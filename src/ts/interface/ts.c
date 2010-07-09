@@ -488,7 +488,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec 
     TSSetRHSFunction - Sets the routine for evaluating the function,
     F(t,u), where U_t = F(t,u).
 
-    Collective on TS
+    Logically Collective on TS
 
     Input Parameters:
 +   ts - the TS context obtained from TSCreate()
@@ -530,7 +530,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetRHSFunction(TS ts,PetscErrorCode (*f)(TS,P
    TSSetMatrices - Sets the functions to compute the matrices Alhs and Arhs, 
    where Alhs(t) U_t = Arhs(t) U.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input Parameters:
 +  ts   - the TS context obtained from TSCreate()
@@ -637,7 +637,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetMatrices(TS ts,Mat *Arhs,Mat *Alhs,void **
    where U_t = F(U,t), as well as the location to store the matrix.
    Use TSSetMatrices() for linear problems.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input Parameters:
 +  ts  - the TS context obtained from TSCreate()
@@ -699,7 +699,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetRHSJacobian(TS ts,Mat A,Mat B,PetscErrorCo
 /*@C
    TSSetIFunction - Set the function to compute F(t,U,U_t) where F = 0 is the DAE to be solved.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input Parameters:
 +  ts  - the TS context obtained from TSCreate()
@@ -740,7 +740,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetIFunction(TS ts,TSIFunction f,void *ctx)
    TSSetIJacobian - Set the function to compute the Jacobian of
    G(U) = F(t,U,U0+a*U) where F(t,U,U_t) = 0 is the DAE to be solved.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input Parameters:
 +  ts  - the TS context obtained from TSCreate()
@@ -887,7 +887,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSView(TS ts,PetscViewer viewer)
    TSSetApplicationContext - Sets an optional user-defined context for 
    the timesteppers.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
@@ -967,7 +967,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetTimeStepNumber(TS ts,PetscInt* iter)
    TSSetInitialTimeStep - Sets the initial timestep to be used, 
    as well as the initial time.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
@@ -996,7 +996,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetInitialTimeStep(TS ts,PetscReal initial_ti
    TSSetTimeStep - Allows one to reset the timestep at any time,
    useful for simple pseudo-timestepping codes.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
@@ -1012,6 +1012,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetTimeStep(TS ts,PetscReal time_step)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidLogicalCollectiveReal(ts,time_step,2);
   ts->time_step = time_step;
   PetscFunctionReturn(0);
 }
@@ -1296,7 +1297,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetKSP(TS ts,KSP *ksp)
    TSGetDuration - Gets the maximum number of timesteps to use and 
    maximum time for iteration.
 
-   Collective on TS
+   Not Collective
 
    Input Parameters:
 +  ts       - the TS context obtained from TSCreate()
@@ -1328,7 +1329,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetDuration(TS ts, PetscInt *maxsteps, PetscR
    TSSetDuration - Sets the maximum number of timesteps to use and 
    maximum time for iteration.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
@@ -1350,6 +1351,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetDuration(TS ts,PetscInt maxsteps,PetscReal
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidLogicalCollectiveInt(ts,maxsteps,2);
+  PetscValidLogicalCollectiveReal(ts,maxtime,2);
   ts->max_steps = maxsteps;
   ts->max_time  = maxtime;
   PetscFunctionReturn(0);
@@ -1361,7 +1364,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetDuration(TS ts,PetscInt maxsteps,PetscReal
    TSSetSolution - Sets the initial solution vector
    for use by the TS routines.
 
-   Collective on TS and Vec
+   Logically Collective on TS and Vec
 
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
@@ -1386,7 +1389,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetSolution(TS ts,Vec x)
   TSSetPreStep - Sets the general-purpose function
   called once at the beginning of each time step.
 
-  Collective on TS
+  Logically Collective on TS
 
   Input Parameters:
 + ts   - The TS context obtained from TSCreate()
@@ -1467,7 +1470,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDefaultPreStep(TS ts)
   TSSetPostStep - Sets the general-purpose function
   called once at the end of each time step.
 
-  Collective on TS
+  Logically Collective on TS
 
   Input Parameters:
 + ts   - The TS context obtained from TSCreate()
@@ -1550,7 +1553,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDefaultPostStep(TS ts)
    TSMonitorSet - Sets an ADDITIONAL function that is to be used at every
    timestep to display the iteration's  progress.   
 
-   Collective on TS
+   Logically Collective on TS
 
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
@@ -1597,7 +1600,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS
 /*@C
    TSMonitorCancel - Clears all the monitors that have been set on a time-step object.   
 
-   Collective on TS
+   Logically Collective on TS
 
    Input Parameters:
 .  ts - the TS context obtained from TSCreate()
@@ -1881,7 +1884,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetTime(TS ts,PetscReal* t)
 /*@
    TSSetTime - Allows one to reset the time.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
@@ -1897,6 +1900,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetTime(TS ts, PetscReal t)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidLogicalCollectiveReal(ts,t,2);
   ts->ptime = t;
   PetscFunctionReturn(0);
 }
@@ -1907,7 +1911,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetTime(TS ts, PetscReal t)
    TSSetOptionsPrefix - Sets the prefix used for searching for all
    TS options in the database.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input Parameter:
 +  ts     - The TS context
@@ -1954,7 +1958,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetOptionsPrefix(TS ts,const char prefix[])
    TSAppendOptionsPrefix - Appends to the prefix used for searching for all
    TS options in the database.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input Parameter:
 +  ts     - The TS context
@@ -2133,7 +2137,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSMonitorSolution(TS ts,PetscInt step,PetscReal
 /*@
    TSSetDM - Sets the DM that may be used by some preconditioners
 
-   Collective on TS
+   Logically Collective on TS and DM
 
    Input Parameters:
 +  ts - the preconditioner context
@@ -2168,7 +2172,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetDM(TS ts,DM dm)
 /*@
    TSGetDM - Gets the DM that may be used by some preconditioners
 
-   Collective on TS
+   Not Collective
 
    Input Parameter:
 . ts - the preconditioner context
@@ -2194,7 +2198,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetDM(TS ts,DM *dm)
 /*@
    SNESTSFormFunction - Function to evaluate nonlinear residual
 
-   Collective on SNES
+   Logically Collective on SNES
 
    Input Parameter:
 + snes - nonlinear solver

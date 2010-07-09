@@ -8,7 +8,7 @@
       VecScatterCreateToAll - Creates a vector and a scatter context that copies all 
           vector values to each processor
 
-  Collective
+  Collective on Vec
 
   Input Parameter: 
 .  vin  - input MPIVEC
@@ -79,7 +79,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec vin,VecScatter *ctx,
       VecScatterCreateToZero - Creates an output vector and a scatter context used to 
               copy all vector values into the output vector on the zeroth processor
 
-  Collective
+  Collective on Vec
 
   Input Parameter: 
 .  vin  - input MPIVEC

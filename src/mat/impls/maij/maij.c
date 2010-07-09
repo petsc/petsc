@@ -67,7 +67,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMAIJGetAIJ(Mat A,Mat *B)
 /*@C
    MatMAIJRedimension - Get an MAIJ matrix with the same action, but for a different block size
 
-   Collective
+   Logically Collective
 
    Input Parameter:
 +  A - the MAIJ matrix
@@ -86,6 +86,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMAIJRedimension(Mat A,PetscInt dof,Mat *B)
   Mat            Aij = PETSC_NULL;
 
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(A,dof,2);
   ierr = MatMAIJGetAIJ(A,&Aij);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(Aij,dof,B);CHKERRQ(ierr);
   PetscFunctionReturn(0);

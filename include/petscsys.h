@@ -1417,7 +1417,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectDestroyOptionsHandlers(PetscObj
     Synopsis:
     PetscErrorCode PetscObjectComposeFunctionDynamic(PetscObject obj,const char name[],const char fname[],void *ptr)
 
-   Collective on PetscObject
+   Logically Collective on PetscObject
 
    Input Parameters:
 +  obj - the PETSc object; this must be cast with a (PetscObject), for example, 

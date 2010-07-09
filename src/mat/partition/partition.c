@@ -304,7 +304,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningDestroy(MatPartitioning part)
 /*@C
    MatPartitioningSetVertexWeights - Sets the weights for vertices for a partitioning.
 
-   Collective on Partitioning
+   Logically Collective on Partitioning
 
    Input Parameters:
 +  part - the partitioning context
@@ -337,7 +337,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetVertexWeights(MatPartitionin
 /*@C
    MatPartitioningSetPartitionWeights - Sets the weights for each partition.
 
-   Collective on Partitioning
+   Logically Collective on Partitioning
 
    Input Parameters:
 +  part - the partitioning context

@@ -82,7 +82,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
 /*@C
     DMMGSetMatType - Sets the type of matrices that DMMG will create for its solvers.
 
-    Collective on MPI_Comm 
+    Logically Collective on MPI_Comm 
 
     Input Parameters:
 +    dmmg - the DMMG object created with DMMGCreate()
@@ -111,7 +111,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG *dmmg,const MatType mtype
 /*@C
     DMMGSetOptionsPrefix - Sets the prefix used for the solvers inside a DMMG
 
-    Collective on MPI_Comm 
+    Logically Collective on MPI_Comm 
 
     Input Parameters:
 +    dmmg - the DMMG object created with DMMGCreate()
@@ -189,7 +189,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG *dmmg)
 /*@C
     DMMGSetDM - Sets the coarse grid information for the grids
 
-    Collective on DMMG
+    Logically Collective on DMMG and DM
 
     Input Parameter:
 +   dmmg - the context
@@ -419,7 +419,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
 /*@C
     DMMGSetKSP - Sets the linear solver object that will use the grid hierarchy
 
-    Collective on DMMG
+    Logically Collective on DMMG
 
     Input Parameter:
 +   dmmg - the context
@@ -581,7 +581,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGView(DMMG *dmmg,PetscViewer viewer)
 /*@C
     DMMGSetNullSpace - Indicates the null space in the linear operator (this is needed by the linear solver)
 
-    Collective on DMMG
+    Logically Collective on DMMG
 
     Input Parameter:
 +   dmmg - the context
@@ -655,7 +655,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cn
        problems zero is used for the initial guess (unless grid sequencing is used). For nonlinear 
        problems this is not needed; it always uses the previous solution as the initial guess.
 
-    Collective on DMMG
+    Logically Collective on DMMG
 
     Input Parameter:
 +   dmmg - the context
@@ -677,7 +677,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGInitialGuessCurrent(DMMG dmmg,Vec vec)
 /*@C
     DMMGSetInitialGuess - Sets the function that computes an initial guess.
 
-    Collective on DMMG
+    Logically Collective on DMMG
 
     Input Parameter:
 +   dmmg - the context

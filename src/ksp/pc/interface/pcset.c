@@ -197,7 +197,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions(PC pc)
 /*@
    PCSetDM - Sets the DM that may be used by some preconditioners
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -225,7 +225,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetDM(PC pc,DM dm)
 /*@
    PCGetDM - Gets the DM that may be used by some preconditioners
 
-   Collective on PC
+   Not Collective
 
    Input Parameter:
 . pc - the preconditioner context

@@ -11,7 +11,7 @@
        Jacobian matrix vector products will be computed at, i.e. J(x) * a. The x is obtained
        from the SNES object (using SNESGetSolution()).
 
-   Collective on SNES
+   Logically Collective on SNES
 
    Input Parameters:
 +   snes - the nonlinear solver context

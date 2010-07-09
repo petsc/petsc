@@ -442,7 +442,7 @@ EXTERN_C_END
    PCJacobiSetUseAbs - Causes the Jacobi preconditioner to use the 
       absolute value of the diagonal to for the preconditioner
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -478,7 +478,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseAbs(PC pc)
       maximum entry in each row as the diagonal preconditioner, instead of
       the diagonal entry
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -513,7 +513,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowMax(PC pc)
       sum of each row as the diagonal preconditioner, instead of
       the diagonal entry
 
-   Collective on PC
+   Logical Collective on PC
 
    Input Parameters:
 .  pc - the preconditioner context

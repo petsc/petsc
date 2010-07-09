@@ -197,10 +197,10 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCComputeExplicitOperator(PC,Mat*);
       These are used to provide extra scaling of preconditioned 
    operator for time-stepping schemes like in SUNDIALS 
 */
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCDiagonalScale(PC,PetscTruth*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGetDiagonalScale(PC,PetscTruth*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCDiagonalScaleLeft(PC,Vec,Vec);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCDiagonalScaleRight(PC,Vec,Vec);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCDiagonalScaleSet(PC,Vec);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetDiagonalScale(PC,Vec);
 
 /* ------------- options specific to particular preconditioners --------- */
 

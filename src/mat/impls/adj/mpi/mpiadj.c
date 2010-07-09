@@ -473,7 +473,7 @@ EXTERN_C_END
 /*@C
    MatMPIAdjSetPreallocation - Sets the array used for storing the matrix elements
 
-   Collective on MPI_Comm
+   Logically Collective on MPI_Comm
 
    Input Parameters:
 +  A - the matrix

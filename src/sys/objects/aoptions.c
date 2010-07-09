@@ -543,7 +543,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
 /*@C
    PetscOptionsEnum - Gets the enum value for a particular option in the database.
 
-   Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in PetscOptionsBegin()
 
    Input Parameters:
 +  opt - option name
@@ -598,7 +598,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsEnum(const char opt[],const char text
 /*@C
    PetscOptionsInt - Gets the integer value for a particular option in the database.
 
-   Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in PetscOptionsBegin()
 
    Input Parameters:
 +  opt - option name
@@ -647,7 +647,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInt(const char opt[],const char text[
 /*@C
    PetscOptionsString - Gets the string value for a particular option in the database.
 
-   Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in PetscOptionsBegin()
 
    Input Parameters:
 +  opt - option name
@@ -696,7 +696,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsString(const char opt[],const char te
 /*@C
    PetscOptionsReal - Gets the PetscReal value for a particular option in the database.
 
-   Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in PetscOptionsBegin()
 
    Input Parameters:
 +  opt - option name
@@ -745,7 +745,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsReal(const char opt[],const char text
 /*@C
    PetscOptionsScalar - Gets the scalar value for a particular option in the database.
 
-   Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in PetscOptionsBegin()
 
    Input Parameters:
 +  opt - option name
@@ -790,7 +790,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsScalar(const char opt[],const char te
    PetscOptionsName - Determines if a particular option has been set in the database. This returns true whether the option is a number, string or boolean, even 
                       its value is set to false.
 
-   Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in PetscOptionsBegin()
 
    Input Parameters:
 +  opt - option name
@@ -837,7 +837,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsName(const char opt[],const char text
 /*@C
      PetscOptionsList - Puts a list of option values that a single one may be selected from
 
-   Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in PetscOptionsBegin()
 
    Input Parameters:
 +  opt - option name
@@ -893,7 +893,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsList(const char opt[],const char ltex
 /*@C
      PetscOptionsEList - Puts a list of option values that a single one may be selected from
 
-   Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in PetscOptionsBegin()
 
    Input Parameters:
 +  opt - option name
@@ -953,7 +953,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsEList(const char opt[],const char lte
      PetscOptionsTruthGroupBegin - First in a series of logical queries on the options database for
        which at most a single value can be true.
 
-   Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in PetscOptionsBegin()
 
    Input Parameters:
 +  opt - option name
@@ -1004,7 +1004,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsTruthGroupBegin(const char opt[],cons
      PetscOptionsTruthGroup - One in a series of logical queries on the options database for
        which at most a single value can be true.
 
-   Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in PetscOptionsBegin()
 
    Input Parameters:
 +  opt - option name
@@ -1054,7 +1054,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsTruthGroup(const char opt[],const cha
      PetscOptionsTruthGroupEnd - Last in a series of logical queries on the options database for
        which at most a single value can be true.
 
-   Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in PetscOptionsBegin()
 
    Input Parameters:
 +  opt - option name
@@ -1103,7 +1103,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsTruthGroupEnd(const char opt[],const 
 /*@C
    PetscOptionsTruth - Determines if a particular option is in the database with a true or false
 
-   Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in PetscOptionsBegin()
 
    Input Parameters:
 +  opt - option name
@@ -1159,7 +1159,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsTruth(const char opt[],const char tex
    option in the database. The values must be separated with commas with 
    no intervening spaces. 
 
-   Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in PetscOptionsBegin()
 
    Input Parameters:
 +  opt - the option one is seeking
@@ -1223,7 +1223,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsRealArray(const char opt[],const char
    option in the database. The values must be separated with commas with 
    no intervening spaces. 
 
-   Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in PetscOptionsBegin()
 
    Input Parameters:
 +  opt - the option one is seeking
@@ -1286,7 +1286,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsIntArray(const char opt[],const char 
    option in the database. The values must be separated with commas with 
    no intervening spaces. 
 
-   Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in PetscOptionsBegin()
 
    Input Parameters:
 +  opt - the option one is seeking
@@ -1344,7 +1344,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsStringArray(const char opt[],const ch
    option in the database. The values must be separated with commas with 
    no intervening spaces. 
 
-   Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in PetscOptionsBegin()
 
    Input Parameters:
 +  opt - the option one is seeking
@@ -1407,7 +1407,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsTruthArray(const char opt[],const cha
      PetscOptionsHead - Puts a heading before listing any more published options. Used, for example,
             in KSPSetFromOptions_GMRES().
 
-   Collective on the communicator passed in PetscOptionsBegin()
+   Logically Collective on the communicator passed in PetscOptionsBegin()
 
    Input Parameter:
 .   head - the heading text

@@ -38,7 +38,7 @@ EXTERN_C_END
    KSPChebychevSetEigenvalues - Sets estimates for the extreme eigenvalues
    of the preconditioned problem.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - the Krylov space context
@@ -60,6 +60,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPChebychevSetEigenvalues(KSP ksp,PetscReal e
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveReal(ksp,emax,2);
+  PetscValidLogicalCollectiveReal(ksp,emin,3);
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,emax,emin);CHKERRQ(ierr);
@@ -99,7 +101,7 @@ PetscErrorCode KSPSolve_Chebychev(KSP ksp)
   PetscFunctionBegin;
   if (ksp->normtype == KSP_NORM_NATURAL) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Cannot use natural residual norm with KSPCHEBYCHEV");
 
-  ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
+  ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   ksp->its = 0;

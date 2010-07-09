@@ -104,7 +104,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPView(KSP ksp,PetscViewer viewer)
 /*@
    KSPSetNormType - Sets the norm that is used for convergence testing.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameter:
 +  ksp - Krylov solver context
@@ -139,6 +139,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP ksp,KSPNormType normtype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(ksp,normtype,2);
   ksp->normtype = normtype;
   if (normtype == KSP_NORM_NO) {
     ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,0,0);CHKERRQ(ierr);
@@ -154,7 +155,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP ksp,KSPNormType normtype)
    KSPSetCheckNormIteration - Sets the first iteration at which the norm of the residual will be 
      computed and used in the convergence test. 
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameter:
 +  ksp - Krylov solver context
@@ -177,6 +178,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetCheckNormIteration(KSP ksp,PetscInt it)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveInt(ksp,it,2);
   ksp->chknorm = it;
   PetscFunctionReturn(0);
 }
@@ -189,7 +191,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetCheckNormIteration(KSP ksp,PetscInt it)
    one additional iteration.
 
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameter:
 +  ksp - Krylov solver context
@@ -214,6 +216,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetLagNorm(KSP ksp,PetscTruth flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,flg,2);
   ksp->lagnorm = flg;
   PetscFunctionReturn(0);
 }
@@ -521,7 +524,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
 /*@C
    KSPSetType - Builds KSP for a particular solver. 
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp      - the Krylov space context
@@ -656,7 +659,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRegister(const char sname[],const char path
 /*@
   KSPSetNullSpace - Sets the null space of the operator
 
-  Collective on KSP
+  Logically Collective on KSP
 
   Input Parameters:
 +  ksp - the Krylov space object
@@ -684,7 +687,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
 /*@
   KSPGetNullSpace - Gets the null space of the operator
 
-  Collective on KSP
+  Not Collective
 
   Input Parameters:
 +  ksp - the Krylov space object

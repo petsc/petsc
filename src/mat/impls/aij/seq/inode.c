@@ -3944,7 +3944,7 @@ EXTERN_C_END
 /*@C
    MatInodeGetInodeSizes - Returns the inode information of the Inode matrix.
 
-   Collective on Mat
+   Not Collective
 
    Input Parameter:
 .  A - the Inode matrix or matrix derived from the Inode class -- e.g., SeqAIJ

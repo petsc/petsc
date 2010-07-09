@@ -153,7 +153,7 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer vie
      MatPartitioningParmetisSetCoarseSequential - Use the sequential code to 
          do the partitioning of the coarse grid.
 
-  Collective on MatPartitioning
+  Logically Collective on MatPartitioning
 
   Input Parameter:
 .  part - the partitioning context

@@ -44,7 +44,7 @@ EXTERN_C_END
    TSRKSetTolerance - Sets the total error the RK explicit time integrators 
                       will allow over the given time interval.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input parameters:
 +    ts  - the time-step context
@@ -62,6 +62,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSRKSetTolerance(TS ts,PetscReal aabs)
   PetscErrorCode ierr,(*f)(TS,PetscReal);  
   
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveReal(ts,aabs,2);
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSRKSetTolerance_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,aabs);CHKERRQ(ierr);

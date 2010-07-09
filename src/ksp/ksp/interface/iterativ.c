@@ -97,7 +97,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetIterationNumber(KSP ksp,PetscInt *its)
     estimation of the extreme singular values of the preconditioned problem
     at each iteration.
  
-    Collective on KSP
+    Logically Collective on KSP
 
     Input Parameters:
 +   ksp - the iterative context
@@ -943,7 +943,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergedReason(KSP ksp,KSPConvergedReas
 /*@
    KSPSetDM - Sets the DM that may be used by some preconditioners
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - the preconditioner context
@@ -975,7 +975,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDM(KSP ksp,DM dm)
 /*@
    KSPSetDMActive - Indicates the DM should be used to generate the linear system matrix and right hand side
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - the preconditioner context
@@ -990,6 +990,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDMActive(KSP ksp,PetscTruth flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,flg,2);
   ksp->dmActive = flg;
   PetscFunctionReturn(0);
 }
@@ -999,7 +1000,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDMActive(KSP ksp,PetscTruth flg)
 /*@
    KSPGetDM - Gets the DM that may be used by some preconditioners
 
-   Collective on KSP
+   Not Collective
 
    Input Parameter:
 . ksp - the preconditioner context

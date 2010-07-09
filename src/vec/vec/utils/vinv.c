@@ -14,7 +14,7 @@ extern MPI_Op VecMin_Local_Op;
    VecStrideScale - Scales a subvector of a vector defined 
    by a starting point and a stride.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameter:
 +  v - the vector 
@@ -42,9 +42,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScale(Vec v,PetscInt start,PetscScala
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(v,start,2);  
+  PetscValidLogicalCollectiveScalar(v,scale,3);  
+
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-
   bs   = v->map->bs;
   if (start < 0) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
@@ -352,7 +354,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMin(Vec v,PetscInt start,PetscInt *id
    VecStrideScaleAll - Scales the subvectors of a vector defined 
    by a starting point and a stride.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameter:
 +  v - the vector 
@@ -1213,25 +1215,36 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDotNorm2(Vec s,Vec t,PetscScalar *dp, Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, VEC_CLASSID,1);
   PetscValidHeaderSpecific(t, VEC_CLASSID,2);
+  PetscValidScalarPointer(dp,3);
+  PetscValidScalarPointer(nm,4);
+  PetscValidType(s,1);
+  PetscValidType(t,2);
+  PetscCheckSameTypeAndComm(s,1,t,2);
+  if (s->map->N != t->map->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (s->map->n != t->map->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PetscLogEventBarrierBegin(VEC_DotNormBarrier,s,t,0,0,((PetscObject)s)->comm);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(s, &n);CHKERRQ(ierr);
-  ierr = VecGetArray(s, &sx);CHKERRQ(ierr);
-  ierr = VecGetArray(t, &tx);CHKERRQ(ierr);
+  if (s->ops->dotnorm2) {
+    ierr = (*s->ops->dotnorm2)(s,t,dp,nm);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetLocalSize(s, &n);CHKERRQ(ierr);
+    ierr = VecGetArray(s, &sx);CHKERRQ(ierr);
+    ierr = VecGetArray(t, &tx);CHKERRQ(ierr);
 
-  for (i = 0; i<n; i++) {
-    dpx += sx[i]*PetscConj(tx[i]);
-    nmx += tx[i]*PetscConj(tx[i]);
+    for (i = 0; i<n; i++) {
+      dpx += sx[i]*PetscConj(tx[i]);
+      nmx += tx[i]*PetscConj(tx[i]);
+    }
+    work[0] = dpx;
+    work[1] = nmx;
+    ierr = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,MPIU_SUM,((PetscObject)s)->comm);CHKERRQ(ierr);
+    *dp  = sum[0];
+    *nm  = sum[1];
+
+    ierr = VecRestoreArray(t, &tx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(s, &sx);CHKERRQ(ierr);
+    ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr);
   }
-  work[0] = dpx;
-  work[1] = nmx;
-  ierr = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,MPIU_SUM,((PetscObject)s)->comm);CHKERRQ(ierr);
-  *dp  = sum[0];
-  *nm  = sum[1];
-  
-  ierr = VecRestoreArray(t, &tx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(s, &sx);CHKERRQ(ierr);
-  ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr);  
   ierr = PetscLogEventBarrierEnd(VEC_DotNormBarrier,s,t,0,0,((PetscObject)s)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1280,7 +1293,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSum(Vec v,PetscScalar *sum)
    VecShift - Shifts all of the components of a vector by computing
    x[i] = x[i] + shift.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 +  v - the vector 
@@ -1302,6 +1315,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecShift(Vec v,PetscScalar shift)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidLogicalCollectiveScalar(v,shift,2);  
   if (v->ops->shift) {
     ierr = (*v->ops->shift)(v);CHKERRQ(ierr);
   } else {
@@ -1320,7 +1334,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecShift(Vec v,PetscScalar shift)
 /*@
    VecAbs - Replaces every element in a vector with its absolute value.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 .  v - the vector 

@@ -719,7 +719,7 @@ EXTERN_C_END
    KSPGMRESSetCGSRefinementType - Sets the type of iterative refinement to use
          in the classical Gram Schmidt orthogonalization.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - the Krylov space context
@@ -741,6 +741,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESC
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(ksp,type,2);
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,type);CHKERRQ(ierr);
@@ -754,7 +755,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESC
    KSPGMRESGetCGSRefinementType - Gets the type of iterative refinement to use
          in the classical Gram Schmidt orthogonalization.
 
-   Collective on KSP
+   Not Collective
 
    Input Parameter:
 .  ksp - the Krylov space context
@@ -791,7 +792,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetCGSRefinementType(KSP ksp,KSPGMRESC
 /*@
    KSPGMRESSetRestart - Sets number of iterations at which GMRES, FGMRES and LGMRES restarts.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - the Krylov space context
@@ -813,6 +814,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart(KSP ksp, PetscInt restart)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(ksp,restart,2);
+
   ierr = PetscTryMethod(ksp,"KSPGMRESSetRestart_C",(KSP,PetscInt),(ksp,restart));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -822,7 +825,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart(KSP ksp, PetscInt restart)
 /*@
    KSPGMRESGetRestart - Gets number of iterations at which GMRES, FGMRES and LGMRES restarts.
 
-   Collective on KSP
+   Not Collective
 
    Input Parameter:
 .  ksp - the Krylov space context
@@ -852,7 +855,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 /*@
    KSPGMRESSetHapTol - Sets tolerance for determining happy breakdown in GMRES, FGMRES and LGMRES.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - the Krylov space context
@@ -876,6 +879,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveReal(ksp,tol,2);
   ierr = PetscTryMethod((ksp),"KSPGMRESSetHapTol_C",(KSP,PetscReal),((ksp),(tol)));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

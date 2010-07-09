@@ -143,7 +143,7 @@ EXTERN_C_END
 /*@
    PCGalerkinSetRestriction - Sets the restriction operator for the "Galerkin-type" preconditioner
    
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameter:
 +  pc - the preconditioner context
@@ -177,7 +177,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetRestriction(PC pc,Mat R)
 /*@
    PCGalerkinSetInterpolation - Sets the interpolation operator for the "Galerkin-type" preconditioner
    
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameter:
 +  pc - the preconditioner context

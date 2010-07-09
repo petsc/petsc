@@ -184,7 +184,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectDestroyOptionsHandlers(PetscObject obj
    referenced by another PetscObject. This increases the reference
    count for that object by one.
 
-   Collective on PetscObject
+   Logically Collective on PetscObject
 
    Input Parameter:
 .  obj - the PETSc object. This must be cast with (PetscObject), for example, 
@@ -237,7 +237,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetReference(PetscObject obj,PetscInt 
    referenced by one less PetscObject. This decreases the reference
    count for that object by one.
 
-   Collective on PetscObject
+   Collective on PetscObject if reference reaches 0 otherwise Logically Collective
 
    Input Parameter:
 .  obj - the PETSc object; this must be cast with (PetscObject), for example, 
@@ -431,7 +431,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectComposeFunction(PetscObject obj,const 
 /*@C
    PetscObjectQueryFunction - Gets a function associated with a given object.
                        
-   Collective on PetscObject
+   Logically Collective on PetscObject
 
    Input Parameters:
 +  obj - the PETSc object; this must be cast with (PetscObject), for example, 
@@ -473,7 +473,7 @@ struct _p_PetscContainer {
 /*@C
    PetscContainerGetPointer - Gets the pointer value contained in the container.
 
-   Collective on PetscContainer
+   Not Collective
 
    Input Parameter:
 .  obj - the object created with PetscContainerCreate()
@@ -501,7 +501,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscContainerGetPointer(PetscContainer obj,void 
 /*@C
    PetscContainerSetPointer - Sets the pointer value contained in the container.
 
-   Collective on PetscContainer
+   Logically Collective on PetscContainer
 
    Input Parameters:
 +  obj - the object created with PetscContainerCreate()
@@ -551,7 +551,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscContainerDestroy(PetscContainer obj)
 /*@C
    PetscContainerSetUserDestroy - Sets name of the user destroy function.
 
-   Collective on PetscContainer
+   Logically Collective on PetscContainer
 
    Input Parameter:
 +  obj - an object that was created with PetscContainerCreate()

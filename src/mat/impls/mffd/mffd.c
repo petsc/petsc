@@ -745,7 +745,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDGetH(Mat mat,PetscScalar *h)
 /*@C
    MatMFFDSetFunction - Sets the function used in applying the matrix free.
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix free matrix created via MatCreateSNESMF()
@@ -780,7 +780,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunction(Mat mat,PetscErrorCode (*fu
 /*@C
    MatMFFDSetFunctioni - Sets the function for a single component
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix free matrix created via MatCreateSNESMF()
@@ -817,7 +817,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioni(Mat mat,PetscErrorCode (*f
 /*@C
    MatMFFDSetFunctioniBase - Sets the base vector for a single component function evaluation
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix free matrix created via MatCreateSNESMF()
@@ -854,7 +854,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioniBase(Mat mat,PetscErrorCode
 /*@
    MatMFFDSetPeriod - Sets how often h is recomputed, by default it is everytime
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix free matrix created via MatCreateSNESMF()
@@ -876,6 +876,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetPeriod(Mat mat,PetscInt period)
   MatMFFD ctx = (MatMFFD)mat->data;
 
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(mat,period,2);
   ctx->recomputeperiod = period;
   PetscFunctionReturn(0);
 }
@@ -886,7 +887,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetPeriod(Mat mat,PetscInt period)
    MatMFFDSetFunctionError - Sets the error_rel for the approximation of
    matrix-vector products using finite differences.
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix free matrix created via MatCreateMFFD() or MatCreateSNESMF()
@@ -916,6 +917,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctionError(Mat mat,PetscReal erro
   MatMFFD ctx = (MatMFFD)mat->data;
 
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveReal(mat,error,2);
   if (error != PETSC_DEFAULT) ctx->error_rel = error;
   PetscFunctionReturn(0);
 }
@@ -928,7 +930,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctionError(Mat mat,PetscReal erro
    the null space, if you know the null space you may have it
    automatically removed.
 
-   Collective on Mat 
+   Logically Collective on Mat 
 
    Input Parameters:
 +  J - the matrix-free matrix context
@@ -959,7 +961,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDAddNullSpace(Mat J,MatNullSpace nullsp)
    MatMFFDSetHHistory - Sets an array to collect a history of the
    differencing values (h) computed for the matrix-free product.
 
-   Collective on Mat 
+   Logically Collective on Mat 
 
    Input Parameters:
 +  J - the matrix-free matrix context
@@ -996,7 +998,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetHHistory(Mat J,PetscScalar history[]
    MatMFFDResetHHistory - Resets the counter to zero to begin 
    collecting a new set of differencing histories.
 
-   Collective on Mat 
+   Logically Collective on Mat 
 
    Input Parameters:
 .  J - the matrix-free matrix context
@@ -1028,7 +1030,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDResetHHistory(Mat J)
     MatMFFDSetBase - Sets the vector U at which matrix vector products of the 
         Jacobian are computed
 
-    Collective on Mat
+    Logically Collective on Mat
 
     Input Parameters:
 +   J - the MatMFFD matrix
@@ -1064,7 +1066,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase(Mat J,Vec U,Vec F)
     MatMFFDSetCheckh - Sets a function that checks the computed h and adjusts
         it to satisfy some criteria
 
-    Collective on Mat
+    Logically Collective on Mat
 
     Input Parameters:
 +   J - the MatMFFD matrix
@@ -1100,7 +1102,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetCheckh(Mat J,PetscErrorCode (*fun)(v
     MatMFFDCheckPositivity - Checks that all entries in U + h*a are positive or
         zero, decreases h until this is satisfied.
 
-    Collective on Vec
+    Logically Collective on Vec
 
     Input Parameters:
 +   U - base vector that is added to

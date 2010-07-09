@@ -37,7 +37,7 @@ static PetscErrorCode PetscBagRegister_Private(PetscBag bag,PetscBagItem item,co
 /*@C
    PetscBagRegisterEnum - add an enum value to the bag
 
-   Collective on PetscBag
+   Logically Collective on PetscBag
 
    Input Parameter:
 +  bag - the bag of values
@@ -95,7 +95,7 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag,void *addr,const char **list,Pe
 /*@C
    PetscBagRegisterInt - add an integer value to the bag
 
-   Collective on PetscBag
+   Logically Collective on PetscBag
 
    Input Parameter:
 +  bag - the bag of values
@@ -146,7 +146,7 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag,void *addr,PetscInt mdefault, co
 /*@C
    PetscBagRegisterString - add a string value to the bag
 
-   Collective on PetscBag
+   Logically Collective on PetscBag
 
    Input Parameter:
 +  bag - the bag of values
@@ -204,7 +204,7 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag,void *addr,PetscInt msize,con
 /*@C
    PetscBagRegisterReal - add a real value to the bag
 
-   Collective on PetscBag
+   Logically Collective on PetscBag
 
    Input Parameter:
 +  bag - the bag of values
@@ -253,9 +253,9 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag,void *addr,PetscReal mdefault, 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscBagRegisterScalar"
 /*@C
-   PetscBagRegisterScalar - add a real value to the bag
+   PetscBagRegisterScalar - add a real or complex number value to the bag
 
-   Collective on PetscBag
+   Logically Collective on PetscBag
 
    Input Parameter:
 +  bag - the bag of values
@@ -307,7 +307,7 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag,void *addr,PetscScalar mdefau
 /*@C
    PetscBagRegisterTruth - add a logical value to the bag
 
-   Collective on PetscBag
+   Logically Collective on PetscBag
 
    Input Parameter:
 +  bag - the bag of values

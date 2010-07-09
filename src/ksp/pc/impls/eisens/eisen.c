@@ -227,7 +227,7 @@ EXTERN_C_END
    PCEisenstatSetOmega - Sets the SSOR relaxation coefficient, omega,
    to use with Eisenstat's trick (where omega = 1.0 by default).
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -258,6 +258,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCEisenstatSetOmega(PC pc,PetscReal omega)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveReal(pc,omega,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCEisenstatSetOmega_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,omega);CHKERRQ(ierr);
@@ -272,7 +273,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCEisenstatSetOmega(PC pc,PetscReal omega)
    not to do additional diagonal preconditioning. For matrices with a constant 
    along the diagonal, this may save a small amount of work.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameter:
 .  pc - the preconditioner context

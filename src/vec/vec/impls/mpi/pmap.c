@@ -253,7 +253,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetLocalSize(PetscLayout map,PetscI
 /*@C
      PetscLayoutSetSize - Sets the global size for a PetscLayout object.
 
-    Collective on PetscLayout
+    Logically Collective on PetscLayout
 
    Input Parameters:
 +    map - pointer to the map
@@ -315,7 +315,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetSize(PetscLayout map,PetscInt *n
 /*@C
      PetscLayoutSetBlockSize - Sets the block size for a PetscLayout object.
 
-    Collective on PetscLayout
+    Logically Collective on PetscLayout
 
    Input Parameters:
 +    map - pointer to the map

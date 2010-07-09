@@ -54,7 +54,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStashGetInfo(Vec vec,PetscInt *nstash,Petsc
    by the routine VecSetValuesLocal() to allow users to insert vector entries
    using a local (per-processor) numbering.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 +  x - vector
@@ -96,7 +96,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMapping(Vec x,ISLocalToGlob
    by the routine VecSetValuesBlockedLocal() to allow users to insert vector entries
    using a local (per-processor) numbering.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 +  x - vector
@@ -285,7 +285,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyEnd(Vec vec)
 /*@
    VecPointwiseMax - Computes the componentwise maximum w_i = max(x_i, y_i).
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 .  x, y  - the vectors
@@ -329,7 +329,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMax(Vec w,Vec x,Vec y)
 /*@
    VecPointwiseMin - Computes the componentwise minimum w_i = min(x_i, y_i).
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 .  x, y  - the vectors
@@ -372,7 +372,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMin(Vec w,Vec x,Vec y)
 /*@
    VecPointwiseMaxAbs - Computes the componentwise maximum of the absolute values w_i = max(abs(x_i), abs(y_i)).
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 .  x, y  - the vectors
@@ -414,7 +414,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMaxAbs(Vec w,Vec x,Vec y)
 /*@
    VecPointwiseDivide - Computes the componentwise division w = x/y.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 .  x, y  - the vectors
@@ -1071,7 +1071,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, Vec newvec)
 /*@
    VecReciprocal - Replaces each component of a vector by its reciprocal.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameter:
 .  vec - the vector
@@ -1124,7 +1124,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetOperation(Vec vec,VecOperation op, void 
    used during the assembly process to store values that belong to
    other processors.
 
-   Collective on Vec
+   Not Collective, different processes can have different size stashes
 
    Input Parameters:
 +  vec   - the vector
@@ -1169,7 +1169,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStashSetInitialSize(Vec vec,PetscInt size,P
 /*@
    VecConjugate - Conjugates a vector.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 .  x - the vector
@@ -1202,7 +1202,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecConjugate(Vec x)
 /*@
    VecPointwiseMult - Computes the componentwise multiplication w = x*y.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 .  x, y  - the vectors
@@ -1245,7 +1245,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMult(Vec w, Vec x,Vec y)
 /*@
    VecSetRandom - Sets all components of a vector to random numbers.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 +  x  - the vector
@@ -1304,7 +1304,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(Vec x,PetscRandom rctx)
 /*@
   VecZeroEntries - puts a 0.0 in each element of a vector
 
-  Collective on Vec
+  Logically Collective on Vec
 
   Input Parameter:
 . vec - The vector
@@ -1456,7 +1456,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetSizes(Vec v, PetscInt n, PetscInt N)
    VecSetBlockSize - Sets the blocksize for future calls to VecSetValuesBlocked()
    and VecSetValuesBlockedLocal().
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameter:
 +  v - the vector
@@ -1480,6 +1480,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetBlockSize(Vec v,PetscInt bs)
   if (v->map->N != -1 && v->map->N % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Vector length not divisible by blocksize %D %D",v->map->N,bs);
   if (v->map->n != -1 && v->map->n % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local vector length not divisible by blocksize %D %D\n\
    Try setting blocksize before setting the vector type",v->map->n,bs);
+  PetscValidLogicalCollectiveInt(v,bs,2);  
 
   v->map->bs   = bs;
   v->bstash.bs = bs; /* use the same blocksize for the vec's block-stash */
@@ -1492,7 +1493,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetBlockSize(Vec v,PetscInt bs)
    VecGetBlockSize - Gets the blocksize for the vector, i.e. what is used for VecSetValuesBlocked()
    and VecSetValuesBlockedLocal().
 
-   Collective on Vec
+   Not Collective
 
    Input Parameter:
 .  v - the vector
@@ -1553,7 +1554,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecValid(Vec v,PetscTruth *flg)
    VecSetOptionsPrefix - Sets the prefix used for searching for all
    Vec options in the database.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameter:
 +  v - the Vec context
@@ -1585,7 +1586,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetOptionsPrefix(Vec v,const char prefix[])
    VecAppendOptionsPrefix - Appends to the prefix used for searching for all
    Vec options in the database.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 +  v - the Vec context
@@ -1693,7 +1694,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetUp(Vec v)
 /*@
    VecCopy - Copies a vector. y <- x
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameter:
 .  x - the vector
@@ -1753,7 +1754,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
 /*@
    VecSwap - Swaps the vectors x and y.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 .  x, y  - the vectors

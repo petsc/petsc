@@ -222,7 +222,7 @@ static PetscErrorCode SlicedSetBlockFills_Private(PetscInt bs,const PetscInt *fi
     SlicedSetBlockFills - Sets the fill pattern in each block for a multi-component problem
     of the matrix returned by SlicedGetMatrix().
 
-    Collective on Sliced
+    Logically Collective on Sliced
 
     Input Parameter:
 +   sliced - the Sliced object

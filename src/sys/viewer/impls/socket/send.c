@@ -359,7 +359,7 @@ EXTERN_C_END
       PetscViewerSocketSetConnection - Sets the machine and port that a PETSc socket 
              viewer is to use
 
-  Collective on PetscViewer
+  Logically Collective on PetscViewer
 
   Input Parameters:
 +   v - viewer to connect
@@ -380,6 +380,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,cons
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket *)v->data;
 
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(v,port,3);
   if (port <= 0) {
     char portn[16];
     ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg);CHKERRQ(ierr);

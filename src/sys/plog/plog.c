@@ -260,7 +260,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogBegin_Private(void)
   rates and object creation and should not slow programs down too much.
   This routine may be called more than once.
 
-  Collective over PETSC_COMM_WORLD
+  Logically Collective over PETSC_COMM_WORLD
 
   Options Database Keys:
 + -log_summary - Prints summary of flop and timing information to the 
@@ -301,7 +301,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogBegin(void)
   PetscLogAllBegin - Turns on extensive logging of objects and events. Logs 
   all events. This creates large log files and slows the program down.
 
-  Collective on PETSC_COMM_WORLD
+  Logically Collective on PETSC_COMM_WORLD
 
   Options Database Keys:
 . -log_all - Prints extensive log information (for code compiled with PETSC_USE_LOG)
@@ -341,7 +341,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogAllBegin(void)
   PetscLogTraceBegin - Activates trace logging.  Every time a PETSc event
   begins or ends, the event name is printed.
 
-  Collective on PETSC_COMM_WORLD
+  Logically Collective on PETSC_COMM_WORLD
 
   Input Parameter:
 . file - The file to print trace in (e.g. stdout)
@@ -1063,7 +1063,7 @@ M*/
    PetscErrorCode PetscLogEventBarrierEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
                   PetscObject o4,MPI_Comm comm)
 
-   Collective on MPI_Comm
+   Logically Collective on MPI_Comm
 
    Input Parameters:
 .  e - integer associated with the event obtained from PetscLogEventRegister()

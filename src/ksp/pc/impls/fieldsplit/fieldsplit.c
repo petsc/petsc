@@ -898,7 +898,7 @@ EXTERN_C_END
 /*@
     PCFieldSplitSetFields - Sets the fields for one particular split in the field split preconditioner
 
-    Collective on PC
+    Logically Collective on PC
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -942,7 +942,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC pc,const char splitna
 /*@
     PCFieldSplitSetIS - Sets the exact elements for field
 
-    Collective on PC
+    Logically Collective on PC
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -982,7 +982,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS(PC pc,const char splitname[]
     PCFieldSplitSetBlockSize - Sets the block size for defining where fields start in the 
       fieldsplit preconditioner. If not set the matrix block size is used.
 
-    Collective on PC
+    Logically Collective on PC
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -999,6 +999,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetBlockSize(PC pc,PetscInt bs)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(pc,bs,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFieldSplitSetBlockSize_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,bs);CHKERRQ(ierr);

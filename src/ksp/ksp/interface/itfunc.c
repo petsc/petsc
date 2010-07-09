@@ -737,7 +737,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
 /*@
     KSPSetPCSide - Sets the preconditioning side.
 
-    Collective on KSP
+    Logically Collective on KSP
 
     Input Parameter:
 .   ksp - iterative context obtained from KSPCreate()
@@ -769,6 +769,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPCSide(KSP ksp,PCSide side)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(ksp,side,2);
   ksp->pc_side = side;
   PetscFunctionReturn(0);
 }
@@ -850,7 +851,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetTolerances(KSP ksp,PetscReal *rtol,Petsc
    KSPSetTolerances - Sets the relative, absolute, divergence, and maximum
    iteration tolerances used by the default KSP convergence testers. 
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - the Krylov subspace context
@@ -887,6 +888,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetTolerances(KSP ksp,PetscReal rtol,PetscR
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveReal(ksp,rtol,2);
+  PetscValidLogicalCollectiveReal(ksp,abstol,3);
+  PetscValidLogicalCollectiveReal(ksp,dtol,4);
+  PetscValidLogicalCollectiveInt(ksp,maxits,5);
+
   if (abstol != PETSC_DEFAULT)   ksp->abstol   = abstol;
   if (rtol != PETSC_DEFAULT)   ksp->rtol   = rtol;
   if (dtol != PETSC_DEFAULT)   ksp->divtol = dtol;
@@ -901,7 +907,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetTolerances(KSP ksp,PetscReal rtol,PetscR
    initial guess is nonzero; otherwise KSP assumes the initial guess
    is to be zero (and thus zeros it out before solving).
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
@@ -923,6 +929,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessNonzero(KSP ksp,PetscTruth f
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,flg,2);
   ksp->guess_zero   = (PetscTruth)!(int)flg;
   PetscFunctionReturn(0);
 }
@@ -962,7 +969,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *
 /*@
    KSPSetErrorIfNotConverged - Causes KSPSolve() to generate an error if the solver has not converged.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
@@ -985,6 +992,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetErrorIfNotConverged(KSP ksp,PetscTruth f
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,flg,2);
   ksp->errorifnotconverged = flg;
   PetscFunctionReturn(0);
 }
@@ -1022,7 +1030,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetErrorIfNotConverged(KSP ksp,PetscTruth *
 /*@
    KSPSetInitialGuessKnoll - Tells the iterative solver to use PCApply(pc,b,..) to compute the initial guess (The Knoll trick)
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
@@ -1039,6 +1047,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessKnoll(KSP ksp,PetscTruth flg
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,flg,2);
   ksp->guess_knoll   = flg;
   PetscFunctionReturn(0);
 }
@@ -1079,7 +1088,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessKnoll(KSP ksp,PetscTruth *fl
    values will be calculated via a Lanczos or Arnoldi process as the linear 
    system is solved.
 
-   Collective on KSP
+   Not Collective
 
    Input Parameter:
 .  ksp - iterative context obtained from KSPCreate()
@@ -1119,7 +1128,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeSingularValues(KSP ksp,PetscTruth
    values will be calculated via a Lanczos or Arnoldi process as the linear 
    system is solved.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
@@ -1145,6 +1154,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeSingularValues(KSP ksp,PetscTruth
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,flg,2);
   ksp->calc_sings  = flg;
   PetscFunctionReturn(0);
 }
@@ -1156,7 +1166,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeSingularValues(KSP ksp,PetscTruth
    values will be calculated via a Lanczos or Arnoldi process as the linear 
    system is solved.
 
-   Collective on KSP
+   Not Collective
 
    Input Parameter:
 .  ksp - iterative context obtained from KSPCreate()
@@ -1189,7 +1199,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeEigenvalues(KSP ksp,PetscTruth *f
    values will be calculated via a Lanczos or Arnoldi process as the linear 
    system is solved.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
@@ -1208,6 +1218,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeEigenvalues(KSP ksp,PetscTruth fl
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,flg,2);
   ksp->calc_sings  = flg;
   PetscFunctionReturn(0);
 }
@@ -1349,7 +1360,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetPC(KSP ksp,PC *pc)
    KSPMonitorSet - Sets an ADDITIONAL function to be called at every iteration to monitor 
    the residual/error etc.
       
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
@@ -1433,7 +1444,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor
 /*@
    KSPMonitorCancel - Clears all monitors for a KSP object.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 .  ksp - iterative context obtained from KSPCreate()
@@ -1593,7 +1604,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetResidualHistory(KSP ksp,PetscReal *a[],P
    KSPSetConvergenceTest - Sets the function to be used to determine
    convergence.  
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
@@ -1779,7 +1790,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
    KSPSetDiagonalScale - Tells KSP to symmetrically diagonally scale the system
      before solving. This actually CHANGES the matrix (and right hand side).
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameter:
 +  ksp - the KSP context
@@ -1814,6 +1825,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScale(KSP ksp,PetscTruth scale)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,scale,2);
   ksp->dscale = scale;
   PetscFunctionReturn(0);
 }
@@ -1861,7 +1873,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDiagonalScale(KSP ksp,PetscTruth *scale)
    KSPSetDiagonalScaleFix - Tells KSP to diagonally scale the system
      back after solving.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameter:
 +  ksp - the KSP context
@@ -1889,6 +1901,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScaleFix(KSP ksp,PetscTruth fix)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,fix,2);
   ksp->dscalefix = fix;
   PetscFunctionReturn(0);
 }
@@ -1899,7 +1912,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScaleFix(KSP ksp,PetscTruth fix)
    KSPGetDiagonalScaleFix - Determines if KSP diagonally scales the system
      back after solving.
 
-   Collective on KSP
+   Not Collective
 
    Input Parameter:
 .  ksp - the KSP context

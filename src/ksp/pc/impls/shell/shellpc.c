@@ -66,7 +66,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetContext(PC pc,void **ctx)
 /*@
     PCShellSetContext - sets the context for a shell PC
 
-   Collective on PC
+   Logically Collective on PC
 
     Input Parameters:
 +   pc - the shell PC
@@ -437,7 +437,7 @@ EXTERN_C_END
    PCShellSetDestroy - Sets routine to use to destroy the user-provided 
    application context.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -478,7 +478,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetDestroy(PC pc,PetscErrorCode (*destr
    PCShellSetSetUp - Sets routine to use to "setup" the preconditioner whenever the 
    matrix operator is changed.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -518,7 +518,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(
 /*@C
    PCShellSetView - Sets routine to use as viewer of shell preconditioner
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -558,7 +558,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetView(PC pc,PetscErrorCode (*view)(PC
 /*@C
    PCShellSetApply - Sets routine to use as preconditioner.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -599,7 +599,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApply(PC pc,PetscErrorCode (*apply)(
 /*@C
    PCShellSetApplyBA - Sets routine to use as preconditioner times operator.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -640,7 +640,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyBA(PC pc,PetscErrorCode (*apply
 /*@C
    PCShellSetApplyTranspose - Sets routine to use as preconditioner transpose.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -686,7 +686,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyTranspose(PC pc,PetscErrorCode 
       applied. This usually does something like scale the linear system in some application 
       specific way.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -729,7 +729,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPreSolve(PC pc,PetscErrorCode (*pres
       applied. This usually does something like scale the linear system in some application 
       specific way.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -836,7 +836,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetName(PC pc,char *name[])
    PCShellSetApplyRichardson - Sets routine to use as preconditioner
    in Richardson iteration.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
