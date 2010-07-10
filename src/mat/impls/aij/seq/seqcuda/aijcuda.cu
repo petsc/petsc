@@ -102,7 +102,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSeqAIJCUDA"
 /*@C
-   MatCreateSeqAIJ - Creates a sparse matrix in AIJ (compressed row) format
+   MatCreateSeqAIJCUDA - Creates a sparse matrix in AIJ (compressed row) format
    (the default parallel PETSc format).  For good matrix assembly performance
    the user should preallocate the matrix storage by setting the parameter nz
    (or the array nnz).  By setting these parameters accurately, performance
@@ -143,16 +143,9 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
    search for consecutive rows with the same nonzero structure, thereby
    reusing matrix information to achieve increased efficiency.
 
-   Options Database Keys:
-+  -mat_no_inode  - Do not use inodes
-.  -mat_inode_limit <limit> - Sets inode limit (max limit=5)
--  -mat_aij_oneindex - Internally use indexing starting at 1
-        rather than 0.  Note that when calling MatSetValues(),
-        the user still MUST index entries starting at 0!
-
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays()
+.seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays(), MatCreateMPIAIJ()
 
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJCUDA(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
@@ -187,14 +180,17 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCUDA(Mat B)
 {
   PetscErrorCode ierr;
+  Mat_SeqAIJ     *aij;
 
   PetscFunctionBegin;
-  ierr = MatCreate_SeqAIJ(B);CHKERRQ(ierr);
+  ierr           = MatCreate_SeqAIJ(B);CHKERRQ(ierr);
+  aij            = (Mat_SeqAIJ*)B->data;
+  aij->inode.use = PETSC_FALSE;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
-  B->ops->mult = MatMult_SeqAIJCUDA;
+  B->ops->mult   = MatMult_SeqAIJCUDA;
 #endif
   B->ops->assemblyend = MatAssemblyEnd_SeqAIJCUDA;
-  B->ops->destroy = MatDestroy_SeqAIJCUDA;
+  B->ops->destroy     = MatDestroy_SeqAIJCUDA;
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUDA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
