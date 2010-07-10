@@ -1188,8 +1188,6 @@ class Configure(config.base.Configure):
   def checkDynamicLinker(self):
     '''Check that the linker can produce dynamic libraries'''
     self.dynamicLibraries = 0
-    if not self.framework.argDB['with-dynamic']:
-      return
     if not self.headers.check('dlfcn.h'):
       self.logPrint('Dynamic libraries disabled since dlfcn.h was missing')
       return
