@@ -485,6 +485,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char f
 
    Options Database Keys:
 +   -options_monitor <optional filename> - print options names and values as they are set
+.   -options_file <filename> - read options from a file
 
    Level: advanced
 
