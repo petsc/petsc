@@ -110,6 +110,7 @@ struct _VecOps {
   PetscErrorCode (*log)(Vec);
   PetscErrorCode (*shift)(Vec);
   PetscErrorCode (*create)(Vec);
+  PetscErrorCode (*dotnorm2)(Vec,Vec,PetscScalar*,PetscScalar*);
 };
 
 /* 
