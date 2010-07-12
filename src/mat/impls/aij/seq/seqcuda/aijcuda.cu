@@ -90,8 +90,9 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
   ((CUSPMATRIX *)(A->spptr))->column_indices.assign(a->j,a->j+a->nz);
   ((CUSPMATRIX *)(A->spptr))->values.assign(a->a,a->a+a->nz);
 
-  /* this shouldn't have to be here, but for some reason MatAssemblyEnd overwrites A->ops->mult to be MatMult_SeqAIJ again */
+  /* This shouldn't be necessary
   A->ops->mult = MatMult_SeqAIJCUDA;
+  */
   PetscFunctionReturn(0);
 }
 
