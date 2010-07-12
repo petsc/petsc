@@ -231,8 +231,8 @@ static PetscErrorCode PCDestroy_Redundant(PC pc)
   if (red->pmats) {
     ierr = MatDestroy(red->pmats);CHKERRQ(ierr);
   }
-  if (red->psubcomm) {ierr = PetscSubcommDestroy(red->psubcomm);CHKERRQ(ierr);}
   if (red->ksp) {ierr = KSPDestroy(red->ksp);CHKERRQ(ierr);}
+  if (red->psubcomm) {ierr = PetscSubcommDestroy(red->psubcomm);CHKERRQ(ierr);}
   ierr = PetscFree(red);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
