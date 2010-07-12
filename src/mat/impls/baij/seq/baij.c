@@ -1813,9 +1813,9 @@ PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],
 #endif
       col = in[l]; 
       if (roworiented) { 
-        value = v + k*(stepval+bs)*bs + l*bs;
+        value = v + (k*(stepval+bs) + l)*bs;
       } else {
-        value = v + l*(stepval+bs)*bs + k*bs;
+        value = v + (l*(stepval+bs) + k)*bs;
       }
       if (col <= lastcol) low = 0; else high = nrow;
       lastcol = col;
@@ -1844,16 +1844,18 @@ PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],
             }
           } else {
             if (is == ADD_VALUES) {
-              for (ii=0; ii<bs; ii++,value+=stepval) {
+              for (ii=0; ii<bs; ii++,value+=bs+stepval) {
                 for (jj=0; jj<bs; jj++) {
-                  *bap++ += *value++; 
+                  bap[jj] += value[jj]; 
                 }
+                bap += bs;
               }
             } else {
-              for (ii=0; ii<bs; ii++,value+=stepval) {
+              for (ii=0; ii<bs; ii++,value+=bs+stepval) {
                 for (jj=0; jj<bs; jj++) {
-                  *bap++  = *value++; 
+                  bap[jj]  = value[jj]; 
                 }
+                bap += bs;
               }
             }
           }
