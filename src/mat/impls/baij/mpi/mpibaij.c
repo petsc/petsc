@@ -310,16 +310,17 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[
           barray = (MatScalar*)v + j*bs2;
         } else { /* Here a copy is required */
           if (roworiented) { 
-            value = v + i*(stepval+bs)*bs + j*bs;
+            value = v + (i*(stepval+bs) + j)*bs;
           } else {
-            value = v + j*(stepval+bs)*bs + i*bs;
+	    value = v + (j*(stepval+bs) + i)*bs;
           }
-          for (ii=0; ii<bs; ii++,value+=stepval) {
+          for (ii=0; ii<bs; ii++,value+=bs+stepval) {
             for (jj=0; jj<bs; jj++) {
-              *barray++  = *value++; 
+              barray[jj]  = value[jj]; 
             }
+            barray += bs;
           }
-          barray -=bs2;
+          barray -= bs2;
         }
           
         if (in[j] >= cstart && in[j] < cend){

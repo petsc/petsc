@@ -244,8 +244,7 @@ PetscErrorCode VecScatterDestroy_MPI_ToAll(VecScatter ctx)
   PetscFunctionBegin;
   ierr = PetscFree(scat->work1);CHKERRQ(ierr);
   ierr = PetscFree(scat->work2);CHKERRQ(ierr);
-  ierr = PetscFree(scat->displx);CHKERRQ(ierr);
-  ierr = PetscFree2(ctx->todata,scat->count);CHKERRQ(ierr);
+  ierr = PetscFree3(ctx->todata,scat->count,scat->displx);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -319,8 +318,7 @@ PetscErrorCode VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
   out->view           = in->view;
 
   ierr                = MPI_Comm_size(((PetscObject)out)->comm,&size);CHKERRQ(ierr);
-  ierr                = PetscMalloc2(1,VecScatter_MPI_ToAll,&sto,size,PetscMPIInt,&sto->count);CHKERRQ(ierr);
-  ierr                = PetscMalloc(size*sizeof(PetscMPIInt),&sto->displx);CHKERRQ(ierr);
+  ierr                = PetscMalloc3(1,VecScatter_MPI_ToAll,&sto,size,PetscMPIInt,&sto->count,size,PetscMPIInt,&sto->displx);CHKERRQ(ierr);
   sto->type           = in_to->type;
   for (i=0; i<size; i++) {
     sto->count[i]  = in_to->count[i];
@@ -1172,8 +1170,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       if (cando) {
 #endif
         ierr  = MPI_Comm_size(((PetscObject)ctx)->comm,&size);CHKERRQ(ierr);
-	ierr  = PetscMalloc(size*sizeof(PetscMPIInt),&displx);CHKERRQ(ierr);
-	ierr  = PetscMalloc2(1,VecScatter_MPI_ToAll,&sto,size,PetscMPIInt,&count);CHKERRQ(ierr);
+	ierr  = PetscMalloc3(1,VecScatter_MPI_ToAll,&sto,size,PetscMPIInt,&count,size,PetscMPIInt,&displx);CHKERRQ(ierr);
         range = xin->map->range;
         for (i=0; i<size; i++) {
           count[i]  = PetscMPIIntCast(range[i+1] - range[i]);

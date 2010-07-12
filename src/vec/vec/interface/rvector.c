@@ -657,7 +657,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScala
   ierr = PetscLogEventBegin(VEC_AXPBYPCZ,x,y,z,0);CHKERRQ(ierr);
   ierr = (*y->ops->axpbypcz)(z,alpha,beta,gamma,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_AXPBYPCZ,x,y,z,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)z);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 

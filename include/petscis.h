@@ -127,7 +127,8 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingBlock(ISLocalToGl
 
 PETSC_STATIC_INLINE PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscInt N,const PetscInt in[],PetscInt out[])
 {
-  PetscInt i,*idx = mapping->indices,Nmax = mapping->n;
+  PetscInt       i,Nmax = mapping->n;
+  const PetscInt *idx = mapping->indices;
   PetscFunctionBegin;
   for (i=0; i<N; i++) {
     if (in[i] < 0) {out[i] = in[i]; continue;}

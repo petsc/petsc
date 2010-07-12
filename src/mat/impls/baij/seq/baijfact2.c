@@ -2493,10 +2493,10 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver1(Mat A,Vec bb,Vec xx)
   Mat_SeqBAIJ      *a=(Mat_SeqBAIJ *)A->data;
   PetscErrorCode    ierr;
   const PetscInt    n=a->mbs,*ai=a->i,*aj=a->j,*adiag=a->diag,*vi,bs=A->rmap->bs,bs2=a->bs2;
-  PetscInt          i,k,nz,kdx,idx,idt,m;
+  PetscInt          i,k,nz,idx,idt,m;
   const MatScalar   *aa=a->a,*v;
   PetscScalar       s[15];
-  PetscScalar       *x;
+  PetscScalar       *x,xv;
   const PetscScalar *b;
 
   PetscFunctionBegin;
@@ -2515,22 +2515,22 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver1(Mat A,Vec bb,Vec xx)
     for(m=0;m<nz;m++){
       idx   = bs*vi[m];
       for(k=0;k<15;k++){
-	kdx = k + idx;
-	x[idt]    -= v[0]*x[kdx];
-	x[1+idt]  -= v[1]*x[kdx];
-	x[2+idt]  -= v[2]*x[kdx];
-        x[3+idt]  -= v[3]*x[kdx];
-	x[4+idt]  -= v[4]*x[kdx];
-	x[5+idt]  -= v[5]*x[kdx];
-	x[6+idt]  -= v[6]*x[kdx];
-        x[7+idt]  -= v[7]*x[kdx];
-	x[8+idt]  -= v[8]*x[kdx];
-	x[9+idt]  -= v[9]*x[kdx];
-	x[10+idt] -= v[10]*x[kdx];
-        x[11+idt] -= v[11]*x[kdx];
-	x[12+idt] -= v[12]*x[kdx];
-	x[13+idt] -= v[13]*x[kdx];
-	x[14+idt] -= v[14]*x[kdx];
+	xv        = x[k + idx];
+	x[idt]    -= v[0]*xv;
+	x[1+idt]  -= v[1]*xv;
+	x[2+idt]  -= v[2]*xv;
+        x[3+idt]  -= v[3]*xv;
+	x[4+idt]  -= v[4]*xv;
+	x[5+idt]  -= v[5]*xv;
+	x[6+idt]  -= v[6]*xv;
+        x[7+idt]  -= v[7]*xv;
+	x[8+idt]  -= v[8]*xv;
+	x[9+idt]  -= v[9]*xv;
+	x[10+idt] -= v[10]*xv;
+        x[11+idt] -= v[11]*xv;
+	x[12+idt] -= v[12]*xv;
+	x[13+idt] -= v[13]*xv;
+	x[14+idt] -= v[14]*xv;
 	v += 15;
       }
     }
@@ -2548,22 +2548,22 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver1(Mat A,Vec bb,Vec xx)
     for(m=0;m<nz;m++){
       idx   = bs*vi[m];
       for(k=0;k<15;k++){
-	kdx = k + idx;
-	s[0]  -= v[0]*x[kdx];
-	s[1]  -= v[1]*x[kdx];
-	s[2]  -= v[2]*x[kdx];
-        s[3]  -= v[3]*x[kdx];
-	s[4]  -= v[4]*x[kdx];
-	s[5]  -= v[5]*x[kdx];
-	s[6]  -= v[6]*x[kdx];
-        s[7]  -= v[7]*x[kdx];
-	s[8]  -= v[8]*x[kdx];
-	s[9]  -= v[9]*x[kdx];
-	s[10] -= v[10]*x[kdx];
-        s[11] -= v[11]*x[kdx];
-	s[12] -= v[12]*x[kdx];
-	s[13] -= v[13]*x[kdx];
-	s[14] -= v[14]*x[kdx];
+	xv = x[k + idx];
+	s[0]  -= v[0]*xv;
+	s[1]  -= v[1]*xv;
+	s[2]  -= v[2]*xv;
+        s[3]  -= v[3]*xv;
+	s[4]  -= v[4]*xv;
+	s[5]  -= v[5]*xv;
+	s[6]  -= v[6]*xv;
+        s[7]  -= v[7]*xv;
+	s[8]  -= v[8]*xv;
+	s[9]  -= v[9]*xv;
+	s[10] -= v[10]*xv;
+        s[11] -= v[11]*xv;
+	s[12] -= v[12]*xv;
+	s[13] -= v[13]*xv;
+	s[14] -= v[14]*xv;
 	v += 15;
       }
     }

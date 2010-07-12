@@ -1,17 +1,17 @@
-#requirespackage PETSC_HAVE_CUDA
+#requirespackage 'PETSC_HAVE_CUDA'
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  = aijcuda.c
-SOURCEF  = 
-SOURCEH  =
-OBJSC    = aijcuda.o 
-OBJSF    = 
-LIBBASE  = libpetscmat
-DIRS     =
-MANSEC   = Mat
-LOCDIR   = src/mat/impls/aij/seq/seqcuda/
+CFLAGS    =
+FFLAGS    =
+SOURCECU  = aijcuda.cu
+SOURCEF   = 
+SOURCEH   =
+OBJSC     = aijcuda.o 
+OBJSF     = 
+LIBBASE   = libpetscmat
+DIRS      =
+MANSEC    = Mat
+LOCDIR    = src/mat/impls/aij/seq/seqcuda/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

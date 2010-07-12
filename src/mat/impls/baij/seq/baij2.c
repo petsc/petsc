@@ -603,7 +603,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver1(Mat A,Vec xx,Vec zz)
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar       *z = 0,sum1,sum2,sum3,sum4,sum5,sum6,sum7,sum8,sum9,sum10,sum11,sum12,sum13,sum14,sum15;
   const PetscScalar *x,*xb;
-  PetscScalar       *zarray;
+  PetscScalar       *zarray,xv;
   const MatScalar   *v;
   PetscErrorCode    ierr;
   const PetscInt    *ii,*ij=a->j,*idx;
@@ -636,21 +636,22 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver1(Mat A,Vec xx,Vec zz)
       xb = x + 15*(idx[j]);
 
       for(k=0;k<15;k++){
-	sum1  += v[0]*xb[k];
-        sum2  += v[1]*xb[k];
-	sum3  += v[2]*xb[k];
-	sum4  += v[3]*xb[k];	
-	sum5  += v[4]*xb[k];
-        sum6  += v[5]*xb[k];
-	sum7  += v[6]*xb[k];
-	sum8  += v[7]*xb[k];	
-        sum9  += v[8]*xb[k];
-        sum10 += v[9]*xb[k];
-	sum11 += v[10]*xb[k];
-	sum12 += v[11]*xb[k];	
-	sum13 += v[12]*xb[k];
-        sum14 += v[13]*xb[k];
-	sum15 += v[14]*xb[k];
+        xv    =  xb[k];
+	sum1  += v[0]*xv;
+        sum2  += v[1]*xv;
+	sum3  += v[2]*xv;
+	sum4  += v[3]*xv;	
+	sum5  += v[4]*xv;
+        sum6  += v[5]*xv;
+	sum7  += v[6]*xv;
+	sum8  += v[7]*xv;	
+        sum9  += v[8]*xv;
+        sum10 += v[9]*xv;
+	sum11 += v[10]*xv;
+	sum12 += v[11]*xv;	
+	sum13 += v[12]*xv;
+        sum14 += v[13]*xv;
+	sum15 += v[14]*xv;
 	v += 15;
       }
     } 
@@ -2003,11 +2004,13 @@ PetscErrorCode MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
 #define __FUNCT__ "MatDiagonalScale_SeqBAIJ"
 PetscErrorCode MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *l,*r,x,*li,*ri;
-  MatScalar      *aa,*v;
-  PetscErrorCode ierr;
-  PetscInt       i,j,k,lm,rn,M,m,n,*ai,*aj,mbs,tmp,bs,bs2;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  const PetscScalar *l,*r,*li,*ri;
+  PetscScalar       x;
+  MatScalar         *aa, *v;
+  PetscErrorCode    ierr;
+  PetscInt          i,j,k,lm,rn,M,m,n,mbs,tmp,bs,bs2,iai;
+  const PetscInt    *ai,*aj;
 
   PetscFunctionBegin;
   ai  = a->i;
@@ -2019,7 +2022,7 @@ PetscErrorCode MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
   mbs = a->mbs;
   bs2 = a->bs2;
   if (ll) {
-    ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(ll,&l);CHKERRQ(ierr);
     ierr = VecGetLocalSize(ll,&lm);CHKERRQ(ierr);
     if (lm != m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
     for (i=0; i<mbs; i++) { /* for each block row */
@@ -2032,26 +2035,28 @@ PetscErrorCode MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
         } 
       }  
     }
-    ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(ll,&l);CHKERRQ(ierr);
     ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
   }
   
   if (rr) {
-    ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(rr,&r);CHKERRQ(ierr);
     ierr = VecGetLocalSize(rr,&rn);CHKERRQ(ierr);
     if (rn != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Right scaling vector wrong length");
     for (i=0; i<mbs; i++) { /* for each block row */
-      M  = ai[i+1] - ai[i];
-      v  = aa + bs2*ai[i];
+      iai = ai[i];
+      M   = ai[i+1] - iai;
+      v   = aa + bs2*iai;
       for (j=0; j<M; j++) { /* for each block */
-        ri = r + bs*aj[ai[i]+j];
+        ri = r + bs*aj[iai+j];
         for (k=0; k<bs; k++) {
           x = ri[k];
-          for (tmp=0; tmp<bs; tmp++) (*v++) *= x;
+          for (tmp=0; tmp<bs; tmp++) v[tmp] *= x;
+          v += bs;
         } 
       }  
     }
-    ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(rr,&r);CHKERRQ(ierr);
     ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

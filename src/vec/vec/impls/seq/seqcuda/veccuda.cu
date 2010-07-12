@@ -504,7 +504,11 @@ PetscErrorCode VecSwap_SeqCUDA(Vec xin,Vec yin)
   if (xin != yin) {
     ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
     ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
+#if defined(PETSC_USE_SCALAR_SINGLE)
     cublasSswap(bn,VecCUDACastToRawPtr(*(CUSPARRAY *)(xin->spptr)),one,VecCUDACastToRawPtr(*(CUSPARRAY *)(yin->spptr)),one);
+#else
+    cublasDswap(bn,VecCUDACastToRawPtr(*(CUSPARRAY *)(xin->spptr)),one,VecCUDACastToRawPtr(*(CUSPARRAY *)(yin->spptr)),one);
+#endif
     ierr = cublasGetError();CHKERRCUDA(ierr);
     xin->valid_GPU_array = PETSC_CUDA_GPU;
     yin->valid_GPU_array = PETSC_CUDA_GPU;
@@ -640,7 +644,11 @@ PetscErrorCode VecNorm_SeqCUDA(Vec xin,NormType type,PetscReal* z)
     *z   = max;
   } else if (type == NORM_1) {
     ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
+#if defined(PETSC_USE_SCALAR_SINGLE)
     *z = cublasSasum(bn,VecCUDACastToRawPtr(*(CUSPARRAY *)(xin->spptr)),one);
+#else
+    *z = cublasDasum(bn,VecCUDACastToRawPtr(*(CUSPARRAY *)(xin->spptr)),one);
+#endif
     ierr = cublasGetError();CHKERRCUDA(ierr);
     ierr = PetscLogFlops(PetscMax(n-1.0,0.0));CHKERRQ(ierr);
   } else if (type == NORM_1_AND_2) {
@@ -658,10 +666,10 @@ PetscErrorCode VecSetRandom_SeqCUDA(Vec xin,PetscRandom r)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  ierr = VecSetRandom_Seq(xin,r);CHKERRQ(ierr);
   if (xin->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
     xin->valid_GPU_array = PETSC_CUDA_CPU;
   }
-  ierr = VecSetRandom_Seq(xin,r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
