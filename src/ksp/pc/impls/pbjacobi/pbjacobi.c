@@ -11,7 +11,7 @@
    Private context (data structure) for the PBJacobi preconditioner.  
 */
 typedef struct {
-  PetscScalar *diag;
+  MatScalar   *diag;
   PetscInt    bs,mbs;
 } PC_PBJacobi;
 
@@ -26,10 +26,11 @@ typedef struct {
 #define __FUNCT__ "PCApply_PBJacobi_2"
 static PetscErrorCode PCApply_PBJacobi_2(PC pc,Vec x,Vec y)
 {
-  PC_PBJacobi    *jac = (PC_PBJacobi*)pc->data;
-  PetscErrorCode ierr;
-  PetscInt       i,m = jac->mbs;
-  PetscScalar    *diag = jac->diag,x0,x1,*xx,*yy;
+  PC_PBJacobi     *jac = (PC_PBJacobi*)pc->data;
+  PetscErrorCode  ierr;
+  PetscInt        i,m = jac->mbs;
+  const MatScalar *diag = jac->diag;
+  PetscScalar     x0,x1,*xx,*yy;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
@@ -49,10 +50,11 @@ static PetscErrorCode PCApply_PBJacobi_2(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApply_PBJacobi_3"
 static PetscErrorCode PCApply_PBJacobi_3(PC pc,Vec x,Vec y)
 {
-  PC_PBJacobi    *jac = (PC_PBJacobi*)pc->data;
-  PetscErrorCode ierr;
-  PetscInt       i,m = jac->mbs;
-  PetscScalar    *diag = jac->diag,x0,x1,x2,*xx,*yy;
+  PC_PBJacobi     *jac = (PC_PBJacobi*)pc->data;
+  PetscErrorCode  ierr;
+  PetscInt        i,m = jac->mbs;
+  const MatScalar *diag = jac->diag;
+  PetscScalar     x0,x1,x2,*xx,*yy;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
@@ -73,10 +75,11 @@ static PetscErrorCode PCApply_PBJacobi_3(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApply_PBJacobi_4"
 static PetscErrorCode PCApply_PBJacobi_4(PC pc,Vec x,Vec y)
 {
-  PC_PBJacobi    *jac = (PC_PBJacobi*)pc->data;
-  PetscErrorCode ierr;
-  PetscInt       i,m = jac->mbs;
-  PetscScalar    *diag = jac->diag,x0,x1,x2,x3,*xx,*yy;
+  PC_PBJacobi      *jac = (PC_PBJacobi*)pc->data;
+  PetscErrorCode   ierr;
+  PetscInt         i,m = jac->mbs;
+  const MatScalar  *diag = jac->diag;
+  PetscScalar      x0,x1,x2,x3,*xx,*yy;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
@@ -98,10 +101,11 @@ static PetscErrorCode PCApply_PBJacobi_4(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApply_PBJacobi_5"
 static PetscErrorCode PCApply_PBJacobi_5(PC pc,Vec x,Vec y)
 {
-  PC_PBJacobi    *jac = (PC_PBJacobi*)pc->data;
-  PetscErrorCode ierr;
-  PetscInt       i,m = jac->mbs;
-  PetscScalar    *diag = jac->diag,x0,x1,x2,x3,x4,*xx,*yy;
+  PC_PBJacobi     *jac = (PC_PBJacobi*)pc->data;
+  PetscErrorCode  ierr;
+  PetscInt        i,m = jac->mbs;
+  const MatScalar *diag = jac->diag;
+  PetscScalar     x0,x1,x2,x3,x4,*xx,*yy;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);

@@ -25,5 +25,4 @@ EXTERN void msgemmi_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
 EXTERN void msgemm_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
 EXTERN_C_END
 #endif
-#endif
 
