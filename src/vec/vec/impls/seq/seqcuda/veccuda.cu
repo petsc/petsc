@@ -3,9 +3,11 @@
    Implements the sequential vectors.
 */
 
+#include "petscconf.h"
+PETSC_CUDA_EXTERN_C_BEGIN
 #include "private/vecimpl.h"          /*I "petscvec.h" I*/
 #include "../src/vec/vec/impls/dvecimpl.h"
-#include "petscblaslapack.h"
+PETSC_CUDA_EXTERN_C_END
 #include <cublas.h>
 #include <cusp/blas.h>
 #include <thrust/device_vector.h>
@@ -27,20 +29,6 @@ M*/
 
 #define VecCUDACastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])
 #define CUSPARRAY cusp::array1d<PetscScalar,cusp::device_memory>
-
-#undef __FUNCT__
-#define __FUNCT__ "cublasInit_Public"
-void cublasInit_Public(void)
-{
-  cublasInit();
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "cublasShutdown_Public"
-void cublasShutdown_Public(void)
-{
-  cublasShutdown();
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUDAAllocateCheck"
@@ -785,7 +773,6 @@ PetscErrorCode VecDestroy_SeqCUDA(Vec v)
   ierr = VecDestroy_Seq(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN PetscErrorCode VecCreate_Seq_Private_CUDA(Vec v,const PetscScalar array[]);
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -798,7 +785,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec V)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)V)->comm,&size);CHKERRQ(ierr);
   if  (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQCUDA on more than one process");
-  ierr = VecCreate_Seq_Private_CUDA(V,0);CHKERRQ(ierr);
+  ierr = VecCreate_Seq_Private(V,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQCUDA);CHKERRQ(ierr);
   V->ops->duplicate     = VecDuplicate_SeqCUDA;
   V->ops->dot           = VecDot_SeqCUDA;

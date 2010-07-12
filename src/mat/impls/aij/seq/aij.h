@@ -223,7 +223,11 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqBAIJ(Mat,const Mat
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCSRPERM(Mat,const MatType,MatReuse,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatReorderForNonzeroDiagonal_SeqAIJ(Mat,PetscReal,IS,IS);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMatMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat);
 EXTERN_C_END
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_SeqAIJ(Mat);
+
 
 /*
     PetscSparseDenseMinusDot - The inner kernel of triangular solves and Gauss-Siedel smoothing. \sum_i xv[i] * r[xi[i]] for CSR storage
