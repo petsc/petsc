@@ -1,19 +1,17 @@
 #requirespackage 'PETSC_HAVE_CUDA'
 ALL: lib
 
-CFLAGS   =
+CFLAGS   = ${PNETCDF_INCLUDE}
 FFLAGS   =
-SOURCECU = veccuda.cu
+SOURCECU = mpicuda.cu
 SOURCEF  =
-SOURCEH  = cudavecimpl.h
-OBJSC    = veccuda.o
+SOURCEH  = 
+OBJSC    = mpicuda.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/vec/impls/seq/seqcuda
-DIRS     = 
+LOCDIR   = src/vec/vec/impls/mpi/mpicuda
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
-

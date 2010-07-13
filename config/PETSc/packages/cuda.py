@@ -42,7 +42,7 @@ class Configure(PETSc.package.NewPackage):
       self.addDefine('CUDA_EXTERN_C_BEGIN','extern "C" {')
       self.addDefine('CUDA_EXTERN_C_END','}')
     else:
-      self.addDefine('CUDA_EXTERN_C_BEGIN','')
-      self.addDefine('CUDA_EXTERN_C_END','')
+      self.addDefine('CUDA_EXTERN_C_BEGIN',' ')
+      self.addDefine('CUDA_EXTERN_C_END',' ')
     
 # add checks that it is proper version o Cuda
