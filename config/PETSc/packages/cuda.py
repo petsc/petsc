@@ -37,8 +37,11 @@ class Configure(PETSc.package.NewPackage):
       raise RuntimeError('Must use either single or double precision with CUDA') 
     if self.scalartypes.scalartype == 'complex':
       raise RuntimeError('Must use real numbers with CUDA') 
-#    self.addMakeMacro('CLINKER','nvcc -m64')
-    self.addMakeMacro('CLINKER','g++')
+    if hasattr(self.compilers, 'CXX') and self.languages.clanguage == 'C':
+      self.setCompilers.pushLanguage('Cxx')
+      cxx_linker = self.setCompilers.getLinker()
+      self.setCompilers.popLanguage()
+      self.addMakeMacro('CLINKER', cxx_linker)
     if self.languages.clanguage == 'C':
       self.addDefine('CUDA_EXTERN_C_BEGIN','extern "C" {')
       self.addDefine('CUDA_EXTERN_C_END','}')
