@@ -86,21 +86,20 @@ cdef class Vec(Object):
 
     #
 
-    def __getbuffer__(Vec self, Py_buffer *view, int flags):
+    def __getbuffer__(self, Py_buffer *view, int flags):
         cdef PetscInt n=0
-        cdef PetscScalar *v =NULL
+        cdef PetscScalar *p=NULL
         CHKERR( VecGetLocalSize(self.vec, &n) )
-        CHKERR( VecGetArray(self.vec, &v) )
-        view.buf = <void *> v
-        view.len = n*sizeof(PetscScalar)
-        view.itemsize = sizeof(PetscScalar)
-        view.readonly = 0
-        PyPetscBuffer_FillInfo(view, self, 's', flags)
+        CHKERR( VecGetArray(self.vec, &p) )
+        PyPetscBuffer_FillInfo(view, <void*>p, n, 's', 0, flags)
+        view.obj = self
 
-    def __releasebuffer__(Vec self, Py_buffer *view):
-        cdef PetscScalar *v = <PetscScalar*> view.buf
-        PyPetscBuffer_Release(view)
-        CHKERR( VecRestoreArray(self.vec, &v) )
+    def __releasebuffer__(self, Py_buffer *view):
+        cdef PetscScalar *p = <PetscScalar*> view.buf
+        try:
+            CHKERR( VecRestoreArray(self.vec, &p) )
+        finally:
+            PyPetscBuffer_Release(view)
 
     #
 

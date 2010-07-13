@@ -367,7 +367,9 @@ cdef extern from "arraynpy.h":
     object PetscVec_array_struct(object,PetscVec)
 
 cdef extern from "pep3118.h":
-    int  PyPetscBuffer_FillInfo(Py_buffer*,object,char,int) except -1
+    int  PyPetscBuffer_FillInfo(Py_buffer*,
+                                void*,PetscInt,char,
+                                int,int) except -1
     void PyPetscBuffer_Release(Py_buffer*)
 
 # --------------------------------------------------------------------

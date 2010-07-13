@@ -17,21 +17,20 @@ cdef class IS(Object):
         self.obj = <PetscObject*> &self.iset
         self.iset = NULL
 
-    def __getbuffer__(IS self, Py_buffer *view, int flags):
+    def __getbuffer__(self, Py_buffer *view, int flags):
         cdef PetscInt n=0
-        cdef const_PetscInt *i=NULL
+        cdef const_PetscInt *p=NULL
         CHKERR( ISGetLocalSize(self.iset, &n) )
-        CHKERR( ISGetIndices(self.iset, &i) )
-        view.buf = <void *> i
-        view.len = n*sizeof(PetscInt)
-        view.itemsize = sizeof(PetscInt)
-        view.readonly = 1
-        PyPetscBuffer_FillInfo(view, self, 'i', flags)
+        CHKERR( ISGetIndices(self.iset, &p) )
+        PyPetscBuffer_FillInfo(view, <void*>p, n, 'i', 1, flags)
+        view.obj = self
 
-    def __releasebuffer__(Vec self, Py_buffer *view):
-        cdef const_PetscInt *i = <PetscInt*> view.buf
-        PyPetscBuffer_Release(view)
-        CHKERR( ISRestoreIndices(self.iset, &i) )
+    def __releasebuffer__(self, Py_buffer *view):
+        cdef const_PetscInt *p = <PetscInt*> view.buf
+        try:
+            CHKERR( ISRestoreIndices(self.iset, &p) )
+        finally:
+            PyPetscBuffer_Release(view)
 
     #
 

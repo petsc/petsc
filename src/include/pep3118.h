@@ -2,37 +2,43 @@
 #define PETSC4PY_PEP3118_H
 
 #if defined(PETSC_USE_64BIT_INDICES)
-# define _FMT_PETSC_INT     "q"
+# define _PyPetsc_FMT_PETSC_INT     "q"
 #else
-# define _FMT_PETSC_INT     "i"
+# define _PyPetsc_FMT_PETSC_INT     "i"
 #endif
 
 #if   defined(PETSC_USE_SCALAR_SINGLE) || defined(PETSC_USE_SINGLE)
-# define _FMT_PETSC_REAL    "f"
-# define _FMT_PETSC_COMPLEX "Zf"
+# define _PyPetsc_FMT_PETSC_REAL    "f"
+# define _PyPetsc_FMT_PETSC_COMPLEX "Zf"
 #elif defined(PETSC_USE_SCALAR_LONG_DOUBLE) ||defined(PETSC_USE_LONG_DOUBLE)
-# define _FMT_PETSC_REAL    "g"
-# define _FMT_PETSC_COMPLEX "Zg"
+# define _PyPetsc_FMT_PETSC_REAL    "g"
+# define _PyPetsc_FMT_PETSC_COMPLEX "Zg"
 #elif defined(PETSC_USE_SCALAR_INT) || defined(PETSC_USE_INT)
-# define _FMT_PETSC_REAL    "i"
-# define _FMT_PETSC_COMPLEX "Zi"
+# define _PyPetsc_FMT_PETSC_REAL    "i"
+# define _PyPetsc_FMT_PETSC_COMPLEX "Zi"
 #else    /*  (PETSC_USE_SCALAR_DOUBLE) || (PETSC_USE_DOUBLE)  */
-# define _FMT_PETSC_REAL    "d"
-# define _FMT_PETSC_COMPLEX "Zd"
+# define _PyPetsc_FMT_PETSC_REAL    "d"
+# define _PyPetsc_FMT_PETSC_COMPLEX "Zd"
 #endif
 
 #if defined(PETSC_USE_COMPLEX)
-# define _FMT_PETSC_SCALAR  _FMT_PETSC_COMPLEX
+# define _PyPetsc_FMT_PETSC_SCALAR  _PyPetsc_FMT_PETSC_COMPLEX
 #else    /* PETSC_USE_REAL */
-# define _FMT_PETSC_SCALAR  _FMT_PETSC_REAL
+# define _PyPetsc_FMT_PETSC_SCALAR  _PyPetsc_FMT_PETSC_REAL
 #endif
 
 static 
 int 
-PyPetscBuffer_FillInfo(Py_buffer *view, PyObject* ob, 
-                       char typechar, int flags)
+PyPetscBuffer_FillInfo(Py_buffer *view,
+                       void *buf, PetscInt count, char typechar,
+                       int readonly, int flags)
 {
-  view->obj = NULL;
+  if (view == NULL) return 0;
+  if (((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) && (readonly == 1)) {
+    PyErr_SetString(PyExc_BufferError, "Object is not writable.");
+    return -1;
+  }
+  view->buf = buf;
   switch (typechar) {
   case 'i': view->itemsize = sizeof(PetscInt);    break;
   case 'r': view->itemsize = sizeof(PetscReal);   break;
@@ -40,13 +46,15 @@ PyPetscBuffer_FillInfo(Py_buffer *view, PyObject* ob,
   case 'c': view->itemsize = 2*sizeof(PetscReal); break;
   default:  view->itemsize = 1;
   }
+  view->len = count*view->itemsize;
+  view->readonly = readonly;
   view->format = NULL;
   if ((flags & PyBUF_FORMAT) == PyBUF_FORMAT) {
     switch (typechar) {
-    case 'i': view->format = (char *) _FMT_PETSC_INT;     break;
-    case 'r': view->format = (char *) _FMT_PETSC_REAL;    break;
-    case 's': view->format = (char *) _FMT_PETSC_SCALAR;  break;
-    case 'c': view->format = (char *) _FMT_PETSC_COMPLEX; break;
+    case 'i': view->format = (char *) _PyPetsc_FMT_PETSC_INT;     break;
+    case 'r': view->format = (char *) _PyPetsc_FMT_PETSC_REAL;    break;
+    case 's': view->format = (char *) _PyPetsc_FMT_PETSC_SCALAR;  break;
+    case 'c': view->format = (char *) _PyPetsc_FMT_PETSC_COMPLEX; break;
     default:  view->format = (char *) "B";
     }
   }
@@ -73,8 +81,6 @@ PyPetscBuffer_FillInfo(Py_buffer *view, PyObject* ob,
       view->strides[0] = view->itemsize;
     }
   }
-  Py_XINCREF(ob);
-  view->obj = ob;
   return 0;
 }
 
@@ -88,8 +94,9 @@ PyPetscBuffer_Release(Py_buffer *view)
   #endif
 }
 
-#undef _FMT_PETSC_INT
-#undef _FMT_PETSC_REAL
-#undef _FMT_PETSC_SCALAR
+#undef _PyPetsc_FMT_PETSC_INT
+#undef _PyPetsc_FMT_PETSC_REAL
+#undef _PyPetsc_FMT_PETSC_SCALAR
+#undef _PyPetsc_FMT_PETSC_COMPLEX
 
 #endif /* !PETSC4PY_PEP3118_H */
