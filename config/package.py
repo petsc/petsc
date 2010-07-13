@@ -40,6 +40,7 @@ class Package(config.base.Configure):
     self.needsMath        = 0    # 1 means requires the system math library
     self.noMPIUni         = 0    # 1 means requires a real MPI
     self.libdir           = 'lib'     # location of libraries in the package directory tree
+    self.altlibdir        = 'lib64'   # alternate location of libraries in the package directory tree
     self.includedir       = 'include' # location of includes in the package directory tree
     self.license          = None # optional license text
     self.excludedDirs     = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
@@ -210,11 +211,15 @@ class Package(config.base.Configure):
     if d:
       for l in self.generateLibList(os.path.join(d, self.libdir)):
         yield('Download '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
+      for l in self.generateLibList(os.path.join(d, self.altlibdir)):
+        yield('Download '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+d+'\n')
 
     if 'with-'+self.package+'-dir' in self.framework.argDB:     
       d = self.framework.argDB['with-'+self.package+'-dir']
       for l in self.generateLibList(os.path.join(d, self.libdir)):
+        yield('User specified root directory '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
+      for l in self.generateLibList(os.path.join(d, self.altlibdir)):
         yield('User specified root directory '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
       if 'with-'+self.package+'-include' in self.framework.argDB:
         raise RuntimeError('Do not set --with-'+self.package+'-include if you set --with-'+self.package+'-dir')
@@ -242,19 +247,22 @@ class Package(config.base.Configure):
                          '--with-'+self.package+'-include='+str(self.framework.argDB['with-'+self.package+'-include'])+' did not work') 
 
     for d in self.getSearchDirectories():
-      for l in self.generateLibList(os.path.join(d, self.libdir)):
-        if isinstance(self.includedir, list):
-          includedir = ([inc for inc in self.includedir if os.path.isabs(inc)] +
-                        [os.path.join(d, inc) for inc in self.includedir if not os.path.isabs(inc)])
-        elif d:
-          includedir = os.path.join(d, self.includedir)
-        else:
-          includedir = ''
-        yield('Package specific search directory '+self.PACKAGE, d, l, includedir)
+      for libdir in [self.libdir, self.altlibdir]:
+        for l in self.generateLibList(os.path.join(d, libdir)):
+          if isinstance(self.includedir, list):
+            includedir = ([inc for inc in self.includedir if os.path.isabs(inc)] +
+                          [os.path.join(d, inc) for inc in self.includedir if not os.path.isabs(inc)])
+          elif d:
+            includedir = os.path.join(d, self.includedir)
+          else:
+            includedir = ''
+          yield('Package specific search directory '+self.PACKAGE, d, l, includedir)
 
     d = self.checkDownload(requireDownload = 0)
     if d:
       for l in self.generateLibList(os.path.join(d, self.libdir)):
+        yield('Download '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
+      for l in self.generateLibList(os.path.join(d, self.altlibdir)):
         yield('Download '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+self.getInstallDir()+'\n')
 
