@@ -6,7 +6,7 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.__init__(self, framework)
     self.functions = ['cublasInit']
     self.includes  = ['cublas.h']
-    self.liblist   = [['libcublas.a']]
+    self.liblist   = [['libcublas.a','libcudart.a']]
     self.double    = 0   # 1 means requires double precision 
     self.cxx       = 0
     return
@@ -37,7 +37,8 @@ class Configure(PETSc.package.NewPackage):
       raise RuntimeError('Must use either single or double precision with CUDA') 
     if self.scalartypes.scalartype == 'complex':
       raise RuntimeError('Must use real numbers with CUDA') 
-    self.addMakeMacro('CLINKER','nvcc -m64')
+#    self.addMakeMacro('CLINKER','nvcc -m64')
+    self.addMakeMacro('CLINKER','g++')
     if self.languages.clanguage == 'C':
       self.addDefine('CUDA_EXTERN_C_BEGIN','extern "C" {')
       self.addDefine('CUDA_EXTERN_C_END','}')
