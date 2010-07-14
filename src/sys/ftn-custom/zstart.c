@@ -316,7 +316,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
     PETSC_i = ic;
 #else
     PetscScalar ic;
-    ic = 1.I;
+    ic = 1.0*I;
     PETSC_i = ic;
 #endif
   }
