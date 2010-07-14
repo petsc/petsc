@@ -2753,7 +2753,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRetrieveValues_MPIAIJ(Mat mat)
 }
 EXTERN_C_END
 
-#include "petscpc.h"
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJ"
@@ -5127,7 +5126,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
                                       MatMatMult_MPIDense_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMultSymbolic_mpidense_mpiaij_C",
                                      "MatMatMultSymbolic_MPIDense_MPIAIJ",
-                                      MatMatMultSymbolic_MPIDense_MPIAIJ);CHKERRQ(ierr);
+                                     MatMatMultSymbolic_MPIDense_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMultNumeric_mpidense_mpiaij_C",
                                      "MatMatMultNumeric_MPIDense_MPIAIJ",
                                       MatMatMultNumeric_MPIDense_MPIAIJ);CHKERRQ(ierr);
