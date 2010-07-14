@@ -6,6 +6,35 @@ sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config', 'BuildSystem'
 
 import script
 
+regressionRequirements = {'src/vec/vec/examples/tests/ex31':  set(['Matlab'])
+                          }
+
+regressionParameters = {'src/vec/vec/examples/tests/ex1_2':  {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex3':    {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex4':    {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex5':    {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex9':    {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex10':   {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex11':   {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex12':   {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex13':   {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex14':   {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex16':   {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex17':   {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex17f':  {'numProcs': 3},
+                        'src/vec/vec/examples/tests/ex21_2': {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex22':   {'numProcs': 4},
+                        'src/vec/vec/examples/tests/ex23':   {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex24':   {'numProcs': 3},
+                        'src/vec/vec/examples/tests/ex25':   {'numProcs': 3},
+                        'src/vec/vec/examples/tests/ex26':   {'numProcs': 4},
+                        'src/vec/vec/examples/tests/ex28':   {'numProcs': 3},
+                        'src/vec/vec/examples/tests/ex29':   {'numProcs': 3, 'args': '-n 126'},
+                        'src/vec/vec/examples/tests/ex30f':  {'numProcs': 4},
+                        'src/vec/vec/examples/tests/ex33':   {'numProcs': 4},
+                        'src/vec/vec/examples/tests/ex36':   {'numProcs': 2, 'args': '-set_option_negidx -set_values_negidx -get_values_negidx'}
+                        }
+
 def noCheckCommand(command, status, output, error):
   ''' Do no check result'''
   return 
@@ -58,10 +87,13 @@ class SourceDatabase(object):
 
   def rebuild(self, vertex):
     if self.verbose: print 'Checking for rebuild of',vertex
-    for dep,mark in self.dependencyGraph[vertex]:
-      if self.rebuildArc(vertex, dep, mark):
-        if self.verbose: print '    dep',dep,'is changed'
-        return True
+    try:
+      for dep,mark in self.dependencyGraph[vertex]:
+        if self.rebuildArc(vertex, dep, mark):
+          if self.verbose: print '    dep',dep,'is changed'
+          return True
+    except KeyError:
+      return True
     return False
 
 class PETScMaker(script.Script):
@@ -95,6 +127,7 @@ class PETScMaker(script.Script):
    self.scalarType    = self.framework.require('PETSc.utilities.scalarTypes', None)
    self.memAlign      = self.framework.require('PETSc.utilities.memAlign',    None)
    self.libraryOptions= self.framework.require('PETSc.utilities.libraryOptions', None)      
+   self.fortrancpp    = self.framework.require('PETSc.utilities.fortranCPP', None)
    return
 
  def setupHelp(self, help):
@@ -105,12 +138,20 @@ class PETScMaker(script.Script):
    help.addArgument('PETScMaker', '-rootDir', nargs.ArgDir(None, os.getcwd(), 'The root directory for this build', isTemporary = 1))
    help.addArgument('PETScMaker', '-dryRun',  nargs.ArgBool(None, False, 'Only output what would be run', isTemporary = 1))
    help.addArgument('PETScMaker', '-dependencies',  nargs.ArgBool(None, True, 'Use dependencies to control build', isTemporary = 1))
-   help.addArgument('PETScMaker', '-rebuildDependencies', nargs.ArgBool(None, False, 'Only check dependencies', isTemporary = 1))
+   help.addArgument('PETScMaker', '-buildLibraries', nargs.ArgBool(None, True, 'Build the PETSc libraries', isTemporary = 1))
+   help.addArgument('PETScMaker', '-regressionTests', nargs.ArgBool(None, False, 'Only run regression tests', isTemporary = 1))
+   help.addArgument('PETScMaker', '-rebuildDependencies', nargs.ArgBool(None, False, 'Rebuild dependency information', isTemporary = 1))
    help.addArgument('PETScMaker', '-verbose', nargs.ArgInt(None, 0, 'The verbosity level', min = 0, isTemporary = 1))
+
+   help.addArgument('PETScMaker', '-maxSources', nargs.ArgInt(None, -1, 'The maximum number of source files in a directory', min = -1, isTemporary = 1))
    return help
 
  def setup(self):
    script.Script.setup(self)
+   if self.dryRun or self.verbose:
+     self.debugSection = 'screen'
+   else:
+     self.debugSection = None
    self.argDB['rootDir'] = os.path.abspath(self.argDB['rootDir'])
    self.framework = self.loadConfigure()
    self.setupModules()
@@ -121,6 +162,7 @@ class PETScMaker(script.Script):
 
        with file(os.path.join(confDir, 'source.db'), 'rb') as f:
          self.sourceDatabase = cPickle.load(f)
+       self.sourceDatabase.verbose = self.verbose
      else:
        self.sourceDatabase = SourceDatabase(self.verbose)
    else:
@@ -204,27 +246,40 @@ class PETScMaker(script.Script):
    packageIncludes = self.headers.toStringNoDupes(packageIncludes)
    return packageIncludes, packageLibs
 
+ def getObjectName(self, source):
+   return os.path.splitext(source)[0]+'.o'
+
  def sortSourceFiles(self, dirname):
-   '''Sorts source files by language
-  - returns lists of 
-   '''
-   cnames = []
-   fnames = []
-   onames = []
+   '''Sorts source files by language (returns dictionary with language keys)'''
+   cnames    = []
+   cxxnames  = []
+   cudanames = []
+   f77names  = []
+   f90names  = []
    for f in os.listdir(dirname):
      ext = os.path.splitext(f)[1]
      if ext == '.c':
        cnames.append(f)
-       onames.append(f.replace('.c', '.o'))
-     if hasattr(self.compilers, 'FC'):
-       if ext == '.F':
-         fnames.append(f)
-         onames.append(f.replace('.F', '.o'))
-       if self.compilers.fortranIsF90:
-         if ext == '.F90':
-           fnames.append(f)
-           onames.append(f.replace('.F90', '.o'))
-   return cnames, fnames, onames
+     elif ext in ['.cxx', '.cpp', '.cc']:
+       if self.languages.clanguage == 'Cxx':
+         cxxnames.append(f)
+     elif ext == '.cu':
+       cudanames.append(f)
+     elif ext == '.F':
+       if hasattr(self.compilers, 'FC'):
+         f77names.append(f)
+     elif ext == '.F90':
+       if hasattr(self.compilers, 'FC') and self.compilers.fortranIsF90:
+         f90names.append(f)
+   source = cnames+cxxnames+cudanames+f77names+f90names
+   if self.argDB['maxSources'] >= 0:
+     cnames    = cnames[:self.argDB['maxSources']]
+     cxxnames  = cxxnames[:self.argDB['maxSources']]
+     cudanames = cudanames[:self.argDB['maxSources']]
+     f77names  = f77names[:self.argDB['maxSources']]
+     f90names  = f90names[:self.argDB['maxSources']]
+     source    = source[:self.argDB['maxSources']]
+   return {'C': cnames, 'Cxx': cxxnames, 'Cuda': cudanames, 'F77': f77names, 'F90': f90names, 'Fortran': f77names+f90names, 'Objects': map(self.getObjectName, source)}
 
  def compileC(self, source):
    '''PETSC_INCLUDE         = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
@@ -243,16 +298,13 @@ class PETScMaker(script.Script):
    flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
    flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
    flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscdir.dir, ''))
-   flags.append('-MMD')
-   sources = [s for s in source if self.sourceDatabase.rebuild(os.path.splitext(s)[0]+'.o')]
+   # TODO: Move this up to configure
+   if self.argDB['dependencies']: flags.append('-MMD')
+   sources = [s for s in source if not os.path.isfile(self.getObjectName(s)) or self.sourceDatabase.rebuild(self.getObjectName(s))]
    packageIncludes, packageLibs = self.getPackageInfo()
    cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+sources)
-   if self.dryRun or self.verbose:
-     section = 'screen'
-   else:
-     section = None
    if len(sources):
-     self.logWrite(cmd+'\n', debugSection = section, forceScroll = True)
+     self.logWrite(cmd+'\n', debugSection = self.debugSection, forceScroll = True)
      if not self.dryRun:
        (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
        if status:
@@ -261,9 +313,12 @@ class PETScMaker(script.Script):
        else:
          self.buildDependenciesFiles(sources)
    else:
-     self.logPrint('Nothing to build', debugSection = section)
+     self.logPrint('Nothing to build', debugSection = self.debugSection)
    self.setCompilers.popLanguage()
-   return
+   for s in sources:
+     if not os.path.isfile(self.getObjectName(s)):
+       print 'ERROR: Missing object file',self.getObjectName(s)
+   return [self.getObjectName(s) for s in sources]
 
  def compileF(self, source):
    '''PETSC_INCLUDE	        = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
@@ -282,18 +337,14 @@ class PETScMaker(script.Script):
    flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
    flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
    cmd = ' '.join([compiler]+['-c']+includes+flags+source)
-   if self.dryRun or self.verbose:
-     section = 'screen'
-   else:
-     section = None
-   self.logWrite(cmd+'\n', debugSection = section, forceScroll = True)
+   self.logWrite(cmd+'\n', debugSection = self.debugSection, forceScroll = True)
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
      if status:
        self.logPrint("ERROR IN COMPILE ******************************", debugSection='screen')
        self.logPrint(output+error, debugSection='screen')
    self.setCompilers.popLanguage()
-   return
+   return [self.getObjectName(s) for s in source]
 
  def archive(self, library, objects):
    '''${AR} ${AR_FLAGS} ${LIBNAME} $*.o'''
@@ -302,28 +353,20 @@ class PETScMaker(script.Script):
      cmd = ' '.join([self.setCompilers.AR, self.setCompilers.FAST_AR_FLAGS, lib]+objects)
    else:
      cmd = ' '.join([self.setCompilers.AR, self.setCompilers.AR_FLAGS, lib]+objects)
-   if self.dryRun or self.verbose:
-     section = 'screen'
-   else:
-     section = None
-   self.logWrite(cmd+'\n', debugSection = section, forceScroll = True)
+   self.logWrite(cmd+'\n', debugSection = self.debugSection, forceScroll = True)
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
      if status:
        self.logPrint("ERROR IN ARCHIVE ******************************", debugSection='screen')
        self.logPrint(output+error, debugSection='screen')
-   return
+   return [library]
 
  def ranlib(self, library):
    '''${ranlib} ${LIBNAME} '''
    library = os.path.join(self.petscdir.dir, self.arch.arch, 'lib', library)   
    lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
    cmd = ' '.join([self.setCompilers.RANLIB, lib])
-   if self.dryRun or self.verbose:
-     section = 'screen'
-   else:
-     section = None
-   self.logWrite(cmd+'\n', debugSection = section, forceScroll = True)
+   self.logWrite(cmd+'\n', debugSection = self.debugSection, forceScroll = True)
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
      if status:
@@ -331,7 +374,22 @@ class PETScMaker(script.Script):
        self.logPrint(output+error, debugSection='screen')
    return
 
- def checkDir(self, dirname):
+ def link(self, executable, objects, language):
+   '''${CLINKER} -o $@ $^ ${PETSC_LIB}
+      ${DSYMUTIL} $@'''
+   self.compilers.pushLanguage(language)
+   cmd = self.compilers.getFullLinkerCmd(objects+' -lpetsc', executable)
+   self.logWrite(cmd+'\n', debugSection = self.debugSection, forceScroll = True)
+   if not self.dryRun:
+     (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
+     if status:
+       self.logPrint("ERROR IN LINK ******************************", debugSection='screen')
+       self.logPrint(output+error, debugSection='screen')
+   # TODO: Move dsymutil stuff from PETSc.utilities.debuggers to config.compilers
+   self.compilers.popLanguage()
+   return [executable]
+
+ def checkDir(self, dirname, allowExamples = False):
    '''Checks whether we should recurse into this directory
    - Excludes examples directory
    - Excludes contrib directory
@@ -341,10 +399,11 @@ class PETScMaker(script.Script):
    - Checks makefile to see if compiler is allowed to visit this directory for this configuration'''
    base = os.path.basename(dirname)
 
-   if base == 'examples': return False
+   if base == 'examples' and not allowExamples: return False
    if not hasattr(self.compilers, 'FC'):
      if base.startswith('ftn-') or base.startswith('f90-'): return False
    if base == 'contrib':  return False
+   #if base == 'tutorials' and not allowExamples:  return False
    if base == 'tutorials':  return False
    if base == 'benchmarks':  return False     
 
@@ -416,17 +475,17 @@ class PETScMaker(script.Script):
    ''' This is run in a PETSc source directory'''
    self.logWrite('Entering '+dirname+'\n', debugSection = 'screen', forceScroll = True)
    os.chdir(dirname)
-   cnames, fnames, onames = self.sortSourceFiles(dirname)
-   if cnames:
-     self.logPrint('Compiling C files '+str(cnames))
-     self.compileC(cnames)
-   if fnames:
-     self.logPrint('Compiling Fortran files '+str(fnames))
-     self.compileF(fnames)
-   # We could feed back names that need to be archived here (necessary?)
-   if onames:
-     self.logPrint('Archiving files '+str(onames)+' into '+libname)
-     self.archive(os.path.join(self.petscdir.dir, self.arch.arch, 'lib', libname), onames)
+   sourceMap = self.sortSourceFiles(dirname)
+   objects   = []
+   if sourceMap['C']:
+     self.logPrint('Compiling C files '+str(sourceMap['C']))
+     objects.extend(self.compileC(sourceMap['C']))
+   if sourceMap['Fortran']:
+     self.logPrint('Compiling Fortran files '+str(sourceMap['Fortran']))
+     objects.extend(self.compileF(sourceMap['Fortran']))
+   if objects:
+     self.logPrint('Archiving files '+str(objects)+' into '+libname)
+     self.archive(os.path.join(self.petscdir.dir, self.arch.arch, 'lib', libname), objects)
    return
 
  def buildAll(self, rootDir = None):
@@ -450,16 +509,12 @@ class PETScMaker(script.Script):
    return
 
  def buildDependenciesFiles(self, names):
-   if self.dryRun or self.verbose:
-     section = 'screen'
-   else:
-     section = None
    if names:
      self.logPrint('Rebuilding dependency info for files '+str(names))
      for source in names:
        depFile = os.path.splitext(source)[0]+'.d'
        if os.path.isfile(depFile):
-         self.logWrite('FOUND DEPENDENCY FILE '+depFile+'\n', debugSection = section, forceScroll = True)
+         self.logWrite('FOUND DEPENDENCY FILE '+depFile+'\n', debugSection = self.debugSection, forceScroll = True)
          if not self.dryRun:
            self.readDependencyFile(depFile)
    return
@@ -468,8 +523,8 @@ class PETScMaker(script.Script):
    ''' This is run in a PETSc source directory'''
    self.logWrite('Entering '+dirname+'\n', debugSection = 'screen', forceScroll = True)
    os.chdir(dirname)
-   cnames, fnames, onames = self.sortSourceFiles(dirname)
-   self.buildDependenciesFiles(onames)
+   sourceMap = self.sortSourceFiles(dirname)
+   self.buildDependenciesFiles(sourceMap['Objects'])
    return
 
  def rebuildDependencies(self, rootDir = None):
@@ -483,13 +538,112 @@ class PETScMaker(script.Script):
      for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
        dirs.remove(badDir)
    return
+ 
+ def cleanupTest(self, dirname, execname):
+   # ${RM} $* *.o $*.mon.* gmon.out mon.out *.exe *.ilk *.pdb *.tds
+   import re
+   trash = re.compile('^('+execname+'(\.o|\.mon\.\w+|\.exe|\.ilk|\.pdb|\.tds)?|g?mon.out)$')
+   for fname in os.listdir(dirname):
+     if trash.match(fname):
+       os.remove(fname)
+   return
+
+ def checkTestOutput(self, executable, output, testNum):
+   outputName = os.path.abspath(os.path.join('output', executable+'_'+str(testNum)+'.out'))
+   if not os.path.isfile(outputName):
+     self.logPrint("MISCONFIGURATION: Regression output file %s (test %d) is missing" % (outputName, testNum), debugSection='screen')
+   else:
+     with file(outputName) as f:
+       validOutput = f.read()
+       if not validOutput == output:
+         self.logPrint("TEST ERROR: Regression output for %s (test %d) does not match" % (executable, testNum), debugSection='screen')
+         self.logPrint(validOutput, debugSection='screen')
+         self.logPrint(output, debugSection='screen')
+       else:
+         self.logPrint("TEST SUCCESS: Regression output for %s (test %d) matches" % (executable, testNum), debugSection='screen')
+   return
+
+ def runTest(self, executable, testNum, **params):
+   numProcs = params.get('numProcs', 1)
+   args     = params.get('args', '')
+   # TODO: Take this line out when configure is fixed
+   # mpiexec = self.mpi.mpiexec.replace(' -n 1','').replace(' ', '\\ ')
+   cmd = ' '.join([self.mpi.mpiexec, '-n', str(numProcs), os.path.abspath(executable), args])
+   self.logWrite('Running test for '+executable+'\n'+cmd+'\n', debugSection = self.debugSection, forceScroll = True)
+   if not self.dryRun:
+     (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
+     if status:
+       self.logPrint("TEST ERROR: Failed to execute %s\n" % executable, debugSection = 'screen', forceScroll = True)
+       self.logPrint(output+error, debugSection='screen', indent = 0, forceScroll = True)
+     else:
+       self.checkTestOutput(executable, output+error, testNum)
+   return
+
+ def regressionTestsDir(self, dirname, dummy):
+   ''' This is run in a PETSc source directory'''
+   self.logWrite('Entering '+dirname+'\n', debugSection = 'screen', forceScroll = True)
+   os.chdir(dirname)
+   sourceMap = self.sortSourceFiles(dirname)
+   objects   = []
+   if sourceMap['C']:
+     self.logPrint('Compiling C files '+str(sourceMap['C']))
+     self.compileC(sourceMap['C'])
+   if sourceMap['Fortran']:
+     if not self.fortrancpp.fortranDatatypes:
+       self.logPrint('Compiling Fortran files '+str(sourceMap['Fortran']))
+       self.compileF(sourceMap['Fortran'])
+   if sourceMap['Objects']:
+     packageNames = set([p.name for p in self.framework.packages])
+     for obj in sourceMap['Objects']:
+       # TESTEXAMPLES_C_X11 = ex3.PETSc runex3 ex3.rm
+       # .PETSc: filters out messages from build
+       # .rm: cleans up test
+       executable = os.path.splitext(obj)[0]
+       paramKey   = os.path.relpath(os.path.abspath(executable), self.petscdir.dir)
+       testNum    = 1
+       if paramKey in regressionRequirements:
+         if not regressionRequirements[paramKey].issubset(packageNames):
+           continue
+       self.logPrint('Linking object '+obj+' into '+executable)
+       # TODO: Fix this hack
+       if executable[-1] == 'f':
+         self.link(executable, obj, 'FC')
+       else:
+         self.link(executable, obj, self.languages.clanguage)
+       self.runTest(executable, testNum, **regressionParameters.get(paramKey, {}))
+       testNum += 1
+       while '%s_%d' % (paramKey, testNum) in regressionParameters:
+         self.runTest(executable, testNum, **regressionParameters.get('%s_%d' % (paramKey, testNum), {}))
+         testNum += 1
+       self.cleanupTest(dirname, executable)
+   return
+
+ def regressionTests(self, rootDir = None):
+   if rootDir is None:
+     rootDir = self.argDB['rootDir']
+   if not self.checkDir(rootDir, allowExamples = True):
+     self.logPrint('Nothing to be done')
+   for root, dirs, files in os.walk(rootDir):
+     self.logPrint('Processing '+root)
+     if 'examples' in dirs:
+       for exroot, exdirs, exfiles in os.walk(os.path.join(root, 'examples')):
+         self.logPrint('Processing '+exroot)
+         print '  Testing in root',root
+         self.regressionTestsDir(exroot, exfiles)
+         for badDir in [d for d in exdirs if not self.checkDir(os.path.join(exroot, d), allowExamples = True)]:
+           exdirs.remove(badDir)
+     for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
+       dirs.remove(badDir)
+   return
 
  def run(self):
    self.setup()
    if self.argDB['rebuildDependencies']:
      self.rebuildDependencies()
-   else:
+   if self.argDB['buildLibraries']:
      self.buildAll()
+   if self.argDB['regressionTests']:
+     self.regressionTests()
    self.cleanup()
    return
 
