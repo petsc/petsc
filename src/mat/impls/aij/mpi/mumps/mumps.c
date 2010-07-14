@@ -148,19 +148,21 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
 {
   Mat_MUMPS      *lu=(Mat_MUMPS*)A->spptr; 
   PetscErrorCode ierr;
-  PetscMPIInt    size=lu->size;
+  PetscTruth     isSeqAIJ,isSeqSBAIJ;
 
   PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSeqSBAIJ);CHKERRQ(ierr);
+
   if (lu->CleanUpMUMPS) {
     /* Terminate instance, deallocate memories */
-    if (size > 1){
-      ierr = PetscFree2(lu->id.sol_loc,lu->id.isol_loc);CHKERRQ(ierr);
-      ierr = VecScatterDestroy(lu->scat_rhs);CHKERRQ(ierr);
-      ierr = VecDestroy(lu->b_seq);CHKERRQ(ierr);
-      if (lu->nSolve && lu->scat_sol){ierr = VecScatterDestroy(lu->scat_sol);CHKERRQ(ierr);}
-      if (lu->nSolve && lu->x_seq){ierr = VecDestroy(lu->x_seq);CHKERRQ(ierr);}
-      ierr = PetscFree(lu->val);CHKERRQ(ierr);
-    }
+    if (lu->id.sol_loc){ierr = PetscFree2(lu->id.sol_loc,lu->id.isol_loc);CHKERRQ(ierr);}
+    if (lu->scat_rhs){ierr = VecScatterDestroy(lu->scat_rhs);CHKERRQ(ierr);}
+    if (lu->b_seq) {ierr = VecDestroy(lu->b_seq);CHKERRQ(ierr);}
+    if (lu->nSolve && lu->scat_sol){ierr = VecScatterDestroy(lu->scat_sol);CHKERRQ(ierr);}
+    if (lu->nSolve && lu->x_seq){ierr = VecDestroy(lu->x_seq);CHKERRQ(ierr);}
+    /* val is reused for SeqAIJ/SBAIJ - but malloced for MPIAIJ/SBAIJ */
+    if (!(isSeqAIJ || isSeqSBAIJ) && lu->val){ierr = PetscFree(lu->val);CHKERRQ(ierr);}
     lu->id.job=JOB_END; 
 #if defined(PETSC_USE_COMPLEX)
     zmumps_c(&lu->id); 
