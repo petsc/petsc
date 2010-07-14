@@ -31,6 +31,7 @@ EXTERN_C_END
 EXTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
 EXTERN PetscErrorCode VecDestroy_SeqCUDA(Vec);
 EXTERN PetscErrorCode VecAYPX_SeqCUDA(Vec,PetscScalar,Vec);
+EXTERN PetscErrorCode VecSetRandom_SeqCUDA(Vec,PetscRandom);
 
 #define CHKERRCUDA(err) if (err != CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err)
 
