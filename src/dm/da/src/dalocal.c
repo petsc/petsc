@@ -79,7 +79,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateLocalVector(DA da,Vec* g)
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(g,2);
-  ierr = VecCreate(((PetscObject)da)->comm,g);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,g);CHKERRQ(ierr);
   ierr = VecSetSizes(*g,da->nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*g,da->w);CHKERRQ(ierr);
