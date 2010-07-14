@@ -3118,10 +3118,10 @@ are equivalent to runtime options
 \trl{-ksp_type preonly} \findex{-pc_type lu} \findex{-pc_factor_mat_solver_package mumps} \findex{-mat_mumps_icntl_7 2}:
 
 KSPSetType(ksp,KSPPREONLY);
-KSPGetPC(ksp,&pc);
+KSPGetPC(ksp,\&pc);
 PCSetType(pc,PCLU);
 PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);
-PCFactorGetMatrix(pc,&F);
+PCFactorGetMatrix(pc,\&F);
 icntl=7; ival = 2;
 MatSetMumpsIcntl(F,icntl,ival);
 
@@ -4903,7 +4903,7 @@ The following Fortran routines differ slightly from their C counterparts; see th
 manual pages and previous discussion in this chapter for details:
 \begin{tabbing}
  PetscInitialize(char *filename,int \trl{ierr)}\\
- PetscError(MPI_COMM,int err,char *message,int \trl{ierr)}\\
+ PetscError(MPI\_COMM,int err,char *message,int \trl{ierr)}\\
  VecGetArray(), MatGetArray()\\
  ISGetIndices(), DAGetGlobalIndices()\\
  VecDuplicateVecs(), VecDestroyVecs()\\
