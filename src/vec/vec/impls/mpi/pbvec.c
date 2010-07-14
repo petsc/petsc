@@ -241,6 +241,37 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPI(Vec vv)
 }
 EXTERN_C_END
 
+/*MC
+   VECSTANDARD = "standard" - A VECSEQ on one process and VECMPI on more than one process
+
+   Options Database Keys:
+. -vec_type standard - sets a vector type to standard on calls to VecSetFromOptions
+
+  Level: beginner
+
+.seealso: VecCreateSeq(), VecCreateMPI()
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "VecCreate_Standard"
+PetscErrorCode PETSCMAT_DLLEXPORT VecCreate_Standard(Vec v)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(((PetscObject)v)->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = VecSetType(v,VECSEQ);CHKERRQ(ierr);
+  } else {
+    ierr = VecSetType(v,VECMPI);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreateMPIWithArray"
 /*@C

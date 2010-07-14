@@ -313,7 +313,7 @@ valid
     _6_ierr = MPI_Comm_compare(((PetscObject)a)->comm,((PetscObject)b)->comm,&__flag); \
     CHKERRQ(_6_ierr);                                                   \
     if (__flag != MPI_CONGRUENT && __flag != MPI_IDENT)                 \
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the two objects: Argument # %d and %d",arga,argb); \
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the two objects: Argument # %d and %d flag %d",arga,argb,__flag); \
   } while (0)
 
 #define PetscCheckSameTypeAndComm(a,arga,b,argb)        \

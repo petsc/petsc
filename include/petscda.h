@@ -126,6 +126,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate2d(MPI_Comm,DAPeriodicType,DA
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],DA*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetOptionsPrefix(DA,const char []);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DAViewFromOptions(DA, const char []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetVecType(DA,const VecType);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DADestroy(DA);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAView(DA,PetscViewer);
