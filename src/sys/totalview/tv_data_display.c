@@ -89,7 +89,7 @@ int TV_add_row(const char *field_name,
   TV_data_buffer_ptr += out;
   
   return 0;
-};
+}
 
 void TV_pre_display_callback(void)
 {
