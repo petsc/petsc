@@ -59,7 +59,10 @@ class Configure(config.base.Configure):
                                            '-${RM} $*.o'])
 
       if self.framework.argDB['with-fortran-datatypes']:
+        self.fortranDatatypes = True
         self.addDefine('USE_FORTRAN_DATATYPES', '1')
+      else:
+        self.fortranDatatypes = False
       if self.framework.argDB['with-fortran-interfaces']:
         if self.framework.argDB['with-fortran-datatypes']:
           raise RuntimeError('Cannot use generated fortran interface definitions with fortran datatypes')
