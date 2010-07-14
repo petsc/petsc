@@ -823,7 +823,10 @@ class Configure(config.base.Configure):
         # This probably only applies to Solaris systems, and then will only
         # work with gcc...
         if arg == '-Y':
-          for lib in argIter.next().split(':'):
+          libs = argIter.next()
+          if libs.startswith('"') and libs.endswith('"'):
+            libs = libs[1:-1]
+          for lib in libs.split(':'):
             #solaris gnu g77 has this extra P, here, not sure why it means
             if lib.startswith('P,'):lib = lib[2:]
             self.logPrint('Handling -Y option: '+lib, 4, 'compilers')
