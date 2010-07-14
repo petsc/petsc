@@ -1,10 +1,9 @@
 /* 
    This should not be included in users code.
 
-  Includes definition of structure for seqential double precision vectors
+  Includes definition of structure for seqential vectors
 
-  These are shared by dvec1.c dvec2.c dvec3.c bvec1.c bvec2.c 
-  pvectors/pvec.c pvectors/pbvec.c 
+  These are shared by dvec1.c dvec2.c dvec3.c bvec1.c bvec2.c pvec.c pbvec.c 
 */
 
 #ifndef __DVECIMPL 
@@ -54,5 +53,6 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec);
 EXTERN_C_END
 EXTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
 EXTERN PetscErrorCode VecDestroy_Seq(Vec);
+EXTERN PetscErrorCode VecCreate_Seq_Private(Vec,const PetscScalar[]);
 
 #endif

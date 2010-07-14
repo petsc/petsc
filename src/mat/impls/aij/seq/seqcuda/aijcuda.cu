@@ -6,10 +6,12 @@
   matrix storage format.
 */
 
-
+#include "petscconf.h"
+PETSC_CUDA_EXTERN_C_BEGIN
 #include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
-#include "petscblaslapack.h"
 #include "petscbt.h"
+PETSC_CUDA_EXTERN_C_END
+
 #include <cusp/csr_matrix.h>
 #include <cusp/multiply.h>
 
@@ -18,11 +20,6 @@
 #endif
 #define CUSPMATRIX cusp::csr_matrix<PetscInt,PetscScalar,cusp::device_memory>
 
-EXTERN PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode);
-EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat);
-EXTERN_C_END
-EXTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
 EXTERN PetscErrorCode VecCUDACopyToGPU_Public(Vec);
 EXTERN PetscErrorCode VecCUDAAllocateCheck_Public(Vec);
 

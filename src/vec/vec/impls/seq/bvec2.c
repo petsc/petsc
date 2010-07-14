@@ -646,7 +646,7 @@ static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_Seq_Private"
-static PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
+PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
 {
   Vec_Seq        *s;
   PetscErrorCode ierr;
@@ -667,17 +667,6 @@ static PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEngineGet_C","VecMatlabEngineGet_Default",VecMatlabEngineGet_Default);CHKERRQ(ierr);
 #endif
   ierr = PetscPublishAll(v);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_Seq_Private_CUDA"
-PetscErrorCode VecCreate_Seq_Private_CUDA(Vec v, const PetscScalar array[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCreate_Seq_Private(v,array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

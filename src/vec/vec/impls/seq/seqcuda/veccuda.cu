@@ -3,85 +3,13 @@
    Implements the sequential vectors.
 */
 
+#include "petscconf.h"
+PETSC_CUDA_EXTERN_C_BEGIN
 #include "private/vecimpl.h"          /*I "petscvec.h" I*/
 #include "../src/vec/vec/impls/dvecimpl.h"
-#include "petscblaslapack.h"
-#include <cublas.h>
-#include <cusp/blas.h>
-#include <thrust/device_vector.h>
-#include <thrust/iterator/constant_iterator.h>
-#include <thrust/transform.h>
-
-/*MC
-   VECSEQCUDA - VECSEQCUDA = "seqcuda" - The basic sequential vector, modified to use CUDA
-
-   Options Database Keys:
-. -vec_type seqcuda - sets the vector type to VECSEQCUDA during a call to VecSetFromOptions()
-
-  Level: beginner
-
-.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateSeqWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateSeq()
-M*/
-
-#define CHKERRCUDA(err) if (err != CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err)
-
-#define VecCUDACastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])
-#define CUSPARRAY cusp::array1d<PetscScalar,cusp::device_memory>
-
-#undef __FUNCT__
-#define __FUNCT__ "cublasInit_Public"
-void cublasInit_Public(void)
-{
-  cublasInit();
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "cublasShutdown_Public"
-void cublasShutdown_Public(void)
-{
-  cublasShutdown();
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDAAllocateCheck"
-PETSC_STATIC_INLINE PetscErrorCode VecCUDAAllocateCheck(Vec v)
-{
-  Vec_Seq   *s;
-  PetscFunctionBegin;
-  if (v->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
-    v->spptr= new CUSPARRAY;
-    ((CUSPARRAY *)(v->spptr))->resize((PetscBLASInt)v->map->n);
-    s = (Vec_Seq*)v->data;
-    /* if the GPU and CPU are both unallocated, there is no data and we can set the newly allocated GPU data as valid */
-    if (s->array == 0){
-      v->valid_GPU_array = PETSC_CUDA_GPU;
-    } else{
-      v->valid_GPU_array = PETSC_CUDA_CPU;
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDACopyToGPU"
-/* Copies a vector from the CPU to the GPU unless we already have an up-to-date copy on the GPU */
-PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
-{
-  PetscBLASInt   cn = v->map->n;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
-  if (v->valid_GPU_array == PETSC_CUDA_CPU){
-    ierr = PetscLogEventBegin(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
-    ((CUSPARRAY *)(v->spptr))->assign(*(PetscScalar**)v->data,*(PetscScalar**)v->data + cn);
-    ierr = PetscLogEventEnd(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
-    v->valid_GPU_array = PETSC_CUDA_BOTH;
-  }
-  PetscFunctionReturn(0);
-}
-
+PETSC_CUDA_EXTERN_C_END
+#include "../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h"
+/* these following 2 public versions are necessary because we use CUSP in the regular version and these need to be called from plain C code. */
 #undef __FUNCT__
 #define __FUNCT__ "VecCUDAAllocateCheck_Public"
 PetscErrorCode VecCUDAAllocateCheck_Public(Vec v)
@@ -131,6 +59,17 @@ PetscErrorCode VecCUDACopyFromGPU(Vec v)
   }
   PetscFunctionReturn(0);
 }
+/*MC
+   VECSEQCUDA - VECSEQCUDA = "seqcuda" - The basic sequential vector, modified to use CUDA
+
+   Options Database Keys:
+. -vec_type seqcuda - sets the vector type to VECSEQCUDA during a call to VecSetFromOptions()
+
+  Level: beginner
+
+.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateSeqWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateSeq()
+M*/
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecAXPY_SeqCUDA"
@@ -785,7 +724,6 @@ PetscErrorCode VecDestroy_SeqCUDA(Vec v)
   ierr = VecDestroy_Seq(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN PetscErrorCode VecCreate_Seq_Private_CUDA(Vec v,const PetscScalar array[]);
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -798,7 +736,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec V)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)V)->comm,&size);CHKERRQ(ierr);
   if  (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQCUDA on more than one process");
-  ierr = VecCreate_Seq_Private_CUDA(V,0);CHKERRQ(ierr);
+  ierr = VecCreate_Seq_Private(V,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQCUDA);CHKERRQ(ierr);
   V->ops->duplicate     = VecDuplicate_SeqCUDA;
   V->ops->dot           = VecDot_SeqCUDA;
