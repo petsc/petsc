@@ -654,6 +654,7 @@ PetscErrorCode VecNorm_SeqCUDA(Vec xin,NormType type,PetscReal* z)
 }
 
 
+/*the following few functions should be modified to actually work with the GPU so they don't force unneccesary allocation of CPU memory */
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetRandom_SeqCUDA"
