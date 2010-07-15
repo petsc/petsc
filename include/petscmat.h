@@ -67,7 +67,7 @@ E*/
 #define MATHYPRESSTRUCT    "hypresstruct"
 #define MATSUBMATRIX       "submatrix"
 #define MATSEQAIJCUDA      "seqaijcuda"
-
+#define MATMPIAIJCUDA      "mpiaijcuda"
 
 #define MATDD              "matdd"
 

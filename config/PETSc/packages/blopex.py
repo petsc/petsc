@@ -14,7 +14,13 @@ class Configure(PETSc.package.NewPackage):
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.deps       = [self.blasLapack]
+    # Hypre has blopex sources/includes for eg: interpreter.h which can conflict with one in petsc.
+    # hence attepmt to build hypre before blopex - so blopex's interpreter.h is the one that gets used.
+    if self.framework.argDB.has_key('download-hypre') and self.framework.argDB['download-hypre']:
+      self.hypre      = framework.require('PETSc.packages.hypre',self)
+      self.deps       = [self.blasLapack,self.hypre]
+    else:
+      self.deps       = [self.blasLapack]
     return
 
   def Install(self):

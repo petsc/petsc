@@ -124,39 +124,96 @@ PetscErrorCode VecMDot_MPICUDA(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 .seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMpiWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateMpi()
 M*/
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecDuplicate_MPICUDA"
+PetscErrorCode VecDuplicate_MPICUDA(Vec win,Vec *v)
+{
+  PetscErrorCode ierr;
+  Vec_MPI        *vw,*w = (Vec_MPI *)win->data;
+  PetscScalar    *array;
+
+  PetscFunctionBegin;
+  ierr = VecCreate(((PetscObject)win)->comm,v);CHKERRQ(ierr);
+
+  /* use the map that exists aleady in win */
+  ierr = PetscLayoutDestroy((*v)->map);CHKERRQ(ierr);
+  (*v)->map = win->map;
+  win->map->refcnt++;
+
+  ierr = VecCreate_MPI_Private(*v,PETSC_FALSE,w->nghost,0);CHKERRQ(ierr);
+  vw   = (Vec_MPI *)(*v)->data;
+  ierr = PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
+
+  /* save local representation of the parallel vector (and scatter) if it exists */
+  if (w->localrep) {
+    ierr = VecGetArrayPrivate(*v,&array);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,win->map->n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
+    ierr = PetscMemcpy(vw->localrep->ops,w->localrep->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate(*v,&array);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(*v,vw->localrep);CHKERRQ(ierr);
+    vw->localupdate = w->localupdate;
+    if (vw->localupdate) {
+      ierr = PetscObjectReference((PetscObject)vw->localupdate);CHKERRQ(ierr);
+    }
+  }    
+
+  /* New vector should inherit stashing property of parent */
+  (*v)->stash.donotstash = win->stash.donotstash;
+  (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
+  
+  ierr = PetscOListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist);CHKERRQ(ierr);
+  ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist);CHKERRQ(ierr);
+  if (win->mapping) {
+    ierr = PetscObjectReference((PetscObject)win->mapping);CHKERRQ(ierr);
+    (*v)->mapping = win->mapping;
+  }
+  if (win->bmapping) {
+    ierr = PetscObjectReference((PetscObject)win->bmapping);CHKERRQ(ierr);
+    (*v)->bmapping = win->bmapping;
+  }
+  (*v)->map->bs    = win->map->bs;
+  (*v)->bstash.bs = win->bstash.bs;
+
+  PetscFunctionReturn(0);
+}
+
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_MPICUDA"
 PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPICUDA(Vec vv)
 {
   PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecCreate_MPI_Private(vv,PETSC_TRUE,0,0);CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(vv,PETSC_FALSE,0,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)vv,VECMPICUDA);CHKERRQ(ierr);
-  vv->valid_GPU_array = PETSC_CUDA_UNALLOCATED;
-  vv->ops->dot           = VecDot_MPICUDA;
-  vv->ops->mdot          = VecMDot_MPICUDA;
-  vv->ops->tdot          = VecTDot_MPICUDA;
-  vv->ops->view          = VecView_MPICUDA;
-  vv->ops->norm          = VecNorm_MPICUDA;
-  vv->ops->scale         = VecScale_SeqCUDA;
-  vv->ops->copy          = VecCopy_SeqCUDA;
-  vv->ops->set           = VecSet_SeqCUDA;
-  vv->ops->swap          = VecSwap_SeqCUDA;
-  vv->ops->axpy          = VecAXPY_SeqCUDA;
-  vv->ops->axpby         = VecAXPBY_SeqCUDA;
-  vv->ops->maxpy         = VecMAXPY_SeqCUDA;
-  vv->ops->aypx          = VecAYPX_SeqCUDA;
-  vv->ops->axpbypcz      = VecAXPBYPCZ_SeqCUDA;
-  vv->ops->pointwisemult = VecPointwiseMult_SeqCUDA;
-  vv->ops->setrandom     = VecSetRandom_SeqCUDA;
-  vv->ops->replacearray  = VecReplaceArray_SeqCUDA;
-  vv->ops->dot_local     = VecDot_SeqCUDA;
-  vv->ops->tdot_local    = VecTDot_SeqCUDA;
-  vv->ops->norm_local    = VecNorm_SeqCUDA;
-  vv->ops->mdot_local    = VecMDot_SeqCUDA;
-  vv->ops->destroy       = VecDestroy_MPICUDA;
+  vv->valid_GPU_array      = PETSC_CUDA_UNALLOCATED;
+  vv->ops->waxpy           = VecWAXPY_SeqCUDA;
+  vv->ops->duplicate       = VecDuplicate_MPICUDA;
+  vv->ops->dot             = VecDot_MPICUDA;
+  vv->ops->mdot            = VecMDot_MPICUDA;
+  vv->ops->tdot            = VecTDot_MPICUDA;
+  vv->ops->view            = VecView_MPICUDA;
+  vv->ops->norm            = VecNorm_MPICUDA;
+  vv->ops->scale           = VecScale_SeqCUDA;
+  vv->ops->copy            = VecCopy_SeqCUDA;
+  vv->ops->set             = VecSet_SeqCUDA;
+  vv->ops->swap            = VecSwap_SeqCUDA;
+  vv->ops->axpy            = VecAXPY_SeqCUDA;
+  vv->ops->axpby           = VecAXPBY_SeqCUDA;
+  vv->ops->maxpy           = VecMAXPY_SeqCUDA;
+  vv->ops->aypx            = VecAYPX_SeqCUDA;
+  vv->ops->axpbypcz        = VecAXPBYPCZ_SeqCUDA;
+  vv->ops->pointwisemult   = VecPointwiseMult_SeqCUDA;
+  vv->ops->setrandom       = VecSetRandom_SeqCUDA;
+  vv->ops->replacearray    = VecReplaceArray_SeqCUDA;
+  vv->ops->dot_local       = VecDot_SeqCUDA;
+  vv->ops->tdot_local      = VecTDot_SeqCUDA;
+  vv->ops->norm_local      = VecNorm_SeqCUDA;
+  vv->ops->mdot_local      = VecMDot_SeqCUDA;
+  vv->ops->destroy         = VecDestroy_MPICUDA;
+  vv->ops->pointwisedivide = VecPointwiseDivide_SeqCUDA;
   /* place array?
      reset array?
      get values?
@@ -165,7 +222,24 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPICUDA(Vec vv)
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "VecCreate_CUDA"
+PetscErrorCode PETSCMAT_DLLEXPORT VecCreate_CUDA(Vec v)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
 
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(((PetscObject)v)->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = VecSetType(v,VECSEQCUDA);CHKERRQ(ierr);
+  } else {
+    ierr = VecSetType(v,VECMPICUDA);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 
 

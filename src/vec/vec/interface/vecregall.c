@@ -10,6 +10,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_FETI(Vec);
 #if defined(PETSC_HAVE_CUDA)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPICUDA(Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_CUDA(Vec);
 #endif
 #if 0
 #if defined(PETSC_HAVE_SIEVE)
@@ -48,6 +49,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterAll(const char path[])
 #if defined PETSC_HAVE_CUDA
   ierr = VecRegisterDynamic(VECSEQCUDA,  path, "VecCreate_SeqCUDA",  VecCreate_SeqCUDA);CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VECMPICUDA,  path, "VecCreate_MPICUDA",  VecCreate_MPICUDA);CHKERRQ(ierr);
+  ierr = VecRegisterDynamic(VECCUDA,     path, "VecCreate_CUDA",     VecCreate_CUDA);CHKERRQ(ierr);
 #endif
 #if 0
 #if defined(PETSC_HAVE_SIEVE)

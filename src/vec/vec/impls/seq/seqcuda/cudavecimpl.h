@@ -8,6 +8,8 @@
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/transform.h>
 
+EXTERN PetscErrorCode VecPointwiseDivide_SeqCUDA(Vec,Vec,Vec);
+EXTERN PetscErrorCode VecWAXPY_SeqCUDA(Vec,PetscScalar,Vec,Vec);
 EXTERN PetscErrorCode VecMDot_SeqCUDA(Vec,PetscInt,const Vec[],PetscScalar *);
 EXTERN PetscErrorCode VecSet_SeqCUDA(Vec,PetscScalar);
 EXTERN PetscErrorCode VecMAXPY_SeqCUDA(Vec,PetscInt,const PetscScalar *,Vec *);
