@@ -222,7 +222,24 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPICUDA(Vec vv)
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "VecCreate_CUDA"
+PetscErrorCode PETSCMAT_DLLEXPORT VecCreate_CUDA(Vec v)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
 
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(((PetscObject)v)->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = VecSetType(v,VECSEQCUDA);CHKERRQ(ierr);
+  } else {
+    ierr = VecSetType(v,VECMPICUDA);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 
 
