@@ -2,6 +2,7 @@ original matrix:
 Matrix Object:
   type=seqaij, rows=25, cols=25
   total: nonzeros=113, allocated nonzeros=125
+  total number of mallocs used during MatSetValues calls =0
     not using I-node routines
 row 0: (0, 4)  (1, -1)  (5, -1) 
 row 1: (0, -1)  (1, 4)  (2, -1)  (6, -1) 
@@ -34,6 +35,7 @@ Matrix Object:
   type=seqaij, rows=25, cols=25
   package used to perform factorization: petsc
   total: nonzeros=221, allocated nonzeros=221
+  total number of mallocs used during MatSetValues calls =0
     not using I-node routines
 row 0: (0, 0.25)  (1, -1)  (2, -1) 
 row 1: (0, -0.25)  (1, 0.266667)  (2, -0.25)  (3, -1)  (4, -1) 
