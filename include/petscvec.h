@@ -98,11 +98,13 @@ E*/
 #define VecType char*
 #define VECSEQ         "seq"
 #define VECMPI         "mpi"
+#define VECSTANDARD    "standard"   /* seq on one process and mpi on several */
 #define VECFETI        "feti"
 #define VECSHARED      "shared"
 #define VECSIEVE       "sieve"
 #define VECSEQCUDA     "seqcuda"
 #define VECMPICUDA     "mpicuda"
+#define VECCUDA        "cuda"       /* seqcuda on one process and mpicuda on several */
 
 /* Logging support */
 #define    VEC_FILE_CLASSID 1211214

@@ -93,6 +93,8 @@ static PetscErrorCode DASetTypeFromOptions_Private(DA da)
 PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
 {
   PetscErrorCode ierr;
+  PetscTruth     flg;
+  char           typeName[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -124,7 +126,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
     if (da->dim > 2) {ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DASetRefinementFactor",da->refine_z,&da->refine_z,PETSC_NULL);CHKERRQ(ierr);}
     /* Handle DA type options; only makes sense to call if dimension has not yet been set  */
     ierr = DASetTypeFromOptions_Private(da);CHKERRQ(ierr);
-    
+
+    if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+    ierr = PetscOptionsList("-da_vec_type","Vector type used for created vectors","DASetVecType",VecList,da->vectype,typeName,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = DASetVecType(da,typeName);CHKERRQ(ierr);
+    }
+   
     /* Handle specific DA options */
     if (da->ops->setfromoptions) {
       ierr = (*da->ops->setfromoptions)(da);CHKERRQ(ierr);
@@ -210,6 +218,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DA *da)
   d->ly           = PETSC_NULL;
   d->lz           = PETSC_NULL;
 
+  ierr = PetscStrallocpy(VECSTANDARD,&d->vectype);CHKERRQ(ierr);
   d->ops->globaltolocalbegin = DAGlobalToLocalBegin;
   d->ops->globaltolocalend   = DAGlobalToLocalEnd;
   d->ops->localtoglobal      = DALocalToGlobal;

@@ -8,6 +8,8 @@
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/transform.h>
 
+EXTERN PetscErrorCode VecPointwiseDivide_SeqCUDA(Vec,Vec,Vec);
+EXTERN PetscErrorCode VecWAXPY_SeqCUDA(Vec,PetscScalar,Vec,Vec);
 EXTERN PetscErrorCode VecMDot_SeqCUDA(Vec,PetscInt,const Vec[],PetscScalar *);
 EXTERN PetscErrorCode VecSet_SeqCUDA(Vec,PetscScalar);
 EXTERN PetscErrorCode VecMAXPY_SeqCUDA(Vec,PetscInt,const PetscScalar *,Vec *);
@@ -30,7 +32,8 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec);
 EXTERN_C_END
 EXTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
 EXTERN PetscErrorCode VecDestroy_SeqCUDA(Vec);
-
+EXTERN PetscErrorCode VecAYPX_SeqCUDA(Vec,PetscScalar,Vec);
+EXTERN PetscErrorCode VecSetRandom_SeqCUDA(Vec,PetscRandom);
 
 #define CHKERRCUDA(err) if (err != CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err)
 
@@ -47,7 +50,6 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDAAllocateCheck(Vec v)
     v->spptr= new CUSPARRAY;
     ((CUSPARRAY *)(v->spptr))->resize((PetscBLASInt)v->map->n);
     s = (Vec_Seq*)v->data;
-    /* if the GPU and CPU are both unallocated, there is no data and we can set the newly allocated GPU data as valid */
     if (s->array == 0){
       v->valid_GPU_array = PETSC_CUDA_GPU;
     } else{

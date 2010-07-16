@@ -179,7 +179,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType t
   PetscErrorCode ierr;
   PetscInt       mmat,nmat,mis,m;
   PetscErrorCode (*r)(Mat,const MatOrderingType,IS*,IS*);
-  PetscTruth     flg = PETSC_FALSE,isseqdense,ismpidense,ismpiaij,ismpibaij,ismpisbaij;
+  PetscTruth     flg = PETSC_FALSE,isseqdense,ismpidense,ismpiaij,ismpibaij,ismpisbaij,ismpiaijcuda;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -193,9 +193,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType t
   ierr = PetscTypeCompare((PetscObject)mat,MATSEQDENSE,&isseqdense);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)mat,MATMPIDENSE,&ismpidense);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)mat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mat,MATMPIAIJCUDA,&ismpiaijcuda);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)mat,MATMPIBAIJ,&ismpibaij);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)mat,MATMPISBAIJ,&ismpisbaij);CHKERRQ(ierr);
-  if (isseqdense || ismpidense || ismpiaij || ismpibaij || ismpisbaij) {
+  if (isseqdense || ismpidense || ismpiaij || ismpibaij || ismpisbaij || ismpiaijcuda) {
     ierr = MatGetLocalSize(mat,&m,PETSC_NULL);CHKERRQ(ierr);
     /*
        Dense matrices only give natural ordering

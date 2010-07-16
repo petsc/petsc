@@ -3091,9 +3091,10 @@ For eg: \trl{-ksp_type preonly} \trl{-pc_type lu} \trl{-pc_factor_mat_solver_pac
  seqaij       & lu           &  MATSOLVERLUSOL           & \trl{lusol}\\
  seqaij       & lu           &  MATSOLVERMATLAB          & \trl{matlab}\\
  aij          & lu           &  MATSOLVERMUMPS           & \trl{mumps}\\
+ aij          & cholesky     &                           &            \\
  sbaij        & cholesky     &                                   & \\
- plapack      & lu           &  MATSOLVERPLAPACK         & \trl{plapack}\\
- plapack      & cholesky     &                                   & \\
+ mpidense     & lu           &  MATSOLVERPLAPACK         & \trl{plapack}\\
+ mpidense     & cholesky     &                                   & \\
  aij          & lu           &  MATSOLVERSPOOLES         & \trl{spooles}\\
  sbaij        & cholesky     &                                   & \\
  seqaij       & lu           &  MATSOLVERSUPERLU         & \trl{superlu} \\
@@ -3115,15 +3116,16 @@ As an alternative to using runtime flags to employ these external
 packages, 
 procedural calls are provided for some packages. For example, following procedural calls
 are equivalent to runtime options
-\trl{-ksp_type preonly} \findex{-pc_type lu} \findex{-pc_factor_mat_solver_package mumps} \findex{-mat_mumps_icntl_7 2}:
-
-KSPSetType(ksp,KSPPREONLY);
-KSPGetPC(ksp,&pc);
-PCSetType(pc,PCLU);
-PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);
-PCFactorGetMatrix(pc,&F);
-icntl=7; ival = 2;
+\trl{-ksp_type preonly} \trl{-pc_type lu} \trl{-pc_factor_mat_solver_package mumps} \trl{-mat_mumps_icntl_7 2}:
+\begin{tabbing}
+KSPSetType(ksp,KSPPREONLY);\\
+KSPGetPC(ksp,\&pc);\\
+PCSetType(pc,PCLU);\\
+PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);\\
+PCFactorGetMatrix(pc,\&F);\\
+icntl=7; ival = 2;\\
 MatSetMumpsIcntl(F,icntl,ival);
+\end{tabbing}
 
 One can also create matrices with the appropriate
 capabilities by calling MatCreate() followed by MatSetType()
@@ -3928,7 +3930,7 @@ with centered finite differences results in
           (u_i)_t = \frac{u_{i+1} - 2 u_{i} + u_{i-1}}{h^2};
 \]
 or with piecewise linear finite elements approximation
-$ u(x,t) \doteq \sum_i \xi_i(t) \phi_i(x)$ yeilds semi-discrete equation
+$ u(x,t) \doteq \sum_i \xi_i(t) \phi_i(x)$ yields semi-discrete equation
 \[
           B {\xi}'(t) = A \xi(t)
 \]
@@ -4053,14 +4055,14 @@ and views it with
 To set up TS for solving an ODE, one must set the following:
 
 \begin{itemize}
-\item Solution:\\
+\item Solution:
 \begin{tabbing}
  TSSetSolution(TS ts, Vec initialsolution);
 \end{tabbing}
 The vector \trl{initialsolution} should contain the ``initial conditions''
 for the ODE. 
 
-\item Function: \\
+\item Function: 
 \subitem $ \bullet $ For linear functions (solved with implicit timestepping),
  the user must call 
 \begin{tabbing}
@@ -4076,7 +4078,7 @@ If the matrices do not depend on time, the user should
 pass in PETSC_NULL.  The variable \trl{ctx} allows 
 users to pass in an application context that is passed to the \trl{frhs()} or \trl{flhs()} function 
 whenever they are called, as the final argument. The user must provide the matrices
-\trl{A}. If \trl{B} is an indentity matrix, the user should pass in PETSC_NULL. 
+\trl{A}. If \trl{B} is an identity matrix, the user should pass in PETSC_NULL. 
 If the right-hand side is provided only as a linear
 function, the user must construct a MATSHELL matrix. Note that this is 
 the same interface as that for SNESSetJacobian(). 
@@ -4903,7 +4905,7 @@ The following Fortran routines differ slightly from their C counterparts; see th
 manual pages and previous discussion in this chapter for details:
 \begin{tabbing}
  PetscInitialize(char *filename,int \trl{ierr)}\\
- PetscError(MPI_COMM,int err,char *message,int \trl{ierr)}\\
+ PetscError(MPI\_COMM,int err,char *message,int \trl{ierr)}\\
  VecGetArray(), MatGetArray()\\
  ISGetIndices(), DAGetGlobalIndices()\\
  VecDuplicateVecs(), VecDestroyVecs()\\

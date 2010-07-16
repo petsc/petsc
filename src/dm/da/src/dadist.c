@@ -39,7 +39,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateGlobalVector(DA da,Vec* g)
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(g,2);
-  ierr = VecCreateMPI(((PetscObject)da)->comm,da->Nlocal,PETSC_DETERMINE,g);
+  ierr = VecCreate(((PetscObject)da)->comm,g);CHKERRQ(ierr);
+  ierr = VecSetSizes(*g,da->Nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMapping(*g,da->ltogmap);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMappingBlock(*g,da->ltogmapb);CHKERRQ(ierr);

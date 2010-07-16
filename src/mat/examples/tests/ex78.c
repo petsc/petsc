@@ -125,6 +125,8 @@ int main(int argc,char **args)
     fclose(ufile);
   }
  
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"matrix.dat",FILE_MODE_WRITE,&view);CHKERRQ(ierr);
+  ierr = MatView(A,view);CHKERRQ(ierr);
   /* Check accuracy of the data */
   if (flg_A & flg_b & flg_u){
     ierr = VecDuplicate(u,&u_tmp);CHKERRQ(ierr); 
@@ -135,17 +137,15 @@ int main(int argc,char **args)
 
     /* Write the matrix, rhs and exact solution in Petsc binary file */
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Write matrix and rhs in binary to 'matrix.dat' ...\n");CHKERRQ(ierr);
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"matrix.dat",FILE_MODE_WRITE,&view);CHKERRQ(ierr);
-    ierr = MatView(A,view);CHKERRQ(ierr);
     ierr = VecView(b,view);CHKERRQ(ierr);
     ierr = VecView(u,view);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(view);CHKERRQ(ierr);
 
     ierr = VecDestroy(b);CHKERRQ(ierr);
     ierr = VecDestroy(u);CHKERRQ(ierr);
     ierr = VecDestroy(u_tmp);CHKERRQ(ierr);
-    ierr = MatDestroy(A);CHKERRQ(ierr);
   }
+  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(view);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

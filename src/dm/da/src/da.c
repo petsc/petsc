@@ -296,6 +296,35 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetInterpolationType(DA da,DAInterpolationTyp
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DASetVecType"
+/*@
+       DASetVecType - Sets the type of vector created with DACreateLocalVector() and DACreateGlobalVector()
+
+   Logically Collective on DA
+
+   Input Parameter:
++  da - initial distributed array
+.  ctype - the vector type, currently either VECSTANDARD or VECCUDA
+
+   Options Database:
+.   -da_vec_type ctype
+
+   Level: intermediate
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DA, DAInterpolationType, VecType
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DASetVecType(DA da,const VecType ctype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  ierr = PetscFree(da->vectype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(ctype,&da->vectype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DAGetNeighbors"
 /*@C
       DAGetNeighbors - Gets an array containing the MPI rank of all the current
@@ -587,6 +616,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
   da2->refine_x = da->refine_x;
   da2->refine_y = da->refine_y;
   da2->refine_z = da->refine_z;
+
+  /* copy vector type information */
+  ierr = PetscFree(da2->vectype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(da->vectype,&da2->vectype);CHKERRQ(ierr);
   *daref = da2;
   PetscFunctionReturn(0);
 }
@@ -686,6 +719,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACoarsen(DA da, MPI_Comm comm,DA *daref)
   da2->refine_x = da->refine_x;
   da2->refine_y = da->refine_y;
   da2->refine_z = da->refine_z;
+
+  /* copy vector type information */
+  ierr = PetscFree(da2->vectype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(da->vectype,&da2->vectype);CHKERRQ(ierr);
+
   *daref = da2;
   PetscFunctionReturn(0);
 }
