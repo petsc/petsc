@@ -4055,14 +4055,14 @@ and views it with
 To set up TS for solving an ODE, one must set the following:
 
 \begin{itemize}
-\item Solution:\\
+\item Solution:
 \begin{tabbing}
  TSSetSolution(TS ts, Vec initialsolution);
 \end{tabbing}
 The vector \trl{initialsolution} should contain the ``initial conditions''
 for the ODE. 
 
-\item Function: \\
+\item Function: 
 \subitem $ \bullet $ For linear functions (solved with implicit timestepping),
  the user must call 
 \begin{tabbing}
@@ -4078,7 +4078,7 @@ If the matrices do not depend on time, the user should
 pass in PETSC_NULL.  The variable \trl{ctx} allows 
 users to pass in an application context that is passed to the \trl{frhs()} or \trl{flhs()} function 
 whenever they are called, as the final argument. The user must provide the matrices
-\trl{A}. If \trl{B} is an indentity matrix, the user should pass in PETSC_NULL. 
+\trl{A}. If \trl{B} is an identity matrix, the user should pass in PETSC_NULL. 
 If the right-hand side is provided only as a linear
 function, the user must construct a MATSHELL matrix. Note that this is 
 the same interface as that for SNESSetJacobian(). 
