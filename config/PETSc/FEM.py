@@ -141,6 +141,38 @@ class QuadratureGenerator(script.Script):
     print 'Perm:',perm
     return perm
 
+  def getReferenceTensor(self, element, quadrature):
+    import FIAT.shapes
+    import numpy
+
+    components = element.function_space().tensor_shape()[0]
+    points = quadrature.get_points()
+    weights = quadrature.get_weights()
+    elemMats = []
+    for i in range(components):
+      basis = element.function_space().select_vector_component(i)
+      dim = FIAT.shapes.dimension(basis.base.shape)
+      elemMat = numpy.zeros((len(basis), len(basis), dim, dim), dtype = numpy.float32)
+      basisTab = numpy.transpose(basis.tabulate(points))
+      basisDerTab = numpy.transpose([basis.deriv_all(d).tabulate(points) for d in range(dim)])
+      perm = self.getBasisFuncOrder(element)
+      if not perm is None:
+        basisTabOld    = numpy.array(basisTab)
+        basisDerTabOld = numpy.array(basisDerTab)
+        for q in range(len(points)):
+          for i,pi in enumerate(perm):
+            basisTab[q][i]    = basisTabOld[q][pi]
+            basisDerTab[q][i] = basisDerTabOld[q][pi]
+      # Integrate for Laplacian
+      for i in range(len(basis)):
+        for j in range(len(basis)):
+          for d in range(dim):
+            for e in range(dim):
+              for q in range(len(points)):
+                elemMat[i][j][d][e] += basisDerTab[q][i][d]*basisDerTab[q][j][e]*weights[q]
+      elemMats.append(elemMat)
+    return elemMats
+
   def getBasisStructs(self, name, element, quadrature, num):
     '''Return C arrays with the basis functions and their derivatives evalauted at the quadrature points
        - FIAT uses a reference element of (-1,-1):(1,-1):(-1,1)'''
