@@ -607,10 +607,32 @@ PetscErrorCode VecCopy_SeqCUDA(Vec xin,Vec yin)
 
   PetscFunctionBegin;
   if (xin != yin) {
-    ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
-    ierr = VecCUDAAllocateCheck(yin);CHKERRQ(ierr);
-    cusp::blas::copy(*(CUSPARRAY *)(xin->spptr),*(CUSPARRAY *)(yin->spptr));
-    yin->valid_GPU_array = PETSC_CUDA_GPU;
+    if (xin->valid_GPU_array == PETSC_CUDA_GPU) {
+      /* copy in GPU */
+      ierr = VecCUDAAllocateCheck(yin);CHKERRQ(ierr);
+      cusp::blas::copy(*(CUSPARRAY *)(xin->spptr),*(CUSPARRAY *)(yin->spptr));
+      yin->valid_GPU_array = PETSC_CUDA_GPU;
+
+    } else if (xin->valid_GPU_array == PETSC_CUDA_CPU) {
+      /* copy in CPU */
+      ierr = VecCopy_Seq(xin,yin);CHKERRQ(ierr);
+    
+    } else if (xin->valid_GPU_array == PETSC_CUDA_BOTH) {
+      /* if xin is valid in both places, see where yin is (because it's probably where we'll want to next use it) */
+      if (yin->valid_GPU_array == PETSC_CUDA_CPU) {
+	/* copy in CPU */
+	ierr = VecCopy_Seq(xin,yin);CHKERRQ(ierr);
+
+      } else if (yin->valid_GPU_array == PETSC_CUDA_GPU) {
+	/* copy in GPU */
+	cusp::blas::copy(*(CUSPARRAY *)(xin->spptr),*(CUSPARRAY *)(yin->spptr));
+      } else {
+	/* xin and yin are both valid in both places (or yin was unallocated before the earlier call to allocatecheck
+	   default to copy in GPU (this is an arbitrary choice) */
+	cusp::blas::copy(*(CUSPARRAY *)(xin->spptr),*(CUSPARRAY *)(yin->spptr));
+	yin->valid_GPU_array = PETSC_CUDA_GPU;
+      }
+    }
   }
   PetscFunctionReturn(0);
 }
