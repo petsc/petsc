@@ -52,7 +52,7 @@ class Configure(config.package.Package):
     if self.installNeeded(mkfile):
       try:
         self.logPrintBox('Compiling CHOLMOD; this may take several minutes')
-        output,err,ret = config.base.Configure.executeShellCommand('cd '+self.packageDir+'/CHOLMOD; CHOLMOD_INSTALL_DIR='+self.installDir+'''/lib; export CHOLMOD_INSTALL_DIR; make; make clean; mv Lib/*.a '''+self.libDir+'; cp Include/*.h '+self.includeDir+'; cd ..; cp UFconfig/*.h '+self.includeDir+'; cd AMD; mv Lib/*.a '+self.libDir+'; cp Include/*.h '+self.includeDir, timeout=2500, log = self.framework.log)
+        output,err,ret = config.base.Configure.executeShellCommand('cd '+self.packageDir+'/CHOLMOD && CHOLMOD_INSTALL_DIR='+self.installDir+'''/lib && export CHOLMOD_INSTALL_DIR && make && make clean && mv Lib/*.a '''+self.libDir+' && cp Include/*.h '+self.includeDir+' && cd .. && cp UFconfig/*.h '+self.includeDir+' && cd AMD && mv Lib/*.a '+self.libDir+' && cp Include/*.h '+self.includeDir, timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on CHOLMOD: '+str(e))
       self.postInstall(output+err, mkfile)
