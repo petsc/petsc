@@ -50,7 +50,6 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDAAllocateCheck(Vec v)
     v->spptr= new CUSPARRAY;
     ((CUSPARRAY *)(v->spptr))->resize((PetscBLASInt)v->map->n);
     s = (Vec_Seq*)v->data;
-    /* if the GPU and CPU are both unallocated, there is no data and we can set the newly allocated GPU data as valid */
     if (s->array == 0){
       v->valid_GPU_array = PETSC_CUDA_GPU;
     } else{
