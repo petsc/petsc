@@ -46,13 +46,13 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('mpe'):
       try:
         self.logPrintBox('Configuring mpe; this may take several minutes')
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=2000, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=2000, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on MPE: '+str(e))
       # Build MPE
       try:
         self.logPrintBox('Compiling mpe; this may take several minutes')
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make clean; make; make install', timeout=2500, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make && make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on MPE: '+str(e))
     return self.installDir

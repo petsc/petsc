@@ -12,11 +12,11 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/qd-2.3.9.tar.gz']
-    self.complex          = 0;
-    self.double           = 0;
+    self.complex          = 0
+    self.double           = 0
     self.includes         = ['qd/dd_real.h']
     self.liblist          = [['libqd.a','libqd_f_main.a','libqdmod.a']]
-    self.requires32bitint = 0;
+    self.requires32bitint = 0
     self.cxx              = 1    # requires 
     self.fc               = 0    # 1 means requires fortran    return
 
@@ -37,12 +37,12 @@ class Configure(config.package.Package):
     if self.installNeeded(self.package):
       self.logPrintBox('Configuring QD; this may take several minutes')
       try:
-        output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)
+        output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=900, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on QD (install manually): '+str(e))
       self.logPrintBox('Compiling QD; this may take several minutes')
       try:
-        output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make; make install; make clean', timeout=2500, log = self.framework.log)
+        output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && make && make install && make clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on QD (install manually): '+str(e))
       self.framework.actions.addArgument('QD', 'Install', 'Installed QD into '+self.installDir)

@@ -16,7 +16,7 @@ class Configure(PETSc.package.NewPackage):
     self.complex          = 1
     self.cxx              = 0
     self.double           = 0      
-    self.requires32bitint = 1;    
+    self.requires32bitint = 1    
     self.include         = [os.path.abspath(os.path.join('include', 'mpack'))]
     return
 
@@ -52,17 +52,17 @@ class Configure(PETSc.package.NewPackage):
     # mpack ./configure doesn't properly propogate the --with-xxx-yy flags to the makefiles so put them in manually
     includes = '-I'+self.qd.includeDir+' -I'+self.gmp.include[0]
     libs = '-L'+self.qd.libDir+' -L'+self.gmp.lib[0][:-8]
-    FLAGS = 'CXXFLAGS="'+includes+'" ; export CXXFLAGS;  CPPFLAGS="'+includes+'" ; export CPPFLAGS  ; CFLAGS="'+includes+'" ; export CFLAGS ; LDFLAGS="'+libs+'"; export LDFLAGS'
+    FLAGS = 'CXXFLAGS="'+includes+'" && export CXXFLAGS &&  CPPFLAGS="'+includes+'" && export CPPFLAGS  && CFLAGS="'+includes+'" && export CFLAGS && LDFLAGS="'+libs+'" && export LDFLAGS'
 
     if self.installNeeded('mpack'):
       try:
         self.logPrintBox('Configuring MPACK; this may take several minutes')
-        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';'+FLAGS+';./configure '+args, timeout=900, log = self.framework.log)
+        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && '+FLAGS+' && ./configure '+args, timeout=900, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on MPACK: '+str(e))
       try:
         self.logPrintBox('Compiling MPACK; this may take several minutes')
-        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';'+FLAGS+'; make ; make install', timeout=2500, log = self.framework.log)
+        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && '+FLAGS+' && make && make install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on MPACK: '+str(e))
       self.postInstall(output1+err1+output2+err2,'mpack')

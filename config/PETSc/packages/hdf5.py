@@ -11,7 +11,7 @@ class Configure(PETSc.package.NewPackage):
     self.needsMath = 1
     self.extraLib  = ['libz.a']
     self.complex   = 1
-    self.requires32bitint = 0;
+    self.requires32bitint = 0
     self.worksonWindows   = 1    
     return
 
@@ -46,12 +46,12 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('hdf5'):
       try:
         self.logPrintBox('Configuring HDF5; this may take several minutes')
-        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)
+        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=900, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on HDF5: '+str(e))
       try:
         self.logPrintBox('Compiling HDF5; this may take several minutes')
-        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; make clean; make; make install', timeout=2500, log = self.framework.log)
+        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make && make install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on HDF5: '+str(e))
       self.postInstall(output1+err1+output2+err2,'hdf5')

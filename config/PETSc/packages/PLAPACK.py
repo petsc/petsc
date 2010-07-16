@@ -57,7 +57,7 @@ class Configure(PETSc.package.NewPackage):
       try:
         self.logPrintBox('Compiling PLAPACK; this may take several minutes')
         output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cp -f '+incDir+'/*.h '+installIncDir, timeout=2500, log = self.framework.log)        
-        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make removeall; make', timeout=2500, log = self.framework.log)
+        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make removeall && make', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on PLAPACK: '+str(e))
       self.postInstall(output1+err1+output2+err2,'Make.include')

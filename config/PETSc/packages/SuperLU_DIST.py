@@ -10,7 +10,7 @@ class Configure(PETSc.package.NewPackage):
     #
     #  SuperLU_dist supports 64 bit integers but uses ParMetis which does not, see the comment in ParMetis.py
     #  in the method configureLibrary()
-    self.requires32bitint = 0;
+    self.requires32bitint = 0
     self.complex          = 1
     return
 
@@ -64,7 +64,7 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling superlu_dist; this may take several minutes')
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';SUPERLU_DIST_INSTALL_DIR='+self.installDir+'/lib;export SUPERLU_DIST_INSTALL_DIR; make clean; make lib LAAUX=""; mv -f *.a '+os.path.join(self.installDir,'lib')+'; cp -f SRC/*.h '+os.path.join(self.installDir,'include')+'/.', timeout=2500, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && SUPERLU_DIST_INSTALL_DIR='+self.installDir+'/lib && export SUPERLU_DIST_INSTALL_DIR && make clean && make lib LAAUX="" && mv -f *.a '+os.path.join(self.installDir,'lib')+' && cp -f SRC/*.h '+os.path.join(self.installDir,'include')+'/.', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU_DIST: '+str(e))
       self.postInstall(output+err,'make.inc')

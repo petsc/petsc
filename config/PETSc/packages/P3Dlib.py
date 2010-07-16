@@ -22,7 +22,7 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded(os.path.join('src','makefile.inc')):
       try:
         self.logPrintBox('Compiling P3DLIB; this may take several minutes')
-        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/src; make libp3d.a', timeout=2500, log = self.framework.log)
+        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/src && make libp3d.a', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on P3DLIB: '+str(e))
       output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('mv -f '+os.path.join(self.packageDir,'src','libp3d.a')+' '+os.path.join(self.installDir,'lib'), timeout=5, log = self.framework.log)

@@ -65,7 +65,7 @@ class Configure(PETSc.package.NewPackage):
       self.framework.outputHeader(parmetisconfigheader,prefix='PARMETIS')
       try:
         self.logPrintBox('Compiling & installing Parmetis; this may take several minutes')
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; make clean; make lib; make minstall; make clean', timeout=2500, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make lib && make minstall && make clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on ParMetis: '+str(e))
       self.postInstall(output+err,'make.inc')
