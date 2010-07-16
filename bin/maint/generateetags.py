@@ -51,7 +51,7 @@ def createTags(etagfile,ctagfile,dirname,files):
   files= []
   gfiles = glob.glob(os.path.join(dirname,'*'))
   for file in gfiles:
-    if file.endswith('.c') or file.endswith('.F') or file.endswith('.cpp') or file.endswith('.F90'):
+    if file.endswith('.c') or file.endswith('.cu') or file.endswith('.F') or file.endswith('.cpp') or file.endswith('.F90'):
       files.append(file)
   if files:
     (status,output) = commands.getstatusoutput('ctags -a -f '+ctagfile+' '+' '.join(files))
@@ -79,7 +79,7 @@ def processDir(tagfiles,dirname,names):
   etagfile = tagfiles[0]
   ctagfile = tagfiles[1]
   newls = []
-  gsfx = ['.py','.c','.F','.F90','.h','.h90','.tex','.cxx','.hh','makefile','.bib']
+  gsfx = ['.py','.c','.cu','.F','.F90','.h','.h90','.tex','.cxx','.hh','makefile','.bib']
   hsfx = ['.html']
   bsfx = ['.py.html','.c.html','.F.html','.h.html','.tex.html','.cxx.html','.hh.html','makefile.html','.gcov.html']
   for l in names:
