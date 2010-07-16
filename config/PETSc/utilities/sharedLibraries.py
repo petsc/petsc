@@ -28,8 +28,8 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-shared', nargs.ArgBool(None, 0, 'Make PETSc libraries shared'))
-    help.addArgument('PETSc', '-with-dynamic', nargs.ArgBool(None, 0, 'Make PETSc libraries dynamic'))
+    help.addArgument('PETSc', '-with-shared', nargs.ArgBool(None, 0, 'Make PETSc libraries shared -- libpetsc.so (Unix/Linux) or libpetsc.dylib (Mac)'))
+    help.addArgument('PETSc', '-with-dynamic', nargs.ArgBool(None, 0, 'Make PETSc libraries dynamic -- uses dlopen() to access libraries, rarely needed'))
     return
 
   def setupDependencies(self, framework):
@@ -43,7 +43,13 @@ class Configure(config.base.Configure):
       - Specify --with-shared
       - Have found a working dynamic linker
     Defines PETSC_USE_SHARED_LIBRARIES if they are used'''
-    self.useShared = (self.argDB['with-dynamic'] or self.argDB['with-shared']) and not self.setCompilers.staticLibraries
+    if self.argDB['with-dynamic'] and not self.argDB['with-shared']:
+      raise RuntimeError('If you use --with-dynamic you also need --with-shared')
+
+    if self.argDB['with-shared'] and not self.argDB['with-pic'] :
+      raise RuntimeError('If you use --with-shared you cannot turn off pic with --with-pic=0')
+    
+    self.useShared = self.argDB['with-shared'] and not self.setCompilers.staticLibraries
     if self.useShared:
       if config.setCompilers.Configure.isSolaris() and config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
         self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase+'gnu')

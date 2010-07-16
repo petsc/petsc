@@ -25,7 +25,7 @@ PetscErrorCode Kernel_A_gets_inverse_A_3(MatScalar *a,PetscReal shift)
 /*     gaussian elimination with partial pivoting */
 
     PetscFunctionBegin;
-    shift = .333*shift*(1 + PetscAbsScalar(a[0]) + PetscAbsScalar(a[4]) + PetscAbsScalar(a[8]));
+    shift = .333*shift*(1.e-12 + PetscAbsScalar(a[0]) + PetscAbsScalar(a[4]) + PetscAbsScalar(a[8]));
     /* Parameter adjustments */
     a       -= 4;
 
