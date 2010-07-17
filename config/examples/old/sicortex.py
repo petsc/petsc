@@ -19,7 +19,7 @@ configure_options = [
   'CXXOPTFLAGS=-O3 -ffast-math',
 
   '--with-batch=1',
-  '--known-mpi-shared=0',
+  '--known-mpi-shared-libraries=0',
 
   '--known-memcmp-ok',
   '--known-sizeof-char=1',

@@ -3,7 +3,7 @@
 # Build PETSc on jazz cluster, with intel compilers
 
 configure_options = [
-  '--with-shared=1',
+  '--with-shared-libraries=1',
   '--with-is-color-value-type=short',
   '--with-mpi-dir=/soft/apps/packages/mpich-gm-1.2.6..13b-intel-8.1-2',
   '--with-blas-lapack-dir=/soft/com/packages/mkl_7.2/mkl72/lib/32',

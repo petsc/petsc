@@ -5,7 +5,7 @@
 
 configure_options = [
   '--with-batch=1',
-  '--known-mpi-shared=0',
+  '--known-mpi-shared-libraries=0',
   '--known-endian=big',
   '--known-memcmp-ok',
   '--known-sizeof-char=1',

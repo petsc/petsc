@@ -7,7 +7,7 @@ configure_options = [
   '--with-clanguage=cxx',
   '--with-debugging=0',
   '--with-log=0',
-  '--with-shared=1'
+  '--with-shared-libraries=1'
   ]
 
 if __name__ == '__main__':

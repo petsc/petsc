@@ -7,7 +7,7 @@ configure_options = [
   '--with-cc=cc',
   '--with-fc=ftn',
   '--with-cxx=0',
-  '--with-shared=0',
+  '--with-shared-libraries=0',
   '--with-debugging=0',
   '-COPTFLAGS=-O3',
   '-FOPTFLAGS=-O3',
@@ -16,7 +16,7 @@ configure_options = [
   '--with-blas-lapack-lib=sci',
   
   '--with-batch=1',
-  '--known-mpi-shared=0',
+  '--known-mpi-shared-libraries=0',
   '--known-sizeof-void-p=8',
   '--known-sizeof-char=1',
   '--known-memcmp-ok',

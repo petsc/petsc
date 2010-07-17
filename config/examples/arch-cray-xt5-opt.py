@@ -12,7 +12,7 @@ configure_options = [
   '--with-cpp=cpp',
   '--with-ld=cc',
   
-  '--with-shared=0',
+  '--with-shared-libraries=0',
   '--with-debugging=0',
   '--COPTFLAGS=-fastsse -O3 -tp barcelona-64',
   '--CXXOPTFLAGS=-fastsse -O3 -tp barcelona-64',

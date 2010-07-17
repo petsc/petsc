@@ -36,7 +36,7 @@
 # Configure script for building PETSc on the Cray XT3/4 ("Red Storm").
 configure_options = [
   '--with-batch=1',
-  '--known-mpi-shared=0',
+  '--known-mpi-shared-libraries=0',
   '--known-memcmp-ok',
   '--known-sizeof-char=1',
   '--known-sizeof-void-p=8',

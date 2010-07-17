@@ -18,7 +18,7 @@ configure_options = [
   '--with-fc=mpif77',
 
   '--download-f-blas-lapack=1',
-  '--with-shared=0',
+  '--with-shared-libraries=0',
   
   '-COPTFLAGS=-O3',
   '-FOPTFLAGS=-O3',
@@ -27,7 +27,7 @@ configure_options = [
   '--with-x=0',
   
   '--with-batch=1',
-  '--known-mpi-shared=0',
+  '--known-mpi-shared-libraries=0',
   '--known-endian=big',
   '--known-memcmp-ok',
   '--known-sizeof-char=1',

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-shared=1',
+  '--with-shared-libraries=1',
   '--download-mpich=1',
   'DATAFILESPATH=/home/balay/datafiles',
   ]

@@ -1436,7 +1436,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectDestroyOptionsHandlers(PetscObj
    Mat, Vec, KSP, SNES, etc.) or any user-provided object. 
 
    The composed function must be wrapped in a EXTERN_C_BEGIN/END for this to
-   work in C++/complex with dynamic link libraries (./configure options --with-shared --with-dynamic)
+   work in C++/complex with dynamic link libraries (./configure options --with-shared-libraries --with-dynamic-loader)
    enabled.
 
    Concepts: objects^composing functions
@@ -1512,7 +1512,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFListGet(PetscFList,char ***,int*);
 
    Level: advanced
 
-   --with-shared --with-dynamic must be used with ./configure to use dynamic libraries
+   --with-shared-libraries --with-dynamic-loader must be used with ./configure to use dynamic libraries
 
 .seealso:  PetscDLLibraryOpen()
 S*/

@@ -10,7 +10,7 @@ configure_options = [
   '--with-x=0',
 
   '--with-is-color-value-type=short',
-  '--with-shared=0',
+  '--with-shared-libraries=0',
   
   '-COPTFLAGS=-O3 -qarch=450d -qtune=450 -qmaxmem=-1',
   '-CXXOPTFLAGS=-O3 -qarch=450d -qtune=450 -qmaxmem=-1',
@@ -21,7 +21,7 @@ configure_options = [
   '--with-fortran-kernels=1',
 
   '--with-batch=1',
-  '--known-mpi-shared=0',
+  '--known-mpi-shared-libraries=0',
   '--known-memcmp-ok',
   '--known-sizeof-char=1',
   '--known-sizeof-void-p=4',

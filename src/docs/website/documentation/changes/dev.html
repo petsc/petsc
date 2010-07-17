@@ -10,7 +10,7 @@
 <table width="100%">
   <tbody>
     <tr>
-      <td width="25%" valign="top">
+      <td valign="top" width="25%">
       <h1><font color="#ff0000" size="7">PETSc</font></h1>
       <ul>
         <li><a href="../../index.html"><strong>Home</strong></a></li>
@@ -25,7 +25,7 @@
       <hr color="#ff5b5b" size="4"> </td>
     </tr>
     <tr>
-      <td width="25%" valign="top">
+      <td valign="top" width="25%">
       <ul>
         <li><a href="../../download/index.html"><strong>Download</strong></a></li>
         <li><a href="../../features/index.html"><strong>Features</strong></a></li>
@@ -81,7 +81,7 @@ Software</strong></a></li>
         <li><a href="../developers/index.html"><strong>Developers Site</strong></a></li>
       </ul>
       </td>
-      <td width="75%" valign="top"><!--##begin-->
+      <td valign="top" width="75%"><!--##begin-->
       <p align="center"><font color="#ff0000" size="5"><a name="CHANGES">CHANGES</a>
 in the PETSc Development Version</font></p>
       <p><u><b>General:</b></u></p>
@@ -110,6 +110,9 @@ compilers to configure. For eg:
           <pre>configure --with-cc='gcc -m64' --with-fc='gfortran -m64'</pre>
         </li>
         <li>Python requirement is changed from 2.2 to 2.3</li>
+        <li>Changed --with-shared to --with-shared-libraries,
+--known-mpi-shared to --known-mpi-shared-libraries and --with-dynamic
+to --with-dynamic-loading</li>
       </ul>
       <p><u><b>IS:</b></u></p>
       <p><u><b>Vec: <br>

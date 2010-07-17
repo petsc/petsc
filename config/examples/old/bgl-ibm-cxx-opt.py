@@ -19,7 +19,7 @@ configure_options = [
   '--with-clanguage=cxx',
 
   '--with-is-color-value-type=short',
-  '--with-shared=0',
+  '--with-shared-libraries=0',
   
   '-COPTFLAGS=-O3 -qbgl -qarch=440d -qtune=440 -qmaxmem=-1',
   '-CXXOPTFLAGS=-O3 -qbgl -qarch=440d -qtune=440 -qmaxmem=-1',

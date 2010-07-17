@@ -1072,7 +1072,7 @@ long to link</font>.</a></p>
       <p>We find this annoying as well. On most machines PETSc
 can use
 shared libraries, so executables should be much smaller, run
-./configure with the additional option --with-shared. Also, if
+./configure with the additional option --with-shared-libraries. Also, if
 you have room, compiling and linking PETSc on your machine's /tmp disk
 or similar local disk, rather than over the network will be much
 faster. </p>
@@ -1686,7 +1686,7 @@ they are installed. This could also happen on clusters - where
 the paths are different on the (run) nodes - than on the
 (compile) front-end.<font color="#ff0000"> </font>Do
 not use dynamic libraries &amp; shared libraries. Run ./configure with
---with-shared=0 --with-dynamic=0</p>
+--with-shared-libraries=0 --with-dynamic-loader=0</p>
       <p style="color: rgb(255, 0, 0);"> </p>
       <p style="color: rgb(255, 0, 0);"> </p>
       <p><span style="color: rgb(255, 0, 0);"></span></p>
@@ -1699,7 +1699,7 @@ install
 PETSc libraries as
 shared libraries</a>?</font></p>
       <p>Yes.&nbsp;Use the ./configure option
---with-shared</p>
+--with-shared-libraries</p>
       <p><a name="why-use-shared"><font color="#ff0000">Why
 should
 I
@@ -1726,7 +1726,7 @@ for this.</p>
 If I want to link to the
 regular .a library files</a>?</font></p>
       <p>You must run ./configure without the option
---with-shared (you can use a different PETSC_ARCH for this build so you
+--with-shared-libraries (you can use a different PETSC_ARCH for this build so you
 can easily switch between the two).</p>
       <p><a name="move-shared-exec"><font color="#ff0000">What
 do
@@ -1745,7 +1745,7 @@ libraries (and difference between shared libraries)</font></a></p>
       <p>PETSc libraries are installed as dynamic libraries
 when
 the
-./configure flag --with-dynamic is used. The difference with
+./configure flag --with-dynamic-loader is used. The difference with
 this - from shared libraries - is the way the libraries are used. From
 the program the library is loaded using dlopen() - and the functions
 are searched using dlsymm(). This separates the resolution of function
