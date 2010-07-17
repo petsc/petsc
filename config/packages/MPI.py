@@ -401,13 +401,13 @@ class Configure(config.package.Package):
       self.framework.log.write('Have to rebuild OPENMPI oldargs = '+oldargs+'\n new args = '+args+'\n')
       try:
         self.logPrintBox('Configuring OPENMPI/MPI; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+';./configure '+args, timeout=1500, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && ./configure '+args, timeout=1500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on OPENMPI/MPI: '+str(e))
       try:
         self.logPrintBox('Compiling OPENMPI/MPI; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+'; make install', timeout=6000, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+'; make clean', timeout=200, log = self.framework.log)        
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && make install', timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && make clean', timeout=200, log = self.framework.log)        
       except RuntimeError, e:
         raise RuntimeError('Error running make on OPENMPI/MPI: '+str(e))
       if not os.path.isdir(os.path.join(installDir,'lib')):
@@ -515,7 +515,7 @@ class Configure(config.package.Package):
       self.framework.logPrint('Have to rebuild MPICH oldargs = '+oldargs+'\n new args = '+args)
       try:
         self.logPrintBox('Running configure on MPICH; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+';./configure '+args, timeout=2000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && ./configure '+args, timeout=2000, log = self.framework.log)
       except RuntimeError, e:
         import sys
         if sys.platform.startswith('cygwin'):
@@ -529,8 +529,8 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running configure on MPICH: '+str(e))
       try:
         self.logPrintBox('Running make on MPICH; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+';make; make install', timeout=6000, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+';make clean', timeout=200, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && make && make install', timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && make clean', timeout=200, log = self.framework.log)
       except RuntimeError, e:
         import sys
         if sys.platform.startswith('cygwin'):

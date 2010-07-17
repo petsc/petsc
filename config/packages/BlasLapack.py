@@ -418,11 +418,11 @@ class Configure(config.package.Package):
       return libdir
     try:
       self.logPrintBox('Compiling '+l.upper()+'BLASLAPACK; this may take several minutes')
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+';make -f tmpmakefile cleanblaslapck cleanlib; make -f tmpmakefile', timeout=2500, log = self.framework.log)
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile', timeout=2500, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error running make on '+self.downloaddirname+': '+str(e))
     try:
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+';mv -f lib'+f2c+'blas.'+self.setCompilers.AR_LIB_SUFFIX+' lib'+f2c+'lapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=30, log = self.framework.log)
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && mv -f lib'+f2c+'blas.'+self.setCompilers.AR_LIB_SUFFIX+' lib'+f2c+'lapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=30, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error moving '+self.downloaddirname+' libraries: '+str(e))
 
@@ -435,7 +435,7 @@ class Configure(config.package.Package):
         debug = 'Release'
         debugdir = 'Release-iphoneos'
       try:
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+os.path.join(blasDir,'BlasLapack')+';xcodebuild -configuration '+debug, timeout=3000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+os.path.join(blasDir,'BlasLapack')+' && xcodebuild -configuration '+debug, timeout=3000, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error making iPhone version of BLAS/LAPACK on '+self.downloaddirname+': '+str(e))
       try:
@@ -444,7 +444,7 @@ class Configure(config.package.Package):
         raise RuntimeError('Error copying iPhone version of BLAS/LAPACK libraries on '+self.downloaddirname+': '+str(e))
       
     try:
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+';cp -f tmpmakefile '+os.path.join(confdir,self.package), timeout=30, log = self.framework.log)
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && cp -f tmpmakefile '+os.path.join(confdir,self.package), timeout=30, log = self.framework.log)
     except RuntimeError, e:
       pass
     return libdir
