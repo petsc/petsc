@@ -61,7 +61,7 @@ class Configure(config.package.Package):
     help.addArgument('MPI', '-download-openmpi=<no,yes,ifneeded,filename>',      nargs.ArgDownload(None, 0, 'Download and install OpenMPI'))
     help.addArgument('MPI', '-with-mpiexec=<prog>',                              nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',                        nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
-    help.addArgument('MPI', '-known-mpi-shared=<bool>',                          nargs.ArgBool(None, None, 'Indicates the MPI libraries are shared (the usual test will be skipped)'))
+    help.addArgument('MPI', '-known-mpi-shared-libraries=<bool>',                          nargs.ArgBool(None, None, 'Indicates the MPI libraries are shared (the usual test will be skipped)'))
     help.addArgument('MPI', '-download-mpich-pm=hydra, gforker or mpd',          nargs.Arg(None, 'hydra', 'Launcher for MPI processes'))
     help.addArgument('MPI', '-download-mpich-device=ch3:nemesis or see mpich2 docs', nargs.Arg(None, 'ch3:sock', 'Communicator for MPI processes'))
     help.addArgument('MPI', '-download-mpich-mpe',                               nargs.ArgBool(None, 0, 'Install MPE with MPICH'))
@@ -133,10 +133,10 @@ class Configure(config.package.Package):
     determines if MPI libraries CANNOT be used by shared libraries'''
     self.executeTest(self.configureMPIEXEC)
     try:
-      self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, defaultArg = 'known-mpi-shared', executor = self.mpiexec)
+      self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, defaultArg = 'known-mpi-shared-libraries', executor = self.mpiexec)
     except RuntimeError, e:
-      if self.framework.argDB['with-shared']:
-        raise RuntimeError('Shared libraries cannot be built using MPI provided.\nEither rebuild with --with-shared=0 or rebuild MPI with shared library support')
+      if self.framework.argDB['with-shared-libraries']:
+        raise RuntimeError('Shared libraries cannot be built using MPI provided.\nEither rebuild with --with-shared-libraries=0 or rebuild MPI with shared library support')
       self.framework.logPrint('MPI libraries cannot be used with shared libraries')
       self.shared = 0
     return
@@ -351,7 +351,7 @@ class Configure(config.package.Package):
       flags = flags.replace('-g','')
     args.append('CC="'+self.getCompiler()+'"')
     args.append('CFLAGS="'+flags+'"')
-    if self.framework.argDB['with-shared']:
+    if self.framework.argDB['with-shared-libraries']:
       if self.setCompilers.staticLibraries:
         raise RuntimeError('Configuring with shared libraries - but the system/compilers do not support this')
       args.append('--enable-shared')
@@ -385,7 +385,7 @@ class Configure(config.package.Package):
       args.append('--disable-mpi-f90')
       args.append('F77=""')
       args.append('FC=""')
-    if not self.framework.argDB['with-shared']:
+    if not self.framework.argDB['with-shared-libraries']:
       args.append('--enable-shared=no')
       args.append('--enable-static=yes')
         
@@ -427,7 +427,7 @@ class Configure(config.package.Package):
       fd.close()
       #need to run ranlib on the libraries using the full path
       try:
-        if not self.framework.argDB['with-shared']:
+        if not self.framework.argDB['with-shared-libraries']:
           output,err,ret  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on OPENMPI/MPI libraries: '+str(e))
@@ -480,7 +480,7 @@ class Configure(config.package.Package):
     else:
       args.append('--disable-f77')
       args.append('--disable-f90')
-    if self.framework.argDB['with-shared'] or self.framework.argDB['download-mpich-shared']:
+    if self.framework.argDB['with-shared-libraries'] or self.framework.argDB['download-mpich-shared']:
       if self.compilers.isGCC or config.setCompilers.Configure.isIntel(compiler):
         if config.setCompilers.Configure.isDarwin():
           args.append('--enable-sharedlibs=gcc-osx')
