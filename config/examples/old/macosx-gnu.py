@@ -7,7 +7,7 @@ configure_options = [
   'FC=gfortran',
   '--with-python',
   '--with-shared-libraries=1',
-  '--with-dynamic-loader=1',
+  '--with-dynamic-loading=1',
   '--download-mpich',
   '-download-mpich-pm=gforker'
   ]

@@ -29,7 +29,7 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-shared-libraries', nargs.ArgBool(None, 0, 'Make PETSc libraries shared -- libpetsc.so (Unix/Linux) or libpetsc.dylib (Mac)'))
-    help.addArgument('PETSc', '-with-dynamic-loader', nargs.ArgBool(None, 0, 'Make PETSc libraries dynamic -- uses dlopen() to access libraries, rarely needed'))
+    help.addArgument('PETSc', '-with-dynamic-loading', nargs.ArgBool(None, 0, 'Make PETSc libraries dynamic -- uses dlopen() to access libraries, rarely needed'))
     return
 
   def setupDependencies(self, framework):
@@ -43,8 +43,8 @@ class Configure(config.base.Configure):
       - Specify --with-shared-libraries
       - Have found a working dynamic linker
     Defines PETSC_USE_SHARED_LIBRARIES if they are used'''
-    if self.argDB['with-dynamic-loader'] and not self.argDB['with-shared-libraries']:
-      raise RuntimeError('If you use --with-dynamic-loader you also need --with-shared-libraries')
+    if self.argDB['with-dynamic-loading'] and not self.argDB['with-shared-libraries']:
+      raise RuntimeError('If you use --with-dynamic-loading you also need --with-shared-libraries')
 
     if self.argDB['with-shared-libraries'] and not self.argDB['with-pic'] :
       raise RuntimeError('If you use --with-shared-libraries you cannot turn off pic with --with-pic=0')
@@ -69,12 +69,12 @@ class Configure(config.base.Configure):
 
   def configureDynamicLibraries(self):
     '''Checks whether dynamic libraries should be used, for which you must
-      - Specify --with-dynamic-loader
+      - Specify --with-dynamic-loading
       - Have found a working dynamic linker (with dlfcn.h and libdl)
     Defines PETSC_USE_DYNAMIC_LIBRARIES if they are used'''
     if self.setCompilers.dynamicLibraries:
       self.addDefine('HAVE_DYNAMIC_LIBRARIES', 1)
-    self.useDynamic = self.argDB['with-dynamic-loader'] and self.useShared and self.setCompilers.dynamicLibraries
+    self.useDynamic = self.argDB['with-dynamic-loading'] and self.useShared and self.setCompilers.dynamicLibraries
     if self.useDynamic:
       self.addDefine('USE_DYNAMIC_LIBRARIES', 1)
     else:

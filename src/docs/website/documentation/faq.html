@@ -1686,7 +1686,7 @@ they are installed. This could also happen on clusters - where
 the paths are different on the (run) nodes - than on the
 (compile) front-end.<font color="#ff0000"> </font>Do
 not use dynamic libraries &amp; shared libraries. Run ./configure with
---with-shared-libraries=0 --with-dynamic-loader=0</p>
+--with-shared-libraries=0 --with-dynamic-loading=0</p>
       <p style="color: rgb(255, 0, 0);"> </p>
       <p style="color: rgb(255, 0, 0);"> </p>
       <p><span style="color: rgb(255, 0, 0);"></span></p>
@@ -1745,7 +1745,7 @@ libraries (and difference between shared libraries)</font></a></p>
       <p>PETSc libraries are installed as dynamic libraries
 when
 the
-./configure flag --with-dynamic-loader is used. The difference with
+./configure flag --with-dynamic-loading is used. The difference with
 this - from shared libraries - is the way the libraries are used. From
 the program the library is loaded using dlopen() - and the functions
 are searched using dlsymm(). This separates the resolution of function
