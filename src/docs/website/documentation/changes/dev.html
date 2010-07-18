@@ -104,7 +104,7 @@ XXXSetFromOptions() is called.<br>
       </b></u> <u><b>config/configure.py:<br>
       </b></u> <u></u>
       <ul>
-        <li> -with-64-bit-pointers option removed. It doesn't work
+        <li>--with-64-bit-pointers option removed. It doesn't work
 properly anway. The user should specify the correct 32bit or 64bit
 compilers to configure. For eg:
           <pre>configure --with-cc='gcc -m64' --with-fc='gfortran -m64'</pre>
@@ -113,6 +113,7 @@ compilers to configure. For eg:
         <li>Changed --with-shared to --with-shared-libraries,
 --known-mpi-shared to --known-mpi-shared-libraries and --with-dynamic
 to --with-dynamic-loading</li>
+        <li>'ifneeded' support removed. '--download-package=ifneeded' should now be '--download-package=1'</li>
       </ul>
       <p><u><b>IS:</b></u></p>
       <p><u><b>Vec: <br>
