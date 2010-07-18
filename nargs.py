@@ -480,8 +480,6 @@ class ArgDownload(Arg):
       return 'no'
     elif value == 1:
       return 'yes'
-    elif value == 2:
-      return 'ifneeded'
     return str(value)
 
   def __str__(self):
@@ -504,7 +502,6 @@ class ArgDownload(Arg):
       elif value == 'yes':      value = 1
       elif value == 'false':    value = 0
       elif value == 'true':     value = 1
-      elif value == 'ifneeded': value = 2
       elif not isinstance(value, int):
         value = str(value)
     except:
