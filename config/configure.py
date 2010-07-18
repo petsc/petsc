@@ -172,9 +172,18 @@ def petsc_configure(configure_options):
   print '             Configuring PETSc to compile on your system                       '
   print '==============================================================================='  
 
-  # Command line arguments take precedence (but don't destroy argv[0])
-  sys.argv = sys.argv[:1] + configure_options + sys.argv[1:]
-  check_for_option_mistakes(sys.argv)
+  try:
+    # Command line arguments take precedence (but don't destroy argv[0])
+    sys.argv = sys.argv[:1] + configure_options + sys.argv[1:]
+    check_for_option_mistakes(sys.argv)
+  except (TypeError, ValueError), e:
+    emsg = str(e)
+    if not emsg.endswith('\n'): emsg = emsg+'\n'
+    msg ='*******************************************************************************\n'\
+    +'                ERROR in COMMAND LINE ARGUMENT to ./configure \n' \
+    +'-------------------------------------------------------------------------------\n'  \
+    +emsg+'*******************************************************************************\n'
+    sys.exit(msg)
   # check PETSC_ARCH
   check_petsc_arch(sys.argv)
   check_broken_configure_log_links()
