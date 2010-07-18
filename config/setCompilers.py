@@ -790,7 +790,7 @@ class Configure(config.base.Configure):
     '''Determine the PIC option for each compiler
        - There needs to be a test that checks that the functionality is actually working'''
     self.usePIC=0
-    if not self.framework.argDB['with-pic'] and not self.framework.argDB['with-shared-libraries']:
+    if not self.framework.argDB['with-pic'] and not self.framework.argDB['with-shared-libraries'] and not self.framework.argDB['with-dynamic-loading']:
       self.framework.logPrint("Skip checking PIC options on user request")
       return
     languages = ['C']
@@ -983,7 +983,7 @@ class Configure(config.base.Configure):
     return self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
 
   def generateSharedLinkerGuesses(self):
-    if not self.framework.argDB['with-pic'] and not self.framework.argDB['with-shared-libraries']:
+    if not self.framework.argDB['with-pic'] and not self.framework.argDB['with-shared-libraries'] and not self.framework.argDB['with-dynamic-loading']:
       self.setStaticLinker()
       self.staticLinker = self.AR
       self.staticLibraries = 1
