@@ -93,9 +93,6 @@ class Configure(PETSc.package.NewPackage):
     '''Determine whether the Sowing exist or not'''
 
     # If download option is specified always build sowing
-    if self.framework.argDB['download-sowing'] == 'ifneeded':
-      self.framework.argDB['download-sowing'] = 0
-
     if self.framework.argDB['download-sowing']:
       PETSc.package.NewPackage.configure(self)
       if self.petscdir.isClone:
