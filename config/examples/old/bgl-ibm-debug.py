@@ -19,7 +19,7 @@ configure_options = [
 
 
   '--with-is-color-value-type=short',
-  '--with-shared=0',
+  '--with-shared-libraries=0',
   
   #'-COPTFLAGS=-O3 -qbgl -qarch=440 -qtune=440',
   #'-CXXOPTFLAGS=-O3 -qbgl -qarch=440 -qtune=440',

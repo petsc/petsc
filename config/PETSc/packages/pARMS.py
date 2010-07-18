@@ -82,7 +82,7 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('makefile.in'):
       try:
         self.logPrintBox('Compiling pARMS; this may take several minutes')
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';PARMS_INSTALL_DIR='+self.installDir+';export PARMS_INSTALL_DIR; mkdir '+os.path.join(self.installDir,self.libdir)+'; make clean; make; cp -f include/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && PARMS_INSTALL_DIR='+self.installDir+' && export PARMS_INSTALL_DIR && mkdir '+os.path.join(self.installDir,self.libdir)+' && make clean && make && cp -f include/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on pARMS: '+str(e))
       self.postInstall(output+err,'makefile.in')

@@ -8,7 +8,7 @@ class Configure(PETSc.package.NewPackage):
     self.includes         = []
     self.liblist          = [['libscalapack.a']]
     self.functions        = ['pssytrd']
-    self.requires32bitint = 0;
+    self.requires32bitint = 0
     self.functionsFortran = 1
     self.complex          = 1
     self.useddirectly     = 0 # PETSc does not use ScaLAPACK, it is only used by MUMPS
@@ -74,12 +74,12 @@ class Configure(PETSc.package.NewPackage):
 
     if self.installNeeded('SLmake.inc'):
       try:
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make cleanlib', timeout=2500, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make cleanlib', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         pass
       try:
         self.logPrintBox('Compiling Scalapack; this may take several minutes')
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make', timeout=2500, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SCALAPACK: '+str(e))
       self.postInstall(output,'SLmake.inc')

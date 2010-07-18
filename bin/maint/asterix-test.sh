@@ -61,7 +61,7 @@ make PETSC_ARCH=asterix-c89 all test alltests tests_DATAFILESPATH DATAFILESPATH=
 # basic sun tests
 ./config/asterix-sun.py
 make PETSC_ARCH=asterix-sun all test
-./config/asterix-sun.py --with-shared=1 --with-dynamic=1 -PETSC_ARCH=asterix-sun-dynamic
+./config/asterix-sun.py --with-shared-libraries=1 --with-dynamic-loading=1 -PETSC_ARCH=asterix-sun-dynamic
 make PETSC_ARCH=asterix-sun-dynamic all alltests tests_DATAFILESPATH DATAFILESPATH=/home/balay/datafiles
 ./config/asterix-sun.py --with-clanguage=cxx -PETSC_ARCH=asterix-sun-cxx  --with-debugging=0 --with-pic=0 \
 --download-f-blaslapack=1 --download-spooles=1 --download-superlu=1 \
@@ -70,7 +70,7 @@ make PETSC_ARCH=asterix-sun-dynamic all alltests tests_DATAFILESPATH DATAFILESPA
 make PETSC_ARCH=asterix-sun-cxx all
 make PETSC_ARCH=asterix-sun-cxx CLINKER=sun-cc shared
 make PETSC_ARCH=asterix-sun-cxx test
-./config/asterix-sun.py --with-shared=1 --with-dynamic=1 --with-scalar-type=complex --with-clanguage=cxx -PETSC_ARCH=asterix-sun-complex-dynamic
+./config/asterix-sun.py --with-shared-libraries=1 --with-dynamic-loading=1 --with-scalar-type=complex --with-clanguage=cxx -PETSC_ARCH=asterix-sun-complex-dynamic
 make PETSC_ARCH=asterix-sun-complex-dynamic all
 make PETSC_ARCH=asterix-sun-complex-dynamic CLINKER=sun-cc shared
 make PETSC_ARCH=asterix-sun-complex-dynamic test

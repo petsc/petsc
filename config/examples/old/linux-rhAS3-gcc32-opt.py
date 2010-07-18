@@ -3,7 +3,7 @@
 # Build PETSc on jazz cluster [with gnu compilers]
 
 configure_options = [
-  '--with-shared=1',
+  '--with-shared-libraries=1',
   '--with-mpi-dir=/soft/apps/packages/mpich-gm-1.2.6..13b-gcc-3.2.3-1',
 
   '-COPTFLAGS=-O2 -march=pentium4 -mcpu=pentium4',

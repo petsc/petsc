@@ -5,10 +5,10 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download          = ['http://ftp.mcs.anl.gov/pub/sowing/sowing-1.1.16.tar.gz']
     self.complex           = 1
-    self.double            = 0;
-    self.requires32bitint  = 0;
-    self.worksonWindows    = 1;
-    self.downloadonWindows = 1;
+    self.double            = 0
+    self.requires32bitint  = 0
+    self.worksonWindows    = 1
+    self.downloadonWindows = 1
     return
 
   def setupHelp(self, help):
@@ -40,11 +40,11 @@ class Configure(PETSc.package.NewPackage):
     fd.close()
     if self.installNeeded(self.package):
       try:
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=900, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on Sowing (install manually): '+str(e))
       try:
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make; make install; make clean', timeout=2500, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make &&  make install && make clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on Sowing (install manually): '+str(e))
       self.framework.actions.addArgument('Sowing', 'Install', 'Installed Sowing into '+self.installDir)
@@ -93,9 +93,6 @@ class Configure(PETSc.package.NewPackage):
     '''Determine whether the Sowing exist or not'''
 
     # If download option is specified always build sowing
-    if self.framework.argDB['download-sowing'] == 'ifneeded':
-      self.framework.argDB['download-sowing'] = 0
-
     if self.framework.argDB['download-sowing']:
       PETSc.package.NewPackage.configure(self)
       if self.petscdir.isClone:

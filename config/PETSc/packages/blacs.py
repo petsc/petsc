@@ -8,7 +8,7 @@ class Configure(PETSc.package.NewPackage):
     self.includes  = []
     self.fc        = 1
     self.functions = ['blacs_pinfo']
-    self.requires32bitint = 0;
+    self.requires32bitint = 0
     self.functionsFortran = 1
     self.complex   = 1
     self.useddirectly     = 0 # PETSc does not use BLACS, it is only used by ScaLAPACK which is used by MUMPS
@@ -70,7 +70,7 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('Bmake.Inc'):
       try:
         self.logPrintBox('Compiling Blacs; this may take several minutes')
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'SRC','MPI')+';make clean; make', timeout=2500, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'SRC','MPI')+' && make clean && make', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on BLACS: '+str(e))
       self.postInstall(output+err,'Bmake.Inc')

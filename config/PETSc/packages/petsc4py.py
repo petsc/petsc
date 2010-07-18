@@ -36,7 +36,7 @@ class Configure(PETSc.package.NewPackage):
 
   def configureLibrary(self):
     if not self.sharedLibraries.useShared:
-        raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared')
+        raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
     self.checkDownload(1)
     if self.setCompilers.isDarwin():
       # The name of the Python library on Apple is Python which does not end in the expected .dylib

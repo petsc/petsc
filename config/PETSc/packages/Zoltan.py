@@ -70,7 +70,7 @@ GL_LIBS    = -lGL -lGLU
       try:
         self.logPrintBox('Compiling zoltan; this may take several minutes')
         output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('rm -f '+self.installDir+'lib/libzoltan*', timeout=2500, log = self.framework.log)
-        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; make clean; make '+args+' zoltan', timeout=2500, log = self.framework.log)
+        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make '+args+' zoltan', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on ZOLTAN: '+str(e))
 

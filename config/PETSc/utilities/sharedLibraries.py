@@ -28,8 +28,8 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-shared', nargs.ArgBool(None, 0, 'Make PETSc libraries shared -- libpetsc.so (Unix/Linux) or libpetsc.dylib (Mac)'))
-    help.addArgument('PETSc', '-with-dynamic', nargs.ArgBool(None, 0, 'Make PETSc libraries dynamic -- uses dlopen() to access libraries, rarely needed'))
+    help.addArgument('PETSc', '-with-shared-libraries', nargs.ArgBool(None, 0, 'Make PETSc libraries shared -- libpetsc.so (Unix/Linux) or libpetsc.dylib (Mac)'))
+    help.addArgument('PETSc', '-with-dynamic-loading', nargs.ArgBool(None, 0, 'Make PETSc libraries dynamic -- uses dlopen() to access libraries, rarely needed'))
     return
 
   def setupDependencies(self, framework):
@@ -38,18 +38,30 @@ class Configure(config.base.Configure):
     self.setCompilers = framework.require('config.setCompilers', self)
     return
 
+  def checkSharedDynamicPicOptions(self):
+    # if user specifies inconsistant 'with-dynamic-loading with-shared-libraries with-pic' options - flag error.
+    if self.framework.argDB['with-dynamic-loading'] and not self.framework.argDB['with-shared-libraries'] and 'with-shared-libraries' in self.framework.clArgDB:
+      raise RuntimeError('If you use --with-dynamic-loading you cannot disable --with-shared-libraries')
+    if self.framework.argDB['with-dynamic-loading'] and not self.framework.argDB['with-pic'] and 'with-pic' in self.framework.clArgDB:
+      raise RuntimeError('If you use --with-dynamic-loading you cannot disable --with-pic')
+    if self.framework.argDB['with-shared-libraries'] and not self.framework.argDB['with-pic'] and 'with-pic' in self.framework.clArgDB:
+      raise RuntimeError('If you use --with-shared-libraries you cannot disable --with-pic')
+
+    # default with-dynamic-loading=1 => with-shared-libraries=1 --with-pic=1
+    # default with-shared-libraries=1 => --with-pic=1
+    # Note: there is code in setCompilers.py that uses this as default.
+    if self.framework.argDB['with-dynamic-loading'] and not self.framework.argDB['with-shared-libraries']: self.framework.argDB['with-shared-libraries'] = 1
+    if self.framework.argDB['with-shared-libraries'] and not self.framework.argDB['with-pic']: self.framework.argDB['with-pic'] = 1
+    return
+
   def configureSharedLibraries(self):
     '''Checks whether dynamic libraries should be used, for which you must
-      - Specify --with-shared
+      - Specify --with-shared-libraries
       - Have found a working dynamic linker
     Defines PETSC_USE_SHARED_LIBRARIES if they are used'''
-    if self.argDB['with-dynamic'] and not self.argDB['with-shared']:
-      raise RuntimeError('If you use --with-dynamic you also need --with-shared')
 
-    if self.argDB['with-shared'] and not self.argDB['with-pic'] :
-      raise RuntimeError('If you use --with-shared you cannot turn off pic with --with-pic=0')
+    self.useShared = self.framework.argDB['with-shared-libraries'] and not self.setCompilers.staticLibraries
     
-    self.useShared = self.argDB['with-shared'] and not self.setCompilers.staticLibraries
     if self.useShared:
       if config.setCompilers.Configure.isSolaris() and config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
         self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase+'gnu')
@@ -69,12 +81,12 @@ class Configure(config.base.Configure):
 
   def configureDynamicLibraries(self):
     '''Checks whether dynamic libraries should be used, for which you must
-      - Specify --with-dynamic
+      - Specify --with-dynamic-loading
       - Have found a working dynamic linker (with dlfcn.h and libdl)
     Defines PETSC_USE_DYNAMIC_LIBRARIES if they are used'''
     if self.setCompilers.dynamicLibraries:
       self.addDefine('HAVE_DYNAMIC_LIBRARIES', 1)
-    self.useDynamic = self.argDB['with-dynamic'] and self.useShared and self.setCompilers.dynamicLibraries
+    self.useDynamic = self.framework.argDB['with-dynamic-loading'] and self.useShared and self.setCompilers.dynamicLibraries
     if self.useDynamic:
       self.addDefine('USE_DYNAMIC_LIBRARIES', 1)
     else:
@@ -82,6 +94,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
+    self.executeTest(self.checkSharedDynamicPicOptions)
     self.executeTest(self.configureSharedLibraries)
     self.executeTest(self.configureDynamicLibraries)
     return

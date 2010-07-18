@@ -1380,8 +1380,8 @@ can also install additional packages that are used by the TOPS packages."""
           os.unlink(os.path.join(reply, 'petsc.tar'))
 
 
-        args.append('--with-shared=1')
-        args.append('--with-dynamic=1')
+        args.append('--with-shared-libraries=1')
+        args.append('--with-dynamic-loading=1')
         args.append('--with-external-packages-dir='+reply)
         args = multenterbox("Configure options you have selected.", title, None, args)
         if not args: sys.exit()
