@@ -21,9 +21,9 @@ class Configure(config.base.Configure):
     else:
       txt += '  shared libraries: disabled\n'
     if self.useDynamic:
-      txt += '  dynamic libraries: enabled\n'
+      txt += '  dynamic loading: enabled\n'
     else:
-      txt += '  dynamic libraries: disabled\n'
+      txt += '  dynamic loading: disabled\n'
     return txt
 
   def setupHelp(self, help):
@@ -55,9 +55,9 @@ class Configure(config.base.Configure):
     return
 
   def configureSharedLibraries(self):
-    '''Checks whether dynamic libraries should be used, for which you must
+    '''Checks whether shared libraries should be used, for which you must
       - Specify --with-shared-libraries
-      - Have found a working dynamic linker
+      - Have found a working shared linker
     Defines PETSC_USE_SHARED_LIBRARIES if they are used'''
 
     self.useShared = self.framework.argDB['with-shared-libraries'] and not self.setCompilers.staticLibraries
@@ -80,7 +80,7 @@ class Configure(config.base.Configure):
     return
 
   def configureDynamicLibraries(self):
-    '''Checks whether dynamic libraries should be used, for which you must
+    '''Checks whether dynamic loading should be used, for which you must
       - Specify --with-dynamic-loading
       - Have found a working dynamic linker (with dlfcn.h and libdl)
     Defines PETSC_USE_DYNAMIC_LIBRARIES if they are used'''
@@ -90,7 +90,7 @@ class Configure(config.base.Configure):
     if self.useDynamic:
       self.addDefine('USE_DYNAMIC_LIBRARIES', 1)
     else:
-      self.logPrint('Dynamic libraries - disabled')
+      self.logPrint('Dynamic loading - disabled')
     return
 
   def configure(self):
