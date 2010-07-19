@@ -494,7 +494,6 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
 	options.ILU_MILU = SMILU_2;
     */    
     ilu_set_default_options(&lu->options);
-    ierr = MatDuplicate_SeqAIJ(A,MAT_COPY_VALUES,&lu->A_dup);CHKERRQ(ierr); /* required for options.Equil = YES; */
   }
   lu->options.PrintStat = NO;
   
@@ -503,10 +502,10 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
   lu->lwork = 0;   /* allocate space internally by system malloc */
 
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"SuperLU Options","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-mat_superlu_equil","Equil","None",(PetscTruth)lu->options.Equil,&flg,0);CHKERRQ(ierr);
-    if (flg && !lu->A_dup) { /* superlu overwrites input matrix and rhs when Equil is used, thus create A_dup to keep user's A unchanged */
-      lu->options.Equil = YES;
-      ierr = MatDuplicate_SeqAIJ(A,MAT_COPY_VALUES,&lu->A_dup);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_superlu_equil","Equil","None",(PetscTruth)lu->options.Equil,(PetscTruth*)&lu->options.Equil,0);CHKERRQ(ierr);
+    if (lu->options.Equil == YES) {
+       /* superlu overwrites input matrix and rhs when Equil is used, thus create A_dup to keep user's A unchanged */
+      ierr = MatDuplicate_SeqAIJ(A,MAT_COPY_VALUES,&lu->A_dup);CHKERRQ(ierr); 
     }
     ierr = PetscOptionsEList("-mat_superlu_colperm","ColPerm","None",colperm,4,colperm[3],&indx,&flg);CHKERRQ(ierr);
     if (flg) {lu->options.ColPerm = (colperm_t)indx;}
