@@ -1180,10 +1180,10 @@ class Configure(config.base.Configure):
     self.logPrint('Unable to find working dynamic linker')
 
   def checkDynamicLinker(self):
-    '''Check that the linker can produce dynamic libraries'''
+    '''Check that the linker can dynamicaly load shared libraries'''
     self.dynamicLibraries = 0
     if not self.headers.check('dlfcn.h'):
-      self.logPrint('Dynamic libraries disabled since dlfcn.h was missing')
+      self.logPrint('Dynamic loading disabled since dlfcn.h was missing')
       return
     if not self.libraries.add('dl', ['dlopen', 'dlsym', 'dlclose']):
       if not self.libraries.check('', ['dlopen', 'dlsym', 'dlclose']):
