@@ -458,16 +458,16 @@ PetscErrorCode VecDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
   {
     ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
     ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
-    /*
+    
     *z = cusp::blas::dot(*(CUSPARRAY *)(xin->spptr),*(CUSPARRAY *)(yin->spptr));
-    */
+    /*
     PetscBLASInt one = 1;
 #if defined(PETSC_USE_SCALAR_SINGLE)
     cublasSdot(PetscBLASIntCast(xin->map->n),VecCUDACastToRawPtr(*(CUSPARRAY *)(xin->spptr)),one,VecCUDACastToRawPtr(*(CUSPARRAY *)(yin->spptr)),one);
 #else
     cublasDdot(PetscBLASIntCast(xin->map->n),VecCUDACastToRawPtr(*(CUSPARRAY *)(xin->spptr)),one,VecCUDACastToRawPtr(*(CUSPARRAY *)(yin->spptr)),one);
 #endif
-    ierr = cublasGetError();CHKERRCUDA(ierr);
+ierr = cublasGetError();CHKERRCUDA(ierr);*/
 
   }
 #endif
