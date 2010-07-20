@@ -121,7 +121,7 @@ PetscErrorCode VecAYPX_SeqCUDA(Vec yin, PetscScalar alpha, Vec xin)
     cusp::blas::aypx(*(CUSPARRAY *)(xin->spptr),*(CUSPARRAY *)(yin->spptr),alpha);
     yin->valid_GPU_array = PETSC_CUDA_GPU;
     ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
-    }
+   }
   PetscFunctionReturn(0);
 }
 
@@ -431,6 +431,7 @@ PetscErrorCode VecMAXPY_SeqCUDA(Vec xin, PetscInt nv,const PetscScalar *alpha,Ve
   PetscFunctionReturn(0);
 } 
 
+
 #undef __FUNCT__
 #define __FUNCT__ "VecDot_SeqCUDA"
 PetscErrorCode VecDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
@@ -439,14 +440,12 @@ PetscErrorCode VecDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
   PetscScalar    *ya,*xa;
 #endif
   PetscErrorCode ierr;
-
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
   /* cannot use BLAS dot for complex because compiler/linker is 
      not happy about returning a double complex */
   {
     ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
-
     PetscInt    i;
     PetscScalar sum = 0.0;
     for (i=0; i<xin->map->n; i++) {
@@ -459,7 +458,17 @@ PetscErrorCode VecDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
   {
     ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
     ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
+    /*
     *z = cusp::blas::dot(*(CUSPARRAY *)(xin->spptr),*(CUSPARRAY *)(yin->spptr));
+    */
+    PetscBLASInt one = 1;
+#if defined(PETSC_USE_SCALAR_SINGLE)
+    cublasSdot(PetscBLASIntCast(xin->map->n),VecCUDACastToRawPtr(*(CUSPARRAY *)(xin->spptr)),one,VecCUDACastToRawPtr(*(CUSPARRAY *)(yin->spptr)),one);
+#else
+    cublasDdot(PetscBLASIntCast(xin->map->n),VecCUDACastToRawPtr(*(CUSPARRAY *)(xin->spptr)),one,VecCUDACastToRawPtr(*(CUSPARRAY *)(yin->spptr)),one);
+#endif
+    ierr = cublasGetError();CHKERRCUDA(ierr);
+
   }
 #endif
   if (xin->map->n >0) {
