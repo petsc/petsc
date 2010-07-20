@@ -132,3 +132,38 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJCUDA(MPI_Comm comm,PetscInt m,P
   PetscFunctionReturn(0);
 }
 
+/*MC
+   MATAIJCUDA - MATAIJCUDA = "aijcuda" - A matrix type to be used for sparse matrices.
+
+   This matrix type is identical to MATSEQAIJCUDA when constructed with a single process communicator,
+   and MATMPIAIJCUDA otherwise.  As a result, for single process communicators, 
+  MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation is supported 
+  for communicators controlling multiple processes.  It is recommended that you call both of
+  the above preallocation routines for simplicity.
+
+   Options Database Keys:
+. -mat_type aij - sets the matrix type to "aij" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MatCreateMPIAIJ,MATSEQAIJ,MATMPIAIJ, MATMPIAIJCUDA, MATSEQAIJCUDA
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_AIJCUDA"
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJCUDA(Mat A) 
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatSetType(A,MATSEQAIJCUDA);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(A,MATMPIAIJCUDA);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
