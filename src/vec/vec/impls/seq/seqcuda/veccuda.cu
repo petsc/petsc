@@ -645,9 +645,10 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
 				       cudamult4<thrust::tuple<PetscScalar,PetscScalar,PetscScalar,PetscScalar,PetscScalar>, thrust::tuple<PetscScalar,PetscScalar,PetscScalar,PetscScalar> >(),
 				       thrust::make_tuple(zero,zero,zero,zero), /*init */
 				       cudaadd4<thrust::tuple<PetscScalar,PetscScalar,PetscScalar,PetscScalar> >()); /* binary function */
-    z[0] = thrust::get<0>(result3);
-    z[1] = thrust::get<1>(result3);
-    z[2] = thrust::get<2>(result3);
+    z[0] = thrust::get<0>(result4);
+    z[1] = thrust::get<1>(result4);
+    z[2] = thrust::get<2>(result4);
+    z[3] = thrust::get<3>(result4);
 
     z    += 4;
     yin  += 4;
