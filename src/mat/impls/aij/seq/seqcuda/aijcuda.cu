@@ -10,6 +10,7 @@
 PETSC_CUDA_EXTERN_C_BEGIN
 #include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
 #include "petscbt.h"
+#include "../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h"
 PETSC_CUDA_EXTERN_C_END
 
 #include <cusp/csr_matrix.h>
