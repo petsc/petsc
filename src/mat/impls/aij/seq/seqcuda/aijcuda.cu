@@ -65,8 +65,8 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
     ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
     ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   } else { /* do not use compressed row format */
-  ierr = VecCUDACopyToGPU_Public(xx);CHKERRQ(ierr);
-  ierr = VecCUDAAllocateCheck_Public(yy);CHKERRQ(ierr);
+  ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
+  ierr = VecCUDAAllocateCheck(yy);CHKERRQ(ierr);
   cusp::multiply(*(CUSPMATRIX *)(A->spptr),*(CUSPARRAY *)(xx->spptr),*(CUSPARRAY *)(yy->spptr));
   yy->valid_GPU_array = PETSC_CUDA_GPU;
   }
