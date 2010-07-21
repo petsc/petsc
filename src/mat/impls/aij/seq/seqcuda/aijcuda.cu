@@ -29,7 +29,7 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   PetscScalar       *y;
-  const PetscScalar *x;
+  PetscScalar *x;
   const MatScalar   *aa;
   PetscErrorCode    ierr;
   PetscInt          m=A->rmap->n;
