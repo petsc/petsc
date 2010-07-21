@@ -41,7 +41,7 @@ class Patch (object):
     self.help.addArgument('Actions', 'updateWeb',       nargs.ArgBool(None, 1, 'Update the patches web page'))
     patchUrl = os.path.join('/mcs', 'ftp', 'pub', 'petsc', 'patches')
     if not os.path.isdir(patchUrl):
-      patchUrl = urlparse.urlunparse(('ssh', 'petsc@harley.mcs.anl.gov', patchUrl, '', '', ''))
+      patchUrl = urlparse.urlunparse(('ssh', 'petsc@login.mcs.anl.gov', patchUrl, '', '', ''))
     else:
       patchUrl = urlparse.urlunparse(('file', '', patchUrl, '', '', ''))
     self.help.addArgument('Variables', 'patchUrl=<dir>', nargs.Arg(None, patchUrl, 'The directory containing both the patch and master patch files'))
