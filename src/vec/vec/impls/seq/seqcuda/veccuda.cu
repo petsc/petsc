@@ -472,7 +472,7 @@ PetscErrorCode VecDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-
+/*The following few template functions are for VecMDot_SeqCUDA*/
 
 template <typename T1,typename T2>
 struct cudamult2 : thrust::unary_function<T1,T2>
@@ -532,28 +532,6 @@ struct cudaadd4 : thrust::binary_function<T,T,T>
 	  return thrust::make_tuple(thrust::get<0>(x)+thrust::get<0>(y),thrust::get<1>(x)+thrust::get<1>(y),thrust::get<2>(x)+thrust::get<2>(y),thrust::get<3>(x)+thrust::get<3>(y));
 	}
 };
-	
-/*
-#undef __FUNCT__
-#define __FUNCT__ "ThrustTest"
-PetscErrorCode ThrustTest(Vec xin,Vec yin,Vec zin)
-{
-  PetscScalar zero = 0.0;
-
-  PetscFunctionBegin;
-  thrust::tuple<PetscScalar,PetscScalar> result;
-  result = thrust::transform_reduce(thrust::make_zip_iterator(thrust::make_tuple(((CUSPARRAY *)xin->spptr)->begin(),((CUSPARRAY *)yin->spptr)->begin(),((CUSPARRAY *)zin->spptr)->begin())),
-				    thrust::make_zip_iterator(thrust::make_tuple(((CUSPARRAY *)xin->spptr)->end(),((CUSPARRAY *)yin->spptr)->end(),((CUSPARRAY *)zin->spptr)->end())),
-				    cudamult2<thrust::tuple<PetscScalar,PetscScalar,PetscScalar>, thrust::tuple<PetscScalar,PetscScalar> >(),
-				    thrust::make_tuple(zero,zero), 
-				    cudaadd2<thrust::tuple<PetscScalar, PetscScalar> >()); 
-	
-	
- PetscFunctionReturn(0);
-}
-
-
-*/
 
 
 #undef __FUNCT__  
@@ -578,11 +556,6 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
     ierr =  VecCUDACopyToGPU(yy0);CHKERRQ(ierr);
     ierr =  VecCUDACopyToGPU(yy1);CHKERRQ(ierr);
     ierr =  VecCUDACopyToGPU(yy2);CHKERRQ(ierr);
-    /*
-    ierr =  VecDot_SeqCUDA(xin,yy0,&z[0]);CHKERRQ(ierr);
-    ierr =  VecDot_SeqCUDA(xin,yy1,&z[1]);CHKERRQ(ierr);
-    ierr =  VecDot_SeqCUDA(xin,yy2,&z[2]);CHKERRQ(ierr);
-    */
     result3 = thrust::transform_reduce(thrust::make_zip_iterator(thrust::make_tuple(((CUSPARRAY *)xin->spptr)->begin(),((CUSPARRAY *)yy0->spptr)->begin(),((CUSPARRAY *)yy1->spptr)->begin(), ((CUSPARRAY *)yy2->spptr)->begin())),
 				       thrust::make_zip_iterator(thrust::make_tuple(((CUSPARRAY *)xin->spptr)->end(),((CUSPARRAY *)yy0->spptr)->end(),((CUSPARRAY *)yy1->spptr)->end(),((CUSPARRAY *)yy2->spptr)->end())),
 				       cudamult3<thrust::tuple<PetscScalar,PetscScalar,PetscScalar,PetscScalar>, thrust::tuple<PetscScalar,PetscScalar,PetscScalar> >(),
@@ -600,11 +573,6 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
     yy1  =  yin[1];
     ierr =  VecCUDACopyToGPU(yy0);CHKERRQ(ierr);
     ierr =  VecCUDACopyToGPU(yy1);CHKERRQ(ierr);
-    /*
-    ierr =  VecDot_SeqCUDA(xin,yy0,&z[0]);CHKERRQ(ierr);
-    ierr =  VecDot_SeqCUDA(xin,yy1,&z[1]);CHKERRQ(ierr);
-    */
-
     result2 = thrust::transform_reduce(thrust::make_zip_iterator(thrust::make_tuple(((CUSPARRAY *)xin->spptr)->begin(),((CUSPARRAY *)yy0->spptr)->begin(),((CUSPARRAY *)yy1->spptr)->begin())),
 				    thrust::make_zip_iterator(thrust::make_tuple(((CUSPARRAY *)xin->spptr)->end(),((CUSPARRAY *)yy0->spptr)->end(),((CUSPARRAY *)yy1->spptr)->end())),
 				    cudamult2<thrust::tuple<PetscScalar,PetscScalar,PetscScalar>, thrust::tuple<PetscScalar,PetscScalar> >(),
@@ -634,12 +602,6 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
     ierr =  VecCUDACopyToGPU(yy1);CHKERRQ(ierr);
     ierr =  VecCUDACopyToGPU(yy2);CHKERRQ(ierr);
     ierr =  VecCUDACopyToGPU(yy3);CHKERRQ(ierr);
-    /*
-    ierr =  VecDot_SeqCUDA(xin,yy0,&z[0]);CHKERRQ(ierr);
-    ierr =  VecDot_SeqCUDA(xin,yy1,&z[1]);CHKERRQ(ierr);
-    ierr =  VecDot_SeqCUDA(xin,yy2,&z[2]);CHKERRQ(ierr);
-    ierr =  VecDot_SeqCUDA(xin,yy3,&z[3]);CHKERRQ(ierr);
-    */
     result4 = thrust::transform_reduce(thrust::make_zip_iterator(thrust::make_tuple(((CUSPARRAY *)xin->spptr)->begin(),((CUSPARRAY *)yy0->spptr)->begin(),((CUSPARRAY *)yy1->spptr)->begin(), ((CUSPARRAY *)yy2->spptr)->begin(),((CUSPARRAY *)yy3->spptr)->begin())),
 				       thrust::make_zip_iterator(thrust::make_tuple(((CUSPARRAY *)xin->spptr)->end(),((CUSPARRAY *)yy0->spptr)->end(),((CUSPARRAY *)yy1->spptr)->end(),((CUSPARRAY *)yy2->spptr)->end(),((CUSPARRAY *)yy3->spptr)->end())),
 				       cudamult4<thrust::tuple<PetscScalar,PetscScalar,PetscScalar,PetscScalar,PetscScalar>, thrust::tuple<PetscScalar,PetscScalar,PetscScalar,PetscScalar> >(),
@@ -824,34 +786,76 @@ PetscErrorCode VecAXPBY_SeqCUDA(Vec yin,PetscScalar alpha,PetscScalar beta,Vec x
   PetscFunctionReturn(0);
 }
 
+/* structs below are for special cases of VecAXPBYPCZ_SeqCUDA */
+struct VecCUDAXPBYPCZ
+{
+  /* z = x + b*y + c*z */
+  template <typename Tuple>
+  __host__ __device__
+  void operator()(Tuple t)
+  {
+    thrust::get<0>(t) = thrust::get<1>(t)*thrust::get<0>(t)+thrust::get<2>(t)+thrust::get<4>(t)*thrust::get<3>(t);
+  }
+};
+struct VecCUDAAXPBYPZ
+{
+  /* z = ax + b*y + z */
+  template <typename Tuple>
+  __host__ __device__
+  void operator()(Tuple t)
+  {
+    thrust::get<0>(t) += thrust::get<2>(t)*thrust::get<1>(t)+thrust::get<4>(t)*thrust::get<3>(t);
+  }
+};
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecAXPBYPCZ_SeqCUDA"
 PetscErrorCode VecAXPBYPCZ_SeqCUDA(Vec zin,PetscScalar alpha,PetscScalar beta,PetscScalar gamma,Vec xin,Vec yin)
 {
   PetscErrorCode     ierr;
-  PetscInt           n = zin->map->n,i;
-  const PetscScalar  *yy,*xx;
-  PetscScalar        *zz;
+  PetscInt           n = zin->map->n;
 
   PetscFunctionBegin;
+    ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
+    ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
+    ierr = VecCUDACopyToGPU(zin);CHKERRQ(ierr);
   if (alpha == 1.0) {
-    ierr = VecGetArrayPrivate3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,&zz);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      zz[i] = xx[i] + beta*yy[i] + gamma*zz[i];
-    }
+    thrust::for_each(
+	thrust::make_zip_iterator(
+	    thrust::make_tuple(
+		((CUSPARRAY*)zin->spptr)->begin(),
+		thrust::make_constant_iterator(gamma,0),
+		((CUSPARRAY*)xin->spptr)->begin(),
+		((CUSPARRAY*)yin->spptr)->begin(),
+		thrust::make_constant_iterator(beta,0))),
+	thrust::make_zip_iterator(
+	    thrust::make_tuple(
+		((CUSPARRAY*)zin->spptr)->end(),  
+		thrust::make_constant_iterator(gamma,n),
+		((CUSPARRAY*)xin->spptr)->end(),
+		((CUSPARRAY*)yin->spptr)->end(),
+		thrust::make_constant_iterator(beta,n))),
+	VecCUDAXPBYPCZ());
     ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr);
-    ierr = VecRestoreArrayPrivate3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,&zz);CHKERRQ(ierr);
   } else if (gamma == 1.0) {
-    ierr = VecGetArrayPrivate3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,&zz);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      zz[i] = alpha*xx[i] + beta*yy[i] + zz[i];
-    }
-    ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr);
-    ierr = VecRestoreArrayPrivate3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,&zz);CHKERRQ(ierr);
+    thrust::for_each(
+	thrust::make_zip_iterator(
+	    thrust::make_tuple(
+		((CUSPARRAY*)zin->spptr)->begin(),
+		((CUSPARRAY*)xin->spptr)->begin(),
+		thrust::make_constant_iterator(alpha,0),
+		((CUSPARRAY*)yin->spptr)->begin(),
+		thrust::make_constant_iterator(beta,0))),
+	thrust::make_zip_iterator(
+	    thrust::make_tuple(
+		((CUSPARRAY*)zin->spptr)->end(),  
+		((CUSPARRAY*)xin->spptr)->end(),
+		thrust::make_constant_iterator(alpha,n),	
+		((CUSPARRAY*)yin->spptr)->end(),
+		thrust::make_constant_iterator(beta,n))),
+	VecCUDAAXPBYPZ());
+    ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr); 
   } else {
-    ierr = VecCUDACopyToGPU(xin);
-    ierr = VecCUDACopyToGPU(yin);
-    ierr = VecCUDACopyToGPU(zin);
     cusp::blas::axpbypcz(*(CUSPARRAY *)(xin->spptr),*(CUSPARRAY *)(yin->spptr),*(CUSPARRAY *)(zin->spptr),*(CUSPARRAY *)(zin->spptr),alpha,beta,gamma);
     zin->valid_GPU_array = PETSC_CUDA_GPU;
     ierr = PetscLogFlops(5.0*n);CHKERRQ(ierr);    
@@ -1024,6 +1028,48 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateSeqCUDA(MPI_Comm comm,PetscInt n,Vec 
   PetscFunctionReturn(0);
 }
 
+/*The following template functions are for VecDotNorm2_SeqCUDA.  Note that there is no complex support as currently written*/
+template <typename T>
+struct cudadotnormcalculate : thrust::unary_function<T,T>
+{
+	__host__ __device__
+	T operator()(T x)
+	{
+		return thrust::make_tuple(thrust::get<0>(x)*thrust::get<1>(x),thrust::get<1>(x)*thrust::get<1>(x));
+	}
+};
+
+template <typename T>
+struct cudadotnormreduce : thrust::binary_function<T,T,T>
+{
+	__host__ __device__
+	T operator()(T x,T y)
+	{
+		return thrust::make_tuple(thrust::get<0>(x)+thrust::get<0>(y),thrust::get<1>(x)+thrust::get<1>(y));
+	}
+};
+	
+#undef __FUNCT__
+#define __FUNCT__ "VecDotNorm2_SeqCUDA"
+PetscErrorCode VecDotNorm2_SeqCUDA(Vec s, Vec t, PetscScalar *dp, PetscScalar *nm)
+{
+  PetscErrorCode                         ierr;
+  PetscScalar                            zero = 0.0,n=s->map->n;
+  thrust::tuple<PetscScalar,PetscScalar> result;
+
+  PetscFunctionBegin;
+  ierr = VecCUDACopyToGPU(s);CHKERRQ(ierr);
+  ierr = VecCUDACopyToGPU(t);CHKERRQ(ierr);
+  result = thrust::transform_reduce(thrust::make_zip_iterator(thrust::make_tuple(((CUSPARRAY *)s->spptr)->begin(),((CUSPARRAY *)t->spptr)->begin())),
+				    thrust::make_zip_iterator(thrust::make_tuple(((CUSPARRAY *)s->spptr)->end(),((CUSPARRAY *)t->spptr)->end())),
+				    cudadotnormcalculate<thrust::tuple<PetscScalar,PetscScalar> >(),
+				    thrust::make_tuple(zero,zero), /*init */
+				    cudadotnormreduce<thrust::tuple<PetscScalar, PetscScalar> >()); /* binary function */
+  *dp = thrust::get<0>(result);
+  *nm = thrust::get<1>(result);
+  ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDuplicate_SeqCUDA"
@@ -1100,6 +1146,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec V)
   V->ops->mdot            = VecMDot_SeqCUDA;
   V->ops->aypx            = VecAYPX_SeqCUDA;
   V->ops->waxpy           = VecWAXPY_SeqCUDA;
+  V->ops->dotnorm2        = VecDotNorm2_SeqCUDA;
   V->valid_GPU_array      = PETSC_CUDA_UNALLOCATED;
   PetscFunctionReturn(0);
 }

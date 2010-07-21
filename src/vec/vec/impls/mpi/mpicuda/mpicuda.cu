@@ -178,6 +178,22 @@ PetscErrorCode VecDuplicate_MPICUDA(Vec win,Vec *v)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "VecDotNorm2_MPICUDA"
+PetscErrorCode VecDotNorm2_MPICUDA(Vec s,Vec t,PetscScalar *dp,PetscScalar *nm)
+{
+  PetscErrorCode  ierr;
+  PetscScalar     work[2],dpx,nmx,sum[2];
+
+  PetscFunctionBegin;
+  ierr    = VecDotNorm2_SeqCUDA(s,t,&dpx,&nmx);CHKERRQ(ierr);
+  work[0] = dpx;
+  work[1] = nmx;
+  ierr    = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,MPIU_SUM,((PetscObject)s)->comm);CHKERRQ(ierr);
+  *dp     = sum[0];
+  *nm     = sum[1];
+  PetscFunctionReturn(0);
+}
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -189,6 +205,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPICUDA(Vec vv)
   ierr = VecCreate_MPI_Private(vv,PETSC_FALSE,0,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)vv,VECMPICUDA);CHKERRQ(ierr);
   vv->valid_GPU_array      = PETSC_CUDA_UNALLOCATED;
+  vv->ops->dotnorm2        = VecDotNorm2_MPICUDA;
   vv->ops->waxpy           = VecWAXPY_SeqCUDA;
   vv->ops->duplicate       = VecDuplicate_MPICUDA;
   vv->ops->dot             = VecDot_MPICUDA;
