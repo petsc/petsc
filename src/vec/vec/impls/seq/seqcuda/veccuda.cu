@@ -857,7 +857,11 @@ PetscErrorCode VecAXPBYPCZ_SeqCUDA(Vec zin,PetscScalar alpha,PetscScalar beta,Pe
 	VecCUDAAXPBYPZ());
     ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr); 
   } else {
-    */ if (alpha == 1.0) {
+    */ 
+     const PetscScalar  *yy,*xx;
+  PetscScalar        *zz;
+  PetscInt i;
+if (alpha == 1.0) {
     ierr = VecGetArrayPrivate3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,&zz);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       zz[i] = xx[i] + beta*yy[i] + gamma*zz[i];
