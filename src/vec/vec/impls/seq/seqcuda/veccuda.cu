@@ -1120,7 +1120,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec V)
   if  (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQCUDA on more than one process");
   ierr = VecCreate_Seq_Private(V,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQCUDA);CHKERRQ(ierr);
-  V->ops->duplicate       = VecDuplicate_SeqCUDA;
   V->ops->dot             = VecDot_SeqCUDA;
   V->ops->norm            = VecNorm_SeqCUDA;
   V->ops->tdot            = VecTDot_SeqCUDA;
@@ -1135,18 +1134,19 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec V)
   V->ops->pointwisedivide = VecPointwiseDivide_SeqCUDA;
   V->ops->setrandom       = VecSetRandom_SeqCUDA;
   V->ops->view            = VecView_SeqCUDA;
-  V->ops->placearray      = VecPlaceArray_SeqCUDA;
-  V->ops->replacearray    = VecReplaceArray_SeqCUDA;
   V->ops->dot_local       = VecDot_SeqCUDA;
   V->ops->tdot_local      = VecTDot_SeqCUDA;
   V->ops->norm_local      = VecNorm_SeqCUDA;
-  V->ops->resetarray      = VecResetArray_SeqCUDA;
-  V->ops->destroy         = VecDestroy_SeqCUDA;
   V->ops->maxpy           = VecMAXPY_SeqCUDA;
   V->ops->mdot            = VecMDot_SeqCUDA;
   V->ops->aypx            = VecAYPX_SeqCUDA;
   V->ops->waxpy           = VecWAXPY_SeqCUDA;
-  /*V->ops->dotnorm2        = VecDotNorm2_SeqCUDA;*/
+  V->ops->dotnorm2        = VecDotNorm2_SeqCUDA;
+  V->ops->placearray      = VecPlaceArray_SeqCUDA;
+  V->ops->replacearray    = VecReplaceArray_SeqCUDA;
+  V->ops->resetarray      = VecResetArray_SeqCUDA;
+  V->ops->destroy         = VecDestroy_SeqCUDA;
+  V->ops->duplicate       = VecDuplicate_SeqCUDA;
   V->valid_GPU_array      = PETSC_CUDA_UNALLOCATED;
   PetscFunctionReturn(0);
 }
