@@ -819,7 +819,6 @@ PetscErrorCode VecAXPBYPCZ_SeqCUDA(Vec zin,PetscScalar alpha,PetscScalar beta,Pe
     ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
     ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
     ierr = VecCUDACopyToGPU(zin);CHKERRQ(ierr);
-    /*
   if (alpha == 1.0) {
     thrust::for_each(
 	thrust::make_zip_iterator(
@@ -856,25 +855,6 @@ PetscErrorCode VecAXPBYPCZ_SeqCUDA(Vec zin,PetscScalar alpha,PetscScalar beta,Pe
 		thrust::make_constant_iterator(beta,n))),
 	VecCUDAAXPBYPZ());
     ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr); 
-  } else {
-    */ 
-     const PetscScalar  *yy,*xx;
-  PetscScalar        *zz;
-  PetscInt i;
-if (alpha == 1.0) {
-    ierr = VecGetArrayPrivate3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,&zz);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      zz[i] = xx[i] + beta*yy[i] + gamma*zz[i];
-    }
-    ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr);
-    ierr = VecRestoreArrayPrivate3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,&zz);CHKERRQ(ierr);
-  } else if (gamma == 1.0) {
-    ierr = VecGetArrayPrivate3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,&zz);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      zz[i] = alpha*xx[i] + beta*yy[i] + zz[i];
-    }
-    ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr);
-    ierr = VecRestoreArrayPrivate3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,&zz);CHKERRQ(ierr);
   } else {
     cusp::blas::axpbypcz(*(CUSPARRAY *)(xin->spptr),*(CUSPARRAY *)(yin->spptr),*(CUSPARRAY *)(zin->spptr),*(CUSPARRAY *)(zin->spptr),alpha,beta,gamma);
     zin->valid_GPU_array = PETSC_CUDA_GPU;
