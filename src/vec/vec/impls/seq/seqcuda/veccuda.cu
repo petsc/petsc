@@ -1146,7 +1146,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec V)
   V->ops->mdot            = VecMDot_SeqCUDA;
   V->ops->aypx            = VecAYPX_SeqCUDA;
   V->ops->waxpy           = VecWAXPY_SeqCUDA;
-  V->ops->dotnorm2        = VecDotNorm2_SeqCUDA;
+  /*V->ops->dotnorm2        = VecDotNorm2_SeqCUDA;*/
   V->valid_GPU_array      = PETSC_CUDA_UNALLOCATED;
   PetscFunctionReturn(0);
 }
