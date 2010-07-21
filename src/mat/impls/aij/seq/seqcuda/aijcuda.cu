@@ -47,6 +47,8 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
   aa  = a->a;
   ii  = a->i;
   if (usecprow){ /* use compressed row format */
+    ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+    ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
     m    = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
@@ -60,6 +62,8 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
       /* for (j=0; j<n; j++) sum += (*aa++)*x[*aj++]; */
       y[*ridx++] = sum;
     }
+    ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   } else { /* do not use compressed row format */
   ierr = VecCUDACopyToGPU_Public(xx);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck_Public(yy);CHKERRQ(ierr);
