@@ -755,11 +755,8 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
 
    Input Parameters:
 +  viewer - binary file viewer, created with PetscViewerBinaryOpen()
--  outtype - type of matrix desired, for example MATSEQAIJ,
-              MATMPISBAIJ etc.  See types in petsc/include/petscmat.h.
-
-   Output Parameters:
-.  newmat - new matrix
+-  newmat - the newly loaded matrix, this needs to have been created with MatCreate()
+            or some related function before a call to MatLoad()
 
    Basic Options Database Keys:
 +    -mat_type seqaij   - AIJ type

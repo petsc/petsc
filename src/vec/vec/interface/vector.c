@@ -988,7 +988,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecResetArray(Vec vec)
 + viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
            HDF5 file viewer, obtained from PetscViewerHDF5Open()
 - newvec - the newly loaded vector, this needs to have been created with VecCreate() or
-           some related function before the VecLoad(). 
+           some related function before a call to VecLoad(). 
+
+  Basic Options Database Keys:
++   -vec_type seq      - sequential type
+.   -vec_type mpi      - parallel type
 
    Level: intermediate
 
