@@ -40,16 +40,20 @@ EXTERN PetscErrorCode VecSetRandom_SeqCUDA(Vec,PetscRandom);
 
 #define VecCUDACastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])
 #define CUSPARRAY cusp::array1d<PetscScalar,cusp::device_memory>
+#define WaitForGPU() cudaThreadSynchronize()
+/*#define WaitForGPU() 0*/
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUDAAllocateCheck"
 PETSC_STATIC_INLINE PetscErrorCode VecCUDAAllocateCheck(Vec v)
 {
+  PetscErrorCode ierr;
   Vec_Seq   *s;
   PetscFunctionBegin;
   if (v->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
     v->spptr= new CUSPARRAY;
     ((CUSPARRAY *)(v->spptr))->resize((PetscBLASInt)v->map->n);
+    ierr = WaitForGPU();CHKERRQ(ierr);
     s = (Vec_Seq*)v->data;
     if (s->array == 0){
       v->valid_GPU_array = PETSC_CUDA_GPU;
@@ -74,6 +78,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
   if (v->valid_GPU_array == PETSC_CUDA_CPU){
     ierr = PetscLogEventBegin(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
     ((CUSPARRAY *)(v->spptr))->assign(*(PetscScalar**)v->data,*(PetscScalar**)v->data + cn);
+    ierr = WaitForGPU();CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
     v->valid_GPU_array = PETSC_CUDA_BOTH;
   }
