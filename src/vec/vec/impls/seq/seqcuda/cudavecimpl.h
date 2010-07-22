@@ -47,6 +47,7 @@ EXTERN PetscErrorCode VecSetRandom_SeqCUDA(Vec,PetscRandom);
 #define __FUNCT__ "VecCUDAAllocateCheck"
 PETSC_STATIC_INLINE PetscErrorCode VecCUDAAllocateCheck(Vec v)
 {
+  PetscErrorCode ierr;
   Vec_Seq   *s;
   PetscFunctionBegin;
   if (v->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
