@@ -55,6 +55,7 @@ PetscErrorCode VecCUDACopyFromGPU(Vec v)
   if (v->valid_GPU_array == PETSC_CUDA_GPU){
     ierr = PetscLogEventBegin(VEC_CUDACopyFromGPU,v,0,0,0);CHKERRQ(ierr);
     thrust::copy(GPUvector->begin(),GPUvector->end(),*(PetscScalar**)v->data);
+    ierr = WaitForGPU();CHKERRCUDA(ierr);
     ierr = PetscLogEventEnd(VEC_CUDACopyFromGPU,v,0,0,0);CHKERRQ(ierr);
     v->valid_GPU_array = PETSC_CUDA_BOTH;
   }
@@ -245,8 +246,7 @@ PetscErrorCode VecWAXPY_SeqCUDA(Vec win,PetscScalar alpha,Vec xin, Vec yin)
 		((CUSPARRAY*)yin->spptr)->end(),
 		((CUSPARRAY*)xin->spptr)->end())),
 	VecCUDASum());
-    ierr = WaitForGPU();CHKERRCUDA(ierr);
-    ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
+        ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
   } else if (alpha == -1.0) {
      thrust::for_each(
 	thrust::make_zip_iterator(
@@ -260,8 +260,7 @@ PetscErrorCode VecWAXPY_SeqCUDA(Vec win,PetscScalar alpha,Vec xin, Vec yin)
 		((CUSPARRAY*)yin->spptr)->end(),
 		((CUSPARRAY*)xin->spptr)->end())),
 	VecCUDADiff());
-     ierr = WaitForGPU();CHKERRCUDA(ierr);
-     ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
+        ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
   } else if (alpha == 0.0) {
     ierr = VecCopy_SeqCUDA(yin,win);CHKERRQ(ierr);
   } else {
@@ -279,9 +278,9 @@ PetscErrorCode VecWAXPY_SeqCUDA(Vec win,PetscScalar alpha,Vec xin, Vec yin)
 		thrust::make_constant_iterator(alpha,win->map->n),
 		((CUSPARRAY*)xin->spptr)->end())),
 	VecCUDAWAXPY());
-     ierr = WaitForGPU();CHKERRCUDA(ierr);
-     ierr = PetscLogFlops(2*win->map->n);CHKERRQ(ierr);
+        ierr = PetscLogFlops(2*win->map->n);CHKERRQ(ierr);
   }
+  ierr = WaitForGPU();CHKERRCUDA(ierr);
   win->valid_GPU_array = PETSC_CUDA_GPU;
   PetscFunctionReturn(0);
 }
@@ -728,6 +727,7 @@ PetscErrorCode VecCopy_SeqCUDA(Vec xin,Vec yin)
 	/* copy in GPU */
 	ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
 	cusp::blas::copy(*(CUSPARRAY *)(xin->spptr),*(CUSPARRAY *)(yin->spptr));
+	ierr = WaitForGPU();CHKERRCUDA(ierr);
 	yin->valid_GPU_array = PETSC_CUDA_GPU;
       } else if (yin->valid_GPU_array == PETSC_CUDA_BOTH) {
 	/* xin and yin are both valid in both places (or yin was unallocated before the earlier call to allocatecheck
@@ -926,6 +926,7 @@ PetscErrorCode VecView_SeqCUDA(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/* should do infinite norm in cuda */
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecNorm_SeqCUDA"
