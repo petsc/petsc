@@ -18,12 +18,14 @@ SNES Object:
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
     left preconditioning
+    using PRECONDITIONED norm type for convergence test
   PC Object:
     type: jacobi
     linear system matrix = precond matrix:
     Matrix Object:
       type=seqaij, rows=5, cols=5
       total: nonzeros=11, allocated nonzeros=25
+      total number of mallocs used during MatSetValues calls =0
         not using I-node routines
 number of Newton iterations = 3
 
