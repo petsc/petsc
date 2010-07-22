@@ -169,11 +169,11 @@ void PETSC_STDCALL matview_(Mat *mat,PetscViewer *vin,PetscErrorCode *ierr)
   *ierr = MatView(*mat,v);
 }
 
-void PETSC_STDCALL matload_(PetscViewer *vin,Mat *mat,PetscErrorCode *ierr)
+void PETSC_STDCALL matload_(Mat *mat,PetscViewer *vin,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
-  *ierr = MatLoad(v,*mat);
+  *ierr = MatLoad(*mat,v);
 }
 
 void PETSC_STDCALL matgetarray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)

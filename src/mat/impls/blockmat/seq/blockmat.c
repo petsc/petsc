@@ -304,7 +304,7 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_BlockMat"
-PetscErrorCode MatLoad_BlockMat(PetscViewer viewer, Mat newmat)
+PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   Mat               tmpA;
@@ -318,7 +318,7 @@ PetscErrorCode MatLoad_BlockMat(PetscViewer viewer, Mat newmat)
   PetscFunctionBegin;
   ierr = MatCreate(PETSC_COMM_SELF,&tmpA);CHKERRQ(ierr);
   ierr = MatSetType(tmpA,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatLoad_SeqAIJ(viewer,tmpA);CHKERRQ(ierr);
+  ierr = MatLoad_SeqAIJ(tmpA,viewer);CHKERRQ(ierr);
 
   ierr = MatGetLocalSize(tmpA,&m,&n);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(PETSC_COMM_SELF,PETSC_NULL,"Options for loading BlockMat matrix 1","Mat");CHKERRQ(ierr);

@@ -1946,7 +1946,7 @@ PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIDense"
-PetscErrorCode MatLoad_MPIDense(PetscViewer viewer,Mat newmat)
+PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
 {
   PetscScalar    *vals,*svals;
   MPI_Comm       comm = ((PetscObject)viewer)->comm;

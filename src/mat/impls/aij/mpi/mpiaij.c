@@ -2868,7 +2868,7 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIAIJ"
-PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer, Mat newMat)
+PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
 {
   PetscScalar    *vals,*svals;
   MPI_Comm       comm = ((PetscObject)viewer)->comm;
