@@ -85,7 +85,6 @@ int main(int argc,char **argv)
 
   if (!testorder) { /* turn off printing when testing ordering mappings */
     ierr = PetscPrintf (PETSC_COMM_WORLD,"\nGlobal Vectors:\n");CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
     ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
     ierr = PetscPrintf (PETSC_COMM_WORLD,"\n\n");CHKERRQ(ierr);
   }

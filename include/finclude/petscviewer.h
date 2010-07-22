@@ -75,8 +75,6 @@
       parameter (PETSC_VIEWER_DRAW_CONTOUR = 21)
       parameter (PETSC_VIEWER_DRAW_PORTS = 22)
 
-      PetscEnum PETSC_VIEWER_NATIVE
-      parameter (PETSC_VIEWER_NATIVE = 23)
       PetscEnum PETSC_VIEWER_NOFORMAT
       parameter (PETSC_VIEWER_NOFORMAT = 24)
 !
