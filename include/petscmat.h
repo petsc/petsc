@@ -1564,14 +1564,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat,MatOperation,v
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellGetOperation(Mat,MatOperation,void(**)(void));
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetContext(Mat,void*);
 
-/*
-   Codes for matrices stored on disk. By default they are
- stored in a universal format. By changing the format with 
- PetscViewerSetFormat(viewer,PETSC_VIEWER_NATIVE); the matrices will
- be stored in a way natural for the matrix, for example dense matrices
- would be stored as dense. Matrices stored this way may only be
- read into matrices of the same time.
-*/
 #define MATRIX_BINARY_FORMAT_DENSE -1
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetHashTableFactor(Mat,PetscReal);

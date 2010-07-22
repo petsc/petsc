@@ -137,9 +137,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
             VecMDot_Seq,
             VecMTDot_Seq,
 	    VecLoad_Default,			
-            0, /* VecLoadIntoVectorNative */
             VecReciprocal_Default,
-            0, /* VecViewNative... */
             VecConjugate_Seq,
             0,
             0,

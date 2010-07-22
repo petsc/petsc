@@ -891,65 +891,42 @@ static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
   PetscErrorCode    ierr;
   int               fd;
   PetscInt          ict,j,n = A->cmap->n,m = A->rmap->n,i,*col_lens,nz = m*n;
-  PetscScalar       *v,*anonz,*vals;
-  PetscViewerFormat format;
+  PetscScalar       *v,*anonz;
   
   PetscFunctionBegin;
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
 
-  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_NATIVE) {
-    /* store the matrix as a dense matrix */
-    ierr = PetscMalloc(4*sizeof(PetscInt),&col_lens);CHKERRQ(ierr);
-    col_lens[0] = MAT_FILE_CLASSID;
-    col_lens[1] = m;
-    col_lens[2] = n;
-    col_lens[3] = MATRIX_BINARY_FORMAT_DENSE;
-    ierr = PetscBinaryWrite(fd,col_lens,4,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PetscFree(col_lens);CHKERRQ(ierr);
+  ierr = PetscMalloc((4+nz)*sizeof(PetscInt),&col_lens);CHKERRQ(ierr);
+  col_lens[0] = MAT_FILE_CLASSID;
+  col_lens[1] = m;
+  col_lens[2] = n;
+  col_lens[3] = nz;
 
-    /* write out matrix, by rows */
-    ierr = PetscMalloc((m*n+1)*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
-    v    = a->v;
-    for (j=0; j<n; j++) {
-      for (i=0; i<m; i++) {
-        vals[j + i*n] = *v++;
-      }
-    }
-    ierr = PetscBinaryWrite(fd,vals,n*m,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscFree(vals);CHKERRQ(ierr);
-  } else {
-    ierr = PetscMalloc((4+nz)*sizeof(PetscInt),&col_lens);CHKERRQ(ierr);
-    col_lens[0] = MAT_FILE_CLASSID;
-    col_lens[1] = m;
-    col_lens[2] = n;
-    col_lens[3] = nz;
+  /* store lengths of each row and write (including header) to file */
+  for (i=0; i<m; i++) col_lens[4+i] = n;
+  ierr = PetscBinaryWrite(fd,col_lens,4+m,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
 
-    /* store lengths of each row and write (including header) to file */
-    for (i=0; i<m; i++) col_lens[4+i] = n;
-    ierr = PetscBinaryWrite(fd,col_lens,4+m,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
-
-    /* Possibly should write in smaller increments, not whole matrix at once? */
-    /* store column indices (zero start index) */
-    ict = 0;
-    for (i=0; i<m; i++) {
-      for (j=0; j<n; j++) col_lens[ict++] = j;
-    }
-    ierr = PetscBinaryWrite(fd,col_lens,nz,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscFree(col_lens);CHKERRQ(ierr);
-
-    /* store nonzero values */
-    ierr = PetscMalloc((nz+1)*sizeof(PetscScalar),&anonz);CHKERRQ(ierr);
-    ict  = 0;
-    for (i=0; i<m; i++) {
-      v = a->v + i;
-      for (j=0; j<n; j++) {
-        anonz[ict++] = *v; v += a->lda;
-      }
-    }
-    ierr = PetscBinaryWrite(fd,anonz,nz,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscFree(anonz);CHKERRQ(ierr);
+  /* Possibly should write in smaller increments, not whole matrix at once? */
+  /* store column indices (zero start index) */
+  ict = 0;
+  for (i=0; i<m; i++) {
+    for (j=0; j<n; j++) col_lens[ict++] = j;
   }
+  ierr = PetscBinaryWrite(fd,col_lens,nz,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscFree(col_lens);CHKERRQ(ierr);
+
+  /* store nonzero values */
+  ierr = PetscMalloc((nz+1)*sizeof(PetscScalar),&anonz);CHKERRQ(ierr);
+  ict  = 0;
+  for (i=0; i<m; i++) {
+    v = a->v + i;
+    for (j=0; j<n; j++) {
+      anonz[ict++] = *v; v += a->lda;
+    }
+  }
+  ierr = PetscBinaryWrite(fd,anonz,nz,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscFree(anonz);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 

@@ -680,7 +680,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, const char *title)
 PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec vec,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
-  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
@@ -693,17 +692,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec vec,PetscViewer viewer)
   if (vec->stash.n || vec->bstash.n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call VecAssemblyBegin/End() before viewing this vector");
 
   ierr = PetscLogEventBegin(VEC_View,vec,viewer,0,0);CHKERRQ(ierr);
-  /*
-     Check if default viewer has been overridden, but user request it anyways
-  */
-  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (vec->ops->viewnative && format == PETSC_VIEWER_NATIVE) {
-    ierr   = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = (*vec->ops->viewnative)(vec,viewer);CHKERRQ(ierr);
-    ierr   = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
-  } else {
-    ierr = (*vec->ops->view)(vec,viewer);CHKERRQ(ierr);
-  }
+  ierr = (*vec->ops->view)(vec,viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_View,vec,viewer,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1106,12 +1095,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetOperation(Vec vec,VecOperation op, void 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
-  /* save the native version of the viewer */
-  if (op == VECOP_VIEW && !vec->ops->viewnative) {
-    vec->ops->viewnative = vec->ops->view;
-  } else if (op == VECOP_LOAD && !vec->ops->loadintovectornative) {
-    vec->ops->loadintovectornative = vec->ops->load;
-  }
   (((void(**)(void))vec->ops)[(int)op]) = f;
   PetscFunctionReturn(0);
 }
