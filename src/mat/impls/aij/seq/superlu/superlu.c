@@ -503,10 +503,6 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
 
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"SuperLU Options","Mat");CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-mat_superlu_equil","Equil","None",(PetscTruth)lu->options.Equil,(PetscTruth*)&lu->options.Equil,0);CHKERRQ(ierr);
-    if (lu->options.Equil == YES) {
-       /* superlu overwrites input matrix and rhs when Equil is used, thus create A_dup to keep user's A unchanged */
-      ierr = MatDuplicate_SeqAIJ(A,MAT_COPY_VALUES,&lu->A_dup);CHKERRQ(ierr); 
-    }
     ierr = PetscOptionsEList("-mat_superlu_colperm","ColPerm","None",colperm,4,colperm[3],&indx,&flg);CHKERRQ(ierr);
     if (flg) {lu->options.ColPerm = (colperm_t)indx;}
     ierr = PetscOptionsEList("-mat_superlu_iterrefine","IterRefine","None",iterrefine,4,iterrefine[0],&indx,&flg);CHKERRQ(ierr);
@@ -545,6 +541,10 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
       lu->options.ILU_MILU = (milu_t)indx;
     }
   PetscOptionsEnd();
+  if (lu->options.Equil == YES) {
+    /* superlu overwrites input matrix and rhs when Equil is used, thus create A_dup to keep user's A unchanged */
+    ierr = MatDuplicate_SeqAIJ(A,MAT_COPY_VALUES,&lu->A_dup);CHKERRQ(ierr); 
+  }
 
   /* Allocate spaces (notice sizes are for the transpose) */
   ierr = PetscMalloc(m*sizeof(PetscInt),&lu->etree);CHKERRQ(ierr);
