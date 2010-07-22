@@ -36,12 +36,12 @@ EXTERN PetscErrorCode VecDestroy_SeqCUDA(Vec);
 EXTERN PetscErrorCode VecAYPX_SeqCUDA(Vec,PetscScalar,Vec);
 EXTERN PetscErrorCode VecSetRandom_SeqCUDA(Vec,PetscRandom);
 
+EXTERN PetscTruth synchronizeCUDA;
 #define CHKERRCUDA(err) if (err != CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err)
 
 #define VecCUDACastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])
 #define CUSPARRAY cusp::array1d<PetscScalar,cusp::device_memory>
-#define WaitForGPU() cudaThreadSynchronize()
-/*#define WaitForGPU() 0*/
+#define WaitForGPU() synchronizeCUDA ? cudaThreadSynchronize() : 0
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUDAAllocateCheck"

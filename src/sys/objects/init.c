@@ -63,6 +63,10 @@ PetscErrorCode PETSC_DLLEXPORT (*PetscErrorPrintf)(const char [],...)          =
 PetscErrorCode PETSC_DLLEXPORT (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
 PetscErrorCode PETSC_DLLEXPORT (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDefault;
 
+/*
+  This is needed to turn on/off cuda synchronization */
+PetscTruth PETSC_DLL_EXPORT synchronizeCUDA = PETSC_FALSE;
+
 /* ------------------------------------------------------------------------------*/
 /* 
    Optional file where all PETSc output from various prints is saved
@@ -573,7 +577,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   if (f) {
     ierr = PetscInfoDeactivateClass(PETSC_NULL);CHKERRQ(ierr);
   }
-
+#if defined(PETSC_HAVE_CUDA)
+  flg1 = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-cuda_synchronize",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  if (flg1) synchronizeCUDA = PETSC_TRUE;
+#endif
 
   PetscFunctionReturn(0);
 }
