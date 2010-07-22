@@ -369,8 +369,6 @@ class Configure(config.base.Configure):
         yield self.framework.argDB['with-cc']
       raise RuntimeError('C compiler you provided with -with-cc='+self.framework.argDB['with-cc']+' does not work')
     elif self.framework.argDB.has_key('CC'):
-      if 'CC' in os.environ and os.environ['CC'] == self.framework.argDB['CC']:
-        self.logPrintBox('\n*****WARNING: Using C compiler '+self.framework.argDB['CC']+' from environmental variable CC****\nAre you sure this is what you want? If not, unset that environmental variable and run configure again')
       if self.isWindows(self.framework.argDB['CC']):
         yield 'win32fe '+self.framework.argDB['CC']
       else:
@@ -499,8 +497,6 @@ class Configure(config.base.Configure):
         yield self.framework.argDB['with-cxx']
       raise RuntimeError('C++ compiler you provided with -with-cxx='+self.framework.argDB['with-cxx']+' does not work')
     elif self.framework.argDB.has_key('CXX'):
-      if 'CXX' in os.environ and os.environ['CXX'] == self.framework.argDB['CXX']:
-        self.logPrintBox('\n*****WARNING: Using C++ compiler '+self.framework.argDB['CXX']+' from environmental variable CXX****\nAre you sure this is what you want? If not, unset that environmental variable and run configure again')
       if self.isWindows(self.framework.argDB['CXX']):
         yield 'win32fe '+self.framework.argDB['CXX']
       else:
@@ -642,8 +638,6 @@ class Configure(config.base.Configure):
         yield self.framework.argDB['with-fc']
       raise RuntimeError('Fortran compiler you provided with --with-fc='+self.framework.argDB['with-fc']+' does not work')
     elif self.framework.argDB.has_key('FC'):
-      if 'FC' in os.environ and os.environ['FC'] == self.framework.argDB['FC']:
-        self.logPrintBox('\n*****WARNING: Using Fortran compiler '+self.framework.argDB['FC']+' from environmental variable FC****\nAre you sure this is what you want? If not, unset that environmental variable and run configure again')
       if self.isWindows(self.framework.argDB['FC']):
         yield 'win32fe '+self.framework.argDB['FC']
       else:
@@ -796,7 +790,7 @@ class Configure(config.base.Configure):
     '''Determine the PIC option for each compiler
        - There needs to be a test that checks that the functionality is actually working'''
     self.usePIC=0
-    if not self.framework.argDB['with-pic'] and not self.framework.argDB['with-shared']:
+    if not self.framework.argDB['with-pic'] and not self.framework.argDB['with-shared-libraries'] and not self.framework.argDB['with-dynamic-loading']:
       self.framework.logPrint("Skip checking PIC options on user request")
       return
     languages = ['C']
@@ -989,7 +983,7 @@ class Configure(config.base.Configure):
     return self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
 
   def generateSharedLinkerGuesses(self):
-    if not self.framework.argDB['with-pic'] and not self.framework.argDB['with-shared']:
+    if not self.framework.argDB['with-pic'] and not self.framework.argDB['with-shared-libraries'] and not self.framework.argDB['with-dynamic-loading']:
       self.setStaticLinker()
       self.staticLinker = self.AR
       self.staticLibraries = 1
@@ -1186,10 +1180,10 @@ class Configure(config.base.Configure):
     self.logPrint('Unable to find working dynamic linker')
 
   def checkDynamicLinker(self):
-    '''Check that the linker can produce dynamic libraries'''
+    '''Check that the linker can dynamicaly load shared libraries'''
     self.dynamicLibraries = 0
     if not self.headers.check('dlfcn.h'):
-      self.logPrint('Dynamic libraries disabled since dlfcn.h was missing')
+      self.logPrint('Dynamic loading disabled since dlfcn.h was missing')
       return
     if not self.libraries.add('dl', ['dlopen', 'dlsym', 'dlclose']):
       if not self.libraries.check('', ['dlopen', 'dlsym', 'dlclose']):
@@ -1301,7 +1295,16 @@ This way - mpi compilers from '''+self.argDB['with-mpi-dir']+ ''' are used.'''
       self.logPrintBox(mesg)
     return
 
+  def resetEnvCompilers(self):
+    ignoreEnv = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FFLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS']
+    for envVal in ignoreEnv:
+      if envVal in os.environ:
+        self.logPrintBox('***** WARNING: '+envVal+' found in enviornment variables - ignoring ******')
+        del os.environ[envVal]
+    return
+
   def configure(self):
+    self.executeTest(self.resetEnvCompilers)
     self.executeTest(self.checkMPICompilerOverride)
     self.executeTest(self.checkVendor)
     self.executeTest(self.checkInitialFlags)
