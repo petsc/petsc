@@ -890,9 +890,9 @@ PetscErrorCode VecAXPBYPCZ_SeqCUDA(Vec zin,PetscScalar alpha,PetscScalar beta,Pe
   } else {
     cusp::blas::axpbypcz(*(CUSPARRAY *)(xin->spptr),*(CUSPARRAY *)(yin->spptr),*(CUSPARRAY *)(zin->spptr),*(CUSPARRAY *)(zin->spptr),alpha,beta,gamma);
     zin->valid_GPU_array = PETSC_CUDA_GPU;
-    ierr = WaitForGPU();CHKERRCUDA(ierr);
     ierr = PetscLogFlops(5.0*n);CHKERRQ(ierr);    
   }
+  ierr = WaitForGPU();CHKERRCUDA(ierr);
   PetscFunctionReturn(0);
 }
 
