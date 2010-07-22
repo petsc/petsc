@@ -97,3 +97,17 @@ cdef extern from "petscsys.h":
     PetscViewer PETSC_VIEWER_DRAW_(MPI_Comm) except? NULL
     PetscViewer PETSC_VIEWER_DRAW_SELF
     PetscViewer PETSC_VIEWER_DRAW_WORLD
+
+# ---
+
+cdef inline PetscFileMode filemode(object mode) except <PetscFileMode>(-1):
+    if mode is None:
+        return PETSC_FILE_MODE_WRITE
+    if isinstance(mode, str):
+        if   mode == 'r'  : return PETSC_FILE_MODE_READ
+        elif mode == 'w'  : return PETSC_FILE_MODE_WRITE
+        elif mode == 'a'  : return PETSC_FILE_MODE_APPEND
+        elif mode == 'u'  : return PETSC_FILE_MODE_UPDATE
+        elif mode == 'au' : return PETSC_FILE_MODE_APPEND_UPDATE
+        elif mode == 'ua' : return PETSC_FILE_MODE_APPEND_UPDATE
+    return mode

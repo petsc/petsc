@@ -97,13 +97,11 @@ cdef class Viewer(Object):
         PetscCLEAR(self.obj); self.vwr = newvwr
         return self
 
-    def createASCII(self, name, mode=None,
-                    format=None, comm=None):
+    def createASCII(self, name, mode=None, format=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
-        cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
-        if mode is not None: cmode = mode
+        cdef PetscFileMode cmode = filemode(mode)
         cdef PetscViewerFormat cvfmt = PETSC_VIEWER_DEFAULT
         if format is not None: cvfmt = format
         cdef PetscViewer newvwr = NULL
@@ -113,13 +111,11 @@ cdef class Viewer(Object):
         CHKERR( PetscViewerSetFormat(self.vwr, cvfmt) )
         return self
 
-    def createBinary(self, name, mode=None,
-                     format=None, comm=None):
+    def createBinary(self, name, mode=None, format=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
-        cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
-        if mode is not None: cmode = mode
+        cdef PetscFileMode cmode = filemode(mode)
         cdef PetscViewerFormat cvfmt = PETSC_VIEWER_DEFAULT
         if format is not None: cvfmt = format
         cdef PetscViewer newvwr = NULL
@@ -154,8 +150,7 @@ cdef class Viewer(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
-        cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
-        if mode is not None: cmode = mode
+        cdef PetscFileMode cmode = filemode(mode)
         cdef PetscViewer newvwr = NULL
         CHKERR( PetscViewerCreate(ccomm, &newvwr) )
         PetscCLEAR(self.obj); self.vwr = newvwr
@@ -168,8 +163,7 @@ cdef class Viewer(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
-        cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
-        if mode is not None: cmode = mode
+        cdef PetscFileMode cmode = filemode(mode)
         cdef PetscViewer newvwr = NULL
         CHKERR( PetscViewerCreate(ccomm, &newvwr) )
         PetscCLEAR(self.obj); self.vwr = newvwr
