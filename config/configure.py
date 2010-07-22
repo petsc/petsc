@@ -38,9 +38,10 @@ def check_for_option_mistakes(opts):
           exception = True
       if not exception:
         raise ValueError('The option '+name+' should probably be '+name.replace('_', '-'));
-    optval = opt.split('=')[1]
-    if optval == 'ifneeded':
-      raise ValueError('The option '+opt+' should probably be '+opt.replace('ifneeded', '1'));
+    if opt.find('=') >=0:
+      optval = opt.split('=')[1]
+      if optval == 'ifneeded':
+        raise ValueError('The option '+opt+' should probably be '+opt.replace('ifneeded', '1'));
   return
 
 def check_petsc_arch(opts):

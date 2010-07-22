@@ -68,6 +68,7 @@ E*/
 #define MATSUBMATRIX       "submatrix"
 #define MATSEQAIJCUDA      "seqaijcuda"
 #define MATMPIAIJCUDA      "mpiaijcuda"
+#define MATAIJCUDA         "aijcuda"
 
 #define MATDD              "matdd"
 

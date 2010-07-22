@@ -465,10 +465,18 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
   
   if (ftype == MAT_FACTOR_LU){
     set_default_options(&lu->options);
+    /* Comments from SuperLU_4.0/SRC/dgssvx.c:
+      "Whether or not the system will be equilibrated depends on the
+       scaling of the matrix A, but if equilibration is used, A is
+       overwritten by diag(R)*A*diag(C) and B by diag(R)*B
+       (if options->Trans=NOTRANS) or diag(C)*B (if options->Trans = TRANS or CONJ)."
+     We set 'options.Equil = NO' as default because additional space is needed for it.
+    */
+    lu->options.Equil     = NO;
   } else if (ftype == MAT_FACTOR_ILU){
     /* Set the default input options of ilu:
 	options.Fact = DOFACT;
-	options.Equil = YES;
+	options.Equil = YES;           // must be YES for ilu - don't know why
 	options.ColPerm = COLAMD;
 	options.DiagPivotThresh = 0.1; //different from complete LU
 	options.Trans = NOTRANS;
@@ -484,46 +492,37 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
 	options.ILU_DropRule = DROP_BASIC | DROP_AREA;
 	options.ILU_Norm = INF_NORM;
 	options.ILU_MILU = SMILU_2;
-    */
-    
+    */    
     ilu_set_default_options(&lu->options);
   }
-  /* Comments from SuperLU_4.0/SRC/dgssvx.c:
-      "Whether or not the system will be equilibrated depends on the
-       scaling of the matrix A, but if equilibration is used, A is
-       overwritten by diag(R)*A*diag(C) and B by diag(R)*B
-       (if options->Trans=NOTRANS) or diag(C)*B (if options->Trans = TRANS or CONJ)."
-     We set 'options.Equil = NO' as default because additional space is needed for it.
-  */
-  lu->options.Equil     = NO;
   lu->options.PrintStat = NO;
-
+  
   /* Initialize the statistics variables. */
   StatInit(&lu->stat);
   lu->lwork = 0;   /* allocate space internally by system malloc */
 
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"SuperLU Options","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_superlu_equil","Equil","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
-    if (flg) { /* superlu overwrites input matrix and rhs when Equil is used, thus create A_dup to keep user's A unchanged */
-      lu->options.Equil = YES;
-      ierr = MatDuplicate_SeqAIJ(A,MAT_COPY_VALUES,&lu->A_dup);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_superlu_equil","Equil","None",(PetscTruth)lu->options.Equil,(PetscTruth*)&lu->options.Equil,0);CHKERRQ(ierr);
+    if (lu->options.Equil == YES) {
+       /* superlu overwrites input matrix and rhs when Equil is used, thus create A_dup to keep user's A unchanged */
+      ierr = MatDuplicate_SeqAIJ(A,MAT_COPY_VALUES,&lu->A_dup);CHKERRQ(ierr); 
     }
     ierr = PetscOptionsEList("-mat_superlu_colperm","ColPerm","None",colperm,4,colperm[3],&indx,&flg);CHKERRQ(ierr);
     if (flg) {lu->options.ColPerm = (colperm_t)indx;}
     ierr = PetscOptionsEList("-mat_superlu_iterrefine","IterRefine","None",iterrefine,4,iterrefine[0],&indx,&flg);CHKERRQ(ierr);
     if (flg) { lu->options.IterRefine = (IterRefine_t)indx;}
-    ierr = PetscOptionsTruth("-mat_superlu_symmetricmode","SymmetricMode","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_superlu_symmetricmode","SymmetricMode","None",(PetscTruth)lu->options.SymmetricMode,&flg,0);CHKERRQ(ierr);
     if (flg) lu->options.SymmetricMode = YES; 
     ierr = PetscOptionsReal("-mat_superlu_diagpivotthresh","DiagPivotThresh","None",lu->options.DiagPivotThresh,&lu->options.DiagPivotThresh,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_superlu_pivotgrowth","PivotGrowth","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_superlu_pivotgrowth","PivotGrowth","None",(PetscTruth)lu->options.PivotGrowth,&flg,0);CHKERRQ(ierr);
     if (flg) lu->options.PivotGrowth = YES;
-    ierr = PetscOptionsTruth("-mat_superlu_conditionnumber","ConditionNumber","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_superlu_conditionnumber","ConditionNumber","None",(PetscTruth)lu->options.ConditionNumber,&flg,0);CHKERRQ(ierr);
     if (flg) lu->options.ConditionNumber = YES;
     ierr = PetscOptionsEList("-mat_superlu_rowperm","rowperm","None",rowperm,2,rowperm[0],&indx,&flg);CHKERRQ(ierr);
     if (flg) {lu->options.RowPerm = (rowperm_t)indx;}
-    ierr = PetscOptionsTruth("-mat_superlu_replacetinypivot","ReplaceTinyPivot","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_superlu_replacetinypivot","ReplaceTinyPivot","None",(PetscTruth)lu->options.ReplaceTinyPivot,&flg,0);CHKERRQ(ierr);
     if (flg) lu->options.ReplaceTinyPivot = YES; 
-    ierr = PetscOptionsTruth("-mat_superlu_printstat","PrintStat","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_superlu_printstat","PrintStat","None",(PetscTruth)lu->options.PrintStat,&flg,0);CHKERRQ(ierr);
     if (flg) lu->options.PrintStat = YES; 
     ierr = PetscOptionsInt("-mat_superlu_lwork","size of work array in bytes used by factorization","None",lu->lwork,&lu->lwork,PETSC_NULL);CHKERRQ(ierr); 
     if (lu->lwork > 0 ){

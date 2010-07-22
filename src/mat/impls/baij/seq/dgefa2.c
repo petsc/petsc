@@ -25,6 +25,7 @@ PetscErrorCode Kernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift)
 /*     gaussian elimination with partial pivoting */
 
     PetscFunctionBegin;
+    shift = .25*shift*(1.e-12 + PetscAbsScalar(a[0]) + PetscAbsScalar(a[3]));
     /* Parameter adjustments */
     a       -= 3;
 
@@ -46,7 +47,13 @@ PetscErrorCode Kernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift)
         l       += k - 1;
 	ipvt[k-1] = l;
 
-	if (a[l + k3] == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
+	if (a[l + k3] == 0.0) { 
+	  if (shift == 0.0) {
+	    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
+	  } else {
+	    a[l + k3] = shift;
+	  }
+	}
 
 /*           interchange if necessary */
 

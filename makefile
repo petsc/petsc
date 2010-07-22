@@ -284,7 +284,7 @@ chk_concepts_dir: chk_loc
 dist:
 	${PETSC_DIR}/bin/maint/builddist ${PETSC_DIR}
 
-# This target works only if you can do 'ssh petsc@harley.mcs.anl.gov'
+# This target works only if you can do 'ssh petsc@login.mcs.anl.gov'
 # also copy the file over to ftp site.
 web-snapshot:
 	@if [ ! -f "${HOME}/petsc-dev.tar.gz" ]; then \
@@ -294,7 +294,7 @@ web-snapshot:
 	    tmpdir=`mktemp -d -t petsc-doc.XXXXXXXX`; \
 	    cd $${tmpdir}; tar -xzf ${HOME}/petsc-dev.tar.gz; \
 	    /usr/bin/rsync  -e ssh -az --delete $${tmpdir}/petsc-dev/ \
-              petsc@harley.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as/snapshots/petsc-dev ;\
+              petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as/snapshots/petsc-dev ;\
 	    /bin/cp -f /home/petsc/petsc-dev.tar.gz /mcs/ftp/pub/petsc/petsc-dev.tar.gz;\
 	    ${RM} -rf $${tmpdir} ;\
 	  fi
@@ -306,9 +306,9 @@ update-web-snapshot: dist web-snapshot
 update-web:
 	@cd ${PETSC_DIR}/src/docs; make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} bib2html; \
 	/usr/bin/rsync -az -C --exclude=BitKeeper --exclude=documentation/installation.html \
-	  ${PETSC_DIR}/src/docs/website/ petsc@harley.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as
+	  ${PETSC_DIR}/src/docs/website/ petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as
 	@cd ${PETSC_DIR}/src/docs/tex/manual; make developers.pdf PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} LOC=${PETSC_DIR}; \
-	/usr/bin/rsync -az developers.pdf petsc@harley.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as/developers/
+	/usr/bin/rsync -az developers.pdf petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as/developers/
 
 #
 #  builds a single list of files for each PETSc library so they may all be built in parallel
