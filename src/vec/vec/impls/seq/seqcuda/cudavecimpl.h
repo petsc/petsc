@@ -40,6 +40,8 @@ EXTERN PetscErrorCode VecSetRandom_SeqCUDA(Vec,PetscRandom);
 
 #define VecCUDACastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])
 #define CUSPARRAY cusp::array1d<PetscScalar,cusp::device_memory>
+/*#define WaitForGPU() cudaThreadSynchronize()*/
+#define WaitForGPU() 0
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUDAAllocateCheck"
