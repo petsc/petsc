@@ -111,7 +111,7 @@ struct _p_DA {
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec,PetscViewer);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT VecLoad_Default_DA(PetscViewer,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT VecLoad_Default_DA(Vec, PetscViewer);
 EXTERN_C_END
 EXTERN PetscErrorCode DAView_Private(DA);
 

@@ -2179,7 +2179,7 @@ int FetiLoadVecSeq(char const * const prefix, char const * const name, char cons
     strcat(fname,postfix);
     PetscViewerBinaryOpen(PETSC_COMM_SELF, fname,PETSC_BINARY_RDONLY,&viewer);
     VecCreate(PETSC_COMM_SELF,v);
-    VecLoad(viewer,*v);    
+    VecLoad(*v,viewer);    
     PetscViewerDestroy(viewer);
     PetscFunctionReturn(0);
 }
@@ -2194,7 +2194,7 @@ int FetiLoadVecMPI(char const * const prefix, char const * const name, char cons
     strcat(fname,postfix);
     PetscViewerBinaryOpen(PETSC_COMM_WORLD, fname,PETSC_BINARY_RDONLY,&viewer);
     VecCreate(PETSC_COMM_WORLD,v);
-    VecLoad(viewer,*v);    
+    VecLoad(*v,viewer);    
     PetscViewerDestroy(viewer);
     PetscFunctionReturn(0);
 }

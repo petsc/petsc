@@ -38,7 +38,7 @@ static PetscErrorCode PetscViewerBinaryReadVecHeader_Private(PetscViewer viewer,
 #if defined(PETSC_HAVE_MPIIO)
 #undef __FUNCT__
 #define __FUNCT__ "VecLoad_Binary_MPIIO"
-static PetscErrorCode VecLoad_Binary_MPIIO(PetscViewer viewer,Vec vec)
+static PetscErrorCode VecLoad_Binary_MPIIO(Vec vec, PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    gsizes[1],lsizes[1],lstarts[1];
@@ -73,7 +73,7 @@ static PetscErrorCode VecLoad_Binary_MPIIO(PetscViewer viewer,Vec vec)
     
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoad_Binary"
-PetscErrorCode VecLoad_Binary(PetscViewer viewer, Vec vec)
+PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 {
   PetscMPIInt    size,rank,tag;
   int            fd;
@@ -111,7 +111,7 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, Vec vec)
 #if defined(PETSC_HAVE_MPIIO)
   ierr = PetscViewerBinaryGetMPIIO(viewer,&useMPIIO);CHKERRQ(ierr);
   if (useMPIIO) {
-    ierr = VecLoad_Binary_MPIIO(viewer,vec);CHKERRQ(ierr);
+    ierr = VecLoad_Binary_MPIIO(vec, viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 #endif
@@ -156,7 +156,7 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, Vec vec)
      This should handle properly the cases where PetscInt is 32 or 64 and hsize_t is 32 or 64. These means properly casting with
    checks back and forth between the two types of variables.
 */
-PetscErrorCode VecLoad_HDF5(PetscViewer viewer, Vec xin)
+PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 {
   hsize_t        rdim,dim = 1; /* Could have dim 2 for blocked vectors */
   PetscInt       n, N, bs, low;
@@ -248,7 +248,7 @@ PetscErrorCode VecLoad_HDF5(PetscViewer viewer, Vec xin)
 #undef __FUNCT__
 #define __FUNCT__ "VecLoad_Default"
 
-PetscErrorCode PETSCVEC_DLLEXPORT VecLoad_Default(PetscViewer viewer, Vec newvec)
+PetscErrorCode PETSCVEC_DLLEXPORT VecLoad_Default(Vec newvec, PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscTruth     isbinary;
@@ -268,11 +268,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad_Default(PetscViewer viewer, Vec newvec
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Since HDF5 format gives ASCII name for each object in file; must use VecLoad() after setting name of Vec with PetscObjectSetName()");
      ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
     }
-    ierr = VecLoad_HDF5(viewer,newvec);CHKERRQ(ierr);
+    ierr = VecLoad_HDF5(newvec, viewer);CHKERRQ(ierr);
   } else
 #endif
   {
-    ierr = VecLoad_Binary(viewer,newvec);CHKERRQ(ierr);
+    ierr = VecLoad_Binary(newvec, viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

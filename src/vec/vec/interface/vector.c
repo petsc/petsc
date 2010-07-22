@@ -974,10 +974,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecResetArray(Vec vec)
   Collective on PetscViewer 
 
   Input Parameters:
-+ viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
-           HDF5 file viewer, obtained from PetscViewerHDF5Open()
-- newvec - the newly loaded vector, this needs to have been created with VecCreate() or
++ newvec - the newly loaded vector, this needs to have been created with VecCreate() or
            some related function before a call to VecLoad(). 
+- viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
+           HDF5 file viewer, obtained from PetscViewerHDF5Open()
 
   Basic Options Database Keys:
 +   -vec_type seq      - sequential type
@@ -1018,7 +1018,7 @@ and PetscBinaryWrite() to see how this may be done.
 
 .seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoad() 
 @*/  
-PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, Vec newvec)
+PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(Vec newvec, PetscViewer viewer)
 {
   PetscErrorCode ierr;
   MPI_Comm       comm;
@@ -1030,8 +1030,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, Vec newvec)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidHeaderSpecific(newvec,VEC_CLASSID,2);
-  PetscValidPointer(newvec,2);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  PetscValidPointer(newvec,1);
 
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
 
@@ -1050,7 +1050,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, Vec newvec)
     }
     ierr = VecSetType(newvec, outtype);CHKERRQ(ierr);
   }
-  ierr = (*newvec->ops->load)(viewer,newvec);CHKERRQ(ierr);
+  ierr = (*newvec->ops->load)(newvec,viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

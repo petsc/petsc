@@ -89,7 +89,7 @@ struct _VecOps {
   PetscErrorCode (*norm_local)(Vec,NormType,PetscReal*);
   PetscErrorCode (*mdot_local)(Vec,PetscInt,const Vec[],PetscScalar*);
   PetscErrorCode (*mtdot_local)(Vec,PetscInt,const Vec[],PetscScalar*);
-  PetscErrorCode (*load)(PetscViewer,Vec);
+  PetscErrorCode (*load)(Vec,PetscViewer);
   PetscErrorCode (*reciprocal)(Vec);
   PetscErrorCode (*conjugate)(Vec);
   PetscErrorCode (*setlocaltoglobalmapping)(Vec,ISLocalToGlobalMapping);
@@ -356,8 +356,8 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayPrivate3(Vec x, PetscScalar *x
 /* Default obtain and release vectors; can be used by any implementation */
 EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
 EXTERN PetscErrorCode VecDestroyVecs_Default(Vec [],PetscInt);
-EXTERN PetscErrorCode VecLoad_Binary(PetscViewer,Vec);
-EXTERN PetscErrorCode VecLoad_Default(PetscViewer,Vec);
+EXTERN PetscErrorCode VecLoad_Binary(Vec, PetscViewer);
+EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
 
 extern PetscInt NormIds[7];  /* map from NormType to IDs used to cache/retreive values of norms */
 
