@@ -58,7 +58,7 @@
       endif
 
       call VecCreate(PETSC_COMM_WORLD,b,ierr)
-      call VecLoad(fd,b,ierr)
+      call VecLoad(b,fd,ierr)
       call PetscViewerDestroy(fd,ierr)
 
 ! Set up solution

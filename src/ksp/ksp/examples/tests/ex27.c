@@ -43,7 +43,7 @@ int main(int argc,char **args)
   ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
   ierr = MatLoad(fd,A);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr = PetscExceptionTry1(VecLoad(fd,b),PETSC_ERR_FILE_READ);     
+  ierr = PetscExceptionTry1(VecLoad(b,fd),PETSC_ERR_FILE_READ);     
   if (PetscExceptionCaught(ierr,PETSC_ERR_FILE_UNEXPECTED) || PetscExceptionCaught(ierr,PETSC_ERR_FILE_READ)) { 
     /* if file contains no RHS, then use a vector of all ones */
     PetscInt    m;

@@ -33,7 +33,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(fd,A);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr = VecLoad(fd,b);CHKERRQ(ierr);
+  ierr = VecLoad(b,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);

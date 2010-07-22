@@ -17,7 +17,7 @@ int main(int argc,char **args)
 
   for (i=0;i<1000;i++){
     ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-    ierr = VecLoad(fd,b);CHKERRQ(ierr);
+    ierr = VecLoad(b,fd);CHKERRQ(ierr);
     ierr = VecView(b,fd);CHKERRQ(ierr);
     ierr = VecDestroy(b);CHKERRQ(ierr);
   }

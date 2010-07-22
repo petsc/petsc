@@ -38,7 +38,7 @@ int main(int argc,char **args)
       ierr = VecSet(x,one);CHKERRQ(ierr);
       } 
   } else {
-      ierr = VecLoad(fd,x);CHKERRQ(ierr);
+    ierr = VecLoad(x,fd);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
   }
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);

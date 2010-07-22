@@ -27,7 +27,7 @@ int main(int argc,char **args)
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatLoad(fd,A);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecLoad(fd,x);CHKERRQ(ierr);
+  ierr = VecLoad(x,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   /* Write matrix and vector */

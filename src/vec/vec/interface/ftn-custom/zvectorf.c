@@ -41,7 +41,7 @@ void PETSC_STDCALL vecsetvaluelocal_(Vec *v,PetscInt *i,PetscScalar *va,InsertMo
   *ierr = VecSetValuesLocal(*v,1,i,va,*mode);
 }
 
-void PETSC_STDCALL vecload_(PetscViewer *viewer,Vec *vec,PetscErrorCode *ierr)
+void PETSC_STDCALL vecload_(Vec *vec, PetscViewer *viewer,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);

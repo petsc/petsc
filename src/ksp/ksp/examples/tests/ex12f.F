@@ -53,7 +53,7 @@
 
  100  format(4(i4,1x),7(g7.1,1x))
       call VecCreate(PETSC_COMM_WORLD,b,ierr)
-      call VecLoad(fd,b,ierr)
+      call VecLoad(b,fd,ierr)
       call PetscViewerDestroy(fd,ierr)
 
 ! Set up solution

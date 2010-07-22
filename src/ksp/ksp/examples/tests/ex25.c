@@ -35,8 +35,8 @@ int main(int argc,char **args)
   ierr = MatLoad(view,C);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecLoad(view,b);CHKERRQ(ierr);
-  ierr = VecLoad(view,u);CHKERRQ(ierr);
+  ierr = VecLoad(b,view);CHKERRQ(ierr);
+  ierr = VecLoad(u,view);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(view);CHKERRQ(ierr);
   /* ierr = VecView(b,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   /* ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
