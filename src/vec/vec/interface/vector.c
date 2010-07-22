@@ -1050,10 +1050,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, Vec newvec)
     if (flg) {
       outtype = vtype;
     }
-    ierr = PetscOptionsGetString(prefix,"-vecload_type",vtype,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      outtype = vtype;
-    }
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
     if (!outtype) {
       ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
