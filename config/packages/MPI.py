@@ -173,7 +173,8 @@ class Configure(config.package.Package):
     self.popLanguage()
     if not self.getExecutable(mpiexecs, path = path, useDefaultPath = 1, resultName = 'mpiexec',setMakeMacro=0):
       raise RuntimeError('Could not locate MPIEXEC - please specify --with-mpiexec option')
-    self.addMakeMacro('MPIEXEC',self.mpiexec.replace(' -n 1','').replace(' ', '\\ '))
+    self.mpiexec = self.mpiexec.replace(' -n 1','').replace(' ', '\\ ')
+    self.addMakeMacro('MPIEXEC', self.mpiexec)
     return
 
   def configureMPI2(self):
