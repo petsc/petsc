@@ -16,17 +16,21 @@ static PetscErrorCode VecLoad_Compat(PetscViewer viewer, Vec vec)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   PetscValidHeaderSpecific(vec,VEC_COOKIE,2);
   ierr = VecGetType(vec,&type);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
-  ierr = VecGetSize(vec,&N);CHKERRQ(ierr);
-  if (type && n>=0 && N>=0) {
-    ierr = VecLoadIntoVector(viewer,vec);CHKERRQ(ierr);
-  } else {
+  if (type) {
+    ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
+    ierr = VecGetSize(vec,&N);CHKERRQ(ierr);
+    if (n>=0 && N>=0) {
+      ierr = VecLoadIntoVector(viewer,vec);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
+  {
     Vec           loadvec;
     const VecType loadtype = type;
     if (!loadtype) {
       MPI_Comm    comm;
       PetscMPIInt size;
-      ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+      ierr = PetscObjectGetComm((PetscObject)vec,&comm);CHKERRQ(ierr);
       ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
       loadtype = (size > 1) ? VECMPI : VECSEQ;
     }

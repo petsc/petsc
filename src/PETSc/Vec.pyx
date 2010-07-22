@@ -128,6 +128,11 @@ cdef class Vec(Object):
         PetscCLEAR(self.obj); self.vec = newvec
         return self
 
+    def setType(self, vec_type):
+        cdef PetscVecType cval = NULL
+        vec_type = str2bytes(vec_type, &cval)
+        CHKERR( VecSetType(self.vec, cval) )
+
     def setSizes(self, size, bsize=None):
         cdef MPI_Comm ccomm = MPI_COMM_NULL
         CHKERR( PetscObjectGetComm(<PetscObject>self.vec, &ccomm) )
@@ -137,10 +142,7 @@ cdef class Vec(Object):
         if bs != PETSC_DECIDE:
             CHKERR( VecSetBlockSize(self.vec, bs) )
 
-    def setType(self, vec_type):
-        cdef PetscVecType cval = NULL
-        vec_type = str2bytes(vec_type, &cval)
-        CHKERR( VecSetType(self.vec, cval) )
+    #
 
     def createSeq(self, size, bsize=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_SELF)
@@ -240,6 +242,8 @@ cdef class Vec(Object):
         if bs != PETSC_DECIDE:
             CHKERR( VecSetBlockSize(self.vec, bs) )
         return self
+
+    #
 
     def setOptionsPrefix(self, prefix):
         cdef const_char *cval = NULL
@@ -351,14 +355,19 @@ cdef class Vec(Object):
         CHKERR( VecCopy(self.vec, result.vec) )
         return result
 
+    def load(self, Viewer viewer not None):
+        cdef MPI_Comm comm = MPI_COMM_NULL
+        cdef PetscObject obj = <PetscObject>(viewer.vwr)
+        if self.vec == NULL:
+            CHKERR( PetscObjectGetComm(obj, &comm) )
+            CHKERR( VecCreate(comm, &self.vec) )
+        CHKERR( VecLoad(viewer.vwr, self.vec) )
+        return self
+
     def equal(self, Vec vec not None):
         cdef PetscTruth flag = PETSC_FALSE
         CHKERR( VecEqual(self.vec, vec.vec, &flag) )
         return <bint> flag
-
-    def load(self, Viewer viewer not None):
-        CHKERR( VecLoad(viewer.vwr, self.vec) )
-        return self
 
     def dot(self, Vec vec not None):
         cdef PetscScalar sval = 0

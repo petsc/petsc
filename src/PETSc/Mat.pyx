@@ -206,17 +206,17 @@ cdef class Mat(Object):
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
+    def setType(self, mat_type):
+        cdef PetscMatType cval = NULL
+        mat_type = str2bytes(mat_type, &cval)
+        CHKERR( MatSetType(self.mat, cval) )
+
     def setSizes(self, size, bsize=None):
         cdef MPI_Comm ccomm = MPI_COMM_NULL
         CHKERR( PetscObjectGetComm(<PetscObject>self.mat, &ccomm) )
         cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
         CHKERR( Mat_SplitSizes(ccomm, size, bsize, &bs, &m, &n, &M, &N) )
         CHKERR( MatSetSizes(self.mat, m, n, M, N) )
-
-    def setType(self, mat_type):
-        cdef PetscMatType cval = NULL
-        mat_type = str2bytes(mat_type, &cval)
-        CHKERR( MatSetType(self.mat, cval) )
 
     #
 
@@ -270,8 +270,6 @@ cdef class Mat(Object):
         else:
             CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, bs) )
 
-    #
-
     def createDense(self, size, bsize=None, array=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
@@ -294,8 +292,6 @@ cdef class Mat(Object):
             CHKERR( Mat_AllocDense_ARRAY(self.mat, bs, array) )
         else:
             CHKERR( Mat_AllocDense_DEFAULT(self.mat, bs) )
-
-    #
 
     def createIS(self, size, LGMap lgmap, comm=None):
         if comm is None: comm = lgmap.getComm()
@@ -350,8 +346,6 @@ cdef class Mat(Object):
     ##     CHKERR( MatCreateShell(ccomm, m, n, M, N, NULL, &newmat) )
     ##     PetscCLEAR(self.obj); self.mat = newmat
     ##     return self
-
-    #
 
     def createPython(self, size, context=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
@@ -473,13 +467,14 @@ cdef class Mat(Object):
         CHKERR( MatCopy(self.mat, result.mat, flag) )
         return result
 
-    def equal(self, Mat mat not None):
-        cdef PetscTruth flag = PETSC_FALSE
-        CHKERR( MatEqual(self.mat, mat.mat, &flag) )
-        return <bint> mat
-
     def load(self, Viewer viewer not None):
+        cdef MPI_Comm comm = MPI_COMM_NULL
+        cdef PetscObject obj = <PetscObject>(viewer.vwr)
+        if self.mat == NULL:
+            CHKERR( PetscObjectGetComm(obj, &comm) )
+            CHKERR( MatCreate(comm, &self.mat) )
         CHKERR( MatLoad(viewer.vwr, self.mat) )
+        return self
 
     def convert(self, mat_type=None, Mat out=None):
         cdef PetscMatType mtype = MATSAME
@@ -526,6 +521,11 @@ cdef class Mat(Object):
         cdef Mat mat = Mat()
         CHKERR( MatPermute(self.mat, row.iset, col.iset, &mat.mat) )
         return mat
+
+    def equal(self, Mat mat not None):
+        cdef PetscTruth flag = PETSC_FALSE
+        CHKERR( MatEqual(self.mat, mat.mat, &flag) )
+        return <bint> mat
 
     def isTranspose(self, Mat mat=None, tol=0):
         if mat is None: mat = self
