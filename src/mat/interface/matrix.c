@@ -5176,7 +5176,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsIS(Mat mat,IS is,PetscScalar diag)
 #define __FUNCT__ "MatZeroRowsStencil"
 /*@C
    MatZeroRowsStencil - Zeros all entries (except possibly the main diagonal)
-   of a set of rows of a matrix.
+   of a set of rows of a matrix. These rows must be local to the process.
 
    Collective on Mat
 
@@ -5239,7 +5239,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsStencil(Mat mat,PetscInt numRows,co
   PetscInt      *dims   = mat->stencil.dims+1;
   PetscInt      *starts = mat->stencil.starts;
   PetscInt      *dxm    = (PetscInt *) rows;
-  PetscInt      *jdxm, i, j, tmp;
+  PetscInt      *jdxm, i, j, tmp, numNewRows = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -5249,14 +5249,23 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsStencil(Mat mat,PetscInt numRows,co
 
   ierr = PetscMalloc(numRows * sizeof(PetscInt), &jdxm);CHKERRQ(ierr);
   for(i = 0; i < numRows; ++i) {
+    /* Skip unused dimensions (they are ordered k, j, i, c) */
     for(j = 0; j < 3-sdim; ++j) dxm++;
+    /* Local index in X dir */
     tmp = *dxm++ - starts[0];
+    /* Loop over remaining dimensions */
     for(j = 0; j < dim-1; ++j) {
+      /* If nonlocal, set index to be negative */
       if ((*dxm++ - starts[j+1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
+      /* Update local index */
       else                                       tmp = tmp*dims[j] + *(dxm-1) - starts[j+1];
     }
+    /* Skip component slot if necessary */
     if (mat->stencil.noc) dxm++;
-    jdxm[i] = tmp;
+    /* Local row number */
+    if (tmp >= 0) {
+      jdxm[numNewRows++] = tmp;
+    }
   }
   ierr = MatZeroRowsLocal(mat,numRows,jdxm,diag);CHKERRQ(ierr);
   ierr = PetscFree(jdxm);CHKERRQ(ierr);
