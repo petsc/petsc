@@ -26,7 +26,7 @@ class Configure(PETSc.package.NewPackage):
       except RuntimeError, e:
         raise RuntimeError('Error running configure on c2html: '+str(e))
       try:
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'&& make && make install && make clean', timeout=2500, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make && make install && make clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on c2html: '+str(e))
       output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir,'c2html.args')+' '+self.confDir+'/c2html', timeout=5, log = self.framework.log)
