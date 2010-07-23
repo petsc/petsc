@@ -7,6 +7,9 @@
 #include <thrust/device_vector.h>
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/transform.h>
+#if defined(PETSC_HAVE_CUSP_DEV)
+#include <cusp/precond/smoothed_aggregation.h>
+#endif
 
 EXTERN PetscErrorCode VecDotNorm2_SeqCUDA(Vec,Vec,PetscScalar *, PetscScalar *);
 EXTERN PetscErrorCode VecPointwiseDivide_SeqCUDA(Vec,Vec,Vec);

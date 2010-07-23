@@ -89,15 +89,14 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
 
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
+  if (A->spptr){
+    delete (CUSPMATRIX *)(A->spptr);
+  }
   A->spptr = new CUSPMATRIX;
   ((CUSPMATRIX *)(A->spptr))->resize(m,A->cmap->n,a->nz);
   ((CUSPMATRIX *)(A->spptr))->row_offsets.assign(a->i,a->i+m+1);
   ((CUSPMATRIX *)(A->spptr))->column_indices.assign(a->j,a->j+a->nz);
   ((CUSPMATRIX *)(A->spptr))->values.assign(a->a,a->a+a->nz);
-
-  /* This shouldn't be necessary
-  A->ops->mult = MatMult_SeqAIJCUDA;
-  */
   PetscFunctionReturn(0);
 }
 
