@@ -73,7 +73,7 @@
 
       call MatCreate(PETSC_COMM_WORLD,Adj,ierr)
       call MatSetType(Adj, MATMPIBAIJ,ierr)
-      call MatLoad(petscviewer,Adj,ierr)
+      call MatLoad(Adj,petscviewer,ierr)
       call MatGetLocalSize(Adj,nlocal,nlocal,ierr)
       call PetscViewerDestroy(petscviewer,ierr)
 

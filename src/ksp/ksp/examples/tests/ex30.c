@@ -93,7 +93,7 @@ int main(int argc,char **args)
        Load the matrix and vector; then destroy the viewer.
     */
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-    ierr = MatLoad(fd,A);CHKERRQ(ierr);
+    ierr = MatLoad(A,fd);CHKERRQ(ierr);
     
     if (!preload){
       flg = PETSC_FALSE;
@@ -133,7 +133,7 @@ int main(int argc,char **args)
         /* load B to get A = A + sigma*B */
         ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
 	ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-	ierr = MatLoad(fd,B);CHKERRQ(ierr);
+	ierr = MatLoad(B,fd);CHKERRQ(ierr);
         ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
         ierr = MatAXPY(A,sigma,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- sigma*B + A */  
       } else {

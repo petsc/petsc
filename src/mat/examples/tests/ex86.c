@@ -19,7 +19,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,infile,FILE_MODE_READ,&in);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&inmat);CHKERRQ(ierr);
   ierr = MatSetType(inmat,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatLoad(in,inmat);CHKERRQ(ierr);
+  ierr = MatLoad(inmat,in);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(in);CHKERRQ(ierr);
 
   ierr = MatMerge(PETSC_COMM_WORLD,inmat,PETSC_DECIDE,MAT_INITIAL_MATRIX,&outmat);CHKERRQ(ierr);

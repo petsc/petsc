@@ -81,7 +81,7 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&ctx.A);CHKERRQ(ierr);
   ierr = MatSetType(ctx.A,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatLoad(fd,ctx.A);CHKERRQ(ierr);
+  ierr = MatLoad(ctx.A,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   /* Create work vectors for matrix-vector product */

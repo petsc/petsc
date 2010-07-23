@@ -56,7 +56,7 @@
      &        FILE_MODE_READ,view,ierr)
          call MatCreate(PETSC_COMM_SELF,A,ierr)
          call MatSetType(A, MATSEQDENSE,ierr)
-         call MatLoad(view,A,ierr)
+         call MatLoad(A,view,ierr)
          write (6,200)
  200     format('The Contents of SeqDense Matrix read in from file')
          call MatView(A,PETSC_VIEWER_STDOUT_SELF,ierr)
@@ -74,7 +74,7 @@
      &     FILE_MODE_READ,view,ierr)
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetType(A, MATMPIDENSE,ierr)
-      call MatLoad(view,A,ierr)
+      call MatLoad(A,view,ierr)
       if (rank .eq. 0) then
          write (6,300)
  300     format('The Contents of MPIDense Matrix read in from file')

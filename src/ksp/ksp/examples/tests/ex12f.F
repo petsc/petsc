@@ -37,7 +37,7 @@
 
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetType(A, MATSEQAIJ,ierr)
-      call MatLoad(fd,A,ierr)
+      call MatLoad(A,fd,ierr)
 
 ! Get information about matrix
       call MatGetSize(A,m,n,ierr)

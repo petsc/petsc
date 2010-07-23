@@ -42,7 +42,7 @@ int main(int argc,char **args)
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetType(C,type);CHKERRQ(ierr);
-  ierr = MatLoad(fd,C);CHKERRQ(ierr);
+  ierr = MatLoad(C,fd);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
   ierr = VecLoad(u,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
