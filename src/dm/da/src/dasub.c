@@ -78,3 +78,70 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetProcessorSubset(DA da,DADirection dir,Pets
   ierr = PetscFree2(owners,ranks);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
+
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetProcessorSubsets"
+/*@C
+   DAGetProcessorSubsets - Returns communicators consisting only of the
+   processors in a DA adjacent in a particular dimension,
+   corresponding to a logical plane in a 3D grid or a line in a 2D grid.
+
+   Collective on DA
+
+   Input Parameters:
++  da - the distributed array
+-  dir - Cartesian direction, either DA_X, DA_Y, or DA_Z
+
+   Output Parameters:
+.  subcomm - new communicator
+
+   Level: advanced
+
+   Notes:
+   This routine is useful for distributing one-dimensional data in a tensor product grid.
+
+.keywords: distributed array, get, processor subset
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DAGetProcessorSubsets(DA da, DADirection dir, MPI_Comm *subcomm)
+{
+  MPI_Comm       comm;
+  MPI_Group      group, subgroup;
+  PetscInt       subgroupSize = 0;
+  PetscInt      *firstPoints;
+  PetscMPIInt    size, *subgroupRanks = PETSC_NULL;
+  PetscInt       xs, xm, ys, ym, zs, zm, firstPoint, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da, DM_CLASSID, 1);
+  comm = ((PetscObject) da)->comm;
+  ierr = DAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  if (dir == DA_Z) {
+    if (da->dim < 3) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"DA_Z invalid for DA dim < 3");
+    firstPoint = zs;
+  } else if (dir == DA_Y) {
+    if (da->dim == 1) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"DA_Y invalid for DA dim = 1");
+    firstPoint = ys;
+  } else if (dir == DA_X) {
+    firstPoint = xs;
+  } else SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
+
+  ierr = PetscMalloc2(size, PetscInt, &firstPoints, size, PetscMPIInt, &subgroupRanks);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&firstPoint, 1, MPIU_INT, firstPoints, 1, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr = PetscInfo2(da,"DAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir);CHKERRQ(ierr);
+  for(p = 0; p < size; ++p) {
+    if (firstPoints[p] == firstPoint) {
+      subgroupRanks[subgroupSize++] = p;
+      ierr = PetscInfo1(da, "%D ", p);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscInfo(da, "\n");CHKERRQ(ierr);
+  ierr = MPI_Comm_group(comm, &group);CHKERRQ(ierr);
+  ierr = MPI_Group_incl(group, subgroupSize, subgroupRanks, &subgroup);CHKERRQ(ierr);
+  ierr = MPI_Comm_create(comm, subgroup, subcomm);CHKERRQ(ierr);
+  ierr = MPI_Group_free(&subgroup);CHKERRQ(ierr);
+  ierr = MPI_Group_free(&group);CHKERRQ(ierr);
+  ierr = PetscFree2(firstPoints, subgroupRanks);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+} 

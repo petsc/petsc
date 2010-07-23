@@ -9,6 +9,7 @@ int main(int argc, char *argv[]) {
   PetscScalar   **arrayX, **arrayY;
   const PetscInt *lx, *ly;
   PetscInt        M = 3, N = 3;
+  PetscInt        p = 1;
   PetscInt        numGP = 3;
   PetscInt        dof = 2*(p+1)*numGP;
   PetscMPIInt     rank, subsize, subrank;
@@ -21,8 +22,8 @@ int main(int argc, char *argv[]) {
   /* Create 1D DAs along two directions */
   ierr = DAGetOwnershipRanges(da, &lx, &ly, PETSC_NULL);CHKERRQ(ierr);
   ierr = DAGetLocalInfo(da, &info);CHKERRQ(ierr);
-  ierr = DAGetProcessorSubset(da, DA_X, info.xs, &commX);CHKERRQ(ierr);
-  ierr = DAGetProcessorSubset(da, DA_Y, info.ys, &commY);CHKERRQ(ierr);
+  ierr = DAGetProcessorSubsets(da, DA_X, &commX);CHKERRQ(ierr);
+  ierr = DAGetProcessorSubsets(da, DA_Y, &commY);CHKERRQ(ierr);
   ierr = MPI_Comm_size(commX, &subsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(commX, &subrank);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]X subrank: %d subsize: %d\n", rank, subrank, subsize);
@@ -37,13 +38,13 @@ int main(int argc, char *argv[]) {
   /* Extract basis functions */
   ierr = DAVecGetArrayDOF(daX, basisX, &arrayX);CHKERRQ(ierr);
   ierr = DAVecGetArrayDOF(daY, basisY, &arrayY);CHKERRQ(ierr);
-  arrayX[i][ndof];
-  arrayY[j][ndof];
+  //arrayX[i][ndof];
+  //arrayY[j][ndof];
   ierr = DAVecRestoreArrayDOF(daX, basisX, &arrayX);CHKERRQ(ierr);
   ierr = DAVecRestoreArrayDOF(daY, basisY, &arrayY);CHKERRQ(ierr);
   /* Cleanup */
-  ierr = VectorDestroy(basisX);CHKERRQ(ierr);
-  ierr = VectorDestroy(basisY);CHKERRQ(ierr);
+  ierr = VecDestroy(basisX);CHKERRQ(ierr);
+  ierr = VecDestroy(basisY);CHKERRQ(ierr);
   ierr = DADestroy(daX);CHKERRQ(ierr);
   ierr = DADestroy(daY);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);

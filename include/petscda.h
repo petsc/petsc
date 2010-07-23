@@ -155,6 +155,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetCorners(DA,PetscInt*,PetscInt*,P
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetGhostCorners(DA,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetInfo(DA,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,DAPeriodicType*,DAStencilType*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetProcessorSubset(DA,DADirection,PetscInt,MPI_Comm*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetProcessorSubsets(DA,DADirection,MPI_Comm*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DARefine(DA,MPI_Comm,DA*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACoarsen(DA,MPI_Comm,DA*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DARefineHierarchy(DA,PetscInt,DA[]);
