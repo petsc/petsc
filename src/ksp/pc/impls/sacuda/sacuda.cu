@@ -1,6 +1,5 @@
 #define PETSCKSP_DLL
 
-#define cudasaprecond cusp::precond::smoothed_aggregation<PetscInt,PetscScalar,cusp::device_memory>
 /*  -------------------------------------------------------------------- */
 
 /* 
@@ -9,7 +8,14 @@
 */
 
 #include "private/pcimpl.h"   /*I "petscpc.h" I*/
-#include "../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h"
+#include "../src/mat/impls/aij/seq/aij.h"
+#include <cusp/precond/smoothed_aggregation.h>
+
+#ifndef CUSPMATRIX
+#define CUSPMATRIX cusp::csr_matrix<PetscInt,PetscScalar,cusp::device_memory>
+#endif
+#define CUSPARRAY cusp::array1d<PetscScalar,cusp::device_memory>
+#define cudasaprecond cusp::precond::smoothed_aggregation<PetscInt,PetscScalar,cusp::device_memory>
 
 /* 
    Private context (data structure) for the SACUDA preconditioner.  
@@ -40,15 +46,26 @@ static PetscErrorCode PCSetUp_SACUDA(PC pc)
   PC_SACUDA      *sa = (PC_SACUDA*)pc->data;
   PetscTruth     flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
   PetscErrorCode ierr;
+  cusp::coo_matrix<PetscInt,PetscScalar,cusp::device_memory> tempmat;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUDA,&flg1);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)pc->pmat,MATMPIAIJCUDA,&flg2);CHKERRQ(ierr);
   if (!(flg1 || flg2)) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Currently only handles CUDA matrices");
-  if (pc->setupcalled == 0){/* allocate space for preconditioner */
-    sa->SACUDA = new cudasaprecond;
-    PetscLogObjectParent(pc,sa->SACUDA);
+  if (pc->setupcalled != 0){
+    try {
+      delete sa->SACUDA;
+    } catch(char* ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+    } 
   }
+  try {
+    tempmat    = *(CUSPMATRIX *)(pc->pmat->spptr);
+    sa->SACUDA = new cudasaprecond(tempmat);
+  } catch(char* ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+  } 
+  PetscLogObjectParent(pc,sa->SACUDA);
   PetscFunctionReturn(0);
 }
 
@@ -69,15 +86,24 @@ static PetscErrorCode PCSetUp_SACUDA(PC pc)
 #define __FUNCT__ "PCApply_SACUDA"
 static PetscErrorCode PCApply_SACUDA(PC pc,Vec x,Vec y)
 {
-  PC_Jacobi      *sac = (PC_SACUDA*)pc->data;
+  PC_SACUDA      *sac = (PC_SACUDA*)pc->data;
   PetscErrorCode ierr;
+  PetscTruth     flg1 = PETSC_FALSE, flg2 = PETSC_FALSE, flg3 = PETSC_FALSE, flg4 = PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)x,VECSEQCUDA,&flg1);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)x,VECMPICUDA,&flg2);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)y,VECSEQCUDA,&flg3);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)y,VECMPICUDA,&flg4);CHKERRQ(ierr);
+  if (!((flg1 || flg2) && (flg3 || flg4))) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP, "Currently only handles CUDA vectors");
   if (!sac->SACUDA) {
     ierr = PCSetUp_SACUDA(pc);CHKERRQ(ierr);
   }
-  /* what goes here? */
-  ierr = VecPointwiseMult(y,x,jac->diag);CHKERRQ(ierr);
+  try {
+    sac->SACUDA->solve(*(CUSPARRAY *)(x->spptr),*(CUSPARRAY *)(y->spptr));
+  } catch(char* ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+  } 
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -98,7 +124,13 @@ static PetscErrorCode PCDestroy_SACUDA(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (sac->SACUDA)     {delete sac->SACUDA;}
+  if (sac->SACUDA) {
+    try {
+      delete sac->SACUDA;
+    } catch(char* ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+    } 
+}
 
   /*
       Free the private data structure that was hanging off the PC
@@ -111,8 +143,7 @@ static PetscErrorCode PCDestroy_SACUDA(PC pc)
 #define __FUNCT__ "PCSetFromOptions_SACUDA"
 static PetscErrorCode PCSetFromOptions_SACUDA(PC pc)
 {
-  PC_SACUDA      *sac = (PC_SACUDA*)pc->data;
-  PetscErrorCode ierr;
+    PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SACUDA options");CHKERRQ(ierr);
@@ -143,7 +174,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SACUDA(PC pc)
   /*
      Initialize the pointer to zero
   */
-  sac->SACCUDA          = 0;
+  sac->SACUDA          = 0;
 
 
   /*
@@ -154,14 +185,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SACUDA(PC pc)
       not needed.
   */
   pc->ops->apply               = PCApply_SACUDA;
-  pc->ops->applytranspose      = PCApply_SACUDA;
+  pc->ops->applytranspose      = 0;
   pc->ops->setup               = PCSetUp_SACUDA;
   pc->ops->destroy             = PCDestroy_SACUDA;
   pc->ops->setfromoptions      = PCSetFromOptions_SACUDA;
   pc->ops->view                = 0;
   pc->ops->applyrichardson     = 0;
-  pc->ops->applysymmetricleft  = 0
-  pc->ops->applysymmetricright = 0
+  pc->ops->applysymmetricleft  = 0;
+  pc->ops->applysymmetricright = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

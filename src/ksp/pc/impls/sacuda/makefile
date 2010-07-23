@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = sacuda.cu
+SOURCECU  = sacuda.cu
 SOURCEF  =
 SOURCEH  = 
 OBJSC    = sacuda.o
