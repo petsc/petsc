@@ -73,7 +73,7 @@
 
       call MatCreate(PETSC_COMM_WORLD,Adj,ierr)
       call MatSetType(Adj, MATMPIBAIJ,ierr)
-      call MatLoad(petscviewer,Adj,ierr)
+      call MatLoad(Adj,petscviewer,ierr)
       call MatGetLocalSize(Adj,nlocal,nlocal,ierr)
       call PetscViewerDestroy(petscviewer,ierr)
 
@@ -98,7 +98,7 @@
       call VecCreateMPI(PETSC_COMM_WORLD,nlocal/bs,PETSC_DETERMINE,       &
      &                  volumes_orig,ierr)
       call PetscObjectSetName(volumes_orig,'/Cells/Volumes',ierr)
-      call VecLoad(hdf5viewer,volumes_orig,ierr)
+      call VecLoad(volumes_orig,hdf5viewer,ierr)
       call VecCreateMPI(PETSC_COMM_WORLD,nlocalnew/bs,PETSC_DETERMINE,       &
      &                  volumes,ierr)
       call MatGetSize(Adjnew,ntotal,ntotal,ierr)

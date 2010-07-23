@@ -499,7 +499,7 @@ PetscPolymorphicFunction(MatIsHermitian,(Mat A),(A,0,&t),PetscTruth,t)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetricKnown(Mat,PetscTruth*,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianKnown(Mat,PetscTruth*,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMissingDiagonal(Mat,PetscTruth *,PetscInt *);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer,Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(Mat, PetscViewer);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
@@ -1567,11 +1567,11 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetContext(Mat,void*);
 
 /*
    Codes for matrices stored on disk. By default they are
- stored in a universal format. By changing the format with 
- PetscViewerSetFormat(viewer,PETSC_VIEWER_NATIVE); the matrices will
- be stored in a way natural for the matrix, for example dense matrices
- would be stored as dense. Matrices stored this way may only be
- read into matrices of the same time.
+   stored in a universal format. By changing the format with 
+   PetscViewerSetFormat(viewer,PETSC_VIEWER_NATIVE); the matrices will
+   be stored in a way natural for the matrix, for example dense matrices
+   would be stored as dense. Matrices stored this way may only be
+   read into matrices of the same type.
 */
 #define MATRIX_BINARY_FORMAT_DENSE -1
 

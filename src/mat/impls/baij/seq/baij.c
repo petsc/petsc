@@ -3263,7 +3263,7 @@ PetscErrorCode MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_SeqBAIJ"
-PetscErrorCode MatLoad_SeqBAIJ(PetscViewer viewer,Mat newmat)
+PetscErrorCode MatLoad_SeqBAIJ(Mat newmat,PetscViewer viewer)
 {
   Mat_SeqBAIJ    *a;
   PetscErrorCode ierr;

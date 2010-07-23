@@ -754,12 +754,9 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
    Collective on PetscViewer
 
    Input Parameters:
-+  viewer - binary file viewer, created with PetscViewerBinaryOpen()
--  outtype - type of matrix desired, for example MATSEQAIJ,
-              MATMPISBAIJ etc.  See types in petsc/include/petscmat.h.
-
-   Output Parameters:
-.  newmat - new matrix
++  newmat - the newly loaded matrix, this needs to have been created with MatCreate()
+            or some related function before a call to MatLoad()
+-  viewer - binary file viewer, created with PetscViewerBinaryOpen()
 
    Basic Options Database Keys:
 +    -mat_type seqaij   - AIJ type
@@ -824,15 +821,15 @@ and PetscBinaryWrite() to see how this may be done.
 .seealso: PetscViewerBinaryOpen(), MatView(), VecLoad()
 
  @*/  
-PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer, Mat newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(Mat newmat,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscTruth     isbinary,flg;
   const MatType  outtype=0;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidHeaderSpecific(newmat,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(newmat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
@@ -845,7 +842,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer, Mat newmat)
   if (!newmat->ops->load) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatLoad is not supported for type: %s",outtype);
 
   ierr = PetscLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
-  ierr = (*newmat->ops->load)(viewer,newmat);CHKERRQ(ierr);
+  ierr = (*newmat->ops->load)(newmat,viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;

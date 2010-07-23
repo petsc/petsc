@@ -470,7 +470,7 @@ EXTERN_C_END
 #if defined(PETSC_HAVE_HDF5)
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoad_HDF5_DA"
-PetscErrorCode VecLoad_HDF5_DA(PetscViewer viewer,Vec xin)
+PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 {
   DA             da;
   PetscErrorCode ierr;
@@ -557,7 +557,7 @@ PetscErrorCode VecLoad_HDF5_DA(PetscViewer viewer,Vec xin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoad_Binary_DA"
-PetscErrorCode VecLoad_Binary_DA(PetscViewer viewer,Vec xin)
+PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
 {
   DA             da;
   PetscErrorCode ierr;
@@ -583,7 +583,7 @@ PetscErrorCode VecLoad_Binary_DA(PetscViewer viewer,Vec xin)
   ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)natural,((PetscObject)xin)->name);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,prefix);CHKERRQ(ierr);
-  ierr = VecLoad_Binary(viewer,natural);CHKERRQ(ierr);
+  ierr = VecLoad_Binary(natural,viewer);CHKERRQ(ierr);
   ierr = DANaturalToGlobalBegin(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
   ierr = DANaturalToGlobalEnd(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
   ierr = VecDestroy(natural);CHKERRQ(ierr);
@@ -598,7 +598,7 @@ PetscErrorCode VecLoad_Binary_DA(PetscViewer viewer,Vec xin)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecLoad_Default_DA"
-PetscErrorCode PETSCDM_DLLEXPORT VecLoad_Default_DA(PetscViewer viewer, Vec xin)
+PetscErrorCode PETSCDM_DLLEXPORT VecLoad_Default_DA(Vec xin, PetscViewer viewer)
 {
   PetscErrorCode ierr;
   DA             da;
@@ -617,10 +617,10 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoad_Default_DA(PetscViewer viewer, Vec xin)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
 
   if (isbinary) {
-    ierr = VecLoad_Binary_DA(viewer,xin);CHKERRQ(ierr);
+    ierr = VecLoad_Binary_DA(xin,viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {
-    ierr = VecLoad_HDF5_DA(viewer,xin);CHKERRQ(ierr);
+    ierr = VecLoad_HDF5_DA(xin,viewer);CHKERRQ(ierr);
 #endif
   } else {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for vector loading", ((PetscObject)viewer)->type_name);

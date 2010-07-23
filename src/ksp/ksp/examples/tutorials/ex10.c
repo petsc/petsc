@@ -106,7 +106,7 @@ int main(int argc,char **args)
     */
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-    ierr = MatLoad(fd,A);CHKERRQ(ierr);
+    ierr = MatLoad(A,fd);CHKERRQ(ierr);
     
     if (!preload){
       flg = PETSC_FALSE;
@@ -124,10 +124,10 @@ int main(int argc,char **args)
         } else {
           ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
           ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
-          ierr = VecLoad(fd,b);CHKERRQ(ierr);
+          ierr = VecLoad(b,fd);CHKERRQ(ierr);
         }
       } else {
-        ierr = VecLoad(fd,b);CHKERRQ(ierr);
+        ierr = VecLoad(b,fd);CHKERRQ(ierr);
       }
     }
     ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
@@ -206,7 +206,7 @@ int main(int argc,char **args)
     if (initialguessfile) {
       PetscViewer viewer2;
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,initialguessfilename,FILE_MODE_READ,&viewer2);CHKERRQ(ierr);
-      ierr = VecLoad(viewer2,x);CHKERRQ(ierr);
+      ierr = VecLoad(x,viewer2);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(viewer2);CHKERRQ(ierr);
       initialguess = PETSC_TRUE;
     } else {
@@ -386,7 +386,7 @@ int main(int argc,char **args)
 
         ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[3],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 	ierr = VecCreate(PETSC_COMM_WORLD,&xstar);CHKERRQ(ierr);
-        ierr = VecLoad(viewer, xstar);CHKERRQ(ierr);
+        ierr = VecLoad(xstar,viewer);CHKERRQ(ierr);
         ierr = VecAXPY(xstar, -1.0, x);CHKERRQ(ierr);
         ierr = VecNorm(xstar, NORM_2, &norm);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD, "Error norm %A\n", norm);CHKERRQ(ierr);

@@ -72,6 +72,7 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
   ierr = VecCUDAAllocateCheck(yy);CHKERRQ(ierr);
   cusp::multiply(*(CUSPMATRIX *)(A->spptr),*(CUSPARRAY *)(xx->spptr),*(CUSPARRAY *)(yy->spptr));
   yy->valid_GPU_array = PETSC_CUDA_GPU;
+  ierr = WaitForGPU();CHKERRCUDA(ierr);
   }
   ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -40,7 +40,6 @@ int main(int argc,char **argv)
   ierr = VecScale(local,value);CHKERRQ(ierr);
   ierr = DALocalToGlobal(da,local,ADD_VALUES,global);CHKERRQ(ierr);
 
-  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
   ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = DAView(da,viewer);CHKERRQ(ierr);
 

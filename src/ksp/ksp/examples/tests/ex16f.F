@@ -51,14 +51,14 @@
 
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetType(A, MATSEQAIJ,ierr)
-      call MatLoad(fd,A,ierr)
+      call MatLoad(A,fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to load matrix '
         SETERRQ(PETSC_COMM_WORLD,1,' ',ierr)
       endif
 
       call VecCreate(PETSC_COMM_WORLD,b,ierr)
-      call VecLoad(fd,b,ierr)
+      call VecLoad(b,fd,ierr)
       call PetscViewerDestroy(fd,ierr)
 
 ! Set up solution

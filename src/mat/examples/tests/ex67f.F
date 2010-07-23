@@ -21,7 +21,7 @@
 
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetType(A, MATSEQAIJ,ierr)
-      call MatLoad(v,A,ierr)
+      call MatLoad(A,v,ierr)
 
       one  = 1
       zero = 0

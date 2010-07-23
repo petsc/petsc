@@ -115,7 +115,7 @@ struct _MatOps {
   PetscErrorCode (*mults)(Mat, Vecs, Vecs);
   PetscErrorCode (*solves)(Mat, Vecs, Vecs);
   PetscErrorCode (*getinertia)(Mat,PetscInt*,PetscInt*,PetscInt*);
-  PetscErrorCode (*load)(PetscViewer, Mat);
+  PetscErrorCode (*load)(Mat, PetscViewer);
   /*84*/
   PetscErrorCode (*issymmetric)(Mat,PetscReal,PetscTruth*);
   PetscErrorCode (*ishermitian)(Mat,PetscReal,PetscTruth*);
