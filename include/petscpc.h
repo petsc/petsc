@@ -74,6 +74,7 @@ E*/
 #define PCPFMG            "pfmg"
 #define PCSYSPFMG         "syspfmg"
 #define PCREDISTRIBUTE    "redistribute"
+#define PCSACUDA          "sacuda"
 
 /* Logging support */
 extern PetscClassId PETSCKSP_DLLEXPORT PC_CLASSID;

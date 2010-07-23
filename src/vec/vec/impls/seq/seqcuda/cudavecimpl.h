@@ -51,9 +51,14 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDAAllocateCheck(Vec v)
   Vec_Seq   *s;
   PetscFunctionBegin;
   if (v->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
-    v->spptr= new CUSPARRAY;
-    ((CUSPARRAY *)(v->spptr))->resize((PetscBLASInt)v->map->n);
-    ierr = WaitForGPU();CHKERRQ(ierr);
+    try {
+	v->spptr= new CUSPARRAY;
+	((CUSPARRAY *)(v->spptr))->resize((PetscBLASInt)v->map->n);
+	ierr = WaitForGPU();CHKERRQ(ierr);
+    } catch(char* ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+    } 
+	
     s = (Vec_Seq*)v->data;
     if (s->array == 0){
       v->valid_GPU_array = PETSC_CUDA_GPU;
@@ -77,8 +82,12 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
   ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUDA_CPU){
     ierr = PetscLogEventBegin(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
-    ((CUSPARRAY *)(v->spptr))->assign(*(PetscScalar**)v->data,*(PetscScalar**)v->data + cn);
-    ierr = WaitForGPU();CHKERRQ(ierr);
+    try{
+      ((CUSPARRAY *)(v->spptr))->assign(*(PetscScalar**)v->data,*(PetscScalar**)v->data + cn);
+      ierr = WaitForGPU();CHKERRQ(ierr);
+    } catch(char* ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+    } 
     ierr = PetscLogEventEnd(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
     v->valid_GPU_array = PETSC_CUDA_BOTH;
   }
