@@ -653,10 +653,10 @@ class Configure(config.base.Configure):
       raise RuntimeError('Wrong PETSC_DIR option specified: '+str(self.petscdir.dir) + '\n  Configure invoked in: '+os.path.realpath(os.getcwd()))
     if self.framework.argDB['prefix'] and os.path.isdir(self.framework.argDB['prefix']) and os.path.samefile(self.framework.argDB['prefix'],self.petscdir.dir):
       raise RuntimeError('Incorrect option --prefix='+self.framework.argDB['prefix']+' specified. It cannot be same as PETSC_DIR!')
-    self.framework.header          = self.arch.arch+'/include/petscconf.h'
-    self.framework.cHeader         = self.arch.arch+'/include/petscfix.h'
-    self.framework.makeMacroHeader = self.arch.arch+'/conf/petscvariables'
-    self.framework.makeRuleHeader  = self.arch.arch+'/conf/petscrules'
+    self.framework.header          = os.path.join(self.arch.arch,'include','petscconf.h')
+    self.framework.cHeader         = os.path.join(self.arch.arch,'include','petscfix.h')
+    self.framework.makeMacroHeader = os.path.join(self.arch.arch,'conf','petscvariables')
+    self.framework.makeRuleHeader  = os.path.join(self.arch.arch,'conf','petscrules')
     if self.libraries.math is None:
       raise RuntimeError('PETSc requires a functional math library. Please send configure.log to petsc-maint@mcs.anl.gov.')
     if self.languages.clanguage == 'Cxx' and not hasattr(self.compilers, 'CXX'):
