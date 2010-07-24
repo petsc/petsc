@@ -45,8 +45,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertBlockDiagonal_SeqBAIJ(Mat A)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*) A->data;
   PetscErrorCode ierr;
-  PetscInt       *diag_offset,i,bs = A->rmap->bs,mbs = a->mbs,ipvt[5];
-  MatScalar      *v = a->a,*odiag,*diag,*mdiag,work[25];
+  PetscInt       *diag_offset,i,bs = A->rmap->bs,mbs = a->mbs,ipvt[5],bs2 = bs*bs,*v_pivots;
+  MatScalar      *v = a->a,*odiag,*diag,*mdiag,work[25],*v_work;
   PetscReal      shift = 0.0;
 
   PetscFunctionBegin;
@@ -54,11 +54,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertBlockDiagonal_SeqBAIJ(Mat A)
   ierr = MatMarkDiagonal_SeqBAIJ(A);CHKERRQ(ierr);
   diag_offset = a->diag;
   if (!a->idiag) {
-    ierr = PetscMalloc(2*bs*bs*mbs*sizeof(PetscScalar),&a->idiag);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(A,2*bs*bs*mbs*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMalloc(2*bs2*mbs*sizeof(PetscScalar),&a->idiag);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(A,2*bs2*mbs*sizeof(PetscScalar));CHKERRQ(ierr);
   }
   diag  = a->idiag;
-  mdiag = a->idiag+bs*bs*mbs; 
+  mdiag = a->idiag+bs2*mbs; 
   /* factor and invert each block */
   switch (bs){
     case 1:
@@ -125,8 +125,27 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertBlockDiagonal_SeqBAIJ(Mat A)
 	mdiag += 36;
       }
       break;
+    case 7:
+      for (i=0; i<mbs; i++) {
+        odiag = v + 49*diag_offset[i];
+        ierr   = PetscMemcpy(diag,odiag,49*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr   = PetscMemcpy(mdiag,odiag,49*sizeof(PetscScalar));CHKERRQ(ierr);
+	ierr   = Kernel_A_gets_inverse_A_7(diag,shift);CHKERRQ(ierr);
+	diag  += 49;
+	mdiag += 49;
+      }
+      break;
     default: 
-      SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"not supported for block size %D",bs);
+      ierr = PetscMalloc2(bs,MatScalar,&v_work,bs,PetscInt,&v_pivots);CHKERRQ(ierr);
+      for (i=0; i<mbs; i++) {
+        odiag = v + bs2*diag_offset[i];
+        ierr   = PetscMemcpy(diag,odiag,bs2*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr   = PetscMemcpy(mdiag,odiag,bs2*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr   = Kernel_A_gets_inverse_A(bs,diag,v_pivots,v_work);CHKERRQ(ierr);
+	diag  += bs2;
+	mdiag += bs2;
+      }
+      ierr = PetscFree2(v_work,v_pivots);CHKERRQ(ierr);
   }
   a->idiagvalid = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -889,15 +908,15 @@ PetscErrorCode MatSOR_SeqBAIJ_7(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
       mdiag = a->idiag+49*a->mbs;
       for (i=0; i<m; i++) {
         x1      = x[i2]; x2 = x[i2+1]; x3 = x[i2+2]; x4 = x[i2+3]; x5 = x[i2+4]; x6 = x[i2+5]; x7 = x[i2+6];
-        x[i2]   = mdiag[0]*x1 + mdiag[7]*x2  + mdiag[14]*x3 + mdiag[21]*x4 + mdiag[28]*x5 + mdiag[35]*x6 + mdiag[35]*x7;
-        x[i2+1] = mdiag[1]*x1 + mdiag[8]*x2  + mdiag[15]*x3 + mdiag[22]*x4 + mdiag[29]*x5 + mdiag[36]*x6 + mdiag[36]*x7;
-        x[i2+2] = mdiag[2]*x1 + mdiag[9]*x2  + mdiag[16]*x3 + mdiag[23]*x4 + mdiag[30]*x5 + mdiag[37]*x6 + mdiag[37]*x7;
-        x[i2+3] = mdiag[3]*x1 + mdiag[10]*x2 + mdiag[17]*x3 + mdiag[24]*x4 + mdiag[31]*x5 + mdiag[38]*x6 + mdiag[38]*x7;
-        x[i2+4] = mdiag[4]*x1 + mdiag[11]*x2 + mdiag[18]*x3 + mdiag[25]*x4 + mdiag[32]*x5 + mdiag[39]*x6 + mdiag[39]*x7;
-        x[i2+5] = mdiag[5]*x1 + mdiag[12]*x2 + mdiag[19]*x3 + mdiag[26]*x4 + mdiag[33]*x5 + mdiag[40]*x6 + mdiag[40]*x7;
-        x[i2+6] = mdiag[6]*x1 + mdiag[13]*x2 + mdiag[20]*x3 + mdiag[27]*x4 + mdiag[34]*x5 + mdiag[41]*x6 + mdiag[41]*x7;
-        mdiag  += 36;
-        i2     += 6;
+        x[i2]   = mdiag[0]*x1 + mdiag[7]*x2  + mdiag[14]*x3 + mdiag[21]*x4 + mdiag[28]*x5 + mdiag[35]*x6 + mdiag[42]*x7;
+        x[i2+1] = mdiag[1]*x1 + mdiag[8]*x2  + mdiag[15]*x3 + mdiag[22]*x4 + mdiag[29]*x5 + mdiag[36]*x6 + mdiag[43]*x7;
+        x[i2+2] = mdiag[2]*x1 + mdiag[9]*x2  + mdiag[16]*x3 + mdiag[23]*x4 + mdiag[30]*x5 + mdiag[37]*x6 + mdiag[44]*x7;
+        x[i2+3] = mdiag[3]*x1 + mdiag[10]*x2 + mdiag[17]*x3 + mdiag[24]*x4 + mdiag[31]*x5 + mdiag[38]*x6 + mdiag[45]*x7;
+        x[i2+4] = mdiag[4]*x1 + mdiag[11]*x2 + mdiag[18]*x3 + mdiag[25]*x4 + mdiag[32]*x5 + mdiag[39]*x6 + mdiag[46]*x7;
+        x[i2+5] = mdiag[5]*x1 + mdiag[12]*x2 + mdiag[19]*x3 + mdiag[26]*x4 + mdiag[33]*x5 + mdiag[40]*x6 + mdiag[47]*x7;
+        x[i2+6] = mdiag[6]*x1 + mdiag[13]*x2 + mdiag[20]*x3 + mdiag[27]*x4 + mdiag[34]*x5 + mdiag[41]*x6 + mdiag[48]*x7;
+        mdiag  += 49;
+        i2     += 7;
       }
       ierr = PetscLogFlops(93.0*m);CHKERRQ(ierr);
     } else if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
@@ -944,6 +963,156 @@ PetscErrorCode MatSOR_SeqBAIJ_7(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
         i2      -= 7;
       }
       ierr = PetscLogFlops(49.0*(a->nz));CHKERRQ(ierr);
+    }
+  } else {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
+  }
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+} 
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSOR_SeqBAIJ_N"
+PetscErrorCode MatSOR_SeqBAIJ_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+{
+  Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar        *x,*work,*w,*workt;
+  const MatScalar    *v,*aa = a->a, *idiag,*mdiag;
+  const PetscScalar  *b;
+  PetscErrorCode     ierr;
+  PetscInt           m = a->mbs,i,i2,nz,bs = A->rmap->bs,bs2 = bs*bs,k,j;
+  const PetscInt     *diag,*ai = a->i,*aj = a->j,*vi;
+
+  PetscFunctionBegin;
+  its = its*lits;
+  if (flag & SOR_EISENSTAT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for Eisenstat");
+  if (its <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
+  if (fshift) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for diagonal shift");
+  if (omega != 1.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for non-trivial relaxation factor");
+  if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
+  if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
+
+  if (!a->idiagvalid){ierr = MatInvertBlockDiagonal_SeqBAIJ(A);CHKERRQ(ierr);}
+
+  diag  = a->diag;
+  idiag = a->idiag;
+  if (!a->mult_work) {
+    k    = PetscMax(A->rmap->n,A->cmap->n);
+    ierr = PetscMalloc((k+1)*sizeof(PetscScalar),&a->mult_work);CHKERRQ(ierr);
+  }
+  work = a->mult_work;
+  if (!a->sor_work) {
+    ierr = PetscMalloc(bs*sizeof(PetscScalar),&a->sor_work);CHKERRQ(ierr);
+  }
+  w = a->sor_work;
+
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
+
+  if (flag & SOR_ZERO_INITIAL_GUESS) {
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+      Kernel_w_gets_Ar_times_v(bs,bs,b,idiag,x);
+      /*x[0] = b[0]*idiag[0] + b[1]*idiag[3] + b[2]*idiag[6];
+      x[1] = b[0]*idiag[1] + b[1]*idiag[4] + b[2]*idiag[7];
+      x[2] = b[0]*idiag[2] + b[1]*idiag[5] + b[2]*idiag[8];*/
+      i2     = bs;
+      idiag += bs2;
+      for (i=1; i<m; i++) {
+        v     = aa + bs2*ai[i];
+        vi    = aj + ai[i];
+        nz    = diag[i] - ai[i];
+
+        ierr = PetscMemcpy(w,b+i2,bs*sizeof(PetscScalar));CHKERRQ(ierr);
+	/* copy all rows of x that are needed into contiguous space */
+        workt = work;
+        for (j=0; j<nz; j++) {
+          ierr = PetscMemcpy(workt,x + bs*(*vi++),bs*sizeof(PetscScalar));CHKERRQ(ierr);
+          workt += bs;
+        }
+        Kernel_w_gets_w_minus_Ar_times_v(bs,bs*nz,w,v,work);
+       /*s1    = b[i2]; s2 = b[i2+1]; s3 = b[i2+2];
+        while (nz--) {
+          idx  = N*(*vi++);
+          x1   = x[idx]; x2 = x[1+idx];x3 = x[2+idx];
+          s1  -= v[0]*x1 + v[3]*x2 + v[6]*x3;
+          s2  -= v[1]*x1 + v[4]*x2 + v[7]*x3;
+          s3  -= v[2]*x1 + v[5]*x2 + v[8]*x3;
+          v   += N2;
+	  } */
+
+        Kernel_w_gets_Ar_times_v(bs,bs,w,idiag,x+i2);        
+        /*  x[i2]   = idiag[0]*s1 + idiag[3]*s2 + idiag[6]*s3;
+        x[i2+1] = idiag[1]*s1 + idiag[4]*s2 + idiag[7]*s3;
+        x[i2+2] = idiag[2]*s1 + idiag[5]*s2 + idiag[8]*s3;*/
+
+        idiag   += bs2;
+        i2      += bs;
+      }
+      /* for logging purposes assume number of nonzero in lower half is 1/2 of total */
+      ierr = PetscLogFlops(1.0*bs2*(a->nz));CHKERRQ(ierr);
+    }
+    if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
+        (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
+      i2    = 0;
+      mdiag = a->idiag+bs2*a->mbs;
+      ierr  = PetscMemcpy(work,x,m*bs*sizeof(PetscScalar));CHKERRQ(ierr);
+      for (i=0; i<m; i++) {
+        Kernel_w_gets_Ar_times_v(bs,bs,work+i2,mdiag,x+i2);
+        /* x1      = x[i2]; x2 = x[i2+1]; x3 = x[i2+2];
+        x[i2]   = mdiag[0]*x1 + mdiag[3]*x2 + mdiag[6]*x3;
+        x[i2+1] = mdiag[1]*x1 + mdiag[4]*x2 + mdiag[7]*x3;
+        x[i2+2] = mdiag[2]*x1 + mdiag[5]*x2 + mdiag[8]*x3; */
+
+        mdiag  += bs2;
+        i2     += bs;
+      }
+      ierr = PetscLogFlops(2.0*bs*(bs-1)*m);CHKERRQ(ierr);
+    } else if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
+      ierr = PetscMemcpy(x,b,A->rmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
+    }
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+      idiag   = a->idiag+bs2*a->mbs - bs2;
+      i2      = bs*m - bs;
+      ierr = PetscMemcpy(w,x+i2,bs*sizeof(PetscScalar));CHKERRQ(ierr);
+      Kernel_w_gets_Ar_times_v(bs,bs,w,idiag,x+i2);
+      /*x1      = x[i2]; x2 = x[i2+1]; x3 = x[i2+2];
+      x[i2]   = idiag[0]*x1 + idiag[3]*x2 + idiag[6]*x3;
+      x[i2+1] = idiag[1]*x1 + idiag[4]*x2 + idiag[7]*x3;
+      x[i2+2] = idiag[2]*x1 + idiag[5]*x2 + idiag[8]*x3;*/
+      idiag -= bs2;
+      i2    -= bs;
+      for (i=m-2; i>=0; i--) {
+        v     = aa + bs2*(diag[i]+1);
+        vi    = aj + diag[i] + 1;
+        nz    = ai[i+1] - diag[i] - 1;
+
+        ierr = PetscMemcpy(w,x+i2,bs*sizeof(PetscScalar));CHKERRQ(ierr);
+	/* copy all rows of x that are needed into contiguous space */
+        workt = work;
+        for (j=0; j<nz; j++) {
+          ierr = PetscMemcpy(workt,x + bs*(*vi++),bs*sizeof(PetscScalar));CHKERRQ(ierr);
+          workt += bs;
+        }
+        Kernel_w_gets_w_minus_Ar_times_v(bs,bs*nz,w,v,work);
+        /* s1    = x[i2]; s2 = x[i2+1]; s3 = x[i2+2]; 
+        while (nz--) {
+          idx  = N*(*vi++);
+          x1   = x[idx]; x2 = x[1+idx]; x3 = x[2+idx];
+          s1  -= v[0]*x1 + v[3]*x2 + v[6]*x3;
+          s2  -= v[1]*x1 + v[4]*x2 + v[7]*x3;
+          s3  -= v[2]*x1 + v[5]*x2 + v[8]*x3;
+          v   += N2;
+	  } */
+
+        Kernel_w_gets_Ar_times_v(bs,bs,w,idiag,x+i2);        
+        /*x[i2]   = idiag[0]*s1 + idiag[3]*s2 + idiag[6]*s3;
+        x[i2+1] = idiag[1]*s1 + idiag[4]*s2 + idiag[7]*s3;
+        x[i2+2] = idiag[2]*s1 + idiag[5]*s2 + idiag[8]*s3; */
+        idiag   -= bs2;
+        i2      -= bs;
+      }
+      ierr = PetscLogFlops(1.0*bs2*(a->nz));CHKERRQ(ierr);
     }
   } else {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
@@ -1286,6 +1455,7 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   if (a->free_imax_ilen) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
   ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
   ierr = PetscFree(a->mult_work);CHKERRQ(ierr);
+  ierr = PetscFree(a->sor_work);CHKERRQ(ierr);
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
   ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
   ierr = PetscFree(a->xtoy);CHKERRQ(ierr);
@@ -2938,17 +3108,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
       B->ops->sor             = MatSOR_SeqBAIJ_7;
       break;
     case 15:
-      B->ops->mult = MatMult_SeqBAIJ_15_ver1;
+      B->ops->mult            = MatMult_SeqBAIJ_15_ver1;
+      B->ops->multadd         = MatMultAdd_SeqBAIJ_N;
+      B->ops->sor             = MatSOR_SeqBAIJ_N;
       break;
     default:
       B->ops->mult            = MatMult_SeqBAIJ_N; 
       B->ops->multadd         = MatMultAdd_SeqBAIJ_N;
+      B->ops->sor             = MatSOR_SeqBAIJ_N;
       break;
     }
   }
-  B->rmap->bs      = bs;
-  b->mbs     = mbs;
-  b->nbs     = nbs;
+  B->rmap->bs  = bs;
+  b->mbs       = mbs;
+  b->nbs       = nbs;
   if (!skipallocation) {
     if (!b->imax) {
       ierr = PetscMalloc2(mbs,PetscInt,&b->imax,mbs,PetscInt,&b->ilen);CHKERRQ(ierr);
