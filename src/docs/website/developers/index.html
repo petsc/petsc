@@ -261,29 +261,29 @@ petsc-maint@mcs.anl.gov). And subscribe to <a
             installed.
           </p>
           <ol>
-            <li>Configure as usual with ./configure and run make
-              allfortranstubs if necessary.</li>
-            <li>Run bin/maint/cmakegen.py to create
-              $PETSC_DIR/CMakeLists.txt, a generic build description
-              (same for all values of PETSC_ARCH).
-            </li>
-            <li>Run bin/maint/cmakeboot.py to initialize a CMake build
-              in $PETSC_DIR/$PETSC_ARCH, this script forwards it's
-              arguments on to the cmake executable, useful to select a
-              different generator (-G'Generator Name').
-            </li>
-            <li>Now the values of the PETSC_DIR and PETSC_ARCH
-              environment variables no longer relevant, just run make
-              from the build directory.
-            </li>
+            <li>Configure as usual with ./configure, provide
+            --with-cmake=/path/to/cmake if the CMake executable is not
+            in your PATH.</li>
+            <li>Run make in the build directory
+            ($PETSC_DIR/$PETSC_ARCH), the value of the environment
+            variables is not important.</li>
           </ol>
           <p>
-            All of these steps should be idempotent.  Step 2 needs to be
-            repeated after new files are added to the build and step 3
-            should never need to be repeated.  The CMake build creates
-            the same libraries as PETSc's standard build, the object
-            files are stored privately in the build directory so
-            multiple PETSC_ARCHs can be built simultaneously.
+            Notes:
+            <ul>
+              <li>The generator for the build directory can be changed
+                (e.g. to Eclipse, XCode, Visual Studio) after running
+                configure.</li>
+              <li>Multiple builds can run at once.</li>
+              <li>If new files are added, the CMake build files can be
+                quickly updated with bin/maint/cmakegen.py.  This is
+                done automatically when reconfiguring for any PETSC_ARCH
+                (e.g. $PETSC_ARCH/conf/reconfigure-$PETSC_ARCH.py).</li>
+              <li>The CMake build creates the same libraries as PETSc's
+                standard build, the object files are stored privately in
+                the build directory so multiple PETSC_ARCHs can be built
+                simultaneously.</li>
+            </ul>
           </p>
         </li>
         <li>builder.py</li>
