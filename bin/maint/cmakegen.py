@@ -96,9 +96,8 @@ if (NOT PETSC_USE_SINGLE_LIBRARY)
 endif ()
 ''' % dict(pkg=pkg, PKG=pkg.upper(), pkgdeps=' '.join('petsc%s'%p for p in pkgdeps)))
 
-def main():
-  os.chdir(os.environ['PETSC_DIR'])
-  with open('CMakeLists.txt', 'w') as f:
+def main(petscdir):
+  with open(os.path.join(petscdir, 'CMakeLists.txt'), 'w') as f:
     writeRoot(f)
     f.write('include_directories (${PETSC_PACKAGE_INCLUDES})\n')
     pkglist = [('sys'            , ''),
@@ -119,4 +118,4 @@ endif ()
 ''' % (' '.join([r'${PETSC' + pkg.upper() + r'_SRCS}' for pkg,deps in pkglist]),))
 
 if __name__ == "__main__":
-  main()
+  main(petscdir=os.environ['PETSC_DIR'])
