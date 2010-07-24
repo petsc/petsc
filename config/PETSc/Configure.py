@@ -397,6 +397,28 @@ class Configure(config.base.Configure):
     fd.close()
     return
 
+  def dumpCMakeLists(self):
+    import sys
+    if sys.version_info >= (2,5):
+      sys.path.insert(0,os.path.join(self.petscdir.dir,'bin','maint'))
+      import cmakegen
+      del sys.path[0]
+      try:
+        cmakegen.main(self.petscdir.dir)
+      except (OSError), e:
+        self.framework.logPrint('Generating CMakeLists.txt failed:\n' + str(e))
+
+  def cmakeBoot(self):
+    import sys
+    if sys.version_info >= (2,5) and self.cmake:
+      sys.path.insert(0,os.path.join(self.petscdir.dir,'bin','maint'))
+      import cmakeboot
+      del sys.path[0]
+      try:
+        cmakeboot.main(petscdir=self.petscdir.dir,petscarch=self.arch.arch,argDB=self.argDB,framework=self.framework,logPrint=self.framework.logPrint)
+      except (OSError), e:
+        self.framework.logPrint('Booting CMake in PETSC_ARCH failed:\n' + str(e))
+
   def configurePrefetch(self):
     '''Sees if there are any prefetch functions supported'''
     if config.setCompilers.Configure.isSolaris() or self.framework.argDB['with-iphone'] or self.framework.argDB['with-cuda']:
@@ -660,6 +682,9 @@ class Configure(config.base.Configure):
     self.dumpConfigInfo()
     self.dumpMachineInfo()
     self.dumpCMakeConfig()
+    self.dumpCMakeLists()
+    if hasattr(self,'cmake'):
+      self.cmakeBoot()
     self.framework.log.write('================================================================================\n')
     self.logClear()
     return
