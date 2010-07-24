@@ -361,7 +361,7 @@ cdef class Vec(Object):
         if self.vec == NULL:
             CHKERR( PetscObjectGetComm(obj, &comm) )
             CHKERR( VecCreate(comm, &self.vec) )
-        CHKERR( VecLoad(viewer.vwr, self.vec) )
+        CHKERR( VecLoad(self.vec, viewer.vwr) )
         return self
 
     def equal(self, Vec vec not None):

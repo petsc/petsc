@@ -473,7 +473,7 @@ cdef class Mat(Object):
         if self.mat == NULL:
             CHKERR( PetscObjectGetComm(obj, &comm) )
             CHKERR( MatCreate(comm, &self.mat) )
-        CHKERR( MatLoad(viewer.vwr, self.mat) )
+        CHKERR( MatLoad(self.mat, viewer.vwr) )
         return self
 
     def convert(self, mat_type=None, Mat out=None):

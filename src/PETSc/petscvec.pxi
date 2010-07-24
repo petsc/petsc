@@ -50,7 +50,7 @@ cdef extern from "petscvec.h" nogil:
     int VecResetArray(PetscVec)
 
     int VecEqual(PetscVec,PetscVec,PetscTruth*)
-    int VecLoad(PetscViewer,PetscVec)
+    int VecLoad(PetscVec,PetscViewer)
 
     int VecDuplicate(PetscVec,PetscVec*)
     int VecCopy(PetscVec,PetscVec)

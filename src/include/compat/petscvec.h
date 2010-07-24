@@ -7,14 +7,14 @@
      PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "VecLoad"
-static PetscErrorCode VecLoad_Compat(PetscViewer viewer, Vec vec)
+static PetscErrorCode VecLoad_Compat(Vec vec,PetscViewer viewer)
 {
   const VecType  type;
   PetscInt       n,N;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
-  PetscValidHeaderSpecific(vec,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(vec,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   ierr = VecGetType(vec,&type);CHKERRQ(ierr);
   if (type) {
     ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);

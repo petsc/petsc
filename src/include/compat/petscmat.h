@@ -7,15 +7,15 @@
      PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "MatLoad"
-static PetscErrorCode MatLoad_Compat(PetscViewer viewer, Mat mat)
+static PetscErrorCode MatLoad_Compat(Mat mat,PetscViewer viewer)
 {
   const MatType  type=0;
   PetscInt       m=-1,n=-1,M=-1,N=-1;
   Mat            newmat;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,2);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   ierr = MatGetType(mat,&type);CHKERRQ(ierr);
   ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);

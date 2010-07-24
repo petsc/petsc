@@ -140,7 +140,7 @@ cdef extern from "petscmat.h" nogil:
     int MatGetOwnershipRangesColumn(PetscMat,const_PetscInt*[])
 
     int MatEqual(PetscMat,PetscMat,PetscTruth*)
-    int MatLoad(PetscViewer,PetscMat)
+    int MatLoad(PetscMat,PetscViewer)
     int MatDuplicate(PetscMat,PetscMatDuplicateOption,PetscMat*)
     int MatCopy(PetscMat,PetscMat,PetscMatStructure)
     int MatTranspose(PetscMat,PetscMatReuse,PetscMat*)
