@@ -238,6 +238,21 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
 }
 
 /*
+    v = v - A w  v_gets_v_minus_Ar_times_w
+
+   v - array of length ncol
+   A(bs,ncols)
+   w - array of length bs
+*/
+#define  Kernel_w_gets_w_minus_Ar_times_v(bs,ncols,w,A,v) \
+{  \
+  PetscScalar  _one = 1.0,_mone = -1.0;	       \
+  PetscBLASInt _ione = 1,_bbs,_bncols; \
+  _bbs = PetscBLASIntCast(bs); _bncols = PetscBLASIntCast(ncols); \
+  BLASgemv_("N",&(_bbs),&(_bncols),&_mone,A,&(_bbs),v,&_ione,&_one,w,&_ione); \
+}
+
+/*
     w = A v   w_gets_A_times_v
 
    v - array of length bs

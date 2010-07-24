@@ -15,6 +15,7 @@
   PetscInt         bs2;              /*  square of block size */                                     \
   PetscInt         mbs,nbs;          /* rows/bs, columns/bs */                                       \
   PetscScalar      *mult_work;       /* work array for matrix vector product*/                       \
+  PetscScalar      *sor_work;        /* work array for SOR */                                        \
   MatScalar        *saved_values;                                                                    \
                                                                                                      \
   Mat              sbaijMat;         /* mat in sbaij format */                                       \
