@@ -10,8 +10,10 @@
 PETSC_CUDA_EXTERN_C_BEGIN
 #include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
 #include "petscbt.h"
+#include "../src/vec/vec/impls/dvecimpl.h"
+#include "private/vecimpl.h"
 PETSC_CUDA_EXTERN_C_END
-
+#include "../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h"
 #include <cusp/csr_matrix.h>
 #include <cusp/multiply.h>
 
@@ -65,10 +67,15 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
     ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
     ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   } else { /* do not use compressed row format */
-  ierr = VecCUDACopyToGPU_Public(xx);CHKERRQ(ierr);
-  ierr = VecCUDAAllocateCheck_Public(yy);CHKERRQ(ierr);
-  cusp::multiply(*(CUSPMATRIX *)(A->spptr),*(CUSPARRAY *)(xx->spptr),*(CUSPARRAY *)(yy->spptr));
+  ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
+  ierr = VecCUDAAllocateCheck(yy);CHKERRQ(ierr);
+  try {
+    cusp::multiply(*(CUSPMATRIX *)(A->spptr),*(CUSPARRAY *)(xx->spptr),*(CUSPARRAY *)(yy->spptr));
+  } catch(char* ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+  } 
   yy->valid_GPU_array = PETSC_CUDA_GPU;
+  ierr = WaitForGPU();CHKERRCUDA(ierr);
   }
   ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -85,15 +92,22 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
 
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
-  A->spptr = new CUSPMATRIX;
-  ((CUSPMATRIX *)(A->spptr))->resize(m,A->cmap->n,a->nz);
-  ((CUSPMATRIX *)(A->spptr))->row_offsets.assign(a->i,a->i+m+1);
-  ((CUSPMATRIX *)(A->spptr))->column_indices.assign(a->j,a->j+a->nz);
-  ((CUSPMATRIX *)(A->spptr))->values.assign(a->a,a->a+a->nz);
-
-  /* This shouldn't be necessary
-  A->ops->mult = MatMult_SeqAIJCUDA;
-  */
+  if (A->spptr){
+    try {
+      delete (CUSPMATRIX *)(A->spptr);
+    } catch(char* ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+    } 
+  }
+  try {
+    A->spptr = new CUSPMATRIX;
+    ((CUSPMATRIX *)(A->spptr))->resize(m,A->cmap->n,a->nz);
+    ((CUSPMATRIX *)(A->spptr))->row_offsets.assign(a->i,a->i+m+1);
+    ((CUSPMATRIX *)(A->spptr))->column_indices.assign(a->j,a->j+a->nz);
+    ((CUSPMATRIX *)(A->spptr))->values.assign(a->a,a->a+a->nz);
+  } catch(char* ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+  } 
   PetscFunctionReturn(0);
 }
 
@@ -169,7 +183,11 @@ PetscErrorCode MatDestroy_SeqAIJCUDA(Mat A)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  delete (CUSPMATRIX *)(A->spptr);
+  try {
+    delete (CUSPMATRIX *)(A->spptr);
+  } catch(char* ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+  } 
   /*this next line is because MatDestroy tries to PetscFree spptr if it is not zero, and PetscFree only works if the memory was allocated with PetscNew or PetscMalloc, which don't call the constructor */
   A->spptr = 0;
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);

@@ -23,7 +23,7 @@ int main(int argc,char **args)
   /* Load matrix A */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatLoad(fd,A);CHKERRQ(ierr);
+  ierr = MatLoad(A,fd);CHKERRQ(ierr);
   flg = PETSC_FALSE;
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-vec",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
@@ -38,7 +38,7 @@ int main(int argc,char **args)
       ierr = VecSet(x,one);CHKERRQ(ierr);
       } 
   } else {
-      ierr = VecLoad(fd,x);CHKERRQ(ierr);
+    ierr = VecLoad(x,fd);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
   }
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);

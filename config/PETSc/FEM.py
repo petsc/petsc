@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import user
-import importer
+#import importer
 import script
 
 class QuadratureGenerator(script.Script):

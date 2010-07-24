@@ -21,7 +21,7 @@ int main(int argc,char **args)
     ierr = VecView(b,fd);CHKERRQ(ierr);
     ierr = VecDestroy(b);CHKERRQ(ierr);
     ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-    ierr = VecLoad(fd,b);CHKERRQ(ierr);
+    ierr = VecLoad(b,fd);CHKERRQ(ierr);
   }
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);

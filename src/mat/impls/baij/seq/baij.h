@@ -210,7 +210,7 @@ EXTERN PetscErrorCode MatMultAdd_SeqBAIJ_5(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMultAdd_SeqBAIJ_6(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat,Vec,Vec,Vec);
-EXTERN PetscErrorCode MatLoad_SeqBAIJ(PetscViewer,Mat);
+EXTERN PetscErrorCode MatLoad_SeqBAIJ(Mat,PetscViewer);
 EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat,PetscTruth);
 EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscTruth);
 

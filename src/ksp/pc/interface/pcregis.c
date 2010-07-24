@@ -51,6 +51,9 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_TFS(PC);
 #if defined(PETSC_HAVE_PROMETHEUS)
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Prometheus(PC);
 #endif
+#if defined(PETSC_HAVE_CUSP_DEV) && defined(PETSC_HAVE_CUDA)
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SACUDA(PC);
+#endif
 
 EXTERN_C_END
 
@@ -116,14 +119,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterAll(const char path[])
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PCRegisterDynamic(PCHYPRE        ,path,"PCCreate_HYPRE",PCCreate_HYPRE);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCPFMG         ,path,"PCCreate_PFMG",PCCreate_PFMG);CHKERRQ(ierr);
-  ierr = PCRegisterDynamic(PCSYSPFMG         ,path,"PCCreate_SysPFMG",PCCreate_SysPFMG);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCSYSPFMG      ,path,"PCCreate_SysPFMG",PCCreate_SysPFMG);CHKERRQ(ierr);
 #endif
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = PCRegisterDynamic(PCTFS         ,path,"PCCreate_TFS",PCCreate_TFS);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCTFS          ,path,"PCCreate_TFS",PCCreate_TFS);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PROMETHEUS)
-  ierr = PCRegisterDynamic(PCPROMETHEUS  ,path,"PCCreate_Prometheus",PCCreate_Prometheus);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCPROMETHEUS   ,path,"PCCreate_Prometheus",PCCreate_Prometheus);CHKERRQ(ierr);
 #endif
-
+#if defined(PETSC_HAVE_CUDA) && defined(PETSC_HAVE_CUSP_DEV)
+  ierr = PCRegisterDynamic(PCSACUDA       ,path,"PCCreate_SACUDA",PCCreate_SACUDA);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }

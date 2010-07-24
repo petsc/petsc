@@ -281,7 +281,7 @@ runex16f:
 	   ${RM} -f ex16f_1.tmp
 runex17:
 	-@${MPIEXEC} -n 1 ./ex17 -ksp_gmres_cgs_refinement_type refine_always -n 6 -ksp_monitor_short -p 5 -norandom -ksp_type gmres \
-	   -pc_type jacobi > ex17_1.tmp 2>&1; \
+	   -pc_type jacobi -ksp_max_it 15 > ex17_1.tmp 2>&1; \
 	   if (${DIFF} output/ex17_1.out ex17_1.tmp) then true; \
 	   else echo "Possible problem with ex17_1, diffs above"; fi; \
 	   ${RM} -f ex17_1.tmp

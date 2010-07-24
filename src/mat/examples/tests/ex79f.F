@@ -26,7 +26,7 @@
      &                          FILE_MODE_READ,v,ierr)
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetType(A, MATMPIAIJ,ierr)
-      call MatLoad(v,A,ierr)
+      call MatLoad(A,v,ierr)
       CHKERRQ(ierr)
       call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
