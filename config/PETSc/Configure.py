@@ -397,6 +397,28 @@ class Configure(config.base.Configure):
     fd.close()
     return
 
+  def dumpCMakeLists(self):
+    import sys
+    if sys.version_info >= (2,5):
+      sys.path.insert(0,os.path.join(self.petscdir.dir,'bin','maint'))
+      import cmakegen
+      del sys.path[0]
+      try:
+        cmakegen.main(self.petscdir.dir)
+      except (OSError), e:
+        self.framework.logPrint('Generating CMakeLists.txt failed:\n' + str(e))
+
+  def cmakeBoot(self):
+    import sys
+    if sys.version_info >= (2,5) and self.cmake:
+      sys.path.insert(0,os.path.join(self.petscdir.dir,'bin','maint'))
+      import cmakeboot
+      del sys.path[0]
+      try:
+        cmakeboot.main(petscdir=self.petscdir.dir,petscarch=self.arch.arch,argDB=self.argDB,framework=self.framework,logPrint=self.framework.logPrint)
+      except (OSError), e:
+        self.framework.logPrint('Booting CMake in PETSC_ARCH failed:\n' + str(e))
+
   def configurePrefetch(self):
     '''Sees if there are any prefetch functions supported'''
     if config.setCompilers.Configure.isSolaris() or self.framework.argDB['with-iphone'] or self.framework.argDB['with-cuda']:
@@ -631,10 +653,10 @@ class Configure(config.base.Configure):
       raise RuntimeError('Wrong PETSC_DIR option specified: '+str(self.petscdir.dir) + '\n  Configure invoked in: '+os.path.realpath(os.getcwd()))
     if self.framework.argDB['prefix'] and os.path.isdir(self.framework.argDB['prefix']) and os.path.samefile(self.framework.argDB['prefix'],self.petscdir.dir):
       raise RuntimeError('Incorrect option --prefix='+self.framework.argDB['prefix']+' specified. It cannot be same as PETSC_DIR!')
-    self.framework.header          = self.arch.arch+'/include/petscconf.h'
-    self.framework.cHeader         = self.arch.arch+'/include/petscfix.h'
-    self.framework.makeMacroHeader = self.arch.arch+'/conf/petscvariables'
-    self.framework.makeRuleHeader  = self.arch.arch+'/conf/petscrules'
+    self.framework.header          = os.path.join(self.arch.arch,'include','petscconf.h')
+    self.framework.cHeader         = os.path.join(self.arch.arch,'include','petscfix.h')
+    self.framework.makeMacroHeader = os.path.join(self.arch.arch,'conf','petscvariables')
+    self.framework.makeRuleHeader  = os.path.join(self.arch.arch,'conf','petscrules')
     if self.libraries.math is None:
       raise RuntimeError('PETSc requires a functional math library. Please send configure.log to petsc-maint@mcs.anl.gov.')
     if self.languages.clanguage == 'Cxx' and not hasattr(self.compilers, 'CXX'):
@@ -660,6 +682,9 @@ class Configure(config.base.Configure):
     self.dumpConfigInfo()
     self.dumpMachineInfo()
     self.dumpCMakeConfig()
+    self.dumpCMakeLists()
+    if hasattr(self,'cmake'):
+      self.cmakeBoot()
     self.framework.log.write('================================================================================\n')
     self.logClear()
     return

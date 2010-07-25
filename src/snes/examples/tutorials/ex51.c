@@ -42,9 +42,10 @@ int main(int argc, char *argv[]) {
   //arrayY[j][ndof];
   ierr = DAVecRestoreArrayDOF(daX, basisX, &arrayX);CHKERRQ(ierr);
   ierr = DAVecRestoreArrayDOF(daY, basisY, &arrayY);CHKERRQ(ierr);
+  /* Return basis vectors */
+  ierr = DARestoreGlobalVector(daX, &basisX);CHKERRQ(ierr);
+  ierr = DARestoreGlobalVector(daY, &basisY);CHKERRQ(ierr);
   /* Cleanup */
-  ierr = VecDestroy(basisX);CHKERRQ(ierr);
-  ierr = VecDestroy(basisY);CHKERRQ(ierr);
   ierr = DADestroy(daX);CHKERRQ(ierr);
   ierr = DADestroy(daY);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
