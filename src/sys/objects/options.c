@@ -245,7 +245,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsValidKey(const char in_str[],PetscTru
      PetscOptionsInsertString - Inserts options into the database from a string
 
      Not collective: but only processes that call this routine will set the options
-                     included in the file
+                     included in the string
 
   Input Parameter:
 .   in_str - string that contains options separated by blanks
