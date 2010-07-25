@@ -51,7 +51,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_TFS(PC);
 #if defined(PETSC_HAVE_PROMETHEUS)
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Prometheus(PC);
 #endif
-#if defined(PETSC_HAVE_CUSP_DEV) && defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_CUSP_SMOOTHED_AGGREGATION)
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SACUDA(PC);
 #endif
 
@@ -127,7 +127,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterAll(const char path[])
 #if defined(PETSC_HAVE_PROMETHEUS)
   ierr = PCRegisterDynamic(PCPROMETHEUS   ,path,"PCCreate_Prometheus",PCCreate_Prometheus);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_CUDA) && defined(PETSC_HAVE_CUSP_DEV)
+#if defined(PETSC_HAVE_CUSP_SMOOTHED_AGGREGATION)
   ierr = PCRegisterDynamic(PCSACUDA       ,path,"PCCreate_SACUDA",PCCreate_SACUDA);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
