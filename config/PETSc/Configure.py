@@ -410,7 +410,7 @@ class Configure(config.base.Configure):
 
   def cmakeBoot(self):
     import sys
-    if sys.version_info >= (2,5) and self.cmake:
+    if sys.version_info >= (2,5) and hasattr(self.cmake,'cmake'):
       sys.path.insert(0,os.path.join(self.petscdir.dir,'bin','maint'))
       import cmakeboot
       del sys.path[0]
@@ -683,8 +683,7 @@ class Configure(config.base.Configure):
     self.dumpMachineInfo()
     self.dumpCMakeConfig()
     self.dumpCMakeLists()
-    if hasattr(self,'cmake'):
-      self.cmakeBoot()
+    self.cmakeBoot()
     self.framework.log.write('================================================================================\n')
     self.logClear()
     return
