@@ -468,6 +468,56 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char f
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsInsertArgs_Private"
+static PetscErrorCode PetscOptionsInsertArgs_Private(int argc,char *args[])
+{
+  PetscErrorCode ierr;
+  int            left    = argc - 1;
+  char           **eargs = args + 1;
+
+  PetscFunctionBegin;
+  while (left) {
+    PetscTruth isoptions_file,isp4,tisp4,isp4yourname,isp4rmrank;
+    ierr = PetscStrcasecmp(eargs[0],"-options_file",&isoptions_file);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(eargs[0],"-p4pg",&isp4);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(eargs[0],"-p4yourname",&isp4yourname);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(eargs[0],"-p4rmrank",&isp4rmrank);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(eargs[0],"-p4wd",&tisp4);CHKERRQ(ierr);
+    isp4 = (PetscTruth) (isp4 || tisp4);
+    ierr = PetscStrcasecmp(eargs[0],"-np",&tisp4);CHKERRQ(ierr);
+    isp4 = (PetscTruth) (isp4 || tisp4);
+    ierr = PetscStrcasecmp(eargs[0],"-p4amslave",&tisp4);CHKERRQ(ierr);
+
+    if (eargs[0][0] != '-') {
+      eargs++; left--;
+    } else if (isoptions_file) {
+      if (left <= 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Missing filename for -options_file filename option");
+      if (eargs[1][0] == '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Missing filename for -options_file filename option");
+      ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,eargs[1],PETSC_TRUE);CHKERRQ(ierr);
+      eargs += 2; left -= 2;
+
+      /*
+       These are "bad" options that MPICH, etc put on the command line
+       we strip them out here.
+       */
+    } else if (tisp4 || isp4rmrank) {
+      eargs += 1; left -= 1;
+    } else if (isp4 || isp4yourname) {
+      eargs += 2; left -= 2;
+    } else if ((left < 2) || ((eargs[1][0] == '-') &&
+                              ((eargs[1][1] > '9') || (eargs[1][1] < '0')))) {
+      ierr = PetscOptionsSetValue(eargs[0],PETSC_NULL);CHKERRQ(ierr);
+      eargs++; left--;
+    } else {
+      ierr = PetscOptionsSetValue(eargs[0],eargs[1]);CHKERRQ(ierr);
+      eargs += 2; left -= 2;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsInsert"
 /*@C
    PetscOptionsInsert - Inserts into the options database from the command line,
@@ -514,6 +564,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
   if (file) {
     ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,file,PETSC_TRUE);CHKERRQ(ierr);
   }
+  /*
+     We want to be able to give -skip_petscrc on the command line, but need to parse it first.  Since the command line
+     should take precedence, we insert it twice.  It would be sufficient to just scan for -skip_petscrc.
+  */
+  if (argc && args && *argc) {ierr = PetscOptionsInsertArgs_Private(*argc,*args);CHKERRQ(ierr);}
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-skip_petscrc",&flag,PETSC_NULL);CHKERRQ(ierr);
   if (!flag) {
     ierr = PetscGetHomeDirectory(pfile,PETSC_MAX_PATH_LEN-16);CHKERRQ(ierr);
@@ -548,49 +603,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
     }
   }
 
-  /* insert command line options */
-  if (argc && args && *argc) {
-    int        left    = *argc - 1;
-    char       **eargs = *args + 1;
-    PetscTruth isoptions_file,isp4,tisp4,isp4yourname,isp4rmrank;
-
-    while (left) {
-      ierr = PetscStrcasecmp(eargs[0],"-options_file",&isoptions_file);CHKERRQ(ierr);
-      ierr = PetscStrcasecmp(eargs[0],"-p4pg",&isp4);CHKERRQ(ierr);
-      ierr = PetscStrcasecmp(eargs[0],"-p4yourname",&isp4yourname);CHKERRQ(ierr);
-      ierr = PetscStrcasecmp(eargs[0],"-p4rmrank",&isp4rmrank);CHKERRQ(ierr);
-      ierr = PetscStrcasecmp(eargs[0],"-p4wd",&tisp4);CHKERRQ(ierr);
-      isp4 = (PetscTruth) (isp4 || tisp4);
-      ierr = PetscStrcasecmp(eargs[0],"-np",&tisp4);CHKERRQ(ierr);
-      isp4 = (PetscTruth) (isp4 || tisp4);
-      ierr = PetscStrcasecmp(eargs[0],"-p4amslave",&tisp4);CHKERRQ(ierr);
-
-      if (eargs[0][0] != '-') {
-        eargs++; left--;
-      } else if (isoptions_file) {
-        if (left <= 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Missing filename for -options_file filename option");
-        if (eargs[1][0] == '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Missing filename for -options_file filename option");
-        ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,eargs[1],PETSC_TRUE);CHKERRQ(ierr);
-        eargs += 2; left -= 2;
-
-      /*
-         These are "bad" options that MPICH, etc put on the command line
-         we strip them out here.
-      */
-      } else if (tisp4 || isp4rmrank) {
-        eargs += 1; left -= 1;        
-      } else if (isp4 || isp4yourname) {
-        eargs += 2; left -= 2;
-      } else if ((left < 2) || ((eargs[1][0] == '-') && 
-               ((eargs[1][1] > '9') || (eargs[1][1] < '0')))) {
-        ierr = PetscOptionsSetValue(eargs[0],PETSC_NULL);CHKERRQ(ierr);
-        eargs++; left--;
-      } else {
-        ierr = PetscOptionsSetValue(eargs[0],eargs[1]);CHKERRQ(ierr); 
-        eargs += 2; left -= 2;
-      }
-    }
-  }
+  /* insert command line options again because they take precedence over arguments in petscrc/environment */
+  if (argc && args && *argc) {ierr = PetscOptionsInsertArgs_Private(*argc,*args);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
