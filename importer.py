@@ -31,7 +31,7 @@ class Loader(ihooks.FancyModuleLoader):
     return None
 
 class Importer(ihooks.ModuleImporter):
-  def import_module(self, name, globals = None, locals = None, fromlist = None, dummy = None):
+  def import_module(self, name, globals = None, locals = None, fromlist = None, dummy = None, level = 0):
     parent  = self.determine_parent(globals)
     q, tail = self.find_head_package(parent, name)
     mod     = self.load_tail(q, tail)
@@ -72,7 +72,7 @@ class Importer(ihooks.ModuleImporter):
     q = self.import_it(head, qname, parent)
     if q: return q, tail
     # Only seems to be needed by numpy
-    if parent.__file__.endswith('.py') and parent.__name__.find('.') >= 0:
+    if parent and parent.__file__.endswith('.py') and parent.__name__.find('.') >= 0:
       package = parent.__name__[0:parent.__name__.rfind('.')]
       qname = "%s.%s" % (package, head)
       q = self.import_it(head, qname, None)

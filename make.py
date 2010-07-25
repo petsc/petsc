@@ -9,7 +9,7 @@ class Make(maker.Make):
   def __init__(self):
     maker.Make.__init__(self)
     self.project = project.Project('http://petsc.cs.iit.edu/petsc/BuildSystem', self.getRoot())
-    self.project.setWebDirectory('petsc@harley.mcs.anl.gov://mcs/www-unix/ase')
+    self.project.setWebDirectory('petsc@login.mcs.anl.gov://mcs/www-unix/ase')
     return
 
   def setupDependencies(self, sourceDB):
@@ -68,9 +68,9 @@ class Make(maker.Make):
       tarball   = installer.getRepositoryName(installer.getMappedUrl(url))+'.tgz'
       fullPath  = os.path.join(dir, tarball)
       installer.backup(url)
-      try: self.executeShellCommand('ssh petsc@harley.mcs.anl.gov mv '+fullPath+' '+fullPath+'.old')
+      try: self.executeShellCommand('ssh petsc@login.mcs.anl.gov mv '+fullPath+' '+fullPath+'.old')
       except: pass
-      self.cpFile(tarball, 'petsc@harley.mcs.anl.gov:/'+dir)
+      self.cpFile(tarball, 'petsc@login.mcs.anl.gov:/'+dir)
       os.remove(tarball)
     return
 

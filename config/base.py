@@ -326,6 +326,12 @@ class Configure(script.Script):
     linker.checkSetup()
     return linker.getCommand(self.linkerSource, self.linkerObj)
 
+  def getFullLinkerCmd(self, objects, executable):
+    self.getLinker()
+    linker = self.framework.getLinkerObject(self.language[-1])
+    linker.checkSetup()
+    return linker.getCommand(objects, executable)
+
   def getSharedLinkerCmd(self):
     self.getSharedLinker()
     linker = self.framework.getSharedLinkerObject(self.language[-1])

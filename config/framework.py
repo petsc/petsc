@@ -104,6 +104,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     # List of packages actually found
     self.packages           = []
     self.createChildren()
+    # Create argDB for user specified options only
+    self.clArgDB = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.clArgs])
     return
 
   def __getstate__(self):

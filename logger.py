@@ -254,11 +254,11 @@ class Logger(args.ArgumentProcessor):
           f.flush()
     return
 
-  def logPrint(self, msg, debugLevel = -1, debugSection = None, indent = 1, comm = None):
+  def logPrint(self, msg, debugLevel = -1, debugSection = None, indent = 1, comm = None, forceScroll = 0):
     '''Write the message to the log streams with proper indentation and a newline'''
     if indent:
       self.logIndent(debugLevel, debugSection, comm)
-    self.logWrite(msg, debugLevel, debugSection)
+    self.logWrite(msg, debugLevel, debugSection, forceScroll = forceScroll)
     for writeAll, f in enumerate([self.out, self.log]):
       if self.checkWrite(f, debugLevel, debugSection, writeAll):
         if writeAll or self.linewidth < 0:

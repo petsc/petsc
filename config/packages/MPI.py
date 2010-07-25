@@ -57,8 +57,8 @@ class Configure(config.package.Package):
   def setupHelp(self, help):
     config.package.Package.setupHelp(self,help)
     import nargs
-    help.addArgument('MPI', '-download-mpich=<no,yes,ifneeded,filename>',        nargs.ArgDownload(None, 0, 'Download and install MPICH-2'))
-    help.addArgument('MPI', '-download-openmpi=<no,yes,ifneeded,filename>',      nargs.ArgDownload(None, 0, 'Download and install OpenMPI'))
+    help.addArgument('MPI', '-download-mpich=<no,yes,filename>',                 nargs.ArgDownload(None, 0, 'Download and install MPICH-2'))
+    help.addArgument('MPI', '-download-openmpi=<no,yes,filename>',               nargs.ArgDownload(None, 0, 'Download and install OpenMPI'))
     help.addArgument('MPI', '-with-mpiexec=<prog>',                              nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',                        nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-known-mpi-shared-libraries=<bool>',                          nargs.ArgBool(None, None, 'Indicates the MPI libraries are shared (the usual test will be skipped)'))
@@ -173,7 +173,8 @@ class Configure(config.package.Package):
     self.popLanguage()
     if not self.getExecutable(mpiexecs, path = path, useDefaultPath = 1, resultName = 'mpiexec',setMakeMacro=0):
       raise RuntimeError('Could not locate MPIEXEC - please specify --with-mpiexec option')
-    self.addMakeMacro('MPIEXEC',self.mpiexec.replace(' -n 1','').replace(' ', '\\ '))
+    self.mpiexec = self.mpiexec.replace(' -n 1','').replace(' ', '\\ ')
+    self.addMakeMacro('MPIEXEC', self.mpiexec)
     return
 
   def configureMPI2(self):
