@@ -57,7 +57,7 @@ int main(int argc,char **args)
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* Read in matrix, rhs and exact solution from ascii files */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-Ain",Ain,PETSC_MAX_PATH_LEN-1,&flg_A);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-Ain",Ain,PETSC_MAX_PATH_LEN,&flg_A);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-noshift",&flg);CHKERRQ(ierr);
   if (flg) shift = 0;
   if (flg_A){
@@ -91,7 +91,7 @@ int main(int argc,char **args)
     fclose(Afile);  
   }
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-rhs",rhs,PETSC_MAX_PATH_LEN-1,&flg_b);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-rhs",rhs,PETSC_MAX_PATH_LEN,&flg_b);CHKERRQ(ierr);
   if (flg_b){
     ierr = VecCreate(PETSC_COMM_SELF,&b);CHKERRQ(ierr);
     ierr = VecSetSizes(b,PETSC_DECIDE,n);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ int main(int argc,char **args)
     fclose(bfile);
   }
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-solu",solu,PETSC_MAX_PATH_LEN-1,&flg_u);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-solu",solu,PETSC_MAX_PATH_LEN,&flg_u);CHKERRQ(ierr);
   if (flg_u){
     ierr = VecCreate(PETSC_COMM_SELF,&u);CHKERRQ(ierr);
     ierr = VecSetSizes(u,PETSC_DECIDE,n);CHKERRQ(ierr);

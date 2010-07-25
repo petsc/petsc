@@ -306,7 +306,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Party(MatPartitioning part)
 {
     PetscErrorCode ierr;
     PetscTruth flag, b;
-    char value[15];
+    char value[256];
     PetscReal r;
 
     PetscFunctionBegin;
@@ -314,12 +314,12 @@ PetscErrorCode MatPartitioningSetFromOptions_Party(MatPartitioning part)
 
     ierr = PetscOptionsString("-mat_partitioning_party_global",
         "Global method to use", "MatPartitioningPartySetGlobal", "gcf,gbf",
-        value, 15, &flag);CHKERRQ(ierr);
+        value, sizeof value, &flag);CHKERRQ(ierr);
     if (flag)
         ierr = MatPartitioningPartySetGlobal(part, value);CHKERRQ(ierr);
 
     ierr = PetscOptionsString("-mat_partitioning_party_local",
-        "Local method to use", "MatPartitioningPartySetLocal", "kl", value, 15,
+        "Local method to use", "MatPartitioningPartySetLocal", "kl", value, sizeof value,
         &flag);CHKERRQ(ierr);
     if (flag)
         ierr = MatPartitioningPartySetLocal(part, value);CHKERRQ(ierr);

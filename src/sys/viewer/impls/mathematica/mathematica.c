@@ -243,7 +243,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaSetFromOptions(PetscViewer 
   ierr = MPI_Comm_rank(((PetscObject)v)->comm, &rank);CHKERRQ(ierr);
 
   /* Get link name */
-  ierr = PetscOptionsGetString("viewer_", "-math_linkname", linkname, 255, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString("viewer_", "-math_linkname", linkname, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscViewerMathematicaSetLinkName(v, linkname);CHKERRQ(ierr);
   }
@@ -277,7 +277,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaSetFromOptions(PetscViewer 
   }
   ierr = PetscFree(hosts);CHKERRQ(ierr);
   /* Get link mode */
-  ierr = PetscOptionsGetString("viewer_", "-math_linkmode", modename, 255, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString("viewer_", "-math_linkmode", modename, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     LinkMode mode;
 
@@ -285,7 +285,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaSetFromOptions(PetscViewer 
     ierr = PetscViewerMathematicaSetLinkMode(v, mode);CHKERRQ(ierr);
   }
   /* Get graphics type */
-  ierr = PetscOptionsGetString("viewer_", "-math_graphics", type, 255, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString("viewer_", "-math_graphics", type, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     PetscTruth isMotif, isPS, isPSFile;
 
@@ -301,7 +301,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaSetFromOptions(PetscViewer 
     }
   }
   /* Get plot type */
-  ierr = PetscOptionsGetString("viewer_", "-math_type", type, 255, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString("viewer_", "-math_type", type, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     PetscTruth isTri, isVecTri, isVec, isSurface;
 

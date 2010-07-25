@@ -149,7 +149,7 @@ int main(int argc,char **args)
    maxIt = tmp_int;
    ierr = PetscOptionsGetReal(PETSC_NULL,"-shift",&shift,&shift_present);
    ierr = PetscOptionsGetString(PETSC_NULL,"-output_file",output_filename,
-            PETSC_MAX_PATH_LEN-1, &output_filename_present);
+            PETSC_MAX_PATH_LEN, &output_filename_present);
    ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&tmp_int,&option_present);CHKERRQ(ierr);
    if (option_present)
      N = tmp_int;

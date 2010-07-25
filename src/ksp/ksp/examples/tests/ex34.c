@@ -77,7 +77,7 @@ int main(int argc,char **args)
   if (size % nodesize) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPI_COMM_WORLD size must be divisible by nodesize");
 
   /* Read matrix */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&ctx.A);CHKERRQ(ierr);
   ierr = MatSetType(ctx.A,MATMPIAIJ);CHKERRQ(ierr);

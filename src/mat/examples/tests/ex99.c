@@ -47,16 +47,16 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscLogStageRegister("EigCheck",&stages[1]);
 
   /* Determine files from which we read the two matrices */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) {
-    ierr = PetscOptionsGetString(PETSC_NULL,"-fA",file[0],PETSC_MAX_PATH_LEN-1,&flgA);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-fA",file[0],PETSC_MAX_PATH_LEN,&flgA);CHKERRQ(ierr);
     if (!flgA) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -fA or -fB options");
-    ierr = PetscOptionsGetString(PETSC_NULL,"-fB",file[1],PETSC_MAX_PATH_LEN-1,&flgB);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-fB",file[1],PETSC_MAX_PATH_LEN,&flgB);CHKERRQ(ierr);
     preload = PETSC_FALSE;
   } else {
-    ierr = PetscOptionsGetString(PETSC_NULL,"-fA",file[1],PETSC_MAX_PATH_LEN-1,&flgA);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-fA",file[1],PETSC_MAX_PATH_LEN,&flgA);CHKERRQ(ierr);
     if (!flgA) {preload = PETSC_FALSE;} /* don't bother with second system */
-    ierr = PetscOptionsGetString(PETSC_NULL,"-fB",file[2],PETSC_MAX_PATH_LEN-1,&flgB);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-fB",file[2],PETSC_MAX_PATH_LEN,&flgB);CHKERRQ(ierr);
   }
 
   PreLoadBegin(preload,"Load system");

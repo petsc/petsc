@@ -42,7 +42,7 @@ int main(int argc,char **args)
   /* 
      Determine file from which we read the matrix
   */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
 
   /* 
        Open binary file.  Note that we use FILE_MODE_READ to indicate

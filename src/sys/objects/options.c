@@ -1670,7 +1670,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const ch
    Input Parameters:
 +  pre - string to prepend to name or PETSC_NULL
 .  name - the option one is seeking
--  len - maximum string length
+-  len - maximum length of the string including null termination
 
    Output Parameters:
 +  string - location to copy string
@@ -1712,6 +1712,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetString(const char pre[],const char
     if (flg) *flg = PETSC_TRUE;
     if (value) {
       ierr = PetscStrncpy(string,value,len);CHKERRQ(ierr);
+      string[len-1] = 0;        /* Ensure that the string is NULL terminated */
     } else {
       ierr = PetscMemzero(string,len);CHKERRQ(ierr);
     }

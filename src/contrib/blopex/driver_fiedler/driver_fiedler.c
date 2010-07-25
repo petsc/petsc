@@ -138,14 +138,14 @@ int main(int argc,char **args)
    if (option_present)
       n_eigs = tmp_int;
    ierr = PetscOptionsGetReal(PETSC_NULL,"-tol", &tol,PETSC_NULL); CHKERRQ(ierr);
-   ierr = PetscOptionsGetString(PETSC_NULL,"-matrix",filename,PETSC_MAX_PATH_LEN-1,
+   ierr = PetscOptionsGetString(PETSC_NULL,"-matrix",filename,PETSC_MAX_PATH_LEN,
            &matrix_present);
    CHKERRQ(ierr);
    if (!matrix_present)
    SETERRQ(PETSC_COMM_SELF,1,"Must indicate binary file to read matrix from with the "
             "'-matrix' option");
    ierr = PetscOptionsGetString(PETSC_NULL,"-mass_matrix",mass_filename,
-           PETSC_MAX_PATH_LEN-1,&mass_matrix_present);
+           PETSC_MAX_PATH_LEN,&mass_matrix_present);
    CHKERRQ(ierr);
    ierr = PetscOptionsHasName(PETSC_NULL,"-full_out",&full_output); CHKERRQ(ierr);
    ierr = PetscOptionsGetInt(PETSC_NULL,"-seed",&tmp_int,&option_present);CHKERRQ(ierr);
@@ -158,7 +158,7 @@ int main(int argc,char **args)
       maxIt = tmp_int;
    ierr = PetscOptionsGetReal(PETSC_NULL,"-shift",&shift,&shift_present);
    ierr = PetscOptionsGetString(PETSC_NULL,"-output_file",output_filename,
-            PETSC_MAX_PATH_LEN-1, &output_filename_present);
+            PETSC_MAX_PATH_LEN, &output_filename_present);
 
 
    /* load matrices */
