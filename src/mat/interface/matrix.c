@@ -5107,7 +5107,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat mat,PetscInt numRows,const Pet
   if (!mat->ops->zerorows) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
-  ierr = (*mat->ops->zerorows)(mat,numNewRows,rows,diag);CHKERRQ(ierr);
+  ierr = (*mat->ops->zerorows)(mat,numRows,rows,diag);CHKERRQ(ierr);
   ierr = MatView_Private(mat);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
