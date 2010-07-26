@@ -5264,7 +5264,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsStencil(Mat mat,PetscInt numRows,co
       jdxm[numNewRows++] = tmp;
     }
   }
-  ierr = MatZeroRowsLocal(mat,numRows,jdxm,diag);CHKERRQ(ierr);
+  ierr = MatZeroRowsLocal(mat,numNewRows,jdxm,diag);CHKERRQ(ierr);
   ierr = PetscFree(jdxm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

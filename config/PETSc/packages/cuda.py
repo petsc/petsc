@@ -60,10 +60,10 @@ class Configure(PETSc.package.NewPackage):
     g = open('testprogram.cu','w')
     g.write('#include <cusp/version.h>\n')
     g.write('#include <cusp/precond/smoothed_aggregation.h>\n')
-    g.write('int main(int argc,char arg**) {return 0;}\n')
+    g.write('int main(int argc,char** arg) {return 0;}\n')
     g.close()
     try:
-      (output, error, status) = PETSc.package.NewPackage.executeShellCommand(self.nvcc+' -m64 testprogram.cu',  log=self.log)
+      (output, error, status) = PETSc.package.NewPackage.executeShellCommand(self.nvcc+' testprogram.cu',  log=self.log)
       if status or error:
         self.logPrint("ERROR IN COMPILE of cusp/precond/smoothed_aggregation.h", debugSection='screen')
         self.logPrint(output+error, debugSection='screen')
