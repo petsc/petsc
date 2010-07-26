@@ -566,7 +566,7 @@ EXTERN PetscErrorCode MatGetColumnNorms(Mat,NormType,PetscReal *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroEntries(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat,PetscInt,const PetscInt [],PetscScalar);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsIS(Mat,IS,PetscScalar);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsStencilTest(Mat,PetscInt,const MatStencil [],PetscScalar);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsStencil(Mat,PetscInt,const MatStencil [],PetscScalar);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroColumns(Mat,PetscInt,const PetscInt [],const PetscScalar*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroColumnsIS(Mat,IS,const PetscScalar*);
 

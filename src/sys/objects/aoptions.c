@@ -653,7 +653,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInt(const char opt[],const char text[
 +  opt - option name
 .  text - short string that describes the option
 .  man - manual page with additional information on option
--  defaultv - the default (current) value
+.  defaultv - the default (current) value
+-  len - length of the result string including null terminator
 
    Output Parameter:
 +  value - the value to return

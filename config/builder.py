@@ -53,7 +53,7 @@ class NullSourceDatabase(object):
     return True
 
 class SourceDatabase(object):
-  '''This can be replaced by Jed's favorite software'''
+  '''This can be replaced by the favorite software of Jed'''
   def __init__(self, verbose = 0):
     # Vertices are filenames
     #   Arcs indicate a dependence and are decorated with consistency markers

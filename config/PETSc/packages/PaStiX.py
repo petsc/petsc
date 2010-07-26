@@ -206,7 +206,7 @@ class Configure(PETSc.package.NewPackage):
         output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make expor install',timeout=2500, log = self.framework.log)
         libDir     = os.path.join(self.installDir, self.libdir)
         includeDir = os.path.join(self.installDir, self.includedir)
-        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && cp -f install/*.a '+libDir+'/. && cp -f install/*.h '+includeDir+'/. &&', timeout=2500, log = self.framework.log)
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && cp -f install/*.a '+libDir+'/. && cp -f install/*.h '+includeDir+'/.', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on PaStiX: '+str(e))
       self.postInstall(output+err,os.path.join('src','config.in'))

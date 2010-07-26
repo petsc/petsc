@@ -105,7 +105,7 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
     return
 
   def configureInstallationMethod(self):
-    if os.path.exists(os.path.join(self.dir,'bin/maint')):
+    if os.path.exists(os.path.join(self.dir,'bin','maint')):
       self.logPrint('This is a Mercurial clone')
       self.isClone = 1
       if os.path.exists(os.path.join(self.dir, '.hg')):

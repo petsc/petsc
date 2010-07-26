@@ -37,7 +37,7 @@ int main(int argc,char **args)
      Determine files from which we read the linear system
      (matrix and right-hand-side vector).
   */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,PETSC_NULL);CHKERRQ(ierr);
 
   /* -----------------------------------------------------------
                   Beginning of linear solver loop
@@ -69,9 +69,9 @@ int main(int argc,char **args)
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
     ierr = MatLoad(A,fd);CHKERRQ(ierr);
-    ierr = PetscPushErrorHandler(PetscIgnoreErrorHandler,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-    ierr = VecLoad(b,fd);CHKERRQ(ierr);
+    ierr = PetscPushErrorHandler(PetscIgnoreErrorHandler,PETSC_NULL);CHKERRQ(ierr);
+    ierrp = VecLoad(b,fd);
     ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
     ierr  = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
     if (ierrp) { /* if file contains no RHS, then use a vector of all ones */

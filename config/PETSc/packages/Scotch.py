@@ -88,7 +88,7 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Error running make on Scotch: '+str(e))
       libDir     = os.path.join(self.installDir, self.libdir)
       includeDir = os.path.join(self.installDir, self.includedir)
-      output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && cp -f lib/*.a '+libDir+'/. && cp -f include/*.h '+includeDir+'/. &&', timeout=2500, log = self.framework.log)
+      output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && cp -f lib/*.a '+libDir+'/. && cp -f include/*.h '+includeDir+'/.', timeout=2500, log = self.framework.log)
       self.postInstall(output+err,os.path.join('src','Makefile.inc'))
     return self.installDir
 
