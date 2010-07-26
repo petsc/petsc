@@ -7,7 +7,7 @@ class Configure(config.package.Package):
     self.download        = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cusp_1_2.tar.gz']
     self.includes        = ['cusp/version.h']
     self.includedir      = ''
-    self.cxx             = 1
+    self.cxx             = 0
     self.archIndependent = 1
     self.worksonWindows  = 1
     return
