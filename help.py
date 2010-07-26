@@ -110,8 +110,10 @@ class Help(Info):
       f = sys.stdout
     self.printBanner(f)
     (nameLen, descLen) = self.getTextSizes()
-    format    = '  -%-'+str(nameLen)+'s: %s\n'
-    formatDef = '  -%-'+str(nameLen)+'s: %-'+str(descLen)+'s  current: %s\n'
+#    format    = '  -%-'+str(nameLen)+'s: %s\n'
+#    formatDef = '  -%-'+str(nameLen)+'s: %-'+str(descLen)+'s  current: %s\n'
+    format    = '  -%s\n       %s\n'
+    formatDef = '  -%s\n       %s  current: %s\n'
     items = self.sections.items()
     items.sort(lambda a, b: a[1][0].__cmp__(b[1][0]))
     for section, names in items:
