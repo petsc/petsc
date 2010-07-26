@@ -272,14 +272,23 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertString(const char in_str[])
   char           *first,*second;
   PetscErrorCode ierr;
   PetscToken     token;
-  PetscTruth     key;
+  PetscTruth     key,ispush,ispop;
 
   PetscFunctionBegin;
   ierr = PetscTokenCreate(in_str,' ',&token);CHKERRQ(ierr);
   ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
   while (first) {
+    ierr = PetscStrcasecmp(first,"-prefix_push",&ispush);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(first,"-prefix_pop",&ispop);CHKERRQ(ierr);
     ierr = PetscOptionsValidKey(first,&key);CHKERRQ(ierr);
-    if (key) {
+    if (ispush) {
+      ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
+      ierr = PetscOptionsPrefixPush(second);CHKERRQ(ierr);
+      ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
+    } else if (ispop) {
+      ierr = PetscOptionsPrefixPop();CHKERRQ(ierr);
+      ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
+    } else if (key) {
       ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
       ierr = PetscOptionsValidKey(second,&key);CHKERRQ(ierr);
       if (!key) {
@@ -481,8 +490,10 @@ static PetscErrorCode PetscOptionsInsertArgs_Private(int argc,char *args[])
 
   PetscFunctionBegin;
   while (left) {
-    PetscTruth isoptions_file,isp4,tisp4,isp4yourname,isp4rmrank;
+    PetscTruth isoptions_file,isprefixpush,isprefixpop,isp4,tisp4,isp4yourname,isp4rmrank;
     ierr = PetscStrcasecmp(eargs[0],"-options_file",&isoptions_file);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(eargs[0],"-prefix_push",&isprefixpush);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(eargs[0],"-prefix_pop",&isprefixpop);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(eargs[0],"-p4pg",&isp4);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(eargs[0],"-p4yourname",&isp4yourname);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(eargs[0],"-p4rmrank",&isp4rmrank);CHKERRQ(ierr);
@@ -499,6 +510,14 @@ static PetscErrorCode PetscOptionsInsertArgs_Private(int argc,char *args[])
       if (eargs[1][0] == '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Missing filename for -options_file filename option");
       ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,eargs[1],PETSC_TRUE);CHKERRQ(ierr);
       eargs += 2; left -= 2;
+    } else if (isprefixpush) {
+      if (left <= 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Missing prefix for -prefix_push option");
+      if (eargs[1][0] == '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Missing prefix for -prefix_push option (prefixes cannot start with '-')");
+      ierr = PetscOptionsPrefixPush(eargs[1]);CHKERRQ(ierr);
+      eargs += 2; left -= 2;
+    } else if (isprefixpop) {
+      ierr = PetscOptionsPrefixPop();CHKERRQ(ierr);
+      eargs++; left--;
 
       /*
        These are "bad" options that MPICH, etc put on the command line
@@ -713,12 +732,23 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetAll(char *copts[])
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsPrefixPush"
 /*@
-PetscOptionsPrefixPush - Designate a prefix to be used by all options insertions to follow.
+   PetscOptionsPrefixPush - Designate a prefix to be used by all options insertions to follow.
 
-Not  Collective, but prefix will only be applied on calling ranks
+   Not Collective, but prefix will only be applied on calling ranks
 
-Input Parameters:
-prefix - The string to append to the existing prefix
+   Input Parameter:
+.  prefix - The string to append to the existing prefix
+
+   Options Database Keys:
+ +   -prefix_push <some_prefix_> - push the given prefix
+ -   -prefix_pop - pop the last prefix
+
+   Notes:
+   It is common to use this in conjunction with -options_file as in
+
+ $ -prefix_push system1_ -options_file system1rc -prefix_pop -prefix_push system2_ -options_file system2rc -prefix_pop
+
+   where the files no longer require all options to be prefixed with -system2_.
 
 Level: advanced
 
@@ -729,8 +759,18 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsPrefixPush(const char prefix[])
   PetscErrorCode ierr;
   size_t n;
   PetscInt start;
+  char buf[2048];
+  PetscTruth key;
 
   PetscFunctionBegin;
+  PetscValidCharPointer(prefix,1);
+  /* Want to check validity of the key using PetscOptionsValidKey(), which requires that the first character is a '-' */
+  buf[0] = '-';
+  ierr = PetscStrncpy(buf+1,prefix,sizeof buf - 1);
+  buf[sizeof buf - 1] = 0;
+  ierr = PetscOptionsValidKey(buf,&key);CHKERRQ(ierr);
+  if (!key) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Given prefix \"%s\" not valid (the first character must be a letter, do not include leading '-')",prefix);
+
   if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
   if (options->prefixind >= MAXPREFIXES) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Maximum depth of prefix stack %d exceeded, recompile \n src/sys/objects/options.c with larger value for MAXPREFIXES",MAXPREFIXES);
   start = options->prefixind ? options->prefixstack[options->prefixind-1] : 0;
@@ -744,11 +784,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsPrefixPush(const char prefix[])
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsPrefixPop"
 /*@
-PetscOptionsPrefixPop - Remove the latest options prefix, see PetscOptionsPrefixPush() for details
+   PetscOptionsPrefixPop - Remove the latest options prefix, see PetscOptionsPrefixPush() for details
 
-Not  Collective, but prefix will only be popped on calling ranks
+   Not  Collective, but prefix will only be popped on calling ranks
 
-Level: advanced
+   Level: advanced
 
 .seealso: PetscOptionsPrefixPush()
 @*/
