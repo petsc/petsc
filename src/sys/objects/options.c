@@ -24,6 +24,7 @@
 #define MAXOPTIONS 512
 #define MAXALIASES 25
 #define MAXOPTIONSMONITORS 5
+#define MAXPREFIXES 25
 
 typedef struct {
   int            N,argc,Naliases;
@@ -39,6 +40,9 @@ typedef struct {
   void           *monitorcontext[MAXOPTIONSMONITORS];                  /* to pass arbitrary user data into monitor */
   PetscInt       numbermonitors;                                       /* to, for instance, detect options being set */
 
+  /* Prefixes */
+  PetscInt prefixind,prefixstack[MAXPREFIXES];
+  char prefix[2048];
 } PetscOptionsTable;
 
 
@@ -706,6 +710,60 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetAll(char *copts[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsPrefixPush"
+/*@
+PetscOptionsPrefixPush - Designate a prefix to be used by all options insertions to follow.
+
+Not  Collective, but prefix will only be applied on calling ranks
+
+Input Parameters:
+prefix - The string to append to the existing prefix
+
+Level: advanced
+
+.seealso: PetscOptionsPrefixPop()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsPrefixPush(const char prefix[])
+{
+  PetscErrorCode ierr;
+  size_t n;
+  PetscInt start;
+
+  PetscFunctionBegin;
+  if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
+  if (options->prefixind >= MAXPREFIXES) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Maximum depth of prefix stack %d exceeded, recompile \n src/sys/objects/options.c with larger value for MAXPREFIXES",MAXPREFIXES);
+  start = options->prefixind ? options->prefixstack[options->prefixind-1] : 0;
+  ierr = PetscStrlen(prefix,&n);CHKERRQ(ierr);
+  if (n+1 > sizeof(options->prefix)-start) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Maximum prefix length %d exceeded",sizeof(options->prefix));
+  ierr = PetscMemcpy(options->prefix+start,prefix,n+1);CHKERRQ(ierr);
+  options->prefixstack[options->prefixind++] = start+n;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsPrefixPop"
+/*@
+PetscOptionsPrefixPop - Remove the latest options prefix, see PetscOptionsPrefixPush() for details
+
+Not  Collective, but prefix will only be popped on calling ranks
+
+Level: advanced
+
+.seealso: PetscOptionsPrefixPush()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsPrefixPop(void)
+{
+  PetscInt offset;
+
+  PetscFunctionBegin;
+  if (options->prefixind < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"More prefixes popped than pushed");
+  options->prefixind--;
+  offset = options->prefixind ? options->prefixstack[options->prefixind-1] : 0;
+  options->prefix[offset] = 0;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsClear"
 /*@C
@@ -729,6 +787,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsClear(void)
     free(options->aliases1[i]);
     free(options->aliases2[i]);
   }
+  options->prefix[0] = 0;
+  options->prefixind = 0;
   options->N        = 0;
   options->Naliases = 0;
   PetscFunctionReturn(0);
@@ -788,7 +848,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetValue(const char iname[],const cha
   PetscErrorCode ierr;
   PetscInt       N,n,i;
   char           **names;
-  const char     *name = (char*)iname;
+  char           fullname[2048];
+  const char     *name = iname;
   PetscTruth     gt,match;
 
   PetscFunctionBegin;
@@ -798,8 +859,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetValue(const char iname[],const cha
   ierr = PetscStrcasecmp(name,"-h",&match);CHKERRQ(ierr);
   if (match) name = "-help";
 
-  name++;
-  /* first check against aliases */
+  name++; /* skip starting hyphen */
+  if (options->prefixind > 0) {
+    ierr = PetscStrncpy(fullname,options->prefix,sizeof fullname);CHKERRQ(ierr);
+    ierr = PetscStrncat(fullname,name,sizeof fullname);CHKERRQ(ierr);
+    name = fullname;
+  }
+
+  /* check against aliases */
   N = options->Naliases; 
   for (i=0; i<N; i++) {
     ierr = PetscStrcasecmp(options->aliases1[i],name,&match);CHKERRQ(ierr);

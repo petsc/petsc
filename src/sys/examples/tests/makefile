@@ -74,6 +74,9 @@ ex18: ex18.o chkopts
 ex19: ex19.o chkopts
 	-${CLINKER} -o ex19 ex19.o  ${PETSC_SYS_LIB}
 	${RM} -f ex19.o
+ex20: ex20.o chkopts
+	-${CLINKER} -o ex20 ex20.o  ${PETSC_SYS_LIB}
+	${RM} -f ex20.o
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1
@@ -102,8 +105,13 @@ runex19:
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else echo "Possible problem with ex19_1, diffs above"; fi; \
 	   ${RM} -f ex19_1.tmp
+runex20:
+	-@${MPIEXEC} -n 1 ./ex20 > ex20_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex20_1.out ex20_1.tmp) then true; \
+	   else echo "Possible problem with ex20_1, diffs above"; fi; \
+	   ${RM} -f ex20_1.tmp
 
-TESTEXAMPLES_C		       = ex19.PETSc runex19 ex19.rm
+TESTEXAMPLES_C		       = ex19.PETSc runex19 ex19.rm ex20.PETSc runex20 ex19.rm
 TESTEXAMPLES_C_X11	       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm 
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm ex17f.PETSc ex17f.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex1f.PETSc runex1f ex1f.rm
