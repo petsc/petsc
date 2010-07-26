@@ -42,6 +42,8 @@ class Configure(config.base.Configure):
     names = {}
     names['CC'] = 'No C compiler found.'
     names['CPP'] = 'No C preprocessor found.'
+    names['CUDACC'] = 'No CUDA compiler found.'
+    names['CUDACPP'] = 'No CUDA preprocessor found.'
     names['CXX'] = 'No C++ compiler found.'
     names['CXXCPP'] = 'No C++ preprocessor found.'
     names['FC'] = 'No Fortran compiler found.'
@@ -49,7 +51,7 @@ class Configure(config.base.Configure):
     names['RANLIB'] = 'No ranlib found.'
     names['LD_SHARED'] = 'No shared linker found.'
     names['dynamicLinker'] = 'No dynamic linker found.'
-    for language in ['C', 'Cxx', 'FC']:
+    for language in ['C', 'CUDA', 'Cxx', 'FC']:
       self.pushLanguage(language)
       key = self.getCompilerFlagsName(language)
       names[key] = 'No '+language+' compiler flags found.'
@@ -59,6 +61,7 @@ class Configure(config.base.Configure):
       names[key] = 'No '+language+' linker flags found.'
       self.popLanguage()
     names['CPPFLAGS'] = 'No preprocessor flags found.'
+    names['CUDACPPFLAGS'] = 'No CUDA preprocessor flags found.'
     names['CXXCPPFLAGS'] = 'No C++ preprocessor flags found.'
     names['AR_FLAGS'] = 'No archiver flags found.'
     names['AR_LIB_SUFFIX'] = 'No static library suffix found.'

@@ -23,6 +23,11 @@ class Configure(config.base.Configure):
       desc.append('  C Compiler:         '+self.getCompiler()+' '+self.getCompilerFlags())
       if not self.getLinker() == self.getCompiler(): desc.append('  C Linker:           '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
+    if hasattr(self, 'CUDACC'):
+      self.pushLanguage('CUDA')
+      desc.append('  CUDA Compiler:      '+self.getCompiler()+' '+self.getCompilerFlags())
+      if not self.getLinker() == self.getCompiler(): desc.append('  CUDA Linker:        '+self.getLinker()+' '+self.getLinkerFlags())
+      self.popLanguage()
     if hasattr(self, 'CXX'):
       self.pushLanguage('Cxx')
       desc.append('  C++ Compiler:       '+self.getCompiler()+' '+self.getCompilerFlags())
@@ -56,9 +61,13 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-large-file-io=<bool>', nargs.ArgBool(None, 0, 'Allow IO with files greater then 2 GB'))
     help.addArgument('Compilers', '-CPP=<prog>',            nargs.Arg(None, None, 'Specify the C preprocessor'))
     help.addArgument('Compilers', '-CPPFLAGS=<string>',     nargs.Arg(None, '',   'Specify the C preprocessor options'))
+    help.addArgument('Compilers', '-CUDACPP=<prog>',        nargs.Arg(None, None, 'Specify the CUDA preprocessor'))
+    help.addArgument('Compilers', '-CUDACPPFLAGS=<string>', nargs.Arg(None, '',   'Specify the CUDA preprocessor options'))
     help.addArgument('Compilers', '-CXXPP=<prog>',          nargs.Arg(None, None, 'Specify the C++ preprocessor'))
     help.addArgument('Compilers', '-CC=<prog>',             nargs.Arg(None, None, 'Specify the C compiler'))
     help.addArgument('Compilers', '-CFLAGS=<string>',       nargs.Arg(None, '',   'Specify the C compiler options'))
+    help.addArgument('Compilers', '-CUDACC=<prog>',         nargs.Arg(None, None, 'Specify the CUDA compiler'))
+    help.addArgument('Compilers', '-CUDAFLAGS=<string>',    nargs.Arg(None, '',   'Specify the CUDA compiler options'))
     help.addArgument('Compilers', '-CXX=<prog>',            nargs.Arg(None, None, 'Specify the C++ compiler'))
     help.addArgument('Compilers', '-CXXFLAGS=<string>',     nargs.Arg(None, '',   'Specify the C++ compiler options'))
     help.addArgument('Compilers', '-CXX_CXXFLAGS=<string>', nargs.Arg(None, '',   'Specify the C++ compiler-only options'))
@@ -318,13 +327,13 @@ class Configure(config.base.Configure):
 
   def checkInitialFlags(self):
     '''Initialize the compiler and linker flags'''
-    for language in ['C', 'Cxx', 'FC']:
+    for language in ['C', 'CUDA', 'Cxx', 'FC']:
       self.pushLanguage(language)
       for flagsArg in [self.getCompilerFlagsName(language), self.getCompilerFlagsName(language, 1), self.getLinkerFlagsName(language)]:
         setattr(self, flagsArg, self.argDB[flagsArg])
         self.framework.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
       self.popLanguage()
-    for flagsArg in ['CPPFLAGS', 'CXXCPPFLAGS', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'sharedLibraryFlags', 'dynamicLibraryFlags']:
+    for flagsArg in ['CPPFLAGS', 'CUDACPPFLAGS', 'CXXCPPFLAGS', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'sharedLibraryFlags', 'dynamicLibraryFlags']:
       setattr(self, flagsArg, self.argDB[flagsArg])
       self.framework.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
     if 'LIBS' in self.argDB:
@@ -357,9 +366,6 @@ class Configure(config.base.Configure):
   def generateCCompilerGuesses(self):
     '''Determine the C compiler using CC, then --with-cc, then MPI, then GNU, then vendors
        - Any given category can be excluded'''
-    import os
-
-
     if hasattr(self, 'CC'):
       yield self.CC
     elif self.framework.argDB.has_key('with-cc'):
@@ -475,6 +481,66 @@ class Configure(config.base.Configure):
       except RuntimeError, e:
         self.popLanguage()
     raise RuntimeError('Cannot find a C preprocessor')
+    return
+
+  def generateCUDACompilerGuesses(self):
+    '''Determine the CUDA compiler using CUDACC, then --with-cudacc, then vendors
+       - Any given category can be excluded'''
+    if hasattr(self, 'CUDACC'):
+      yield self.CUDACC
+    elif self.framework.argDB.has_key('with-cudacc'):
+      yield self.framework.argDB['with-cudacc']
+      raise RuntimeError('C compiler you provided with -with-cudacc='+self.framework.argDB['with-cudacc']+' does not work')
+    elif self.framework.argDB.has_key('CUDACC'):
+      yield self.framework.argDB['CUDACC']
+      raise RuntimeError('CUDA compiler you provided with -CUDACC='+self.framework.argDB['CUDACC']+' does not work')
+    else:
+      vendor = self.vendor
+      if not self.vendor is None:
+        if vendor == 'nvidia' or not vendor:
+          yield 'nvcc'
+      yield 'nvcc'     
+    return
+
+  def checkCUDACompiler(self):
+    '''Locate a functional CUDA compiler'''
+    if 'with-cudacc' in self.framework.argDB and self.framework.argDB['with-cudacc'] == '0':
+      if 'CUDACC' in self.framework.argDB:
+        del self.framework.argDB['CUDACC']
+      return
+    for compiler in self.generateCUDACompilerGuesses():
+      try:
+        if self.getExecutable(compiler, resultName = 'CUDACC'):
+          self.checkCompiler('CUDA')
+          break
+      except RuntimeError, e:
+        self.logPrint('Error testing CUDA compiler: '+str(e))
+        del self.CUDACC
+    return
+
+  def generateCUDAPreprocessorGuesses(self):
+    '''Determines the CUDA preprocessor from --with-cudacpp, then CUDACPP, then the CUDA compiler'''
+    if 'with-cudacpp' in self.framework.argDB:
+      yield self.framework.argDB['with-cudacpp']
+    elif 'CUDACPP' in self.framework.argDB:
+      yield self.framework.argDB['CUDACPP']
+    else:
+      yield self.CUDACC+' -E'
+    return
+
+  def checkCUDAPreprocessor(self):
+    '''Locate a functional CUDA preprocessor'''
+    for compiler in self.generateCUDAPreprocessorGuesses():
+      try:
+        if self.getExecutable(compiler, resultName = 'CUDACPP'):
+          self.pushLanguage('CUDA')
+          if not self.checkPreprocess('#include <stdlib.h>\n__global__ void testFunction() {return;};'):
+            raise RuntimeError('Cannot preprocess CUDA with '+self.CUDACPP+'.')
+          self.popLanguage()
+          return
+      except RuntimeError, e:
+        self.popLanguage()
+    raise RuntimeError('Cannot find a CUDA preprocessor')
     return
 
   def generateCxxCompilerGuesses(self):
@@ -723,11 +789,9 @@ class Configure(config.base.Configure):
           self.checkCompiler('FC')
           break
       except RuntimeError, e:
-        import os
-
         self.logPrint('Error testing Fortran compiler: '+str(e))
         if os.path.basename(self.FC) in ['mpif90', 'mpif77']:
-         self.framework.logPrint(' MPI installation '+str(self.FC)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
+          self.framework.logPrint(' MPI installation '+str(self.FC)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
         del self.FC
     return
 
@@ -1234,6 +1298,12 @@ if (dlclose(handle)) {
     if hasattr(self, 'CPP'):
       self.addSubstitution('CPP', self.CPP)
       self.addSubstitution('CPPFLAGS', self.CPPFLAGS)
+    if hasattr(self, 'CUDACC'):
+      self.addSubstitution('CUDACC', self.CUDACC)
+      self.addSubstitution('CUDAFLAGS', self.CUDAFLAGS)
+    if hasattr(self, 'CUDACPP'):
+      self.addSubstitution('CUDACPP', self.CUDACPP)
+      self.addSubstitution('CUDACPPFLAGS', self.CUDACPPFLAGS)
     if hasattr(self, 'CXX'):
       self.addSubstitution('CXX', self.CXX)
       self.addSubstitution('CXX_CXXFLAGS', self.CXX_CXXFLAGS)
@@ -1310,6 +1380,8 @@ This way - mpi compilers from '''+self.argDB['with-mpi-dir']+ ''' are used.'''
     self.executeTest(self.checkInitialFlags)
     self.executeTest(self.checkCCompiler)
     self.executeTest(self.checkCPreprocessor)
+    self.executeTest(self.checkCUDACompiler)
+    self.executeTest(self.checkCUDAPreprocessor)
     self.executeTest(self.checkCxxCompiler)
     if hasattr(self, 'CXX'):
       self.executeTest(self.checkCxxPreprocessor)

@@ -348,7 +348,7 @@ class Configure(script.Script):
     language = self.language[-1]
     if includes and not includes[-1] == '\n':
       includes += '\n'
-    if language in ['C','Cxx']:
+    if language in ['C', 'CUDA', 'Cxx']:
       codeStr = ''
       if self.compilerDefines: codeStr = '#include "'+self.compilerDefines+'"\n'
       codeStr += '#include "conffix.h"\n'+includes
@@ -370,7 +370,7 @@ class Configure(script.Script):
           codeEnd   = '\n      end\n'
         codeStr += codeBegin+body+codeEnd
     else:
-      raise RuntimeError('Invalid language: '+language)
+      raise RuntimeError('Cannot determine code body for language: '+language)
     return codeStr
 
   def preprocess(self, codeStr, timeout = 600.0):
@@ -446,6 +446,8 @@ class Configure(script.Script):
   def getCompilerFlagsName(self, language, compilerOnly = 0):
     if language == 'C':
       flagsArg = 'CFLAGS'
+    elif language == 'CUDA':
+      flagsArg = 'CUDAFLAGS'
     elif language == 'Cxx':
       if compilerOnly:
         flagsArg = 'CXX_CXXFLAGS'
@@ -507,11 +509,7 @@ class Configure(script.Script):
 
   # Should be static
   def getLinkerFlagsName(self, language):
-    if language == 'C':
-      flagsArg = 'LDFLAGS'
-    elif language == 'Cxx':
-      flagsArg = 'LDFLAGS'
-    elif language == 'FC':
+    if language in ['C', 'CUDA', 'Cxx', 'FC']:
       flagsArg = 'LDFLAGS'
     else:
       raise RuntimeError('Unknown language: '+language)
