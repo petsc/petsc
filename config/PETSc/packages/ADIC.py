@@ -17,7 +17,7 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('ADIC', '-with-adic=<bool>',      nargs.ArgBool(None, 0, 'Activate ADIC'))
-    help.addArgument('ADIC', '-with-adic-path=<path>', nargs.Arg(None, None, 'Full path of adic executable'))    
+    help.addArgument('ADIC', '-with-adic-path=<dir>', nargs.Arg(None, None, 'Full path of adic executable'))    
     return
 
   def generateADIC(self):

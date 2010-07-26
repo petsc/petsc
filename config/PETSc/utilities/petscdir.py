@@ -17,7 +17,7 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-PETSC_DIR',                        nargs.Arg(None, None, 'The root directory of the PETSc installation'))
+    help.addArgument('PETSc', '-PETSC_DIR=<root-dir>',                        nargs.Arg(None, None, 'The root directory of the PETSc installation'))
     return
 
   def setupDependencies(self, framework):

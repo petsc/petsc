@@ -15,9 +15,8 @@ class Configure(config.base.Configure):
     
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-fpp=<name>', nargs.Arg(None, None, 'Specify Fortran preprocessor (broken)'))
-    help.addArgument('PETSc', '-with-fortran-datatypes=<name>', nargs.ArgBool(None, 0, 'Declare PETSc objects in Fortran like type(Vec) instead of Vec'))
-    help.addArgument('PETSc', '-with-fortran-interfaces=<name>', nargs.ArgBool(None, 0, 'Generate Fortran interface definitions for PETSc functions'))
+    help.addArgument('PETSc', '-with-fortran-datatypes=<bool>', nargs.ArgBool(None, 0, 'Declare PETSc objects in Fortran like type(Vec) instead of Vec'))
+    help.addArgument('PETSc', '-with-fortran-interfaces=<bool>', nargs.ArgBool(None, 0, 'Generate Fortran interface definitions for PETSc functions'))
     return
 
   def setupDependencies(self, framework):
