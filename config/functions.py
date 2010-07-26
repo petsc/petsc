@@ -14,7 +14,7 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('Functions', '-known-memcmp-ok=<0 or 1>', nargs.ArgBool(None, None, 'Does memcmp() work correctly?'))
+    help.addArgument('Functions', '-known-memcmp-ok=<bool>', nargs.ArgBool(None, None, 'Does memcmp() work correctly?'))
     return
 
   def setupDependencies(self, framework):

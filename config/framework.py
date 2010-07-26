@@ -173,21 +173,21 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def getHostCPU(self):
     if not hasattr(self, '_host_cpu'):
-      return self.argDB['with-host-cpu']
+      return self.argDB['known-host-cpu']
     return self._host_cpu
   def setHostCPU(self, cpu):
     self._host_cpu = cpu
   host_cpu = property(getHostCPU, setHostCPU, doc = 'Machine CPU')
   def getHostVendor(self):
     if not hasattr(self, '_host_vendor'):
-      return self.argDB['with-host-vendor']
+      return self.argDB['known-host-vendor']
     return self._host_vendor
   def setHostVendor(self, vendor):
     self._host_vendor = vendor
   host_vendor = property(getHostVendor, setHostVendor, doc = 'Machine Vendor')
   def getHostOS(self):
     if not hasattr(self, '_host_os'):
-      return self.argDB['with-host-os']
+      return self.argDB['known-host-os']
     return self._host_os
   def setHostOS(self, os):
     self._host_os = os
@@ -222,19 +222,19 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     host_cpu, host_vendor, host_os = self.getArchitecture()
 
     help.addArgument('Framework', '-configModules',       nargs.Arg(None, None, 'A list of Python modules with a Configure class'))
-    help.addArgument('Framework', '-ignoreCompileOutput', nargs.ArgBool(None, 1, 'Ignore compiler output'))
-    help.addArgument('Framework', '-ignoreLinkOutput',    nargs.ArgBool(None, 1, 'Ignore linker output'))
-    help.addArgument('Framework', '-ignoreWarnings',      nargs.ArgBool(None, 0, 'Ignore compiler and linker warnings'))
-    help.addArgument('Framework', '-doCleanup',           nargs.ArgBool(None, 1, 'Delete any configure generated files (turn off for debugging)'))
-    help.addArgument('Framework', '-with-alternatives',   nargs.ArgBool(None, 0, 'Provide a choice among alternative package installations'))
+    help.addArgument('Framework', '-ignoreCompileOutput=<bool>', nargs.ArgBool(None, 1, 'Ignore compiler output'))
+    help.addArgument('Framework', '-ignoreLinkOutput=<bool>',    nargs.ArgBool(None, 1, 'Ignore linker output'))
+    help.addArgument('Framework', '-ignoreWarnings=<bool>',      nargs.ArgBool(None, 0, 'Ignore compiler and linker warnings'))
+    help.addArgument('Framework', '-doCleanup=<bool>',           nargs.ArgBool(None, 1, 'Delete any configure generated files (turn off for debugging)'))
+    help.addArgument('Framework', '-with-alternatives=<bool>',   nargs.ArgBool(None, 0, 'Provide a choice among alternative package installations'))
     help.addArgument('Framework', '-search-dirs',         nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
     help.addArgument('Framework', '-package-dirs',        nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
     help.addArgument('Framework', '-with-external-packages-dir=<dir>', nargs.Arg(None, None, 'Location to install downloaded packages'))
-    help.addArgument('Framework', '-with-batch',          nargs.ArgBool(None, 0, 'Machine using cross-compilers or a batch system to submit jobs'))
-    help.addArgument('Framework', '-with-host-cpu',       nargs.Arg(None, host_cpu,    'Machine CPU'))
-    help.addArgument('Framework', '-with-host-vendor',    nargs.Arg(None, host_vendor, 'Machine vendor'))
-    help.addArgument('Framework', '-with-host-os',        nargs.Arg(None, host_os,     'Machine OS'))
-    help.addArgument('Framework', '-with-file-create-pause', nargs.ArgBool(None, 0, 'Add 1 sec pause between config temp file delete/recreate'))
+    help.addArgument('Framework', '-with-batch=<bool>',          nargs.ArgBool(None, 0, 'Machine using cross-compilers or a batch system to submit jobs'))
+    help.addArgument('Framework', '-known-host-cpu=<string>',       nargs.Arg(None, host_cpu,    'Machine CPU'))
+    help.addArgument('Framework', '-known-host-vendor=<string>',    nargs.Arg(None, host_vendor, 'Machine vendor'))
+    help.addArgument('Framework', '-known-host-os=<string>',        nargs.Arg(None, host_os,     'Machine OS'))
+    help.addArgument('Framework', '-with-file-create-pause=<bool>', nargs.ArgBool(None, 0, 'Add 1 sec pause between config temp file delete/recreate'))
     return help
 
   def getCleanup(self):
@@ -250,8 +250,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     '''Change titles and setup all children'''
     argDB = script.Script.setupArguments(self, argDB)
 
-    self.help.title = 'Python Configure Help\n   Comma seperated lists should be given between [] (use \[ \] in tcsh/csh)\n    For example: --with-mpi-lib=\[/usr/local/lib/libmpich.a,/usr/local/lib/libpmpich.a\]'
-    self.actions.title = 'Python Configure Actions\n   These are the actions performed by configure on the filesystem'
+    self.help.title = 'Configure Help\n   Comma seperated lists should be given between [] (use \[ \] in tcsh/csh)\n      For example: --with-mpi-lib=\[/usr/local/lib/libmpich.a,/usr/local/lib/libpmpich.a\]\n   Options beginning with --known- are to provide values you already know\n      For example:--known-endian=big\n   Options beginning with --with- indicate that you are requesting something\n      For example: --with-c-support=1\n   <prog> means a program name or a full path to a program\n      For example:--with-cmake=/Users/bsmith/bin/cmake\n   <bool> means a boolean, use either 0 or 1\n   <dir> means a directory\n      For example: --with-external-packages-dir=/Users/bsmith/external\n   For packages use --with-PACKAGE-dir=<dir> OR --with-PACKAGE-include=<dir> --with-PACKAGE-lib=<lib> OR --download-PACKAGE'
+    self.actions.title = 'Configure Actions\n   These are the actions performed by configure on the filesystem'
 
     for child in self.childGraph.vertices:
       if hasattr(child, 'setupHelp'): child.setupHelp(self.help)

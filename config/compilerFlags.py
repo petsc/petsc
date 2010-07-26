@@ -18,15 +18,15 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('Compiler Flags', '-optionsModule=<module name>', nargs.Arg(None, 'config.compilerOptions', 'The Python module used to determine compiler options and versions'))
-    help.addArgument('Compiler Flags', '-with-debugging=<yes or no>', nargs.ArgBool(None, 1, 'Specify debugging version of libraries'))
-    help.addArgument('Compiler Flags', '-C_VERSION',   nargs.Arg(None, 'Unknown', 'The version of the C compiler'))
-    help.addArgument('Compiler Flags', '-CXX_VERSION', nargs.Arg(None, 'Unknown', 'The version of the C++ compiler'))
-    help.addArgument('Compiler Flags', '-FC_VERSION',  nargs.Arg(None, 'Unknown', 'The version of the Fortran compiler'))
-    help.addArgument('Compiler Flags', '-COPTFLAGS',   nargs.Arg(None, None, 'Override the debugging/optimization flags for the C compiler'))
-    help.addArgument('Compiler Flags', '-CXXOPTFLAGS', nargs.Arg(None, None, 'Override the debugging/optimization flags for the C++ compiler'))
-    help.addArgument('Compiler Flags', '-FOPTFLAGS',   nargs.Arg(None, None, 'Override the debugging/optimization flags for the Fortran compiler'))
+    help.addArgument('Compiler Flags', '-with-debugging=<bool>', nargs.ArgBool(None, 1, 'Specify debugging version of libraries'))
+    help.addArgument('Compiler Flags', '-C_VERSION=<string>',   nargs.Arg(None, 'Unknown', 'The version of the C compiler'))
+    help.addArgument('Compiler Flags', '-CXX_VERSION=<string>', nargs.Arg(None, 'Unknown', 'The version of the C++ compiler'))
+    help.addArgument('Compiler Flags', '-FC_VERSION=<string>',  nargs.Arg(None, 'Unknown', 'The version of the Fortran compiler'))
+    help.addArgument('Compiler Flags', '-COPTFLAGS=<string>',   nargs.Arg(None, None, 'Override the debugging/optimization flags for the C compiler'))
+    help.addArgument('Compiler Flags', '-CXXOPTFLAGS=<string>', nargs.Arg(None, None, 'Override the debugging/optimization flags for the C++ compiler'))
+    help.addArgument('Compiler Flags', '-FOPTFLAGS=<string>',   nargs.Arg(None, None, 'Override the debugging/optimization flags for the Fortran compiler'))
     # not sure where to put this, currently gcov is handled in ../compilerOptions.py
-    help.addArgument('Compiler Flags', '-with-gcov=<yes or no>', nargs.ArgBool(None, 0, 'Specify that GNUs coverage tool gcov is used'))
+    help.addArgument('Compiler Flags', '-with-gcov=<bool>', nargs.ArgBool(None, 0, 'Specify that GNUs coverage tool gcov is used'))
     return
 
   def setupDependencies(self, framework):
