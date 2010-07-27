@@ -15,9 +15,9 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
 
-    help.addArgument('SourceControl', '-with-hg=<executable>',  nargs.Arg(None, 'hg', 'Specify the Mercurial executable'))
-    help.addArgument('SourceControl', '-with-cvs=<executable>', nargs.Arg(None, 'cvs', 'Specify the CVS executable'))
-    help.addArgument('SourceControl', '-with-svn=<executable>', nargs.Arg(None, 'svn', 'Specify the Subversion executable'))
+    help.addArgument('SourceControl', '-with-hg=<prog>',  nargs.Arg(None, 'hg', 'Specify the Mercurial executable'))
+    help.addArgument('SourceControl', '-with-cvs=<prog>', nargs.Arg(None, 'cvs', 'Specify the CVS executable'))
+    help.addArgument('SourceControl', '-with-svn=<prog>', nargs.Arg(None, 'svn', 'Specify the Subversion executable'))
     return
 
   def configureMercurial(self):

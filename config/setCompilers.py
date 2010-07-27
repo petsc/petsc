@@ -51,47 +51,50 @@ class Configure(config.base.Configure):
     import nargs
 
     help.addArgument('Compilers', '-with-cpp=<prog>', nargs.Arg(None, None, 'Specify the C preprocessor'))
-    help.addArgument('Compilers', '-with-cc=<prog>',  nargs.Arg(None, None, 'Specify the C compiler'))
-    help.addArgument('Compilers', '-with-cxx=<prog>', nargs.Arg(None, None, 'Specify the C++ compiler'))
-    help.addArgument('Compilers', '-with-fc=<prog>',  nargs.Arg(None, None, 'Specify the Fortran compiler'))
-
-    help.addArgument('Compilers', '-with-gnu-compilers=<bool>',      nargs.ArgBool(None, 1, 'Try to use GNU compilers'))
-    help.addArgument('Compilers', '-with-vendor-compilers=<vendor>', nargs.Arg(None, '', 'Try to use vendor compilers (no argument all vendors, 0 no vendors)'))
-
-    help.addArgument('Compilers', '-with-large-file-io=<bool>', nargs.ArgBool(None, 0, 'Allow IO with files greater then 2 GB'))
     help.addArgument('Compilers', '-CPP=<prog>',            nargs.Arg(None, None, 'Specify the C preprocessor'))
     help.addArgument('Compilers', '-CPPFLAGS=<string>',     nargs.Arg(None, '',   'Specify the C preprocessor options'))
-    help.addArgument('Compilers', '-CUDACPP=<prog>',        nargs.Arg(None, None, 'Specify the CUDA preprocessor'))
-    help.addArgument('Compilers', '-CUDACPPFLAGS=<string>', nargs.Arg(None, '',   'Specify the CUDA preprocessor options'))
-    help.addArgument('Compilers', '-CXXPP=<prog>',          nargs.Arg(None, None, 'Specify the C++ preprocessor'))
+    help.addArgument('Compilers', '-with-cc=<prog>',  nargs.Arg(None, None, 'Specify the C compiler'))
     help.addArgument('Compilers', '-CC=<prog>',             nargs.Arg(None, None, 'Specify the C compiler'))
     help.addArgument('Compilers', '-CFLAGS=<string>',       nargs.Arg(None, '',   'Specify the C compiler options'))
-    help.addArgument('Compilers', '-CUDACC=<prog>',         nargs.Arg(None, None, 'Specify the CUDA compiler'))
-    help.addArgument('Compilers', '-CUDAFLAGS=<string>',    nargs.Arg(None, '',   'Specify the CUDA compiler options'))
+    help.addArgument('Compilers', '-CC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the C linker flags'))
+
+    help.addArgument('Compilers', '-CXXPP=<prog>',          nargs.Arg(None, None, 'Specify the C++ preprocessor'))
+    help.addArgument('Compilers', '-CXXCPPFLAGS=<string>',  nargs.Arg(None, '',   'Specify the C++ preprocessor options'))
+    help.addArgument('Compilers', '-with-cxx=<prog>', nargs.Arg(None, None, 'Specify the C++ compiler'))
     help.addArgument('Compilers', '-CXX=<prog>',            nargs.Arg(None, None, 'Specify the C++ compiler'))
     help.addArgument('Compilers', '-CXXFLAGS=<string>',     nargs.Arg(None, '',   'Specify the C++ compiler options'))
     help.addArgument('Compilers', '-CXX_CXXFLAGS=<string>', nargs.Arg(None, '',   'Specify the C++ compiler-only options'))
-    help.addArgument('Compilers', '-CXXCPPFLAGS=<string>',  nargs.Arg(None, '',   'Specify the C++ preprocessor options'))
+    help.addArgument('Compilers', '-CXX_LINKER_FLAGS=<string>',       nargs.Arg(None, [], 'Specify the C++ linker flags'))
+
+    help.addArgument('Compilers', '-with-fc=<prog>',  nargs.Arg(None, None, 'Specify the Fortran compiler'))
     help.addArgument('Compilers', '-FC=<prog>',             nargs.Arg(None, None, 'Specify the Fortran compiler'))
     help.addArgument('Compilers', '-FFLAGS=<string>',       nargs.Arg(None, '',   'Specify the Fortran compiler options'))
+    help.addArgument('Compilers', '-FC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the FC linker flags'))
+
+    help.addArgument('Compilers', '-with-gnu-compilers=<bool>',      nargs.ArgBool(None, 1, 'Try to use GNU compilers'))
+    help.addArgument('Compilers', '-with-vendor-compilers=<vendor as string>', nargs.Arg(None, '', 'Try to use vendor compilers (no argument all vendors, 0 no vendors)'))
+
+    help.addArgument('Compilers', '-with-large-file-io=<bool>', nargs.ArgBool(None, 0, 'Allow IO with files greater then 2 GB'))
+
+    help.addArgument('Compilers', '-CUDACPP=<prog>',        nargs.Arg(None, None, 'Specify the CUDA preprocessor'))
+    help.addArgument('Compilers', '-CUDACPPFLAGS=<string>', nargs.Arg(None, '',   'Specify the CUDA preprocessor options'))
+    help.addArgument('Compilers', '-CUDACC=<prog>',         nargs.Arg(None, None, 'Specify the CUDA compiler'))
+    help.addArgument('Compilers', '-CUDAFLAGS=<string>',    nargs.Arg(None, '',   'Specify the CUDA compiler options'))
 
 ##    help.addArgument('Compilers', '-LD=<prog>',              nargs.Arg(None, None, 'Specify the executable linker'))
 ##    help.addArgument('Compilers', '-CC_LD=<prog>',           nargs.Arg(None, None, 'Specify the linker for C only'))
 ##    help.addArgument('Compilers', '-CXX_LD=<prog>',          nargs.Arg(None, None, 'Specify the linker for C++ only'))
 ##    help.addArgument('Compilers', '-FC_LD=<prog>',           nargs.Arg(None, None, 'Specify the linker for Fortran only'))
+    help.addArgument('Compilers', '-with-shared-ld=<prog>',  nargs.Arg(None, None, 'Specify the shared linker'))
     help.addArgument('Compilers', '-LD_SHARED=<prog>',       nargs.Arg(None, None, 'Specify the shared linker'))
     help.addArgument('Compilers', '-LDFLAGS=<string>',       nargs.Arg(None, '',   'Specify the linker options'))
-    help.addArgument('Compilers', '-CC_LINKER_FLAGS',        nargs.Arg(None, [], 'Specify the C linker flags'))
-    help.addArgument('Compilers', '-CXX_LINKER_FLAGS',       nargs.Arg(None, [], 'Specify the Cxx linker flags'))
-    help.addArgument('Compilers', '-FC_LINKER_FLAGS',        nargs.Arg(None, [], 'Specify the FC linker flags'))
-    help.addArgument('Compilers', '-with-ar',                nargs.Arg(None, None,   'Specify the archiver'))
-    help.addArgument('Compilers', '-AR',                     nargs.Arg(None, None,   'Specify the archiver flags'))
-    help.addArgument('Compilers', '-AR_FLAGS',               nargs.Arg(None, None,   'Specify the archiver flags'))
-    help.addArgument('Compilers', '-with-ranlib',            nargs.Arg(None, None,   'Specify ranlib'))
-    help.addArgument('Compilers', '-with-pic',               nargs.ArgBool(None, 0, 'Compile with -fPIC or equivalent flag if possible'))
-    help.addArgument('Compilers', '-with-shared-ld=<prog>',  nargs.Arg(None, None, 'Specify the shared linker'))
-    help.addArgument('Compilers', '-sharedLibraryFlags',     nargs.Arg(None, [], 'Specify the shared library flags'))
-    help.addArgument('Compilers', '-dynamicLibraryFlags',    nargs.Arg(None, [], 'Specify the dynamic library flags'))
+    help.addArgument('Compilers', '-with-ar=<prog>',                nargs.Arg(None, None,   'Specify the archiver'))
+    help.addArgument('Compilers', '-AR=<prog>',                     nargs.Arg(None, None,   'Specify the archiver flags'))
+    help.addArgument('Compilers', '-AR_FLAGS=<string>',               nargs.Arg(None, None,   'Specify the archiver flags'))
+    help.addArgument('Compilers', '-with-ranlib=<prog>',            nargs.Arg(None, None,   'Specify ranlib'))
+    help.addArgument('Compilers', '-with-pic=<bool>',               nargs.ArgBool(None, 0, 'Compile with -fPIC or equivalent flag if possible'))
+    help.addArgument('Compilers', '-sharedLibraryFlags=<string>',     nargs.Arg(None, [], 'Specify the shared library flags'))
+    help.addArgument('Compilers', '-dynamicLibraryFlags=<string>',    nargs.Arg(None, [], 'Specify the dynamic library flags'))
     help.addArgument('Compilers', '-LIBS=<string>',          nargs.Arg(None, None, 'Specify extra libraries for all links'))
     return
 
@@ -1367,7 +1370,7 @@ This way - mpi compilers from '''+self.argDB['with-mpi-dir']+ ''' are used.'''
     return
 
   def resetEnvCompilers(self):
-    ignoreEnv = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FFLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS']
+    ignoreEnv = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FFLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS','LDFLAGS','MPI_DIR']
     for envVal in ignoreEnv:
       if envVal in os.environ:
         self.logPrintBox('***** WARNING: '+envVal+' found in enviornment variables - ignoring ******')

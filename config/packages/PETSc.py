@@ -59,7 +59,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-petsc-dir=<root dir>',        nargs.ArgDir(None, None, 'Specify the root directory of the PETSc installation'))
     help.addArgument('PETSc', '-with-petsc-arch=<arch>',           nargs.Arg(None, None, 'Specify PETSC_ARCH'))
     # Construction options
-    help.addArgument('PETSc', '-download-petsc=<no,yes>',          nargs.ArgBool(None, 0, 'Install PETSc'))
+    help.addArgument('PETSc', '-download-petsc=<bool>',          nargs.ArgBool(None, 0, 'Install PETSc'))
     # Testing options
     help.addArgument('PETSc', '-with-petsc-shared=<bool>',         nargs.ArgBool(None, 1, 'Require that the PETSc library be shared'))
     return

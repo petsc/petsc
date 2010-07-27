@@ -31,9 +31,9 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
 
-    help.addArgument('Compilers', '-with-clib-autodetect',           nargs.ArgBool(None, 1, 'Autodetect C compiler libraries'))
-    help.addArgument('Compilers', '-with-fortranlib-autodetect',     nargs.ArgBool(None, 1, 'Autodetect Fortran compiler libraries'))
-    help.addArgument('Compilers', '-with-cxxlib-autodetect',         nargs.ArgBool(None, 1, 'Autodetect C++ compiler libraries'))
+    help.addArgument('Compilers', '-with-clib-autodetect=<bool>',           nargs.ArgBool(None, 1, 'Autodetect C compiler libraries'))
+    help.addArgument('Compilers', '-with-fortranlib-autodetect=<bool>',     nargs.ArgBool(None, 1, 'Autodetect Fortran compiler libraries'))
+    help.addArgument('Compilers', '-with-cxxlib-autodetect=<bool>',         nargs.ArgBool(None, 1, 'Autodetect C++ compiler libraries'))
 
     return
 
