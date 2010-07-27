@@ -1384,7 +1384,7 @@ This way - mpi compilers from '''+self.argDB['with-mpi-dir']+ ''' are used.'''
     self.executeTest(self.checkCCompiler)
     self.executeTest(self.checkCPreprocessor)
     self.executeTest(self.checkCUDACompiler)
-#    self.executeTest(self.checkCUDAPreprocessor)
+    self.executeTest(self.checkCUDAPreprocessor)
     self.executeTest(self.checkCxxCompiler)
     if hasattr(self, 'CXX'):
       self.executeTest(self.checkCxxPreprocessor)
