@@ -18,8 +18,8 @@ class Configure(config.base.Configure):
   
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-PETSC_ARCH',     nargs.Arg(None, None, 'The configuration name'))
-    help.addArgument('PETSc', '-with-petsc-arch',nargs.Arg(None, None, 'The configuration name'))
+    help.addArgument('PETSc', '-PETSC_ARCH=<string>',     nargs.Arg(None, None, 'The configuration name'))
+    help.addArgument('PETSc', '-with-petsc-arch=<string>',nargs.Arg(None, None, 'The configuration name'))
     return
 
   def setupDependencies(self, framework):

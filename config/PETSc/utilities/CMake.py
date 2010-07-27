@@ -15,7 +15,7 @@ class Configure(config.base.Configure):
     
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-cmake=<cmakename>', nargs.Arg(None, 'cmake', 'Specify cmake'))
+    help.addArgument('PETSc', '-with-cmake=<prog>', nargs.Arg(None, 'cmake', 'Specify cmake'))
     return
 
   def configureCMake(self):

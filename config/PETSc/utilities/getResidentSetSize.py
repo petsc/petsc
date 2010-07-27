@@ -17,7 +17,7 @@ class Configure(config.base.Configure):
      
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-proc-filesystem=<yes or no>', nargs.ArgBool(None, 1, 'Use the /proc filesystem for system statistics'))    
+    help.addArgument('PETSc', '-with-proc-filesystem=<bool>', nargs.ArgBool(None, 1, 'Use the /proc filesystem for system statistics'))    
     return
 
   def setupDependencies(self, framework):

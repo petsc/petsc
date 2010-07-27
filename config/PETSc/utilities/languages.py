@@ -18,9 +18,9 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-clanguage=<C or C++>', nargs.Arg(None, 'C', 'Specify C or C++ language'))
-    help.addArgument('PETSc', '-with-c++-support', nargs.ArgBool(None, 0, 'When building C, compile C++ portions of external libraries (e.g. Prometheus)'))
-    help.addArgument('PETSc', '-with-c-support', nargs.ArgBool(None, 0, 'When building with C++, compile so may be used directly from C'))
-    help.addArgument('PETSc', '-with-fortran', nargs.ArgBool(None, 1, 'Create and install the Fortran wrappers'))
+    help.addArgument('PETSc', '-with-c++-support=<bool>', nargs.ArgBool(None, 0, 'When building C, compile C++ portions of external libraries (e.g. Prometheus)'))
+    help.addArgument('PETSc', '-with-c-support=<bool>', nargs.ArgBool(None, 0, 'When building with C++, compile so may be used directly from C'))
+    help.addArgument('PETSc', '-with-fortran=<bool>', nargs.ArgBool(None, 1, 'Create and install the Fortran wrappers'))
     return
 
   def setupDependencies(self, framework):
