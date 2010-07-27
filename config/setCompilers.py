@@ -525,7 +525,8 @@ class Configure(config.base.Configure):
     elif 'CUDACPP' in self.framework.argDB:
       yield self.framework.argDB['CUDACPP']
     else:
-      yield self.CUDACC+' -E'
+      if hasattr(self, 'CUDACC'):
+        yield self.CUDACC+' -E'
     return
 
   def checkCUDAPreprocessor(self):

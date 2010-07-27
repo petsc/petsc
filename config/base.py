@@ -407,6 +407,20 @@ class Configure(script.Script):
     err = self.framework.filterPreprocessOutput(err)
     return not ret and not len(err)
 
+  # Should be static
+  def getPreprocessorFlagsName(self, language):
+    if language in ['C', 'Cxx', 'FC']:
+      flagsArg = 'CPPFLAGS'
+    elif language == 'CUDA':
+      flagsArg = 'CUDACPPFLAGS'
+    else:
+      raise RuntimeError('Unknown language: '+language)
+    return flagsArg
+
+  def getPreprocessorFlagsArg(self):
+    '''Return the name of the argument which holds the preprocessor flags for the current language'''
+    return self.getPreprocessorFlagsName(self.language[-1])
+
   def filterCompileOutput(self, output):
     return self.framework.filterCompileOutput(output)
 

@@ -7,6 +7,7 @@ class Configure(config.package.Package):
     self.download        = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/thrust_0_1.tar.gz']
     self.includes        = ['thrust/version.h']
     self.includedir      = ''
+    self.forceLanguage   = 'CUDA'
     self.cxx             = 0
     self.archIndependent = 1
     self.worksonWindows  = 1

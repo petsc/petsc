@@ -106,6 +106,8 @@ class Package(config.base.Configure):
 
   def getDefaultLanguage(self):
     '''The language in which to run tests'''
+    if hasattr(self, 'forceLanguage'):
+      return self.forceLanguage
     if hasattr(self, 'languageProvider'):
       if hasattr(self.languageProvider, 'defaultLanguage'):
         return self.languageProvider.defaultLanguage
@@ -114,6 +116,8 @@ class Package(config.base.Configure):
     return self._defaultLanguage
   def setDefaultLanguage(self, defaultLanguage):
     '''The language in which to run tests'''
+    if hasattr(self, 'languageProvider'):
+      del self.languageProvider
     self._defaultLanguage = defaultLanguage
     return
   defaultLanguage = property(getDefaultLanguage, setDefaultLanguage, doc = 'The language in which to run tests')
@@ -363,9 +367,13 @@ class Package(config.base.Configure):
   def checkInclude(self, incl, hfiles, otherIncludes = [], timeout = 600.0):
     if self.cxx:
       self.headers.pushLanguage('C++')
+    else:
+      self.headers.pushLanguage(self.defaultLanguage)
     ret = self.executeTest(self.headers.checkInclude, [incl, hfiles],{'otherIncludes' : otherIncludes, 'timeout': timeout})
     if self.cxx:
       self.headers.popLanguage()
+    else:
+      self.headers.pushLanguage(self.defaultLanguage)
     return ret
 
   def checkPackageLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0):

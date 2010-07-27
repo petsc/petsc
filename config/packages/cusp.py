@@ -7,6 +7,7 @@ class Configure(config.package.Package):
     self.download        = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cusp_1_2.tar.gz']
     self.includes        = ['cusp/version.h']
     self.includedir      = ''
+    self.forceLanguage   = 'CUDA'
     self.cxx             = 0
     self.archIndependent = 1
     self.worksonWindows  = 1
@@ -33,4 +34,17 @@ class Configure(config.package.Package):
 
   def getSearchDirectories(self):
     yield ''
+    return
+
+  def configurePC(self):
+    self.pushLanguage('CUDA')
+    if self.checkLink('#include <cusp/version.h>\n#include <cusp/precond/smoothed_aggregation.h>\n', ''):
+      self.addDefine('HAVE_CUSP_SMOOTHED_AGGREGATION','1')
+    self.popLanguage()
+    return
+
+  def configureLibrary(self):
+    '''Calls the regular package configureLibrary and then does an additional tests needed by CUSP'''
+    config.package.Package.configureLibrary(self)
+    self.executeTest(self.configurePC)
     return
