@@ -28,9 +28,9 @@ class Configure(config.base.Configure):
     self.substPrefix  = 'PETSC'
     self.updated      = 0
     self.strmsg       = ''
-    self.attrs        = [CacheAttribute('level1-dcache-size', 'size', 'Size in bytes of Level 1 data cache', 32768, 16),
-                         CacheAttribute('level1-dcache-linesize', 'size', 'Size in bytes of each line of the Level 1 data cache', 32, 16),
-                         CacheAttribute('level1-dcache-assoc', 'ways', 'Associativity of the Level 1 data cache, 0 for full associative', 2, 0)]
+    self.attrs        = [CacheAttribute('level1-dcache-size', 'int', 'Size in bytes of Level 1 data cache', 32768, 16),
+                         CacheAttribute('level1-dcache-linesize', 'int', 'Size in bytes of each line of the Level 1 data cache', 32, 16),
+                         CacheAttribute('level1-dcache-assoc', 'int', 'Associativity of the Level 1 data cache, 0 for full associative', 2, 0)]
     self.method       = None
     return
 

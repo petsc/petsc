@@ -18,7 +18,7 @@ class Configure(config.base.Configure):
      
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-DATAFILESPATH=directory',                 nargs.Arg(None, None, 'Specifiy location of PETSc datafiles, e.g. test matrices'))    
+    help.addArgument('PETSc', '-DATAFILESPATH=<dir>',                 nargs.Arg(None, None, 'Specifiy location of PETSc datafiles, e.g. test matrices'))    
     return
 
   def setupDependencies(self, framework):

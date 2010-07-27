@@ -11,21 +11,21 @@
   <tbody>
     <tr>
       <td valign="top" width="25%">
-      <h1><font size="7" color="#ff0000">PETSc</font></h1>
+      <h1><font color="#ff0000" size="7">PETSc</font></h1>
       <ul>
         <li><a href="../index.html"><strong>Home</strong></a></li>
       </ul>
       </td>
       <td width="75%"><!--##begin-->
-      <table width="100%" border="0">
+      <table border="0" width="100%">
         <tbody>
           <tr>
             <td width="50%">
             <h1><b><a name="Docs: Installation">Docs:&nbsp;
 Installation</a></b></h1>
             </td>
-            <td width="50%"><img src="../images/headbang.gif"
- height="113" width="113" border="0"></td>
+            <td width="50%"><img src="../images/headbang.gif" border="0"
+ height="113" width="113"></td>
           </tr>
         </tbody>
       </table>
@@ -33,7 +33,7 @@ Installation</a></b></h1>
     </tr>
     <tr>
       <td colspan="2" width="100%">
-      <hr size="4" color="#ff5b5b"> </td>
+      <hr color="#ff5b5b" size="4"> </td>
     </tr>
     <tr>
       <td valign="top" width="25%">
@@ -108,7 +108,8 @@ PETSC_DIR $PWD</font></li>
         <li><font color="#ff0000">./configure</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 (use
 --help
-for options or the <a href="#ExampleUsage">example usages</a>
+for
+options or the <a href="#ExampleUsage">example usages</a>
 below)</li>
         <li> <font color="#ff0000">make all</font><br>
         </li>
@@ -146,8 +147,9 @@ bug-reporting</a> section</li>
         <li>Examples are at <span style="font-weight: bold;">config/examples/*.py</span>.
 We
 use
-some of these scripts locally for testing - <span
- style="font-weight: bold;"></span>for example one can update these
+some
+of these scripts locally for testing - <span style="font-weight: bold;"></span>for
+example one can update these
 files and run as:<span style="font-weight: bold;"><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span
  style="color: rgb(255, 0, 0);">config/examples/arch-osx-10.6.py</span><br>
@@ -212,6 +214,7 @@ make </font><font color="#ff0000">PETSC_ARCH=linux-gnu</font><br>
           <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make
 
+
           </font><font color="#ff0000">PETSC_ARCH=linux-gnu test</font><font
  color="#ff0000"><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -223,6 +226,7 @@ make
 make </font><font color="#ff0000">PETSC_ARCH=linux-gnu-intel</font><br>
           <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make
+
 
           </font><font color="#ff0000">PETSC_ARCH=linux-gnu-intel </font><font
  color="#ff0000">test </font></li>
@@ -251,7 +255,8 @@ in ~/.cshrc]<br>
       <p><b><a name="PETSC_DIR"><font color="#551a8b">PETSC_DIR</font></a></b>:
 this
 variable
-should point to the location of the
+should
+point to the location of the
 PETSc installation that is used. Multiple PETSc versions can coexist
 on the same file-system. By changing PETSC_DIR value, one can switch
 between these installed versions of PETSc.</p>
@@ -321,7 +326,8 @@ either specifying --with-cc=mpicc or --with-mpi-dir [and not
 --with-fc=mpif90</span></li>
           <li><span style="color: rgb(255, 0, 0);">--with-mpi-dir=/opt/mpich2-1.1
 [but
-*no* --with-cc=gcc ]<br>
+*no*
+--with-cc=gcc ]<br>
             </span></li>
         </ul>
         <li>Configure defaults to building PETSc in debug mode. One can
@@ -414,7 +420,7 @@ specify the package to configure.<br>
       <ul>
         <li>Run <span style="color: rgb(255, 0, 0);"></span><span
  style="color: rgb(255, 0, 0);"><span style="color: rgb(51, 0, 51);"><span
- style="color: rgb(255, 0, 0); font-weight: bold;">./configure-help</span></span></span><span
+ style="color: rgb(255, 0, 0); font-weight: bold;">./configure --help</span></span></span><span
  style="color: rgb(255, 0, 0);"></span> to get the list of external
 packages - and corresponding additional options&nbsp; [for example <span
  style="color: rgb(255, 0, 0);">--with-mpiexec</span> for mpich]<br>
@@ -479,32 +485,22 @@ these packages provide some basic numeric kernels used by PETSc.</p>
         <li>Configure will automatically look for blas/lapack in
 certain
 standard locations, on most systems you should not need to provide any
-information about BLAS/LAPACK in the ./configure command, some
-of the standard locations used are&nbsp;</li>
-        <ul>
-          <li>&nbsp;/usr/lib/libblas.a,liblapack.a</li>
-          <li>Intel MKL on Windows or Linux</li>
-          <li>sunperf on solaris</li>
-          <li>VecLib on Macs</li>
-          <li>IBM ESSL<br>
-          </li>
-          <li>[and many more]<br>
-          </li>
-        </ul>
+information about BLAS/LAPACK in the ./configure command.</li>
         <li>One can use the following options to let configure
-download/install blas automatically. <br>
+download/install blas/lapack automatically. <br>
         </li>
         <ul>
           <li><span style="color: rgb(255, 0, 0);">--download-f-blas-lapack=1</span>&nbsp;
 [when
 fortran
-compiler is present]<br>
+compiler
+is present]<br>
           </li>
           <li><span style="color: rgb(255, 0, 0);">--download-c-blas-lapack=1</span>
 [when configuring without a fortran compiler - i.e --with-fc=0]</li>
         </ul>
-        <li>Alternatively one can use other <a href="#external">externalpackages</a>
-installation options like the following.</li>
+        <li>Alternatively one can use other options like one of the
+following.</li>
         <ul>
           <li><span style="color: rgb(255, 0, 0);">--with-blas-lapack-lib=libsunperf.a</span><br>
           </li>
@@ -543,10 +539,12 @@ download/install MPI automatically</li>
           <li><span style="color: rgb(255, 0, 0);">--download-mpich=1</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 [install
 and
-use MPICH]</li>
+use
+MPICH]</li>
           <li><span style="color: rgb(255, 0, 0);">--download-openmpi=1</span>&nbsp;
 [Install
-and useOpenMPI]<br>
+and
+useOpenMPI]<br>
           </li>
         </ul>
         <li>Alternatively one can use other <a
@@ -623,8 +621,8 @@ overwride them with user specified <span style="color: rgb(255, 0, 0);">--with-c
       </ul>
       <br>
       <table style="border-collapse: collapse;" id="AutoNumber5"
- width="72%" border="1" bordercolor="#111111" cellpadding="0"
- cellspacing="0">
+ border="1" bordercolor="#111111" cellpadding="0" cellspacing="0"
+ width="72%">
         <tbody>
           <tr>
             <td width="26%">&nbsp;MPI&nbsp;&nbsp;&nbsp; </td>
@@ -670,7 +668,8 @@ the following cygwin components are installed.<br>
       </ul>
       <p><font color="#551a8b"><b>Remove Cygwin link.exe: </b></font>Cygwin
 link.exe
-can conflict with Intel ifort and Comapq F90 compilers. If you
+can
+conflict with Intel ifort and Comapq F90 compilers. If you
 are using these compilers - please do [from cygwin/bash shell]:<br>
       </p>
       <ul>
@@ -712,7 +711,8 @@ installed].<br>
 ./configure
 --with-cc='win32fe
 cl'
---with-fc='win32fe ifort'&nbsp;
+--with-fc='win32fe
+ifort'&nbsp;
 --with-cxx='win32fe cl'&nbsp; --download-f-blas-lapack=1</font></p>
       <p>If fortran usage is not required, use:<br>
       </p>
@@ -778,7 +778,8 @@ or GNU Debugger <b>gdb&nbsp;ex1.exe</b>.<br>
       </p>
       <p><b><font color="#551a8b">Using Cygwin gcc/g++/gfortran: </font></b>One
 can
-install and use PETSc with gcc/gfortran compilers from cygwin. In
+install
+and use PETSc with gcc/gfortran compilers from cygwin. In
 this case follow the regular instructions.<br>
       </p>
       <p><b><font color="#551a8b"><a name="Win32fe"></a>PETSc Win32
@@ -798,8 +799,9 @@ Instructions</a><br>
  color="#551a8b">Installing PETSc in /usr/local or /opt where sudo or
 root previledges are required:</font></a></h3>
       <p>If one wants to install PETSc [with sources] in a common
-system location like /usr/local or /opt, then sugest creating a dir for
-PETSc in the required location with user previledges, and then do the
+system location like /usr/local or /opt, then we suggest creating a dir
+for
+PETSc in the required location with user privileges, and then do the
 PETSc install [as a <span style="font-weight: bold;">regular/non-root
 user</span>]. i.e<br>
       </p>
@@ -837,14 +839,16 @@ After the install is done, one has to switch to using <span
  style="color: rgb(255, 0, 0);">PETSC_DIR=/opt/petsc/petsc-3.1-p0</span>.
 &nbsp;If
 you've
-installed PETSc with the --prefix option then you DO
+installed
+PETSc with the --prefix option then you DO
 NOT use a PETSC_ARCH variable. You should install different
 configurations using different --prefix names.<br>
       <hr>
       <h3 style="font-weight: bold;"><a name="SP"><font color="#551a8b">Installing
 on
 machine
-requiring cross compiler or a job scheduler:</font></a></h3>
+requiring
+cross compiler or a job scheduler, such as IBM SP or IBM Blue Gene:</font></a></h3>
       <p>If one has to use a cross compiler - or go through the job
 scheduler to use MPI on a
 given machine - use the configure option <span
@@ -868,42 +872,6 @@ the <span style="font-weight: bold;">frontend node</span> (compiler
 server)to
 complete the configuration process</li>
       </ul>
-      <br>
-      <hr style="width: 100%; height: 2px;">
-      <h3 style="font-weight: bold;"><a name="SP"><font color="#551a8b">Installing
-on
-IBM
-SP:</font></a></h3>
-To run any code compiled with MPI on IBM SP - one has to
-go
-through the <span style="font-weight: bold;">job scheduler</span>.&nbsp;
-[So
-follow
-the instructions from the above section 'Installing on
-machine requiring job scheduler']. Alternatively check/run
-config/examples/aix5.1.0.0.py for all
-configure options
-required on the SP with compilers defaulting to 32bit mode, and
-config/examples/aix5.1.0.0-64.py with compilers defaulting to 64bit
-mode.<br>
-      <h3 style="font-weight: bold;"><font><font><font><font
- color="#551a8b">Installing
-on IBM BG/L:</font></font></font></font></h3>
-IBM BG/L [as of now] requires modified compiler
-script
-wrappers to compile PETSc-3.1-p0. Please download <a
- href="http://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz">http://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz</a>
-and follow instructions provided in the <span
- style="font-weight: bold;">README</span> file<br>
-      <br>
-      <h3 style="font-weight: bold;"><font><font><font><font
- color="#551a8b">Installing
-on IBM BG/P:</font></font></font></font></h3>
-IBM BG/P has mpixlc and mpixlf wrappers so no additional compiler
-wrappers are needed.<br>
-      <br>
-      <h3 style="font-weight: bold;"></h3>
-      <p> </p>
       <hr>
       <h3><a name="AdditionalMicrosoftWindowsNotes"><font
  color="#551a8b">Installing with TAU Instrumentation package:</font></a></h3>
@@ -957,7 +925,7 @@ to Installation Instructions</a>&nbsp;&nbsp;&nbsp; <br>
 <!--##end--> </tr>
     <tr>
       <td width="100%">
-      <hr size="4" color="#ff5b5b"> </td>
+      <hr color="#ff5b5b" size="4"> </td>
     </tr>
   </tbody>
 </table>

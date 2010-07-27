@@ -14,7 +14,7 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-errorchecking=<yes or no>', nargs.ArgBool(None, 1, 'Specify error checking/exceptions in libraries'))    
+    help.addArgument('PETSc', '-with-errorchecking=<bool>', nargs.ArgBool(None, 1, 'Specify error checking/exceptions in libraries'))    
     return
 
   def setupDependencies(self, framework):

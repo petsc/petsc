@@ -79,3 +79,4 @@ valgrind*
 .DS_Store
 session_*
 CTAGS
+CMakeLists.txt
