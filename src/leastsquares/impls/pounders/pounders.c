@@ -8,12 +8,12 @@ static PetscErrorCode gqtwrap(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qm
     PetscReal one = 1.0;
     PetscFunctionBegin;
 
-    /*    gqt(mfqP->n,mfqP->Hres,mfqP->n,mfqP->Gres,1.0,mfqP->gqt_rtol,atol,
+    gqt(mfqP->n,mfqP->Hres,mfqP->n,mfqP->Gres,1.0,mfqP->gqt_rtol,atol,
 	mfqP->gqt_maxits,gnorm,qmin,mfqP->Xsubproblem,&info,&its,
-	mfqP->work,mfqP->work2, mfqP->work3);*/
-    dgqt_(&mfqP->n,mfqP->Hres,&mfqP->n,mfqP->Gres,&one,&mfqP->gqt_rtol,&atol,
-	&mfqP->gqt_maxits,gnorm,qmin,mfqP->Xsubproblem,&info,&its,
 	mfqP->work,mfqP->work2, mfqP->work3);
+    /*dgqt_(&mfqP->n,mfqP->Hres,&mfqP->n,mfqP->Gres,&one,&mfqP->gqt_rtol,&atol,
+	&mfqP->gqt_maxits,gnorm,qmin,mfqP->Xsubproblem,&info,&its,
+	mfqP->work,mfqP->work2, mfqP->work3);*/
     *qmin *= -1;
     PetscFunctionReturn(0);
 }
@@ -616,7 +616,6 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
     /* Solve the subproblem min{Q(s): ||s|| <= delta} */
     ierr = gqtwrap(mfqP,&gnorm,&mdec); CHKERRQ(ierr);
     /* Evaluate the function at the new point */
-    printf("mfqP->delta=%f\n",mfqP->delta);
 
     for (i=0;i<mfqP->n;i++) {
 	mfqP->work[i] = mfqP->Xsubproblem[i]*mfqP->delta + mfqP->xmin[i];

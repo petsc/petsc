@@ -24,14 +24,18 @@ static PetscErrorCode estsv(PetscInt n, PetscScalar *r, PetscInt ldr, PetscScala
 	for (i=0;i<n;i++) {
 	    
 	    // Scale y. The scaling factor (0.01) reduces the number of scalings
-	    if (z[i] > 0.0) e=-e;
+	    if (z[i] >= 0.0) 
+		e=-PetscAbs(e);
+	    else
+		e = PetscAbs(e);
+
 	    if (PetscAbs(e - z[i]) > PetscAbs(r[i + ldr*i])) {
 		temp = PetscMin(0.01,PetscAbs(r[i + ldr*i]))/
 		    PetscAbs(e-z[i]);
 		BLASscal_(&blasn, &temp, z, &blas1);
 		e = temp*e;
 	    }
-
+	
 	    // Determine the two possible choices of y[i]
 	    if (r[i + ldr*i] == 0.0)
 		w = wm = 1.0;
@@ -236,9 +240,9 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 {
     PetscErrorCode ierr;
     PetscReal f,p001=0.001,p5=0.5,minusone=-1,delta2=delta*delta;
-    PetscInt iter, j, rednc;
+    PetscInt iter, j, rednc,info;
     PetscBLASInt indef;
-    PetscBLASInt blas1=1, blasn=n, iblas, blaslda = lda,blasldap1=lda+1,info;
+    PetscBLASInt blas1=1, blasn=n, iblas, blaslda = lda,blasldap1=lda+1,blasinfo;
     PetscReal alpha, anorm, bnorm, parc, parf, parl, pars, par=*retpar,
 	paru, prod, rxnorm, rznorm, temp, xnorm;
     
@@ -319,7 +323,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 	for (j=0;j<n;j++) {
 	    a[j + j*lda] = wa1[j] + par;
 	}
-	
+
 	// Attempt the Cholesky factorization of A without referencing
 	// the lower triangular part.
 	LAPACKpotrf_("U",&blasn,a,&blaslda,&indef);
@@ -334,10 +338,10 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 	    parf = par;
 	    BLAScopy_(&blasn, b, &blas1, wa2, &blas1);
 	    CHKMEMQ;
-	    LAPACKtrtrs_("U","T","N",&blasn,&blas1,a,&blaslda,wa2,&blasn,&info);
+	    LAPACKtrtrs_("U","T","N",&blasn,&blas1,a,&blaslda,wa2,&blasn,&blasinfo);
 	    CHKMEMQ;
 	    rxnorm = BLASnrm2_(&blasn, wa2, &blas1);
-	    LAPACKtrtrs_("U","N","N",&blasn,&blas1,a,&blaslda,wa2,&blasn,&info);
+	    LAPACKtrtrs_("U","N","N",&blasn,&blas1,a,&blaslda,wa2,&blasn,&blasinfo);
 	    CHKMEMQ;
 	    BLAScopy_(&blasn, wa2, &blas1, x, &blas1);
 	    CHKMEMQ;
@@ -355,6 +359,8 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 	    // Compute a direction of negative curvature and use this
 	    // information to improve pars.
 
+	    iblas=blasn*blasn;
+	    
 	    ierr = estsv(n,a,lda,&rznorm,z);
 	    //destsv_(&n, a, &lda, &rznorm, z);
 	    CHKMEMQ;
@@ -370,12 +376,12 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 		prod = BLASdot_(&blasn, z, &blas1, x, &blas1) / delta;
 		temp = (delta - xnorm)*((delta + xnorm)/delta);
 		alpha = temp/(PetscAbs(prod) + sqrt(prod*prod + temp/delta));
-		if (prod == 0) 
-		    alpha = 0;
-		else if (prod < 0) {
-		    alpha *= -1;
-		}
-		
+		if (prod >= 0) 
+		    alpha = PetscAbs(alpha);
+		else 
+		    alpha =-PetscAbs(alpha);
+
+
 		// Test to decide if the negative curvature step
 		// produces a larger reduction than with z=0
 		
@@ -403,7 +409,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 		temp = 1.0/xnorm;
 		BLASscal_(&blasn, &temp, wa2, &blas1);
 		CHKMEMQ;
-		LAPACKtrtrs_("U","T","N",&blasn, &blas1, a, &blaslda, wa2, &blasn, &info);
+		LAPACKtrtrs_("U","T","N",&blasn, &blas1, a, &blaslda, wa2, &blasn, &blasinfo);
 		CHKMEMQ;
 		temp = BLASnrm2_(&blasn, wa2, &blas1);
 		parc = (xnorm - delta)/(delta*temp*temp);
@@ -434,18 +440,18 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 		
 		BLAScopy_(&iblas,&a[0 + (indef-1)*lda], &blas1, wa2, &blas1);
 		CHKMEMQ;
-		LAPACKtrtrs_("U","T","N",&iblas,&blas1,a,&blaslda,wa2,&blasn,&info);
+		LAPACKtrtrs_("U","T","N",&iblas,&blas1,a,&blaslda,wa2,&blasn,&blasinfo);
 		CHKMEMQ;
 		BLAScopy_(&iblas,wa2,&blas1,&a[0 + (indef-1)*lda],&blas1); 
 		CHKMEMQ;
 		temp = BLASnrm2_(&iblas,&a[0 + (indef-1)*lda],&blas1);
 		CHKMEMQ;
 		a[indef-1 + (indef-1)*lda] -= temp*temp;
-		LAPACKtrtrs_("U","N","N",&iblas,&blas1,a,&blaslda,wa2,&blasn,&info);
+		LAPACKtrtrs_("U","N","N",&iblas,&blas1,a,&blaslda,wa2,&blasn,&blasinfo);
 		CHKMEMQ;
 	    }
 	    
-	    wa2[indef=1] = -1.0;
+	    wa2[indef-1] = -1.0;
 	    iblas = indef;
 	    temp = BLASnrm2_(&iblas,wa2,&blas1);
 	    parc = - a[indef-1 + (indef-1)*lda]/(temp*temp);
