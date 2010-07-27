@@ -392,10 +392,7 @@ class ArgLibrary(Arg):
     # Should check whether it is a well-formed path and an archive or shared object
     if self.mustExist:
       if not isinstance(value, list):
-        value = [value]
-      for lib in value:
-        if lib.startswith('/') and not os.path.isfile(lib):
-          raise ValueError('Invalid library: '+str(lib)+' for key '+str(self.key))
+        value = value.split(' ')
     self.value = value
     return
 

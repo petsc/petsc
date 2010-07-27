@@ -240,8 +240,7 @@ class Package(config.base.Configure):
       d = os.path.dirname(self.framework.argDB['with-'+self.package+'-include'])
       inc = self.framework.argDB['with-'+self.package+'-include']
       libs = self.framework.argDB['with-'+self.package+'-lib']
-      if not isinstance(libs, list): libs = [libs]
-      libs = [os.path.abspath(l) for l in libs]
+      if not isinstance(libs, list): libs = libs.split(' ')
       yield('User specified '+self.PACKAGE+' libraries', d, libs, os.path.abspath(inc))
       raise RuntimeError('--with-'+self.package+'-lib='+str(self.framework.argDB['with-'+self.package+'-lib'])+' and \n'+\
                          '--with-'+self.package+'-include='+str(self.framework.argDB['with-'+self.package+'-include'])+' did not work') 
