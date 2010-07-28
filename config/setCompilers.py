@@ -544,7 +544,6 @@ class Configure(config.base.Configure):
           return
       except RuntimeError, e:
         self.popLanguage()
-    raise RuntimeError('Cannot find a CUDA preprocessor')
     return
 
   def generateCxxCompilerGuesses(self):
