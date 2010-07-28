@@ -1042,7 +1042,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
 /* ---------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "TaoSolverSetUp_NLS"
-static int TaoSolverSetUp_NLS(TaoSolver tao)
+static PetscErrorCode TaoSolverSetUp_NLS(TaoSolver tao)
 {
   TAO_NLS *nlsP = (TAO_NLS *)tao->data;
   PetscErrorCode ierr;
@@ -1071,7 +1071,7 @@ static int TaoSolverSetUp_NLS(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "TaoSolverDestroy_NLS"
-static int TaoSolverDestroy_NLS(TaoSolver tao)
+static PetscErrorCode TaoSolverDestroy_NLS(TaoSolver tao)
 {
   TAO_NLS *nlsP = (TAO_NLS *)tao->data;
   PetscErrorCode ierr;
@@ -1178,6 +1178,7 @@ static PetscErrorCode TaoSolverSetFromOptions_NLS(TaoSolver tao)
   ierr = PetscOptionsReal("-tao_nls_trust0", "initial trust region radius", "", nlsP->trust0, &nlsP->trust0, 0); CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_nls_epsilon", "tolerance used when computing actual and predicted reduction", "", nlsP->epsilon, &nlsP->epsilon, 0); CHKERRQ(ierr);
   ierr = PetscOptionsTail(); CHKERRQ(ierr);
+  ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1185,7 +1186,7 @@ static PetscErrorCode TaoSolverSetFromOptions_NLS(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "TaoSolverView_NLS"
-static int TaoSolverView_NLS(TaoSolver tao, PetscViewer viewer)
+static PetscErrorCode TaoSolverView_NLS(TaoSolver tao, PetscViewer viewer)
 {
   TAO_NLS *nlsP = (TAO_NLS *)tao->data;
   PetscInt nrejects;
