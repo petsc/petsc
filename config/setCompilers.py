@@ -1369,7 +1369,9 @@ This way - mpi compilers from '''+self.argDB['with-mpi-dir']+ ''' are used.'''
     return
 
   def resetEnvCompilers(self):
-    ignoreEnv = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FFLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS','LDFLAGS','MPI_DIR']
+    ignoreEnv = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS',
+                 'CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS','LDFLAGS','LIBS',
+                 'MPI_DIR']
     for envVal in ignoreEnv:
       if envVal in os.environ:
         self.logPrintBox('***** WARNING: '+envVal+' found in enviornment variables - ignoring ******')
