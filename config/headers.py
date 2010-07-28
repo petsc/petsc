@@ -95,7 +95,7 @@ class Configure(config.base.Configure):
       hfiles = [hfiles]
     for hfile in hfiles:
       flagsArg = self.getPreprocessorFlagsArg()
-      self.logPrintBox('Checking include with compiler flags var '+flagsArg)
+      self.logPrint('Checking include with compiler flags var '+flagsArg)
       #oldFlags = self.compilers.CPPFLAGS
       oldFlags = getattr(self.compilers, flagsArg)
       #self.compilers.CPPFLAGS += ' '+' '.join([self.getIncludeArgument(inc) for inc in incl+otherIncludes])
