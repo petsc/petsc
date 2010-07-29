@@ -27,5 +27,7 @@ class Configure(config.package.Package):
     return self.installDir
 
   def getSearchDirectories(self):
+    import os
+    yield os.path.join('/usr','local','cuda','include')
     yield ''
     return
