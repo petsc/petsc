@@ -254,6 +254,9 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
   flag = CVodeSetUserData(mem, ts);
   if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSetUserData() fails");
 
+  /* Sundials may choose to use a smaller initial step, but will never use a larger step. */
+  flag = CVodeSetInitStep(mem,(realtype)ts->initial_time_step);
+  if (flag) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_LIB,"CVodeSetInitStep() failed");
   if (cvode->mindt > 0) {
     flag = CVodeSetMinStep(mem,(realtype)cvode->mindt);
     if (flag) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_LIB,"CVodeSetMinStep() failed");
@@ -846,6 +849,10 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetExactFinalTime(TS ts,PetscTruth ft
    Input Parameter:
 +   ts - the time-step context
 -   mindt - lowest time step if positive, negative to deactivate
+
+   Note:
+   Sundials will error if it is not possible to keep the estimated truncation error below
+   the tolerance set with TSSundialsSetTolerance() without going below this step size.
 
    Level: beginner
 
