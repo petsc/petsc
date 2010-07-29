@@ -228,6 +228,6 @@ PetscInt main(PetscInt argc,char **args)
   ierr = DARestoreGlobalVector(da,&z);CHKERRQ(ierr);
   ierr = DARestoreGlobalVector(da,&zz);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

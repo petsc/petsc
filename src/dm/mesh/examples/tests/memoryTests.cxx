@@ -869,6 +869,6 @@ int main(int argc, char *argv[])
   ierr = PetscLogBegin();CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &options);CHKERRQ(ierr);
   ierr = RunUnitTests(&options);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

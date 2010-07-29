@@ -214,7 +214,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(s1);CHKERRQ(ierr);
   ierr = VecDestroy(s2);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
 #endif
   return 0;
 }

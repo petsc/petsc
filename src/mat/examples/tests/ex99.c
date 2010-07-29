@@ -218,7 +218,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatDestroy(A);CHKERRQ(ierr);
 
   PreLoadEnd();
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 /*------------------------------------------------

@@ -453,6 +453,6 @@ int main(int argc, char *argv[])
   } catch (ALE::Exception e) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, e.message());
   }
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

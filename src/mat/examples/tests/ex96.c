@@ -264,7 +264,7 @@ int main(int argc,char **argv)
   ierr = DADestroy(user.coarse.da);CHKERRQ(ierr);
   ierr = MatDestroy(P);CHKERRQ(ierr); 
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
 
   return 0;
 }

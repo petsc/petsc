@@ -91,7 +91,7 @@ int main(int argc,char **argv)
   ierr = DMCompositeDestroy(packer);CHKERRQ(ierr);
   ierr = PetscFree(redundant1);CHKERRQ(ierr);
   ierr = PetscFree(redundant2);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

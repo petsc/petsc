@@ -124,7 +124,7 @@ int main(int argc,char **argv)
   ierr = TSDestroy(ts);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */

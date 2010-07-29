@@ -78,7 +78,7 @@ int main(int argc,char **argv)
     done with it.
   */
   ierr = ISDestroy(is);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

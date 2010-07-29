@@ -28,7 +28,7 @@ int main (int argc, char ** argv) {
       std::cerr << "Error: " << e << std::endl;
     }
   }
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 
 }

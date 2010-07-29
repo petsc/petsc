@@ -115,6 +115,6 @@ int main(int argc, char *argv[])
   ierr = ProcessOptions(PETSC_COMM_WORLD, &options);CHKERRQ(ierr);
   ierr = RegisterSuites(&options);CHKERRQ(ierr);
   result = RunUnitTests();
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(result);
 }

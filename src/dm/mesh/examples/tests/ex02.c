@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
   ierr = viewStrata(doublet, "Top-down Doublet");                  CHKERRQ(ierr);
   delete doublet;
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }/* main() */
 

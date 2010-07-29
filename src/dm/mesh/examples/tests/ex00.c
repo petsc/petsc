@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
     if (coneTest) {
       ierr = ConeTest();CHKERRQ(ierr);
     }
-    ierr = PetscFinalize();CHKERRQ(ierr);
+    ierr = PetscFinalize();
   } catch(ALE::Exception e) {
     std::cout << e << std::endl;
   }

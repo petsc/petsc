@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(P);CHKERRQ(ierr);
   ierr = MatDestroy(Aglobal);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

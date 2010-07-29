@@ -85,7 +85,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(work1);CHKERRQ(ierr);
   ierr = VecDestroy(work2);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

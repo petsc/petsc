@@ -33,7 +33,7 @@ int main(int argc,char **argv)
     ierr = PetscSynchronizedFGets(PETSC_COMM_WORLD,stdin,256,user);CHKERRQ(ierr);
     ierr = PetscStrncmp(user,"exit",4,&userhappy);CHKERRQ(ierr);
   }
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

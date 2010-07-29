@@ -153,6 +153,6 @@ PetscInt main(PetscInt argc,char **args)
   if (use_random) {ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);}
   ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = MatDestroy(As);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

@@ -232,7 +232,7 @@ int main(int argc,char **argv)
 
   ierr = VecDestroy(X1_local);CHKERRQ(ierr);
   ierr = VecDestroy(X2_local);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

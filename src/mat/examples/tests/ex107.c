@@ -255,6 +255,6 @@ int main(int argc,char **args)
   ierr = MatDestroy(C);CHKERRQ(ierr);
   ierr = MatDestroy(Csymm);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

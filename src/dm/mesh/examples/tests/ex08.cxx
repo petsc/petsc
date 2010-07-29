@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
   catch(...) {
     std::cout << "SOME KINDA ERROR" << std::endl;
   }
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }/* main() */
 

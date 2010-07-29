@@ -175,7 +175,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(y);CHKERRQ(ierr);
   ierr = VecDestroy(w);CHKERRQ(ierr);
   ierr = VecDestroyVecs(z,3);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

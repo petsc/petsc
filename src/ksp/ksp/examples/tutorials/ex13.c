@@ -132,7 +132,7 @@ int main(int argc,char **args)
   ierr = PetscFree(userx);CHKERRQ(ierr);
   ierr = PetscFree(userb);CHKERRQ(ierr);
   ierr = UserFinalizeLinearSolver(&userctx);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
 
   return 0;
 }

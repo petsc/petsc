@@ -84,7 +84,7 @@ int main(int argc,char **args)
     ierr = PetscFree(is2);CHKERRQ(ierr);
   }
   ierr = MatDestroy(C);CHKERRQ(ierr);  
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

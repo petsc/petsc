@@ -98,7 +98,7 @@ int main(int argc,char **argv)
   ierr = ISRestoreIndices(newis,&ii);CHKERRQ(ierr);
   ierr = ISDestroy(newis);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

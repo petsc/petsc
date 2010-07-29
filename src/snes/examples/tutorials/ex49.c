@@ -173,7 +173,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerDrawGetDraw(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetPause(draw,-1);CHKERRQ(ierr);
   ierr = PetscDrawPause(draw);CHKERRQ(ierr); */
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

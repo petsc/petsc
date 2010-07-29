@@ -164,7 +164,7 @@ int main(int argc,char **argv)
     ierr = VecDestroy(user.rloc);CHKERRQ(ierr);
     ierr = VecScatterDestroy(user.scatter);CHKERRQ(ierr);
   }
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 /* ------------------------------------------------------------------- */

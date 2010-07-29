@@ -202,7 +202,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr= MatDestroy(J);CHKERRQ(ierr);
   if (fd_jacobian_coloring){ierr = MatFDColoringDestroy(matfdcoloring);CHKERRQ(ierr);}
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

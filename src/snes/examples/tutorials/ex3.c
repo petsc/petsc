@@ -271,7 +271,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(J);CHKERRQ(ierr);
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
   ierr = DADestroy(ctx.da);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
 
   PetscFunctionReturn(0);
 }

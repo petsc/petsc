@@ -240,7 +240,7 @@ int main(int Argc,char **Args)
   ierr = MatDestroy(HtH);CHKERRQ(ierr);
 
   ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 
