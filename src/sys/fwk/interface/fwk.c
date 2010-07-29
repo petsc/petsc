@@ -569,9 +569,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkCreate(MPI_Comm comm, PetscFwk *framework
   PetscFwk fwk;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  #ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = PetscFwkInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-  #endif
+#endif
   PetscValidPointer(framework,2);
   ierr = PetscHeaderCreate(fwk,_p_PetscFwk,PetscInt,PETSC_FWK_CLASSID,0,"PetscFwk",comm,PetscFwkDestroy,0);CHKERRQ(ierr);
   fwk->record = PETSC_NULL;
