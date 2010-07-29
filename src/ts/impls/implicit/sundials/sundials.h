@@ -37,6 +37,8 @@ typedef struct {
   int                       restart;
   double                    linear_tol;
 
+  PetscReal mindt,maxdt;
+
   /* Variables used by Sundials */
   MPI_Comm    comm_sundials;
   double      reltol;
