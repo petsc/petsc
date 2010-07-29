@@ -22,6 +22,9 @@ class PETScMaker(script.Script):
    self.framework = framework
    self.log = sys.stdout
 
+ def __str__(self):
+   return ''
+
  def setupModules(self):
    self.mpi           = self.framework.require('config.packages.MPI',         None)
    self.base          = self.framework.require('config.base',                 None)
