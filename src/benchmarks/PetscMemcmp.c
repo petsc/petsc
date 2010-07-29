@@ -48,6 +48,6 @@ int main(int argc,char **argv)
   fprintf(stdout,"    %-15s : %e sec\n","Latency",(z-y)/10.0);
   fprintf(stdout,"    %-15s : %e sec\n","Per PetscScalar",(2*y-x-z)/100000);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

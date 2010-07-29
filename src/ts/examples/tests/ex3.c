@@ -178,7 +178,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(appctx.solution);CHKERRQ(ierr);
   ierr = PetscFree(z);CHKERRQ(ierr);
 
-  PetscFinalize();CHKERRQ(ierr); 
+  PetscFinalize(); 
   return 0;
 }
 

@@ -22,7 +22,7 @@ int main(int argc,char **args)
   ierr = PCSetUp(pc);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
   ierr = PCDestroy(pc);	CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
     

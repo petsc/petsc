@@ -647,7 +647,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp(Mat A)
 .  -mat_view_draw - PetscDraws nonzero structure of matrix, using MatView() and PetscDrawOpenX().
 .  -display <name> - Sets display name (default is host)
 .  -draw_pause <sec> - Sets number of seconds to pause after display
-.  -mat_view_socket - Sends matrix to socket, can be accessed from Matlab (see users manual)
+.  -mat_view_socket - Sends matrix to socket, can be accessed from Matlab (see the <a href="../../docs/manual.pdf">users manual</a> for details).
 .  -viewer_socket_machine <machine>
 .  -viewer_socket_port <port>
 .  -mat_view_binary - save matrix to file in binary format
@@ -2582,7 +2582,7 @@ $                   Run with the option -info to determine an optimal value to u
 
 
    Notes:
-   See the users manual for additional information about
+   See the <a href="../../docs/manual.pdf">users manual</a> for additional information about
    choosing the fill factor for better efficiency.
 
    Most users should employ the simplified KSP interface for linear solvers
@@ -4793,7 +4793,7 @@ PetscErrorCode MatView_Private(Mat mat)
 .  -mat_view_draw - PetscDraws nonzero structure of matrix, using MatView() and PetscDrawOpenX().
 .  -display <name> - Sets display name (default is host)
 .  -draw_pause <sec> - Sets number of seconds to pause after display
-.  -mat_view_socket - Sends matrix to socket, can be accessed from Matlab (see users manual)
+.  -mat_view_socket - Sends matrix to socket, can be accessed from Matlab (See the <a href="../../docs/manual.pdf">users manual</a>)
 .  -viewer_socket_machine <machine>
 .  -viewer_socket_port <port>
 .  -mat_view_binary - save matrix to file in binary format
@@ -5626,7 +5626,7 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
 .  fact - new matrix that has been symbolically factored
 
    Notes:
-   See the users manual for additional information about
+   See the <a href="../../docs/manual.pdf">users manual</a>  for additional information about
    choosing the fill factor for better efficiency.
 
    Most users should employ the simplified KSP interface for linear solvers
@@ -5763,8 +5763,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,
         call MatRestoreArray(mat,mat_array,i_mat,ierr)
 .ve
 
-   See the Fortran chapter of the users manual and 
-   petsc/src/mat/examples/tests for details.
+   See the <a href="../../docs/manual.pdf#ch_fortran">Fortran chapter of the users manual</a> and 
+   src/mat/examples/tests for details.
 
    Level: advanced
 
@@ -5815,8 +5815,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetArray(Mat mat,PetscScalar *v[])
         call MatRestoreArray(mat,mat_array,i_mat,ierr)
 .ve
 
-   See the Fortran chapter of the users manual and 
-   petsc/src/mat/examples/tests for details
+   See the <a href="../../docs/manual.pdf#ch_fortran">Fortran chapter of the users manual</a>
+   src/mat/examples/tests for details
 
    Level: advanced
 
@@ -6433,7 +6433,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatColoringPatch(Mat mat,PetscInt ncolors,Pets
    In-place factorization ILU(0) can also be used as a local
    solver for the blocks within the block Jacobi or additive Schwarz
    methods (runtime option: -sub_pc_factor_in_place).  See the discussion 
-   of these preconditioners in the users manual for details on setting
+   of these preconditioners in the <a href="../../docs/manual.pdf#ch_pc">PC chapter of the users manual</a> for details on setting
    local solver options.
 
    Most users should employ the simplified KSP interface for linear solvers

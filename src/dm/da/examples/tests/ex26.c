@@ -30,6 +30,6 @@ int main(int argc,char **argv)
   ierr = MatDestroy(J);CHKERRQ(ierr);
   ierr = MatFDColoringDestroy(matfdcoloring);CHKERRQ(ierr); 
   ierr = DADestroy(da);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

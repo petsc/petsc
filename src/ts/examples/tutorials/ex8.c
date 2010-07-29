@@ -366,6 +366,6 @@ int main(int argc,char **argv)
   ierr = PetscFree(problem);CHKERRQ(ierr);
   ierr = PetscFListDestroy(&plist);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

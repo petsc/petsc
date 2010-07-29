@@ -266,7 +266,7 @@ $       This will require 1 more iteration of the solver than usual.
 
    Notes:  
    To see all options, run your program with the -help option
-   or consult the users manual.
+   or consult <A href="../../docs/manual.pdf#nameddest=ch_ksp">KSP chapter of the users manual</A>.
 
    Level: beginner
 

@@ -121,7 +121,7 @@ int main(int argc,char **args)
     ierr = MatDestroy(A[1]);CHKERRQ(ierr);
     ierr = MatDestroy(A[2]);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

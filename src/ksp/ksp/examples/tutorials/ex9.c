@@ -361,7 +361,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(C1);CHKERRQ(ierr);   ierr = MatDestroy(C2);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 #undef __FUNCT__

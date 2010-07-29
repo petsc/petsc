@@ -274,7 +274,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(B);CHKERRQ(ierr);
 
   PreLoadEnd();
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
 
   return 0;
 }

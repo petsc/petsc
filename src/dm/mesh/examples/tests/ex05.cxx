@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
   ierr = testSkewedHat(comm);CHKERRQ(ierr);
   ierr = testSkewedHatFlip(comm);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }/* main() */
 

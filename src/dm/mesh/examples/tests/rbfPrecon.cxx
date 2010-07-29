@@ -318,6 +318,6 @@ int main(int argc, char *argv[])
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   ierr = PetscLogBegin();CHKERRQ(ierr);
   ierr = RunTests();CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

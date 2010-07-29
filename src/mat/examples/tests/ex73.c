@@ -154,7 +154,7 @@ int main(int argc,char **args)
        are no longer needed.
   */
   ierr = MatDestroy(B);CHKERRQ(ierr); 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

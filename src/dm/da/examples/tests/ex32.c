@@ -72,6 +72,6 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,0,0);
   ierr = TestQ2Q1DA();CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

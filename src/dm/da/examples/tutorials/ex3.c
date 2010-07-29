@@ -156,7 +156,7 @@ int main(int argc,char **argv)
   ierr = DADestroy(dac);CHKERRQ(ierr);
   ierr = DADestroy(daf);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

@@ -29,6 +29,6 @@ int main(int argc, char *argv[])
     ALE::Obj<xsieve_type> xsieveHat = ALE::Test::XSieveTester::createHatXSieve(PETSC_COMM_SELF, argDB);
     ierr = ALE::Test::XSieveTester::BasicTest<xsieve_type>(xsieveHat, argDB, "Hat");CHKERRQ(ierr);
   }
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

@@ -119,7 +119,7 @@ int main(int argc,char **argv)
   if (mat)  {ierr = MatDestroy(mat);CHKERRQ(ierr);}
   if (tmat) {ierr = MatDestroy(tmat);CHKERRQ(ierr);}
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

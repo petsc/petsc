@@ -56,6 +56,6 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatDestroy(C);CHKERRQ(ierr);
   ierr = MatDestroy(P);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

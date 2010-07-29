@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerDestroy(out);CHKERRQ(ierr);
   ierr = MatDestroy(outmat);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

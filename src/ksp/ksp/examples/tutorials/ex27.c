@@ -189,7 +189,7 @@ int main(int argc,char **args)
                       End of linear solver loop
      ----------------------------------------------------------- */
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

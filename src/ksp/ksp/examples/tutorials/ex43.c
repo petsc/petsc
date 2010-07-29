@@ -1577,7 +1577,7 @@ int main(int argc,char **args)
 
   solve_stokes_2d_coupled(mx,my);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

@@ -307,6 +307,6 @@ int main(int argc, char *argv[])
   } catch(ALE::Exception e) {
     std::cerr << "ERROR: " << e.msg() << std::endl;
   }
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

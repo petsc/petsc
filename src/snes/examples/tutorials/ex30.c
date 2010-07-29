@@ -246,7 +246,7 @@ int main(int argc,char **argv)
   ierr = PetscFree(user);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

@@ -235,7 +235,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd)
   Input Parameter:
 . rnd - The random number generator context
 
-  Notes:  To see all options, run your program with the -help option, or consult the users manual.
+  Notes:  To see all options, run your program with the -help option.
           Must be called after PetscRandomCreate() but before the rnd is used.
 
   Level: beginner

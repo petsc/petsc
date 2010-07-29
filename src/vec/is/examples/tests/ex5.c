@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   ierr = ISLocalToGlobalMappingGetInfo(mapping,&nneigh,&neigh,&numneigh,&ineigh);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingRestoreInfo(mapping,&nneigh,&neigh,&numneigh,&ineigh);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(mapping);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

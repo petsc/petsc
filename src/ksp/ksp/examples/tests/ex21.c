@@ -107,6 +107,6 @@ int main(int argc,char *argv[])
   ierr = Destroy(A,is0,is1);CHKERRQ(ierr);
   ierr = MatDestroy(S);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   ierr = DADestroy(da_c);CHKERRQ(ierr);
   ierr = VecDestroy(v_f);CHKERRQ(ierr);
   ierr = DADestroy(da_f);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

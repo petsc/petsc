@@ -449,6 +449,6 @@ int main(int argc,char **args)
   */
 
   PreLoadEnd();
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

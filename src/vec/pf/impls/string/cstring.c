@@ -52,7 +52,7 @@ PetscErrorCode PFDestroy_String(void *value)
 */
 PetscErrorCode PETSCVEC_DLLEXPORT PFStringCreateFunction(PF pf,char *string,void **f)
 {
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
   PetscErrorCode ierr;
   char       task[1024],tmp[256],lib[PETSC_MAX_PATH_LEN],username[64];
   FILE       *fd;
@@ -61,7 +61,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFStringCreateFunction(PF pf,char *string,void
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
   ierr = PetscFree(pf->data);CHKERRQ(ierr);
   ierr = PetscStrallocpy(string,(char**)&pf->data);CHKERRQ(ierr);
 

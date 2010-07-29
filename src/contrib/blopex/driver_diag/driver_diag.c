@@ -393,6 +393,6 @@ int main(int argc,char **args)
    ierr = PetscFree(resid_hist);
    CHKERRQ(ierr);
 
-   ierr = PetscFinalize();CHKERRQ(ierr);
+   ierr = PetscFinalize();
    return 0;
 }

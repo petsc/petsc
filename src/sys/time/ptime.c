@@ -29,7 +29,7 @@
    Since the PETSc libraries incorporate timing of phases and operations, 
    PetscGetTime() is intended only for timing of application codes.  
    The options database commands -log, -log_summary, and -log_all activate
-   PETSc library timing.  See the users manual for further details.
+   PETSc library timing.  
 
    Level: intermediate
 

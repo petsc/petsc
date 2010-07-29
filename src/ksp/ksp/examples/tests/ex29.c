@@ -111,7 +111,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(fine_ctx.localF);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr); 
   ierr = KSPDestroy(ksp);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

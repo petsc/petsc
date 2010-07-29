@@ -1401,6 +1401,6 @@ int main(int argc,char *argv[])
   ierr = VecDestroy(X0);CHKERRQ(ierr);
   ierr = DADestroy(ctx.da);CHKERRQ(ierr);
   ierr = TSDestroy(ts);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

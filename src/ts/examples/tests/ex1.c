@@ -230,7 +230,7 @@ int main(int argc,char **argv)
   if (A) {ierr= MatDestroy(A);CHKERRQ(ierr);}
   if (Alhs) {ierr= MatDestroy(Alhs);CHKERRQ(ierr);}
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

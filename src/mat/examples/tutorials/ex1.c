@@ -92,7 +92,7 @@ int main(int argc,char **args)
     ierr = ISDestroy(iscol);CHKERRQ(ierr);
   PreLoadEnd();
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

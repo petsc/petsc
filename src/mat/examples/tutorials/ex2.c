@@ -174,6 +174,6 @@ int main(int argc,char **argv)
 
   /*ierr = PetscLogPrintSummary(MPI_COMM_SELF,"ex2.log");CHKERRQ(ierr);*/
   
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

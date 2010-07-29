@@ -187,7 +187,7 @@ int main(int argc,char **args)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_summary).
   */
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

@@ -64,7 +64,7 @@ int main(int argc,char **argv)
   ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rnd);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

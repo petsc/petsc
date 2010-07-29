@@ -61,6 +61,6 @@ int main(int argc,char **argv)
 
   ierr = PetscFree(A);CHKERRQ(ierr);
   ierr = PetscFree(B);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

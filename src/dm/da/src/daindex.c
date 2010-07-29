@@ -44,7 +44,7 @@
         value = da_array(i_da + 1)
 .ve
 
-   See the Fortran chapter of the users manual for details
+   See the <A href="../../docs/manual.pdf#nameddest=ch_fortran">Fortran chapter</A> of the users manual for details.
 
 .keywords: distributed array, get, global, indices, local-to-global
 

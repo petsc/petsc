@@ -94,7 +94,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerDestroy(user.lambda_viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(user.fu_viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(user.flambda_viewer);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

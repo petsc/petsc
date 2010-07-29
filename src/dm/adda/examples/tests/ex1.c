@@ -19,6 +19,6 @@ int main(int argc,char **argv)
 
   /* Free memory */
   ierr = ADDADestroy(adda);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
