@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   ierr = ISDestroy(isapp);CHKERRQ(ierr);
 
   ierr = AODestroy(ao);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

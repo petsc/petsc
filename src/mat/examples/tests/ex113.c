@@ -53,7 +53,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(A1);CHKERRQ(ierr);
   ierr = MatDestroy(A2);CHKERRQ(ierr);  
   ierr = MatDestroy(dstMat);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   ierr = PetscDrawViewPortsDestroy(ports);CHKERRQ(ierr);
   ierr = PetscDrawLGDestroy(lg);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

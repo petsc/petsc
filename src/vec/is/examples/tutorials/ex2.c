@@ -57,7 +57,7 @@ int main(int argc,char **argv)
   ierr = ISStrideGetInfo(set,&first,&step);CHKERRQ(ierr);
   if (first != 3 || step != 2) SETERRQ(PETSC_COMM_SELF,1,"Stride info not correct!\n");
   ierr = ISDestroy(set);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

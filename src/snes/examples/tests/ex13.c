@@ -129,7 +129,7 @@ int main(int argc,char **argv)
     ierr = SNESDestroy(snes);CHKERRQ(ierr);
     ierr = DADestroy(user.da);CHKERRQ(ierr);
   }
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
 
   return 0;
 }/* --------------------  Form initial approximation ----------------- */

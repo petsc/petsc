@@ -170,6 +170,6 @@ int main(int argc,char **args)
   ierr = PetscFree(submatA);CHKERRQ(ierr);
   ierr = PetscFree(submatB);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

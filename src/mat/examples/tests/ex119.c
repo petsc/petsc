@@ -24,6 +24,6 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,outputfile,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = MatView(A,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

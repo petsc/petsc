@@ -36,6 +36,6 @@ int main(int argc,char **argv)
   fprintf(stdout,"%s : \n","VecNorm");
   fprintf(stdout," Time %g\n",t2-t1);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

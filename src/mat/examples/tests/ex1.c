@@ -102,7 +102,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);
   ierr = ISDestroy(perm);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

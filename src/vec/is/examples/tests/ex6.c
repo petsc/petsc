@@ -35,6 +35,6 @@ int main(int argc,char **argv)
 
   ierr = ISDestroy(is);CHKERRQ(ierr);
   ierr = ISDestroy(isc);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

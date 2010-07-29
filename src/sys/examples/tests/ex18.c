@@ -13,6 +13,6 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
   ierr = PetscContainerDestroy(container);CHKERRQ(ierr); 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

@@ -180,7 +180,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(U);CHKERRQ(ierr);  ierr = VecDestroy(F);CHKERRQ(ierr);
   ierr = MatDestroy(J);CHKERRQ(ierr);  ierr = SNESDestroy(snes);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(monP.viewer);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
 
   return 0;
 }

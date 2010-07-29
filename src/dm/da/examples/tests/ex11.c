@@ -79,7 +79,7 @@ ierr = VecView(coors,PETSC_VIEWER_STDOUT_SELF);
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(locala);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

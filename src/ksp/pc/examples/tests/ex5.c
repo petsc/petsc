@@ -164,7 +164,7 @@ int main(int Argc,char **Args)
   ierr = MatDestroy(cmat);CHKERRQ(ierr);
   ierr = MatDestroy(fmat);CHKERRQ(ierr);
   ierr = KSPDestroy(kspmg);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

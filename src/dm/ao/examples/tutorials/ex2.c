@@ -158,7 +158,7 @@ int main(int argc,char **args)
   ierr = PetscLogEventEnd(MOVE_VERTEX_EVENT,0,0,0,0);CHKERRQ(ierr);
   ierr = DataDestroy(&gdata);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

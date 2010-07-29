@@ -235,7 +235,7 @@ int main(int argc,char **args)
 
   ierr = PetscPrintf(comm,"Time taken in gradient calculation %g sec.\n",grad_time);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

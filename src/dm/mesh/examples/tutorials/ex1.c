@@ -360,6 +360,6 @@ int main(int argc, char *argv[])
     std::cout << e << std::endl;
     MPI_Abort(comm, 1);
   }
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

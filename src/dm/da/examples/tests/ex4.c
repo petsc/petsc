@@ -151,6 +151,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(global);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

@@ -194,6 +194,6 @@ PetscInt main(PetscInt argc,char **args)
   ierr = DARestoreGlobalVector(da,&zz);CHKERRQ(ierr);
   ierr = VecDestroy(coords);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

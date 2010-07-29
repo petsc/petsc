@@ -178,6 +178,6 @@ int main(int argc, char *argv[])
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

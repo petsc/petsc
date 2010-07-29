@@ -112,7 +112,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(ctx.yr);CHKERRQ(ierr);
   ierr = VecScatterDestroy(ctx.sct);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

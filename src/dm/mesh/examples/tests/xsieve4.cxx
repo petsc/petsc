@@ -28,6 +28,6 @@ int main(int argc, char *argv[])
     ALE::Obj<xsieve_type> xsieveTree = ALE::Test::XSieveTester::createTreeXSieve(PETSC_COMM_SELF, argDB);
     ierr = ALE::Test::XSieveTester::BoundaryTest<xsieve_type>(xsieveTree, argDB, "Tree");CHKERRQ(ierr);
   }
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

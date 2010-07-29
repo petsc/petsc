@@ -27,6 +27,6 @@ int main(int argc,char **argv)
     fprintf(stdout,"%-15s : %e sec\n","PetscGetCPUTime",(y-x)/10.0);
   }
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

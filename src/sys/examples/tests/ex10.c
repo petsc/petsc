@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   PetscIntView(20,a,0);
   ierr = PetscFree(a);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

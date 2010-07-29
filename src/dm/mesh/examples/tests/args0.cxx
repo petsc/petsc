@@ -36,6 +36,6 @@ int main(int argc, char** argv){
   catch(ALE::Exception& e) {
     std::cout << "Caught exception: " << e << "\n";
   }
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

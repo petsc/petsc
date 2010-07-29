@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscSleep(2);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

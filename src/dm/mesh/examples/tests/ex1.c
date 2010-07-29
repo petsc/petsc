@@ -61,6 +61,6 @@ int main(int argc, char *argv[])
   if (sieveTests && coneTests) {
     ierr = SieveConeTest(comm);CHKERRQ(ierr);
   }
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

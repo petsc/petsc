@@ -69,6 +69,6 @@ int main(int argc,char **argv)
   ierr = PetscViewerDestroy(H5viewer);CHKERRQ(ierr);
   ierr = VecDestroy(gauss);CHKERRQ(ierr);
   ierr = DADestroy(da2D);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
     return 0;
 }

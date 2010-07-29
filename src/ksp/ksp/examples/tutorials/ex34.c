@@ -112,7 +112,7 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Error norm %g\n",norm/((PetscReal)(mx)*(PetscReal)(my)*(PetscReal)(mz)));CHKERRQ(ierr); 
 
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

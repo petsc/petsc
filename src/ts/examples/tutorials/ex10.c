@@ -1095,6 +1095,6 @@ int main(int argc, char *argv[])
   ierr = MatDestroy(B);CHKERRQ(ierr);
   ierr = RDDestroy(rd);CHKERRQ(ierr);
   ierr = TSDestroy(ts);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

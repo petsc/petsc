@@ -418,6 +418,8 @@ extern const char *TSSundialsGramSchmidtTypes[];
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetType(TS,TSSundialsLmmType);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsGetPC(TS,PC*);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetTolerance(TS,PetscReal,PetscReal);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetMinTimeStep(TS,PetscReal);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetMaxTimeStep(TS,PetscReal);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsGetIterations(TS,PetscInt *,PetscInt *);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetGramSchmidtType(TS,TSSundialsGramSchmidtType);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetGMRESRestart(TS,PetscInt);

@@ -72,7 +72,7 @@ int main(int argc,char **argv)
   if (n != 4) SETERRQ(PETSC_COMM_SELF,1,"Number of blocks not 4!");
 
   ierr = ISDestroy(set);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

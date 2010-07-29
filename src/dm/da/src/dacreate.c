@@ -79,7 +79,7 @@ static PetscErrorCode DASetTypeFromOptions_Private(DA da)
   Input Parameter:
 . da - The DA
 
-  Notes:  To see all options, run your program with the -help option, or consult the users manual.
+  Notes:  To see all options, run your program with the -help option, or consult the <A href="../../docs/manual.pdf">Users Manual</A>.
           Must be called after DACreate() but before the DA is used.
 
   Level: beginner

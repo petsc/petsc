@@ -239,6 +239,6 @@ int main(int argc, char *args[])
   ierr = VecDestroy(cellCenters);
   ierr = PetscViewerDestroy(binaryviewer);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize(); 
   PetscFunctionReturn(0);
 }

@@ -81,7 +81,7 @@ int main(int argc,char **argv)
      are no longer needed.
   */
   ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

@@ -114,7 +114,7 @@ int main(int argc,char **args)
   ierr = PetscFree(iblock);CHKERRQ(ierr);
   ierr = PetscFree(evecs_array);CHKERRQ(ierr);
   ierr = PetscFree(ifail);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
 #endif
   return 0;
 }

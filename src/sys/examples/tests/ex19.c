@@ -18,6 +18,6 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",option2);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(0,"-option3",option3,30,&flg);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",option3);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

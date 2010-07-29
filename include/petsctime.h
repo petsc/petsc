@@ -42,7 +42,7 @@ extern PetscLogDouble PETSC_DLLEXPORT BaseTime;
    Since the PETSc libraries incorporate timing of phases and operations, 
    PetscTime() is intended only for timing of application codes.  
    The options database commands -log, -log_summary, and -log_all activate
-   PETSc library timing.  See the users manual for further details.
+   PETSc library timing. See the <A href="../../docs/manual.pdf">Users Manual</A> for more details.
 
 .seealso:  PetscTimeSubtract(), PetscTimeAdd()
 
@@ -69,7 +69,7 @@ extern PetscLogDouble PETSC_DLLEXPORT BaseTime;
    Since the PETSc libraries incorporate timing of phases and operations, 
    PetscTimeSubtract() is intended only for timing of application codes.  
    The options database commands -log, -log_summary, and -log_all activate
-   PETSc library timing.  See the users manual for further details.
+   PETSc library timing.  See the <A href="../../docs/manual.pdf">Users Manual</A> for more details.
 
 .seealso:  PetscTime(), PetscTimeAdd()
 
@@ -94,7 +94,7 @@ extern PetscLogDouble PETSC_DLLEXPORT BaseTime;
    Since the PETSc libraries incorporate timing of phases and operations, 
    PetscTimeAdd() is intended only for timing of application codes.  
    The options database commands -log, -log_summary, and -log_all activate
-   PETSc library timing.  See the users manual for further details.
+   PETSc library timing. See the <A href="../../docs/manual.pdf">Users Manual</A> for more details.
 
 .seealso:  PetscTime(), PetscTimeSubtract()
 

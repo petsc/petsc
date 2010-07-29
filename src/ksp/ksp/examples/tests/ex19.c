@@ -170,7 +170,7 @@ int main(int argc,char **argv)
 
   ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = MatDestroy(user.Ii);CHKERRQ(ierr); 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
 
   return 0;
 }

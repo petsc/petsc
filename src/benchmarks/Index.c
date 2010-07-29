@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   ierr = test1();CHKERRQ(ierr);
   ierr = test2();CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }
 

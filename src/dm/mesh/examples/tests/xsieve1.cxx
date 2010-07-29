@@ -30,6 +30,6 @@ int main(int argc, char *argv[])
     ierr = ALE::Test::XSieveTester::BaseTest<xsieve_type>(xsieveFork, argDB, "Fork XSieve");CHKERRQ(ierr);
     ierr = ALE::Test::XSieveTester::BaseTest<xsieve_type>(xsieveHat, argDB, "Hat XSieve");CHKERRQ(ierr);
   }
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

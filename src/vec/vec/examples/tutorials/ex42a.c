@@ -24,7 +24,7 @@ int main(int argc,char **args)
     ierr = VecLoad(b,fd);CHKERRQ(ierr);
   }
   ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

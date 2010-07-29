@@ -200,7 +200,7 @@ $   Jorge's nifty new strategy if one specifies the option
 $          -snes_mf_jorge
 
    The user can set these parameters via MatMFFDSetFunctionError().
-   See the nonlinear solvers chapter of the users manual for details.
+   See the <A href="../../docs/manual.pdf#nameddest=ch_snes">SNES chapter of the users manual</A>.
 
    The user should call MatDestroy() when finished with the matrix-free
    matrix context.

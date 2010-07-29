@@ -14,6 +14,6 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,PETSC_NULL,PETSC_NULL);
   ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
   ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

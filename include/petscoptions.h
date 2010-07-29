@@ -44,6 +44,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsInsertFile(MPI_Comm,const cha
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsInsertString(const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsDestroy(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsClear(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsPrefixPush(const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsPrefixPop(void);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsReject(const char[],const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetAll(char*[]);

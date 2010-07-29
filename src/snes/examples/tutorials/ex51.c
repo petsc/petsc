@@ -49,5 +49,5 @@ int main(int argc, char *argv[]) {
   ierr = DADestroy(daX);CHKERRQ(ierr);
   ierr = DADestroy(daY);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
 }

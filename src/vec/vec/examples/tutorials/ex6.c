@@ -71,7 +71,7 @@ int main(int argc,char **args)
   /* Free data structures */
   ierr = VecDestroy(vec);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(view_in);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 

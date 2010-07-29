@@ -72,7 +72,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(r);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
 #else

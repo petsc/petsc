@@ -86,7 +86,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(tmat);CHKERRQ(ierr);
   if (mat) {ierr = MatDestroy(mat);CHKERRQ(ierr);}
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

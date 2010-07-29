@@ -3632,7 +3632,7 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat newmat,PetscViewer viewer)
 
    Specify the preallocated storage with either nz or nnz (not both).
    Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
-   allocation.  For additional details, see the users manual chapter on
+   allocation.  See the <A href="../../docs/manual.pdf#nameddest=ch_mat">Mat chapter of the users manual</A> for details.
    matrices.
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPIBAIJ()
@@ -3688,8 +3688,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqBAIJ(MPI_Comm comm,PetscInt bs,Pet
 
    Specify the preallocated storage with either nz or nnz (not both).
    Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
-   allocation.  For additional details, see the users manual chapter on
-   matrices.
+   allocation.  See the <A href="../../docs/manual.pdf#nameddest=ch_mat">Mat chapter of the users manual</A> for details.
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPIBAIJ(), MatGetInfo()
 @*/
