@@ -486,7 +486,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **args)
 -  -memory_info - Print memory usage at end of run
 
    Options Database Keys for Profiling:
-   See the Profiling chapter of the users manual for details.
+   See the <a href="../../docs/manual.pdf#nameddest=ch_profiling">profiling chapter of the users manual</a> for details.
 +  -log_trace [filename] - Print traces of all PETSc calls
         to the screen (useful to determine where a program
         hangs without running in the debugger).  See PetscLogTraceBegin().
@@ -518,7 +518,7 @@ $       call PetscInitialize(file,ierr)
    Important Fortran Note:
    In Fortran, you MUST use PETSC_NULL_CHARACTER to indicate a
    null character string; you CANNOT just use PETSC_NULL as 
-   in the C version.  See the users manual for details.
+   in the C version. See the <a href="../../docs/manual.pdf">users manual</a> for details.
 
    If your main program is C but you call Fortran code that also uses PETSc you need to call PetscInitializeFortran() soon after 
    calling PetscInitialize().
@@ -718,7 +718,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
 -  -malloc_log - Prints summary of memory usage
 
    Options Database Keys for Profiling:
-   See the Profiling chapter of the users manual for details.
+   See the <a href="../../docs/manual.pdf#nameddest=ch_profiling">profiling chapter of the users manual</a> for details.
 +  -log_summary [filename] - Prints summary of flop and timing
         information to screen. If the filename is specified the
         summary is written to the file. (for code compiled with 

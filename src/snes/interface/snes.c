@@ -334,7 +334,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscTruth hasOpera
 
    Notes:
    To see all options, run your program with the -help option or consult
-   the users manual.
+   the <A href="../../docs/manual.pdf#nameddest=ch_snes">SNES chapter of the users manual</A>.
 
    Level: beginner
 

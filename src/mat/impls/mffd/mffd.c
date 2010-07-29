@@ -680,8 +680,7 @@ EXTERN_C_END
 .ve
 
    The user can set the error_rel via MatMFFDSetFunctionError() and 
-   umin via MatMFFDDSSetUmin(); see the nonlinear solvers chapter
-   of the users manual for details.
+   umin via MatMFFDDSSetUmin(); see the <A href="../../docs/manual.pdf#nameddest=ch_snes">SNES chapter of the users manual</A> for details.
 
    The user should call MatDestroy() when finished with the matrix-free
    matrix context.

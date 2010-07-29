@@ -1996,7 +1996,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCreate(void)
 
    Notes:
    To see all options, run your program with the -help option or consult
-   the users manual. 
+   the <A href="../../docs/manual.pdf">users manual</A>.. 
 
    Level: intermediate
 

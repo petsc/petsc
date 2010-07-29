@@ -3395,7 +3395,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR(Mat B,const Petsc
 
    The AIJ format (also called the Yale sparse matrix format or
    compressed row storage (CSR)), is fully compatible with standard Fortran 77
-   storage.  The stored row and column indices begin with zero.  See the users manual for details.
+   storage.  The stored row and column indices begin with zero. 
+   See the <A href="../../docs/manual.pdf#nameddest=ch_mat">Mat chapter of the users manual</A> for details.
 
    The parallel matrix is partitioned such that the first m0 rows belong to 
    process 0, the next m1 rows belong to process 1, the next m2 rows belong 
