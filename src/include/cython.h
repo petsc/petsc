@@ -46,10 +46,8 @@ Cython_ImportFunction(PyObject   *module,
   }
 #endif
   Py_DECREF(capi);
-  Py_DECREF(capsule);
   return p;
  bad:
   Py_XDECREF(capi);
-  Py_XDECREF(capsule);
   return NULL;
 }
