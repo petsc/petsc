@@ -4,6 +4,7 @@
 #include "../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h"
 #include <cusp/csr_matrix.h>
 #include <cusp/multiply.h>
+#include <thrust/iterator/permutation_iterator.h>
 
 #define CUSPMATRIX cusp::csr_matrix<PetscInt,PetscScalar,cusp::device_memory>
 
