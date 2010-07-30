@@ -49,6 +49,16 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
+struct VecCUDAPlusEquals
+{
+  template <typename Tuple>
+  __host__ __device__
+  void operator()(Tuple t)
+  {
+    thrust::get<1>(t) += thrust::get<0>(t);
+  }
+};
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_SeqAIJCUDA"
 PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
@@ -57,26 +67,41 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
   PetscErrorCode       ierr;
   PetscTruth           usecprow=a->compressedrow.use;
   SeqAIJCUDA_Container *cudastruct = (SeqAIJCUDA_Container *)A->spptr;
-  CUSPARRAY            workvector;
 
   PetscFunctionBegin; 
   ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
   ierr = VecCUDACopyToGPU(yy);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(zz);CHKERRQ(ierr);
-  workvector = *(CUSPARRAY *)yy->spptr;
-  if (usecprow) {
+    if (usecprow) {
     try {
+      ierr = VecCopy_SeqCUDA(yy,zz);CHKERRQ(ierr);
       cusp::multiply(*cudastruct->mat,*(CUSPARRAY *)(xx->spptr), *cudastruct->tempvec);
-      ierr = VecSet_SeqCUDA(zz,0.0);CHKERRQ(ierr);
-      thrust::copy(cudastruct->tempvec->begin(),cudastruct->tempvec->end(),thrust::make_permutation_iterator(((CUSPARRAY *)zz->spptr)->begin(),cudastruct->indices->begin()));	
-      ierr = VecAXPY_SeqCUDA(zz,1.0,workvector);CHKERRQ(ierr);
+      thrust::for_each(
+	 thrust::make_zip_iterator(
+		 thrust::make_tuple(
+				    cudastruct->tempvec->begin(),
+				    thrust::make_permutation_iterator(((CUSPARRAY *)zz->spptr)->begin(), cudastruct->indices->begin()))),
+	 thrust::make_zip_iterator(
+		 thrust::make_tuple(
+				   cudastruct->tempvec->end(),
+				   thrust::make_permutation_iterator(((CUSPARRAY *)zz->spptr)->begin() + cudastruct->tempvec->size(),cudastruct->indices->end()))),
+	 VecCUDAPlusEquals());
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
     }
   } else {
     try {
       cusp::multiply(*cudastruct->mat,*(CUSPARRAY *)(xx->spptr),*(CUSPARRAY *)(zz->spptr));
-      ierr = VecAXPY_SeqCUDA(zz,1.0,workvector);CHKERRQ(ierr);
+      thrust::for_each(
+	 thrust::make_zip_iterator(
+		 thrust::make_tuple(
+				    ((CUSPARRAY *)yy->spptr)->begin(),
+				    ((CUSPARRAY *)zz->spptr)->begin())),
+	 thrust::make_zip_iterator(
+		 thrust::make_tuple(
+				    ((CUSPARRAY *)yy->spptr)->end(),
+				   ((CUSPARRAY *)zz->spptr)->begin())),
+	 VecCUDAPlusEquals());
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
     } 
