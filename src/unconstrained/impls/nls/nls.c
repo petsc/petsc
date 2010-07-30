@@ -1211,7 +1211,6 @@ static PetscErrorCode TaoSolverView_NLS(TaoSolver tao, PetscViewer viewer)
   ierr = PetscPrintf(comm, "  nls ksp dtol: %d\n", nlsP->ksp_dtol); CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "  nls ksp iter: %d\n", nlsP->ksp_iter); CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "  nls ksp othr: %d\n", nlsP->ksp_othr); CHKERRQ(ierr);
-  ierr = TaoLineSearchView(tao->linesearch, viewer); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

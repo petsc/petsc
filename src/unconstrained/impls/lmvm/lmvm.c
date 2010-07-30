@@ -2,9 +2,9 @@
 #include "src/matrix/lmvmmat.h"
 #include "lmvm.h"
 
-#define LMM_BFGS                0
-#define LMM_SCALED_GRADIENT     1
-#define LMM_GRADIENT            2
+#define LMVM_BFGS                0
+#define LMVM_SCALED_GRADIENT     1
+#define LMVM_GRADIENT            2
 
 #undef __FUNCT__  
 #define __FUNCT__ "TaoSolverSolve_LMVM"
@@ -13,9 +13,6 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
 
   TAO_LMVM *lmP = (TAO_LMVM *)tao->data;
   
-  
-//  PetscTruth success;
-
   PetscReal f, fold, gdx, gnorm;
   PetscReal step = 1.0;
 
@@ -26,7 +23,6 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
   PetscInt iter = 0;
   TaoSolverConvergedReason reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
-//  PetscInt bfgsUpdates = 0;
 
   PetscFunctionBegin;
 
@@ -94,17 +90,17 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
 
       lmP->bfgs = 1;
       ++lmP->sgrad;
-      stepType = LMM_SCALED_GRADIENT;
+      stepType = LMVM_SCALED_GRADIENT;
     }
     else {
       if (1 == lmP->bfgs) {
         // The first BFGS direction is always the scaled gradient
         ++lmP->sgrad;
-        stepType = LMM_SCALED_GRADIENT;
+        stepType = LMVM_SCALED_GRADIENT;
       }
       else {
         ++lmP->bfgs;
-        stepType = LMM_BFGS;
+        stepType = LMVM_BFGS;
       }
     }
     ierr = VecScale(lmP->D, -1.0); CHKERRQ(ierr);
@@ -117,7 +113,7 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, lmP->D, &step,&ls_status); CHKERRQ(ierr);
     
 
-    while (((int)ls_status < 0) && (stepType != LMM_GRADIENT)) {
+    while (((int)ls_status < 0) && (stepType != LMVM_GRADIENT)) {
       // Linesearch failed
       // Reset factors and use scaled gradient step
       f = fold;
@@ -125,7 +121,7 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
       ierr = VecCopy(lmP->Gold, tao->gradient); CHKERRQ(ierr);
         
       switch(stepType) {
-      case LMM_BFGS:
+      case LMVM_BFGS:
         // Failed to obtain acceptable iterate with BFGS step
         // Attempt to use the scaled gradient direction
 
@@ -149,10 +145,10 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
   
 	lmP->bfgs = 1;
 	++lmP->sgrad;
-	stepType = LMM_SCALED_GRADIENT;
+	stepType = LMVM_SCALED_GRADIENT;
 	break;
 
-      case LMM_SCALED_GRADIENT:
+      case LMVM_SCALED_GRADIENT:
         // The scaled gradient step did not produce a new iterate;
 	// attempt to use the gradient direction.
 	// Need to make sure we are not using a different diagonal scaling
@@ -163,7 +159,7 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
 
         lmP->bfgs = 1;
         ++lmP->grad;
-        stepType = LMM_GRADIENT;
+        stepType = LMVM_GRADIENT;
         break;
       }
       ierr = VecScale(lmP->D, -1.0); CHKERRQ(ierr);
@@ -188,7 +184,7 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSetUp_LMVM"
+#define __FUNCT__ "TaoSolverSetUp_LMVM"
 static PetscErrorCode TaoSolverSetUp_LMVM(TaoSolver tao)
 {
   TAO_LMVM *lmP = (TAO_LMVM *)tao->data;
@@ -281,19 +277,20 @@ static PetscErrorCode TaoSolverSetFromOptions_LMVM(TaoSolver tao)
 #define __FUNCT__ "TaoSolverView_LMVM"
 static PetscErrorCode TaoSolverView_LMVM(TaoSolver tao, PetscViewer viewer)
 {
-    /*
-  TAO_LMVM *lm = (TAO_LMVM *)solver;
-  int info;
 
-  TaoFunctionBegin;
-  info = TaoPrintInt(tao, "  Rejected matrix updates: %d\n", lm->M->GetRejects()); CHKERRQ(info);
-  info = TaoPrintInt(tao, "  BFGS steps: %d\n", lm->bfgs); CHKERRQ(info);
-  info = TaoPrintInt(tao, "  Scaled gradient steps: %d\n", lm->sgrad); CHKERRQ(info);
-  info = TaoPrintInt(tao, "  Gradient steps: %d\n", lm->grad); CHKERRQ(info);
-  info = TaoLineSearchView(tao); CHKERRQ(info);
-  TaoFunctionReturn(0);
-    */
-    return 0;
+    TAO_LMVM *lm = (TAO_LMVM *)tao->data;
+    PetscTruth isascii;
+    PetscErrorCode ierr;
+
+
+    PetscFunctionBegin;
+    ierr = PetscTypeCompare((PetscObject)viewer, PETSC_VIEWER_ASCII, &isascii); CHKERRQ(ierr);
+    if (isascii) {
+	ierr = PetscViewerASCIIPrintf(viewer, "  BFGS steps: %d\n", lm->bfgs); CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(viewer, "  Scaled gradient steps: %d\n", lm->sgrad); CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(viewer, "  Gradient steps: %d\n", lm->grad); CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------- */

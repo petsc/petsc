@@ -229,18 +229,21 @@ static PetscErrorCode TaoSolverSetFromOptions_BLMVM(TaoSolver tao)
 #define __FUNCT__ "TaoSolverView_BLMVM"
 static int TaoSolverView_BLMVM(TaoSolver tao, PetscViewer viewer)
 {
-    /*
-  TAO_BLMVM *blm = (TAO_BLMVM *) solver;
-  int info;
+    TAO_BLMVM *lm = (TAO_BLMVM *)tao->data;
+    PetscTruth isascii;
+    PetscErrorCode ierr;
 
-  TaoFunctionBegin;
-  info = TaoPrintInt(tao, "  Rejected matrix updates: %d\n", blm->M->GetRejects()); CHKERRQ(info);
-  info = TaoPrintInt(tao, "  Gradient steps: %d\n", blm->grad); CHKERRQ(info);
-  info = TaoPrintInt(tao, "  Reset steps: %d\n", blm->reset); CHKERRQ(info);
-  info = TaoLineSearchView(tao); CHKERRQ(info);
-  TaoFunctionReturn(0); 
-    */
-    return 0;
+    
+    PetscFunctionBegin;
+    ierr = PetscTypeCompare((PetscObject)viewer, PETSC_VIEWER_ASCII, &isascii); CHKERRQ(ierr);
+    /*
+    if (isascii) {
+	ierr = PetscViewerASCIIPrintf(viewer, "  BFGS steps: %d\n", lm->bfgs); CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(viewer, "  Scaled gradient steps: %d\n", lm->sgrad); CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(viewer, "  Gradient steps: %d\n", lm->grad); CHKERRQ(ierr);
+	}*/
+    ierr = TaoLineSearchView(tao->linesearch, viewer); CHKERRQ(ierr);
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
