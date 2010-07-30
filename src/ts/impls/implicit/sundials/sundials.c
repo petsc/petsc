@@ -254,6 +254,18 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
   flag = CVodeSetUserData(mem, ts);
   if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSetUserData() fails");
 
+  /* Sundials may choose to use a smaller initial step, but will never use a larger step. */
+  flag = CVodeSetInitStep(mem,(realtype)ts->initial_time_step);
+  if (flag) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_LIB,"CVodeSetInitStep() failed");
+  if (cvode->mindt > 0) {
+    flag = CVodeSetMinStep(mem,(realtype)cvode->mindt);
+    if (flag) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_LIB,"CVodeSetMinStep() failed");
+  }
+  if (cvode->maxdt > 0) {
+    flag = CVodeSetMaxStep(mem,(realtype)cvode->maxdt);
+    if (flag) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_LIB,"CVodeSetMaxStep() failed");
+  }
+
   /* Call CVodeInit to initialize the integrator memory and specify the
    * user's right hand side function in u'=f(t,u), the inital time T0, and
    * the initial dependent variable vector cvode->y */
@@ -318,6 +330,8 @@ PetscErrorCode TSSetFromOptions_Sundials_Nonlinear(TS ts)
     }
     ierr = PetscOptionsReal("-ts_sundials_atol","Absolute tolerance for convergence","TSSundialsSetTolerance",cvode->abstol,&cvode->abstol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_sundials_rtol","Relative tolerance for convergence","TSSundialsSetTolerance",cvode->reltol,&cvode->reltol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_sundials_mindt","Minimum step size","TSSundialsSetMinTimeStep",cvode->mindt,&cvode->mindt,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_sundials_maxdt","Maximum step size","TSSundialsSetMaxTimeStep",cvode->maxdt,&cvode->maxdt,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_sundials_linear_tolerance","Convergence tolerance for linear solve","TSSundialsSetLinearTolerance",cvode->linear_tol,&cvode->linear_tol,&flag);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_sundials_gmres_restart","Number of GMRES orthogonalization directions","TSSundialsSetGMRESRestart",cvode->restart,&cvode->restart,&flag);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-ts_sundials_exact_final_time","Interpolate output to stop exactly at the final time","TSSundialsSetExactFinalTime",cvode->exact_final_time,&cvode->exact_final_time,PETSC_NULL);CHKERRQ(ierr);
@@ -357,7 +371,9 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"Sundials using unmodified (classical) Gram-Schmidt for orthogonalization in GMRES\n");CHKERRQ(ierr);
     }
-    
+    if (cvode->mindt > 0) {ierr = PetscViewerASCIIPrintf(viewer,"Sundials minimum time step %g\n",cvode->mindt);CHKERRQ(ierr);}
+    if (cvode->maxdt > 0) {ierr = PetscViewerASCIIPrintf(viewer,"Sundials maximum time step %g\n",cvode->maxdt);CHKERRQ(ierr);}
+
     /* Outputs from CVODE, CVSPILS */
     ierr = CVodeGetTolScaleFactor(cvode->mem,&tolsfac);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Sundials suggested factor for tolerance scaling %g\n",tolsfac);CHKERRQ(ierr);
@@ -465,6 +481,32 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetTolerance_Sundials(TS ts,double aa
 EXTERN_C_END
 
 EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "TSSundialsSetMinTimeStep_Sundials"
+PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetMinTimeStep_Sundials(TS ts,PetscReal mindt)
+{
+  TS_Sundials *cvode = (TS_Sundials*)ts->data;
+
+  PetscFunctionBegin;
+  cvode->mindt = mindt;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "TSSundialsSetMaxTimeStep_Sundials"
+PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetMaxTimeStep_Sundials(TS ts,PetscReal maxdt)
+{
+  TS_Sundials *cvode = (TS_Sundials*)ts->data;
+
+  PetscFunctionBegin;
+  cvode->maxdt = maxdt;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSSundialsGetPC_Sundials"
 PetscErrorCode PETSCTS_DLLEXPORT TSSundialsGetPC_Sundials(TS ts,PC *pc)
@@ -540,8 +582,7 @@ EXTERN_C_END
 .seealso: TSSundialsSetType(), TSSundialsSetGMRESRestart(),
           TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
           TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
-          TSSundialsSetExactFinalTime()
+          TSSundialsSetLinearTolerance(), TSSundialsGetPC(), TSSundialsSetExactFinalTime()
 
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSSundialsGetIterations(TS ts,int *nonlin,int *lin)
@@ -801,6 +842,56 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetExactFinalTime(TS ts,PetscTruth ft
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "TSSundialsSetMinTimeStep"
+/*@
+   TSSundialsSetMinTimeStep - Smallest time step to be chosen by the adaptive controller.
+
+   Input Parameter:
++   ts - the time-step context
+-   mindt - lowest time step if positive, negative to deactivate
+
+   Note:
+   Sundials will error if it is not possible to keep the estimated truncation error below
+   the tolerance set with TSSundialsSetTolerance() without going below this step size.
+
+   Level: beginner
+
+.seealso: TSSundialsSetType(), TSSundialsSetTolerance(),
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetMinTimeStep(TS ts,PetscReal mindt)
+{
+  PetscErrorCode ierr,(*f)(TS,PetscReal);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSSundialsSetMinTimeStep_C",(void(**)(void))&f);CHKERRQ(ierr);
+  if (f) {ierr = (*f)(ts,mindt);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSSundialsSetMaxTimeStep"
+/*@
+   TSSundialsSetMaxTimeStep - Largest time step to be chosen by the adaptive controller.
+
+   Input Parameter:
++   ts - the time-step context
+-   maxdt - lowest time step if positive, negative to deactivate
+
+   Level: beginner
+
+.seealso: TSSundialsSetType(), TSSundialsSetTolerance(),
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetMaxTimeStep(TS ts,PetscReal maxdt)
+{
+  PetscErrorCode ierr,(*f)(TS,PetscReal);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSSundialsSetMaxTimeStep_C",(void(**)(void))&f);CHKERRQ(ierr);
+  if (f) {ierr = (*f)(ts,maxdt);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "TSSundialsMonitorInternalSteps"
 /*@
    TSSundialsMonitorInternalSteps - Monitor Sundials internal steps (Defaults to false).
@@ -880,6 +971,10 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS ts)
   cvode->monitorstep      = PETSC_FALSE;
 
   ierr = MPI_Comm_dup(((PetscObject)ts)->comm,&(cvode->comm_sundials));CHKERRQ(ierr);
+
+  cvode->mindt = -1.;
+  cvode->maxdt = -1.;
+
   /* set tolerance for Sundials */
   cvode->reltol = 1e-6;
   cvode->abstol = 1e-6;
@@ -898,6 +993,12 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS ts)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetTolerance_C",
                     "TSSundialsSetTolerance_Sundials",
                      TSSundialsSetTolerance_Sundials);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetMinTimeStep_C",
+                    "TSSundialsSetMinTimeStep_Sundials",
+                     TSSundialsSetMinTimeStep_Sundials);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetMaxTimeStep_C",
+                    "TSSundialsSetMaxTimeStep_Sundials",
+                     TSSundialsSetMaxTimeStep_Sundials);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsGetPC_C",
                     "TSSundialsGetPC_Sundials",
                      TSSundialsGetPC_Sundials);CHKERRQ(ierr);
@@ -914,13 +1015,3 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS ts)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-
-
-
-
-
-
-
-
-

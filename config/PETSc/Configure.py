@@ -164,6 +164,11 @@ class Configure(config.base.Configure):
     else:
       self.addMakeMacro('FC','')
 
+    if hasattr(self.compilers, 'CUDACC'):
+      self.setCompilers.pushLanguage('CUDA')
+      self.addMakeMacro('CUDACC_FLAGS',self.setCompilers.getCompilerFlags())
+      self.setCompilers.popLanguage()
+
     # shared library linker values
     self.setCompilers.pushLanguage(self.languages.clanguage)
     # need to fix BuildSystem to collect these separately

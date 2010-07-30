@@ -31,12 +31,12 @@ class Configure(PETSc.package.NewPackage):
     if not self.scalartypes.precision in ['double', 'single']:
       raise RuntimeError('Must use either single or double precision with CUDA') 
     else:
-      self.pushLanguage('CUDA')
+      self.setCompilers.pushLanguage('CUDA')
       self.setCompilers.addCompilerFlag('-m64')
       #self.addMakeMacro('CUDACC','nvcc -m64')
       if self.scalartypes.precision == 'double':
         self.setCompilers.addCompilerFlag('-arch sm_13')
-      self.popLanguage()
+      self.setCompilers.popLanguage()
     return
 
   def configureLibrary(self):

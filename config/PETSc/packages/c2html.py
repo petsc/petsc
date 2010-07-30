@@ -21,14 +21,22 @@ class Configure(PETSc.package.NewPackage):
     fd.write(args)
     fd.close()
     if self.installNeeded('c2html.args'):
+      # check if flex or lex are in PATH
+      self.getExecutable('flex')
+      self.getExecutable('lex')
+      if not hasattr(self, 'flex') or not hasattr(self, 'lex'):
+        raise RuntimeError('Cannot build c2html. It requires either "flex" or "lex" in PATH. Please install flex and retry.\n\
+ Or disable c2html with --with-c2html=0')
       try:
         output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=900, log = self.framework.log)
       except RuntimeError, e:
-        raise RuntimeError('Error running configure on c2html: '+str(e))
+        raise RuntimeError('Error running configure on c2html: '+str(e)+'.\n\
+ Try disable c2html with --with-c2html=0')
       try:
         output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make && make install && make clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
-        raise RuntimeError('Error running make; make install on c2html: '+str(e))
+        raise RuntimeError('Error running make; make install on c2html: '+str(e)+'.\n\
+ Try disable c2html with --with-c2html=0')
       output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir,'c2html.args')+' '+self.confDir+'/c2html', timeout=5, log = self.framework.log)
       self.framework.actions.addArgument('C2HTML', 'Install', 'Installed c2html into '+self.installDir)
     self.binDir = os.path.join(self.installDir, 'bin')
@@ -41,6 +49,12 @@ class Configure(PETSc.package.NewPackage):
     
   def configure(self):
     '''Determine whether the c2html exist or not'''
+
+    if (self.framework.clArgDB.has_key('with-c2html') and not self.framework.argDB['with-c2html']) or \
+          (self.framework.clArgDB.has_key('download-c2html') and not self.framework.argDB['downlaod-c2html']):
+      self.framework.logPrint("Not checking c2html on user request\n")
+      return
+
     if self.petscdir.isClone:
       self.framework.logPrint('PETSc clone, checking for c2html\n')
       self.getExecutable('c2html', getFullPath = 1)
