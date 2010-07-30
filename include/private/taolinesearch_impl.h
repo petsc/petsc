@@ -37,6 +37,7 @@ struct _p_TaoLineSearch {
     Vec new_x;
     Vec new_g;
     PetscReal step;
+    PetscReal initstep;
 
     PetscInt maxfev;
     PetscInt nfev;
