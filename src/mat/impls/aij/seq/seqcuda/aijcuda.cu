@@ -57,24 +57,26 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
   PetscErrorCode       ierr;
   PetscTruth           usecprow=a->compressedrow.use;
   SeqAIJCUDA_Container *cudastruct = (SeqAIJCUDA_Container *)A->spptr;
+  CUSPARRAY            workvector;
 
   PetscFunctionBegin; 
   ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
   ierr = VecCUDACopyToGPU(yy);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(zz);CHKERRQ(ierr);
+  workvector = *(CUSPARRAY *)yy->spptr;
   if (usecprow) {
     try {
       cusp::multiply(*cudastruct->mat,*(CUSPARRAY *)(xx->spptr), *cudastruct->tempvec);
       ierr = VecSet_SeqCUDA(zz,0.0);CHKERRQ(ierr);
       thrust::copy(cudastruct->tempvec->begin(),cudastruct->tempvec->end(),thrust::make_permutation_iterator(((CUSPARRAY *)zz->spptr)->begin(),cudastruct->indices->begin()));	
-      ierr = VecAXPY_SeqCUDA(zz,1.0,yy);CHKERRQ(ierr);
+      ierr = VecAXPY_SeqCUDA(zz,1.0,workvector);CHKERRQ(ierr);
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
     }
   } else {
     try {
       cusp::multiply(*cudastruct->mat,*(CUSPARRAY *)(xx->spptr),*(CUSPARRAY *)(zz->spptr));
-      ierr = VecAXPY_SeqCUDA(zz,1.0,yy);CHKERRQ(ierr);
+      ierr = VecAXPY_SeqCUDA(zz,1.0,workvector);CHKERRQ(ierr);
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
     } 
