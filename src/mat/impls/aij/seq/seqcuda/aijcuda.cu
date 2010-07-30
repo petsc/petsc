@@ -266,6 +266,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCUDA(Mat B)
 #endif
   B->spptr = new SeqAIJCUDA_Container;
   ((SeqAIJCUDA_Container *)B->spptr)->mat = 0;
+  ((SeqAIJCUDA_Container *)B->spptr)->tempvec = 0;
+  ((SeqAIJCUDA_Container *)B->spptr)->indices = 0;
+  
   B->ops->assemblyend = MatAssemblyEnd_SeqAIJCUDA;
   B->ops->destroy     = MatDestroy_SeqAIJCUDA;
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUDA);CHKERRQ(ierr);
