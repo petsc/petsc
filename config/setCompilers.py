@@ -493,7 +493,7 @@ class Configure(config.base.Configure):
       yield self.CUDACC
     elif self.framework.argDB.has_key('with-cudacc'):
       yield self.framework.argDB['with-cudacc']
-      raise RuntimeError('C compiler you provided with -with-cudacc='+self.framework.argDB['with-cudacc']+' does not work')
+      raise RuntimeError('CUDA compiler you provided with -with-cudacc='+self.framework.argDB['with-cudacc']+' does not work')
     elif self.framework.argDB.has_key('CUDACC'):
       yield self.framework.argDB['CUDACC']
       raise RuntimeError('CUDA compiler you provided with -CUDACC='+self.framework.argDB['CUDACC']+' does not work')
