@@ -265,6 +265,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCUDA(Mat B)
   B->ops->multadd = MatMultAdd_SeqAIJCUDA;
 #endif
   B->spptr = new SeqAIJCUDA_Container;
+  ((SeqAIJCUDA_Container *)B->spptr)->mat = 0;
   B->ops->assemblyend = MatAssemblyEnd_SeqAIJCUDA;
   B->ops->destroy     = MatDestroy_SeqAIJCUDA;
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUDA);CHKERRQ(ierr);
