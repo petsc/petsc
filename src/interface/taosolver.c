@@ -391,7 +391,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverView(TaoSolver tao, PetscViewer view
 {
     PetscErrorCode ierr;
     PetscTruth isascii,isstring;
-    const TaoSolverType type;
+    TaoSolverType type;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
     PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
@@ -927,7 +927,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetConvergedReason(TaoSolver tao, Ta
 
 #undef __FUNCT__ 
 #define __FUNCT__ "TaoSolverGetType"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetType(TaoSolver tao, const TaoSolverType *type)
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetType(TaoSolver tao, TaoSolverType *type)
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);

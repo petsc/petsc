@@ -48,7 +48,7 @@ EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate(MPI_Comm,TaoSolver*);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetFromOptions(TaoSolver);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetUp(TaoSolver);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetType(TaoSolver, const TaoSolverType);
-EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetType(TaoSolver, const TaoSolverType*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetType(TaoSolver, TaoSolverType *);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDestroy(TaoSolver);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetOptionsPrefix(TaoSolver,const char []);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverView(TaoSolver, PetscViewer);
