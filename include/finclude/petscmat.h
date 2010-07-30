@@ -76,6 +76,18 @@
       parameter (NUM_MAT_OPTIONS=20)
  
 !
+!  MatFactorShiftType
+!
+      PetscEnum MAT_SHIFT_NONE
+      PetscEnum MAT_SHIFT_NONZERO
+      PetscEnum MAT_SHIFT_POSITIVE_DEFINITE
+      PetscEnum MAT_SHIFT_INBLOCKS
+      parameter (MAT_SHIFT_NONE=0)
+      parameter (MAT_SHIFT_NONZERO=1)
+      parameter (MAT_SHIFT_POSITIVE_DEFINITE=2)
+      parameter (MAT_SHIFT_INBLOCKS=3)
+
+!
 !  MatDuplicateOption
 !
       PetscEnum MAT_DO_NOT_COPY_VALUES
