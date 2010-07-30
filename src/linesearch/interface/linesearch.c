@@ -43,8 +43,7 @@ PetscLogEvent TaoLineSearch_ApplyEvent = 0, TaoLineSearch_EvalEvent=0;
 	     info = PetscViewerASCIIPopTab(viewer);CHKERRQ(info);
 	 }
 	 info = PetscViewerASCIIPrintf(viewer,"  maximum function evaluations=%D\n",ls->maxfev);CHKERRQ(info);
- /*	info = PetscViewerASCIIPrintf(viewer,"  tolerances: relative=%G, absolute=%G, solution=%G\n",
-	 ls->rtol,ls->abstol,ls->xtol);CHKERRQ(info); */
+	 info = PetscViewerASCIIPrintf(viewer,"  tolerances: ftol=%G, rtol=%G, gtol=%G\n", ls->ftol, ls->rtol,ls->gtol);CHKERRQ(info); 
 	 info = PetscViewerASCIIPrintf(viewer,"  total number of function evaluations=%D\n",ls->nfev);CHKERRQ(info);
 	 if (ls->bounded) {
 	     info = PetscViewerASCIIPrintf(viewer,"  using variable bounds\n");CHKERRQ(info);
@@ -607,9 +606,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetInitialStepLength(TaoLine
     PetscFunctionBegin;
     PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
     
-    ls->step = s;
-    ls->step = PetscMin(ls->stepmax,ls->step);
-    ls->step = PetscMax(ls->stepmin,ls->step);
+    ls->initstep = s;
     PetscFunctionReturn(0);
 }
 

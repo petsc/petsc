@@ -42,15 +42,17 @@ static PetscErrorCode TaoLineSearchSetFromOptions_MT(TaoLineSearch ls)
 #define __FUNCT__ "TaoLineSearchView_MT"
 static PetscErrorCode TaoLineSearchView_MT(TaoLineSearch ls, PetscViewer pv)
 {
-    PetscErrorCode ierr;
-    PetscTruth isascii;
+    //PetscErrorCode ierr;
+    //PetscTruth isascii;
     PetscFunctionBegin;
+    /*
     ierr = PetscTypeCompare((PetscObject)pv, PETSC_VIEWER_ASCII, &isascii); CHKERRQ(ierr);
     if (isascii) {
-	ierr = PetscViewerASCIIPrintf(pv,"  Line Search: MoreThuente.\n"); CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(pv,"  maxf=%d, ftol=%g, gtol=%g\n",ls->maxfev, ls->rtol, ls->ftol); CHKERRQ(ierr);
     } else {
 	SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for MoreThuente TaoLineSearch",((PetscObject)pv)->type_name);
     }
+    */
     PetscFunctionReturn(0);
 }
 
@@ -172,7 +174,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     dgy = dginit;
  
     ls->nfev = 0;
-    ls->step=1.0;
+    ls->step=ls->initstep;
     for (i=0; i< ls->maxfev; i++) {
     /* Set min and max steps to correspond to the interval of uncertainty */
       if (mt->bracket) {
@@ -341,11 +343,13 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_MT(TaoLineSearch ls)
     ctx->bracket=0;
     ctx->infoc=1;
     ls->data = (void*)ctx;
+    ls->initstep = 1.0;
     ls->ops->setup=0; //TaoLineSearchSetup_MT;
     ls->ops->apply=TaoLineSearchApply_MT;
     ls->ops->view =TaoLineSearchView_MT;
     ls->ops->destroy=TaoLineSearchDestroy_MT;
     ls->ops->setfromoptions=TaoLineSearchSetFromOptions_MT;
+
     PetscFunctionReturn(0);
 }
 EXTERN_C_END
