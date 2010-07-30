@@ -2,8 +2,8 @@
 
 ALL: lib
 
-DIRS     = lmvm nls neldermead
-# ntl ntr lmvm cg neldermead
+DIRS     = lmvm nls neldermead cg
+# ntl ntr
 LOCDIR   = src/unconstrained/impls/
 
 include ${TAO_DIR}/conf/tao_base

@@ -89,8 +89,7 @@ int main(int argc,char **argv)
   /* Set routines for function, gradient, hessian evaluation */
   info = TaoSolverSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user); CHKERRQ(info);
   info = TaoSolverSetHessianRoutine(tao,H,H,FormHessian,&user); CHKERRQ(info);
-
-  info = PetscOptionsSetValue("-tao_lmm_vectors","15"); CHKERRQ(info);
+    
   /* Check for TAO command line options */
   info = TaoSolverSetFromOptions(tao); CHKERRQ(info);
 
