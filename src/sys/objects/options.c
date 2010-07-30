@@ -1968,7 +1968,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCreate(void)
 
   PetscFunctionBegin;
   options = (PetscOptionsTable*)malloc(sizeof(PetscOptionsTable));
-  ierr    = PetscMemzero(options->used,MAXOPTIONS*sizeof(PetscTruth));CHKERRQ(ierr);
+  ierr    = PetscMemzero(options,sizeof(PetscOptionsTable));CHKERRQ(ierr);
   options->namegiven 		= PETSC_FALSE;
   options->N         		= 0;
   options->Naliases  		= 0;

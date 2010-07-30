@@ -2866,15 +2866,57 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
   PetscFunctionReturn(0);
 }
 
+/*
+    Allows sending/receiving larger messages then 2 gigabytes in a single call
+*/
+static int MPILong_Send(void *mess,PetscInt cnt, MPI_Datatype type,int to, int tag, MPI_Comm comm)
+{
+  int             ierr;
+  static PetscInt CHUNKSIZE = 250000000; /* 250,000,000 */
+  PetscInt        i,numchunks;
+  PetscMPIInt     icnt;
+
+  numchunks = cnt/CHUNKSIZE + 1;
+  for (i=0; i<numchunks; i++) {
+    icnt = PetscMPIIntCast((i < numchunks-1) ? CHUNKSIZE : cnt - (numchunks-1)*CHUNKSIZE);
+    ierr = MPI_Send(mess,icnt,type,to,tag,comm);
+    if (type == MPIU_INT) {
+      mess = (void*) (((PetscInt*)mess) + CHUNKSIZE);
+    } else if (type == MPIU_SCALAR) {
+      mess = (void*) (((PetscScalar*)mess) + CHUNKSIZE);
+    } else SETERRQ(comm,PETSC_ERR_SUP,"No support for this datatype");
+  }
+  return 0;
+}
+static int MPILong_Recv(void *mess,PetscInt cnt, MPI_Datatype type,int from, int tag, MPI_Comm comm)
+{
+  int             ierr;
+  static PetscInt CHUNKSIZE = 250000000; /* 250,000,000 */
+  MPI_Status      status;
+  PetscInt        i,numchunks;
+  PetscMPIInt     icnt;
+
+  numchunks = cnt/CHUNKSIZE + 1;
+  for (i=0; i<numchunks; i++) {
+    icnt = PetscMPIIntCast((i < numchunks-1) ? CHUNKSIZE : cnt - (numchunks-1)*CHUNKSIZE);
+    ierr = MPI_Recv(mess,icnt,type,from,tag,comm,&status);
+    if (type == MPIU_INT) {
+      mess = (void*) (((PetscInt*)mess) + CHUNKSIZE);
+    } else if (type == MPIU_SCALAR) {
+      mess = (void*) (((PetscScalar*)mess) + CHUNKSIZE);
+    } else SETERRQ(comm,PETSC_ERR_SUP,"No support for this datatype");
+  }
+  return 0;
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIAIJ"
 PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
 {
   PetscScalar    *vals,*svals;
   MPI_Comm       comm = ((PetscObject)viewer)->comm;
-  MPI_Status     status;
   PetscErrorCode ierr;
-  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,mpicnt,mpimaxnz;
+  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag;
   PetscInt       i,nz,j,rstart,rend,mmax,maxnz = 0,grows,gcols;
   PetscInt       header[4],*rowlengths = 0,M,N,m,*cols;
   PetscInt       *ourlens = PETSC_NULL,*procsnz = PETSC_NULL,*offlens = PETSC_NULL,jj,*mycols,*smycols;
@@ -2943,13 +2985,11 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
       for (j=0; j<rowners[i+1]-rowners[i]; j++) {
         procsnz[i] += rowlengths[j];
       }
-      mpicnt = PetscMPIIntCast(rowners[i+1]-rowners[i]);
-      ierr   = MPI_Send(rowlengths,mpicnt,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+      ierr = MPILong_Send(rowlengths,rowners[i+1]-rowners[i],MPIU_INT,i,tag,comm);CHKERRQ(ierr);
     }
     ierr = PetscFree(rowlengths);CHKERRQ(ierr);
   } else {
-    mpicnt = PetscMPIIntCast(m);CHKERRQ(ierr);
-    ierr   = MPI_Recv(ourlens,mpicnt,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
+    ierr = MPILong_Recv(ourlens,m,MPIU_INT,0,tag,comm);CHKERRQ(ierr);
   }
 
   if (!rank) {
@@ -2969,8 +3009,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
     for (i=1; i<size; i++) {
       nz     = procsnz[i];
       ierr   = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
-      mpicnt = PetscMPIIntCast(nz);
-      ierr   = MPI_Send(cols,mpicnt,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+      ierr   = MPILong_Send(cols,nz,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
     }
     ierr = PetscFree(cols);CHKERRQ(ierr);
   } else {
@@ -2982,12 +3021,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
     ierr = PetscMalloc(nz*sizeof(PetscInt),&mycols);CHKERRQ(ierr);
 
     /* receive message of column indices*/
-    mpicnt = PetscMPIIntCast(nz);CHKERRQ(ierr);
-    ierr = MPI_Recv(mycols,mpicnt,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
-    ierr = MPI_Get_count(&status,MPIU_INT,&mpimaxnz);CHKERRQ(ierr);
-    if (mpimaxnz == MPI_UNDEFINED) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI_Get_count() returned MPI_UNDEFINED, expected %d",mpicnt);
-    else if (mpimaxnz < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI_Get_count() returned impossible negative value %d, expected %d",mpimaxnz,mpicnt);
-    else if (mpimaxnz != mpicnt) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file: expected %d received %d",mpicnt,mpimaxnz);
+    ierr = MPILong_Recv(mycols,nz,MPIU_INT,0,tag,comm);CHKERRQ(ierr);
   }
 
   /* determine column ownership if matrix is not square */
@@ -3046,8 +3080,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
     for (i=1; i<size; i++) {
       nz     = procsnz[i];
       ierr   = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
-      mpicnt = PetscMPIIntCast(nz);
-      ierr   = MPI_Send(vals,mpicnt,MPIU_SCALAR,i,((PetscObject)newMat)->tag,comm);CHKERRQ(ierr);
+      ierr   = MPILong_Send(vals,nz,MPIU_SCALAR,i,((PetscObject)newMat)->tag,comm);CHKERRQ(ierr);
     }
     ierr = PetscFree(procsnz);CHKERRQ(ierr);
   } else {
@@ -3055,12 +3088,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
     ierr = PetscMalloc((nz+1)*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
 
     /* receive message of values*/
-    mpicnt = PetscMPIIntCast(nz);
-    ierr   = MPI_Recv(vals,mpicnt,MPIU_SCALAR,0,((PetscObject)newMat)->tag,comm,&status);CHKERRQ(ierr);
-    ierr   = MPI_Get_count(&status,MPIU_SCALAR,&mpimaxnz);CHKERRQ(ierr);
-    if (mpimaxnz == MPI_UNDEFINED) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI_Get_count() returned MPI_UNDEFINED, expected %d",mpicnt);
-    else if (mpimaxnz < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI_Get_count() returned impossible negative value %d, expected %d",mpimaxnz,mpicnt);
-    else if (mpimaxnz != mpicnt) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file: expected %d received %d",mpicnt,mpimaxnz);
+    ierr   = MPILong_Recv(vals,nz,MPIU_SCALAR,0,((PetscObject)newMat)->tag,comm);CHKERRQ(ierr);
 
     /* insert into matrix */
     jj      = rstart;
