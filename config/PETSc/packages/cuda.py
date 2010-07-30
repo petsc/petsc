@@ -33,6 +33,7 @@ class Configure(PETSc.package.NewPackage):
     else:
       self.setCompilers.pushLanguage('CUDA')
       self.setCompilers.addCompilerFlag('-m64')
+      #self.addMakeMacro('CUDACC','nvcc -m64')
       if self.scalartypes.precision == 'double':
         self.setCompilers.addCompilerFlag('-arch sm_13')
       self.setCompilers.popLanguage()

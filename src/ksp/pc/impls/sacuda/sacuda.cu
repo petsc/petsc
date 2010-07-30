@@ -10,11 +10,9 @@
 #include "private/pcimpl.h"   /*I "petscpc.h" I*/
 #include "../src/mat/impls/aij/seq/aij.h"
 #include <cusp/precond/smoothed_aggregation.h>
+#include "../src/vec/vec/impls/dvecimpl.h"
+#include "../src/mat/impls/aij/seq/seqcuda/cudamatimpl.h"
 
-#ifndef CUSPMATRIX
-#define CUSPMATRIX cusp::csr_matrix<PetscInt,PetscScalar,cusp::device_memory>
-#endif
-#define CUSPARRAY cusp::array1d<PetscScalar,cusp::device_memory>
 #define cudasaprecond cusp::precond::smoothed_aggregation<PetscInt,PetscScalar,cusp::device_memory>
 
 /* 
@@ -99,8 +97,10 @@ static PetscErrorCode PCApply_SACUDA(PC pc,Vec x,Vec y)
   if (!sac->SACUDA) {
     ierr = PCSetUp_SACUDA(pc);CHKERRQ(ierr);
   }
+  ierr = VecCUDACopyToGPU(x);CHKERRQ(ierr);
+  ierr = VecCUDAAllocateCheck(y);CHKERRQ(ierr);
   try {
-    sac->SACUDA->solve(*(CUSPARRAY *)(x->spptr),*(CUSPARRAY *)(y->spptr));
+    cusp::multiply(*(sac->SACUDA),*(CUSPARRAY *)(x->spptr),*(CUSPARRAY *)(y->spptr));
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
   } 

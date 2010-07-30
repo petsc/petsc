@@ -13,17 +13,7 @@ PETSC_CUDA_EXTERN_C_BEGIN
 #include "../src/vec/vec/impls/dvecimpl.h"
 #include "private/vecimpl.h"
 PETSC_CUDA_EXTERN_C_END
-#include "../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h"
-#include <cusp/csr_matrix.h>
-#include <cusp/multiply.h>
-
-#ifndef CUSPARRAY
-#define CUSPARRAY cusp::array1d<PetscScalar,cusp::device_memory>
-#endif
-#define CUSPMATRIX cusp::csr_matrix<PetscInt,PetscScalar,cusp::device_memory>
-
-EXTERN PetscErrorCode VecCUDACopyToGPU_Public(Vec);
-EXTERN PetscErrorCode VecCUDAAllocateCheck_Public(Vec);
+#include "../src/mat/impls/aij/seq/seqcuda/cudamatimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqAIJCUDA"
@@ -39,6 +29,7 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
   PetscInt          n,i,nonzerorow=0;
   PetscScalar       sum;
   PetscTruth        usecprow=a->compressedrow.use;
+  SeqAIJCUDA_Container *cudastruct = (SeqAIJCUDA_Container *)A->spptr;
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*x,*y,*aa)
@@ -70,7 +61,7 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
   ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(yy);CHKERRQ(ierr);
   try {
-    cusp::multiply(*(CUSPMATRIX *)(A->spptr),*(CUSPARRAY *)(xx->spptr),*(CUSPARRAY *)(yy->spptr));
+    cusp::multiply(*cudastruct->mat,*(CUSPARRAY *)(xx->spptr),*(CUSPARRAY *)(yy->spptr));
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
   } 
@@ -89,22 +80,26 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       m = A->rmap->n;
+  SeqAIJCUDA_Container  *cudastruct = (SeqAIJCUDA_Container *)A->spptr;
 
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
-  if (A->spptr){
+  if (cudastruct){
     try {
-      delete (CUSPMATRIX *)(A->spptr);
+      delete cudastruct->mat;
+      delete cudastruct;
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
     } 
   }
   try {
-    A->spptr = new CUSPMATRIX;
-    ((CUSPMATRIX *)(A->spptr))->resize(m,A->cmap->n,a->nz);
-    ((CUSPMATRIX *)(A->spptr))->row_offsets.assign(a->i,a->i+m+1);
-    ((CUSPMATRIX *)(A->spptr))->column_indices.assign(a->j,a->j+a->nz);
-    ((CUSPMATRIX *)(A->spptr))->values.assign(a->a,a->a+a->nz);
+    A->spptr = new SeqAIJCUDA_Container;
+    cudastruct = (SeqAIJCUDA_Container *)A->spptr;
+    cudastruct->mat = new CUSPMATRIX;
+    cudastruct->mat->resize(m,A->cmap->n,a->nz);
+    cudastruct->mat->row_offsets.assign(a->i,a->i+m+1);
+    cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
+    cudastruct->mat->values.assign(a->a,a->a+a->nz);
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
   } 
