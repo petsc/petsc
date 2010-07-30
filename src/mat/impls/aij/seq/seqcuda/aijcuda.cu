@@ -124,21 +124,20 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
 
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
-  if (cudastruct){
+  if (cudastruct->mat){
     try {
-      delete cudastruct->mat;
+      delete (cudastruct->mat);
       if (cudastruct->tempvec) {
-	delete cudastruct->tempvec;
-	delete cudastruct->indices;
+	delete (cudastruct->tempvec);
       }
-      delete cudastruct;
+      if (cudastruct->indices) {
+	delete (cudastruct->indices);
+      }
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
     } 
   }
   try {
-    A->spptr = new SeqAIJCUDA_Container;
-    cudastruct = (SeqAIJCUDA_Container *)A->spptr;
     cudastruct->mat = new CUSPMATRIX;
     if (usecprow) {
       m    = a->compressedrow.nrows;
@@ -265,6 +264,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCUDA(Mat B)
   B->ops->mult    = MatMult_SeqAIJCUDA;
   B->ops->multadd = MatMultAdd_SeqAIJCUDA;
 #endif
+  B->spptr = new SeqAIJCUDA_Container;
   B->ops->assemblyend = MatAssemblyEnd_SeqAIJCUDA;
   B->ops->destroy     = MatDestroy_SeqAIJCUDA;
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUDA);CHKERRQ(ierr);
