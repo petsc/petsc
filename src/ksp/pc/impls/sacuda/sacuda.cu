@@ -11,12 +11,8 @@
 #include "../src/mat/impls/aij/seq/aij.h"
 #include <cusp/precond/smoothed_aggregation.h>
 #include "../src/vec/vec/impls/dvecimpl.h"
-#include "../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h"
+#include "../src/mat/impls/aij/seq/seqcuda/cudamatimpl.h"
 
-#ifndef CUSPMATRIX
-#define CUSPMATRIX cusp::csr_matrix<PetscInt,PetscScalar,cusp::device_memory>
-#endif
-#define CUSPARRAY cusp::array1d<PetscScalar,cusp::device_memory>
 #define cudasaprecond cusp::precond::smoothed_aggregation<PetscInt,PetscScalar,cusp::device_memory>
 
 /* 
