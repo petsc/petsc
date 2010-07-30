@@ -7,21 +7,35 @@ TaoSolver
 * Check bounds for bounded methods, give warning for unbounded methods
 * TaoSolverConvergedReason -> TaoSolverTerminationReason
 
+Mesh Refinement
+
 TRON -- use current C++ version for now, but will have to eventually fix
+CG
+NTR
+NTL
+BQPIP?
+BCG?
+KT?
+BNLS?
+QPIP?
 
-POUNDER -- get something working!
- * fix xhist and fhist preallocation
+Check memory on MT line search!
 
+Check fortran stubs 
 
-Fortran stubs 
+finish examples
 
 documentation
 
 buildscripts
 
+build documentation
+
 automatic testing, coverage
 
-Check against PetscScalar=single, complex
+test against tao-1.10.1
+
+Check against PetscScalar=single, complex (give good error message)
 
 redistribute, mask, matrixfree subtypes 
 
