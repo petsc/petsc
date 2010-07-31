@@ -72,20 +72,22 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
   ierr = VecCUDACopyToGPU(yy);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(zz);CHKERRQ(ierr);
-    if (usecprow) {
+  if (usecprow) {
     try {
       ierr = VecCopy_SeqCUDA(yy,zz);CHKERRQ(ierr);
-      cusp::multiply(*cudastruct->mat,*(CUSPARRAY *)(xx->spptr), *cudastruct->tempvec);
-      thrust::for_each(
-	 thrust::make_zip_iterator(
+      if (a->compressedrow.nrows) {
+        cusp::multiply(*cudastruct->mat,*(CUSPARRAY *)(xx->spptr), *cudastruct->tempvec);
+        thrust::for_each(
+	   thrust::make_zip_iterator(
 		 thrust::make_tuple(
 				    cudastruct->tempvec->begin(),
 				    thrust::make_permutation_iterator(((CUSPARRAY *)zz->spptr)->begin(), cudastruct->indices->begin()))),
-	 thrust::make_zip_iterator(
+ 	   thrust::make_zip_iterator(
 		 thrust::make_tuple(
 				   cudastruct->tempvec->end(),
 				   thrust::make_permutation_iterator(((CUSPARRAY *)zz->spptr)->begin() + cudastruct->tempvec->size(),cudastruct->indices->end()))),
-	 VecCUDAPlusEquals());
+	   VecCUDAPlusEquals());
+      }
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
     }
@@ -120,7 +122,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
   PetscErrorCode        ierr;
   PetscInt              m           = A->rmap->n,*ii,*ridx;
   SeqAIJCUDA_Container  *cudastruct = (SeqAIJCUDA_Container *)A->spptr;
-  PetscTruth            usecprow    = a->compressedrow.use;
 
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
@@ -139,7 +140,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
   }
   try {
     cudastruct->mat = new CUSPMATRIX;
-    if (usecprow) {
+    if (a->compressedrow.use) {
       m    = a->compressedrow.nrows;
       ii   = a->compressedrow.i;
       ridx = a->compressedrow.rindex;
@@ -260,10 +261,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCUDA(Mat B)
   ierr            = MatCreate_SeqAIJ(B);CHKERRQ(ierr);
   aij             = (Mat_SeqAIJ*)B->data;
   aij->inode.use  = PETSC_FALSE;
-#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
   B->ops->mult    = MatMult_SeqAIJCUDA;
   B->ops->multadd = MatMultAdd_SeqAIJCUDA;
-#endif
   B->spptr = new SeqAIJCUDA_Container;
   ((SeqAIJCUDA_Container *)B->spptr)->mat = 0;
   ((SeqAIJCUDA_Container *)B->spptr)->tempvec = 0;
