@@ -34,7 +34,7 @@ class Configure(config.package.Package):
 
   def getSearchDirectories(self):
     import os
-    yield os.path.join('/usr','local','cuda','include')
+    yield os.path.join('/usr','local','cuda')
     yield ''
     return
 

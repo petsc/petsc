@@ -42,8 +42,8 @@ class Configure(config.base.Configure):
     names = {}
     names['CC'] = 'No C compiler found.'
     names['CPP'] = 'No C preprocessor found.'
-    names['CUDACC'] = 'No CUDA compiler found.'
-    names['CUDACPP'] = 'No CUDA preprocessor found.'
+    names['CUDAC'] = 'No CUDA compiler found.'
+    names['CUDAPP'] = 'No CUDA preprocessor found.'
     names['CXX'] = 'No C++ compiler found.'
     names['CXXCPP'] = 'No C++ preprocessor found.'
     names['FC'] = 'No Fortran compiler found.'
@@ -61,7 +61,7 @@ class Configure(config.base.Configure):
       names[key] = 'No '+language+' linker flags found.'
       self.popLanguage()
     names['CPPFLAGS'] = 'No preprocessor flags found.'
-    names['CUDACPPFLAGS'] = 'No CUDA preprocessor flags found.'
+    names['CUDAPPFLAGS'] = 'No CUDA preprocessor flags found.'
     names['CXXCPPFLAGS'] = 'No C++ preprocessor flags found.'
     names['AR_FLAGS'] = 'No archiver flags found.'
     names['AR_LIB_SUFFIX'] = 'No static library suffix found.'
@@ -82,7 +82,7 @@ class Configure(config.base.Configure):
         if not hasattr(self.setCompilers, name):
           raise MissingProcessor(self.dispatchNames[name])
         return getattr(self.setCompilers, name)
-      if name in ['CC_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'sharedLibraryFlags', 'dynamicLibraryFlags']:
+      if name in ['CC_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS','sharedLibraryFlags', 'dynamicLibraryFlags']:
         flags = getattr(self.setCompilers, name)
         if not isinstance(flags, list): flags = [flags]
         return ' '.join(flags)

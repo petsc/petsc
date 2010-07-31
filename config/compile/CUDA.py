@@ -11,13 +11,15 @@ import config.setsOrdered as sets
 class Preprocessor(config.compile.processor.Processor):
   '''The CUDA preprocessor'''
   def __init__(self, argDB):
-    config.compile.processor.Processor.__init__(self, argDB, 'CUDACPP', 'CUDACPPFLAGS', '.cpp', '.c')
+    config.compile.processor.Processor.__init__(self, argDB, 'CUDAPP', 'CUDAPPFLAGS', '.cpp', '.c')
+    self.language        = 'CUDA'
     return
 
 class Compiler(config.compile.processor.Processor):
   '''The CUDA compiler'''
   def __init__(self, argDB, usePreprocessorFlags = True):
-    config.compile.processor.Processor.__init__(self, argDB, 'CUDACC', 'CUDAFLAGS', '.cu', '.o')
+    config.compile.processor.Processor.__init__(self, argDB, 'CUDAC', 'CUDAFLAGS', '.cu', '.o')
+    self.language        = 'CUDA'
     self.requiredFlags[-1]  = '-c'
     self.outputFlag         = '-o'
     self.includeDirectories = sets.Set()
@@ -43,9 +45,10 @@ class Compiler(config.compile.processor.Processor):
 class Linker(config.compile.C.Linker):
   '''The CUDA linker'''
   def __init__(self, argDB):
+    self.language        = 'CUDA'
     self.compiler        = Compiler(argDB, usePreprocessorFlags = False)
     self.configLibraries = config.libraries.Configure(config.framework.Framework(clArgs = '', argDB = argDB))
-    config.compile.processor.Processor.__init__(self, argDB, [self.compiler.name], ['LDFLAGS', 'CC_LINKER_FLAGS'], '.o', '.a')
+    config.compile.processor.Processor.__init__(self, argDB, [self.compiler.name], ['CUDAC_LINKER_FLAGS'], '.o', '.a')
     self.outputFlag = '-o'
     self.libraries  = sets.Set()
     return
