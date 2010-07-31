@@ -95,8 +95,8 @@ libfast:  ${SOURCECU} ${SOURCEC} ${SOURCEF}
 
 libfastcompile:
 	-@if [ "${SOURCECU}" != "" ]; then \
-	echo ${CUDACC} ${CUDACC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}; \
-	${CUDACC} ${CUDACC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}; \
+	echo ${CUDAC} ${CUDACC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}; \
+	${CUDAC} ${CUDACC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}; \
 	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS} > tmpf 2>&1 ; ${GREP} -v "has no symbols" tmpf; ${RM} tmpf; \
 		    ${RM} ${OBJSC} ${SOBJS} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
 	    fi; \
@@ -392,10 +392,10 @@ getmpiexec:
 #
 #   Compiles CUDA code
 .cu.o:
-	${CUDACC} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}
+	${CUDAC} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}
 
 .cu.a: 
-	${CUDACC} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}
+	${CUDAC} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}
 	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
 	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
 	-${RM} $*.o $*.lo
