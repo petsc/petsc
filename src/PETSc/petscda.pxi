@@ -56,14 +56,14 @@ cdef extern from "petscda.h" nogil:
                           PetscInt*,PetscInt*,PetscInt*,
                           PetscInt*,PetscInt*,PetscInt*)
 
-    #int DASetUniformCoordinates(PetscDA,
-    #                            PetscReal,PetscReal,
-    #                            PetscReal,PetscReal,
-    #                            PetscReal,PetscReal)
-    #int DASetCoordinates(PetscDA,PetscVec)
-    #int DAGetCoordinates(PetscDA,PetscVec*)
-    #int DAGetGhostedCoordinates(PetscDA,PetscVec*)
-    #int DAGetCoordinateDA(PetscDA,PetscDA*)
+    int DASetUniformCoordinates(PetscDA,
+                                PetscReal,PetscReal,
+                                PetscReal,PetscReal,
+                                PetscReal,PetscReal)
+    int DASetCoordinates(PetscDA,PetscVec)
+    int DAGetCoordinates(PetscDA,PetscVec*)
+    int DAGetCoordinateDA(PetscDA,PetscDA*)
+    int DAGetGhostedCoordinates(PetscDA,PetscVec*)
 
     int DACreateGlobalVector(PetscDA,PetscVec*)
     int DACreateNaturalVector(PetscDA,PetscVec*)

@@ -1,6 +1,21 @@
 #ifndef _COMPAT_PETSC_DA_H
 #define _COMPAT_PETSC_DA_H
 
+#if PETSC_VERSION_(3,0,0)
+static PETSC_UNUSED
+PetscErrorCode DASetCoordinates_Compat(DA da,Vec c)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(c,VEC_COOKIE,2);
+  ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
+  ierr = DASetCoordinates(da,c);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define DASetCoordinates DASetCoordinates_Compat
+#endif
+
 #if (PETSC_VERSION_(2,3,3) || \
      PETSC_VERSION_(2,3,2))
 #define DM_COOKIE DA_COOKIE

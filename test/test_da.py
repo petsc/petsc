@@ -64,6 +64,21 @@ class BaseTestDA(object):
             self.assertEqual(s, starts[i])
             self.assertEqual(e-s, lsizes[i])
 
+    def testCoordinates(self):
+        self.da.setUniformCoordinates(0,1,0,1,0,1)
+        #
+        c = self.da.getCoordinates()
+        self.da.setCoordinates(c)
+        c.destroy()
+        cda = self.da.getCoordinateDA()
+        cda.destroy()
+        #
+        c = self.da.getCoordinates()
+        self.da.setCoordinates(c)
+        c.destroy()
+        gc = self.da.getGhostCoordinates()
+        gc.destroy()
+
     def testGetVector(self):
         vn = self.da.createNaturalVector()
         vg = self.da.createGlobalVector()
