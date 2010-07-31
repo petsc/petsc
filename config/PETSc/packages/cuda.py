@@ -32,7 +32,6 @@ class Configure(PETSc.package.NewPackage):
       raise RuntimeError('Must use either single or double precision with CUDA') 
     else:
       self.setCompilers.pushLanguage('CUDA')
-      self.setCompilers.addCompilerFlag('-m64')
       if self.scalartypes.precision == 'double':
         self.setCompilers.addCompilerFlag('-arch sm_13')
       self.setCompilers.popLanguage()
