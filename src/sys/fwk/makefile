@@ -1,7 +1,7 @@
 ALL: lib
 
 SOURCEH  = ../../../include/petscfwk.h 
-DIRS     = interface examples
+DIRS     = interface #examples
 LOCDIR   = src/sys/fwk/
 MANSEC   = fwk
 

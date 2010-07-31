@@ -13,34 +13,38 @@ EXTERN PetscFwk PETSC_DLLEXPORT PETSC_FWK_DEFAULT_(MPI_Comm);
 #define PETSC_FWK_DEFAULT_WORLD PETSC_FWK_DEFAULT_(PETSC_COMM_WORLD)
 
 
-typedef PetscErrorCode (*PetscFwkComponentConfigure)(PetscFwk fwk, PetscInt state, PetscObject *component);
+typedef PetscErrorCode (*PetscFwkConfigureComponentFunction)(PetscFwk fwk, const char *configuration, PetscObject *component);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkInitializePackage(const char path[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkFinalizePackage(void);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkCreate(MPI_Comm comm, PetscFwk *fwk);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkDestroy(PetscFwk fwk);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterComponent(PetscFwk fwk, const char url[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterDependence(PetscFwk fwk, const char client_url[], const char server_url[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkGetComponent(PetscFwk fwk, const char url[], PetscObject *component, PetscTruth *found);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkConfigure(PetscFwk fwk, PetscInt state);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkViewConfigurationOrder(PetscFwk fwk, PetscViewer viewerASCII);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterComponent(PetscFwk fwk, const char key[], const char url[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterDependence(PetscFwk fwk, const char client_key[], const char server_key[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkGetComponent(PetscFwk fwk, const char key[], PetscObject *component, PetscTruth *found);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkGetURL(PetscFwk fwk, const char *key, const char **url, PetscTruth *found);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkConfigure(PetscFwk fwk, const char *configuration);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkView(PetscFwk fwk, PetscViewer viewerASCII);
 
 /* 
-   1) 'Create' a PetscFwk fwk, which is created with fwk.state=0
-   2) 'Require' some dependencies by listing the dependent components' URLs. For each newly encountered URL, 
-      which has the form [<path>/<lib>]:<name>, the following is done:
+   1) 'Create' a PetscFwk fwk.
+   2) 'Register' some components by associating keys with urls.  
+      URLs associated with a key can be overwritten with subsequent 'register' calls.
+      Empty urls can be used in 'register' calls, so that dependencies on this key can be declared before its URL is known.
+   3) 'Require' some dependencies by listing the dependent components' keys. 
+   4) Run PetscFwkConfigure on fwk with the 'configuration' string encoding the state each component must be put in.
+   
+   During registration, for each newly encountered URL, which has the form [<path>/<lib>]:<name>, the following is done:
       a) <lib> is located along the <path>, and is loaded  
       b) the configuration subroutine Configure of type PetscFwkComponentConfigure, with the symbol '<name>Configure',
          is loaded from the library or from the current object, if <path>/<lib> is missing.  
-      c) Configure is then run with 'fwk'=fwk, 'state'=fwk.state (which is zero in this case),
-         'component'=component (return parameter), to initialize the component.  
-         component is expected to use fwk's comm for its own creation/initialization.
-      d) More dependency requirements may be posted during each Configure 
-   3) Run PetscFwkConfigure on fwk with 'state' equal to the number of cycles to be executed: 
-      fwk is configured to be in state='state' by going through that many cycles. 
-      a) Components are sorted topologically according to the dependency graph and the state of the fwk is set to 0.
-      b) During each cycle the state of the framework is incremented, components are traversed in the topological order
-         and the corresponding Configure routine is run with 'fwk'=fwk, 'state'=fwk.state, 'component'=component.
+      c) Configure is then run with 'fwk'=fwk, 'configuration'=PETSC_NULL, 'component'=component (return parameter), 
+         to initialize the component.  component is expected to use fwk's comm for its own creation/initialization.
+      d) More dependency requirements may be posted during the initial Configure call.
+
+   During configuration Components are traversed in the topological order and the corresponding Configure routine is run 
+      with 'fwk'=fwk, 'configuration'=configuration, 'component'=component.
+
 */
 #endif
