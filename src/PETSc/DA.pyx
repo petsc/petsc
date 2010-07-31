@@ -227,6 +227,41 @@ cdef class DA(Object):
 
     #
 
+    def setUniformCoordinates(self,
+                              xmin=0, xmax=1,
+                              ymin=0, ymax=1,
+                              zmin=0, zmax=1):
+        cdef PetscReal _xmin = asReal(xmin), _xmax = asReal(xmax)
+        cdef PetscReal _ymin = asReal(ymin), _ymax = asReal(ymax)
+        cdef PetscReal _zmin = asReal(zmin), _zmax = asReal(zmax)
+        CHKERR( DASetUniformCoordinates(self.da,
+                                        _xmin, _xmax,
+                                        _ymin, _ymax,
+                                        _zmin, _zmax) )
+
+    def setCoordinates(self, Vec c not None):
+        CHKERR( DASetCoordinates(self.da, c.vec) )
+
+    def getCoordinates(self):
+        cdef Vec c = Vec()
+        CHKERR( DAGetCoordinates(self.da, &c.vec) )
+        ## PetscIncref(<PetscObject>c.vec)
+        return c
+
+    def getCoordinateDA(self):
+        cdef DA cda = DA()
+        CHKERR( DAGetCoordinateDA(self.da, &cda.da) )
+        ## PetscIncref(<PetscObject>cda.da)
+        return cda
+
+    def getGhostCoordinates(self):
+        cdef Vec gc = Vec()
+        CHKERR( DAGetGhostedCoordinates(self.da, &gc.vec) )
+        ## PetscIncref(<PetscObject>gc.vec)
+        return gc
+
+    #
+
     def createNaturalVector(self):
         cdef Vec vn = Vec()
         CHKERR( DACreateNaturalVector(self.da, &vn.vec) )
