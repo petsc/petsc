@@ -110,7 +110,7 @@ triangle_shared:
     if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling & installing Triangle; this may take several minutes')
-        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make '+os.path.join(libDir, 'libtriangle.'+self.setCompilers.AR_LIB_SUFFIX)+' triangle_shared && make clean', timeout=2500, log = self.framework.log)
+        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make '+os.path.join(libDir, 'libtriangle.'+self.setCompilers.AR_LIB_SUFFIX)+' && make clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on Triangle: '+str(e))
       output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'src', 'triangle.h')+' '+includeDir, timeout=5, log = self.framework.log)
