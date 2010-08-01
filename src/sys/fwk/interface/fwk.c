@@ -318,9 +318,9 @@ PetscErrorCode PetscFwkView(PetscFwk fwk, PetscViewer viewer) {
         ierr = PetscViewerASCIIPrintf(viewer, "\n"); CHKERRQ(ierr);
       }
       id = vertices[i];
-      ierr = PetscViewerASCIIPrintf(viewer, "%d: %s", id, fwk->record[id].url); CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "%d: key:%s, url:%s", id, fwk->record[id].key, fwk->record[id].url); CHKERRQ(ierr);
     }
-    /* ierr = PetscViewerASCIIPrintf(viewer, "\n"); CHKERRQ(ierr); */
+    ierr = PetscViewerASCIIPrintf(viewer, "\n"); CHKERRQ(ierr);
     ierr = PetscFree(vertices); CHKERRQ(ierr);
   }
   else {
@@ -337,9 +337,7 @@ PetscErrorCode PetscFwkConfigure(PetscFwk fwk, const char *configuration){
   PetscObject component;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-
   ierr = PetscFwkCheck(&fwk); CHKERRQ(ierr);
-
   ierr = PetscFwkGraphTopologicalSort(fwk->dep_graph, &N, &vertices); CHKERRQ(ierr);
   for(i = 0; i < N; ++i) {
     id = vertices[i];
@@ -617,6 +615,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkCreate(MPI_Comm comm, PetscFwk *framework
   fwk->record = PETSC_NULL;
   fwk->N = fwk->maxN = 0;
   ierr = PetscFwkGraphCreate(&fwk->dep_graph); CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)fwk,PETSCFWK);CHKERRQ(ierr);
   *framework = fwk;
   PetscFunctionReturn(0);
 }/* PetscFwkCreate() */

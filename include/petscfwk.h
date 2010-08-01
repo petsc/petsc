@@ -5,6 +5,13 @@
 
 extern PETSC_DLLEXPORT PetscClassId PETSC_FWK_CLASSID;
 
+/* 
+   There is only one type implementing PetscFwk class, 
+   so all the code is in the interface and PETSCFWK (below) 
+   is the implementing type name, rather than something like PETSCFWK_BASIC.
+*/
+#define PETSCFWK "petscfwk" 
+
 struct _p_PetscFwk;
 typedef struct _p_PetscFwk *PetscFwk;
 
