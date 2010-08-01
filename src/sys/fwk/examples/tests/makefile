@@ -24,7 +24,7 @@ TESTS = test1
 
 libs: chklib_dir lib shared
 
-test1:
+test1: test1.c
 	make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} EX=test1 ex
 
 EX_DIR     = .
