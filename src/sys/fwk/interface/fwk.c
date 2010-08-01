@@ -443,7 +443,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkGetID_Private(PetscFwk fwk, const char ke
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /* Check whether a component with the given key has already been registered. */
-  if(_found){_found = PETSC_FALSE;}
+  if(_found){*_found = PETSC_FALSE;}
   for(i = 0; i < fwk->N; ++i) {
     ierr = PetscStrcmp(key, fwk->record[i].key, &eq); CHKERRQ(ierr);
     if(eq) {
