@@ -93,15 +93,16 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
     }
   } else {
     try {
-      cusp::multiply(*cudastruct->mat,*(CUSPARRAY *)(xx->spptr),*(CUSPARRAY *)(zz->spptr));
+      ierr = VecCopy_SeqCUDA(yy,zz);CHKERRQ(ierr);
+      cusp::multiply(*cudastruct->mat,*(CUSPARRAY *)(xx->spptr),*cudastruct->tempvec);
       thrust::for_each(
 	 thrust::make_zip_iterator(
 		 thrust::make_tuple(
-				    ((CUSPARRAY *)yy->spptr)->begin(),
+				    cudastruct->tempvec->begin(),
 				    ((CUSPARRAY *)zz->spptr)->begin())),
 	 thrust::make_zip_iterator(
 		 thrust::make_tuple(
-				    ((CUSPARRAY *)yy->spptr)->end(),
+				    cudastruct->tempvec->end(),
 				   ((CUSPARRAY *)zz->spptr)->end())),
 	 VecCUDAPlusEquals());
     } catch(char* ex) {
