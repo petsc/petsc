@@ -55,7 +55,7 @@ struct VecCUDAPlusEquals
   __host__ __device__
   void operator()(Tuple t)
   {
-    thrust::get<1>(t) += thrust::get<0>(t);
+    thrust::get<1>(t) = thrust::get<1>(t) + thrust::get<0>(t);
   }
 };
 
@@ -102,7 +102,7 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
 	 thrust::make_zip_iterator(
 		 thrust::make_tuple(
 				    ((CUSPARRAY *)yy->spptr)->end(),
-				   ((CUSPARRAY *)zz->spptr)->begin())),
+				   ((CUSPARRAY *)zz->spptr)->end())),
 	 VecCUDAPlusEquals());
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
