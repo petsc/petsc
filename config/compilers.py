@@ -50,6 +50,7 @@ class Configure(config.base.Configure):
     names['AR'] = 'No archiver found.'
     names['RANLIB'] = 'No ranlib found.'
     names['LD_SHARED'] = 'No shared linker found.'
+    names['CC_LD'] = 'No C linker found.'
     names['dynamicLinker'] = 'No dynamic linker found.'
     for language in ['C', 'CUDA', 'Cxx', 'FC']:
       self.pushLanguage(language)
