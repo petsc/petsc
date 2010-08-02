@@ -35,7 +35,7 @@ cdef int Fwk_ImportConfigure(
     assert configure_p != NULL
     #
     cdef str url  = bytes2str(url_p)
-    cdef str path = bytes2str(path_p) + '.py'
+    cdef str path = bytes2str(path_p)
     cdef str name = bytes2str(name_p)
     #
     cdef module = fwk_cache.get(path)
