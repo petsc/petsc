@@ -67,7 +67,7 @@ cdef int Fwk_ImportConfigure(
 cdef int Fwk_ComponentConfigure(
     void        *pconfigure,
     PetscFwk    pfwk,
-    const_char  *pconfig, 
+    const_char  *pconfig,
     PetscObject *pcomponent,
     ) except PETSC_ERR_PYTHON with gil:
     #
@@ -94,7 +94,7 @@ cdef int Fwk_ComponentConfigure(
     cdef object result = configure(fwk, config, component)
     if result is not None:
         component = result
-    
+
     if pcomponent != NULL:
         if component is not None:
             PetscIncref(component.obj[0])

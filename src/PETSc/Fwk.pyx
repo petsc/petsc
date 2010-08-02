@@ -33,7 +33,7 @@ cdef class Fwk(Object):
         CHKERR( PetscFwkRegisterComponent(self.fwk, _key, _url) )
 
     def registerDependence(self, clientkey, serverkey):
-        cdef const_char *_clientkey = NULL, 
+        cdef const_char *_clientkey = NULL
         cdef const_char *_serverkey = NULL
         clientkey = str2bytes(clientkey, &_clientkey)
         serverkey = str2bytes(serverkey, &_serverkey)
