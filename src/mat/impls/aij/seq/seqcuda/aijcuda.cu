@@ -110,6 +110,9 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
   }
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   zz->valid_GPU_array = PETSC_CUDA_GPU;
+  ierr = VecView(xx,0);CHKERRQ(ierr);
+  ierr = VecView(zz,0);CHKERRQ(ierr);
+  ierr = MatView(A,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -146,8 +149,8 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
       ridx = a->compressedrow.rindex;
       cudastruct->mat->resize(m,A->cmap->n,a->nz);
       cudastruct->mat->row_offsets.assign(ii,ii+m+1);
-      cudastruct->mat->column_indices.assign(thrust::make_permutation_iterator(a->j,ii),thrust::make_permutation_iterator(a->j,ii)+a->nz);
-      cudastruct->mat->values.assign(thrust::make_permutation_iterator(a->a,ii),thrust::make_permutation_iterator(a->a,ii)+a->nz);
+      cudastruct->mat->column_indices.assign(thrust::make_permutation_iterator(a->j,ii),thrust::make_permutation_iterator(a->j,ii)+m);
+      cudastruct->mat->values.assign(thrust::make_permutation_iterator(a->a,ii),thrust::make_permutation_iterator(a->a,ii)+m);
       cudastruct->indices = new CUSPARRAY;
       cudastruct->indices->assign(ridx,ridx+m);
       cudastruct->tempvec = new CUSPARRAY;
