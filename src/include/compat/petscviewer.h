@@ -5,6 +5,8 @@
 #if (PETSC_VERSION_(2,3,3) || \
      PETSC_VERSION_(2,3,2))
 #define PETSC_VIEWER_HDF5 PETSC_VIEWER_HDF4
+#define PETSC_VIEWER_ASCII_MATRIXMARKET ((PetscViewerFormat)-1)
+#define PETSC_VIEWER_ASCII_PYTHON       ((PetscViewerFormat)-1)
 #endif
 
 #if (PETSC_VERSION_(2,3,3) || \
