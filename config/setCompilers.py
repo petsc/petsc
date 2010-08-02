@@ -353,6 +353,9 @@ class Configure(config.base.Configure):
       msg = 'Cannot compile '+language+' with '+self.getCompiler()+'.'
       self.popLanguage()
       raise RuntimeError(msg)
+    if language == 'CUDA': # do not check CUDA linker since it is never used (and is broken on Mac with -m64)
+      self.popLanguage()
+      return
     if not self.checkLink():
       msg = 'Cannot compile/link '+language+' with '+self.getCompiler()+'.'
       self.popLanguage()
