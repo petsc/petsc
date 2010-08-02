@@ -23,7 +23,7 @@ class Configure(config.base.Configure):
       desc.append('  C Compiler:         '+self.getCompiler()+' '+self.getCompilerFlags())
       if not self.getLinker() == self.getCompiler(): desc.append('  C Linker:           '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
-    if hasattr(self, 'CUDACC'):
+    if hasattr(self, 'CUDAC'):
       self.pushLanguage('CUDA')
       desc.append('  CUDA Compiler:      '+self.getCompiler()+' '+self.getCompilerFlags())
       if not self.getLinker() == self.getCompiler(): desc.append('  CUDA Linker:        '+self.getLinker()+' '+self.getLinkerFlags())
@@ -76,11 +76,12 @@ class Configure(config.base.Configure):
 
     help.addArgument('Compilers', '-with-large-file-io=<bool>', nargs.ArgBool(None, 0, 'Allow IO with files greater then 2 GB'))
 
-    help.addArgument('Compilers', '-CUDACPP=<prog>',        nargs.Arg(None, None, 'Specify the CUDA preprocessor'))
-    help.addArgument('Compilers', '-CUDACPPFLAGS=<string>', nargs.Arg(None, '',   'Specify the CUDA preprocessor options'))
-    help.addArgument('Compilers', '-CUDACC=<prog>',         nargs.Arg(None, None, 'Specify the CUDA compiler'))
+    help.addArgument('Compilers', '-CUDAPP=<prog>',        nargs.Arg(None, None, 'Specify the CUDA preprocessor'))
+    help.addArgument('Compilers', '-CUDAPPFLAGS=<string>', nargs.Arg(None, '',   'Specify the CUDA preprocessor options'))
+    help.addArgument('Compilers', '-CUDAC=<prog>',         nargs.Arg(None, None, 'Specify the CUDA compiler'))
     help.addArgument('Compilers', '-CUDAFLAGS=<string>',    nargs.Arg(None, '',   'Specify the CUDA compiler options'))
-
+    help.addArgument('Compilers', '-CUDAC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the CUDA linker flags'))
+    
 ##    help.addArgument('Compilers', '-LD=<prog>',              nargs.Arg(None, None, 'Specify the executable linker'))
 ##    help.addArgument('Compilers', '-CC_LD=<prog>',           nargs.Arg(None, None, 'Specify the linker for C only'))
 ##    help.addArgument('Compilers', '-CXX_LD=<prog>',          nargs.Arg(None, None, 'Specify the linker for C++ only'))
@@ -336,7 +337,7 @@ class Configure(config.base.Configure):
         setattr(self, flagsArg, self.argDB[flagsArg])
         self.framework.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
       self.popLanguage()
-    for flagsArg in ['CPPFLAGS', 'CUDACPPFLAGS', 'CXXCPPFLAGS', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'sharedLibraryFlags', 'dynamicLibraryFlags']:
+    for flagsArg in ['CPPFLAGS', 'CUDAPPFLAGS', 'CXXCPPFLAGS', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS','sharedLibraryFlags', 'dynamicLibraryFlags']:
       setattr(self, flagsArg, self.argDB[flagsArg])
       self.framework.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
     if 'LIBS' in self.argDB:
@@ -487,16 +488,16 @@ class Configure(config.base.Configure):
     return
 
   def generateCUDACompilerGuesses(self):
-    '''Determine the CUDA compiler using CUDACC, then --with-cudacc, then vendors
+    '''Determine the CUDA compiler using CUDAC, then --with-cudac, then vendors
        - Any given category can be excluded'''
-    if hasattr(self, 'CUDACC'):
-      yield self.CUDACC
-    elif self.framework.argDB.has_key('with-cudacc'):
-      yield self.framework.argDB['with-cudacc']
-      raise RuntimeError('C compiler you provided with -with-cudacc='+self.framework.argDB['with-cudacc']+' does not work')
-    elif self.framework.argDB.has_key('CUDACC'):
-      yield self.framework.argDB['CUDACC']
-      raise RuntimeError('CUDA compiler you provided with -CUDACC='+self.framework.argDB['CUDACC']+' does not work')
+    if hasattr(self, 'CUDAC'):
+      yield self.CUDAC
+    elif self.framework.argDB.has_key('with-cudac'):
+      yield self.framework.argDB['with-cudac']
+      raise RuntimeError('CUDA compiler you provided with -with-cudac='+self.framework.argDB['with-cudac']+' does not work')
+    elif self.framework.argDB.has_key('CUDAC'):
+      yield self.framework.argDB['CUDAC']
+      raise RuntimeError('CUDA compiler you provided with -CUDAC='+self.framework.argDB['CUDAC']+' does not work')
     else:
       vendor = self.vendor
       if not self.vendor is None:
@@ -507,39 +508,39 @@ class Configure(config.base.Configure):
 
   def checkCUDACompiler(self):
     '''Locate a functional CUDA compiler'''
-    if 'with-cudacc' in self.framework.argDB and self.framework.argDB['with-cudacc'] == '0':
-      if 'CUDACC' in self.framework.argDB:
-        del self.framework.argDB['CUDACC']
+    if 'with-cudac' in self.framework.argDB and self.framework.argDB['with-cudac'] == '0':
+      if 'CUDAC' in self.framework.argDB:
+        del self.framework.argDB['CUDAC']
       return
     for compiler in self.generateCUDACompilerGuesses():
       try:
-        if self.getExecutable(compiler, resultName = 'CUDACC'):
+        if self.getExecutable(compiler, resultName = 'CUDAC'):
           self.checkCompiler('CUDA')
           break
       except RuntimeError, e:
         self.logPrint('Error testing CUDA compiler: '+str(e))
-        del self.CUDACC
+        del self.CUDAC
     return
 
   def generateCUDAPreprocessorGuesses(self):
-    '''Determines the CUDA preprocessor from --with-cudacpp, then CUDACPP, then the CUDA compiler'''
+    '''Determines the CUDA preprocessor from --with-cudacpp, then CUDAPP, then the CUDA compiler'''
     if 'with-cudacpp' in self.framework.argDB:
       yield self.framework.argDB['with-cudacpp']
-    elif 'CUDACPP' in self.framework.argDB:
-      yield self.framework.argDB['CUDACPP']
+    elif 'CUDAPP' in self.framework.argDB:
+      yield self.framework.argDB['CUDAPP']
     else:
-      if hasattr(self, 'CUDACC'):
-        yield self.CUDACC+' -E'
+      if hasattr(self, 'CUDAC'):
+        yield self.CUDAC+' -E'
     return
 
   def checkCUDAPreprocessor(self):
     '''Locate a functional CUDA preprocessor'''
     for compiler in self.generateCUDAPreprocessorGuesses():
       try:
-        if self.getExecutable(compiler, resultName = 'CUDACPP'):
+        if self.getExecutable(compiler, resultName = 'CUDAPP'):
           self.pushLanguage('CUDA')
           if not self.checkPreprocess('#include <stdlib.h>\n__global__ void testFunction() {return;};'):
-            raise RuntimeError('Cannot preprocess CUDA with '+self.CUDACPP+'.')
+            raise RuntimeError('Cannot preprocess CUDA with '+self.CUDAPP+'.')
           self.popLanguage()
           return
       except RuntimeError, e:
@@ -1131,7 +1132,7 @@ class Configure(config.base.Configure):
     if self.containsInvalidFlag(output):
       valid = 0
       self.framework.logPrint('Rejecting '+self.language[-1]+' linker flag '+flag+' due to \n'+output)
-    else:
+    if valid:
       self.framework.logPrint('Valid '+self.language[-1]+' linker flag '+flag)
     setattr(self, flagsArg, oldFlags)
     return valid
@@ -1146,7 +1147,7 @@ class Configure(config.base.Configure):
 
   def checkLinkerMac(self):
     '''Tests some Apple Mac specific linker flags'''
-    langMap = {'C':'CC','FC':'FC','Cxx':'CXX'}
+    langMap = {'C':'CC','FC':'FC','Cxx':'CXX','CUDA':'CUDAC'}
     languages = ['C']
     if hasattr(self, 'CXX'):
       languages.append('Cxx')
@@ -1301,12 +1302,12 @@ if (dlclose(handle)) {
     if hasattr(self, 'CPP'):
       self.addSubstitution('CPP', self.CPP)
       self.addSubstitution('CPPFLAGS', self.CPPFLAGS)
-    if hasattr(self, 'CUDACC'):
-      self.addSubstitution('CUDACC', self.CUDACC)
+    if hasattr(self, 'CUDAC'):
+      self.addSubstitution('CUDAC', self.CUDAC)
       self.addSubstitution('CUDAFLAGS', self.CUDAFLAGS)
-    if hasattr(self, 'CUDACPP'):
-      self.addSubstitution('CUDACPP', self.CUDACPP)
-      self.addSubstitution('CUDACPPFLAGS', self.CUDACPPFLAGS)
+    if hasattr(self, 'CUDAPP'):
+      self.addSubstitution('CUDAPP', self.CUDAPP)
+      self.addSubstitution('CUDAPPFLAGS', self.CUDAPPFLAGS)
     if hasattr(self, 'CXX'):
       self.addSubstitution('CXX', self.CXX)
       self.addSubstitution('CXX_CXXFLAGS', self.CXX_CXXFLAGS)

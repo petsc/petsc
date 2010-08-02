@@ -412,7 +412,7 @@ class Configure(script.Script):
     if language in ['C', 'Cxx', 'FC']:
       flagsArg = 'CPPFLAGS'
     elif language == 'CUDA':
-      flagsArg = 'CUDACPPFLAGS'
+      flagsArg = 'CUDAPPFLAGS'
     else:
       raise RuntimeError('Unknown language: '+language)
     return flagsArg

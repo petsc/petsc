@@ -12,8 +12,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.4/downloads/openmpi-1.4.1.tar.gz']
-    #self.download_mpich     = ['http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.3a2/mpich2-1.3a2.tar.gz']
-    self.download_mpich     = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/mpich2-trunk-r6644.tar.gz']
+    self.download_mpich     = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/mpich2-trunk-r6968.tar.gz']
     self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
     self.includes           = ['mpi.h']
@@ -471,16 +470,16 @@ class Configure(config.package.Package):
           fc = os.path.join(os.path.dirname(fc), 'xlf')
           self.framework.log.write('Using IBM f90 compiler, switching to xlf for compiling MPICH\n')
         # now set F90
-        args.append('F90="'+fc+'"')
-        args.append('F90FLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
+        args.append('FC="'+fc+'"')
+        args.append('FCFLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
       else:
-        args.append('--disable-f90')
+        args.append('--disable-fc')
       args.append('F77="'+fc+'"')
       args.append('FFLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
       self.popLanguage()
     else:
       args.append('--disable-f77')
-      args.append('--disable-f90')
+      args.append('--disable-fc')
     if self.framework.argDB['with-shared-libraries'] or self.framework.argDB['download-mpich-shared']:
       if self.compilers.isGCC or config.setCompilers.Configure.isIntel(compiler):
         if config.setCompilers.Configure.isDarwin():
