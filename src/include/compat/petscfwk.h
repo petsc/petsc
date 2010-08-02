@@ -24,23 +24,27 @@ static PetscErrorCode PetscFwkDestroy(PetscFwk fwk){PetscFwk_ERR_SUP}
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkViewConfigurationOrder"
-static PetscErrorCode PetscFwkViewConfigurationOrder(PetscFwk fwk,PetscViewer viewer){PetscFwk_ERR_SUP}
+static PetscErrorCode PetscFwkView(PetscFwk fwk,PetscViewer viewer){PetscFwk_ERR_SUP}
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkRegisterComponent"
-static PetscErrorCode PetscFwkRegisterComponent(PetscFwk fwk,const char url[]){PetscFwk_ERR_SUP}
+static PetscErrorCode PetscFwkRegisterComponent(PetscFwk fwk,const char key[],const char url[]){PetscFwk_ERR_SUP}
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkRegisterDependence"
-static PetscErrorCode PetscFwkRegisterDependence(PetscFwk fwk,const char client_url[],const char server_url[]){PetscFwk_ERR_SUP}
+static PetscErrorCode PetscFwkRegisterDependence(PetscFwk fwk,const char client_key[],const char server_key[]){PetscFwk_ERR_SUP}
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkGetComponent"
-static PetscErrorCode PetscFwkGetComponent(PetscFwk fwk,const char url[],PetscObject *component,PetscTruth *found){PetscFwk_ERR_SUP}
+static PetscErrorCode PetscFwkGetComponent(PetscFwk fwk,const char key[],PetscObject *component,PetscTruth *found){PetscFwk_ERR_SUP}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscFwkGetURL"
+static PetscErrorCode PetscFwkGetURL(PetscFwk fwk, const char key[], const char**_url, PetscTruth *_found) {PetscFwk_ERR_SUP}
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkConfigure"
-static PetscErrorCode PetscFwkConfigure(PetscFwk fwk,PetscInt state){PetscFwk_ERR_SUP}
+static PetscErrorCode PetscFwkConfigure(PetscFwk fwk,const char *configuration){PetscFwk_ERR_SUP}
 
 static PetscFwk PETSC_FWK_DEFAULT_(MPI_Comm comm) {return PETSC_NULL;}
 

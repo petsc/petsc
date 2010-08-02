@@ -6,11 +6,12 @@ cdef extern from "petscsys.h" nogil:
     ctypedef _p_PetscFwk *PetscFwk
     int PetscFwkCreate(MPI_Comm,PetscFwk*)
     int PetscFwkDestroy(PetscFwk)
-    int PetscFwkRegisterComponent(PetscFwk,char[])
+    int PetscFwkRegisterComponent(PetscFwk,char[],char[])
     int PetscFwkRegisterDependence(PetscFwk,char[],char[])
     int PetscFwkGetComponent(PetscFwk,char[],PetscObject*,PetscTruth*)
-    int PetscFwkConfigure(PetscFwk,PetscInt)
-    int PetscFwkViewConfigurationOrder(PetscFwk,PetscViewer)
+    int PetscFwkGetURL(PetscFwk,char[],char*[],PetscTruth*)
+    int PetscFwkConfigure(PetscFwk,char[])
+    int PetscFwkView(PetscFwk,PetscViewer)
     PetscFwk PETSC_FWK_DEFAULT_(MPI_Comm)
 
 # -----------------------------------------------------------------------------
@@ -25,7 +26,7 @@ cdef int Fwk_ImportConfigure(
     const_char *url_p,
     const_char *path_p, 
     const_char *name_p,
-    void         **configure_p,
+    void       **configure_p,
     ) except PETSC_ERR_PYTHON with gil:
     #
     assert url_p != NULL
@@ -66,7 +67,7 @@ cdef int Fwk_ImportConfigure(
 cdef int Fwk_ComponentConfigure(
     void        *pconfigure,
     PetscFwk    pfwk,
-    PetscInt    pstate, 
+    const_char  *pconfig, 
     PetscObject *pcomponent,
     ) except PETSC_ERR_PYTHON with gil:
     #
@@ -74,7 +75,7 @@ cdef int Fwk_ComponentConfigure(
     assert pfwk != NULL
     #
     cdef configure = <object> pconfigure
-    cdef PetscInt state = asInt(pstate)
+    cdef config = bytes2str(pconfig)
     cdef Fwk fwk = <Fwk> Fwk()
     PetscIncref(<PetscObject>pfwk)
     fwk.fwk = pfwk
@@ -90,7 +91,7 @@ cdef int Fwk_ComponentConfigure(
             PetscIncref(pcomponent[0])
             component.obj[0] = pcomponent[0]
 
-    cdef object result = configure(fwk, state, component)
+    cdef object result = configure(fwk, config, component)
     if result is not None:
         component = result
     
@@ -131,7 +132,7 @@ cdef extern from *:
         ) nogil except PETSC_ERR_PYTHON
 
     ctypedef int (*PetscFwkPythonConfigureComponentFunction)(
-        void*, PetscFwk, PetscInt, PetscObject*,
+        void*, PetscFwk, char[], PetscObject *,
         ) nogil except PETSC_ERR_PYTHON
 
     ctypedef int (*PetscFwkPythonPrintErrorFunction)(
