@@ -1107,6 +1107,11 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   if (zz != yy) {
     ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
+#if defined(PETSC_HAVE_CUDA)
+  ierr = VecView(xx,0);CHKERRQ(ierr);
+  ierr = VecView(zz,0);CHKERRQ(ierr);
+  ierr = MatView(A,0);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
