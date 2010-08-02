@@ -84,8 +84,8 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
 				    thrust::make_permutation_iterator(((CUSPARRAY *)zz->spptr)->begin(), cudastruct->indices->begin()))),
  	   thrust::make_zip_iterator(
 		 thrust::make_tuple(
-				   cudastruct->tempvec->end(),
-				   thrust::make_permutation_iterator(((CUSPARRAY *)zz->spptr)->begin() + cudastruct->tempvec->size(),cudastruct->indices->end()))),
+				   cudastruct->tempvec->begin(),
+				   thrust::make_permutation_iterator(((CUSPARRAY *)zz->spptr)->begin(),cudastruct->indices->end()))) + cudastruct->tempvec->size(),
 	   VecCUDAPlusEquals());
       }
     } catch(char* ex) {
