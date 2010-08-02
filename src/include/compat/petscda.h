@@ -1,7 +1,7 @@
 #ifndef _COMPAT_PETSC_DA_H
 #define _COMPAT_PETSC_DA_H
 
-#if PETSC_VERSION_(3,0,0)
+#if (PETSC_VERSION_(3,0,0))
 static PETSC_UNUSED
 PetscErrorCode DASetCoordinates_Compat(DA da,Vec c)
 {
