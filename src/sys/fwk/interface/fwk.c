@@ -396,9 +396,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkParseURL_Private(PetscFwk fwk, const char
   if(n != path) {
     n[-1] = '\0';
   }
-  /* Find and remove the library suffix */
+  /* Find the library suffix and determine the component library type: .so or .py */
   ierr = PetscStrrchr(path,'.',&s);CHKERRQ(ierr);
-  /* Determine the component library type: .so or .py */
   /* FIX: we should really be using PETSc's internally defined suffices */
   if(s != path && s[-1] == '.') {
     if((s[0] == 'a' && s[1] == '\0') || (s[0] == 's' && s[1] == 'o' && s[2] == '\0')){
@@ -412,12 +411,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkParseURL_Private(PetscFwk fwk, const char
            "Unknown library suffix within the URL.\n"
            "Must have url = [<path/><library>:]<name>,\n"
            "where library = <libname>.<suffix>, suffix = .a || .so || .py.\n"
-           "Instead got url %s and suffix %s\n"
+           "Instead got url %s\n"
            "Remember that URL is always truncated to the max allowed length of %d", 
                inurl, s,nlen);     
     }
-    /* Remove the suffix from the library name */
-    s[-1] = '\0';  
   }
   else {
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, 
