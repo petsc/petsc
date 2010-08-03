@@ -246,7 +246,6 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 
   ierr = VecRestoreArray(xcoorl,&zctx.xy);CHKERRQ(ierr);
   ierr = VecRestoreArray(xlocal,&zctx.v);CHKERRQ(ierr);
-  ierr = VecDestroy(xcoor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
