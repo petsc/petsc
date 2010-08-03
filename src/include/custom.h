@@ -35,6 +35,90 @@
 
 /* ---------------------------------------------------------------- */
 
+static PetscErrorCode
+PetscTBEH(MPI_Comm comm,
+          int line,
+          const char *fun,
+          const char* file,
+          const char *dir,
+          PetscErrorCode n,
+          PetscErrorType p,
+          const char *mess,
+          void *ctx)
+{
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+  return PetscTraceBackErrorHandler(line,fun,file,dir,n,p,mess,ctx);
+#else
+  return PetscTraceBackErrorHandler(comm,line,fun,file,dir,n,p,mess,ctx);
+#endif
+}
+
+static PetscErrorCode (*PetscPyEH)
+(MPI_Comm comm,
+ int,const char *,const char*,const char*,
+ PetscErrorCode,PetscErrorType,const char*,void*) = 0;
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+static PetscErrorCode
+PetscPythonErrorHandler(int line,
+                        const char *fun,
+                        const char* file,
+                        const char *dir,
+                        PetscErrorCode n,
+                        int p,
+                        const char *mess,
+                        void *ctx)
+{
+  return PetscPyEH(PETSC_COMM_SELF,
+                   line,fun,file,dir,
+                   (PetscErrorCode)n,
+                   (PetscErrorType)p,
+                   mess,ctx);
+}
+#else
+static PetscErrorCode
+PetscPythonErrorHandler(MPI_Comm comm,
+                        int line,
+                        const char *fun,
+                        const char* file,
+                        const char *dir,
+                        PetscErrorCode n,
+                        PetscErrorType p,
+                        const char *mess,
+                        void *ctx)
+{
+  return PetscPyEH(comm,
+                   line,fun,file,dir,
+                   n,p,mess,ctx);
+}
+#endif
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPushErrorHandlerPython"
+static PetscErrorCode
+PetscPushErrorHandlerPython(void)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscPushErrorHandler(PetscPythonErrorHandler,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPopErrorHandlerPython"
+static PetscErrorCode
+PetscPopErrorHandlerPython(void)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscPopErrorHandler();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* ---------------------------------------------------------------- */
+
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 #define PetscCLASSID(stageLog,index) \

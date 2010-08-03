@@ -129,4 +129,33 @@ cdef class Sys:
         cdef int s = seconds
         CHKERR( PetscSleep(s) )
 
+    # --- xxx ---
+
+    @classmethod
+    def pushErrorHandler(cls, errhandler):
+        if errhandler == "python":
+            CHKERR( PetscPushErrorHandlerPython() )
+        elif errhandler == "debugger":
+            CHKERR( PetscPushErrorHandler(
+                    PetscAttachDebuggerErrorHandler, NULL) )
+        elif errhandler == "emacs":
+            CHKERR( PetscPushErrorHandler(
+                    PetscEmacsClientErrorHandler, NULL) )
+        elif errhandler == "traceback":
+            CHKERR( PetscPushErrorHandler(
+                    PetscTraceBackErrorHandler, NULL) )
+        elif errhandler == "ignore":
+            CHKERR( PetscPushErrorHandler(
+                    PetscIgnoreErrorHandler, NULL) )
+        elif errhandler == "mpiabort":
+            CHKERR( PetscPushErrorHandler(
+                    PetscMPIAbortErrorHandler, NULL) )
+        elif errhandler == "abort":
+            CHKERR( PetscPushErrorHandler(
+                    PetscAbortErrorHandler, NULL) )
+
+    @classmethod
+    def popErrorHandler(cls):
+        CHKERR( PetscPopErrorHandler() )
+    
 # --------------------------------------------------------------------

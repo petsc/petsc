@@ -3,62 +3,11 @@
 
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
-
 typedef enum {
   PETSC_ERROR_INITIAL=1,
   PETSC_ERROR_REPEAT=0,
   PETSC_ERROR_IN_CXX=2
 } PetscErrorType;
-
-static PetscErrorCode (*PetscPythonErrorHandler)
-(MPI_Comm comm,
- int,const char *,const char*,const char*,
- PetscErrorCode,PetscErrorType,const char*,void*) = 0;
-
-static PetscErrorCode
-PetscErrorHandler_Compat(int line,
-                         const char *fun,
-                         const char* file,
-                         const char *dir,
-                         PetscErrorCode n,
-                         int p,
-                         const char *mess,
-                         void *ctx)
-{
-  return PetscPythonErrorHandler(PETSC_COMM_SELF,
-                                 line,fun,file,dir,
-                                 (PetscErrorCode)n,
-                                 (PetscErrorType)p,
-                                 mess,ctx);
-}
-static PetscErrorCode
-PetscTraceBackErrorHandler_Compat(MPI_Comm comm,
-                                  int line,
-                                  const char *fun,
-                                  const char* file,
-                                  const char *dir,
-                                  PetscErrorCode n,
-                                  PetscErrorType p,
-                                  const char *mess,
-                                  void *ctx)
-{
-  return PetscTraceBackErrorHandler(line,fun,file,dir,n,p,mess,ctx);
-}
-#define PetscTraceBackErrorHandler PetscTraceBackErrorHandler_Compat
-
-static PetscErrorCode
-PetscPushErrorHandler_Compat(PetscErrorCode (*handler)
-                             (MPI_Comm comm,
-                              int,const char *,const char*,const char*,
-                              PetscErrorCode,PetscErrorType,
-                              const char*,void*),
-                             void *ctx)
-{
-  PetscPythonErrorHandler = handler;
-  return PetscPushErrorHandler(PetscErrorHandler_Compat,ctx);
-}
-#define PetscPushErrorHandler PetscPushErrorHandler_Compat
-
 #endif
 
 #if (PETSC_VERSION_(3,1,0) || \

@@ -18,12 +18,18 @@ cdef extern from "petscsys.h" nogil:
     ctypedef enum PetscErrorType:
         PETSC_ERROR_INITIAL
         PETSC_ERROR_REPEAT
-    ctypedef int PetscTBF(MPI_Comm,
+    ctypedef int PetscEHF(MPI_Comm,
                           int,char*,char*,char*,
                           int,PetscErrorType,char*,void*)
-    PetscTBF PetscTBEH "PetscTraceBackErrorHandler"
-    int PetscPushErrorHandler(PetscTBF*,void*)
+    PetscEHF PetscAttachDebuggerErrorHandler
+    PetscEHF PetscEmacsClientErrorHandler
+    PetscEHF PetscTraceBackErrorHandler
+    PetscEHF PetscMPIAbortErrorHandler
+    PetscEHF PetscAbortErrorHandler
+    PetscEHF PetscIgnoreErrorHandler
+    int PetscPushErrorHandler(PetscEHF*,void*)
     int PetscPopErrorHandler()
+
     int PetscErrorMessage(int,char*[],char**)
 
     int PetscSplitOwnership(MPI_Comm,PetscInt*,PetscInt*)
@@ -36,8 +42,6 @@ cdef extern from "petscsys.h" nogil:
     int PetscSequentialPhaseBegin(MPI_Comm,int)
     int PetscSequentialPhaseEnd(MPI_Comm,int)
     int PetscSleep(int)
-
-
 
 cdef inline int Sys_SplitSizes(MPI_Comm comm, object size, object bsize,
                                PetscInt *_b, PetscInt *_n, PetscInt *_N) except -1:
