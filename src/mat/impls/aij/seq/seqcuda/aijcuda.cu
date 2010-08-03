@@ -162,6 +162,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
       cudastruct->mat->row_offsets.assign(a->i,a->i+m+1);
       cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
       cudastruct->mat->values.assign(a->a,a->a+a->nz);
+      cudastruct->tempvec = new CUSPARRAY;
       cudastruct->tempvec->resize(m);
     }
   } catch(char* ex) {
