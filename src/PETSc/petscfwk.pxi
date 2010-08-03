@@ -68,16 +68,17 @@ cdef int Fwk_ComponentConfigure(
     void        *pconfigure,
     PetscFwk    pfwk,
     const_char  *pkey,
-    const_char  *pconfig,
+    const_char  *pstage,
     PetscObject *pcomponent,
     ) except PETSC_ERR_PYTHON with gil:
     #
     assert pconfigure != NULL
     assert pfwk != NULL
+    assert pkey != NULL
     #
     cdef configure = <object> pconfigure
     cdef key = bytes2str(pkey)
-    cdef config = bytes2str(pconfig)
+    cdef stage = bytes2str(pstage)
     cdef Fwk fwk = <Fwk> Fwk()
     PetscIncref(<PetscObject>pfwk)
     fwk.fwk = pfwk
@@ -92,7 +93,7 @@ cdef int Fwk_ComponentConfigure(
             component = klass()
             PetscIncref(pcomponent[0])
             component.obj[0] = pcomponent[0]    
-    cdef object result = configure(fwk, key, config, component)
+    cdef object result = configure(fwk, key, stage, component)
     if result is not None:
         component = result
 

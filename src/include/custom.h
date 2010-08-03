@@ -185,7 +185,7 @@ PetscObjectGetClassName(PetscObject obj, const char *class_name[])
 typedef PetscErrorCode (*PetscFwkPythonImportConfigureFunction)
 (const char *url, const char *path, const char *name, void **configure);
 typedef PetscErrorCode (*PetscFwkPythonConfigureComponentFunction)
-(void *configure, PetscFwk fwk, const char *cfg, PetscObject *component);
+(void *configure, PetscFwk fwk, const char *key, const char *stage, PetscObject *component);
 typedef PetscErrorCode (*PetscFwkPythonPrintErrorFunction)(void);
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
