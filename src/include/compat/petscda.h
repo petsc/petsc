@@ -2,6 +2,8 @@
 #define _COMPAT_PETSC_DA_H
 
 #if PETSC_VERSION_(3,0,0)
+#undef __FUNCT__
+#define __FUNCT__ "DASetCoordinates"
 static PETSC_UNUSED
 PetscErrorCode DASetCoordinates_Compat(DA da,Vec c)
 {
@@ -16,17 +18,59 @@ PetscErrorCode DASetCoordinates_Compat(DA da,Vec c)
 #define DASetCoordinates DASetCoordinates_Compat
 #endif
 
+#if (PETSC_VERSION_(3,1,0) ||                    \
+     PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
+#define __FUNCT__ "DAGetCoordinates"
+static PETSC_UNUSED
+PetscErrorCode DAGetCoordinates_Compat(DA da,Vec *c)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = DAGetCoordinates(da,c);CHKERRQ(ierr);
+  if (*c) {ierr = PetscObjectDereference((PetscObject)*c);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+#define DAGetCoordinates DAGetCoordinates_Compat
+#undef __FUNCT__
+#define __FUNCT__ "DAGetCoordinateDA"
+static PETSC_UNUSED
+PetscErrorCode DAGetCoordinateDA_Compat(DA da,DA *cda)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = DAGetCoordinateDA(da,cda);CHKERRQ(ierr);
+  if (*cda) {ierr = PetscObjectDereference((PetscObject)*cda);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+#define DAGetCoordinateDA DAGetCoordinateDA_Compat
+#undef __FUNCT__
+#define __FUNCT__ "DAGetGhostedCoordinates"
+static PETSC_UNUSED
+PetscErrorCode DAGetGhostedCoordinates_Compat(DA da,Vec *c)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = DAGetGhostedCoordinates(da,c);CHKERRQ(ierr);
+  if (*c) {ierr = PetscObjectDereference((PetscObject)*c);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+#define DAGetGhostedCoordinates DAGetGhostedCoordinates_Compat
+#endif
+
 #if (PETSC_VERSION_(2,3,3) || \
      PETSC_VERSION_(2,3,2))
 #define DM_COOKIE DA_COOKIE
 #define DA_XYZGHOSTED ((DAPeriodicType)-1)
 #endif
 
-#if (PETSC_VERSION_(2,3,3) || \
-     PETSC_VERSION_(2,3,2))
+#if PETSC_VERSION_(2,3,3)
+#undef __FUNCT__
+#define __FUNCT__ "DASetCoordinates"
 static PETSC_UNUSED
 PetscErrorCode DASetCoordinates_Compat(DA da,Vec c)
 {
+  Vec            cold;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -38,45 +82,45 @@ PetscErrorCode DASetCoordinates_Compat(DA da,Vec c)
 #define DASetCoordinates DASetCoordinates_Compat
 #endif
 
-#if (PETSC_VERSION_(2,3,3) || \
-     PETSC_VERSION_(2,3,2))
+#if PETSC_VERSION_(2,3,2)
+#undef __FUNCT__
+#define __FUNCT__ "DASetCoordinates"
 static PETSC_UNUSED
-PetscErrorCode DAGetCoordinates_Compat(DA da,Vec *c)
+PetscErrorCode DASetCoordinates_Compat(DA da,Vec c)
 {
+  Vec            cold;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
-  PetscValidPointer(c,2);
-  ierr = DAGetCoordinates(da,c);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)*c);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(c,VEC_COOKIE,2);
+  ierr = DAGetCoordinates(da,&cold);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
+  ierr = DASetCoordinates(da,c);CHKERRQ(ierr);
+  if (cold) {ierr=VecDestroy(cold);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
-#define DAGetCoordinates DAGetCoordinates_Compat
+#define DASetCoordinates DASetCoordinates_Compat
+#undef __FUNCT__
+#define __FUNCT__ "DASetUniformCoordinates"
 static PETSC_UNUSED
-PetscErrorCode DAGetCoordinateDA_Compat(DA da,DA *cda)
+PetscErrorCode DASetUniformCoordinates_Compat(DA da,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
 {
+  Vec            cold;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = DAGetCoordinateDA(da,cda);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)*cda);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  ierr = DAGetCoordinates(da,&cold);CHKERRQ(ierr);
+  ierr = DASetUniformCoordinates(da,xmin,xmax,ymin,ymax,zmin,zmax);CHKERRQ(ierr);
+  if (cold) {ierr=VecDestroy(cold);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
-#define DAGetCoordinateDA DAGetCoordinateDA_Compat
-static PETSC_UNUSED
-PetscErrorCode DAGetGhostedCoordinates_Compat(DA da,Vec *c)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  ierr = DAGetGhostedCoordinates(da,c);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)*c);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#define DAGetGhostedCoordinates DAGetGhostedCoordinates_Compat
+#define DASetUniformCoordinates DASetUniformCoordinates_Compat
 #endif
-
 
 #if (PETSC_VERSION_(2,3,3) || \
      PETSC_VERSION_(2,3,2))
+#undef __FUNCT__
+#define __FUNCT__ "DACreate"
 static PETSC_UNUSED
 PetscErrorCode DACreate_Compat(MPI_Comm comm,PetscInt dim,DAPeriodicType wrap,DAStencilType stencil_type,
 			       PetscInt M, PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,
