@@ -3,7 +3,7 @@
 EXTERN_C_BEGIN
 #undef  __FUNCT__ 
 #define __FUNCT__ "PetscFwkComponentConfigureTestIA"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIA(PetscFwk fwk, const char *conf, PetscObject *component) {
+PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIA(PetscFwk fwk, const char* key, const char *conf, PetscObject *component) {
   MPI_Comm       comm;
   PetscContainer container;
   PetscErrorCode ierr;
@@ -13,7 +13,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIA(PetscFwk fwk, co
     ierr = PetscContainerCreate(comm, &container); CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)container, "TestIA"); CHKERRQ(ierr);
     *component = (PetscObject)container;
-    ierr = PetscPrintf(comm, "%s: created component\n", __FUNCT__); CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "%s: created component %s\n", __FUNCT__, key); CHKERRQ(ierr);
   }
   else {
     container = *((PetscContainer*)component);
@@ -24,7 +24,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIA(PetscFwk fwk, co
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "PetscFwkComponentConfigureTestIB"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIB(PetscFwk fwk, const char* conf, PetscObject *component) {
+PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIB(PetscFwk fwk, const char* key, const char* conf, PetscObject *component) {
   MPI_Comm       comm;
   PetscContainer container;
   PetscErrorCode ierr;
@@ -34,9 +34,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIB(PetscFwk fwk, co
     ierr = PetscContainerCreate(comm, &container); CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)container, "TestIB"); CHKERRQ(ierr);
     *component = (PetscObject)container;
-    ierr = PetscPrintf(comm, "%s: created component\n", __FUNCT__); CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "%s: registering dependence: TestIB --> TestIA\n", __FUNCT__); CHKERRQ(ierr);
-    ierr = PetscFwkRegisterDependence(fwk, "IB", "IA"); CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "%s: created component %s\n", __FUNCT__, key); CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "%s: registering dependence: %s --> IA\n", __FUNCT__, key); CHKERRQ(ierr);
+    ierr = PetscFwkRegisterDependence(fwk, key, "IA"); CHKERRQ(ierr);
   }
   else {
     container = *((PetscContainer*)component);
@@ -47,7 +47,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIB(PetscFwk fwk, co
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "PetscFwkComponentConfigureTestIC"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIC(PetscFwk fwk, const char *conf, PetscObject *component) {
+PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIC(PetscFwk fwk, const char* key, const char *conf, PetscObject *component) {
   MPI_Comm       comm;
   PetscContainer container;
   PetscErrorCode ierr;
@@ -57,7 +57,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIC(PetscFwk fwk, co
     ierr = PetscContainerCreate(comm, &container); CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)container, "TestIC"); CHKERRQ(ierr);
     *component = (PetscObject)container;
-    ierr = PetscPrintf(comm, "%s: created component\n", __FUNCT__); CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "%s: created component %s\n", __FUNCT__, key); CHKERRQ(ierr);
   }
   else {
     container = *((PetscContainer*)component);

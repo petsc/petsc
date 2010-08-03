@@ -20,7 +20,7 @@ EXTERN PetscFwk PETSC_DLLEXPORT PETSC_FWK_DEFAULT_(MPI_Comm);
 #define PETSC_FWK_DEFAULT_WORLD PETSC_FWK_DEFAULT_(PETSC_COMM_WORLD)
 
 
-typedef PetscErrorCode (*PetscFwkConfigureComponentFunction)(PetscFwk fwk, const char *configuration, PetscObject *component);
+typedef PetscErrorCode (*PetscFwkConfigureComponentFunction)(PetscFwk fwk, const char* key, const char *configuration, PetscObject *component);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkInitializePackage(const char path[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkFinalizePackage(void);

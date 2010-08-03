@@ -10,7 +10,7 @@ static PetscTruth PetscFwkPackageInitialized = PETSC_FALSE;
 typedef enum{PETSC_FWK_COMPONENT_SO, PETSC_FWK_COMPONENT_PY} PetscFwkComponentType;
 
 typedef PetscErrorCode (*PetscFwkPythonImportConfigureFunction)(const char *url, const char *path, const char *name, void **configure);
-typedef PetscErrorCode (*PetscFwkPythonConfigureComponentFunction)(void *configure, PetscFwk fwk, const char* configuration, PetscObject *component);
+typedef PetscErrorCode (*PetscFwkPythonConfigureComponentFunction)(void *configure, PetscFwk fwk, const char *key, const char* configuration, PetscObject *component);
 typedef PetscErrorCode (*PetscFwkPythonPrintErrorFunction)(void);
 
 EXTERN_C_BEGIN
@@ -32,7 +32,8 @@ EXTERN_C_END
 #define PETSC_FWK_CONFIGURE_PYTHON(fwk, id, configuration)	        \
   PETSC_FWK_CHECKINIT_PYTHON();						\
   {									\
-    PetscErrorCode ierr;						\
+    PetscErrorCode ierr;                                                \
+    const char *_key  = fwk->record[id].key;                            \
     const char *_url  = fwk->record[id].url;				\
     const char *_path = fwk->record[id].path;				\
     const char *_name = fwk->record[id].name;				\
@@ -43,7 +44,7 @@ EXTERN_C_END
       if (ierr) { PetscFwkPythonPrintError(); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "Python error"); } \
       fwk->record[id].configure = _configure;                                                           \
     }                                                                                                   \
-    ierr = PetscFwkPythonConfigureComponent(_configure, fwk, configuration, &_component);               \
+    ierr = PetscFwkPythonConfigureComponent(_configure, fwk, _key, configuration, &_component);         \
     if (ierr) { PetscFwkPythonPrintError(); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "Python error"); }   \
     fwk->record[id].component = _component;                             \
   }
@@ -334,6 +335,7 @@ PetscErrorCode PetscFwkView(PetscFwk fwk, PetscViewer viewer) {
 PetscErrorCode PetscFwkConfigure(PetscFwk fwk, const char *configuration){
   PetscInt i, id, N, *vertices;
   PetscFwkConfigureComponentFunction configure = PETSC_NULL;
+  char *key;
   PetscObject component;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -343,11 +345,12 @@ PetscErrorCode PetscFwkConfigure(PetscFwk fwk, const char *configuration){
     id = vertices[i];
     configure = PETSC_NULL;
     component = fwk->record[id].component;
+    key       = fwk->record[id].key;
     switch(fwk->record[id].type){
     case PETSC_FWK_COMPONENT_SO:
       configure = (PetscFwkConfigureComponentFunction)fwk->record[id].configure;
       if(configure != PETSC_NULL) {
-        ierr = (*configure)(fwk,configuration,&component); CHKERRQ(ierr);
+        ierr = (*configure)(fwk,key,configuration,&component); CHKERRQ(ierr);
       }
       break;
     case PETSC_FWK_COMPONENT_PY:
@@ -524,14 +527,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterComponentID_Private(PetscFwk fwk,
       /* Load the library designated by 'path' and retrieve from it the configure routine designated by the constructed symbol */
       ierr = PetscDLLibrarySym(((PetscObject)fwk)->comm, &PetscFwkDLList, path, sym, (void**)(&configure)); CHKERRQ(ierr);
       /* Run the configure routine, which should return a valid object or PETSC_NULL */
-      ierr = (*configure)(fwk, PETSC_NULL, &component); CHKERRQ(ierr);
+      ierr = (*configure)(fwk, key, PETSC_NULL, &component); CHKERRQ(ierr);
       fwk->record[id].component = component;
       fwk->record[id].configure = (void *)configure;
     }
     break;
   case PETSC_FWK_COMPONENT_PY:
     PETSC_FWK_CONFIGURE_PYTHON(fwk, id, PETSC_NULL);
-    /* component and nfigure fields are set by PETSC_FWK_CONFIGURE_PYTHON */
+    /* component and configure fields are set by PETSC_FWK_CONFIGURE_PYTHON */
     break;
   default:
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, 
