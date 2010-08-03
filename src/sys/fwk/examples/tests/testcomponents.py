@@ -1,10 +1,10 @@
 from petsc4py import PETSc
 
-def TestIIIA(fwk, conf, component):
+def TestIIIA(fwk, key, conf, component):
     if component is None:
         component = PETSc.Vec().create(fwk.comm)
-        print "Created a new component TestIIIA"
+        print "Created a new component " + str(key)
     else:
         assert isinstance(component, PETSc.Vec)
-    print "Using configuration: " + str(conf)
+    print "TestIIIA: using configuration: " + str(conf)
     return component
