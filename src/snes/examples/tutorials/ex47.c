@@ -3,54 +3,94 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1\n\n";
 #include "petscsnes.h"
 extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*), ComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
-int main(int argc,char **argv) {
-  SNES snes; Vec x,f; Mat J; DA da;
-  PetscInitialize(&argc,&argv,(char *)0,help);
+int main(int argc, char *argv[]) {
+  SNES snes;
+  DA   da;
+  Mat  J;
+  Vec  x, f;
+  PetscErrorCode ierr;
 
-  DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,8,1,1,PETSC_NULL,&da);
-  DACreateGlobalVector(da,&x); VecDuplicate(x,&f);
-  DAGetMatrix(da,MATAIJ,&J);
+  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
 
-  SNESCreate(PETSC_COMM_WORLD,&snes);
-  SNESSetFunction(snes,f,ComputeFunction,da);
-  SNESSetJacobian(snes,J,J,ComputeJacobian,da);
-  SNESSetFromOptions(snes);
-  SNESSolve(snes,PETSC_NULL,x);
+  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-8,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(da,&x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&f);CHKERRQ(ierr);
+  ierr = DAGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
 
-  MatDestroy(J); VecDestroy(x); VecDestroy(f); SNESDestroy(snes); DADestroy(da);
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,f,ComputeFunction,da);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,J,J,ComputeJacobian,da);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+
+  ierr = MatDestroy(J);CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(f);CHKERRQ(ierr);
+  ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = DADestroy(da);CHKERRQ(ierr);
   PetscFinalize();
-  return 0;}
+  return 0;
+}
+
 PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx) {
-  PetscInt i,Mx,xs,xm; PetscScalar *xx,*ff,hx; DA da = (DA) ctx; Vec xlocal;
-  DAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
-  hx     = 1.0/(PetscReal)(Mx-1);
-  DAGetLocalVector(da,&xlocal);DAGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);  DAGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);
-  DAVecGetArray(da,xlocal,&xx); DAVecGetArray(da,f,&ff);
-  DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);
+  DA             da = (DA) ctx;
+  Vec            xlocal;
+  PetscScalar   *xx, *ff, hx;
+  PetscInt       i, Mx, xs, xm;
+  PetscErrorCode ierr;
 
-  for (i=xs; i<xs+xm; i++) {
-    if (i == 0 || i == Mx-1) ff[i] = xx[i]/hx; 
-    else  ff[i] =  (2.0*xx[i] - xx[i-1] - xx[i+1])/hx - hx*PetscExpScalar(xx[i]); 
-  }
-  DAVecRestoreArray(da,xlocal,&xx); DARestoreLocalVector(da,&xlocal);DAVecRestoreArray(da,f,&ff);
-  return 0;}
-PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,void *ctx){
-  DA da = (DA) ctx; PetscInt i,Mx,xm,xs; PetscScalar hx,*xx; Vec xlocal;
-  DAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
-  hx = 1.0/(PetscReal)(Mx-1);
-  DAGetLocalVector(da,&xlocal);DAGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);  DAGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);
-  DAVecGetArray(da,xlocal,&xx);
-  DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);
+  PetscFunctionBegin;
+  ierr = DAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  hx   = 1.0/(PetscReal)(Mx-1);
+  ierr = DAGetLocalVector(da,&xlocal);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,f,&ff);CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  for (i=xs; i<xs+xm; i++) {
-    if (i == 0 || i == Mx-1) { MatSetValue(*J,i,i,1.0/hx,INSERT_VALUES);}
-    else {
-      MatSetValue(*J,i,i-1,-1.0/hx,INSERT_VALUES);
-      MatSetValue(*J,i,i,2.0/hx - hx*PetscExpScalar(xx[i]),INSERT_VALUES);
-      MatSetValue(*J,i,i+1,-1.0/hx,INSERT_VALUES);
+  for(i = xs; i < xs+xm; ++i) {
+    if (i == 0 || i == Mx-1) {
+      ff[i] = xx[i]/hx;
+    } else {
+      ff[i] = (2.0*xx[i] - xx[i-1] - xx[i+1])/hx - hx*PetscExpScalar(xx[i]);
     }
   }
-  MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);  *flag = SAME_NONZERO_PATTERN;
-  DAVecRestoreArray(da,xlocal,&xx);DARestoreLocalVector(da,&xlocal);
-  return 0;}
+  ierr = DAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,f,&ff);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
+PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,void *ctx){
+  DA             da = (DA) ctx;
+  Vec            xlocal;
+  PetscScalar   *xx, hx;
+  PetscInt       i, Mx, xm, xs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  hx = 1.0/(PetscReal)(Mx-1);
+  ierr = DAGetLocalVector(da,&xlocal);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+
+  for (i=xs; i<xs+xm; i++) {
+    if (i == 0 || i == Mx-1) {
+      ierr = MatSetValue(*J,i,i,1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
+    } else {
+      ierr = MatSetValue(*J,i,i-1,-1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValue(*J,i,i,2.0/hx - hx*PetscExpScalar(xx[i]),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValue(*J,i,i+1,-1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  *flag = SAME_NONZERO_PATTERN;
+  ierr = DAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
