@@ -1,10 +1,12 @@
 from petsc4py import PETSc
 
-def Viz(fwk, conf, c):
+def Viz(fwk, key, conf, c):
     if c is None:
         # Create a Fwk instance to serve as the component
         c = PETSc.Fwk().create(fwk.comm)
-    else:
+        fwk.registerDependence(key, "DensityField")
+        return c
+    if conf == "init":
         import numpy
         assert isinstance(c, PETSc.Fwk)
         # Extract a PetscObject with key "DensityField"

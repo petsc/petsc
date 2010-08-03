@@ -3,10 +3,12 @@ petsc4py.init(sys.argv)
 
 from petsc4py import PETSc
 
-def DensityField(fwk, conf, c):
+def DensityField(fwk, key, conf, c):
     if c is None:
         # Create a Fwk to serve as the component
         c = PETSc.Fwk().create(fwk.comm)
+        return c
+    if conf == "init":
         N = 32
         d = 2
         da = PETSc.DA().create(dim=3,dof=d,sizes=(N,N,N))
@@ -21,13 +23,14 @@ def DensityField(fwk, conf, c):
                         v[i,j,k,l] = sin(2*pi*i/N)*sin(2*pi*j/N)*sin(2*pi*k/N)
         c.compose("mesh", da)
         c.compose("density",vec)
-    return c
-
-fwk = PETSc.Fwk().create()
-fwk.registerComponent("DensityField", "./ex1.py:DensityField")
-fwk.registerComponent("Viz", "./ex1_viz.py:Viz")
-#fwk.view()
-fwk.configure("test")
+        return c
+    
+if __name__ == "__main__":
+    fwk = PETSc.Fwk().create()
+    fwk.registerComponent("DensityField", "./ex1.py:DensityField")
+    fwk.registerComponent("Viz", "./ex1_viz.py:Viz")
+    #fwk.view()
+    fwk.configure("test")
 
 import time
 time.sleep(100)
