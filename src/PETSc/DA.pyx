@@ -245,19 +245,19 @@ cdef class DA(Object):
     def getCoordinates(self):
         cdef Vec c = Vec()
         CHKERR( DAGetCoordinates(self.da, &c.vec) )
-        ## PetscIncref(<PetscObject>c.vec)
+        PetscIncref(<PetscObject>c.vec)
         return c
 
     def getCoordinateDA(self):
         cdef DA cda = DA()
         CHKERR( DAGetCoordinateDA(self.da, &cda.da) )
-        ## PetscIncref(<PetscObject>cda.da)
+        PetscIncref(<PetscObject>cda.da)
         return cda
 
     def getGhostCoordinates(self):
         cdef Vec gc = Vec()
         CHKERR( DAGetGhostedCoordinates(self.da, &gc.vec) )
-        ## PetscIncref(<PetscObject>gc.vec)
+        PetscIncref(<PetscObject>gc.vec)
         return gc
 
     #

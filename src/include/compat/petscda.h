@@ -2,6 +2,8 @@
 #define _COMPAT_PETSC_DA_H
 
 #if (PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
+#define __FUNCT__ "DASetCoordinates"
 static PETSC_UNUSED
 PetscErrorCode DASetCoordinates_Compat(DA da,Vec c)
 {
@@ -14,6 +16,46 @@ PetscErrorCode DASetCoordinates_Compat(DA da,Vec c)
   PetscFunctionReturn(0);
 }
 #define DASetCoordinates DASetCoordinates_Compat
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
+#define __FUNCT__ "DAGetCoordinates"
+static PETSC_UNUSED
+PetscErrorCode DAGetCoordinates_Compat(DA da,Vec *c)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = DAGetCoordinates(da,c);CHKERRQ(ierr);
+  if (*c) {ierr = PetscObjectDereference((PetscObject)*c);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+#define DAGetCoordinates DAGetCoordinates_Compat
+#undef __FUNCT__
+#define __FUNCT__ "DAGetCoordinateDA"
+static PETSC_UNUSED
+PetscErrorCode DAGetCoordinateDA_Compat(DA da,DA *cda)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = DAGetCoordinateDA(da,cda);CHKERRQ(ierr);
+  if (*cda) {ierr = PetscObjectDereference((PetscObject)*cda);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+#define DAGetCoordinateDA DAGetCoordinateDA_Compat
+#undef __FUNCT__
+#define __FUNCT__ "DAGetGhostedCoordinates"
+static PETSC_UNUSED
+PetscErrorCode DAGetGhostedCoordinates_Compat(DA da,Vec *c)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = DAGetGhostedCoordinates(da,c);CHKERRQ(ierr);
+  if (*c) {ierr = PetscObjectDereference((PetscObject)*c);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+#define DAGetGhostedCoordinates DAGetGhostedCoordinates_Compat
 #endif
 
 #if (PETSC_VERSION_(3,0,0))
