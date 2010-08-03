@@ -110,6 +110,7 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
     } 
   }
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+  ierr = WaitForGPU();CHKERRCUDA(ierr);
   zz->valid_GPU_array = PETSC_CUDA_GPU;
   /*ierr = VecView(xx,0);CHKERRQ(ierr);
   ierr = VecView(zz,0);CHKERRQ(ierr);
