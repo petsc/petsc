@@ -67,6 +67,7 @@ cdef int Fwk_ImportConfigure(
 cdef int Fwk_ComponentConfigure(
     void        *pconfigure,
     PetscFwk    pfwk,
+    const_char  *pkey,
     const_char  *pconfig,
     PetscObject *pcomponent,
     ) except PETSC_ERR_PYTHON with gil:
@@ -75,6 +76,7 @@ cdef int Fwk_ComponentConfigure(
     assert pfwk != NULL
     #
     cdef configure = <object> pconfigure
+    cdef key = bytes2str(pkey)
     cdef config = bytes2str(pconfig)
     cdef Fwk fwk = <Fwk> Fwk()
     PetscIncref(<PetscObject>pfwk)
@@ -89,9 +91,8 @@ cdef int Fwk_ComponentConfigure(
             klass = TypeRegistryGet(classid)
             component = klass()
             PetscIncref(pcomponent[0])
-            component.obj[0] = pcomponent[0]
-
-    cdef object result = configure(fwk, config, component)
+            component.obj[0] = pcomponent[0]    
+    cdef object result = configure(fwk, key, config, component)
     if result is not None:
         component = result
 
@@ -132,7 +133,7 @@ cdef extern from *:
         ) nogil except PETSC_ERR_PYTHON
 
     ctypedef int (*PetscFwkPythonConfigureComponentFunction)(
-        void*, PetscFwk, char[], PetscObject *,
+        void*, PetscFwk, char[], char[], PetscObject *,
         ) nogil except PETSC_ERR_PYTHON
 
     ctypedef int (*PetscFwkPythonPrintErrorFunction)(
