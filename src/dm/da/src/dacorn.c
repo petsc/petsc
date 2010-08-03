@@ -25,7 +25,7 @@
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DAGetGhostCorners(), DAGetCoordinates(), DASetUniformCoordinates(). DAGetGhostCoordinates(), DAGetCoordinateDA()
+.seealso: DAGetGhostCorners(), DAGetCoordinates(), DASetUniformCoordinates(). DAGetGhostedCoordinates(), DAGetCoordinateDA()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DA da,Vec c)
 {
@@ -75,12 +75,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DA da,Vec c)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinates(DA da,Vec *c)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(c,2);
-  if (da->coordinates) {ierr = PetscObjectReference((PetscObject) da->coordinates);CHKERRQ(ierr);}
   *c = da->coordinates;
   PetscFunctionReturn(0);
 }
@@ -159,7 +156,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
       ierr = PetscFree3(lc,ld,le);CHKERRQ(ierr);
     }
   }
-  ierr = PetscObjectReference((PetscObject) da->da_coordinates);CHKERRQ(ierr);
   *cda = da->da_coordinates;
   PetscFunctionReturn(0);
 }
@@ -204,12 +200,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostedCoordinates(DA da,Vec *c)
     DA dac;
     ierr = DAGetCoordinateDA(da,&dac);CHKERRQ(ierr);
     ierr = DACreateLocalVector(dac,&da->ghosted_coordinates);CHKERRQ(ierr);
-    if (dac == da) {ierr = PetscObjectDereference((PetscObject)dac);CHKERRQ(ierr);}
     ierr = DAGlobalToLocalBegin(dac,da->coordinates,INSERT_VALUES,da->ghosted_coordinates);CHKERRQ(ierr);
     ierr = DAGlobalToLocalEnd(dac,da->coordinates,INSERT_VALUES,da->ghosted_coordinates);CHKERRQ(ierr);
-    ierr = DADestroy(dac);CHKERRQ(ierr);
   }
-  ierr = PetscObjectReference((PetscObject) da->ghosted_coordinates);CHKERRQ(ierr);
   *c = da->ghosted_coordinates;
   PetscFunctionReturn(0);
 }
@@ -368,7 +361,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalBoundingBox(DA da,PetscReal lmin[],Pe
     }
   }
   ierr = VecRestoreArrayRead(coords,&local_coords);CHKERRQ(ierr);
-  ierr = VecDestroy(coords);CHKERRQ(ierr);
   if (lmin) {ierr = PetscMemcpy(lmin,min,dim*sizeof(PetscReal));CHKERRQ(ierr);}
   if (lmax) {ierr = PetscMemcpy(lmax,max,dim*sizeof(PetscReal));CHKERRQ(ierr);}
   PetscFunctionReturn(0);

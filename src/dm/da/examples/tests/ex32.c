@@ -35,7 +35,6 @@ static PetscErrorCode TestQ2Q1DA( void )
   ierr = DAGetCoordinates(Q2_da,&coords);CHKERRQ(ierr);
   ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,mx,my,mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,0,0,0,&Q1_da);CHKERRQ(ierr);
   ierr = DASetCoordinates(Q1_da,coords);CHKERRQ(ierr);
-  ierr = VecDestroy(coords);CHKERRQ(ierr);
 
   /* Get ghost coordinates one way */
   ierr = DAGetGhostedCoordinates(Q1_da,&gcoords);CHKERRQ(ierr);
@@ -49,16 +48,12 @@ static PetscErrorCode TestQ2Q1DA( void )
 
   ierr = CompareGhostedCoords(gcoords,gcoords2);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(cda,&gcoords2);CHKERRQ(ierr);
-  ierr = DADestroy(cda);CHKERRQ(ierr);
 
   ierr = VecScale(coords,10.0);CHKERRQ(ierr);
   ierr = VecScale(gcoords,10.0);CHKERRQ(ierr);
   ierr = DAGetGhostedCoordinates(Q1_da,&gcoords2);CHKERRQ(ierr);
   ierr = CompareGhostedCoords(gcoords,gcoords2);CHKERRQ(ierr);
-  ierr = VecDestroy(coords);CHKERRQ(ierr);
-  ierr = VecDestroy(gcoords2);CHKERRQ(ierr);
 
-  ierr = VecDestroy(gcoords);CHKERRQ(ierr);
   ierr = DADestroy(Q2_da);CHKERRQ(ierr);
   ierr = DADestroy(Q1_da);CHKERRQ(ierr);
   PetscFunctionReturn(0);

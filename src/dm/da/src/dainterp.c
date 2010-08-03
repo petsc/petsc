@@ -125,8 +125,6 @@ PetscErrorCode DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   if (vcoors) {
     ierr = DAVecRestoreArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
     ierr = DAVecRestoreArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
-    ierr = VecDestroy(cvcoors);CHKERRQ(ierr);
-    ierr = VecDestroy(vcoors);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -370,8 +368,6 @@ PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
   if (vcoors) {
     ierr = DAVecRestoreArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
     ierr = DAVecRestoreArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
-    ierr = VecDestroy(cvcoors);CHKERRQ(ierr);
-    ierr = VecDestroy(vcoors);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -813,8 +809,6 @@ PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
   if (vcoors) {
     ierr = DAVecRestoreArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
     ierr = DAVecRestoreArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
-    ierr = VecDestroy(cvcoors);CHKERRQ(ierr);
-    ierr = VecDestroy(vcoors);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

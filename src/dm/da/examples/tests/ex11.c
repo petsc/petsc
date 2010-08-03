@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   ierr = DAGetCoordinates(da,&coors);CHKERRQ(ierr);
   ierr = VecGetArray(coors,&xy);CHKERRQ(ierr);
 
-ierr = VecView(coors,PETSC_VIEWER_STDOUT_SELF);
+  ierr = VecView(coors,PETSC_VIEWER_STDOUT_SELF);
 
   /* Set values into local vectors */
   ierr = VecGetArray(local,&alocal);CHKERRQ(ierr);
@@ -63,7 +63,6 @@ ierr = VecView(coors,PETSC_VIEWER_STDOUT_SELF);
   }
   ierr = VecRestoreArray(local,&alocal);CHKERRQ(ierr);
   ierr = VecRestoreArray(coors,&xy);CHKERRQ(ierr);
-  ierr = VecDestroy(coords);CHKERRQ(ierr);
 
   ierr = DALocalToGlobal(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
 

@@ -93,7 +93,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DA da,PetscReal xmin,Pe
   ierr = DASetCoordinates(da,xcoor);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,xcoor);CHKERRQ(ierr);
   ierr = VecDestroy(xcoor);CHKERRQ(ierr);
-  ierr = DADestroy(cda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -245,7 +244,6 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   }
   ierr = VecRestoreArrayRead(xcoor,&xg);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xin,&array);CHKERRQ(ierr);
-  ierr = VecDestroy(xcoor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

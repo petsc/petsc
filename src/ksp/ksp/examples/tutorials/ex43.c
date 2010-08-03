@@ -379,8 +379,6 @@ static PetscErrorCode DACoordViewGnuplot2d(DA da,const char prefix[])
     }
   }
   ierr = DAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
-  ierr = VecDestroy(coords);CHKERRQ(ierr);
-  ierr = DADestroy(cda);CHKERRQ(ierr);
 
   ierr = PetscFClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -449,8 +447,6 @@ static PetscErrorCode DAViewGnuplot2d(DA da,Vec fields,const char comment[],cons
   ierr = VecDestroy(local_fields);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
-  ierr = VecDestroy(coords);CHKERRQ(ierr);
-  ierr = DADestroy(cda);CHKERRQ(ierr);
 
   ierr = PetscFClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -513,8 +509,6 @@ static PetscErrorCode DAViewCoefficientsGnuplot2d(DA da,Vec fields,const char co
   }
   ierr = DAVecRestoreArray(da,local_fields,&_coefficients);CHKERRQ(ierr);
   ierr = VecDestroy(local_fields);CHKERRQ(ierr);
-
-  ierr = DADestroy(cda);CHKERRQ(ierr);
 
   ierr = PetscFClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -834,8 +828,6 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DA stokes_da,DA properties_da,Vec p
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
-  ierr = VecDestroy(coords);CHKERRQ(ierr);
-  ierr = DADestroy(cda);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(properties_da,local_properties,&props);CHKERRQ(ierr);
   ierr = VecDestroy(local_properties);CHKERRQ(ierr);
@@ -909,8 +901,6 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DA stokes_da,DA properties_da,Vec
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
-  ierr = VecDestroy(coords);CHKERRQ(ierr);
-  ierr = DADestroy(cda);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(properties_da,local_properties,&props);CHKERRQ(ierr);
   ierr = VecDestroy(local_properties);CHKERRQ(ierr);
@@ -1003,8 +993,6 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DA stokes_da,DA properties_da,Vec p
 
 
   ierr = DAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
-  ierr = VecDestroy(coords);CHKERRQ(ierr);
-  ierr = DADestroy(cda);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(properties_da,local_properties,&props);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(properties_da,&local_properties);CHKERRQ(ierr);
@@ -1064,9 +1052,7 @@ static PetscErrorCode DACreateSolCx(PetscReal eta0,PetscReal eta1,PetscReal xc,P
 
   ierr = DALocalToGlobal(da,local_X,INSERT_VALUES,X);CHKERRQ(ierr);
 
-  ierr = DADestroy(cda);CHKERRQ(ierr);
   ierr = VecDestroy(local_X);CHKERRQ(ierr);
-  ierr = VecDestroy(coords);CHKERRQ(ierr);
 
   *_da = da;
   *_X  = X;
@@ -1190,8 +1176,6 @@ static PetscErrorCode DAIntegrateErrors(DA stokes_da,Vec X,Vec X_analytic)
 
 
   ierr = DAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
-  ierr = VecDestroy(coords);CHKERRQ(ierr);
-  ierr = DADestroy(cda);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(stokes_da,X_analytic_local,&stokes_analytic);CHKERRQ(ierr);
   ierr = VecDestroy(X_analytic_local);CHKERRQ(ierr);
@@ -1426,12 +1410,8 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
     }
   }
   ierr = DAVecRestoreArray(prop_cda,prop_coords,&_prop_coords);CHKERRQ(ierr);
-  ierr = VecDestroy(prop_coords);CHKERRQ(ierr);
-  ierr = DADestroy(prop_cda);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(vel_cda,vel_coords,&_vel_coords);CHKERRQ(ierr);
-  ierr = VecDestroy(vel_coords);CHKERRQ(ierr);
-  ierr = DADestroy(vel_cda);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(da_prop,l_properties,&element_props);CHKERRQ(ierr);
   ierr = DALocalToGlobalBegin(da_prop,l_properties,properties);CHKERRQ(ierr);
@@ -1652,8 +1632,6 @@ static PetscErrorCode BCApply_EAST(DA da,PetscInt d_idx,PetscScalar bc_val,Mat A
   ierr = PetscFree(bc_global_ids);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
-  ierr = VecDestroy(coords);CHKERRQ(ierr);
-  ierr = DADestroy(cda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1726,8 +1704,6 @@ static PetscErrorCode BCApply_WEST(DA da,PetscInt d_idx,PetscScalar bc_val,Mat A
   ierr = PetscFree(bc_global_ids);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
-  ierr = VecDestroy(coords);CHKERRQ(ierr);
-  ierr = DADestroy(cda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1800,8 +1776,6 @@ static PetscErrorCode BCApply_NORTH(DA da,PetscInt d_idx,PetscScalar bc_val,Mat 
   ierr = PetscFree(bc_global_ids);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
-  ierr = VecDestroy(coords);CHKERRQ(ierr);
-  ierr = DADestroy(cda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1875,8 +1849,6 @@ static PetscErrorCode BCApply_SOUTH(DA da,PetscInt d_idx,PetscScalar bc_val,Mat 
   ierr = PetscFree(bc_global_ids);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
-  ierr = VecDestroy(coords);CHKERRQ(ierr);
-  ierr = DADestroy(cda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
