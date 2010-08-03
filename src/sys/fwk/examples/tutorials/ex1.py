@@ -29,8 +29,7 @@ fwk.registerComponent("Viz", "./ex1_viz.py:Viz")
 #fwk.view()
 fwk.configure("test")
 
-
-for i in range(10000000):
-    pass
+import time
+time.sleep(3)
 
 del fwk
