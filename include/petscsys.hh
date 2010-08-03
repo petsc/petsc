@@ -48,7 +48,9 @@ namespace PETSc {
     inline void operator=(const Point& p) {for(int d = 0; d < dim; ++d) {x[d] = p.x[d];}}
     inline bool operator==(const Point& p) {for(int d = 0; d < dim; ++d) {if (x[d] != p.x[d]) return false;} return true;}
     inline void operator+=(const Point& p) {for(int d = 0; d < dim; ++d) {x[d] += p.x[d];}}
+    inline void operator+=(const value_type& c) {for(int d = 0; d < dim; ++d) {x[d] += c;}}
     inline void operator-=(const Point& p) {for(int d = 0; d < dim; ++d) {x[d] -= p.x[d];}}
+    inline void operator-=(const value_type& c) {for(int d = 0; d < dim; ++d) {x[d] -= c;}}
     template<int d>
     static bool lessThan(const Point& a, const Point &b) {
       return a.x[d] < b.x[d];
