@@ -4,7 +4,7 @@ def Viz(fwk, key, conf, c):
     if c is None:
         # Create a Fwk instance to serve as the component
         c = PETSc.Fwk().create(fwk.comm)
-        fwk.registerDependence(key, "DensityField")
+        fwk.registerDependence("DensityField",key)
         return c
     if conf == "init":
         import numpy

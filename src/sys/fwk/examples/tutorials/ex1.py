@@ -30,9 +30,9 @@ if __name__ == "__main__":
     fwk.registerComponent("DensityField", "./ex1.py:DensityField")
     fwk.registerComponent("Viz", "./ex1_viz.py:Viz")
     #fwk.view()
-    fwk.configure("test")
+    fwk.configure("init")
 
-import time
-time.sleep(100)
+    import time
+    time.sleep(1)
 
-del fwk
+    del fwk
