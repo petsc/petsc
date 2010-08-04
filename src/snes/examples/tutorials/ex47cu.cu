@@ -8,6 +8,7 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1 using GPU\n\n
 #include "petsccuda.h"
 
 extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*), ComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscTruth useCUDA = PETSC_FALSE;
 
 int main(int argc,char **argv) 
 {
@@ -16,8 +17,15 @@ int main(int argc,char **argv)
   Mat            J;
   DA             da;
   PetscErrorCode ierr;
+  char           *tmp,typeName[256];
+  PetscTruth     flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-da_vec_type",typeName,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscStrstr(typeName,"cuda",&tmp);CHKERRQ(ierr);
+    if (tmp) useCUDA = PETSC_TRUE;
+  }
 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-8,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DACreateGlobalVector(da,&x); VecDuplicate(x,&f);CHKERRQ(ierr);
@@ -66,7 +74,6 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   DA             da = (DA) ctx; 
   Vec            xlocal;
   PetscErrorCode ierr;
-  PetscTruth     useCUDA = PETSC_FALSE;
 
   ierr = DAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   hx     = 1.0/(PetscReal)(Mx-1);
@@ -75,25 +82,25 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   ierr = DAGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
 
   if (useCUDA) {
-    ierr = VecCUDACopyToGPU(x);CHKERRQ(ierr);
+    ierr = VecCUDACopyToGPU(xlocal);CHKERRQ(ierr);
     ierr = VecCUDAAllocateCheck(f);CHKERRQ(ierr);
-    try{
+    try {
       thrust::for_each(
 		       thrust::make_zip_iterator(
 						 thrust::make_tuple(
 								    ((CUSPARRAY*)f->spptr)->begin(),
-								    ((CUSPARRAY*)x->spptr)->begin(),
-								    ((CUSPARRAY*)x->spptr)->begin() + 1,
-								    ((CUSPARRAY*)x->spptr)->begin() - 1,
+								    ((CUSPARRAY*)xlocal->spptr)->begin(),
+								    ((CUSPARRAY*)xlocal->spptr)->begin() + 1,
+								    ((CUSPARRAY*)xlocal->spptr)->begin() - 1,
 								    thrust::counting_iterator<int>(0),
 								    thrust::constant_iterator<int>(x->map->n),
 								    thrust::constant_iterator<PetscScalar>(hx))),
 		       thrust::make_zip_iterator(
 						 thrust::make_tuple(
 								    ((CUSPARRAY*)f->spptr)->end(),
-								    ((CUSPARRAY*)x->spptr)->end(),
-								    ((CUSPARRAY*)x->spptr)->end() + 1,
-								    ((CUSPARRAY*)x->spptr)->end() - 1,
+								    ((CUSPARRAY*)xlocal->spptr)->end(),
+								    ((CUSPARRAY*)xlocal->spptr)->end() + 1,
+								    ((CUSPARRAY*)xlocal->spptr)->end() - 1,
 								    thrust::counting_iterator<int>(0) + x->map->n,
 								    thrust::constant_iterator<int>(x->map->n),
 								    thrust::constant_iterator<PetscScalar>(hx))),
