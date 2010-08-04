@@ -47,18 +47,24 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
 
   ierr = DAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   hx     = 1.0/(PetscReal)(Mx-1);
-  ierr = DAGetLocalVector(da,&xlocal);DAGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DAGetLocalVector(da,&xlocal);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,xlocal,&xx); DAVecGetArray(da,f,&ff);CHKERRQ(ierr);
-  ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  for (i=xs; i<xs+xm; i++) {
-    if (i == 0 || i == Mx-1) ff[i] = xx[i]/hx; 
-    else  ff[i] =  (2.0*xx[i] - xx[i-1] - xx[i+1])/hx - hx*PetscExpScalar(xx[i]); 
+  if (useCUDA) {
+  } else {
+    ierr = DAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
+    ierr = DAVecGetArray(da,f,&ff);CHKERRQ(ierr);
+    ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    
+    for (i=xs; i<xs+xm; i++) {
+      if (i == 0 || i == Mx-1) ff[i] = xx[i]/hx; 
+      else  ff[i] =  (2.0*xx[i] - xx[i-1] - xx[i+1])/hx - hx*PetscExpScalar(xx[i]); 
+    }
+    ierr = DAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(da,f,&ff);CHKERRQ(ierr);
+    ierr = DARestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
   }
-  ierr = DAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,f,&ff);CHKERRQ(ierr);
   return 0;
 
 }
