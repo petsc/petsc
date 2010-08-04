@@ -144,7 +144,6 @@ PetscErrorCode DAView_VTK(DA da, PetscViewer viewer)
     ierr = VecView(natural, viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = VecDestroy(natural);CHKERRQ(ierr);
-    ierr = DADestroy(dac);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

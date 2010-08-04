@@ -225,7 +225,7 @@ typedef struct {
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsCreate(PetscDraw,PetscInt,PetscDrawViewPorts**);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsCreateRect(PetscDraw,PetscInt,PetscInt,PetscDrawViewPorts**);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsDestroy(PetscDrawViewPorts*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsSet(PetscDrawViewPorts*,int);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsSet(PetscDrawViewPorts*,PetscInt);
 
 /*S
      PetscDrawAxis - Manages X-Y axis
@@ -268,7 +268,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawLGAddPoints(PetscDrawLG,int,Petsc
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawLGDraw(PetscDrawLG);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawLGPrint(PetscDrawLG);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawLGReset(PetscDrawLG);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawLGSetDimension(PetscDrawLG,int);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawLGSetDimension(PetscDrawLG,PetscInt);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawLGGetAxis(PetscDrawLG,PetscDrawAxis *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawLGGetDraw(PetscDrawLG,PetscDraw *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawLGIndicateDataPoints(PetscDrawLG);

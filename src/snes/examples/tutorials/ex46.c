@@ -280,8 +280,6 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
     }
   }
   ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-  ierr = VecDestroy(coordinates);CHKERRQ(ierr);
-  ierr = DADestroy(coordDA);CHKERRQ(ierr);
   ierr = PetscLogFlops(11*info->ym*info->xm);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 

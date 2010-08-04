@@ -16,7 +16,7 @@ PetscErrorCode main(int argc, char *argv[]) {
   ierr = PetscFwkRegisterComponent(fwk, "IC", "${PETSC_DIR}/${PETSC_ARCH}/lib/libtestcomponents.so:TestIC");    CHKERRQ(ierr);
   ierr = PetscFwkRegisterComponent(fwk, "IIC", "${PETSC_DIR}/${PETSC_ARCH}/lib/libtestcomponents.so:TestIIC");  CHKERRQ(ierr);
   ierr = PetscFwkRegisterDependence(fwk, "IIB", "IB"); CHKERRQ(ierr);
-  ierr = PetscFwkRegisterDependence(fwk,"IIA", "IA"); CHKERRQ(ierr); 
+  ierr = PetscFwkRegisterDependence(fwk, "IIA", "IA"); CHKERRQ(ierr); 
 
   CHKERRQ(ierr);
   /*

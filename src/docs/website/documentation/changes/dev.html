@@ -195,6 +195,9 @@ from void** to void* to avoid the need for an explicit cast (the
 argument still has the meaning of a pointer to d-dimensionally indexed
 array of user-defined node type, old code will still compile correctly
 but the cast is no longer necessary).</li>
+        <li>DAGetCoordinates(), DAGetGhostedCoordinates(), and
+DAGetCoordinateDA() now return borrowed references.  The returned object
+should not be destroyed by the user.</li>
       </ul>
       <p><u><b>DMMG:</b></u></p>
       <ul>
