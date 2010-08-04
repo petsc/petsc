@@ -629,6 +629,9 @@ EXTERN_C_END
        By default it also sets the nonzero structure and puts in the zero entries. To prevent setting 
        the nonzero pattern call DASetMatPreallocateOnly()
 
+       When you call MatView() on this matrix it is displayed using the global natural ordering, NOT in the ordering used
+       internally by PETSc.
+
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DASetBlockFills(), DASetMatPreallocateOnly()
 
 @*/
