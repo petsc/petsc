@@ -125,8 +125,20 @@ int main(int argc,char **args)
     fclose(ufile);
   }
  
+  /* Write matrix, rhs and exact solution in Petsc binary file */
+  ierr = PetscPrintf(PETSC_COMM_SELF,"\n Write matrix in binary to 'matrix.dat' ...\n");CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"matrix.dat",FILE_MODE_WRITE,&view);CHKERRQ(ierr);
   ierr = MatView(A,view);CHKERRQ(ierr);
+
+  if (flg_b){ /* Write rhs in Petsc binary file */
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\n Write rhs in binary to 'matrix.dat' ...\n");CHKERRQ(ierr);
+    ierr = VecView(b,view);CHKERRQ(ierr);
+  }
+  if (flg_u){
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\n Write exact solution in binary to 'matrix.dat' ...\n");CHKERRQ(ierr);
+    ierr = VecView(u,view);CHKERRQ(ierr);
+  }
+
   /* Check accuracy of the data */
   if (flg_A & flg_b & flg_u){
     ierr = VecDuplicate(u,&u_tmp);CHKERRQ(ierr); 
@@ -134,17 +146,12 @@ int main(int argc,char **args)
     ierr = VecAXPY(u_tmp,-1.0,b);CHKERRQ(ierr);
     ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
     printf("\n Accuracy of the reading data: | b - A*u |_2 : %g \n",res_norm); 
-
-    /* Write the matrix, rhs and exact solution in Petsc binary file */
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\n Write matrix and rhs in binary to 'matrix.dat' ...\n");CHKERRQ(ierr);
-    ierr = VecView(b,view);CHKERRQ(ierr);
-    ierr = VecView(u,view);CHKERRQ(ierr);
-
-    ierr = VecDestroy(b);CHKERRQ(ierr);
-    ierr = VecDestroy(u);CHKERRQ(ierr);
     ierr = VecDestroy(u_tmp);CHKERRQ(ierr);
   }
+
   ierr = MatDestroy(A);CHKERRQ(ierr);
+  if (flg_b) {ierr = VecDestroy(b);CHKERRQ(ierr);}
+  if (flg_u) {ierr = VecDestroy(u);CHKERRQ(ierr);}
   ierr = PetscViewerDestroy(view);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
