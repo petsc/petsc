@@ -23,7 +23,7 @@ def DensityField(fwk, key, conf, c):
                         v[i,j,k,l] = sin(2*pi*i/N)*sin(2*pi*j/N)*sin(2*pi*k/N)
         c.compose("mesh", da)
         c.compose("density",vec)
-        return c
+    return c
     
 if __name__ == "__main__":
     fwk = PETSc.Fwk().create()
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     #fwk.view()
     fwk.configure("init")
 
-    import time
-    time.sleep(1)
+    for i in range(10):
+        fwk.configure("run")
 
     del fwk
