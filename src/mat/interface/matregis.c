@@ -27,13 +27,13 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAdj(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Shell(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Composite(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_CSRPERM(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqCSRPERM(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPICSRPERM(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJPERM(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJPERM(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJPERM(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_CRL(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqCRL(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPICRL(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJCRL(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCRL(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJCRL(Mat);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Scatter(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BlockMat(Mat);
@@ -91,13 +91,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATMPIAIJ,         path,"MatCreate_MPIAIJ",      MatCreate_MPIAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQAIJ,         path,"MatCreate_SeqAIJ",      MatCreate_SeqAIJ);CHKERRQ(ierr);
 
-  ierr = MatRegisterDynamic(MATCSRPERM,        path,"MatCreate_CSRPERM",  MatCreate_CSRPERM);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATMPICSRPERM,     path,"MatCreate_MPICSRPERM",  MatCreate_MPICSRPERM);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSEQCSRPERM,     path,"MatCreate_SeqCSRPERM",  MatCreate_SeqCSRPERM);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATAIJPERM,        path,"MatCreate_AIJPERM",    MatCreate_AIJPERM);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATMPIAIJPERM,     path,"MatCreate_MPIAIJPERM", MatCreate_MPIAIJPERM);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSEQAIJPERM,     path,"MatCreate_SeqAIJPERM", MatCreate_SeqAIJPERM);CHKERRQ(ierr);
 
-  ierr = MatRegisterDynamic(MATCRL,            path,"MatCreate_CRL",         MatCreate_CRL);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSEQCRL,         path,"MatCreate_SeqCRL",      MatCreate_SeqCRL);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATMPICRL,         path,"MatCreate_MPICRL",      MatCreate_MPICRL);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATAIJCRL,         path,"MatCreate_AIJCRL",     MatCreate_AIJCRL);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSEQAIJCRL,      path,"MatCreate_SeqAIJCRL",  MatCreate_SeqAIJCRL);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATMPIAIJCRL,      path,"MatCreate_MPIAIJCRL",  MatCreate_MPIAIJCRL);CHKERRQ(ierr);
 
   ierr = MatRegisterDynamic(MATBAIJ,           path,"MatCreate_BAIJ",       MatCreate_BAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMPIBAIJ,        path,"MatCreate_MPIBAIJ",    MatCreate_MPIBAIJ);CHKERRQ(ierr);

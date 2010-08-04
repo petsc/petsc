@@ -4968,8 +4968,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetCommunicationStructs(Mat A, Vec *lvec, P
 }
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICRL(Mat,const MatType,MatReuse,Mat*);
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICSRPERM(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPIAIJCRL(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPIAIJPERM(Mat,const MatType,MatReuse,Mat*);
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPISBAIJ(Mat,const MatType,MatReuse,Mat*);
 EXTERN_C_END
 
@@ -5141,12 +5141,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDiagonalScaleLocal_C",
 				     "MatDiagonalScaleLocal_MPIAIJ",
 				     MatDiagonalScaleLocal_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaij_mpicsrperm_C",
-                                     "MatConvert_MPIAIJ_MPICSRPERM",
-                                      MatConvert_MPIAIJ_MPICSRPERM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaij_mpicrl_C",
-                                     "MatConvert_MPIAIJ_MPICRL",
-                                      MatConvert_MPIAIJ_MPICRL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaij_mpiaijperm_C",
+                                     "MatConvert_MPIAIJ_MPIAIJPERM",
+                                      MatConvert_MPIAIJ_MPIAIJPERM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaij_mpiaijcrl_C",
+                                     "MatConvert_MPIAIJ_MPIAIJCRL",
+                                      MatConvert_MPIAIJ_MPIAIJCRL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaij_mpisbaij_C",
                                      "MatConvert_MPIAIJ_MPISBAIJ",
                                       MatConvert_MPIAIJ_MPISBAIJ);CHKERRQ(ierr);
