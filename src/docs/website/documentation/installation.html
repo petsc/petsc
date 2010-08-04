@@ -916,6 +916,32 @@ Check config/config/asterix-tops.py for an example.<br>
         <li>To test&nbsp; do: 'cd src/tops; make examples'<br>
         </li>
       </ul>
+      <hr>
+      <h3><a name="CUDA"><font color="#551a8b">Preliminary instructions
+for using PETSc/CUDA:</font></a></h3>
+Hardware/Software used: NVidia GT200 [Tesla C1060] on Intel Xeon server
+with Ubuntu 10.04 x86_64<br>
+      <ul>
+        <li>install CUDA-3.1, Thrust-v1.2.1, Cusp-v0.1 in default
+locations [along with compatible nvidia kernel driver]</li>
+        <li>make sure nvcc is in PATH, and LD_LIBRARY_PATH is set
+correctly to CUDA libs</li>
+        <li>verify CUDA installation with Nvidia CUDA SDK [by compiling 
+the SDK - and then running 'deviceQuery' &amp;&amp; 'binomialOptions -type=double']</li>
+        <li>configure and build current petsc-dev with
+./config/examples/arch-cuda-double.py</li>
+        <li>run a sample example with:</li>
+      </ul>
+      <span style="color: rgb(255, 0, 0);">cd
+src/snes/examples/tutorials</span><br style="color: rgb(255, 0, 0);">
+      <span style="color: rgb(255, 0, 0);">make ex19</span><br
+ style="color: rgb(255, 0, 0);">
+      <span style="color: rgb(255, 0, 0);">./ex19 -da_vec_type mpicuda
+-da_mat_type mpiaijcuda -pc_type none -dmmg_nlevels 1 -da_grid_x 100
+-da_grid_y 100 -log_summary -mat_no_inode -preload off&nbsp;
+-cuda_synchronize</span><br>
+      <br>
+      <hr>
       <p></p>
       <p><font color="#551a8b"><b><a
  href="installation.html#Docs:%20%20Installation">Return
