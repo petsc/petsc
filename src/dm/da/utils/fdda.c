@@ -632,6 +632,9 @@ EXTERN_C_END
        When you call MatView() on this matrix it is displayed using the global natural ordering, NOT in the ordering used
        internally by PETSc.
 
+       In general it is easiest to use MatSetValuesStencil() or MatSetValuesLocal() to put values into the matrix because MatSetValues() requires 
+       the indices for the global numbering for DAs which is complicated.
+
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DASetBlockFills(), DASetMatPreallocateOnly()
 
 @*/
