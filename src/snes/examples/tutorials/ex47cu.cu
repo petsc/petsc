@@ -5,6 +5,8 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1 using GPU\n\n
 
 #include "petscda.h"
 #include "petscsnes.h"
+#include "petsccuda.h"
+
 extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*), ComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 int main(int argc,char **argv) 
@@ -17,7 +19,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,8,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-8,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DACreateGlobalVector(da,&x); VecDuplicate(x,&f);CHKERRQ(ierr);
   ierr = DAGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
 
@@ -37,6 +39,26 @@ int main(int argc,char **argv)
   return 0;
 }
 
+struct ApplyStencil
+{
+	template <typename Tuple>
+	__host__ __device__
+	void operator()(Tuple t)
+	{
+		/* f = (2*x_i - x_(i+1) - x_(i-1))/h */
+	  /* note that we have yet to do anything with the endpoints */
+	     thrust::get<0>(t) = 1;
+		if ((thrust::get<4>(t) > 0) && (thrust::get<4>(t) < thrust::get<5>(t)-1)) {
+		  thrust::get<0>(t) = (2.0*thrust::get<1>(t) - thrust::get<2>(t) - thrust::get<3>(t)) / (thrust::get<6>(t)) - (thrust::get<6>(t))*exp(thrust::get<1>(t));
+		} else if (thrust::get<4>(t) == 0) {
+		  thrust::get<0>(t) = thrust::get<1>(t) / (thrust::get<6>(t));
+		} else if (thrust::get<4>(t) == thrust::get<5>(t)-1) {
+		  thrust::get<0>(t) = thrust::get<1>(t) / (thrust::get<6>(t));
+		} 
+		
+	}
+};
+
 PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx) 
 {
   PetscInt       i,Mx,xs,xm;
@@ -44,6 +66,7 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   DA             da = (DA) ctx; 
   Vec            xlocal;
   PetscErrorCode ierr;
+  PetscTruth     useCUDA = PETSC_FALSE;
 
   ierr = DAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   hx     = 1.0/(PetscReal)(Mx-1);
@@ -52,6 +75,35 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   ierr = DAGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
 
   if (useCUDA) {
+    ierr = VecCUDACopyToGPU(x);CHKERRQ(ierr);
+    ierr = VecCUDAAllocateCheck(f);CHKERRQ(ierr);
+    try{
+      thrust::for_each(
+		       thrust::make_zip_iterator(
+						 thrust::make_tuple(
+								    ((CUSPARRAY*)f->spptr)->begin(),
+								    ((CUSPARRAY*)x->spptr)->begin(),
+								    ((CUSPARRAY*)x->spptr)->begin() + 1,
+								    ((CUSPARRAY*)x->spptr)->begin() - 1,
+								    thrust::counting_iterator<int>(0),
+								    thrust::constant_iterator<int>(x->map->n),
+								    thrust::constant_iterator<PetscScalar>(hx))),
+		       thrust::make_zip_iterator(
+						 thrust::make_tuple(
+								    ((CUSPARRAY*)f->spptr)->end(),
+								    ((CUSPARRAY*)x->spptr)->end(),
+								    ((CUSPARRAY*)x->spptr)->end() + 1,
+								    ((CUSPARRAY*)x->spptr)->end() - 1,
+								    thrust::counting_iterator<int>(0) + x->map->n,
+								    thrust::constant_iterator<int>(x->map->n),
+								    thrust::constant_iterator<PetscScalar>(hx))),
+		       ApplyStencil());
+    }
+    catch(char* all){
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Thrust is not working\n");CHKERRQ(ierr);
+    }
+    f->valid_GPU_array = PETSC_CUDA_GPU;
+    ierr = PetscObjectStateIncrease((PetscObject)f);CHKERRQ(ierr);
   } else {
     ierr = DAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
     ierr = DAVecGetArray(da,f,&ff);CHKERRQ(ierr);
@@ -65,6 +117,8 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
     ierr = DAVecRestoreArray(da,f,&ff);CHKERRQ(ierr);
     ierr = DARestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
   }
+  //  VecView(x,0);printf("f\n");
+  //  VecView(f,0);
   return 0;
 
 }
