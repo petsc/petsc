@@ -26,6 +26,10 @@
    The output parameter, g, is a regular PETSc vector that should be destroyed
    with a call to VecDestroy() when usage is finished.
 
+   When you view this vector (or one obtained via VecDuplicate()) it is printed in the global natural ordering NOT 
+   in the PETSc parallel global ordering that is used internally. Similarly VecLoad() into this vector loads from a global natural ordering. 
+   This means that vectors saved to disk from one DA parallel distribution can be reloaded into a different DA parallel distribution correctly.
+
 .keywords: distributed array, create, global, distributed, vector
 
 .seealso: DACreateLocalVector(), VecDuplicate(), VecDuplicateVecs(),
