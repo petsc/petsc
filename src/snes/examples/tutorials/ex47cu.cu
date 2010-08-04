@@ -69,11 +69,13 @@ struct ApplyStencil
 
 PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx) 
 {
-  PetscInt       i,Mx,xs,xm;
+  PetscInt       i,Mx,xs,xm,xstartshift,xendshift,fstart;
   PetscScalar    *xx,*ff,hx;
   DA             da = (DA) ctx; 
   Vec            xlocal;
   PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
+  MPI_Comm       comm;
 
   ierr = DAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   hx     = 1.0/(PetscReal)(Mx-1);
@@ -84,25 +86,31 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   if (useCUDA) {
     ierr = VecCUDACopyToGPU(xlocal);CHKERRQ(ierr);
     ierr = VecCUDAAllocateCheck(f);CHKERRQ(ierr);
+    ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    if (rank) xstartshift = 1; else xstartshift = 0;
+    if (rank != size-1) xendshift = 1; else xendshift = 0;
+    ierr = VecGetOwnershipRange(f,&fstart,PETSC_NULL);CHKERRQ(ierr);
     try {
       thrust::for_each(
 		       thrust::make_zip_iterator(
 						 thrust::make_tuple(
 								    ((CUSPARRAY*)f->spptr)->begin(),
-								    ((CUSPARRAY*)xlocal->spptr)->begin(),
-								    ((CUSPARRAY*)xlocal->spptr)->begin() + 1,
-								    ((CUSPARRAY*)xlocal->spptr)->begin() - 1,
-								    thrust::counting_iterator<int>(0),
-								    thrust::constant_iterator<int>(x->map->n),
+								    ((CUSPARRAY*)xlocal->spptr)->begin()+xstartshift,
+								    ((CUSPARRAY*)xlocal->spptr)->begin()+xstartshift + 1,
+								    ((CUSPARRAY*)xlocal->spptr)->begin()+xstartshift - 1,
+								    thrust::counting_iterator<int>(fstart),
+								    thrust::constant_iterator<int>(Mx),
 								    thrust::constant_iterator<PetscScalar>(hx))),
 		       thrust::make_zip_iterator(
 						 thrust::make_tuple(
 								    ((CUSPARRAY*)f->spptr)->end(),
-								    ((CUSPARRAY*)xlocal->spptr)->end(),
-								    ((CUSPARRAY*)xlocal->spptr)->end() + 1,
-								    ((CUSPARRAY*)xlocal->spptr)->end() - 1,
-								    thrust::counting_iterator<int>(0) + x->map->n,
-								    thrust::constant_iterator<int>(x->map->n),
+								    ((CUSPARRAY*)xlocal->spptr)->end()-xendshift,
+								    ((CUSPARRAY*)xlocal->spptr)->end()-xendshift + 1,
+								    ((CUSPARRAY*)xlocal->spptr)->end()-xendshift - 1,
+								    thrust::counting_iterator<int>(fstart) + x->map->n,
+								    thrust::constant_iterator<int>(Mx),
 								    thrust::constant_iterator<PetscScalar>(hx))),
 		       ApplyStencil());
     }
