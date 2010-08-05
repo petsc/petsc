@@ -105,11 +105,11 @@ cdef enum PetscOptType:
 cdef getpair(prefix, name, char **pr, char **nm):
     # --
     cdef char *p = str2cp(prefix)
-    if p and p[0] == c'-':
+    if p != NULL and p[0] == c'-':
         p = &p[1]
     # --
     cdef char *n = str2cp(name)
-    if n and n[0] != c'-':
+    if n != NULL and n[0] != c'-':
         name = '-' + name
         n = str2cp(name)
     # --
