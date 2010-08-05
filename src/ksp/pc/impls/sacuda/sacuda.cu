@@ -42,14 +42,13 @@ typedef struct {
 static PetscErrorCode PCSetUp_SACUDA(PC pc)
 {
   PC_SACUDA      *sa = (PC_SACUDA*)pc->data;
-  PetscTruth     flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
+  PetscTruth     flg = PETSC_FALSE;
   PetscErrorCode ierr;
-  cusp::coo_matrix<PetscInt,PetscScalar,cusp::device_memory> tempmat;
+  SeqAIJCUDA_Container *gpustruct;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUDA,&flg1);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATMPIAIJCUDA,&flg2);CHKERRQ(ierr);
-  if (!(flg1 || flg2)) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Currently only handles CUDA matrices");
+  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUDA,&flg);CHKERRQ(ierr);;
+  if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Currently only handles CUDA matrices");
   if (pc->setupcalled != 0){
     try {
       delete sa->SACUDA;
@@ -58,12 +57,11 @@ static PetscErrorCode PCSetUp_SACUDA(PC pc)
     } 
   }
   try {
-    tempmat    = *(CUSPMATRIX *)(pc->pmat->spptr);
-    sa->SACUDA = new cudasaprecond(tempmat);
+    gpustruct  = (SeqAIJCUDA_Container *)(pc->pmat->spptr);
+    sa->SACUDA = new cudasaprecond(*(CUSPMATRIX*)gpustruct->mat);
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
   } 
-  PetscLogObjectParent(pc,sa->SACUDA);
   PetscFunctionReturn(0);
 }
 
@@ -86,21 +84,20 @@ static PetscErrorCode PCApply_SACUDA(PC pc,Vec x,Vec y)
 {
   PC_SACUDA      *sac = (PC_SACUDA*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth     flg1 = PETSC_FALSE, flg2 = PETSC_FALSE, flg3 = PETSC_FALSE, flg4 = PETSC_FALSE;
+  PetscTruth     flg1,flg2;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)x,VECSEQCUDA,&flg1);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)x,VECMPICUDA,&flg2);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)y,VECSEQCUDA,&flg3);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)y,VECMPICUDA,&flg4);CHKERRQ(ierr);
-  if (!((flg1 || flg2) && (flg3 || flg4))) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP, "Currently only handles CUDA vectors");
+  ierr = PetscTypeCompare((PetscObject)y,VECSEQCUDA,&flg2);CHKERRQ(ierr);
+  if (!(flg1 && flg2)) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP, "Currently only handles CUDA vectors");
   if (!sac->SACUDA) {
     ierr = PCSetUp_SACUDA(pc);CHKERRQ(ierr);
   }
   ierr = VecCUDACopyToGPU(x);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(y);CHKERRQ(ierr);
   try {
-    cusp::multiply(*(sac->SACUDA),*(CUSPARRAY *)(x->spptr),*(CUSPARRAY *)(y->spptr));
+    cusp::multiply(*sac->SACUDA,*(CUSPARRAY *)(x->spptr),*(CUSPARRAY *)(y->spptr));
+    y->valid_GPU_array = PETSC_CUDA_GPU;
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
   } 
