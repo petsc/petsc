@@ -570,6 +570,17 @@ class Configure(config.package.Package):
     '''Check if mpicc, mpicxx etc binaries exist - and update setCompilers() database.
     The input arguments are the names of the binaries specified by the respective pacakges MPICH/LAM.'''
 
+    # Both MPICH and MVAPICH now depend on LD_LIBRARY_PATH for sharedlibraries.
+    # So using LD_LIBRARY_PATH in configure - and -Wl,-rpath in makefiles
+    if self.framework.argDB['with-shared-libraries']:
+      if 'LD_LIBRARY_PATH' in os.environ:
+        ldPath=os.environ['LD_LIBRARY_PATH']
+      else:
+        ldPath=''
+      if ldPath == '': ldPath = os.path.join(installDir,'lib')
+      else: ldPath += ':' + os.path.join(installDir,'lib')
+      os.environ['LD_LIBRARY_PATH'] = ldPath
+
     # Initialize to empty
     mpicc=''
     mpicxx=''
