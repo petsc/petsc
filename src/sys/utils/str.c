@@ -727,7 +727,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrrstr(const char a[],const char b[],char *
 -  b - string to find
 
    Output Parameter:
-.  tmp - location of occurance
+.  tmp - location of occurance, is a PETSC_NULL if the string is not found
 
    Notes: Not for use in Fortran
 

@@ -28,34 +28,37 @@ typedef struct _p_Mat*           Mat;
 E*/
 #define MatType char*
 #define MATSAME            "same"
-#define MATSEQMAIJ         "seqmaij"
-#define MATMPIMAIJ         "mpimaij"
 #define MATMAIJ            "maij"
+#define MATSEQMAIJ           "seqmaij"
+#define MATMPIMAIJ           "mpimaij"
 #define MATIS              "is"
-#define MATSEQAIJ          "seqaij"
-#define MATMPIAIJ          "mpiaij"
 #define MATAIJ             "aij"
+#define MATSEQAIJ            "seqaij"
+#define MATMPIAIJ            "mpiaij"
+#define MATAIJCRL              "aijcrl"
+#define MATSEQAIJCRL             "seqaijcrl"
+#define MATMPIAIJCRL             "mpiaijcrl"
+#define MATAIJCUDA             "aijcuda"
+#define MATSEQAIJCUDA            "seqaijcuda"
+#define MATMPIAIJCUDA            "mpiaijcuda"
+#define MATAIJPERM             "aijperm"
+#define MATSEQAIJPERM            "seqaijperm"
+#define MATMPIAIJPERM            "mpiaijperm"
 #define MATSHELL           "shell"
-#define MATSEQDENSE        "seqdense"
-#define MATMPIDENSE        "mpidense"
 #define MATDENSE           "dense"
-#define MATSEQBAIJ         "seqbaij"
-#define MATMPIBAIJ         "mpibaij"
+#define MATSEQDENSE          "seqdense"
+#define MATMPIDENSE          "mpidense"
 #define MATBAIJ            "baij"
+#define MATSEQBAIJ           "seqbaij"
+#define MATMPIBAIJ           "mpibaij"
 #define MATMPIADJ          "mpiadj"
-#define MATSEQSBAIJ        "seqsbaij"
-#define MATMPISBAIJ        "mpisbaij"
 #define MATSBAIJ           "sbaij"
+#define MATSEQSBAIJ          "seqsbaij"
+#define MATMPISBAIJ          "mpisbaij"
 #define MATDAAD            "daad"
 #define MATMFFD            "mffd"
 #define MATNORMAL          "normal"
 #define MATLRC             "lrc"
-#define MATSEQCSRPERM      "seqcsrperm"
-#define MATMPICSRPERM      "mpicsrperm"
-#define MATCSRPERM         "csrperm"
-#define MATSEQCRL          "seqcrl"
-#define MATMPICRL          "mpicrl"
-#define MATCRL             "crl"
 #define MATSCATTER         "scatter"
 #define MATBLOCKMAT        "blockmat"
 #define MATCOMPOSITE       "composite"
@@ -66,12 +69,7 @@ E*/
 #define MATHYPRESTRUCT     "hyprestruct"
 #define MATHYPRESSTRUCT    "hypresstruct"
 #define MATSUBMATRIX       "submatrix"
-#define MATSEQAIJCUDA      "seqaijcuda"
-#define MATMPIAIJCUDA      "mpiaijcuda"
-#define MATAIJCUDA         "aijcuda"
-
 #define MATDD              "matdd"
-
 #define MATIM              "matim"
 
 
@@ -311,8 +309,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNormal(Mat,Mat*);
 PetscPolymorphicFunction(MatCreateNormal,(Mat mat),(mat,&A),Mat,A)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateLRC(Mat,Mat,Mat,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,ISLocalToGlobalMapping,Mat*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqCRL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPICRL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJCRL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJCRL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateScatter(MPI_Comm,VecScatter,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatScatterSetVecScatter(Mat,VecScatter);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatScatterGetVecScatter(Mat,VecScatter*);

@@ -2,10 +2,10 @@
 
 #include "../src/mat/impls/aij/mpi/mpiaij.h"
 #undef __FUNCT__  
-#define __FUNCT__ "MatCreateMPICSRPERM"
+#define __FUNCT__ "MatCreateMPIAIJPERM"
 /*@C
-   MatCreateMPICSRPERM - Creates a sparse parallel matrix whose local 
-   portions are stored as SEQCSRPERM matrices (a matrix class that inherits 
+   MatCreateMPIAIJPERM - Creates a sparse parallel matrix whose local 
+   portions are stored as SEQAIJPERM matrices (a matrix class that inherits 
    from SEQAIJ but includes some optimizations to allow more effective 
    vectorization).  The same guidelines that apply to MPIAIJ matrices for 
    preallocating the matrix storage apply here as well.
@@ -68,7 +68,7 @@
    If o_nnz, d_nnz are specified, then o_nz, and d_nz are ignored.
 
    When calling this routine with a single process communicator, a matrix of
-   type SEQCSRPERM is returned.  If a matrix of type MPICSRPERM is desired 
+   type SEQAIJPERM is returned.  If a matrix of type MPIAIJPERM is desired 
    for this type of communicator, use the construction mechanism:
      MatCreate(...,&A); MatSetType(A,MPIAIJ); MatMPIAIJSetPreallocation(A,...);
 
@@ -87,9 +87,9 @@
 
 .keywords: matrix, cray, sparse, parallel
 
-.seealso: MatCreate(), MatCreateSeqCSRPERM(), MatSetValues()
+.seealso: MatCreate(), MatCreateSeqAIJPERM(), MatSetValues()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPICSRPERM(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJPERM(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -99,40 +99,40 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPICSRPERM(MPI_Comm comm,PetscInt m,P
   ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
-    ierr = MatSetType(*A,MATMPICSRPERM);CHKERRQ(ierr);
+    ierr = MatSetType(*A,MATMPIAIJPERM);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(*A,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
   } else {
-    ierr = MatSetType(*A,MATSEQCSRPERM);CHKERRQ(ierr);
+    ierr = MatSetType(*A,MATSEQAIJPERM);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(*A,d_nz,d_nnz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
-extern PetscErrorCode MatConvert_SeqAIJ_SeqCSRPERM(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat,const MatType,MatReuse,Mat*);
 extern PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatMPIAIJSetPreallocation_MPICSRPERM"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation_MPICSRPERM(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
+#define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJPERM"
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation_MPIAIJPERM(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   Mat_MPIAIJ     *b = (Mat_MPIAIJ*)B->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatMPIAIJSetPreallocation_MPIAIJ(B,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
-  ierr = MatConvert_SeqAIJ_SeqCSRPERM(b->A, MATSEQCSRPERM, MAT_REUSE_MATRIX, &b->A);CHKERRQ(ierr);
-  ierr = MatConvert_SeqAIJ_SeqCSRPERM(b->B, MATSEQCSRPERM, MAT_REUSE_MATRIX, &b->B);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_SeqAIJPERM(b->A, MATSEQAIJPERM, MAT_REUSE_MATRIX, &b->A);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_SeqAIJPERM(b->B, MATSEQAIJPERM, MAT_REUSE_MATRIX, &b->B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatConvert_MPIAIJ_MPICSRPERM"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICSRPERM(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
+#define __FUNCT__ "MatConvert_MPIAIJ_MPIAIJPERM"
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPIAIJPERM(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;
@@ -142,10 +142,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICSRPERM(Mat A,const MatTy
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr = PetscObjectChangeTypeName( (PetscObject) B, MATMPICSRPERM);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName( (PetscObject) B, MATMPIAIJPERM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAIJSetPreallocation_C",
-				     "MatMPIAIJSetPreallocation_MPICSRPERM",
-				     MatMPIAIJSetPreallocation_MPICSRPERM);CHKERRQ(ierr);
+				     "MatMPIAIJSetPreallocation_MPIAIJPERM",
+				     MatMPIAIJSetPreallocation_MPIAIJPERM);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }
@@ -154,39 +154,39 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatCreate_MPICSRPERM"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPICSRPERM(Mat A)
+#define __FUNCT__ "MatCreate_MPIAIJPERM"
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJPERM(Mat A)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatConvert_MPIAIJ_MPICSRPERM(A,MATMPICSRPERM,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatConvert_MPIAIJ_MPIAIJPERM(A,MATMPIAIJPERM,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 /*MC
-   MATCSRPERM - MATCSRPERM = "CSRPERM" - A matrix type to be used for sparse matrices.
+   MATAIJPERM - MATAIJPERM = "AIJPERM" - A matrix type to be used for sparse matrices.
 
-   This matrix type is identical to MATSEQCSRPERM when constructed with a single process communicator,
-   and MATMPICSRPERM otherwise.  As a result, for single process communicators, 
+   This matrix type is identical to MATSEQAIJPERM when constructed with a single process communicator,
+   and MATMPIAIJPERM otherwise.  As a result, for single process communicators, 
   MatSeqAIJSetPreallocation() is supported, and similarly MatMPIAIJSetPreallocation() is supported 
   for communicators controlling multiple processes.  It is recommended that you call both of
   the above preallocation routines for simplicity.
 
    Options Database Keys:
-. -mat_type csrperm - sets the matrix type to "CSRPERM" during a call to MatSetFromOptions()
+. -mat_type aijperm - sets the matrix type to "AIJPERM" during a call to MatSetFromOptions()
 
   Level: beginner
 
-.seealso: MatCreateMPICSRPERM(), MATSEQCSRPERM, MATMPICSRPERM
+.seealso: MatCreateMPIAIJPERM(), MATSEQAIJPERM, MATMPIAIJPERM
 M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatCreate_CSRPERM"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_CSRPERM(Mat A) 
+#define __FUNCT__ "MatCreate_AIJPERM"
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJPERM(Mat A) 
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -194,9 +194,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_CSRPERM(Mat A)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = MatSetType(A,MATSEQCSRPERM);CHKERRQ(ierr);
+    ierr = MatSetType(A,MATSEQAIJPERM);CHKERRQ(ierr);
   } else {
-    ierr = MatSetType(A,MATMPICSRPERM);CHKERRQ(ierr);
+    ierr = MatSetType(A,MATMPIAIJPERM);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
