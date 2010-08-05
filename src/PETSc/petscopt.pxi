@@ -104,12 +104,12 @@ cdef getpair(prefix, name, const_char **pr, const_char **nm):
     # --
     cdef const_char *p = NULL
     prefix = str2bytes(prefix, &p)
-    if p and p[0] == c'-':
+    if p != NULL and p[0] == c'-':
         p = &p[1]
     # --
     cdef const_char *n = NULL
     name = str2bytes(name, &n)
-    if n and n[0] != c'-':
+    if n != NULL and n[0] != c'-':
         name = b'-' + name
         name = str2bytes(name, &n)
     # --
