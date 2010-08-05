@@ -813,7 +813,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatRetrieveValues_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatConvert_seqaij_seqsbaij_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatConvert_seqaij_seqbaij_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatConvert_seqaij_seqcsrperm_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatConvert_seqaij_seqaijperm_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatIsTranspose_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSeqAIJSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSeqAIJSetPreallocationCSR_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -3241,7 +3241,7 @@ extern PetscErrorCode MatGetFactor_seqaij_pastix(Mat,MatFactorType,Mat*);
 #if defined(PETSC_HAVE_ESSL) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SCALAR_SINGLE) && !defined(PETSC_USE_SCALAR_MAT_SINGLE)
 extern PetscErrorCode MatGetFactor_seqaij_essl(Mat,MatFactorType,Mat *);
 #endif
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCRL(Mat,MatType,MatReuse,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqAIJCRL(Mat,MatType,MatReuse,Mat*);
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_bas(Mat,MatFactorType,Mat*);
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorAvailable_seqaij_petsc(Mat,MatFactorType,PetscTruth *);
@@ -3395,12 +3395,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqbaij_C",
                                      "MatConvert_SeqAIJ_SeqBAIJ",
                                       MatConvert_SeqAIJ_SeqBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqcsrperm_C",
-                                     "MatConvert_SeqAIJ_SeqCSRPERM",
-                                      MatConvert_SeqAIJ_SeqCSRPERM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqcrl_C",
-                                     "MatConvert_SeqAIJ_SeqCRL",
-                                      MatConvert_SeqAIJ_SeqCRL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqaijperm_C",
+                                     "MatConvert_SeqAIJ_SeqAIJPERM",
+                                      MatConvert_SeqAIJ_SeqAIJPERM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqaijcrl_C",
+                                     "MatConvert_SeqAIJ_SeqAIJCRL",
+                                      MatConvert_SeqAIJ_SeqAIJCRL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatIsTranspose_C",
                                      "MatIsTranspose_SeqAIJ",
                                       MatIsTranspose_SeqAIJ);CHKERRQ(ierr);

@@ -5,7 +5,10 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1 using GPU\n\n
 
 #include "petscda.h"
 #include "petscsnes.h"
+#include "petsccuda.h"
+
 extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*), ComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscTruth useCUDA = PETSC_FALSE;
 
 int main(int argc,char **argv) 
 {
@@ -14,10 +17,17 @@ int main(int argc,char **argv)
   Mat            J;
   DA             da;
   PetscErrorCode ierr;
+  char           *tmp,typeName[256];
+  PetscTruth     flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-da_vec_type",typeName,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscStrstr(typeName,"cuda",&tmp);CHKERRQ(ierr);
+    if (tmp) useCUDA = PETSC_TRUE;
+  }
 
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,8,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-8,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DACreateGlobalVector(da,&x); VecDuplicate(x,&f);CHKERRQ(ierr);
   ierr = DAGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
 
@@ -37,28 +47,92 @@ int main(int argc,char **argv)
   return 0;
 }
 
+struct ApplyStencil
+{
+	template <typename Tuple>
+	__host__ __device__
+	void operator()(Tuple t)
+	{
+		/* f = (2*x_i - x_(i+1) - x_(i-1))/h - h*exp(x_i) */
+	     thrust::get<0>(t) = 1;
+		if ((thrust::get<4>(t) > 0) && (thrust::get<4>(t) < thrust::get<5>(t)-1)) {
+		  thrust::get<0>(t) = (2.0*thrust::get<1>(t) - thrust::get<2>(t) - thrust::get<3>(t)) / (thrust::get<6>(t)) - (thrust::get<6>(t))*exp(thrust::get<1>(t));
+		} else if (thrust::get<4>(t) == 0) {
+		  thrust::get<0>(t) = thrust::get<1>(t) / (thrust::get<6>(t));
+		} else if (thrust::get<4>(t) == thrust::get<5>(t)-1) {
+		  thrust::get<0>(t) = thrust::get<1>(t) / (thrust::get<6>(t));
+		} 
+		
+	}
+};
+
 PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx) 
 {
-  PetscInt       i,Mx,xs,xm;
+  PetscInt       i,Mx,xs,xm,xstartshift,xendshift,fstart;
   PetscScalar    *xx,*ff,hx;
   DA             da = (DA) ctx; 
   Vec            xlocal;
   PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
+  MPI_Comm       comm;
 
   ierr = DAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   hx     = 1.0/(PetscReal)(Mx-1);
-  ierr = DAGetLocalVector(da,&xlocal);DAGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DAGetLocalVector(da,&xlocal);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,xlocal,&xx); DAVecGetArray(da,f,&ff);CHKERRQ(ierr);
-  ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  for (i=xs; i<xs+xm; i++) {
-    if (i == 0 || i == Mx-1) ff[i] = xx[i]/hx; 
-    else  ff[i] =  (2.0*xx[i] - xx[i-1] - xx[i+1])/hx - hx*PetscExpScalar(xx[i]); 
+  if (useCUDA) {
+    ierr = VecCUDACopyToGPU(xlocal);CHKERRQ(ierr);
+    ierr = VecCUDAAllocateCheck(f);CHKERRQ(ierr);
+    ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    if (rank) xstartshift = 1; else xstartshift = 0;
+    if (rank != size-1) xendshift = 1; else xendshift = 0;
+    ierr = VecGetOwnershipRange(f,&fstart,PETSC_NULL);CHKERRQ(ierr);
+    try {
+      thrust::for_each(
+		       thrust::make_zip_iterator(
+						 thrust::make_tuple(
+								    ((CUSPARRAY*)f->spptr)->begin(),
+								    ((CUSPARRAY*)xlocal->spptr)->begin()+xstartshift,
+								    ((CUSPARRAY*)xlocal->spptr)->begin()+xstartshift + 1,
+								    ((CUSPARRAY*)xlocal->spptr)->begin()+xstartshift - 1,
+								    thrust::counting_iterator<int>(fstart),
+								    thrust::constant_iterator<int>(Mx),
+								    thrust::constant_iterator<PetscScalar>(hx))),
+		       thrust::make_zip_iterator(
+						 thrust::make_tuple(
+								    ((CUSPARRAY*)f->spptr)->end(),
+								    ((CUSPARRAY*)xlocal->spptr)->end()-xendshift,
+								    ((CUSPARRAY*)xlocal->spptr)->end()-xendshift + 1,
+								    ((CUSPARRAY*)xlocal->spptr)->end()-xendshift - 1,
+								    thrust::counting_iterator<int>(fstart) + x->map->n,
+								    thrust::constant_iterator<int>(Mx),
+								    thrust::constant_iterator<PetscScalar>(hx))),
+		       ApplyStencil());
+    }
+    catch(char* all){
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Thrust is not working\n");CHKERRQ(ierr);
+    }
+    f->valid_GPU_array = PETSC_CUDA_GPU;
+    ierr = PetscObjectStateIncrease((PetscObject)f);CHKERRQ(ierr);
+  } else {
+    ierr = DAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
+    ierr = DAVecGetArray(da,f,&ff);CHKERRQ(ierr);
+    ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    
+    for (i=xs; i<xs+xm; i++) {
+      if (i == 0 || i == Mx-1) ff[i] = xx[i]/hx; 
+      else  ff[i] =  (2.0*xx[i] - xx[i-1] - xx[i+1])/hx - hx*PetscExpScalar(xx[i]); 
+    }
+    ierr = DAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(da,f,&ff);CHKERRQ(ierr);
+    ierr = DARestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
   }
-  ierr = DAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,f,&ff);CHKERRQ(ierr);
+  //  VecView(x,0);printf("f\n");
+  //  VecView(f,0);
   return 0;
 
 }

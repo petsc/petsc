@@ -113,7 +113,8 @@ compilers to configure. For eg:
         <li>Changed --with-shared to --with-shared-libraries,
 --known-mpi-shared to --known-mpi-shared-libraries and --with-dynamic
 to --with-dynamic-loading</li>
-        <li>'ifneeded' support removed. '--download-package=ifneeded' should now be '--download-package=1'</li>
+        <li>'ifneeded' support removed. '--download-package=ifneeded'
+should now be '--download-package=1'</li>
       </ul>
       <p><u><b>IS:</b></u></p>
       <p><u><b>Vec: <br>
@@ -143,7 +144,11 @@ Formerly, options were silently ignored in this circumstance.</li>
         <li> Added MatSetMumpsIcntl()</li>
         <li>MatLoad() now takes a created Mat as input (and no longer a
 Mat type), if you provide the size and type in the Mat then that is
-used other defaults are used.<br>
+used other defaults are used.</li>
+        <li>MATCRL -&gt; MATAIJCRL, MATSEQCRL -&gt; MATSEQAIJCRL,
+MATMPICRL -&gt; MATMPIAIJCRL</li>
+        <li>MatCreateSeqCRL() -&gt; MatCreateSeqAIJCRL()
+MatCreateMPICRL() -&gt; MatCreateMPIAIJCRL()<br>
         </li>
       </ul>
       <u><b>PC:</b></u>
@@ -196,7 +201,7 @@ argument still has the meaning of a pointer to d-dimensionally indexed
 array of user-defined node type, old code will still compile correctly
 but the cast is no longer necessary).</li>
         <li>DAGetCoordinates(), DAGetGhostedCoordinates(), and
-DAGetCoordinateDA() now return borrowed references.  The returned object
+DAGetCoordinateDA() now return borrowed references. The returned object
 should not be destroyed by the user.</li>
       </ul>
       <p><u><b>DMMG:</b></u></p>

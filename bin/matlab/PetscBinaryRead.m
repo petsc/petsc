@@ -68,8 +68,15 @@ for l=1:narg
     n      = header(2);
     nz     = header(3);
     if (nz == -1)
-      s   = read(fd,m*n,'double');
-      A   = reshape(s,n,m)';
+      if strcmp(comp,'complex')
+        s     = read(fd,2*m*n,'double');
+        iReal = linspace(1,n*m*2-1,n*m);
+        iImag = iReal +1 ;
+        A     = complex(reshape(s(iReal),n,m)',reshape(s(iImag),n,m)') ;
+      else
+        s   = read(fd,m*n,'double');
+        A   = reshape(s,n,m)';
+      end
     else
       nnz = double(read(fd,m,'int32'));  %nonzeros per row
       sum_nz = sum(nnz);
