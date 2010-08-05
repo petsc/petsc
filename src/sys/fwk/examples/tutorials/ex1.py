@@ -22,28 +22,25 @@ def Electrolyte(fwk, key, stage, e):
         return e
     if stage == "init":
         da = PETSc.DA().create(dim=3,dof=d+1,sizes=N)
-        rhoGammaVec = da.createNaturalVector()
-        rhoGamma    = rhoGammaVec.getArray()
-        rhoGamma = rhoGamma.reshape(M)
+        rhoVec = PETSc.Vec()
+        rhoVec.createSeq(comm=da.comm,size=N[0]*N[1]*N[2]*d)
+        rho    = rhoVec.getArray()
+        rho    = rho.reshape((N[0],N[1],N[2],d))
         from math import sin as sin, pi as pi
         for i in range(N[0]):
             for j in range(N[1]):
                 for k in range(N[2]):
                     for s in range(d):
-                        rhoGamma[i,j,k,s] = sin(2*pi*i/N[0])*sin(2*pi*j/N[1])*sin(2*pi*k/N[2])
-                    rhoGamma[i,j,k,d] = GAMMA
+                        rho[i,j,k,s] = sin(2*pi*i/N[0])*sin(2*pi*j/N[1])*sin(2*pi*k/N[2])
         e.compose("mesh", da)
-        e.compose("rhoGamma",rhoGammaVec)
+        e.compose("rho",rhoVec)
     return e
     
 if __name__ == "__main__":
     fwk = PETSc.Fwk().create()
     fwk.registerComponent("Electrolyte", "./ex1.py:Electrolyte")
     fwk.registerComponent("Viz",         "./viz.py:Viz")
-    #fwk.view()
     fwk.configure("init")
-
     for i in range(4):
-        fwk.configure("viewRhoGamma")
-
+        fwk.configure("viewRho")
     del fwk
