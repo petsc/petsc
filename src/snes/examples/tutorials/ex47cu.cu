@@ -53,8 +53,7 @@ struct ApplyStencil
 	__host__ __device__
 	void operator()(Tuple t)
 	{
-		/* f = (2*x_i - x_(i+1) - x_(i-1))/h */
-	  /* note that we have yet to do anything with the endpoints */
+		/* f = (2*x_i - x_(i+1) - x_(i-1))/h - h*exp(x_i) */
 	     thrust::get<0>(t) = 1;
 		if ((thrust::get<4>(t) > 0) && (thrust::get<4>(t) < thrust::get<5>(t)-1)) {
 		  thrust::get<0>(t) = (2.0*thrust::get<1>(t) - thrust::get<2>(t) - thrust::get<3>(t)) / (thrust::get<6>(t)) - (thrust::get<6>(t))*exp(thrust::get<1>(t));
