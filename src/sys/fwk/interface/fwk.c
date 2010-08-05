@@ -396,40 +396,40 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkParseURL_Private(PetscFwk fwk, const char
   /* Copy n to name */
   ierr = PetscStrcpy(name, n); CHKERRQ(ierr);
   /* If n isn't the whole path (i.e., there is a ':' separator), end 'path' right before the located ':' */
-  if(n != path) {
-    n[-1] = '\0';
-  }
-  /* Find the library suffix and determine the component library type: .so or .py */
-  ierr = PetscStrrchr(path,'.',&s);CHKERRQ(ierr);
-  /* FIX: we should really be using PETSc's internally defined suffices */
-  if(s != path && s[-1] == '.') {
-    if((s[0] == 'a' && s[1] == '\0') || (s[0] == 's' && s[1] == 'o' && s[2] == '\0')){
-      *type = PETSC_FWK_COMPONENT_SO;
-    }
-    else if (s[0] == 'p' && s[1] == 'y' && s[2] == '\0'){
-      *type = PETSC_FWK_COMPONENT_PY;
-    }
-    else {
-      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, 
-           "Unknown library suffix within the URL.\n"
-           "Must have url = [<path/><library>:]<name>,\n"
-           "where library = <libname>.<suffix>, suffix = .a || .so || .py.\n"
-           "Instead got url %s\n"
-           "Remember that URL is always truncated to the max allowed length of %d", 
-               inurl, s,nlen);     
-    }
+  if(n == path) {
+    /* 
+       No library is provided, so the component is assumed to be "local", that is
+       defined in an already loaded executable. So we set type to .so, path to "",
+       and look for the configure symbol among already loaded symbols 
+       (or count on PetscDLXXX to do that.
+    */
+    *type = PETSC_FWK_COMPONENT_SO;
+    path[0] = '\0';
   }
   else {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, 
-             "Could not locate library within the URL.\n"
-             "Must have url = [<path/><library>:]<name>.\n"
-             "Instead got %s\n"
-             "Remember that URL is always truncated to the max allowed length of %d", 
-             inurl, nlen);     
+    n[-1] = '\0';
+    /* Find the library suffix and determine the component library type: .so or .py */
+    ierr = PetscStrrchr(path,'.',&s);CHKERRQ(ierr);
+    /* FIX: we should really be using PETSc's internally defined suffices */
+    if(s != path && s[-1] == '.') {
+      if((s[0] == 'a' && s[1] == '\0') || (s[0] == 's' && s[1] == 'o' && s[2] == '\0')){
+        *type = PETSC_FWK_COMPONENT_SO;
+      }
+      else if (s[0] == 'p' && s[1] == 'y' && s[2] == '\0'){
+        *type = PETSC_FWK_COMPONENT_PY;
+      }
+      else {
+        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, 
+                 "Unknown library suffix within the URL.\n"
+                 "Must have url = [<path/><library>:]<name>,\n"
+                 "where library = <libname>.<suffix>, suffix = .a || .so || .py.\n"
+                 "Instead got url %s\n"
+                 "Remember that URL is always truncated to the max allowed length of %d", 
+                 inurl, s,nlen);     
+      }
+    }
   }
-  ierr = PetscStrcpy(url, path); CHKERRQ(ierr);
-  ierr = PetscStrcat(url, ":");  CHKERRQ(ierr);
-  ierr = PetscStrcat(url, name); CHKERRQ(ierr);
+  ierr = PetscStrncpy(url, inurl, nlen); CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }/* PetscFwkParseURL_Private() */
 
@@ -522,10 +522,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterComponentID_Private(PetscFwk fwk,
       char sym[PETSC_FWK_MAX_URL_LENGTH+26+1];
       PetscFwkConfigureComponentFunction configure = PETSC_NULL;
       /* Build the configure symbol from name and standard prefix */
-      ierr = PetscStrcpy(sym, "PetscFwkComponentConfigure"); CHKERRQ(ierr);
+      ierr = PetscStrcpy(sym, "PetscFwkConfigure"); CHKERRQ(ierr);
       ierr = PetscStrcat(sym, name); CHKERRQ(ierr);
       /* Load the library designated by 'path' and retrieve from it the configure routine designated by the constructed symbol */
       ierr = PetscDLLibrarySym(((PetscObject)fwk)->comm, &PetscFwkDLList, path, sym, (void**)(&configure)); CHKERRQ(ierr);
+      if(!configure) {
+        SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not find configuration routine for component with url %s.\n", url);
+      }
       /* Run the configure routine, which should return a valid object or PETSC_NULL */
       ierr = (*configure)(fwk, key, PETSC_NULL, &component); CHKERRQ(ierr);
       fwk->record[id].component = component;

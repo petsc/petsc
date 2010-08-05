@@ -210,7 +210,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLClose(PetscDLHandle *handle)
    Not Collective
 
    Input Parameters:
-+   handle - obtained with PetscDLOpen()
++   handle - obtained with PetscDLOpen() or PETSC_NULL
 -   symbol - name of symbol
 
    Output Parameter:
@@ -218,11 +218,20 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLClose(PetscDLHandle *handle)
 
    Level: developer
 
+  Notes:
+   If handle is PETSC_NULL, the symbol is looked for in the main executable's dynamic symbol table.
+   In order to be dynamically loadable, the symbol has to be exported as such.  On many UNIX-like 
+   systems this requires platform-specific linker flags.
+
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDLSym(PetscDLHandle handle,const char symbol[],void **value)
 {
   dlhandle_t dlhandle;
   dlsymbol_t dlsymbol;
+#if defined(PETSC_HAVE_DLERROR)
+  char *e;
+#endif  
+
 
   PetscFunctionBegin;
   PetscValidCharPointer(symbol,2);
@@ -253,16 +262,54 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLSym(PetscDLHandle handle,const char symbol
   */  
 #elif defined(PETSC_HAVE_DLFCN_H)
 #if defined(PETSC_HAVE_DLSYM)
-  if (handle != PETSC_NULL)
+  if (handle != PETSC_NULL) {
     dlhandle = (dlhandle_t) handle;
-  else
+  }
+  else {
     dlhandle = (dlhandle_t) 0;
+    
+#if defined(PETSC_HAVE_DLOPEN)
+    /* Attempt to retrieve the main executable's dlhandle. */
+    { int dlflags1 = 0, dlflags2 = 0;
+#if defined(PETSC_HAVE_RTLD_LAZY)
+      dlflags1 = RTLD_LAZY;
+#endif
+      if(!dlflags1) {
+#if defined(PETSC_HAVE_RTLD_NOW)
+        dlflags1 = RTLD_NOW;
+#endif
+      }
+#if defined(PETSC_HAVE_RTLD_LOCAL)
+      dlflags2 = RTLD_LOCAL;
+#endif
+      if(!dlflags2) {
+#if defined(PETSC_HAVE_RTLD_GLOBAL)
+        dlflags2 = RTLD_GLOBAL;
+#endif
+      }
+#if defined(PETSC_HAVE_DLERROR)
+      dlerror(); /* clear any previous error */
+#endif
+      /* Attempt to open the main executable as a dynamic library. */
+      dlhandle = dlopen(0, dlflags1|dlflags2); 
+    }
+#endif
+#if defined(PETSC_HAVE_DLERROR)
+    e = dlerror();
+    if(e){
+      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error opening main executable as a dynamic library:\n  Error message from dlopen(): '%s'\n", e);
+    }
+  }
+#endif
 #if defined(PETSC_HAVE_DLERROR)
   dlerror(); /* clear any previous error */
 #endif
   dlsymbol = (dlsymbol_t) dlsym(dlhandle,symbol);
 #if defined(PETSC_HAVE_DLERROR)
-  dlerror(); /* clear any previous error */
+/*   e = dlerror(); */
+/*   if(e){ */
+/*     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG,"Error obtaining symbol '%s' from dynamic library:\n  Error message from dlsym(): '%s'\n", symbol, e); */
+/*   } */
 #endif
 #endif /* !PETSC_HAVE_DLSYM */
 

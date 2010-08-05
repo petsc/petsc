@@ -1,4 +1,5 @@
 from petsc4py import PETSc
+import time
 
 def Viz(fwk, key, conf, c):
     if c is None:
@@ -7,7 +8,6 @@ def Viz(fwk, key, conf, c):
         fwk.registerDependence("DensityField",key)
         return c
     if conf == "init":
-        import numpy
         assert isinstance(c, PETSc.Fwk)
         # Extract a PetscObject with key "DensityField"
         densityField = fwk.getComponent("DensityField")
@@ -15,6 +15,12 @@ def Viz(fwk, key, conf, c):
         #   a DA and a Vec
         da  = densityField.query("mesh")
         vec = densityField.query("density")
+        c.compose("mesh", da)
+        c.compose("density", vec)
+    if conf == "run":
+        import numpy
+        da  = c.query("mesh")
+        vec = c.query("density")
         # Get DA parameters and make sure the Vec conforms to them
         N = numpy.array([0,0,0])
         N[0],N[1],N[2] = da.getSizes()
@@ -28,9 +34,14 @@ def Viz(fwk, key, conf, c):
         v = v.reshape(shape)
         # Plot the first component of the vec over the da
         # Use a contour plot in 3D or surface plot in 2D
+        #print "Plotting a slice of a " + str(dim) + "D array of shape " + str(v.shape)
+        #print "v = " + str(v)
         from enthought.mayavi import mlab as mlab
         if dim == 2:
             mlab.surf(v[:,:,1])
         if dim == 3:
-            mlab.contour3d(v[:,:,:,1])   
+            mlab.contour3d(v[:,:,:,1])
+        time.sleep(1)
+        mlab.clf()
+
     return c
