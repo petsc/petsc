@@ -34,6 +34,8 @@ def Viz(fwk, key, conf, c):
         v = v.reshape(shape)
         # Plot the first component of the vec over the da
         # Use a contour plot in 3D or surface plot in 2D
+        #print "Plotting a slice of a " + str(dim) + "D array of shape " + str(v.shape)
+        #print "v = " + str(v)
         from enthought.mayavi import mlab as mlab
         if dim == 2:
             mlab.surf(v[:,:,1])
