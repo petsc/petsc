@@ -9,7 +9,7 @@
 <table width="100%">
   <tbody>
     <tr>
-      <td width="25%" valign="top">
+      <td valign="top" width="25%">
       <h1><font color="#ff0000" size="7">PETSc</font></h1>
       <ul>
         <li><a href="../index.html"><strong>Home</strong></a></li>
@@ -24,7 +24,7 @@
       <hr color="#ff5b5b" size="4"> </td>
     </tr>
     <tr>
-      <td width="25%" valign="top">
+      <td valign="top" width="25%">
       <ul>
         <li><a href="../download/index.html"><strong>Download</strong></a></li>
         <li><a href="../features/index.html"><strong>Features</strong></a></li>
@@ -55,7 +55,7 @@ Software</strong></a></li>
 Site</strong></a></li>
       </ul>
       </td>
-      <td width="75%" valign="top"><!--##begin-->
+      <td valign="top" width="75%"><!--##begin-->
       <h4><a href="faq.html#General">General</a></h4>
       <menu>
       <li><a href="faq.html#petsc-mailing-list">How
@@ -82,6 +82,8 @@ different number of iterations?</a></li>
       <li><a href="faq.html#newremotebranches">How come I get an hg
 error indicating "new remote branches" might be created when I try to
 push?</a></li>
+      <li><a href="faq.html#gpus">Can PETSc use GPUs to speed up the
+computation time?</a></li>
       </menu>
       <h4><a href="faq.html#Installation">Installation</a></h4>
       <menu>
@@ -171,6 +173,7 @@ can I understand what is really happening within my program? </a></li>
 large sparse matrices takes a long time. What can I do make this
 process faster? or MatSetValues() is <span style="font-weight: bold;">so
 slow,
+
 
 
 
@@ -450,8 +453,25 @@ disable.</p>
       <p>Fixing this is complicated. Basically, you clone the repo
 before you made head #2, then create the diff for the bad changeset
 that made head #2. Apply it to the clone and checkin, then pull the
-master.</p>
-      <font color="#ff0000"></font>
+master.<br>
+      </p>
+      <p><a name="gpus"><font color="#ff0000">Can PETSc use GPUs to
+speedup computations?</font></a><span style="font-weight: bold;"></span></p>
+      <p>PETSc-dev has some support for running portions of the
+computation on Nvidia GPUs. See <a
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/installation.html#CUDA">installation.html</a>
+for how to install PETSc to use GPUs. PETSc has a Vec class VECCUDA
+that performs almost all the vector operations on the GPU. The Mat
+class MATCUDA performs matrix-vector products on the GPU but does not
+have matrix assembly on the GPU yet. Both of these classes run in
+parallel with MPI. All KPS methods, except KSPIBCGS, run all their
+vector operations on the GPU thus, for example Jacobi preconditioned
+Krylov methods run completely on the GPU. Preconditioners are a
+problem, we could do with some help for these. The example <a
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/src/snes/examples/tutorials/ex47cu.cu.html">src/snes/examples/tutorials/ex47cu.cu</a>
+demonstates how the&nbsp; nonlinear function evaluation can be done on
+the GPU.<br>
+      </p>
       <h3><a name="Installation">Installation</a></h3>
       <p><a name="already-installed"><font color="#ff0000">How
 do I begin using PETSc if the software
@@ -570,7 +590,8 @@ This
 seems
 to
 work
-with both Mac OS 10.5 and 10.6. It defaults to using
+with
+both Mac OS 10.5 and 10.6. It defaults to using
 32 bit pointers so for Mac OS X 10.6 and later you should use
 --with-fc="gfortran -m64"<br>
       <br>
@@ -691,7 +712,9 @@ the type of restriction/extension&nbsp;<br>
 options by using<br>
       <i> -pc_type asm -help</i><br>
 Also, see the procedural interfaces in the manual pages, with names <b>PCASMxxxx()</b><br>
-and check the index of the <a href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manual.pdf">users manual</a> for <b>PCASMxxx</b>().<br>
+and check the index of the <a
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manual.pdf">users
+manual</a> for <b>PCASMxxx</b>().<br>
       </p>
       <p>PETSc also contains a domain decomposition inspired wirebasket
 or face based two level method where the coarse mesh to fine mesh
@@ -732,7 +755,7 @@ communication </li>
       <table width="100%">
         <tbody>
           <tr>
-            <td width="75%" valign="top">
+            <td valign="top" width="75%">
             <li> Actually do the
 communication; this can be done
 repeatedly as needed</li>
@@ -956,7 +979,8 @@ than
 the
 MPI_Cart_create()
 command.
-How can one use them together?<br>
+How
+can one use them together?<br>
             <br>
             </span>The MPI_Cart_create() first divides the mesh along
 the z direction, then the y, then the x. DA divides along the x, then
@@ -1004,7 +1028,8 @@ conditions
 I
 can
 use
-MatZeroRows() to eliminate the Dirichlet rows but this results in a
+MatZeroRows()
+to eliminate the Dirichlet rows but this results in a
 non-symmetric system. How come there is no MatZeroColumns() to keep the
 matrix symmetric?<br>
             <br>
@@ -1026,7 +1051,8 @@ symmetric methods. See its manual page.<br>
             <span style="color: rgb(255, 0, 0);"><a name="matlab"></a>How
 can
 I
-get PETSc Vecs and Mats to Matlab or vice versa?<br>
+get
+PETSc Vecs and Mats to Matlab or vice versa?<br>
             </span><br>
             <span style="color: rgb(255, 0, 0);"><br>
             </span>There are four was to work with PETSc and Matlab<br>
@@ -1049,13 +1075,15 @@ Matlab session and a running PETSc program. See <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerSocketOpen.html">PetscViewerSocketOpen</a>()
 for
 access
-from the PETSc side and PetscOpenSocket in bin/matlab for
+from
+the PETSc side and PetscOpenSocket in bin/matlab for
 access from the Matlab side.</li>
               <li>Finally you can save PETSc Vecs (not Mats) with the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
 viewer
 that
-saves .mat files can then be loaded into Matlab.<br>
+saves
+.mat files can then be loaded into Matlab.<br>
               </li>
             </ol>
             <hr> </td>
@@ -1072,7 +1100,8 @@ long to link</font>.</a></p>
       <p>We find this annoying as well. On most machines PETSc
 can use
 shared libraries, so executables should be much smaller, run
-./configure with the additional option --with-shared-libraries. Also, if
+./configure with the additional option --with-shared-libraries. Also,
+if
 you have room, compiling and linking PETSc on your machine's /tmp disk
 or similar local disk, rather than over the network will be much
 faster. </p>
@@ -1109,7 +1138,9 @@ long time. What can I do make this process faster? or MatSetValues() is
 so slow, what can I do to speed it up?</font></a><a
  name="efficient-assembly"><font><font></font></font></a><font><font><a
  name="slow"></a></font></font><a name="efficient-assembly"> </a></p>
-      <p>See the <a href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manual.pdf#nameddest=ch_performance">Performance chapter of the users manual</a> for
+      <p>See the <a
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manual.pdf#nameddest=ch_performance">Performance
+chapter of the users manual</a> for
 many
 tips on this.</p>
       <p>a) Preallocate enough space for the sparse matrix. For
@@ -1145,7 +1176,9 @@ can
 I
 generate performance summaries
 with PETSc?</font> </a></p>
-      <p>Use these options at runtime: -log_summary. See the <a href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manual.pdf#nameddest=ch_performance">Performance chapter of the users manual</a>
+      <p>Use these options at runtime: -log_summary. See the <a
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manual.pdf#nameddest=ch_performance">Performance
+chapter of the users manual</a>
 for information on interpreting
 the summary data. If using the PETSc (non)linear solvers, one can also
 specify -snes_view or -ksp_view for a printout of solver info. Only the
@@ -1210,6 +1243,7 @@ in
 
 
 
+
           <a href="faq.html#slow">generating the
 matrix</a> or some other operation.</li>
         <li>There must be enough work for each process to
@@ -1239,7 +1273,8 @@ for
 more
 processes.
 You
-may also
+may
+also
 consider multigrid preconditioners like <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
 or BoomerAMG in <a
@@ -1316,7 +1351,8 @@ debug
 if
 -start_in_debugger
 does
-not work on my machine?</font> </a></p>
+not
+work on my machine?</font> </a></p>
       <p>For a uniprocessor job, just try&nbsp;the debugger
 directly, for example: gdb ex1. You can also use Totalview which is a
 good graphical parallel debugger.<br>
@@ -1368,7 +1404,8 @@ cannot
 open
 shared
 object
-file: No such file or directory.</span></p>
+file:
+No such file or directory.</span></p>
       <p>The Intel compilers use shared libraries (like libimf)
 that
 cannot by default at run time. When using the Intel compilers (and
@@ -1398,7 +1435,8 @@ not
 set:
 Argument
 #
-n mean?</a></span></p>
+n
+mean?</a></span></p>
 Many
 operations on PETSc objects require that the specific type of the
 object be set before the operations is performed. You must call
@@ -1420,7 +1458,8 @@ call
 to
 VecSetSizes(),
 MatSetSizes(),
-VecCreateXXX() or
+VecCreateXXX()
+or
 MatCreateXXX() you passed in local and global sizes that do not make
 sense for the correct number of processors. For example if you pass in
 a local size of 2 and a global size of 100 and run on two processors,
@@ -1450,6 +1489,7 @@ problem.<br>
 &nbsp; <br>
 If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
 machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
+
 
 
 
@@ -1500,6 +1540,7 @@ that the matrix is singular. You can use -pc_factor_shift_nonzero or
 -pc_factor_shift_positive_definite,
 -[level]_pc_factor_shift_nonzero,&nbsp; </span></font><font
  style="color: rgb(0, 0, 0);" color="#ff0000">-[level]_pc_factor_shift_postive_definite
+
 
 
 
@@ -1654,7 +1695,8 @@ print
 two
 residual
 norms
-per iteration?<br>
+per
+iteration?<br>
       </span></font></font></p>
       <p style="color: rgb(0, 0, 0);"><font face="Terminal"><font
  face="Terminal"><font face="Terminal">&gt; 1198 KSP Residual norm
@@ -1726,7 +1768,8 @@ for this.</p>
 If I want to link to the
 regular .a library files</a>?</font></p>
       <p>You must run ./configure without the option
---with-shared-libraries (you can use a different PETSC_ARCH for this build so you
+--with-shared-libraries (you can use a different PETSC_ARCH for this
+build so you
 can easily switch between the two).</p>
       <p><a name="move-shared-exec"><font color="#ff0000">What
 do
