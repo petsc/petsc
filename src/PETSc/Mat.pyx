@@ -24,12 +24,12 @@ class MatType(object):
     MFFD            = S_(MATMFFD)
     NORMAL          = S_(MATNORMAL)
     LRC             = S_(MATLRC)
-    SEQCSRPERM      = S_(MATSEQCSRPERM)
-    MPICSRPERM      = S_(MATMPICSRPERM)
-    CSRPERM         = S_(MATCSRPERM)
-    SEQCRL          = S_(MATSEQCRL)
-    MPICRL          = S_(MATMPICRL)
-    CRL             = S_(MATCRL)
+    SEQAIJPERM      = S_(MATSEQAIJPERM)
+    MPIAIJPERM      = S_(MATMPIAIJPERM)
+    AIJPERM         = S_(MATAIJPERM)
+    SEQAIJCRL       = S_(MATSEQAIJCRL)
+    MPIAIJCRL       = S_(MATMPIAIJCRL)
+    AIJCRL          = S_(MATAIJCRL)
     SCATTER         = S_(MATSCATTER)
     BLOCKMAT        = S_(MATBLOCKMAT)
     COMPOSITE       = S_(MATCOMPOSITE)
@@ -237,13 +237,13 @@ cdef class Mat(Object):
             CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, bs) )
         return self
 
-    def createCRL(self, size, bsize=None, nnz=None, csr=None, comm=None):
+    def createAIJCRL(self, size, bsize=None, nnz=None, csr=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
         CHKERR( Mat_SplitSizes(ccomm, size, bsize, &bs, &m, &n, &M, &N) )
         # create matrix
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateAnyCRL(ccomm, bs, m, n, M, N, &newmat) )
+        CHKERR( MatCreateAnyAIJCRL(ccomm, bs, m, n, M, N, &newmat) )
         PetscCLEAR(self.obj); self.mat = newmat
         # preallocate matrix
         if csr is not None:   # with CSR preallocation

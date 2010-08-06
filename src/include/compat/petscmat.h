@@ -5,6 +5,16 @@
 
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
+#define MATSEQAIJPERM  MATSEQCSRPERM
+#define MATMPIAIJPERM  MATMPICSRPERM
+#define MATAIJPERM     MATCSRPERM
+#define MATSEQAIJCRL   MATSEQCRL
+#define MATMPIAIJCRL   MATMPICRL
+#define MATAIJCRL      MATCRL
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "MatLoad"
 static PetscErrorCode MatLoad_Compat(Mat mat,PetscViewer viewer)

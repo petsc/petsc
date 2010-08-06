@@ -26,12 +26,12 @@ cdef extern from "petscmat.h" nogil:
     PetscMatType MATMFFD
     PetscMatType MATNORMAL
     PetscMatType MATLRC
-    PetscMatType MATSEQCSRPERM
-    PetscMatType MATMPICSRPERM
-    PetscMatType MATCSRPERM
-    PetscMatType MATSEQCRL
-    PetscMatType MATMPICRL
-    PetscMatType MATCRL
+    PetscMatType MATSEQAIJPERM
+    PetscMatType MATMPIAIJPERM
+    PetscMatType MATAIJPERM
+    PetscMatType MATSEQAIJCRL
+    PetscMatType MATMPIAIJCRL
+    PetscMatType MATAIJCRL
     PetscMatType MATSCATTER
     PetscMatType MATBLOCKMAT
     PetscMatType MATCOMPOSITE
@@ -272,10 +272,10 @@ cdef extern from "custom.h" nogil:
                         PetscInt,PetscInt,
                         PetscInt,PetscInt,
                         PetscMat*)
-    int MatCreateAnyCRL(MPI_Comm,PetscInt,
-                        PetscInt,PetscInt,
-                        PetscInt,PetscInt,
-                        PetscMat*)
+    int MatCreateAnyAIJCRL(MPI_Comm,PetscInt,
+                           PetscInt,PetscInt,
+                           PetscInt,PetscInt,
+                           PetscMat*)
     int MatAnyAIJSetPreallocation(PetscMat,PetscInt,
                                   PetscInt,PetscInt[],
                                   PetscInt,PetscInt[])

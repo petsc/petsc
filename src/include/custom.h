@@ -472,12 +472,12 @@ MatCreateAnyAIJ(MPI_Comm comm, PetscInt bs,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatCreateAnyCRL"
+#define __FUNCT__ "MatCreateAnyAIJCRL"
 static PetscErrorCode
-MatCreateAnyCRL(MPI_Comm comm, PetscInt bs,
-                PetscInt m, PetscInt n,
-                PetscInt M, PetscInt N,
-                Mat *A)
+MatCreateAnyAIJCRL(MPI_Comm comm, PetscInt bs,
+                   PetscInt m, PetscInt n,
+                   PetscInt M, PetscInt N,
+                   Mat *A)
 {
   Mat            mat = PETSC_NULL;
   MatType        mtype = PETSC_NULL;
@@ -489,8 +489,8 @@ MatCreateAnyCRL(MPI_Comm comm, PetscInt bs,
   ierr = MatCreate(comm,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m,n,M,N);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  if (size > 1) mtype = (MatType)MATMPICRL;
-  else          mtype = (MatType)MATSEQCRL;
+  if (size > 1) mtype = (MatType)MATMPIAIJCRL;
+  else          mtype = (MatType)MATSEQAIJCRL;
   ierr = MatSetType(mat,mtype);CHKERRQ(ierr);
   if (bs != PETSC_DECIDE) {
     ierr = MatBlockSize_Check(mat,bs);CHKERRQ(ierr);
