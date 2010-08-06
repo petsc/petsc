@@ -115,6 +115,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat mat,const MatMFFDType ftype
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidCharPointer(ftype,2);
 
+  ierr = PetscTypeCompare((PetscObject)mat,MATMFFD,&match);CHKERRQ(ierr);
+  if (!match) PetscFunctionReturn(0);
+
   /* already set, so just return */
   ierr = PetscTypeCompare((PetscObject)ctx,ftype,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
