@@ -10,7 +10,7 @@ PETSC_CUDA_EXTERN_C_BEGIN
 PETSC_CUDA_EXTERN_C_END
 #include "../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h"
 
-/* these following 2 public versions are necessary because we use CUSP in the regular version and these need to be called from plain C code. */
+/* these following 3 public versions are necessary because we use CUSP in the regular version and these need to be called from plain C code. */
 #undef __FUNCT__
 #define __FUNCT__ "VecCUDAAllocateCheck_Public"
 PetscErrorCode VecCUDAAllocateCheck_Public(Vec v)
@@ -30,6 +30,17 @@ PetscErrorCode VecCUDACopyToGPU_Public(Vec v)
 
   PetscFunctionBegin;
   ierr = VecCUDACopyToGPU(v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUDACopyToGPUSome_Public"
+PetscErrorCode VecCUDACopyToGPUSome_Public(Vec v, CUSPINTARRAYCPU* indicesCPU, CUSPINTARRAYGPU* indicesGPU)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecCUDACopyToGPUSome(v,indicesCPU,indicesGPU);CHKERRCUDA(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -74,7 +85,7 @@ PetscErrorCode VecCUDACopyFromGPU(Vec v)
    We could add another few flag-types to keep track of this, or treat things like VecGetArray VecRestoreArray
    where you have to always call in pairs 
 */
-PetscErrorCode VecCUDACopyFromGPUSome(Vec v)
+PetscErrorCode VecCUDACopyFromGPUSome(Vec v,CUSPINTARRAYCPU *indicesCPU,CUSPINTARRAYGPU *indicesGPU)
 {
   Vec_Seq        *s;
   PetscInt       n = v->map->n;
@@ -89,7 +100,15 @@ PetscErrorCode VecCUDACopyFromGPUSome(Vec v)
     s->array           = array;
     s->array_allocated = array;
   }
-  /* now in here we have to do a scatter of some kind */
+  if (v->valid_GPU_array == PETSC_CUDA_GPU) {
+    ierr = PetscLogEventBegin(VEC_CUDACopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
+    thrust::copy(
+		 thrust::make_permutation_iterator(((VecSeqCUDA_Container *)v->spptr)->GPUarray->begin(),indicesGPU->begin()),
+		 thrust::make_permutation_iterator(((VecSeqCUDA_Container *)v->spptr)->GPUarray->begin(),indicesGPU->end()),
+		 thrust::make_permutation_iterator(s->array,indicesCPU->begin()));
+    ierr = PetscLogEventEnd(VEC_CUDACopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
+  }
+  v->valid_GPU_array = PETSC_CUDA_CPU;
   PetscFunctionReturn(0);
 }
 
@@ -1317,9 +1336,7 @@ PetscErrorCode VecDestroy_SeqCUDA(Vec v)
   PetscFunctionBegin;
   try {
     if (v->spptr) {
-      if (((VecSeqCUDA_Container *)v->spptr)->GPUarray) {
-	delete ((VecSeqCUDA_Container *)v->spptr)->GPUarray;
-      }
+      delete ((VecSeqCUDA_Container *)v->spptr)->GPUarray;
       delete (VecSeqCUDA_Container *)v->spptr;
     }
   } catch(char* ex) {

@@ -17,9 +17,7 @@ PetscErrorCode VecDestroy_MPICUDA(Vec v)
   PetscFunctionBegin;
   try{
     if (v->spptr) {
-      if(((VecSeqCUDA_Container*)v->spptr)->GPUarray) {
-	delete ((VecSeqCUDA_Container*)v->spptr)->GPUarray;
-      }
+      delete ((VecSeqCUDA_Container*)v->spptr)->GPUarray;
       delete (VecSeqCUDA_Container *)v->spptr;
     }
   } catch(char* ex){

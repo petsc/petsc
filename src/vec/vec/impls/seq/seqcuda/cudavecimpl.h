@@ -7,6 +7,11 @@
 #include <thrust/device_vector.h>
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/transform.h>
+#include <thrust/iterator/permutation_iterator.h>
+
+#define CUSPARRAY cusp::array1d<PetscScalar,cusp::device_memory>
+#define CUSPINTARRAYGPU cusp::array1d<PetscInt,cusp::device_memory>
+#define CUSPINTARRAYCPU cusp::array1d<PetscInt,cusp::host_memory>
 
 EXTERN PetscErrorCode VecDotNorm2_SeqCUDA(Vec,Vec,PetscScalar *, PetscScalar *);
 EXTERN PetscErrorCode VecPointwiseDivide_SeqCUDA(Vec,Vec,Vec);
@@ -38,22 +43,19 @@ EXTERN PetscErrorCode VecSetRandom_SeqCUDA(Vec,PetscRandom);
 
 EXTERN PetscErrorCode VecCUDACopyToGPU_Public(Vec);
 EXTERN PetscErrorCode VecCUDAAllocateCheck_Public(Vec);
+EXTERN PetscErrorCode VecCUDACopyToGPUSome_Public(Vec,CUSPINTARRAYCPU*,CUSPINTARRAYGPU*);
 
 EXTERN PetscTruth synchronizeCUDA;
 #define CHKERRCUDA(err) if (err != CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err)
 
 #define VecCUDACastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])
-#define CUSPARRAY cusp::array1d<PetscScalar,cusp::device_memory>
-#define CUSPINTARRAYGPU cusp::array1d<PetscInt,cusp::device_memory>
-#define CUSPINTARRAYCPU cusp::array1d<PetscInt,cusp::host_memory>
+
 #define WaitForGPU() synchronizeCUDA ? cudaThreadSynchronize() : 0
 
 struct VecSeqCUDA_Container {
   /* eventually we should probably move the GPU flag into here 
      also need to add deletion of cpu/gpu indices
   */
-  CUSPINTARRAYGPU* GPUindices; /* if we're using VecCUDACopyFrom(To)GPUSome then these two arrays hold the scatter indices */ 
-  CUSPINTARRAYCPU* CPUindices;
   CUSPARRAY*       GPUarray;  /* this always holds the GPU data */
 };
 
@@ -107,6 +109,28 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
     ierr = PetscLogEventEnd(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
     v->valid_GPU_array = PETSC_CUDA_BOTH;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUDACopyToGPUSome"
+PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPUSome(Vec v,CUSPINTARRAYCPU *indicesCPU,CUSPINTARRAYGPU *indicesGPU)
+{
+  Vec_Seq        *s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
+  s = (Vec_Seq *)v->data;
+  if (v->valid_GPU_array == PETSC_CUDA_CPU) {
+    ierr = PetscLogEventBegin(VEC_CUDACopyToGPUSome,v,0,0,0);CHKERRQ(ierr);
+    thrust::copy(
+		 thrust::make_permutation_iterator(s->array,indicesCPU->begin()),
+		 thrust::make_permutation_iterator(s->array,indicesCPU->end()),
+		 thrust::make_permutation_iterator(((VecSeqCUDA_Container *)v->spptr)->GPUarray->begin(),indicesGPU->begin()));
+    ierr = PetscLogEventEnd(VEC_CUDACopyToGPUSome,v,0,0,0);CHKERRQ(ierr);
+  }
+  v->valid_GPU_array = PETSC_CUDA_GPU;
   PetscFunctionReturn(0);
 }
 
