@@ -29,6 +29,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       its;
   PetscScalar    *xx;
+  SNESConvergedReason reason;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   
@@ -85,9 +86,10 @@ int main(int argc,char **argv)
   */
 
   ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
-  ierr = VecView(x,0);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %D\n\n",its);CHKERRQ(ierr);
+  ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s number of Newton iterations = %D\n\n",SNESConvergedReasons[reason],its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
