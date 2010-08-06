@@ -44,7 +44,18 @@ EXTERN PetscTruth synchronizeCUDA;
 
 #define VecCUDACastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])
 #define CUSPARRAY cusp::array1d<PetscScalar,cusp::device_memory>
+#define CUSPINTARRAYGPU cusp::array1d<PetscInt,cusp::device_memory>
+#define CUSPINTARRAYCPU cusp::array1d<PetscInt,cusp::host_memory>
 #define WaitForGPU() synchronizeCUDA ? cudaThreadSynchronize() : 0
+
+struct VecSeqCUDA_Container {
+  /* eventually we should probably move the GPU flag into here 
+     also need to add deletion of cpu/gpu indices
+  */
+  CUSPINTARRAYGPU* GPUindices; /* if we're using VecCUDACopyFrom(To)GPUSome then these two arrays hold the scatter indices */ 
+  CUSPINTARRAYCPU* CPUindices;
+  CUSPARRAY*       GPUarray;  /* this always holds the GPU data */
+};
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUDAAllocateCheck"
@@ -52,11 +63,13 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDAAllocateCheck(Vec v)
 {
   PetscErrorCode ierr;
   Vec_Seq   *s;
+
   PetscFunctionBegin;
   if (v->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
     try {
-	v->spptr= new CUSPARRAY;
-	((CUSPARRAY *)(v->spptr))->resize((PetscBLASInt)v->map->n);
+        v->spptr = new VecSeqCUDA_Container;
+	((VecSeqCUDA_Container*)v->spptr)->GPUarray = new CUSPARRAY;
+	((VecSeqCUDA_Container*)v->spptr)->GPUarray->resize((PetscBLASInt)v->map->n);
 	ierr = WaitForGPU();CHKERRQ(ierr);
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
@@ -86,7 +99,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
   if (v->valid_GPU_array == PETSC_CUDA_CPU){
     ierr = PetscLogEventBegin(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
     try{
-      ((CUSPARRAY *)(v->spptr))->assign(*(PetscScalar**)v->data,*(PetscScalar**)v->data + cn);
+      ((VecSeqCUDA_Container*)v->spptr)->GPUarray->assign(*(PetscScalar**)v->data,*(PetscScalar**)v->data + cn);
       ierr = WaitForGPU();CHKERRQ(ierr);
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);

@@ -15,7 +15,16 @@ PetscErrorCode VecDestroy_MPICUDA(Vec v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  delete (CUSPARRAY *)v->spptr;
+  try{
+    if (v->spptr) {
+      if(((VecSeqCUDA_Container*)v->spptr)->GPUarray) {
+	delete ((VecSeqCUDA_Container*)v->spptr)->GPUarray;
+      }
+      delete (VecSeqCUDA_Container *)v->spptr;
+    }
+  } catch(char* ex){
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+  }
   ierr = VecDestroy_MPI(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
