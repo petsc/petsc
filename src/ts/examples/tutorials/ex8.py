@@ -33,7 +33,7 @@ class MyODE:
     P.assemble()
     return True # same_nz
 
-da = PETSc.DA().create([9],comm=PETSc.COMM_WORLD)
+da = PETSc.DA().create([-9],comm=PETSc.COMM_WORLD)
 f = da.createGlobalVector()
 x = f.duplicate()
 J = da.getMatrix(PETSc.Mat.Type.AIJ);
