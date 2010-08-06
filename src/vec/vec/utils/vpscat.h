@@ -20,7 +20,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   PetscInt               i,*indices,*sstarts,nrecvs,nsends,bs;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(xin,(const PetscScalar*)&xv);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
   if (mode & SCATTER_REVERSE) {
     to   = (VecScatter_MPI_General*)ctx->fromdata;
@@ -92,7 +92,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
       PETSCMAP1(Scatter)(to->local.n,to->local.vslots,xv,from->local.vslots,yv,addv);
     }
   }
-  ierr = VecRestoreArrayRead(xin,(const PetscScalar*)&xv);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
