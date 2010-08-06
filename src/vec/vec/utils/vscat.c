@@ -563,7 +563,7 @@ PetscErrorCode VecScatterBegin_SStoSS(VecScatter ctx,Vec x,Vec y,InsertMode addv
   PetscScalar           *xv,*yv;
   
   PetscFunctionBegin;
-  ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,(const PetscScalar **)&xv);CHKERRQ(ierr);
   if (x != y) {ierr = VecGetArray(y,&yv);CHKERRQ(ierr);} else {yv = xv;}
 
   if (mode & SCATTER_REVERSE){
@@ -606,7 +606,7 @@ PetscErrorCode VecScatterBegin_SStoSS(VecScatter ctx,Vec x,Vec y,InsertMode addv
     }
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
-  ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,(const PetscScalar **)&xv);CHKERRQ(ierr);
   if (x != y) {ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
