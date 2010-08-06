@@ -109,7 +109,8 @@ PETSC_DIR $PWD</font></li>
 (use
 --help
 for
-options or the <a href="#ExampleUsage">example usages</a>
+options
+or the <a href="#ExampleUsage">example usages</a>
 below)</li>
         <li> <font color="#ff0000">make all</font><br>
         </li>
@@ -148,8 +149,10 @@ bug-reporting</a> section</li>
 We
 use
 some
-of these scripts locally for testing - <span style="font-weight: bold;"></span>for
-example one can update these
+of
+these scripts locally for testing - <span style="font-weight: bold;"></span>for
+example
+one can update these
 files and run as:<span style="font-weight: bold;"><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span
  style="color: rgb(255, 0, 0);">config/examples/arch-osx-10.6.py</span><br>
@@ -215,6 +218,7 @@ make </font><font color="#ff0000">PETSC_ARCH=linux-gnu</font><br>
 make
 
 
+
           </font><font color="#ff0000">PETSC_ARCH=linux-gnu test</font><font
  color="#ff0000"><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -226,6 +230,7 @@ make
 make </font><font color="#ff0000">PETSC_ARCH=linux-gnu-intel</font><br>
           <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make
+
 
 
           </font><font color="#ff0000">PETSC_ARCH=linux-gnu-intel </font><font
@@ -256,7 +261,8 @@ in ~/.cshrc]<br>
 this
 variable
 should
-point to the location of the
+point
+to the location of the
 PETSc installation that is used. Multiple PETSc versions can coexist
 on the same file-system. By changing PETSC_DIR value, one can switch
 between these installed versions of PETSc.</p>
@@ -327,7 +333,8 @@ either specifying --with-cc=mpicc or --with-mpi-dir [and not
           <li><span style="color: rgb(255, 0, 0);">--with-mpi-dir=/opt/mpich2-1.1
 [but
 *no*
---with-cc=gcc ]<br>
+--with-cc=gcc
+]<br>
             </span></li>
         </ul>
         <li>Configure defaults to building PETSc in debug mode. One can
@@ -494,7 +501,8 @@ download/install blas/lapack automatically. <br>
 [when
 fortran
 compiler
-is present]<br>
+is
+present]<br>
           </li>
           <li><span style="color: rgb(255, 0, 0);">--download-c-blas-lapack=1</span>
 [when configuring without a fortran compiler - i.e --with-fc=0]</li>
@@ -669,7 +677,8 @@ the following cygwin components are installed.<br>
       <p><font color="#551a8b"><b>Remove Cygwin link.exe: </b></font>Cygwin
 link.exe
 can
-conflict with Intel ifort and Comapq F90 compilers. If you
+conflict
+with Intel ifort and Comapq F90 compilers. If you
 are using these compilers - please do [from cygwin/bash shell]:<br>
       </p>
       <ul>
@@ -713,7 +722,8 @@ installed].<br>
 cl'
 --with-fc='win32fe
 ifort'&nbsp;
---with-cxx='win32fe cl'&nbsp; --download-f-blas-lapack=1</font></p>
+--with-cxx='win32fe
+cl'&nbsp; --download-f-blas-lapack=1</font></p>
       <p>If fortran usage is not required, use:<br>
       </p>
       <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -779,7 +789,8 @@ or GNU Debugger <b>gdb&nbsp;ex1.exe</b>.<br>
       <p><b><font color="#551a8b">Using Cygwin gcc/g++/gfortran: </font></b>One
 can
 install
-and use PETSc with gcc/gfortran compilers from cygwin. In
+and
+use PETSc with gcc/gfortran compilers from cygwin. In
 this case follow the regular instructions.<br>
       </p>
       <p><b><font color="#551a8b"><a name="Win32fe"></a>PETSc Win32
@@ -840,7 +851,8 @@ After the install is done, one has to switch to using <span
 &nbsp;If
 you've
 installed
-PETSc with the --prefix option then you DO
+PETSc
+with the --prefix option then you DO
 NOT use a PETSC_ARCH variable. You should install different
 configurations using different --prefix names.<br>
       <hr>
@@ -848,7 +860,8 @@ configurations using different --prefix names.<br>
 on
 machine
 requiring
-cross compiler or a job scheduler, such as IBM SP or IBM Blue Gene:</font></a></h3>
+cross
+compiler or a job scheduler, such as IBM SP or IBM Blue Gene:</font></a></h3>
       <p>If one has to use a cross compiler - or go through the job
 scheduler to use MPI on a
 given machine - use the configure option <span
@@ -917,20 +930,31 @@ Check config/config/asterix-tops.py for an example.<br>
         </li>
       </ul>
       <hr>
-      <h3><a name="CUDA"><font color="#551a8b">Preliminary instructions
-for using PETSc/CUDA:</font></a></h3>
-Hardware/Software used: NVidia GT200 [Tesla C1060] on Intel Xeon server
-with Ubuntu 10.04 x86_64<br>
+      <h3><a name="CUDA"><font color="#551a8b">Installing PETSc to use
+NVidia GPUs (aka CUDA)</font></a></h3>
       <ul>
-        <li>install CUDA-3.1, Thrust-v1.2.1, Cusp-v0.1 in default
-locations [along with compatible nvidia kernel driver]</li>
-        <li>make sure nvcc is in PATH, and LD_LIBRARY_PATH is set
-correctly to CUDA libs</li>
-        <li>verify CUDA installation with Nvidia CUDA SDK [by compiling 
-the SDK - and then running 'deviceQuery' &amp;&amp; 'binomialOptions -type=double']</li>
-        <li>configure and build current petsc-dev with
-./config/examples/arch-cuda-double.py</li>
-        <li>run a sample example with:</li>
+        <li>Install CUDA-3.1, Thrust-v1.2.1, Cusp-v0.1 in default
+locations (have links to them???)</li>
+        <li>Make sure nvcc is in PATH</li>
+        <li>On Linux</li>
+        <ul>
+          <li>install compatible NVidia kernel driver (have links to
+them and show how to install kernel driver???)<br>
+          </li>
+          <li>make sure&nbsp; LD_LIBRARY_PATH is set to point to the
+CUDA libraries (show example???)<br>
+          </li>
+          <li>verify CUDA installation with Nvidia CUDA SDK [by
+compiling the SDK - and then running 'deviceQuery' &amp;&amp;
+'binomialOptions -type=double'] (how do you do this????)<br>
+          </li>
+        </ul>
+        <li>Configure and build PETSc with
+the additional ./configure options --with-cuda=1 --with-cusp=1
+--with-thrust=1 (if the GPU card only supports single precision add the
+option --with-precision=single)<br>
+        </li>
+        <li>Run a sample example with:</li>
       </ul>
       <span style="color: rgb(255, 0, 0);">cd
 src/snes/examples/tutorials</span><br style="color: rgb(255, 0, 0);">
@@ -941,6 +965,9 @@ src/snes/examples/tutorials</span><br style="color: rgb(255, 0, 0);">
 -da_grid_y 100 -log_summary -mat_no_inode -preload off&nbsp;
 -cuda_synchronize</span><br>
       <br>
+&nbsp;&nbsp;&nbsp;&nbsp; We only have experience using Nvidia GPUs on
+Apple machines and Intel Xeon servers running Ubuntu 10.04 x86_64
+NVidia GT200 [Tesla C1060]&nbsp;
       <hr>
       <p></p>
       <p><font color="#551a8b"><b><a
