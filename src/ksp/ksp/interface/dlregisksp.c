@@ -94,9 +94,9 @@ const char *KSPNormTypes[]                = {"NO","PRECONDITIONED","UNPRECONDITI
 const char *KSPConvergedReasons_Shifted[] = {"DIVERGED_INDEFINITE_MAT","DIVERGED_NAN","DIVERGED_INDEFINITE_PC",
 					     "DIVERGED_NONSYMMETRIC", "DIVERGED_BREAKDOWN_BICG","DIVERGED_BREAKDOWN",
                                              "DIVERGED_DTOL","DIVERGED_ITS","DIVERGED_NULL","","CONVERGED_ITERATING",
-                                             "","CONVERGED_RTOL","CONVERGED_ATOL","CONVERGED_ITS",
+                                             "CONVERGED_RTOL_NORMAL","CONVERGED_RTOL","CONVERGED_ATOL","CONVERGED_ITS",
                                              "CONVERGED_CG_NEG_CURVE","CONVERGED_CG_CONSTRAINED","CONVERGED_STEP_LENGTH",
-                                             "CONVERGED_HAPPY_BREAKDOWN","KSPConvergedReason","KSP_",0};
+                                             "CONVERGED_HAPPY_BREAKDOWN","CONVERGED_ATOL_NORMAL","KSPConvergedReason","KSP_",0};
 const char **KSPConvergedReasons = KSPConvergedReasons_Shifted + 10;
 
 static PetscTruth KSPPackageInitialized = PETSC_FALSE;
