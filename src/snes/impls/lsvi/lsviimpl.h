@@ -1,10 +1,10 @@
 /* 
-   Private context for a Newton line search method for solving
-   systems of nonlinear equations
+   Private context for semismooth newton method with line search for solving
+   system of mixed complementarity equations
  */
 
-#ifndef __SNES_LS_H
-#define __SNES_LS_H
+#ifndef __SNES_LSVI_H
+#define __SNES_LSVI_H
 #include "private/snesimpl.h"
 
 typedef struct {
@@ -19,7 +19,7 @@ typedef struct {
   PetscErrorCode           (*postcheckstep)(SNES,Vec,Vec,Vec,void*,PetscTruth*,PetscTruth*); /* step-checking routine (optional) */
   void                     *postcheck;                                                       /* user-defined step-checking context (optional) */
   PetscViewerASCIIMonitor  monitor;
-} SNES_LS;
+} SNES_LSVI;
 
 #endif
 

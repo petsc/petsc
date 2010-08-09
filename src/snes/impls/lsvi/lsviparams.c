@@ -1,6 +1,6 @@
 #define PETSCSNES_DLL
 
-#include "../src/snes/impls/ls/lsimpl.h"  /*I "petscsnes.h" I*/
+#include "../src/snes/impls/lsvi/lsviimpl.h"  /*I "petscsnes.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetLineSearchParams"
@@ -31,7 +31,7 @@
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetParams(SNES snes,PetscReal alpha,PetscReal maxstep,PetscReal minlambda)
 {
-  SNES_LS *ls = (SNES_LS*)snes->data;
+  SNES_LSVI *ls = (SNES_LSVI*)snes->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -75,7 +75,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetParams(SNES snes,PetscReal a
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchGetParams(SNES snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *minlambda)
 {
-  SNES_LS *ls = (SNES_LS*)snes->data;
+  SNES_LSVI *ls = (SNES_LSVI*)snes->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
