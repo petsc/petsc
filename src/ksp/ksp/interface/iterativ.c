@@ -424,11 +424,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP ksp,PetscInt n,PetscReal 
   PetscFunctionReturn(0);
 }
 
-typedef struct {
-  PetscTruth initialrtol;    /* default relative residual decrease is computing from initial residual, not rhs */
-  PetscTruth mininitialrtol; /* default relative residual decrease is computing from min of initial residual and rhs */
-  Vec        work;
-} KSPDefaultConvergedCtx;
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDefaultConvergedCreate"

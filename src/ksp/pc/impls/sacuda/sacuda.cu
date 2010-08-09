@@ -96,7 +96,7 @@ static PetscErrorCode PCApply_SACUDA(PC pc,Vec x,Vec y)
   ierr = VecCUDACopyToGPU(x);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(y);CHKERRQ(ierr);
   try {
-    cusp::multiply(*sac->SACUDA,*(CUSPARRAY *)(x->spptr),*(CUSPARRAY *)(y->spptr));
+    cusp::multiply(*sac->SACUDA,*((VecSeqCUDA_Container *)x->spptr)->GPUarray,*((VecSeqCUDA_Container *)y->spptr)->GPUarray);
     y->valid_GPU_array = PETSC_CUDA_GPU;
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);

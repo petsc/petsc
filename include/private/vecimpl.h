@@ -172,6 +172,7 @@ extern PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load
 extern PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
 extern PetscLogEvent VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier, VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ, VEC_Ops;
 extern PetscLogEvent VEC_CUDACopyToGPU, VEC_CUDACopyFromGPU;
+extern PetscLogEvent VEC_CUDACopyToGPUSome, VEC_CUDACopyFromGPUSome;
 
 #if defined(PETSC_HAVE_CUDA)
 EXTERN PetscErrorCode VecCUDACopyFromGPU(Vec v);

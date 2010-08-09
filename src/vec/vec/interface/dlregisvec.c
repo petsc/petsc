@@ -158,7 +158,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
   ierr = PetscLogEventRegister("VecNormalize",     VEC_CLASSID,&VEC_Normalize);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscLogEventRegister("VecCUDACopyTo",     VEC_CLASSID,&VEC_CUDACopyToGPU);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecCUDACopyFrom",     VEC_CLASSID,&VEC_CUDACopyFromGPU);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecCUDACopyFrom",   VEC_CLASSID,&VEC_CUDACopyFromGPU);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecCopyToSome",     VEC_CLASSID,&VEC_CUDACopyToGPUSome);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecCopyFromSome",   VEC_CLASSID,&VEC_CUDACopyFromGPUSome);CHKERRQ(ierr);
 #endif
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(VEC_DotBarrier, PETSC_FALSE);CHKERRQ(ierr);
