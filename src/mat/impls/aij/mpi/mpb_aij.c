@@ -26,10 +26,17 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, Mat* subM
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
   Mat_SeqAIJ*    aijB = (Mat_SeqAIJ*)aij->B->data;
   PetscMPIInt    commRank,subCommSize,subCommRank;
-  PetscMPIInt    *commRankMap,subRank,rank;
+  PetscMPIInt    *commRankMap,subRank,rank,commsize;
   PetscInt       *garrayCMap,col,i,j,*nnz,newRow,newCol;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(((PetscObject)mat)->comm,&commsize);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(subComm,&subCommSize);CHKERRQ(ierr);
+  if (subCommSize > commsize) SETERRQ2(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"CommSize %D < SubCommZize %D",commsize,subCommSize);
+  if (commsize == 1){
+    ierr = MatDuplicate(mat,MAT_COPY_VALUES,subMat);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 
   /* create subMat object with the relavent layout */
   ierr = MatCreate(subComm,subMat);CHKERRQ(ierr);
@@ -43,7 +50,6 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, Mat* subM
 
   /* create a map of comm_rank from subComm to comm */
   ierr = MPI_Comm_rank(((PetscObject)mat)->comm,&commRank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(subComm,&subCommSize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(subComm,&subCommRank);CHKERRQ(ierr);
   ierr = PetscMalloc(subCommSize*sizeof(PetscMPIInt),&commRankMap);CHKERRQ(ierr);
   ierr = MPI_Allgather(&commRank,1,MPI_INT,commRankMap,1,MPI_INT,subComm);CHKERRQ(ierr);
@@ -99,6 +105,5 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, Mat* subM
   ierr = PetscFree(commRankMap);CHKERRQ(ierr);
   ierr = PetscFree(garrayCMap);CHKERRQ(ierr);
   ierr = PetscFree(nnz);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
