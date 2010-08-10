@@ -27,12 +27,13 @@ int main(int argc,char **args)
   PetscMPIInt       size;
   Vec               x,b,y,b1;
   DA                da;
-  Mat               A,F,C,X,C1;
+  Mat               A,F,RHS,X,C1;
   MatFactorInfo     info;
   IS                perm,iperm;
   PetscInt          dof=1,M=-8,m,n,nrhs;
   PetscScalar       one = 1.0;
   PetscReal         norm;
+  PetscTruth        InplaceLU;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -61,16 +62,42 @@ int main(int argc,char **args)
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   nrhs = 2;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-nrhs",&nrhs,PETSC_NULL);CHKERRQ(ierr);
-  ierr = ComputeRHSMatrix(m,nrhs,&C);CHKERRQ(ierr);
-  ierr = MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&X);CHKERRQ(ierr);
-  
+  ierr = ComputeRHSMatrix(m,nrhs,&RHS);CHKERRQ(ierr);
+  ierr = MatDuplicate(RHS,MAT_DO_NOT_COPY_VALUES,&X);CHKERRQ(ierr);
 
   ierr = MatGetOrdering(A,MATORDERINGND,&perm,&iperm);CHKERRQ(ierr);
-  ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
-  ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
-  info.fill = 5.0;
-  ierr = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
+  
+  
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-inplacelu",&InplaceLU,PETSC_NULL);CHKERRQ(ierr);
+  if (!InplaceLU){
+    ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+    info.fill = 5.0;
+    ierr = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
+    ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
+  } else { /* Test inplace factorization */  
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&F);CHKERRQ(ierr); 
+    /* or create F without DA 
+    const MatType     type;
+    PetscInt          i,ncols;
+    const PetscInt    *cols;
+    const PetscScalar *vals;
+    ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
+    ierr = MatGetType(A,&type);CHKERRQ(ierr);
+    ierr = MatCreate(((PetscObject)A)->comm,&F);CHKERRQ(ierr);
+    ierr = MatSetSizes(F,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
+    ierr = MatSetType(F,type);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(F);CHKERRQ(ierr);
+    for (i=0; i<m; i++) {
+      ierr = MatGetRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+      ierr = MatSetValues(F,1,&i,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(F,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(F,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    */
+    ierr = MatLUFactor(F,perm,iperm,&info);CHKERRQ(ierr);
+  }
+
   ierr = VecDuplicate(y,&b1);CHKERRQ(ierr);
  
   /* MatSolve */
@@ -106,11 +133,12 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveTransposeAdd  : Error of norm %A\n",norm);CHKERRQ(ierr);
   
   /* MatMatSolve */
-  ierr = MatMatSolve(F,C,X);CHKERRQ(ierr);
+  ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
   ierr = MatMatMult(A,X,MAT_INITIAL_MATRIX,2.0,&C1);CHKERRQ(ierr);
-  ierr = MatAXPY(C1,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatAXPY(C1,-1.0,RHS,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C1,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMatSolve           : Error of norm %A\n",norm);CHKERRQ(ierr);
+
 
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);
@@ -118,7 +146,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(y);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = MatDestroy(F);CHKERRQ(ierr);
-  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = MatDestroy(RHS);CHKERRQ(ierr);
   ierr = MatDestroy(C1);CHKERRQ(ierr);
   ierr = MatDestroy(X);CHKERRQ(ierr);
   ierr = ISDestroy(perm);CHKERRQ(ierr);
