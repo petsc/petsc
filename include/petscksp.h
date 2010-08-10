@@ -369,6 +369,8 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetLagNorm(KSP,PetscTruth);
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetTolerances()
 E*/
 typedef enum {/* converged */
+              KSP_CONVERGED_RTOL_NORMAL        =  1,
+              KSP_CONVERGED_ATOL_NORMAL        =  9,
               KSP_CONVERGED_RTOL               =  2,
               KSP_CONVERGED_ATOL               =  3,
               KSP_CONVERGED_ITS                =  4,

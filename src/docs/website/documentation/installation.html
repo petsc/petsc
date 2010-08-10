@@ -933,26 +933,33 @@ Check config/config/asterix-tops.py for an example.<br>
       <h3><a name="CUDA"><font color="#551a8b">Installing PETSc to use
 NVidia GPUs (aka CUDA)</font></a></h3>
       <ul>
-        <li>Install CUDA-3.1, Thrust-v1.2.1, Cusp-v0.1 in default
-locations (have links to them???)</li>
+        <li>Install <a href="http://developer.nvidia.com/object/cuda_3_1_downloads.html">CUDA-3.1</a>,
+  <a href="http://code.google.com/p/thrust/">Thrust-v1.2.1</a>,
+  <a href="http://code.google.com/p/cusp-library/">Cusp-v0.1</a> in default locations</li>
+        <ul>
+          <li>If not in the default location, you can indicate them using --with-thrust-dir and --with-cusp-dir</li>
+        </ul>
         <li>Make sure nvcc is in PATH</li>
         <li>On Linux</li>
         <ul>
-          <li>install compatible NVidia kernel driver (have links to
-them and show how to install kernel driver???)<br>
+          <li>install compatible NVidia
+          kernel <a href="http://developer.nvidia.com/object/cuda_3_1_downloads.html#Linux">developer driver</a> by
+          running the executable you download, as root</li>
+          <li>make sure&nbsp; LD_LIBRARY_PATH is set to point to the CUDA libraries, for instance
+            <ul>
+              <li>LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib</li>
+            </ul>
           </li>
-          <li>make sure&nbsp; LD_LIBRARY_PATH is set to point to the
-CUDA libraries (show example???)<br>
-          </li>
-          <li>verify CUDA installation with Nvidia CUDA SDK [by
-compiling the SDK - and then running 'deviceQuery' &amp;&amp;
-'binomialOptions -type=double'] (how do you do this????)<br>
+          <li>verify CUDA installation with Nvidia CUDA SDK [by compiling the SDK - and then running 'deviceQuery'
+          &amp;&amp; 'binomialOptions -type=double'] (how do you do this????)<br>
           </li>
         </ul>
-        <li>Configure and build PETSc with
-the additional ./configure options --with-cuda=1 --with-cusp=1
---with-thrust=1 (if the GPU card only supports single precision add the
-option --with-precision=single)<br>
+        <li>Configure and build PETSc with the additional configure options
+          <ul>
+            <li> --with-cuda=1 --with-cusp=1 --with-thrust=1</li>
+            <li>if the GPU card only supports single precision add --with-precision=single</li>
+            <li>if you did not install in default locations add --with-thrust-dir=path_to_thrust and --with-cusp-dir=path_to_cusp</li>
+          </ul>
         </li>
         <li>Run a sample example with:</li>
       </ul>
