@@ -154,8 +154,7 @@ void PETSC_DLLEXPORT MPIAPI PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Da
     xout[2*i]    = PetscMax(xout[2*i],xin[2*i]); 
     xout[2*i+1] += xin[2*i+1]; 
   }
-  PetscStackPop;
-  return;
+  PetscFunctionReturnVoid();
 }
 EXTERN_C_END
 
@@ -209,9 +208,7 @@ void PETSC_DLLEXPORT MPIAPI PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt
       xout[2*i+1] = xin[2*i+1];
     }
   }
-
-  PetscStackPop;
-  return;
+  PetscFunctionReturnVoid();
 }
 EXTERN_C_END
 
@@ -237,9 +234,7 @@ void PETSC_DLLEXPORT MPIAPI PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt
       xout[2*i+1] = xin[2*i+1];
     }
   }
-
-  PetscStackPop;
-  return;
+  PetscFunctionReturnVoid();
 }
 EXTERN_C_END
 /* ---------------------------------------------------------------------------------------*/
@@ -269,9 +264,7 @@ void PETSC_DLLEXPORT PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Data
   for (i=0; i<count; i++) {
     xout[i] += xin[i]; 
   }
-
-  PetscStackPop;
-  return;
+  PetscFunctionReturnVoid();
 }
 EXTERN_C_END
 #endif
