@@ -6,6 +6,7 @@ docs/apiref
 docs/usrman
 dist
 MANIFEST
+__pycache__
 *.pyc
 *.pyo
 *~
