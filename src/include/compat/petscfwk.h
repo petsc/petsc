@@ -16,7 +16,7 @@ typedef struct _p_PetscFwk *PetscFwk;
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkCreate"
-PetscErrorCode PetscFwkCreate(MPI_Comm comm,PetscFwk *fwk){PetscFwk_ERR_SUP}
+static PetscErrorCode PetscFwkCreate(MPI_Comm comm,PetscFwk *fwk){PetscFwk_ERR_SUP}
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkDestroy"
