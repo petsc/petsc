@@ -320,6 +320,9 @@ cdef object vecgetvalues(PetscVec vec, object oindices, object values):
 
 # --------------------------------------------------------------------
 
+cdef inline object vec_getarray(Vec self):
+    return asarray(self)
+
 cdef inline int vec_setarray(Vec self, object o) except -1:
     cdef PetscInt na=0, nv=0, i=0
     cdef PetscScalar *va=NULL, *vv=NULL
@@ -342,7 +345,7 @@ cdef inline int vec_setarray(Vec self, object o) except -1:
 cdef object vec_getitem(Vec self, object i):
     cdef PetscInt N=0
     if i is Ellipsis:
-        return asarray(self)
+        return vec_getarray(self)
     if isinstance(i, slice):
         CHKERR( VecGetSize(self.vec, &N) )
         start, stop, stride = i.indices(toInt(N))

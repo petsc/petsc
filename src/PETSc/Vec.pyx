@@ -309,14 +309,8 @@ cdef class Vec(Object):
         CHKERR( MPI_Comm_size(comm, &size) )
         return array_i(size+1, rng)
 
-    def getArray(self, out=None):
-        array = asarray(self)
-        if out is None:
-            out = array
-        else:
-            out = asarray(out)
-            out.flat[:] = array
-        return out
+    def getArray(self):
+        return vec_getarray(self)
 
     def setArray(self, array):
         vec_setarray(self, array)
@@ -703,9 +697,15 @@ cdef class Vec(Object):
         def __get__(self):
             return PetscVec_array_struct(self, self.vec)
 
+    def __array__(self, dtype=None):
+        array = self.getArray()
+        if dtype is not None:
+            array = array.astype(dtype)
+        return array
+
     property array:
         def __get__(self):
-            return asarray(self)
+            return vec_getarray(self)
         def __set__(self, value):
             vec_setarray(self, value)
 
