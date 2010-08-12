@@ -7,6 +7,9 @@
 #define __SNES_LSVI_H
 #include "private/snesimpl.h"
 
+#define PETSC_LSVI_INF  1.0e20
+#define PETSC_LSVI_EPS  DBL_EPSILON
+
 typedef struct {
   PetscErrorCode           (*LineSearch)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscTruth*);
   void                     *lsP;                              /* user-defined line-search context (optional) */
