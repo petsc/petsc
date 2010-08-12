@@ -275,6 +275,7 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
 PetscErrorCode SNESSetUp_LSVI(SNES snes)
 {
   PetscErrorCode ierr;
+  SNES_LSVI      *lsvi = (SNES_LSVI*) snes->data;
 
   PetscFunctionBegin;
   if (!snes->vec_sol_update) {
@@ -286,6 +287,13 @@ PetscErrorCode SNESSetUp_LSVI(SNES snes)
     ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work);CHKERRQ(ierr);
     ierr = PetscLogObjectParents(snes,snes->nwork,snes->work);CHKERRQ(ierr);
   }
+
+  ierr = VecDuplicate(snes->vec_sol, &lsvi->phi); CHKERRQ(ierr);
+  ierr = VecDuplicate(snes->vec_sol, &lsvi->dpsi); CHKERRQ(ierr);
+  ierr = VecDuplicate(snes->vec_sol, &lsvi->Da); CHKERRQ(ierr);
+  ierr = VecDuplicate(snes->vec_sol, &lsvi->Db); CHKERRQ(ierr);
+  ierr = VecDuplicate(snes->vec_sol, &lsvi->xl); CHKERRQ(ierr);
+  ierr = VecDuplicate(snes->vec_sol, &lsvi->xu); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -302,7 +310,7 @@ PetscErrorCode SNESSetUp_LSVI(SNES snes)
 #define __FUNCT__ "SNESDestroy_LSVI"
 PetscErrorCode SNESDestroy_LSVI(SNES snes)
 {
-  SNES_LSVI        *ls = (SNES_LSVI*) snes->data;
+  SNES_LSVI        *lsvi = (SNES_LSVI*) snes->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -315,14 +323,21 @@ PetscErrorCode SNESDestroy_LSVI(SNES snes)
     snes->nwork = 0;
     snes->work  = PETSC_NULL;
   }
-  if (ls->monitor) {
-    ierr = PetscViewerASCIIMonitorDestroy(ls->monitor);CHKERRQ(ierr);
+  if (lsvi->monitor) {
+    ierr = PetscViewerASCIIMonitorDestroy(lsvi->monitor);CHKERRQ(ierr);
   } 
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
 
   /* clear composed functions */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSet_C","",PETSC_NULL);CHKERRQ(ierr);
 
+  /* clear vectors */
+  ierr = VecDestroy(lsvi->phi); CHKERRQ(ierr);
+  ierr = VecDestroy(lsvi->dpsi); CHKERRQ(ierr);
+  ierr = VecDestroy(lsvi->Da); CHKERRQ(ierr);
+  ierr = VecDestroy(lsvi->Db); CHKERRQ(ierr);
+  ierr = VecDestroy(lsvi->xl); CHKERRQ(ierr);
+  ierr = VecDestroy(lsvi->xu); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -809,14 +824,16 @@ static PetscErrorCode SNESSetFromOptions_LSVI(SNES snes)
   PetscTruth     flg,set;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNES Line search options");CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_ls_alpha","Function norm must decrease by","None",ls->alpha,&ls->alpha,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_ls_maxstep","Step must be less than","None",ls->maxstep,&ls->maxstep,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_ls_minlambda","Minimum lambda allowed","None",ls->minlambda,&ls->minlambda,0);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("SNES semismooth method options");CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_lsvi_alpha","Function norm must decrease by","None",ls->alpha,&ls->alpha,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_lsvi_maxstep","Step must be less than","None",ls->maxstep,&ls->maxstep,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_lsvi_minlambda","Minimum lambda allowed","None",ls->minlambda,&ls->minlambda,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_lsvi_delta","descent test fraction","None",ls->delta,&ls->delta,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_lsvi_rho","descent test power","None",ls->rho,&ls->rho,0);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-snes_ls_monitor","Print progress of line searches","SNESLineSearchSetMonitor",ls->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
     if (set) {ierr = SNESLineSearchSetMonitor(snes,flg);CHKERRQ(ierr);}
 
-    ierr = PetscOptionsEList("-snes_ls","Line search used","SNESLineSearchSet",lses,4,"cubic",&indx,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-snes_lsvi","Line search used","SNESLineSearchSet",lses,4,"cubic",&indx,&flg);CHKERRQ(ierr);
     if (flg) {
       switch (indx) {
       case 0:
@@ -841,11 +858,14 @@ static PetscErrorCode SNESSetFromOptions_LSVI(SNES snes)
       SNESLSVI - Semismooth newton method based nonlinear solver that uses a line search
 
    Options Database:
-+   -snes_ls [cubic,quadratic,basic,basicnonorms] - Selects line search
-.   -snes_ls_alpha <alpha> - Sets alpha
-.   -snes_ls_maxstep <maxstep> - Sets the maximum stepsize the line search will use (if the 2-norm(y) > maxstep then scale y to be y = (maxstep/2-norm(y)) *y)
-.   -snes_ls_minlambda <minlambda>  - Sets the minimum lambda the line search will use  minlambda / max_i ( y[i]/x[i] )
--   -snes_ls_monitor - print information about progress of line searches 
++   -snes_lsvi [cubic,quadratic,basic,basicnonorms] - Selects line search
+.   -snes_lsvi_alpha <alpha> - Sets alpha
+.   -snes_lsvi_maxstep <maxstep> - Sets the maximum stepsize the line search will use (if the 2-norm(y) > maxstep then scale y to be y = (maxstep/2-norm(y)) *y)
+.   -snes_lsvi_minlambda <minlambda>  - Sets the minimum lambda the line search will use  minlambda / max_i ( y[i]/x[i] )
+    -snes_lsvi_delta <delta> - Sets the fraction used in the descent test.
+    -snes_lsvi_rho <rho> - Sets the power used in the descent test.
+     For a descent direction to be accepted it has to satisfy the condition dpsi^T*d <= -delta*||d||^rho
+-   -snes_lsvi_monitor - print information about progress of line searches 
 
 
    Level: beginner
@@ -881,6 +901,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LSVI(SNES snes)
   neP->postcheck        = PETSC_NULL;
   neP->precheckstep     = PETSC_NULL;
   neP->precheck         = PETSC_NULL;
+  neP->rho              = 2.1;
+  neP->delta            = 1e-10;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetMonitor_C","SNESLineSearchSetMonitor_LSVI",SNESLineSearchSetMonitor_LSVI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSet_C","SNESLineSearchSet_LSVI",SNESLineSearchSet_LSVI);CHKERRQ(ierr);
