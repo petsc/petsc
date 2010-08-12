@@ -176,7 +176,7 @@ EXTERN PetscErrorCode MatConvert_Basic(Mat, const MatType,MatReuse,Mat*);
 EXTERN PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
 EXTERN PetscErrorCode MatView_Private(Mat);
 
-EXTERN PetscErrorCode MatHeaderCopy(Mat,Mat);
+EXTERN PetscErrorCode MatHeaderMerge(Mat,Mat);
 EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat);
 EXTERN PetscErrorCode MatAXPYGetxtoy_Private(PetscInt,PetscInt*,PetscInt*,PetscInt*, PetscInt*,PetscInt*,PetscInt*, PetscInt**);
 EXTERN PetscErrorCode MatPtAP_Basic(Mat,Mat,MatReuse,PetscReal,Mat*);

@@ -955,7 +955,7 @@ PetscErrorCode MatLUFactor_SeqAIJ(Mat A,IS row,IS col,const MatFactorInfo *info)
   ierr = MatLUFactorNumeric(C,A,info);CHKERRQ(ierr);
   A->ops->solve            = C->ops->solve;
   A->ops->solvetranspose   = C->ops->solvetranspose;
-  ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);
+  ierr = MatHeaderMerge(A,C);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(A,((Mat_SeqAIJ*)(A->data))->icol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

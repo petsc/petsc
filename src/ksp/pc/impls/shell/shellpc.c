@@ -106,9 +106,7 @@ static PetscErrorCode PCSetUp_Shell(PC pc)
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
   if (!shell->setup) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No setup() routine provided to Shell PC");
-  PetscStackPush("PCSHELL user function setup()");
-  ierr  = (*shell->setup)(pc);CHKERRQ(ierr);
-  PetscStackPop;
+  PetscStackCall("PCSHELL user function setup()",ierr  = (*shell->setup)(pc);CHKERRQ(ierr));
   PetscFunctionReturn(0);
 }
 
@@ -122,9 +120,7 @@ static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
   if (!shell->apply) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No apply() routine provided to Shell PC");
-  PetscStackPush("PCSHELL user function apply()");
-  ierr  = (*shell->apply)(pc,x,y);CHKERRQ(ierr);
-  PetscStackPop;
+  PetscStackCall("PCSHELL user function apply()",ierr = (*shell->apply)(pc,x,y);CHKERRQ(ierr));
   PetscFunctionReturn(0);
 }
 
@@ -138,9 +134,7 @@ static PetscErrorCode PCApplyBA_Shell(PC pc,PCSide side,Vec x,Vec y,Vec w)
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
   if (!shell->applyBA) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No applyBA() routine provided to Shell PC");
-  PetscStackPush("PCSHELL user function applyBA()");
-  ierr  = (*shell->applyBA)(pc,side,x,y,w);CHKERRQ(ierr);
-  PetscStackPop;
+  PetscStackCall("PCSHELL user function applyBA()",ierr  = (*shell->applyBA)(pc,side,x,y,w);CHKERRQ(ierr));
   PetscFunctionReturn(0);
 }
 
@@ -154,9 +148,7 @@ static PetscErrorCode PCPreSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
   if (!shell->presolve) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No presolve() routine provided to Shell PC");
-  PetscStackPush("PCSHELL user function presolve()");
-  ierr  = (*shell->presolve)(pc,ksp,b,x);CHKERRQ(ierr);
-  PetscStackPop;
+  PetscStackCall("PCSHELL user function presolve()",ierr  = (*shell->presolve)(pc,ksp,b,x);CHKERRQ(ierr));
   PetscFunctionReturn(0);
 }
 
@@ -170,9 +162,7 @@ static PetscErrorCode PCPostSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
   if (!shell->postsolve) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No postsolve() routine provided to Shell PC");
-  PetscStackPush("PCSHELL user function postsolve()");
-  ierr  = (*shell->postsolve)(pc,ksp,b,x);CHKERRQ(ierr);
-  PetscStackPop;
+  PetscStackCall("PCSHELL user function postsolve()",ierr  = (*shell->postsolve)(pc,ksp,b,x);CHKERRQ(ierr));
   PetscFunctionReturn(0);
 }
 
@@ -186,9 +176,7 @@ static PetscErrorCode PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
   if (!shell->applytranspose) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No applytranspose() routine provided to Shell PC");
-  PetscStackPush("PCSHELL user function applytranspose()");
-  ierr  = (*shell->applytranspose)(pc,x,y);CHKERRQ(ierr);
-  PetscStackPop;
+  PetscStackCall("PCSHELL user function applytranspose()",ierr  = (*shell->applytranspose)(pc,x,y);CHKERRQ(ierr));
   PetscFunctionReturn(0);
 }
 
@@ -202,9 +190,7 @@ static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
   if (!shell->applyrich) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No applyrichardson() routine provided to Shell PC");
-  PetscStackPush("PCSHELL user function applyrichardson()");
-  ierr  = (*shell->applyrich)(pc,x,y,w,rtol,abstol,dtol,it,guesszero,outits,reason);CHKERRQ(ierr);
-  PetscStackPop;
+  PetscStackCall("PCSHELL user function applyrichardson()",ierr  = (*shell->applyrich)(pc,x,y,w,rtol,abstol,dtol,it,guesszero,outits,reason);CHKERRQ(ierr));
   PetscFunctionReturn(0);
 }
 
@@ -218,7 +204,7 @@ static PetscErrorCode PCDestroy_Shell(PC pc)
   PetscFunctionBegin;
   ierr = PetscFree(shell->name);CHKERRQ(ierr);
   if (shell->destroy) {
-    ierr  = (*shell->destroy)(pc);CHKERRQ(ierr);
+    PetscStackCall("PCSHELL user function destroy()",ierr  = (*shell->destroy)(pc);CHKERRQ(ierr));
   }
   ierr = PetscFree(shell);CHKERRQ(ierr);
   PetscFunctionReturn(0);

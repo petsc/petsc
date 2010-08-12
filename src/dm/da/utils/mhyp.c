@@ -11,6 +11,19 @@ EXTERN_C_BEGIN
 #include "HYPRE_parcsr_ls.h"
 EXTERN_C_END
 
+/*
+    PetscStackCallHypre - Calls a hypre library routine after pushing the name of the routine on the stack.
+
+   Input Parameters:
++   name - string that gives the name of the function being called
+-   routine - actual call to the routine
+
+   Developer Note: this is so that when a hypre routine results in a crash or corrupts memory, they get blamed instead of PETSc.
+
+*/
+#define PetscStackCallHypre(name,routine) PetscStackPush(name);ierr = routine;if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in %s()",name);PetscStackPop;
+
+
 #undef __FUNCT__
 #define __FUNCT__ "MatHYPRE_IJMatrixPreallocate"
 PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o,HYPRE_IJMatrix ij)
@@ -49,7 +62,7 @@ PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o,HYPRE_IJMatrix ij)
         nnz_o[i] = 0;
       }
     }
-    ierr = HYPRE_IJMatrixSetDiagOffdSizes(ij,nnz_d,nnz_o);CHKERRQ(ierr);
+    PetscStackCallHypre("HYPRE_IJMatrixSetDiagOffdSizes",HYPRE_IJMatrixSetDiagOffdSizes(ij,nnz_d,nnz_o));
     ierr = PetscFree(nnz_d);CHKERRQ(ierr);
     ierr = PetscFree(nnz_o);CHKERRQ(ierr);
   }
@@ -1175,3 +1188,4 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_HYPRESStruct(Mat B)
 EXTERN_C_END
 
 #endif
+ 

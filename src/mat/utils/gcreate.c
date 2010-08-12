@@ -233,20 +233,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetUpPreallocation(Mat B)
 }
 
 /*
-        Copies from Cs header to A
+        Merges some information from Cs header to A; the C object is then destroyed
 
         This is somewhat different from MatHeaderReplace() it would be nice to merge the code
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatHeaderCopy"
-PetscErrorCode MatHeaderCopy(Mat A,Mat C)
+#define __FUNCT__ "MatHeaderMerge"
+PetscErrorCode MatHeaderMerge(Mat A,Mat C)
 {
-  PetscErrorCode ierr;
-  PetscInt       refct;
-  PetscOps       *Abops;
-  MatOps         Aops;
-  char           *mtype,*mname;
-  void           *spptr;
+  PetscErrorCode         ierr;
+  PetscInt               refct;
+  PetscOps               *Abops;
+  MatOps                 Aops;
+  char                   *mtype,*mname;
+  void                   *spptr;
   ISLocalToGlobalMapping mapping,bmapping;
 
   PetscFunctionBegin;
@@ -300,10 +300,11 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
   PetscFunctionReturn(0);
 }
 /*
-        Replace A's header with that of C
-        This is essentially code moved from MatDestroy
+        Replace A's header with that of C; the C object is then destroyed
 
-        This is somewhat different from MatHeaderCopy() it would be nice to merge the code
+        This is essentially code moved from MatDestroy()
+
+        This is somewhat different from MatHeaderMerge() it would be nice to merge the code
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatHeaderReplace"

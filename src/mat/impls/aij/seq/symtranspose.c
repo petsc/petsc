@@ -192,7 +192,7 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
   if (reuse == MAT_INITIAL_MATRIX || *B != A) {
     *B = At;
   } else {
-    ierr = MatHeaderCopy(A,At);
+    ierr = MatHeaderMerge(A,At);
   }
   ierr = PetscLogEventEnd(MAT_Transpose_SeqAIJ,A,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

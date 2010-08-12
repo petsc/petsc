@@ -1562,7 +1562,7 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
   if (reuse == MAT_INITIAL_MATRIX || *B != A) {
     *B = C;
   } else {
-    ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);
+    ierr = MatHeaderMerge(A,C);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

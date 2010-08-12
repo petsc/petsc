@@ -667,6 +667,18 @@ M*/
 
 #endif
 
+/*
+    PetscStackCall - Calls an external library routine or user function after pushing the name of the routine on the stack.
+
+   Input Parameters:
++   name - string that gives the name of the function being called
+-   routine - actual call to the routine
+
+   Developer Note: this is so that when a user or external library routine results in a crash or corrupts memory, they get blamed instead of PETSc.
+
+*/
+#define PetscStackCall(name,routine) PetscStackPush(name);routine;PetscStackPop;
+
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackCreate(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackView(PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackDestroy(void);
