@@ -73,7 +73,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
 
   if (!pc->setupcalled) {
     if (!red->psubcomm) {
-      ierr = PetscSubcommCreate(comm,red->nsubcomm,&red->psubcomm);CHKERRQ(ierr);
+      ierr = PetscSubcommCreate(comm,red->nsubcomm,PETSC_SUBCOMM_INTERLACED,&red->psubcomm);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory(pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
 
       /* create a new PC that processors in each subcomm have copy of */
@@ -357,7 +357,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantGetPC_Redundant(PC pc,PC *innerpc)
   PetscFunctionBegin;
   if (!red->psubcomm) {
     ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-    ierr = PetscSubcommCreate(comm,red->nsubcomm,&red->psubcomm);CHKERRQ(ierr);
+    ierr = PetscSubcommCreate(comm,red->nsubcomm,PETSC_SUBCOMM_INTERLACED,&red->psubcomm);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
 
     /* create a new PC that processors in each subcomm have copy of */

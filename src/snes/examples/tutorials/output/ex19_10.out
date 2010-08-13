@@ -229,5 +229,9 @@ SNES Object:
       type=mpiaij, rows=196, cols=196
       total: nonzeros=3472, allocated nonzeros=3472
       total number of mallocs used during MatSetValues calls =0
-        using I-node (on process 0) routines: found 21 nodes, limit used is 5
+        Matrix Object:
+          type=mpiaij, rows=196, cols=196
+          total: nonzeros=3472, allocated nonzeros=3472
+          total number of mallocs used during MatSetValues calls =0
+            using I-node (on process 0) routines: found 21 nodes, limit used is 5
 Number of Newton iterations = 2
