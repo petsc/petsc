@@ -26,8 +26,7 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
     if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL) {
       DALocalInfo info;
       ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D N %D P %D m %D n %D p %D w %D s %D\n",
-                                                rank,da->M,da->N,da->P,da->m,da->n,da->p,da->w,da->s);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D N %D P %D m %D n %D p %D w %D s %D\n",rank,da->M,da->N,da->P,da->m,da->n,da->p,da->w,da->s);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D, Y range of indices: %D %D, Z range of indices: %D %D\n",
                                                 info.xs,info.xs+info.xm,info.ys,info.ys+info.ym,info.zs,info.zs+info.zm);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
@@ -37,8 +36,7 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
         ierr = VecGetArrayRead(da->coordinates,&coors);CHKERRQ(ierr);
         ierr = VecGetLocalSize(da->coordinates,&last);CHKERRQ(ierr);
         last = last - 3;
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Lower left corner %G %G %G : Upper right %G %G %G\n",
-                                                  coors[0],coors[1],coors[2],coors[last],coors[last+1],coors[last+2]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Lower left corner %G %G %G : Upper right %G %G %G\n",coors[0],coors[1],coors[2],coors[last],coors[last+1],coors[last+2]);CHKERRQ(ierr);
         ierr = VecRestoreArrayRead(da->coordinates,&coors);CHKERRQ(ierr);
       }
 #endif

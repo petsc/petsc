@@ -7,17 +7,7 @@
 /* Must use hypre 2.0.0 or more recent. */
 
 #include "private/pcimpl.h"          /*I "petscpc.h" I*/
-EXTERN_C_BEGIN
-#include "HYPRE.h"
-#include "HYPRE_parcsr_ls.h"
-#include "_hypre_parcsr_mv.h"
-#include "_hypre_IJ_mv.h"
-EXTERN_C_END
-
-EXTERN PetscErrorCode MatHYPRE_IJMatrixCreate(Mat,HYPRE_IJMatrix*);
-EXTERN PetscErrorCode MatHYPRE_IJMatrixCopy(Mat,HYPRE_IJMatrix);
-EXTERN PetscErrorCode MatHYPRE_IJMatrixFastCopy(Mat,HYPRE_IJMatrix);
-EXTERN PetscErrorCode VecHYPRE_IJVectorCreate(Vec,HYPRE_IJVector*);
+#include "../src/dm/da/utils/mhyp.h"
 
 /* 
    Private context (data structure) for the  preconditioner.  
@@ -1060,8 +1050,6 @@ EXTERN_C_END
 
 /* ---------------------------------------------------------------------------------------------------------------------------------*/
 
-/* working with a HYPRE_StructMatrix and need access to its data */
-#include "../src/dm/da/utils/mhyp.h"
 /* this include is needed ONLY to allow access to the private data inside the Mat object specific to hypre */
 #include "private/matimpl.h"
 
