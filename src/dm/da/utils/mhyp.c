@@ -3,7 +3,7 @@
 /*
     Creates hypre ijmatrix from PETSc matrix
 */
-
+#include "petscsys.h"
 #if defined(PETSC_HAVE_HYPRE)
 #include "private/matimpl.h"          /*I "petscmat.h" I*/
 #include "petscda.h"                  /*I "petscda.h" I*/
@@ -53,7 +53,6 @@ PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o,HYPRE_IJMatrix ij)
   }
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatHYPRE_IJMatrixCreate"
