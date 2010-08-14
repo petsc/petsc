@@ -30,15 +30,15 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
   ierr = VecCUDAAllocateCheck(yy);CHKERRQ(ierr);
   if (usecprow){ /* use compressed row format */
     try {
-      cusp::multiply(*cudastruct->mat,*((VecSeqCUDA_Container *)xx->spptr)->GPUarray,*cudastruct->tempvec);
+      cusp::multiply(*cudastruct->mat,*((Vec_CUDA *)xx->spptr)->GPUarray,*cudastruct->tempvec);
       ierr = VecSet_SeqCUDA(yy,0.0);CHKERRQ(ierr);
-      thrust::copy(cudastruct->tempvec->begin(),cudastruct->tempvec->end(),thrust::make_permutation_iterator(((VecSeqCUDA_Container *)yy->spptr)->GPUarray->begin(),cudastruct->indices->begin()));
+      thrust::copy(cudastruct->tempvec->begin(),cudastruct->tempvec->end(),thrust::make_permutation_iterator(((Vec_CUDA *)yy->spptr)->GPUarray->begin(),cudastruct->indices->begin()));
     } catch (char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
     }
   } else { /* do not use compressed row format */
     try {
-      cusp::multiply(*cudastruct->mat,*((VecSeqCUDA_Container *)xx->spptr)->GPUarray,*((VecSeqCUDA_Container *)yy->spptr)->GPUarray);
+      cusp::multiply(*cudastruct->mat,*((Vec_CUDA *)xx->spptr)->GPUarray,*((Vec_CUDA *)yy->spptr)->GPUarray);
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
     } 
@@ -76,16 +76,16 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
     try {
       ierr = VecCopy_SeqCUDA(yy,zz);CHKERRQ(ierr);
       if (a->compressedrow.nrows) {
-        cusp::multiply(*cudastruct->mat,*((VecSeqCUDA_Container *)xx->spptr)->GPUarray, *cudastruct->tempvec);
+        cusp::multiply(*cudastruct->mat,*((Vec_CUDA *)xx->spptr)->GPUarray, *cudastruct->tempvec);
         thrust::for_each(
 	   thrust::make_zip_iterator(
 		 thrust::make_tuple(
 				    cudastruct->tempvec->begin(),
-				    thrust::make_permutation_iterator(((VecSeqCUDA_Container *)zz->spptr)->GPUarray->begin(), cudastruct->indices->begin()))),
+				    thrust::make_permutation_iterator(((Vec_CUDA *)zz->spptr)->GPUarray->begin(), cudastruct->indices->begin()))),
  	   thrust::make_zip_iterator(
 		 thrust::make_tuple(
 				    cudastruct->tempvec->begin(),
-				    thrust::make_permutation_iterator(((VecSeqCUDA_Container *)zz->spptr)->GPUarray->begin(),cudastruct->indices->begin()))) + cudastruct->tempvec->size(),
+				    thrust::make_permutation_iterator(((Vec_CUDA *)zz->spptr)->GPUarray->begin(),cudastruct->indices->begin()))) + cudastruct->tempvec->size(),
 	   VecCUDAPlusEquals());
       }
     } catch(char* ex) {
@@ -94,16 +94,16 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
   } else {
     try {
       ierr = VecCopy_SeqCUDA(yy,zz);CHKERRQ(ierr);
-      cusp::multiply(*cudastruct->mat,*((VecSeqCUDA_Container *)xx->spptr)->GPUarray,*cudastruct->tempvec);
+      cusp::multiply(*cudastruct->mat,*((Vec_CUDA *)xx->spptr)->GPUarray,*cudastruct->tempvec);
       thrust::for_each(
 	 thrust::make_zip_iterator(
 		 thrust::make_tuple(
 				    cudastruct->tempvec->begin(),
-				    ((VecSeqCUDA_Container *)zz->spptr)->GPUarray->begin())),
+				    ((Vec_CUDA *)zz->spptr)->GPUarray->begin())),
 	 thrust::make_zip_iterator(
 		 thrust::make_tuple(
 				    cudastruct->tempvec->end(),
-				   ((VecSeqCUDA_Container *)zz->spptr)->GPUarray->end())),
+				   ((Vec_CUDA *)zz->spptr)->GPUarray->end())),
 	 VecCUDAPlusEquals());
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
