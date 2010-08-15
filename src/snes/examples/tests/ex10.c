@@ -1,4 +1,5 @@
 #include "petscsnes.h"
+#include "../src/snes/impls/lsvi/lsviimpl.h"
 
 static char  help[] =
 "This example is copied from the TAO package\n\
@@ -97,8 +98,8 @@ int main(int argc, char **argv)
   info = VecDuplicate(x, &xu); CHKERRQ(info);
   info = VecSet(xl, lb); CHKERRQ(info);
   info = VecSet(xu, ub); CHKERRQ(info);
-  /*  info = TaoAppSetVariableBounds(my_app,xl,xu); CHKERRQ(info); */
 
+  info = SNESLSVISetVariableBounds(snes,xl,xu);CHKERRQ(info);
 
   /* Solve the application */
   info = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(info);

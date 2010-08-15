@@ -1,3 +1,9 @@
+#include "private/snesimpl.h"
+
+#define PETSC_LSVI_INF   1.0e20
+#define PETSC_LSVI_NINF -1.0e20
+#define PETSC_LSVI_EPS  DBL_EPSILON
+
 /* 
    Private context for semismooth newton method with line search for solving
    system of mixed complementarity equations
@@ -5,10 +11,6 @@
 
 #ifndef __SNES_LSVI_H
 #define __SNES_LSVI_H
-#include "private/snesimpl.h"
-
-#define PETSC_LSVI_INF  1.0e20
-#define PETSC_LSVI_EPS  DBL_EPSILON
 
 typedef struct {
   PetscErrorCode           (*LineSearch)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscTruth*);
@@ -35,6 +37,7 @@ typedef struct {
   Vec                      Db;            /* B sub-differential work vector (row scaling) */
   Vec                      xl;            /* lower bound on variables */
   Vec                      xu;            /* upper bound on variables */
+  PetscTruth               usersetxbounds; /* flag to indicate whether the user has set bounds on variables */
 
   PetscScalar             norm_d;         /* two norm of the descent direction */
   /* Parameters for checking sufficient descent conditions satisfied */
@@ -44,3 +47,4 @@ typedef struct {
 
 #endif
 
+extern PetscErrorCode SNESLSVISetVariableBounds(SNES,Vec,Vec);

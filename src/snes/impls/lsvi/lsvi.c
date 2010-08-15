@@ -257,7 +257,7 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
 /* -------------------------------------------------------------------------- */
 /*
    SNESSetUp_LSVI - Sets up the internal data structures for the later use
-   of the SNESLS nonlinear solver.
+   of the SNESLSVI nonlinear solver.
 
    Input Parameter:
 .  snes - the SNES context
@@ -292,8 +292,16 @@ PetscErrorCode SNESSetUp_LSVI(SNES snes)
   ierr = VecDuplicate(snes->vec_sol, &lsvi->dpsi); CHKERRQ(ierr);
   ierr = VecDuplicate(snes->vec_sol, &lsvi->Da); CHKERRQ(ierr);
   ierr = VecDuplicate(snes->vec_sol, &lsvi->Db); CHKERRQ(ierr);
-  ierr = VecDuplicate(snes->vec_sol, &lsvi->xl); CHKERRQ(ierr);
-  ierr = VecDuplicate(snes->vec_sol, &lsvi->xu); CHKERRQ(ierr);
+
+  /* If the lower and upper bound on variables are not set, set it to
+     -Inf and Inf */
+  if (!lsvi->xl && !lsvi->xu) {
+    lsvi->usersetxbounds = PETSC_FALSE;
+    ierr = VecDuplicate(snes->vec_sol, &lsvi->xl); CHKERRQ(ierr);
+    ierr = VecSet(lsvi->xl,PETSC_LSVI_NINF);CHKERRQ(ierr);
+    ierr = VecDuplicate(snes->vec_sol, &lsvi->xu); CHKERRQ(ierr);
+    ierr = VecSet(lsvi->xu,PETSC_LSVI_INF);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -329,9 +337,10 @@ PetscErrorCode SNESDestroy_LSVI(SNES snes)
   ierr = VecDestroy(lsvi->dpsi); CHKERRQ(ierr);
   ierr = VecDestroy(lsvi->Da); CHKERRQ(ierr);
   ierr = VecDestroy(lsvi->Db); CHKERRQ(ierr);
-  ierr = VecDestroy(lsvi->xl); CHKERRQ(ierr);
-  ierr = VecDestroy(lsvi->xu); CHKERRQ(ierr);
-
+  if (!lsvi->usersetxbounds) {
+    ierr = VecDestroy(lsvi->xl); CHKERRQ(ierr);
+    ierr = VecDestroy(lsvi->xu); CHKERRQ(ierr);
+  }
   if (lsvi->monitor) {
     ierr = PetscViewerASCIIMonitorDestroy(lsvi->monitor);CHKERRQ(ierr);
   } 
@@ -804,6 +813,43 @@ static PetscErrorCode SNESView_LSVI(SNES snes,PetscViewer viewer)
   } else {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for SNES EQ LSVI",((PetscObject)viewer)->type_name);
   }
+  PetscFunctionReturn(0);
+}
+
+/*
+   SNESLSVISetVariableBounds - Sets the lower and upper bounds for the solution vector. xl <= x <= xu.
+
+   Input Parameters:
+.  snes - the SNES context.
+.  xl   - lower bound.
+.  xu   - upper bound.
+
+   Notes:
+   If this routine is not called then the lower and upper bounds are set to 
+   -Infinity and Infinity respectively during SNESSetUp.
+*/
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLSVISetVariableBounds"
+PetscErrorCode SNESLSVISetVariableBounds(SNES snes, Vec xl, Vec xu)
+{
+  SNES_LSVI        *lsvi = (SNES_LSVI*)snes->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(xl,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(xu,VEC_CLASSID,3);
+
+  /* Check if SNESSetFunction is called */
+  if(!snes->vec_func) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
+
+  /* Check if the vector sizes are compatible for lower and upper bounds */
+  if (xl->map->N != snes->vec_func->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths lower bound = %D solution vector = %D",xl->map->N,snes->vec_func->map->N);
+  if (xu->map->N != snes->vec_func->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths: upper bound = %D solution vector = %D",xu->map->N,snes->vec_func->map->N);
+  lsvi->usersetxbounds = PETSC_TRUE;
+  lsvi->xl = xl;
+  lsvi->xu = xu;
+
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
