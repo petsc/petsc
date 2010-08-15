@@ -323,13 +323,6 @@ PetscErrorCode SNESDestroy_LSVI(SNES snes)
     snes->nwork = 0;
     snes->work  = PETSC_NULL;
   }
-  if (lsvi->monitor) {
-    ierr = PetscViewerASCIIMonitorDestroy(lsvi->monitor);CHKERRQ(ierr);
-  } 
-  ierr = PetscFree(snes->data);CHKERRQ(ierr);
-
-  /* clear composed functions */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSet_C","",PETSC_NULL);CHKERRQ(ierr);
 
   /* clear vectors */
   ierr = VecDestroy(lsvi->phi); CHKERRQ(ierr);
@@ -338,6 +331,15 @@ PetscErrorCode SNESDestroy_LSVI(SNES snes)
   ierr = VecDestroy(lsvi->Db); CHKERRQ(ierr);
   ierr = VecDestroy(lsvi->xl); CHKERRQ(ierr);
   ierr = VecDestroy(lsvi->xu); CHKERRQ(ierr);
+
+  if (lsvi->monitor) {
+    ierr = PetscViewerASCIIMonitorDestroy(lsvi->monitor);CHKERRQ(ierr);
+  } 
+  ierr = PetscFree(snes->data);CHKERRQ(ierr);
+
+  /* clear composed functions */
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSet_C","",PETSC_NULL);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
