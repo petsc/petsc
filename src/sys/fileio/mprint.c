@@ -419,7 +419,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFlush(MPI_Comm comm)
   } else { /* other processors send queue to processor 0 */
     PrintfQueue next = queuebase,previous;
 
-    ierr = MPI_Recv(&dummy,1,MPI_INT,i,tag,comm,&status);CHKERRQ(ierr);
+    ierr = MPI_Recv(&dummy,1,MPI_INT,0,tag,comm,&status);CHKERRQ(ierr);
     ierr = MPI_Send(&queuelength,1,MPI_INT,0,tag,comm);CHKERRQ(ierr);
     for (i=0; i<queuelength; i++) {
       ierr     = MPI_Send(&next->size,1,MPI_INT,0,tag,comm);CHKERRQ(ierr);
