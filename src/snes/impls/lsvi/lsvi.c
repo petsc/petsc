@@ -71,6 +71,99 @@ PetscErrorCode SNESLSVICheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,
   PetscFunctionReturn(0);
 }
 
+/*
+  ComputeFischerFunction - Computes the semismooth fischer function for a mixed complementarity equation.
+
+  Notes:
+  The Fischer-Burmeister function is defined as
+       ff(a,b) := sqrt(a*a + b*b) - a - b                                                            
+  and is used reformulate a complementarity equation  as a semismooth equation.    
+*/
+
+#undef __FUNCT__
+#define __FUNCT__ "ComputeFischerFunction"
+static PetscErrorCode ComputeFischerFunction(PetscScalar a, PetscScalar b, PetscScalar* ff)
+{
+  PetscFunctionBegin;
+  *ff = sqrt(a*a + b*b) - a - b;
+  PetscFunctionReturn(0);
+}
+  
+/* 
+   SNESLSVIComputeSSFunction - Reformulates a system of nonlinear equations in mixed complementarity fo   rm to a system of nonlinear equations in semismooth form. 
+
+   Input Parameters:                                                                                  
+.  x - current iterate
+.  f - function evaluated at x                                                                         
+.  xl - lower bounds
+-  xu - upper bounds
+
+   Output Parameters:
+.  phi - Semismooth function
+
+   Notes:
+   The result of this function is done by cases:
++  l[i] == -infinity, u[i] == infinity  -- phi[i] = -f[i]
+.  l[i] == -infinity, u[i] finite       -- phi[i] = ss(u[i]-x[i], -f[i])                             
+.  l[i] finite,       u[i] == infinity  -- phi[i] = ss(x[i]-l[i],  f[i])                              
+.  l[i] finite < u[i] finite -- phi[i] = phi(x[i]-l[i], ss(u[i]-x[i], -f[u])) 
+-  otherwise l[i] == u[i] -- phi[i] = l[i] - x[i]
+   ss is the semismoothing function used to reformulate the nonlinear equation in complementarity
+   form to semismooth form
+*/
+#undef __FUNCT__
+#define __FUNCT__ "SNESLSVIComputeSSFunction"
+static PetscErrorCode SNESLSVIComputeSSFunction(Vec phi,Vec x,Vec f,Vec xl,Vec xu)
+{
+  PetscErrorCode  ierr;
+  PetscScalar     *phi_arr,*x_arr,*f_arr,*l,*u,t;
+  PetscInt        i,n;
+
+  PetscFunctionBegin;
+  ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
+  
+  ierr = VecGetArray(x,&x_arr);CHKERRQ(ierr);
+  ierr = VecGetArray(f,&f_arr);CHKERRQ(ierr);
+  ierr = VecGetArray(xl,&l);CHKERRQ(ierr);
+  ierr = VecGetArray(xu,&u);CHKERRQ(ierr);
+  ierr = VecGetArray(phi,&phi_arr);CHKERRQ(ierr);
+
+  /* Here we are assuming that the distribution of all the input vectors and the ouput
+     vector is same. 
+  */
+  for (i=0;i < n;i++) {
+    if ((l[i] <= PETSC_LSVI_NINF) && (u[i] >= PETSC_LSVI_INF)) {
+      phi_arr[i] = -f_arr[i];
+    }
+    else if (l[i] <= PETSC_LSVI_NINF) {
+      t = u[i] - x_arr[i];
+      ierr = ComputeFischerFunction(t,-f_arr[i],&phi_arr[i]);CHKERRQ(ierr);
+      phi_arr[i] = -phi_arr[i];
+    }
+    else if (u[i] >= PETSC_LSVI_INF) {
+      t = x_arr[i] - l[i];
+      ierr = ComputeFischerFunction(t,f_arr[i],&phi_arr[i]);CHKERRQ(ierr);
+    }
+    else if (l[i] == u[i]) {
+      phi_arr[i] = l[i] - x_arr[i];
+    }
+    else {
+      t = u[i] - x_arr[i];
+      ierr = ComputeFischerFunction(t,-f_arr[i],&phi_arr[i]);
+      t = x_arr[i] - l[i];
+      ierr = ComputeFischerFunction(t,phi_arr[i],&phi_arr[i]);
+    }
+  }
+  
+  ierr = VecRestoreArray(x,&x_arr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(f,&f_arr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xl,&l);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xu,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArray(phi,&phi_arr);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 /*  -------------------------------------------------------------------- 
 
      This file implements a semismooth truncated Newton method with a line search,
@@ -131,7 +224,7 @@ PetscErrorCode SNESLSVICheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,
 #define __FUNCT__ "SNESSolve_LSVI"
 PetscErrorCode SNESSolve_LSVI(SNES snes)
 { 
-  SNES_LSVI          *neP = (SNES_LSVI*)snes->data;
+  SNES_LSVI          *lsvi = (SNES_LSVI*)snes->data;
   PetscErrorCode     ierr;
   PetscInt           maxits,i,lits;
   PetscTruth         lssucceed;
@@ -166,6 +259,10 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
   ierr = VecNormEnd(F,NORM_2,&fnorm);CHKERRQ(ierr);
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
   if PetscIsInfOrNanReal(fnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+
+  /* Compute the semismooth function */
+  ierr = SNESLSVIComputeSSFunction(lsvi->phi,X,F,lsvi->xl,lsvi->xu);CHKERRQ(ierr);
+
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
@@ -201,9 +298,9 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
     snes->linear_its += lits;
     ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
 
-    if (neP->precheckstep) {
+    if (lsvi->precheckstep) {
       PetscTruth changed_y = PETSC_FALSE;
-      ierr = (*neP->precheckstep)(snes,X,Y,neP->precheck,&changed_y);CHKERRQ(ierr);
+      ierr = (*lsvi->precheckstep)(snes,X,Y,lsvi->precheck,&changed_y);CHKERRQ(ierr);
     }
 
     if (PetscLogPrintInfo){
@@ -216,7 +313,7 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
     */
     ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     ynorm = 1; gnorm = fnorm;
-    ierr = (*neP->LineSearch)(snes,neP->lsP,X,F,G,Y,W,fnorm,xnorm,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
+    ierr = (*lsvi->LineSearch)(snes,lsvi->lsP,X,F,G,Y,W,fnorm,xnorm,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",fnorm,gnorm,ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
@@ -257,7 +354,7 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
 /* -------------------------------------------------------------------------- */
 /*
    SNESSetUp_LSVI - Sets up the internal data structures for the later use
-   of the SNESLS nonlinear solver.
+   of the SNESLSVI nonlinear solver.
 
    Input Parameter:
 .  snes - the SNES context
@@ -292,8 +389,16 @@ PetscErrorCode SNESSetUp_LSVI(SNES snes)
   ierr = VecDuplicate(snes->vec_sol, &lsvi->dpsi); CHKERRQ(ierr);
   ierr = VecDuplicate(snes->vec_sol, &lsvi->Da); CHKERRQ(ierr);
   ierr = VecDuplicate(snes->vec_sol, &lsvi->Db); CHKERRQ(ierr);
-  ierr = VecDuplicate(snes->vec_sol, &lsvi->xl); CHKERRQ(ierr);
-  ierr = VecDuplicate(snes->vec_sol, &lsvi->xu); CHKERRQ(ierr);
+
+  /* If the lower and upper bound on variables are not set, set it to
+     -Inf and Inf */
+  if (!lsvi->xl && !lsvi->xu) {
+    lsvi->usersetxbounds = PETSC_FALSE;
+    ierr = VecDuplicate(snes->vec_sol, &lsvi->xl); CHKERRQ(ierr);
+    ierr = VecSet(lsvi->xl,PETSC_LSVI_NINF);CHKERRQ(ierr);
+    ierr = VecDuplicate(snes->vec_sol, &lsvi->xu); CHKERRQ(ierr);
+    ierr = VecSet(lsvi->xu,PETSC_LSVI_INF);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -323,6 +428,16 @@ PetscErrorCode SNESDestroy_LSVI(SNES snes)
     snes->nwork = 0;
     snes->work  = PETSC_NULL;
   }
+
+  /* clear vectors */
+  ierr = VecDestroy(lsvi->phi); CHKERRQ(ierr);
+  ierr = VecDestroy(lsvi->dpsi); CHKERRQ(ierr);
+  ierr = VecDestroy(lsvi->Da); CHKERRQ(ierr);
+  ierr = VecDestroy(lsvi->Db); CHKERRQ(ierr);
+  if (!lsvi->usersetxbounds) {
+    ierr = VecDestroy(lsvi->xl); CHKERRQ(ierr);
+    ierr = VecDestroy(lsvi->xu); CHKERRQ(ierr);
+  }
   if (lsvi->monitor) {
     ierr = PetscViewerASCIIMonitorDestroy(lsvi->monitor);CHKERRQ(ierr);
   } 
@@ -331,13 +446,6 @@ PetscErrorCode SNESDestroy_LSVI(SNES snes)
   /* clear composed functions */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSet_C","",PETSC_NULL);CHKERRQ(ierr);
 
-  /* clear vectors */
-  ierr = VecDestroy(lsvi->phi); CHKERRQ(ierr);
-  ierr = VecDestroy(lsvi->dpsi); CHKERRQ(ierr);
-  ierr = VecDestroy(lsvi->Da); CHKERRQ(ierr);
-  ierr = VecDestroy(lsvi->Db); CHKERRQ(ierr);
-  ierr = VecDestroy(lsvi->xl); CHKERRQ(ierr);
-  ierr = VecDestroy(lsvi->xu); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -351,7 +459,7 @@ PetscErrorCode SNESDestroy_LSVI(SNES snes)
 PetscErrorCode SNESLineSearchNo_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal xnorm,PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag)
 {
   PetscErrorCode ierr;
-  SNES_LSVI        *neP = (SNES_LSVI*)snes->data;
+  SNES_LSVI        *lsvi = (SNES_LSVI*)snes->data;
   PetscTruth     changed_w = PETSC_FALSE,changed_y = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -359,8 +467,8 @@ PetscErrorCode SNESLineSearchNo_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec
   ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,ynorm);CHKERRQ(ierr);         /* ynorm = || y || */
   ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
-  if (neP->postcheckstep) {
-   ierr = (*neP->postcheckstep)(snes,x,y,w,neP->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
+  if (lsvi->postcheckstep) {
+   ierr = (*lsvi->postcheckstep)(snes,x,y,w,lsvi->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
   }
   if (changed_y) {
     ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
@@ -384,15 +492,15 @@ PetscErrorCode SNESLineSearchNo_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec
 PetscErrorCode SNESLineSearchNoNorms_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal xnorm,PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag)
 {
   PetscErrorCode ierr;
-  SNES_LSVI        *neP = (SNES_LSVI*)snes->data;
+  SNES_LSVI        *lsvi = (SNES_LSVI*)snes->data;
   PetscTruth     changed_w = PETSC_FALSE,changed_y = PETSC_FALSE;
 
   PetscFunctionBegin;
   *flag = PETSC_TRUE; 
   ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y      */
-  if (neP->postcheckstep) {
-   ierr = (*neP->postcheckstep)(snes,x,y,w,neP->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
+  if (lsvi->postcheckstep) {
+   ierr = (*lsvi->postcheckstep)(snes,x,y,w,lsvi->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
   }
   if (changed_y) {
     ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
@@ -427,7 +535,7 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
 #endif
   PetscErrorCode ierr;
   PetscInt       count;
-  SNES_LSVI        *neP = (SNES_LSVI*)snes->data;
+  SNES_LSVI        *lsvi = (SNES_LSVI*)snes->data;
   PetscTruth     changed_w = PETSC_FALSE,changed_y = PETSC_FALSE;
   MPI_Comm       comm;
 
@@ -438,8 +546,8 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
 
   ierr = VecNorm(y,NORM_2,ynorm);CHKERRQ(ierr);
   if (*ynorm == 0.0) {
-    if (neP->monitor) {
-      ierr = PetscViewerASCIIMonitorPrintf(neP->monitor,"    Line search: Initial direction and size is 0\n");CHKERRQ(ierr);
+    if (lsvi->monitor) {
+      ierr = PetscViewerASCIIMonitorPrintf(lsvi->monitor,"    Line search: Initial direction and size is 0\n");CHKERRQ(ierr);
     }
     *gnorm = fnorm;
     ierr   = VecCopy(x,w);CHKERRQ(ierr);
@@ -447,15 +555,15 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
     *flag  = PETSC_FALSE;
     goto theend1;
   }
-  if (*ynorm > neP->maxstep) {	/* Step too big, so scale back */
-    if (neP->monitor) {
-      ierr = PetscViewerASCIIMonitorPrintf(neP->monitor,"    Line search: Scaling step by %G old ynorm %G\n",neP->maxstep/(*ynorm),*ynorm);CHKERRQ(ierr);
+  if (*ynorm > lsvi->maxstep) {	/* Step too big, so scale back */
+    if (lsvi->monitor) {
+      ierr = PetscViewerASCIIMonitorPrintf(lsvi->monitor,"    Line search: Scaling step by %G old ynorm %G\n",lsvi->maxstep/(*ynorm),*ynorm);CHKERRQ(ierr);
     }
-    ierr = VecScale(y,neP->maxstep/(*ynorm));CHKERRQ(ierr);
-    *ynorm = neP->maxstep;
+    ierr = VecScale(y,lsvi->maxstep/(*ynorm));CHKERRQ(ierr);
+    *ynorm = lsvi->maxstep;
   }
   ierr      = VecMaxPointwiseDivide(y,x,&rellength);CHKERRQ(ierr);
-  minlambda = neP->minlambda/rellength;
+  minlambda = lsvi->minlambda/rellength;
   ierr      = MatMult(snes->jacobian,y,w);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   ierr      = VecDot(f,w,&cinitslope);CHKERRQ(ierr);
@@ -481,9 +589,9 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
   ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
   if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   ierr = PetscInfo2(snes,"Initial fnorm %G gnorm %G\n",fnorm,*gnorm);CHKERRQ(ierr);
-  if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + neP->alpha*initslope) { /* Sufficient reduction */
-    if (neP->monitor) {
-      ierr = PetscViewerASCIIMonitorPrintf(neP->monitor,"    Line search: Using full step: fnorm %G gnorm %G\n",fnorm,*gnorm);CHKERRQ(ierr);
+  if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + lsvi->alpha*initslope) { /* Sufficient reduction */
+    if (lsvi->monitor) {
+      ierr = PetscViewerASCIIMonitorPrintf(lsvi->monitor,"    Line search: Using full step: fnorm %G gnorm %G\n",fnorm,*gnorm);CHKERRQ(ierr);
     }
     goto theend1;
   }
@@ -511,12 +619,12 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
   }
   ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
   if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
-  if (neP->monitor) {
-    ierr = PetscViewerASCIIMonitorPrintf(neP->monitor,"    Line search: gnorm after quadratic fit %G\n",*gnorm);CHKERRQ(ierr);
+  if (lsvi->monitor) {
+    ierr = PetscViewerASCIIMonitorPrintf(lsvi->monitor,"    Line search: gnorm after quadratic fit %G\n",*gnorm);CHKERRQ(ierr);
   }
-  if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*neP->alpha*initslope) { /* sufficient reduction */
-    if (neP->monitor) {
-      ierr = PetscViewerASCIIMonitorPrintf(neP->monitor,"    Line search: Quadratically determined step, lambda=%18.16e\n",lambda);CHKERRQ(ierr);
+  if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*lsvi->alpha*initslope) { /* sufficient reduction */
+    if (lsvi->monitor) {
+      ierr = PetscViewerASCIIMonitorPrintf(lsvi->monitor,"    Line search: Quadratically determined step, lambda=%18.16e\n",lambda);CHKERRQ(ierr);
     }
     goto theend1;
   }
@@ -525,9 +633,9 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
   count = 1;
   while (PETSC_TRUE) {
     if (lambda <= minlambda) { 
-      if (neP->monitor) {
-	ierr = PetscViewerASCIIMonitorPrintf(neP->monitor,"    Line search: unable to find good step length! After %D tries \n",count);CHKERRQ(ierr);
-	ierr = PetscViewerASCIIMonitorPrintf(neP->monitor,"    Line search: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,minlambda,lambda,initslope);CHKERRQ(ierr);
+      if (lsvi->monitor) {
+	ierr = PetscViewerASCIIMonitorPrintf(lsvi->monitor,"    Line search: unable to find good step length! After %D tries \n",count);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIMonitorPrintf(lsvi->monitor,"    Line search: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,minlambda,lambda,initslope);CHKERRQ(ierr);
       }
       *flag = PETSC_FALSE; 
       break;
@@ -563,13 +671,13 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
     }
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
     if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
-    if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*neP->alpha*initslope) { /* is reduction enough? */
-      if (neP->monitor) {
+    if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*lsvi->alpha*initslope) { /* is reduction enough? */
+      if (lsvi->monitor) {
 	ierr = PetscPrintf(comm,"    Line search: Cubically determined step, current gnorm %G lambda=%18.16e\n",*gnorm,lambda);CHKERRQ(ierr);
       }
       break;
     } else {
-      if (neP->monitor) {
+      if (lsvi->monitor) {
         ierr = PetscPrintf(comm,"    Line search: Cubic step no good, shrinking lambda, current gnorem %G lambda=%18.16e\n",*gnorm,lambda);CHKERRQ(ierr);
       }
     }
@@ -577,8 +685,8 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
   }
   theend1:
   /* Optional user-defined check for line search step validity */
-  if (neP->postcheckstep && *flag) {
-    ierr = (*neP->postcheckstep)(snes,x,y,w,neP->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
+  if (lsvi->postcheckstep && *flag) {
+    ierr = (*lsvi->postcheckstep)(snes,x,y,w,lsvi->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
     if (changed_y) {
       ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);
     }
@@ -618,7 +726,7 @@ PetscErrorCode SNESLineSearchQuadratic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Ve
 #endif
   PetscErrorCode ierr;
   PetscInt       count;
-  SNES_LSVI        *neP = (SNES_LSVI*)snes->data;
+  SNES_LSVI        *lsvi = (SNES_LSVI*)snes->data;
   PetscTruth     changed_w = PETSC_FALSE,changed_y = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -627,8 +735,8 @@ PetscErrorCode SNESLineSearchQuadratic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Ve
 
   ierr = VecNorm(y,NORM_2,ynorm);CHKERRQ(ierr);
   if (*ynorm == 0.0) {
-    if (neP->monitor) {
-      ierr = PetscViewerASCIIMonitorPrintf(neP->monitor,"Line search: Direction and size is 0\n");CHKERRQ(ierr);
+    if (lsvi->monitor) {
+      ierr = PetscViewerASCIIMonitorPrintf(lsvi->monitor,"Line search: Direction and size is 0\n");CHKERRQ(ierr);
     }
     *gnorm = fnorm;
     ierr   = VecCopy(x,w);CHKERRQ(ierr);
@@ -636,12 +744,12 @@ PetscErrorCode SNESLineSearchQuadratic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Ve
     *flag  = PETSC_FALSE;
     goto theend2;
   }
-  if (*ynorm > neP->maxstep) {	/* Step too big, so scale back */
-    ierr   = VecScale(y,neP->maxstep/(*ynorm));CHKERRQ(ierr);
-    *ynorm = neP->maxstep;
+  if (*ynorm > lsvi->maxstep) {	/* Step too big, so scale back */
+    ierr   = VecScale(y,lsvi->maxstep/(*ynorm));CHKERRQ(ierr);
+    *ynorm = lsvi->maxstep;
   }
   ierr      = VecMaxPointwiseDivide(y,x,&rellength);CHKERRQ(ierr);
-  minlambda = neP->minlambda/rellength;
+  minlambda = lsvi->minlambda/rellength;
   ierr = MatMult(snes->jacobian,y,w);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   ierr      = VecDot(f,w,&cinitslope);CHKERRQ(ierr);
@@ -667,9 +775,9 @@ PetscErrorCode SNESLineSearchQuadratic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Ve
   }
   ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
   if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
-  if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + neP->alpha*initslope) { /* Sufficient reduction */
-    if (neP->monitor) {
-      ierr = PetscViewerASCIIMonitorPrintf(neP->monitor,"    Line Search: Using full step\n");CHKERRQ(ierr);
+  if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + lsvi->alpha*initslope) { /* Sufficient reduction */
+    if (lsvi->monitor) {
+      ierr = PetscViewerASCIIMonitorPrintf(lsvi->monitor,"    Line Search: Using full step\n");CHKERRQ(ierr);
     }
     goto theend2;
   }
@@ -679,9 +787,9 @@ PetscErrorCode SNESLineSearchQuadratic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Ve
   count = 1;
   while (PETSC_TRUE) {
     if (lambda <= minlambda) { /* bad luck; use full step */
-      if (neP->monitor) {
-        ierr = PetscViewerASCIIMonitorPrintf(neP->monitor,"Line search: Unable to find good step length! %D \n",count);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIMonitorPrintf(neP->monitor,"Line search: fnorm=%G, gnorm=%G, ynorm=%G, lambda=%G, initial slope=%G\n",fnorm,*gnorm,*ynorm,lambda,initslope);CHKERRQ(ierr);
+      if (lsvi->monitor) {
+        ierr = PetscViewerASCIIMonitorPrintf(lsvi->monitor,"Line search: Unable to find good step length! %D \n",count);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIMonitorPrintf(lsvi->monitor,"Line search: fnorm=%G, gnorm=%G, ynorm=%G, lambda=%G, initial slope=%G\n",fnorm,*gnorm,*ynorm,lambda,initslope);CHKERRQ(ierr);
       }
       ierr = VecCopy(x,w);CHKERRQ(ierr);
       *flag = PETSC_FALSE;
@@ -707,9 +815,9 @@ PetscErrorCode SNESLineSearchQuadratic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Ve
     }
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
     if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
-    if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*neP->alpha*initslope) { /* sufficient reduction */
-      if (neP->monitor) {
-        ierr = PetscViewerASCIIMonitorPrintf(neP->monitor,"    Line Search: Quadratically determined step, lambda=%G\n",lambda);CHKERRQ(ierr);
+    if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*lsvi->alpha*initslope) { /* sufficient reduction */
+      if (lsvi->monitor) {
+        ierr = PetscViewerASCIIMonitorPrintf(lsvi->monitor,"    Line Search: Quadratically determined step, lambda=%G\n",lambda);CHKERRQ(ierr);
       }
       break;
     }
@@ -717,8 +825,8 @@ PetscErrorCode SNESLineSearchQuadratic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Ve
   }
   theend2:
   /* Optional user-defined check for line search step validity */
-  if (neP->postcheckstep) {
-    ierr = (*neP->postcheckstep)(snes,x,y,w,neP->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
+  if (lsvi->postcheckstep) {
+    ierr = (*lsvi->postcheckstep)(snes,x,y,w,lsvi->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
     if (changed_y) {
       ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);
     }
@@ -804,6 +912,43 @@ static PetscErrorCode SNESView_LSVI(SNES snes,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
+
+/*
+   SNESLSVISetVariableBounds - Sets the lower and upper bounds for the solution vector. xl <= x <= xu.
+
+   Input Parameters:
+.  snes - the SNES context.
+.  xl   - lower bound.
+.  xu   - upper bound.
+
+   Notes:
+   If this routine is not called then the lower and upper bounds are set to 
+   -Infinity and Infinity respectively during SNESSetUp.
+*/
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLSVISetVariableBounds"
+PetscErrorCode SNESLSVISetVariableBounds(SNES snes, Vec xl, Vec xu)
+{
+  SNES_LSVI        *lsvi = (SNES_LSVI*)snes->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(xl,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(xu,VEC_CLASSID,3);
+
+  /* Check if SNESSetFunction is called */
+  if(!snes->vec_func) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
+
+  /* Check if the vector sizes are compatible for lower and upper bounds */
+  if (xl->map->N != snes->vec_func->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths lower bound = %D solution vector = %D",xl->map->N,snes->vec_func->map->N);
+  if (xu->map->N != snes->vec_func->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths: upper bound = %D solution vector = %D",xu->map->N,snes->vec_func->map->N);
+  lsvi->usersetxbounds = PETSC_TRUE;
+  lsvi->xl = xl;
+  lsvi->xu = xu;
+
+  PetscFunctionReturn(0);
+}
 /* -------------------------------------------------------------------------- */
 /*
    SNESSetFromOptions_LSVI - Sets various parameters for the SNESLSVI method.
@@ -881,7 +1026,7 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LSVI(SNES snes)
 {
   PetscErrorCode ierr;
-  SNES_LSVI        *neP;
+  SNES_LSVI        *lsvi;
 
   PetscFunctionBegin;
   snes->ops->setup	     = SNESSetUp_LSVI;
@@ -890,19 +1035,20 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LSVI(SNES snes)
   snes->ops->setfromoptions  = SNESSetFromOptions_LSVI;
   snes->ops->view            = SNESView_LSVI;
 
-  ierr                  = PetscNewLog(snes,SNES_LSVI,&neP);CHKERRQ(ierr);
-  snes->data    	= (void*)neP;
-  neP->alpha		= 1.e-4;
-  neP->maxstep		= 1.e8;
-  neP->minlambda        = 1.e-12;
-  neP->LineSearch       = SNESLineSearchCubic_LSVI;
-  neP->lsP              = PETSC_NULL;
-  neP->postcheckstep    = PETSC_NULL;
-  neP->postcheck        = PETSC_NULL;
-  neP->precheckstep     = PETSC_NULL;
-  neP->precheck         = PETSC_NULL;
-  neP->rho              = 2.1;
-  neP->delta            = 1e-10;
+  ierr                   = PetscNewLog(snes,SNES_LSVI,&lsvi);CHKERRQ(ierr);
+  snes->data    	 = (void*)lsvi;
+  lsvi->alpha		 = 1.e-4;
+  lsvi->maxstep		 = 1.e8;
+  lsvi->minlambda         = 1.e-12;
+  lsvi->LineSearch        = SNESLineSearchCubic_LSVI;
+  lsvi->lsP               = PETSC_NULL;
+  lsvi->postcheckstep     = PETSC_NULL;
+  lsvi->postcheck         = PETSC_NULL;
+  lsvi->precheckstep      = PETSC_NULL;
+  lsvi->precheck          = PETSC_NULL;
+  lsvi->rho               = 2.1;
+  lsvi->delta             = 1e-10;
+  lsvi->computessfunction = ComputeFischerFunction; 
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetMonitor_C","SNESLineSearchSetMonitor_LSVI",SNESLineSearchSetMonitor_LSVI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSet_C","SNESLineSearchSet_LSVI",SNESLineSearchSet_LSVI);CHKERRQ(ierr);
