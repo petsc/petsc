@@ -72,7 +72,35 @@ PetscErrorCode SNESLSVICheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,
 }
 
 /*
-  ComputeFischerFunction - Computes the semismooth fischer function for a mixed complementarity equation.
+  SNESLSVIComputeMeritFunction - Evaluates the merit function for the mixed complementarity problem.
+
+  Input Parameter:
+. phi - the semismooth function
+
+  Output Parameter:
+. psi - the merit function
+
+  Notes:
+  The merit function for the mixed complementarity problem is defined as
+     psi = 0.5*phi^T*phi
+*/
+#undef __FUNCT__
+#define __FUNCT__ "SNESLSVIComputeMeritFunction"
+static PetscErrorCode SNESLSVIComputeMeritFunction(Vec phi, PetscScalar* psi)
+{
+  PetscErrorCode ierr;
+  PetscScalar    phinorm;
+
+  PetscFunctionBegin;
+  ierr = VecNormBegin(phi,NORM_2,&phinorm);
+  ierr = VecNormEnd(phi,NORM_2,&phinorm);
+
+  *psi = 0.5*phinorm*phinorm;
+  PetscFunctionReturn(0);
+}
+
+/*
+  ComputeFischerFunction - Computes the semismooth fischer burmeister function for a mixed complementarity equation.
 
   Notes:
   The Fischer-Burmeister function is defined as
@@ -90,7 +118,7 @@ static PetscErrorCode ComputeFischerFunction(PetscScalar a, PetscScalar b, Petsc
 }
   
 /* 
-   SNESLSVIComputeSSFunction - Reformulates a system of nonlinear equations in mixed complementarity fo   rm to a system of nonlinear equations in semismooth form. 
+   SNESLSVIComputeSSFunction - Reformulates a system of nonlinear equations in mixed complementarity form to a system of nonlinear equations in semismooth form. 
 
    Input Parameters:                                                                                  
 .  x - current iterate
@@ -262,6 +290,8 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
 
   /* Compute the semismooth function */
   ierr = SNESLSVIComputeSSFunction(lsvi->phi,X,F,lsvi->xl,lsvi->xu);CHKERRQ(ierr);
+
+  ierr = SNESLSVIComputeMeritFunction(lsvi->phi,&lsvi->psi);CHKERRQ(ierr);
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
