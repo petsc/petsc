@@ -10,7 +10,7 @@ def append(seq, item):
         seq.append(item)
 
 def append_dict(conf, dct):
-    for key, values in dct.iteritems():
+    for key, values in dct.items():
         if key in conf:
             for value in values:
                 if value not in conf[key]:
