@@ -72,6 +72,48 @@ PetscErrorCode SNESLSVICheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,
 }
 
 /*
+  SNESDefaultConverged_LSVI - Checks the convergence of the semismooth newton algorithm.
+
+  Notes:
+  The convergence criterion currently implemented is
+  merit < abstol
+  merit < rtol*merit_initial
+*/
+PetscErrorCode SNESDefaultConverged_LSVI(SNES snes,PetscInt it,PetscReal xnorm,PetscReal gradnorm,PetscReal merit,SNESConvergedReason *reason,void *dummy)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidPointer(reason,6);
+  
+  *reason = SNES_CONVERGED_ITERATING;
+
+  if (!it) {
+    /* set parameter for default relative tolerance convergence test */
+    snes->ttol = merit*snes->rtol;
+  }
+  if (merit != merit) {
+    ierr = PetscInfo(snes,"Failed to converged, function norm is NaN\n");CHKERRQ(ierr);
+    *reason = SNES_DIVERGED_FNORM_NAN;
+  } else if (merit < snes->abstol) {
+    ierr = PetscInfo2(snes,"Converged due to merit function %G < %G\n",merit,snes->abstol);CHKERRQ(ierr);
+    *reason = SNES_CONVERGED_FNORM_ABS;
+  } else if (snes->nfuncs >= snes->max_funcs) {
+    ierr = PetscInfo2(snes,"Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);CHKERRQ(ierr);
+    *reason = SNES_DIVERGED_FUNCTION_COUNT;
+  }
+
+  if (it && !*reason) {
+    if (merit < snes->ttol) {
+      ierr = PetscInfo2(snes,"Converged due to merit function %G < %G (relative tolerance)\n",merit,snes->ttol);CHKERRQ(ierr);
+      *reason = SNES_CONVERGED_FNORM_RELATIVE;
+    }
+  } 
+  PetscFunctionReturn(0);
+}
+
+/*
   SNESLSVIComputeMeritFunction - Evaluates the merit function for the mixed complementarity problem.
 
   Input Parameter:
@@ -291,6 +333,7 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
   /* Compute the semismooth function */
   ierr = SNESLSVIComputeSSFunction(lsvi->phi,X,F,lsvi->xl,lsvi->xu);CHKERRQ(ierr);
 
+  /* Compute Merit function */
   ierr = SNESLSVIComputeMeritFunction(lsvi->phi,&lsvi->psi);CHKERRQ(ierr);
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
@@ -1064,6 +1107,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LSVI(SNES snes)
   snes->ops->destroy	     = SNESDestroy_LSVI;
   snes->ops->setfromoptions  = SNESSetFromOptions_LSVI;
   snes->ops->view            = SNESView_LSVI;
+  snes->ops->converged       = SNESDefaultConverged_LSVI;
 
   ierr                   = PetscNewLog(snes,SNES_LSVI,&lsvi);CHKERRQ(ierr);
   snes->data    	 = (void*)lsvi;
