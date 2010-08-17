@@ -8,6 +8,7 @@
 
 static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC,Mat,Mat);
 static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC,Mat,Mat);
+static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_BJacobi"
@@ -27,9 +28,14 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
   ierr = MatGetLocalSize(pc->pmat,&M,&N);CHKERRQ(ierr);
   ierr = MatGetBlockSize(pc->pmat,&bs);CHKERRQ(ierr);
 
-  /* ----------
+  if (jac->n > 0 && jac->n < size){
+    ierr = PCSetUp_BJacobi_Multiproc(pc);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  /* --------------------------------------------------------------------------
       Determines the number of blocks assigned to each processor 
-  */
+  -----------------------------------------------------------------------------*/
 
   /*   local block count  given */
   if (jac->n_local > 0 && jac->n < 0) {
@@ -99,7 +105,9 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
   }
   if (jac->n_local < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of blocks is less than number of processors");
 
-  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
+  /* -------------------------
+      Determines mat and pmat 
+  ---------------------------*/
   ierr = PetscObjectQueryFunction((PetscObject)pc->mat,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (size == 1 && !f) {
     mat  = pc->mat;
@@ -109,6 +117,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
     MatReuse   scall;
 
     if (jac->use_true_local) {
+      /* use block from true matrix, not preconditioner matrix for local MatMult() */
       scall = MAT_INITIAL_MATRIX;
       if (pc->setupcalled) {
         if (pc->flag == SAME_NONZERO_PATTERN) {
@@ -1182,6 +1191,137 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
     if(pc->setfromoptionscalled){
       ierr = KSPSetFromOptions(jac->ksp[i]);CHKERRQ(ierr);
     }
+  }
+  PetscFunctionReturn(0);
+}
+
+/* ---------------------------------------------------------------------------------------------*/
+/*
+      These are for a single block with multiple processes; 
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_BJacobi_Multiproc"
+static PetscErrorCode PCDestroy_BJacobi_Multiproc(PC pc)
+{
+  PC_BJacobi           *jac = (PC_BJacobi*)pc->data;
+  PC_BJacobi_Multiproc *mpjac = (PC_BJacobi_Multiproc*)jac->data;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  if (mpjac->ysub){ierr = VecDestroy(mpjac->ysub);CHKERRQ(ierr);}
+  if (mpjac->xsub){ierr = VecDestroy(mpjac->xsub);CHKERRQ(ierr);}
+  if (mpjac->submats){ierr = MatDestroy(mpjac->submats);CHKERRQ(ierr);}
+  if (mpjac->ksp){ierr = KSPDestroy(mpjac->ksp);CHKERRQ(ierr);}
+  if (mpjac->psubcomm){ierr = PetscSubcommDestroy(mpjac->psubcomm);CHKERRQ(ierr);}
+
+  ierr = PetscFree(mpjac);CHKERRQ(ierr);
+  ierr = PetscFree(jac);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_BJacobi_Multiproc"
+static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
+{
+  PC_BJacobi           *jac = (PC_BJacobi*)pc->data;
+  PC_BJacobi_Multiproc *mpjac = (PC_BJacobi_Multiproc*)jac->data;
+  PetscErrorCode       ierr;
+  PetscScalar          *xarray,*yarray;
+
+  PetscFunctionBegin;
+  /* place x's and y's local arrays into xsub and ysub */
+  ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
+  ierr = VecGetArray(y,&yarray);CHKERRQ(ierr);
+  ierr = VecPlaceArray(mpjac->xsub,xarray);CHKERRQ(ierr);
+  ierr = VecPlaceArray(mpjac->ysub,yarray);CHKERRQ(ierr);
+
+  /* apply preconditioner on each matrix block */
+  ierr = KSPSolve(mpjac->ksp,mpjac->xsub,mpjac->ysub);CHKERRQ(ierr);
+
+  ierr = VecResetArray(mpjac->xsub);CHKERRQ(ierr);
+  ierr = VecResetArray(mpjac->ysub);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yarray);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+extern PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat,MPI_Comm,Mat*);
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_BJacobi_Multiproc"
+static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
+{
+  PC_BJacobi           *jac = (PC_BJacobi*)pc->data;
+  PC_BJacobi_Multiproc *mpjac = (PC_BJacobi_Multiproc*)jac->data;
+  PetscErrorCode       ierr;
+  PetscInt             m,n; 
+  MPI_Comm             comm = ((PetscObject)pc)->comm,subcomm;
+  const char           *prefix;
+
+  PetscFunctionBegin;
+  if (jac->n_local > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only a single block in a subcommunicator is supported");
+  jac->n_local = 1; /* currently only a single block is supported for a subcommunicator */
+  if (!pc->setupcalled) {
+    ierr = PetscNewLog(pc,PC_BJacobi_Multiproc,&mpjac);CHKERRQ(ierr);
+    jac->data = (void*)mpjac;
+
+    /* initialize datastructure mpjac */
+    mpjac->nsubcomm = jac->n;
+
+    if (!jac->psubcomm) {
+      /* Create default contiguous subcommunicatiors if user does not provide them */
+      ierr = PetscSubcommCreate(comm,mpjac->nsubcomm,PETSC_SUBCOMM_CONTIGUOUS,&jac->psubcomm);CHKERRQ(ierr);
+      ierr = PetscLogObjectMemory(pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
+    } 
+    mpjac->psubcomm = jac->psubcomm;
+    subcomm         = mpjac->psubcomm->comm;
+
+    /* Get matrix blocks of pmat */
+    ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,&mpjac->submats);CHKERRQ(ierr);
+
+    /* create a new PC that processors in each subcomm have copy of */
+    ierr = KSPCreate(subcomm,&mpjac->ksp);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)mpjac->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(pc,mpjac->ksp);CHKERRQ(ierr);
+    ierr = KSPSetOperators(mpjac->ksp,mpjac->submats,mpjac->submats,pc->flag);CHKERRQ(ierr);
+    ierr = KSPGetPC(mpjac->ksp,&mpjac->pc);CHKERRQ(ierr);
+
+    ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(mpjac->ksp,prefix);CHKERRQ(ierr); 
+    ierr = KSPAppendOptionsPrefix(mpjac->ksp,"sub_");CHKERRQ(ierr); 
+    /*
+      PetscMPIInt rank,subsize,subrank;
+      ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(subcomm,&subrank);CHKERRQ(ierr);
+
+      ierr = MatGetLocalSize(mpjac->submats,&m,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetSize(mpjac->submats,&n,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(comm,"[%d], sub-size %d,sub-rank %d\n",rank,subsize,subrank);
+      ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+    */
+
+    /* create dummy vectors xsub and ysub */
+    ierr = MatGetLocalSize(mpjac->submats,&m,&n);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(subcomm,n,PETSC_DECIDE,PETSC_NULL,&mpjac->xsub);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(subcomm,m,PETSC_DECIDE,PETSC_NULL,&mpjac->ysub);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(pc,mpjac->xsub);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(pc,mpjac->ysub);CHKERRQ(ierr);
+
+    pc->ops->destroy = PCDestroy_BJacobi_Multiproc;
+    pc->ops->apply   = PCApply_BJacobi_Multiproc;
+  }
+
+  if (pc->setupcalled && pc->flag == DIFFERENT_NONZERO_PATTERN) {
+    /* destroy old matrix blocks, then get new matrix blocks */
+    if (mpjac->submats) {
+      ierr = MatDestroy(mpjac->submats);CHKERRQ(ierr);
+      ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,&mpjac->submats);CHKERRQ(ierr);
+      ierr = KSPSetOperators(mpjac->ksp,mpjac->submats,mpjac->submats,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+  }     
+
+  if (pc->setfromoptionscalled){
+    ierr = KSPSetFromOptions(mpjac->ksp);CHKERRQ(ierr); 
   }
   PetscFunctionReturn(0);
 }

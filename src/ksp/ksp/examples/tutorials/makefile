@@ -294,16 +294,31 @@ runex2_7:
 	   if (${DIFF} output/ex2_7.out ex2_7.tmp) then true; \
 	   else echo "Possible problem with ex2_7, diffs above"; fi; \
 	   ${RM} -f ex2_7.tmp
-runex2f:
-	-@${MPIEXEC} -n 2 ./ex2f -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex2f_1.tmp 2>&1; \
-	   if (${DIFF} output/ex2f_1.out ex2f_1.tmp) then true; \
-	   else echo "Possible problem with ex2f_1, diffs above"; fi; \
-	   ${RM} -f ex2f_1.tmp
+runex2_bjacobi:
+	-@${MPIEXEC} -n 4 ./ex2 -pc_type bjacobi -pc_bjacobi_blocks 1 -ksp_monitor_short -sub_pc_type jacobi -sub_ksp_type gmres > ex2.tmp 2>&1; \
+	   if (${DIFF} output/ex2_bjacobi.out ex2.tmp) then true; \
+	   else echo "Possible problem with ex2_bjacobi, diffs above"; fi; \
+	   ${RM} -f ex2.tmp
+runex2_bjacobi_2:
+	-@${MPIEXEC} -n 4 ./ex2 -pc_type bjacobi -pc_bjacobi_blocks 2 -ksp_monitor_short -sub_pc_type jacobi -sub_ksp_type gmres > ex2.tmp 2>&1; \
+	   if (${DIFF} output/ex2_bjacobi_2.out ex2.tmp) then true; \
+	   else echo "Possible problem with ex2_bjacobi_2, diffs above"; fi; \
+	   ${RM} -f ex2.tmp
+runex2_bjacobi_3:
+	-@${MPIEXEC} -n 4 ./ex2 -pc_type bjacobi -pc_bjacobi_blocks 4 -ksp_monitor_short -sub_pc_type jacobi -sub_ksp_type gmres > ex2.tmp 2>&1; \
+	   if (${DIFF} output/ex2_bjacobi_3.out ex2.tmp) then true; \
+	   else echo "Possible problem with ex2_bjacobi_3, diffs above"; fi; \
+	   ${RM} -f ex2.tmp
 runex2_umfpack:
 	-@${MPIEXEC} -n 1 ./ex2 -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package umfpack > ex2_umfpack.tmp 2>&1; \
            if (${DIFF} output/ex2_umfpack.out ex2_umfpack.tmp) then true; \
            else echo "Possible problem with ex2_umfpack, diffs above"; fi; \
            ${RM} -f ex2_umfpack.tmp
+runex2f:
+	-@${MPIEXEC} -n 2 ./ex2f -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex2f_1.tmp 2>&1; \
+	   if (${DIFF} output/ex2f_1.out ex2f_1.tmp) then true; \
+	   else echo "Possible problem with ex2f_1, diffs above"; fi; \
+	   ${RM} -f ex2f_1.tmp
 runex5:
 	-@${MPIEXEC} -n 1 ./ex5 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
@@ -869,7 +884,8 @@ runex45:
 
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
-                                 runex2_4 ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 ex5.rm \
+                                 runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 ex2.rm \
+                                 ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex9.PETSc runex9 ex9.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm ex22.PETSc runex22 ex22.rm \
                                  ex23.PETSc runex23 runex23_2 ex23.rm  ex25.PETSc runex25 runex25_2 ex25.rm \
