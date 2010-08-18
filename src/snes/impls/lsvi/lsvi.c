@@ -298,6 +298,73 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
   PetscFunctionReturn(0);
 }
   
+/*
+   SNESLSVIComputeMeritFunctionGradient - Computes the gradient of the merit function psi.
+
+   Input Parameters:
+.  phi - semismooth function.
+.  H   - B-subdifferential
+
+   Output Parameters:
+.  dpsi - merit function gradient
+
+   Notes:
+   The merit function gradient is computed as follows
+   dpsi = H^T*phi
+*/
+#undef __FUNCT__
+#define __FUNCT__ "SNESLSVIComputeMeritFunctionGradient"
+PetscErrorCode SNESLSVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMultTranspose(H,phi,dpsi);
+
+  PetscFunctionReturn(0);
+}
+
+/*
+   SNESLSVISetDescentDirection - Sets the descent direction for the semismooth algorithm
+
+   Input Parameters:
+.  snes - the SNES context.
+.  dpsi - gradient of the merit function.
+
+   Output Parameters:
+.  flg  - PETSC_TRUE if the sufficient descent condition is not satisfied.
+
+   Notes: 
+   The condition for the sufficient descent direction is
+        dpsi^T*Y <= -rho*||Y||^delta
+   where rho, delta are as defined in the SNES_LSVI structure.
+   If this condition is satisfied then the existing descent direction i.e.
+   the direction given by the linear solve should be used otherwise it should be set to the negative of the
+   merit function gradient i.e -dpsi.
+*/
+#undef __FUNCT__
+#define __FUNCT__ "SNESLSVICheckDescentDirection"
+PetscErrorCode SNESLSVICheckDescentDirection(SNES snes,Vec dpsi, Vec Y,PetscTruth* flg)
+{
+  PetscErrorCode  ierr;
+  SNES_LSVI       *lsvi = (SNES_LSVI*)snes->data;
+  PetscScalar     norm_Y, dpsidotY,rhs;
+  const PetscReal rho = lsvi->rho,delta=lsvi->delta;
+
+  PetscFunctionBegin;
+
+  *flg = PETSC_FALSE;
+  ierr = VecDot(dpsi,Y,&dpsidotY);CHKERRQ(ierr);
+  ierr = VecNormBegin(Y,NORM_2,&norm_Y);CHKERRQ(ierr);
+  ierr = VecNormEnd(Y,NORM_2,&norm_Y);CHKERRQ(ierr);
+
+  rhs = -delta*PetscPowScalar(norm_Y,rho);
+
+  if (dpsidotY > rhs) *flg = PETSC_TRUE;
+ 
+  PetscFunctionReturn(0);
+}
+
 /*  -------------------------------------------------------------------- 
 
      This file implements a semismooth truncated Newton method with a line search,
@@ -361,7 +428,7 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
   SNES_LSVI          *lsvi = (SNES_LSVI*)snes->data;
   PetscErrorCode     ierr;
   PetscInt           maxits,i,lits;
-  PetscTruth         lssucceed;
+  PetscTruth         lssucceed,changedir;
   MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal          fnorm,gnorm,xnorm=0,ynorm;
   Vec                Y,X,F,G,W;
@@ -421,16 +488,19 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
 
     /* Solve J Y = Phi, where J is the B-subdifferential matrix */
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
-    ierr = SNESLSVIComputeBsubdifferential(snes,X,F,snes->jacobian,snes->jacobian_pre,&flg);CHKERRQ(ierr);
+    /*   ierr = SNESLSVIComputeBsubdifferential(snes,X,F,snes->jacobian,snes->jacobian_pre,&flg);CHKERRQ(ierr); */
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
     ierr = SNES_KSPSolve(snes,snes->ksp,F,Y);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
-    if (kspreason < 0) {
+    ierr = SNESLSVIComputeMeritFunctionGradient(snes->jacobian,lsvi->phi,lsvi->dpsi);CHKERRQ(ierr);
+    ierr = SNESLSVICheckDescentDirection(snes,lsvi->dpsi,Y,&changedir);CHKERRQ(ierr);
+    if (kspreason < 0 || changedir) {
       if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
         ierr = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
         snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
         break;
       }
+      ierr = VecCopy(lsvi->dpsi,Y);CHKERRQ(ierr);
     }
     ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
