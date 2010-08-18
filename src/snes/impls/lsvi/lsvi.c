@@ -234,6 +234,70 @@ static PetscErrorCode SNESLSVIComputeSSFunction(Vec phi,Vec x,Vec f,Vec xl,Vec x
   PetscFunctionReturn(0);
 }
 
+/*
+   SNESLSVIComputeBsubdifferential - Calculates an element of the B-subdifferential of the
+   Fischer-Burmeister function for complementarity problems.
+
+   Input Parameters:
+.  snes     - the SNES context
+.  X        - the current iterate
+.  vec_func - nonlinear function evaluated at x
+
+   Output Parameters:
+.  jac      - B-subdifferential matrix
+.  jac_pre  - optional preconditioning matrix
+.  flag     - flag passed on by SNESComputeJacobian.
+
+   Notes:
+   The B subdifferential matrix is given by
+   H = Da + Db*jac
+   where Db is the row scaling matrix stored as a vector
+   and   Da is the diagonal perturbation matrix stored as a vector
+*/
+#undef __FUNCT__
+#define __FUNCT__ "SNESLSVIComputeBsubdifferential"
+PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat jac, Mat jac_pre, MatStructure *flg)
+{
+  PetscErrorCode ierr;
+  SNES_LSVI      *lsvi = (SNES_LSVI*)snes->data;
+  PetscScalar    *l,*u,*x,*f,*da,*db;
+  PetscInt       n = X->map->n,i;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(vec_func,&f);CHKERRQ(ierr);
+  ierr = VecGetArray(lsvi->xl,&l);CHKERRQ(ierr);
+  ierr = VecGetArray(lsvi->xu,&u);CHKERRQ(ierr);
+  ierr = VecGetArray(lsvi->Da,&da);CHKERRQ(ierr);
+  ierr = VecGetArray(lsvi->Db,&db);CHKERRQ(ierr);
+  
+  /* Compute the elements of the diagonal perturbation vector Da and row scaling vector Db */
+  for(i=0;i< n;i++) {
+    /* Free variables */
+    if ((l[i] <= PETSC_LSVI_NINF) && (u[i] >= PETSC_LSVI_INF)) {
+      da[i] = 0; db[i] = -1;
+    }
+  }
+
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(vec_func,&f);CHKERRQ(ierr);
+  ierr = VecRestoreArray(lsvi->xl,&l);CHKERRQ(ierr);
+  ierr = VecRestoreArray(lsvi->xu,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArray(lsvi->Da,&da);CHKERRQ(ierr);
+  ierr = VecRestoreArray(lsvi->Db,&db);CHKERRQ(ierr);
+
+  /* Do row scaling */
+  ierr = MatDiagonalScale(jac,lsvi->Db,PETSC_NULL);
+  ierr = MatDiagonalScale(jac_pre,lsvi->Db,PETSC_NULL);
+
+  /* Add diagonal perturbation */
+  ierr = MatDiagonalSet(jac,lsvi->Da,ADD_VALUES);CHKERRQ(ierr);
+  ierr = MatDiagonalSet(jac_pre,lsvi->Da,ADD_VALUES);CHKERRQ(ierr);
+  
+
+  PetscFunctionReturn(0);
+}
+  
 /*  -------------------------------------------------------------------- 
 
      This file implements a semismooth truncated Newton method with a line search,
@@ -355,8 +419,9 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
 
-    /* Solve J Y = F, where J is Jacobian matrix */
+    /* Solve J Y = Phi, where J is the B-subdifferential matrix */
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+    ierr = SNESLSVIComputeBsubdifferential(snes,X,F,snes->jacobian,snes->jacobian_pre,&flg);CHKERRQ(ierr);
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
     ierr = SNES_KSPSolve(snes,snes->ksp,F,Y);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);

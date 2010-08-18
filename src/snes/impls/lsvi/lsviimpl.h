@@ -4,6 +4,7 @@
 #define PETSC_LSVI_NINF -1.0e20
 #define PETSC_LSVI_EPS  DBL_EPSILON
 
+#define PetscScalarNorm(a,b) (sqr((a)*(a)+(b)*(b)))
 /* 
    Private context for semismooth newton method with line search for solving
    system of mixed complementarity equations
