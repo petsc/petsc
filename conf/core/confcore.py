@@ -194,7 +194,7 @@ class PetscConfig:
         def get_flags(cmd):
             try: return ' '.join(split_quoted(cmd)[1:])
             except: return ''
-        # compiler
+        # C compiler
         PCC = self['PCC']
         PCC_FLAGS = get_flags(cc) + ' ' + self['PCC_FLAGS']
         if sys.version_info[:2] < (2, 5):
@@ -203,6 +203,14 @@ class PetscConfig:
         ccshared = getenv('CCSHARED', ccshared)
         cflags   = getenv('CFLAGS',   cflags)
         PCC_SHARED = str.join(' ', (PCC, ccshared, cflags))
+        # C++ compiler
+        if self.language == 'c++':
+            PCXX = PCC
+        else:
+            try:
+                PCXX = self['CXX']
+            except KeyError:
+                PCXX = cxx
         # linker
         PLD = self['PCC_LINKER']
         PLD_FLAGS = get_flags(ld) + ' ' + self['PCC_LINKER_FLAGS']
@@ -213,6 +221,7 @@ class PetscConfig:
         #
         compiler.set_executables(
             compiler     = PCC,
+            compiler_cxx = PCXX,
             linker_exe   = PLD,
             compiler_so  = PCC_SHARED,
             linker_so    = PLD_SHARED,
