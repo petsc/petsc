@@ -13,18 +13,17 @@ try:
     from cStringIO import StringIO
 except ImportError:
     from io import StringIO
-
+from copy import deepcopy
 
 from distutils.core import setup
 from distutils.core import Extension as _Extension
 from distutils.command.config    import config     as _config
 from distutils.command.build     import build      as _build
 from distutils.command.build_ext import build_ext  as _build_ext
-from distutils.util import split_quoted
+from distutils.util import split_quoted, execute
 from distutils import log
 from distutils.errors import DistutilsError
 
-#import conf.core.confutils as cfgutils
 from conf.core import confutils as cfgutils
 
 # --------------------------------------------------------------------
@@ -151,16 +150,11 @@ class PetscConfig:
         petsc_lib = cfgutils.flaglist(
             '-L%s %s' % (self['PETSC_LIB_DIR'], self['PETSC_LIB_BASIC']))
         petsc_lib['runtime_library_dirs'].append(self['PETSC_LIB_DIR'])
+        petsc_ext_lib = split_quoted(self['PETSC_EXTERNAL_LIB_BASIC'])
+        petsc_lib['extra_link_args'].extend(petsc_ext_lib)
+        #
         self._configure_ext(extension, petsc_inc, preppend=True)
         self._configure_ext(extension, petsc_lib)
-        # extra compiler and linker configuration
-        ccflags = split_quoted(self['PCC_FLAGS'])
-        if sys.version_info[:2] < (2, 5):
-            try: ccflags.remove('-Wwrite-strings')
-            except ValueError: pass
-        extension.extra_compile_args.extend(ccflags)
-        ldflags = split_quoted(self['PETSC_EXTERNAL_LIB_BASIC'])
-        extension.extra_link_args.extend(ldflags)
 
     def configure_compiler(self, compiler):
         if compiler.compiler_type != 'unix': return
@@ -174,28 +168,31 @@ class PetscConfig:
         ld = cc
         ldshared = ldshared.replace(ld, '').strip()
         ldshared = ldshared.replace(ldflags, '').strip()
+        #
+        getenv = os.environ.get
         def get_flags(cmd):
             try: return ' '.join(split_quoted(cmd)[1:])
             except: return ''
-        ccflags = get_flags(cc)
-        ldflags = get_flags(ld) # + ' ' + ldflags
-        #
+        # compiler
         PCC = self['PCC']
+        PCC_FLAGS = get_flags(cc) + ' ' + self['PCC_FLAGS']
+        if sys.version_info[:2] < (2, 5):
+            PCC_FLAGS = PCC_FLAGS.replace('-Wwrite-strings', '')
+        PCC = getenv('PCC', PCC) + ' ' +  getenv('PCCFLAGS', PCC_FLAGS)
+        ccshared = getenv('CCSHARED', ccshared)
+        cflags   = getenv('CFLAGS',   cflags)
+        PCC_SHARED = str.join(' ', (PCC, ccshared, cflags))
+        # linker
         PLD = self['PCC_LINKER']
-        #
-        PCC = os.environ.get('PCC', PCC)
-        PLD = os.environ.get('PLD', PLD)
-        cflags   = os.environ.get('CFLAGS',   cflags)
-        ccflags  = os.environ.get('CCFLAGS',  ccflags)
-        ldflags  = os.environ.get('LDFLAGS',  ldflags)
-        ccshared = os.environ.get('CCSHARED', ccshared)
-        ldshared = os.environ.get('LDSHARED', ldshared)
-        #
-        PCC_SHARED = str.join(" ", (PCC, ccflags, ccshared, cflags))
-        PLD_SHARED = str.join(" ", (PLD, ldflags, ldshared, cflags))
+        PLD_FLAGS = get_flags(ld) + ' ' + self['PCC_LINKER_FLAGS']
+        PLD = getenv('PLD', PLD) + ' ' + getenv('PLDFLAGS', PLD_FLAGS)
+        ldshared = getenv('LDSHARED', ldshared)
+        ldflags  = getenv('LDFLAGS',  cflags+ldflags)
+        PLD_SHARED = str.join(' ', (PLD, ldshared, ldflags))
         #
         compiler.set_executables(
             compiler     = PCC,
+            linker_exe   = PLD,
             compiler_so  = PCC_SHARED,
             linker_so    = PLD_SHARED,
             )
@@ -384,24 +381,22 @@ class build_ext(_build_ext):
         modpath = str.split(fullname, '.')
         pkgpath = os.path.join('', *modpath[0:-1])
         name = modpath[-1]
-        srcs = list(ext.sources)
-        macs = list(ext.define_macros)
-        incs = list(ext.include_dirs)
-        deps = list(ext.depends)
-        lang = ext.language
-        newext = extclass(name, sources=srcs, depends=deps,
-                          define_macros=macs, include_dirs=incs,
-                          language=lang)
+        sources = list(ext.sources)
+        newext = extclass(name, sources)
+        newext.__dict__.update(deepcopy(ext.__dict__))
+        newext.name = name
         return pkgpath, newext
 
     def _build_ext_arch(self, ext, pkgpath, arch):
         build_temp = self.build_temp
         build_lib  = self.build_lib
-        self.build_temp = os.path.join(build_temp, arch)
-        self.build_lib  = os.path.join(build_lib, pkgpath, arch)
-        _build_ext.build_extension(self, ext)
-        self.build_lib  = build_lib
-        self.build_temp = build_temp
+        try:
+            self.build_temp = os.path.join(build_temp, arch)
+            self.build_lib  = os.path.join(build_lib, pkgpath, arch)
+            _build_ext.build_extension(self, ext)
+        finally:
+            self.build_temp = build_temp
+            self.build_lib  = build_lib
 
     def get_config_arch(self, arch):
         return config.Configure(self.petsc_dir, arch)
@@ -444,10 +439,13 @@ class build_ext(_build_ext):
         config_file = os.path.join(build_lib, dist_name, 'lib',
                                    dist_name.replace('4py', '') + '.cfg')
         #
-        log.info('writing %s' % config_file)
-        fh = open(config_file, 'w')
-        try: fh.write(config_data)
-        finally: fh.close()
+        def write_file(filename, data):
+            fh = open(filename, 'w')
+            try: fh.write(config_data)
+            finally: fh.close()
+        execute(write_file, (config_file, config_data),
+                msg='writing %s' % config_file, 
+                verbose=self.verbose, dry_run=self.dry_run)
 
     def get_config_data(self, arch_list):
         template = """\
