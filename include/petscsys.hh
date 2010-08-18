@@ -41,6 +41,8 @@ namespace PETSc {
     Point(const Point<dim,Value2_>& p) {for(int d = 0; d < dim; ++d) {x[d] = (Value2_) p.x[d];}}
 
     inline int size() const {return dim;};
+    inline value_type length() const {value_type l = 0.0; for(int d = 0; d < dim; ++d) {l += x[d]*x[d];} return sqrt(l);};
+    inline value_type sum() const {value_type s = 0.0; for(int d = 0; d < dim; ++d) {s += x[d];} return s;};
 
     inline operator value_type *() {return x;};
 
@@ -51,6 +53,10 @@ namespace PETSc {
     inline void operator+=(const value_type& c) {for(int d = 0; d < dim; ++d) {x[d] += c;}}
     inline void operator-=(const Point& p) {for(int d = 0; d < dim; ++d) {x[d] -= p.x[d];}}
     inline void operator-=(const value_type& c) {for(int d = 0; d < dim; ++d) {x[d] -= c;}}
+    inline void operator*=(const Point& p) {for(int d = 0; d < dim; ++d) {x[d] *= p.x[d];}}
+    inline void operator*=(const value_type& c) {for(int d = 0; d < dim; ++d) {x[d] *= c;}}
+    inline void operator/=(const Point& p) {for(int d = 0; d < dim; ++d) {x[d] /= p.x[d];}}
+    inline void operator/=(const value_type& c) {for(int d = 0; d < dim; ++d) {x[d] /= c;}}
     template<int d>
     static bool lessThan(const Point& a, const Point &b) {
       return a.x[d] < b.x[d];

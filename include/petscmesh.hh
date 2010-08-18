@@ -6,6 +6,8 @@
 
 using ALE::Obj;
 
+PetscErrorCode MeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer viewer);
+
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreateMatrix" 
 template<typename Mesh, typename Section>
