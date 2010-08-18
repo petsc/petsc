@@ -163,6 +163,8 @@ struct _MatOps {
   PetscErrorCode (*hermitiantranspose)(Mat,MatReuse,Mat*);
   PetscErrorCode (*multhermitiantranspose)(Mat,Vec,Vec);
   PetscErrorCode (*multhermitiantransposeadd)(Mat,Vec,Vec,Vec);
+  PetscErrorCode (*getmultiprocblock)(Mat,MPI_Comm,Mat*);
+  /*124*/
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -176,7 +178,7 @@ EXTERN PetscErrorCode MatConvert_Basic(Mat, const MatType,MatReuse,Mat*);
 EXTERN PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
 EXTERN PetscErrorCode MatView_Private(Mat);
 
-EXTERN PetscErrorCode MatHeaderCopy(Mat,Mat);
+EXTERN PetscErrorCode MatHeaderMerge(Mat,Mat);
 EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat);
 EXTERN PetscErrorCode MatAXPYGetxtoy_Private(PetscInt,PetscInt*,PetscInt*,PetscInt*, PetscInt*,PetscInt*,PetscInt*, PetscInt**);
 EXTERN PetscErrorCode MatPtAP_Basic(Mat,Mat,MatReuse,PetscReal,Mat*);
@@ -975,5 +977,6 @@ extern PetscLogEvent  MAT_Applypapt, MAT_Applypapt_symbolic, MAT_Applypapt_numer
 extern PetscLogEvent  MAT_Getsymtranspose, MAT_Transpose_SeqAIJ, MAT_Getsymtransreduced,MAT_GetSequentialNonzeroStructure;
 
 extern PetscLogEvent  MATMFFD_Mult;
+extern PetscLogEvent  MAT_GetMultiProcBlock;
 
 #endif

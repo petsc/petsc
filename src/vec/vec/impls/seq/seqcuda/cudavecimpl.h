@@ -52,10 +52,8 @@ EXTERN PetscTruth synchronizeCUDA;
 
 #define WaitForGPU() synchronizeCUDA ? cudaThreadSynchronize() : 0
 
-struct VecSeqCUDA_Container {
-  /* eventually we should probably move the GPU flag into here 
-     also need to add deletion of cpu/gpu indices
-  */
+struct Vec_CUDA {
+  /* eventually we should probably move the GPU flag into here */
   CUSPARRAY*       GPUarray;  /* this always holds the GPU data */
 };
 
@@ -69,9 +67,9 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDAAllocateCheck(Vec v)
   PetscFunctionBegin;
   if (v->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
     try {
-        v->spptr = new VecSeqCUDA_Container;
-	((VecSeqCUDA_Container*)v->spptr)->GPUarray = new CUSPARRAY;
-	((VecSeqCUDA_Container*)v->spptr)->GPUarray->resize((PetscBLASInt)v->map->n);
+        v->spptr = new Vec_CUDA;
+	((Vec_CUDA*)v->spptr)->GPUarray = new CUSPARRAY;
+	((Vec_CUDA*)v->spptr)->GPUarray->resize((PetscBLASInt)v->map->n);
 	ierr = WaitForGPU();CHKERRQ(ierr);
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
@@ -101,7 +99,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
   if (v->valid_GPU_array == PETSC_CUDA_CPU){
     ierr = PetscLogEventBegin(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
     try{
-      ((VecSeqCUDA_Container*)v->spptr)->GPUarray->assign(*(PetscScalar**)v->data,*(PetscScalar**)v->data + cn);
+      ((Vec_CUDA*)v->spptr)->GPUarray->assign(*(PetscScalar**)v->data,*(PetscScalar**)v->data + cn);
       ierr = WaitForGPU();CHKERRQ(ierr);
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
@@ -127,7 +125,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPUSome(Vec v,CUSPINTARRAYCPU *i
     thrust::copy(
 		 thrust::make_permutation_iterator(s->array,indicesCPU->begin()),
 		 thrust::make_permutation_iterator(s->array,indicesCPU->end()),
-		 thrust::make_permutation_iterator(((VecSeqCUDA_Container *)v->spptr)->GPUarray->begin(),indicesGPU->begin()));
+		 thrust::make_permutation_iterator(((Vec_CUDA *)v->spptr)->GPUarray->begin(),indicesGPU->begin()));
     ierr = PetscLogEventEnd(VEC_CUDACopyToGPUSome,v,0,0,0);CHKERRQ(ierr);
   }
   v->valid_GPU_array = PETSC_CUDA_GPU;

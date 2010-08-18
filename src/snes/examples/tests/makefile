@@ -215,11 +215,6 @@ runex9_3:
 	   if (${DIFF} output/ex9_1.out ex9_3.tmp) then true; \
 	   else echo "Possible problem with ex9_1, diffs above"; fi; \
 	   ${RM} -f ex9_3.tmp
-runex10:
-	-@${MPIEXEC} -n 2 ./ex10 -ksp_gmres_cgs_refinement_type refine_always -n 10 -snes_monitor_short  > ex10_1.tmp 2>&1;	  \
-	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
-	   else echo "Possible problem with ex10_1, diffs above"; fi; \
-	   ${RM} -f ex10_1.tmp
 runex12f:
 	-@${MPIEXEC} -n 2 ./ex12f -ksp_gmres_cgs_refinement_type refine_always -n 10 -snes_monitor_short  > ex12_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex12_1.out ex12_1.tmp) then true; \

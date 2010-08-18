@@ -1701,7 +1701,7 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
   if (reuse == MAT_INITIAL_MATRIX || *matout != A) {
     *matout = B;
   } else {
-    ierr = MatHeaderCopy(A,B);CHKERRQ(ierr);
+    ierr = MatHeaderMerge(A,B);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2718,7 +2718,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
 /*119*/0,
        0,
        0,
-       0
+       0,
+       MatGetMultiProcBlock_MPIAIJ
 };
 
 /* ----------------------------------------------------------------------------------------*/
@@ -3430,12 +3431,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR(Mat B,const Petsc
    process 0, the next m1 rows belong to process 1, the next m2 rows belong 
    to process 2 etc.. where m0,m1,m2... are the input parameter 'm'.
 
-   The DIAGONAL portion of the local submatrix of a processor can be defined 
-   as the submatrix which is obtained by extraction the part corresponding 
-   to the rows r1-r2 and columns r1-r2 of the global matrix, where r1 is the 
-   first row that belongs to the processor, and r2 is the last row belonging 
-   to the this processor. This is a square mxm matrix. The remaining portion 
-   of the local submatrix (mxN) constitute the OFF-DIAGONAL portion.
+   The DIAGONAL portion of the local submatrix of a processor can be defined
+   as the submatrix which is obtained by extraction the part corresponding to
+   the rows r1-r2 and columns c1-c2 of the global matrix, where r1 is the
+   first row that belongs to the processor, r2 is the last row belonging to
+   the this processor, and c1-c2 is range of indices of the local part of a
+   vector suitable for applying the matrix to.  This is an mxn matrix.  In the
+   common case of a square matrix, the row and column ranges are the same and
+   the DIAGONAL part is also square. The remaining portion of the local
+   submatrix (mxN) constitute the OFF-DIAGONAL portion.
 
    If o_nnz, d_nnz are specified, then o_nz, and d_nz are ignored.
 

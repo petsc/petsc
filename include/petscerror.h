@@ -598,10 +598,10 @@ M*/
     petscstack->directory[petscstack->currentsize] = "unknown"; \
     petscstack->line[petscstack->currentsize]      = 0; \
     petscstack->currentsize++; \
-  }} while (0)
+  } CHKMEMQ;} while (0)
 
 #define PetscStackPop \
-  do {if (petscstack && petscstack->currentsize > 0) {     \
+  do {CHKMEMQ; if (petscstack && petscstack->currentsize > 0) {	\
     petscstack->currentsize--; \
     petscstack->function[petscstack->currentsize]  = 0; \
     petscstack->file[petscstack->currentsize]      = 0; \
@@ -636,25 +636,48 @@ M*/
 M*/
 #define PetscFunctionReturn(a) \
   do {\
-  PetscStackPop; \
+  if (petscstack && petscstack->currentsize > 0) {	\
+    petscstack->currentsize--; \
+    petscstack->function[petscstack->currentsize]  = 0; \
+    petscstack->file[petscstack->currentsize]      = 0; \
+    petscstack->directory[petscstack->currentsize] = 0; \
+    petscstack->line[petscstack->currentsize]      = 0; \
+  }\
   return(a);} while (0)
 
 #define PetscFunctionReturnVoid() \
   do {\
-  PetscStackPop; \
+  if (petscstack && petscstack->currentsize > 0) {	\
+    petscstack->currentsize--; \
+    petscstack->function[petscstack->currentsize]  = 0; \
+    petscstack->file[petscstack->currentsize]      = 0; \
+    petscstack->directory[petscstack->currentsize] = 0; \
+    petscstack->line[petscstack->currentsize]      = 0; \
+  }\
   return;} while (0)
-
 
 #else
 
 #define PetscFunctionBegin 
 #define PetscFunctionReturn(a)  return(a)
 #define PetscFunctionReturnVoid() return
-#define PetscStackPop 
-#define PetscStackPush(f) 
+#define PetscStackPop     CHKMEMQ
+#define PetscStackPush(f) CHKMEMQ
 #define PetscStackActive        0
 
 #endif
+
+/*
+    PetscStackCall - Calls an external library routine or user function after pushing the name of the routine on the stack.
+
+   Input Parameters:
++   name - string that gives the name of the function being called
+-   routine - actual call to the routine
+
+   Developer Note: this is so that when a user or external library routine results in a crash or corrupts memory, they get blamed instead of PETSc.
+
+*/
+#define PetscStackCall(name,routine) PetscStackPush(name);routine;PetscStackPop;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackCreate(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackView(PetscViewer);

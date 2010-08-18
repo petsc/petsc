@@ -1633,7 +1633,7 @@ PetscErrorCode MatTranspose_SeqBAIJ(Mat A,MatReuse reuse,Mat *B)
   if (reuse == MAT_INITIAL_MATRIX || *B != A) {
     *B = C;
   } else {
-    ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);
+    ierr = MatHeaderMerge(A,C);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2966,7 +2966,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
 /*119*/0,
        0,
        MatMultHermitianTranspose_SeqBAIJ,
-       MatMultHermitianTransposeAdd_SeqBAIJ
+       MatMultHermitianTransposeAdd_SeqBAIJ,
+       0,
 };
 
 EXTERN_C_BEGIN

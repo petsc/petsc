@@ -26,6 +26,7 @@ PetscLogEvent  MAT_MultHermitianTranspose,MAT_MultHermitianTransposeAdd;
 PetscLogEvent  MAT_Getsymtranspose, MAT_Getsymtransreduced, MAT_Transpose_SeqAIJ, MAT_GetBrowsOfAcols;
 PetscLogEvent  MAT_GetBrowsOfAocols, MAT_Getlocalmat, MAT_Getlocalmatcondensed, MAT_Seqstompi, MAT_Seqstompinum, MAT_Seqstompisym;
 PetscLogEvent  MAT_Applypapt, MAT_Applypapt_numeric, MAT_Applypapt_symbolic, MAT_GetSequentialNonzeroStructure;
+PetscLogEvent  MAT_GetMultiProcBlock;
 
 /* nasty global values for MatSetValue() */
 PetscInt    PETSCMAT_DLLEXPORT MatSetValue_Row = 0;
@@ -8066,5 +8067,55 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRedundantMatrix(Mat mat,PetscInt nsubcom
   ierr = PetscLogEventBegin(MAT_GetRedundantMatrix,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->getredundantmatrix)(mat,nsubcomm,subcomm,mlocal_red,reuse,matredundant);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_GetRedundantMatrix,mat,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetMultiProcBlock"
+/*@C
+   MatGetMultiProcBlock - Create multiple [bjacobi] 'parallel submatrices' from
+   a given 'mat' object. Each submatrix can span multiple procs.
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+-  subcomm - the subcommunicator obtained by com_split(comm)
+
+   Output Parameter:
+.  subMat - 'parallel submatrices each spans a given subcomm
+
+  Notes:
+  The submatrix partition across processors is dicated by 'subComm' a
+  communicator obtained by com_split(comm). The comm_split
+  is not restriced to be grouped with consequitive original ranks.
+
+  Due the comm_split() usage, the parallel layout of the submatrices
+  map directly to the layout of the original matrix [wrt the local
+  row,col partitioning]. So the original 'DiagonalMat' naturally maps
+  into the 'DiagonalMat' of the subMat, hence it is used directly from
+  the subMat. However the offDiagMat looses some columns - and this is
+  reconstructed with MatSetValues()
+
+  Level: advanced
+
+  Concepts: subcommunicator
+  Concepts: submatrices
+
+.seealso: MatGetSubMatrices()
+@*/
+PetscErrorCode  PETSCMAT_DLLEXPORT MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, Mat* subMat)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    commsize,subCommSize;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(((PetscObject)mat)->comm,&commsize);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(subComm,&subCommSize);CHKERRQ(ierr);
+  if (subCommSize > commsize) SETERRQ2(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"CommSize %D < SubCommZize %D",commsize,subCommSize);
+  
+  ierr = PetscLogEventBegin(MAT_GetMultiProcBlock,mat,0,0,0);CHKERRQ(ierr); 
+  ierr = (*mat->ops->getmultiprocblock)(mat,subComm,subMat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_GetMultiProcBlock,mat,0,0,0);CHKERRQ(ierr);   
   PetscFunctionReturn(0);
 }

@@ -29,6 +29,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       its;
   PetscScalar    *xx;
+  SNESConvergedReason reason;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   
@@ -85,9 +86,16 @@ int main(int argc,char **argv)
   */
 
   ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
-  ierr = VecView(x,0);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %D\n\n",its);CHKERRQ(ierr);
+  ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
+  /*
+     Some systems computes a residual that is identically zero, thus converging
+     due to FNORM_ABS, others converge due to FNORM_RELATIVE.  Here, we only
+     report the reason if the iteration did not converge so that the tests are
+     reproducible.
+  */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s number of Newton iterations = %D\n\n",reason>0?"CONVERGED":SNESConvergedReasons[reason],its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

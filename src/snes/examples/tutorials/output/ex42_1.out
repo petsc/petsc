@@ -233,5 +233,5 @@
 232 SNES Function norm < 1.e-11
 1
 1
-number of Newton iterations = 232
+CONVERGED number of Newton iterations = 232
 
