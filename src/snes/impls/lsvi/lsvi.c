@@ -120,15 +120,15 @@ PetscErrorCode SNESDefaultConverged_LSVI(SNES snes,PetscInt it,PetscReal xnorm,P
 . phi - the semismooth function
 
   Output Parameter:
-. psi - the merit function
+. merit - the merit function
 
   Notes:
   The merit function for the mixed complementarity problem is defined as
-     psi = 0.5*phi^T*phi
+     merit = 0.5*phi^T*phi
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESLSVIComputeMeritFunction"
-static PetscErrorCode SNESLSVIComputeMeritFunction(Vec phi, PetscScalar* psi)
+static PetscErrorCode SNESLSVIComputeMeritFunction(Vec phi, PetscScalar* merit)
 {
   PetscErrorCode ierr;
   PetscScalar    phinorm;
@@ -137,7 +137,7 @@ static PetscErrorCode SNESLSVIComputeMeritFunction(Vec phi, PetscScalar* psi)
   ierr = VecNormBegin(phi,NORM_2,&phinorm);
   ierr = VecNormEnd(phi,NORM_2,&phinorm);
 
-  *psi = 0.5*phinorm*phinorm;
+  *merit = 0.5*phinorm*phinorm;
   PetscFunctionReturn(0);
 }
 
@@ -162,11 +162,9 @@ static PetscErrorCode ComputeFischerFunction(PetscScalar a, PetscScalar b, Petsc
 /* 
    SNESLSVIComputeSSFunction - Reformulates a system of nonlinear equations in mixed complementarity form to a system of nonlinear equations in semismooth form. 
 
-   Input Parameters:                                                                                  
+   Input Parameters:  
+.  snes - the SNES context
 .  x - current iterate
-.  f - function evaluated at x                                                                         
-.  xl - lower bounds
--  xu - upper bounds
 
    Output Parameters:
 .  phi - Semismooth function
@@ -180,22 +178,26 @@ static PetscErrorCode ComputeFischerFunction(PetscScalar a, PetscScalar b, Petsc
 -  otherwise l[i] == u[i] -- phi[i] = l[i] - x[i]
    ss is the semismoothing function used to reformulate the nonlinear equation in complementarity
    form to semismooth form
+
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESLSVIComputeSSFunction"
-static PetscErrorCode SNESLSVIComputeSSFunction(Vec phi,Vec x,Vec f,Vec xl,Vec xu)
+static PetscErrorCode SNESLSVIComputeSSFunction(SNES snes,Vec X,Vec phi)
 {
   PetscErrorCode  ierr;
+  SNES_LSVI       *lsvi = (SNES_LSVI*)snes->data;
+  Vec             Xl = lsvi->xl,Xu = lsvi->xu,F = snes->vec_func;
   PetscScalar     *phi_arr,*x_arr,*f_arr,*l,*u,t;
   PetscInt        i,n;
 
   PetscFunctionBegin;
-  ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   
-  ierr = VecGetArray(x,&x_arr);CHKERRQ(ierr);
-  ierr = VecGetArray(f,&f_arr);CHKERRQ(ierr);
-  ierr = VecGetArray(xl,&l);CHKERRQ(ierr);
-  ierr = VecGetArray(xu,&u);CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x_arr);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f_arr);CHKERRQ(ierr);
+  ierr = VecGetArray(Xl,&l);CHKERRQ(ierr);
+  ierr = VecGetArray(Xu,&u);CHKERRQ(ierr);
   ierr = VecGetArray(phi,&phi_arr);CHKERRQ(ierr);
 
   /* Here we are assuming that the distribution of all the input vectors and the ouput
@@ -225,10 +227,10 @@ static PetscErrorCode SNESLSVIComputeSSFunction(Vec phi,Vec x,Vec f,Vec xl,Vec x
     }
   }
   
-  ierr = VecRestoreArray(x,&x_arr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(f,&f_arr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xl,&l);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xu,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x_arr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f_arr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Xl,&l);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Xu,&u);CHKERRQ(ierr);
   ierr = VecRestoreArray(phi,&phi_arr);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -430,7 +432,7 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
   PetscInt           maxits,i,lits;
   PetscTruth         lssucceed,changedir;
   MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
-  PetscReal          fnorm,gnorm,xnorm=0,ynorm;
+  PetscReal          gnorm,xnorm=0,ynorm;
   Vec                Y,X,F,G,W;
   KSPConvergedReason kspreason;
 
@@ -450,33 +452,29 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
   snes->iter = 0;
   snes->norm = 0.0;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+  ierr = SNESLSVIComputeSSFunction(snes,X,lsvi->phi);CHKERRQ(ierr);
   if (snes->domainerror) {
     snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
     PetscFunctionReturn(0);
   }
-  ierr = VecNormBegin(F,NORM_2,&fnorm);CHKERRQ(ierr);	/* fnorm <- ||F||  */
+
+   /* Compute Merit function */
+  ierr = SNESLSVIComputeMeritFunction(lsvi->phi,&lsvi->merit);CHKERRQ(ierr);
+
   ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm <- ||x||  */
-  ierr = VecNormEnd(F,NORM_2,&fnorm);CHKERRQ(ierr);
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
-  if PetscIsInfOrNanReal(fnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
-
-  /* Compute the semismooth function */
-  ierr = SNESLSVIComputeSSFunction(lsvi->phi,X,F,lsvi->xl,lsvi->xu);CHKERRQ(ierr);
-
-  /* Compute Merit function */
-  ierr = SNESLSVIComputeMeritFunction(lsvi->phi,&lsvi->psi);CHKERRQ(ierr);
+  if PetscIsInfOrNanReal(lsvi->merit) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
-  snes->norm = fnorm;
+  snes->norm = lsvi->merit;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  SNESLogConvHistory(snes,fnorm,0);
-  SNESMonitor(snes,0,fnorm);
+  SNESLogConvHistory(snes,lsvi->merit,0);
+  SNESMonitor(snes,0,lsvi->merit);
 
   /* set parameter for default relative tolerance convergence test */
-  snes->ttol = fnorm*snes->rtol;
+  snes->ttol = lsvi->merit*snes->rtol;
   /* test convergence */
-  ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+  ierr = (*snes->ops->converged)(snes,0,0.0,0.0,lsvi->merit,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
 
   for (i=0; i<maxits; i++) {
@@ -488,7 +486,7 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
 
     /* Solve J Y = Phi, where J is the B-subdifferential matrix */
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
-    /*   ierr = SNESLSVIComputeBsubdifferential(snes,X,F,snes->jacobian,snes->jacobian_pre,&flg);CHKERRQ(ierr); */
+    ierr = SNESLSVIComputeBsubdifferential(snes,X,F,snes->jacobian,snes->jacobian_pre,&flg);CHKERRQ(ierr);
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
     ierr = SNES_KSPSolve(snes,snes->ksp,F,Y);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
@@ -520,9 +518,9 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
        and evaluate G = function(Y) (depends on the line search). 
     */
     ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
-    ynorm = 1; gnorm = fnorm;
-    ierr = (*lsvi->LineSearch)(snes,lsvi->lsP,X,F,G,Y,W,fnorm,xnorm,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
-    ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",fnorm,gnorm,ynorm,(int)lssucceed);CHKERRQ(ierr);
+    ynorm = 1; gnorm = lsvi->merit;
+    ierr = (*lsvi->LineSearch)(snes,lsvi->lsP,X,lsvi->phi,G,Y,W,lsvi->merit,xnorm,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
+    ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",lsvi->merit,gnorm,ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
@@ -538,19 +536,19 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
       }
     }
     /* Update function and solution vectors */
-    fnorm = gnorm;
-    ierr = VecCopy(G,F);CHKERRQ(ierr);
+    lsvi->merit = gnorm;
+    ierr = VecCopy(G,lsvi->phi);CHKERRQ(ierr);
     ierr = VecCopy(W,X);CHKERRQ(ierr);
     /* Monitor convergence */
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i+1;
-    snes->norm = fnorm;
+    snes->norm = lsvi->merit;
     ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     SNESLogConvHistory(snes,snes->norm,lits);
     SNESMonitor(snes,snes->iter,snes->norm);
     /* Test for convergence, xnorm = || X || */
     if (snes->ops->converged != SNESSkipConverged) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
-    ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+    ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,lsvi->merit,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) break;
   }
   if (i == maxits) {
@@ -681,9 +679,10 @@ PetscErrorCode SNESLineSearchNo_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec
   if (changed_y) {
     ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
   }
-  ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
+  ierr = SNESLSVIComputeSSFunction(snes,w,g);CHKERRQ(ierr);
   if (!snes->domainerror) {
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);  /* gnorm = || g || */
+    *gnorm *= 0.5**gnorm;
     if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   }
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
@@ -1249,7 +1248,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LSVI(SNES snes)
   lsvi->alpha		 = 1.e-4;
   lsvi->maxstep		 = 1.e8;
   lsvi->minlambda         = 1.e-12;
-  lsvi->LineSearch        = SNESLineSearchCubic_LSVI;
+  lsvi->LineSearch        = SNESLineSearchNo_LSVI;
   lsvi->lsP               = PETSC_NULL;
   lsvi->postcheckstep     = PETSC_NULL;
   lsvi->postcheck         = PETSC_NULL;
