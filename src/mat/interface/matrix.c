@@ -26,7 +26,7 @@ PetscLogEvent  MAT_MultHermitianTranspose,MAT_MultHermitianTransposeAdd;
 PetscLogEvent  MAT_Getsymtranspose, MAT_Getsymtransreduced, MAT_Transpose_SeqAIJ, MAT_GetBrowsOfAcols;
 PetscLogEvent  MAT_GetBrowsOfAocols, MAT_Getlocalmat, MAT_Getlocalmatcondensed, MAT_Seqstompi, MAT_Seqstompinum, MAT_Seqstompisym;
 PetscLogEvent  MAT_Applypapt, MAT_Applypapt_numeric, MAT_Applypapt_symbolic, MAT_GetSequentialNonzeroStructure;
-PetscLogEvent  Mat_GetMultiProcBlock;
+PetscLogEvent  MAT_GetMultiProcBlock;
 
 /* nasty global values for MatSetValue() */
 PetscInt    PETSCMAT_DLLEXPORT MatSetValue_Row = 0;
@@ -8113,13 +8113,9 @@ PetscErrorCode  PETSCMAT_DLLEXPORT MatGetMultiProcBlock(Mat mat, MPI_Comm subCom
   ierr = MPI_Comm_size(((PetscObject)mat)->comm,&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_size(subComm,&subCommSize);CHKERRQ(ierr);
   if (subCommSize > commsize) SETERRQ2(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"CommSize %D < SubCommZize %D",commsize,subCommSize);
-  if (commsize == 1){
-    ierr = MatDuplicate(mat,MAT_COPY_VALUES,subMat);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  } else {
-    /* ierr = PetscLogEventBegin(MAT_GetMultiProcBlock,mat,0,0,0);CHKERRQ(ierr); */
-    ierr = (*mat->ops->getmultiprocblock)(mat,subComm,subMat);CHKERRQ(ierr);
-    /* ierr = PetscLogEventEnd(MAT_GetMultiProcBlock,mat,0,0,0);CHKERRQ(ierr); */
-  }
+  
+  ierr = PetscLogEventBegin(MAT_GetMultiProcBlock,mat,0,0,0);CHKERRQ(ierr); 
+  ierr = (*mat->ops->getmultiprocblock)(mat,subComm,subMat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_GetMultiProcBlock,mat,0,0,0);CHKERRQ(ierr);   
   PetscFunctionReturn(0);
 }

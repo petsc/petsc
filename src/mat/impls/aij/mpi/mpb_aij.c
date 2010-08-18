@@ -1,23 +1,5 @@
 #include "../src/mat/impls/aij/mpi/mpiaij.h"
 
-/*
-
-  This routine creates multiple [bjacobi] 'parallel submatrices' from
-  a given 'mat' object. Each submatrix can span multiple procs.
-
-  The submatrix partition across processors is dicated by 'subComm' a
-  communicator obtained by com_split(comm). Note: the comm_split
-  is not restriced to be grouped with consequitive original ranks.
-
-  Due the comm_split() usage, the parallel layout of the submatrices
-  map directly to the layout of the original matrix [wrt the local
-  row,col partitioning]. So the original 'DiagonalMat' naturally maps
-  into the 'DiagonalMat' of the subMat, hence it is used directly from
-  the subMat. However the offDiagMat looses some columns - and this is
-  reconstructed with MatSetValues()
-  
- */
-
 #undef __FUNCT__
 #define __FUNCT__ "MatGetMultiProcBlock_MPIAIJ"
 PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, Mat* subMat)
@@ -32,11 +14,6 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, Mat* subM
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)mat)->comm,&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_size(subComm,&subCommSize);CHKERRQ(ierr);
-  if (subCommSize > commsize) SETERRQ2(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"CommSize %D < SubCommZize %D",commsize,subCommSize);
-  if (commsize == 1){
-    ierr = MatDuplicate(mat,MAT_COPY_VALUES,subMat);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
 
   /* create subMat object with the relavent layout */
   ierr = MatCreate(subComm,subMat);CHKERRQ(ierr);
