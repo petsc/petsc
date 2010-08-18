@@ -127,8 +127,8 @@ cdef inline ndarray iarray_i(object ob, PetscInt* size, PetscInt** data):
 
 cdef inline ndarray iarray_r(object ob, PetscInt* size, PetscReal** data):
     cdef ndarray ary = iarray(ob, NPY_PETSC_REAL)
-    if size != NULL: size[0] = <PetscInt>     PyArray_SIZE(ary)
-    if data != NULL: data[0] = <PetscScalar*> PyArray_DATA(ary)
+    if size != NULL: size[0] = <PetscInt>   PyArray_SIZE(ary)
+    if data != NULL: data[0] = <PetscReal*> PyArray_DATA(ary)
     return ary
 
 cdef inline ndarray iarray_s(object ob, PetscInt* size, PetscScalar** data):
