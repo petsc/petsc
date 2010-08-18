@@ -638,6 +638,7 @@ PetscPolymorphicSubroutine(MatInterpolateAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestrict(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetVecs(Mat,Vec*,Vec*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRedundantMatrix(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetMultiProcBlock(Mat,MPI_Comm,Mat*);
 
 /*MC
    MatSetValue - Set a single entry into a matrix.
@@ -1556,7 +1557,7 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_HERMITIANTRANSPOSE=120,
                MATOP_MULTHERMITIANTRANSPOSE=121,
                MATOP_MULTHERMITIANTRANSPOSEADD=122,
-	       MATOP_LOADNEW=123,
+	       MATOP_GETMULTIPROCBLOCK=123,
              } MatOperation;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat,MatOperation,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat,MatOperation,void(*)(void));

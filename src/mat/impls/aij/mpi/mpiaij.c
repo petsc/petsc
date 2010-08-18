@@ -2718,7 +2718,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
 /*119*/0,
        0,
        0,
-       0
+       0,
+       MatGetMultiProcBlock_MPIAIJ
 };
 
 /* ----------------------------------------------------------------------------------------*/

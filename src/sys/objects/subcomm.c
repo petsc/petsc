@@ -66,8 +66,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommCreate(MPI_Comm comm,PetscInt nsub
 PetscErrorCode PetscSubcommCreate_contiguous(MPI_Comm comm,PetscInt nsubcomm,PetscSubcomm *psubcomm)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank,size,*subsize,duprank,subrank;
-  PetscInt       np_subcomm,nleftover,i,color,rankstart;
+  PetscMPIInt    rank,size,*subsize,duprank=-1,subrank=-1;
+  PetscInt       np_subcomm,nleftover,i,color=-1,rankstart;
   MPI_Comm       subcomm=0,dupcomm=0;
   PetscSubcomm   psubcomm_tmp;
 

@@ -678,13 +678,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_BJacobi(PC pc)
   jac->n                 = -1;
   jac->n_local           = -1;
   jac->first_local       = rank;
-  jac->ksp              = 0;
+  jac->ksp               = 0;
   jac->use_true_local    = PETSC_FALSE;
   jac->same_local_solves = PETSC_TRUE;
   jac->g_lens            = 0;
   jac->l_lens            = 0;
   jac->tp_mat            = 0;
   jac->tp_pmat           = 0;
+  jac->psubcomm          = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBJacobiSetUseTrueLocal_C",
                     "PCBJacobiSetUseTrueLocal_BJacobi",
@@ -1265,11 +1266,9 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     jac->data = (void*)mpjac;
 
     /* initialize datastructure mpjac */
-    mpjac->nsubcomm = jac->n;
-
     if (!jac->psubcomm) {
       /* Create default contiguous subcommunicatiors if user does not provide them */
-      ierr = PetscSubcommCreate(comm,mpjac->nsubcomm,PETSC_SUBCOMM_CONTIGUOUS,&jac->psubcomm);CHKERRQ(ierr);
+      ierr = PetscSubcommCreate(comm,jac->n,PETSC_SUBCOMM_CONTIGUOUS,&jac->psubcomm);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory(pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
     } 
     mpjac->psubcomm = jac->psubcomm;

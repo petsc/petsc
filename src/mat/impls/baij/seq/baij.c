@@ -2966,7 +2966,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
 /*119*/0,
        0,
        MatMultHermitianTranspose_SeqBAIJ,
-       MatMultHermitianTransposeAdd_SeqBAIJ
+       MatMultHermitianTransposeAdd_SeqBAIJ,
+       0,
 };
 
 EXTERN_C_BEGIN

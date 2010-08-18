@@ -47,8 +47,7 @@ typedef struct {
   PC           pc;                 /* preconditioner used on each subcommunicator */
   Vec          xsub,ysub;          /* vectors of a subcommunicator to hold parallel vectors of ((PetscObject)pc)->comm */
   Mat          submats;            /* matrix and optional preconditioner matrix belong to a subcommunicator */
-  PetscSubcomm psubcomm;           /* only psubcomm->comm is needed! */
-  PetscInt     nsubcomm;           /* total number of blocks, which is same as number of subcommunicators */
+  PetscSubcomm psubcomm;           
 } PC_BJacobi_Multiproc;
 #endif
 
