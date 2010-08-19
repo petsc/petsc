@@ -29,7 +29,7 @@ typedef struct {
   /* ------------------ Semismooth algorithm stuff ------------------------------ */
   Vec                      phi;                      /* pointer to semismooth function */
   PetscErrorCode           (*computessfunction)(PetscScalar,PetscScalar,PetscScalar*); /* Semismooth function evaluation routine */
-  PetscScalar              merit;           /* Merit function */
+  PetscReal                merit;           /* Merit function */
   Vec                      dpsi;          /* Gradient of merit function */
   Vec                      Da;            /* B sub-differential work vector (diag perturbation) */
   Vec                      Db;            /* B sub-differential work vector (row scaling) */
