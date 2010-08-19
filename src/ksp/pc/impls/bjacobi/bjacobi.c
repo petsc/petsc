@@ -228,6 +228,7 @@ static PetscErrorCode PCSetFromOptions_BJacobi(PC pc)
 static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
 {
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
+  PC_BJacobi_Multiproc *mpjac = (PC_BJacobi_Multiproc*)jac->data;
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       i;
@@ -245,13 +246,20 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
     ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
     if (jac->same_local_solves) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);
-      ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
-      if (!rank && jac->ksp) {
+      if (jac->ksp) {
+        ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+        if (!rank){
+          ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+          ierr = KSPView(jac->ksp[0],sviewer);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      } else if (jac->psubcomm && !jac->psubcomm->color){
+        ierr = PetscViewerASCIIGetStdout(mpjac->psubcomm->comm,&sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = KSPView(jac->ksp[0],sviewer);CHKERRQ(ierr);
+        ierr = KSPView(mpjac->ksp,sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      }   
-      ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      }
     } else {
       PetscInt n_global; 
       ierr = MPI_Allreduce(&jac->n_local,&n_global,1,MPIU_INT,MPI_MAX,((PetscObject)pc)->comm);CHKERRQ(ierr);
