@@ -300,7 +300,7 @@ runex2_bjacobi:
 	   else echo "Possible problem with ex2_bjacobi, diffs above"; fi; \
 	   ${RM} -f ex2.tmp
 runex2_bjacobi_2:
-	-@${MPIEXEC} -n 4 ./ex2 -pc_type bjacobi -pc_bjacobi_blocks 2 -ksp_monitor_short -sub_pc_type jacobi -sub_ksp_type gmres > ex2.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex2 -pc_type bjacobi -pc_bjacobi_blocks 2 -ksp_monitor_short -sub_pc_type jacobi -sub_ksp_type gmres -ksp_view > ex2.tmp 2>&1; \
 	   if (${DIFF} output/ex2_bjacobi_2.out ex2.tmp) then true; \
 	   else echo "Possible problem with ex2_bjacobi_2, diffs above"; fi; \
 	   ${RM} -f ex2.tmp
