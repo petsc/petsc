@@ -106,7 +106,7 @@ class Configure(config.base.Configure):
     removedashl = 0
     for j in libs:
       # do not remove duplicate -l, because there is a tiny chance that order may matter
-      if j in newlibs and not j.startswith('-l'): continue
+      if j in newlibs and not ( j.startswith('-l') or j == '-framework') : continue
       # handle special case of -framework frameworkname
       if j == '-framework': removedashl = 1
       elif removedashl:
