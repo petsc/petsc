@@ -1187,7 +1187,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsReject(const char name[],const char m
 -  pre - string to prepend to the name or PETSC_NULL
 
    Output Parameters:
-.  flg - PETSC_TRUE if found else PETSC_FALSE.
+.  set - PETSC_TRUE if found else PETSC_FALSE.
 
    Level: beginner
 
@@ -1204,7 +1204,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsReject(const char name[],const char m
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsHasName(const char pre[],const char name[],PetscTruth *flg)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsHasName(const char pre[],const char name[],PetscTruth *set)
 {
   char           *value;
   PetscErrorCode ierr;
@@ -1212,7 +1212,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsHasName(const char pre[],const char n
 
   PetscFunctionBegin;
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
-  if (flg) *flg = flag;
+  if (set) *set = flag;
   PetscFunctionReturn(0);
 }
 
@@ -1229,7 +1229,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsHasName(const char pre[],const char n
 
    Output Parameter:
 +  ivalue - the integer value to return
--  flg - PETSC_TRUE if found, else PETSC_FALSE
+-  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
 
@@ -1243,7 +1243,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsHasName(const char pre[],const char n
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetInt(const char pre[],const char name[],PetscInt *ivalue,PetscTruth *flg)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetInt(const char pre[],const char name[],PetscInt *ivalue,PetscTruth *set)
 {
   char           *value;
   PetscErrorCode ierr;
@@ -1254,13 +1254,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetInt(const char pre[],const char na
   PetscValidIntPointer(ivalue,3);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
-    if (!value) {if (flg) *flg = PETSC_FALSE;}
+    if (!value) {if (set) *set = PETSC_FALSE;}
     else {
-      if (flg) *flg = PETSC_TRUE; 
+      if (set) *set = PETSC_TRUE; 
       ierr = PetscOptionsAtoi(value,ivalue);CHKERRQ(ierr);
     }
   } else {
-    if (flg) *flg = PETSC_FALSE;
+    if (set) *set = PETSC_FALSE;
   }
   PetscFunctionReturn(0); 
 } 
@@ -1343,7 +1343,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEList(const char pre[],const char 
 
    Output Parameter:
 +  value - the  value to return
--  flg - PETSC_TRUE if found, else PETSC_FALSE
+-  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
 
@@ -1394,7 +1394,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEnum(const char pre[],const char o
 
    Output Parameter:
 +  ivalue - the logical value to return
--  flg - PETSC_TRUE  if found, else PETSC_FALSE
+-  set - PETSC_TRUE  if found, else PETSC_FALSE
 
    Level: beginner
 
@@ -1414,7 +1414,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEnum(const char pre[],const char o
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetTruth(const char pre[],const char name[],PetscTruth *ivalue,PetscTruth *flg)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetTruth(const char pre[],const char name[],PetscTruth *ivalue,PetscTruth *set)
 {
   char           *value;
   PetscTruth     flag;
@@ -1425,14 +1425,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetTruth(const char pre[],const char 
   PetscValidIntPointer(ivalue,3);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
-    if (flg) *flg = PETSC_TRUE;
+    if (set) *set = PETSC_TRUE;
     if (!value) {
       *ivalue = PETSC_TRUE;
     } else {
       ierr = PetscOptionsAtol(value, ivalue);CHKERRQ(ierr);
     }
   } else {
-    if (flg) *flg = PETSC_FALSE;
+    if (set) *set = PETSC_FALSE;
   }
   PetscFunctionReturn(0); 
 } 
@@ -1454,7 +1454,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetTruth(const char pre[],const char 
    Output Parameter:
 +  dvalue - the integer values to return
 .  nmax - actual number of values retreived
--  flg - PETSC_TRUE if found, else PETSC_FALSE
+-  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
 
@@ -1471,7 +1471,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetTruth(const char pre[],const char 
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetTruthArray(const char pre[],const char name[],PetscTruth dvalue[],PetscInt *nmax,PetscTruth *flg)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetTruthArray(const char pre[],const char name[],PetscTruth dvalue[],PetscInt *nmax,PetscTruth *set)
 {
   char           *value;
   PetscErrorCode ierr;
@@ -1483,10 +1483,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetTruthArray(const char pre[],const 
   PetscValidCharPointer(name,2);
   PetscValidIntPointer(dvalue,3);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
-  if (!flag)  {if (flg) *flg = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
-  if (!value) {if (flg) *flg = PETSC_TRUE; *nmax = 0; PetscFunctionReturn(0);}
+  if (!flag)  {if (set) *set = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
+  if (!value) {if (set) *set = PETSC_TRUE; *nmax = 0; PetscFunctionReturn(0);}
 
-  if (flg) *flg = PETSC_TRUE;
+  if (set) *set = PETSC_TRUE;
 
   ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
   ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
@@ -1516,7 +1516,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetTruthArray(const char pre[],const 
 
    Output Parameter:
 +  dvalue - the double value to return
--  flg - PETSC_TRUE if found, PETSC_FALSE if not found
+-  set - PETSC_TRUE if found, PETSC_FALSE if not found
 
    Level: beginner
 
@@ -1529,7 +1529,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetTruthArray(const char pre[],const 
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetReal(const char pre[],const char name[],PetscReal *dvalue,PetscTruth *flg)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetReal(const char pre[],const char name[],PetscReal *dvalue,PetscTruth *set)
 {
   char           *value;
   PetscErrorCode ierr;
@@ -1540,10 +1540,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetReal(const char pre[],const char n
   PetscValidDoublePointer(dvalue,3);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
-    if (!value) {if (flg) *flg = PETSC_FALSE;}
-    else        {if (flg) *flg = PETSC_TRUE; ierr = PetscOptionsAtod(value,dvalue);CHKERRQ(ierr);}
+    if (!value) {if (set) *set = PETSC_FALSE;}
+    else        {if (set) *set = PETSC_TRUE; ierr = PetscOptionsAtod(value,dvalue);CHKERRQ(ierr);}
   } else {
-    if (flg) *flg = PETSC_FALSE;
+    if (set) *set = PETSC_FALSE;
   }
   PetscFunctionReturn(0); 
 } 
@@ -1562,7 +1562,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetReal(const char pre[],const char n
 
    Output Parameter:
 +  dvalue - the double value to return
--  flg - PETSC_TRUE if found, else PETSC_FALSE
+-  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
 
@@ -1579,7 +1579,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetReal(const char pre[],const char n
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetScalar(const char pre[],const char name[],PetscScalar *dvalue,PetscTruth *flg)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetScalar(const char pre[],const char name[],PetscScalar *dvalue,PetscTruth *set)
 {
   char           *value;
   PetscTruth     flag;
@@ -1591,7 +1591,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetScalar(const char pre[],const char
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (!value) {
-      if (flg) *flg = PETSC_FALSE;
+      if (set) *set = PETSC_FALSE;
     } else { 
 #if !defined(PETSC_USE_COMPLEX)
       ierr = PetscOptionsAtod(value,dvalue);CHKERRQ(ierr);
@@ -1613,10 +1613,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetScalar(const char pre[],const char
       } 
       ierr    = PetscTokenDestroy(token);CHKERRQ(ierr);
 #endif
-      if (flg) *flg    = PETSC_TRUE;
+      if (set) *set    = PETSC_TRUE;
     } 
   } else { /* flag */
-    if (flg) *flg = PETSC_FALSE;
+    if (set) *set = PETSC_FALSE;
   }
   PetscFunctionReturn(0); 
 } 
@@ -1638,7 +1638,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetScalar(const char pre[],const char
    Output Parameters:
 +  dvalue - the double value to return
 .  nmax - actual number of values retreived
--  flg - PETSC_TRUE if found, else PETSC_FALSE
+-  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
 
@@ -1651,7 +1651,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetScalar(const char pre[],const char
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetRealArray(const char pre[],const char name[],PetscReal dvalue[],PetscInt *nmax,PetscTruth *flg)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetRealArray(const char pre[],const char name[],PetscReal dvalue[],PetscInt *nmax,PetscTruth *set)
 {
   char           *value;
   PetscErrorCode ierr;
@@ -1663,10 +1663,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetRealArray(const char pre[],const c
   PetscValidCharPointer(name,2);
   PetscValidDoublePointer(dvalue,3);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
-  if (!flag)  {if (flg) *flg = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
-  if (!value) {if (flg) *flg = PETSC_TRUE; *nmax = 0; PetscFunctionReturn(0);}
+  if (!flag)  {if (set) *set = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
+  if (!value) {if (set) *set = PETSC_TRUE; *nmax = 0; PetscFunctionReturn(0);}
 
-  if (flg) *flg = PETSC_TRUE;
+  if (set) *set = PETSC_TRUE;
 
   ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
   ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
@@ -1698,7 +1698,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetRealArray(const char pre[],const c
    Output Parameter:
 +  dvalue - the integer values to return
 .  nmax - actual number of values retreived
--  flg - PETSC_TRUE if found, else PETSC_FALSE
+-  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
 
@@ -1711,7 +1711,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetRealArray(const char pre[],const c
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const char name[],PetscInt dvalue[],PetscInt *nmax,PetscTruth *flg)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const char name[],PetscInt dvalue[],PetscInt *nmax,PetscTruth *set)
 {
   char           *value;
   PetscErrorCode ierr;
@@ -1724,10 +1724,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const ch
   PetscValidCharPointer(name,2);
   PetscValidIntPointer(dvalue,3);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
-  if (!flag)  {if (flg) *flg = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
-  if (!value) {if (flg) *flg = PETSC_TRUE; *nmax = 0; PetscFunctionReturn(0);}
+  if (!flag)  {if (set) *set = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
+  if (!value) {if (set) *set = PETSC_TRUE; *nmax = 0; PetscFunctionReturn(0);}
 
-  if (flg) *flg = PETSC_TRUE;
+  if (set) *set = PETSC_TRUE;
 
   ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
   ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
@@ -1781,7 +1781,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const ch
 
    Output Parameters:
 +  string - location to copy string
--  flg - PETSC_TRUE if found, else PETSC_FALSE
+-  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
 
@@ -1803,7 +1803,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const ch
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetString(const char pre[],const char name[],char string[],size_t len,PetscTruth *flg)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetString(const char pre[],const char name[],char string[],size_t len,PetscTruth *set)
 {
   char           *value;
   PetscErrorCode ierr;
@@ -1814,9 +1814,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetString(const char pre[],const char
   PetscValidCharPointer(string,3);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr); 
   if (!flag) {
-    if (flg) *flg = PETSC_FALSE;
+    if (set) *set = PETSC_FALSE;
   } else {
-    if (flg) *flg = PETSC_TRUE;
+    if (set) *set = PETSC_TRUE;
     if (value) {
       ierr = PetscStrncpy(string,value,len);CHKERRQ(ierr);
       string[len-1] = 0;        /* Ensure that the string is NULL terminated */
@@ -1843,7 +1843,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetString(const char pre[],const char
 
    Output Parameter:
 +  strings - location to copy strings
--  flg - PETSC_TRUE if found, else PETSC_FALSE
+-  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
 
@@ -1865,7 +1865,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetString(const char pre[],const char
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetStringArray(const char pre[],const char name[],char *strings[],PetscInt *nmax,PetscTruth *flg)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetStringArray(const char pre[],const char name[],char *strings[],PetscInt *nmax,PetscTruth *set)
 {
   char           *value;
   PetscErrorCode ierr;
@@ -1877,10 +1877,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetStringArray(const char pre[],const
   PetscValidCharPointer(name,2);
   PetscValidPointer(strings,3);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr); 
-  if (!flag)  {*nmax = 0; if (flg) *flg = PETSC_FALSE; PetscFunctionReturn(0);}
-  if (!value) {*nmax = 0; if (flg) *flg = PETSC_FALSE;PetscFunctionReturn(0);}
-  if (!*nmax) {if (flg) *flg = PETSC_FALSE;PetscFunctionReturn(0);}
-  if (flg) *flg = PETSC_TRUE;
+  if (!flag)  {*nmax = 0; if (set) *set = PETSC_FALSE; PetscFunctionReturn(0);}
+  if (!value) {*nmax = 0; if (set) *set = PETSC_FALSE;PetscFunctionReturn(0);}
+  if (!*nmax) {if (set) *set = PETSC_FALSE;PetscFunctionReturn(0);}
+  if (set) *set = PETSC_TRUE;
 
   ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
   ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
