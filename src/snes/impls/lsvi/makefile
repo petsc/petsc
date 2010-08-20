@@ -1,4 +1,4 @@
-
+#requirespackage 'PETSC_USE_DVI'
 ALL: lib
 
 CFLAGS   =
