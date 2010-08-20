@@ -44,7 +44,7 @@ static PetscErrorCode PCSetUp_SACUDA(PC pc)
   PC_SACUDA      *sa = (PC_SACUDA*)pc->data;
   PetscTruth     flg = PETSC_FALSE;
   PetscErrorCode ierr;
-  SeqAIJCUDA_Container *gpustruct;
+  Mat_SeqAIJCUDA *gpustruct;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUDA,&flg);CHKERRQ(ierr);;
@@ -57,7 +57,7 @@ static PetscErrorCode PCSetUp_SACUDA(PC pc)
     } 
   }
   try {
-    gpustruct  = (SeqAIJCUDA_Container *)(pc->pmat->spptr);
+    gpustruct  = (Mat_SeqAIJCUDA *)(pc->pmat->spptr);
     sa->SACUDA = new cudasaprecond(*(CUSPMATRIX*)gpustruct->mat);
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);

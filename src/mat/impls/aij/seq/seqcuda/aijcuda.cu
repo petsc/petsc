@@ -19,11 +19,11 @@ PETSC_CUDA_EXTERN_C_END
 #define __FUNCT__ "MatMult_SeqAIJCUDA"
 PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqAIJ           *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode       ierr;
-  PetscInt             nonzerorow=0;
-  PetscTruth           usecprow    = a->compressedrow.use;
-  SeqAIJCUDA_Container *cudastruct = (SeqAIJCUDA_Container *)A->spptr;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       nonzerorow=0;
+  PetscTruth     usecprow    = a->compressedrow.use;
+  Mat_SeqAIJCUDA *cudastruct = (Mat_SeqAIJCUDA *)A->spptr;
 
   PetscFunctionBegin;
   ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
@@ -63,10 +63,10 @@ struct VecCUDAPlusEquals
 #define __FUNCT__ "MatMultAdd_SeqAIJCUDA"
 PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
 {
-  Mat_SeqAIJ           *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode       ierr;
-  PetscTruth           usecprow=a->compressedrow.use;
-  SeqAIJCUDA_Container *cudastruct = (SeqAIJCUDA_Container *)A->spptr;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode ierr;
+  PetscTruth     usecprow=a->compressedrow.use;
+  Mat_SeqAIJCUDA *cudastruct = (Mat_SeqAIJCUDA *)A->spptr;
 
   PetscFunctionBegin; 
   ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
@@ -124,13 +124,19 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
 #define __FUNCT__ "MatAssemblyEnd_SeqAIJCUDA"
 PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
 {
-  Mat_SeqAIJ            *a          = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode        ierr;
-  PetscInt              m           = A->rmap->n,*ii,*ridx;
-  SeqAIJCUDA_Container  *cudastruct = (SeqAIJCUDA_Container *)A->spptr;
+  Mat_SeqAIJ      *a          = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode  ierr;
+  PetscInt        m           = A->rmap->n,*ii,*ridx;
+  Mat_SeqAIJCUDA  *cudastruct = (Mat_SeqAIJCUDA *)A->spptr;
 
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
+  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
+  /*
+       It may be possible to reuse nonzero structure with new matrix values but 
+     for simplicity and insured correctness we delete and build a new matrix on
+     the GPU. Likely a very small performance hit.
+  */
   if (cudastruct->mat){
     try {
       delete (cudastruct->mat);
@@ -163,8 +169,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
       cudastruct->mat->row_offsets.assign(a->i,a->i+m+1);
       cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
       cudastruct->mat->values.assign(a->a,a->a+a->nz);
-      cudastruct->tempvec = new CUSPARRAY;
-      cudastruct->tempvec->resize(m);
     }
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
@@ -241,8 +245,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJCUDA(MPI_Comm comm,PetscInt m,P
 #define __FUNCT__ "MatDestroy_SeqAIJCUDA"
 PetscErrorCode MatDestroy_SeqAIJCUDA(Mat A)
 {
-  PetscErrorCode       ierr;
-  SeqAIJCUDA_Container *cudacontainer = (SeqAIJCUDA_Container*)A->spptr;
+  PetscErrorCode ierr;
+  Mat_SeqAIJCUDA *cudacontainer = (Mat_SeqAIJCUDA*)A->spptr;
 
   PetscFunctionBegin;
   try {
@@ -271,10 +275,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCUDA(Mat B)
   aij->inode.use  = PETSC_FALSE;
   B->ops->mult    = MatMult_SeqAIJCUDA;
   B->ops->multadd = MatMultAdd_SeqAIJCUDA;
-  B->spptr = new SeqAIJCUDA_Container;
-  ((SeqAIJCUDA_Container *)B->spptr)->mat = 0;
-  ((SeqAIJCUDA_Container *)B->spptr)->tempvec = 0;
-  ((SeqAIJCUDA_Container *)B->spptr)->indices = 0;
+  B->spptr = new Mat_SeqAIJCUDA;
+  ((Mat_SeqAIJCUDA *)B->spptr)->mat = 0;
+  ((Mat_SeqAIJCUDA *)B->spptr)->tempvec = 0;
+  ((Mat_SeqAIJCUDA *)B->spptr)->indices = 0;
   
   B->ops->assemblyend = MatAssemblyEnd_SeqAIJCUDA;
   B->ops->destroy     = MatDestroy_SeqAIJCUDA;
