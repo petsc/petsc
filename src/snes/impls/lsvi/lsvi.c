@@ -202,17 +202,17 @@ static PetscErrorCode SNESLSVIComputeSSFunction(SNES snes,Vec X,Vec phi)
 
   /* Here we are assuming that the distribution of all the input vectors and the ouput
      vector is same. 
-  */
+  */  
   for (i=0;i < n;i++) {
-    if ((PetscAbsScalar(l[i]) <= PETSC_LSVI_NINF) && (PetscAbsScalar(u[i]) >= PETSC_LSVI_INF)) {
+    if ((l[i] <= PETSC_LSVI_NINF) && (u[i] >= PETSC_LSVI_INF)) {
       phi_arr[i] = -f_arr[i];
     }
-    else if (PetscAbsScalar(l[i]) <= PETSC_LSVI_NINF) {
+    else if (l[i] <= PETSC_LSVI_NINF) {
       t = u[i] - x_arr[i];
       ierr = ComputeFischerFunction(t,-f_arr[i],&phi_arr[i]);CHKERRQ(ierr);
       phi_arr[i] = -phi_arr[i];
     }
-    else if (PetscAbsScalar(u[i]) >= PETSC_LSVI_INF) {
+    else if (u[i] >= PETSC_LSVI_INF) {
       t = x_arr[i] - l[i];
       ierr = ComputeFischerFunction(t,f_arr[i],&phi_arr[i]);CHKERRQ(ierr);
     }
@@ -276,7 +276,7 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
   /* Compute the elements of the diagonal perturbation vector Da and row scaling vector Db */
   for(i=0;i< n;i++) {
     /* Free variables */
-    if ((PetscAbsScalar(l[i]) <= PETSC_LSVI_NINF) && (PetscAbsScalar(u[i]) >= PETSC_LSVI_INF)) {
+    if ((l[i] <= PETSC_LSVI_NINF) && (u[i] >= PETSC_LSVI_INF)) {
       da[i] = 0; db[i] = -1;
     }
   }
@@ -363,7 +363,7 @@ PetscErrorCode SNESLSVICheckDescentDirection(SNES snes,Vec dpsi, Vec Y,PetscTrut
 
   rhs = -delta*PetscPowScalar(norm_Y,rho);
 
-  if (PetscAbsScalar(dpsidotY) > rhs) *flg = PETSC_TRUE;
+  if (dpsidotY > rhs) *flg = PETSC_TRUE;
  
   PetscFunctionReturn(0);
 }

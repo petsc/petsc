@@ -57,6 +57,9 @@ int main(int argc, char **argv)
   /* Initialize PETSc */
   PetscInitialize(&argc, &argv, (char *)0, help );
 
+#if defined(PETSC_USE_COMPLEX)
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This example does not work for scalar type complex\n");
+#endif
   /* Specify default dimension of the problem */
   user.mx = 4; user.my = 4;
 
