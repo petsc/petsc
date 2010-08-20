@@ -2,9 +2,9 @@
 
 #define PETSC_LSVI_INF   1.0e20
 #define PETSC_LSVI_NINF -1.0e20
-#define PETSC_LSVI_EPS  DBL_EPSILON
+#define PETSC_LSVI_EPS  2.2204460492503131e-16
 
-#define PetscScalarNorm(a,b) (sqr((a)*(a)+(b)*(b)))
+#define PetscScalarNorm(a,b) (PetscSqrtScalar((a)*(a)+(b)*(b)))
 /* 
    Private context for semismooth newton method with line search for solving
    system of mixed complementarity equations
@@ -34,6 +34,8 @@ typedef struct {
   Vec                      dpsi;          /* Gradient of merit function */
   Vec                      Da;            /* B sub-differential work vector (diag perturbation) */
   Vec                      Db;            /* B sub-differential work vector (row scaling) */
+  Vec                      z;    /* B subdifferential work vector */
+  Vec                      t;    /* B subdifferential work vector */
   Vec                      xl;            /* lower bound on variables */
   Vec                      xu;            /* upper bound on variables */
   PetscTruth               usersetxbounds; /* flag to indicate whether the user has set bounds on variables */

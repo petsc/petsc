@@ -262,7 +262,7 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
 {
   PetscErrorCode ierr;
   SNES_LSVI      *lsvi = (SNES_LSVI*)snes->data;
-  PetscScalar    *l,*u,*x,*f,*da,*db;
+  PetscScalar    *l,*u,*x,*f,*da,*db,*z,*t,t1,t2;
   PetscInt       n = X->map->n,i;
 
   PetscFunctionBegin;
@@ -272,21 +272,51 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
   ierr = VecGetArray(lsvi->xu,&u);CHKERRQ(ierr);
   ierr = VecGetArray(lsvi->Da,&da);CHKERRQ(ierr);
   ierr = VecGetArray(lsvi->Db,&db);CHKERRQ(ierr);
+  ierr = VecGetArray(lsvi->z,&z);CHKERRQ(ierr);
   
+  /* Set the elements of the vector z:
+     z[i] = 1 if (x[i] - l[i],f[i]) = (0,0)
+  */
+  for(i=0;i < n;i++) {
+    if(PetscAbsScalar(f[i]) <= PETSC_LSVI_EPS) {
+      if ((l[i] > PETSC_LSVI_NINF) && (PetscAbsScalar(x[i]-l[i]) <= PETSC_LSVI_EPS)) {
+	da[i] = 1;
+	z[i] = 1;
+      }
+    }
+  }
+  ierr = VecRestoreArray(lsvi->z,&z);CHKERRQ(ierr);
+  
+  ierr = MatMult(jac,lsvi->z,lsvi->t);CHKERRQ(ierr);
+  
+  ierr = VecGetArray(lsvi->t,&t);CHKERRQ(ierr);
   /* Compute the elements of the diagonal perturbation vector Da and row scaling vector Db */
   for(i=0;i< n;i++) {
     /* Free variables */
     if ((l[i] <= PETSC_LSVI_NINF) && (u[i] >= PETSC_LSVI_INF)) {
       da[i] = 0; db[i] = -1;
     }
+    /* lower bounded variables */
+    else if (u[i] >= PETSC_LSVI_INF) {
+      if (da[i] >= 1) {
+	t2 = PetscScalarNorm(1,t[i]);
+	da[i] = 1/t2 - 1;
+	db[i] = t[i]/t2 - 1;
+      } else {
+	t1 = x[i] - l[i];
+	t2 = PetscScalarNorm(t1,f[i]);
+	da[i] = t1/t2 - 1;
+	db[i] = f[i]/t2 - 1;
+      }
+    }
   }
-
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(vec_func,&f);CHKERRQ(ierr);
   ierr = VecRestoreArray(lsvi->xl,&l);CHKERRQ(ierr);
   ierr = VecRestoreArray(lsvi->xu,&u);CHKERRQ(ierr);
   ierr = VecRestoreArray(lsvi->Da,&da);CHKERRQ(ierr);
   ierr = VecRestoreArray(lsvi->Db,&db);CHKERRQ(ierr);
+  ierr = VecRestoreArray(lsvi->z,&z);CHKERRQ(ierr);
 
   /* Do row scaling */
   ierr = MatDiagonalScale(jac,lsvi->Db,PETSC_NULL);
@@ -296,7 +326,6 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
   ierr = MatDiagonalSet(jac,lsvi->Da,ADD_VALUES);CHKERRQ(ierr);
   ierr = MatDiagonalSet(jac_pre,lsvi->Da,ADD_VALUES);CHKERRQ(ierr);
   
-
   PetscFunctionReturn(0);
 }
   
@@ -597,6 +626,8 @@ PetscErrorCode SNESSetUp_LSVI(SNES snes)
   ierr = VecDuplicate(snes->vec_sol, &lsvi->dpsi); CHKERRQ(ierr);
   ierr = VecDuplicate(snes->vec_sol, &lsvi->Da); CHKERRQ(ierr);
   ierr = VecDuplicate(snes->vec_sol, &lsvi->Db); CHKERRQ(ierr);
+  ierr = VecDuplicate(snes->vec_sol, &lsvi->z);CHKERRQ(ierr);
+  ierr = VecDuplicate(snes->vec_sol, &lsvi->t); CHKERRQ(ierr);
 
   /* If the lower and upper bound on variables are not set, set it to
      -Inf and Inf */
@@ -642,6 +673,8 @@ PetscErrorCode SNESDestroy_LSVI(SNES snes)
   ierr = VecDestroy(lsvi->dpsi); CHKERRQ(ierr);
   ierr = VecDestroy(lsvi->Da); CHKERRQ(ierr);
   ierr = VecDestroy(lsvi->Db); CHKERRQ(ierr);
+  ierr = VecDestroy(lsvi->z); CHKERRQ(ierr);
+  ierr = VecDestroy(lsvi->t); CHKERRQ(ierr);
   if (!lsvi->usersetxbounds) {
     ierr = VecDestroy(lsvi->xl); CHKERRQ(ierr);
     ierr = VecDestroy(lsvi->xu); CHKERRQ(ierr);
