@@ -407,7 +407,7 @@ EXTERN_C_END
   
 
 /*MC
-  MATSOLVERSUPERLU = "superlu" - A solver package roviding direct solvers (LU) for sequential matrices 
+  MATSOLVERSUPERLU = "superlu" - A solver package providing solvers LU and ILU for sequential matrices 
   via the external package SuperLU.
 
   Use ./configure --download-superlu to have PETSc installed with SuperLU
@@ -435,7 +435,7 @@ EXTERN_C_END
 
    Level: beginner
 
-.seealso: PCLU, MATSOLVERSUPERLU_DIST, MATSOLVERMUMPS, MATSOLVERSPOOLES, PCFactorSetMatSolverPackage(), MatSolverPackage
+.seealso: PCLU, PCILU, MATSOLVERSUPERLU_DIST, MATSOLVERMUMPS, MATSOLVERSPOOLES, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/
 
 EXTERN_C_BEGIN
