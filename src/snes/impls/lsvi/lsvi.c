@@ -121,6 +121,7 @@ PetscErrorCode SNESDefaultConverged_LSVI(SNES snes,PetscInt it,PetscReal xnorm,P
 
   Output Parameter:
 . merit - the merit function
+. phinorm - ||phi||
 
   Notes:
   The merit function for the mixed complementarity problem is defined as
@@ -128,16 +129,15 @@ PetscErrorCode SNESDefaultConverged_LSVI(SNES snes,PetscInt it,PetscReal xnorm,P
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESLSVIComputeMeritFunction"
-static PetscErrorCode SNESLSVIComputeMeritFunction(Vec phi, PetscReal* merit)
+static PetscErrorCode SNESLSVIComputeMeritFunction(Vec phi, PetscReal* merit,PetscReal* phinorm)
 {
   PetscErrorCode ierr;
-  PetscReal    phinorm;
 
   PetscFunctionBegin;
-  ierr = VecNormBegin(phi,NORM_2,&phinorm);
-  ierr = VecNormEnd(phi,NORM_2,&phinorm);
+  ierr = VecNormBegin(phi,NORM_2,phinorm);
+  ierr = VecNormEnd(phi,NORM_2,phinorm);
 
-  *merit = 0.5*phinorm*phinorm;
+  *merit = 0.5*(*phinorm)*(*phinorm);
   PetscFunctionReturn(0);
 }
 
@@ -460,22 +460,22 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
   }
 
    /* Compute Merit function */
-  ierr = SNESLSVIComputeMeritFunction(lsvi->phi,&lsvi->merit);CHKERRQ(ierr);
+  ierr = SNESLSVIComputeMeritFunction(lsvi->phi,&lsvi->merit,&lsvi->phinorm);CHKERRQ(ierr);
 
   ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm <- ||x||  */
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
   if PetscIsInfOrNanReal(lsvi->merit) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
-  snes->norm = lsvi->merit;
+  snes->norm = lsvi->phinorm;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  SNESLogConvHistory(snes,lsvi->merit,0);
-  SNESMonitor(snes,0,lsvi->merit);
+  SNESLogConvHistory(snes,lsvi->phinorm,0);
+  SNESMonitor(snes,0,lsvi->phinorm);
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = lsvi->merit*snes->rtol;
   /* test convergence */
-  ierr = (*snes->ops->converged)(snes,0,0.0,0.0,lsvi->merit,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+  ierr = (*snes->ops->converged)(snes,0,0.0,0.0,lsvi->phinorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
 
   for (i=0; i<maxits; i++) {
@@ -519,9 +519,9 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
        and evaluate G = function(Y) (depends on the line search). 
     */
     ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
-    ynorm = 1; gnorm = lsvi->merit;
-    ierr = (*lsvi->LineSearch)(snes,lsvi->lsP,X,lsvi->phi,G,Y,W,lsvi->merit,xnorm,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
-    ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",lsvi->merit,gnorm,ynorm,(int)lssucceed);CHKERRQ(ierr);
+    ynorm = 1; gnorm = lsvi->phinorm;
+    ierr = (*lsvi->LineSearch)(snes,lsvi->lsP,X,lsvi->phi,G,Y,W,lsvi->phinorm,xnorm,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
+    ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",lsvi->phinorm,gnorm,ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
@@ -537,19 +537,20 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
       }
     }
     /* Update function and solution vectors */
-    lsvi->merit = gnorm;
+    lsvi->phinorm = gnorm;
+    lsvi->merit = 0.5*lsvi->phinorm*lsvi->phinorm;
     ierr = VecCopy(G,lsvi->phi);CHKERRQ(ierr);
     ierr = VecCopy(W,X);CHKERRQ(ierr);
     /* Monitor convergence */
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i+1;
-    snes->norm = lsvi->merit;
+    snes->norm = lsvi->phinorm;
     ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     SNESLogConvHistory(snes,snes->norm,lits);
     SNESMonitor(snes,snes->iter,snes->norm);
     /* Test for convergence, xnorm = || X || */
     if (snes->ops->converged != SNESSkipConverged) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
-    ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,lsvi->merit,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+    ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,lsvi->phinorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) break;
   }
   if (i == maxits) {
@@ -683,7 +684,6 @@ PetscErrorCode SNESLineSearchNo_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec
   ierr = SNESLSVIComputeSSFunction(snes,w,g);CHKERRQ(ierr);
   if (!snes->domainerror) {
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);  /* gnorm = || g || */
-    *gnorm *= 0.5**gnorm;
     if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   }
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
@@ -734,6 +734,7 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
      minimization problem:
         min  z(x):  R^n -> R,
      where z(x) = .5 * fnorm*fnorm, and fnorm = || f ||_2.
+     This function z(x) is same as the merit function for the complementarity problem.
    */
         
   PetscReal      initslope,lambdaprev,gnormprev,a,b,d,t1,t2,rellength;
@@ -789,7 +790,7 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
     snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
     goto theend1;
   }
-  ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
+  ierr = SNESLSVIComputeSSFunction(snes,w,g);CHKERRQ(ierr);
   if (snes->domainerror) {
     ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -820,7 +821,7 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
     snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
     goto theend1;
   }
-  ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
+  ierr = SNESLSVIComputeSSFunction(snes,w,g);CHKERRQ(ierr);
   if (snes->domainerror) {
     ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -872,7 +873,7 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       break;
     }
-    ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
+    ierr = SNESLSVIComputeSSFunction(snes,w,g);CHKERRQ(ierr);
     if (snes->domainerror) {
       ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
       PetscFunctionReturn(0);
@@ -899,7 +900,7 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
       ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);
     }
     if (changed_y || changed_w) { /* recompute the function if the step has changed */
-      ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
+      ierr = SNESLSVIComputeSSFunction(snes,w,g);CHKERRQ(ierr);
       if (snes->domainerror) {
         ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
         PetscFunctionReturn(0);
@@ -927,6 +928,7 @@ PetscErrorCode SNESLineSearchQuadratic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Ve
      minimization problem:
         min  z(x):  R^n -> R,
      where z(x) = .5 * fnorm*fnorm,and fnorm = || f ||_2.
+     z(x) is the same as the merit function for the complementarity problem
    */
   PetscReal      initslope,minlambda,lambda,lambdatemp,rellength;
 #if defined(PETSC_USE_COMPLEX)
@@ -976,7 +978,7 @@ PetscErrorCode SNESLineSearchQuadratic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Ve
     snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
     goto theend2;
   }
-  ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
+  ierr = SNESLSVIComputeSSFunction(snes,w,g);CHKERRQ(ierr);
   if (snes->domainerror) {
     ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -1016,7 +1018,7 @@ PetscErrorCode SNESLineSearchQuadratic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Ve
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       break;
     }
-    ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
+    ierr = SNESLSVIComputeSSFunction(snes,w,g);CHKERRQ(ierr);
     if (snes->domainerror) {
       ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
       PetscFunctionReturn(0);
@@ -1039,7 +1041,7 @@ PetscErrorCode SNESLineSearchQuadratic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Ve
       ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);
     }
     if (changed_y || changed_w) { /* recompute the function if the step has changed */
-      ierr = SNESComputeFunction(snes,w,g);
+      ierr = SNESLSVIComputeSSFunction(snes,w,g);
       if (snes->domainerror) {
         ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
         PetscFunctionReturn(0);
@@ -1075,14 +1077,14 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "SNESLineSearchSetMonitor_LSVI"
 PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetMonitor_LSVI(SNES snes,PetscTruth flg)
 {
-  SNES_LSVI        *ls = (SNES_LSVI*)snes->data;
+  SNES_LSVI        *lsvi = (SNES_LSVI*)snes->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (flg && !ls->monitor) {
-    ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,"stdout",((PetscObject)snes)->tablevel,&ls->monitor);CHKERRQ(ierr);
-  } else if (!flg && ls->monitor) {
-    ierr = PetscViewerASCIIMonitorDestroy(ls->monitor);CHKERRQ(ierr);
+  if (flg && !lsvi->monitor) {
+    ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,"stdout",((PetscObject)snes)->tablevel,&lsvi->monitor);CHKERRQ(ierr);
+  } else if (!flg && lsvi->monitor) {
+    ierr = PetscViewerASCIIMonitorDestroy(lsvi->monitor);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1101,7 +1103,7 @@ EXTERN_C_END
 #define __FUNCT__ "SNESView_LSVI"
 static PetscErrorCode SNESView_LSVI(SNES snes,PetscViewer viewer)
 {
-  SNES_LSVI        *ls = (SNES_LSVI *)snes->data;
+  SNES_LSVI        *lsvi = (SNES_LSVI *)snes->data;
   const char     *cstr;
   PetscErrorCode ierr;
   PetscTruth     iascii;
@@ -1109,12 +1111,12 @@ static PetscErrorCode SNESView_LSVI(SNES snes,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    if (ls->LineSearch == SNESLineSearchNo_LSVI)             cstr = "SNESLineSearchNo";
-    else if (ls->LineSearch == SNESLineSearchQuadratic_LSVI) cstr = "SNESLineSearchQuadratic";
-    else if (ls->LineSearch == SNESLineSearchCubic_LSVI)     cstr = "SNESLineSearchCubic";
+    if (lsvi->LineSearch == SNESLineSearchNo_LSVI)             cstr = "SNESLineSearchNo";
+    else if (lsvi->LineSearch == SNESLineSearchQuadratic_LSVI) cstr = "SNESLineSearchQuadratic";
+    else if (lsvi->LineSearch == SNESLineSearchCubic_LSVI)     cstr = "SNESLineSearchCubic";
     else                                                cstr = "unknown";
     ierr = PetscViewerASCIIPrintf(viewer,"  line search variant: %s\n",cstr);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  alpha=%G, maxstep=%G, minlambda=%G\n",ls->alpha,ls->maxstep,ls->minlambda);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  alpha=%G, maxstep=%G, minlambda=%G\n",lsvi->alpha,lsvi->maxstep,lsvi->minlambda);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for SNES EQ LSVI",((PetscObject)viewer)->type_name);
   }
@@ -1170,7 +1172,7 @@ PetscErrorCode SNESLSVISetVariableBounds(SNES snes, Vec xl, Vec xu)
 #define __FUNCT__ "SNESSetFromOptions_LSVI"
 static PetscErrorCode SNESSetFromOptions_LSVI(SNES snes)
 {
-  SNES_LSVI      *ls = (SNES_LSVI *)snes->data;
+  SNES_LSVI      *lsvi = (SNES_LSVI *)snes->data;
   const char     *lses[] = {"basic","basicnonorms","quadratic","cubic"};
   PetscErrorCode ierr;
   PetscInt       indx;
@@ -1178,12 +1180,12 @@ static PetscErrorCode SNESSetFromOptions_LSVI(SNES snes)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES semismooth method options");CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_lsvi_alpha","Function norm must decrease by","None",ls->alpha,&ls->alpha,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_lsvi_maxstep","Step must be less than","None",ls->maxstep,&ls->maxstep,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_lsvi_minlambda","Minimum lambda allowed","None",ls->minlambda,&ls->minlambda,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_lsvi_delta","descent test fraction","None",ls->delta,&ls->delta,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_lsvi_rho","descent test power","None",ls->rho,&ls->rho,0);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-snes_ls_monitor","Print progress of line searches","SNESLineSearchSetMonitor",ls->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_lsvi_alpha","Function norm must decrease by","None",lsvi->alpha,&lsvi->alpha,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_lsvi_maxstep","Step must be less than","None",lsvi->maxstep,&lsvi->maxstep,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_lsvi_minlambda","Minimum lambda allowed","None",lsvi->minlambda,&lsvi->minlambda,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_lsvi_delta","descent test fraction","None",lsvi->delta,&lsvi->delta,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_lsvi_rho","descent test power","None",lsvi->rho,&lsvi->rho,0);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-snes_lsvi_monitor","Print progress of line searches","SNESLineSearchSetMonitor",lsvi->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
     if (set) {ierr = SNESLineSearchSetMonitor(snes,flg);CHKERRQ(ierr);}
 
     ierr = PetscOptionsEList("-snes_lsvi","Line search used","SNESLineSearchSet",lses,4,"cubic",&indx,&flg);CHKERRQ(ierr);
@@ -1234,7 +1236,7 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LSVI(SNES snes)
 {
   PetscErrorCode ierr;
-  SNES_LSVI        *lsvi;
+  SNES_LSVI      *lsvi;
 
   PetscFunctionBegin;
   snes->ops->setup	     = SNESSetUp_LSVI;
@@ -1249,7 +1251,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LSVI(SNES snes)
   lsvi->alpha		 = 1.e-4;
   lsvi->maxstep		 = 1.e8;
   lsvi->minlambda         = 1.e-12;
-  lsvi->LineSearch        = SNESLineSearchNo_LSVI;
+  lsvi->LineSearch        = SNESLineSearchCubic_LSVI;
   lsvi->lsP               = PETSC_NULL;
   lsvi->postcheckstep     = PETSC_NULL;
   lsvi->postcheck         = PETSC_NULL;

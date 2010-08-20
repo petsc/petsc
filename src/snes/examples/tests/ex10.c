@@ -107,7 +107,7 @@ int main(int argc, char **argv)
   /* Solve the application */
   info = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(info);
 
-  info = VecView(x,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(info);
+  /*  info = VecView(x,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(info); */
 
   /* Free memory */
   info = VecDestroy(x); CHKERRQ(info);
