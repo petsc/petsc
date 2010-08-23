@@ -68,7 +68,7 @@ int main(int argc,char **args)
   PetscMPIInt subsize,subrank;
   ierr = MPI_Comm_size((MPI_Comm)subcomm,&subsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank((MPI_Comm)subcomm,&subrank);CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(comm,"[%d], sub-size %d,sub-rank %d\n",rank,subsize,subrank);
+  ierr = PetscSynchronizedPrintf(comm,"[%D], sub-size %D,sub-rank %D\n",rank,subsize,subrank);
   ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
   */
 
@@ -103,7 +103,7 @@ int main(int argc,char **args)
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > 1.e-4 && !rank){
     ierr = PetscPrintf(PETSC_COMM_WORLD,"[%D]  Number of iterations = %3D\n",rank,its);CHKERRQ(ierr);
-    printf("Error: Residual norm of each block |subb - subA*subx |= %g\n",norm);
+    printf("Error: Residual norm of each block |subb - subA*subx |= %A\n",norm);
   }
   ierr = VecResetArray(subb);CHKERRQ(ierr);
   ierr = VecResetArray(subx);CHKERRQ(ierr);
@@ -111,13 +111,13 @@ int main(int argc,char **args)
   
   ierr = PetscOptionsGetInt(PETSC_NULL,"-subvec_view",&id,&flg);CHKERRQ(ierr);
   if (flg && rank == id){
-    printf("[%d] subb:\n", rank);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] subb:\n", rank);
     ierr = VecGetArray(subb,&array);CHKERRQ(ierr);
-    for (i=0; i<m; i++) printf("%g\n",array[i]);
+    for (i=0; i<m; i++) printf("%G\n",array[i]);
     ierr = VecRestoreArray(subb,&array);CHKERRQ(ierr);
-    printf("[%d] subx:\n", rank);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] subx:\n", rank);
     ierr = VecGetArray(subx,&array);CHKERRQ(ierr);
-    for (i=0; i<m; i++) printf("%g\n",array[i]);
+    for (i=0; i<m; i++) printf("%G\n",array[i]);
     ierr = VecRestoreArray(subx,&array);CHKERRQ(ierr);
   }
 
