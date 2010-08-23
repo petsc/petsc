@@ -456,6 +456,7 @@ struct _p_VecScatter {
   PetscErrorCode (*destroy)(VecScatter);
   PetscErrorCode (*view)(VecScatter,PetscViewer);
   void           *fromdata,*todata;
+  void           *spptr;
 };
 
 EXTERN PetscErrorCode VecStashCreate_Private(MPI_Comm,PetscInt,VecStash*);

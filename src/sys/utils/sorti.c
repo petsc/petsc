@@ -83,6 +83,42 @@ PetscErrorCode PETSC_DLLEXPORT PetscSortInt(PetscInt n,PetscInt i[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortRemoveDupsInt" 
+/*@
+   PetscSortRemoveDupsInt - Sorts an array of integers in place in increasing order removes all duplicate entries
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+-  ii  - array of integers
+
+   Output Parameter:
+.  n - number of non-redundant values
+
+   Level: intermediate
+
+   Concepts: sorting^ints
+
+.seealso: PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscSortRemoveDupsInt(PetscInt *n,PetscInt ii[])
+{
+  PetscErrorCode ierr;
+  PetscInt       i,s = 0,N = *n, b = 0;
+
+  PetscFunctionBegin;
+  ierr = PetscSortInt(N,ii);CHKERRQ(ierr);
+  for (i=0; i<N-1; i++) {
+    if (ii[b+s+1] == ii[b]) {ii[b+1] = ii[b+s+2]; s++;}
+    else b++;
+  }
+  *n = N - s;
+  PetscFunctionReturn(0);
+}
+
+
 /* -----------------------------------------------------------------------*/
 #define SWAP2(a,b,c,d,t) {t=a;a=b;b=t;t=c;c=d;d=t;}
 
