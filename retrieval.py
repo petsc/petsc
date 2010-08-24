@@ -85,6 +85,7 @@ Unable to download package %s from: %s
         failureMessage = '''\
 Unable to unzip downloaded package %s from: %s
 * If you are behind a firewall - please fix your proxy and rerun ./configure
+*     For example at LANL you may need to set the environmental variable http_proxy (or HTTP_PROXY?) to  http://proxyout.lanl.gov 
 * Alternatively, you can download the above URL manually, to /yourselectedlocation/%s
   and use the configure option:
   --download-%s=/yourselectedlocation/%s
