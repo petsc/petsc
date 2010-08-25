@@ -131,17 +131,17 @@ class Configure(config.base.Configure):
     return 0
   isGNU = staticmethod(isGNU)
 
-  def isGfortran450(compiler):
-    '''returns true if the compiler is gfortran450'''
+  def isGfortran45x(compiler):
+    '''returns true if the compiler is gfortran-4.5.x'''
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version')
       output = output +  error
-      if output.find('GNU Fortran (GCC) 4.5.0') >=0:
+      if output.find('GNU Fortran (GCC) 4.5.') >=0:
         return 1
     except RuntimeError:
       pass
     return 0
-  isGfortran450 = staticmethod(isGfortran450)
+  isGfortran45x = staticmethod(isGfortran45x)
 
 
   def isG95(compiler):
