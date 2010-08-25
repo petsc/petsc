@@ -159,7 +159,7 @@ Compilers:
   -AR                              : Specify the archiver flags
   -AR_FLAGS                        : Specify the archiver flags
   --with-ranlib                    : Specify ranlib
-  --with-shared                    : Enable shared libraries                                               current: 1
+  --with-shared-libraries                : Enable shared libraries                                               current: 1
   --with-shared-ld=&lt;prog&gt;          : Specify the shared linker
   --with-f90-header=&lt;file&gt;         : Specify the C header for the F90 interface, e.g. f90_intel.h
   --with-f90-source=&lt;file&gt;         : Specify the C source for the F90 interface, e.g. f90_intel.c
