@@ -1117,22 +1117,11 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
     ui[k+1] = ui[k] + nzk;  
   } 
 
-#if defined(PETSC_USE_INFO)
-  if (ai[am] != 0) {
-    PetscReal af = ((PetscReal)(2*ui[am]-am))/((PetscReal)ai[am]);
-    ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %G needed %G\n",reallocs,fill,af);CHKERRQ(ierr);
-    ierr = PetscInfo1(A,"Run with -pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
-    ierr = PetscInfo1(A,"PCFactorSetFill(pc,%G) for best performance.\n",af);CHKERRQ(ierr);
-  } else {
-    ierr = PetscInfo(A,"Empty matrix.\n");CHKERRQ(ierr);
-  }
-#endif
-
   ierr = ISRestoreIndices(perm,&rip);CHKERRQ(ierr);
   ierr = PetscFree4(uj_ptr,uj_lvl_ptr,il,jl);CHKERRQ(ierr); 
   ierr = PetscFree(cols_lvl);CHKERRQ(ierr);
 
-  /* destroy list of free space and other temporary array(s) */
+  /* copy free_space into uj and free free_space; set uj in new datastructure; */
   ierr = PetscMalloc((ui[am]+1)*sizeof(PetscInt),&uj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,uj);CHKERRQ(ierr);
   ierr = PetscIncompleteLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
@@ -1164,10 +1153,21 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
   B->info.factor_mallocs    = reallocs;
   B->info.fill_ratio_given  = fill;
   if (ai[am] != 0.) {
-    B->info.fill_ratio_needed = ((PetscReal)ui[am])/((PetscReal)ai[am]);
+    /* nonzeros in lower triangular part of A = (ai[am]-am)/2 */
+    B->info.fill_ratio_needed = ((PetscReal)ui[am])/((PetscReal)((ai[am]-am)/2)); 
   } else {
     B->info.fill_ratio_needed = 0.0;
   }
+#if defined(PETSC_USE_INFO)
+  if (ai[am] != 0) {
+    PetscReal af = ((PetscReal)(2*ui[am]-am))/((PetscReal)ai[am]);
+    ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %G needed %G\n",reallocs,fill,af);CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"Run with -pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"PCFactorSetFill(pc,%G) for best performance.\n",af);CHKERRQ(ierr);
+  } else {
+    ierr = PetscInfo(A,"Empty matrix.\n");CHKERRQ(ierr);
+  }
+#endif
   if (perm_identity){
     B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
     B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
@@ -1290,21 +1290,10 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
     ui[k+1] = ui[k] + nzk;  
   } 
 
-#if defined(PETSC_USE_INFO)
-  if (ai[mbs] != 0.) {
-    PetscReal af = ((PetscReal)ui[mbs])/((PetscReal)ai[mbs]);
-    ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %G needed %G\n",reallocs,fill,af);CHKERRQ(ierr);
-    ierr = PetscInfo1(A,"Run with -pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
-    ierr = PetscInfo1(A,"PCFactorSetFill(pc,%G) for best performance.\n",af);CHKERRQ(ierr);
-  } else {
-    ierr = PetscInfo(A,"Empty matrix.\n");CHKERRQ(ierr);
-  }
-#endif
-
   ierr = ISRestoreIndices(perm,&rip);CHKERRQ(ierr);
   ierr = PetscFree4(ui_ptr,il,jl,cols);CHKERRQ(ierr);
 
-  /* destroy list of free space and other temporary array(s) */
+  /* copy free_space into uj and free free_space; set uj in new datastructure; */
   ierr = PetscMalloc((ui[mbs]+1)*sizeof(PetscInt),&uj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,uj);CHKERRQ(ierr);
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
@@ -1335,10 +1324,21 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
   B->info.factor_mallocs    = reallocs;
   B->info.fill_ratio_given  = fill;
   if (ai[mbs] != 0.) {
-    B->info.fill_ratio_needed = ((PetscReal)ui[mbs])/((PetscReal)ai[mbs]);
+    /* nonzeros in lower triangular part of A = (ai[mbs]-mbs)/2 */
+    B->info.fill_ratio_needed = ((PetscReal)ui[mbs])/((PetscReal)((ai[mbs]-mbs)/2));
   } else {
     B->info.fill_ratio_needed = 0.0;
   }
+#if defined(PETSC_USE_INFO)
+  if (ai[mbs] != 0.) {
+    PetscReal af = B->info.fill_ratio_needed; 
+    ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %G needed %G\n",reallocs,fill,af);CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"Run with -pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"PCFactorSetFill(pc,%G) for best performance.\n",af);CHKERRQ(ierr);
+  } else {
+    ierr = PetscInfo(A,"Empty matrix.\n");CHKERRQ(ierr);
+  }
+#endif
   if (perm_identity){
     B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering; 
   } else {
