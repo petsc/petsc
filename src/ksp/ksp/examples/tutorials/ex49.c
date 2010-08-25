@@ -318,7 +318,7 @@ static PetscErrorCode DAGetElementOwnershipRanges2d(DA da,PetscInt **_lx,PetscIn
   ierr = VecScatterEnd(ctx,vlx,V_SEQ,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGetArray(V_SEQ,&_a);CHKERRQ(ierr);
   for (i = 0; i < cpu_x; i++) {
-    LX[i] = (PetscInt)_a[i];
+    LX[i] = (PetscInt)PetscRealPart(_a[i]);
   }
   ierr = VecRestoreArray(V_SEQ,&_a);CHKERRQ(ierr);
   ierr = VecScatterDestroy(ctx);CHKERRQ(ierr);
@@ -329,7 +329,7 @@ static PetscErrorCode DAGetElementOwnershipRanges2d(DA da,PetscInt **_lx,PetscIn
   ierr = VecScatterEnd(ctx,vly,V_SEQ,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGetArray(V_SEQ,&_a);CHKERRQ(ierr);
   for (i = 0; i < cpu_y; i++) {
-    LY[i] = (PetscInt)_a[i];
+    LY[i] = (PetscInt)PetscRealPart(_a[i]);
   }
   ierr = VecRestoreArray(V_SEQ,&_a);CHKERRQ(ierr);
   ierr = VecScatterDestroy(ctx);CHKERRQ(ierr);
@@ -809,7 +809,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   Vec                    f,X;
   PetscInt               prop_dof,prop_stencil_width;
   Vec                    properties,l_properties;
-  PetscScalar            dx,dy;
+  PetscReal              dx,dy;
   PetscInt               M,N;
   DACoor2d               **_prop_coords,**_vel_coords;
   GaussPointCoefficients **element_props;
@@ -858,8 +858,8 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
 
   /* define centroid positions */
   ierr = DAGetInfo(da_prop,0,&M,&N,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  dx   = 1.0/((PetscScalar)(M));
-  dy   = 1.0/((PetscScalar)(N));
+  dx   = 1.0/((PetscReal)(M));
+  dy   = 1.0/((PetscReal)(N));
 
   ierr = DASetUniformCoordinates(da_prop,0.0+0.5*dx,1.0-0.5*dx,0.0+0.5*dy,1.0-0.5*dy,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
@@ -960,7 +960,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
 
           element_props[j][i].E[p]  = opts_E0;
           element_props[j][i].nu[p] = opts_nu0;
-          if (coord_x > opts_xc) {
+          if (PetscRealPart(coord_x) > PetscRealPart(opts_xc)) {
             element_props[j][i].E[p]  = opts_E1;
             element_props[j][i].nu[p] = opts_nu1;
           }
