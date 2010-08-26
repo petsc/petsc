@@ -2584,7 +2584,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFacto
   fact->info.factor_mallocs   = reallocs;
   fact->info.fill_ratio_given = fill;
   if (ai[am] != 0) {
-    /* nonzeros in lower triangular part of A (includign diagonals) = (ai[am]+am)/2 */
+    /* nonzeros in lower triangular part of A (including diagonals) = (ai[am]+am)/2 */
     fact->info.fill_ratio_needed = ((PetscReal)2*ui[am])/(ai[am]+am);
   } else {
     fact->info.fill_ratio_needed = 0.0;
@@ -2943,7 +2943,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
   fact->info.factor_mallocs    = reallocs;
   fact->info.fill_ratio_given  = fill;
   if (ai[am] != 0) {
-    /* nonzeros in lower triangular part of A (includign diagonals) = (ai[am]+am)/2 */
+    /* nonzeros in lower triangular part of A (including diagonals) = (ai[am]+am)/2 */
     fact->info.fill_ratio_needed = ((PetscReal)2*ui[am])/(ai[am]+am);
   } else {
     fact->info.fill_ratio_needed = 0.0;

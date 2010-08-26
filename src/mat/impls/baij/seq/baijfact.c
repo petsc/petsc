@@ -1225,7 +1225,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
   nlnk = mbs + 1;
   ierr = PetscLLCreate(mbs,mbs,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
-  /* initial FreeSpace size is fill* (ai[am]+am)/2 */
+  /* initial FreeSpace size is fill* (ai[mbs]+mbs)/2 */
   ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[mbs]+mbs)/2),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
