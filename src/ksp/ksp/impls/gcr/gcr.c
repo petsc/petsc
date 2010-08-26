@@ -48,12 +48,10 @@ PetscErrorCode KSPSolve_GCR_cycle( KSP ksp )
     ierr = MatMult( A, s, v ); CHKERRQ(ierr);  /* v = A s */
 		
     ierr = VecMDot( v,k, ctx->VV, ctx->val ); CHKERRQ(ierr);
-    
-    for( i=0; i<=k; i++ ) {
-      ierr = VecAXPY( v, -ctx->val[i], ctx->VV[i] ); CHKERRQ(ierr); /* v = v - alpha_i v_i */
-      ierr = VecAXPY( s, -ctx->val[i], ctx->SS[i] ); CHKERRQ(ierr); /* s = s - alpha_i s_i */
-    }
-		
+    for (i=0; i<k; i++) ctx->val[i] = -ctx->val[i];
+    ierr = VecMAXPY(v,k,ctx->val,ctx->VV);CHKERRQ(ierr); /* v = v - sum_{i=0}^{k-1} alpha_i v_i */
+    ierr = VecMAXPY(s,k,ctx->val,ctx->SS);CHKERRQ(ierr); /* s = s - sum_{i=0}^{k-1} alpha_i s_i */
+
     ierr = VecDotNorm2(r,v,&r_dot_v,&nrm);CHKERRQ(ierr);
     nrm     = sqrt(nrm);
     r_dot_v = r_dot_v/nrm;
