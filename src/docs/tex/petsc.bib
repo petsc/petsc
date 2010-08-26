@@ -2994,6 +2994,16 @@ mesh refinement",
   year    = "1998"
 }
 
+@techreport{KarypisKumar97,
+	Author = {Karypis, George and Kumar, V.},
+	Institution = {Department of Computer Science, University of Minnesota},
+	Keywords = {graph partitioning; ParMetis},
+	Note = {http://www.cs.umn.edu/~metis},
+	Number = {97-060},
+	Title = {{ParMETIS}: Parallel graph partitioning and sparse matrix ordering library},
+	Year = {1997}
+}
+
 @misc{ parmetis-web-page,
   author =       "George {Karypis et al.}",
   title =        "{ParMETIS Web page}",
@@ -5003,4 +5013,57 @@ note = "See \url{http://www.sc.doe.gov/ascr/ProgramDocuments/Docs/TownHall.pdf}"
  doi = {http://dx.doi.org/10.1016/j.jcp.2009.06.041},
  publisher = {Academic Press Professional, Inc.},
  address = {San Diego, CA, USA},
- }
+}
+
+@phdthesis{Rankin99,
+	Author = {Rankin, W. T.},
+	Keywords = {FMM, parallel FMM},
+	School = {Department of Electrical and Computer Engineering, Duke University},
+	Title = {Efficient parallel implementations of multipole-based {$N$}-body algorithms},
+	Year = {1999}
+}
+
+@inproceedings{WarrenSalmon93,
+	Abstract = {We report on an efficient adaptive N-body method which we have recently designed and implemented. The algorithm computes the forces on an arbitrary distribution of bodies in a time which scales as N log N with the particle number. The accuracy of the force calculations is analytically bounded, and can be adjusted via a user defined parameter between a few percent relative accuracy, down to machine arithmetic accuracy. Instead of using pointers to indicate the topology of the tree, we identify...},
+	Address = {New York},
+	Author = {Warren, Michael S. and Salmon, John K.},
+	Booktitle = {Proceedings of the 1993 ACM/IEEE Conference on Supercomputing},
+	Citeulike-Article-Id = {580952},
+	Keywords = {oct-tree},
+	Pages = {12--21},
+	Publisher = {ACM},
+	Title = {A parallel hashed Oct-Tree {N}-body algorithm},
+	Year = {1993},
+	url = {http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.50.100}
+}
+
+@unpublished{CruzBarbaKnepley09,
+	Author = {Cruz, Felipe A. and Barba, L.~A. and Matthew G. Knepley},
+	Keywords = {temporary reference},
+	Note = {To appear, \textit{Int.\ J.\ Num.\ Meth.\ Fluids}; preprint on \href{http://arxiv.org/abs/0905.2637}{http://arxiv.org/abs/0905.2637}; doi:10.1002/nme.2972},
+	Title = {{PetFMM}\,---\,A dynamically load-balancing parallel fast multipole library},
+	Year = {2010}
+}
+
+@unpublished{YokotaBardhanETal2010,
+	Author = {Yokota, R. and Hamada, T. and Bardhan, J. P. and Knepley, M. G. and Barba, L.~A.},
+	Note = {preprint \href{http://arxiv.org/abs/1007.4591}{arXiv:1007.4591}, July 2010},
+	Title = {Biomolecular electrostatics simulation by an {FMM-based BEM on 512 GPUs}},
+	Year = {2010}
+}
+
+@unpublished{CruzWCCM10,
+  author = {Felipe A. Cruz},
+  title  = {Heterogeneous extension of the PetFMM a Fast Multipole Library},
+  note   = {Presentation at WCCM 2010, Sydney Australia},
+  year   = {2010}
+}
+
+@article{McGuffee06,
+  author  = {S.~R. {McGuffee} and A.~H. Elcock},
+  title   = {Atomistically detailed simulations of concentrated protein solutions: the effects of salt, {pH}, point mutations, and protein concentration in simulations of 1000-molecule systems},
+  journal = {Journal of the American Chemical Society},
+  volume  = {128},
+  pages   = {12098--12110},
+  year    = {2006}
+}
