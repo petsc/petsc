@@ -13,8 +13,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex5s.c ex6.c \
                    ex14.c ex18.c ex19.c ex20.c ex21.c ex22.c \
                    ex23.c ex24.c ex25.c ex26.c ex27.c ex29.c ex30.c ex31.c ex38.c ex42.c ex43.c \
                    ex44.c ex45.c ex47.c ex48.c ex49.c ex50.c ex47cu.cu
-EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F ex33f.F mex34f90.F ex34f90.F \
-		   mex35f90.F90 ex35f90.F90 mex36f90.F90 ex36f90.F90 mex37f90.F90 ex37f90.F90 ex39f90.F
+EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F ex33f.F 
 EXAMPLESCH	 = ex43-44.h
 EXAMPLESFH       = ex5f.h
 EXAMPLESMATLAB   = ex5m.m
@@ -147,18 +146,6 @@ ex32: ex32.o chkopts
 ex33f: ex33f.o  chkopts
 	-${FLINKER} -o ex33f ex33f.o ${PETSC_SNES_LIB}
 	${RM} ex33f.o
-ex34f90: mex34f90.o ex34f90.o  chkopts
-	-${FLINKER} -o ex34f90 ex34f90.o ${PETSC_SNES_LIB}
-	${RM} ex34f90.o mex34f90.mod mex34f90.o mex34finterfaces.mod
-ex35f90: mex35f90.o ex35f90.o  chkopts
-	-${FLINKER} -o ex35f90 ex35f90.o ${PETSC_SNES_LIB}
-	${RM} ex35f90.o mex35f90.mod mex35f90.o mex35finterfaces.mod
-ex36f90: mex36f90.o ex36f90.o  chkopts
-	-${FLINKER} -o ex36f90 ex36f90.o ${PETSC_SNES_LIB}
-	${RM} ex36f90.o mex36f90.mod mex36f90.o mex36finterfaces.mod
-ex37f90: mex37f90.o ex37f90.o  chkopts
-	-${FLINKER} -o ex37f90 ex37f90.o ${PETSC_SNES_LIB}
-	${RM} ex37f90.o mex37f90.mod mex37f90.o mex37finterfaces.mod
 ex38: ex38.o  chkopts
 	-${CLINKER} -o ex38 ex38.o ${PETSC_SNES_LIB}
 	${RM} ex38.o
