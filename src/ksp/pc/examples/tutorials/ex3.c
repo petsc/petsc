@@ -84,7 +84,7 @@ int main(int argc,char **argv)
   /*
    * ILU preconditioner;
    * this will break down unless you add the Shift line,
-   * or use the -pc_factor_shift_positive_definite option */
+   * or use the -pc_factor_shift_type POSITIVE_DEFINITE option */
   ierr = KSPGetPC(solver,&prec);CHKERRQ(ierr);
   ierr = PCSetType(prec,PCILU);CHKERRQ(ierr);
   /* ierr = PCFactorSetShiftType(prec,MAT_SHIFT_POSITIVE_DEFINITE);CHKERRQ(ierr); */
@@ -113,7 +113,7 @@ int main(int argc,char **argv)
     printf("\nDivergence because of indefinite preconditioner;\n");
     printf("Run the executable again but with '-pc_factor_shift_type POSITIVE_DEFINITE' option.\n");
   } else if (reason<0) {
-    printf("\nOther kind of divergence: this should not happen.\n");
+    printf("\nOther kind of divergence: %s this should not happen.\n",KSPConvergedReasons[reason]);
   } else {
     ierr = KSPGetIterationNumber(solver,&its);CHKERRQ(ierr);
     printf("\nConvergence in %d iterations.\n",(int)its);

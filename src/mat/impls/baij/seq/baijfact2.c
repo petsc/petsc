@@ -6002,11 +6002,9 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
   
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
-
-  /* destroy list of free space and other temporary arrays */
-  ierr = PetscMalloc((bi[n]+1)*sizeof(PetscInt),&bj);CHKERRQ(ierr);
   
   /* copy free_space into bj and free free_space; set bi, bj, bdiag in new datastructure; */
+  ierr = PetscMalloc((bi[n]+1)*sizeof(PetscInt),&bj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous_LU(&free_space,bj,n,bi,bdiag);CHKERRQ(ierr); 
   
   ierr = PetscIncompleteLLDestroy(lnk,lnkbt);CHKERRQ(ierr);

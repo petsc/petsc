@@ -52,7 +52,7 @@ def pkgsources(pkg):
   return sources
 
 def writeRoot(f):
-  f.write(r'''cmake_minimum_required (VERSION 2.6)
+  f.write(r'''cmake_minimum_required (VERSION 2.6.2)
 project (PETSc C)
 
 include (${PETSc_BINARY_DIR}/conf/PETScConfig.cmake)

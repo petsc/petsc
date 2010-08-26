@@ -2216,6 +2216,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSetProgramName(const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetDate(char[],size_t);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortInt(PetscInt,PetscInt[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortRemoveDupsInt(PetscInt*,PetscInt[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithPermutation(PetscInt,const PetscInt[],PetscInt[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortStrWithPermutation(PetscInt,const char*[],PetscInt[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithArray(PetscInt,PetscInt[],PetscInt[]);
