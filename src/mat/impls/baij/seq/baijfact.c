@@ -1038,10 +1038,10 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
   nlnk = am + 1;
   ierr = PetscIncompleteLLCreate(am,am,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
 
-  /* initial FreeSpace size is fill*(ai[am]+1) */
-  ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+1)),&free_space);CHKERRQ(ierr);
+  /* initial FreeSpace size is fill*(ai[am]+am)/2 */
+  ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+am)/2),&free_space);CHKERRQ(ierr);
   current_space = free_space;
-  ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+1)),&free_space_lvl);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+am)/2),&free_space_lvl);CHKERRQ(ierr);
   current_space_lvl = free_space_lvl;
 
   for (k=0; k<am; k++){  /* for each active row k */
@@ -1153,14 +1153,14 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
   B->info.factor_mallocs    = reallocs;
   B->info.fill_ratio_given  = fill;
   if (ai[am] != 0.) {
-    /* nonzeros in lower triangular part of A = (ai[am]-am)/2 */
-    B->info.fill_ratio_needed = ((PetscReal)ui[am])/((PetscReal)((ai[am]-am)/2)); 
+    /* nonzeros in lower triangular part of A (includign diagonals)= (ai[am]+am)/2 */
+    B->info.fill_ratio_needed = ((PetscReal)2*ui[am])/(ai[am]+am); 
   } else {
     B->info.fill_ratio_needed = 0.0;
   }
 #if defined(PETSC_USE_INFO)
   if (ai[am] != 0) {
-    PetscReal af = ((PetscReal)(2*ui[am]-am))/((PetscReal)ai[am]);
+    PetscReal af = B->info.fill_ratio_needed; 
     ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %G needed %G\n",reallocs,fill,af);CHKERRQ(ierr);
     ierr = PetscInfo1(A,"Run with -pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
     ierr = PetscInfo1(A,"PCFactorSetFill(pc,%G) for best performance.\n",af);CHKERRQ(ierr);
@@ -1225,8 +1225,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
   nlnk = mbs + 1;
   ierr = PetscLLCreate(mbs,mbs,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
-  /* initial FreeSpace size is fill*(ai[mbs]+1) */
-  ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[mbs]+1)),&free_space);CHKERRQ(ierr);
+  /* initial FreeSpace size is fill* (ai[am]+am)/2 */
+  ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[mbs]+mbs)/2),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   for (k=0; k<mbs; k++){  /* for each active row k */
@@ -1324,8 +1324,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
   B->info.factor_mallocs    = reallocs;
   B->info.fill_ratio_given  = fill;
   if (ai[mbs] != 0.) {
-    /* nonzeros in lower triangular part of A = (ai[mbs]-mbs)/2 */
-    B->info.fill_ratio_needed = ((PetscReal)ui[mbs])/((PetscReal)((ai[mbs]-mbs)/2));
+    /* nonzeros in lower triangular part of A = (ai[mbs]+mbs)/2 */
+    B->info.fill_ratio_needed = ((PetscReal)2*ui[mbs])/(ai[mbs]+mbs);
   } else {
     B->info.fill_ratio_needed = 0.0;
   }

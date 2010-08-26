@@ -2466,10 +2466,10 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFacto
     nlnk = am + 1;
     ierr = PetscIncompleteLLCreate(am,am,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
 
-    /* initial FreeSpace size is fill*(ai[am]+1) */
-    ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+1)),&free_space);CHKERRQ(ierr);
+    /* initial FreeSpace size is fill*(ai[am]+am)/2 */
+    ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+am)/2),&free_space);CHKERRQ(ierr);
     current_space = free_space;
-    ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+1)),&free_space_lvl);CHKERRQ(ierr);
+    ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+am)/2),&free_space_lvl);CHKERRQ(ierr);
     current_space_lvl = free_space_lvl;
 
     for (k=0; k<am; k++){  /* for each active row k */
@@ -2584,8 +2584,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFacto
   fact->info.factor_mallocs   = reallocs;
   fact->info.fill_ratio_given = fill;
   if (ai[am] != 0) {
-    /* nonzeros in lower triangular part of A = (ai[am]-am)/2 */
-    fact->info.fill_ratio_needed = ((PetscReal)ui[am])/((PetscReal)((ai[am]-am)/2));
+    /* nonzeros in lower triangular part of A (includign diagonals) = (ai[am]+am)/2 */
+    fact->info.fill_ratio_needed = ((PetscReal)2*ui[am])/(ai[am]+am);
   } else {
     fact->info.fill_ratio_needed = 0.0;
   }
@@ -2842,8 +2842,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
   nlnk = am + 1;
   ierr = PetscLLCreate(am,am,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
-  /* initial FreeSpace size is fill*(ai[am]+1) */
-  ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+1)),&free_space);CHKERRQ(ierr);
+  /* initial FreeSpace size is fill*(ai[am]+am)/2 */
+  ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+am)/2),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   for (k=0; k<am; k++){  /* for each active row k */
@@ -2943,8 +2943,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
   fact->info.factor_mallocs    = reallocs;
   fact->info.fill_ratio_given  = fill;
   if (ai[am] != 0) {
-    /* nonzeros in lower triangular part of A = (ai[am]-am)/2 */
-    fact->info.fill_ratio_needed = ((PetscReal)ui[am])/((PetscReal)((ai[am]-am)/2));
+    /* nonzeros in lower triangular part of A (includign diagonals) = (ai[am]+am)/2 */
+    fact->info.fill_ratio_needed = ((PetscReal)2*ui[am])/(ai[am]+am);
   } else {
     fact->info.fill_ratio_needed = 0.0;
   }
