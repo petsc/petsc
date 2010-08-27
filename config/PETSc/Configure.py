@@ -405,9 +405,7 @@ class Configure(config.base.Configure):
   def dumpCMakeLists(self):
     import sys
     if sys.version_info >= (2,5):
-      sys.path.insert(0,os.path.join(self.petscdir.dir,'bin','maint'))
       import cmakegen
-      del sys.path[0]
       try:
         cmakegen.main(self.petscdir.dir)
       except (OSError), e:
@@ -416,16 +414,13 @@ class Configure(config.base.Configure):
   def cmakeBoot(self):
     import sys
     if sys.version_info >= (2,5) and hasattr(self.cmake,'cmake'):
-      sys.path.insert(0,os.path.join(self.petscdir.dir,'bin','maint'))
       try:
         import cmakeboot
-        del sys.path[0]
         cmakeboot.main(petscdir=self.petscdir.dir,petscarch=self.arch.arch,argDB=self.argDB,framework=self.framework,logPrint=self.framework.logPrint)
       except (OSError), e:
         self.framework.logPrint('Booting CMake in PETSC_ARCH failed:\n' + str(e))
       except (ImportError, KeyError), e:
         self.framework.logPrint('Importing cmakeboot failed:\n' + str(e))
-        del sys.path[0]
     return
 
   def configurePrefetch(self):
