@@ -580,7 +580,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
 #if defined(PETSC_HAVE_CUDA)
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-cuda_synchronize",&flg1,PETSC_NULL);CHKERRQ(ierr);
-  if (flg1) synchronizeCUDA = PETSC_TRUE;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-log_summary",&flg3);CHKERRQ(ierr);
+  if (flg1 || flg3) synchronizeCUDA = PETSC_TRUE;
 #endif
 
   PetscFunctionReturn(0);
