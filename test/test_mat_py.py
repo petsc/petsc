@@ -27,7 +27,7 @@ class Diagonal(Matrix):
 
     def create(self, mat):
         super(Diagonal,self).create(mat)
-        self.D = mat.getVecLeft()
+        self.D = mat.createVecLeft()
 
     def destroy(self):
         self.D.destroy()
@@ -110,27 +110,27 @@ class TestMatrix(unittest.TestCase):
         self.assertRaises(Exception, f)
 
     def testMult(self):
-        x, y = self.A.getVecs()
+        x, y = self.A.createVecs()
         f = lambda : self.A.mult(x, y)
         self.assertRaises(Exception, f)
 
     def testMultTranspose(self):
-        x, y = self.A.getVecs()
+        x, y = self.A.createVecs()
         f = lambda : self.A.multTranspose(x, y)
         self.assertRaises(Exception, f)
 
     def testGetDiagonal(self):
-        d = self.A.getVecLeft()
+        d = self.A.createVecLeft()
         f = lambda : self.A.getDiagonal(d)
         self.assertRaises(Exception, f)
 
     def testSetDiagonal(self):
-        d = self.A.getVecLeft()
+        d = self.A.createVecLeft()
         f = lambda : self.A.setDiagonal(d)
         self.assertRaises(Exception, f)
 
     def testDiagonalScale(self):
-        x, y = self.A.getVecs()
+        x, y = self.A.createVecs()
         f = lambda : self.A.diagonalScale(x, y)
         self.assertRaises(Exception, f)
 
@@ -139,13 +139,13 @@ class TestIdentity(TestMatrix):
     PYCLS = 'Identity'
 
     def testMult(self):
-        x, y = self.A.getVecs()
+        x, y = self.A.createVecs()
         x.setRandom()
         self.A.mult(x,y)
         self.assertTrue(y.equal(x))
 
     def testMultTransposeSymmKnown(self):
-        x, y = self.A.getVecs()
+        x, y = self.A.createVecs()
         x.setRandom()
         self.A.setOption(PETSc.Mat.Option.SYMMETRIC, True)
         self.A.multTranspose(x,y)
@@ -155,7 +155,7 @@ class TestIdentity(TestMatrix):
         self.assertRaises(Exception, f)
 
     def testMultTransposeNewMeth(self):
-        x, y = self.A.getVecs()
+        x, y = self.A.createVecs()
         x.setRandom()
         AA = self.A.getPythonContext()
         AA.multTranspose = AA.mult
@@ -164,7 +164,7 @@ class TestIdentity(TestMatrix):
         self.assertTrue(y.equal(x))
 
     def testGetDiagonal(self):
-        d = self.A.getVecLeft()
+        d = self.A.createVecLeft()
         o = d.duplicate()
         o.set(1)
         self.A.getDiagonal(d)
@@ -177,7 +177,7 @@ class TestDiagonal(TestMatrix):
 
     def setUp(self):
         super(TestDiagonal, self).setUp()
-        D = self.A.getVecLeft()
+        D = self.A.createVecLeft()
         s, e = D.getOwnershipRange()
         for i in range(s, e):
             D[i] = i+1
@@ -191,13 +191,13 @@ class TestDiagonal(TestMatrix):
         self.assertEqual(D.norm(), 0)
 
     def testMult(self):
-        x, y = self.A.getVecs()
+        x, y = self.A.createVecs()
         x.set(1)
         self.A.mult(x,y)
         self.assertTrue(y.equal(self._getCtx().D))
 
     def testMultTransposeSymmKnown(self):
-        x, y = self.A.getVecs()
+        x, y = self.A.createVecs()
         x.set(1)
         self.A.setOption(PETSc.Mat.Option.SYMMETRIC, True)
         self.A.multTranspose(x,y)
@@ -207,7 +207,7 @@ class TestDiagonal(TestMatrix):
         self.assertRaises(Exception, f)
 
     def testMultTransposeNewMeth(self):
-        x, y = self.A.getVecs()
+        x, y = self.A.createVecs()
         x.set(1)
         AA = self.A.getPythonContext()
         AA.multTranspose = AA.mult
@@ -216,18 +216,18 @@ class TestDiagonal(TestMatrix):
         self.assertTrue(y.equal(self._getCtx().D))
 
     def testGetDiagonal(self):
-        d = self.A.getVecLeft()
+        d = self.A.createVecLeft()
         self.A.getDiagonal(d)
         self.assertTrue(d.equal(self._getCtx().D))
 
     def testSetDiagonal(self):
-        d = self.A.getVecLeft()
+        d = self.A.createVecLeft()
         d.setRandom()
         self.A.setDiagonal(d)
         self.assertTrue(d.equal(self._getCtx().D))
 
     def testDiagonalScale(self):
-        x, y = self.A.getVecs()
+        x, y = self.A.createVecs()
         x.set(2)
         y.set(3)
         old = self._getCtx().D.copy()
@@ -239,8 +239,8 @@ class TestDiagonal(TestMatrix):
         A = self.A
         A.setOption(PETSc.Mat.Option.SYMMETRIC, True)
         AT = PETSc.Mat().createTranspose(A)
-        x, y = A.getVecs()
-        xt, yt = AT.getVecs()
+        x, y = A.createVecs()
+        xt, yt = AT.createVecs()
         #
         y.setRandom()
         A.multTranspose(y, x)

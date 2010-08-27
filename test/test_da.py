@@ -79,13 +79,13 @@ class BaseTestDA(object):
         gc = self.da.getGhostCoordinates()
         gc.destroy()
 
-    def testGetVector(self):
-        vn = self.da.createNaturalVector()
-        vg = self.da.createGlobalVector()
-        vl = self.da.createLocalVector()
+    def testCreateVec(self):
+        vn = self.da.createNaturalVec()
+        vg = self.da.createGlobalVec()
+        vl = self.da.createLocalVec()
 
-    def testGetMatrix(self):
-        mat = self.da.getMatrix()
+    def testCreateMat(self):
+        mat = self.da.createMat()
         self.assertTrue(mat.getType() in ('aij', 'seqaij', 'mpiaij'))
 
     def testGetScatter(self):

@@ -13,7 +13,7 @@ def mkmat(n, mtype, opts):
 
 def mksys_diag(n, mtype, opts):
     A = mkmat(n, mtype, opts)
-    x, b = A.getVecs()
+    x, b = A.createVecs()
     for i in range(n):
         A[i,i] = i+1
         x[i]   = 1.0/(i+1)
@@ -25,7 +25,7 @@ def mksys_diag(n, mtype, opts):
 
 def mksys_poi2(n, mtype, opts):
     A = mkmat(n, mtype, opts)
-    x, b = A.getVecs()
+    x, b = A.createVecs()
     for i in range(n):
         if i == 0:
             cols = [i, i+1]

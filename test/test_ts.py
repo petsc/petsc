@@ -63,7 +63,7 @@ class TestTSNonlinear(unittest.TestCase):
         J = PETSc.Mat().create(ts.comm)
         J.setSizes(3);
         J.setFromOptions()
-        u, f = J.getVecs()
+        u, f = J.createVecs()
 
         ts.setAppCtx(ode)
         ts.setRHSFunction(ode.rhsfunction, f)
@@ -105,7 +105,7 @@ class TestTSNonlinear(unittest.TestCase):
         J.setSizes(5); J.setType('aij')
         J.setPreallocationNNZ(nnz=1)
         J.setFromOptions()
-        u, f = J.getVecs()
+        u, f = J.createVecs()
 
         ts.setAppCtx(ode)
         ts.setRHSFunction(ode.rhsfunction, f)
