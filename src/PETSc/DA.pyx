@@ -268,29 +268,32 @@ cdef class DA(Object):
 
     #
 
-    def createNaturalVector(self):
+    def createNaturalVec(self):
         cdef Vec vn = Vec()
         CHKERR( DACreateNaturalVector(self.da, &vn.vec) )
         return vn
 
-    def createGlobalVector(self):
+    def createGlobalVec(self):
         cdef Vec vg = Vec()
         CHKERR( DACreateGlobalVector(self.da, &vg.vec) )
         return vg
 
-    def createLocalVector(self):
+    def createLocalVec(self):
         cdef Vec vl = Vec()
         CHKERR( DACreateLocalVector(self.da, &vl.vec) )
         return vl
 
-    def createMatrix(self, mat_type=None):
+    def createMat(self, mat_type=None):
         cdef PetscMatType mtype = MATAIJ
         if mat_type is not None: mtype = str2cp(mat_type)
         cdef Mat mat = Mat()
         CHKERR( DAGetMatrix(self.da, mtype, &mat.mat) )
         return mat
 
-    getMatrix = createMatrix
+    createNaturalVector = createNaturalVec
+    createGlobalVector = createGlobalVec
+    createLocalVector = createLocalVec
+    getMatrix = createMatrix = createMat
 
     #
 

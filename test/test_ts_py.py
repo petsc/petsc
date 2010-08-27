@@ -113,7 +113,7 @@ class TestTSPython(unittest.TestCase):
         J = PETSc.Mat().create(ts.comm)
         J.setSizes(3);
         J.setFromOptions()
-        u, f = J.getVecs()
+        u, f = J.createVecs()
 
         ts.setAppCtx(ode)
         ts.setFunction(ode.function, f)
@@ -155,7 +155,7 @@ class TestTSPython(unittest.TestCase):
         J.setSizes(5); J.setType('aij');
         J.setPreallocationNNZ(1)
         J.setFromOptions()
-        u, f = J.getVecs()
+        u, f = J.createVecs()
 
         ts.setAppCtx(ode)
         ts.setFunction(ode.function, f)

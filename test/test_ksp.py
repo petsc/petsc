@@ -124,7 +124,7 @@ class BaseTestKSP(object):
             A.setValue(i, i, 0.9/(i+1))
         A.assemble()
         A.shift(1)
-        x, b = A.getVecs()
+        x, b = A.createVecs()
         b.set(10)
         x.setRandom()
         self.ksp.setOperators(A)

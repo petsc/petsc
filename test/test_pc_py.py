@@ -142,7 +142,7 @@ class TestPCPYTHON(unittest.TestCase):
         A.setUp()
         A.assemble()
         A.shift(10)
-        x, y = A.getVecs()
+        x, y = A.createVecs()
         x.setRandom()
         self.pc.setOperators(A, A, True)
         assert (A,A) == self.pc.getOperators()[:2]

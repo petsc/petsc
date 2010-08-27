@@ -718,8 +718,9 @@ cdef class Mat(Object):
         cdef PetscTruth assembled
         CHKERR( MatAssembled(self.mat, &assembled) )
         return <bint> assembled
+    #
 
-    def getVecs(self, side=None):
+    def createVecs(self, side=None):
         cdef Vec vecr, vecl
         if side is None:
             vecr = Vec(); vecl = Vec();
@@ -736,15 +737,19 @@ cdef class Mat(Object):
         else:
             raise ValueError("side '%r' not understood" % side)
 
-    def getVecRight(self):
+    def createVecRight(self):
         cdef Vec vecr = Vec()
         CHKERR( MatGetVecs(self.mat, &vecr.vec, NULL) )
         return vecr
 
-    def getVecLeft(self):
+    def createVecLeft(self):
         cdef Vec vecl = Vec()
         CHKERR( MatGetVecs(self.mat, NULL, &vecl.vec) )
         return vecl
+
+    getVecs = createVecs
+    getVecRight = createVecRight
+    getVecLeft = createVecLeft
 
     #
 
