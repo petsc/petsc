@@ -429,29 +429,7 @@ class Configure(config.base.Configure):
       self.addDefine('Prefetch(a,b,c)', ' ')
       return
     self.pushLanguage(self.languages.clanguage)      
-    if self.checkLink('', 'void *v = 0;__builtin_prefetch(v,0,0);\n'):
-      # From GCC docs: void __builtin_prefetch(const void *addr,int rw,int locality)
-      #
-      #   The value of rw is a compile-time constant one or zero; one
-      #   means that the prefetch is preparing for a write to the memory
-      #   address and zero, the default, means that the prefetch is
-      #   preparing for a read. The value locality must be a compile-time
-      #   constant integer between zero and three. A value of zero means
-      #   that the data has no temporal locality, so it need not be left
-      #   in the cache after the access. A value of three means that the
-      #   data has a high degree of temporal locality and should be left
-      #   in all levels of cache possible. Values of one and two mean,
-      #   respectively, a low or moderate degree of temporal locality.
-      #
-      # Here we adopt Intel's x86/x86-64 naming scheme for the locality
-      # hints.  Using macros for these values in necessary since some
-      # compilers require an enum.
-      self.addDefine('Prefetch(a,b,c)', '__builtin_prefetch((a),(b),(c))')
-      self.addDefine('PREFETCH_HINT_NTA', '0')
-      self.addDefine('PREFETCH_HINT_T0',  '3')
-      self.addDefine('PREFETCH_HINT_T1',  '2')
-      self.addDefine('PREFETCH_HINT_T2',  '1')
-    elif self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch((const char*)v,_MM_HINT_NTA);\n'):
+    if self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch((const char*)v,_MM_HINT_NTA);\n'):
       # The Intel Intrinsics manual [1] specifies the prototype
       #
       #   void _mm_prefetch(char const *a, int sel);
@@ -475,6 +453,28 @@ class Configure(config.base.Configure):
       self.addDefine('PREFETCH_HINT_T0',  '_MM_HINT_T0')
       self.addDefine('PREFETCH_HINT_T1',  '_MM_HINT_T1')
       self.addDefine('PREFETCH_HINT_T2',  '_MM_HINT_T2')
+    elif self.checkLink('', 'void *v = 0;__builtin_prefetch(v,0,0);\n'):
+      # From GCC docs: void __builtin_prefetch(const void *addr,int rw,int locality)
+      #
+      #   The value of rw is a compile-time constant one or zero; one
+      #   means that the prefetch is preparing for a write to the memory
+      #   address and zero, the default, means that the prefetch is
+      #   preparing for a read. The value locality must be a compile-time
+      #   constant integer between zero and three. A value of zero means
+      #   that the data has no temporal locality, so it need not be left
+      #   in the cache after the access. A value of three means that the
+      #   data has a high degree of temporal locality and should be left
+      #   in all levels of cache possible. Values of one and two mean,
+      #   respectively, a low or moderate degree of temporal locality.
+      #
+      # Here we adopt Intel's x86/x86-64 naming scheme for the locality
+      # hints.  Using macros for these values in necessary since some
+      # compilers require an enum.
+      self.addDefine('Prefetch(a,b,c)', '__builtin_prefetch((a),(b),(c))')
+      self.addDefine('PREFETCH_HINT_NTA', '0')
+      self.addDefine('PREFETCH_HINT_T0',  '3')
+      self.addDefine('PREFETCH_HINT_T1',  '2')
+      self.addDefine('PREFETCH_HINT_T2',  '1')
     else:
       self.addDefine('Prefetch(a,b,c)', ' ')
     self.popLanguage()
