@@ -11,6 +11,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatGetOrdering_Flow_SeqAIJ"
 /*
       Computes an ordering to get most of the large numerical values in the lower triangular part of the matrix
+
+      This code does not work and is not called anywhere. It would be registered with MatOrderingRegisterAll()
 */
 PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
