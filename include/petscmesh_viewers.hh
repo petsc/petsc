@@ -217,6 +217,11 @@ class VTKViewer {
     } else if (corners == 8) {
       // VTK_HEXAHEDRON
       return 12;
+    } else if (corners == 9) {
+      if (dim == 2) {
+       // VTK_QUADRATIC_QUAD
+        return 23;
+      }
     }
     return -1;
   };
