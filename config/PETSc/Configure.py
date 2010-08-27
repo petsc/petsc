@@ -498,6 +498,16 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_BUILTIN_EXPECT', 1)
     self.popLanguage()
 
+  def configureFunctionName(self):
+    '''Sees if the compiler supports __FUNCTION__ or a variant'''
+    self.pushLanguage(self.languages.clanguage)
+    if self.checkLink('', "if (__func__[0] != 'm') return 1;"):
+      self.addDefine('FUNCTION_NAME', '__func__')
+    elif self.checkLink('', "if (__FUNCTION__[0] != 'm') return 1;"):
+      self.addDefine('FUNCTION_NAME', '__FUNCTION__')
+    else:
+      self.addDefine('FUNCTION_NAME', '__FUNCT__')
+
   def configureIntptrt(self):
     '''Determine what to use for uintptr_t'''
     def staticAssertSizeMatchesVoidStar(inc,typename):
@@ -707,6 +717,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.configurePrefetch)
     self.executeTest(self.configureUnused)
     self.executeTest(self.configureExpect);
+    self.executeTest(self.configureFunctionName);
     self.executeTest(self.configureIntptrt);
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)

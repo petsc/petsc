@@ -10,7 +10,7 @@
 #define PETSCMAP1(a)      PETSCMAP1_b(a,BS)
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecScatterBegin_"
+#define __FUNCT__ "VecScatterBegin_" PetscStringize(BS)
 PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertMode addv,ScatterMode mode)
 {
   VecScatter_MPI_General *to,*from;
@@ -123,7 +123,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
 /* --------------------------------------------------------------------------------------*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecScatterEnd_"
+#define __FUNCT__ "VecScatterEnd_" PetscStringize(BS)
 PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMode addv,ScatterMode mode)
 {
   VecScatter_MPI_General *to,*from;

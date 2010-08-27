@@ -355,7 +355,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRegisterFinalize(PetscErrorCode (*f)(void))
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetsRegisterFinalizeAll"
+#define __FUNCT__ "PetscRegisterFinalizeAll"
 /*@C
    PetscRegisterFinalizeAll - Runs all the finalize functions set with PetscRegisterFinalize()
 
