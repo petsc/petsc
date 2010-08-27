@@ -1181,7 +1181,7 @@ PetscErrorCode DMCompositeRestoreLocalVectors_DM(DMComposite packer,struct DMCom
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeGetLocalVectors"
 /*@C
-    DMCompositeGetLocalVectors - Gets local vectors and arrays for each part of a DMComposite.'
+    DMCompositeGetLocalVectors - Gets local vectors and arrays for each part of a DMComposite.
        Use DMCompositeRestoreLocalVectors() to return them.
 
     Not Collective
@@ -1231,8 +1231,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetLocalVectors(DMComposite packer,.
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeRestoreLocalVectors"
 /*@C
-    DMCompositeRestoreLocalVectors - Restores local vectors and arrays for each part of a DMComposite.'
-       Use VecPakcRestoreLocalVectors() to return them.
+    DMCompositeRestoreLocalVectors - Restores local vectors and arrays for each part of a DMComposite.
 
     Not Collective
 
