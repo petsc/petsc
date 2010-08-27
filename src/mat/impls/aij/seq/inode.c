@@ -423,8 +423,8 @@ static PetscErrorCode MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
     n    = ii[1] - ii[0];
     nonzerorow += (n>0)*nsz;
     ii  += nsz;
-    PetscPrefetchBlock(idx+nsz*n,n,0,0);    /* Prefetch the indices for the block row after the current one */
-    PetscPrefetchBlock(v1+nsz*n,nsz*n,0,0); /* Prefetch the values for the block row after the current one  */
+    PetscPrefetchBlock(idx+nsz*n,n,0,PETSC_PREFETCH_HINT_NTA);    /* Prefetch the indices for the block row after the current one */
+    PetscPrefetchBlock(v1+nsz*n,nsz*n,0,PETSC_PREFETCH_HINT_NTA); /* Prefetch the values for the block row after the current one  */
     sz   = n;                   /* No of non zeros in this row */
                                 /* Switch on the size of Node */
     switch (nsz){               /* Each loop in 'case' is unrolled */
@@ -818,9 +818,9 @@ PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A,Vec bb,Vec xx)
     if (i < node_max-1) {
       /* Prefetch the block after the current one, the prefetch itself can't cause a memory error,
       * but our indexing to determine it's size could. */
-      PetscPrefetchBlock(aj+ai[row+nsz],ad[row+nsz]-ai[row+nsz],0,0); /* indices */
+      PetscPrefetchBlock(aj+ai[row+nsz],ad[row+nsz]-ai[row+nsz],0,PETSC_PREFETCH_HINT_NTA); /* indices */
       /* In my tests, it seems to be better to fetch entire rows instead of just the lower-triangular part */
-      PetscPrefetchBlock(aa+ai[row+nsz],ad[row+nsz+ns[i+1]-1]-ai[row+nsz],0,0);
+      PetscPrefetchBlock(aa+ai[row+nsz],ad[row+nsz+ns[i+1]-1]-ai[row+nsz],0,PETSC_PREFETCH_HINT_NTA);
       /* for (j=0; j<ns[i+1]; j++) PetscPrefetchBlock(aa+ai[row+nsz+j],ad[row+nsz+j]-ai[row+nsz+j],0,0); */
     }
 
@@ -2369,9 +2369,9 @@ PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
     
     if (i < node_max-1) {
       /* Prefetch the indices for the next block */
-      PetscPrefetchBlock(aj+ai[row+nsz],ai[row+nsz+1]-ai[row+nsz],0,0); /* indices */
+      PetscPrefetchBlock(aj+ai[row+nsz],ai[row+nsz+1]-ai[row+nsz],0,PETSC_PREFETCH_HINT_NTA); /* indices */
       /* Prefetch the data for the next block */
-      PetscPrefetchBlock(aa+ai[row+nsz],ai[row+nsz+ns[i+1]]-ai[row+nsz],0,0);
+      PetscPrefetchBlock(aa+ai[row+nsz],ai[row+nsz+ns[i+1]]-ai[row+nsz],0,PETSC_PREFETCH_HINT_NTA);
     }
 
     switch (nsz){               /* Each loop in 'case' is unrolled */
@@ -2542,9 +2542,9 @@ PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
     
     if (i > 0) {
       /* Prefetch the indices for the next block */
-      PetscPrefetchBlock(aj+ad[row-nsz+1]+1,ad[row-nsz]-ad[row-nsz+1],0,0); /* indices */
+      PetscPrefetchBlock(aj+ad[row-nsz+1]+1,ad[row-nsz]-ad[row-nsz+1],0,PETSC_PREFETCH_HINT_NTA);
       /* Prefetch the data for the next block */
-      PetscPrefetchBlock(aa+ad[row-nsz+1]+1,ad[row-nsz-ns[i-1]+1]-ad[row-nsz+1],0,0);
+      PetscPrefetchBlock(aa+ad[row-nsz+1]+1,ad[row-nsz-ns[i-1]+1]-ad[row-nsz+1],0,PETSC_PREFETCH_HINT_NTA);
     }
 
     switch (nsz){               /* Each loop in 'case' is unrolled */

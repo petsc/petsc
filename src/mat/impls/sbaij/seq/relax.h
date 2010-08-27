@@ -202,10 +202,10 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
 	nz = 0;
 	for (i=m-1; i>=0; i--){
           sum = b[i];
-	  nz2 = ai[i] - ai[i-1] - 1;
-	  PETSC_Prefetch(v-nz2-1,0,1);
-	  PETSC_Prefetch(vj-nz2-1,0,1);  
-	  PetscSparseDenseMinusDot(sum,x,v,vj,nz);         
+          nz2 = ai[i] - ai[i-1] - 1;
+          PETSC_Prefetch(v-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
+          PETSC_Prefetch(vj-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
+          PetscSparseDenseMinusDot(sum,x,v,vj,nz);
           nz   = nz2;
 #endif
           x[i] = omega*sum*aidiag[i];        
@@ -220,8 +220,8 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
 	for (i=m-1; i>=0; i--){
           sum = t[i];
 	  nz2 = ai[i] - ai[i-1] - 1;
-	  PETSC_Prefetch(v-nz2-1,0,1);
-	  PETSC_Prefetch(vj-nz2-1,0,1);  
+	  PETSC_Prefetch(v-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
+	  PETSC_Prefetch(vj-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
 	  PetscSparseDenseMinusDot(sum,x,v,vj,nz);         
           x[i] = (1-omega)*x[i] + omega*sum*aidiag[i];        
 	  nz  = nz2;
