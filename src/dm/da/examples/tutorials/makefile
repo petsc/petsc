@@ -59,6 +59,9 @@ ex11f90: ex11f90.o   chkopts
 	-${FLINKER} -o ex11f90 ex11f90.o  ${PETSC_DM_LIB}
 	${RM} -f ex11f90.o
 
+ex12: ex12.o   chkopts
+	-${CLINKER} -o ex12 ex12.o  ${PETSC_DM_LIB}
+	${RM} -f ex12.o
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 2 ./ex1 -nox
@@ -82,7 +85,7 @@ runex3_3:
 runex10:
 	-@${MPIEXEC} -n 4 ./ex10
 
-TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm
+TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm ex12.PETSc ex12.rm
 TESTEXAMPLES_C_X11	  = ex1.PETSc runex1 ex1.rm ex5.PETSc ex5.rm  
 TESTEXAMPLES_FORTRAN	  = 
 TESTEXAMPLES_F90_NOCOMPLEX= ex6f90.PETSc ex6f90.rm ex11f90.PETSc ex11f90.rm
