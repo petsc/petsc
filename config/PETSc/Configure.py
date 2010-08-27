@@ -448,9 +448,9 @@ class Configure(config.base.Configure):
       # compilers require an enum.
       self.addDefine('Prefetch(a,b,c)', '__builtin_prefetch((a),(b),(c))')
       self.addDefine('PREFETCH_HINT_NTA', '0')
-      self.addDefine('PREFETCH_HINT_T0',  '1')
+      self.addDefine('PREFETCH_HINT_T0',  '3')
       self.addDefine('PREFETCH_HINT_T1',  '2')
-      self.addDefine('PREFETCH_HINT_T2',  '3')
+      self.addDefine('PREFETCH_HINT_T2',  '1')
     elif self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch((const char*)v,_MM_HINT_NTA);\n'):
       # The Intel Intrinsics manual [1] specifies the prototype
       #

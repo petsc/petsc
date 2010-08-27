@@ -1885,9 +1885,9 @@ PETSC_STATIC_INLINE PetscErrorCode PETSC_DLLEXPORT PetscMemzero(void *a,size_t n
    Adopting Intel's x86/x86-64 conventions, there are four levels of temporal locality.  Not all architectures offer
    equivalent locality hints, but the following macros are always defined to their closest analogue.
 +  PETSC_PREFETCH_HINT_NTA - Non-temporal.  Prefetches directly to L1, evicts to memory (skips higher level cache unless it was already there when prefetched).
-.  PETSC_PREFETCH_HINT_T0 - Temporal with respect to high-level cache only.  Only prefetches to high-level cache (not L1), kept at high levels after eviction from L1.
-.  PETSC_PREFETCH_HINT_T1 - Same as T0, but keep in mid-level cache.  (On many systems, T0 and T1 are equivalent.)
--  PETSC_PREFETCH_HINT_T2 - Fetch to all levels of cache and evict to the closest level.  Use this when the memory will be reused regularly despite necessary eviction from L1.
+.  PETSC_PREFETCH_HINT_T0 - Fetch to all levels of cache and evict to the closest level.  Use this when the memory will be reused regularly despite necessary eviction from L1.
+.  PETSC_PREFETCH_HINT_T1 - Fetch to level 2 and higher (not L1).
+-  PETSC_PREFETCH_HINT_T2 - Fetch to high-level cache only.  (On many systems, T0 and T1 are equivalent.)
 
    This function does nothing on architectures that do not support prefetch and never errors (even if passed an invalid
    address).
