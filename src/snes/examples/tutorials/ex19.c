@@ -246,7 +246,9 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
   ierr = DAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   return 0;
 }
- 
+
+#undef __FUNCT__
+#define __FUNCT__ "FormFunctionLocal"
 PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
  {
   AppCtx         *user = (AppCtx*)ptr;
@@ -381,6 +383,8 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr
   PetscFunctionReturn(0);
 } 
 
+#undef __FUNCT__
+#define __FUNCT__ "FormFunctionLocali"
 /*
     This function that evaluates the function for a single 
     degree of freedom. It is used by the -dmmg_fas solver
@@ -489,6 +493,8 @@ PetscErrorCode FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,Pet
   PetscFunctionReturn(0);
 } 
 
+#undef __FUNCT__
+#define __FUNCT__ "FormFunctionLocali4"
 /*
     This function that evaluates the function for a single 
     grid point. It is used by the -dmmg_fas -dmmg_fas_block solver

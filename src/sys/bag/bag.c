@@ -727,6 +727,8 @@ PetscErrorCode PetscBagGetName(PetscBag bag, char **name)
   PetscFunctionReturn(0);
 }  
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscBagGetData"
 /*@C
     PetscBagGetData - Gives back the user - access to memory that
     should be used for storing user-data-structure

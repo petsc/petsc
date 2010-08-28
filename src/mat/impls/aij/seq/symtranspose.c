@@ -17,7 +17,7 @@
 
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetSymbolicTranspose_SeqIJ"
+#define __FUNCT__ "MatGetSymbolicTranspose_SeqAIJ"
 PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A,PetscInt *Ati[],PetscInt *Atj[]) 
 {
   PetscErrorCode ierr;
@@ -74,7 +74,7 @@ PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A,PetscInt *Ati[],PetscInt *At
      modified from MatGetSymbolicTranspose_SeqAIJ()
 */
 #undef __FUNCT__
-#define __FUNCT__ "MatGetSymbolicTransposeReduced_SeqIJ"
+#define __FUNCT__ "MatGetSymbolicTransposeReduced_SeqAIJ"
 PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,PetscInt rend,PetscInt *Ati[],PetscInt *Atj[]) 
 {
   PetscErrorCode ierr;
@@ -127,7 +127,7 @@ PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,Petsc
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatTranspose_SeqIJ_FAST"
+#define __FUNCT__ "MatTranspose_SeqAIJ_FAST"
 PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B) 
 {
   PetscErrorCode ierr;

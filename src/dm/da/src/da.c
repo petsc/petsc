@@ -449,6 +449,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRanges(DA da,const PetscInt *lx[]
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DASetRefinementFactor"
 /*@
      DASetRefinementFactor - Set the ratios that the DA grid is refined
 
@@ -485,6 +487,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetRefinementFactor(DA da, PetscInt refine_x,
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetRefinementFactor"
 /*@C
      DAGetRefinementFactor - Gets the ratios that the DA grid is refined
 
@@ -514,6 +518,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetRefinementFactor(DA da, PetscInt *refine_x
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DASetGetMatrix"
 /*@C
      DASetGetMatrix - Sets the routine used by the DA to allocate a matrix.
 

@@ -429,14 +429,52 @@ class Configure(config.base.Configure):
       self.addDefine('Prefetch(a,b,c)', ' ')
       return
     self.pushLanguage(self.languages.clanguage)      
-    if self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch(v,(int)0);\n'):
+    if self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch((const char*)v,_MM_HINT_NTA);\n'):
+      # The Intel Intrinsics manual [1] specifies the prototype
+      #
+      #   void _mm_prefetch(char const *a, int sel);
+      #
+      # but other vendors seem to insist on using subtly different
+      # prototypes, including void* for the pointer, and an enum for
+      # sel.  These are both reasonable changes, but negatively impact
+      # portability.
+      #
+      # [1] http://software.intel.com/file/6373
       self.addDefine('HAVE_XMMINTRIN_H', 1)
-      self.addDefine('Prefetch(a,b,c)', '_mm_prefetch((const void*)(a),(int)(c))')
-    elif self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch((const char*)v,(int)0);\n'):
+      self.addDefine('Prefetch(a,b,c)', '_mm_prefetch((const char*)(a),(c))')
+      self.addDefine('PREFETCH_HINT_NTA', '_MM_HINT_NTA')
+      self.addDefine('PREFETCH_HINT_T0',  '_MM_HINT_T0')
+      self.addDefine('PREFETCH_HINT_T1',  '_MM_HINT_T1')
+      self.addDefine('PREFETCH_HINT_T2',  '_MM_HINT_T2')
+    elif self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch(v,_MM_HINT_NTA);\n'):
       self.addDefine('HAVE_XMMINTRIN_H', 1)
-      self.addDefine('Prefetch(a,b,c)', '_mm_prefetch((const char*)(a),(int)(c))')
+      self.addDefine('Prefetch(a,b,c)', '_mm_prefetch((const void*)(a),(c))')
+      self.addDefine('PREFETCH_HINT_NTA', '_MM_HINT_NTA')
+      self.addDefine('PREFETCH_HINT_T0',  '_MM_HINT_T0')
+      self.addDefine('PREFETCH_HINT_T1',  '_MM_HINT_T1')
+      self.addDefine('PREFETCH_HINT_T2',  '_MM_HINT_T2')
     elif self.checkLink('', 'void *v = 0;__builtin_prefetch(v,0,0);\n'):
+      # From GCC docs: void __builtin_prefetch(const void *addr,int rw,int locality)
+      #
+      #   The value of rw is a compile-time constant one or zero; one
+      #   means that the prefetch is preparing for a write to the memory
+      #   address and zero, the default, means that the prefetch is
+      #   preparing for a read. The value locality must be a compile-time
+      #   constant integer between zero and three. A value of zero means
+      #   that the data has no temporal locality, so it need not be left
+      #   in the cache after the access. A value of three means that the
+      #   data has a high degree of temporal locality and should be left
+      #   in all levels of cache possible. Values of one and two mean,
+      #   respectively, a low or moderate degree of temporal locality.
+      #
+      # Here we adopt Intel's x86/x86-64 naming scheme for the locality
+      # hints.  Using macros for these values in necessary since some
+      # compilers require an enum.
       self.addDefine('Prefetch(a,b,c)', '__builtin_prefetch((a),(b),(c))')
+      self.addDefine('PREFETCH_HINT_NTA', '0')
+      self.addDefine('PREFETCH_HINT_T0',  '3')
+      self.addDefine('PREFETCH_HINT_T1',  '2')
+      self.addDefine('PREFETCH_HINT_T2',  '1')
     else:
       self.addDefine('Prefetch(a,b,c)', ' ')
     self.popLanguage()
@@ -459,6 +497,16 @@ class Configure(config.base.Configure):
     if self.checkLink('', 'if (__builtin_expect(0,1)) return 1;'):
       self.addDefine('HAVE_BUILTIN_EXPECT', 1)
     self.popLanguage()
+
+  def configureFunctionName(self):
+    '''Sees if the compiler supports __FUNCTION__ or a variant'''
+    self.pushLanguage(self.languages.clanguage)
+    if self.checkLink('', "if (__func__[0] != 'm') return 1;"):
+      self.addDefine('FUNCTION_NAME', '__func__')
+    elif self.checkLink('', "if (__FUNCTION__[0] != 'm') return 1;"):
+      self.addDefine('FUNCTION_NAME', '__FUNCTION__')
+    else:
+      self.addDefine('FUNCTION_NAME', '__FUNCT__')
 
   def configureIntptrt(self):
     '''Determine what to use for uintptr_t'''
@@ -669,6 +717,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.configurePrefetch)
     self.executeTest(self.configureUnused)
     self.executeTest(self.configureExpect);
+    self.executeTest(self.configureFunctionName);
     self.executeTest(self.configureIntptrt);
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)

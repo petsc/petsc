@@ -155,6 +155,8 @@ PetscErrorCode FormFunction(SNES snes,Vec T,Vec F,void* ptr)
   PetscFunctionReturn(0);
 } 
 
+#undef __FUNCT__  
+#define __FUNCT__ "FormFunctionLocal"
 PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **t,PetscScalar **f,void *ptr)
 {
   PetscInt     i,j;
