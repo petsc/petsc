@@ -53,10 +53,6 @@ cdef extern from "petscmat.h" nogil:
     PetscMatOrderingType MATORDERINGDSC_ND
     PetscMatOrderingType MATORDERINGDSC_MMD
     PetscMatOrderingType MATORDERINGDSC_MDF
-    PetscMatOrderingType MATORDERINGCONSTRAINED
-    PetscMatOrderingType MATORDERINGIDENTITY
-    PetscMatOrderingType MATORDERINGREVERSE
-    PetscMatOrderingType MATORDERINGFLOW
     PetscMatOrderingType MATORDERINGAMD
 
     ctypedef enum PetscMatReuse "MatReuse":

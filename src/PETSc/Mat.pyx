@@ -92,10 +92,6 @@ class MatOrderingType(object):
     DSC_ND      = S_(MATORDERINGDSC_ND)
     DSC_MMD     = S_(MATORDERINGDSC_MMD)
     DSC_MDF     = S_(MATORDERINGDSC_MDF)
-    CONSTRAINED = S_(MATORDERINGCONSTRAINED)
-    IDENTITY    = S_(MATORDERINGIDENTITY)
-    REVERSE     = S_(MATORDERINGREVERSE)
-    FLOW        = S_(MATORDERINGFLOW)
     AMD         = S_(MATORDERINGAMD)
 
 # --------------------------------------------------------------------
