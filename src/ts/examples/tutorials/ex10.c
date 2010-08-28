@@ -748,6 +748,8 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
 static PetscScalar RDRadiationTemperature(RD rd,PetscScalar E)
 { return pow(E*rd->c/(4.*rd->sigma_b),0.25); }
 
+#undef __FUNCT__  
+#define __FUNCT__ "RDInitialState"
 static PetscErrorCode RDInitialState(RD rd,Vec X)
 {
   DALocalInfo info;

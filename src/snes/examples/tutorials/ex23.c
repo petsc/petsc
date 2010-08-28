@@ -80,7 +80,9 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+
+#undef __FUNCT__  
+#define __FUNCT__ "FormFunction"
 /*
      This local function acts on the ghosted version of U (accessed via DAGetLocalVector())
      BUT the global, nonghosted version of FU
@@ -120,6 +122,8 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "FormFunctionLocali"
 PetscErrorCode FormFunctionLocali(DALocalInfo *info,MatStencil *pt,PetscScalar *u,PetscScalar *fu,void* dummy)
 {
   PetscInt     i,N = info->mx;

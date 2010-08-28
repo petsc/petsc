@@ -139,7 +139,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfoActivateClass(int objclass)
 extern FILE *petsc_history;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscInfo"
+#define __FUNCT__ "PetscInfo_Private"
 /*MC
     PetscInfo - Logs informative data, which is printed to standard output
     or a file when the option -info <file> is specified.

@@ -679,7 +679,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetFactorAvailable_seqaij_petsc"
+#define __FUNCT__ "MatGetFactorAvailable_seqbaij_petsc"
 PetscErrorCode MatGetFactorAvailable_seqbaij_petsc(Mat A,MatFactorType ftype,PetscTruth *flg)
 {
   PetscFunctionBegin;

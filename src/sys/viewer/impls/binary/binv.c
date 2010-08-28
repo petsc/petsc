@@ -788,7 +788,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileGetMode(PetscViewer viewer,PetscFi
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinarySetMPIIO" 
+#define __FUNCT__ "PetscViewerBinarySetMPIIO"
 /*@
      PetscViewerBinarySetMPIIO - Sets a binary viewer to use MPI IO for reading/writing. Must be called
         before PetscViewerFileSetName()
@@ -822,6 +822,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySetMPIIO(PetscViewer viewer)
 }
 
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerFileSetMode"
 /*@C
      PetscViewerFileSetMode - Sets the type of file to be open
 

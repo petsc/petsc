@@ -3878,7 +3878,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes(Mat A,IS *rperm,IS *cp
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatAdjustForInodes_SeqAIJ_Inode"
+#define __FUNCT__ "MatInodeAdjustForInodes_SeqAIJ_Inode"
 PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A,IS *rperm,IS *cperm)
 {
   Mat_SeqAIJ      *a=(Mat_SeqAIJ*)A->data;

@@ -45,7 +45,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJSpooles(Mat F,Mat A,IS r,IS c,const Mat
 
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  
-#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSAIJSpooles"
+#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqAIJSpooles"
 PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJSpooles(Mat F,Mat A,IS r,const MatFactorInfo *info)
 { 
   PetscFunctionBegin;	
