@@ -179,8 +179,8 @@ class BaseTestMatAnyAIJ(object):
         self.A.assemble()
         A = self.A
         AT = PETSc.Mat().createTranspose(A)
-        x, y = A.getVecs()
-        xt, yt = AT.getVecs()
+        x, y = A.createVecs()
+        xt, yt = AT.createVecs()
         #
         y.setRandom()
         A.multTranspose(y, x)
