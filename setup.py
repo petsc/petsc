@@ -118,7 +118,7 @@ def run_cython(*C_SOURCE):
     import sys, os
     if os.path.exists(os.path.join(*C_SOURCE)):
         return
-    if not sys.argv[1] == "install":
+    if "install" not in sys.argv:
         return
     warn = lambda msg='': sys.stderr.write(msg+'\n')
     warn("*"*80)
