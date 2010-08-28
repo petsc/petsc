@@ -570,7 +570,7 @@ static PetscErrorCode MatGetDiagonal_Python(Mat mat,Vec v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetDiagonal_Python"
+#define __FUNCT__ "MatDiagonalSet_Python"
 static PetscErrorCode MatDiagonalSet_Python(Mat mat,Vec v,InsertMode im)
 {
   Mat_Py *py = (Mat_Py *) mat->data;

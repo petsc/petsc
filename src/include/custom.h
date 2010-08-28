@@ -623,7 +623,7 @@ MatAnyDenseSetPreallocation(Mat mat, PetscInt bs, PetscScalar *data)
 /* ---------------------------------------------------------------- */
 
 #undef __FUNCT__
-#define __FUNCT__ "MatFactorInfoDefaults()"
+#define __FUNCT__ "MatFactorInfoDefaults"
 static PetscErrorCode
 MatFactorInfoDefaults(PetscTruth incomplete, MatFactorInfo *info)
 {
@@ -902,7 +902,7 @@ MatFDColoringSetOptionsPrefix(MatFDColoring fdc, const char prefix[]) {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetUseMFFD"
+#define __FUNCT__ "SNESGetUseMFFD"
 static PetscErrorCode
 SNESGetUseMFFD(SNES snes,PetscTruth *flag)
 {
@@ -1198,7 +1198,7 @@ TSSetRHSFunction_Ex(TS ts,Vec r,PetscErrorCode (*fun)(TS,PetscReal,Vec,Vec,void*
 #define TSSetRHSFunction TSSetRHSFunction_Ex
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetRHSFunction_Ex"
+#define __FUNCT__ "TSGetRHSFunction_Ex"
 static PetscErrorCode
 TSGetRHSFunction_Ex(TS ts,Vec *f,PetscErrorCode (**fun)(TS,PetscReal,Vec,Vec,void*),void **ctx)
 {
