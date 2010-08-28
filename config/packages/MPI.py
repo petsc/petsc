@@ -12,7 +12,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.4/downloads/openmpi-1.4.2.tar.gz']
-    self.download_mpich     = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/mpich2-1.3b1.tar.gz']
+    self.download_mpich     = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/mpich2-trunk-r7115.tar.gz']
     self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
     self.includes           = ['mpi.h']
@@ -481,6 +481,7 @@ class Configure(config.package.Package):
       args.append('--disable-f77')
       args.append('--disable-fc')
     if self.framework.argDB['with-shared-libraries'] or self.framework.argDB['download-mpich-shared']:
+      args.append('--enable-shared') # --enable-sharedlibs can now be removed?
       if self.compilers.isGCC or config.setCompilers.Configure.isIntel(compiler):
         if config.setCompilers.Configure.isDarwin():
           args.append('--enable-sharedlibs=gcc-osx')
