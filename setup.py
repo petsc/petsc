@@ -118,26 +118,34 @@ def run_cython(*C_SOURCE):
     import sys, os
     if os.path.exists(os.path.join(*C_SOURCE)):
         return
+    if not sys.argv[1] == "install":
+        return
     warn = lambda msg='': sys.stderr.write(msg+'\n')
     warn("*"*80)
     warn()
     warn(" Attempting to generate C source files with Cython!!")
     warn()
     warn("*"*80)
-    import conf.cythonize
     try:
+        import conf.cythonize
         conf.cythonize.run('petsc4py.PETSc.pyx', wdir='src')
-    except:
+    except ImportError:
         warn("*"*80)
         warn()
-        warn(" Unable to generate C source files with Cython!!")
         warn(" Download and install Cython <http://www.cython.org>")
         warn(" and next execute in your shell:")
         warn()
         warn("   $ python ./conf/cythonize.py")
         warn()
         warn("*"*80)
-
+        raise
+    except:
+        warn("*"*80)
+        warn()
+        warn(" Unable to generate C source files with Cython!!")
+        warn()
+        warn("*"*80)
+        raise
 
 if __name__ == '__main__':
     run_cython('src', 'petsc4py.PETSc.c')
