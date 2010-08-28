@@ -327,7 +327,7 @@ PetscErrorCode restrct(Mat mat,Vec rr,Vec bb)
 }
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "Create2dLaplacian"
+#define __FUNCT__ "Create1dLaplacian"
 PetscErrorCode Create1dLaplacian(PetscInt n,Mat *mat)
 {
   PetscScalar    mone = -1.0,two = 2.0;

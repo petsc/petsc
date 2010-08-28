@@ -3,10 +3,11 @@
     This is included by sbaij.c to generate unsigned short and regular versions of these two functions
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatMult_SeqSBAIJ_1_Hermitian"
 #if defined(USESHORT)
+#define __FUNCT__ "MatMult_SeqSBAIJ_1_Hermitian_ushort"
 PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian_ushort(Mat A,Vec xx,Vec zz) 
 #else
+#define __FUNCT__ "MatMult_SeqSBAIJ_1_Hermitian"
 PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat A,Vec xx,Vec zz)
 #endif
 {
@@ -54,10 +55,11 @@ PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat A,Vec xx,Vec zz)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMult_SeqSBAIJ_1"
 #if defined(USESHORT)
+#define __FUNCT__ "MatMult_SeqSBAIJ_1_ushort"
 PetscErrorCode MatMult_SeqSBAIJ_1_ushort(Mat A,Vec xx,Vec zz)
 #else
+#define __FUNCT__ "MatMult_SeqSBAIJ_1"
 PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
 #endif
 {
@@ -105,10 +107,11 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSOR_SeqSBAIJ"
 #if defined(USESHORT)
+#define __FUNCT__ "MatSOR_SeqSBAIJ_ushort"
 PetscErrorCode MatSOR_SeqSBAIJ_ushort(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 #else
+#define __FUNCT__ "MatSOR_SeqSBAIJ"
 PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 #endif
 {

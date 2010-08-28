@@ -44,7 +44,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDefaultComputeJacobianColor(TS ts,PetscReal t
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSSDefaultComputeJacobian"
+#define __FUNCT__ "TSDefaultComputeJacobian"
 /*@C
    TSDefaultComputeJacobian - Computes the Jacobian using finite differences.
 
