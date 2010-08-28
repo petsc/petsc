@@ -222,6 +222,11 @@ class VTKViewer {
        // VTK_QUADRATIC_QUAD
         return 23;
       }
+    } else if (corners == 27) {
+      if (dim == 3) {
+       // VTK_QUADRATIC_HEXAHEDRON
+        return 29;
+      }
     }
     return -1;
   };

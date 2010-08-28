@@ -2575,7 +2575,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
   PetscErrorCode     ierr;
   PetscTruth         perm_identity,free_ij = PETSC_TRUE,missing;
   PetscInt           bs=A->rmap->bs,am=a->mbs,d;
-  const PetscInt     *cols,*rip,*ai,*aj;
+  const PetscInt     *cols,*rip,*ai=a->i,*aj=a->j;
   PetscInt           reallocs=0,i,*ui;
   PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
   PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL,ncols,*cols_lvl,*uj,**uj_ptr,**uj_lvl_ptr;
@@ -2605,20 +2605,16 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
   /* check whether perm is the identity mapping */  
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
   if (!perm_identity) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix reordering is not supported for sbaij matrix. Use aij format");
- 
+  a->permute = PETSC_FALSE;
+
   /* special case that simply copies fill pattern */
   if (!levels ) {  
-    a->permute = PETSC_FALSE;
     /* reuse the column pointers and row offsets for memory savings */
     ui           = a->i; 
     uj           = a->j;
     free_ij      = PETSC_FALSE;
     ratio_needed = 1.0;
   } else { /* case: levels>0 */
-    if (perm_identity){
-      a->permute = PETSC_FALSE;
-      ai = a->i; aj = a->j;
-    }
     ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);  
 
     /* initialization */

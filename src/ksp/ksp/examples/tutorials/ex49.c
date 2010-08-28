@@ -373,11 +373,11 @@ static PetscErrorCode DACoordViewGnuplot2d(DA da,const char prefix[])
   ierr = DAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
   for (j = sj; j < sj+ny-1; j++) {
     for (i = si; i < si+nx-1; i++) {
-      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",_coords[j][i].x,_coords[j][i].y);CHKERRQ(ierr);
-      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",_coords[j+1][i].x,_coords[j+1][i].y);CHKERRQ(ierr);
-      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",_coords[j+1][i+1].x,_coords[j+1][i+1].y);CHKERRQ(ierr);
-      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",_coords[j][i+1].x,_coords[j][i+1].y);CHKERRQ(ierr);
-      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n\n",_coords[j][i].x,_coords[j][i].y);CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",PetscRealPart(_coords[j][i].x),PetscRealPart(_coords[j][i].y));CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",PetscRealPart(_coords[j+1][i].x),PetscRealPart(_coords[j+1][i].y));CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",PetscRealPart(_coords[j+1][i+1].x),PetscRealPart(_coords[j+1][i+1].y));CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",PetscRealPart(_coords[j][i+1].x),PetscRealPart(_coords[j][i+1].y));CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n\n",PetscRealPart(_coords[j][i].x),PetscRealPart(_coords[j][i].y));CHKERRQ(ierr);
     }
   }
   ierr = DAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
@@ -438,10 +438,10 @@ static PetscErrorCode DAViewGnuplot2d(DA da,Vec fields,const char comment[],cons
       coord_x = _coords[j][i].x;
       coord_y = _coords[j][i].y;
 
-      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e ",coord_x,coord_y);CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e ",PetscRealPart(coord_x),PetscRealPart(coord_y));CHKERRQ(ierr);
       for (d = 0; d < n_dofs; d++) {
         field_d = _fields[ n_dofs*((i-si)+(j-sj)*(nx))+d ];
-        ierr    = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e ",field_d);CHKERRQ(ierr);
+        ierr    = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e ",PetscRealPart(field_d));CHKERRQ(ierr);
       }
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"\n");CHKERRQ(ierr);
     }
@@ -502,9 +502,11 @@ static PetscErrorCode DAViewCoefficientsGnuplot2d(DA da,Vec fields,const char co
         coord_x = _coefficients[j][i].gp_coords[2*p];
         coord_y = _coefficients[j][i].gp_coords[2*p+1];
 
-        ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e ",coord_x,coord_y);CHKERRQ(ierr);
+        ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e ",PetscRealPart(coord_x),PetscRealPart(coord_y));CHKERRQ(ierr);
 
-        ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e %1.6e %1.6e",_coefficients[j][i].E[p],_coefficients[j][i].nu[p],_coefficients[j][i].fx[p],_coefficients[j][i].fy[p]);CHKERRQ(ierr);
+        ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e %1.6e %1.6e",
+                            PetscRealPart(_coefficients[j][i].E[p]),PetscRealPart(_coefficients[j][i].nu[p]),
+                            PetscRealPart(_coefficients[j][i].fx[p]),PetscRealPart(_coefficients[j][i].fy[p]));CHKERRQ(ierr);
         ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"\n");CHKERRQ(ierr);
       }
     }

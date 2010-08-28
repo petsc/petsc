@@ -113,11 +113,11 @@ int main(int argc,char **args)
   if (flg && rank == id){
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] subb:\n", rank);
     ierr = VecGetArray(subb,&array);CHKERRQ(ierr);
-    for (i=0; i<m; i++) printf("%G\n",array[i]);
+    for (i=0; i<m; i++) printf("%G\n",PetscRealPart(array[i]));
     ierr = VecRestoreArray(subb,&array);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] subx:\n", rank);
     ierr = VecGetArray(subx,&array);CHKERRQ(ierr);
-    for (i=0; i<m; i++) printf("%G\n",array[i]);
+    for (i=0; i<m; i++) printf("%G\n",PetscRealPart(array[i]));
     ierr = VecRestoreArray(subx,&array);CHKERRQ(ierr);
   }
 
