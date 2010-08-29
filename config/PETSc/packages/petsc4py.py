@@ -26,9 +26,14 @@ class Configure(PETSc.package.NewPackage):
       apple = ''
     self.logClearRemoveDirectory()
     self.logResetRemoveDirectory()
-    # the ARCHFLAGS is for the Mac to prevent it trying to build ppc libraries
+    archflags = ""
+    if self.setCompilers.isDarwin():
+      if self.types.sizes['known-sizeof-void-p'] == 32:
+        archflags = "ARCHFLAGS=\'-arch i386\'"
+      else:
+        archflags = "ARCHFLAGS=\'-arch x86_64\'"
     self.addMakeRule('petsc4py','', \
-                       ['@cd '+self.packageDir+';python setup.py clean --all; ARCHFLAGS=\'-arch i386 -arch x86_64\'  python setup.py install --install-lib='+os.path.join(self.installDir,'lib'),\
+                       ['@cd '+self.packageDir+';python setup.py clean --all; '+archflags+' python setup.py install --install-lib='+os.path.join(self.installDir,'lib'),\
                           '@echo "====================================="',\
                           '@echo "To use petsc4py, add '+os.path.join(self.petscconfigure.installdir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
