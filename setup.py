@@ -99,21 +99,6 @@ def run_setup():
                           'build_ext'  : build_ext},
           **metadata)
 
-def chk_cython(*C_SOURCE):
-    import sys, os
-    if os.path.exists(os.path.join(*C_SOURCE)):
-        return
-    warn = lambda msg='': sys.stderr.write(msg+'\n')
-    warn("*"*80)
-    warn()
-    warn(" You need to generate C source files with Cython!!")
-    warn(" Download and install Cython <http://www.cython.org>")
-    warn(" and next execute in your shell:")
-    warn()
-    warn("   $ python ./conf/cythonize.py")
-    warn()
-    warn("*"*80)
-
 def run_cython(*C_SOURCE):
     import sys, os
     if os.path.exists(os.path.join(*C_SOURCE)):
