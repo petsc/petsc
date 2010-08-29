@@ -209,11 +209,11 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerFlush(PetscViewer);
            KSPMonitorDefault(), SNESMonitorDefault()
 
 S*/
-struct _p_PetscViewerASCIIMonitor {
+struct _n_PetscViewerASCIIMonitor {
   PetscViewer viewer;
   PetscInt    tabs;
 };
-typedef struct _p_PetscViewerASCIIMonitor* PetscViewerASCIIMonitor;
+typedef struct _n_PetscViewerASCIIMonitor* PetscViewerASCIIMonitor;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIMonitorCreate(MPI_Comm,const char *,PetscInt,PetscViewerASCIIMonitor*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIMonitorDestroy(PetscViewerASCIIMonitor);
