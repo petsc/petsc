@@ -101,10 +101,8 @@ def run_setup():
 
 def run_cython(*C_SOURCE):
     import sys, os
-    if os.path.exists(os.path.join(*C_SOURCE)):
-        return
-    if "install" not in sys.argv:
-        return
+    if os.path.exists(os.path.join(*C_SOURCE)): return
+    if "install" not in sys.argv: return
     warn = lambda msg='': sys.stderr.write(msg+'\n')
     warn("*"*80)
     warn()
@@ -132,8 +130,35 @@ def run_cython(*C_SOURCE):
         warn("*"*80)
         raise
 
+def install_petsc():
+    import os,sys
+    if 'PETSC_DIR' in os.environ: return
+    if "install" not in sys.argv: return
+    warn = lambda msg='': sys.stderr.write(msg+'\n')
+    warn("*"*80)
+    warn()
+    warn(" PETSC_DIR is not set in your environment, downloading and installing PETSc!!")
+    warn()
+    warn("*"*80)
+    import urllib
+#    urllib.urlretrieve('http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz', 'petsc.tar.gz')
+    import tarfile
+    f = tarfile.open('petsc.tar.gz')
+#    f.extractall()
+    f.close()
+    cwd = os.getcwd()
+    os.environ['PETSC_DIR'] = os.path.abspath(os.path.join(cwd,'petsc-dev'))
+    os.chdir(os.environ['PETSC_DIR'])
+    sys.path.insert(0,os.path.join(os.environ['PETSC_DIR'],'config'))
+    import configure
+    configure.petsc_configure([])
+    os.chdir(cwd)
+    sys.exit(0)
+
+    
 if __name__ == '__main__':
     run_cython('src', 'petsc4py.PETSc.c')
+    install_petsc()
     try:
         run_setup()
     except:
