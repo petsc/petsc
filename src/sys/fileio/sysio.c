@@ -691,6 +691,8 @@ PetscMPIInt PetscDataRep_write_conv_fn(void *userbuf, MPI_Datatype datatype,Pets
 EXTERN_C_END
 #endif
 
+#undef __FUNCT__  
+#define __FUNCT__ "MPIU_File_write_all"
 PetscErrorCode MPIU_File_write_all(MPI_File fd,void *data,PetscMPIInt cnt,MPI_Datatype dtype,MPI_Status *status)
 {
   PetscErrorCode ierr;
@@ -704,6 +706,8 @@ PetscErrorCode MPIU_File_write_all(MPI_File fd,void *data,PetscMPIInt cnt,MPI_Da
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MPIU_File_read_all"
 PetscErrorCode MPIU_File_read_all(MPI_File fd,void *data,PetscMPIInt cnt,MPI_Datatype dtype,MPI_Status *status)
 {
   PetscErrorCode ierr;
