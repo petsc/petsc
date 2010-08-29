@@ -86,13 +86,34 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetenv(MPI_Comm comm,const char name[
 static char PetscDisplay[256]; 
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscWorldIsSingleHost"
+static PetscErrorCode PetscWorldIsSingleHost(PetscTruth *onehost)
+{
+  PetscErrorCode ierr;
+  char hostname[256],roothostname[256],localmatch,allmatch;
+  PetscTruth flag;
+
+  PetscFunctionBegin;
+  ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
+  ierr = PetscMemcpy(roothostname,hostname,256);CHKERRQ(ierr);
+  ierr = MPI_Bcast(roothostname,256,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscStrcmp(hostname,roothostname,&flag);CHKERRQ(ierr);
+  localmatch = (PetscMPIInt)flag;
+  ierr = MPI_Allreduce(&localmatch,&allmatch,1,MPI_INT,MPI_LAND,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  *onehost = (PetscTruth)allmatch;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscSetDisplay" 
 PetscErrorCode PETSC_DLLEXPORT PetscSetDisplay(void)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
-  PetscTruth     flag;
-  char           *str,display[256];
+  PetscTruth     flag,singlehost;
+  char           display[256];
+  const char     *str;
 
   PetscFunctionBegin;
   ierr = PetscMemzero(display,256*sizeof(char));CHKERRQ(ierr);
@@ -100,26 +121,26 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetDisplay(void)
   if (flag) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr); 
-  if (!rank) {
-    str = getenv("DISPLAY");
-    if (!str || (str[0] == ':' && size > 1)) {
-      ierr = PetscGetHostName(display,255);CHKERRQ(ierr);
-      ierr = PetscStrcat(display,":0.0");CHKERRQ(ierr);
-    } else {
-      ierr = PetscStrncpy(display,str,256);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+
+  ierr = PetscWorldIsSingleHost(&singlehost);CHKERRQ(ierr);
+
+  str = getenv("DISPLAY");
+  if (!str) str = ":0.0";
+  if (str[0] != ':' || singlehost) {
+    ierr = PetscStrcpy(display,str);CHKERRQ(ierr);
+  } else {
+    if (!rank) {
+      size_t len1,len2;
+      ierr = PetscGetHostName(display,256);CHKERRQ(ierr);
+      ierr = PetscStrlen(display,&len1);CHKERRQ(ierr);
+      ierr = PetscStrlen(str,&len2);CHKERRQ(ierr);
+      ierr = PetscStrncat(display,str,255-(len1+len2));CHKERRQ(ierr);
     }
-  }
-  ierr = MPI_Bcast(display,256,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  if (rank) {
-    str = getenv("DISPLAY");
-    /* assume that ssh port forwarding is working */
-    if (str && (str[0] != ':')) {
-      ierr = PetscStrcpy(display,str);CHKERRQ(ierr);
-    }
+    ierr = MPI_Bcast(display,256,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
   ierr = PetscStrcpy(PetscDisplay,display);CHKERRQ(ierr);
-  PetscFunctionReturn(0);  
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
