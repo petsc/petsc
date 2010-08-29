@@ -40,7 +40,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutCreate(MPI_Comm comm,PetscLayout *m
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _p_PetscLayout,map);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_PetscLayout,map);CHKERRQ(ierr);
   (*map)->comm   = comm;
   (*map)->bs     = -1;
   (*map)->n      = -1;
@@ -181,7 +181,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutCopy(PetscLayout in,PetscLayout *ou
   if (*out) {ierr = PetscLayoutDestroy(*out);CHKERRQ(ierr);}
   ierr = PetscLayoutCreate(comm,out);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscMemcpy(*out,in,sizeof(struct _p_PetscLayout));CHKERRQ(ierr);
+  ierr = PetscMemcpy(*out,in,sizeof(struct _n_PetscLayout));CHKERRQ(ierr);
   ierr = PetscMalloc((size+1)*sizeof(PetscInt),&(*out)->range);CHKERRQ(ierr);
   ierr = PetscMemcpy((*out)->range,in->range,(size+1)*sizeof(PetscInt));CHKERRQ(ierr);
   (*out)->refcnt = 0;
