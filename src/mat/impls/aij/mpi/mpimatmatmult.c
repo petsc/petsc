@@ -189,6 +189,8 @@ typedef struct {
   MPI_Request *rwaits,*swaits;
 } MPIAIJ_MPIDense;
 
+#undef __FUNCT__
+#define __FUNCT__ "MPIAIJ_MPIDenseDestroy"
 PetscErrorCode MPIAIJ_MPIDenseDestroy(void *ctx)
 {
   MPIAIJ_MPIDense *contents = (MPIAIJ_MPIDense*) ctx;
@@ -241,6 +243,8 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMPIDenseScatter"
 /*
     Performs an efficient scatter on the rows of B needed by this process; this is
     a modification of the VecScatterBegin_() routines.
