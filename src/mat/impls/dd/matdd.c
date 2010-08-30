@@ -108,7 +108,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT Mat_DDBlockInit(Mat A, PetscInt rowblock, Pets
   Mat_DD*              dd = (Mat_DD*)A->data;
   PetscInt              m,n,M,N;
   MPI_Comm              comm = ((PetscObject)A)->comm, subcomm;
-  PetscMPIInt           commsize, commrank, subcommsize;
+  PetscMPIInt           commsize=0, commrank, subcommsize=0;
   PetscMPIInt           subcommcolor;
   
   PetscFunctionBegin;
@@ -136,7 +136,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT Mat_DDBlockInit(Mat A, PetscInt rowblock, Pets
       subcommcolor = MPI_UNDEFINED;
     }
     ierr = MPI_Comm_split(comm, subcommcolor, commrank, &subcomm); CHKERRQ(ierr);
-    ierr = MPI_Comm_size(subcomm, &subcommsize);            CHKERRQ(ierr);
+    ierr = MPI_Comm_size(subcomm, &subcommsize);CHKERRQ(ierr);
     break;
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER, "Unknown block comm type: %d", commsize);

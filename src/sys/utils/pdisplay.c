@@ -111,7 +111,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetDisplay(void)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
-  PetscTruth     flag,singlehost;
+  PetscTruth     flag,singlehost=PETSC_FALSE;
   char           display[sizeof PetscDisplay];
   const char     *str;
 
