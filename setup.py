@@ -13,7 +13,7 @@ def configure(prefix):
     os.chdir(os.environ['PETSC_DIR'])
     sys.path.insert(0,os.path.join(os.environ['PETSC_DIR'],'config'))
     import configure
-    configure.petsc_configure(['--with-fc=0','--with-mpi=0','--with-shared'])
+    configure.petsc_configure(['--with-fc=0','--with-mpi=0','--with-shared-libraries'])
 
 def build():
     import os,sys
