@@ -172,7 +172,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatConvert_SeqSBAI_SeqBAIJ"
+#define __FUNCT__ "MatConvert_SeqSBAIJ_SeqBAIJ"
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat) 
 {
   Mat            B;

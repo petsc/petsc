@@ -16,7 +16,7 @@ int main(int argc,char **args)
   Mat            A,subA;        
   Vec            x,b,u,subb,subx,subu;           
   PetscViewer    fd;            
-  char           file[4][PETSC_MAX_PATH_LEN];     /* input file name */
+  char           file[PETSC_MAX_PATH_LEN];     
   PetscTruth     flg;
   PetscErrorCode ierr;
   PetscInt       i,m,n,its;
@@ -29,24 +29,18 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help); 
   /* Load the matrix */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
     
   /* Load the matrix; then destroy the viewer.*/
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
 
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    
-  flg = PETSC_FALSE;
-  ierr = PetscOptionsGetString(PETSC_NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg){ /* rhs is stored in a separate file */
-    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  }
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
     
   /* Create rhs vector b */
   ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
