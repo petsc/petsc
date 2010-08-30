@@ -84,25 +84,22 @@ runex2f:
 	-@${MPIEXEC} -n 1 ./ex2f 
 
 runex4:
-	-@${MPIEXEC} -n 1 ./ex4 -nox > ex4_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex4 -ts_view -nox > ex4_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
 	   else echo "Possible problem with ex4_1, diffs above"; fi; \
 	   ${RM} -f ex4_1.tmp
-
 runex4_2:
-	-@${MPIEXEC} -n 3 ./ex4 -nox > ex4_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 3 ./ex4 -ts_view -nox > ex4_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex4_2.out ex4_2.tmp) then true; \
 	   else echo "Possible problem with ex4_2, diffs above"; fi; \
 	   ${RM} -f ex4_2.tmp
-
 runex4_3:
-	-@${MPIEXEC} -n 1 ./ex4 -nox -nonlinear > ex4_3.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex4 -ts_view -nox -nonlinear > ex4_3.tmp 2>&1;	  \
 	   if (${DIFF} output/ex4_3.out ex4_3.tmp) then true; \
 	   else echo "Possible problem with ex4_3, diffs above"; fi; \
 	   ${RM} -f ex4_3.tmp
-
 runex4_4:
-	-@${MPIEXEC} -n 3 ./ex4 -nox -nonlinear > ex4_4.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 3 ./ex4 -ts_view -nox -nonlinear > ex4_4.tmp 2>&1;	  \
 	   if (${DIFF} output/ex4_4.out ex4_4.tmp) then true; \
 	   else echo "Possible problem with ex4_4, diffs above"; fi; \
 	   ${RM} -f ex4_4.tmp
