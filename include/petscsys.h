@@ -606,7 +606,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCommDestroy(MPI_Comm*);
   Concepts: memory allocation
 
 M*/
-#define PetscMalloc(a,b)  ((a != 0) ? (*PetscTrMalloc)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__,(void**)(b)) : (*(b) = 0,0) )
+#define PetscMalloc(a,b)  ((a != 0) ? (*PetscTrMalloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,(void**)(b)) : (*(b) = 0,0) )
 
 /*MC
    PetscAddrAlign - Rounds up an address to PETSC_MEMALIGN alignment
@@ -917,7 +917,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscFree(a)   ((a) ? ((*PetscTrFree)((void*)(a),__LINE__,__FUNCT__,__FILE__,__SDIR__) || ((a = 0),0)) : 0)
+#define PetscFree(a)   ((a) ? ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__) || ((a = 0),0)) : 0)
 
 /*MC
    PetscFreeVoid - Frees memory
@@ -939,7 +939,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscFreeVoid(a) ((*PetscTrFree)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__),(a) = 0)
+#define PetscFreeVoid(a) ((*PetscTrFree)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__),(a) = 0)
 
 
 /*MC

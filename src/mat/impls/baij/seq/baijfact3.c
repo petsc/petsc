@@ -75,6 +75,8 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact,PetscTruth natural)
   PetscFunctionReturn(0); 
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSeqBAIJSetNumericFactorization_inplace"
 PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA,PetscTruth natural)
 {
   PetscFunctionBegin;
