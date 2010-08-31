@@ -887,7 +887,7 @@ PetscErrorCode PetscViewerASCIIMonitorCreate(MPI_Comm comm,const char *filename,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNew(struct _p_PetscViewerASCIIMonitor,ctx);CHKERRQ(ierr);
+  ierr         = PetscNew(struct _n_PetscViewerASCIIMonitor,ctx);CHKERRQ(ierr);
   ierr         = PetscViewerASCIIOpen(comm,filename,&(*ctx)->viewer);CHKERRQ(ierr);
   (*ctx)->tabs = tabs;
   PetscFunctionReturn(0);

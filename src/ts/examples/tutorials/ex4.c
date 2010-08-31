@@ -95,7 +95,7 @@ int main(int argc,char **argv)
   TS             ts;                     /* timestepping context */
   Mat            A;                      /* matrix data structure */
   Vec            u;                      /* approximate solution vector */
-  PetscReal      time_total_max = 100.0; /* default max total time */
+  PetscReal      time_total_max = 1.0;   /* default max total time */
   PetscInt       time_steps_max = 100;   /* default max timesteps */
   PetscDraw      draw;                   /* drawing context */
   PetscErrorCode ierr;
@@ -175,7 +175,6 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
   ierr = TSMonitorSet(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -250,10 +249,9 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      View timestepping solver info
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"avg. error (2 norm) = %G, avg. error (max norm) = %G\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Total timesteps %D, Final time %G\n",steps,ftime);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Avg. error (2 norm) = %G, Avg. error (max norm) = %G\n",
               appctx.norm_2/steps,appctx.norm_max/steps);CHKERRQ(ierr);
-  ierr = TSView(ts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

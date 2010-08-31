@@ -56,7 +56,7 @@ def check_petsc_arch(opts):
   # If not yet specified - use the filename of script
   if not found:
       filename = os.path.basename(sys.argv[0])
-      if not filename.startswith('configure') and not filename.startswith('reconfigure'):
+      if not filename.startswith('configure') and not filename.startswith('reconfigure') and not filename.startswith('setup'):
         petsc_arch=os.path.splitext(os.path.basename(sys.argv[0]))[0]
         useName = 'PETSC_ARCH='+petsc_arch
         opts.append(useName)

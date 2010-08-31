@@ -61,7 +61,7 @@ static int PetscOptionsCreate_Private(const char opt[],const char text[],const c
   PetscOptions next;
 
   PetscFunctionBegin;
-  ierr             = PetscNew(struct _p_PetscOptions,amsopt);CHKERRQ(ierr);
+  ierr             = PetscNew(struct _n_PetscOptions,amsopt);CHKERRQ(ierr);
   (*amsopt)->next  = 0;
   (*amsopt)->set   = PETSC_FALSE;
   (*amsopt)->type  = t;

@@ -190,8 +190,8 @@ PETSC_EXTERN_CXX_END
     See manual page for PetscOptionsBegin() 
 */
 typedef enum {OPTION_INT,OPTION_LOGICAL,OPTION_REAL,OPTION_LIST,OPTION_STRING,OPTION_REAL_ARRAY,OPTION_HEAD,OPTION_INT_ARRAY,OPTION_ELIST,OPTION_LOGICAL_ARRAY,OPTION_STRING_ARRAY} PetscOptionType;
-typedef struct _p_PetscOptions* PetscOptions;
-struct _p_PetscOptions {
+typedef struct _n_PetscOptions* PetscOptions;
+struct _n_PetscOptions {
   char              *option;
   char              *text;
   void              *data;         /* used to hold the default value and then any value it is changed to by GUI */
