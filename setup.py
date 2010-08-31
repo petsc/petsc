@@ -43,7 +43,7 @@ def install(prefix):
     
 if __name__ == '__main__':
     setup()
-    configure("/Users/barrysmith/tmp/petsc-install")
+    configure("/Users/barrysmith/tmp/petsc-install-dummy")
     build()
     install("/Users/barrysmith/tmp/petsc-install")
 # -----------------------------------------------------------------------------
