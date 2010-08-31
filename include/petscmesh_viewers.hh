@@ -209,6 +209,7 @@ class VTKViewer {
         cellType = 1;
         break;
       default:
+        break;
       }
       break;
     case 1:
@@ -222,6 +223,7 @@ class VTKViewer {
         cellType = 21;
         break;
       default:
+        break;
       }
       break;
     case 2:
@@ -243,6 +245,7 @@ class VTKViewer {
         cellType = 23;
         break;
       default:
+        break;
       }
       break;
     case 3:
@@ -264,6 +267,7 @@ class VTKViewer {
         cellType = 29;
         break;
       default:
+        break;
       }
     }
     return cellType;
