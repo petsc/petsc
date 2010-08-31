@@ -134,7 +134,7 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
   Vec            sol = ts->vec_sol;
   PetscErrorCode ierr;
   PetscInt       i,max_steps = ts->max_steps,flag;
-  long int       its;
+  long int       its,nsteps;
   realtype       t,tout;
   PetscScalar    *y_data;
   void           *mem;
@@ -153,7 +153,59 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
     } else {
       flag = CVode(mem,tout,cvode->y,&t,CV_NORMAL);
     }
-    if (flag)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, flag %d",flag);
+   
+    if (flag){ /* display error message */
+      switch (flag){
+      case CV_ILL_INPUT:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_ILL_INPUT");
+        break;
+      case CV_TOO_CLOSE:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_CLOSE");
+        break;
+      case CV_TOO_MUCH_WORK:
+        PetscReal      tcur;
+        ierr = CVodeGetNumSteps(mem,&nsteps);CHKERRQ(ierr);
+        ierr = CVodeGetCurrentTime(mem,&tcur);CHKERRQ(ierr);
+        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_MUCH_WORK. At t=%G, nsteps %D exceeds mxstep %D. Increase '-ts_max_steps <>' or modify TSSetDuration()",tcur,nsteps,ts->max_steps);
+        break;
+      case CV_TOO_MUCH_ACC:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_MUCH_ACC");
+        break;
+      case CV_ERR_FAILURE:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_ERR_FAILURE");
+        break;
+      case CV_CONV_FAILURE:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_CONV_FAILURE");
+        break;
+      case CV_LINIT_FAIL:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_LINIT_FAIL");
+        break;
+      case CV_LSETUP_FAIL:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_LSETUP_FAIL");
+        break;
+      case CV_LSOLVE_FAIL:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_LSOLVE_FAIL");
+        break;
+      case CV_RHSFUNC_FAIL:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_RHSFUNC_FAIL");
+        break;
+      case CV_FIRST_RHSFUNC_ERR:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_FIRST_RHSFUNC_ERR");
+        break;
+      case CV_REPTD_RHSFUNC_ERR:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_REPTD_RHSFUNC_ERR");
+        break;
+      case CV_UNREC_RHSFUNC_ERR:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_UNREC_RHSFUNC_ERR");
+        break;
+      case CV_RTFUNC_FAIL:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_RTFUNC_FAIL");
+        break;
+      default:
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, flag %d",flag);
+      }
+    }
+  
     if (t > ts->max_time && cvode->exact_final_time) { 
       /* interpolate to final requested time */
       ierr = CVodeGetDky(mem,tout,0,cvode->y);CHKERRQ(ierr);
@@ -175,8 +227,9 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
     ierr = TSPostStep(ts);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,t,sol);CHKERRQ(ierr); 
   }
-  *steps += ts->steps;
-  *time   = t;
+  ierr = CVodeGetNumSteps(mem,&nsteps);CHKERRQ(ierr);
+  *steps = nsteps;   
+  *time  = t;
   PetscFunctionReturn(0);
 }
 
@@ -216,6 +269,7 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
 
   PetscFunctionBegin;
   ierr = PCSetFromOptions(cvode->pc);CHKERRQ(ierr);
+
   /* get the vector size */
   ierr = VecGetSize(ts->vec_sol,&glosize);CHKERRQ(ierr);
   ierr = VecGetLocalSize(ts->vec_sol,&locsize);CHKERRQ(ierr);
@@ -259,7 +313,15 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
   if (flag) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_LIB,"CVodeSetInitStep() failed");
   if (cvode->mindt > 0) {
     flag = CVodeSetMinStep(mem,(realtype)cvode->mindt);
-    if (flag) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_LIB,"CVodeSetMinStep() failed");
+    if (flag){ 
+      if (flag == CV_MEM_NULL){
+        SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_LIB,"CVodeSetMinStep() failed, cvode_mem pointer is NULL");
+      } else if (flag == CV_ILL_INPUT){
+        SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_LIB,"CVodeSetMinStep() failed, hmin is nonpositive or it exceeds the maximum allowable step size");
+      } else {
+        SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_LIB,"CVodeSetMinStep() failed");
+      }
+    }
   }
   if (cvode->maxdt > 0) {
     flag = CVodeSetMaxStep(mem,(realtype)cvode->maxdt);
@@ -274,13 +336,15 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeInit() fails, flag %d",flag);
   }
 
+  /* specifies scalar relative and absolute tolerances */
   flag = CVodeSStolerances(mem,cvode->reltol,cvode->abstol);
   if (flag){
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSStolerances() fails, flag %d",flag);
   }
 
-  /* initialize the number of steps */
-  ierr   = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr); 
+  /* Specify max num of steps to be taken by cvode in its attempt to reach the next output time */
+  flag = CVodeSetMaxNumSteps(mem,ts->max_steps);
+  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr); 
 
   /* call CVSpgmr to use GMRES as the linear solver.        */
   /* setup the ode integrator with the given preconditioner */

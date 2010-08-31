@@ -103,6 +103,11 @@ runex4_4:
 	   if (${DIFF} output/ex4_4.out ex4_4.tmp) then true; \
 	   else echo "Possible problem with ex4_4, diffs above"; fi; \
 	   ${RM} -f ex4_4.tmp
+runex4_sundials:
+	-@${MPIEXEC} -n 4 ./ex4 -nox -ts_type sundials -ts_max_steps 500 > ex4.tmp 2>&1;	  \
+	   if (${DIFF} output/ex4_sundials.out ex4.tmp) then true; \
+	   else echo "Possible problem with ex4_sundials, diffs above"; fi; \
+	   ${RM} -f ex4.tmp
 
 runex6:
 	-@${MPIEXEC} -n 1 ./ex6 -nox -time_steps_max 4   > ex6_1.tmp 2>&1;	  \
