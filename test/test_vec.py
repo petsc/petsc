@@ -135,7 +135,7 @@ class BaseTestVec(object):
         import numpy
         refs = self.vec.getRefCount()
         arr3 = numpy.asarray(self.vec)
-        self.assertEqual(self.vec.getRefCount(), refs)
+        self.assertEqual(self.vec.getRefCount(), refs+1)
         self.assertTrue((arr1 == arr3).all())
         arr3[:] = 0
         self.assertAlmostEqual(abs(self.vec.sum()), 0)

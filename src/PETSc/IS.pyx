@@ -17,20 +17,15 @@ cdef class IS(Object):
         self.obj = <PetscObject*> &self.iset
         self.iset = NULL
 
+    #
+
     def __getbuffer__(self, Py_buffer *view, int flags):
-        cdef PetscInt n=0
-        cdef const_PetscInt *p=NULL
-        CHKERR( ISGetLocalSize(self.iset, &n) )
-        CHKERR( ISGetIndices(self.iset, &p) )
-        PyPetscBuffer_FillInfo(view, <void*>p, n, 'i', 1, flags)
-        view.obj = self
+        cdef _IS_buffer buf = _IS_buffer(self)
+        buf.acquirebuffer(view, flags)
+        view.obj = buf
 
     def __releasebuffer__(self, Py_buffer *view):
-        cdef const_PetscInt *p = <PetscInt*> view.buf
-        try:
-            CHKERR( ISRestoreIndices(self.iset, &p) )
-        finally:
-            PyPetscBuffer_Release(view)
+        (<_IS_buffer>view.obj).releasebuffer(view)
 
     #
 
@@ -279,17 +274,18 @@ cdef class IS(Object):
         def __get__(self):
             return self.isSorted()
 
-    # --- array interface ---
+    # --- NumPy support (legacy) ---
 
-    property __array_struct__:
+    property __array_interface__:
         def __get__(self):
-            return PetscIS_array_struct(self, self.iset)
-
-    def __array__(self, dtype=None):
-        indices = self.getIndices()
-        if dtype is not None:
-            indices = indices.astype(dtype)
-        return indices
+            cdef object data = _IS_buffer(self)
+            cdef object size = self.getLocalSize()
+            cdef dtype descr = PyArray_DescrFromType(NPY_PETSC_INT)
+            cdef str typestr = "=%c%d" % (descr.kind, descr.itemsize)
+            return dict(version=3,
+                        data=data,
+                        shape=(size,),
+                        typestr=typestr)
 
     property array:
         def __get__(self):

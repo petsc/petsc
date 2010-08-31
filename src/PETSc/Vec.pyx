@@ -87,19 +87,12 @@ cdef class Vec(Object):
     #
 
     def __getbuffer__(self, Py_buffer *view, int flags):
-        cdef PetscInt n=0
-        cdef PetscScalar *p=NULL
-        CHKERR( VecGetLocalSize(self.vec, &n) )
-        CHKERR( VecGetArray(self.vec, &p) )
-        PyPetscBuffer_FillInfo(view, <void*>p, n, 's', 0, flags)
-        view.obj = self
+        cdef _Vec_buffer buf = _Vec_buffer(self)
+        buf.acquirebuffer(view, flags)
+        view.obj = buf
 
     def __releasebuffer__(self, Py_buffer *view):
-        cdef PetscScalar *p = <PetscScalar*> view.buf
-        try:
-            CHKERR( VecRestoreArray(self.vec, &p) )
-        finally:
-            PyPetscBuffer_Release(view)
+        (<_Vec_buffer>view.obj).releasebuffer(view)
 
     #
 
@@ -691,21 +684,22 @@ cdef class Vec(Object):
         def __get__(self):
             return self.getOwnershipRanges()
 
-    # -- array interface V3 ---
+    # --- NumPy support (legacy) ---
 
-    property __array_struct__:
+    property __array_interface__:
         def __get__(self):
-            return PetscVec_array_struct(self, self.vec)
-
-    def __array__(self, dtype=None):
-        array = self.getArray()
-        if dtype is not None:
-            array = array.astype(dtype)
-        return array
+            cdef object data = _Vec_buffer(self)
+            cdef object size = self.getLocalSize()
+            cdef dtype descr = PyArray_DescrFromType(NPY_PETSC_SCALAR)
+            cdef str typestr = "=%c%d" % (descr.kind, descr.itemsize)
+            return dict(version=3,
+                        data=data,
+                        shape=(size,),
+                        typestr=typestr)
 
     property array:
         def __get__(self):
-            return vec_getarray(self)
+            return asarray(self)
         def __set__(self, value):
             vec_setarray(self, value)
 
