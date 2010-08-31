@@ -62,7 +62,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommCreate(MPI_Comm comm,PetscInt nsub
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscSubcommCreate_interlaced"
+#define __FUNCT__ "PetscSubcommCreate_contiguous"
 PetscErrorCode PetscSubcommCreate_contiguous(MPI_Comm comm,PetscInt nsubcomm,PetscSubcomm *psubcomm)
 {
   PetscErrorCode ierr;

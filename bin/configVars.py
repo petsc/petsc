@@ -24,6 +24,7 @@ class ConfigReader(script.Script):
     print mpi.include, mpi.lib
     arch = framework.require('PETSc.utilities.arch', None)
     print arch.arch
+    print 'Configure is cached:',('configureCache' in self.argDB)
     return
 
 if __name__ == '__main__':

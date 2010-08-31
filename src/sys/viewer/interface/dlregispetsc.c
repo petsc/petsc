@@ -87,7 +87,11 @@ extern PetscErrorCode PetscDLLibraryRegister_petscts(const char[]);
 #endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscDLLibraryRegister_petscsys" 
+#if defined(PETSC_USE_SINGLE_LIBRARY)
+#define __FUNCT__ "PetscDLLibraryRegister_petsc"
+#else
+#define __FUNCT__ "PetscDLLibraryRegister_petscsys"
+#endif
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 

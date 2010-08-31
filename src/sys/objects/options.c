@@ -1329,7 +1329,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEList(const char pre[],const char 
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsEnum"
+#define __FUNCT__ "PetscOptionsGetEnum"
 /*@C
    PetscOptionsGetEnum - Gets the enum value for a particular option in the database.
 

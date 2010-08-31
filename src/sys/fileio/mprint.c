@@ -604,12 +604,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,siz
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
+  char           *str;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   
   if (!rank) {
-    fgets(string,len,fp);
+    str = fgets(string,len,fp); /* Not very useful error behavior, but what is desired behavior for attempt to read at EOF? */
   }
   ierr = MPI_Bcast(string,len,MPI_BYTE,0,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1054,11 +1054,7 @@ E*/
 #define MATORDERINGDSC_ND      "dsc_nd"         /* these three are only for DSCPACK, see its documentation for details */
 #define MATORDERINGDSC_MMD     "dsc_mmd"
 #define MATORDERINGDSC_MDF     "dsc_mdf"
-#define MATORDERINGCONSTRAINED "constrained"
-#define MATORDERINGIDENTITY    "identity"
-#define MATORDERINGREVERSE     "reverse"
-#define MATORDERINGFLOW        "flow"
-#define MATORDERINGAMD         "amd"
+#define MATORDERINGAMD         "amd"            /* only works if UMFPACK is installed with PETSc */
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat,const MatOrderingType,IS*,IS*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrderingList(PetscFList *list);

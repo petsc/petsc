@@ -73,6 +73,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetTabLevel(PetscObject obj,PetscInt *
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectIncrementTabLevel"
 /*@
    PetscObjectIncrementTabLevel - Sets the number of tabs that ASCII output for that object use based on
          the tablevel of another object. This should be called immediately after the object is created.

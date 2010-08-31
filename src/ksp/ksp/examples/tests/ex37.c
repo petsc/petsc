@@ -16,7 +16,7 @@ int main(int argc,char **args)
   Mat            A,subA;        
   Vec            x,b,u,subb,subx,subu;           
   PetscViewer    fd;            
-  char           file[4][PETSC_MAX_PATH_LEN];     /* input file name */
+  char           file[PETSC_MAX_PATH_LEN];     
   PetscTruth     flg;
   PetscErrorCode ierr;
   PetscInt       i,m,n,its;
@@ -29,24 +29,18 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help); 
   /* Load the matrix */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
     
   /* Load the matrix; then destroy the viewer.*/
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
 
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    
-  flg = PETSC_FALSE;
-  ierr = PetscOptionsGetString(PETSC_NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg){ /* rhs is stored in a separate file */
-    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  }
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
     
   /* Create rhs vector b */
   ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
@@ -68,7 +62,7 @@ int main(int argc,char **args)
   PetscMPIInt subsize,subrank;
   ierr = MPI_Comm_size((MPI_Comm)subcomm,&subsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank((MPI_Comm)subcomm,&subrank);CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(comm,"[%d], sub-size %d,sub-rank %d\n",rank,subsize,subrank);
+  ierr = PetscSynchronizedPrintf(comm,"[%D], sub-size %D,sub-rank %D\n",rank,subsize,subrank);
   ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
   */
 
@@ -103,7 +97,7 @@ int main(int argc,char **args)
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > 1.e-4 && !rank){
     ierr = PetscPrintf(PETSC_COMM_WORLD,"[%D]  Number of iterations = %3D\n",rank,its);CHKERRQ(ierr);
-    printf("Error: Residual norm of each block |subb - subA*subx |= %g\n",norm);
+    printf("Error: Residual norm of each block |subb - subA*subx |= %A\n",norm);
   }
   ierr = VecResetArray(subb);CHKERRQ(ierr);
   ierr = VecResetArray(subx);CHKERRQ(ierr);
@@ -111,13 +105,13 @@ int main(int argc,char **args)
   
   ierr = PetscOptionsGetInt(PETSC_NULL,"-subvec_view",&id,&flg);CHKERRQ(ierr);
   if (flg && rank == id){
-    printf("[%d] subb:\n", rank);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] subb:\n", rank);
     ierr = VecGetArray(subb,&array);CHKERRQ(ierr);
-    for (i=0; i<m; i++) printf("%g\n",array[i]);
+    for (i=0; i<m; i++) printf("%G\n",PetscRealPart(array[i]));
     ierr = VecRestoreArray(subb,&array);CHKERRQ(ierr);
-    printf("[%d] subx:\n", rank);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] subx:\n", rank);
     ierr = VecGetArray(subx,&array);CHKERRQ(ierr);
-    for (i=0; i<m; i++) printf("%g\n",array[i]);
+    for (i=0; i<m; i++) printf("%G\n",PetscRealPart(array[i]));
     ierr = VecRestoreArray(subx,&array);CHKERRQ(ierr);
   }
 

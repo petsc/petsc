@@ -313,7 +313,7 @@ PetscErrorCode PETSC_DLLEXPORT F90Array3dDestroy(F90Array3d *ptr,PetscDataType t
 #define f90array4ddestroyscalar_          F90ARRAY4DDESTROYSCALAR
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define f90array4dcreatescalar_           f90array4dcreatescalar
-#define f90array4daccessscalar_           f90array4daccessscalar
+#define f90array4ddestroyscalar_          f90array4ddestroyscalar
 #endif
 
 EXTERN_C_BEGIN

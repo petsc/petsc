@@ -606,7 +606,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCommDestroy(MPI_Comm*);
   Concepts: memory allocation
 
 M*/
-#define PetscMalloc(a,b)  ((a != 0) ? (*PetscTrMalloc)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__,(void**)(b)) : (*(b) = 0,0) )
+#define PetscMalloc(a,b)  ((a != 0) ? (*PetscTrMalloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,(void**)(b)) : (*(b) = 0,0) )
 
 /*MC
    PetscAddrAlign - Rounds up an address to PETSC_MEMALIGN alignment
@@ -917,7 +917,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscFree(a)   ((a) ? ((*PetscTrFree)((void*)(a),__LINE__,__FUNCT__,__FILE__,__SDIR__) || ((a = 0),0)) : 0)
+#define PetscFree(a)   ((a) ? ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__) || ((a = 0),0)) : 0)
 
 /*MC
    PetscFreeVoid - Frees memory
@@ -939,7 +939,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscFreeVoid(a) ((*PetscTrFree)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__),(a) = 0)
+#define PetscFreeVoid(a) ((*PetscTrFree)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__),(a) = 0)
 
 
 /*MC
@@ -1875,18 +1875,19 @@ PETSC_STATIC_INLINE PetscErrorCode PETSC_DLLEXPORT PetscMemzero(void *a,size_t n
 +  a - pointer to first element to fetch (any type but usually PetscInt or PetscScalar)
 .  n - number of elements to fetch
 .  rw - 1 if the memory will be written to, otherwise 0 (ignored by many processors)
--  t - temporal locality (0,1,2,3), see note
+-  t - temporal locality (PETSC_PREFETCH_HINT_{NTA,T0,T1,T2}), see note
 
    Level: developer
 
    Notes:
    The last two arguments (rw and t) must be compile-time constants.
 
-   There are four levels of temporal locality (not all architectures distinguish)
-+  0 - Non-temporal.  Prefetches directly to L1, evicts to memory (skips higher level cache unless it was already there when prefetched).
-.  1 - Temporal with respect to high-level cache only.  Only prefetches to high-level cache (not L1), kept at high levels after eviction from L1.
-.  2 - Same as 1, but keep in mid-level cache.  (On most systems, 1 and 2 are equivalent.)
--  3 - Fetch to all levels of cache and evict to the closest level.  Use this when the memory will be reused regularly despite necessary eviction from L1.
+   Adopting Intel's x86/x86-64 conventions, there are four levels of temporal locality.  Not all architectures offer
+   equivalent locality hints, but the following macros are always defined to their closest analogue.
++  PETSC_PREFETCH_HINT_NTA - Non-temporal.  Prefetches directly to L1, evicts to memory (skips higher level cache unless it was already there when prefetched).
+.  PETSC_PREFETCH_HINT_T0 - Fetch to all levels of cache and evict to the closest level.  Use this when the memory will be reused regularly despite necessary eviction from L1.
+.  PETSC_PREFETCH_HINT_T1 - Fetch to level 2 and higher (not L1).
+-  PETSC_PREFETCH_HINT_T2 - Fetch to high-level cache only.  (On many systems, T0 and T1 are equivalent.)
 
    This function does nothing on architectures that do not support prefetch and never errors (even if passed an invalid
    address).
@@ -2216,6 +2217,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSetProgramName(const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetDate(char[],size_t);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortInt(PetscInt,PetscInt[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortRemoveDupsInt(PetscInt*,PetscInt[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithPermutation(PetscInt,const PetscInt[],PetscInt[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortStrWithPermutation(PetscInt,const char*[],PetscInt[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithArray(PetscInt,PetscInt[],PetscInt[]);

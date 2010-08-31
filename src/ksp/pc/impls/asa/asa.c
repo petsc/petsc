@@ -84,7 +84,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASASetDM(PC pc,DM dm)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCASASetDM"
+#define __FUNCT__ "PCASASetDM_ASA"
 PetscErrorCode PETSCKSP_DLLEXPORT PCASASetDM_ASA(PC pc, DM dm)
 {
   PetscErrorCode ierr;

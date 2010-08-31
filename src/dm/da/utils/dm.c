@@ -625,7 +625,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMSetJaocbian"
+#define __FUNCT__ "DMSetJacobian"
 /*@
     DMSetJacobian - sets a function to compute the matrix entries for the KSP solver or Jacobian for SNES
 

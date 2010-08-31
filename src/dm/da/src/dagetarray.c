@@ -28,7 +28,11 @@
 
     appropriate DALocalToGlobalBegin() and DALocalToGlobalEnd() to have correct values in the ghost locations.
 
-  Fortran Notes: From Fortran use DAVecGetArrayF90() and pass for the array type PetscScalar,pointer :: array(:,:,:) of the appropriate number of dimensions. For a DA with a dof of 1 use the dimension of the DA, for a dof greater than 1 use one more than the dimension of the DA. The order of the indices is array(1:dof,xs+1:xs+xm,ys+1:ys+ym,zs+1:zs+zm) where the values are obtained from DAGetCorners() for a global array or DAGetGhostCorners() for a local array. 
+  Fortran Notes: From Fortran use DAVecGetArrayF90() and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate 
+       dimension. For a DA created with a dof of 1 use the dimension of the DA, for a DA created with a dof greater than 1 use one more than the 
+       dimension of the DA. The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
+       array(1:dof,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from 
+       DAGetCorners() for a global array or DAGetGhostCorners() for a local array. Include finclude/petscda.h90 to access this routine.
 
   Due to bugs in the compiler DAVecGetArrayF90() does not work with gfortran versions before 2.5
 

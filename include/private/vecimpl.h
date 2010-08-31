@@ -19,8 +19,8 @@ PETSC_EXTERN_CXX_BEGIN
 
 .seealso:  PetscLayoutCreate(), PetscLayoutDestroy()
 S*/
-typedef struct _p_PetscLayout* PetscLayout;
-struct _p_PetscLayout{
+typedef struct _n_PetscLayout* PetscLayout;
+struct _n_PetscLayout{
   MPI_Comm  comm;
   PetscInt  n,N;         /* local, global vector size */
   PetscInt  rstart,rend; /* local start, local end + 1 */
@@ -456,6 +456,7 @@ struct _p_VecScatter {
   PetscErrorCode (*destroy)(VecScatter);
   PetscErrorCode (*view)(VecScatter,PetscViewer);
   void           *fromdata,*todata;
+  void           *spptr;
 };
 
 EXTERN PetscErrorCode VecStashCreate_Private(MPI_Comm,PetscInt,VecStash*);

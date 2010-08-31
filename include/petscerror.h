@@ -110,7 +110,7 @@ PETSC_EXTERN_CXX_BEGIN
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3()
 M*/
-#define SETERRQ(comm,n,s)              return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s)
+#define SETERRQ(comm,n,s)              return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s)
 
 /*MC
    SETERRQ1 - Macro that is called when an error has been detected, 
@@ -136,7 +136,7 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ(), SETERRQ2(), SETERRQ3()
 M*/
-#define SETERRQ1(comm,n,s,a1)          return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1)
+#define SETERRQ1(comm,n,s,a1)          return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1)
 
 /*MC
    SETERRQ2 - Macro that is called when an error has been detected, 
@@ -163,7 +163,7 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ3()
 M*/
-#define SETERRQ2(comm,n,s,a1,a2)       return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2)
+#define SETERRQ2(comm,n,s,a1,a2)       return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2)
 
 /*MC
    SETERRQ3 - Macro that is called when an error has been detected, 
@@ -193,13 +193,13 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
-#define SETERRQ3(comm,n,s,a1,a2,a3)    return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3)
+#define SETERRQ3(comm,n,s,a1,a2,a3)    return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3)
 
-#define SETERRQ4(comm,n,s,a1,a2,a3,a4) return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4)
-#define SETERRQ5(comm,n,s,a1,a2,a3,a4,a5)       return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5)
-#define SETERRQ6(comm,n,s,a1,a2,a3,a4,a5,a6)    return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6)
-#define SETERRQ7(comm,n,s,a1,a2,a3,a4,a5,a6,a7) return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6,a7)
-#define SETERRABORT(comm,n,s)     do {PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s);MPI_Abort(comm,n);} while (0)
+#define SETERRQ4(comm,n,s,a1,a2,a3,a4) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4)
+#define SETERRQ5(comm,n,s,a1,a2,a3,a4,a5)       return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5)
+#define SETERRQ6(comm,n,s,a1,a2,a3,a4,a5,a6)    return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6)
+#define SETERRQ7(comm,n,s,a1,a2,a3,a4,a5,a6,a7) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6,a7)
+#define SETERRABORT(comm,n,s)     do {PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s);MPI_Abort(comm,n);} while (0)
 
 /*MC
    CHKERRQ - Checks error code, if non-zero it calls the error handler and then returns
@@ -236,11 +236,11 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2()
 M*/
-#define CHKERRQ(n)             do {if (PetscUnlikely(n)) return PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT," ");} while (0)
+#define CHKERRQ(n)             do {if (PetscUnlikely(n)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT," ");} while (0)
 
-#define CHKERRV(n)             do {if (PetscUnlikely(n)) {n = PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT," ");return;}} while(0)
-#define CHKERRABORT(comm,n)    do {if (PetscUnlikely(n)) {PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT," ");MPI_Abort(comm,n);}} while (0)
-#define CHKERRCONTINUE(n)      do {if (PetscUnlikely(n)) {PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT," ");}} while (0)
+#define CHKERRV(n)             do {if (PetscUnlikely(n)) {n = PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT," ");return;}} while(0)
+#define CHKERRABORT(comm,n)    do {if (PetscUnlikely(n)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT," ");MPI_Abort(comm,n);}} while (0)
+#define CHKERRCONTINUE(n)      do {if (PetscUnlikely(n)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT," ");}} while (0)
 
 #ifdef PETSC_CLANGUAGE_CXX
 
@@ -267,7 +267,7 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKERRQ(), CHKMEMQ
 M*/
-#define CHKERRXX(n)            do {if (PetscUnlikely(n)) {PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_IN_CXX,0);}} while(0)
+#define CHKERRXX(n)            do {if (PetscUnlikely(n)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_IN_CXX,0);}} while(0)
 
 #endif
 
@@ -295,9 +295,9 @@ M*/
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
           PetscMallocValidate()
 M*/
-#define CHKMEMQ do {PetscErrorCode _7_ierr = PetscMallocValidate(__LINE__,__FUNCT__,__FILE__,__SDIR__);CHKERRQ(_7_ierr);} while(0)
+#define CHKMEMQ do {PetscErrorCode _7_ierr = PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__);CHKERRQ(_7_ierr);} while(0)
 
-#define CHKMEMA PetscMallocValidate(__LINE__,__FUNCT__,__FILE__,__SDIR__)
+#define CHKMEMA PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__)
 
 #if defined(PETSC_UNDERSCORE_CHKERR)
 extern  PetscErrorCode __gierr;
@@ -555,7 +555,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackPrint(PetscStack*,FILE* fp);
 
 #define PetscStackActive (petscstack != 0)
 
-
 /*MC
    PetscFunctionBegin - First executable line of each PETSc function
         used for error handling.
@@ -582,14 +581,22 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackPrint(PetscStack*,FILE* fp);
 .keywords: traceback, error handling
 M*/
 #define PetscFunctionBegin \
-  do {\
-   if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {    \
-    petscstack->function[petscstack->currentsize]  = __FUNCT__; \
-    petscstack->file[petscstack->currentsize]      = __FILE__; \
-    petscstack->directory[petscstack->currentsize] = __SDIR__; \
-    petscstack->line[petscstack->currentsize]      = __LINE__; \
-    petscstack->currentsize++; \
-  }} while (0)
+  do {                                                                  \
+    if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {     \
+      petscstack->function[petscstack->currentsize]  = PETSC_FUNCTION_NAME; \
+      petscstack->file[petscstack->currentsize]      = __FILE__;        \
+      petscstack->directory[petscstack->currentsize] = __SDIR__;        \
+      petscstack->line[petscstack->currentsize]      = __LINE__;        \
+      petscstack->currentsize++;                                        \
+    }                                                                   \
+    PetscCheck__FUNCT__();                                              \
+  } while (0)
+
+#define PetscCheck__FUNCT__() do { \
+    if (strcmp(PETSC_FUNCTION_NAME,__FUNCT__) && strcmp(__FUNCT__,"User provided function")) { \
+      (*PetscErrorPrintf)("%s%s:%d: __FUNCT__=\"%s\" does not agree with %s=\"%s\"\n",__SDIR__,__FILE__,__LINE__,__FUNCT__,PetscStringize(PETSC_FUNCTION_NAME),PETSC_FUNCTION_NAME); \
+    }                                                                   \
+  } while (0)
 
 #define PetscStackPush(n) \
   do {if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {    \

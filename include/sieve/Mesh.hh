@@ -4669,14 +4669,14 @@ namespace ALE {
           }
           newVertices[e] = edge2vertex[edges[e]];
         }
-        cells[0*4+0] = cone[0]+vertexOffset; cells[0*4+1] = newVertices[3]; cells[0*4+2] = newVertices[0]; cells[0*4+3] = newVertices[2];
-        cells[1*4+0] = cone[1]+vertexOffset; cells[1*4+0] = newVertices[4]; cells[1*4+0] = newVertices[1]; cells[1*4+0] = newVertices[0];
-        cells[2*4+0] = cone[2]+vertexOffset; cells[2*4+0] = newVertices[5]; cells[2*4+0] = newVertices[2]; cells[2*4+0] = newVertices[1];
-        cells[3*4+0] = cone[3]+vertexOffset; cells[3*4+0] = newVertices[3]; cells[3*4+0] = newVertices[5]; cells[3*4+0] = newVertices[4];
-        cells[4*4+0] = newVertices[0]; cells[4*4+0] = newVertices[3]; cells[4*4+0] = newVertices[4]; cells[4*4+0] = newVertices[2];
-        cells[5*4+0] = newVertices[1]; cells[5*4+0] = newVertices[4]; cells[5*4+0] = newVertices[5]; cells[5*4+0] = newVertices[3];
-        cells[6*4+0] = newVertices[2]; cells[6*4+0] = newVertices[5]; cells[6*4+0] = newVertices[3]; cells[6*4+0] = newVertices[1];
-        cells[7*4+0] = newVertices[0]; cells[7*4+0] = newVertices[1]; cells[7*4+0] = newVertices[2]; cells[7*4+0] = newVertices[3];
+        tetCells[0*4+0] = cone[0]+vertexOffset; tetCells[0*4+1] = newVertices[3]; tetCells[0*4+2] = newVertices[0]; tetCells[0*4+3] = newVertices[2];
+        tetCells[1*4+0] = cone[1]+vertexOffset; tetCells[1*4+0] = newVertices[4]; tetCells[1*4+0] = newVertices[1]; tetCells[1*4+0] = newVertices[0];
+        tetCells[2*4+0] = cone[2]+vertexOffset; tetCells[2*4+0] = newVertices[5]; tetCells[2*4+0] = newVertices[2]; tetCells[2*4+0] = newVertices[1];
+        tetCells[3*4+0] = cone[3]+vertexOffset; tetCells[3*4+0] = newVertices[3]; tetCells[3*4+0] = newVertices[5]; tetCells[3*4+0] = newVertices[4];
+        tetCells[4*4+0] = newVertices[0];       tetCells[4*4+0] = newVertices[3]; tetCells[4*4+0] = newVertices[4]; tetCells[4*4+0] = newVertices[2];
+        tetCells[5*4+0] = newVertices[1];       tetCells[5*4+0] = newVertices[4]; tetCells[5*4+0] = newVertices[5]; tetCells[5*4+0] = newVertices[3];
+        tetCells[6*4+0] = newVertices[2];       tetCells[6*4+0] = newVertices[5]; tetCells[6*4+0] = newVertices[3]; tetCells[6*4+0] = newVertices[1];
+        tetCells[7*4+0] = newVertices[0];       tetCells[7*4+0] = newVertices[1]; tetCells[7*4+0] = newVertices[2]; tetCells[7*4+0] = newVertices[3];
         *numCells = 8;
         *cells    = tetCells;
       };
@@ -4744,7 +4744,7 @@ namespace ALE {
           }
         }
       };
-      void getNewCell(const point_type cell, const int coneSize, const point_type cone[], int newCellNumber, int *newConeSize, point_type **newCone) {
+      void getNewCell(const point_type cell, const int coneSize, const point_type cone[], int newCellNumber, int *newConeSize, const point_type **newCone) {
         const CellType    t = this->getCellType(cell);
         int               numCells;
         const point_type *cells;
@@ -4772,13 +4772,13 @@ namespace ALE {
     static void refineGeneral(MeshType& mesh, MeshType& newMesh, Refiner& refiner) {
       typedef typename MeshType::sieve_type sieve_type;
       typedef typename MeshType::point_type point_type;
-      typedef typename Refiner::key_type    edge_type;
+      typedef typename Refiner::edge_type   edge_type;
 
       // Calculate number of new cells
       const Obj<typename MeshType::label_sequence>&     cells       = mesh.heightStratum(0);
       const int                                         numCells    = cells->size();
       const typename MeshType::label_sequence::iterator cEnd        = cells->end();
-      const int                                         numNewCells = 0;
+      int                                               numNewCells = 0;
       point_type                                        curNewCell  = 0;
 
       for(typename MeshType::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
@@ -4797,7 +4797,7 @@ namespace ALE {
       // First compute map from edges to new vertices
       for(typename MeshType::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
         sieve->cone(*c_iter, cV);
-        refiner.splitEdge(*c_iter, cV.numPoints(), cV.getPoints(), curNewVertex);
+        refiner.splitEdge(*c_iter, cV.getSize(), cV.getPoints(), curNewVertex);
         cV.clear();
       }
       // Reallocate the sieve chart
@@ -4808,7 +4808,7 @@ namespace ALE {
         // Set new cone and support sizes
         sieve->cone(*c_iter, cV);
         const point_type *cone     = cV.getPoints();
-        const int         coneSize = cV.numPoints();
+        const int         coneSize = cV.getSize();
         const int         newCells = refiner.numNewCells(*c_iter);
 
         for(int nc = 0; nc < newCells; ++nc, ++curNewCell) {
@@ -4834,7 +4834,7 @@ namespace ALE {
         // Set new cone and support sizes
         sieve->cone(*c_iter, cV);
         const point_type *cone     = cV.getPoints();
-        const int         coneSize = cV.numPoints();
+        const int         coneSize = cV.getSize();
         const int         newCells = refiner.numNewCells(*c_iter);
 
         for(int nc = 0; nc < newCells; ++nc, ++curNewCell) {

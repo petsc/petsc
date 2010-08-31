@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import re, os, sys, shutil
 
+print 'loading install'
+
 if os.environ.has_key('PETSC_DIR'):
   PETSC_DIR = os.environ['PETSC_DIR']
 else:
@@ -44,6 +46,7 @@ class Installer(script.Script):
     argDB.saveFilename = os.path.join(PETSC_DIR, PETSC_ARCH, 'conf', 'RDict.db')
     argDB.load()
     script.Script.__init__(self, argDB = argDB)
+    if not clArgs is None: self.clArgs = clArgs
     self.copies = []
     return
 
@@ -85,8 +88,6 @@ class Installer(script.Script):
     self.destLibDir        = os.path.join(self.destDir, 'lib')
     self.destBinDir        = os.path.join(self.destDir, 'bin')
     self.installIncludeDir = os.path.join(self.installDir, 'include')
-    self.installConfDir    = os.path.join(self.installDir, 'conf')
-    self.installLibDir     = os.path.join(self.installDir, 'lib')
     self.installBinDir     = os.path.join(self.installDir, 'bin')
 
     self.make      = self.makesys.make+' '+self.makesys.flags
@@ -261,7 +262,7 @@ make PETSC_DIR=%s test
     self.installLib()
     # this file will mess up the make test run since it resets PETSC_ARCH when PETSC_ARCH needs to be null now
     os.unlink(os.path.join(self.rootDir,'conf','petscvariables'))
-    fd = file(os.path.join('conf','petscvariables'),'w')
+    fd = file(os.path.join(self.rootDir,'conf','petscvariables'),'w')
     fd.close()
     # if running as root then change file ownership back to user
     if os.environ.has_key('SUDO_USER'):
