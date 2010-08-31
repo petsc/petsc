@@ -162,12 +162,12 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
       case CV_TOO_CLOSE:
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_CLOSE");
         break;
-      case CV_TOO_MUCH_WORK:
+      case CV_TOO_MUCH_WORK: {
         PetscReal      tcur;
         ierr = CVodeGetNumSteps(mem,&nsteps);CHKERRQ(ierr);
         ierr = CVodeGetCurrentTime(mem,&tcur);CHKERRQ(ierr);
         SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_MUCH_WORK. At t=%G, nsteps %D exceeds mxstep %D. Increase '-ts_max_steps <>' or modify TSSetDuration()",tcur,nsteps,ts->max_steps);
-        break;
+      } break;
       case CV_TOO_MUCH_ACC:
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_MUCH_ACC");
         break;
