@@ -13,7 +13,7 @@ class VTKViewer {
   virtual ~VTKViewer() {};
 
   #undef __FUNCT__  
-  #define __FUNCT__ "VTKWriteHeader"
+  #define __FUNCT__ "writeHeader"
   template<typename Mesh>
   static PetscErrorCode writeHeader(const Obj<Mesh>& mesh, PetscViewer viewer) {
     PetscErrorCode ierr;
@@ -27,7 +27,7 @@ class VTKViewer {
   };
 
   #undef __FUNCT__  
-  #define __FUNCT__ "VTKWriteVertices"
+  #define __FUNCT__ "writeVertices"
   template<typename Mesh>
   static PetscErrorCode writeVertices(const Obj<Mesh>& mesh, PetscViewer viewer) {
     Obj<typename Mesh::real_section_type> coordinates;
@@ -55,7 +55,7 @@ class VTKViewer {
   };
 
   #undef __FUNCT__  
-  #define __FUNCT__ "VTKWriteField"
+  #define __FUNCT__ "writeField"
   template<typename Section>
     static PetscErrorCode writeField(const Obj<Section>& field, const std::string& name, const int fiberDim, const Obj<PETSC_MESH_TYPE::numbering_type>& numbering, PetscViewer viewer, int enforceDim = -1, int precision = 6) {
     int            dim = enforceDim > 0 ? enforceDim : fiberDim;
@@ -78,7 +78,7 @@ class VTKViewer {
   };
 
   #undef __FUNCT__  
-  #define __FUNCT__ "VTKWriteSection"
+  #define __FUNCT__ "writeSection"
   template<typename Section>
   static PetscErrorCode writeSection(const Obj<Section>& field, const int fiberDim, const Obj<PETSC_MESH_TYPE::numbering_type>& numbering, PetscViewer viewer, int enforceDim = -1, int precision = 6) {
     typedef typename Section::value_type value_type;
@@ -200,39 +200,77 @@ class VTKViewer {
   };
 
   static int getCellType(const int dim, const int corners) {
-    if (corners == 2) {
-      // VTK_LINE
-      return 3;
-    } else if (corners == 3) {
-      // VTK_TRIANGLE
-      return 5;
-    } else if (corners == 4) {
-      if (dim == 3) {
-        // VTK_TETRA
-        return 10;
-      } else if (dim == 2) {
+    int cellType = -1;
+    switch(dim) {
+    case 0:
+      switch(corners) {
+      case 1:
+        // VTK_VERTEX
+        cellType = 1;
+        break;
+      default:
+      }
+      break;
+    case 1:
+      switch(corners) {
+      case 2:
+        // VTK_LINE
+        cellType = 3;
+        break;
+      case 3:
+        // VTJ_QUADRATIC_EDGE
+        cellType = 21;
+        break;
+      default:
+      }
+      break;
+    case 2:
+      switch(corners) {
+      case 3:
+        // VTK_TRIANGLE
+        cellType = 5;
+        break;
+      case 4:
         // VTK_QUAD
-        return 9;
+        cellType = 9;
+        break;
+      case 6:
+        // VTK_QUADRATIC_TRIANGLE
+        cellType = 22;
+        break;
+      case 9:
+        // VTK_QUADRATIC_QUAD
+        cellType = 23;
+        break;
+      default:
       }
-    } else if (corners == 8) {
-      // VTK_HEXAHEDRON
-      return 12;
-    } else if (corners == 9) {
-      if (dim == 2) {
-       // VTK_QUADRATIC_QUAD
-        return 23;
-      }
-    } else if (corners == 27) {
-      if (dim == 3) {
-       // VTK_QUADRATIC_HEXAHEDRON
-        return 29;
+      break;
+    case 3:
+      switch(corners) {
+      case 4:
+        // VTK_TETRA
+        cellType = 10;
+        break;
+      case 8:
+        // VTK_HEXAHEDRON
+        cellType = 12;
+        break;
+      case 10:
+        // VTK_QUADRATIC_TETRA
+        cellType = 24;
+        break;
+      case 27:
+        // VTK_QUADRATIC_HEXAHEDRON
+        cellType = 29;
+        break;
+      default:
       }
     }
-    return -1;
+    return cellType;
   };
 
   #undef __FUNCT__
-  #define __FUNCT__ "VTKWriteElements"
+  #define __FUNCT__ "writeElements"
   template<typename Mesh>
   static PetscErrorCode writeElements(const Obj<Mesh>& mesh, PetscViewer viewer)
   {
@@ -253,7 +291,7 @@ class VTKViewer {
     return writeElements(mesh, elements, cNumbering, vNumbering, viewer);
   };
   #undef __FUNCT__  
-  #define __FUNCT__ "VTKWriteElements"
+  #define __FUNCT__ "writeElements"
   template<typename Mesh>
   static PetscErrorCode writeElements(const Obj<Mesh>& mesh, const std::string& cLabelName, const int cLabelValue, const std::string& vLabelName, const int vLabelValue, PetscViewer viewer)
   {
@@ -275,7 +313,7 @@ class VTKViewer {
     return writeElements(mesh, elements, cNumbering, vNumbering, viewer);
   };
   #undef __FUNCT__  
-  #define __FUNCT__ "VTKWriteElements"
+  #define __FUNCT__ "writeElements"
   template<typename Mesh>
   static PetscErrorCode writeElements(const Obj<Mesh>& mesh, const Obj<typename Mesh::label_sequence>& elements, const Obj<typename Mesh::numbering_type>& cNumbering, const Obj<typename Mesh::numbering_type>& vNumbering, PetscViewer viewer)
   {
@@ -366,6 +404,8 @@ class VTKViewer {
     }
     PetscFunctionReturn(0);
   };
+  #undef __FUNCT__  
+  #define __FUNCT__ "writeElements"
   static PetscErrorCode writeElements(const Obj<PETSC_MESH_TYPE>& mesh, const Obj<PETSC_MESH_TYPE::label_sequence>& elements, const Obj<PETSC_MESH_TYPE::numbering_type>& cNumbering, const Obj<PETSC_MESH_TYPE::numbering_type>& vNumbering, PetscViewer viewer)
   {
     typedef ALE::SieveAlg<PETSC_MESH_TYPE>  sieve_alg_type;
@@ -477,7 +517,7 @@ class VTKViewer {
   };
 
   #undef __FUNCT__  
-  #define __FUNCT__ "VTKWriteHierarchyVertices"
+  #define __FUNCT__ "writeHierarchyVertices"
   static PetscErrorCode writeHierarchyVertices(DMMG * dmmg, PetscViewer viewer, double * offset) {
     PetscErrorCode ierr;
     ALE::Obj<PETSC_MESH_TYPE> mesh;
@@ -515,7 +555,7 @@ class VTKViewer {
   };
 
   #undef __FUNCT__  
-  #define __FUNCT__ "VTKWriteHierarchyElements"
+  #define __FUNCT__ "writeHierarchyElements"
   static PetscErrorCode writeHierarchyElements(DMMG * dmmg, PetscViewer viewer) {
     int            numElements = 0;
     int            numVertices = 0;
@@ -622,7 +662,7 @@ class VTKXMLViewer {
   };
 
   #undef __FUNCT__
-  #define __FUNCT__ "VTKWriteHeader"
+  #define __FUNCT__ "writeHeader"
   template<typename Mesh>
   static PetscErrorCode writeHeader(const Obj<Mesh>& mesh, PetscViewer viewer) {
     Obj<typename Mesh::numbering_type> vNumbering = getVertexNumbering(mesh);
@@ -641,7 +681,7 @@ class VTKXMLViewer {
   };
 
   #undef __FUNCT__  
-  #define __FUNCT__ "VTKWriteVertices"
+  #define __FUNCT__ "writeVertices"
   template<typename Mesh>
   static PetscErrorCode writeVertices(const Obj<Mesh>& mesh, PetscViewer viewer) {
     Obj<typename Mesh::real_section_type> coordinates;
@@ -665,7 +705,7 @@ class VTKXMLViewer {
   };
 
   #undef __FUNCT__  
-  #define __FUNCT__ "VTKWriteSection"
+  #define __FUNCT__ "writeSection"
   template<typename Section>
   static PetscErrorCode writeSection(const Obj<Section>& field, const int fiberDim, const Obj<PETSC_MESH_TYPE::numbering_type>& numbering, PetscViewer viewer, int enforceDim = -1, int precision = 6) {
     typedef typename Section::value_type value_type;
@@ -726,7 +766,7 @@ class VTKXMLViewer {
   };
 
   #undef __FUNCT__
-  #define __FUNCT__ "VTKWriteElements"
+  #define __FUNCT__ "writeElements"
   template<typename Mesh>
   static PetscErrorCode writeElements(const Obj<Mesh>& mesh, PetscViewer viewer)
   {
@@ -737,7 +777,7 @@ class VTKXMLViewer {
     return writeElements(mesh, elements, cNumbering, vNumbering, viewer);
   };
   #undef __FUNCT__  
-  #define __FUNCT__ "VTKWriteElements"
+  #define __FUNCT__ "writeElements"
   template<typename Mesh>
   static PetscErrorCode writeElements(const Obj<Mesh>& mesh, const std::string& cLabelName, const int cLabelValue, const std::string& vLabelName, const int vLabelValue, PetscViewer viewer)
   {
@@ -759,7 +799,7 @@ class VTKXMLViewer {
     return writeElements(mesh, elements, cNumbering, vNumbering, viewer);
   };
   #undef __FUNCT__  
-  #define __FUNCT__ "VTKWriteElements"
+  #define __FUNCT__ "writeElements"
   template<typename Mesh>
   static PetscErrorCode writeElements(const Obj<Mesh>& mesh, const Obj<typename Mesh::label_sequence>& elements, const Obj<typename Mesh::numbering_type>& cNumbering, const Obj<typename Mesh::numbering_type>& vNumbering, PetscViewer viewer)
   {
@@ -842,7 +882,7 @@ class VTKXMLViewer {
   };
 
   #undef __FUNCT__
-  #define __FUNCT__ "VTKWriteFooter"
+  #define __FUNCT__ "writeFooter"
   static PetscErrorCode writeFooter(PetscViewer viewer) {
     PetscErrorCode ierr;
 
