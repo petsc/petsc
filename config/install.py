@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import re, os, sys, shutil
 
+print 'loading install'
+
 if os.environ.has_key('PETSC_DIR'):
   PETSC_DIR = os.environ['PETSC_DIR']
 else:
