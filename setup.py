@@ -12,9 +12,9 @@ def setup():
     sys.path.insert(0,os.path.join(os.environ['PETSC_DIR'],'config'))
     return
 
-def configure(prefix):
+def configure():
     import configure
-    configure.petsc_configure(['--with-fc=0','--with-mpi=0','--with-shared-libraries','--prefix='+prefix])
+    configure.petsc_configure(['--with-fc=0','--with-mpi=0','--with-shared-libraries'])
     # force save of configure information, or build will fail to load it
     
     # work around bug in logger.Logger that when log file is closed Logger.defaultLog still points to something
@@ -34,7 +34,7 @@ def install(prefix):
     import install
     import sys
     import os
-    install.Installer(sys.argv[1:]+['--destDir='+prefix]).run()
+    install.Installer(sys.argv[1:]+['--destDir='+prefix,'--prefix='+prefix]).run()
     # temporary hack - delete log files created by BuildSystem - when 'sudo make install' is invoked
     delfiles=['RDict.db','RDict.log','build.log','default.log','build.log.bkp','default.log.bkp']
     for delfile in delfiles:
@@ -43,7 +43,7 @@ def install(prefix):
     
 if __name__ == '__main__':
     setup()
-    configure("/Users/barrysmith/tmp/petsc-install-dummy")
+    configure()
     build()
     install("/Users/barrysmith/tmp/petsc-install")
 # -----------------------------------------------------------------------------

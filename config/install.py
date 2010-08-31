@@ -88,8 +88,6 @@ class Installer(script.Script):
     self.destLibDir        = os.path.join(self.destDir, 'lib')
     self.destBinDir        = os.path.join(self.destDir, 'bin')
     self.installIncludeDir = os.path.join(self.installDir, 'include')
-    self.installConfDir    = os.path.join(self.installDir, 'conf')
-    self.installLibDir     = os.path.join(self.installDir, 'lib')
     self.installBinDir     = os.path.join(self.installDir, 'bin')
 
     self.make      = self.makesys.make+' '+self.makesys.flags
