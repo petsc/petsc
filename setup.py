@@ -33,6 +33,7 @@ def build():
 def install(prefix):
     import install
     import sys
+    import os
     install.Installer(sys.argv[1:]+['--destDir='+prefix]).run()
     # temporary hack - delete log files created by BuildSystem - when 'sudo make install' is invoked
     delfiles=['RDict.db','RDict.log','build.log','default.log','build.log.bkp','default.log.bkp']
@@ -42,7 +43,7 @@ def install(prefix):
     
 if __name__ == '__main__':
     setup()
-    configure("/Users/knepley/tmp/petsc-install")
+    configure("/Users/barrysmith/tmp/petsc-install")
     build()
-    install("/Users/knepley/tmp/petsc-install")
+    install("/Users/barrysmith/tmp/petsc-install")
 # -----------------------------------------------------------------------------

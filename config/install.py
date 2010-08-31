@@ -264,7 +264,7 @@ make PETSC_DIR=%s test
     self.installLib()
     # this file will mess up the make test run since it resets PETSC_ARCH when PETSC_ARCH needs to be null now
     os.unlink(os.path.join(self.rootDir,'conf','petscvariables'))
-    fd = file(os.path.join('conf','petscvariables'),'w')
+    fd = file(os.path.join(self.rootDir,'conf','petscvariables'),'w')
     fd.close()
     # if running as root then change file ownership back to user
     if os.environ.has_key('SUDO_USER'):
