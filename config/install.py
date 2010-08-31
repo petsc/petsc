@@ -46,6 +46,7 @@ class Installer(script.Script):
     argDB.saveFilename = os.path.join(PETSC_DIR, PETSC_ARCH, 'conf', 'RDict.db')
     argDB.load()
     script.Script.__init__(self, argDB = argDB)
+    if not clArgs is None: self.clArgs = clArgs
     self.copies = []
     return
 
