@@ -153,7 +153,7 @@ PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A,HYPRE_IJMatrix ij)
 #include "../src/mat/impls/aij/mpi/mpiaij.h"
 
 #undef __FUNCT__
-#define __FUNCT__ "MatHYPRE_IJMatrixFastCopy_SeqIJ"
+#define __FUNCT__ "MatHYPRE_IJMatrixFastCopy_SeqAIJ"
 PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A,HYPRE_IJMatrix ij)
 {
   PetscErrorCode        ierr;
