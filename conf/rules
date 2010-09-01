@@ -643,7 +643,7 @@ html: chk_c2html
 	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
           ${MKDIR} -p $${loc} ;\
-          for i in ${SOURCEC} ${SOURCEF} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} *_Impl.cc *_Impl.hh *.sidl foo ; do\
+          for i in ${SOURCEC} ${SOURCEF} ${SOURCEH} ${SOURCECU} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} *_Impl.cc *_Impl.hh *.sidl foo ; do\
 	    if [ -f $$i ]; then \
 	      idir=`dirname $$i`;\
 	      if [ ! -d $${loc}/$${idir} ]; then ${MKDIR} -p $${loc}/$${idir}; fi ; \
@@ -683,7 +683,7 @@ html: chk_c2html
 		 fi; \
                done; \
                echo " " >> $${loc}/index.html; \
-               for file in ${SOURCEH} ${SOURCEC} ${SOURCEF} foo ; do \
+               for file in ${SOURCEH} ${SOURCEC} ${SOURCEF} ${SOURCECU} foo ; do \
 		 if [ -f $$file ]; then \
                    echo "<a href=\"$${file}.html\">$${file}</a><br>" >> $${loc}/index.html; \
 		 fi; \

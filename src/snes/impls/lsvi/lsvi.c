@@ -276,12 +276,14 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
   
   /* Set the elements of the vector z:
      z[i] = 1 if (x[i] - l[i],f[i]) = (0,0)
+     else z[i] = 0
   */
   for(i=0;i < n;i++) {
+    da[i] = db[i] = z[i] = 0;
     if(PetscAbsScalar(f[i]) <= PETSC_LSVI_EPS) {
       if ((l[i] > PETSC_LSVI_NINF) && (PetscAbsScalar(x[i]-l[i]) <= PETSC_LSVI_EPS)) {
 	da[i] = 1;
-	z[i] = 1;
+	z[i]  = 1;
       }
     }
   }
@@ -316,7 +318,7 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
   ierr = VecRestoreArray(lsvi->xu,&u);CHKERRQ(ierr);
   ierr = VecRestoreArray(lsvi->Da,&da);CHKERRQ(ierr);
   ierr = VecRestoreArray(lsvi->Db,&db);CHKERRQ(ierr);
-  ierr = VecRestoreArray(lsvi->z,&z);CHKERRQ(ierr);
+  ierr = VecRestoreArray(lsvi->t,&t);CHKERRQ(ierr);
 
   /* Do row scaling */
   ierr = MatDiagonalScale(jac,lsvi->Db,PETSC_NULL);
@@ -367,7 +369,7 @@ PetscErrorCode SNESLSVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
 
    Notes: 
    The condition for the sufficient descent direction is
-        dpsi^T*Y <= -rho*||Y||^delta
+        dpsi^T*Y <= -delta*||Y||^rho
    where rho, delta are as defined in the SNES_LSVI structure.
    If this condition is satisfied then the existing descent direction i.e.
    the direction given by the linear solve should be used otherwise it should be set to the negative of the
@@ -806,12 +808,12 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
   }
   ierr      = VecMaxPointwiseDivide(y,x,&rellength);CHKERRQ(ierr);
   minlambda = lsvi->minlambda/rellength;
-  ierr      = MatMult(snes->jacobian,y,w);CHKERRQ(ierr);
+  /*  ierr      = MatMult(snes->jacobian,y,w);CHKERRQ(ierr); */
 #if defined(PETSC_USE_COMPLEX)
-  ierr      = VecDot(f,w,&cinitslope);CHKERRQ(ierr);
+  ierr      = VecDot(lsvi->dpsi,y,&cinitslope);CHKERRQ(ierr);
   initslope = PetscRealPart(cinitslope);
 #else
-  ierr      = VecDot(f,w,&initslope);CHKERRQ(ierr);
+  ierr      = VecDot(lsvi->dpsi,y,&initslope);CHKERRQ(ierr);
 #endif
   if (initslope > 0.0)  initslope = -initslope;
   if (initslope == 0.0) initslope = -1.0;
@@ -920,7 +922,7 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
       break;
     } else {
       if (lsvi->monitor) {
-        ierr = PetscPrintf(comm,"    Line search: Cubic step no good, shrinking lambda, current gnorem %G lambda=%18.16e\n",*gnorm,lambda);CHKERRQ(ierr);
+        ierr = PetscPrintf(comm,"    Line search: Cubic step no good, shrinking lambda, current gnorm %G lambda=%18.16e\n",*gnorm,lambda);CHKERRQ(ierr);
       }
     }
     count++;
@@ -993,12 +995,12 @@ PetscErrorCode SNESLineSearchQuadratic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Ve
   }
   ierr      = VecMaxPointwiseDivide(y,x,&rellength);CHKERRQ(ierr);
   minlambda = lsvi->minlambda/rellength;
-  ierr = MatMult(snes->jacobian,y,w);CHKERRQ(ierr);
+  /*  ierr = MatMult(snes->jacobian,y,w);CHKERRQ(ierr); */
 #if defined(PETSC_USE_COMPLEX)
   ierr      = VecDot(f,w,&cinitslope);CHKERRQ(ierr);
   initslope = PetscRealPart(cinitslope);
 #else
-  ierr = VecDot(f,w,&initslope);CHKERRQ(ierr);
+  ierr = VecDot(lsvi->dpsi,y,&initslope);CHKERRQ(ierr);
 #endif
   if (initslope > 0.0)  initslope = -initslope;
   if (initslope == 0.0) initslope = -1.0;

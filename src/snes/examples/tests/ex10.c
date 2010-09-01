@@ -50,7 +50,7 @@ int main(int argc, char **argv)
   SNES            snes;              /* nonlinear solver context */
   Mat             J;                 /* Jacobian matrix */
   PetscInt        N;                 /* Number of elements in vector */
-  PetscScalar     lb = -0.05;  /* lower bound constant */
+  PetscScalar     lb = 0.0;  /* lower bound constant */
   PetscScalar     ub = PETSC_LSVI_INF;          /* upper bound constant */
   AppCtx          user;              /* user-defined work context */
 
