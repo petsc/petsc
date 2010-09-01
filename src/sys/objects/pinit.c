@@ -714,12 +714,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
    See the <a href="../../docs/manual.pdf#nameddest=ch_profiling">profiling chapter of the users manual</a> for details.
 +  -log_summary [filename] - Prints summary of flop and timing
         information to screen. If the filename is specified the
-        summary is written to the file. (for code compiled with 
-        PETSC_USE_LOG).  See PetscLogPrintSummary().
+        summary is written to the file.  See PetscLogPrintSummary().
+.  -log_summary_python [filename] - Prints data on of flop and timing usage to a file or screen.
+        See PetscLogPrintSummaryPy().
 .  -log_all [filename] - Logs extensive profiling information
-        (for code compiled with PETSC_USE_LOG). See PetscLogDump(). 
-.  -log [filename] - Logs basic profiline information (for
-        code compiled with PETSC_USE_LOG).  See PetscLogDump().
+        See PetscLogDump(). 
+.  -log [filename] - Logs basic profiline information  See PetscLogDump().
 .  -log_sync - Log the synchronization in scatters, inner products
         and norms
 -  -log_mpe [filename] - Creates a logfile viewable by the 
@@ -824,6 +824,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     if (flg1) { 
       if (mname[0])  {ierr = PetscLogPrintSummary(PETSC_COMM_WORLD,mname);CHKERRQ(ierr);}
       else           {ierr = PetscLogPrintSummary(PETSC_COMM_WORLD,0);CHKERRQ(ierr);}
+    }
+
+    mname[0] = 0;
+    ierr = PetscOptionsGetString(PETSC_NULL,"-log_summary_python",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+    if (flg1) { 
+      PetscViewer viewer;
+      if (mname[0])  {
+        ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
+      } else {
+        viewer = PETSC_VIEWER_STDOUT_WORLD;
+      }
+      ierr = PetscLogPrintSummaryPython(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsGetString(PETSC_NULL,"-log_detailed",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);

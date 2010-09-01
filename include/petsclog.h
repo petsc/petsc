@@ -224,7 +224,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogSet(PetscErrorCode (*)(int, int, P
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject, const char[], ...)  PETSC_PRINTF_FORMAT_CHECK(2,3);
 /* Output functions */
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm, const char[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummaryPy(PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummaryPython(PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogPrintDetailed(MPI_Comm, const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogDump(const char[]);
 

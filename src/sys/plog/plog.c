@@ -2125,9 +2125,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscClassIdRegister(const char name[],PetscClass
 
 #include "../src/sys/viewer/impls/ascii/asciiimpl.h"  /*I     "petscsys.h"   I*/
 #undef __FUNCT__  
-#define __FUNCT__ "PetscLogPrintSummaryPy"
+#define __FUNCT__ "PetscLogPrintSummaryPython"
 /*@ 
-   PetscLogPrintSummaryPy - Saves logging information in a Python format.
+   PetscLogPrintSummaryPython - Saves logging information in a Python format.
 
    Collective on PetscViewer
 
@@ -2135,7 +2135,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscClassIdRegister(const char name[],PetscClass
 .   viewer - viewer to save Python data
 
 @*/
-PetscErrorCode PetscLogPrintSummaryPy(PetscViewer viewer) 
+PetscErrorCode PetscLogPrintSummaryPython(PetscViewer viewer) 
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
   FILE              *fd = ascii->fd; 
