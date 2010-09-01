@@ -83,6 +83,9 @@ from conf.petscconf import setup, Extension
 from conf.petscconf import config, build, build_ext
 
 def run_setup():
+    import sys
+    if 'setuptools' in sys.modules:
+        metadata['zip_safe'] = False
     setup(packages     = ['petsc4py',
                           'petsc4py.lib',],
           package_dir  = {'petsc4py'     : 'src',
@@ -99,42 +102,40 @@ def run_setup():
                           'build_ext'  : build_ext},
           **metadata)
 
-def run_cython(*C_SOURCE):
+def run_cython(source):
     import sys, os
-    if os.path.exists(os.path.join(*C_SOURCE)): return
-    if "install" not in sys.argv: return
-    warn = lambda msg='': sys.stderr.write(msg+'\n')
-    warn("*"*80)
-    warn()
-    warn(" Attempting to generate C source files with Cython!!")
-    warn()
-    warn("*"*80)
+    source_c = os.path.splitext(source)[0] + '.c'
+    if (os.path.exists(source_c)):
+        return False
     try:
-        import conf.cythonize
-        conf.cythonize.run('petsc4py.PETSc.pyx', wdir='src')
+        import Cython
     except ImportError:
+        warn = lambda msg='': sys.stderr.write(msg+'\n')
         warn("*"*80)
         warn()
+        warn(" You need to generate C source files with Cython!!")
         warn(" Download and install Cython <http://www.cython.org>")
-        warn(" and next execute in your shell:")
-        warn()
-        warn("   $ python ./conf/cythonize.py")
         warn()
         warn("*"*80)
-        raise
-    except:
-        warn("*"*80)
-        warn()
-        warn(" Unable to generate C source files with Cython!!")
-        warn()
-        warn("*"*80)
-        raise
-    
-if __name__ == '__main__':
-    run_cython('src', 'petsc4py.PETSc.c')
+        raise SystemExit
+    from distutils import log
+    from conf.cythonize import run as cythonize
+    log.info("cythonizing '%s' source" % source)
+    cythonize(source)
+    return True
+
+def main():
+    import os
     try:
         run_setup()
     except:
-        raise
+        done = run_cython(os.path.join('src', 'petsc4py.PETSc.pyx'))
+        if done:
+            run_setup()
+        else:
+            raise
+
+if __name__ == '__main__':
+    main()
 
 # -----------------------------------------------------------------------------
