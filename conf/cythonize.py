@@ -42,8 +42,15 @@ def cythonize(source, includes=(),
             pass
         os.rename(header, dest)
 
-def run(source, includes=(), wdir=os.path.curdir):
-    name = os.path.splitext(source)[0]
+def run(source, includes=(), wdir=None):
+    dirname = os.path.dirname(source)
+    if wdir is None:
+        if dirname:
+            wdir = dirname
+        else:
+            wdir = os.curdir
+    filename = os.path.basename(source)
+    name = os.path.splitext(filename)[0]
     if name.count('.') == 0:
         package = ''
         module  = name
@@ -54,7 +61,7 @@ def run(source, includes=(), wdir=os.path.curdir):
     cwd = os.getcwd()
     os.chdir(wdir)
     try:
-        cythonize(source,
+        cythonize(filename,
                   includes=['include'] + list(includes),
                   output_h=os.path.join('include', package),
                   )
@@ -62,4 +69,4 @@ def run(source, includes=(), wdir=os.path.curdir):
         os.chdir(cwd)
 
 if __name__ == "__main__":
-    run('petsc4py.PETSc.pyx', wdir='src')
+    run(os.path.join('src', 'petsc4py.PETSc.pyx'))
