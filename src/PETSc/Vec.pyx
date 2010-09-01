@@ -86,21 +86,38 @@ cdef class Vec(Object):
 
     #
 
-    def __getbuffer__(self, Py_buffer *view, int flags):
-        cdef _Vec_buffer buf = _Vec_buffer(self)
-        buf.acquirebuffer(view, flags)
-        view.obj = buf
-
-    def __releasebuffer__(self, Py_buffer *view):
-        (<_Vec_buffer>view.obj).releasebuffer(view)
-
-    #
+    #def __len__(self):
+    #    cdef PetscInt size = 0
+    #    CHKERR( VecGetSize(self.vec, &size) )
+    #    return <Py_ssize_t>size
 
     def __getitem__(self, i):
         return vec_getitem(self, i)
 
     def __setitem__(self, i, v):
         vec_setitem(self, i, v)
+
+    # buffer interface (PEP 3118)
+
+    def __getbuffer__(self, Py_buffer *view, int flags):
+        cdef _Vec_buffer buf = _Vec_buffer(self)
+        buf.acquirebuffer(view, flags)
+
+    def __releasebuffer__(self, Py_buffer *view):
+        cdef _Vec_buffer buf = <_Vec_buffer>(view.obj)
+        buf.releasebuffer(view)
+
+    # 'with' statement (PEP 343)
+
+    def __enter__(self):
+        cdef _Vec_buffer buf = _Vec_buffer(self)
+        self.set_attr('__buffer__', buf)
+        return buf.enter()
+
+    def __exit__(self, t, v, tb):
+        cdef _Vec_buffer buf = self.get_attr('__buffer__')
+        self.set_attr('__buffer__', None)
+        return buf.exit()
 
     #
 
@@ -684,24 +701,19 @@ cdef class Vec(Object):
         def __get__(self):
             return self.getOwnershipRanges()
 
-    # --- NumPy support (legacy) ---
-
-    property __array_interface__:
-        def __get__(self):
-            cdef object data = _Vec_buffer(self)
-            cdef object size = self.getLocalSize()
-            cdef dtype descr = PyArray_DescrFromType(NPY_PETSC_SCALAR)
-            cdef str typestr = "=%c%d" % (descr.kind, descr.itemsize)
-            return dict(version=3,
-                        data=data,
-                        shape=(size,),
-                        typestr=typestr)
-
     property array:
         def __get__(self):
             return asarray(self)
         def __set__(self, value):
             vec_setarray(self, value)
+
+    # --- NumPy array interface (legacy) ---
+
+    property __array_interface__:
+        def __get__(self):
+            cdef _Vec_buffer buf = _Vec_buffer(self)
+            return buf.__array_interface__
+
 
 # --------------------------------------------------------------------
 

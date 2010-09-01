@@ -380,47 +380,78 @@ cdef class _Vec_buffer:
     cdef PetscScalar *data
 
     def __cinit__(self, Vec vec not None):
-        CHKERR( PetscIncref(<PetscObject>vec.vec) )
-        self.vec = vec.vec
-        self.size = -1
+        cdef PetscVec v = vec.vec
+        CHKERR( PetscIncref(<PetscObject>v) )
+        self.vec = v
+        self.size = 0
         self.data = NULL
 
     def __dealloc__(self):
-        if self.data != NULL and self.vec != NULL:
-            CHKERR( VecRestoreArray(self.vec, &self.data) )
         if self.vec != NULL:
+            if self.data != NULL:
+                CHKERR( VecRestoreArray(self.vec, &self.data) )
             CHKERR( VecDestroy(self.vec) )
 
     #
 
+    cdef int acquire(self) except -1:
+        if self.vec != NULL and self.data == NULL:
+            CHKERR( VecGetLocalSize(self.vec, &self.size) )
+            CHKERR( VecGetArray(self.vec, &self.data) )
+        return 0
+
+    cdef int release(self) except -1:
+        if self.vec != NULL and self.data != NULL:
+            CHKERR( VecRestoreArray(self.vec, &self.data) )
+            self.size = 0
+            self.data = NULL
+        return 0
+
+    # buffer interface (PEP 3118)
+
     cdef int acquirebuffer(self, Py_buffer *view, int flags) except -1:
-        cdef PetscInt size = 0
-        cdef PetscScalar *data = NULL
-        CHKERR( VecGetLocalSize(self.vec, &size) )
-        CHKERR( VecGetArray(self.vec, &data) )
-        PyPetscBuffer_FillInfo(view, <void*>data,
-                               size, 's', 0, flags)
+        self.acquire()
+        PyPetscBuffer_FillInfo(view, <void*>self.data,
+                               self.size, 's', 0, flags)
+        view.obj = self
+        return 0
 
     cdef int releasebuffer(self, Py_buffer *view) except -1:
-        cdef PetscScalar *data = <PetscScalar*>view.buf
         PyPetscBuffer_Release(view)
-        CHKERR( VecRestoreArray(self.vec, &data) )
+        self.release()
+        return 0
 
     def __getbuffer__(self, Py_buffer *view, int flags):
         self.acquirebuffer(view, flags)
-        view.obj = self
 
     def __releasebuffer__(self, Py_buffer *view):
         self.releasebuffer(view)
-    #
+
+    # 'with' statement (PEP 343)
+
+    cdef object enter(self):
+        self.acquire()
+        return asarray(self)
+
+    cdef object exit(self):
+        self.release()
+        return None
+
+    def __enter__(self):
+        return self.enter()
+
+    def __exit__(self, t, v, tb):
+        return self.exit()
+
+    # buffer interface (legacy)
 
     cdef Py_ssize_t getbuffer(self, Py_ssize_t idx, void **p) except -1:
         if idx != 0: raise SystemError(
             "accessing non-existent buffer segment")
-        if self.size < 0:
+        if self.vec != NULL:
             CHKERR( VecGetLocalSize(self.vec, &self.size) )
         if p != NULL:
-            if self.data == NULL:
+            if self.vec != NULL and self.data == NULL:
                 CHKERR( VecGetArray(self.vec, &self.data) )
             p[0] = <void*>self.data
         return <Py_ssize_t> (self.size*sizeof(PetscScalar))
@@ -435,5 +466,19 @@ cdef class _Vec_buffer:
 
     def __getwritebuffer__(self, Py_ssize_t idx, void **p):
         return self.getbuffer(idx, p)
+
+    # NumPy array interface (legacy)
+
+    property __array_interface__:
+        def __get__(self):
+            if self.vec != NULL:
+                CHKERR( VecGetLocalSize(self.vec, &self.size) )
+            cdef object size = toInt(self.size)
+            cdef dtype descr = PyArray_DescrFromType(NPY_PETSC_SCALAR)
+            cdef str typestr = "=%c%d" % (descr.kind, descr.itemsize)
+            return dict(version=3,
+                        data=self,
+                        shape=(size,),
+                        typestr=typestr)
 
 # --------------------------------------------------------------------
