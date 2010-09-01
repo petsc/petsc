@@ -29,7 +29,9 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-shared-libraries=<bool>', nargs.ArgBool(None, 0, 'Make PETSc libraries shared -- libpetsc.so (Unix/Linux) or libpetsc.dylib (Mac)'))
+    #help.addArgument('PETSc', '-with-shared=<bool>', nargs.ArgBool(None, 0, 'Make PETSc libraries shared -- libpetsc.so (Unix/Linux) or libpetsc.dylib (Mac)', deprecated = '-with-shared-libraries'))
     help.addArgument('PETSc', '-with-dynamic-loading=<bool>', nargs.ArgBool(None, 0, 'Make PETSc libraries dynamic -- uses dlopen() to access libraries, rarely needed'))
+    #help.addArgument('PETSc', '-with-dynamic=<bool>', nargs.ArgBool(None, 0, 'Make PETSc libraries dynamic -- uses dlopen() to access libraries, rarely needed', deprecated = '-with-dynamic-loading'))
     return
 
   def setupDependencies(self, framework):
