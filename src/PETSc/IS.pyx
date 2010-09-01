@@ -22,10 +22,10 @@ cdef class IS(Object):
     def __getbuffer__(self, Py_buffer *view, int flags):
         cdef _IS_buffer buf = _IS_buffer(self)
         buf.acquirebuffer(view, flags)
-        view.obj = buf
-
+   
     def __releasebuffer__(self, Py_buffer *view):
-        (<_IS_buffer>view.obj).releasebuffer(view)
+        cdef _IS_buffer buf = <_IS_buffer>(view.obj)
+        buf.releasebuffer(view)
 
     #
 
@@ -246,6 +246,20 @@ cdef class IS(Object):
 
     #
 
+    property permutation:
+        def __get__(self):
+            return self.isPermutation()
+
+    property identity:
+        def __get__(self):
+            return self.isIdentity()
+
+    property sorted:
+        def __get__(self):
+            return self.isSorted()
+
+    #
+
     property sizes:
         def __get__(self):
             return self.getSizes()
@@ -261,35 +275,17 @@ cdef class IS(Object):
     property block_size:
         def __get__(self):
             return self.getBlockSize()
-
-    #
-
-    property permutation:
-        def __get__(self):
-            return self.isPermutation()
-    property identity:
-        def __get__(self):
-            return self.isIdentity()
-    property sorted:
-        def __get__(self):
-            return self.isSorted()
-
-    # --- NumPy support (legacy) ---
-
-    property __array_interface__:
-        def __get__(self):
-            cdef object data = _IS_buffer(self)
-            cdef object size = self.getLocalSize()
-            cdef dtype descr = PyArray_DescrFromType(NPY_PETSC_INT)
-            cdef str typestr = "=%c%d" % (descr.kind, descr.itemsize)
-            return dict(version=3,
-                        data=data,
-                        shape=(size,),
-                        typestr=typestr)
-
+    
     property array:
         def __get__(self):
             return asarray(self)
+
+    # --- NumPy array interface (legacy) ---
+
+    property __array_interface__:
+        def __get__(self):
+            cdef _IS_buffer buf = _IS_buffer(self)
+            return buf.__array_interface__
 
 # --------------------------------------------------------------------
 

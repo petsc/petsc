@@ -86,50 +86,62 @@ cdef class _IS_buffer:
     cdef const_PetscInt *data
 
     def __cinit__(self, IS iset not None):
-        CHKERR( PetscIncref(<PetscObject>iset.iset) )
-        self.iset = iset.iset
-        self.size = -1
+        cdef PetscIS i = iset.iset
+        CHKERR( PetscIncref(<PetscObject>i) )
+        self.iset = i
+        self.size = 0
         self.data = NULL
 
     def __dealloc__(self):
-        if self.data != NULL and self.iset != NULL:
-            CHKERR( ISRestoreIndices(self.iset, &self.data) )
         if self.iset != NULL:
+            if self.data != NULL:
+                CHKERR( ISRestoreIndices(self.iset, &self.data) )
             CHKERR( ISDestroy(self.iset) )
 
     #
 
+    cdef int acquire(self) except -1:
+        if self.iset != NULL and self.data == NULL:
+            CHKERR( ISGetLocalSize(self.iset, &self.size) )
+            CHKERR( ISGetIndices(self.iset, &self.data) )
+        return 0
+
+    cdef int release(self) except -1:
+        if self.iset != NULL and self.data != NULL:
+            CHKERR( ISRestoreIndices(self.iset, &self.data) )
+            self.size = 0
+            self.data = NULL
+        return 0
+
+    # buffer interface (PEP 3118)
+
     cdef int acquirebuffer(self, Py_buffer *view, int flags) except -1:
-        cdef PetscInt size = 0
-        cdef const_PetscInt *data = NULL
-        CHKERR( ISGetLocalSize(self.iset, &size) )
-        CHKERR( ISGetIndices(self.iset, &data) )
-        PyPetscBuffer_FillInfo(view, <void*>data,
-                               size, 'i', 0, flags)
+        self.acquire()
+        PyPetscBuffer_FillInfo(view, <void*>self.data,
+                               self.size, 'i', 0, flags)
+        view.obj = self
         return 0
 
     cdef int releasebuffer(self, Py_buffer *view) except -1:
-        cdef const_PetscInt *data = <PetscInt*>view.buf
         PyPetscBuffer_Release(view)
-        CHKERR( ISRestoreIndices(self.iset, &data) )
+        self.release()
         return 0
 
     def __getbuffer__(self, Py_buffer *view, int flags):
         self.acquirebuffer(view, flags)
-        view.obj = self
 
     def __releasebuffer__(self, Py_buffer *view):
         self.releasebuffer(view)
 
-    #
+    # buffer interface (legacy)
 
     cdef Py_ssize_t getbuffer(self, Py_ssize_t idx, void **p) except -1:
         if idx != 0: raise SystemError(
             "accessing non-existent buffer segment")
-        if self.size < 0:
+        if self.iset != NULL:
             CHKERR( ISGetLocalSize(self.iset, &self.size) )
         if p != NULL:
-            if self.data == NULL:
+            if self.iset != NULL and self.data == NULL:
                 CHKERR( ISGetIndices(self.iset, &self.data) )
             p[0] = <void*>self.data
         return <Py_ssize_t> (self.size*sizeof(PetscInt))
@@ -141,5 +153,19 @@ cdef class _IS_buffer:
 
     def __getreadbuffer__(self, Py_ssize_t idx, void **p):
         return self.getbuffer(idx, p)
+
+    # NumPy array interface (legacy)
+
+    property __array_interface__:
+        def __get__(self):
+            if self.iset != NULL:
+                CHKERR( ISGetLocalSize(self.iset, &self.size) )
+            cdef object size = toInt(self.size)
+            cdef dtype descr = PyArray_DescrFromType(NPY_PETSC_INT)
+            cdef str typestr = "=%c%d" % (descr.kind, descr.itemsize)
+            return dict(version=3,
+                        data=self,
+                        shape=(size,),
+                        typestr=typestr)
 
 # --------------------------------------------------------------------

@@ -61,6 +61,19 @@ class BaseTestIS(object):
         for prop in proplist:
             self.assertTrue(hasattr(self.iset, prop))
 
+    def testArray(self):
+        import numpy
+        refs = self.iset.getRefCount()
+        arr1 = numpy.asarray(self.iset)
+        self.assertEqual(self.iset.getRefCount(), refs+1)
+        arr2 = self.iset.array
+        self.assertEqual(self.iset.getRefCount(), refs+2)
+        self.assertTrue((arr1 == arr2).all())
+        del arr2
+        self.assertEqual(self.iset.getRefCount(), refs+1)
+        del arr1
+        self.assertEqual(self.iset.getRefCount(), refs)
+
 
 # --------------------------------------------------------------------
 
