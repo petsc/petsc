@@ -65,8 +65,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DA da,Vec c)
     For two and three dimensions coordinates are interlaced (x_0,y_0,x_1,y_1,...)
     and (x_0,y_0,z_0,x_1,y_1,z_1...)
 
-    The user is responsible for destroying this vector.
-
   Level: intermediate
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
@@ -94,8 +92,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinates(DA da,Vec *c)
 
    Output Parameter:
 .  dac - coordinate DA
-
-  Note: The user is responsible for destroying this DA when finished
 
   Level: intermediate
 
@@ -179,8 +175,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
 
     For two and three dimensions coordinates are interlaced (x_0,y_0,x_1,y_1,...)
     and (x_0,y_0,z_0,x_1,y_1,z_1...)
-
-    The user is responsible for destroying this vector.
 
   Level: intermediate
 
