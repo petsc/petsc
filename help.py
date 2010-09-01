@@ -88,7 +88,7 @@ class Help(Info):
     while argName[0] == '-': argName = argName[1:]
     return argName
 
-  def addArgument(self, section, name, type, ignoreDuplicates = 0):
+  def addArgument(self, section, name, argType, ignoreDuplicates = 0):
     '''Add an argument with given name and type to a help section. The type, which can also have an initializer and help string, will be put into RDict.'''
 ##  super(Info, self).addArgument(section, name, None)
     if section in self.sections:
@@ -98,9 +98,10 @@ class Help(Info):
         raise RuntimeError('Duplicate configure option '+name+' in section '+section)
     else:
       self.sections[section] = (len(self.sections), [])
-    self.sections[section][1].append(name)
+    if not argType.deprecated:
+      self.sections[section][1].append(name)
 
-    self.argDB.setType(self.getArgName(name), type, forceLocal = 1)
+    self.argDB.setType(self.getArgName(name), argType, forceLocal = 1)
     return
 
   def output(self, f = None):
