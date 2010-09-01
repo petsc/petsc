@@ -32,7 +32,8 @@ Options: \n\
 #include "petscksp.h"
 #include "petscda.h"
 
-#include "ex43-solCx.h" /* A Maple-generated exact solution */
+/* A Maple-generated exact solution created by Mirko Velic (mirko.velic@sci.monash.edu.au) */
+#include "ex43-solCx.h"
 
 static PetscErrorCode DABCApplyFreeSlip(DA,Mat,Vec);
 
@@ -1250,7 +1251,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   dx   = 1.0/((PetscReal)(M));
   dy   = 1.0/((PetscReal)(N));
 
-  ierr = DASetUniformCoordinates(da_prop,0.0+0.5*dx,1.0-0.5*dx,0.0+0.5*dx,1.0-0.5*dx,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DASetUniformCoordinates(da_prop,0.0+0.5*dx,1.0-0.5*dx,0.0+0.5*dy,1.0-0.5*dy,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   /* define coefficients */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-c_str",&coefficient_structure,PETSC_NULL);CHKERRQ(ierr);
