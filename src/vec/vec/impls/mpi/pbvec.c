@@ -253,7 +253,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_Standard"
-PetscErrorCode PETSCMAT_DLLEXPORT VecCreate_Standard(Vec v)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Standard(Vec v)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

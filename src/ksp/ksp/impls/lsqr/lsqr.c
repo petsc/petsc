@@ -19,7 +19,7 @@ typedef struct {
   PetscReal  rhs_norm; /* Norm of the right hand side */
 } KSP_LSQR;
 
-extern PetscErrorCode PETSCVEC_DLLEXPORT VecSquare(Vec);
+extern PetscErrorCode PETSCKSP_DLLEXPORT VecSquare(Vec);
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_LSQR"
@@ -495,7 +495,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSquare"
-PetscErrorCode PETSCVEC_DLLEXPORT VecSquare(Vec v)
+PetscErrorCode PETSCKSP_DLLEXPORT VecSquare(Vec v)
 {
   PetscErrorCode ierr;
   PetscScalar    *x;

@@ -15,7 +15,7 @@ static PetscTruth ISPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT ISFinalizePackage(void) 
+PetscErrorCode PETSCVEC_DLLEXPORT ISFinalizePackage(void)
 {
   PetscFunctionBegin;
   ISPackageInitialized = PETSC_FALSE;

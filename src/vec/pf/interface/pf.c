@@ -512,7 +512,7 @@ static PetscTruth PFPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PFFinalizePackage(void) 
+PetscErrorCode PETSCVEC_DLLEXPORT PFFinalizePackage(void)
 {
   PetscFunctionBegin;
   PFPackageInitialized = PETSC_FALSE;

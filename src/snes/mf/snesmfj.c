@@ -72,14 +72,14 @@ PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
 }
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_MFFD(Mat,Vec,Vec);
+extern PetscErrorCode PETSCSNES_DLLEXPORT MatMFFDSetBase_MFFD(Mat,Vec,Vec);
 /*
     This routine resets the MatAssemblyEnd() for the MatMFFD created from MatCreateSNESMF() so that it NO longer
   uses the solution in the SNES object to update the base. See the warning in MatCreateSNESMF().
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDSetBase_SNESMF"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
+PetscErrorCode PETSCSNES_DLLEXPORT MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
 {
   PetscErrorCode ierr;
 

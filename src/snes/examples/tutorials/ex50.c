@@ -365,7 +365,7 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-PetscErrorCode PETSCDM_DLLEXPORT FormFunction(SNES snes, Vec X, Vec F, void *user)
+PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *user)
 {
   DALocalInfo    info;
   void          *u;

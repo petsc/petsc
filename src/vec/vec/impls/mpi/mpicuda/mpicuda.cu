@@ -249,7 +249,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_CUDA"
-PetscErrorCode PETSCMAT_DLLEXPORT VecCreate_CUDA(Vec v)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_CUDA(Vec v)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

@@ -550,7 +550,7 @@ EXTERN PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA,Mat);
    Level: intermediate
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA(Mat mat,DA da)
+PetscErrorCode PETSCDM_DLLEXPORT MatSetDA(Mat mat,DA da)
 {
   PetscErrorCode ierr,(*f)(Mat,DA);
 

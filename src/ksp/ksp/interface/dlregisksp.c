@@ -20,7 +20,7 @@ static PetscTruth PCPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PCFinalizePackage(void) 
+PetscErrorCode PETSCKSP_DLLEXPORT PCFinalizePackage(void)
 {
   PetscFunctionBegin;
   PCPackageInitialized = PETSC_FALSE;
@@ -111,7 +111,7 @@ static PetscTruth KSPPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT KSPFinalizePackage(void) 
+PetscErrorCode PETSCKSP_DLLEXPORT KSPFinalizePackage(void)
 {
   PetscFunctionBegin;
   KSPPackageInitialized = PETSC_FALSE;

@@ -2460,8 +2460,8 @@ struct _n_PetscSubcomm {
 typedef enum {PETSC_SUBCOMM_GENERAL=0,PETSC_SUBCOMM_CONTIGUOUS=1,PETSC_SUBCOMM_INTERLACED=2} PetscSubcommType;
 extern const char *PetscSubcommTypes[];
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommCreate(MPI_Comm,PetscInt,PetscSubcommType,PetscSubcomm*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommDestroy(PetscSubcomm);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSubcommCreate(MPI_Comm,PetscInt,PetscSubcommType,PetscSubcomm*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSubcommDestroy(PetscSubcomm);
 
 PETSC_EXTERN_CXX_END
 

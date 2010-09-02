@@ -29,7 +29,7 @@ static PetscTruth MatPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT MatFinalizePackage(void) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatFinalizePackage(void)
 {
   PetscFunctionBegin;
   MatPackageInitialized            = PETSC_FALSE;
