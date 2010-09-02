@@ -25,7 +25,7 @@
 .seealso: PetscDrawGetCoordinates()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSetCoordinates(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSetCoordinates(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
 {
   PetscErrorCode ierr;
 

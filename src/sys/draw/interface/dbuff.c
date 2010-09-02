@@ -21,7 +21,7 @@
    Concepts: double buffer
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSetDoubleBuffer(PetscDraw draw)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSetDoubleBuffer(PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

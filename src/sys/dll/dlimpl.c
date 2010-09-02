@@ -45,7 +45,7 @@ typedef void* dlsymbol_t;
    Level: developer
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDLOpen(const char name[],int flags,PetscDLHandle *handle)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDLOpen(const char name[],int flags,PetscDLHandle *handle)
 {
   int        dlflags1,dlflags2;
   dlhandle_t dlhandle;
@@ -143,7 +143,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLOpen(const char name[],int flags,PetscDLHa
 
   Level: developer
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDLClose(PetscDLHandle *handle)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDLClose(PetscDLHandle *handle)
 {
   dlhandle_t dlhandle;
 
@@ -224,7 +224,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLClose(PetscDLHandle *handle)
    systems this requires platform-specific linker flags.
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDLSym(PetscDLHandle handle,const char symbol[],void **value)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDLSym(PetscDLHandle handle,const char symbol[],void **value)
 {
   dlhandle_t dlhandle;
   dlsymbol_t dlsymbol;

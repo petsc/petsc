@@ -91,7 +91,7 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 
 .seealso:   SOCKAnswer_Private()
 */
-PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char *hostname,int portnum,int *t)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenSocket(char *hostname,int portnum,int *t)
 {
   struct sockaddr_in sa;
   struct hostent     *hp;
@@ -288,7 +288,7 @@ $    -viewer_socket_port <port>
           PETSC_VIEWER_SOCKET_SELF, PetscViewerBinaryWrite(), PetscViewerBinaryRead(), PetscViewerBinaryWriteStringArray(),
           PetscBinaryViewerGetDescriptor()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
 {
   PetscErrorCode ierr;
 
@@ -334,7 +334,7 @@ PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_Socket" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Socket(PetscViewer v)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerCreate_Socket(PetscViewer v)
 {
   PetscViewer_Socket *vmatlab;
   PetscErrorCode     ierr;
@@ -371,7 +371,7 @@ EXTERN_C_END
 
 .seealso: PetscViewerSocketOpen()
 @*/ 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,const char machine[],PetscInt port)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,const char machine[],PetscInt port)
 {
   PetscErrorCode     ierr;
   PetscMPIInt        rank;
@@ -459,7 +459,7 @@ $       XXXView(XXX object,PETSC_VIEWER_SOCKET_(comm));
           PetscViewerSocketSetConnection(), PetscViewerDestroy(), PETSC_VIEWER_SOCKET_(), PetscViewerBinaryWrite(), PetscViewerBinaryRead(),
           PetscViewerBinaryWriteStringArray(), PetscBinaryViewerGetDescriptor(), PETSC_VIEWER_MATLAB_()
 @*/
-PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
+PetscViewer PETSCSYS_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
   PetscTruth     flg;

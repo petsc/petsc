@@ -56,7 +56,7 @@ int main(int argc,char **args) {
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFwkConfigureElectrolyte"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkConfigureElectrolyte(PetscFwk fwk, const char* key, const char* stage, PetscObject *_component) {
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkConfigureElectrolyte(PetscFwk fwk, const char* key, const char* stage, PetscObject *_component) {
   DA da;
   Vec rhoVec;
   PetscFwk e;

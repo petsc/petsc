@@ -7,7 +7,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomSeed_Rand"
-PetscErrorCode PETSC_DLLEXPORT PetscRandomSeed_Rand(PetscRandom r)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomSeed_Rand(PetscRandom r)
 {
   PetscFunctionBegin;
   srand(r->seed);  
@@ -17,7 +17,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSeed_Rand(PetscRandom r)
 #define RAND_WRAP ((PetscReal)((rand()/(double)((unsigned int)RAND_MAX+1))))
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValue_Rand"
-PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue_Rand(PetscRandom r,PetscScalar *val)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomGetValue_Rand(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
@@ -34,7 +34,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue_Rand(PetscRandom r,PetscScala
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValueReal_Rand"
-PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal_Rand(PetscRandom r,PetscReal *val)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomGetValueReal_Rand(PetscRandom r,PetscReal *val)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
@@ -71,7 +71,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate_Rand" 
-PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate_Rand(PetscRandom r)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomCreate_Rand(PetscRandom r)
 {
   PetscErrorCode ierr;
 

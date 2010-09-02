@@ -23,5 +23,5 @@ struct PetscViewerLink_t {
 extern PetscMPIInt Petsc_Viewer_keyval;
 
 EXTERN_C_BEGIN
-EXTERN PetscMPIInt PETSC_DLLEXPORT MPIAPI Petsc_DelViewer(MPI_Comm,PetscMPIInt,void*,void*);
+EXTERN PetscMPIInt PETSCSYS_DLLEXPORT MPIAPI Petsc_DelViewer(MPI_Comm,PetscMPIInt,void*,void*);
 EXTERN_C_END

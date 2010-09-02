@@ -2,7 +2,7 @@
 
 #include "petscdraw.h"
 
-extern PetscLogEvent PETSC_DLLEXPORT PETSC_Barrier;
+extern PetscLogEvent PETSCSYS_DLLEXPORT PETSC_Barrier;
 
 static PetscTruth PetscSysPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
@@ -16,7 +16,7 @@ static PetscTruth PetscSysPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSysFinalizePackage(void) 
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSysFinalizePackage(void)
 {
   PetscFunctionBegin;
   PetscSysPackageInitialized = PETSC_FALSE;
@@ -38,7 +38,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSysFinalizePackage(void)
 .keywords: Petsc, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSysInitializePackage(const char path[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSysInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
@@ -101,9 +101,9 @@ extern PetscErrorCode PetscDLLibraryRegister_petscts(const char[]);
   path - library path
  */
 #if defined(PETSC_USE_SINGLE_LIBRARY)
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister_petsc(const char path[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryRegister_petsc(const char path[])
 #else
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister_petscsys(const char path[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryRegister_petscsys(const char path[])
 #endif
 {
   PetscErrorCode ierr;

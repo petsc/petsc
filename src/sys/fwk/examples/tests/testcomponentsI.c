@@ -3,7 +3,7 @@
 EXTERN_C_BEGIN
 #undef  __FUNCT__ 
 #define __FUNCT__ "PetscFwkComponentConfigureTestIA"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIA(PetscFwk fwk, const char* key, const char *conf, PetscObject *component) {
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkComponentConfigureTestIA(PetscFwk fwk, const char* key, const char *conf, PetscObject *component) {
   MPI_Comm       comm;
   PetscContainer container;
   PetscErrorCode ierr;
@@ -24,7 +24,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIA(PetscFwk fwk, co
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "PetscFwkComponentConfigureTestIB"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIB(PetscFwk fwk, const char* key, const char* conf, PetscObject *component) {
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkComponentConfigureTestIB(PetscFwk fwk, const char* key, const char* conf, PetscObject *component) {
   MPI_Comm       comm;
   PetscContainer container;
   PetscErrorCode ierr;
@@ -47,7 +47,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIB(PetscFwk fwk, co
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "PetscFwkComponentConfigureTestIC"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIC(PetscFwk fwk, const char* key, const char *conf, PetscObject *component) {
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkComponentConfigureTestIC(PetscFwk fwk, const char* key, const char *conf, PetscObject *component) {
   MPI_Comm       comm;
   PetscContainer container;
   PetscErrorCode ierr;

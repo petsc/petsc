@@ -20,7 +20,7 @@
    Concepts: clear^window
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSynchronizedClear(PetscDraw draw)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSynchronizedClear(PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

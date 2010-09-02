@@ -61,7 +61,7 @@ static PetscErrorCode PetscSortInt_Private(PetscInt *v,PetscInt right)
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSortInt(PetscInt n,PetscInt i[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSortInt(PetscInt n,PetscInt i[])
 {
   PetscErrorCode ierr;
   PetscInt       j,k,tmp,ik;
@@ -103,7 +103,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSortInt(PetscInt n,PetscInt i[])
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSortRemoveDupsInt(PetscInt *n,PetscInt ii[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSortRemoveDupsInt(PetscInt *n,PetscInt ii[])
 {
   PetscErrorCode ierr;
   PetscInt       i,s = 0,N = *n, b = 0;
@@ -172,7 +172,7 @@ static PetscErrorCode PetscSortIntWithArray_Private(PetscInt *v,PetscInt *V,Pets
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithArray(PetscInt n,PetscInt i[],PetscInt Ii[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSortIntWithArray(PetscInt n,PetscInt i[],PetscInt Ii[])
 {
   PetscErrorCode ierr;
   PetscInt       j,k,tmp,ik;
@@ -244,7 +244,7 @@ static PetscErrorCode PetscSortMPIIntWithArray_Private(PetscMPIInt *v,PetscMPIIn
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSortMPIIntWithArray(PetscMPIInt n,PetscMPIInt i[],PetscMPIInt Ii[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSortMPIIntWithArray(PetscMPIInt n,PetscMPIInt i[],PetscMPIInt Ii[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    j,k,tmp,ik;
@@ -318,7 +318,7 @@ static PetscErrorCode PetscSortIntWithScalarArray_Private(PetscInt *v,PetscScala
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar Ii[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar Ii[])
 {
   PetscErrorCode ierr;
   PetscInt       j,k,tmp,ik;

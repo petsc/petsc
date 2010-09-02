@@ -26,7 +26,7 @@
 .seealso: PetscDrawString(), PetscDrawStringVertical(), PetscDrawStringGetSize()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawStringSetSize(PetscDraw draw,PetscReal width,PetscReal height)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawStringSetSize(PetscDraw draw,PetscReal width,PetscReal height)
 {
   PetscErrorCode ierr;
   PetscTruth isnull;

@@ -23,7 +23,7 @@ struct _n_PetscViewers {
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen(), PetscViewersCreate()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewersDestroy(PetscViewers v)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewersDestroy(PetscViewers v)
 {
   int         i;
   PetscErrorCode ierr;
@@ -57,7 +57,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewersDestroy(PetscViewers v)
 .seealso: PetscViewerCreate(), PetscViewersDestroy()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
 {
   PetscErrorCode ierr;
 
@@ -91,7 +91,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
 .seealso: PetscViewersCreate(), PetscViewersDestroy()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewersGetViewer(PetscViewers viewers,PetscInt n,PetscViewer *viewer)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewersGetViewer(PetscViewers viewers,PetscInt n,PetscViewer *viewer)
 {
   PetscErrorCode ierr;
 

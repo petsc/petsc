@@ -112,15 +112,15 @@ EXTERN_C_END
 #if defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
 extern MPI_Op MPIU_SUM;
 EXTERN_C_BEGIN
-extern void PETSC_DLLEXPORT MPIAPI PetscSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
+extern void PETSCSYS_DLLEXPORT MPIAPI PetscSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
 EXTERN_C_END
 #endif
 extern PETSC_DLL_IMPORT MPI_Op PetscMaxSum_Op;
 
 EXTERN_C_BEGIN
-extern void PETSC_DLLEXPORT MPIAPI PetscMaxSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
-extern PetscMPIInt PETSC_DLLEXPORT MPIAPI Petsc_DelCounter(MPI_Comm,PetscMPIInt,void*,void*);
-extern PetscMPIInt PETSC_DLLEXPORT MPIAPI Petsc_DelComm(MPI_Comm,PetscMPIInt,void*,void*);
+extern void PETSCSYS_DLLEXPORT MPIAPI PetscMaxSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
+extern PetscMPIInt PETSCSYS_DLLEXPORT MPIAPI Petsc_DelCounter(MPI_Comm,PetscMPIInt,void*,void*);
+extern PetscMPIInt PETSCSYS_DLLEXPORT MPIAPI Petsc_DelComm(MPI_Comm,PetscMPIInt,void*,void*);
 EXTERN_C_END
 
 EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscOptionsCheckInitial_Private(void);
@@ -129,8 +129,8 @@ EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscInitialize_DynamicLibraries(void);
 #if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscLogBegin_Private(void);
 #endif
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFreeAlign(void*,int,const char[],const char[],const char[]);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscFreeAlign(void*,int,const char[],const char[],const char[]);
 extern int PetscGlobalArgc;
 extern char **PetscGlobalArgs;
 

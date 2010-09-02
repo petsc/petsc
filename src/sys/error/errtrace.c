@@ -40,7 +40,7 @@ $     SETERRQ(comm,number,p,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
-PetscErrorCode PETSC_DLLEXPORT PetscIgnoreErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscIgnoreErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(n);
@@ -58,7 +58,7 @@ static char version[256];
    Initializes arch, hostname, username,date so that system calls do NOT need
    to be made during the error handler.
 */
-PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize()
+PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorPrintfInitialize()
 {
   PetscErrorCode ierr;
   PetscTruth     use_stdout = PETSC_FALSE,use_none = PETSC_FALSE;
@@ -85,14 +85,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize()
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorPrintfNone" 
-PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfNone(const char format[],...)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorPrintfNone(const char format[],...)
 {
   return 0;
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorPrintfDefault" 
-PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
 {
   va_list           Argp;
   static PetscTruth PetscErrorPrintfCalled = PETSC_FALSE;
@@ -167,7 +167,7 @@ $     SETERRQ(comm,number,n,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler()
  @*/
-PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscLogDouble    mem,rss;
   PetscTruth        flg1 = PETSC_FALSE,flg2 = PETSC_FALSE;
@@ -263,7 +263,7 @@ $     SETERROR(number,n,mess)
 
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler()
  @*/
-PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandlerCxx(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p, const char *mess,void *ctx)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscTraceBackErrorHandlerCxx(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p, const char *mess,void *ctx)
 {
   std::ostringstream *msg = (std::ostringstream*) ctx;
 

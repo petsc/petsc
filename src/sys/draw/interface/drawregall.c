@@ -23,7 +23,7 @@ EXTERN_C_END
 
 .seealso:  PetscDrawRegisterDestroy()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawRegisterAll(const char *path)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawRegisterAll(const char *path)
 {
   PetscErrorCode ierr;
 

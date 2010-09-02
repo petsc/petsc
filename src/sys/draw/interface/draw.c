@@ -18,7 +18,7 @@ static PetscTruth PetscDrawPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawFinalizePackage(void) 
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawFinalizePackage(void)
 {
   PetscFunctionBegin;
   PetscDrawPackageInitialized = PETSC_FALSE;
@@ -41,7 +41,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawFinalizePackage(void)
 .keywords: Petsc, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawInitializePackage(const char path[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
@@ -94,7 +94,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawInitializePackage(const char path[])
 
 .seealso: PetscDrawCheckResizedWindow()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawResizeWindow(PetscDraw draw,int w,int h)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawResizeWindow(PetscDraw draw,int w,int h)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -119,7 +119,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawResizeWindow(PetscDraw draw,int w,int h)
 .seealso: PetscDrawResizeWindow()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawCheckResizedWindow(PetscDraw draw)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawCheckResizedWindow(PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -146,7 +146,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawCheckResizedWindow(PetscDraw draw)
 
 .seealso: PetscDrawSetTitle()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawGetTitle(PetscDraw draw,char **title)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawGetTitle(PetscDraw draw,char **title)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
@@ -174,7 +174,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawGetTitle(PetscDraw draw,char **title)
 
 .seealso: PetscDrawGetTitle(), PetscDrawAppendTitle()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSetTitle(PetscDraw draw,const char title[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSetTitle(PetscDraw draw,const char title[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -207,7 +207,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSetTitle(PetscDraw draw,const char title
 
 .seealso: PetscDrawSetTitle(), PetscDrawGetTitle()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawAppendTitle(PetscDraw draw,const char title[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAppendTitle(PetscDraw draw,const char title[])
 {
   PetscErrorCode ierr;
   size_t len1,len2,len;
@@ -250,7 +250,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawAppendTitle(PetscDraw draw,const char ti
 .seealso: PetscDrawCreate()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawDestroy(PetscDraw draw)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawDestroy(PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -285,7 +285,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawDestroy(PetscDraw draw)
    Level: advanced
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -322,7 +322,7 @@ PetscErrorCode PetscDrawDestroy_Null(PetscDraw draw)
    Level: advanced
 
 */
-PetscErrorCode PETSC_DLLEXPORT PetscDrawOpenNull(MPI_Comm comm,PetscDraw *win)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawOpenNull(MPI_Comm comm,PetscDraw *win)
 {
   PetscErrorCode ierr;
 
@@ -344,7 +344,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawOpenNull(MPI_Comm comm,PetscDraw *win)
   Level: advanced
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSetDisplay(PetscDraw draw,char *display)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSetDisplay(PetscDraw draw,char *display)
 {
   PetscErrorCode ierr;
 
@@ -402,7 +402,7 @@ EXTERN_C_END
 .seealso: PetscDrawRestoreSingleton(), PetscViewerGetSingleton(), PetscViewerRestoreSingleton()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawGetSingleton(PetscDraw draw,PetscDraw *sdraw)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawGetSingleton(PetscDraw draw,PetscDraw *sdraw)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -441,7 +441,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawGetSingleton(PetscDraw draw,PetscDraw *s
 .seealso: PetscDrawGetSingleton(), PetscViewerGetSingleton(), PetscViewerRestoreSingleton()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawRestoreSingleton(PetscDraw draw,PetscDraw *sdraw)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawRestoreSingleton(PetscDraw draw,PetscDraw *sdraw)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

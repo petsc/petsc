@@ -36,7 +36,7 @@
     put it in a universal location like a .chsrc file
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],size_t len,PetscTruth *flag)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],size_t len,PetscTruth *flag)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -107,7 +107,7 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscTruth *onehost)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetDisplay" 
-PetscErrorCode PETSC_DLLEXPORT PetscSetDisplay(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDisplay(void)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
@@ -154,7 +154,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetDisplay(void)
 .   display - the display string
 
 */
-PetscErrorCode PETSC_DLLEXPORT PetscGetDisplay(char display[],size_t n)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscGetDisplay(char display[],size_t n)
 {
   PetscErrorCode ierr;
 

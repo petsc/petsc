@@ -21,7 +21,7 @@
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerCreate(), PetscViewerDestroy(),
           PetscViewerSetType()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerFlush(PetscViewer viewer)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFlush(PetscViewer viewer)
 {
   PetscErrorCode ierr;
 

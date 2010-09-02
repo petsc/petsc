@@ -21,7 +21,7 @@
 
 .seealso: PetscObjectGetName()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectSetName(PetscObject obj,const char name[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetName(PetscObject obj,const char name[])
 {
   PetscErrorCode ierr;
 
@@ -50,7 +50,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectSetName(PetscObject obj,const char nam
 
 .seealso: PetscObjectGetName(), PetscObjectSetName()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectName(PetscObject obj)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectName(PetscObject obj)
 {
   PetscErrorCode   ierr;
   PetscCommCounter *counter;
@@ -89,7 +89,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectName(PetscObject obj)
 .seealso: PetscObjectSetName()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectPublish(PetscObject obj)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPublish(PetscObject obj)
 {
   PetscErrorCode ierr;
 
@@ -103,7 +103,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectPublish(PetscObject obj)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectChangeTypeName"
-PetscErrorCode PETSC_DLLEXPORT PetscObjectChangeTypeName(PetscObject obj,const char type_name[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectChangeTypeName(PetscObject obj,const char type_name[])
 {
   PetscErrorCode ierr;
 

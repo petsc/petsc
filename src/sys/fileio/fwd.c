@@ -44,7 +44,7 @@
    Concepts: working directory
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscGetWorkingDirectory(char path[],size_t len)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscGetWorkingDirectory(char path[],size_t len)
 {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_GETCWD)

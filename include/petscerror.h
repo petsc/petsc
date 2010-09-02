@@ -311,11 +311,11 @@ extern PetscInt       PetscErrorUncatchableCount;
 extern PetscErrorCode PetscExceptions[PETSC_EXCEPTIONS_MAX];
 extern PetscInt       PetscExceptionsCount;
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscExceptionPush(PetscErrorCode);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscExceptionPop(PetscErrorCode);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode,PetscTruth);
-EXTERN PetscTruth PETSC_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode,PetscTruth);
+EXTERN PetscTruth PETSCSYS_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
 /*MC
    PetscExceptionCaught - Indicates if a specific exception zierr was caught.
 
@@ -511,28 +511,28 @@ M*/
 E*/
 typedef enum {PETSC_ERROR_INITIAL=0,PETSC_ERROR_REPEAT=1,PETSC_ERROR_IN_CXX = 2} PetscErrorType;
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int,const char*[],char **);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorPrintfInitialize(void);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorMessage(int,const char*[],char **);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
 #if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
 #include <sstream>
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandlerCxx(MPI_Comm,int,const char *,const char *,const char *,PetscErrorCode,PetscErrorType,const char*,void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTraceBackErrorHandlerCxx(MPI_Comm,int,const char *,const char *,const char *,PetscErrorCode,PetscErrorType,const char*,void*);
 #endif
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscIgnoreErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscEmacsClientErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMPIAbortErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscAbortErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscAttachDebuggerErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscReturnErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscError(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,...) PETSC_PRINTF_FORMAT_CHECK(7,8);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPopErrorHandler(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDefaultSignalHandler(int,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPushSignalHandler(PetscErrorCode (*)(int,void *),void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPopSignalHandler(void);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscIgnoreErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscEmacsClientErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMPIAbortErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscAbortErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscAttachDebuggerErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscReturnErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscError(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,...) PETSC_PRINTF_FORMAT_CHECK(7,8);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscPopErrorHandler(void);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDefaultSignalHandler(int,void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscPushSignalHandler(PetscErrorCode (*)(int,void *),void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscPopSignalHandler(void);
 
 typedef enum {PETSC_FP_TRAP_OFF=0,PETSC_FP_TRAP_ON=1} PetscFPTrap;
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSetFPTrap(PetscFPTrap);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscSetFPTrap(PetscFPTrap);
 
 /*
       Allows the code to build a stack frame as it runs
@@ -549,9 +549,9 @@ typedef struct  {
         int currentsize;
 } PetscStack;
 
-extern PETSC_DLLEXPORT PetscStack *petscstack;
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackCopy(PetscStack*,PetscStack*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackPrint(PetscStack*,FILE* fp);
+extern PETSCSYS_DLLEXPORT PetscStack *petscstack;
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscStackCopy(PetscStack*,PetscStack*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscStackPrint(PetscStack*,FILE* fp);
 
 #define PetscStackActive (petscstack != 0)
 
@@ -686,11 +686,11 @@ M*/
 */
 #define PetscStackCall(name,routine) PetscStackPush(name);routine;PetscStackPop;
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackCreate(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackView(PetscViewer);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackDestroy(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackPublish(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackDepublish(void);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscStackCreate(void);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscStackView(PetscViewer);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscStackDestroy(void);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscStackPublish(void);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscStackDepublish(void);
 
 
 PETSC_EXTERN_CXX_END

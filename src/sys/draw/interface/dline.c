@@ -22,7 +22,7 @@
    Concepts: drawing^line
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
   PetscErrorCode ierr;
   PetscTruth isdrawnull;
@@ -51,7 +51,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLine(PetscDraw draw,PetscReal xl,PetscRe
    Level: advanced
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawIsNull(PetscDraw draw,PetscTruth *yes)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawIsNull(PetscDraw draw,PetscTruth *yes)
 {
   PetscErrorCode ierr;
   PetscTruth isdrawnull;

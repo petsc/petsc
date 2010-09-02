@@ -52,7 +52,7 @@ PetscTruth PetscPreLoadingOn   = PETSC_FALSE;
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsCheckInitial_Components"
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Components(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Components(void)
 {
   PetscTruth flg1;
   PetscErrorCode ierr;
@@ -83,7 +83,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Components(void)
 
 .seealso: PetscInitialize(), PetscInitializeFortran()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscInitializeNoArguments(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscInitializeNoArguments(void)
 {
   PetscErrorCode ierr;
   int            argc = 0;
@@ -103,7 +103,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializeNoArguments(void)
 
 .seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscInitialized(PetscTruth *isInitialized)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscInitialized(PetscTruth *isInitialized)
 {
   PetscFunctionBegin;
   PetscValidPointer(isInitialized, 1);
@@ -120,7 +120,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialized(PetscTruth *isInitialized)
 
 .seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscFinalized(PetscTruth *isFinalized)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFinalized(PetscTruth *isFinalized)
 {
   PetscFunctionBegin;
   PetscValidPointer(isFinalized, 1);
@@ -140,7 +140,7 @@ MPI_Op PetscMaxSum_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscMaxSum_Local"
-void PETSC_DLLEXPORT MPIAPI PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
+void PETSCSYS_DLLEXPORT MPIAPI PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   PetscInt *xin = (PetscInt*)in,*xout = (PetscInt*)out,i,count = *cnt;
 
@@ -168,7 +168,7 @@ there would be no place to store the both needed results.
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscMaxSum"
-PetscErrorCode PETSC_DLLEXPORT PetscMaxSum(MPI_Comm comm,const PetscInt nprocs[],PetscInt *max,PetscInt *sum)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMaxSum(MPI_Comm comm,const PetscInt nprocs[],PetscInt *max,PetscInt *sum)
 {
   PetscMPIInt    size,rank;
   PetscInt       *work;
@@ -186,12 +186,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscMaxSum(MPI_Comm comm,const PetscInt nprocs[]
 }
 
 /* ----------------------------------------------------------------------------*/
-MPI_Op PETSC_DLLEXPORT PetscADMax_Op = 0;
+MPI_Op PETSCSYS_DLLEXPORT PetscADMax_Op = 0;
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscADMax_Local"
-void PETSC_DLLEXPORT MPIAPI PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+void PETSCSYS_DLLEXPORT MPIAPI PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = *cnt;
@@ -212,12 +212,12 @@ void PETSC_DLLEXPORT MPIAPI PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt
 }
 EXTERN_C_END
 
-MPI_Op PETSC_DLLEXPORT PetscADMin_Op = 0;
+MPI_Op PETSCSYS_DLLEXPORT PetscADMin_Op = 0;
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscADMin_Local"
-void PETSC_DLLEXPORT MPIAPI PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+void PETSCSYS_DLLEXPORT MPIAPI PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = *cnt;
@@ -250,7 +250,7 @@ MPI_Op MPIU_SUM = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscSum_Local"
-void PETSC_DLLEXPORT PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+void PETSCSYS_DLLEXPORT PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = *cnt;
@@ -281,7 +281,7 @@ EXTERN_C_BEGIN
    Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 
 */
-PetscMPIInt PETSC_DLLEXPORT MPIAPI Petsc_DelCounter(MPI_Comm comm,PetscMPIInt keyval,void *count_val,void *extra_state)
+PetscMPIInt PETSCSYS_DLLEXPORT MPIAPI Petsc_DelCounter(MPI_Comm comm,PetscMPIInt keyval,void *count_val,void *extra_state)
 {
   PetscErrorCode ierr;
 
@@ -304,7 +304,7 @@ EXTERN_C_BEGIN
   Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 
 */
-PetscMPIInt PETSC_DLLEXPORT MPIAPI Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
+PetscMPIInt PETSCSYS_DLLEXPORT MPIAPI Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
 {
   PetscErrorCode ierr;
 
@@ -353,7 +353,7 @@ char **PetscGlobalArgs = 0;
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArguments()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscGetArgs(int *argc,char ***args)
 {
   PetscFunctionBegin;
   if (!PetscInitializeCalled && PetscFinalizeCalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"You must call after PetscInitialize() but before PetscFinalize()");
@@ -383,7 +383,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscFreeArguments()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscGetArguments(char ***args)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscGetArguments(char ***args)
 {
   PetscInt       i,argc = PetscGlobalArgc;
   PetscErrorCode ierr;
@@ -416,7 +416,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetArguments(char ***args)
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscGetArguments()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **args)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFreeArguments(char **args)
 {
   PetscInt       i = 0;
   PetscErrorCode ierr;
@@ -521,7 +521,7 @@ $       call PetscInitialize(file,ierr)
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscInitializeNoArguments()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char file[],const char help[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscInitialize(int *argc,char ***args,const char file[],const char help[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    flag, size;
@@ -732,7 +732,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
 
 .seealso: PetscInitialize(), PetscOptionsPrint(), PetscMallocDump(), PetscMPIDump(), PetscEnd()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFinalize(void)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;

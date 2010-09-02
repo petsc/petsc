@@ -31,7 +31,7 @@
    Note: 
    This routine is anologous to memcmp()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMemcmp(const void *str1,const void *str2,size_t len,PetscTruth *e)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMemcmp(const void *str1,const void *str2,size_t len,PetscTruth *e)
 {
   int r;
 
@@ -72,7 +72,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemcmp(const void *str1,const void *str2,siz
 
 .seealso: PetscMemcpy()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMemmove(void *a,void *b,size_t n)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMemmove(void *a,void *b,size_t n)
 {
   PetscFunctionBegin;
   if (n > 0 && !a) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy to null pointer");

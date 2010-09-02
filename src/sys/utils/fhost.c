@@ -45,7 +45,7 @@
 
 .seealso: PetscGetUserName()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscGetHostName(char name[],size_t nlen)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscGetHostName(char name[],size_t nlen)
 {
   char           *domain;
   PetscErrorCode ierr;

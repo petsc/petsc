@@ -23,7 +23,7 @@
 
 .seealso:  PetscDrawLineGetWidth()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawLineSetWidth(PetscDraw draw,PetscReal width)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLineSetWidth(PetscDraw draw,PetscReal width)
 {
   PetscErrorCode ierr;
   PetscTruth isdrawnull;

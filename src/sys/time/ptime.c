@@ -38,7 +38,7 @@
 
 .keywords:  get, time
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscGetTime(PetscLogDouble *t)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscGetTime(PetscLogDouble *t)
 {
   PetscFunctionBegin;
   PetscTime(*t);

@@ -42,7 +42,7 @@
 
 .seealso: PetscCommGetNewTag()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectGetNewTag(PetscObject obj,PetscMPIInt *tag)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetNewTag(PetscObject obj,PetscMPIInt *tag)
 {
   PetscErrorCode ierr;
 
@@ -75,7 +75,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetNewTag(PetscObject obj,PetscMPIInt 
 
 .seealso: PetscObjectGetNewTag(), PetscCommDuplicate()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
 {
   PetscErrorCode   ierr;
   PetscCommCounter *counter;
@@ -131,7 +131,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag
 
 .seealso: PetscObjectGetNewTag(), PetscCommGetNewTag(), PetscCommDestroy()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPIInt* first_tag)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPIInt* first_tag)
 {
   PetscErrorCode   ierr;
   PetscCommCounter *counter;
@@ -215,7 +215,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
 
 .seealso:   PetscCommDuplicate()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscCommDestroy(MPI_Comm *comm)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscCommDestroy(MPI_Comm *comm)
 {
   PetscErrorCode   ierr;
   PetscCommCounter *counter;

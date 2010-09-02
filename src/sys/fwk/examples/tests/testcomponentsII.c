@@ -2,7 +2,7 @@
 EXTERN_C_BEGIN
 #undef  __FUNCT__ 
 #define __FUNCT__ "PetscFwkComponentConfigureTestIIA"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIIA(PetscFwk fwk, const char* key, const char* conf, PetscObject *component) {
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkComponentConfigureTestIIA(PetscFwk fwk, const char* key, const char* conf, PetscObject *component) {
   MPI_Comm       comm;
   PetscContainer container;
   PetscErrorCode ierr;
@@ -23,7 +23,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIIA(PetscFwk fwk, c
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "PetscFwkComponentConfigureTestIIB"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIIB(PetscFwk fwk, const char* key, const char* conf, PetscObject *component) {
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkComponentConfigureTestIIB(PetscFwk fwk, const char* key, const char* conf, PetscObject *component) {
   MPI_Comm       comm;
   PetscContainer container;
   PetscErrorCode ierr;
@@ -46,7 +46,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIIB(PetscFwk fwk, c
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "PetscFwkComponentConfigureTestIIC"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIIC(PetscFwk fwk, const char* key, const char* conf, PetscObject *component) {
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkComponentConfigureTestIIC(PetscFwk fwk, const char* key, const char* conf, PetscObject *component) {
   MPI_Comm       comm;
   PetscContainer container;
   PetscErrorCode ierr;

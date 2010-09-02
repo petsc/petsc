@@ -7,16 +7,16 @@ PETSC_EXTERN_CXX_BEGIN
 typedef struct _n_PetscTable* PetscTable;
 typedef PetscInt* PetscTablePosition;  
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTableCreate(const PetscInt,PetscTable*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTableCreateCopy(const PetscTable,PetscTable*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTableDestroy(PetscTable);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTableGetCount(const PetscTable,PetscInt*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTableIsEmpty(const PetscTable,PetscInt*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTableAdd(PetscTable,const PetscInt,const PetscInt);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTableAddCount(PetscTable,const PetscInt);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTableFind(PetscTable,const PetscInt,PetscInt*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTableGetHeadPosition(PetscTable,PetscTablePosition*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTableGetNext(PetscTable,PetscTablePosition*,PetscInt*,PetscInt*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTableRemoveAll(PetscTable);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTableCreate(const PetscInt,PetscTable*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTableCreateCopy(const PetscTable,PetscTable*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTableDestroy(PetscTable);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTableGetCount(const PetscTable,PetscInt*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTableIsEmpty(const PetscTable,PetscInt*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTableAdd(PetscTable,const PetscInt,const PetscInt);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTableAddCount(PetscTable,const PetscInt);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTableFind(PetscTable,const PetscInt,PetscInt*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTableGetHeadPosition(PetscTable,PetscTablePosition*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTableGetNext(PetscTable,PetscTablePosition*,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTableRemoveAll(PetscTable);
 PETSC_EXTERN_CXX_END
 #endif

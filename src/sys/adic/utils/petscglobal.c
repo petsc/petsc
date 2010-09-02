@@ -23,7 +23,7 @@
 
 .seealso: PetscGlobalMin(), PetscGlobalSum()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscGlobalMax(MPI_Comm comm,const PetscReal* local,PetscReal* result)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscGlobalMax(MPI_Comm comm,const PetscReal* local,PetscReal* result)
 {
   return MPI_Allreduce((void*)local,result,1,MPIU_REAL,MPI_MAX,comm);
 }
@@ -50,7 +50,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGlobalMax(MPI_Comm comm,const PetscReal* loc
 
 .seealso: PetscGlobalMax(), PetscGlobalSum()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscGlobalMin(MPI_Comm comm,const PetscReal* local,PetscReal* result)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscGlobalMin(MPI_Comm comm,const PetscReal* local,PetscReal* result)
 {
   return MPI_Allreduce((void*)local,result,1,MPIU_REAL,MPI_MIN,comm);
 }
@@ -77,7 +77,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGlobalMin(MPI_Comm comm,const PetscReal* loc
 
 .seealso: PetscGlobalMin(), PetscGlobalMax()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscGlobalSum(MPI_Comm comm, const PetscScalar* local,PetscScalar* result)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscGlobalSum(MPI_Comm comm, const PetscScalar* local,PetscScalar* result)
 {
   return MPI_Allreduce((void*)local,result,1,MPIU_SCALAR,MPIU_SUM,comm);
 }

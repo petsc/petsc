@@ -64,7 +64,7 @@ extern PetscOptionsObjectType PetscOptionsObject;
 /*
    PetscOptionsAtoi - Converts a string to an integer value. Handles special cases such as "default" and "decide"
 */
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsAtoi(const char name[],PetscInt *a)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsAtoi(const char name[],PetscInt *a)
 {
   PetscErrorCode ierr;
   size_t         i,len;
@@ -109,7 +109,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsAtoi(const char name[],PetscInt *a)
 /*
    Converts a string to PetscReal value. Handles special cases like "default" and "decide"
 */
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsAtod(const char name[],PetscReal *a)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsAtod(const char name[],PetscReal *a)
 {
   PetscErrorCode ierr;
   size_t         len;
@@ -146,7 +146,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsAtod(const char name[],PetscReal *a)
 /*
    PetscOptionsAtol - Converts string to PetscTruth, handles cases like "yes", "no", "true", "false", "0", "1"
 */
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsAtol(const char value[], PetscTruth *a)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsAtol(const char value[], PetscTruth *a)
 {
   PetscTruth     istrue, isfalse;
   size_t         len;
@@ -195,7 +195,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsAtol(const char value[], PetscTruth *
     array of length len.  On some machines the program name includes 
     its entire path, so one should generally set len >= PETSC_MAX_PATH_LEN.
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscGetProgramName(char name[],size_t len)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscGetProgramName(char name[],size_t len)
 {
   PetscErrorCode ierr;
 
@@ -208,7 +208,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetProgramName(char name[],size_t len)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetProgramName"
-PetscErrorCode PETSC_DLLEXPORT PetscSetProgramName(const char name[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSetProgramName(const char name[])
 { 
   PetscErrorCode ierr;
 
@@ -232,7 +232,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetProgramName(const char name[])
   Level: intermediate
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsValidKey(const char in_str[],PetscTruth *key)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsValidKey(const char in_str[],PetscTruth *key)
 {
   PetscFunctionBegin;
   *key = PETSC_FALSE;
@@ -267,7 +267,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsValidKey(const char in_str[],PetscTru
           PetscOptionsList(), PetscOptionsEList(), PetscOptionsInsertFile()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertString(const char in_str[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsInsertString(const char in_str[])
 {
   char           *first,*second;
   PetscErrorCode ierr;
@@ -355,7 +355,7 @@ static char *Petscgetline(FILE * f)
           PetscOptionsList(), PetscOptionsEList()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscTruth require)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscTruth require)
 {
   char           *string,fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*vstring = 0,*astring = 0;
   PetscErrorCode ierr;
@@ -567,7 +567,7 @@ static PetscErrorCode PetscOptionsInsertArgs_Private(int argc,char *args[])
 .seealso: PetscOptionsDestroy_Private(), PetscOptionsPrint(), PetscOptionsInsertString(), PetscOptionsInsertFile(),
           PetscInitialize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const char file[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const char file[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -651,7 +651,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
 
 .seealso: PetscOptionsAllUsed()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsPrint(FILE *fd)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsPrint(FILE *fd)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -695,7 +695,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsPrint(FILE *fd)
 
 .seealso: PetscOptionsAllUsed(), PetscOptionsPrint()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetAll(char *copts[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetAll(char *copts[])
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -754,7 +754,7 @@ Level: advanced
 
 .seealso: PetscOptionsPrefixPop()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsPrefixPush(const char prefix[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsPrefixPush(const char prefix[])
 {
   PetscErrorCode ierr;
   size_t n;
@@ -792,7 +792,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsPrefixPush(const char prefix[])
 
 .seealso: PetscOptionsPrefixPush()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsPrefixPop(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsPrefixPop(void)
 {
   PetscInt offset;
 
@@ -813,7 +813,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsPrefixPop(void)
 
 .seealso: PetscOptionsInsert()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsClear(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsClear(void)
 {
   PetscInt i;
 
@@ -847,7 +847,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsClear(void)
 
 .seealso: PetscOptionsInsert()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsDestroy(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -882,7 +882,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsDestroy(void)
 
 .seealso: PetscOptionsInsert()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetValue(const char iname[],const char value[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsSetValue(const char iname[],const char value[])
 {
   size_t         len;
   PetscErrorCode ierr;
@@ -978,7 +978,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetValue(const char iname[],const cha
    Concepts: options database^removing option
 .seealso: PetscOptionsInsert()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsClearValue(const char iname[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsClearValue(const char iname[])
 {
   PetscErrorCode ierr;
   PetscInt       N,n,i;
@@ -1040,7 +1040,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsClearValue(const char iname[])
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetAlias(const char inewname[],const char ioldname[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsSetAlias(const char inewname[],const char ioldname[])
 {
   PetscErrorCode ierr;
   PetscInt       n = options->Naliases;
@@ -1157,7 +1157,7 @@ static PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char n
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsReject(const char name[],const char mess[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsReject(const char name[],const char mess[])
 {
   PetscErrorCode ierr;
   PetscTruth     flag = PETSC_FALSE;
@@ -1204,7 +1204,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsReject(const char name[],const char m
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsHasName(const char pre[],const char name[],PetscTruth *set)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsHasName(const char pre[],const char name[],PetscTruth *set)
 {
   char           *value;
   PetscErrorCode ierr;
@@ -1243,7 +1243,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsHasName(const char pre[],const char n
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetInt(const char pre[],const char name[],PetscInt *ivalue,PetscTruth *set)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetInt(const char pre[],const char name[],PetscInt *ivalue,PetscTruth *set)
 {
   char           *value;
   PetscErrorCode ierr;
@@ -1295,7 +1295,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetInt(const char pre[],const char na
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEList(const char pre[],const char opt[],const char *const*list,PetscInt ntext,PetscInt *value,PetscTruth *set)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetEList(const char pre[],const char opt[],const char *const*list,PetscInt ntext,PetscInt *value,PetscTruth *set)
 {
   PetscErrorCode ierr;
   size_t         alen,len = 0;
@@ -1361,7 +1361,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEList(const char pre[],const char 
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList(), PetscOptionsGetEList(), PetscOptionsEnum()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEnum(const char pre[],const char opt[],const char *const*list,PetscEnum *value,PetscTruth *set)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetEnum(const char pre[],const char opt[],const char *const*list,PetscEnum *value,PetscTruth *set)
 {
   PetscErrorCode ierr;
   PetscInt       ntext = 0,tval;
@@ -1414,7 +1414,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEnum(const char pre[],const char o
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetTruth(const char pre[],const char name[],PetscTruth *ivalue,PetscTruth *set)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetTruth(const char pre[],const char name[],PetscTruth *ivalue,PetscTruth *set)
 {
   char           *value;
   PetscTruth     flag;
@@ -1471,7 +1471,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetTruth(const char pre[],const char 
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetTruthArray(const char pre[],const char name[],PetscTruth dvalue[],PetscInt *nmax,PetscTruth *set)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetTruthArray(const char pre[],const char name[],PetscTruth dvalue[],PetscInt *nmax,PetscTruth *set)
 {
   char           *value;
   PetscErrorCode ierr;
@@ -1529,7 +1529,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetTruthArray(const char pre[],const 
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetReal(const char pre[],const char name[],PetscReal *dvalue,PetscTruth *set)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetReal(const char pre[],const char name[],PetscReal *dvalue,PetscTruth *set)
 {
   char           *value;
   PetscErrorCode ierr;
@@ -1579,7 +1579,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetReal(const char pre[],const char n
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetScalar(const char pre[],const char name[],PetscScalar *dvalue,PetscTruth *set)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetScalar(const char pre[],const char name[],PetscScalar *dvalue,PetscTruth *set)
 {
   char           *value;
   PetscTruth     flag;
@@ -1651,7 +1651,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetScalar(const char pre[],const char
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetRealArray(const char pre[],const char name[],PetscReal dvalue[],PetscInt *nmax,PetscTruth *set)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetRealArray(const char pre[],const char name[],PetscReal dvalue[],PetscInt *nmax,PetscTruth *set)
 {
   char           *value;
   PetscErrorCode ierr;
@@ -1711,7 +1711,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetRealArray(const char pre[],const c
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const char name[],PetscInt dvalue[],PetscInt *nmax,PetscTruth *set)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const char name[],PetscInt dvalue[],PetscInt *nmax,PetscTruth *set)
 {
   char           *value;
   PetscErrorCode ierr;
@@ -1803,7 +1803,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const ch
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetString(const char pre[],const char name[],char string[],size_t len,PetscTruth *set)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetString(const char pre[],const char name[],char string[],size_t len,PetscTruth *set)
 {
   char           *value;
   PetscErrorCode ierr;
@@ -1865,7 +1865,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetString(const char pre[],const char
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetStringArray(const char pre[],const char name[],char *strings[],PetscInt *nmax,PetscTruth *set)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetStringArray(const char pre[],const char name[],char *strings[],PetscInt *nmax,PetscTruth *set)
 {
   char           *value;
   PetscErrorCode ierr;
@@ -1911,7 +1911,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetStringArray(const char pre[],const
 
 .seealso: PetscOptionsPrint()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsAllUsed(int *N)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsAllUsed(int *N)
 {
   PetscInt i,n = 0;
 
@@ -1937,7 +1937,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsAllUsed(int *N)
 
 .seealso: PetscOptionsAllUsed()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsLeft(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsLeft(void)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -1962,7 +1962,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsLeft(void)
     PetscOptionsCreate - Creates the empty options database.
 
 */
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsCreate(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCreate(void)
 {
   PetscErrorCode ierr;
 
@@ -2002,7 +2002,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCreate(void)
 
 .keywords: set, options, database
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsSetFromOptions(void)
 {
   PetscTruth          flgc,flgm;
   PetscErrorCode      ierr;
@@ -2041,7 +2041,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions(void)
 
 .seealso: PetscOptionsMonitorSet()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorDefault(const char name[], const char value[], void *dummy)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsMonitorDefault(const char name[], const char value[], void *dummy)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer = (PetscViewer) dummy;
@@ -2099,7 +2099,7 @@ $     monitor (const char name[], const char value[], void *mctx)
 
 .seealso: PetscOptionsMonitorDefault(), PetscOptionsMonitorCancel()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
 {
   PetscFunctionBegin;
   if (options->numbermonitors >= MAXOPTIONSMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptions monitors set");
@@ -2127,7 +2127,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorSet(PetscErrorCode (*monitor)(
 
 .seealso: PetscOptionsMonitorDefault(), PetscOptionsMonitorSet()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorCancel(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsMonitorCancel(void)
 {
   PetscErrorCode ierr;
   PetscInt       i;

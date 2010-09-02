@@ -38,7 +38,7 @@
 .seealso: PetscStrToArrayDestroy()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrToArray(const char s[],int *argc,char ***args)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrToArray(const char s[],int *argc,char ***args)
 {
   int        i,n,*lens,cnt = 0;
   PetscTruth flg = PETSC_FALSE;
@@ -103,7 +103,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrToArray(const char s[],int *argc,char ***
 .seealso: PetscStrToArray()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrToArrayDestroy(int argc,char **args)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrToArrayDestroy(int argc,char **args)
 {
   PetscInt i;
 
@@ -139,7 +139,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrToArrayDestroy(int argc,char **args)
   Concepts: string length
   
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrlen(const char s[],size_t *len)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrlen(const char s[],size_t *len)
 {
   PetscFunctionBegin;
   if (!s) {
@@ -173,7 +173,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrlen(const char s[],size_t *len)
   Concepts: string copy
   
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrallocpy(const char s[],char *t[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrallocpy(const char s[],char *t[])
 {
   PetscErrorCode ierr;
   size_t         len;
@@ -215,7 +215,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrallocpy(const char s[],char *t[])
 
 @*/
 
-PetscErrorCode PETSC_DLLEXPORT PetscStrcpy(char s[],const char t[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrcpy(char s[],const char t[])
 {
   PetscFunctionBegin;
   if (t && !s) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy string into null pointer");
@@ -248,7 +248,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrcpy(char s[],const char t[])
 .seealso: PetscStrcpy(), PetscStrcat(), PetscStrncat()
   
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrncpy(char s[],const char t[],size_t n)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrncpy(char s[],const char t[],size_t n)
 {
   PetscFunctionBegin;
   if (t && !s) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy string into null pointer");
@@ -277,7 +277,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrncpy(char s[],const char t[],size_t n)
 .seealso: PetscStrcpy(), PetscStrncpy(), PetscStrncat()
   
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrcat(char s[],const char t[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrcat(char s[],const char t[])
 {
   PetscFunctionBegin;
   if (!t) PetscFunctionReturn(0);
@@ -306,7 +306,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrcat(char s[],const char t[])
 .seealso: PetscStrcpy(), PetscStrncpy(), PetscStrcat()
   
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrncat(char s[],const char t[],size_t n)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrncat(char s[],const char t[],size_t n)
 {
   PetscFunctionBegin;
   strncat(s,t,n);
@@ -334,7 +334,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrncat(char s[],const char t[],size_t n)
 .seealso: PetscStrgrt(), PetscStrncmp(), PetscStrcasecmp()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrcmp(const char a[],const char b[],PetscTruth *flg)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrcmp(const char a[],const char b[],PetscTruth *flg)
 {
   int c;
 
@@ -376,7 +376,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrcmp(const char a[],const char b[],PetscTr
 .seealso: PetscStrcmp(), PetscStrncmp(), PetscStrcasecmp()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrgrt(const char a[],const char b[],PetscTruth *t)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrgrt(const char a[],const char b[],PetscTruth *t)
 {
   int c;
 
@@ -420,7 +420,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrgrt(const char a[],const char b[],PetscTr
 .seealso: PetscStrcmp(), PetscStrncmp(), PetscStrgrt()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrcasecmp(const char a[],const char b[],PetscTruth *t)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrcasecmp(const char a[],const char b[],PetscTruth *t)
 {
   int c;
 
@@ -474,7 +474,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrcasecmp(const char a[],const char b[],Pet
 .seealso: PetscStrgrt(), PetscStrcmp(), PetscStrcasecmp()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrncmp(const char a[],const char b[],size_t n,PetscTruth *t)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrncmp(const char a[],const char b[],size_t n,PetscTruth *t)
 {
   int c;
 
@@ -504,7 +504,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrncmp(const char a[],const char b[],size_t
    Notes:    Not for use in Fortran
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrchr(const char a[],char b,char *c[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrchr(const char a[],char b,char *c[])
 {
   PetscFunctionBegin;
   *c = (char *)strchr(a,b);
@@ -531,7 +531,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrchr(const char a[],char b,char *c[])
    Notes:    Not for use in Fortran
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrrchr(const char a[],char b,char *tmp[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrrchr(const char a[],char b,char *tmp[])
 {
   PetscFunctionBegin;
   *tmp = (char *)strrchr(a,b);
@@ -554,7 +554,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrrchr(const char a[],char b,char *tmp[])
    Notes:    Not for use in Fortran
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrtolower(char a[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrtolower(char a[])
 {
   PetscFunctionBegin;
   while (*a) {
@@ -595,7 +595,7 @@ struct _p_PetscToken {char token;char *array;char *current;};
 
 .seealso: PetscTokenCreate(), PetscTokenDestroy()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscTokenFind(PetscToken a,char *result[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscTokenFind(PetscToken a,char *result[])
 {
   char *ptr = a->current,token;
 
@@ -645,7 +645,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTokenFind(PetscToken a,char *result[])
 
 .seealso: PetscTokenFind(), PetscTokenDestroy()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscTokenCreate(const char a[],const char b,PetscToken *t)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscTokenCreate(const char a[],const char b,PetscToken *t)
 {
   PetscErrorCode ierr;
 
@@ -673,7 +673,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTokenCreate(const char a[],const char b,Pets
 
 .seealso: PetscTokenCreate(), PetscTokenFind()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscTokenDestroy(PetscToken a)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscTokenDestroy(PetscToken a)
 {
   PetscErrorCode ierr;
 
@@ -702,7 +702,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTokenDestroy(PetscToken a)
    Level: intermediate
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrrstr(const char a[],const char b[],char *tmp[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrrstr(const char a[],const char b[],char *tmp[])
 {
   const char *stmp = a, *ltmp = 0;
 
@@ -734,7 +734,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrrstr(const char a[],const char b[],char *
    Level: intermediate
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrstr(const char a[],const char b[],char *tmp[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrstr(const char a[],const char b[],char *tmp[])
 {
   PetscFunctionBegin;
   *tmp = (char *)strstr(a,b);
@@ -756,7 +756,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrstr(const char a[],const char b[],char *t
    Notes: Not for use in Fortran
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscGetPetscDir(const char *dir[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscGetPetscDir(const char *dir[])
 {
   PetscFunctionBegin;
   *dir = PETSC_DIR;
@@ -789,7 +789,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetPetscDir(const char *dir[])
    Level: intermediate
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char aa[],char b[],size_t len)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char aa[],char b[],size_t len)
 {
   PetscErrorCode ierr;
   int            i = 0;
