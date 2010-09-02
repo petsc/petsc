@@ -806,7 +806,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
   if (size > 1) { 
     /* change viewer to display matrix in natural ordering */
     ierr = MatShellSetOperation(A, MATOP_VIEW, (void (*)(void)) MatView_MPI_DA);CHKERRQ(ierr);
-    /* turn off loading of matrix because loading would require proper permutation I don't feel like writing now */
     ierr = MatShellSetOperation(A, MATOP_LOAD, (void (*)(void)) MatLoad_MPI_DA);CHKERRQ(ierr);
   }
   *J = A;
