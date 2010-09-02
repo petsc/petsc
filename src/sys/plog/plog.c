@@ -2135,7 +2135,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscClassIdRegister(const char name[],PetscClass
 .   viewer - viewer to save Python data
 
 @*/
-PetscErrorCode PetscLogPrintSummaryPython(PetscViewer viewer) 
+PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummaryPython(PetscViewer viewer) 
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
   FILE              *fd = ascii->fd; 
@@ -2145,8 +2145,8 @@ PetscErrorCode PetscLogPrintSummaryPython(PetscViewer viewer)
   EventPerfInfo     *eventInfo = PETSC_NULL;
   ClassPerfInfo     *classInfo;
   const char        *name;
-  PetscLogDouble    locTotalTime, TotalTime, TotalFlops;
-  PetscLogDouble    numMessages, messageLength, avgMessLen, numReductions;
+  PetscLogDouble    locTotalTime, TotalTime = 0, TotalFlops = 0;
+  PetscLogDouble    numMessages = 0, messageLength = 0, avgMessLen, numReductions = 0;
   PetscLogDouble    stageTime, flops, mem, mess, messLen, red;
   PetscLogDouble    fracTime, fracFlops, fracMessages, fracLength;
   PetscLogDouble    fracReductions;
