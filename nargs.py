@@ -48,11 +48,6 @@ tests will cause ValueError.
     self.isTemporary = isTemporary
     return
 
-  @property
-  def deprecated(self): return self._deprecated
-  @deprecated.setter
-  def deprecated(self, value): self._deprecated = value
-
   def parseValue(arg):
     '''Return the object represented by the value portion of a string argument'''
     # Should I replace this with a lexer?
