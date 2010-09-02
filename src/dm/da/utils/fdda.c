@@ -2,7 +2,7 @@
  
 #include "private/daimpl.h" /*I      "petscda.h"     I*/
 #include "petscmat.h"         /*I      "petscmat.h"    I*/
-
+#include "private/matimpl.h"
 
 EXTERN PetscErrorCode DAGetColoring1d_MPIAIJ(DA,ISColoringType,ISColoring *);
 EXTERN PetscErrorCode DAGetColoring2d_MPIAIJ(DA,ISColoringType,ISColoring *);
@@ -634,12 +634,11 @@ PetscErrorCode PETSCDM_DLLEXPORT MatLoad_MPI_DA(Mat A,PetscViewer viewer)
   ierr = AOPetscToApplication(ao,rend-rstart,app);CHKERRQ(ierr);
   ierr = ISCreateGeneralNC(comm,rend-rstart,app,&is);CHKERRQ(ierr);
 
-  /* Do permutation and copy */
+  /* Do permutation and replace header */
   ierr = MatGetSubMatrix(Anatural,is,is,MAT_INITIAL_MATRIX,&Aapp);CHKERRQ(ierr);
-  ierr = MatCopy(Aapp,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatHeaderReplace(A,Aapp);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);
   ierr = MatDestroy(Anatural);CHKERRQ(ierr);
-  ierr = MatDestroy(Aapp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
