@@ -474,9 +474,12 @@ M*/
 #  define PETSC_SMALL                   1.e-10
 #endif
 
+#if defined PETSC_HAVE_ADIC
+/* Use MPI_Allreduce when ADIC is not available. */
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalMax(MPI_Comm, const PetscReal*,PetscReal*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalMin(MPI_Comm, const PetscReal*,PetscReal*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalSum(MPI_Comm, const PetscScalar*,PetscScalar*);
+#endif
 
 /*MC
       PetscIsInfOrNan - Returns 1 if the input double has an infinity for Not-a-number (Nan) value, otherwise 0.
