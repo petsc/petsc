@@ -144,7 +144,9 @@ ex32: ex32.o   chkopts
 ex33: ex33.o   chkopts
 	-${CLINKER} -o ex33 ex33.o  ${PETSC_DM_LIB}
 	${RM} -f ex33.o
-
+ex35: ex35.o   chkopts
+	-${CLINKER} -o ex35 ex35.o  ${PETSC_DM_LIB}
+	${RM} -f ex35.o
 
 #-------------------------------------------------------------------------------
 runex1:
