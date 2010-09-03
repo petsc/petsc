@@ -90,7 +90,8 @@ static char PetscDisplay[256];
 static PetscErrorCode PetscWorldIsSingleHost(PetscTruth *onehost)
 {
   PetscErrorCode ierr;
-  char hostname[256],roothostname[256],localmatch,allmatch;
+  char hostname[256],roothostname[256];
+  PetscMPIInt localmatch,allmatch;
   PetscTruth flag;
 
   PetscFunctionBegin;
