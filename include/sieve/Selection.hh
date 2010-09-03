@@ -96,6 +96,9 @@ namespace ALE {
         case 4 : // quadrilateral
           _numFaceVertices = 2; // Edge has 2 vertices
           break;
+        case 6 : // quadratic triangle
+          _numFaceVertices = 3; // Edge has 3 vertices
+          break;
         case 9 : // quadratic quadrilateral
           _numFaceVertices = 3; // Edge has 3 vertices
           break;
@@ -110,6 +113,9 @@ namespace ALE {
           break;
         case 8 : // hexahedron
           _numFaceVertices = 4; // Face has 4 vertices
+          break;
+        case 10 : // quadratic tetrahedron
+          _numFaceVertices = 6; // Face has 6 vertices
           break;
         case 27 : // quadratic hexahedron
           _numFaceVertices = 9; // Face has 9 vertices
@@ -157,6 +163,46 @@ namespace ALE {
             throw ALE::Exception("Invalid quad crossedge");
           }
         }
+      } else if (cellDim == 2 && numCorners == 6) {
+        // Quadratic triangle (I hate this)
+        // Edges are determined by the first 2 vertices (corners of edges)
+        const int faceSizeTri = 3;
+        int  sortedIndices[3];
+        bool found = false;
+        int faceVerticesTriSorted[9] = {
+          0, 3,  4, // bottom
+          1, 4,  5, // right
+          2, 3,  5, // left
+        };
+        int faceVerticesTri[9] = {
+          0, 3,  4, // bottom
+          1, 4,  5, // right
+          2, 5,  3, // left
+        };
+
+        for(int i = 0; i < faceSizeTri; ++i) sortedIndices[i] = indices[i];
+        std::sort(sortedIndices, sortedIndices+faceSizeTri);
+        for (int iFace=0; iFace < 4; ++iFace) {
+          const int ii = iFace*faceSizeTri;
+          if ((sortedIndices[0] == faceVerticesTriSorted[ii+0]) &&
+              (sortedIndices[1] == faceVerticesTriSorted[ii+1])) {
+            if (debug) {
+              if (iFace == 0) std::cout << "Bottom edge" << std::endl;
+              else if (iFace == 1) std::cout << "Right edge" << std::endl;
+              else if (iFace == 2) std::cout << "Left edge" << std::endl;
+            }  // if
+            for (int fVertex=0; fVertex < faceSizeTri; ++fVertex)
+              for (int cVertex=0; cVertex < faceSizeTri; ++cVertex)
+                if (indices[cVertex] == faceVerticesTri[ii+fVertex]) {
+                  faceVertices->push_back((*origVertices)[cVertex]); 
+                  break;
+                } // if
+            found = true;
+            break;
+          } // if
+        } // for
+        if (!found) {throw ALE::Exception("Invalid tri crossface");}
+        return true;
       } else if (cellDim == 2 && numCorners == 9) {
         // Quadratic quad (I hate this)
         // Edges are determined by the first 2 vertices (corners of edges)
@@ -261,6 +307,51 @@ namespace ALE {
         } // for
         if (!found) {throw ALE::Exception("Invalid hex crossface");}
         return true;
+      } else if (cellDim == 3 && numCorners == 10) {
+        // Quadratic tet
+        // Faces are determined by the first 3 vertices (corners of faces)
+        const int faceSizeTet = 6;
+        int  sortedIndices[6];
+        bool found = false;
+        int faceVerticesTetSorted[24] = {
+          0, 1, 2,  6, 7, 8, // bottom
+          0, 3, 4,  6, 7, 9,  // front
+          1, 4, 5,  7, 8, 9,  // right
+          2, 3, 5,  6, 8, 9,  // left
+        };
+        int faceVerticesTet[24] = {
+          0, 1, 2,  6, 7, 8, // bottom
+          0, 4, 3,  6, 7, 9,  // front
+          1, 5, 4,  7, 8, 9,  // right
+          2, 3, 5,  8, 6, 9,  // left
+        };
+
+        for(int i = 0; i < faceSizeTet; ++i) sortedIndices[i] = indices[i];
+        std::sort(sortedIndices, sortedIndices+faceSizeTet);
+        for (int iFace=0; iFace < 6; ++iFace) {
+          const int ii = iFace*faceSizeTet;
+          if ((sortedIndices[0] == faceVerticesTetSorted[ii+0]) &&
+              (sortedIndices[1] == faceVerticesTetSorted[ii+1]) &&
+              (sortedIndices[2] == faceVerticesTetSorted[ii+2]) &&
+              (sortedIndices[3] == faceVerticesTetSorted[ii+3])) {
+            if (debug) {
+              if (iFace == 0) std::cout << "Bottom tri" << std::endl;
+              else if (iFace == 1) std::cout << "Front tri" << std::endl;
+              else if (iFace == 2) std::cout << "Right tri" << std::endl;
+              else if (iFace == 3) std::cout << "Left tri" << std::endl;
+            }  // if
+            for (int fVertex=0; fVertex < faceSizeTet; ++fVertex)
+              for (int cVertex=0; cVertex < faceSizeTet; ++cVertex)
+                if (indices[cVertex] == faceVerticesTet[ii+fVertex]) {
+                  faceVertices->push_back((*origVertices)[cVertex]); 
+                  break;
+                } // if
+            found = true;
+            break;
+          } // if
+        } // for
+        if (!found) {throw ALE::Exception("Invalid tet crossface");}
+        return true;
       } else if (cellDim == 3 && numCorners == 27) {
         // Quadratic hexes (I hate this)
         //   A hex is two oriented quads with the normal of the first
@@ -286,7 +377,7 @@ namespace ALE {
           0, 3, 4, 7,  11, 15, 16, 19,  20, // left
         };
         int faceVerticesQuadHex[54] = {
-          0, 1, 2, 3,  8, 9, 10, 11,  24, // bottom
+          3, 2, 1, 0,  10, 9, 8, 11,  24, // bottom
           4, 5, 6, 7,  12, 13, 14, 15,  25, // top
           0, 1, 5, 4,  8, 17, 12, 16,  22, // front
           1, 2, 6, 5,  9, 18, 13, 17,  21, // right
