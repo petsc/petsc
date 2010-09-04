@@ -20,10 +20,10 @@ end
 end
 
 %
-% to run parallel jobs make sure petscmpirun is in your path
+% to run parallel jobs make sure petscmpiexec is in your path
 % with the particular PETSC_ARCH environmental varable set
-%command = ['petscmpirun -np ' int2str(np) ' ' program opt ' &'];
-command = [ program opt ' &'];
+command = ['petscmpiexec -np ' int2str(np) ' ' program opt ' &'];
+%command = [ program opt ' &'];
 fprintf(1,['Executing: ' command])
 
 result = system(command)

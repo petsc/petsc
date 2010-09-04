@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 import re, os, sys, shutil
 
-print 'loading install'
-
 if os.environ.has_key('PETSC_DIR'):
   PETSC_DIR = os.environ['PETSC_DIR']
 else:
@@ -144,14 +142,8 @@ class Installer(script.Script):
       raise shutil.Error, errors
     return copies
 
-  def installIncludes(self):
-    self.copies.extend(self.copytree(self.rootIncludeDir, self.destIncludeDir))
-    self.copies.extend(self.copytree(self.archIncludeDir, self.destIncludeDir))
-    return
 
-  def copyConf(self, src, dst):
-    if os.path.isdir(dst):
-      dst = os.path.join(dst, os.path.basename(src))
+  def fixConfFile(self, src):
     lines   = []
     oldFile = open(src, 'r')
     for line in oldFile.readlines():
@@ -168,20 +160,44 @@ class Installer(script.Script):
       line = re.sub('\$\{PETSC_DIR\}', self.installDir, line)
       lines.append(line)
     oldFile.close()
-    newFile = open(dst, 'w')
+    newFile = open(src, 'w')
     newFile.write(''.join(lines))
     newFile.close()
-    shutil.copystat(src, dst)
+    return
+
+  def fixConf(self):
+    import shutil
+    # copy standard rules and variables file so that we can change them in place
+    for file in ['rules', 'variables']:
+      shutil.copy2(os.path.join(self.rootConfDir,file),os.path.join(self.archConfDir,file))
+    for file in ['rules', 'variables','petscrules', 'petscvariables']:
+      self.fixConfFile(os.path.join(self.archConfDir,file))
+
+  def createUninstaller(self):
+    uninstallscript = os.path.join(self.archConfDir, 'uninstall.py')
+    f = open(uninstallscript, 'w')
+    # Could use the Python AST to do this
+    f.write('#!'+sys.executable+'\n')
+    f.write('import os\n')
+
+    f.write('copies = '+re.sub(self.destDir,self.installDir,repr(self.copies)))
+    f.write('''
+for src, dst in copies:
+  if os.path.exists(dst):
+    os.remove(dst)
+''')
+    f.close()
+    os.chmod(uninstallscript,0744)
+    return
+
+  def installIncludes(self):
+    self.copies.extend(self.copytree(self.rootIncludeDir, self.destIncludeDir))
+    self.copies.extend(self.copytree(self.archIncludeDir, self.destIncludeDir))
     return
 
   def installConf(self):
-    # rootConfDir can have a duplicate petscvariables - so processing it first removes the appropriate duplicate file.
-    self.copies.extend(self.copytree(self.rootConfDir, self.destConfDir, copyFunc = self.copyConf))
+    self.copies.extend(self.copytree(self.rootConfDir, self.destConfDir))
     self.copies.extend(self.copytree(self.archConfDir, self.destConfDir))
-    # Just copyConf() a couple of files manually [as the rest of the files should not be modified]
-    for file in ['petscrules', 'petscvariables']:
-      self.copyConf(os.path.join(self.archConfDir,file),os.path.join(self.destConfDir,file))
-    return
 
   def installBin(self):
     self.copies.extend(self.copytree(self.rootBinDir, self.destBinDir))
@@ -202,22 +218,6 @@ class Installer(script.Script):
     self.copies.extend(self.copytree(self.archLibDir, self.destLibDir, copyFunc = self.copyLib))
     return
 
-  def createUninstaller(self):
-    uninstallscript = os.path.join(self.destConfDir, 'uninstall.py')
-    f = open(uninstallscript, 'w')
-    # Could use the Python AST to do this
-    f.write('#!'+sys.executable+'\n')
-    f.write('import os\n')
-
-    f.write('copies = '+re.sub(self.destDir,self.installDir,repr(self.copies)))
-    f.write('''
-for src, dst in copies:
-  if os.path.exists(dst):
-    os.remove(dst)
-''')
-    f.close()
-    os.chmod(uninstallscript,0744)
-    return
 
   def outputHelp(self):
     print '''\
@@ -229,9 +229,13 @@ make PETSC_DIR=%s test
 ''' % (self.installDir,self.installDir)
     return
 
-  def run(self):
+  def runfix(self):
     self.setup()
     self.setupDirectories()
+    self.createUninstaller()
+    self.fixConf()
+
+  def runcopy(self):
     if os.path.exists(self.destDir) and os.path.samefile(self.destDir, os.path.join(self.rootDir,self.arch)):
       print '********************************************************************'
       print 'Install directory is current directory; nothing needs to be done'
@@ -256,23 +260,19 @@ make PETSC_DIR=%s test
       print 'Unable to write to ', self.destDir, 'Perhaps you need to do "sudo make install"'
       print '********************************************************************'
       return
+
+    self.outputHelp()
     self.installIncludes()
     self.installConf()
     self.installBin()
     self.installLib()
-    # this file will mess up the make test run since it resets PETSC_ARCH when PETSC_ARCH needs to be null now
-    os.unlink(os.path.join(self.rootDir,'conf','petscvariables'))
-    fd = file(os.path.join(self.rootDir,'conf','petscvariables'),'w')
-    fd.close()
-    # if running as root then change file ownership back to user
-    if os.environ.has_key('SUDO_USER'):
-      os.chown(os.path.join(self.rootDir,'conf','petscvariables'),int(os.environ['SUDO_UID']),int(os.environ['SUDO_GID']))
-    self.createUninstaller()
-    self.outputHelp()
+
     return
 
 if __name__ == '__main__':
-  Installer(sys.argv[1:]).run()
+  a = Installer(sys.argv[1:])
+  a.runfix()
+  a.runcopy()
   # temporary hack - delete log files created by BuildSystem - when 'sudo make install' is invoked
   delfiles=['RDict.db','RDict.log','build.log','default.log','build.log.bkp','default.log.bkp']
   for delfile in delfiles:
