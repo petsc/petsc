@@ -1,69 +1,44 @@
 #include "petsc.h"
 
 EXTERN_C_BEGIN
-#undef  __FUNCT__ 
-#define __FUNCT__ "PetscFwkComponentConfigureTestIA"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIA(PetscFwk fwk, const char* key, const char *conf, PetscObject *component) {
-  MPI_Comm       comm;
-  PetscContainer container;
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)fwk, &comm); CHKERRQ(ierr);
-  if(!*component) {
-    ierr = PetscContainerCreate(comm, &container); CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)container, "TestIA"); CHKERRQ(ierr);
-    *component = (PetscObject)container;
-    ierr = PetscPrintf(comm, "%s: created component %s\n", __FUNCT__, key); CHKERRQ(ierr);
-  }
-  else {
-    container = *((PetscContainer*)component);
-    ierr = PetscPrintf(comm, "%s: using configuration %s\n", __FUNCT__, conf); CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}/* PetscFwkComponentConfigureTestIA() */
 
 #undef  __FUNCT__ 
-#define __FUNCT__ "PetscFwkComponentConfigureTestIB"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIB(PetscFwk fwk, const char* key, const char* conf, PetscObject *component) {
-  MPI_Comm       comm;
-  PetscContainer container;
+#define __FUNCT__ "TestIACall"
+PetscErrorCode PETSC_DLLEXPORT TestIACall(PetscFwk component, const char* message) {
+  MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)fwk, &comm); CHKERRQ(ierr);
-  if(!*component) {
-    ierr = PetscContainerCreate(comm, &container); CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)container, "TestIB"); CHKERRQ(ierr);
-    *component = (PetscObject)container;
-    ierr = PetscPrintf(comm, "%s: created component %s\n", __FUNCT__, key); CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "%s: registering dependence: %s --> IA\n", __FUNCT__, key); CHKERRQ(ierr);
-    ierr = PetscFwkRegisterDependence(fwk, key, "IA"); CHKERRQ(ierr);
-  }
-  else {
-    container = *((PetscContainer*)component);
-    ierr = PetscPrintf(comm, "%s: using configuration %s\n", __FUNCT__, conf); CHKERRQ(ierr);
-  }
+  ierr = PetscPrintf(comm, "%s: running '%s'\n", __FUNCT__, message); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/* PetscFwkComponentConfigureTestIB() */
+}/* TestIACall() */
 
 #undef  __FUNCT__ 
-#define __FUNCT__ "PetscFwkComponentConfigureTestIC"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIC(PetscFwk fwk, const char* key, const char *conf, PetscObject *component) {
-  MPI_Comm       comm;
-  PetscContainer container;
+#define __FUNCT__ "TestIBCall"
+PetscErrorCode PETSC_DLLEXPORT TestIBCall(PetscFwk component, const char* message) {
+  MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
+  PetscTruth init;
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)fwk, &comm); CHKERRQ(ierr);
-  if(!*component) {
-    ierr = PetscContainerCreate(comm, &container); CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)container, "TestIC"); CHKERRQ(ierr);
-    *component = (PetscObject)container;
-    ierr = PetscPrintf(comm, "%s: created component %s\n", __FUNCT__, key); CHKERRQ(ierr);
-  }
-  else {
-    container = *((PetscContainer*)component);
-    ierr = PetscPrintf(comm, "%s: using configuration %s\n", __FUNCT__, conf); CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "%s: running '%s'\n", __FUNCT__, message); CHKERRQ(ierr);
+  ierr = PetscStrcmp(message, "initialize", &init); CHKERRQ(ierr);
+  if(init) {
+    PetscFwk fwk;
+    ierr = PetscObjectQuery((PetscObject)component, "visitor", (PetscObject*)(&fwk)); CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "%s: registering dependence: %s --> TestIA\n", __FUNCT__, ((PetscObject)component)->name); CHKERRQ(ierr);
+    ierr = PetscFwkRegisterDependence(fwk, ((PetscObject)component)->name, "TestIA"); CHKERRQ(ierr);    
   }
   PetscFunctionReturn(0);
-}/* PetscFwkComponentConfigureTestIC() */
+}/* TestIBCall() */
+
+#undef  __FUNCT__ 
+#define __FUNCT__ "TestICCall"
+PetscErrorCode PETSC_DLLEXPORT TestICCall(PetscFwk component, const char* message) {
+  MPI_Comm comm = ((PetscObject)component)->comm;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscPrintf(comm, "%s: running '%s'\n", __FUNCT__, message); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}/* TestICCall() */
+
 EXTERN_C_END
 
