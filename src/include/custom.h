@@ -266,26 +266,31 @@ PetscObjectGetClassName(PetscObject obj, const char *class_name[])
 
 /* ---------------------------------------------------------------- */
 
-typedef PetscErrorCode (*PetscFwkPythonImportConfigureFunction)
-(const char *url, const char *path, const char *name, void **configure);
-typedef PetscErrorCode (*PetscFwkPythonConfigureComponentFunction)
-(void *configure, PetscFwk fwk, const char *key, const char *stage, PetscObject *component);
+typedef PetscErrorCode (*PetscFwkPythonCallFunction)
+  (PetscFwk, const char *message, void *vtable);
+typedef PetscErrorCode (*PetscFwkPythonSetVTableFunction)
+  (PetscFwk, const char *path, const char *name, void **vtable_p);
+typedef PetscErrorCode (*PetscFwkPythonClearVTableFunction)
+  (PetscFwk fwk, void **vtable_p);
 typedef PetscErrorCode (*PetscFwkPythonPrintErrorFunction)(void);
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 EXTERN_C_BEGIN
-static PetscFwkPythonImportConfigureFunction
-       PetscFwkPythonImportConfigure = PETSC_NULL;
-static PetscFwkPythonConfigureComponentFunction
-       PetscFwkPythonConfigureComponent = PETSC_NULL;
+static PetscFwkPythonCallFunction
+       PetscFwkPythonCall = PETSC_NULL;
+static PetscFwkPythonSetVTableFunction
+       PetscFwkPythonSetVTable = PETSC_NULL;
+static PetscFwkPythonClearVTableFunction
+       PetscFwkPythonClearVTable = PETSC_NULL;
 static PetscFwkPythonPrintErrorFunction
        PetscFwkPythonPrintError = PETSC_NULL;
 EXTERN_C_END
 #else
 EXTERN_C_BEGIN
-PetscFwkPythonImportConfigureFunction    PetscFwkPythonImportConfigure;
-PetscFwkPythonConfigureComponentFunction PetscFwkPythonConfigureComponent;
-PetscFwkPythonPrintErrorFunction         PetscFwkPythonPrintError;
+PetscFwkPythonCallFunction        PetscFwkPythonCall;
+PetscFwkPythonSetVTableFunction   PetscFwkPythonSetVTable;
+PetscFwkPythonClearVTableFunction PetscFwkPythonClearVTable;
+PetscFwkPythonPrintErrorFunction  PetscFwkPythonPrintError;
 EXTERN_C_END
 #endif
 

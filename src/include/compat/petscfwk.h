@@ -23,12 +23,28 @@ static PetscErrorCode PetscFwkCreate(MPI_Comm comm,PetscFwk *fwk){PetscFwk_ERR_S
 static PetscErrorCode PetscFwkDestroy(PetscFwk fwk){PetscFwk_ERR_SUP}
 
 #undef  __FUNCT__
-#define __FUNCT__ "PetscFwkViewConfigurationOrder"
+#define __FUNCT__ "PetscFwkGetURL"
+static PetscErrorCode PetscFwkGetURL(PetscFwk fwk, const char**_url) {PetscFwk_ERR_SUP}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscFwkSetURL"
+static PetscErrorCode PetscFwkSetURL(PetscFwk fwk, const char*_url) {PetscFwk_ERR_SUP}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscFwkCall"
+static PetscErrorCode PetscFwkCall(PetscFwk fwk, const char message[]){PetscFwk_ERR_SUP}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscFwkView"
 static PetscErrorCode PetscFwkView(PetscFwk fwk,PetscViewer viewer){PetscFwk_ERR_SUP}
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkRegisterComponent"
-static PetscErrorCode PetscFwkRegisterComponent(PetscFwk fwk,const char key[],const char url[]){PetscFwk_ERR_SUP}
+static PetscErrorCode PetscFwkRegisterComponent(PetscFwk fwk,const char key[]){PetscFwk_ERR_SUP}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscFwkRegisterComponentURL"
+static PetscErrorCode PetscFwkRegisterComponentURL(PetscFwk fwk,const char key[],const char url[]){PetscFwk_ERR_SUP}
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkRegisterDependence"
@@ -39,12 +55,8 @@ static PetscErrorCode PetscFwkRegisterDependence(PetscFwk fwk,const char client_
 static PetscErrorCode PetscFwkGetComponent(PetscFwk fwk,const char key[],PetscObject *component,PetscTruth *found){PetscFwk_ERR_SUP}
 
 #undef  __FUNCT__
-#define __FUNCT__ "PetscFwkGetURL"
-static PetscErrorCode PetscFwkGetURL(PetscFwk fwk, const char key[], const char**_url, PetscTruth *_found) {PetscFwk_ERR_SUP}
-
-#undef  __FUNCT__
-#define __FUNCT__ "PetscFwkConfigure"
-static PetscErrorCode PetscFwkConfigure(PetscFwk fwk,const char *configuration){PetscFwk_ERR_SUP}
+#define __FUNCT__ "PetscFwkVisit"
+static PetscErrorCode PetscFwkVisit(PetscFwk fwk, const char *message){PetscFwk_ERR_SUP}
 
 static PetscFwk PETSC_FWK_DEFAULT_(MPI_Comm comm) {return PETSC_NULL;}
 
