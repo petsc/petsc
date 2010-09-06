@@ -10,7 +10,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_QMD(Mat,const MatOrderin
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_RCM(Mat,const MatOrderingType,IS*,IS*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_RowLength(Mat,const MatOrderingType,IS*,IS*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_DSC(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_Flow_SeqAIJ(Mat,const MatOrderingType,IS*,IS*);
 #if defined(PETSC_HAVE_UMFPACK)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_AMD(Mat,const MatOrderingType,IS*,IS*);
 #endif
@@ -54,7 +53,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegisterAll(const char path[])
   ierr = MatOrderingRegisterDynamic(MATORDERINGRCM,      path,"MatGetOrdering_RCM"      ,MatGetOrdering_RCM);CHKERRQ(ierr);
   ierr = MatOrderingRegisterDynamic(MATORDERINGQMD,      path,"MatGetOrdering_QMD"      ,MatGetOrdering_QMD);CHKERRQ(ierr);
   ierr = MatOrderingRegisterDynamic(MATORDERINGROWLENGTH,path,"MatGetOrdering_RowLength",MatGetOrdering_RowLength);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterDynamic(MATORDERINGFLOW,     path,"MatGetOrdering_Flow_SeqAIJ",MatGetOrdering_Flow_SeqAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_UMFPACK)
   ierr = MatOrderingRegisterDynamic(MATORDERINGAMD,      path,"MatGetOrdering_AMD",MatGetOrdering_AMD);CHKERRQ(ierr);
 #endif

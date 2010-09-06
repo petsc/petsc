@@ -23,7 +23,7 @@
    Concepts: rectangle
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawRectangle(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c1,int c2,int c3,int c4)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawRectangle(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c1,int c2,int c3,int c4)
 {
   PetscErrorCode ierr;
   PetscTruth isnull;

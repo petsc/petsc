@@ -38,7 +38,7 @@
 .seealso: PetscFClose(), PetscSynchronizedFGets(), PetscSynchronizedPrintf(), PetscSynchronizedFlush(),
           PetscFPrintf()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FILE **fp)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FILE **fp)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -89,7 +89,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFOpen(MPI_Comm comm,const char name[],const 
 
 .seealso: PetscFOpen()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscFClose(MPI_Comm comm,FILE *fd)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFClose(MPI_Comm comm,FILE *fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -125,7 +125,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFClose(MPI_Comm comm,FILE *fd)
 .seealso: PetscFOpen(), PetscFClose(), PetscPOpen()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscPClose(MPI_Comm comm,FILE *fd)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscPClose(MPI_Comm comm,FILE *fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -172,7 +172,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPClose(MPI_Comm comm,FILE *fd)
 .seealso: PetscFOpen(), PetscFClose(), PetscPClose()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscPOpen(MPI_Comm comm,const char machine[],const char program[],const char mode[],FILE **fp)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscPOpen(MPI_Comm comm,const char machine[],const char program[],const char mode[],FILE **fp)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;

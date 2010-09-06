@@ -21,8 +21,8 @@
   If PetscInfoFlags[OBJECT_CLASSID - PETSC_SMALLEST_CLASSID] is zero, no messages related
   to that object are printed. OBJECT_CLASSID is, for example, MAT_CLASSID.
 */
-PetscTruth PETSC_DLLEXPORT PetscLogPrintInfo     = PETSC_FALSE;
-PetscTruth PETSC_DLLEXPORT PetscLogPrintInfoNull = PETSC_FALSE;
+PetscTruth PETSCSYS_DLLEXPORT PetscLogPrintInfo     = PETSC_FALSE;
+PetscTruth PETSCSYS_DLLEXPORT PetscLogPrintInfoNull = PETSC_FALSE;
 int        PetscInfoFlags[]   = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                                     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                                     1,1,1,1,1,1,1,1,1,1,1,1};
@@ -51,7 +51,7 @@ FILE      *PetscInfoFile      = PETSC_NULL;
 
 .seealso: PetscInfo()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscInfoAllow(PetscTruth flag, const char filename[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscInfoAllow(PetscTruth flag, const char filename[])
 {
   char           fname[PETSC_MAX_PATH_LEN], tname[5];
   PetscMPIInt    rank;
@@ -91,7 +91,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfoAllow(PetscTruth flag, const char filena
 .keywords: allow, information, printing, monitoring
 .seealso: PetscInfoActivateClass(), PetscInfo(), PetscInfoAllow()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscInfoDeactivateClass(int objclass)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscInfoDeactivateClass(int objclass)
 {
   PetscFunctionBegin;
   if (!objclass) {
@@ -120,7 +120,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfoDeactivateClass(int objclass)
 .keywords: allow, information, printing, monitoring
 .seealso: PetscInfoDeactivateClass(), PetscInfo(), PetscInfoAllow()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscInfoActivateClass(int objclass)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscInfoActivateClass(int objclass)
 {
   PetscFunctionBegin;
   if (!objclass) {
@@ -139,7 +139,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfoActivateClass(int objclass)
 extern FILE *petsc_history;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscInfo"
+#define __FUNCT__ "PetscInfo_Private"
 /*MC
     PetscInfo - Logs informative data, which is printed to standard output
     or a file when the option -info <file> is specified.
@@ -176,7 +176,7 @@ $
 
 .seealso: PetscInfoAllow()
 M*/
-PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(const char func[],void *vobj, const char message[], ...)  
+PetscErrorCode PETSCSYS_DLLEXPORT PetscInfo_Private(const char func[],void *vobj, const char message[], ...)
 {
   va_list        Argp;
   PetscMPIInt    rank,urank;

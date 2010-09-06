@@ -2,7 +2,7 @@
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "TestACall"
-PetscErrorCode PETSC_DLLEXPORT TestACall(PetscFwk component, const char* message) {
+PetscErrorCode PETSCSYS_DLLEXPORT TestACall(PetscFwk component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -12,7 +12,7 @@ PetscErrorCode PETSC_DLLEXPORT TestACall(PetscFwk component, const char* message
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "TestBInitialize"
-PetscErrorCode PETSC_DLLEXPORT TestBInitialize(PetscFwk component, const char* message) {
+PetscErrorCode PETSCSYS_DLLEXPORT TestBInitialize(PetscFwk component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -22,7 +22,7 @@ PetscErrorCode PETSC_DLLEXPORT TestBInitialize(PetscFwk component, const char* m
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "TestBCall"
-PetscErrorCode PETSC_DLLEXPORT TestBCall(PetscFwk component, const char* message) {
+PetscErrorCode PETSCSYS_DLLEXPORT TestBCall(PetscFwk component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -32,7 +32,7 @@ PetscErrorCode PETSC_DLLEXPORT TestBCall(PetscFwk component, const char* message
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "TestCInitialize"
-PetscErrorCode PETSC_DLLEXPORT TestCInitialize(PetscFwk component, const char* message) {
+PetscErrorCode PETSCSYS_DLLEXPORT TestCInitialize(PetscFwk component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -42,7 +42,7 @@ PetscErrorCode PETSC_DLLEXPORT TestCInitialize(PetscFwk component, const char* m
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "TestCCall"
-PetscErrorCode PETSC_DLLEXPORT TestCCall(PetscFwk component, const char* message) {
+PetscErrorCode PETSCSYS_DLLEXPORT TestCCall(PetscFwk component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -83,9 +83,8 @@ PetscErrorCode main(int argc, char *argv[]) {
   ierr = PetscFwkRegisterComponentURL(fwk, "TestIIIA", "./testcomponents.py:TestIIIA"); CHKERRQ(ierr);
 
   CHKERRQ(ierr);
-  /*
   ierr = PetscFwkRegisterComponentURL(fwk, "TestIIIA", "./testcomponents.py:TestIIIA");
-  */
+
   CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "Viewing top-level framework:\n"); CHKERRQ(ierr);
   ierr = PetscFwkView(fwk, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);

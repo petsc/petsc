@@ -34,7 +34,7 @@ PetscTruth PetscBeganMPE = PETSC_FALSE;
 .seealso: PetscLogDump(), PetscLogBegin(), PetscLogAllBegin(), PetscLogEventActivate(),
           PetscLogEventDeactivate()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogMPEBegin(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscLogMPEBegin(void)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -64,7 +64,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogMPEBegin(void)
 
 .seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogMPEBegin()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogMPEDump(const char sname[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscLogMPEDump(const char sname[])
 {
   char           name[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -145,7 +145,7 @@ const char *(PetscRGBColor[PETSC_RGB_COLOR_MAX]) = {
 .keywords: log, mpe , color
 .seealso: PetscLogEventRegister
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogGetRGBColor(const char *str[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscLogGetRGBColor(const char *str[])
 {
   static int idx = 0;
 

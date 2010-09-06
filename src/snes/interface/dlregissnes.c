@@ -14,7 +14,7 @@ static PetscTruth SNESPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT SNESFinalizePackage(void) 
+PetscErrorCode PETSCSNES_DLLEXPORT SNESFinalizePackage(void)
 {
   PetscFunctionBegin;
   SNESPackageInitialized = PETSC_FALSE;

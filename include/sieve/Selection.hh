@@ -96,6 +96,12 @@ namespace ALE {
         case 4 : // quadrilateral
           _numFaceVertices = 2; // Edge has 2 vertices
           break;
+        case 6 : // quadratic triangle
+          _numFaceVertices = 3; // Edge has 3 vertices
+          break;
+        case 9 : // quadratic quadrilateral
+          _numFaceVertices = 3; // Edge has 3 vertices
+          break;
         default :
           throw ALE::Exception("Invalid number of face corners");
         }
@@ -107,6 +113,12 @@ namespace ALE {
           break;
         case 8 : // hexahedron
           _numFaceVertices = 4; // Face has 4 vertices
+          break;
+        case 10 : // quadratic tetrahedron
+          _numFaceVertices = 6; // Face has 6 vertices
+          break;
+        case 27 : // quadratic hexahedron
+          _numFaceVertices = 9; // Face has 9 vertices
           break;
         default :
           throw ALE::Exception("Invalid number of face corners");
@@ -133,10 +145,12 @@ namespace ALE {
       const int debug     = mesh->debug();
       bool      posOrient = false;
 
-      // Simplices
+      if (debug) std::cout << "cellDim: " << cellDim << ", numCorners: " << numCorners << std::endl;
+
       if (cellDim == numCorners-1) {
+        // Simplices
         posOrient = !(oppositeVertex%2);
-      } else if (cellDim == 2) {
+      } else if (cellDim == 2 && numCorners == 4) {
         // Quads
         if ((indices[1] > indices[0]) && (indices[1] - indices[0] == 1)) {
           posOrient = true;
@@ -149,7 +163,90 @@ namespace ALE {
             throw ALE::Exception("Invalid quad crossedge");
           }
         }
-      } else if (cellDim == 3) {
+      } else if (cellDim == 2 && numCorners == 6) {
+        // Quadratic triangle (I hate this)
+        // Edges are determined by the first 2 vertices (corners of edges)
+        const int faceSizeTri = 3;
+        int  sortedIndices[3];
+        bool found = false;
+        int faceVerticesTriSorted[9] = {
+          0, 3,  4, // bottom
+          1, 4,  5, // right
+          2, 3,  5, // left
+        };
+        int faceVerticesTri[9] = {
+          0, 3,  4, // bottom
+          1, 4,  5, // right
+          2, 5,  3, // left
+        };
+
+        for(int i = 0; i < faceSizeTri; ++i) sortedIndices[i] = indices[i];
+        std::sort(sortedIndices, sortedIndices+faceSizeTri);
+        for (int iFace=0; iFace < 4; ++iFace) {
+          const int ii = iFace*faceSizeTri;
+          if ((sortedIndices[0] == faceVerticesTriSorted[ii+0]) &&
+              (sortedIndices[1] == faceVerticesTriSorted[ii+1])) {
+            if (debug) {
+              if (iFace == 0) std::cout << "Bottom edge" << std::endl;
+              else if (iFace == 1) std::cout << "Right edge" << std::endl;
+              else if (iFace == 2) std::cout << "Left edge" << std::endl;
+            }  // if
+            for (int fVertex=0; fVertex < faceSizeTri; ++fVertex)
+              for (int cVertex=0; cVertex < faceSizeTri; ++cVertex)
+                if (indices[cVertex] == faceVerticesTri[ii+fVertex]) {
+                  faceVertices->push_back((*origVertices)[cVertex]); 
+                  break;
+                } // if
+            found = true;
+            break;
+          } // if
+        } // for
+        if (!found) {throw ALE::Exception("Invalid tri crossface");}
+        return true;
+      } else if (cellDim == 2 && numCorners == 9) {
+        // Quadratic quad (I hate this)
+        // Edges are determined by the first 2 vertices (corners of edges)
+        const int faceSizeQuad = 3;
+        int  sortedIndices[3];
+        bool found = false;
+        int faceVerticesQuadSorted[12] = {
+          0, 1,  4, // bottom
+          1, 2,  5, // right
+          2, 3,  6, // top
+          0, 3,  7, // left
+        };
+        int faceVerticesQuad[12] = {
+          0, 1,  4, // bottom
+          1, 2,  5, // right
+          2, 3,  6, // top
+          3, 0,  7, // left
+        };
+
+        for(int i = 0; i < faceSizeQuad; ++i) sortedIndices[i] = indices[i];
+        std::sort(sortedIndices, sortedIndices+faceSizeQuad);
+        for (int iFace=0; iFace < 4; ++iFace) {
+          const int ii = iFace*faceSizeQuad;
+          if ((sortedIndices[0] == faceVerticesQuadSorted[ii+0]) &&
+              (sortedIndices[1] == faceVerticesQuadSorted[ii+1])) {
+            if (debug) {
+              if (iFace == 0) std::cout << "Bottom edge" << std::endl;
+              else if (iFace == 1) std::cout << "Right edge" << std::endl;
+              else if (iFace == 2) std::cout << "Top edge" << std::endl;
+              else if (iFace == 3) std::cout << "Left edge" << std::endl;
+            }  // if
+            for (int fVertex=0; fVertex < faceSizeQuad; ++fVertex)
+              for (int cVertex=0; cVertex < faceSizeQuad; ++cVertex)
+                if (indices[cVertex] == faceVerticesQuad[ii+fVertex]) {
+                  faceVertices->push_back((*origVertices)[cVertex]); 
+                  break;
+                } // if
+            found = true;
+            break;
+          } // if
+        } // for
+        if (!found) {throw ALE::Exception("Invalid quad crossface");}
+        return true;
+      } else if (cellDim == 3 && numCorners == 8) {
         // Hexes
         //   A hex is two oriented quads with the normal of the first
         //   pointing up at the second.
@@ -160,163 +257,164 @@ namespace ALE {
         //   | 3-|-2
         //   |/  |/
         //   0---1
+        //
+        // Faces are determined by the first 4 vertices (corners of faces)
+        const int faceSizeHex = 4;
         int  sortedIndices[4];
         bool found = false;
+        int faceVerticesHexSorted[24] = {
+          0, 1, 2, 3,  // bottom
+          4, 5, 6, 7,  // top
+          0, 1, 4, 5,  // front
+          1, 2, 5, 6,  // right
+          2, 3, 6, 7,  // back
+          0, 3, 4, 7,  // left
+        };
+        int faceVerticesHex[24] = {
+          3, 2, 1, 0,  // bottom
+          4, 5, 6, 7,  // top
+          0, 1, 5, 4,  // front
+          1, 2, 6, 5,  // right
+          2, 3, 7, 6,  // back
+          3, 0, 4, 7,  // left
+        };
 
-        for(int i = 0; i < 4; ++i) sortedIndices[i] = indices[i];
-        std::sort(sortedIndices, sortedIndices+4);
-        // Case 1: Bottom quad
-        if ((sortedIndices[0] == 0) && (sortedIndices[1] == 1) && (sortedIndices[2] == 2) && (sortedIndices[3] == 3)) {
-          if (debug) std::cout << "Bottom quad" << std::endl;
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 3) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 2) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 1) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 0) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          found = true;
-        }
-        // Case 2: Top quad
-        if ((sortedIndices[0] == 4) && (sortedIndices[1] == 5) && (sortedIndices[2] == 6) && (sortedIndices[3] == 7)) {
-          if (debug) std::cout << "Top quad" << std::endl;
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 5) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 6) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 7) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 4) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          found = true;
-        }
-        // Case 3: Front quad
-        if ((sortedIndices[0] == 0) && (sortedIndices[1] == 1) && (sortedIndices[2] == 4) && (sortedIndices[3] == 5)) {
-          if (debug) std::cout << "Front quad" << std::endl;
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 1) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 5) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 4) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 0) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          found = true;
-        }
-        // Case 4: Back quad
-        if ((sortedIndices[0] == 2) && (sortedIndices[1] == 3) && (sortedIndices[2] == 6) && (sortedIndices[3] == 7)) {
-          if (debug) std::cout << "Back quad" << std::endl;
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 7) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 6) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 2) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 3) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          found = true;
-        }
-        // Case 5: Right quad
-        if ((sortedIndices[0] == 1) && (sortedIndices[1] == 2) && (sortedIndices[2] == 5) && (sortedIndices[3] == 6)) {
-          if (debug) std::cout << "Right quad" << std::endl;
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 2) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 6) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 5) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 1) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          found = true;
-        }
-        // Case 6: Left quad
-        if ((sortedIndices[0] == 0) && (sortedIndices[1] == 3) && (sortedIndices[2] == 4) && (sortedIndices[3] == 7)) {
-          if (debug) std::cout << "Left quad" << std::endl;
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 4) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 7) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 3) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          for(int i = 0; i < 4; ++i) {
-            if (indices[i] == 0) {
-              faceVertices->push_back((*origVertices)[i]); break;
-            }
-          }
-          found = true;
-        }
+        for(int i = 0; i < faceSizeHex; ++i) sortedIndices[i] = indices[i];
+        std::sort(sortedIndices, sortedIndices+faceSizeHex);
+        for (int iFace=0; iFace < 6; ++iFace) {
+          const int ii = iFace*faceSizeHex;
+          if ((sortedIndices[0] == faceVerticesHexSorted[ii+0]) &&
+              (sortedIndices[1] == faceVerticesHexSorted[ii+1]) &&
+              (sortedIndices[2] == faceVerticesHexSorted[ii+2]) &&
+              (sortedIndices[3] == faceVerticesHexSorted[ii+3])) {
+            if (debug) {
+              if (iFace == 0) std::cout << "Bottom quad" << std::endl;
+              else if (iFace == 1) std::cout << "Top quad" << std::endl;
+              else if (iFace == 2) std::cout << "Front quad" << std::endl;
+              else if (iFace == 3) std::cout << "Right quad" << std::endl;
+              else if (iFace == 4) std::cout << "Back quad" << std::endl;
+              else if (iFace == 5) std::cout << "Left quad" << std::endl;
+            }  // if
+            for (int fVertex=0; fVertex < faceSizeHex; ++fVertex)
+              for (int cVertex=0; cVertex < faceSizeHex; ++cVertex)
+                if (indices[cVertex] == faceVerticesHex[ii+fVertex]) {
+                  faceVertices->push_back((*origVertices)[cVertex]); 
+                  break;
+                } // if
+            found = true;
+            break;
+          } // if
+        } // for
         if (!found) {throw ALE::Exception("Invalid hex crossface");}
         return true;
+      } else if (cellDim == 3 && numCorners == 10) {
+        // Quadratic tet
+        // Faces are determined by the first 3 vertices (corners of faces)
+        const int faceSizeTet = 6;
+        int  sortedIndices[6];
+        bool found = false;
+        int faceVerticesTetSorted[24] = {
+          0, 1, 2,  6, 7, 8, // bottom
+          0, 3, 4,  6, 7, 9,  // front
+          1, 4, 5,  7, 8, 9,  // right
+          2, 3, 5,  6, 8, 9,  // left
+        };
+        int faceVerticesTet[24] = {
+          0, 1, 2,  6, 7, 8, // bottom
+          0, 4, 3,  6, 7, 9,  // front
+          1, 5, 4,  7, 8, 9,  // right
+          2, 3, 5,  8, 6, 9,  // left
+        };
+
+        for(int i = 0; i < faceSizeTet; ++i) sortedIndices[i] = indices[i];
+        std::sort(sortedIndices, sortedIndices+faceSizeTet);
+        for (int iFace=0; iFace < 6; ++iFace) {
+          const int ii = iFace*faceSizeTet;
+          if ((sortedIndices[0] == faceVerticesTetSorted[ii+0]) &&
+              (sortedIndices[1] == faceVerticesTetSorted[ii+1]) &&
+              (sortedIndices[2] == faceVerticesTetSorted[ii+2]) &&
+              (sortedIndices[3] == faceVerticesTetSorted[ii+3])) {
+            if (debug) {
+              if (iFace == 0) std::cout << "Bottom tri" << std::endl;
+              else if (iFace == 1) std::cout << "Front tri" << std::endl;
+              else if (iFace == 2) std::cout << "Right tri" << std::endl;
+              else if (iFace == 3) std::cout << "Left tri" << std::endl;
+            }  // if
+            for (int fVertex=0; fVertex < faceSizeTet; ++fVertex)
+              for (int cVertex=0; cVertex < faceSizeTet; ++cVertex)
+                if (indices[cVertex] == faceVerticesTet[ii+fVertex]) {
+                  faceVertices->push_back((*origVertices)[cVertex]); 
+                  break;
+                } // if
+            found = true;
+            break;
+          } // if
+        } // for
+        if (!found) {throw ALE::Exception("Invalid tet crossface");}
+        return true;
+      } else if (cellDim == 3 && numCorners == 27) {
+        // Quadratic hexes (I hate this)
+        //   A hex is two oriented quads with the normal of the first
+        //   pointing up at the second.
+        //
+        //     7---6
+        //    /|  /|
+        //   4---5 |
+        //   | 3-|-2
+        //   |/  |/
+        //   0---1
+        //
+        // Faces are determined by the first 4 vertices (corners of faces)
+        const int faceSizeQuadHex = 9;
+        int  sortedIndices[9];
+        bool found = false;
+        int faceVerticesQuadHexSorted[54] = {
+          0, 1, 2, 3,  8, 9, 10, 11,  24, // bottom
+          4, 5, 6, 7,  12, 13, 14, 15,  25, // top
+          0, 1, 4, 5,  8, 12, 16, 17,  22, // front
+          1, 2, 5, 6,  9, 13, 17, 18,  21, // right
+          2, 3, 6, 7,  10, 14, 18, 19,  23, // back
+          0, 3, 4, 7,  11, 15, 16, 19,  20, // left
+        };
+        int faceVerticesQuadHex[54] = {
+          3, 2, 1, 0,  10, 9, 8, 11,  24, // bottom
+          4, 5, 6, 7,  12, 13, 14, 15,  25, // top
+          0, 1, 5, 4,  8, 17, 12, 16,  22, // front
+          1, 2, 6, 5,  9, 18, 13, 17,  21, // right
+          2, 3, 7, 6,  10, 19, 14, 18,  23, // back
+          3, 0, 4, 7,  11, 16, 15, 19,  20 // left
+        };
+
+        for (int i=0; i < faceSizeQuadHex; ++i) sortedIndices[i] = indices[i];
+        std::sort(sortedIndices, sortedIndices+faceSizeQuadHex);
+        for (int iFace=0; iFace < 6; ++iFace) {
+          const int ii = iFace*faceSizeQuadHex;
+          if ((sortedIndices[0] == faceVerticesQuadHexSorted[ii+0]) &&
+              (sortedIndices[1] == faceVerticesQuadHexSorted[ii+1]) &&
+              (sortedIndices[2] == faceVerticesQuadHexSorted[ii+2]) &&
+              (sortedIndices[3] == faceVerticesQuadHexSorted[ii+3])) {
+            if (debug) {
+              if (iFace == 0) std::cout << "Bottom quad" << std::endl;
+              else if (iFace == 1) std::cout << "Top quad" << std::endl;
+              else if (iFace == 2) std::cout << "Front quad" << std::endl;
+              else if (iFace == 3) std::cout << "Right quad" << std::endl;
+              else if (iFace == 4) std::cout << "Back quad" << std::endl;
+              else if (iFace == 5) std::cout << "Left quad" << std::endl;
+            }  // if
+            for (int fVertex=0; fVertex < faceSizeQuadHex; ++fVertex)
+              for (int cVertex=0; cVertex < faceSizeQuadHex; ++cVertex)
+                if (indices[cVertex] == faceVerticesQuadHex[ii+fVertex]) {
+                  faceVertices->push_back((*origVertices)[cVertex]); 
+                  break;
+                } // if
+            found = true;
+            break;
+          } // if
+        } // for
+        if (!found) {throw ALE::Exception("Invalid hex crossface");}
+        return true;
+      } else {
+        throw ALE::Exception("Unknown cell type for faceOrientation().");
       }
       if (!posOrient) {
         if (debug) std::cout << "  Reversing initial face orientation" << std::endl;

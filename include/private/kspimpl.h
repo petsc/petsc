@@ -108,6 +108,12 @@ struct _p_KSP {
   MatNullSpace nullsp;      /* Null space of the operator, removed from Krylov space */
 };
 
+typedef struct {
+  PetscTruth initialrtol;    /* default relative residual decrease is computing from initial residual, not rhs */
+  PetscTruth mininitialrtol; /* default relative residual decrease is computing from min of initial residual and rhs */
+  Vec        work;
+} KSPDefaultConvergedCtx;
+
 #define KSPLogResidualHistory(ksp,norm) \
     {if (ksp->res_hist && ksp->res_hist_max > ksp->res_hist_len) \
      ksp->res_hist[ksp->res_hist_len++] = norm;}

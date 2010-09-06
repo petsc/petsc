@@ -29,7 +29,7 @@ static PetscTruth MatPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT MatFinalizePackage(void) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatFinalizePackage(void)
 {
   PetscFunctionBegin;
   MatPackageInitialized            = PETSC_FALSE;
@@ -140,6 +140,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[])
   ierr = PetscLogEventRegister("MatMatMultTrnNum", MAT_CLASSID,&MAT_MatMultTransposeNumeric);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetRedundant",  MAT_CLASSID,&MAT_GetRedundantMatrix);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetSeqNZStrct", MAT_CLASSID,&MAT_GetSequentialNonzeroStructure);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatGetMultiProcBlock", MAT_CLASSID,&MAT_GetMultiProcBlock);CHKERRQ(ierr);
 
   /* these may be specific to MPIAIJ matrices */
   ierr = PetscLogEventRegister("MatMerge_SeqsToMPINumeric",MAT_CLASSID,&MAT_Seqstompinum);

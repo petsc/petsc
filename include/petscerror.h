@@ -110,7 +110,7 @@ PETSC_EXTERN_CXX_BEGIN
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3()
 M*/
-#define SETERRQ(comm,n,s)              return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s)
+#define SETERRQ(comm,n,s)              return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s)
 
 /*MC
    SETERRQ1 - Macro that is called when an error has been detected, 
@@ -136,7 +136,7 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ(), SETERRQ2(), SETERRQ3()
 M*/
-#define SETERRQ1(comm,n,s,a1)          return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1)
+#define SETERRQ1(comm,n,s,a1)          return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1)
 
 /*MC
    SETERRQ2 - Macro that is called when an error has been detected, 
@@ -163,7 +163,7 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ3()
 M*/
-#define SETERRQ2(comm,n,s,a1,a2)       return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2)
+#define SETERRQ2(comm,n,s,a1,a2)       return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2)
 
 /*MC
    SETERRQ3 - Macro that is called when an error has been detected, 
@@ -193,13 +193,13 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
-#define SETERRQ3(comm,n,s,a1,a2,a3)    return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3)
+#define SETERRQ3(comm,n,s,a1,a2,a3)    return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3)
 
-#define SETERRQ4(comm,n,s,a1,a2,a3,a4) return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4)
-#define SETERRQ5(comm,n,s,a1,a2,a3,a4,a5)       return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5)
-#define SETERRQ6(comm,n,s,a1,a2,a3,a4,a5,a6)    return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6)
-#define SETERRQ7(comm,n,s,a1,a2,a3,a4,a5,a6,a7) return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6,a7)
-#define SETERRABORT(comm,n,s)     do {PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s);MPI_Abort(comm,n);} while (0)
+#define SETERRQ4(comm,n,s,a1,a2,a3,a4) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4)
+#define SETERRQ5(comm,n,s,a1,a2,a3,a4,a5)       return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5)
+#define SETERRQ6(comm,n,s,a1,a2,a3,a4,a5,a6)    return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6)
+#define SETERRQ7(comm,n,s,a1,a2,a3,a4,a5,a6,a7) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6,a7)
+#define SETERRABORT(comm,n,s)     do {PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s);MPI_Abort(comm,n);} while (0)
 
 /*MC
    CHKERRQ - Checks error code, if non-zero it calls the error handler and then returns
@@ -236,11 +236,11 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2()
 M*/
-#define CHKERRQ(n)             do {if (PetscUnlikely(n)) return PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT," ");} while (0)
+#define CHKERRQ(n)             do {if (PetscUnlikely(n)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT," ");} while (0)
 
-#define CHKERRV(n)             do {if (PetscUnlikely(n)) {n = PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT," ");return;}} while(0)
-#define CHKERRABORT(comm,n)    do {if (PetscUnlikely(n)) {PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT," ");MPI_Abort(comm,n);}} while (0)
-#define CHKERRCONTINUE(n)      do {if (PetscUnlikely(n)) {PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT," ");}} while (0)
+#define CHKERRV(n)             do {if (PetscUnlikely(n)) {n = PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT," ");return;}} while(0)
+#define CHKERRABORT(comm,n)    do {if (PetscUnlikely(n)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT," ");MPI_Abort(comm,n);}} while (0)
+#define CHKERRCONTINUE(n)      do {if (PetscUnlikely(n)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT," ");}} while (0)
 
 #ifdef PETSC_CLANGUAGE_CXX
 
@@ -267,7 +267,7 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKERRQ(), CHKMEMQ
 M*/
-#define CHKERRXX(n)            do {if (PetscUnlikely(n)) {PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_IN_CXX,0);}} while(0)
+#define CHKERRXX(n)            do {if (PetscUnlikely(n)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_IN_CXX,0);}} while(0)
 
 #endif
 
@@ -295,9 +295,9 @@ M*/
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
           PetscMallocValidate()
 M*/
-#define CHKMEMQ do {PetscErrorCode _7_ierr = PetscMallocValidate(__LINE__,__FUNCT__,__FILE__,__SDIR__);CHKERRQ(_7_ierr);} while(0)
+#define CHKMEMQ do {PetscErrorCode _7_ierr = PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__);CHKERRQ(_7_ierr);} while(0)
 
-#define CHKMEMA PetscMallocValidate(__LINE__,__FUNCT__,__FILE__,__SDIR__)
+#define CHKMEMA PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__)
 
 #if defined(PETSC_UNDERSCORE_CHKERR)
 extern  PetscErrorCode __gierr;
@@ -311,11 +311,11 @@ extern PetscInt       PetscErrorUncatchableCount;
 extern PetscErrorCode PetscExceptions[PETSC_EXCEPTIONS_MAX];
 extern PetscInt       PetscExceptionsCount;
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscExceptionPush(PetscErrorCode);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscExceptionPop(PetscErrorCode);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode,PetscTruth);
-EXTERN PetscTruth PETSC_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode,PetscTruth);
+EXTERN PetscTruth PETSCSYS_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
 /*MC
    PetscExceptionCaught - Indicates if a specific exception zierr was caught.
 
@@ -511,28 +511,28 @@ M*/
 E*/
 typedef enum {PETSC_ERROR_INITIAL=0,PETSC_ERROR_REPEAT=1,PETSC_ERROR_IN_CXX = 2} PetscErrorType;
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int,const char*[],char **);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorPrintfInitialize(void);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorMessage(int,const char*[],char **);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
 #if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
 #include <sstream>
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandlerCxx(MPI_Comm,int,const char *,const char *,const char *,PetscErrorCode,PetscErrorType,const char*,void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTraceBackErrorHandlerCxx(MPI_Comm,int,const char *,const char *,const char *,PetscErrorCode,PetscErrorType,const char*,void*);
 #endif
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscIgnoreErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscEmacsClientErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMPIAbortErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscAbortErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscAttachDebuggerErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscReturnErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscError(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,...) PETSC_PRINTF_FORMAT_CHECK(7,8);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPopErrorHandler(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDefaultSignalHandler(int,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPushSignalHandler(PetscErrorCode (*)(int,void *),void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPopSignalHandler(void);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscIgnoreErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscEmacsClientErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMPIAbortErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscAbortErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscAttachDebuggerErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscReturnErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscError(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,...) PETSC_PRINTF_FORMAT_CHECK(7,8);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscPopErrorHandler(void);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDefaultSignalHandler(int,void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscPushSignalHandler(PetscErrorCode (*)(int,void *),void*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscPopSignalHandler(void);
 
 typedef enum {PETSC_FP_TRAP_OFF=0,PETSC_FP_TRAP_ON=1} PetscFPTrap;
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSetFPTrap(PetscFPTrap);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscSetFPTrap(PetscFPTrap);
 
 /*
       Allows the code to build a stack frame as it runs
@@ -549,12 +549,11 @@ typedef struct  {
         int currentsize;
 } PetscStack;
 
-extern PETSC_DLLEXPORT PetscStack *petscstack;
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackCopy(PetscStack*,PetscStack*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackPrint(PetscStack*,FILE* fp);
+extern PETSCSYS_DLLEXPORT PetscStack *petscstack;
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscStackCopy(PetscStack*,PetscStack*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscStackPrint(PetscStack*,FILE* fp);
 
 #define PetscStackActive (petscstack != 0)
-
 
 /*MC
    PetscFunctionBegin - First executable line of each PETSc function
@@ -582,14 +581,22 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackPrint(PetscStack*,FILE* fp);
 .keywords: traceback, error handling
 M*/
 #define PetscFunctionBegin \
-  do {\
-   if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {    \
-    petscstack->function[petscstack->currentsize]  = __FUNCT__; \
-    petscstack->file[petscstack->currentsize]      = __FILE__; \
-    petscstack->directory[petscstack->currentsize] = __SDIR__; \
-    petscstack->line[petscstack->currentsize]      = __LINE__; \
-    petscstack->currentsize++; \
-  }} while (0)
+  do {                                                                  \
+    if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {     \
+      petscstack->function[petscstack->currentsize]  = PETSC_FUNCTION_NAME; \
+      petscstack->file[petscstack->currentsize]      = __FILE__;        \
+      petscstack->directory[petscstack->currentsize] = __SDIR__;        \
+      petscstack->line[petscstack->currentsize]      = __LINE__;        \
+      petscstack->currentsize++;                                        \
+    }                                                                   \
+    PetscCheck__FUNCT__();                                              \
+  } while (0)
+
+#define PetscCheck__FUNCT__() do { \
+    if (strcmp(PETSC_FUNCTION_NAME,__FUNCT__) && strcmp(__FUNCT__,"User provided function")) { \
+      (*PetscErrorPrintf)("%s%s:%d: __FUNCT__=\"%s\" does not agree with %s=\"%s\"\n",__SDIR__,__FILE__,__LINE__,__FUNCT__,PetscStringize(PETSC_FUNCTION_NAME),PETSC_FUNCTION_NAME); \
+    }                                                                   \
+  } while (0)
 
 #define PetscStackPush(n) \
   do {if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {    \
@@ -598,10 +605,10 @@ M*/
     petscstack->directory[petscstack->currentsize] = "unknown"; \
     petscstack->line[petscstack->currentsize]      = 0; \
     petscstack->currentsize++; \
-  }} while (0)
+  } CHKMEMQ;} while (0)
 
 #define PetscStackPop \
-  do {if (petscstack && petscstack->currentsize > 0) {     \
+  do {CHKMEMQ; if (petscstack && petscstack->currentsize > 0) {	\
     petscstack->currentsize--; \
     petscstack->function[petscstack->currentsize]  = 0; \
     petscstack->file[petscstack->currentsize]      = 0; \
@@ -636,31 +643,54 @@ M*/
 M*/
 #define PetscFunctionReturn(a) \
   do {\
-  PetscStackPop; \
+  if (petscstack && petscstack->currentsize > 0) {	\
+    petscstack->currentsize--; \
+    petscstack->function[petscstack->currentsize]  = 0; \
+    petscstack->file[petscstack->currentsize]      = 0; \
+    petscstack->directory[petscstack->currentsize] = 0; \
+    petscstack->line[petscstack->currentsize]      = 0; \
+  }\
   return(a);} while (0)
 
 #define PetscFunctionReturnVoid() \
   do {\
-  PetscStackPop; \
+  if (petscstack && petscstack->currentsize > 0) {	\
+    petscstack->currentsize--; \
+    petscstack->function[petscstack->currentsize]  = 0; \
+    petscstack->file[petscstack->currentsize]      = 0; \
+    petscstack->directory[petscstack->currentsize] = 0; \
+    petscstack->line[petscstack->currentsize]      = 0; \
+  }\
   return;} while (0)
-
 
 #else
 
 #define PetscFunctionBegin 
 #define PetscFunctionReturn(a)  return(a)
 #define PetscFunctionReturnVoid() return
-#define PetscStackPop 
-#define PetscStackPush(f) 
+#define PetscStackPop     CHKMEMQ
+#define PetscStackPush(f) CHKMEMQ
 #define PetscStackActive        0
 
 #endif
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackCreate(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackView(PetscViewer);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackDestroy(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackPublish(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackDepublish(void);
+/*
+    PetscStackCall - Calls an external library routine or user function after pushing the name of the routine on the stack.
+
+   Input Parameters:
++   name - string that gives the name of the function being called
+-   routine - actual call to the routine
+
+   Developer Note: this is so that when a user or external library routine results in a crash or corrupts memory, they get blamed instead of PETSc.
+
+*/
+#define PetscStackCall(name,routine) PetscStackPush(name);routine;PetscStackPop;
+
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscStackCreate(void);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscStackView(PetscViewer);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscStackDestroy(void);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscStackPublish(void);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscStackDepublish(void);
 
 
 PETSC_EXTERN_CXX_END

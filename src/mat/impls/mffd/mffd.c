@@ -21,7 +21,7 @@ static PetscTruth MatMFFDPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT MatMFFDFinalizePackage(void) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDFinalizePackage(void)
 {
   PetscFunctionBegin;
   MatMFFDPackageInitialized = PETSC_FALSE;
@@ -45,7 +45,7 @@ PetscErrorCode PETSC_DLLEXPORT MatMFFDFinalizePackage(void)
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT MatMFFDInitializePackage(const char path[]) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
@@ -114,6 +114,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat mat,const MatMFFDType ftype
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidCharPointer(ftype,2);
+
+  ierr = PetscTypeCompare((PetscObject)mat,MATMFFD,&match);CHKERRQ(ierr);
+  if (!match) PetscFunctionReturn(0);
 
   /* already set, so just return */
   ierr = PetscTypeCompare((PetscObject)ctx,ftype,&match);CHKERRQ(ierr);

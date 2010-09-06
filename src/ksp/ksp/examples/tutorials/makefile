@@ -6,7 +6,7 @@ FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
                    ex12.c ex13.c ex15.c ex16.c ex22.c ex23.c ex25.c ex27.c ex28.c ex29.c ex32.c ex33.c ex34.c ex35.c ex37.c ex38.c \
-                   ex39.c ex40.c ex41.c ex45.c
+                   ex39.c ex40.c ex41.c ex45.c ex49.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90
 MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
@@ -233,6 +233,10 @@ ex47: ex47.o chkopts
 	-${CLINKER} -o ex47 ex47.o ${PETSC_KSP_LIB}
 	${RM} ex47.o
 
+ex49: ex49.o chkopts
+	-${CLINKER} -o ex49 ex49.o ${PETSC_KSP_LIB}
+	${RM} ex49.o
+
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -294,16 +298,31 @@ runex2_7:
 	   if (${DIFF} output/ex2_7.out ex2_7.tmp) then true; \
 	   else echo "Possible problem with ex2_7, diffs above"; fi; \
 	   ${RM} -f ex2_7.tmp
-runex2f:
-	-@${MPIEXEC} -n 2 ./ex2f -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex2f_1.tmp 2>&1; \
-	   if (${DIFF} output/ex2f_1.out ex2f_1.tmp) then true; \
-	   else echo "Possible problem with ex2f_1, diffs above"; fi; \
-	   ${RM} -f ex2f_1.tmp
+runex2_bjacobi:
+	-@${MPIEXEC} -n 4 ./ex2 -pc_type bjacobi -pc_bjacobi_blocks 1 -ksp_monitor_short -sub_pc_type jacobi -sub_ksp_type gmres > ex2.tmp 2>&1; \
+	   if (${DIFF} output/ex2_bjacobi.out ex2.tmp) then true; \
+	   else echo "Possible problem with ex2_bjacobi, diffs above"; fi; \
+	   ${RM} -f ex2.tmp
+runex2_bjacobi_2:
+	-@${MPIEXEC} -n 4 ./ex2 -pc_type bjacobi -pc_bjacobi_blocks 2 -ksp_monitor_short -sub_pc_type jacobi -sub_ksp_type gmres -ksp_view > ex2.tmp 2>&1; \
+	   if (${DIFF} output/ex2_bjacobi_2.out ex2.tmp) then true; \
+	   else echo "Possible problem with ex2_bjacobi_2, diffs above"; fi; \
+	   ${RM} -f ex2.tmp
+runex2_bjacobi_3:
+	-@${MPIEXEC} -n 4 ./ex2 -pc_type bjacobi -pc_bjacobi_blocks 4 -ksp_monitor_short -sub_pc_type jacobi -sub_ksp_type gmres > ex2.tmp 2>&1; \
+	   if (${DIFF} output/ex2_bjacobi_3.out ex2.tmp) then true; \
+	   else echo "Possible problem with ex2_bjacobi_3, diffs above"; fi; \
+	   ${RM} -f ex2.tmp
 runex2_umfpack:
 	-@${MPIEXEC} -n 1 ./ex2 -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package umfpack > ex2_umfpack.tmp 2>&1; \
            if (${DIFF} output/ex2_umfpack.out ex2_umfpack.tmp) then true; \
            else echo "Possible problem with ex2_umfpack, diffs above"; fi; \
            ${RM} -f ex2_umfpack.tmp
+runex2f:
+	-@${MPIEXEC} -n 2 ./ex2f -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex2f_1.tmp 2>&1; \
+	   if (${DIFF} output/ex2f_1.out ex2f_1.tmp) then true; \
+	   else echo "Possible problem with ex2f_1, diffs above"; fi; \
+	   ${RM} -f ex2f_1.tmp
 runex5:
 	-@${MPIEXEC} -n 1 ./ex5 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
@@ -867,16 +886,33 @@ runex45:
 	   else echo "Possible problem with ex45_1, diffs above"; fi; \
 	   ${RM} -f ex45_1.tmp
 
+runex49:
+	-@${MPIEXEC} -n 1 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 > ex49_1.tmp 2>&1;	  \
+	   ${DIFF} output/ex49_1.out ex49_1.tmp || echo "Possible problem with ex49_1, diffs above"; \
+	   ${RM} -f ex49_1.tmp
+
+runex49_2:
+	-@${MPIEXEC} -n 4 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_type gcr -elas_pc_type asm -elas_sub_pc_type lu > ex49_2.tmp 2>&1;	  \
+	   ${DIFF} output/ex49_2.out ex49_2.tmp || echo "Possible problem with ex49_2, diffs above"; \
+	   ${RM} -f ex49_2.tmp
+
+runex49_3:
+	-@${MPIEXEC} -n 4 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 2 -brick_E 1,10,1000,100 -brick_nu 0.4,0.2,0.3,0.1 -brick_span 3 -elas_pc_type asm -elas_sub_pc_type lu > ex49_3.tmp 2>&1; \
+	   ${DIFF} output/ex49_3.out ex49_3.tmp || echo "Possible problem with ex49_3, diffs above"; \
+	   ${RM} -f ex49_3.tmp
+
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
-                                 runex2_4 ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 ex5.rm \
+                                 runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 ex2.rm \
+                                 ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex9.PETSc runex9 ex9.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm ex22.PETSc runex22 ex22.rm \
                                  ex23.PETSc runex23 runex23_2 ex23.rm  ex25.PETSc runex25 runex25_2 ex25.rm \
                                  ex27.PETSc ex27.rm ex28.PETSc ex28.rm ex29.PETSc  ex29.rm \
                                  ex31.PETSc ex31.rm ex32.PETSc runex32 ex32.rm ex38.PETSc runex38 ex38.rm \
                                  ex43.PETSc runex43 runex43_2 ex43.rm \
-                                 ex45.PETSc runex45 ex45.rm
+                                 ex45.PETSc runex45 ex45.rm \
+                                 ex49.PETSc runex49 runex49_2 runex49_3 ex49.rm
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm  
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc ex6f.rm \
                                  ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm ex22f.PETSc runex22f \

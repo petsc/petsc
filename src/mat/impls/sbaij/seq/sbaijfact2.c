@@ -2510,17 +2510,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
       ui[k+1] = ui[k] + nzk;  
     } 
 
-#if defined(PETSC_USE_INFO)
-    if (ai[am] != 0) {
-      PetscReal af = ((PetscReal)ui[am])/((PetscReal)ai[am]);
-      ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %G needed %G\n",reallocs,fill,af);CHKERRQ(ierr);
-      ierr = PetscInfo1(A,"Run with -pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
-      ierr = PetscInfo1(A,"PCFactorSetFill(pc,%G) for best performance.\n",af);CHKERRQ(ierr);
-    } else {
-      ierr = PetscInfo(A,"Empty matrix.\n");CHKERRQ(ierr);
-    }
-#endif
-
     ierr = ISRestoreIndices(perm,&rip);CHKERRQ(ierr);
     ierr = PetscFree4(uj_ptr,uj_lvl_ptr,il,jl);CHKERRQ(ierr);
 
@@ -2559,10 +2548,20 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
   fact->info.factor_mallocs    = reallocs;
   fact->info.fill_ratio_given  = fill;
   if (ai[am] != 0) {
-    fact->info.fill_ratio_needed = ((PetscReal)ui[am])/((PetscReal)ai[am]);
+    fact->info.fill_ratio_needed = ((PetscReal)ui[am])/ai[am];
   } else {
     fact->info.fill_ratio_needed = 0.0;
   }
+#if defined(PETSC_USE_INFO)
+    if (ai[am] != 0) {
+      PetscReal af = fact->info.fill_ratio_needed;
+      ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %G needed %G\n",reallocs,fill,af);CHKERRQ(ierr);
+      ierr = PetscInfo1(A,"Run with -pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
+      ierr = PetscInfo1(A,"PCFactorSetFill(pc,%G) for best performance.\n",af);CHKERRQ(ierr);
+    } else {
+      ierr = PetscInfo(A,"Empty matrix.\n");CHKERRQ(ierr);
+    }
+#endif
   fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering; 
   PetscFunctionReturn(0); 
 } 
@@ -2576,7 +2575,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
   PetscErrorCode     ierr;
   PetscTruth         perm_identity,free_ij = PETSC_TRUE,missing;
   PetscInt           bs=A->rmap->bs,am=a->mbs,d;
-  const PetscInt     *cols,*rip,*ai,*aj;
+  const PetscInt     *cols,*rip,*ai=a->i,*aj=a->j;
   PetscInt           reallocs=0,i,*ui;
   PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
   PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL,ncols,*cols_lvl,*uj,**uj_ptr,**uj_lvl_ptr;
@@ -2606,20 +2605,16 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
   /* check whether perm is the identity mapping */  
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
   if (!perm_identity) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix reordering is not supported for sbaij matrix. Use aij format");
- 
+  a->permute = PETSC_FALSE;
+
   /* special case that simply copies fill pattern */
   if (!levels ) {  
-    a->permute = PETSC_FALSE;
     /* reuse the column pointers and row offsets for memory savings */
     ui           = a->i; 
     uj           = a->j;
     free_ij      = PETSC_FALSE;
     ratio_needed = 1.0;
   } else { /* case: levels>0 */
-    if (perm_identity){
-      a->permute = PETSC_FALSE;
-      ai = a->i; aj = a->j;
-    }
     ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);  
 
     /* initialization */
@@ -2707,17 +2702,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
       ui[k+1] = ui[k] + nzk;  
     } 
 
-#if defined(PETSC_USE_INFO)
-    if (ai[am] != 0) {
-      PetscReal af = ((PetscReal)ui[am])/((PetscReal)ai[am]);
-      ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %G needed %G\n",reallocs,fill,af);CHKERRQ(ierr);
-      ierr = PetscInfo1(A,"Run with -pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
-      ierr = PetscInfo1(A,"PCFactorSetFill(pc,%G) for best performance.\n",af);CHKERRQ(ierr);
-    } else {
-      ierr = PetscInfo(A,"Empty matrix.\n");CHKERRQ(ierr);
-    }
-#endif
-
     ierr = ISRestoreIndices(perm,&rip);CHKERRQ(ierr);
     ierr = PetscFree4(uj_ptr,uj_lvl_ptr,il,jl);CHKERRQ(ierr);
 
@@ -2758,6 +2742,16 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
   fact->info.factor_mallocs    = reallocs;
   fact->info.fill_ratio_given  = fill;
   fact->info.fill_ratio_needed = ratio_needed;
+#if defined(PETSC_USE_INFO)
+    if (ai[am] != 0) {
+      PetscReal af = fact->info.fill_ratio_needed;
+      ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %G needed %G\n",reallocs,fill,af);CHKERRQ(ierr);
+      ierr = PetscInfo1(A,"Run with -pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
+      ierr = PetscInfo1(A,"PCFactorSetFill(pc,%G) for best performance.\n",af);CHKERRQ(ierr);
+    } else {
+      ierr = PetscInfo(A,"Empty matrix.\n");CHKERRQ(ierr);
+    }
+#endif
   if (perm_identity){
     fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace;
   } else {

@@ -23,7 +23,7 @@
 
 .seealso: PetscDrawSetPause(), PetscDrawGetPause()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawPause(PetscDraw draw)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawPause(PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

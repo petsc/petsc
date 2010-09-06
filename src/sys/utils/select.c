@@ -33,7 +33,7 @@
    Concepts: menu
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscPopUpSelect(MPI_Comm comm,const char *machine,const char *title,int n,const char **choices,int *choice)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscPopUpSelect(MPI_Comm comm,const char *machine,const char *title,int n,const char **choices,int *choice)
 {
   PetscMPIInt    rank;
   int            i,rows = n + 2;
@@ -76,7 +76,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPopUpSelect(MPI_Comm comm,const char *machin
     FILE *fd;
 
     ierr = PetscFOpen(PETSC_COMM_SELF,"${HOMEDIRECTORY}/.popuptmp","r",&fd);CHKERRQ(ierr);
-    fscanf(fd,"%d",choice);
+    if (fscanf(fd,"%d",choice) != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fscanf() could not read numeric choice");
     *choice -= 1;
     if (*choice < 0 || *choice > n-1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Selection %d out of range",*choice);
     ierr = PetscFClose(PETSC_COMM_SELF,fd);CHKERRQ(ierr);

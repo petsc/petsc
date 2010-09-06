@@ -373,7 +373,7 @@ PetscErrorCode PetscBagRegisterTruth(PetscBag bag,void *addr,PetscTruth mdefault
            PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscBagDestroy(PetscBag bag)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscBagDestroy(PetscBag bag)
 {
   PetscErrorCode ierr;
   PetscBagItem   nitem = bag->bagitems,item;
@@ -409,7 +409,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagDestroy(PetscBag bag)
            PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagView(), PetscBagRegisterEnum()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscBagSetFromOptions(PetscBag bag)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscBagSetFromOptions(PetscBag bag)
 {
   PetscErrorCode ierr;
   PetscBagItem   nitem = bag->bagitems;
@@ -476,7 +476,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagSetFromOptions(PetscBag bag)
            PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
 {
   PetscTruth     isascii,isbinary;
   PetscErrorCode ierr;
@@ -571,7 +571,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
            PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag *bag)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag *bag)
 {
   PetscErrorCode ierr;
   PetscTruth     isbinary,skipoptions;
@@ -727,6 +727,8 @@ PetscErrorCode PetscBagGetName(PetscBag bag, char **name)
   PetscFunctionReturn(0);
 }  
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscBagGetData"
 /*@C
     PetscBagGetData - Gives back the user - access to memory that
     should be used for storing user-data-structure

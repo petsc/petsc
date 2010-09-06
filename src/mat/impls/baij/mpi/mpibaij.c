@@ -1495,7 +1495,7 @@ PetscErrorCode MatTranspose_MPIBAIJ(Mat A,MatReuse reuse,Mat *matout)
   if (reuse == MAT_INITIAL_MATRIX || *matout != A) {
     *matout = B;
   } else {
-    ierr = MatHeaderCopy(A,B);CHKERRQ(ierr);
+    ierr = MatHeaderMerge(A,B);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

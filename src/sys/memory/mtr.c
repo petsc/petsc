@@ -15,10 +15,10 @@
 /*
      These are defined in mal.c and ensure that malloced space is PetscScalar aligned
 */
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFreeAlign(void*,int,const char[],const char[],const char[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTrMallocDefault(size_t,int,const char[],const char[],const char[],void**);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void*,int,const char[],const char[],const char[]);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscFreeAlign(void*,int,const char[],const char[],const char[]);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTrMallocDefault(size_t,int,const char[],const char[],const char[],void**);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTrFreeDefault(void*,int,const char[],const char[],const char[]);
 
 
 #define CLASSID_VALUE   ((PetscClassId) 0xf0e0d0c9)
@@ -120,7 +120,7 @@ PetscErrorCode PetscSetUseTrMalloc_Private(void)
 .seealso: CHKMEMQ
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMallocValidate(int line,const char function[],const char file[],const char dir[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocValidate(int line,const char function[],const char file[],const char dir[])
 {
   TRSPACE     *head,*lasthead;
   char        *a;
@@ -172,7 +172,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocValidate(int line,const char function[
     double aligned pointer to requested storage, or null if not
     available.
  */
-PetscErrorCode PETSC_DLLEXPORT PetscTrMallocDefault(size_t a,int lineno,const char function[],const char filename[],const char dir[],void**result)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscTrMallocDefault(size_t a,int lineno,const char function[],const char filename[],const char dir[],void**result)
 {
   TRSPACE        *head;
   char           *inew;
@@ -252,7 +252,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrMallocDefault(size_t a,int lineno,const ch
 .   file  - file name where used.  Use __FILE__ for this
 .   dir - directory where file is. Use __SDIR__ for this
  */
-PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void *aa,int line,const char function[],const char file[],const char dir[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscTrFreeDefault(void *aa,int line,const char function[],const char file[],const char dir[])
 {
   char           *a = (char*)aa;
   TRSPACE        *head;
@@ -342,7 +342,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void *aa,int line,const char f
 
 .seealso: PetscMallocDump(), PetscMemoryGetCurrentUsage()
  @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMemoryShowUsage(PetscViewer viewer,const char message[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMemoryShowUsage(PetscViewer viewer,const char message[])
 {
   PetscLogDouble allocated,maximum,resident,residentmax;
   PetscErrorCode ierr;
@@ -391,7 +391,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemoryShowUsage(PetscViewer viewer,const cha
 .seealso: PetscMallocDump(), PetscMallocDumpLog(), PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(),
           PetscMemoryGetMaximumUsage()
  @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMallocGetCurrentUsage(PetscLogDouble *space)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocGetCurrentUsage(PetscLogDouble *space)
 {
   PetscFunctionBegin;
   *space = (PetscLogDouble) TRallocated;
@@ -416,7 +416,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocGetCurrentUsage(PetscLogDouble *space)
 .seealso: PetscMallocDump(), PetscMallocDumpLog(), PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(),
           PetscMemoryGetCurrentUsage()
  @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMallocGetMaximumUsage(PetscLogDouble *space)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocGetMaximumUsage(PetscLogDouble *space)
 {
   PetscFunctionBegin;
   *space = (PetscLogDouble) TRMaxMem;
@@ -454,7 +454,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocGetMaximumUsage(PetscLogDouble *space)
 
 .seealso:  PetscMallocGetCurrentUsage(), PetscMallocDumpLog() 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMallocDump(FILE *fp)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocDump(FILE *fp)
 {
   TRSPACE        *head;
   PetscErrorCode ierr;
@@ -493,7 +493,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDump(FILE *fp)
 
 .seealso: PetscMallocDump(), PetscMallocDumpLog()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMallocSetDumpLog(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocSetDumpLog(void)
 {
   PetscErrorCode ierr;
 
@@ -525,7 +525,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocSetDumpLog(void)
 
 .seealso: PetscMallocGetCurrentUsage(), PetscMallocDump(), PetscMallocSetDumpLog()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocDumpLog(FILE *fp)
 {
   PetscInt       i,j,n,dummy,*perm;
   size_t         *shortlength;
@@ -618,7 +618,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
 
 .seealso: CHKMEMQ(), PetscMallocValidate()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMallocDebug(PetscTruth level)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocDebug(PetscTruth level)
 {
   PetscFunctionBegin;
   TRdebugLevel = level;

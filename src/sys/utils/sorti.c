@@ -1,15 +1,19 @@
 #define PETSC_DLL
 /*
    This file contains routines for sorting integers. Values are sorted in place.
-
-
-   The word "register"  in this code is used to identify data that is not
-   aliased.  For some compilers, marking variables as register can improve 
-   the compiler optimizations.
  */
 #include "petscsys.h"                /*I  "petscsys.h"  I*/
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
+
+#define MEDIAN(v,right)                         \
+  (v[0]<v[right/2]                              \
+   ? (v[right/2]<v[right]                       \
+      ? right/2                                 \
+      : (v[0]<v[right] ? right : 0))            \
+   : (v[right]<v[right/2]                       \
+      ? right/2                                 \
+      : (v[0]<v[right] ? 0 : right)))
 
 /* -----------------------------------------------------------------------*/
 
@@ -20,28 +24,28 @@
    Assumes 0 origin for v, number of elements = right+1 (right is index of
    right-most member). 
 */
-static PetscErrorCode PetscSortInt_Private(PetscInt *v,PetscInt right)
+static void PetscSortInt_Private(PetscInt *v,PetscInt right)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,vl,last,tmp;
+  PetscInt       i,j,pivot,tmp;
 
-  PetscFunctionBegin;
   if (right <= 1) {
     if (right == 1) {
       if (v[0] > v[1]) SWAP(v[0],v[1],tmp);
     }
-    PetscFunctionReturn(0);
+    return;
   }
-  SWAP(v[0],v[right/2],tmp);
-  vl   = v[0];
-  last = 0;
-  for (i=1; i<=right; i++) {
-    if (v[i] < vl) {last++; SWAP(v[last],v[i],tmp);}
+  i = MEDIAN(v,right);          /* Choose a pivot */
+  SWAP(v[0],v[i],tmp);          /* Move it out of the way */
+  pivot = v[0];
+  for (i=0,j=right+1;;) {
+    while (++i < j && v[i] <= pivot); /* Scan from the left */
+    while (v[--j] > pivot);           /* Scan from the right */
+    if (i >= j) break;
+    SWAP(v[i],v[j],tmp);
   }
-  SWAP(v[0],v[last],tmp);
-  ierr = PetscSortInt_Private(v,last-1);CHKERRQ(ierr);
-  ierr = PetscSortInt_Private(v+last+1,right-(last+1));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
+  SWAP(v[0],v[j],tmp);          /* Put pivot back in place. */
+  PetscSortInt_Private(v,j-1);
+  PetscSortInt_Private(v+j+1,right-(j+1));
 }
 
 #undef __FUNCT__  
@@ -61,9 +65,8 @@ static PetscErrorCode PetscSortInt_Private(PetscInt *v,PetscInt right)
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSortInt(PetscInt n,PetscInt i[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSortInt(PetscInt n,PetscInt i[])
 {
-  PetscErrorCode ierr;
   PetscInt       j,k,tmp,ik;
 
   PetscFunctionBegin;
@@ -78,10 +81,46 @@ PetscErrorCode PETSC_DLLEXPORT PetscSortInt(PetscInt n,PetscInt i[])
       }
     }
   } else {
-    ierr = PetscSortInt_Private(i,n-1);CHKERRQ(ierr);
+    PetscSortInt_Private(i,n-1);
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortRemoveDupsInt" 
+/*@
+   PetscSortRemoveDupsInt - Sorts an array of integers in place in increasing order removes all duplicate entries
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+-  ii  - array of integers
+
+   Output Parameter:
+.  n - number of non-redundant values
+
+   Level: intermediate
+
+   Concepts: sorting^ints
+
+.seealso: PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt()
+@*/
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSortRemoveDupsInt(PetscInt *n,PetscInt ii[])
+{
+  PetscErrorCode ierr;
+  PetscInt       i,s = 0,N = *n, b = 0;
+
+  PetscFunctionBegin;
+  ierr = PetscSortInt(N,ii);CHKERRQ(ierr);
+  for (i=0; i<N-1; i++) {
+    if (ii[b+s+1] == ii[b]) {ii[b+1] = ii[b+s+2]; s++;}
+    else b++;
+  }
+  *n = N - s;
+  PetscFunctionReturn(0);
+}
+
 
 /* -----------------------------------------------------------------------*/
 #define SWAP2(a,b,c,d,t) {t=a;a=b;b=t;t=c;c=d;d=t;}
@@ -136,7 +175,7 @@ static PetscErrorCode PetscSortIntWithArray_Private(PetscInt *v,PetscInt *V,Pets
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithArray(PetscInt n,PetscInt i[],PetscInt Ii[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSortIntWithArray(PetscInt n,PetscInt i[],PetscInt Ii[])
 {
   PetscErrorCode ierr;
   PetscInt       j,k,tmp,ik;
@@ -208,7 +247,7 @@ static PetscErrorCode PetscSortMPIIntWithArray_Private(PetscMPIInt *v,PetscMPIIn
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSortMPIIntWithArray(PetscMPIInt n,PetscMPIInt i[],PetscMPIInt Ii[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSortMPIIntWithArray(PetscMPIInt n,PetscMPIInt i[],PetscMPIInt Ii[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    j,k,tmp,ik;
@@ -282,7 +321,7 @@ static PetscErrorCode PetscSortIntWithScalarArray_Private(PetscInt *v,PetscScala
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar Ii[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar Ii[])
 {
   PetscErrorCode ierr;
   PetscInt       j,k,tmp,ik;

@@ -2,10 +2,15 @@ function result = launch(program,np,opt)
 %
 %  launch(program,np)
 %  Starts up PETSc program
-% see @sreader/sreader() and PetscBinaryRead()
 % 
-% Unfortunately does not emit an error code if the 
-% launch failes.
+% Unfortunately does not emit an error code if the launch fails and one cannot see the output 
+% including error messages from the PETSc code.
+%
+% To debug problems we recommend commenting out the launch script from the Matlab script and 
+% in a separate terminal starting the PETSc program manually, for example petscmpiexec -n 1 ./ex1 -info other options
+% The Matlab script will block on the PetscOpenSocket() until the PETSc executable is started.
+
+%  see also @sreader/sreader() and PetscBinaryRead()
 %
 if nargin < 2
   np = 1;

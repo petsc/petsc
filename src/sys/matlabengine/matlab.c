@@ -32,7 +32,7 @@ PetscClassId MATLABENGINE_CLASSID = -1;
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(), PetscMatlabEngine
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],PetscMatlabEngine *mengine)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],PetscMatlabEngine *mengine)
 {
   PetscErrorCode    ierr;
   PetscMPIInt       rank,size;
@@ -77,7 +77,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineCreate(MPI_Comm comm,const char 
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(), PetscMatlabEngine
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineDestroy(PetscMatlabEngine v)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEngineDestroy(PetscMatlabEngine v)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -104,7 +104,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineDestroy(PetscMatlabEngine v)
           PetscMatlabEngineCreate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(), PetscMatlabEngine
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,const char string[],...)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,const char string[],...)
 {
   va_list           Argp;
   char              buffer[1024];
@@ -151,7 +151,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineEvaluate(PetscMatlabEngine mengi
           PetscMatlabEngineEvaluate(), PetscMatlabEngineCreate(), PetscMatlabEnginePrintOutput(),
           PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(), PetscMatlabEngine
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineGetOutput(PetscMatlabEngine mengine,char **string)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEngineGetOutput(PetscMatlabEngine mengine,char **string)
 {
   PetscFunctionBegin;  
   *string = mengine->buffer;
@@ -174,7 +174,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineGetOutput(PetscMatlabEngine meng
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEngineCreate(),
           PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(), PetscMatlabEngine
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMatlabEnginePrintOutput(PetscMatlabEngine mengine,FILE *fd)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEnginePrintOutput(PetscMatlabEngine mengine,FILE *fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -204,7 +204,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEnginePrintOutput(PetscMatlabEngine me
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), MatlabEngineGetArray(), PetscMatlabEngine
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMatlabEnginePut(PetscMatlabEngine mengine,PetscObject obj)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEnginePut(PetscMatlabEngine mengine,PetscObject obj)
 {
   PetscErrorCode ierr,(*put)(PetscObject,void*);
   
@@ -236,7 +236,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEnginePut(PetscMatlabEngine mengine,Pe
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), MatlabEngineGetArray(), PetscMatlabEngine
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineGet(PetscMatlabEngine mengine,PetscObject obj)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEngineGet(PetscMatlabEngine mengine,PetscObject obj)
 {
   PetscErrorCode ierr,(*get)(PetscObject,void*);
   
@@ -281,7 +281,7 @@ $      PetscMatlabEngineYYY(XXX object,PETSC_MATLAB_ENGINE_(comm));
           PETSC_MATLAB_ENGINE_WORLD, PETSC_MATLAB_ENGINE_SELF
  
 @*/
-PetscMatlabEngine PETSC_DLLEXPORT PETSC_MATLAB_ENGINE_(MPI_Comm comm)
+PetscMatlabEngine PETSCSYS_DLLEXPORT PETSC_MATLAB_ENGINE_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
   PetscTruth        flg;
@@ -330,7 +330,7 @@ PetscMatlabEngine PETSC_DLLEXPORT PETSC_MATLAB_ENGINE_(MPI_Comm comm)
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePut(), MatlabEngineGetArray(), PetscMatlabEngine
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMatlabEnginePutArray(PetscMatlabEngine mengine,int m,int n,PetscScalar *array,const char name[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEnginePutArray(PetscMatlabEngine mengine,int m,int n,PetscScalar *array,const char name[])
 {
   PetscErrorCode ierr;
   mxArray *mat;
@@ -368,7 +368,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEnginePutArray(PetscMatlabEngine mengi
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGet(), PetscMatlabEngine
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineGetArray(PetscMatlabEngine mengine,int m,int n,PetscScalar *array,const char name[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEngineGetArray(PetscMatlabEngine mengine,int m,int n,PetscScalar *array,const char name[])
 {
   PetscErrorCode ierr;
   mxArray *mat;

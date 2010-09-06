@@ -82,6 +82,8 @@ EXTERN PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat,MatGetSubMatrixOption,MatRe
 
 EXTERN PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat,IS,IS,MatReuse,Mat *);
 EXTERN PetscErrorCode MatGetSubMatrix_MPIAIJ_Private (Mat,IS,IS,PetscInt,MatReuse,Mat *);
+EXTERN PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat,MPI_Comm,Mat*);
+
 EXTERN PetscErrorCode MatLoad_MPIAIJ(Mat,PetscViewer);
 EXTERN PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 EXTERN PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
@@ -109,7 +111,6 @@ EXTERN PetscErrorCode MatILUFactor_MPIAIJ(Mat,IS,IS,const MatFactorInfo *);
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock_MPIAIJ(Mat,PetscTruth *,MatReuse,Mat *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
-
 EXTERN_C_END
 
 #endif

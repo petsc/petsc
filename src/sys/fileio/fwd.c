@@ -44,22 +44,18 @@
    Concepts: working directory
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscGetWorkingDirectory(char path[],size_t len)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscGetWorkingDirectory(char path[],size_t len)
 {
+  PetscFunctionBegin;
 #if defined(PETSC_HAVE_GETCWD)
-  PetscFunctionBegin;
-  getcwd(path,len);
-  PetscFunctionReturn(0);
+  if (!getcwd(path,len)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"getcwd()");
 #elif defined(PETSC_HAVE__GETCWD)
-  PetscFunctionBegin;
   _getcwd(path,len);
-  PetscFunctionReturn(0);
 #elif defined(PETSC_HAVE_GETWD)
-  PetscFunctionBegin;
   getwd(path);
-  PetscFunctionReturn(0);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS, "Could not find getcwd() or getwd()");
 #endif
+  PetscFunctionReturn(0);
 }
 

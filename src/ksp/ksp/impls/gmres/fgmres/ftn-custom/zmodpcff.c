@@ -3,8 +3,12 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define kspfgmressetmodifypc_      KSPFGMRESSETMODIFYPC
+#define kspfgmresmodifypcnochange_ KSPFGMRESMODIFYPCNOCHANGE
+#define kspfgmresmodifypcksp_      KSPFGMRESMODIFYPCKSP
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define kspfgmressetmodifypc_      kspfgmressetmodifypc
+#define kspfgmresmodifypcnochange_ kspfgmresmodifypcnochange
+#define kspfgmresmodifypcksp_      kspfgmresmodifypcksp
 #endif
 
 static PetscErrorCode ourmodify(KSP ksp,PetscInt i,PetscInt i2,PetscReal d,void* ctx)

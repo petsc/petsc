@@ -2,7 +2,7 @@
  
 #include "private/daimpl.h" /*I      "petscda.h"     I*/
 #include "petscmat.h"         /*I      "petscmat.h"    I*/
-
+#include "private/matimpl.h"
 
 EXTERN PetscErrorCode DAGetColoring1d_MPIAIJ(DA,ISColoringType,ISColoring *);
 EXTERN PetscErrorCode DAGetColoring2d_MPIAIJ(DA,ISColoringType,ISColoring *);
@@ -550,7 +550,7 @@ EXTERN PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA,Mat);
    Level: intermediate
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA(Mat mat,DA da)
+PetscErrorCode PETSCDM_DLLEXPORT MatSetDA(Mat mat,DA da)
 {
   PetscErrorCode ierr,(*f)(Mat,DA);
 
@@ -598,6 +598,46 @@ PetscErrorCode PETSCDM_DLLEXPORT MatView_MPI_DA(Mat A,PetscViewer viewer)
   ierr = PetscObjectName((PetscObject)A);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)Anatural,((PetscObject)A)->name);CHKERRQ(ierr);
   ierr = MatView(Anatural,viewer);CHKERRQ(ierr);
+  ierr = MatDestroy(Anatural);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatLoad_MPI_DA"
+PetscErrorCode PETSCDM_DLLEXPORT MatLoad_MPI_DA(Mat A,PetscViewer viewer)
+{
+  DA             da;
+  PetscErrorCode ierr;
+  Mat            Anatural,Aapp;
+  AO             ao;
+  PetscInt       rstart,rend,*app,i;
+  IS             is;
+  MPI_Comm       comm;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)A,"DA",(PetscObject*)&da);CHKERRQ(ierr);
+  if (!da) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix not generated from a DA");
+
+  /* Load the matrix in natural ordering */
+  ierr = MatCreate(((PetscObject)A)->comm,&Anatural);CHKERRQ(ierr);
+  ierr = MatSetType(Anatural,((PetscObject)A)->type_name);CHKERRQ(ierr);
+  ierr = MatLoad(Anatural,viewer);CHKERRQ(ierr);
+
+  /* Map natural ordering to application ordering and create IS */
+  ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(Anatural,&rstart,&rend);CHKERRQ(ierr);
+  ierr = PetscMalloc((rend-rstart)*sizeof(PetscInt),&app);CHKERRQ(ierr);
+  for (i=rstart; i<rend; i++) app[i-rstart] = i;
+  ierr = AOPetscToApplication(ao,rend-rstart,app);CHKERRQ(ierr);
+  ierr = ISCreateGeneralNC(comm,rend-rstart,app,&is);CHKERRQ(ierr);
+
+  /* Do permutation and replace header */
+  ierr = MatGetSubMatrix(Anatural,is,is,MAT_INITIAL_MATRIX,&Aapp);CHKERRQ(ierr);
+  ierr = MatHeaderReplace(A,Aapp);CHKERRQ(ierr);
+  ierr = ISDestroy(is);CHKERRQ(ierr);
   ierr = MatDestroy(Anatural);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -765,8 +805,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
   if (size > 1) { 
     /* change viewer to display matrix in natural ordering */
     ierr = MatShellSetOperation(A, MATOP_VIEW, (void (*)(void)) MatView_MPI_DA);CHKERRQ(ierr);
-    /* turn off loading of matrix because loading would require proper permutation I don't feel like writing now */
-    ierr = MatShellSetOperation(A, MATOP_LOAD, (void (*)(void)) 0);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(A, MATOP_LOAD, (void (*)(void)) MatLoad_MPI_DA);CHKERRQ(ierr);
   }
   *J = A;
   PetscFunctionReturn(0);

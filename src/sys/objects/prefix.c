@@ -22,7 +22,7 @@
    Concepts: prefix^setting
 
 */
-PetscErrorCode PETSC_DLLEXPORT PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
 {
   PetscErrorCode ierr;
 
@@ -57,7 +57,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectSetOptionsPrefix(PetscObject obj,const
    Concepts: prefix^setting
 
 */
-PetscErrorCode PETSC_DLLEXPORT PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix[])
 {
   char   *buf = obj->prefix;
   PetscErrorCode ierr;
@@ -95,7 +95,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectAppendOptionsPrefix(PetscObject obj,co
    Concepts: prefix^getting
 
 */
-PetscErrorCode PETSC_DLLEXPORT PetscObjectGetOptionsPrefix(PetscObject obj,const char *prefix[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetOptionsPrefix(PetscObject obj,const char *prefix[])
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -122,7 +122,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetOptionsPrefix(PetscObject obj,const
    Concepts: prefix^setting
 
 */
-PetscErrorCode PETSC_DLLEXPORT PetscObjectPrependOptionsPrefix(PetscObject obj,const char prefix[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPrependOptionsPrefix(PetscObject obj,const char prefix[])
 {
   char           *buf;
   size_t         len1,len2;

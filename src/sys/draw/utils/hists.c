@@ -49,7 +49,7 @@ struct _p_DrawHG {
 .seealso: PetscDrawHGDestroy()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
   PetscDrawHG    h;
   MPI_Comm       comm;
   PetscTruth     isnull;
@@ -105,7 +105,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGCreate(PetscDraw draw, int bins, Petsc
    Concepts: histogram^setting number of bins
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins) 
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins)
 {
   PetscErrorCode ierr;
 
@@ -135,7 +135,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetNumberBins(PetscDrawHG hist, int bi
 
   Concepts: histogram^resetting
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawHGReset(PetscDrawHG hist)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGReset(PetscDrawHG hist)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
@@ -161,7 +161,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGReset(PetscDrawHG hist)
 
 .seealso:  PetscDrawHGCreate()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDestroy(PetscDrawHG hist)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGDestroy(PetscDrawHG hist)
 {
   PetscErrorCode ierr;
 
@@ -196,7 +196,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDestroy(PetscDrawHG hist)
 
 .seealso: PetscDrawHGAddValues()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
@@ -262,7 +262,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGAddValue(PetscDrawHG hist, PetscReal v
   Level: intermediate
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
 {
   PetscDraw      draw = hist->win;
   PetscTruth     isnull;
@@ -405,7 +405,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
 
 .keywords:  draw, histogram
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawHGPrint(PetscDrawHG hist)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGPrint(PetscDrawHG hist)
 {
   PetscReal      xmax,xmin,*bins,*values,binSize,binLeft,binRight,mean,var;
   PetscErrorCode ierr;
@@ -499,7 +499,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGPrint(PetscDrawHG hist)
   Level: intermediate
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetColor(PetscDrawHG hist, int color)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGSetColor(PetscDrawHG hist, int color)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
@@ -524,7 +524,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetColor(PetscDrawHG hist, int color)
 
   Concepts: histogram^setting axis
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscReal x_max, int y_min, int y_max) 
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscReal x_max, int y_min, int y_max)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
@@ -551,7 +551,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal 
 .keywords:  draw, histogram, statistics
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawHGCalcStats(PetscDrawHG hist, PetscTruth calc)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGCalcStats(PetscDrawHG hist, PetscTruth calc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
@@ -574,7 +574,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGCalcStats(PetscDrawHG hist, PetscTruth
 
 .keywords:  draw, histogram, statistics
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawHGIntegerBins(PetscDrawHG hist, PetscTruth ints)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGIntegerBins(PetscDrawHG hist, PetscTruth ints)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
@@ -601,7 +601,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGIntegerBins(PetscDrawHG hist, PetscTru
   Level: intermediate
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
@@ -626,7 +626,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxi
   Level: intermediate
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawHGGetDraw(PetscDrawHG hist, PetscDraw *win)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGGetDraw(PetscDrawHG hist, PetscDraw *win)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);

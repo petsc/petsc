@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c util2.c ex7.c ex8.c ex9.c ex10.c ex11.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c util2.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c
 EXAMPLESF       = ex1f.F ex2f.F
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
@@ -63,6 +63,10 @@ ex10: ex10.o  chkopts
 ex11: ex11.o  chkopts
 	-${CLINKER} -o ex11 ex11.o  ${PETSC_TS_LIB}
 	${RM} ex11.o
+
+ex12: ex12.o  chkopts
+	-${CLINKER} -o ex12 ex12.o  ${PETSC_TS_LIB}
+	${RM} ex12.o
 #---------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always  > ex1_1.tmp 2>&1;	  \
@@ -80,28 +84,30 @@ runex2f:
 	-@${MPIEXEC} -n 1 ./ex2f 
 
 runex4:
-	-@${MPIEXEC} -n 1 ./ex4 -nox > ex4_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex4 -ts_view -nox > ex4_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
 	   else echo "Possible problem with ex4_1, diffs above"; fi; \
 	   ${RM} -f ex4_1.tmp
-
 runex4_2:
-	-@${MPIEXEC} -n 3 ./ex4 -nox > ex4_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 3 ./ex4 -ts_view -nox > ex4_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex4_2.out ex4_2.tmp) then true; \
 	   else echo "Possible problem with ex4_2, diffs above"; fi; \
 	   ${RM} -f ex4_2.tmp
-
 runex4_3:
-	-@${MPIEXEC} -n 1 ./ex4 -nox -nonlinear > ex4_3.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex4 -ts_view -nox -nonlinear > ex4_3.tmp 2>&1;	  \
 	   if (${DIFF} output/ex4_3.out ex4_3.tmp) then true; \
 	   else echo "Possible problem with ex4_3, diffs above"; fi; \
 	   ${RM} -f ex4_3.tmp
-
 runex4_4:
-	-@${MPIEXEC} -n 3 ./ex4 -nox -nonlinear > ex4_4.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 3 ./ex4 -ts_view -nox -nonlinear > ex4_4.tmp 2>&1;	  \
 	   if (${DIFF} output/ex4_4.out ex4_4.tmp) then true; \
 	   else echo "Possible problem with ex4_4, diffs above"; fi; \
 	   ${RM} -f ex4_4.tmp
+runex4_sundials:
+	-@${MPIEXEC} -n 4 ./ex4 -nox -ts_type sundials -ts_max_steps 500 > ex4.tmp 2>&1;	  \
+	   if (${DIFF} output/ex4_sundials.out ex4.tmp) then true; \
+	   else echo "Possible problem with ex4_sundials, diffs above"; fi; \
+	   ${RM} -f ex4.tmp
 
 runex6:
 	-@${MPIEXEC} -n 1 ./ex6 -nox -time_steps_max 4   > ex6_1.tmp 2>&1;	  \

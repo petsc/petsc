@@ -493,12 +493,18 @@ namespace ALE {
             if (corners == dim+1) {
               numFaceVertices[numCases] = dim;
               if (debug) {std::cout << "  Recognizing simplices" << std::endl;}
+            } else if ((dim == 1) && (corners == 3)) {
+              numFaceVertices[numCases] = 3;
+              if (debug) {std::cout << "  Recognizing quadratic edges" << std::endl;}
             } else if ((dim == 2) && (corners == 4)) {
               numFaceVertices[numCases] = 2;
               if (debug) {std::cout << "  Recognizing quads" << std::endl;}
             } else if ((dim == 2) && (corners == 6)) {
               numFaceVertices[numCases] = 3;
               if (debug) {std::cout << "  Recognizing tri and quad cohesive Lagrange cells" << std::endl;}
+            } else if ((dim == 2) && (corners == 9)) {
+              numFaceVertices[numCases] = 3;
+              if (debug) {std::cout << "  Recognizing quadratic quads and quadratic quad cohesive Lagrange cells" << std::endl;}
             } else if ((dim == 3) && (corners == 6)) {
               numFaceVertices[numCases] = 4;
               if (debug) {std::cout << "  Recognizing tet cohesive cells" << std::endl;}
@@ -508,9 +514,18 @@ namespace ALE {
             } else if ((dim == 3) && (corners == 9)) {
               numFaceVertices[numCases] = 6;
               if (debug) {std::cout << "  Recognizing tet cohesive Lagrange cells" << std::endl;}
+            } else if ((dim == 3) && (corners == 10)) {
+              numFaceVertices[numCases] = 6;
+              if (debug) {std::cout << "  Recognizing quadratic tets" << std::endl;}
             } else if ((dim == 3) && (corners == 12)) {
               numFaceVertices[numCases] = 6;
               if (debug) {std::cout << "  Recognizing hex cohesive Lagrange cells" << std::endl;}
+            } else if ((dim == 3) && (corners == 18)) {
+              numFaceVertices[numCases] = 6;
+              if (debug) {std::cout << "  Recognizing quadratic tet cohesive Lagrange cells" << std::endl;}
+            } else if ((dim == 3) && (corners == 27)) {
+              numFaceVertices[numCases] = 9;
+              if (debug) {std::cout << "  Recognizing quadratic hexes and quadratic hex cohesive Lagrange cells" << std::endl;}
             } else {
               throw ALE::Exception("Could not determine number of face vertices");
             }
@@ -749,6 +764,14 @@ namespace ALE {
           faceVertices = 2;
         } else if ((dim == 3) && (corners == 8)) {
           faceVertices = 4;
+        } else if ((dim == 2) && (corners == 6)) {
+	  faceVertices = 3;
+        } else if ((dim == 2) && (corners == 9)) {
+          faceVertices = 3;
+        } else if ((dim == 3) && (corners == 10)) {
+          faceVertices = 6;
+        } else if ((dim == 3) && (corners == 27)) {
+          faceVertices = 9;
         } else {
           throw ALE::Exception("Could not determine number of face vertices");
         }
@@ -1461,6 +1484,14 @@ namespace ALE {
             faceVertices = 2;
           } else if ((dim == 3) && (corners == 8)) {
             faceVertices = 4;
+	  } else if ((dim == 2) && (corners == 6)) {
+	    faceVertices = 3;
+	  } else if ((dim == 2) && (corners == 9)) {
+	    faceVertices = 3;
+	  } else if ((dim == 3) && (corners == 10)) {
+	    faceVertices = 6;
+	  } else if ((dim == 3) && (corners == 27)) {
+	    faceVertices = 9;
           } else {
             throw ALE::Exception("Could not determine number of face vertices");
           }

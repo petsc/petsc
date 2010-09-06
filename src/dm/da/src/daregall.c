@@ -2,9 +2,9 @@
 
 #include "private/daimpl.h"     /*I  "petscda.h"  I*/
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT DACreate_1D(DA);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT DACreate_2D(DA);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT DACreate_3D(DA);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA);
 EXTERN_C_END
 
 #undef __FUNCT__  

@@ -423,7 +423,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetLocalJacobian(DA,DALocalFunction1*
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalJacobian(DA,DALocalFunction1);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalAdicFunction_Private(DA,DALocalFunction1);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA(Mat,DA);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  MatSetDA(Mat,DA);
 
 /*MC
        DASetLocalAdicFunction - Caches in a DA a local function computed by ADIC/ADIFOR
@@ -637,11 +637,11 @@ typedef struct NLF_DAAD* NLF;
 
 #include <petscbag.h>
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabOpen(MPI_Comm, const char [], PetscViewer*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabDestroy(PetscViewer);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabOutputBag(PetscViewer, const char [], PetscBag);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabOutputVec(PetscViewer, const char [], Vec);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabOutputVecDA(PetscViewer, const char [], Vec, DA);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryMatlabOpen(MPI_Comm, const char [], PetscViewer*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryMatlabDestroy(PetscViewer);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryMatlabOutputBag(PetscViewer, const char [], PetscBag);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryMatlabOutputVec(PetscViewer, const char [], Vec);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryMatlabOutputVecDA(PetscViewer, const char [], Vec, DA);
 
 
 /*S

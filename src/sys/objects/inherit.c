@@ -16,7 +16,7 @@ EXTERN PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject,const char[],vo
    PetscHeaderCreate_Private - Creates a base PETSc object header and fills
    in the default values.  Called by the macro PetscHeaderCreate().
 */
-PetscErrorCode PETSC_DLLEXPORT PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,PetscInt type,const char class_name[],MPI_Comm comm,
+PetscErrorCode PETSCSYS_DLLEXPORT PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,PetscInt type,const char class_name[],MPI_Comm comm,
                                          PetscErrorCode (*des)(PetscObject),PetscErrorCode (*vie)(PetscObject,PetscViewer))
 {
   static PetscInt idcnt = 1;
@@ -53,7 +53,7 @@ extern PetscLogDouble PetscMemoryMaximumUsage;
     PetscHeaderDestroy_Private - Destroys a base PETSc object header. Called by 
     the macro PetscHeaderDestroy().
 */
-PetscErrorCode PETSC_DLLEXPORT PetscHeaderDestroy_Private(PetscObject h)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscHeaderDestroy_Private(PetscObject h)
 {
   PetscErrorCode ierr;
 
@@ -109,7 +109,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscHeaderDestroy_Private(PetscObject h)
 .seealso: KSPSetFromOptions(), PCSetFromOptions(), SNESSetFromOptions(), PetscObjectProcessOptionsHandlers(), PetscObjectDestroyOptionsHandlers()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*handle)(PetscObject,void*),PetscErrorCode (*destroy)(PetscObject,void*),void *ctx)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*handle)(PetscObject,void*),PetscErrorCode (*destroy)(PetscObject,void*),void *ctx)
 {
   PetscFunctionBegin;
   if (obj->noptionhandler >= PETSC_MAX_OPTIONS_HANDLER) SETERRQ(obj->comm,PETSC_ERR_ARG_OUTOFRANGE,"To many options handlers added");
@@ -135,7 +135,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectAddOptionsHandler(PetscObject obj,Pets
 .seealso: KSPSetFromOptions(), PCSetFromOptions(), SNESSetFromOptions(), PetscObjectAddOptionsHandler(), PetscObjectDestroyOptionsHandlers()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectProcessOptionsHandlers(PetscObject obj)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectProcessOptionsHandlers(PetscObject obj)
 {
   PetscInt       i;
   PetscErrorCode ierr;
@@ -163,7 +163,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectProcessOptionsHandlers(PetscObject obj
 .seealso: KSPSetFromOptions(), PCSetFromOptions(), SNESSetFromOptions(), PetscObjectAddOptionsHandler(), PetscObjectProcessOptionsHandlers()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectDestroyOptionsHandlers(PetscObject obj)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectDestroyOptionsHandlers(PetscObject obj)
 {
   PetscInt       i;
   PetscErrorCode ierr;
@@ -194,7 +194,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectDestroyOptionsHandlers(PetscObject obj
 
 .seealso: PetscObjectCompose(), PetscObjectDereference()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectReference(PetscObject obj)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectReference(PetscObject obj)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -221,7 +221,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectReference(PetscObject obj)
 
 .seealso: PetscObjectCompose(), PetscObjectDereference(), PetscObjectReference()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -247,7 +247,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetReference(PetscObject obj,PetscInt 
 
 .seealso: PetscObjectCompose(), PetscObjectReference()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectDereference(PetscObject obj)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectDereference(PetscObject obj)
 {
   PetscErrorCode ierr;
 
@@ -362,7 +362,7 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
 
 .seealso: PetscObjectQuery(), PetscContainerCreate()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectCompose(PetscObject obj,const char name[],PetscObject ptr)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectCompose(PetscObject obj,const char name[],PetscObject ptr)
 {
   PetscErrorCode ierr;
 
@@ -400,7 +400,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCompose(PetscObject obj,const char nam
 
 .seealso: PetscObjectQuery()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectQuery(PetscObject obj,const char name[],PetscObject *ptr)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectQuery(PetscObject obj,const char name[],PetscObject *ptr)
 {
   PetscErrorCode ierr;
 
@@ -414,7 +414,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectQuery(PetscObject obj,const char name[
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectComposeFunction"
-PetscErrorCode PETSC_DLLEXPORT PetscObjectComposeFunction(PetscObject obj,const char name[],const char fname[],void (*ptr)(void))
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposeFunction(PetscObject obj,const char name[],const char fname[],void (*ptr)(void))
 {
   PetscErrorCode ierr;
 
@@ -451,7 +451,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectComposeFunction(PetscObject obj,const 
 
 .seealso: PetscObjectComposeFunctionDynamic()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectQueryFunction(PetscObject obj,const char name[],void (**ptr)(void))
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectQueryFunction(PetscObject obj,const char name[],void (**ptr)(void))
 {
   PetscErrorCode ierr;
 
@@ -486,7 +486,7 @@ struct _p_PetscContainer {
 .seealso: PetscContainerCreate(), PetscContainerDestroy(), 
           PetscContainerSetPointer()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscContainerGetPointer(PetscContainer obj,void **ptr)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscContainerGetPointer(PetscContainer obj,void **ptr)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(obj,PETSC_CONTAINER_CLASSID,1);
@@ -512,7 +512,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscContainerGetPointer(PetscContainer obj,void 
 .seealso: PetscContainerCreate(), PetscContainerDestroy(), 
           PetscContainerGetPointer()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscContainerSetPointer(PetscContainer obj,void *ptr)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscContainerSetPointer(PetscContainer obj,void *ptr)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(obj,PETSC_CONTAINER_CLASSID,1);
@@ -535,7 +535,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscContainerSetPointer(PetscContainer obj,void 
 
 .seealso: PetscContainerCreate()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscContainerDestroy(PetscContainer obj)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscContainerDestroy(PetscContainer obj)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -561,7 +561,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscContainerDestroy(PetscContainer obj)
 
 .seealso: PetscContainerDestroy()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscContainerSetUserDestroy(PetscContainer obj, PetscErrorCode (*des)(void*))
+PetscErrorCode PETSCSYS_DLLEXPORT PetscContainerSetUserDestroy(PetscContainer obj, PetscErrorCode (*des)(void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(obj,PETSC_CONTAINER_CLASSID,1);
@@ -569,7 +569,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscContainerSetUserDestroy(PetscContainer obj, 
   PetscFunctionReturn(0);
 }
 
-PetscClassId PETSC_DLLEXPORT PETSC_CONTAINER_CLASSID;
+PetscClassId PETSCSYS_DLLEXPORT PETSC_CONTAINER_CLASSID;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscContainerCreate"
@@ -591,7 +591,7 @@ PetscClassId PETSC_DLLEXPORT PETSC_CONTAINER_CLASSID;
 
 .seealso: PetscContainerDestroy(), PetscContainerSetPointer(), PetscContainerGetPointer()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscContainerCreate(MPI_Comm comm,PetscContainer *container)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscContainerCreate(MPI_Comm comm,PetscContainer *container)
 {
   PetscErrorCode ierr;
   PetscContainer contain;
@@ -623,7 +623,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscContainerCreate(MPI_Comm comm,PetscContainer
 .keywords: set, options, database
 .seealso: PetscObjectSetOptionsPrefix(), PetscObjectGetOptionsPrefix()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectSetFromOptions(PetscObject obj)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetFromOptions(PetscObject obj)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -648,7 +648,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectSetFromOptions(PetscObject obj)
 .keywords: setup
 .seealso: PetscObjectDestroy()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectSetUp(PetscObject obj)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetUp(PetscObject obj)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);

@@ -6,7 +6,7 @@
 /* FIX: is it okay to include this directly? */
 #include <ctype.h>
 
-PETSC_DLLEXPORT PetscClassId PETSC_FWK_CLASSID;
+PETSCSYS_DLLEXPORT PetscClassId PETSC_FWK_CLASSID;
 static char PETSC_FWK_CLASS_NAME[] = "PetscFwk";
 static PetscTruth PetscFwkPackageInitialized = PETSC_FALSE;
 
@@ -289,10 +289,6 @@ struct _n_PetscFwkVTable_SO {
   char           *path, *name;
 };
 
-struct _n_PetscFwkRecord {
-  char                *key;
-  PetscFwk            component;
-};
 
 struct _p_PetscFwk {
   PETSCHEADER(int);
@@ -300,9 +296,8 @@ struct _p_PetscFwk {
   void                      *vtable;
   char *                    url;
   PetscInt                  N, maxN;
-  struct _n_PetscFwkRecord  *record;
+  PetscFwk                  *component;
   PetscFwkGraph             dep_graph;
-  PetscFwk                  visitor;
 };
 
 static PetscFwk defaultFwk = PETSC_NULL;
@@ -331,7 +326,7 @@ static PetscDLLibrary PetscFwkDLLibrariesLoaded = 0;
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkDLLibrarySym"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const char path[],const char symbol[],void **value)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const char path[],const char symbol[],void **value)
 {
   char           libname[PETSC_MAX_PATH_LEN],suffix[16],*s;
   PetscDLLibrary nlist,prev,list;
@@ -575,7 +570,7 @@ PetscErrorCode PetscFwkCall(PetscFwk fwk, const char* message) {
 */
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkParseURL_Private"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkParseURL_Private(const char inurl[], char **outpath, char **outname, PetscFwkVTableType *outtype){
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkParseURL_Private(const char inurl[], char **outpath, char **outname, PetscFwkVTableType *outtype){
   char *n, *s;
   static PetscInt nlen = PETSC_FWK_MAX_URL_LENGTH;
   static char path[PETSC_FWK_MAX_URL_LENGTH+1], name[PETSC_FWK_MAX_URL_LENGTH+1];
@@ -640,7 +635,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkParseURL_Private(const char inurl[], char
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkClearURL_Private"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkClearURL_Private(PetscFwk fwk) {
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkClearURL_Private(PetscFwk fwk) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   switch(fwk->vtable_type) {
@@ -670,7 +665,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkClearURL_Private(PetscFwk fwk) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkSetURL"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkSetURL(PetscFwk fwk, const char url[]) {
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkSetURL(PetscFwk fwk, const char url[]) {
   PetscErrorCode ierr;
   char *path, *name;
   PetscFunctionBegin;
@@ -701,7 +696,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkSetURL(PetscFwk fwk, const char url[]) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkGetURL"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkGetURL(PetscFwk fwk, const char **url) {
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetURL(PetscFwk fwk, const char **url) {
   PetscFunctionBegin;
   *url = fwk->url;
   PetscFunctionReturn(0);
@@ -734,7 +729,7 @@ PetscErrorCode PetscFwkView(PetscFwk fwk, PetscViewer viewer) {
         ierr = PetscViewerASCIIPrintf(viewer, "\n"); CHKERRQ(ierr);
       }
       id = vertices[i];
-      ierr = PetscViewerASCIIPrintf(viewer, "%d: key:%s, name:%s, url:%s", id, fwk->record[id].key, ((PetscObject)(fwk->record[id].component))->name, fwk->record[id].component->url); CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "%d: name:%s, url:%s", id, ((PetscObject)(fwk->component[id]))->name, fwk->component[id]->url); CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer, "\n"); CHKERRQ(ierr);
     ierr = PetscFree(vertices); CHKERRQ(ierr);
@@ -750,15 +745,13 @@ PetscErrorCode PetscFwkView(PetscFwk fwk, PetscViewer viewer) {
 #define __FUNCT__ "PetscFwkVisit"
 PetscErrorCode PetscFwkVisit(PetscFwk fwk, const char* message){
   PetscInt i, id, N, *vertices;
-  char *key;
   PetscFwk component, visitor;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscFwkGraphTopologicalSort(fwk->dep_graph, &N, &vertices); CHKERRQ(ierr);
   for(i = 0; i < N; ++i) {
     id = vertices[i];
-    component = fwk->record[id].component;
-    key       = fwk->record[id].key;
+    component = fwk->component[id];
     /* Save the component's visitor and set fwk as the current visitor. */
     ierr = PetscObjectQuery((PetscObject)component, "visitor", (PetscObject*)(&visitor)); CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)component, "visitor", (PetscObject) fwk);      CHKERRQ(ierr);
@@ -773,7 +766,7 @@ PetscErrorCode PetscFwkVisit(PetscFwk fwk, const char* message){
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkGetKeyID_Private"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkGetKeyID_Private(PetscFwk fwk, const char key[], PetscInt *_id, PetscTruth *_found){
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetKeyID_Private(PetscFwk fwk, const char key[], PetscInt *_id, PetscTruth *_found){
   PetscInt i;
   PetscTruth eq;
   PetscErrorCode ierr;
@@ -781,7 +774,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkGetKeyID_Private(PetscFwk fwk, const char
   /* Check whether a component with the given key has already been registered. */
   if(_found){*_found = PETSC_FALSE;}
   for(i = 0; i < fwk->N; ++i) {
-    ierr = PetscStrcmp(key, fwk->record[i].key, &eq); CHKERRQ(ierr);
+    ierr = PetscStrcmp(key, ((PetscObject)fwk->component[i])->name, &eq); CHKERRQ(ierr);
     if(eq) {
       if(_id) {*_id = i;}
       if(_found){*_found = PETSC_TRUE;}
@@ -792,9 +785,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkGetKeyID_Private(PetscFwk fwk, const char
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkRegisterKey_Private"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterKey_Private(PetscFwk fwk, const char key[], PetscInt *_id) {
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterKey_Private(PetscFwk fwk, const char key[], PetscInt *_id) {
   PetscInt v, id;
-  size_t len;
   PetscTruth found;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -805,26 +797,23 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterKey_Private(PetscFwk fwk, const c
   }
   /***/
   /* No such key found. */
-  /* Create a new record containing a new component for this key. */
+  /* Create a new component for this key. */
   if(fwk->N >= fwk->maxN) {
-    /* No more empty records, therefore, expand the record array */
-    struct _n_PetscFwkRecord *new_record;
-    ierr = PetscMalloc(sizeof(struct _n_PetscFwkRecord)*(fwk->maxN+CHUNKSIZE), &new_record);   CHKERRQ(ierr);
-    ierr = PetscMemcpy(new_record, fwk->record, sizeof(struct _n_PetscFwkRecord)*(fwk->maxN)); CHKERRQ(ierr);
-    ierr = PetscMemzero(new_record+fwk->maxN,sizeof(struct _n_PetscFwkRecord)*(CHUNKSIZE));    CHKERRQ(ierr);
-    ierr = PetscFree(fwk->record);                                                             CHKERRQ(ierr);
-    fwk->record = new_record;
+    /* No more empty component slots, therefore, expand the component array */
+    PetscFwk *new_components;
+    ierr = PetscMalloc(sizeof(PetscFwk)*(fwk->maxN+CHUNKSIZE), &new_components);   CHKERRQ(ierr);
+    ierr = PetscMemcpy(new_components, fwk->component, sizeof(PetscFwk)*(fwk->maxN)); CHKERRQ(ierr);
+    ierr = PetscMemzero(new_components+fwk->maxN,sizeof(PetscFwk)*(CHUNKSIZE));    CHKERRQ(ierr);
+    ierr = PetscFree(fwk->component);                                              CHKERRQ(ierr);
+    fwk->component = new_components;
     fwk->maxN += CHUNKSIZE;
   }
   id = fwk->N;
   ++(fwk->N);
   /* Store key */
-  ierr = PetscStrlen(key, &len);                                     CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(char)*(len+1), &(fwk->record[id].key));  CHKERRQ(ierr);
-  ierr = PetscStrcpy(fwk->record[id].key, key);                      CHKERRQ(ierr);
   /* Create the corresponding component. */
-  ierr = PetscFwkCreate(((PetscObject)fwk)->comm, &(fwk->record[id].component)); CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)(fwk->record[id].component), key);      CHKERRQ(ierr);
+  ierr = PetscFwkCreate(((PetscObject)fwk)->comm, fwk->component+id); CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)fwk->component[id], key);    CHKERRQ(ierr);
   /* Add a new vertex to the dependence graph.  This vertex will correspond to the newly registered component. */
   ierr = PetscFwkGraphAddVertex(fwk->dep_graph, &v); CHKERRQ(ierr);
   /* v must equal id */
@@ -841,7 +830,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterKey_Private(PetscFwk fwk, const c
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkRegisterComponent"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterComponent(PetscFwk fwk, const char key[]){
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterComponent(PetscFwk fwk, const char key[]){
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscFwkRegisterKey_Private(fwk, key, PETSC_NULL); CHKERRQ(ierr);
@@ -850,19 +839,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterComponent(PetscFwk fwk, const cha
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkRegisterComponentURL"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterComponentURL(PetscFwk fwk, const char key[], const char url[]){
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterComponentURL(PetscFwk fwk, const char key[], const char url[]){
   PetscErrorCode ierr;
   PetscInt id;
   PetscFunctionBegin;
   ierr = PetscFwkRegisterKey_Private(fwk, key, &id); CHKERRQ(ierr);
-  ierr = PetscFwkSetURL(fwk->record[id].component, url); CHKERRQ(ierr);
+  ierr = PetscFwkSetURL(fwk->component[id], url); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* PetscFwkRegisterComponentURL() */
 
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkRegisterDependence"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterDependence(PetscFwk fwk, const char clientkey[], const char serverkey[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterDependence(PetscFwk fwk, const char clientkey[], const char serverkey[])
 {
   PetscInt clientid, serverid;
   PetscErrorCode ierr; 
@@ -884,29 +873,23 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterDependence(PetscFwk fwk, const ch
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkDestroy"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkDestroy(PetscFwk fwk)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkDestroy(PetscFwk fwk)
 {
   PetscInt i;
   PetscErrorCode ierr;
   if (--((PetscObject)fwk)->refct > 0) PetscFunctionReturn(0);
   for(i = 0; i < fwk->N; ++i){
-    ierr = PetscFree(fwk->record[i].key);
-    if(fwk->record[i].component != PETSC_NULL) {
-      ierr = PetscObjectDestroy((PetscObject)fwk->record[i].component); CHKERRQ(ierr);
-    }
+    ierr = PetscObjectDestroy((PetscObject)fwk->component[i]); CHKERRQ(ierr);
   }
-  ierr = PetscFree(fwk->record); CHKERRQ(ierr);
+  ierr = PetscFree(fwk->component); CHKERRQ(ierr);
   ierr = PetscFwkGraphDestroy(fwk->dep_graph); CHKERRQ(ierr);
-  if(fwk->visitor) {
-    ierr = PetscObjectDestroy((PetscObject)(fwk->visitor)); CHKERRQ(ierr);
-  }
   ierr = PetscHeaderDestroy(fwk);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* PetscFwkDestroy()*/
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkCreate"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkCreate(MPI_Comm comm, PetscFwk *framework){
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkCreate(MPI_Comm comm, PetscFwk *framework){
   PetscFwk fwk;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -915,13 +898,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkCreate(MPI_Comm comm, PetscFwk *framework
 #endif
   PetscValidPointer(framework,2);
   ierr = PetscHeaderCreate(fwk,_p_PetscFwk,PetscInt,PETSC_FWK_CLASSID,0,"PetscFwk",comm,PetscFwkDestroy,PetscFwkView);CHKERRQ(ierr);
-  fwk->record = PETSC_NULL;
+  fwk->component   = PETSC_NULL;
   fwk->vtable_type = PETSC_FWK_VTABLE_NONE;
   fwk->vtable      = PETSC_NULL;
   fwk->N = fwk->maxN = 0;
   /* FIX: should only create a graph on demand */
   ierr = PetscFwkGraphCreate(&fwk->dep_graph); CHKERRQ(ierr);
-  fwk->visitor = PETSC_NULL;
   ierr = PetscObjectChangeTypeName((PetscObject)fwk,PETSCFWK);CHKERRQ(ierr);
   *framework = fwk;
   PetscFunctionReturn(0);
@@ -930,7 +912,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkCreate(MPI_Comm comm, PetscFwk *framework
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkGetComponent"
-PetscErrorCode PETSC_DLLEXPORT PetscFwkGetComponent(PetscFwk fwk, const char key[], PetscFwk *_component, PetscTruth *_found) {
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetComponent(PetscFwk fwk, const char key[], PetscFwk *_component, PetscTruth *_found) {
   PetscInt id;
   PetscTruth found;
   PetscErrorCode ierr;
@@ -938,7 +920,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkGetComponent(PetscFwk fwk, const char key
   PetscValidCharPointer(key,2);
   ierr = PetscFwkGetKeyID_Private(fwk, key, &id, &found); CHKERRQ(ierr);
   if(found && _component) {
-    *_component = fwk->record[id].component;
+    *_component = fwk->component[id];
   }
   if(_found) {*_found = found;}
   PetscFunctionReturn(0);
@@ -982,7 +964,7 @@ static PetscMPIInt Petsc_Fwk_default_keyval = MPI_KEYVAL_INVALID;
 
 #undef  __FUNCT__
 #define __FUNCT__ "PETSC_FWK_DEFAULT_"
-PetscFwk PETSC_DLLEXPORT PETSC_FWK_DEFAULT_(MPI_Comm comm) {
+PetscFwk PETSCSYS_DLLEXPORT PETSC_FWK_DEFAULT_(MPI_Comm comm) {
   PetscErrorCode ierr;
   PetscTruth     flg;
   PetscFwk       fwk;

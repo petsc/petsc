@@ -45,7 +45,7 @@
 
 .seealso: PetscGetUserName()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscGetHostName(char name[],size_t nlen)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscGetHostName(char name[],size_t nlen)
 {
   char           *domain;
   PetscErrorCode ierr;
@@ -81,7 +81,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetHostName(char name[],size_t nlen)
 #if defined(PETSC_HAVE_SYSINFO_3ARG)
     sysinfo(SI_SRPC_DOMAIN,name+l,nlen-l);
 #elif defined(PETSC_HAVE_GETDOMAINNAME)
-    getdomainname(name+l,nlen - l);
+    if (getdomainname(name+l,nlen - l)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"getdomainname()");
 #endif
     /* check if domain name is not a dnsdomainname and nuke it */
     ierr = PetscStrlen(name,&ll);CHKERRQ(ierr);

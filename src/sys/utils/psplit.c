@@ -28,7 +28,7 @@
 .seealso: PetscSplitOwnership()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt bs,PetscInt *n,PetscInt *N)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt bs,PetscInt *n,PetscInt *N)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
@@ -73,7 +73,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt b
 .seealso: PetscSplitOwnershipBlock()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;

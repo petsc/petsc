@@ -10,7 +10,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSSEHardwareTest"
-PetscErrorCode PETSC_DLLEXPORT PetscSSEHardwareTest(PetscTruth *flag) 
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSSEHardwareTest(PetscTruth *flag)
 {
   PetscErrorCode ierr;
   char *vendor;
@@ -54,7 +54,7 @@ static void PetscSSEDisabledHandler(int sig) {
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSSEOSEnabledTest_Linux"
-PetscErrorCode PETSC_DLLEXPORT PetscSSEOSEnabledTest_Linux(PetscTruth *flag) 
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSSEOSEnabledTest_Linux(PetscTruth *flag)
 {
   int status, pid = 0;
   PetscFunctionBegin;
@@ -86,7 +86,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSSEOSEnabledTest_Linux(PetscTruth *flag)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSSEOSEnabledTest_TRUE"
-PetscErrorCode PETSC_DLLEXPORT PetscSSEOSEnabledTest_TRUE(PetscTruth *flag) 
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSSEOSEnabledTest_TRUE(PetscTruth *flag)
 {
   PetscFunctionBegin;
   if (flag) {
@@ -102,7 +102,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSSEOSEnabledTest_TRUE(PetscTruth *flag)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSSEEnabledTest_FALSE"
-PetscErrorCode PETSC_DLLEXPORT PetscSSEEnabledTest_FALSE(PetscTruth *flag) 
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSSEEnabledTest_FALSE(PetscTruth *flag)
 {
   PetscFunctionBegin;
   if (flag) {
@@ -141,7 +141,7 @@ static PetscTruth petsc_sse_local_is_untested  = PETSC_TRUE;
 static PetscTruth petsc_sse_enabled_local      = PETSC_FALSE;
 static PetscTruth petsc_sse_global_is_untested = PETSC_TRUE;
 static PetscTruth petsc_sse_enabled_global     = PETSC_FALSE;
-PetscErrorCode PETSC_DLLEXPORT PetscSSEIsEnabled(MPI_Comm comm,PetscTruth *lflag,PetscTruth *gflag) {
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSSEIsEnabled(MPI_Comm comm,PetscTruth *lflag,PetscTruth *gflag) {
   PetscErrorCode ierr;
   PetscTruth disabled_option;
 

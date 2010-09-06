@@ -12,7 +12,7 @@ static PetscTruth CharacteristicPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT CharacteristicFinalizePackage(void) 
+PetscErrorCode CharacteristicFinalizePackage(void)
 {
   PetscFunctionBegin;
   CharacteristicPackageInitialized = PETSC_FALSE;

@@ -30,7 +30,7 @@ struct _n_PetscOList {
 .seealso: PetscOListDestroy(), PetscOListFind(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
 {
   PetscOList     olist,nlist,prev;
   PetscErrorCode ierr;
@@ -104,7 +104,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListAdd(PetscOList *fl,const char name[],Pe
 .seealso: PetscOListAdd(), PetscOListFind(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOListDestroy(PetscOList fl)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOListDestroy(PetscOList fl)
 {
   PetscOList     tmp;
   PetscErrorCode ierr;
@@ -141,7 +141,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListDestroy(PetscOList fl)
 .seealso: PetscOListDestroy(), PetscOListAdd(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
 {
   PetscErrorCode ierr;
   PetscTruth     match;
@@ -181,7 +181,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListFind(PetscOList fl,const char name[],Pe
 .seealso: PetscOListDestroy(), PetscOListAdd(), PetscOListDuplicate(), PetscOListFind(), PetscOListDuplicate()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name)
 {
   PetscFunctionBegin;
 
@@ -212,7 +212,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListReverseFind(PetscOList fl,PetscObject o
 .seealso: PetscOListDestroy(), PetscOListAdd(), PetscOListReverseFind(), PetscOListFind(), PetscOListDuplicate()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOListDuplicate(PetscOList fl,PetscOList *nl)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOListDuplicate(PetscOList fl,PetscOList *nl)
 {
   PetscErrorCode ierr;
 

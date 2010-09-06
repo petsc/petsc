@@ -29,7 +29,9 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-shared-libraries=<bool>', nargs.ArgBool(None, 0, 'Make PETSc libraries shared -- libpetsc.so (Unix/Linux) or libpetsc.dylib (Mac)'))
+    #help.addArgument('PETSc', '-with-shared=<bool>', nargs.ArgBool(None, 0, 'Make PETSc libraries shared -- libpetsc.so (Unix/Linux) or libpetsc.dylib (Mac)', deprecated = '-with-shared-libraries'))
     help.addArgument('PETSc', '-with-dynamic-loading=<bool>', nargs.ArgBool(None, 0, 'Make PETSc libraries dynamic -- uses dlopen() to access libraries, rarely needed'))
+    #help.addArgument('PETSc', '-with-dynamic=<bool>', nargs.ArgBool(None, 0, 'Make PETSc libraries dynamic -- uses dlopen() to access libraries, rarely needed', deprecated = '-with-dynamic-loading'))
     return
 
   def setupDependencies(self, framework):
@@ -65,6 +67,8 @@ class Configure(config.base.Configure):
     if self.useShared:
       if config.setCompilers.Configure.isSolaris() and config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
         self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase+'gnu')
+      elif '-qmkshrobj' in self.setCompilers.sharedLibraryFlags:
+        self.addMakeRule('shared_arch','shared_linux_ibm')
       else:
         self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase)
       self.addMakeMacro('BUILDSHAREDLIB','yes')

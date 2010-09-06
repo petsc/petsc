@@ -11,15 +11,17 @@
        This data is general for all implementations
 */
 typedef struct {
-  PetscInt   n,n_local;        /* number of blocks (global, local) */
+  PetscInt   n;                 /* number of global blocks */
+  PetscInt   n_local;           /* number of blocks in this subcommunicator or in this process */
   PetscInt   first_local;       /* number of first block on processor */
   PetscTruth use_true_local;    /* use block from true matrix, not preconditioner matrix for local MatMult() */
-  KSP        *ksp;             /* KSP contexts for blocks */
+  KSP        *ksp;              /* KSP contexts for blocks */
   void       *data;             /* implementation-specific data */
   PetscTruth same_local_solves; /* flag indicating whether all local solvers are same (used for PCView()) */
   PetscInt   *l_lens;           /* lens of each block */
   PetscInt   *g_lens;
   Mat        tp_mat,tp_pmat;    /* diagonal block of matrix for this processor */
+  PetscSubcomm psubcomm;        /* for multiple processors per block */
 } PC_BJacobi;
 
 /*
@@ -27,7 +29,6 @@ typedef struct {
 */
 
 /*  This is for multiple blocks per processor */
-
 typedef struct {
   Vec              *x,*y;             /* work vectors for solves on each block */
   PetscInt         *starts;           /* starting point of each block */
@@ -40,6 +41,14 @@ typedef struct {
   Vec  x,y;
 } PC_BJacobi_Singleblock;
 
+/*  This is for multiple processors per block */
+typedef struct {
+  KSP          ksp;                /* ksp used on each subcommunicator */
+  PC           pc;                 /* preconditioner used on each subcommunicator */
+  Vec          xsub,ysub;          /* vectors of a subcommunicator to hold parallel vectors of ((PetscObject)pc)->comm */
+  Mat          submats;            /* matrix and optional preconditioner matrix belong to a subcommunicator */
+  PetscSubcomm psubcomm;           
+} PC_BJacobi_Multiproc;
 #endif
 
 

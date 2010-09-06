@@ -26,7 +26,7 @@
 
 .seealso: PetscDrawGetPause(), PetscDrawPause()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSetPause(PetscDraw draw,PetscReal lpause)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSetPause(PetscDraw draw,PetscReal lpause)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);

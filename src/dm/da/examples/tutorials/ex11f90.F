@@ -47,7 +47,7 @@
       call DAGetCorners(ada,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,       &
      &                  xl,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       call DAVecGetArrayF90(ada,g,x1,ierr)
-      do i=xs+1,xs+xl
+      do i=xs,xs+xl-1
          CHKMEMQ
          x1(i) = i
          CHKMEMQ
@@ -64,8 +64,8 @@
       call DAGetCorners(ada,xs,ys,PETSC_NULL_INTEGER,                       &
      &                  xl,yl,PETSC_NULL_INTEGER,ierr)
       call DAVecGetArrayF90(ada,g,x2,ierr)
-      do i=xs+1,xs+xl
-        do j=ys+1,ys+yl
+      do i=xs,xs+xl-1
+        do j=ys,ys+yl-1
            CHKMEMQ
            x2(i,j) = i + j
            CHKMEMQ
@@ -85,9 +85,9 @@
       call DAGetCorners(ada,xs,ys,zs,                                       &
      &                  xl,yl,zl,ierr)
       call DAVecGetArrayF90(ada,g,x3,ierr)
-      do i=xs+1,xs+xl
-        do j=ys+1,ys+yl
-          do k=zs+1,zs+zl
+      do i=xs,xs+xl-1
+        do j=ys,ys+yl-1
+          do k=zs,zs+zl-1
             CHKMEMQ
             x3(i,j,k) = i + j + k
             CHKMEMQ
@@ -110,7 +110,7 @@
       call DAGetCorners(ada,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,       &
      &                  xl,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       call DAVecGetArrayF90(ada,g,x2,ierr)
-      do i=xs+1,xs+xl
+      do i=xs,xs+xl-1
          CHKMEMQ
          x2(1,i) = i
          x2(2,i) = -i
@@ -129,8 +129,8 @@
       call DAGetCorners(ada,xs,ys,PETSC_NULL_INTEGER,                       &
      &                  xl,yl,PETSC_NULL_INTEGER,ierr)
       call DAVecGetArrayF90(ada,g,x3,ierr)
-      do i=xs+1,xs+xl
-        do j=ys+1,ys+yl
+      do i=xs,xs+xl-1
+        do j=ys,ys+yl-1
            CHKMEMQ
            x3(1,i,j) = i + j
            x3(2,i,j) = -(i + j)
@@ -152,9 +152,9 @@
       call DAGetCorners(ada,xs,ys,zs,                                       &
      &                  xl,yl,zl,ierr)
       call DAVecGetArrayF90(ada,g,x4,ierr)
-      do i=xs+1,xs+xl
-        do j=ys+1,ys+yl
-          do k=zs+1,zs+zl
+      do i=xs,xs+xl-1
+        do j=ys,ys+yl-1
+          do k=zs,zs+zl-1
             CHKMEMQ
             x4(1,i,j,k) = i + j + k
             x4(2,i,j,k) = -(i + j + k)

@@ -37,7 +37,7 @@ int main(int argc,char **args)
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
   PetscErrorCode ierr;
   PetscTruth     flg = PETSC_FALSE;
-  PetscScalar    v,one = 1.0,neg_one = -1.0;
+  PetscScalar    v;
 #if defined(PETSC_USE_LOG)
   PetscLogStage  stage;
 #endif
@@ -144,7 +144,7 @@ int main(int argc,char **args)
     ierr = VecSetRandom(u,rctx);CHKERRQ(ierr);
     ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
   } else {
-    ierr = VecSet(u,one);CHKERRQ(ierr);
+    ierr = VecSet(u,1.0);CHKERRQ(ierr);
   }
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
@@ -235,7 +235,7 @@ int main(int argc,char **args)
   /* 
      Check the error
   */
-  ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
+  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   /* Scale the norm */

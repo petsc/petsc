@@ -8,7 +8,7 @@ EXTERN_C_BEGIN
 
 #undef __FUNCT__  
 #define __FUNCT__ "nt_time"
-PetscLogDouble PETSC_DLLEXPORT nt_time(void) 
+PetscLogDouble PETSCSYS_DLLEXPORT nt_time(void)
 {
   static PetscTruth     flag = PETSC_TRUE;
   PetscErrorCode ierr;

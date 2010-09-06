@@ -44,7 +44,7 @@ struct _p_DrawLG {
 
 .seealso:  PetscDrawLGDestroy()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawLGCreate(PetscDraw draw,int dim,PetscDrawLG *outctx)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGCreate(PetscDraw draw,int dim,PetscDrawLG *outctx)
 {
   PetscErrorCode ierr;
   PetscTruth     isnull;
@@ -96,7 +96,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGCreate(PetscDraw draw,int dim,PetscDra
    Concepts: line graph^setting number of lines
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
 {
   PetscErrorCode ierr;
 
@@ -129,7 +129,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt d
    Concepts: line graph^restarting
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawLGReset(PetscDrawLG lg)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGReset(PetscDrawLG lg)
 {
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
@@ -157,7 +157,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGReset(PetscDrawLG lg)
 
 .seealso:  PetscDrawLGCreate()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawLGDestroy(PetscDrawLG lg)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGDestroy(PetscDrawLG lg)
 {
   PetscErrorCode ierr;
 
@@ -196,7 +196,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGDestroy(PetscDrawLG lg)
 
 .seealso: PetscDrawLGAddPoints()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawLGAddPoint(PetscDrawLG lg,PetscReal *x,PetscReal *y)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGAddPoint(PetscDrawLG lg,PetscReal *x,PetscReal *y)
 {
   PetscErrorCode ierr;
   int            i;
@@ -244,7 +244,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGAddPoint(PetscDrawLG lg,PetscReal *x,P
    Concepts: line graph^showing points
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawLGIndicateDataPoints(PetscDrawLG lg)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGIndicateDataPoints(PetscDrawLG lg)
 {
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
@@ -274,7 +274,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGIndicateDataPoints(PetscDrawLG lg)
 
 .seealso: PetscDrawLGAddPoint()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawLGAddPoints(PetscDrawLG lg,int n,PetscReal **xx,PetscReal **yy)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGAddPoints(PetscDrawLG lg,int n,PetscReal **xx,PetscReal **yy)
 {
   PetscErrorCode ierr;
   int            i,j,k;
@@ -331,7 +331,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGAddPoints(PetscDrawLG lg,int n,PetscRe
 .seealso: PetscDrawSPDraw(), PetscDrawLGSPDraw()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawLGDraw(PetscDrawLG lg)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGDraw(PetscDrawLG lg)
 {
   PetscReal      xmin=lg->xmin,xmax=lg->xmax,ymin=lg->ymin,ymax=lg->ymax;
   PetscErrorCode ierr;
@@ -379,7 +379,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGDraw(PetscDrawLG lg)
 
 .keywords:  draw, line, graph
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawLGPrint(PetscDrawLG lg)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGPrint(PetscDrawLG lg)
 {
   PetscReal xmin=lg->xmin, xmax=lg->xmax, ymin=lg->ymin, ymax=lg->ymax;
   int       i, j, dim = lg->dim, nopts = lg->nopts;
@@ -417,7 +417,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGPrint(PetscDrawLG lg)
    Concepts: line graph^setting axis
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max) 
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max)
 {
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
@@ -448,7 +448,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_m
    Level: advanced
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawLGGetAxis(PetscDrawLG lg,PetscDrawAxis *axis)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGGetAxis(PetscDrawLG lg,PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) {
@@ -477,7 +477,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGGetAxis(PetscDrawLG lg,PetscDrawAxis *
    Level: intermediate
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawLGGetDraw(PetscDrawLG lg,PetscDraw *draw)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGGetDraw(PetscDrawLG lg,PetscDraw *draw)
 {
   PetscFunctionBegin;
   PetscValidHeader(lg,1);
@@ -509,7 +509,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGGetDraw(PetscDrawLG lg,PetscDraw *draw
    Developer Notes: This code cheats and uses the fact that the LG and SP structs are the same
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
 {
   PetscDrawLG    sp = (PetscDrawLG)spin;
   PetscReal      xmin,xmax,ymin,ymax;

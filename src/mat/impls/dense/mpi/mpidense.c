@@ -988,7 +988,7 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
   if (reuse == MAT_INITIAL_MATRIX || *matout != A) {
     *matout = B;
   } else {
-    ierr = MatHeaderCopy(A,B);CHKERRQ(ierr);
+    ierr = MatHeaderMerge(A,B);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2165,7 +2165,7 @@ PetscErrorCode MatEqual_MPIDense(Mat A,Mat B,PetscTruth *flag)
 .keywords: Petsc, destroy, package, PLAPACK
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKFinalizePackage(void) 
+PetscErrorCode PETSCMAT_DLLEXPORT PetscPLAPACKFinalizePackage(void)
 {
   PetscErrorCode ierr;
 
@@ -2193,7 +2193,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKFinalizePackage(void)
 .keywords: Petsc, initialize, package, PLAPACK
 .seealso: PetscSysInitializePackage(), PetscInitialize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKInitializePackage(MPI_Comm comm) 
+PetscErrorCode PETSCMAT_DLLEXPORT PetscPLAPACKInitializePackage(MPI_Comm comm)
 {
   PetscMPIInt    size;
   PetscErrorCode ierr;

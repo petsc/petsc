@@ -27,7 +27,7 @@ FILE *PETSC_ZOPEFD = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFormatConvert"
-PetscErrorCode PETSC_DLLEXPORT PetscFormatConvert(const char *format,char *newformat,PetscInt size)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFormatConvert(const char *format,char *newformat,PetscInt size)
 {
   PetscInt i = 0,j = 0;
 
@@ -77,7 +77,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFormatConvert(const char *format,char *newfo
 /* 
    No error handling because may be called by error handler
 */
-PetscErrorCode PETSC_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *format,int *fullLength,va_list Argp)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *format,int *fullLength,va_list Argp)
 {
   /* no malloc since may be called by error handler */
   char          *newformat;
@@ -115,7 +115,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *f
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscZopeLog"
-PetscErrorCode PETSC_DLLEXPORT PetscZopeLog(const char *format,va_list Argp)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscZopeLog(const char *format,va_list Argp)
 {
   /* no malloc since may be called by error handler */
   char        newformat[8*1024];
@@ -151,7 +151,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscZopeLog(const char *format,va_list Argp)
 
    No error handling because may be called by error handler
 */
-PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
 {
   /* no malloc since may be called by error handler (assume no long messages in errors) */
   char        *newformat;
@@ -215,7 +215,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), PetscVSNPrintf(),
           PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSNPrintf(char *str,size_t len,const char format[],...)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSNPrintf(char *str,size_t len,const char format[],...)
 {
   PetscErrorCode ierr;
   int            fullLength;
@@ -258,7 +258,7 @@ FILE        *queuefile  = PETSC_NULL;
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), 
           PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -322,7 +322,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedPrintf(MPI_Comm comm,const char 
           PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -381,10 +381,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,c
 .seealso: PetscSynchronizedPrintf(), PetscFPrintf(), PetscPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFlush(MPI_Comm comm)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedFlush(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank,size,tag,i,j,n;
+  PetscMPIInt    rank,size,tag,i,j,n,dummy;
   char          *message;
   MPI_Status     status;
   FILE           *fd;
@@ -402,9 +402,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFlush(MPI_Comm comm)
       fd = PETSC_STDOUT;
     }
     for (i=1; i<size; i++) {
+      /* to prevent a flood of messages to process zero, request each message separately */
+      ierr = MPI_Send(&dummy,1,MPI_INT,i,tag,comm);CHKERRQ(ierr);
       ierr = MPI_Recv(&n,1,MPI_INT,i,tag,comm,&status);CHKERRQ(ierr);
       for (j=0; j<n; j++) {
-        int size;
+        PetscMPIInt size;
 
         ierr = MPI_Recv(&size,1,MPI_INT,i,tag,comm,&status);CHKERRQ(ierr);
         ierr = PetscMalloc(size * sizeof(char), &message);CHKERRQ(ierr);
@@ -417,6 +419,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFlush(MPI_Comm comm)
   } else { /* other processors send queue to processor 0 */
     PrintfQueue next = queuebase,previous;
 
+    ierr = MPI_Recv(&dummy,1,MPI_INT,0,tag,comm,&status);CHKERRQ(ierr);
     ierr = MPI_Send(&queuelength,1,MPI_INT,0,tag,comm);CHKERRQ(ierr);
     for (i=0; i<queuelength; i++) {
       ierr     = MPI_Send(&next->size,1,MPI_INT,0,tag,comm);CHKERRQ(ierr);
@@ -459,7 +462,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFlush(MPI_Comm comm)
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf(), PetscSynchronizedFlush()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -504,7 +507,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFPrintf(MPI_Comm comm,FILE* fd,const char fo
 
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscPrintf(MPI_Comm comm,const char format[],...)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscPrintf(MPI_Comm comm,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -553,7 +556,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPrintf(MPI_Comm comm,const char format[],...
 /* ---------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscHelpPrintfDefault" 
-PetscErrorCode PETSC_DLLEXPORT PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -597,16 +600,17 @@ PetscErrorCode PETSC_DLLEXPORT PetscHelpPrintfDefault(MPI_Comm comm,const char f
           PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,size_t len,char string[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,size_t len,char string[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
+  char           *str;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   
   if (!rank) {
-    fgets(string,len,fp);
+    str = fgets(string,len,fp); /* Not very useful error behavior, but what is desired behavior for attempt to read at EOF? */
   }
   ierr = MPI_Bcast(string,len,MPI_BYTE,0,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);

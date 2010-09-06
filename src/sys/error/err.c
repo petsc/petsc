@@ -59,7 +59,7 @@ $     SETERRQ(PETSC_COMM_SELF,number,p,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler()
  @*/
-PetscErrorCode PETSC_DLLEXPORT PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscErrorCode ierr;
   char        command[PETSC_MAX_PATH_LEN];
@@ -122,7 +122,7 @@ $    int handler(MPI_Comm comm,int line,char *func,char *file,char *dir,PetscErr
 .seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm,int,const char *,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void *ctx)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm,int,const char *,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void *ctx)
 {
   EH             neweh;
   PetscErrorCode ierr;
@@ -151,7 +151,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(M
 
 .seealso: PetscPushErrorHandler()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscPopErrorHandler(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscPopErrorHandler(void)
 {
   EH             tmp;
   PetscErrorCode ierr;
@@ -206,7 +206,7 @@ $     SETERRQ(comm,number,mess)
 .seealso:  PetscPushErrorHandler(), PetscPopErrorHandler().
  @*/
 
-PetscErrorCode PETSC_DLLEXPORT PetscReturnErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscReturnErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(n);
@@ -275,7 +275,7 @@ static const char *PetscErrorStrings[] = {
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
-PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int errnum,const char *text[],char **specific)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorMessage(int errnum,const char *text[],char **specific)
 {
   PetscFunctionBegin;
   if (text && errnum > PETSC_ERR_MIN_VALUE && errnum < PETSC_ERR_MAX_VALUE) {
@@ -289,12 +289,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int errnum,const char *text[],c
 }
 
 #if defined(PETSC_USE_ERRORCHECKING)
-PetscErrorCode PETSC_DLLEXPORT PetscErrorUncatchable[PETSC_EXCEPTIONS_MAX] = {0};
-PetscInt       PETSC_DLLEXPORT PetscErrorUncatchableCount                  = 0;
-PetscErrorCode PETSC_DLLEXPORT PetscExceptions[PETSC_EXCEPTIONS_MAX]       = {0};
-PetscInt       PETSC_DLLEXPORT PetscExceptionsCount                        = 0;
-PetscErrorCode PETSC_DLLEXPORT PetscExceptionTmp                           = 0;
-PetscErrorCode PETSC_DLLEXPORT PetscExceptionTmp1                          = 0;
+PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorUncatchable[PETSC_EXCEPTIONS_MAX] = {0};
+PetscInt       PETSCSYS_DLLEXPORT PetscErrorUncatchableCount                  = 0;
+PetscErrorCode PETSCSYS_DLLEXPORT PetscExceptions[PETSC_EXCEPTIONS_MAX]       = {0};
+PetscInt       PETSCSYS_DLLEXPORT PetscExceptionsCount                        = 0;
+PetscErrorCode PETSCSYS_DLLEXPORT PetscExceptionTmp                           = 0;
+PetscErrorCode PETSCSYS_DLLEXPORT PetscExceptionTmp1                          = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorIsCatchable" 
@@ -312,7 +312,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscExceptionTmp1                          = 0;
 
 .seealso: PetscExceptionTry1(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop(), PetscErrorSetCatchable()
 @*/
-PetscTruth PETSC_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode err)
+PetscTruth PETSCSYS_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode err)
 {
   PetscInt i;
   for (i=0; i<PetscErrorUncatchableCount; i++) {
@@ -338,7 +338,7 @@ PetscTruth PETSC_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode err)
 
 .seealso: PetscExceptionTry1(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop(), PetscErrorIsCatchable()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode err,PetscTruth flg)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode err,PetscTruth flg)
 {
   PetscFunctionBegin;
   if (!flg && PetscErrorIsCatchable(err)) {
@@ -379,7 +379,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode err,PetscTr
 
 .seealso: PetscExceptionTry1(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode err) 
+PetscErrorCode PETSCSYS_DLLEXPORT PetscExceptionPush(PetscErrorCode err)
 {
   PetscFunctionBegin;
   if (PetscExceptionsCount >= PETSC_EXCEPTIONS_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stack for PetscExceptions is overflowed, recompile \nsrc/sysd/error/err.c with a larger value for PETSC_EXCEPTIONS_MAX");
@@ -404,7 +404,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode err)
 
 .seealso: PetscExceptionTry1(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode err)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscExceptionPop(PetscErrorCode err)
 {
   PetscFunctionBegin;
   if (PetscExceptionsCount <= 0)SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stack for PetscExceptions is empty");
@@ -446,7 +446,7 @@ $     SETERRQ(comm,n,mess)
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), SETERRQ(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscError(MPI_Comm comm,int line,const char *func,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,...)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscError(MPI_Comm comm,int line,const char *func,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,...)
 {
   va_list        Argp;
   int            fullLength;
@@ -531,7 +531,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscError(MPI_Comm comm,int line,const char *fun
 
 .seealso: PetscRealView() 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,n = N/20,p = N % 20;
@@ -616,7 +616,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,const PetscInt idx[],Pets
 
 .seealso: PetscIntView() 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewer)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,n = N/5,p = N % 5;
@@ -702,7 +702,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt N,const PetscReal idx[],Pe
 
 .seealso: PetscIntView(), PetscRealView()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer viewer)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,n = N/3,p = N % 3;

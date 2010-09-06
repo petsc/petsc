@@ -15,7 +15,14 @@ PetscErrorCode VecDestroy_MPICUDA(Vec v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  delete (CUSPARRAY *)v->spptr;
+  try{
+    if (v->spptr) {
+      delete ((Vec_CUDA*)v->spptr)->GPUarray;
+      delete (Vec_CUDA *)v->spptr;
+    }
+  } catch(char* ex){
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+  }
   ierr = VecDestroy_MPI(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -242,7 +249,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_CUDA"
-PetscErrorCode PETSCMAT_DLLEXPORT VecCreate_CUDA(Vec v)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_CUDA(Vec v)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

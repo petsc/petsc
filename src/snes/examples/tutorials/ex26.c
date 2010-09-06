@@ -324,21 +324,25 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar *x,PetscScalar *f
 {
   PetscErrorCode ierr;
   PetscInt       i,xint,xend;
-  PetscReal      hx,dhx,r;
-  PetscScalar    u,uxx,min = 100000.0,max = -10000.0;
-  PetscScalar    psi_0=0.0, psi_a=1.0;
+  PetscReal      hx,dhx,r,min = 100000.0,max = -10000.0,psi_0=0.0, psi_a=1.0;
+  PetscScalar    u,uxx;
   
   PetscFunctionBegin;
   for (i=info->xs; i<info->xs + info->xm; i++) {
-    if (x[i] > max) max = x[i];
-    if (x[i] < min) min = x[i];
+    PetscReal xi = PetscRealPart(x[i]);
+    if (xi > max) max = xi;
+    if (xi < min) min = xi;
   }
-  /* 
-     Use PetscGlobalMax() and PetscGlobalMin() here because this code may be differentiated with AdiC. 
-     Otherwise should user MPI_Allreduce() 
+#if defined PETSC_HAVE_ADIC
+  /*
+     Use PetscGlobalMax() and PetscGlobalMin() here because this code may be differentiated with AdiC.
   */
   ierr = PetscGlobalMax(PETSC_COMM_WORLD,&max,&psi_a);CHKERRQ(ierr);
-  ierr = PetscGlobalMin(PETSC_COMM_WORLD,&min,&psi_0);CHKERRQ(ierr); 
+  ierr = PetscGlobalMin(PETSC_COMM_WORLD,&min,&psi_0);CHKERRQ(ierr);
+#else
+  ierr = MPI_Allreduce(&max,&psi_a,1,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&min,&psi_0,1,MPIU_REAL,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+#endif
 
   hx     = 1.0/(PetscReal)(info->mx-1);  dhx    = 1.0/hx;
   
@@ -392,8 +396,8 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   Vec            localX;
   PetscErrorCode ierr;
   PetscInt       col[6],row,i,xs,xm,Mx,xint,xend,imin, imax;
-  PetscScalar    v[6],hx,dhx,*x;
-  PetscReal      r, u, psi_0=0.0, psi_a=1.0;
+  PetscScalar    v[6],*x,u;
+  PetscReal      hx,dhx,r,psi_0=0.0, psi_a=1.0;
   PetscTruth     assembled;
 
   PetscFunctionBegin;

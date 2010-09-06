@@ -66,7 +66,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptRegisterAll(const char path[])
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSGLFinalizePackage"
+#define __FUNCT__ "TSGLAdaptFinalizePackage"
 /*@C
   TSGLFinalizePackage - This function destroys everything in the TSGL package. It is
   called from PetscFinalize().
@@ -86,7 +86,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptFinalizePackage(void)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSGLInitializePackage"
+#define __FUNCT__ "TSGLAdaptInitializePackage"
 /*@C
   TSGLAdaptInitializePackage - This function initializes everything in the TSGLAdapt package. It is
   called from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to

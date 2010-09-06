@@ -35,8 +35,7 @@ void PETSC_STDCALL davecgetarrayf901_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode
 {
   PetscInt    xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
   PetscScalar *aa;
-  
-  PetscFunctionBegin;
+
   *ierr = DAGetCorners(*da,&xs,&ys,&zs,&xm,&ym,&zm);if (*ierr) return;
   *ierr = DAGetGhostCorners(*da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);if (*ierr) return;
   *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0);if (*ierr) return;
@@ -54,8 +53,7 @@ void PETSC_STDCALL davecgetarrayf901_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode
     *ierr = PETSC_ERR_ARG_INCOMP;
   }
   *ierr = VecGetArray(*v,&aa);if (*ierr) return;
-  gxs++; /* in Fortran array indices will start at 1 */
-  *ierr = F90Array1dCreate(aa,PETSC_SCALAR,gxs,gxm,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array1dCreate(aa,PETSC_SCALAR,gxs,gxm-1,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
 }
 
 void PETSC_STDCALL davecrestorearrayf901_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -68,8 +66,7 @@ void PETSC_STDCALL davecgetarrayf902_(DA *da,Vec *v,F90Array2d *a,PetscErrorCode
 {
   PetscInt    xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
   PetscScalar *aa;
-  
-  PetscFunctionBegin;
+
   *ierr = DAGetCorners(*da,&xs,&ys,&zs,&xm,&ym,&zm);if (*ierr) return;
   *ierr = DAGetGhostCorners(*da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);if (*ierr) return;
   *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0);if (*ierr) return;
@@ -92,10 +89,8 @@ void PETSC_STDCALL davecgetarrayf902_(DA *da,Vec *v,F90Array2d *a,PetscErrorCode
     gxs = 0;
     gxm = dof;
   }
-  gxs++; /* in Fortran array indices will start at 1 */
-  gys++;
   *ierr = VecGetArray(*v,&aa);if (*ierr) return;
-  *ierr = F90Array2dCreate(aa,PETSC_SCALAR,gxs,gxm,gys,gym,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array2dCreate(aa,PETSC_SCALAR,gxs,gxm-1,gys,gym-1,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
 }
 
 void PETSC_STDCALL davecrestorearrayf902_(DA *da,Vec *v,F90Array2d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -108,8 +103,7 @@ void PETSC_STDCALL davecgetarrayf903_(DA *da,Vec *v,F90Array3d *a,PetscErrorCode
 {
   PetscInt    xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
   PetscScalar *aa;
-  
-  PetscFunctionBegin;
+
   *ierr = DAGetCorners(*da,&xs,&ys,&zs,&xm,&ym,&zm);if (*ierr) return;
   *ierr = DAGetGhostCorners(*da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);if (*ierr) return;
   *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0);if (*ierr) return;
@@ -134,11 +128,8 @@ void PETSC_STDCALL davecgetarrayf903_(DA *da,Vec *v,F90Array3d *a,PetscErrorCode
     gxs = 0;
     gxm = dof;
   }
-  gxs++; /* in Fortran array indices will start at 1 */
-  gys++;
-  gzs++;
   *ierr = VecGetArray(*v,&aa);if (*ierr) return;
-  *ierr = F90Array3dCreate(aa,PETSC_SCALAR,gxs,gxm,gys,gym,gzs,gzm,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array3dCreate(aa,PETSC_SCALAR,gxs,gxm-1,gys,gym-1,gzs,gzm-1,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
 }
 
 void PETSC_STDCALL davecrestorearrayf903_(DA *da,Vec *v,F90Array3d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -151,8 +142,7 @@ void PETSC_STDCALL davecgetarrayf904_(DA *da,Vec *v,F90Array4d *a,PetscErrorCode
 {
   PetscInt    xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof,one = 1;
   PetscScalar *aa;
-  
-  PetscFunctionBegin;
+
   *ierr = DAGetCorners(*da,&xs,&ys,&zs,&xm,&ym,&zm);if (*ierr) return;
   *ierr = DAGetGhostCorners(*da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);if (*ierr) return;
   *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0);if (*ierr) return;
@@ -169,11 +159,8 @@ void PETSC_STDCALL davecgetarrayf904_(DA *da,Vec *v,F90Array4d *a,PetscErrorCode
   } else if (N != gxm*gym*gzm*dof) {
     *ierr = PETSC_ERR_ARG_INCOMP;
   }
-  gxs++; /* in Fortran array indices will start at 1 */
-  gys++;
-  gzs++;
   *ierr = VecGetArray(*v,&aa);if (*ierr) return;
-  *ierr = F90Array4dCreate(aa,PETSC_SCALAR,one,dof,gxs,gxm,gys,gym,gzs,gzm,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array4dCreate(aa,PETSC_SCALAR,one,dof,gxs,gxm-1,gys,gym-1,gzs,gzm-1,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
 }
 
 void PETSC_STDCALL davecrestorearrayf904_(DA *da,Vec *v,F90Array4d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -186,8 +173,7 @@ void PETSC_STDCALL davecgetarrayf90user1_(DA *da,Vec *v,F90Array1d *a,PetscError
 {
   PetscInt    xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
   PetscScalar *aa;
-  
-  PetscFunctionBegin;
+
   *ierr = DAGetCorners(*da,&xs,&ys,&zs,&xm,&ym,&zm);if (*ierr) return;
   *ierr = DAGetGhostCorners(*da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);if (*ierr) return;
   *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0);if (*ierr) return;

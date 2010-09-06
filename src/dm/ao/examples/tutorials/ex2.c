@@ -561,7 +561,7 @@ PetscErrorCode DataMoveElements(GridData *gdata)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DataPartitionVertice"
+#define __FUNCT__ "DataPartitionVertices"
 /*
          Given the newly partitioned cells (elements), this routine partitions the 
      vertices.

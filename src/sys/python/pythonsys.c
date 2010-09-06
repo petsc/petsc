@@ -165,7 +165,7 @@ static PetscTruth PetscBeganPython = PETSC_FALSE;
 
 .keywords: Python
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscPythonFinalize(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscPythonFinalize(void)
 {
   PetscFunctionBegin;
   if (PetscBeganPython) { if (Py_IsInitialized()) Py_Finalize(); }
@@ -187,7 +187,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPythonFinalize(void)
 .keywords: Python
   
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscPythonInitialize(const char pyexe[],const char pylib[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscPythonInitialize(const char pyexe[],const char pylib[])
 {
   int               argc       = 0;
   char              **argv     = 0;

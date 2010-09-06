@@ -233,20 +233,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetUpPreallocation(Mat B)
 }
 
 /*
-        Copies from Cs header to A
+        Merges some information from Cs header to A; the C object is then destroyed
 
         This is somewhat different from MatHeaderReplace() it would be nice to merge the code
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatHeaderCopy"
-PetscErrorCode MatHeaderCopy(Mat A,Mat C)
+#define __FUNCT__ "MatHeaderMerge"
+PetscErrorCode MatHeaderMerge(Mat A,Mat C)
 {
-  PetscErrorCode ierr;
-  PetscInt       refct;
-  PetscOps       *Abops;
-  MatOps         Aops;
-  char           *mtype,*mname;
-  void           *spptr;
+  PetscErrorCode         ierr;
+  PetscInt               refct;
+  PetscOps               *Abops;
+  MatOps                 Aops;
+  char                   *mtype,*mname;
+  void                   *spptr;
+  ISLocalToGlobalMapping mapping,bmapping;
 
   PetscFunctionBegin;
   /* save the parts of A we need */
@@ -256,6 +257,8 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
   mtype = ((PetscObject)A)->type_name;
   mname = ((PetscObject)A)->name;
   spptr = A->spptr;
+  mapping  = A->mapping;
+  bmapping = A->bmapping;
 
   /* zero these so the destroy below does not free them */
   ((PetscObject)A)->type_name = 0;
@@ -265,6 +268,12 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
 
   ierr = PetscFree(C->spptr);CHKERRQ(ierr);
+  if (C->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(C->mapping);CHKERRQ(ierr);
+  }
+  if (C->bmapping) {
+    ierr = ISLocalToGlobalMappingDestroy(C->bmapping);CHKERRQ(ierr);
+  }
 
   ierr = PetscLayoutDestroy(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(A->cmap);CHKERRQ(ierr);
@@ -281,6 +290,8 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
   ((PetscObject)A)->type_name = mtype;
   ((PetscObject)A)->name      = mname;
   A->spptr                    = spptr;
+  A->mapping                  = mapping;
+  A->bmapping                 = bmapping;
 
   /* since these two are copied into A we do not want them destroyed in C */
   ((PetscObject)C)->qlist = 0;
@@ -289,10 +300,11 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
   PetscFunctionReturn(0);
 }
 /*
-        Replace A's header with that of C
-        This is essentially code moved from MatDestroy
+        Replace A's header with that of C; the C object is then destroyed
 
-        This is somewhat different from MatHeaderCopy() it would be nice to merge the code
+        This is essentially code moved from MatDestroy()
+
+        This is somewhat different from MatHeaderMerge() it would be nice to merge the code
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatHeaderReplace"
@@ -310,6 +322,12 @@ PetscErrorCode MatHeaderReplace(Mat A,Mat C)
   ierr = PetscLayoutDestroy(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(A->cmap);CHKERRQ(ierr);
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
+  if (A->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(A->mapping);CHKERRQ(ierr);
+  }
+  if (A->bmapping) {
+    ierr = ISLocalToGlobalMappingDestroy(A->bmapping);CHKERRQ(ierr);
+  }
   
   /* copy C over to A */
   if (C) {

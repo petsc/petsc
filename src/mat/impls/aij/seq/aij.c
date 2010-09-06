@@ -1562,7 +1562,7 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
   if (reuse == MAT_INITIAL_MATRIX || *B != A) {
     *B = C;
   } else {
-    ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);
+    ierr = MatHeaderMerge(A,C);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1881,6 +1881,22 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
 
   ierr = ISRestoreIndices(isrow,&irow);CHKERRQ(ierr);
   *B = C;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetMultiProcBlock_SeqAIJ"
+PetscErrorCode  MatGetMultiProcBlock_SeqAIJ(Mat mat,MPI_Comm subComm,Mat* subMat)
+{
+  PetscErrorCode ierr;
+  Mat            B;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(subComm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,mat->rmap->n,mat->cmap->n,mat->rmap->n,mat->cmap->n);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatDuplicateNoCreate_SeqAIJ(B,mat,MAT_COPY_VALUES,PETSC_TRUE);CHKERRQ(ierr);
+  *subMat = B;
   PetscFunctionReturn(0);
 }
 
@@ -2630,7 +2646,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 /*119*/0,
        0,
        0,
-       0
+       0,
+       MatGetMultiProcBlock_SeqAIJ
 };
 
 EXTERN_C_BEGIN

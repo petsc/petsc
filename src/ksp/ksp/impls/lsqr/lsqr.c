@@ -19,7 +19,7 @@ typedef struct {
   PetscReal  rhs_norm; /* Norm of the right hand side */
 } KSP_LSQR;
 
-extern PetscErrorCode PETSCVEC_DLLEXPORT VecSquare(Vec);
+extern PetscErrorCode PETSCKSP_DLLEXPORT VecSquare(Vec);
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_LSQR"
@@ -309,15 +309,62 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetArnorm( KSP ksp,PetscReal *arnorm, P
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "KSPLSQRMonitorDefault"
+/*@C
+   KSPLSQRMonitorDefault - Print the residual norm at each iteration of the LSQR method and the norm of the residual of the normal equations A'*A x = A' b
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp   - iterative context
+.  n     - iteration number
+.  rnorm - 2-norm (preconditioned) residual value (may be estimated).  
+-  dummy - unused monitor context 
+
+   Level: intermediate
+
+.keywords: KSP, default, monitor, residual
+
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorLGCreate(), KSPMonitorDefault()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+{
+  PetscErrorCode          ierr;
+  PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
+  KSP_LSQR               *lsqr = (KSP_LSQR*)ksp->data;
+
+  PetscFunctionBegin;
+  if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
+  if (((PetscObject)ksp)->prefix) {
+    ierr = PetscViewerASCIIMonitorPrintf(viewer,"  Residual norm and norm of normal equations for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
+  }
+  if (!n) {
+    ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %14.12e\n",n,rnorm);CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %14.12e Residual norm normal equations %14.12e\n",n,rnorm,lsqr->arnorm);CHKERRQ(ierr);
+  }
+  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "KSPSetFromOptions_LSQR"
 PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp)
 {
-  PetscErrorCode ierr;
-  KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
+  PetscErrorCode          ierr;
+  KSP_LSQR                *lsqr = (KSP_LSQR*)ksp->data;
+  char                    monfilename[PETSC_MAX_PATH_LEN];
+  PetscViewerASCIIMonitor monviewer;
+  PetscTruth              flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP LSQR Options");CHKERRQ(ierr);
-  ierr = PetscOptionsName("-ksp_LSQR_set_standard_error","Set Standard Error Estimates of Solution","KSPLSQRSetStandardErrorVec",&lsqr->se_flg);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-ksp_lsqr_set_standard_error","Set Standard Error Estimates of Solution","KSPLSQRSetStandardErrorVec",&lsqr->se_flg);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-ksp_monitor_lsqr","Monitor residual norm and norm of residual of normal equations","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,monfilename,((PetscObject)ksp)->tablevel,&monviewer);CHKERRQ(ierr);
+    ierr = KSPMonitorSet(ksp,KSPLSQRMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -338,6 +385,54 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPLSQRDefaultConverged"
+/*@C
+   KSPLSQRDefaultConverged - Determines convergence of the LSQR Krylov method. This calls KSPDefaultConverged() and if that does not determine convergence then checks 
+      convergence for the least squares problem.
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp   - iterative context
+.  n     - iteration number
+.  rnorm - 2-norm residual value (may be estimated)
+-  ctx - convergence context which must be created by KSPDefaultConvergedCreate()
+
+   reason is set to:
++   positive - if the iteration has converged;
+.   negative - if residual norm exceeds divergence threshold;
+-   0 - otherwise.
+
+   Notes:
+      Possible convergence for the least squares problem (which is based on the residual of the normal equations) are KSP_CONVERGED_RTOL_NORMAL norm and KSP_CONVERGED_ATOL_NORMAL.
+
+   Level: intermediate
+
+.keywords: KSP, default, convergence, residual
+
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(),
+          KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm(), KSPDefaultConvergedCreate(), KSPDefaultConvergedDestroy(), KSPDefaultConverged()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
+{
+  PetscErrorCode         ierr;
+  KSP_LSQR               *lsqr = (KSP_LSQR*)ksp->data;
+
+  PetscFunctionBegin;
+  ierr = KSPDefaultConverged(ksp,n,rnorm,reason,ctx);CHKERRQ(ierr);
+  if (!n || *reason) PetscFunctionReturn(0);
+  if (lsqr->arnorm/lsqr->rhs_norm < ksp->rtol) {
+    *reason = KSP_CONVERGED_RTOL_NORMAL;
+  }
+  if (lsqr->arnorm < ksp->abstol) {
+    *reason = KSP_CONVERGED_ATOL_NORMAL;
+  }
+  PetscFunctionReturn(0);
+}
+
+
 
 /*MC
      KSPLSQR - This implements LSQR
@@ -363,7 +458,9 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
    Developer Notes: How is this related to the KSPCGNE implementation? One difference is that KSPCGNE applies
             the preconditioner transpose times the preconditioner,  so one does not need to pass A'*A as the third argument to KSPSetOperators().
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
+   For least squares problems without a zero to A*x = b, there are additional convergence tests for the residual of the normal equations, A'*(b - Ax), see KSPLSQRDefaultConverged()
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPLSQRDefaultConverged()
 
 M*/
 EXTERN_C_BEGIN
@@ -381,7 +478,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LSQR(KSP ksp)
   lsqr->arnorm = 0.0;
   ksp->data                      = (void*)lsqr;
   if (ksp->pc_side != PC_LEFT) {
-     ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for LSQR to left!\n");CHKERRQ(ierr);
+    ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for LSQR to left!\n");CHKERRQ(ierr);
   }
   ksp->pc_side                   = PC_LEFT;
   ksp->ops->setup                = KSPSetUp_LSQR;
@@ -391,13 +488,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LSQR(KSP ksp)
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
   ksp->ops->setfromoptions       = KSPSetFromOptions_LSQR;
   ksp->ops->view                 = KSPView_LSQR;
+  ksp->converged                 = KSPLSQRDefaultConverged;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSquare"
-PetscErrorCode PETSCVEC_DLLEXPORT VecSquare(Vec v)
+PetscErrorCode PETSCKSP_DLLEXPORT VecSquare(Vec v)
 {
   PetscErrorCode ierr;
   PetscScalar    *x;

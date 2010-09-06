@@ -50,7 +50,7 @@
 .seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
           PetscViewerPushFormat(), PetscViewerPopFormat(), PetscViewerDrawOpen(),PetscViewerSocketOpen()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
 {
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
@@ -101,7 +101,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFormat(PetscViewer viewer,PetscView
 .seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
           PetscViewerSetFormat(), PetscViewerPopFormat()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -131,7 +131,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerPushFormat(PetscViewer viewer,PetscVie
 .seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
           PetscViewerSetFormat(), PetscViewerPushFormat()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerPopFormat(PetscViewer viewer)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerPopFormat(PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -143,7 +143,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerPopFormat(PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerGetFormat" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerGetFormat(PetscViewer viewer,PetscViewerFormat *format)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerGetFormat(PetscViewer viewer,PetscViewerFormat *format)
 {
   PetscFunctionBegin;
   *format =  viewer->format;

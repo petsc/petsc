@@ -7,7 +7,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFListGetPathAndFunction"
-PetscErrorCode PETSC_DLLEXPORT PetscFListGetPathAndFunction(const char name[],char *path[],char *function[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFListGetPathAndFunction(const char name[],char *path[],char *function[])
 {
   PetscErrorCode ierr;
   char           work[PETSC_MAX_PATH_LEN],*lfunction;
@@ -35,7 +35,7 @@ PetscDLLibrary DLLibrariesLoaded = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLoadDynamicLibrary"
-static PetscErrorCode PETSC_DLLEXPORT PetscLoadDynamicLibrary(const char *name,PetscTruth *found)
+static PetscErrorCode PETSCSYS_DLLEXPORT PetscLoadDynamicLibrary(const char *name,PetscTruth *found)
 {
   char           libs[PETSC_MAX_PATH_LEN],dlib[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -65,7 +65,7 @@ static PetscErrorCode PETSC_DLLEXPORT PetscLoadDynamicLibrary(const char *name,P
     PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the 
     search path.
 */ 
-PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscInitialize_DynamicLibraries(void)
 {
   char           *libname[32];
   PetscErrorCode ierr;
@@ -191,7 +191,7 @@ static PetscFList   dlallhead = 0;
 .seealso: PetscFListDestroy(), SNESRegisterDynamic(), KSPRegisterDynamic(),
           PCRegisterDynamic(), TSRegisterDynamic(), PetscFList
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscFListAdd(PetscFList *fl,const char name[],const char rname[],void (*fnc)(void))
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFListAdd(PetscFList *fl,const char name[],const char rname[],void (*fnc)(void))
 {
   PetscFList     entry,ne;
   PetscErrorCode ierr;
@@ -260,7 +260,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListAdd(PetscFList *fl,const char name[],co
 
 .seealso: PetscFListAddDynamic(), PetscFList
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscFListDestroy(PetscFList *fl)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFListDestroy(PetscFList *fl)
 {
   PetscFList     next,entry,tmp = dlallhead;
   PetscErrorCode ierr;
@@ -305,7 +305,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListDestroy(PetscFList *fl)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFListDestroyAll"
-PetscErrorCode PETSC_DLLEXPORT PetscFListDestroyAll(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFListDestroyAll(void)
 {
   PetscFList     tmp2,tmp1 = dlallhead;
   PetscErrorCode ierr;
@@ -337,7 +337,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListDestroyAll(void)
 
 .seealso: PetscFListAddDynamic(), PetscFList
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscFListFind(PetscFList fl,MPI_Comm comm,const char name[],void (**r)(void))
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFListFind(PetscFList fl,MPI_Comm comm,const char name[],void (**r)(void))
 {
   PetscFList     entry = fl;
   PetscErrorCode ierr;
@@ -444,7 +444,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListFind(PetscFList fl,MPI_Comm comm,const 
 
 .seealso: PetscFListAddDynamic(), PetscFListPrintTypes(), PetscFList
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscFListView(PetscFList list,PetscViewer viewer)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFListView(PetscFList list,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscTruth     iascii;
@@ -492,7 +492,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListView(PetscFList list,PetscViewer viewer
 
 .seealso: PetscFListAddDynamic(), PetscFList
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscFListGet(PetscFList list,char ***array,int *n)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFListGet(PetscFList list,char ***array,int *n)
 {
   PetscErrorCode ierr;
   PetscInt       count = 0;
@@ -537,7 +537,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListGet(PetscFList list,char ***array,int *
 
 .seealso: PetscFListAddDynamic(), PetscFList
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFList list,const char def[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFList list,const char def[])
 {
   PetscErrorCode ierr;
   PetscInt       count = 0;
@@ -576,7 +576,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const
 .seealso: PetscFList, PetscFListAdd(), PetscFlistDestroy()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscFListDuplicate(PetscFList fl,PetscFList *nl)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFListDuplicate(PetscFList fl,PetscFList *nl)
 {
   PetscErrorCode ierr;
   char           path[PETSC_MAX_PATH_LEN];
@@ -617,7 +617,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListDuplicate(PetscFList fl,PetscFList *nl)
     the path as path:name
 
 */
-PetscErrorCode PETSC_DLLEXPORT PetscFListConcat(const char path[],const char name[],char fullname[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFListConcat(const char path[],const char name[],char fullname[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

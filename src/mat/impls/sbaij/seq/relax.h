@@ -3,10 +3,11 @@
     This is included by sbaij.c to generate unsigned short and regular versions of these two functions
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatMult_SeqSBAIJ_1_Hermitian"
 #if defined(USESHORT)
+#define __FUNCT__ "MatMult_SeqSBAIJ_1_Hermitian_ushort"
 PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian_ushort(Mat A,Vec xx,Vec zz) 
 #else
+#define __FUNCT__ "MatMult_SeqSBAIJ_1_Hermitian"
 PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat A,Vec xx,Vec zz)
 #endif
 {
@@ -54,10 +55,11 @@ PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat A,Vec xx,Vec zz)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMult_SeqSBAIJ_1"
 #if defined(USESHORT)
+#define __FUNCT__ "MatMult_SeqSBAIJ_1_ushort"
 PetscErrorCode MatMult_SeqSBAIJ_1_ushort(Mat A,Vec xx,Vec zz)
 #else
+#define __FUNCT__ "MatMult_SeqSBAIJ_1"
 PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
 #endif
 {
@@ -105,10 +107,11 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSOR_SeqSBAIJ"
 #if defined(USESHORT)
+#define __FUNCT__ "MatSOR_SeqSBAIJ_ushort"
 PetscErrorCode MatSOR_SeqSBAIJ_ushort(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 #else
+#define __FUNCT__ "MatSOR_SeqSBAIJ"
 PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 #endif
 {
@@ -202,10 +205,10 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
 	nz = 0;
 	for (i=m-1; i>=0; i--){
           sum = b[i];
-	  nz2 = ai[i] - ai[i-1] - 1;
-	  PETSC_Prefetch(v-nz2-1,0,1);
-	  PETSC_Prefetch(vj-nz2-1,0,1);  
-	  PetscSparseDenseMinusDot(sum,x,v,vj,nz);         
+          nz2 = ai[i] - ai[i-1] - 1;
+          PETSC_Prefetch(v-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
+          PETSC_Prefetch(vj-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
+          PetscSparseDenseMinusDot(sum,x,v,vj,nz);
           nz   = nz2;
 #endif
           x[i] = omega*sum*aidiag[i];        
@@ -220,8 +223,8 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
 	for (i=m-1; i>=0; i--){
           sum = t[i];
 	  nz2 = ai[i] - ai[i-1] - 1;
-	  PETSC_Prefetch(v-nz2-1,0,1);
-	  PETSC_Prefetch(vj-nz2-1,0,1);  
+	  PETSC_Prefetch(v-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
+	  PETSC_Prefetch(vj-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
 	  PetscSparseDenseMinusDot(sum,x,v,vj,nz);         
           x[i] = (1-omega)*x[i] + omega*sum*aidiag[i];        
 	  nz  = nz2;

@@ -42,7 +42,7 @@ struct _p_DrawSP {
 
 .seealso:  PetscDrawSPDestroy()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
 {
   PetscErrorCode ierr;
   PetscTruth     isnull;
@@ -93,7 +93,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSPCreate(PetscDraw draw,int dim,PetscDra
    Concepts: scatter plot^setting number of data types
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
 {
   PetscErrorCode ierr;
 
@@ -125,7 +125,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
   Concepts: scatter plot^resetting
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSPReset(PetscDrawSP sp)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSPReset(PetscDrawSP sp)
 {
   PetscFunctionBegin;
   if (sp && ((PetscObject)sp)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
@@ -153,7 +153,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSPReset(PetscDrawSP sp)
 
 .seealso:  PetscDrawSPCreate()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSPDestroy(PetscDrawSP sp)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSPDestroy(PetscDrawSP sp)
 {
   PetscErrorCode ierr;
 
@@ -189,7 +189,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSPDestroy(PetscDrawSP sp)
 
 .seealso: PetscDrawSPAddPoints()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -242,7 +242,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,P
 
 .seealso: PetscDrawSPAddPoint()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscReal **yy)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscReal **yy)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k;
@@ -299,7 +299,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscRe
 .seealso: PetscDrawLGDraw(), PetscDrawLGSPDraw()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSPDraw(PetscDrawSP sp)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSPDraw(PetscDrawSP sp)
 {
   PetscReal      xmin=sp->xmin,xmax=sp->xmax,ymin=sp->ymin,ymax=sp->ymax;
   PetscErrorCode ierr;
@@ -348,7 +348,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSPDraw(PetscDrawSP sp)
    Concepts: scatter plot^setting axis
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSPSetLimits(PetscDrawSP sp,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max) 
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSPSetLimits(PetscDrawSP sp,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max)
 {
   PetscFunctionBegin;
   if (sp && ((PetscObject)sp)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
@@ -379,7 +379,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSPSetLimits(PetscDrawSP sp,PetscReal x_m
    Level: intermediate
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSPGetAxis(PetscDrawSP sp,PetscDrawAxis *axis)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSPGetAxis(PetscDrawSP sp,PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
   if (sp && ((PetscObject)sp)->classid == PETSC_DRAW_CLASSID) {
@@ -407,7 +407,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSPGetAxis(PetscDrawSP sp,PetscDrawAxis *
    Level: intermediate
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSPGetDraw(PetscDrawSP sp,PetscDraw *draw)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSPGetDraw(PetscDrawSP sp,PetscDraw *draw)
 {
   PetscFunctionBegin;
   PetscValidHeader(sp,1);

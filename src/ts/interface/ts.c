@@ -1436,9 +1436,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPreStep(TS ts)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->ops->prestep) {
     PetscStackPush("TS PreStep function");
-    CHKMEMQ;
     ierr = (*ts->ops->prestep)(ts);CHKERRQ(ierr);
-    CHKMEMQ;
     PetscStackPop;
   }
   PetscFunctionReturn(0);
@@ -1517,9 +1515,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPostStep(TS ts)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->ops->poststep) {
     PetscStackPush("TS PostStep function");
-    CHKMEMQ;
     ierr = (*ts->ops->poststep)(ts);CHKERRQ(ierr);
-    CHKMEMQ;
     PetscStackPop;
   }
   PetscFunctionReturn(0);

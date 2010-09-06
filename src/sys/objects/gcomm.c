@@ -26,7 +26,7 @@
    Concepts: MPI communicator^getting from object
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
 {
   PetscErrorCode ierr;
 
@@ -65,7 +65,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetComm(PetscObject obj,MPI_Comm *comm
 .seealso:  PetscObjectIncrementTabLevel()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectGetTabLevel(PetscObject obj,PetscInt *tab)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetTabLevel(PetscObject obj,PetscInt *tab)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -73,6 +73,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetTabLevel(PetscObject obj,PetscInt *
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectIncrementTabLevel"
 /*@
    PetscObjectIncrementTabLevel - Sets the number of tabs that ASCII output for that object use based on
          the tablevel of another object. This should be called immediately after the object is created.
@@ -94,7 +96,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetTabLevel(PetscObject obj,PetscInt *
 .seealso:   PetscObjectSetLabLevel(),  PetscObjectGetTabLevel()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectIncrementTabLevel(PetscObject obj,PetscObject oldobj,PetscInt tab)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectIncrementTabLevel(PetscObject obj,PetscObject oldobj,PetscInt tab)
 {
 
   PetscFunctionBegin;

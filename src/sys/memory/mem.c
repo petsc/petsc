@@ -69,7 +69,7 @@
    Concepts: memory usage
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 {
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
   FILE                   *file;
@@ -119,7 +119,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
   if (!(file = fopen(proc,"r"))) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to access system file %s to get memory usage data",proc);
   }
-  fscanf(file,"%d %d",&mm,&rss);
+  if (fscanf(file,"%d %d",&mm,&rss) != 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"Failed to read two integers (mm and rss) from %s",proc);
   *mem = ((PetscLogDouble)rss) * ((PetscLogDouble)getpagesize());
   err = fclose(file);
   if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
@@ -179,7 +179,7 @@ PetscLogDouble PetscMemoryMaximumUsage = 0;
    Concepts: memory usage
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
 {
   PetscFunctionBegin;
   if (!PetscMemoryCollectMaximumUsage) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"To use this function you must first call PetscMemorySetGetMaximumUsage()");
@@ -208,7 +208,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
    Concepts: memory usage
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMemorySetGetMaximumUsage(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMemorySetGetMaximumUsage(void)
 {
   PetscFunctionBegin;
   PetscMemoryCollectMaximumUsage = PETSC_TRUE;

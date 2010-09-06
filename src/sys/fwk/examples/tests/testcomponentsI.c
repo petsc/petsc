@@ -4,7 +4,7 @@ EXTERN_C_BEGIN
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "TestIACall"
-PetscErrorCode PETSC_DLLEXPORT TestIACall(PetscFwk component, const char* message) {
+PetscErrorCode PETSCSYS_DLLEXPORT TestIACall(PetscFwk component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -14,7 +14,7 @@ PetscErrorCode PETSC_DLLEXPORT TestIACall(PetscFwk component, const char* messag
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "TestIBCall"
-PetscErrorCode PETSC_DLLEXPORT TestIBCall(PetscFwk component, const char* message) {
+PetscErrorCode PETSCSYS_DLLEXPORT TestIBCall(PetscFwk component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscTruth init;
@@ -32,7 +32,7 @@ PetscErrorCode PETSC_DLLEXPORT TestIBCall(PetscFwk component, const char* messag
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "TestICCall"
-PetscErrorCode PETSC_DLLEXPORT TestICCall(PetscFwk component, const char* message) {
+PetscErrorCode PETSCSYS_DLLEXPORT TestICCall(PetscFwk component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;

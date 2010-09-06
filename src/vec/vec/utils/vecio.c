@@ -77,7 +77,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 {
   PetscMPIInt    size,rank,tag;
   int            fd;
-  PetscInt       i,rows,n,*range,N,bs;
+  PetscInt       i,rows = 0,n,*range,N,bs;
   PetscErrorCode ierr;
   PetscTruth     flag;
   PetscScalar    *avec,*avecwork;

@@ -1,4 +1,6 @@
 
+#if !defined(_MHYP_H)
+#define _MHYP_H
 
 #include "petscda.h"   /*I "petscda.h" I*/
 #include "HYPRE_struct_mv.h"
@@ -43,3 +45,22 @@ typedef struct {
   PetscInt              *gindices,rstart,gnx,gnxgny,gnxgnygnz,xs,ys,zs,nx,ny,nz,nxny,nxnynz;
 } Mat_HYPRESStruct;
 
+
+EXTERN PetscErrorCode MatHYPRE_IJMatrixCreate(Mat,HYPRE_IJMatrix*);
+EXTERN PetscErrorCode MatHYPRE_IJMatrixCopy(Mat,HYPRE_IJMatrix);
+EXTERN PetscErrorCode MatHYPRE_IJMatrixFastCopy(Mat,HYPRE_IJMatrix);
+EXTERN PetscErrorCode VecHYPRE_IJVectorCreate(Vec,HYPRE_IJVector*);
+
+/*
+    PetscStackCallHypre - Calls a hypre library routine after pushing the name of the routine on the stack.
+
+   Input Parameters:
++   name - string that gives the name of the function being called
+-   routine - actual call to the routine
+
+   Developer Note: this is so that when a hypre routine results in a crash or corrupts memory, they get blamed instead of PETSc.
+
+*/
+#define PetscStackCallHypre(name,routine) PetscStackPush(name);ierr = routine;if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in %s()",name);PetscStackPop;
+
+#endif

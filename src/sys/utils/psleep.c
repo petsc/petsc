@@ -34,7 +34,7 @@
    Concepts: waiting
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSleep(PetscReal s)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSleep(PetscReal s)
 {
   PetscFunctionBegin;
   if (s < 0) getc(stdin);

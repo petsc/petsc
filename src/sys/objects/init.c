@@ -24,44 +24,44 @@
      Indicates if PETSc started up MPI, or it was 
    already started before PETSc was initialized.
 */
-PetscTruth  PETSC_DLLEXPORT PetscBeganMPI         = PETSC_FALSE;
-PetscTruth  PETSC_DLLEXPORT PetscInitializeCalled = PETSC_FALSE;
-PetscTruth  PETSC_DLLEXPORT PetscFinalizeCalled   = PETSC_FALSE;
-PetscMPIInt PETSC_DLLEXPORT PetscGlobalRank = -1;
-PetscMPIInt PETSC_DLLEXPORT PetscGlobalSize = -1;
+PetscTruth  PETSCSYS_DLLEXPORT PetscBeganMPI         = PETSC_FALSE;
+PetscTruth  PETSCSYS_DLLEXPORT PetscInitializeCalled = PETSC_FALSE;
+PetscTruth  PETSCSYS_DLLEXPORT PetscFinalizeCalled   = PETSC_FALSE;
+PetscMPIInt PETSCSYS_DLLEXPORT PetscGlobalRank = -1;
+PetscMPIInt PETSCSYS_DLLEXPORT PetscGlobalSize = -1;
 
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)
 template <> class std::complex<double>; /* instantiate complex template class */
 #endif
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-MPI_Datatype  PETSC_DLLEXPORT MPI_C_DOUBLE_COMPLEX;
-MPI_Datatype  PETSC_DLLEXPORT MPI_C_COMPLEX;
+MPI_Datatype  PETSCSYS_DLLEXPORT MPI_C_DOUBLE_COMPLEX;
+MPI_Datatype  PETSCSYS_DLLEXPORT MPI_C_COMPLEX;
 #endif
-PetscScalar   PETSC_DLLEXPORT PETSC_i; 
+PetscScalar   PETSCSYS_DLLEXPORT PETSC_i;
 #else
-PetscScalar   PETSC_DLLEXPORT PETSC_i = 0.0; 
+PetscScalar   PETSCSYS_DLLEXPORT PETSC_i = 0.0;
 #endif
-MPI_Datatype  PETSC_DLLEXPORT MPIU_2SCALAR = 0;
-MPI_Datatype  PETSC_DLLEXPORT MPIU_2INT = 0;
+MPI_Datatype  PETSCSYS_DLLEXPORT MPIU_2SCALAR = 0;
+MPI_Datatype  PETSCSYS_DLLEXPORT MPIU_2INT = 0;
 
 #if defined(PETSC_USE_SCALAR_QD_DD)
-MPI_Datatype  PETSC_DLLEXPORT MPIU_QD_DD;
+MPI_Datatype  PETSCSYS_DLLEXPORT MPIU_QD_DD;
 #endif
 /*
      These are needed by petscbt.h
 */
 #include "petscbt.h"
-char     PETSC_DLLEXPORT _BT_mask = ' ';
-char     PETSC_DLLEXPORT _BT_c = ' ';
-PetscInt PETSC_DLLEXPORT _BT_idx  = 0;
+char     PETSCSYS_DLLEXPORT _BT_mask = ' ';
+char     PETSCSYS_DLLEXPORT _BT_c = ' ';
+PetscInt PETSCSYS_DLLEXPORT _BT_idx  = 0;
 
 /*
        Function that is called to display all error messages
 */
-PetscErrorCode PETSC_DLLEXPORT (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
-PetscErrorCode PETSC_DLLEXPORT (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
-PetscErrorCode PETSC_DLLEXPORT (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDefault;
+PetscErrorCode PETSCSYS_DLLEXPORT (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
+PetscErrorCode PETSCSYS_DLLEXPORT (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
+PetscErrorCode PETSCSYS_DLLEXPORT (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDefault;
 
 /*
   This is needed to turn on/off cuda synchronization */
@@ -75,7 +75,7 @@ FILE *petsc_history = PETSC_NULL;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogOpenHistoryFile"
-PetscErrorCode PETSC_DLLEXPORT PetscLogOpenHistoryFile(const char filename[],FILE **fd)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscLogOpenHistoryFile(const char filename[],FILE **fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -115,7 +115,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogOpenHistoryFile(const char filename[],FIL
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogCloseHistoryFile"
-PetscErrorCode PETSC_DLLEXPORT PetscLogCloseHistoryFile(FILE **fd)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscLogCloseHistoryFile(FILE **fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -188,7 +188,7 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag)
 
 .seealso: PetscInitialize(), PetscOptionsPrint(), PetscMallocDump(), PetscMPIDump(), PetscFinalize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscEnd(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscEnd(void)
 {
   PetscFunctionBegin;
   PetscFinalize();
@@ -220,7 +220,7 @@ PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
    Concepts: package help message
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),PetscErrorCode (*version)(MPI_Comm))
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),PetscErrorCode (*version)(MPI_Comm))
 {
   PetscFunctionBegin;
   PetscExternalHelpFunction    = help;
@@ -230,11 +230,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetHelpVersionFunctions(PetscErrorCode (*hel
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsCheckInitial_Private"
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Private(void)
 {
   char           string[64],mname[PETSC_MAX_PATH_LEN],*f;
   MPI_Comm       comm = PETSC_COMM_WORLD;
-  PetscTruth     flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flag,flgz,flgzout;
+  PetscTruth     flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flag,flgz,flgzout;
   PetscErrorCode ierr;
   PetscReal      si;
   int            i;
@@ -484,8 +484,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-log_all",&flg1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-log",&flg2,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-log_summary",&flg3);CHKERRQ(ierr);
-  if (flg1)              {  ierr = PetscLogAllBegin();CHKERRQ(ierr); }
-  else if (flg2 || flg3) {  ierr = PetscLogBegin();CHKERRQ(ierr);}
+  ierr = PetscOptionsHasName(PETSC_NULL,"-log_summary_python",&flg4);CHKERRQ(ierr);
+  if (flg1)                      {  ierr = PetscLogAllBegin();CHKERRQ(ierr); }
+  else if (flg2 || flg3 || flg4) {  ierr = PetscLogBegin();CHKERRQ(ierr);}
     
   ierr = PetscOptionsGetString(PETSC_NULL,"-log_trace",mname,250,&flg1);CHKERRQ(ierr);
   if (flg1) { 
@@ -577,8 +578,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   if (f) {
     ierr = PetscInfoDeactivateClass(PETSC_NULL);CHKERRQ(ierr);
   }
+
 #if defined(PETSC_HAVE_CUDA)
-  flg1 = PETSC_FALSE;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-log_summary",&flg3);CHKERRQ(ierr);
+  if (flg3) {
+    flg1 = PETSC_TRUE;
+  } else {
+    flg1 = PETSC_FALSE;
+  }
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-cuda_synchronize",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) synchronizeCUDA = PETSC_TRUE;
 #endif

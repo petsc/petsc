@@ -13,8 +13,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex5s.c ex6.c \
                    ex14.c ex18.c ex19.c ex20.c ex21.c ex22.c \
                    ex23.c ex24.c ex25.c ex26.c ex27.c ex29.c ex30.c ex31.c ex38.c ex42.c ex43.c \
                    ex44.c ex45.c ex47.c ex48.c ex49.c ex50.c ex47cu.cu
-EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F ex33f.F mex34f90.F ex34f90.F \
-		   mex35f90.F90 ex35f90.F90 mex36f90.F90 ex36f90.F90 mex37f90.F90 ex37f90.F90 ex39f90.F
+EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F ex33f.F 
 EXAMPLESCH	 = ex43-44.h
 EXAMPLESFH       = ex5f.h
 EXAMPLESMATLAB   = ex5m.m
@@ -147,18 +146,6 @@ ex32: ex32.o chkopts
 ex33f: ex33f.o  chkopts
 	-${FLINKER} -o ex33f ex33f.o ${PETSC_SNES_LIB}
 	${RM} ex33f.o
-ex34f90: mex34f90.o ex34f90.o  chkopts
-	-${FLINKER} -o ex34f90 ex34f90.o ${PETSC_SNES_LIB}
-	${RM} ex34f90.o mex34f90.mod mex34f90.o mex34finterfaces.mod
-ex35f90: mex35f90.o ex35f90.o  chkopts
-	-${FLINKER} -o ex35f90 ex35f90.o ${PETSC_SNES_LIB}
-	${RM} ex35f90.o mex35f90.mod mex35f90.o mex35finterfaces.mod
-ex36f90: mex36f90.o ex36f90.o  chkopts
-	-${FLINKER} -o ex36f90 ex36f90.o ${PETSC_SNES_LIB}
-	${RM} ex36f90.o mex36f90.mod mex36f90.o mex36finterfaces.mod
-ex37f90: mex37f90.o ex37f90.o  chkopts
-	-${FLINKER} -o ex37f90 ex37f90.o ${PETSC_SNES_LIB}
-	${RM} ex37f90.o mex37f90.mod mex37f90.o mex37finterfaces.mod
 ex38: ex38.o  chkopts
 	-${CLINKER} -o ex38 ex38.o ${PETSC_SNES_LIB}
 	${RM} ex38.o
@@ -440,12 +427,12 @@ runex19_2:
 	   else echo "Possible problem with ex19_2, diffs above"; fi; \
 	   ${RM} -f ex19_2.tmp
 runex19_3: #test pc_redundant
-	-@${MPIEXEC} -n 4 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type aij -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2 > ex19_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2 > ex19_3.tmp 2>&1; \
 	   if (${DIFF} output/ex19_3.out ex19_3.tmp) then true; \
 	   else echo "Possible problem with ex19_3, diffs above"; fi; \
 	   ${RM} -f ex19_3.tmp
 runex19_4: #test pc_redundant
-	-@${MPIEXEC} -n 12 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type aij -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 5 > ex19_4.tmp 2>&1; \
+	-@${MPIEXEC} -n 12 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 5 > ex19_4.tmp 2>&1; \
 	   if (${DIFF} output/ex19_3.out ex19_4.tmp) then true; \
 	   else echo "Possible problem with ex19_4, diffs above"; fi; \
 	   ${RM} -f ex19_4.tmp
@@ -485,12 +472,12 @@ runex19_10:
 	   else echo "Possible problem with ex19_10, diffs above"; fi; \
 	   ${RM} -f ex19_10.tmp
 runex19_11: #test pc_redundant
-	-@${MPIEXEC} -n 4 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type aij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 2 -preload off > ex19_11.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 2 -preload off > ex19_11.tmp 2>&1; \
 	   if (${DIFF} output/ex19_11.out ex19_11.tmp) then true; \
 	   else echo "Possible problem with ex19_11, diffs above"; fi; \
 	   ${RM} -f ex19_11.tmp
 runex19_12: #test pc_redundant
-	-@${MPIEXEC} -n 12 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type aij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 5 -preload off > ex19_12.tmp 2>&1; \
+	-@${MPIEXEC} -n 12 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 5 -preload off > ex19_12.tmp 2>&1; \
 	   if (${DIFF} output/ex19_12.out ex19_12.tmp) then true; \
 	   else echo "Possible problem with ex19_12, diffs above"; fi; \
 	   ${RM} -f ex19_12.tmp

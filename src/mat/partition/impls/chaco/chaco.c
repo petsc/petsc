@@ -146,7 +146,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
         /* redirect output to buffer: chaco -> mesg_log */
 #ifdef PETSC_HAVE_UNISTD_H
         fd_stdout = dup(1);
-        pipe(fd_pipe);
+        if (pipe(fd_pipe)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Could not open pipe");
         close(1);
         dup2(fd_pipe[1], 1);
         ierr = PetscMalloc(SIZE_LOG * sizeof(char), &(chaco->mesg_log));CHKERRQ(ierr);

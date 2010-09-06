@@ -22,7 +22,7 @@
 .keywords: draw, ellipse
 .seealso: PetscDrawRectangle(), PetscDrawTriangle()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawEllipse(PetscDraw draw, PetscReal x, PetscReal y, PetscReal a, PetscReal b, int c)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawEllipse(PetscDraw draw, PetscReal x, PetscReal y, PetscReal a, PetscReal b, int c)
 {
   PetscTruth isdrawnull;
   PetscErrorCode ierr;

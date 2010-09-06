@@ -32,7 +32,7 @@ EXTERN_C_BEGIN
 
          we do not use PetscFree() since it is unsafe after PetscFinalize()
 */
-PetscMPIInt PETSC_DLLEXPORT Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
+PetscMPIInt PETSCDM_DLLEXPORT Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
 {
   free(attr_val);
   return(MPI_SUCCESS);
@@ -622,7 +622,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetType(Mesh mesh,const MeshType *type)
 
   Level: advanced
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT MeshRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mesh))
+PetscErrorCode PETSCDM_DLLEXPORT MeshRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mesh))
 {
   PetscErrorCode ierr;
   char           fullname[PETSC_MAX_PATH_LEN];
@@ -634,7 +634,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MeshRegister(const char sname[],const char pat
 }
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MeshCreate_Cartesian(Mesh);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreate_Cartesian(Mesh);
 EXTERN_C_END
 
 #undef __FUNCT__  

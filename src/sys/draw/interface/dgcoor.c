@@ -27,7 +27,7 @@
 .seealso: PetscDrawSetCoordinates()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawGetCoordinates(PetscDraw draw,PetscReal *xl,PetscReal *yl,PetscReal *xr,PetscReal *yr)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawGetCoordinates(PetscDraw draw,PetscReal *xl,PetscReal *yl,PetscReal *xr,PetscReal *yr)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);

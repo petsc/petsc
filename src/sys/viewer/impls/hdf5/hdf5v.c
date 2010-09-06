@@ -26,7 +26,7 @@ PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
 EXTERN_C_BEGIN 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFileSetMode_HDF5"
-PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetMode_HDF5(PetscViewer viewer, PetscFileMode type)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileSetMode_HDF5(PetscViewer viewer, PetscFileMode type)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *) viewer->data;
 
@@ -40,7 +40,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFileSetName_HDF5"
-PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[])
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *) viewer->data;
 #if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
@@ -77,7 +77,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_HDF5" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_HDF5(PetscViewer v)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerCreate_HDF5(PetscViewer v)
 {  
   PetscViewer_HDF5 *hdf5;
   PetscErrorCode    ierr;
@@ -129,7 +129,7 @@ $    FILE_MODE_APPEND - open existing file for binary output
           VecView(), MatView(), VecLoad(), MatLoad(),
           PetscFileMode, PetscViewer
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF5Open(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *hdf5v)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5Open(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *hdf5v)
 {
   PetscErrorCode ierr;
  
@@ -158,7 +158,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF5Open(MPI_Comm comm, const char nam
 
 .seealso: PetscViewerHDF5Open()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF5GetFileId(PetscViewer viewer, hid_t *file_id)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5GetFileId(PetscViewer viewer, hid_t *file_id)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *) viewer->data;
  
@@ -172,7 +172,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF5GetFileId(PetscViewer viewer, hid_
 #if defined(oldhdf4stuff)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerHDF5WriteSDS" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF5WriteSDS(PetscViewer viewer, float *xf, int d, int *dims,int bs)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5WriteSDS(PetscViewer viewer, float *xf, int d, int *dims,int bs)
 {
  int                   i;
  PetscViewer_HDF5      *vhdf5 = (PetscViewer_HDF5*)viewer->data;

@@ -369,6 +369,8 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetLagNorm(KSP,PetscTruth);
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetTolerances()
 E*/
 typedef enum {/* converged */
+              KSP_CONVERGED_RTOL_NORMAL        =  1,
+              KSP_CONVERGED_ATOL_NORMAL        =  9,
               KSP_CONVERGED_RTOL               =  2,
               KSP_CONVERGED_ATOL               =  3,
               KSP_CONVERGED_ITS                =  4,
@@ -584,11 +586,11 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUseFischerGuess(KSP,PetscInt,Pets
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFischerGuess(KSP,KSPFischerGuess);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetFischerGuess(KSP,KSPFischerGuess*);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat,Mat,Mat,Mat,Mat,Mat*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatCreateSchurComplement(Mat,Mat,Mat,Mat,Mat,Mat*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatSchurComplementGetKSP(Mat,KSP*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementUpdate(Mat,Mat,Mat,Mat,Mat,Mat,MatStructure);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementGetSubmatrices(Mat,Mat*,Mat*,Mat*,Mat*,Mat*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSchurComplement(Mat,IS,IS,IS,IS,MatReuse,Mat *,MatReuse,Mat *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatSchurComplementUpdate(Mat,Mat,Mat,Mat,Mat,Mat,MatStructure);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatSchurComplementGetSubmatrices(Mat,Mat*,Mat*,Mat*,Mat*,Mat*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatGetSchurComplement(Mat,IS,IS,IS,IS,MatReuse,Mat *,MatReuse,Mat *);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDM(KSP,DM);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDMActive(KSP,PetscTruth);

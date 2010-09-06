@@ -146,7 +146,9 @@ typedef struct {
   PetscScalar u;
   PetscScalar lambda;
 } ULambda;
- 
+
+#undef __FUNCT__  
+#define __FUNCT__ "FormFunction"
 /*
       Evaluates FU = Gradiant(L(w,u,lambda))
 
@@ -207,6 +209,8 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "u_solution"
 /* 
     Computes the exact solution
 */
@@ -220,6 +224,8 @@ PetscErrorCode u_solution(void *dummy,PetscInt n,PetscScalar *x,PetscScalar *u)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "ExactSolution"
 PetscErrorCode ExactSolution(DMComposite packer,Vec U) 
 {
   PF             pf;
@@ -247,7 +253,8 @@ PetscErrorCode ExactSolution(DMComposite packer,Vec U)
   PetscFunctionReturn(0);
 }
 
-
+#undef __FUNCT__  
+#define __FUNCT__ "Monitor"
 PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
 {
   DMMG           dmmg = (DMMG)dummy;

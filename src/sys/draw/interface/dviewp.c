@@ -24,7 +24,7 @@
    Concepts: graphics^in subset of window
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -58,7 +58,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,
 .seealso: PetscDrawDivideViewPort(), PetscDrawSetViewPort()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSplitViewPort(PetscDraw draw)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSplitViewPort(PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -122,7 +122,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSplitViewPort(PetscDraw draw)
 .seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsSet(), PetscDrawViewPortsDestroy()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDrawViewPorts **ports)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDrawViewPorts **ports)
 {
   int        i,n;
   PetscErrorCode ierr;
@@ -199,7 +199,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsCreate(PetscDraw draw,PetscInt 
 .seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsSet(), PetscDrawViewPortsDestroy()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt ny,PetscDrawViewPorts **ports)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt ny,PetscDrawViewPorts **ports)
 {
   PetscReal     *xl, *xr, *yl, *yr, hx, hy;
   PetscTruth     isnull;
@@ -266,7 +266,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsCreateRect(PetscDraw draw,Petsc
 .seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsSet(), PetscDrawViewPortsCreate()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 {
   PetscErrorCode ierr;
 
@@ -301,7 +301,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsDestroy(PetscDrawViewPorts *por
 .seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsDestroy(), PetscDrawViewPortsCreate()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsSet(PetscDrawViewPorts *ports,PetscInt port)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawViewPortsSet(PetscDrawViewPorts *ports,PetscInt port)
 {
   PetscErrorCode ierr;
 

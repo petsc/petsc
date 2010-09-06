@@ -14,7 +14,7 @@ static PetscTruth TSPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT TSFinalizePackage(void) 
+PetscErrorCode PETSCTS_DLLEXPORT TSFinalizePackage(void)
 {
   PetscFunctionBegin;
   TSPackageInitialized = PETSC_FALSE;
@@ -38,7 +38,7 @@ PetscErrorCode PETSC_DLLEXPORT TSFinalizePackage(void)
 .keywords: TS, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSInitializePackage(const char path[]) 
+PetscErrorCode PETSCTS_DLLEXPORT TSInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;

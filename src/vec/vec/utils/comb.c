@@ -106,8 +106,7 @@ void PETSCVEC_DLLEXPORT MPIAPI PetscSplitReduction_Local(void *in,void *out,Pets
       MPI_Abort(MPI_COMM_WORLD,1);
     }
   }
-  PetscStackPop; /* since function returns void cannot use PetscFunctionReturn(); */
-  return;
+  PetscFunctionReturnVoid();
 }
 EXTERN_C_END
 

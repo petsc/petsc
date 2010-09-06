@@ -59,7 +59,7 @@ PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFileGetName_VU" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerFileGetName_VU(PetscViewer viewer, char **name)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileGetName_VU(PetscViewer viewer, char **name)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
 
@@ -72,7 +72,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFileSetName_VU" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_VU(PetscViewer viewer, const char name[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileSetName_VU(PetscViewer viewer, const char name[])
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
   char           fname[PETSC_MAX_PATH_LEN];
@@ -128,7 +128,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_VU" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_VU(PetscViewer viewer)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerCreate_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu;
   PetscErrorCode ierr;
@@ -181,7 +181,7 @@ EXTERN_C_END
 
 .seealso: PetscViewerASCIIGetPointer()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
 
@@ -208,7 +208,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerVUGetPointer(PetscViewer viewer, FILE 
 .keywords: Viewer, file, get, pointer
 .seealso: PetscViewerASCIISetMode()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
 
@@ -234,7 +234,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerVUSetMode(PetscViewer viewer, PetscFil
 .keywords: Viewer, Vec
 .seealso: PetscViewerVUGetVecSeen()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerVUSetVecSeen(PetscViewer viewer, PetscTruth vecSeen)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUSetVecSeen(PetscViewer viewer, PetscTruth vecSeen)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
 
@@ -262,7 +262,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerVUSetVecSeen(PetscViewer viewer, Petsc
 .keywords: Viewer, Vec
 .seealso: PetscViewerVUGetVecSeen()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerVUGetVecSeen(PetscViewer viewer, PetscTruth *vecSeen)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUGetVecSeen(PetscViewer viewer, PetscTruth *vecSeen)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
 
@@ -289,7 +289,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerVUGetVecSeen(PetscViewer viewer, Petsc
 .keywords: Viewer, print, deferred
 .seealso: PetscViewerVUFlushDeferred()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[], ...)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[], ...)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
   va_list        Argp;
@@ -330,7 +330,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerVUPrintDeferred(PetscViewer viewer, co
 .keywords: Viewer, flush, deferred
 .seealso: PetscViewerVUPrintDeferred()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerVUFlushDeferred(PetscViewer viewer)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUFlushDeferred(PetscViewer viewer)
 {
   PetscViewer_VU *vu   = (PetscViewer_VU *) viewer->data;
   PrintfQueue    next = vu->queueBase;
