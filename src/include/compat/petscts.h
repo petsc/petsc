@@ -32,30 +32,25 @@ typedef PetscErrorCode (*TSIJacobian)(TS,PetscReal,Vec,Vec,PetscReal,
                                       Mat*,Mat*,MatStructure*,void*);
 #undef __FUNCT__
 #define __FUNCT__ "TSSetIFunction"
-static PETSC_UNUSED
-PetscErrorCode TSSetIFunction(TS ts,TSIFunction f,void *ctx)
+static PetscErrorCode TSSetIFunction(TS ts,TSIFunction f,void *ctx)
 {PetscTS_ERR_SUP}
 #undef __FUNCT__
 #define __FUNCT__ "TSSetIJacobian"
-static PETSC_UNUSED
-PetscErrorCode TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian j,void *ctx)
+static PetscErrorCode TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian j,void *ctx)
 {PetscTS_ERR_SUP}
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeIFunction"
-static PETSC_UNUSED
-PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec x,Vec Xdot,Vec f)
+static PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec x,Vec Xdot,Vec f)
 {PetscTS_ERR_SUP}
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeIJacobian"
-static PETSC_UNUSED
-PetscErrorCode TSComputeIJacobian(TS ts,
+static PetscErrorCode TSComputeIJacobian(TS ts,
                                   PetscReal t,Vec x,Vec Xdot,PetscReal a,
                                   Mat *A,Mat *B,MatStructure *flag)
 {PetscTS_ERR_SUP}
 #undef __FUNCT__
 #define __FUNCT__ "TSGetIJacobian"
-static PETSC_UNUSED
-PetscErrorCode TSGetIJacobian(TS ts,Mat *A,Mat *B,
+static PetscErrorCode TSGetIJacobian(TS ts,Mat *A,Mat *B,
                               TSIJacobian *j,void **ctx)
 {PetscTS_ERR_SUP}
 #endif
@@ -63,8 +58,7 @@ PetscErrorCode TSGetIJacobian(TS ts,Mat *A,Mat *B,
 #if (PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "TSThetaSetTheta"
-static PETSC_UNUSED
-PetscErrorCode TSThetaSetTheta(TS ts,PetscReal theta)
+static PetscErrorCode TSThetaSetTheta(TS ts,PetscReal theta)
 {
   PetscErrorCode ierr,(*f)(TS,PetscReal);
   PetscFunctionBegin;
@@ -76,8 +70,7 @@ PetscErrorCode TSThetaSetTheta(TS ts,PetscReal theta)
 }
 #undef __FUNCT__
 #define __FUNCT__ "TSThetaGetTheta"
-static PETSC_UNUSED
-PetscErrorCode TSThetaGetTheta(TS ts,PetscReal *theta)
+static PetscErrorCode TSThetaGetTheta(TS ts,PetscReal *theta)
 {
   PetscErrorCode ierr,(*f)(TS,PetscReal*);
   PetscFunctionBegin;

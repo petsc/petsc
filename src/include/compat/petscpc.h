@@ -8,9 +8,8 @@
 /* PCFieldSplitSetFields */
 #undef __FUNCT__
 #define __FUNCT__ "PCFieldSplitSetFields"
-static PetscErrorCode
-PCFieldSplitSetFields_Compat(PC pc,const char splitname[],
-                             PetscInt n,const PetscInt *fields)
+static PetscErrorCode PCFieldSplitSetFields_Compat(PC pc,const char splitname[],
+                                                   PetscInt n,const PetscInt *fields)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -21,8 +20,7 @@ PCFieldSplitSetFields_Compat(PC pc,const char splitname[],
 /* PCFieldSplitSetIS */
 #undef __FUNCT__
 #define __FUNCT__ "PCFieldSplitSetIS"
-static PetscErrorCode
-PCFieldSplitSetIS_Compat(PC pc,const char splitname[],IS is)
+static PetscErrorCode PCFieldSplitSetIS_Compat(PC pc,const char splitname[],IS is)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -36,8 +34,8 @@ PCFieldSplitSetIS_Compat(PC pc,const char splitname[],IS is)
 /* PCASMSetLocalSubdomains */
 #undef __FUNCT__
 #define __FUNCT__ "PCASMSetLocalSubdomains"
-static PetscErrorCode
-PCASMSetLocalSubdomains_Compat(PC pc,PetscInt n,IS is[],IS is_local[])
+static PetscErrorCode PCASMSetLocalSubdomains_Compat(PC pc,PetscInt n,
+                                              IS is[],IS is_local[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -49,8 +47,8 @@ PCASMSetLocalSubdomains_Compat(PC pc,PetscInt n,IS is[],IS is_local[])
 /* PCASMSetTotalSubdomains */
 #undef __FUNCT__
 #define __FUNCT__ "PCASMSetTotalSubdomains"
-static PetscErrorCode
-PCASMSetTotalSubdomains_Compat(PC pc,PetscInt N,IS is[],IS is_local[])
+static PetscErrorCode PCASMSetTotalSubdomains_Compat(PC pc,PetscInt N,
+                                                     IS is[],IS is_local[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

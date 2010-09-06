@@ -44,10 +44,9 @@ static StageLog _v_stageLog = 0;
 #if (PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsHasName"
-static PETSC_UNUSED
-PetscErrorCode PetscOptionsHasName_Compat(const char pre[],
-                                          const char name[],
-                                          PetscTruth *flg)
+static PetscErrorCode PetscOptionsHasName_Compat(const char pre[],
+                                                 const char name[],
+                                                 PetscTruth *flg)
 {
   char dummy[2] = { 0, 0 };
   PetscErrorCode ierr;
