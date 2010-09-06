@@ -7,6 +7,19 @@
 
 /* -------------------------------------------------------------------------- */
 
+#if !defined(WITH_THREAD)
+#undef  PyGILState_Ensure
+#define PyGILState_Ensure() ((PyGILState_STATE)0)
+#undef  PyGILState_Release
+#define PyGILState_Release(state) (state)=((PyGILState_STATE)0)
+#undef  Py_BLOCK_THREADS
+#define Py_BLOCK_THREADS (_save)=(PyThreadState*)0;
+#undef  Py_UNBLOCK_THREADS
+#define Py_UNBLOCK_THREADS (_save)=(PyThreadState*)0;
+#endif
+
+/* -------------------------------------------------------------------------- */
+
 #if PY_MAJOR_VERSION >= 3
 #define PyInt_Check  PyLong_Check
 #define PyInt_AsLong PyLong_AsLong
