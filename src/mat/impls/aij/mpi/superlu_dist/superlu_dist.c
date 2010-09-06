@@ -499,8 +499,8 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
   PetscMPIInt       size;
   superlu_options_t options;
   PetscTruth        flg;
-  const char        *pctype[] = {"MMD_AT_PLUS_A","NATURAL","MMD_ATA","PARMETIS"}; 
-  const char        *prtype[] = {"LargeDiag","NATURAL"}; 
+  const char        *colperm[] = {"NATURAL","MMD_AT_PLUS_A","MMD_ATA","METIS_AT_PLUS_A","PARMETIS"}; 
+  const char        *rowperm[] = {"LargeDiag","NATURAL"}; 
   const char        *factPattern[] = {"SamePattern","SamePattern_SameRowPerm"};
 
   PetscFunctionBegin;
@@ -524,7 +524,7 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
      options.Fact              = DOFACT;
      options.Equil             = YES;
      options.ParSymbFact       = NO;
-     options.ColPerm           = MMD_AT_PLUS_A;
+     options.ColPerm           = METIS_AT_PLUS_A; 
      options.RowPerm           = LargeDiag;
      options.ReplaceTinyPivot  = YES;
      options.IterRefine        = DOUBLE;
@@ -560,7 +560,7 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
       options.Equil = NO;
     }
 
-    ierr = PetscOptionsEList("-mat_superlu_dist_rowperm","Row permutation","None",prtype,2,prtype[0],&indx,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-mat_superlu_dist_rowperm","Row permutation","None",rowperm,2,rowperm[0],&indx,&flg);CHKERRQ(ierr);
     if (flg) {
       switch (indx) {
       case 0:
@@ -572,21 +572,26 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
       }
     } 
 
-    ierr = PetscOptionsEList("-mat_superlu_dist_colperm","Column permutation","None",pctype,4,pctype[0],&indx,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-mat_superlu_dist_colperm","Column permutation","None",colperm,5,colperm[3],&indx,&flg);CHKERRQ(ierr);
     if (flg) {
       switch (indx) {
       case 0:
-        options.ColPerm = MMD_AT_PLUS_A;
+        options.ColPerm = NATURAL;
         break;
       case 1:
-        options.ColPerm = NATURAL;
+        options.ColPerm = MMD_AT_PLUS_A;
         break;
       case 2:
         options.ColPerm = MMD_ATA;
         break;
       case 3:
-        options.ColPerm = PARMETIS;
+        options.ColPerm = METIS_AT_PLUS_A;
         break;
+      case 4:
+        options.ColPerm = PARMETIS; /* only works for np>1 */
+        break;
+      default:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown column permutation");
       }
     }
 
@@ -690,15 +695,26 @@ PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"  Use iterative refinement %s \n",PetscTruths[options.IterRefine == DOUBLE]);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Processors in row %d col partition %d \n",lu->nprow,lu->npcol);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Row permutation %s \n",(options.RowPerm == NOROWPERM) ? "NATURAL": "LargeDiag");CHKERRQ(ierr);
-  if (options.ColPerm == NATURAL) {
+ 
+  switch(options.ColPerm){
+  case NATURAL:
     ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation NATURAL\n");CHKERRQ(ierr);
-  } else if (options.ColPerm == MMD_AT_PLUS_A) {
+    break;
+  case MMD_AT_PLUS_A:
     ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation MMD_AT_PLUS_A\n");CHKERRQ(ierr);
-  } else if (options.ColPerm == MMD_ATA) {
+    break;
+  case MMD_ATA:
     ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation MMD_ATA\n");CHKERRQ(ierr);
-  } else if (options.ColPerm == PARMETIS) {
+    break;
+  case METIS_AT_PLUS_A:
+    ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation METIS_AT_PLUS_A\n");CHKERRQ(ierr);
+    break;
+  case PARMETIS:
     ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation PARMETIS\n");CHKERRQ(ierr);
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown column permutation");
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown column permutation");
+  }
 
   ierr = PetscViewerASCIIPrintf(viewer,"  Parallel symbolic factorization %s \n",PetscTruths[options.ParSymbFact != NO]);CHKERRQ(ierr);
   

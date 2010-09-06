@@ -12,7 +12,7 @@ include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 
 # Requires Python and petsc4py
-ex1: ex1.o  chkopts
+ex1: ex1.o chkopts
 	-${CLINKER}  -o ex1 ex1.o ${PETSC_LIB} 
 	${RM} ex1.o
 

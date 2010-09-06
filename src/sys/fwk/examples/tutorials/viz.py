@@ -1,15 +1,17 @@
 from petsc4py import PETSc
+from enthought.mayavi import mlab as mlab
 import time
 
-def Viz(fwk, key, stage, v):
-    if v is None:
-        # Create a Fwk instance to serve as the component
-        v = PETSc.Fwk().create(fwk.comm)
+class Viz:
+    @staticmethod
+    def init(v):
+        fwk = v.query("visitor")
+        key = v.getName()
         fwk.registerDependence("Electrolyte",key)
-        return v
-    if stage == "init":
-        assert isinstance(v, PETSc.Fwk)
-    if stage == "viewRho":
+
+    @staticmethod
+    def viewRho(v):
+        fwk = v.query("visitor")
         import numpy
         # Extract a PetscObject e with key "Electrolyte"
         e = fwk.getComponent("Electrolyte")
@@ -29,13 +31,15 @@ def Viz(fwk, key, stage, v):
         rho = rho.reshape(shape)
         # Plot all of the components of rho over the da
         # Use a contour plot in 3D 
-        from enthought.mayavi import mlab as mlab
         for s in range(d):
             mlab.contour3d(rho[:,:,:,s])
             time.sleep(1)
             mlab.clf()
         time.sleep(3)
-    if stage == "viewRhoGamma":
+        
+    @staticmethod
+    def viewRhoGamma(v):
+        fwk = v.queryObject("visitor")
         import numpy
         # Extract a PetscObject e with key "Electrolyte"
         e = fwk.getComponent("Electrolyte")
@@ -55,10 +59,9 @@ def Viz(fwk, key, stage, v):
         rhoGamma = rhoGamma.reshape(shape)
         # Plot all of the components of rhoGamma -- rho and Gamma -- over the da
         # Use a contour plot in 3D 
-        from enthought.mayavi import mlab as mlab
         for s in range(d+1):
             mlab.contour3d(rhoGamma[:,:,:,s])
             time.sleep(1)
             mlab.clf()
         time.sleep(3)
-    return v
+
