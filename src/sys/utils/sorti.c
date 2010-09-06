@@ -6,14 +6,16 @@
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 
-#define MEDIAN(v,right)                         \
-  (v[0]<v[right/2]                              \
-   ? (v[right/2]<v[right]                       \
-      ? right/2                                 \
-      : (v[0]<v[right] ? right : 0))            \
-   : (v[right]<v[right/2]                       \
-      ? right/2                                 \
-      : (v[0]<v[right] ? 0 : right)))
+#define MEDIAN3(v,a,b,c)                        \
+  (v[a]<v[b]                                    \
+   ? (v[b]<v[c]                                 \
+      ? b                                       \
+      : (v[a]<v[c] ? c : a))                    \
+   : (v[c]<v[b]                                 \
+      ? b                                       \
+      : (v[a]<v[c] ? a : c)))
+
+#define MEDIAN(v,right) MEDIAN3(v,right/4,right/2,right/4*3)
 
 /* -----------------------------------------------------------------------*/
 
