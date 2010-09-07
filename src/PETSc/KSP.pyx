@@ -243,11 +243,27 @@ cdef class KSP(Object):
         return (toReal(crtol), toReal(catol), toReal(cdivtol), toInt(cmaxits))
 
     def setConvergenceTest(self, converged, *args, **kargs):
-        if converged is None: KSP_setConverged(self.ksp, None)
-        else: KSP_setConverged(self.ksp, (converged, args, kargs))
+        cdef PetscKSPNormType normtype = KSP_NORM_NO
+        cdef void* cctx = NULL
+        if converged is not None:
+            CHKERR( KSPSetConvergenceTest(
+                    self.ksp, KSP_Converged, NULL, NULL) )
+            self.set_attr('__converged__', (converged, args, kargs))
+        else:
+            CHKERR( KSPGetNormType(self.ksp, &normtype) )
+            if normtype != KSP_NORM_NO:
+                CHKERR( KSPDefaultConvergedCreate(&cctx) )
+                CHKERR( KSPSetConvergenceTest(
+                        self.ksp, KSPDefaultConverged,
+                        cctx, KSPDefaultConvergedDestroy) )
+            else:
+                CHKERR( KSPSetConvergenceTest(
+                        self.ksp, KSPSkipConverged,
+                        NULL, NULL) )
+            self.set_attr('__converged__', None)
 
     def getConvergenceTest(self):
-        return KSP_getConverged(self.ksp)
+        return self.get_attr('__converged__')
 
     def callConvergenceTest(self, its, rnorm):
         cdef PetscInt  ival = asInt(its)
@@ -280,11 +296,18 @@ cdef class KSP(Object):
         CHKERR( KSPLogConvergenceHistory(self.ksp, ival, rval) )
 
     def setMonitor(self, monitor, *args, **kargs):
-        if monitor is None: KSP_setMonitor(self.ksp, None)
-        else: KSP_setMonitor(self.ksp, (monitor, args, kargs))
+        cdef object monitorlist = None
+        if monitor is not None:
+            CHKERR( KSPMonitorSet(self.ksp, KSP_Monitor, NULL, NULL) )
+            monitorlist = self.get_attr('__monitor__')
+            if monitorlist is None:
+                monitorlist = [(monitor, args, kargs)]
+            else:
+                monitorlist.append((monitor, args, kargs))
+        self.set_attr('__monitor__', monitorlist)
 
     def getMonitor(self):
-        return KSP_getMonitor(self.ksp)
+        return self.get_attr('__monitor__')
 
     def callMonitor(self, its, rnorm):
         cdef PetscInt  ival = asInt(its)
@@ -293,7 +316,7 @@ cdef class KSP(Object):
 
     def cancelMonitor(self):
         CHKERR( KSPMonitorCancel(self.ksp) )
-        KSP_delMonitor(self.ksp)
+        self.set_attr('__monitor__', None)
 
     # --- xxx ---
 

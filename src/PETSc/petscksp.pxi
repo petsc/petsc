@@ -153,6 +153,12 @@ cdef extern from "custom.h" nogil:
     int KSPConvergenceTestCall(PetscKSP,PetscInt,PetscReal,PetscKSPConvergedReason*)
     int KSPSetConvergedReason(PetscKSP,PetscKSPConvergedReason)
 
+cdef extern from "libpetsc4py.h":
+    PetscKSPType KSPPYTHON
+    int KSPPythonSetContext(PetscKSP,void*)
+    int KSPPythonGetContext(PetscKSP,void**)
+    int KSPPythonSetType(PetscKSP,char[])
+
 # -----------------------------------------------------------------------------
 
 cdef inline KSP ref_KSP(PetscKSP ksp):
@@ -163,40 +169,13 @@ cdef inline KSP ref_KSP(PetscKSP ksp):
 
 # -----------------------------------------------------------------------------
 
-cdef inline int KSP_setConvergedDefault(PetscKSP ksp) except -1:
-    cdef void* cctx = NULL
-    cdef PetscKSPNormType normtype = KSP_NORM_NO
-    CHKERR( KSPGetNormType(ksp, &normtype) )
-    if normtype != KSP_NORM_NO:
-        CHKERR( KSPDefaultConvergedCreate(&cctx) )
-        CHKERR( KSPSetConvergenceTest(
-                ksp, KSPDefaultConverged,
-                cctx, KSPDefaultConvergedDestroy) )
-    else:
-        CHKERR( KSPSetConvergenceTest(
-                ksp, KSPSkipConverged,
-                NULL, NULL) )
-    return 0
-
-
-cdef inline object KSP_getConverged(PetscKSP ksp):
-    return Object_getAttr(<PetscObject>ksp, '__converged__')
-
-cdef inline int KSP_setConverged(PetscKSP ksp, object converged) except -1:
-    if converged is not None:
-        CHKERR( KSPSetConvergenceTest(ksp, KSP_Converged, NULL, NULL) )
-    else:
-        KSP_setConvergedDefault(ksp)
-    Object_setAttr(<PetscObject>ksp, '__converged__', converged)
-    return 0
-
 cdef int KSP_Converged(PetscKSP  ksp,
                        PetscInt  its,
                        PetscReal rn,
                        PetscKSPConvergedReason *r,
                         void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef KSP Ksp = ref_KSP(ksp)
-    (converged, args, kargs) = KSP_getConverged(ksp)
+    (converged, args, kargs) = Ksp.get_attr('__converged__')
     reason = converged(Ksp, toInt(its), toReal(rn), *args, **kargs)
     if   reason is None:  r[0] = KSP_CONVERGED_ITERATING
     elif reason is False: r[0] = KSP_CONVERGED_ITERATING
@@ -206,39 +185,15 @@ cdef int KSP_Converged(PetscKSP  ksp,
 
 # -----------------------------------------------------------------------------
 
-cdef inline object KSP_getMonitor(PetscKSP ksp):
-    return Object_getAttr(<PetscObject>ksp, '__monitor__')
-
-cdef inline int KSP_setMonitor(PetscKSP ksp, object monitor) except -1:
-    CHKERR( KSPMonitorSet(ksp, KSP_Monitor, NULL, NULL) )
-    cdef object monitorlist = KSP_getMonitor(ksp)
-    if monitor is None: monitorlist = None
-    elif monitorlist is None: monitorlist = [monitor]
-    else: monitorlist.append(monitor)
-    Object_setAttr(<PetscObject>ksp, '__monitor__', monitorlist)
-    return 0
-
-cdef inline int KSP_delMonitor(PetscKSP ksp) except -1:
-    Object_setAttr(<PetscObject>ksp, '__monitor__', None)
-    return 0
-
 cdef int KSP_Monitor(PetscKSP  ksp,
                      PetscInt   its,
                      PetscReal  rnorm,
                      void* ctx) except PETSC_ERR_PYTHON with gil:
-    cdef object monitorlist = KSP_getMonitor(ksp)
-    if monitorlist is None: return 0
     cdef KSP Ksp = ref_KSP(ksp)
+    cdef object monitorlist = Ksp.get_attr('__monitor__')
+    if monitorlist is None: return 0
     for (monitor, args, kargs) in monitorlist:
         monitor(Ksp, toInt(its), toReal(rnorm), *args, **kargs)
     return 0
-
-# -----------------------------------------------------------------------------
-
-cdef extern from "libpetsc4py.h":
-    PetscKSPType KSPPYTHON
-    int KSPPythonSetContext(PetscKSP,void*)
-    int KSPPythonGetContext(PetscKSP,void**)
-    int KSPPythonSetType(PetscKSP,char[])
 
 # -----------------------------------------------------------------------------
