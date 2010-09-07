@@ -56,7 +56,7 @@ cdef int Fwk_Call(
             func = getattr(klass, "call")
             func(component,message)
         except AttributeError:
-            raise AttributeError("Fwk '%s' has no suitable func to respond to message '%s'" % (component.getName(),message))
+            raise AttributeError("Fwk '%s' has no suitable func in vtable '%s' to respond to message '%s'" % (component.getName(), str(klass), message))
     return 0
 
 

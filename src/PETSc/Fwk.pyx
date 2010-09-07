@@ -9,7 +9,7 @@ cdef class Fwk(Object):
         self.fwk = NULL
 
     def call(self, message):
-        cdef char *_message = NULL
+        cdef const_char *_message = NULL
         message = str2bytes(message, &_message)
         CHKERR( PetscFwkCall(self.fwk, _message) )
 
