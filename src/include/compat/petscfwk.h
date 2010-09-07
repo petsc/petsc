@@ -52,7 +52,7 @@ static PetscErrorCode PetscFwkRegisterDependence(PetscFwk fwk,const char client_
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkGetComponent"
-static PetscErrorCode PetscFwkGetComponent(PetscFwk fwk,const char key[],PetscObject *component,PetscTruth *found){PetscFwk_ERR_SUP}
+static PetscErrorCode PetscFwkGetComponent(PetscFwk fwk,const char key[],PetscFwk *component,PetscTruth *found){PetscFwk_ERR_SUP}
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkVisit"
