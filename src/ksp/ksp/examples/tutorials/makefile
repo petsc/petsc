@@ -489,7 +489,7 @@ runex10_13:
 runex10_14:
 	-@${MPIEXEC} -n 3 ./ex10 -options_left no -pc_type spai -f0 ${DATAFILESPATH}/matrices/medium > ex10_14.tmp 2>&1; \
 	  ${DIFF} output/ex10_14.out ex10_14.tmp || echo "Possible problem with ex10_14, diffs above"; \
-	  rm -f ex10_14.tmp
+	  ${RM} -f ex10_14.tmp
 runex10_15:
 	-@${MPIEXEC} -n 3 ./ex10 -options_left no -pc_type hypre -pc_hypre_type pilut -f0 ${DATAFILESPATH}/matrices/medium > ex10_15.tmp 2>&1;\
 	   if (${DIFF} output/ex10_15.out ex10_15.tmp) then true; \
