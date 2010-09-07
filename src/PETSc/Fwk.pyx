@@ -8,6 +8,11 @@ cdef class Fwk(Object):
         self.obj = <PetscObject*> &self.fwk
         self.fwk = NULL
 
+    def call(self, message):
+        cdef const_char *_message = NULL
+        message = str2bytes(message, &_message)
+        CHKERR( PetscFwkCall(self.fwk, _message) )
+
     def view(self, Viewer viewer=None):
         cdef PetscViewer vwr = NULL
         if viewer is not None: vwr = viewer.vwr
@@ -25,12 +30,29 @@ cdef class Fwk(Object):
         PetscCLEAR(self.obj); self.fwk = newfwk
         return self
 
-    def registerComponent(self, key, url):
+    def getURL(self):
+        cdef const_char *_url = NULL
+        CHKERR( PetscFwkGetURL(self.fwk, &_url) )
+        if _url == NULL: return None
+        return bytes2str(_url)
+
+    def setURL(self, url):
+        cdef const_char *_url = NULL
+        url = str2bytes(url, &_url)
+        CHKERR( PetscFwkSetURL(self.fwk, _url) )
+        return 0
+
+    def registerComponent(self, key):
+        cdef const_char *_key = NULL
+        key = str2bytes(key, &_key)
+        CHKERR( PetscFwkRegisterComponent(self.fwk, _key) )
+
+    def registerComponentURL(self, key, url):
         cdef const_char *_key = NULL
         cdef const_char *_url = NULL
         key = str2bytes(key, &_key)
         url = str2bytes(url, &_url)
-        CHKERR( PetscFwkRegisterComponent(self.fwk, _key, _url) )
+        CHKERR( PetscFwkRegisterComponentURL(self.fwk, _key, _url) )
 
     def registerDependence(self, clientkey, serverkey):
         cdef const_char *_clientkey = NULL
@@ -40,34 +62,24 @@ cdef class Fwk(Object):
         CHKERR( PetscFwkRegisterDependence(self.fwk, _clientkey, _serverkey) )
         return self
 
-    def configure(self, configuration):
+    def visit(self, configuration):
         cdef const_char *_configuration = NULL
         configuration = str2bytes(configuration, &_configuration)
-        CHKERR( PetscFwkConfigure(self.fwk, _configuration) )
+        CHKERR( PetscFwkVisit(self.fwk, _configuration) )
         return self
 
     def getComponent(self, key):
         cdef const_char *_key = NULL
-        cdef PetscObject cobj = NULL
+        cdef PetscFwk component = NULL
         cdef PetscTruth found = PETSC_FALSE
         key = str2bytes(key, &_key)
-        CHKERR( PetscFwkGetComponent(self.fwk, _key, &cobj, &found) )
-        if found == PETSC_FALSE or cobj == NULL: return None
-        cdef PetscClassId classid = 0
-        CHKERR( PetscObjectGetClassId(cobj, &classid) )
-        cdef type klass = TypeRegistryGet(classid)
-        cdef Object newobj = klass()
-        PetscIncref(cobj); newobj.obj[0] = cobj
-        return newobj
+        CHKERR( PetscFwkGetComponent(self.fwk, _key, &component, &found) )
+        if found == PETSC_FALSE or component == NULL: return None
+        cdef Fwk cfwk = Fwk()
+        PetscIncref(<PetscObject>component); 
+        PetscCLEAR(cfwk.obj); cfwk.fwk = component
+        return cfwk
 
-    def getURL(self, key):
-        cdef const_char *_key = NULL
-        cdef const_char *_url = NULL
-        cdef PetscTruth found = PETSC_FALSE
-        key = str2bytes(key, &_key)
-        CHKERR( PetscFwkGetURL(self.fwk, _key, &_url, &found) )
-        if found == PETSC_FALSE or _url == NULL: return None
-        return bytes2str(_url)
 
     @classmethod
     def DEFAULT(cls, comm=None):
