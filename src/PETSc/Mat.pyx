@@ -276,9 +276,10 @@ cdef class Mat(Object):
         PetscCLEAR(self.obj); self.mat = newmat
         # preallocate matrix
         if array is not None:
-            CHKERR( Mat_AllocDense_ARRAY(self.mat, bs, array) )
+            array = Mat_AllocDense_ARRAY(self.mat, bs, array)
+            self.set_attr('__array__', array)
         else:
-            CHKERR( Mat_AllocDense_DEFAULT(self.mat, bs) )
+            Mat_AllocDense_DEFAULT(self.mat, bs)
         return self
 
     def setPreallocationDense(self, array, bsize=None):

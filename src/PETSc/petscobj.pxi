@@ -67,22 +67,6 @@ cdef inline int PetscDecref(PetscObject obj):
 
 # --------------------------------------------------------------------
 
-cdef inline object Object_getDict(PetscObject o):
-    cdef void *dct = NULL
-    CHKERR( PetscObjectGetPyDict(o, PETSC_TRUE, &dct) )
-    return <object> dct
-
-cdef inline object Object_getAttr(PetscObject o, char name[]):
-    cdef void *attr = NULL
-    CHKERR( PetscObjectGetPyObj(o, name, &attr) )
-    return <object> attr
-
-cdef inline int Object_setAttr(PetscObject o, char name[], object attr) except -1:
-    CHKERR( PetscObjectSetPyObj(o, name, <void*>attr) )
-    return 0
-
-# --------------------------------------------------------------------
-
 cdef inline long Object_toFortran(PetscObject o):
     return <long> o
 

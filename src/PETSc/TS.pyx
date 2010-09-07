@@ -89,10 +89,10 @@ cdef class TS(Object):
     # --- xxx ---
 
     def setAppCtx(self, appctx):
-        Object_setAttr(<PetscObject>self.ts, '__appctx__', appctx)
+        self.set_attr('__appctx__', appctx)
 
     def getAppCtx(self):
-        return Object_getAttr(<PetscObject>self.ts, '__appctx__')
+        return self.get_attr('__appctx__')
 
     # --- xxx ---
 

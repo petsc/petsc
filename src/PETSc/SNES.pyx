@@ -83,10 +83,10 @@ cdef class SNES(Object):
     # --- xxx ---
 
     def setAppCtx(self, appctx):
-        Object_setAttr(<PetscObject>self.snes, '__appctx__', appctx)
+        self.set_attr('__appctx__', appctx)
 
     def getAppCtx(self):
-        return Object_getAttr(<PetscObject>self.snes, '__appctx__')
+        return self.get_attr('__appctx__')
 
     # --- xxx ---
 
@@ -202,7 +202,7 @@ cdef class SNES(Object):
         if reset: flag = PETSC_TRUE
         cdef object rhist = oarray_r(empty_r(size), NULL, &rdata)
         cdef object ihist = oarray_i(empty_i(size), NULL, &idata)
-        Object_setAttr(<PetscObject>self.snes, '__history__', (rhist, ihist))
+        self.set_attr('__history__', (rhist, ihist))
         CHKERR( SNESSetConvergenceHistory(self.snes, rdata, idata, size, flag) )
 
     def getConvergenceHistory(self):
