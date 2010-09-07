@@ -75,10 +75,10 @@ cdef class Fwk(Object):
         key = str2bytes(key, &_key)
         CHKERR( PetscFwkGetComponent(self.fwk, _key, &component, &found) )
         if found == PETSC_FALSE or component == NULL: return None
-        cdef Fwk cfwk = Fwk()
-        PetscIncref(<PetscObject>component); 
-        PetscCLEAR(cfwk.obj); cfwk.fwk = component
-        return cfwk
+        cdef Fwk fwk = Fwk()
+        PetscIncref(<PetscObject>component);
+        fwk.fwk = component
+        return fwk
 
 
     @classmethod
