@@ -1,7 +1,6 @@
 #undef  __FUNCT__
 #define __FUNCT__ "PetscPyObjDestroy"
-static
-PetscErrorCode PetscPyObjDestroy(void* ptr)
+static PetscErrorCode PetscPyObjDestroy(void* ptr)
 {
   PyObject *pyobj = 0;
   PetscFunctionBegin;
@@ -16,8 +15,7 @@ PetscErrorCode PetscPyObjDestroy(void* ptr)
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscObjectGetPyDict"
-PETSC_STATIC_INLINE
-PetscErrorCode PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **dict)
+static PetscErrorCode PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **dict)
 {
   PyObject      *pydict = NULL;
   PetscFunctionBegin;
@@ -49,8 +47,7 @@ PetscErrorCode PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **d
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscObjectSetPyObj"
-PETSC_STATIC_INLINE
-PetscErrorCode PetscObjectSetPyObj(PetscObject obj, const char name[], void *op)
+static PetscErrorCode PetscObjectSetPyObj(PetscObject obj, const char name[], void *op)
 {
   PyObject       *pydct = NULL;
   PyObject       *pykey = NULL;
@@ -100,8 +97,7 @@ PetscErrorCode PetscObjectSetPyObj(PetscObject obj, const char name[], void *op)
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscObjectGetPyObj"
-PETSC_STATIC_INLINE
-PetscErrorCode PetscObjectGetPyObj(PetscObject obj, const char name[], void **op)
+static PetscErrorCode PetscObjectGetPyObj(PetscObject obj, const char name[], void **op)
 {
   PyObject       *pydct = NULL;
   PyObject       *pykey = NULL;

@@ -120,10 +120,9 @@ static void OPENMPI_dlopen_libmpi(void)
 #endif
 }
 
-static PetscErrorCode
-PetscInitialize_OpenMPI(int *argc,char ***args,
-                        const char file[],
-                        const char help[])
+static PetscErrorCode PetscInitialize_OpenMPI(int *argc,char ***args,
+                                              const char file[],
+                                              const char help[])
 {
   OPENMPI_dlopen_libmpi();
   return PetscInitialize(argc,args,file,help);

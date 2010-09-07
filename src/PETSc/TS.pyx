@@ -89,32 +89,50 @@ cdef class TS(Object):
     # --- xxx ---
 
     def setAppCtx(self, appctx):
-        Object_setAttr(<PetscObject>self.ts, '__appctx__', appctx)
+        self.set_attr('__appctx__', appctx)
 
     def getAppCtx(self):
-        return Object_getAttr(<PetscObject>self.ts, '__appctx__')
+        return self.get_attr('__appctx__')
 
     # --- xxx ---
 
     def setLHSMatrix(self, Mat Alhs not None, lhsmatrix=None, *args, **kargs):
-        TS_setLHSMatrix(self.ts, Alhs.mat, lhsmatrix, args, kargs)
+        cdef PetscMatStructure matstr = MAT_DIFFERENT_NONZERO_PATTERN # XXX
+        if lhsmatrix is None:
+            CHKERR( TSSetMatrices(self.ts, NULL, NULL,
+                                  Alhs.mat, NULL, matstr, NULL) )
+            self.set_attr('__lhsmatrix__', None)
+        else:
+            CHKERR( TSSetMatrices(self.ts, NULL, NULL,
+                                  Alhs.mat, TS_LHSMatrix, matstr, NULL) )
+            self.set_attr('__lhsmatrix__', (lhsmatrix, args, kargs))
 
     def setRHSMatrix(self, Mat Arhs not None, rhsmatrix=None, *args, **kargs):
-        TS_setRHSMatrix(self.ts, Arhs.mat, rhsmatrix, args, kargs)
+        cdef PetscMatStructure matstr = MAT_DIFFERENT_NONZERO_PATTERN # XXX
+        if rhsmatrix is None:
+            CHKERR( TSSetMatrices(self.ts, Arhs.mat, NULL,
+                                  NULL, NULL, matstr, NULL) )
+            self.set_attr('__rhsmatrix__', None)
+        else:
+            CHKERR( TSSetMatrices(self.ts, Arhs.mat, TS_RHSMatrix,
+                                  NULL, NULL, matstr, NULL) )
+            self.set_attr('__rhsmatrix__', (rhsmatrix, args, kargs))
 
     # --- xxx ---
 
     def setRHSFunction(self, function, Vec f not None, *args, **kargs):
         cdef PetscVec fvec = NULL
         if f is not None: fvec = f.vec
-        TS_setRHSFunction(self.ts, fvec, (function, args, kargs))
+        CHKERR( TSSetRHSFunction(self.ts, fvec, TS_RHSFunction, NULL) )
+        self.set_attr('__rhsfunction__', (function, args, kargs))
 
     def setRHSJacobian(self, jacobian, Mat J, Mat P=None, *args, **kargs):
-        cdef PetscMat Jmat=NULL
+        cdef PetscMat Jmat = NULL
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat = Jmat
         if P is not None: Pmat = P.mat
-        TS_setRHSJacobian(self.ts, Jmat, Pmat, (jacobian, args, kargs))
+        CHKERR( TSSetRHSJacobian(self.ts, Jmat, Pmat, TS_RHSJacobian, NULL) )
+        self.set_attr('__rhsjacobian__', (jacobian, args, kargs))
 
     def computeRHSFunction(self, t, Vec x not None, Vec f not None):
         cdef PetscReal time = asReal(t)
@@ -133,7 +151,7 @@ cdef class TS(Object):
         cdef Vec f = Vec()
         CHKERR( TSGetRHSFunction(self.ts, &f.vec, NULL, NULL) )
         PetscIncref(<PetscObject>f.vec)
-        cdef object function = TS_getRHSFunction(self.ts)
+        cdef object function = self.get_attr('__rhsfunction__')
         return (f, function)
 
     def getRHSJacobian(self):
@@ -141,7 +159,7 @@ cdef class TS(Object):
         CHKERR( TSGetRHSJacobian(self.ts, &J.mat, &P.mat, NULL, NULL) )
         PetscIncref(<PetscObject>J.mat)
         PetscIncref(<PetscObject>P.mat)
-        cdef object jacobian = TS_getRHSJacobian(self.ts)
+        cdef object jacobian = self.get_attr('__rhsjacobian__')
         return (J, P, jacobian)
 
     #
@@ -149,14 +167,19 @@ cdef class TS(Object):
     def setIFunction(self, function, Vec f not None, *args, **kargs):
         cdef PetscVec fvec=NULL
         if f is not None: fvec = f.vec
-        TS_setIFunction(self.ts, f.vec, (function, args, kargs))
+        CHKERR( TSSetIFunction(self.ts, fvec, TS_IFunction, NULL) )
+        self.set_attr('__ifunction__', (function, args, kargs))
 
     def setIJacobian(self, jacobian, Mat J, Mat P=None, *args, **kargs):
-        cdef PetscMat Jmat=NULL
+        cdef PetscMat Jmat = NULL
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat = Jmat
         if P is not None: Pmat = P.mat
-        TS_setIJacobian(self.ts, Jmat, Pmat, (jacobian, args, kargs))
+        CHKERR( TSSetIJacobian(self.ts, Jmat, Pmat, TS_IJacobian, NULL) )
+        self.set_attr('__ijacobian__', (jacobian, args, kargs))
+        if Pmat != NULL:
+            CHKERR( PetscObjectCompose(
+                    <PetscObject>self.ts,"__ijacpmat__", <PetscObject>Pmat) )
 
     def computeIFunction(self,
                          t, Vec x not None, Vec xdot not None,
@@ -177,7 +200,7 @@ cdef class TS(Object):
         return flag
 
     def getIFunction(self):
-        cdef object function = TS_getIFunction(self.ts)
+        cdef object function = self.get_attr('__ifunction__')
         return function
 
     def getIJacobian(self):
@@ -185,7 +208,7 @@ cdef class TS(Object):
         CHKERR( TSGetIJacobian(self.ts, &J.mat, &P.mat, NULL, NULL) )
         PetscIncref(<PetscObject>J.mat)
         PetscIncref(<PetscObject>P.mat)
-        cdef object jacobian = TS_getIJacobian(self.ts)
+        cdef object jacobian = self.get_attr('__ijacobian__')
         return (J, P, jacobian)
 
     #
@@ -296,11 +319,18 @@ cdef class TS(Object):
     #
 
     def setMonitor(self, monitor, *args, **kargs):
-        if monitor is None: TS_setMonitor(self.ts, None)
-        else: TS_setMonitor(self.ts, (monitor, args, kargs))
+        cdef object monitorlist = None
+        if monitor is not None:
+            CHKERR( TSMonitorSet(self.ts, TS_Monitor, NULL, NULL) )
+            monitorlist = self.get_attr('__monitor__')
+            if monitorlist is None:
+                monitorlist = [(monitor, args, kargs)]
+            else:
+                monitorlist.append((monitor, args, kargs))
+        self.set_attr('__monitor__', monitorlist)
 
     def getMonitor(self):
-        return TS_getMonitor(self.ts)
+        return self.get_attr('__monitor__')
 
     def callMonitor(self, step, time, Vec u=None):
         cdef PetscInt  ival = asInt(step)
@@ -313,23 +343,30 @@ cdef class TS(Object):
 
     def cancelMonitor(self):
         CHKERR( TSMonitorCancel(self.ts) )
-        TS_delMonitor(self.ts)
-
+        self.set_attr('__monitor__', None)
     #
 
     def setPreStep(self, prestep, *args, **kargs):
-        if prestep is not None: prestep = (prestep, args, kargs)
-        TS_setPreStep(self.ts, prestep)
+        if prestep is not None:
+            CHKERR( TSSetPreStep(self.ts, TS_PreStep) )
+            self.set_attr('__prestep__', (prestep, args, kargs))
+        else:
+            CHKERR( TSSetPreStep(self.ts, NULL) )
+            self.set_attr('__prestep__', None)
 
     def getPreStep(self, prestep):
-        return TS_getPreStep(self.ts)
+        return self.get_attr('__prestep__')
 
     def setPostStep(self, poststep, *args, **kargs):
-        if poststep is not None: prestep = (poststep, args, kargs)
-        TS_setPostStep(self.ts, (poststep, args, kargs))
+        if poststep is not None:
+            CHKERR( TSSetPostStep(self.ts, TS_PostStep) )
+            self.set_attr('__poststep__', (poststep, args, kargs))
+        else:
+            CHKERR( TSSetPostStep(self.ts, NULL) )
+            self.set_attr('__poststep__', None)
 
     def getPostStep(self):
-        return TS_getPostStep(self.ts)
+        return self.get_attr('__poststep__')
 
     def setUp(self):
         CHKERR( TSSetUp(self.ts) )

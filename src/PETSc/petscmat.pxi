@@ -1,5 +1,3 @@
-# --------------------------------------------------------------------
-
 cdef extern from "petscmat.h" nogil:
 
     ctypedef char* PetscMatType "const char*"
@@ -283,7 +281,13 @@ cdef extern from "custom.h" nogil:
                           PetscMat*)
     int MatAnyDenseSetPreallocation(PetscMat,PetscInt,PetscScalar[])
 
-# --------------------------------------------------------------------
+cdef extern from "libpetsc4py.h":
+    PetscMatType MATPYTHON
+    int MatPythonSetContext(PetscMat,void*)
+    int MatPythonGetContext(PetscMat,void**)
+    int MatPythonSetType(PetscMat,char[])
+
+# -----------------------------------------------------------------------------
 
 cdef extern from "petscmat.h" nogil:
     int MatNullSpaceDestroy(PetscNullSpace)
@@ -298,43 +302,36 @@ cdef extern from "petscmat.h" nogil:
                                       void*) except PETSC_ERR_PYTHON
     int MatNullSpaceSetFunction(PetscNullSpace,MatNullSpaceFunction*,void*)
 
-cdef extern from *:
-    enum: PETSC_300 "(PETSC_VERSION_(3,0,0))"
-
 cdef inline NullSpace ref_NullSpace(PetscNullSpace nsp):
     cdef NullSpace ob = <NullSpace> NullSpace()
     PetscIncref(<PetscObject>nsp)
     ob.nsp = nsp
     return ob
 
-cdef inline object NullSpace_getFunction(PetscNullSpace nsp):
-    return Object_getAttr(<PetscObject>nsp, '__function__')
+cdef int NullSpace_Function(PetscNullSpace n, PetscVec v, void *ctx) \
+                            except PETSC_ERR_PYTHON with gil:
+    cdef NullSpace nsp = ref_NullSpace(n)
+    cdef Vec vec = ref_Vec(v)
+    (function, args, kargs) = nsp.get_attr('__function__')
+    function(nsp, vec, *args, **kargs)
+    return 0
 
-cdef inline int NullSpace_setFunction(PetscNullSpace nsp,
-                                      object function) except -1:
-    if function is None:
-        CHKERR( MatNullSpaceSetFunction(nsp, NULL, NULL) )
-    elif PETSC_300:
+cdef extern from *:
+    enum: PETSC_300 "(PETSC_VERSION_(3,0,0))"
+
+cdef inline int MatNullSpaceSetFunctionPython(PetscNullSpace nsp) except -1:
+    if PETSC_300:
         CHKERR( MatNullSpaceSetFunction(
                 nsp, <MatNullSpaceFunction*>NullSpace_Function_OLD, nsp) )
     else:
         CHKERR( MatNullSpaceSetFunction(
                 nsp, <MatNullSpaceFunction*>NullSpace_Function, nsp) )
-    Object_setAttr(<PetscObject>nsp, '__function__', function)
-    return 0
-
-cdef int NullSpace_Function(PetscNullSpace n, PetscVec v, void *ctx) \
-                            except PETSC_ERR_PYTHON with gil:
-    cdef NullSpace nsp = ref_NullSpace(n)
-    cdef Vec vec = ref_Vec(v)
-    (function, args, kargs) = NullSpace_getFunction(n)
-    function(nsp, vec, *args, **kargs)
     return 0
 
 cdef int NullSpace_Function_OLD(PetscVec v, void* ctx) nogil:
     return NullSpace_Function(<PetscNullSpace> ctx, v, ctx)
 
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 cdef inline Mat ref_Mat(PetscMat mat):
     cdef Mat ob = <Mat> Mat()
@@ -342,7 +339,7 @@ cdef inline Mat ref_Mat(PetscMat mat):
     ob.mat = mat
     return ob
 
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 # unary operations
 
@@ -446,7 +443,7 @@ cdef Mat mat_rmul(Mat self, other):
 cdef Mat mat_rdiv(Mat self, other):
     raise NotImplementedError
 
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 cdef inline PetscMatStructure matstructure(object structure) \
     except <PetscMatStructure>(-1):
@@ -462,7 +459,7 @@ cdef inline PetscMatAssemblyType assemblytype(object assembly) \
     elif assembly is True:  return MAT_FLUSH_ASSEMBLY
     else:                   return assembly
 
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 cdef inline int Mat_BlockSize(object bsize, PetscInt *_bs) except -1:
     cdef PetscInt bs = PETSC_DECIDE
@@ -591,10 +588,9 @@ cdef inline int Mat_AllocDense_ARRAY(PetscMat A, PetscInt bs,
         "size(array) is %d, expected %dx%d=%d" %
         (toInt(size), toInt(m), toInt(n), toInt(m*n)) )
     CHKERR( MatAnyDenseSetPreallocation(A, bs, data) )
-    Object_setAttr(<PetscObject>A, '__array__', array)
     return 0
 
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 ctypedef int MatSetValuesFcn(PetscMat,PetscInt,const_PetscInt[],
                              PetscInt,const_PetscInt[],
@@ -775,7 +771,7 @@ cdef inline matgetvalues(PetscMat mat,
     CHKERR( MatGetValues(mat, ni, i, nj, j, v) )
     return values
 
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 cdef extern from "custom.h":
     int MatFactorInfoDefaults(PetscTruth,PetscMatFactorInfo*)
@@ -787,7 +783,7 @@ cdef int matfactorinfo(PetscTruth incomplete, object options,
     cdef dict opts = options
     return 0
 
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 cdef object mat_getitem(Mat self, object ij):
     cdef PetscInt M=0, N=0
@@ -817,12 +813,4 @@ cdef int mat_setitem(Mat self, object ij, object v) except -1:
     matsetvalues(self.mat, rows, cols, v, None, 0, 0)
     return 0
 
-# --------------------------------------------------------------------
-
-cdef extern from "libpetsc4py.h":
-    PetscMatType MATPYTHON
-    int MatPythonSetContext(PetscMat,void*)
-    int MatPythonGetContext(PetscMat,void**)
-    int MatPythonSetType(PetscMat,char[])
-
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------

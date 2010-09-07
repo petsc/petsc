@@ -276,9 +276,10 @@ cdef class Mat(Object):
         PetscCLEAR(self.obj); self.mat = newmat
         # preallocate matrix
         if array is not None:
-            CHKERR( Mat_AllocDense_ARRAY(self.mat, bs, array) )
+            array = Mat_AllocDense_ARRAY(self.mat, bs, array)
+            self.set_attr('__array__', array)
         else:
-            CHKERR( Mat_AllocDense_DEFAULT(self.mat, bs) )
+            Mat_AllocDense_DEFAULT(self.mat, bs)
         return self
 
     def setPreallocationDense(self, array, bsize=None):
@@ -1056,11 +1057,15 @@ cdef class NullSpace(Object):
         return self
 
     def setFunction(self, function, *args, **kargs):
-        if function is None: NullSpace_setFunction(self.nsp, None)
-        else: NullSpace_setFunction(self.nsp, (function, args, kargs))
+        if function is not None:
+            MatNullSpaceSetFunctionPython(self.nsp)
+            self.set_attr('__function__', (function, args, kargs))
+        else:    
+            CHKERR( MatNullSpaceSetFunction(self.nsp, NULL, NULL) )
+            self.set_attr('__function__', None)
 
     def getFunction(self):
-        return NullSpace_getFunction(self.nsp)
+        return self.get_attr('__function__')
 
     def remove(self, Vec vec not None, Vec out=None):
         cdef PetscVec v = NULL, *vp = NULL

@@ -136,7 +136,13 @@ cdef extern from "custom.h" nogil:
                                 PetscReal,PetscReal,PetscReal,
                                 PetscSNESConvergedReason*)
 
-# --------------------------------------------------------------------
+cdef extern from "libpetsc4py.h":
+    PetscSNESType SNESPYTHON
+    int SNESPythonSetContext(PetscSNES,void*)
+    int SNESPythonGetContext(PetscSNES,void**)
+    int SNESPythonSetType(PetscSNES,char[])
+
+# -----------------------------------------------------------------------------
 
 cdef inline SNES ref_SNES(PetscSNES snes):
     cdef SNES ob = <SNES> SNES()
@@ -146,16 +152,6 @@ cdef inline SNES ref_SNES(PetscSNES snes):
 
 # -----------------------------------------------------------------------------
 
-cdef inline object SNES_getFunction(PetscSNES snes):
-    return Object_getAttr(<PetscObject>snes, '__function__')
-
-cdef inline int SNES_setFunction(PetscSNES snes,
-                                 PetscVec f,
-                                 object function) except -1:
-    CHKERR( SNESSetFunction(snes, f, SNES_Function, NULL) )
-    Object_setAttr(<PetscObject>snes, '__function__', function)
-    return 0
-
 cdef int SNES_Function(PetscSNES snes,
                        PetscVec  x,
                        PetscVec  f,
@@ -163,41 +159,20 @@ cdef int SNES_Function(PetscSNES snes,
     cdef SNES Snes = ref_SNES(snes)
     cdef Vec  Xvec = ref_Vec(x)
     cdef Vec  Fvec = ref_Vec(f)
-    (function, args, kargs) = SNES_getFunction(snes)
+    (function, args, kargs) = Snes.get_attr('__function__')
     function(Snes, Xvec, Fvec, *args, **kargs)
     return 0
 
 # -----------------------------------------------------------------------------
 
-cdef inline object SNES_getUpdate(PetscSNES snes):
-    return Object_getAttr(<PetscObject>snes, '__update__')
-
-cdef inline int SNES_setUpdate(PetscSNES snes, object update) except -1:
-    if update is not None:
-        CHKERR( SNESSetUpdate(snes, SNES_Update) )
-    else:
-        CHKERR( SNESSetUpdate(snes, NULL) )
-    Object_setAttr(<PetscObject>snes, '__update__', update)
-    return 0
-
 cdef int SNES_Update(PetscSNES snes,
                      PetscInt its) except PETSC_ERR_PYTHON with gil:
     cdef SNES Snes = ref_SNES(snes)
-    (update, args, kargs) = SNES_getUpdate(snes)
+    (update, args, kargs) = Snes.get_attr('__update__')
     update(Snes, toInt(its), *args, **kargs)
     return 0
 
 # -----------------------------------------------------------------------------
-
-cdef inline object SNES_getJacobian(PetscSNES snes):
-    return Object_getAttr(<PetscObject>snes, '__jacobian__')
-
-cdef inline int SNES_setJacobian(PetscSNES snes,
-                                 PetscMat J, PetscMat P,
-                                 object jacobian) except -1:
-    CHKERR( SNESSetJacobian(snes, J, P, SNES_Jacobian, NULL) )
-    Object_setAttr(<PetscObject>snes, '__jacobian__', jacobian)
-    return 0
 
 cdef int SNES_Jacobian(PetscSNES snes,
                        PetscVec  x,
@@ -209,7 +184,7 @@ cdef int SNES_Jacobian(PetscSNES snes,
     cdef Vec  Xvec = ref_Vec(x)
     cdef Mat  Jmat = ref_Mat(J[0])
     cdef Mat  Pmat = ref_Mat(P[0])
-    (jacobian, args, kargs) = SNES_getJacobian(snes)
+    (jacobian, args, kargs) = Snes.get_attr('__jacobian__')
     retv = jacobian(Snes, Xvec, Jmat, Pmat, *args, **kargs)
     s[0] = matstructure(retv)
     cdef PetscMat Jtmp = NULL, Ptmp = NULL
@@ -219,19 +194,6 @@ cdef int SNES_Jacobian(PetscSNES snes,
 
 # -----------------------------------------------------------------------------
 
-cdef inline object SNES_getConverged(PetscSNES snes):
-    return Object_getAttr(<PetscObject>snes, '__converged__')
-
-cdef inline int SNES_setConverged(PetscSNES snes, object converged) except -1:
-    if converged is not None:
-        CHKERR( SNESSetConvergenceTest(
-                snes, SNES_Converged, NULL, NULL) )
-    else:
-        CHKERR( SNESSetConvergenceTest(
-                snes, SNESDefaultConverged, NULL, NULL) )
-    Object_setAttr(<PetscObject>snes, '__converged__', converged)
-    return 0
-
 cdef int SNES_Converged(PetscSNES  snes,
                         PetscInt   iters,
                         PetscReal  xnorm,
@@ -240,11 +202,11 @@ cdef int SNES_Converged(PetscSNES  snes,
                         PetscSNESConvergedReason *r,
                         void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef SNES Snes = ref_SNES(snes)
-    (converged, args, kargs) = SNES_getConverged(snes)
     cdef object it = toInt(iters)
     cdef object xn = toReal(xnorm)
     cdef object gn = toReal(gnorm)
     cdef object fn = toReal(fnorm)
+    (converged, args, kargs) = Snes.get_attr('__converged__')
     reason = converged(Snes, it, (xn, gn, fn), *args, **kargs)
     if   reason is None:  r[0] = SNES_CONVERGED_ITERATING
     elif reason is False: r[0] = SNES_CONVERGED_ITERATING
@@ -252,43 +214,19 @@ cdef int SNES_Converged(PetscSNES  snes,
     else:                 r[0] = reason
     return 0
 
-# --------------------------------------------------------------------
-
-cdef inline object SNES_getMonitor(PetscSNES snes):
-    return Object_getAttr(<PetscObject>snes, '__monitor__')
-
-cdef inline int SNES_setMonitor(PetscSNES snes, object monitor) except -1:
-    CHKERR( SNESMonitorSet(snes, SNES_Monitor, NULL, NULL) )
-    cdef object monitorlist = SNES_getMonitor(snes)
-    if monitor is None: monitorlist = None
-    elif monitorlist is None: monitorlist = [monitor]
-    else: monitorlist.append(monitor)
-    Object_setAttr(<PetscObject>snes, '__monitor__', monitorlist)
-    return 0
-
-cdef inline int SNES_delMonitor(PetscSNES snes) except -1:
-    Object_setAttr(<PetscObject>snes, '__monitor__', None)
-    return 0
+# -----------------------------------------------------------------------------
 
 cdef int SNES_Monitor(PetscSNES  snes,
                       PetscInt   iters,
                       PetscReal  rnorm,
                       void* ctx) except PETSC_ERR_PYTHON with gil:
-    cdef object monitorlist = SNES_getMonitor(snes)
-    if monitorlist is None: return 0
     cdef SNES Snes = ref_SNES(snes)
+    cdef object monitorlist = Snes.get_attr('__monitor__')
+    if monitorlist is None: return 0
     cdef object it = toInt(iters)
     cdef object rn = toReal(rnorm)
     for (monitor, args, kargs) in monitorlist:
         monitor(Snes, it, rn, *args, **kargs)
     return 0
-
-# -----------------------------------------------------------------------------
-
-cdef extern from "libpetsc4py.h":
-    PetscSNESType SNESPYTHON
-    int SNESPythonSetContext(PetscSNES,void*)
-    int SNESPythonGetContext(PetscSNES,void**)
-    int SNESPythonSetType(PetscSNES,char[])
 
 # -----------------------------------------------------------------------------
