@@ -456,7 +456,7 @@ cdef class _Vec_buffer:
             p[0] = <void*>self.data
         return <Py_ssize_t> (self.size*sizeof(PetscScalar))
 
-    def __getsegcount__(self, int *lenp):
+    def __getsegcount__(self, Py_ssize_t *lenp):
         if lenp != NULL:
             lenp[0] = self.getbuffer(0, NULL)
         return 1
