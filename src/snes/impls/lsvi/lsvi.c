@@ -277,7 +277,7 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
   ierr = VecGetArray(lsvi->z,&z);CHKERRQ(ierr);
   
   /* Set the elements of the vector z:
-     z[i] = 1 if (x[i] - l[i],f[i]) = (0,0)
+     z[i] = 1 if (x[i] - l[i],f[i]) = (0,0) or (u[i] - x[i],f[i]) = (0,0)
      else z[i] = 0
   */
   for(i=0;i < n;i++) {
@@ -285,6 +285,10 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
     if(PetscAbsScalar(f[i]) <= PETSC_LSVI_EPS) {
       if ((l[i] > PETSC_LSVI_NINF) && (PetscAbsScalar(x[i]-l[i]) <= PETSC_LSVI_EPS)) {
 	da[i] = 1;
+	z[i]  = 1;
+      }
+      if ((u[i] < PETSC_LSVI_INF) && (PetscAbsScalar(u[i]-x[i]) <= PETSC_LSVI_EPS)) {
+	db[i] = 1;
 	z[i]  = 1;
       }
     }
@@ -309,6 +313,19 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
 	t2 = PetscScalarNorm(t1,f[i]);
 	da[i] = t1/t2 - 1;
 	db[i] = f[i]/t2 - 1;
+      }
+    }
+    else if (l[i] >= PETSC_LSVI_NINF) {
+      if (db[i] >= 1) {
+	t2 = PetscScalarNorm(1,t[i]);
+	da[i] = -1/t2 -1;
+	db[i] = -t[i]/t2 - 1;
+      }
+      else {
+	t1 = u[i] - x[i];
+	t2 = PetscScalarNorm(t1,f[i]);
+	da[i] = t1/t2 - 1;
+	db[i] = -f[i]/t2 - 1;
       }
     }
   }
