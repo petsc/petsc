@@ -91,28 +91,34 @@ cdef class SNES(Object):
     # --- xxx ---
 
     def setFunction(self, function, Vec f not None, *args, **kargs):
-        SNES_setFunction(self.snes, f.vec, (function, args, kargs))
+        CHKERR( SNESSetFunction(self.snes, f.vec, SNES_Function, NULL) )
+        self.set_attr('__function__', (function, args, kargs))
 
     def getFunction(self):
         cdef Vec f = Vec()
         CHKERR( SNESGetFunction(self.snes, &f.vec, NULL, NULL) )
         PetscIncref(<PetscObject>f.vec)
-        cdef object function = SNES_getFunction(self.snes)
+        cdef object function = self.get_attr('__function__')
         return (f, function)
 
     def setUpdate(self, update, *args, **kargs):
-        if update is None: SNES_setUpdate(self.snes, None)
-        else: SNES_setUpdate(self.snes, (update, args, kargs))
+        if update is not None:
+            CHKERR( SNESSetUpdate(self.snes, SNES_Update) )
+            self.set_attr('__update__', (update, args, kargs))
+        else:
+            CHKERR( SNESSetUpdate(self.snes, NULL) )
+            self.set_attr('__update__', None)
 
     def getUpdate(self):
-        return SNES_getUpdate(self.snes)
+        return self.get_attr('__update__')
 
     def setJacobian(self, jacobian, Mat J, Mat P=None, *args, **kargs):
         cdef PetscMat Jmat=NULL
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat = Jmat
         if P is not None: Pmat = P.mat
-        SNES_setJacobian(self.snes, Jmat, Pmat, (jacobian, args, kargs))
+        CHKERR( SNESSetJacobian(self.snes, Jmat, Pmat, SNES_Jacobian, NULL) )
+        self.set_attr('__jacobian__', (jacobian, args, kargs))
 
     def getJacobian(self):
         cdef Mat J = Mat()
@@ -120,7 +126,7 @@ cdef class SNES(Object):
         CHKERR( SNESGetJacobian(self.snes, &J.mat, &P.mat, NULL, NULL) )
         PetscIncref(<PetscObject>J.mat)
         PetscIncref(<PetscObject>P.mat)
-        cdef object jacobian = SNES_getJacobian(self.snes)
+        cdef object jacobian = self.get_attr('__jacobian__')
         return (J, P, jacobian)
 
     def computeFunction(self, Vec x not None, Vec f not None):
@@ -163,11 +169,17 @@ cdef class SNES(Object):
         return (toReal(crtol), toReal(catol), toReal(cstol), toInt(cmaxit))
 
     def setConvergenceTest(self, converged, *args, **kargs):
-        if converged is None: SNES_setConverged(self.snes, None)
-        else: SNES_setConverged(self.snes, (converged, args, kargs))
+        if converged is not None: 
+            CHKERR( SNESSetConvergenceTest(
+                    self.snes, SNES_Converged, NULL, NULL) )
+            self.set_attr('__converged__', (converged, args, kargs))
+        else: 
+            CHKERR( SNESSetConvergenceTest(
+                    self.snes, SNESDefaultConverged, NULL, NULL) )
+            self.set_attr('__converged__', None)
 
     def getConvergenceTest(self):
-        return SNES_getConverged(self.snes)
+        return self.get_attr('__converged__')
 
     def callConvergenceTest(self, its, xnorm, ynorm, fnorm):
         cdef PetscInt  ival  = asInt(its)
@@ -209,11 +221,18 @@ cdef class SNES(Object):
         CHKERR( SNESLogConvergenceHistory(self.snes, ival1, rval, ival2) )
 
     def setMonitor(self, monitor, *args, **kargs):
-        if monitor is None: SNES_setMonitor(self.snes, None)
-        else: SNES_setMonitor(self.snes, (monitor, args, kargs))
+        cdef object monitorlist = None
+        if monitor is not None:
+            CHKERR( SNESMonitorSet(self.snes, SNES_Monitor, NULL, NULL) )
+            monitorlist = self.get_attr('__monitor__')
+            if monitorlist is None: 
+                monitorlist = [(monitor, args, kargs)]
+            else: 
+                monitorlist.append((monitor, args, kargs))
+        self.set_attr('__monitor__', monitorlist)
 
     def getMonitor(self):
-        return SNES_getMonitor(self.snes)
+        return self.get_attr('__monitor__')
 
     def callMonitor(self, its, rnorm):
         cdef PetscInt  ival = asInt(its)
@@ -222,7 +241,7 @@ cdef class SNES(Object):
 
     def cancelMonitor(self):
         CHKERR( SNESMonitorCancel(self.snes) )
-        SNES_delMonitor(self.snes)
+        self.set_attr('__monitor__', None)
 
     # --- xxx ---
 
