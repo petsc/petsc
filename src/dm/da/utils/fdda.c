@@ -624,6 +624,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MatLoad_MPI_DA(Mat A,PetscViewer viewer)
   /* Load the matrix in natural ordering */
   ierr = MatCreate(((PetscObject)A)->comm,&Anatural);CHKERRQ(ierr);
   ierr = MatSetType(Anatural,((PetscObject)A)->type_name);CHKERRQ(ierr);
+  ierr = MatSetSizes(Anatural,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatLoad(Anatural,viewer);CHKERRQ(ierr);
 
   /* Map natural ordering to application ordering and create IS */

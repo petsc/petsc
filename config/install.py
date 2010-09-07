@@ -269,10 +269,12 @@ make PETSC_DIR=%s test
 
     return
 
+  def run(self):
+    self.runfix()
+    self.runcopy()
+
 if __name__ == '__main__':
-  a = Installer(sys.argv[1:])
-  a.runfix()
-  a.runcopy()
+  Installer(sys.argv[1:]).run()
   # temporary hack - delete log files created by BuildSystem - when 'sudo make install' is invoked
   delfiles=['RDict.db','RDict.log','build.log','default.log','build.log.bkp','default.log.bkp']
   for delfile in delfiles:
