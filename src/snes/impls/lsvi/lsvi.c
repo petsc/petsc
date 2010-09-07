@@ -264,7 +264,7 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
 {
   PetscErrorCode ierr;
   SNES_LSVI      *lsvi = (SNES_LSVI*)snes->data;
-  PetscScalar    *l,*u,*x,*f,*da,*db,*z,*t,t1,t2;
+  PetscScalar    *l,*u,*x,*f,*da,*db,*z,*t,t1,t2,ci,di,ei;
   PetscInt       n = X->map->n,i;
 
   PetscFunctionBegin;
@@ -315,7 +315,8 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
 	db[i] = f[i]/t2 - 1;
       }
     }
-    else if (l[i] >= PETSC_LSVI_NINF) {
+    /* upper bounded variables */
+    else if (l[i] <= PETSC_LSVI_NINF) {
       if (db[i] >= 1) {
 	t2 = PetscScalarNorm(1,t[i]);
 	da[i] = -1/t2 -1;
@@ -327,6 +328,41 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
 	da[i] = t1/t2 - 1;
 	db[i] = -f[i]/t2 - 1;
       }
+    }
+    /* Fixed variables */
+    else if (l[i] == u[i]) {
+      da[i] = -1;
+      db[i] = 0;
+    }
+    /* Box constrained variables */
+    else {
+      if (db[i] >= 1) {
+	t2 = PetscScalarNorm(1,t[i]);
+	ci = 1/t2 + 1;
+	di = t[i]/t2 + 1;
+      }
+      else {
+	t1 = x[i] - u[i];
+	t2 = PetscScalarNorm(t1,f[i]);
+	ci = t1/t2 + 1;
+	di = f[i]/t2 + 1;
+      }
+      
+      if (da[i] >= 1) {
+	t1 = ci + di*t[i];
+	t2 = PetscScalarNorm(1,t1);
+	t1 = t1/t2 - 1;
+	t2 = 1/t2  - 1;
+      }
+      else {
+	ierr = ComputeFischerFunction(u[i]-x[i],-f[i],&ei);CHKERRQ(ierr);
+	t2 = PetscScalarNorm(x[i]-l[i],ei);
+	t1 = ei/t2 - 1;
+	t2 = (x[i] - l[i])/t2 - 1;
+      }
+
+      da[i] = t2 + t1*ci;
+      db[i] = t1*di;
     }
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
