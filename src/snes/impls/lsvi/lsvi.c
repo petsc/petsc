@@ -79,6 +79,8 @@ PetscErrorCode SNESLSVICheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,
   merit < abstol
   merit < rtol*merit_initial
 */
+#undef __FUNCT__
+#define __FUNCT__ "SNESDefaultConverged_LSVI"
 PetscErrorCode SNESDefaultConverged_LSVI(SNES snes,PetscInt it,PetscReal xnorm,PetscReal gradnorm,PetscReal merit,SNESConvergedReason *reason,void *dummy)
 {
   PetscErrorCode ierr;
