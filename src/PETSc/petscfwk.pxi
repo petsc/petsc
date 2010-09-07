@@ -21,6 +21,11 @@ cdef extern from "petscsys.h" nogil:
 
 # -----------------------------------------------------------------------------
 
+cdef inline object ref_Fwk(PetscFwk fwk):
+    cdef Fwk ob = <Fwk> Fwk()
+    PetscIncref(<PetscObject>fwk)
+    ob.fwk = fwk
+    return ob
 
 cdef dict fwk_cache = {}
 __fwk_cache__ = fwk_cache
@@ -31,44 +36,37 @@ cdef extern from "Python.h":
     void Py_XDECREF(object o)
 
 cdef int Fwk_Call(
-    PetscFwk         pcomponent,
-    const_char       *pmessage,
-    void             *pvtable
+    PetscFwk   component_p,
+    const_char *message_p,
+    void       *vtable_p,
     ) except PETSC_ERR_PYTHON with gil:
+    assert component_p != NULL
+    assert message_p   != NULL
+    assert vtable_p    != NULL
     #
-    assert pcomponent != NULL
-    assert pmessage   != NULL
+    cdef Fwk component = <Fwk> ref_Fwk(component_p)
+    cdef object vtable = <object> vtable_p
+    cdef object message = bytes2str(message_p)
     #
-    cdef Fwk component = <Fwk> Fwk()
-    PetscIncref(<PetscObject>pcomponent)
-    component.fwk     = pcomponent
-    #
-    cdef message = bytes2str(pmessage)
-    #
-    cdef object klass = <object> pvtable
-    #
-    cdef func = None
+    cdef function = None
     try:
-        func = getattr(klass, message)
-        func(component)
+        function = getattr(vtable, message)
     except AttributeError:
-        try:
-            func = getattr(klass, "call")
-            func(component,message)
-        except AttributeError:
-            raise AttributeError("Fwk '%s' has no suitable func in vtable '%s' to respond to message '%s'" % (component.getName(), str(klass), message))
+        vtable(component, message)
+    else:
+        function(component)
     return 0
 
-
 cdef int Fwk_SetVTable(
-    PetscFwk          component_p,
-    const_char        *path_p, 
-    const_char        *name_p,
-    void              **vtable_p
+    PetscFwk   component_p,
+    const_char *path_p, 
+    const_char *name_p,
+    void       **vtable_p,
     ) except PETSC_ERR_PYTHON with gil:
-    #
-    assert path_p != NULL
-    assert name_p != NULL
+    assert component_p != NULL
+    assert path_p      != NULL
+    assert name_p      != NULL
+    assert vtable_p    != NULL
     #
     cdef str path = bytes2str(path_p)
     cdef str name = bytes2str(name_p)
@@ -88,28 +86,23 @@ cdef int Fwk_SetVTable(
             del fwk_cache[path]
             raise
     #
-    cdef klass = None
-    try:
-        klass = getattr(module, name)
-    except AttributeError:
-        raise AttributeError(
-            "Cannot load class %s() from file '%s'"
-            % (name, path))
-    #
-    Py_XINCREF(klass)
-    vtable_p[0] = <void*>klass
+    cdef object vtable = getattr(module, name)
+    Py_XINCREF(vtable)
+    vtable_p[0] = <void*>vtable
     return 0
 
 cdef int Fwk_ClearVTable(
-     PetscFwk component_p, 
-     void     **vtable_p
-     ) except PETSC_ERR_PYTHON with gil:
+    PetscFwk component_p, 
+    void     **vtable_p,
+    ) except PETSC_ERR_PYTHON with gil:
+    assert component_p != NULL
+    assert vtable_p    != NULL
     #
-    cdef object klass = <object> vtable_p[0]
-    Py_XDECREF(klass)
+    Py_XDECREF(<object>vtable_p[0])
     vtable_p[0] = NULL
     return 0
 
+# -----------------------------------------------------------------------------
 
 cdef extern from "Python.h":
     ctypedef struct PyObject

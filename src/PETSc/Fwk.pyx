@@ -8,11 +8,6 @@ cdef class Fwk(Object):
         self.obj = <PetscObject*> &self.fwk
         self.fwk = NULL
 
-    def call(self, message):
-        cdef const_char *_message = NULL
-        message = str2bytes(message, &_message)
-        CHKERR( PetscFwkCall(self.fwk, _message) )
-
     def view(self, Viewer viewer=None):
         cdef PetscViewer vwr = NULL
         if viewer is not None: vwr = viewer.vwr
@@ -42,17 +37,15 @@ cdef class Fwk(Object):
         CHKERR( PetscFwkSetURL(self.fwk, _url) )
         return 0
 
-    def registerComponent(self, key):
-        cdef const_char *_key = NULL
-        key = str2bytes(key, &_key)
-        CHKERR( PetscFwkRegisterComponent(self.fwk, _key) )
-
-    def registerComponentURL(self, key, url):
+    def registerComponent(self, key, url=None):
         cdef const_char *_key = NULL
         cdef const_char *_url = NULL
         key = str2bytes(key, &_key)
         url = str2bytes(url, &_url)
-        CHKERR( PetscFwkRegisterComponentURL(self.fwk, _key, _url) )
+        if _url == NULL:
+            CHKERR( PetscFwkRegisterComponent(self.fwk, _key) )
+        else:
+            CHKERR( PetscFwkRegisterComponentURL(self.fwk, _key, _url) )
 
     def registerDependence(self, clientkey, serverkey):
         cdef const_char *_clientkey = NULL
@@ -60,12 +53,6 @@ cdef class Fwk(Object):
         clientkey = str2bytes(clientkey, &_clientkey)
         serverkey = str2bytes(serverkey, &_serverkey)
         CHKERR( PetscFwkRegisterDependence(self.fwk, _clientkey, _serverkey) )
-        return self
-
-    def visit(self, configuration):
-        cdef const_char *_configuration = NULL
-        configuration = str2bytes(configuration, &_configuration)
-        CHKERR( PetscFwkVisit(self.fwk, _configuration) )
         return self
 
     def getComponent(self, key):
@@ -79,6 +66,17 @@ cdef class Fwk(Object):
         PetscIncref(<PetscObject>component);
         fwk.fwk = component
         return fwk
+
+    def call(self, message):
+        cdef const_char *_message = NULL
+        message = str2bytes(message, &_message)
+        CHKERR( PetscFwkCall(self.fwk, _message) )
+
+    def visit(self, message):
+        cdef const_char *_message = NULL
+        message = str2bytes(message, &_message)
+        CHKERR( PetscFwkVisit(self.fwk, _message) )
+        return self
 
 
     @classmethod
