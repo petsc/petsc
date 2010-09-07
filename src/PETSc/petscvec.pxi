@@ -412,7 +412,7 @@ cdef class _Vec_buffer:
     cdef int acquirebuffer(self, Py_buffer *view, int flags) except -1:
         self.acquire()
         PyPetscBuffer_FillInfo(view, <void*>self.data,
-                               self.size, 's', 0, flags)
+                               self.size, c's', 0, flags)
         view.obj = self
         return 0
 

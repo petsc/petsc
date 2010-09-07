@@ -14,8 +14,7 @@
 #if (PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetOptionsPrefix"
-static PETSC_UNUSED
-PetscErrorCode MatMFFDSetOptionsPrefix_Compat(Mat mat, const char prefix[])
+static PetscErrorCode MatMFFDSetOptionsPrefix_Compat(Mat mat, const char prefix[])
 {
   MatMFFD        mfctx = mat ? (MatMFFD)mat->data : PETSC_NULL ;
   PetscErrorCode ierr;

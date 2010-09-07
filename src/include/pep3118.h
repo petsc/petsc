@@ -27,11 +27,9 @@
 # define _PyPetsc_FMT_PETSC_SCALAR  _PyPetsc_FMT_PETSC_REAL
 #endif
 
-static 
-int 
-PyPetscBuffer_FillInfo(Py_buffer *view,
-                       void *buf, PetscInt count, char typechar,
-                       int readonly, int flags)
+static int PyPetscBuffer_FillInfo(Py_buffer *view,
+                                  void *buf, PetscInt count, char typechar,
+                                  int readonly, int flags)
 {
   if (view == NULL) return 0;
   if (((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) && (readonly == 1)) {
@@ -88,9 +86,7 @@ PyPetscBuffer_FillInfo(Py_buffer *view,
   return 0;
 }
 
-static
-void
-PyPetscBuffer_Release(Py_buffer *view)
+static void PyPetscBuffer_Release(Py_buffer *view)
 {
   #if PY_VERSION_HEX < 0x02070000
   if (view->internal) PyMem_Free(view->internal);

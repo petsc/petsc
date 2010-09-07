@@ -89,8 +89,7 @@ typedef PetscErrorCode MatNullSpaceFunction(MatNullSpace,Vec,void*);
 #if (PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateSubMatrix"
-static PETSC_UNUSED
-PetscErrorCode MatCreateSubMatrix_Compat(Mat A, IS r, IS c, Mat *B)
+static PetscErrorCode MatCreateSubMatrix_Compat(Mat A, IS r, IS c, Mat *B)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -107,8 +106,7 @@ PetscErrorCode MatCreateSubMatrix_Compat(Mat A, IS r, IS c, Mat *B)
 #if (PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonalBlock"
-static PETSC_UNUSED
-PetscErrorCode MatGetDiagonalBlock_Compat(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
+static PetscErrorCode MatGetDiagonalBlock_Compat(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
 {
   PetscErrorCode ierr,(*f)(Mat,PetscTruth*,MatReuse,Mat*);
   PetscMPIInt    size;
@@ -138,8 +136,7 @@ PetscErrorCode MatGetDiagonalBlock_Compat(Mat A,PetscTruth *iscopy,MatReuse reus
 #if (PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSubMatrix"
-static PETSC_UNUSED
-PetscErrorCode MatGetSubMatrix_Compat(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newmat)
+static PetscErrorCode MatGetSubMatrix_Compat(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newmat)
 {
   MPI_Comm comm;
   PetscMPIInt size;

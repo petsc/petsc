@@ -78,11 +78,11 @@ cdef class Sys:
     # --- xxx ---
 
     @classmethod
-    def Print(cls, *args, **kwargs):
-        cdef object comm = kwargs.get('comm', None)
+    def Print(cls, *args, **kargs):
+        cdef object comm = kargs.get('comm', None)
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef object sep = kwargs.get('sep', ' ')
-        cdef object end = kwargs.get('end', '\n')
+        cdef object sep = kargs.get('sep', ' ')
+        cdef object end = kargs.get('end', '\n')
         if comm_rank(ccomm) == 0:
             if not args: args = ('',)
             format = ['%s', sep] * len(args)
@@ -95,12 +95,12 @@ cdef class Sys:
         CHKERR( PetscPrintf(ccomm, m) )
 
     @classmethod
-    def syncPrint(cls, *args, **kwargs):
-        cdef object comm = kwargs.get('comm', None)
+    def syncPrint(cls, *args, **kargs):
+        cdef object comm = kargs.get('comm', None)
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef object sep = kwargs.get('sep', ' ')
-        cdef object end = kwargs.get('end', '\n')
-        cdef object flush = kwargs.get('flush', False)
+        cdef object sep = kargs.get('sep', ' ')
+        cdef object end = kargs.get('end', '\n')
+        cdef object flush = kargs.get('flush', False)
         if not args: args = ('',)
         format = ['%s', sep] * len(args)
         format[-1] = end
