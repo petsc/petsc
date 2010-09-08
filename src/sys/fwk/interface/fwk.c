@@ -14,13 +14,11 @@ static PetscTruth PetscFwkPackageInitialized = PETSC_FALSE;
 typedef PetscErrorCode (*PetscFwkPythonSetVTableFunction)(PetscFwk fwk, const char* path, const char* name, void **vtable);
 typedef PetscErrorCode (*PetscFwkPythonClearVTableFunction)(PetscFwk fwk, void **vtable);
 typedef PetscErrorCode (*PetscFwkPythonCallFunction)(PetscFwk fwk, const char* message, void *vtable);
-typedef PetscErrorCode (*PetscFwkPythonPrintErrorFunction)(void);
 
 EXTERN_C_BEGIN
 PetscFwkPythonSetVTableFunction       PetscFwkPythonSetVTable       = PETSC_NULL;
 PetscFwkPythonClearVTableFunction     PetscFwkPythonClearVTable     = PETSC_NULL;
 PetscFwkPythonCallFunction            PetscFwkPythonCall            = PETSC_NULL;
-PetscFwkPythonPrintErrorFunction      PetscFwkPythonPrintError      = PETSC_NULL;
 EXTERN_C_END
 
 #define PETSC_FWK_CHECKINIT_PYTHON()					\
@@ -38,7 +36,7 @@ EXTERN_C_END
   {									\
     PetscErrorCode ierr;                                                \
     ierr = PetscFwkPythonSetVTable(fwk, path, name, &(fwk->vtable));    \
-    if (ierr) { PetscFwkPythonPrintError(); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "Python error"); } \
+    if (ierr) { PetscPythonPrintError(); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "Python error"); } \
   }
 
 #define PETSC_FWK_CLEAR_VTABLE_PYTHON(fwk)                              \
@@ -46,7 +44,7 @@ EXTERN_C_END
   {									\
     PetscErrorCode ierr;                                                \
     ierr = PetscFwkPythonClearVTable(fwk, &(fwk->vtable));              \
-    if (ierr) { PetscFwkPythonPrintError(); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "Python error"); } \
+    if (ierr) { PetscPythonPrintError(); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "Python error"); } \
   }
   
 #define PETSC_FWK_CALL_PYTHON(fwk, message)                             \
@@ -54,7 +52,7 @@ EXTERN_C_END
   {									\
     PetscErrorCode ierr;                                                \
     ierr = PetscFwkPythonCall(fwk, message, fwk->vtable);                           \
-    if (ierr) { PetscFwkPythonPrintError(); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "Python error"); } \
+    if (ierr) { PetscPythonPrintError(); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "Python error"); } \
   }
   
 
