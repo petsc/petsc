@@ -18,7 +18,9 @@ where f is the function to be minimized. \n\
 The command line options are:\n\
   -mx <xg>, where <xg> = number of grid points in the 1st coordinate direction\n\
   -my <yg>, where <yg> = number of grid points in the 2nd coordinate direction\n\
-  -start <st>, where <st> =0 for zero vector, and an average of the boundary conditions otherwise \n\n";
+  -start <st>, where <st> =0 for zero vector, and an average of the boundary conditions otherwise\n\
+  -lb <value>, lower bound on the variables\n\
+  -ub <value>, upper bound on the variables\n\n";
 
 /*                                                                              
    User-defined application context - contains data needed by the               
@@ -43,16 +45,16 @@ extern PetscErrorCode FormJacobian(SNES, Vec, Mat *, Mat*, MatStructure*,void *)
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  PetscErrorCode  info;              /* used to check for functions returning nonzeros */
-  Vec             x,r;               /* solution and residual vectors */
-  Vec             xl,xu;             /* Bounds on the variables */
-  PetscTruth      flg;               /* A return variable when checking for user options */
-  SNES            snes;              /* nonlinear solver context */
-  Mat             J;                 /* Jacobian matrix */
-  PetscInt        N;                 /* Number of elements in vector */
-  PetscScalar     lb = -0.02;  /* lower bound constant */
-  PetscScalar     ub = 0.025;   /* upper bound constant */
-  AppCtx          user;              /* user-defined work context */
+  PetscErrorCode  info;             /* used to check for functions returning nonzeros */
+  Vec             x,r;              /* solution and residual vectors */
+  Vec             xl,xu;            /* Bounds on the variables */
+  PetscTruth      flg;              /* A return variable when checking for user options */
+  SNES            snes;             /* nonlinear solver context */
+  Mat             J;                /* Jacobian matrix */
+  PetscInt        N;                /* Number of elements in vector */
+  PetscScalar     lb = PETSC_LSVI_NINF;       /* lower bound constant */
+  PetscScalar     ub = PETSC_LSVI_INF;       /* upper bound constant */
+  AppCtx          user;             /* user-defined work context */
 
   /* Initialize PETSc */
   PetscInitialize(&argc, &argv, (char *)0, help );
@@ -66,14 +68,15 @@ int main(int argc, char **argv)
   /* Check for any command line arguments that override defaults */
   info = PetscOptionsGetInt(PETSC_NULL, "-mx", &user.mx, &flg); CHKERRQ(info);
   info = PetscOptionsGetInt(PETSC_NULL, "-my", &user.my, &flg); CHKERRQ(info);
+  info = PetscOptionsGetScalar(PETSC_NULL, "-lb", &lb, &flg);CHKERRQ(info);
+  info = PetscOptionsGetScalar(PETSC_NULL, "-ub", &ub, &flg);CHKERRQ(info);
+
 
   /* Calculate any derived values from parameters */
   N = user.mx*user.my;
-
   
   PetscPrintf(PETSC_COMM_SELF,"\n---- Minimum Surface Area Problem -----\n");
   PetscPrintf(PETSC_COMM_SELF,"mx:%d, my:%d\n", user.mx,user.my);
-
 
   /* Create appropriate vectors and matrices */
   info = VecCreateSeq(MPI_COMM_SELF, N, &x);
