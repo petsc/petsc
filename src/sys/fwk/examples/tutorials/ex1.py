@@ -7,10 +7,13 @@ from petsc4py import PETSc
 if __name__ == "__main__":
     fwk = PETSc.Fwk().create()
     fwk.setName("ex1")
-    fwk.registerComponentURL("Electrolyte", "./electrolyte.py:Electrolyte")
-    fwk.registerComponentURL("Viz",         "./viz.py:Viz")
+    fwk.registerComponent("Electrolyte", "./electrolyte.py:Electrolyte")
+    fwk.registerComponent("Viz",         "./viz.py:Viz")
     viz = fwk.getComponent("Viz")
+    print "ex1 framework prior to an 'init' visit:"
     fwk.visit("init")
+    print "ex1 framework after an 'init' visit:"
+    fwk.view()
     for i in range(4):
         viz.call("viewRho")
     del viz
