@@ -610,7 +610,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = PCGetOperators(ksp->pc,&A,0,0);CHKERRQ(ierr);
     ierr = VecDuplicate(ksp->vec_sol,&t);CHKERRQ(ierr);
     ierr = KSP_MatMult(ksp,A,ksp->vec_sol,t);CHKERRQ(ierr);
-    ierr = VecWAXPY(t,-1.0,t,ksp->vec_rhs);CHKERRQ(ierr);
+    ierr = VecAYPX(t, -1.0, ksp->vec_rhs);CHKERRQ(ierr);
     ierr = VecNorm(t,NORM_2,&norm);CHKERRQ(ierr);
     ierr = VecDestroy(t);CHKERRQ(ierr);
     ierr = PetscPrintf(((PetscObject)ksp)->comm,"KSP final norm of residual %G\n",norm);CHKERRQ(ierr);
