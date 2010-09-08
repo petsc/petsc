@@ -100,6 +100,8 @@ static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN],
 
 typedef struct _Py_object_t PyObject; /* fake definition */
 
+static PyObject* Py_None = 0;
+
 static int   	 (*Py_IsInitialized)(void);
 static void  	 (*Py_InitializeEx)(int);
 static void  	 (*Py_Finalize)(void);
@@ -112,6 +114,10 @@ static void      (*Py_DecRef)(PyObject *);
 
 static void      (*PyErr_Clear)(void);
 static PyObject* (*PyErr_Occurred)(void);
+static void      (*PyErr_Fetch)(PyObject **, PyObject **, PyObject **);
+static void      (*PyErr_NormalizeException)(PyObject **, PyObject **, PyObject **);
+static void      (*PyErr_Display)(PyObject *, PyObject *, PyObject *);
+static void      (*PyErr_Restore)(PyObject *, PyObject *, PyObject *);
 
 
 #define PetscDLPyLibOpen(libname) \
@@ -132,6 +138,7 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
   ierr = PetscDLPyLibOpen(pythonlib);CHKERRQ(ierr);
   ierr = PetscInfo1(0,"Python: loaded dynamic library %s\n", pythonlib);CHKERRQ(ierr);
   /* look required symbols from the Python C-API */
+  ierr = PetscDLPyLibSym("_Py_NoneStruct"        , &Py_None               );CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("Py_IsInitialized"      , &Py_IsInitialized      );CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("Py_InitializeEx"       , &Py_InitializeEx       );CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("Py_Finalize"           , &Py_Finalize           );CHKERRQ(ierr);
@@ -141,7 +148,12 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
   ierr = PetscDLPyLibSym("Py_DecRef"             , &Py_DecRef             );CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("PyErr_Clear"           , &PyErr_Clear           );CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("PyErr_Occurred"        , &PyErr_Occurred        );CHKERRQ(ierr);
+  ierr = PetscDLPyLibSym("PyErr_Fetch"             , &PyErr_Fetch             );CHKERRQ(ierr);
+  ierr = PetscDLPyLibSym("PyErr_NormalizeException", &PyErr_NormalizeException);CHKERRQ(ierr);
+  ierr = PetscDLPyLibSym("PyErr_Display",            &PyErr_Display           );CHKERRQ(ierr);
+  ierr = PetscDLPyLibSym("PyErr_Restore",            &PyErr_Restore           );CHKERRQ(ierr);
   /* XXX TODO: check that ALL symbols were there !!! */
+  if (!Py_None)          SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");
   if (!Py_IsInitialized) SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");
   if (!Py_InitializeEx)  SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");
   if (!Py_Finalize)      SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");
@@ -231,8 +243,34 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscPythonInitialize(const char pyexe[],const
     ierr = PetscInfo(0,"Python: successfully imported  module 'petsc4py.PETSc'\n");CHKERRQ(ierr);
     Py_DecRef(module); module = 0;
   } else {
+    PetscPythonPrintError();
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: could not import module 'petsc4py.PETSc', perhaps your PYTHONPATH does not contain it\n"); 
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPythonPrintError"
+/*@C
+  PetscPythonPrintError - Print Python errors.
+
+  Level: developer
+
+.keywords: Python
+  
+@*/
+PetscErrorCode PETSCSYS_DLLEXPORT PetscPythonPrintError(void)
+{
+  PyObject *exc=0, *val=0, *tb=0;
+  PetscFunctionBegin;
+  if (!PetscBeganPython) PetscFunctionReturn(0);
+  if (!PyErr_Occurred()) PetscFunctionReturn(0);
+  PyErr_Fetch(&exc,&val,&tb);
+  PyErr_NormalizeException(&exc,&val,&tb);
+  PyErr_Display(exc ? exc : Py_None,
+                val ? val : Py_None,
+                tb  ? tb  : Py_None);
+  PyErr_Restore(exc,val,tb);
   PetscFunctionReturn(0);
 }
 

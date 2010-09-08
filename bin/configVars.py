@@ -25,6 +25,9 @@ class ConfigReader(script.Script):
     arch = framework.require('PETSc.utilities.arch', None)
     print arch.arch
     print 'Configure is cached:',('configureCache' in self.argDB)
+    for k in framework.argDB.keys():
+      if k.startswith('known'):
+        print k,framework.argDB[k]
     return
 
 if __name__ == '__main__':

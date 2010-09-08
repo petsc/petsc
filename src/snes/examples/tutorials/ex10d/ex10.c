@@ -166,7 +166,7 @@ int main(int argc,char **argv)
      a  ready interface to ParMeTiS). 
    */
   fptr = fopen("adj.in","r"); 
-  if (!fptr) SETERRQ(PETSC_COMM_SELF,0,"Could not open adj.in")
+  if (!fptr) SETERRQ(PETSC_COMM_SELF,0,"Could not open adj.in");
   
   /*
      Each processor writes to the file output.<rank> where rank is the

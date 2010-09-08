@@ -149,11 +149,17 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
     }
     ierr = PetscObjectComposedDataSetInt((PetscObject) viewer, stateId, outputState);CHKERRQ(ierr);
     if (name) {
-      ierr = PetscViewerASCIIPrintf(viewer, "SCALARS %s double %d\n", name, bs);CHKERRQ(ierr);
+      if (bs == 3) {
+        ierr = PetscViewerASCIIPrintf(viewer, "VECTORS %s double\n", name);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer, "SCALARS %s double %d\n", name, bs);CHKERRQ(ierr);
+      }
     } else {
       ierr = PetscViewerASCIIPrintf(viewer, "SCALARS scalars double %d\n", bs);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
+    if (bs != 3) {
+      ierr = PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
+    }
     for (i=0; i<n/bs; i++) {
       for (b=0; b<bs; b++) {
         if (b > 0) {
