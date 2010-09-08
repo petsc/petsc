@@ -79,6 +79,8 @@ PetscErrorCode SNESLSVICheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,
   merit < abstol
   merit < rtol*merit_initial
 */
+#undef __FUNCT__
+#define __FUNCT__ "SNESDefaultConverged_LSVI"
 PetscErrorCode SNESDefaultConverged_LSVI(SNES snes,PetscInt it,PetscReal xnorm,PetscReal gradnorm,PetscReal merit,SNESConvergedReason *reason,void *dummy)
 {
   PetscErrorCode ierr;
@@ -262,7 +264,7 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
 {
   PetscErrorCode ierr;
   SNES_LSVI      *lsvi = (SNES_LSVI*)snes->data;
-  PetscScalar    *l,*u,*x,*f,*da,*db,*z,*t,t1,t2;
+  PetscScalar    *l,*u,*x,*f,*da,*db,*z,*t,t1,t2,ci,di,ei;
   PetscInt       n = X->map->n,i;
 
   PetscFunctionBegin;
@@ -275,7 +277,7 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
   ierr = VecGetArray(lsvi->z,&z);CHKERRQ(ierr);
   
   /* Set the elements of the vector z:
-     z[i] = 1 if (x[i] - l[i],f[i]) = (0,0)
+     z[i] = 1 if (x[i] - l[i],f[i]) = (0,0) or (u[i] - x[i],f[i]) = (0,0)
      else z[i] = 0
   */
   for(i=0;i < n;i++) {
@@ -285,12 +287,14 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
 	da[i] = 1;
 	z[i]  = 1;
       }
+      if ((u[i] < PETSC_LSVI_INF) && (PetscAbsScalar(u[i]-x[i]) <= PETSC_LSVI_EPS)) {
+	db[i] = 1;
+	z[i]  = 1;
+      }
     }
   }
   ierr = VecRestoreArray(lsvi->z,&z);CHKERRQ(ierr);
-  
   ierr = MatMult(jac,lsvi->z,lsvi->t);CHKERRQ(ierr);
-  
   ierr = VecGetArray(lsvi->t,&t);CHKERRQ(ierr);
   /* Compute the elements of the diagonal perturbation vector Da and row scaling vector Db */
   for(i=0;i< n;i++) {
@@ -311,6 +315,55 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
 	db[i] = f[i]/t2 - 1;
       }
     }
+    /* upper bounded variables */
+    else if (l[i] <= PETSC_LSVI_NINF) {
+      if (db[i] >= 1) {
+	t2 = PetscScalarNorm(1,t[i]);
+	da[i] = -1/t2 -1;
+	db[i] = -t[i]/t2 - 1;
+      }
+      else {
+	t1 = u[i] - x[i];
+	t2 = PetscScalarNorm(t1,f[i]);
+	da[i] = t1/t2 - 1;
+	db[i] = -f[i]/t2 - 1;
+      }
+    }
+    /* Fixed variables */
+    else if (l[i] == u[i]) {
+      da[i] = -1;
+      db[i] = 0;
+    }
+    /* Box constrained variables */
+    else {
+      if (db[i] >= 1) {
+	t2 = PetscScalarNorm(1,t[i]);
+	ci = 1/t2 + 1;
+	di = t[i]/t2 + 1;
+      }
+      else {
+	t1 = x[i] - u[i];
+	t2 = PetscScalarNorm(t1,f[i]);
+	ci = t1/t2 + 1;
+	di = f[i]/t2 + 1;
+      }
+      
+      if (da[i] >= 1) {
+	t1 = ci + di*t[i];
+	t2 = PetscScalarNorm(1,t1);
+	t1 = t1/t2 - 1;
+	t2 = 1/t2  - 1;
+      }
+      else {
+	ierr = ComputeFischerFunction(u[i]-x[i],-f[i],&ei);CHKERRQ(ierr);
+	t2 = PetscScalarNorm(x[i]-l[i],ei);
+	t1 = ei/t2 - 1;
+	t2 = (x[i] - l[i])/t2 - 1;
+      }
+
+      da[i] = t2 + t1*ci;
+      db[i] = t1*di;
+    }
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(vec_func,&f);CHKERRQ(ierr);
@@ -322,12 +375,14 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
 
   /* Do row scaling */
   ierr = MatDiagonalScale(jac,lsvi->Db,PETSC_NULL);
-  ierr = MatDiagonalScale(jac_pre,lsvi->Db,PETSC_NULL);
-
+  if (jac != jac_pre) { /* If jac and jac_pre are different */
+    ierr = MatDiagonalScale(jac_pre,lsvi->Db,PETSC_NULL);
+  }
   /* Add diagonal perturbation */
   ierr = MatDiagonalSet(jac,lsvi->Da,ADD_VALUES);CHKERRQ(ierr);
-  ierr = MatDiagonalSet(jac_pre,lsvi->Da,ADD_VALUES);CHKERRQ(ierr);
-  
+  if (jac != jac_pre) {
+    ierr = MatDiagonalSet(jac_pre,lsvi->Da,ADD_VALUES);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
   
@@ -369,11 +424,10 @@ PetscErrorCode SNESLSVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
 
    Notes: 
    The condition for the sufficient descent direction is
-        dpsi^T*Y <= -delta*||Y||^rho
+        dpsi^T*Y > delta*||Y||^rho
    where rho, delta are as defined in the SNES_LSVI structure.
    If this condition is satisfied then the existing descent direction i.e.
-   the direction given by the linear solve should be used otherwise it should be set to the negative of the
-   merit function gradient i.e -dpsi.
+   the direction given by the linear solve should be used otherwise it should be set to the negative of the merit function gradient i.e -dpsi.
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESLSVICheckDescentDirection"
@@ -392,9 +446,9 @@ PetscErrorCode SNESLSVICheckDescentDirection(SNES snes,Vec dpsi, Vec Y,PetscTrut
   ierr = VecNormBegin(Y,NORM_2,&norm_Y);CHKERRQ(ierr);
   ierr = VecNormEnd(Y,NORM_2,&norm_Y);CHKERRQ(ierr);
 
-  rhs = -delta*PetscPowScalar(norm_Y,rho);
+  rhs = delta*PetscPowScalar(norm_Y,rho);
 
-  if (dpsidotY > rhs) *flg = PETSC_TRUE;
+  if (dpsidotY <= rhs) *flg = PETSC_TRUE;
  
   PetscFunctionReturn(0);
 }
@@ -504,7 +558,7 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
   SNESMonitor(snes,0,lsvi->phinorm);
 
   /* set parameter for default relative tolerance convergence test */
-  snes->ttol = lsvi->merit*snes->rtol;
+  snes->ttol = lsvi->phinorm*snes->rtol;
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,lsvi->phinorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
@@ -515,12 +569,13 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-
+ 
     /* Solve J Y = Phi, where J is the B-subdifferential matrix */
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
     ierr = SNESLSVIComputeBsubdifferential(snes,X,F,snes->jacobian,snes->jacobian_pre,&flg);CHKERRQ(ierr);
+ 
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
-    ierr = SNES_KSPSolve(snes,snes->ksp,F,Y);CHKERRQ(ierr);
+    ierr = SNES_KSPSolve(snes,snes->ksp,lsvi->phi,Y);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
     ierr = SNESLSVIComputeMeritFunctionGradient(snes->jacobian,lsvi->phi,lsvi->dpsi);CHKERRQ(ierr);
     ierr = SNESLSVICheckDescentDirection(snes,lsvi->dpsi,Y,&changedir);CHKERRQ(ierr);
@@ -535,7 +590,7 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
     ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
     ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
-
+    /*
     if (lsvi->precheckstep) {
       PetscTruth changed_y = PETSC_FALSE;
       ierr = (*lsvi->precheckstep)(snes,X,Y,lsvi->precheck,&changed_y);CHKERRQ(ierr);
@@ -544,7 +599,7 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
     if (PetscLogPrintInfo){
       ierr = SNESLSVICheckResidual_Private(snes,snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
     }
-
+    */
     /* Compute a (scaled) negative update in the line search routine: 
          Y <- X - lambda*Y 
        and evaluate G = function(Y) (depends on the line search). 

@@ -76,7 +76,7 @@ void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
 #define __FUNCT__ "Store1DArray"
 void Store1DArray(int m,double *a,const char *filename,int *fdd)
 {
-  int  fd = *fdd;
+  int  fd = *fdd,ierr;
   int  classid = 1211214; /* classid for vectors */
 
   if (fd == -1) {
@@ -87,9 +87,9 @@ void Store1DArray(int m,double *a,const char *filename,int *fdd)
     }
     *fdd = fd;
   }
-  write(fd,&classid,sizeof(int));
-  write(fd,&m,sizeof(int));
-  write(fd,a,m*sizeof(double));
+  ierr = write(fd,&classid,sizeof(int));
+  ierr = write(fd,&m,sizeof(int));
+  ierr = write(fd,a,m*sizeof(double));
 }
 
 
