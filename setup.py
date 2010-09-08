@@ -138,9 +138,11 @@ class cmd_install(_install):
             os.chdir(wdir)
 
 def version():
-    return 'dev'
+    return '3.2.dev1'
 def tarball():
-    return None
+    return None # XXX remove this line
+    return ('http://ftp.mcs.anl.gov/pub/petsc/<XXX>/' # XXX fix this line
+            'petsc-lite-%s.tar.gz' % version() )
 
 description = __doc__.split('\n')[1:-1]; del description[1:3]
 classifiers = """
