@@ -57,7 +57,7 @@ cdef int Fwk_Call(
         function(component)
     return 0
 
-cdef int Fwk_SetVTable(
+cdef int Fwk_LoadVTable(
     PetscFwk   component_p,
     const_char *path_p, 
     const_char *name_p,
@@ -110,7 +110,7 @@ cdef extern from *:
         PetscFwk, const_char[], void *
         ) except PETSC_ERR_PYTHON with gil
 
-    ctypedef int (*PetscFwkPythonSetVTableFunction)(
+    ctypedef int (*PetscFwkPythonLoadVTableFunction)(
         PetscFwk, const_char[], const_char[], void**
         ) except PETSC_ERR_PYTHON with gil
 
@@ -121,14 +121,14 @@ cdef extern from *:
     cdef PetscFwkPythonCallFunction \
         PetscFwkPythonCall
 
-    cdef PetscFwkPythonSetVTableFunction \
-        PetscFwkPythonSetVTable
+    cdef PetscFwkPythonLoadVTableFunction \
+        PetscFwkPythonLoadVTable
 
     cdef PetscFwkPythonClearVTableFunction \
         PetscFwkPythonClearVTable
 
 PetscFwkPythonCall          = Fwk_Call
 PetscFwkPythonClearVTable   = Fwk_ClearVTable
-PetscFwkPythonSetVTable     = Fwk_SetVTable
+PetscFwkPythonLoadVTable    = Fwk_LoadVTable
 
 # -----------------------------------------------------------------------------

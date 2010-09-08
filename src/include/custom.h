@@ -268,29 +268,25 @@ PetscObjectGetClassName(PetscObject obj, const char *class_name[])
 
 typedef PetscErrorCode (*PetscFwkPythonCallFunction)
   (PetscFwk, const char *message, void *vtable);
-typedef PetscErrorCode (*PetscFwkPythonSetVTableFunction)
+typedef PetscErrorCode (*PetscFwkPythonLoadVTableFunction)
   (PetscFwk, const char *path, const char *name, void **vtable_p);
 typedef PetscErrorCode (*PetscFwkPythonClearVTableFunction)
   (PetscFwk fwk, void **vtable_p);
-typedef PetscErrorCode (*PetscFwkPythonPrintErrorFunction)(void);
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 EXTERN_C_BEGIN
 static PetscFwkPythonCallFunction
        PetscFwkPythonCall = PETSC_NULL;
-static PetscFwkPythonSetVTableFunction
-       PetscFwkPythonSetVTable = PETSC_NULL;
+static PetscFwkPythonLoadVTableFunction
+       PetscFwkPythonLoadVTable = PETSC_NULL;
 static PetscFwkPythonClearVTableFunction
        PetscFwkPythonClearVTable = PETSC_NULL;
-static PetscFwkPythonPrintErrorFunction
-       PetscFwkPythonPrintError = PETSC_NULL;
 EXTERN_C_END
 #else
 EXTERN_C_BEGIN
 PetscFwkPythonCallFunction        PetscFwkPythonCall;
-PetscFwkPythonSetVTableFunction   PetscFwkPythonSetVTable;
+PetscFwkPythonLoadVTableFunction  PetscFwkPythonLoadVTable;
 PetscFwkPythonClearVTableFunction PetscFwkPythonClearVTable;
-PetscFwkPythonPrintErrorFunction  PetscFwkPythonPrintError;
 EXTERN_C_END
 #endif
 
