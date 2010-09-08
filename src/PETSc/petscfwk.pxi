@@ -104,28 +104,6 @@ cdef int Fwk_ClearVTable(
 
 # -----------------------------------------------------------------------------
 
-cdef extern from "Python.h":
-    ctypedef struct PyObject
-    PyObject *Py_None
-    PyObject *PyErr_Occurred()
-    void PyErr_Fetch(PyObject**,PyObject**,PyObject**)
-    void PyErr_NormalizeException(PyObject**,PyObject**,PyObject**)
-    void PyErr_Display(PyObject*,PyObject*,PyObject*)
-    void PyErr_Restore(PyObject*,PyObject*,PyObject*)
-
-cdef int Fwk_PrintError() with gil:
-    if PyErr_Occurred() == NULL: return 0
-    cdef PyObject *exc=NULL,*val=NULL,*tb=NULL
-    PyErr_Fetch(&exc,&val,&tb)
-    PyErr_NormalizeException(&exc,&val,&tb)
-    PyErr_Display(exc if exc != NULL else Py_None,
-                  val if val != NULL else Py_None,
-                  tb  if tb  != NULL else Py_None)
-    PyErr_Restore(exc,val,tb)
-    return 0
-
-# -----------------------------------------------------------------------------
-
 cdef extern from *:
 
     ctypedef int (*PetscFwkPythonCallFunction)(
@@ -140,9 +118,6 @@ cdef extern from *:
         PetscFwk, void**
         )  except PETSC_ERR_PYTHON with gil
 
-    ctypedef int (*PetscFwkPythonPrintErrorFunction)(
-        ) with gil
-
     cdef PetscFwkPythonCallFunction \
         PetscFwkPythonCall
 
@@ -152,12 +127,8 @@ cdef extern from *:
     cdef PetscFwkPythonClearVTableFunction \
         PetscFwkPythonClearVTable
 
-    cdef PetscFwkPythonPrintErrorFunction \
-        PetscFwkPythonPrintError
-
 PetscFwkPythonCall          = Fwk_Call
 PetscFwkPythonClearVTable   = Fwk_ClearVTable
 PetscFwkPythonSetVTable     = Fwk_SetVTable
-PetscFwkPythonPrintError    = Fwk_PrintError
 
 # -----------------------------------------------------------------------------
