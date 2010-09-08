@@ -574,7 +574,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkParseURL_Private(const char inurl[], c
   char *n, *s;
   static PetscInt nlen = PETSC_FWK_MAX_URL_LENGTH;
   static char path[PETSC_FWK_MAX_URL_LENGTH+1], name[PETSC_FWK_MAX_URL_LENGTH+1];
-  PetscFwkVTableType type;
+  PetscFwkVTableType type = PETSC_FWK_VTABLE_NONE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /* FIX: this routine should replace the filesystem path by an abolute path for real normalization */
