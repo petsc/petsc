@@ -1342,6 +1342,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenMPMalloc(MPI_Comm,size_t,void*
 
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscPythonInitialize(const char[],const char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscPythonFinalize(void);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscPythonPrintError(void);
 
 /*
      These are so that in extern C code we can caste function pointers to non-extern C
