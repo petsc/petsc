@@ -14,7 +14,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newt
   Mat_SeqAIJ     *b;
   PetscErrorCode ierr;
   PetscInt       *ai=a->i,*aj=a->j,m=A->rmap->N,n=A->cmap->n,i,j,k,*bi,*bj,*rowlengths,nz,*rowstart,itmp;
-  PetscInt       bs=A->rmap->bs,bs2=bs*bs,mbs=A->rmap->N/bs;
+  PetscInt       bs=A->rmap->bs,bs2=bs*bs,mbs=A->rmap->N/bs,diagcnt=0;
   MatScalar      *av,*bv;
 
   PetscFunctionBegin;
@@ -26,11 +26,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newt
   k = 0;
   for (i=0; i<mbs; i++) {
     nz = ai[i+1] - ai[i];
-    aj++; /* skip diagonal */
-    for (j=1; j<nz; j++) { /* no. of lower triangular blocks */
-      rowlengths[(*aj)*bs]++; aj++;
+    if (nz) {
+      rowlengths[k] += nz;   /* no. of upper triangular blocks */
+      if (*aj == i) {aj++;diagcnt++;nz--;} /* skip diagonal */
+      for (j=0; j<nz; j++) { /* no. of lower triangular blocks */
+	rowlengths[(*aj)*bs]++; aj++;
+      }
     }
-    rowlengths[k] += nz;   /* no. of upper triangular blocks */
     rowlengths[k] *= bs;
     for (j=1; j<bs; j++) {
       rowlengths[k+j] = rowlengths[k];
@@ -60,23 +62,26 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newt
     }
     bi[i+1]     = bi[i] + rowlengths[i*bs]/bs; 
   }
-  if (bi[mbs] != 2*a->nz - mbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bi[mbs]: %D != 2*a->nz-mbs: %D\n",bi[mbs],2*a->nz - mbs);
+  if (bi[mbs] != 2*a->nz - diagcnt) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bi[mbs]: %D != 2*a->nz-diagcnt: %D\n",bi[mbs],2*a->nz - diagcnt);
 
   /* set b->j and b->a */
   aj = a->j; av = a->a;
   for (i=0; i<mbs; i++) {
+    nz = ai[i+1] - ai[i];
     /* diagonal block */
-    for (j=0; j<bs; j++){   /* row i*bs+j */
-      itmp = i*bs+j;
-      for (k=0; k<bs; k++){ /* col i*bs+k */
-        *(bj + rowstart[itmp]) = (*aj)*bs+k;
-        *(bv + rowstart[itmp]) = *(av+k*bs+j); 
-        rowstart[itmp]++;
+    if (nz && *aj == i) {
+      nz--;
+      for (j=0; j<bs; j++){   /* row i*bs+j */
+	itmp = i*bs+j;
+	for (k=0; k<bs; k++){ /* col i*bs+k */
+	  *(bj + rowstart[itmp]) = (*aj)*bs+k;
+	  *(bv + rowstart[itmp]) = *(av+k*bs+j); 
+	  rowstart[itmp]++;
+	}
       }
+      aj++; av += bs2; 
     }
-    aj++; av += bs2; 
     
-    nz = ai[i+1] - ai[i] -1;
     while (nz--){
       /* lower triangular blocks */
       for (j=0; j<bs; j++){   /* row (*aj)*bs+j */
