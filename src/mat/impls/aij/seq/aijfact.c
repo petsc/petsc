@@ -2795,6 +2795,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,const 
   PetscFunctionReturn(0); 
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqAIJ"
 PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
