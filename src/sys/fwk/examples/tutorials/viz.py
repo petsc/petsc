@@ -8,13 +8,16 @@ class Viz:
         fwk = v.query("visitor")
         key = v.getName()
         fwk.registerDependence("Electrolyte",key)
-
+        e = fwk.getComponent("Electrolyte")
+        v.compose("Electrolyte", e)
+        
     @staticmethod
     def viewRho(v):
-        fwk = v.query("visitor")
         import numpy
         # Extract a PetscObject e with key "Electrolyte"
-        e = fwk.getComponent("Electrolyte")
+        e = v.query("Electrolyte")
+        if e is None:
+            raise Exception("No Electrolyte object found in the Viz framework: '"+str(v.getName()) +"'")
         # Then extract objects attached to e:
         #   a DA and a Vec
         da       = e.query("mesh")
@@ -39,10 +42,9 @@ class Viz:
         
     @staticmethod
     def viewRhoGamma(v):
-        fwk = v.queryObject("visitor")
         import numpy
         # Extract a PetscObject e with key "Electrolyte"
-        e = fwk.getComponent("Electrolyte")
+        e = v.query("Electrolyte")
         # Then extract objects attached to e:
         #   a DA and a Vec
         da       = e.query("mesh")
@@ -64,4 +66,5 @@ class Viz:
             time.sleep(1)
             mlab.clf()
         time.sleep(3)
+
 

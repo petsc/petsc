@@ -1,9 +1,7 @@
 Fine grid size 9 by 9
-  0 KSP Residual norm 16.4099 
-  1 KSP Residual norm 0.730477 
-  2 KSP Residual norm 0.108653 
-  3 KSP Residual norm 0.0180852 
-  4 KSP Residual norm 0.00281594 
-  5 KSP Residual norm 0.000572456 
-  6 KSP Residual norm 8.80449e-05 
-Number of iterations = 6
+  0 KSP Residual norm 12.1368 
+  1 KSP Residual norm 0.413942 
+  2 KSP Residual norm 0.01581 
+  3 KSP Residual norm 0.000778874 
+  4 KSP Residual norm 2.88462e-05 
+Number of iterations = 4

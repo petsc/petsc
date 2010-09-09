@@ -2,18 +2,22 @@
 from petsc4py import PETSc as petsc
 import numpy
 
-def ScreeningAvg(fwk, key, stage, avg):
-    if avg is None:
-        avg = PETSc.Mat().create(fwk.comm)
-        fwk.registerDependence("Electrolyte", key)
-        return avg
-    if stage == "init":
-        assert isinstance(avg,PETSc.Mat)
+class ScreeningAvg:
+    @staticmethod
+    def init(a):
+        fwk = a.query("visitor")
+        key = a.getName()
+        fwk.registerDependence("Electrolyte",key)
+        e = fwk.getComponent("Electrolyte")
+        a.compose("Electrolyte", e)
+        
+    @staticmethod
+    def setup(a):
         # Extract the "DensityField" component, and from it, the mesh (DA) and vectors of mesh spacings and ion radii
         # The DA supports vectors with d+1 degrees of freedom: d ion species + Gamma (local screening parameter).
         # The screening average operator averages the first d components (ion densities),
         # over a ball of radius constructed using the densities and Gamma.
-        e     = fwk.getComponent("Electrolyte")
+        e     = a.query("Electrolyte")
         da    = e.query("mesh")
         comm  = da.getComm()
         if comm.getSize() > 1:
@@ -29,6 +33,8 @@ def ScreeningAvg(fwk, key, stage, avg):
         numSpecies = radii.getSize()
         #
         matSizes = [meshSize*numSpecies, meshSize*(numSpecies+1)]
+        ##
+        avg = petsc.Mat()
         avg.create(comm)
         avg.setSizes(matSizes)
         avg.setType('python')
@@ -41,7 +47,7 @@ def ScreeningAvg(fwk, key, stage, avg):
         R = PETSc.Vec()
         R.createSeq(meshSize,comm=comm)
         avg.compose("R",R)
-    return avg
+        a.compose("averagingOperator",avg)
 
 
 

@@ -11,31 +11,31 @@ static char PETSC_FWK_CLASS_NAME[] = "PetscFwk";
 static PetscTruth PetscFwkPackageInitialized = PETSC_FALSE;
 
 
-typedef PetscErrorCode (*PetscFwkPythonSetVTableFunction)(PetscFwk fwk, const char* path, const char* name, void **vtable);
+typedef PetscErrorCode (*PetscFwkPythonLoadVTableFunction)(PetscFwk fwk, const char* path, const char* name, void **vtable);
 typedef PetscErrorCode (*PetscFwkPythonClearVTableFunction)(PetscFwk fwk, void **vtable);
 typedef PetscErrorCode (*PetscFwkPythonCallFunction)(PetscFwk fwk, const char* message, void *vtable);
 
 EXTERN_C_BEGIN
-PetscFwkPythonSetVTableFunction       PetscFwkPythonSetVTable       = PETSC_NULL;
+PetscFwkPythonLoadVTableFunction      PetscFwkPythonLoadVTable      = PETSC_NULL;
 PetscFwkPythonClearVTableFunction     PetscFwkPythonClearVTable     = PETSC_NULL;
 PetscFwkPythonCallFunction            PetscFwkPythonCall            = PETSC_NULL;
 EXTERN_C_END
 
 #define PETSC_FWK_CHECKINIT_PYTHON()					\
-  if(PetscFwkPythonSetVTable == PETSC_NULL) {		        	\
+  if(PetscFwkPythonLoadVTable == PETSC_NULL) {		        	\
     PetscErrorCode ierr;						\
     ierr = PetscPythonInitialize(PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);	\
-    if(PetscFwkPythonSetVTable == PETSC_NULL) {			        \
+    if(PetscFwkPythonLoadVTable == PETSC_NULL) {			        \
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,				\
 	      "Couldn't initialize Python support for PetscFwk");	\
     }									\
   }									
   
-#define PETSC_FWK_SET_VTABLE_PYTHON(fwk, path, name)                    \
+#define PETSC_FWK_LOAD_VTABLE_PYTHON(fwk, path, name)                   \
   PETSC_FWK_CHECKINIT_PYTHON();						\
   {									\
     PetscErrorCode ierr;                                                \
-    ierr = PetscFwkPythonSetVTable(fwk, path, name, &(fwk->vtable));    \
+    ierr = PetscFwkPythonLoadVTable(fwk, path, name, &(fwk->vtable));   \
     if (ierr) { PetscPythonPrintError(); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "Python error"); } \
   }
 
@@ -683,7 +683,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkSetURL(PetscFwk fwk, const char url[])
     }
     break;
   case PETSC_FWK_VTABLE_PY:
-    PETSC_FWK_SET_VTABLE_PYTHON(fwk, path, name);
+    PETSC_FWK_LOAD_VTABLE_PYTHON(fwk, path, name);
     break;
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, 
