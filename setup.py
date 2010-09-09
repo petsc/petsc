@@ -56,6 +56,7 @@ def config(dry_run=False):
         '--with-shared-libraries',
         '--with-fc=0',
         '--with-mpi=0',
+        '--with-cmake=0',
         ]
     import configure
     configure.petsc_configure(options)
