@@ -1108,16 +1108,17 @@ class Configure(config.base.Configure):
         self.sharedLibraryExt = ext
         # using printf appears to correctly identify non-pic code on X86_64
         if self.checkLink(includes = '#include <stdio.h>\nint '+testMethod+'(void) {printf("hello");\nreturn 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1):
+          oldLib  = self.linkerObj
           oldLibs = self.LIBS
-          self.LIBS += ' -L. -lconftest'
+          self.LIBS += ' -L'+self.tmpDir+' -lconftest'
           if self.checkLink(includes = 'int foo(void);', body = 'int ret = foo();\nif(ret);'):
-            os.remove('libconftest.'+self.sharedLibraryExt)
+            os.remove(oldLib)
             self.LIBS = oldLibs
             self.sharedLibraries = 1
             self.logPrint('Using shared linker '+self.sharedLinker+' with flags '+str(self.sharedLibraryFlags)+' and library extension '+self.sharedLibraryExt)
             break
+          os.remove(oldLib)
           self.LIBS = oldLibs
-          os.remove('libconftest.'+self.sharedLibraryExt)
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
         del self.LD_SHARED 
         del self.sharedLinker
@@ -1270,8 +1271,9 @@ class Configure(config.base.Configure):
         self.dynamicLibraryExt = ext
         testMethod = 'foo'
         if self.checkLink(includes = 'int '+testMethod+'(void) {return 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 'dynamic'):
+          oldLib  = self.linkerObj
           code = '''
-void *handle = dlopen("./libconftest.so", 0);
+void *handle = dlopen("%s", 0);
 int (*foo)(void) = (int (*)(void)) dlsym(handle, "foo");
 
 if (!foo) {
@@ -1286,13 +1288,13 @@ if (dlclose(handle)) {
   printf("Could not close library\\n");
   return -1;
 }
-'''
+''' % oldLib
           if self.checkLink(includes = '#include<dlfcn.h>', body = code):
-            os.remove('libconftest.'+self.dynamicLibraryExt)
+            os.remove(oldLib)
             self.dynamicLibraries = 1
             self.logPrint('Using dynamic linker '+self.dynamicLinker+' with flags '+str(self.dynamicLibraryFlags)+' and library extension '+self.dynamicLibraryExt)
             break
-          os.remove('libconftest.'+self.dynamicLibraryExt)
+          os.remove(oldLib)
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
         del self.dynamicLinker
     return

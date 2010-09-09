@@ -77,8 +77,10 @@ class Configure(script.Script):
     self.subst           = {}
     self.argSubst        = {}
     self.language        = []
-    self.compilerDefines = 'confdefs.h'
-    self.compilerFixes   = 'conffix.h'
+    self.tmpDir          = os.tempnam()
+    os.makedirs(self.tmpDir)
+    self.compilerDefines = os.path.join(self.tmpDir, 'confdefs.h')
+    self.compilerFixes   = os.path.join(self.tmpDir, 'conffix.h')
     self.pushLanguage('C')
     return
 
@@ -271,8 +273,8 @@ class Configure(script.Script):
   def getCompiler(self):
     compiler            = self.framework.getCompilerObject(self.language[-1])
     compiler.checkSetup()
-    self.compilerSource = 'conftest'+compiler.sourceExtension
-    self.compilerObj    = compiler.getTarget(self.compilerSource)
+    self.compilerSource = os.path.join(self.tmpDir, 'conftest'+compiler.sourceExtension)
+    self.compilerObj    = os.path.join(self.tmpDir, compiler.getTarget(self.compilerSource))
     return compiler.getProcessor()
 
   def getCompilerFlags(self):
@@ -281,8 +283,8 @@ class Configure(script.Script):
   def getLinker(self):
     linker            = self.framework.getLinkerObject(self.language[-1])
     linker.checkSetup()
-    self.linkerSource = 'conftest'+linker.sourceExtension
-    self.linkerObj    = linker.getTarget(self.linkerSource,0)
+    self.linkerSource = os.path.join(self.tmpDir, 'conftest'+linker.sourceExtension)
+    self.linkerObj    = linker.getTarget(self.linkerSource, 0)
     return linker.getProcessor()
 
   def getLinkerFlags(self):
@@ -291,8 +293,8 @@ class Configure(script.Script):
   def getSharedLinker(self):
     linker            = self.framework.getSharedLinkerObject(self.language[-1])
     linker.checkSetup()
-    self.linkerSource = 'conftest'+linker.sourceExtension
-    self.linkerObj    = linker.getTarget(self.linkerSource,1)
+    self.linkerSource = os.path.join(self.tmpDir, 'conftest'+linker.sourceExtension)
+    self.linkerObj    = linker.getTarget(self.linkerSource, 1)
     return linker.getProcessor()
 
   def getSharedLinkerFlags(self):
@@ -301,8 +303,8 @@ class Configure(script.Script):
   def getDynamicLinker(self):
     linker            = self.framework.getDynamicLinkerObject(self.language[-1])
     linker.checkSetup()
-    self.linkerSource = 'conftest'+linker.sourceExtension
-    self.linkerObj    = linker.getTarget(self.linkerSource,1)
+    self.linkerSource = os.path.join(self.tmpDir, 'conftest'+linker.sourceExtension)
+    self.linkerObj    = linker.getTarget(self.linkerSource, 1)
     return linker.getProcessor()
 
   def getDynamicLinkerFlags(self):
@@ -388,10 +390,10 @@ class Configure(script.Script):
     f = file(self.compilerSource, 'w')
     f.write(self.getCode(codeStr))
     f.close()
-    (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, timeout = timeout, log = self.framework.log)
-    if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
-    if os.path.isfile(self.compilerFixes): os.remove(self.compilerFixes)
-    if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
+    (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, timeout = timeout, log = self.framework.log, lineLimit = 1000)
+    if self.cleanup:
+      for filename in [self.compilerDefines, self.compilerFixes, self.compilerSource]:
+        if os.path.isfile(filename): os.remove(filename)
     return (out, err, ret)
 
   def outputPreprocess(self, codeStr):
@@ -444,10 +446,9 @@ class Configure(script.Script):
     (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, log = self.framework.log)
     if not os.path.isfile(self.compilerObj):
       err += '\nPETSc Error: No output file produced'
-    if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
-    if os.path.isfile(self.compilerFixes): os.remove(self.compilerFixes)
-    if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
-    if cleanup and os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
+    if cleanup:
+      for filename in [self.compilerDefines, self.compilerFixes, self.compilerSource, self.compilerObj]:
+        if os.path.isfile(filename): os.remove(filename)
     return (out, err, ret)
 
   def checkCompile(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
@@ -548,9 +549,9 @@ class Configure(script.Script):
         raise ConfigureSetupError('Running executables on this system is not supported')
     cleanup = cleanup and self.framework.doCleanup
     if executor:
-      command = executor+' ./'+self.linkerObj
+      command = executor+' '+self.linkerObj
     else:
-      command = './'+self.linkerObj
+      command = self.linkerObj
     output  = ''
     error   = ''
     status  = 1

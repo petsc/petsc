@@ -140,7 +140,8 @@ class SharedLinker(config.compile.processor.Processor):
   extraArguments = property(getExtraArguments, config.compile.processor.Processor.setExtraArguments, doc = 'Optional arguments for the end of the command')
 
   def getTarget(self, source, shared, prefix = 'lib'):
-    base, ext = os.path.splitext(source)
+    dirname, basename = os.path.split(source)
+    base, ext = os.path.splitext(basename)
     if prefix:
       if not (len(base) > len(prefix) and base[:len(prefix)] == prefix):
         base = prefix+base
@@ -148,7 +149,7 @@ class SharedLinker(config.compile.processor.Processor):
       base += '.'+self.configCompilers.setCompilers.sharedLibraryExt
     else:
       base += '.'+self.argDB['LD_SHARED_SUFFIX']
-    return base
+    return os.path.join(dirname, base)
 
 class StaticLinker(SharedLinker):
   '''The C static linker, which is not really a linker, but we are hacking it in here'''
@@ -179,14 +180,15 @@ class StaticLinker(SharedLinker):
     return archiveCmd+ranlibCmd
 
   def getTarget(self, source, shared):
-    base, ext = os.path.splitext(source)
+    dirname, basename = os.path.split(source)
+    base, ext = os.path.splitext(basename)
     if not (len(base)>3 and base[:3]=='lib'):
       base = 'lib'+base
     if hasattr(self,'configCompilers'):
       base += '.'+self.configCompilers.AR_LIB_SUFFIX
     else:
       base += '.'+self.argDB['AR_LIB_SUFFIX']
-    return base
+    return os.path.join(dirname, base)
 
 class DynamicLinker(config.compile.processor.Processor):
   '''The C linker'''
@@ -232,9 +234,10 @@ class DynamicLinker(config.compile.processor.Processor):
   extraArguments = property(getExtraArguments, config.compile.processor.Processor.setExtraArguments, doc = 'Optional arguments for the end of the command')
 
   def getTarget(self, source, shared, prefix = 'lib'):
-    base, ext = os.path.splitext(source)
+    dirname, basename = os.path.split(source)
+    base, ext = os.path.splitext(basename)
     if prefix:
       if not (len(base) > len(prefix) and base[:len(prefix)] == prefix):
         base = prefix+base
     base += '.'+self.configCompilers.setCompilers.dynamicLibraryExt
-    return base
+    return os.path.join(dirname, base)
