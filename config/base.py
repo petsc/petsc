@@ -61,6 +61,7 @@ import script
 
 import os
 import time
+import tempfile
 
 class ConfigureSetupError(Exception):
   pass
@@ -77,8 +78,7 @@ class Configure(script.Script):
     self.subst           = {}
     self.argSubst        = {}
     self.language        = []
-    self.tmpDir          = os.tempnam()
-    os.makedirs(self.tmpDir)
+    self.tmpDir          = tempfile.mkdtemp()
     self.compilerDefines = os.path.join(self.tmpDir, 'confdefs.h')
     self.compilerFixes   = os.path.join(self.tmpDir, 'conffix.h')
     self.pushLanguage('C')
