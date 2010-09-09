@@ -141,7 +141,7 @@ class cmd_install(_install):
 def version():
     return '3.2.dev1'
 def tarball():
-    return None # XXX remove this line
+    return "http://petsc.cs.iit.edu/petsc/petsc-dev/archive/tip.tar.gz"
     return ('http://ftp.mcs.anl.gov/pub/petsc/<XXX>/' # XXX fix this line
             'petsc-lite-%s.tar.gz' % version() )
 
