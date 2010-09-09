@@ -40,10 +40,9 @@ cdef extern from "petscda.h" nogil:
 
     int DASetOptionsPrefix(PetscDA,char[])
     int DASetFromOptions(PetscDA)
-
-    #int DASetElementType(PetscDA,PetscDAElementType)
-    #int DASetInterpolationType(PetscDA,PetscDAInterpolationType)
-
+    int DASetElementType(PetscDA,PetscDAElementType)
+    int DASetInterpolationType(PetscDA,PetscDAInterpolationType)
+    int DAGetInterpolation(PetscDA,PetscDA,PetscMat*,PetscVec*)
     int DAGetInfo(PetscDA,
                   PetscInt*,
                   PetscInt*,PetscInt*,PetscInt*,
@@ -89,6 +88,10 @@ cdef extern from "petscda.h" nogil:
     int DAGetISLocalToGlobalMapping(PetscDA,PetscLGMap*)
     int DAGetISLocalToGlobalMappingBlck(PetscDA,PetscLGMap*)
     int DAGetScatter(PetscDA,PetscScatter*,PetscScatter*,PetscScatter*)
+
+    int DASetRefinementFactor(PetscDA,PetscInt,PetscInt,PetscInt)
+    int DAGetRefinementFactor(PetscDA,PetscInt*,PetscInt*,PetscInt*)
+    int DARefine(PetscDA,MPI_Comm,PetscDA*)
 
     #int DASetFieldName(PetscDA,PetscInt,const_char[])
     #int DAGetFieldName(PetscDA,PetscInt,char**)

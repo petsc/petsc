@@ -352,6 +352,49 @@ cdef class DA(Object):
 
     #
 
+    def setRefinementFactor(self,
+                            refine_x=2,
+                            refine_y=2,
+                            refine_z=2):
+        cdef PetscInt refine[3]
+        refine[0] = asInt(refine_x)
+        refine[1] = asInt(refine_y)
+        refine[2] = asInt(refine_z)
+        CHKERR( DASetRefinementFactor(self.da,
+                                      refine[0],
+                                      refine[1],
+                                      refine[2]) )
+
+    def getRefinementFactor(self):
+        cdef PetscInt i, dim, refine[3]
+        CHKERR( DAGetDim(self.da, &dim) )
+        CHKERR( DAGetRefinementFactor(self.da,
+                                      &refine[0],
+                                      &refine[1],
+                                      &refine[2]) )
+        return tuple([toInt(refine[i]) for 0 <= i < dim])
+
+    def refine(self, comm=None):
+        cdef MPI_Comm dacomm = MPI_COMM_NULL
+        CHKERR( PetscObjectGetComm(<PetscObject>self.da, &dacomm) )
+        dacomm = def_Comm(comm, dacomm)
+        cdef DA rda = DA()
+        CHKERR( DARefine(self.da, dacomm, &rda.da) )
+        return rda
+
+    def setInterpolationType(self, interp_type):
+        cdef PetscDAInterpolationType ival = interp_type
+        CHKERR( DASetInterpolationType(self.da, ival) )
+
+    def getInterpolation(self, DA da not None):
+        cdef Mat A = Mat()
+        cdef Vec scale = Vec()
+        CHKERR( DAGetInterpolation(self.da, da.da, 
+                                   &A.mat, &scale.vec))
+        return(A, scale)
+
+    #
+
     property dim:
         def __get__(self):
             return self.getDim()
