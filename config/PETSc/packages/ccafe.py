@@ -58,6 +58,7 @@ class Configure(PETSc.package.NewPackage):
     self.addMakeMacro('CCAFE_VERSION', self.version)
     self.addMakeMacro('CCASPEC_CONFIG', self.ccaspec_config)
     self.addMakeMacro('CCASPEC_VERSION', PETSc.package.NewPackage.executeShellCommand(self.ccaspec_config + ' --var CCASPEC_VERSION')[0].rstrip())
+    self.addMakeMacro('CCASPEC_VARS', PETSc.package.NewPackage.executeShellCommand(self.ccaspec_config + ' --var CCASPEC_MAKEINCL')[0].rstrip())
     self.addMakeMacro('CCASPEC_BABEL_BABEL',  self.babel)
     self.addMakeMacro('CCASPEC_BABEL_VERSION',  PETSc.package.NewPackage.executeShellCommand(self.ccaspec_config + ' --var CCASPEC_BABEL_VERSION')[0].rstrip())
     self.addMakeMacro('BABEL_CONFIG', self.babel_config)
