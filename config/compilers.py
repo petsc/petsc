@@ -1126,7 +1126,7 @@ class Configure(config.base.Configure):
       modname = 'CONFIGTEST.mod'
     else:
       raise RuntimeError('Fortran module was not created during the compile. configtest.mod/CONFIGTEST.mod not found')
-    os.rename(modname, os.path.join(testdir, modname))
+    shutil.copy(modname, os.path.join(testdir, modname))
     fcode = '''\
       use configtest
 
