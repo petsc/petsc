@@ -334,7 +334,7 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
     }
     if (!lsSuccess) {
       if (++snes->numFailures >= snes->maxFailures) {
-        snes->reason = SNES_DIVERGED_LS_FAILURE;
+        snes->reason = SNES_DIVERGED_LINE_SEARCH;
         break;
       }
     }

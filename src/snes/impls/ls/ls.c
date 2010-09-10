@@ -226,7 +226,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     if (!lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
 	PetscTruth ismin;
-        snes->reason = SNES_DIVERGED_LS_FAILURE;
+        snes->reason = SNES_DIVERGED_LINE_SEARCH;
         ierr = SNESLSCheckLocalMin_Private(snes,snes->jacobian,G,W,gnorm,&ismin);CHKERRQ(ierr);
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
         break;
