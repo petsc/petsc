@@ -78,7 +78,7 @@ class Configure(script.Script):
     self.subst           = {}
     self.argSubst        = {}
     self.language        = []
-    self.tmpDir          = tempfile.mkdtemp()
+    self.tmpDir          = tempfile.mkdtemp(prefix='petsc-')
     self.compilerDefines = os.path.join(self.tmpDir, 'confdefs.h')
     self.compilerFixes   = os.path.join(self.tmpDir, 'conffix.h')
     self.pushLanguage('C')
