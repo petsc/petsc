@@ -84,6 +84,10 @@ class Configure(script.Script):
     self.pushLanguage('C')
     return
 
+  def __del__(self):
+    shutil.rmtree(self.tmpDir)
+    return
+
   def __str__(self):
     return ''
 
