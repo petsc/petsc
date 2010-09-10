@@ -583,7 +583,8 @@ class PETScMaker(script.Script):
    self.setup()
    if rootDir is None:
      rootDir = self.argDB['rootDir']
-   if not self.checkDir(rootDir):
+   srcdirs = [os.path.join(rootDir,'include', os.path.join(rootDir,'src'))]
+   if not any(map(self.checkDir,srcdirs)):
      self.logPrint('Nothing to be done')
    if rootDir == os.environ['PETSC_DIR']:
      library = os.path.join(self.petscdir.dir, self.arch.arch, 'lib', 'libpetsc')   
@@ -591,11 +592,12 @@ class PETScMaker(script.Script):
      if os.path.isfile(lib):
        self.logPrint('Removing '+lib)
        os.unlink(lib)
-   for root, dirs, files in os.walk(rootDir):
-     self.logPrint('Processing '+root)
-     self.buildDir('libpetsc', root, files)
-     for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
-       dirs.remove(badDir)
+   for srcdir in srcdirs:
+     for root, dirs, files in os.walk(srcdir):
+       self.logPrint('Processing '+root)
+       self.buildDir('libpetsc', root, files)
+       for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
+         dirs.remove(badDir)
    self.ranlib('libpetsc')
    self.buildSharedLibrary('libpetsc')
    return
