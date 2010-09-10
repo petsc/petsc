@@ -257,7 +257,7 @@ def petsc_configure(configure_options):
     print '''++ Could not locate BuildSystem in %s.''' % configDir
     print '''++ Downloading it from http://petsc.cs.iit.edu/petsc/BuildSystem'''
     print '==============================================================================='
-    self.downloadPackage('http://petsc.cs.iit.edu/petsc/BuildSystem/archive/tip.tar.gz', 'BuildSystem.tar.gz', configDir)
+    downloadPackage('http://petsc.cs.iit.edu/petsc/BuildSystem/archive/tip.tar.gz', 'BuildSystem.tar.gz', configDir)
       
   sys.path.insert(0, bsDir)
   sys.path.insert(0, configDir)
