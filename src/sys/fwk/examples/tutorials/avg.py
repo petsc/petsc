@@ -471,7 +471,365 @@ __global__ void accumulateScreeningAvg(   float * B,  //Big array
               grid=(ax, ay),
               stream=stream)
 
+import matplotlib.pyplot as plt
 
 
+def run_screening_test():
+    '''Tests the screening density vs. a convolution.'''
+    #the constant screening radius used in the test
+    TEST_RADIUS = 0.1
+    
+    # The number of mesh points in each direction
+    n = 32
 
+    n_x = n
+    n_y = n
+    n_z = n
+
+    #the size of the domain
+    l_x = 1.
+    l_y = 3.
+    l_z = 1.
+    
+    def convolution_screening(h, rho, Rfilter, n_R = None):
+        rhoref = np.zeros_like(rho)
+        rhohat = np.fft.fftn(rho)
+        rhohat_conv = np.zeros_like(rhohat) 
+        n = rho.shape
+        if (not n_R):
+            n_R = max(n)
+        #find the range of Rfilter
+        R_min = max(h)*max(n)
+        R_max = 0.
+        for i in range(n[0]):
+            for j in range(n[1]):
+                for k in range(n[2]):
+                    if Rfilter[i, j, k] < R_min:
+                        R_min = Rfilter[i, j, k]
+                    if Rfilter[i, j, k] > R_max:
+                        R_max = Rfilter[i, j, k]
+        if R_min == R_max:
+            n_R = 1 #one convolution case
+        #print R_min, R_max
+        for i_R in range(n_R):
+            #do the convolution!
+            n_x = rho.shape[0]
+            n_y = rho.shape[1]
+            n_z = rho.shape[2]
+            l_x = n_x*h[0]
+            l_y = n_y*h[1]
+            l_z = n_z*h[2]
+            x = np.array(np.zeros(3), dtype=np.float32)
+            if (n_R == 1):
+                radius = R_min
+            else:
+                radius = (R_max - R_min)*i_R / n_R + R_min
+            print radius
+            for i in range(-n_x / 2, n_x / 2):
+                for j in range(-n_y / 2, n_y / 2):
+                    for k in range(-n_z / 2, n_z / 2):
+                        n_x = rho.shape[0]
+                        n_y = rho.shape[1]
+                        n_z = rho.shape[2]
+                        x = np.array(np.zeros(3))
+                        x[0] = (2.*pi*(1. / l_x)*i)
+                        x[1] = (2.*pi*(1. / l_y)*j)
+                        x[2] = (2.*pi*(1. / l_z)*k)
+                        f = (sqrt(x[0]**2 + x[1]**2 + x[2]**2))
+                        Rf = (radius*f)
+                        Rf2 = (Rf*Rf)
+                        Rf3 = (Rf*Rf2)
+                        #centered at zero, the convolving function is:
+                        #3*(-cos(R*f) / (R*f)**2 + sin(R*f) / (R*f)**3
+                        if (Rf == 0.):
+                            rhohat_conv[i, j, k] = (rhohat[i, j, k])
+                        else:
+                            rhohat_conv[i, j, k] = (rhohat[i, j, k]*3.*(-cos(Rf) / Rf2 + sin(Rf) / Rf3))
+                        rho_ref_R = np.fft.ifftn(rhohat_conv)
+                        #go through realspace and see what points you can fill in
+                        R_bottom = radius
+                        R_top = radius + (R_max - R_min) / n_R + R_min
+                        for i in range(n_x):
+                            for j in range(n_y):
+                                for k in range(n_z):
+                                    if Rfilter[i, j, k] >= R_bottom and Rfilter[i, j, k] <= R_top:
+                                        rhoref[i, j, k] = np.real(rho_ref_R[i, j, k])
+                                        print "marked as", rhoref[i, j, k]
+        return rhoref
+
+    def plot_data(grid, cut = int(n_z / 2)):
+        '''Plotting function'''
+        dim = len(grid.shape)
+        # Make plot with vertical (default) colorbar
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        if (dim == 3):
+            n_x, n_y, n_z = grid.shape
+            n_grid = numpy.array(numpy.zeros((n_x, n_y)))
+            for i in range(n_x):
+                for j in range(n_y):
+                    n_grid[i, j] = grid[i, j, cut]
+        else:
+            n_grid = grid
+        cax = ax.imshow(n_grid, interpolation='nearest')
+        cb = plt.colorbar(cax)    
+
+    def linear_radial_screening_function(x):
+        '''The screening radius is linear in the distrance from the center of the physical sample.'''
+        m_x = l_x / 2.
+        m_y = l_y / 2.
+        m_z = l_z / 2.
+        return (sqrt((x[0] - m_x)**2 + (x[1] - m_y)**2 + (x[2] - m_z)**2))*0.25;
+
+    def constant_screening_function(x, radius=TEST_RADIUS):
+        '''constant screening radius'''
+        return radius
+
+    def cos3d(x):
+        '''a simple function to test against'''
+        return 1.0*cos(2.*pi*x[0])*cos(2.*pi*x[1])*cos(2.*pi*x[2])
+
+    def cos3dhat(xi):
+        v = n_x*n_y*n_z
+        epsilon = 0.0001
+        for xi_i in xi:
+            if fabs(xi_i - 2.0*pi) < epsilon:
+                v *= 0.5
+            elif fabs(xi_i + 2.0*pi) < epsilon:
+                v *= 0.5
+            else:
+                v *= 0.0
+        return v
+    
+    def field_function_x(x):
+        return x[0]
+
+    def constant_field_function(x):
+        return 1.
+
+    def random_field_function(x):
+        return rnd.randn()
+
+    def run_convolution_test(rho, radius = TEST_RADIUS):
+        rhohat = numpy.fft.fftn(numpy.array(rho, dtype=numpy.complex128))
+        n_x = rho.shape[0]
+        n_y = rho.shape[1]
+        n_z = rho.shape[2]
+        x = numpy.array(numpy.zeros(3), dtype=numpy.float64)
+        rhohat_conv = numpy.zeros_like(rhohat)
+        for i in range(-n_x / 2, n_x / 2):
+            for j in range(-n_y / 2, n_y / 2):
+                for k in range(-n_z / 2, n_z / 2):
+                    x[0] = (2.*pi*(1. / l_x)*i)
+                    x[1] = (2.*pi*(1. / l_y)*j)
+                    x[2] = (2.*pi*(1. / l_z)*k)
+                    f = (sqrt(x[0]**2 + x[1]**2 + x[2]**2))
+                    Rf = (radius*f)
+                    Rf2 = (Rf*Rf)
+                    Rf3 = (Rf*Rf2)
+                    #centered at zero, the convolving function is:
+                    #3*(-cos(R*f) / (R*f)**2 + sin(R*f) / (R*f)**3
+                    if (Rf == 0.):
+                        rhohat_conv[i, j, k] = (rhohat[i, j, k])
+                    else:
+                        rhohat_conv[i, j, k] = (rhohat[i, j, k]*3.*(-cos(Rf) / Rf2 + sin(Rf) / Rf3))
+        rho_conv = numpy.fft.ifftn(rhohat_conv)
+        return rho_conv
+
+
+#uses PyCUDA's reduction machinery as a test version of this integral
+
+    def run_reduction_example(A, B):
+        Af = numpy.fft.fftn(A)
+        Af = numpy.array(Af)
+        for i in range(n_x):
+            for j in range(n_y):
+                for k in range(n_z):
+                    Af[i, j, k] = Af[i, j, k] / (n_x*n_y*n_z)
+        Af_rg = gpuarray.to_gpu(numpy.array(numpy.real(Af).flatten(), dtype=numpy.float32))
+        Af_ig = gpuarray.to_gpu(numpy.array(numpy.imag(Af).flatten(), dtype=numpy.float32))
+        freqs_x = numpy.fft.fftfreq(n_x, d=l_x / (n_x))
+        freqs_y = numpy.fft.fftfreq(n_y, d=l_y / (n_y))
+        freqs_z = numpy.fft.fftfreq(n_z, d=l_z / (n_z))
+        F_x = numpy.array(numpy.zeros_like(Af), dtype=numpy.float32)
+        F_y = numpy.array(numpy.zeros_like(Af), dtype=numpy.float32)
+        F_z = numpy.array(numpy.zeros_like(Af), dtype=numpy.float32)
+        for i in range(n_x):
+            for j in range(n_y):
+                for k in range(n_z):
+                    F_x[i, j, k] = freqs_x[i]*2.*pi
+                    F_y[i, j, k] = freqs_y[j]*2.*pi
+                    F_z[i, j, k] = freqs_z[k]*2.*pi
+                    
+        F_x = gpuarray.to_gpu(F_x.flatten())
+        F_y = gpuarray.to_gpu(F_y.flatten())
+        F_z = gpuarray.to_gpu(F_z.flatten())
+
+        
+        krnl = ReductionKernel(numpy.float64, neutral="0.0",
+                               reduce_expr="a + b",
+                               map_expr="(-sin(fdotx)*Af_i[i] + Af_r[i]*cos(fdotx))*(Rf > 0. ? 3*((-cos(Rf) / Rf2) + (sin(Rf) / Rf3)) : 1.)",
+                               #map_expr="R",
+                               arguments="float* Af_r, float* Af_i, float* F_x, float* F_y, float* F_z, float x, float y, float z, float h_x, float h_y, float h_z, float R",
+                               preamble="""
+                               #define PI CUDART_PI
+                               #define f sqrtf(F_x[i]*F_x[i] + F_y[i]*F_y[i] + F_z[i]*F_z[i])
+                               #define Rf (R*f)
+                               #define Rf2 (R*R*f*f)
+                               #define Rf3 (R*R*R*f*f*f)
+                               #define fdotx (x*F_x[i] + y*F_y[i] + z*F_z[i])
+                               """
+                               )
+        A_h = numpy.array(numpy.zeros_like(A))
+
+        t1 = time.time()
+        
+        for i in range(n_x):
+            for j in range(n_y):
+                for k in range(n_z):
+                    
+                    x = (l_x / n_x)*i
+                    y = (l_y / n_y)*j
+                    z = (l_z / n_z)*k
+                    #print x, y, z
+                    my_dot_prod = krnl(Af_rg, Af_ig, F_x, F_y, F_z, x, y, z, l_x / n_x, l_y / n_y, l_z / n_z, B[i, j, k]).get()
+                    #print my_dot_prod
+                    A_h[i, j, k] = my_dot_prod
+        t2 = time.time()
+        print "reductions time: %0.3f ms" % ((t2 - t1)*1000)
+        return A_h
+
+    def partitioned_reduction_example(A, B):
+        Af = numpy.fft.fftn(A)
+        for i in range(n_x):
+            for j in range(n_y):
+                for k in range(n_z):
+                    Af[i, j, k] = Af[i, j, k] / (n_x*n_y*n_z)
+        Af_rg = gpuarray.to_gpu(numpy.array(numpy.real(Af), dtype=numpy.float32))
+        Af_ig = gpuarray.to_gpu(numpy.array(numpy.imag(Af), dtype=numpy.float32))
+        freqs_x = numpy.fft.fftfreq(n_x, d=l_x / (n_x))
+        freqs_y = numpy.fft.fftfreq(n_y, d=l_y / (n_y))
+        freqs_z = numpy.fft.fftfreq(n_z, d=l_z / (n_z))
+        F_x = numpy.array(numpy.zeros_like(Af), dtype=numpy.float32)
+        F_y = numpy.array(numpy.zeros_like(Af), dtype=numpy.float32)
+        F_z = numpy.array(numpy.zeros_like(Af), dtype=numpy.float32)
+        for i in range(n_x):
+            for j in range(n_y):
+                for k in range(n_z):
+                    F_x[i, j, k] = freqs_x[i]*2.*pi
+                    F_y[i, j, k] = freqs_y[j]*2.*pi
+                    F_z[i, j, k] = freqs_z[k]*2.*pi
+                    
+        F_x = gpuarray.to_gpu(F_x.flatten())
+        F_y = gpuarray.to_gpu(F_y.flatten())
+        F_z = gpuarray.to_gpu(F_z.flatten())
+
+        
+        krnl_2 = ReductionKernel(numpy.float32, neutral="0.0",
+                               reduce_expr="a + b",
+                               map_expr="(cosf(fdotx)*Af_r[i])*(Rf > 0. ? 3.*((sinf(Rf) / (Rf3) - cosf(Rf) / (Rf2))) : 1.)",
+                               #map_expr="R",
+                               arguments="float* Af_r, float* Af_i, float* F_x, float* F_y, float* F_z, float x, float y, float z, float h_x, float h_y, float h_z, float R",
+                               preamble="""
+                               #define PI CUDART_PI
+                               #define f sqrtf(F_x[i]*F_x[i] + F_y[i]*F_y[i] + F_z[i]*F_z[i])
+                               #define Rf (R*f)
+                               #define Rf2 (R*R*f*f)
+                               #define Rf3 (R*R*R*f*f*f)
+                               #define fdotx (x*F_x[i] + y*F_y[i] + z*F_z[i])
+                               """
+                               )
+
+        krnl_3 = ReductionKernel(numpy.float32, neutral="0.0",
+                               reduce_expr="a + b",
+                               map_expr="(-sinf(fdotx)*Af_i[i])*(Rf > 0. ? 3.*((sinf(Rf) / (Rf3) - cosf(Rf) / (Rf2))) : 1.)",
+                               #map_expr="R",
+                               arguments="float* Af_r, float* Af_i, float* F_x, float* F_y, float* F_z, float x, float y, float z, float h_x, float h_y, float h_z, float R",
+                               preamble="""
+                               #define PI CUDART_PI
+                               #define f sqrtf(F_x[i]*F_x[i] + F_y[i]*F_y[i] + F_z[i]*F_z[i])
+                               #define Rf (R*f)
+                               #define Rf2 (R*R*f*f)
+                               #define Rf3 (R*R*R*f*f*f)
+                               #define fdotx (x*F_x[i] + y*F_y[i] + z*F_z[i])
+                               """
+                               )
+                
+        A_h = numpy.array(numpy.zeros_like(A))
+
+        t1 = time.time()
+
+        #partition frequency space and do this
+        for i in range(n_x):
+            for j in range(n_y):
+                for k in range(n_z):
+                    
+                    x = (l_x / n_x)*i
+                    y = (l_y / n_y)*j
+                    z = (l_z / n_z)*k
+                    #print x, y, z
+                    my_dot_prod_2 = krnl_2(Af_rg, Af_ig, F_x, F_y, F_z, x, y, z, l_x / n_x, l_y / n_y, l_z / n_z, B[i, j, k]).get()
+                    my_dot_prod_3 = krnl_3(Af_rg, Af_ig, F_x, F_y, F_z, x, y, z, l_x / n_x, l_y / n_y, l_z / n_z, B[i, j, k]).get()
+                    #print my_dot_prod
+                    A_h[i, j, k] = my_dot_prod_2 + my_dot_prod_3
+        t2 = time.time()
+        print "reductions time: %0.3f ms" % ((t2 - t1)*1000)
+        return A_h
+
+
+    ff = cos3d
+    #create the realspace grid
+    x = numpy.zeros(3)
+    A = numpy.array(numpy.zeros((n_x, n_y, n_z)), dtype=numpy.float64)
+    B = numpy.array(numpy.zeros((n_x, n_y, n_z)), dtype=numpy.float64)
+
+    #create the real-space grids
+    for i in range(n_x):
+        for j in range(n_y):
+            for k in range(n_z):
+                x[0] = (l_x / n_x)*i #+ (l_x / (2.*n_x))
+                x[1] = (l_y / n_y)*j #+ (l_y / (2.*n_y))
+                x[2] = (l_z / n_z)*k #+ (l_z / (2.*n_z))
+                B[i, j, k] = constant_screening_function(x)
+                A[i,j,k] = ff(x)
+                #print homogenization_radius_function(x)
+
+    # Test the error on the Fourier transform
+    #print n_x, n_y, n_z
+    #print l_x, l_y, l_z
+    #print l_x/(n_x-1), l_y/(n_y-1), l_z/(n_z-1)
+    Ahat = numpy.array(numpy.zeros((n_x, n_y, n_z)), dtype=numpy.complex64)
+    for k in range(-n_z / 2, n_z / 2):
+        for j in range(-n_y / 2, n_y / 2):
+            for i in range(-n_x / 2, n_x / 2):
+                x[0] = 2.*pi / l_x * i
+                x[1] = 2.*pi / l_y * j
+                x[2] = 2.*pi / l_z * k
+                #if i == 2 and j == 3: print x
+                Ahat[i, j, k] = cos3dhat(x)
+    print "analytical FFT test", numpy.linalg.norm(A - numpy.fft.ifftn(Ahat))
+    print "fft(ifft(A)) test", numpy.linalg.norm(A - numpy.fft.ifftn(numpy.fft.fftn(A)))
+    print "Running the screening integral..."
+    #rint numpy.fft.fftn(A)
+
+    #Run the 
+    rho_c = run_convolution_test(A)
+
+    #Run the on-GPU screening integral test
+    rho_s = screening_density((l_x / n_x, l_y / n_y, l_z / n_z), A, B)
+    #rho_t = run_reduction_example(A, B)
+
+    #rho_cpu = run_cpu_pseudoconvolution((l_x / n_x, l_y / n_y, l_z / n_z), A, B)
+    #rho_cc = convolution_screening((l_x / n_x, l_y / n_y, l_z / n_z), A, B)
+    print "Analytic vs. GPU SQ error:", numpy.linalg.norm(rho_c   - rho_s)
+    # print "Analytic vs. Reduction SQ error:", numpy.linalg.norm(rho_c - rho_t)
+    #print "Analytic vs. CPU SQ error:", numpy.linalg.norm(rho_cpu - rho_c)
+    #print "Dimension Reduction error:", numpy.linalg.norm(rho_c - rho_cc)
+    #print "GPU reduction error:", numpy.linalg.norm(rho_c - rho_r)
+    #plot_data(rho_t)
+    #plot_data(rho_s)
+    #plt.show()
+    
+if __name__=="__main__":
+    run_screening_test()
 
