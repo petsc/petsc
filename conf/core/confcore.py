@@ -76,7 +76,7 @@ class PetscConfig:
         self.configdict = { }
         if not petsc_dir:
             raise DistutilsError("PETSc not found")
-        elif not os.path.isdir(petsc_dir):
+        if not os.path.isdir(petsc_dir):
             raise DistutilsError("invalid PETSC_DIR: %s" % petsc_dir)
         self.configdict = self._get_petsc_conf(petsc_dir, petsc_arch)
         self.PETSC_DIR  = self['PETSC_DIR']
@@ -283,8 +283,12 @@ class config(_config):
         if not petsc_dir: return None
         petsc_dir = os.path.expandvars(petsc_dir)
         if not petsc_dir or '$PETSC_DIR' in petsc_dir:
-            log.warn("PETSC_DIR not specified")
-            return None
+            try:
+                import petsc
+                petsc_dir = petsc.get_petsc_dir()
+            except ImportError:
+                log.warn("PETSC_DIR not specified")
+                return None
         petsc_dir = os.path.expanduser(petsc_dir)
         petsc_dir = os.path.abspath(petsc_dir)
         return config.chk_petsc_dir(petsc_dir)
@@ -323,7 +327,7 @@ class config(_config):
             if os.path.isdir(arch_path):
                 valid_archs.append(arch)
             else:
-                log.warn("invalid PETSC_ARCH '%s' (ignored)" % arch)
+                log.warn("invalid PETSC_ARCH: %s (ignored)" % arch)
         return valid_archs
 
 
