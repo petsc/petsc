@@ -14,6 +14,7 @@ all message-passing communication.
 import sys, os
 from distutils.core import setup
 from distutils.util import get_platform
+from distutils.spawn import find_executable
 from distutils.command.build import build as _build
 if 'setuptools' in sys.modules:
     from setuptools.command.install import install as _install
@@ -65,7 +66,6 @@ def bootstrap():
     except:
         pass
     # Simple-minded lookup for MPI and mpi4py
-    from distutils.spawn import find_executable
     mpi4py = mpicc = None
     try:
         import mpi4py
