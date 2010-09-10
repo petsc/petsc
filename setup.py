@@ -19,11 +19,12 @@ if 'setuptools' in sys.modules:
     from setuptools.command.install import install as _install
 else:
     from distutils.command.install import install as _install
+from distutils.command.sdist import sdist as _sdist
 from distutils import log
 
 init_py = """\
-# Author:  Lisandro Dalcin
-# Contact: dalcinl@gmail.com
+# Author:  PETSc Team
+# Contact: petsc-users@mcs.anl.gov
 
 def get_petsc_dir():
     import os
@@ -31,6 +32,11 @@ def get_petsc_dir():
 
 def get_petsc_arch():
     return ''
+
+def get_config():
+    conf = {}
+    conf['petsc_dir'] = get_petsc_dir()
+    return conf
 """
 
 def bootstrap():
@@ -76,7 +82,7 @@ def install(dest_dir, prefix=None, dry_run=False):
     if dry_run: return
     if prefix is None:
         prefix = dest_dir
-    options = [ 
+    options = [
         '--destDir=' + dest_dir,
         '--prefix='  + prefix
         ]
@@ -90,7 +96,7 @@ def install(dest_dir, prefix=None, dry_run=False):
               'build.log.bkp','default.log.bkp']
     for delfile in delfiles:
         try:
-            if (os.path.exists(delfile) and 
+            if (os.path.exists(delfile) and
                 os.stat(delfile).st_uid==0):
                 os.remove(delfile)
         except:
@@ -99,12 +105,12 @@ def install(dest_dir, prefix=None, dry_run=False):
 class cmd_build(_build):
 
     def finalize_options(self):
-        if self.build_base is None: 
+        if self.build_base is None:
             self.build_base= 'build'
         self.build_base = os.path.join(
             os.environ['PETSC_ARCH'], self.build_base)
         _build.finalize_options(self)
-        
+
     def run(self):
         _build.run(self)
         wdir = os.getcwd()
@@ -138,10 +144,24 @@ class cmd_install(_install):
         finally:
             os.chdir(wdir)
 
+class cmd_sdist(_sdist):
+
+    def initialize_options(self):
+        _sdist.initialize_options(self)
+        self.force_manifest = 1
+        self.template = os.path.join('config', 'MANIFEST.in')
+
+    def run(self):
+        _sdist.run(self)
+        try:
+            os.remove(self.manifest)
+        except Exception:
+            pass
+
 def version():
     return '3.2.dev1'
 def tarball():
-    return "http://petsc.cs.iit.edu/petsc/petsc-dev/archive/tip.tar.gz"
+    return None
     return ('http://ftp.mcs.anl.gov/pub/petsc/<XXX>/' # XXX fix this line
             'petsc-lite-%s.tar.gz' % version() )
 
@@ -160,7 +180,7 @@ Topic :: Software Development :: Libraries
 """
 
 bootstrap()
-setup(name='petsc', 
+setup(name='petsc',
       version=version(),
       description=description.pop(0),
       long_description='\n'.join(description),
@@ -185,5 +205,6 @@ setup(name='petsc',
       cmdclass={
         'build': cmd_build,
         'install': cmd_install,
+        'sdist': cmd_sdist,
         },
       )
