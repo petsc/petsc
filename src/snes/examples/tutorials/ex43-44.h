@@ -36,7 +36,7 @@ PetscErrorCode FormFunctionSub(SNES snes,Vec x,Vec f,void *ictx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "FormJaocbianSub"
+#define __FUNCT__ "FormJacobianSub"
 PetscErrorCode FormJacobianSub(SNES snes,Vec x,Mat *A, Mat *B, MatStructure *str,void *ictx)
 {
   PetscErrorCode ierr;
