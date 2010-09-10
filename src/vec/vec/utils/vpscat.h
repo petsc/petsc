@@ -20,25 +20,6 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   PetscInt               i,*indices,*sstarts,nrecvs,nsends,bs;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_CUDA)
-  if (xin->valid_GPU_array == PETSC_CUDA_GPU) {
-    if (!ctx->spptr) {
-      PetscInt *indices,n = to->n; 
-      ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-      ierr = PetscMemcpy(indices,to->indices,n*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscSortRemoveDupsInt(&n,indices);CHKERRQ(ierr);
-     
-      ierr = PetscIntView(n,indices,0);CHKERRQ(ierr);
-
-      ierr = PetscFree(indices);CHKERRQ(ierr);
-    }
-  } else {
-    ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
-  }
-#else
-  ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
-#endif
-  if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
   if (mode & SCATTER_REVERSE) {
     to   = (VecScatter_MPI_General*)ctx->fromdata;
     from = (VecScatter_MPI_General*)ctx->todata;
@@ -56,6 +37,25 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   nsends   = to->n;
   indices  = to->indices;
   sstarts  = to->starts;
+#if defined(PETSC_HAVE_CUDA)
+  if (xin->valid_GPU_array == PETSC_CUDA_GPU && 0) {
+    if (!ctx->spptr) {
+      PetscInt *indices,n = to->n; 
+      ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+      ierr = PetscMemcpy(indices,to->indices,n*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscSortRemoveDupsInt(&n,indices);CHKERRQ(ierr);
+     
+      ierr = PetscIntView(n,indices,0);CHKERRQ(ierr);
+
+      ierr = PetscFree(indices);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
+  }
+#else
+  ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
+#endif
+  if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
 
   if (!(mode & SCATTER_LOCAL)) {
 
