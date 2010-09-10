@@ -22,6 +22,9 @@ else:
 from distutils.command.sdist import sdist as _sdist
 from distutils import log
 
+PETSC_DIR  = None
+PETSC_ARCH = None
+
 init_py = """\
 # Author:  PETSc Team
 # Contact: petsc-users@mcs.anl.gov
@@ -39,12 +42,20 @@ def get_config():
     return conf
 """
 
+metadata = {
+    'provides' : ['petsc'],
+    'requires' : [],
+}
+
 def bootstrap():
+    # Set PETSC_DIR and PETSC_ARCH, 
+    global PETSC_DIR, PETSC_ARCH
     PETSC_DIR  = os.path.abspath(os.getcwd())
     PETSC_ARCH = get_platform() + '-python'
     os.environ['PETSC_DIR']  = PETSC_DIR
     os.environ['PETSC_ARCH'] = PETSC_ARCH
     sys.path.insert(0, os.path.join(PETSC_DIR, 'config'))
+    # Generate package __init__.py file
     try:
         if not os.path.exists(PETSC_ARCH):
             os.mkdir(PETSC_ARCH)
@@ -53,6 +64,19 @@ def bootstrap():
             open(pkgfile, 'wt').write(init_py)
     except:
         pass
+    # Simple-minded lookup for MPI and mpi4py
+    from distutils.spawn import find_executable
+    mpi4py = mpicc = None
+    try:
+        import mpi4py
+        conf = mpi4py.get_config()
+        mpicc = conf.get('mpicc')
+    except ImportError: # mpi4py is not installed
+        mpicc = os.environ.get('MPICC') or find_executable('mpicc')
+    except AttributeError: # mpi4py too old
+        pass
+    if not mpi4py and mpicc:
+        metadata['requires'].append('mpi4py')
 
 def config(dry_run=False):
     log.info('PETSc: configure')
@@ -60,10 +84,24 @@ def config(dry_run=False):
     options = [
         'PETSC_ARCH='+os.environ['PETSC_ARCH'],
         '--with-shared-libraries',
-        '--with-fc=0',
-        '--with-mpi=0',
-        '--with-cmake=0',
+        '--with-cmake=0', # not needed
         ]
+    # MPI
+    try:
+        import mpi4py
+        conf = mpi4py.get_config()
+        mpicc = conf.get('mpicc')
+    except (ImportError, AttributeError):
+        mpicc = os.environ.get('MPICC') or find_executable('mpicc')
+    if mpicc:
+        options.append('--with-cc='+mpicc)
+    else:
+        options.append('--with-mpi=0')
+    options.extend([
+        '--with-fc=0',    # XXX mpif90?
+        '--with-cxx=0',   # XXX mpicxx?
+        ])
+    # Run PETSc configure
     import configure
     configure.petsc_configure(options)
     import logger
@@ -72,6 +110,7 @@ def config(dry_run=False):
 def build(dry_run=False):
     log.info('PETSc: build')
     if dry_run: return
+    # Run PETSc builder
     import builder
     builder.PETScMaker().run()
     import logger
@@ -86,6 +125,7 @@ def install(dest_dir, prefix=None, dry_run=False):
         '--destDir=' + dest_dir,
         '--prefix='  + prefix
         ]
+    # Run PETSc installer
     import install
     install.Installer(options).run()
     import logger
@@ -159,7 +199,8 @@ class cmd_sdist(_sdist):
             pass
 
 def version():
-    return '3.2.dev1'
+    return '3.2.dev1' # XXX should parse include/petscversion.h
+
 def tarball():
     return None
     return ('http://ftp.mcs.anl.gov/pub/petsc/<XXX>/' # XXX fix this line
@@ -189,9 +230,6 @@ setup(name='petsc',
       platforms=['POSIX'],
       license='PETSc',
 
-      provides=['petsc'],
-      requires=[],
-
       url='http://www.mcs.anl.gov/petsc/',
       download_url=tarball(),
 
@@ -207,4 +245,4 @@ setup(name='petsc',
         'install': cmd_install,
         'sdist': cmd_sdist,
         },
-      )
+      **metadata)
