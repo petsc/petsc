@@ -384,7 +384,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedFPrintf(MPI_Comm comm,FILE* f
 PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedFlush(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank,size,tag,i,j,n,dummy;
+  PetscMPIInt    rank,size,tag,i,j,n,dummy = 0;
   char          *message;
   MPI_Status     status;
   FILE           *fd;

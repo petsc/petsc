@@ -345,7 +345,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS(PC,const char[],IS);
 .seealso: PCFieldSplitSchurPrecondition()
 E*/
 typedef enum {PC_FIELDSPLIT_SCHUR_PRE_SELF,PC_FIELDSPLIT_SCHUR_PRE_DIAG,PC_FIELDSPLIT_SCHUR_PRE_USER} PCFieldSplitSchurPreType;
-extern const char *PCFieldSplitSchurPreTypes[];
+extern const char *const PCFieldSplitSchurPreTypes[];
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSchurPrecondition(PC,PCFieldSplitSchurPreType,Mat);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSchurBlocks(PC,Mat*,Mat*,Mat*,Mat*);

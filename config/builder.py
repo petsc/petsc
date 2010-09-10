@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import os, sys
+import shutil
+import tempfile
 
 sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config'))
 sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config', 'BuildSystem'))
@@ -128,6 +130,8 @@ class PETScMaker(script.Script):
    self.memAlign      = self.framework.require('PETSc.utilities.memAlign',    None)
    self.libraryOptions= self.framework.require('PETSc.utilities.libraryOptions', None)      
    self.fortrancpp    = self.framework.require('PETSc.utilities.fortranCPP', None)
+   self.debuggers     = self.framework.require('PETSc.utilities.debuggers', None)
+   self.sharedLibraries= self.framework.require('PETSc.utilities.sharedLibraries', None)      
    return
 
  def setupHelp(self, help):
@@ -171,9 +175,9 @@ class PETScMaker(script.Script):
 
  def cleanupLog(self, framework, confDir):
    '''Move configure.log to PROJECT_ARCH/conf - and update configure.log.bkp in both locations appropriately'''
-   import shutil
    import os
 
+   self.log.flush()
    if hasattr(framework, 'logName'):
      logName         = framework.logName
    else:
@@ -289,7 +293,6 @@ class PETScMaker(script.Script):
       CCPPFLAGS	            = ${PETSC_CCPPFLAGS}
       PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC} ${SSOURCE}
       PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}'''
-   import shutil
    # PETSCFLAGS, CFLAGS and CPPFLAGS are taken from user input (or empty)
    includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
    self.setCompilers.pushLanguage(self.languages.clanguage)
@@ -372,6 +375,94 @@ class PETScMaker(script.Script):
      if status:
        self.logPrint("ERROR IN RANLIB ******************************", debugSection='screen')
        self.logPrint(output+error, debugSection='screen')
+   return
+
+ def linkShared(self, sharedLib, libDir, tmpDir):
+   '''
+   CLINKER                  = ${PCC_LINKER} ${PCC_LINKER_FLAGS}
+   PETSC_EXTERNAL_LIB_BASIC = ${EXTERNAL_LIB} ${PACKAGES_LIBS} ${PCC_LINKER_LIBS}
+   SYS_LIB                  = ???
+   '''
+   osName = self.arch.hostOsBase
+   # PCC_LINKER PCC_LINKER_FLAGS
+   linker      = self.setCompilers.getLinker()
+   linkerFlags = self.setCompilers.getLinkerFlags()
+   # PACKAGES_LIBS PCC_LINKER_LIBS
+   packageIncludes, packageLibs = self.getPackageInfo()
+   extraLibs = self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
+   sysLib      = ''
+   sysLib.replace('-Wl,-rpath', '-L')
+   externalLib = packageLibs+' '+extraLibs
+   externalLib.replace('-Wl,-rpath', '-L')
+   # Move this switch into the sharedLibrary module
+   if self.setCompilers.isSolaris() and self.setCompilers.isGNU(self.framework.getCompiler()):
+     cmd = self.setCompilers.LD+' -G -h '+os.path.basename(sharedLib)+' *.o -o '+sharedLib+' '+sysLib+' '+externalLib
+     oldDir = os.getcwd()
+     os.chdir(tmpDir)
+     self.executeShellCommand(cmd, log=self.log)
+     os.chdir(oldDir)
+   elif '-qmkshrobj' in self.setCompilers.sharedLibraryFlags:
+     cmd = linker+' '+linkerFlags+' -qmkshrobj -o '+sharedLib+' *.o '+externalLib
+     oldDir = os.getcwd()
+     os.chdir(tmpDir)
+     self.executeShellCommand(cmd, log=self.log)
+     os.chdir(oldDir)
+   else:
+     if osName == 'linux':
+       cmd = linker+' -shared -Wl,-soname,'+os.path.basename(sharedLib)+' -o '+sharedLib+' *.o '+externalLib
+     elif osName.startswith('darwin'):
+       cmd   = ''
+       flags = ''
+       if not 'MACOSX_DEPLOYMENT_TARGET' in os.environ:
+         cmd += 'MACOSX_DEPLOYMENT_TARGET=10.5 '
+       if self.setCompilers.getLinkerFlags().find('-Wl,-commons,use_dylibs') > -1:
+         flags += '-Wl,-commons,use_dylibs'
+       cmd += self.setCompilers.getSharedLinker()+' -g  -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup '+flags+' -o '+sharedLib+' *.o -L'+libDir+' '+packageLibs+' '+sysLib+' '+extraLibs+' -lm -lc'
+     elif osName == 'cygwin':
+       cmd = linker+' '+linkerFlags+' -shared -o '+sharedLib+' *.o '+externalLib
+     else:
+       raise RuntimeError('Do not know how to make shared library for your crappy '+osName+' OS')
+     oldDir = os.getcwd()
+     os.chdir(tmpDir)
+     self.executeShellCommand(cmd, log=self.log)
+     os.chdir(oldDir)
+     if hasattr(self.debuggers, 'dsymutil'):
+       cmd = self.debuggers.dsymutil+' '+sharedLib
+       self.executeShellCommand(cmd, log=self.log)
+   return
+
+ def buildSharedLibrary(self, library):
+   '''
+   PETSC_LIB_DIR        = ${PETSC_DIR}/${PETSC_ARCH}/lib
+   INSTALL_LIB_DIR	= ${PETSC_LIB_DIR}
+   '''
+   if self.sharedLibraries.useShared:
+     libDir = os.path.join(self.petscdir.dir, self.arch.arch, 'lib')
+     tmpDir = tempfile.mkdtemp('petsc-' + self.arch.arch + '-')
+     self.logPrint('Making shared libraries in '+libDir)
+     sharedLib = os.path.join(libDir, os.path.splitext(library)[0]+'.'+self.setCompilers.sharedLibraryExt)
+     archive   = os.path.join(libDir, os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX)
+     # Should we rebuild?
+     rebuild = False
+     if os.path.isfile(archive):
+       if os.path.isfile(sharedLib):
+         if os.path.getmtime(archive) >= os.path.getmtime(sharedLib):
+           rebuild = True
+       else:
+         rebuild = True
+     if rebuild:
+       self.logPrint('Building '+sharedLib)
+       [shutil.rmtree(p) for p in os.listdir(tmpDir)]
+       oldDir = os.getcwd()
+       os.chdir(tmpDir)
+       self.executeShellCommand(self.setCompilers.AR+' x '+archive, log=self.log)
+       os.chdir(oldDir)
+       self.linkShared(sharedLib, libDir, tmpDir)
+     else:
+       self.logPrint('Nothing to rebuild for shared library '+library)
+     shutil.rmtree(tmpDir)
+   else:
+     self.logPrint('Shared libraries disabled')
    return
 
  def link(self, executable, objects, language):
@@ -492,20 +583,26 @@ class PETScMaker(script.Script):
    self.setup()
    if rootDir is None:
      rootDir = self.argDB['rootDir']
-   if not self.checkDir(rootDir):
+   if rootDir == self.petscdir.dir:
+     srcdirs = [os.path.join(rootDir,'include', os.path.join(rootDir,'src'))]
+   else:
+     srcdirs = [rootDir]
+   if not any(map(self.checkDir,srcdirs)):
      self.logPrint('Nothing to be done')
-   if rootDir == os.environ['PETSC_DIR']:
+   if rootDir == self.petscdir.dir:
      library = os.path.join(self.petscdir.dir, self.arch.arch, 'lib', 'libpetsc')   
      lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
      if os.path.isfile(lib):
        self.logPrint('Removing '+lib)
        os.unlink(lib)
-   for root, dirs, files in os.walk(rootDir):
-     self.logPrint('Processing '+root)
-     self.buildDir('libpetsc', root, files)
-     for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
-       dirs.remove(badDir)
+   for srcdir in srcdirs:
+     for root, dirs, files in os.walk(srcdir):
+       self.logPrint('Processing '+root)
+       self.buildDir('libpetsc', root, files)
+       for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
+         dirs.remove(badDir)
    self.ranlib('libpetsc')
+   self.buildSharedLibrary('libpetsc')
    return
 
  def buildDependenciesFiles(self, names):
@@ -642,6 +739,7 @@ class PETScMaker(script.Script):
      self.rebuildDependencies()
    if self.argDB['buildLibraries']:
      self.buildAll()
+   self.buildSharedLibrary('libpetsc')
    if self.argDB['regressionTests']:
      self.regressionTests()
    self.cleanup()

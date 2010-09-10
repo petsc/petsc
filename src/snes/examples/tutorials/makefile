@@ -445,12 +445,50 @@ runex19_5: #test different scatters
            done;\
          done;\
 	 ${RM} -f ex19_5.tmp
+
 # fieldsplit preconditioner tests
 runex19_6: 
 	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -snes_view  -preload off > ex19_6.tmp 2>&1; \
 	   if (${DIFF} output/ex19_6.out ex19_6.tmp) then true; \
 	   else echo "Possible problem with ex19_6, diffs above"; fi; \
 	   ${RM} -f ex19_6.tmp
+
+runex19_fieldsplit_2:
+	-@${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type additive -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -snes_monitor_short -ksp_monitor_short -preload off > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fieldsplit_2.out ex19_6.tmp) then true; \
+	   else echo "Possible problem with ex19_fieldsplit_2, diffs above"; fi; \
+	   ${RM} -f ex19_6.tmp
+
+runex19_fieldsplit_3:
+	-@${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type additive -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short -preload off > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fieldsplit_3.out ex19_6.tmp) then true; \
+	   else echo "Possible problem with ex19_fieldsplit_3, diffs above"; fi; \
+	   ${RM} -f ex19_6.tmp
+
+runex19_fieldsplit_4:
+	-@${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short -preload off > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fieldsplit_4.out ex19_6.tmp) then true; \
+	   else echo "Possible problem with ex19_fieldsplit_4, diffs above"; fi; \
+	   ${RM} -f ex19_6.tmp
+
+runex19_fieldsplit_mumps:
+	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short -preload off -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_factor_mat_solver_package mumps > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fieldsplit_5.out ex19_6.tmp) then true; \
+	   else echo "Possible problem with ex19_fieldsplit_5, diffs above"; fi; \
+	   ${RM} -f ex19_6.tmp
+
+runex19_fieldsplit_hypre:
+	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_type hypre -fieldsplit_1_pc_hypre_type boomeramg -snes_monitor_short -ksp_monitor_short -preload off > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fieldsplit_hypre.out ex19_6.tmp) then true; \
+	   else echo "Possible problem with ex19_fieldsplit_hypre, diffs above"; fi; \
+	   ${RM} -f ex19_6.tmp
+
+runex19_fieldsplit_redundant:
+	-@${MPIEXEC} -n 4 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_type redundant -fieldsplit_1_pc_redundant_number 2 -fieldsplit_1_redundant_pc_factor_mat_solver_package mumps -snes_monitor_short -ksp_monitor_short -preload off > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fieldsplit_redundant.out ex19_6.tmp) then true; \
+	   else echo "Possible problem with ex19_fieldsplit_redundant, diffs above"; fi; \
+	   ${RM} -f ex19_6.tmp
+
 runex19_7: 
 	-@${MPIEXEC} -n 3 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -snes_view  -preload off > ex19_7.tmp 2>&1; \
 	   if (${DIFF} output/ex19_7.out ex19_7.tmp) then true; \
@@ -659,7 +697,8 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  runex3_2 runex3_3 runex3_4 ex3.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 \
                                  runex5_5 runex5_6 runex5_7 runex5_9 runex5_13 runex5_14 ex5.rm \
                                  ex6.PETSc runex6 runex6_2 ex6.rm\
-                                 ex14.PETSc runex14 runex14_2 ex14.rm ex19.PETSc runex19 runex19_2 runex19_5 runex19_6 runex19_7 runex19_8 runex19_9 \
+                                 ex14.PETSc runex14 runex14_2 ex14.rm ex19.PETSc runex19 runex19_2 runex19_5 \
+                                 runex19_6 runex19_fieldsplit_2 runex19_fieldsplit_3 runex19_fieldsplit_4 runex19_7 runex19_8 runex19_9 \
                                  runex19_10 runex19_14 runex19_15 runex19_15a runex19_16 runex19_16a ex19.rm \
                                  ex22.PETSc runex22 ex22.rm ex18.PETSc ex18.rm ex19.PETSc ex19.rm ex21.PETSc runex21 ex21.rm \
                                  ex23.PETSc runex23 ex23.rm ex24.PETSc ex24.rm   ex25.PETSc runex25 runex25_2 \
@@ -678,7 +717,7 @@ TESTEXAMPLES_13		       =
 TESTEXAMPLES_MATLAB_ENGINE     = ex5.PETSc runex5_11 runex5_13 ex5.rm
 TESTEXAMPLES_AMS	       = 
 TESTEXAMPLES_ADIFOR	       = ex5f.PETSc runex5f_2 ex5f.rm
-TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_3 runex19_4 ex19.rm 
+TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_3 runex19_4 runex19_fieldsplit_mumps runex19_fieldsplit_redundant ex19.rm 
 TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu runex19_superlu_equil ex19.rm 
 TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm 
 TESTEXAMPLES_CUDA              = ex19.PETSc runex19_cuda ex19.rm 

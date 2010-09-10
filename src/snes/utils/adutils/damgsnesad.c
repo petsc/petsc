@@ -1405,7 +1405,7 @@ PetscErrorCode DMMGSolveFAS_NCG(DMMG *dmmg, PetscInt level)
       PetscTruth ismin;
       beta=0;
       if (++snes->numFailures >= snes->maxFailures) {
-      snes->reason = SNES_DIVERGED_LS_FAILURE;
+      snes->reason = SNES_DIVERGED_LINE_SEARCH;
         ierr = SNESLSCheckLocalMin_Private(snes->jacobian,F,W,fnorm,&ismin);CHKERRQ(ierr);
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
         break;

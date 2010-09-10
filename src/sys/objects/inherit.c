@@ -179,7 +179,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectDestroyOptionsHandlers(PetscObject 
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectReference"
-/*@C
+/*@
    PetscObjectReference - Indicates to any PetscObject that it is being
    referenced by another PetscObject. This increases the reference
    count for that object by one.
@@ -204,7 +204,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectReference(PetscObject obj)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectGetReference"
-/*@C
+/*@
    PetscObjectGetReference - Gets the current reference count for 
    any PETSc object.
 

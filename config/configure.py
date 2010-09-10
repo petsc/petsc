@@ -1,11 +1,32 @@
 #!/usr/bin/env python
-import os
-import sys
+import os, sys
 import commands
 # to load ~/.pythonrc.py before inserting correct BuildSystem to path
 import user
 extraLogs = []
 petsc_arch = ''
+
+import urllib
+import tarfile
+
+def untar(tar, path = '.', leading = ''):
+  if leading:
+    entries = [t.name for t in tar.getmembers()]
+    prefix = os.path.commonprefix(entries)
+    if prefix:
+      for tarinfo in tar.getmembers():
+        tail = tarinfo.name.split(prefix, 1)[1]
+        tarinfo.name = os.path.join(leading, tail)
+  for tarinfo in tar.getmembers():
+    tar.extract(tarinfo, path)
+  return
+
+def downloadPackage(url, filename, targetDirname):
+  '''Download the tarball for a package at url, save it as filename, and untar it into targetDirname'''
+  filename, headers = urllib.urlretrieve(url, filename)
+  tar = tarfile.open(filename, 'r:gz')
+  untar(tar, targetDirname, leading = filename.split('.')[0])
+  return
 
 # Use en_US as language so that BuildSystem parses compiler messages in english
 if 'LC_LOCAL' in os.environ and os.environ['LC_LOCAL'] != '' and os.environ['LC_LOCAL'] != 'en_US' and os.environ['LC_LOCAL']!= 'en_US.UTF-8': os.environ['LC_LOCAL'] = 'en_US.UTF-8'
@@ -234,27 +255,9 @@ def petsc_configure(configure_options):
   if not os.path.isdir(bsDir):
     print '==============================================================================='
     print '''++ Could not locate BuildSystem in %s.''' % configDir
-    print '''++ Downloading it using "hg clone http://hg.mcs.anl.gov/petsc/BuildSystem %s"''' % bsDir
+    print '''++ Downloading it from http://petsc.cs.iit.edu/petsc/BuildSystem'''
     print '==============================================================================='
-    (status,output) = commands.getstatusoutput('hg clone http://petsc.cs.iit.edu/petsc/BuildSystem '+ bsDir)
-    if status:
-      if output.find('ommand not found') >= 0:
-        print '==============================================================================='
-        print '''** Unable to locate hg (Mercurial) to download BuildSystem; make sure hg is'''
-        print '''** in your path or manually copy BuildSystem to $PETSC_DIR/config/BuildSystem'''
-        print '''**  from a machine where you do have hg installed and can clone BuildSystem. '''
-        print '==============================================================================='
-      elif output.find('Cannot resolve host') >= 0:
-        print '==============================================================================='
-        print '''** Unable to download BuildSystem. You must be off the network.'''
-        print '''** Connect to the internet and run ./configure again.'''
-        print '==============================================================================='
-      else:
-        print '==============================================================================='
-        print '''** Unable to download BuildSystem. Please send this message to petsc-maint@mcs.anl.gov'''
-        print '==============================================================================='
-      print output
-      sys.exit(3)
+    downloadPackage('http://petsc.cs.iit.edu/petsc/BuildSystem/archive/tip.tar.gz', 'BuildSystem.tar.gz', configDir)
       
   sys.path.insert(0, bsDir)
   sys.path.insert(0, configDir)

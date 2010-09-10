@@ -148,8 +148,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA da)
   da->m = size;
   m     = da->m;
 
-  if (M < m)     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"More processors than data points! %D %D",m,M);
-  if ((M-1) < s) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array is too small for stencil! %D %D",M-1,s);
+  if (s > 0) {
+    /* if not communicating data then should be ok to have nothing on some processes */
+    if (M < m)     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"More processes than data points! %D %D",m,M);
+    if ((M-1) < s) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array is too small for stencil! %D %D",M-1,s);
+  }
 
   /* 
      Determine locally owned region 

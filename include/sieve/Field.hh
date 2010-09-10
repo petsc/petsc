@@ -1737,7 +1737,7 @@ namespace ALE {
   public: // Restriction and Update
     // Zero entries
     void zero() {
-      this->set(0.0);
+      this->set((value_type) 0.0);
     };
     void zeroWithBC() {
       memset(this->_array, 0, this->sizeWithBC()* sizeof(value_type));

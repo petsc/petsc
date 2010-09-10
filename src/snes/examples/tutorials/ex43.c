@@ -42,7 +42,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&ctx.p,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-max_snes_solves",&max_snes_solves,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-snes_steps_per_solve",&snes_steps_per_solve,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-criteria_reduce",&ctx.p,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-criteria_reduce",&criteria_reduce,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context

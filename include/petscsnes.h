@@ -232,16 +232,16 @@ typedef enum {/* converged */
               SNES_CONVERGED_FNORM_RELATIVE    =  3, /* ||F|| < rtol*||F_initial|| */
               SNES_CONVERGED_PNORM_RELATIVE    =  4, /* Newton computed step size small; || delta x || < stol */
               SNES_CONVERGED_ITS               =  5, /* maximum iterations reached */
-              SNES_CONVERGED_TR_DELTA          =  7,
+              SNES_CONVERGED_TR_DELTA            =  7,
               /* diverged */
-              SNES_DIVERGED_FUNCTION_DOMAIN    = -1, /* the new x location passed the function is not in the domain of F */
-              SNES_DIVERGED_FUNCTION_COUNT     = -2,  
-              SNES_DIVERGED_LINEAR_SOLVE       = -3, /* the linear solve failed */
-              SNES_DIVERGED_FNORM_NAN          = -4, 
-              SNES_DIVERGED_MAX_IT             = -5,
-              SNES_DIVERGED_LS_FAILURE         = -6, /* the line search failed */ 
-              SNES_DIVERGED_LOCAL_MIN          = -8, /* || J^T b || is small, implies converged to local minimum of F() */
-              SNES_CONVERGED_ITERATING         =  0} SNESConvergedReason;
+              SNES_DIVERGED_FUNCTION_DOMAIN     = -1, /* the new x location passed the function is not in the domain of F */
+              SNES_DIVERGED_FUNCTION_COUNT      = -2,  
+              SNES_DIVERGED_LINEAR_SOLVE        = -3, /* the linear solve failed */
+              SNES_DIVERGED_FNORM_NAN           = -4, 
+              SNES_DIVERGED_MAX_IT              = -5,
+              SNES_DIVERGED_LINE_SEARCH         = -6, /* the line search failed */ 
+              SNES_DIVERGED_LOCAL_MIN           = -8, /* || J^T b || is small, implies converged to local minimum of F() */
+              SNES_CONVERGED_ITERATING          =  0} SNESConvergedReason;
 extern const char **SNESConvergedReasons;
 
 /*MC
@@ -302,7 +302,7 @@ M*/
 M*/
 
 /*MC
-     SNES_DIVERGED_LS_FAILURE - The line search has failed. This only occurs for a SNESType of SNESLS
+     SNES_DIVERGED_LINE_SEARCH - The line search has failed. This only occurs for a SNESType of SNESLS
 
    Level: beginner
 
