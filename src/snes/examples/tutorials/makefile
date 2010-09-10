@@ -471,10 +471,22 @@ runex19_fieldsplit_4:
 	   else echo "Possible problem with ex19_fieldsplit_4, diffs above"; fi; \
 	   ${RM} -f ex19_6.tmp
 
-runex19_fieldsplit_5:
+runex19_fieldsplit_mumps:
 	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short -preload off -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_factor_mat_solver_package mumps > ex19_6.tmp 2>&1; \
 	   if (${DIFF} output/ex19_fieldsplit_5.out ex19_6.tmp) then true; \
 	   else echo "Possible problem with ex19_fieldsplit_5, diffs above"; fi; \
+	   ${RM} -f ex19_6.tmp
+
+runex19_fieldsplit_hypre:
+	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_type hypre -fieldsplit_1_pc_hypre_type boomeramg -snes_monitor_short -ksp_monitor_short -preload off > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fieldsplit_hypre.out ex19_6.tmp) then true; \
+	   else echo "Possible problem with ex19_fieldsplit_hypre, diffs above"; fi; \
+	   ${RM} -f ex19_6.tmp
+
+runex19_fieldsplit_redundant:
+	-@${MPIEXEC} -n 4 ./ex19 -dmmg_nlevels 1 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_type redundant -fieldsplit_1_pc_redundant_number 2 -fieldsplit_1_redundant_pc_factor_mat_solver_package mumps -snes_monitor_short -ksp_monitor_short -preload off > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fieldsplit_redundant.out ex19_6.tmp) then true; \
+	   else echo "Possible problem with ex19_fieldsplit_redundant, diffs above"; fi; \
 	   ${RM} -f ex19_6.tmp
 
 runex19_7: 
@@ -705,7 +717,7 @@ TESTEXAMPLES_13		       =
 TESTEXAMPLES_MATLAB_ENGINE     = ex5.PETSc runex5_11 runex5_13 ex5.rm
 TESTEXAMPLES_AMS	       = 
 TESTEXAMPLES_ADIFOR	       = ex5f.PETSc runex5f_2 ex5f.rm
-TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_3 runex19_4 ex19.rm 
+TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_3 runex19_4 runex19_fieldsplit_mumps runex19_fieldsplit_redundant ex19.rm 
 TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu runex19_superlu_equil ex19.rm 
 TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm 
 TESTEXAMPLES_CUDA              = ex19.PETSc runex19_cuda ex19.rm 

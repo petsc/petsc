@@ -583,10 +583,13 @@ class PETScMaker(script.Script):
    self.setup()
    if rootDir is None:
      rootDir = self.argDB['rootDir']
-   srcdirs = [os.path.join(rootDir,'include', os.path.join(rootDir,'src'))]
+   if rootDir == self.petscdir.dir:
+     srcdirs = [os.path.join(rootDir,'include', os.path.join(rootDir,'src'))]
+   else:
+     srcdirs = [rootDir]
    if not any(map(self.checkDir,srcdirs)):
      self.logPrint('Nothing to be done')
-   if rootDir == os.environ['PETSC_DIR']:
+   if rootDir == self.petscdir.dir:
      library = os.path.join(self.petscdir.dir, self.arch.arch, 'lib', 'libpetsc')   
      lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
      if os.path.isfile(lib):

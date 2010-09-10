@@ -910,9 +910,9 @@ namespace ALE {
         ierr = MPI_Recv(sizes,  2, MPIU_INT,    0, 1, section.comm(), &status);CHKERRXX(ierr);
         section.setChart(typename IConstantSection<Point_, Value_>::chart_type(sizes[0], sizes[1]));
         ierr = MPI_Recv(values, 2, MPIU_SCALAR, 0, 1, section.comm(), &status);CHKERRXX(ierr);
-        value = values[0];
+        value = (value_type) values[0];
         section.updatePoint(min, &value);
-        section.setDefaultValue(values[1]);
+        section.setDefaultValue((value_type) values[1]);
       }
     };
     template<typename Point_, typename Value_, int fiberDim>
@@ -1052,7 +1052,7 @@ namespace ALE {
           const int fiberDim = section.getFiberDimension(p);
 
           for(int i = 0; i < fiberDim; ++i, ++off) {
-            pvalues[i] = values[off];
+            pvalues[i] = (value_type) values[off];
           }
           section.updatePoint(p, pvalues);
         }
@@ -1120,7 +1120,7 @@ namespace ALE {
           const int fiberDim = section.getFiberDimension(p);
 
           for(int i = 0; i < fiberDim; ++i, ++off) {
-            pvalues[i] = values[off];
+            pvalues[i] = (value_type) values[off];
           }
           section.updatePoint(p, pvalues);
         }
