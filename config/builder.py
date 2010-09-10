@@ -438,7 +438,7 @@ class PETScMaker(script.Script):
    '''
    if self.sharedLibraries.useShared:
      libDir = os.path.join(self.petscdir.dir, self.arch.arch, 'lib')
-     tmpDir = tempfile.mkdtemp()
+     tmpDir = tempfile.mkdtemp('petsc-' + self.arch.arch + '-')
      self.logPrint('Making shared libraries in '+libDir)
      sharedLib = os.path.join(libDir, os.path.splitext(library)[0]+'.'+self.setCompilers.sharedLibraryExt)
      archive   = os.path.join(libDir, os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX)
