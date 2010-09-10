@@ -3,12 +3,10 @@
 
 #include "private/snesimpl.h"
 
-#ifndef SNESPICARD
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
 #define SNESPICARD "picard"
-#endif
-
-#if (PETSC_VERSION_(3,0,0))
-#define SNESPICARD "picard"
+#define SNES_DIVERGED_LINE_SEARCH SNES_DIVERGED_LS_FAILURE
 #endif
 
 #if (PETSC_VERSION_(3,0,0))

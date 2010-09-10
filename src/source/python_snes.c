@@ -86,6 +86,11 @@ typedef struct {
 
 /* -------------------------------------------------------------------------- */
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#define SNES_DIVERGED_LINE_SEARCH SNES_DIVERGED_LS_FAILURE
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "SNESPreSolve_Python"
 static PetscErrorCode SNESPreSolve_Python(SNES snes)
@@ -274,7 +279,7 @@ static PetscErrorCode SNESLineSearch_Python(SNES snes,Vec x,Vec y, Vec F,PetscTr
     if (++snes->numFailures >= snes->maxFailures) {
       ierr = PetscInfo2(snes,"iter=%D, reached maximum allowed line search failures %D\n",
                         snes->iter,snes->maxFailures);CHKERRQ(ierr);
-      snes->reason = SNES_DIVERGED_LS_FAILURE;
+      snes->reason = SNES_DIVERGED_LINE_SEARCH;
     } else *succeed = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
@@ -598,14 +603,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Python(SNES snes)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-#if defined(vec_sol_update)
-#undef vec_sol_update
-#endif
-
-#if defined(vec_rhs)
-#undef vec_rhs
-#endif
 
 /* -------------------------------------------------------------------------- */
 
