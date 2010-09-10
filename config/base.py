@@ -85,6 +85,8 @@ class Configure(script.Script):
     return
 
   def __del__(self):
+    if not os.path.isdir(self.tmpDir):
+      raise RuntimeError('How the hell could my tmpDir disappear?')
     shutil.rmtree(self.tmpDir)
     return
 
