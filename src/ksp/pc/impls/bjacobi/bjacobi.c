@@ -1263,7 +1263,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
   PC_BJacobi_Multiproc *mpjac = (PC_BJacobi_Multiproc*)jac->data;
   PetscErrorCode       ierr;
   PetscInt             m,n; 
-  MPI_Comm             comm = ((PetscObject)pc)->comm,subcomm;
+  MPI_Comm             comm = ((PetscObject)pc)->comm,subcomm=0;
   const char           *prefix;
 
   PetscFunctionBegin;
@@ -1322,6 +1322,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     /* destroy old matrix blocks, then get new matrix blocks */
     if (mpjac->submats) {
       ierr = MatDestroy(mpjac->submats);CHKERRQ(ierr);
+      subcomm = mpjac->psubcomm->comm;
       ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,&mpjac->submats);CHKERRQ(ierr);
       ierr = KSPSetOperators(mpjac->ksp,mpjac->submats,mpjac->submats,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     }
