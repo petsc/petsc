@@ -26,13 +26,14 @@ __credits__   = "PETSc Team <petsc-maint@mcs.anl.gov>"
 
 # --------------------------------------------------------------------
 
-def init(args=None, arch=None):
+def init(args=None, arch=None, comm=None):
     """
     Initialize PETSc.
 
     :Parameters:
       - `args`: command-line arguments, usually the 'sys.argv' list.
       - `arch`: specific configuration to use.
+      - `comm`: MPI commmunicator
 
     .. note:: This function should be called only once, typically at
        the very beginning of the bootstrap script of an application.
@@ -40,7 +41,7 @@ def init(args=None, arch=None):
     import petsc4py.lib
     PETSc = petsc4py.lib.ImportPETSc(arch)
     args  = petsc4py.lib.getInitArgs(args)
-    PETSc._initialize(args)
+    PETSc._initialize(args, comm)
 
 # --------------------------------------------------------------------
 
