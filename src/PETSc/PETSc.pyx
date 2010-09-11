@@ -313,12 +313,15 @@ cdef void finalize() nogil:
                 "[error code: %d]\n", ierr)
     # and we are done, see you later !!
 
-cdef int initialize(object args) except -1:
+cdef int initialize(object args, object comm) except -1:
     if (<int>PetscInitializeCalled): return 1
     if (<int>PetscFinalizeCalled):   return 0
     # allocate command line arguments
     global PyPetsc_Argc; global PyPetsc_Argv;
     getinitargs(args, &PyPetsc_Argc, &PyPetsc_Argv)
+    # communicator
+    global PETSC_COMM_WORLD
+    PETSC_COMM_WORLD = def_Comm(comm, PETSC_COMM_WORLD)
     # initialize PETSc
     CHKERR( PetscInitialize(&PyPetsc_Argc, &PyPetsc_Argv, NULL, NULL) )
     # install custom error handler
@@ -375,7 +378,7 @@ cdef int register(char path[]) except -1:
 
 # --------------------------------------------------------------------
 
-def _initialize(args=None):
+def _initialize(args=None, comm=None):
     global tracebacklist
     Error._traceback_ = tracebacklist
     global PetscError
@@ -384,7 +387,7 @@ def _initialize(args=None):
     global __file__
     cdef bytes filename = __file__.encode()
     cdef char* path = filename
-    cdef int ready = initialize(args)
+    cdef int ready = initialize(args, comm)
     if ready: register(path)
     #
     global __COMM_SELF__, __COMM_WORLD__
