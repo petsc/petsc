@@ -131,17 +131,17 @@ class Configure(config.base.Configure):
     return 0
   isGNU = staticmethod(isGNU)
 
-  def isGfortran450(compiler):
-    '''returns true if the compiler is gfortran450'''
+  def isGfortran45x(compiler):
+    '''returns true if the compiler is gfortran-4.5.x'''
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version')
       output = output +  error
-      if output.find('GNU Fortran (GCC) 4.5.0') >=0:
+      if output.find('GNU Fortran (GCC) 4.5.') >=0:
         return 1
     except RuntimeError:
       pass
     return 0
-  isGfortran450 = staticmethod(isGfortran450)
+  isGfortran45x = staticmethod(isGfortran45x)
 
 
   def isG95(compiler):
@@ -871,7 +871,7 @@ class Configure(config.base.Configure):
       languages.append('FC')
     for language in languages:
       self.pushLanguage(language)
-      for testFlag in ['-PIC', '-fPIC', '-KPIC']:
+      for testFlag in ['-PIC', '-fPIC', '-KPIC','-qpic']:
         try:
           self.framework.logPrint('Trying '+language+' compiler flag '+testFlag)
           if not self.checkLinkerFlag(testFlag):
@@ -987,13 +987,16 @@ class Configure(config.base.Configure):
   
   def checkArchiver(self):
     '''Check that the archiver exists and can make a library usable by the compiler'''
+    objName    = os.path.join(self.tmpDir, 'conf1.o')
+    arcUnix    = os.path.join(self.tmpDir, 'libconf1.a')
+    arcWindows = os.path.join(self.tmpDir, 'libconf1.lib')
     def checkArchive(command, status, output, error):
       if error or status:
         self.framework.logPrint('Possible ERROR while running archiver: '+output)
         if status: self.framework.logPrint('ret = '+str(status))
         if error: self.framework.logPrint('error message = {'+error+'}')
-        if os.path.isfile('conf1.o'):
-          os.remove('conf1.o')
+        if os.path.isfile(objName):
+          os.remove(objName)
         raise RuntimeError('Archiver is not functional')
       return
     def checkRanlib(command, status, output, error):
@@ -1001,8 +1004,8 @@ class Configure(config.base.Configure):
         self.framework.logPrint('Possible ERROR while running ranlib: '+output)
         if status: self.framework.logPrint('ret = '+str(status))
         if error: self.framework.logPrint('error message = {'+error+'}')
-        if os.path.isfile('libconf1.a'):
-          os.remove('libconf1.a')
+        if os.path.isfile(arcUnix):
+          os.remove(arcUnix)
         raise RuntimeError('Ranlib is not functional with your archiver.  Try --with-ranlib=true if ranlib is unnecessary.')
       return
     oldLibs = self.LIBS
@@ -1010,33 +1013,33 @@ class Configure(config.base.Configure):
     for (archiver, arflags, ranlib) in self.generateArchiverGuesses():
       if not self.checkCompile('', 'int foo(int a) {\n  return a+1;\n}\n\n', cleanup = 0, codeBegin = '', codeEnd = ''):
         raise RuntimeError('Compiler is not functional')
-      if os.path.isfile('conf1.o'):
-        os.remove('conf1.o')
-      os.rename(self.compilerObj, 'conf1.o')
+      if os.path.isfile(objName):
+        os.remove(objName)
+      os.rename(self.compilerObj, objName)
       if self.getExecutable(archiver, getFullPath = 1, resultName = 'AR'):
         if self.getExecutable(ranlib, getFullPath = 1, resultName = 'RANLIB'):
           arext = 'a'
           try:
-            (output, error, status) = config.base.Configure.executeShellCommand(self.AR+' '+arflags+' libconf1.'+arext+' conf1.o', checkCommand = checkArchive, log = self.framework.log)
-            (output, error, status) = config.base.Configure.executeShellCommand(self.RANLIB+' libconf1.'+arext, checkCommand = checkRanlib, log = self.framework.log)
+            (output, error, status) = config.base.Configure.executeShellCommand(self.AR+' '+arflags+' '+arcUnix+' '+objName, checkCommand = checkArchive, log = self.framework.log)
+            (output, error, status) = config.base.Configure.executeShellCommand(self.RANLIB+' '+arcUnix, checkCommand = checkRanlib, log = self.framework.log)
           except RuntimeError, e:
             self.logPrint(str(e))
             continue
-          self.LIBS = '-L. -lconf1 ' + oldLibs
+          self.LIBS = '-L'+self.tmpDir+' -lconf1 ' + oldLibs
           success =  self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
-          os.rename('libconf1.a','libconf1.lib')
+          os.rename(arcUnix, arcWindows)
           if not success:
             arext = 'lib'
             success = self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
-            os.remove('libconf1.lib')
+            os.remove(arcWindows)
             if success:
               break
           else:
-            os.remove('libconf1.lib')
+            os.remove(arcWindows)
             break
     else:
-      if os.path.isfile('conf1.o'):
-        os.remove('conf1.o')
+      if os.path.isfile(objName):
+        os.remove(objName)
       self.LIBS = oldLibs
       self.popLanguage()
       raise RuntimeError('Could not find a suitable archiver.  Use --with-ar to specify an archiver.')
@@ -1044,7 +1047,7 @@ class Configure(config.base.Configure):
     self.AR_LIB_SUFFIX = arext
     self.framework.addMakeMacro('AR_FLAGS', self.AR_FLAGS)
     self.addMakeMacro('AR_LIB_SUFFIX', self.AR_LIB_SUFFIX)
-    os.remove('conf1.o')
+    os.remove(objName)
     self.LIBS = oldLibs
     self.popLanguage()
     return
@@ -1079,6 +1082,7 @@ class Configure(config.base.Configure):
       yield (self.CXX, ['-shared'], 'so')
     # C compiler default
     yield (self.CC, ['-shared'], 'so')
+    yield (self.CC, ['-qmkshrobj'], 'so')
     # Solaris default
     if Configure.isSolaris():
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
@@ -1107,16 +1111,17 @@ class Configure(config.base.Configure):
         self.sharedLibraryExt = ext
         # using printf appears to correctly identify non-pic code on X86_64
         if self.checkLink(includes = '#include <stdio.h>\nint '+testMethod+'(void) {printf("hello");\nreturn 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1):
+          oldLib  = self.linkerObj
           oldLibs = self.LIBS
-          self.LIBS += ' -L. -lconftest'
+          self.LIBS += ' -L'+self.tmpDir+' -lconftest'
           if self.checkLink(includes = 'int foo(void);', body = 'int ret = foo();\nif(ret);'):
-            os.remove('libconftest.'+self.sharedLibraryExt)
+            os.remove(oldLib)
             self.LIBS = oldLibs
             self.sharedLibraries = 1
             self.logPrint('Using shared linker '+self.sharedLinker+' with flags '+str(self.sharedLibraryFlags)+' and library extension '+self.sharedLibraryExt)
             break
+          os.remove(oldLib)
           self.LIBS = oldLibs
-          os.remove('libconftest.'+self.sharedLibraryExt)
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
         del self.LD_SHARED 
         del self.sharedLinker
@@ -1269,8 +1274,9 @@ class Configure(config.base.Configure):
         self.dynamicLibraryExt = ext
         testMethod = 'foo'
         if self.checkLink(includes = 'int '+testMethod+'(void) {return 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 'dynamic'):
+          oldLib  = self.linkerObj
           code = '''
-void *handle = dlopen("./libconftest.so", 0);
+void *handle = dlopen("%s", 0);
 int (*foo)(void) = (int (*)(void)) dlsym(handle, "foo");
 
 if (!foo) {
@@ -1285,13 +1291,13 @@ if (dlclose(handle)) {
   printf("Could not close library\\n");
   return -1;
 }
-'''
+''' % oldLib
           if self.checkLink(includes = '#include<dlfcn.h>', body = code):
-            os.remove('libconftest.'+self.dynamicLibraryExt)
+            os.remove(oldLib)
             self.dynamicLibraries = 1
             self.logPrint('Using dynamic linker '+self.dynamicLinker+' with flags '+str(self.dynamicLibraryFlags)+' and library extension '+self.dynamicLibraryExt)
             break
-          os.remove('libconftest.'+self.dynamicLibraryExt)
+          os.remove(oldLib)
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
         del self.dynamicLinker
     return

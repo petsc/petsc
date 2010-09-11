@@ -106,7 +106,7 @@ class Configure(config.base.Configure):
     removedashl = 0
     for j in libs:
       # do not remove duplicate -l, because there is a tiny chance that order may matter
-      if j in newlibs and not j.startswith('-l'): continue
+      if j in newlibs and not ( j.startswith('-l') or j == '-framework') : continue
       # handle special case of -framework frameworkname
       if j == '-framework': removedashl = 1
       elif removedashl:
@@ -274,6 +274,7 @@ extern "C" {
     self.setCompilers.LIBS = ' '+self.toString(libraries)+' '+self.setCompilers.LIBS
 
     # Make a library which calls initFunction(), and returns checkFunction()
+    lib1Name = os.path.join(self.tmpDir, 'lib1.'+self.setCompilers.sharedLibraryExt)
     if noCheckArg:
       checkCode = 'isInitialized = '+checkFunction+'();'
     else:
@@ -297,9 +298,10 @@ int init(int argc,  char *argv[]) {
       self.setCompilers.LIBS = oldFlags
       raise RuntimeError('Could not complete shared library check')
     if os.path.isfile(configObj.compilerObj): os.remove(configObj.compilerObj)
-    os.rename(configObj.linkerObj, 'lib1.so')
+    os.rename(configObj.linkerObj, lib1Name)
 
     # Make a library which calls checkFunction()
+    lib2Name = os.path.join(self.tmpDir, 'lib2.'+self.setCompilers.sharedLibraryExt)
     codeBegin = '''
 #ifdef __cplusplus
 extern "C"
@@ -321,7 +323,7 @@ int checkInit(void) {
       raise RuntimeError('Could not complete shared library check')
       return 0
     if os.path.isfile(configObj.compilerObj): os.remove(configObj.compilerObj)
-    os.rename(configObj.linkerObj, 'lib2.so')
+    os.rename(configObj.linkerObj, lib2Name)
 
     self.setCompilers.LIBS = oldFlags
 
@@ -344,7 +346,7 @@ int checkInit(void) {
   int (*init)(int, char **);
   int (*checkInit)(void);
 
-  lib = dlopen("./lib1.so", RTLD_LAZY);
+  lib = dlopen("'''+lib1Name+'''", RTLD_LAZY);
   if (!lib) {
     fprintf(stderr, "Could not open lib1.so: %s\\n", dlerror());
     exit(1);
@@ -358,7 +360,7 @@ int checkInit(void) {
     fprintf(stderr, "Could not initialize library\\n");
     exit(1);
   }
-  lib = dlopen("./lib2.so", RTLD_LAZY);
+  lib = dlopen("'''+lib2Name+'''", RTLD_LAZY);
   if (!lib) {
     fprintf(stderr, "Could not open lib2.so: %s\\n", dlerror());
     exit(1);
@@ -379,8 +381,8 @@ int checkInit(void) {
     if self.checkRun(defaultIncludes, body, defaultArg = defaultArg, executor = executor):
       isShared = 1
     self.setCompilers.LIBS = oldLibs
-    if os.path.isfile('lib1.so') and self.framework.doCleanup: os.remove('lib1.so')
-    if os.path.isfile('lib2.so') and self.framework.doCleanup: os.remove('lib2.so')
+    if os.path.isfile(lib1Name) and self.framework.doCleanup: os.remove(lib1Name)
+    if os.path.isfile(lib2Name) and self.framework.doCleanup: os.remove(lib2Name)
     if isShared:
       self.framework.logPrint('Library was shared')
     else:

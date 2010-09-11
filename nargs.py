@@ -25,12 +25,14 @@ in order to declare the type of that option.
 Inputs which cannot be converted to the correct type will cause TypeError, those failing validation
 tests will cause ValueError.
 '''
-  def __init__(self, key, value = None, help = '', isTemporary = 0):
-    self.key = key
-    if not value is None:
-      self.setValue(value)
+  def __init__(self, key, value = None, help = '', isTemporary = False, deprecated = False):
+    self.key         = key
     self.help        = help
     self.isTemporary = isTemporary
+    self.deprecated  = False
+    if not value is None:
+      self.setValue(value)
+    self.deprecated  = deprecated
     return
 
   def isValueSet(self):
@@ -163,15 +165,23 @@ tests will cause ValueError.
           print str(e)
     return self.value
 
+  def checkKey(self):
+    if self.deprecated:
+      if isinstance(self.deprecated, str):
+        raise KeyError('Deprecated option '+self.key+' should be '+self.deprecated)
+      raise KeyError('Deprecated option '+self.key)
+    return
+
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
+    self.checkKey()
     self.value = value
     return
 
 class ArgBool(Arg):
   '''Arguments that represent boolean values'''
-  def __init__(self, key, value = None, help = '', isTemporary = 0):
-    Arg.__init__(self, key, value, help, isTemporary)
+  def __init__(self, key, value = None, help = '', isTemporary = 0, deprecated = False):
+    Arg.__init__(self, key, value, help, isTemporary, deprecated)
     return
 
   def getEntryPrompt(self):
@@ -179,6 +189,7 @@ class ArgBool(Arg):
 
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
+    self.checkKey()
     try:
       if   value == 'no':    value = 0
       elif value == 'yes':   value = 1
@@ -194,8 +205,8 @@ class ArgBool(Arg):
 
 class ArgFuzzyBool(Arg):
   '''Arguments that represent boolean values of an extended set'''
-  def __init__(self, key, value = None, help = '', isTemporary = 0):
-    Arg.__init__(self, key, value, help, isTemporary)
+  def __init__(self, key, value = None, help = '', isTemporary = 0, deprecated = False):
+    Arg.__init__(self, key, value, help, isTemporary, deprecated)
     return
 
   def valueName(self, value):
@@ -219,6 +230,7 @@ class ArgFuzzyBool(Arg):
 
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
+    self.checkKey()
     try:
       if   value == '0':        value = 0
       elif value == '1':        value = 1
@@ -238,10 +250,10 @@ class ArgFuzzyBool(Arg):
 
 class ArgInt(Arg):
   '''Arguments that represent integer numbers'''
-  def __init__(self, key, value = None, help = '', min = -2147483647L, max = 2147483648L, isTemporary = 0):
+  def __init__(self, key, value = None, help = '', min = -2147483647L, max = 2147483648L, isTemporary = 0, deprecated = False):
     self.min = min
     self.max = max
-    Arg.__init__(self, key, value, help, isTemporary)
+    Arg.__init__(self, key, value, help, isTemporary, deprecated)
     return
 
   def getEntryPrompt(self):
@@ -249,6 +261,7 @@ class ArgInt(Arg):
 
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
+    self.checkKey()
     try:
       value = int(value)
     except:
@@ -260,10 +273,10 @@ class ArgInt(Arg):
 
 class ArgReal(Arg):
   '''Arguments that represent floating point numbers'''
-  def __init__(self, key, value = None, help = '', min = -1.7976931348623157e308, max = 1.7976931348623157e308, isTemporary = 0):
+  def __init__(self, key, value = None, help = '', min = -1.7976931348623157e308, max = 1.7976931348623157e308, isTemporary = 0, deprecated = False):
     self.min = min
     self.max = max
-    Arg.__init__(self, key, value, help, isTemporary)
+    Arg.__init__(self, key, value, help, isTemporary, deprecated)
     return
 
   def getEntryPrompt(self):
@@ -271,6 +284,7 @@ class ArgReal(Arg):
 
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
+    self.checkKey()
     try:
       value = float(value)
     except:
@@ -282,9 +296,9 @@ class ArgReal(Arg):
 
 class ArgDir(Arg):
   '''Arguments that represent directories'''
-  def __init__(self, key, value = None, help = '', mustExist = 1, isTemporary = 0):
+  def __init__(self, key, value = None, help = '', mustExist = 1, isTemporary = 0, deprecated = False):
     self.mustExist = mustExist
-    Arg.__init__(self, key, value, help, isTemporary)
+    Arg.__init__(self, key, value, help, isTemporary, deprecated)
     return
 
   def getEntryPrompt(self):
@@ -309,6 +323,7 @@ class ArgDir(Arg):
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     import os
+    self.checkKey()
     # Should check whether it is a well-formed path
     if not isinstance(value, str):
       raise TypeError('Invalid directory: '+str(value)+' for key '+str(self.key))
@@ -320,9 +335,9 @@ class ArgDir(Arg):
 
 class ArgDirList(Arg):
   '''Arguments that represent directory lists'''
-  def __init__(self, key, value = None, help = '', mustExist = 1, isTemporary = 0):
+  def __init__(self, key, value = None, help = '', mustExist = 1, isTemporary = 0, deprecated = False):
     self.mustExist = mustExist
-    Arg.__init__(self, key, value, help, isTemporary)
+    Arg.__init__(self, key, value, help, isTemporary, deprecated)
     return
 
   def getEntryPrompt(self):
@@ -347,6 +362,7 @@ class ArgDirList(Arg):
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     import os
+    self.checkKey()
     if not isinstanceof(value, list):
       value = [value]
     # Should check whether it is a well-formed path
@@ -362,9 +378,9 @@ class ArgDirList(Arg):
 
 class ArgLibrary(Arg):
   '''Arguments that represent libraries'''
-  def __init__(self, key, value = None, help = '', mustExist = 1, isTemporary = 0):
+  def __init__(self, key, value = None, help = '', mustExist = 1, isTemporary = 0, deprecated = False):
     self.mustExist = mustExist
-    Arg.__init__(self, key, value, help, isTemporary)
+    Arg.__init__(self, key, value, help, isTemporary, deprecated)
     return
 
   def getEntryPrompt(self):
@@ -389,6 +405,7 @@ class ArgLibrary(Arg):
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     import os
+    self.checkKey()
     # Should check whether it is a well-formed path and an archive or shared object
     if self.mustExist:
       if not isinstance(value, list):
@@ -398,9 +415,9 @@ class ArgLibrary(Arg):
 
 class ArgExecutable(Arg):
   '''Arguments that represent executables'''
-  def __init__(self, key, value = None, help = '', mustExist = 1, isTemporary = 0):
+  def __init__(self, key, value = None, help = '', mustExist = 1, isTemporary = 0, deprecated = False):
     self.mustExist = mustExist
-    Arg.__init__(self, key, value, help, isTemporary)
+    Arg.__init__(self, key, value, help, isTemporary, deprecated)
     return
 
   def getEntryPrompt(self):
@@ -430,6 +447,7 @@ class ArgExecutable(Arg):
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     import os
+    self.checkKey()
     # Should check whether it is a well-formed path
     if self.mustExist:
       index = value.find(' ')
@@ -451,16 +469,17 @@ class ArgExecutable(Arg):
 
 class ArgString(Arg):
   '''Arguments that represent strings satisfying a given regular expression'''
-  def __init__(self, key, value = None, help = '', regExp = None, isTemporary = 0):
+  def __init__(self, key, value = None, help = '', regExp = None, isTemporary = 0, deprecated = False):
     self.regExp = regExp
     if self.regExp:
       import re
       self.re = re.compile(self.regExp)
-    Arg.__init__(self, key, value, help, isTemporary)
+    Arg.__init__(self, key, value, help, isTemporary, deprecated)
     return
 
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
+    self.checkKey()
     if self.regExp and not self.re.match(value):
       raise ValueError('Invalid string '+str(value)+'. You must give a string satisfying "'+str(self.regExp)+'"'+' for key '+str(self.key))
     self.value = value
@@ -468,8 +487,8 @@ class ArgString(Arg):
 
 class ArgDownload(Arg):
   '''Arguments that represent software downloads'''
-  def __init__(self, key, value = None, help = '', isTemporary = 0):
-    Arg.__init__(self, key, value, help, isTemporary)
+  def __init__(self, key, value = None, help = '', isTemporary = 0, deprecated = False):
+    Arg.__init__(self, key, value, help, isTemporary, deprecated)
     return
 
   def valueName(self, value):
@@ -492,6 +511,7 @@ class ArgDownload(Arg):
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     import os
+    self.checkKey()
     try:
       if   value == '0':        value = 0
       elif value == '1':        value = 1

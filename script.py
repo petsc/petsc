@@ -193,7 +193,7 @@ class Script(logger.Logger):
     if status: raise RuntimeError('Could not execute \''+command+'\':\n'+output+error)
   defaultCheckCommand = staticmethod(defaultCheckCommand)
 
-  def executeShellCommand(command, checkCommand = None, timeout = 600.0, log = None):
+  def executeShellCommand(command, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0):
     '''Execute a shell command returning the output, and optionally provide a custom error checker
        - This returns a tuple of the (output, error, statuscode)'''
     if not checkCommand:
@@ -204,6 +204,8 @@ class Script(logger.Logger):
       import re
       # get rid of multiple blank lines
       output = re.sub('\n[\n]*','\n', output)
+      if lineLimit:
+        output = '\n'.join(output.split('\n')[:lineLimit])
       log.write('sh: '+output+'\n')
       return output
     def runInShell(command, log):
@@ -266,7 +268,7 @@ class Script(logger.Logger):
     if argDB is None:
       argDB = self.argDB
     if not 'configureCache' in argDB:
-      self.logPrint('No cached configure in RDict')
+      self.logPrint('No cached configure in RDict at '+str(argDB.saveFilename))
       return None
     try:
       cache = argDB['configureCache']

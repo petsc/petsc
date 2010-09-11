@@ -144,7 +144,8 @@ class SharedLinker(config.compile.processor.Processor):
   extraArguments = property(getExtraArguments, config.compile.processor.Processor.setExtraArguments, doc = 'Optional arguments for the end of the command')
 
   def getTarget(self, source, shared, prefix = 'lib'):
-    base, ext = os.path.splitext(source)
+    dirname, basename = os.path.split(source)
+    base, ext = os.path.splitext(basename)
     if prefix:
       if not (len(base) > len(prefix) and base[:len(prefix)] == prefix):
         base = prefix+base
@@ -152,4 +153,4 @@ class SharedLinker(config.compile.processor.Processor):
       base += '.'+self.configCompilers.setCompilers.sharedLibraryExt
     else:
       base += '.'+self.argDB['LD_SHARED_SUFFIX']
-    return base
+    return os.path.join(dirname, base)

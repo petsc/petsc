@@ -12,7 +12,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.4/downloads/openmpi-1.4.2.tar.gz']
-    self.download_mpich     = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/mpich2-trunk-r6968.tar.gz']
+    self.download_mpich     = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/mpich2-trunk-r7115.tar.gz']
     self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
     self.includes           = ['mpi.h']
@@ -481,6 +481,7 @@ class Configure(config.package.Package):
       args.append('--disable-f77')
       args.append('--disable-fc')
     if self.framework.argDB['with-shared-libraries'] or self.framework.argDB['download-mpich-shared']:
+      args.append('--enable-shared') # --enable-sharedlibs can now be removed?
       if self.compilers.isGCC or config.setCompilers.Configure.isIntel(compiler):
         if config.setCompilers.Configure.isDarwin():
           args.append('--enable-sharedlibs=gcc-osx')
@@ -569,6 +570,17 @@ class Configure(config.package.Package):
   def updateCompilers(self, installDir, mpiccName, mpicxxName, mpif77Name, mpif90Name):
     '''Check if mpicc, mpicxx etc binaries exist - and update setCompilers() database.
     The input arguments are the names of the binaries specified by the respective pacakges MPICH/LAM.'''
+
+    # Both MPICH and MVAPICH now depend on LD_LIBRARY_PATH for sharedlibraries.
+    # So using LD_LIBRARY_PATH in configure - and -Wl,-rpath in makefiles
+    if self.framework.argDB['with-shared-libraries']:
+      if 'LD_LIBRARY_PATH' in os.environ:
+        ldPath=os.environ['LD_LIBRARY_PATH']
+      else:
+        ldPath=''
+      if ldPath == '': ldPath = os.path.join(installDir,'lib')
+      else: ldPath += ':' + os.path.join(installDir,'lib')
+      os.environ['LD_LIBRARY_PATH'] = ldPath
 
     # Initialize to empty
     mpicc=''

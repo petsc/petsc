@@ -2,6 +2,7 @@ import config.base
 
 import re
 import os
+import shutil
 
 class MissingProcessor(RuntimeError):
   pass
@@ -520,7 +521,7 @@ class Configure(config.base.Configure):
 
   def testMangling(self, cfunc, ffunc, clanguage = 'C', extraObjs = []):
     '''Test a certain name mangling'''
-    cobj = 'confc.o'
+    cobj = os.path.join(self.tmpDir, 'confc.o')
     found = 0
     # Compile the C test object
     self.pushLanguage(clanguage)
@@ -966,7 +967,7 @@ class Configure(config.base.Configure):
     cinc = 'extern "C" '+cinc+'\n'
 
     cxxCode = 'void foo(void){'+self.mangleFortranFunction('d1chk')+'();}'
-    cxxobj = 'cxxobj.o'
+    cxxobj  = os.path.join(self.tmpDir, 'cxxobj.o')
     self.pushLanguage('Cxx')
     if not self.checkCompile(cinc+cxxCode, None, cleanup = 0):
       self.logPrint('Cannot compile Cxx function: '+cfunc, 3, 'compilers')
@@ -1046,7 +1047,7 @@ class Configure(config.base.Configure):
   }
   return;
 }\n'''
-    cobj = 'fooobj.o'
+    cobj = os.path.join(self.tmpDir, 'fooobj.o')
     self.pushLanguage('C')
     if not self.checkCompile(cinc+ccode, None, cleanup = 0):
       self.logPrint('Cannot compile C function: f90ptrtest', 3, 'compilers')
@@ -1101,8 +1102,8 @@ class Configure(config.base.Configure):
       self.logPrint('Not a Fortran90 compiler - hence skipping module include test')
       return
     found   = False
-    testdir = 'confdir'
-    modobj  = 'configtest.o'
+    testdir = os.path.join(self.tmpDir, 'confdir')
+    modobj  = os.path.join(self.tmpDir, 'configtest.o')
     modcode = '''\
       module configtest
       integer testint
@@ -1127,7 +1128,7 @@ class Configure(config.base.Configure):
       modname = 'CONFIGTEST.mod'
     else:
       raise RuntimeError('Fortran module was not created during the compile. configtest.mod/CONFIGTEST.mod not found')
-    os.rename(modname, os.path.join(testdir, modname))
+    shutil.copy(modname, os.path.join(testdir, modname))
     fcode = '''\
       use configtest
 
@@ -1163,8 +1164,8 @@ class Configure(config.base.Configure):
       self.logPrint('Not a Fortran90 compiler - hence skipping module include test')
       return
     found   = False
-    testdir = 'confdir'
-    modobj  = 'configtest.o'
+    testdir = os.path.join(self.tmpDir, 'confdir')
+    modobj  = os.path.join(self.tmpDir, 'configtest.o')
     modcode = '''\
       module configtest
       integer testint
