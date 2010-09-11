@@ -78,6 +78,20 @@ cdef class Fwk(Object):
         CHKERR( PetscFwkVisit(self.fwk, _message) )
         return self
 
+    def __getitem__(self, key):
+        return self.getComponent(key)
+
+    def __call__(self, message, *, visit=False):
+        if visit:
+            return self.visit(message)
+        else:
+            return self.call(message)
+
+    property url:
+        def __get__(self):
+            return self.getURL()
+        def __set__(self, value):
+            self.setURL(value)
 
     @classmethod
     def DEFAULT(cls, comm=None):
