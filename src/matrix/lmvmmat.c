@@ -1,5 +1,6 @@
 #include "lmvmmat.h"   /*I "lmvmmat.h" */
 #include "tao_util.h"  /*I "tao_util.h" */
+#include "petscksp.h"
 
 
 /* These lists are used for setting options */

@@ -5,6 +5,8 @@ TESTEXAMPLES_C = test_link1.tao runtest_link1 test_link1.rm clean \
          test_lmvmmat1.tao runtest_lmvmmat1 test_lmvmmat1.rm \
          test_rosenbrock1.tao runtest_rosenbrock1 test_rosenbrock1.rm \
          test_jbearing2.tao runtest_jbearing2 test_jbearing2.rm \
+	 test_eptorsion2.tao runtest_eptorsion2 test_eptorsion2.rm \
+	 test_minsurf2.tao runtest_minsurf2 test_minsurf2.rm \
 	 clean 
 
 
@@ -49,6 +51,14 @@ test_jbearing2: test_jbearing2.o tao_chkopts
 test_plate2: test_plate2.o tao_chkopts
 	-${CLINKER} -o test_plate2 test_plate2.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_plate2.o
+
+test_eptorsion2: test_eptorsion2.o tao_chkopts
+	-${CLINKER} -o test_eptorsion2 test_eptorsion2.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_eptorsion2.o
+
+test_minsurf2: test_minsurf2.o tao_chkopts
+	-${CLINKER} -o test_minsurf2 test_minsurf2.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_minsurf2.o
 
 test_bratu2: test_bratu2.o tao_chkopts
 	-${CLINKER} -o test_bratu2 test_bratu2.o ${TAO_LIB} ${PETSC_LIB}
@@ -100,6 +110,20 @@ runtest_plate2:
 	if (${DIFF} output/test_plate2_1.out test_plate2_1.tmp) then true;\
         else echo "Possible problem with test_plate2_1, diffs above"; fi; \
 	${RM} -f test_plate2_1.tmp
+
+runtest_eptorsion2: 
+	-@${MPIEXEC} -np 2 ./test_eptorsion2 > test_eptorsion2_1.tmp 2>&1; \
+	if (${DIFF} output/test_eptorsion2_1.out test_eptorsion2_1.tmp) then true;\
+        else echo "Possible problem with test_eptorsion2_1, diffs above"; fi; \
+	${RM} -f test_eptorsion2_1.tmp
+
+runtest_minsurf2: 
+	-@${MPIEXEC} -np 2 ./test_minsurf2 > test_minsurf2_1.tmp 2>&1; \
+	if (${DIFF} output/test_minsurf2_1.out test_minsurf2_1.tmp) then true;\
+        else echo "Possible problem with test_minsurf2_1, diffs above"; fi; \
+	${RM} -f test_minsurf2_1.tmp
+
+
 
 runtest_bratu2: 
 	-@${MPIEXEC} -np 2 ./test_bratu2 > test_bratu2_1.tmp 2>&1; \

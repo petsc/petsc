@@ -638,7 +638,14 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetTolerances(TaoSolver tao, PetscRe
   PetscFunctionReturn(0);
 }
 
-
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverGetSolutionVector"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetSolutionVector(TaoSolver tao, Vec *X)
+{
+    PetscFunctionBegin;
+    *X = tao->solution;
+    PetscFunctionReturn(0);
+}
 
 
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverResetStatistics(TaoSolver tao)

@@ -9,7 +9,6 @@ Context for a Newton line search method (unconstrained minimization)
 typedef struct {
   Mat M;
 
-  Vec G;
   Vec D;
   Vec W;
 

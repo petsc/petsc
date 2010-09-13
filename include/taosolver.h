@@ -62,6 +62,7 @@ EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegisterDestroy(void);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetConvergedReason(TaoSolver,TaoSolverConvergedReason*);
 
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetInitialVector(TaoSolver, Vec);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetSolutionVector(TaoSolver, Vec*);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveRoutine(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscReal*,void*), void*);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetGradientRoutine(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveAndGradientRoutine(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscReal*, Vec, void*), void*);
@@ -76,6 +77,11 @@ EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeGradient(TaoSolver, Ve
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjectiveAndGradient(TaoSolver, Vec, PetscReal*, Vec);
 
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeHessian(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
+
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultComputeHessian(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
+
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultComputeHessianColor(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
+
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeDualVariables(TaoSolver, Vec, Vec);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetVariableBounds(TaoSolver, Vec, Vec);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetVariableBounds(TaoSolver, Vec*, Vec*);

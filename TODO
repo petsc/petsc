@@ -10,7 +10,6 @@ TaoSolver
 Mesh Refinement
 
 TRON -- use current C++ version for now, but will have to eventually fix
-CG
 NTR
 NTL
 BQPIP?

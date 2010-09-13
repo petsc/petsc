@@ -58,22 +58,6 @@ static const char *NLS_UPDATE[64] = {
 static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x) ;
 // Routine for BFGS preconditioner
 
-/*
-#undef __FUNCT__
-#define __FUNCT__ "bfgs_apply"
-static PetscErrorCode bfgs_apply(void *ptr, Vec xin, Vec xout)
-{
-  TaoLMVMMat *M = (TaoLMVMMat *)ptr;
-  TaoVecPetsc Xin(xin);
-  TaoVecPetsc Xout(xout);
-  TaoTruth info2;
-  int info;
-
-  PetscFunctionBegin;
-  info = M->Solve(&Xin, &Xout, &info2); CHKERRQ(info);
-  PetscFunctionReturn(0);
-}
-*/
 
 // Implements Newton's Method with a line search approach for solving
 // unconstrained minimization problems.  A More'-Thuente line search 
@@ -141,7 +125,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
 
 
 
-  // Modify the linear solver to a conjugate gradient method
+  // Modify the linear solver to a trust region method if desired
 
   switch(nlsP->ksp_type) {
   case NLS_KSP_CG:

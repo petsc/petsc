@@ -50,6 +50,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverSetObjectiveAndGradient(TaoSolver
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverComputeObjective(TaoSolver, Vec, PetscReal*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverComputeGradient(TaoSolver, Vec, Vec);
-
+EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverSetInitialTrustRegionRadius(TaoSolver, PetscReal*);
 PETSC_EXTERN_CXX_END
 #endif
