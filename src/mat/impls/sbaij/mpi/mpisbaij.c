@@ -750,8 +750,8 @@ PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
 #endif
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
   ierr = MatStashDestroy_Private(&mat->bstash);CHKERRQ(ierr);
-  ierr = MatDestroy(baij->A);CHKERRQ(ierr);
-  ierr = MatDestroy(baij->B);CHKERRQ(ierr);
+  if (baij->A){ierr = MatDestroy(baij->A);CHKERRQ(ierr);}
+  if (baij->B){ierr = MatDestroy(baij->B);CHKERRQ(ierr);}
 #if defined (PETSC_USE_CTABLE)
   if (baij->colmap) {ierr = PetscTableDestroy(baij->colmap);CHKERRQ(ierr);}
 #else
