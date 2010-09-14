@@ -190,12 +190,10 @@ PetscErrorCode VecDuplicate_MPICUDA(Vec win,Vec *v)
 PetscErrorCode VecDotNorm2_MPICUDA(Vec s,Vec t,PetscScalar *dp,PetscScalar *nm)
 {
   PetscErrorCode  ierr;
-  PetscScalar     work[2],dpx,nmx,sum[2];
+  PetscScalar     work[2],sum[2];
 
   PetscFunctionBegin;
-  ierr    = VecDotNorm2_SeqCUDA(s,t,&dpx,&nmx);CHKERRQ(ierr);
-  work[0] = dpx;
-  work[1] = nmx;
+  ierr    = VecDotNorm2_SeqCUDA(s,t,work,work+1);CHKERRQ(ierr);
   ierr    = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,MPIU_SUM,((PetscObject)s)->comm);CHKERRQ(ierr);
   *dp     = sum[0];
   *nm     = sum[1];

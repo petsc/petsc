@@ -201,5 +201,6 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesGeneral(PetscInt,Petsc
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISExpandIndicesGeneral(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
 
+
 PETSC_EXTERN_CXX_END
 #endif

@@ -179,6 +179,7 @@ slow,
 
 
 
+
         </span>what can I do to make it
 faster?</a></li>
       <li><a href="faq.html#log-summary">How can I
@@ -584,16 +585,11 @@ I install petsc4py with the development PETSc</a>?</font></p>
       <p>&nbsp; </p>
       <p><font color="#ff0000"><a name="gfortran">What Fortran compiler
 do you recommend for the Apple Mac OS X?</a></font></p>
-We recommend, as of 5/5/2010, installing gfortran-4.2.3 from <a
- href="http://r.research.att.com/tools/">http://r.research.att.com/tools/</a>.
-This
-seems
-to
-work
-with
-both Mac OS 10.5 and 10.6. It defaults to using
-32 bit pointers so for Mac OS X 10.6 and later you should use
---with-fc="gfortran -m64"<br>
+We recommend, as of 9/10/2010, installing gfortran-4.3 from <a
+ href="http://hpc.sourceforge.net/">http://hpc.sourceforge.net</a>. You
+may need to use
+--with-fc="gfortran -m64" to get it to work with the 64 bit gcc
+compilers.<br>
       <br>
 Please contact Apple at <a href="http://www.apple.com/feedback">http://www.apple.com/feedback</a>
 and urge them to bundle gfortran with future versions of Xcode.<br>
@@ -980,7 +976,8 @@ the
 MPI_Cart_create()
 command.
 How
-can one use them together?<br>
+can
+one use them together?<br>
             <br>
             </span>The MPI_Cart_create() first divides the mesh along
 the z direction, then the y, then the x. DA divides along the x, then
@@ -1029,7 +1026,8 @@ I
 can
 use
 MatZeroRows()
-to eliminate the Dirichlet rows but this results in a
+to
+eliminate the Dirichlet rows but this results in a
 non-symmetric system. How come there is no MatZeroColumns() to keep the
 matrix symmetric?<br>
             <br>
@@ -1052,7 +1050,8 @@ symmetric methods. See its manual page.<br>
 can
 I
 get
-PETSc Vecs and Mats to Matlab or vice versa?<br>
+PETSc
+Vecs and Mats to Matlab or vice versa?<br>
             </span><br>
             <span style="color: rgb(255, 0, 0);"><br>
             </span>There are four was to work with PETSc and Matlab<br>
@@ -1076,14 +1075,16 @@ Matlab session and a running PETSc program. See <a
 for
 access
 from
-the PETSc side and PetscOpenSocket in bin/matlab for
+the
+PETSc side and PetscOpenSocket in bin/matlab for
 access from the Matlab side.</li>
               <li>Finally you can save PETSc Vecs (not Mats) with the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
 viewer
 that
 saves
-.mat files can then be loaded into Matlab.<br>
+.mat
+files can then be loaded into Matlab.<br>
               </li>
             </ol>
             <hr> </td>
@@ -1140,7 +1141,8 @@ so slow, what can I do to speed it up?</font></a><a
  name="slow"></a></font></font><a name="efficient-assembly"> </a></p>
       <p>See the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manual.pdf#nameddest=ch_performance">Performance
-chapter of the users manual</a> for
+chapter
+of the users manual</a> for
 many
 tips on this.</p>
       <p>a) Preallocate enough space for the sparse matrix. For
@@ -1178,7 +1180,8 @@ generate performance summaries
 with PETSc?</font> </a></p>
       <p>Use these options at runtime: -log_summary. See the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manual.pdf#nameddest=ch_performance">Performance
-chapter of the users manual</a>
+chapter
+of the users manual</a>
 for information on interpreting
 the summary data. If using the PETSc (non)linear solvers, one can also
 specify -snes_view or -ksp_view for a printout of solver info. Only the
@@ -1244,6 +1247,7 @@ in
 
 
 
+
           <a href="faq.html#slow">generating the
 matrix</a> or some other operation.</li>
         <li>There must be enough work for each process to
@@ -1275,7 +1279,8 @@ processes.
 You
 may
 also
-consider multigrid preconditioners like <a
+consider
+multigrid preconditioners like <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
 or BoomerAMG in <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCHYPRE.html">PCHYPRE</a>.</li>
@@ -1352,7 +1357,8 @@ if
 -start_in_debugger
 does
 not
-work on my machine?</font> </a></p>
+work
+on my machine?</font> </a></p>
       <p>For a uniprocessor job, just try&nbsp;the debugger
 directly, for example: gdb ex1. You can also use Totalview which is a
 good graphical parallel debugger.<br>
@@ -1405,7 +1411,8 @@ open
 shared
 object
 file:
-No such file or directory.</span></p>
+No
+such file or directory.</span></p>
       <p>The Intel compilers use shared libraries (like libimf)
 that
 cannot by default at run time. When using the Intel compilers (and
@@ -1460,7 +1467,8 @@ VecSetSizes(),
 MatSetSizes(),
 VecCreateXXX()
 or
-MatCreateXXX() you passed in local and global sizes that do not make
+MatCreateXXX()
+you passed in local and global sizes that do not make
 sense for the correct number of processors. For example if you pass in
 a local size of 2 and a global size of 100 and run on two processors,
 this cannot work since the sum of the local sizes is 4, not 100.</span></font><br>
@@ -1489,6 +1497,7 @@ problem.<br>
 &nbsp; <br>
 If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
 machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
+
 
 
 
@@ -1540,6 +1549,7 @@ that the matrix is singular. You can use -pc_factor_shift_nonzero or
 -pc_factor_shift_positive_definite,
 -[level]_pc_factor_shift_nonzero,&nbsp; </span></font><font
  style="color: rgb(0, 0, 0);" color="#ff0000">-[level]_pc_factor_shift_postive_definite
+
 
 
 

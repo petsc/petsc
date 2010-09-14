@@ -17,7 +17,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   PetscScalar            *xv,*yv,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
-  PetscInt               i,*indices,*sstarts,nrecvs,nsends,bs;
+  PetscInt               i,k,*indices,*sstarts,nrecvs,nsends,bs,*sindices;
 
   PetscFunctionBegin;
   if (mode & SCATTER_REVERSE) {
@@ -38,17 +38,24 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   indices  = to->indices;
   sstarts  = to->starts;
 #if defined(PETSC_HAVE_CUDA)
-  if (xin->valid_GPU_array == PETSC_CUDA_GPU && 0) {
+  if (xin->valid_GPU_array == PETSC_CUDA_GPU) {
     if (!ctx->spptr) {
-      PetscInt *indices,n = to->n; 
-      ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-      ierr = PetscMemcpy(indices,to->indices,n*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscSortRemoveDupsInt(&n,indices);CHKERRQ(ierr);
-     
-      ierr = PetscIntView(n,indices,0);CHKERRQ(ierr);
-
-      ierr = PetscFree(indices);CHKERRQ(ierr);
+      PetscInt *tindices,n = sstarts[nsends];
+      ierr = PetscMalloc(n*sizeof(PetscInt),&tindices);CHKERRQ(ierr);
+      ierr = PetscMemcpy(tindices,to->indices,n*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscSortRemoveDupsInt(&n,tindices);CHKERRQ(ierr);
+      ierr = PetscMalloc(bs*n*sizeof(PetscInt),&sindices);CHKERRQ(ierr);
+      for (i=0; i<n; i++) {
+        for (k=0; k<bs; k++) {
+          sindices[i*bs+k] = tindices[i]+k;
+        }
+      }
+      ierr = PetscFree(tindices);CHKERRQ(ierr);
+      ierr = PetscCUSPIndicesCreate(n,sindices,(PetscCUSPIndices*)&ctx->spptr);CHKERRQ(ierr);
+      ierr = PetscFree(sindices);CHKERRQ(ierr);
     }
+    ierr = VecCUDACopyToGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
   } else {
     ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
   }
@@ -111,6 +118,8 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   }
 #if defined(PETSC_HAVE_CUDA)
   if (xin->valid_GPU_array != PETSC_CUDA_GPU) {
+    ierr = VecRestoreArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
+  } else {
     ierr = VecRestoreArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
   }
 #else

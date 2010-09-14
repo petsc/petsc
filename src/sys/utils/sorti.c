@@ -116,8 +116,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortRemoveDupsInt(PetscInt *n,PetscInt ii
   PetscFunctionBegin;
   ierr = PetscSortInt(N,ii);CHKERRQ(ierr);
   for (i=0; i<N-1; i++) {
-    if (ii[b+s+1] == ii[b]) {ii[b+1] = ii[b+s+2]; s++;}
-    else b++;
+    if (ii[b+s+1] != ii[b]) {ii[b+1] = ii[b+s+1]; b++;}
+    else s++;
   }
   *n = N - s;
   PetscFunctionReturn(0);

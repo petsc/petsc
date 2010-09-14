@@ -1,3 +1,4 @@
+
 #define PETSCVEC_DLL
 
 /*
@@ -233,6 +234,9 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
   ierr = PetscFree4(from->values,from->indices,from->starts,from->procs);CHKERRQ(ierr);
   ierr = PetscFree(from);CHKERRQ(ierr);
   ierr = PetscFree(to);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  ierr = PetscCUSPIndicesDestroy((PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
+#endif
   ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

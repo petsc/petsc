@@ -1202,6 +1202,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSqrtAbs(Vec v)
 
   Level: advanced
 
+  Developer Notes: Even though the second return argument is a norm and hence could be a PetscReal value it is returned as PetscScalar
+
 .seealso:   VecDot(), VecNorm(), VecDotBegin(), VecNormBegin(), VecDotEnd(), VecNormEnd()
 
 .keywords: vector, sqrt, square root
