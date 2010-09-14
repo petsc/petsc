@@ -84,9 +84,12 @@ from conf.petscconf import config, build, build_ext
 
 def run_setup():
     import sys, os
-    if ('setuptools' in sys.modules and
-        not os.environ.get('PETSC_DIR')):
-        metadata['requires'].append('petsc')
+    if (('distribute' in sys.modules) or
+        ('setuptools' in sys.modules)):
+        metadata['install_requires'] = ['numpy']
+        if not os.environ.get('PETSC_DIR'):
+            metadata['install_requires'].append('petsc')
+
     if 'setuptools' in sys.modules:
         metadata['zip_safe'] = False
     setup(packages     = ['petsc4py',
