@@ -3849,6 +3849,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat mat,MatDuplicateOption op,Mat
     B->stencil.starts[i] = mat->stencil.starts[i];
   }
 
+  B->nooffproczerorows = mat->nooffproczerorows;
+  B->nooffprocentries  = mat->nooffprocentries;
   ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
