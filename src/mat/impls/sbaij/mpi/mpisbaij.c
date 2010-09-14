@@ -231,6 +231,7 @@ PetscErrorCode MatSetValues_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im[],Pets
         }
       }
     } else {  /* off processor entry */
+      if (mat->nooffprocentries) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process row %D even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set",im[i]);
       if (!baij->donotstash) {
         n_loc = 0;
         for (j=0; j<n; j++){
@@ -345,6 +346,7 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im
         }
       }
     } else {
+      if (mat->nooffprocentries) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process row %D even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set",im[i]);
       if (!baij->donotstash) {
         if (roworiented) {
           ierr = MatStashValuesRowBlocked_Private(&mat->bstash,im[i],n,in,v,m,n,i);CHKERRQ(ierr);
@@ -489,7 +491,7 @@ PetscErrorCode MatAssemblyBegin_MPISBAIJ(Mat mat,MatAssemblyType mode)
   InsertMode     addv;
 
   PetscFunctionBegin;
-  if (baij->donotstash) {
+  if (baij->donotstash || mat->nooffprocentries) {
     PetscFunctionReturn(0);
   }
 
@@ -525,7 +527,7 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   /* do not use 'b=(Mat_SeqBAIJ*)baij->B->data' as B can be reset in disassembly */
   PetscFunctionBegin;
 
-  if (!baij->donotstash) { 
+  if (!baij->donotstash &&  !mat->nooffprocentries) { 
     while (1) {
       ierr = MatStashScatterGetMesg_Private(&mat->stash,&n,&row,&col,&val,&flg);CHKERRQ(ierr);
       if (!flg) break;

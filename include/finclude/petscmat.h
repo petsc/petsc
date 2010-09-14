@@ -52,6 +52,8 @@
       PetscEnum MAT_GETROW_UPPERTRIANGULAR
       PetscEnum MAT_UNUSED_NONZERO_LOCATION_ERR
       PetscEnum MAT_SPD
+      PetscEnum MAT_NO_OFF_PROC_ENTRIES
+      PetscEnum MAT_NO_OFF_PROC_ZERO_ROWS
       PetscEnum NUM_MAT_OPTIONS
 
       parameter (MAT_ROW_ORIENTED=0)
@@ -73,6 +75,8 @@
       parameter (MAT_GETROW_UPPERTRIANGULAR=17)
       parameter (MAT_UNUSED_NONZERO_LOCATION_ERR=18)
       parameter (MAT_SPD=19)
+      parameter (MAT_NO_OFF_PROC_ENTRIES=20)
+      parameter (MAT_NO_OFF_PROC_ZERO_ROWS=21)
       parameter (NUM_MAT_OPTIONS=20)
  
 !

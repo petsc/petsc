@@ -4908,7 +4908,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
 .    MAT_NEW_DIAGONALS - new diagonals will be allowed (for block diagonal format only)
 .    MAT_IGNORE_OFF_PROC_ENTRIES - drops off-processor entries
 .    MAT_NEW_NONZERO_LOCATION_ERR - generates an error for new matrix entry
--    MAT_USE_HASH_TABLE - uses a hash table to speed up matrix assembly
+.    MAT_USE_HASH_TABLE - uses a hash table to speed up matrix assembly
++    MAT_NO_OFF_PROC_ENTRIES - you know each process will only set values for its own rows, will generate an error if
+        any process sets values for another process. This avoids all reductions in the MatAssembly routines and thus improves
+        performance for very large process counts.
 
    Notes:
    Some options are relevant only for particular matrix types and
@@ -4961,6 +4964,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
    MAT_USE_INODES - indicates using inode version of the code - works with AIJ and 
    ROWBS matrix types
 
+  MAT_NO_OFF_PROC_ZERO_ROWS - you know each process will only zero its own rows. This avoids all reductions in the
+        zero row routines and thus improves performance for very large process counts.
+
    Level: intermediate
 
    Concepts: matrices^setting options
@@ -4980,6 +4986,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat mat,MatOption op,PetscTruth f
   if (!((PetscObject)mat)->type_name) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_TYPENOTSET,"Cannot set options until type and size have been set, see MatSetType() and MatSetSizes()");
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   switch (op) {
+  case MAT_NO_OFF_PROC_ENTRIES:
+    mat->nooffprocentries                = flg;
+    PetscFunctionReturn(0);
+    break;
+  case MAT_NO_OFF_PROC_ZERO_ROWS:
+    mat->nooffproczerorows               = flg;
+    PetscFunctionReturn(0);
+    break;
   case MAT_SPD:
     mat->spd_set                         = PETSC_TRUE;
     mat->spd                             = flg;

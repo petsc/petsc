@@ -390,6 +390,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
         }
       }
     } else {
+      if (mat->nooffprocentries) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process row %D even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set",im[i]);
       if (!aij->donotstash) {
         if (roworiented) {
           ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n,(PetscTruth)(ignorezeroentries && (addv == ADD_VALUES)));CHKERRQ(ierr);
@@ -458,7 +459,7 @@ PetscErrorCode MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
   InsertMode     addv;
 
   PetscFunctionBegin;
-  if (aij->donotstash) {
+  if (aij->donotstash || mat->nooffprocentries) {
     PetscFunctionReturn(0);
   }
 
@@ -489,7 +490,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 
   /* do not use 'b = (Mat_SeqAIJ *)aij->B->data' as B can be reset in disassembly */
   PetscFunctionBegin;
-  if (!aij->donotstash) {
+  if (!aij->donotstash && !mat->nooffprocentries) {
     while (1) {
       ierr = MatStashScatterGetMesg_Private(&mat->stash,&n,&row,&col,&val,&flg);CHKERRQ(ierr);
       if (!flg) break;
