@@ -889,8 +889,8 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
 #endif
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
   if (aij->diag) {ierr = VecDestroy(aij->diag);CHKERRQ(ierr);}
-  ierr = MatDestroy(aij->A);CHKERRQ(ierr);
-  ierr = MatDestroy(aij->B);CHKERRQ(ierr);
+  if (aij->A){ierr = MatDestroy(aij->A);CHKERRQ(ierr);}
+  if (aij->B){ierr = MatDestroy(aij->B);CHKERRQ(ierr);}
 #if defined (PETSC_USE_CTABLE)
   if (aij->colmap) {ierr = PetscTableDestroy(aij->colmap);CHKERRQ(ierr);}
 #else

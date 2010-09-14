@@ -756,21 +756,34 @@ runex36f:
 	   else echo "Possible problem with ex36_1, diffs above"; fi; \
 	   ${RM} -f ex36_1.tmp
 runex37:
-	-@${MPIEXEC} -n 1  ./ex37 > ex37_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex37 > ex37_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex37_1.out ex37_1.tmp) then true; \
-	   else echo "Possible problem with part I of ex37_1, diffs above"; fi; \
+	   else echo "Possible problem with ex37_1, diffs above"; fi; \
 	   ${RM} -f ex37_1.tmp
-	-@${MPIEXEC} -n 3  ./ex37 > ex37_1.tmp 2>&1;   \
-	   if (${DIFF} output/ex37_1.out ex37_1.tmp) then true; \
-	   else echo "Possible problem with part II of ex37_1, diffs above"; fi; \
+runex37_2:
+	-@${MPIEXEC} -n 3 ./ex37 > ex37_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex37_2.out ex37_1.tmp) then true; \
+	   else echo "Possible problem with ex37_2, diffs above"; fi; \
 	   ${RM} -f ex37_1.tmp
-	-@${MPIEXEC} -n 1  ./ex37 -mat_type seqbaij > ex37_1.tmp 2>&1;   \
-	   if (${DIFF} output/ex37_1.out ex37_1.tmp) then true; \
-	   else echo "Possible problem with part III of ex37_1, diffs above"; fi; \
+runex37_3:
+	-@${MPIEXEC} -n 1 ./ex37 -mat_type baij -mat_block_size 1 > ex37_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex37_3.out ex37_1.tmp) then true; \
+	   else echo "Possible problem with ex37_3, diffs above"; fi; \
 	   ${RM} -f ex37_1.tmp
-	-@${MPIEXEC} -n 3  ./ex37 -mat_type mpibaij > ex37_1.tmp 2>&1;   \
-	   if (${DIFF} output/ex37_1.out ex37_1.tmp) then true; \
-	   else echo "Possible problem with part IV of ex37_1, diffs above"; fi; \
+runex37_4:
+	-@${MPIEXEC} -n 1 ./ex37 -mat_type baij -mat_block_size 2 > ex37_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex37_4.out ex37_1.tmp) then true; \
+	   else echo "Possible problem with ex37_4, diffs above"; fi; \
+	   ${RM} -f ex37_1.tmp
+runex37_5:
+	-@${MPIEXEC} -n 2 ./ex37 -mat_type baij -mat_block_size 1 > ex37_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex37_5.out ex37_1.tmp) then true; \
+	   else echo "Possible problem with ex37_5, diffs above"; fi; \
+	   ${RM} -f ex37_1.tmp
+runex37_6:
+	-@${MPIEXEC} -n 2 ./ex37 -mat_type baij -mat_block_size 2 > ex37_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex37_6.out ex37_1.tmp) then true; \
+	   else echo "Possible problem with ex37_6, diffs above"; fi; \
 	   ${RM} -f ex37_1.tmp
 # See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex40:
@@ -1294,7 +1307,8 @@ TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex
                                  ex25.rm ex27.PETSc ex27.rm ex28.PETSc ex28.rm \
                                  ex30.PETSc runex30 runex30_2 runex30_3 runex30_4 runex30_5 runex30_6 ex30.rm ex31.PETSc \
                                  runex31 runex31_2 ex31.rm ex33.PETSc ex33.rm ex34.PETSc ex34.rm ex35.PETSc runex35 \
-                                 ex35.rm ex37.PETSc runex37 ex37.rm ex38.PETSc ex38.rm ex43.PETSc ex43.rm ex48.PETSc \
+                                 ex35.rm ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 runex37_5 runex37_6 ex37.rm \
+                                 ex38.PETSc ex38.rm ex43.PETSc ex43.rm ex48.PETSc \
                                  runex48 ex48.rm ex49.PETSc ex49.rm ex51.PETSc runex51 ex51.rm ex52.PETSc ex52.rm \
                                  ex54.PETSc runex54 ex54.rm ex56.PETSc runex56 runex56_4 runex56_5 \
                                  ex56.rm ex74.PETSc runex74 ex74.rm ex75.PETSc runex75 ex75.rm ex76.PETSc runex76 \
