@@ -8,18 +8,36 @@ static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n";
 int main(int argc,char **args)
 {
   Mat            C,A; 
-  PetscInt       i, n = 10,midx[3];
+  PetscInt       i, n = 10,midx[3],bs=1;
   PetscErrorCode ierr;
   PetscScalar    v[3];
-  PetscTruth     flg;
+  PetscTruth     flg,isAIJ;
+  const MatType  type;
+  PetscMPIInt    size;
 
   PetscInitialize(&argc,&args,(char *)0,help);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
+  ierr = MatSetType(C,MATAIJ);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
 
+  ierr = MatGetType(C,&type);CHKERRQ(ierr);
+  if (size == 1){
+    ierr = PetscTypeCompare((PetscObject)C,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
+  } else {
+    ierr = PetscTypeCompare((PetscObject)C,MATMPIAIJ,&isAIJ);CHKERRQ(ierr);
+  }
+  if (isAIJ){
+    ierr = MatSeqAIJSetPreallocation(C,3,PETSC_NULL);
+    ierr = MatMPIAIJSetPreallocation(C,3,PETSC_NULL,3,PETSC_NULL);CHKERRQ(ierr);
+  } else {
+    ierr = MatGetBlockSize(C,&bs);CHKERRQ(ierr);
+    ierr = MatSeqBAIJSetPreallocation(C,bs,3,PETSC_NULL);
+    ierr = MatMPIBAIJSetPreallocation(C,bs,3,PETSC_NULL,3,PETSC_NULL);CHKERRQ(ierr);
+  }
   v[0] = -1.; v[1] = 2.; v[2] = -1.;
   for (i=1; i<n-1; i++){
     midx[2] = i-1; midx[1] = i; midx[0] = i+1;
@@ -41,37 +59,40 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* test matrices with different nonzero patterns */
+  /* test matrices with different nonzero patterns - Note: A is created with different nonzero pattern of C! */
   ierr = MatCopy(C,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatEqual(A,C,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"MatCopy(C,A,DIFFERENT_NONZERO_PATTERN): Matrices are NOT equal");
+  
+  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"A is obtained with MatCopy(,,DIFFERENT_NONZERO_PATTERN):\n");CHKERRQ(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
 
-  /* Now C and A have the same nonzero pattern */
-  ierr = MatSetOption(C,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);CHKERRQ(ierr);
+  /* test matrices with same nonzero pattern */
+  ierr = MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&A);CHKERRQ(ierr);
   ierr = MatCopy(C,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatEqual(A,C,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"MatCopy(C,A,SAME_NONZERO_PATTERN): Matrices are NOT equal");
+  
+  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\nA is obtained with MatCopy(,,SAME_NONZERO_PATTERN):\n");CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = MatEqual(A,C,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrices are equal\n");CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,1,"Matrices are NOT equal");
-  }
-
-  ierr = MatStoreValues(A);CHKERRQ(ierr);
-  ierr = MatZeroEntries(A);CHKERRQ(ierr);
-  ierr = MatRetrieveValues(A);CHKERRQ(ierr);
-  ierr = MatEqual(A,C,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrices are equal\n");CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,1,"Matrices are NOT equal");
+  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"A:\n");CHKERRQ(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  
+  /* test MatStore/RetrieveValues() */
+  if (isAIJ){
+    ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = MatStoreValues(A);CHKERRQ(ierr);
+    ierr = MatZeroEntries(A);CHKERRQ(ierr);
+    ierr = MatRetrieveValues(A);CHKERRQ(ierr);
   }
 
   ierr = MatDestroy(C);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
-
   ierr = PetscFinalize();
   return 0;
 }

@@ -61,13 +61,15 @@ namespace ALE {
     };
     template<typename Points>
     void addPoint(const Obj<Points>& points) {
-      for(typename Points::const_iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+      const typename Points::const_iterator pointsEnd = points->end();
+      for(typename Points::const_iterator p_iter = points->begin(); p_iter != pointsEnd; ++p_iter) {
         this->checkPoint(*p_iter);
       }
     }
     template<typename Points>
     void addPoint(const Points& points) {
-      for(typename Points::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+      const typename Points::const_iterator pointsEnd = points.end();
+      for(typename Points::const_iterator p_iter = points.begin(); p_iter != pointsEnd; ++p_iter) {
         this->checkPoint(*p_iter);
       }
     }
@@ -92,7 +94,8 @@ namespace ALE {
     }
     template<typename Sequence>
     void setFiberDimension(const Obj<Sequence>& points, int dim) {
-      for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+      const typename Sequence::iterator pointsEnd = points->end();
+      for(typename Sequence::iterator p_iter = points->begin(); p_iter != pointsEnd; ++p_iter) {
         this->setFiberDimension(*p_iter, dim);
       }
     }
@@ -252,7 +255,8 @@ namespace ALE {
     };
     template<typename Points>
     void addPoint(const Obj<Points>& points) {
-      for(typename Points::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+      const typename Points::const_iterator pointsEnd = points.end();
+      for(typename Points::iterator p_iter = points->begin(); p_iter != pointsEnd; ++p_iter) {
         this->setFiberDimension(*p_iter, fiberDim);
       }
     }
@@ -260,7 +264,8 @@ namespace ALE {
       this->getAtlas()->copy(section->getAtlas());
       const chart_type& chart = section->getChart();
 
-      for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+      const typename chart_type::const_iterator chartEnd = chart.end();
+      for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chartEnd; ++c_iter) {
         this->updatePoint(*c_iter, section->restrictPoint(*c_iter));
       }
     }
@@ -281,12 +286,14 @@ namespace ALE {
     }
     template<typename Sequence>
     void setFiberDimension(const Obj<Sequence>& points, int dim) {
-      for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+      const typename Sequence::iterator pointsEnd = points->end();
+      for(typename Sequence::iterator p_iter = points->begin(); p_iter != pointsEnd; ++p_iter) {
         this->setFiberDimension(*p_iter, dim);
       }
     }
     void setFiberDimension(const std::set<point_type>& points, int dim) {
-      for(typename std::set<point_type>::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+      const typename std::set<point_type>::const_iterator pointsEnd = points.end();
+      for(typename std::set<point_type>::iterator p_iter = points.begin(); p_iter != pointsEnd; ++p_iter) {
         this->setFiberDimension(*p_iter, dim);
       }
     };
@@ -393,7 +400,8 @@ namespace ALE {
       const typename atlas_type::chart_type& chart = this->_atlas->getChart();
       values_type                            array = this->_array;
 
-      for(typename atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+      const typename atlas_type::chart_type::const_iterator chartEnd = chart.end();
+      for(typename atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chartEnd; ++p_iter) {
         const int idx = (*p_iter)*fiberDim;
 
         if (fiberDim != 0) {
@@ -556,7 +564,8 @@ namespace ALE {
         this->_spaces[s]->reallocatePoint(chart);
         this->_bcs[s]->reallocatePoint(chart);
       }
-      for(typename std::set<newpoint_type>::const_iterator p_iter = this->newPoints.begin(); p_iter != this->newPoints.end(); ++p_iter) {
+      const typename std::set<newpoint_type>::const_iterator newPointsEnd = this->newPoints.end();
+      for(typename std::set<newpoint_type>::const_iterator p_iter = this->newPoints.begin(); p_iter != newPointsEnd; ++p_iter) {
         this->setFiberDimension(p_iter->first, p_iter->second);
       }
       this->orderPoints(this->_atlas);
@@ -599,7 +608,8 @@ namespace ALE {
       const chart_type& chart = this->getChart();
 
       // Copy sizes
-      for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+      const typename chart_type::const_iterator chartEnd = chart.end();
+      for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chartEnd; ++c_iter) {
         const int fDim = this->getFiberDimension(*c_iter, space);
         const int cDim = this->getConstraintDimension(*c_iter, space);
 
@@ -616,7 +626,8 @@ namespace ALE {
       Obj<atlas_type>   newAtlas = new atlas_type(this->comm(), this->debug());
       const chart_type& newChart = field->getChart();
 
-      for(typename chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
+      const typename chart_type::const_iterator newChartEnd = newChart.end();
+      for(typename chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChartEnd; ++c_iter) {
         const int cDim   = field->getConstraintDimension(*c_iter);
         const int dof[1] = {0};
 
@@ -627,7 +638,7 @@ namespace ALE {
       // Copy offsets
       newAtlas->setChart(newChart);
       newAtlas->allocatePoint();
-      for(typename chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
+      for(typename chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChartEnd; ++c_iter) {
         index_type idx;
 
         idx.prefix = field->getFiberDimension(*c_iter);

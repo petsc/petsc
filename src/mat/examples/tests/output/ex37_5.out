@@ -1,16 +1,16 @@
 A is obtained with MatCopy(,,DIFFERENT_NONZERO_PATTERN):
 Matrix Object:
-  type=seqaij, rows=10, cols=10
-  total: nonzeros=28, allocated nonzeros=200
-  total number of mallocs used during MatSetValues calls =10
-    not using I-node routines
+  type=mpibaij, rows=10, cols=10
+  total: nonzeros=28, allocated nonzeros=230
+  total number of mallocs used during MatSetValues calls =12
+      block size is 1
 
 A is obtained with MatCopy(,,SAME_NONZERO_PATTERN):
 Matrix Object:
-  type=seqaij, rows=10, cols=10
+  type=mpibaij, rows=10, cols=10
   total: nonzeros=28, allocated nonzeros=28
   total number of mallocs used during MatSetValues calls =0
-    not using I-node routines
+      block size is 1
 A:
 row 0: (0, 2)  (1, -1) 
 row 1: (0, -1)  (1, 2)  (2, -1) 

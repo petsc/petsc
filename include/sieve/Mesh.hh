@@ -4670,13 +4670,13 @@ namespace ALE {
           newVertices[e] = edge2vertex[edges[e]];
         }
         tetCells[0*4+0] = cone[0]+vertexOffset; tetCells[0*4+1] = newVertices[3]; tetCells[0*4+2] = newVertices[0]; tetCells[0*4+3] = newVertices[2];
-        tetCells[1*4+0] = cone[1]+vertexOffset; tetCells[1*4+0] = newVertices[4]; tetCells[1*4+0] = newVertices[1]; tetCells[1*4+0] = newVertices[0];
-        tetCells[2*4+0] = cone[2]+vertexOffset; tetCells[2*4+0] = newVertices[5]; tetCells[2*4+0] = newVertices[2]; tetCells[2*4+0] = newVertices[1];
-        tetCells[3*4+0] = cone[3]+vertexOffset; tetCells[3*4+0] = newVertices[3]; tetCells[3*4+0] = newVertices[5]; tetCells[3*4+0] = newVertices[4];
-        tetCells[4*4+0] = newVertices[0];       tetCells[4*4+0] = newVertices[3]; tetCells[4*4+0] = newVertices[4]; tetCells[4*4+0] = newVertices[2];
-        tetCells[5*4+0] = newVertices[1];       tetCells[5*4+0] = newVertices[4]; tetCells[5*4+0] = newVertices[5]; tetCells[5*4+0] = newVertices[3];
-        tetCells[6*4+0] = newVertices[2];       tetCells[6*4+0] = newVertices[5]; tetCells[6*4+0] = newVertices[3]; tetCells[6*4+0] = newVertices[1];
-        tetCells[7*4+0] = newVertices[0];       tetCells[7*4+0] = newVertices[1]; tetCells[7*4+0] = newVertices[2]; tetCells[7*4+0] = newVertices[3];
+        tetCells[1*4+0] = cone[1]+vertexOffset; tetCells[1*4+1] = newVertices[4]; tetCells[1*4+2] = newVertices[1]; tetCells[1*4+3] = newVertices[0];
+        tetCells[2*4+0] = cone[2]+vertexOffset; tetCells[2*4+1] = newVertices[5]; tetCells[2*4+2] = newVertices[2]; tetCells[2*4+3] = newVertices[1];
+        tetCells[3*4+0] = cone[3]+vertexOffset; tetCells[3*4+1] = newVertices[3]; tetCells[3*4+2] = newVertices[5]; tetCells[3*4+3] = newVertices[4];
+        tetCells[4*4+0] = newVertices[0];       tetCells[4*4+1] = newVertices[3]; tetCells[4*4+2] = newVertices[4]; tetCells[4*4+3] = newVertices[2];
+        tetCells[5*4+0] = newVertices[1];       tetCells[5*4+1] = newVertices[4]; tetCells[5*4+2] = newVertices[5]; tetCells[5*4+3] = newVertices[3];
+        tetCells[6*4+0] = newVertices[2];       tetCells[6*4+1] = newVertices[5]; tetCells[6*4+2] = newVertices[3]; tetCells[6*4+3] = newVertices[1];
+        tetCells[7*4+0] = newVertices[0];       tetCells[7*4+1] = newVertices[1]; tetCells[7*4+2] = newVertices[2]; tetCells[7*4+3] = newVertices[3];
         *numCells = 8;
         *cells    = tetCells;
       };
@@ -4695,13 +4695,13 @@ namespace ALE {
           newVertices[e] = edge2vertex[edges[e]];
         }
         tcells[0*4+0] = cone[0]+vertexOffset; tcells[0*4+1] = newVertices[3]; tcells[0*4+2] = newVertices[0]; tcells[0*4+3] = newVertices[2];
-        tcells[1*4+0] = cone[1]+vertexOffset; tcells[1*4+0] = newVertices[4]; tcells[1*4+0] = newVertices[1]; tcells[1*4+0] = newVertices[0];
-        tcells[2*4+0] = cone[2]+vertexOffset; tcells[2*4+0] = newVertices[5]; tcells[2*4+0] = newVertices[2]; tcells[2*4+0] = newVertices[1];
-        tcells[3*4+0] = cone[3]+vertexOffset; tcells[3*4+0] = newVertices[3]; tcells[3*4+0] = newVertices[5]; tcells[3*4+0] = newVertices[4];
-        tcells[4*4+0] = newVertices[0]; tcells[4*4+0] = newVertices[3]; tcells[4*4+0] = newVertices[4]; tcells[4*4+0] = newVertices[2];
-        tcells[5*4+0] = newVertices[1]; tcells[5*4+0] = newVertices[4]; tcells[5*4+0] = newVertices[5]; tcells[5*4+0] = newVertices[3];
-        tcells[6*4+0] = newVertices[2]; tcells[6*4+0] = newVertices[5]; tcells[6*4+0] = newVertices[3]; tcells[6*4+0] = newVertices[1];
-        tcells[7*4+0] = newVertices[0]; tcells[7*4+0] = newVertices[1]; tcells[7*4+0] = newVertices[2]; tcells[7*4+0] = newVertices[3];
+        tcells[1*4+0] = cone[1]+vertexOffset; tcells[1*4+1] = newVertices[4]; tcells[1*4+2] = newVertices[1]; tcells[1*4+3] = newVertices[0];
+        tcells[2*4+0] = cone[2]+vertexOffset; tcells[2*4+1] = newVertices[5]; tcells[2*4+2] = newVertices[2]; tcells[2*4+3] = newVertices[1];
+        tcells[3*4+0] = cone[3]+vertexOffset; tcells[3*4+1] = newVertices[3]; tcells[3*4+2] = newVertices[5]; tcells[3*4+3] = newVertices[4];
+        tcells[4*4+0] = newVertices[0]; tcells[4*4+1] = newVertices[3]; tcells[4*4+2] = newVertices[4]; tcells[4*4+3] = newVertices[2];
+        tcells[5*4+0] = newVertices[1]; tcells[5*4+1] = newVertices[4]; tcells[5*4+2] = newVertices[5]; tcells[5*4+3] = newVertices[3];
+        tcells[6*4+0] = newVertices[2]; tcells[6*4+1] = newVertices[5]; tcells[6*4+2] = newVertices[3]; tcells[6*4+3] = newVertices[1];
+        tcells[7*4+0] = newVertices[0]; tcells[7*4+1] = newVertices[1]; tcells[7*4+2] = newVertices[2]; tcells[7*4+3] = newVertices[3];
         *numCells = 8;
         *cells    = tcells;
       };
@@ -4776,6 +4776,7 @@ namespace ALE {
 
       // Calculate number of new cells
       const Obj<typename MeshType::label_sequence>&     cells       = mesh.heightStratum(0);
+      assert(!cells.isNull());
       const int                                         numCells    = cells->size();
       const typename MeshType::label_sequence::iterator cEnd        = cells->end();
       int                                               numNewCells = 0;
@@ -4786,12 +4787,14 @@ namespace ALE {
       }
       // Bound number of new vertices
       //const int maxNewVertices = numCells * 6;
-      const int  numVertices  = mesh.depthStratum(0)->size();
-      point_type curNewVertex = numNewCells + numVertices;
+      const int  numOldVertices  = mesh.depthStratum(0)->size();
+      point_type curNewVertex = numNewCells + numOldVertices;
 
       // Loop over cells
       const Obj<sieve_type>&                         sieve    = mesh.getSieve();
+      assert(!sieve.isNull());
       const Obj<sieve_type>&                         newSieve = newMesh.getSieve();
+      assert(!newSieve.isNull());
       ALE::ISieveVisitor::PointRetriever<sieve_type> cV(std::max(1, sieve->getMaxConeSize()));
 
       // First compute map from edges to new vertices
@@ -4846,14 +4849,14 @@ namespace ALE {
         }
         cV.clear();
 
-#if 0
+#if 0 // MATT- IS THIS DEBUGGING CODE OR UNFINISHED?
         //   Check that vertex does not yet exist
         point_type newVertices[6];
 
         for(int v = 0; v < 6; ++v) {
           newVertices[v] = edge2vertex[edges[v]];
-          vertex2edge[(newVertices[v]-numNewCells-numVertices)*2+0] = edges[v].first;
-          vertex2edge[(newVertices[v]-numNewCells-numVertices)*2+1] = edges[v].second;
+          vertex2edge[(newVertices[v]-numNewCells-numOldVertices)*2+0] = edges[v].first;
+          vertex2edge[(newVertices[v]-numNewCells-numOldVertices)*2+1] = edges[v].second;
         }
 #endif
       }
@@ -4867,12 +4870,14 @@ namespace ALE {
         newCoordinates->setFiberDimension(v, 3);
       }
       newCoordinates->allocatePoint();
-      for(int v = 0; v < numVertices; ++v) {
+      for(int v = 0; v < numOldVertices; ++v) {
         newCoordinates->updatePoint(v+numNewCells, coordinates->restrictPoint(v+numCells));
       }
-      for(int v = numNewCells+numVertices; v < curNewVertex; ++v) {
-        const int     endpointA = vertex2edge[(v-numNewCells-numVertices)*2+0];
-        const int     endpointB = vertex2edge[(v-numNewCells-numVertices)*2+1];
+      for(int v = numNewCells+numOldVertices; v < curNewVertex; ++v) {
+        const int     endpointA = vertex2edge[(v-numNewCells-numOldVertices)*2+0];
+        const int     endpointB = vertex2edge[(v-numNewCells-numOldVertices)*2+1];
+	std::cout << "Setting coordinates of vertex " << v << " between vertices "
+		  << endpointA << " and " << endpointB << std::endl;
         const double *coordsA   = coordinates->restrictPoint(endpointA);
         double        coords[3];
 
