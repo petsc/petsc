@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+
+from __future__ import with_statement  # For python-2.5
+
 import os, sys
 import shutil
 import tempfile
