@@ -284,6 +284,30 @@ static PetscErrorCode PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplySymmetricLeft_ILU"
+static PetscErrorCode PCApplySymmetricLeft_ILU(PC pc,Vec x,Vec y)
+{
+  PetscErrorCode ierr;
+  PC_ILU         *icc = (PC_ILU*)pc->data;
+
+  PetscFunctionBegin;
+  ierr = MatForwardSolve(((PC_Factor*)icc)->fact,x,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplySymmetricRight_ILU"
+static PetscErrorCode PCApplySymmetricRight_ILU(PC pc,Vec x,Vec y)
+{
+  PetscErrorCode ierr;
+  PC_ILU         *icc = (PC_ILU*)pc->data;
+
+  PetscFunctionBegin;
+  ierr = MatBackwardSolve(((PC_Factor*)icc)->fact,x,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*MC
      PCILU - Incomplete factorization preconditioners.
 
@@ -308,6 +332,9 @@ static PetscErrorCode PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
    Notes: Only implemented for some matrix formats. (for parallel see PCHYPRE for hypre's ILU)
 
           For BAIJ matrices this implements a point block ILU
+
+          The "symmetric" application of this preconditioner is not actually symmetric since L is not transpose(U) 
+          even when the matrix is not symmetric since the U stores the diagonals of the factorization.
 
    References:
    T. Dupont, R. Kendall, and H. Rachford. An approximate factorization procedure for solving
@@ -369,6 +396,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
   pc->ops->setfromoptions      = PCSetFromOptions_ILU;
   pc->ops->getfactoredmatrix   = PCFactorGetMatrix_Factor;
   pc->ops->view                = PCView_ILU;
+  pc->ops->applysymmetricleft  = PCApplySymmetricLeft_ILU;
+  pc->ops->applysymmetricright = PCApplySymmetricRight_ILU;
   pc->ops->applyrichardson     = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetZeroPivot_C","PCFactorSetZeroPivot_Factor",
