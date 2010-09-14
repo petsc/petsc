@@ -73,10 +73,12 @@ def bootstrap():
         mpicc = conf.get('mpicc')
     except ImportError: # mpi4py is not installed
         mpicc = os.environ.get('MPICC') or find_executable('mpicc')
-    except AttributeError: # mpi4py too old
+    except AttributeError: # mpi4py is too old
         pass
     if not mpi4py and mpicc:
-        metadata['requires'].append('mpi4py')
+        if (('distribute' in sys.modules) or
+            ('setuptools' in sys.modules)):
+            metadata['install_requires']= ['mpi4py>=1.2.2']
 
 def config(dry_run=False):
     log.info('PETSc: configure')
