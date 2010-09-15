@@ -35,8 +35,36 @@ class Configure(PETSc.package.NewPackage):
       if self.scalartypes.precision == 'double':
         self.setCompilers.addCompilerFlag('-arch sm_13')
       self.setCompilers.popLanguage()
+    self.checkSizeofVoidP()
     return
+  
+  def checkSizeofVoidP(self):
+    '''Checks if the CUDA compiler agrees with the C compiler on what size of void * should be'''
+    self.framework.log.write('Checking if sizeof(void*) in CUDA is the same as with regular compiler\n')
+    typeName = 'void*'
+    filename = 'conftestval'
+    includes = '''
+#include <sys/types.h>
+#if STDC_HEADERS
+#include <stdlib.h>
+#include <stdio.h>
+#include <stddef.h>
+#endif\n'''
+    body     = 'FILE *f = fopen("'+filename+'", "w");\n\nif (!f) exit(1);\nfprintf(f, "%lu\\n", (unsigned long)sizeof('+typeName+'));\n'                 
+    self.pushLanguage('CUDA')
+    if self.checkRun(includes, body) and os.path.exists(filename):
+      f    = file(filename)
+      size = int(f.read())
+      f.close()
+      os.remove(filename)
+    else:
+      raise RuntimeError('Error checking sizeof(void*) with CUDA')
+    if size != self.types.sizes['known-sizeof-void-p']:
+      raise RuntimeError('CUDA Error: sizeof(void*) with CUDA compiler is ' + str(size) + ' which differs from sizeof(void*) with C compiler')
+    self.popLanguage()
 
+  def checkVersion(self):
+    pass
   def configureLibrary(self):
     PETSc.package.NewPackage.configureLibrary(self)
     if not self.cusp.found or not self.thrust.found:
