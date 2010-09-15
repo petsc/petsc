@@ -2,7 +2,10 @@
 static char help[] = "Tests sequential and parallel MatMatMult() and MatPtAP(), sequential MatMatMultTranspose()\n\
 Input arguments are:\n\
   -f0 <input_file> -f1 <input_file> -f2 <input_file> -f3 <input_file> : file to load\n\n";
-/* e.g., mpiexec -n 3 ./ex94 -f0 $D/medium -f1 $D/medium -f2 $D/arco1 -f3 $D/arco1 */
+/* Example of usage:
+   ./ex94 -f0 <A_binary> -f1 <B_binary> -matmatmult_mat_view_info -matmatmulttr_mat_view_info
+   mpiexec -n 3 ./ex94 -f0 $D/medium -f1 $D/medium -f2 $D/arco1 -f3 $D/arco1 -matmatmult_mat_view_info
+*/
 
 #include "petscmat.h"
 
@@ -25,10 +28,13 @@ int main(int argc,char **args)
   Vec            v3,v4,v5;
   PetscInt       pm,pn,pM,pN;
   PetscTruth     Test_MatPtAP=PETSC_TRUE;
+  MatInfo        info;
   
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-fill",&fill,PETSC_NULL);CHKERRQ(ierr);
 
   /*  Load the matrices A and B */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],128,&flg);CHKERRQ(ierr);
@@ -75,6 +81,9 @@ int main(int argc,char **args)
   if (Test_MatMatMult){
     ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
     ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+    ierr = MatSetOptionsPrefix(C,"matmatmult_");CHKERRQ(ierr); /* enable option '-matmatmult_' for matrix C */
+    //ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
+    //ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMatMult: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded);
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha=1.0;
@@ -118,7 +127,6 @@ int main(int argc,char **args)
   if (size>1) Test_MatMatMultTr = PETSC_FALSE;
   if (Test_MatMatMultTr){
     PetscInt PN;
-    /* ierr = MatGetSize(B,&M,&N);CHKERRQ(ierr); */
     PN   = M/2;
     nzp  = 5; /* num of nonzeros in each row of P */
     ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr); 
@@ -140,6 +148,9 @@ int main(int argc,char **args)
     ierr = MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     
     ierr = MatMatMultTranspose(P,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+    ierr = MatSetOptionsPrefix(C,"matmatmulttr_");CHKERRQ(ierr); /* enable '-matmatmulttr_' for matrix C */
+    //ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
+    //ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMatMultTranspose: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded);
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha=1.0;

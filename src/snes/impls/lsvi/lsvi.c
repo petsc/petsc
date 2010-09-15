@@ -453,6 +453,46 @@ PetscErrorCode SNESLSVICheckDescentDirection(SNES snes,Vec dpsi, Vec Y,PetscTrut
   PetscFunctionReturn(0);
 }
 
+/*
+   SNESLSVIAdjustInitialGuess - Readjusts the initial guess to the SNES solver supplied by the user so that the initial guess lies inside the feasible region .
+
+   Input Parameters:
+.  lb - lower bound.
+.  ub - upper bound.
+
+   Output Parameters:
+.  X - the readjusted initial guess.
+
+   Notes:
+   The readjusted initial guess X[i] = max(max(min(l[i],X[i]),min(X[i],u[i])),min(l[i],u[i]))
+*/
+#undef __FUNCT__
+#define __FUNCT__ "SNESLSVIAdjustInitialGuess"
+PetscErrorCode SNESLSVIAdjustInitialGuess(Vec X, Vec lb, Vec ub)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,n,i_start,i_end;
+  PetscScalar    *x,*l,*u;
+
+  PetscFunctionBegin;
+
+  ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(X,&i_start,&i_end);CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(lb,&l);CHKERRQ(ierr);
+  ierr = VecGetArray(ub,&u);CHKERRQ(ierr);
+
+  for(i = i_start; i < i_end; i++) {
+    x[i] = PetscMax(PetscMax(PetscMin(x[i],l[i]),PetscMin(x[i],u[i])),PetscMin(l[i],u[i]));
+  }
+
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(lb,&l);CHKERRQ(ierr);
+  ierr = VecRestoreArray(ub,&u);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 /*  -------------------------------------------------------------------- 
 
      This file implements a semismooth truncated Newton method with a line search,
@@ -538,12 +578,13 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
   snes->iter = 0;
   snes->norm = 0.0;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+
+  ierr = SNESLSVIAdjustInitialGuess(X,lsvi->xl,lsvi->xu);CHKERRQ(ierr);
   ierr = SNESLSVIComputeSSFunction(snes,X,lsvi->phi);CHKERRQ(ierr);
   if (snes->domainerror) {
     snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
     PetscFunctionReturn(0);
   }
-
    /* Compute Merit function */
   ierr = SNESLSVIComputeMeritFunction(lsvi->phi,&lsvi->merit,&lsvi->phinorm);CHKERRQ(ierr);
 
