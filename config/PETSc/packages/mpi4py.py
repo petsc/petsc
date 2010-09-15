@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download          = ['http://mpi4py.googlecode.com/files/mpi4py-1.2.1.tar.gz']
+    self.download          = ['http://mpi4py.googlecode.com/files/mpi4py-1.2.2.tar.gz']
     self.functions         = []
     self.includes          = []
     self.liblist           = []
@@ -32,8 +32,14 @@ class Configure(PETSc.package.NewPackage):
     else:
       arch = self.arch
       self.addMakeRule('mpi4py_noinstall','mpi4py')      
+    archflags = ""
+    if self.setCompilers.isDarwin():
+      if self.types.sizes['known-sizeof-void-p'] == 32:
+        archflags = "ARCHFLAGS=\'-arch i386\'"
+      else:
+        archflags = "ARCHFLAGS=\'-arch x86_64\'"
     self.addMakeRule('mpi4py','', \
-                       ['@MPICC=${PCC}; export MPICC; cd '+self.packageDir+';python setup.py clean --all; python setup.py install --install-lib='+os.path.join(self.petscconfigure.installdir,'lib'),\
+                       ['@MPICC=${PCC}; export MPICC; cd '+self.packageDir+';python setup.py clean --all; '+archflags+' python setup.py install --install-lib='+os.path.join(self.installDir,'lib'),\
                           '@echo "====================================="',\
                           '@echo "To use mpi4py, add '+os.path.join(self.petscconfigure.installdir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])

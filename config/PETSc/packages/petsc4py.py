@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download          = ['http://petsc4py.googlecode.com/files/petsc4py-1.1.tar.gz']
+    self.download          = ['http://petsc4py.googlecode.com/files/petsc4py-1.1.1.tar.gz']
     self.functions         = []
     self.includes          = []
     self.liblist           = []
@@ -31,12 +31,18 @@ class Configure(PETSc.package.NewPackage):
       self.addMakeRule('petsc4py_noinstall','')
     else:
       arch = self.arch
-      self.addMakeRule('petsc4py_noinstall','petsc4py')      
+      self.addMakeRule('petsc4py_noinstall','petsc4py')
+    archflags = ""
+    if self.setCompilers.isDarwin():
+      if self.types.sizes['known-sizeof-void-p'] == 32:
+        archflags = "ARCHFLAGS=\'-arch i386\'"
+      else:
+        archflags = "ARCHFLAGS=\'-arch x86_64\'"
     self.addMakeRule('petsc4py','', \
-                       ['@cd '+self.packageDir+';python setup.py clean --all; python setup.py install --install-lib='+os.path.join(self.petscconfigure.installdir,'lib'),\
+                       ['@cd '+self.packageDir+';python setup.py clean --all; '+archflags+' python setup.py install --install-lib='+os.path.join(self.installDir,'lib'),\
                           '@echo "====================================="',\
                           '@echo "To use petsc4py, add '+os.path.join(self.petscconfigure.installdir,'lib')+' to PYTHONPATH"',\
-                          '@echo "====================================="'])
+                          '@echo "====================================="'])      
     
     return self.installDir
 
