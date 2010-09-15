@@ -36,7 +36,7 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  Redundant preconditioner: First (color=0) of %D PCs follows\n",red->nsubcomm);CHKERRQ(ierr);
       ierr = PetscViewerGetSubcomm(viewer,((PetscObject)red->pc)->comm,&subviewer);CHKERRQ(ierr);
-      if (red->psubcomm->color) { /* only view first redundant pc */
+      if (!red->psubcomm->color) { /* only view first redundant pc */
 	ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
 	ierr = KSPView(red->ksp,subviewer);CHKERRQ(ierr);
 	ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
