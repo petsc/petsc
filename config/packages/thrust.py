@@ -11,6 +11,7 @@ class Configure(config.package.Package):
     self.cxx             = 0
     self.archIndependent = 1
     self.worksonWindows  = 1
+    self.version         = '100300'
     return
 
   def Install(self):
@@ -30,4 +31,17 @@ class Configure(config.package.Package):
     import os
     yield os.path.join('/usr','local','cuda')
     yield ''
+    return
+
+  def configureLibrary(self):
+    '''Calls the regular package configureLibrary and then does an additional tests needed by Thrust'''
+    config.package.Package.configureLibrary(self)
+    self.executeTest(self.checkVersion)
+    return
+
+  def checkVersion(self):
+    self.pushLanguage('CUDA')
+    if not self.checkRun('#include <thrust/version.h>\n', 'if (THRUST_VERSION != ' + self.version +') return 1'):
+      raise RuntimeError('Thrust version error: PETSC currently requires Thrust version '+ str(int(self.version)/100000) + '.' + str(int(self.version) / 100 % 1000) + '.' + str(int(self.version) % 100) + ' when compiling with CUDA')
+    self.popLanguage()
     return

@@ -11,6 +11,7 @@ class Configure(config.package.Package):
     self.cxx             = 0
     self.archIndependent = 1
     self.worksonWindows  = 1
+    self.version         = '100'
     return
 
   def setupDependencies(self, framework):
@@ -49,4 +50,12 @@ class Configure(config.package.Package):
     '''Calls the regular package configureLibrary and then does an additional tests needed by CUSP'''
     config.package.Package.configureLibrary(self)
     self.executeTest(self.configurePC)
+    self.executeTest(self.checkVersion)
+    return
+
+  def checkVersion(self):
+    self.pushLanguage('CUDA')
+    if not self.checkRun('#include <cusp/version.h>\n', 'if (CUSP_VERSION != ' + self.version +') return 1'):
+      raise RuntimeError('Cusp version error: PETSC currently requires Cusp version '+ str(int(self.version) / 100000) + '.' + str(int(self.version) / 100 % 1000) + '.' + str(int(self.version) % 100) + ' when compiling with CUDA')
+    self.popLanguage()
     return
