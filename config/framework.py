@@ -67,7 +67,7 @@ except NameError:
 
 class Framework(config.base.Configure, script.LanguageProcessor):
   '''This needs to manage configure information in itself just as Builder manages it for configurations'''
-  def __init__(self, clArgs = None, argDB = None, loadArgDB = 1):
+  def __init__(self, clArgs = None, argDB = None, loadArgDB = 1, tmpDir = None):
     import graph
     import nargs
 
@@ -76,7 +76,10 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
       argDB = RDict.RDict(load = loadArgDB)
     # Storage for intermediate test results
-    self.tmpDir             = tempfile.mkdtemp(prefix = 'petsc-')
+    if tmpDir is None:
+      self.tmpDir        = tempfile.mkdtemp(prefix = 'petsc-')
+    else:
+      self.tmpDir        = tmpDir
     script.LanguageProcessor.__init__(self, clArgs, argDB)
     config.base.Configure.__init__(self, self, self.tmpDir)
     self.childGraph      = graph.DirectedGraph()
