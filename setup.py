@@ -34,9 +34,6 @@ def get_petsc_dir():
     import os
     return os.path.dirname(__file__)
 
-def get_petsc_arch():
-    return ''
-
 def get_config():
     conf = {}
     conf['petsc_dir'] = get_petsc_dir()
