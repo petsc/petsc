@@ -58,8 +58,7 @@ def bootstrap():
         if not os.path.exists(PETSC_ARCH):
             os.mkdir(PETSC_ARCH)
         pkgfile = os.path.join(PETSC_ARCH, '__init__.py')
-        if not os.path.exists(pkgfile):
-            open(pkgfile, 'wt').write(init_py)
+        open(pkgfile, 'wt').write(init_py)
     except:
         pass
     # Simple-minded lookup for MPI and mpi4py
@@ -96,10 +95,8 @@ def config(dry_run=False):
         options.append('--with-cc='+mpicc)
     else:
         options.append('--with-mpi=0')
-    options.extend([
-        '--with-fc=0',    # XXX mpif90?
-        '--with-cxx=0',   # XXX mpicxx?
-        ])
+    options.append('--with-cxx=0') # XXX mpicxx?
+    options.append('--with-fc=0')  # XXX mpif90?
     # Run PETSc configure
     import configure
     configure.petsc_configure(options)
@@ -129,42 +126,34 @@ def install(dest_dir, prefix=None, dry_run=False):
     install.Installer(options).run()
     import logger
     logger.Logger.defaultLog = None
-    # temporary hack - delete log files created by BuildSystem
-    delfiles=['RDict.db','RDict.log',
-              'build.log','default.log',
-              'build.log.bkp','default.log.bkp']
-    for delfile in delfiles:
-        try:
-            if (os.path.exists(delfile) and
-                os.stat(delfile).st_uid==0):
-                os.remove(delfile)
-        except:
-            pass
+
+class context:
+    def __init__(self):
+        self.sys_argv = sys.argv[:]
+        self.wdir = os.getcwd()
+    def enter(self):
+        del sys.argv[1:]
+        pdir = os.environ['PETSC_DIR']
+        os.chdir(pdir)
+        return self
+    def exit(self):
+        sys.argv[:] = self.sys_argv
+        os.chdir(self.wdir)
 
 class cmd_build(_build):
 
-    def finalize_options(self):
-        if self.build_base is None:
-            self.build_base= 'build'
-        self.build_base = os.path.join(
-            os.environ['PETSC_ARCH'], self.build_base)
-        _build.finalize_options(self)
-
     def run(self):
         _build.run(self)
-        wdir = os.getcwd()
-        pdir = os.environ['PETSC_DIR']
+        ctx = context().enter()
         try:
-            os.chdir(pdir)
             config(self.dry_run)
             build(self.dry_run)
         finally:
-            os.chdir(wdir)
+            ctx.exit()
 
 class cmd_install(_install):
 
     def run(self):
-        _install.run(self)
         root_dir = self.install_platlib
         dest_dir = os.path.join(root_dir, 'petsc')
         bdist_base = self.get_finalized_command('bdist').bdist_base
@@ -174,28 +163,21 @@ class cmd_install(_install):
         else:
             prefix = dest_dir
         dest_dir = os.path.abspath(dest_dir)
-        prefix = os.path.abspath(prefix)
-        wdir = os.getcwd()
-        pdir = os.environ['PETSC_DIR']
+        prefix   = os.path.abspath(prefix)
+        #
+        _install.run(self)
+        ctx = context().enter()
         try:
-            os.chdir(pdir)
             install(dest_dir, prefix, self.dry_run)
         finally:
-            os.chdir(wdir)
+            ctx.exit()
 
 class cmd_sdist(_sdist):
 
     def initialize_options(self):
         _sdist.initialize_options(self)
         self.force_manifest = 1
-        self.template = os.path.join('config', 'MANIFEST.in')
-
-    def run(self):
-        _sdist.run(self)
-        try:
-            os.remove(self.manifest)
-        except Exception:
-            pass
+        self.template = os.path.join('config', 'manifest.in')
 
 def version():
     return '3.2.dev1' # XXX should parse include/petscversion.h
@@ -233,12 +215,12 @@ setup(name='petsc',
       download_url=tarball(),
 
       author='PETSc Team',
-      author_email='petsc-users@mcs.anl.gov',
+      author_email='petsc-maint@mcs.anl.gov',
       maintainer='Lisandro Dalcin',
       maintainer_email='dalcinl@gmail.com',
 
       packages = ['petsc'],
-      package_dir = {'petsc': os.environ['PETSC_ARCH']},
+      package_dir = {'petsc': PETSC_ARCH},
       cmdclass={
         'build': cmd_build,
         'install': cmd_install,
