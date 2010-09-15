@@ -455,6 +455,8 @@ class Configure(config.base.Configure):
       except RuntimeError, e:
         import os
 
+        import sys,traceback
+        traceback.print_tb(sys.exc_info()[2])
         self.logPrint('Error testing C compiler: '+str(e))
         if os.path.basename(self.CC) == 'mpicc':
           self.framework.logPrint(' MPI installation '+str(self.CC)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
@@ -519,6 +521,8 @@ class Configure(config.base.Configure):
       try:
         if self.getExecutable(compiler, resultName = 'CUDAC'):
           self.checkCompiler('CUDA')
+          # Put version info into the log
+          self.executeShellCommand(self.CUDAC+' --version')
           break
       except RuntimeError, e:
         self.logPrint('Error testing CUDA compiler: '+str(e))

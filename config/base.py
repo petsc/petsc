@@ -61,13 +61,12 @@ import script
 
 import os
 import time
-import tempfile
 
 class ConfigureSetupError(Exception):
   pass
 
 class Configure(script.Script):
-  def __init__(self, framework):
+  def __init__(self, framework, tmpDir = None):
     script.Script.__init__(self, framework.clArgs, framework.argDB)
     self.framework       = framework
     self.defines         = {}
@@ -78,17 +77,14 @@ class Configure(script.Script):
     self.subst           = {}
     self.argSubst        = {}
     self.language        = []
-    self.tmpDir          = tempfile.mkdtemp(prefix='petsc-')
+    if tmpDir is None:
+      self.tmpDir        = os.path.join(self.framework.tmpDir, self.__module__)
+    else:
+      self.tmpDir        = tmpDir
+    if not os.path.isdir(self.tmpDir): os.mkdir(self.tmpDir)
     self.compilerDefines = os.path.join(self.tmpDir, 'confdefs.h')
     self.compilerFixes   = os.path.join(self.tmpDir, 'conffix.h')
     self.pushLanguage('C')
-    return
-
-  def __del__(self):
-    if not os.path.isdir(self.tmpDir):
-      raise RuntimeError('How the hell could my tmpDir disappear?')
-    import shutil
-    shutil.rmtree(self.tmpDir)
     return
 
   def __str__(self):
@@ -321,12 +317,14 @@ class Configure(script.Script):
     self.getCompiler()
     preprocessor = self.framework.getPreprocessorObject(self.language[-1])
     preprocessor.checkSetup()
+    preprocessor.includeDirectories.add(self.tmpDir)
     return preprocessor.getCommand(self.compilerSource)
 
   def getCompilerCmd(self):
     self.getCompiler()
     compiler = self.framework.getCompilerObject(self.language[-1])
     compiler.checkSetup()
+    compiler.includeDirectories.add(self.tmpDir)
     return compiler.getCommand(self.compilerSource, self.compilerObj)
 
   def getLinkerCmd(self):
@@ -359,7 +357,7 @@ class Configure(script.Script):
       includes += '\n'
     if language in ['C', 'CUDA', 'Cxx']:
       codeStr = ''
-      if self.compilerDefines: codeStr = '#include "'+self.compilerDefines+'"\n'
+      if self.compilerDefines: codeStr = '#include "'+os.path.basename(self.compilerDefines)+'"\n'
       codeStr += '#include "conffix.h"\n'+includes
       if not body is None:
         if codeBegin is None:

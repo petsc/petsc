@@ -13,6 +13,7 @@ class Preprocessor(config.compile.processor.Processor):
   def __init__(self, argDB):
     config.compile.processor.Processor.__init__(self, argDB, 'CUDAPP', 'CUDAPPFLAGS', '.cpp', '.c')
     self.language        = 'CUDA'
+    self.includeDirectories = sets.Set()
     return
 
 class Compiler(config.compile.processor.Processor):
@@ -47,7 +48,7 @@ class Linker(config.compile.C.Linker):
   def __init__(self, argDB):
     self.language        = 'C'
     self.compiler        = Compiler(argDB, usePreprocessorFlags = False)
-    self.configLibraries = config.libraries.Configure(config.framework.Framework(clArgs = '', argDB = argDB))
+    self.configLibraries = config.libraries.Configure(config.framework.Framework(clArgs = '', argDB = argDB, tmpDir = os.getcwd()))
     config.compile.processor.Processor.__init__(self, argDB, [self.compiler.name], ['CUDAC_LINKER_FLAGS'], '.o', '.a')
     self.outputFlag = '-o'
     self.libraries  = sets.Set()
