@@ -47,19 +47,20 @@ class Configure(config.base.Configure):
     self.getExecutable('sed',  getFullPath = 1)
     if not hasattr(self, 'sed'): raise RuntimeError('Could not locate sed executable')
     # check if sed supports -i "" or -i option
-    f = file('sed1', 'w')
+    sed1 = os.path.join(self.tmpDir,'sed1')
+    f = open(sed1, 'w')
     f.write('sed\n')
     f.close()
     for sedcmd in [self.sed+' -i',self.sed+' -i ""','perl -pi -e']:
       try:
-        (out,err,status) = Configure.executeShellCommand(sedcmd + ' s/sed/sd/g sed1')
+        (out,err,status) = Configure.executeShellCommand('%s s/sed/sd/g "%s"'%(sedcmd,sed1))
         self.framework.logPrint('Adding SEDINPLACE cmd: '+sedcmd)
         self.addMakeMacro('SEDINPLACE',sedcmd)
         status = 1
         break
       except RuntimeError:
         self.framework.logPrint('Rejected SEDINPLACE cmd: '+sedcmd)
-    os.unlink('sed1')
+    os.unlink(sed1)
     if not status:
         self.framework.logPrint('No suitable SEDINPLACE found')
         self.addMakeMacro('SEDINPLACE','SEDINPLACE_NOT_FOUND')
@@ -74,18 +75,20 @@ class Configure(config.base.Configure):
     self.getExecutable('diff', getFullPath = 1,setMakeMacro=0)
     if hasattr(self, 'diff'):
       # check if diff supports -w option for ignoring whitespace
-      f = file('diff1', 'w')
-      f.write('diff\n')
-      f.close()
-      f = file('diff2', 'w')
-      f.write('diff  \n')
-      f.close()
+      def mkfile(base,contents):
+        fname = os.path.join(self.tmpDir,base)
+        f = open(fname,'w')
+        f.write(contents)
+        f.close
+        return fname
+      diff1 = mkfile('diff1','diff\n')
+      diff2 = mkfile('diff2','diff  \n')
       try:
-        (out,err,status) = Configure.executeShellCommand(self.diff+' -w diff1 diff2')
+        (out,err,status) = Configure.executeShellCommand('"%s" -w "%s" "%s"' % (self.diff,diff1,diff2))
       except RuntimeError:
         status = 1
-      os.unlink('diff1')
-      os.unlink('diff2')
+      os.unlink(diff1)
+      os.unlink(diff2)
       if status:
         (buf,err,status) = Configure.executeShellCommand('/bin/rpm -q diffutils')
         if buf.find('diffutils-2.8.1-17.fc8') > -1:
