@@ -542,6 +542,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(PetscInt port)
   char           *method, *path, *protocol;
   struct         stat statbuf;
   PetscTruth     flg;
+  PetscToken     tok;
 
   PetscFunctionBegin;
   fd = fdopen(port, "r+");
@@ -553,11 +554,14 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(PetscInt port)
   }
   ierr = PetscInfo1(PETSC_NULL,"Processing web request %s",buf);CHKERRQ(ierr);
 
-  method = strtok(buf, " ");
-  path = strtok(NULL, " ");
-  protocol = strtok(NULL, "\r");
+  ierr = PetscTokenCreate(buf,' ',&tok);CHKERRQ(ierr);
+  ierr = PetscTokenFind(tok,&method);CHKERRQ(ierr);
+  ierr = PetscTokenFind(tok,&path);CHKERRQ(ierr);
+  ierr = PetscTokenFind(tok,&protocol);CHKERRQ(ierr);
+
   if (!method || !path || !protocol) {
     ierr = PetscInfo(PETSC_NULL,"Web request not well formatted, giving up\n");CHKERRQ(ierr); 
+    ierr = PetscTokenDestroy(tok);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }   
 
@@ -567,18 +571,19 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(PetscInt port)
   if (!flg) {
     send_error(fd, 501, "Not supported", NULL, "Method is not supported.");
     ierr = PetscInfo(PETSC_NULL,"Web request not a GET, giving up\n");CHKERRQ(ierr); 
+    ierr = PetscTokenDestroy(tok);CHKERRQ(ierr);
   } else {
     ierr = PetscStrcmp(path,"/favicon.ico",&flg);CHKERRQ(ierr);
     if (flg) {
       /* should have cool PETSc icon */;
     } else {
       send_headers(fd, 200, "OK", NULL, "text/html", -1, statbuf.st_mtime);
-      fprintf(fd, "<HTML><HEAD><TITLE>Index of </TITLE></HEAD>\r\n<BODY>");
-      fprintf(fd, "<H4>Index of </H4>\r\n<PRE>\n");
-      fprintf(fd, "Name Last Modified Size\r\n");
+      fprintf(fd, "<HTML><HEAD><TITLE>Petsc Application Server</TITLE></HEAD>\r\n<BODY>");
+      fprintf(fd, "<H4>Request of %s </H4>\r\n\n",path);
       fprintf(fd, "<HR>\r\n");
       fprintf(fd, "</BODY></HTML>\r\n");
     }
+    ierr = PetscTokenDestroy(tok);CHKERRQ(ierr);
   }
   fclose(fd);
   ierr = PetscInfo(PETSC_NULL,"Finished processing request\n");CHKERRQ(ierr); 
