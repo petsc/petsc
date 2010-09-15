@@ -38,6 +38,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   PetscInt           i,j,anzi,brow,bnzj,cnzi,nlnk,*lnk,nspacedouble=0;
   MatScalar          *ca;
   PetscBT            lnkbt;
+  PetscReal          afill;
 
   PetscFunctionBegin;
   /* Set up */
@@ -107,10 +108,17 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   c->free_ij  = PETSC_TRUE;
   c->nonew    = 0;
 
+  /* set MatInfo */
+  afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
+  if (afill < 1.0) afill = 1.0;
+  c->maxnz                     = ci[am]; 
+  c->nz                        = ci[am];
+  (*C)->info.mallocs           = nspacedouble;
+  (*C)->info.fill_ratio_given  = fill;               
+  (*C)->info.fill_ratio_needed = afill; 
+
 #if defined(PETSC_USE_INFO)
-  if (ci[am] != 0) {
-    PetscReal afill = ((PetscReal)ci[am])/(ai[am]+bi[bm]);
-    if (afill < 1.0) afill = 1.0;
+  if (ci[am]) {
     ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %G needed %G.\n",nspacedouble,fill,afill);CHKERRQ(ierr);
     ierr = PetscInfo1((*C),"Use MatMatMult(A,B,MatReuse,%G,&C) for best performance.;\n",afill);CHKERRQ(ierr);
   } else {
@@ -201,7 +209,6 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   /* clean up */
   ierr = MatDestroy(At);CHKERRQ(ierr);
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(A,&ati,&atj);CHKERRQ(ierr);
- 
   PetscFunctionReturn(0);
 }
 
