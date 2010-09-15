@@ -519,6 +519,8 @@ class Configure(config.base.Configure):
       try:
         if self.getExecutable(compiler, resultName = 'CUDAC'):
           self.checkCompiler('CUDA')
+          # Put version info into the log
+          self.executeShellCommand(self.CUDAC+' --version')
           break
       except RuntimeError, e:
         self.logPrint('Error testing CUDA compiler: '+str(e))

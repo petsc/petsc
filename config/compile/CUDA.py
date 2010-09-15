@@ -13,6 +13,7 @@ class Preprocessor(config.compile.processor.Processor):
   def __init__(self, argDB):
     config.compile.processor.Processor.__init__(self, argDB, 'CUDAPP', 'CUDAPPFLAGS', '.cpp', '.c')
     self.language        = 'CUDA'
+    self.includeDirectories = sets.Set()
     return
 
 class Compiler(config.compile.processor.Processor):

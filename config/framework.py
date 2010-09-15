@@ -44,6 +44,7 @@ import user
 import script
 import config.base
 import time
+import tempfile
 
 import os
 import re
@@ -74,8 +75,10 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       import RDict
 
       argDB = RDict.RDict(load = loadArgDB)
+    # Storage for intermediate test results
+    self.tmpDir             = tempfile.mkdtemp(prefix = 'petsc-')
     script.LanguageProcessor.__init__(self, clArgs, argDB)
-    config.base.Configure.__init__(self, self)
+    config.base.Configure.__init__(self, self, self.tmpDir)
     self.childGraph      = graph.DirectedGraph()
     self.substRE         = re.compile(r'@(?P<name>[^@]+)@')
     self.substFiles      = {}
@@ -106,6 +109,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.createChildren()
     # Create argDB for user specified options only
     self.clArgDB = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.clArgs])
+    self.logPrint('All intermediate test results are stored in '+self.tmpDir)
     return
 
   def __getstate__(self):
@@ -285,6 +289,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.actions.addArgument('Framework', 'File creation', 'Created C specific configure header '+self.cHeader)
     self.log.write('\n')
     self.actions.output(self.log)
+    if os.path.isdir(self.tmpDir):
+      import shutil
+      shutil.rmtree(self.tmpDir)
     return
 
   def printSummary(self):

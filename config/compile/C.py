@@ -11,6 +11,7 @@ class Preprocessor(config.compile.processor.Processor):
   '''The C preprocessor'''
   def __init__(self, argDB):
     config.compile.processor.Processor.__init__(self, argDB, 'CPP', 'CPPFLAGS', '.cpp', '.c')
+    self.includeDirectories = sets.Set()
     return
 
 class Compiler(config.compile.processor.Processor):
