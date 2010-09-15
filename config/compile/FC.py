@@ -12,6 +12,7 @@ class Preprocessor(config.compile.C.Preprocessor):
     config.compile.C.Preprocessor.__init__(self, argDB)
     self.language        = 'FC'
     self.targetExtension = '.F'
+    self.includeDirectories = sets.Set()
     return
 
 class Compiler(config.compile.processor.Processor):
