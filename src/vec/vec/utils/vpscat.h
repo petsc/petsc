@@ -17,7 +17,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   PetscScalar            *xv,*yv,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
-  PetscInt               i,k,*indices,*sstarts,nrecvs,nsends,bs,*sindices;
+  PetscInt               i,*indices,*sstarts,nrecvs,nsends,bs;
 
   PetscFunctionBegin;
   if (mode & SCATTER_REVERSE) {
@@ -40,7 +40,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
 #if defined(PETSC_HAVE_CUDA)
   if (xin->valid_GPU_array == PETSC_CUDA_GPU) {
     if (!ctx->spptr) {
-      PetscInt *tindices,n = sstarts[nsends];
+      PetscInt k,*tindices,n = sstarts[nsends],*sindices;
       ierr = PetscMalloc(n*sizeof(PetscInt),&tindices);CHKERRQ(ierr);
       ierr = PetscMemcpy(tindices,to->indices,n*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = PetscSortRemoveDupsInt(&n,tindices);CHKERRQ(ierr);

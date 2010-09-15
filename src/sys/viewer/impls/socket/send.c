@@ -89,7 +89,7 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 /*
     PetscSocketOpen - handles connected to an open port where someone is waiting.
 
-.seealso:   SOCKAnswer_Private()
+.seealso:   PetscSocketListen(), PetscSocketEstablish()
 */
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenSocket(char *hostname,int portnum,int *t)
 {
@@ -159,17 +159,14 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenSocket(char *hostname,int portnum,int
 }
 
 #define MAXHOSTNAME 100
-/*-----------------------------------------------------------------*/
-/* The listenport variable is an ugly hack. If the user hits a         */
-/* control c while we are listening then we stop listening         */
-/* but do not close the listen. Therefore if we try to bind again  */
-/* and get an address in use, close the listen which was left      */
-/* hanging; the problem is if the user uses several portnumbers    */
-/* and control c we may not be able to close the correct listener. */
-static int listenport;
 #undef __FUNCT__  
-#define __FUNCT__ "SOCKEstablish_Private"
-static PetscErrorCode SOCKEstablish_Private(u_short portnum,int *ss)
+#define __FUNCT__ "PetscSocketEstablish"
+/*
+   PetscSocketEstablish - starts a listener on a socket
+
+.seealso:   PetscSocketListen()
+*/
+PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
 {
   char               myname[MAXHOSTNAME+1];
   int                s;
@@ -187,7 +184,7 @@ static PetscErrorCode SOCKEstablish_Private(u_short portnum,int *ss)
   if (!hp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to get hostent information from system");
 
   sa.sin_family = hp->h_addrtype; 
-  sa.sin_port = htons(portnum); 
+  sa.sin_port = htons((u_short)portnum); 
 
   if ((s = socket(AF_INET,SOCK_STREAM,0)) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Error running socket() command");
   ierr = setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));CHKERRQ(ierr);
@@ -202,7 +199,6 @@ static PetscErrorCode SOCKEstablish_Private(u_short portnum,int *ss)
       close(s);
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Error from bind()");
     }
-    close(listenport); 
   }
   listen(s,0);
   *ss = s;
@@ -210,10 +206,14 @@ static PetscErrorCode SOCKEstablish_Private(u_short portnum,int *ss)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SOCKAnswer_Private"
-static PetscErrorCode SOCKAnswer_Private(int portnumber,int *t)
+#define __FUNCT__ "PetscSocketListen"
+/*
+   PetscSocketListens - Listens at a socket created with PetscSocketEstablish()
+
+.seealso:   PetscSocketEstablish()
+*/
+PetscErrorCode PetscSocketListen(int listenport,int *t)
 {
-  PetscErrorCode     ierr;
   struct sockaddr_in isa; 
 #if defined(PETSC_HAVE_ACCEPT_SIZE_T)
   size_t             i;
@@ -222,13 +222,9 @@ static PetscErrorCode SOCKAnswer_Private(int portnumber,int *t)
 #endif
 
   PetscFunctionBegin;
-/* open port*/
-  ierr = SOCKEstablish_Private((u_short) portnumber,&listenport);CHKERRQ(ierr);
-
-/* wait for someone to try to connect */
+  /* wait for someone to try to connect */
   i = sizeof(struct sockaddr_in);
   if ((*t = accept(listenport,(struct sockaddr *)&isa,(socklen_t *)&i)) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"error from accept()\n");
-  close(listenport);  
   PetscFunctionReturn(0);
 }
 
@@ -403,8 +399,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,c
   if (!rank) {
     ierr = PetscStrcmp(mach,"server",&tflg);CHKERRQ(ierr);
     if (tflg) {
+      int listenport;
       ierr = PetscInfo1(v,"Waiting for connection from socket process on port %D\n",port);CHKERRQ(ierr);
-      ierr = SOCKAnswer_Private((int)port,&vmatlab->port);CHKERRQ(ierr);
+      ierr = PetscSocketEstablish((int)port,&listenport);CHKERRQ(ierr);
+      ierr = PetscSocketListen(listenport,&vmatlab->port);CHKERRQ(ierr);
+      close(listenport);  
     } else {
       ierr = PetscInfo2(v,"Connecting to socket process on port %D machine %s\n",port,mach);CHKERRQ(ierr);
       ierr = PetscOpenSocket(mach,(int)port,&vmatlab->port);CHKERRQ(ierr);
@@ -483,8 +482,146 @@ PetscViewer PETSCSYS_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
   PetscFunctionReturn(viewer);
 }
 
+#include <string.h>
+#include <time.h>
+#include <sys/stat.h>
+#define SERVER     "webserver/1.0"
+#define PROTOCOL   "HTTP/1.0"
+#define RFC1123FMT "%a, %d %b %Y %H:%M:%S GMT"
 
+void send_headers(FILE *f, int status, const char *title, const char *extra, const char *mime, int length, time_t date)
+{
+  time_t now;
+  char   timebuf[128];
 
+  fprintf(f, "%s %d %s\r\n", PROTOCOL, status, title);
+  fprintf(f, "Server: %s\r\n", SERVER);
+  now = time(NULL);
+  strftime(timebuf, sizeof(timebuf), RFC1123FMT, gmtime(&now));
+  fprintf(f, "Date: %s\r\n", timebuf);
+  if (extra) fprintf(f, "%s\r\n", extra);
+  if (mime) fprintf(f, "Content-Type: %s\r\n", mime);
+  if (length >= 0) fprintf(f, "Content-Length: %d\r\n", length);
+  if (date != -1)
+  {
+    strftime(timebuf, sizeof(timebuf), RFC1123FMT, gmtime(&date));
+    fprintf(f, "Last-Modified: %s\r\n", timebuf);
+  }
+  fprintf(f, "Connection: close\r\n");
+  fprintf(f, "\r\n");
+}
+
+void send_error(FILE *f, int status, const char *title, const char *extra, const char *text)
+{
+  send_headers(f, status, title, extra, "text/html", -1, -1);
+  fprintf(f, "<HTML><HEAD><TITLE>%d %s</TITLE></HEAD>\r\n", status, title);
+  fprintf(f, "<BODY><H4>%d %s</H4>\r\n", status, title);
+  fprintf(f, "%s\r\n", text);
+  fprintf(f, "</BODY></HTML>\r\n");
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscWebServeRequest"
+/*@C
+      PetscWebServeRequest - serves a single web request
+
+    Not collective 
+
+  Input Parameters:
+.   port - the port
+
+    Level: developer
+
+.seealso: PetscWebServe()
+@*/ 
+PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(PetscInt port)
+{
+  PetscErrorCode ierr;
+  FILE           *fd;
+  char           buf[4096];
+  char           *method, *path, *protocol;
+  struct         stat statbuf;
+  PetscTruth     flg;
+
+  PetscFunctionBegin;
+  fd = fdopen(port, "r+");
+
+  ierr = PetscInfo(PETSC_NULL,"Processing web request\n");CHKERRQ(ierr);
+  if (!fgets(buf, sizeof(buf), fd)) {
+    ierr = PetscInfo(PETSC_NULL,"Cannot read web request, giving up\n");CHKERRQ(ierr); 
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscInfo1(PETSC_NULL,"Processing web request %s",buf);CHKERRQ(ierr);
+
+  method = strtok(buf, " ");
+  path = strtok(NULL, " ");
+  protocol = strtok(NULL, "\r");
+  if (!method || !path || !protocol) {
+    ierr = PetscInfo(PETSC_NULL,"Web request not well formatted, giving up\n");CHKERRQ(ierr); 
+    PetscFunctionReturn(0);
+  }   
+
+  fseek(fd, 0, SEEK_CUR); // Force change of stream direction
+
+  ierr = PetscStrcmp(method,"GET",&flg);
+  if (!flg) {
+    send_error(fd, 501, "Not supported", NULL, "Method is not supported.");
+    ierr = PetscInfo(PETSC_NULL,"Web request not a GET, giving up\n");CHKERRQ(ierr); 
+  } else {
+    ierr = PetscStrcmp(path,"/favicon.ico",&flg);CHKERRQ(ierr);
+    if (flg) {
+      /* should have cool PETSc icon */;
+    } else {
+      send_headers(fd, 200, "OK", NULL, "text/html", -1, statbuf.st_mtime);
+      fprintf(fd, "<HTML><HEAD><TITLE>Index of </TITLE></HEAD>\r\n<BODY>");
+      fprintf(fd, "<H4>Index of </H4>\r\n<PRE>\n");
+      fprintf(fd, "Name Last Modified Size\r\n");
+      fprintf(fd, "<HR>\r\n");
+      fprintf(fd, "</BODY></HTML>\r\n");
+    }
+  }
+  fclose(fd);
+  ierr = PetscInfo(PETSC_NULL,"Finished processing request\n");CHKERRQ(ierr); 
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscWebServe"
+/*@C
+      PetscWebServe - start up the PETSc web server and respond to requests
+
+    Not collective - only does something on process zero of the communicator
+
+  Input Parameters:
++   comm - the MPI communicator
+-   port - port to listen on
+
+    Level: developer
+
+.seealso: PetscViewerSocketOpen()
+@*/ 
+PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServe(MPI_Comm comm,PetscInt port)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    rank;
+  PetscInt       iport,listenport;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (rank) PetscFunctionReturn(0);
+   
+  if (port == PETSC_DECIDE) port = 8080;
+  ierr = PetscInfo1(PETSC_NULL,"Starting webserver at port %D\n",port);CHKERRQ(ierr);
+  ierr = PetscSocketEstablish(port,&listenport);CHKERRQ(ierr);
+  while (1) {
+    ierr = PetscSocketListen(listenport,&iport);CHKERRQ(ierr);
+    ierr = PetscWebServeRequest(iport);CHKERRQ(ierr);
+    close(iport);
+  }
+  close(listenport);
+  PetscFunctionReturn(0);
+}
 
 
 

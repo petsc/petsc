@@ -1,4 +1,4 @@
-function ex41(np,opt)
+function ex42(np,opt)
 %
 %  ex41(np,opt) - receives a matrix and vector from Matlab via socket
 %  solves the linear system and returns the solution vector

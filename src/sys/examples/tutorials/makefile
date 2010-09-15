@@ -6,7 +6,7 @@ FFLAGS	        = -I${PETSC_DIR}/include/finclude
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex5.c ex6.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c
 EXAMPLESF       = ex3f.F ex4f90.F90 ex5f90.F90 
 MANSEC          = Sys
 CLEANFILES      = binaryoutput binaryoutput.info
@@ -53,6 +53,10 @@ ex5f90: ex5f90.o  chkopts
 ex6: ex6.o   chkopts
 	-${CLINKER} -o ex6 ex6.o  ${PETSC_SYS_LIB}
 	${RM} -f ex6.o
+
+ex7: ex7.o   chkopts
+	-${CLINKER} -o ex7 ex7.o  ${PETSC_SYS_LIB}
+	${RM} -f ex7.o
 
 #
 # ------------------------------------------------------------------------

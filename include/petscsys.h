@@ -2358,6 +2358,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGetTmp(MPI_Comm,char[],size_t);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscFileRetrieve(MPI_Comm,const char[],char[],size_t,PetscTruth*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLs(MPI_Comm,const char[],char[],size_t,PetscTruth*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenSocket(char*,int,int*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServe(MPI_Comm,PetscInt);
 
 /*
    In binary files variables are stored using the following lengths,
