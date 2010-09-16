@@ -482,6 +482,8 @@ PetscViewer PETSCSYS_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
   PetscFunctionReturn(viewer);
 }
 
+#if defined(PETSC_HAVE_PTHREAD)
+#include <pthread.h>
 #include <time.h>
 #define PROTOCOL   "HTTP/1.0"
 #define RFC1123FMT "%a, %d %b %Y %H:%M:%S GMT"
@@ -586,6 +588,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(PetscInt port)
       fprintf(fd, "<HTML><HEAD><TITLE>Petsc Application Server</TITLE></HEAD>\r\n<BODY>");
       fprintf(fd, "<H4>Serving PETSc application code %s </H4>\r\n\n",program);
       fprintf(fd, "<HR>\r\n");
+      ierr = PetscOptionsPrint(fd);CHKERRQ(ierr);
+      fprintf(fd, "<HR>\r\n");
       fprintf(fd, "</BODY></HTML>\r\n");
       goto theend;
     }
@@ -597,6 +601,36 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(PetscInt port)
   ierr = PetscInfo(PETSC_NULL,"Finished processing request\n");CHKERRQ(ierr); 
 
   PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscWebServeWait"
+/*@C
+      PetscWebServeWait - waits for requests on a thread
+
+    Not collective
+
+  Input Parameter:
+.   port - port to listen on
+
+    Level: developer
+
+.seealso: PetscViewerSocketOpen()
+@*/ 
+void PETSCSYS_DLLEXPORT *PetscWebServeWait(PetscInt *port)
+{
+  PetscErrorCode ierr;
+  PetscInt       iport,listenport;
+
+  ierr = PetscInfo1(PETSC_NULL,"Starting webserver at port %D\n",*port);if (ierr) return 0;
+  ierr = PetscSocketEstablish(*port,&listenport);if (ierr) return 0;
+  while (1) {
+    ierr = PetscSocketListen(listenport,&iport);if (ierr) return 0;
+    ierr = PetscWebServeRequest(iport);if (ierr) return 0;
+    close(iport);
+  }
+  close(listenport);
+  return 0;
 }
 
 #undef __FUNCT__  
@@ -618,23 +652,17 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServe(MPI_Comm comm,PetscInt port)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscInt       iport,listenport;
+  pthread_t      thread;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
-   
   if (port == PETSC_DECIDE) port = 8080;
-  ierr = PetscInfo1(PETSC_NULL,"Starting webserver at port %D\n",port);CHKERRQ(ierr);
-  ierr = PetscSocketEstablish(port,&listenport);CHKERRQ(ierr);
-  while (1) {
-    ierr = PetscSocketListen(listenport,&iport);CHKERRQ(ierr);
-    ierr = PetscWebServeRequest(iport);CHKERRQ(ierr);
-    close(iport);
-  }
-  close(listenport);
+   
+  ierr = pthread_create(&thread, NULL, (void *(*)(void *))PetscWebServeWait, &port);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 
 

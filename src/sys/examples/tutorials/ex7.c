@@ -27,6 +27,7 @@ int main(int argc,char **argv)
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Starting up PetscWebServe()\n");CHKERRQ(ierr);
   ierr = PetscWebServe(PETSC_COMM_WORLD,PETSC_DECIDE);CHKERRQ(ierr);
+  while (1) {;}
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
