@@ -200,9 +200,9 @@ def version():
         if micro > 0:
             v += ".%d" % micro
         if patch > 0:
-            v += ".p%d" % patch
+            v += ".post%d" % patch
     else:
-        v = "%d.%d.dev" % (major, minor+1)
+        v = "%d.%d.dev%d" % (major, minor+1, 0)
     return v
 
 def tarball():
