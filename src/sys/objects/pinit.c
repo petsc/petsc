@@ -802,7 +802,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFinalize(void)
   }
 #endif
 
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
   if (PetscStackActive) {
     ierr = PetscStackDestroy();CHKERRQ(ierr);
   }

@@ -482,7 +482,7 @@ PetscViewer PETSCSYS_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
   PetscFunctionReturn(viewer);
 }
 
-#if defined(PETSC_HAVE_PTHREAD)
+#if defined(PETSC_HAVE_SERVER)
 /*
    I fear all this code below is problematic because there will be two threads mucking with the same data structure like the stack frames that are 
    generated automatically.

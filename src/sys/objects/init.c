@@ -509,7 +509,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   /*
       Setup building of stack frames for all function calls
   */
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
   ierr = PetscStackCreate();CHKERRQ(ierr);
 #endif
 

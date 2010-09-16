@@ -537,7 +537,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscSetFPTrap(PetscFPTrap);
 /*
       Allows the code to build a stack frame as it runs
 */
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
 
 #define PETSCSTACKSIZE 64
 

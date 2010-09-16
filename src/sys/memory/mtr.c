@@ -32,7 +32,7 @@ typedef struct _trSPACE {
     const char      *functionname;
     const char      *dirname;
     PetscClassId    classid;        
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
     PetscStack      stack;
 #endif
     struct _trSPACE *next,*prev;
@@ -212,7 +212,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTrMallocDefault(size_t a,int lineno,const
   }
   TRfrags++;
 
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
   ierr = PetscStackCopy(petscstack,&head->stack);CHKERRQ(ierr);
 #endif
 
@@ -469,7 +469,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocDump(FILE *fp)
   head = TRhead;
   while (head) {
     fprintf(fp,"[%2d]%.0f bytes %s() line %d in %s%s\n",rank,(PetscLogDouble)head->size,head->functionname,head->lineno,head->dirname,head->filename);
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
     ierr = PetscStackPrint(&head->stack,fp);CHKERRQ(ierr);
 #endif
     head = head->next;

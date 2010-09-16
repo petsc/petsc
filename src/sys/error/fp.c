@@ -362,7 +362,7 @@ void PetscDefaultFPTrap(int sig)
   }
 
   (*PetscErrorPrintf)("Try option -start_in_debugger\n");
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
   if (!PetscStackActive) {
     (*PetscErrorPrintf)("  or try option -log_stack\n");
   } else {
