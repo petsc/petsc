@@ -367,7 +367,7 @@ EXTERN_C_END
 
 .seealso: PetscViewerSocketOpen()
 @*/ 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,const char machine[],PetscInt port)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,const char machine[],int port)
 {
   PetscErrorCode     ierr;
   PetscMPIInt        rank;
@@ -376,7 +376,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,c
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket *)v->data;
 
   PetscFunctionBegin;
-  PetscValidLogicalCollectiveInt(v,port,3);
+  /* PetscValidLogicalCollectiveInt(v,port,3); not a PetscInt */
   if (port <= 0) {
     char portn[16];
     ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg);CHKERRQ(ierr);
@@ -401,12 +401,12 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,c
     if (tflg) {
       int listenport;
       ierr = PetscInfo1(v,"Waiting for connection from socket process on port %D\n",port);CHKERRQ(ierr);
-      ierr = PetscSocketEstablish((int)port,&listenport);CHKERRQ(ierr);
+      ierr = PetscSocketEstablish(port,&listenport);CHKERRQ(ierr);
       ierr = PetscSocketListen(listenport,&vmatlab->port);CHKERRQ(ierr);
       close(listenport);  
     } else {
       ierr = PetscInfo2(v,"Connecting to socket process on port %D machine %s\n",port,mach);CHKERRQ(ierr);
-      ierr = PetscOpenSocket(mach,(int)port,&vmatlab->port);CHKERRQ(ierr);
+      ierr = PetscOpenSocket(mach,port,&vmatlab->port);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -483,6 +483,10 @@ PetscViewer PETSCSYS_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 }
 
 #if defined(PETSC_HAVE_PTHREAD)
+/*
+   I fear all this code below is problematic because there will be two threads mucking with the same data structure like the stack frames that are 
+   generated automatically.
+*/
 #include <pthread.h>
 #include <time.h>
 #define PROTOCOL   "HTTP/1.0"
@@ -538,7 +542,7 @@ PetscErrorCode PetscWebSendError(FILE *f, int status, const char *title, const c
 
 .seealso: PetscWebServe()
 @*/ 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(PetscInt port)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(int port)
 {
   PetscErrorCode ierr;
   FILE           *fd;
@@ -617,12 +621,12 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(PetscInt port)
 
 .seealso: PetscViewerSocketOpen()
 @*/ 
-void PETSCSYS_DLLEXPORT *PetscWebServeWait(PetscInt *port)
+void PETSCSYS_DLLEXPORT *PetscWebServeWait(int *port)
 {
   PetscErrorCode ierr;
-  PetscInt       iport,listenport;
+  int            iport,listenport;
 
-  ierr = PetscInfo1(PETSC_NULL,"Starting webserver at port %D\n",*port);if (ierr) return 0;
+  ierr = PetscInfo1(PETSC_NULL,"Starting webserver at port %d\n",*port);if (ierr) return 0;
   ierr = PetscSocketEstablish(*port,&listenport);if (ierr) return 0;
   while (1) {
     ierr = PetscSocketListen(listenport,&iport);if (ierr) return 0;
@@ -648,7 +652,7 @@ void PETSCSYS_DLLEXPORT *PetscWebServeWait(PetscInt *port)
 
 .seealso: PetscViewerSocketOpen()
 @*/ 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServe(MPI_Comm comm,PetscInt port)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServe(MPI_Comm comm,int port)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
