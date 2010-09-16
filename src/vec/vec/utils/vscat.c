@@ -239,13 +239,12 @@ PetscErrorCode VecScatterBegin_MPI_ToOne(VecScatter ctx,Vec x,Vec y,InsertMode a
 PetscErrorCode VecScatterDestroy_MPI_ToAll(VecScatter ctx)
 {
   VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
-  PetscMPIInt          *count = scat->count,*displx = scat->displx;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(scat->work1);CHKERRQ(ierr);
   ierr = PetscFree(scat->work2);CHKERRQ(ierr);
-  ierr = PetscFree3(ctx->todata,count,displx);CHKERRQ(ierr);
+  ierr = PetscFree3(ctx->todata,scat->count,scat->displx);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
