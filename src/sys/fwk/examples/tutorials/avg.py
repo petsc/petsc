@@ -5,7 +5,7 @@ import numpy
 class ScreeningAvg:
     @staticmethod
     def init(a):
-        fwk = a.query("visitor")
+        fwk = a.getParent()
         key = a.getName()
         fwk.registerDependence("Electrolyte",key)
         e = fwk.getComponent("Electrolyte")

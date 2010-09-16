@@ -293,6 +293,7 @@ struct _p_PetscFwk {
   PetscFwkVTableType        vtable_type;
   void                      *vtable;
   char *                    url;
+  PetscFwk                  parent;
   PetscInt                  N, maxN;
   PetscFwk                  *component;
   PetscFwkGraph             dep_graph;
@@ -738,25 +739,34 @@ PetscErrorCode PetscFwkView(PetscFwk fwk, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }/* PetscFwkView() */
 
+#undef  __FUNCT__
+#define __FUNCT__ "PetscFwkGetParent"
+PetscErrorCode PetscFwkGetParent(PetscFwk fwk, PetscFwk *parent)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fwk,PETSC_FWK_CLASSID,1);
+  PetscValidPointer(parent,5);
+  *parent = fwk->parent;
+  PetscFunctionReturn(0);
+}/* PetscFwkGetParent() */
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkVisit"
 PetscErrorCode PetscFwkVisit(PetscFwk fwk, const char* message){
   PetscInt i, id, N, *vertices;
-  PetscFwk component, visitor;
+  PetscFwk component;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscFwkGraphTopologicalSort(fwk->dep_graph, &N, &vertices); CHKERRQ(ierr);
   for(i = 0; i < N; ++i) {
     id = vertices[i];
     component = fwk->component[id];
-    /* Save the component's visitor and set fwk as the current visitor. */
-    ierr = PetscObjectQuery((PetscObject)component, "visitor", (PetscObject*)(&visitor)); CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)component, "visitor", (PetscObject) fwk);      CHKERRQ(ierr);
+    /* Save the component's visitor */
+    component->parent = fwk;
     /* Call "configure" */
-    ierr = PetscFwkCall(component, message);    CHKERRQ(ierr);
-    /* Restore visitor */
-    ierr = PetscObjectCompose((PetscObject)component, "visitor", (PetscObject) visitor);  CHKERRQ(ierr);
+    ierr = PetscFwkCall(component, message); CHKERRQ(ierr);
+    /* Clear visitor */
+    component->parent = PETSC_NULL;
   }
   ierr = PetscFree(vertices); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -896,6 +906,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkCreate(MPI_Comm comm, PetscFwk *framew
 #endif
   PetscValidPointer(framework,2);
   ierr = PetscHeaderCreate(fwk,_p_PetscFwk,PetscInt,PETSC_FWK_CLASSID,0,"PetscFwk",comm,PetscFwkDestroy,PetscFwkView);CHKERRQ(ierr);
+  fwk->parent      = PETSC_NULL;
   fwk->component   = PETSC_NULL;
   fwk->vtable_type = PETSC_FWK_VTABLE_NONE;
   fwk->vtable      = PETSC_NULL;
