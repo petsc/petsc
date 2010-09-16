@@ -167,6 +167,7 @@ static PetscErrorCode ComputeFischerFunction(PetscScalar a, PetscScalar b, Petsc
    Input Parameters:  
 .  snes - the SNES context
 .  x - current iterate
+.  functx - user defined function context
 
    Output Parameters:
 .  phi - Semismooth function
@@ -184,28 +185,25 @@ static PetscErrorCode ComputeFischerFunction(PetscScalar a, PetscScalar b, Petsc
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESLSVIComputeSSFunction"
-static PetscErrorCode SNESLSVIComputeSSFunction(SNES snes,Vec X,Vec phi)
+static PetscErrorCode SNESLSVIComputeSSFunction(SNES snes,Vec X,Vec phi,void* functx)
 {
   PetscErrorCode  ierr;
   SNES_LSVI       *lsvi = (SNES_LSVI*)snes->data;
   Vec             Xl = lsvi->xl,Xu = lsvi->xu,F = snes->vec_func;
   PetscScalar     *phi_arr,*x_arr,*f_arr,*l,*u,t;
-  PetscInt        i,n;
+  PetscInt        i,i_start,i_end;
 
   PetscFunctionBegin;
-  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
-  
+  ierr = (*lsvi->computeuserfunction)(snes,X,F,functx);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(X,&i_start,&i_end);CHKERRQ(ierr);
+
   ierr = VecGetArray(X,&x_arr);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f_arr);CHKERRQ(ierr);
   ierr = VecGetArray(Xl,&l);CHKERRQ(ierr);
   ierr = VecGetArray(Xu,&u);CHKERRQ(ierr);
   ierr = VecGetArray(phi,&phi_arr);CHKERRQ(ierr);
 
-  /* Here we are assuming that the distribution of all the input vectors and the ouput
-     vector is same. 
-  */  
-  for (i=0;i < n;i++) {
+  for (i=i_start;i < i_end;i++) {
     if ((l[i] <= PETSC_LSVI_NINF) && (u[i] >= PETSC_LSVI_INF)) {
       phi_arr[i] = -f_arr[i];
     }
@@ -239,8 +237,7 @@ static PetscErrorCode SNESLSVIComputeSSFunction(SNES snes,Vec X,Vec phi)
 }
 
 /*
-   SNESLSVIComputeBsubdifferential - Calculates an element of the B-subdifferential of the
-   Fischer-Burmeister function for complementarity problems.
+   SNESLSVIComputeSSJacobian - Computes the jacobian of the semismooth function.The Jacobian for the semismooth function is an element of the B-subdifferential of the Fischer-Burmeister function for complementarity problems.
 
    Input Parameters:
 .  snes     - the SNES context
@@ -248,39 +245,46 @@ static PetscErrorCode SNESLSVIComputeSSFunction(SNES snes,Vec X,Vec phi)
 .  vec_func - nonlinear function evaluated at x
 
    Output Parameters:
-.  jac      - B-subdifferential matrix
+.  jac      - semismooth jacobian
 .  jac_pre  - optional preconditioning matrix
 .  flag     - flag passed on by SNESComputeJacobian.
+.  jacctx   - user provided jacobian context
 
    Notes:
-   The B subdifferential matrix is given by
-   H = Da + Db*jac
-   where Db is the row scaling matrix stored as a vector
-   and   Da is the diagonal perturbation matrix stored as a vector
+   The semismooth jacobian matrix is given by
+   jac = Da + Db*jacfun
+   where Db is the row scaling matrix stored as a vector,
+         Da is the diagonal perturbation matrix stored as a vector
+   and   jacfun is the jacobian of the original nonlinear function.	 
 */
 #undef __FUNCT__
-#define __FUNCT__ "SNESLSVIComputeBsubdifferential"
-PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat jac, Mat jac_pre, MatStructure *flg)
+#define __FUNCT__ "SNESLSVIComputeSSJacobian"
+PetscErrorCode SNESLSVIComputeSSJacobian(SNES snes,Vec X,Mat *jac, Mat *jac_pre, MatStructure *flg,void* jacctx)
 {
   PetscErrorCode ierr;
   SNES_LSVI      *lsvi = (SNES_LSVI*)snes->data;
   PetscScalar    *l,*u,*x,*f,*da,*db,*z,*t,t1,t2,ci,di,ei;
-  PetscInt       n = X->map->n,i;
+  PetscInt       i,i_start,i_end;
+  Vec            F = snes->vec_func;
 
   PetscFunctionBegin;
+
+  ierr = (*lsvi->computeuserjacobian)(snes,X,jac,jac_pre,flg,jacctx);CHKERRQ(ierr);
+
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(vec_func,&f);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   ierr = VecGetArray(lsvi->xl,&l);CHKERRQ(ierr);
   ierr = VecGetArray(lsvi->xu,&u);CHKERRQ(ierr);
   ierr = VecGetArray(lsvi->Da,&da);CHKERRQ(ierr);
   ierr = VecGetArray(lsvi->Db,&db);CHKERRQ(ierr);
   ierr = VecGetArray(lsvi->z,&z);CHKERRQ(ierr);
   
+  ierr = VecGetOwnershipRange(X,&i_start,&i_end);CHKERRQ(ierr);
   /* Set the elements of the vector z:
      z[i] = 1 if (x[i] - l[i],f[i]) = (0,0) or (u[i] - x[i],f[i]) = (0,0)
      else z[i] = 0
   */
-  for(i=0;i < n;i++) {
+  for(i=i_start;i < i_end;i++) {
     da[i] = db[i] = z[i] = 0;
     if(PetscAbsScalar(f[i]) <= PETSC_LSVI_EPS) {
       if ((l[i] > PETSC_LSVI_NINF) && (PetscAbsScalar(x[i]-l[i]) <= PETSC_LSVI_EPS)) {
@@ -294,10 +298,10 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
     }
   }
   ierr = VecRestoreArray(lsvi->z,&z);CHKERRQ(ierr);
-  ierr = MatMult(jac,lsvi->z,lsvi->t);CHKERRQ(ierr);
+  ierr = MatMult(*jac,lsvi->z,lsvi->t);CHKERRQ(ierr);
   ierr = VecGetArray(lsvi->t,&t);CHKERRQ(ierr);
   /* Compute the elements of the diagonal perturbation vector Da and row scaling vector Db */
-  for(i=0;i< n;i++) {
+  for(i=i_start;i< i_end;i++) {
     /* Free variables */
     if ((l[i] <= PETSC_LSVI_NINF) && (u[i] >= PETSC_LSVI_INF)) {
       da[i] = 0; db[i] = -1;
@@ -366,23 +370,21 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
     }
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vec_func,&f);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   ierr = VecRestoreArray(lsvi->xl,&l);CHKERRQ(ierr);
   ierr = VecRestoreArray(lsvi->xu,&u);CHKERRQ(ierr);
   ierr = VecRestoreArray(lsvi->Da,&da);CHKERRQ(ierr);
   ierr = VecRestoreArray(lsvi->Db,&db);CHKERRQ(ierr);
   ierr = VecRestoreArray(lsvi->t,&t);CHKERRQ(ierr);
 
-  /* Do row scaling */
-  ierr = MatDiagonalScale(jac,lsvi->Db,PETSC_NULL);
-  if (jac != jac_pre) { /* If jac and jac_pre are different */
-    ierr = MatDiagonalScale(jac_pre,lsvi->Db,PETSC_NULL);
+  /* Do row scaling  and add diagonal perturbation */
+  ierr = MatDiagonalScale(*jac,lsvi->Db,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatDiagonalSet(*jac,lsvi->Da,ADD_VALUES);CHKERRQ(ierr);
+  if (*jac != *jac_pre) { /* If jac and jac_pre are different */
+    ierr = MatDiagonalScale(*jac_pre,lsvi->Db,PETSC_NULL);
+    ierr = MatDiagonalSet(*jac_pre,lsvi->Da,ADD_VALUES);CHKERRQ(ierr);
   }
-  /* Add diagonal perturbation */
-  ierr = MatDiagonalSet(jac,lsvi->Da,ADD_VALUES);CHKERRQ(ierr);
-  if (jac != jac_pre) {
-    ierr = MatDiagonalSet(jac_pre,lsvi->Da,ADD_VALUES);CHKERRQ(ierr);
-  }
+
   PetscFunctionReturn(0);
 }
   
@@ -391,7 +393,7 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
 
    Input Parameters:
 .  phi - semismooth function.
-.  H   - B-subdifferential
+.  H   - semismooth jacobian
 
    Output Parameters:
 .  dpsi - merit function gradient
@@ -471,12 +473,11 @@ PetscErrorCode SNESLSVICheckDescentDirection(SNES snes,Vec dpsi, Vec Y,PetscTrut
 PetscErrorCode SNESLSVIAdjustInitialGuess(Vec X, Vec lb, Vec ub)
 {
   PetscErrorCode ierr;
-  PetscInt       i,n,i_start,i_end;
+  PetscInt       i,i_start,i_end;
   PetscScalar    *x,*l,*u;
 
   PetscFunctionBegin;
 
-  ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(X,&i_start,&i_end);CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(lb,&l);CHKERRQ(ierr);
@@ -580,7 +581,7 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
 
   ierr = SNESLSVIAdjustInitialGuess(X,lsvi->xl,lsvi->xu);CHKERRQ(ierr);
-  ierr = SNESLSVIComputeSSFunction(snes,X,lsvi->phi);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(snes,X,lsvi->phi);CHKERRQ(ierr);
   if (snes->domainerror) {
     snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
     PetscFunctionReturn(0);
@@ -611,9 +612,8 @@ PetscErrorCode SNESSolve_LSVI(SNES snes)
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
  
-    /* Solve J Y = Phi, where J is the B-subdifferential matrix */
+    /* Solve J Y = Phi, where J is the semismooth jacobian */
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
-    ierr = SNESLSVIComputeBsubdifferential(snes,X,F,snes->jacobian,snes->jacobian_pre,&flg);CHKERRQ(ierr);
  
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
     ierr = SNES_KSPSolve(snes,snes->ksp,lsvi->phi,Y);CHKERRQ(ierr);
@@ -708,6 +708,7 @@ PetscErrorCode SNESSetUp_LSVI(SNES snes)
 {
   PetscErrorCode ierr;
   SNES_LSVI      *lsvi = (SNES_LSVI*) snes->data;
+  PetscInt       i_start[3],i_end[3];
 
   PetscFunctionBegin;
   if (!snes->vec_sol_update) {
@@ -735,7 +736,20 @@ PetscErrorCode SNESSetUp_LSVI(SNES snes)
     ierr = VecSet(lsvi->xl,PETSC_LSVI_NINF);CHKERRQ(ierr);
     ierr = VecDuplicate(snes->vec_sol, &lsvi->xu); CHKERRQ(ierr);
     ierr = VecSet(lsvi->xu,PETSC_LSVI_INF);CHKERRQ(ierr);
+  } else {
+    /* Check if lower bound, upper bound and solution vector distribution across the processors is identical */
+    ierr = VecGetOwnershipRange(snes->vec_sol,i_start,i_end);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(lsvi->xl,i_start+1,i_end+1);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(lsvi->xu,i_start+2,i_end+2);CHKERRQ(ierr);
+    if ((i_start[0] != i_start[1]) || (i_start[0] != i_start[2]) || (i_end[0] != i_end[1]) || (i_end[0] != i_end[2]))
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Distribution of lower bound, upper bound and the solution vector should be identical across all the processors.");
   }
+
+  lsvi->computeuserfunction = snes->ops->computefunction;
+  lsvi->computeuserjacobian = snes->ops->computejacobian;
+
+  snes->ops->computefunction = SNESLSVIComputeSSFunction;
+  snes->ops->computejacobian = SNESLSVIComputeSSJacobian;
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -812,7 +826,7 @@ PetscErrorCode SNESLineSearchNo_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec
   if (changed_y) {
     ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
   }
-  ierr = SNESLSVIComputeSSFunction(snes,w,g);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
   if (!snes->domainerror) {
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);  /* gnorm = || g || */
     if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
@@ -875,7 +889,7 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
 #endif
   PetscErrorCode ierr;
   PetscInt       count;
-  SNES_LSVI        *lsvi = (SNES_LSVI*)snes->data;
+  SNES_LSVI      *lsvi = (SNES_LSVI*)snes->data;
   PetscTruth     changed_w = PETSC_FALSE,changed_y = PETSC_FALSE;
   MPI_Comm       comm;
 
@@ -921,7 +935,7 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
     snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
     goto theend1;
   }
-  ierr = SNESLSVIComputeSSFunction(snes,w,g);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
   if (snes->domainerror) {
     ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -952,7 +966,7 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
     snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
     goto theend1;
   }
-  ierr = SNESLSVIComputeSSFunction(snes,w,g);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
   if (snes->domainerror) {
     ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -1004,7 +1018,7 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       break;
     }
-    ierr = SNESLSVIComputeSSFunction(snes,w,g);CHKERRQ(ierr);
+    ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
     if (snes->domainerror) {
       ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
       PetscFunctionReturn(0);
@@ -1031,7 +1045,7 @@ PetscErrorCode SNESLineSearchCubic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
       ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);
     }
     if (changed_y || changed_w) { /* recompute the function if the step has changed */
-      ierr = SNESLSVIComputeSSFunction(snes,w,g);CHKERRQ(ierr);
+      ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
       if (snes->domainerror) {
         ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
         PetscFunctionReturn(0);
@@ -1109,7 +1123,7 @@ PetscErrorCode SNESLineSearchQuadratic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Ve
     snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
     goto theend2;
   }
-  ierr = SNESLSVIComputeSSFunction(snes,w,g);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
   if (snes->domainerror) {
     ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -1149,7 +1163,7 @@ PetscErrorCode SNESLineSearchQuadratic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Ve
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       break;
     }
-    ierr = SNESLSVIComputeSSFunction(snes,w,g);CHKERRQ(ierr);
+    ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
     if (snes->domainerror) {
       ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
       PetscFunctionReturn(0);
@@ -1172,7 +1186,7 @@ PetscErrorCode SNESLineSearchQuadratic_LSVI(SNES snes,void *lsctx,Vec x,Vec f,Ve
       ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);
     }
     if (changed_y || changed_w) { /* recompute the function if the step has changed */
-      ierr = SNESLSVIComputeSSFunction(snes,w,g);
+      ierr = SNESComputeFunction(snes,w,g);
       if (snes->domainerror) {
         ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
         PetscFunctionReturn(0);

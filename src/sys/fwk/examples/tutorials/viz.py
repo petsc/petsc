@@ -5,7 +5,7 @@ import time
 class Viz:
     @staticmethod
     def init(v):
-        fwk = v.query("visitor")
+        fwk = v.getParent()
         key = v.getName()
         fwk.registerDependence("Electrolyte",key)
         e = fwk.getComponent("Electrolyte")

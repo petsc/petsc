@@ -44,6 +44,11 @@ typedef struct {
   /* Parameters for checking sufficient descent conditions satisfied */
   PetscReal             rho;
   PetscReal             delta;
+
+  /* Copy of user supplied function evaluation and jacobian evaluation function pointers */
+  PetscErrorCode (*computeuserfunction)(SNES,Vec,Vec,void*);
+  PetscErrorCode (*computeuserjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+
 } SNES_LSVI;
 
 #endif

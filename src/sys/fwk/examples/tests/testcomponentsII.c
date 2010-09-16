@@ -22,7 +22,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT TestIIBCall(PetscFwk component, const char* me
   ierr = PetscStrcmp(message, "initialize", &init); CHKERRQ(ierr);
   if(init) {
     PetscFwk fwk;
-    ierr = PetscObjectQuery((PetscObject)component, "visitor", (PetscObject*)(&fwk)); CHKERRQ(ierr);
+    ierr = PetscFwkGetParent(component, &fwk); CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "%s: registering dependence: %s --> TestIIA\n", __FUNCT__, ((PetscObject)component)->name); CHKERRQ(ierr);
     ierr = PetscFwkRegisterDependence(fwk, ((PetscObject)component)->name, "TestIIA"); CHKERRQ(ierr);    
   }

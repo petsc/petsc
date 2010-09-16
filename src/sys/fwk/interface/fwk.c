@@ -293,6 +293,7 @@ struct _p_PetscFwk {
   PetscFwkVTableType        vtable_type;
   void                      *vtable;
   char *                    url;
+  PetscFwk                  parent;
   PetscInt                  N, maxN;
   PetscFwk                  *component;
   PetscFwkGraph             dep_graph;
@@ -536,6 +537,8 @@ PetscErrorCode PetscFwkCall_NONE(PetscFwk fwk, const char* message) {
 PetscErrorCode PetscFwkCall(PetscFwk fwk, const char* message) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(fwk,PETSC_FWK_CLASSID,1);
+  PetscValidCharPointer(message,2);
   if(!message || !message[0]) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Null or empty message string");
   }
@@ -667,6 +670,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkSetURL(PetscFwk fwk, const char url[])
   PetscErrorCode ierr;
   char *path, *name;
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(fwk,PETSC_FWK_CLASSID,1);
+  PetscValidCharPointer(url,2);
   if(fwk->vtable) {
     ierr = PetscFwkClearURL_Private(fwk); CHKERRQ(ierr);
   }
@@ -696,6 +701,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkSetURL(PetscFwk fwk, const char url[])
 #define __FUNCT__ "PetscFwkGetURL"
 PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetURL(PetscFwk fwk, const char **url) {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(fwk,PETSC_FWK_CLASSID,1);
+  PetscValidPointer(url,2);
   *url = fwk->url;
   PetscFunctionReturn(0);
 }/* PetscFwkGetURL() */
@@ -711,7 +718,6 @@ PetscErrorCode PetscFwkView(PetscFwk fwk, PetscViewer viewer) {
   PetscErrorCode    ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fwk,PETSC_FWK_CLASSID,1);
-  PetscValidType(fwk,1);
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)fwk)->comm,&viewer);CHKERRQ(ierr);
   }
@@ -738,25 +744,36 @@ PetscErrorCode PetscFwkView(PetscFwk fwk, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }/* PetscFwkView() */
 
+#undef  __FUNCT__
+#define __FUNCT__ "PetscFwkGetParent"
+PetscErrorCode PetscFwkGetParent(PetscFwk fwk, PetscFwk *parent)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fwk,PETSC_FWK_CLASSID,1);
+  PetscValidPointer(parent,2);
+  *parent = fwk->parent;
+  PetscFunctionReturn(0);
+}/* PetscFwkGetParent() */
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkVisit"
 PetscErrorCode PetscFwkVisit(PetscFwk fwk, const char* message){
   PetscInt i, id, N, *vertices;
-  PetscFwk component, visitor;
+  PetscFwk component;
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(fwk,PETSC_FWK_CLASSID,1);
+  PetscValidCharPointer(message,2);
   ierr = PetscFwkGraphTopologicalSort(fwk->dep_graph, &N, &vertices); CHKERRQ(ierr);
   for(i = 0; i < N; ++i) {
     id = vertices[i];
     component = fwk->component[id];
-    /* Save the component's visitor and set fwk as the current visitor. */
-    ierr = PetscObjectQuery((PetscObject)component, "visitor", (PetscObject*)(&visitor)); CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)component, "visitor", (PetscObject) fwk);      CHKERRQ(ierr);
+    /* Save the component's visitor */
+    component->parent = fwk;
     /* Call "configure" */
-    ierr = PetscFwkCall(component, message);    CHKERRQ(ierr);
-    /* Restore visitor */
-    ierr = PetscObjectCompose((PetscObject)component, "visitor", (PetscObject) visitor);  CHKERRQ(ierr);
+    ierr = PetscFwkCall(component, message); CHKERRQ(ierr);
+    /* Clear visitor */
+    component->parent = PETSC_NULL;
   }
   ierr = PetscFree(vertices); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -831,6 +848,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterKey_Private(PetscFwk fwk, cons
 PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterComponent(PetscFwk fwk, const char key[]){
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(fwk,PETSC_FWK_CLASSID,1);
+  PetscValidCharPointer(key,2);
   ierr = PetscFwkRegisterKey_Private(fwk, key, PETSC_NULL); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* PetscFwkRegisterComponent() */
@@ -841,6 +860,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterComponentURL(PetscFwk fwk, con
   PetscErrorCode ierr;
   PetscInt id;
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(fwk,PETSC_FWK_CLASSID,1);
+  PetscValidCharPointer(key,2);
+  PetscValidCharPointer(url,3);
   ierr = PetscFwkRegisterKey_Private(fwk, key, &id); CHKERRQ(ierr);
   ierr = PetscFwkSetURL(fwk->component[id], url); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -854,6 +876,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterDependence(PetscFwk fwk, const
   PetscInt clientid, serverid;
   PetscErrorCode ierr; 
   PetscFunctionBegin; 
+  PetscValidHeaderSpecific(fwk,PETSC_FWK_CLASSID,1);
   PetscValidCharPointer(clientkey,2);
   PetscValidCharPointer(serverkey,3);
   /* Register keys */
@@ -875,6 +898,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkDestroy(PetscFwk fwk)
 {
   PetscInt i;
   PetscErrorCode ierr;
+  PetscValidHeaderSpecific(fwk,PETSC_FWK_CLASSID,1);
   if (--((PetscObject)fwk)->refct > 0) PetscFunctionReturn(0);
   for(i = 0; i < fwk->N; ++i){
     ierr = PetscObjectDestroy((PetscObject)fwk->component[i]); CHKERRQ(ierr);
@@ -896,6 +920,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkCreate(MPI_Comm comm, PetscFwk *framew
 #endif
   PetscValidPointer(framework,2);
   ierr = PetscHeaderCreate(fwk,_p_PetscFwk,PetscInt,PETSC_FWK_CLASSID,0,"PetscFwk",comm,PetscFwkDestroy,PetscFwkView);CHKERRQ(ierr);
+  fwk->parent      = PETSC_NULL;
   fwk->component   = PETSC_NULL;
   fwk->vtable_type = PETSC_FWK_VTABLE_NONE;
   fwk->vtable      = PETSC_NULL;
@@ -915,7 +940,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetComponent(PetscFwk fwk, const char 
   PetscTruth found;
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(fwk,PETSC_FWK_CLASSID,1);
   PetscValidCharPointer(key,2);
+  if (_component) PetscValidPointer(_component,3);
+  if (_found)     PetscValidPointer(_found,4);
   ierr = PetscFwkGetKeyID_Private(fwk, key, &id, &found); CHKERRQ(ierr);
   if(found && _component) {
     *_component = fwk->component[id];

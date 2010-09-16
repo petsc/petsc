@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download          = ['http://mpi4py.googlecode.com/files/mpi4py-1.2.1.tar.gz']
+    self.download          = ['http://mpi4py.googlecode.com/files/mpi4py-1.2.2.tar.gz']
     self.functions         = []
     self.includes          = []
     self.liblist           = []

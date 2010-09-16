@@ -36,6 +36,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterComponent(PetscFwk fwk,
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterDependence(PetscFwk fwk, const char server_key[], const char client_key[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterComponentURL(PetscFwk fwk, const char key[], const char url[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetComponent(PetscFwk fwk, const char key[], PetscFwk *component, PetscTruth *found);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetParent(PetscFwk fwk, PetscFwk *parent);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkVisit(PetscFwk fwk, const char *message);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkDestroy(PetscFwk fwk);
 
