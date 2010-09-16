@@ -190,12 +190,12 @@ static PetscErrorCode SNESLSVIComputeSSFunction(SNES snes,Vec X,Vec phi)
   SNES_LSVI       *lsvi = (SNES_LSVI*)snes->data;
   Vec             Xl = lsvi->xl,Xu = lsvi->xu,F = snes->vec_func;
   PetscScalar     *phi_arr,*x_arr,*f_arr,*l,*u,t;
-  PetscInt        i,n;
+  PetscInt        i,i_start,i_end;
 
   PetscFunctionBegin;
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
-  
+  ierr = VecGetOwnershipRange(X,&i_start,&i_end);CHKERRQ(ierr);
+
   ierr = VecGetArray(X,&x_arr);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f_arr);CHKERRQ(ierr);
   ierr = VecGetArray(Xl,&l);CHKERRQ(ierr);
@@ -205,7 +205,7 @@ static PetscErrorCode SNESLSVIComputeSSFunction(SNES snes,Vec X,Vec phi)
   /* Here we are assuming that the distribution of all the input vectors and the ouput
      vector is same. 
   */  
-  for (i=0;i < n;i++) {
+  for (i=i_start;i < i_end;i++) {
     if ((l[i] <= PETSC_LSVI_NINF) && (u[i] >= PETSC_LSVI_INF)) {
       phi_arr[i] = -f_arr[i];
     }
@@ -265,7 +265,7 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
   PetscErrorCode ierr;
   SNES_LSVI      *lsvi = (SNES_LSVI*)snes->data;
   PetscScalar    *l,*u,*x,*f,*da,*db,*z,*t,t1,t2,ci,di,ei;
-  PetscInt       n = X->map->n,i;
+  PetscInt       i,i_start,i_end;
 
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -276,11 +276,12 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
   ierr = VecGetArray(lsvi->Db,&db);CHKERRQ(ierr);
   ierr = VecGetArray(lsvi->z,&z);CHKERRQ(ierr);
   
+  ierr = VecGetOwnershipRange(X,&i_start,&i_end);CHKERRQ(ierr);
   /* Set the elements of the vector z:
      z[i] = 1 if (x[i] - l[i],f[i]) = (0,0) or (u[i] - x[i],f[i]) = (0,0)
      else z[i] = 0
   */
-  for(i=0;i < n;i++) {
+  for(i=i_start;i < i_end;i++) {
     da[i] = db[i] = z[i] = 0;
     if(PetscAbsScalar(f[i]) <= PETSC_LSVI_EPS) {
       if ((l[i] > PETSC_LSVI_NINF) && (PetscAbsScalar(x[i]-l[i]) <= PETSC_LSVI_EPS)) {
@@ -297,7 +298,7 @@ PetscErrorCode SNESLSVIComputeBsubdifferential(SNES snes,Vec X,Vec vec_func,Mat 
   ierr = MatMult(jac,lsvi->z,lsvi->t);CHKERRQ(ierr);
   ierr = VecGetArray(lsvi->t,&t);CHKERRQ(ierr);
   /* Compute the elements of the diagonal perturbation vector Da and row scaling vector Db */
-  for(i=0;i< n;i++) {
+  for(i=i_start;i< i_end;i++) {
     /* Free variables */
     if ((l[i] <= PETSC_LSVI_NINF) && (u[i] >= PETSC_LSVI_INF)) {
       da[i] = 0; db[i] = -1;
@@ -471,12 +472,11 @@ PetscErrorCode SNESLSVICheckDescentDirection(SNES snes,Vec dpsi, Vec Y,PetscTrut
 PetscErrorCode SNESLSVIAdjustInitialGuess(Vec X, Vec lb, Vec ub)
 {
   PetscErrorCode ierr;
-  PetscInt       i,n,i_start,i_end;
+  PetscInt       i,i_start,i_end;
   PetscScalar    *x,*l,*u;
 
   PetscFunctionBegin;
 
-  ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(X,&i_start,&i_end);CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(lb,&l);CHKERRQ(ierr);
@@ -708,6 +708,7 @@ PetscErrorCode SNESSetUp_LSVI(SNES snes)
 {
   PetscErrorCode ierr;
   SNES_LSVI      *lsvi = (SNES_LSVI*) snes->data;
+  PetscInt       i_start[3],i_end[3];
 
   PetscFunctionBegin;
   if (!snes->vec_sol_update) {
@@ -735,6 +736,13 @@ PetscErrorCode SNESSetUp_LSVI(SNES snes)
     ierr = VecSet(lsvi->xl,PETSC_LSVI_NINF);CHKERRQ(ierr);
     ierr = VecDuplicate(snes->vec_sol, &lsvi->xu); CHKERRQ(ierr);
     ierr = VecSet(lsvi->xu,PETSC_LSVI_INF);CHKERRQ(ierr);
+  } else {
+    /* Check if lower bound, upper bound and solution vector distribution across the processors is identical */
+    ierr = VecGetOwnershipRange(snes->vec_sol,i_start,i_end);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(lsvi->xl,i_start+1,i_end+1);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(lsvi->xu,i_start+2,i_end+2);CHKERRQ(ierr);
+    if ((i_start[0] != i_start[1]) || (i_start[0] != i_start[2]) || (i_end[0] != i_end[1]) || (i_end[0] != i_end[2]))
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Distribution of lower bound, upper bound and the solution vector should be identical across all the processors.");
   }
   PetscFunctionReturn(0);
 }
