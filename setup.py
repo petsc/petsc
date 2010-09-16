@@ -36,7 +36,7 @@ def get_petsc_dir():
 
 def get_config():
     conf = {}
-    conf['petsc_dir'] = get_petsc_dir()
+    conf['PETSC_DIR'] = get_petsc_dir()
     return conf
 """
 
@@ -54,10 +54,13 @@ def bootstrap():
     os.environ['PETSC_ARCH'] = PETSC_ARCH
     sys.path.insert(0, os.path.join(PETSC_DIR, 'config'))
     # Generate package __init__.py file
-    if not os.path.exists(PETSC_ARCH):
-        os.mkdir(PETSC_ARCH)
-    pkgfile = os.path.join(PETSC_ARCH, '__init__.py')
-    open(pkgfile, 'wt').write(init_py)
+    from distutils.dir_util import mkpath
+    pkgdir = os.path.join('config', 'pypi')
+    pkgfile = os.path.join(pkgdir, '__init__.py')
+    if not os.path.exists(pkgdir):
+        mkpath(pkgdir)
+    if not os.path.exists(pkgfile):
+        open(pkgfile, 'wt').write(init_py)
     # Simple-minded lookup for MPI and mpi4py
     mpi4py = mpicc = None
     try:
@@ -240,7 +243,7 @@ setup(name='petsc',
       maintainer_email='dalcinl@gmail.com',
 
       packages = ['petsc'],
-      package_dir = {'petsc': PETSC_ARCH},
+      package_dir = {'petsc': 'config/pypi'},
       cmdclass={
         'build': cmd_build,
         'install': cmd_install,
