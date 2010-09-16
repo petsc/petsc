@@ -1,4 +1,4 @@
-recursive-include config *.py config.guess config.sub MANIFEST.in
+recursive-include config *.py config.guess config.sub
 recursive-exclude config/examples *
 recursive-exclude config/BuildSystem/docs *
 
