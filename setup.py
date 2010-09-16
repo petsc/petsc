@@ -206,9 +206,14 @@ def version():
     return v
 
 def tarball():
-    return None
-    return ('http://ftp.mcs.anl.gov/pub/petsc/<XXX>/' # XXX fix this line
-            'petsc-lite-%s.tar.gz' % version() )
+    VERSION = version()
+    if '.dev' in VERSION:
+        return None
+    if '.post' not in VERSION:
+        VERSION = VERSION + '.post0'
+    VERSION = VERSION.replace('.post', '-p')
+    return ('http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/'
+            'petsc-lite-%s.tar.gz' % VERSION)
 
 description = __doc__.split('\n')[1:-1]; del description[1:3]
 classifiers = """
