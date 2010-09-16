@@ -917,7 +917,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscFree(a)   ((a) ? ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__) || ((a = 0),0)) : 0)
+#define PetscFree(a)   ((a) ? ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__) || (((a) = 0),0)) : 0)
 
 /*MC
    PetscFreeVoid - Frees memory
@@ -966,7 +966,7 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscFree2(m1,m2)   (PetscFree(m2) || PetscFree(m1))
 #else
-#define PetscFree2(m1,m2)   (PetscFree(m1))
+#define PetscFree2(m1,m2)   ((m2)=0, PetscFree(m1))
 #endif
 
 /*MC
@@ -994,7 +994,7 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscFree3(m1,m2,m3)   (PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
-#define PetscFree3(m1,m2,m3)   (PetscFree(m1))
+#define PetscFree3(m1,m2,m3)   ((m3)=0,(m2)=0,PetscFree(m1))
 #endif
 
 /*MC
@@ -1023,7 +1023,7 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscFree4(m1,m2,m3,m4)   (PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
-#define PetscFree4(m1,m2,m3,m4)   (PetscFree(m1))
+#define PetscFree4(m1,m2,m3,m4)   ((m4)=0,(m3)=0,(m2)=0,PetscFree(m1))
 #endif
 
 /*MC
@@ -1053,7 +1053,7 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscFree5(m1,m2,m3,m4,m5)   (PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
-#define PetscFree5(m1,m2,m3,m4,m5)   (PetscFree(m1))
+#define PetscFree5(m1,m2,m3,m4,m5)   ((m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1))
 #endif
 
 
@@ -1086,7 +1086,7 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscFree6(m1,m2,m3,m4,m5,m6)   (PetscFree(m6) || PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
-#define PetscFree6(m1,m2,m3,m4,m5,m6)   (PetscFree(m1))
+#define PetscFree6(m1,m2,m3,m4,m5,m6)   ((m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1))
 #endif
 
 /*MC
@@ -1120,7 +1120,7 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   (PetscFree(m7) || PetscFree(m6) || PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
-#define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   (PetscFree(m1))
+#define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   ((m7)=0,(m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1))
 #endif
 
 EXTERN PETSCSYS_DLLEXPORT PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**);
