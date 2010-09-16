@@ -25,6 +25,10 @@ class Package(config.base.Configure):
     self.version          = ''
     # These are specified for the package
     self.required         = 0    # 1 means the package is required
+    self.lookforbydefault = 0    # 1 means the package is not required, but always look for and use if found
+                                 # cannot tell the difference between user requiring it with --with-PACKAGE=1 and
+                                 # this flag being one so hope user never requires it. Needs to be fixed in an overhaul of
+                                 # args database so it keeps track of what the user set vs what the program set
     self.useddirectly     = 1    # 1 indicates used by PETSc directly, 0 indicates used by a package used by PETSc
     self.download         = []   # urls where repository or tarballs may be found
     self.deps             = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
@@ -45,8 +49,8 @@ class Package(config.base.Configure):
     self.license          = None # optional license text
     self.excludedDirs     = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
     self.archIndependent  = 0    # 1 means the install directory does not incorporate the ARCH name
-    self.downloadonWindows   = 0  # 1 means that package can be used on Microsof Windows
-    self.worksonWindows      = 0  # 1 means the --download-package works on Microsoft Windows
+    self.downloadonWindows   = 0  # 1 means the --download-package works on Microsoft Windows
+    self.worksonWindows      = 0  # 1 means that package can be used on Microsof Windows
     # Outside coupling
     self.defaultInstallDir= os.path.abspath('externalpackages')
     return
@@ -77,7 +81,7 @@ class Package(config.base.Configure):
   def setupHelp(self,help):
     '''Prints help messages for the package'''
     import nargs
-    help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,self.required,'Indicate if you wish to test for '+self.name))
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,self.required+self.lookforbydefault,'Indicate if you wish to test for '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
     if self.download and not self.download[0] == 'redefine':
       help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,filename>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
@@ -269,7 +273,8 @@ class Package(config.base.Configure):
         yield('Download '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+self.getInstallDir()+'\n')
 
-    raise RuntimeError('You must specify a path for '+self.name+' with --with-'+self.package+'-dir=<directory>\nIf you do not want '+self.name+', then give --with-'+self.package+'=0\nYou might also consider using --download-'+self.package+' instead')
+    if not self.lookforbydefault:
+      raise RuntimeError('You must specify a path for '+self.name+' with --with-'+self.package+'-dir=<directory>\nIf you do not want '+self.name+', then give --with-'+self.package+'=0\nYou might also consider using --download-'+self.package+' instead')
 
   def checkDownload(self, requireDownload = 1):
     '''Check if we should download the package, returning the install directory or the empty string indicating installation'''
@@ -436,7 +441,8 @@ class Package(config.base.Configure):
           self.directory = directory
           self.framework.packages.append(self)
           return
-    raise RuntimeError('Could not find a functional '+self.name+'\n')
+    if not self.lookforbydefault:
+      raise RuntimeError('Could not find a functional '+self.name+'\n')
 
   def checkSharedLibrary(self):
     '''By default we don\'t care about checking if the library is shared'''
