@@ -482,42 +482,44 @@ PetscViewer PETSCSYS_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
   PetscFunctionReturn(viewer);
 }
 
-#include <string.h>
 #include <time.h>
-#include <sys/stat.h>
-#define SERVER     "webserver/1.0"
 #define PROTOCOL   "HTTP/1.0"
 #define RFC1123FMT "%a, %d %b %Y %H:%M:%S GMT"
 
-void send_headers(FILE *f, int status, const char *title, const char *extra, const char *mime, int length, time_t date)
+#undef __FUNCT__  
+#define __FUNCT__ "PetscWebSendHeader"
+PetscErrorCode PetscWebSendHeader(FILE *f, int status, const char *title, const char *extra, const char *mime, int length)
 {
   time_t now;
   char   timebuf[128];
 
+  PetscFunctionBegin;
   fprintf(f, "%s %d %s\r\n", PROTOCOL, status, title);
-  fprintf(f, "Server: %s\r\n", SERVER);
+  fprintf(f, "Server: %s\r\n", "petscserver/1.0");
   now = time(NULL);
   strftime(timebuf, sizeof(timebuf), RFC1123FMT, gmtime(&now));
   fprintf(f, "Date: %s\r\n", timebuf);
   if (extra) fprintf(f, "%s\r\n", extra);
   if (mime) fprintf(f, "Content-Type: %s\r\n", mime);
   if (length >= 0) fprintf(f, "Content-Length: %d\r\n", length);
-  if (date != -1)
-  {
-    strftime(timebuf, sizeof(timebuf), RFC1123FMT, gmtime(&date));
-    fprintf(f, "Last-Modified: %s\r\n", timebuf);
-  }
   fprintf(f, "Connection: close\r\n");
   fprintf(f, "\r\n");
+  PetscFunctionReturn(0);
 }
 
-void send_error(FILE *f, int status, const char *title, const char *extra, const char *text)
+#undef __FUNCT__  
+#define __FUNCT__ "PetscWebSendError"
+PetscErrorCode PetscWebSendError(FILE *f, int status, const char *title, const char *extra, const char *text)
 {
-  send_headers(f, status, title, extra, "text/html", -1, -1);
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscWebSendHeader(f, status, title, extra, "text/html", -1);CHKERRQ(ierr);
   fprintf(f, "<HTML><HEAD><TITLE>%d %s</TITLE></HEAD>\r\n", status, title);
   fprintf(f, "<BODY><H4>%d %s</H4>\r\n", status, title);
   fprintf(f, "%s\r\n", text);
   fprintf(f, "</BODY></HTML>\r\n");
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -540,7 +542,6 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(PetscInt port)
   FILE           *fd;
   char           buf[4096];
   char           *method, *path, *protocol;
-  struct         stat statbuf;
   PetscTruth     flg;
   PetscToken     tok;
 
@@ -569,22 +570,29 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(PetscInt port)
 
   ierr = PetscStrcmp(method,"GET",&flg);
   if (!flg) {
-    send_error(fd, 501, "Not supported", NULL, "Method is not supported.");
+    ierr = PetscWebSendError(fd, 501, "Not supported", NULL, "Method is not supported.");CHKERRQ(ierr);
     ierr = PetscInfo(PETSC_NULL,"Web request not a GET, giving up\n");CHKERRQ(ierr); 
-    ierr = PetscTokenDestroy(tok);CHKERRQ(ierr);
-  } else {
+   } else {
     ierr = PetscStrcmp(path,"/favicon.ico",&flg);CHKERRQ(ierr);
     if (flg) {
       /* should have cool PETSc icon */;
-    } else {
-      send_headers(fd, 200, "OK", NULL, "text/html", -1, statbuf.st_mtime);
+      goto theend;
+    } 
+    ierr = PetscStrcmp(path,"/",&flg);CHKERRQ(ierr);
+    if (flg) {      
+      char program[128];
+      ierr = PetscGetProgramName(program,128);CHKERRQ(ierr);
+      ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "text/html", -1);CHKERRQ(ierr);
       fprintf(fd, "<HTML><HEAD><TITLE>Petsc Application Server</TITLE></HEAD>\r\n<BODY>");
-      fprintf(fd, "<H4>Request of %s </H4>\r\n\n",path);
+      fprintf(fd, "<H4>Serving PETSc application code %s </H4>\r\n\n",program);
       fprintf(fd, "<HR>\r\n");
       fprintf(fd, "</BODY></HTML>\r\n");
+      goto theend;
     }
-    ierr = PetscTokenDestroy(tok);CHKERRQ(ierr);
+    ierr = PetscWebSendError(fd, 501, "Not supported", NULL, "Unknown request.");CHKERRQ(ierr);
   }
+  theend:
+  ierr = PetscTokenDestroy(tok);CHKERRQ(ierr);
   fclose(fd);
   ierr = PetscInfo(PETSC_NULL,"Finished processing request\n");CHKERRQ(ierr); 
 
