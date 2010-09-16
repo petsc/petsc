@@ -52,6 +52,7 @@ testexamples_SCOTCH: ${TESTEXAMPLES_SCOTCH}
 testexamples_PASTIX: ${TESTEXAMPLES_PASTIX}
 testexamples_ML: ${TESTEXAMPLES_ML}
 testexamples_CUDA: ${TESTEXAMPLES_CUDA}
+testexamples_PTHREAD: ${TESTEXAMPLES_PTHREAD}
 testexamples_X11:
 testexamples_MPE:
 testexamples_ESSL:
