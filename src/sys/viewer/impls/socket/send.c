@@ -1,3 +1,4 @@
+
 #define PETSC_DLL
 #include "petscsys.h"
 
@@ -482,11 +483,8 @@ PetscViewer PETSCSYS_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
   PetscFunctionReturn(viewer);
 }
 
-#if defined(PETSC_HAVE_SERVER)
-/*
-   I fear all this code below is problematic because there will be two threads mucking with the same data structure like the stack frames that are 
-   generated automatically.
-*/
+#if defined(PETSC_USE_SERVER)
+
 #include <pthread.h>
 #include <time.h>
 #define PROTOCOL   "HTTP/1.0"
@@ -624,10 +622,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(int port)
 void PETSCSYS_DLLEXPORT *PetscWebServeWait(int *port)
 {
   PetscErrorCode ierr;
-  int            iport,listenport;
+  int            iport,listenport,tport = *port;
 
-  ierr = PetscInfo1(PETSC_NULL,"Starting webserver at port %d\n",*port);if (ierr) return 0;
-  ierr = PetscSocketEstablish(*port,&listenport);if (ierr) return 0;
+  ierr = PetscInfo1(PETSC_NULL,"Starting webserver at port %d\n",tport);if (ierr) return 0;
+  ierr = PetscFree(port);if (ierr) return 0;
+  ierr = PetscSocketEstablish(tport,&listenport);if (ierr) return 0;
   while (1) {
     ierr = PetscSocketListen(listenport,&iport);if (ierr) return 0;
     ierr = PetscWebServeRequest(iport);if (ierr) return 0;
@@ -657,13 +656,17 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServe(MPI_Comm comm,int port)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   pthread_t      thread;
+  int            *trueport;
 
   PetscFunctionBegin;
+  if (port < 1 && port != PETSC_DEFAULT && port != PETSC_DECIDE) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Cannot use negative port number %d",port);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
-  if (port == PETSC_DECIDE) port = 8080;
-   
-  ierr = pthread_create(&thread, NULL, (void *(*)(void *))PetscWebServeWait, &port);CHKERRQ(ierr);
+
+  if (port == PETSC_DECIDE || port == PETSC_DEFAULT) port = 8080;
+  ierr = PetscMalloc(1*sizeof(int),&trueport);CHKERRQ(ierr); /* malloc this so it still exists in thread */
+  *trueport = port;
+  ierr = pthread_create(&thread, NULL, (void *(*)(void *))PetscWebServeWait, trueport);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif

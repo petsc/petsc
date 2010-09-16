@@ -446,6 +446,14 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Private(void)
     }
   }
 #endif
+#if defined(PETSC_USE_SERVER)
+  ierr = PetscOptionsHasName(PETSC_NULL,"-server", &flgz);CHKERRQ(ierr);
+  if (flgz){
+    PetscInt port = PETSC_DECIDE;
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-server",&port,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscWebServe(PETSC_COMM_WORLD,(int)port);CHKERRQ(ierr);
+  }
+#endif
 
   /*
         Setup profiling and logging

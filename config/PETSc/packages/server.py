@@ -19,5 +19,6 @@ class Configure(PETSc.package.NewPackage):
   def configureLibrary(self):
     if not self.pthread.found:
        raise RuntimeError('Pthreads not found, server needs pthreads to run')
-    self.addDefine('USE_PTHREADS',1)
+    self.addDefine('USE_PTHREAD',1)
+    self.addDefine('USE_SERVER',1)    
     
