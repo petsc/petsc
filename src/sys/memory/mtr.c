@@ -71,9 +71,14 @@ static const char **PetscLogMallocDirectory,**PetscLogMallocFile,**PetscLogMallo
 #define __FUNCT__ "PetscSetUseTrMalloc_Private"
 PetscErrorCode PetscSetUseTrMalloc_Private(void)
 {
+#if !defined(PETSC_USE_PTHREAD)
   PetscErrorCode ierr;
+#endif
 
   PetscFunctionBegin;
+#if defined(PETSC_USE_PTHREAD)
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use PETSc's debug malloc when using pthreads");
+#else
   ierr              = PetscMallocSet(PetscTrMallocDefault,PetscTrFreeDefault);CHKERRQ(ierr);
   TRallocated       = 0;
   TRfrags           = 0;
@@ -84,6 +89,7 @@ PetscErrorCode PetscSetUseTrMalloc_Private(void)
   PetscLogMallocMax = 10000;
   PetscLogMalloc    = -1;
   PetscFunctionReturn(0);
+#endif
 }
 
 #undef __FUNCT__  
