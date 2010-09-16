@@ -54,13 +54,10 @@ def bootstrap():
     os.environ['PETSC_ARCH'] = PETSC_ARCH
     sys.path.insert(0, os.path.join(PETSC_DIR, 'config'))
     # Generate package __init__.py file
-    try:
-        if not os.path.exists(PETSC_ARCH):
-            os.mkdir(PETSC_ARCH)
-        pkgfile = os.path.join(PETSC_ARCH, '__init__.py')
-        open(pkgfile, 'wt').write(init_py)
-    except:
-        pass
+    if not os.path.exists(PETSC_ARCH):
+        os.mkdir(PETSC_ARCH)
+    pkgfile = os.path.join(PETSC_ARCH, '__init__.py')
+    open(pkgfile, 'wt').write(init_py)
     # Simple-minded lookup for MPI and mpi4py
     mpi4py = mpicc = None
     try:
@@ -119,7 +116,7 @@ def install(dest_dir, prefix=None, dry_run=False):
         prefix = dest_dir
     options = [
         '--destDir=' + dest_dir,
-        '--prefix='  + prefix
+        '--prefix='  + prefix,
         ]
     # Run PETSc installer
     import install
