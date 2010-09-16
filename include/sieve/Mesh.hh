@@ -4858,6 +4858,31 @@ namespace ALE {
           vertex2edge[(newVertices[v]-numNewCells-numOldVertices)*2+0] = edges[v].first;
           vertex2edge[(newVertices[v]-numNewCells-numOldVertices)*2+1] = edges[v].second;
         }
+#else
+        const CellType   t = this->getCellType(*c_iter);
+        int              numEdges;
+        const edge_type *edges;
+
+        switch(t) {
+        case TETRAHEDRON:
+          getEdges_TETRAHEDRON(coneSize, cone, &numEdges, &edges);
+          break;
+        case TRIANGULAR_PRISM:
+          getEdges_TRIANGULAR_PRISM(coneSize, cone, &numEdges, &edges);
+          break;
+        case TRIANGULAR_PRISM_LAGRANGE:
+          getEdges_TRIANGULAR_PRISM_LAGRANGE(coneSize, cone, &numEdges, &edges);
+          break;
+        default:
+          throw ALE::Exception("Could not determine number of new cells for this cell type");
+        }
+        // Check that vertex does not yet exist
+        for(int v = 0; v < numEdges; ++v) {
+          point_type newVertex = edge2vertex[edges[v]];
+
+          vertex2edge[(newVertex-numNewCells-numOldVertices)*2+0] = edges[v].first;
+          vertex2edge[(newVertex-numNewCells-numOldVertices)*2+1] = edges[v].second;
+        }
 #endif
       }
       newSieve->symmetrize();
