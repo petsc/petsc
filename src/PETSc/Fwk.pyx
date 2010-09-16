@@ -72,6 +72,15 @@ cdef class Fwk(Object):
         message = str2bytes(message, &_message)
         CHKERR( PetscFwkCall(self.fwk, _message) )
 
+    def getParent(self):
+        cdef PetscFwk parent = NULL
+        CHKERR( PetscFwkGetParent(self.fwk, &parent) )
+        if parent == NULL: return None
+        cdef Fwk fwk = Fwk()
+        PetscIncref(<PetscObject>parent);
+        fwk.fwk = parent
+        return fwk
+
     def visit(self, message):
         cdef const_char *_message = NULL
         message = str2bytes(message, &_message)
@@ -92,6 +101,10 @@ cdef class Fwk(Object):
             return self.getURL()
         def __set__(self, value):
             self.setURL(value)
+
+    property parent:
+        def __get__(self):
+            return self.getParent()
 
     @classmethod
     def DEFAULT(cls, comm=None):

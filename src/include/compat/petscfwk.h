@@ -55,6 +55,10 @@ static PetscErrorCode PetscFwkRegisterDependence(PetscFwk fwk,const char client_
 static PetscErrorCode PetscFwkGetComponent(PetscFwk fwk,const char key[],PetscFwk *component,PetscTruth *found){PetscFwk_ERR_SUP}
 
 #undef  __FUNCT__
+#define __FUNCT__ "PetscFwkGetParent"
+static PetscErrorCode PetscFwkGetParent(PetscFwk fwk, PetscFwk *parent){PetscFwk_ERR_SUP}
+
+#undef  __FUNCT__
 #define __FUNCT__ "PetscFwkVisit"
 static PetscErrorCode PetscFwkVisit(PetscFwk fwk, const char *message){PetscFwk_ERR_SUP}
 

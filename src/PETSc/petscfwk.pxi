@@ -14,6 +14,7 @@ cdef extern from "petscsys.h" nogil:
     int PetscFwkRegisterComponentURL(PetscFwk,char[],char[])
     int PetscFwkRegisterDependence(PetscFwk,char[],char[])
     int PetscFwkGetComponent(PetscFwk,char[],PetscFwk*,PetscTruth*)
+    int PetscFwkGetParent(PetscFwk,PetscFwk*)
     int PetscFwkVisit(PetscFwk, char[])
     int PetscFwkDestroy(PetscFwk)
     PetscFwk PETSC_FWK_DEFAULT_(MPI_Comm)
