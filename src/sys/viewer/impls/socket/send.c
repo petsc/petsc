@@ -512,6 +512,15 @@ PetscErrorCode PetscWebSendHeader(FILE *f, int status, const char *title, const 
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscWebSendFooter"
+PetscErrorCode PetscWebSendFooter(FILE *fd)
+{
+  PetscFunctionBegin;
+  fprintf(fd, "</BODY></HTML>\r\n");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscWebSendError"
 PetscErrorCode PetscWebSendError(FILE *f, int status, const char *title, const char *extra, const char *text)
 {
@@ -522,9 +531,12 @@ PetscErrorCode PetscWebSendError(FILE *f, int status, const char *title, const c
   fprintf(f, "<HTML><HEAD><TITLE>%d %s</TITLE></HEAD>\r\n", status, title);
   fprintf(f, "<BODY><H4>%d %s</H4>\r\n", status, title);
   fprintf(f, "%s\r\n", text);
-  fprintf(f, "</BODY></HTML>\r\n");
+  ierr = PetscWebSendFooter(f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+extern FILE *PetscInfoFile;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscWebServeRequest"
@@ -592,7 +604,13 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(int port)
       fprintf(fd, "<HR>\r\n");
       ierr = PetscOptionsPrint(fd);CHKERRQ(ierr);
       fprintf(fd, "<HR>\r\n");
-      fprintf(fd, "</BODY></HTML>\r\n");
+      ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
+      goto theend;
+    }
+    ierr = PetscStrcmp(path,"/info",&flg);CHKERRQ(ierr);
+    if (flg) {      
+      ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "text/html", -1);CHKERRQ(ierr);
+      ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
       goto theend;
     }
     ierr = PetscWebSendError(fd, 501, "Not supported", NULL, "Unknown request.");CHKERRQ(ierr);

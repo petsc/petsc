@@ -433,6 +433,9 @@ PETSC_EXTERN_CXX_BEGIN
 
    Level: beginner
 
+   Developer Note: Why have PetscTruth, why not use bool in C? The problem is that K and R C, C99 and C++ all have different mechanisms for 
+      boolean values. It is not easy to have a simple macro that that will work properly in all circumstances with all three mechanisms.
+
 E*/
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscTruth;
 extern const char *PetscTruths[];
@@ -489,6 +492,9 @@ M*/
 
           This macro does not exist in Fortran; you must use PETSC_NULL_INTEGER, 
           PETSC_NULL_DOUBLE_PRECISION, PETSC_NULL_FUNCTION, PETSC_NULL_OBJECT etc
+
+  Developer Note: Why have PETSC_NULL, why not just use NULL? The problem is that NULL is defined in different include files under 
+      different versions of Unix. It is tricky to insure the correct include file is always included.
 
 .seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE
 
