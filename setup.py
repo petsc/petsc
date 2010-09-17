@@ -23,12 +23,9 @@ else:
 from distutils.command.sdist import sdist as _sdist
 from distutils import log
 
-PETSC_DIR  = None
-PETSC_ARCH = None
-
 init_py = """\
 # Author:  PETSc Team
-# Contact: petsc-users@mcs.anl.gov
+# Contact: petsc-maint@mcs.anl.gov
 
 def get_petsc_dir():
     import os
@@ -47,7 +44,6 @@ metadata = {
 
 def bootstrap():
     # Set PETSC_DIR and PETSC_ARCH, 
-    global PETSC_DIR, PETSC_ARCH
     PETSC_DIR  = os.path.abspath(os.getcwd())
     PETSC_ARCH = get_platform() + '-python'
     os.environ['PETSC_DIR']  = PETSC_DIR
@@ -143,6 +139,11 @@ class context:
         os.chdir(self.wdir)
 
 class cmd_build(_build):
+
+    def initialize_options(self):
+        _build.initialize_options(self)
+        PETSC_ARCH = os.environ.get('PETSC_ARCH', '')
+        self.build_base = os.path.join(PETSC_ARCH, 'build-python')
 
     def run(self):
         _build.run(self)
