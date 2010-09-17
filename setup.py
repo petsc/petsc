@@ -89,7 +89,6 @@ def run_setup():
         metadata['install_requires'] = ['numpy']
         if not os.environ.get('PETSC_DIR'):
             metadata['install_requires'].append('petsc')
-
     if 'setuptools' in sys.modules:
         metadata['zip_safe'] = False
     setup(packages     = ['petsc4py',
