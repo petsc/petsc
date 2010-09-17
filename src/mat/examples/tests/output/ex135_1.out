@@ -1,0 +1,41 @@
+Matrix Object:
+  type=mpisbaij, rows=1000, cols=1000
+  total: nonzeros=1999, allocated nonzeros=2000
+  total number of mallocs used during MatSetValues calls =0
+    [0] Local rows 250 nz 500 nz alloced 500 bs 1 mem SKIP
+    [0] on-diagonal part: nz 250 
+    [0] off-diagonal part: nz 250 
+    [1] Local rows 250 nz 500 nz alloced 500 bs 1 mem SKIP
+    [1] on-diagonal part: nz 250 
+    [1] off-diagonal part: nz 250 
+    [2] Local rows 250 nz 500 nz alloced 500 bs 1 mem SKIP
+    [2] on-diagonal part: nz 250 
+    [2] off-diagonal part: nz 250 
+    [3] Local rows 250 nz 499 nz alloced 500 bs 1 mem SKIP
+    [3] on-diagonal part: nz 499 
+    [3] off-diagonal part: nz 0 
+    Information on VecScatter used in matrix-vector product: 
+    [0] Number sends = 0; Number to self = 0
+    [0] Number receives = 1; Number from self = 0
+    [0] 0 length 1 from whom 3
+    Now the indices for all remote receives (in order by process received from)
+    [0] 0 
+    [1] Number sends = 0; Number to self = 0
+    [1] Number receives = 1; Number from self = 0
+    [1] 0 length 1 from whom 3
+    Now the indices for all remote receives (in order by process received from)
+    [1] 0 
+    [2] Number sends = 0; Number to self = 0
+    [2] Number receives = 1; Number from self = 0
+    [2] 0 length 1 from whom 3
+    Now the indices for all remote receives (in order by process received from)
+    [2] 0 
+    [3] Number sends = 3; Number to self = 0
+    [3]   0 length = 1 to whom 0
+    [3]   1 length = 1 to whom 1
+    [3]   2 length = 1 to whom 2
+    Now the indices for all remote sends (in order by process sent to)
+    [3] 249 
+    [3] 249 
+    [3] 249 
+    [3] Number receives = 0; Number from self = 0
