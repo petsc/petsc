@@ -9,7 +9,7 @@ class Configure(PETSc.package.NewPackage):
 #    Does not currently support automatic download and install
     self.functions = ['AMS_Memory_create']
     self.includes  = ['ams.h']
-    self.liblist   = [['libamspub.a','libamsutilmt.a']]
+    self.liblist   = [['libamspub.a','libamsutilmt.a','libamsacc.a','libamsutil.a']]
     return
 
   def setupDependencies(self, framework):

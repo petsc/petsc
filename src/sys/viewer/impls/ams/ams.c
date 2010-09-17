@@ -47,7 +47,7 @@ PetscErrorCode PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
     ierr = PetscOptionsHasName(PETSC_NULL,"-options_gui",&flg2);CHKERRQ(ierr);
     if (flg2) {
       char cmd[PETSC_MAX_PATH_LEN];
-      ierr = PetscStrcpy(cmd,"cd ${PETSC_DIR}/${PETSC_ARCH}/bin;java -d32 -classpath .:");CHKERRQ(ierr);
+      ierr = PetscStrcpy(cmd,"cd ${PETSC_DIR}/${PETSC_ARCH}/bin;java -d64 -classpath .:");CHKERRQ(ierr);
       ierr = PetscStrcat(cmd,PETSC_AMS_DIR);CHKERRQ(ierr);
       ierr = PetscStrcat(cmd,"/java -Djava.library.path=");CHKERRQ(ierr);
       ierr = PetscStrcat(cmd,PETSC_AMS_DIR);CHKERRQ(ierr);

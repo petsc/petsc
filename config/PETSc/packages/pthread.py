@@ -7,8 +7,11 @@ class Configure(PETSc.package.NewPackage):
     self.functions         = ['pthread_create']
     self.includes          = ['pthread.h']
     self.liblist           = [['libpthread.a']]
-    self.complex           = 1
+    self.complex           = 1   # 0 means cannot use complex
     self.lookforbydefault  = 1 
+    self.double            = 0   # 1 means requires double precision 
+    self.requires32bitint  = 0;  # 1 means that the package will not work with 64 bit integers
+    self.worksonWindows    = 1  # 1 means that package can be used on Microsof Windows
     return
 
   def setupDependencies(self, framework):
