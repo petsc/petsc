@@ -16,7 +16,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                    ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex98.c ex99.c ex100.c \
                    ex101.c ex102.c ex103.c ex104.c ex106.c ex107.c ex108.c ex109.c ex110.c\
                    ex111.c ex112.c ex113.c ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c ex120.c ex121.c ex122.c ex123.c \
-                   ex124.c ex129.c ex130.c ex131.c ex132.c ex133.c
+                   ex124.c ex129.c ex130.c ex131.c ex132.c ex133.c ex134.c
 EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex126f.F ex120f.F
 
 include ${PETSC_DIR}/conf/variables
@@ -507,6 +507,11 @@ ex132: ex132.o chkopts
 ex133: ex133.o chkopts
 	-${CLINKER} -o ex133 ex133.o ${PETSC_MAT_LIB}
 	${RM} ex133.o
+
+ex134: ex134.o chkopts
+	-${CLINKER} -o ex134 ex134.o ${PETSC_MAT_LIB}
+	${RM} ex134.o
+
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
