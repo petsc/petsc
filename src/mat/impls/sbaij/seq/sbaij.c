@@ -1601,10 +1601,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
     b->free_ij    = PETSC_FALSE;
   }
   
-  B->rmap->bs               = bs;
-  b->bs2              = bs2;
-  b->nz             = 0;
-  b->maxnz          = nz*bs2;
+  B->rmap->bs     = bs;
+  b->bs2          = bs2;
+  b->nz           = 0;
+  b->maxnz        = nz;
   
   b->inew             = 0;
   b->jnew             = 0;
