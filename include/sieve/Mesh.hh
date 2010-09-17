@@ -4765,7 +4765,7 @@ namespace ALE {
         }
       };
       void getNeighboringVertices(const point_type cell, const int coneSize, const point_type cone[], const point_type firstNewVertex, point_type vertex2edge[]) {
-        const CellType   t = this->getCellType();
+        const CellType   t = this->getCellType(cell);
         int              numEdges;
         const edge_type *edges;
 
