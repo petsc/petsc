@@ -3041,7 +3041,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscIn
     }
     if (!nnz) {
       if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 10;
-      else if (nz <= 0)        nz = 1;
+      else if (nz < 0) nz = 1;
       for (i=0; i<B->rmap->n; i++) b->imax[i] = nz;
       nz = nz*B->rmap->n;
     } else {

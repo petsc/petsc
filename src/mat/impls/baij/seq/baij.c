@@ -3135,7 +3135,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
     for (i=0; i<mbs; i++) { b->ilen[i] = 0;}
     if (!nnz) {
       if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 5;
-      else if (nz <= 0)        nz = 1;
+      else if (nz < 0) nz = 1;
       for (i=0; i<mbs; i++) b->imax[i] = nz;
       nz = nz*mbs;
     } else {
