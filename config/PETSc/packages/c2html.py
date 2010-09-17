@@ -51,7 +51,7 @@ class Configure(PETSc.package.NewPackage):
     '''Determine whether the c2html exist or not'''
 
     if (self.framework.clArgDB.has_key('with-c2html') and not self.framework.argDB['with-c2html']) or \
-          (self.framework.clArgDB.has_key('download-c2html') and not self.framework.argDB['downlaod-c2html']):
+          (self.framework.clArgDB.has_key('download-c2html') and not self.framework.argDB['download-c2html']):
       self.framework.logPrint("Not checking c2html on user request\n")
       return
 

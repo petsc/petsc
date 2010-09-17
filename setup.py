@@ -23,12 +23,9 @@ else:
 from distutils.command.sdist import sdist as _sdist
 from distutils import log
 
-PETSC_DIR  = None
-PETSC_ARCH = None
-
 init_py = """\
 # Author:  PETSc Team
-# Contact: petsc-users@mcs.anl.gov
+# Contact: petsc-maint@mcs.anl.gov
 
 def get_petsc_dir():
     import os
@@ -47,7 +44,6 @@ metadata = {
 
 def bootstrap():
     # Set PETSC_DIR and PETSC_ARCH, 
-    global PETSC_DIR, PETSC_ARCH
     PETSC_DIR  = os.path.abspath(os.getcwd())
     PETSC_ARCH = get_platform() + '-python'
     os.environ['PETSC_DIR']  = PETSC_DIR
@@ -75,6 +71,8 @@ def bootstrap():
         if (('distribute' in sys.modules) or
             ('setuptools' in sys.modules)):
             metadata['install_requires']= ['mpi4py>=1.2.2']
+    if 'setuptools' in sys.modules:
+        metadata['zip_safe'] = False
 
 def config(dry_run=False):
     log.info('PETSc: configure')
@@ -142,6 +140,11 @@ class context:
 
 class cmd_build(_build):
 
+    def initialize_options(self):
+        _build.initialize_options(self)
+        PETSC_ARCH = os.environ.get('PETSC_ARCH', '')
+        self.build_base = os.path.join(PETSC_ARCH, 'build-python')
+
     def run(self):
         _build.run(self)
         ctx = context().enter()
@@ -206,9 +209,14 @@ def version():
     return v
 
 def tarball():
-    return None
-    return ('http://ftp.mcs.anl.gov/pub/petsc/<XXX>/' # XXX fix this line
-            'petsc-lite-%s.tar.gz' % version() )
+    VERSION = version()
+    if '.dev' in VERSION:
+        return None
+    if '.post' not in VERSION:
+        VERSION = VERSION + '.post0'
+    VERSION = VERSION.replace('.post', '-p')
+    return ('http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/'
+            'petsc-lite-%s.tar.gz' % VERSION)
 
 description = __doc__.split('\n')[1:-1]; del description[1:3]
 classifiers = """
