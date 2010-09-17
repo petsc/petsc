@@ -4,7 +4,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download        = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/thrust_0_1.tar.gz']
+    self.download        = 0
     self.includes        = ['thrust/version.h']
     self.includedir      = ''
     self.forceLanguage   = 'CUDA'
