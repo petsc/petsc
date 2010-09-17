@@ -191,11 +191,11 @@ static PetscErrorCode SNESLSVIComputeSSFunction(SNES snes,Vec X,Vec phi,void* fu
   SNES_LSVI       *lsvi = (SNES_LSVI*)snes->data;
   Vec             Xl = lsvi->xl,Xu = lsvi->xu,F = snes->vec_func;
   PetscScalar     *phi_arr,*x_arr,*f_arr,*l,*u,t;
-  PetscInt        i,i_start,i_end;
+  PetscInt        i,nlocal;
 
   PetscFunctionBegin;
   ierr = (*lsvi->computeuserfunction)(snes,X,F,functx);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(X,&i_start,&i_end);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(X,&nlocal);CHKERRQ(ierr);
 
   ierr = VecGetArray(X,&x_arr);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f_arr);CHKERRQ(ierr);
@@ -203,7 +203,7 @@ static PetscErrorCode SNESLSVIComputeSSFunction(SNES snes,Vec X,Vec phi,void* fu
   ierr = VecGetArray(Xu,&u);CHKERRQ(ierr);
   ierr = VecGetArray(phi,&phi_arr);CHKERRQ(ierr);
 
-  for (i=i_start;i < i_end;i++) {
+  for (i=0;i < nlocal;i++) {
     if ((l[i] <= PETSC_LSVI_NINF) && (u[i] >= PETSC_LSVI_INF)) {
       phi_arr[i] = -f_arr[i];
     }
@@ -264,7 +264,7 @@ PetscErrorCode SNESLSVIComputeSSJacobian(SNES snes,Vec X,Mat *jac, Mat *jac_pre,
   PetscErrorCode ierr;
   SNES_LSVI      *lsvi = (SNES_LSVI*)snes->data;
   PetscScalar    *l,*u,*x,*f,*da,*db,*z,*t,t1,t2,ci,di,ei;
-  PetscInt       i,i_start,i_end;
+  PetscInt       i,nlocal;
   Vec            F = snes->vec_func;
 
   PetscFunctionBegin;
@@ -279,12 +279,12 @@ PetscErrorCode SNESLSVIComputeSSJacobian(SNES snes,Vec X,Mat *jac, Mat *jac_pre,
   ierr = VecGetArray(lsvi->Db,&db);CHKERRQ(ierr);
   ierr = VecGetArray(lsvi->z,&z);CHKERRQ(ierr);
   
-  ierr = VecGetOwnershipRange(X,&i_start,&i_end);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(X,&nlocal);CHKERRQ(ierr);
   /* Set the elements of the vector z:
      z[i] = 1 if (x[i] - l[i],f[i]) = (0,0) or (u[i] - x[i],f[i]) = (0,0)
      else z[i] = 0
   */
-  for(i=i_start;i < i_end;i++) {
+  for(i=0;i < nlocal;i++) {
     da[i] = db[i] = z[i] = 0;
     if(PetscAbsScalar(f[i]) <= PETSC_LSVI_EPS) {
       if ((l[i] > PETSC_LSVI_NINF) && (PetscAbsScalar(x[i]-l[i]) <= PETSC_LSVI_EPS)) {
@@ -301,7 +301,7 @@ PetscErrorCode SNESLSVIComputeSSJacobian(SNES snes,Vec X,Mat *jac, Mat *jac_pre,
   ierr = MatMult(*jac,lsvi->z,lsvi->t);CHKERRQ(ierr);
   ierr = VecGetArray(lsvi->t,&t);CHKERRQ(ierr);
   /* Compute the elements of the diagonal perturbation vector Da and row scaling vector Db */
-  for(i=i_start;i< i_end;i++) {
+  for(i=0;i< nlocal;i++) {
     /* Free variables */
     if ((l[i] <= PETSC_LSVI_NINF) && (u[i] >= PETSC_LSVI_INF)) {
       da[i] = 0; db[i] = -1;
@@ -473,17 +473,17 @@ PetscErrorCode SNESLSVICheckDescentDirection(SNES snes,Vec dpsi, Vec Y,PetscTrut
 PetscErrorCode SNESLSVIAdjustInitialGuess(Vec X, Vec lb, Vec ub)
 {
   PetscErrorCode ierr;
-  PetscInt       i,i_start,i_end;
+  PetscInt       i,nlocal;
   PetscScalar    *x,*l,*u;
 
   PetscFunctionBegin;
 
-  ierr = VecGetOwnershipRange(X,&i_start,&i_end);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(X,&nlocal);CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(lb,&l);CHKERRQ(ierr);
   ierr = VecGetArray(ub,&u);CHKERRQ(ierr);
 
-  for(i = i_start; i < i_end; i++) {
+  for(i = 0; i < nlocal; i++) {
     x[i] = PetscMax(PetscMax(PetscMin(x[i],l[i]),PetscMin(x[i],u[i])),PetscMin(l[i],u[i]));
   }
 
