@@ -156,6 +156,10 @@ class cmd_build(_build):
 
 class cmd_install(_install):
 
+    def initialize_options(self):
+        _install.initialize_options(self)
+        self.optimize = 1
+
     def run(self):
         root_dir = self.install_platlib
         dest_dir = os.path.join(root_dir, 'petsc')
