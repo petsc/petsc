@@ -75,6 +75,8 @@ def bootstrap():
         if (('distribute' in sys.modules) or
             ('setuptools' in sys.modules)):
             metadata['install_requires']= ['mpi4py>=1.2.2']
+    if 'setuptools' in sys.modules:
+        metadata['zip_safe'] = False
 
 def config(dry_run=False):
     log.info('PETSc: configure')
