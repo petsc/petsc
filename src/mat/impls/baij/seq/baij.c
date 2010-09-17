@@ -2375,7 +2375,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetColumnIndices_SeqBAIJ(Mat mat,Pet
   PetscInt    i,nz,mbs;
 
   PetscFunctionBegin;
-  nz  = baij->maxnz/baij->bs2;
+  nz  = baij->maxnz;
   mbs = baij->mbs;
   for (i=0; i<nz; i++) {
     baij->j[i] = indices[i];
@@ -3165,8 +3165,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
   b->bs2              = bs2;
   b->mbs              = mbs;
   b->nz               = 0;
-  b->maxnz            = nz*bs2;
-  B->info.nz_unneeded = (PetscReal)b->maxnz;
+  b->maxnz            = nz;
+  B->info.nz_unneeded = (PetscReal)b->maxnz*bs2;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -3269,7 +3269,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBAIJ(Mat B)
   b->solve_work            = 0;
   b->mult_work             = 0;
   B->spptr                 = 0;
-  B->info.nz_unneeded      = (PetscReal)b->maxnz;
+  B->info.nz_unneeded      = (PetscReal)b->maxnz*b->bs2;
   b->keepnonzeropattern    = PETSC_FALSE;
   b->xtoy                  = 0;
   b->XtoY                  = 0;
@@ -3395,7 +3395,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
     }
   } else c->diag        = 0;
   c->nz                 = a->nz;
-  c->maxnz              = bs2*a->nz; /* Since we allocate exactly the right amount */
+  c->maxnz              = a->nz; /* Since we allocate exactly the right amount */
   c->solve_work         = 0;
   c->mult_work          = 0;
   c->free_a             = PETSC_TRUE;

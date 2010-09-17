@@ -1599,10 +1599,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
     b->free_ij    = PETSC_FALSE;
   }
   
-  B->rmap->bs               = bs;
-  b->bs2              = bs2;
-  b->nz             = 0;
-  b->maxnz          = nz*bs2;
+  B->rmap->bs     = bs;
+  b->bs2          = bs2;
+  b->nz           = 0;
+  b->maxnz        = nz;
   
   b->inew             = 0;
   b->jnew             = 0;
@@ -1789,7 +1789,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   b->solve_work       = 0;
   b->mult_work        = 0;
   B->spptr            = 0;
-  B->info.nz_unneeded = (PetscReal)b->maxnz;
+  B->info.nz_unneeded = (PetscReal)b->maxnz*b->bs2;
   b->keepnonzeropattern   = PETSC_FALSE;
   b->xtoy             = 0;
   b->XtoY             = 0;
@@ -2083,7 +2083,7 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     }
   } else c->diag  = 0;
   c->nz           = a->nz;
-  c->maxnz        = bs2*a->nz; /* Since we allocate exactly the right amount */
+  c->maxnz        = a->nz; /* Since we allocate exactly the right amount */
   c->solve_work   = 0;
   c->mult_work    = 0;
   c->free_a       = PETSC_TRUE;
