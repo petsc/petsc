@@ -1,0 +1,36 @@
+include makefile
+recursive-include config *.py config.guess config.sub
+recursive-exclude config/examples *
+recursive-exclude config/BuildSystem/docs *
+
+recursive-include bin *.py *mpiexec* petscrun popup
+recursive-include bin/matlab *
+recursive-include conf *
+recursive-include include *
+recursive-include src *
+
+recursive-exclude src/characteristic/examples *
+recursive-exclude src/dm/adda/examples *
+recursive-exclude src/dm/ao/examples *
+recursive-exclude src/dm/da/examples *
+recursive-exclude src/dm/mesh/examples *
+recursive-exclude src/ksp/ksp/examples *
+recursive-exclude src/ksp/pc/examples *
+recursive-exclude src/mat/examples *
+recursive-exclude src/snes/examples *
+recursive-exclude src/sys/draw/examples *
+recursive-exclude src/sys/error/examples *
+recursive-exclude src/sys/examples *
+recursive-exclude src/sys/fwk/examples *
+recursive-exclude src/sys/random/examples *
+recursive-exclude src/sys/viewer/examples *
+recursive-exclude src/ts/examples *
+recursive-exclude src/vec/is/examples *
+recursive-exclude src/vec/pf/examples *
+recursive-exclude src/vec/vec/examples *
+
+exclude conf/petscvariables
+recursive-exclude src/docs *
+recursive-exclude src/tops *
+recursive-exclude include  *.d *.o
+recursive-exclude src *.d *.o
