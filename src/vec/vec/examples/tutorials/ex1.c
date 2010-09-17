@@ -55,7 +55,7 @@ int main(int argc,char **argv)
 #if defined(PETSC_HAVE_AMS)
   ierr = PetscObjectPublishBaseBegin((PetscObject)x);CHKERRQ(ierr);
   ierr = PetscObjectPublishBaseEnd((PetscObject)x);CHKERRQ(ierr);
-  ierr = PetscSleep(2.0);CHKERRQ(ierr);
+  ierr = PetscSleep(200.0);CHKERRQ(ierr);
 #endif
   /*
      Duplicate some work vectors (of the same format and

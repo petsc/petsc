@@ -596,23 +596,42 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(int port)
     } 
     ierr = PetscStrcmp(path,"/",&flg);CHKERRQ(ierr);
     if (flg) {      
-      char program[128];
+      char        program[128];
+      PetscMPIInt size;
+
+      ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
       ierr = PetscGetProgramName(program,128);CHKERRQ(ierr);
       ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "text/html", -1);CHKERRQ(ierr);
       fprintf(fd, "<HTML><HEAD><TITLE>Petsc Application Server</TITLE></HEAD>\r\n<BODY>");
       fprintf(fd, "<H4>Serving PETSc application code %s </H4>\r\n\n",program);
+      fprintf(fd, "Number of processes %d\r\n\n",size);
       fprintf(fd, "<HR>\r\n");
       ierr = PetscOptionsPrint(fd);CHKERRQ(ierr);
       fprintf(fd, "<HR>\r\n");
       ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
       goto theend;
     }
-    ierr = PetscStrcmp(path,"/info",&flg);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+    ierr = PetscStrcmp(path,"/ams",&flg);CHKERRQ(ierr);
     if (flg) {      
+      char       host[256],**comm_list,**mem_list;
+      AMS_Comm   ams;
+      PetscInt   i = 0;
+ 
+      ierr = PetscGetHostName(host,256);CHKERRQ(ierr);
+      ierr = AMS_Connect(host, -1, &comm_list);CHKERRQ(ierr);
+      ierr = AMS_Comm_attach(comm_list[0],&ams);CHKERRQ(ierr);
+      //      ierr = AMS_Comm_get_memory_list(ams,&mem_list);CHKERRQ(ierr);
       ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "text/html", -1);CHKERRQ(ierr);
+      fprintf(fd, "AMS Communicator %s\r\n\n",comm_list[0]);
+      // while (mem_list[i]) {
+      //fprintf(fd,"Memory %s\r\n\n",mem_list[i++]);
+      //}
       ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
+      ierr = AMS_Disconnect();CHKERRQ(ierr);
       goto theend;
     }
+#endif
     ierr = PetscWebSendError(fd, 501, "Not supported", NULL, "Unknown request.");CHKERRQ(ierr);
   }
   theend:
