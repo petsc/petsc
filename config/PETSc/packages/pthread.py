@@ -21,7 +21,7 @@ class Configure(PETSc.package.NewPackage):
 
   def getSearchDirectories(self):
     ''' libpthread.a is in the usual place'''
-    return []
+    return ['/usr']
 
 # sets PETSC_HAVE_PHTHREAD but does NOT set PETSC_USE_PTHREAD; that is set only by particular packages that
 # use pthreads
