@@ -11,7 +11,7 @@ class Configure(config.package.Package):
     self.cxx             = 0
     self.archIndependent = 1
     self.worksonWindows  = 1
-    self.version         = '100'
+    self.version         = '101'
     return
 
   def setupDependencies(self, framework):

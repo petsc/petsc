@@ -11,7 +11,7 @@ class Configure(config.package.Package):
     self.cxx             = 0
     self.archIndependent = 1
     self.worksonWindows  = 1
-    self.version         = '100300'
+    self.version         = '100201'
     return
 
   def Install(self):
