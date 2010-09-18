@@ -382,7 +382,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,c
     char portn[16];
     ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg);CHKERRQ(ierr);
     if (tflg) {
-      ierr = PetscOptionsAtoi(portn,&port);CHKERRQ(ierr);
+      PetscInt pport;
+      ierr = PetscOptionsAtoi(portn,&pport);CHKERRQ(ierr);
+      port = pport;
     } else {
       port = PETSCSOCKETDEFAULTPORT;
     }
