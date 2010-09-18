@@ -299,6 +299,8 @@ PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, Pe
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "nonlinearResidual"
 PetscErrorCode nonlinearResidual(PetscReal lambda, PetscScalar u[], PetscScalar r[]) {
   PetscFunctionBegin;
   r[0] += lambda*(48.0*u[0]*u[0]*u[0] + 12.0*u[1]*u[1]*u[1] + 9.0*u[0]*u[0]*(4.0*u[1] + u[2] + 4.0*u[3]) + u[1]*u[1]*(9.0*u[2] + 6.0*u[3]) + u[1]*(6.0*u[2]*u[2] + 8.0*u[2]*u[3] + 6.0*u[3]*u[3])
@@ -315,6 +317,8 @@ PetscErrorCode nonlinearResidual(PetscReal lambda, PetscScalar u[], PetscScalar 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "nonlinearResidualBratu"
 PetscErrorCode nonlinearResidualBratu(PetscReal lambda, PetscScalar u[], PetscScalar r[]) {
   PetscScalar rLocal[4] = {0.0, 0.0, 0.0, 0.0};
   PetscScalar phi[4] = {0.0, 0.0, 0.0, 0.0};
@@ -340,6 +344,8 @@ PetscErrorCode nonlinearResidualBratu(PetscReal lambda, PetscScalar u[], PetscSc
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "nonlinearJacobian"
 PetscErrorCode nonlinearJacobian(PetscReal lambda, PetscScalar u[], PetscScalar J[]) {
   PetscFunctionBegin;
   J[0]  = lambda*(72.0*u[0]*u[0] + 12.0*u[1]*u[1] + 9.0*u[0]*(4.0*u[1] + u[2] + 4.0*u[3]) + u[1]*(6.0*u[2] + 9.0*u[3]) + 2.0*(u[2]*u[2] + 3.0*u[2]*u[3] + 6.0*u[3]*u[3]))/600.0;
@@ -396,7 +402,7 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
      vertex (i,j), we consider the element below:
 
        3         2
-     i,j+1 --- i+1,j
+     i,j+1 --- i+1,j+1
        |         |
        |         |
       i,j  --- i+1,j
