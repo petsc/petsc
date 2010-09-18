@@ -13,7 +13,7 @@ int main(int argc,char **args)
   Vec            u,x,b,bpla;
   PetscErrorCode ierr;
   PetscMPIInt    rank,nproc;
-  PetscInt       i,j,k,M = 10,m,n,nfact,nsolve,Istart,Iend,*im,*in;
+  PetscInt       i,j,k,M = 10,m,n,nfact,nsolve,Istart,Iend,*im,*in,start,end;
   PetscScalar    *array,rval;
   PetscReal      norm,tol=1.e-12;
   IS             perm,iperm;
@@ -34,8 +34,8 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(C);CHKERRQ(ierr); 
 
   /* Create vectors */
-  ierr = MatGetLocalSize(C,&m,&n);CHKERRQ(ierr);
-  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix local size m %d must equal n %d",m,n);
+  ierr = MatGetOwnershipRange(C,&start,&end);CHKERRQ(ierr);
+  m    = end - start;
   /* printf("[%d] C - local size m: %d\n",rank,m); */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,m,PETSC_DECIDE);CHKERRQ(ierr);

@@ -11,7 +11,7 @@ int main(int argc,char **args)
   Vec            u,x,b;
   PetscErrorCode ierr;
   PetscMPIInt    rank,nproc;
-  PetscInt       i,M = 10,m,n,nfact,nsolve;
+  PetscInt       i,M = 10,m,n,nfact,nsolve,start,end;
   PetscScalar    *array,rval;
   PetscReal      norm,tol=1.e-12;
   IS             perm,iperm;
@@ -23,23 +23,16 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &nproc);CHKERRQ(ierr);
 
-  /* Create matrix and vectors */
+  /* Create matrix C */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
   ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr); 
   ierr = MatSetFromOptions(C);CHKERRQ(ierr); 
-  
-  ierr = MatGetLocalSize(C,&m,&n);CHKERRQ(ierr);
-  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix local size m %d must equal n %d",m,n);
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&u);CHKERRQ(ierr); /* save the true solution */
-
-  /* Assembly */
+  /* Assembly C */
+  ierr = MatGetOwnershipRange(C,&start,&end);CHKERRQ(ierr);
+  m    = end - start;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   ierr = MatGetArray(C,&array);CHKERRQ(ierr);
@@ -49,9 +42,18 @@ int main(int argc,char **args)
   }
   ierr = MatRestoreArray(C,&array);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);   
-  /*if (!rank) {printf("main, C: \n");}
-    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  /* if (!rank) {printf("main, C: \n");}
+     ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+ 
+  /* Create vectors */
+  ierr = MatGetLocalSize(C,&m,&n);CHKERRQ(ierr);
+  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix local size m %d must equal n %d",m,n);
+  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&u);CHKERRQ(ierr); /* save the true solution */
 
   /* Test MatDuplicate() */
   ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr); 
