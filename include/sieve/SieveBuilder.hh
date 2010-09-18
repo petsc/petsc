@@ -363,7 +363,7 @@ namespace ALE {
 	sieve->addArrow(vertexA, edge, color++);
 	sieve->addArrow(vertexB, edge, color++);
 	if (debug > 1)
-	  std::cout << "Adding vertices " << vertexA << " and " << vertexB << std::endl;
+	  std::cout << "    Adding vertices " << vertexA << " and " << vertexB << std::endl;
 	  
 	// Vertices on right edge
 	color = 0;
@@ -373,7 +373,7 @@ namespace ALE {
 	sieve->addArrow(vertexA, edge, color++);
 	sieve->addArrow(vertexB, edge, color++);
 	if (debug > 1)
-	  std::cout << "Adding vertices " << vertexA << " and " << vertexB << std::endl;
+	  std::cout << "    Adding vertices " << vertexA << " and " << vertexB << std::endl;
 	  
 	// Vertices on left edge
 	color = 0;
@@ -383,7 +383,7 @@ namespace ALE {
 	sieve->addArrow(vertexA, edge, color++);
 	sieve->addArrow(vertexB, edge, color++);
 	if (debug > 1)
-	  std::cout << "Adding vertices " << vertexA << " and " << vertexB << std::endl;
+	  std::cout << "    Adding vertices " << vertexA << " and " << vertexB << std::endl;
 	  
 	break;
       } // case 2
