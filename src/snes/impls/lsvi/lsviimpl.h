@@ -2,7 +2,6 @@
 
 #define PETSC_LSVI_INF   1.0e20
 #define PETSC_LSVI_NINF -1.0e20
-#define PETSC_LSVI_EPS  2.2204460492503131e-16
 
 #define PetscScalarNorm(a,b) (PetscSqrtScalar((a)*(a)+(b)*(b)))
 /* 
@@ -45,6 +44,8 @@ typedef struct {
   PetscReal             rho;
   PetscReal             delta;
 
+  /* Tolerance to check whether the constraint is satisfied */
+  PetscReal             const_tol;
   /* Copy of user supplied function evaluation and jacobian evaluation function pointers */
   PetscErrorCode (*computeuserfunction)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computeuserjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);

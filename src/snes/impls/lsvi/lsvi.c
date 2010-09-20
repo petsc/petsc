@@ -286,12 +286,12 @@ PetscErrorCode SNESLSVIComputeSSJacobian(SNES snes,Vec X,Mat *jac, Mat *jac_pre,
   */
   for(i=0;i < nlocal;i++) {
     da[i] = db[i] = z[i] = 0;
-    if(PetscAbsScalar(f[i]) <= PETSC_LSVI_EPS) {
-      if ((l[i] > PETSC_LSVI_NINF) && (PetscAbsScalar(x[i]-l[i]) <= PETSC_LSVI_EPS)) {
+    if(PetscAbsScalar(f[i]) <= lsvi->const_tol) {
+      if ((l[i] > PETSC_LSVI_NINF) && (PetscAbsScalar(x[i]-l[i]) <= lsvi->const_tol)) {
 	da[i] = 1;
 	z[i]  = 1;
       }
-      if ((u[i] < PETSC_LSVI_INF) && (PetscAbsScalar(u[i]-x[i]) <= PETSC_LSVI_EPS)) {
+      if ((u[i] < PETSC_LSVI_INF) && (PetscAbsScalar(u[i]-x[i]) <= lsvi->const_tol)) {
 	db[i] = 1;
 	z[i]  = 1;
       }
@@ -1330,6 +1330,7 @@ static PetscErrorCode SNESSetFromOptions_LSVI(SNES snes)
     ierr = PetscOptionsReal("-snes_lsvi_minlambda","Minimum lambda allowed","None",lsvi->minlambda,&lsvi->minlambda,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-snes_lsvi_delta","descent test fraction","None",lsvi->delta,&lsvi->delta,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-snes_lsvi_rho","descent test power","None",lsvi->rho,&lsvi->rho,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_lsvi_const_tol","constraint tolerance","None",lsvi->const_tol,&lsvi->const_tol,0);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-snes_lsvi_monitor","Print progress of line searches","SNESLineSearchSetMonitor",lsvi->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
     if (set) {ierr = SNESLineSearchSetMonitor(snes,flg);CHKERRQ(ierr);}
 
@@ -1404,6 +1405,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LSVI(SNES snes)
   lsvi->precheck          = PETSC_NULL;
   lsvi->rho               = 2.1;
   lsvi->delta             = 1e-10;
+  lsvi->const_tol         =  2.2204460492503131e-16;
   lsvi->computessfunction = ComputeFischerFunction; 
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetMonitor_C","SNESLineSearchSetMonitor_LSVI",SNESLineSearchSetMonitor_LSVI);CHKERRQ(ierr);
