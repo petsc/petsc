@@ -4673,7 +4673,7 @@ namespace ALE {
         tetCells[1*4+0] = cone[1]+vertexOffset; tetCells[1*4+1] = newVertices[4]; tetCells[1*4+2] = newVertices[1]; tetCells[1*4+3] = newVertices[0];
         tetCells[2*4+0] = cone[2]+vertexOffset; tetCells[2*4+1] = newVertices[5]; tetCells[2*4+2] = newVertices[2]; tetCells[2*4+3] = newVertices[1];
         tetCells[3*4+0] = cone[3]+vertexOffset; tetCells[3*4+1] = newVertices[3]; tetCells[3*4+2] = newVertices[5]; tetCells[3*4+3] = newVertices[4];
-        tetCells[4*4+0] = newVertices[0];       tetCells[4*4+1] = newVertices[3]; tetCells[4*4+2] = newVertices[4]; tetCells[4*4+3] = newVertices[2];
+        tetCells[4*4+0] = newVertices[0];       tetCells[4*4+1] = newVertices[3]; tetCells[4*4+2] = newVertices[4]; tetCells[4*4+3] = newVertices[1];
         tetCells[5*4+0] = newVertices[1];       tetCells[5*4+1] = newVertices[4]; tetCells[5*4+2] = newVertices[5]; tetCells[5*4+3] = newVertices[3];
         tetCells[6*4+0] = newVertices[2];       tetCells[6*4+1] = newVertices[5]; tetCells[6*4+2] = newVertices[3]; tetCells[6*4+3] = newVertices[1];
         tetCells[7*4+0] = newVertices[0];       tetCells[7*4+1] = newVertices[1]; tetCells[7*4+2] = newVertices[2]; tetCells[7*4+3] = newVertices[3];
