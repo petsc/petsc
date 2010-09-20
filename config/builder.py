@@ -253,10 +253,12 @@ class PETScMaker(script.Script):
    packageIncludes = self.headers.toStringNoDupes(packageIncludes)
    return packageIncludes, packageLibs
 
- def getObjectName(self, source):
-   return os.path.splitext(source)[0]+'.o'
+ def getObjectName(self, source, objDir = None):
+   if objDir is None:
+     return os.path.splitext(source)[0]+'.o'
+   return os.path.join(objDir, os.path.splitext(os.path.basename(source))[0]+'.o')
 
- def sortSourceFiles(self, dirname):
+ def sortSourceFiles(self, dirname, objDir = None):
    '''Sorts source files by language (returns dictionary with language keys)'''
    cnames    = []
    cxxnames  = []
@@ -286,9 +288,9 @@ class PETScMaker(script.Script):
      f77names  = f77names[:self.argDB['maxSources']]
      f90names  = f90names[:self.argDB['maxSources']]
      source    = source[:self.argDB['maxSources']]
-   return {'C': cnames, 'Cxx': cxxnames, 'Cuda': cudanames, 'F77': f77names, 'F90': f90names, 'Fortran': f77names+f90names, 'Objects': map(self.getObjectName, source)}
+   return {'C': cnames, 'Cxx': cxxnames, 'Cuda': cudanames, 'F77': f77names, 'F90': f90names, 'Fortran': f77names+f90names, 'Objects': [self.getObjectName(s, objDir) for s in source]}
 
- def compileC(self, source):
+ def compileC(self, source, objDir = None):
    '''PETSC_INCLUDE         = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
                                ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE}
       PETSC_CC_INCLUDES     = ${PETSC_INCLUDE}
@@ -306,7 +308,8 @@ class PETScMaker(script.Script):
    flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscdir.dir, ''))
    # TODO: Move this up to configure
    if self.argDB['dependencies']: flags.append('-MMD')
-   sources = [s for s in source if not os.path.isfile(self.getObjectName(s)) or self.sourceDatabase.rebuild(self.getObjectName(s))]
+   sources = [s for s in source if not os.path.isfile(self.getObjectName(s, objDir)) or self.sourceDatabase.rebuild(self.getObjectName(s, objDir))]
+   objects = [self.getObjectName(s, objDir) for s in sources]
    packageIncludes, packageLibs = self.getPackageInfo()
    cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+sources)
    if len(sources):
@@ -321,12 +324,15 @@ class PETScMaker(script.Script):
    else:
      self.logPrint('Nothing to build', debugSection = self.debugSection)
    self.setCompilers.popLanguage()
-   for s in sources:
-     if not os.path.isfile(self.getObjectName(s)):
-       print 'ERROR: Missing object file',self.getObjectName(s)
-   return [self.getObjectName(s) for s in sources]
+   for o in objects:
+     locObj = os.path.basename(o)
+     if not os.path.isfile(locObj):
+       print 'ERROR: Missing object file',locObj
+     else:
+       shutil.move(locObj, o)
+   return objects
 
- def compileF(self, source):
+ def compileF(self, source, objDir = None):
    '''PETSC_INCLUDE	        = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
                               ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE}
       PETSC_CC_INCLUDES     = ${PETSC_INCLUDE}
@@ -338,6 +344,7 @@ class PETScMaker(script.Script):
    flags           = []
 
    includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
+   objects  = [self.getObjectName(s, objDir) for s in source]
    self.setCompilers.pushLanguage('FC')
    compiler      = self.setCompilers.getCompiler()
    flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
@@ -350,7 +357,10 @@ class PETScMaker(script.Script):
        self.logPrint("ERROR IN COMPILE ******************************", debugSection='screen')
        self.logPrint(output+error, debugSection='screen')
    self.setCompilers.popLanguage()
-   return [self.getObjectName(s) for s in source]
+   for o in objects:
+     if not os.path.isfile(o):
+       print 'ERROR: Missing object file',o
+   return objects
 
  def archive(self, library, objects):
    '''${AR} ${AR_FLAGS} ${LIBNAME} $*.o'''
@@ -434,17 +444,25 @@ class PETScMaker(script.Script):
        self.executeShellCommand(cmd, log=self.log)
    return
 
- def buildSharedLibrary(self, library):
+ def expandArchive(self, archive, objDir):
+   [shutil.rmtree(p) for p in os.listdir(objDir)]
+   oldDir = os.getcwd()
+   os.chdir(objDir)
+   self.executeShellCommand(self.setCompilers.AR+' x '+archive, log = self.log)
+   os.chdir(oldDir)
+   return
+
+ def buildSharedLibrary(self, libname):
    '''
    PETSC_LIB_DIR        = ${PETSC_DIR}/${PETSC_ARCH}/lib
    INSTALL_LIB_DIR	= ${PETSC_LIB_DIR}
    '''
    if self.sharedLibraries.useShared:
      libDir = os.path.join(self.petscdir.dir, self.arch.arch, 'lib')
-     tmpDir = tempfile.mkdtemp('petsc-' + self.arch.arch + '-')
+     objDir = os.path.join(self.petscdir.dir, self.arch.arch, 'lib', libname+'-obj')
      self.logPrint('Making shared libraries in '+libDir)
-     sharedLib = os.path.join(libDir, os.path.splitext(library)[0]+'.'+self.setCompilers.sharedLibraryExt)
-     archive   = os.path.join(libDir, os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX)
+     sharedLib = os.path.join(libDir, os.path.splitext(libname)[0]+'.'+self.setCompilers.sharedLibraryExt)
+     archive   = os.path.join(libDir, os.path.splitext(libname)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX)
      # Should we rebuild?
      rebuild = False
      if os.path.isfile(archive):
@@ -455,15 +473,10 @@ class PETScMaker(script.Script):
          rebuild = True
      if rebuild:
        self.logPrint('Building '+sharedLib)
-       [shutil.rmtree(p) for p in os.listdir(tmpDir)]
-       oldDir = os.getcwd()
-       os.chdir(tmpDir)
-       self.executeShellCommand(self.setCompilers.AR+' x '+archive, log=self.log)
-       os.chdir(oldDir)
-       self.linkShared(sharedLib, libDir, tmpDir)
+       #self.expandArchive(archive, objDir)
+       self.linkShared(sharedLib, libDir, objDir)
      else:
-       self.logPrint('Nothing to rebuild for shared library '+library)
-     shutil.rmtree(tmpDir)
+       self.logPrint('Nothing to rebuild for shared library '+libname)
    else:
      self.logPrint('Shared libraries disabled')
    return
@@ -565,47 +578,51 @@ class PETScMaker(script.Script):
    fd.close()
    return True
  
- def buildDir(self, libname, dirname, dummy):
+ def buildDir(self, dirname, dummy, objDir):
    ''' This is run in a PETSc source directory'''
    self.logWrite('Entering '+dirname+'\n', debugSection = 'screen', forceScroll = True)
    os.chdir(dirname)
-   sourceMap = self.sortSourceFiles(dirname)
+   sourceMap = self.sortSourceFiles(dirname, objDir)
    objects   = []
    if sourceMap['C']:
      self.logPrint('Compiling C files '+str(sourceMap['C']))
-     objects.extend(self.compileC(sourceMap['C']))
+     objects.extend(self.compileC(sourceMap['C'], objDir))
    if sourceMap['Fortran']:
      self.logPrint('Compiling Fortran files '+str(sourceMap['Fortran']))
-     objects.extend(self.compileF(sourceMap['Fortran']))
-   if objects:
-     self.logPrint('Archiving files '+str(objects)+' into '+libname)
-     self.archive(os.path.join(self.petscdir.dir, self.arch.arch, 'lib', libname), objects)
-   return
+     objects.extend(self.compileF(sourceMap['Fortran'], objDir))
+   return objects
 
- def buildAll(self, rootDir = None):
+ def buildAll(self, libname, rootDir = None):
    self.setup()
    if rootDir is None:
      rootDir = self.argDB['rootDir']
    if rootDir == self.petscdir.dir:
-     srcdirs = [os.path.join(rootDir,'include', os.path.join(rootDir,'src'))]
+     srcdirs = [os.path.join(rootDir, 'include'), os.path.join(rootDir, 'src')]
    else:
      srcdirs = [rootDir]
-   if not any(map(self.checkDir,srcdirs)):
+   if not any(map(self.checkDir, srcdirs)):
      self.logPrint('Nothing to be done')
-   if rootDir == self.petscdir.dir:
-     library = os.path.join(self.petscdir.dir, self.arch.arch, 'lib', 'libpetsc')   
+   library = os.path.join(self.petscdir.dir, self.arch.arch, 'lib', libname)
+   objDir  = os.path.join(self.petscdir.dir, self.arch.arch, 'lib', libname+'-obj')
+   if not os.path.isdir(objDir): os.mkdir(objDir)
+   if rootDir == self.petscdir.dir and not self.argDB['dependencies']:
+     # Remove old library by default when rebuilding the entire package
      lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
      if os.path.isfile(lib):
        self.logPrint('Removing '+lib)
        os.unlink(lib)
+   objects = []
    for srcdir in srcdirs:
      for root, dirs, files in os.walk(srcdir):
        self.logPrint('Processing '+root)
-       self.buildDir('libpetsc', root, files)
+       objects += self.buildDir(root, files, objDir)
        for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
          dirs.remove(badDir)
-   self.ranlib('libpetsc')
-   self.buildSharedLibrary('libpetsc')
+   if len(objects):
+     self.logPrint('Archiving files '+str(objects)+' into '+libname)
+     self.archive(library, objects)
+   self.ranlib(libname)
+   self.buildSharedLibrary(libname)
    return
 
  def buildDependenciesFiles(self, names):
@@ -619,22 +636,23 @@ class PETScMaker(script.Script):
            self.readDependencyFile(depFile)
    return
  
- def buildDependenciesDir(self, dirname, fnames):
+ def buildDependenciesDir(self, dirname, fnames, objDir):
    ''' This is run in a PETSc source directory'''
    self.logWrite('Entering '+dirname+'\n', debugSection = 'screen', forceScroll = True)
    os.chdir(dirname)
-   sourceMap = self.sortSourceFiles(dirname)
+   sourceMap = self.sortSourceFiles(dirname, objDir)
    self.buildDependenciesFiles(sourceMap['Objects'])
    return
 
- def rebuildDependencies(self, rootDir = None):
+ def rebuildDependencies(self, libname, rootDir = None):
    if rootDir is None:
      rootDir = self.argDB['rootDir']
    if not self.checkDir(rootDir):
      self.logPrint('Nothing to be done')
+   objDir = os.path.join(self.petscdir.dir, self.arch.arch, 'lib', libname+'-obj')
    for root, dirs, files in os.walk(rootDir):
      self.logPrint('Processing '+root)
-     self.buildDependenciesDir(root, files)
+     self.buildDependenciesDir(root, files, objDir)
      for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
        dirs.remove(badDir)
    return
@@ -739,10 +757,9 @@ class PETScMaker(script.Script):
  def run(self):
    self.setup()
    if self.argDB['rebuildDependencies']:
-     self.rebuildDependencies()
+     self.rebuildDependencies('libpetsc')
    if self.argDB['buildLibraries']:
-     self.buildAll()
-   self.buildSharedLibrary('libpetsc')
+     self.buildAll('libpetsc')
    if self.argDB['regressionTests']:
      self.regressionTests()
    self.cleanup()
