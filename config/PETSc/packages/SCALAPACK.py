@@ -6,7 +6,7 @@ class Configure(PETSc.package.NewPackage):
     # use the version from PETSc ftp site - it has lapack removed
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scalapack.tgz']
     self.includes  = []
-    self.liblist   = [['libscalapack.a']]
+    self.liblist   = [[],['libscalapack.a']]
     self.functions = ['pssytrd']
     self.requires32bitint = 0;
     self.functionsFortran = 1
