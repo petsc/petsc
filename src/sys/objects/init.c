@@ -421,17 +421,17 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   /*
     Activates new sockets for zope if needed
   */
-  ierr=PetscOptionsHasName(PETSC_NULL,"-zope", &flgz);CHKERRQ(ierr);
-  ierr=PetscOptionsHasName(PETSC_NULL,"-nostdout", &flgzout);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-zope", &flgz);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-nostdout", &flgzout);CHKERRQ(ierr);
   if (flgz){
-    int          sockfd; 
-    char         hostname[256];
-    char         username[256];
-    int          remoteport = 9999;
+    int  sockfd; 
+    char hostname[256];
+    char username[256];
+    int  remoteport = 9999;
 
     ierr = PetscOptionsGetString(PETSC_NULL, "-zope", hostname, 256, &flgz);CHKERRQ(ierr);
     if (!hostname[0]){
-      ierr=PetscGetHostName(hostname,256);CHKERRQ(ierr);
+      ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
     }
     ierr = PetscOpenSocket(hostname, remoteport, &sockfd);CHKERRQ(ierr);
     ierr = PetscGetUserName(username, 256);CHKERRQ(ierr);
@@ -465,9 +465,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Private(void)
     char logname[PETSC_MAX_PATH_LEN]; logname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-info",logname,250,&flg1);CHKERRQ(ierr);
     if (logname[0]) {
-      PetscInfoAllow(PETSC_TRUE,logname); 
+      ierr = PetscInfoAllow(PETSC_TRUE,logname);CHKERRQ(ierr);
     } else {
-      PetscInfoAllow(PETSC_TRUE,PETSC_NULL); 
+      ierr = PetscInfoAllow(PETSC_TRUE,PETSC_NULL);CHKERRQ(ierr); 
     }
   }
 #endif
