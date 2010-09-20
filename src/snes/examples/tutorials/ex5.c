@@ -438,6 +438,8 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCt
       Variant of FormFunction() that computes the function in Matlab
 */
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
+#undef __FUNCT__
+#define __FUNCT__ "FormFunctionMatlab"
 PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;

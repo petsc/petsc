@@ -382,7 +382,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,c
     char portn[16];
     ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg);CHKERRQ(ierr);
     if (tflg) {
-      ierr = PetscOptionsAtoi(portn,&port);CHKERRQ(ierr);
+      PetscInt pport;
+      ierr = PetscOptionsAtoi(portn,&pport);CHKERRQ(ierr);
+      port = (int)pport;
     } else {
       port = PETSCSOCKETDEFAULTPORT;
     }
@@ -582,7 +584,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(int port)
     PetscFunctionReturn(0);
   }   
 
-  fseek(fd, 0, SEEK_CUR); // Force change of stream direction
+  fseek(fd, 0, SEEK_CUR); /* Force change of stream direction */
 
   ierr = PetscStrcmp(method,"GET",&flg);
   if (!flg) {

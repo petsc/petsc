@@ -1849,20 +1849,19 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
   ierr = MatSetType(mat,((PetscObject)A)->type_name);CHKERRQ(ierr);
   a                 = (Mat_MPIDense*)mat->data;
   ierr              = PetscMemcpy(mat->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
+
   mat->factortype   = A->factortype;
   mat->assembled    = PETSC_TRUE;
   mat->preallocated = PETSC_TRUE;
 
-  mat->rmap->rstart     = A->rmap->rstart;
-  mat->rmap->rend       = A->rmap->rend;
-  a->size              = oldmat->size;
-  a->rank              = oldmat->rank;
-  mat->insertmode      = NOT_SET_VALUES;
-  a->nvec              = oldmat->nvec;
-  a->donotstash        = oldmat->donotstash;
- 
-  ierr = PetscMemcpy(mat->rmap->range,A->rmap->range,(a->size+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemcpy(mat->cmap->range,A->cmap->range,(a->size+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  a->size           = oldmat->size;
+  a->rank           = oldmat->rank;
+  mat->insertmode   = NOT_SET_VALUES;
+  a->nvec           = oldmat->nvec;
+  a->donotstash     = oldmat->donotstash;
+
+  ierr = PetscLayoutCopy(A->rmap,&mat->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutCopy(A->cmap,&mat->cmap);CHKERRQ(ierr);
 
   ierr = MatSetUpMultiply_MPIDense(mat);CHKERRQ(ierr);
   ierr = MatDuplicate(oldmat->A,cpvalues,&a->A);CHKERRQ(ierr);

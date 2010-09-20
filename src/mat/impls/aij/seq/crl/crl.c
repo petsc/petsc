@@ -243,7 +243,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJCRL(MPI_Comm comm,PetscInt m,Pe
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
   ierr = MatSetSizes(*A,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATSEQAIJCRL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation_SeqAIJ(*A,nz,(PetscInt*)nnz);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation_SeqAIJ(*A,nz,nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
