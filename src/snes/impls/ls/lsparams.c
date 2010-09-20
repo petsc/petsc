@@ -46,7 +46,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetParams(SNES snes,PetscReal a
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESGetLineSearchParams"
+#define __FUNCT__ "SNESLineSearchGetParams"
 /*@C
    SNESLineSearchGetParams - Gets the parameters associated with the line search
      routine in the Newton-based method SNESLS.
