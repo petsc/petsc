@@ -13,7 +13,7 @@ typedef struct {
   Vec W;
 
   Vec Diag;
-  PetscScalar radius;
+  PetscScalar radius,trust0;
   // Parameters when updating the trust-region radius based on reduction
   PetscScalar eta1;          // used to compute trust-region radius
   PetscScalar eta2;          // used to compute trust-region radius

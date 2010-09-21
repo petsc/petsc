@@ -231,10 +231,18 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDestroy(TaoSolver tao)
   if (tao->stepdirection) {
       ierr = VecDestroy(tao->stepdirection); CHKERRQ(ierr);
   }
+  if (tao->ksp) {
+      ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
+  }
+  if (tao->linesearch) {
+      ierr = TaoLineSearchDestroy(tao->linesearch); CHKERRQ(ierr);
+  }
   tao->gradient = PETSC_NULL;
   tao->XL = PETSC_NULL;
   tao->XU = PETSC_NULL;
   tao->stepdirection = PETSC_NULL;
+  tao->ksp = PETSC_NULL;
+  tao->linesearch = PETSC_NULL;
   ierr = PetscHeaderDestroy(tao); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -290,8 +290,8 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
   
             prered = radius * (gnorm - 0.5 * radius * prered / (gnorm * gnorm));
             actred = f - ftrial;
-            if ((fabs(actred) <= nlsP->epsilon) && 
-                (fabs(prered) <= nlsP->epsilon)) {
+            if ((PetscAbsScalar(actred) <= nlsP->epsilon) && 
+                (PetscAbsScalar(prered) <= nlsP->epsilon)) {
               kappa = 1.0;
             }
             else {
@@ -303,7 +303,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
             tau_min = PetscMin(tau_1, tau_2);
             tau_max = PetscMax(tau_1, tau_2);
   
-            if (fabs(kappa - 1.0) <= nlsP->mu1_i) {
+            if (PetscAbsScalar(kappa - 1.0) <= nlsP->mu1_i) {
               // Great agreement
               max_radius = PetscMax(max_radius, radius);
   
@@ -323,7 +323,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
                 tau = tau_max;
               }
             }
-            else if (fabs(kappa - 1.0) <= nlsP->mu2_i) {
+            else if (PetscAbsScalar(kappa - 1.0) <= nlsP->mu2_i) {
               // Good agreement
               max_radius = PetscMax(max_radius, radius);
   
@@ -456,7 +456,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
     }
 
     // Solve the Newton system of equations
-    ierr = KSPSetOperators(tao->ksp,tao->hessian,tao->hessian_pre,matflag);
+    ierr = KSPSetOperators(tao->ksp,tao->hessian,tao->hessian_pre,matflag); CHKERRQ(ierr);
     if (NLS_KSP_NASH == nlsP->ksp_type ||
         NLS_KSP_STCG == nlsP->ksp_type || 
         NLS_KSP_GLTR == nlsP->ksp_type) {
@@ -867,8 +867,8 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
               // Compute and actual reduction
               actred = fold - f_full;
               prered = -prered;
-              if ((fabs(actred) <= nlsP->epsilon) && 
-                  (fabs(prered) <= nlsP->epsilon)) {
+              if ((PetscAbsScalar(actred) <= nlsP->epsilon) && 
+                  (PetscAbsScalar(prered) <= nlsP->epsilon)) {
                 kappa = 1.0;
               }
               else {
@@ -933,8 +933,8 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
             else {
               actred = fold - f_full;
               prered = -prered;
-              if ((fabs(actred) <= nlsP->epsilon) && 
-                  (fabs(prered) <= nlsP->epsilon)) {
+              if ((PetscAbsScalar(actred) <= nlsP->epsilon) && 
+                  (PetscAbsScalar(prered) <= nlsP->epsilon)) {
                 kappa = 1.0;
               }
               else {
@@ -1078,15 +1078,6 @@ static PetscErrorCode TaoSolverDestroy_NLS(TaoSolver tao)
   }
   if (nlsP->M) {
     ierr = MatDestroy(nlsP->M); CHKERRQ(ierr);
-  }
-  if (tao->gradient) {
-    ierr = VecDestroy(tao->gradient); CHKERRQ(ierr);
-  }
-  if (tao->stepdirection) {
-    ierr = VecDestroy(tao->stepdirection); CHKERRQ(ierr);
-  }
-  if (tao->linesearch) {
-    ierr = TaoLineSearchDestroy(tao->linesearch); CHKERRQ(ierr);
   }
   if (tao->data) {
     ierr = PetscFree(tao->data); CHKERRQ(ierr);
