@@ -1,0 +1,22 @@
+# -*- makefile -*-
+
+MPIEXEC=
+PYTHON=python
+
+.PHONY:test
+test: run clean
+
+.PHONY:run
+run: run_fd run_mf
+
+.PHONY:run_fd
+run_fd:
+	${MPIEXEC} ${PYTHON} bratu3d.py -fd -nx 7 -ny 8 -nz 9 -snes_monitor
+
+.PHONY:run_mf
+run_mf:
+	${MPIEXEC} ${PYTHON} bratu3d.py -mf -nx 9 -ny 8 -nz 7 -snes_monitor
+
+.PHONY:clean
+clean:
+	${RM} *.py[co]

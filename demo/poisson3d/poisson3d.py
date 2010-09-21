@@ -40,7 +40,8 @@ x.scale(h**2)
 try:
     from matplotlib import pylab
 except ImportError:
-    raise SystemExit("matplotlib not available")
+    print("matplotlib not available")
+    raise SystemExit
 from numpy import mgrid
 X, Y =  mgrid[0:1:1j*n,0:1:1j*n]
 Z = x[...].reshape(n,n,n)[:,:,n/2-2]

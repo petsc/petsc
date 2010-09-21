@@ -1,13 +1,26 @@
-.PHONY: f2py petsc
+# -*- makefile -*-
 
-all: f2py petsc
+MPIEXEC=
+PYTHON=python
 
-f2py:
+.PHONY:test
+test: run clean
+
+.PHONY:run
+run: run_py run_cc
+
+.PHONY:run_py
+run_py: poisson3d.so
+	${MPIEXEC} ${PYTHON} poisson3d.py -ksp_monitor
+
+.PHONY:run_cc
+run_cc: poisson3d.exe
+	${MPIEXEC} ./poisson3d.exe -ksp_monitor
+
+poisson3d.so:
 	${MAKE} -f makefile.f2py
-petsc:
+poisson3d.exe:
 	${MAKE} -f makefile.petsc
 
 clean:
-	${MAKE} -f makefile.f2py clean
-	${MAKE} -f makefile.petsc clean lclean
-	${RM} *.py[co] *.o
+	${RM} *.py[co] *.o *.so *.exe 

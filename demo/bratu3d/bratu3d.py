@@ -29,16 +29,14 @@ class Bratu3D(object):
         assert da.getDim() == 3
         self.da = da
         self.lambda_ = lambda_
-        self.localX  = da.createLocalVector()
+        self.localX  = da.createLocalVec()
 
     def formInitGuess(self, snes, X):
         #
-        X.zeroEntries()
-        corners, sizes = self.da.getCorners()
-        x = X[...].reshape(sizes, order='f')
+        x = self.da.getVecArray(X)
         #
         mx, my, mz = self.da.getSizes()
-        hx, hy, hz = [1.0/m for m in [mx, my, mz]]
+        hx, hy, hz = [1.0/(m-1) for m in [mx, my, mz]]
         lambda_ = self.lambda_
         scale = lambda_/(lambda_ + 1.0)
         #
@@ -61,12 +59,8 @@ class Bratu3D(object):
     def formFunction(self, snes, X, F):
         #
         self.da.globalToLocal(X, self.localX)
-        corners, sizes = self.da.getGhostCorners()
-        x = self.localX[...].reshape(sizes, order='f')
-        #
-        F.zeroEntries()
-        corners, sizes = self.da.getCorners()
-        f = F[...].reshape(sizes, order='f')
+        x = self.da.getVecArray(self.localX)
+        f = self.da.getVecArray(F)
         #
         mx, my, mz = self.da.getSizes()
         hx, hy, hz = [1.0/m for m in [mx, my, mz]]
@@ -103,18 +97,20 @@ class Bratu3D(object):
         if J != P: J.assemble() # matrix-free operator
         return PETSc.Mat.Structure.SAME_NONZERO_PATTERN
 
-
 OptDB = PETSc.Options()
 
-N = OptDB.getInt('N', 16)
+n  = OptDB.getInt('n', 16)
+nx = OptDB.getInt('nx', n)
+ny = OptDB.getInt('nz', n)
+nz = OptDB.getInt('ny', n)
 lambda_ = OptDB.getReal('lambda', 6.0)
 do_plot = OptDB.getBool('plot', False)
 
-da = PETSc.DA().create([N, N, N])
+da = PETSc.DA().create([nx, ny, nz])
 pde = Bratu3D(da, lambda_)
 
 snes = PETSc.SNES().create()
-F = da.createGlobalVector()
+F = da.createGlobalVec()
 snes.setFunction(pde.formFunction, F)
 
 fd = OptDB.getBool('fd', True)
@@ -123,19 +119,19 @@ if mf:
     J = None
     snes.setUseMF()
 else:
-    J = da.createMatrix()
+    J = da.createMat()
     snes.setJacobian(pde.formJacobian, J)
     if fd:
         snes.setUseFD()
 
-X = da.createGlobalVector()
-pde.formInitGuess(None, X)
-
 snes.getKSP().setType('cg')
 snes.setFromOptions()
+
+X = da.createGlobalVec()
+pde.formInitGuess(snes, X)
 snes.solve(None, X)
 
-U = da.createNaturalVector()
+U = da.createNaturalVec()
 da.globalToNatural(X, U)
 
 def plot(da, U):
