@@ -684,6 +684,17 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscInitialize(int *argc,char ***args,const c
 #if defined(PETSC_HAVE_CUDA)
   cublasInit();
 #endif
+
+#if defined(PETSC_HAVE_AMS)
+  ierr = PetscOptionsHasName(PETSC_NULL,"-ams_publish_all",&flg);CHKERRQ(ierr);
+  if (flg) {
+    AMS_Comm acomm;
+    ierr               = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_(PETSC_COMM_WORLD),&acomm);CHKERRQ(ierr);
+    ierr               = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_(PETSC_COMM_SELF),&acomm);CHKERRQ(ierr);
+    PetscAMSPublishAll = PETSC_TRUE;
+  }
+#endif
+
   /*
       Once we are completedly initialized then we can set this variables
   */

@@ -219,7 +219,7 @@ PetscViewer PETSC_VIEWER_AMS_(MPI_Comm comm)
        If there is a PetscViewer associated with this communicator, it is destroyed.
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PETSC_VIEWER_AMS_Destroy" 
+#define __FUNCT__ "PetscViewer_AMS_Destroy" 
 PetscErrorCode PetscViewer_AMS_Destroy(MPI_Comm comm)
 {
   PetscErrorCode ierr;

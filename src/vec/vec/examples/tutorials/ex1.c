@@ -52,17 +52,19 @@ int main(int argc,char **argv)
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectPublishBaseBegin((PetscObject)x);CHKERRQ(ierr);
-  ierr = PetscObjectPublishBaseEnd((PetscObject)x);CHKERRQ(ierr);
-  ierr = PetscSleep(200.0);CHKERRQ(ierr);
-#endif
   /*
      Duplicate some work vectors (of the same format and
      partitioning as the initial vector).
   */
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&w);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+  ierr = PetscObjectPublishBaseBegin((PetscObject)x);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseEnd((PetscObject)x);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseBegin((PetscObject)y);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseEnd((PetscObject)y);CHKERRQ(ierr);
+  ierr = PetscSleep(200.0);CHKERRQ(ierr);
+#endif
   ierr = VecNorm(w,NORM_2,&norm);CHKERRQ(ierr);
   /*
      Duplicate more work vectors (of the same format and

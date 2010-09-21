@@ -41,6 +41,12 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscHeaderCreate_Private(PetscObject h,PetscC
   h->bops->composefunction  = PetscObjectComposeFunction_Petsc;
   h->bops->queryfunction    = PetscObjectQueryFunction_Petsc;
   ierr = PetscCommDuplicate(comm,&h->comm,&h->tag);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+  if (PetscAMSPublishAll) {
+    ierr = PetscObjectPublishBaseBegin((PetscObject)h);CHKERRQ(ierr);
+    ierr = PetscObjectPublishBaseEnd((PetscObject)h);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -58,6 +64,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscHeaderDestroy_Private(PetscObject h)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_AMS)
+  
+#endif
   if (PetscMemoryCollectMaximumUsage) {
     PetscLogDouble usage;
     ierr = PetscMemoryGetCurrentUsage(&usage);CHKERRQ(ierr);

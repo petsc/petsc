@@ -33,6 +33,7 @@ int PetscObjectPublishBaseBegin(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectPublishBaseEnd"
 int PetscObjectPublishBaseEnd(PetscObject obj)
@@ -41,10 +42,22 @@ int PetscObjectPublishBaseEnd(PetscObject obj)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   if (amem < 0) SETERRQ(obj->comm,PETSC_ERR_ARG_WRONGSTATE,"Called without a call to PetscObjectPublishBaseBegin()");
   ierr = AMS_Memory_publish(amem);CHKERRQ(ierr);
   ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectPublishBaseDestroy"
+int PetscObjectPublishBaseDestroy(PetscObject obj)
+{
+  AMS_Comm       acomm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr      = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_(obj->comm),&acomm);CHKERRQ(ierr);
+  ierr      = AMS_Memory_destroy(obj->amem);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
