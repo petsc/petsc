@@ -355,7 +355,6 @@ namespace ALE {
 	// Vertices on edges
 
 	// Vertices on bottom edge
-	int edgeOrientation = 1;
 	color = 0;
 	edge = bdVertices[dim][0];
 	typename sieve_type::point_type vertexA = bdVertices[dim][3];
