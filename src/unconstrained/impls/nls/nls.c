@@ -101,7 +101,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
   MatStructure matflag;
 
   PetscInt stepType;
-  PetscInt iter = 0, status = 0;
+  PetscInt iter = 0;
   PetscInt bfgsUpdates = 0;
   PetscInt n,N,kspits;
   PetscInt needH;
@@ -678,11 +678,11 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
 
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, nlsP->D, &step, &ls_reason); CHKERRQ(ierr);
 
-    while (status && stepType != NLS_GRADIENT) {
+    while (ls_reason < 0  && stepType != NLS_GRADIENT) {
       // Linesearch failed
       f = fold;
-      ierr = VecCopy(tao->solution, nlsP->Xold); CHKERRQ(ierr);
-      ierr = VecCopy(tao->gradient, nlsP->Gold); CHKERRQ(ierr);
+      ierr = VecCopy(nlsP->Xold, tao->solution); CHKERRQ(ierr);
+      ierr = VecCopy(nlsP->Gold, tao->gradient); CHKERRQ(ierr);
 
       switch(stepType) {
       case NLS_NEWTON:
@@ -791,7 +791,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
       ierr = TaoLineSearchGetFullStepObjective(tao->linesearch, &f_full); CHKERRQ(ierr);
     }
 
-    if (status) {
+    if (ls_reason < 0) {
       // Failed to find an improving point
       f = fold;
       ierr = VecCopy(nlsP->Xold, tao->solution); CHKERRQ(ierr);
@@ -1079,9 +1079,8 @@ static PetscErrorCode TaoSolverDestroy_NLS(TaoSolver tao)
   if (nlsP->M) {
     ierr = MatDestroy(nlsP->M); CHKERRQ(ierr);
   }
-  if (tao->data) {
-    ierr = PetscFree(tao->data); CHKERRQ(ierr);
-  }
+  ierr = PetscFree(tao->data); CHKERRQ(ierr);
+
 
   tao->gradient=PETSC_NULL;
   tao->stepdirection=PETSC_NULL;
@@ -1208,7 +1207,7 @@ PetscErrorCode TaoSolverCreate_NLS(TaoSolver tao)
   tao->ops->setfromoptions = TaoSolverSetFromOptions_NLS;
   tao->ops->destroy = TaoSolverDestroy_NLS;
 
-  tao->max_its = 2000;
+  tao->max_its = 50;
   tao->fatol = 1e-10;
   tao->frtol = 1e-10;
   tao->data = (void*)nlsP;

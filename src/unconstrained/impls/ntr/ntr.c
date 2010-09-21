@@ -115,8 +115,8 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
   if (radius < 0.0) {
     SETERRQ(1, "Initial radius negative");
     }*/
-  radius = tr->radius;
-  // Modify the radius if it is too large or small
+  radius = tr->trust0;
+  /* Modify the radius if it is too large or small */
   radius = PetscMax(radius, tr->min_radius);
   radius = PetscMin(radius, tr->max_radius);
 
@@ -128,7 +128,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
     ierr = MatLMVMAllocateVectors(tr->M,tao->solution); CHKERRQ(ierr);
   }
 
-  // Check convergence criteria
+  /* Check convergence criteria */
   ierr = TaoSolverComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
   if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
@@ -141,7 +141,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
     PetscFunctionReturn(0);
   }
 
-  // Create vectors for the limited memory preconditioner
+  /* Create vectors for the limited memory preconditioner */
   if ((NTR_PC_BFGS == tr->pc_type) && 
       (BFGS_SCALE_BFGS != tr->bfgs_scale_type)) {
     if (!tr->Diag) {
@@ -356,11 +356,11 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
     ierr = MatLMVMSetDelta(tr->M,delta); CHKERRQ(ierr);
   }
 
-  // Have not converged; continue with Newton method
+  /* Have not converged; continue with Newton method */
   while (reason == TAO_CONTINUE_ITERATING) {
     ++iter;
 
-    // Compute the Hessian
+    /* Compute the Hessian */
     if (needH) {
       ierr = TaoSolverComputeHessian(tao, tao->solution, &tao->hessian, &tao->hessian_pre, &matflag); CHKERRQ(ierr);
       needH = 0;
@@ -368,14 +368,14 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 
     if (NTR_PC_BFGS == tr->pc_type) {
       if (BFGS_SCALE_AHESS == tr->bfgs_scale_type) {
-        // Obtain diagonal for the bfgs preconditioner
+        /* Obtain diagonal for the bfgs preconditioner */
         ierr = MatGetDiagonal(tao->hessian, tr->Diag); CHKERRQ(ierr);
 	ierr = VecAbs(tr->Diag); CHKERRQ(ierr);
 	ierr = VecReciprocal(tr->Diag); CHKERRQ(ierr);
 	ierr = MatLMVMSetScale(tr->M,tr->Diag); CHKERRQ(ierr);
       }
 
-      // Update the limited memory preconditioner
+      /* Update the limited memory preconditioner */
       ierr = MatLMVMUpdate(tr->M, tao->solution, tao->gradient); CHKERRQ(ierr);
       ++bfgsUpdates;
     }
@@ -383,7 +383,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
     while (reason == TAO_CONTINUE_ITERATING) {
       ierr = KSPSetOperators(tao->ksp, tao->hessian, tao->hessian_pre, matflag); CHKERRQ(ierr);
       
-      // Solve the trust region subproblem
+      /* Solve the trust region subproblem */
       if (NTR_KSP_NASH == tr->ksp_type) {
 	ierr = KSPNASHSetRadius(tao->ksp,tr->max_radius); CHKERRQ(ierr);
 	ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
@@ -399,20 +399,20 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
       }
 
       if (0.0 == radius) {
-        // Radius was uninitialized; use the norm of the direction
+        /* Radius was uninitialized; use the norm of the direction */
         if (norm_d > 0.0) {
           radius = norm_d;
 
-          // Modify the radius if it is too large or small
+          /* Modify the radius if it is too large or small */
           radius = PetscMax(radius, tr->min_radius);
           radius = PetscMin(radius, tr->max_radius);
         }
         else {
-          // The direction was bad; set radius to default value and re-solve 
-          // the trust-region subproblem to get a direction
+          /* The direction was bad; set radius to default value and re-solve 
+	     the trust-region subproblem to get a direction */
 	  radius = tr->trust0;
 
-          // Modify the radius if it is too large or small
+          /* Modify the radius if it is too large or small */
           radius = PetscMax(radius, tr->min_radius);
           radius = PetscMin(radius, tr->max_radius);
 	  
@@ -439,8 +439,8 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
       ierr = KSPGetConvergedReason(tao->ksp, &ksp_reason); CHKERRQ(ierr);
       if ((KSP_DIVERGED_INDEFINITE_PC == ksp_reason) &&
           (NTR_PC_BFGS == tr->pc_type) && (bfgsUpdates > 1)) {
-        // Preconditioner is numerically indefinite; reset the
-        // approximate if using BFGS preconditioning.
+        /* Preconditioner is numerically indefinite; reset the
+	   approximate if using BFGS preconditioning. */
   
         if (f != 0.0) {
           delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
@@ -455,7 +455,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
       }
 
       if (NTR_UPDATE_REDUCTION == tr->update_type) {
-	// Get predicted reduction
+	/* Get predicted reduction */
 	if (NTR_KSP_NASH == tr->ksp_type) {
 	  ierr = KSPNASHGetObjFcn(tao->ksp,&prered); CHKERRQ(ierr);
 	} else if (NTR_KSP_STCG == tr->ksp_type) {
@@ -465,13 +465,13 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 	}
 	
 	if (prered >= 0.0) {
-	  // The predicted reduction has the wrong sign.  This cannot
-	  // happen in infinite precision arithmetic.  Step should
-	  // be rejected!
+	  /* The predicted reduction has the wrong sign.  This cannot
+	     happen in infinite precision arithmetic.  Step should
+	     be rejected! */
 	  radius = tr->alpha1 * PetscMin(radius, norm_d);
 	}
 	else {
-	  // Compute trial step and function value
+	  /* Compute trial step and function value */
 	  ierr = VecCopy(tao->solution,tr->W); CHKERRQ(ierr);
 	  ierr = VecAXPY(tr->W, 1.0, tao->stepdirection); CHKERRQ(ierr);
 	  ierr = TaoSolverComputeObjective(tao, tr->W, &ftrial); CHKERRQ(ierr);
@@ -479,7 +479,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 	  if (TaoInfOrNaN(ftrial)) {
 	    radius = tr->alpha1 * PetscMin(radius, norm_d);
 	  } else {
-	    // Compute and actual reduction
+	    /* Compute and actual reduction */
 	    actred = f - ftrial;
 	    prered = -prered;
 	    if ((PetscAbsScalar(actred) <= tr->epsilon) && 
@@ -490,27 +490,27 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 	      kappa = actred / prered;
 	    }
 	    
-	    // Accept or reject the step and update radius
+	    /* Accept or reject the step and update radius */
 	    if (kappa < tr->eta1) {
-	      // Reject the step
+	      /* Reject the step */
 	      radius = tr->alpha1 * PetscMin(radius, norm_d);
 	    } 
 	    else {
-	      // Accept the step
+	      /* Accept the step */
 	      if (kappa < tr->eta2) { 
-		// Marginal bad step
+		/* Marginal bad step */
 		radius = tr->alpha2 * PetscMin(radius, norm_d);
 	      }
 	      else if (kappa < tr->eta3) {
-		// Reasonable step
+		/* Reasonable step */
 		radius = tr->alpha3 * radius;
 	      }
 	      else if (kappa < tr->eta4) { 
-		// Good step
+		/* Good step */
 		radius = PetscMax(tr->alpha4 * norm_d, radius);
 	      }
 	      else {
-		// Very good step
+		/* Very good step */
 		radius = PetscMax(tr->alpha5 * norm_d, radius);
 	      }
 	      break;
@@ -519,7 +519,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 	} 
       }
       else {
-	// Get predicted reduction
+	/* Get predicted reduction */
 	if (NTR_KSP_NASH == tr->ksp_type) {
 	  ierr = KSPNASHGetObjFcn(tao->ksp,&prered); CHKERRQ(ierr);
 	} else if (NTR_KSP_STCG == tr->ksp_type) {
@@ -529,14 +529,14 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 	}
 
 	if (prered >= 0.0) {
-	  // The predicted reduction has the wrong sign.  This cannot
-	  // happen in infinite precision arithmetic.  Step should
-	  // be rejected!
+	  /* The predicted reduction has the wrong sign.  This cannot
+	     happen in infinite precision arithmetic.  Step should
+	     be rejected! */
 	  radius = tr->gamma1 * PetscMin(radius, norm_d);
 	}
 	else {
 	  ierr = VecCopy(tao->solution, tr->W); CHKERRQ(ierr);
-	  ierr = VecAXPY(tao->solution, 1.0, tao->stepdirection); CHKERRQ(ierr);
+	  ierr = VecAXPY(tr->W, 1.0, tao->stepdirection); CHKERRQ(ierr);
 	  ierr = TaoSolverComputeObjective(tao, tr->W, &ftrial); CHKERRQ(ierr);
 	  if (TaoInfOrNaN(ftrial)) {
 	    radius = tr->gamma1 * PetscMin(radius, norm_d);
@@ -559,7 +559,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 	    tau_max = PetscMax(tau_1, tau_2);
 
 	    if (kappa >= 1.0 - tr->mu1) {
-	      // Great agreement; accept step and update radius
+	      /* Great agreement; accept step and update radius */
 	      if (tau_max < 1.0) {
 		radius = PetscMax(radius, tr->gamma3 * norm_d);
 	      }
@@ -572,7 +572,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 	      break;
 	    }
 	    else if (kappa >= 1.0 - tr->mu2) {
-	      // Good agreement
+	      /* Good agreement */
 
 	      if (tau_max < tr->gamma2) {
 		radius = tr->gamma2 * PetscMin(radius, norm_d);
@@ -589,7 +589,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 	      break;
 	    }
 	    else {
-	      // Not good agreement
+	      /* Not good agreement */
 	      if (tau_min > 1.0) {
 		radius = tr->gamma2 * PetscMin(radius, norm_d);
 	      }
@@ -615,12 +615,12 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 	}
       }
 
-      // The step computed was not good and the radius was decreased.
-      // Monitor the radius to terminate.
+      /* The step computed was not good and the radius was decreased.
+	 Monitor the radius to terminate. */
       ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, radius, &reason); CHKERRQ(ierr);
     }
 
-    // The radius may have been increased; modify if it is too large
+    /* The radius may have been increased; modify if it is too large */
     radius = PetscMin(radius, tr->max_radius);
 
     if (reason == TAO_CONTINUE_ITERATING) {
@@ -655,12 +655,11 @@ static PetscErrorCode TaoSolverSetUp_NTR(TaoSolver tao)
   tr->Diag = 0;
   tr->M = 0;
 
-  // Set linear solver to default for trust region
+  /* Set linear solver to default for trust region */
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp, "tao_"); CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
 
-  // Check sizes for compatability
   PetscFunctionReturn(0);
 }
 
