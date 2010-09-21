@@ -4862,7 +4862,17 @@ namespace ALE {
       }
       // Reallocate the sieve chart
       newSieve->setChart(typename sieve_type::chart_type(0, curNewVertex));
-      refiner.setVertexOffset(numNewCells - numCells);
+      
+      const int cellDepth = (mesh.depth() == -1) ? -1 : 1;
+      const std::string labelName = 
+	mesh.hasLabel("censored depth") ? "censored depth" : "depth";
+      assert(!mesh.getFactory().isNull());
+      const Obj<typename MeshType::numbering_type>& numbering = 
+	mesh.getFactory()->getNumbering(Obj<MeshType>(mesh), labelName, cellDepth);
+      assert(!numbering.isNull());
+      const int numCellsNoLagrange = numbering->getGlobalSize();
+
+      refiner.setVertexOffset(numNewCells - numCellsNoLagrange);
       // Create new sieve with correct sizes for refined cells
       for(typename MeshType::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
         // Set new cone and support sizes
@@ -4906,18 +4916,7 @@ namespace ALE {
         }
         cV.clear();
 
-#if 0 // MATT- IS THIS DEBUGGING CODE OR UNFINISHED?
-        //   Check that vertex does not yet exist
-        point_type newVertices[6];
-
-        for(int v = 0; v < 6; ++v) {
-          newVertices[v] = edge2vertex[edges[v]];
-          vertex2edge[(newVertices[v]-numNewCells-numOldVertices)*2+0] = edges[v].first;
-          vertex2edge[(newVertices[v]-numNewCells-numOldVertices)*2+1] = edges[v].second;
-        }
-#else
         refiner.getNeighboringVertices(*c_iter, coneSize, cone, numNewCells+numOldVertices, vertex2edge);
-#endif
       }
       newSieve->symmetrize();
       // Create new coordinates
