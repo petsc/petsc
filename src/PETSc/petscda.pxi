@@ -123,4 +123,103 @@ cdef inline PetscInt asDims(dims,
     if ndim >= 3: _P[0] = asInt(P)
     return ndim
 
+cdef inline tuple toDims(PetscInt dim,
+                         PetscInt M,
+                         PetscInt N, 
+                         PetscInt P):
+        if dim == 0:
+            return ()
+        elif dim == 1:
+            return (toInt(M),)
+        elif dim == 2:
+            return (toInt(M), toInt(N))
+        else:
+            return (toInt(M), toInt(N), toInt(P))
+
+# --------------------------------------------------------------------
+
+cdef class _DA_Vec_array(object):
+
+    cdef readonly ndarray array
+    cdef readonly tuple   starts
+    cdef readonly tuple   sizes
+
+    def __cinit__(self, DA da not None, Vec vec not None):
+        #
+        cdef PetscInt dim, dof
+        CHKERR( DAGetInfo(da.da,
+                          &dim, NULL, NULL, NULL, NULL, NULL, NULL,
+                          &dof, NULL, NULL, NULL) )
+        cdef PetscInt lxs, lys, lzs, lxm, lym, lzm
+        CHKERR( DAGetCorners(da.da,
+                             &lxs, &lys, &lzs,
+                             &lxm, &lym, &lzm) )
+        cdef PetscInt gxs, gys, gzs, gxm, gym, gzm
+        CHKERR( DAGetGhostCorners(da.da,
+                                  &gxs, &gys, &gzs,
+                                  &gxm, &gym, &gzm) )
+        #
+        cdef PetscInt n
+        CHKERR( VecGetLocalSize(vec.vec, &n) )
+        cdef PetscInt xs, ys, zs, xm, ym, zm
+        if (n == lxm*lym*lzm*dof):
+            xs, ys, zs = lxs, lys, lzs
+            xm, ym, zm = lxm, lym, lzm
+        elif (n == gxm*gym*gzm*dof):
+            xs, ys, zs = gxs, gys, gzs
+            xm, ym, zm = gxm, gym, gzm
+        else:
+            raise ValueError(
+                "Vector local size %d is not compatible with DA local sizes %s"
+                % (<Py_ssize_t>n, toDims(dim, lxm, lym, lzm)))
+        #
+        cdef tuple starts = toDims(dim, xs, ys, zs)
+        cdef tuple sizes  = toDims(dim, xm, ym, zm)
+        cdef PetscInt k = sizeof(PetscScalar)
+        cdef tuple shape   = toDims(dim, xm, ym, zm)
+        cdef tuple strides = toDims(dim, k*1, k*xm, k*xm*ym)
+        if dof > 1:
+            shape   += (<Py_ssize_t>dof,)
+            strides += (<Py_ssize_t>(k*xm*ym*zm),)
+        #
+        self.array = asarray(vec)
+        self.starts = starts
+        self.sizes  = sizes
+        self.array.shape = shape
+        self.array.strides = strides
+
+    def __getitem__(self, index):
+        index = adjust_index_exp(self.starts, index)
+        return self.array[index]
+
+    def __setitem__(self, index, value):
+        index = adjust_index_exp(self.starts, index)
+        self.array[index] = value
+
+cdef object adjust_index_exp(object starts, object index):
+     if not isinstance(index, tuple):
+         return adjust_index(start[0], index)
+     index = list(index)
+     for i, start in enumerate(starts):
+         index[i] = adjust_index(start, index[i])
+     index = tuple(index)
+     return index
+
+cdef object adjust_index(object lbound, object index):
+    if index is None:
+        return index
+    if index is Ellipsis:
+        return index
+    if isinstance(index, slice):
+        start = index.start
+        stop  = index.stop
+        step  = index.step
+        if start is not None: start -= lbound
+        if stop  is not None: stop  -= lbound
+        return slice(start, stop, step)
+    try:
+        return index - lbound
+    except TypeError:
+        return index
+
 # --------------------------------------------------------------------

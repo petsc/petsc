@@ -322,6 +322,11 @@ cdef class DA(Object):
 
     #
 
+    def getVecArray(self, Vec vec not None):
+        return _DA_Vec_array(self, vec)
+
+    #
+
     def getAO(self):
         cdef AO ao = AO()
         CHKERR( DAGetAO(self.da, &ao.ao) )
