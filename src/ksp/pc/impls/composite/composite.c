@@ -126,12 +126,14 @@ static PetscErrorCode PCDestroy_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PetscErrorCode   ierr;
-  PC_CompositeLink next = jac->head;
+  PC_CompositeLink next = jac->head,next_tmp;
 
   PetscFunctionBegin;
   while (next) {
     ierr = PCDestroy(next->pc);CHKERRQ(ierr);
-    next = next->next;
+    next_tmp = next;
+    next     = next->next;
+    ierr = PetscFree(next_tmp);CHKERRQ(ierr);
   }
 
   if (jac->work1) {ierr = VecDestroy(jac->work1);CHKERRQ(ierr);}
@@ -162,10 +164,11 @@ static PetscErrorCode PCSetFromOptions_Composite(PC pc)
     if (flg) {
       ierr = PCCompositeSetUseTrue(pc);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsStringArray("-pc_composite_pcs","List of composite solvers","PCCompositeAddPC",pcs,&nmax,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsStringArray("-pc_composite_pcs","List of composite solvers","PCCompositeAddPC",pcs,&nmax,&flg);CHKERRQ(ierr); 
     if (flg) {
       for (i=0; i<nmax; i++) {
         ierr = PCCompositeAddPC(pc,pcs[i]);CHKERRQ(ierr);
+        ierr = PetscFree(pcs[i]);CHKERRQ(ierr); /* deallocate string pcs[i], which is allocated in PetscOptionsStringArray() */
       }
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
