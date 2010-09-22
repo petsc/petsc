@@ -50,4 +50,5 @@ int main(int argc, char *argv[]) {
   ierr = DADestroy(daY);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
+  return 0;
 }
