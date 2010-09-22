@@ -162,7 +162,7 @@ static PetscErrorCode ComputeFischerFunction(PetscScalar a, PetscScalar b, Petsc
 }
   
 /* 
-   SNESVIComputeSSFunction - Reformulates a system of nonlinear equations in mixed complementarity form to a system of nonlinear equations in semismooth form. 
+   SNESVIComputeFunction - Reformulates a system of nonlinear equations in mixed complementarity form to a system of nonlinear equations in semismooth form. 
 
    Input Parameters:  
 .  snes - the SNES context
@@ -184,8 +184,8 @@ static PetscErrorCode ComputeFischerFunction(PetscScalar a, PetscScalar b, Petsc
 
 */
 #undef __FUNCT__
-#define __FUNCT__ "SNESVIComputeSSFunction"
-static PetscErrorCode SNESVIComputeSSFunction(SNES snes,Vec X,Vec phi,void* functx)
+#define __FUNCT__ "SNESVIComputeFunction"
+static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void* functx)
 {
   PetscErrorCode  ierr;
   SNES_VI       *vi = (SNES_VI*)snes->data;
@@ -237,7 +237,7 @@ static PetscErrorCode SNESVIComputeSSFunction(SNES snes,Vec X,Vec phi,void* func
 }
 
 /*
-   SNESVIComputeSSJacobian - Computes the jacobian of the semismooth function.The Jacobian for the semismooth function is an element of the B-subdifferential of the Fischer-Burmeister function for complementarity problems.
+   SNESVIComputeJacobian - Computes the jacobian of the semismooth function.The Jacobian for the semismooth function is an element of the B-subdifferential of the Fischer-Burmeister function for complementarity problems.
 
    Input Parameters:
 .  snes     - the SNES context
@@ -258,8 +258,8 @@ static PetscErrorCode SNESVIComputeSSFunction(SNES snes,Vec X,Vec phi,void* func
    and   jacfun is the jacobian of the original nonlinear function.	 
 */
 #undef __FUNCT__
-#define __FUNCT__ "SNESVIComputeSSJacobian"
-PetscErrorCode SNESVIComputeSSJacobian(SNES snes,Vec X,Mat *jac, Mat *jac_pre, MatStructure *flg,void* jacctx)
+#define __FUNCT__ "SNESVIComputeJacobian"
+PetscErrorCode SNESVIComputeJacobian(SNES snes,Vec X,Mat *jac, Mat *jac_pre, MatStructure *flg,void* jacctx)
 {
   PetscErrorCode ierr;
   SNES_VI      *vi = (SNES_VI*)snes->data;
@@ -748,8 +748,8 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
   vi->computeuserfunction = snes->ops->computefunction;
   vi->computeuserjacobian = snes->ops->computejacobian;
 
-  snes->ops->computefunction = SNESVIComputeSSFunction;
-  snes->ops->computejacobian = SNESVIComputeSSJacobian;
+  snes->ops->computefunction = SNESVIComputeFunction;
+  snes->ops->computejacobian = SNESVIComputeJacobian;
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
