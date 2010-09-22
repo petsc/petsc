@@ -27,7 +27,20 @@ FILE *PETSC_ZOPEFD = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFormatConvert"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFormatConvert(const char *format,char *newformat,PetscInt size)
+/*@C 
+     PetscFormatConvert - Takes a PETSc format string and converts it to a reqular C format string
+
+   Input Parameters:
++   format - the PETSc format string
+.   newformat - the location to put the standard C format string values
+-   size - the length of newformat
+
+    Note: this exists so we can have the same code when PetscInt is either int or long long and PetscScalar is either double or float
+
+ Level: developer
+
+@*/
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFormatConvert(const char *format,char *newformat,size_t size)
 {
   PetscInt i = 0,j = 0;
 
@@ -74,10 +87,22 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFormatConvert(const char *format,char *ne
  
 #undef __FUNCT__  
 #define __FUNCT__ "PetscVSNPrintf"
-/* 
-   No error handling because may be called by error handler
-*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *format,int *fullLength,va_list Argp)
+/*@C 
+     PetscVSNPrintf - The PETSc version of vsnprintf(). Converts a PETSc format string into a standard C format string and then puts all the 
+       function arguments into a string using the format statement.
+
+   Input Parameters:
++   str - location to put result
+.   len - the amount of space in str
++   format - the PETSc format string
+-   fullLength - the amount of space in str actually used.
+
+    Note:  No error handling because may be called by error handler
+
+ Level: developer
+
+@*/
+PetscErrorCode PETSCSYS_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *format,size_t *fullLength,va_list Argp)
 {
   /* no malloc since may be called by error handler */
   char          *newformat;
@@ -121,8 +146,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscZopeLog(const char *format,va_list Argp)
   char        newformat[8*1024];
   char        log[8*1024];
   char        logstart[] = " <<<log>>>";
-  size_t      len;
-  size_t      formatlen;
+  size_t      len,formatlen;
 
   PetscFormatConvert(format,newformat,8*1024);
   PetscStrlen(logstart, &len);
@@ -141,16 +165,40 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscZopeLog(const char *format,va_list Argp)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscVFPrintf"
-/* 
-   All PETSc standard out and error messages are sent through this function; so, in theory, this can
-   can be replaced with something that does not simply write to a file. 
+#define __FUNCT__ "PetscVFPrintfDefault"
+/*@C 
+     PetscVFPrintf -  All PETSc standard out and error messages are sent through this function; so, in theory, this can
+        can be replaced with something that does not simply write to a file. 
 
-   Note: For error messages this may be called by a process, for regular standard out it is
-   called only by process 0 of a given communicator
+      To use, write your own function for example,
+$PetscErrorCode mypetscvfprintf(FILE *fd,const char format[],va_list Argp)
+${
+$  PetscErrorCode ierr;
+$
+$  PetscFunctionBegin;
+$   if (fd != stdout && fd != stderr) {  handle regular files 
+$      ierr = PetscVFPrintfDefault(fd,format,Argp); CHKERR(ierr);
+$  } else {
+$     char   buff[BIG];
+$     size_t length;
+$     ierr = PetscVSNPrintf(buff,BIG,format,&length,Argp);CHKERRQ(ierr);
+$     now send buff to whatever stream or whatever you want 
+$ }
+$ PetscFunctionReturn(0);
+$}
+then before the call to PetscInitialize() do the assignment
+$    PetscVFPrintf = mypetscvfprintf;
 
-   No error handling because may be called by error handler
-*/
+      Notes: For error messages this may be called by any process, for regular standard out it is
+          called only by process 0 of a given communicator
+
+      No error handling because may be called by error handler
+
+  Level:  developer
+
+.seealso: PetscVSNPrintf(), PetscErrorPrintf()
+
+@*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
 {
   /* no malloc since may be called by error handler (assume no long messages in errors) */
@@ -218,7 +266,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *form
 PetscErrorCode PETSCSYS_DLLEXPORT PetscSNPrintf(char *str,size_t len,const char format[],...)
 {
   PetscErrorCode ierr;
-  int            fullLength;
+  size_t         fullLength;
   va_list        Argp;
 
   PetscFunctionBegin;
@@ -278,7 +326,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedPrintf(MPI_Comm comm,const ch
   } else { /* other processors add to local queue */
     va_list     Argp;
     PrintfQueue next;
-    int         fullLength = 8191;
+    size_t      fullLength = 8191;
 
     ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
     if (queue) {queue->next = next; queue = next; queue->next = 0;}
@@ -343,7 +391,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedFPrintf(MPI_Comm comm,FILE* f
   } else { /* other processors add to local queue */
     va_list     Argp;
     PrintfQueue next;
-    int         fullLength = 8191;
+    size_t      fullLength = 8191;
     ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
     if (queue) {queue->next = next; queue = next; queue->next = 0;}
     else       {queuebase   = queue = next;}
@@ -556,6 +604,24 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscPrintf(MPI_Comm comm,const char format[],
 /* ---------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscHelpPrintfDefault" 
+/*@C 
+     PetscHelpPrintf -  All PETSc help messages are passing through this function. You can change how help messages are printed by 
+        replacinng it  with something that does not simply write to a stdout. 
+
+      To use, write your own function for example,
+$PetscErrorCode mypetschelpprintf(MPI_Comm comm,const char format[],....)
+${
+$ PetscFunctionReturn(0);
+$}
+then before the call to PetscInitialize() do the assignment
+$    PetscHelpPrintf = mypetschelpprintf;
+
+  Note: the default routine used is called PetscHelpPrintfDefault().
+
+  Level:  developer
+
+.seealso: PetscVSNPrintf(), PetscVFPrintf(), PetscErrorPrintf()
+@*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 {
   PetscErrorCode ierr;

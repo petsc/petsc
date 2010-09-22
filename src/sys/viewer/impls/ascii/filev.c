@@ -436,7 +436,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIPrintf(PetscViewer viewer,cons
     va_end(Argp);
   } else if (ascii->bviewer) { /* this is a singleton PetscViewer that is not on process 0 */
     va_list     Argp;
-    int         fullLength;
+    size_t      fullLength;
     char        *string;
 
     PrintfQueue next;
@@ -836,7 +836,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIISynchronizedPrintf(PetscViewer
   } else { /* other processors add to local queue */
     char        *string;
     va_list     Argp;
-    int         fullLength;
+    size_t      fullLength;
     PrintfQueue next;
 
     ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
@@ -984,7 +984,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIMonitorPrintf(PetscViewerASCII
     va_end(Argp);
   } else if (ascii->bviewer) { /* this is a singleton PetscViewer that is not on process 0 */
     va_list     Argp;
-    int         fullLength;
+    size_t      fullLength;
     char        *string;
     PrintfQueue next;
 

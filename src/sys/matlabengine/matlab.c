@@ -106,11 +106,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEngineDestroy(PetscMatlabEngine v)
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,const char string[],...)
 {
-  va_list           Argp;
-  char              buffer[1024];
+  va_list        Argp;
+  char           buffer[1024];
   PetscErrorCode ierr;
-  int               fullLength;
-  size_t            len;
+  size_t         fullLength, len;
 
   PetscFunctionBegin;  
   va_start(Argp,string);

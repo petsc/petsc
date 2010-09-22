@@ -449,7 +449,7 @@ $     SETERRQ(comm,n,mess)
 PetscErrorCode PETSCSYS_DLLEXPORT PetscError(MPI_Comm comm,int line,const char *func,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,...)
 {
   va_list        Argp;
-  int            fullLength;
+  size_t         fullLength;
   PetscErrorCode ierr;
   char           buf[2048],*lbuf = 0;
   PetscTruth     ismain,isunknown;
