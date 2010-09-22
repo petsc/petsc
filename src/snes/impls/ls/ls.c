@@ -1206,7 +1206,7 @@ static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
     ierr = PetscOptionsTruth("-snes_ls_monitor","Print progress of line searches","SNESLineSearchSetMonitor",ls->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
     if (set) {ierr = SNESLineSearchSetMonitor(snes,flg);CHKERRQ(ierr);}
 
-    ierr = PetscOptionsEList("-snes_lsa","Line search used","SNESLineSearchSet",lses,4,"cubic",&indx,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-snes_ls","Line search used","SNESLineSearchSet",lses,4,"cubic",&indx,&flg);CHKERRQ(ierr);
     if (flg) {
       switch (indx) {
       case 0:
