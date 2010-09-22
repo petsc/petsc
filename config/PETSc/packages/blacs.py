@@ -4,7 +4,7 @@ class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/blacs-dev.tar.gz']
-    self.liblist   = [['libblacs.a']]
+    self.liblist   = [[],['libblacs.a']]
     self.includes  = []
     self.fc        = 1
     self.functions = ['blacs_pinfo']

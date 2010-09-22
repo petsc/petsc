@@ -58,6 +58,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscHeaderDestroy_Private(PetscObject h)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_AMS)
+  
+#endif
   if (PetscMemoryCollectMaximumUsage) {
     PetscLogDouble usage;
     ierr = PetscMemoryGetCurrentUsage(&usage);CHKERRQ(ierr);

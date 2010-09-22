@@ -4649,9 +4649,9 @@ namespace ALE {
         triPrismLEdges[3] = edge_type(std::min(cone[3], cone[4]), std::max(cone[3], cone[4]));
         triPrismLEdges[4] = edge_type(std::min(cone[4], cone[5]), std::max(cone[4], cone[5]));
         triPrismLEdges[5] = edge_type(std::min(cone[5], cone[3]), std::max(cone[5], cone[3]));
-        triPrismLEdges[6] = edge_type(cone[6], cone[6]);
-        triPrismLEdges[7] = edge_type(cone[7], cone[7]);
-        triPrismLEdges[8] = edge_type(cone[8], cone[8]);
+        triPrismLEdges[6] = edge_type(std::min(cone[6], cone[7]), std::max(cone[6], cone[7]));
+        triPrismLEdges[7] = edge_type(std::min(cone[7], cone[8]), std::max(cone[7], cone[8]));
+        triPrismLEdges[8] = edge_type(std::min(cone[8], cone[6]), std::max(cone[8], cone[6]));
         *numEdges = 9;
         *edges    = triPrismLEdges;
       };
@@ -4673,7 +4673,7 @@ namespace ALE {
         tetCells[1*4+0] = cone[1]+vertexOffset; tetCells[1*4+1] = newVertices[4]; tetCells[1*4+2] = newVertices[1]; tetCells[1*4+3] = newVertices[0];
         tetCells[2*4+0] = cone[2]+vertexOffset; tetCells[2*4+1] = newVertices[5]; tetCells[2*4+2] = newVertices[2]; tetCells[2*4+3] = newVertices[1];
         tetCells[3*4+0] = cone[3]+vertexOffset; tetCells[3*4+1] = newVertices[3]; tetCells[3*4+2] = newVertices[5]; tetCells[3*4+3] = newVertices[4];
-        tetCells[4*4+0] = newVertices[0];       tetCells[4*4+1] = newVertices[3]; tetCells[4*4+2] = newVertices[4]; tetCells[4*4+3] = newVertices[2];
+        tetCells[4*4+0] = newVertices[0];       tetCells[4*4+1] = newVertices[3]; tetCells[4*4+2] = newVertices[4]; tetCells[4*4+3] = newVertices[1];
         tetCells[5*4+0] = newVertices[1];       tetCells[5*4+1] = newVertices[4]; tetCells[5*4+2] = newVertices[5]; tetCells[5*4+3] = newVertices[3];
         tetCells[6*4+0] = newVertices[2];       tetCells[6*4+1] = newVertices[5]; tetCells[6*4+2] = newVertices[3]; tetCells[6*4+3] = newVertices[1];
         tetCells[7*4+0] = newVertices[0];       tetCells[7*4+1] = newVertices[1]; tetCells[7*4+2] = newVertices[2]; tetCells[7*4+3] = newVertices[3];
@@ -4694,15 +4694,47 @@ namespace ALE {
           }
           newVertices[e] = edge2vertex[edges[e]];
         }
-        tcells[0*4+0] = cone[0]+vertexOffset; tcells[0*4+1] = newVertices[3]; tcells[0*4+2] = newVertices[0]; tcells[0*4+3] = newVertices[2];
-        tcells[1*4+0] = cone[1]+vertexOffset; tcells[1*4+1] = newVertices[4]; tcells[1*4+2] = newVertices[1]; tcells[1*4+3] = newVertices[0];
-        tcells[2*4+0] = cone[2]+vertexOffset; tcells[2*4+1] = newVertices[5]; tcells[2*4+2] = newVertices[2]; tcells[2*4+3] = newVertices[1];
-        tcells[3*4+0] = cone[3]+vertexOffset; tcells[3*4+1] = newVertices[3]; tcells[3*4+2] = newVertices[5]; tcells[3*4+3] = newVertices[4];
-        tcells[4*4+0] = newVertices[0]; tcells[4*4+1] = newVertices[3]; tcells[4*4+2] = newVertices[4]; tcells[4*4+3] = newVertices[2];
-        tcells[5*4+0] = newVertices[1]; tcells[5*4+1] = newVertices[4]; tcells[5*4+2] = newVertices[5]; tcells[5*4+3] = newVertices[3];
-        tcells[6*4+0] = newVertices[2]; tcells[6*4+1] = newVertices[5]; tcells[6*4+2] = newVertices[3]; tcells[6*4+3] = newVertices[1];
-        tcells[7*4+0] = newVertices[0]; tcells[7*4+1] = newVertices[1]; tcells[7*4+2] = newVertices[2]; tcells[7*4+3] = newVertices[3];
-        *numCells = 8;
+        tcells[0*9+0] = cone[0]+vertexOffset; // New cell 0
+	tcells[0*9+1] = newVertices[0];
+	tcells[0*9+2] = newVertices[2];
+        tcells[0*9+3] = cone[3]+vertexOffset;
+	tcells[0*9+4] = newVertices[3];
+	tcells[0*9+5] = newVertices[5];
+        tcells[0*9+6] = cone[6]+vertexOffset;
+	tcells[0*9+7] = newVertices[6];
+	tcells[0*9+8] = newVertices[8];
+
+        tcells[1*9+0] = cone[1]+vertexOffset; // New cell 1
+	tcells[1*9+1] = newVertices[1];
+	tcells[1*9+2] = newVertices[0];
+        tcells[1*9+3] = cone[4]+vertexOffset;
+	tcells[1*9+4] = newVertices[4];
+	tcells[1*9+5] = newVertices[3];
+        tcells[1*9+6] = cone[7]+vertexOffset;
+	tcells[1*9+7] = newVertices[7];
+	tcells[1*9+8] = newVertices[6];
+
+        tcells[2*9+0] = cone[2]+vertexOffset; // New cell 2
+	tcells[2*9+1] = newVertices[2];
+	tcells[2*9+2] = newVertices[1];
+        tcells[2*9+3] = cone[5]+vertexOffset;
+	tcells[2*9+4] = newVertices[5];
+	tcells[2*9+5] = newVertices[4];
+        tcells[2*9+6] = cone[8]+vertexOffset;
+	tcells[2*9+7] = newVertices[8];
+	tcells[2*9+8] = newVertices[7];
+
+        tcells[3*9+0] = newVertices[0]; // New cell 3
+	tcells[3*9+1] = newVertices[1];
+	tcells[3*9+2] = newVertices[2];
+        tcells[3*9+3] = newVertices[3];
+	tcells[3*9+4] = newVertices[4];
+	tcells[3*9+5] = newVertices[5];
+        tcells[3*9+6] = newVertices[6];
+	tcells[3*9+7] = newVertices[7];
+	tcells[3*9+8] = newVertices[8];
+
+        *numCells = 4;
         *cells    = tcells;
       };
     public:
@@ -4830,7 +4862,17 @@ namespace ALE {
       }
       // Reallocate the sieve chart
       newSieve->setChart(typename sieve_type::chart_type(0, curNewVertex));
-      refiner.setVertexOffset(numNewCells - numCells);
+      
+      const int cellDepth = (mesh.depth() == -1) ? -1 : 1;
+      const std::string labelName = 
+	mesh.hasLabel("censored depth") ? "censored depth" : "depth";
+      assert(!mesh.getFactory().isNull());
+      const Obj<typename MeshType::numbering_type>& numbering = 
+	mesh.getFactory()->getNumbering(Obj<MeshType>(mesh), labelName, cellDepth);
+      assert(!numbering.isNull());
+      const int numCellsNoLagrange = numbering->getGlobalSize();
+
+      refiner.setVertexOffset(numNewCells - numCellsNoLagrange);
       // Create new sieve with correct sizes for refined cells
       for(typename MeshType::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
         // Set new cone and support sizes
@@ -4874,18 +4916,7 @@ namespace ALE {
         }
         cV.clear();
 
-#if 0 // MATT- IS THIS DEBUGGING CODE OR UNFINISHED?
-        //   Check that vertex does not yet exist
-        point_type newVertices[6];
-
-        for(int v = 0; v < 6; ++v) {
-          newVertices[v] = edge2vertex[edges[v]];
-          vertex2edge[(newVertices[v]-numNewCells-numOldVertices)*2+0] = edges[v].first;
-          vertex2edge[(newVertices[v]-numNewCells-numOldVertices)*2+1] = edges[v].second;
-        }
-#else
         refiner.getNeighboringVertices(*c_iter, coneSize, cone, numNewCells+numOldVertices, vertex2edge);
-#endif
       }
       newSieve->symmetrize();
       // Create new coordinates

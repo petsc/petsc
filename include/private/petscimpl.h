@@ -364,8 +364,7 @@ valid
 
 #endif
 
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPublishBaseBegin(PetscObject);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPublishBaseEnd(PetscObject);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPublishBase(PetscObject);
 
 /*MC
    PetscObjectStateIncrease - Increases the state of any PetscObject, 

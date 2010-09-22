@@ -230,7 +230,7 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],Petsc
           /* ierr = MatSetValues_SeqBAIJ(baij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         } else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-        else if (in[j] >= mat->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[i],mat->cmap->N-1);
+        else if (in[j] >= mat->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],mat->cmap->N-1);
 #endif
         else {
           if (mat->was_assembled) {
@@ -1066,6 +1066,179 @@ static PetscErrorCode MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer vi
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatView_MPIBAIJ_Binary"
+static PetscErrorCode MatView_MPIBAIJ_Binary(Mat mat,PetscViewer viewer)
+{
+  Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*)mat->data;
+  Mat_SeqBAIJ*   A = (Mat_SeqBAIJ*)a->A->data;
+  Mat_SeqBAIJ*   B = (Mat_SeqBAIJ*)a->B->data;
+  PetscErrorCode ierr;
+  PetscInt       i,*row_lens,*crow_lens,bs = mat->rmap->bs,count,j,k,bs2=a->bs2,header[4],nz,rlen;
+  PetscInt       *range,nzmax,*column_indices,cnt,col,*garray = a->garray,cstart = mat->cmap->rstart/bs,len,pcnt,l,ll;
+  int            fd;
+  PetscScalar    *column_values;
+  FILE           *file;
+  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(((PetscObject)mat)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr);
+  nz   = bs2*(A->nz + B->nz);
+  rlen = mat->rmap->n;
+  if (!rank) {
+    header[0] = MAT_FILE_CLASSID;
+    header[1] = mat->rmap->N;
+    header[2] = mat->cmap->N;
+    ierr = MPI_Reduce(&nz,&header[3],1,MPIU_INT,MPI_SUM,0,((PetscObject)mat)->comm);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,header,4,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+    /* get largest number of rows any processor has */
+    range = mat->rmap->range;
+    for (i=1; i<size; i++) {
+      rlen = PetscMax(rlen,range[i+1] - range[i]);
+    }
+  } else {
+    ierr = MPI_Reduce(&nz,0,1,MPIU_INT,MPI_SUM,0,((PetscObject)mat)->comm);CHKERRQ(ierr);
+  }
+
+  ierr  = PetscMalloc((rlen/bs)*sizeof(PetscInt),&crow_lens);CHKERRQ(ierr);
+  /* compute lengths of each row  */
+  count = 0;
+  for (i=0; i<a->mbs; i++) {
+    crow_lens[i] = A->i[i+1] - A->i[i] + B->i[i+1] - B->i[i];
+  }
+  /* store the row lengths to the file */
+  if (!rank) {
+    MPI_Status status;
+    ierr  = PetscMalloc(rlen*sizeof(PetscInt),&row_lens);CHKERRQ(ierr);    
+    rlen  = (range[1] - range[0])/bs;
+    for (i=0; i<rlen; i++) {
+      for (j=0; j<bs; j++) {
+        row_lens[i*bs+j] = bs*crow_lens[i];
+      }
+    }
+    ierr = PetscBinaryWrite(fd,row_lens,bs*rlen,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+    for (i=1; i<size; i++) {
+      rlen = (range[i+1] - range[i])/bs;
+      ierr = MPI_Recv(crow_lens,rlen,MPIU_INT,i,tag,((PetscObject)mat)->comm,&status);CHKERRQ(ierr);
+      for (k=0; k<rlen; k++) {
+	for (j=0; j<bs; j++) {
+	  row_lens[k*bs+j] = bs*crow_lens[k];
+	}
+      }
+      ierr = PetscBinaryWrite(fd,row_lens,bs*rlen,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(row_lens);CHKERRQ(ierr);
+  } else {
+    ierr = MPI_Send(crow_lens,mat->rmap->n/bs,MPIU_INT,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(crow_lens);CHKERRQ(ierr);
+
+  /* load up the local column indices. Include for all rows not just one for each block row since process 0 does not have the
+     information needed to make it for each row from a block row. This does require more communication but still not more than
+     the communication needed for the nonzero values  */
+  nzmax = nz; /*  space a largest processor needs */
+  ierr = MPI_Reduce(&nz,&nzmax,1,MPIU_INT,MPI_MAX,0,((PetscObject)mat)->comm);CHKERRQ(ierr);
+  ierr = PetscMalloc(nzmax*sizeof(PetscInt),&column_indices);CHKERRQ(ierr);
+  cnt  = 0;
+  for (i=0; i<a->mbs; i++) {
+    pcnt = cnt;
+    for (j=B->i[i]; j<B->i[i+1]; j++) {
+      if ( (col = garray[B->j[j]]) > cstart) break;
+      for (l=0; l<bs; l++) {
+	column_indices[cnt++] = bs*col+l;
+      }
+    }
+    for (k=A->i[i]; k<A->i[i+1]; k++) {
+      for (l=0; l<bs; l++) {
+        column_indices[cnt++] = bs*(A->j[k] + cstart)+l;
+      }
+    }
+    for (; j<B->i[i+1]; j++) {
+      for (l=0; l<bs; l++) {
+        column_indices[cnt++] = bs*garray[B->j[j]]+l;
+      }
+    }
+    len = cnt - pcnt;
+    for (k=1; k<bs; k++) {
+      ierr = PetscMemcpy(&column_indices[cnt],&column_indices[pcnt],len*sizeof(PetscInt));CHKERRQ(ierr);
+      cnt += len;
+    }
+  }
+  if (cnt != nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Internal PETSc error: cnt = %D nz = %D",cnt,nz);
+
+  /* store the columns to the file */
+  if (!rank) {
+    MPI_Status status;
+    ierr = PetscBinaryWrite(fd,column_indices,nz,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+    for (i=1; i<size; i++) {
+      ierr = MPI_Recv(&cnt,1,MPIU_INT,i,tag,((PetscObject)mat)->comm,&status);CHKERRQ(ierr);
+      ierr = MPI_Recv(column_indices,cnt,MPIU_INT,i,tag,((PetscObject)mat)->comm,&status);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fd,column_indices,cnt,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = MPI_Send(&cnt,1,MPIU_INT,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
+    ierr = MPI_Send(column_indices,cnt,MPIU_INT,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(column_indices);CHKERRQ(ierr);
+
+  /* load up the numerical values */
+  ierr = PetscMalloc(nzmax*sizeof(PetscScalar),&column_values);CHKERRQ(ierr);
+  cnt = 0;
+  for (i=0; i<a->mbs; i++) {
+    rlen = bs*(B->i[i+1] - B->i[i] + A->i[i+1] - A->i[i]);
+    for (j=B->i[i]; j<B->i[i+1]; j++) {
+      if ( garray[B->j[j]] > cstart) break;
+      for (l=0; l<bs; l++) {
+        for (ll=0; ll<bs; ll++) {
+	  column_values[cnt + l*rlen + ll] = B->a[bs2*j+l+bs*ll];
+        }
+      }
+      cnt += bs;
+    }
+    for (k=A->i[i]; k<A->i[i+1]; k++) {
+      for (l=0; l<bs; l++) {
+        for (ll=0; ll<bs; ll++) {
+          column_values[cnt + l*rlen + ll] = A->a[bs2*k+l+bs*ll];
+        }
+      }
+      cnt += bs;
+    }
+    for (; j<B->i[i+1]; j++) {
+      for (l=0; l<bs; l++) {
+        for (ll=0; ll<bs; ll++) {
+	  column_values[cnt + l*rlen + ll] = B->a[bs2*j+l+bs*ll];
+        }
+      }
+      cnt += bs;
+    }
+    cnt += (bs-1)*rlen;
+  }
+  if (cnt != nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal PETSc error: cnt = %D nz = %D",cnt,nz);
+
+  /* store the column values to the file */
+  if (!rank) {
+    MPI_Status status;
+    ierr = PetscBinaryWrite(fd,column_values,nz,PETSC_SCALAR,PETSC_TRUE);CHKERRQ(ierr);
+    for (i=1; i<size; i++) {
+      ierr = MPI_Recv(&cnt,1,MPIU_INT,i,tag,((PetscObject)mat)->comm,&status);CHKERRQ(ierr);
+      ierr = MPI_Recv(column_values,cnt,MPIU_SCALAR,i,tag,((PetscObject)mat)->comm,&status);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fd,column_values,cnt,PETSC_SCALAR,PETSC_TRUE);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = MPI_Send(&nz,1,MPIU_INT,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
+    ierr = MPI_Send(column_values,nz,MPIU_SCALAR,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(column_values);CHKERRQ(ierr);
+
+  ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
+  if (file) {
+    fprintf(file,"-matload_block_size %d\n",(int)mat->rmap->bs);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatView_MPIBAIJ"
 PetscErrorCode MatView_MPIBAIJ(Mat mat,PetscViewer viewer)
 {
@@ -1077,8 +1250,10 @@ PetscErrorCode MatView_MPIBAIJ(Mat mat,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSOCKET,&issocket);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
-  if (iascii || isdraw || issocket || isbinary) { 
+  if (iascii || isdraw || issocket) { 
     ierr = MatView_MPIBAIJ_ASCIIorDraworSocket(mat,viewer);CHKERRQ(ierr);
+  } else if (isbinary) { 
+    ierr = MatView_MPIBAIJ_Binary(mat,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Viewer type %s not supported by MPIBAIJ matrices",((PetscObject)viewer)->type_name);
   }
@@ -2755,13 +2930,14 @@ EXTERN_C_END
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIBAIJSetPreallocationCSR"
 /*@C
-   MatMPIBAIJSetPreallocationCSR - Allocates memory for a sparse parallel matrix in AIJ format
+   MatMPIBAIJSetPreallocationCSR - Allocates memory for a sparse parallel matrix in BAIJ format
    (the default parallel PETSc format).  
 
    Collective on MPI_Comm
 
    Input Parameters:
 +  A - the matrix 
+.  bs - the block size
 .  i - the indices into j for the start of each local row (starts with zero)
 .  j - the column indices for each local row (starts with zero) these must be sorted for each row
 -  v - optional values in the matrix
@@ -3834,5 +4010,60 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin,PetscInt *min,const PetscI
   
   /* task normally handled by MatSetValuesBlocked() */
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreateMPIBAIJWithArrays"
+/*@
+     MatCreateMPIBAIJWithArrays - creates a MPI BAIJ matrix using arrays that contain in standard
+         CSR format the local rows. 
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - MPI communicator
+.  bs - the block size, only a block size of 1 is supported
+.  m - number of local rows (Cannot be PETSC_DECIDE)
+.  n - This value should be the same as the local size used in creating the 
+       x vector for the matrix-vector product y = Ax. (or PETSC_DECIDE to have
+       calculated if N is given) For square matrices n is almost always m.
+.  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
+.  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
+.   i - row indices
+.   j - column indices
+-   a - matrix values
+
+   Output Parameter:
+.   mat - the matrix
+
+   Level: intermediate
+
+   Notes:
+       The i, j, and a arrays ARE copied by this routine into the internal format used by PETSc;
+     thus you CANNOT change the matrix entries by changing the values of a[] after you have 
+     called this routine. Use MatCreateMPIAIJWithSplitArrays() to avoid needing to copy the arrays.
+
+       The i and j indices are 0 based, and i indices are indices corresponding to the local j array.
+
+.keywords: matrix, aij, compressed row, sparse, parallel
+
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
+          MPIAIJ, MatCreateMPIAIJ(), MatCreateMPIAIJWithSplitArrays()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt i[],const PetscInt j[],const PetscScalar a[],Mat *mat)
+{
+  PetscErrorCode ierr;
+
+
+ PetscFunctionBegin;
+  if (i[0]) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
+  }
+  if (m < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"local number of rows (m) cannot be PETSC_DECIDE, or negative");
+  ierr = MatCreate(comm,mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
+  ierr = MatSetType(*mat,MATMPISBAIJ);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocationCSR(*mat,bs,i,j,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

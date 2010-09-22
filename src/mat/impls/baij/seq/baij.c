@@ -3743,8 +3743,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocationCSR(Mat B,PetscInt b
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSeqBAIJWithArrays"
 /*@
-     MatCreateSeqBAIJWithArrays - Creates an sequential BAIJ matrix using matrix elements 
-              (upper triangular entries in CSR format) provided by the user.
+     MatCreateSeqBAIJWithArrays - Creates an sequential BAIJ matrix using matrix elements provided by the user.
 
      Collective on MPI_Comm
 
@@ -3760,7 +3759,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocationCSR(Mat B,PetscInt b
    Output Parameter:
 .  mat - the matrix
 
-   Level: intermediate
+   Level: advanced
 
    Notes:
        The i, j, and a arrays are not copied by this routine, the user must free these arrays
@@ -3769,6 +3768,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocationCSR(Mat B,PetscInt b
        You cannot set new nonzero locations into this matrix, that will generate an error.
 
        The i and j indices are 0 based
+
+       When block size is greater than 1 the matrix values must be stored using the BAIJ storage format (see the BAIJ code to determine this).
+
 
 .seealso: MatCreate(), MatCreateMPIBAIJ(), MatCreateSeqBAIJ()
 

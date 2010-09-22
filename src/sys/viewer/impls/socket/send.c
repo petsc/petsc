@@ -466,20 +466,22 @@ PetscViewer PETSCSYS_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
   PetscErrorCode ierr;
   PetscTruth     flg;
   PetscViewer    viewer;
+  MPI_Comm       ncomm;
 
   PetscFunctionBegin;
+  ierr = PetscCommDuplicate(comm,&ncomm,PETSC_NULL);if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   if (Petsc_Viewer_Socket_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Socket_keyval,0);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   }
-  ierr = MPI_Attr_get(comm,Petsc_Viewer_Socket_keyval,(void **)&viewer,(int*)&flg);
+  ierr = MPI_Attr_get(ncomm,Petsc_Viewer_Socket_keyval,(void **)&viewer,(int*)&flg);
   if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   if (!flg) { /* PetscViewer not yet created */
-    ierr = PetscViewerSocketOpen(comm,0,0,&viewer); 
+    ierr = PetscViewerSocketOpen(ncomm,0,0,&viewer); 
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
-    ierr = MPI_Attr_put(comm,Petsc_Viewer_Socket_keyval,(void*)viewer);
+    ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Socket_keyval,(void*)viewer);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   } 
   PetscFunctionReturn(viewer);
@@ -610,25 +612,57 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(int port)
       fprintf(fd, "<HR>\r\n");
       ierr = PetscOptionsPrint(fd);CHKERRQ(ierr);
       fprintf(fd, "<HR>\r\n");
+#if defined(PETSC_HAVE_AMS)
+      fprintf(fd, "<a href=\"./ams\">Connect to memory snooper</a>\r\n\r\n");
+#endif
       ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
       goto theend;
     }
 #if defined(PETSC_HAVE_AMS)
     ierr = PetscStrcmp(path,"/ams",&flg);CHKERRQ(ierr);
     if (flg) {      
-      char       host[256],**comm_list,**mem_list;
-      AMS_Comm   ams;
-      PetscInt   i = 0;
- 
+      char               host[256],**comm_list,**mem_list,**fld_list;
+      AMS_Comm           ams;
+      PetscInt           i = 0,j;
+      AMS_Memory_type    mtype;
+      AMS_Data_type      dtype;
+      AMS_Shared_type    stype;
+      AMS_Reduction_type rtype;
+      AMS_Memory         memory;
+      int                len;
+      void               *addr;
+
       ierr = PetscGetHostName(host,256);CHKERRQ(ierr);
       ierr = AMS_Connect(host, -1, &comm_list);CHKERRQ(ierr);
       ierr = AMS_Comm_attach(comm_list[0],&ams);CHKERRQ(ierr);
-      //      ierr = AMS_Comm_get_memory_list(ams,&mem_list);CHKERRQ(ierr);
+      ierr = AMS_Comm_get_memory_list(ams,&mem_list);CHKERRQ(ierr);
       ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "text/html", -1);CHKERRQ(ierr);
-      fprintf(fd, "AMS Communicator %s\r\n\n",comm_list[0]);
-      // while (mem_list[i]) {
-      //fprintf(fd,"Memory %s\r\n\n",mem_list[i++]);
-      //}
+      if (!mem_list[0]) {
+	fprintf(fd, "AMS Communicator %s has no published memories</p>\r\n",comm_list[0]);
+      } else {
+	/* fprintf(fd, "AMS Communicator %s</p>\r\n",comm_list[0]); */
+	fprintf(fd,"<ul>\r\n");
+	while (mem_list[i]) {
+	  fprintf(fd,"<li> %s</li>\r\n",mem_list[i]);
+	  ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
+	  ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
+	  j = 0;
+	  fprintf(fd,"<ul>\r\n");
+	  while (fld_list[j]) {
+	    fprintf(fd,"<li> %s",fld_list[j]);
+	    ierr = AMS_Memory_get_field_info(memory, fld_list[j], &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+	    if (len == 1) {
+	      if (dtype == AMS_INT)        fprintf(fd," %d",*(int*)addr);
+	      else if (dtype == AMS_STRING) fprintf(fd," %s",*(char**)addr);
+	    }
+	    fprintf(fd,"</li>\r\n");
+	    j++;
+	  }
+	  fprintf(fd,"</ul>\r\n");
+	  i++;
+	}
+	fprintf(fd,"</ul>\r\n");
+      }
       ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
       ierr = AMS_Disconnect();CHKERRQ(ierr);
       goto theend;
