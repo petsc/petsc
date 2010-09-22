@@ -297,7 +297,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetVertexDivision(DA da,const PetscInt **lx,c
       ierr = PetscMalloc(da->m*sizeof(PetscInt),&da->lx);CHKERRQ(ierr);
       ierr = DAGetProcessorSubset(da,DA_X,da->xs,&comm);CHKERRQ(ierr);
       ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-      n = da->xe-da->xs;
+      n = (da->xe-da->xs)/da->w;
       ierr = MPI_Allgather(&n,1,MPIU_INT,da->lx,1,MPIU_INT,comm);CHKERRQ(ierr);
     }
     *lx = da->lx;
