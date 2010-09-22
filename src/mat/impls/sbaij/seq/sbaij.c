@@ -2266,7 +2266,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(Mat newmat,PetscViewer viewer)
    Output Parameter:
 .  mat - the matrix
 
-   Level: intermediate
+   Level: advanced
 
    Notes:
        The i, j, and a arrays are not copied by this routine, the user must free these arrays
@@ -2275,6 +2275,9 @@ PetscErrorCode MatLoad_SeqSBAIJ(Mat newmat,PetscViewer viewer)
        You cannot set new nonzero locations into this matrix, that will generate an error.
 
        The i and j indices are 0 based
+
+       When block size is greater than 1 the matrix values must be stored using the SBAIJ storage format (see the SBAIJ code to determine this). For block size of 1
+       it is the regular CSR format excluding the lower triangular elements.
 
 .seealso: MatCreate(), MatCreateMPISBAIJ(), MatCreateSeqSBAIJ()
 
