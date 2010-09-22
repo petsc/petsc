@@ -45,6 +45,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate(MPI_Comm comm, Vec *vec)
   v->array_gotten = PETSC_FALSE;
   v->petscnative  = PETSC_FALSE;
 
+#if defined(PETSC_HAVE_AMS)
+  if (PetscAMSPublishAll) {
+    ierr = PetscObjectPublishBase((PetscObject)v);CHKERRQ(ierr);
+  }
+#endif
   *vec = v; 
   PetscFunctionReturn(0);
 }
