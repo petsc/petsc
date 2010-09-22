@@ -484,6 +484,8 @@ PetscViewer PETSCSYS_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
     ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Socket_keyval,(void*)viewer);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   } 
+  ierr = PetscCommDestroy(&ncomm);
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   PetscFunctionReturn(viewer);
 }
 

@@ -46,6 +46,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIGetStdout(MPI_Comm comm,PetscV
     ierr = PetscObjectRegisterDestroy((PetscObject)*viewer);CHKERRQ(ierr);
     ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Stdout_keyval,(void*)*viewer);CHKERRQ(ierr);
   } 
+  ierr = PetscCommDestroy(&ncomm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -126,6 +127,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIGetStderr(MPI_Comm comm,PetscV
     ierr = PetscObjectRegisterDestroy((PetscObject)*viewer);CHKERRQ(ierr);
     ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Stderr_keyval,(void*)*viewer);CHKERRQ(ierr);
   } 
+  ierr = PetscCommDestroy(&ncomm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
