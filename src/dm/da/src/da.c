@@ -612,7 +612,7 @@ static PetscErrorCode DARefineVertexDivision(PetscTruth periodic,PetscInt stenci
   for (i=0; i<m; i++) totalc += lc[i];
   remaining = totalc * ratio - (!periodic);
   for (i=0; i<m; i++) {
-    PetscInt want = remaining/(m-i) + (i < remaining%(m-i));
+    PetscInt want = remaining/(m-i) + !!(remaining%(m-i));
     if (i == m-1) lf[i] = want;
     else {
       PetscInt diffc = (startf+want)/ratio - (startc + lc[i]);
