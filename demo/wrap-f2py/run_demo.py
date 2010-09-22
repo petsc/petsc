@@ -13,20 +13,25 @@ class App(object):
 
     def formInitGuess(self, snes, X):
         X.zeroEntries() # just in case
-        ierr = Bratu2D.FormInitGuess(
-            self.da.fortran, X.fortran, self.lambda_)
+        da = self.da.fortran
+        vec_X = X.fortran
+        ierr = Bratu2D.FormInitGuess(da, vec_X, self.lambda_)
         if ierr: raise PETSc.Error(ierr)
 
     def formFunction(self, snes, X, F):
         F.zeroEntries() # just in case
-        ierr = Bratu2D.FormFunction(
-            self.da.fortran, X.fortran, F.fortran, self.lambda_)
+        da = self.da.fortran
+        vec_X = X.fortran
+        vec_F = F.fortran
+        ierr = Bratu2D.FormFunction(da, vec_X, vec_F, self.lambda_)
         if ierr: raise PETSc.Error(ierr)
 
     def formJacobian(self, snes, X, J, P):
         P.zeroEntries() # just in case
-        ierr = Bratu2D.FormJacobian(
-            self.da.fortran, X.fortran, P.fortran, self.lambda_)
+        da = self.da.fortran
+        vec_X = X.fortran
+        mat_P = P.fortran
+        ierr = Bratu2D.FormJacobian(da, vec_X, mat_P, self.lambda_)
         if ierr: raise PETSc.Error(ierr)
         if J != P: J.assemble() # matrix-free operator
         return PETSc.Mat.Structure.SAME_NONZERO_PATTERN

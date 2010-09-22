@@ -17,22 +17,6 @@ def configuration(parent_package='',top_path=None):
     LIBRARY_DIRS = []
     LIBRARIES    = []
 
-    # MPI (hackish)
-    import os;
-    from distutils.sysconfig import get_config_vars
-    from distutils.util import split_quoted
-    conf = get_config_vars()
-    CC = split_quoted(conf['CC']);
-    LD = split_quoted(conf['LDSHARED']);
-    CC[0] = os.environ.get('MPICC', 'mpicc')
-    LD[0] = os.environ.get('MPILD', CC[0])
-    os.environ['CC']       = ' '.join(CC)
-    os.environ['LDSHARED'] = ' '.join(LD)
-    F90 = os.environ.get('MPIF90', 'mpif90')
-    F77 = os.environ.get('MPIF77', 'mpif77')
-    os.environ['F90'] = F90
-    os.environ['F77'] = F77
-
     # PETSc
     import os
     PETSC_DIR  = os.environ['PETSC_DIR']
@@ -46,8 +30,8 @@ def configuration(parent_package='',top_path=None):
         if PETSC_ARCH: pass # XXX should warn ...
         INCLUDE_DIRS += [join(PETSC_DIR, 'include')]
         LIBRARY_DIRS += [join(PETSC_DIR, 'lib')]
-    LIBRARIES += ['petscts', 'petscsnes', 'petscksp',
-                  'petscdm', 'petscmat',  'petscvec',
+    LIBRARIES += [#'petscts', 'petscsnes', 'petscksp',
+                  #'petscdm', 'petscmat',  'petscvec',
                   'petsc']
 
     # PETSc for Python

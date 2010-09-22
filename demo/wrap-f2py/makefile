@@ -1,56 +1,33 @@
-.PHONY: source build test clean
+# -*- makefile -*-
 
-MODULE = Bratu2D
+MPIEXEC=
+PYTHON=python
 
-ALL: build
-source: ${MODULE}module.c
-build:  ${MODULE}.so
+F2PY = f2py
+F2PY_FLAGS  = --quiet
+F2PY_FLAGS += --noarch
+F2PY_FLAGS += -DF2PY_REPORT_ON_ARRAY_COPY=1
+
+.PHONY:test
+test: run clean
+
+SCRIPT=run_demo
+MODULE=Bratu2D
+.PHONY:run
+run: ${MODULE}.so
+	${PYTHON} ${SCRIPT}.py
+
+${MODULE}.so: ${MODULE}.pyf ${MODULE}.F90
+	CC=${CC} F90=${FC} LDSHARED=${FC_LINKER} \
+	${PYTHON} setup.py -q build_ext --inplace
+	${RM} -r build ${MODULE}module.c
+
+.PHONY:clean
+clean::
+	${RM} ${MODULE}*.so
+	${RM} *.py[co]
+	${RM} -r __pycache__
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
-
-PYTHON = python
-F2PY   = f2py
-
-#
-
-PYTHON_INCLUDE = ${shell ${PYTHON} -c 'from distutils import sysconfig; print(sysconfig.get_python_inc())'}
-PYTHON_LIBDIR  = ${shell ${PYTHON} -c 'from distutils import sysconfig; print(sysconfig.get_config_var("LIBDIR"))'}
-PYTHON_LIB     = ${shell ${PYTHON} -c 'from distutils import sysconfig; print("python"+sysconfig.get_python_version())'}
-NUMPY_INCLUDE  = ${shell ${PYTHON} -c 'import numpy; print(numpy.get_include())'}
-F2PY_ROOTDIR   = ${shell ${PYTHON} -c 'import os, numpy.f2py; print(os.path.dirname(numpy.f2py.__file__))'}
-
-#
-
-F2PY_FLAGS =
-fortranobject.h:
-	cp ${F2PY_ROOTDIR}/src/$@ ./$@
-fortranobject.c: fortranobject.h
-	cp ${F2PY_ROOTDIR}/src/$@ ./$@
-${MODULE}module.c: ${MODULE}.pyf fortranobject.c
-	${F2PY} ${F2PY_FLAGS}  $<
-#
-
-CFLAGS  = -I${PYTHON_INCLUDE} -I${NUMPY_INCLUDE}
-SOURCEC = ${MODULE}module.c fortranobject.c
-OBJSC   = ${MODULE}module.o fortranobject.o
-
-FFLAGS  = ${FC_FLAGS} ${FCPPFLAGS}
-SOURCEF = ${MODULE}.F90
-OBJSF   = ${MODULE}.o
-
-${MODULE}.so: ${OBJSC} ${OBJSF}
-	${FLINKER} -shared ${PETSC_DM_LIB} -L${PYTHON_LIBDIR} -l${PYTHON_LIB} -o $@ ${OBJSC} ${OBJSF}
-
-#
-
-NP = -n 8
-test: build
-	${MPIEXEC} ${NP} ${PYTHON} run_demo.py -snes_monitor -ksp_monitor
-
-#
-
-clean::
-	${RM} fortranobject.[ch] ${MODULE}module.c ${OBJSC} ${OBJSF} ${MODULE}.so
-	${RM} -r build
-#
+MPIEXEC=
