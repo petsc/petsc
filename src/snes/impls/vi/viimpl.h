@@ -23,7 +23,7 @@ typedef struct {
   void                     *precheck;                                                        /* user-defined step-checking context (optional) */
   PetscErrorCode           (*postcheckstep)(SNES,Vec,Vec,Vec,void*,PetscTruth*,PetscTruth*); /* step-checking routine (optional) */
   void                     *postcheck;                                                       /* user-defined step-checking context (optional) */
-  PetscViewerASCIIMonitor  monitor;
+  PetscViewerASCIIMonitor  lsmonitor;
 
   /* ------------------ Semismooth algorithm stuff ------------------------------ */
   Vec                      phi;                      /* pointer to semismooth function */
