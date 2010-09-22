@@ -17,6 +17,9 @@
 #
 # ------------------------------------------------------------------------
 
+try: range = xrange
+except: pass
+
 import sys, petsc4py
 petsc4py.init(sys.argv)
 
@@ -41,11 +44,11 @@ class Bratu3D(object):
         scale = lambda_/(lambda_ + 1.0)
         #
         (xs, xe), (ys, ye), (zs, ze) = self.da.getRanges()
-        for k in xrange(zs, ze):
+        for k in range(zs, ze):
             min_k = min(k,mz-k-1)*hz
-            for j in xrange(ys, ye):
+            for j in range(ys, ye):
                 min_j = min(j,my-j-1)*hy
-                for i in xrange(xs, xe):
+                for i in range(xs, xe):
                     min_i = min(i,mx-i-1)*hx
                     if (i==0    or j==0    or k==0 or
                         i==mx-1 or j==my-1 or k==mz-1):
@@ -71,9 +74,9 @@ class Bratu3D(object):
         lambda_ = self.lambda_
         #
         (xs, xe), (ys, ye), (zs, ze) = self.da.getRanges()
-        for k in xrange(zs, ze):
-            for j in xrange(ys, ye):
-                for i in xrange(xs, xe):
+        for k in range(zs, ze):
+            for j in range(ys, ye):
+                for i in range(xs, xe):
                     if (i==0    or j==0    or k==0 or
                         i==mx-1 or j==my-1 or k==mz-1):
                         f[i, j, k] = x[i, j, k] - 0

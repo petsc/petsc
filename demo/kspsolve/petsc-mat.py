@@ -1,3 +1,6 @@
+try: range = xrange
+except: pass
+
 from petsc4py import PETSc
 
 # grid size and spacing
@@ -20,7 +23,7 @@ offdy = -1.0/hy**2
 # loop over owned block of rows on this
 # processor and insert entry values
 Istart, Iend = A.getOwnershipRange()
-for I in xrange(Istart, Iend) :
+for I in range(Istart, Iend) :
     A[I,I] = diagv
     i = I//n    # map row number to
     j = I - i*n # grid coordinates

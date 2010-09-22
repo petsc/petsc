@@ -20,3 +20,4 @@ run_mf:
 .PHONY:clean
 clean:
 	${RM} *.py[co]
+	${RM} -r __pycache__

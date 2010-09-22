@@ -96,7 +96,7 @@ def run_test(nx,ny,nz,samples,plot=False):
     ts.setUp()
 
     wt = 1e300
-    for i in xrange(samples):
+    for i in range(samples):
         app.formInitial(0, x)
         t1 = PETSc.Log.getTime()
         ts.solve(x)

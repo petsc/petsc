@@ -31,4 +31,5 @@ run_f90: ${MODULE}
 
 .PHONY:clean
 clean:
-	${RM} *.py[co] ${MODULE}.so
+	${RM} *.py[co] ${MODULE}*.so
+	${RM} -r __pycache__

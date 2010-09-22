@@ -1,3 +1,11 @@
+try:
+    execfile
+except NameError:
+    def execfile(file, globals=globals(), locals=locals()):
+        fh = open(file, "r")
+        try: exec(fh.read()+"\n", globals, locals)
+        finally: fh.close()
+
 import petsc4py, sys
 petsc4py.init(sys.argv)
 
@@ -20,17 +28,18 @@ ksp.atol = 0
 x.set(0)
 b.set(1)
 ksp.solve(b,x)
-print ksp.its, ksp.norm
+print("iterations: %d residual norm: %g" % (ksp.its, ksp.norm)) 
 
 x.set(0)
 b.set(1)
 its, norm = cg(A,b,x,100,1e-5)
-print its, norm
+print("iterations: %d residual norm: %g" % (its, norm)) 
 
 try:
     from matplotlib import pylab
 except ImportError:
-    raise SystemExit("matplotlib not available")
+    print("matplotlib not available")
+    raise SystemExit
 from numpy import mgrid
 X, Y =  mgrid[0:1:1j*m,0:1:1j*n]
 Z = x[...].reshape(m,n)
