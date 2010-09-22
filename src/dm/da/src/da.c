@@ -268,7 +268,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetVertexDivision(DA da, const PetscInt lx[],
 
 #undef __FUNCT__
 #define __FUNCT__ "DAGetVertexDivision"
-/*@
+/*@C
    DAGetVertexDivision - Get the number of nodes in each direction on each process
 
    Collective on DA
