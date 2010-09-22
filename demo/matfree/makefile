@@ -18,7 +18,7 @@ SCRIPT=matfree
 MODULE=matfreelib
 .PHONY:run_py
 run_py: ${MODULE}.so
-	${MPIEXEC} ${PYTHON} ${SCRIPT}.py #-ts_monitor -snes_monitor
+	${MPIEXEC} ${PYTHON} ${SCRIPT}.py
 
 ${MODULE}.so: ${MODULE}.f90
 	${F2PY} ${F2PY_FLAGS} -c $< -m ${MODULE}
@@ -26,7 +26,7 @@ ${MODULE}.so: ${MODULE}.f90
 EXECUTABLE=matfree
 .PHONY:run_cc
 run_cc: ${EXECUTABLE}.exe
-	${MPIEXEC} ./${EXECUTABLE}.exe #-ts_monitor -snes_monitor
+	${MPIEXEC} ./${EXECUTABLE}.exe
 
 ${EXECUTABLE}.exe:
 	${MAKE} -f makefile.petsc \

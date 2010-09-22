@@ -17,7 +17,7 @@ run: run_py run_f90
 
 .PHONY:run_py
 run_py:
-	${MPIEXEC} ${PYTHON} bratu2d.py -impl python -snes_monitor
+	${MPIEXEC} ${PYTHON} bratu2d.py -impl python
 
 MODULE=bratu2df90
 .PHONY:${MODULE}
@@ -27,7 +27,7 @@ ${MODULE}.so: ${MODULE}.f90
 
 .PHONY:run_f90
 run_f90: ${MODULE}
-	${MPIEXEC} ${PYTHON} bratu2d.py -impl fortran -snes_monitor
+	${MPIEXEC} ${PYTHON} bratu2d.py -impl fortran
 
 .PHONY:clean
 clean:

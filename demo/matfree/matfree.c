@@ -111,6 +111,8 @@ PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "GetInt"
 PetscErrorCode GetInt(const char* name, PetscInt *v, PetscInt defv)
 {
   PetscErrorCode ierr;
@@ -120,6 +122,8 @@ PetscErrorCode GetInt(const char* name, PetscInt *v, PetscInt defv)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
   double         wt;
