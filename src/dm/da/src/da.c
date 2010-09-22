@@ -266,6 +266,63 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetVertexDivision(DA da, const PetscInt lx[],
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DAGetVertexDivision"
+/*@
+   DAGetVertexDivision - Get the number of nodes in each direction on each process
+
+   Collective on DA
+
+   Input Parameters:
++ da - The DA
+. lx - array containing number of nodes in the X direction on each process, or PETSC_NULL if not needed.
+. ly - array containing number of nodes in the Y direction on each process, or PETSC_NULL if not needed.
+- lz - array containing number of nodes in the Z direction on each process, or PETSC_NULL if not needed.
+
+  Level: advanced
+
+.keywords:  distributed array
+.seealso: DACreate(), DADestroy(), DA
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DAGetVertexDivision(DA da,const PetscInt **lx,const PetscInt **ly,const PetscInt **lz)
+{
+  PetscErrorCode ierr;
+  PetscInt n;
+  MPI_Comm comm;
+  PetscMPIInt size;
+
+  PetscFunctionBegin;
+  if (lx) {
+    if (!da->lx) {
+      ierr = PetscMalloc(da->m*sizeof(PetscInt),&da->lx);CHKERRQ(ierr);
+      ierr = DAGetProcessorSubset(da,DA_X,da->xs,&comm);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+      n = da->xe-da->xs;
+      ierr = MPI_Allgather(&n,1,MPIU_INT,da->lx,1,MPIU_INT,comm);CHKERRQ(ierr);
+    }
+    *lx = da->lx;
+  }
+  if (ly) {
+    if (!da->ly) {
+      ierr = PetscMalloc(da->n*sizeof(PetscInt),&da->ly);CHKERRQ(ierr);
+      ierr = DAGetProcessorSubset(da,DA_Y,da->ys,&comm);CHKERRQ(ierr);
+      n = da->ye-da->ys;
+      ierr = MPI_Allgather(&n,1,MPIU_INT,da->ly,1,MPIU_INT,comm);CHKERRQ(ierr);
+    }
+    *ly = da->ly;
+  }
+  if (lz) {
+    if (!da->lz) {
+      ierr = PetscMalloc(da->p*sizeof(PetscInt),&da->lz);CHKERRQ(ierr);
+      ierr = DAGetProcessorSubset(da,DA_Z,da->zs,&comm);CHKERRQ(ierr);
+      n = da->ze-da->zs;
+      ierr = MPI_Allgather(&n,1,MPIU_INT,da->lz,1,MPIU_INT,comm);CHKERRQ(ierr);
+    }
+    *lz = da->lz;
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "DASetInterpolationType"
 /*@
