@@ -219,9 +219,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DA da, PetscInt width)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetVertexDivision"
+#define __FUNCT__ "DASetOwnershipRanges"
 /*@
-  DASetVertexDivision - Sets the number of nodes in each direction on each process
+  DASetOwnershipRanges - Sets the number of nodes in each direction on each process
 
   Logically Collective on DA
 
@@ -236,7 +236,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DA da, PetscInt width)
 .keywords:  distributed array
 .seealso: DACreate(), DADestroy(), DA
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetVertexDivision(DA da, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[])
+PetscErrorCode PETSCDM_DLLEXPORT DASetOwnershipRanges(DA da, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[])
 {
   PetscErrorCode ierr;
   
@@ -267,24 +267,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetVertexDivision(DA da, const PetscInt lx[],
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DAGetVertexDivision"
-/*@C
-   DAGetVertexDivision - Get the number of nodes in each direction on each process
-
-   Collective on DA
-
-   Input Parameters:
-+ da - The DA
-. lx - array containing number of nodes in the X direction on each process, or PETSC_NULL if not needed.
-. ly - array containing number of nodes in the Y direction on each process, or PETSC_NULL if not needed.
-- lz - array containing number of nodes in the Z direction on each process, or PETSC_NULL if not needed.
-
-  Level: advanced
-
-.keywords:  distributed array
-.seealso: DACreate(), DADestroy(), DA
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetVertexDivision(DA da,const PetscInt **lx,const PetscInt **ly,const PetscInt **lz)
+#define __FUNCT__ "DACreateOwnershipRanges"
+/*
+ Ensure that da->lx, ly, and lz exist.  Collective on DA.
+*/
+PetscErrorCode PETSCDM_DLLEXPORT DACreateOwnershipRanges(DA da)
 {
   PetscErrorCode ierr;
   PetscInt n;
@@ -292,33 +279,24 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetVertexDivision(DA da,const PetscInt **lx,c
   PetscMPIInt size;
 
   PetscFunctionBegin;
-  if (lx) {
-    if (!da->lx) {
-      ierr = PetscMalloc(da->m*sizeof(PetscInt),&da->lx);CHKERRQ(ierr);
-      ierr = DAGetProcessorSubset(da,DA_X,da->xs,&comm);CHKERRQ(ierr);
-      ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-      n = (da->xe-da->xs)/da->w;
-      ierr = MPI_Allgather(&n,1,MPIU_INT,da->lx,1,MPIU_INT,comm);CHKERRQ(ierr);
-    }
-    *lx = da->lx;
+  if (!da->lx) {
+    ierr = PetscMalloc(da->m*sizeof(PetscInt),&da->lx);CHKERRQ(ierr);
+    ierr = DAGetProcessorSubset(da,DA_X,da->xs,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    n = (da->xe-da->xs)/da->w;
+    ierr = MPI_Allgather(&n,1,MPIU_INT,da->lx,1,MPIU_INT,comm);CHKERRQ(ierr);
   }
-  if (ly) {
-    if (!da->ly) {
-      ierr = PetscMalloc(da->n*sizeof(PetscInt),&da->ly);CHKERRQ(ierr);
-      ierr = DAGetProcessorSubset(da,DA_Y,da->ys,&comm);CHKERRQ(ierr);
-      n = da->ye-da->ys;
-      ierr = MPI_Allgather(&n,1,MPIU_INT,da->ly,1,MPIU_INT,comm);CHKERRQ(ierr);
-    }
-    *ly = da->ly;
+  if (da->dim > 1 && !da->ly) {
+    ierr = PetscMalloc(da->n*sizeof(PetscInt),&da->ly);CHKERRQ(ierr);
+    ierr = DAGetProcessorSubset(da,DA_Y,da->ys,&comm);CHKERRQ(ierr);
+    n = da->ye-da->ys;
+    ierr = MPI_Allgather(&n,1,MPIU_INT,da->ly,1,MPIU_INT,comm);CHKERRQ(ierr);
   }
-  if (lz) {
-    if (!da->lz) {
-      ierr = PetscMalloc(da->p*sizeof(PetscInt),&da->lz);CHKERRQ(ierr);
-      ierr = DAGetProcessorSubset(da,DA_Z,da->zs,&comm);CHKERRQ(ierr);
-      n = da->ze-da->zs;
-      ierr = MPI_Allgather(&n,1,MPIU_INT,da->lz,1,MPIU_INT,comm);CHKERRQ(ierr);
-    }
-    *lz = da->lz;
+  if (da->dim > 2 && !da->lz) {
+    ierr = PetscMalloc(da->p*sizeof(PetscInt),&da->lz);CHKERRQ(ierr);
+    ierr = DAGetProcessorSubset(da,DA_Z,da->zs,&comm);CHKERRQ(ierr);
+    n = da->ze-da->zs;
+    ierr = MPI_Allgather(&n,1,MPIU_INT,da->lz,1,MPIU_INT,comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -602,9 +580,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetGetMatrix(DA da,PetscErrorCode (*f)(DA, co
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DARefineVertexDivision"
-/* Tiny helper function, more logic could go here to balance partitions as much as possible for a given stencil width. */
-static PetscErrorCode DARefineVertexDivision(PetscTruth periodic,PetscInt stencil_width,PetscInt ratio,PetscInt m,const PetscInt lc[],PetscInt lf[])
+#define __FUNCT__ "DARefineOwnershipRanges"
+/*
+  Creates "balanced" ownership ranges after refinement, constrained by the need for the
+  fine grid boundaries to fall within one stencil width of the coarse partition.
+
+  Uses a greedy algorithm to handle non-ideal layouts, could probably do something better.
+*/
+static PetscErrorCode DARefineOwnershipRanges(PetscTruth periodic,PetscInt stencil_width,PetscInt ratio,PetscInt m,const PetscInt lc[],PetscInt lf[])
 {
   PetscInt i,totalc = 0,remaining,startc = 0,startf = 0;
 
@@ -680,27 +663,26 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
   } else {
     P = 1 + da->refine_z*(da->P - 1);
   }
+  ierr = DACreateOwnershipRanges(da);CHKERRQ(ierr);
   if (da->dim == 3) {
     PetscInt *lx,*ly,*lz;
     ierr = PetscMalloc3(da->m,PetscInt,&lx,da->n,PetscInt,&ly,da->p,PetscInt,&lz);CHKERRQ(ierr);
-    ierr = DARefineVertexDivision(PetscTruth(DAXPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
-    ierr = DARefineVertexDivision(PetscTruth(DAYPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_y,da->n,da->ly,ly);CHKERRQ(ierr);
-    ierr = DARefineVertexDivision(PetscTruth(DAZPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_z,da->p,da->lz,lz);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges(DAXPeriodic(da->wrap) || da->interptype == DA_Q0,da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges(DAYPeriodic(da->wrap) || da->interptype == DA_Q0,da->s,da->refine_y,da->n,da->ly,ly);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges(DAZPeriodic(da->wrap) || da->interptype == DA_Q0,da->s,da->refine_z,da->p,da->lz,lz);CHKERRQ(ierr);
     ierr = DACreate3d(((PetscObject)da)->comm,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,lx,ly,lz,&da2);CHKERRQ(ierr);
     ierr = PetscFree3(lx,ly,lz);CHKERRQ(ierr);
   } else if (da->dim == 2) {
     PetscInt *lx,*ly;
     ierr = PetscMalloc2(da->m,PetscInt,&lx,da->n,PetscInt,&ly);CHKERRQ(ierr);
-    ierr = DARefineVertexDivision(PetscTruth(DAXPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
-    ierr = DARefineVertexDivision(PetscTruth(DAYPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_y,da->n,da->ly,ly);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges(DAXPeriodic(da->wrap) || da->interptype == DA_Q0,da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges(DAYPeriodic(da->wrap) || da->interptype == DA_Q0,da->s,da->refine_y,da->n,da->ly,ly);CHKERRQ(ierr);
     ierr = DACreate2d(((PetscObject)da)->comm,da->wrap,da->stencil_type,M,N,da->m,da->n,da->w,da->s,lx,ly,&da2);CHKERRQ(ierr);
     ierr = PetscFree2(lx,ly);CHKERRQ(ierr);
   } else if (da->dim == 1) {
-    const PetscInt *lxc;
     PetscInt *lx;
     ierr = PetscMalloc(da->m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
-    ierr = DAGetVertexDivision(da,&lxc,0,0);CHKERRQ(ierr);
-    ierr = DARefineVertexDivision(PetscTruth(DAXPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_x,da->m,lxc,lx);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges(DAXPeriodic(da->wrap) || da->interptype == DA_Q0,da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
     ierr = DACreate1d(((PetscObject)da)->comm,da->wrap,M,da->w,da->s,lx,&da2);CHKERRQ(ierr);
     ierr = PetscFree(lx);CHKERRQ(ierr);
   }

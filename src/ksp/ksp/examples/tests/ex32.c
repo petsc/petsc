@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   ierr = DASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = DASetDof(da,dof);CHKERRQ(ierr);
   ierr = DASetStencilWidth(da,1);CHKERRQ(ierr);
-  ierr = DASetVertexDivision(da,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DASetOwnershipRanges(da,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DASetFromOptions(da);CHKERRQ(ierr);
 
   ierr = DACreateGlobalVector(da,&x);CHKERRQ(ierr);
