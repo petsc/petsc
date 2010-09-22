@@ -426,6 +426,7 @@ class Package(config.base.Configure):
           incl.append(loc)
       if self.functions:
         self.framework.logPrint('Checking for library in '+location+': '+str(lib))
+        self.framework.logPrint('Contents: '+str(os.listdir(location)))
       else:
         self.framework.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
       if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2]}):
