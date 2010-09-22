@@ -606,11 +606,16 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetGetMatrix(DA da,PetscErrorCode (*f)(DA, co
 /* Tiny helper function, more logic could go here to balance partitions as much as possible for a given stencil width. */
 static PetscErrorCode DARefineVertexDivision(DAPeriodicType periodic,PetscInt ratio,PetscInt m,const PetscInt lc[],PetscInt lf[])
 {
-  PetscInt i;
+  PetscInt i,max = 0;
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
-    lf[i] = lc[i]*ratio - (i == m-1 && !periodic);
+    lf[i] = lc[i]*ratio;
+    max = PetscMax(max,lf[i]);
+  }
+  if (!periodic) { /* One part needs to shrink by one node, find one of maximal size */
+    for (i=m-1; lf[i]<max; i--);
+    lf[i]--;
   }
   PetscFunctionReturn(0);
 }
