@@ -33,7 +33,7 @@ E*/
 #define SNESTEST    "test"
 #define SNESPICARD  "picard"
 #define SNESKSPONLY "ksponly"
-#define SNESLSVI    "lsvi"
+#define SNESVI      "vi"
 
 /* Logging support */
 extern PetscClassId PETSCSNES_DLLEXPORT SNES_CLASSID;

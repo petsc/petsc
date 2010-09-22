@@ -9,7 +9,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Test(SNES);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Picard(SNES);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_KSPONLY(SNES);
 #if !defined(PETSC_USE_COMPLEX)
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LSVI(SNES);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_VI(SNES);
 #endif
 EXTERN_C_END
 
@@ -52,7 +52,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESRegisterAll(const char path[])
   ierr = SNESRegisterDynamic(SNESPICARD, path,"SNESCreate_Picard", SNESCreate_Picard);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic(SNESKSPONLY,path,"SNESCreate_KSPONLY",SNESCreate_KSPONLY);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = SNESRegisterDynamic(SNESLSVI,   path,"SNESCreate_LSVI",   SNESCreate_LSVI);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic(SNESVI,   path,"SNESCreate_VI",   SNESCreate_VI);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

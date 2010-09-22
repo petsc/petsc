@@ -1,5 +1,5 @@
 #include "petscsnes.h"
-#include "../src/snes/impls/lsvi/lsviimpl.h"
+#include "../src/snes/impls/vi/viimpl.h"
 
 static char  help[] =
 "This example is copied from the TAO package\n\
@@ -52,8 +52,8 @@ int main(int argc, char **argv)
   SNES            snes;             /* nonlinear solver context */
   Mat             J;                /* Jacobian matrix */
   PetscInt        N;                /* Number of elements in vector */
-  PetscScalar     lb = PETSC_LSVI_NINF;       /* lower bound constant */
-  PetscScalar     ub = PETSC_LSVI_INF;       /* upper bound constant */
+  PetscScalar     lb = PETSC_VI_NINF;       /* lower bound constant */
+  PetscScalar     ub = PETSC_VI_INF;       /* upper bound constant */
   AppCtx          user;             /* user-defined work context */
 
   /* Initialize PETSc */
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
   info = VecSet(xl, lb); CHKERRQ(info);
   info = VecSet(xu, ub); CHKERRQ(info);
 
-  info = SNESLSVISetVariableBounds(snes,xl,xu);CHKERRQ(info);
+  info = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(info);
 
   /* Solve the application */
   info = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(info);

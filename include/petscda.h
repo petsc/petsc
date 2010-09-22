@@ -185,7 +185,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetFieldName(DA,PetscInt,const char
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetPeriodicity(DA, DAPeriodicType);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetDof(DA, int);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DA, PetscInt);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetVertexDivision(DA, const PetscInt[], const PetscInt[], const PetscInt[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetVertexDivision(DA,const PetscInt[],const PetscInt[],const PetscInt[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DAGetVertexDivision(DA,const PetscInt**,const PetscInt**,const PetscInt**);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetNumProcs(DA, PetscInt, PetscInt, PetscInt);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetStencilType(DA, DAStencilType);
 
