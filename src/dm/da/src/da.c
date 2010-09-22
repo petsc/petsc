@@ -683,16 +683,16 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
   if (da->dim == 3) {
     PetscInt *lx,*ly,*lz;
     ierr = PetscMalloc3(da->m,PetscInt,&lx,da->n,PetscInt,&ly,da->p,PetscInt,&lz);CHKERRQ(ierr);
-    ierr = DARefineVertexDivision(DAXPeriodic(da->wrap) || da->interptype == DA_Q0,da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
-    ierr = DARefineVertexDivision(DAYPeriodic(da->wrap) || da->interptype == DA_Q0,da->s,da->refine_y,da->n,da->ly,ly);CHKERRQ(ierr);
-    ierr = DARefineVertexDivision(DAZPeriodic(da->wrap) || da->interptype == DA_Q0,da->s,da->refine_z,da->p,da->lz,lz);CHKERRQ(ierr);
+    ierr = DARefineVertexDivision(PetscTruth(DAXPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
+    ierr = DARefineVertexDivision(PetscTruth(DAYPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_y,da->n,da->ly,ly);CHKERRQ(ierr);
+    ierr = DARefineVertexDivision(PetscTruth(DAZPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_z,da->p,da->lz,lz);CHKERRQ(ierr);
     ierr = DACreate3d(((PetscObject)da)->comm,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,lx,ly,lz,&da2);CHKERRQ(ierr);
     ierr = PetscFree3(lx,ly,lz);CHKERRQ(ierr);
   } else if (da->dim == 2) {
     PetscInt *lx,*ly;
     ierr = PetscMalloc2(da->m,PetscInt,&lx,da->n,PetscInt,&ly);CHKERRQ(ierr);
-    ierr = DARefineVertexDivision(DAXPeriodic(da->wrap) || da->interptype == DA_Q0,da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
-    ierr = DARefineVertexDivision(DAYPeriodic(da->wrap) || da->interptype == DA_Q0,da->s,da->refine_y,da->n,da->ly,ly);CHKERRQ(ierr);
+    ierr = DARefineVertexDivision(PetscTruth(DAXPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
+    ierr = DARefineVertexDivision(PetscTruth(DAYPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_y,da->n,da->ly,ly);CHKERRQ(ierr);
     ierr = DACreate2d(((PetscObject)da)->comm,da->wrap,da->stencil_type,M,N,da->m,da->n,da->w,da->s,lx,ly,&da2);CHKERRQ(ierr);
     ierr = PetscFree2(lx,ly);CHKERRQ(ierr);
   } else if (da->dim == 1) {
@@ -700,7 +700,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
     PetscInt *lx;
     ierr = PetscMalloc(da->m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
     ierr = DAGetVertexDivision(da,&lxc,0,0);CHKERRQ(ierr);
-    ierr = DARefineVertexDivision(DAXPeriodic(da->wrap) || da->interptype == DA_Q0,da->s,da->refine_x,da->m,lxc,lx);CHKERRQ(ierr);
+    ierr = DARefineVertexDivision(PetscTruth(DAXPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_x,da->m,lxc,lx);CHKERRQ(ierr);
     ierr = DACreate1d(((PetscObject)da)->comm,da->wrap,M,da->w,da->s,lx,&da2);CHKERRQ(ierr);
     ierr = PetscFree(lx);CHKERRQ(ierr);
   }
