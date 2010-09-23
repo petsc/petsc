@@ -44,7 +44,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFormatConvert(const char *format,char *ne
 {
   PetscInt i = 0,j = 0;
 
-  while (format[i] && i < size-1) {
+  while (format[i] && i < (PetscInt)size-1) {
     if (format[i] == '%' && format[i+1] == 'D') {
       newformat[j++] = '%';
 #if !defined(PETSC_USE_64BIT_INDICES)
@@ -333,7 +333,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedPrintf(MPI_Comm comm,const ch
     else       {queuebase   = queue = next;}
     queuelength++;
     next->size = -1;
-    while(fullLength >= next->size) {
+    while(fullLength >= (PetscInt)next->size) {
       next->size = fullLength+1;
       ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
       va_start(Argp,format);
@@ -397,7 +397,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedFPrintf(MPI_Comm comm,FILE* f
     else       {queuebase   = queue = next;}
     queuelength++;
     next->size = -1;
-    while(fullLength >= next->size) {
+    while(fullLength >= (PetscInt)next->size) {
       next->size = fullLength+1;
       ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
       va_start(Argp,format);
