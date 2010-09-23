@@ -333,7 +333,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedPrintf(MPI_Comm comm,const ch
     else       {queuebase   = queue = next;}
     queuelength++;
     next->size = -1;
-    while(fullLength >= (PetscInt)next->size) {
+    while((PetscInt)fullLength >= next->size) {
       next->size = fullLength+1;
       ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
       va_start(Argp,format);
@@ -397,7 +397,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedFPrintf(MPI_Comm comm,FILE* f
     else       {queuebase   = queue = next;}
     queuelength++;
     next->size = -1;
-    while(fullLength >= (PetscInt)next->size) {
+    while((PetscInt)fullLength >= next->size) {
       next->size = fullLength+1;
       ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
       va_start(Argp,format);
