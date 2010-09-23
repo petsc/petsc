@@ -1405,7 +1405,7 @@ DACreateND(MPI_Comm comm,
   ierr = DASetDof(*da,dof);CHKERRQ(ierr);
   ierr = DASetSizes(*da,M,N,P);CHKERRQ(ierr);
   ierr = DASetNumProcs(*da,m,n,p);CHKERRQ(ierr);
-  ierr = DASetVertexDivision(*da,lx,ly,lz);CHKERRQ(ierr);
+  ierr = DASetOwnershipRanges(*da,lx,ly,lz);CHKERRQ(ierr);
   ierr = DASetPeriodicity(*da,wrap);CHKERRQ(ierr);
   ierr = DASetStencilType(*da,stencil_type);CHKERRQ(ierr);
   ierr = DASetStencilWidth(*da,stencil_width);CHKERRQ(ierr);
