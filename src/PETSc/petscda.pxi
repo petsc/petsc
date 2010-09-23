@@ -198,7 +198,7 @@ cdef class _DA_Vec_array(object):
 
 cdef object adjust_index_exp(object starts, object index):
      if not isinstance(index, tuple):
-         return adjust_index(start[0], index)
+         return adjust_index(starts[0], index)
      index = list(index)
      for i, start in enumerate(starts):
          index[i] = adjust_index(start, index[i])
