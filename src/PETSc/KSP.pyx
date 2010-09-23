@@ -302,12 +302,10 @@ cdef class KSP(Object):
         if monitor is not None:
             CHKERR( KSPMonitorSet(self.ksp, KSP_Monitor, NULL, NULL) )
             monitorlist = self.get_attr('__monitor__')
+            if monitorlist is None: monitorlist = []
             if args is None: args = ()
             if kargs is None: kargs = {}
-            if monitorlist is None:
-                monitorlist = [(monitor, args, kargs)]
-            else:
-                monitorlist.append((monitor, args, kargs))
+            monitorlist.append((monitor, args, kargs))
         self.set_attr('__monitor__', monitorlist)
 
     def getMonitor(self):
