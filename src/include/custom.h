@@ -337,10 +337,10 @@ VecRestoreArrayC(Vec v, PetscScalar *a[])
 #if PETSC_VERSION_(3,0,0)
 typedef PetscMap* PetscLayout;
 #define PetscLayoutSetUp PetscMapSetUp
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT 
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT
 PetscMapSetBlockSize(PetscMap*,PetscInt);
 #define PetscLayoutSetBlockSize PetscMapSetBlockSize
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT 
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT
 PetscMapGetBlockSize(PetscMap*,PetscInt*);
 #define PetscLayoutGetBlockSize PetscMapGetBlockSize
 #endif
@@ -1409,13 +1409,22 @@ DACreateND(MPI_Comm comm,
   ierr = DASetPeriodicity(*da,wrap);CHKERRQ(ierr);
   ierr = DASetStencilType(*da,stencil_type);CHKERRQ(ierr);
   ierr = DASetStencilWidth(*da,stencil_width);CHKERRQ(ierr);
+  {
+    const DAType defaultType = DA1D;
+    switch (dim) {
+    case 1: defaultType = DA1D; break;
+    case 2: defaultType = DA2D; break;
+    case 3: defaultType = DA3D; break;
+    }
+    ierr = DASetType(*da,defaultType);CHKERRQ(ierr);
+  }
 
   /* This violates the behavior for other classes, but right now users
      expect negative dimensions to be handled this way */
   /*
-  ierr = DASetOptionsPrefix(*da,prefix);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = DASetOptionsPrefix(*da,prefix);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = DASetFromOptions(*da);CHKERRQ(ierr);CHKERRQ(ierr);
   */
-  ierr = DASetFromOptions(*da);CHKERRQ(ierr);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
