@@ -2427,6 +2427,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES snes,const SNESType type)
   snes->setupcalled = PETSC_FALSE;
   ierr = (*r)(snes);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)snes,type);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+  if (PetscAMSPublishAll) {
+    ierr = PetscObjectAMSPublish((PetscObject)snes);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0); 
 }
 

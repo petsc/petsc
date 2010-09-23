@@ -7,9 +7,9 @@
 PetscTruth PetscAMSPublishAll;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscObjectPublish"
+#define __FUNCT__ "PetscObjectAMSPublish"
 /*@C 
-   PetscObjectPublish - Publish an object
+   PetscObjectAMSPublish - Publish an object
 
    Collective on PetscObject
 
@@ -18,14 +18,16 @@ PetscTruth PetscAMSPublishAll;
          Thus must be cast with a (PetscObject), for example, 
          PetscObjectSetName((PetscObject)mat,name);
 
+   Notes: PetscViewer objects are not published
+
    Level: advanced
 
    Concepts: publishing object
 
-.seealso: PetscObjectSetName()
+.seealso: PetscObjectSetName(), PetscObjectUnPublish()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPublish(PetscObject obj)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectAMSPublish(PetscObject obj)
 {
   PetscErrorCode ierr;
   AMS_Memory     amem;
@@ -33,6 +35,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPublish(PetscObject obj)
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
+  if (obj->classid == PETSC_VIEWER_CLASSID) PetscFunctionReturn(0);
   if (obj->amem != -1) PetscFunctionReturn(0);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
 
@@ -63,6 +66,7 @@ PetscErrorCode PetscObjectUnPublish(PetscObject obj)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (obj->classid == PETSC_VIEWER_CLASSID) PetscFunctionReturn(0);
   if (obj->amem == -1) PetscFunctionReturn(0);
   ierr      = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_(obj->comm),&acomm);CHKERRQ(ierr);
   ierr      = AMS_Memory_destroy(obj->amem);CHKERRQ(ierr);

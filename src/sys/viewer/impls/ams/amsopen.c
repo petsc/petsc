@@ -18,7 +18,7 @@
     Options Database Keys:
 +   -ams_port <port number> - port number where you are running AMS client
 .   -ams_publish_objects - publish all PETSc objects to be visible to the AMS memory snooper,
-                           use PetscObjectPublish() to publish individual objects
+                           use PetscObjectAMSPublish() to publish individual objects
 -   -ams_java - open JAVA AMS client
 
     Level: advanced
@@ -38,7 +38,7 @@
    Concepts: ALICE Memory Snooper
    Concepts: Asynchronous Memory Snooper
 
-.seealso: PetscObjectPublish(), PetscViewerDestroy(), PetscViewerStringSPrintf()
+.seealso: PetscObjectAMSPublish(), PetscViewerDestroy(), PetscViewerStringSPrintf()
 
 @*/
 PetscErrorCode PetscViewerAMSOpen(MPI_Comm comm,const char name[],PetscViewer *lab)

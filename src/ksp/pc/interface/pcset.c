@@ -77,6 +77,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC pc,const PCType type)
   pc->setupcalled = 0;
   ierr = (*r)(pc);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)pc,type);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+  if (PetscAMSPublishAll) {
+    ierr = PetscObjectAMSPublish((PetscObject)pc);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 

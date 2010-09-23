@@ -69,6 +69,11 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetType(TS ts,const TSType type)
   }
   ierr = (*r)(ts);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)ts, type);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+  if (PetscAMSPublishAll) {
+    ierr = PetscObjectAMSPublish((PetscObject)ts);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 

@@ -58,11 +58,6 @@ int main(int argc,char **argv)
   */
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&w);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectPublish((PetscObject)x);CHKERRQ(ierr);
-  ierr = PetscObjectPublish((PetscObject)y);CHKERRQ(ierr);
-  ierr = PetscSleep(200.0);CHKERRQ(ierr);
-#endif
   ierr = VecNorm(w,NORM_2,&norm);CHKERRQ(ierr);
   /*
      Duplicate more work vectors (of the same format and

@@ -580,6 +580,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP ksp, const KSPType type)
   ksp->setupstage = KSP_SETUP_NEW;
   ierr = (*r)(ksp);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+  if (PetscAMSPublishAll) {
+    ierr = PetscObjectAMSPublish((PetscObject)ksp);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
