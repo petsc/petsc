@@ -214,7 +214,6 @@ def version():
     return v
 
 def tarball():
-    return None # XXX remove this line !!!
     VERSION = version()
     if '.dev' in VERSION:
         return None
