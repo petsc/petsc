@@ -29,16 +29,29 @@ build *PETSc for Python*:
 
 .. include:: links.txt
 
-Using **setuptools**
---------------------
 
-If you already have a working PETSc you can take advantage of
-setuptools's :program:`easy_install` command::
+Using **pip** or **easy_install**
+---------------------------------
 
-   $ export PETSC_DIR=/path/to/petsc
-   $ export PETSC_ARCH=linux-gnu # may not be required
+If you already have a working PETSc, set environment variables
+:envvar:`PETSC_DIR` and perhaps :envvar:`PETSC_ARCH` to appropriate
+values::
 
-   $ easy_install petsc4py
+    $ export PETSC_DIR=/path/to/petsc
+    $ export PETSC_ARCH=linux-gnu
+
+.. note:: If you do not set these environment variables, the install
+   process will attempt to download and install PETSc for you.
+
+Now you can use :program:`pip`::
+
+    $ [sudo] pip install petsc4py
+
+Alternatively, you can use *setuptools* :program:`easy_install`
+(deprecated)::
+
+    $ [sudo] easy_install petsc4py
+
 
 Using **distutils**
 -------------------
