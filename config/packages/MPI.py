@@ -77,7 +77,6 @@ class Configure(config.package.Package):
   # search many obscure locations for MPI
   def getSearchDirectories(self):
     import re
-    yield ''
     # Try configure package directories
     dirExp = re.compile(r'mpi(ch)?(-.*)?')
     for packageDir in self.framework.argDB['package-dirs']:

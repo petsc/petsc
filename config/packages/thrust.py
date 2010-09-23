@@ -29,9 +29,7 @@ class Configure(config.package.Package):
 
   def getSearchDirectories(self):
     import os
-    yield os.path.join('/usr','local','cuda')
-    yield ''
-    return
+    return [os.path.join('/usr','local','cuda')]
 
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional tests needed by Thrust'''

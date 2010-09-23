@@ -416,6 +416,9 @@ class Package(config.base.Configure):
       libs += self.libraries.math
       
     for location, directory, lib, incl in self.generateGuesses():
+      if directory and not os.path.isdir(directory):
+        self.framework.logPrint('Directory does not exist: %s (while checking "%s" for "%r")' % (directory,location,lib))
+        continue
       if lib == '': lib = []
       elif not isinstance(lib, list): lib = [lib]
       if incl == '': incl = []

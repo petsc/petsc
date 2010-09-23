@@ -35,9 +35,7 @@ class Configure(config.package.Package):
 
   def getSearchDirectories(self):
     import os
-    yield os.path.join('/usr','local','cuda')
-    yield ''
-    return
+    return [os.path.join('/usr','local','cuda')]
 
   def configurePC(self):
     self.pushLanguage('CUDA')
