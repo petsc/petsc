@@ -9,6 +9,21 @@ HISTORY: PETSc for Python
 :Address:      PTLC, 3000 Santa Fe, Argentina
 
 
+Release 1.1.1
+=============
+
+This is a new-features and bug-fix release.
+
+- Support for setting PETSC_COMM_WORLD before PETSc initialization.
+
+- Support for coordinates, refinement and interpolation in DA. Many
+  thanks to Blaise Bourdin.
+
+- Workaround build failures when PETSc is built with *mpiuni*.
+
+- Workaround GIL-related APIs for non-threaded Python builds.
+
+
 Release 1.1
 ===========
 
