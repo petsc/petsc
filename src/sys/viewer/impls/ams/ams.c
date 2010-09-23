@@ -54,28 +54,6 @@ PetscErrorCode PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
       ierr = PetscStrcat(cmd,"/lib amsoptions -ams_server ${HOSTNAME}");CHKERRQ(ierr);
       ierr = PetscPOpen(((PetscObject)v)->comm,m,cmd,"r",PETSC_NULL);CHKERRQ(ierr);
     }
-
-    ierr = PetscOptionsHasName(PETSC_NULL,"-ams_publish_objects",&flg2);CHKERRQ(ierr);
-    if (flg2) {
-      char dir[PETSC_MAX_PATH_LEN];
-#if defined(PETSC_HAVE_UCBPS)
-      char buf[PETSC_MAX_PATH_LEN],*found;
-      FILE *fp;
-
-      /* check if jacc is not already running */
-      ierr  = PetscPOpen(((PetscObject)v),m,"/usr/ucb/ps -ugxww | grep jacc | grep -v grep","r",&fp);CHKERRQ(ierr);
-      found = fgets(buf,1024,fp);
-      ierr  = PetscFClose(((PetscObject)v),fp);CHKERRQ(ierr);
-      if (found) PetscFunctionReturn(0);
-#endif
-      ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"AMS_HOME",dir,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-      if (!flg) {
-        ierr = PetscStrncpy(dir,AMS_HOME,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-      }
-      /* ierr = PetscStrcat(dir,"/java/client/jacc -display ${DISPLAY}");CHKERRQ(ierr); */
-      ierr = PetscStrcat(dir,"/java/client/jacc");CHKERRQ(ierr);
-      ierr = PetscPOpen(((PetscObject)v)->comm,m,dir,"r",PETSC_NULL);CHKERRQ(ierr);
-    }
   }
   PetscFunctionReturn(0);
 }

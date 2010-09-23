@@ -364,8 +364,6 @@ valid
 
 #endif
 
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPublishBase(PetscObject);
-
 /*MC
    PetscObjectStateIncrease - Increases the state of any PetscObject, 
    regardless of the type.

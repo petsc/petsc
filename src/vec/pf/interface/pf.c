@@ -129,7 +129,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt
   newpf->dimout           = dimout;
 
   *pf                     = newpf;
-  ierr = PetscPublishAll(pf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 
 }

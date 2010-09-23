@@ -312,7 +312,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate(MPI_Comm comm,PC *newpc)
 
   pc->modifysubmatrices   = 0;
   pc->modifysubmatricesP  = 0;
-  ierr = PetscPublishAll(pc);CHKERRQ(ierr);
   *newpc = pc;
   PetscFunctionReturn(0);
 

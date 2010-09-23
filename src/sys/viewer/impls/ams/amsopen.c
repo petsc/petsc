@@ -19,8 +19,6 @@
 +   -ams_port <port number> - port number where you are running AMS client
 .   -ams_publish_objects - publish all PETSc objects to be visible to the AMS memory snooper,
                            use PetscObjectPublish() to publish individual objects
-.   -ams_publish_stack - publish the PETSc stack frames to the snooper
-.   -ams_matlab - open Matlab Petscview AMS client
 -   -ams_java - open JAVA AMS client
 
     Level: advanced
@@ -34,8 +32,7 @@
     Notes:
     This PetscViewer can be destroyed with PetscViewerDestroy().
 
-    Information about the AMS (ALICE Memory Snooper) is available via
-    http://www.mcs.anl.gov/ams.
+    Information about the AMS is available via http://www.mcs.anl.gov/ams.
 
    Concepts: AMS
    Concepts: ALICE Memory Snooper

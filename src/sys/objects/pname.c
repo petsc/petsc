@@ -68,38 +68,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectName(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscObjectPublish"
-/*@C 
-   PetscObjectPublish - Publish an object
 
-   Collective on PetscObject
-
-   Input Parameters:
-.  obj - the Petsc variable
-         Thus must be cast with a (PetscObject), for example, 
-         PetscObjectSetName((PetscObject)mat,name);
-
-   Level: advanced
-
-   Concepts: publishing object
-
-   Notes: Not currently used
-
-.seealso: PetscObjectSetName()
-
-@*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPublish(PetscObject obj)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  if (obj->bops->publish) {
-    ierr = (*obj->bops->publish)(obj);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectChangeTypeName"

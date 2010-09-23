@@ -1466,8 +1466,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectAppendOptionsPrefix(PetscObj
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPrependOptionsPrefix(PetscObject,const char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetOptionsPrefix(PetscObject,const char*[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPublish(PetscObject);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPublishBase(PetscObject);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPublishBaseDestroy(PetscObject);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectUnPublish(PetscObject);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectChangeTypeName(PetscObject,const char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectRegisterDestroy(PetscObject);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectRegisterDestroyAll(void);
@@ -1586,12 +1585,10 @@ $     PetscTruth flag = PetscNot(a)
 */
 #if defined(PETSC_HAVE_AMS)
 extern PetscTruth PetscAMSPublishAll;
-#define PetscPublishAll(v) (PetscAMSPublishAll ? PetscObjectPublish((PetscObject)v) : 0)
 #define PetscObjectTakeAccess(obj)  ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_take_access(((PetscObject)(obj))->amem))
 #define PetscObjectGrantAccess(obj) ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_grant_access(((PetscObject)(obj))->amem))
 #define PetscObjectDepublish(obj)   ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_destroy(((PetscObject)(obj))->amem));((PetscObject)(obj))->amem = -1;
 #else
-#define PetscPublishAll(v)           0
 #define PetscObjectTakeAccess(obj)   0
 #define PetscObjectGrantAccess(obj)  0
 #define PetscObjectDepublish(obj)      0

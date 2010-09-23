@@ -59,7 +59,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat mat, const MatType matype)
   /* create the new data structure */
   ierr = (*r)(mat);CHKERRQ(ierr);
 
-  ierr = PetscPublishAll(mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

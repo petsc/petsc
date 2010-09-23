@@ -211,7 +211,6 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscTruth alloc,PetscInt nghost,cons
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEngineGet_C","VecMatlabEngineGet_Default",VecMatlabEngineGet_Default);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectChangeTypeName((PetscObject)v,VECMPI);CHKERRQ(ierr);
-  ierr = PetscPublishAll(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

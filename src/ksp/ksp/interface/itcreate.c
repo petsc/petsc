@@ -514,7 +514,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->reason          = KSP_CONVERGED_ITERATING;
   ksp->setupstage      = KSP_SETUP_NEW;
 
-  ierr = PetscPublishAll(ksp);CHKERRQ(ierr);
   *inksp = ksp;
   PetscFunctionReturn(0);
 }

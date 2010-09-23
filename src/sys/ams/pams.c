@@ -6,18 +6,33 @@
 */
 PetscTruth PetscAMSPublishAll;
 
-/*
-    Publishes the common header part of any PETSc object to the AMS
-*/
 #undef __FUNCT__  
-#define __FUNCT__ "PetscObjectPublishBase"
-PetscErrorCode PetscObjectPublishBase(PetscObject obj)
+#define __FUNCT__ "PetscObjectPublish"
+/*@C 
+   PetscObjectPublish - Publish an object
+
+   Collective on PetscObject
+
+   Input Parameters:
+.  obj - the Petsc variable
+         Thus must be cast with a (PetscObject), for example, 
+         PetscObjectSetName((PetscObject)mat,name);
+
+   Level: advanced
+
+   Concepts: publishing object
+
+.seealso: PetscObjectSetName()
+
+@*/
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPublish(PetscObject obj)
 {
+  PetscErrorCode ierr;
   AMS_Memory     amem;
   AMS_Comm       acomm;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
   if (obj->amem != -1) PetscFunctionReturn(0);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
 
@@ -33,12 +48,16 @@ PetscErrorCode PetscObjectPublishBase(PetscObject obj)
   ierr = AMS_Memory_add_field(amem,"Name",&obj->name,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   ierr = AMS_Memory_publish(amem);CHKERRQ(ierr);
   ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
+
+  if (obj->bops->publish) {
+    ierr = (*obj->bops->publish)(obj);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscObjectPublishBaseDestroy"
-PetscErrorCode PetscObjectPublishBaseDestroy(PetscObject obj)
+#define __FUNCT__ "PetscObjectUnPublish"
+PetscErrorCode PetscObjectUnPublish(PetscObject obj)
 {
   AMS_Comm       acomm;
   PetscErrorCode ierr;

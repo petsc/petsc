@@ -78,7 +78,6 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomCreate_Rand(PetscRandom r)
   PetscFunctionBegin;
   ierr = PetscMemcpy(r->ops,&PetscRandomOps_Values,sizeof(PetscRandomOps_Values));CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)r,PETSCRAND);CHKERRQ(ierr);
-  ierr = PetscPublishAll(r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

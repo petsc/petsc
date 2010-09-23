@@ -1043,7 +1043,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm comm,SNES *outsnes)
   kctx->norm_last   = 0.0;
 
   *outsnes = snes;
-  ierr = PetscPublishAll(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

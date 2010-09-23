@@ -327,7 +327,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA da)
   da->idx = idx;
   da->Nl  = nn;
 
-  ierr = PetscPublishAll(da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -1763,7 +1763,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
   da->ltol = PETSC_NULL;
   da->ao   = PETSC_NULL;
 
-  ierr = PetscPublishAll(da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

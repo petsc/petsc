@@ -687,7 +687,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscInitialize(int *argc,char ***args,const c
 #endif
 
 #if defined(PETSC_HAVE_AMS)
-  ierr = PetscOptionsHasName(PETSC_NULL,"-ams_publish_all",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-ams_publish_objects",&flg);CHKERRQ(ierr);
   if (flg) {
     PetscAMSPublishAll = PETSC_TRUE;
   }
