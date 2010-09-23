@@ -1056,9 +1056,11 @@ cdef class NullSpace(Object):
         PetscCLEAR(self.obj); self.nsp = newnsp
         return self
 
-    def setFunction(self, function, *args, **kargs):
+    def setFunction(self, function, args=None, kargs=None):
         if function is not None:
             MatNullSpaceSetFunctionPython(self.nsp)
+            if args is None: args = ()
+            if kargs is None: kargs = {}
             self.set_attr('__function__', (function, args, kargs))
         else:    
             CHKERR( MatNullSpaceSetFunction(self.nsp, NULL, NULL) )

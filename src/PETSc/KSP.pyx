@@ -242,12 +242,14 @@ cdef class KSP(Object):
         CHKERR( KSPGetTolerances(self.ksp, &crtol, &catol, &cdivtol, &cmaxits) )
         return (toReal(crtol), toReal(catol), toReal(cdivtol), toInt(cmaxits))
 
-    def setConvergenceTest(self, converged, *args, **kargs):
+    def setConvergenceTest(self, converged, args=None, kargs=None):
         cdef PetscKSPNormType normtype = KSP_NORM_NO
         cdef void* cctx = NULL
         if converged is not None:
             CHKERR( KSPSetConvergenceTest(
                     self.ksp, KSP_Converged, NULL, NULL) )
+            if args is None: args = ()
+            if kargs is None: kargs = {}
             self.set_attr('__converged__', (converged, args, kargs))
         else:
             CHKERR( KSPGetNormType(self.ksp, &normtype) )
@@ -295,11 +297,13 @@ cdef class KSP(Object):
         cdef PetscReal rval = asReal(rnorm)
         CHKERR( KSPLogConvergenceHistory(self.ksp, ival, rval) )
 
-    def setMonitor(self, monitor, *args, **kargs):
+    def setMonitor(self, monitor, args=None, kargs=None):
         cdef object monitorlist = None
         if monitor is not None:
             CHKERR( KSPMonitorSet(self.ksp, KSP_Monitor, NULL, NULL) )
             monitorlist = self.get_attr('__monitor__')
+            if args is None: args = ()
+            if kargs is None: kargs = {}
             if monitorlist is None:
                 monitorlist = [(monitor, args, kargs)]
             else:

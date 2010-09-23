@@ -96,7 +96,8 @@ cdef class TS(Object):
 
     # --- xxx ---
 
-    def setLHSMatrix(self, Mat Alhs not None, lhsmatrix=None, *args, **kargs):
+    def setLHSMatrix(self, Mat Alhs not None,
+                     lhsmatrix=None, args=None, kargs=None):
         cdef PetscMatStructure matstr = MAT_DIFFERENT_NONZERO_PATTERN # XXX
         if lhsmatrix is None:
             CHKERR( TSSetMatrices(self.ts, NULL, NULL,
@@ -105,9 +106,12 @@ cdef class TS(Object):
         else:
             CHKERR( TSSetMatrices(self.ts, NULL, NULL,
                                   Alhs.mat, TS_LHSMatrix, matstr, NULL) )
+            if args is None: args = ()
+            if kargs is None: kargs = {}
             self.set_attr('__lhsmatrix__', (lhsmatrix, args, kargs))
 
-    def setRHSMatrix(self, Mat Arhs not None, rhsmatrix=None, *args, **kargs):
+    def setRHSMatrix(self, Mat Arhs not None,
+                     rhsmatrix=None, args=None, kargs=None):
         cdef PetscMatStructure matstr = MAT_DIFFERENT_NONZERO_PATTERN # XXX
         if rhsmatrix is None:
             CHKERR( TSSetMatrices(self.ts, Arhs.mat, NULL,
@@ -116,22 +120,28 @@ cdef class TS(Object):
         else:
             CHKERR( TSSetMatrices(self.ts, Arhs.mat, TS_RHSMatrix,
                                   NULL, NULL, matstr, NULL) )
+            if args is None: args = ()
+            if kargs is None: kargs = {}
             self.set_attr('__rhsmatrix__', (rhsmatrix, args, kargs))
 
     # --- xxx ---
 
-    def setRHSFunction(self, function, Vec f not None, *args, **kargs):
+    def setRHSFunction(self, function, Vec f not None, args=None, kargs=None):
         cdef PetscVec fvec = NULL
         if f is not None: fvec = f.vec
         CHKERR( TSSetRHSFunction(self.ts, fvec, TS_RHSFunction, NULL) )
+        if args is None: args = ()
+        if kargs is None: kargs = {}
         self.set_attr('__rhsfunction__', (function, args, kargs))
 
-    def setRHSJacobian(self, jacobian, Mat J, Mat P=None, *args, **kargs):
+    def setRHSJacobian(self, jacobian, Mat J, Mat P=None, args=None, kargs=None):
         cdef PetscMat Jmat = NULL
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat = Jmat
         if P is not None: Pmat = P.mat
         CHKERR( TSSetRHSJacobian(self.ts, Jmat, Pmat, TS_RHSJacobian, NULL) )
+        if args is None: args = ()
+        if kargs is None: kargs = {}
         self.set_attr('__rhsjacobian__', (jacobian, args, kargs))
 
     def computeRHSFunction(self, t, Vec x not None, Vec f not None):
@@ -164,18 +174,22 @@ cdef class TS(Object):
 
     #
 
-    def setIFunction(self, function, Vec f not None, *args, **kargs):
+    def setIFunction(self, function, Vec f not None, args=None, kargs=None):
         cdef PetscVec fvec=NULL
         if f is not None: fvec = f.vec
         CHKERR( TSSetIFunction(self.ts, fvec, TS_IFunction, NULL) )
+        if args is None: args = ()
+        if kargs is None: kargs = {}
         self.set_attr('__ifunction__', (function, args, kargs))
 
-    def setIJacobian(self, jacobian, Mat J, Mat P=None, *args, **kargs):
+    def setIJacobian(self, jacobian, Mat J, Mat P=None, args=None, kargs=None):
         cdef PetscMat Jmat = NULL
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat = Jmat
         if P is not None: Pmat = P.mat
         CHKERR( TSSetIJacobian(self.ts, Jmat, Pmat, TS_IJacobian, NULL) )
+        if args is None: args = ()
+        if kargs is None: kargs = {}
         self.set_attr('__ijacobian__', (jacobian, args, kargs))
         if Pmat != NULL:
             CHKERR( PetscObjectCompose(
@@ -318,11 +332,13 @@ cdef class TS(Object):
 
     #
 
-    def setMonitor(self, monitor, *args, **kargs):
+    def setMonitor(self, monitor, args=None, kargs=None):
         cdef object monitorlist = None
         if monitor is not None:
             CHKERR( TSMonitorSet(self.ts, TS_Monitor, NULL, NULL) )
             monitorlist = self.get_attr('__monitor__')
+            if args is None: args = ()
+            if kargs is None: kargs = {}
             if monitorlist is None:
                 monitorlist = [(monitor, args, kargs)]
             else:
@@ -346,9 +362,11 @@ cdef class TS(Object):
         self.set_attr('__monitor__', None)
     #
 
-    def setPreStep(self, prestep, *args, **kargs):
+    def setPreStep(self, prestep, args=None, kargs=None):
         if prestep is not None:
             CHKERR( TSSetPreStep(self.ts, TS_PreStep) )
+            if args is None: args = ()
+            if kargs is None: kargs = {}
             self.set_attr('__prestep__', (prestep, args, kargs))
         else:
             CHKERR( TSSetPreStep(self.ts, NULL) )
@@ -357,9 +375,11 @@ cdef class TS(Object):
     def getPreStep(self, prestep):
         return self.get_attr('__prestep__')
 
-    def setPostStep(self, poststep, *args, **kargs):
+    def setPostStep(self, poststep, args=None, kargs=None):
         if poststep is not None:
             CHKERR( TSSetPostStep(self.ts, TS_PostStep) )
+            if args is None: args = ()
+            if kargs is None: kargs = {}
             self.set_attr('__poststep__', (poststep, args, kargs))
         else:
             CHKERR( TSSetPostStep(self.ts, NULL) )
