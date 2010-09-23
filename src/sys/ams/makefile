@@ -6,7 +6,7 @@ SOURCEH   =
 SOURCEC   = pams.c
 OBJSC     = pams.o
 DIRS      = java
-LOCDIR    = src/sys/ams
+LOCDIR    = src/sys/ams/
 MANSEC    = Sys
 
 include ${PETSC_DIR}/conf/variables

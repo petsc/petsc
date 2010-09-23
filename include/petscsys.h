@@ -1466,6 +1466,8 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectAppendOptionsPrefix(PetscObj
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPrependOptionsPrefix(PetscObject,const char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetOptionsPrefix(PetscObject,const char*[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPublish(PetscObject);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPublishBase(PetscObject);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPublishBaseDestroy(PetscObject);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectChangeTypeName(PetscObject,const char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectRegisterDestroy(PetscObject);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectRegisterDestroyAll(void);

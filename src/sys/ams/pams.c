@@ -11,7 +11,7 @@ PetscTruth PetscAMSPublishAll;
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectPublishBase"
-int PetscObjectPublishBase(PetscObject obj)
+PetscErrorCode PetscObjectPublishBase(PetscObject obj)
 {
   AMS_Memory     amem;
   AMS_Comm       acomm;
@@ -38,12 +38,13 @@ int PetscObjectPublishBase(PetscObject obj)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectPublishBaseDestroy"
-int PetscObjectPublishBaseDestroy(PetscObject obj)
+PetscErrorCode PetscObjectPublishBaseDestroy(PetscObject obj)
 {
   AMS_Comm       acomm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (obj->amem == -1) PetscFunctionReturn(0);
   ierr      = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_(obj->comm),&acomm);CHKERRQ(ierr);
   ierr      = AMS_Memory_destroy(obj->amem);CHKERRQ(ierr);
   obj->amem = -1;

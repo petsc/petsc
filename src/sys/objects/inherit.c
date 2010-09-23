@@ -41,6 +41,12 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscHeaderCreate_Private(PetscObject h,PetscC
   h->bops->composefunction  = PetscObjectComposeFunction_Petsc;
   h->bops->queryfunction    = PetscObjectQueryFunction_Petsc;
   ierr = PetscCommDuplicate(comm,&h->comm,&h->tag);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+  if (PetscAMSPublishAll && classid != PETSC_VIEWER_CLASSID) {
+    ierr = PetscObjectPublishBase((PetscObject)h);CHKERRQ(ierr);
+  }
+#endif
+
   PetscFunctionReturn(0);
 }
 
@@ -59,7 +65,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscHeaderDestroy_Private(PetscObject h)
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)
-  
+  if (PetscAMSPublishAll && h->classid != PETSC_VIEWER_CLASSID) {
+    ierr = PetscObjectPublishBaseDestroy((PetscObject)h);CHKERRQ(ierr);
+  }
 #endif
   if (PetscMemoryCollectMaximumUsage) {
     PetscLogDouble usage;
