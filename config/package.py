@@ -303,8 +303,10 @@ class Package(config.base.Configure):
     return ''
 
   def installNeeded(self, mkfile):
-    if not os.path.isfile(os.path.join(self.confDir, self.name)) or not (self.getChecksum(os.path.join(self.confDir, self.name)) == self.getChecksum(os.path.join(self.packageDir, mkfile))):
-      self.framework.log.write('Have to rebuild '+self.name+', '+mkfile+' != '+os.path.join(self.confDir, self.name)+'\n')
+    makefile      = os.path.join(self.packageDir, mkfile)
+    makefileSaved = os.path.join(self.confDir, self.name)
+    if not os.path.isfile(makefileSaved) or not (self.getChecksum(makefileSaved) == self.getChecksum(makefile)):
+      self.framework.log.write('Have to rebuild '+self.name+', '+makefile+' != '+makefileSaved+'\n')
       return 1
     else:
       self.framework.log.write('Do not need to rebuild '+self.name+'\n')

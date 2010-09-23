@@ -4,7 +4,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download        = 0
+    self.download        = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cusp_101.tar.gz']
     self.includes        = ['cusp/version.h']
     self.includedir      = ''
     self.forceLanguage   = 'CUDA'

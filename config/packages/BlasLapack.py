@@ -419,9 +419,10 @@ class Configure(config.package.Package):
       line = f.readline()
     f.close()
     g.close()
-    if os.path.isfile(os.path.join(confdir,self.package)) and (SourceDB.getChecksum(os.path.join(confdir,self.package)) == SourceDB.getChecksum(os.path.join(blasDir,'tmpmakefile'))):
-      self.framework.log.write('Do not need to compile '+self.downloaddirname+', already compiled\n')
+
+    if not self.installNeeded('tmpmakefile'):
       return libdir
+
     try:
       self.logPrintBox('Compiling '+l.upper()+'BLASLAPACK; this may take several minutes')
       output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile', timeout=2500, log = self.framework.log)
