@@ -1735,7 +1735,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   ierr = DASetDof(*da, dof);CHKERRQ(ierr);
   ierr = DASetStencilType(*da, stencil_type);CHKERRQ(ierr);
   ierr = DASetStencilWidth(*da, s);CHKERRQ(ierr);
-  ierr = DASetVertexDivision(*da, lx, ly, lz);CHKERRQ(ierr);
+  ierr = DASetOwnershipRanges(*da, lx, ly, lz);CHKERRQ(ierr);
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
   ierr = DASetFromOptions(*da);CHKERRQ(ierr);
   ierr = DASetType(*da, DA3D);CHKERRQ(ierr);

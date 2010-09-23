@@ -22,8 +22,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def getSearchDirectories(self):
-    yield os.path.join('/usr','local','cuda')
-    return
+    return [os.path.join('/usr','local','cuda')]
 
   def configureTypes(self):
     if self.scalartypes.scalartype == 'complex':
