@@ -1,7 +1,7 @@
 #include "private/snesimpl.h"
 
-#define PETSC_LSVI_INF   1.0e20
-#define PETSC_LSVI_NINF -1.0e20
+#define PETSC_VI_INF   1.0e20
+#define PETSC_VI_NINF -1.0e20
 
 #define PetscScalarNorm(a,b) (PetscSqrtScalar((a)*(a)+(b)*(b)))
 /* 
@@ -9,8 +9,8 @@
    system of mixed complementarity equations
  */
 
-#ifndef __SNES_LSVI_H
-#define __SNES_LSVI_H
+#ifndef __SNES_VI_H
+#define __SNES_VI_H
 
 typedef struct {
   PetscErrorCode           (*LineSearch)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscTruth*);
@@ -23,7 +23,7 @@ typedef struct {
   void                     *precheck;                                                        /* user-defined step-checking context (optional) */
   PetscErrorCode           (*postcheckstep)(SNES,Vec,Vec,Vec,void*,PetscTruth*,PetscTruth*); /* step-checking routine (optional) */
   void                     *postcheck;                                                       /* user-defined step-checking context (optional) */
-  PetscViewerASCIIMonitor  monitor;
+  PetscViewerASCIIMonitor  lsmonitor;
 
   /* ------------------ Semismooth algorithm stuff ------------------------------ */
   Vec                      phi;                      /* pointer to semismooth function */
@@ -50,8 +50,8 @@ typedef struct {
   PetscErrorCode (*computeuserfunction)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computeuserjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
-} SNES_LSVI;
+} SNES_VI;
 
 #endif
 
-extern PetscErrorCode SNESLSVISetVariableBounds(SNES,Vec,Vec);
+extern PetscErrorCode SNESVISetVariableBounds(SNES,Vec,Vec);

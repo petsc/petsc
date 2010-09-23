@@ -1920,7 +1920,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscGetFlops(PetscLogDouble *flops)
 PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjectState(PetscObject obj, const char format[], ...)
 {
   PetscErrorCode ierr;
-  int            fullLength;
+  size_t         fullLength;
   va_list        Argp;
 
   PetscFunctionBegin;

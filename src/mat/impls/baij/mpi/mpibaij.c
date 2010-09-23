@@ -2026,7 +2026,7 @@ PetscErrorCode MatGetSubMatrix_MPIBAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,M
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetSubMatrix_MPIBAIJ"
+#define __FUNCT__ "MatGetSubMatrix_MPIBAIJ_Private"
 /*
     Not great since it makes two copies of the submatrix, first an SeqBAIJ 
   in local and then by concatenating the local matrices the end result.

@@ -142,7 +142,6 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALocalToLocalEnd(DA,Vec,InsertMode,V
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALocalToGlobal(DA,Vec,InsertMode,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALocalToGlobalBegin(DA,Vec,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALocalToGlobalEnd(DA,Vec,Vec);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetOwnershipRanges(DA,const PetscInt*[],const PetscInt*[],const PetscInt*[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateGlobalVector(DA,Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateLocalVector(DA,Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateNaturalVector(DA,Vec *);
@@ -185,7 +184,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetFieldName(DA,PetscInt,const char
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetPeriodicity(DA, DAPeriodicType);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetDof(DA, int);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DA, PetscInt);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetVertexDivision(DA, const PetscInt[], const PetscInt[], const PetscInt[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetOwnershipRanges(DA,const PetscInt[],const PetscInt[],const PetscInt[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRanges(DA,const PetscInt**,const PetscInt**,const PetscInt**);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetNumProcs(DA, PetscInt, PetscInt, PetscInt);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetStencilType(DA, DAStencilType);
 

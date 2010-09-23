@@ -1607,7 +1607,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscSNPrintf(char*,size_t,const char 
 
 /* These are used internally by PETSc ASCII IO routines*/
 #include <stdarg.h>
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscVSNPrintf(char*,size_t,const char[],int*,va_list);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscVSNPrintf(char*,size_t,const char[],size_t*,va_list);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  (*PetscVFPrintf)(FILE*,const char[],va_list);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscVFPrintfDefault(FILE*,const char[],va_list);
 
@@ -1632,6 +1632,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscVFPrintfDefault(FILE*,const char[
 $     PetscErrorPrintf = PetscErrorPrintfNone; to turn off all printing of error messages (does not change the way the 
 $                        error is handled.) and
 $     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on
+$        of you can use your own function
 
           Use
      PETSC_STDERR = FILE* obtained from a file open etc. to have stderr printed to the file. 
@@ -1648,7 +1649,7 @@ $     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on
     Concepts: error messages^printing
     Concepts: printing^error messages
 
-.seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscHelpPrintf(), PetscPrintf(), PetscErrorHandlerPush()
+.seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscHelpPrintf(), PetscPrintf(), PetscErrorHandlerPush(), PetscVFPrintf(), PetscHelpPrintf()
 M*/
 EXTERN PETSCSYS_DLLEXPORT PetscErrorCode (*PetscErrorPrintf)(const char[],...);
 

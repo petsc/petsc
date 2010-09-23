@@ -4575,7 +4575,7 @@ namespace ALE {
       typedef typename MeshType::point_type point_type;
       typedef EdgeType                      edge_type;
       typedef typename std::map<edge_type, point_type> edge_map_type;
-      typedef enum {LINE, TRIANGLE, QUADRILATERAL, TETRAHEDRON, HEXAHEDRON, TRIANGULAR_PRISM, TRIANGULAR_PRISM_LAGRANGE, HEXAHEDRON_LAGRANGE} CellType;
+      typedef enum {LINE, LINE_LAGRANGE, TRIANGLE, QUADRILATERAL, TETRAHEDRON, HEXAHEDRON, TRIANGULAR_PRISM, TRIANGULAR_PRISM_LAGRANGE, HEXAHEDRON_LAGRANGE} CellType;
     protected:
       MeshType&     mesh;
       int           dim;
@@ -4589,28 +4589,67 @@ namespace ALE {
     protected:
       CellType getCellType(const point_type cell) {
         const int corners = mesh.getSieve()->getConeSize(cell);
-        if (dim == 1) {
-            return LINE;
-        } else if (dim == 2) {
-          if (corners == 3) {
-            return TRIANGLE;
-          } else if (corners == 4) {
-            return QUADRILATERAL;
-          }
-        } else if (dim == 3) {
-          if (corners == 4) {
-            return TETRAHEDRON;
-          } else if (corners == 6) {
+	switch (dim) {
+	  return LINE;
+	case 2:
+	  switch (corners) {
+	  case 3:
+	    return TRIANGLE;
+	  case 4:
+	    return QUADRILATERAL;
+	  case 6:
+	    return LINE_LAGRANGE;
+	  default :
+	    assert(0);
+	    throw ALE::Exception("Could not determine 2-D cell type.");
+	  } // switch
+	case 3:
+	  switch (corners) {
+	  case 4:
+	    return TETRAHEDRON;
+	  case 6:
             return TRIANGULAR_PRISM;
-          } else if (corners == 8) {
-            return HEXAHEDRON;
-          } else if (corners == 9) {
+	  case 9:
             return TRIANGULAR_PRISM_LAGRANGE;
-          } else if (corners == 12) {
+	  case 12:
             return HEXAHEDRON_LAGRANGE;
-          }
-        }
-        throw ALE::Exception("Could not determine cell type");
+	  default:
+	    assert(0);
+	    throw ALE::Exception("Could not determine 3-D cell type.");
+	  } // switch
+	} // switch
+      };
+      void getEdges_TRIANGLE(const int coneSize, const point_type cone[],  int *numEdges, const edge_type **edges) {
+        static edge_type triEdges[3];
+
+        assert(coneSize == 3);
+        triEdges[0] = edge_type(std::min(cone[0], cone[1]), std::max(cone[0], cone[1]));
+        triEdges[1] = edge_type(std::min(cone[1], cone[2]), std::max(cone[1], cone[2]));
+        triEdges[2] = edge_type(std::min(cone[2], cone[0]), std::max(cone[2], cone[0]));
+        *numEdges = 3;
+        *edges    = triEdges;
+      };
+      void getEdges_QUADRILATERAL(const int coneSize, const point_type cone[],  int *numEdges, const edge_type **edges) {
+        static edge_type quadEdges[4];
+
+        assert(coneSize == 4);
+        quadEdges[0] = edge_type(std::min(cone[0], cone[1]), std::max(cone[0], cone[1]));
+        quadEdges[1] = edge_type(std::min(cone[1], cone[2]), std::max(cone[1], cone[2]));
+        quadEdges[2] = edge_type(std::min(cone[2], cone[3]), std::max(cone[2], cone[3]));
+        quadEdges[3] = edge_type(std::min(cone[3], cone[0]), std::max(cone[3], cone[0]));
+	// MISSING VERTEX IN MIDDLE OF CELL
+        *numEdges = 4;
+        *edges    = quadEdges;
+      };
+      void getEdges_LINE_LAGRANGE(const int coneSize, const point_type cone[],  int *numEdges, const edge_type **edges) {
+        static edge_type lineEdges[6];
+
+        assert(coneSize == 6);
+        lineEdges[0] = edge_type(std::min(cone[0], cone[1]), std::max(cone[0], cone[1]));
+        lineEdges[1] = edge_type(std::min(cone[2], cone[3]), std::max(cone[2], cone[3]));
+        lineEdges[2] = edge_type(std::min(cone[4], cone[5]), std::max(cone[4], cone[5]));
+        *numEdges = 3;
+        *edges    = lineEdges;
       };
       void getEdges_TETRAHEDRON(const int coneSize, const point_type cone[],  int *numEdges, const edge_type **edges) {
         static edge_type tetEdges[6];
@@ -4655,6 +4694,58 @@ namespace ALE {
         *numEdges = 9;
         *edges    = triPrismLEdges;
       };
+      void getNewCells_TRIANGLE(const int coneSize, const point_type cone[],  int *numCells, const point_type **cells) {
+        int               numEdges;
+        const edge_type  *edges;
+        static point_type triCells[4*3];
+        point_type        newVertices[3];
+
+        getEdges_TRIANGLE(coneSize, cone, &numEdges, &edges);
+        assert(numEdges == 3);
+        for(int e = 0; e < numEdges; ++e) {
+          if (edge2vertex.find(edges[e]) == edge2vertex.end()) {
+            throw ALE::Exception("Missing edge in refined mesh");
+          }
+          newVertices[e] = edge2vertex[edges[e]];
+        }
+        triCells[0*3+0] = cone[0]+vertexOffset; triCells[0*3+1] = newVertices[0]; triCells[0*3+2] = newVertices[2];
+        triCells[1*3+0] = newVertices[0];       triCells[1*3+1] = newVertices[1]; triCells[1*3+2] = newVertices[2];
+        triCells[2*3+0] = cone[1]+vertexOffset; triCells[2*3+1] = newVertices[1]; triCells[2*3+2] = newVertices[0];
+        triCells[3*3+0] = cone[2]+vertexOffset; triCells[3*3+1] = newVertices[2]; triCells[3*3+2] = newVertices[1];
+        *numCells = 4;
+        *cells    = triCells;
+      };
+      void getNewCells_LINE_LAGRANGE(const int coneSize, const point_type cone[],  int *numCells, const point_type **cells) {
+        int               numEdges;
+        const edge_type  *edges;
+        static point_type lineCells[2*6];
+        point_type        newVertices[3];
+
+        getEdges_LINE_LAGRANGE(coneSize, cone, &numEdges, &edges);
+        assert(numEdges == 3);
+        for(int e = 0; e < numEdges; ++e) {
+          if (edge2vertex.find(edges[e]) == edge2vertex.end()) {
+            throw ALE::Exception("Missing edge in refined mesh");
+          }
+          newVertices[e] = edge2vertex[edges[e]];
+        }
+	lineCells[0*6+0] = cone[0]+vertexOffset; // new cell 0
+        lineCells[0*6+1] = newVertices[0];
+	lineCells[0*6+2] = cone[2]+vertexOffset;
+        lineCells[0*6+3] = newVertices[1];
+	lineCells[0*6+4] = cone[4]+vertexOffset;
+        lineCells[0*6+5] = newVertices[2];
+
+        lineCells[1*6+0] = newVertices[0]; // new cell 1
+	lineCells[1*6+1] = cone[1]+vertexOffset;
+        lineCells[1*6+2] = newVertices[1];
+	lineCells[1*6+3] = cone[3]+vertexOffset;
+        lineCells[1*6+4] = newVertices[2];
+	lineCells[1*6+5] = cone[5]+vertexOffset;
+
+        *numCells = 2;
+        *cells    = lineCells;
+      };
       void getNewCells_TETRAHEDRON(const int coneSize, const point_type cone[],  int *numCells, const point_type **cells) {
         int               numEdges;
         const edge_type  *edges;
@@ -4670,13 +4761,13 @@ namespace ALE {
           newVertices[e] = edge2vertex[edges[e]];
         }
         tetCells[0*4+0] = cone[0]+vertexOffset; tetCells[0*4+1] = newVertices[3]; tetCells[0*4+2] = newVertices[0]; tetCells[0*4+3] = newVertices[2];
-        tetCells[1*4+0] = cone[1]+vertexOffset; tetCells[1*4+1] = newVertices[4]; tetCells[1*4+2] = newVertices[1]; tetCells[1*4+3] = newVertices[0];
-        tetCells[2*4+0] = cone[2]+vertexOffset; tetCells[2*4+1] = newVertices[5]; tetCells[2*4+2] = newVertices[2]; tetCells[2*4+3] = newVertices[1];
-        tetCells[3*4+0] = cone[3]+vertexOffset; tetCells[3*4+1] = newVertices[3]; tetCells[3*4+2] = newVertices[5]; tetCells[3*4+3] = newVertices[4];
-        tetCells[4*4+0] = newVertices[0];       tetCells[4*4+1] = newVertices[3]; tetCells[4*4+2] = newVertices[4]; tetCells[4*4+3] = newVertices[1];
-        tetCells[5*4+0] = newVertices[1];       tetCells[5*4+1] = newVertices[4]; tetCells[5*4+2] = newVertices[5]; tetCells[5*4+3] = newVertices[3];
-        tetCells[6*4+0] = newVertices[2];       tetCells[6*4+1] = newVertices[5]; tetCells[6*4+2] = newVertices[3]; tetCells[6*4+3] = newVertices[1];
-        tetCells[7*4+0] = newVertices[0];       tetCells[7*4+1] = newVertices[1]; tetCells[7*4+2] = newVertices[2]; tetCells[7*4+3] = newVertices[3];
+        tetCells[1*4+0] = newVertices[0];       tetCells[1*4+1] = newVertices[1]; tetCells[1*4+2] = newVertices[2]; tetCells[1*4+3] = newVertices[3];
+        tetCells[2*4+0] = newVertices[0];       tetCells[2*4+1] = newVertices[3]; tetCells[2*4+2] = newVertices[4]; tetCells[2*4+3] = newVertices[1];
+        tetCells[3*4+0] = cone[1]+vertexOffset; tetCells[3*4+1] = newVertices[4]; tetCells[3*4+2] = newVertices[1]; tetCells[3*4+3] = newVertices[0];
+        tetCells[4*4+0] = newVertices[2];       tetCells[4*4+1] = newVertices[5]; tetCells[4*4+2] = newVertices[3]; tetCells[4*4+3] = newVertices[1];
+        tetCells[5*4+0] = cone[2]+vertexOffset; tetCells[5*4+1] = newVertices[5]; tetCells[5*4+2] = newVertices[2]; tetCells[5*4+3] = newVertices[1];
+        tetCells[6*4+0] = newVertices[1];       tetCells[6*4+1] = newVertices[4]; tetCells[6*4+2] = newVertices[5]; tetCells[6*4+3] = newVertices[3];
+        tetCells[7*4+0] = cone[3]+vertexOffset; tetCells[7*4+1] = newVertices[3]; tetCells[7*4+2] = newVertices[5]; tetCells[7*4+3] = newVertices[4];
         *numCells = 8;
         *cells    = tetCells;
       };
@@ -4704,35 +4795,35 @@ namespace ALE {
 	tcells[0*9+7] = newVertices[6];
 	tcells[0*9+8] = newVertices[8];
 
-        tcells[1*9+0] = cone[1]+vertexOffset; // New cell 1
+        tcells[1*9+0] = newVertices[0]; // New cell 1
 	tcells[1*9+1] = newVertices[1];
-	tcells[1*9+2] = newVertices[0];
-        tcells[1*9+3] = cone[4]+vertexOffset;
+	tcells[1*9+2] = newVertices[2];
+        tcells[1*9+3] = newVertices[3];
 	tcells[1*9+4] = newVertices[4];
-	tcells[1*9+5] = newVertices[3];
-        tcells[1*9+6] = cone[7]+vertexOffset;
+	tcells[1*9+5] = newVertices[5];
+        tcells[1*9+6] = newVertices[6];
 	tcells[1*9+7] = newVertices[7];
-	tcells[1*9+8] = newVertices[6];
+	tcells[1*9+8] = newVertices[8];
 
-        tcells[2*9+0] = cone[2]+vertexOffset; // New cell 2
-	tcells[2*9+1] = newVertices[2];
-	tcells[2*9+2] = newVertices[1];
-        tcells[2*9+3] = cone[5]+vertexOffset;
-	tcells[2*9+4] = newVertices[5];
-	tcells[2*9+5] = newVertices[4];
-        tcells[2*9+6] = cone[8]+vertexOffset;
-	tcells[2*9+7] = newVertices[8];
-	tcells[2*9+8] = newVertices[7];
+        tcells[2*9+0] = cone[1]+vertexOffset; // New cell 2
+	tcells[2*9+1] = newVertices[1];
+	tcells[2*9+2] = newVertices[0];
+        tcells[2*9+3] = cone[4]+vertexOffset;
+	tcells[2*9+4] = newVertices[4];
+	tcells[2*9+5] = newVertices[3];
+        tcells[2*9+6] = cone[7]+vertexOffset;
+	tcells[2*9+7] = newVertices[7];
+	tcells[2*9+8] = newVertices[6];
 
-        tcells[3*9+0] = newVertices[0]; // New cell 3
-	tcells[3*9+1] = newVertices[1];
-	tcells[3*9+2] = newVertices[2];
-        tcells[3*9+3] = newVertices[3];
-	tcells[3*9+4] = newVertices[4];
-	tcells[3*9+5] = newVertices[5];
-        tcells[3*9+6] = newVertices[6];
-	tcells[3*9+7] = newVertices[7];
-	tcells[3*9+8] = newVertices[8];
+        tcells[3*9+0] = cone[2]+vertexOffset; // New cell 3
+	tcells[3*9+1] = newVertices[2];
+	tcells[3*9+2] = newVertices[1];
+        tcells[3*9+3] = cone[5]+vertexOffset;
+	tcells[3*9+4] = newVertices[5];
+	tcells[3*9+5] = newVertices[4];
+        tcells[3*9+6] = cone[8]+vertexOffset;
+	tcells[3*9+7] = newVertices[8];
+	tcells[3*9+8] = newVertices[7];
 
         *numCells = 4;
         *cells    = tcells;
@@ -4743,6 +4834,10 @@ namespace ALE {
       edge_map_type& getEdgeToVertex() {return edge2vertex;};
       int numNewCells(const point_type cell) {
         switch(this->getCellType(cell)) {
+	case TRIANGLE:
+	  return 4;
+	case LINE_LAGRANGE:
+	  return 2;
         case TETRAHEDRON:
           return 8;
         case TRIANGULAR_PRISM:
@@ -4757,6 +4852,12 @@ namespace ALE {
         const edge_type *edges;
 
         switch(t) {
+	case TRIANGLE:
+          getEdges_TRIANGLE(coneSize, cone, &numEdges, &edges);
+          break;
+	case LINE_LAGRANGE:
+          getEdges_LINE_LAGRANGE(coneSize, cone, &numEdges, &edges);
+          break;	  
         case TETRAHEDRON:
           getEdges_TETRAHEDRON(coneSize, cone, &numEdges, &edges);
           break;
@@ -4782,6 +4883,16 @@ namespace ALE {
         const point_type *cells;
 
         switch(t) {
+        case TRIANGLE:
+          getNewCells_TRIANGLE(coneSize, cone,  &numCells, &cells);
+          *newConeSize = 3;
+          *newCone     = &cells[newCellNumber*3];
+          break;
+        case LINE_LAGRANGE:
+          getNewCells_LINE_LAGRANGE(coneSize, cone,  &numCells, &cells);
+          *newConeSize = 6;
+          *newCone     = &cells[newCellNumber*6];
+          break;
         case TETRAHEDRON:
           getNewCells_TETRAHEDRON(coneSize, cone,  &numCells, &cells);
           *newConeSize = 4;
@@ -4802,6 +4913,12 @@ namespace ALE {
         const edge_type *edges;
 
         switch(t) {
+        case TRIANGLE:
+          getEdges_TRIANGLE(coneSize, cone, &numEdges, &edges);
+          break;
+        case LINE_LAGRANGE:
+          getEdges_LINE_LAGRANGE(coneSize, cone, &numEdges, &edges);
+          break;
         case TETRAHEDRON:
           getEdges_TETRAHEDRON(coneSize, cone, &numEdges, &edges);
           break;
@@ -4843,7 +4960,6 @@ namespace ALE {
         numNewCells += refiner.numNewCells(*c_iter);
       }
       // Bound number of new vertices
-      //const int maxNewVertices = numCells * 6;
       const int  numOldVertices  = mesh.depthStratum(0)->size();
       point_type curNewVertex = numNewCells + numOldVertices;
 
@@ -4923,13 +5039,16 @@ namespace ALE {
       const Obj<typename MeshType::real_section_type>& coordinates    = mesh.getRealSection("coordinates");
       const Obj<typename MeshType::real_section_type>& newCoordinates = newMesh.getRealSection("coordinates");
 
+      const int spaceDim = coordinates->getFiberDimension(numCellsNoLagrange);
+      assert(spaceDim > 0);
+
       newCoordinates->setChart(typename sieve_type::chart_type(numNewCells, curNewVertex));
       for(int v = numNewCells; v < curNewVertex; ++v) {
-        newCoordinates->setFiberDimension(v, 3);
+        newCoordinates->setFiberDimension(v, spaceDim);
       }
       newCoordinates->allocatePoint();
       for(int v = 0; v < numOldVertices; ++v) {
-        newCoordinates->updatePoint(v+numNewCells, coordinates->restrictPoint(v+numCells));
+        newCoordinates->updatePoint(v+numNewCells, coordinates->restrictPoint(v+numCellsNoLagrange));
       }
       for(int v = numNewCells+numOldVertices; v < curNewVertex; ++v) {
         const int     endpointA = vertex2edge[(v-numNewCells-numOldVertices)*2+0];

@@ -293,7 +293,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUPrintDeferred(PetscViewer viewer,
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
   va_list        Argp;
-  int            fullLength;
+  size_t         fullLength;
   PrintfQueue    next;
   PetscErrorCode ierr;
 

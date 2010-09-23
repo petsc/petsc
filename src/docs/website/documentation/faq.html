@@ -9,7 +9,7 @@
 <table width="100%">
   <tbody>
     <tr>
-      <td valign="top" width="25%">
+      <td width="25%" valign="top">
       <h1><font color="#ff0000" size="7">PETSc</font></h1>
       <ul>
         <li><a href="../index.html"><strong>Home</strong></a></li>
@@ -24,7 +24,7 @@
       <hr color="#ff5b5b" size="4"> </td>
     </tr>
     <tr>
-      <td valign="top" width="25%">
+      <td width="25%" valign="top">
       <ul>
         <li><a href="../download/index.html"><strong>Download</strong></a></li>
         <li><a href="../features/index.html"><strong>Features</strong></a></li>
@@ -55,7 +55,7 @@ Software</strong></a></li>
 Site</strong></a></li>
       </ul>
       </td>
-      <td valign="top" width="75%"><!--##begin-->
+      <td width="75%" valign="top"><!--##begin-->
       <h4><a href="faq.html#General">General</a></h4>
       <menu>
       <li><a href="faq.html#petsc-mailing-list">How
@@ -113,7 +113,7 @@ recommend for the Apple Mac OS X?</a><br>
       <ul>
         <li><a href="#redirectstdout">How can I redirect PETSc's stdout
 and stderr when programming with a GUI interface in Windows Developer
-Studio?</a></li>
+Studio or to C++ streams?</a></li>
         <li><a href="#hypre">I want to use hypre
 boomerAMG without GMRES
 but when I run -pc_type hypre -pc_hypre_type boomeramg -ksp_type
@@ -173,6 +173,7 @@ can I understand what is really happening within my program? </a></li>
 large sparse matrices takes a long time. What can I do make this
 process faster? or MatSetValues() is <span style="font-weight: bold;">so
 slow,
+
 
 
 
@@ -601,9 +602,11 @@ and urge them to bundle gfortran with future versions of Xcode.<br>
 can
 I
 redirect PETSc's stdout and stderr when programming with a GUI
-interface in Windows Developer Studio?&nbsp;</font></a> </p>
-These directions where supplied by a user. You just need
-to add this <br>
+interface in Windows Developer Studio or too C++ streams?&nbsp;</font></a>
+      </p>
+To overload just the error messages write your own MyPrintError()
+function that does whatever you want (including pop up windows etc) and
+use it like below.<br>
       <br>
 extern "C"<br>
 {<br>
@@ -655,19 +658,43 @@ And this link options /nologo /subsystem:console
 /nodefaultlib:"libcmtd.lib" /nodefaultlib:"libcd.lib"
 /nodefaultlib:"mvcrt.lib" /pdbtype:sept<br>
       <br>
-With this simple trick any print to stdout&nbsp; (that is not from a
-library) will work.<br>
-      <br>
 Note that it is compiled and linked as if it was a console program. The
 linker will search for a main,&nbsp; and then from it the WinMain will
 start. This works with MFC templates and derived classes too.<br>
       <br>
-You can also reassign PetscVFPrintf() to handle stdout and stderr any
-way you like<br>
-      <br>
 &nbsp;Note: When writing a Window's console application you do not need
 to do anything, the stdout and stderr is automatically output to the
 console window.<a name="nosaij"><br>
+      </a><br>
+To change where all PETSc stdout and stderr go write a function<br>
+      <br>
+You can also reassign PetscVFPrintf() to handle stdout and stderr any
+way you like write the following function<br>
+      <br>
+PetscErrorCode mypetscvfprintf(FILE *fd,const char format[],va_list
+Argp)<br>
+{<br>
+&nbsp; PetscErrorCode ierr;<br>
+      <br>
+&nbsp; PetscFunctionBegin;<br>
+&nbsp;&nbsp; if (fd != stdout &amp;&amp; fd != stderr) { /* handle
+regular files */<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ierr =
+PetscVFPrintfDefault(fd,format,Argp); CHKERR(ierr);<br>
+&nbsp; } else {<br>
+&nbsp;&nbsp;&nbsp;&nbsp; char buff[BIG];<br>
+&nbsp;&nbsp;&nbsp;&nbsp; int&nbsp;&nbsp;&nbsp;&nbsp; length;<br>
+&nbsp;&nbsp;&nbsp;&nbsp; ierr =
+PetscVSNPrintf(buff,BIG,format,&amp;length,Argp);CHKERRQ(ierr);<br>
+&nbsp;&nbsp;&nbsp;&nbsp; /* now send buff to whatever stream or
+whatever you want */<br>
+&nbsp;}<br>
+&nbsp;PetscFunctionReturn(0);<br>
+}<br>
+      <br>
+and assign PetscVFPrintf = mypetscprintf; before PetscInitialize() in
+your main program.<br>
+      <a name="nosaij"><br>
       </a>
       <p>&nbsp;<a name="hypre"><font color="#ff0000">I
 want to
@@ -751,7 +778,7 @@ communication </li>
       <table width="100%">
         <tbody>
           <tr>
-            <td valign="top" width="75%">
+            <td width="75%" valign="top">
             <li> Actually do the
 communication; this can be done
 repeatedly as needed</li>
@@ -977,7 +1004,8 @@ MPI_Cart_create()
 command.
 How
 can
-one use them together?<br>
+one
+use them together?<br>
             <br>
             </span>The MPI_Cart_create() first divides the mesh along
 the z direction, then the y, then the x. DA divides along the x, then
@@ -1027,7 +1055,8 @@ can
 use
 MatZeroRows()
 to
-eliminate the Dirichlet rows but this results in a
+eliminate
+the Dirichlet rows but this results in a
 non-symmetric system. How come there is no MatZeroColumns() to keep the
 matrix symmetric?<br>
             <br>
@@ -1051,7 +1080,8 @@ can
 I
 get
 PETSc
-Vecs and Mats to Matlab or vice versa?<br>
+Vecs
+and Mats to Matlab or vice versa?<br>
             </span><br>
             <span style="color: rgb(255, 0, 0);"><br>
             </span>There are four was to work with PETSc and Matlab<br>
@@ -1076,7 +1106,8 @@ for
 access
 from
 the
-PETSc side and PetscOpenSocket in bin/matlab for
+PETSc
+side and PetscOpenSocket in bin/matlab for
 access from the Matlab side.</li>
               <li>Finally you can save PETSc Vecs (not Mats) with the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
@@ -1084,7 +1115,8 @@ viewer
 that
 saves
 .mat
-files can then be loaded into Matlab.<br>
+files
+can then be loaded into Matlab.<br>
               </li>
             </ol>
             <hr> </td>
@@ -1142,7 +1174,8 @@ so slow, what can I do to speed it up?</font></a><a
       <p>See the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manual.pdf#nameddest=ch_performance">Performance
 chapter
-of the users manual</a> for
+of
+the users manual</a> for
 many
 tips on this.</p>
       <p>a) Preallocate enough space for the sparse matrix. For
@@ -1181,7 +1214,8 @@ with PETSc?</font> </a></p>
       <p>Use these options at runtime: -log_summary. See the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manual.pdf#nameddest=ch_performance">Performance
 chapter
-of the users manual</a>
+of
+the users manual</a>
 for information on interpreting
 the summary data. If using the PETSc (non)linear solvers, one can also
 specify -snes_view or -ksp_view for a printout of solver info. Only the
@@ -1248,6 +1282,7 @@ in
 
 
 
+
           <a href="faq.html#slow">generating the
 matrix</a> or some other operation.</li>
         <li>There must be enough work for each process to
@@ -1280,7 +1315,8 @@ You
 may
 also
 consider
-multigrid preconditioners like <a
+multigrid
+preconditioners like <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
 or BoomerAMG in <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCHYPRE.html">PCHYPRE</a>.</li>
@@ -1358,7 +1394,8 @@ if
 does
 not
 work
-on my machine?</font> </a></p>
+on
+my machine?</font> </a></p>
       <p>For a uniprocessor job, just try&nbsp;the debugger
 directly, for example: gdb ex1. You can also use Totalview which is a
 good graphical parallel debugger.<br>
@@ -1412,7 +1449,8 @@ shared
 object
 file:
 No
-such file or directory.</span></p>
+such
+file or directory.</span></p>
       <p>The Intel compilers use shared libraries (like libimf)
 that
 cannot by default at run time. When using the Intel compilers (and
@@ -1468,7 +1506,8 @@ MatSetSizes(),
 VecCreateXXX()
 or
 MatCreateXXX()
-you passed in local and global sizes that do not make
+you
+passed in local and global sizes that do not make
 sense for the correct number of processors. For example if you pass in
 a local size of 2 and a global size of 100 and run on two processors,
 this cannot work since the sum of the local sizes is 4, not 100.</span></font><br>
@@ -1497,6 +1536,7 @@ problem.<br>
 &nbsp; <br>
 If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
 machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
+
 
 
 
@@ -1549,6 +1589,7 @@ that the matrix is singular. You can use -pc_factor_shift_nonzero or
 -pc_factor_shift_positive_definite,
 -[level]_pc_factor_shift_nonzero,&nbsp; </span></font><font
  style="color: rgb(0, 0, 0);" color="#ff0000">-[level]_pc_factor_shift_postive_definite
+
 
 
 

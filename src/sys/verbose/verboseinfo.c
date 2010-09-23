@@ -184,7 +184,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscInfo_Private(const char func[],void *vobj
   PetscObject    obj = (PetscObject)vobj;
   char           string[8*1024];
   PetscErrorCode ierr;
-  int            fullLength, err;
+  size_t         fullLength;
+  int            err;
 
   PetscFunctionBegin;
   if (obj) PetscValidHeader(obj,1);

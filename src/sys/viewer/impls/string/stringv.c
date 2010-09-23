@@ -46,7 +46,7 @@ static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
 PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerStringSPrintf(PetscViewer viewer,const char format[],...)
 {
   va_list            Argp;
-  int                fullLength;
+  size_t             fullLength;
   size_t             shift;
   PetscErrorCode     ierr;
   PetscTruth         isstring;

@@ -4,14 +4,14 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = lsvi.c
+SOURCEC  = vi.c
 SOURCEF  =
-SOURCEH  = lsviimpl.h
-OBJSC    = lsvi.o
+SOURCEH  = viimpl.h
+OBJSC    = vi.o
 OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
-LOCDIR   = src/snes/impls/lsvi/
+LOCDIR   = src/snes/impls/vi/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

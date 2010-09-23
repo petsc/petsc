@@ -219,9 +219,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DA da, PetscInt width)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetVertexDivision"
+#define __FUNCT__ "DASetOwnershipRanges"
 /*@
-  DASetVertexDivision - Sets the number of nodes in each direction on each process
+  DASetOwnershipRanges - Sets the number of nodes in each direction on each process
 
   Logically Collective on DA
 
@@ -236,7 +236,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DA da, PetscInt width)
 .keywords:  distributed array
 .seealso: DACreate(), DADestroy(), DA
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetVertexDivision(DA da, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[])
+PetscErrorCode PETSCDM_DLLEXPORT DASetOwnershipRanges(DA da, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[])
 {
   PetscErrorCode ierr;
   
@@ -262,6 +262,41 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetVertexDivision(DA da, const PetscInt lx[],
       ierr = PetscMalloc(da->p*sizeof(PetscInt), &da->lz);CHKERRQ(ierr);
     }
     ierr = PetscMemcpy(da->lz, lz, da->p*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DACreateOwnershipRanges"
+/*
+ Ensure that da->lx, ly, and lz exist.  Collective on DA.
+*/
+PetscErrorCode PETSCDM_DLLEXPORT DACreateOwnershipRanges(DA da)
+{
+  PetscErrorCode ierr;
+  PetscInt n;
+  MPI_Comm comm;
+  PetscMPIInt size;
+
+  PetscFunctionBegin;
+  if (!da->lx) {
+    ierr = PetscMalloc(da->m*sizeof(PetscInt),&da->lx);CHKERRQ(ierr);
+    ierr = DAGetProcessorSubset(da,DA_X,da->xs,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    n = (da->xe-da->xs)/da->w;
+    ierr = MPI_Allgather(&n,1,MPIU_INT,da->lx,1,MPIU_INT,comm);CHKERRQ(ierr);
+  }
+  if (da->dim > 1 && !da->ly) {
+    ierr = PetscMalloc(da->n*sizeof(PetscInt),&da->ly);CHKERRQ(ierr);
+    ierr = DAGetProcessorSubset(da,DA_Y,da->ys,&comm);CHKERRQ(ierr);
+    n = da->ye-da->ys;
+    ierr = MPI_Allgather(&n,1,MPIU_INT,da->ly,1,MPIU_INT,comm);CHKERRQ(ierr);
+  }
+  if (da->dim > 2 && !da->lz) {
+    ierr = PetscMalloc(da->p*sizeof(PetscInt),&da->lz);CHKERRQ(ierr);
+    ierr = DAGetProcessorSubset(da,DA_Z,da->zs,&comm);CHKERRQ(ierr);
+    n = da->ze-da->zs;
+    ierr = MPI_Allgather(&n,1,MPIU_INT,da->lz,1,MPIU_INT,comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -544,6 +579,39 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetGetMatrix(DA da,PetscErrorCode (*f)(DA, co
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DARefineOwnershipRanges"
+/*
+  Creates "balanced" ownership ranges after refinement, constrained by the need for the
+  fine grid boundaries to fall within one stencil width of the coarse partition.
+
+  Uses a greedy algorithm to handle non-ideal layouts, could probably do something better.
+*/
+static PetscErrorCode DARefineOwnershipRanges(PetscTruth periodic,PetscInt stencil_width,PetscInt ratio,PetscInt m,const PetscInt lc[],PetscInt lf[])
+{
+  PetscInt i,totalc = 0,remaining,startc = 0,startf = 0;
+
+  PetscFunctionBegin;
+  for (i=0; i<m; i++) totalc += lc[i];
+  remaining = totalc * ratio - (!periodic);
+  for (i=0; i<m; i++) {
+    PetscInt want = remaining/(m-i) + !!(remaining%(m-i));
+    if (i == m-1) lf[i] = want;
+    else {
+      PetscInt diffc = (startf+want)/ratio - (startc + lc[i]);
+      while (PetscAbs(diffc) > stencil_width) {
+        want += (diffc < 0);
+        diffc = (startf+want)/ratio - (startc + lc[i]);
+      }
+    }
+    lf[i] = want;
+    startc += lc[i];
+    startf += lf[i];
+    remaining -= lf[i];
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "DARefine"
 /*@
@@ -595,12 +663,28 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
   } else {
     P = 1 + da->refine_z*(da->P - 1);
   }
+  ierr = DACreateOwnershipRanges(da);CHKERRQ(ierr);
   if (da->dim == 3) {
-    ierr = DACreate3d(((PetscObject)da)->comm,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,0,0,0,&da2);CHKERRQ(ierr);
+    PetscInt *lx,*ly,*lz;
+    ierr = PetscMalloc3(da->m,PetscInt,&lx,da->n,PetscInt,&ly,da->p,PetscInt,&lz);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges(DAXPeriodic(da->wrap) || da->interptype == DA_Q0,da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges(DAYPeriodic(da->wrap) || da->interptype == DA_Q0,da->s,da->refine_y,da->n,da->ly,ly);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges(DAZPeriodic(da->wrap) || da->interptype == DA_Q0,da->s,da->refine_z,da->p,da->lz,lz);CHKERRQ(ierr);
+    ierr = DACreate3d(((PetscObject)da)->comm,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,lx,ly,lz,&da2);CHKERRQ(ierr);
+    ierr = PetscFree3(lx,ly,lz);CHKERRQ(ierr);
   } else if (da->dim == 2) {
-    ierr = DACreate2d(((PetscObject)da)->comm,da->wrap,da->stencil_type,M,N,da->m,da->n,da->w,da->s,0,0,&da2);CHKERRQ(ierr);
+    PetscInt *lx,*ly;
+    ierr = PetscMalloc2(da->m,PetscInt,&lx,da->n,PetscInt,&ly);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges(DAXPeriodic(da->wrap) || da->interptype == DA_Q0,da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges(DAYPeriodic(da->wrap) || da->interptype == DA_Q0,da->s,da->refine_y,da->n,da->ly,ly);CHKERRQ(ierr);
+    ierr = DACreate2d(((PetscObject)da)->comm,da->wrap,da->stencil_type,M,N,da->m,da->n,da->w,da->s,lx,ly,&da2);CHKERRQ(ierr);
+    ierr = PetscFree2(lx,ly);CHKERRQ(ierr);
   } else if (da->dim == 1) {
-    ierr = DACreate1d(((PetscObject)da)->comm,da->wrap,M,da->w,da->s,0,&da2);CHKERRQ(ierr);
+    PetscInt *lx;
+    ierr = PetscMalloc(da->m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges(DAXPeriodic(da->wrap) || da->interptype == DA_Q0,da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
+    ierr = DACreate1d(((PetscObject)da)->comm,da->wrap,M,da->w,da->s,lx,&da2);CHKERRQ(ierr);
+    ierr = PetscFree(lx);CHKERRQ(ierr);
   }
 
   /* allow overloaded (user replaced) operations to be inherited by refinement clones */
