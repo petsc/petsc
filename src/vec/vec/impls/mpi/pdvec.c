@@ -676,6 +676,7 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecView_MPI_HDF5"
 PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 {
+  /* TODO: It looks like we can remove the H5Sclose(filespace) and H5Dget_space(dset_id). Why do we do this? */
   hid_t         filespace; /* file dataspace identifier */
   hid_t	        plist_id;  /* property list identifier */
   hid_t         dset_id;   /* dataset identifier */
