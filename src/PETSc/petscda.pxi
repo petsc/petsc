@@ -140,9 +140,10 @@ cdef inline tuple toDims(PetscInt dim,
 
 cdef class _DA_Vec_array(object):
 
+    cdef _Vec_buffer vecbuf
+    cdef readonly tuple starts, sizes
+    cdef tuple shape, strides
     cdef readonly ndarray array
-    cdef readonly tuple   starts
-    cdef readonly tuple   sizes
 
     def __cinit__(self, DA da not None, Vec vec not None):
         #
@@ -182,19 +183,47 @@ cdef class _DA_Vec_array(object):
             shape   += (<Py_ssize_t>dof,)
             strides += (<Py_ssize_t>(k*xm*ym*zm),)
         #
-        self.array = asarray(vec)
+        self.vecbuf = _Vec_buffer(vec)
         self.starts = starts
-        self.sizes  = sizes
-        self.array.shape = shape
-        self.array.strides = strides
+        self.sizes = sizes
+        self.shape = shape
+        self.strides = strides
+
+    cdef int acquire(self) except -1:
+        self.vecbuf.acquire()
+        if self.array is None:
+            self.array = asarray(self.vecbuf)
+            self.array.shape = self.shape
+            self.array.strides = self.strides
+        return 0
+
+    cdef int release(self) except -1:
+        self.vecbuf.release()
+        self.array = None
+        return 0
+
+    #
 
     def __getitem__(self, index):
+        self.acquire()
         index = adjust_index_exp(self.starts, index)
         return self.array[index]
 
     def __setitem__(self, index, value):
+        self.acquire()
         index = adjust_index_exp(self.starts, index)
         self.array[index] = value
+
+    # 'with' statement (PEP 343)
+
+    def __enter__(self):
+        self.acquire()
+        return self
+
+    def __exit__(self, t, v, tb):
+        self.release()
+        return None
+
 
 cdef object adjust_index_exp(object starts, object index):
      if not isinstance(index, tuple):
