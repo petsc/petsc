@@ -24,3 +24,7 @@ class Configure(config.package.Package):
     except RuntimeError,e:
       raise RuntimeError('Error installing Boost include files: '+str(e))
     return self.installDir
+
+  def getSearchDirectories(self):
+    yield ''
+    return
