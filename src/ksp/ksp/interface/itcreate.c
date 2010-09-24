@@ -248,12 +248,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetNormType(KSP ksp, KSPNormType *normtype)
   PetscFunctionReturn(0);
 }
 
-#if 0
+#if defined(PETSC_HAVE_AMS)
 #undef __FUNCT__  
 #define __FUNCT__ "KSPPublish_Petsc"
 static PetscErrorCode KSPPublish_Petsc(PetscObject obj)
 {
+  KSP            ksp = (KSP) obj;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = AMS_Memory_add_field(obj->amem,"its",&ksp->its,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
@@ -504,6 +508,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
   ierr = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr);
   ksp->ops->buildsolution  = KSPDefaultBuildSolution;
   ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+#if defined(PETSC_HAVE_AMS)
+  ((PetscObject)ksp)->bops->publish       = KSPPublish_Petsc;
+#endif
 
   ksp->vec_sol         = 0;
   ksp->vec_rhs         = 0;

@@ -49,12 +49,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectAMSPublish(PetscObject obj)
   ierr = AMS_Memory_add_field(amem,"Id",&obj->id,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field(amem,"ParentId",&obj->parentid,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field(amem,"Name",&obj->name,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_publish(amem);CHKERRQ(ierr);
-  ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
-
   if (obj->bops->publish) {
     ierr = (*obj->bops->publish)(obj);CHKERRQ(ierr);
   }
+  ierr = AMS_Memory_publish(amem);CHKERRQ(ierr);
+  ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
