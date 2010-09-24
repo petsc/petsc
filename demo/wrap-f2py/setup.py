@@ -6,8 +6,11 @@
 try:
     from numpy.distutils.fcompiler     import FCompiler
     from numpy.distutils.unixccompiler import UnixCCompiler
-    FCompiler.runtime_library_dir_option = \
-        UnixCCompiler.runtime_library_dir_option.im_func
+    try: # Python 2
+        meth = UnixCCompiler.runtime_library_dir_option.im_func
+    except AttributeError: # Python 3
+        meth = UnixCCompiler.runtime_library_dir_option
+    FCompiler.runtime_library_dir_option = meth
 except Exception:
     pass
 
