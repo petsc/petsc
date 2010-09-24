@@ -569,7 +569,7 @@ PetscErrorCode PetscAMSDisplay(FILE *fd)
     if (!mem_list[0]) {
       fprintf(fd, "AMS Communicator %s has no published memories</p>\r\n",comm_list[0]);
     } else {
-      /* fprintf(fd, "AMS Communicator %s</p>\r\n",comm_list[0]); */
+      fprintf(fd, "<HTML><HEAD><TITLE>Petsc Application Server</TITLE></HEAD>\r\n<BODY>");
       fprintf(fd,"<ul>\r\n");
       while (mem_list[i]) {
 	fprintf(fd,"<li> %s</li>\r\n",mem_list[i]);
@@ -595,6 +595,129 @@ PetscErrorCode PetscAMSDisplay(FILE *fd)
   }
   ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
   ierr = AMS_Disconnect();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscAMSDisplayTree"
+PetscErrorCode PetscAMSDisplayTree(FILE *fd)
+{
+  PetscErrorCode     ierr;
+  char               host[256],**comm_list,**mem_list,**fld_list;
+  AMS_Comm           ams;
+  PetscInt           i = 0,j;
+  AMS_Memory_type    mtype;
+  AMS_Data_type      dtype;
+  AMS_Shared_type    stype;
+  AMS_Reduction_type rtype;
+  AMS_Memory         memory;
+  int                len;
+  void               *addr,*addr2;
+  
+  ierr = PetscGetHostName(host,256);CHKERRQ(ierr);
+  ierr = AMS_Connect(host, -1, &comm_list);CHKERRQ(ierr);
+  ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "text/html", -1);CHKERRQ(ierr);
+  if (!comm_list[0]) {
+    fprintf(fd, "AMS Communicator not running</p>\r\n");
+  } else {
+    ierr = AMS_Comm_attach(comm_list[0],&ams);CHKERRQ(ierr);
+    ierr = AMS_Comm_get_memory_list(ams,&mem_list);CHKERRQ(ierr);
+    if (!mem_list[0]) {
+      fprintf(fd, "AMS Communicator %s has no published memories</p>\r\n",comm_list[0]);
+    } else {
+      PetscInt   nts = 0,nsnes = 0,nksp = 0,npc = 0, nmat = 0,*Id, maxId = 0, *locx,*locy;
+      PetscTruth flg;
+      char       *clas;
+
+      while (mem_list[i]) {
+	ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
+	ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
+        ierr = AMS_Memory_get_field_info(memory, "Class", &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        clas = *(char**)addr;
+        ierr = PetscStrcmp(clas,"Mat",&flg);CHKERRQ(ierr);
+        if (flg) nmat++;
+        ierr = PetscStrcmp(clas,"PC",&flg);CHKERRQ(ierr);
+        if (flg) npc++;
+        ierr = PetscStrcmp(clas,"KSP",&flg);CHKERRQ(ierr);
+        if (flg) nksp++;
+        ierr = PetscStrcmp(clas,"SNES",&flg);CHKERRQ(ierr);
+        if (flg) nsnes++;
+        ierr = PetscStrcmp(clas,"TS",&flg);CHKERRQ(ierr);
+        if (flg) nts++;
+        ierr = AMS_Memory_get_field_info(memory, "Id", &addr2, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        Id = (int*) addr2;
+        maxId = PetscMax(maxId,*Id);
+	i++;
+      } 
+      printf(" %d %d %d %d %d maxId %d\n",nmat,npc,nksp,nsnes,nts,maxId);
+
+      /* determine all the top level objects and their location in the tree */
+      ierr = PetscMalloc2(maxId,PetscInt,&locx,maxId,PetscInt,&locy);CHKERRQ(ierr);
+      ierr = PetscMemzero(locx,maxId*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMemzero(locy,maxId*sizeof(PetscInt));CHKERRQ(ierr);
+      i = 0; nsnes = 0;
+      while (mem_list[i]) {
+	ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
+	ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
+        ierr = AMS_Memory_get_field_info(memory, "Class", &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        clas = *(char**)addr;
+        
+        ierr = PetscStrcmp(clas,"SNES",&flg);CHKERRQ(ierr);
+        if (flg) {
+          ierr = AMS_Memory_get_field_info(memory, "Id", &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+          Id = (int*) addr;
+          nsnes++;
+          locx[*Id] = nsnes;
+          locy[*Id] = 1;
+        }
+	i++;
+      } 
+
+      /* print all the top-level objects */
+      fprintf(fd, "<HTML><HEAD><TITLE>Petsc Application Server</TITLE>\r\n");
+      fprintf(fd, "<canvas width=800 height=600 id=\"tree\"></canvas>\r\n");
+      fprintf(fd, "<script type=\"text/javascript\">\r\n");  
+      fprintf(fd, "  function draw(){\r\n");  
+      fprintf(fd, "  var example = document.getElementById('tree');\r\n");
+      fprintf(fd, "  var context = example.getContext('2d');\r\n");
+      fprintf(fd, "  context.font         = \"normal 24px sans-serif\";\r\n");
+      fprintf(fd, "  context.fillStyle = \"rgb(255,0,0)\";\r\n");
+      fprintf(fd, "  context.textBaseline = \"top\";\r\n");
+      fprintf(fd, "  var xspace = example.width/%d;\r\n",nsnes+1);
+      for (i=0; i<nsnes; i++) {
+        fprintf(fd, "  var width = context.measureText(\"SNES\");\r\n");
+        fprintf(fd, "  context.fillStyle = \"rgb(255,0,0)\";\r\n");
+	fprintf(fd, "  context.fillRect((%d+1)*xspace-width.width/2, %d, width.width, %d);\r\n",i,10,22);       
+        fprintf(fd, "  context.fillStyle = \"rgb(0,0,0)\";\r\n");
+        fprintf(fd, "  context.fillText(\"SNES\",(%d+1)*xspace-width.width/2, %d);\r\n",i,10);       
+      }
+
+      /* print all the objects whose parents have been printed already */
+      i = 0;
+      while (mem_list[i]) {
+	ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
+	ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
+        ierr = AMS_Memory_get_field_info(memory, "Class", &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        clas = *(char**)addr;
+        ierr = AMS_Memory_get_field_info(memory, "ParentId", &addr2, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        Id = (int*) addr2;
+        if (*Id > 0) {
+          printf("my parent is %d\n",*Id);
+          if (locx[*Id] > 0)  printf("  its loc is %d\n",locx[*Id]);
+        }
+	i++;
+      } 
+ 
+      ierr = PetscFree2(locx,locy);CHKERRQ(ierr);
+      ierr = AMS_Disconnect();CHKERRQ(ierr);
+      fprintf(fd, "}\r\n"); 
+      fprintf(fd, "</script>\r\n");  
+      fprintf(fd, "<body onload=\"draw();\">\r\n"); 
+      fprintf(fd, "</body></html>\r\n"); 
+    }
+  }
+  ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 #endif
@@ -670,7 +793,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(int port)
       ierr = PetscOptionsPrint(fd);CHKERRQ(ierr);
       fprintf(fd, "<HR>\r\n");
 #if defined(PETSC_HAVE_AMS)
-      fprintf(fd, "<a href=\"./ams\">Connect to memory snooper</a>\r\n\r\n");
+      fprintf(fd, "<a href=\"./ams\">Connect to memory snooper</a></p>\r\n\r\n");
+      fprintf(fd, "<a href=\"./ams-tree\">Connect to memory snooper--Tree display</a></p>\r\n\r\n");
 #endif
       ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
       goto theend;
@@ -679,6 +803,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(int port)
     ierr = PetscStrcmp(path,"/ams",&flg);CHKERRQ(ierr);
     if (flg) {      
       ierr = PetscAMSDisplay(fd);CHKERRQ(ierr);
+      goto theend;
+    }
+    ierr = PetscStrcmp(path,"/ams-tree",&flg);CHKERRQ(ierr);
+    if (flg) {      
+      ierr = PetscAMSDisplayTree(fd);CHKERRQ(ierr);
       goto theend;
     }
 #endif
