@@ -23,7 +23,11 @@ typedef struct {
   KSP            smoothd;                      /* pre smoother */
   KSP            smoothu;                      /* post smoother */
   Mat            interpolate; 
-  Mat            restrct;                      /* restrict is a reserved word on the Cray!!!*/ 
+  Mat            restrct;                      /* restrict is a reserved word in C99 and on Cray */
+  PetscLogEvent  eventsmoothsetup;             /* if logging times for each level */
+  PetscLogEvent  eventsmoothsolve;
+  PetscLogEvent  eventresidual;
+  PetscLogEvent  eventinterprestrict;
 } PC_MG_Levels;
 
 /*
@@ -41,10 +45,7 @@ typedef struct {
   PetscInt      default_smoothu;              /* number of smooths per level if not over-ridden */
   PetscInt      default_smoothd;              /*  with calls to KSPSetTolerances() */
   PetscReal     rtol,abstol,dtol,ttol;        /* tolerances for when running with PCApplyRichardson_MG */
-  PetscLogEvent eventsmoothsetup;             /* if logging times for each level */
-  PetscLogEvent eventsmoothsolve;  
-  PetscLogEvent eventresidual;
-  PetscLogEvent eventinterprestrict;    
+
   void          *innerctx;                   /* optional data for preconditioner, like PCEXOTIC that inherits off of PCMG */
 } PC_MG;
 

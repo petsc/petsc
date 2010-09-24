@@ -17,13 +17,13 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PCRichardsonCo
 
   PetscFunctionBegin;
 
-  if (mg->eventsmoothsolve) {ierr = PetscLogEventBegin(mg->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
+  if (mglevels->eventsmoothsolve) {ierr = PetscLogEventBegin(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   ierr = KSPSolve(mglevels->smoothd,mglevels->b,mglevels->x);CHKERRQ(ierr);  /* pre-smooth */
-  if (mg->eventsmoothsolve) {ierr = PetscLogEventEnd(mg->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
+  if (mglevels->eventsmoothsolve) {ierr = PetscLogEventEnd(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   if (mglevels->level) {  /* not the coarsest grid */
-    if (mg->eventresidual) {ierr = PetscLogEventBegin(mg->eventresidual,0,0,0,0);CHKERRQ(ierr);}
+    if (mglevels->eventresidual) {ierr = PetscLogEventBegin(mglevels->eventresidual,0,0,0,0);CHKERRQ(ierr);}
     ierr = (*mglevels->residual)(mglevels->A,mglevels->b,mglevels->x,mglevels->r);CHKERRQ(ierr);
-    if (mg->eventresidual) {ierr = PetscLogEventEnd(mg->eventresidual,0,0,0,0);CHKERRQ(ierr);}
+    if (mglevels->eventresidual) {ierr = PetscLogEventEnd(mglevels->eventresidual,0,0,0,0);CHKERRQ(ierr);}
 
     /* if on finest level and have convergence criteria set */
     if (mglevels->level == mglevels->levels-1 && mg->ttol && reason) {
@@ -42,19 +42,19 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PCRichardsonCo
     }
 
     mgc = *(mglevelsin - 1);
-    if (mg->eventinterprestrict) {ierr = PetscLogEventBegin(mg->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
+    if (mglevels->eventinterprestrict) {ierr = PetscLogEventBegin(mglevels->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     ierr = MatRestrict(mglevels->restrct,mglevels->r,mgc->b);CHKERRQ(ierr);
-    if (mg->eventinterprestrict) {ierr = PetscLogEventEnd(mg->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
+    if (mglevels->eventinterprestrict) {ierr = PetscLogEventEnd(mglevels->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     ierr = VecSet(mgc->x,0.0);CHKERRQ(ierr);
     while (cycles--) {
       ierr = PCMGMCycle_Private(pc,mglevelsin-1,reason);CHKERRQ(ierr); 
     }
-    if (mg->eventinterprestrict) {ierr = PetscLogEventBegin(mg->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
+    if (mglevels->eventinterprestrict) {ierr = PetscLogEventBegin(mglevels->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     ierr = MatInterpolateAdd(mglevels->interpolate,mgc->x,mglevels->x,mglevels->x);CHKERRQ(ierr);
-    if (mg->eventinterprestrict) {ierr = PetscLogEventEnd(mg->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
-    if (mg->eventsmoothsolve) {ierr = PetscLogEventBegin(mg->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
+    if (mglevels->eventinterprestrict) {ierr = PetscLogEventEnd(mglevels->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
+    if (mglevels->eventsmoothsolve) {ierr = PetscLogEventBegin(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
     ierr = KSPSolve(mglevels->smoothu,mglevels->b,mglevels->x);CHKERRQ(ierr);    /* post smooth */
-    if (mg->eventsmoothsolve) {ierr = PetscLogEventEnd(mg->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
+    if (mglevels->eventsmoothsolve) {ierr = PetscLogEventEnd(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -167,6 +167,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *
     mglevels[i]->cycles          = PC_MG_CYCLE_V;
     mg->default_smoothu = 1;
     mg->default_smoothd = 1;
+    mglevels[i]->eventsmoothsetup    = 0;
+    mglevels[i]->eventsmoothsolve    = 0;
+    mglevels[i]->eventresidual       = 0;
+    mglevels[i]->eventinterprestrict = 0;
 
     if (comms) comm = comms[i];
     ierr = KSPCreate(comm,&mglevels[i]->smoothd);CHKERRQ(ierr);
@@ -199,10 +203,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *
     mg->abstol              = 0.0;
     mg->dtol                = 0.0;
     mg->ttol                = 0.0;
-    mg->eventsmoothsetup    = 0;
-    mg->eventsmoothsolve    = 0;
-    mg->eventresidual       = 0;
-    mg->eventinterprestrict = 0;
     mg->cyclesperpcapply    = 1; 
   }
   mg->am          = PC_MG_MULTIPLICATIVE;
@@ -363,18 +363,18 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
     if (flg) {
       PetscInt i;
       char     eventname[128];
-      if (!mg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+      if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
       levels = mglevels[0]->levels;
       for (i=0; i<levels; i++) {  
         sprintf(eventname,"MGSetup Level %d",(int)i);
-        ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->classid,&mg->eventsmoothsetup);CHKERRQ(ierr);
+        ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->classid,&mglevels[i]->eventsmoothsetup);CHKERRQ(ierr);
         sprintf(eventname,"MGSmooth Level %d",(int)i);
-        ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->classid,&mg->eventsmoothsolve);CHKERRQ(ierr);
+        ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->classid,&mglevels[i]->eventsmoothsolve);CHKERRQ(ierr);
         if (i) {
           sprintf(eventname,"MGResid Level %d",(int)i);
-          ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->classid,&mg->eventresidual);CHKERRQ(ierr);
+          ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->classid,&mglevels[i]->eventresidual);CHKERRQ(ierr);
           sprintf(eventname,"MGInterp Level %d",(int)i);
-          ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->classid,&mg->eventinterprestrict);CHKERRQ(ierr);
+          ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->classid,&mglevels[i]->eventinterprestrict);CHKERRQ(ierr);
         }
       }
     }
@@ -591,9 +591,9 @@ PetscErrorCode PCSetUp_MG(PC pc)
       /* if doing only down then initial guess is zero */
       ierr = KSPSetInitialGuessNonzero(mglevels[i]->smoothd,PETSC_TRUE);CHKERRQ(ierr);
     }
-    if (mg->eventsmoothsetup) {ierr = PetscLogEventBegin(mg->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
+    if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventBegin(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
     ierr = KSPSetUp(mglevels[i]->smoothd);CHKERRQ(ierr);
-    if (mg->eventsmoothsetup) {ierr = PetscLogEventEnd(mg->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
+    if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
   }
   for (i=1; i<n; i++) {
     if (mglevels[i]->smoothu && mglevels[i]->smoothu != mglevels[i]->smoothd) {
@@ -609,9 +609,9 @@ PetscErrorCode PCSetUp_MG(PC pc)
       }
 
       ierr = KSPSetInitialGuessNonzero(mglevels[i]->smoothu,PETSC_TRUE);CHKERRQ(ierr);
-      if (mg->eventsmoothsetup) {ierr = PetscLogEventBegin(mg->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
+      if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventBegin(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
       ierr = KSPSetUp(mglevels[i]->smoothu);CHKERRQ(ierr);
-      if (mg->eventsmoothsetup) {ierr = PetscLogEventEnd(mg->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
+      if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
     }
   }
 
@@ -637,9 +637,9 @@ PetscErrorCode PCSetUp_MG(PC pc)
     ierr = KSPSetFromOptions(mglevels[0]->smoothd);CHKERRQ(ierr);
   }
 
-  if (mg->eventsmoothsetup) {ierr = PetscLogEventBegin(mg->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
+  if (mglevels[0]->eventsmoothsetup) {ierr = PetscLogEventBegin(mglevels[0]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
   ierr = KSPSetUp(mglevels[0]->smoothd);CHKERRQ(ierr);
-  if (mg->eventsmoothsetup) {ierr = PetscLogEventEnd(mg->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
+  if (mglevels[0]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[0]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
 
   /*
      Dump the interpolation/restriction matrices plus the 
