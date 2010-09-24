@@ -612,7 +612,7 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
   AMS_Reduction_type rtype;
   AMS_Memory         memory;
   int                len;
-  void               *addr,*addr2;
+  void               *addr,*addr2,*addr3;
   
   ierr = PetscGetHostName(host,256);CHKERRQ(ierr);
   ierr = AMS_Connect(host, -1, &comm_list);CHKERRQ(ierr);
@@ -625,7 +625,7 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
     if (!mem_list[0]) {
       fprintf(fd, "AMS Communicator %s has no published memories</p>\r\n",comm_list[0]);
     } else {
-      PetscInt   nts = 0,nsnes = 0,nksp = 0,npc = 0, nmat = 0,*Id, maxId = 0, *locx,*locy;
+      PetscInt   nts = 0,nsnes = 0,nksp = 0,npc = 0, nmat = 0,*Id, maxId = 0, *locx,*locy,*parentId;
       PetscTruth flg;
       char       *clas;
 
@@ -693,19 +693,28 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       }
 
       /* print all the objects whose parents have been printed already */
-      i = 0;
-      while (mem_list[i]) {
-	ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
-	ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
-        ierr = AMS_Memory_get_field_info(memory, "Class", &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
-        clas = *(char**)addr;
-        ierr = AMS_Memory_get_field_info(memory, "ParentId", &addr2, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
-        Id = (int*) addr2;
-        if (*Id > 0) {
-          printf("my parent is %d\n",*Id);
-          if (locx[*Id] > 0)  printf("  its loc is %d\n",locx[*Id]);
-        }
-	i++;
+      for (j=0; j<5; j++) {
+	i = 0;
+	while (mem_list[i]) {
+	  ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
+	  ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
+	  ierr = AMS_Memory_get_field_info(memory, "Class", &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+	  clas = *(char**)addr;
+	  ierr = AMS_Memory_get_field_info(memory, "Id", &addr2, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+	  Id = (int*) addr2;
+	  ierr = AMS_Memory_get_field_info(memory, "ParentId", &addr3, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+	  parentId = (int*) addr3;
+	  if (*parentId > 0) {
+	    printf("my parent is %d\n",*parentId);
+	    if (locx[*parentId] > 0) {
+	      printf("  its loc is %d\n",locx[*parentId]);
+	      locy[*Id] = locy[*parentId] + 1;
+	      locx[*Id] = locx[*parentId];
+	      fprintf(fd, "  context.fillText(\"%s\",(%d)*xspace-width.width/2, %d);\r\n",clas,locx[*parentId],20*locy[*Id]);       
+	    }
+	  }
+	  i++;
+	}
       } 
  
       ierr = PetscFree2(locx,locy);CHKERRQ(ierr);
