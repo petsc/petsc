@@ -25,6 +25,11 @@ class BaseTestIS(object):
         self.assertTrue(self.iset.equal(iset))
         del iset
 
+    def testCopy(self):
+        iset = self.iset.copy()
+        self.assertTrue(self.iset.equal(iset))
+        del iset
+
     def testEqual(self):
         self.assertTrue(self.iset.equal(self.iset))
         iset = self.iset.duplicate()
@@ -39,6 +44,13 @@ class BaseTestIS(object):
         iset = self.iset.difference(self.iset)
         self.assertEqual(iset.getLocalSize(), 0)
         del iset
+
+    ## def testComplement(self):
+    ##     self.iset.sort()
+    ##     imin = self.iset.getIndices().min()
+    ##     imax = self.iset.getIndices().max()
+    ##     iset = self.iset.complement(imin, imax+1)
+    ##     del iset
 
     def testSum(self):
         if self.iset.getComm().getSize() > 1:
