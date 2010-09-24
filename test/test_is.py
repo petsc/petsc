@@ -45,12 +45,13 @@ class BaseTestIS(object):
         self.assertEqual(iset.getLocalSize(), 0)
         del iset
 
-    ## def testComplement(self):
-    ##     self.iset.sort()
-    ##     imin = self.iset.getIndices().min()
-    ##     imax = self.iset.getIndices().max()
-    ##     iset = self.iset.complement(imin, imax+1)
-    ##     del iset
+    def testComplement(self):
+        self.iset.sort()
+        nmin = self.iset.getIndices().min()
+        nmax = self.iset.getIndices().max()
+        iset = self.iset.complement(nmin, nmax+1)
+        iset.complement(nmin, nmax+1)
+        del iset
 
     def testSum(self):
         if self.iset.getComm().getSize() > 1:
