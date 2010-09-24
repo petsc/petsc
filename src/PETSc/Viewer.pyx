@@ -132,28 +132,6 @@ cdef class Viewer(Object):
         CHKERR( PetscViewerSetFormat(self.vwr, cvfmt) )
         return self
 
-    def createDraw(self, display=None, title=None,
-                   position=None, size=None, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef const_char *cdisplay = NULL
-        cdef const_char *ctitle = NULL
-        display = str2bytes(display, &cdisplay)
-        title = str2bytes(title, &ctitle)
-        cdef int x, y, h, w
-        x = y = h = w = PETSC_DECIDE
-        if position not in (None, PETSC_DECIDE):
-            x, y = position
-        if size not in (None, PETSC_DECIDE):
-            try:
-                w, h = size
-            except TypeError:
-                w = h = size
-        cdef PetscViewer newvwr = NULL
-        CHKERR( PetscViewerDrawOpen(ccomm, cdisplay, ctitle,
-                                    x, y, w, h, &newvwr) )
-        PetscCLEAR(self.obj); self.vwr = newvwr
-        return self
-
     def createHDF5(self, name, mode=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef const_char *cname = NULL
@@ -178,6 +156,28 @@ cdef class Viewer(Object):
         CHKERR( PetscViewerSetType(self.vwr, PETSCVIEWERNETCDF) )
         CHKERR( PetscViewerFileSetMode(self.vwr, cmode) )
         CHKERR( PetscViewerFileSetName(self.vwr, cname) )
+        return self
+
+    def createDraw(self, display=None, title=None,
+                   position=None, size=None, comm=None):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef const_char *cdisplay = NULL
+        cdef const_char *ctitle = NULL
+        display = str2bytes(display, &cdisplay)
+        title = str2bytes(title, &ctitle)
+        cdef int x, y, h, w
+        x = y = h = w = PETSC_DECIDE
+        if position not in (None, PETSC_DECIDE):
+            x, y = position
+        if size not in (None, PETSC_DECIDE):
+            try:
+                w, h = size
+            except TypeError:
+                w = h = size
+        cdef PetscViewer newvwr = NULL
+        CHKERR( PetscViewerDrawOpen(ccomm, cdisplay, ctitle,
+                                    x, y, w, h, &newvwr) )
+        PetscCLEAR(self.obj); self.vwr = newvwr
         return self
 
     def setType(self, vwr_type):
