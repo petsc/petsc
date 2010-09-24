@@ -70,7 +70,6 @@ PetscErrorCode DAGetGhostedCoordinates_Compat(DA da,Vec *c)
 static PETSC_UNUSED
 PetscErrorCode DASetCoordinates_Compat(DA da,Vec c)
 {
-  Vec            cold;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
