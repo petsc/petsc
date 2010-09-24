@@ -104,11 +104,14 @@ cdef extern from "petscsys.h":
 
 cdef inline PetscFileMode filemode(object mode) except <PetscFileMode>(-1):
     if mode is None:
-        return PETSC_FILE_MODE_WRITE
+        return PETSC_FILE_MODE_READ
     if isinstance(mode, str):
         if   mode == 'r'  : return PETSC_FILE_MODE_READ
         elif mode == 'w'  : return PETSC_FILE_MODE_WRITE
         elif mode == 'a'  : return PETSC_FILE_MODE_APPEND
+        elif mode == 'r+' : return PETSC_FILE_MODE_UPDATE
+        elif mode == 'w+' : return PETSC_FILE_MODE_UPDATE
+        elif mode == 'a+' : return PETSC_FILE_MODE_APPEND_UPDATE
         elif mode == 'u'  : return PETSC_FILE_MODE_UPDATE
         elif mode == 'au' : return PETSC_FILE_MODE_APPEND_UPDATE
         elif mode == 'ua' : return PETSC_FILE_MODE_APPEND_UPDATE

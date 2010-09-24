@@ -109,13 +109,16 @@ cdef class Viewer(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
-        cdef PetscFileMode cmode = filemode(mode)
+        cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
+        if mode is not None: filemode(mode)
         cdef PetscViewerFormat cvfmt = PETSC_VIEWER_DEFAULT
         if format is not None: cvfmt = format
         cdef PetscViewer newvwr = NULL
-        CHKERR( PetscViewerASCIIOpen(ccomm, cname, &newvwr) )
+        CHKERR( PetscViewerCreate(ccomm, &newvwr) )
         PetscCLEAR(self.obj); self.vwr = newvwr
+        CHKERR( PetscViewerSetType(self.vwr, PETSCVIEWERASCII) )
         CHKERR( PetscViewerFileSetMode(self.vwr, cmode) )
+        CHKERR( PetscViewerFileSetName(self.vwr, cname) )
         CHKERR( PetscViewerSetFormat(self.vwr, cvfmt) )
         return self
 
@@ -218,6 +221,15 @@ cdef class Viewer(Object):
         cdef Viewer viewer = Viewer()
         viewer.vwr = PETSC_VIEWER_STDERR_(ccomm)
         PetscIncref(<PetscObject>(viewer.vwr))
+        return viewer
+
+    @classmethod
+    def ASCII(cls, name, comm=None):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef const_char *cname = NULL
+        name = str2bytes(name, &cname)
+        cdef Viewer viewer = Viewer()
+        CHKERR( PetscViewerASCIIOpen(ccomm, cname, &viewer.vwr) )
         return viewer
 
     @classmethod
