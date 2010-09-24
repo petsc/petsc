@@ -101,6 +101,31 @@ class BaseTestObject(object):
         self.assertEqual(self.obj.getComm(),      self.obj.comm)
         self.assertEqual(self.obj.getRefCount(),  self.obj.refcount)
 
+    def testShallowCopy(self):
+        import copy
+        rc = self.obj.getRefCount()
+        obj = copy.copy(self.obj)
+        self.assertTrue(obj is not self.obj)
+        self.assertTrue(obj == self.obj)
+        self.assertTrue(type(obj) is type(self.obj))
+        self.assertEqual(obj.getRefCount(), rc+1)
+        del obj
+        self.assertEqual(self.obj.getRefCount(), rc)
+
+    def testDeepCopy(self):
+        import copy
+        rc = self.obj.getRefCount()
+        try:
+            obj = copy.deepcopy(self.obj)
+        except NotImplementedError:
+            return
+        self.assertTrue(obj is not self.obj)
+        self.assertTrue(obj != self.obj)
+        self.assertTrue(type(obj) is type(self.obj))
+        self.assertEqual(self.obj.getRefCount(), rc)
+        self.assertEqual(obj.getRefCount(), 1)
+        del obj
+
 # --------------------------------------------------------------------
 
 class TestObjectRandom(BaseTestObject, unittest.TestCase):
@@ -136,6 +161,10 @@ class TestObjectVec(BaseTestObject, unittest.TestCase):
     FACTORY = 'createSeq'
     TARGS   = (0,)
 
+    def setUp(self):
+        BaseTestObject.setUp(self)
+        self.obj.assemble()
+
 class TestObjectScatter(BaseTestObject, unittest.TestCase):
     CLASS  = PETSc.Scatter
     FACTORY = 'create'
@@ -151,6 +180,9 @@ class TestObjectMat(BaseTestObject, unittest.TestCase):
     TARGS = (0,)
     KARGS   = {'comm': PETSc.COMM_SELF}
 
+    def setUp(self):
+        BaseTestObject.setUp(self)
+        self.obj.assemble()
 
 class TestObjectNullSpace(BaseTestObject, unittest.TestCase):
     CLASS  = PETSc.NullSpace

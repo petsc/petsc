@@ -23,6 +23,22 @@ cdef class Object:
     def __nonzero__(self):
         return self.obj[0] != NULL
 
+    def __copy__(self):
+        cdef Object obj = type(self)()
+        cdef PetscObject o = self.obj[0]
+        if o != NULL:
+            CHKERR( PetscObjectReference(o) )
+        obj.obj[0] = o
+        return obj
+
+    def __deepcopy__(self, dict memo not None):
+        cdef object obj_copy = None
+        try:
+            obj_copy = self.copy
+        except AttributeError:
+            raise NotImplementedError
+        return obj_copy()
+
     # --- reference management ---
 
     cdef long inc_ref(self) except -1:
