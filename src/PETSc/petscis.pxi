@@ -13,6 +13,7 @@ cdef extern from "petscis.h" nogil:
     int ISGetType(PetscIS,PetscISType*)
 
     int ISDuplicate(PetscIS,PetscIS*)
+    int ISCopy(PetscIS,PetscIS)
     int ISAllGather(PetscIS,PetscIS*)
     int ISInvertPermutation(PetscIS,PetscInt,PetscIS*)
 
@@ -34,6 +35,7 @@ cdef extern from "petscis.h" nogil:
     int ISSum(PetscIS,PetscIS,PetscIS*)
     int ISExpand(PetscIS,PetscIS,PetscIS*)
     int ISDifference(PetscIS,PetscIS,PetscIS*)
+    int ISComplement(PetscIS,PetscInt,PetscInt,PetscIS*)
 
     int ISBlock(PetscIS,PetscTruth*)
     int ISBlockGetIndices(PetscIS,const_PetscInt*[])
