@@ -518,7 +518,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   } 
 
   if (!pc->setupcalled) {
-    ierr = PetscOptionsGetTruth(0,"-pc_mg_monitor",&monitor,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetTruth(((PetscObject)pc)->prefix,"-pc_mg_monitor",&monitor,PETSC_NULL);CHKERRQ(ierr);
      
     for (i=0; i<n; i++) {
       if (monitor) {
