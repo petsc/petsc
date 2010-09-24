@@ -691,8 +691,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISComplement(IS is,PetscInt nmin,PetscInt nmax
   ierr = PetscMalloc((nmax-nmin-unique)*sizeof(PetscInt),&nindices);CHKERRQ(ierr);
   cnt = 0;
   for (i=nmin,j=0; i<nmax; i++) {
-    if (i != indices[j]) nindices[cnt++] = i;
-    else do { j++; } while (i==indices[j]);
+    if (j<n && i==indices[j]) do { j++; } while (j<n && i==indices[j]);
+    else nindices[cnt++] = i;
   }
   if (cnt != nmax-nmin-unique) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of entries found in complement %D does not match expected %D",cnt,nmax-nmin-unique);
   ierr = ISCreateGeneralNC(((PetscObject)is)->comm,cnt,nindices,isout);CHKERRQ(ierr);
