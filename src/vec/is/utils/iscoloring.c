@@ -664,7 +664,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISComplement(IS is,PetscInt nmin,PetscInt nmax
 {
   PetscErrorCode ierr;
   const PetscInt *indices;
-  PetscInt       n,i,j,cnt,*nindices;
+  PetscInt       n,i,j,unique,cnt,*nindices;
   PetscTruth     sorted;
 
   PetscFunctionBegin;
@@ -683,21 +683,19 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISComplement(IS is,PetscInt nmin,PetscInt nmax
     if (indices[i] >= nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Index %D's value %D is larger than maximum given %D",i,indices[i],nmax);
   }
 #endif
-  ierr = PetscMalloc((nmax - n)*sizeof(PetscInt),&nindices);CHKERRQ(ierr);
+  /* Count number of unique entries */
+  unique = (n>0);
+  for (i=0; i<n-1; i++) {
+    if (indices[i+1] != indices[i]) unique++;
+  }
+  ierr = PetscMalloc((nmax-nmin-unique)*sizeof(PetscInt),&nindices);CHKERRQ(ierr);
   cnt = 0;
-  j   = nmin;
-  for (i=0; i<n; i++) {
-    for (; j<indices[i]; j++) {
-      nindices[cnt++] = j;
-    }
-    j++;
+  for (i=nmin,j=0; i<nmax; i++) {
+    if (i != indices[j]) nindices[cnt++] = i;
+    else do { j++; } while (i==indices[j]);
   }
-  for (; j<nmax; j++) {
-    nindices[cnt++] = j;
-  }
-  if (cnt != nmax-nmin - n) SETERRQ2(PETSC_ERR_PLIB,"Number entries found in complement %D does not match expected %D",cnt,nmax-n);
-  ierr = ISCreateGeneral(((PetscObject)is)->comm,nmax-nmin-n,nindices,isout);CHKERRQ(ierr);
+  if (cnt != nmax-nmin-unique) SETERRQ2(PETSC_ERR_PLIB,"Number of entries found in complement %D does not match expected %D",cnt,nmax-nmin-unique);
+  ierr = ISCreateGeneralNC(((PetscObject)is)->comm,cnt,nindices,isout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
-  ierr = PetscFree(nindices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
