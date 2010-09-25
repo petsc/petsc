@@ -92,6 +92,7 @@ cdef extern from "petscda.h" nogil:
     int DASetRefinementFactor(PetscDA,PetscInt,PetscInt,PetscInt)
     int DAGetRefinementFactor(PetscDA,PetscInt*,PetscInt*,PetscInt*)
     int DARefine(PetscDA,MPI_Comm,PetscDA*)
+    int DACoarsen(PetscDA,MPI_Comm,PetscDA*)
 
     #int DASetFieldName(PetscDA,PetscInt,const_char[])
     #int DAGetFieldName(PetscDA,PetscInt,char**)

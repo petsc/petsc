@@ -383,9 +383,17 @@ cdef class DA(Object):
         cdef MPI_Comm dacomm = MPI_COMM_NULL
         CHKERR( PetscObjectGetComm(<PetscObject>self.da, &dacomm) )
         dacomm = def_Comm(comm, dacomm)
-        cdef DA rda = DA()
-        CHKERR( DARefine(self.da, dacomm, &rda.da) )
-        return rda
+        cdef DA da = DA()
+        CHKERR( DARefine(self.da, dacomm, &da.da) )
+        return da
+
+    def coarsen(self, comm=None):
+        cdef MPI_Comm dacomm = MPI_COMM_NULL
+        CHKERR( PetscObjectGetComm(<PetscObject>self.da, &dacomm) )
+        dacomm = def_Comm(comm, dacomm)
+        cdef DA da = DA()
+        CHKERR( DACoarsen(self.da, dacomm, &da.da) )
+        return da
 
     def setInterpolationType(self, interp_type):
         cdef PetscDAInterpolationType ival = interp_type
