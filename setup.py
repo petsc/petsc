@@ -78,6 +78,7 @@ def config(dry_run=False):
     if dry_run: return
     options = [
         'PETSC_ARCH='+os.environ['PETSC_ARCH'],
+        '--with-debugging=0',
         '--with-shared',
         '--with-cmake=0', # not needed
         ]
