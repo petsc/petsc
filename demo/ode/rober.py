@@ -33,13 +33,20 @@ ode = Rober()
 
 J = PETSc.Mat().createDense([ode.n, ode.n], comm=ode.comm)
 x = PETSc.Vec().createSeq(ode.n, comm=ode.comm)
+f = x.duplicate()
 
 ts = PETSc.TS().create(comm=ode.comm)
 ts.setProblemType(ts.ProblemType.NONLINEAR)
 ts.setType(ts.Type.THETA)
 
-ts.setIFunction(ode.evalFunction)
+ts.setIFunction(ode.evalFunction, f)
 ts.setIJacobian(ode.evalJacobian, J)
+
+history = []
+def monitor(ts, i, t, x):
+    xx = x[:].tolist()
+    history.append((i, t, xx))
+ts.setMonitor(monitor)
 
 ts.setTime(0.0)
 ts.setTimeStep(.001)
@@ -51,3 +58,27 @@ ode.evalSolution(0.0, x)
 ts.solve(x)
 
 del ode, J, x, ts
+
+try:
+    from matplotlib import pylab
+except ImportError:
+    print("matplotlib not available")
+    raise SystemExit
+
+import numpy as np
+ii = np.asarray([v[0] for v in history])
+tt = np.asarray([v[1] for v in history])
+xx = np.asarray([v[2] for v in history])
+
+pylab.figure()
+pylab.semilogy(ii[:-1], np.diff(tt), )
+pylab.xlabel('step')
+pylab.ylabel('timestep')
+
+for i in range(0,3):
+    pylab.figure()
+    pylab.plot(tt, xx[:,i], "rgb"[i])
+    pylab.xlabel('t')
+    pylab.ylabel('x%d' % i)
+
+pylab.show()
