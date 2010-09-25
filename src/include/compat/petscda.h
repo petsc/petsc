@@ -164,4 +164,19 @@ PetscErrorCode DASetFromOptions(DA da) {
 }
 #endif
 
+#if (PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
+#undef __FUNCT__
+#define __FUNCT__ "DACoarsen"
+static PETSC_UNUSED
+PetscErrorCode DACoarsen(DA da, MPI_Comm comm,DA *daref)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidPointer(daref,3);
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__" not available in this PETSc version");
+  PetscFunctionReturn(PETSC_ERR_SUP);
+}
+#endif
+
 #endif /* _COMPAT_PETSC_DA_H */
