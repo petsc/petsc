@@ -17,6 +17,7 @@ Special options:\n\
 -itr <integer>         Maximal number of iterations\n\
 -output_file <string>  Filename to write calculated eigenvectors.\n\
 -shift <real number>   Apply shift to 'stiffness' matrix\n\
+-no_con                Do not apply constraint of constant vector\n\
 Example:\n\
 mpirun -np 2 ./driver_fiedler -matrix my_matrix.bin -n_eigs 3 -tol 1e-6 -itr 20\n";
 
@@ -106,12 +107,13 @@ int main(int argc,char **args)
    double *                   resid_hist;
    int                        iterations;
    PetscMPIInt                rank;
-   int                        n_eigs = 1;
+   int                        n_eigs = 3;
    int                        seed = 1;
    int                        i,j;
    PetscLogDouble             t1,t2,elapsed_time;
-   double                     tol=1e-08;
+   double                     tol=1e-06;
    PetscTruth                 full_output=PETSC_FALSE;
+   PetscTruth                 no_con=PETSC_FALSE;
    KSP                        ksp;
    lobpcg_Tolerance           lobpcg_tol;
    int                        maxIt = 100;
@@ -148,6 +150,7 @@ int main(int argc,char **args)
            PETSC_MAX_PATH_LEN-1,&mass_matrix_present);
    CHKERRQ(ierr);
    ierr = PetscOptionsHasName(PETSC_NULL,"-full_out",&full_output); CHKERRQ(ierr);
+   ierr = PetscOptionsHasName(PETSC_NULL,"-no_con",&no_con); CHKERRQ(ierr);
    ierr = PetscOptionsGetInt(PETSC_NULL,"-seed",&tmp_int,&option_present);CHKERRQ(ierr);
    if (option_present)
       seed = tmp_int;
@@ -253,11 +256,12 @@ int main(int argc,char **args)
    PETSCSetupInterpreter( &ii );
    eigenvectors = mv_MultiVectorCreateFromSampleVector(&ii, n_eigs,u);
 
-   /* building constraints (constant vector */
-   constraints= mv_MultiVectorCreateFromSampleVector(&ii, 1,u);
-   raw_constraints = (mv_TempMultiVector*)mv_MultiVectorGetData (constraints);
-   tmp_vec = (Vec)(raw_constraints->vector)[0];
-   ierr = VecSet(tmp_vec,1.0); CHKERRQ(ierr);
+   /* building constraints (constant vector) */
+   /* the constraints will not beused if run with -no_con option */ 
+     constraints= mv_MultiVectorCreateFromSampleVector(&ii, 1,u);
+     raw_constraints = (mv_TempMultiVector*)mv_MultiVectorGetData (constraints);
+     tmp_vec = (Vec)(raw_constraints->vector)[0];
+     ierr = VecSet(tmp_vec,1.0); CHKERRQ(ierr);
 
    for (i=0; i<seed; i++) /* this cycle is to imitate changing random seed */
       mv_MultiVectorSetRandom (eigenvectors, 1234);
@@ -291,7 +295,7 @@ int main(int argc,char **args)
       mass_matrix_present?OperatorBMultiVector:NULL,
       &aux_data,
       Precond_FnMultiVector,
-      constraints,
+      no_con?NULL:constraints,
       blap_fn,
       lobpcg_tol,
       maxIt,
@@ -314,7 +318,7 @@ int main(int argc,char **args)
       mass_matrix_present?OperatorBMultiVector:NULL,
       &aux_data,
       Precond_FnMultiVector,
-      constraints,
+      no_con?NULL:constraints,
       blap_fn,
       lobpcg_tol,
       maxIt,
