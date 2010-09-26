@@ -637,7 +637,8 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
         Id = (int*) addr2;
         maxId = PetscMax(maxId,*Id);
 	i++;
-      } 
+      }
+      maxId++; 
 
       /* Gets everyone's parent ID and which nodes are masked */
       ierr = PetscMalloc3(maxId,PetscInt,&parentid,maxId,PetscTruth,&mask,maxId,char**,&classes);CHKERRQ(ierr);
