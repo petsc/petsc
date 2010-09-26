@@ -347,3 +347,112 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortIntWithScalarArray(PetscInt n,PetscIn
 }
 
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscProcessTree" 
+/*@
+   PetscProcessTree - Prepares tree data to be displayed graphically
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+.  mask - indicates those entries in the tree, location 0 is always masked
+-  parentid - indicates the parent of each entry
+
+   Output Parameters:
++  Nlevels - the number of levels
+.  Level - for each node tells its level
+.  Levelcnts - the number of nodes on each level
+.  Idbylevel - a list of ids on each of the levels, first level followed by second etc
+-  Column - for each id tells its column index
+
+   Level: intermediate
+
+
+.seealso: PetscSortReal(), PetscSortIntWithPermutation()
+@*/
+PetscErrorCode PETSCSYS_DLLEXPORT PetscProcessTree(PetscInt n,const PetscTruth mask[],const PetscInt parentid[],PetscInt *Nlevels,PetscInt **Level,PetscInt **Levelcnt,PetscInt **Idbylevel,PetscInt **Column)
+{
+  PetscInt       i,j,cnt,nmask = 0,nlevels = 0,*level,*levelcnt,levelmax = 0,*workid,*workparentid,tcnt = 0,*idbylevel,*column;
+  PetscErrorCode ierr;
+  PetscTruth     done = PETSC_FALSE;
+
+  PetscFunctionBegin;
+  if (!mask[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mask of 0th location must be set");
+  for (i=0; i<n; i++) {
+    if (mask[i]) continue;
+    if (parentid[i]  == i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Node labeled as own parent");
+    if (parentid[i] && mask[parentid[i]]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Parent is masked");
+  }
+
+
+  for (i=0; i<n; i++) {
+    if (!mask[i]) nmask++;
+  }
+
+  /* determine the level in the tree of each node */
+  ierr = PetscMalloc(n*sizeof(PetscInt),&level);CHKERRQ(ierr);
+  ierr = PetscMemzero(level,n*sizeof(PetscInt));CHKERRQ(ierr);
+  level[0] = 1;
+  while (!done) {
+    done = PETSC_TRUE;
+    for (i=0; i<n; i++) {
+      if (mask[i]) continue;
+      if (!level[i] && level[parentid[i]]) level[i] = level[parentid[i]] + 1;
+      else if (!level[i]) done = PETSC_FALSE;
+    }
+  }
+  for (i=0; i<n; i++) {
+    level[i]--;
+    nlevels = PetscMax(nlevels,level[i]);
+  }
+
+  /* count the number of nodes on each level and its max */
+  ierr = PetscMalloc(nlevels*sizeof(PetscInt),&levelcnt);CHKERRQ(ierr);
+  ierr = PetscMemzero(levelcnt,nlevels*sizeof(PetscInt));CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    if (mask[i]) continue;
+    levelcnt[level[i]-1]++;
+  }
+  for (i=0; i<nlevels;i++) {
+    levelmax = PetscMax(levelmax,levelcnt[i]);
+  }
+
+  /* for each level sort the ids by the parent id */
+  ierr = PetscMalloc2(levelmax,PetscInt,&workid,levelmax,PetscInt,&workparentid);CHKERRQ(ierr);
+  ierr = PetscMalloc(nmask*sizeof(PetscInt),&idbylevel);CHKERRQ(ierr);
+  for (j=1; j<=nlevels;j++) {
+    cnt = 0;
+    for (i=0; i<n; i++) {
+      if (mask[i]) continue;
+      if (level[i] != j) continue;
+      workid[cnt]         = i;
+      workparentid[cnt++] = parentid[i];
+    }
+    /*  PetscIntView(cnt,workparentid,0);
+    PetscIntView(cnt,workid,0);
+    ierr = PetscSortIntWithArray(cnt,workparentid,workid);CHKERRQ(ierr);
+    PetscIntView(cnt,workparentid,0);
+    PetscIntView(cnt,workid,0);*/
+    ierr = PetscMemcpy(idbylevel+tcnt,workid,cnt*sizeof(PetscInt));CHKERRQ(ierr);
+    tcnt += cnt;
+  }
+  if (tcnt != nmask) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent count of unmasked nodes");
+  ierr = PetscFree2(workid,workparentid);CHKERRQ(ierr);
+
+  /* for each node list its column */
+  ierr = PetscMalloc(n*sizeof(PetscInt),&column);CHKERRQ(ierr);
+  cnt = 0;
+  for (j=0; j<nlevels; j++) {
+    for (i=0; i<levelcnt[j]; i++) {
+      column[idbylevel[cnt++]] = i;
+    }
+  }
+
+  *Nlevels   = nlevels;
+  *Level     = level;
+  *Levelcnt  = levelcnt;
+  *Idbylevel = idbylevel;
+  *Column    = column;
+  PetscFunctionReturn(0);
+}

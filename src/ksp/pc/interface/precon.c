@@ -88,6 +88,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCDestroy(PC pc)
   if (pc->pmat) {ierr = MatDestroy(pc->pmat);CHKERRQ(ierr);}
   if (pc->mat) {ierr = MatDestroy(pc->mat);CHKERRQ(ierr);}
 
+  if (!((PetscObject)pc)->parentid) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PC always needs a parent");
   ierr = PetscHeaderDestroy(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

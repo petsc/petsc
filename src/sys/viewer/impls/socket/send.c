@@ -612,7 +612,7 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
   AMS_Reduction_type rtype;
   AMS_Memory         memory;
   int                len;
-  void               *addr,*addr2,*addr3;
+  void               *addr2,*addr3,*addr;
   
   ierr = PetscGetHostName(host,256);CHKERRQ(ierr);
   ierr = AMS_Connect(host, -1, &comm_list);CHKERRQ(ierr);
@@ -625,53 +625,49 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
     if (!mem_list[0]) {
       fprintf(fd, "AMS Communicator %s has no published memories</p>\r\n",comm_list[0]);
     } else {
-      PetscInt   nts = 0,nsnes = 0,nksp = 0,npc = 0, nmat = 0,*Id, maxId = 0, *locx,*locy,*parentId;
-      PetscTruth flg;
-      char       *clas;
+      PetscInt   Nlevels,*Level,*Levelcnt,*Idbylevel,*Column,*parentid,*Id,maxId = 0,maxCol = 0,*parentId,id,cnt;
+      PetscTruth *mask;
+      char       **classes,*clas;
 
+      /* get maximum number of objects */
       while (mem_list[i]) {
 	ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
 	ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
-        ierr = AMS_Memory_get_field_info(memory, "Class", &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
-        clas = *(char**)addr;
-        ierr = PetscStrcmp(clas,"Mat",&flg);CHKERRQ(ierr);
-        if (flg) nmat++;
-        ierr = PetscStrcmp(clas,"PC",&flg);CHKERRQ(ierr);
-        if (flg) npc++;
-        ierr = PetscStrcmp(clas,"KSP",&flg);CHKERRQ(ierr);
-        if (flg) nksp++;
-        ierr = PetscStrcmp(clas,"SNES",&flg);CHKERRQ(ierr);
-        if (flg) nsnes++;
-        ierr = PetscStrcmp(clas,"TS",&flg);CHKERRQ(ierr);
-        if (flg) nts++;
         ierr = AMS_Memory_get_field_info(memory, "Id", &addr2, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
         Id = (int*) addr2;
         maxId = PetscMax(maxId,*Id);
 	i++;
       } 
-      printf(" %d %d %d %d %d maxId %d\n",nmat,npc,nksp,nsnes,nts,maxId);
 
-      /* determine all the top level objects and their location in the tree */
-      ierr = PetscMalloc2(maxId,PetscInt,&locx,maxId,PetscInt,&locy);CHKERRQ(ierr);
-      ierr = PetscMemzero(locx,maxId*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscMemzero(locy,maxId*sizeof(PetscInt));CHKERRQ(ierr);
-      i = 0; nsnes = 0;
+      /* Gets everyone's parent ID and which nodes are masked */
+      ierr = PetscMalloc3(maxId,PetscInt,&parentid,maxId,PetscTruth,&mask,maxId,char**,&classes);CHKERRQ(ierr);
+      for (i=0; i<maxId; i++) mask[i] = PETSC_TRUE;
+      i = 0;
       while (mem_list[i]) {
 	ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
 	ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
-        ierr = AMS_Memory_get_field_info(memory, "Class", &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        ierr = AMS_Memory_get_field_info(memory, "Id", &addr2, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        Id = (int*) addr2;
+	ierr = AMS_Memory_get_field_info(memory, "ParentId", &addr3, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+	parentId = (int*) addr3;
+	ierr = AMS_Memory_get_field_info(memory, "Class", &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
         clas = *(char**)addr;
-        
-        ierr = PetscStrcmp(clas,"SNES",&flg);CHKERRQ(ierr);
-        if (flg) {
-          ierr = AMS_Memory_get_field_info(memory, "Id", &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
-          Id = (int*) addr;
-          nsnes++;
-          locx[*Id] = nsnes;
-          locy[*Id] = 1;
-        }
-	i++;
+        parentid[*Id] = *parentId;
+	mask[*Id]     = PETSC_FALSE;
+        ierr = PetscStrallocpy(clas,classes+*Id);CHKERRQ(ierr);
+        i++;
       } 
+
+      /* if the parent is masked then relabel the parent as 0 since the true parent was deleted */
+      for (i=0; i<maxId; i++) {
+        if (!mask[i] && parentid[i] > 0 && mask[parentid[i]]) parentid[i] = 0;
+      }
+
+      ierr = PetscProcessTree(maxId,mask,parentid,&Nlevels,&Level,&Levelcnt,&Idbylevel,&Column);CHKERRQ(ierr);   
+
+      for (i=0; i<Nlevels; i++) {
+        maxCol = PetscMax(maxCol,Levelcnt[i]);
+      }
 
       /* print all the top-level objects */
       fprintf(fd, "<HTML><HEAD><TITLE>Petsc Application Server</TITLE>\r\n");
@@ -683,41 +679,28 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       fprintf(fd, "  context.font         = \"normal 24px sans-serif\";\r\n");
       fprintf(fd, "  context.fillStyle = \"rgb(255,0,0)\";\r\n");
       fprintf(fd, "  context.textBaseline = \"top\";\r\n");
-      fprintf(fd, "  var xspace = example.width/%d;\r\n",nsnes+1);
-      for (i=0; i<nsnes; i++) {
-        fprintf(fd, "  var width = context.measureText(\"SNES\");\r\n");
-        fprintf(fd, "  context.fillStyle = \"rgb(255,0,0)\";\r\n");
-	fprintf(fd, "  context.fillRect((%d+1)*xspace-width.width/2, %d, width.width, %d);\r\n",i,10,22);       
-        fprintf(fd, "  context.fillStyle = \"rgb(0,0,0)\";\r\n");
-        fprintf(fd, "  context.fillText(\"SNES\",(%d+1)*xspace-width.width/2, %d);\r\n",i,10);       
-      }
+      fprintf(fd, "  var xspacep = 0;\r\n");
 
-      /* print all the objects whose parents have been printed already */
-      for (j=0; j<5; j++) {
-	i = 0;
-	while (mem_list[i]) {
-	  ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
-	  ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
-	  ierr = AMS_Memory_get_field_info(memory, "Class", &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
-	  clas = *(char**)addr;
-	  ierr = AMS_Memory_get_field_info(memory, "Id", &addr2, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
-	  Id = (int*) addr2;
-	  ierr = AMS_Memory_get_field_info(memory, "ParentId", &addr3, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
-	  parentId = (int*) addr3;
-	  if (*parentId > 0) {
-	    printf("my parent is %d\n",*parentId);
-	    if (locx[*parentId] > 0) {
-	      printf("  its loc is %d\n",locx[*parentId]);
-	      locy[*Id] = locy[*parentId] + 1;
-	      locx[*Id] = locx[*parentId];
-	      fprintf(fd, "  context.fillText(\"%s\",(%d)*xspace-width.width/2, %d);\r\n",clas,locx[*parentId],20*locy[*Id]);       
-	    }
-	  }
-	  i++;
+      cnt = 0;
+      for (i=0; i<Nlevels; i++) {
+	fprintf(fd, "  var xspace = example.width/%d;\r\n",Levelcnt[i]+1);
+	for (j=0; j<Levelcnt[i]; j++) {
+          id   = Idbylevel[cnt++];
+          clas = classes[id];
+	  fprintf(fd, "  var width = context.measureText(\"%s\");\r\n",clas);
+	  fprintf(fd, "  context.fillStyle = \"rgb(255,0,0)\";\r\n");
+	  fprintf(fd, "  context.fillRect((%d)*xspace-width.width/2, %d, width.width, %d);\r\n",j+1,30+40*i,22);       
+	  fprintf(fd, "  context.fillStyle = \"rgb(0,0,0)\";\r\n");
+	  fprintf(fd, "  context.fillText(\"%s\",(%d)*xspace-width.width/2, %d);\r\n",clas,j+1,30+40*i);       
+          if (parentid[id]) {
+	    fprintf(fd, "  context.moveTo(%d*xspace,%d);\r\n",j+1,30+40*i);
+	    fprintf(fd, "  context.lineTo(%d*xspacep,%d);\r\n",Column[parentid[id]]+1,30+40*(i-1)+22);
+	    fprintf(fd, "  context.stroke();\r\n");
+          }
 	}
-      } 
+	fprintf(fd, "  xspacep = xspace;\r\n");        
+      }
  
-      ierr = PetscFree2(locx,locy);CHKERRQ(ierr);
       ierr = AMS_Disconnect();CHKERRQ(ierr);
       fprintf(fd, "}\r\n"); 
       fprintf(fd, "</script>\r\n");  

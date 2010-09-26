@@ -1318,6 +1318,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPC(KSP ksp,PC pc)
   ierr = PetscObjectReference((PetscObject)pc);CHKERRQ(ierr);
   if (ksp->pc) {ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);}
   ksp->pc = pc;
+  ierr = PetscLogObjectParent(ksp,ksp->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

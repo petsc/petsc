@@ -2234,6 +2234,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSortReal(PetscInt,PetscReal[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSortRealWithPermutation(PetscInt,const PetscReal[],PetscInt[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSortSplit(PetscInt,PetscInt,PetscScalar[],PetscInt[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSortSplitReal(PetscInt,PetscInt,PetscReal[],PetscInt[]);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscProcessTree(PetscInt,const PetscTruth[],const PetscInt[],PetscInt*,PetscInt**,PetscInt**,PetscInt**,PetscInt**);
 
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDisplay(void);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGetDisplay(char[],size_t);
