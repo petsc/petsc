@@ -40,7 +40,6 @@ typedef struct
 {
   KSP                      ksp;
   Mat                      A;
-  Mat                      B;
   mv_InterfaceInterpreter  ii;
 } aux_data_struct;
 
@@ -71,36 +70,19 @@ void OperatorAMultiVector(void * data, void * x, void * y)
 }
 
 
-void OperatorBSingleVector (void * data, void * x, void * y)
-{
-   PetscErrorCode     ierr;
-
-   ierr = MatMult(((aux_data_struct*)data)->B, (Vec)x, (Vec)y);
-   assert(!ierr);
-}
-
-void OperatorBMultiVector(void * data, void * x, void * y)
-{
-   ((aux_data_struct*)data)->ii.Eval(OperatorBSingleVector, data, x, y);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
    Vec            u;
-   Vec            tmp_vec;
    Mat            A;
-   Mat            B;
 
-   PetscInt       N = 100;
+   PetscInt       N = 1000;
    PetscScalar    value;
 
    PetscErrorCode ierr;
 
    mv_MultiVectorPtr          eigenvectors;
-   mv_MultiVectorPtr          constraints;
-   mv_TempMultiVector*        raw_constraints;
    mv_TempMultiVector*        raw_eigenvectors;
 
    PetscScalar *              eigs;
@@ -109,12 +91,12 @@ int main(int argc,char **args)
    double *                   resid_hist;
    int                        iterations;
    PetscMPIInt                rank;
-   int                        n_eigs = 1;
+   int                        n_eigs = 3;
    int                        seed = 1;
    PetscInt                   i;
    int                        j;
    PetscLogDouble             t1,t2,elapsed_time;
-   double                     tol=1e-08;
+   double                     tol=1e-06;
    PetscTruth                 full_output=PETSC_FALSE;
    KSP                        ksp;
    lobpcg_Tolerance           lobpcg_tol;
@@ -145,8 +127,9 @@ int main(int argc,char **args)
      seed = tmp_int;
    if (seed<1)
      seed=1;
-   ierr = PetscOptionsGetInt(PETSC_NULL,"-itr",&tmp_int,PETSC_NULL);CHKERRQ(ierr);
-   maxIt = tmp_int;
+   ierr = PetscOptionsGetInt(PETSC_NULL,"-itr",&tmp_int,&option_present);CHKERRQ(ierr);
+   if (option_present)
+     maxIt = tmp_int;
    ierr = PetscOptionsGetReal(PETSC_NULL,"-shift",&shift,&shift_present);
    ierr = PetscOptionsGetString(PETSC_NULL,"-output_file",output_filename,
             PETSC_MAX_PATH_LEN, &output_filename_present);
@@ -235,13 +218,7 @@ int main(int argc,char **args)
 
    PETSCSetupInterpreter( &ii );
    eigenvectors = mv_MultiVectorCreateFromSampleVector(&ii, n_eigs,u);
-
-   /* building constraints (constant vector */
-   constraints= mv_MultiVectorCreateFromSampleVector(&ii, 1,u);
-   raw_constraints = (mv_TempMultiVector*)mv_MultiVectorGetData (constraints);
-   tmp_vec = (Vec)(raw_constraints->vector)[0];
-   ierr = VecSet(tmp_vec,1.0); CHKERRQ(ierr);
-
+ 
    for (i=0; i<seed; i++) /* this cycle is to imitate changing random seed */
       mv_MultiVectorSetRandom (eigenvectors, 1234);
 
@@ -257,7 +234,6 @@ int main(int argc,char **args)
    #endif
 
    aux_data.A = A;
-   aux_data.B = B;
    aux_data.ksp = ksp;
    aux_data.ii = ii;
 
@@ -274,7 +250,7 @@ int main(int argc,char **args)
       NULL,
       &aux_data,
       Precond_FnMultiVector,
-      constraints,
+      NULL,   /* no constraints */
       blap_fn,
       lobpcg_tol,
       maxIt,
@@ -297,7 +273,7 @@ int main(int argc,char **args)
       NULL,
       &aux_data,
       Precond_FnMultiVector,
-      constraints,
+      NULL,  /* no constraints */
       blap_fn,
       lobpcg_tol,
       maxIt,
@@ -359,7 +335,6 @@ int main(int argc,char **args)
    if (output_filename_present)
    {
       raw_eigenvectors = (mv_TempMultiVector*)mv_MultiVectorGetData (eigenvectors);
-      tmp_vec = (Vec)(raw_constraints->vector)[0];
       for ( j = 0; j < n_eigs; j++ )
       {
         sprintf( tmp_str, "%s_%d.petsc", output_filename, j );
@@ -381,7 +356,7 @@ int main(int argc,char **args)
 
    LOBPCG_DestroyRandomContext();
    mv_MultiVectorDestroy(eigenvectors);
-   mv_MultiVectorDestroy(constraints);
+   /* mv_MultiVectorDestroy(constraints); */
 
    /* free memory used for eig-vals */
    ierr = PetscFree(eigs);
