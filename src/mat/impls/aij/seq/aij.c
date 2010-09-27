@@ -2292,7 +2292,7 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
 #define __FUNCT__ "MatAXPYSetPreallocation_SeqAIJ"
 PetscErrorCode MatAXPYSetPreallocation_SeqAIJ(Mat B,Mat Y,Mat X)
 {
-  PetscInt          i,nzx,nzy,m=Y->rmap->N,n=Y->cmap->N;
+  PetscInt          i,m=Y->rmap->N,n=Y->cmap->N;
   PetscErrorCode    ierr;
   Mat_SeqAIJ        *x = (Mat_SeqAIJ*)X->data;
   Mat_SeqAIJ        *y = (Mat_SeqAIJ*)Y->data;
@@ -2302,10 +2302,16 @@ PetscErrorCode MatAXPYSetPreallocation_SeqAIJ(Mat B,Mat Y,Mat X)
   PetscFunctionBegin;
   ierr = PetscMalloc(n*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
   /* Set the number of nonzeros in the new matrix */
-  for(i = 0;i < m;i++) {
-    nzx = xi[i+1] - xi[i]; nzy = yi[i+1] - yi[i];
-    if (nzx > nzy) nnz[i] = nzy + (nzx - nzy);
-    else nnz[i] = nzx + (nzy - nzx);
+  for(i=0; i<m; i++) {
+    PetscInt j,k,nzx = xi[i+1] - xi[i],nzy = yi[i+1] - yi[i];
+    const PetscInt *xj = x->j+xi[i],*yj = y->j+yi[i];
+    nnz[i] = 0;
+    for (j=0,k=0; j<nzx; j++) {                   /* Point in X */
+      for (; k<nzy && yj[k]<xj[j]; k++) nnz[i]++; /* Catch up to X */
+      if (k<nzy && yj[k]==xj[j]) k++;             /* Skip duplicate */
+      nnz[i]++;
+    }
+    for (; k<nzy; k++) nnz[i]++;
   }
   /* Preallocate matrix */
   ierr = MatSeqAIJSetPreallocation(B,PETSC_NULL,nnz);CHKERRQ(ierr);
