@@ -37,15 +37,17 @@ ksp.solve(b, x)
 # account for grid spacing
 x.scale(h**2)
 
-try:
-    from matplotlib import pylab
-except ImportError:
-    print("matplotlib not available")
-    raise SystemExit
-from numpy import mgrid
-X, Y =  mgrid[0:1:1j*n,0:1:1j*n]
-Z = x[...].reshape(n,n,n)[:,:,n/2-2]
-pylab.contourf(X, Y, Z)
-pylab.axis('equal')
-pylab.colorbar()
-pylab.show()
+OptDB = PETSc.Options()
+if OptDB.getBool('plot_mpl', False):
+    try:
+        from matplotlib import pylab
+    except ImportError:
+        PETSc.Sys.Print("matplotlib not available")
+    else:
+        from numpy import mgrid
+        X, Y =  mgrid[0:1:1j*n,0:1:1j*n]
+        Z = x[...].reshape(n,n,n)[:,:,n/2-2]
+        pylab.contourf(X, Y, Z)
+        pylab.axis('equal')
+        pylab.colorbar()
+        pylab.show()

@@ -103,7 +103,7 @@ def run_test(nx,ny,nz,samples,plot=False):
         t2 = PETSc.Log.getTime()
         wt = min(wt,t2-t1)
         
-    if plot: 
+    if plot and pylab: 
         app.plot(ts.time, x)
 
     return wt
@@ -115,9 +115,10 @@ start = OptDB.getInt('start', 8)
 step = OptDB.getInt('step', 4)
 stop = OptDB.getInt('stop', start)
 samples = OptDB.getInt('samples', 1)
+
 plot = OptDB.getBool('plot', False)
 if plot and not pylab:
-    raise SystemExit("matplotlib not available")
+    PETSc.Sys.Print("matplotlib not available")
 
 for n in range(start, stop+step, step):
     nx = ny = nz = n+1
@@ -125,5 +126,5 @@ for n in range(start, stop+step, step):
     PETSc.Sys.Print("Grid %3d x %3d x %3d -> %f  seconds (%2d samples)" 
                     % (nx,ny,nz,wt,samples))
 
-if plot:
+if plot and pylab:
     pylab.show()

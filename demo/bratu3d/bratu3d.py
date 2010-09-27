@@ -107,7 +107,6 @@ nx = OptDB.getInt('nx', n)
 ny = OptDB.getInt('nz', n)
 nz = OptDB.getInt('ny', n)
 lambda_ = OptDB.getReal('lambda', 6.0)
-do_plot = OptDB.getBool('plot', False)
 
 da = PETSc.DA().create([nx, ny, nz])
 pde = Bratu3D(da, lambda_)
@@ -137,27 +136,29 @@ snes.solve(None, X)
 U = da.createNaturalVec()
 da.globalToNatural(X, U)
 
-def plot(da, U):
-    comm = da.getComm()
-    scatter, U0 = PETSc.Scatter.toZero(U)
-    scatter.scatter(U, U0, False, PETSc.Scatter.Mode.FORWARD)
-    rank = comm.getRank()
-    if rank == 0:
-        solution = U0[...]
-        solution = solution.reshape(da.sizes, order='f').copy()
-        try:
-            from matplotlib import pyplot
-            pyplot.contourf(solution[:, :, N//2])
-            pyplot.axis('equal')
-            pyplot.show()
-        except:
-            raise
-            pass
-    comm.barrier()
-    scatter.destroy()
-    U0.destroy()
+if OptDB.getBool('plot_mpl', False):
 
-if do_plot: plot(da, U)
+    def plot_mpl(da, U):
+        comm = da.getComm()
+        rank = comm.getRank()
+        scatter, U0 = PETSc.Scatter.toZero(U)
+        scatter.scatter(U, U0, False, PETSc.Scatter.Mode.FORWARD)
+        if rank == 0:
+            try:
+                from matplotlib import pylab
+            except ImportError:
+                PETSc.Sys.Print("matplotlib not available")
+            else:
+                from numpy import mgrid
+                nx, ny, nz = da.sizes
+                solution = U0[...].reshape(da.sizes, order='f')
+                xx, yy =  mgrid[0:1:1j*nx,0:1:1j*ny]
+                pylab.contourf(xx, yy, solution[:, :, nz//2])
+                pylab.axis('equal')
+                pylab.xlabel('X')
+                pylab.ylabel('Y')
+                pylab.title('Z/2')
+                pylab.show()
+        comm.barrier()
 
-del pde, da, snes
-del F, J, X, U
+    plot_mpl(da, U)
