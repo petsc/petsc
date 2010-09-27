@@ -1,5 +1,6 @@
 .PHONY:all
 all:
+	-${MAKE} -C binary-io
 	-${MAKE} -C kspsolve
 	-${MAKE} -C bratu2d
 	-${MAKE} -C bratu3d
