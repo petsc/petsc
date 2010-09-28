@@ -281,9 +281,12 @@ struct _p_Mat {
   PetscTruth             symmetric_set,hermitian_set,structurally_symmetric_set,spd_set; /* if true, then corresponding flag is correct*/
   PetscTruth             symmetric_eternal;
   PetscTruth             nooffprocentries,nooffproczerorows;
+#if defined(PETSC_HAVE_CUDA)
+  PetscCUDAFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
+#endif
   void                   *spptr;          /* pointer for special library like SuperLU */
   MatSolverPackage       solvertype;
-};
+  };
 
 #define MatPreallocated(A)  ((!(A)->preallocated) ? MatSetUpPreallocation(A) : 0)
 extern PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);

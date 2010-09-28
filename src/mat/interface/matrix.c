@@ -134,6 +134,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRealPart(Mat mat)
   if (!mat->ops->realpart) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = (*mat->ops->realpart)(mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -202,6 +207,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatImaginaryPart(Mat mat)
   if (!mat->ops->imaginarypart) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = (*mat->ops->imaginarypart)(mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -343,6 +353,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate(Mat mat)
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (!mat->ops->conjugate) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Not provided for this matrix format, send email to petsc-maint@mcs.anl.gov");
   ierr = (*mat->ops->conjugate)(mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1093,6 +1108,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValues(Mat mat,PetscInt m,const PetscInt
   if (!mat->ops->setvalues) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = (*mat->ops->setvalues)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1135,6 +1155,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesRowLocal(Mat mat,PetscInt row,cons
   PetscValidType(mat,1);
   PetscValidScalarPointer(v,2);
   ierr = MatSetValuesRow(mat, mat->mapping->indices[row],v);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1189,6 +1214,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesRow(Mat mat,PetscInt row,const Pet
   if (!mat->ops->setvaluesrow) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = (*mat->ops->setvaluesrow)(mat,row,v);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1303,6 +1333,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesStencil(Mat mat,PetscInt m,const M
     jdxn[i] = tmp;
   }
   ierr = MatSetValuesLocal(mat,m,jdxm,n,jdxn,v,addv);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1411,6 +1446,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedStencil(Mat mat,PetscInt m,
     jdxn[i] = tmp;
   }
   ierr = MatSetValuesBlockedLocal(mat,m,jdxm,n,jdxn,v,addv);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1581,6 +1621,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlocked(Mat mat,PetscInt m,const P
     ierr = PetscFree2(ibufm,ibufn);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1789,6 +1834,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal(Mat mat,PetscInt nrow,const 
   }
   mat->same_nonzero = PETSC_FALSE;
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1884,6 +1934,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
     ierr = PetscFree2(ibufm,ibufn);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -4526,6 +4581,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalScale(Mat mat,Vec l,Vec r)
   ierr = (*mat->ops->diagonalscale)(mat,l,r);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 } 
 
@@ -4568,6 +4628,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatScale(Mat mat,PetscScalar a)
     ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
   } 
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 } 
 
@@ -4864,6 +4929,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
     }
   }
   inassm--;
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -5067,6 +5137,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroEntries(Mat mat)
   ierr = (*mat->ops->zeroentries)(mat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_ZeroEntries,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -5127,6 +5202,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat mat,PetscInt numRows,const Pet
   ierr = (*mat->ops->zerorows)(mat,numRows,rows,diag);CHKERRQ(ierr);
   ierr = MatView_Private(mat);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -5350,6 +5430,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,PetscInt numRows,cons
     ierr = ISDestroy(is);CHKERRQ(ierr);
   }
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -5853,6 +5938,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreArray(Mat mat,PetscScalar *v[])
   if (!mat->ops->restorearray) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = (*mat->ops->restorearray)(mat,v);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
