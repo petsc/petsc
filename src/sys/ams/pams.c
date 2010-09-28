@@ -39,7 +39,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectAMSPublish(PetscObject obj)
   if (obj->amem != -1) PetscFunctionReturn(0);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
 
-  ierr      = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_(obj->comm),&acomm);CHKERRQ(ierr);
+  ierr      = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_(PETSC_COMM_WORLD),&acomm);CHKERRQ(ierr);
+  /* Really want to attach to correct communicator but then browser needs to access multiple communicators
+  ierr      = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_(obj->comm),&acomm);CHKERRQ(ierr); */
+  
   ierr      = AMS_Memory_create(acomm,obj->name,&amem);CHKERRQ(ierr);
   obj->amem = (int)amem;
 

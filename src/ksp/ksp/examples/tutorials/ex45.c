@@ -56,7 +56,6 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(b,&r);CHKERRQ(ierr);
   ierr = KSPGetOperators(ksp,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  PetscSleep(100);
   ierr = MatMult(A,x,r);CHKERRQ(ierr);
   ierr = VecAXPY(r,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_2,&norm);CHKERRQ(ierr);

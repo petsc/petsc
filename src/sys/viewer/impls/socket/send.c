@@ -561,7 +561,7 @@ PetscErrorCode PetscAMSDisplay(FILE *fd)
   ierr = PetscGetHostName(host,256);CHKERRQ(ierr);
   ierr = AMS_Connect(host, -1, &comm_list);CHKERRQ(ierr);
   ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "text/html", -1);CHKERRQ(ierr);
-  if (!comm_list[0]) {
+  if (!comm_list || !comm_list[0]) {
     fprintf(fd, "AMS Communicator not running</p>\r\n");
   } else {
     ierr = AMS_Comm_attach(comm_list[0],&ams);CHKERRQ(ierr);
@@ -612,12 +612,12 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
   AMS_Reduction_type rtype;
   AMS_Memory         memory;
   int                len;
-  void               *addr2,*addr3,*addr;
+  void               *addr2,*addr3,*addr,*addr4;
   
   ierr = PetscGetHostName(host,256);CHKERRQ(ierr);
   ierr = AMS_Connect(host, -1, &comm_list);CHKERRQ(ierr);
   ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "text/html", -1);CHKERRQ(ierr);
-  if (!comm_list[0]) {
+  if (!comm_list || !comm_list[0]) {
     fprintf(fd, "AMS Communicator not running</p>\r\n");
   } else {
     ierr = AMS_Comm_attach(comm_list[0],&ams);CHKERRQ(ierr);
@@ -627,7 +627,7 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
     } else {
       PetscInt   Nlevels,*Level,*Levelcnt,*Idbylevel,*Column,*parentid,*Id,maxId = 0,maxCol = 0,*parentId,id,cnt;
       PetscTruth *mask;
-      char       **classes,*clas;
+      char       **classes,*clas,**subclasses,*sclas;
 
       /* get maximum number of objects */
       while (mem_list[i]) {
@@ -641,7 +641,9 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       maxId++; 
 
       /* Gets everyone's parent ID and which nodes are masked */
-      ierr = PetscMalloc3(maxId,PetscInt,&parentid,maxId,PetscTruth,&mask,maxId,char**,&classes);CHKERRQ(ierr);
+      ierr = PetscMalloc4(maxId,PetscInt,&parentid,maxId,PetscTruth,&mask,maxId,char**,&classes,maxId,char**,&subclasses);CHKERRQ(ierr);
+      ierr = PetscMemzero(classes,maxId*sizeof(char*));CHKERRQ(ierr);
+      ierr = PetscMemzero(subclasses,maxId*sizeof(char*));CHKERRQ(ierr);
       for (i=0; i<maxId; i++) mask[i] = PETSC_TRUE;
       i = 0;
       while (mem_list[i]) {
@@ -653,9 +655,12 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
 	parentId = (int*) addr3;
 	ierr = AMS_Memory_get_field_info(memory, "Class", &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
         clas = *(char**)addr;
+	ierr = AMS_Memory_get_field_info(memory, "Type", &addr4, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        sclas = *(char**)addr4;
         parentid[*Id] = *parentId;
 	mask[*Id]     = PETSC_FALSE;
         ierr = PetscStrallocpy(clas,classes+*Id);CHKERRQ(ierr);
+        ierr = PetscStrallocpy(sclas,subclasses+*Id);CHKERRQ(ierr);
         i++;
       } 
 
@@ -681,27 +686,42 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       fprintf(fd, "  context.fillStyle = \"rgb(255,0,0)\";\r\n");
       fprintf(fd, "  context.textBaseline = \"top\";\r\n");
       fprintf(fd, "  var xspacep = 0;\r\n");
+      fprintf(fd, "  var yspace = example.height/%d;\r\n",(Nlevels+1));
+      fprintf(fd, "  var height = 22;\r\n");
 
       cnt = 0;
       for (i=0; i<Nlevels; i++) {
 	fprintf(fd, "  var xspace = example.width/%d;\r\n",Levelcnt[i]+1);
 	for (j=0; j<Levelcnt[i]; j++) {
           id   = Idbylevel[cnt++];
-          clas = classes[id];
+          clas  = classes[id];
+          sclas = subclasses[id];
 	  fprintf(fd, "  var width = context.measureText(\"%s\");\r\n",clas);
+	  fprintf(fd, "  var swidth = context.measureText(\"%s\");\r\n",sclas);
 	  fprintf(fd, "  context.fillStyle = \"rgb(255,0,0)\";\r\n");
-	  fprintf(fd, "  context.fillRect((%d)*xspace-width.width/2, %d, width.width, %d);\r\n",j+1,30+40*i,22);       
+	  fprintf(fd, "  context.fillRect((%d)*xspace-width.width/2, %d*yspace-height/2, width.width, height);\r\n",j+1,i+1);       
+	  fprintf(fd, "  context.fillRect((%d)*xspace-swidth.width/2, %d*yspace+height/2, swidth.width, height);\r\n",j+1,i+1);       
 	  fprintf(fd, "  context.fillStyle = \"rgb(0,0,0)\";\r\n");
-	  fprintf(fd, "  context.fillText(\"%s\",(%d)*xspace-width.width/2, %d);\r\n",clas,j+1,30+40*i);       
+	  fprintf(fd, "  context.fillText(\"%s\",(%d)*xspace-width.width/2, %d*yspace-height/2);\r\n",clas,j+1,i+1);       
+	  fprintf(fd, "  context.fillText(\"%s\",(%d)*xspace-swidth.width/2, %d*yspace+height/2);\r\n",sclas,j+1,i+1);       
           if (parentid[id]) {
-	    fprintf(fd, "  context.moveTo(%d*xspace,%d);\r\n",j+1,30+40*i);
-	    fprintf(fd, "  context.lineTo(%d*xspacep,%d);\r\n",Column[parentid[id]]+1,30+40*(i-1)+22);
+	    fprintf(fd, "  context.moveTo(%d*xspace,%d*yspace-height/2);\r\n",j+1,i+1);
+	    fprintf(fd, "  context.lineTo(%d*xspacep,%d*yspace+3*height/2);\r\n",Column[parentid[id]]+1,i);
 	    fprintf(fd, "  context.stroke();\r\n");
           }
 	}
 	fprintf(fd, "  xspacep = xspace;\r\n");        
       }
- 
+      ierr = PetscFree(Level);CHKERRQ(ierr);
+      ierr = PetscFree(Levelcnt);CHKERRQ(ierr);
+      ierr = PetscFree(Idbylevel);CHKERRQ(ierr);
+      ierr = PetscFree(Column);CHKERRQ(ierr);
+      for (i=0; i<maxId; i++) {
+        ierr = PetscFree(classes[i]);CHKERRQ(ierr);
+        ierr = PetscFree(subclasses[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree4(mask,parentid,classes,subclasses);CHKERRQ(ierr);
+
       ierr = AMS_Disconnect();CHKERRQ(ierr);
       fprintf(fd, "}\r\n"); 
       fprintf(fd, "</script>\r\n");  
