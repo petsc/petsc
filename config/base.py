@@ -77,15 +77,28 @@ class Configure(script.Script):
     self.subst           = {}
     self.argSubst        = {}
     self.language        = []
-    if tmpDir is None:
-      self.tmpDir        = os.path.join(self.framework.tmpDir, self.__module__)
-    else:
+    if not tmpDir is None:
       self.tmpDir        = tmpDir
-    if not os.path.isdir(self.tmpDir): os.mkdir(self.tmpDir)
-    self.compilerDefines = os.path.join(self.tmpDir, 'confdefs.h')
-    self.compilerFixes   = os.path.join(self.tmpDir, 'conffix.h')
     self.pushLanguage('C')
     return
+
+  def getTmpDir(self):
+    if not hasattr(self, '_tmpDir'):
+      self._tmpDir = os.path.join(self.framework.tmpDir, self.__module__)
+      if not os.path.isdir(self._tmpDir): os.mkdir(self._tmpDir)
+      self.logPrint('All intermediate test results are stored in '+self._tmpDir)
+    return self._tmpDir
+  def setTmpDir(self, temp):
+    if hasattr(self, '_tmpDir'):
+      if os.path.isdir(self._tmpDir):
+        import shutil
+        shutil.rmtree(self._tmpDir)
+      if temp is None:
+        delattr(self, '_tmpDir')
+    if not temp is None:
+      self._tmpDir = temp
+    return
+  tmpDir = property(getTmpDir, setTmpDir, doc = 'Temporary directory for test byproducts')
 
   def __str__(self):
     return ''
@@ -268,12 +281,19 @@ class Configure(script.Script):
     self.language.pop()
     return self.language[-1]
 
+  def getHeaders(self):
+    self.compilerDefines = os.path.join(self.tmpDir, 'confdefs.h')
+    self.compilerFixes   = os.path.join(self.tmpDir, 'conffix.h')
+    return
+
   def getPreprocessor(self):
+    self.getHeaders()
     preprocessor       = self.framework.getPreprocessorObject(self.language[-1])
     preprocessor.checkSetup()
     return preprocessor.getProcessor()
 
   def getCompiler(self):
+    self.getHeaders()
     compiler            = self.framework.getCompilerObject(self.language[-1])
     compiler.checkSetup()
     self.compilerSource = os.path.join(self.tmpDir, 'conftest'+compiler.sourceExtension)
@@ -284,6 +304,7 @@ class Configure(script.Script):
     return self.framework.getCompilerObject(self.language[-1]).getFlags()
 
   def getLinker(self):
+    self.getHeaders()
     linker            = self.framework.getLinkerObject(self.language[-1])
     linker.checkSetup()
     self.linkerSource = os.path.join(self.tmpDir, 'conftest'+linker.sourceExtension)
@@ -294,6 +315,7 @@ class Configure(script.Script):
     return self.framework.getLinkerObject(self.language[-1]).getFlags()
 
   def getSharedLinker(self):
+    self.getHeaders()
     linker            = self.framework.getSharedLinkerObject(self.language[-1])
     linker.checkSetup()
     self.linkerSource = os.path.join(self.tmpDir, 'conftest'+linker.sourceExtension)
@@ -304,6 +326,7 @@ class Configure(script.Script):
     return self.framework.getSharedLinkerObject(self.language[-1]).getFlags()
 
   def getDynamicLinker(self):
+    self.getHeaders()
     linker            = self.framework.getDynamicLinkerObject(self.language[-1])
     linker.checkSetup()
     self.linkerSource = os.path.join(self.tmpDir, 'conftest'+linker.sourceExtension)

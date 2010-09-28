@@ -76,12 +76,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
       argDB = RDict.RDict(load = loadArgDB)
     # Storage for intermediate test results
-    if tmpDir is None:
-      self.tmpDir        = tempfile.mkdtemp(prefix = 'petsc-')
-    else:
-      self.tmpDir        = tmpDir
+    self.tmpDir          = tmpDir
     script.LanguageProcessor.__init__(self, clArgs, argDB)
-    config.base.Configure.__init__(self, self, self.tmpDir)
+    config.base.Configure.__init__(self, self)
     self.childGraph      = graph.DirectedGraph()
     self.substRE         = re.compile(r'@(?P<name>[^@]+)@')
     self.substFiles      = {}
@@ -112,7 +109,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.createChildren()
     # Create argDB for user specified options only
     self.clArgDB = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.clArgs])
-    self.logPrint('All intermediate test results are stored in '+self.tmpDir)
     return
 
   def __getstate__(self):
@@ -178,6 +174,22 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       raise RuntimeError('Unable to parse output of '+configSub+': '+output)
     return (m.group('cpu'), m.group('vendor'), m.group('os'))
 
+  def getTmpDir(self):
+    if not hasattr(self, '_tmpDir'):
+      self._tmpDir = tempfile.mkdtemp(prefix = 'petsc-')
+      self.logPrint('All intermediate test results are stored in '+self._tmpDir)
+    return self._tmpDir
+  def setTmpDir(self, temp):
+    if hasattr(self, '_tmpDir'):
+      if os.path.isdir(self._tmpDir):
+        import shutil
+        shutil.rmtree(self._tmpDir)
+      if temp is None:
+        delattr(self, '_tmpDir')
+    if not temp is None:
+      self._tmpDir = temp
+    return
+  tmpDir = property(getTmpDir, setTmpDir, doc = 'Temporary directory for test byproducts')
   def getHostCPU(self):
     if not hasattr(self, '_host_cpu'):
       return self.argDB['known-host-cpu']
@@ -292,9 +304,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.actions.addArgument('Framework', 'File creation', 'Created C specific configure header '+self.cHeader)
     self.log.write('\n')
     self.actions.output(self.log)
-    if os.path.isdir(self.tmpDir):
-      import shutil
-      shutil.rmtree(self.tmpDir)
+    self.tmpDir = None
     return
 
   def printSummary(self):
