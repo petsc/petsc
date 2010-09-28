@@ -1074,7 +1074,7 @@ static PetscErrorCode MatView_MPIBAIJ_Binary(Mat mat,PetscViewer viewer)
   Mat_SeqBAIJ*   B = (Mat_SeqBAIJ*)a->B->data;
   PetscErrorCode ierr;
   PetscInt       i,*row_lens,*crow_lens,bs = mat->rmap->bs,count,j,k,bs2=a->bs2,header[4],nz,rlen;
-  PetscInt       *range,nzmax,*column_indices,cnt,col,*garray = a->garray,cstart = mat->cmap->rstart/bs,len,pcnt,l,ll;
+  PetscInt       *range=0,nzmax,*column_indices,cnt,col,*garray = a->garray,cstart = mat->cmap->rstart/bs,len,pcnt,l,ll;
   int            fd;
   PetscScalar    *column_values;
   FILE           *file;
