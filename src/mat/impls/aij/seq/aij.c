@@ -2348,7 +2348,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = PetscInfo3(Y,"ratio of nnz(X)/nnz(Y): %d/%d = %G\n",x->nz,y->nz,(PetscReal)(x->nz)/y->nz);CHKERRQ(ierr);
   } else {
     ierr = MatCreate(((PetscObject)Y)->comm,&B);CHKERRQ(ierr);
-    ierr = MatSetSizes(B,Y->rmap->n,Y->rmap->N,Y->cmap->n,Y->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,Y->rmap->n,Y->cmap->n,Y->rmap->N,Y->cmap->N);CHKERRQ(ierr);
     ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
     ierr = MatAXPYSetPreallocation_SeqAIJ(B,Y,X);CHKERRQ(ierr);
     ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
