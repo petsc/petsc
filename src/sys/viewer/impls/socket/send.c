@@ -625,7 +625,7 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
     if (!mem_list[0]) {
       fprintf(fd, "AMS Communicator %s has no published memories</p>\r\n",comm_list[0]);
     } else {
-      PetscInt   Nlevels,*Level,*Levelcnt,*Idbylevel,*Column,*parentid,*Id,maxId = 0,maxCol = 0,*parentId,id,cnt;
+      PetscInt   Nlevels,*Level,*Levelcnt,*Idbylevel,*Column,*parentid,*Id,maxId = 0,maxCol = 0,*parentId,id,cnt,Nlevelcnt = 0;
       PetscTruth *mask;
       char       **classes,*clas,**subclasses,*sclas;
 
@@ -674,6 +674,9 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       for (i=0; i<Nlevels; i++) {
         maxCol = PetscMax(maxCol,Levelcnt[i]);
       }
+      for (i=0; i<Nlevels; i++) {
+        Nlevelcnt = PetscMax(Nlevelcnt,Levelcnt[i]);
+      }
 
       /* print all the top-level objects */
       fprintf(fd, "<HTML><HEAD><TITLE>Petsc Application Server</TITLE>\r\n");
@@ -682,12 +685,19 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       fprintf(fd, "  function draw(){\r\n");  
       fprintf(fd, "  var example = document.getElementById('tree');\r\n");
       fprintf(fd, "  var context = example.getContext('2d');\r\n");
-      fprintf(fd, "  context.font         = \"normal 24px sans-serif\";\r\n");
+      /* adjust font size based on how big a tree is printed */
+      if (Nlevels > 5 || Nlevelcnt > 10) {
+        fprintf(fd, "  context.font         = \"normal 12px sans-serif\";\r\n");
+      } else {
+        fprintf(fd, "  context.font         = \"normal 24px sans-serif\";\r\n");
+      }
       fprintf(fd, "  context.fillStyle = \"rgb(255,0,0)\";\r\n");
       fprintf(fd, "  context.textBaseline = \"top\";\r\n");
       fprintf(fd, "  var xspacep = 0;\r\n");
       fprintf(fd, "  var yspace = example.height/%d;\r\n",(Nlevels+1));
-      fprintf(fd, "  var height = 22;\r\n");
+      /* estimate the height of a string as twice the width of a character */
+      fprintf(fd, "  var wheight = context.measureText(\"K\");\r\n");
+      fprintf(fd, "  var height = 1.6*wheight.width;\r\n");      
 
       cnt = 0;
       for (i=0; i<Nlevels; i++) {
