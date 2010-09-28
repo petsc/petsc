@@ -22,28 +22,28 @@ cdef extern from "petscis.h" nogil:
     int ISGetIndices(PetscIS,const_PetscInt*[])
     int ISRestoreIndices(PetscIS,const_PetscInt*[])
 
-    int ISEqual(PetscIS,PetscIS,PetscTruth*)
+    int ISEqual(PetscIS,PetscIS,PetscBool*)
 
     int ISSetPermutation(PetscIS)
-    int ISPermutation(PetscIS,PetscTruth*)
+    int ISPermutation(PetscIS,PetscBool*)
     int ISSetIdentity(PetscIS)
-    int ISIdentity(PetscIS,PetscTruth*)
+    int ISIdentity(PetscIS,PetscBool*)
 
     int ISSort(PetscIS)
-    int ISSorted(PetscIS,PetscTruth*)
+    int ISSorted(PetscIS,PetscBool*)
 
     int ISSum(PetscIS,PetscIS,PetscIS*)
     int ISExpand(PetscIS,PetscIS,PetscIS*)
     int ISDifference(PetscIS,PetscIS,PetscIS*)
     int ISComplement(PetscIS,PetscInt,PetscInt,PetscIS*)
 
-    int ISBlock(PetscIS,PetscTruth*)
+    int ISBlock(PetscIS,PetscBool*)
     int ISBlockGetIndices(PetscIS,const_PetscInt*[])
     int ISBlockRestoreIndices(PetscIS,const_PetscInt*[])
     int ISBlockGetSize(PetscIS,PetscInt*)
     int ISBlockGetLocalSize(PetscIS,PetscInt*)
     int ISBlockGetBlockSize(PetscIS,PetscInt*)
-    int ISStride(PetscIS,PetscTruth*)
+    int ISStride(PetscIS,PetscBool*)
     int ISStrideGetInfo(PetscIS,PetscInt*,PetscInt*)
     int ISStrideToGeneral(PetscIS)
 

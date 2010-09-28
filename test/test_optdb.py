@@ -7,8 +7,7 @@ from sys import getrefcount
 class TestOptions(unittest.TestCase):
 
     PREFIX  = 'myopts-'
-    OPTLIST = [('truth',  True),
-               ('bool',   False),
+    OPTLIST = [('bool',   True),
                ('int',    7),
                ('real',   5),
                ('scalar', 3),

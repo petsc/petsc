@@ -87,7 +87,7 @@ PETSC_EXTERN_CXX_END
 #define __FUNCT__ "PetscPythonRegisterAll"
 static PetscErrorCode PetscPythonRegisterAll(const char path[])
 {
-  static PetscTruth registered = PETSC_FALSE;
+  static PetscBool registered = PETSC_FALSE;
   PetscErrorCode ierr;
   if (registered) return 0;
   registered = PETSC_TRUE;

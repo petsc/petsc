@@ -5,7 +5,7 @@ cdef extern from "petsc.h" nogil:
     enum: PETSC_DEFAULT
     enum: PETSC_DETERMINE
 
-    ctypedef enum PetscTruth:
+    ctypedef enum PetscBool:
         PETSC_TRUE,  PETSC_YES,
         PETSC_FALSE, PETSC_NO,
 

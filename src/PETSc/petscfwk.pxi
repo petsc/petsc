@@ -13,7 +13,7 @@ cdef extern from "petscsys.h" nogil:
     int PetscFwkRegisterComponent(PetscFwk,char[])
     int PetscFwkRegisterComponentURL(PetscFwk,char[],char[])
     int PetscFwkRegisterDependence(PetscFwk,char[],char[])
-    int PetscFwkGetComponent(PetscFwk,char[],PetscFwk*,PetscTruth*)
+    int PetscFwkGetComponent(PetscFwk,char[],PetscFwk*,PetscBool*)
     int PetscFwkGetParent(PetscFwk,PetscFwk*)
     int PetscFwkVisit(PetscFwk, char[])
     int PetscFwkDestroy(PetscFwk)

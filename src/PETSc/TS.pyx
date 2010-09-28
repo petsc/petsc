@@ -252,11 +252,11 @@ cdef class TS(Object):
     #
 
     def setUseFD(self, flag=True):
-        cdef PetscTruth cflag = flag
+        cdef PetscBool cflag = flag
         CHKERR( TSSetUseFDColoring(self.ts, cflag) )
 
     def getUseFD(self):
-        cdef PetscTruth flag = PETSC_FALSE
+        cdef PetscBool flag = PETSC_FALSE
         CHKERR( TSGetUseFDColoring(self.ts, &flag) )
         return <bint> flag
 

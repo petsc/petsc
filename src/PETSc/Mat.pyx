@@ -520,43 +520,43 @@ cdef class Mat(Object):
         return mat
 
     def equal(self, Mat mat not None):
-        cdef PetscTruth flag = PETSC_FALSE
+        cdef PetscBool flag = PETSC_FALSE
         CHKERR( MatEqual(self.mat, mat.mat, &flag) )
         return <bint> mat
 
     def isTranspose(self, Mat mat=None, tol=0):
         if mat is None: mat = self
         cdef PetscReal rval = asReal(tol)
-        cdef PetscTruth flag = PETSC_FALSE
+        cdef PetscBool flag = PETSC_FALSE
         CHKERR( MatIsTranspose(self.mat, mat.mat, rval, &flag) )
         return <bint>flag
 
     def isSymmetric(self, tol=0):
         cdef PetscReal rval = asReal(tol)
-        cdef PetscTruth flag = PETSC_FALSE
+        cdef PetscBool flag = PETSC_FALSE
         CHKERR( MatIsSymmetric(self.mat, rval, &flag) )
         return <bint>flag
 
     def isSymmetricKnown(self):
-        cdef PetscTruth flag1 = PETSC_FALSE
-        cdef PetscTruth flag2 = PETSC_FALSE
+        cdef PetscBool flag1 = PETSC_FALSE
+        cdef PetscBool flag2 = PETSC_FALSE
         CHKERR( MatIsSymmetricKnown(self.mat, &flag1, &flag2) )
         return (<bint>flag1, <bint>flag2)
 
     def isHermitian(self, tol=0):
         cdef PetscReal rval = asReal(tol)
-        cdef PetscTruth flag = PETSC_FALSE
+        cdef PetscBool flag = PETSC_FALSE
         CHKERR( MatIsHermitian(self.mat, rval, &flag) )
         return <bint>flag
 
     def isHermitianKnown(self):
-        cdef PetscTruth flag1 = PETSC_FALSE
-        cdef PetscTruth flag2 = PETSC_FALSE
+        cdef PetscBool flag1 = PETSC_FALSE
+        cdef PetscBool flag2 = PETSC_FALSE
         rslt = CHKERR( MatIsHermitianKnown(self.mat, &flag1, &flag2) )
         return (<bint>flag1, <bint>flag2)
 
     def isStructurallySymmetric(self):
-        cdef PetscTruth flag = PETSC_FALSE
+        cdef PetscBool flag = PETSC_FALSE
         CHKERR( MatIsStructurallySymmetric(self.mat, &flag) )
         return <bint>flag
 
@@ -586,10 +586,10 @@ cdef class Mat(Object):
 
     def getRowIJ(self, symmetric=False, compressed=False):
         cdef PetscInt shift=0
-        cdef PetscTruth symm=symmetric
-        cdef PetscTruth bcmp=compressed
+        cdef PetscBool symm=symmetric
+        cdef PetscBool bcmp=compressed
         cdef PetscInt n=0, *ia=NULL, *ja=NULL
-        cdef PetscTruth done=PETSC_FALSE
+        cdef PetscBool done=PETSC_FALSE
         CHKERR( MatGetRowIJ(self.mat, shift, symm, bcmp, &n, &ia, &ja, &done) )
         cdef object ai=None, aj=None
         if done != PETSC_FALSE: ai = array_i(  n+1, ia)
@@ -599,9 +599,9 @@ cdef class Mat(Object):
 
     def getColumnIJ(self, symmetric=False, compressed=False):
         cdef PetscInt shift=0
-        cdef PetscTruth symm=symmetric, bcmp=compressed
+        cdef PetscBool symm=symmetric, bcmp=compressed
         cdef PetscInt n=0, *ia=NULL, *ja=NULL
-        cdef PetscTruth done=PETSC_FALSE
+        cdef PetscBool done=PETSC_FALSE
         CHKERR( MatGetColumnIJ(self.mat, shift, symm, bcmp, &n, &ia, &ja, &done) )
         cdef object ai=None, aj=None
         if done != PETSC_FALSE: ai = array_i(  n+1, ia)
@@ -716,7 +716,7 @@ cdef class Mat(Object):
         CHKERR( MatAssemblyEnd(self.mat, flag) )
 
     def isAssembled(self):
-        cdef PetscTruth assembled
+        cdef PetscBool assembled
         CHKERR( MatAssembled(self.mat, &assembled) )
         return <bint> assembled
     #
@@ -801,7 +801,7 @@ cdef class Mat(Object):
     #
 
     def getDiagonalBlock(self):
-        cdef PetscTruth iscopy = PETSC_FALSE
+        cdef PetscBool iscopy = PETSC_FALSE
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
         cdef Mat mat = Mat()
         CHKERR( MatGetDiagonalBlock(self.mat, &iscopy, reuse, &mat.mat) )
@@ -1043,7 +1043,7 @@ cdef class NullSpace(Object):
 
     def create(self, constant=False, vectors=(),  comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscTruth has_const = PETSC_FALSE
+        cdef PetscBool has_const = PETSC_FALSE
         if constant: has_const = PETSC_TRUE
         cdef PetscInt nv = len(vectors)
         cdef PetscVec *v = NULL

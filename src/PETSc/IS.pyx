@@ -106,7 +106,7 @@ cdef class IS(Object):
         return iset
 
     def toGeneral(self):
-        cdef PetscTruth flag = PETSC_FALSE
+        cdef PetscBool flag = PETSC_FALSE
         CHKERR( ISStride(self.iset, &flag) )
         if flag == PETSC_FALSE: return self
         CHKERR( ISStrideToGeneral(self.iset) )
@@ -137,7 +137,7 @@ cdef class IS(Object):
 
     def getBlockSize(self):
         cdef PetscInt bs = 1
-        cdef PetscTruth block = PETSC_FALSE
+        cdef PetscBool block = PETSC_FALSE
         CHKERR( ISBlock(self.iset, &block) )
         if block != PETSC_FALSE:
             CHKERR( ISBlockGetBlockSize(self.iset, &bs) )
@@ -156,7 +156,7 @@ cdef class IS(Object):
         return oindices
 
     def getIndicesBlock(self):
-        cdef PetscTruth block = PETSC_FALSE
+        cdef PetscBool block = PETSC_FALSE
         CHKERR( ISBlock(self.iset, &block) )
         if block == PETSC_FALSE: return self.getIndices()
         cdef PetscInt size = 0, bs = 0
@@ -172,7 +172,7 @@ cdef class IS(Object):
         return oindices
 
     def getInfo(self):
-        cdef PetscTruth stride = PETSC_FALSE
+        cdef PetscBool stride = PETSC_FALSE
         CHKERR( ISStride(self.iset, &stride) )
         if stride == PETSC_FALSE: return None
         cdef PetscInt first = 0, step = 0
@@ -184,7 +184,7 @@ cdef class IS(Object):
         return self
 
     def isSorted(self):
-        cdef PetscTruth flag = PETSC_FALSE
+        cdef PetscBool flag = PETSC_FALSE
         CHKERR( ISSorted(self.iset, &flag) )
         return <bint> flag
 
@@ -193,7 +193,7 @@ cdef class IS(Object):
         return self
 
     def isPermutation(self):
-        cdef PetscTruth flag = PETSC_FALSE
+        cdef PetscBool flag = PETSC_FALSE
         CHKERR( ISPermutation(self.iset, &flag) )
         return <bint> flag
 
@@ -202,12 +202,12 @@ cdef class IS(Object):
         return self
 
     def isIdentity(self):
-        cdef PetscTruth flag = PETSC_FALSE
+        cdef PetscBool flag = PETSC_FALSE
         CHKERR( ISIdentity(self.iset, &flag) )
         return <bint> flag
 
     def equal(self, IS iset not None):
-        cdef PetscTruth flag = PETSC_FALSE
+        cdef PetscBool flag = PETSC_FALSE
         CHKERR( ISEqual(self.iset, iset.iset, &flag) )
         return <bint> flag
 
@@ -222,7 +222,7 @@ cdef class IS(Object):
         return out
 
     def union(self, IS iset not None): # XXX review this
-        cdef PetscTruth flag1, flag2
+        cdef PetscBool flag1, flag2
         CHKERR( ISSorted(self.iset, &flag1) )
         CHKERR( ISSorted(iset.iset, &flag2) )
         cdef IS out = IS()

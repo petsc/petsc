@@ -391,7 +391,7 @@ class MySNES(object):
 
     def setFromOptions(self, snes):
         OptDB = PETSc.Options(snes)
-        self.trace = OptDB.getTruth('trace',self.trace)
+        self.trace = OptDB.getBool('trace',self.trace)
         self._log('setFromOptions',snes)
 
     def setUp(self, snes):

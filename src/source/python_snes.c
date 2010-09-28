@@ -24,8 +24,8 @@ struct _SNESPyOps {
 
   PetscErrorCode (*computefunction)(SNES,Vec,Vec);
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*);
-  PetscErrorCode (*linearsolve)(SNES,Vec,Vec,PetscTruth*,PetscInt*);
-  PetscErrorCode (*linesearch)(SNES,Vec,Vec,Vec,PetscTruth*);
+  PetscErrorCode (*linearsolve)(SNES,Vec,Vec,PetscBool*,PetscInt*);
+  PetscErrorCode (*linesearch)(SNES,Vec,Vec,Vec,PetscBool*);
 };
 
 typedef struct {
@@ -206,9 +206,9 @@ static PetscErrorCode SNESComputeJacobian_Python(SNES snes,Vec x,Mat *A,Mat *B,M
   PetscFunctionReturn(0);
 }
 
-static PyObject * SNESPyObjToPetscTruth(PyObject *value, PetscTruth *outsucceed)
+static PyObject * SNESPyObjToPetscBool(PyObject *value, PetscBool *outsucceed)
 {
-  PetscTruth succeed = PETSC_FALSE;
+  PetscBool succeed = PETSC_FALSE;
   if (value == NULL)
     return NULL;
   if (value == Py_None) {
@@ -230,7 +230,7 @@ static PyObject * SNESPyObjToPetscTruth(PyObject *value, PetscTruth *outsucceed)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESLinearSolve_Python"
-static PetscErrorCode SNESLinearSolve_Python(SNES snes,Vec b,Vec x,PetscTruth *succeed, PetscInt *its)
+static PetscErrorCode SNESLinearSolve_Python(SNES snes,Vec b,Vec x,PetscBool *succeed, PetscInt *its)
 {
   KSPConvergedReason kspreason;
   PetscErrorCode     ierr;
@@ -241,7 +241,7 @@ static PetscErrorCode SNESLinearSolve_Python(SNES snes,Vec b,Vec x,PetscTruth *s
                                                    PyPetscVec_New,  b,
                                                    PyPetscVec_New,  x    ),
                              notimplemented,
-                             SNESPyObjToPetscTruth, succeed);
+                             SNESPyObjToPetscBool, succeed);
  finally:
   if (!(*succeed)) {
     if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
@@ -262,7 +262,7 @@ notimplemented: /* default linear solve */
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearch_Python"
-static PetscErrorCode SNESLineSearch_Python(SNES snes,Vec x,Vec y, Vec F,PetscTruth *succeed)
+static PetscErrorCode SNESLineSearch_Python(SNES snes,Vec x,Vec y, Vec F,PetscBool *succeed)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -273,7 +273,7 @@ static PetscErrorCode SNESLineSearch_Python(SNES snes,Vec x,Vec y, Vec F,PetscTr
                                                   PyPetscVec_New,  y,
                                                   PyPetscVec_New,  F    ),
                              notimplemented,
-                             SNESPyObjToPetscTruth, succeed);
+                             SNESPyObjToPetscBool, succeed);
  finally:
   if (!(*succeed)) {
     if (++snes->numFailures >= snes->maxFailures) {
@@ -305,7 +305,7 @@ static PetscErrorCode SNESSolve_Python(SNES snes)
 {
   SNES_Py        *py = (SNES_Py *)snes->data;
   Vec            X,F,Y;
-  PetscTruth     succeed;
+  PetscBool      succeed;
   PetscInt       i=0,lits=0;
   PetscReal      fnorm,ynorm=0,xnorm=0;
   MatStructure   flg = DIFFERENT_NONZERO_PATTERN;
@@ -461,7 +461,7 @@ EXTERN_C_END
 static PetscErrorCode SNESView_Python(SNES snes,PetscViewer viewer)
 {
   SNES_Py        *py = (SNES_Py *)snes->data;
-  PetscTruth     isascii,isstring;
+  PetscBool      isascii,isstring;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -495,7 +495,7 @@ static PetscErrorCode SNESSetFromOptions_Python(SNES snes)
 {
   SNES_Py        *py = (SNES_Py *)snes->data;
   char           pyname[2*PETSC_MAX_PATH_LEN+3];
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES Python options");CHKERRQ(ierr);
@@ -626,7 +626,7 @@ EXTERN_C_END
 PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonGetContext(SNES snes,void **ctx)
 {
   SNES_Py        *py;
-  PetscTruth     ispython;
+  PetscBool      ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -660,7 +660,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES snes,void *ctx)
 {
   SNES_Py        *py;
   PyObject       *old, *self = (PyObject *) ctx;
-  PetscTruth     ispython;
+  PetscBool      ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);

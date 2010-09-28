@@ -107,7 +107,7 @@ static PetscErrorCode PCSetFromOptions_Python(PC pc)
 {
   PC_Py          *py = (PC_Py *)pc->data;
   char           pyname[2*PETSC_MAX_PATH_LEN+3];
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscOptionsHead("PC Python options");CHKERRQ(ierr);
@@ -127,7 +127,7 @@ static PetscErrorCode PCSetFromOptions_Python(PC pc)
 static PetscErrorCode PCView_Python(PC pc,PetscViewer viewer)
 {
   PC_Py          *py = (PC_Py *)pc->data;
-  PetscTruth     isascii,isstring;
+  PetscBool      isascii,isstring;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -389,7 +389,7 @@ EXTERN_C_END
 PetscErrorCode PETSCKSP_DLLEXPORT PCPythonGetContext(PC pc,void **ctx)
 {
   PC_Py          *py;
-  PetscTruth     ispython;
+  PetscBool      ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -423,7 +423,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC pc,void *ctx)
 {
   PC_Py          *py;
   PyObject       *old, *self = (PyObject *) ctx;
-  PetscTruth     ispython;
+  PetscBool      ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);

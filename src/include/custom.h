@@ -135,7 +135,7 @@ PetscLogStageFindId(const char name[], PetscLogStage *stageid)
 {
   int            s;
   StageLog       stageLog = 0;
-  PetscTruth     match = PETSC_FALSE;
+  PetscBool      match = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidCharPointer(name,1);
@@ -157,7 +157,7 @@ PetscLogClassFindId(const char name[], PetscClassId *classid)
 {
   int            c;
   StageLog       stageLog = 0;
-  PetscTruth     match = PETSC_FALSE;
+  PetscBool      match = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidCharPointer(name,1);
@@ -180,7 +180,7 @@ PetscLogEventFindId(const char name[], PetscLogEvent *eventid)
 {
   int            e;
   StageLog       stageLog = 0;
-  PetscTruth     match = PETSC_FALSE;
+  PetscBool      match = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidCharPointer(name,1);
@@ -429,7 +429,7 @@ MatSetBlockSize_Patch(Mat mat,PetscInt bs)
 #undef __FUNCT__
 #define __FUNCT__ "MatIsPreallocated"
 static PetscErrorCode
-MatIsPreallocated(Mat A,PetscTruth *flag)
+MatIsPreallocated(Mat A,PetscBool *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -508,7 +508,7 @@ MatAnyAIJSetPreallocation(Mat A,PetscInt bs,
                           PetscInt d_nz,const PetscInt d_nnz[],
                           PetscInt o_nz,const PetscInt o_nnz[])
 {
-  PetscTruth     flag = PETSC_FALSE;
+  PetscBool      flag = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -539,7 +539,7 @@ static PetscErrorCode
 MatAnyAIJSetPreallocationCSR(Mat A,PetscInt bs, const PetscInt Ii[],
                              const PetscInt Jj[], const PetscScalar V[])
 {
-  PetscTruth     flag = PETSC_FALSE;
+  PetscBool      flag = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -600,7 +600,7 @@ MatCreateAnyDense(MPI_Comm comm, PetscInt bs,
 static PetscErrorCode
 MatAnyDenseSetPreallocation(Mat mat, PetscInt bs, PetscScalar *data)
 {
-  PetscTruth     flag = PETSC_FALSE;
+  PetscBool      flag = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -626,7 +626,7 @@ MatAnyDenseSetPreallocation(Mat mat, PetscInt bs, PetscScalar *data)
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorInfoDefaults"
 static PetscErrorCode
-MatFactorInfoDefaults(PetscTruth incomplete, MatFactorInfo *info)
+MatFactorInfoDefaults(PetscBool incomplete, MatFactorInfo *info)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -905,7 +905,7 @@ MatFDColoringSetOptionsPrefix(MatFDColoring fdc, const char prefix[]) {
 #undef __FUNCT__
 #define __FUNCT__ "SNESGetUseMFFD"
 static PetscErrorCode
-SNESGetUseMFFD(SNES snes,PetscTruth *flag)
+SNESGetUseMFFD(SNES snes,PetscBool *flag)
 {
   Mat            J = PETSC_NULL;
   PetscErrorCode ierr;
@@ -921,10 +921,10 @@ SNESGetUseMFFD(SNES snes,PetscTruth *flag)
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetUseMFFD"
 static PetscErrorCode
-SNESSetUseMFFD(SNES snes,PetscTruth flag)
+SNESSetUseMFFD(SNES snes,PetscBool flag)
 {
   const char*    prefix = PETSC_NULL;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
   Vec            r = PETSC_NULL;
   Mat            A = PETSC_NULL,B = PETSC_NULL,J = PETSC_NULL;
   KSP            ksp = PETSC_NULL;
@@ -977,7 +977,7 @@ SNESSetUseMFFD(SNES snes,PetscTruth flag)
 #undef __FUNCT__
 #define __FUNCT__ "SNESGetUseFDColoring"
 static PetscErrorCode
-SNESGetUseFDColoring(SNES snes,PetscTruth *flag)
+SNESGetUseFDColoring(SNES snes,PetscBool *flag)
 {
   PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = PETSC_NULL;
   MatFDColoring  fdcoloring = PETSC_NULL;
@@ -994,10 +994,10 @@ SNESGetUseFDColoring(SNES snes,PetscTruth *flag)
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetUseFDColoring"
 static PetscErrorCode
-SNESSetUseFDColoring(SNES snes,PetscTruth flag)
+SNESSetUseFDColoring(SNES snes,PetscBool flag)
 {
   const char*    prefix = PETSC_NULL;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
   Vec            f = PETSC_NULL;
   PetscErrorCode (*fun)(SNES,Vec,Vec,void*) = PETSC_NULL;
   void*          funP = PETSC_NULL;
@@ -1231,7 +1231,7 @@ TSGetRHSJacobian_Ex(TS ts,Mat *A,Mat *B,PetscErrorCode (**jac)(TS,PetscReal,Vec,
 #undef __FUNCT__
 #define __FUNCT__ "TSGetUseFDColoring"
 static PetscErrorCode
-TSGetUseFDColoring(TS ts,PetscTruth *flag)
+TSGetUseFDColoring(TS ts,PetscBool *flag)
 {
   PetscErrorCode (*jac)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*) = PETSC_NULL;
   MatFDColoring  fdcoloring = PETSC_NULL;
@@ -1248,10 +1248,10 @@ TSGetUseFDColoring(TS ts,PetscTruth *flag)
 #undef __FUNCT__
 #define __FUNCT__ "TSSetUseFDColoring"
 static PetscErrorCode
-TSSetUseFDColoring(TS ts,PetscTruth flag)
+TSSetUseFDColoring(TS ts,PetscBool flag)
 {
   const char*    prefix = PETSC_NULL;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
   Vec            f = PETSC_NULL;
   PetscErrorCode (*fun)(TS,PetscReal,Vec,Vec,void*) = PETSC_NULL;
   void*          funP = PETSC_NULL;

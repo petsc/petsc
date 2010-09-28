@@ -13,10 +13,10 @@ cdef extern from "petsc.h" nogil:
     int PetscLogStageRegister(char[],PetscLogStage*)
     int PetscLogStagePush(PetscLogStage)
     int PetscLogStagePop()
-    int PetscLogStageSetActive(PetscLogStage,PetscTruth)
-    int PetscLogStageGetActive(PetscLogStage,PetscTruth*)
-    int PetscLogStageSetVisible(PetscLogStage,PetscTruth)
-    int PetscLogStageGetVisible(PetscLogStage,PetscTruth*)
+    int PetscLogStageSetActive(PetscLogStage,PetscBool)
+    int PetscLogStageGetActive(PetscLogStage,PetscBool*)
+    int PetscLogStageSetVisible(PetscLogStage,PetscBool)
+    int PetscLogStageGetVisible(PetscLogStage,PetscBool*)
     int PetscLogStageGetId(char[],PetscLogStage*)
 
     ctypedef int PetscLogClass "PetscClassId"
@@ -33,7 +33,7 @@ cdef extern from "petsc.h" nogil:
 
     int PetscLogEventActivate(PetscLogEvent)
     int PetscLogEventDeactivate(PetscLogEvent)
-    int PetscLogEventSetActiveAll(PetscLogEvent,PetscTruth)
+    int PetscLogEventSetActiveAll(PetscLogEvent,PetscBool)
 
 cdef extern from "custom.h" nogil:
     int PetscLogStageFindId(char[],PetscLogStage*)

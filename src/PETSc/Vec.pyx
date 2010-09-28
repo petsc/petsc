@@ -369,7 +369,7 @@ cdef class Vec(Object):
         return self
 
     def equal(self, Vec vec not None):
-        cdef PetscTruth flag = PETSC_FALSE
+        cdef PetscBool flag = PETSC_FALSE
         CHKERR( VecEqual(self.vec, vec.vec, &flag) )
         return <bint> flag
 
@@ -489,7 +489,7 @@ cdef class Vec(Object):
         CHKERR( VecSetRandom(self.vec, rnd) )
 
     def permute(self, IS order not None, invert=False):
-        cdef PetscTruth cinvert = PETSC_FALSE
+        cdef PetscBool cinvert = PETSC_FALSE
         if invert: cinvert = PETSC_TRUE
         CHKERR( VecPermute(self.vec, order.iset, cinvert) )
 

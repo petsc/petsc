@@ -26,7 +26,7 @@ cdef extern from "petsc.h" nogil:
 
 
 cdef extern from "context.h":
-    int PetscObjectGetPyDict(PetscObject,PetscTruth,void**)
+    int PetscObjectGetPyDict(PetscObject,PetscBool,void**)
     int PetscObjectSetPyObj(PetscObject,char[],void*)
     int PetscObjectGetPyObj(PetscObject,char[],void**)
 

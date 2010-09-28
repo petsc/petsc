@@ -277,7 +277,7 @@ cdef class KSP(Object):
     def setConvergenceHistory(self, length=None, reset=False):
         cdef PetscReal *data = NULL
         cdef PetscInt   size = 10000
-        cdef PetscTruth flag = PETSC_FALSE
+        cdef PetscBool flag = PETSC_FALSE
         if   length is True:     pass
         elif length is not None: size = asInt(length)
         if size < 0: size = 10000
@@ -331,22 +331,22 @@ cdef class KSP(Object):
     # --- xxx ---
 
     def setInitialGuessNonzero(self, bint flag):
-        cdef PetscTruth guess_nonzero = PETSC_FALSE
+        cdef PetscBool guess_nonzero = PETSC_FALSE
         if flag: guess_nonzero = PETSC_TRUE
         CHKERR( KSPSetInitialGuessNonzero(self.ksp, guess_nonzero) )
 
     def getInitialGuessNonzero(self):
-        cdef PetscTruth guess_nonzero = PETSC_FALSE
+        cdef PetscBool guess_nonzero = PETSC_FALSE
         CHKERR( KSPGetInitialGuessNonzero(self.ksp, &guess_nonzero) )
         return <bint>guess_nonzero
 
     def setInitialGuessKnoll(self, bint flag):
-        cdef PetscTruth guess_knoll = PETSC_FALSE
+        cdef PetscBool guess_knoll = PETSC_FALSE
         if flag: guess_knoll = PETSC_TRUE
         CHKERR( KSPSetInitialGuessKnoll(self.ksp, guess_knoll) )
 
     def getInitialGuessKnoll(self):
-        cdef PetscTruth guess_knoll = PETSC_FALSE
+        cdef PetscBool guess_knoll = PETSC_FALSE
         CHKERR( KSPGetInitialGuessKnoll(self.ksp, &guess_knoll) )
         return <bint>guess_knoll
 

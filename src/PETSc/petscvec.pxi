@@ -33,7 +33,7 @@ cdef extern from "petscvec.h" nogil:
     int VecCreateShared(MPI_Comm,PetscInt,PetscInt,PetscVec*)
     int VecGetType(PetscVec,PetscVecType*)
     int VecSetType(PetscVec,PetscVecType)
-    int VecSetOption(PetscVec,PetscVecOption,PetscTruth)
+    int VecSetOption(PetscVec,PetscVecOption,PetscBool)
     int VecSetSizes(PetscVec,PetscInt,PetscInt)
     int VecGetSize(PetscVec,PetscInt*)
     int VecGetLocalSize(PetscVec,PetscInt*)
@@ -49,7 +49,7 @@ cdef extern from "petscvec.h" nogil:
     int VecPlaceArray(PetscVec,PetscScalar[])
     int VecResetArray(PetscVec)
 
-    int VecEqual(PetscVec,PetscVec,PetscTruth*)
+    int VecEqual(PetscVec,PetscVec,PetscBool*)
     int VecLoad(PetscVec,PetscViewer)
 
     int VecDuplicate(PetscVec,PetscVec*)
@@ -115,7 +115,7 @@ cdef extern from "petscvec.h" nogil:
     int VecMaxPointwiseDivide(PetscVec,PetscVec,PetscReal*)
     int VecShift(PetscVec,PetscScalar)
     int VecReciprocal(PetscVec)
-    int VecPermute(PetscVec,PetscIS,PetscTruth)
+    int VecPermute(PetscVec,PetscIS,PetscBool)
     int VecExp(PetscVec)
     int VecLog(PetscVec)
     int VecSqrtAbs(PetscVec)

@@ -33,7 +33,7 @@ struct _TSPyOps {
 
   PetscErrorCode (*start)     (TS,PetscReal,Vec);
   PetscErrorCode (*step)      (TS,PetscReal,Vec);
-  PetscErrorCode (*verify)    (TS,PetscReal,Vec,PetscTruth*,PetscReal*);
+  PetscErrorCode (*verify)    (TS,PetscReal,Vec,PetscBool*,PetscReal*);
 
   PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec);
 
@@ -156,7 +156,7 @@ static PetscErrorCode TSSetFromOptions_Python(TS ts)
 {
   TS_Py          *py = (TS_Py *)ts->data;
   char           pyname[2*PETSC_MAX_PATH_LEN+3];
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscOptionsHead("TS Python options");CHKERRQ(ierr);
@@ -176,7 +176,7 @@ static PetscErrorCode TSSetFromOptions_Python(TS ts)
 static PetscErrorCode TSView_Python(TS ts,PetscViewer viewer)
 {
   TS_Py          *py = (TS_Py *)ts->data;
-  PetscTruth     isascii,isstring;
+  PetscBool      isascii,isstring;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -370,9 +370,9 @@ static PetscErrorCode TSStep_Python(TS ts,PetscReal t,Vec u)
   goto finally;
 }
 
-static PyObject * TSPyObjToVSArgs(PyObject *value,PetscTruth *ok,PetscReal *dt)
+static PyObject * TSPyObjToVSArgs(PyObject *value,PetscBool *ok,PetscReal *dt)
 {
-  PetscTruth tmpok = *ok;
+  PetscBool  tmpok = *ok;
   PetscReal  tmpdt = *dt;
   PyObject  *ook = NULL;
   PyObject  *odt = NULL;
@@ -418,7 +418,7 @@ static PyObject * TSPyObjToVSArgs(PyObject *value,PetscTruth *ok,PetscReal *dt)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSVerifyStep_Python"
-static PetscErrorCode TSVerifyStep_Python(TS ts,PetscReal t,Vec u,PetscTruth *ok,PetscReal *dt)
+static PetscErrorCode TSVerifyStep_Python(TS ts,PetscReal t,Vec u,PetscBool *ok,PetscReal *dt)
 {
   PetscFunctionBegin;
   *ok = PETSC_TRUE; *dt = ts->time_step;
@@ -525,7 +525,7 @@ static PetscErrorCode TSSolve_Python(TS ts,PetscInt *steps,PetscReal *ptime)
     ierr = TSPyMonitor(ts,ts->steps,ts->ptime,py->update);CHKERRQ(ierr);
   }
   for (i=0; i<ts->max_steps && ts->ptime<ts->max_time; i++) {
-    PetscTruth stepok = PETSC_TRUE;
+    PetscBool  stepok = PETSC_TRUE;
     PetscReal  nextdt = ts->time_step;
     /* call prestep routine, only once per time step */
     /* update vector already have the previous solution */
@@ -663,8 +663,8 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSPythonGetContext(TS ts,void **ctx)
 {
-  TS_Py        *py;
-  PetscTruth     ispython;
+  TS_Py         *py;
+  PetscBool      ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -696,9 +696,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPythonGetContext(TS ts,void **ctx)
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetContext(TS ts,void *ctx)
 {
-  TS_Py        *py;
+  TS_Py          *py;
   PyObject       *old, *self = (PyObject *) ctx;
-  PetscTruth     ispython;
+  PetscBool      ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);

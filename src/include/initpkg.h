@@ -1,39 +1,11 @@
 /* ------------------------------------------------------------------------- */
 
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
-#define PetscSysInitializePackage PetscInitializePackage
-#endif
-
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
-#undef  __FUNCT__
-#define __FUNCT__ "PetscFwkInitializePackage"
-static PetscErrorCode PetscFwkInitializePackage(const char path[])
-{
-  static PetscTruth initialized = PETSC_FALSE;
-  PetscErrorCode ierr;
-  if (initialized) return 0;
-  initialized = PETSC_TRUE;
-  PetscFunctionBegin;
-  ierr = PetscCookieRegister("PetscFwk",&PETSC_FWK_COOKIE);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
-
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
-#define AOInitializePackage(p) (0)
-#endif
-
-/* ------------------------------------------------------------------------- */
-
 #undef  __FUNCT__
 #define __FUNCT__ "PetscInitializePackageAll"
 static PetscErrorCode PetscInitializePackageAll(const char path[])
 {
   PetscErrorCode ierr;
-  static PetscTruth initialized = PETSC_FALSE;
+  static PetscBool initialized = PETSC_FALSE;
   if (initialized) return ierr=0;
   initialized = PETSC_TRUE;
   PetscFunctionBegin;

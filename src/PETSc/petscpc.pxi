@@ -79,16 +79,16 @@ cdef extern from "petscpc.h" nogil:
     int PCApplyBAorAB(PetscPC,PetscPCSide,PetscVec,PetscVec,PetscVec)
     int PCApplyBAorABTranspose(PetscPC,PetscPCSide,PetscVec,PetscVec,PetscVec)
 
-    #int PCApplyTransposeExists(PetscPC,PetscTruth*)
-    #int PCApplyRichardsonExists(PetscPC,PetscTruth*)
+    #int PCApplyTransposeExists(PetscPC,PetscBool*)
+    #int PCApplyRichardsonExists(PetscPC,PetscBool*)
 
     int PCSetOperators(PetscPC,PetscMat,PetscMat,PetscMatStructure)
     int PCGetOperators(PetscPC,PetscMat*,PetscMat*,PetscMatStructure*)
-    int PCGetOperatorsSet(PetscPC,PetscTruth*,PetscTruth*)
+    int PCGetOperatorsSet(PetscPC,PetscBool*,PetscBool*)
 
     int PCComputeExplicitOperator(PetscPC,PetscMat*)
 
-    int PCDiagonalScale(PetscPC,PetscTruth*)
+    int PCDiagonalScale(PetscPC,PetscBool*)
     int PCDiagonalScaleLeft(PetscPC,PetscVec,PetscVec)
     int PCDiagonalScaleRight(PetscPC,PetscVec,PetscVec)
     int PCDiagonalScaleSet(PetscPC,PetscVec)

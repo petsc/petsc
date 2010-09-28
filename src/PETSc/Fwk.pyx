@@ -58,7 +58,7 @@ cdef class Fwk(Object):
     def getComponent(self, key):
         cdef const_char *_key = NULL
         cdef PetscFwk component = NULL
-        cdef PetscTruth found = PETSC_FALSE
+        cdef PetscBool found = PETSC_FALSE
         key = str2bytes(key, &_key)
         CHKERR( PetscFwkGetComponent(self.fwk, _key, &component, &found) )
         if found == PETSC_FALSE or component == NULL: return None

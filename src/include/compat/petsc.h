@@ -3,6 +3,11 @@
 
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
+typedef PetscTruth PetscBool;
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
 typedef enum {
   PETSC_ERROR_INITIAL=1,
   PETSC_ERROR_REPEAT=0,

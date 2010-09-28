@@ -91,7 +91,7 @@ cdef extern from "petscsnes.h" nogil:
                              PetscSNESConvergedReason*,void*) except PETSC_ERR_PYTHON
     int SNESSkipConverged(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal,
                           PetscSNESConvergedReason*,void*) except PETSC_ERR_PYTHON
-    int SNESSetConvergenceHistory(PetscSNES,PetscReal[],PetscInt[],PetscInt,PetscTruth)
+    int SNESSetConvergenceHistory(PetscSNES,PetscReal[],PetscInt[],PetscInt,PetscBool)
     int SNESGetConvergenceHistory(PetscSNES,PetscReal*[],PetscInt*[],PetscInt*)
     int SNESLogConvergenceHistory(PetscSNES,PetscInt,PetscReal,PetscInt)
 
@@ -117,19 +117,19 @@ cdef extern from "petscsnes.h" nogil:
     int SNESGetMaxLinearSolveFailures(PetscSNES,PetscInt*)
     int SNESGetLinearSolveFailures(PetscSNES,PetscInt*)
 
-    int SNESKSPSetUseEW(PetscSNES,PetscTruth)
-    int SNESKSPGetUseEW(PetscSNES,PetscTruth*)
+    int SNESKSPSetUseEW(PetscSNES,PetscBool)
+    int SNESKSPGetUseEW(PetscSNES,PetscBool*)
     int SNESKSPSetParametersEW(PetscSNES,PetscInt,PetscReal,PetscReal,
                                PetscReal,PetscReal,PetscReal,PetscReal)
     int SNESKSPGetParametersEW(PetscSNES,PetscInt*,PetscReal*,PetscReal*,
                                PetscReal*,PetscReal*,PetscReal*,PetscReal*)
 
 cdef extern from "custom.h" nogil:
-    int SNESSetUseMFFD(PetscSNES,PetscTruth)
-    int SNESGetUseMFFD(PetscSNES,PetscTruth*)
+    int SNESSetUseMFFD(PetscSNES,PetscBool)
+    int SNESGetUseMFFD(PetscSNES,PetscBool*)
 
-    int SNESSetUseFDColoring(PetscSNES,PetscTruth)
-    int SNESGetUseFDColoring(PetscSNES,PetscTruth*)
+    int SNESSetUseFDColoring(PetscSNES,PetscBool)
+    int SNESGetUseFDColoring(PetscSNES,PetscBool*)
 
     int SNESMonitorCall(PetscSNES,PetscInt,PetscReal)
     int SNESConvergenceTestCall(PetscSNES,PetscInt,

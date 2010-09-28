@@ -17,7 +17,7 @@ PETSC_EXTERN_CXX_END
 typedef struct {
   PyObject *self;
   char     *pyname;
-  PetscTruth  scale,shift;
+  PetscBool   scale,shift;
   PetscScalar vscale,vshift;
 } Mat_Py;
 
@@ -134,7 +134,7 @@ static PetscErrorCode MatSetFromOptions_Python(Mat mat)
 {
   Mat_Py         *py = (Mat_Py*)mat->data;
   char           pyname[2*PETSC_MAX_PATH_LEN+3];
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Mat Python options");CHKERRQ(ierr);
@@ -154,7 +154,7 @@ static PetscErrorCode MatSetFromOptions_Python(Mat mat)
 static PetscErrorCode MatView_Python(Mat mat,PetscViewer viewer)
 {
   Mat_Py         *py = (Mat_Py*)mat->data;
-  PetscTruth     isascii,isstring;
+  PetscBool      isascii,isstring;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
@@ -175,7 +175,7 @@ static PetscErrorCode MatView_Python(Mat mat,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetOption_Python"
-static PetscErrorCode MatSetOption_Python(Mat mat,MatOption op,PetscTruth flag)
+static PetscErrorCode MatSetOption_Python(Mat mat,MatOption op,PetscBool flag)
 {
   PetscFunctionBegin;
   MAT_PYTHON_CALL(mat, "setOption", ("O&ii",
@@ -230,7 +230,7 @@ static PetscErrorCode MatSetUpPreallocation_Python(Mat mat)
   /* try to load Python code if not yet done */
   if (py->self == NULL || py->self == Py_None) {
     char       pyname[2*PETSC_MAX_PATH_LEN+3];
-    PetscTruth flag = PETSC_FALSE;
+    PetscBool  flag = PETSC_FALSE;
     ierr = PetscOptionsGetString(((PetscObject)mat)->prefix,"-mat_python_type",
                                  pyname,sizeof(pyname),&flag);CHKERRQ(ierr);
     if (flag && pyname[0]==0) flag = PETSC_FALSE;
@@ -410,7 +410,7 @@ static PetscErrorCode MatMultAdd_Python(Mat mat,Vec x,Vec v,Vec y)
 static PetscErrorCode MatMultTranspose_Python(Mat mat,Vec x, Vec y)
 {
   Mat_Py         *py = (Mat_Py *) mat->data;
-  PetscTruth     symmset,symmknown;
+  PetscBool      symmset,symmknown;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   MAT_PYTHON_CALL_MAYBE(mat, "multTranspose", ("O&O&O&",
@@ -507,7 +507,7 @@ static PetscErrorCode MatSolveTranspose_Python(Mat mat,Vec b, Vec x)
 {
   Mat_Py         *py = (Mat_Py *) mat->data;
   PetscScalar    one = 1;
-  PetscTruth     symmset,symmknown;
+  PetscBool      symmset,symmknown;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /*  shift */
@@ -745,7 +745,7 @@ EXTERN_C_END
 PetscErrorCode PETSCMAT_DLLEXPORT MatPythonGetContext(Mat mat,void **ctx)
 {
   Mat_Py         *py;
-  PetscTruth     ispython;
+  PetscBool      ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -777,9 +777,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonGetContext(Mat mat,void **ctx)
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat mat,void *ctx)
 {
-  Mat_Py          *py;
+  Mat_Py         *py;
   PyObject       *old, *self = (PyObject *) ctx;
-  PetscTruth     ispython;
+  PetscBool      ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);

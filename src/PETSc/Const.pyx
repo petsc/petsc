@@ -7,14 +7,6 @@ DETERMINE = PETSC_DETERMINE
 
 # --------------------------------------------------------------------
 
-class Truth(object):
-    TRUE  = PETSC_TRUE
-    FALSE = PETSC_FALSE
-    YES   = PETSC_YES
-    NO    = PETSC_NO
-
-# --------------------------------------------------------------------
-
 class InsertMode(object):
     # native
     NOT_SET_VALUES = PETSC_NOT_SET_VALUES

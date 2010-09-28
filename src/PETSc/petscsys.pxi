@@ -12,8 +12,8 @@ cdef extern from "petscsys.h" nogil:
     int PetscInitialize(int*,char***,char[],char[])
     int PetscInitializeNoArguments()
     int PetscFinalize()
-    PetscTruth PetscInitializeCalled
-    PetscTruth PetscFinalizeCalled
+    PetscBool PetscInitializeCalled
+    PetscBool PetscFinalizeCalled
 
     ctypedef enum PetscErrorType:
         PETSC_ERROR_INITIAL

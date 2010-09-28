@@ -6,6 +6,19 @@
 
 static PetscClassId PETSC_FWK_COOKIE = 0;
 
+#undef  __FUNCT__
+#define __FUNCT__ "PetscFwkInitializePackage"
+static PetscErrorCode PetscFwkInitializePackage(const char path[])
+{
+  static PetscTruth initialized = PETSC_FALSE;
+  PetscErrorCode ierr;
+  if (initialized) return 0;
+  initialized = PETSC_TRUE;
+  PetscFunctionBegin;
+  ierr = PetscCookieRegister("PetscFwk",&PETSC_FWK_COOKIE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 struct _p_PetscFwk;
 typedef struct _p_PetscFwk *PetscFwk;
 

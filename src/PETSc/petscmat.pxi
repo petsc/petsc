@@ -117,7 +117,7 @@ cdef extern from "petscmat.h" nogil:
     int MatSetSizes(PetscMat,PetscInt,PetscInt,PetscInt,PetscInt)
     int MatSetBlockSize(PetscMat,PetscInt)
     int MatSetType(PetscMat,PetscMatType)
-    int MatSetOption(PetscMat,PetscMatOption,PetscTruth)
+    int MatSetOption(PetscMat,PetscMatOption,PetscBool)
 
     int MatSetOptionsPrefix(PetscMat,char[])
     int MatGetOptionsPrefix(PetscMat,char*[])
@@ -133,19 +133,19 @@ cdef extern from "petscmat.h" nogil:
     int MatGetOwnershipRangeColumn(PetscMat,PetscInt*,PetscInt*)
     int MatGetOwnershipRangesColumn(PetscMat,const_PetscInt*[])
 
-    int MatEqual(PetscMat,PetscMat,PetscTruth*)
+    int MatEqual(PetscMat,PetscMat,PetscBool*)
     int MatLoad(PetscMat,PetscViewer)
     int MatDuplicate(PetscMat,PetscMatDuplicateOption,PetscMat*)
     int MatCopy(PetscMat,PetscMat,PetscMatStructure)
     int MatTranspose(PetscMat,PetscMatReuse,PetscMat*)
     int MatConvert(PetscMat,PetscMatType,PetscMatReuse,PetscMat*)
 
-    int MatIsSymmetric(PetscMat,PetscReal,PetscTruth*)
-    int MatIsStructurallySymmetric(PetscMat,PetscTruth*)
-    int MatIsHermitian(PetscMat,PetscReal,PetscTruth*)
-    int MatIsSymmetricKnown(PetscMat,PetscTruth*,PetscTruth*)
-    int MatIsHermitianKnown(PetscMat,PetscTruth*,PetscTruth*)
-    int MatIsTranspose(PetscMat A,PetscMat B,PetscReal tol,PetscTruth *flg)
+    int MatIsSymmetric(PetscMat,PetscReal,PetscBool*)
+    int MatIsStructurallySymmetric(PetscMat,PetscBool*)
+    int MatIsHermitian(PetscMat,PetscReal,PetscBool*)
+    int MatIsSymmetricKnown(PetscMat,PetscBool*,PetscBool*)
+    int MatIsHermitianKnown(PetscMat,PetscBool*,PetscBool*)
+    int MatIsTranspose(PetscMat A,PetscMat B,PetscReal tol,PetscBool *flg)
 
     int MatGetVecs(PetscMat,PetscVec*,PetscVec*)
 
@@ -163,17 +163,17 @@ cdef extern from "petscmat.h" nogil:
     int MatGetValues(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[],PetscScalar[])
     int MatGetRow(PetscMat,PetscInt,PetscInt*,const_PetscInt*[],const_PetscScalar*[])
     int MatRestoreRow(PetscMat,PetscInt,PetscInt*,const_PetscInt*[],const_PetscScalar*[])
-    int MatGetRowIJ(PetscMat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt*[],PetscInt*[],PetscTruth*)
-    int MatRestoreRowIJ(PetscMat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt*[],PetscInt*[],PetscTruth*)
-    int MatGetColumnIJ(PetscMat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt*[],PetscInt*[],PetscTruth*)
-    int MatRestoreColumnIJ(PetscMat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt*[],PetscInt*[],PetscTruth*)
+    int MatGetRowIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,PetscInt*[],PetscInt*[],PetscBool*)
+    int MatRestoreRowIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,PetscInt*[],PetscInt*[],PetscBool*)
+    int MatGetColumnIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,PetscInt*[],PetscInt*[],PetscBool*)
+    int MatRestoreColumnIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,PetscInt*[],PetscInt*[],PetscBool*)
 
     int MatZeroEntries(PetscMat)
     int MatStoreValues(PetscMat)
     int MatRetrieveValues(PetscMat)
     int MatAssemblyBegin(PetscMat,PetscMatAssemblyType)
     int MatAssemblyEnd(PetscMat,PetscMatAssemblyType)
-    int MatAssembled(PetscMat,PetscTruth*)
+    int MatAssembled(PetscMat,PetscBool*)
 
     int MatDiagonalSet(PetscMat,PetscVec,PetscInsertMode)
     int MatDiagonalScale(PetscMat, PetscVec OPTIONAL, PetscVec OPTIONAL)
@@ -197,7 +197,7 @@ cdef extern from "petscmat.h" nogil:
     int MatGetSubMatrix(PetscMat,PetscIS,PetscIS,PetscMatReuse,PetscMat*)
     int MatGetSubMatrices(PetscMat,PetscInt,PetscIS[],PetscIS[],PetscMatReuse,PetscMat*[])
     int MatIncreaseOverlap(PetscMat,PetscInt,PetscIS[],PetscInt)
-    int MatGetDiagonalBlock(PetscMat,PetscTruth*,PetscMatReuse,PetscMat*)
+    int MatGetDiagonalBlock(PetscMat,PetscBool*,PetscMatReuse,PetscMat*)
 
     int MatConjugate(PetscMat)
     int MatRealPart(PetscMat)
@@ -255,7 +255,7 @@ cdef extern from "petscmat.h" nogil:
     int MatMatSolve(PetscMat,PetscMat,PetscMat)
 
     int MatComputeExplicitOperator(PetscMat,PetscMat*)
-    int MatUseScaledForm(PetscMat,PetscTruth)
+    int MatUseScaledForm(PetscMat,PetscBool)
     int MatScaleSystem(PetscMat,PetscVec,PetscVec)
     int MatUnScaleSystem(PetscMat,PetscVec,PetscVec)
 
@@ -291,7 +291,7 @@ cdef extern from "libpetsc4py.h":
 
 cdef extern from "petscmat.h" nogil:
     int MatNullSpaceDestroy(PetscNullSpace)
-    int MatNullSpaceCreate(MPI_Comm,PetscTruth,PetscInt,PetscVec[],
+    int MatNullSpaceCreate(MPI_Comm,PetscBool,PetscInt,PetscVec[],
                            PetscNullSpace*)
     int MatNullSpaceRemove(PetscNullSpace,PetscVec,PetscVec*)
     int MatNullSpaceAttach(PetscMat,PetscNullSpace)
@@ -774,9 +774,9 @@ cdef inline matgetvalues(PetscMat mat,
 # -----------------------------------------------------------------------------
 
 cdef extern from "custom.h":
-    int MatFactorInfoDefaults(PetscTruth,PetscMatFactorInfo*)
+    int MatFactorInfoDefaults(PetscBool,PetscMatFactorInfo*)
 
-cdef int matfactorinfo(PetscTruth incomplete, object options,
+cdef int matfactorinfo(PetscBool incomplete, object options,
                        PetscMatFactorInfo *info) except -1:
     CHKERR( MatFactorInfoDefaults(incomplete, info) )
     if options is None: return 0

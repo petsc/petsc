@@ -91,7 +91,7 @@ cdef extern from "petscksp.h" nogil:
     int KSPGetPCSide(PetscKSP,PetscPCSide*)
 
     int KSPSetConvergenceTest(PetscKSP,PetscKSPConvergedFunction,void*,PetscKSPCtxDel)
-    int KSPSetResidualHistory(PetscKSP,PetscReal[],PetscInt,PetscTruth)
+    int KSPSetResidualHistory(PetscKSP,PetscReal[],PetscInt,PetscBool)
     int KSPGetResidualHistory(PetscKSP,PetscReal*[],PetscInt*)
     int KSPDefaultConvergedCreate(void**)
     int KSPDefaultConvergedDestroy(void*)
@@ -101,20 +101,20 @@ cdef extern from "petscksp.h" nogil:
     int KSPMonitorSet(PetscKSP,PetscKSPMonitorFunction,void*,PetscKSPCtxDel)
     int KSPMonitorCancel(PetscKSP)
 
-    int KSPSetInitialGuessNonzero(PetscKSP,PetscTruth)
-    int KSPGetInitialGuessNonzero(PetscKSP,PetscTruth*)
-    int KSPSetInitialGuessKnoll(PetscKSP,PetscTruth)
-    int KSPGetInitialGuessKnoll(PetscKSP,PetscTruth*)
+    int KSPSetInitialGuessNonzero(PetscKSP,PetscBool)
+    int KSPGetInitialGuessNonzero(PetscKSP,PetscBool*)
+    int KSPSetInitialGuessKnoll(PetscKSP,PetscBool)
+    int KSPGetInitialGuessKnoll(PetscKSP,PetscBool*)
     int KSPSetUseFischerGuess(PetscKSP,PetscInt,PetscInt)
 
-    int KSPGetComputeEigenvalues(PetscKSP,PetscTruth*)
-    int KSPSetComputeEigenvalues(PetscKSP,PetscTruth)
-    int KSPGetComputeSingularValues(PetscKSP,PetscTruth*)
-    int KSPSetComputeSingularValues(PetscKSP,PetscTruth)
+    int KSPGetComputeEigenvalues(PetscKSP,PetscBool*)
+    int KSPSetComputeEigenvalues(PetscKSP,PetscBool)
+    int KSPGetComputeSingularValues(PetscKSP,PetscBool*)
+    int KSPSetComputeSingularValues(PetscKSP,PetscBool)
 
     int KSPSetOperators(PetscKSP,PetscMat,PetscMat,PetscMatStructure)
     int KSPGetOperators(PetscKSP,PetscMat*,PetscMat*,PetscMatStructure*)
-    int KSPGetOperatorsSet(PetscKSP,PetscTruth*,PetscTruth*)
+    int KSPGetOperatorsSet(PetscKSP,PetscBool*,PetscBool*)
 
     int KSPSetNullSpace(PetscKSP,PetscNullSpace)
     int KSPGetNullSpace(PetscKSP,PetscNullSpace*)
@@ -136,10 +136,10 @@ cdef extern from "petscksp.h" nogil:
     int KSPBuildSolution(PetscKSP,PetscVec,PetscVec*)
     int KSPBuildResidual(PetscKSP,PetscVec,PetscVec,PetscVec*)
 
-    int KSPSetDiagonalScale(PetscKSP,PetscTruth)
-    int KSPGetDiagonalScale(PetscKSP,PetscTruth*)
-    int KSPSetDiagonalScaleFix(PetscKSP,PetscTruth)
-    int KSPGetDiagonalScaleFix(PetscKSP,PetscTruth*)
+    int KSPSetDiagonalScale(PetscKSP,PetscBool)
+    int KSPGetDiagonalScale(PetscKSP,PetscBool*)
+    int KSPSetDiagonalScaleFix(PetscKSP,PetscBool)
+    int KSPGetDiagonalScaleFix(PetscKSP,PetscBool*)
 
     int KSPComputeExplicitOperator(PetscKSP,PetscMat*)
 

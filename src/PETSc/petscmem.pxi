@@ -4,5 +4,5 @@ cdef extern from "petsc.h" nogil:
     int PetscMemcpy(void*,void*,size_t)
     int PetscMemmove(void*,void*,size_t)
     int PetscMemzero(void*,size_t)
-    int PetscMemcmp(void*,void*,size_t,PetscTruth*)
+    int PetscMemcmp(void*,void*,size_t,PetscBool*)
 

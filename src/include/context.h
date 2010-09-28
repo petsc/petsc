@@ -15,7 +15,7 @@ static PetscErrorCode PetscPyObjDestroy(void* ptr)
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscObjectGetPyDict"
-static PetscErrorCode PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **dict)
+static PetscErrorCode PetscObjectGetPyDict(PetscObject obj, PetscBool create, void **dict)
 {
   PyObject      *pydict = NULL;
   PetscFunctionBegin;

@@ -106,7 +106,7 @@ static PetscErrorCode KSPSetFromOptions_Python(KSP ksp)
 {
   KSP_Py         *py = (KSP_Py *)ksp->data;
   char           pyname[2*PETSC_MAX_PATH_LEN+3];
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP Python options");CHKERRQ(ierr);
@@ -126,7 +126,7 @@ static PetscErrorCode KSPSetFromOptions_Python(KSP ksp)
 static PetscErrorCode KSPView_Python(KSP ksp,PetscViewer viewer)
 {
   KSP_Py         *py = (KSP_Py*)ksp->data;
-  PetscTruth     isascii,isstring;
+  PetscBool      isascii,isstring;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
@@ -247,7 +247,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPCreate_Python"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Python(KSP ksp)
 {
-  KSP_Py      *py;
+  KSP_Py         *py;
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
@@ -302,8 +302,8 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonGetContext(KSP ksp,void **ctx)
 {
-  KSP_Py        *py;
-  PetscTruth     ispython;
+  KSP_Py         *py;
+  PetscBool      ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -335,9 +335,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonGetContext(KSP ksp,void **ctx)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetContext(KSP ksp,void *ctx)
 {
-  KSP_Py        *py;
+  KSP_Py         *py;
   PyObject       *old, *self = (PyObject *) ctx;
-  PetscTruth     ispython;
+  PetscBool      ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);

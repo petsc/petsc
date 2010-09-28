@@ -36,7 +36,7 @@ cdef class Options:
         cdef const_char *pr = NULL
         cdef const_char *nm = NULL
         tmp = getpair(self.prefix, name, &pr, &nm)
-        cdef PetscTruth flag = PETSC_FALSE
+        cdef PetscBool flag = PETSC_FALSE
         CHKERR( PetscOptionsHasName(pr, nm, &flag) )
         return <bint> flag
 
@@ -73,11 +73,7 @@ cdef class Options:
     #
 
     def getBool(self, name, default=None):
-        value = getopt(OPT_TRUTH, self.prefix, name, default)
-        return bool(value)
-
-    def getTruth(self, name, default=None):
-        return getopt(OPT_TRUTH, self.prefix, name, default)
+        return getopt(OPT_BOOL, self.prefix, name, default)
 
     def getInt(self, name, default=None):
         return getopt(OPT_INT, self.prefix, name, default)

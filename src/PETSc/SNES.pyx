@@ -203,7 +203,7 @@ cdef class SNES(Object):
         cdef PetscReal *rdata = NULL
         cdef PetscInt  *idata = NULL
         cdef PetscInt   size = 1000
-        cdef PetscTruth flag = PETSC_FALSE
+        cdef PetscBool flag = PETSC_FALSE
         if   length is True:     pass
         elif length is not None: size = asInt(length)
         if size < 0: size = 1000
@@ -366,7 +366,7 @@ cdef class SNES(Object):
         if targs or kargs: self.setParamsEW(*targs, **kargs)
 
     def getUseEW(self):
-        cdef PetscTruth flag = PETSC_FALSE
+        cdef PetscBool flag = PETSC_FALSE
         CHKERR( SNESKSPGetUseEW(self.snes, &flag) )
         return <bint> flag
 
@@ -411,20 +411,20 @@ cdef class SNES(Object):
     # --- xxx ---
 
     def setUseMF(self, flag=True):
-        cdef PetscTruth cflag = flag
+        cdef PetscBool cflag = flag
         CHKERR( SNESSetUseMFFD(self.snes, cflag) )
 
     def getUseMF(self):
-        cdef PetscTruth flag = PETSC_FALSE
+        cdef PetscBool flag = PETSC_FALSE
         CHKERR( SNESGetUseMFFD(self.snes, &flag) )
         return <bint> flag
 
     def setUseFD(self, flag=True):
-        cdef PetscTruth cflag = flag
+        cdef PetscBool cflag = flag
         CHKERR( SNESSetUseFDColoring(self.snes, flag) )
 
     def getUseFD(self):
-        cdef PetscTruth flag = PETSC_FALSE
+        cdef PetscBool flag = PETSC_FALSE
         CHKERR( SNESGetUseFDColoring(self.snes, &flag) )
         return <bint> flag
 

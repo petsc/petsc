@@ -122,8 +122,8 @@ cdef extern from "petscts.h" nogil:
     int TSThetaGetTheta(PetscTS,PetscReal*)
 
 cdef extern from "custom.h" nogil:
-    int TSSetUseFDColoring(PetscTS,PetscTruth)
-    int TSGetUseFDColoring(PetscTS,PetscTruth*)
+    int TSSetUseFDColoring(PetscTS,PetscBool)
+    int TSGetUseFDColoring(PetscTS,PetscBool*)
     int TSMonitorCall(PetscTS,PetscInt,PetscReal,PetscVec)
 
 cdef extern from "libpetsc4py.h":

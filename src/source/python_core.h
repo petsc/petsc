@@ -34,6 +34,11 @@
 
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
+typedef PetscTruth PetscBool;
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
 #define PETSCVIEWERASCII  PETSC_VIEWER_ASCII
 #define PETSCVIEWERSTRING PETSC_VIEWER_STRING
 #endif
@@ -199,7 +204,7 @@ do {                                                                    \
 #define __FUNCT__ "PetscPythonImportPetsc4Py"
 static PetscErrorCode PetscPythonImportPetsc4Py(void)
 {
-  static PetscTruth initialized = PETSC_FALSE;
+  static PetscBool initialized = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (initialized) PetscFunctionReturn(0);
