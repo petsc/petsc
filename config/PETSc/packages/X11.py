@@ -35,10 +35,11 @@ class Configure(PETSc.package.NewPackage,config.autoconf.Configure):
     includeDir = ''
     libraryDir = ''
     # Create Imakefile
-    dir = os.path.abspath('conftestdir')
-    if os.path.exists(dir): shutil.rmtree(dir)
-    os.mkdir(dir)
-    os.chdir(dir)
+    testDir = os.path.join(self.tmpDir, 'X11testdir')
+    oldDir  = os.getcwd()
+    if os.path.exists(testDir): shutil.rmtree(testDir)
+    os.mkdir(testDir)
+    os.chdir(testDir)
     f = file('Imakefile', 'w')
     f.write('''
 acfindx:
@@ -68,9 +69,9 @@ acfindx:
     except RuntimeError, e:
       self.framework.log.write('Error using Xmake: '+str(e)+'\n')
     # Cleanup
-    os.chdir(os.path.dirname(dir))
+    os.chdir(oldDir)
     time.sleep(1)
-    shutil.rmtree(dir)
+    shutil.rmtree(testDir)
     return (includeDir, libraryDir)
 
   def configureLibrary(self):

@@ -45,6 +45,7 @@ extern PetscLogEvent  Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mes
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshFinalize();
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh, PetscViewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshLoad(PetscViewer, Mesh);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm, Mesh*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetType(Mesh, MeshType);

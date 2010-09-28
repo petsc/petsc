@@ -268,7 +268,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh mesh, PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshLoad" 
-/*@C
+/*@
     MeshLoad - Create a mesh topology from the saved data in a viewer.
 
     Collective on Viewer

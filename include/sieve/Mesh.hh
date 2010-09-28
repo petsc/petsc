@@ -4569,6 +4569,8 @@ namespace ALE {
       ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
       return mesh;
     };
+
+#if 0 // WORKING ON REDESIGN WITHIN PYLITH SOURCE TREE
     template<typename MeshType, typename EdgeType>
     class CellRefiner {
     public:
@@ -4577,31 +4579,41 @@ namespace ALE {
       typedef typename std::map<edge_type, point_type> edge_map_type;
       typedef enum {LINE, LINE_LAGRANGE, TRIANGLE, QUADRILATERAL, TETRAHEDRON, HEXAHEDRON, TRIANGULAR_PRISM, TRIANGULAR_PRISM_LAGRANGE, HEXAHEDRON_LAGRANGE} CellType;
     protected:
-      MeshType&     mesh;
-      int           dim;
-      point_type    vertexOffset;
-      edge_map_type edge2vertex;
+      const MeshType&     _mesh;
+      int           _dim;
+      point_type    _vertexOffset;
+      edge_map_type _edge2vertex;
     public:
-      CellRefiner(MeshType& mesh) : mesh(mesh) {
-        this->dim = mesh.getDimension();
+      CellRefiner(MeshType& mesh) : _mesh(mesh) {
+        _dim = _mesh.getDimension();
       };
       ~CellRefiner() {};
     protected:
       CellType getCellType(const point_type cell) {
-        const int corners = mesh.getSieve()->getConeSize(cell);
-	switch (dim) {
+        const int corners = _mesh.getSieve()->getConeSize(cell);
+	switch (_dim) {
 	  return LINE;
 	case 2:
 	  switch (corners) {
 	  case 3:
 	    return TRIANGLE;
 	  case 4:
+	    throw ALE::Exception("Not implemented.");
 	    return QUADRILATERAL;
 	  case 6:
 	    return LINE_LAGRANGE;
-	  default :
+	  case 0: {
+	    std::ostringstream msg;
+	    std::cerr << "Internal error. Cone size for mesh point " << cell << " is zero. May be a vertex.";
 	    assert(0);
 	    throw ALE::Exception("Could not determine 2-D cell type.");
+	  } // case 0
+	  default : {
+	    std::ostringstream msg;
+	    std::cerr << "Internal error. Unknown cone size for mesh point " << cell << ". Unknown cell type.";
+	    assert(0);
+	    throw ALE::Exception("Could not determine 2-D cell type.");
+	  } // default
 	  } // switch
 	case 3:
 	  switch (corners) {
@@ -4612,10 +4624,20 @@ namespace ALE {
 	  case 9:
             return TRIANGULAR_PRISM_LAGRANGE;
 	  case 12:
+	    throw ALE::Exception("Not implemented.");
             return HEXAHEDRON_LAGRANGE;
-	  default:
+	  case 0: {
+	    std::ostringstream msg;
+	    std::cerr << "Internal error. Cone size for mesh point " << cell << " is zero. May be a vertex.";
 	    assert(0);
 	    throw ALE::Exception("Could not determine 3-D cell type.");
+	  } // case 0
+	  default : {
+	    std::ostringstream msg;
+	    std::cerr << "Internal error. Unknown cone size for mesh point " << cell << ". Unknown cell type.";
+	    assert(0);
+	    throw ALE::Exception("Could not determine 3-D cell type.");
+	  } // default
 	  } // switch
 	} // switch
       };
@@ -4628,18 +4650,6 @@ namespace ALE {
         triEdges[2] = edge_type(std::min(cone[2], cone[0]), std::max(cone[2], cone[0]));
         *numEdges = 3;
         *edges    = triEdges;
-      };
-      void getEdges_QUADRILATERAL(const int coneSize, const point_type cone[],  int *numEdges, const edge_type **edges) {
-        static edge_type quadEdges[4];
-
-        assert(coneSize == 4);
-        quadEdges[0] = edge_type(std::min(cone[0], cone[1]), std::max(cone[0], cone[1]));
-        quadEdges[1] = edge_type(std::min(cone[1], cone[2]), std::max(cone[1], cone[2]));
-        quadEdges[2] = edge_type(std::min(cone[2], cone[3]), std::max(cone[2], cone[3]));
-        quadEdges[3] = edge_type(std::min(cone[3], cone[0]), std::max(cone[3], cone[0]));
-	// MISSING VERTEX IN MIDDLE OF CELL
-        *numEdges = 4;
-        *edges    = quadEdges;
       };
       void getEdges_LINE_LAGRANGE(const int coneSize, const point_type cone[],  int *numEdges, const edge_type **edges) {
         static edge_type lineEdges[6];
@@ -4703,15 +4713,15 @@ namespace ALE {
         getEdges_TRIANGLE(coneSize, cone, &numEdges, &edges);
         assert(numEdges == 3);
         for(int e = 0; e < numEdges; ++e) {
-          if (edge2vertex.find(edges[e]) == edge2vertex.end()) {
+          if (_edge2vertex.find(edges[e]) == _edge2vertex.end()) {
             throw ALE::Exception("Missing edge in refined mesh");
           }
-          newVertices[e] = edge2vertex[edges[e]];
+          newVertices[e] = _edge2vertex[edges[e]];
         }
-        triCells[0*3+0] = cone[0]+vertexOffset; triCells[0*3+1] = newVertices[0]; triCells[0*3+2] = newVertices[2];
+        triCells[0*3+0] = cone[0]+_vertexOffset; triCells[0*3+1] = newVertices[0]; triCells[0*3+2] = newVertices[2];
         triCells[1*3+0] = newVertices[0];       triCells[1*3+1] = newVertices[1]; triCells[1*3+2] = newVertices[2];
-        triCells[2*3+0] = cone[1]+vertexOffset; triCells[2*3+1] = newVertices[1]; triCells[2*3+2] = newVertices[0];
-        triCells[3*3+0] = cone[2]+vertexOffset; triCells[3*3+1] = newVertices[2]; triCells[3*3+2] = newVertices[1];
+        triCells[2*3+0] = cone[1]+_vertexOffset; triCells[2*3+1] = newVertices[1]; triCells[2*3+2] = newVertices[0];
+        triCells[3*3+0] = cone[2]+_vertexOffset; triCells[3*3+1] = newVertices[2]; triCells[3*3+2] = newVertices[1];
         *numCells = 4;
         *cells    = triCells;
       };
@@ -4724,24 +4734,24 @@ namespace ALE {
         getEdges_LINE_LAGRANGE(coneSize, cone, &numEdges, &edges);
         assert(numEdges == 3);
         for(int e = 0; e < numEdges; ++e) {
-          if (edge2vertex.find(edges[e]) == edge2vertex.end()) {
+          if (_edge2vertex.find(edges[e]) == _edge2vertex.end()) {
             throw ALE::Exception("Missing edge in refined mesh");
           }
-          newVertices[e] = edge2vertex[edges[e]];
+          newVertices[e] = _edge2vertex[edges[e]];
         }
-	lineCells[0*6+0] = cone[0]+vertexOffset; // new cell 0
+	lineCells[0*6+0] = cone[0]+_vertexOffset; // new cell 0
         lineCells[0*6+1] = newVertices[0];
-	lineCells[0*6+2] = cone[2]+vertexOffset;
+	lineCells[0*6+2] = cone[2]+_vertexOffset;
         lineCells[0*6+3] = newVertices[1];
-	lineCells[0*6+4] = cone[4]+vertexOffset;
+	lineCells[0*6+4] = cone[4]+_vertexOffset;
         lineCells[0*6+5] = newVertices[2];
 
         lineCells[1*6+0] = newVertices[0]; // new cell 1
-	lineCells[1*6+1] = cone[1]+vertexOffset;
+	lineCells[1*6+1] = cone[1]+_vertexOffset;
         lineCells[1*6+2] = newVertices[1];
-	lineCells[1*6+3] = cone[3]+vertexOffset;
+	lineCells[1*6+3] = cone[3]+_vertexOffset;
         lineCells[1*6+4] = newVertices[2];
-	lineCells[1*6+5] = cone[5]+vertexOffset;
+	lineCells[1*6+5] = cone[5]+_vertexOffset;
 
         *numCells = 2;
         *cells    = lineCells;
@@ -4755,19 +4765,19 @@ namespace ALE {
         getEdges_TETRAHEDRON(coneSize, cone, &numEdges, &edges);
         assert(numEdges == 6);
         for(int e = 0; e < numEdges; ++e) {
-          if (edge2vertex.find(edges[e]) == edge2vertex.end()) {
+          if (_edge2vertex.find(edges[e]) == _edge2vertex.end()) {
             throw ALE::Exception("Missing edge in refined mesh");
           }
-          newVertices[e] = edge2vertex[edges[e]];
+          newVertices[e] = _edge2vertex[edges[e]];
         }
-        tetCells[0*4+0] = cone[0]+vertexOffset; tetCells[0*4+1] = newVertices[3]; tetCells[0*4+2] = newVertices[0]; tetCells[0*4+3] = newVertices[2];
+        tetCells[0*4+0] = cone[0]+_vertexOffset; tetCells[0*4+1] = newVertices[3]; tetCells[0*4+2] = newVertices[0]; tetCells[0*4+3] = newVertices[2];
         tetCells[1*4+0] = newVertices[0];       tetCells[1*4+1] = newVertices[1]; tetCells[1*4+2] = newVertices[2]; tetCells[1*4+3] = newVertices[3];
         tetCells[2*4+0] = newVertices[0];       tetCells[2*4+1] = newVertices[3]; tetCells[2*4+2] = newVertices[4]; tetCells[2*4+3] = newVertices[1];
-        tetCells[3*4+0] = cone[1]+vertexOffset; tetCells[3*4+1] = newVertices[4]; tetCells[3*4+2] = newVertices[1]; tetCells[3*4+3] = newVertices[0];
+        tetCells[3*4+0] = cone[1]+_vertexOffset; tetCells[3*4+1] = newVertices[4]; tetCells[3*4+2] = newVertices[1]; tetCells[3*4+3] = newVertices[0];
         tetCells[4*4+0] = newVertices[2];       tetCells[4*4+1] = newVertices[5]; tetCells[4*4+2] = newVertices[3]; tetCells[4*4+3] = newVertices[1];
-        tetCells[5*4+0] = cone[2]+vertexOffset; tetCells[5*4+1] = newVertices[5]; tetCells[5*4+2] = newVertices[2]; tetCells[5*4+3] = newVertices[1];
+        tetCells[5*4+0] = cone[2]+_vertexOffset; tetCells[5*4+1] = newVertices[5]; tetCells[5*4+2] = newVertices[2]; tetCells[5*4+3] = newVertices[1];
         tetCells[6*4+0] = newVertices[1];       tetCells[6*4+1] = newVertices[4]; tetCells[6*4+2] = newVertices[5]; tetCells[6*4+3] = newVertices[3];
-        tetCells[7*4+0] = cone[3]+vertexOffset; tetCells[7*4+1] = newVertices[3]; tetCells[7*4+2] = newVertices[5]; tetCells[7*4+3] = newVertices[4];
+        tetCells[7*4+0] = cone[3]+_vertexOffset; tetCells[7*4+1] = newVertices[3]; tetCells[7*4+2] = newVertices[5]; tetCells[7*4+3] = newVertices[4];
         *numCells = 8;
         *cells    = tetCells;
       };
@@ -4780,18 +4790,18 @@ namespace ALE {
         getEdges_TRIANGULAR_PRISM_LAGRANGE(coneSize, cone, &numEdges, &edges);
         assert(numEdges == 9);
         for(int e = 0; e < numEdges; ++e) {
-          if (edge2vertex.find(edges[e]) == edge2vertex.end()) {
+          if (_edge2vertex.find(edges[e]) == _edge2vertex.end()) {
             throw ALE::Exception("Missing edge in refined mesh");
           }
-          newVertices[e] = edge2vertex[edges[e]];
+          newVertices[e] = _edge2vertex[edges[e]];
         }
-        tcells[0*9+0] = cone[0]+vertexOffset; // New cell 0
+        tcells[0*9+0] = cone[0]+_vertexOffset; // New cell 0
 	tcells[0*9+1] = newVertices[0];
 	tcells[0*9+2] = newVertices[2];
-        tcells[0*9+3] = cone[3]+vertexOffset;
+        tcells[0*9+3] = cone[3]+_vertexOffset;
 	tcells[0*9+4] = newVertices[3];
 	tcells[0*9+5] = newVertices[5];
-        tcells[0*9+6] = cone[6]+vertexOffset;
+        tcells[0*9+6] = cone[6]+_vertexOffset;
 	tcells[0*9+7] = newVertices[6];
 	tcells[0*9+8] = newVertices[8];
 
@@ -4805,23 +4815,23 @@ namespace ALE {
 	tcells[1*9+7] = newVertices[7];
 	tcells[1*9+8] = newVertices[8];
 
-        tcells[2*9+0] = cone[1]+vertexOffset; // New cell 2
+        tcells[2*9+0] = cone[1]+_vertexOffset; // New cell 2
 	tcells[2*9+1] = newVertices[1];
 	tcells[2*9+2] = newVertices[0];
-        tcells[2*9+3] = cone[4]+vertexOffset;
+        tcells[2*9+3] = cone[4]+_vertexOffset;
 	tcells[2*9+4] = newVertices[4];
 	tcells[2*9+5] = newVertices[3];
-        tcells[2*9+6] = cone[7]+vertexOffset;
+        tcells[2*9+6] = cone[7]+_vertexOffset;
 	tcells[2*9+7] = newVertices[7];
 	tcells[2*9+8] = newVertices[6];
 
-        tcells[3*9+0] = cone[2]+vertexOffset; // New cell 3
+        tcells[3*9+0] = cone[2]+_vertexOffset; // New cell 3
 	tcells[3*9+1] = newVertices[2];
 	tcells[3*9+2] = newVertices[1];
-        tcells[3*9+3] = cone[5]+vertexOffset;
+        tcells[3*9+3] = cone[5]+_vertexOffset;
 	tcells[3*9+4] = newVertices[5];
 	tcells[3*9+5] = newVertices[4];
-        tcells[3*9+6] = cone[8]+vertexOffset;
+        tcells[3*9+6] = cone[8]+_vertexOffset;
 	tcells[3*9+7] = newVertices[8];
 	tcells[3*9+8] = newVertices[7];
 
@@ -4829,9 +4839,9 @@ namespace ALE {
         *cells    = tcells;
       };
     public:
-      point_type getVertexOffset()                        {return vertexOffset;};
-      void       setVertexOffset(const point_type offset) {vertexOffset = offset;};
-      edge_map_type& getEdgeToVertex() {return edge2vertex;};
+      point_type getVertexRelativeOffset()                        {return _vertexOffset;};
+      void       setVertexRelativeOffset(const point_type offset) {_vertexOffset = offset;};
+      edge_map_type& getEdgeToVertex() {return _edge2vertex;};
       int numNewCells(const point_type cell) {
         switch(this->getCellType(cell)) {
 	case TRIANGLE:
@@ -4872,8 +4882,9 @@ namespace ALE {
         }
         // Check that vertex does not yet exist
         for(int v = 0; v < numEdges; ++v) {
-          if (edge2vertex.find(edges[v]) == edge2vertex.end()) {
-            edge2vertex[edges[v]] = curNewVertex++;
+          if (_edge2vertex.find(edges[v]) == _edge2vertex.end()) {
+	    std::cout << "Edge: " << edges[v] << ", new vertex: " << curNewVertex << std::endl;
+            _edge2vertex[edges[v]] = curNewVertex++;
           }
         }
       };
@@ -4932,156 +4943,449 @@ namespace ALE {
           throw ALE::Exception("Could not determine number of new cells for this cell type");
         }
         for(int v = 0; v < numEdges; ++v) {
-          point_type newVertex = edge2vertex[edges[v]];
+          point_type newVertex = _edge2vertex[edges[v]];
 
+	  std::cout << "VERTEX2EDGE index: " << newVertex-firstNewVertex << ", first: " << edges[v].first << ", second: " << edges[v].second << std::endl;
           vertex2edge[(newVertex-firstNewVertex)*2+0] = edges[v].first;
           vertex2edge[(newVertex-firstNewVertex)*2+1] = edges[v].second;
         }
       };
     };
     // This method takes a mesh and performs a refinement of each cell
+    //
+    //   triangle: 1 --> 4 refinement, adding a new vertex at the midpoint of each edge
     //   tetrahedra:        1 --> 8 refinement,  adding a new vertex at the midpoint of each edge
-    //   tetrahedral prism: 1 --> 4 refinement,  adding a new vertex at the midpoint of each edge, but only split end edges
+    //
+    // :WARNING: This method currently only works for uninterpolated meshes with tri and tet cells.
     template<typename MeshType, typename Refiner>
-    static void refineGeneral(MeshType& mesh, MeshType& newMesh, Refiner& refiner) {
+    static void refineGeneral(const Obj<MeshType>& mesh, const Obj<MeshType>& newMesh, Refiner& refiner) {
       typedef typename MeshType::sieve_type sieve_type;
       typedef typename MeshType::point_type point_type;
       typedef typename Refiner::edge_type   edge_type;
 
-      // Calculate number of new cells
-      const Obj<typename MeshType::label_sequence>&     cells       = mesh.heightStratum(0);
+      // :WARNING: Assumed order of mesh points (cells and vertices):
+      //
+      // normal cells (in censored depth)
+      // normal vertices (in censored depth)
+      // other vertices
+      // other cells
+      //
+      // This permits omitting in output the other vertices (e.g.,
+      // Lagrange multipliers) and other cells (e.g., cohesive cells)
+      // which have a custom reference cell that is not recognized.
+
+      assert(!mesh.isNull());
+      assert(!newMesh.isNull());
+
+      // Get original mesh stuff.
+      const Obj<typename MeshType::label_sequence>& cells = mesh->heightStratum(0);
       assert(!cells.isNull());
-      const int                                         numCells    = cells->size();
-      const typename MeshType::label_sequence::iterator cEnd        = cells->end();
-      int                                               numNewCells = 0;
-      point_type                                        curNewCell  = 0;
-
-      for(typename MeshType::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
-        numNewCells += refiner.numNewCells(*c_iter);
-      }
-      // Bound number of new vertices
-      const int  numOldVertices  = mesh.depthStratum(0)->size();
-      point_type curNewVertex = numNewCells + numOldVertices;
-
-      // Loop over cells
-      const Obj<sieve_type>&                         sieve    = mesh.getSieve();
+      const typename MeshType::label_sequence::iterator cellsEnd = cells->end();
+      
+      const Obj<typename MeshType::label_sequence>& vertices = mesh->depthStratum(0);
+      assert(!vertices.isNull());
+      
+      const Obj<sieve_type>& sieve = mesh->getSieve();
       assert(!sieve.isNull());
-      const Obj<sieve_type>&                         newSieve = newMesh.getSieve();
-      assert(!newSieve.isNull());
       ALE::ISieveVisitor::PointRetriever<sieve_type> cV(std::max(1, sieve->getMaxConeSize()));
 
-      // First compute map from edges to new vertices
-      for(typename MeshType::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
-        sieve->cone(*c_iter, cV);
-        refiner.splitEdge(*c_iter, cV.getSize(), cV.getPoints(), curNewVertex);
-        cV.clear();
-      }
-      // Reallocate the sieve chart
-      newSieve->setChart(typename sieve_type::chart_type(0, curNewVertex));
+      if (mesh->hasLabel("censored depth")) {
+	// :WARNING: Assume all cells in the censored depth come before
+	// any other cells. This guarantees that we add vertices in the
+	// censored depth before adding other vertices.
+
+	int counterBegin = 0;
+
+	int oldNumCellsNormal = 0;
+	int oldNumCellsOther = 0;
+	int oldNumVerticesNormal = 0;
+	int oldNumVerticesOther = 0;
+	
+	int newNumCellsNormal = 0;
+	int newNumCellsOther = 0;
+	int newNumVerticesNormal = 0;
+	int newNumVerticesOther = 0;
+
+	// Count number of cells in censored depth (normal cells).
+	const Obj<typename MeshType::label_sequence>& cellsNormal = mesh->getLabelStratum("censored depth", mesh->depth());
+	assert(!cellsNormal.isNull());
+	const typename MeshType::label_sequence::iterator cellsNormalEnd = cellsNormal->end();
+	oldNumCellsNormal = cellsNormal->size();
+	for(typename MeshType::label_sequence::iterator c_iter = cellsNormal->begin(); c_iter != cellsNormalEnd; ++c_iter)
+	  newNumCellsNormal += refiner.numNewCells(*c_iter);
+	
+	// Count number of remaining cells (other cells).
+	const int numSkip = oldNumCellsNormal;
+	oldNumCellsOther = cells->size() - oldNumCellsNormal;
+	typename MeshType::label_sequence::iterator c_iter = cells->begin();
+	for (int i=0; i < numSkip; ++i)
+	  ++c_iter;
+	for (; c_iter != cellsEnd; ++c_iter)
+	  newNumCellsOther += refiner.numNewCells(*c_iter);
+	
+	// Get number of old normal vertices.
+	assert(!mesh->getFactory.isNull());
+	Obj<typename Mesh::numbering_type> vNumbering = mesh->getFactory()->getNumbering(mesh, "censored depth", 0);
+	assert(!vNumbering.isNull());
+	oldNumVerticesNormal = vNumbering->size();
+	
+	// Count number of new normal vertices.
+	int counterBegin = newNumCellsNormal + vertices->size();
+	const point_type curNewVertex = counterBegin;
+	for(typename MeshType::label_sequence::iterator c_iter = cellsNormal->begin(); c_iter != cellsNormalEnd; ++c_iter) {
+	  cV.clear();
+	  sieve->cone(*c_iter, cV);
+	  refiner.splitEdge(*c_iter, cV.getSize(), cV.getPoints(), curNewVertex);
+	} // for
+	newNumVerticesNormal = curNewVertex - counterBegin;
+	
+	// Count number of remaining vertices (other vertices).
+	oldNumVerticesOther = vertices->size() - oldNumVerticessNormal;
+	counterBegin = curNewVertex + oldNumVerticesOther;
+	curNewVertex = counterBegin;
+	c_iter = cells->begin();
+	for (int i=0; i < numSkip; ++i)
+	  ++c_iter;
+	for (; c_iter != cellsEnd; ++c_iter) {
+	  cV.clear();
+	  sieve->cone(*c_iter, cV);
+	  refiner.splitEdge(*c_iter, cV.getSize(), cV.getPoints(), curNewVertex);
+	} // for
+	newNumVerticesOther = curNewVertex - counterBegin;
+	
+	Interval<point_type> oldCellsNormalRange(0, oldNumCellsNormal);
+	Interval<point_type> newCellsNormalRange(0, newNumCellsNormal);
+
+	Interval<point_type> oldVerticesNormalRange(oldNumCellsNormal, oldNumCellsNormal+oldNumVerticesNormal);
+	Interval<point_type> newVerticesNormalRange(newNumCellsNormal, newNumCellsNormal+newNumVerticesNormal);
+	
+	Interval<point_type> oldVerticesOtherRange(oldNumCellsNormal+oldNumVerticesNormal ,
+						   oldNumCellsNormal+oldNumVerticesNormal+oldNumVerticesOther);
+	Interval<point_type> newVerticesOtherRange(newNumCellsNormal+newNumVerticesNormal ,
+						   newNumCellsNormal+newNumVerticesNormal+newNumVerticesOther);
+
+	Interval<point_type> oldCellssOtherRange(oldNumCellsNormal+oldNumVerticesNormal+oldNumVerticesOther,
+						 oldNumCellsNormal+oldNumVerticesNormal+oldNumVerticesOther+oldNumCellsOther);
+	Interval<point_type> newCellssOtherRange(newNumCellsNormal+newNumVerticesNormal+newNumVerticesOther,
+						 newNumCellsNormal+newNumVerticesNormal+newNumVerticesOther+newNumCellsOther);
+
+
+	// Allocate chart for new sieve.
+	const Obj<sieve_type>& newSieve = newMesh->getSieve();
+	assert(!newSieve.isNull());
+	newSieve->setChart(typename sieve_type::chart_type(0, newCellsOtherRange.end()));
+	refiner.setVertexRelativeOffset(newNumCellsNormal-oldNumCellsNormal); // THIS DOES NOT WORK FOR COHESIVE CELLS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+	// Create new sieve with correct sizes for refined cells
+
+	// Start with normal cells.
+	point_type curNewCell = newCellsNormalRange.begin();
+	const typename Interval<point_type>::const_iterator oldCellsNormalRangeEnd = oldCellsNormalRange.end();
+	for (typename Interval<point_type>::const_iterator c_iter=oldCellsNormalRange.begin();
+	     c_iter != oldCellsNormalRangeEnd;
+	     ++c_iter) {
+	  // Set new cone and support sizes
+	  cV.clear();
+	  sieve->cone(*c_iter, cV);
+	  const point_type *cone = cV.getPoints();
+	  const int coneSize = cV.getSize();
+	  const int newCells = refiner.numNewCells(*c_iter);
+	  
+	  for(int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
+	    const point_type *newCone;
+	    int newConeSize;
+	    
+	    newSieve->setConeSize(curNewCell, sieve->getConeSize(*c_iter));
+	    // OPTIMIZE THIS
+	    refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
+	    for(int v = 0; v < newConeSize; ++v) 
+	      newSieve->addSupportSize(newCone[v], 1);
+	  } // for
+	} // for
+
+	// Continue with other cells.
+	point_type curNewCell = newCellsOtherRange.begin();
+	const typename Interval<point_type>::const_iterator oldCellsOtherRangeEnd = oldCellsOtherRange.end();
+	for (typename Interval<point_type>::const_iterator c_iter=oldCellOtherRange.begin();
+	     c_iter != oldCellsOtherRangeEnd;
+	     ++c_iter) {
+	  // Set new cone and support sizes
+	  cV.clear();
+	  sieve->cone(*c_iter, cV);
+	  const point_type *cone = cV.getPoints();
+	  const int coneSize = cV.getSize();
+	  const int newCells = refiner.numNewCells(*c_iter);
+	
+	  for(int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
+	    const point_type *newCone;
+	    int newConeSize;
+	  
+	    newSieve->setConeSize(curNewCell, sieve->getConeSize(*c_iter));
+	    // OPTIMIZE THIS
+	    refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
+	    for(int v = 0; v < newConeSize; ++v) 
+	      newSieve->addSupportSize(newCone[v], 1);
+	  } // for
+	} // for
+	newSieve->allocate();
+	point_type* vertex2edge = new point_type[(newNumVerticesNormal+newNumVerticesOther)*2];
+	typename Refiner::edge_map_type& edge2vertex = refiner.getEdgeToVertex();
+
+
+	// Create refined normal cells in new sieve.
+	curNewCell = newCellsNormalRange.begin();
+	for (typename Interval<point_type>::const_iterator c_iter=oldCellsNormalRange.begin();
+	     c_iter != oldCellsNormalRangeEnd;
+	     ++c_iter) {
+	  cV.clear();
+	  sieve->cone(*c_iter, cV);
+	  const point_type *cone = cV.getPoints();
+	  const int coneSize = cV.getSize();
+	  const int newCells = refiner.numNewCells(*c_iter);
+	  
+	  for (int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
+	    const point_type *newCone;
+	    int newConeSize;
+	    
+	    refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
+	    newSieve->setCone(newCone, curNewCell);
+	  } // for
+	  
+	  refiner.getNeighboringVertices(*c_iter, coneSize, cone, firstNewVertex, vertex2edge);
+	} // for
+
+	// Create refined other cells in new sieve.
+	curNewCell = newCellsOtherRange.begin();
+	for (typename Interval<point_type>::const_iterator c_iter=oldCellsOtherRange.begin();
+	     c_iter != oldCellsOtherRangeEnd;
+	     ++c_iter) {
+	  cV.clear();
+	  sieve->cone(*c_iter, cV);
+	  const point_type *cone = cV.getPoints();
+	  const int coneSize = cV.getSize();
+	  const int newCells = refiner.numNewCells(*c_iter);
+	  
+	  for (int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
+	    const point_type *newCone;
+	    int newConeSize;
+	    
+	    refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
+	    newSieve->setCone(newCone, curNewCell);
+	  } // for
+	  
+	  // FIX THIS!!! LAGRANGE VERTICES MUST BE AFTER ALL OTHER VERTICES (INCLUDING OLD LAGRANGE VERTICES)
+	  refiner.getNeighboringVertices(*c_iter, coneSize, cone, firstNewVertex, vertex2edge);
+	} // for
+	newSieve->symmetrize();
+
+	// Set coordinates in refined mesh.
+	const Obj<typename MeshType::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+	assert(!coordinates.isNull());
+	const Obj<typename MeshType::real_section_type>& newCoordinates = newMesh->getRealSection("coordinates");
+	assert(!newCoordinates.isNull());
+
+	const typename MeshType::label_sequence::const_iterator verticesEnd = vertices->end();
+	assert(vertices->size() > 0);
+	const int spaceDim = coordinates->getFiberDimension(*vertices->begin());
+	assert(spaceDim > 0);
+	newCoordinates->setChart(typename sieve_type::chart_type(newNumCellsNormal, newNumCellsNormal+newNumVertices));
+
+	for (int iVertex=0, offset=newNumCellsNormal; iVertex < newNumVertices; ++iVertex) {
+	  const point_type vNew = iVertex + offset;
+	  newCoordinates->setFiberDimension(vNew, spaceDim);
+	} // for
+	newCoordinates->allocatePoint();
       
-      const int cellDepth = (mesh.depth() == -1) ? -1 : 1;
-      const std::string labelName = 
-	mesh.hasLabel("censored depth") ? "censored depth" : "depth";
-      assert(!mesh.getFactory().isNull());
-      const Obj<typename MeshType::numbering_type>& numbering = 
-	mesh.getFactory()->getNumbering(Obj<MeshType>(mesh), labelName, cellDepth);
-      assert(!numbering.isNull());
-      const int numCellsNoLagrange = numbering->getGlobalSize();
+	for (int iVertex=0, oldOffset=oldNumCellsNormal, newOffset=newNumCellsNormal; iVertex < oldNumVertices; ++iVertex) {
+	  const point_type vOld = iVertex + oldOffset;
+	  const point_type vNew = iVertex + newOffset;
+	  newCoordinates->updatePoint(vNew, coordinates->restrictPoint(vOld));
+	} // for
+	for(int v=0, iVertex=oldNumVertices, newOffset=newNumCellsNormal; iVertex < newNumVertices; ++v, ++iVertex) {
+	  const point_type vNew = iVertex + newOffset;
+	  const point_type endpointA = vertex2edge[v*2+0];
+	  const point_type endpointB = vertex2edge[v*2+1];
+	  std::cout << "Setting coordinates of vertex " << vNew << " between vertices "
+		    << endpointA << " and " << endpointB << std::endl;
+	  const double *coordsA   = coordinates->restrictPoint(endpointA);
+	  double coords[3];
 
-      refiner.setVertexOffset(numNewCells - numCellsNoLagrange);
-      // Create new sieve with correct sizes for refined cells
-      for(typename MeshType::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
-        // Set new cone and support sizes
-        sieve->cone(*c_iter, cV);
-        const point_type *cone     = cV.getPoints();
-        const int         coneSize = cV.getSize();
-        const int         newCells = refiner.numNewCells(*c_iter);
+	  for(int d = 0; d < 3; ++d)
+	    coords[d]  = coordsA[d];
+	  const double *coordsB = coordinates->restrictPoint(endpointB);
+	  for(int d = 0; d < 3; ++d) {
+	    coords[d] += coordsB[d];
+	    coords[d] *= 0.5;
+	  } // for
+	  newCoordinates->updatePoint(vNew, coords);
+	} // for
+	delete [] vertex2edge;
+	// Fast stratification
+	const Obj<typename MeshType::label_type>& height = newMesh->createLabel("height");
+	const Obj<typename MeshType::label_type>& depth  = newMesh->createLabel("depth");
 
-        for(int nc = 0; nc < newCells; ++nc, ++curNewCell) {
-          const point_type *newCone;
-          int               newConeSize;
+	for (int iCell=0; iCell < newNumCellsNormal; ++iCell) {
+	  const point_type cNew = iCell;
+	  height->setCone(0, cNew);
+	  depth->setCone(1, cNew);
+	} // for
+	for (int iCell=newNumCellsNormal, offset=newNumVertices; iCell < newNumCells; ++iCell) {
+	  const point_type cNew = iCell + offset;
+	  height->setCone(0, cNew);
+	  depth->setCone(1, cNew);
+	} // for
+	for (int iVertex=0, newOffset=newNumCellsNormal; iVertex < newNumVertices; ++iVertex) {
+	  const point_type vNew = iVertex + newOffset;
+	  height->setCone(1, vNew);
+	  depth->setCone(0, vNew);
+	} // for
+	newMesh->setHeight(1);
+	newMesh->setDepth(1);
 
-          newSieve->setConeSize(curNewCell, sieve->getConeSize(*c_iter));
-          refiner.getNewCell(*c_iter, coneSize, cone, nc, &newConeSize, &newCone);
-          for(int v = 0; v < newConeSize; ++v) {
-            newSieve->addSupportSize(newCone[v], 1);
-          }
-        }
-        cV.clear();
-      }
-      newSieve->allocate();
-      const int   numNewVertices = curNewVertex - numNewCells;
-      point_type *vertex2edge    = new point_type[numNewVertices*2];
-      typename Refiner::edge_map_type& edge2vertex = refiner.getEdgeToVertex();
+      } else {	  
+	int counterBegin = 0;
 
-      // Create refined cells in new sieve
-      curNewCell = 0;
-      for(typename MeshType::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
-        // Set new cone and support sizes
-        sieve->cone(*c_iter, cV);
-        const point_type *cone     = cV.getPoints();
-        const int         coneSize = cV.getSize();
-        const int         newCells = refiner.numNewCells(*c_iter);
+	int oldNumCells = 0;
+	int oldNumVertices = 0;
+	
+	int newNumCells = 0;
+	int newNumVertices = 0;
 
-        for(int nc = 0; nc < newCells; ++nc, ++curNewCell) {
-          const point_type *newCone;
-          int               newConeSize;
+	// Count number of cells.
+	oldNumCells = cells->size();
+	for (typename MeshType::label_sequence::iterator c_iter = cells->begin(); c_iter != cellsEnd; ++c_iter)
+	  newNumCells += refiner.numNewCells(*c_iter);
 
-          refiner.getNewCell(*c_iter, coneSize, cone, nc, &newConeSize, &newCone);
-          newSieve->setCone(newCone, curNewCell);
-        }
-        cV.clear();
+	// Count number of vertices (normal vertices).
+	oldNumVertices = vertices->size();
+	int counterBegin = newNumCells + oldNumVertices;
+	const point_type curNewVertex = counterBegin;
+	for(typename MeshType::label_sequence::iterator c_iter = cells->begin(); c_iter != cellsEnd; ++c_iter) {
+	  cV.clear();
+	  sieve->cone(*c_iter, cV);
+	  refiner.splitEdge(*c_iter, cV.getSize(), cV.getPoints(), curNewVertex);
+	} // for
+	newNumVertices = curNewVertex - counterBegin;
 
-        refiner.getNeighboringVertices(*c_iter, coneSize, cone, numNewCells+numOldVertices, vertex2edge);
-      }
-      newSieve->symmetrize();
-      // Create new coordinates
-      const Obj<typename MeshType::real_section_type>& coordinates    = mesh.getRealSection("coordinates");
-      const Obj<typename MeshType::real_section_type>& newCoordinates = newMesh.getRealSection("coordinates");
+	Interval<point_type> oldCellsRange(0, oldNumCells);
+	Interval<point_type> newCellsRange(0, newNumCells);
 
-      const int spaceDim = coordinates->getFiberDimension(numCellsNoLagrange);
-      assert(spaceDim > 0);
+	Interval<point_type> oldVerticesRange(oldNumCells, oldNumCells+oldNumVertices);
+	Interval<point_type> newVerticesRange(newNumCells, newNumCells+newNumVertices);
+	
+	// Allocate chart for new sieve.
+	const Obj<sieve_type>& newSieve = newMesh->getSieve();
+	assert(!newSieve.isNull());
+	newSieve->setChart(typename sieve_type::chart_type(0, newCellsOtherRange.end()));
+	refiner.setVertexRelativeOffset(newNumCells-oldNumCells);
 
-      newCoordinates->setChart(typename sieve_type::chart_type(numNewCells, curNewVertex));
-      for(int v = numNewCells; v < curNewVertex; ++v) {
-        newCoordinates->setFiberDimension(v, spaceDim);
-      }
-      newCoordinates->allocatePoint();
-      for(int v = 0; v < numOldVertices; ++v) {
-        newCoordinates->updatePoint(v+numNewCells, coordinates->restrictPoint(v+numCellsNoLagrange));
-      }
-      for(int v = numNewCells+numOldVertices; v < curNewVertex; ++v) {
-        const int     endpointA = vertex2edge[(v-numNewCells-numOldVertices)*2+0];
-        const int     endpointB = vertex2edge[(v-numNewCells-numOldVertices)*2+1];
-	std::cout << "Setting coordinates of vertex " << v << " between vertices "
-		  << endpointA << " and " << endpointB << std::endl;
-        const double *coordsA   = coordinates->restrictPoint(endpointA);
-        double        coords[3];
+	// Create new sieve with correct sizes for refined cells
 
-        for(int d = 0; d < 3; ++d) {
-          coords[d]  = coordsA[d];
-        }
-        const double *coordsB = coordinates->restrictPoint(endpointB);
-        for(int d = 0; d < 3; ++d) {
-          coords[d] += coordsB[d];
-          coords[d] *= 0.5;
-        }
-        newCoordinates->updatePoint(v, coords);
-      }
-      delete [] vertex2edge;
-      // Fast stratification
-      const Obj<typename MeshType::label_type>& height = newMesh.createLabel("height");
-      const Obj<typename MeshType::label_type>& depth  = newMesh.createLabel("depth");
-      for(int c = 0; c < numNewCells; ++c) {
-        height->setCone(0, c);
-        depth->setCone(1, c);
-      }
-      for(int v = numNewCells; v < numNewCells+numNewVertices; ++v) {
-        height->setCone(1, v);
-        depth->setCone(0, v);
-      }
-      newMesh.setHeight(1);
-      newMesh.setDepth(1);
+	// Start with normal cells.
+	point_type curNewCell = newCellsRange.begin();
+	const typename Interval<point_type>::const_iterator oldCellsRangeEnd = oldCellsRange.end();
+	for (typename Interval<point_type>::const_iterator c_iter=oldCellsRange.begin();
+	     c_iter != oldCellsRangeEnd;
+	     ++c_iter) {
+	  // Set new cone and support sizes
+	  cV.clear();
+	  sieve->cone(*c_iter, cV);
+	  const point_type *cone = cV.getPoints();
+	  const int coneSize = cV.getSize();
+	  const int newCells = refiner.numNewCells(*c_iter);
+	  
+	  for(int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
+	    const point_type *newCone;
+	    int newConeSize;
+	    
+	    newSieve->setConeSize(curNewCell, sieve->getConeSize(*c_iter));
+	    // OPTIMIZE THIS
+	    refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
+	    for(int v = 0; v < newConeSize; ++v) 
+	      newSieve->addSupportSize(newCone[v], 1);
+	  } // for
+	} // for
+
+	// Create refined normal cells in new sieve.
+	curNewCell = newCellsRange.begin();
+	for (typename Interval<point_type>::const_iterator c_iter=oldCellsRange.begin();
+	     c_iter != oldCellsRangeEnd;
+	     ++c_iter) {
+	  cV.clear();
+	  sieve->cone(*c_iter, cV);
+	  const point_type *cone = cV.getPoints();
+	  const int coneSize = cV.getSize();
+	  const int newCells = refiner.numNewCells(*c_iter);
+	  
+	  for (int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
+	    const point_type *newCone;
+	    int newConeSize;
+	    
+	    refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
+	    newSieve->setCone(newCone, curNewCell);
+	  } // for
+	  
+	  refiner.getNeighboringVertices(*c_iter, coneSize, cone, firstNewVertex, vertex2edge);
+	} // for
+	newSieve->symmetrize();
+
+	// Set coordinates in refined mesh.
+	const Obj<typename MeshType::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+	assert(!coordinates.isNull());
+	const Obj<typename MeshType::real_section_type>& newCoordinates = newMesh->getRealSection("coordinates");
+	assert(!newCoordinates.isNull());
+
+	const typename MeshType::label_sequence::const_iterator verticesEnd = vertices->end();
+	assert(vertices->size() > 0);
+	const int spaceDim = coordinates->getFiberDimension(*vertices->begin());
+	assert(spaceDim > 0);
+	newCoordinates->setChart(typename sieve_type::chart_type(newVerticesRange.begin(), newVerticesRange.end()));
+
+	const typename Interval<point_type>::const_iterator newVerticesRangeEnd = newVerticesRange.end();
+	for (typename Interval<point_type>::const_iterator v_iter=newVerticesRange.begin(); v_iter != newVerticesRangeEnd; ++v_iter)
+	  newCoordinates->setFiberDimension(v_iter, spaceDim);
+	newCoordinates->allocatePoint();
+      
+	const typename Interval<point_type>::const_iterator oldVerticesRangeEnd = oldVerticesRange.end();
+	for (typename Interval<point_type>::const_iterator vOld_iter=oldVerticesRange.begin(), vNew_iter=newVerticesRange.begin(); vOld_iter != oldVerticesRangeEnd; ++vOld_iter)
+	  newCoordinates->updatePoint(*vNew_iter, coordinates->restrictPoint(*vOld_iter));
+	for(int v=0, iVertex=oldNumVertices; iVertex < newNumVertices; ++v, ++iVertex) {
+	  const point_type vNew = newVerticesRange.begin() + iVertex;
+	  const point_type endpointA = vertex2edge[v*2+0];
+	  const point_type endpointB = vertex2edge[v*2+1];
+	  std::cout << "Setting coordinates of vertex " << vNew << " between vertices "
+		    << endpointA << " and " << endpointB << std::endl;
+	  const double *coordsA   = coordinates->restrictPoint(endpointA);
+	  double coords[3];
+	  
+	  for(int d = 0; d < 3; ++d)
+	    coords[d]  = coordsA[d];
+	  const double *coordsB = coordinates->restrictPoint(endpointB);
+	  for(int d = 0; d < 3; ++d) {
+	    coords[d] += coordsB[d];
+	    coords[d] *= 0.5;
+	  } // for
+	  newCoordinates->updatePoint(vNew, coords);
+	} // for
+	delete [] vertex2edge;
+
+	// Fast stratification
+	const Obj<typename MeshType::label_type>& height = newMesh->createLabel("height");
+	const Obj<typename MeshType::label_type>& depth  = newMesh->createLabel("depth");
+	for (int iCell=0; iCell < newNumCells; ++iCell) {
+	  const point_type cNew = iCell;
+	  height->setCone(0, cNew);
+	  depth->setCone(1, cNew);
+	} // for
+	for (int iVertex=0, newOffset=newNumCellsNormal; iVertex < newNumVertices; ++iVertex) {
+	  const point_type vNew = iVertex + newOffset;
+	  height->setCone(1, vNew);
+	  depth->setCone(0, vNew);
+	} // for
+	newMesh->setHeight(1);
+	newMesh->setDepth(1);
+      } // if/else
+
       // Exchange new boundary vertices
       //   We can convert endpoints, and then just match to new vertex on this side
       //   1) Create the overlap of edges which are vertex pairs (do not need for interpolated meshes)
@@ -5091,18 +5395,18 @@ namespace ALE {
 
 
       // Create the parallel overlap
-      int *numCellsP    = new int[mesh.commSize()];
-      int *numNewCellsP = new int[newMesh.commSize()];
+      int *oldNumCellsP    = new int[mesh->commSize()];
+      int *newNumCellsP = new int[newMesh->commSize()];
       int  ierr;
 
-      ierr = MPI_Allgather((void *) &numCells, 1, MPI_INT, numCellsP, 1, MPI_INT, mesh.comm());CHKERRXX(ierr);
-      ierr = MPI_Allgather((void *) &numNewCells, 1, MPI_INT, numNewCellsP, 1, MPI_INT, newMesh.comm());CHKERRXX(ierr);
-      Obj<typename MeshType::send_overlap_type> newSendOverlap = newMesh.getSendOverlap();
-      Obj<typename MeshType::recv_overlap_type> newRecvOverlap = newMesh.getRecvOverlap();
-      const Obj<typename MeshType::send_overlap_type>& sendOverlap = mesh.getSendOverlap();
-      const Obj<typename MeshType::recv_overlap_type>& recvOverlap = mesh.getRecvOverlap();
+      ierr = MPI_Allgather((void *) &oldNumCells, 1, MPI_INT, oldNumCellsP, 1, MPI_INT, mesh->comm());CHKERRXX(ierr);
+      ierr = MPI_Allgather((void *) &newNumCells, 1, MPI_INT, newNumCellsP, 1, MPI_INT, newMesh->comm());CHKERRXX(ierr);
+      Obj<typename MeshType::send_overlap_type> newSendOverlap = newMesh->getSendOverlap();
+      Obj<typename MeshType::recv_overlap_type> newRecvOverlap = newMesh->getRecvOverlap();
+      const Obj<typename MeshType::send_overlap_type>& sendOverlap = mesh->getSendOverlap();
+      const Obj<typename MeshType::recv_overlap_type>& recvOverlap = mesh->getRecvOverlap();
       Obj<typename MeshType::send_overlap_type::traits::capSequence> sendPoints  = sendOverlap->cap();
-      const typename MeshType::send_overlap_type::source_type        localOffset = numNewCellsP[newMesh.commRank()] - numCellsP[mesh.commRank()];
+      const typename MeshType::send_overlap_type::source_type        localOffset = newNumCellsP[newMesh->commRank()] - oldNumCellsP[mesh->commRank()];
 
       for(typename MeshType::send_overlap_type::traits::capSequence::iterator p_iter = sendPoints->begin(); p_iter != sendPoints->end(); ++p_iter) {
         const Obj<typename MeshType::send_overlap_type::traits::supportSequence>& ranks      = sendOverlap->support(*p_iter);
@@ -5111,7 +5415,7 @@ namespace ALE {
         for(typename MeshType::send_overlap_type::traits::supportSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
           const int                                   rank         = *r_iter;
           const typename MeshType::send_overlap_type::source_type& remotePoint  = r_iter.color();
-          const typename MeshType::send_overlap_type::source_type  remoteOffset = numNewCellsP[rank] - numCellsP[rank];
+          const typename MeshType::send_overlap_type::source_type  remoteOffset = newNumCellsP[rank] - oldNumCellsP[rank];
 
           newSendOverlap->addArrow(localPoint+localOffset, rank, remotePoint+remoteOffset);
         }
@@ -5125,17 +5429,17 @@ namespace ALE {
         for(typename MeshType::recv_overlap_type::traits::coneSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
           const int                                        rank         = *r_iter;
           const typename MeshType::recv_overlap_type::target_type& remotePoint  = r_iter.color();
-          const typename MeshType::recv_overlap_type::target_type  remoteOffset = numNewCellsP[rank] - numCellsP[rank];
+          const typename MeshType::recv_overlap_type::target_type  remoteOffset = newNumCellsP[rank] - oldNumCellsP[rank];
 
           newRecvOverlap->addArrow(rank, localPoint+localOffset, remotePoint+remoteOffset);
         }
       }
-      newMesh.setCalculatedOverlap(true);
-      delete [] numCellsP;
-      delete [] numNewCellsP;
+      newMesh->setCalculatedOverlap(true);
+      delete [] oldNumCellsP;
+      delete [] newNumCellsP;
       // Check edges in edge2vertex for both endpoints sent to same process
       //   Put it in section with point being the lowest numbered vertex and value (other endpoint, new vertex)
-      Obj<ALE::Section<point_type, edge_type> > newVertices = new ALE::Section<point_type, edge_type>(mesh.comm());
+      Obj<ALE::Section<point_type, edge_type> > newVerticesSection = new ALE::Section<point_type, edge_type>(mesh->comm());
       std::map<edge_type, std::vector<int> > bdedge2rank;
 
       for(typename std::map<edge_type, point_type>::const_iterator e_iter = edge2vertex.begin(); e_iter != edge2vertex.end(); ++e_iter) {
@@ -5151,20 +5455,20 @@ namespace ALE {
                                 std::insert_iterator<std::list<int> >(ranks, ranks.begin()));
 
           if(ranks.size()) {
-            newVertices->addFiberDimension(std::min(e_iter->first.first, e_iter->first.second)+localOffset, 1);
+            newVerticesSection->addFiberDimension(std::min(e_iter->first.first, e_iter->first.second)+localOffset, 1);
             for(typename std::list<int>::const_iterator r_iter = ranks.begin(); r_iter != ranks.end(); ++r_iter) {
               bdedge2rank[e_iter->first].push_back(*r_iter);
             }
           }
         }
       }
-      newVertices->allocatePoint();
-      const typename ALE::Section<point_type, edge_type>::chart_type& chart = newVertices->getChart();
+      newVerticesSection->allocatePoint();
+      const typename ALE::Section<point_type, edge_type>::chart_type& chart = newVerticesSection->getChart();
 
       for(typename ALE::Section<point_type, edge_type>::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
         typedef typename ALE::Section<point_type, edge_type>::value_type value_type;
         const point_type p      = *c_iter;
-        const int        dim    = newVertices->getFiberDimension(p);
+        const int        dim    = newVerticesSection->getFiberDimension(p);
         int              v      = 0;
         value_type      *values = new value_type[dim];
 
@@ -5173,14 +5477,14 @@ namespace ALE {
             values[v++] = edge_type(std::max(e_iter->first.first, e_iter->first.second)+localOffset, edge2vertex[e_iter->first]);
           }
         }
-        newVertices->updatePoint(p, values);
+        newVerticesSection->updatePoint(p, values);
         delete [] values;
       }
       // Copy across overlap
       typedef ALE::Pair<int, point_type> overlap_point_type;
-      Obj<ALE::Section<overlap_point_type, edge_type> > overlapVertices = new ALE::Section<overlap_point_type, edge_type>(mesh.comm());
+      Obj<ALE::Section<overlap_point_type, edge_type> > overlapVertices = new ALE::Section<overlap_point_type, edge_type>(mesh->comm());
 
-      ALE::Pullback::SimpleCopy::copy(newSendOverlap, newRecvOverlap, newVertices, overlapVertices);
+      ALE::Pullback::SimpleCopy::copy(newSendOverlap, newRecvOverlap, newVerticesSection, overlapVertices);
       // Merge by translating edge to local points, finding edge in edge2vertex, and adding (local new vetex, remote new vertex) to overlap
       for(typename std::map<edge_type, std::vector<int> >::const_iterator e_iter = bdedge2rank.begin(); e_iter != bdedge2rank.end(); ++e_iter) {
         const point_type localPoint = edge2vertex[e_iter->first];
@@ -5220,7 +5524,9 @@ namespace ALE {
         }
       }
     };
+#endif
   };
+
   class MeshSerializer {
   public:
     template<typename Mesh>

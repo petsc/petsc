@@ -48,7 +48,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_Basic"
 PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
@@ -82,6 +81,50 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
   }
   ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatAXPY_BasicWithPreallocation"
+PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,MatStructure str)
+{
+  PetscInt          i,start,end,j,ncols,m,n;
+  PetscErrorCode    ierr;
+  const PetscInt    *row;
+  PetscScalar       *val;
+  const PetscScalar *vals;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(X,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(X,&start,&end);CHKERRQ(ierr);
+  if (a == 1.0) {
+    for (i = start; i < end; i++) {
+      ierr = MatGetRow(Y,i,&ncols,&row,&vals);CHKERRQ(ierr);
+      ierr = MatSetValues(B,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow(Y,i,&ncols,&row,&vals);CHKERRQ(ierr);
+
+      ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
+      ierr = MatSetValues(B,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = PetscMalloc((n+1)*sizeof(PetscScalar),&val);CHKERRQ(ierr);
+    for (i=start; i<end; i++) {
+      ierr = MatGetRow(Y,i,&ncols,&row,&vals);CHKERRQ(ierr);
+      ierr = MatSetValues(B,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow(Y,i,&ncols,&row,&vals);CHKERRQ(ierr);
+
+      ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
+      for (j=0; j<ncols; j++) {
+	val[j] = a*vals[j];
+      }
+      ierr = MatSetValues(B,1,&i,ncols,row,val,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(val);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
