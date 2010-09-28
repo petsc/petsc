@@ -40,7 +40,7 @@ struct AppCtx{int testint;};
 PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 PetscErrorCode MatrixFreePreconditioner(PC,Vec,Vec);
-PetscErrorCode FormLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,PetscTruth*);
+PetscErrorCode FormLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,PetscBool *);
 
 int main(int argc,char **argv)
 {
@@ -55,7 +55,7 @@ int main(int argc,char **argv)
   PetscInt       *Shistit = 0,Khistl = 200,Shistl = 10;
   PetscReal      h,xp = 0.0,*Khist = 0,*Shist = 0;
   PetscScalar    v,pfive = .5;
-  PetscTruth     flg;
+  PetscBool      flg;
   AppCtx	 user;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -184,7 +184,7 @@ int main(int argc,char **argv)
 }
 
 PetscErrorCode FormLineSearch(SNES snes,void* user,Vec X,Vec F,Vec G,Vec Y,Vec W,PetscReal fnorm,
-                              PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag)
+                              PetscReal *ynorm,PetscReal *gnorm,PetscBool  *flag)
 {
   PetscErrorCode ierr;
   PetscScalar mone=-1.0;

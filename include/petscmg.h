@@ -55,7 +55,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCycleTypeOnLevel(PC,PetscInt,PCM
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCyclesOnLevel(PC,PetscInt,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGMultiplicativeSetCycles(PC,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetGalerkin(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetGalerkin(PC,PetscTruth*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetGalerkin(PC,PetscBool *);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmoother(PC,PetscInt,KSP*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmootherDown(PC,PetscInt,KSP*);

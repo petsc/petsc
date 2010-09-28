@@ -112,7 +112,7 @@ int main(int argc,char **argv)
   DMComposite        packer;
   AppCtx         *appctx;
   ISColoring     iscoloring;
-  PetscTruth     bdp;
+  PetscBool      bdp;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
@@ -253,7 +253,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   Vec            vu,vlambda,vfu,vflambda,vglambda;
   DA             da;
   DMComposite        packer = (DMComposite)dmmg->dm;
-  PetscTruth     useadic = PETSC_TRUE;
+  PetscBool      useadic = PETSC_TRUE;
 #if defined(PETSC_HAVE_ADIC)
   AppCtx         *appctx = (AppCtx*)dmmg->user;
 #endif

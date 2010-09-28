@@ -17,7 +17,7 @@ const char *MatOptions[] = {"ROW_ORIENTED","NEW_NONZERO_LOCATIONS",
 const char *MatFactorShiftTypes[] = {"NONE","NONZERO","POSITIVE_DEFINITE","INBLOCKS","MatFactorShiftType","PC_FACTOR_",0};
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDInitializePackage(const char[]);
-static PetscTruth MatPackageInitialized = PETSC_FALSE;
+static PetscBool  MatPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "MatFinalizePackage"
 /*@C
@@ -63,7 +63,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
-  PetscTruth        opt;
+  PetscBool         opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;

@@ -12,7 +12,7 @@ typedef ALE::UniformSection<arrow_type, double>                         matrix_s
 typedef struct {
   int        debug;           // The debugging level
   int        dim;             // The topological mesh dimension
-  PetscTruth interpolate;     // Construct missing elements of the mesh
+  PetscBool  interpolate;     // Construct missing elements of the mesh
   PetscReal  refinementLimit; // The largest allowable cell volume
   PetscLogEvent assemblyEvent;
 } Options;
@@ -85,7 +85,7 @@ PetscErrorCode ViewMesh(const Obj<ALE::Mesh>& m, const char filename[])
 PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& m, Options *options)
 {
   Obj<ALE::Mesh> mB;
-  PetscTruth     view;
+  PetscBool      view;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -336,7 +336,7 @@ PetscErrorCode NoAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   const Obj<ALE::Mesh::real_section_type>& s = m->getRealSection("default");
   Obj<ALE::Mesh::real_section_type>        t = new ALE::Mesh::real_section_type(s->comm(), s->debug());
   PetscLogStage  stage;
-  PetscTruth     view;
+  PetscBool      view;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -459,7 +459,7 @@ PetscErrorCode StoredAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   const Obj<ALE::Mesh::real_section_type>& o = m->getRealSection("operator");
   Obj<ALE::Mesh::real_section_type>        t = new ALE::Mesh::real_section_type(s->comm(), s->debug());
   PetscLogStage  stage;
-  PetscTruth     view;
+  PetscBool      view;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -602,7 +602,7 @@ PetscErrorCode PartialAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   const Obj<matrix_section_type>&          o = new matrix_section_type(s->comm(), s->debug());
   Obj<ALE::Mesh::real_section_type>        t = new ALE::Mesh::real_section_type(s->comm(), s->debug());
   PetscLogStage  stage;
-  PetscTruth     view;
+  PetscBool      view;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

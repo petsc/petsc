@@ -63,7 +63,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSplitViewPort(PetscDraw draw)
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   int            n;
-  PetscTruth     isnull;
+  PetscBool      isnull;
   PetscReal      xl,xr,yl,yr,h;
 
   PetscFunctionBegin;
@@ -126,7 +126,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawViewPortsCreate(PetscDraw draw,PetscI
 {
   int        i,n;
   PetscErrorCode ierr;
-  PetscTruth isnull;
+  PetscBool  isnull;
   PetscReal  *xl,*xr,*yl,*yr,h;
 
   PetscFunctionBegin;
@@ -202,7 +202,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawViewPortsCreate(PetscDraw draw,PetscI
 PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt ny,PetscDrawViewPorts **ports)
 {
   PetscReal     *xl, *xr, *yl, *yr, hx, hy;
-  PetscTruth     isnull;
+  PetscBool      isnull;
   PetscInt       i, j, n;
   PetscErrorCode ierr;
 

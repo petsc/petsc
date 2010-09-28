@@ -43,7 +43,7 @@ static PetscErrorCode MatFDColoringView_Draw_Zoom(PetscDraw draw,void *Aa)
 static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     isnull;
+  PetscBool      isnull;
   PetscDraw      draw;
   PetscReal      xr,yr,xl,yl,h,w;
 
@@ -96,7 +96,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringView(MatFDColoring c,PetscViewer 
 {
   PetscErrorCode    ierr;
   PetscInt          i,j;
-  PetscTruth        isdraw,iascii;
+  PetscBool         isdraw,iascii;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -289,7 +289,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFunction(MatFDColoring matfd,P
 PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFromOptions(MatFDColoring matfd)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   char           value[3];
 
   PetscFunctionBegin;
@@ -320,7 +320,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFromOptions(MatFDColoring matf
 PetscErrorCode MatFDColoringView_Private(MatFDColoring fd)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
   PetscViewer    viewer;
 
   PetscFunctionBegin;
@@ -534,7 +534,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply_AIJ(Mat J,MatFDColoring col
   PetscReal      epsilon = coloring->error_rel,umin = coloring->umin,unorm; 
   Vec            w1=coloring->w1,w2=coloring->w2,w3;
   void           *fctx = coloring->fctx;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
   PetscInt       ctype=coloring->ctype,N,col_start=0,col_end=0;
   Vec            x1_tmp;
 
@@ -550,7 +550,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply_AIJ(Mat J,MatFDColoring col
   if (flg) {
     ierr = PetscInfo(coloring,"Not calling MatZeroEntries()\n");CHKERRQ(ierr);
   } else {
-    PetscTruth assembled;
+    PetscBool  assembled;
     ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);
     if (assembled) {
       ierr = MatZeroEntries(J);CHKERRQ(ierr);
@@ -740,7 +740,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApplyTS(Mat J,MatFDColoring color
   PetscReal      epsilon = coloring->error_rel,umin = coloring->umin; 
   Vec            w1=coloring->w1,w2=coloring->w2,w3;
   void           *fctx = coloring->fctx;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_CLASSID,1);
@@ -760,7 +760,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApplyTS(Mat J,MatFDColoring color
   if (flg) {
     ierr = PetscInfo(coloring,"Not calling MatZeroEntries()\n");CHKERRQ(ierr);
   } else {
-    PetscTruth assembled;
+    PetscBool  assembled;
     ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);
     if (assembled) {
       ierr = MatZeroEntries(J);CHKERRQ(ierr);

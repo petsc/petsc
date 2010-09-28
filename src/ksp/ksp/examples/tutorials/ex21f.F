@@ -51,7 +51,7 @@
       PetscInt i,j,II,JJ,Istart
       PetscInt Iend,m,n,its,ione
       PetscMPIInt rank
-      PetscTruth flg
+      PetscBool  flg
       PetscErrorCode ierr
 
 !  Note: Any user-defined Fortran routines MUST be declared as external.

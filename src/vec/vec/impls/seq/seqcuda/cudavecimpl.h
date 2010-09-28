@@ -45,7 +45,7 @@ EXTERN PetscErrorCode VecCUDACopyToGPU_Public(Vec);
 EXTERN PetscErrorCode VecCUDAAllocateCheck_Public(Vec);
 EXTERN PetscErrorCode VecCUDACopyToGPUSome_Public(Vec,CUSPINTARRAYCPU*,CUSPINTARRAYGPU*);
 
-EXTERN PetscTruth synchronizeCUDA;
+EXTERN PetscBool  synchronizeCUDA;
 #define CHKERRCUDA(err) if (err != CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err)
 
 #define VecCUDACastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])

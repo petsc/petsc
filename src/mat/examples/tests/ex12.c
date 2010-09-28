@@ -86,7 +86,7 @@ PetscErrorCode TestMatZeroRows_Basic(Mat A,IS is,PetscScalar diag)
 {
   Mat            B;
   PetscErrorCode ierr;
-  PetscTruth     keepnonzeropattern;
+  PetscBool      keepnonzeropattern;
 
   /* Now copy A into B, and test it with MatZeroRows() */
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);

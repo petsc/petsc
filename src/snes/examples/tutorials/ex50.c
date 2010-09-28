@@ -80,7 +80,7 @@ PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 
 typedef struct {
    PassiveReal  lidvelocity,prandtl,grashof;  /* physical parameters */
-   PetscTruth   draw_contours;                /* flag - 1 indicates drawing contours */
+   PetscBool    draw_contours;                /* flag - 1 indicates drawing contours */
 } AppCtx;
 
 PetscErrorCode FormInitialGuess(AppCtx*,DA,Vec);

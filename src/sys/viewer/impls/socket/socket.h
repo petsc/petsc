@@ -8,7 +8,7 @@
 typedef struct {
   int           port;
 #if defined(PETSC_HAVE_MPIIO)
-  PetscTruth    MPIIO;
+  PetscBool     MPIIO;
 #endif
 } PetscViewer_Socket;
 

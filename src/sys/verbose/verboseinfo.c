@@ -21,8 +21,8 @@
   If PetscInfoFlags[OBJECT_CLASSID - PETSC_SMALLEST_CLASSID] is zero, no messages related
   to that object are printed. OBJECT_CLASSID is, for example, MAT_CLASSID.
 */
-PetscTruth PETSCSYS_DLLEXPORT PetscLogPrintInfo     = PETSC_FALSE;
-PetscTruth PETSCSYS_DLLEXPORT PetscLogPrintInfoNull = PETSC_FALSE;
+PetscBool  PETSCSYS_DLLEXPORT PetscLogPrintInfo     = PETSC_FALSE;
+PetscBool  PETSCSYS_DLLEXPORT PetscLogPrintInfoNull = PETSC_FALSE;
 int        PetscInfoFlags[]   = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                                     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                                     1,1,1,1,1,1,1,1,1,1,1,1};
@@ -51,7 +51,7 @@ FILE      *PetscInfoFile      = PETSC_NULL;
 
 .seealso: PetscInfo()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscInfoAllow(PetscTruth flag, const char filename[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscInfoAllow(PetscBool  flag, const char filename[])
 {
   char           fname[PETSC_MAX_PATH_LEN], tname[5];
   PetscMPIInt    rank;

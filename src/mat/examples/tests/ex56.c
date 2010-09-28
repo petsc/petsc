@@ -12,7 +12,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscScalar    x[6][9],y[3][3],one=1.0;
-  PetscTruth     flg,testsbaij=PETSC_FALSE;
+  PetscBool      flg,testsbaij=PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

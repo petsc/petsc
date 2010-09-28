@@ -53,8 +53,8 @@ int main(int argc,char **args)
   PetscInt       i,j,Ii,J,Istart,Iend;
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscTruth     flg;
-  PetscTruth     user_subdomains = PETSC_FALSE;     
+  PetscBool      flg;
+  PetscBool      user_subdomains = PETSC_FALSE;     
   PetscScalar    v, one = 1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -204,7 +204,7 @@ int main(int argc,char **args)
     KSP        *subksp;       /* array of KSP contexts for local subblocks */
     PetscInt   nlocal,first;  /* number of local subblocks, first local subblock */
     PC         subpc;          /* PC context for subblock */
-    PetscTruth isasm;
+    PetscBool  isasm;
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"User explicitly sets subdomain solvers.\n");CHKERRQ(ierr);
 

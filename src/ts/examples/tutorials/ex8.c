@@ -267,7 +267,7 @@ int main(int argc,char **argv)
   Vec             x,r;          /* solution, residual vectors */
   Mat             A;            /* Jacobian matrix */
   Problem         problem;
-  PetscTruth      use_monitor;
+  PetscBool       use_monitor;
   PetscInt        steps,maxsteps = 100;
   PetscReal       ftime;
   MonitorCtx      mon;

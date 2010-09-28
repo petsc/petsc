@@ -8,7 +8,7 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1 using GPU\n\n
 #include "petsccuda.h"
 
 extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*), ComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-PetscTruth useCUDA = PETSC_FALSE;
+PetscBool  useCUDA = PETSC_FALSE;
 
 int main(int argc,char **argv) 
 {
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   DA             da;
   PetscErrorCode ierr;
   char           *tmp,typeName[256];
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsGetString(PETSC_NULL,"-da_vec_type",typeName,256,&flg);CHKERRQ(ierr);

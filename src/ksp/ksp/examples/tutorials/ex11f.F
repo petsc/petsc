@@ -69,7 +69,7 @@
       PetscInt Iend,i,j,II,JJ,one
       PetscErrorCode ierr
       PetscMPIInt rank
-      PetscTruth flg
+      PetscBool  flg
       logical          use_random
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

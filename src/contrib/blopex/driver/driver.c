@@ -134,9 +134,9 @@ int main(int argc,char **args)
    PetscLogDouble              t1,t2,elapsed_time;
    DA                          da;
    double                      tol=1e-08;
-   PetscTruth                  option_present;
-   PetscTruth                  freepart=PETSC_FALSE;
-   PetscTruth                  full_output=PETSC_FALSE;
+   PetscBool                   option_present;
+   PetscBool                   freepart=PETSC_FALSE;
+   PetscBool                   full_output=PETSC_FALSE;
    PetscInt                    m,n,p;
    KSP                        ksp;
    lobpcg_Tolerance           lobpcg_tol;

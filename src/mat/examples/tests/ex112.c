@@ -23,7 +23,7 @@ PetscInt main(PetscInt argc,char **args)
   PetscReal      enorm;
   PetscInt       func;
   FuncType       function = RANDOM;
-  PetscTruth     view = PETSC_FALSE;
+  PetscBool      view = PETSC_FALSE;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);

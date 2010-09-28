@@ -463,7 +463,7 @@ M*/
    PetscObjectComposedDataGetInt - retrieve integer data attached to an object
 
    Synopsis:
-   PetscErrorCode PetscObjectComposedDataGetInt(PetscObject obj,int id,int data,PetscTruth flag)
+   PetscErrorCode PetscObjectComposedDataGetInt(PetscObject obj,int id,int data,PetscBool  flag)
 
    Not collective
 
@@ -511,7 +511,7 @@ M*/
    attached to an object
 
    Synopsis:
-   PetscErrorCode PetscObjectComposedDataGetIntstar(PetscObject obj,int id,int *data,PetscTruth flag)
+   PetscErrorCode PetscObjectComposedDataGetIntstar(PetscObject obj,int id,int *data,PetscBool  flag)
 
    Not collective
 
@@ -558,7 +558,7 @@ M*/
    PetscObjectComposedDataGetReal - retrieve real data attached to an object
 
    Synopsis:
-   PetscErrorCode PetscObjectComposedDataGetReal(PetscObject obj,int id,PetscReal data,PetscTruth flag)
+   PetscErrorCode PetscObjectComposedDataGetReal(PetscObject obj,int id,PetscReal data,PetscBool  flag)
 
    Not collective
 
@@ -606,7 +606,7 @@ M*/
    attached to an object
 
    Synopsis:
-   PetscErrorCode PetscObjectComposedDataGetRealstar(PetscObject obj,int id,PetscReal *data,PetscTruth flag)
+   PetscErrorCode PetscObjectComposedDataGetRealstar(PetscObject obj,int id,PetscReal *data,PetscBool  flag)
 
    Not collective
 
@@ -657,7 +657,7 @@ M*/
    PetscObjectComposedDataGetScalar - retrieve scalar data attached to an object
 
    Synopsis:
-   PetscErrorCode PetscObjectComposedDataGetScalar(PetscObject obj,int id,PetscScalar data,PetscTruth flag)
+   PetscErrorCode PetscObjectComposedDataGetScalar(PetscObject obj,int id,PetscScalar data,PetscBool  flag)
 
    Not collective
 
@@ -714,7 +714,7 @@ M*/
    attached to an object
 
    Synopsis:
-   PetscErrorCode PetscObjectComposedDataGetScalarstar(PetscObject obj,int id,PetscScalar *data,PetscTruth flag)
+   PetscErrorCode PetscObjectComposedDataGetScalarstar(PetscObject obj,int id,PetscScalar *data,PetscBool  flag)
 
    Not collective
 
@@ -740,8 +740,8 @@ M*/
 #endif
 
 /* some vars for logging */
-extern PETSCSYS_DLLEXPORT PetscTruth PetscPreLoadingUsed;       /* true if we are or have done preloading */
-extern PETSCSYS_DLLEXPORT PetscTruth PetscPreLoadingOn;         /* true if we are currently in a preloading calculation */
+extern PETSCSYS_DLLEXPORT PetscBool  PetscPreLoadingUsed;       /* true if we are or have done preloading */
+extern PETSCSYS_DLLEXPORT PetscBool  PetscPreLoadingOn;         /* true if we are currently in a preloading calculation */
 
 extern PETSCSYS_DLLEXPORT PetscMPIInt Petsc_Counter_keyval;
 extern PETSCSYS_DLLEXPORT PetscMPIInt Petsc_InnerComm_keyval;

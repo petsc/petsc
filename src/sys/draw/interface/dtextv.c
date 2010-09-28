@@ -27,7 +27,7 @@
 PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawStringVertical(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
 {
   PetscErrorCode ierr;
-  PetscTruth isnull;
+  PetscBool  isnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);

@@ -234,7 +234,7 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
 PetscErrorCode MeshCreateExodus(MPI_Comm comm, const char filename[], Mesh *mesh)
 {
   PetscInt       debug = 0;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

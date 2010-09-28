@@ -26,18 +26,18 @@ extern PetscErrorCode RegisterDistributionFunctionSuite();
 extern PetscErrorCode RegisterIDistributionFunctionSuite();
 
 typedef struct {
-  PetscTruth function;      // Run the functionality tests
-  PetscTruth stress;        // Run the stress tests
-  PetscTruth memory;        // Run the memory tests
-  PetscTruth stl;           // Run the STL tests
-  PetscTruth sifter;        // Run the Sifter tests
-  PetscTruth sieve;         // Run the Sieve tests
-  PetscTruth isieve;        // Run the ISieve tests
-  PetscTruth section;       // Run the Section tests
-  PetscTruth isection;      // Run the ISection tests
-  PetscTruth imesh;         // Run the IMesh tests
-  PetscTruth distribution;  // Run the Distribution tests
-  PetscTruth idistribution; // Run the IDistribution tests
+  PetscBool  function;      // Run the functionality tests
+  PetscBool  stress;        // Run the stress tests
+  PetscBool  memory;        // Run the memory tests
+  PetscBool  stl;           // Run the STL tests
+  PetscBool  sifter;        // Run the Sifter tests
+  PetscBool  sieve;         // Run the Sieve tests
+  PetscBool  isieve;        // Run the ISieve tests
+  PetscBool  section;       // Run the Section tests
+  PetscBool  isection;      // Run the ISection tests
+  PetscBool  imesh;         // Run the IMesh tests
+  PetscBool  distribution;  // Run the Distribution tests
+  PetscBool  idistribution; // Run the IDistribution tests
 } Options;
 
 #undef __FUNCT__

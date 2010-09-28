@@ -24,7 +24,7 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
   PetscMPIInt    rank;
   PetscInt       i;
   AO_Basic       *aodebug = (AO_Basic*)ao->data;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)ao)->comm,&rank);CHKERRQ(ierr);
@@ -217,7 +217,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm comm,PetscInt napp,const
   AO             ao;
   PetscMPIInt    *lens,size,rank,nnapp,*disp;
   PetscInt       *allpetsc,*allapp,ip,ia,N,i,*petsc,start;
-  PetscTruth     opt;
+  PetscBool      opt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

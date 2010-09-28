@@ -58,7 +58,7 @@ typedef struct {
    PetscInt    ratio;
    Mat         R;               /* restriction fine to coarse */
    Vec         Rscale;
-   PetscTruth  redundant_build; /* build coarse matrix redundantly */
+   PetscBool   redundant_build; /* build coarse matrix redundantly */
    Vec         localall;        /* contains entire coarse vector on each processor in NATURAL order*/
    VecScatter  tolocalall;      /* maps from parallel "global" coarse vector to localall */
    VecScatter  fromlocalall;    /* maps from localall vector back to global coarse vector */
@@ -433,7 +433,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   PetscErrorCode ierr;
   KSP            ksp;
   PC             pc;
-  PetscTruth     ismg;
+  PetscBool      ismg;
 
   *flag = SAME_NONZERO_PATTERN;
   ierr = FormJacobian_Grid(user,&user->fine,X,J,B);CHKERRQ(ierr);

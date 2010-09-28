@@ -43,7 +43,7 @@
 PetscErrorCode PETSCMAT_DLLEXPORT MatMAIJGetAIJ(Mat A,Mat *B)
 {
   PetscErrorCode ierr;
-  PetscTruth     ismpimaij,isseqmaij;
+  PetscBool      ismpimaij,isseqmaij;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)A,MATMPIMAIJ,&ismpimaij);CHKERRQ(ierr);  

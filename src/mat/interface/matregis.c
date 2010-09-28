@@ -56,7 +56,7 @@ EXTERN_C_END
     MatRegisterAll() is called. In general, if there is more than one
     DLL, then MatRegisterAll() may be called several times.
 */
-EXTERN PetscTruth MatRegisterAllCalled;
+EXTERN PetscBool  MatRegisterAllCalled;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRegisterAll"

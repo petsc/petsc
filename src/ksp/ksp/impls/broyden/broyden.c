@@ -169,7 +169,7 @@ PetscErrorCode KSPView_Broyden(KSP ksp,PetscViewer viewer)
 {
   KSP_Broyden    *cg = (KSP_Broyden *)ksp->data; 
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);

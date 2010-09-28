@@ -43,7 +43,7 @@ typedef struct parameter_s {
   PassiveScalar  amp,sigma,xctr,zctr,L1,L2,LINF; /* parameters for gaussian Initial Condition */
   PassiveScalar  Pe, theta, ct, st, diffScale;   /* parameters for velocity field and diffusion length */
   int            flow_type, sl_event;
-  PetscTruth     param_test, output_to_file;
+  PetscBool      param_test, output_to_file;
   char           output_filename[FNAME_LENGTH];
   /* timestep stuff */
   PassiveScalar  t; /* the time */
@@ -75,7 +75,7 @@ int DoSolve              (DMMG*);
 int DoOutput             (DMMG*, int);
 PetscReal BiCubicInterp  (Field**, PetscReal, PetscReal);
 PetscReal CubicInterp    (PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
-PetscTruth OptionsHasName(const char*);
+PetscBool  OptionsHasName(const char*);
 
 /* characteristic call-backs (static interface) */
 PetscErrorCode InterpVelocity2D(void*, PetscReal[], PetscInt, PetscInt[], PetscReal[], void*);
@@ -475,10 +475,10 @@ int DoOutput(DMMG *dmmg, int n_plot)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "OptionsHasName"
-PetscTruth OptionsHasName(const char name[])
+PetscBool  OptionsHasName(const char name[])
 /* ------------------------------------------------------------------- */
 {
-  PetscTruth retval; 
+  PetscBool  retval; 
   int ierr;
   ierr = PetscOptionsHasName(PETSC_NULL,name,&retval);
   return retval;

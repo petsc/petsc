@@ -10,7 +10,7 @@ int main(int argc,char **args)
   Mat            A,B;
   PetscErrorCode ierr;
   char           file[PETSC_MAX_PATH_LEN];
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscViewer    fd;
 
   PetscInitialize(&argc,&args,(char *)0,help);

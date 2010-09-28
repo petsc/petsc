@@ -27,7 +27,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawTriangle(PetscDraw draw,PetscReal x1,
                  int c1,int c2,int c3)
 {
   PetscErrorCode ierr;
-  PetscTruth     isnull;
+  PetscBool      isnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
@@ -89,7 +89,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawScalePopup(PetscDraw popup,PetscReal 
 typedef struct {
   int        m,n;
   PetscReal  *x,*y,min,max,*v;
-  PetscTruth showgrid;
+  PetscBool  showgrid;
 } ZoomCtx;
 
 #undef __FUNCT__  
@@ -144,7 +144,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawTensorContour(PetscDraw win,int m,int
 {
   PetscErrorCode ierr;
   int            N = m*n;
-  PetscTruth     isnull;
+  PetscBool      isnull;
   PetscDraw      popup;
   MPI_Comm       comm;
   int            xin=1,yin=1,i;

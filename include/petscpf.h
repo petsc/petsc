@@ -49,7 +49,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFApplyVec(PF,Vec,Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFRegisterDestroy(void);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFRegisterAll(const char[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFInitializePackage(const char[]);
-extern PetscTruth PFRegisterAllCalled;
+extern PetscBool  PFRegisterAllCalled;
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFRegister(const char[],const char[],const char[],PetscErrorCode (*)(PF,void*));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)

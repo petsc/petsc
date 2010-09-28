@@ -113,7 +113,7 @@ int main(int argc,char **argv)
   PetscBag               bag;
   PetscInt               its;                  /* iterations for convergence */
   SNESConvergedReason    reason;
-  PetscTruth             drawContours;         /* flag for drawing contours */
+  PetscBool              drawContours;         /* flag for drawing contours */
   PetscErrorCode         ierr;
   PetscReal              lambda_max = 6.81, lambda_min = 0.0, error;
 
@@ -336,7 +336,7 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 
 #undef __FUNCT__
 #define __FUNCT__ "constantResidual"
-PetscErrorCode constantResidual(PetscReal lambda, PetscTruth isLower, int i, int j, PetscReal hx, PetscReal hy, Field r[])
+PetscErrorCode constantResidual(PetscReal lambda, PetscBool  isLower, int i, int j, PetscReal hx, PetscReal hy, Field r[])
 {
   Field       rLocal[3] = {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}};
   PetscScalar phi[3] = {0.0, 0.0, 0.0};
@@ -536,7 +536,7 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info, Field **x, Field **f, AppCtx
       for(k = 0; k < 3; k++) {
         printf("  rLocal[%d] = (%g, %g, %g)\n", k, rLocal[k].u, rLocal[k].v, rLocal[k].p);
       }
-      ierr = constantResidual(1.0, PETSC_TRUTH, i, j, hx, hy, rLocal);CHKERRQ(ierr);
+      ierr = constantResidual(1.0, PETSC_BOOL, i, j, hx, hy, rLocal);CHKERRQ(ierr);
       printf("Upper Laplacian+Constant ElementVector for (%d, %d)\n", i, j);
       for(k = 0; k < 3; k++) {
         printf("  rLocal[%d] = (%g, %g, %g)\n", k, rLocal[k].u, rLocal[k].v, rLocal[k].p);

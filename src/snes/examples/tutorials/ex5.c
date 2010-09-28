@@ -75,9 +75,9 @@ int main(int argc,char **argv)
   Mat                    A,J;                    /* Jacobian matrix */
   AppCtx                 user;                 /* user-defined work context */
   PetscInt               its;                  /* iterations for convergence */
-  PetscTruth             matlab_function = PETSC_FALSE;
-  PetscTruth             fd_jacobian = PETSC_FALSE,adic_jacobian=PETSC_FALSE,fd_jacobian_ghosted=PETSC_FALSE;
-  PetscTruth             adicmf_jacobian = PETSC_FALSE;
+  PetscBool              matlab_function = PETSC_FALSE;
+  PetscBool              fd_jacobian = PETSC_FALSE,adic_jacobian=PETSC_FALSE,fd_jacobian_ghosted=PETSC_FALSE;
+  PetscBool              adicmf_jacobian = PETSC_FALSE;
   PetscErrorCode         ierr;
   PetscReal              bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
   MatFDColoring          matfdcoloring = 0;
@@ -202,7 +202,7 @@ int main(int argc,char **argv)
   */
 
   {
-    PetscTruth test_appctx = PETSC_FALSE;
+    PetscBool  test_appctx = PETSC_FALSE;
     ierr = PetscOptionsGetTruth(PETSC_NULL,"-test_appctx",&test_appctx,0);CHKERRQ(ierr);
     if (test_appctx) {
       AppCtx *puser;

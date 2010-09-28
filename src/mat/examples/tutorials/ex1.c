@@ -30,7 +30,7 @@ int main(int argc,char **args)
   IS                    isrow,iscol;      /* row and column permutations */
   PetscErrorCode        ierr;
   const MatOrderingType rtype = MATORDERINGRCM;
-  PetscTruth            flg,PreLoad = PETSC_FALSE;
+  PetscBool             flg,PreLoad = PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

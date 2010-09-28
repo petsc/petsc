@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   Vec            local,global;
   PetscScalar    value;
   PetscDraw      draw;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

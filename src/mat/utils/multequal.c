@@ -21,7 +21,7 @@
 
    Concepts: matrices^equality between
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMultEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMultEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
 {
   PetscErrorCode ierr;
   Vec            x,s1,s2;
@@ -97,7 +97,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultEqual(Mat A,Mat B,PetscInt n,PetscTruth
 
    Concepts: matrices^equality between
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
 {
   PetscErrorCode ierr;
   Vec            x,y,s1,s2;
@@ -170,7 +170,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscTr
 
    Concepts: matrices^equality between
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
 {
   PetscErrorCode ierr;
   Vec            x,s1,s2;
@@ -240,7 +240,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeEqual(Mat A,Mat B,PetscInt n,P
 
    Concepts: matrices^equality between
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAddEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
 {
   PetscErrorCode ierr;
   Vec            x,y,s1,s2;

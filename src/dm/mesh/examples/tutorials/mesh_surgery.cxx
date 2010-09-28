@@ -7,11 +7,11 @@
 typedef struct {
   int dim;
   int debug;
-  PetscTruth useZeroBase;
+  PetscBool  useZeroBase;
   char baseFilename[2048];
   PetscInt flips;
-  PetscTruth dolfin;
-  PetscTruth generate;
+  PetscBool  dolfin;
+  PetscBool  generate;
 } Options;
 
 #undef  __FUNCT__ 

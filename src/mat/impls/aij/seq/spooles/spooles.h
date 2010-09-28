@@ -15,7 +15,7 @@ typedef struct {
   PetscInt        msglvl,pivotingflag,symflag,seed,FrontMtxInfo,typeflag;
   PetscInt        ordering,maxdomainsize,maxzeros,maxsize,
                   patchAndGoFlag,storeids,storevalues;
-  PetscTruth      useQR;
+  PetscBool       useQR;
   double          tau,toosmall,fudge;
   FILE            *msgFile ;
 } Spooles_options;
@@ -45,7 +45,7 @@ typedef struct {
   IS              iden,is_petsc;
   VecScatter      scat;
   
-  PetscTruth     CleanUpSpooles,useQR;
+  PetscBool      CleanUpSpooles,useQR;
 } Mat_Spooles;
 
 EXTERN PetscErrorCode SetSpoolesOptions(Mat, Spooles_options *);

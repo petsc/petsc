@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
   char           baseFilename[2048];
   PetscInt       dim, debug;
   PetscReal      refinementLimit, beta;
-  PetscTruth     interpolate, readFile;
+  PetscBool      interpolate, readFile;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -9,7 +9,7 @@
 typedef struct {
   PCExoticType type;
   Mat          P;            /* the constructed interpolation matrix */
-  PetscTruth   directSolve;  /* use direct LU factorization to construct interpolation */
+  PetscBool    directSolve;  /* use direct LU factorization to construct interpolation */
   KSP          ksp;
 } PC_Exotic;
 
@@ -666,7 +666,7 @@ PetscErrorCode PCView_Exotic(PC pc,PetscViewer viewer)
 {
   PC_MG          *mg = (PC_MG*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
   PC_Exotic      *ctx = (PC_Exotic*) mg->innerctx;
 
   PetscFunctionBegin;
@@ -701,7 +701,7 @@ PetscErrorCode PCView_Exotic(PC pc,PetscViewer viewer)
 PetscErrorCode PCSetFromOptions_Exotic(PC pc)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   PC_MG          *mg = (PC_MG*)pc->data;
   PCExoticType   mgctype;
   PC_Exotic      *ctx = (PC_Exotic*) mg->innerctx;

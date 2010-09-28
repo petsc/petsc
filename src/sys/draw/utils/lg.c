@@ -19,7 +19,7 @@ struct _p_DrawLG {
   PetscDrawAxis axis;
   PetscReal     xmin,xmax,ymin,ymax,*x,*y;
   int           nopts,dim;
-  PetscTruth    use_dots;
+  PetscBool     use_dots;
 };
 
 #define CHUNCKSIZE 100
@@ -47,7 +47,7 @@ struct _p_DrawLG {
 PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGCreate(PetscDraw draw,int dim,PetscDrawLG *outctx)
 {
   PetscErrorCode ierr;
-  PetscTruth     isnull;
+  PetscBool      isnull;
   PetscObject    obj = (PetscObject)draw;
   PetscDrawLG    lg;
 

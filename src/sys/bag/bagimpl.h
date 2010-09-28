@@ -12,7 +12,7 @@ struct _n_PetscBagItem {
   PetscInt      msize;
   char          name[PETSC_BAG_NAME_LENGTH],help[PETSC_BAG_HELP_LENGTH]; 
   const char    **list;
-  PetscTruth    freelist;
+  PetscBool     freelist;
   PetscBagItem  next;
 };
 

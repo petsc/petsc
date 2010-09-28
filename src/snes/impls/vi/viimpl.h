@@ -13,15 +13,15 @@
 #define __SNES_VI_H
 
 typedef struct {
-  PetscErrorCode           (*LineSearch)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscTruth*);
+  PetscErrorCode           (*LineSearch)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);
   void                     *lsP;                              /* user-defined line-search context (optional) */
   /* --------------- Parameters used by line search method ----------------- */
   PetscReal                alpha;		                                                   /* used to determine sufficient reduction */
   PetscReal                maxstep;                                                          /* maximum step size */
   PetscReal                minlambda;                                                        /* determines smallest line search lambda used */
-  PetscErrorCode           (*precheckstep)(SNES,Vec,Vec,void*,PetscTruth*);                  /* step-checking routine (optional) */
+  PetscErrorCode           (*precheckstep)(SNES,Vec,Vec,void*,PetscBool *);                  /* step-checking routine (optional) */
   void                     *precheck;                                                        /* user-defined step-checking context (optional) */
-  PetscErrorCode           (*postcheckstep)(SNES,Vec,Vec,Vec,void*,PetscTruth*,PetscTruth*); /* step-checking routine (optional) */
+  PetscErrorCode           (*postcheckstep)(SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *); /* step-checking routine (optional) */
   void                     *postcheck;                                                       /* user-defined step-checking context (optional) */
   PetscViewerASCIIMonitor  lsmonitor;
 
@@ -37,7 +37,7 @@ typedef struct {
   Vec                      t;    /* B subdifferential work vector */
   Vec                      xl;            /* lower bound on variables */
   Vec                      xu;            /* upper bound on variables */
-  PetscTruth               usersetxbounds; /* flag to indicate whether the user has set bounds on variables */
+  PetscBool                usersetxbounds; /* flag to indicate whether the user has set bounds on variables */
 
   PetscScalar             norm_d;         /* two norm of the descent direction */
   /* Parameters for checking sufficient descent conditions satisfied */

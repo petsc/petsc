@@ -14,7 +14,7 @@ static char help[] = "Test MatGetInertia() for Hermitian matrix. \n\n";
 PetscInt main(PetscInt argc,char **args)
 {
   Mat            A,As;    
-  PetscTruth     flg,disp_mat=PETSC_FALSE;  
+  PetscBool      flg,disp_mat=PETSC_FALSE;  
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscInt       i,j; 

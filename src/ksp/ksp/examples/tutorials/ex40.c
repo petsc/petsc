@@ -15,14 +15,14 @@ PetscErrorCode computeMinEigVal(Mat A, PetscInt its, PetscScalar *eig);
 #define __FUNCT__ "main"
 int main(int Argc,char **Args)
 {
-  PetscTruth      flg;
+  PetscBool       flg;
   PetscInt        n = 6,i;
   PetscScalar     rho = 1.0;
   PetscReal       h;
   PetscReal       beta = 1.0;
   ADDA            adda;
   PetscInt        nodes[2];
-  PetscTruth      periodic[2];
+  PetscBool       periodic[2];
   PetscInt        refine[2];
   PetscRandom     rctx;
   PetscMPIInt     comm_size;

@@ -10,7 +10,7 @@ int main(int argc,char **args)
   Mat            BAIJ,SBAIJ,*subBAIJ,*subSBAIJ;
   PetscViewer    viewer;
   char           file[PETSC_MAX_PATH_LEN];
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscErrorCode ierr;
   PetscInt       n = 2,issize;
   PetscMPIInt    rank;

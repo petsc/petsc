@@ -8,7 +8,7 @@ using ALE::Obj;
 typedef struct {
   int        debug;       // The debugging level
   PetscInt   dim;         // The topological mesh dimension
-  PetscTruth interpolate; // Generate intermediate mesh elements
+  PetscBool  interpolate; // Generate intermediate mesh elements
 } Options;
 
 #undef __FUNCT__
@@ -35,7 +35,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
 {
   Mesh           boundary, mesh;
-  PetscTruth     view;
+  PetscBool      view;
   PetscMPIInt    size;
   PetscErrorCode ierr;
 

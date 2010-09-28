@@ -15,8 +15,8 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   const PetscInt *is;
   PetscInt       nis = iscoloring->n,*rowhit,*columnsforrow,l,bs = 1;
   IS             *isa;
-  PetscTruth     done,flg = PETSC_FALSE;
-  PetscTruth     flg1,flg2;
+  PetscBool      done,flg = PETSC_FALSE;
+  PetscBool      flg1,flg2;
 
   PetscFunctionBegin;
   if (!mat->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled by calls to MatAssemblyBegin/End();");

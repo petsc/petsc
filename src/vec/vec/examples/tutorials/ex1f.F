@@ -39,7 +39,7 @@
       Vec              x,y,w,z(5)
       PetscReal        norm,v,v1,v2
       PetscInt           n,ithree
-      PetscTruth flg
+      PetscBool  flg
       PetscErrorCode ierr
       PetscMPIInt  rank
       PetscScalar  one,two,three

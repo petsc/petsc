@@ -24,7 +24,7 @@ const char **SNESConvergedReasons = SNESConvergedReasons_Shifted + 10;
     SNESRegisterAll() is called. In general, if there is more than one
     DLL then SNESRegisterAll() may be called several times.
 */
-extern PetscTruth SNESRegisterAllCalled;
+extern PetscBool  SNESRegisterAllCalled;
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESRegisterAll"

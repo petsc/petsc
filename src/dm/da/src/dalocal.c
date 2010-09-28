@@ -333,7 +333,7 @@ EXTERN_C_END
 .seealso: DARestoreAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DA da,PetscTruth ghosted,void *vptr,void *array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DA da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,deriv_type_size,xs,ys,xm,ym,zs,zm,itdof;
@@ -473,7 +473,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DA da,PetscTruth ghosted,void *v
 .seealso: DAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicArray(DA da,PetscTruth ghosted,void *ptr,void *array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicArray(DA da,PetscBool  ghosted,void *ptr,void *array_start,PetscInt *tdof)
 {
   PetscInt  i;
   void      **iptr = (void**)ptr,iarray_start = 0;
@@ -520,7 +520,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicArray(DA da,PetscTruth ghosted,voi
 
 #undef __FUNCT__
 #define __FUNCT__ "ad_DAGetArray"
-PetscErrorCode PETSCDM_DLLEXPORT ad_DAGetArray(DA da,PetscTruth ghosted,void *iptr)
+PetscErrorCode PETSCDM_DLLEXPORT ad_DAGetArray(DA da,PetscBool  ghosted,void *iptr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -530,7 +530,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ad_DAGetArray(DA da,PetscTruth ghosted,void *ip
 
 #undef __FUNCT__
 #define __FUNCT__ "ad_DARestoreArray"
-PetscErrorCode PETSCDM_DLLEXPORT ad_DARestoreArray(DA da,PetscTruth ghosted,void *iptr)
+PetscErrorCode PETSCDM_DLLEXPORT ad_DARestoreArray(DA da,PetscBool  ghosted,void *iptr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -560,7 +560,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ad_DARestoreArray(DA da,PetscTruth ghosted,void
 .seealso: DARestoreArray(), DAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DA da,PetscTruth ghosted,void *vptr)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DA da,PetscBool  ghosted,void *vptr)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,xs,ys,xm,ym,zs,zm;
@@ -684,7 +684,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DA da,PetscTruth ghosted,void *vptr)
 .seealso: DAGetArray(), DAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DA da,PetscTruth ghosted,void *vptr)
+PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DA da,PetscBool  ghosted,void *vptr)
 {
   PetscInt  i;
   void      **iptr = (void**)vptr,*iarray_start = 0;
@@ -753,7 +753,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DA da,PetscTruth ghosted,void *v
 .seealso: DARestoreAdicMFArray(), DAGetArray(), DAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscTruth ghosted,void *vptr,void *array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
@@ -874,7 +874,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscTruth ghosted,void 
 
 #undef __FUNCT__
 #define __FUNCT__ "DAGetAdicMFArray4"
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscTruth ghosted,void *vptr,void *array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
@@ -967,7 +967,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscTruth ghosted,void
 
 #undef __FUNCT__
 #define __FUNCT__ "DAGetAdicMFArray9"
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DA da,PetscTruth ghosted,void *vptr,void *array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DA da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
@@ -1084,7 +1084,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DA da,PetscTruth ghosted,void
 .seealso: DARestoreAdicMFArray(), DAGetArray(), DAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DA da,PetscTruth ghosted,void *vptr,void *array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DA da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
@@ -1223,7 +1223,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DA da,PetscTruth ghosted,void
 .seealso: DAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicMFArray(DA da,PetscTruth ghosted,void *vptr,void *array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicMFArray(DA da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscInt  i;
   void      **iptr = (void**)vptr,*iarray_start = 0;
@@ -1270,7 +1270,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicMFArray(DA da,PetscTruth ghosted,v
 
 #undef __FUNCT__
 #define __FUNCT__ "admf_DAGetArray"
-PetscErrorCode PETSCDM_DLLEXPORT admf_DAGetArray(DA da,PetscTruth ghosted,void *iptr)
+PetscErrorCode PETSCDM_DLLEXPORT admf_DAGetArray(DA da,PetscBool  ghosted,void *iptr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -1280,7 +1280,7 @@ PetscErrorCode PETSCDM_DLLEXPORT admf_DAGetArray(DA da,PetscTruth ghosted,void *
 
 #undef __FUNCT__
 #define __FUNCT__ "admf_DARestoreArray"
-PetscErrorCode PETSCDM_DLLEXPORT admf_DARestoreArray(DA da,PetscTruth ghosted,void *iptr)
+PetscErrorCode PETSCDM_DLLEXPORT admf_DARestoreArray(DA da,PetscBool  ghosted,void *iptr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     himaInfo       hinfo;
     PetscRandom    ran;
     PetscErrorCode ierr;
-    PetscTruth     flg;
+    PetscBool      flg;
 
     PetscInitialize(&argc,&argv,(char *)0,help);
     time(&start);

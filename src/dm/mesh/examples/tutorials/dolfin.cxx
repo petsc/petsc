@@ -19,9 +19,9 @@ int main(int argc, char **argv)
 {
   char           filename[2048];
   PetscInt       debug = 0;
-  PetscTruth     doBoundary  = PETSC_FALSE;
-  PetscTruth     interpolate = PETSC_FALSE;
-  PetscTruth     view        = PETSC_FALSE;
+  PetscBool      doBoundary  = PETSC_FALSE;
+  PetscBool      interpolate = PETSC_FALSE;
+  PetscBool      view        = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

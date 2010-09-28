@@ -35,7 +35,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,j,m = 3,n = 2,its;
   PetscMPIInt    size,rank;
-  PetscTruth     mat_nonsymmetric = PETSC_FALSE;
+  PetscBool      mat_nonsymmetric = PETSC_FALSE;
 #if defined (PETSC_USE_LOG)
   PetscLogStage  stages[2];
 #endif

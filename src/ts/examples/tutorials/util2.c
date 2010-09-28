@@ -61,7 +61,7 @@ PetscErrorCode RHSJacobianFD(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructur
   PetscReal      amax,epsilon = 1.e-8; /* assumes PetscReal precision */
   PetscReal      dx_min = 1.e-16,dx_par = 1.e-1;
   MPI_Comm       comm;
-  PetscTruth     assembled;
+  PetscBool      assembled;
 
   ierr = VecDuplicate(xx1,&jj1);CHKERRQ(ierr);
   ierr = VecDuplicate(xx1,&jj2);CHKERRQ(ierr);

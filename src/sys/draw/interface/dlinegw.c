@@ -31,7 +31,7 @@
 PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLineGetWidth(PetscDraw draw,PetscReal *width)
 {
   PetscErrorCode ierr;
-  PetscTruth isdrawnull;
+  PetscBool  isdrawnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);

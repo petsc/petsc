@@ -33,7 +33,7 @@ int main(int argc,char **args)
   PetscScalar    Ke[16];
   PetscReal      x,y,h;
   IS             *is1,*is2;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);

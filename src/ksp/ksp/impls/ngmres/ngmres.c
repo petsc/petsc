@@ -155,7 +155,7 @@ PetscErrorCode KSPView_NGMRES(KSP ksp,PetscViewer viewer)
 {
   KSP_NGMRES    *cg = (KSP_NGMRES *)ksp->data; 
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);

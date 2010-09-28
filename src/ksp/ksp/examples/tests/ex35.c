@@ -23,7 +23,7 @@ int main(int argc,char **argv)
   DA             da;
   Mat            A;
   PetscInt       dof=1;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscScalar    zero=0.0;
 
   PetscInitialize(&argc,&argv,(char *)0,help);

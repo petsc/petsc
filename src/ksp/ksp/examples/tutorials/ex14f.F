@@ -72,7 +72,7 @@
       KSP      ksp
 
       PetscInt  Nx,Ny,N,mx,my,ifive,ithree
-      PetscTruth flg,nooutput,usemf
+      PetscBool  flg,nooutput,usemf
       common   /mycommon/ mx,my,B,localX,localF,da
 !
 !

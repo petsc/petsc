@@ -40,7 +40,7 @@ static PetscErrorCode ournullspace(DMMG dmmg,Vec vec[])
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL dmmgsetnullspace_(DMMG **dmmg,PetscTruth *has_cnst,PetscInt *n,void (PETSC_STDCALL *nullspace)(DMMG*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
+void PETSC_STDCALL dmmgsetnullspace_(DMMG **dmmg,PetscBool  *has_cnst,PetscInt *n,void (PETSC_STDCALL *nullspace)(DMMG*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   PetscInt i;
 

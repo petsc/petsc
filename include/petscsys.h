@@ -365,7 +365,7 @@ M*/
     PetscUnlikely - hints the compiler that the given condition is usually FALSE
 
     Synopsis:
-    PetscTruth PetscUnlikely(PetscTruth cond)
+    PetscBool  PetscUnlikely(PetscBool  cond)
 
     Not Collective
 
@@ -384,7 +384,7 @@ M*/
     PetscLikely - hints the compiler that the given condition is usually TRUE
 
     Synopsis:
-    PetscTruth PetscUnlikely(PetscTruth cond)
+    PetscBool  PetscUnlikely(PetscBool  cond)
 
     Not Collective
 
@@ -429,35 +429,35 @@ PETSC_EXTERN_CXX_BEGIN
 */
 
 /*E
-    PetscTruth - Logical variable. Actually an int in C and a logical in Fortran. 
+    PetscBool  - Logical variable. Actually an int in C and a logical in Fortran. 
 
    Level: beginner
 
-   Developer Note: Why have PetscTruth, why not use bool in C? The problem is that K and R C, C99 and C++ all have different mechanisms for 
+   Developer Note: Why have PetscBool , why not use bool in C? The problem is that K and R C, C99 and C++ all have different mechanisms for 
       boolean values. It is not easy to have a simple macro that that will work properly in all circumstances with all three mechanisms.
 
 E*/
-typedef enum { PETSC_FALSE,PETSC_TRUE } PetscTruth;
-extern const char *PetscTruths[];
+typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool ;
+extern const char *PetscBools[];
 
 /*MC
-    PETSC_FALSE - False value of PetscTruth
+    PETSC_FALSE - False value of PetscBool 
 
     Level: beginner
 
     Note: Zero integer
 
-.seealso: PetscTruth, PETSC_TRUE
+.seealso: PetscBool , PETSC_TRUE
 M*/
 
 /*MC
-    PETSC_TRUE - True value of PetscTruth
+    PETSC_TRUE - True value of PetscBool 
 
     Level: beginner
 
     Note: Nonzero integer
 
-.seealso: PetscTruth, PETSC_FALSE
+.seealso: PetscBool , PETSC_FALSE
 M*/
 
 /*MC
@@ -467,7 +467,7 @@ M*/
 
     Note: Zero integer
 
-.seealso: PetscTruth, PETSC_TRUE, PETSC_FALSE, PETSC_NO
+.seealso: PetscBool , PETSC_TRUE, PETSC_FALSE, PETSC_NO
 M*/
 #define PETSC_YES            PETSC_TRUE
 
@@ -478,7 +478,7 @@ M*/
 
     Note: Nonzero integer
 
-.seealso: PetscTruth, PETSC_TRUE, PETSC_FALSE, PETSC_YES
+.seealso: PetscBool , PETSC_TRUE, PETSC_FALSE, PETSC_YES
 M*/
 #define PETSC_NO             PETSC_FALSE
 
@@ -579,8 +579,8 @@ extern MPI_Comm PETSC_COMM_WORLD;
 M*/
 #define PETSC_COMM_SELF MPI_COMM_SELF
 
-extern PETSCSYS_DLLEXPORT PetscTruth PetscInitializeCalled;
-extern PETSCSYS_DLLEXPORT PetscTruth PetscFinalizeCalled;
+extern PETSCSYS_DLLEXPORT PetscBool  PetscInitializeCalled;
+extern PETSCSYS_DLLEXPORT PetscBool  PetscFinalizeCalled;
 
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSetHelpVersionFunctions(PetscErrorCode (*)(MPI_Comm),PetscErrorCode (*)(MPI_Comm));
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*);
@@ -1142,7 +1142,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocDump(FILE *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocDumpLog(FILE *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocGetCurrentUsage(PetscLogDouble *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocGetMaximumUsage(PetscLogDouble *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocDebug(PetscTruth);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocDebug(PetscBool );
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocValidate(int,const char[],const char[],const char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocSetDumpLog(void);
 
@@ -1173,7 +1173,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocSetDumpLog(void);
 
 E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2, PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
-              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_TRUTH=9, PETSC_LONG_DOUBLE = 10, PETSC_QD_DD = 11} PetscDataType;
+              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC_LONG_DOUBLE = 10, PETSC_QD_DD = 11} PetscDataType;
 extern const char *PetscDataTypes[];
 
 #if defined(PETSC_USE_COMPLEX)
@@ -1215,14 +1215,14 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDataTypeGetSize(PetscDataType,size
 */
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscBitMemcpy(void*,PetscInt,const void*,PetscInt,PetscInt,PetscDataType);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMemmove(void*,void *,size_t);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMemcmp(const void*,const void*,size_t,PetscTruth *);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMemcmp(const void*,const void*,size_t,PetscBool  *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscStrlen(const char[],size_t*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscStrToArray(const char[],int*,char ***);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscStrToArrayDestroy(int,char **);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscStrcmp(const char[],const char[],PetscTruth *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscStrgrt(const char[],const char[],PetscTruth *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscStrcasecmp(const char[],const char[],PetscTruth*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscStrncmp(const char[],const char[],size_t,PetscTruth*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscStrcmp(const char[],const char[],PetscBool  *);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscStrgrt(const char[],const char[],PetscBool  *);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscStrcasecmp(const char[],const char[],PetscBool *);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscStrncmp(const char[],const char[],size_t,PetscBool *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscStrcpy(char[],const char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscStrcat(char[],const char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscStrncat(char[],const char[],size_t);
@@ -1315,7 +1315,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMemoryGetMaximumUsage(PetscLogDoub
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMemorySetGetMaximumUsage(void);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMemoryShowUsage(PetscViewer,const char[]);
 
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscInfoAllow(PetscTruth,const char []);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscInfoAllow(PetscBool ,const char []);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGetTime(PetscLogDouble*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGetCPUTime(PetscLogDouble*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSleep(PetscReal);
@@ -1326,8 +1326,8 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSleep(PetscReal);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscInitialize(int*,char***,const char[],const char[]);
 PetscPolymorphicSubroutine(PetscInitialize,(int *argc,char ***args),(argc,args,PETSC_NULL,PETSC_NULL))
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscInitializeNoArguments(void);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscInitialized(PetscTruth *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscFinalized(PetscTruth *);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscInitialized(PetscBool  *);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscFinalized(PetscBool  *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscFinalize(void);
 EXTERN PetscErrorCode PetscInitializeFortran(void);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGetArgs(int*,char ***);
@@ -1471,7 +1471,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectChangeTypeName(PetscObject,c
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectRegisterDestroy(PetscObject);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectRegisterDestroyAll(void);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectName(PetscObject);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTypeCompare(PetscObject,const char[],PetscTruth*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTypeCompare(PetscObject,const char[],PetscBool *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscRegisterFinalize(PetscErrorCode (*)(void));
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscRegisterFinalizeAll(void);
 
@@ -1530,7 +1530,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryAppend(MPI_Comm,PetscDLLi
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm,PetscDLLibrary *,const char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibrarySym(MPI_Comm,PetscDLLibrary *,const char[],const char[],void **);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryPrintPath(PetscDLLibrary);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm,const char[],char *,size_t,PetscTruth *);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm,const char[],char *,size_t,PetscBool  *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryOpen(MPI_Comm,const char[],PetscDLLibrary *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryClose(PetscDLLibrary);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibrary *,const char[]);
@@ -1556,12 +1556,12 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBarrier(PetscObject);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMPIDump(FILE*);
 
 /*
-    PetscNot - negates a logical type value and returns result as a PetscTruth
+    PetscNot - negates a logical type value and returns result as a PetscBool 
 
     Notes: This is useful in cases like 
 $     int        *a;
-$     PetscTruth flag = PetscNot(a) 
-     where !a does not return a PetscTruth because we cannot provide a cast from int to PetscTruth in C.
+$     PetscBool  flag = PetscNot(a) 
+     where !a does not return a PetscBool  because we cannot provide a cast from int to PetscBool  in C.
 */
  #define PetscNot(a) ((a) ? PETSC_FALSE : PETSC_TRUE)
 
@@ -1584,7 +1584,7 @@ $     PetscTruth flag = PetscNot(a)
           For locking, unlocking and destroying AMS memories associated with  PETSc objects. ams.h is included in petscviewer.h
 */
 #if defined(PETSC_HAVE_AMS)
-extern PetscTruth PetscAMSPublishAll;
+extern PetscBool  PetscAMSPublishAll;
 #define PetscObjectTakeAccess(obj)  ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_take_access(((PetscObject)(obj))->amem))
 #define PetscObjectGrantAccess(obj) ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_grant_access(((PetscObject)(obj))->amem))
 #define PetscObjectDepublish(obj)   ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_destroy(((PetscObject)(obj))->amem));((PetscObject)(obj))->amem = -1;
@@ -2234,7 +2234,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSortReal(PetscInt,PetscReal[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSortRealWithPermutation(PetscInt,const PetscReal[],PetscInt[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSortSplit(PetscInt,PetscInt,PetscScalar[],PetscInt[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSortSplitReal(PetscInt,PetscInt,PetscReal[],PetscInt[]);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscProcessTree(PetscInt,const PetscTruth[],const PetscInt[],PetscInt*,PetscInt**,PetscInt**,PetscInt**,PetscInt**);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscProcessTree(PetscInt,const PetscBool [],const PetscInt[],PetscInt*,PetscInt**,PetscInt**,PetscInt**,PetscInt**);
 
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDisplay(void);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGetDisplay(char[],size_t);
@@ -2274,7 +2274,7 @@ typedef struct _p_PetscRandom*   PetscRandom;
 
 /* Dynamic creation and loading functions */
 extern PetscFList PetscRandomList;
-extern PetscTruth PetscRandomRegisterAllCalled;
+extern PetscBool  PetscRandomRegisterAllCalled;
 
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomRegisterAll(const char []);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscRandom));
@@ -2350,20 +2350,20 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGetRelativePath(const char[],char[
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGetWorkingDirectory(char[],size_t);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGetRealPath(const char[],char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGetHomeDirectory(char[],size_t);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTestFile(const char[],char,PetscTruth*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTestDirectory(const char[],char,PetscTruth*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTestFile(const char[],char,PetscBool *);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTestDirectory(const char[],char,PetscBool *);
 
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBinaryRead(int,void*,PetscInt,PetscDataType);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBinarySynchronizedRead(MPI_Comm,int,void*,PetscInt,PetscDataType);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBinarySynchronizedWrite(MPI_Comm,int,void*,PetscInt,PetscDataType,PetscTruth);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBinaryWrite(int,void*,PetscInt,PetscDataType,PetscTruth);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBinarySynchronizedWrite(MPI_Comm,int,void*,PetscInt,PetscDataType,PetscBool );
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBinaryWrite(int,void*,PetscInt,PetscDataType,PetscBool );
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBinaryOpen(const char[],PetscFileMode,int *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBinaryClose(int);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSharedTmp(MPI_Comm,PetscTruth *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSharedWorkingDirectory(MPI_Comm,PetscTruth *);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSharedTmp(MPI_Comm,PetscBool  *);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSharedWorkingDirectory(MPI_Comm,PetscBool  *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGetTmp(MPI_Comm,char[],size_t);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscFileRetrieve(MPI_Comm,const char[],char[],size_t,PetscTruth*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLs(MPI_Comm,const char[],char[],size_t,PetscTruth*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscFileRetrieve(MPI_Comm,const char[],char[],size_t,PetscBool *);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLs(MPI_Comm,const char[],char[],size_t,PetscBool *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenSocket(char*,int,int*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServe(MPI_Comm,int);
 
@@ -2392,7 +2392,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBinarySeek(int,off_t,PetscBinarySe
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBinarySynchronizedSeek(MPI_Comm,int,off_t,PetscBinarySeekType,off_t*);
 
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDebugTerminal(const char[]);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDebugger(const char[],PetscTruth);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDebugger(const char[],PetscBool );
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDefaultDebugger(void);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDebuggerFromString(char*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscAttachDebugger(void);
@@ -2404,7 +2404,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGatherMessageLengths2(MPI_Comm,Pet
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscPostIrecvInt(MPI_Comm,PetscMPIInt,PetscMPIInt,const PetscMPIInt[],const PetscMPIInt[],PetscInt***,MPI_Request**);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscPostIrecvScalar(MPI_Comm,PetscMPIInt,PetscMPIInt,const PetscMPIInt[],const PetscMPIInt[],PetscScalar***,MPI_Request**);
 
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSSEIsEnabled(MPI_Comm,PetscTruth *,PetscTruth *);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSSEIsEnabled(MPI_Comm,PetscBool  *,PetscBool  *);
 
 /*E
   InsertMode - Whether entries are inserted or added into vectors or matrices

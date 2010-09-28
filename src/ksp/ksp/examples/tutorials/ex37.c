@@ -101,7 +101,7 @@ int main(int argc,char **argv)
   PetscViewer    viewer;
   PetscReal      norm;
   PetscInt       dim, l, meshDebug;
-  PetscTruth     viewEnergy;
+  PetscBool      viewEnergy;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
@@ -711,7 +711,7 @@ PetscErrorCode ElementGeometry(ALE::Obj<ALE::Mesh> mesh, const ALE::Mesh::point_
 
 #undef __FUNCT__
 #define __FUNCT__ "ElementContains"
-PetscErrorCode ElementContains(ALE::Obj<ALE::Mesh> mesh, const ALE::Mesh::point_type& e, double point[], PetscTruth *contains)
+PetscErrorCode ElementContains(ALE::Obj<ALE::Mesh> mesh, const ALE::Mesh::point_type& e, double point[], PetscBool  *contains)
 {
   const double  *coords = mesh->getCoordinates()->restrict(std::string("element"), e);
   int            dim = mesh->getDimension();
@@ -757,7 +757,7 @@ PetscErrorCode ComputeChargeDensity(ALE::Obj<ALE::Mesh> mesh, double points[], d
 {
   ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> elements = mesh->getTopology()->heightStratum(0);
   PetscReal      elementVec[NUM_BASIS_FUNCTIONS];
-  PetscTruth     contains;
+  PetscBool      contains;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

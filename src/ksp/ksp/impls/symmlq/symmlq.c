@@ -33,7 +33,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
   Mat            Amat,Pmat;
   MatStructure   pflag;
   KSP_SYMMLQ     *symmlq = (KSP_SYMMLQ*)ksp->data;
-  PetscTruth     diagonalscale;
+  PetscBool      diagonalscale;
 
   PetscFunctionBegin;
   ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);

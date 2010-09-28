@@ -20,7 +20,7 @@ typedef ALE::X::SifterDef::ArrowContainer<ALE::X::UnicolorArrowSet> WindowedArro
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscInt       verbosity;
   PetscErrorCode ierr;
 

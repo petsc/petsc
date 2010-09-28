@@ -20,7 +20,7 @@ int main(int argc,char **args)
   PetscReal      norm;
   PetscRandom    rctx;
   TestType       type;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

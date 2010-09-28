@@ -10,7 +10,7 @@ EXTERN PetscErrorCode ISGetLocalSize_General(IS,PetscInt *);
 EXTERN PetscErrorCode ISInvertPermutation_General(IS,PetscInt,IS *);
 EXTERN PetscErrorCode ISView_General(IS,PetscViewer);
 EXTERN PetscErrorCode ISSort_General(IS);
-EXTERN PetscErrorCode ISSorted_General(IS,PetscTruth*);
+EXTERN PetscErrorCode ISSorted_General(IS,PetscBool *);
 
 static struct _ISOps myops = { ISGetSize_General,
                                ISGetLocalSize_General,
@@ -45,7 +45,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideToGeneral(IS inis)
   PetscErrorCode ierr;
   PetscInt       step;
   IS_General     *sub;
-  PetscTruth     stride,flg = PETSC_FALSE;
+  PetscBool      stride,flg = PETSC_FALSE;
   const PetscInt *idx;
 
   PetscFunctionBegin;

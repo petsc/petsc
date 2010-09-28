@@ -134,7 +134,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
 #if defined(PETSC_USE_COMPLEX)
   PetscScalar    cstep1,cstep2,cbstp,crtr,cwtasp,cptasp;
 #endif
-  PetscTruth     diagonalscale;
+  PetscBool      diagonalscale;
 
   PetscFunctionBegin;
   ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -411,7 +411,7 @@ PetscErrorCode KSPSetFromOptions_QCG(KSP ksp)
   PetscErrorCode ierr;
   PetscReal      delta;
   KSP_QCG        *cgP = (KSP_QCG*)ksp->data;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP QCG Options");CHKERRQ(ierr);

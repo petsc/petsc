@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   SNES           snes;
   DA             da1,da2;
   DMComposite    pack;
-  PetscTruth     couple = PETSC_FALSE;
+  PetscBool      couple = PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscLogEventRegister("FormFunc1", 0,&EVENT_FORMFUNCTIONLOCAL1);CHKERRQ(ierr);

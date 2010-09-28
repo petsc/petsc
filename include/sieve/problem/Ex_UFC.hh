@@ -19,11 +19,11 @@ namespace ALE {
       PetscInt      debug;                       // The debugging level
       RunType       run;                         // The run type
       PetscInt      dim;                         // The topological mesh dimension
-      PetscTruth    reentrantMesh;               // Generate a reentrant mesh?
-      PetscTruth    circularMesh;                // Generate a circular mesh?
-      PetscTruth    refineSingularity;           // Generate an a priori graded mesh for the poisson problem
-      PetscTruth    generateMesh;                // Generate the unstructure mesh
-      PetscTruth    interpolate;                 // Generate intermediate mesh elements
+      PetscBool     reentrantMesh;               // Generate a reentrant mesh?
+      PetscBool     circularMesh;                // Generate a circular mesh?
+      PetscBool     refineSingularity;           // Generate an a priori graded mesh for the poisson problem
+      PetscBool     generateMesh;                // Generate the unstructure mesh
+      PetscBool     interpolate;                 // Generate intermediate mesh elements
       PetscReal     refinementLimit;             // The largest allowable cell volume
       char          baseFilename[2048];          // The base filename for mesh files
       char          partitioner[2048];           // The graph partitioner
@@ -422,7 +422,7 @@ namespace ALE {
       Ex_UFCOptions *getOptions() {return &this->_options;};
       int  dim() const {return this->_options.dim;};
       bool interpolated() const {return this->_options.interpolate;};
-      void interpolated(const bool i) {this->_options.interpolate = (PetscTruth) i;};
+      void interpolated(const bool i) {this->_options.interpolate = (PetscBool ) i;};
       BCType bcType() const {return this->_options.bcType;};
       UFCHook * ufcHook() const {return this->_ufchook;};
       void ufcHook(UFCHook * uh) {this->_ufchook = uh;};
@@ -438,7 +438,7 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "CreateMesh"
       PetscErrorCode createMesh() {
-        PetscTruth     view;
+        PetscBool      view;
         PetscErrorCode ierr;
 
         PetscFunctionBegin;
@@ -494,7 +494,7 @@ namespace ALE {
         if (_options.refinementLimit > 0.0) {
           ::Mesh refinedMesh;
 
-          ierr = MeshRefine((::Mesh) this->_dm, _options.refinementLimit, (PetscTruth) interpolated(), &refinedMesh);CHKERRQ(ierr);
+          ierr = MeshRefine((::Mesh) this->_dm, _options.refinementLimit, (PetscBool ) interpolated(), &refinedMesh);CHKERRQ(ierr);
           ierr = MeshDestroy((::Mesh) this->_dm);CHKERRQ(ierr);
           this->_dm = (DM) refinedMesh;
           ierr = MeshGetMesh((::Mesh) this->_dm, this->_mesh);CHKERRQ(ierr);
@@ -758,7 +758,7 @@ namespace ALE {
 	const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s = this->_mesh->getRealSection("default");
 	s->setDebug(debug());
 	_subproblem->setupField(this->_mesh, s);
-	PetscTruth flag;
+	PetscBool  flag;
 	ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
 	if (flag) {s->view("Exact Solution");}
 	ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &flag);CHKERRQ(ierr);
@@ -773,7 +773,7 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "CreateExactSolution"
       PetscErrorCode createExactSolution() {
-        PetscTruth     flag;
+        PetscBool      flag;
         PetscErrorCode ierr;
 
         PetscFunctionBegin;
@@ -854,7 +854,7 @@ namespace ALE {
         // Report on solve
         SNES                snes = DMMGGetSNES(this->_dmmg);
         PetscInt            its;
-        PetscTruth          flag;
+        PetscBool           flag;
         SNESConvergedReason reason;
 
         ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
@@ -992,7 +992,7 @@ namespace ALE {
       PetscErrorCode checkResidual(ALE::Problem::ExactSolType sol) {
         const char    *name;
         PetscScalar    norm;
-        PetscTruth     flag;
+        PetscBool      flag;
         PetscErrorCode ierr;
 
         PetscFunctionBegin;

@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
   DA             da;
-  PetscTruth     flg = PETSC_FALSE,test_order = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE,test_order = PETSC_FALSE;
   ISColoring     coloring;
   Mat            mat;
   DAStencilType  stencil_type = DA_STENCIL_BOX;

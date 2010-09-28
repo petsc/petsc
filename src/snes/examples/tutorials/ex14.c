@@ -71,7 +71,7 @@ int main(int argc,char **argv)
   Mat                    J;                    /* Jacobian matrix */
   AppCtx                 user;                 /* user-defined work context */
   PetscInt               its;                  /* iterations for convergence */
-  PetscTruth             matrix_free = PETSC_FALSE,coloring = PETSC_FALSE;
+  PetscBool              matrix_free = PETSC_FALSE,coloring = PETSC_FALSE;
   PetscErrorCode         ierr;
   PetscReal              bratu_lambda_max = 6.81,bratu_lambda_min = 0.,fnorm;
   MatFDColoring          matfdcoloring;

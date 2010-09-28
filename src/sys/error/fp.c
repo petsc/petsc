@@ -337,7 +337,7 @@ void PetscDefaultFPTrap(int sig)
 {
   const FPNode *node;
   int          code;
-  PetscTruth   matched = PETSC_FALSE;
+  PetscBool    matched = PETSC_FALSE;
 
   PetscFunctionBegin;
   /* Note: While it is possible for the exception state to be preserved by the

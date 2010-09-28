@@ -107,7 +107,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
   KSP_CG         *cg;
   Mat            Amat,Pmat;
   MatStructure   pflag;
-  PetscTruth     diagonalscale;
+  PetscBool      diagonalscale;
 
   PetscFunctionBegin;
   ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -325,7 +325,7 @@ PetscErrorCode KSPView_CG(KSP ksp,PetscViewer viewer)
 #if defined(PETSC_USE_COMPLEX)
   KSP_CG         *cg = (KSP_CG *)ksp->data; 
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -384,7 +384,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCGUseSingleReduction_CG" 
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCGUseSingleReduction_CG(KSP ksp,PetscTruth flg)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCGUseSingleReduction_CG(KSP ksp,PetscBool  flg)
 {
   KSP_CG *cg  = (KSP_CG *)ksp->data;
 

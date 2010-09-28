@@ -101,7 +101,7 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       nonzerorow=0;
-  PetscTruth     usecprow    = a->compressedrow.use;
+  PetscBool      usecprow    = a->compressedrow.use;
   Mat_SeqAIJCUDA *cudastruct = (Mat_SeqAIJCUDA *)A->spptr;
 
   PetscFunctionBegin;
@@ -145,7 +145,7 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscTruth     usecprow=a->compressedrow.use;
+  PetscBool      usecprow=a->compressedrow.use;
   Mat_SeqAIJCUDA *cudastruct = (Mat_SeqAIJCUDA *)A->spptr;
 
   PetscFunctionBegin;

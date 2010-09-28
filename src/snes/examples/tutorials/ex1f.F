@@ -59,7 +59,7 @@
       PetscMPIInt size,rank
       PetscScalar   pfive
       double precision   tol
-      PetscTruth  setls
+      PetscBool   setls
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
@@ -323,7 +323,7 @@
       integer           lctx
       Vec               x, f,g, y, w
       double  precision fnorm,ynorm,gnorm
-      PetscTruth           flag
+      PetscBool            flag
       PetscErrorCode ierr
 
       PetscScalar       mone

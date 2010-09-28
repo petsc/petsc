@@ -34,7 +34,7 @@
       PetscScalar  v
       PetscInt i,istart,iend,n,ione
       PetscErrorCode ierr
-      PetscTruth flg
+      PetscBool  flg
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       n = 50

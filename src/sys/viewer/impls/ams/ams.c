@@ -19,7 +19,7 @@ PetscErrorCode PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
   PetscViewer_AMS *vams = (PetscViewer_AMS*)v->data;
   PetscErrorCode  ierr;
   int             port = -1;
-  PetscTruth      flg,flg2;
+  PetscBool       flg,flg2;
   char            m[64];
 
   PetscFunctionBegin;

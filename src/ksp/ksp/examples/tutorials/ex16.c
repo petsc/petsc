@@ -36,7 +36,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       ntimes,i,j,k,Ii,J,Istart,Iend;
   PetscInt       m = 8,n = 7,its;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
   PetscScalar    v,one = 1.0,neg_one = -1.0,rhs;
 
   PetscInitialize(&argc,&args,(char *)0,help);

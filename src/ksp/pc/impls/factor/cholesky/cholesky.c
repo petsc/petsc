@@ -10,16 +10,16 @@
 typedef struct {
   PC_Factor        hdr;
   PetscReal        actualfill;       /* actual fill in factor */
-  PetscTruth       inplace;          /* flag indicating in-place factorization */
+  PetscBool        inplace;          /* flag indicating in-place factorization */
   IS               row,col;          /* index sets used for reordering */
-  PetscTruth       reuseordering;    /* reuses previous reordering computed */
-  PetscTruth       reusefill;        /* reuse fill from previous Cholesky */
+  PetscBool        reuseordering;    /* reuses previous reordering computed */
+  PetscBool        reusefill;        /* reuse fill from previous Cholesky */
 } PC_Cholesky;
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetReuseOrdering_Cholesky"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering_Cholesky(PC pc,PetscTruth flag)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering_Cholesky(PC pc,PetscBool  flag)
 {
   PC_Cholesky *lu;
   
@@ -33,7 +33,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetReuseFill_Cholesky"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill_Cholesky(PC pc,PetscTruth flag)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill_Cholesky(PC pc,PetscBool  flag)
 {
   PC_Cholesky *lu;
   
@@ -63,7 +63,7 @@ static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
 {
   PC_Cholesky    *chol = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
   
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
 static PetscErrorCode PCSetUp_Cholesky(PC pc)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
 
   PetscFunctionBegin;
@@ -254,9 +254,9 @@ EXTERN_C_END
 
 .seealso: PCFactorSetReuseFill()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering(PC pc,PetscTruth flag)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering(PC pc,PetscBool  flag)
 {
-  PetscErrorCode ierr,(*f)(PC,PetscTruth);
+  PetscErrorCode ierr,(*f)(PC,PetscBool );
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);

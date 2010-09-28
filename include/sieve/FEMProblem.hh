@@ -930,7 +930,7 @@ namespace ALE {
 	ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
 	s->axpy(-1.0, constant);
       }
-      PetscTruth flag;
+      PetscBool  flag;
       PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);
       if (flag) {
 	ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);

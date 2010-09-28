@@ -78,7 +78,7 @@ PetscErrorCode MatScale_SeqDense(Mat A,PetscScalar alpha)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIsHermitian_SeqDense"
-PetscErrorCode MatIsHermitian_SeqDense(Mat A,PetscReal rtol,PetscTruth *fl)
+PetscErrorCode MatIsHermitian_SeqDense(Mat A,PetscReal rtol,PetscBool  *fl)
 {
   Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
   PetscInt       i,j,m = A->rmap->n,N;
@@ -812,7 +812,7 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
   PetscScalar       *v;
   PetscViewerFormat format;
 #if defined(PETSC_USE_COMPLEX)
-  PetscTruth        allreal = PETSC_TRUE;
+  PetscBool         allreal = PETSC_TRUE;
 #endif
 
   PetscFunctionBegin;
@@ -1031,7 +1031,7 @@ PetscErrorCode MatView_SeqDense_Draw_Zoom(PetscDraw draw,void *Aa)
 PetscErrorCode MatView_SeqDense_Draw(Mat A,PetscViewer viewer)
 {
   PetscDraw      draw;
-  PetscTruth     isnull;
+  PetscBool      isnull;
   PetscReal      xr,yr,xl,yl,h,w;
   PetscErrorCode ierr;
 
@@ -1054,7 +1054,7 @@ PetscErrorCode MatView_SeqDense_Draw(Mat A,PetscViewer viewer)
 PetscErrorCode MatView_SeqDense(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     iascii,isbinary,isdraw;
+  PetscBool      iascii,isbinary,isdraw;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -1145,7 +1145,7 @@ PetscErrorCode MatTranspose_SeqDense(Mat A,MatReuse reuse,Mat *matout)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatEqual_SeqDense"
-PetscErrorCode MatEqual_SeqDense(Mat A1,Mat A2,PetscTruth *flg)
+PetscErrorCode MatEqual_SeqDense(Mat A1,Mat A2,PetscBool  *flg)
 {
   Mat_SeqDense *mat1 = (Mat_SeqDense*)A1->data;
   Mat_SeqDense *mat2 = (Mat_SeqDense*)A2->data;
@@ -1287,7 +1287,7 @@ PetscErrorCode MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_SeqDense"
-PetscErrorCode MatSetOption_SeqDense(Mat A,MatOption op,PetscTruth flg)
+PetscErrorCode MatSetOption_SeqDense(Mat A,MatOption op,PetscBool  flg)
 {
   Mat_SeqDense   *aij = (Mat_SeqDense*)A->data;
   PetscErrorCode ierr;

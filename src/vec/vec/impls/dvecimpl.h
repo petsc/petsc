@@ -45,7 +45,7 @@ EXTERN PetscErrorCode VecAXPY_Seq(Vec,PetscScalar,Vec);
 EXTERN PetscErrorCode VecAXPBY_Seq(Vec,PetscScalar,PetscScalar,Vec);
 EXTERN PetscErrorCode VecMax_Seq(Vec,PetscInt*,PetscReal *);
 EXTERN PetscErrorCode VecDuplicate_Seq(Vec,Vec *);
-EXTERN PetscErrorCode VecSetOption_Seq(Vec,VecOption,PetscTruth);
+EXTERN PetscErrorCode VecSetOption_Seq(Vec,VecOption,PetscBool );
 EXTERN PetscErrorCode VecConjugate_Seq(Vec);
 EXTERN PetscErrorCode VecNorm_Seq(Vec,NormType,PetscReal*);
 EXTERN_C_BEGIN

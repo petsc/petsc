@@ -52,7 +52,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryPrintPath(PetscDLLibrary libs)
    ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, or ${any environmental variable}
    occuring in directoryname and filename will be replaced with appropriate values.
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,size_t llen,PetscTruth *found)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,size_t llen,PetscBool  *found)
 {
   char           *buf,*par2,suffix[16],*gz,*so;
   size_t         len;
@@ -129,7 +129,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const cha
 PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrary *entry)
 {
   PetscErrorCode ierr;
-  PetscTruth     foundlibrary,match;
+  PetscBool      foundlibrary,match;
   char           libname[PETSC_MAX_PATH_LEN],par2[PETSC_MAX_PATH_LEN],suffix[16],*s;
   char           *basename,registername[128];
   PetscDLHandle  handle;
@@ -261,7 +261,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary
     prev  = 0;
     nlist = list;
     while (nlist) {
-      PetscTruth match;
+      PetscBool  match;
       ierr = PetscStrcmp(nlist->libname,libname,&match);CHKERRQ(ierr);
       if (match) goto done;
       prev  = nlist;
@@ -334,7 +334,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibr
   PetscDLLibrary list,prev;
   PetscErrorCode ierr;
   size_t         len;
-  PetscTruth     match,dir;
+  PetscBool      match,dir;
   char           program[PETSC_MAX_PATH_LEN],found[8*PETSC_MAX_PATH_LEN];
   char           *libname,suffix[16],*s;
   PetscToken     token;
@@ -421,7 +421,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLib
   PetscDLLibrary list,prev;
   PetscErrorCode ierr;
   size_t         len;
-  PetscTruth     match,dir;
+  PetscBool      match,dir;
   char           program[PETSC_MAX_PATH_LEN],found[8*PETSC_MAX_PATH_LEN];
   char           *libname,suffix[16],*s;
   PetscToken     token;
@@ -503,7 +503,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLib
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryClose(PetscDLLibrary list)
 {
-  PetscTruth     done = PETSC_FALSE;
+  PetscBool      done = PETSC_FALSE;
   PetscDLLibrary prev,tail;
   PetscErrorCode ierr;
 
@@ -556,7 +556,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLL
 {
   PetscErrorCode ierr;
   size_t         l;
-  PetscTruth     dir;
+  PetscBool      dir;
   char           program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*libname1,fbuf[PETSC_MAX_PATH_LEN],*found,suffix[16],*f2;
   char           *func,*funcname,libname[PETSC_MAX_PATH_LEN],*lib;
   FILE           *fp;

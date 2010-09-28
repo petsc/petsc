@@ -2,7 +2,7 @@
 
 #include "private/snesimpl.h"
 
-static PetscTruth SNESPackageInitialized = PETSC_FALSE;
+static PetscBool  SNESPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "SNESFinalizePackage"
 /*@C
@@ -42,7 +42,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
-  PetscTruth        opt;
+  PetscBool         opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;

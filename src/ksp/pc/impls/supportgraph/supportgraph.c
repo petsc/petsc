@@ -57,7 +57,7 @@
 */
 typedef struct {
   Mat        pre;      /* Cholesky factored preconditioner matrix */
-  PetscTruth augment;  /* whether to augment the spanning tree */
+  PetscBool  augment;  /* whether to augment the spanning tree */
   PetscReal  maxCong;  /* create subgraph with at most this much congestion (only used with augment) */
   PetscReal  tol;      /* throw out entries smaller than this */
 } PC_SupportGraph;
@@ -68,7 +68,7 @@ static PetscErrorCode PCView_SupportGraph(PC pc,PetscViewer viewer)
 {
   PC_SupportGraph *sg = (PC_SupportGraph*)pc->data;
   PetscErrorCode  ierr;
-  PetscTruth      iascii;
+  PetscBool       iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -89,7 +89,7 @@ static PetscErrorCode PCView_SupportGraph(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscTruth augment,PetscReal tol,PetscReal& maxCong);
+EXTERN PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscBool  augment,PetscReal tol,PetscReal& maxCong);
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -115,7 +115,7 @@ static PetscErrorCode PCSetUp_SupportGraph(PC pc)
   Vec            diag;
   PetscInt       n,i;
   PetscScalar    *x;
-  PetscTruth     zeroflag = PETSC_FALSE;
+  PetscBool      zeroflag = PETSC_FALSE;
   */
 
   PetscFunctionBegin;

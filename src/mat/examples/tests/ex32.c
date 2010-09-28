@@ -19,7 +19,7 @@ int main(int argc,char **args)
   PetscScalar    *val,*bval;
   FILE*          file;
   PetscViewer    view;
-  PetscTruth     opt;
+  PetscBool      opt;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

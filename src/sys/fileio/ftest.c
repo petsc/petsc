@@ -27,7 +27,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTestOwnership"
-static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscTruth *flg) 
+static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscBool  *flg) 
 {
   int m = R_OK;
   
@@ -49,7 +49,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTestOwnership"
-static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscTruth *flg) 
+static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscBool  *flg) 
 {
   uid_t          uid;
   gid_t          *gid = PETSC_NULL;
@@ -110,7 +110,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetFileStat"
-static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t *fileGid, int *fileMode,PetscTruth *exists)
+static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t *fileGid, int *fileMode,PetscBool  *exists)
 {
   struct stat    statbuf;
   PetscErrorCode ierr;
@@ -134,13 +134,13 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTestFile"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTestFile(const char fname[], char mode, PetscTruth *flg)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscTestFile(const char fname[], char mode, PetscBool  *flg)
 {
   uid_t          fuid;
   gid_t          fgid;
   int            fmode;
   PetscErrorCode ierr;
-  PetscTruth     exists;
+  PetscBool      exists;
 
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
@@ -158,13 +158,13 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTestFile(const char fname[], char mode, P
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTestDirectory"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTestDirectory(const char fname[],char mode,PetscTruth *flg)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscTestDirectory(const char fname[],char mode,PetscBool  *flg)
 {
   uid_t          fuid;
   gid_t          fgid;
   int            fmode;
   PetscErrorCode ierr;
-  PetscTruth     exists;
+  PetscBool      exists;
 
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
@@ -182,7 +182,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTestDirectory(const char fname[],char mod
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLs"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLs(MPI_Comm comm,const char libname[],char found[],size_t tlen,PetscTruth *flg)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscLs(MPI_Comm comm,const char libname[],char found[],size_t tlen,PetscBool  *flg)
 {
   PetscErrorCode ierr;
   size_t         len;

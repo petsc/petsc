@@ -31,7 +31,7 @@
    Note: 
    This routine is anologous to memcmp()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscMemcmp(const void *str1,const void *str2,size_t len,PetscTruth *e)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMemcmp(const void *str1,const void *str2,size_t len,PetscBool  *e)
 {
   int r;
 

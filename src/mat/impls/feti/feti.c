@@ -1630,7 +1630,7 @@ int MatFetiCalculateRHS(Mat A, Vec * dr_Scc)   /* dr with additional correction 
 
 int MatSetUp_Feti(Mat A)   /*  MatLoad_Feti calls this  */
 {
-    static PetscTruth matsetup_called=PETSC_FALSE;
+    static PetscBool  matsetup_called=PETSC_FALSE;
 
     PetscFunctionBegin;
 

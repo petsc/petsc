@@ -833,7 +833,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
   PetscMPIInt    size;
   PetscInt       totalv,xin_type = VEC_SEQ_ID,yin_type = VEC_SEQ_ID,*range; 
   MPI_Comm       comm,ycomm;
-  PetscTruth     ixblock,iyblock,iystride,islocal,cando,flag;
+  PetscBool      ixblock,iyblock,iystride,islocal,cando,flag;
   IS             tix = 0,tiy = 0;
 
   PetscFunctionBegin;
@@ -1042,7 +1042,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       PetscInt               nx,ny;
       const PetscInt         *idx,*idy;
       VecScatter_Seq_General *to11 = PETSC_NULL,*from11 = PETSC_NULL;
-      PetscTruth             idnx,idny;
+      PetscBool              idnx,idny;
 
       ierr = ISGetLocalSize(ix,&nx);CHKERRQ(ierr);
       ierr = ISGetLocalSize(iy,&ny);CHKERRQ(ierr);
@@ -1457,7 +1457,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
 
 .seealso: VecScatterCreate(), VecScatterEnd(), VecScatterBegin()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecScatterGetMerged(VecScatter ctx,PetscTruth *flg)
+PetscErrorCode PETSCVEC_DLLEXPORT VecScatterGetMerged(VecScatter ctx,PetscBool  *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_CLASSID,1);

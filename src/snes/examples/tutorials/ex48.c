@@ -239,10 +239,10 @@ struct _p_THI {
     PetscReal irefgam,eps2,exponent;
   } friction;
   PetscReal rhog;
-  PetscTruth no_slip;
-  PetscTruth tridiagonal;
-  PetscTruth coarse2d;
-  PetscTruth verbose;
+  PetscBool  no_slip;
+  PetscBool  tridiagonal;
+  PetscBool  coarse2d;
+  PetscBool  verbose;
   MatType mattype;
 };
 
@@ -395,7 +395,7 @@ static PetscErrorCode THIDestroy(THI thi)
 #define __FUNCT__ "THICreate"
 static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
 {
-  static PetscTruth registered = PETSC_FALSE;
+  static PetscBool  registered = PETSC_FALSE;
   THI thi;
   Units units;
   PetscErrorCode ierr;
@@ -436,7 +436,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
     char homexp[] = "A";
     char mtype[256] = MATSBAIJ;
     PetscReal L,m = 1.0;
-    PetscTruth flg;
+    PetscBool  flg;
     L = thi->Lx;
     ierr = PetscOptionsReal("-thi_L","Domain size (m)","",L,&L,&flg);CHKERRQ(ierr);
     if (flg) thi->Lx = thi->Ly = L;
@@ -1251,7 +1251,7 @@ static PetscErrorCode DARefineHierarchy_THI(DA dac0,PetscInt nlevels,DA hierarch
 static PetscErrorCode DAGetInterpolation_THI(DA dac,DA daf,Mat *A,Vec *scale)
 {
   PetscErrorCode ierr;
-  PetscTruth flg,isda2;
+  PetscBool  flg,isda2;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dac,DM_CLASSID,1);
@@ -1431,7 +1431,7 @@ int main(int argc,char *argv[])
   PetscInt       i;
   PetscErrorCode ierr;
   PetscLogStage  stages[3];
-  PetscTruth     repeat_fine_solve = PETSC_FALSE;
+  PetscBool      repeat_fine_solve = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
@@ -1503,7 +1503,7 @@ int main(int argc,char *argv[])
     /* This option is only valid for the SBAIJ format.  The matrices we assemble are symmetric, but the SBAIJ assembly
     * functions will complain if we provide lower-triangular entries without setting this option. */
     Mat B = dmmg[i]->B;
-    PetscTruth flg1,flg2;
+    PetscBool  flg1,flg2;
     ierr = PetscTypeCompare((PetscObject)B,MATSEQSBAIJ,&flg1);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)B,MATMPISBAIJ,&flg2);CHKERRQ(ierr);
     if (flg1 || flg2) {
@@ -1544,7 +1544,7 @@ int main(int argc,char *argv[])
   }
 
   {
-    PetscTruth flg;
+    PetscBool  flg;
     char filename[PETSC_MAX_PATH_LEN] = "";
     ierr = PetscOptionsGetString(PETSC_NULL,"-o",filename,sizeof(filename),&flg);CHKERRQ(ierr);
     if (flg) {

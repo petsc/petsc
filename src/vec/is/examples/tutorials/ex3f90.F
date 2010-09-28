@@ -26,7 +26,7 @@
       PetscInt inputindices(4)
       PetscInt, pointer :: indices(:)
       IS       set
-      PetscTruth isablock;
+      PetscBool  isablock;
 
       n               = 4
       bs              = 3

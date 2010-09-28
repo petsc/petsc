@@ -15,7 +15,7 @@ typedef struct {
   int            w,h;        /* These are saved in case additional windows are opened */
   char           *display;
   char           *title;
-  PetscTruth     singleton_made;
+  PetscBool      singleton_made;
 } PetscViewer_Draw;
 
 #endif

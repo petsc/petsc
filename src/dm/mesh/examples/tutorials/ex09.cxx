@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
   PetscInt       debug = 0;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -87,7 +87,7 @@ PetscErrorCode testSkewedHat(MPI_Comm comm) {
   int rank;
   PetscErrorCode ierr;
   int debug;
-  PetscTruth flag;
+  PetscBool  flag;
   PetscFunctionBegin;
 
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
@@ -127,7 +127,7 @@ PetscErrorCode testSkewedHatFlip(MPI_Comm comm) {
   int rank;
   PetscErrorCode ierr;
   int debug;
-  PetscTruth flag;
+  PetscBool  flag;
   PetscFunctionBegin;
 
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);

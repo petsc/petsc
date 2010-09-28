@@ -462,7 +462,7 @@ PetscErrorCode EventPerfLogDeactivateClass(EventPerfLog eventLog, EventRegLog ev
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT EventRegLogGetEvent(EventRegLog eventLog, const char name[], PetscLogEvent *event)
 {
-  PetscTruth     match;
+  PetscBool      match;
   int            e;
   PetscErrorCode ierr;
 
@@ -499,7 +499,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT EventRegLogGetEvent(EventRegLog eventLog, cons
 .keywords: log, visible, event
 .seealso: EventPerfLogGetVisible(), EventRegLogRegister(), StageLogGetEventLog()
 @*/
-PetscErrorCode EventPerfLogSetVisible(EventPerfLog eventLog, PetscLogEvent event, PetscTruth isVisible) 
+PetscErrorCode EventPerfLogSetVisible(EventPerfLog eventLog, PetscLogEvent event, PetscBool  isVisible) 
 {
   PetscFunctionBegin;
   eventLog->eventInfo[event].visible = isVisible;
@@ -528,7 +528,7 @@ PetscErrorCode EventPerfLogSetVisible(EventPerfLog eventLog, PetscLogEvent event
 .keywords: log, visible, event
 .seealso: EventPerfLogSetVisible(), EventRegLogRegister(), StageLogGetEventLog()
 @*/
-PetscErrorCode EventPerfLogGetVisible(EventPerfLog eventLog, PetscLogEvent event, PetscTruth *isVisible) 
+PetscErrorCode EventPerfLogGetVisible(EventPerfLog eventLog, PetscLogEvent event, PetscBool  *isVisible) 
 {
   PetscFunctionBegin;
   PetscValidIntPointer(isVisible,3);

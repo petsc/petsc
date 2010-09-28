@@ -12,7 +12,7 @@ int main(int argc,char **argv) {
   PetscScalar    *oa,*da,value; 
   PetscRandom    rctx;
   PetscErrorCode ierr;
-  PetscTruth     equal;
+  PetscBool      equal;
   Mat_SeqAIJ     *daij,*oaij;
   Mat_MPIAIJ     *Ampiaij;
   PetscMPIInt    size,rank;

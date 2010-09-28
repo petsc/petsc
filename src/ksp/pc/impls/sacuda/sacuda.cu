@@ -42,7 +42,7 @@ typedef struct {
 static PetscErrorCode PCSetUp_SACUDA(PC pc)
 {
   PC_SACUDA      *sa = (PC_SACUDA*)pc->data;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
   PetscErrorCode ierr;
   Mat_SeqAIJCUDA *gpustruct;
 
@@ -84,7 +84,7 @@ static PetscErrorCode PCApply_SACUDA(PC pc,Vec x,Vec y)
 {
   PC_SACUDA      *sac = (PC_SACUDA*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth     flg1,flg2;
+  PetscBool      flg1,flg2;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)x,VECSEQCUDA,&flg1);CHKERRQ(ierr);

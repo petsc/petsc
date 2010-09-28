@@ -7,7 +7,7 @@ using ALE::Obj;
 typedef struct {
   int        debug;           // The debugging level
   int        dim;             // The topological mesh dimension
-  PetscTruth interpolate;     // Construct missing elements of the mesh
+  PetscBool  interpolate;     // Construct missing elements of the mesh
   PetscReal  refinementLimit; // The largest allowable cell volume
 } Options;
 
@@ -77,7 +77,7 @@ PetscErrorCode ViewMesh(const Obj<ALE::Mesh>& m, const char filename[])
 PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& m, Options *options)
 {
   Obj<ALE::Mesh> mB;
-  PetscTruth     view;
+  PetscBool      view;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

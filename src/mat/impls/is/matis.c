@@ -419,7 +419,7 @@ PetscErrorCode MatGetDiagonal_IS(Mat A, Vec v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_IS"
-PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscTruth flg)
+PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscBool  flg)
 {
   Mat_IS         *a = (Mat_IS*)A->data; 
   PetscErrorCode ierr;

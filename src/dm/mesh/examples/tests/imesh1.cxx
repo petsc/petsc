@@ -46,8 +46,8 @@ protected:
   PetscInt            _iters;        // The number of test repetitions
   PetscInt            _dim;          // The mesh dimension
   PetscInt            _size;         // The interval size
-  PetscTruth          _interpolate;  // Flag for mesh interpolation
-  PetscTruth          _onlyParallel; // Shut off serial tests
+  PetscBool           _interpolate;  // Flag for mesh interpolation
+  PetscBool           _onlyParallel; // Shut off serial tests
   ALE::Obj<ALE::Mesh>             _m;
   std::map<point_type,point_type> _renumbering;
 public:
@@ -603,7 +603,7 @@ protected:
   int                 _debug; // The debugging level
   PetscInt            _iters; // The number of test repetitions
   PetscInt            _size;  // The number of mesh points
-  PetscTruth          _interpolate;  // Flag for mesh interpolation
+  PetscBool           _interpolate;  // Flag for mesh interpolation
   ALE::Obj<ALE::Mesh> _m;
 public:
   PetscErrorCode processOptions() {

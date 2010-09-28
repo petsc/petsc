@@ -42,7 +42,7 @@
       character*(60)   type,tsinfo
       character*(5)    etype
       PetscInt         i1,i60
-      PetscTruth flg
+      PetscBool  flg
       PetscSizeT five
 
       external Monitor,RHSFunctionHeat,RHSMatrixFree,Initial

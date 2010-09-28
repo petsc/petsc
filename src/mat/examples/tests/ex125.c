@@ -18,7 +18,7 @@ int main(int argc,char **args)
   IS             perm,iperm;
   MatFactorInfo  info;
   PetscRandom    rand;
-  PetscTruth     flg,testMatSolve=PETSC_TRUE,testMatMatSolve=PETSC_TRUE;
+  PetscBool      flg,testMatSolve=PETSC_TRUE,testMatMatSolve=PETSC_TRUE;
   PetscViewer    fd;              /* viewer */
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
 

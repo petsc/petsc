@@ -13,7 +13,7 @@
        PetscMPIInt size,rank
        PetscOffset iis
        IS          is,newis
-       PetscTruth  flag
+       PetscBool   flag
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
            CHKERRQ(ierr)

@@ -11,7 +11,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscReal      norm;
   char           file[PETSC_MAX_PATH_LEN];
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscViewer    fd;
 
   PetscInitialize(&argc,&args,(char *)0,help);

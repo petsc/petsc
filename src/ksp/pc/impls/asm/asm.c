@@ -25,9 +25,9 @@ typedef struct {
   IS         *is_local;           /* index set that defines each non-overlapping subdomain, may be NULL */
   Mat        *mat,*pmat;          /* mat is not currently used */
   PCASMType  type;                /* use reduced interpolation, restriction or both */
-  PetscTruth type_set;            /* if user set this value (so won't change it for symmetric problems) */
-  PetscTruth same_local_solves;   /* flag indicating whether all local solvers are same */
-  PetscTruth sort_indices;        /* flag to sort subdomain indices */
+  PetscBool  type_set;            /* if user set this value (so won't change it for symmetric problems) */
+  PetscBool  same_local_solves;   /* flag indicating whether all local solvers are same */
+  PetscBool  sort_indices;        /* flag to sort subdomain indices */
 } PC_ASM;
 
 #undef __FUNCT__  
@@ -38,7 +38,7 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       i,bsz;
-  PetscTruth     iascii,isstring;
+  PetscBool      iascii,isstring;
   PetscViewer    sviewer;
 
 
@@ -139,7 +139,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
 {
   PC_ASM         *osm  = (PC_ASM*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth     symset,flg;
+  PetscBool      symset,flg;
   PetscInt       i,m,m_local,firstRow,lastRow;
   PetscMPIInt    size;
   MatReuse       scall = MAT_REUSE_MATRIX;
@@ -491,7 +491,7 @@ static PetscErrorCode PCSetFromOptions_ASM(PC pc)
   PC_ASM         *osm = (PC_ASM*)pc->data;
   PetscErrorCode ierr;
   PetscInt       blocks,ovl;
-  PetscTruth     symset,flg;
+  PetscBool      symset,flg;
   PCASMType      asmtype;
 
   PetscFunctionBegin;
@@ -623,7 +623,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCASMSetSortIndices_ASM"
-PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetSortIndices_ASM(PC pc,PetscTruth doSort)
+PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetSortIndices_ASM(PC pc,PetscBool  doSort)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
 
@@ -872,9 +872,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetType(PC pc,PCASMType type)
 .seealso: PCASMSetLocalSubdomains(), PCASMSetTotalSubdomains(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetSortIndices(PC pc,PetscTruth doSort)
+PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetSortIndices(PC pc,PetscBool  doSort)
 {
-  PetscErrorCode ierr,(*f)(PC,PetscTruth);
+  PetscErrorCode ierr,(*f)(PC,PetscBool );
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -1060,10 +1060,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMCreateSubdomains(Mat A, PetscInt n, IS* o
 {
   MatPartitioning           mpart;
   const char                *prefix;
-  PetscErrorCode            (*f)(Mat,PetscTruth*,MatReuse,Mat*);
+  PetscErrorCode            (*f)(Mat,PetscBool *,MatReuse,Mat*);
   PetscMPIInt               size;
   PetscInt                  i,j,rstart,rend,bs;
-  PetscTruth                iscopy = PETSC_FALSE,isbaij = PETSC_FALSE,foundpart = PETSC_FALSE;
+  PetscBool                 iscopy = PETSC_FALSE,isbaij = PETSC_FALSE,foundpart = PETSC_FALSE;
   Mat                       Ad = PETSC_NULL, adj;
   IS                        ispart,isnumb,*is;
   PetscErrorCode            ierr;
@@ -1094,7 +1094,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMCreateSubdomains(Mat A, PetscInt n, IS* o
     if (!isbaij) {ierr = PetscTypeCompare((PetscObject)Ad,MATSEQSBAIJ,&isbaij);CHKERRQ(ierr);}
   }
   if (Ad && n > 1) {
-    PetscTruth match,done;
+    PetscBool  match,done;
     /* Try to setup a good matrix partitioning if available */
     ierr = MatPartitioningCreate(PETSC_COMM_SELF,&mpart);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject)mpart,prefix);CHKERRQ(ierr);
@@ -1372,7 +1372,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMGetLocalSubdomains(PC pc,PetscInt *n,IS *
 {
   PC_ASM         *osm;
   PetscErrorCode ierr;
-  PetscTruth     match;
+  PetscBool      match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -1418,7 +1418,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMGetLocalSubmatrices(PC pc,PetscInt *n,Mat
 {
   PC_ASM         *osm;
   PetscErrorCode ierr;
-  PetscTruth     match;
+  PetscBool      match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);

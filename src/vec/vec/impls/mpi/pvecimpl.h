@@ -38,7 +38,7 @@ EXTERN PetscErrorCode VecSetValuesBlocked_MPI(Vec,PetscInt,const PetscInt [],con
 EXTERN PetscErrorCode VecAssemblyBegin_MPI(Vec);
 EXTERN PetscErrorCode VecAssemblyEnd_MPI(Vec);
 
-EXTERN PetscErrorCode VecCreate_MPI_Private(Vec,PetscTruth,PetscInt,const PetscScalar[]);
+EXTERN PetscErrorCode VecCreate_MPI_Private(Vec,PetscBool ,PetscInt,const PetscScalar[]);
 
 #endif
 

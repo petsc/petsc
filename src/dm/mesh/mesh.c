@@ -7,7 +7,7 @@ PetscClassId PETSCDM_DLLEXPORT MESH_CLASSID;
 PetscLogEvent  Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
             Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
 
-PetscTruth MeshRegisterAllCalled = PETSC_FALSE;
+PetscBool  MeshRegisterAllCalled = PETSC_FALSE;
 PetscFList MeshList;
 
 #if PETSC_HAVE_SIEVE
@@ -126,7 +126,7 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Petsc
   } else if (format == PETSC_VIEWER_ASCII_PCICE) {
     char      *filename;
     char       coordFilename[2048];
-    PetscTruth isConnect;
+    PetscBool  isConnect;
     size_t     len;
 
     ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
@@ -174,7 +174,7 @@ PetscErrorCode MeshView_Sieve_Binary(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Pets
 #define __FUNCT__ "MeshView_Sieve"
 PetscErrorCode MeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer viewer)
 {
-  PetscTruth     iascii, isbinary, isdraw;
+  PetscBool      iascii, isbinary, isdraw;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -444,7 +444,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexMatrix(Mesh mesh, MatType mtype, M
 PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, const MatType mtype, Mat *J)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscTruth          flag;
+  PetscBool           flag;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -567,7 +567,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
 PetscErrorCode PETSCDM_DLLEXPORT MeshSetType(Mesh mesh, const MeshType type)
 {
   PetscErrorCode ierr,(*r)(Mesh);
-  PetscTruth     match;
+  PetscBool      match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh,MESH_CLASSID,1);
@@ -707,7 +707,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRegisterDestroy(void)
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -781,7 +781,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateVector(Mesh mesh, SectionReal section
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateLocalVector(Mesh mesh, Vec *lvec)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1488,11 +1488,11 @@ PetscErrorCode WritePCICERestart(Mesh mesh, PetscViewer viewer)
 .keywords: mesh, PCICE
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFilename[], const char adjFilename[], PetscTruth interpolate, const char bcFilename[], Mesh *mesh)
+PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFilename[], const char adjFilename[], PetscBool  interpolate, const char bcFilename[], Mesh *mesh)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscInt            debug = 0;
-  PetscTruth          flag;
+  PetscBool           flag;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -1532,11 +1532,11 @@ PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFil
 .keywords: mesh, PCICE
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshCreatePyLith(MPI_Comm comm, const int dim, const char baseFilename[], PetscTruth zeroBase, PetscTruth interpolate, Mesh *mesh)
+PetscErrorCode MeshCreatePyLith(MPI_Comm comm, const int dim, const char baseFilename[], PetscBool  zeroBase, PetscBool  interpolate, Mesh *mesh)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscInt            debug = 0;
-  PetscTruth          flag;
+  PetscBool           flag;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -1572,7 +1572,7 @@ PetscErrorCode MeshCreatePyLith(MPI_Comm comm, const int dim, const char baseFil
 .keywords: mesh, coordinates
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshGetCoordinates(Mesh mesh, PetscTruth columnMajor, PetscInt *numVertices, PetscInt *dim, PetscReal *coords[])
+PetscErrorCode MeshGetCoordinates(Mesh mesh, PetscBool  columnMajor, PetscInt *numVertices, PetscInt *dim, PetscReal *coords[])
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
@@ -1604,7 +1604,7 @@ PetscErrorCode MeshGetCoordinates(Mesh mesh, PetscTruth columnMajor, PetscInt *n
 .keywords: mesh, elements
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshGetElements(Mesh mesh, PetscTruth columnMajor, PetscInt *numElements, PetscInt *numCorners, PetscInt *vertices[])
+PetscErrorCode MeshGetElements(Mesh mesh, PetscBool  columnMajor, PetscInt *numElements, PetscInt *numCorners, PetscInt *vertices[])
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
@@ -1758,7 +1758,7 @@ PetscErrorCode MeshDistributeByFace(Mesh serialMesh, const char partitioner[], M
 .keywords: mesh, elements
 .seealso: MeshCreate(), MeshRefine()
 @*/
-PetscErrorCode MeshGenerate(Mesh boundary, PetscTruth interpolate, Mesh *mesh)
+PetscErrorCode MeshGenerate(Mesh boundary, PetscBool  interpolate, Mesh *mesh)
 {
   ALE::Obj<PETSC_MESH_TYPE> mB;
   PetscErrorCode      ierr;
@@ -1795,7 +1795,7 @@ PetscErrorCode MeshGenerate(Mesh boundary, PetscTruth interpolate, Mesh *mesh)
 .keywords: mesh, elements
 .seealso: MeshCreate(), MeshGenerate()
 @*/
-PetscErrorCode MeshRefine(Mesh mesh, double refinementLimit, PetscTruth interpolate, Mesh *refinedMesh)
+PetscErrorCode MeshRefine(Mesh mesh, double refinementLimit, PetscBool  interpolate, Mesh *refinedMesh)
 {
   ALE::Obj<PETSC_MESH_TYPE> oldMesh;
   PetscErrorCode      ierr;
@@ -1873,7 +1873,7 @@ PetscErrorCode MeshRefine_Mesh(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
 .keywords: mesh, elements
 .seealso: MeshCreate(), MeshGenerate()
 @*/
-PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningFactor, PetscTruth interpolate, Mesh *coarseHierarchy)
+PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningFactor, PetscBool  interpolate, Mesh *coarseHierarchy)
 {
   ALE::Obj<PETSC_MESH_TYPE> oldMesh;
   PetscErrorCode      ierr;
@@ -2335,14 +2335,14 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
 .keywords: mesh, elements
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshHasSectionReal(Mesh mesh, const char name[], PetscTruth *flag)
+PetscErrorCode MeshHasSectionReal(Mesh mesh, const char name[], PetscBool  *flag)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  *flag = (PetscTruth) m->hasRealSection(std::string(name));
+  *flag = (PetscBool ) m->hasRealSection(std::string(name));
   PetscFunctionReturn(0);
 }
 
@@ -2440,14 +2440,14 @@ PetscErrorCode MeshSetSectionReal(Mesh mesh, SectionReal section)
 .keywords: mesh, elements
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshHasSectionInt(Mesh mesh, const char name[], PetscTruth *flag)
+PetscErrorCode MeshHasSectionInt(Mesh mesh, const char name[], PetscBool  *flag)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  *flag = (PetscTruth) m->hasIntSection(std::string(name));
+  *flag = (PetscBool ) m->hasIntSection(std::string(name));
   PetscFunctionReturn(0);
 }
 

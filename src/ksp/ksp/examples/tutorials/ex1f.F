@@ -67,7 +67,7 @@
       PetscReal        norm,tol
       PetscErrorCode   ierr
       PetscInt i,n,col(3),its,i1,i2,i3
-      PetscTruth flg
+      PetscBool  flg
       PetscMPIInt size,rank
       PetscScalar      none,one,value(3)
 

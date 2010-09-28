@@ -25,7 +25,7 @@
 PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
   PetscErrorCode ierr;
-  PetscTruth isdrawnull;
+  PetscBool  isdrawnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
@@ -51,10 +51,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLine(PetscDraw draw,PetscReal xl,Pets
    Level: advanced
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawIsNull(PetscDraw draw,PetscTruth *yes)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawIsNull(PetscDraw draw,PetscBool  *yes)
 {
   PetscErrorCode ierr;
-  PetscTruth isdrawnull;
+  PetscBool  isdrawnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);

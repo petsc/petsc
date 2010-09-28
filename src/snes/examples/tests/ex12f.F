@@ -36,7 +36,7 @@
       PetscErrorCode ierr
       PetscInt N,start,end,nn,i
       PetscInt ii,its,i1,i0,i3
-      PetscTruth flg
+      PetscBool  flg
       SNES             snes
       Mat              J
       Vec              x,r,u
@@ -237,7 +237,7 @@
       Vec              x
       Mat              jac,B
       PetscFortranAddr ctx(*)
-      PetscTruth       flag
+      PetscBool        flag
       PetscInt  ii,istart,iend
       PetscInt  i,j,n,end,start,i1
       PetscErrorCode ierr

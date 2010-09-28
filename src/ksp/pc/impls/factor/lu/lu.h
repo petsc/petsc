@@ -9,11 +9,11 @@
 typedef struct {
   PC_Factor   hdr;
   PetscReal   actualfill;       /* actual fill in factor */
-  PetscTruth  inplace;          /* flag indicating in-place factorization */
+  PetscBool   inplace;          /* flag indicating in-place factorization */
   IS          row,col;          /* index sets used for reordering */
-  PetscTruth  reuseordering;    /* reuses previous reordering computed */
-  PetscTruth  reusefill;        /* reuse fill from previous LU */
-  PetscTruth  nonzerosalongdiagonal;
+  PetscBool   reuseordering;    /* reuses previous reordering computed */
+  PetscBool   reusefill;        /* reuse fill from previous LU */
+  PetscBool   nonzerosalongdiagonal;
   PetscReal   nonzerosalongdiagonaltol;
 } PC_LU;
 

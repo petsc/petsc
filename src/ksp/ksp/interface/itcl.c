@@ -6,7 +6,7 @@
 
 #include "private/kspimpl.h"  /*I "petscksp.h" I*/
 
-extern PetscTruth KSPRegisterAllCalled;
+extern PetscBool  KSPRegisterAllCalled;
 
 
 #undef __FUNCT__  
@@ -282,7 +282,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
   const char             *convtests[] = {"default","skip"};
   char                    type[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscViewerASCIIMonitor monviewer;
-  PetscTruth              flg,flag;
+  PetscBool               flg,flag;
   PetscInt                model[2],nmax;
   void                    *ctx;
 

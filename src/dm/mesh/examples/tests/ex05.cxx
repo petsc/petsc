@@ -27,7 +27,7 @@ PetscErrorCode   testSkewedHatFlip(MPI_Comm comm);
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscInt       verbosity;
   PetscErrorCode ierr;
 
@@ -51,7 +51,7 @@ PetscErrorCode testHat(MPI_Comm comm) {
   int rank;
   PetscErrorCode ierr;
   int debug;
-  PetscTruth flag;
+  PetscBool  flag;
   PetscFunctionBegin;
 
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
@@ -89,7 +89,7 @@ PetscErrorCode testSkewedHat(MPI_Comm comm) {
   int rank;
   PetscErrorCode ierr;
   int debug;
-  PetscTruth flag;
+  PetscBool  flag;
   PetscFunctionBegin;
 
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
@@ -130,7 +130,7 @@ PetscErrorCode testSkewedHatFlip(MPI_Comm comm) {
   int rank;
   PetscErrorCode ierr;
   int debug;
-  PetscTruth flag;
+  PetscBool  flag;
   PetscFunctionBegin;
 
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);

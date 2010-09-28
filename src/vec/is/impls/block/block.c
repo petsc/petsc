@@ -8,7 +8,7 @@
 
 typedef struct {
   PetscInt        N,n;            /* number of blocks */
-  PetscTruth      sorted;       /* are the blocks sorted? */
+  PetscBool       sorted;       /* are the blocks sorted? */
   PetscInt        *idx;
   PetscInt        bs;           /* blocksize */
 } IS_Block;
@@ -121,7 +121,7 @@ PetscErrorCode ISView_Block(IS is, PetscViewer viewer)
   IS_Block       *sub = (IS_Block *)is->data;
   PetscErrorCode ierr;
   PetscInt       i,n = sub->n,*idx = sub->idx;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -158,7 +158,7 @@ PetscErrorCode ISSort_Block(IS is)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISSorted_Block" 
-PetscErrorCode ISSorted_Block(IS is,PetscTruth *flg)
+PetscErrorCode ISSorted_Block(IS is,PetscBool  *flg)
 {
   IS_Block *sub = (IS_Block *)is->data;
 
@@ -181,7 +181,7 @@ PetscErrorCode ISDuplicate_Block(IS is,IS *newIS)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISIdentity_Block" 
-PetscErrorCode ISIdentity_Block(IS is,PetscTruth *ident)
+PetscErrorCode ISIdentity_Block(IS is,PetscBool  *ident)
 {
   IS_Block *is_block = (IS_Block*)is->data;
   PetscInt i,n = is_block->n,*idx = is_block->idx,bs = is_block->bs;
@@ -266,7 +266,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscI
   PetscInt       i,min,max;
   IS             Nindex;
   IS_Block       *sub;
-  PetscTruth     sorted = PETSC_TRUE;
+  PetscBool      sorted = PETSC_TRUE;
 
   PetscFunctionBegin;
   PetscValidPointer(is,5);
@@ -422,7 +422,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetBlockSize(IS is,PetscInt *size)
 
 .seealso: ISBlockGetSize(), ISGetSize(), ISBlockGetBlockSize(), ISCreateBlock()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISBlock(IS is,PetscTruth *flag)
+PetscErrorCode PETSCVEC_DLLEXPORT ISBlock(IS is,PetscBool  *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);

@@ -5,7 +5,7 @@
 */
 #include "private/matimpl.h"      /*I "petscmat.h" I*/
 
-PetscTruth MatRegisterAllCalled = PETSC_FALSE;
+PetscBool  MatRegisterAllCalled = PETSC_FALSE;
 
 /*
    Contains the list of registered Mat routines
@@ -39,7 +39,7 @@ PetscFList MatList = 0;
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat mat, const MatType matype)
 {
   PetscErrorCode ierr,(*r)(Mat);
-  PetscTruth     sametype;
+  PetscBool      sametype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);

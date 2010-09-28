@@ -20,7 +20,7 @@ struct _p_PetscRandom {
   unsigned    long seed;
   PetscScalar low,width;       /* lower bound and width of the interval over
                                   which the random numbers are distributed */
-  PetscTruth  iset;            /* if true, indicates that the user has set the interval */
+  PetscBool   iset;            /* if true, indicates that the user has set the interval */
   /* array for shuffling ??? */
 };
 

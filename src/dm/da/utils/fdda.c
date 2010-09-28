@@ -68,7 +68,7 @@ static PetscErrorCode DASetBlockFills_Private(PetscInt *dfill,PetscInt w,PetscIn
 .seealso DAGetMatrix(), DASetGetMatrix(), DASetBlockSize(), DASetBlockFills()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetMatPreallocateOnly(DA da,PetscTruth only)
+PetscErrorCode PETSCDM_DLLEXPORT DASetMatPreallocateOnly(DA da,PetscBool  only)
 {
   PetscFunctionBegin;
   da->prealloc_only = only;
@@ -157,7 +157,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,const 
   DAPeriodicType wrap;
   MPI_Comm       comm;
   PetscMPIInt    size;
-  PetscTruth     isBAIJ;
+  PetscBool      isBAIJ;
 
   PetscFunctionBegin;
   /*
@@ -688,7 +688,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
   const MatType  Atype;
   void           (*aij)(void)=PETSC_NULL,(*baij)(void)=PETSC_NULL,(*sbaij)(void)=PETSC_NULL;
   MatType        ttype[256];
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscMPIInt    size;
 
   PetscFunctionBegin;

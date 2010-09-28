@@ -1,6 +1,6 @@
 #include "../src/characteristic/characteristicimpl.h"
 
-static PetscTruth CharacteristicPackageInitialized = PETSC_FALSE;
+static PetscBool  CharacteristicPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicFinalizePackage"
 /*@C
@@ -40,7 +40,7 @@ PetscErrorCode CharacteristicInitializePackage(const char path[])
 {
   char              logList[256];
   char             *className;
-  PetscTruth        opt;
+  PetscBool         opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;

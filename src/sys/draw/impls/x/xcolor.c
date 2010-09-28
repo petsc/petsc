@@ -78,7 +78,7 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
   unsigned char *red,*green,*blue;
   int            i,ncolors;
   PetscErrorCode ierr;
-  PetscTruth     fast = PETSC_FALSE;
+  PetscBool      fast = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (colormap) {
@@ -118,7 +118,7 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
   used so far; this is to allow us to try to reuse as much of the current
   colormap as possible.
 */
-static PetscTruth cmap_pixvalues_used[256];
+static PetscBool  cmap_pixvalues_used[256];
 static int        cmap_base = 0;
 
 #undef __FUNCT__  
@@ -130,7 +130,7 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
   int           found,i,ncolors;
   XColor        colordef;
   unsigned char *red,*green,*blue;
-  PetscTruth    fast = PETSC_FALSE;
+  PetscBool     fast = PETSC_FALSE;
 
   PetscFunctionBegin;
 
@@ -141,7 +141,7 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
   }
 
   cmap_base = 0;
-  ierr = PetscMemzero(cmap_pixvalues_used,256*sizeof(PetscTruth));CHKERRQ(ierr);
+  ierr = PetscMemzero(cmap_pixvalues_used,256*sizeof(PetscBool ));CHKERRQ(ierr);
 
   /* set the basic colors into the color map */
   for (i=0; i<PETSC_DRAW_BASIC_COLORS; i++) {
@@ -197,7 +197,7 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
 PetscErrorCode PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visual,Colormap colormap)
 {
   PetscErrorCode ierr;
-  PetscTruth     sharedcolormap = PETSC_FALSE;
+  PetscBool      sharedcolormap = PETSC_FALSE;
   XVisualInfo    vinfo;
 
   PetscFunctionBegin;

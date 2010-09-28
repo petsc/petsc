@@ -236,7 +236,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectView(PetscObject obj,PetscViewer vi
    Concepts: object type^comparing
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTypeCompare(PetscObject obj,const char type_name[],PetscTruth *same)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscTypeCompare(PetscObject obj,const char type_name[],PetscBool  *same)
 {
   PetscErrorCode ierr;
 

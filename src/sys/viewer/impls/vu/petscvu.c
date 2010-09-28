@@ -15,7 +15,7 @@ typedef struct {
   FILE          *fd;
   PetscFileMode mode;     /* The mode in which to open the file */
   char          *filename;
-  PetscTruth    vecSeen;  /* The flag indicating whether any vector has been viewed so far */
+  PetscBool     vecSeen;  /* The flag indicating whether any vector has been viewed so far */
   PrintfQueue   queue, queueBase;
   int           queueLength;
 } PetscViewer_VU;
@@ -234,7 +234,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUSetMode(PetscViewer viewer, Petsc
 .keywords: Viewer, Vec
 .seealso: PetscViewerVUGetVecSeen()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUSetVecSeen(PetscViewer viewer, PetscTruth vecSeen)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUSetVecSeen(PetscViewer viewer, PetscBool  vecSeen)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
 
@@ -262,7 +262,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUSetVecSeen(PetscViewer viewer, Pe
 .keywords: Viewer, Vec
 .seealso: PetscViewerVUGetVecSeen()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUGetVecSeen(PetscViewer viewer, PetscTruth *vecSeen)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool  *vecSeen)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
 

@@ -11,7 +11,7 @@
 /*
    This is used to set the numeric factorization for both LU and ILU symbolic factorization
 */
-PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact,PetscTruth natural)
+PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact,PetscBool  natural)
 {
   PetscFunctionBegin;
   if(natural){
@@ -77,7 +77,7 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact,PetscTruth natural)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqBAIJSetNumericFactorization_inplace"
-PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA,PetscTruth natural)
+PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA,PetscBool  natural)
 {
   PetscFunctionBegin;
   if (natural) {
@@ -94,7 +94,7 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA,PetscTruth natu
     case 4:
 #if defined(PETSC_USE_SCALAR_MAT_SINGLE)
       {
-        PetscTruth  sse_enabled_local;
+        PetscBool   sse_enabled_local;
         PetscErrorCode ierr;
         ierr = PetscSSEIsEnabled(inA->comm,&sse_enabled_local,PETSC_NULL);CHKERRQ(ierr);
         if (sse_enabled_local) {
@@ -187,7 +187,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b;
   PetscInt           n=a->mbs,bs = A->rmap->bs,bs2=a->bs2;
-  PetscTruth         row_identity,col_identity,both_identity;
+  PetscBool          row_identity,col_identity,both_identity;
   IS                 isicol;
   PetscErrorCode     ierr;
   const PetscInt     *r,*ic;
@@ -328,7 +328,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
-  both_identity = (PetscTruth) (row_identity && col_identity);
+  both_identity = (PetscBool ) (row_identity && col_identity);
   ierr = MatSeqBAIJSetNumericFactorization(B,both_identity);CHKERRQ(ierr);
   PetscFunctionReturn(0);
  }
@@ -339,7 +339,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b;
   PetscInt           n=a->mbs,bs = A->rmap->bs,bs2=a->bs2;
-  PetscTruth         row_identity,col_identity,both_identity;
+  PetscBool          row_identity,col_identity,both_identity;
   IS                 isicol;
   PetscErrorCode     ierr;
   const PetscInt     *r,*ic;
@@ -476,7 +476,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
 
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
-  both_identity = (PetscTruth) (row_identity && col_identity);
+  both_identity = (PetscBool ) (row_identity && col_identity);
   ierr = MatSeqBAIJSetNumericFactorization_inplace(B,both_identity);CHKERRQ(ierr);
   PetscFunctionReturn(0);
  }

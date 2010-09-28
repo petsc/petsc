@@ -53,7 +53,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
     int                    nb_locals = mat->rmap->n;
     Mat_MPIAdj             *adj = (Mat_MPIAdj *) mat->data;
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
-    PetscTruth             flg;
+    PetscBool              flg;
 #ifdef PETSC_HAVE_UNISTD_H
     int                    fd_stdout, fd_pipe[2], count,err;
 #endif
@@ -374,7 +374,7 @@ PetscErrorCode MatPartitioningView_Scotch(MatPartitioning part, PetscViewer view
   MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
   PetscErrorCode         ierr;
   PetscMPIInt            rank;
-  PetscTruth             iascii;
+  PetscBool              iascii;
   
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)part)->comm, &rank);CHKERRQ(ierr);
@@ -623,7 +623,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningScotchSetMapping(MatPartitionin
 PetscErrorCode MatPartitioningSetFromOptions_Scotch(MatPartitioning part)
 {
     PetscErrorCode ierr;
-    PetscTruth flag;
+    PetscBool  flag;
     char name[PETSC_MAX_PATH_LEN];
     int i;
     PetscReal r;

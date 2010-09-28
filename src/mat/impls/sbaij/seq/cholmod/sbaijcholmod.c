@@ -42,7 +42,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT CholmodStart(Mat F)
   PetscErrorCode ierr;
   Mat_CHOLMOD    *chol=(Mat_CHOLMOD*)F->spptr;
   cholmod_common *c;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   if (chol->common) PetscFunctionReturn(0);
@@ -68,14 +68,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT CholmodStart(Mat F)
     c->name = (size_t)tmp;                                               \
   } while (0)
 #define CHOLMOD_OPTION_TRUTH(name,help) do {                             \
-    PetscTruth tmp = (PetscTruth)!!c->name;                              \
+    PetscBool  tmp = (PetscBool )!!c->name;                              \
     ierr = PetscOptionsTruth("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
     c->name = (int)tmp;                                                  \
   } while (0)
 
   ierr = PetscOptionsBegin(((PetscObject)F)->comm,((PetscObject)F)->prefix,"CHOLMOD Options","Mat");CHKERRQ(ierr);
   /* CHOLMOD handles first-time packing and refactor-packing separately, but we usually want them to be the same. */
-  chol->pack = (PetscTruth)c->final_pack;
+  chol->pack = (PetscBool )c->final_pack;
   ierr = PetscOptionsTruth("-mat_cholmod_pack","Pack factors after factorization [disable for frequent repeat factorization]","None",chol->pack,&chol->pack,0);CHKERRQ(ierr);
   c->final_pack = (int)chol->pack;
 
@@ -121,7 +121,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT CholmodStart(Mat F)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatWrapCholmod_seqsbaij"
-static PetscErrorCode MatWrapCholmod_seqsbaij(Mat A,PetscTruth values,cholmod_sparse *C,PetscTruth *aijalloc)
+static PetscErrorCode MatWrapCholmod_seqsbaij(Mat A,PetscBool  values,cholmod_sparse *C,PetscBool  *aijalloc)
 {
   Mat_SeqSBAIJ *sbaij = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
@@ -248,7 +248,7 @@ static PetscErrorCode MatFactorInfo_CHOLMOD(Mat F,PetscViewer viewer)
 PetscErrorCode PETSCMAT_DLLEXPORT MatView_CHOLMOD(Mat F,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
-  PetscTruth        iascii;
+  PetscBool         iascii;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -290,7 +290,7 @@ static PetscErrorCode MatCholeskyFactorNumeric_CHOLMOD(Mat F,Mat A,const MatFact
 {
   Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->spptr;
   cholmod_sparse cholA;
-  PetscTruth     aijalloc;
+  PetscBool      aijalloc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -315,7 +315,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorSymbolic_CHOLMOD(Mat F,Mat A,
   Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->spptr;
   PetscErrorCode ierr;
   cholmod_sparse cholA;
-  PetscTruth     aijalloc;
+  PetscBool      aijalloc;
   PetscInt       *fset = 0;
   size_t         fsize = 0;
 

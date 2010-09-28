@@ -186,7 +186,7 @@
       Mat              J
       PetscErrorCode   ierr
       PetscInt         its
-      PetscTruth       flg,matrix_free
+      PetscBool        flg,matrix_free
       PetscInt         ione,nfour
       double precision lambda_max,lambda_min
       type (userctx)   user

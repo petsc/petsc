@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscReal      *work,tols[2];
   PetscInt       i,j,n,il=1,iu=5,*iblock,*isplit,*iwork,nevs,*ifail,cklvl=2;
   PetscMPIInt    size;
-  PetscTruth     flg;
+  PetscBool      flg;
   Vec            *evecs;
   PetscScalar    *evecs_array,*D,*E,*evals;
   Mat            T;

@@ -68,7 +68,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerCreate(MPI_Comm comm,PetscViewer *i
 PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSetType(PetscViewer viewer,const PetscViewerType type)
 {
   PetscErrorCode ierr,(*r)(PetscViewer);
-  PetscTruth     match;
+  PetscBool      match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -151,7 +151,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSetFromOptions(PetscViewer viewer)
 {
   PetscErrorCode ierr;
   char       vtype[256];
-  PetscTruth flg;
+  PetscBool  flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);

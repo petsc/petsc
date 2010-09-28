@@ -10,7 +10,7 @@
         PetscScalar :: x
         PetscReal :: y
         PetscInt :: nxc
-        PetscTruth :: t
+        PetscBool  :: t
         character*(80) :: c
 
       end type appctx
@@ -48,7 +48,7 @@
 !      compute size of ctx
       call PetscDataTypeGetSize(PETSC_INT,sizeofint,ierr)
       call PetscDataTypeGetSize(PETSC_SCALAR,sizeofscalar,ierr)
-      call PetscDataTypeGetSize(PETSC_TRUTH,sizeoftruth,ierr)
+      call PetscDataTypeGetSize(PETSC_BOOL,sizeoftruth,ierr)
       call PetscDataTypeGetSize(PETSC_CHAR,sizeofchar,ierr)
       call PetscDataTypeGetSize(PETSC_REAL,sizeofreal,ierr)
 

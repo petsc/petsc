@@ -24,12 +24,12 @@ typedef struct{
   Mat 	   	 Amat;		  /* left hand side matrix */
   Vec		 ksp_rhs,ksp_sol; /* working vectors for formulating inv(Alhs)*(Arhs*U+g) */
   int		 max_probsz;      /* max size of the problem */
-  PetscTruth     useAlhs;         /* flag (1 indicates solving Alhs*U' = Arhs*U+g */
+  PetscBool      useAlhs;         /* flag (1 indicates solving Alhs*U' = Arhs*U+g */
   int            nz;              /* total number of grid points */
   PetscInt       m;               /* total number of interio grid points */
   Vec            solution;        /* global exact ts solution vector */
   PetscScalar    *z;              /* array of grid points */
-  PetscTruth     debug;           /* flag (1 indicates activation of debugging printouts) */
+  PetscBool      debug;           /* flag (1 indicates activation of debugging printouts) */
 } AppCtx;
 
 extern PetscScalar exact(PetscScalar,PetscReal);
@@ -144,7 +144,7 @@ int main(int argc,char **argv)
 #ifdef PETSC_HAVE_SUNDIALS
   {
     const TSType   type;
-    PetscTruth     sundialstype=PETSC_FALSE;
+    PetscBool      sundialstype=PETSC_FALSE;
     ierr = TSGetType(ts,&type);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)ts,TSSUNDIALS,&sundialstype);CHKERRQ(ierr);
     if (sundialstype && appctx.useAlhs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use Alhs formulation for TSSUNDIALS type");

@@ -26,7 +26,7 @@ typedef struct {
   PetscInt    M;                     /* total number of grid points */
   PetscReal   h;                     /* mesh width h = 1/(M-1) */
   PetscReal   norm_2,norm_max;
-  PetscTruth  nox;                   /* indicates problem is to be run without graphics */ 
+  PetscBool   nox;                   /* indicates problem is to be run without graphics */ 
 } AppCtx;
 
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void *);
@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   PetscInt       maxsteps = 100,steps,m;
   PetscMPIInt    size;
   PetscInt       problem = linear_no_matrix;
-  PetscTruth     flg;
+  PetscBool      flg;
   AppCtx         appctx;
   PetscReal      dt,ftime,maxtime=100.;
   TS             ts;
@@ -206,7 +206,7 @@ int main(int argc,char **argv)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-testinfo",&flg);CHKERRQ(ierr);
   if (flg) {
-    PetscTruth iseuler;
+    PetscBool  iseuler;
     ierr = PetscTypeCompare((PetscObject)ts,"euler",&iseuler);CHKERRQ(ierr);
     if (iseuler) {
       if (!PETSC_NEAR(appctx.norm_2/steps,0.00257244,1.e-4)) {

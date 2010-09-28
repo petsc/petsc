@@ -15,7 +15,7 @@ int main(int argc,char **args)
   char           filein[PETSC_MAX_PATH_LEN],finname[PETSC_MAX_PATH_LEN],fileout[PETSC_MAX_PATH_LEN];
   PetscInt       n,col,row,rowin;
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscScalar    val,*array;
   FILE*          file;
   PetscViewer    view;

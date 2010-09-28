@@ -43,8 +43,8 @@ typedef struct {
 #else
   double                  *val;
 #endif
-  PetscTruth              matsolve_iscalled,matmatsolve_iscalled;
-  PetscTruth CleanUpSuperLU_Dist; /* Flag to clean up (non-global) SuperLU objects during Destroy */
+  PetscBool               matsolve_iscalled,matmatsolve_iscalled;
+  PetscBool  CleanUpSuperLU_Dist; /* Flag to clean up (non-global) SuperLU objects during Destroy */
 } Mat_SuperLU_DIST;
 
 extern PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat,PetscViewer);
@@ -61,7 +61,7 @@ PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
 {
   PetscErrorCode   ierr;
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)A->spptr; 
-  PetscTruth       flg;
+  PetscBool        flg;
     
   PetscFunctionBegin;
   if (lu->CleanUpSuperLU_Dist) {
@@ -291,7 +291,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
       ierr = PetscFree(tseq);CHKERRQ(ierr);
       aa =  (Mat_SeqAIJ*)A_seq->data;
     } else {
-      PetscTruth flg;
+      PetscBool  flg;
       ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
       if (flg) {
         Mat_MPIAIJ *At = (Mat_MPIAIJ*)A->data;
@@ -498,7 +498,7 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
   PetscInt          M=A->rmap->N,N=A->cmap->N,indx;
   PetscMPIInt       size;
   superlu_options_t options;
-  PetscTruth        flg;
+  PetscBool         flg;
   const char        *colperm[] = {"NATURAL","MMD_AT_PLUS_A","MMD_ATA","METIS_AT_PLUS_A","PARMETIS"}; 
   const char        *rowperm[] = {"LargeDiag","NATURAL"}; 
   const char        *factPattern[] = {"SamePattern","SamePattern_SameRowPerm"};
@@ -636,7 +636,7 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
       options.PrintStat = NO;
     }
     ierr = PetscOptionsTruth("-mat_superlu_dist_statprint","Print factorization information","None",
-                              (PetscTruth)options.PrintStat,(PetscTruth*)&options.PrintStat,0);CHKERRQ(ierr); 
+                              (PetscBool )options.PrintStat,(PetscBool *)&options.PrintStat,0);CHKERRQ(ierr); 
   PetscOptionsEnd();
 
   lu->options             = options; 
@@ -689,10 +689,10 @@ PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
   options = lu->options;
   ierr = PetscViewerASCIIPrintf(viewer,"SuperLU_DIST run parameters:\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Process grid nprow %D x npcol %D \n",lu->nprow,lu->npcol);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Equilibrate matrix %s \n",PetscTruths[options.Equil != NO]);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Equilibrate matrix %s \n",PetscBools[options.Equil != NO]);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Matrix input mode %d \n",lu->MatInputMode);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Replace tiny pivots %s \n",PetscTruths[options.ReplaceTinyPivot != NO]);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Use iterative refinement %s \n",PetscTruths[options.IterRefine == DOUBLE]);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Replace tiny pivots %s \n",PetscBools[options.ReplaceTinyPivot != NO]);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Use iterative refinement %s \n",PetscBools[options.IterRefine == DOUBLE]);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Processors in row %d col partition %d \n",lu->nprow,lu->npcol);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Row permutation %s \n",(options.RowPerm == NOROWPERM) ? "NATURAL": "LargeDiag");CHKERRQ(ierr);
  
@@ -716,7 +716,7 @@ PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown column permutation");
   }
 
-  ierr = PetscViewerASCIIPrintf(viewer,"  Parallel symbolic factorization %s \n",PetscTruths[options.ParSymbFact != NO]);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Parallel symbolic factorization %s \n",PetscBools[options.ParSymbFact != NO]);CHKERRQ(ierr);
   
   if (lu->FactPattern == SamePattern){
     ierr = PetscViewerASCIIPrintf(viewer,"  Repeated factorization SamePattern\n");CHKERRQ(ierr);
@@ -731,7 +731,7 @@ PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
 PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
-  PetscTruth        iascii;
+  PetscBool         iascii;
   PetscViewerFormat format;
 
   PetscFunctionBegin;

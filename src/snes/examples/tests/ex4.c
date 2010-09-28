@@ -60,7 +60,7 @@ int main(int argc, char **argv)
   PetscDraw      draw;                 /* drawing context */
   PetscInt       its, N, nfails;
   PetscErrorCode ierr;
-  PetscTruth     cavity; 
+  PetscBool      cavity; 
   PetscReal      bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
   PetscScalar    *xvalues;
 
@@ -434,7 +434,7 @@ PetscErrorCode  FormJacobian2(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,v
   PetscScalar    ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
   PetscScalar    val,four = 4.0, three = 3.0,*x;
   PetscReal      hx, hy,hx2, hy2, hxhy2;
-  PetscTruth     assembled;
+  PetscBool      assembled;
 
   mx	 = user->mx; 
   my	 = user->my;

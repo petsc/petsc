@@ -10,7 +10,7 @@ int main(int argc,char **args)
   Mat            C; 
   PetscInt       i,j,m = 3,n = 3,Ii,J;
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscScalar    v;
   IS             perm,iperm;
   Vec            x,u,b,y;

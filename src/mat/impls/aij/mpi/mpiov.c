@@ -738,7 +738,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
 { 
   PetscErrorCode ierr;
   PetscInt       nmax,nstages_local,nstages,i,pos,max_no,nrow,ncol;
-  PetscTruth     rowflag,colflag,wantallmatrix = PETSC_FALSE,twantallmatrix;
+  PetscBool      rowflag,colflag,wantallmatrix = PETSC_FALSE,twantallmatrix;
 
   PetscFunctionBegin;
   /*
@@ -807,7 +807,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   MPI_Status     *r_status3,*r_status4,*s_status4;
   MPI_Comm       comm;
   PetscScalar    **rbuf4,**sbuf_aa,*vals,*mat_a,*sbuf_aa_i;
-  PetscTruth     sorted;
+  PetscBool      sorted;
   PetscMPIInt    *onodes1,*olengths1;
   PetscMPIInt    idex,idex2,end;
 
@@ -1224,7 +1224,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
 
   /* Create the submatrices */
   if (scall == MAT_REUSE_MATRIX) {
-    PetscTruth flag;
+    PetscBool  flag;
 
     /*
         Assumes new rows are same length as the old rows,hence bug!

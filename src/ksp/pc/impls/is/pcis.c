@@ -14,7 +14,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISSetUp(PC pc)
   Mat_IS          *matis = (Mat_IS*)pc->mat->data; 
   PetscInt        i;
   PetscErrorCode  ierr;
-  PetscTruth      flg;
+  PetscBool       flg;
   
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)pc->mat,MATIS,&flg);CHKERRQ(ierr);
@@ -143,7 +143,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISSetUp(PC pc)
     ierr = KSPSetType(pcis->ksp_N,KSPPREONLY);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(pcis->ksp_N);CHKERRQ(ierr);
     {
-      PetscTruth damp_fixed = PETSC_FALSE,
+      PetscBool  damp_fixed = PETSC_FALSE,
                  remove_nullspace_fixed = PETSC_FALSE,
                  set_damping_factor_floating = PETSC_FALSE,
                  not_damp_floating = PETSC_FALSE,
@@ -404,7 +404,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec ve
   ierr = VecScatterEnd  (pcis->N_to_B,b,vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   /* Checking for consistency of the RHS */
   {
-    PetscTruth flg = PETSC_FALSE;
+    PetscBool  flg = PETSC_FALSE;
     ierr = PetscOptionsGetTruth(PETSC_NULL,"-pc_is_check_consistency",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       PetscScalar average;

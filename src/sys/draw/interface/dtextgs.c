@@ -27,7 +27,7 @@
 PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawStringGetSize(PetscDraw draw,PetscReal *width,PetscReal *height)
 {
   PetscErrorCode ierr;
-  PetscTruth isnull;
+  PetscBool  isnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);

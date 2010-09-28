@@ -17,9 +17,9 @@ typedef struct {
   PetscInt         *i;               /* pointer to beginning of each row */
   PetscInt         *j;               /* column values: j + i[k] is start of row k */
   PetscInt         *values;          /* numerical values */
-  PetscTruth       symmetric;        /* user indicates the nonzero structure is symmetric */
-  PetscTruth       freeaij;          /* free a, i,j at destroy */
-  PetscTruth       freeaijwithfree;  /* use free() to free i,j instead of PetscFree() */
+  PetscBool        symmetric;        /* user indicates the nonzero structure is symmetric */
+  PetscBool        freeaij;          /* free a, i,j at destroy */
+  PetscBool        freeaijwithfree;  /* use free() to free i,j instead of PetscFree() */
 } Mat_MPIAdj;
 
 #endif

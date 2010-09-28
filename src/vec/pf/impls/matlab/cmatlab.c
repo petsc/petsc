@@ -16,7 +16,7 @@ typedef struct {
 PetscErrorCode PFView_Matlab(void *value,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
   PF_Matlab      *matlab = (PF_Matlab*)value;
 
   PetscFunctionBegin;
@@ -61,7 +61,7 @@ PetscErrorCode PFApply_Matlab(void *value,PetscInt n,PetscScalar *in,PetscScalar
 PetscErrorCode PFSetFromOptions_Matlab(PF pf)
 {
   PetscErrorCode ierr;
-  PetscTruth     flag;
+  PetscBool      flag;
   char           value[256];
   PF_Matlab      *matlab = (PF_Matlab*)pf->data;
 

@@ -36,9 +36,9 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
   PetscReal      h,xp = 0.0; 
   PetscScalar    v,pfive = .5;
-  PetscTruth     flg;
+  PetscBool      flg;
   MatFDColoring  matfdcoloring = 0;
-  PetscTruth     fd_jacobian_coloring;
+  PetscBool      fd_jacobian_coloring;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

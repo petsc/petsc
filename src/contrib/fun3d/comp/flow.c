@@ -33,7 +33,7 @@ typedef struct {
 typedef struct {                               /*============================*/
  GRID        *grid;                               /* Pointer to Grid info       */
  TstepCtx    *tsCtx;                              /* Pointer to Time Stepping Context */
- PetscTruth  PreLoading;                          
+ PetscBool   PreLoading;                          
 } AppCtx;                                      /*============================*/
 
 int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
@@ -91,7 +91,7 @@ int main(int argc,char **args)
   PetscScalar   *qnode;
   int     	ierr;
   int ileast;
-  PetscTruth    flg;
+  PetscBool     flg;
   MPI_Comm      comm;
   
   ierr = PetscInitialize(&argc,&args,"petsc.opt",help);CHKERRQ(ierr);
@@ -306,7 +306,7 @@ int FormInitialGuess(SNES snes, GRID *grid)
 {
    int ierr;
    PetscScalar *qnode;
-   PetscTruth flg;
+   PetscBool  flg;
 
    ierr = VecGetArray(grid->qnode,&qnode);CHKERRQ(ierr);
    f77INIT(&grid->nnodesLoc, qnode, grid->turbre,
@@ -496,7 +496,7 @@ int Update(SNES snes, void *ctx)
  int            Converged = 0;
  int		nfailsCum = 0, nfails = 0;
  PetscScalar    cfl_damp_ratio = 1.0e-02, cfl_damp_power = 0.75;
- PetscTruth     print_flag,cfl_damp_flag,flg;
+ PetscBool      print_flag,cfl_damp_flag,flg;
 
  ierr = PetscOptionsHasName(PETSC_NULL,"-print", &print_flag);
  ierr = PetscOptionsHasName(PETSC_NULL,"-cfl_damp", &cfl_damp_flag);
@@ -767,14 +767,14 @@ int GetLocalOrdering(GRID *grid)
   PetscScalar *ftmp;
   char        mesh_file[PETSC_MAX_PATH_LEN];
   /*AO        ao;*/
-  PetscTruth  flg;
+  PetscBool   flg;
   FILE        *fptr, *fptr1;
   MPI_Comm    comm = PETSC_COMM_WORLD;
  
   /* Read the integer grid parameters */ 
   ICALLOC(grid_param,&tmp);
   if (!rank) {
-   PetscTruth exists;
+   PetscBool  exists;
    ierr = PetscOptionsGetString(PETSC_NULL,"-mesh",mesh_file,256,&flg);CHKERRQ(ierr);
    ierr = PetscTestFile(mesh_file,'r',&exists);CHKERRQ(ierr);
    if (!exists) { /* try uns3d.msh as the file name */
@@ -831,7 +831,7 @@ int GetLocalOrdering(GRID *grid)
     }
     else {
       char       spart_file[PETSC_MAX_PATH_LEN],part_file[PETSC_MAX_PATH_LEN];
-      PetscTruth exists;
+      PetscBool  exists;
       
       ierr = PetscOptionsGetString(PETSC_NULL,"-partition",spart_file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
       ierr = PetscTestFile(spart_file,'r',&exists);CHKERRQ(ierr);
@@ -1781,7 +1781,7 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
    int      *val_diag, *val_offd, *svertices, *loc2pet, *loc2glo;
    IS      isglobal,islocal;
    ISLocalToGlobalMapping isl2g;
-   PetscTruth flg;
+   PetscBool  flg;
  
    nnodes = grid->nnodes;
    nnodesLoc = grid->nnodesLoc;
@@ -2325,7 +2325,7 @@ int WriteRestartFile(GRID *grid, int timeStep)
   IS 		islocal, isglobal;
   VecScatter 	scatter;  
   FILE          *fptr,*fptr1;
-  PetscTruth    flgIO,flg_vtk;
+  PetscBool     flgIO,flg_vtk;
   
   nnodes = grid->nnodes;
   nnodesLoc = grid->nnodesLoc;

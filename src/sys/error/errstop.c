@@ -40,7 +40,7 @@ $     SETERRQ(comm,n,p,mess)
  @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscMPIAbortErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
-  PetscTruth     flg1 = PETSC_FALSE,flg2 = PETSC_FALSE;
+  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE;
   PetscLogDouble mem,rss;
 
   PetscFunctionBegin;

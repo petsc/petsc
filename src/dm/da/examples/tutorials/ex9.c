@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   DA             da;
   Vec            global,local,global2;
   PetscMPIInt    rank;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   /*
     Every PETSc routine should begin with the PetscInitialize() routine.

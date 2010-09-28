@@ -5,7 +5,7 @@ PetscClassId CHARACTERISTIC_CLASSID;
 PetscLogEvent  CHARACTERISTIC_SetUp, CHARACTERISTIC_Solve, CHARACTERISTIC_QueueSetup, CHARACTERISTIC_DAUpdate;
 PetscLogEvent  CHARACTERISTIC_HalfTimeLocal, CHARACTERISTIC_HalfTimeRemote, CHARACTERISTIC_HalfTimeExchange;
 PetscLogEvent  CHARACTERISTIC_FullTimeLocal, CHARACTERISTIC_FullTimeRemote, CHARACTERISTIC_FullTimeExchange;
-PetscTruth  CharacteristicRegisterAllCalled = PETSC_FALSE;
+PetscBool   CharacteristicRegisterAllCalled = PETSC_FALSE;
 /*
    Contains the list of registered characteristic routines
 */
@@ -22,7 +22,7 @@ PetscErrorCode SiftDown(Characteristic, Queue, PetscInt, PetscInt);
 #define __FUNCT__ "CharacteristicView"
 PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer)
 {
-  PetscTruth     iascii;
+  PetscBool      iascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -168,7 +168,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
 PetscErrorCode CharacteristicSetType(Characteristic c, const CharacteristicType type)
 {
   PetscErrorCode ierr, (*r)(Characteristic);
-  PetscTruth     match;
+  PetscBool      match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c, CHARACTERISTIC_CLASSID, 1);
@@ -336,7 +336,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   PetscInt                gx, gy;
   PetscInt                n, ni, nj, is, ie, js, je, qs, comp;
   PetscErrorCode          ierr;
-  PetscTruth              verbose = PETSC_FALSE;
+  PetscBool               verbose = PETSC_FALSE;
 
   PetscFunctionBegin;
   c->queueSize = 0;
@@ -764,7 +764,7 @@ int HeapSort(Characteristic c, Queue queue, PetscInt size)
 PetscErrorCode SiftDown(Characteristic c, Queue queue, PetscInt root, PetscInt bottom)
 /*---------------------------------------------------------------------*/
 {
-  PetscTruth               done = PETSC_FALSE;
+  PetscBool                done = PETSC_FALSE;
   PetscInt                 maxChild;
   CharacteristicPointDA2D  temp;
 
@@ -791,7 +791,7 @@ PetscErrorCode SiftDown(Characteristic c, Queue queue, PetscInt root, PetscInt b
 PetscErrorCode DAGetNeighborsRank(DA da, PetscMPIInt neighbors[])
 {
   DAPeriodicType periodic_type;
-  PetscTruth     IPeriodic = PETSC_FALSE, JPeriodic = PETSC_FALSE;
+  PetscBool      IPeriodic = PETSC_FALSE, JPeriodic = PETSC_FALSE;
   MPI_Comm       comm;
   PetscMPIInt    rank;
   PetscInt       **procs,pi,pj,pim,pip,pjm,pjp,PI,PJ;

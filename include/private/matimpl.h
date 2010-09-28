@@ -35,14 +35,14 @@ struct _MatOps {
   PetscErrorCode (*transpose)(Mat,MatReuse,Mat *);
   /*15*/
   PetscErrorCode (*getinfo)(Mat,MatInfoType,MatInfo*);
-  PetscErrorCode (*equal)(Mat,Mat,PetscTruth *);
+  PetscErrorCode (*equal)(Mat,Mat,PetscBool  *);
   PetscErrorCode (*getdiagonal)(Mat,Vec);
   PetscErrorCode (*diagonalscale)(Mat,Vec,Vec);
   PetscErrorCode (*norm)(Mat,NormType,PetscReal*);
   /*20*/
   PetscErrorCode (*assemblybegin)(Mat,MatAssemblyType);
   PetscErrorCode (*assemblyend)(Mat,MatAssemblyType);
-  PetscErrorCode (*setoption)(Mat,MatOption,PetscTruth);
+  PetscErrorCode (*setoption)(Mat,MatOption,PetscBool );
   PetscErrorCode (*zeroentries)(Mat);
   /*24*/
   PetscErrorCode (*zerorows)(Mat,PetscInt,const PetscInt[],PetscScalar);
@@ -76,10 +76,10 @@ struct _MatOps {
   PetscErrorCode (*dummy)(void);
   /*49*/
   PetscErrorCode (*setblocksize)(Mat,PetscInt);
-  PetscErrorCode (*getrowij)(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
-  PetscErrorCode (*restorerowij)(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
-  PetscErrorCode (*getcolumnij)(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
-  PetscErrorCode (*restorecolumnij)(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
+  PetscErrorCode (*getrowij)(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt*,PetscInt *[],PetscInt *[],PetscBool  *);
+  PetscErrorCode (*restorerowij)(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt *,PetscInt *[],PetscInt *[],PetscBool  *);
+  PetscErrorCode (*getcolumnij)(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt*,PetscInt *[],PetscInt *[],PetscBool  *);
+  PetscErrorCode (*restorecolumnij)(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt*,PetscInt *[],PetscInt *[],PetscBool  *);
   /*54*/
   PetscErrorCode (*fdcoloringcreate)(Mat,ISColoring,MatFDColoring);
   PetscErrorCode (*coloringpatch)(Mat,PetscInt,PetscInt,ISColoringValue[],ISColoring*);
@@ -91,7 +91,7 @@ struct _MatOps {
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*view)(Mat,PetscViewer);
   PetscErrorCode (*convertfrom)(Mat, const MatType,MatReuse,Mat*);
-  PetscErrorCode (*usescaledform)(Mat,PetscTruth);
+  PetscErrorCode (*usescaledform)(Mat,PetscBool );
   /*64*/
   PetscErrorCode (*scalesystem)(Mat,Vec,Vec);
   PetscErrorCode (*unscalesystem)(Mat,Vec,Vec);
@@ -117,9 +117,9 @@ struct _MatOps {
   PetscErrorCode (*getinertia)(Mat,PetscInt*,PetscInt*,PetscInt*);
   PetscErrorCode (*load)(Mat, PetscViewer);
   /*84*/
-  PetscErrorCode (*issymmetric)(Mat,PetscReal,PetscTruth*);
-  PetscErrorCode (*ishermitian)(Mat,PetscReal,PetscTruth*);
-  PetscErrorCode (*isstructurallysymmetric)(Mat,PetscTruth*);
+  PetscErrorCode (*issymmetric)(Mat,PetscReal,PetscBool *);
+  PetscErrorCode (*ishermitian)(Mat,PetscReal,PetscBool *);
+  PetscErrorCode (*isstructurallysymmetric)(Mat,PetscBool *);
   PetscErrorCode (*dummy4)(void);
   PetscErrorCode (*getvecs)(Mat,Vec*,Vec*);
   /*89*/
@@ -151,7 +151,7 @@ struct _MatOps {
   PetscErrorCode (*getredundantmatrix)(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
   PetscErrorCode (*getrowmin)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*getcolumnvector)(Mat,Vec,PetscInt);
-  PetscErrorCode (*missingdiagonal)(Mat,PetscTruth*,PetscInt*);
+  PetscErrorCode (*missingdiagonal)(Mat,PetscBool *,PetscInt*);
   /*114*/
   PetscErrorCode (*getseqnonzerostructure)(Mat,Mat *);
   PetscErrorCode (*create)(Mat);  
@@ -227,7 +227,7 @@ typedef struct {
   PetscInt      **rindices;             /* receiving data (indices) */
   PetscInt      nprocessed;             /* number of messages already processed */
   PetscMPIInt   *flg_v;                 /* indicates what messages have arrived so far and from whom */
-  PetscTruth    reproduce;
+  PetscBool     reproduce;
   PetscInt      reproduce_count;
 } MatStash;
 
@@ -236,8 +236,8 @@ EXTERN PetscErrorCode MatStashDestroy_Private(MatStash*);
 EXTERN PetscErrorCode MatStashScatterEnd_Private(MatStash*);
 EXTERN PetscErrorCode MatStashSetInitialSize_Private(MatStash*,PetscInt);
 EXTERN PetscErrorCode MatStashGetInfo_Private(MatStash*,PetscInt*,PetscInt*);
-EXTERN PetscErrorCode MatStashValuesRow_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscTruth);
-EXTERN PetscErrorCode MatStashValuesCol_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscTruth);
+EXTERN PetscErrorCode MatStashValuesRow_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscBool );
+EXTERN PetscErrorCode MatStashValuesCol_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscBool );
 EXTERN PetscErrorCode MatStashValuesRowBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscInt,PetscInt);
 EXTERN PetscErrorCode MatStashValuesColBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscInt,PetscInt);
 EXTERN PetscErrorCode MatStashScatterBegin_Private(Mat,MatStash*,PetscInt*);
@@ -247,16 +247,16 @@ typedef struct {
   PetscInt   dim;
   PetscInt   dims[4];
   PetscInt   starts[4];
-  PetscTruth noc;        /* this is a single component problem, hence user will not set MatStencil.c */
+  PetscBool  noc;        /* this is a single component problem, hence user will not set MatStencil.c */
 } MatStencilInfo;
 
 /* Info about using compressed row format */
 typedef struct {
-  PetscTruth use;
+  PetscBool  use;
   PetscInt   nrows;                         /* number of non-zero rows */
   PetscInt   *i;                            /* compressed row pointer  */
   PetscInt   *rindex;                       /* compressed row index               */
-  PetscTruth checked;                       /* if compressed row format have been checked for */
+  PetscBool  checked;                       /* if compressed row format have been checked for */
 } Mat_CompressedRow;
 EXTERN PetscErrorCode Mat_CheckCompressedRow(Mat,Mat_CompressedRow*,PetscInt*,PetscInt,PetscReal);
 
@@ -265,22 +265,22 @@ struct _p_Mat {
   PetscLayout            rmap,cmap;
   void                   *data;            /* implementation-specific data */
   MatFactorType          factortype;       /* MAT_FACTOR_LU, ILU, CHOLESKY or ICC */
-  PetscTruth             assembled;        /* is the matrix assembled? */
-  PetscTruth             was_assembled;    /* new values inserted into assembled mat */
+  PetscBool              assembled;        /* is the matrix assembled? */
+  PetscBool              was_assembled;    /* new values inserted into assembled mat */
   PetscInt               num_ass;          /* number of times matrix has been assembled */
-  PetscTruth             same_nonzero;     /* matrix has same nonzero pattern as previous */
+  PetscBool              same_nonzero;     /* matrix has same nonzero pattern as previous */
   MatInfo                info;             /* matrix information */
   ISLocalToGlobalMapping mapping;          /* mapping used in MatSetValuesLocal() */
   ISLocalToGlobalMapping bmapping;         /* mapping used in MatSetValuesBlockedLocal() */
   InsertMode             insertmode;       /* have values been inserted in matrix or added? */
   MatStash               stash,bstash;     /* used for assembling off-proc mat emements */
   MatNullSpace           nullsp;
-  PetscTruth             preallocated;
+  PetscBool              preallocated;
   MatStencilInfo         stencil;          /* information for structured grid */
-  PetscTruth             symmetric,hermitian,structurally_symmetric,spd;
-  PetscTruth             symmetric_set,hermitian_set,structurally_symmetric_set,spd_set; /* if true, then corresponding flag is correct*/
-  PetscTruth             symmetric_eternal;
-  PetscTruth             nooffprocentries,nooffproczerorows;
+  PetscBool              symmetric,hermitian,structurally_symmetric,spd;
+  PetscBool              symmetric_set,hermitian_set,structurally_symmetric_set,spd_set; /* if true, then corresponding flag is correct*/
+  PetscBool              symmetric_eternal;
+  PetscBool              nooffprocentries,nooffproczerorows;
 #if defined(PETSC_HAVE_CUDA)
   PetscCUDAFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
 #endif
@@ -384,7 +384,7 @@ struct  _p_MatFDColoring{
 */
 struct _p_MatNullSpace {
   PETSCHEADER(int);
-  PetscTruth     has_cnst;
+  PetscBool      has_cnst;
   PetscInt       n;
   Vec*           vecs;
   PetscScalar*   alpha;                 /* for projections */
@@ -399,7 +399,7 @@ struct _p_MatNullSpace {
 typedef struct {
   PetscInt       nshift,nshift_max;
   PetscReal      shift_amount,shift_lo,shift_hi,shift_top,shift_fraction;
-  PetscTruth     newshift;
+  PetscBool      newshift;
   PetscReal      rs;  /* active row sum of abs(offdiagonals) */
   PetscScalar    pv;  /* pivot of the active row */
 } FactorShiftCtx;

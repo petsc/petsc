@@ -18,7 +18,7 @@ int main(int argc,char **args)
   PetscInt    	 N, n=10, m, Istart, Iend, II, J, i,j;
   PetscInt       nneg, nzero, npos;
   PetscScalar 	 v,sigma;
-  PetscTruth  	 flag,loadA=PETSC_FALSE,loadB=PETSC_FALSE;
+  PetscBool   	 flag,loadA=PETSC_FALSE,loadB=PETSC_FALSE;
   char           file[2][PETSC_MAX_PATH_LEN]; 
   PetscViewer    viewer;
   PetscMPIInt    rank;

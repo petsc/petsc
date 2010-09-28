@@ -13,7 +13,7 @@ typedef struct {
   Vec        *vwork_m;  /* work vectors of length m, where the system is size m x n */
   Vec        *vwork_n;  /* work vectors of length n */
   Vec        se;        /* Optional standard error vector */
-  PetscTruth se_flg;   /* flag for -ksp_lsqr_set_standard_error */
+  PetscBool  se_flg;   /* flag for -ksp_lsqr_set_standard_error */
   PetscReal  arnorm;   /* Norm of the vector A.r */
   PetscReal  anorm;    /* Frobenius norm of the matrix A */
   PetscReal  rhs_norm; /* Norm of the right hand side */
@@ -27,7 +27,7 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
-  PetscTruth     nopreconditioner;
+  PetscBool      nopreconditioner;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner);CHKERRQ(ierr);
@@ -71,7 +71,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   Mat            Amat,Pmat;
   MatStructure   pflag;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
-  PetscTruth     diagonalscale,nopreconditioner;
+  PetscBool      diagonalscale,nopreconditioner;
   
   PetscFunctionBegin;
   ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -355,7 +355,7 @@ PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp)
   KSP_LSQR                *lsqr = (KSP_LSQR*)ksp->data;
   char                    monfilename[PETSC_MAX_PATH_LEN];
   PetscViewerASCIIMonitor monviewer;
-  PetscTruth              flg;
+  PetscBool               flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP LSQR Options");CHKERRQ(ierr);

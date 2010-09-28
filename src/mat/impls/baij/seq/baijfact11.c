@@ -27,7 +27,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat C,Mat A,const MatFactorI
   MatScalar      p10,p11,p12,p13,p14,p15,p16,m10,m11,m12;
   MatScalar      m13,m14,m15,m16;
   MatScalar      *ba = b->a,*aa = a->a;
-  PetscTruth     pivotinblocks = b->pivotinblocks;
+  PetscBool      pivotinblocks = b->pivotinblocks;
   PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
@@ -297,7 +297,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C,Mat A,
   MatScalar      p10,p11,p12,p13,p14,p15,p16,m10,m11,m12;
   MatScalar      m13,m14,m15,m16;
   MatScalar      *ba = b->a,*aa = a->a;
-  PetscTruth     pivotinblocks = b->pivotinblocks;
+  PetscBool      pivotinblocks = b->pivotinblocks;
   PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
@@ -552,7 +552,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
   MatScalar   *ba = b->a,*aa = a->a;
   int         nonzero=0;
 /*    int            nonzero=0,colscale = 16; */
-  PetscTruth  pivotinblocks = b->pivotinblocks;
+  PetscBool   pivotinblocks = b->pivotinblocks;
   PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
@@ -993,7 +993,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
   MatScalar      *ba = b->a,*aa = a->a;
   int            nonzero=0;
 /*    int            nonzero=0,colscale = 16; */
-  PetscTruth     pivotinblocks = b->pivotinblocks;
+  PetscBool      pivotinblocks = b->pivotinblocks;
   PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
@@ -1434,7 +1434,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
   MatScalar      *ba = b->a,*aa = a->a;
   int            nonzero=0;
 /*    int            nonzero=0,colscale = 16; */
-  PetscTruth     pivotinblocks = b->pivotinblocks;
+  PetscBool      pivotinblocks = b->pivotinblocks;
   PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;

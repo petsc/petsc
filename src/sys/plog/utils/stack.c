@@ -50,7 +50,7 @@ PetscErrorCode StackDestroy(IntStack stack)
 .keywords: log, stack, empty
 .seealso: StackCreate(), StackDestroy(), StackPush(), StackPop(), StackTop()
 @*/
-PetscErrorCode StackEmpty(IntStack stack, PetscTruth *empty)
+PetscErrorCode StackEmpty(IntStack stack, PetscBool  *empty)
 {
   PetscFunctionBegin;
   PetscValidIntPointer(empty,2);

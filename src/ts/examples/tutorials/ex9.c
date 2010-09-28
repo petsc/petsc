@@ -197,7 +197,7 @@ typedef struct {
   PetscReal cfl;
   PetscReal xmin,xmax;
   PetscInt initial;
-  PetscTruth exact;
+  PetscBool  exact;
   FVBCType bctype;
 } FVCtx;
 
@@ -1190,7 +1190,7 @@ static PetscErrorCode SolutionStatsView(DA da,Vec X,PetscViewer viewer)
   PetscScalar sum,*x,tvsum,tvgsum;
   PetscInt imin,imax,Mx,i,j,xs,xm,dof;
   Vec Xloc;
-  PetscTruth iascii;
+  PetscBool  iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -1252,7 +1252,7 @@ int main(int argc,char *argv[])
   Vec X,X0;
   FVCtx ctx;
   PetscInt i,dof,xs,xm,Mx,draw = 0;
-  PetscTruth view_final = PETSC_FALSE;
+  PetscBool  view_final = PETSC_FALSE;
   PetscReal ptime;
   PetscErrorCode ierr;
 

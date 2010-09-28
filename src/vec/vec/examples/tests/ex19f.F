@@ -9,7 +9,7 @@
 !
        PetscInt  n
        PetscErrorCode ierr
-       PetscTruth flg
+       PetscBool  flg
        PetscScalar      one,two,three,dot
        PetscReal        norm,rdot
        Vec              x,y,w

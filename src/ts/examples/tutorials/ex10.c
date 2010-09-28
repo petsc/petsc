@@ -38,18 +38,18 @@ typedef struct _n_RD *RD;
 struct _n_RD {
   void           (*MaterialEnergy)(RD,const RDNode*,PetscScalar*,RDNode*);
   DA             da;
-  PetscTruth     monitor_residual;
+  PetscBool      monitor_residual;
   DiscretizationType discretization;
   QuadratureType quadrature;
   JacobianType   jacobian;
   PetscInt       initial;
   BCType         leftbc;
-  PetscTruth     view_draw;
+  PetscBool      view_draw;
   char           view_binary[PETSC_MAX_PATH_LEN];
-  PetscTruth     test_diff;
-  PetscTruth     endpoint;
-  PetscTruth     bclimit;
-  PetscTruth     bcmidpoint;
+  PetscBool      test_diff;
+  PetscBool      endpoint;
+  PetscBool      bclimit;
+  PetscBool      bcmidpoint;
   RDUnit         unit;
 
   /* model constants, see Table 2 and RDCreate() */
@@ -151,7 +151,7 @@ static void RDSigma_R(RD rd,RDNode *n,PetscScalar *sigma_R,RDNode *dsigma_R)
 }
 
 /* Eq 4 */
-static void RDDiffusionCoefficient(RD rd,PetscTruth limit,RDNode *n,RDNode *nx,PetscScalar *D_R,RDNode *dD_R,RDNode *dxD_R)
+static void RDDiffusionCoefficient(RD rd,PetscBool  limit,RDNode *n,RDNode *nx,PetscScalar *D_R,RDNode *dD_R,RDNode *dxD_R)
 {
   PetscScalar sigma_R,denom;
   RDNode dsigma_R,ddenom,dxdenom;
@@ -258,7 +258,7 @@ static PetscScalar RDDiffusion(RD rd,PetscReal hx,const RDNode x[],PetscInt i,RD
 static PetscErrorCode RDGetLocalArrays(RD rd,TS ts,Vec X,Vec Xdot,PetscReal *Theta,PetscReal *dt,Vec *X0loc,RDNode **x0,Vec *Xloc,RDNode **x,Vec *Xloc_t,RDNode **xdot)
 {
   PetscErrorCode ierr;
-  PetscTruth istheta;
+  PetscBool  istheta;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector(rd->da,X0loc);CHKERRQ(ierr);
@@ -311,7 +311,7 @@ static PetscErrorCode RDRestoreLocalArrays(RD rd,Vec *X0loc,RDNode **x0,Vec *Xlo
 
 #undef __FUNCT__  
 #define __FUNCT__ "RDCheckDomain_Private"
-static PetscErrorCode RDCheckDomain_Private(RD rd,TS ts,Vec X,PetscTruth *in) {
+static PetscErrorCode RDCheckDomain_Private(RD rd,TS ts,Vec X,PetscBool  *in) {
   PetscErrorCode ierr;
   PetscInt       minloc;
   PetscReal      min;
@@ -333,7 +333,7 @@ static PetscErrorCode RDCheckDomain_Private(RD rd,TS ts,Vec X,PetscTruth *in) {
 /* Energy and temperature must remain positive */
 #define RDCheckDomain(rd,ts,X) do {                                \
     PetscErrorCode _ierr;                                          \
-    PetscTruth _in;                                                \
+    PetscBool  _in;                                                \
     _ierr = RDCheckDomain_Private(rd,ts,X,&_in);CHKERRQ(_ierr);    \
     if (!_in) PetscFunctionReturn(0);                              \
   } while (0)

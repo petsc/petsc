@@ -23,10 +23,10 @@ int main(int argc, char **argv)
   char           pset[2048];
   std::string    psetFilename;
   PetscInt       debug = 0;
-  PetscTruth     doBoundary  = PETSC_FALSE;
-  PetscTruth     interpolate = PETSC_FALSE;
-  PetscTruth     split       = PETSC_FALSE;
-  PetscTruth     view        = PETSC_FALSE;
+  PetscBool      doBoundary  = PETSC_FALSE;
+  PetscBool      interpolate = PETSC_FALSE;
+  PetscBool      split       = PETSC_FALSE;
+  PetscBool      view        = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

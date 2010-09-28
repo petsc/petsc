@@ -24,12 +24,12 @@ typedef struct {
   PetscInt      debug;                       // The debugging level
   RunType       run;                         // The run type
   PetscInt      dim;                         // The topological mesh dimension
-  PetscTruth    reentrantMesh;               // Generate a reentrant mesh?
-  PetscTruth    circularMesh;                // Generate a circular mesh?
-  PetscTruth    refineSingularity;           // Generate an a priori graded mesh for the poisson problem
-  PetscTruth    structured;                  // Use a structured mesh
-  PetscTruth    generateMesh;                // Generate the unstructure mesh
-  PetscTruth    interpolate;                 // Generate intermediate mesh elements
+  PetscBool     reentrantMesh;               // Generate a reentrant mesh?
+  PetscBool     circularMesh;                // Generate a circular mesh?
+  PetscBool     refineSingularity;           // Generate an a priori graded mesh for the poisson problem
+  PetscBool     structured;                  // Use a structured mesh
+  PetscBool     generateMesh;                // Generate the unstructure mesh
+  PetscBool     interpolate;                 // Generate intermediate mesh elements
   PetscReal     refinementLimit;             // The largest allowable cell volume
   char          baseFilename[2048];          // The base filename for mesh files
   char          partitioner[2048];           // The graph partitioner
@@ -432,7 +432,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     *dm = (DM) da;
   } else {
     Mesh        mesh;
-    PetscTruth  view;
+    PetscBool   view;
     PetscMPIInt size;
 
     if (options->generateMesh) {
@@ -674,7 +674,7 @@ PetscErrorCode Function_Unstructured(Mesh mesh, SectionReal section, void *ctx)
 #define __FUNCT__ "FormFunctions"
 PetscErrorCode FormFunctions(DM dm, Options *options)
 {
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1003,7 +1003,7 @@ PetscErrorCode CalculateError(Mesh mesh, SectionReal X, double *error, void *ctx
 #define __FUNCT__ "FormWeakForms"
 PetscErrorCode FormWeakForms(DM dm, Options *options)
 {
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1414,7 +1414,7 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
 #define __FUNCT__ "FormOperator"
 PetscErrorCode FormOperator(DM dm, Options *options)
 {
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1567,7 +1567,7 @@ replace this part by setting up the form and setting the discretizations.
 PetscErrorCode CreateExactSolution(DM dm, Options *options)
 {
   const int      dim = options->dim;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1654,7 +1654,7 @@ PetscErrorCode CheckResidual(DM dm, ExactSolType sol, Options *options)
   MPI_Comm       comm;
   const char    *name;
   PetscScalar    norm;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1747,7 +1747,7 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
   SNES                snes;
   MPI_Comm            comm;
   PetscInt            its;
-  PetscTruth          flag;
+  PetscBool           flag;
   SNESConvergedReason reason;
   PetscErrorCode      ierr;
 

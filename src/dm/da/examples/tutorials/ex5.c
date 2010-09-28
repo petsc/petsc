@@ -10,7 +10,7 @@ int main(int argc,char **argv)
   PetscInt       M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ne,i;
   const PetscInt *e;
   PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
   DA             da;
   PetscViewer    viewer;
   Vec            local,global;

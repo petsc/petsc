@@ -333,7 +333,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat
 PetscErrorCode PETSCMAT_DLLEXPORT MatSubMatrixUpdate(Mat N,Mat A,IS isrow,IS iscol)
 {
   PetscErrorCode  ierr;
-  PetscTruth      flg;
+  PetscBool       flg;
   Mat_SubMatrix  *Na;
 
   PetscFunctionBegin;

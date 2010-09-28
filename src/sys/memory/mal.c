@@ -99,7 +99,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFreeDefault(void *ptr,int line,char *func
 PetscErrorCode  PETSCSYS_DLLEXPORT (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**) = PetscMallocAlign;
 PetscErrorCode  PETSCSYS_DLLEXPORT (*PetscTrFree)(void*,int,const char[],const char[],const char[])          = PetscFreeAlign;
 
-PetscTruth petscsetmallocvisited = PETSC_FALSE;
+PetscBool  petscsetmallocvisited = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMallocSet"

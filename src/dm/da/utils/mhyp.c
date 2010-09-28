@@ -16,7 +16,7 @@ PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o,HYPRE_IJMatrix ij)
   PetscErrorCode ierr;
   PetscInt       i;
   PetscInt       n_d,*ia_d,n_o,*ia_o;
-  PetscTruth     done_d=PETSC_FALSE,done_o=PETSC_FALSE;
+  PetscBool      done_d=PETSC_FALSE,done_o=PETSC_FALSE;
   PetscInt       *nnz_d=PETSC_NULL,*nnz_o=PETSC_NULL;
   
   PetscFunctionBegin;
@@ -73,7 +73,7 @@ PetscErrorCode MatHYPRE_IJMatrixCreate(Mat A,HYPRE_IJMatrix *ij)
   PetscStackCallHypre("HYPRE_IJMatrixCreate",HYPRE_IJMatrixCreate(((PetscObject)A)->comm,rstart,rend-1,cstart,cend-1,ij));
   PetscStackCallHypre("HYPRE_IJMatrixSetObjectType",HYPRE_IJMatrixSetObjectType(*ij,HYPRE_PARCSR));
   {
-    PetscTruth  same;
+    PetscBool   same;
     Mat         A_d,A_o;
     PetscInt    *colmap;
     ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&same);CHKERRQ(ierr);
@@ -116,7 +116,7 @@ PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A,HYPRE_IJMatrix ij)
   PetscInt          i,rstart,rend,ncols;
   const PetscScalar *values;
   const PetscInt    *cols;
-  PetscTruth        flg;
+  PetscBool         flg;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
@@ -259,7 +259,7 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
 {
   PetscErrorCode        ierr;
   int                   rstart,rend,cstart,cend;
-  PetscTruth            flg;
+  PetscBool             flg;
   hypre_ParCSRMatrix    *par_matrix;
   hypre_AuxParCSRMatrix *aux_matrix;
 

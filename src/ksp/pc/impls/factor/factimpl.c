@@ -92,7 +92,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_Factor(PC pc,const 
 {
   PC_Factor      *dir = (PC_Factor*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
  
   PetscFunctionBegin;
   if (!pc->setupcalled) {
@@ -140,7 +140,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetPivotInBlocks_Factor"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks_Factor(PC pc,PetscTruth pivot)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks_Factor(PC pc,PetscBool  pivot)
 {
   PC_Factor *dir = (PC_Factor*)pc->data;
 
@@ -175,7 +175,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_Factor(PC pc,const
   PetscFunctionBegin;
   if (lu->fact) {
     const MatSolverPackage ltype;
-    PetscTruth             flg;
+    PetscBool              flg;
     ierr = MatFactorGetSolverPackage(lu->fact,&ltype);CHKERRQ(ierr);
     ierr = PetscStrcmp(stype,ltype,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package after PC has been setup or used");
@@ -222,7 +222,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC pc)
 {
   PC_Factor       *factor = (PC_Factor*)pc->data;
   PetscErrorCode  ierr;
-  PetscTruth      flg = PETSC_FALSE,set;
+  PetscBool       flg = PETSC_FALSE,set;
   char            tname[256], solvertype[64];
   PetscFList      ordlist;
   PetscEnum       etmp;
@@ -284,7 +284,7 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
 {
   PC_Factor       *factor = (PC_Factor*)pc->data;
   PetscErrorCode  ierr;
-  PetscTruth      isstring,iascii;
+  PetscBool       isstring,iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);

@@ -3,12 +3,12 @@
 #include "../src/ts/impls/implicit/gl/gl.h" /*I  "petscts.h" I*/
 
 static PetscFList TSGLAdaptList;
-static PetscTruth TSGLAdaptPackageInitialized;
-static PetscTruth TSGLAdaptRegisterAllCalled;
+static PetscBool  TSGLAdaptPackageInitialized;
+static PetscBool  TSGLAdaptRegisterAllCalled;
 static PetscClassId TSGLADAPT_CLASSID;
 
 struct _TSGLAdaptOps {
-  PetscErrorCode (*choose)(TSGLAdapt,PetscInt,const PetscInt[],const PetscReal[],const PetscReal[],PetscInt,PetscReal,PetscReal,PetscInt*,PetscReal*,PetscTruth*);
+  PetscErrorCode (*choose)(TSGLAdapt,PetscInt,const PetscInt[],const PetscReal[],const PetscReal[],PetscInt,PetscReal,PetscReal,PetscInt*,PetscReal*,PetscBool *);
   PetscErrorCode (*destroy)(TSGLAdapt);
   PetscErrorCode (*view)(TSGLAdapt,PetscViewer);
   PetscErrorCode (*setfromoptions)(TSGLAdapt);
@@ -167,7 +167,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptSetOptionsPrefix(TSGLAdapt adapt,const
 PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptView(TSGLAdapt adapt,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth iascii;
+  PetscBool  iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -210,7 +210,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptSetFromOptions(TSGLAdapt adapt)
 {
   PetscErrorCode ierr;
   char           type[256] = TSGLADAPT_BOTH;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   /* This should use PetscOptionsBegin() if/when this becomes an object used outside of TSGL, but currently this
@@ -228,7 +228,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptSetFromOptions(TSGLAdapt adapt)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLAdaptChoose"
-PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptChoose(TSGLAdapt adapt,PetscInt n,const PetscInt orders[],const PetscReal errors[],const PetscReal cost[],PetscInt cur,PetscReal h,PetscReal tleft,PetscInt *next_sc,PetscReal *next_h,PetscTruth *finish)
+PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptChoose(TSGLAdapt adapt,PetscInt n,const PetscInt orders[],const PetscReal errors[],const PetscReal cost[],PetscInt cur,PetscReal h,PetscReal tleft,PetscInt *next_sc,PetscReal *next_h,PetscBool  *finish)
 {
   PetscErrorCode ierr;
 
@@ -282,7 +282,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLAdaptChoose_None"
-static PetscErrorCode TSGLAdaptChoose_None(TSGLAdapt adapt,PetscInt n,const PetscInt orders[],const PetscReal errors[],const PetscReal cost[],PetscInt cur,PetscReal h,PetscReal tleft,PetscInt *next_sc,PetscReal *next_h,PetscTruth *finish)
+static PetscErrorCode TSGLAdaptChoose_None(TSGLAdapt adapt,PetscInt n,const PetscInt orders[],const PetscReal errors[],const PetscReal cost[],PetscInt cur,PetscReal h,PetscReal tleft,PetscInt *next_sc,PetscReal *next_h,PetscBool  *finish)
 {
 
   PetscFunctionBegin;
@@ -321,7 +321,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLAdaptChoose_Size"
-static PetscErrorCode TSGLAdaptChoose_Size(TSGLAdapt adapt,PetscInt n,const PetscInt orders[],const PetscReal errors[],const PetscReal cost[],PetscInt cur,PetscReal h,PetscReal tleft,PetscInt *next_sc,PetscReal *next_h,PetscTruth *finish)
+static PetscErrorCode TSGLAdaptChoose_Size(TSGLAdapt adapt,PetscInt n,const PetscInt orders[],const PetscReal errors[],const PetscReal cost[],PetscInt cur,PetscReal h,PetscReal tleft,PetscInt *next_sc,PetscReal *next_h,PetscBool  *finish)
 {
   TSGLAdapt_Size *sz = (TSGLAdapt_Size*)adapt->data;
   PetscReal dec = 0.2,inc = 5.0,safe = 0.9,optimal,last_desired_h;
@@ -371,7 +371,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLAdaptChoose_Both"
-static PetscErrorCode TSGLAdaptChoose_Both(TSGLAdapt adapt,PetscInt n,const PetscInt orders[],const PetscReal errors[],const PetscReal cost[],PetscInt cur,PetscReal h,PetscReal tleft,PetscInt *next_sc,PetscReal *next_h,PetscTruth *finish)
+static PetscErrorCode TSGLAdaptChoose_Both(TSGLAdapt adapt,PetscInt n,const PetscInt orders[],const PetscReal errors[],const PetscReal cost[],PetscInt cur,PetscReal h,PetscReal tleft,PetscInt *next_sc,PetscReal *next_h,PetscBool  *finish)
 {
   TSGLAdapt_Both *both = (TSGLAdapt_Both*)adapt->data;
   PetscErrorCode ierr;

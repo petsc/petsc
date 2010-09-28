@@ -12,7 +12,7 @@ int main(int argc,char **argv) {
   PetscRandom    rctx;
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

@@ -18,7 +18,7 @@ typedef struct {
   PetscReal  delta2;	/* used to compute trust region parameter */
   PetscReal  delta3;	/* used to compute trust region parameter */
   PetscReal  sigma;		/* used to detemine termination */
-  PetscTruth itflag;	/* flag for convergence testing */
+  PetscBool  itflag;	/* flag for convergence testing */
   PetscReal  rnorm0,ttol;   /* used for KSP convergence test */
 } SNES_TR;
 

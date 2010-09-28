@@ -9,7 +9,7 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetReuseFill_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill_ILU(PC pc,PetscTruth flag)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill_ILU(PC pc,PetscBool  flag)
 {
   PC_ILU *lu = (PC_ILU*)pc->data;
   
@@ -73,7 +73,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetReuseOrdering_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering_ILU(PC pc,PetscTruth flag)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering_ILU(PC pc,PetscBool  flag)
 {
   PC_ILU *ilu = (PC_ILU*)pc->data;
 
@@ -102,7 +102,7 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       itmp;
-  PetscTruth     flg;
+  PetscBool      flg;
   /* PetscReal      dt[3]; */
   PC_ILU         *ilu = (PC_ILU*)pc->data;
   PetscReal      tol;
@@ -144,7 +144,7 @@ static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
 {
   PC_ILU         *ilu = (PC_ILU*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -169,7 +169,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
   PetscErrorCode ierr;
   PC_ILU         *ilu = (PC_ILU*)pc->data;
   MatInfo        info;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   /* ugly hack to change default, since it is not support by some matrix types */

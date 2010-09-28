@@ -37,7 +37,7 @@ EXTERN_C_END
     KSPRegisterAll() is called. In general, if there is more than one
     DLL, then KSPRegisterAll() may be called several times.
 */
-EXTERN PetscTruth KSPRegisterAllCalled;
+EXTERN PetscBool  KSPRegisterAllCalled;
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPRegisterAll"

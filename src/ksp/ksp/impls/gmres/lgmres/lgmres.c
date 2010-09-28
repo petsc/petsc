@@ -6,7 +6,7 @@
 #define LGMRES_DEFAULT_MAXK     30
 #define LGMRES_DEFAULT_AUGDIM   2 /*default number of augmentation vectors */ 
 static PetscErrorCode    LGMRESGetNewVectors(KSP,PetscInt);
-static PetscErrorCode    LGMRESUpdateHessenberg(KSP,PetscInt,PetscTruth,PetscReal *);
+static PetscErrorCode    LGMRESUpdateHessenberg(KSP,PetscInt,PetscBool ,PetscReal *);
 static PetscErrorCode    BuildLgmresSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
 
 #undef __FUNCT__  
@@ -106,7 +106,7 @@ PetscErrorCode LGMREScycle(PetscInt *itcount,KSP ksp)
   PetscReal      res_norm, res;             
   PetscReal      hapbnd, tt;
   PetscScalar    tmp;
-  PetscTruth     hapend = PETSC_FALSE;  /* indicates happy breakdown ending */
+  PetscBool      hapend = PETSC_FALSE;  /* indicates happy breakdown ending */
   PetscErrorCode ierr;
   PetscInt       loc_it;                /* local count of # of dir. in Krylov space */ 
   PetscInt       max_k = lgmres->max_k; /* max approx space size */
@@ -349,7 +349,7 @@ PetscErrorCode KSPSolve_LGMRES(KSP ksp)
   PetscInt       cycle_its; /* iterations done in a call to LGMREScycle */
   PetscInt       itcount;   /* running total of iterations, incl. those in restarts */
   KSP_LGMRES     *lgmres = (KSP_LGMRES *)ksp->data;
-  PetscTruth     guess_zero = ksp->guess_zero;
+  PetscBool      guess_zero = ksp->guess_zero;
   PetscInt       ii;        /*LGMRES_MOD variable */
 
   PetscFunctionBegin;
@@ -534,7 +534,7 @@ static PetscErrorCode BuildLgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP 
  */
 #undef __FUNCT__  
 #define __FUNCT__ "LGMRESUpdateHessenberg"
-static PetscErrorCode LGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscTruth hapend,PetscReal *res)
+static PetscErrorCode LGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  hapend,PetscReal *res)
 {
   PetscScalar   *hh,*cc,*ss,tt;
   PetscInt      j;
@@ -710,7 +710,7 @@ PetscErrorCode KSPView_LGMRES(KSP ksp,PetscViewer viewer)
 {
   KSP_LGMRES     *lgmres = (KSP_LGMRES *)ksp->data; 
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = KSPView_GMRES(ksp,viewer);CHKERRQ(ierr);
@@ -737,7 +737,7 @@ PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp)
   PetscErrorCode ierr;
   PetscInt       aug;
   KSP_LGMRES     *lgmres = (KSP_LGMRES*) ksp->data;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = KSPSetFromOptions_GMRES(ksp);CHKERRQ(ierr);

@@ -14,7 +14,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   PetscInt       n = 7,cnt = 0,i,j;
-  PetscTruth     mask[]     = {PETSC_TRUE,PETSC_FALSE,PETSC_FALSE,PETSC_TRUE,PETSC_FALSE,PETSC_FALSE,PETSC_FALSE};
+  PetscBool      mask[]     = {PETSC_TRUE,PETSC_FALSE,PETSC_FALSE,PETSC_TRUE,PETSC_FALSE,PETSC_FALSE,PETSC_FALSE};
   PetscInt       parentId[] = {-1,         2,         0,         -1,         2,         1,         0};   
   PetscInt       Nlevels,*Level,*Levelcnt,*Idbylevel,*Column;
 

@@ -59,14 +59,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_SL_Minpack(Mat mat,MatColoringT
   PetscErrorCode  ierr;
   PetscInt        *list,*work,clique,*ria,*rja,*cia,*cja,*seq,*coloring,n;
   PetscInt        ncolors,i;
-  PetscTruth      done;
+  PetscBool       done;
   Mat             mat_seq = mat;
   PetscMPIInt     size;
   MPI_Comm        comm;
   ISColoring      iscoloring_seq;
   PetscInt        bs = 1,rstart,rend,N_loc,nc;
   ISColoringValue *colors_loc;
-  PetscTruth      flg1,flg2;
+  PetscBool       flg1,flg2;
 
   PetscFunctionBegin;
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
@@ -146,14 +146,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_LF_Minpack(Mat mat,MatColoringT
   PetscErrorCode  ierr;
   PetscInt        *list,*work,*ria,*rja,*cia,*cja,*seq,*coloring,n;
   PetscInt        n1, none,ncolors,i;
-  PetscTruth      done;
+  PetscBool       done;
   Mat             mat_seq = mat;
   PetscMPIInt     size;
   MPI_Comm        comm;
   ISColoring      iscoloring_seq;
   PetscInt        bs = 1,rstart,rend,N_loc,nc;
   ISColoringValue *colors_loc;
-  PetscTruth      flg1,flg2;
+  PetscBool       flg1,flg2;
 
   PetscFunctionBegin;
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
@@ -235,14 +235,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_ID_Minpack(Mat mat,MatColoringT
   PetscErrorCode  ierr;
   PetscInt        *list,*work,clique,*ria,*rja,*cia,*cja,*seq,*coloring,n;
   PetscInt        ncolors,i;
-  PetscTruth      done;
+  PetscBool       done;
   Mat             mat_seq = mat;
   PetscMPIInt     size;
   MPI_Comm        comm;
   ISColoring      iscoloring_seq;
   PetscInt        bs = 1,rstart,rend,N_loc,nc;
   ISColoringValue *colors_loc;
-  PetscTruth      flg1,flg2;
+  PetscBool       flg1,flg2;
 
   PetscFunctionBegin;
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
@@ -323,7 +323,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_Natural(Mat mat,MatColoringType
   PetscInt        start,end,i,bs = 1,n;
   ISColoringValue *colors;
   MPI_Comm        comm;
-  PetscTruth      flg1,flg2;
+  PetscBool       flg1,flg2;
   Mat             mat_seq = mat;
   PetscMPIInt     size;
   ISColoring      iscoloring_seq;
@@ -384,7 +384,7 @@ EXTERN_C_END
 /* ===========================================================================================*/
 
 PetscFList MatColoringList = 0;
-PetscTruth MatColoringRegisterAllCalled = PETSC_FALSE;
+PetscBool  MatColoringRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatColoringRegister" 
@@ -480,7 +480,7 @@ $         Sources and Development of Mathematical Software, Wayne R. Cowell edit
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,const MatColoringType type,ISColoring *iscoloring)
 {
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr,(*r)(Mat,const MatColoringType,ISColoring *);
   char           tname[PETSC_MAX_PATH_LEN];
   MPI_Comm       comm;

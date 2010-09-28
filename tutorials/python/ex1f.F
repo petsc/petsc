@@ -6,7 +6,7 @@
 #include "finclude/petscksp.h"
 
       PetscInt       N
-      PetscTruth     draw, flg
+      PetscBool      draw, flg
       PetscReal      rnorm,rtwo
       PetscScalar    one,mone
       Mat            A

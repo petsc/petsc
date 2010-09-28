@@ -15,7 +15,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   PetscInt           i,j,*aj = B->j,ec = 0,*garray;
   IS                 from,to;
   Vec                gvec;
-  PetscTruth         useblockis;
+  PetscBool          useblockis;
 #if defined (PETSC_USE_CTABLE)
   PetscTable         gid1_lid1;
   PetscTablePosition tpos;

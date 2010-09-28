@@ -98,7 +98,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenSocket(char *hostname,int portnum,int
   struct hostent     *hp;
   int                s = 0;
   PetscErrorCode     ierr;
-  PetscTruth         flg = PETSC_TRUE;
+  PetscBool          flg = PETSC_TRUE;
 
   PetscFunctionBegin;
   if (!(hp=gethostbyname(hostname))) {
@@ -303,7 +303,7 @@ PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
   PetscErrorCode ierr;
   PetscInt       def = -1;
   char           sdef[256];
-  PetscTruth     tflg;
+  PetscBool      tflg;
 
   PetscFunctionBegin;
   /*
@@ -373,7 +373,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,c
   PetscErrorCode     ierr;
   PetscMPIInt        rank;
   char               mach[256];
-  PetscTruth         tflg;
+  PetscBool          tflg;
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket *)v->data;
 
   PetscFunctionBegin;
@@ -464,7 +464,7 @@ $       XXXView(XXX object,PETSC_VIEWER_SOCKET_(comm));
 PetscViewer PETSCSYS_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscViewer    viewer;
   MPI_Comm       ncomm;
 
@@ -626,7 +626,7 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       fprintf(fd, "AMS Communicator %s has no published memories</p>\r\n",comm_list[0]);
     } else {
       PetscInt   Nlevels,*Level,*Levelcnt,*Idbylevel,*Column,*parentid,*Id,maxId = 0,maxCol = 0,*parentId,id,cnt,Nlevelcnt = 0;
-      PetscTruth *mask;
+      PetscBool  *mask;
       char       **classes,*clas,**subclasses,*sclas;
 
       /* get maximum number of objects */
@@ -641,7 +641,7 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       maxId++; 
 
       /* Gets everyone's parent ID and which nodes are masked */
-      ierr = PetscMalloc4(maxId,PetscInt,&parentid,maxId,PetscTruth,&mask,maxId,char**,&classes,maxId,char**,&subclasses);CHKERRQ(ierr);
+      ierr = PetscMalloc4(maxId,PetscInt,&parentid,maxId,PetscBool ,&mask,maxId,char**,&classes,maxId,char**,&subclasses);CHKERRQ(ierr);
       ierr = PetscMemzero(classes,maxId*sizeof(char*));CHKERRQ(ierr);
       ierr = PetscMemzero(subclasses,maxId*sizeof(char*));CHKERRQ(ierr);
       for (i=0; i<maxId; i++) mask[i] = PETSC_TRUE;
@@ -765,7 +765,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(int port)
   FILE           *fd;
   char           buf[4096];
   char           *method, *path, *protocol;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscToken     tok;
 
   PetscFunctionBegin;

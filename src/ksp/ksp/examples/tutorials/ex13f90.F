@@ -58,7 +58,7 @@
       PetscFortranAddr userctx(6)
       PetscErrorCode ierr
       PetscInt m,n,t,tmax,i,j
-      PetscTruth flg
+      PetscBool  flg
       PetscMPIInt size,rank
       double precision  enorm
       PetscScalar,ALLOCATABLE :: userx(:,:)

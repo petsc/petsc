@@ -186,7 +186,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 #if !defined(PETSC_MISSING_LAPACK_STEBZ)
   PetscBLASInt  e_splts;
 #endif
-  PetscTruth    diagonalscale;
+  PetscBool     diagonalscale;
 
   PetscFunctionBegin;
   /***************************************************************************/

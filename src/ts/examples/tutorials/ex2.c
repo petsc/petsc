@@ -56,7 +56,7 @@ typedef struct {
   Vec        solution;      /* global exact solution vector */
   PetscInt   m;             /* total number of grid points */
   PetscReal  h;             /* mesh width: h = 1/(m-1) */
-  PetscTruth debug;         /* flag (1 indicates activation of debugging printouts) */
+  PetscBool  debug;         /* flag (1 indicates activation of debugging printouts) */
 } AppCtx;
 
 /* 
@@ -87,7 +87,7 @@ int main(int argc,char **argv)
   PetscReal      ftime;                  /* final time */
   PetscReal      dt;
   PetscReal      time_total_max = 100.0; /* default max total time */
-  PetscTruth     flg;
+  PetscBool      flg;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters

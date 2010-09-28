@@ -3,7 +3,7 @@
 #include "private/snesimpl.h"
 
 typedef struct {
-  PetscTruth complete_print;
+  PetscBool  complete_print;
 } SNES_Test;
 
 /*

@@ -2159,7 +2159,7 @@ value for the solution vector that is given; this zeroing is done at the
 call to KSPSolve() (or KSPSolve()). To use a nonzero 
 initial guess, the user {\em must} call
 \begin{tabbing}
-  KSPSetInitialGuessNonzero(KSP ksp,PetscTruth flg);
+  KSPSetInitialGuessNonzero(KSP ksp,PetscBool  flg);
 \end{tabbing}
 
 \subsection{Preconditioning within KSP} 
@@ -2491,9 +2491,9 @@ just a few in the sections below.
 Some of the options for ILU preconditioner are 
 \begin{tabbing}
   PCFactorSetLevels(PC pc,int levels);\\
-  PCFactorSetReuseOrdering(PC pc,PetscTruth flag);\\
+  PCFactorSetReuseOrdering(PC pc,PetscBool  flag);\\
   PCFactorSetDropTolerance(PC pc,double dt,double dtcol,int dtcount);\\
-  PCFactorSetReuseFill(PC pc,PetscTruth flag);\\
+  PCFactorSetReuseFill(PC pc,PetscBool  flag);\\
   PCFactorSetUseInPlace(PC pc); \\
   PCFactorSetAllowDiagonalFill(PC pc);
 \end{tabbing}
@@ -3044,7 +3044,7 @@ First, one must know what the null space is and store it using an orthonormal ba
 in an array of PETSc Vecs. (The constant functions can be handled separately, since
 they are such a common case). Create a MatNullSpace object with the command
 \begin{tabbing}
-MatNullSpaceCreate(MPI\_Comm,PetscTruth hasconstants,int dim,Vec *basis,MatNullSpace *nsp);
+MatNullSpaceCreate(MPI\_Comm,PetscBool  hasconstants,int dim,Vec *basis,MatNullSpace *nsp);
 \end{tabbing}
 Here \trl{dim} is the number of vectors in \trl{basis} and \trl{hasconstants} indicates
 if the null space contains the constant functions. (If the null space contains the constant
@@ -3702,7 +3702,7 @@ the entire {\bf linear} iterative process $ u $ does not change hence
 $\sqrt{1 + ||u||} $ need be computed only once. This information may be set with the 
 options
 \begin{tabbing}
-  MatMFFDWPSetComputeNormU(Mat mat,PetscTruth);
+  MatMFFDWPSetComputeNormU(Mat mat,PetscBool );
 \end{tabbing}
 or 
 \begin{tabbing}
@@ -5610,7 +5610,7 @@ details about interpreting such profiling data.
 
 In particular, the macros 
 \begin{tabbing}
-  PreLoadBegin(PetscTruth,char* stagename),\\
+  PreLoadBegin(PetscBool ,char* stagename),\\
   PreLoadStage(char *stagename),
 \end{tabbing}
 and 
@@ -6000,13 +6000,13 @@ though this is rarely done.
 To locate options in the database, one should use the
 commands
 \begin{tabbing}
-  PetscOptionsHasName(char *pre,char *name,PetscTruth *flg);\\
-  PetscOptionsGetInt(char *pre,char *name,int *value,PetscTruth *flg);\\
-  PetscOptionsGetReal(char *pre,char *name,double *value,PetscTruth *flg);\\
-  PetscOptionsGetString(char *pre,char *name,char *value,int maxlen,PetscTruth *flg);\\
-  PetscOptionsGetStringArray(char *pre,char *name,char **values,int *maxlen,PetscTruth *flg);\\
-  PetscOptionsGetIntArray(char *pre,char *name,int *value,int *nmax,PetscTruth *flg);\\
-  PetscOptionsGetRealArray(char *pre,char *name,double *value, int *nmax,PetscTruth *flg);
+  PetscOptionsHasName(char *pre,char *name,PetscBool  *flg);\\
+  PetscOptionsGetInt(char *pre,char *name,int *value,PetscBool  *flg);\\
+  PetscOptionsGetReal(char *pre,char *name,double *value,PetscBool  *flg);\\
+  PetscOptionsGetString(char *pre,char *name,char *value,int maxlen,PetscBool  *flg);\\
+  PetscOptionsGetStringArray(char *pre,char *name,char **values,int *maxlen,PetscBool  *flg);\\
+  PetscOptionsGetIntArray(char *pre,char *name,int *value,int *nmax,PetscBool  *flg);\\
+  PetscOptionsGetRealArray(char *pre,char *name,double *value, int *nmax,PetscBool  *flg);
 \end{tabbing}
 All of
 these 
@@ -7232,7 +7232,7 @@ Additional preconditioner routines are
   PCApply\=BAorAB(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);\\
   PCApplyBAorABTranspose(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);\\
   PCApplyRichardson(PC pc,Vec x,Vec y,Vec work,PetscReal rtol,PetscReal atol, PetscReal dtol,PetscInt \\
-   \>  maxits,PetscTruth zeroguess,PetscInt *its,PCRichardsonConvergedReason*);
+   \>  maxits,PetscBool  zeroguess,PetscInt *its,PCRichardsonConvergedReason*);
 \end{tabbing}
 The first two routines apply the action of the matrix followed by the
 preconditioner or the preconditioner followed by the matrix depending

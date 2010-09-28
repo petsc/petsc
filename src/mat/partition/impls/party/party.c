@@ -40,7 +40,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
     int nb_locals;              
     Mat_MPIAdj *adj = (Mat_MPIAdj *) mat->data;
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
-    PetscTruth flg;
+    PetscBool  flg;
 #ifdef PETSC_HAVE_UNISTD_H
     int fd_stdout, fd_pipe[2], count,err;
 #endif
@@ -167,7 +167,7 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewe
   MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
   PetscErrorCode        ierr;
   PetscMPIInt           rank;
-  PetscTruth            iascii;
+  PetscBool             iascii;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)part)->comm, &rank);CHKERRQ(ierr);
@@ -264,7 +264,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetCoarseLevel(MatPartitio
 
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetMatchOptimization(MatPartitioning part,
-    PetscTruth opt)
+    PetscBool  opt)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
@@ -288,7 +288,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetMatchOptimization(MatPa
    Level: advanced
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetBipart(MatPartitioning part, PetscTruth bp)
+PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetBipart(MatPartitioning part, PetscBool  bp)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
@@ -305,7 +305,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetBipart(MatPartitioning 
 PetscErrorCode MatPartitioningSetFromOptions_Party(MatPartitioning part)
 {
     PetscErrorCode ierr;
-    PetscTruth flag, b;
+    PetscBool  flag, b;
     char value[256];
     PetscReal r;
 

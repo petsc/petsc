@@ -17,7 +17,7 @@ int main(int argc,char **argv)
 {
   PetscInt       M = -10,N = -8;
   PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
   DA             da;
   Vec            global1,global2,global3;
   DAPeriodicType ptype = DA_NONPERIODIC;

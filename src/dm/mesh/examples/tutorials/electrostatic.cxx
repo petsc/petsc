@@ -17,9 +17,9 @@ typedef struct {
   PetscInt      debug;                       // The debugging level
   RunType       run;                         // The run type
   PetscInt      dim;                         // The topological mesh dimension
-  PetscTruth    structured;                  // Use a structured mesh
-  PetscTruth    generateMesh;                // Generate the unstructure mesh
-  PetscTruth    interpolate;                 // Generate intermediate mesh elements
+  PetscBool     structured;                  // Use a structured mesh
+  PetscBool     generateMesh;                // Generate the unstructure mesh
+  PetscBool     interpolate;                 // Generate intermediate mesh elements
   PetscReal     refinementLimit;             // The largest allowable cell volume
   PetscReal     particleRadius;              // The radius of the charged particle
   PetscInt      particleEdges;               // The number of edges along the particle
@@ -307,7 +307,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     *dm = (DM) da;
   } else {
     Mesh        mesh;
-    PetscTruth  view;
+    PetscBool   view;
     PetscMPIInt size;
 
     if (options->generateMesh) {
@@ -1668,7 +1668,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
 PetscErrorCode CreateExactSolution(DM dm, Options *options)
 {
   const int      dim = options->dim;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1780,7 +1780,7 @@ PetscErrorCode CheckResidual(DM dm, ExactSolType sol, Options *options)
   MPI_Comm       comm;
   const char    *name;
   PetscScalar    norm;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1825,7 +1825,7 @@ PetscErrorCode CheckJacobian(DM dm, ExactSolType sol, Options *options)
   MPI_Comm       comm;
   const char    *name;
   PetscScalar    norm;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1915,7 +1915,7 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
   SNES                snes;
   MPI_Comm            comm;
   PetscInt            its;
-  PetscTruth          flag;
+  PetscBool           flag;
   SNESConvergedReason reason;
   PetscErrorCode      ierr;
 

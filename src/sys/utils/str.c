@@ -41,7 +41,7 @@
 PetscErrorCode PETSCSYS_DLLEXPORT PetscStrToArray(const char s[],int *argc,char ***args)
 {
   int        i,n,*lens,cnt = 0;
-  PetscTruth flg = PETSC_FALSE;
+  PetscBool  flg = PETSC_FALSE;
 
   n = strlen(s);
   *argc = 0;
@@ -334,7 +334,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscStrncat(char s[],const char t[],size_t n)
 .seealso: PetscStrgrt(), PetscStrncmp(), PetscStrcasecmp()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscStrcmp(const char a[],const char b[],PetscTruth *flg)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrcmp(const char a[],const char b[],PetscBool  *flg)
 {
   int c;
 
@@ -376,7 +376,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscStrcmp(const char a[],const char b[],Pets
 .seealso: PetscStrcmp(), PetscStrncmp(), PetscStrcasecmp()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscStrgrt(const char a[],const char b[],PetscTruth *t)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrgrt(const char a[],const char b[],PetscBool  *t)
 {
   int c;
 
@@ -420,7 +420,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscStrgrt(const char a[],const char b[],Pets
 .seealso: PetscStrcmp(), PetscStrncmp(), PetscStrgrt()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscStrcasecmp(const char a[],const char b[],PetscTruth *t)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrcasecmp(const char a[],const char b[],PetscBool  *t)
 {
   int c;
 
@@ -474,7 +474,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscStrcasecmp(const char a[],const char b[],
 .seealso: PetscStrgrt(), PetscStrcmp(), PetscStrcasecmp()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscStrncmp(const char a[],const char b[],size_t n,PetscTruth *t)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscStrncmp(const char a[],const char b[],size_t n,PetscBool  *t)
 {
   int c;
 
@@ -797,7 +797,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char aa[],
   char           *work,*par,*epar,env[1024],*tfree,*a = (char*)aa;
   const char     *s[] = {"${PETSC_ARCH}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}","${HOSTNAME}",0};
   const char     *r[] = {0,0,0,0,0,0,0,0,0};
-  PetscTruth     flag;
+  PetscBool      flag;
 
   PetscFunctionBegin;
   if (!a || !b) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"a and b strings must be nonnull");

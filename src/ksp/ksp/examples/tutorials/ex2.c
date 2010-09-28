@@ -36,7 +36,7 @@ int main(int argc,char **args)
   PetscReal      norm;     /* norm of solution error */
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
   PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
   PetscScalar    v;
 #if defined(PETSC_USE_LOG)
   PetscLogStage  stage;
@@ -191,7 +191,7 @@ int main(int argc,char **args)
           are equivalent to these procedual calls 
   */
 #ifdef PETSC_HAVE_MUMPS 
-  PetscTruth flg_lu=PETSC_FALSE,flg_ch=PETSC_FALSE;
+  PetscBool  flg_lu=PETSC_FALSE,flg_ch=PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-use_mumps_lu",&flg_lu,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-use_mumps_ch",&flg_ch,PETSC_NULL);CHKERRQ(ierr);
   if (flg_lu || flg_ch){

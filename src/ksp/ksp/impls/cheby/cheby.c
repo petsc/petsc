@@ -96,7 +96,7 @@ PetscErrorCode KSPSolve_Chebychev(KSP ksp)
   KSP_Chebychev  *chebychevP = (KSP_Chebychev*)ksp->data;
   Mat            Amat,Pmat;
   MatStructure   pflag;
-  PetscTruth     diagonalscale;
+  PetscBool      diagonalscale;
 
   PetscFunctionBegin;
   if (ksp->normtype == KSP_NORM_NATURAL) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Cannot use natural residual norm with KSPCHEBYCHEV");
@@ -216,7 +216,7 @@ PetscErrorCode KSPView_Chebychev(KSP ksp,PetscViewer viewer)
 {
   KSP_Chebychev  *cheb = (KSP_Chebychev*)ksp->data;
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);

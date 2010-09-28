@@ -8,7 +8,7 @@ PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscTruth     iascii,isdraw;
+  PetscBool      iascii,isdraw;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
@@ -33,7 +33,7 @@ PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
     double     x,y;
     PetscInt   base,*idx;
     char       node[10];
-    PetscTruth isnull;
+    PetscBool  isnull;
  
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);

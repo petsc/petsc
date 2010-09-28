@@ -32,7 +32,7 @@ typedef struct {
 
   /* Flag that indicates whether we need to clean up permutation 
    * information during the MatDestroy. */
-  PetscTruth CleanUpAIJPERM;
+  PetscBool  CleanUpAIJPERM;
 
   /* Some of this stuff is for Ed's recursive triangular solve.
    * I'm not sure what I need yet. */

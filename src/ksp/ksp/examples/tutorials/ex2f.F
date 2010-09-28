@@ -78,7 +78,7 @@
       PetscInt  Istart,Iend,ione
       PetscErrorCode ierr
       PetscMPIInt     rank,size
-      PetscTruth  flg
+      PetscBool   flg
       PetscScalar v,one,neg_one
       Vec         x,b,u
       Mat         A 

@@ -28,7 +28,7 @@ void PETSC_STDCALL islocaltoglobalmappingview_(ISLocalToGlobalMapping *mapping,P
 }
 
 static PetscInt   *sprocs, *snumprocs, **sindices;
-static PetscTruth called;
+static PetscBool  called;
 void PETSC_STDCALL islocaltoglobalmpnggetinfosize_(ISLocalToGlobalMapping *mapping,PetscInt *nprocs,PetscInt *maxnumprocs,PetscErrorCode *ierr)
 {
   PetscInt i;

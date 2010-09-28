@@ -10,7 +10,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   ADDA           adda;
   PetscInt       nodes[4] = {20, 20, 10, 10};
-  PetscTruth     periodic[4] = {PETSC_TRUE, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE};
+  PetscBool      periodic[4] = {PETSC_TRUE, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE};
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

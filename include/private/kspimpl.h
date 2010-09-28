@@ -37,11 +37,11 @@ typedef enum {KSP_SETUP_NEW, KSP_SETUP_NEWMATRIX, KSP_SETUP_NEWRHS} KSPSetUpStag
 struct _p_KSP {
   PETSCHEADER(struct _KSPOps);
   DM              dm;
-  PetscTruth      dmActive;
+  PetscBool       dmActive;
   /*------------------------- User parameters--------------------------*/
   PetscInt        max_it;                     /* maximum number of iterations */
   KSPFischerGuess guess;
-  PetscTruth      guess_zero,                  /* flag for whether initial guess is 0 */
+  PetscBool       guess_zero,                  /* flag for whether initial guess is 0 */
                   calc_sings,                  /* calculate extreme Singular Values */
                   guess_knoll;                /* use initial guess of PCApply(ksp->B,b */
   PCSide          pc_side;                  /* flag for left, right, or symmetric 
@@ -53,8 +53,8 @@ struct _p_KSP {
   PetscReal       rnorm0;                   /* initial residual norm (used for divergence testing) */
   PetscReal       rnorm;                    /* current residual norm */
   KSPConvergedReason reason;     
-  PetscTruth         printreason;     /* prints converged reason after solve */
-  PetscTruth         errorifnotconverged;    /* create an error if the KSPSolve() does not converge */
+  PetscBool          printreason;     /* prints converged reason after solve */
+  PetscBool          errorifnotconverged;    /* create an error if the KSPSolve() does not converge */
 
   Vec vec_sol,vec_rhs;            /* pointer to where user has stashed 
                                       the solution and rhs, these are 
@@ -64,10 +64,10 @@ struct _p_KSP {
   PetscReal     *res_hist_alloc;      /* If !0 means user did not provide buffer, needs deallocation */
   PetscInt      res_hist_len;         /* current size of residual history array */
   PetscInt      res_hist_max;         /* actual amount of data in residual_history */
-  PetscTruth    res_hist_reset;       /* reset history to size zero for each new solve */
+  PetscBool     res_hist_reset;       /* reset history to size zero for each new solve */
 
   PetscInt      chknorm;             /* only compute/check norm if iterations is great than this */
-  PetscTruth    lagnorm;             /* Lag the residual norm calculation so that it is computed as part of the 
+  PetscBool     lagnorm;             /* Lag the residual norm calculation so that it is computed as part of the 
                                         MPI_Allreduce() for computing the inner products for the next iteration. */ 
   /* --------User (or default) routines (most return -1 on error) --------*/
   PetscErrorCode (*monitor[MAXKSPMONITORS])(KSP,PetscInt,PetscReal,void*); /* returns control to user after */
@@ -92,16 +92,16 @@ struct _p_KSP {
 
   PetscInt       its;       /* number of iterations so far computed */
 
-  PetscTruth     transpose_solve;    /* solve transpose system instead */
+  PetscBool      transpose_solve;    /* solve transpose system instead */
 
   KSPNormType    normtype;          /* type of norm used for convergence tests */
 
   /*   Allow diagonally scaling the matrix before computing the preconditioner or using 
        the Krylov method. Note this is NOT just Jacobi preconditioning */
 
-  PetscTruth   dscale;       /* diagonal scale system; used with KSPSetDiagonalScale() */
-  PetscTruth   dscalefix;    /* unscale system after solve */
-  PetscTruth   dscalefix2;   /* system has been unscaled */
+  PetscBool    dscale;       /* diagonal scale system; used with KSPSetDiagonalScale() */
+  PetscBool    dscalefix;    /* unscale system after solve */
+  PetscBool    dscalefix2;   /* system has been unscaled */
   Vec          diagonal;     /* 1/sqrt(diag of matrix) */
   Vec          truediagonal;
 
@@ -109,8 +109,8 @@ struct _p_KSP {
 };
 
 typedef struct {
-  PetscTruth initialrtol;    /* default relative residual decrease is computing from initial residual, not rhs */
-  PetscTruth mininitialrtol; /* default relative residual decrease is computing from min of initial residual and rhs */
+  PetscBool  initialrtol;    /* default relative residual decrease is computing from initial residual, not rhs */
+  PetscBool  mininitialrtol; /* default relative residual decrease is computing from min of initial residual and rhs */
   Vec        work;
 } KSPDefaultConvergedCtx;
 

@@ -50,7 +50,7 @@ typedef struct {
   PetscScalar       *rhs_dup;
 
   /* Flag to clean up (non-global) SuperLU objects during Destroy */
-  PetscTruth CleanUpSuperLU;
+  PetscBool  CleanUpSuperLU;
 } Mat_SuperLU;
 
 extern PetscErrorCode MatFactorInfo_SuperLU(Mat,PetscViewer);
@@ -243,7 +243,7 @@ PetscErrorCode MatDestroy_SuperLU(Mat A)
 PetscErrorCode MatView_SuperLU(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
-  PetscTruth        iascii;
+  PetscBool         iascii;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -447,7 +447,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
   Mat_SuperLU    *lu;
   PetscErrorCode ierr;
   PetscInt       indx,m=A->rmap->n,n=A->cmap->n;  
-  PetscTruth     flg;
+  PetscBool      flg;
   const char     *colperm[]={"NATURAL","MMD_ATA","MMD_AT_PLUS_A","COLAMD"}; /* MY_PERMC - not supported by the petsc interface yet */
   const char     *iterrefine[]={"NOREFINE", "SINGLE", "DOUBLE", "EXTRA"};
   const char     *rowperm[]={"NOROWPERM", "LargeDiag"}; /* MY_PERMC - not supported by the petsc interface yet */
@@ -512,23 +512,23 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
   lu->lwork = 0;   /* allocate space internally by system malloc */
 
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"SuperLU Options","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_superlu_equil","Equil","None",(PetscTruth)lu->options.Equil,(PetscTruth*)&lu->options.Equil,0);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_superlu_equil","Equil","None",(PetscBool )lu->options.Equil,(PetscBool *)&lu->options.Equil,0);CHKERRQ(ierr);
     ierr = PetscOptionsEList("-mat_superlu_colperm","ColPerm","None",colperm,4,colperm[3],&indx,&flg);CHKERRQ(ierr);
     if (flg) {lu->options.ColPerm = (colperm_t)indx;}
     ierr = PetscOptionsEList("-mat_superlu_iterrefine","IterRefine","None",iterrefine,4,iterrefine[0],&indx,&flg);CHKERRQ(ierr);
     if (flg) { lu->options.IterRefine = (IterRefine_t)indx;}
-    ierr = PetscOptionsTruth("-mat_superlu_symmetricmode","SymmetricMode","None",(PetscTruth)lu->options.SymmetricMode,&flg,0);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_superlu_symmetricmode","SymmetricMode","None",(PetscBool )lu->options.SymmetricMode,&flg,0);CHKERRQ(ierr);
     if (flg) lu->options.SymmetricMode = YES; 
     ierr = PetscOptionsReal("-mat_superlu_diagpivotthresh","DiagPivotThresh","None",lu->options.DiagPivotThresh,&lu->options.DiagPivotThresh,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_superlu_pivotgrowth","PivotGrowth","None",(PetscTruth)lu->options.PivotGrowth,&flg,0);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_superlu_pivotgrowth","PivotGrowth","None",(PetscBool )lu->options.PivotGrowth,&flg,0);CHKERRQ(ierr);
     if (flg) lu->options.PivotGrowth = YES;
-    ierr = PetscOptionsTruth("-mat_superlu_conditionnumber","ConditionNumber","None",(PetscTruth)lu->options.ConditionNumber,&flg,0);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_superlu_conditionnumber","ConditionNumber","None",(PetscBool )lu->options.ConditionNumber,&flg,0);CHKERRQ(ierr);
     if (flg) lu->options.ConditionNumber = YES;
     ierr = PetscOptionsEList("-mat_superlu_rowperm","rowperm","None",rowperm,2,rowperm[0],&indx,&flg);CHKERRQ(ierr);
     if (flg) {lu->options.RowPerm = (rowperm_t)indx;}
-    ierr = PetscOptionsTruth("-mat_superlu_replacetinypivot","ReplaceTinyPivot","None",(PetscTruth)lu->options.ReplaceTinyPivot,&flg,0);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_superlu_replacetinypivot","ReplaceTinyPivot","None",(PetscBool )lu->options.ReplaceTinyPivot,&flg,0);CHKERRQ(ierr);
     if (flg) lu->options.ReplaceTinyPivot = YES; 
-    ierr = PetscOptionsTruth("-mat_superlu_printstat","PrintStat","None",(PetscTruth)lu->options.PrintStat,&flg,0);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_superlu_printstat","PrintStat","None",(PetscBool )lu->options.PrintStat,&flg,0);CHKERRQ(ierr);
     if (flg) lu->options.PrintStat = YES; 
     ierr = PetscOptionsInt("-mat_superlu_lwork","size of work array in bytes used by factorization","None",lu->lwork,&lu->lwork,PETSC_NULL);CHKERRQ(ierr); 
     if (lu->lwork > 0 ){

@@ -87,7 +87,7 @@ EXTERN_C_END
 /* ===========================================================================================*/
 
 PetscFList MatPartitioningList = 0;
-PetscTruth MatPartitioningRegisterAllCalled = PETSC_FALSE;
+PetscBool  MatPartitioningRegisterAllCalled = PETSC_FALSE;
 
 
 #undef __FUNCT__  
@@ -217,7 +217,7 @@ $    -mat_partitioning_view
 PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningApply(MatPartitioning matp,IS *partitioning)
 {
   PetscErrorCode ierr;
-  PetscTruth     flag = PETSC_FALSE;
+  PetscBool      flag = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
@@ -445,7 +445,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate(MPI_Comm comm,MatPartiti
 PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningView(MatPartitioning part,PetscViewer viewer)
 {
   PetscErrorCode            ierr;
-  PetscTruth                iascii;
+  PetscBool                 iascii;
   const MatPartitioningType name;
 
   PetscFunctionBegin;
@@ -502,7 +502,7 @@ $      (for instance, parmetis)
 PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning part,const MatPartitioningType type)
 {
   PetscErrorCode ierr,(*r)(MatPartitioning);
-  PetscTruth match;
+  PetscBool  match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
@@ -553,7 +553,7 @@ $      (for instance, parmetis)
 PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetFromOptions(MatPartitioning part)
 {
   PetscErrorCode ierr;
-  PetscTruth flag;
+  PetscBool  flag;
   char       type[256];
   const char *def;
 

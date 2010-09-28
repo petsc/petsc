@@ -213,7 +213,7 @@ PetscErrorCode ReadMesh(MPI_Comm comm, PFLOTRANMesh *data, Options *options)
 PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
 {
   Mesh           mesh;
-  PetscTruth     view;
+  PetscBool      view;
   PetscMPIInt    size;
   PetscErrorCode ierr;
 

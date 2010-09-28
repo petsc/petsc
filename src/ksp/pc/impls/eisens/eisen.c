@@ -12,7 +12,7 @@ typedef struct {
   Mat        shell,A;
   Vec        b,diag;     /* temporary storage for true right hand side */
   PetscReal  omega;
-  PetscTruth usediag;    /* indicates preconditioner should include diagonal scaling*/
+  PetscBool  usediag;    /* indicates preconditioner should include diagonal scaling*/
 } PC_Eisenstat;
 
 
@@ -37,7 +37,7 @@ static PetscErrorCode PCApply_Eisenstat(PC pc,Vec x,Vec y)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth     hasop;
+  PetscBool      hasop;
 
   PetscFunctionBegin;
   if (eis->usediag)  {
@@ -56,7 +56,7 @@ static PetscErrorCode PCApply_Eisenstat(PC pc,Vec x,Vec y)
 static PetscErrorCode PCPreSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
-  PetscTruth     nonzero;
+  PetscBool      nonzero;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -126,7 +126,7 @@ static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data; 
   PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Eisenstat SSOR options");CHKERRQ(ierr);
@@ -145,7 +145,7 @@ static PetscErrorCode PCView_Eisenstat(PC pc,PetscViewer viewer)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data; 
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);

@@ -3,7 +3,7 @@
 #include "../src/sys/random/randomimpl.h"         /*I "petscsys.h" I*/
 
 PetscFList PetscRandomList              = PETSC_NULL;
-PetscTruth PetscRandomRegisterAllCalled = PETSC_FALSE;
+PetscBool  PetscRandomRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomSetType"
@@ -32,7 +32,7 @@ PetscTruth PetscRandomRegisterAllCalled = PETSC_FALSE;
 PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomSetType(PetscRandom rnd, const PetscRandomType type)
 {
   PetscErrorCode (*r)(PetscRandom);
-  PetscTruth     match;
+  PetscBool      match;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

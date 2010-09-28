@@ -102,9 +102,9 @@ namespace ALE {
       LaplaceBEMOptions *getOptions() {return &this->_options;};
       int  dim() const {return this->_options.dim;};
       bool structured() const {return this->_options.structured;};
-      void structured(const bool s) {this->_options.structured = (PetscTruth) s;};
+      void structured(const bool s) {this->_options.structured = (PetscBool ) s;};
       bool interpolated() const {return this->_options.interpolate;};
-      void interpolated(const bool i) {this->_options.interpolate = (PetscTruth) i;};
+      void interpolated(const bool i) {this->_options.interpolate = (PetscBool ) i;};
       BCType bcType() const {return this->_options.bcType;};
       void bcType(const BCType bc) {this->_options.bcType = bc;};
       AssemblyType opAssembly() const {return this->_options.operatorAssembly;};
@@ -117,7 +117,7 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "CreateMesh"
       PetscErrorCode createMesh() {
-        PetscTruth     view;
+        PetscBool      view;
         PetscErrorCode ierr;
 
         PetscFunctionBegin;
@@ -193,7 +193,7 @@ namespace ALE {
         if (_options.refinementLimit > 0.0) {
           ::Mesh refinedMesh;
 
-          ierr = MeshRefine((::Mesh) this->_dm, _options.refinementLimit, (PetscTruth) interpolated(), &refinedMesh);CHKERRQ(ierr);
+          ierr = MeshRefine((::Mesh) this->_dm, _options.refinementLimit, (PetscBool ) interpolated(), &refinedMesh);CHKERRQ(ierr);
           ierr = MeshDestroy((::Mesh) this->_dm);CHKERRQ(ierr);
           this->_dm = (DM) refinedMesh;
           ierr = MeshGetMesh((::Mesh) this->_dm, this->_mesh);CHKERRQ(ierr);
@@ -352,7 +352,7 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "CreateExactSolution"
       PetscErrorCode createExactSolution() {
-        PetscTruth     flag;
+        PetscBool      flag;
         PetscErrorCode ierr;
 
         PetscFunctionBegin;
@@ -484,7 +484,7 @@ namespace ALE {
         // Report on solve
         SNES                snes = DMMGGetSNES(this->_dmmg);
         PetscInt            its;
-        PetscTruth          flag;
+        PetscBool           flag;
         SNESConvergedReason reason;
 
         ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
@@ -657,7 +657,7 @@ namespace ALE {
       PetscErrorCode checkResidual(ALE::Problem::ExactSolType sol) {
         const char    *name;
         PetscScalar    norm;
-        PetscTruth     flag;
+        PetscBool      flag;
         PetscErrorCode ierr;
 
         PetscFunctionBegin;

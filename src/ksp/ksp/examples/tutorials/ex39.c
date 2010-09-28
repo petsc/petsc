@@ -14,7 +14,7 @@ PetscErrorCode computeMaxEigVal(Mat A, PetscInt its, PetscScalar *eig);
 #define __FUNCT__ "main"
 int main(int Argc,char **Args)
 {
-  PetscTruth      flg;
+  PetscBool       flg;
   PetscInt        n = -6;
   PetscScalar     rho = 1.0;
   PetscReal       h;

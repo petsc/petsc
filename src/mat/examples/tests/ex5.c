@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscInt       i,j,m = 8,n,rstart,rend,vstart,vend;
   PetscScalar    one = 1.0,negone = -1.0,v,alpha=0.1;
   PetscReal      norm;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);

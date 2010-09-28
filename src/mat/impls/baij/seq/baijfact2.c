@@ -5567,7 +5567,7 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 /* ----------------------------------------------------------------*/
-EXTERN PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat,Mat,MatDuplicateOption,PetscTruth);
+EXTERN PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat,Mat,MatDuplicateOption,PetscBool );
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering"
@@ -5690,7 +5690,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
   MatScalar      *rtmp,*pc,*mwork,*v,*pv,*aa=a->a;
   PetscInt       bs=A->rmap->bs,bs2 = a->bs2,*v_pivots,flg;
   MatScalar      *v_work;
-  PetscTruth     col_identity,row_identity,both_identity;
+  PetscBool      col_identity,row_identity,both_identity;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -5778,7 +5778,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
 
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(isicol,&col_identity);CHKERRQ(ierr);
-  both_identity = (PetscTruth) (row_identity && col_identity);
+  both_identity = (PetscBool ) (row_identity && col_identity);
   if (both_identity){
     C->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering;
   } else {
@@ -5869,14 +5869,14 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
   PetscInt           *bi,*cols,nnz,*cols_lvl;
   PetscInt           *bdiag,prow,fm,nzbd,reallocs=0,dcount=0;
   PetscInt           i,levels,diagonal_fill;
-  PetscTruth         col_identity,row_identity,both_identity;
+  PetscBool          col_identity,row_identity,both_identity;
   PetscReal          f;
   PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL;
   PetscBT            lnkbt;
   PetscInt           nzi,*bj,**bj_ptr,**bjlvl_ptr; 
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL; 
   PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL; 
-  PetscTruth         missing;
+  PetscBool          missing;
   PetscInt           bs=A->rmap->bs,bs2=a->bs2;
 
   PetscFunctionBegin;
@@ -5896,7 +5896,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
 
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
-  both_identity = (PetscTruth) (row_identity && col_identity);
+  both_identity = (PetscBool ) (row_identity && col_identity);
   
   if (!levels && both_identity) { 
     /* special case: ilu(0) with natural ordering */
@@ -6071,7 +6071,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
   PetscInt       prow,n = a->mbs,*ainew,*ajnew,jmax,*fill,nz,*im,*ajfill,*flev,*xitmp;
   PetscInt       *dloc,idx,row,m,fm,nzf,nzi,reallocate = 0,dcount = 0;
   PetscInt       incrlev,nnz,i,bs = A->rmap->bs,bs2 = a->bs2,levels,diagonal_fill,dd;
-  PetscTruth     col_identity,row_identity,both_identity,flg;
+  PetscBool      col_identity,row_identity,both_identity,flg;
   PetscReal      f;
 
   PetscFunctionBegin;
@@ -6085,7 +6085,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
 
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
-  both_identity = (PetscTruth) (row_identity && col_identity);
+  both_identity = (PetscBool ) (row_identity && col_identity);
 
   if (!levels && both_identity) {  /* special case copy the nonzero structure */  
     ierr = MatDuplicateNoCreate_SeqBAIJ(fact,A,MAT_DO_NOT_COPY_VALUES,PETSC_TRUE);CHKERRQ(ierr);

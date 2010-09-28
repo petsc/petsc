@@ -24,10 +24,10 @@ using ALE::Obj;
 typedef struct {
   PetscInt   debug;           // The debugging level
   PetscInt   dim;             // The topological mesh dimension
-  PetscTruth interpolate;     // Construct intermediate mesh elements
+  PetscBool  interpolate;     // Construct intermediate mesh elements
   PetscReal  refinementLimit; // The area of the largest triangle in the mesh
   PetscReal  refinementExp;   // The exponent of the radius for refinement
-  PetscTruth viewDielectric;  // View the dielectric constant as a field
+  PetscBool  viewDielectric;  // View the dielectric constant as a field
 } Options;
 
 double refineLimit(const double [], void *);
@@ -437,7 +437,7 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *boundary, Options *option
 PetscErrorCode CreateMesh(MPI_Comm comm, Mesh *mesh, Options *options)
 {
   Mesh           boundary;
-  PetscTruth     view;
+  PetscBool      view;
   PetscMPIInt    size;
   PetscErrorCode ierr;
 

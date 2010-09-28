@@ -36,7 +36,7 @@ static PetscErrorCode MatPartitioningApply_Jostle(MatPartitioning part, IS * par
     Mat mat = part->adj, matMPI;
     Mat_MPIAdj *adj = (Mat_MPIAdj *) mat->data;
     MatPartitioning_Jostle *jostle_struct = (MatPartitioning_Jostle *) part->data;
-    PetscTruth flg;
+    PetscBool  flg;
 #ifdef PETSC_HAVE_UNISTD_H
     int fd_stdout, fd_pipe[2], count,err;
 #endif
@@ -161,7 +161,7 @@ PetscErrorCode MatPartitioningView_Jostle(MatPartitioning part, PetscViewer view
 {
   MatPartitioning_Jostle *jostle_struct = (MatPartitioning_Jostle *) part->data;
   PetscErrorCode         ierr;
-  PetscTruth             iascii;
+  PetscBool              iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
@@ -224,7 +224,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningJostleSetCoarseSequential(MatPa
 PetscErrorCode MatPartitioningSetFromOptions_Jostle(MatPartitioning part)
 {
     PetscErrorCode ierr;
-    PetscTruth     flag = PETSC_FALSE;
+    PetscBool      flag = PETSC_FALSE;
     PetscReal      level;
 
     PetscFunctionBegin;

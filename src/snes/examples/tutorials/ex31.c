@@ -96,7 +96,7 @@ int main(int argc,char **argv)
   AppCtx         app;
   PC             pc;
   KSP            ksp;
-  PetscTruth     isshell;
+  PetscBool      isshell;
   PetscViewer    v1;
 
   PetscInitialize(&argc,&argv,(char *)0,help);

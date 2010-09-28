@@ -36,7 +36,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   int                      wgtflag=0, numflag=0, ncon=1, nparts=part->n, options[3],  i,j;
   Mat                      mat = part->adj;
   Mat_MPIAdj               *adj = (Mat_MPIAdj *)mat->data;
-  PetscTruth               flg;
+  PetscBool                flg;
   float                    *tpwgts,*ubvec;
   PetscInt                 bs = 1,nold;
 
@@ -126,7 +126,7 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer vie
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *)part->data;
   PetscErrorCode ierr;
   int rank;
-  PetscTruth               iascii;
+  PetscBool                iascii;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)part)->comm,&rank);CHKERRQ(ierr);
@@ -198,7 +198,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningParmetisGetEdgeCut(MatPartition
 PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
 {
   PetscErrorCode ierr;
-  PetscTruth     flag = PETSC_FALSE;
+  PetscBool      flag = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Set ParMeTiS partitioning options");CHKERRQ(ierr);
@@ -346,7 +346,7 @@ PetscErrorCode MatMeshToCellGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
   int                      *newxadj,*newadjncy;
   int                      numflag=0;
   Mat_MPIAdj               *adj = (Mat_MPIAdj *)mesh->data,*newadj;
-  PetscTruth               flg;
+  PetscBool                flg;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)mesh,MATMPIADJ,&flg);CHKERRQ(ierr);

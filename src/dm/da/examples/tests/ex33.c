@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscInt       N = 6,M=8,P=5,dof=1;
   PetscInt       stencil_width=1,pt=0,st=0;
   PetscErrorCode ierr;
-  PetscTruth     flg2,flg3,isbinary,mpiio;
+  PetscBool      flg2,flg3,isbinary,mpiio;
   DAPeriodicType periodic = DA_NONPERIODIC;
   DAStencilType  stencil_type = DA_STENCIL_STAR;
   DA             da,da2;
@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   PetscViewer    viewer;
   PetscRandom    rdm;
 #if defined(PETSC_HAVE_HDF5)
-  PetscTruth     ishdf5;
+  PetscBool      ishdf5;
 #endif
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 

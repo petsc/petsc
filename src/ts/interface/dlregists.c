@@ -2,7 +2,7 @@
 
 #include "private/tsimpl.h"
 
-static PetscTruth TSPackageInitialized = PETSC_FALSE;
+static PetscBool  TSPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "TSFinalizePackage"
 /*@C
@@ -42,7 +42,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
-  PetscTruth        opt;
+  PetscBool         opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;

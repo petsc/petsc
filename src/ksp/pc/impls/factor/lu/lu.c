@@ -29,7 +29,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetReuseOrdering_LU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering_LU(PC pc,PetscTruth flag)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering_LU(PC pc,PetscBool  flag)
 {
   PC_LU *lu = (PC_LU*)pc->data;
 
@@ -42,7 +42,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetReuseFill_LU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill_LU(PC pc,PetscTruth flag)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill_LU(PC pc,PetscBool  flag)
 {
   PC_LU *lu = (PC_LU*)pc->data;
 
@@ -58,7 +58,7 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
 {
   PC_LU           *lu = (PC_LU*)pc->data;
   PetscErrorCode  ierr;
-  PetscTruth      flg = PETSC_FALSE;
+  PetscBool       flg = PETSC_FALSE;
   PetscReal       tol;
 
   PetscFunctionBegin;
@@ -81,7 +81,7 @@ static PetscErrorCode PCView_LU(PC pc,PetscViewer viewer)
 {
   PC_LU          *lu = (PC_LU*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);

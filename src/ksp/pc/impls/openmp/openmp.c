@@ -13,7 +13,7 @@ typedef struct {
   Mat          gmat;                 /* matrix known only to process 0 in the local world */
   Vec          x,y,xdummy,ydummy;
   VecScatter   scatter;
-  PetscTruth   nonzero_guess; 
+  PetscBool    nonzero_guess; 
 } PC_OpenMP;
 
 
@@ -47,7 +47,7 @@ static PetscErrorCode PCView_OpenMP(PC pc,PetscViewer viewer)
   PC_OpenMP      *red = (PC_OpenMP*)pc->data;
   PetscMPIInt    size;
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
 

@@ -61,7 +61,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PCRichardsonCo
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_MG"
-static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscTruth zeroguess,PetscInt *outits,PCRichardsonConvergedReason *reason)
+static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool  zeroguess,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
@@ -316,7 +316,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       m,levels = 1,cycles;
-  PetscTruth     flg;
+  PetscBool      flg;
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
   PCMGType       mgtype;
@@ -393,7 +393,7 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   PC_MG_Levels   **mglevels = mg->levels;
   PetscErrorCode ierr;
   PetscInt       levels = mglevels[0]->levels,i;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -443,7 +443,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   PetscErrorCode          ierr;
   PetscInt                i,n = mglevels[0]->levels;
   PC                      cpc,mpc;
-  PetscTruth              preonly,lu,redundant,cholesky,monitor = PETSC_FALSE,dump = PETSC_FALSE,opsset;
+  PetscBool               preonly,lu,redundant,cholesky,monitor = PETSC_FALSE,dump = PETSC_FALSE,opsset;
   PetscViewerASCIIMonitor ascii;
   PetscViewer             viewer = PETSC_NULL;
   MPI_Comm                comm;
@@ -599,7 +599,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (mglevels[i]->smoothu && mglevels[i]->smoothu != mglevels[i]->smoothd) {
       Mat          downmat,downpmat;
       MatStructure matflag;
-      PetscTruth   opsset;
+      PetscBool    opsset;
 
       /* check if operators have been set for up, if not use down operators to set them */
       ierr = KSPGetOperatorsSet(mglevels[i]->smoothu,&opsset,PETSC_NULL);CHKERRQ(ierr);
@@ -875,7 +875,7 @@ $  -pc_mg_galerkin
 .seealso: PCMGSetGalerkin()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetGalerkin(PC pc,PetscTruth *galerkin)
+PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetGalerkin(PC pc,PetscBool  *galerkin)
 { 
   PC_MG        *mg = (PC_MG*)pc->data;
 

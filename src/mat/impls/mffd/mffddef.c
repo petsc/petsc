@@ -63,7 +63,7 @@ typedef struct {
 .  h - the scale computed
 
 */
-static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,PetscTruth *zeroa)
+static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,PetscBool  *zeroa)
 {
   MatMFFD_DS      *hctx = (MatMFFD_DS*)ctx->hctx;
   PetscReal        nrm,sum,umin = hctx->umin;
@@ -125,7 +125,7 @@ static PetscErrorCode MatMFFDView_DS(MatMFFD ctx,PetscViewer viewer)
 {
   MatMFFD_DS       *hctx = (MatMFFD_DS *)ctx->hctx;
   PetscErrorCode   ierr;
-  PetscTruth       iascii;
+  PetscBool        iascii;
 
   PetscFunctionBegin;
   /*

@@ -17,7 +17,7 @@
 */
 static char       Debugger[PETSC_MAX_PATH_LEN];
 static char       DebugTerminal[PETSC_MAX_PATH_LEN];
-static PetscTruth Xterm = PETSC_TRUE;
+static PetscBool  Xterm = PETSC_TRUE;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSetDebugTerminal"
@@ -84,7 +84,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDebugTerminal(const char terminal[])
 
 .seealso: PetscAttachDebugger(), PetscAttachDebuggerErrorHandler()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDebugger(const char debugger[],PetscTruth xterm)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDebugger(const char debugger[],PetscBool  xterm)
 {
   PetscErrorCode ierr;
 
@@ -129,7 +129,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDefaultDebugger(void)
 #define __FUNCT__ "PetscCheckDebugger_Private"
 static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const char string[], const char *debugger[])
 {
-  PetscTruth     exists;
+  PetscBool      exists;
   char           *f;
   PetscErrorCode ierr;
 
@@ -161,7 +161,7 @@ static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const 
 PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDebuggerFromString(char *string)
 {
   const char     *debugger = PETSC_NULL;
-  PetscTruth     xterm    = PETSC_TRUE;
+  PetscBool      xterm    = PETSC_TRUE;
   char           *f;
   PetscErrorCode ierr;
 
@@ -247,7 +247,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscAttachDebugger(void)
     const char *args[10];
     char       pid[10];
     PetscInt   j,jj;
-    PetscTruth isdbx,isidb,isxldb,isxxgdb,isups,isxdb,isworkshop,isddd,iskdbg;
+    PetscBool  isdbx,isidb,isxldb,isxxgdb,isups,isxdb,isworkshop,isddd,iskdbg;
 
     ierr = PetscGetHostName(hostname,64);CHKERRQ(ierr);
     /*
@@ -304,7 +304,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscAttachDebugger(void)
     } else {
       j = 0;
       if (Xterm) {
-        PetscTruth cmp;
+        PetscBool  cmp;
         char *tmp,*tmp1;
         ierr = PetscStrncmp(DebugTerminal,"screen",6,&cmp);CHKERRQ(ierr);
         if (cmp) display[0] = 0; /* when using screen, we never pass -display */
@@ -505,7 +505,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscStopForDebugger(void)
   int            ppid;
   PetscMPIInt    rank;
   char           program[PETSC_MAX_PATH_LEN],hostname[256];
-  PetscTruth     isdbx,isxldb,isxxgdb,isddd,iskdbg,isups,isxdb;
+  PetscBool      isdbx,isxldb,isxxgdb,isddd,iskdbg,isups,isxdb;
 #endif
 
   PetscFunctionBegin;

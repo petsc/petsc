@@ -6,7 +6,7 @@
 
 PetscClassId PETSC_DRAW_CLASSID;
 
-static PetscTruth PetscDrawPackageInitialized = PETSC_FALSE;
+static PetscBool  PetscDrawPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawFinalizePackage"
 /*@C
@@ -45,7 +45,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
-  PetscTruth        opt;
+  PetscBool         opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;

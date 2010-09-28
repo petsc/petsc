@@ -15,7 +15,7 @@ struct SH {
   struct SH*     previous;
 };
 static struct SH* sh        = 0;
-static PetscTruth SignalSet = PETSC_FALSE;
+static PetscBool  SignalSet = PETSC_FALSE;
 
 
 

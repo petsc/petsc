@@ -48,7 +48,7 @@ typedef struct {
   //  DA        da;             /* distributed array data structure */
    PetscReal alpha;          /* parameter controlling linearity */
    PetscReal lambda;         /* parameter controlling nonlinearity */
-  PetscTruth     draw_contours;                /* flag - 1 indicates drawing contours */
+  PetscBool      draw_contours;                /* flag - 1 indicates drawing contours */
 } AppCtx;
 
 

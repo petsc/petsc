@@ -212,9 +212,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscInt       i,dof = da->w;
-  PetscTruth     iascii,fieldsnamed = PETSC_FALSE,isbinary;
+  PetscBool      iascii,fieldsnamed = PETSC_FALSE,isbinary;
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  PetscTruth     ismatlab;
+  PetscBool      ismatlab;
 #endif
 
   PetscFunctionBegin;

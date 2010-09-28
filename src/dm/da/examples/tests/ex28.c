@@ -30,7 +30,7 @@ PetscInt main(PetscInt argc,char **args)
   PetscInt       func;
   FuncType       function = TANH;
   DA             da, da1, coordsda;
-  PetscTruth     view_x = PETSC_FALSE, view_y = PETSC_FALSE, view_z = PETSC_FALSE;
+  PetscBool      view_x = PETSC_FALSE, view_y = PETSC_FALSE, view_z = PETSC_FALSE;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);

@@ -42,7 +42,7 @@
       PetscInt Istart,Iend
       PetscInt nsteps,one
       PetscErrorCode ierr
-      PetscTruth flg
+      PetscBool  flg
       PetscScalar  v
       
 
@@ -174,7 +174,7 @@
 ! Use common block to retain matrix between successive subroutine calls
       Mat              A2
       PetscMPIInt      rank
-      PetscTruth       pflag
+      PetscBool        pflag
       common /my_data/ A2,pflag,rank
 
       one = 1

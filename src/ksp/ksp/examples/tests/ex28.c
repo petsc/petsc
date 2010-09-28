@@ -21,7 +21,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,n = 10,col[3],its,rstart,rend,nlocal;
   PetscScalar    neg_one = -1.0,one = 1.0,value[3];
-  PetscTruth     TEST_PROCEDURAL=PETSC_FALSE;
+  PetscBool      TEST_PROCEDURAL=PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

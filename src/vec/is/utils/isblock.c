@@ -99,7 +99,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt n,PetscInt bs
   PetscErrorCode ierr;
   PetscInt       i,j,k,val,len,*nidx,bbs;
   const PetscInt *idx,*idx_local;
-  PetscTruth     flg,isblock;
+  PetscBool      flg,isblock;
 #if defined (PETSC_USE_CTABLE)
   PetscInt       maxsz;
 #else

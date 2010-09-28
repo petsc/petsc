@@ -172,7 +172,7 @@ void petsc_lobpcg_solve_c_(
    int                        iterations;   /* number of iterations         */
    int                        n_eigs;       /* number of eigenvalues        */
    int                        i;
-   PetscTruth                 outpt=PETSC_FALSE; /* print evals and resids  */
+   PetscBool                  outpt=PETSC_FALSE; /* print evals and resids  */
    lobpcg_Tolerance           lobpcg_tol;   /* residual tolerance           */
    mv_InterfaceInterpreter    ii;           /* Interface Interpreter        */
    lobpcg_BLASLAPACKFunctions blap_fn;      /* BLAS functions               */

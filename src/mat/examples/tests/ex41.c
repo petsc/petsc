@@ -15,7 +15,7 @@ int main(int argc,char **args)
   PetscInt       nd = 2,ov=1,i,j,m,n,*idx,lsize;
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscTruth     flg;
+  PetscBool      flg;
   Mat            A,B;
   char           file[PETSC_MAX_PATH_LEN]; 
   PetscViewer    fd;

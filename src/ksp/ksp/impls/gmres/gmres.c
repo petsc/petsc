@@ -33,7 +33,7 @@
 #define GMRES_DELTA_DIRECTIONS 10
 #define GMRES_DEFAULT_MAXK     30
 static PetscErrorCode    GMRESGetNewVectors(KSP,PetscInt);
-static PetscErrorCode    GMRESUpdateHessenberg(KSP,PetscInt,PetscTruth,PetscReal*);
+static PetscErrorCode    GMRESUpdateHessenberg(KSP,PetscInt,PetscBool ,PetscReal*);
 static PetscErrorCode    BuildGmresSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
 
 #undef __FUNCT__
@@ -125,7 +125,7 @@ PetscErrorCode GMREScycle(PetscInt *itcount,KSP ksp)
   PetscReal      res_norm,res,hapbnd,tt;
   PetscErrorCode ierr;
   PetscInt       it = 0, max_k = gmres->max_k;
-  PetscTruth     hapend = PETSC_FALSE;
+  PetscBool      hapend = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr    = VecNormalize(VEC_VV(0),&res_norm);CHKERRQ(ierr);
@@ -220,7 +220,7 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
   PetscErrorCode ierr;
   PetscInt       its,itcount;
   KSP_GMRES      *gmres = (KSP_GMRES *)ksp->data;
-  PetscTruth     guess_zero = ksp->guess_zero;
+  PetscBool      guess_zero = ksp->guess_zero;
 
   PetscFunctionBegin;
   if (ksp->calc_sings && !gmres->Rsvd) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
@@ -361,7 +361,7 @@ static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,P
  */
 #undef __FUNCT__  
 #define __FUNCT__ "GMRESUpdateHessenberg"
-static PetscErrorCode GMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscTruth hapend,PetscReal *res)
+static PetscErrorCode GMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  hapend,PetscReal *res)
 {
   PetscScalar *hh,*cc,*ss,tt;
   PetscInt    j;
@@ -488,7 +488,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
   KSP_GMRES      *gmres = (KSP_GMRES *)ksp->data; 
   const char     *cstr;
   PetscErrorCode ierr;
-  PetscTruth     iascii,isstring;
+  PetscBool      iascii,isstring;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -569,7 +569,7 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp)
   PetscInt       restart;
   PetscReal      haptol;
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP GMRES Options");CHKERRQ(ierr);

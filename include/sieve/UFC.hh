@@ -190,19 +190,19 @@ namespace ALE {
 
   class boundary_condition {
   public:
-    PetscTruth (*_func)(PETSC_MESH_TYPE::point_type, const double *);
+    PetscBool  (*_func)(PETSC_MESH_TYPE::point_type, const double *);
     int marker;
     int cellmarker;
 
     boundary_condition(){};
-    boundary_condition (PetscTruth (*func)(PETSC_MESH_TYPE::point_type, const double *), int mark = 1, int cellmark = 2) {
+    boundary_condition (PetscBool  (*func)(PETSC_MESH_TYPE::point_type, const double *), int mark = 1, int cellmark = 2) {
       
     }
     void applyBC(Obj<PETSC_MESH_TYPE> m) {
     }
   };
   
-  PetscTruth Scalar_Dirichlet_Pred(PETSC_MESH_TYPE::point_type p, const double * coords) {
+  PetscBool  Scalar_Dirichlet_Pred(PETSC_MESH_TYPE::point_type p, const double * coords) {
     //set up the marker
     //if anything in the star of the thing has support size 1 but not height 0 then the thing's on the boundary! mark it!
     Obj<PETSC_MESH_TYPE::sieve_type::supportArray> star = 
@@ -1083,7 +1083,7 @@ void SetupField_UFC(ALE::Obj<PETSC_MESH_TYPE> m, const ALE::Obj<PETSC_MESH_TYPE:
  PetscErrorCode CreateExactSolution_UFC(Obj<PETSC_MESH_TYPE> m, Obj<PETSC_MESH_TYPE::real_section_type> s, ufc::form * form, PetscScalar (*exactSolution)(const double *))
  {
    const int      dim = m->getDimension();
-   //PetscTruth     flag;
+   //PetscBool      flag;
    //PetscErrorCode ierr;
    
    PetscFunctionBegin;

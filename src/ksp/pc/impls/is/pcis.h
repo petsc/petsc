@@ -45,9 +45,9 @@ typedef struct {
   VecScatter      global_to_D;    /* scattering context from global to local interior nodes */
   VecScatter      N_to_B     ;    /* scattering context from all local nodes to local interface nodes */
   VecScatter      global_to_B;    /* scattering context from global to local interface nodes */
-  PetscTruth      pure_neumann;
+  PetscBool       pure_neumann;
 
-  PetscTruth ISLocalToGlobalMappingGetInfoWasCalled;
+  PetscBool  ISLocalToGlobalMappingGetInfoWasCalled;
   PetscInt   n_neigh;    /* number of neighbours this subdomain has (by now, INCLUDING OR NOT the subdomain itself). */
                          /* Once this is definitively decided, the code can be simplifies and some if's eliminated.  */
   PetscInt   *neigh;     /* list of neighbouring subdomains                                                          */

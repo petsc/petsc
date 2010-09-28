@@ -15,16 +15,16 @@ typedef struct {
 typedef struct {
   PetscInt          nonew;            /* 1 don't add new nonzero blocks, -1 generate error on new */
   PetscInt          nounused;         /* -1 generate error on unused space */
-  PetscTruth        singlemalloc;     /* if true a, i, and j have been obtained with one big malloc */
+  PetscBool         singlemalloc;     /* if true a, i, and j have been obtained with one big malloc */
   PetscInt          maxnz;            /* allocated nonzeros */
   PetscInt          *imax;            /* maximum space allocated for each row */
   PetscInt          *ilen;            /* actual length of each row */
-  PetscTruth        free_imax_ilen;  
+  PetscBool         free_imax_ilen;  
   PetscInt          reallocs;         /* number of mallocs done during MatDDAddBlock()
                                         as more blocks are set than were prealloced */
   PetscInt          rmax;             /* max nonzeros in any row */\
-  PetscTruth        free_ij;          /* free the column indices j and row offsets i when the matrix is destroyed */ \
-  PetscTruth        free_a;           /* free the numerical values when matrix is destroy */ 
+  PetscBool         free_ij;          /* free the column indices j and row offsets i when the matrix is destroyed */ \
+  PetscBool         free_a;           /* free the numerical values when matrix is destroy */ 
   PetscInt          nz;               /* nonzero blocks */                                       
   PetscInt          *i;               /* pointer to beginning of each row */               
   PetscInt          *j;               /* column values: j + i[k] - 1 is start of row k */  
@@ -79,7 +79,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatDDXAIJFreeAIJ(Mat AAA, Mat_DDBlock **a,Pet
   PetscInt *AI = ai, *AJ = aj, *RP = j_row_pointer;\
   Mat_DDBlock *AP = a_row_pointer;\
   PetscInt *AIMAX = allocated_row_lengths;\
-  PetscTruth NONEW=(no_new_block_flag) ? PETSC_TRUE: PETSC_FALSE;	\
+  PetscBool  NONEW=(no_new_block_flag) ? PETSC_TRUE: PETSC_FALSE;	\
   if (NROW >= RMAX) {\
         /* there is no extra room in row, therefore enlarge */ \
         PetscInt   new_nz = AI[AM] + CHUNKSIZE,len,*new_i=0,*new_j=0; \

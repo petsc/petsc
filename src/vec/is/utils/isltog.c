@@ -54,7 +54,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingView(ISLocalToGlobalMapp
 {
   PetscInt        i;
   PetscMPIInt     rank;
-  PetscTruth      iascii;
+  PetscBool       iascii;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -528,7 +528,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetInfo(ISLocalToGlobalM
   MPI_Request    *recv_waits,*send_waits;
   MPI_Status     recv_status,*send_status,*recv_statuses;
   MPI_Comm       comm = ((PetscObject)mapping)->comm;
-  PetscTruth     debug = PETSC_FALSE;
+  PetscBool      debug = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);

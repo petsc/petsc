@@ -71,7 +71,7 @@ typedef struct {
   Vec         solution;          /* global exact solution vector */
   PetscInt    m;                 /* total number of grid points */
   PetscReal   h;                 /* mesh width h = 1/(m-1) */
-  PetscTruth  debug;             /* flag (1 indicates activation of debugging printouts) */
+  PetscBool   debug;             /* flag (1 indicates activation of debugging printouts) */
   PetscViewer viewer1, viewer2;  /* viewers for the solution and error */
   PetscReal   norm_2, norm_max;  /* error norms */
 } AppCtx;
@@ -101,7 +101,7 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
   PetscReal      dt;
   PetscReal      ftime;
-  PetscTruth     flg;
+  PetscBool      flg;
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -369,7 +369,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal crtime,Vec u,void *ctx)
   AppCtx         *appctx = (AppCtx*) ctx;   /* user-defined application context */
   PetscErrorCode ierr;
   PetscReal      norm_2, norm_max, dt, dttol;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   /* 
      View a graph of the current iterate

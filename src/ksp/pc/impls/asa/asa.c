@@ -52,7 +52,7 @@
 
 PetscLogEvent PC_InitializationStage_ASA, PC_GeneralSetupStage_ASA;
 PetscLogEvent PC_CreateTransferOp_ASA, PC_CreateVcycle_ASA;
-PetscTruth asa_events_registered = PETSC_FALSE;
+PetscBool  asa_events_registered = PETSC_FALSE;
 
 
 #undef __FUNCT__  
@@ -237,7 +237,7 @@ PetscErrorCode SafeVecDestroy(Vec *v)
 PetscErrorCode PrintResNorm(Mat A, Vec x, Vec b, Vec r)
 {
   PetscErrorCode ierr;
-  PetscTruth     destroyr = PETSC_FALSE;
+  PetscBool      destroyr = PETSC_FALSE;
   PetscReal      resnorm;
   MPI_Comm       Acomm;
 
@@ -355,7 +355,7 @@ PetscErrorCode PCComputeSpectralRadius_ASA(PC_ASA_level *asa_lev)
 PetscErrorCode PCSetRichardsonScale_ASA(KSP ksp, PetscReal spec_rad, PetscReal richardson_scale) {
   PetscErrorCode ierr;
   PC             pc;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscReal      spec_rad_inv;
 
   PetscFunctionBegin;
@@ -407,7 +407,7 @@ PetscErrorCode PCSetSORomega_ASA(PC pc, PetscReal sor_omega)
 PetscErrorCode PCSetupSmoothersOnLevel_ASA(PC_ASA *asa, PC_ASA_level *asa_lev, PetscInt maxits)
 {
   PetscErrorCode    ierr;
-  PetscTruth        flg;
+  PetscBool         flg;
   PC                pc;
 
   PetscFunctionBegin;
@@ -465,7 +465,7 @@ PetscErrorCode PCSetupSmoothersOnLevel_ASA(PC_ASA *asa, PC_ASA_level *asa_lev, P
 PetscErrorCode PCSetupDirectSolversOnLevel_ASA(PC_ASA *asa, PC_ASA_level *asa_lev, PetscInt maxits)
 {
   PetscErrorCode    ierr;
-  PetscTruth        flg;
+  PetscBool         flg;
   PetscMPIInt       comm_size;
   PC                pc;
 
@@ -571,7 +571,7 @@ PetscErrorCode PCCreateAggregates_ASA(PC_ASA_level *asa_lev)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCCreateTransferOp_ASA"
-PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construct_bridge)
+PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscBool  construct_bridge)
 {
   PetscErrorCode ierr;
 
@@ -1079,8 +1079,8 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
   PetscScalar    tmp;
   PetscReal      prevnorm, norm;
 
-  PetscTruth     skip_steps_f_i = PETSC_FALSE;
-  PetscTruth     sufficiently_coarsened = PETSC_FALSE;
+  PetscBool      skip_steps_f_i = PETSC_FALSE;
+  PetscBool      sufficiently_coarsened = PETSC_FALSE;
 
   PetscInt       vec_size, vec_loc_size;
   PetscInt       loc_vec_low, loc_vec_high;
@@ -1091,7 +1091,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
   Mat            AI;
 
   Vec            cand_vec, cand_vec_new;
-  PetscTruth     isrichardson;
+  PetscBool      isrichardson;
   PC             coarse_pc;
 
   PetscFunctionBegin;
@@ -1379,7 +1379,7 @@ PetscErrorCode PCApplyVcycleOnLevel_ASA(PC_ASA_level *asa_lev, PetscInt gamma)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCGeneralSetupStage_ASA"
-PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscTruth *cand_added)
+PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_added)
 {
   PetscErrorCode ierr;
   PC_ASA_level   *asa_lev, *asa_next_lev;
@@ -1387,7 +1387,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscTruth *cand_a
   PetscRandom    rctx;     /* random number generator context */
   PetscReal      r;
   PetscScalar    rs;
-  PetscTruth     nd_fast;
+  PetscBool      nd_fast;
 
   Vec            ax;
   PetscScalar    tmp;
@@ -1397,7 +1397,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscTruth *cand_a
   PetscInt       loc_vec_low, loc_vec_high;
   PetscInt       i;
 
-  PetscTruth     skip_steps_d_j = PETSC_FALSE;
+  PetscBool      skip_steps_d_j = PETSC_FALSE;
 
   PetscInt       *idxm, *idxn;
   PetscScalar    *v;
@@ -1634,11 +1634,11 @@ PetscErrorCode PCConstructMultigrid_ASA(PC pc)
   PC_ASA_level   *asa_lev;
   PetscInt       i, ls, le;
   PetscScalar    *d;
-  PetscTruth     zeroflag = PETSC_FALSE;
+  PetscBool      zeroflag = PETSC_FALSE;
   PetscReal      rnorm, rnorm_start;
   PetscReal      rq, rq_prev;
   PetscScalar    rq_nom, rq_denom;
-  PetscTruth     cand_added;
+  PetscBool      cand_added;
   PetscRandom    rctx;
 
   PetscFunctionBegin;
@@ -1810,7 +1810,7 @@ PetscErrorCode PCApply_ASA(PC pc,Vec x,Vec y)
  */
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_ASA"
-PetscErrorCode PCApplyRichardson_ASA(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscTruth guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
+PetscErrorCode PCApplyRichardson_ASA(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool  guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PC_ASA         *asa = (PC_ASA*)pc->data;
   PC_ASA_level   *asa_lev;
@@ -1945,7 +1945,7 @@ static PetscErrorCode PCDestroy_ASA(PC pc)
 static PetscErrorCode PCSetFromOptions_ASA(PC pc)
 {
   PC_ASA         *asa = (PC_ASA*)pc->data;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscErrorCode ierr;
   char           type[20];
 
@@ -2006,7 +2006,7 @@ static PetscErrorCode PCView_ASA(PC pc,PetscViewer viewer)
 {
   PC_ASA          *asa = (PC_ASA*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
   PC_ASA_level   *asa_lev = asa->levellist;
 
   PetscFunctionBegin;

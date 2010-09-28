@@ -4,7 +4,7 @@
 #include "petscksp.h"            /*I "petscksp.h" I*/
 
 typedef struct {
-  PetscTruth use_true_matrix;       /* use mat rather than pmat in inner linear solve */
+  PetscBool  use_true_matrix;       /* use mat rather than pmat in inner linear solve */
   KSP        ksp; 
   PetscInt   its;                   /* total number of iterations KSP uses */
 } PC_KSP;
@@ -65,7 +65,7 @@ static PetscErrorCode PCSetUp_KSP(PC pc)
   PetscErrorCode ierr;
   PC_KSP         *jac = (PC_KSP*)pc->data;
   Mat            mat;
-  PetscTruth     A;
+  PetscBool      A;
 
   PetscFunctionBegin;
   if (!jac->ksp) {ierr = PCKSPCreateKSP_KSP(pc);CHKERRQ(ierr);}
@@ -101,7 +101,7 @@ static PetscErrorCode PCView_KSP(PC pc,PetscViewer viewer)
 {
   PC_KSP         *jac = (PC_KSP*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   if (!jac->ksp) {ierr = PCKSPCreateKSP_KSP(pc);CHKERRQ(ierr);}
@@ -129,7 +129,7 @@ static PetscErrorCode PCView_KSP(PC pc,PetscViewer viewer)
 static PetscErrorCode PCSetFromOptions_KSP(PC pc)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP preconditioner options");CHKERRQ(ierr);

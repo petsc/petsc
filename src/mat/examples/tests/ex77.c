@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   IS             ip, isrow, iscol;
   PetscRandom    rdm;
-  PetscTruth     reorder=PETSC_FALSE;
+  PetscBool      reorder=PETSC_FALSE;
   MatInfo        minfo1,minfo2;
   PetscReal      norm1,norm2,tol=1.e-10;
 

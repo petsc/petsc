@@ -28,7 +28,7 @@ PetscErrorCode DiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   Vec            w;
   PetscRandom    rctx;  /* random number generator context */
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   char           noise_file[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
@@ -95,7 +95,7 @@ PetscErrorCode DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double
   PetscInt       fcount;
   MPI_Comm       comm = ((PetscObject)snes)->comm;
   FILE           *fp;
-  PetscTruth     noise_test = PETSC_FALSE;
+  PetscBool      noise_test = PETSC_FALSE;
 
   PetscFunctionBegin;
   /* Call to SNESSetUp() just to set data structures in SNES context */
@@ -237,7 +237,7 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   PetscReal      yy1n,yy2n,enorm;
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscTruth     printv = PETSC_FALSE;
+  PetscBool      printv = PETSC_FALSE;
   char           filename[32];
   MPI_Comm       comm = ((PetscObject)snes)->comm;
 

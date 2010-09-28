@@ -20,7 +20,7 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
   PetscInt               i;
   PetscMPIInt            rank;
   PetscViewerFormat      format;
-  PetscTruth             iascii;
+  PetscBool              iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -352,7 +352,7 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
     PetscInt    *sstarts = out_to->starts,  *rstarts = out_from->starts;
     PetscMPIInt *sprocs  = out_to->procs,   *rprocs  = out_from->procs;
     PetscInt    i;
-    PetscTruth  flg;
+    PetscBool   flg;
     MPI_Request *swaits  = out_to->requests,*rwaits  = out_from->requests;
     MPI_Request *rev_swaits,*rev_rwaits;
     PetscScalar *Ssvalues = out_to->values, *Srvalues = out_from->values;
@@ -1927,7 +1927,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
     ierr = PetscFree2(request,status);CHKERRQ(ierr);
 #endif
   } else {
-    PetscTruth  use_rsend = PETSC_FALSE, use_ssend = PETSC_FALSE;
+    PetscBool   use_rsend = PETSC_FALSE, use_ssend = PETSC_FALSE;
     PetscInt    *sstarts = to->starts,  *rstarts = from->starts;
     PetscMPIInt *sprocs  = to->procs,   *rprocs  = from->procs;
     MPI_Request *swaits  = to->requests,*rwaits  = from->requests;
@@ -2092,9 +2092,9 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   MPI_Comm       comm;
   MPI_Request    *send_waits = PETSC_NULL,*recv_waits = PETSC_NULL;
   MPI_Status     recv_status,*send_status = PETSC_NULL;
-  PetscTruth     duplicate = PETSC_FALSE;
+  PetscBool      duplicate = PETSC_FALSE;
 #if defined(PETSC_USE_DEBUG)
-  PetscTruth     found = PETSC_FALSE;
+  PetscBool      found = PETSC_FALSE;
 #endif
 
   PetscFunctionBegin;

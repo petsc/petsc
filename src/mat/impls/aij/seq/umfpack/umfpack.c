@@ -87,10 +87,10 @@ typedef struct {
   PetscInt      *Wi,*ai,*aj,*perm_c;
   PetscScalar  *av;
   MatStructure flg;
-  PetscTruth   PetscMatOdering;
+  PetscBool    PetscMatOdering;
 
   /* Flag to clean up UMFPACK objects during Destroy */
-  PetscTruth CleanUpUMFPACK;
+  PetscBool  CleanUpUMFPACK;
 } Mat_UMFPACK;
 
 #undef __FUNCT__  
@@ -318,7 +318,7 @@ static PetscErrorCode MatFactorInfo_UMFPACK(Mat A,PetscViewer viewer)
 static PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
-  PetscTruth        iascii;
+  PetscBool         iascii;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -388,7 +388,7 @@ PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
 
   const char     *strategy[]={"AUTO","UNSYMMETRIC","SYMMETRIC","2BY2"},
                  *scale[]={"NONE","SUM","MAX"}; 
-  PetscTruth     flg;
+  PetscBool      flg;
   
   PetscFunctionBegin;
   /* Create the factorization matrix F */  

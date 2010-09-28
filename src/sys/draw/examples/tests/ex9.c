@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   int             color = PETSC_DRAW_GREEN;
   const char      *xlabel,*ylabel,*toplabel;
   PetscReal       xd;
-  PetscTruth      flg;
+  PetscBool       flg;
 
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 

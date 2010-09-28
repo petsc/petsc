@@ -32,7 +32,7 @@ static PetscMPIInt Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
 PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIGetStdout(MPI_Comm comm,PetscViewer *viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   MPI_Comm       ncomm;
 
   PetscFunctionBegin;
@@ -113,7 +113,7 @@ static PetscMPIInt Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
 PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIGetStderr(MPI_Comm comm,PetscViewer *viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   MPI_Comm       ncomm;
 
   PetscFunctionBegin;
@@ -230,7 +230,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIOpen(MPI_Comm comm,const char 
 {
   PetscErrorCode    ierr;
   PetscViewerLink   *vlink,*nv;
-  PetscTruth        flg,eq;
+  PetscBool         flg,eq;
   size_t            len;
 
   PetscFunctionBegin;

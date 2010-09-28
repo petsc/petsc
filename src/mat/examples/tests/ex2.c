@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscInt         m = 7,n,i,j,rstart,rend,rect = 0;
   PetscErrorCode   ierr;
   PetscMPIInt      size,rank;
-  PetscTruth       flg;
+  PetscBool        flg;
   PetscScalar      v, alpha;
   PetscReal        normf,normi,norm1;
 

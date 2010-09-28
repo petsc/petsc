@@ -14,7 +14,7 @@ PetscErrorCode MeshCreateExodus(MPI_Comm comm, const char filename[], Mesh *mesh
 #define __FUNCT__ "main"
 int main (int argc, char ** argv) {
   Mesh           mesh;
-  PetscTruth     flag;
+  PetscBool      flag;
   char           filename[PETSC_MAX_PATH_LEN+1];
   PetscErrorCode ierr;
 
@@ -55,7 +55,7 @@ int main (int argc, char ** argv) {
 PetscErrorCode MeshCreateExodus(MPI_Comm comm, const char filename[], Mesh *mesh)
 {
   PetscInt       debug = 1;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -82,7 +82,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Ob
   const PetscMPIInt   rank          = mesh->commRank();
   int                 CPU_word_size = 0;
   int                 IO_word_size  = 0;
-  PetscTruth          interpolate   = PETSC_FALSE;
+  PetscBool           interpolate   = PETSC_FALSE;
   int                 exoid;
   char                title[MAX_LINE_LENGTH+1], elem_type[MAX_STR_LENGTH+1];
   float               version;
@@ -105,7 +105,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Ob
   int   *eb_ids, *num_elem_in_block, *num_nodes_per_elem, *num_attr;
   int  **connect;
   char **block_names, **block_elem_sig, elem_type_sig[4];
-  PetscTruth is_known_elem_type=PETSC_FALSE;
+  PetscBool  is_known_elem_type=PETSC_FALSE;
   if (num_elem_blk > 0) {
     ierr = PetscMalloc6(num_elem_blk,int,&eb_ids, num_elem_blk,int,&num_elem_in_block, num_elem_blk,int,&num_nodes_per_elem, num_elem_blk,int,&num_attr, num_elem_blk,char*,&block_names, num_elem_blk,char*,&block_elem_sig);CHKERRQ(ierr);
     ierr = ex_get_elem_blk_ids(exoid, eb_ids);CHKERRQ(ierr);
@@ -268,7 +268,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Ob
     */
     if (rank == 0) {
       int *parent_block;
-      PetscTruth flag1, flag2;
+      PetscBool  flag1, flag2;
       ierr = PetscMalloc(num_elem*sizeof(int), &parent_block);CHKERRQ(ierr);
       for(int eb = 0, k = 0; eb < num_elem_blk; ++eb) {
         for(int e = 0; e < num_elem_in_block[eb]; ++e, ++k) {

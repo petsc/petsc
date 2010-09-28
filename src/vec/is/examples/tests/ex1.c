@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   PetscInt       i,n,*indices;
   const PetscInt *ii;
   IS             is,newis;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 

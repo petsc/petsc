@@ -22,7 +22,7 @@ int main(int argc,char **args)
   PetscInt       start=0;
   PetscMPIInt    size;
   IS             isrow,iscol;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

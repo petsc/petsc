@@ -20,7 +20,7 @@ PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,MatReuse r
   Mat_SeqAIJ     *gmata;
   PetscMPIInt    tag;
   MPI_Status     status;
-  PetscTruth     aij;
+  PetscBool      aij;
   MatScalar      *gmataa,*ao,*ad,*gmataarestore=0;
 
   PetscFunctionBegin;
@@ -307,14 +307,14 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
   PetscErrorCode ierr;
   PetscInt       i,j,rstart = mat->rmap->rstart,rend = mat->rmap->rend;
   PetscInt       cstart = mat->cmap->rstart,cend = mat->cmap->rend,row,col;
-  PetscTruth     roworiented = aij->roworiented;
+  PetscBool      roworiented = aij->roworiented;
 
   /* Some Variables required in the macro */
   Mat            A = aij->A;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data; 
   PetscInt       *aimax = a->imax,*ai = a->i,*ailen = a->ilen,*aj = a->j;
   MatScalar      *aa = a->a;
-  PetscTruth     ignorezeroentries = a->ignorezeroentries;
+  PetscBool      ignorezeroentries = a->ignorezeroentries;
   Mat            B = aij->B;
   Mat_SeqAIJ     *b = (Mat_SeqAIJ*)B->data; 
   PetscInt       *bimax = b->imax,*bi = b->i,*bilen = b->ilen,*bj = b->j,bm = aij->B->rmap->n,am = aij->A->rmap->n;
@@ -393,9 +393,9 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
       if (mat->nooffprocentries) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process row %D even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set",im[i]);
       if (!aij->donotstash) {
         if (roworiented) {
-          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n,(PetscTruth)(ignorezeroentries && (addv == ADD_VALUES)));CHKERRQ(ierr);
+          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n,(PetscBool )(ignorezeroentries && (addv == ADD_VALUES)));CHKERRQ(ierr);
         } else {
-          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m,(PetscTruth)(ignorezeroentries && (addv == ADD_VALUES)));CHKERRQ(ierr);
+          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m,(PetscBool )(ignorezeroentries && (addv == ADD_VALUES)));CHKERRQ(ierr);
         }
       }
     }
@@ -484,7 +484,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   PetscMPIInt    n;
   PetscInt       i,j,rstart,ncols,flg;
   PetscInt       *row,*col;
-  PetscTruth     other_disassembled;
+  PetscBool      other_disassembled;
   PetscScalar    *val;
   InsertMode     addv = mat->insertmode;
 
@@ -572,7 +572,7 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
 #if defined(PETSC_DEBUG)
-  PetscTruth     found = PETSC_FALSE;
+  PetscBool      found = PETSC_FALSE;
 #endif
 
   PetscFunctionBegin;
@@ -763,7 +763,7 @@ PetscErrorCode MatMultTranspose_MPIAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscTruth     merged;
+  PetscBool      merged;
 
   PetscFunctionBegin;
   ierr = VecScatterGetMerged(a->Mvctx,&merged);CHKERRQ(ierr);
@@ -791,7 +791,7 @@ PetscErrorCode MatMultTranspose_MPIAIJ(Mat A,Vec xx,Vec yy)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatIsTranspose_MPIAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscReal tol,PetscTruth *f)
+PetscErrorCode PETSCMAT_DLLEXPORT MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscReal tol,PetscBool  *f)
 {
   MPI_Comm       comm;
   Mat_MPIAIJ     *Aij = (Mat_MPIAIJ *) Amat->data, *Bij;
@@ -1055,7 +1055,7 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
   Mat_MPIAIJ        *aij = (Mat_MPIAIJ*)mat->data;
   PetscErrorCode    ierr;
   PetscMPIInt       rank = aij->rank,size = aij->size;
-  PetscTruth        isdraw,iascii,isbinary;
+  PetscBool         isdraw,iascii,isbinary;
   PetscViewer       sviewer;
   PetscViewerFormat format;
 
@@ -1067,7 +1067,7 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       MatInfo    info;
-      PetscTruth inodes;
+      PetscBool  inodes;
 
       ierr = MPI_Comm_rank(((PetscObject)mat)->comm,&rank);CHKERRQ(ierr);
       ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
@@ -1109,7 +1109,7 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     PetscFunctionReturn(0);
   } else if (isdraw) {
     PetscDraw  draw;
-    PetscTruth isnull;
+    PetscBool  isnull;
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
   }
@@ -1125,7 +1125,7 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     MatScalar   *a;
 
     if (mat->rmap->N > 1024) {
-      PetscTruth flg = PETSC_FALSE;
+      PetscBool  flg = PETSC_FALSE;
 
       ierr = PetscOptionsGetTruth(((PetscObject) mat)->prefix, "-mat_ascii_output_large", &flg,PETSC_NULL);CHKERRQ(ierr);
       if (!flg) {
@@ -1190,7 +1190,7 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 PetscErrorCode MatView_MPIAIJ(Mat mat,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     iascii,isdraw,issocket,isbinary;
+  PetscBool      iascii,isdraw,issocket,isbinary;
  
   PetscFunctionBegin;
   ierr  = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -1212,7 +1212,7 @@ PetscErrorCode MatSOR_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,Pe
   Mat_MPIAIJ     *mat = (Mat_MPIAIJ*)matin->data;
   PetscErrorCode ierr; 
   Vec            bb1 = 0;
-  PetscTruth     hasop;
+  PetscBool      hasop;
 
   PetscFunctionBegin;
   if (its > 1 || ~flag & SOR_ZERO_INITIAL_GUESS || flag & SOR_EISENSTAT) {
@@ -1417,7 +1417,7 @@ PetscErrorCode MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_MPIAIJ"
-PetscErrorCode MatSetOption_MPIAIJ(Mat A,MatOption op,PetscTruth flg)
+PetscErrorCode MatSetOption_MPIAIJ(Mat A,MatOption op,PetscBool  flg)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
@@ -1775,11 +1775,11 @@ PetscErrorCode MatSetUnfactored_MPIAIJ(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatEqual_MPIAIJ"
-PetscErrorCode MatEqual_MPIAIJ(Mat A,Mat B,PetscTruth *flag)
+PetscErrorCode MatEqual_MPIAIJ(Mat A,Mat B,PetscBool  *flag)
 {
   Mat_MPIAIJ     *matB = (Mat_MPIAIJ*)B->data,*matA = (Mat_MPIAIJ*)A->data;
   Mat            a,b,c,d;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1939,7 +1939,7 @@ PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat fact,Mat A, IS isrow, IS iscol, c
   using boost::graph::distributed::ilu_default::process_group_type;
   using boost::graph::ilu_permuted;
 
-  PetscTruth      row_identity, col_identity;
+  PetscBool       row_identity, col_identity;
   PetscContainer  c;
   PetscInt        m, n, M, N;
   PetscErrorCode  ierr;
@@ -5299,14 +5299,14 @@ void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[
   { 
   PetscInt        i,j,rstart = mat->rmap->rstart,rend = mat->rmap->rend;
   PetscInt        cstart = mat->cmap->rstart,cend = mat->cmap->rend,row,col;
-  PetscTruth      roworiented = aij->roworiented;
+  PetscBool       roworiented = aij->roworiented;
 
   /* Some Variables required in the macro */
   Mat             A = aij->A;
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data; 
   PetscInt        *aimax = a->imax,*ai = a->i,*ailen = a->ilen,*aj = a->j;
   MatScalar       *aa = a->a;
-  PetscTruth      ignorezeroentries = (((a->ignorezeroentries)&&(addv==ADD_VALUES))?PETSC_TRUE:PETSC_FALSE); 
+  PetscBool       ignorezeroentries = (((a->ignorezeroentries)&&(addv==ADD_VALUES))?PETSC_TRUE:PETSC_FALSE); 
   Mat             B = aij->B;
   Mat_SeqAIJ      *b = (Mat_SeqAIJ*)B->data; 
   PetscInt        *bimax = b->imax,*bi = b->i,*bilen = b->ilen,*bj = b->j,bm = aij->B->rmap->n,am = aij->A->rmap->n;
@@ -5383,9 +5383,9 @@ void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[
     } else {
       if (!aij->donotstash) {
         if (roworiented) {
-          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n,(PetscTruth)(ignorezeroentries && (addv == ADD_VALUES)));CHKERRQ(ierr);
+          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n,(PetscBool )(ignorezeroentries && (addv == ADD_VALUES)));CHKERRQ(ierr);
         } else {
-          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m,(PetscTruth)(ignorezeroentries && (addv == ADD_VALUES)));CHKERRQ(ierr);
+          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m,(PetscBool )(ignorezeroentries && (addv == ADD_VALUES)));CHKERRQ(ierr);
         }
       }
     }

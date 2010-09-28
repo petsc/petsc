@@ -40,7 +40,7 @@ int main(int argc,char **args)
   PetscInt       ldim,low,high,iglobal,Istart,Iend,Istart2,Iend2;
   PetscInt       Ii,J,i,j,m = 3,n = 2,its,t;
   PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
   PetscScalar    v;
   PetscMPIInt    rank,size;
 #if defined (PETSC_USE_LOG)

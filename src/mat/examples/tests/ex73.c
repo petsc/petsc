@@ -27,7 +27,7 @@ int main(int argc,char **args)
   Mat             A,B;               /* matrix */
   PetscViewer     fd;                /* viewer */
   char            file[PETSC_MAX_PATH_LEN];         /* input file name */
-  PetscTruth      flg;
+  PetscBool       flg;
   PetscInt        ierr,*nlocal,m,n;
   PetscMPIInt     rank,size;
   MatPartitioning part;

@@ -13,7 +13,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_1WD(Mat mat,const MatOrderingTy
 {
   PetscErrorCode ierr;
   PetscInt       i,*mask,*xls,nblks,*xblk,*ls,nrow,*perm,*ia,*ja;
-  PetscTruth     done;
+  PetscBool      done;
 
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);

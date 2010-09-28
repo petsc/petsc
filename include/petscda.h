@@ -199,7 +199,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DASplitComm2d(MPI_Comm,PetscInt,Petsc
 
 /* Dynamic creation and loading functions */
 extern PetscFList DAList;
-extern PetscTruth DARegisterAllCalled;
+extern PetscBool  DARegisterAllCalled;
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetType(DA, const DAType);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DAGetType(DA, const DAType *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DARegister(const char[],const char[],const char[],PetscErrorCode (*)(DA));
@@ -532,9 +532,9 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetContext(DM,void**);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSetInitialGuess(DM,PetscErrorCode (*)(DM,Vec));
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSetFunction(DM,PetscErrorCode (*)(DM,Vec,Vec));
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSetJacobian(DM,PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure *));
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMHasInitialGuess(DM,PetscTruth*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMHasFunction(DM,PetscTruth*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMHasJacobian(DM,PetscTruth*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMHasInitialGuess(DM,PetscBool *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMHasFunction(DM,PetscBool *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMHasJacobian(DM,PetscBool *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMComputeInitialGuess(DM,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMComputeFunction(DM,Vec,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMComputeJacobian(DM,Vec,Mat,Mat,MatStructure *);
@@ -548,23 +548,23 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetInterpolation(DA,DA,Mat*,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAggregates(DA,DA,Mat*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetInjection(DA,DA,VecScatter*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetBlockFills(DA,PetscInt*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetMatPreallocateOnly(DA,PetscTruth);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetMatPreallocateOnly(DA,PetscBool );
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetRefinementFactor(DA,PetscInt,PetscInt,PetscInt);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetRefinementFactor(DA,PetscInt*,PetscInt*,PetscInt*);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicArray(DA,PetscTruth,void*,void*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DARestoreAdicArray(DA,PetscTruth,void*,void*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicMFArray(DA,PetscTruth,void*,void*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicMFArray4(DA,PetscTruth,void*,void*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicMFArray9(DA,PetscTruth,void*,void*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicMFArrayb(DA,PetscTruth,void*,void*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DARestoreAdicMFArray(DA,PetscTruth,void*,void*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetArray(DA,PetscTruth,void*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DARestoreArray(DA,PetscTruth,void*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  ad_DAGetArray(DA,PetscTruth,void*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  ad_DARestoreArray(DA,PetscTruth,void*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  admf_DAGetArray(DA,PetscTruth,void*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  admf_DARestoreArray(DA,PetscTruth,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicArray(DA,PetscBool ,void*,void*,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DARestoreAdicArray(DA,PetscBool ,void*,void*,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicMFArray(DA,PetscBool ,void*,void*,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicMFArray4(DA,PetscBool ,void*,void*,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicMFArray9(DA,PetscBool ,void*,void*,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicMFArrayb(DA,PetscBool ,void*,void*,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DARestoreAdicMFArray(DA,PetscBool ,void*,void*,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetArray(DA,PetscBool ,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DARestoreArray(DA,PetscBool ,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  ad_DAGetArray(DA,PetscBool ,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  ad_DARestoreArray(DA,PetscBool ,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  admf_DAGetArray(DA,PetscBool ,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  admf_DARestoreArray(DA,PetscBool ,void*);
 
 #include "petscpf.h"
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DACreatePF(DA,PF*);
@@ -657,7 +657,7 @@ typedef struct _p_ADDA* ADDA;
 
 extern PetscClassId PETSCDM_DLLEXPORT ADDA_CLASSID;
 
-PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm,PetscInt,PetscInt*,PetscInt*,PetscInt,PetscTruth*,ADDA*);
+PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm,PetscInt,PetscInt*,PetscInt*,PetscInt,PetscBool *,ADDA*);
 PetscErrorCode PETSCDM_DLLEXPORT ADDADestroy(ADDA);
 
 /* DM interface functions */
@@ -687,8 +687,8 @@ typedef struct _ADDAIdx_s ADDAIdx;
 PetscErrorCode PETSCDM_DLLEXPORT ADDAMatSetValues(Mat, ADDA, PetscInt, const ADDAIdx[], ADDA, PetscInt,
 						  const ADDAIdx[], const PetscScalar[], InsertMode);
 
-PetscTruth ADDAHCiterStartup(const PetscInt, const PetscInt *const, const PetscInt *const, PetscInt *const);
-PetscTruth ADDAHCiter(const PetscInt, const PetscInt *const, const PetscInt *const, PetscInt *const);
+PetscBool  ADDAHCiterStartup(const PetscInt, const PetscInt *const, const PetscInt *const, PetscInt *const);
+PetscBool  ADDAHCiter(const PetscInt, const PetscInt *const, const PetscInt *const, PetscInt *const);
 
 PETSC_EXTERN_CXX_END
 #endif

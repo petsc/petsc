@@ -199,7 +199,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomSetSeed(PetscRandom r,unsigned long
 */
 static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd)
 {
-  PetscTruth     opt;
+  PetscBool      opt;
   const char     *defaultType;
   char           typeName[256];
   PetscErrorCode ierr;
@@ -293,7 +293,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomSetFromOptions(PetscRandom rnd)
 PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomView(PetscRandom rnd,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
-  PetscTruth        iascii;
+  PetscBool         iascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(rnd,PETSC_RANDOM_CLASSID,1);
@@ -335,7 +335,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomView(PetscRandom rnd,PetscViewer vi
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomViewFromOptions(PetscRandom rnd, char *title)
 {
-  PetscTruth     opt = PETSC_FALSE;
+  PetscBool      opt = PETSC_FALSE;
   PetscViewer    viewer;
   char           typeName[1024];
   char           fileName[PETSC_MAX_PATH_LEN];

@@ -154,7 +154,7 @@ static PetscErrorCode PCView_SPAI(PC pc,PetscViewer viewer)
 {
   PC_SPAI        *ispai = (PC_SPAI*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -555,7 +555,7 @@ static PetscErrorCode PCSetFromOptions_SPAI(PC pc)
   PetscErrorCode ierr;
   int            nbsteps1,max1,maxnew1,block_size1,cache_size,verbose,sp;
   double         epsilon1;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SPAI options");CHKERRQ(ierr);

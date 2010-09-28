@@ -13,7 +13,7 @@ int main(int argc,char *argv[])
   Sliced         slice;
   PetscInt       i,bs=1,N=5,n,m,rstart,ghosts[2],*d_nnz,*o_nnz,dfill[4]={1,0,0,1},ofill[4]={1,1,1,1};
   PetscReal      alpha=1,K=1,rho0=1,u0=0,sigma=0.2;
-  PetscTruth     useblock=PETSC_TRUE;
+  PetscBool      useblock=PETSC_TRUE;
   PetscScalar    *xx;
   Mat            A;
   Vec            x,b,lf;

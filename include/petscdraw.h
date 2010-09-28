@@ -138,7 +138,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawOpenPS(MPI_Comm,char *,PetscDr
 
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawOpenNull(MPI_Comm,PetscDraw *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawDestroy(PetscDraw);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawIsNull(PetscDraw,PetscTruth*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawIsNull(PetscDraw,PetscBool *);
 
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawGetPopup(PetscDraw,PetscDraw*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawCheckResizedWindow(PetscDraw);
@@ -244,7 +244,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisCreate(PetscDraw,PetscDraw
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisDestroy(PetscDrawAxis);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisDraw(PetscDrawAxis);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisSetLimits(PetscDrawAxis,PetscReal,PetscReal,PetscReal,PetscReal);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisSetHoldLimits(PetscDrawAxis,PetscTruth);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisSetHoldLimits(PetscDrawAxis,PetscBool );
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisSetColors(PetscDrawAxis,int,int,int);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisSetLabels(PetscDrawAxis,const char[],const char[],const char[]);
 
@@ -323,8 +323,8 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGGetDraw(PetscDrawHG,PetscDra
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGSetLimits(PetscDrawHG,PetscReal,PetscReal,int,int);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGSetNumberBins(PetscDrawHG,int);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGSetColor(PetscDrawHG,int);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGCalcStats(PetscDrawHG, PetscTruth);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGIntegerBins(PetscDrawHG, PetscTruth);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGCalcStats(PetscDrawHG, PetscBool );
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGIntegerBins(PetscDrawHG, PetscBool );
 
 /*
     PetscViewer routines that allow you to access underlying PetscDraw objects

@@ -13,7 +13,7 @@ int main(int argc,char **args)
   PetscInt       i,j,m = 3,n = 2,low,high,iglobal;
   PetscInt       Ii,J,ldim;
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscScalar    v,one = 1.0;
   Vec            u,b;
   PetscInt       bs,ndiag,diag[7];  bs = 1,ndiag = 5;

@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscReal      norm,tol=1.e-12,Anorm;
   IS             perm,iperm;
   MatFactorInfo  info;
-  PetscTruth     flg,testMatSolve=PETSC_TRUE;
+  PetscBool      flg,testMatSolve=PETSC_TRUE;
   PetscViewer    fd;              /* viewer */
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
 

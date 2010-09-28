@@ -279,7 +279,7 @@ TOPS::UnstructuredSolver_impl::Initialize_impl ()
 #undef __FUNCT__
 #define __FUNCT__ "TOPS::UnstructuredSolver_impl::Initialize"
 
-  PetscTruth initialized;
+  PetscBool  initialized;
   PetscInitialized(&initialized);
   if (initialized) {
     this->startedpetsc = 0;

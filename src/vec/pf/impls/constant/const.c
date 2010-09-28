@@ -31,7 +31,7 @@ PetscErrorCode PFApplyVec_Constant(void *value,Vec x,Vec y)
 PetscErrorCode PFView_Constant(void *value,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -131,7 +131,7 @@ PetscErrorCode PFApplyVec_Identity(void *value,Vec x,Vec y)
 PetscErrorCode PFView_Identity(void *value,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);

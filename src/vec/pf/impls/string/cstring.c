@@ -12,7 +12,7 @@
 PetscErrorCode PFView_String(void *value,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth iascii;
+  PetscBool  iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -56,7 +56,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFStringCreateFunction(PF pf,char *string,void
   PetscErrorCode ierr;
   char       task[1024],tmp[256],lib[PETSC_MAX_PATH_LEN],username[64];
   FILE       *fd;
-  PetscTruth tmpshared,wdshared,keeptmpfiles = PETSC_FALSE;
+  PetscBool  tmpshared,wdshared,keeptmpfiles = PETSC_FALSE;
   MPI_Comm   comm;
 #endif
 
@@ -106,7 +106,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFStringCreateFunction(PF pf,char *string,void
 PetscErrorCode PFSetFromOptions_String(PF pf)
 {
   PetscErrorCode ierr;
-  PetscTruth flag;
+  PetscBool  flag;
   char       value[PETSC_MAX_PATH_LEN];
   PetscErrorCode (*f)(void*,PetscInt,const PetscScalar*,PetscScalar*) = 0;
 

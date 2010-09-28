@@ -97,7 +97,7 @@ int main(int argc,char **args)
    int                        j;
    PetscLogDouble             t1,t2,elapsed_time;
    double                     tol=1e-06;
-   PetscTruth                 full_output=PETSC_FALSE;
+   PetscBool                  full_output=PETSC_FALSE;
    KSP                        ksp;
    lobpcg_Tolerance           lobpcg_tol;
    int                        maxIt = 100;
@@ -106,11 +106,11 @@ int main(int argc,char **args)
    aux_data_struct            aux_data;
    PetscViewer                fd;    /* viewer */
 
-   PetscTruth                 option_present;
+   PetscBool                  option_present;
    PetscReal                  shift;
-   PetscTruth                 shift_present;
+   PetscBool                  shift_present;
    char                       output_filename[PETSC_MAX_PATH_LEN];
-   PetscTruth                 output_filename_present;
+   PetscBool                  output_filename_present;
    char                       tmp_str[PETSC_MAX_PATH_LEN];
    PetscInt                   tmp_int;
 

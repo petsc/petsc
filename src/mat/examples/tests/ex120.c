@@ -12,9 +12,9 @@ PetscInt main(PetscInt argc,char **args)
 {
   Mat            A,A_dense,B;    
   Vec            *evecs;
-  PetscTruth     flg,TestZHEEV=PETSC_TRUE,TestZHEEVX=PETSC_FALSE,TestZHEGV=PETSC_FALSE,TestZHEGVX=PETSC_FALSE; 
+  PetscBool      flg,TestZHEEV=PETSC_TRUE,TestZHEEVX=PETSC_FALSE,TestZHEGV=PETSC_FALSE,TestZHEGVX=PETSC_FALSE; 
   PetscErrorCode ierr;
-  PetscTruth     isSymmetric;
+  PetscBool      isSymmetric;
   PetscScalar    sigma,*arrayA,*arrayB,*evecs_array=PETSC_NULL,*work;
   PetscReal      *evals,*rwork;
   PetscMPIInt    size;

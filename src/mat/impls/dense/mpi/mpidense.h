@@ -9,7 +9,7 @@ typedef struct {
   PetscMPIInt   size;                   /* size of communicator */
   PetscMPIInt   rank;                   /* rank of proc in communicator */ 
   /* The following variables are used for matrix assembly */
-  PetscTruth    donotstash;             /* Flag indicationg if values should be stashed */
+  PetscBool     donotstash;             /* Flag indicationg if values should be stashed */
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   PetscInt      nsends,nrecvs;         /* numbers of sends and receives */
@@ -21,13 +21,13 @@ typedef struct {
   Vec           lvec;                   /* local vector */
   VecScatter    Mvctx;                  /* scatter context for vector */
 
-  PetscTruth    roworiented;            /* if true, row oriented input (default) */
+  PetscBool     roworiented;            /* if true, row oriented input (default) */
 } Mat_MPIDense;
 
 EXTERN PetscErrorCode MatLoad_MPIDense(Mat,PetscViewer);
 EXTERN PetscErrorCode MatSetUpMultiply_MPIDense(Mat);
 EXTERN PetscErrorCode MatGetSubMatrices_MPIDense(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
-EXTERN PetscErrorCode MatEqual_MPIDense(Mat,Mat,PetscTruth*);
+EXTERN PetscErrorCode MatEqual_MPIDense(Mat,Mat,PetscBool *);
 EXTERN PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat,Mat,PetscReal,Mat*);
 EXTERN PetscErrorCode MatMatMult_MPIAIJ_MPIDense(Mat,Mat,MatReuse,PetscReal,Mat*);
 EXTERN PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat,Mat,PetscReal,Mat*); 

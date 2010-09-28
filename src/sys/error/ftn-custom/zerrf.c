@@ -118,17 +118,17 @@ void PETSC_STDCALL petscintview_(PetscInt *n,PetscInt *d,PetscViewer *viwer,Pets
   *ierr = PetscIntView(*n,d,v);
 }
 
-void PETSC_STDCALL petscerroriscatchable_(PetscErrorCode *ierr,PetscTruth *is)
+void PETSC_STDCALL petscerroriscatchable_(PetscErrorCode *ierr,PetscBool  *is)
 {
   *is = PetscErrorIsCatchable(*ierr);
 }
 
-void PETSC_STDCALL petscexceptionvalue_(PetscErrorCode *ierr,PetscTruth *is)
+void PETSC_STDCALL petscexceptionvalue_(PetscErrorCode *ierr,PetscBool  *is)
 {
   *is = PetscExceptionValue(*ierr);
 }
 
-void PETSC_STDCALL petscexceptioncaught_(PetscErrorCode *ierr,PetscErrorCode *zierr,PetscTruth *is)
+void PETSC_STDCALL petscexceptioncaught_(PetscErrorCode *ierr,PetscErrorCode *zierr,PetscBool  *is)
 {
   *is = PetscExceptionCaught(*ierr,*zierr);
 }

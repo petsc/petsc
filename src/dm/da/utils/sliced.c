@@ -287,7 +287,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedCreate(MPI_Comm comm,Sliced *slice)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode DMDestroy_Private(DM,PetscTruth*);
+extern PetscErrorCode DMDestroy_Private(DM,PetscBool *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "SlicedDestroy"
@@ -307,7 +307,7 @@ extern PetscErrorCode DMDestroy_Private(DM,PetscTruth*);
 PetscErrorCode PETSCDM_DLLEXPORT SlicedDestroy(Sliced slice)
 {
   PetscErrorCode ierr;
-  PetscTruth     done;
+  PetscBool      done;
 
   PetscFunctionBegin;
   ierr = DMDestroy_Private((DM)slice,&done);CHKERRQ(ierr);

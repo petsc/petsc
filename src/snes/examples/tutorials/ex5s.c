@@ -116,7 +116,7 @@ int main(int argc,char **argv)
   ISColoring     iscoloring;
   Mat            J;
   PetscScalar    zero = 0.0;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRQ(ierr);

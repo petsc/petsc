@@ -16,7 +16,7 @@ using ALE::Obj;
 typedef struct {
   PetscInt   debug;              // The debugging level
   PetscInt   test;               // The testing level
-  PetscTruth postponeGhosts;     // Number ghost variables last
+  PetscBool  postponeGhosts;     // Number ghost variables last
   char       baseFilename[2048]; // The base filename for mesh files
   char       partitioner[2048];  // The graph partitioner
 
@@ -110,7 +110,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
   std::string baseFilename(options->baseFilename);
   std::string coordFile = baseFilename+".nodes";
   std::string adjFile   = baseFilename+".lcon";
-  PetscTruth  view;
+  PetscBool   view;
   PetscMPIInt size;
 
   ierr = MeshCreatePCICE(comm, 3, coordFile.c_str(), adjFile.c_str(), PETSC_TRUE, PETSC_NULL, &mesh);CHKERRQ(ierr);

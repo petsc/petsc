@@ -21,7 +21,7 @@ int main(int argc,char **args)
   Mat            A;
   char           file[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
-  PetscTruth     table = PETSC_FALSE,flg;
+  PetscBool      table = PETSC_FALSE,flg;
   KSP            ksp;
 #endif
 

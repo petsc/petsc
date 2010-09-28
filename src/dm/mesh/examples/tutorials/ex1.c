@@ -44,19 +44,19 @@ typedef enum {PCICE, PYLITH} FileType;
 typedef struct {
   int            debug;              // The debugging level
   PetscInt       dim;                // The topological mesh dimension
-  PetscTruth     useZeroBase;        // Use zero-based indexing
+  PetscBool      useZeroBase;        // Use zero-based indexing
   FileType       inputFileType;      // The input file type, e.g. PCICE
   FileType       outputFileType;     // The output file type, e.g. PCICE
   char           baseFilename[2048]; // The base filename for mesh files
-  PetscTruth     output;             // Output the mesh
-  PetscTruth     outputLocal;        // Output the local form of the mesh
-  PetscTruth     outputVTK;          // Output the mesh in VTK
-  PetscTruth     distribute;         // Distribute the mesh among processes
+  PetscBool      output;             // Output the mesh
+  PetscBool      outputLocal;        // Output the local form of the mesh
+  PetscBool      outputVTK;          // Output the mesh in VTK
+  PetscBool      distribute;         // Distribute the mesh among processes
   char           partitioner[2048];  // The partitioner name
-  PetscTruth     interpolate;        // Construct missing elements of the mesh
-  PetscTruth     doPartition;        // Construct field over cells indicating process number
+  PetscBool      interpolate;        // Construct missing elements of the mesh
+  PetscBool      doPartition;        // Construct field over cells indicating process number
   SectionInt     partition;          // Section with partition number in each cell
-  PetscTruth     doOdd;              // Construct field over odd cells indicating process number
+  PetscBool      doOdd;              // Construct field over odd cells indicating process number
   SectionInt     odd;                // Section with cell number in each odd cell
 } Options;
 
@@ -68,7 +68,7 @@ PetscErrorCode OutputVTK(Mesh mesh, Options *options)
 {
   MPI_Comm       comm;
   PetscViewer    viewer;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -282,7 +282,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 {
   const char    *fileTypes[2] = {"pcice", "pylith"};
   PetscInt       inputFt, outputFt;
-  PetscTruth     setOutputType;
+  PetscBool      setOutputType;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

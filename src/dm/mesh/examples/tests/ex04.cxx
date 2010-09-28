@@ -29,7 +29,7 @@ PetscErrorCode   viewPointConeArraySequence(PointConeArraySequence& seq, const c
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscInt       verbosity;
   PetscErrorCode ierr;
 
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 #undef  __FUNCT__
 #define __FUNCT__ "testPointConeArraySequence"
 PetscErrorCode testPointConeArraySequence() {
-  PetscTruth flag;
+  PetscBool  flag;
   PetscErrorCode ierr;
 
   // Allocate a raw array of n PointConeArrows 

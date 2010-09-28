@@ -117,7 +117,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationIS(AO ao,IS is)
   PetscErrorCode ierr;
   PetscInt       n;
   PetscInt       *ia;
-  PetscTruth     flag;
+  PetscBool      flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
@@ -164,7 +164,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscIS(AO ao,IS is)
 {
   PetscErrorCode ierr;
   PetscInt       n,*ia;
-  PetscTruth     flag;
+  PetscBool      flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);

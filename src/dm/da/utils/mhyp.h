@@ -19,7 +19,7 @@ typedef struct {
   HYPRE_StructVector  hb,hx;
   hypre_Box           hbox;
 
-  PetscTruth          needsinitialization;
+  PetscBool           needsinitialization;
 
   /* variables that are stored here so they need not be reloaded for each MatSetValuesLocal() or MatZeroRowsLocal() call */
   PetscInt            *gindices,rstart,gnx,gnxgny,xs,ys,zs,nx,ny,nxny;
@@ -39,7 +39,7 @@ typedef struct {
   int                    nvars;
   int                    dofs_order;
 
-  PetscTruth             needsinitialization;
+  PetscBool              needsinitialization;
 
   /* variables that are stored here so they need not be reloaded for each MatSetValuesLocal() or MatZeroRowsLocal() call */
   PetscInt              *gindices,rstart,gnx,gnxgny,gnxgnygnz,xs,ys,zs,nx,ny,nz,nxny,nxnynz;

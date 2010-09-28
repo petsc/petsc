@@ -49,7 +49,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscGetHostName(char name[],size_t nlen)
 {
   char           *domain;
   PetscErrorCode ierr;
-  PetscTruth     flag;
+  PetscBool      flag;
 #if defined(PETSC_HAVE_UNAME) && !defined(PETSC_HAVE_GETCOMPUTERNAME)
   struct utsname utname;
 #endif

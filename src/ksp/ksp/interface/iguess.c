@@ -8,7 +8,7 @@ typedef struct {
                 curl,     /* Current number of basis vectors */
                 maxl,     /* Maximum number of basis vectors */
                 refcnt;
-    PetscTruth  monitor;
+    PetscBool   monitor;
     Mat         mat;
     KSP         ksp;
     PetscScalar *alpha;   /* */
@@ -133,7 +133,7 @@ typedef struct {
                 curl,     /* Current number of basis vectors */
                 maxl,     /* Maximum number of basis vectors */
                 refcnt;
-    PetscTruth  monitor;
+    PetscBool   monitor;
     Mat         mat;
     KSP         ksp;
     PetscScalar *alpha;   /* */

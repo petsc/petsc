@@ -36,7 +36,7 @@ struct _p_WindowNode {
   MouseNode  MouseListHead;
   MouseNode  MouseListTail;
   BOOL       IsGetMouseOn;
-  PetscTruth DoubleBuffered;
+  PetscBool  DoubleBuffered;
   HDC        Buffer,DoubleBuffer;
   HBITMAP    BufferBit,DoubleBufferBit;
   HGDIOBJ    store,dbstore;
@@ -53,7 +53,7 @@ typedef struct  {
   int        stringheight;
   int        stringwidth;
   int        pause;
-  PetscTruth haveresized;
+  PetscBool  haveresized;
   HANDLE     hReadyEvent;
   int        x,y,w,h;  /* Size and location of window */
   WindowNode node;/* so we can grab windownode info if needed */

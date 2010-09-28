@@ -17,7 +17,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT TestIACall(PetscFwk component, const char* mes
 PetscErrorCode PETSCSYS_DLLEXPORT TestIBCall(PetscFwk component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
-  PetscTruth init;
+  PetscBool  init;
   PetscFunctionBegin;
   ierr = PetscPrintf(comm, "%s: running '%s'\n", __FUNCT__, message); CHKERRQ(ierr);
   ierr = PetscStrcmp(message, "initialize", &init); CHKERRQ(ierr);

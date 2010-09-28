@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #endif
 
-static PetscTruth PetscRandomPackageInitialized = PETSC_FALSE;
+static PetscBool  PetscRandomPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomFinalizePackage"
 /*@C

@@ -160,7 +160,7 @@ static PetscErrorCode PetscSortStrWithPermutation_Private(const char* v[],PetscI
 {
   PetscErrorCode ierr;
   PetscInt       tmp,i,last;
-  PetscTruth     gt;
+  PetscBool      gt;
   const char     *vl;
 
   PetscFunctionBegin;
@@ -211,7 +211,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortStrWithPermutation(PetscInt n,const c
   PetscErrorCode ierr;
   PetscInt       j,k,tmp;
   const char     *ik;
-  PetscTruth     gt;
+  PetscBool      gt;
 
   PetscFunctionBegin;
   if (n<8) {

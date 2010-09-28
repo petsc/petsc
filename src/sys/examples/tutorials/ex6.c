@@ -12,7 +12,7 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscTruth flg = PETSC_TRUE;
+  PetscBool  flg = PETSC_TRUE;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 

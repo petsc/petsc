@@ -691,7 +691,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMComputeInitialGuess(DM dm,Vec x)
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMHasInitialGuess(DM dm,PetscTruth *flg)
+PetscErrorCode PETSCDM_DLLEXPORT DMHasInitialGuess(DM dm,PetscBool  *flg)
 {
   PetscFunctionBegin;
   *flg =  (dm->ops->initialguess) ? PETSC_TRUE : PETSC_FALSE;
@@ -716,7 +716,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMHasInitialGuess(DM dm,PetscTruth *flg)
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMHasFunction(DM dm,PetscTruth *flg)
+PetscErrorCode PETSCDM_DLLEXPORT DMHasFunction(DM dm,PetscBool  *flg)
 {
   PetscFunctionBegin;
   *flg =  (dm->ops->function) ? PETSC_TRUE : PETSC_FALSE;
@@ -741,7 +741,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMHasFunction(DM dm,PetscTruth *flg)
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMHasJacobian(DM dm,PetscTruth *flg)
+PetscErrorCode PETSCDM_DLLEXPORT DMHasJacobian(DM dm,PetscBool  *flg)
 {
   PetscFunctionBegin;
   *flg =  (dm->ops->jacobian) ? PETSC_TRUE : PETSC_FALSE;

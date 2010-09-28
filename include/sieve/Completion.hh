@@ -78,7 +78,7 @@ namespace ALE {
             std::cout << "assignment["<<*e_iter<<"]" << assignment[e2++] << std::endl;
           }
         }
-        PetscTruth flg;
+        PetscBool  flg;
         PetscOptionsHasName(PETSC_NULL, "-output_partition", &flg);
         if (flg) {
           ostringstream fname;

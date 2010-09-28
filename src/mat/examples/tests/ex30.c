@@ -17,7 +17,7 @@ int main(int argc,char **args)
   Mat            C,A;
   PetscInt       i,j,m = 5,n = 5,Ii,J,lf = 0;
   PetscErrorCode ierr;
-  PetscTruth     LU=PETSC_FALSE,CHOLESKY,TRIANGULAR=PETSC_FALSE,MATDSPL=PETSC_FALSE,flg,matordering;
+  PetscBool      LU=PETSC_FALSE,CHOLESKY,TRIANGULAR=PETSC_FALSE,MATDSPL=PETSC_FALSE,flg,matordering;
   PetscScalar    v;
   IS             row,col;
   PetscViewer    viewer1,viewer2;

@@ -49,7 +49,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerStringSPrintf(PetscViewer viewer,co
   size_t             fullLength;
   size_t             shift;
   PetscErrorCode     ierr;
-  PetscTruth         isstring;
+  PetscBool          isstring;
   char               tmp[4096];
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
 
@@ -178,7 +178,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerStringSetString(PetscViewer viewer,
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
   PetscErrorCode     ierr;
-  PetscTruth         isstring;
+  PetscBool          isstring;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);

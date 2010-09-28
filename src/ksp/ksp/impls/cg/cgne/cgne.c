@@ -70,7 +70,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
   KSP_CG         *cg;
   Mat            Amat,Pmat;
   MatStructure   pflag;
-  PetscTruth     diagonalscale,transpose_pc;
+  PetscBool      diagonalscale,transpose_pc;
 
   PetscFunctionBegin;
   ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);

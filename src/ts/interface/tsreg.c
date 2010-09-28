@@ -3,7 +3,7 @@
 #include "private/tsimpl.h"      /*I "petscts.h"  I*/
 
 PetscFList TSList                       = PETSC_NULL;
-PetscTruth TSRegisterAllCalled          = PETSC_FALSE;
+PetscBool  TSRegisterAllCalled          = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetType"
@@ -46,7 +46,7 @@ PetscTruth TSRegisterAllCalled          = PETSC_FALSE;
 PetscErrorCode PETSCTS_DLLEXPORT TSSetType(TS ts,const TSType type)
 {
   PetscErrorCode (*r)(TS);
-  PetscTruth     match;
+  PetscBool      match;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

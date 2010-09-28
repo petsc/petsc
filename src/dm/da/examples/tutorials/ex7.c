@@ -12,7 +12,7 @@ typedef struct {
   char          filename[PETSC_MAX_PATH_LEN];
   PetscReal     ra;
   PetscInt      ia;
-  PetscTruth    ta;
+  PetscBool     ta;
 } Parameter;
 
 #undef __FUNCT__

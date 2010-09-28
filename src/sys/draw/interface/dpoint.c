@@ -27,7 +27,7 @@
 PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawPoint(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
 {
   PetscErrorCode ierr;
-  PetscTruth isnull;
+  PetscBool  isnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);

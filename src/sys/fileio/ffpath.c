@@ -52,7 +52,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscGetFileFromPath(char *path,char *defname,
   char       *p,*cdir,trial[PETSC_MAX_PATH_LEN],*senv,*env;
   size_t     ln;
   PetscErrorCode ierr;
-  PetscTruth flg;
+  PetscBool  flg;
 
   PetscFunctionBegin;
   /* Setup default */

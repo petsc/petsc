@@ -348,7 +348,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetPreallocation_AIJ(Mat A,PetscInt nz, P
   /* Assume gather and scatter have been set */
   Mat_DD        *dd = (Mat_DD*)A->data;
   Mat_DDAIJ     *aij = (Mat_DDAIJ*)dd->data;
-  PetscTruth     skipallocation = PETSC_FALSE;
+  PetscBool      skipallocation = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscInt       i;
 
@@ -443,7 +443,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetUpPreallocation(Mat A)
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatDDLocateBlock_AIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDDLocateBlock_AIJ(Mat M, PetscInt row, PetscInt col, PetscTruth insert, Mat_DDBlock **block_pp) {
+PetscErrorCode PETSCMAT_DLLEXPORT MatDDLocateBlock_AIJ(Mat M, PetscInt row, PetscInt col, PetscBool  insert, Mat_DDBlock **block_pp) {
   PetscErrorCode        ierr;
   Mat_DD*              dd = (Mat_DD*)M->data;
   Mat_DDAIJ*           a = (Mat_DDAIJ*)dd->data;

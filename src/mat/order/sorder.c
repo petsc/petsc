@@ -8,7 +8,7 @@
 #include "petscmat.h"  /*I "petscmat.h" I*/
 
 PetscFList      MatOrderingList = 0;
-PetscTruth MatOrderingRegisterAllCalled = PETSC_FALSE;
+PetscBool  MatOrderingRegisterAllCalled = PETSC_FALSE;
 
 EXTERN PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat,const MatOrderingType,IS *,IS *);
 
@@ -30,7 +30,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_Natural(Mat mat,const MatOrderi
 {
   PetscErrorCode ierr;
   PetscInt       n,i,*ii;
-  PetscTruth     done;
+  PetscBool      done;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
@@ -74,7 +74,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_RowLength(Mat mat,const MatOrde
 {
   PetscErrorCode ierr;
   PetscInt       n,*ia,*ja,*permr,*lens,i;
-  PetscTruth     done;
+  PetscBool      done;
 
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,&ia,&ja,&done);CHKERRQ(ierr);
@@ -179,7 +179,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType t
   PetscErrorCode ierr;
   PetscInt       mmat,nmat,mis,m;
   PetscErrorCode (*r)(Mat,const MatOrderingType,IS*,IS*);
-  PetscTruth     flg = PETSC_FALSE,isseqdense,ismpidense,ismpiaij,ismpibaij,ismpisbaij,ismpiaijcuda;
+  PetscBool      flg = PETSC_FALSE,isseqdense,ismpidense,ismpiaij,ismpibaij,ismpisbaij,ismpiaijcuda;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);

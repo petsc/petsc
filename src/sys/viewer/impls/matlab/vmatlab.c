@@ -285,7 +285,7 @@ $       XXXView(XXX object,PETSC_VIEWER_MATLAB_(comm));
 PetscViewer PETSCSYS_DLLEXPORT PETSC_VIEWER_MATLAB_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscViewer    viewer;
   char           fname[PETSC_MAX_PATH_LEN];
   MPI_Comm       ncomm;

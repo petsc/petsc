@@ -38,7 +38,7 @@ int main(int argc,char **argv)
   PetscInt       its;
   PetscMPIInt    size;
   PetscScalar    pfive = .5,*xx;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

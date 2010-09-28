@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       Xs,Xm,Ys,Ym,Zs,Zm,iloc,*ltog,*iglobal;
   PetscInt       *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
-  PetscTruth     test_order = PETSC_FALSE;
+  PetscBool      test_order = PETSC_FALSE;
   DA             da;
   PetscViewer    viewer;
   Vec            local,global;
@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   DAPeriodicType wrap = DA_XYPERIODIC;
   DAStencilType  stencil_type = DA_STENCIL_BOX;
   AO             ao;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,300,&viewer);CHKERRQ(ierr);

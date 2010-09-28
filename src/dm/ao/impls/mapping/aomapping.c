@@ -36,7 +36,7 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   AO_Mapping     *aomap = (AO_Mapping *) ao->data;
   PetscMPIInt    rank;
   PetscInt       i;
-  PetscTruth     iascii;
+  PetscBool      iascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -166,7 +166,7 @@ static struct _AOOps AOps = {AOView_Mapping,
 .keywords: AO, index
 .seealso: AOMappingHasPetscIndex(), AOCreateMapping()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscTruth *hasIndex)
+PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool  *hasIndex)
 {
   AO_Mapping *aomap;
   PetscInt   *app;
@@ -215,7 +215,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasApplicationIndex(AO ao, PetscInt id
 .keywords: AO, index
 .seealso: AOMappingHasApplicationIndex(), AOCreateMapping()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscTruth *hasIndex)
+PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool  *hasIndex)
 {
   AO_Mapping *aomap;
   PetscInt   *petsc;
@@ -282,7 +282,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMapping(MPI_Comm comm,PetscInt napp,con
   PetscMPIInt    size, rank,*lens, *disp,nnapp;
   PetscInt       N, start;
   PetscInt       i;
-  PetscTruth     opt;
+  PetscBool      opt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

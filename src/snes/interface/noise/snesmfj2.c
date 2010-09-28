@@ -14,12 +14,12 @@ typedef struct {  /* default context for matrix-free SNES */
   MatNullSpace sp;               /* null space context */
   PetscReal    error_rel;        /* square root of relative error in computing function */
   PetscReal    umin;             /* minimum allowable u'a value relative to |u|_1 */
-  PetscTruth   jorge;            /* flag indicating use of Jorge's method for determining
+  PetscBool    jorge;            /* flag indicating use of Jorge's method for determining
                                    the differencing parameter */
   PetscReal    h;                /* differencing parameter */
-  PetscTruth   need_h;           /* flag indicating whether we must compute h */
-  PetscTruth   need_err;         /* flag indicating whether we must currently compute error_rel */
-  PetscTruth   compute_err;      /* flag indicating whether we must ever compute error_rel */
+  PetscBool    need_h;           /* flag indicating whether we must compute h */
+  PetscBool    need_err;         /* flag indicating whether we must currently compute error_rel */
+  PetscBool    compute_err;      /* flag indicating whether we must ever compute error_rel */
   PetscInt     compute_err_iter; /* last iter where we've computer error_rel */
   PetscInt     compute_err_freq; /* frequency of computing error_rel */
   void         *data;            /* implementation-specific data */
@@ -50,7 +50,7 @@ PetscErrorCode SNESMatrixFreeView2_Private(Mat J,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   MFCtx_Private  *ctx;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
@@ -222,7 +222,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,
   MFCtx_Private  *mfctx;
   PetscErrorCode ierr;
   PetscInt       n,nloc;
-  PetscTruth     flg;
+  PetscBool      flg;
   char           p[64];
 
   PetscFunctionBegin;

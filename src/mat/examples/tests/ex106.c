@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,j,m = 3,n = 2,its;
   PetscMPIInt    size,rank;
-  PetscTruth     mat_nonsymmetric;
+  PetscBool      mat_nonsymmetric;
   PetscInt       its_max;
   MatFactorInfo  factinfo;
   IS             perm,iperm;

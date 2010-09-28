@@ -43,7 +43,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDataTypeToMPIDataType(PetscDataType ptype
     *mtype = MPI_SHORT;
   } else if (ptype == PETSC_ENUM) {
     *mtype = MPI_INT;
-  } else if (ptype == PETSC_TRUTH) {
+  } else if (ptype == PETSC_BOOL) {
     *mtype = MPI_INT;
   } else if (ptype == PETSC_FLOAT) {
     *mtype = MPI_FLOAT;
@@ -114,7 +114,7 @@ typedef enum {PETSC_INT_SIZE = sizeof(PetscInt),PETSC_DOUBLE_SIZE = sizeof(doubl
               PETSC_COMPLEX_SIZE = sizeof(PetscScalar),PETSC_LONG_SIZE=sizeof(long),
               PETSC_SHORT_SIZE = sizeof(short),PETSC_FLOAT_SIZE = sizeof(float),
               PETSC_CHAR_SIZE = sizeof(char),PETSC_BIT_LOGICAL_SIZE = sizeof(char),
-              PETSC_ENUM_SIZE = sizeof(PetscTruth), PETSC_TRUTH_SIZE = sizeof(PetscTruth), 
+              PETSC_ENUM_SIZE = sizeof(PetscBool), PETSC_BOOL_SIZE = sizeof(PetscBool), 
               PETSC_LONG_DOUBLE_SIZE = sizeof(long double)} PetscDataTypeSize;
 #if defined(PETSC_USE_COMPLEX)
 #define PETSC_SCALAR_SIZE PETSC_COMPLEX_SIZE
@@ -178,8 +178,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDataTypeGetSize(PetscDataType ptype,size_
     *size = PETSC_ENUM_SIZE;
   } else if (ptype == PETSC_BIT_LOGICAL) {
     *size = PETSC_BIT_LOGICAL_SIZE;
-  } else if (ptype == PETSC_TRUTH) {
-    *size = PETSC_TRUTH_SIZE;
+  } else if (ptype == PETSC_BOOL) {
+    *size = PETSC_BOOL_SIZE;
   } else if (ptype == PETSC_LONG_DOUBLE) {
     *size = PETSC_LONG_DOUBLE_SIZE;
   } else {

@@ -136,7 +136,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm comm,PetscInt ndim,c
   Mat_FFTW       *fftw;
   PetscInt       m,i;
   const char     *p_flags[]={"FFTW_ESTIMATE","FFTW_MEASURE","FFTW_PATIENT","FFTW_EXHAUSTIVE"};
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscInt       p_flag;
 
   PetscFunctionBegin;

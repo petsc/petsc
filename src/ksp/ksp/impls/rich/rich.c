@@ -37,7 +37,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   PetscInt       xs, ws;
   Mat            Amat,Pmat;
   KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
-  PetscTruth     exists,diagonalscale;
+  PetscBool      exists,diagonalscale;
 
   PetscFunctionBegin;
   if (ksp->normtype == KSP_NORM_NATURAL) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Cannot use natural residual norm for KSPRICHARDSON");
@@ -175,7 +175,7 @@ PetscErrorCode KSPView_Richardson(KSP ksp,PetscViewer viewer)
 {
   KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -194,7 +194,7 @@ PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp)
   KSP_Richardson *rich = (KSP_Richardson*)ksp->data;
   PetscErrorCode ierr;
   PetscReal      tmp;
-  PetscTruth     flg,flg2;
+  PetscBool      flg,flg2;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP Richardson Options");CHKERRQ(ierr);
@@ -235,7 +235,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPRichardsonSetSelfScale_Richardson"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscTruth selfscale)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool  selfscale)
 {
   KSP_Richardson *richardsonP;
 

@@ -30,7 +30,7 @@ int main(int argc,char **args)
   char           file[2][PETSC_MAX_PATH_LEN];     /* input file name */
   PetscErrorCode ierr;
   PetscInt       its;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscReal      norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);

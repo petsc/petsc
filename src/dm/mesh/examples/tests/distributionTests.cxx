@@ -16,14 +16,14 @@ typedef struct {
   PetscInt   rank;
   PetscInt   size;
   // Classes
-  PetscTruth section;     // Run the Section tests
-  PetscTruth isection;    // Run the ISection tests
-  PetscTruth partition;   // Run the Partition tests
+  PetscBool  section;     // Run the Section tests
+  PetscBool  isection;    // Run the ISection tests
+  PetscBool  partition;   // Run the Partition tests
   // Run flags
   PetscInt   number;      // Number of each class to create
   // Mesh flags
   PetscInt   numCells;    // If possible, set the total number of cells
-  PetscTruth interpolate; // Interpolate the mesh
+  PetscBool  interpolate; // Interpolate the mesh
   // Section flags
   PetscInt   components;  // Number of section components
 } Options;

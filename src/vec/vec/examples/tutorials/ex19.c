@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   PetscMPIInt    rank;
   PetscInt       i, nlocal, n = 6;
   PetscScalar   *array;
-  PetscTruth     equal;
+  PetscBool      equal;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

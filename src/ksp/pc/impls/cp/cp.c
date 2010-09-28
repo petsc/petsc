@@ -22,7 +22,7 @@ static PetscErrorCode PCSetUp_CP(PC pc)
   PC_CP          *cp = (PC_CP*)pc->data;
   PetscInt       i,j,*colcnt;
   PetscErrorCode ierr;  
-  PetscTruth     flg;
+  PetscBool      flg;
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)pc->pmat->data;
 
   PetscFunctionBegin;
