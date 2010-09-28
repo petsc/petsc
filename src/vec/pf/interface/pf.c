@@ -31,7 +31,7 @@ PetscTruth PFRegisterAllCalled = PETSC_FALSE;
 
 .seealso: PFCreate(), PFDestroy(), PFSetType(), PFApply(), PFApplyVec()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,PetscScalar*,PetscScalar*),PetscErrorCode (*applyvec)(void*,Vec,Vec),PetscErrorCode (*view)(void*,PetscViewer),PetscErrorCode (*destroy)(void*),void*ctx)
+PetscErrorCode PETSCVEC_DLLEXPORT PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,const PetscScalar*,PetscScalar*),PetscErrorCode (*applyvec)(void*,Vec,Vec),PetscErrorCode (*view)(void*,PetscViewer),PetscErrorCode (*destroy)(void*),void*ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
@@ -231,7 +231,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFApplyVec(PF pf,Vec x,Vec y)
 
 .seealso: PFApplyVec(), PFCreate(), PFDestroy(), PFSetType(), PFSet()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFApply(PF pf,PetscInt n,PetscScalar* x,PetscScalar* y)
+PetscErrorCode PETSCVEC_DLLEXPORT PFApply(PF pf,PetscInt n,const PetscScalar* x,PetscScalar* y)
 {
   PetscErrorCode ierr;
 
