@@ -48,9 +48,7 @@ PetscErrorCode MatCUDACopyToGPU(Mat A)
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
     }
-    A->valid_GPU_matrix = PETSC_CUDA_BOTH;
-  }
-  else if (A->valid_GPU_matrix == PETSC_CUDA_CPU) {
+  } else if (A->valid_GPU_matrix == PETSC_CUDA_CPU) {
   /*
        It may be possible to reuse nonzero structure with new matrix values but 
      for simplicity and insured correctness we delete and build a new matrix on
@@ -93,6 +91,7 @@ PetscErrorCode MatCUDACopyToGPU(Mat A)
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
     } 
   }
+  A->valid_GPU_matrix = PETSC_CUDA_BOTH;
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
@@ -211,7 +210,9 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
-  A->valid_GPU_matrix = PETSC_CUDA_CPU;
+  if (A->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED){
+    A->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
   PetscFunctionReturn(0);
 }
 
