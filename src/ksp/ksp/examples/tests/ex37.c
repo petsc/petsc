@@ -60,7 +60,15 @@ int main(int argc,char **args)
 
   ierr = PetscSubcommCreate(comm,&psubcomm);CHKERRQ(ierr);
   ierr = PetscSubcommSetNumber(psubcomm,nsubcomm);CHKERRQ(ierr);
-  if (type == PETSC_SUBCOMM_CONTIGUOUS){
+  if (type == PETSC_SUBCOMM_GENERAL){/* user provides color, subrank and duprank */
+    PetscMPIInt color,subrank,duprank,subsize;
+    duprank = size-1 - rank;
+    subsize = size/nsubcomm;
+    if (subsize*nsubcomm != size) SETERRQ2(comm,PETSC_ERR_SUP,"This example requires nsubcomm %D divides nproc %D",nsubcomm,size);
+    color   = duprank/subsize;
+    subrank = duprank - color*subsize;
+    ierr = PetscSubcommSetTypeGeneral(psubcomm,color,subrank,duprank);CHKERRQ(ierr);
+  } else if (type == PETSC_SUBCOMM_CONTIGUOUS){
     ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
   } else if(type == PETSC_SUBCOMM_INTERLACED){
     ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_INTERLACED);CHKERRQ(ierr);
@@ -71,10 +79,12 @@ int main(int argc,char **args)
 
   ierr = PetscOptionsHasName(PETSC_NULL, "-subcomm_view", &flg);CHKERRQ(ierr);
   if (flg){
-    PetscMPIInt subsize,subrank;
+    PetscMPIInt subsize,subrank,duprank;
     ierr = MPI_Comm_size((MPI_Comm)subcomm,&subsize);CHKERRQ(ierr);
     ierr = MPI_Comm_rank((MPI_Comm)subcomm,&subrank);CHKERRQ(ierr);
-    ierr = PetscSynchronizedPrintf(comm,"[%D], sub-size %D,sub-rank %D\n",rank,subsize,subrank);
+    ierr = MPI_Comm_rank((MPI_Comm)psubcomm->dupparent,&duprank);CHKERRQ(ierr);
+
+    ierr = PetscSynchronizedPrintf(comm,"[%D], color %D, sub-size %D, sub-rank %D, duprank %D\n",rank,psubcomm->color,subsize,subrank,duprank);
     ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
   }
 

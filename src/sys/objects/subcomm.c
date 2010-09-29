@@ -49,7 +49,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommSetNumber(PetscSubcomm psubcomm,Pe
 
    Input Parameter:
 +  psubcomm - PetscSubcomm context
--  subcommtype - subcommunicator type
+-  subcommtype - subcommunicator type, PETSC_SUBCOMM_CONTIGUOUS,PETSC_SUBCOMM_INTERLACED
 
    Level: advanced
 
@@ -77,9 +77,47 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommSetType(PetscSubcomm psubcomm,cons
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSubcommSetTypeGeneral"
-PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm)
+/*@C
+  PetscSubcommSetTypeGeneral - Set type of subcommunicators from user's specifications
+
+   Collective on MPI_Comm
+
+   Input Parameter:
++  psubcomm - PetscSubcomm context
+.  color   - control of subset assignment (nonnegative integer). Processes with the same color are in the same subcommunicator.
+.  subrank - rank in the subcommunicator
+-  duprank - rank in the dupparent (see PetscSubcomm)
+
+   Level: advanced
+
+.keywords: communicator, create
+
+.seealso: PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetNumber(),PetscSubcommSetType()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt color,PetscMPIInt subrank,PetscMPIInt duprank)
 {
+  PetscErrorCode ierr;
+  MPI_Comm       subcomm=0,dupcomm=0,comm=psubcomm->parent;
+  PetscMPIInt    size;
+
   PetscFunctionBegin;
+  if (!psubcomm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"PetscSubcomm is not created. Call PetscSubcommCreate()");
+  if (psubcomm->n < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of subcommunicators %D is incorrect. Call PetscSubcommSetNumber()",psubcomm->n);
+
+  ierr = MPI_Comm_split(comm,color,subrank,&subcomm);CHKERRQ(ierr);
+
+  /* create dupcomm with same size as comm, but its rank, duprank, maps subcomm's contiguously into dupcomm 
+     if duprank is not a valid number, then dupcomm is not created - not all applications require dupcomm! */
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (duprank == PETSC_DECIDE){
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"duprank==PETSC_DECIDE is not supported yet");
+  } else if (duprank >= 0 && duprank < size){
+    ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
+  } 
+
+  psubcomm->dupparent = dupcomm;
+  psubcomm->comm      = subcomm;
+  psubcomm->color     = color;
   PetscFunctionReturn(0);
 }
 
