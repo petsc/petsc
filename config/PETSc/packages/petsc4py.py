@@ -27,7 +27,7 @@ class Configure(PETSc.package.NewPackage):
     self.logClearRemoveDirectory()
     self.logResetRemoveDirectory()
     archflags = ""
-    more if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin():
       if self.types.sizes['known-sizeof-void-p'] == 32:
         archflags = "ARCHFLAGS=\'-arch i386\'"
       else:
