@@ -263,7 +263,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 #undef __FUNCT__  
 #define __FUNCT__ "DMGlobalToLocalBegin"
 /*@
-    DMGlobalToLocalBegin - Begins updating local vectors from local vectors
+    DMGlobalToLocalBegin - Begins updating local vectors from global vector
 
     Neighbor-wise Collective on DM
 
@@ -291,7 +291,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mod
 #undef __FUNCT__  
 #define __FUNCT__ "DMGlobalToLocalEnd"
 /*@
-    DMGlobalToLocalEnd - Ends updating local vectors from local vectors
+    DMGlobalToLocalEnd - Ends updating local vectors from global vector
 
     Neighbor-wise Collective on DM
 

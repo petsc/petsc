@@ -94,7 +94,7 @@ def printindex(outfilename,headfilename,levels,titles,tables):
                   if tables[i].index(filename) % 3 == 2 : fd.write('<TR>\n')
       fd.write('</TABLE>\n')
       # Add HTML tail info here
-      fd.write('<BR><A HREF="../../index.html"><IMG SRC="../up.gif">Table of Contents</A>\n')
+      fd.write('<BR><A HREF="../../index.html">Table of Contents</A>\n')
       fd.close()
 
 # This routine takes in as input a dictionary, which contains the
