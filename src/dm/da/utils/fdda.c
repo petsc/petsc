@@ -682,7 +682,7 @@ EXTERN_C_END
 PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
 {
   PetscErrorCode ierr;
-  PetscInt       dim,dof,nx,ny,nz,dims[3],starts[3];
+  PetscInt       dim,dof,nx,ny,nz,dims[3],starts[3],M,N,P;
   Mat            A;
   MPI_Comm       comm;
   const MatType  Atype;
@@ -722,11 +722,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,&M,&N,&P,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   ierr = DAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,dof*nx*ny*nz,dof*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,dof*nx*ny*nz,dof*nx*ny*nz,dof*M*N*P,dof*M*N*P);CHKERRQ(ierr);
   ierr = MatSetType(A,(const MatType)ttype);CHKERRQ(ierr); 
   ierr = MatSetDA(A,da);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
