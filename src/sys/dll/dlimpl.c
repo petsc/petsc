@@ -228,10 +228,6 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDLSym(PetscDLHandle handle,const char sym
 {
   dlhandle_t dlhandle;
   dlsymbol_t dlsymbol;
-#if defined(PETSC_HAVE_DLERROR)
-  const char *e;
-#endif  
-
 
   PetscFunctionBegin;
   PetscValidCharPointer(symbol,2);
@@ -293,14 +289,15 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDLSym(PetscDLHandle handle,const char sym
       /* Attempt to open the main executable as a dynamic library. */
       dlhandle = dlopen(0, dlflags1|dlflags2); 
     }
-#endif
 #if defined(PETSC_HAVE_DLERROR)
-    e = (const char*) dlerror();
-    if(e){
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error opening main executable as a dynamic library:\n  Error message from dlopen(): '%s'\n", e);
+    { const char *e = (const char*) dlerror();
+      if(e){
+        SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error opening main executable as a dynamic library:\n  Error message from dlopen(): '%s'\n", e);
+      }
     }
-  }
 #endif
+#endif /* PETSC_HAVE_DLOPEN */
+  }
 #if defined(PETSC_HAVE_DLERROR)
   dlerror(); /* clear any previous error */
 #endif
