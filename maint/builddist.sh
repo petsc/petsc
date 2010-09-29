@@ -9,11 +9,11 @@ endif
 cd $BUILDDIR
 
 if (-d tao-$VERSION) then
-    #rm -rf tao-$VERSION
+    rm -rf tao-$VERSION
 endif
 
 echo "Cloning ssh://login.mcs.anl.gov//home/sarich/hg/tao_c -r $REVISION"
-#hg clone ssh://login.mcs.anl.gov//home/sarich/hg/tao_c -r $REVISION tao-$VERSION
+hg clone ssh://login.mcs.anl.gov//home/sarich/hg/tao_c -r $REVISION tao-$VERSION
 
 cd tao-$VERSION
 export TAO_DIR=$BUILDDIR/tao-2.0-beta
