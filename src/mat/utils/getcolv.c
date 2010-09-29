@@ -127,21 +127,21 @@ PetscErrorCode MatGetColumnNorms_MPIAIJ(Mat A,NormType type,PetscReal *norms)
   ierr = PetscMemzero(work,n*sizeof(PetscReal));CHKERRQ(ierr);  
   if (type == NORM_2) {
     for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
-      work[A->rmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i]*a_aij->a[i]);
+      work[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i]*a_aij->a[i]);
     }
     for (i=0; i<b_aij->i[aij->B->rmap->n]; i++) {
       work[garray[b_aij->j[i]]] += PetscAbsScalar(b_aij->a[i]*b_aij->a[i]);
     }
   } else if (type == NORM_1) {
     for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
-      work[A->rmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i]);
+      work[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i]);
     }
     for (i=0; i<b_aij->i[aij->B->rmap->n]; i++) {
       work[garray[b_aij->j[i]]] += PetscAbsScalar(b_aij->a[i]);
     }
   } else if (type == NORM_INFINITY) {
     for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
-      work[A->rmap->rstart + a_aij->j[i]] = PetscMax(PetscAbsScalar(a_aij->a[i]), work[A->rmap->rstart + a_aij->j[i]]);
+      work[A->cmap->rstart + a_aij->j[i]] = PetscMax(PetscAbsScalar(a_aij->a[i]), work[A->cmap->rstart + a_aij->j[i]]);
     }
     for (i=0; i<b_aij->i[aij->B->rmap->n]; i++) {
       work[garray[b_aij->j[i]]] = PetscMax(PetscAbsScalar(b_aij->a[i]),work[garray[b_aij->j[i]]]);
