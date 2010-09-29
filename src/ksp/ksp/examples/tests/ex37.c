@@ -3,7 +3,7 @@ static char help[] = "Test MatGetMultiProcBlock() \n\
 Reads a PETSc matrix and vector from a file and solves a linear system.\n\n";
 /*
   Example:
-  mpiexec -n 4 ./ex37 -f <input_file> -nsubcomm 2
+  mpiexec -n 4 ./ex37 -f <input_file> -nsubcomm 2 -subcomm_view -subcomm_type <1 or 2>
 */
 
 #include "petscksp.h"
@@ -26,6 +26,7 @@ int main(int argc,char **args)
   PetscSubcomm   psubcomm;
   PetscInt       nsubcomm=1,id;
   PetscScalar    *barray,*xarray,*uarray,*array,one=1.0;
+  PetscInt       type=1;
 
   PetscInitialize(&argc,&args,(char *)0,help); 
   /* Load the matrix */
@@ -55,16 +56,27 @@ int main(int argc,char **args)
 
   /* Test MatGetMultiProcBlock() */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-nsubcomm",&nsubcomm,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscSubcommCreate(comm,nsubcomm,PETSC_SUBCOMM_CONTIGUOUS,&psubcomm);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-subcomm_type",&type,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscSubcommCreate(comm,&psubcomm);CHKERRQ(ierr);
+  ierr = PetscSubcommSetNumber(psubcomm,nsubcomm);CHKERRQ(ierr);
+  if (type == PETSC_SUBCOMM_CONTIGUOUS){
+    ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
+  } else if(type == PETSC_SUBCOMM_INTERLACED){
+    ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_INTERLACED);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(psubcomm->parent,PETSC_ERR_SUP,"PetscSubcommType %D is not supported yet",type);
+  }
   subcomm = psubcomm->comm;
 
-  /*
-  PetscMPIInt subsize,subrank;
-  ierr = MPI_Comm_size((MPI_Comm)subcomm,&subsize);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank((MPI_Comm)subcomm,&subrank);CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(comm,"[%D], sub-size %D,sub-rank %D\n",rank,subsize,subrank);
-  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
-  */
+  ierr = PetscOptionsHasName(PETSC_NULL, "-subcomm_view", &flg);CHKERRQ(ierr);
+  if (flg){
+    PetscMPIInt subsize,subrank;
+    ierr = MPI_Comm_size((MPI_Comm)subcomm,&subsize);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank((MPI_Comm)subcomm,&subrank);CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf(comm,"[%D], sub-size %D,sub-rank %D\n",rank,subsize,subrank);
+    ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  }
 
   /* Create subA */
   ierr = MatGetMultiProcBlock(A,subcomm,&subA);CHKERRQ(ierr);

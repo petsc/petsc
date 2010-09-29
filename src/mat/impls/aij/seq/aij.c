@@ -2288,19 +2288,20 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   PetscFunctionReturn(0);
 }
 
+/* 
+   Computes the number of nonzeros per row needed for preallocation when X and Y 
+   have different nonzero structure. 
+*/
 #undef __FUNCT__  
-#define __FUNCT__ "MatAXPYSetPreallocation_SeqAIJ"
-PetscErrorCode MatAXPYSetPreallocation_SeqAIJ(Mat B,Mat Y,Mat X)
+#define __FUNCT__ "MatAXPYGetPreallocation_SeqAIJ"
+PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat Y,Mat X,PetscInt* nnz)
 {
-  PetscInt          i,m=Y->rmap->N,n=Y->cmap->N;
-  PetscErrorCode    ierr;
+  PetscInt          i,m=Y->rmap->N;
   Mat_SeqAIJ        *x = (Mat_SeqAIJ*)X->data;
   Mat_SeqAIJ        *y = (Mat_SeqAIJ*)Y->data;
   const PetscInt    *xi = x->i,*yi = y->i;
-  PetscInt          *nnz;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(n*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
   /* Set the number of nonzeros in the new matrix */
   for(i=0; i<m; i++) {
     PetscInt j,k,nzx = xi[i+1] - xi[i],nzy = yi[i+1] - yi[i];
@@ -2313,10 +2314,6 @@ PetscErrorCode MatAXPYSetPreallocation_SeqAIJ(Mat B,Mat Y,Mat X)
     }
     for (; k<nzy; k++) nnz[i]++;
   }
-  /* Preallocate matrix */
-  ierr = MatSeqAIJSetPreallocation(B,PETSC_NULL,nnz);CHKERRQ(ierr);
-
-  ierr = PetscFree(nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2328,7 +2325,6 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscInt       i;
   Mat_SeqAIJ     *x  = (Mat_SeqAIJ *)X->data,*y = (Mat_SeqAIJ *)Y->data;
   PetscBLASInt   one=1,bnz = PetscBLASIntCast(x->nz);
-  Mat            B;
 
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {
@@ -2347,12 +2343,17 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += a*(x->a[i]); 
     ierr = PetscInfo3(Y,"ratio of nnz(X)/nnz(Y): %d/%d = %G\n",x->nz,y->nz,(PetscReal)(x->nz)/y->nz);CHKERRQ(ierr);
   } else {
+    Mat B;
+    PetscInt *nnz;
+    ierr = PetscMalloc(Y->rmap->N*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
     ierr = MatCreate(((PetscObject)Y)->comm,&B);CHKERRQ(ierr);
-    ierr = MatSetSizes(B,Y->rmap->n,Y->rmap->N,Y->cmap->n,Y->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,Y->rmap->n,Y->cmap->n,Y->rmap->N,Y->cmap->N);CHKERRQ(ierr);
     ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
-    ierr = MatAXPYSetPreallocation_SeqAIJ(B,Y,X);CHKERRQ(ierr);
+    ierr = MatAXPYGetPreallocation_SeqAIJ(Y,X,nnz);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(B,PETSC_NULL,nnz);CHKERRQ(ierr);
     ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
     ierr = MatHeaderReplace(Y,B);CHKERRQ(ierr);
+    ierr = PetscFree(nnz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

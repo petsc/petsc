@@ -1276,7 +1276,9 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     /* initialize datastructure mpjac */
     if (!jac->psubcomm) {
       /* Create default contiguous subcommunicatiors if user does not provide them */
-      ierr = PetscSubcommCreate(comm,jac->n,PETSC_SUBCOMM_CONTIGUOUS,&jac->psubcomm);CHKERRQ(ierr);
+      ierr = PetscSubcommCreate(comm,&jac->psubcomm);CHKERRQ(ierr);
+      ierr = PetscSubcommSetNumber(jac->psubcomm,jac->n);CHKERRQ(ierr);
+      ierr = PetscSubcommSetType(jac->psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory(pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
     } 
     mpjac->psubcomm = jac->psubcomm;
