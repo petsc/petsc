@@ -910,8 +910,15 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       import nargs
       import sys
 
+      if self.arch:
+        confname = 'conftest-%s' % (self.arch,)
+        reconfname = 'reconfigure-%s.py' % (self.arch,)
+      else:
+        confname = 'conftest'
+        reconfname = reconfigure.py
       args = self.clArgs[:]
-      body = ['FILE *output = fopen("reconfigure.py","w");']
+      body = ['const char reconfname[] = "' + reconfname + '";',
+              'FILE *output = fopen(reconfname,"w");']
       body.append('fprintf(output, "#!'+sys.executable+'\\n");')
       body.append('fprintf(output, "\\nconfigure_options = [\\n");')
       body.extend(self.batchSetup)
@@ -930,7 +937,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
                 '  configure.petsc_configure(configure_options)\\n");']
       body.append('\\n'.join(driver))
       body.append('\nfclose(output);\n')
-      body.append('chmod("reconfigure.py",0744);')
+      body.append('chmod(reconfname,0744);')
 
       oldFlags = self.compilers.CPPFLAGS
       oldLibs  = self.compilers.LIBS
@@ -939,14 +946,18 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.batchIncludes.insert(0, '#include <stdio.h>\n#include <sys/types.h>\n#include <sys/stat.h>')
       if not self.checkLink('\n'.join(self.batchIncludes)+'\n', '\n'.join(body), cleanup = 0, codeBegin = '\nint main(int argc, char **argv) {\n'):
         sys.exit('Unable to generate test file for cross-compilers/batch-system\n')
+      import shutil
+      # Could use shutil.copy, but want an error if confname exists as a directory
+      shutil.copyfile(os.path.join(self.tmpDir,'conftest'),confname)
+      shutil.copymode(os.path.join(self.tmpDir,'conftest'),confname)
       self.compilers.CPPFLAGS = oldFlags
       self.compilers.LIBS = oldLibs
       self.logClear()
       print '=================================================================================\r'
       print '    Since your compute nodes require use of a batch system or mpiexec you must:  \r'
-      print ' 1) Submit ./conftest to 1 processor of your batch system or system you are      \r'
+      print ' 1) Submit ./'+confname+' to 1 processor of your batch system or system you are  \r'
       print '    cross-compiling for; this will generate the file reconfigure.py              \r'
-      print ' 2) Run ./reconfigure.py (to complete the configure process).                    \r'
+      print ' 2) Run ./'+reconfname+' (to complete the configure process).                    \r'
       print '=================================================================================\r'
       sys.exit(0)
     return
