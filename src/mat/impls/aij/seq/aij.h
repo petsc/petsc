@@ -218,6 +218,8 @@ EXTERN PetscErrorCode MatView_SeqAIJ(Mat,PetscViewer);
 EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscBool );
 EXTERN PetscErrorCode Mat_CheckInode_FactorLU(Mat,PetscBool );
 
+EXTERN PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat,Mat,PetscInt*);
+
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqSBAIJ(Mat,const MatType,MatReuse,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqBAIJ(Mat,const MatType,MatReuse,Mat*);
