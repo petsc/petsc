@@ -60,9 +60,9 @@ cdef class DA(Object):
         #
         cdef PetscInt ndim = PETSC_DECIDE
         cdef PetscInt ndof = 1
-        cdef PetscInt M = PETSC_DECIDE, m = PETSC_DECIDE, *lx = NULL
-        cdef PetscInt N = PETSC_DECIDE, n = PETSC_DECIDE, *ly = NULL
-        cdef PetscInt P = PETSC_DECIDE, p = PETSC_DECIDE, *lz = NULL
+        cdef PetscInt M = 1, m = PETSC_DECIDE, *lx = NULL
+        cdef PetscInt N = 1, n = PETSC_DECIDE, *ly = NULL
+        cdef PetscInt P = 1, p = PETSC_DECIDE, *lz = NULL
         cdef PetscDAPeriodicType ptype = DA_PERIODIC_NONE
         cdef PetscDAStencilType  stype = DA_STENCIL_BOX
         cdef PetscInt            swidth = 1
@@ -72,7 +72,7 @@ cdef class DA(Object):
         else: gsizes = tuple(gsizes)
         cdef PetscInt gdim = len(gsizes)
         assert gdim <= 3
-        if   gdim == 0: M = N = P = PETSC_DECIDE
+        if   gdim == 0: M = N = P = 1
         elif gdim == 1: M, = gsizes
         elif gdim == 2: M, N = gsizes
         elif gdim == 3: M, N, P = gsizes
