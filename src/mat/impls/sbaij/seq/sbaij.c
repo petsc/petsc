@@ -12,14 +12,14 @@
 #define USESHORT
 #include "../src/mat/impls/sbaij/seq/relax.h"
 
-extern PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat,PetscTruth);
+extern PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat,PetscBool );
 
 /*
      Checks for missing diagonals
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatMissingDiagonal_SeqSBAIJ"
-PetscErrorCode MatMissingDiagonal_SeqSBAIJ(Mat A,PetscTruth *missing,PetscInt *dd)
+PetscErrorCode MatMissingDiagonal_SeqSBAIJ(Mat A,PetscBool  *missing,PetscInt *dd)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data; 
   PetscErrorCode ierr;
@@ -59,7 +59,7 @@ PetscErrorCode MatMarkDiagonal_SeqSBAIJ(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_SeqSBAIJ"
-static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscBool  symmetric,PetscBool  blockcompressed,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscBool  *done)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   PetscInt     i,j,n = a->mbs,nz = a->i[n],bs = A->rmap->bs;
@@ -95,7 +95,7 @@ static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscTruth symm
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRowIJ_SeqSBAIJ" 
-static PetscErrorCode MatRestoreRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+static PetscErrorCode MatRestoreRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscBool  symmetric,PetscBool  blockcompressed,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscBool  *done)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   PetscInt     i,n = a->mbs,nz = a->i[n];
@@ -157,7 +157,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_SeqSBAIJ"
-PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscTruth flg)
+PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscBool  flg)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
@@ -517,7 +517,7 @@ static PetscErrorCode MatView_SeqSBAIJ_Draw(Mat A,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscReal      xl,yl,xr,yr,w,h;
   PetscDraw      draw;
-  PetscTruth     isnull;
+  PetscBool      isnull;
   
   PetscFunctionBegin; 
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
@@ -537,7 +537,7 @@ static PetscErrorCode MatView_SeqSBAIJ_Draw(Mat A,PetscViewer viewer)
 PetscErrorCode MatView_SeqSBAIJ(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     iascii,isdraw;
+  PetscBool      iascii,isdraw;
   FILE           *file = 0;
 
   PetscFunctionBegin;
@@ -616,7 +616,7 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
   PetscInt          *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,lastcol = -1;
   PetscInt          *imax=a->imax,*ai=a->i,*ailen=a->ilen;
   PetscInt          *aj=a->j,nonew=a->nonew,bs2=a->bs2,bs=A->rmap->bs,stepval;
-  PetscTruth        roworiented=a->roworiented; 
+  PetscBool         roworiented=a->roworiented; 
   const PetscScalar *value = v;
   MatScalar         *ap,*aa = a->a,*bap;
   
@@ -745,7 +745,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ_SeqAIJ_Inode(Mat A)
   PetscErrorCode  ierr;
   const PetscInt  *ai = a->i, *aj = a->j,*cols;
   PetscInt        i = 0,j,blk_size,m = A->rmap->n,node_count = 0,nzx,nzy,*ns,row,nz,cnt,cnt2,*counts;
-  PetscTruth      flag;
+  PetscBool       flag;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(m*sizeof(PetscInt),&ns);CHKERRQ(ierr);
@@ -893,7 +893,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
 PetscErrorCode MatZeroRows_SeqSBAIJ_Check_Blocks(PetscInt idx[],PetscInt n,PetscInt bs,PetscInt sizes[], PetscInt *bs_max)
 {
   PetscInt   i,j,k,row;
-  PetscTruth flg;
+  PetscBool  flg;
   
   PetscFunctionBegin;
    for (i=0,j=0; i<n; j++) {
@@ -1037,7 +1037,7 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,const MatFactorInfo *info)
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)inA->data;
   Mat            outA;
   PetscErrorCode ierr;
-  PetscTruth     row_identity;
+  PetscBool      row_identity;
   
   PetscFunctionBegin;
   if (info->levels != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only levels=0 is supported for in-place icc");
@@ -1240,7 +1240,7 @@ PetscErrorCode MatSetBlockSize_SeqSBAIJ(Mat A,PetscInt bs)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIsSymmetric_SeqSBAIJ"
-PetscErrorCode MatIsSymmetric_SeqSBAIJ(Mat A,PetscReal tol,PetscTruth *flg)
+PetscErrorCode MatIsSymmetric_SeqSBAIJ(Mat A,PetscReal tol,PetscBool  *flg)
 {
   PetscFunctionBegin;
   *flg = PETSC_TRUE;
@@ -1249,7 +1249,7 @@ PetscErrorCode MatIsSymmetric_SeqSBAIJ(Mat A,PetscReal tol,PetscTruth *flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIsStructurallySymmetric_SeqSBAIJ"
-PetscErrorCode MatIsStructurallySymmetric_SeqSBAIJ(Mat A,PetscTruth *flg)
+PetscErrorCode MatIsStructurallySymmetric_SeqSBAIJ(Mat A,PetscBool  *flg)
 {
    PetscFunctionBegin;
    *flg = PETSC_TRUE;
@@ -1258,7 +1258,7 @@ PetscErrorCode MatIsStructurallySymmetric_SeqSBAIJ(Mat A,PetscTruth *flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIsHermitian_SeqSBAIJ"
-PetscErrorCode MatIsHermitian_SeqSBAIJ(Mat A,PetscReal tol,PetscTruth *flg)
+PetscErrorCode MatIsHermitian_SeqSBAIJ(Mat A,PetscReal tol,PetscBool  *flg)
  {
    PetscFunctionBegin;
    *flg = PETSC_FALSE;
@@ -1467,7 +1467,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
   Mat_SeqSBAIJ   *b = (Mat_SeqSBAIJ*)B->data;
   PetscErrorCode ierr;
   PetscInt       i,mbs,bs2, newbs = PetscAbs(bs);
-  PetscTruth     skipallocation = PETSC_FALSE,flg = PETSC_FALSE;
+  PetscBool      skipallocation = PETSC_FALSE,flg = PETSC_FALSE;
   
   PetscFunctionBegin;
   B->preallocated = PETSC_TRUE;
@@ -1618,10 +1618,10 @@ EXTERN_C_END
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqSBAIJSetNumericFactorization_inplace"
-PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat B,PetscTruth natural)
+PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat B,PetscBool  natural)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
   PetscInt       bs = B->rmap->bs;
 
   PetscFunctionBegin;
@@ -1717,7 +1717,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactorAvailable_seqsbaij_petsc"
-PetscErrorCode MatGetFactorAvailable_seqsbaij_petsc(Mat A,MatFactorType ftype,PetscTruth *flg)
+PetscErrorCode MatGetFactorAvailable_seqsbaij_petsc(Mat A,MatFactorType ftype,PetscBool  *flg)
 {
   PetscFunctionBegin;
   if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
@@ -1764,7 +1764,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   Mat_SeqSBAIJ   *b;
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscTruth     no_unroll = PETSC_FALSE,no_inode = PETSC_FALSE;
+  PetscBool      no_unroll = PETSC_FALSE,no_inode = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)B)->comm,&size);CHKERRQ(ierr);
@@ -1864,7 +1864,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
     if (no_inode) {ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_inode\n");CHKERRQ(ierr);}
     ierr = PetscOptionsInt("-mat_inode_limit","Do not use inodes larger then this value",PETSC_NULL,b->inode.limit,&b->inode.limit,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  b->inode.use = (PetscTruth)(!(no_unroll || no_inode));
+  b->inode.use = (PetscBool )(!(no_unroll || no_inode));
   if (b->inode.limit > b->inode.max_limit) b->inode.limit = b->inode.max_limit;
 
   PetscFunctionReturn(0);

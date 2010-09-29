@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   PetscInt       *Shistit = 0,Khistl = 200,Shistl = 10;
   PetscReal      h,xp = 0.0,*Khist = 0,*Shist = 0;
   PetscScalar    v,pfive = .5;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

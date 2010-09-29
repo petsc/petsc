@@ -22,8 +22,8 @@ struct _p_DrawHG {
   int           maxValues;
   PetscReal     *values;
   int           color;
-  PetscTruth    calcStats;
-  PetscTruth    integerBins;
+  PetscBool     calcStats;
+  PetscBool     integerBins;
 };
 
 #define CHUNKSIZE 100
@@ -52,7 +52,7 @@ struct _p_DrawHG {
 PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
   PetscDrawHG    h;
   MPI_Comm       comm;
-  PetscTruth     isnull;
+  PetscBool      isnull;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -265,7 +265,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGAddValue(PetscDrawHG hist, PetscRea
 PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
 {
   PetscDraw      draw = hist->win;
-  PetscTruth     isnull;
+  PetscBool      isnull;
   PetscReal      xmin,xmax,ymin,ymax,*bins,*values,binSize,binLeft,binRight,maxHeight,mean,var;
   char           title[256];
   char           xlabel[256];
@@ -551,7 +551,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGSetLimits(PetscDrawHG hist, PetscRe
 .keywords:  draw, histogram, statistics
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGCalcStats(PetscDrawHG hist, PetscTruth calc)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGCalcStats(PetscDrawHG hist, PetscBool  calc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
@@ -574,7 +574,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGCalcStats(PetscDrawHG hist, PetscTr
 
 .keywords:  draw, histogram, statistics
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGIntegerBins(PetscDrawHG hist, PetscTruth ints)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawHGIntegerBins(PetscDrawHG hist, PetscBool  ints)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);

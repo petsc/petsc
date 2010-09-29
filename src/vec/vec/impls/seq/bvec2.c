@@ -96,7 +96,7 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
     */
     static PetscInt stateId = -1;
     int outputState = 0;
-    PetscTruth hasState;
+    PetscBool  hasState;
     int doOutput = 0;
     PetscInt bs, b;
 
@@ -301,7 +301,7 @@ static PetscErrorCode VecView_Seq_Draw(Vec xin,PetscViewer v)
 {
   PetscErrorCode    ierr;
   PetscDraw         draw;
-  PetscTruth        isnull;
+  PetscBool         isnull;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -332,7 +332,7 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   PetscInt       n = xin->map->n,classid=VEC_FILE_CLASSID;
   FILE           *file;
 #if defined(PETSC_HAVE_MPIIO)
-  PetscTruth     isMPIIO;
+  PetscBool      isMPIIO;
 #endif
 
   PetscFunctionBegin;
@@ -407,15 +407,15 @@ EXTERN_C_END
 PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     isdraw,iascii,issocket,isbinary;
+  PetscBool      isdraw,iascii,issocket,isbinary;
 #if defined(PETSC_HAVE_MATHEMATICA)
-  PetscTruth     ismathematica;
+  PetscBool      ismathematica;
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  PetscTruth     ismatlab;
+  PetscBool      ismatlab;
 #endif
 #if defined(PETSC_HAVE_HDF5)
-  PetscTruth ishdf5;
+  PetscBool  ishdf5;
 #endif
 
   PetscFunctionBegin;
@@ -783,7 +783,7 @@ PetscErrorCode VecDuplicate_Seq(Vec win,Vec *V)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSetOption_Seq"
-PetscErrorCode VecSetOption_Seq(Vec v,VecOption op,PetscTruth flag)
+PetscErrorCode VecSetOption_Seq(Vec v,VecOption op,PetscBool  flag)
 {
   PetscFunctionBegin;
   if (op == VEC_IGNORE_NEGATIVE_INDICES) {

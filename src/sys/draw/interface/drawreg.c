@@ -39,7 +39,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawCreate(MPI_Comm comm,const char displ
   PetscDraw      draw;
   PetscErrorCode ierr;
   PetscReal      dpause;
-  PetscTruth     flag;
+  PetscBool      flag;
 
   PetscFunctionBegin;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
@@ -102,8 +102,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawCreate(MPI_Comm comm,const char displ
 PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
 {
   PetscErrorCode ierr,(*r)(PetscDraw);
-  PetscTruth      match;
-  PetscTruth      flg=PETSC_FALSE;
+  PetscBool       match;
+  PetscBool       flg=PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
@@ -124,7 +124,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSetType(PetscDraw draw,const PetscDra
   if (!flg) {
     ierr = PetscStrcmp(type,PETSC_DRAW_X,&match);CHKERRQ(ierr);
     if (match) {
-      PetscTruth dontwarn = PETSC_TRUE;
+      PetscBool  dontwarn = PETSC_TRUE;
       flg = PETSC_TRUE;
       ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&dontwarn);CHKERRQ(ierr);
       if (!dontwarn) {
@@ -240,11 +240,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawRegister(const char *sname,const char
 PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSetFromOptions(PetscDraw draw)
 {
   PetscErrorCode ierr;
-  PetscTruth flg,nox;
+  PetscBool  flg,nox;
   char       vtype[256];
   const char *def;
 #if !defined(PETSC_USE_WINDOWS_GRAPHICS) && !defined(PETSC_HAVE_X11)
-  PetscTruth warn;
+  PetscBool  warn;
 #endif
 
   PetscFunctionBegin;

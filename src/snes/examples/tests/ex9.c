@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   Vec            x,r;                  /* vectors */
   DAStencilType  stencil = DA_STENCIL_BOX;
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscInt       Nx = PETSC_DECIDE,Ny = PETSC_DECIDE,Nz = PETSC_DECIDE,its;
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
 

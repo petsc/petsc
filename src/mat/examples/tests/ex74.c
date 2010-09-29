@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PetscScalar        neg_one = -1.0,four=4.0,value[3];  
   IS                 perm, iscol;
   PetscRandom        rdm;
-  PetscTruth         doIcc=PETSC_TRUE,equal;
+  PetscBool          doIcc=PETSC_TRUE,equal;
   MatInfo            minfo1,minfo2;
   MatFactorInfo      factinfo;
   const MatType      type;

@@ -9,11 +9,11 @@ typedef struct {
   PetscInt   rank;
   PetscInt   size;
   // Classes
-  PetscTruth overlap;       // Run the Overlap tests
-  PetscTruth preallocation; // Run the Preallocation tests
-  PetscTruth label;         // Run the Label tests
+  PetscBool  overlap;       // Run the Overlap tests
+  PetscBool  preallocation; // Run the Preallocation tests
+  PetscBool  label;         // Run the Label tests
   // Mesh flags
-  PetscTruth interpolate;   // Interpolate the mesh
+  PetscBool  interpolate;   // Interpolate the mesh
   PetscReal  refine;        // The refinement limit
 } Options;
 

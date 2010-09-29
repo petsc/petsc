@@ -24,7 +24,7 @@ void             removeArrows(const ALE::Obj<BiGraphInt3>& bg,         const cha
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscInt       verbosity;
   PetscErrorCode ierr;
 
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 #define __FUNCT__ "testBiGraphDiv2"
 PetscErrorCode testBiGraphDiv2() {
   PetscInt debug;
-  PetscTruth flag;
+  PetscBool  flag;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   debug = 0;

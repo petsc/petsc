@@ -13,7 +13,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAAD9(NLF,MatSORType,PetscInt
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAADb(NLF,MatSORType,PetscInt,Vec);
 EXTERN_C_END
 EXTERN PetscErrorCode DMMGFormFunction(SNES,Vec,Vec,void *);
-EXTERN PetscErrorCode SNESLSCheckLocalMin_Private(Mat,Vec,Vec,PetscReal,PetscTruth*);
+EXTERN PetscErrorCode SNESLSCheckLocalMin_Private(Mat,Vec,Vec,PetscReal,PetscBool *);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMGComputeJacobianWithAdic"
@@ -630,7 +630,7 @@ Options:
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSolveFASMCycle"
-PetscErrorCode DMMGSolveFASMCycle(DMMG *dmmg,PetscInt level,PetscTruth* converged)
+PetscErrorCode DMMGSolveFASMCycle(DMMG *dmmg,PetscInt level,PetscBool * converged)
 {
   PetscErrorCode ierr;
   PetscInt       j,k,cycles=1,nlevels=level;//nlevels=dmmg[0]->nlevels-1; 
@@ -782,7 +782,7 @@ Options:
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSolveFASMCycle9"
-PetscErrorCode DMMGSolveFASMCycle9(DMMG *dmmg,PetscInt level,PetscTruth* converged)
+PetscErrorCode DMMGSolveFASMCycle9(DMMG *dmmg,PetscInt level,PetscBool * converged)
 {
   PetscErrorCode ierr;
   PetscInt       j,k,cycles=1,nlevels=level;//nlevels=dmmg[0]->nlevels-1; 
@@ -946,7 +946,7 @@ Options:
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSolveFASFCycle"
-PetscErrorCode DMMGSolveFASFCycle(DMMG *dmmg,PetscInt l,PetscTruth* converged)
+PetscErrorCode DMMGSolveFASFCycle(DMMG *dmmg,PetscInt l,PetscBool * converged)
 {
   PetscErrorCode ierr;
   PetscInt       j;//l = dmmg[0]->nlevels-1;
@@ -1007,7 +1007,7 @@ Options:
 */
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSolveFASFCycle"
-PetscErrorCode DMMGSolveFASFCycle9(DMMG *dmmg,PetscInt l,PetscTruth* converged)
+PetscErrorCode DMMGSolveFASFCycle9(DMMG *dmmg,PetscInt l,PetscBool * converged)
 {
   PetscErrorCode ierr;
   PetscInt       j;//l = dmmg[0]->nlevels-1;
@@ -1070,7 +1070,7 @@ PetscErrorCode DMMGSolveFASCycle(DMMG *dmmg,PetscInt level)
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscTruth     converged = PETSC_FALSE, flg = PETSC_FALSE,flgb = PETSC_FALSE;
+  PetscBool      converged = PETSC_FALSE, flg = PETSC_FALSE,flgb = PETSC_FALSE;
   PetscReal      norm;
 
   PetscFunctionBegin;
@@ -1154,7 +1154,7 @@ Options:
 PetscErrorCode DMMGSolveFASCyclen(DMMG *dmmg,PetscInt level)
 {
   PetscErrorCode ierr;
-  PetscTruth     converged = PETSC_FALSE, flg = PETSC_FALSE,flgb = PETSC_FALSE;
+  PetscBool      converged = PETSC_FALSE, flg = PETSC_FALSE,flgb = PETSC_FALSE;
   PetscReal      norm;
   // PC_MG          **mg;
   //PC             pc;
@@ -1241,7 +1241,7 @@ PetscErrorCode DMMGSolveFAS_NCG(DMMG *dmmg, PetscInt level)
   SNES_LS        *neP = (SNES_LS*)snes->data;
   PetscErrorCode ierr;
   PetscInt       maxits,i,lits;
-  PetscTruth     lssucceed;
+  PetscBool      lssucceed;
   // MatStructure   flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal      fnorm,gnorm,xnorm,ynorm,betaFR,betaPR,beta,betaHS,betaDY;
   Vec            Y,X,F,G,W,Gradold,Sk;
@@ -1402,7 +1402,7 @@ PetscErrorCode DMMGSolveFAS_NCG(DMMG *dmmg, PetscInt level)
     SNESMonitor(snes,i+1,fnorm);
     
      if (!lssucceed) { 
-      PetscTruth ismin;
+      PetscBool  ismin;
       beta=0;
       if (++snes->numFailures >= snes->maxFailures) {
       snes->reason = SNES_DIVERGED_LINE_SEARCH;
@@ -1463,7 +1463,7 @@ PetscErrorCode DMMGSolveFAS_NGMRES(DMMG *dmmg, PetscInt level)
   PetscInt       maxits=10000,i,k,l,j,subm=3,iter;
  ierr = PetscOptionsGetInt(PETSC_NULL,"-dmmg_fas_ngmres_m",&subm,PETSC_NULL);CHKERRQ(ierr);
 
-  PetscTruth     restart=PETSC_FALSE, selectA=PETSC_FALSE;
+  PetscBool      restart=PETSC_FALSE, selectA=PETSC_FALSE;
   PetscReal      fnorm,gnorm,dnorm,dnormtemp,dminnorm,fminnorm,tol=1.e-12,gammaA=2,epsilonB=0.1,deltaB=0.9,gammaC;
   Vec            X,F,G,W,D,u[subm],res[subm];
    PetscScalar    H[subm][subm],q[subm][subm],beta[subm],xi[subm],alpha[subm],alphasum,det,Hinv[16];
@@ -1715,7 +1715,7 @@ PetscErrorCode DMMGSolveFAS_QNewton(DMMG *dmmg, PetscInt level)
   PetscInt       maxits=10000,i,k,l,subm=3,subm01;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dmmg_fas_QNewton_m",&subm,PETSC_NULL);CHKERRQ(ierr);
   subm01=subm-1;
-   PetscTruth   flg = PETSC_FALSE;  
+   PetscBool    flg = PETSC_FALSE;  
    PetscReal      fnorm,gnorm,tol=1.e-12;
   Vec            X,F,G,W,D,Y,v[subm],w[subm],s0,s1,F0,F1;
  

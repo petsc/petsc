@@ -78,7 +78,7 @@ struct _VecOps {
   PetscErrorCode (*max)(Vec,PetscInt*,PetscReal*);      /* z = max(x); idx=index of max(x) */
   PetscErrorCode (*min)(Vec,PetscInt*,PetscReal*);      /* z = min(x); idx=index of min(x) */
   PetscErrorCode (*setrandom)(Vec,PetscRandom);         /* set y[j] = random numbers */
-  PetscErrorCode (*setoption)(Vec,VecOption,PetscTruth);
+  PetscErrorCode (*setoption)(Vec,VecOption,PetscBool );
   PetscErrorCode (*setvaluesblocked)(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
   PetscErrorCode (*destroy)(Vec);
   PetscErrorCode (*view)(Vec,PetscViewer);
@@ -140,8 +140,8 @@ typedef struct {
   PetscInt      rmax;                   /* maximum message length */
   PetscInt      *nprocs;                /* tmp data used both during scatterbegin and end */
   PetscInt      nprocessed;             /* number of messages already processed */
-  PetscTruth    donotstash;
-  PetscTruth    ignorenegidx;           /* ignore negative indices passed into VecSetValues/VetGetValues */
+  PetscBool     donotstash;
+  PetscBool     ignorenegidx;           /* ignore negative indices passed into VecSetValues/VetGetValues */
   InsertMode    insertmode;
   PetscInt      *bowners;
 } VecStash;
@@ -157,9 +157,9 @@ struct _p_Vec {
   void                   *data;     /* implementation-specific data */
   ISLocalToGlobalMapping mapping;   /* mapping used in VecSetValuesLocal() */
   ISLocalToGlobalMapping bmapping;  /* mapping used in VecSetValuesBlockedLocal() */
-  PetscTruth             array_gotten;
+  PetscBool              array_gotten;
   VecStash               stash,bstash; /* used for storing off-proc values during assembly */
-  PetscTruth             petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
+  PetscBool              petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
 #if defined(PETSC_HAVE_CUDA)
   PetscCUDAFlag          valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
   void                   *spptr; /* if we're using CUDA, then this is the special pointer to the array on the GPU */
@@ -383,10 +383,10 @@ typedef struct {
        vector are the same, so one only needs copy components that truly 
        copies instead of just y[idx[i]] = y[jdx[i]] where idx[i] == jdx[i].
   */
-  PetscTruth     nonmatching_computed;
+  PetscBool      nonmatching_computed;
   PetscInt       n_nonmatching;        /* number of "from"s  != "to"s */
   PetscInt       *slots_nonmatching;   /* locations of "from"s  != "to"s */
-  PetscTruth     is_copy;
+  PetscBool      is_copy;
   PetscInt       copy_start;   /* local scatter is a copy starting at copy_start */
   PetscInt       copy_length;
 } VecScatter_Seq_General;
@@ -422,20 +422,20 @@ typedef struct {
   PetscScalar            *values;  /* buffer for all sends or receives */
   VecScatter_Seq_General local;    /* any part that happens to be local */
   MPI_Status             *sstatus,*rstatus;
-  PetscTruth             use_readyreceiver;
+  PetscBool              use_readyreceiver;
   PetscInt               bs;
-  PetscTruth             sendfirst;
-  PetscTruth             contiq;
+  PetscBool              sendfirst;
+  PetscBool              contiq;
   /* for MPI_Alltoallv() approach */
-  PetscTruth             use_alltoallv;
+  PetscBool              use_alltoallv;
   PetscMPIInt            *counts,*displs;
   /* for MPI_Alltoallw() approach */
-  PetscTruth             use_alltoallw;
+  PetscBool              use_alltoallw;
 #if defined(PETSC_HAVE_MPI_ALLTOALLW)
   PetscMPIInt            *wcounts,*wdispls;
   MPI_Datatype           *types;
 #endif
-  PetscTruth             use_window;
+  PetscBool              use_window;
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
   MPI_Win                window;
   PetscInt               *winstarts;    /* displacements in the processes I am putting to */
@@ -445,11 +445,11 @@ typedef struct {
 struct _p_VecScatter {
   PETSCHEADER(int);
   PetscInt       to_n,from_n;
-  PetscTruth     inuse;                /* prevents corruption from mixing two scatters */
-  PetscTruth     beginandendtogether;  /* indicates that the scatter begin and end  function are called together, VecScatterEnd()
+  PetscBool      inuse;                /* prevents corruption from mixing two scatters */
+  PetscBool      beginandendtogether;  /* indicates that the scatter begin and end  function are called together, VecScatterEnd()
                                           is then treated as a nop */
-  PetscTruth     packtogether;         /* packs all the messages before sending, same with receive */
-  PetscTruth     reproduce;            /* always receive the ghost points in the same order of processes */
+  PetscBool      packtogether;         /* packs all the messages before sending, same with receive */
+  PetscBool      reproduce;            /* always receive the ghost points in the same order of processes */
   PetscErrorCode (*begin)(VecScatter,Vec,Vec,InsertMode,ScatterMode);
   PetscErrorCode (*end)(VecScatter,Vec,Vec,InsertMode,ScatterMode);
   PetscErrorCode (*copy)(VecScatter,VecScatter);

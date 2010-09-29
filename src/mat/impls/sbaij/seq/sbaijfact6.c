@@ -15,7 +15,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4(Mat C,Mat A,const MatFactorIn
   PetscInt       i,j,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
   MatScalar      *ba = b->a,*aa,*ap,*dk,*uik;
   MatScalar      *u,*diag,*rtmp,*rtmp_ptr;
-  PetscTruth     pivotinblocks = b->pivotinblocks;
+  PetscBool      pivotinblocks = b->pivotinblocks;
   PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;

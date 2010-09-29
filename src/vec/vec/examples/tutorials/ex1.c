@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   PetscReal      norm,v,v1,v2;
   PetscInt       n = 20;
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscScalar    one = 1.0,two = 2.0,three = 3.0,dots[3],dot;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 

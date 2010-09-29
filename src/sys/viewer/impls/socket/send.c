@@ -98,7 +98,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenSocket(char *hostname,int portnum,int
   struct hostent     *hp;
   int                s = 0;
   PetscErrorCode     ierr;
-  PetscTruth         flg = PETSC_TRUE;
+  PetscBool          flg = PETSC_TRUE;
 
   PetscFunctionBegin;
   if (!(hp=gethostbyname(hostname))) {
@@ -303,7 +303,7 @@ PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
   PetscErrorCode ierr;
   PetscInt       def = -1;
   char           sdef[256];
-  PetscTruth     tflg;
+  PetscBool      tflg;
 
   PetscFunctionBegin;
   /*
@@ -373,7 +373,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,c
   PetscErrorCode     ierr;
   PetscMPIInt        rank;
   char               mach[256];
-  PetscTruth         tflg;
+  PetscBool          tflg;
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket *)v->data;
 
   PetscFunctionBegin;
@@ -464,7 +464,7 @@ $       XXXView(XXX object,PETSC_VIEWER_SOCKET_(comm));
 PetscViewer PETSCSYS_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscViewer    viewer;
   MPI_Comm       ncomm;
 
@@ -625,8 +625,8 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
     if (!mem_list[0]) {
       fprintf(fd, "AMS Communicator %s has no published memories</p>\r\n",comm_list[0]);
     } else {
-      PetscInt   Nlevels,*Level,*Levelcnt,*Idbylevel,*Column,*parentid,*Id,maxId = 0,maxCol = 0,*parentId,id,cnt;
-      PetscTruth *mask;
+      PetscInt   Nlevels,*Level,*Levelcnt,*Idbylevel,*Column,*parentid,*Id,maxId = 0,maxCol = 0,*parentId,id,cnt,Nlevelcnt = 0;
+      PetscBool  *mask;
       char       **classes,*clas,**subclasses,*sclas;
 
       /* get maximum number of objects */
@@ -641,7 +641,7 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       maxId++; 
 
       /* Gets everyone's parent ID and which nodes are masked */
-      ierr = PetscMalloc4(maxId,PetscInt,&parentid,maxId,PetscTruth,&mask,maxId,char**,&classes,maxId,char**,&subclasses);CHKERRQ(ierr);
+      ierr = PetscMalloc4(maxId,PetscInt,&parentid,maxId,PetscBool ,&mask,maxId,char**,&classes,maxId,char**,&subclasses);CHKERRQ(ierr);
       ierr = PetscMemzero(classes,maxId*sizeof(char*));CHKERRQ(ierr);
       ierr = PetscMemzero(subclasses,maxId*sizeof(char*));CHKERRQ(ierr);
       for (i=0; i<maxId; i++) mask[i] = PETSC_TRUE;
@@ -674,6 +674,9 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       for (i=0; i<Nlevels; i++) {
         maxCol = PetscMax(maxCol,Levelcnt[i]);
       }
+      for (i=0; i<Nlevels; i++) {
+        Nlevelcnt = PetscMax(Nlevelcnt,Levelcnt[i]);
+      }
 
       /* print all the top-level objects */
       fprintf(fd, "<HTML><HEAD><TITLE>Petsc Application Server</TITLE>\r\n");
@@ -682,12 +685,19 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       fprintf(fd, "  function draw(){\r\n");  
       fprintf(fd, "  var example = document.getElementById('tree');\r\n");
       fprintf(fd, "  var context = example.getContext('2d');\r\n");
-      fprintf(fd, "  context.font         = \"normal 24px sans-serif\";\r\n");
+      /* adjust font size based on how big a tree is printed */
+      if (Nlevels > 5 || Nlevelcnt > 10) {
+        fprintf(fd, "  context.font         = \"normal 12px sans-serif\";\r\n");
+      } else {
+        fprintf(fd, "  context.font         = \"normal 24px sans-serif\";\r\n");
+      }
       fprintf(fd, "  context.fillStyle = \"rgb(255,0,0)\";\r\n");
       fprintf(fd, "  context.textBaseline = \"top\";\r\n");
       fprintf(fd, "  var xspacep = 0;\r\n");
       fprintf(fd, "  var yspace = example.height/%d;\r\n",(Nlevels+1));
-      fprintf(fd, "  var height = 22;\r\n");
+      /* estimate the height of a string as twice the width of a character */
+      fprintf(fd, "  var wheight = context.measureText(\"K\");\r\n");
+      fprintf(fd, "  var height = 1.6*wheight.width;\r\n");      
 
       cnt = 0;
       for (i=0; i<Nlevels; i++) {
@@ -755,7 +765,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(int port)
   FILE           *fd;
   char           buf[4096];
   char           *method, *path, *protocol;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscToken     tok;
 
   PetscFunctionBegin;

@@ -17,7 +17,7 @@ typedef struct {
   void       *ctx;
   SNES       snes;
   Vec        diagonal;       /* current matrix diagonal */
-  PetscTruth diagonalvalid;  /* indicates if diagonal matches current base vector */
+  PetscBool  diagonalvalid;  /* indicates if diagonal matches current base vector */
 } Mat_DAAD;
 
 #undef __FUNCT__  

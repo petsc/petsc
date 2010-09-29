@@ -6,8 +6,8 @@
 #if defined(PETSC_USE_LOG) && defined (PETSC_HAVE_MPE)
 #include "mpe.h"
 
-PetscTruth UseMPE = PETSC_FALSE;
-PetscTruth PetscBeganMPE = PETSC_FALSE;
+PetscBool  UseMPE = PETSC_FALSE;
+PetscBool  PetscBeganMPE = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogMPEBegin"

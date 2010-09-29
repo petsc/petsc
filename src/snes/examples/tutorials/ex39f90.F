@@ -172,7 +172,7 @@
       integer             its,matrix_free,flg,ierr
       double precision    lambda_max,lambda_min
       type (userctx)      user
-      PetscTruth          test_linesearch,test_check
+      PetscBool           test_linesearch,test_check
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
@@ -368,7 +368,7 @@
       type (userctx)    user
       Vec               x,f,g,y,w
       PetscReal fnorm,ynorm,gnorm
-      PetscTruth           flag
+      PetscBool            flag
       PetscErrorCode ierr
 
       PetscScalar       mone
@@ -831,7 +831,7 @@
       SNES           snes
       Vec            X,Y
       type (userctx) user
-      PetscTruth     changed_Y
+      PetscBool      changed_Y
       PetscErrorCode ierr
 
      	write(*,*)"Inside formPreCheck, user%xm=",user%xm        
@@ -843,7 +843,7 @@
       SNES           snes
       Vec            X,Y,W
       type (userctx) user
-      PetscTruth     changed_Y,changed_W
+      PetscBool      changed_Y,changed_W
       PetscErrorCode ierr
 
      	write(*,*)"Inside formPostCheck, user%xm=",user%xm        

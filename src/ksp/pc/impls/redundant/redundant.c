@@ -13,7 +13,7 @@ typedef struct {
   Vec          xdup,ydup;            /* parallel vector that congregates xsub or ysub facilitating vector scattering */
   Mat          pmats;                /* matrix and optional preconditioner matrix belong to a subcommunicator */
   VecScatter   scatterin,scatterout; /* scatter used to move all values to each processor group (subcommunicator) */
-  PetscTruth   useparallelmat;
+  PetscBool    useparallelmat;
   PetscSubcomm psubcomm;          
   PetscInt     nsubcomm;           /* num of data structure PetscSubcomm */
 } PC_Redundant;
@@ -24,7 +24,7 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth     iascii,isstring;
+  PetscBool      iascii,isstring;
   PetscViewer    subviewer;
 
   PetscFunctionBegin;

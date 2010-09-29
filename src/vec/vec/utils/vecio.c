@@ -79,13 +79,13 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
   int            fd;
   PetscInt       i,rows = 0,n,*range,N,bs;
   PetscErrorCode ierr;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscScalar    *avec,*avecwork;
   MPI_Comm       comm;
   MPI_Request    request;
   MPI_Status     status;
 #if defined(PETSC_HAVE_MPIIO)
-  PetscTruth     useMPIIO;
+  PetscBool      useMPIIO;
 #endif
 
   PetscFunctionBegin;
@@ -161,7 +161,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   hsize_t        rdim,dim = 1; /* Could have dim 2 for blocked vectors */
   PetscInt       n, N, bs, low;
   PetscScalar   *x;
-  PetscTruth     flag;
+  PetscBool      flag;
   hid_t          file_id, dset_id, filespace, memspace, plist_id;
   hsize_t        dims[2];
   hsize_t        count[2];
@@ -251,9 +251,9 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 PetscErrorCode PETSCVEC_DLLEXPORT VecLoad_Default(Vec newvec, PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     isbinary;
+  PetscBool      isbinary;
 #if defined(PETSC_HAVE_HDF5)
-  PetscTruth     ishdf5;
+  PetscBool      ishdf5;
 #endif
 
   PetscFunctionBegin;

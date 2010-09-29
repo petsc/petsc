@@ -17,7 +17,7 @@ int main(int argc,char **args)
   Vec            x,b,u,subb,subx,subu;           
   PetscViewer    fd;            
   char           file[PETSC_MAX_PATH_LEN];     
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscErrorCode ierr;
   PetscInt       i,m,n,its;
   PetscReal      norm;

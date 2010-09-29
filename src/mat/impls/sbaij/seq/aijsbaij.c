@@ -277,7 +277,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType new
   PetscInt       *ai=a->i,*aj,m=A->rmap->N,n=A->cmap->n,i,j,k,*bi,*bj,*browlengths;
   PetscInt       bs=A->rmap->bs,bs2=bs*bs,mbs=m/bs,dd;
   MatScalar      *av,*bv;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   if (n != m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix must be square");

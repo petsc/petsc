@@ -84,8 +84,8 @@ typedef struct { /* physical and miscelaneous parameters */
   PetscReal    L, V, lid_depth, fault_depth;
   ViscParam    diffusion, dislocation;
   PetscInt     ivisc, adv_scheme, ibound, output_ivisc;
-  PetscTruth   quiet, param_test, output_to_file, pv_analytic;
-  PetscTruth   interrupted, stop_solve, toggle_kspmon, kspmon;
+  PetscBool    quiet, param_test, output_to_file, pv_analytic;
+  PetscBool    interrupted, stop_solve, toggle_kspmon, kspmon;
   char         filename[PETSC_MAX_PATH_LEN];
 } Parameter;
 
@@ -141,7 +141,7 @@ extern PetscErrorCode ViscosityField(DMMG,Vec,Vec);
 extern PetscErrorCode StressField(DMMG *dmmg);
 extern PetscErrorCode SNESConverged_Interactive(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *);
 extern PetscErrorCode InteractiveHandler(int, void *);
-extern PetscTruth OptionsHasName(const char pre[],const char name[]);
+extern PetscBool  OptionsHasName(const char pre[],const char name[]);
 
 /*-----------------------------------------------------------------------*/
 #undef __FUNCT__
@@ -268,7 +268,7 @@ PetscErrorCode UpdateSolution(DMMG *dmmg, AppCtx *user, PetscInt *nits)
   PassiveScalar       cont_incr=0.3;
   PetscInt            its;
   PetscErrorCode      ierr;
-  PetscTruth          q = PETSC_FALSE;
+  PetscBool           q = PETSC_FALSE;
 
   PetscFunctionBegin;
   snes = DMMGGetSNES(dmmg);
@@ -1468,10 +1468,10 @@ PetscScalar Pressure(PetscInt i, PetscInt j, AppCtx *user)
 #undef __FUNCT__
 #define __FUNCT__ "OptionsHasName"
 /*  utility function */
-PetscTruth OptionsHasName(const char pre[],const char name[])
+PetscBool  OptionsHasName(const char pre[],const char name[])
 /* ------------------------------------------------------------------- */
 {
-  PetscTruth     retval; 
+  PetscBool      retval; 
   PetscErrorCode ierr;
   ierr = PetscOptionsHasName(pre,name,&retval);
   return retval;

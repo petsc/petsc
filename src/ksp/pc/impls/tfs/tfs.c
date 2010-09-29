@@ -106,10 +106,10 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt      *localtoglobal,ncol,i;
-  PetscTruth     ismpiaij;
+  PetscBool      ismpiaij;
 
   /*
-  PetscTruth     issymmetric;
+  PetscBool      issymmetric;
   Petsc Real tol = 0.0;
   */
 

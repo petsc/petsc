@@ -285,7 +285,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSchurComplementGetSubmatrices(Mat N,Mat *A,
 {
   Mat_SchurComplement *Na = (Mat_SchurComplement *) N->data;  
   PetscErrorCode       ierr;
-  PetscTruth           flg;
+  PetscBool            flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(N,MAT_CLASSID,1);

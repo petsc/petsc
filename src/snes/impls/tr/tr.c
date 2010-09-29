@@ -95,7 +95,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
   PetscScalar         cnorm;
   KSP                 ksp;
   SNESConvergedReason reason = SNES_CONVERGED_ITERATING;
-  PetscTruth          conv = PETSC_FALSE,breakout = PETSC_FALSE;
+  PetscBool           conv = PETSC_FALSE,breakout = PETSC_FALSE;
 
   PetscFunctionBegin;
   maxits	= snes->max_its;	/* maximum number of iterations */
@@ -297,7 +297,7 @@ static PetscErrorCode SNESView_TR(SNES snes,PetscViewer viewer)
 {
   SNES_TR *tr = (SNES_TR *)snes->data;
   PetscErrorCode ierr;
-  PetscTruth iascii;
+  PetscBool  iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);

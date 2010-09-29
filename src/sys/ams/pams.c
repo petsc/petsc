@@ -4,7 +4,7 @@
 /*
      If true then every PETSc object will be published with the AMS
 */
-PetscTruth PetscAMSPublishAll;
+PetscBool  PetscAMSPublishAll;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectAMSPublish"

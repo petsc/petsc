@@ -26,16 +26,16 @@ struct _PC_FieldSplitLink {
 
 typedef struct {
   PCCompositeType   type;
-  PetscTruth        defaultsplit; /* Flag for a system with a set of 'k' scalar fields with the same layout (and bs = k) */
-  PetscTruth        splitdefined; /* Flag is set after the splits have been defined, to prevent more splits from being added */
-  PetscTruth        realdiagonal; /* Flag to use the diagonal blocks of mat preconditioned by pmat, instead of just pmat */
+  PetscBool         defaultsplit; /* Flag for a system with a set of 'k' scalar fields with the same layout (and bs = k) */
+  PetscBool         splitdefined; /* Flag is set after the splits have been defined, to prevent more splits from being added */
+  PetscBool         realdiagonal; /* Flag to use the diagonal blocks of mat preconditioned by pmat, instead of just pmat */
   PetscInt          bs;           /* Block size for IS and Mat structures */
   PetscInt          nsplits;      /* Number of field divisions defined */
   Vec               *x,*y,w1,w2;
   Mat               *mat;         /* The diagonal block for each split */
   Mat               *pmat;        /* The preconditioning diagonal block for each split */
   Mat               *Afield;      /* The rows of the matrix associated with each split */
-  PetscTruth        issetup;
+  PetscBool         issetup;
   /* Only used when Schur complement preconditioning is used */
   Mat               B;            /* The (0,1) block */
   Mat               C;            /* The (1,0) block */
@@ -73,7 +73,7 @@ static PetscErrorCode PCView_FieldSplit(PC pc,PetscViewer viewer)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
-  PetscTruth        iascii;
+  PetscBool         iascii;
   PetscInt          i,j;
   PC_FieldSplitLink ilink = jac->head;
 
@@ -114,7 +114,7 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
-  PetscTruth        iascii;
+  PetscBool         iascii;
   PetscInt          i,j;
   PC_FieldSplitLink ilink = jac->head;
   KSP               ksp;
@@ -174,7 +174,7 @@ static PetscErrorCode PCFieldSplitSetRuntimeSplits_Private(PC pc)
   PetscErrorCode ierr;
   PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
   PetscInt       i,nfields,*ifields;
-  PetscTruth     flg;
+  PetscBool      flg;
   char           optionname[128],splitname[8];
 
   PetscFunctionBegin;
@@ -205,7 +205,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   PC_FieldSplit     *jac  = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilink = jac->head;
-  PetscTruth        flg = PETSC_FALSE;
+  PetscBool         flg = PETSC_FALSE;
   PetscInt          i;
 
   PetscFunctionBegin;
@@ -260,7 +260,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   PC_FieldSplitLink ilink;
   PetscInt          i,nsplit,ccsize;
   MatStructure      flag = pc->flag;
-  PetscTruth        sorted;
+  PetscBool         sorted;
 
   PetscFunctionBegin;
   ierr   = PCFieldSplitSetDefaults(pc);CHKERRQ(ierr);
@@ -391,6 +391,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
 
       ierr  = KSPCreate(((PetscObject)pc)->comm,&jac->kspschur);CHKERRQ(ierr);
+      ierr  = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur);CHKERRQ(ierr);
       ierr  = PetscObjectIncrementTabLevel((PetscObject)jac->kspschur,(PetscObject)pc,1);CHKERRQ(ierr);
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELF) {
@@ -729,7 +730,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
 {
   PetscErrorCode  ierr;
   PetscInt        bs;
-  PetscTruth      flg;
+  PetscBool       flg;
   PC_FieldSplit   *jac = (PC_FieldSplit*)pc->data;
   PCCompositeType ctype;
 
@@ -792,6 +793,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields_FieldSplit(PC pc,const c
   ierr           = KSPCreate(((PetscObject)pc)->comm,&ilink->ksp);CHKERRQ(ierr);
   ierr           = PetscObjectIncrementTabLevel((PetscObject)ilink->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr           = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);
+  ierr           = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilink->ksp);CHKERRQ(ierr);
 
   ierr = PetscSNPrintf(prefix,sizeof prefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix?((PetscObject)pc)->prefix:"",splitname);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(ilink->ksp,prefix);CHKERRQ(ierr);
@@ -873,6 +875,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS_FieldSplit(PC pc,const char 
   ierr           = KSPCreate(((PetscObject)pc)->comm,&ilink->ksp);CHKERRQ(ierr);
   ierr           = PetscObjectIncrementTabLevel((PetscObject)ilink->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr           = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);
+  ierr           = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilink->ksp);CHKERRQ(ierr);
 
   ierr = PetscSNPrintf(prefix,sizeof prefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix?((PetscObject)pc)->prefix:"",splitname);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(ilink->ksp,prefix);CHKERRQ(ierr);

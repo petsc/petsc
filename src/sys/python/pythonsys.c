@@ -12,7 +12,7 @@
 #define __FUNCT__ "PetscPythonFindExecutable"
 static PetscErrorCode PetscPythonFindExecutable(char pythonexe[PETSC_MAX_PATH_LEN])
 {
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /* get the path for the Python interpreter executable */
@@ -34,7 +34,7 @@ static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN],
   char prefix[PETSC_MAX_PATH_LEN],version[8],sep[2]={PETSC_DIR_SEPARATOR, 0},*eol;
   FILE* fp = NULL;
   char path[PETSC_MAX_PATH_LEN+1];
-  PetscTruth found = PETSC_FALSE;
+  PetscBool  found = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
@@ -166,7 +166,7 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
 
 static char       PetscPythonExe[PETSC_MAX_PATH_LEN] = { 0 };
 static char       PetscPythonLib[PETSC_MAX_PATH_LEN] = { 0 };
-static PetscTruth PetscBeganPython = PETSC_FALSE;
+static PetscBool  PetscBeganPython = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscPythonFinalize"
@@ -204,7 +204,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscPythonInitialize(const char pyexe[],const
   int               argc       = 0;
   char              **argv     = 0;
   PyObject          *module    = 0;
-  static PetscTruth registered = PETSC_FALSE;
+  static PetscBool  registered = PETSC_FALSE;
   PetscErrorCode    ierr;
   PetscFunctionBegin;
   if (PetscBeganPython) PetscFunctionReturn(0);

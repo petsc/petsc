@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PetscInt          n,col[3],n1,block,row,i,j,i2,j2,Ii,J,rstart,rend,bs=1,mbs=16,d_nz=3,o_nz=3,prob=2;
   PetscErrorCode    ierr;
   PetscMPIInt       size,rank;
-  PetscTruth        flg;
+  PetscBool         flg;
   const MatType     type;
 
   PetscInitialize(&argc,&args,(char *)0,help);

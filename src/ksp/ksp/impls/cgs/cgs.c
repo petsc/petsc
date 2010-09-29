@@ -29,7 +29,7 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
   PetscScalar    rho,rhoold,a,s,b;
   Vec            X,B,V,P,R,RP,T,Q,U,AUQ;
   PetscReal      dp = 0.0;
-  PetscTruth     diagonalscale;
+  PetscBool      diagonalscale;
 
   PetscFunctionBegin;
   /* not sure what residual norm it does use, should use for right preconditioning */

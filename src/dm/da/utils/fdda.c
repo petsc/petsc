@@ -68,7 +68,7 @@ static PetscErrorCode DASetBlockFills_Private(PetscInt *dfill,PetscInt w,PetscIn
 .seealso DAGetMatrix(), DASetGetMatrix(), DASetBlockSize(), DASetBlockFills()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetMatPreallocateOnly(DA da,PetscTruth only)
+PetscErrorCode PETSCDM_DLLEXPORT DASetMatPreallocateOnly(DA da,PetscBool  only)
 {
   PetscFunctionBegin;
   da->prealloc_only = only;
@@ -157,7 +157,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,const 
   DAPeriodicType wrap;
   MPI_Comm       comm;
   PetscMPIInt    size;
-  PetscTruth     isBAIJ;
+  PetscBool      isBAIJ;
 
   PetscFunctionBegin;
   /*
@@ -682,13 +682,13 @@ EXTERN_C_END
 PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
 {
   PetscErrorCode ierr;
-  PetscInt       dim,dof,nx,ny,nz,dims[3],starts[3];
+  PetscInt       dim,dof,nx,ny,nz,dims[3],starts[3],M,N,P;
   Mat            A;
   MPI_Comm       comm;
   const MatType  Atype;
   void           (*aij)(void)=PETSC_NULL,(*baij)(void)=PETSC_NULL,(*sbaij)(void)=PETSC_NULL;
   MatType        ttype[256];
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
@@ -722,11 +722,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,&M,&N,&P,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   ierr = DAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,dof*nx*ny*nz,dof*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,dof*nx*ny*nz,dof*nx*ny*nz,dof*M*N*P,dof*M*N*P);CHKERRQ(ierr);
   ierr = MatSetType(A,(const MatType)ttype);CHKERRQ(ierr); 
   ierr = MatSetDA(A,da);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
@@ -754,13 +754,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
       ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPISBAIJSetPreallocation_C",&sbaij);CHKERRQ(ierr);
       if (!sbaij) {
         ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C",&sbaij);CHKERRQ(ierr);
-      }
-      if (!sbaij) {
-        PetscTruth flg, flg2;
-        ierr = PetscTypeCompare((PetscObject)A,MATHYPRESTRUCT,&flg);CHKERRQ(ierr);
-        ierr = PetscTypeCompare((PetscObject)A,MATHYPRESSTRUCT,&flg2);CHKERRQ(ierr);
-        if (!flg && !flg2) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not implemented for the matrix type: %s in %D dimension!\n" \
-                           "Send mail to petsc-maint@mcs.anl.gov for code",Atype,dim);
       }
     }
   }

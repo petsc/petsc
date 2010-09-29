@@ -77,7 +77,7 @@ typedef struct  {
   int nnz;			/* Number of nonzeros allocated for factors  */
   int luparm[30];		/* Input/output to LUSOL                     */
 
-  PetscTruth CleanUpLUSOL;
+  PetscBool  CleanUpLUSOL;
 
 } Mat_LUSOL;
 

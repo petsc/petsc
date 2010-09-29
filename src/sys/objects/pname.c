@@ -60,9 +60,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectName(PetscObject obj)
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   if (!obj->name) {
+    void *commp = 0;
     ierr = MPI_Attr_get(obj->comm,Petsc_Counter_keyval,(void*)&counter,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
-    ierr = PetscSNPrintf(name,64,"%s_%D_%d",obj->class_name,counter->namecount++,PetscAbs((int)obj->comm));CHKERRQ(ierr);
+    ierr = PetscMemcpy(&commp,&obj->comm,PetscMin(sizeof(commp),sizeof(obj->comm)));CHKERRQ(ierr);
+    ierr = PetscSNPrintf(name,64,"%s_%p_%D",obj->class_name,commp,counter->namecount++);CHKERRQ(ierr);
     ierr = PetscStrallocpy(name,&obj->name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

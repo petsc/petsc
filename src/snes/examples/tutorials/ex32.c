@@ -68,11 +68,11 @@ typedef struct {
 
 typedef struct {
   PassiveReal  lidvelocity,prandtl,grashof;  /* physical parameters */
-  PetscTruth   draw_contours;                /* flag - 1 indicates drawing contours */
+  PetscBool    draw_contours;                /* flag - 1 indicates drawing contours */
   DMMG         *dmmg,*dmmg_comp;             /* used by MySolutionView() */
   DMMG         *dmmg1,*dmmg2; /* passing objects of sub-physics into the composite physics - used by FormInitialGuessComp() */
   DMComposite  pack;
-  PetscTruth   COMPOSITE_MODEL;
+  PetscBool    COMPOSITE_MODEL;
   Field        **x;   /* passing DMMGGetx(dmmg) - final solution of original coupled physics */
   Field1       **x1;  /* passing local ghosted vector array of Physics 1 */
   Field2       **x2;  /* passing local ghosted vector array of Physics 2 */
@@ -101,7 +101,7 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   SNES           snes;
   DA             da;
-  PetscTruth     ViewSolu=PETSC_FALSE,CompSolu=PETSC_TRUE,DoSubPhysics=PETSC_FALSE;
+  PetscBool      ViewSolu=PETSC_FALSE,CompSolu=PETSC_TRUE,DoSubPhysics=PETSC_FALSE;
   Vec            solu_true,solu_local;
 
   PetscInitialize(&argc,&argv,(char *)0,help);

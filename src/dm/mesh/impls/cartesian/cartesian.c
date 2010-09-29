@@ -95,7 +95,7 @@ PetscErrorCode MeshView_Cartesian_Ascii(const ALE::Obj<ALE::CartesianMesh>& mesh
 
 PetscErrorCode PETSCDM_DLLEXPORT MeshView_Cartesian(Mesh mesh, PetscViewer viewer)
 {
-  PetscTruth     iascii, isbinary, isdraw;
+  PetscBool      iascii, isbinary, isdraw;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

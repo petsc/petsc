@@ -49,19 +49,19 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscByteSwapEnum(PetscEnum *buff,PetscInt n)
   PetscByteSwapTruth - Swap bytes in a  PETSc Truth
 
 */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscByteSwapTruth(PetscTruth *buff,PetscInt n)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscByteSwapTruth(PetscBool  *buff,PetscInt n)
 {
   PetscInt    i,j;
-  PetscTruth  tmp = PETSC_FALSE;
+  PetscBool   tmp = PETSC_FALSE;
   char        *ptr1,*ptr2 = (char*)&tmp;
                                    
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
-    for (i=0; i<(PetscInt)sizeof(PetscTruth); i++) {
-      ptr2[i] = ptr1[sizeof(PetscTruth)-1-i];
+    for (i=0; i<(PetscInt)sizeof(PetscBool ); i++) {
+      ptr2[i] = ptr1[sizeof(PetscBool )-1-i];
     }
-    for (i=0; i<(PetscInt)sizeof(PetscTruth); i++) {
+    for (i=0; i<(PetscInt)sizeof(PetscBool ); i++) {
       ptr1[i] = ptr2[i];
     }
   }
@@ -177,7 +177,7 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
   PetscFunctionBegin;
   if      (pdtype == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_ENUM)   {ierr = PetscByteSwapEnum((PetscEnum*)data,count);CHKERRQ(ierr);}        
-  else if (pdtype == PETSC_TRUTH)  {ierr = PetscByteSwapTruth((PetscTruth*)data,count);CHKERRQ(ierr);}        
+  else if (pdtype == PETSC_BOOL)  {ierr = PetscByteSwapTruth((PetscBool *)data,count);CHKERRQ(ierr);}        
   else if (pdtype == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)data,count);CHKERRQ(ierr);}
@@ -238,7 +238,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,Pets
   else if (type == PETSC_SHORT)   m *= sizeof(short);
   else if (type == PETSC_CHAR)    m *= sizeof(char);
   else if (type == PETSC_ENUM)    m *= sizeof(PetscEnum);
-  else if (type == PETSC_TRUTH)   m *= sizeof(PetscTruth);
+  else if (type == PETSC_BOOL)   m *= sizeof(PetscBool );
   else if (type == PETSC_BIT_LOGICAL) m  = PetscBTLength(m)*sizeof(char);
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
   
@@ -300,7 +300,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,Pets
 .seealso: PetscBinaryRead(), PetscBinaryOpen(), PetscBinaryClose(), PetscViewerBinaryGetDescriptor(), PetscBinarySynchronizedWrite(), 
           PetscBinarySynchronizedRead(), PetscBinarySynchronizedSeek()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,PetscTruth istemp)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,PetscBool  istemp)
 {
   char           *pp = (char*)p;
   int            err,wsize;
@@ -320,7 +320,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,Pet
   else if (type == PETSC_SHORT)   m *= sizeof(short);
   else if (type == PETSC_CHAR)    m *= sizeof(char);
   else if (type == PETSC_ENUM)    m *= sizeof(PetscEnum);
-  else if (type == PETSC_TRUTH)   m *= sizeof(PetscTruth);
+  else if (type == PETSC_BOOL)   m *= sizeof(PetscBool );
   else if (type == PETSC_BIT_LOGICAL) m = PetscBTLength(m)*sizeof(char);
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
 
@@ -575,7 +575,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscBinarySynchronizedRead(MPI_Comm comm,int 
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead(), PetscBinarySynchronizedRead(),
           PetscBinarySynchronizedSeek()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscBinarySynchronizedWrite(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type,PetscTruth istemp)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscBinarySynchronizedWrite(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type,PetscBool  istemp)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;

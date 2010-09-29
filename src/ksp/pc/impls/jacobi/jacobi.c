@@ -60,9 +60,9 @@ typedef struct {
   Vec        diagsqrt;           /* vector containing the reciprocals of the square roots of
                                     the diagonal elements of the preconditioner matrix (used 
                                     only for symmetric preconditioner application) */
-  PetscTruth userowmax;
-  PetscTruth userowsum;
-  PetscTruth useabs;             /* use the absolute values of the diagonal entries */
+  PetscBool  userowmax;
+  PetscBool  userowsum;
+  PetscBool  useabs;             /* use the absolute values of the diagonal entries */
 } PC_Jacobi;
 
 EXTERN_C_BEGIN
@@ -130,7 +130,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
   PetscErrorCode ierr;
   PetscInt       n,i;
   PetscScalar    *x;
-  PetscTruth     zeroflag = PETSC_FALSE;
+  PetscBool      zeroflag = PETSC_FALSE;
 
   PetscFunctionBegin;
   /*

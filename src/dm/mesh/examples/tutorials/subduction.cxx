@@ -38,7 +38,7 @@ typedef enum {MANTLE_MAT, LID_MAT} MaterialType;
 typedef struct {
   PetscInt   debug;             // The debugging level
   char       partitioner[2048]; // The graph partitioner
-  PetscTruth interpolate;       // Create intermediate mesh elements
+  PetscBool  interpolate;       // Create intermediate mesh elements
   PetscReal  refinementLimit;   // The maximum volume of any cell
 
   PetscReal  width;             // The width of the top of the wedge (m)
@@ -454,7 +454,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
 {
   Mesh           mesh, meshBoundary;
   PetscMPIInt    size;
-  PetscTruth     view;
+  PetscBool      view;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -967,7 +967,7 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
   SNES                snes;
   MPI_Comm            comm;
   PetscInt            its;
-  PetscTruth          flag;
+  PetscBool           flag;
   SNESConvergedReason reason;
   PetscErrorCode      ierr;
 

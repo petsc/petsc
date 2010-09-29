@@ -367,7 +367,7 @@ int UserMatrixCreate1(Atassi *user,Mat *mat)
   Mat        A;
   MatType    mtype;
   int        ierr, *nnz_d, *nnz_o;
-  PetscTruth flg;
+  PetscBool  flg;
 
   ierr = MatGetTypeFromOptions(user->comm,PETSC_NULL,&mtype,&flg);CHKERRQ(ierr);
 

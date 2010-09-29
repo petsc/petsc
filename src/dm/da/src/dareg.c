@@ -3,7 +3,7 @@
 #include "private/daimpl.h"    /*I "petscda.h"  I*/
 
 PetscFList DAList                       = PETSC_NULL;
-PetscTruth DARegisterAllCalled          = PETSC_FALSE;
+PetscBool  DARegisterAllCalled          = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "DASetType"
@@ -30,7 +30,7 @@ PetscTruth DARegisterAllCalled          = PETSC_FALSE;
 PetscErrorCode PETSCDM_DLLEXPORT DASetType(DA da, const DAType method)
 {
   PetscErrorCode (*r)(DA);
-  PetscTruth     match;
+  PetscBool      match;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

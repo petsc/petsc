@@ -4,7 +4,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFApply_Constant"
-PetscErrorCode PFApply_Constant(void *value,PetscInt n,PetscScalar *x,PetscScalar *y)
+PetscErrorCode PFApply_Constant(void *value,PetscInt n,const PetscScalar *x,PetscScalar *y)
 {
   PetscInt    i;
   PetscScalar v = ((PetscScalar*)value)[0];
@@ -31,7 +31,7 @@ PetscErrorCode PFApplyVec_Constant(void *value,Vec x,Vec y)
 PetscErrorCode PFView_Constant(void *value,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -88,7 +88,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Constant(PF pf,void *value)
 EXTERN_C_END
 
 
-typedef PetscErrorCode (*FCN)(void*,PetscInt,PetscScalar*,PetscScalar*); /* force argument to next function to not be extern C*/
+typedef PetscErrorCode (*FCN)(void*,PetscInt,const PetscScalar*,PetscScalar*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PFCreate_Quick"
@@ -105,7 +105,7 @@ EXTERN_C_END
 /* -------------------------------------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PFApply_Identity"
-PetscErrorCode PFApply_Identity(void *value,PetscInt n,PetscScalar *x,PetscScalar *y)
+PetscErrorCode PFApply_Identity(void *value,PetscInt n,const PetscScalar *x,PetscScalar *y)
 {
   PetscInt    i;
 
@@ -131,7 +131,7 @@ PetscErrorCode PFApplyVec_Identity(void *value,Vec x,Vec y)
 PetscErrorCode PFView_Identity(void *value,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);

@@ -26,7 +26,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DALoad(PetscViewer viewer,PetscInt M,PetscInt N
   PetscInt       info[8],nmax = 8,i;
   MPI_Comm       comm;
   char           fieldnametag[32],fieldname[64];
-  PetscTruth     isbinary,flag;
+  PetscBool      isbinary,flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);

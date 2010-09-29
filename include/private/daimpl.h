@@ -91,7 +91,7 @@ struct _p_DA {
   PetscInt               *ofill,*dfill;
 
   /* used by DASetMatPreallocateOnly() */
-  PetscTruth             prealloc_only;
+  PetscBool              prealloc_only;
 };
 
 /*

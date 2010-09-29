@@ -49,7 +49,7 @@ int main(int argc,char **args)
   PetscReal      res_norm;
   FILE           *Afile,*bfile,*ufile;
   PetscViewer    view;
-  PetscTruth     flg_A,flg_b,flg_u,flg;
+  PetscBool      flg_A,flg_b,flg_u,flg;
   PetscMPIInt    size;
 
   PetscInitialize(&argc,&args,(char *)0,help);

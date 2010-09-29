@@ -14,7 +14,7 @@ typedef struct {
   PetscInt     m,n,step,k;
   PetscReal    min,max,scale;
   PetscScalar  *xy,*v;
-  PetscTruth   showgrid;
+  PetscBool    showgrid;
 } ZoomCtx;
 
 /*
@@ -80,7 +80,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   const PetscInt     *lx,*ly;
   PetscReal          coors[4],ymin,ymax,xmin,xmax;
   PetscDraw          draw,popup;
-  PetscTruth         isnull,useports = PETSC_FALSE;
+  PetscBool          isnull,useports = PETSC_FALSE;
   MPI_Comm           comm;
   Vec                xlocal,xcoor,xcoorl;
   DAPeriodicType     periodic;
@@ -351,7 +351,7 @@ EXTERN PetscErrorCode VecView_MPI_Draw_DA1d(Vec,PetscViewer);
 #if defined(PETSC_HAVE_MPIIO)
 #undef __FUNCT__  
 #define __FUNCT__ "DAArrayMPIIO"
-static PetscErrorCode DAArrayMPIIO(DA da,PetscViewer viewer,Vec xin,PetscTruth write)
+static PetscErrorCode DAArrayMPIIO(DA da,PetscViewer viewer,Vec xin,PetscBool  write)
 {
   PetscErrorCode    ierr;
   MPI_File          mfdes;
@@ -411,9 +411,9 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscInt       dim;
   Vec            natural;
-  PetscTruth     isdraw;
+  PetscBool      isdraw;
 #if defined(PETSC_HAVE_HDF5)
-  PetscTruth     ishdf5;
+  PetscBool      ishdf5;
 #endif
   const char     *prefix;
 
@@ -439,7 +439,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
 #endif
   } else {
 #if defined(PETSC_HAVE_MPIIO)
-    PetscTruth isbinary,isMPIIO;
+    PetscBool  isbinary,isMPIIO;
 
     ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
     if (isbinary) {
@@ -563,9 +563,9 @@ PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
   Vec            natural;
   const char     *prefix;
   PetscInt       bs;
-  PetscTruth     flag;
+  PetscBool      flag;
 #if defined(PETSC_HAVE_MPIIO)
-  PetscTruth     isMPIIO;
+  PetscBool      isMPIIO;
 #endif
 
   PetscFunctionBegin;
@@ -601,9 +601,9 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoad_Default_DA(Vec xin, PetscViewer viewer)
 {
   PetscErrorCode ierr;
   DA             da;
-  PetscTruth     isbinary;
+  PetscBool      isbinary;
 #if defined(PETSC_HAVE_HDF5)
-  PetscTruth     ishdf5;
+  PetscBool      ishdf5;
 #endif
 
   PetscFunctionBegin;

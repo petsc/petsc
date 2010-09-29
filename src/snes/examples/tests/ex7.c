@@ -15,7 +15,7 @@ typedef struct {
 
 typedef struct {
   Mat        precond;
-  PetscTruth variant;
+  PetscBool  variant;
 } AppCtx;
 
 #undef __FUNCT__

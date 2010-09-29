@@ -8,7 +8,7 @@
 
 PETSCSYS_DLLEXPORT PetscClassId PETSC_FWK_CLASSID;
 static char PETSC_FWK_CLASS_NAME[] = "PetscFwk";
-static PetscTruth PetscFwkPackageInitialized = PETSC_FALSE;
+static PetscBool  PetscFwkPackageInitialized = PETSC_FALSE;
 
 
 typedef PetscErrorCode (*PetscFwkPythonLoadVTableFunction)(PetscFwk fwk, const char* path, const char* name, void **vtable);
@@ -201,10 +201,10 @@ PetscErrorCode PetscFwkGraphAddEdge(PetscFwkGraph graph, PetscInt row, PetscInt 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkGraphTopologicalSort"
 PetscErrorCode PetscFwkGraphTopologicalSort(PetscFwkGraph graph, PetscInt *n, PetscInt **queue) {
-  PetscTruth *queued;
+  PetscBool  *queued;
   PetscInt   *indegree;
   PetscInt ii, k, jj, Nqueued = 0;
-  PetscTruth progress;
+  PetscBool  progress;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if(!n || !queue) {
@@ -212,7 +212,7 @@ PetscErrorCode PetscFwkGraphTopologicalSort(PetscFwkGraph graph, PetscInt *n, Pe
   }
   *n = graph->vcount;
   ierr = PetscMalloc(sizeof(PetscInt)*graph->vcount, queue); CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscTruth)*graph->vcount, &queued); CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscBool )*graph->vcount, &queued); CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*graph->vcount, &indegree); CHKERRQ(ierr);
   for(ii = 0; ii < graph->vcount; ++ii) {
     queued[ii]   = PETSC_FALSE;
@@ -355,7 +355,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkDLLibrarySym(MPI_Comm comm, PetscDLLib
     prev  = 0;
     nlist = list;
     while (nlist) {
-      PetscTruth match;
+      PetscBool  match;
       ierr = PetscStrcmp(nlist->libname,libname,&match);CHKERRQ(ierr);
       if (match) goto done;
       prev  = nlist;
@@ -466,7 +466,7 @@ struct _n_PetscFList {
 PetscErrorCode PetscFwkFListFind(PetscFList fl,MPI_Comm comm,const char function[],QueryFunction *r) {
   PetscFList     entry = fl;
   PetscErrorCode ierr;
-  PetscTruth     flg,f1,f2;
+  PetscBool      flg,f1,f2;
  
   PetscFunctionBegin;
   if (!function) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to find routine with null name");
@@ -477,7 +477,7 @@ PetscErrorCode PetscFwkFListFind(PetscFList fl,MPI_Comm comm,const char function
     flg = PETSC_FALSE;
     ierr = PetscStrcmp(function,entry->name,&f1);CHKERRQ(ierr);
     ierr = PetscStrcmp(function,entry->rname,&f2);CHKERRQ(ierr);
-    flg =  (PetscTruth) (f1 || f2);
+    flg =  (PetscBool ) (f1 || f2);
 
     if (flg) {
       if (entry->routine) {
@@ -714,7 +714,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetURL(PetscFwk fwk, const char **url)
 PetscErrorCode PetscFwkView(PetscFwk fwk, PetscViewer viewer) {
   PetscInt *vertices, N;
   PetscInt i, id;
-  PetscTruth        iascii;
+  PetscBool         iascii;
   PetscErrorCode    ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fwk,PETSC_FWK_CLASSID,1);
@@ -781,9 +781,9 @@ PetscErrorCode PetscFwkVisit(PetscFwk fwk, const char* message){
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkGetKeyID_Private"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetKeyID_Private(PetscFwk fwk, const char key[], PetscInt *_id, PetscTruth *_found){
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetKeyID_Private(PetscFwk fwk, const char key[], PetscInt *_id, PetscBool  *_found){
   PetscInt i;
-  PetscTruth eq;
+  PetscBool  eq;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /* Check whether a component with the given key has already been registered. */
@@ -802,7 +802,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetKeyID_Private(PetscFwk fwk, const c
 #define __FUNCT__ "PetscFwkRegisterKey_Private"
 PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterKey_Private(PetscFwk fwk, const char key[], PetscInt *_id) {
   PetscInt v, id;
-  PetscTruth found;
+  PetscBool  found;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /* Check whether a component with the given url has already been registered.  If so, return its id, if it has been requested. */
@@ -935,9 +935,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkCreate(MPI_Comm comm, PetscFwk *framew
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkGetComponent"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetComponent(PetscFwk fwk, const char key[], PetscFwk *_component, PetscTruth *_found) {
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetComponent(PetscFwk fwk, const char key[], PetscFwk *_component, PetscBool  *_found) {
   PetscInt id;
-  PetscTruth found;
+  PetscBool  found;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fwk,PETSC_FWK_CLASSID,1);
@@ -992,7 +992,7 @@ static PetscMPIInt Petsc_Fwk_default_keyval = MPI_KEYVAL_INVALID;
 #define __FUNCT__ "PETSC_FWK_DEFAULT_"
 PetscFwk PETSCSYS_DLLEXPORT PETSC_FWK_DEFAULT_(MPI_Comm comm) {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscFwk       fwk;
 
   PetscFunctionBegin;

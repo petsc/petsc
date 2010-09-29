@@ -44,7 +44,7 @@ typedef struct {
   PetscScalar    *val;
   MPI_Comm       comm_mumps;
   VecScatter     scat_rhs, scat_sol;
-  PetscTruth     isAIJ,CleanUpMUMPS,mumpsview;
+  PetscBool      isAIJ,CleanUpMUMPS,mumpsview;
   Vec            b_seq,x_seq;
   PetscErrorCode (*MatDestroy)(Mat);
   PetscErrorCode (*ConvertToTriples)(Mat, int, MatReuse, int*, int**, int**, PetscScalar**);
@@ -611,7 +611,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   PetscErrorCode  ierr;
   MatReuse        reuse;
   Mat             F_diag; 
-  PetscTruth      isMPIAIJ;
+  PetscBool       isMPIAIJ;
 
   PetscFunctionBegin;
   reuse = MAT_REUSE_MATRIX;
@@ -693,7 +693,7 @@ PetscErrorCode PetscSetMUMPSOptions(Mat F, Mat A)
   Mat_MUMPS        *lu = (Mat_MUMPS*)F->spptr;
   PetscErrorCode   ierr;
   PetscInt         icntl;
-  PetscTruth       flg;
+  PetscBool        flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"MUMPS Options","Mat");CHKERRQ(ierr);
@@ -1122,7 +1122,7 @@ PetscErrorCode MatFactorInfo_MUMPS(Mat A,PetscViewer viewer)
 PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
-  PetscTruth        iascii;
+  PetscBool         iascii;
   PetscViewerFormat format;
   Mat_MUMPS         *mumps=(Mat_MUMPS*)A->spptr;
 
@@ -1212,7 +1212,7 @@ PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   Mat            B;
   PetscErrorCode ierr;
   Mat_MUMPS      *mumps;
-  PetscTruth     isSeqAIJ;
+  PetscBool      isSeqAIJ;
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
@@ -1267,7 +1267,7 @@ PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   Mat            B;
   PetscErrorCode ierr;
   Mat_MUMPS      *mumps;
-  PetscTruth     isSeqSBAIJ;
+  PetscBool      isSeqSBAIJ;
 
   PetscFunctionBegin;
   if (ftype != MAT_FACTOR_CHOLESKY) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Cannot use PETSc SBAIJ matrices with MUMPS LU, use AIJ matrix");
@@ -1313,7 +1313,7 @@ PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
   Mat            B;
   PetscErrorCode ierr;
   Mat_MUMPS      *mumps;
-  PetscTruth     isSeqBAIJ;
+  PetscBool      isSeqBAIJ;
 
   PetscFunctionBegin;
   /* Create the factorization matrix */

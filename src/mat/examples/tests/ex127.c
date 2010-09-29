@@ -13,7 +13,7 @@ PetscInt main(PetscInt argc,char **args)
 {
   Mat            A,As;    
   Vec            x,y,ys;
-  PetscTruth     flg,disp_mat=PETSC_FALSE,disp_vec=PETSC_FALSE;  
+  PetscBool      flg,disp_mat=PETSC_FALSE,disp_vec=PETSC_FALSE;  
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscInt       m,i,j; 

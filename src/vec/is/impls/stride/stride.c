@@ -12,7 +12,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISIdentity_Stride" 
-PetscErrorCode ISIdentity_Stride(IS is,PetscTruth *ident)
+PetscErrorCode ISIdentity_Stride(IS is,PetscBool  *ident)
 {
   IS_Stride *is_stride = (IS_Stride*)is->data;
 
@@ -135,7 +135,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideGetInfo(IS is,PetscInt *first,PetscInt
 
 .seealso: ISCreateStride(), ISGetSize()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISStride(IS is,PetscTruth *flag)
+PetscErrorCode PETSCVEC_DLLEXPORT ISStride(IS is,PetscBool  *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
@@ -219,7 +219,7 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
   IS_Stride      *sub = (IS_Stride *)is->data;
   PetscInt       i,n = sub->n;
   PetscMPIInt    rank,size;
-  PetscTruth     iascii;
+  PetscBool      iascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -266,7 +266,7 @@ PetscErrorCode ISSort_Stride(IS is)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISSorted_Stride" 
-PetscErrorCode ISSorted_Stride(IS is,PetscTruth* flg)
+PetscErrorCode ISSorted_Stride(IS is,PetscBool * flg)
 {
   IS_Stride *sub = (IS_Stride*)is->data;
 
@@ -325,7 +325,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateStride(MPI_Comm comm,PetscInt n,PetscI
   PetscInt       min,max;
   IS             Nindex;
   IS_Stride      *sub;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidPointer(is,5);

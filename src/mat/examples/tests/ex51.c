@@ -15,7 +15,7 @@ int main(int argc,char **args)
   PetscRandom    rdm;
   Vec            xx,s1,s2;
   PetscReal      s1norm,s2norm,rnorm,tol = 1.e-10;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
  

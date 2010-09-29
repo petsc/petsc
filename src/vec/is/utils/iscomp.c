@@ -34,11 +34,11 @@ $    is2 = {2, 3} {0, 1}
     Concepts: IS^equal
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISEqual(IS is1,IS is2,PetscTruth *flg)
+PetscErrorCode PETSCVEC_DLLEXPORT ISEqual(IS is1,IS is2,PetscBool  *flg)
 {
   PetscInt       sz1,sz2,*a1,*a2;
   const PetscInt *ptr1,*ptr2;
-  PetscTruth     flag;
+  PetscBool      flag;
   MPI_Comm       comm;
   PetscErrorCode ierr;
   PetscMPIInt    mflg;

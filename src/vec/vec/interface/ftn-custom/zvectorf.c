@@ -89,7 +89,7 @@ $      type(Field)     :: a(*)
 
 .seealso: VecGetArray(), VecGetArrayF90()
 M*/
-static PetscTruth VecGetArrayAligned = PETSC_FALSE;
+static PetscBool  VecGetArrayAligned = PETSC_FALSE;
 void PETSC_STDCALL vecgetarrayaligned_(PetscErrorCode *ierr)
 {
   VecGetArrayAligned = PETSC_TRUE;

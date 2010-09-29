@@ -93,6 +93,7 @@ what communicator use then pass in PETSC_COMM_SELF </li>
 routines to any object that are called to process options when
 XXXSetFromOptions() is called.<br>
         </li>
+        <li>Changed PetscTruth to PetscBool and PETSC_TRUTH to PETSC_BOOL</li>
       </ul>
       <u><b>Logging:<br>
       </b></u>
@@ -117,6 +118,10 @@ to --with-dynamic-loading</li>
 should now be '--download-package=1'</li>
       </ul>
       <p><u><b>IS:</b></u></p>
+      <p><u><b>PF:</b></u></p>
+      <ul>
+        <li>The source array is marked constant in PFApply and the callback.</li>
+      </ul>
       <p><u><b>Vec: <br>
       </b></u></p>
       <ul>

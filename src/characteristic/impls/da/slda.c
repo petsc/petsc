@@ -5,7 +5,7 @@
 PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
 {
   Characteristic_DA *da = (Characteristic_DA *) c->data; 
-  PetscTruth         iascii, isstring;
+  PetscBool          iascii, isstring;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;

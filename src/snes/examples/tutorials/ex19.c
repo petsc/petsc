@@ -78,7 +78,7 @@ PetscErrorCode FormFunctionLocali4(DALocalInfo*,MatStencil*,Field**,PetscScalar*
 
 typedef struct {
    PassiveReal  lidvelocity,prandtl,grashof;  /* physical parameters */
-   PetscTruth     draw_contours;                /* flag - 1 indicates drawing contours */
+   PetscBool      draw_contours;                /* flag - 1 indicates drawing contours */
 } AppCtx;
 
 #undef __FUNCT__
@@ -153,7 +153,6 @@ int main(int argc,char **argv)
 
   PreLoadStage("Solve");
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
-    PetscSleep(100);
     snes = DMMGGetSNES(dmmg);
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"Number of Newton iterations = %D\n", its);CHKERRQ(ierr);

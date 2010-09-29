@@ -127,7 +127,7 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat F,Mat A,const MatFactorInfo *info
   PetscInt           *ivec1,*ivec2,j;
   double             *dvec;
 #endif
-  PetscTruth         isSeqAIJ,isMPIAIJ;
+  PetscBool          isSeqAIJ,isMPIAIJ;
   
   PetscFunctionBegin;
   if (lu->flg == DIFFERENT_NONZERO_PATTERN) { /* first numeric factorization */      

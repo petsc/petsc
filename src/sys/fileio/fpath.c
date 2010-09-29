@@ -49,7 +49,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscGetFullPath(const char path[],char fullpa
   struct passwd *pwde;
   PetscErrorCode ierr;
   size_t        ln;
-  PetscTruth    flg;
+  PetscBool     flg;
 
   PetscFunctionBegin;
   if (path[0] == '/') {

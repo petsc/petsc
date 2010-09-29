@@ -27,7 +27,7 @@ typedef struct {
   Vec        func;      /* work vector where F(t[i],u[i]) is stored */
   Vec        rhs;       /* work vector for RHS; vec_sol/dt */
   Vec        w1,w2;     /* work space vectors for function evaluation */
-  PetscTruth exact_final_time; /* force Sundials to interpolate solution to exactly final time
+  PetscBool  exact_final_time; /* force Sundials to interpolate solution to exactly final time
                                    requested by user (default) */
   /* PETSc peconditioner objects used by SUNDIALS */
   Mat  pmat;                         /* preconditioner Jacobian */
@@ -45,7 +45,7 @@ typedef struct {
   double      abstol;        /* only for using SS flag in SUNDIALS */
   N_Vector    y;             /* current solution */
   void        *mem;
-  PetscTruth  monitorstep;   /* flag for monitor internal steps; itask=V_ONE_STEP or itask=CV_NORMAL*/
+  PetscBool   monitorstep;   /* flag for monitor internal steps; itask=V_ONE_STEP or itask=CV_NORMAL*/
 } TS_Sundials;
 #endif
 

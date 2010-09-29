@@ -1384,7 +1384,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAbs(Vec v)
 .seealso: MatPermute()
 .keywords: vec, permute
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecPermute(Vec x, IS row, PetscTruth inv)
+PetscErrorCode PETSCVEC_DLLEXPORT VecPermute(Vec x, IS row, PetscBool  inv)
 {
   PetscScalar    *array, *newArray;
   const PetscInt *idx;
@@ -1433,13 +1433,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPermute(Vec x, IS row, PetscTruth inv)
    Concepts: vector^equality
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
+PetscErrorCode PETSCVEC_DLLEXPORT VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
 {
   PetscScalar    *v1,*v2; 
   PetscErrorCode ierr; 
   PetscInt       n1,n2,N1,N2; 
   PetscInt       state1,state2; 
-  PetscTruth     flg1; 
+  PetscBool      flg1; 
  
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(vec1,VEC_CLASSID,1); 

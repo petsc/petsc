@@ -35,7 +35,7 @@ PetscErrorCode viewStrata(ALE::Sieve *sieve, const char *name = NULL);
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscInt       verbosity;
   ALE::Sieve     *doublet;
   PetscErrorCode ierr;

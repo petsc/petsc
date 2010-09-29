@@ -35,7 +35,7 @@ typedef struct {
   PetscReal     rho;
   PetscScalar   W;
   PetscInt      Ii;
-  PetscTruth    T;
+  PetscBool     T;
   TwoVec        pos; 
   PetscDataType dt;
   YourChoice    which;
@@ -97,7 +97,7 @@ int main(int argc,char **argv)
 
 #if defined(PETSC_USE_SOCKET_VIEWER)
   {
-    PetscTruth flg;
+    PetscBool  flg;
     ierr = PetscOptionsName("-bag_view_socket","Sends bag to socket (can be read from matlab)","PetscBagView",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscBagView(bag,PETSC_VIEWER_SOCKET_(PETSC_COMM_WORLD));CHKERRQ(ierr);

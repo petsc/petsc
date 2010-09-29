@@ -144,7 +144,7 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 
   Notes: does byte swapping to work on all machines.
 */
-PetscErrorCode PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,PetscTruth dummy)
+PetscErrorCode PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,PetscBool  dummy)
 {
 
   int  maxblock,wsize,err;

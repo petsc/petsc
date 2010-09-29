@@ -31,7 +31,7 @@
   Level: intermediate
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm comm, PetscInt dim, PetscInt *nodes,PetscInt *procs,PetscInt dof, PetscTruth *periodic,ADDA *adda_p)
+PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm comm, PetscInt dim, PetscInt *nodes,PetscInt *procs,PetscInt dof, PetscBool  *periodic,ADDA *adda_p)
 {
   PetscErrorCode ierr;
   ADDA           adda;
@@ -509,7 +509,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInjection(ADDA adda1, ADDA adda2, VecSca
 
   Level: developer
 @*/
-PetscTruth ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const PetscInt *const uc, PetscInt *const idx) {
+PetscBool  ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const PetscInt *const uc, PetscInt *const idx) {
   PetscErrorCode ierr;
   PetscInt i;
 
@@ -550,7 +550,7 @@ PetscTruth ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const
 
   Level: developer
 @*/
-PetscTruth ADDAHCiter(const PetscInt dim, const PetscInt *const lc, const PetscInt *const uc, PetscInt *const idx) {
+PetscBool  ADDAHCiter(const PetscInt dim, const PetscInt *const lc, const PetscInt *const uc, PetscInt *const idx) {
   PetscInt i;
   for(i=dim-1; i>=0; i--) {
     idx[i] += 1;

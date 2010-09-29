@@ -232,7 +232,7 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
   PetscInt       *aj=a->j,nonew=a->nonew,bs=A->rmap->bs,brow,bcol;
   PetscErrorCode ierr;
   PetscInt       ridx,cidx;
-  PetscTruth     roworiented=a->roworiented;
+  PetscBool      roworiented=a->roworiented;
   MatScalar      value;
   Mat            *ap,*aa = a->a;
 
@@ -311,7 +311,7 @@ PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
   PetscInt          i,j,m,n,bs = 1,ncols,*lens,currentcol,mbs,**ii,*ilens,nextcol,*llens,cnt = 0;
   const PetscInt    *cols;
   const PetscScalar *values;
-  PetscTruth        flg = PETSC_FALSE,notdone;
+  PetscBool         flg = PETSC_FALSE,notdone;
   Mat_SeqAIJ        *a;
   Mat_BlockMat      *amat;
 
@@ -640,7 +640,7 @@ PetscErrorCode MatGetSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,MatReuse scall,M
   PetscInt       *j_new,*i_new,*aj = a->j,*ailen = a->ilen;
   PetscScalar    *a_new;
   Mat            C,*aa = a->a;
-  PetscTruth     stride,equal;
+  PetscBool      stride,equal;
 
   PetscFunctionBegin;
   ierr = ISEqual(isrow,iscol,&equal);CHKERRQ(ierr);
@@ -755,7 +755,7 @@ PetscErrorCode MatAssemblyEnd_BlockMat(Mat A,MatAssemblyType mode)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_BlockMat"
-PetscErrorCode MatSetOption_BlockMat(Mat A,MatOption opt,PetscTruth flg)
+PetscErrorCode MatSetOption_BlockMat(Mat A,MatOption opt,PetscBool  flg)
 {
   PetscFunctionBegin;
   if (opt == MAT_SYMMETRIC && flg) {

@@ -24,7 +24,7 @@ void viewFlip(const ALE::Obj<PointFlip>& flip, const char* name);
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscInt       verbosity;
   PetscErrorCode ierr;
 
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 PetscErrorCode testHatFlip() {
   PetscErrorCode ierr;
   int debug;
-  PetscTruth flag;
+  PetscBool  flag;
   MPI_Comm comm = PETSC_COMM_SELF;
   PetscFunctionBegin;
 

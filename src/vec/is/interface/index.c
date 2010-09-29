@@ -28,7 +28,7 @@ PetscClassId PETSCVEC_DLLEXPORT IS_CLASSID;
 
 .seealso: ISSetIdentity()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISIdentity(IS is,PetscTruth *ident)
+PetscErrorCode PETSCVEC_DLLEXPORT ISIdentity(IS is,PetscBool  *ident)
 {
   PetscErrorCode ierr;
 
@@ -89,12 +89,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSetIdentity(IS is)
 
 .seealso: ISSetPermutation()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISPermutation(IS is,PetscTruth *perm)
+PetscErrorCode PETSCVEC_DLLEXPORT ISPermutation(IS is,PetscBool  *perm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(perm,2);
-  *perm = (PetscTruth) is->isperm;
+  *perm = (PetscBool ) is->isperm;
   PetscFunctionReturn(0);
 }
 
@@ -451,7 +451,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSort(IS is)
 
 .seealso: ISSort()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISSorted(IS is,PetscTruth *flg)
+PetscErrorCode PETSCVEC_DLLEXPORT ISSorted(IS is,PetscBool  *flg)
 {
   PetscErrorCode ierr;
 

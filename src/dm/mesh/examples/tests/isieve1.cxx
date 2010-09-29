@@ -37,7 +37,7 @@ protected:
   int                  _debug; // The debugging level
   PetscInt             _iters; // The number of test repetitions
   PetscInt             _size;  // The interval size
-  PetscTruth           _onlyParallel; // Shut off serial tests
+  PetscBool            _onlyParallel; // Shut off serial tests
 public:
   PetscErrorCode processOptions() {
     PetscErrorCode ierr;

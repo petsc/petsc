@@ -818,10 +818,10 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   KSP                    ksp_E;
   PetscInt               coefficient_structure = 0;
   PetscInt               cpu_x,cpu_y,*lx = PETSC_NULL,*ly = PETSC_NULL;
-  PetscTruth             use_gp_coords = PETSC_FALSE;
-  PetscTruth             use_nonsymbc = PETSC_FALSE;
-  PetscTruth             no_view = PETSC_FALSE;
-  PetscTruth             flg;
+  PetscBool              use_gp_coords = PETSC_FALSE;
+  PetscBool              use_nonsymbc = PETSC_FALSE;
+  PetscBool              no_view = PETSC_FALSE;
+  PetscBool              flg;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;

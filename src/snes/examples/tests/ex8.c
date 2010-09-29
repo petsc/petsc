@@ -48,7 +48,7 @@ int main(int argc, char **argv)
   PetscErrorCode  info;             /* used to check for functions returning nonzeros */
   Vec             x,r;              /* solution and residual vectors */
   Vec             xl,xu;            /* Bounds on the variables */
-  PetscTruth      flg_l,flg_u;     /* flags to check if the bounds are set */
+  PetscBool       flg_l,flg_u;     /* flags to check if the bounds are set */
   SNES            snes;             /* nonlinear solver context */
   Mat             J;                /* Jacobian matrix */
   PetscInt        N;            /* Number of elements in vector */
@@ -286,7 +286,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   PetscScalar     f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
   PetscScalar     hl,hr,ht,hb,hc,htl,hbr;
   PetscScalar     **x, v[7];
-  PetscTruth      assembled;
+  PetscBool       assembled;
   PetscInt        xs,xm,ys,ym;
   Vec             localX;
 
@@ -551,7 +551,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscErrorCode  info;
   PetscInt        start=-1,i,j;
   PetscScalar     zero=0.0;
-  PetscTruth      flg;
+  PetscBool       flg;
 
   PetscFunctionBegin;
   info = PetscOptionsGetInt(PETSC_NULL,"-start",&start,&flg); CHKERRQ(info);

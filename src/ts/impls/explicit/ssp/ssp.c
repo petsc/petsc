@@ -18,7 +18,7 @@ typedef struct {
   Vec xdot;
   Vec *work;
   PetscInt nwork;
-  PetscTruth workout;
+  PetscBool  workout;
 } TS_SSP;
 
 
@@ -240,7 +240,7 @@ static PetscErrorCode TSSetFromOptions_SSP(TS ts)
   char tname[256] = TSSSPRKS2;
   TS_SSP *ssp = (TS_SSP*)ts->data;
   PetscErrorCode ierr;
-  PetscTruth flg;
+  PetscBool  flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SSP ODE solver options");CHKERRQ(ierr);

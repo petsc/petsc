@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscScalar    *array;
   PetscErrorCode ierr;
   PetscRandom    r;
-  PetscTruth     equal;
+  PetscBool      equal;
   PetscReal      fill = 1.0;
 
   PetscInitialize(&argc,&argv,(char *)0,help);

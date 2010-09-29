@@ -22,7 +22,7 @@
 
 typedef struct {
   Vec X,Xdot;                   /* Storage for one stage */
-  PetscTruth extrapolate;
+  PetscBool  extrapolate;
   PetscReal Theta;
   PetscReal shift;
   PetscReal stage_time;
@@ -172,7 +172,7 @@ static PetscErrorCode TSSetFromOptions_Theta(TS ts)
 static PetscErrorCode TSView_Theta(TS ts,PetscViewer viewer)
 {
   TS_Theta       *th = (TS_Theta*)ts->data;
-  PetscTruth      iascii;
+  PetscBool       iascii;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;

@@ -5,7 +5,7 @@
 
 #include "private/pcimpl.h"      /*I "petscpc.h" I*/
 
-PetscTruth PCRegisterAllCalled = PETSC_FALSE;
+PetscBool  PCRegisterAllCalled = PETSC_FALSE;
 /*
    Contains the list of registered KSP routines
 */
@@ -54,7 +54,7 @@ PetscFList PCList = 0;
 PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC pc,const PCType type)
 {
   PetscErrorCode ierr,(*r)(PC);
-  PetscTruth     match;
+  PetscBool      match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -166,7 +166,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions(PC pc)
   PetscErrorCode ierr;
   char           type[256];
   const char     *def;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);

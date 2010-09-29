@@ -44,7 +44,7 @@ struct _n_DMMG {
   MPI_Comm       comm;
   PetscErrorCode (*solve)(DMMG*,PetscInt);
   void           *user;         
-  PetscTruth     galerkin;                  /* for A_c = R*A*R^T */
+  PetscBool      galerkin;                  /* for A_c = R*A*R^T */
   MatType        mtype;                     /* create matrices of this type */
   char           *prefix;
 
@@ -56,10 +56,10 @@ struct _n_DMMG {
   Vec            Rscale;                 /* scaling to restriction before computing Jacobian */
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);  
 
-  PetscTruth     updatejacobian;         /* compute new Jacobian when DMMGComputeJacobian_Multigrid() is called */
+  PetscBool      updatejacobian;         /* compute new Jacobian when DMMGComputeJacobian_Multigrid() is called */
   PetscInt       updatejacobianperiod;   /* how often, inside a SNES, the Jacobian is recomputed */
 
-  PetscTruth     getcoloringfrommat;     /* call a graph coloring algorithm on the matrix to get the coloring, instead of getting it from the DM */
+  PetscBool      getcoloringfrommat;     /* call a graph coloring algorithm on the matrix to get the coloring, instead of getting it from the DM */
   ISColoringType isctype;
   MatFDColoring  fdcoloring;             /* only used with FD coloring for Jacobian */  
   SNES           snes;                  
@@ -72,7 +72,7 @@ struct _n_DMMG {
   /* FAS only */
   NLF            nlf;                   /* FAS smoother object */
   VecScatter     inject;                /* inject from this level to the next coarsest */
-  PetscTruth     monitor,monitorall;
+  PetscBool      monitor,monitorall;
   PetscInt       presmooth,postsmooth,coarsesmooth;
   PetscReal      rtol,abstol,rrtol;       /* convergence tolerance */   
   
@@ -93,7 +93,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUseMatrixFree(DMMG*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG*,DM);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG*,KSP,PetscInt);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG*,PetscTruth,PetscInt,PetscErrorCode (*)(DMMG,Vec[]));
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG*,PetscBool ,PetscInt,PetscErrorCode (*)(DMMG,Vec[]));
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG*,const MatType);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetISColoringType(DMMG*,ISColoringType);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetOptionsPrefix(DMMG*,const char[]);

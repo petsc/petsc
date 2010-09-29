@@ -44,7 +44,7 @@
       PetscInt         n,ithree
       PetscErrorCode   ierr
       PetscMPIInt      rank
-      PetscTruth       flg
+      PetscBool        flg
       PetscScalar      one,two,three
       PetscScalar      dots(3),dot
 

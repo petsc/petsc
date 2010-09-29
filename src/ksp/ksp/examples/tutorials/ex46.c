@@ -36,7 +36,7 @@ int main(int argc,char **argv)
   PetscReal      norm;          /* norm of solution error */
   PetscInt       i,j,its;
   PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
   PetscLogStage  stage;
   DALocalInfo    info;
 

@@ -13,7 +13,7 @@ PetscInt main(PetscInt argc,char **args)
   Mat            A,P,C;    
   PetscViewer    fd;               
   char           file[2][PETSC_MAX_PATH_LEN];     
-  PetscTruth     flg; 
+  PetscBool      flg; 
   PetscErrorCode ierr;
   PetscReal      fill=2.0;
 

@@ -24,7 +24,7 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
 {
   PetscErrorCode ierr;
   PetscInt       max,*opt,nopt,i;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   /* Require 2 tags,get the second using PetscCommGetNewTag() */
@@ -246,7 +246,7 @@ static PetscErrorCode MatStashExpand_Private(MatStash *stash,PetscInt incr)
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatStashValuesRow_Private"
-PetscErrorCode MatStashValuesRow_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[],PetscTruth ignorezeroentries)
+PetscErrorCode MatStashValuesRow_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[],PetscBool  ignorezeroentries)
 {
   PetscErrorCode     ierr;
   PetscInt           i,k,cnt = 0;
@@ -289,7 +289,7 @@ PetscErrorCode MatStashValuesRow_Private(MatStash *stash,PetscInt row,PetscInt n
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashValuesCol_Private"
-PetscErrorCode MatStashValuesCol_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[],PetscInt stepval,PetscTruth ignorezeroentries)
+PetscErrorCode MatStashValuesCol_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[],PetscInt stepval,PetscBool  ignorezeroentries)
 {
   PetscErrorCode     ierr;
   PetscInt           i,k,cnt = 0; 
@@ -616,7 +616,7 @@ PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals
   PetscMPIInt    i,*flg_v = stash->flg_v,i1,i2;
   PetscInt       bs2;
   MPI_Status     recv_status;
-  PetscTruth     match_found = PETSC_FALSE;
+  PetscBool      match_found = PETSC_FALSE;
 
   PetscFunctionBegin;
 

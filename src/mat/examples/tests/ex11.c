@@ -12,7 +12,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscScalar    v,five = 5.0;
   IS             isrow;
-  PetscTruth     keepnonzeropattern;
+  PetscBool      keepnonzeropattern;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

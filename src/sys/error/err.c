@@ -312,7 +312,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscExceptionTmp1                          = 
 
 .seealso: PetscExceptionTry1(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop(), PetscErrorSetCatchable()
 @*/
-PetscTruth PETSCSYS_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode err)
+PetscBool  PETSCSYS_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode err)
 {
   PetscInt i;
   for (i=0; i<PetscErrorUncatchableCount; i++) {
@@ -338,7 +338,7 @@ PetscTruth PETSCSYS_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode err)
 
 .seealso: PetscExceptionTry1(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop(), PetscErrorIsCatchable()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode err,PetscTruth flg)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode err,PetscBool  flg)
 {
   PetscFunctionBegin;
   if (!flg && PetscErrorIsCatchable(err)) {
@@ -452,7 +452,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscError(MPI_Comm comm,int line,const char *
   size_t         fullLength;
   PetscErrorCode ierr;
   char           buf[2048],*lbuf = 0;
-  PetscTruth     ismain,isunknown;
+  PetscBool      ismain,isunknown;
 #if defined(PETSC_USE_ERRORCHECKING)
   PetscInt       i;
 #endif
@@ -535,7 +535,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscIntView(PetscInt N,const PetscInt idx[],P
 {
   PetscErrorCode ierr;
   PetscInt       j,i,n = N/20,p = N % 20;
-  PetscTruth     iascii,isbinary;
+  PetscBool      iascii,isbinary;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
@@ -620,7 +620,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRealView(PetscInt N,const PetscReal idx[]
 {
   PetscErrorCode ierr;
   PetscInt       j,i,n = N/5,p = N % 5;
-  PetscTruth     iascii,isbinary;
+  PetscBool      iascii,isbinary;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
@@ -706,7 +706,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscScalarView(PetscInt N,const PetscScalar i
 {
   PetscErrorCode ierr;
   PetscInt       j,i,n = N/3,p = N % 3;
-  PetscTruth     iascii,isbinary;
+  PetscBool      iascii,isbinary;
   MPI_Comm       comm;
 
   PetscFunctionBegin;

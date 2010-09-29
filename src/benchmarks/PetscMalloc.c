@@ -10,7 +10,7 @@ int main(int argc,char **argv)
   void        *arr[1000],*dummy;
   int         ierr,i,rand1[1000],rand2[1000];
   PetscRandom r;
-  PetscTruth  flg;
+  PetscBool   flg;
   
   PetscInitialize(&argc,&argv,0,0);
   

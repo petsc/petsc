@@ -9,7 +9,7 @@ typedef struct _PCOps *PCOps;
 struct _PCOps {
   PetscErrorCode (*setup)(PC);
   PetscErrorCode (*apply)(PC,Vec,Vec);
-  PetscErrorCode (*applyrichardson)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscTruth,PetscInt*,PCRichardsonConvergedReason*);
+  PetscErrorCode (*applyrichardson)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*);
   PetscErrorCode (*applyBA)(PC,PCSide,Vec,Vec,Vec);
   PetscErrorCode (*applytranspose)(PC,Vec,Vec);
   PetscErrorCode (*applyBAtranspose)(PC,PetscInt,Vec,Vec,Vec);
@@ -35,8 +35,8 @@ struct _p_PC {
   MatStructure   flag;
   Mat            mat,pmat;
   Vec            diagonalscaleright,diagonalscaleleft; /* used for time integration scaling */
-  PetscTruth     diagonalscale;
-  PetscTruth     nonzero_guess; /* used by PCKSP, PCREDUNDANT and PCOPENMP */
+  PetscBool      diagonalscale;
+  PetscBool      nonzero_guess; /* used by PCKSP, PCREDUNDANT and PCOPENMP */
   PetscErrorCode (*modifysubmatrices)(PC,PetscInt,const IS[],const IS[],Mat[],void*); /* user provided routine */
   void           *modifysubmatricesP; /* context for user routine */
   void           *data;

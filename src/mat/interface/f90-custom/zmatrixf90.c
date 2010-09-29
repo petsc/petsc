@@ -40,8 +40,8 @@ void PETSC_STDCALL matrestorearrayf90_(Mat *mat,F90Array2d *ptr,int *ierr PETSC_
   *ierr = F90Array2dDestroy(ptr,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   *ierr = MatRestoreArray(*mat,&fa);
 }
-void PETSC_STDCALL matgetrowijf90_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscTruth *blockcompressed,PetscInt *n,F90Array1d *ia,
-                                F90Array1d *ja,PetscTruth *done,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(iad)  PETSC_F90_2PTR_PROTO(jad))
+void PETSC_STDCALL matgetrowijf90_(Mat *B,PetscInt *shift,PetscBool  *sym,PetscBool  *blockcompressed,PetscInt *n,F90Array1d *ia,
+                                F90Array1d *ja,PetscBool  *done,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(iad)  PETSC_F90_2PTR_PROTO(jad))
 {
   PetscInt *IA,*JA;
   *ierr = MatGetRowIJ(*B,*shift,*sym,*blockcompressed,n,&IA,&JA,done);if (*ierr) return; if (!*done) return;
@@ -49,8 +49,8 @@ void PETSC_STDCALL matgetrowijf90_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscT
   *ierr = F90Array1dCreate((PetscInt *)JA,PETSC_INT,1,IA[*n],ja PETSC_F90_2PTR_PARAM(jad));
 }
 
-void PETSC_STDCALL matrestorerowijf90_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscTruth *blockcompressed, PetscInt *n,F90Array1d *ia,
-                                F90Array1d *ja,PetscTruth *done,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(iad)  PETSC_F90_2PTR_PROTO(jad))
+void PETSC_STDCALL matrestorerowijf90_(Mat *B,PetscInt *shift,PetscBool  *sym,PetscBool  *blockcompressed, PetscInt *n,F90Array1d *ia,
+                                F90Array1d *ja,PetscBool  *done,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(iad)  PETSC_F90_2PTR_PROTO(jad))
 {
   PetscInt *IA,*JA;
   *ierr = F90Array1dAccess(ia,PETSC_INT,(void **)&IA PETSC_F90_2PTR_PARAM(iad));if (*ierr) return;

@@ -8,7 +8,7 @@
 PetscClassId PF_CLASSID = 0;
 
 PetscFList PFList         = PETSC_NULL; /* list of all registered PD functions */
-PetscTruth PFRegisterAllCalled = PETSC_FALSE;
+PetscBool  PFRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFSet"
@@ -31,7 +31,7 @@ PetscTruth PFRegisterAllCalled = PETSC_FALSE;
 
 .seealso: PFCreate(), PFDestroy(), PFSetType(), PFApply(), PFApplyVec()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,PetscScalar*,PetscScalar*),PetscErrorCode (*applyvec)(void*,Vec,Vec),PetscErrorCode (*view)(void*,PetscViewer),PetscErrorCode (*destroy)(void*),void*ctx)
+PetscErrorCode PETSCVEC_DLLEXPORT PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,const PetscScalar*,PetscScalar*),PetscErrorCode (*applyvec)(void*,Vec,Vec),PetscErrorCode (*view)(void*,PetscViewer),PetscErrorCode (*destroy)(void*),void*ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
@@ -64,7 +64,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSet(PF pf,PetscErrorCode (*apply)(void*,Pets
 PetscErrorCode PETSCVEC_DLLEXPORT PFDestroy(PF pf)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
@@ -159,7 +159,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFApplyVec(PF pf,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PetscInt       i,rstart,rend,n,p;
-  PetscTruth     nox = PETSC_FALSE;
+  PetscBool      nox = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
@@ -231,7 +231,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFApplyVec(PF pf,Vec x,Vec y)
 
 .seealso: PFApplyVec(), PFCreate(), PFDestroy(), PFSetType(), PFSet()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFApply(PF pf,PetscInt n,PetscScalar* x,PetscScalar* y)
+PetscErrorCode PETSCVEC_DLLEXPORT PFApply(PF pf,PetscInt n,const PetscScalar* x,PetscScalar* y)
 {
   PetscErrorCode ierr;
 
@@ -278,7 +278,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFView(PF pf,PetscViewer viewer)
 {
   const PFType      cstr;
   PetscErrorCode    ierr;
-  PetscTruth        iascii;
+  PetscBool         iascii;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -425,7 +425,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFGetType(PF pf,const PFType *type)
 PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF pf,const PFType type,void *ctx)
 {
   PetscErrorCode ierr,(*r)(PF,void*);
-  PetscTruth     match;
+  PetscBool      match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
@@ -478,7 +478,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSetFromOptions(PF pf)
 {
   PetscErrorCode ierr;
   char           type[256];
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
@@ -499,7 +499,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSetFromOptions(PF pf)
   PetscFunctionReturn(0);
 }
 
-static PetscTruth PFPackageInitialized = PETSC_FALSE;
+static PetscBool  PFPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "PFFinalizePackage"
 /*@C
@@ -539,7 +539,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
-  PetscTruth        opt;
+  PetscBool         opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;

@@ -169,7 +169,7 @@ PetscErrorCode PetscViewerBinaryMatlabOutputVecDA(PetscViewer viewer, const char
   FILE          *info;
   const char    *fieldname;
   PetscInt       dim,ni,nj,nk,pi,pj,pk,dof,n;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

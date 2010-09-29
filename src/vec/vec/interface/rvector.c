@@ -143,7 +143,7 @@ $    work load inbalance that causes certain processes to arrive much earlier th
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecNorm(Vec x,NormType type,PetscReal *val)  
 {
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -210,7 +210,7 @@ $    work load inbalance that causes certain processes to arrive much earlier th
           VecNormBegin(), VecNormEnd()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecNormAvailable(Vec x,NormType type,PetscTruth *available,PetscReal *val)  
+PetscErrorCode PETSCVEC_DLLEXPORT VecNormAvailable(Vec x,NormType type,PetscBool  *available,PetscReal *val)  
 {
   PetscErrorCode ierr;
 
@@ -423,7 +423,7 @@ $      x[i] = alpha * x[i], for i=1,...,n.
 PetscErrorCode PETSCVEC_DLLEXPORT VecScale (Vec x, PetscScalar alpha)
 {
   PetscReal      norms[4] = {0.0,0.0,0.0, 0.0};
-  PetscTruth     flgs[4];
+  PetscBool      flgs[4];
   PetscErrorCode ierr;
   PetscInt       i;
 

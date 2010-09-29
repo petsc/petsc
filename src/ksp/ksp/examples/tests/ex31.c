@@ -21,7 +21,7 @@ int main(int argc,char **args)
   Vec            x,b,u;           /* approx solution, RHS, exact solution */
   PetscViewer    fd;              /* viewer */
   char           file[PETSC_MAX_PATH_LEN];     /* input file name */
-  PetscTruth     flg,partition=PETSC_FALSE,displayIS=PETSC_FALSE,displayMat=PETSC_FALSE;
+  PetscBool      flg,partition=PETSC_FALSE,displayIS=PETSC_FALSE,displayMat=PETSC_FALSE;
   PetscErrorCode ierr;
   PetscInt       its,m,n;
   PetscReal      norm;

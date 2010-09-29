@@ -19,7 +19,7 @@ int main(int argc,char **argv)
   PetscInt       i,n = 4, inputindices[] = {0,3,9,12},bs = 3,issize;
   const PetscInt *indices;
   IS             set;
-  PetscTruth     isblock;
+  PetscBool      isblock;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
       

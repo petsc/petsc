@@ -6,7 +6,7 @@
 #include "private/meshimpl.h"
 #endif
 
-static PetscTruth AOPackageInitialized = PETSC_FALSE;
+static PetscBool  AOPackageInitialized = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOFinalizePackage"
@@ -44,7 +44,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
-  PetscTruth        opt;
+  PetscBool         opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -75,7 +75,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOInitializePackage(const char path[])
   PetscFunctionReturn(0);
 }
 
-static PetscTruth DMPackageInitialized = PETSC_FALSE;
+static PetscBool  DMPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "DMFinalizePackage"
 /*@C
@@ -128,7 +128,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
-  PetscTruth        opt;
+  PetscBool         opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;

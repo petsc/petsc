@@ -23,7 +23,7 @@ PetscLogEvent  TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEv
 */
 static PetscErrorCode TSSetTypeFromOptions(TS ts)
 {
-  PetscTruth     opt;
+  PetscBool      opt;
   const char     *defaultType;
   char           typeName[256];
   PetscErrorCode ierr;
@@ -72,7 +72,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 PetscErrorCode PETSCTS_DLLEXPORT TSSetFromOptions(TS ts)
 {
   PetscReal               dt;
-  PetscTruth              opt,flg;
+  PetscBool               opt,flg;
   PetscErrorCode          ierr;
   PetscViewerASCIIMonitor monviewer;
   char                    monfilename[PETSC_MAX_PATH_LEN];
@@ -165,7 +165,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSViewFromOptions(TS ts,const char title[])
 {
   PetscViewer    viewer;
   PetscDraw      draw;
-  PetscTruth     opt = PETSC_FALSE;
+  PetscBool      opt = PETSC_FALSE;
   char           fileName[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
@@ -838,7 +838,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSView(TS ts,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   const TSType   type;
-  PetscTruth     iascii,isstring;
+  PetscBool      iascii,isstring;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);

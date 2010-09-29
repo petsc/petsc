@@ -8,33 +8,33 @@
     Struct header shared by SeqAIJ, SeqBAIJ and SeqSBAIJ matrix formats
 */
 #define SEQAIJHEADER(datatype)	\
-  PetscTruth        roworiented;      /* if true, row-oriented input, default */\
+  PetscBool         roworiented;      /* if true, row-oriented input, default */\
   PetscInt          nonew;            /* 1 don't add new nonzeros, -1 generate error on new */\
   PetscInt          nounused;         /* -1 generate error on unused space */\
-  PetscTruth        singlemalloc;     /* if true a, i, and j have been obtained with one big malloc */\
+  PetscBool         singlemalloc;     /* if true a, i, and j have been obtained with one big malloc */\
   PetscInt          maxnz;            /* allocated nonzeros */\
   PetscInt          *imax;            /* maximum space allocated for each row */\
   PetscInt          *ilen;            /* actual length of each row */\
-  PetscTruth        free_imax_ilen;  \
+  PetscBool         free_imax_ilen;  \
   PetscInt          reallocs;         /* number of mallocs done during MatSetValues() \
                                         as more values are set than were prealloced */\
   PetscInt          rmax;             /* max nonzeros in any row */\
-  PetscTruth        keepnonzeropattern;   /* keeps matrix structure same in calls to MatZeroRows()*/\
-  PetscTruth        ignorezeroentries; \
+  PetscBool         keepnonzeropattern;   /* keeps matrix structure same in calls to MatZeroRows()*/\
+  PetscBool         ignorezeroentries; \
   PetscInt          *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */\
   Mat               XtoY;             /* used by MatAXPY() */\
-  PetscTruth        free_ij;          /* free the column indices j and row offsets i when the matrix is destroyed */ \
-  PetscTruth        free_a;           /* free the numerical values when matrix is destroy */ \
+  PetscBool         free_ij;          /* free the column indices j and row offsets i when the matrix is destroyed */ \
+  PetscBool         free_a;           /* free the numerical values when matrix is destroy */ \
   Mat_CompressedRow compressedrow;    /* use compressed row format */                      \
   PetscInt          nz;               /* nonzeros */                                       \
   PetscInt          *i;               /* pointer to beginning of each row */               \
   PetscInt          *j;               /* column values: j + i[k] - 1 is start of row k */  \
   PetscInt          *diag;            /* pointers to diagonal elements */                  \
-  PetscTruth        free_diag;         \
+  PetscBool         free_diag;         \
   datatype          *a;               /* nonzero elements */                               \
   PetscScalar       *solve_work;      /* work space used in MatSolve */                    \
   IS                row, col, icol;   /* index sets, used for reorderings */ \
-  PetscTruth        pivotinblocks;    /* pivot inside factorization of each diagonal block */ \
+  PetscBool         pivotinblocks;    /* pivot inside factorization of each diagonal block */ \
   Mat               parent             /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....); 
                                          means that this shares some data structures with the parent including diag, ilen, imax, i, j */
 
@@ -49,23 +49,23 @@
 typedef struct {
   MatScalar   *bdiag,*ibdiag,*ssor_work;      /* diagonal blocks of matrix used for MatSOR_SeqAIJ_Inode() */
   PetscInt    bdiagsize;                       /* length of bdiag and ibdiag */
-  PetscTruth  ibdiagvalid;                     /* do ibdiag[] and bdiag[] contain the most recent values */
+  PetscBool   ibdiagvalid;                     /* do ibdiag[] and bdiag[] contain the most recent values */
 
-  PetscTruth use;
+  PetscBool  use;
   PetscInt   node_count;                    /* number of inodes */
   PetscInt   *size;                         /* size of each inode */
   PetscInt   limit;                         /* inode limit */
   PetscInt   max_limit;                     /* maximum supported inode limit */
-  PetscTruth checked;                       /* if inodes have been checked for */
+  PetscBool  checked;                       /* if inodes have been checked for */
 } Mat_SeqAIJ_Inode;
 
 EXTERN PetscErrorCode MatView_SeqAIJ_Inode(Mat,PetscViewer);
 EXTERN PetscErrorCode MatAssemblyEnd_SeqAIJ_Inode(Mat,MatAssemblyType);
 EXTERN PetscErrorCode MatDestroy_SeqAIJ_Inode(Mat);
 EXTERN PetscErrorCode MatCreate_SeqAIJ_Inode(Mat);
-EXTERN PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat,MatOption,PetscTruth);
+EXTERN PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat,MatOption,PetscBool );
 EXTERN PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat,MatDuplicateOption,Mat*);
-EXTERN PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,PetscTruth);
+EXTERN PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,PetscBool );
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat,Mat,const MatFactorInfo*);
 
@@ -75,7 +75,7 @@ typedef struct {
   MatScalar        *saved_values;             /* location for stashing nonzero values of matrix */
 
   PetscScalar      *idiag,*mdiag,*ssor_work;  /* inverse of diagonal entries, diagonal values and workspace for Eisenstat trick */
-  PetscTruth       idiagvalid;                     /* current idiag[] and mdiag[] are valid */
+  PetscBool        idiagvalid;                     /* current idiag[] and mdiag[] are valid */
   PetscScalar      fshift,omega;                   /* last used omega and fshift */
 
   ISColoring       coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */
@@ -153,7 +153,7 @@ EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat,Mat,const MatF
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatDuplicate_SeqAIJ(Mat,MatDuplicateOption,Mat*);
 EXTERN PetscErrorCode MatCopy_SeqAIJ(Mat,Mat,MatStructure);
-EXTERN PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat,PetscTruth*,PetscInt*);
+EXTERN PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat,PetscBool *,PetscInt*);
 EXTERN PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat);
 
 EXTERN PetscErrorCode MatMult_SeqAIJ(Mat A,Vec,Vec);
@@ -191,7 +191,7 @@ EXTERN PetscErrorCode MatSolveTransposeAdd_SeqAIJ_inplace(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMatSolve_SeqAIJ_inplace(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatMatSolve_SeqAIJ(Mat,Mat,Mat);
-EXTERN PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg);
+EXTERN PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscBool * flg);
 EXTERN PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
 EXTERN PetscErrorCode MatLoad_SeqAIJ(Mat,PetscViewer);
 EXTERN PetscErrorCode RegisterApplyPtAPRoutines_Private(Mat);
@@ -208,15 +208,15 @@ EXTERN PetscErrorCode MatSetValues_SeqAIJ(Mat,PetscInt,const PetscInt[],PetscInt
 EXTERN PetscErrorCode MatGetRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 EXTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 EXTERN PetscErrorCode MatAXPY_SeqAIJ(Mat,PetscScalar,Mat,MatStructure);
-EXTERN PetscErrorCode MatGetRowIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
-EXTERN PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
-EXTERN PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
-EXTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
+EXTERN PetscErrorCode MatGetRowIJ_SeqAIJ(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt*,PetscInt *[],PetscInt *[],PetscBool  *);
+EXTERN PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt *,PetscInt *[],PetscInt *[],PetscBool  *);
+EXTERN PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt*,PetscInt *[],PetscInt *[],PetscBool  *);
+EXTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt *,PetscInt *[],PetscInt *[],PetscBool  *);
 EXTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
 EXTERN PetscErrorCode MatView_SeqAIJ(Mat,PetscViewer);
 
-EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscTruth);
-EXTERN PetscErrorCode Mat_CheckInode_FactorLU(Mat,PetscTruth);
+EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscBool );
+EXTERN PetscErrorCode Mat_CheckInode_FactorLU(Mat,PetscBool );
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqSBAIJ(Mat,const MatType,MatReuse,Mat*);

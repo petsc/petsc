@@ -463,7 +463,7 @@ TOPS::StructuredSolver_impl::Initialize_impl ()
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.Initialize)
 #undef __FUNCT__
 #define __FUNCT__ "TOPS::StructuredSolver_impl::Initialize"
-  PetscTruth initialized;
+  PetscBool  initialized;
   PetscInitialized(&initialized);
   if (initialized) {
     this->startedpetsc = 0;
@@ -703,7 +703,7 @@ TOPS::StructuredSolver_impl::updatedParameterValue_impl (
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.updatedParameterValue)
   // Insert-Code-Here {TOPS.StructuredSolver.updatedParameterValue} (updatedParameterValue method)
   std::cout << "TOPS::StructuredSolver_impl::updatedParameterValue called" << std::endl;
-  PetscTruth flg;
+  PetscBool  flg;
   PetscInt ierr;
   ierr = PetscInitialized(&flg); 
   if (!flg) ierr = PetscInitializeNoArguments();

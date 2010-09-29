@@ -14,7 +14,7 @@ PetscErrorCode SetSpoolesOptions(Mat A, Spooles_options *options)
   PetscErrorCode ierr;
   int          indx;
   const char   *ordertype[]={"BestOfNDandMS","MMD","MS","ND"};
-  PetscTruth   flg;
+  PetscBool    flg;
 
   PetscFunctionBegin;	
   /* set default input parameters */ 

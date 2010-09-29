@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscInt       rstart,rend,rect = 0;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscScalar    v;
   PetscReal      normf,normi,norm1;
   MatInfo        info;

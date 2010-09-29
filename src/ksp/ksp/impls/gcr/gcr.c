@@ -129,7 +129,7 @@ PetscErrorCode KSPView_GCR( KSP ksp, PetscViewer viewer )
 {
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);
@@ -188,7 +188,7 @@ PetscErrorCode KSPSetFromOptions_GCR(KSP ksp)
   PetscErrorCode  ierr;
   KSP_GCR         *ctx = (KSP_GCR *)ksp->data;
   PetscInt        restart;
-  PetscTruth      flg;
+  PetscBool       flg;
         
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP GCR options");CHKERRQ(ierr);

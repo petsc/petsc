@@ -9,7 +9,7 @@
 typedef struct {
   PetscInt        ell;		/* Number of search directions. */
   PetscReal	delta;		/* Threshold for recomputing exact residual norm */
-  PetscTruth	bConvex;	/* Compute Enhanced BiCGstab polynomial when set to PETSC_TRUE */
+  PetscBool 	bConvex;	/* Compute Enhanced BiCGstab polynomial when set to PETSC_TRUE */
   
   /* Workspace Vectors */
   Vec	vB;

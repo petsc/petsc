@@ -15,7 +15,7 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscTruth     iascii,isdraw;
+  PetscBool      iascii,isdraw;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
@@ -38,7 +38,7 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
     double     ymin = -1,ymax = 1,xmin = -1,xmax = da->M,x;
     PetscInt   base;
     char       node[10];
-    PetscTruth isnull;
+    PetscBool  isnull;
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
@@ -95,7 +95,7 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
 PetscErrorCode DAView_Private(DA da)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg1 = PETSC_FALSE;
+  PetscBool      flg1 = PETSC_FALSE;
   PetscViewer    view;
 
   PetscFunctionBegin;
@@ -128,7 +128,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA da)
   Vec                  local, global;
   VecScatter           ltog, gtol;
   IS                   to, from;
-  PetscTruth           flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
+  PetscBool            flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
   PetscMPIInt          rank, size;
   PetscInt             i,*idx,nn,left,xs,xe,x,Xs,Xe,start,end,m;
   PetscErrorCode       ierr;
@@ -381,7 +381,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm, DAPeriodicType wrap, 
   PetscFunctionBegin;
   ierr = DACreate(comm, da);CHKERRQ(ierr);
   ierr = DASetDim(*da, 1);CHKERRQ(ierr);
-  ierr = DASetSizes(*da, M, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = DASetSizes(*da, M, 1, 1);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = DASetNumProcs(*da, size, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = DASetPeriodicity(*da, wrap);CHKERRQ(ierr);

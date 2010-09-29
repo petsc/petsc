@@ -94,7 +94,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   MPI_Status     *r_status1,*r_status2,*s_status1,*s_status2;
   MPI_Comm       comm;
   PetscScalar    **rbuf2,**sbuf2;
-  PetscTruth     sorted;
+  PetscBool      sorted;
 
   PetscFunctionBegin;
   comm   = ((PetscObject)C)->comm;

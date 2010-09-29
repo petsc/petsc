@@ -103,7 +103,7 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse
   const PetscInt *irow,*aj = a->j,*ai = a->i;
   MatScalar      *mat_a;
   Mat            C;
-  PetscTruth     flag,sorted;
+  PetscBool      flag,sorted;
 
   PetscFunctionBegin;
   if (isrow != iscol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isro"); 
@@ -1202,7 +1202,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatEqual_SeqSBAIJ"
-PetscErrorCode MatEqual_SeqSBAIJ(Mat A,Mat B,PetscTruth* flg)
+PetscErrorCode MatEqual_SeqSBAIJ(Mat A,Mat B,PetscBool * flg)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data,*b = (Mat_SeqSBAIJ *)B->data;
   PetscErrorCode ierr;
@@ -1281,7 +1281,7 @@ PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
   MatScalar      *aa,*v;
   PetscErrorCode ierr;
   PetscInt       i,j,k,lm,M,m,*ai,*aj,mbs,tmp,bs,bs2;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   if (ll != rr){

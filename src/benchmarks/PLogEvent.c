@@ -8,7 +8,7 @@ int main(int argc,char **argv)
   PetscLogDouble x,y;
   PetscLogEvent  e1;
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&argv,0,0);
   PetscLogEventRegister("*DummyEvent",0,&e1);

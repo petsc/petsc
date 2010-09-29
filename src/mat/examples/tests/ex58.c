@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscInt       m = 7,n,i,rstart,rend,cols[3];
   PetscErrorCode ierr;
   PetscScalar    v[3];
-  PetscTruth     equal;
+  PetscBool      equal;
   const char     *eq[2];
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 

@@ -4,7 +4,7 @@
 
 static MPI_Comm saved_PETSC_COMM_WORLD = 0;
 MPI_Comm PETSC_COMM_LOCAL_WORLD        = 0;           /* comm for a single node (local set of processes) */
-PetscTruth PetscOpenMPWorker           = PETSC_FALSE;  /* this is a regular process, nonworker process */
+PetscBool  PetscOpenMPWorker           = PETSC_FALSE;  /* this is a regular process, nonworker process */
 void* PetscOpenMPCtx                   = 0;
 
 extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenMPHandle(MPI_Comm);
@@ -248,7 +248,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
 {
   PetscErrorCode ierr;
   PetscInt       command;
-  PetscTruth     exitwhileloop = PETSC_FALSE;
+  PetscBool      exitwhileloop = PETSC_FALSE;
 
   PetscFunctionBegin;
   while (!exitwhileloop) {

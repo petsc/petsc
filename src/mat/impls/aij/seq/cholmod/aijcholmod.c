@@ -5,7 +5,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatWrapCholmod_seqaij"
-static PetscErrorCode MatWrapCholmod_seqaij(Mat A,PetscTruth values,cholmod_sparse *C,PetscTruth *aijalloc)
+static PetscErrorCode MatWrapCholmod_seqaij(Mat A,PetscBool  values,cholmod_sparse *C,PetscBool  *aijalloc)
 {
   Mat_SeqAIJ      *aij = (Mat_SeqAIJ*)A->data;
   const PetscInt  *ai = aij->i,*aj = aij->j,*adiag;

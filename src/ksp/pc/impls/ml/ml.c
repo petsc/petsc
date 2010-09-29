@@ -50,7 +50,7 @@ typedef struct {
   FineGridCtx    *PetscMLdata;
   PetscInt       Nlevels,MaxNlevels,MaxCoarseSize,CoarsenScheme,EnergyMinimization;
   PetscReal      Threshold,DampingFactor,EnergyMinimizationDropTol;
-  PetscTruth     SpectralNormScheme_Anorm,BlockScaling,EnergyMinimizationCheap,Symmetrize,OldHierarchy,KeepAggInfo,Reusable;
+  PetscBool      SpectralNormScheme_Anorm,BlockScaling,EnergyMinimizationCheap,Symmetrize,OldHierarchy,KeepAggInfo,Reusable;
   PetscMPIInt    size; /* size of communicator for pc->pmat */
 } PC_ML;
 
@@ -515,7 +515,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   GridCtx         *gridctx; 
   PC_MG           *mg = (PC_MG*)pc->data;
   PC_ML           *pc_ml = (PC_ML*)mg->innerctx;
-  PetscTruth      isSeq, isMPI;
+  PetscBool       isSeq, isMPI;
   KSP             smoother;
   PC              subpc;
 

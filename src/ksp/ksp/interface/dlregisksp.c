@@ -8,7 +8,7 @@ const char *PCSides[]          = {"LEFT","RIGHT","SYMMETRIC","PCSide","PC_",0};
 const char *PCASMTypes[]       = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCASMType","PC_ASM_",0};
 const char *PCCompositeTypes[] = {"ADDITIVE","MULTIPLICATIVE","SYMMETRIC_MULTIPLICATIVE","SPECIAL","SCHUR","PCCompositeType","PC_COMPOSITE",0};
 
-static PetscTruth PCPackageInitialized = PETSC_FALSE;
+static PetscBool  PCPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "PCFinalizePackage"
 /*@C
@@ -48,7 +48,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCInitializePackage(const char path[])
 {
   char              logList[256];
   char             *className;
-  PetscTruth        opt;
+  PetscBool         opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -99,7 +99,7 @@ const char *KSPConvergedReasons_Shifted[] = {"DIVERGED_INDEFINITE_MAT","DIVERGED
                                              "CONVERGED_HAPPY_BREAKDOWN","CONVERGED_ATOL_NORMAL","KSPConvergedReason","KSP_",0};
 const char **KSPConvergedReasons = KSPConvergedReasons_Shifted + 10;
 
-static PetscTruth KSPPackageInitialized = PETSC_FALSE;
+static PetscBool  KSPPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFinalizePackage"
 /*@C
@@ -139,7 +139,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
-  PetscTruth        opt;
+  PetscBool         opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;

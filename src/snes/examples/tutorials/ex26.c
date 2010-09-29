@@ -64,8 +64,8 @@ int main(int argc,char **argv)
   SNES                   snes;                 /* nonlinear solver */
   AppCtx                 user;                 /* user-defined work context */
   PetscInt               its;                  /* iterations for convergence */
-  PetscTruth             fd_jacobian = PETSC_FALSE;
-  PetscTruth             adicmf_jacobian = PETSC_FALSE;
+  PetscBool              fd_jacobian = PETSC_FALSE;
+  PetscBool              adicmf_jacobian = PETSC_FALSE;
   PetscInt               grids = 100, dof = 1, stencil_width = 1; 
   PetscErrorCode         ierr;
   PetscReal              fnorm;
@@ -290,7 +290,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   */
   {
     char         filename[PETSC_MAX_PATH_LEN];
-    PetscTruth   flg;
+    PetscBool    flg;
     PetscViewer  view_in;
     PetscReal    fnorm;
     Vec          Y;
@@ -398,7 +398,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   PetscInt       col[6],row,i,xs,xm,Mx,xint,xend,imin, imax;
   PetscScalar    v[6],*x,u;
   PetscReal      hx,dhx,r,psi_0=0.0, psi_a=1.0;
-  PetscTruth     assembled;
+  PetscBool      assembled;
 
   PetscFunctionBegin;
   ierr = MatAssembled(*B,&assembled);CHKERRQ(ierr);

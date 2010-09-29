@@ -11,7 +11,7 @@ static char help[] = "Reads a matrix and vector from a file and writes to anothe
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
-  PetscTruth  flg;
+  PetscBool   flg;
   Vec         x;
   Mat         A;
   char        file[256];

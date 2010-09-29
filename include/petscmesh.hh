@@ -16,7 +16,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const O
   const ALE::Obj<typename Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh, section->getName(), section);
   int            localSize  = order->getLocalSize();
   int            globalSize = order->getGlobalSize();
-  PetscTruth     isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock, isSymmetric;
+  PetscBool      isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock, isSymmetric;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -32,7 +32,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const O
   ierr = PetscStrcmp(mtype, MATSEQSBAIJ, &isSymSeqBlock);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATMPISBAIJ, &isSymMPIBlock);CHKERRQ(ierr);
   // Check for symmetric storage
-  isSymmetric = (PetscTruth) (isSymBlock || isSymSeqBlock || isSymMPIBlock);
+  isSymmetric = (PetscBool ) (isSymBlock || isSymSeqBlock || isSymMPIBlock);
   if (isSymmetric) {
     ierr = MatSetOption(*J, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE);CHKERRQ(ierr);
   }
@@ -857,7 +857,7 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs
 #undef __FUNCT__
 #define __FUNCT__ "preallocateOperatorNew"
 template<typename Mesh, typename Atlas>
-PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<typename Mesh::order_type>& globalOrder, PetscInt dnz[], PetscInt onz[], PetscTruth isSymmetric, Mat A)
+PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<typename Mesh::order_type>& globalOrder, PetscInt dnz[], PetscInt onz[], PetscBool  isSymmetric, Mat A)
 {
   typedef typename Mesh::sieve_type        sieve_type;
   typedef typename Mesh::point_type        point_type;
@@ -1033,7 +1033,7 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
 }
 
 template<typename Mesh, typename Atlas>
-PetscErrorCode preallocateOperatorI(const ALE::Obj<Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<typename Mesh::order_type>& globalOrder, PetscInt dnz[], PetscInt onz[], PetscTruth isSymmetric, Mat A)
+PetscErrorCode preallocateOperatorI(const ALE::Obj<Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<typename Mesh::order_type>& globalOrder, PetscInt dnz[], PetscInt onz[], PetscBool  isSymmetric, Mat A)
 {
   typedef typename Mesh::sieve_type        sieve_type;
   typedef typename Mesh::point_type        point_type;

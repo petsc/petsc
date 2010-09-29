@@ -332,7 +332,7 @@ PetscErrorCode SNESTSFormFunction_CN(SNES snes,Vec x,Vec y,TS ts)
 #define __FUNCT__ "TSScaleShiftMatrices_CN"
 PetscErrorCode TSScaleShiftMatrices_CN(TS ts,Mat A,Mat B,MatStructure str)
 {
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscErrorCode ierr;
   PetscScalar    mdt = 1.0/ts->time_step;
 
@@ -380,7 +380,7 @@ static PetscErrorCode TSSetUp_CN_Linear_Constant_Matrix(TS ts)
 {
   TS_CN          *cn = (TS_CN*)ts->data;
   PetscErrorCode ierr;
-  PetscTruth shelltype;
+  PetscBool  shelltype;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  

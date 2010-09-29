@@ -10,7 +10,7 @@
       PetscInt  i,n,ii(1),start
       PetscInt  stride,ssize,first
       IS          is
-      PetscTruth  flag
+      PetscBool   flag
       PetscOffset iis
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)

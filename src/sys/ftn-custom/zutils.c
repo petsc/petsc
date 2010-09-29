@@ -208,14 +208,14 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,s
 #endif
 
 EXTERN_C_BEGIN
-PetscTruth PETSC_STDCALL petscisinfornanscalar_(PetscScalar *v)
+PetscBool  PETSC_STDCALL petscisinfornanscalar_(PetscScalar *v)
 {
-  return (PetscTruth) PetscIsInfOrNanScalar(*v);
+  return (PetscBool ) PetscIsInfOrNanScalar(*v);
 }
 
-PetscTruth PETSC_STDCALL petscisinfornanreal_(PetscReal *v)
+PetscBool  PETSC_STDCALL petscisinfornanreal_(PetscReal *v)
 {
-  return (PetscTruth) PetscIsInfOrNanReal(*v);
+  return (PetscBool ) PetscIsInfOrNanReal(*v);
 }
 EXTERN_C_END
 

@@ -67,7 +67,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawGetDraw(PetscViewer viewer,Pets
 {
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
   PetscErrorCode   ierr;
-  PetscTruth       isdraw;
+  PetscBool        isdraw;
   char             *title;
 
   PetscFunctionBegin;
@@ -134,7 +134,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawBaseAdd(PetscViewer viewer,Pets
 {
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
   PetscErrorCode   ierr;
-  PetscTruth       isdraw;
+  PetscBool        isdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -167,7 +167,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawBaseSet(PetscViewer viewer,Pets
 {
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
   PetscErrorCode   ierr;
-  PetscTruth       isdraw;
+  PetscBool        isdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -203,7 +203,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawBaseSet(PetscViewer viewer,Pets
 PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawGetDrawLG(PetscViewer viewer,PetscInt  windownumber,PetscDrawLG *drawlg)
 {
   PetscErrorCode   ierr;
-  PetscTruth       isdraw;
+  PetscBool        isdraw;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
 
   PetscFunctionBegin;
@@ -249,7 +249,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawGetDrawLG(PetscViewer viewer,Pe
 PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawGetDrawAxis(PetscViewer viewer,PetscInt  windownumber,PetscDrawAxis *drawaxis)
 {
   PetscErrorCode   ierr;
-  PetscTruth       isdraw;
+  PetscBool        isdraw;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;;
 
   PetscFunctionBegin;
@@ -456,7 +456,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawClear(PetscViewer viewer)
 {
   PetscErrorCode   ierr;
   PetscInt         i;
-  PetscTruth       isdraw;
+  PetscBool        isdraw;
   PetscViewer_Draw *vdraw;
 
   PetscFunctionBegin;

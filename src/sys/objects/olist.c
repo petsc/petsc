@@ -34,7 +34,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOListAdd(PetscOList *fl,const char name[]
 {
   PetscOList     olist,nlist,prev;
   PetscErrorCode ierr;
-  PetscTruth     match;
+  PetscBool      match;
 
   PetscFunctionBegin;
 
@@ -144,7 +144,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOListDestroy(PetscOList fl)
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
 {
   PetscErrorCode ierr;
-  PetscTruth     match;
+  PetscBool      match;
 
   PetscFunctionBegin;
 

@@ -70,7 +70,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
     int nb_locals;              
     Mat_MPIAdj *adj;
     MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *) part->data;
-    PetscTruth flg;
+    PetscBool  flg;
 #ifdef PETSC_HAVE_UNISTD_H
     int fd_stdout, fd_pipe[2], count,err;
 #endif
@@ -215,7 +215,7 @@ PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewe
     MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *) part->data;
     PetscErrorCode        ierr;
     PetscMPIInt           rank;
-    PetscTruth            iascii;
+    PetscBool             iascii;
 
     PetscFunctionBegin;
     ierr = MPI_Comm_rank(((PetscObject)part)->comm, &rank);CHKERRQ(ierr);
@@ -408,7 +408,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part)
     PetscErrorCode ierr;
     int  i;
     PetscReal r;
-    PetscTruth flag;
+    PetscBool  flag;
     const char *global[] =
         { "multilevel-kl", "spectral", "linear", "random", "scattered" };
     const char *local[] = { "kernighan-lin", "none" };

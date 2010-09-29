@@ -55,9 +55,9 @@ const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT"
    Level: advanced
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock(Mat A,PetscBool  *iscopy,MatReuse reuse,Mat *a)
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscTruth*,MatReuse,Mat*);
+  PetscErrorCode ierr,(*f)(Mat,PetscBool *,MatReuse,Mat*);
   PetscMPIInt    size;
 
   PetscFunctionBegin;
@@ -134,6 +134,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRealPart(Mat mat)
   if (!mat->ops->realpart) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = (*mat->ops->realpart)(mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -202,6 +207,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatImaginaryPart(Mat mat)
   if (!mat->ops->imaginarypart) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = (*mat->ops->imaginarypart)(mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -224,7 +234,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatImaginaryPart(Mat mat)
 
 .seealso: MatRealPart()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMissingDiagonal(Mat mat,PetscTruth *missing,PetscInt *dd)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMissingDiagonal(Mat mat,PetscBool  *missing,PetscInt *dd)
 {
   PetscErrorCode ierr;
 
@@ -343,6 +353,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate(Mat mat)
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (!mat->ops->conjugate) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Not provided for this matrix format, send email to petsc-maint@mcs.anl.gov");
   ierr = (*mat->ops->conjugate)(mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -672,7 +687,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscInt          rows,cols;
-  PetscTruth        iascii;
+  PetscBool         iascii;
   const MatType     cstr;
   PetscViewerFormat format;
 
@@ -825,7 +840,7 @@ and PetscBinaryWrite() to see how this may be done.
 PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(Mat newmat,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     isbinary,flg;
+  PetscBool      isbinary,flg;
   const MatType  outtype=0;
 
   PetscFunctionBegin;
@@ -967,7 +982,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatUnScaleSystem(Mat mat,Vec b,Vec x)
 
 .seealso: MatScaleSystem(), MatUnScaleSystem()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatUseScaledForm(Mat mat,PetscTruth scaled)
+PetscErrorCode PETSCMAT_DLLEXPORT MatUseScaledForm(Mat mat,PetscBool  scaled)
 {
   PetscErrorCode ierr;
 
@@ -1093,6 +1108,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValues(Mat mat,PetscInt m,const PetscInt
   if (!mat->ops->setvalues) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = (*mat->ops->setvalues)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1135,6 +1155,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesRowLocal(Mat mat,PetscInt row,cons
   PetscValidType(mat,1);
   PetscValidScalarPointer(v,2);
   ierr = MatSetValuesRow(mat, mat->mapping->indices[row],v);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1189,6 +1214,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesRow(Mat mat,PetscInt row,const Pet
   if (!mat->ops->setvaluesrow) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = (*mat->ops->setvaluesrow)(mat,row,v);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1303,6 +1333,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesStencil(Mat mat,PetscInt m,const M
     jdxn[i] = tmp;
   }
   ierr = MatSetValuesLocal(mat,m,jdxm,n,jdxn,v,addv);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1411,6 +1446,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedStencil(Mat mat,PetscInt m,
     jdxn[i] = tmp;
   }
   ierr = MatSetValuesBlockedLocal(mat,m,jdxm,n,jdxn,v,addv);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1459,7 +1499,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetStencil(Mat mat,PetscInt dim,const Petsc
   }
   mat->stencil.dims[dim]   = dof;
   mat->stencil.starts[dim] = 0;
-  mat->stencil.noc         = (PetscTruth)(dof == 1);
+  mat->stencil.noc         = (PetscBool )(dof == 1);
   PetscFunctionReturn(0);
 }
 
@@ -1581,6 +1621,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlocked(Mat mat,PetscInt m,const P
     ierr = PetscFree2(ibufm,ibufn);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1789,6 +1834,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal(Mat mat,PetscInt nrow,const 
   }
   mat->same_nonzero = PETSC_FALSE;
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1884,6 +1934,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
     ierr = PetscFree2(ibufm,ibufn);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -3551,7 +3606,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCopy(Mat A,Mat B,MatStructure str)
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, const MatType newtype,MatReuse reuse,Mat *M)
 {
   PetscErrorCode         ierr;
-  PetscTruth             sametype,issame,flg;
+  PetscBool              sametype,issame,flg;
   char                   convname[256],mtype[256];
   Mat                    B;
 
@@ -3725,7 +3780,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverPackage t
   ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)(void))&conv);CHKERRQ(ierr);
   if (!conv) {
-    PetscTruth flag;
+    PetscBool  flag;
     MPI_Comm   comm;
 
     ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
@@ -3765,11 +3820,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverPackage t
 
 .seealso: MatCopy(), MatDuplicate(), MatGetFactor()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorAvailable(Mat mat, const MatSolverPackage type,MatFactorType ftype,PetscTruth *flg)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorAvailable(Mat mat, const MatSolverPackage type,MatFactorType ftype,PetscBool  *flg)
 {
   PetscErrorCode         ierr;
   char                   convname[256];
-  PetscErrorCode         (*conv)(Mat,MatFactorType,PetscTruth*);
+  PetscErrorCode         (*conv)(Mat,MatFactorType,PetscBool *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -4188,9 +4243,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatTranspose(Mat mat,MatReuse reuse,Mat *B)
 
 .seealso: MatTranspose(), MatIsSymmetric(), MatIsHermitian()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatIsTranspose(Mat A,Mat B,PetscReal tol,PetscTruth *flg)
+PetscErrorCode PETSCMAT_DLLEXPORT MatIsTranspose(Mat A,Mat B,PetscReal tol,PetscBool  *flg)
 {
-  PetscErrorCode ierr,(*f)(Mat,Mat,PetscReal,PetscTruth*),(*g)(Mat,Mat,PetscReal,PetscTruth*);
+  PetscErrorCode ierr,(*f)(Mat,Mat,PetscReal,PetscBool *),(*g)(Mat,Mat,PetscReal,PetscBool *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -4268,9 +4323,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatHermitianTranspose(Mat mat,MatReuse reuse,M
 
 .seealso: MatTranspose(), MatIsSymmetric(), MatIsHermitian(), MatIsTranspose()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianTranspose(Mat A,Mat B,PetscReal tol,PetscTruth *flg)
+PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianTranspose(Mat A,Mat B,PetscReal tol,PetscBool  *flg)
 {
-  PetscErrorCode ierr,(*f)(Mat,Mat,PetscReal,PetscTruth*),(*g)(Mat,Mat,PetscReal,PetscTruth*);
+  PetscErrorCode ierr,(*f)(Mat,Mat,PetscReal,PetscBool *),(*g)(Mat,Mat,PetscReal,PetscBool *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -4458,7 +4513,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPermuteSparsify(Mat A, PetscInt band, Petsc
 
    Concepts: matrices^equality between
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatEqual(Mat A,Mat B,PetscTruth *flg)
+PetscErrorCode PETSCMAT_DLLEXPORT MatEqual(Mat A,Mat B,PetscBool  *flg)
 {
   PetscErrorCode ierr;
 
@@ -4526,6 +4581,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalScale(Mat mat,Vec l,Vec r)
   ierr = (*mat->ops->diagonalscale)(mat,l,r);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 } 
 
@@ -4568,6 +4628,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatScale(Mat mat,PetscScalar a)
     ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
   } 
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 } 
 
@@ -4681,7 +4746,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyBegin(Mat mat,MatAssemblyType type)
 
 .seealso: MatAssemblyEnd(), MatSetValues(), MatAssemblyBegin()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatAssembled(Mat mat,PetscTruth *assembled)
+PetscErrorCode PETSCMAT_DLLEXPORT MatAssembled(Mat mat,PetscBool  *assembled)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -4700,10 +4765,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssembled(Mat mat,PetscTruth *assembled)
 PetscErrorCode MatView_Private(Mat mat)
 {
   PetscErrorCode    ierr;
-  PetscTruth        flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flg6 = PETSC_FALSE,flg7 = PETSC_FALSE,flg8 = PETSC_FALSE;
-  static PetscTruth incall = PETSC_FALSE;
+  PetscBool         flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flg6 = PETSC_FALSE,flg7 = PETSC_FALSE,flg8 = PETSC_FALSE;
+  static PetscBool  incall = PETSC_FALSE;
 #if defined(PETSC_USE_SOCKET_VIEWER)
-  PetscTruth        flg5 = PETSC_FALSE;
+  PetscBool         flg5 = PETSC_FALSE;
 #endif
 
   PetscFunctionBegin;
@@ -4817,7 +4882,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
 {
   PetscErrorCode  ierr;
   static PetscInt inassm = 0;
-  PetscTruth      flg = PETSC_FALSE;
+  PetscBool       flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -4864,6 +4929,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
     }
   }
   inassm--;
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -4974,7 +5044,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
    Concepts: matrices^setting options
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat mat,MatOption op,PetscTruth flg)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat mat,MatOption op,PetscBool  flg)
 {
   PetscErrorCode ierr;
 
@@ -5067,6 +5137,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroEntries(Mat mat)
   ierr = (*mat->ops->zeroentries)(mat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_ZeroEntries,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -5127,6 +5202,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat mat,PetscInt numRows,const Pet
   ierr = (*mat->ops->zerorows)(mat,numRows,rows,diag);CHKERRQ(ierr);
   ierr = MatView_Private(mat);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -5350,6 +5430,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,PetscInt numRows,cons
     ierr = ISDestroy(is);CHKERRQ(ierr);
   }
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -5853,6 +5938,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreArray(Mat mat,PetscScalar *v[])
   if (!mat->ops->restorearray) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = (*mat->ops->restorearray)(mat,v);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -5912,7 +6002,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrices(Mat mat,PetscInt n,const IS 
 {
   PetscErrorCode ierr;
   PetscInt        i;
-  PetscTruth      eq;
+  PetscBool       eq;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -6219,7 +6309,7 @@ $    call  MatGetRowIJF90(mat,shift,symmetric,inodecompressed,n,ia,ja,done,ierr)
 
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ(), MatGetArray()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat mat,PetscInt shift,PetscTruth symmetric,PetscTruth inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscTruth *done)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat mat,PetscInt shift,PetscBool  symmetric,PetscBool  inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscBool  *done)
 {
   PetscErrorCode ierr;
 
@@ -6267,7 +6357,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat mat,PetscInt shift,PetscTruth 
 
 .seealso: MatGetRowIJ(), MatRestoreColumnIJ()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumnIJ(Mat mat,PetscInt shift,PetscTruth symmetric,PetscTruth inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscTruth *done)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumnIJ(Mat mat,PetscInt shift,PetscBool  symmetric,PetscBool  inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscBool  *done)
 {
   PetscErrorCode ierr;
 
@@ -6314,7 +6404,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumnIJ(Mat mat,PetscInt shift,PetscTru
 
 .seealso: MatGetRowIJ(), MatRestoreColumnIJ()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowIJ(Mat mat,PetscInt shift,PetscTruth symmetric,PetscTruth inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscTruth *done)
+PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowIJ(Mat mat,PetscInt shift,PetscBool  symmetric,PetscBool  inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscBool  *done)
 {
   PetscErrorCode ierr;
 
@@ -6361,7 +6451,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowIJ(Mat mat,PetscInt shift,PetscTr
 
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreColumnIJ(Mat mat,PetscInt shift,PetscTruth symmetric,PetscTruth inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscTruth *done)
+PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreColumnIJ(Mat mat,PetscInt shift,PetscBool  symmetric,PetscBool  inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscBool  *done)
 {
   PetscErrorCode ierr;
 
@@ -7215,7 +7305,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolves(Mat mat,Vecs b,Vecs x)
 
 .seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption(), MatIsSymmetricKnown()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetric(Mat A,PetscReal tol,PetscTruth *flg)
+PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetric(Mat A,PetscReal tol,PetscBool  *flg)
 {
   PetscErrorCode ierr;
 
@@ -7273,7 +7363,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetric(Mat A,PetscReal tol,PetscTruth 
 
 .seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption(), MatIsSymmetricKnown()
 @*/ 
-PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitian(Mat A,PetscReal tol,PetscTruth *flg)
+PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitian(Mat A,PetscReal tol,PetscBool  *flg)
 {
   PetscErrorCode ierr;
 
@@ -7334,7 +7424,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitian(Mat A,PetscReal tol,PetscTruth 
 
 .seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption(), MatIsSymmetric()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetricKnown(Mat A,PetscTruth *set,PetscTruth *flg)
+PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetricKnown(Mat A,PetscBool  *set,PetscBool  *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -7372,7 +7462,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetricKnown(Mat A,PetscTruth *set,Pets
 
 .seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption(), MatIsSymmetric()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianKnown(Mat A,PetscTruth *set,PetscTruth *flg)
+PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianKnown(Mat A,PetscBool  *set,PetscBool  *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -7406,7 +7496,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianKnown(Mat A,PetscTruth *set,Pets
 
 .seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsSymmetric(), MatSetOption()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatIsStructurallySymmetric(Mat A,PetscTruth *flg)
+PetscErrorCode PETSCMAT_DLLEXPORT MatIsStructurallySymmetric(Mat A,PetscBool  *flg)
 {
   PetscErrorCode ierr;
 

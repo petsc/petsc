@@ -42,7 +42,7 @@ int main(int argc,char **argv)
   PetscInt       its;
   PetscMPIInt    size,rank;
   PetscScalar    pfive = .5,*xx;
-  PetscTruth     flg;
+  PetscBool      flg;
   AppCtx         user;         /* user-defined work context */
   IS             isglobal,islocal;
 

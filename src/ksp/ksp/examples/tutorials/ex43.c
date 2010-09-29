@@ -1207,7 +1207,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   KSP                    ksp_S;
   PetscInt               coefficient_structure = 0;
   PetscInt               cpu_x,cpu_y,*lx = PETSC_NULL,*ly = PETSC_NULL;
-  PetscTruth             use_gp_coords = PETSC_FALSE;
+  PetscBool              use_gp_coords = PETSC_FALSE;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;

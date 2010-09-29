@@ -23,7 +23,7 @@ int main(int argc,char **args)
   PetscViewer           fd;               /* viewer */
   char                  file[PETSC_MAX_PATH_LEN];     /* input file name */
   PetscErrorCode        ierr;
-  PetscTruth            flg;
+  PetscBool             flg;
   Vec                   x,y,z,work;
   PetscReal             rnorm;
 

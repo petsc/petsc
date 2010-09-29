@@ -58,11 +58,11 @@ struct _p_SNES {
   PetscInt            numbermonitors;                                     /* number of monitors */
   void                *cnvP;	                                            /* convergence context */
   SNESConvergedReason reason;
-  PetscTruth          errorifnotconverged;
+  PetscBool           errorifnotconverged;
 
   /* --- Routines and data that are unique to each particular solver --- */
 
-  PetscTruth     setupcalled;                /* true if setup has been called */
+  PetscBool      setupcalled;                /* true if setup has been called */
   void           *data;                      /* implementation-specific data */
 
   /* --------------------------  Parameters -------------------------------------- */
@@ -77,7 +77,7 @@ struct _p_SNES {
   PetscReal   abstol;            /* absolute tolerance */
   PetscReal   xtol;            /* relative tolerance in solution */
   PetscReal   deltatol;        /* trust region convergence tolerance */
-  PetscTruth  printreason;     /* print reason for convergence/divergence after each solve */
+  PetscBool   printreason;     /* print reason for convergence/divergence after each solve */
   PetscInt    lagpreconditioner; /* SNESSetLagPreconditioner() */
   PetscInt    lagjacobian;       /* SNESSetLagJacobian() */
   /* ------------------------ Default work-area management ---------------------- */
@@ -92,7 +92,7 @@ struct _p_SNES {
   PetscInt    *conv_hist_its;     /* linear iterations for each Newton step */
   PetscInt    conv_hist_len;      /* size of convergence history array */
   PetscInt    conv_hist_max;      /* actual amount of data in conv_history */
-  PetscTruth  conv_hist_reset;    /* reset counter for each new SNES solve */
+  PetscBool   conv_hist_reset;    /* reset counter for each new SNES solve */
 
   /* the next two are used for failures in the line search; they should be put into the LS struct */
   PetscInt    numFailures;        /* number of unsuccessful step attempts */
@@ -101,9 +101,9 @@ struct _p_SNES {
   PetscInt    numLinearSolveFailures;
   PetscInt    maxLinearSolveFailures;
 
-  PetscTruth  domainerror;       /* set with SNESSetFunctionDomainError() */
+  PetscBool   domainerror;       /* set with SNESSetFunctionDomainError() */
 
-  PetscTruth  ksp_ewconv;        /* flag indicating use of Eisenstat-Walker KSP convergence criteria */
+  PetscBool   ksp_ewconv;        /* flag indicating use of Eisenstat-Walker KSP convergence criteria */
   void        *kspconvctx;       /* Eisenstat-Walker KSP convergence context */
 
   PetscReal   ttol;           /* used by default convergence test routine */
@@ -143,7 +143,7 @@ typedef struct {
 PetscErrorCode SNES_KSPSolve(SNES,KSP,Vec,Vec);
 PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
-extern PetscTruth SNESRegisterAllCalled;
+extern PetscBool  SNESRegisterAllCalled;
 extern PetscFList SNESList;
 
 extern PetscLogEvent SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval;

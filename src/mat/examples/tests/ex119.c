@@ -11,7 +11,7 @@ int main(int argc,char **args)
   Mat            A;
   PetscViewer    viewer;
   char           inputfile[256],outputfile[256];
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetString(PETSC_NULL,"-inputfile",inputfile,256,&flg);CHKERRQ(ierr);

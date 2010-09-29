@@ -20,7 +20,7 @@ int main(int argc,char **args)
   const PetscInt    *cols1,*cols2;
   PetscScalar       vals1[4],vals2[4],v;
   const PetscScalar *v1,*v2;
-  PetscTruth        flg;
+  PetscBool         flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

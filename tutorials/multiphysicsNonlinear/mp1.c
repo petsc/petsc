@@ -38,7 +38,7 @@ int main(int argc,char **argv)
   DMComposite    pack;
 
   DMMG           *dmmg1,*dmmg2;
-  PetscTruth     SolveSubPhysics=PETSC_FALSE,GaussSeidel=PETSC_TRUE,Jacobi=PETSC_FALSE;
+  PetscBool      SolveSubPhysics=PETSC_FALSE,GaussSeidel=PETSC_TRUE,Jacobi=PETSC_FALSE;
   Vec            X1,X1_local,X2,X2_local;
   PetscViewer    viewer;
 

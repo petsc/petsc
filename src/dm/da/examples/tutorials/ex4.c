@@ -18,7 +18,7 @@ T*/
 
 #undef __FUNCT__
 #define __FUNCT__ "myfunction"
-PetscErrorCode myfunction(void *ctx,PetscInt n,PetscScalar *xy,PetscScalar *u)
+PetscErrorCode myfunction(void *ctx,PetscInt n,const PetscScalar *xy,PetscScalar *u)
 {
   PetscInt i;
 

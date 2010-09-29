@@ -14,9 +14,9 @@ using ALE::Obj;
 typedef struct {
   PetscInt      debug;                       // The debugging level
   PetscInt      dim;                         // The topological mesh dimension
-  PetscTruth    generateMesh;                // Generate the unstructure mesh
-  PetscTruth    interpolate;                 // Generate intermediate mesh elements
-  PetscTruth    refineLocal;                 // Locally refine the mesh
+  PetscBool     generateMesh;                // Generate the unstructure mesh
+  PetscBool     interpolate;                 // Generate intermediate mesh elements
+  PetscBool     refineLocal;                 // Locally refine the mesh
   PetscReal    *refinementLimit;             // The largest allowable cell volume on each process
   char          baseFilename[2048];          // The base filename for mesh files
 } Options;
@@ -28,7 +28,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscMPIInt    size;
   PetscInt       numLimits;
   ostringstream  filename;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -159,7 +159,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
 
   PetscFunctionBegin;
   Mesh        mesh;
-  PetscTruth  view;
+  PetscBool   view;
   PetscMPIInt size, rank;
 
   if (options->generateMesh) {
@@ -229,7 +229,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     ierr = MeshDestroy(mesh);CHKERRQ(ierr);
     mesh = parallelMesh;
   }
-  PetscTruth refine = PETSC_FALSE;
+  PetscBool  refine = PETSC_FALSE;
 
   for(int p = 0; p < size; ++p) {
     if (options->refinementLimit[p] > 0.0) {

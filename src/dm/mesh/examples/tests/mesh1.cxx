@@ -15,7 +15,7 @@ typedef struct {
   int        debug;           // The debugging level
   int        test;            // The testing level
   int        dim;             // The topological mesh dimension
-  PetscTruth interpolate;     // Construct missing elements of the mesh
+  PetscBool  interpolate;     // Construct missing elements of the mesh
   PetscReal  refinementLimit; // The largest allowable cell volume
 } Options;
 

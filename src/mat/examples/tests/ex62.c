@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscViewer    fd;
   char           type[256],file[PETSC_MAX_PATH_LEN];
   PetscScalar    mone = -1.0;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

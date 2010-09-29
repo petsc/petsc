@@ -88,9 +88,9 @@ typedef enum {VISC_CONSTANT, VISC_VARIABLE} ViscosityType;
 typedef struct {
   PetscInt      debug;                                        // The debugging level
   PetscInt      dim;                                          // The dimension
-  PetscTruth    generateMesh;                                 // Generate the unstructure mesh
-  PetscTruth    square;                                       // Use the square mesh test problem
-  PetscTruth    interpolate;                                  // Generate intermediate mesh elements
+  PetscBool     generateMesh;                                 // Generate the unstructure mesh
+  PetscBool     square;                                       // Use the square mesh test problem
+  PetscBool     interpolate;                                  // Generate intermediate mesh elements
   PetscReal     refinementLimit;                              // The largest allowable cell volume
   char          baseFilename[2048];                           // The base filename for mesh files
   PetscReal     radius;                                       // The inner radius
@@ -185,13 +185,13 @@ PetscErrorCode SolveStokes(DMMG *dmmg, Options *options);
 PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, void *ctx);
 PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx);
 PetscErrorCode IterateStokes(DMMG *dmmg, Options *options);
-PetscErrorCode CheckStokesConvergence(DMMG *dmmg, PetscTruth *iterate, Options *options);
+PetscErrorCode CheckStokesConvergence(DMMG *dmmg, PetscBool  *iterate, Options *options);
 PetscErrorCode DivNorm_L2(Mesh mesh, SectionReal X, PetscReal *norm, Options *options);
 
 PetscErrorCode SolveTransport(DM dm, Options *options);
 PetscErrorCode Transport_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, void *ctx);
 PetscErrorCode Transport_Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx);
-PetscErrorCode CheckStoppingCriteria(DM dm, PetscTruth *iterate, Options *options);
+PetscErrorCode CheckStoppingCriteria(DM dm, PetscBool  *iterate, Options *options);
 
 PetscErrorCode WriteSolution(DM dm, Options *options);
 
@@ -220,7 +220,7 @@ int main(int argc, char *argv[])
   Options        options;
   DM             stokesDM, paramDM, transportDM;
   PetscErrorCode ierr;
-  PetscTruth     iterate = PETSC_TRUE;
+  PetscBool      iterate = PETSC_TRUE;
   PetscInt       iter = 0, max_iter = 1;
 
   PetscFunctionBegin;
@@ -277,7 +277,7 @@ int main(int argc, char *argv[])
 PetscErrorCode SolveStokes(DMMG *dmmg, Options *options)
 {
   Mesh           mesh     = (Mesh) DMMGGetDM(dmmg);
-  PetscTruth     iterate  = PETSC_TRUE;
+  PetscBool      iterate  = PETSC_TRUE;
   PetscInt       iter     = 0;
   PetscInt       max_iter = 3;
   MPI_Comm       comm;
@@ -289,7 +289,7 @@ PetscErrorCode SolveStokes(DMMG *dmmg, Options *options)
     SNES                snes;
     SNESConvergedReason reason;
     PetscInt            its;
-    PetscTruth          flag;
+    PetscBool           flag;
 
     //ierr = SectionRealToVec(options->exactSol.section, mesh, SCATTER_FORWARD, DMMGGetx(dmmg));CHKERRQ(ierr);
     // CHECK options->paramName = "exactSolution";
@@ -407,7 +407,7 @@ PetscErrorCode DivNorm_L2(Mesh mesh, SectionReal X, PetscReal *norm, Options *op
  */
 #undef __FUNCT__
 #define __FUNCT__ "CheckStokesConvergence"
-PetscErrorCode CheckStokesConvergence(DMMG *dmmg, PetscTruth *iterate, Options *options)
+PetscErrorCode CheckStokesConvergence(DMMG *dmmg, PetscBool  *iterate, Options *options)
 {
   Mesh            mesh = (Mesh) DMMGGetFine(dmmg)->dm;
   const PetscReal tol  = 1.0e-5;
@@ -456,7 +456,7 @@ PetscErrorCode SolveTransport(DM dm, Options *options)
   //  Mesh                mesh = (Mesh) DMMGGetDM(dmmg);
   SNES                snes;
   PetscInt            its;
-  PetscTruth          flag;
+  PetscBool           flag;
   SNESConvergedReason reason;
 
   //ierr = SectionRealToVec(options->exactSol.section, mesh, SCATTER_FORWARD, DMMGGetx(dmmg));CHKERRQ(ierr);
@@ -482,7 +482,7 @@ PetscErrorCode SolveTransport(DM dm, Options *options)
  */ 
 #undef __FUNCT__
 #define __FUNCT__ "CheckStoppingCriteria"
-PetscErrorCode CheckStoppingCriteria(DM dm, PetscTruth *iterate, Options *options)
+PetscErrorCode CheckStoppingCriteria(DM dm, PetscBool  *iterate, Options *options)
 {
   Obj<ALE::Mesh> m;
   PetscReal      error;
@@ -550,7 +550,7 @@ PetscErrorCode CheckStoppingCriteria(DM dm, PetscTruth *iterate, Options *option
 PetscErrorCode WriteSolution(DM dm, Options *options)
 {
   PetscErrorCode ierr;
-  PetscTruth flag;
+  PetscBool  flag;
   Mesh mesh = (Mesh) dm;
   SectionReal solution;
   Obj<ALE::Mesh::real_section_type> sol;
@@ -751,7 +751,7 @@ PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[]
 PetscErrorCode CreateMesh(MPI_Comm comm, DM *stokesDM, DM *paramDM, DM *transportDM, Options *options)
 {
   Mesh           stokesMesh, paramMesh, transportMesh;
-  PetscTruth     view;
+  PetscBool      view;
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
@@ -950,7 +950,7 @@ PetscErrorCode CreateExactSolution(DM dm, SectionReal *exactSol, Options *option
   const int      dim  = options->dim;
   Obj<ALE::Mesh> m;
   Obj<ALE::Mesh::real_section_type> s;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1090,7 +1090,7 @@ PetscErrorCode CheckStokesResidual(DM dm, SectionReal sol, const std::string& pa
   MPI_Comm       comm;
   const char    *name;
   PetscScalar    norm;
-  PetscTruth     flag;
+  PetscBool      flag;
   std::string    oldParamName = options->paramName;
   PetscErrorCode ierr;
 

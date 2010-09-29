@@ -22,11 +22,11 @@ static char help[] = "Sieve Package Correctness and Performance Unit Tests.\n\n"
 #include "laplaceBEM1.hh"
 
 typedef struct {
-  PetscTruth function;      // Run the functionality tests
-  PetscTruth stress;        // Run the stress tests
-  PetscTruth convergence;   // Run the convergence tests
-  PetscTruth bratu;         // Run the Bratu problem tests
-  PetscTruth laplaceBEM;    // Run the Laplace BEM problem tests
+  PetscBool  function;      // Run the functionality tests
+  PetscBool  stress;        // Run the stress tests
+  PetscBool  convergence;   // Run the convergence tests
+  PetscBool  bratu;         // Run the Bratu problem tests
+  PetscBool  laplaceBEM;    // Run the Laplace BEM problem tests
 } Options;
 
 #undef __FUNCT__

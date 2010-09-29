@@ -14,14 +14,14 @@ typedef struct {
 
   PetscErrorCode (*dt)(TS,PetscReal*,void*);              /* compute next timestep, and related context */
   void           *dtctx;              
-  PetscErrorCode (*verify)(TS,Vec,void*,PetscReal*,PetscTruth*); /* verify previous timestep and related context */
+  PetscErrorCode (*verify)(TS,Vec,void*,PetscReal*,PetscBool *); /* verify previous timestep and related context */
   void           *verifyctx;     
 
   PetscReal  initial_fnorm,fnorm;                  /* original and current norm of F(u) */
   PetscReal  fnorm_previous;
 
   PetscReal  dt_increment;                  /* scaling that dt is incremented each time-step */
-  PetscTruth increment_dt_from_initial_dt;
+  PetscBool  increment_dt_from_initial_dt;
 } TS_Pseudo;
 
 /* ------------------------------------------------------------------------------*/
@@ -90,7 +90,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
 
 .seealso: TSPseudoSetVerifyTimeStep(), TSPseudoVerifyTimeStep()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,PetscReal *newdt,PetscTruth *flag)
+PetscErrorCode PETSCTS_DLLEXPORT TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,PetscReal *newdt,PetscBool  *flag)
 {
   PetscFunctionBegin;
   *flag = PETSC_TRUE;
@@ -123,7 +123,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,
 
 .seealso: TSPseudoSetVerifyTimeStep(), TSPseudoDefaultVerifyTimeStep()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,PetscTruth *flag)
+PetscErrorCode PETSCTS_DLLEXPORT TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,PetscBool  *flag)
 {
   TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
@@ -145,7 +145,7 @@ static PetscErrorCode TSStep_Pseudo(TS ts,PetscInt *steps,PetscReal *ptime)
   Vec            sol = ts->vec_sol;
   PetscErrorCode ierr;
   PetscInt       i,max_steps = ts->max_steps,its,lits;
-  PetscTruth     ok;
+  PetscBool      ok;
   TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscReal      current_time_step;
   
@@ -334,7 +334,7 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
 {
   TS_Pseudo               *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode          ierr;
-  PetscTruth              flg = PETSC_FALSE;
+  PetscBool               flg = PETSC_FALSE;
   PetscViewerASCIIMonitor viewer;
 
   PetscFunctionBegin;
@@ -380,7 +380,7 @@ static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
    Level: advanced
 
    Calling sequence of func:
-.  func (TS ts,Vec update,void *ctx,PetscReal *newdt,PetscTruth *flag);
+.  func (TS ts,Vec update,void *ctx,PetscReal *newdt,PetscBool  *flag);
 
 .  update - latest solution vector
 .  ctx - [optional] timestep context
@@ -395,9 +395,9 @@ static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
 
 .seealso: TSPseudoDefaultVerifyTimeStep(), TSPseudoVerifyTimeStep()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void*,PetscReal*,PetscTruth*),void* ctx)
+PetscErrorCode PETSCTS_DLLEXPORT TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void*,PetscReal*,PetscBool *),void* ctx)
 {
-  PetscErrorCode ierr,(*f)(TS,PetscErrorCode (*)(TS,Vec,void*,PetscReal *,PetscTruth *),void *);
+  PetscErrorCode ierr,(*f)(TS,PetscErrorCode (*)(TS,Vec,void*,PetscReal *,PetscBool  *),void *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -529,7 +529,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPseudoSetTimeStep(TS ts,PetscErrorCode (*dt)(
 
 /* ----------------------------------------------------------------------------- */
 
-typedef PetscErrorCode (*FCN1)(TS,Vec,void*,PetscReal*,PetscTruth*); /* force argument to next function to not be extern C*/
+typedef PetscErrorCode (*FCN1)(TS,Vec,void*,PetscReal*,PetscBool *); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPseudoSetVerifyTimeStep_Pseudo"

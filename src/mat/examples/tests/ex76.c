@@ -19,8 +19,8 @@ int main(int argc,char **args)
   PetscRandom    rdm;
   PetscInt       reorder=0,displ=0;
   MatFactorInfo  factinfo;
-  PetscTruth     equal;
-  PetscTruth     TestAIJ=PETSC_FALSE,TestBAIJ=PETSC_TRUE;
+  PetscBool      equal;
+  PetscBool      TestAIJ=PETSC_FALSE,TestBAIJ=PETSC_TRUE;
   PetscInt       TestShift=0;
 
   PetscInitialize(&argc,&args,(char *)0,help);

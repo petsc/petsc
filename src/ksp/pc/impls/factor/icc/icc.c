@@ -89,7 +89,7 @@ static PetscErrorCode PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 static PetscErrorCode PCSetFromOptions_ICC(PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
-  PetscTruth     flg;
+  PetscBool      flg;
   /* PetscReal      dt[3];*/
   PetscErrorCode ierr;
 

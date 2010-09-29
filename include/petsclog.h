@@ -37,7 +37,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscInfo_Private(const char[],void*,co
 #endif
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscInfoDeactivateClass(PetscClassId);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscInfoActivateClass(PetscClassId);
-extern PetscTruth     PETSCSYS_DLLEXPORT PetscLogPrintInfo;  /* if true, indicates PetscInfo() is turned on */
+extern PetscBool      PETSCSYS_DLLEXPORT PetscLogPrintInfo;  /* if true, indicates PetscInfo() is turned on */
 
 /* We must make the following structures available to access the event
      activation flags in the PetscLogEventBegin/End() macros. These are not part of the PETSc public
@@ -101,8 +101,8 @@ typedef struct {
 
 typedef struct {
   int            id;            /* The integer identifying this event */
-  PetscTruth     active;        /* The flag to activate logging */
-  PetscTruth     visible;       /* The flag to print info in summary */
+  PetscBool      active;        /* The flag to activate logging */
+  PetscBool      visible;       /* The flag to print info in summary */
   int            depth;         /* The nesting depth of the event call */
   int            count;         /* The number of times this event was executed */
   PetscLogDouble flops;         /* The flops used in this event */
@@ -133,7 +133,7 @@ struct _n_EventPerfLog {
 */
 typedef struct _StageInfo {
   char         *name;     /* The stage name */
-  PetscTruth    used;     /* The stage was pushed on this processor */
+  PetscBool     used;     /* The stage was pushed on this processor */
   EventPerfInfo perfInfo; /* The stage performance information */
   EventPerfLog  eventLog; /* The event information for this stage */
   ClassPerfLog  classLog; /* The class information for this stage */
@@ -184,7 +184,7 @@ struct _n_StageLog {
 #include "mpe.h"
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT        PetscLogMPEBegin(void);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT        PetscLogMPEDump(const char[]);
-extern PetscTruth UseMPE;
+extern PetscBool  UseMPE;
 #define PETSC_LOG_EVENT_MPE_BEGIN(e) \
   ((UseMPE && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) ? \
    MPE_Log_event(_stageLog->eventLog->eventInfo[e].mpe_id_begin,0,NULL) : 0)
@@ -214,8 +214,8 @@ EXTERN PETSCSYS_DLLEXPORT PetscErrorCode (*_PetscLogPHD)(PetscObject);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogBegin(void);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogAllBegin(void);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogTraceBegin(FILE *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogActions(PetscTruth);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjects(PetscTruth);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogActions(PetscBool );
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjects(PetscBool );
 /* General functions */
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogGetRGBColor(const char*[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogDestroy(void);
@@ -233,16 +233,16 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGetFlops(PetscLogDouble *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageRegister(const char[],PetscLogStage*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStagePush(PetscLogStage);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStagePop(void);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageSetActive(PetscLogStage, PetscTruth);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageGetActive(PetscLogStage, PetscTruth *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageSetVisible(PetscLogStage, PetscTruth);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageGetVisible(PetscLogStage, PetscTruth *);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageSetActive(PetscLogStage, PetscBool );
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageGetActive(PetscLogStage, PetscBool  *);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageSetVisible(PetscLogStage, PetscBool );
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageGetVisible(PetscLogStage, PetscBool  *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageGetId(const char [], PetscLogStage *);
 /* Event functions */
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventRegister(const char[], PetscClassId,PetscLogEvent*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventActivate(PetscLogEvent);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventDeactivate(PetscLogEvent);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventSetActiveAll(PetscLogEvent, PetscTruth);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventSetActiveAll(PetscLogEvent, PetscBool );
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventActivateClass(PetscClassId);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventDeactivateClass(PetscClassId);
 
@@ -437,7 +437,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjectState(PetscObject,const c
 
 #define PreLoadBegin(flag,name) \
 {\
-  PetscTruth     PreLoading = flag;\
+  PetscBool      PreLoading = flag;\
   int            PreLoadMax,PreLoadIt;\
   PetscLogStage  _stageNum;\
   PetscErrorCode _3_ierr;	\
@@ -452,7 +452,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjectState(PetscObject,const c
     } else {\
       _3_ierr = PetscLogStageRegister(name,&_stageNum);CHKERRQ(_3_ierr); \
     }\
-    _3_ierr = PetscLogStageSetActive(_stageNum,(PetscTruth)(!PreLoadMax || PreLoadIt));\
+    _3_ierr = PetscLogStageSetActive(_stageNum,(PetscBool )(!PreLoadMax || PreLoadIt));\
     _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);
 
 #define PreLoadEnd() \
@@ -468,7 +468,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjectState(PetscObject,const c
   } else {\
     _3_ierr = PetscLogStageRegister(name,&_stageNum);CHKERRQ(_3_ierr);	\
   }\
-  _3_ierr = PetscLogStageSetActive(_stageNum,(PetscTruth)(!PreLoadMax || PreLoadIt));\
+  _3_ierr = PetscLogStageSetActive(_stageNum,(PetscBool )(!PreLoadMax || PreLoadIt));\
   _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);
 
 PETSC_EXTERN_CXX_END

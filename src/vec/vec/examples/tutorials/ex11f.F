@@ -27,7 +27,7 @@
 
       Vec               x
       PetscReal         norm
-      PetscTruth flg
+      PetscBool  flg
       PetscMPIInt rank
       PetscInt n,bs,comp
       PetscErrorCode ierr

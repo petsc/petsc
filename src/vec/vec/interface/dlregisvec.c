@@ -3,7 +3,7 @@
 #include "petscvec.h"
 #include "petscpf.h"
 
-static PetscTruth ISPackageInitialized = PETSC_FALSE;
+static PetscBool  ISPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "ISFinalizePackage"
 /*@C
@@ -41,7 +41,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
-  PetscTruth        opt;
+  PetscBool         opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -86,7 +86,7 @@ EXTERN_C_END
 const char *NormTypes[] = {"1","2","FROBENIUS","INFINITY","1_AND_2","NormType","NORM_",0};
 PetscInt   NormIds[7];  /* map from NormType to IDs used to cache Normvalues */
 
-static PetscTruth VecPackageInitialized = PETSC_FALSE;
+static PetscBool  VecPackageInitialized = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecInitializePackage"
@@ -107,7 +107,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
-  PetscTruth        opt;
+  PetscBool         opt;
   PetscErrorCode    ierr;
   PetscInt          i;
 

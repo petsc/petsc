@@ -587,7 +587,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetGetMatrix(DA da,PetscErrorCode (*f)(DA, co
 
   Uses a greedy algorithm to handle non-ideal layouts, could probably do something better.
 */
-static PetscErrorCode DARefineOwnershipRanges(PetscTruth periodic,PetscInt stencil_width,PetscInt ratio,PetscInt m,const PetscInt lc[],PetscInt lf[])
+static PetscErrorCode DARefineOwnershipRanges(PetscBool  periodic,PetscInt stencil_width,PetscInt ratio,PetscInt m,const PetscInt lc[],PetscInt lf[])
 {
   PetscInt i,totalc = 0,remaining,startc = 0,startf = 0;
 
@@ -667,22 +667,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
   if (da->dim == 3) {
     PetscInt *lx,*ly,*lz;
     ierr = PetscMalloc3(da->m,PetscInt,&lx,da->n,PetscInt,&ly,da->p,PetscInt,&lz);CHKERRQ(ierr);
-    ierr = DARefineOwnershipRanges((PetscTruth)(DAXPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
-    ierr = DARefineOwnershipRanges((PetscTruth)(DAYPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_y,da->n,da->ly,ly);CHKERRQ(ierr);
-    ierr = DARefineOwnershipRanges((PetscTruth)(DAZPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_z,da->p,da->lz,lz);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges((PetscBool )(DAXPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges((PetscBool )(DAYPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_y,da->n,da->ly,ly);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges((PetscBool )(DAZPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_z,da->p,da->lz,lz);CHKERRQ(ierr);
     ierr = DACreate3d(((PetscObject)da)->comm,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,lx,ly,lz,&da2);CHKERRQ(ierr);
     ierr = PetscFree3(lx,ly,lz);CHKERRQ(ierr);
   } else if (da->dim == 2) {
     PetscInt *lx,*ly;
     ierr = PetscMalloc2(da->m,PetscInt,&lx,da->n,PetscInt,&ly);CHKERRQ(ierr);
-    ierr = DARefineOwnershipRanges((PetscTruth)(DAXPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
-    ierr = DARefineOwnershipRanges((PetscTruth)(DAYPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_y,da->n,da->ly,ly);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges((PetscBool )(DAXPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges((PetscBool )(DAYPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_y,da->n,da->ly,ly);CHKERRQ(ierr);
     ierr = DACreate2d(((PetscObject)da)->comm,da->wrap,da->stencil_type,M,N,da->m,da->n,da->w,da->s,lx,ly,&da2);CHKERRQ(ierr);
     ierr = PetscFree2(lx,ly);CHKERRQ(ierr);
   } else if (da->dim == 1) {
     PetscInt *lx;
     ierr = PetscMalloc(da->m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
-    ierr = DARefineOwnershipRanges((PetscTruth)(DAXPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges((PetscBool )(DAXPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
     ierr = DACreate1d(((PetscObject)da)->comm,da->wrap,M,da->w,da->s,lx,&da2);CHKERRQ(ierr);
     ierr = PetscFree(lx);CHKERRQ(ierr);
   }

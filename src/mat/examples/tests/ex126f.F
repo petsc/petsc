@@ -15,8 +15,8 @@
       PetscInt       i,j,II,JJ,m
       PetscInt       Istart, Iend
       PetscInt       ione
-      PetscTruth     wmumps
-      PetscTruth     flg
+      PetscBool      wmumps
+      PetscBool      flg
       PetscScalar    one, v
       IS             perm,iperm
       PetscErrorCode ierr

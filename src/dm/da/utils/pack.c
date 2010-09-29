@@ -36,7 +36,7 @@ struct _p_DMComposite {
   PetscInt               n,N,rstart;           /* rstart is relative to all processors, n unknowns owned by this process, N is total unknowns */
   PetscInt               nghost;               /* number of all local entries include DA ghost points and any shared redundant arrays */
   PetscInt               nDM,nredundant,nmine; /* how many DM's and seperate redundant arrays used to build DMComposite (nmine is ones on this process) */
-  PetscTruth             setup;                /* after this is set, cannot add new links to the DMComposite */
+  PetscBool              setup;                /* after this is set, cannot add new links to the DMComposite */
   struct DMCompositeLink *next;
 
   PetscErrorCode (*FormCoupleLocations)(DMComposite,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt);
@@ -189,7 +189,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeCreate(MPI_Comm comm,DMComposite *pa
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode DMDestroy_Private(DM,PetscTruth*);
+extern PetscErrorCode DMDestroy_Private(DM,PetscBool *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeDestroy"
@@ -211,7 +211,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeDestroy(DMComposite packer)
 {
   PetscErrorCode         ierr;
   struct DMCompositeLink *next, *prev;
-  PetscTruth             done;
+  PetscBool              done;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(packer,DM_CLASSID,1);
@@ -253,7 +253,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeDestroy(DMComposite packer)
 PetscErrorCode PETSCDM_DLLEXPORT DMCompositeView(DMComposite packer,PetscViewer v)
 {
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)v,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -843,7 +843,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_DMComposite(Vec gvec,PetscViewer viewer
   DMComposite            packer;
   PetscErrorCode         ierr;
   struct DMCompositeLink *next;
-  PetscTruth             isdraw;
+  PetscBool              isdraw;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)gvec,"DMComposite",(PetscObject*)&packer);CHKERRQ(ierr);
@@ -1409,7 +1409,7 @@ struct MatPack {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultBoth_Shell_Pack"
-PetscErrorCode MatMultBoth_Shell_Pack(Mat A,Vec x,Vec y,PetscTruth add)
+PetscErrorCode MatMultBoth_Shell_Pack(Mat A,Vec x,Vec y,PetscBool  add)
 {
   struct MatPack         *mpack;
   struct DMCompositeLink *xnext,*ynext;
@@ -1684,7 +1684,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, const 
   Mat                    Atmp;
   PetscMPIInt            rank;
   PetscScalar            zero = 0.0;
-  PetscTruth             dense = PETSC_FALSE;
+  PetscBool              dense = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(packer,DM_CLASSID,1);
@@ -1867,7 +1867,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetColoring(DMComposite dmcomposite,
   PetscErrorCode         ierr;
   PetscInt               n,i,cnt;
   ISColoringValue        *colors;
-  PetscTruth             dense = PETSC_FALSE;
+  PetscBool              dense = PETSC_FALSE;
   ISColoringValue        maxcol = 0;
 
   PetscFunctionBegin;

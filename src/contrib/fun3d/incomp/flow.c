@@ -31,7 +31,7 @@ typedef struct {
 typedef struct {                               /*============================*/
  GRID        *grid;                               /* Pointer to Grid info       */
  TstepCtx    *tsCtx;                              /* Pointer to Time Stepping Context */
- PetscTruth  PreLoading;                          
+ PetscBool   PreLoading;                          
 } AppCtx;                                      /*============================*/
 
 extern int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
@@ -82,7 +82,7 @@ int main(int argc,char **args)
   Mat           Jpc;                   /* Jacobian and Preconditioner matrices */
   PetscScalar   *qnode;
   int 		ierr;
-  PetscTruth    flg;
+  PetscBool     flg;
   MPI_Comm      comm;
   PetscInt      maxfails = 10000;
   ierr = PetscInitialize(&argc,&args,"petsc.opt",help);CHKERRQ(ierr);
@@ -432,7 +432,7 @@ int Update(SNES snes,void *ctx)
  PetscScalar 	fratio;
  PetscScalar 	time1,time2,cpuloc,cpuglo;
  int 		max_steps;
- PetscTruth     print_flag = PETSC_FALSE;
+ PetscBool      print_flag = PETSC_FALSE;
  FILE 		*fptr = 0;
  int		nfailsCum = 0,nfails = 0;
  /*Scalar         cpu_ini,cpu_fin,cpu_time;*/
@@ -457,7 +457,7 @@ int Update(SNES snes,void *ctx)
   ierr = PetscGetTime(&time1);CHKERRQ(ierr);
 #if defined (PARCH_IRIX64) && defined(USE_HW_COUNTERS)
  /*if (!user->PreLoading) {
-  PetscTruth flg = PETSC_FALSE;
+  PetscBool  flg = PETSC_FALSE;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-e0",&event0,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-e1",&event1,&flg);CHKERRQ(ierr);
   ierr = PetscGetTime(&time_start_counters);CHKERRQ(ierr);
@@ -625,14 +625,14 @@ int GetLocalOrdering(GRID *grid)
   char         mesh_file[PETSC_MAX_PATH_LEN];
   AO           ao;
   FILE         *fptr,*fptr1;
-  PetscTruth   flg;
+  PetscBool    flg;
   MPI_Comm     comm = PETSC_COMM_WORLD;
 
   PetscFunctionBegin;
   /* Read the integer grid parameters */ 
   ICALLOC(grid_param,&tmp);
   if (!rank) {
-   PetscTruth exists;
+   PetscBool  exists;
    ierr = PetscOptionsGetString(PETSC_NULL,"-mesh",mesh_file,256,&flg);CHKERRQ(ierr);
    ierr = PetscTestFile(mesh_file,'r',&exists);CHKERRQ(ierr);
    if (!exists) { /* try uns3d.msh as the file name */
@@ -688,7 +688,7 @@ int GetLocalOrdering(GRID *grid)
     }
     else {
       char       spart_file[PETSC_MAX_PATH_LEN],part_file[PETSC_MAX_PATH_LEN];
-      PetscTruth exists;
+      PetscBool  exists;
       
       ierr = PetscOptionsGetString(PETSC_NULL,"-partition",spart_file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
       ierr = PetscTestFile(spart_file,'r',&exists);CHKERRQ(ierr);
@@ -1789,7 +1789,7 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
    int                    *val_diag,*val_offd,*svertices,*loc2pet;
    IS                     isglobal,islocal;
    ISLocalToGlobalMapping isl2g;
-   PetscTruth             flg;
+   PetscBool              flg;
    MPI_Comm               comm = PETSC_COMM_WORLD;
 
    PetscFunctionBegin;

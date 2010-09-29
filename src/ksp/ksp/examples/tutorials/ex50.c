@@ -50,7 +50,7 @@ int main(int argc,char **argv)
   PetscReal      norm;
   PetscErrorCode ierr;
   PetscMPIInt    rank,nproc;
-  PetscTruth     flg;
+  PetscBool      flg;
       
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

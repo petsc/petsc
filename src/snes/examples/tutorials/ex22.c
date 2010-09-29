@@ -89,7 +89,7 @@ int main(int argc,char **argv)
   DA             da;
   DMMG           *dmmg;
   DMComposite    packer;
-  PetscTruth     use_matrix_based = PETSC_FALSE,use_monitor = PETSC_FALSE;
+  PetscBool      use_matrix_based = PETSC_FALSE,use_monitor = PETSC_FALSE;
   PetscInt       i;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
@@ -214,7 +214,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 /* 
     Computes the exact solution
 */
-PetscErrorCode u_solution(void *dummy,PetscInt n,PetscScalar *x,PetscScalar *u)
+PetscErrorCode u_solution(void *dummy,PetscInt n,const PetscScalar *x,PetscScalar *u)
 {
   PetscInt i;
   PetscFunctionBegin;

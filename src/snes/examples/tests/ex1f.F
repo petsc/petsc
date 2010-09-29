@@ -79,7 +79,7 @@
       Vec                x,r
       PetscDraw               draw
       Mat                J
-      PetscTruth matrix_free,flg,fd_coloring
+      PetscBool  matrix_free,flg,fd_coloring
       PetscErrorCode ierr
       PetscInt   its,N, mx,my,i5
       PetscMPIInt size,rank

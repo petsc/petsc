@@ -9,7 +9,7 @@ using ALE::Obj;
 typedef struct {
   int debug;
   int dim;
-  PetscTruth interpolate;
+  PetscBool  interpolate;
 } Options;
 
 #undef __FUNCT__

@@ -75,7 +75,7 @@ typedef struct {
   PetscInt   mu;                           /* Number of cycles to relax in setup stages */
   PetscInt   mu_initial;                   /* Number of cycles to relax for generating first candidate vector */
   PetscInt   direct_solver;                /* For which matrix size should we use the direct solver? */
-  PetscTruth scale_diag;                   /* Should we scale the matrix with the inverse of its diagonal? */
+  PetscBool  scale_diag;                   /* Should we scale the matrix with the inverse of its diagonal? */
   /* parameters for relaxation */
   char *     ksptype_smooth;               /* The relaxation method used on each level (KSP) */
   char *     pctype_smooth;                /* The relaxation method used on each level (PC) */
@@ -101,7 +101,7 @@ typedef struct {
   PetscInt   max_dof_lev_2;                /* The maximum number of degrees of freedom per
 					      node on level 2 (K in paper) */
 
-  PetscTruth multigrid_constructed;        /* Flag that checks whether we have constructed an
+  PetscBool  multigrid_constructed;        /* Flag that checks whether we have constructed an
 					      applicable multigrid yet */
 
   /* parameters that rule the behaviour of the iteration */

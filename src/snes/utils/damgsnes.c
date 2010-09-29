@@ -47,7 +47,7 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
   PetscInt       i,nlevels = dmmg[0]->nlevels,it;
   KSP            ksp,lksp;
   PC             pc;
-  PetscTruth     ismg,galerkin = PETSC_FALSE;
+  PetscBool      ismg,galerkin = PETSC_FALSE;
   Vec            W;
   MatStructure   flg;
 
@@ -553,13 +553,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
 {
   PetscErrorCode          ierr;
   PetscInt                i,nlevels = dmmg[0]->nlevels;
-  PetscTruth              mffdoperator,mffd,fdjacobian;
-  PetscTruth              useFAS = PETSC_FALSE, fasBlock=PETSC_FALSE, fasGMRES=PETSC_FALSE;
-  PetscTruth              monitor, monitorAll;
+  PetscBool               mffdoperator,mffd,fdjacobian;
+  PetscBool               useFAS = PETSC_FALSE, fasBlock=PETSC_FALSE, fasGMRES=PETSC_FALSE;
+  PetscBool               monitor, monitorAll;
   PetscInt                fasPresmooth = 1, fasPostsmooth = 1, fasCoarsesmooth = 1, fasMaxIter = 2;
   PetscReal               fasRtol = 1.0e-8, fasAbstol = 1.0e-50;
 #if defined(PETSC_HAVE_ADIC)
-  PetscTruth              mfadoperator,mfad,adjacobian;
+  PetscBool               mfadoperator,mfad,adjacobian;
 #endif
   PetscClassId            classid;
 
@@ -655,7 +655,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
       PC          pc;
       PetscMPIInt size;
       MPI_Comm    comm;
-      PetscTruth  flg1,flg2,flg3;
+      PetscBool   flg1,flg2,flg3;
       KSP         cksp;
 
       ierr = KSPGetPC(dmmg[i]->ksp,&pc);CHKERRQ(ierr);
@@ -737,7 +737,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
   }
 
   if (useFAS) {
-    PetscTruth flg;
+    PetscBool  flg;
 
     for(i = 0; i < nlevels; i++) {
       ierr = VecDuplicate(dmmg[i]->b,&dmmg[i]->w);CHKERRQ(ierr);
@@ -942,7 +942,7 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
   CHKMEMQ;
   ierr = PetscObjectGetClassId((PetscObject) dmmg[0]->dm,&classid);CHKERRQ(ierr);
   if (classid == DM_CLASSID) {
-    PetscTruth flag;
+    PetscBool  flag;
     /* it makes no sense to use an option to decide on ghost, it depends on whether the 
        formfunctionlocal computes ghost values in F or not. */
     ierr = PetscOptionsHasName(PETSC_NULL, "-dmmg_form_function_ghost", &flag);CHKERRQ(ierr);
@@ -969,7 +969,7 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
       ierr = MeshSetLocalJacobian((Mesh) dmmg[i]->dm, (PetscErrorCode (*)(Mesh,SectionReal,Mat,void*)) jacobian);CHKERRQ(ierr);
       // Setup a work section
       SectionReal defaultSec, constantSec;
-      PetscTruth  hasConstant;
+      PetscBool   hasConstant;
 
       ierr = MeshGetSectionReal((Mesh) dmmg[i]->dm, "default", &defaultSec);CHKERRQ(ierr);
       ierr = MeshHasSectionReal((Mesh) dmmg[i]->dm, "constant", &hasConstant);CHKERRQ(ierr);
@@ -1174,7 +1174,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
 {
   PetscErrorCode ierr;
   PetscInt       i,nDM;
-  PetscTruth     fieldsplit,dmcomposite;
+  PetscBool      fieldsplit,dmcomposite;
   KSP            ksp;
   SNES           snes;
   PC             pc;

@@ -33,7 +33,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   Mat            Amat,Pmat;
   MatStructure   pflag;
   KSP_MINRES     *minres = (KSP_MINRES*)ksp->data;
-  PetscTruth     diagonalscale;
+  PetscBool      diagonalscale;
 
   PetscFunctionBegin;
   if (ksp->normtype != KSP_NORM_PRECONDITIONED) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Only supports preconditioned residual norm for KSPMINRES");

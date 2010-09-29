@@ -806,7 +806,7 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
   ALE::Obj<PETSC_MESH_TYPE::sieve_type::supportSet> includedVertices = new PETSC_MESH_TYPE::sieve_type::supportSet();
   includedVertices->clear();
   int nComparisons;
-  PetscTruth info;
+  PetscBool  info;
   ierr = PetscOptionsHasName(PETSC_NULL, "-dmmg_coarsen_info", &info);CHKERRQ(ierr);
   double nComparisons_perPoint_Total = 0.;
   double maxspace = -1., minspace = -1., dist, current_beta;
@@ -1191,7 +1191,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
   PetscErrorCode ierr;
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscFunctionBegin;
-  PetscTruth info;
+  PetscBool  info;
   int overallComparisons = 0;
   ierr = PetscOptionsHasName(PETSC_NULL, "-dmmg_coarsen_info", &info);CHKERRQ(ierr);
   ierr = MeshGetMesh(finemesh, m);CHKERRQ(ierr);

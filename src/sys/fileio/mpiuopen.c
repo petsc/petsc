@@ -48,7 +48,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFOpen(MPI_Comm comm,const char name[],con
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    PetscTruth isstdout,isstderr;
+    PetscBool  isstdout,isstderr;
     ierr = PetscStrcmp(name,"stdout",&isstdout);CHKERRQ(ierr);
     ierr = PetscStrcmp(name,"stderr",&isstderr);CHKERRQ(ierr);
     if (isstdout || !name) {

@@ -14,7 +14,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_QMD(Mat mat,const MatOrderingTy
   PetscInt       i,  *deg,*marker,*rchset,*nbrhd,*qsize,*qlink,nofsub,*iperm,nrow;
   PetscErrorCode ierr;
   PetscInt       *ia,*ja,*perm;
-  PetscTruth      done; 
+  PetscBool       done; 
 
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);

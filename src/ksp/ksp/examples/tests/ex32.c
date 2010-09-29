@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   DA             da;
   Mat            A,Atrans;
   PetscInt       dof=1,M=-8;
-  PetscTruth     flg,trans=PETSC_FALSE;
+  PetscBool      flg,trans=PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);

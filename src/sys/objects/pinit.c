@@ -12,7 +12,7 @@
 #if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PetscLogBegin_Private(void);
 #endif
-extern PetscTruth PetscOpenMPWorker;
+extern PetscBool  PetscOpenMPWorker;
 
 /* -----------------------------------------------------------------------------------------*/
 
@@ -38,13 +38,13 @@ PetscMPIInt Petsc_OuterComm_keyval = MPI_KEYVAL_INVALID;
 /*
      Declare and set all the string names of the PETSc enums
 */
-const char *PetscTruths[]    = {"FALSE","TRUE","PetscTruth","PETSC_",0};
+const char *PetscBools[]    = {"FALSE","TRUE","PetscBool ","PETSC_",0};
 const char *PetscDataTypes[] = {"INT", "DOUBLE", "COMPLEX",
                                 "LONG","SHORT",  "FLOAT",
-                                "CHAR","LOGICAL","ENUM","TRUTH","LONGDOUBLE","PetscDataType","PETSC_",0};
+                                "CHAR","LOGICAL","ENUM","BOOL","LONGDOUBLE","PetscDataType","PETSC_",0};
 
-PetscTruth PetscPreLoadingUsed = PETSC_FALSE;
-PetscTruth PetscPreLoadingOn   = PETSC_FALSE;
+PetscBool  PetscPreLoadingUsed = PETSC_FALSE;
+PetscBool  PetscPreLoadingOn   = PETSC_FALSE;
 
 /*
        Checks the options database for initializations related to the 
@@ -54,7 +54,7 @@ PetscTruth PetscPreLoadingOn   = PETSC_FALSE;
 #define __FUNCT__ "PetscOptionsCheckInitial_Components"
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Components(void)
 {
-  PetscTruth flg1;
+  PetscBool  flg1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -103,7 +103,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscInitializeNoArguments(void)
 
 .seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscInitialized(PetscTruth *isInitialized)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscInitialized(PetscBool  *isInitialized)
 {
   PetscFunctionBegin;
   PetscValidPointer(isInitialized, 1);
@@ -120,7 +120,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscInitialized(PetscTruth *isInitialized)
 
 .seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFinalized(PetscTruth *isFinalized)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscFinalized(PetscBool  *isFinalized)
 {
   PetscFunctionBegin;
   PetscValidPointer(isFinalized, 1);
@@ -129,7 +129,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFinalized(PetscTruth *isFinalized)
 }
 
 EXTERN PetscErrorCode        PetscOptionsCheckInitial_Private(void);
-extern PetscTruth PetscBeganMPI;
+extern PetscBool  PetscBeganMPI;
 
 /*
        This function is the MPI reduction operation used to compute the sum of the 
@@ -526,7 +526,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscInitialize(int *argc,char ***args,const c
   PetscErrorCode ierr;
   PetscMPIInt    flag, size;
   PetscInt       nodesize;
-  PetscTruth     flg;
+  PetscBool      flg;
   char           hostname[256];
 
   PetscFunctionBegin;
@@ -746,9 +746,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFinalize(void)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   int            nopt;
-  PetscTruth     flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE;
+  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE;
 #if defined(PETSC_HAVE_AMS)
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
 #endif
   
   PetscFunctionBegin;

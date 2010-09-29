@@ -56,7 +56,7 @@ int main(int argc,char **argv)
   Vec           x,v1,v2,v3,v4;
   PetscReal     norm,norm_tmp,norm_tmp1,tol=1.e-12;
   PetscRandom   rdm;
-  PetscTruth    Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_FALSE,flg;
+  PetscBool     Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_FALSE,flg;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-tol",&tol,PETSC_NULL);CHKERRQ(ierr);

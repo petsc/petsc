@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   Mat            A; 
   GridCtx        fine_ctx; 
   KSP            ksp; 
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
   /* set up discretization matrix for fine grid */

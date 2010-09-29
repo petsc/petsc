@@ -123,7 +123,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISDifference(IS is1,IS is2,IS *isout)
 PetscErrorCode PETSCVEC_DLLEXPORT ISSum(IS is1,IS is2,IS *is3)
 {
   MPI_Comm       comm;
-  PetscTruth     f;
+  PetscBool      f;
   PetscMPIInt    size;
   const PetscInt *i1,*i2;
   PetscInt       n1,n2,n3, p1,p2, *iout;

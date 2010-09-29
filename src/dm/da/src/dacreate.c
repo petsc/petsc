@@ -45,7 +45,7 @@ static PetscErrorCode DASetTypeFromOptions_Private(DA da)
 {
   const DAType   defaultType = DA1D;
   char           typeName[256];
-  PetscTruth     opt = PETSC_FALSE;
+  PetscBool      opt = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -93,7 +93,7 @@ static PetscErrorCode DASetTypeFromOptions_Private(DA da)
 PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   char           typeName[256];
 
   PetscFunctionBegin;

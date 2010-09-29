@@ -5,7 +5,7 @@
 /*
    Ugly variable to indicate if we are inside a PetscBagLoad() and should not call PetscOptions....
 */
-static PetscTruth PetscBagInLoad = PETSC_FALSE;
+static PetscBool  PetscBagInLoad = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscBagRegister_Private"
@@ -58,7 +58,7 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag,void *addr,const char **list,Pe
   PetscErrorCode ierr;
   PetscBagItem   item;
   char           nname[PETSC_BAG_NAME_LENGTH+1];
-  PetscTruth     printhelp;
+  PetscBool      printhelp;
   PetscInt       i = 0;
 
   PetscFunctionBegin;
@@ -116,7 +116,7 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag,void *addr,PetscInt mdefault, co
   PetscErrorCode ierr;
   PetscBagItem   item;
   char           nname[PETSC_BAG_NAME_LENGTH+1];
-  PetscTruth     printhelp;
+  PetscBool      printhelp;
 
   PetscFunctionBegin;
   if (!PetscBagInLoad) {
@@ -170,7 +170,7 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag,void *addr,PetscInt msize,con
   PetscErrorCode ierr;
   PetscBagItem   item;
   char           nname[PETSC_BAG_NAME_LENGTH+1];
-  PetscTruth     printhelp;
+  PetscBool      printhelp;
 
   PetscFunctionBegin;
   if (!PetscBagInLoad) {
@@ -225,7 +225,7 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag,void *addr,PetscReal mdefault, 
   PetscErrorCode ierr;
   PetscBagItem   item;
   char           nname[PETSC_BAG_NAME_LENGTH+1];
-  PetscTruth     printhelp;
+  PetscBool      printhelp;
 
   PetscFunctionBegin;
   if (!PetscBagInLoad) {
@@ -277,7 +277,7 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag,void *addr,PetscScalar mdefau
   PetscErrorCode ierr;
   PetscBagItem   item;
   char           nname[PETSC_BAG_NAME_LENGTH+1];
-  PetscTruth     printhelp;
+  PetscBool      printhelp;
 
   PetscFunctionBegin;
   if (!PetscBagInLoad) {
@@ -324,12 +324,12 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag,void *addr,PetscScalar mdefau
            PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
-PetscErrorCode PetscBagRegisterTruth(PetscBag bag,void *addr,PetscTruth mdefault, const char* name, const char* help)
+PetscErrorCode PetscBagRegisterTruth(PetscBag bag,void *addr,PetscBool  mdefault, const char* name, const char* help)
 {
   PetscErrorCode ierr;
   PetscBagItem   item;
   char           nname[PETSC_BAG_NAME_LENGTH+1];
-  PetscTruth     printhelp;
+  PetscBool      printhelp;
 
   PetscFunctionBegin;
   /* the checks here with != PETSC_FALSE and PETSC_TRUE is a special case; here we truly demand that the value be 0 or 1 */
@@ -340,18 +340,18 @@ PetscErrorCode PetscBagRegisterTruth(PetscBag bag,void *addr,PetscTruth mdefault
     ierr     = PetscStrncat(nname,name,PETSC_BAG_NAME_LENGTH-1);CHKERRQ(ierr);
     ierr     = PetscOptionsHasName(PETSC_NULL,"-help",&printhelp);CHKERRQ(ierr);
     if (printhelp) {
-      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  %s <%s>: %s \n",nname,PetscTruths[mdefault],help);CHKERRQ(ierr);
+      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  %s <%s>: %s \n",nname,PetscBools[mdefault],help);CHKERRQ(ierr);
     }
     ierr     = PetscOptionsGetTruth(PETSC_NULL,nname,&mdefault,PETSC_NULL);CHKERRQ(ierr);
   }
 
   ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
-  item->dtype  = PETSC_TRUTH;
+  item->dtype  = PETSC_BOOL;
   item->offset = ((char*)addr) - ((char*)bag);
   if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next   = 0;
   item->msize  = 1;
-  *(PetscTruth*)addr = mdefault;
+  *(PetscBool *)addr = mdefault;
   ierr = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -441,8 +441,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscBagSetFromOptions(PetscBag bag)
         PetscInt  i = 0;
         while (nitem->list[i++]);
         ierr = PetscOptionsEnum(name,nitem->help,nitem->list[i-3],nitem->list,*value,value,PETSC_NULL);CHKERRQ(ierr);
-      } else if (nitem->dtype == PETSC_TRUTH) {
-        PetscTruth *value = (PetscTruth*)(((char*)bag) + nitem->offset);
+      } else if (nitem->dtype == PETSC_BOOL) {
+        PetscBool  *value = (PetscBool *)(((char*)bag) + nitem->offset);
         ierr = PetscOptionsTruth(name,nitem->help,"",*value,value,PETSC_NULL);CHKERRQ(ierr);
       }
       nitem = nitem->next;
@@ -478,7 +478,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscBagSetFromOptions(PetscBag bag)
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
 {
-  PetscTruth     isascii,isbinary;
+  PetscBool      isascii,isbinary;
   PetscErrorCode ierr;
   PetscBagItem   nitem = bag->bagitems;
   
@@ -507,13 +507,13 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
       } else if (nitem->dtype == PETSC_INT) {
         PetscInt value = *(PetscInt*)(((char*)bag) + nitem->offset);
         ierr = PetscViewerASCIIPrintf(view,"  %s = %D; %s\n",nitem->name,value,nitem->help);CHKERRQ(ierr);
-      } else if (nitem->dtype == PETSC_TRUTH) {
-        PetscTruth value = *(PetscTruth*)(((char*)bag) + nitem->offset);
+      } else if (nitem->dtype == PETSC_BOOL) {
+        PetscBool  value = *(PetscBool *)(((char*)bag) + nitem->offset);
         /* some Fortran compilers use -1 as boolean */
         if (((int) value) == -1) value = PETSC_TRUE;
         /* the checks here with != PETSC_FALSE and PETSC_TRUE is a special case; here we truly demand that the value be 0 or 1 */
         if (value != PETSC_FALSE && value != PETSC_TRUE) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Boolean value for %s %s is corrupt; integer value %d",nitem->name,nitem->help,value);
-        ierr = PetscViewerASCIIPrintf(view,"  %s = %s; %s\n",nitem->name,PetscTruths[value],nitem->help);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(view,"  %s = %s; %s\n",nitem->name,PetscBools[value],nitem->help);CHKERRQ(ierr);
       } else if (nitem->dtype == PETSC_ENUM) {
         PetscEnum value = *(PetscEnum*)(((char*)bag) + nitem->offset);
         PetscInt  i = 0;
@@ -537,7 +537,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
       ierr  = PetscViewerBinaryWrite(view,nitem->help,PETSC_BAG_HELP_LENGTH,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
       ierr  = PetscViewerBinaryWrite(view,&nitem->msize,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
       /* some Fortran compilers use -1 as boolean */
-      if (dtype == PETSC_TRUTH && ((*(int*) (((char*)bag) + nitem->offset) == -1))) *(int*) (((char*)bag) + nitem->offset) = PETSC_TRUE;
+      if (dtype == PETSC_BOOL && ((*(int*) (((char*)bag) + nitem->offset) == -1))) *(int*) (((char*)bag) + nitem->offset) = PETSC_TRUE;
 
       ierr  = PetscViewerBinaryWrite(view,(((char*)bag) + nitem->offset),nitem->msize,nitem->dtype,PETSC_FALSE);CHKERRQ(ierr);
       if (dtype == PETSC_ENUM) {
@@ -574,7 +574,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
 PetscErrorCode PETSCSYS_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag *bag)
 {
   PetscErrorCode ierr;
-  PetscTruth     isbinary,skipoptions;
+  PetscBool      isbinary,skipoptions;
   PetscInt       classid,bagsizecount[2],i,offsetdtype[2],msize;
   char           name[PETSC_BAG_NAME_LENGTH],help[PETSC_BAG_HELP_LENGTH],**list;
   PetscBagItem   nitem;
@@ -617,9 +617,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag *bag)
       PetscInt mdefault;
       ierr = PetscViewerBinaryRead(view,&mdefault,1,PETSC_INT);CHKERRQ(ierr);
       ierr = PetscBagRegisterInt(*bag,((char*)(*bag))+offsetdtype[0],mdefault,name,help);CHKERRQ(ierr);
-    } else if (offsetdtype[1] == (PetscInt) PETSC_TRUTH) {
-      PetscTruth mdefault;
-      ierr = PetscViewerBinaryRead(view,&mdefault,1,PETSC_TRUTH);CHKERRQ(ierr);
+    } else if (offsetdtype[1] == (PetscInt) PETSC_BOOL) {
+      PetscBool  mdefault;
+      ierr = PetscViewerBinaryRead(view,&mdefault,1,PETSC_BOOL);CHKERRQ(ierr);
       ierr = PetscBagRegisterTruth(*bag,((char*)(*bag))+offsetdtype[0],mdefault,name,help);CHKERRQ(ierr);
     } else if (offsetdtype[1] == (PetscInt) PETSC_ENUM) {
       PetscEnum mdefault;

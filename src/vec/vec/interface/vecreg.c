@@ -3,7 +3,7 @@
 #include "private/vecimpl.h"    /*I "petscvec.h"  I*/
 
 PetscFList VecList                       = PETSC_NULL;
-PetscTruth VecRegisterAllCalled          = PETSC_FALSE;
+PetscBool  VecRegisterAllCalled          = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetType"
@@ -33,7 +33,7 @@ PetscTruth VecRegisterAllCalled          = PETSC_FALSE;
 PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec vec, const VecType method)
 {
   PetscErrorCode (*r)(Vec);
-  PetscTruth     match;
+  PetscBool      match;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

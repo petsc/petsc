@@ -13,7 +13,7 @@
 
 #include "private/fortranimpl.h" 
 
-extern PETSC_DLL_IMPORT PetscTruth PetscBeganMPI;
+extern PETSC_DLL_IMPORT PetscBool  PetscBeganMPI;
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscinitialize_              PETSCINITIALIZE

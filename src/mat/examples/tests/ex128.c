@@ -17,7 +17,7 @@ int main(int argc,char **args)
   Mat            C,sC,sA;
   PetscInt       i,j,m = 5,n = 5,Ii,J,lf = 0;
   PetscErrorCode ierr;
-  PetscTruth     CHOLESKY=PETSC_FALSE,TRIANGULAR=PETSC_FALSE,flg;
+  PetscBool      CHOLESKY=PETSC_FALSE,TRIANGULAR=PETSC_FALSE,flg;
   PetscScalar    v;
   IS             row,col;
   MatFactorInfo  info;

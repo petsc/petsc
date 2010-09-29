@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;
   PetscInt opts[6] = {0};
-  PetscTruth hascl = PETSC_FALSE,hasstr = PETSC_FALSE;
+  PetscBool  hascl = PETSC_FALSE,hasstr = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-zero","0");CHKERRQ(ierr);

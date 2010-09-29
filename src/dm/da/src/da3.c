@@ -12,7 +12,7 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscTruth     iascii,isdraw;
+  PetscBool      iascii,isdraw;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
@@ -48,7 +48,7 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
     PetscReal     xmin = -1.0,xmax = (PetscReal)((da->M+2)*da->P),x,y,ycoord,xcoord;
     PetscInt        k,plane,base,*idx;
     char       node[10];
-    PetscTruth isnull;
+    PetscBool  isnull;
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);

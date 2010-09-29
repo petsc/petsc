@@ -52,7 +52,7 @@ typedef struct {
  PetscInt    **icols;
  PetscScalar **values;
 
- PetscTruth  block_data;
+ PetscBool   block_data;
  PetscInt    n_alloc_icol;
  PetscInt    n_alloc_val;
  PetscInt    *alloc_icol;

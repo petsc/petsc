@@ -26,7 +26,7 @@
 PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLineSetWidth(PetscDraw draw,PetscReal width)
 {
   PetscErrorCode ierr;
-  PetscTruth isdrawnull;
+  PetscBool  isdrawnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);

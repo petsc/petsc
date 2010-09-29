@@ -19,7 +19,7 @@
 #define FGMRES_DELTA_DIRECTIONS 10
 #define FGMRES_DEFAULT_MAXK     30
 static PetscErrorCode FGMRESGetNewVectors(KSP,PetscInt);
-static PetscErrorCode FGMRESUpdateHessenberg(KSP,PetscInt,PetscTruth,PetscReal *);
+static PetscErrorCode FGMRESUpdateHessenberg(KSP,PetscInt,PetscBool ,PetscReal *);
 static PetscErrorCode BuildFgmresSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
 
 EXTERN PetscErrorCode KSPView_GMRES(KSP,PetscViewer);
@@ -110,7 +110,7 @@ PetscErrorCode FGMREScycle(PetscInt *itcount,KSP ksp)
   KSP_FGMRES     *fgmres = (KSP_FGMRES *)(ksp->data);
   PetscReal      res_norm;             
   PetscReal      hapbnd,tt;
-  PetscTruth     hapend = PETSC_FALSE;  /* indicates happy breakdown ending */
+  PetscBool      hapend = PETSC_FALSE;  /* indicates happy breakdown ending */
   PetscErrorCode ierr;
   PetscInt       loc_it;                /* local count of # of dir. in Krylov space */ 
   PetscInt       max_k = fgmres->max_k; /* max # of directions Krylov space */
@@ -278,7 +278,7 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
   PetscErrorCode ierr;
   PetscInt       cycle_its = 0; /* iterations done in a call to FGMREScycle */
   KSP_FGMRES     *fgmres = (KSP_FGMRES *)ksp->data;
-  PetscTruth     diagonalscale;
+  PetscBool      diagonalscale;
 
   PetscFunctionBegin;
   ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -420,7 +420,7 @@ static PetscErrorCode BuildFgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP 
  */
 #undef __FUNCT__  
 #define __FUNCT__ "FGMRESUpdateHessenberg"
-static PetscErrorCode FGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscTruth hapend,PetscReal *res)
+static PetscErrorCode FGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  hapend,PetscReal *res)
 {
   PetscScalar   *hh,*cc,*ss,tt;
   PetscInt      j;
@@ -600,7 +600,7 @@ extern PetscErrorCode KSPSetFromOptions_GMRES(KSP);
 PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = KSPSetFromOptions_GMRES(ksp);CHKERRQ(ierr);

@@ -58,7 +58,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringView(ISColoring iscoloring,PetscView
 {
   PetscInt       i;
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
   IS             *is;
 
   PetscFunctionBegin;
@@ -232,7 +232,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm comm,PetscInt ncolor
   PetscMPIInt    size,rank,tag;
   PetscInt       base,top,i;
   PetscInt       nc,ncwork;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
   MPI_Status     status;
 
   PetscFunctionBegin;
@@ -485,7 +485,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGather(IS is,IS *isout)
   const PetscInt *lindices;
   MPI_Comm       comm;
   PetscMPIInt    size,*sizes = PETSC_NULL,*offsets = PETSC_NULL,nn;
-  PetscTruth     stride;
+  PetscBool      stride;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
@@ -665,7 +665,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISComplement(IS is,PetscInt nmin,PetscInt nmax
   PetscErrorCode ierr;
   const PetscInt *indices;
   PetscInt       n,i,j,unique,cnt,*nindices;
-  PetscTruth     sorted;
+  PetscBool      sorted;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);

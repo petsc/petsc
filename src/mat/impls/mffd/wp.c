@@ -43,7 +43,7 @@ M*/
 
 typedef struct {
   PetscReal  normUfact;                   /* previous sqrt(1.0 + || U ||) */
-  PetscTruth computenormU;   
+  PetscBool  computenormU;   
 } MatMFFD_WP;
 
 #undef __FUNCT__  
@@ -61,7 +61,7 @@ typedef struct {
 .   h - the scale computed
 
 */
-static PetscErrorCode MatMFFDCompute_WP(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,PetscTruth *zeroa)
+static PetscErrorCode MatMFFDCompute_WP(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,PetscBool  *zeroa)
 {
   MatMFFD_WP    *hctx = (MatMFFD_WP*)ctx->hctx;
   PetscReal      normU,norma;
@@ -103,7 +103,7 @@ static PetscErrorCode MatMFFDView_WP(MatMFFD ctx,PetscViewer viewer)
 {
   MatMFFD_WP     *hctx = (MatMFFD_WP *)ctx->hctx;
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -162,7 +162,7 @@ static PetscErrorCode MatMFFDDestroy_WP(MatMFFD ctx)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDWPSetComputeNormU_P"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDWPSetComputeNormU_P(Mat mat,PetscTruth flag)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDWPSetComputeNormU_P(Mat mat,PetscBool  flag)
 {
   MatMFFD     ctx = (MatMFFD)mat->data;
   MatMFFD_WP  *hctx = (MatMFFD_WP*)ctx->hctx;
@@ -197,9 +197,9 @@ EXTERN_C_END
 .seealso: MatMFFDSetFunctionError(), MatCreateSNESMF()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDWPSetComputeNormU(Mat A,PetscTruth flag)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDWPSetComputeNormU(Mat A,PetscBool  flag)
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscTruth);
+  PetscErrorCode ierr,(*f)(Mat,PetscBool );
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);

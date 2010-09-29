@@ -27,7 +27,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawZoom(PetscDraw draw,PetscErrorCode (*
   PetscErrorCode  ierr;
   PetscDrawButton button;
   PetscReal       dpause,xc,yc,scale = 1.0,w,h,xr,xl,yr,yl,xmin,xmax,ymin,ymax;
-  PetscTruth      isnull;
+  PetscBool       isnull;
 
   PetscFunctionBegin;
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);

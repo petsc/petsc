@@ -18,7 +18,7 @@ int main(int argc,char **args)
   PetscScalar    v;
   PetscErrorCode ierr;
   PetscInt       i,j,rowlens[] = {2,3,1},cols[] = {0,2,0,1,2,2};
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

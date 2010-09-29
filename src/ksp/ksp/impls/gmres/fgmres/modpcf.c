@@ -116,7 +116,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFGMRESModifyPCKSP(KSP ksp,PetscInt total_it
   PetscInt       maxits;
   KSP            sub_ksp;
   PetscReal      rtol,abstol,dtol;
-  PetscTruth     isksp;
+  PetscBool      isksp;
 
   PetscFunctionBegin;
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);

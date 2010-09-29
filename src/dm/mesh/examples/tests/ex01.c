@@ -54,7 +54,7 @@ PetscErrorCode CreateSieve(MPI_Comm comm, int debug)
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscInt       verbosity;
   PetscErrorCode ierr;
 

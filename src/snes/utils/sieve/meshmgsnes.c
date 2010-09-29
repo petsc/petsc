@@ -63,7 +63,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType 
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> sX;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> sB;
-  PetscTruth       fasDebug;
+  PetscBool        fasDebug;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -215,7 +215,7 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
   SNES           snes = dmmg[level]->snes;
   PetscReal      norm;
   PetscInt       i, j, k;
-  PetscTruth     fasDebug;
+  PetscBool      fasDebug;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

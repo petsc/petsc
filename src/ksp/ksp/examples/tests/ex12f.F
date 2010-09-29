@@ -17,7 +17,7 @@
 
       PetscErrorCode  ierr
       PetscInt its,m,n,mlocal,nlocal
-      PetscTruth flg
+      PetscBool  flg
       PetscScalar      norm,none
       Vec              x,b,u
       Mat              A

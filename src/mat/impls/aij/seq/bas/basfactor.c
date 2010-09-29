@@ -10,7 +10,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatF
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqSBAIJ       *b;
   PetscErrorCode     ierr;
-  PetscTruth         perm_identity,missing;
+  PetscBool          perm_identity,missing;
   PetscInt           reallocs=0,i,*ai=a->i,*aj=a->j,am=A->rmap->n,*ui;
   const PetscInt     *rip,*riip;
   PetscInt           j;
@@ -112,7 +112,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   MatScalar      *ba=b->a;
   PetscReal      shiftnz = info->shiftamount;
   PetscReal      droptol = -1;
-  PetscTruth     perm_identity;
+  PetscBool      perm_identity;
   spbas_matrix   Pattern, matrix_L,matrix_LT;
   PetscReal      mem_reduction;
 

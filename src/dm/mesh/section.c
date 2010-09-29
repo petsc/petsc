@@ -13,7 +13,7 @@ PetscLogEvent  SectionPair_View;
 #define __FUNCT__ "SectionRealView_Sieve"
 PetscErrorCode SectionRealView_Sieve(SectionReal section, PetscViewer viewer)
 {
-  PetscTruth     iascii, isbinary, isdraw;
+  PetscBool      iascii, isbinary, isdraw;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1145,7 +1145,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalRealVector(Mesh mesh, SectionRe
 #define __FUNCT__ "SectionIntView_Sieve"
 PetscErrorCode SectionIntView_Sieve(SectionInt section, PetscViewer viewer)
 {
-  PetscTruth     iascii, isbinary, isdraw;
+  PetscBool      iascii, isbinary, isdraw;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -76,7 +76,7 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.,history[50];
   MatFDColoring  fdcoloring;           
-  PetscTruth     matrix_free = PETSC_FALSE,flg,fd_coloring = PETSC_FALSE;
+  PetscBool      matrix_free = PETSC_FALSE,flg,fd_coloring = PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -128,7 +128,7 @@ int main(int argc,char **argv)
   */
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
   if (!matrix_free) {
-    PetscTruth matrix_free_operator = PETSC_FALSE;
+    PetscBool  matrix_free_operator = PETSC_FALSE;
     ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf_operator",&matrix_free_operator,PETSC_NULL);CHKERRQ(ierr);
     if (matrix_free_operator) matrix_free = PETSC_FALSE;
   }

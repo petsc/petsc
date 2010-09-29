@@ -29,7 +29,7 @@ typedef struct {
   /* A few inheritance details */
   PetscMPIInt    size;
 
-  PetscTruth CleanUpDSCPACK;
+  PetscBool  CleanUpDSCPACK;
 } Mat_DSCPACK;
 
 
@@ -426,7 +426,7 @@ PetscErrorCode MatGetFactor_seqbaij_dscpack(Mat A,MatFactorType ftype,Mat *F)
   Mat_DSCPACK    *lu;   
   PetscErrorCode ierr;
   PetscInt       bs,indx; 
-  PetscTruth     flg;
+  PetscBool      flg;
   const char     *ftype[]={"LDLT","LLT"},*ltype[]={"LBLAS1","LBLAS2","LBLAS3"},*dtype[]={"DBLAS1","DBLAS2"}; 
 
   PetscFunctionBegin; 
@@ -593,7 +593,7 @@ PetscErrorCode MatView_DSCPACK(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscMPIInt       size;
-  PetscTruth        iascii;
+  PetscBool         iascii;
   PetscViewerFormat format;
   Mat_DSCPACK       *lu=(Mat_DSCPACK*)A->spptr;
 

@@ -46,7 +46,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
   PetscErrorCode ierr;
   PetscInt       i;
   DMMG           *p;
-  PetscTruth     ftype;
+  PetscBool      ftype;
   char           mtype[256];
 
   PetscFunctionBegin;
@@ -206,7 +206,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG *dmmg)
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG *dmmg, DM dm)
 {
   PetscInt       nlevels     = dmmg[0]->nlevels;
-  PetscTruth     doRefine    = PETSC_TRUE;
+  PetscBool      doRefine    = PETSC_TRUE;
   PetscInt       i;
   DM             *hierarchy;
   PetscErrorCode ierr;
@@ -280,7 +280,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels;
-  PetscTruth     gridseq = PETSC_FALSE,vecmonitor = PETSC_FALSE,flg;
+  PetscBool      gridseq = PETSC_FALSE,vecmonitor = PETSC_FALSE,flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetTruth(0,"-dmmg_grid_sequence",&gridseq,PETSC_NULL);CHKERRQ(ierr);
@@ -361,7 +361,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
   PetscErrorCode          ierr;
   PetscInt                i;
   PC                      pc;
-  PetscTruth              ismg,ismf,isshell,ismffd;
+  PetscBool               ismg,ismf,isshell,ismffd;
   KSP                     lksp; /* solver internal to the multigrid preconditioner */
   MPI_Comm                *comms;
 
@@ -440,7 +440,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels,level;
-  PetscTruth     ismg,galerkin=PETSC_FALSE;
+  PetscBool      ismg,galerkin=PETSC_FALSE;
   PC             pc;
   KSP            lksp;
   
@@ -530,7 +530,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGView(DMMG *dmmg,PetscViewer viewer)
   PetscInt       i,nlevels = dmmg[0]->nlevels;
   PetscMPIInt    flag;
   MPI_Comm       comm;
-  PetscTruth     iascii,isbinary;
+  PetscBool      iascii,isbinary;
 
   PetscFunctionBegin;
   PetscValidPointer(dmmg,1);
@@ -594,7 +594,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGView(DMMG *dmmg,PetscViewer viewer)
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetDM(), DMMGSolve(), MatNullSpaceCreate(), KSPSetNullSpace(), DMMGSetMatType()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cnst,PetscInt n,PetscErrorCode (*func)(DMMG,Vec[]))
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG *dmmg,PetscBool  has_cnst,PetscInt n,PetscErrorCode (*func)(DMMG,Vec[]))
 {
   PetscErrorCode ierr;
   PetscInt       i,j,nlevels = dmmg[0]->nlevels;
@@ -602,7 +602,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cn
   MatNullSpace   nullsp;
   KSP            iksp;
   PC             pc,ipc;
-  PetscTruth     ismg,isred;
+  PetscBool      ismg,isred;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Passing null as DMMG");

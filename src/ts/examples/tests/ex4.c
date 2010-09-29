@@ -49,16 +49,16 @@ int main(int argc,char **argv)
   Vec 		 x;
   Data		 data;
   PetscInt 	 mn;
-  PetscTruth     flg;
+  PetscBool      flg;
   ISColoring     iscoloring;
   MatFDColoring  matfdcoloring = 0;
-  PetscTruth     fd_jacobian_coloring = PETSC_FALSE;
+  PetscBool      fd_jacobian_coloring = PETSC_FALSE;
 #if defined(PETSC_HAVE_SUNDIALS)
   PC		 pc;
   PetscViewer    viewer;
   char           pcinfo[120],tsinfo[120];
   const TSType   tstype;
-  PetscTruth     sundials;
+  PetscBool      sundials;
 #endif
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
@@ -102,7 +102,7 @@ int main(int argc,char **argv)
     ierr = PetscOptionsHasName(PETSC_NULL,"-fd_color",&fd_jacobian_coloring);CHKERRQ(ierr);
     if (fd_jacobian_coloring){ /* Use finite differences with coloring */
       /* Get data structure of J */
-      PetscTruth pc_diagonal;
+      PetscBool  pc_diagonal;
       ierr = PetscOptionsHasName(PETSC_NULL,"-pc_diagonal",&pc_diagonal);CHKERRQ(ierr);
       if (pc_diagonal){ /* the preconditioner of J is a diagonal matrix */
         PetscInt rstart,rend,i;
@@ -125,7 +125,7 @@ int main(int argc,char **argv)
       ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
 
-      PetscTruth view_J;
+      PetscBool  view_J;
       ierr = PetscOptionsHasName(PETSC_NULL,"-view_J",&view_J);CHKERRQ(ierr);
       if (view_J){ 
         ierr = PetscPrintf(PETSC_COMM_SELF,"J computed from TSDefaultComputeJacobianColor():\n");CHKERRQ(ierr);

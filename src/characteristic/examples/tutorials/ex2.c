@@ -27,7 +27,7 @@ typedef struct parameter_s {
   int            ni, nj, pi, pj;
   PetscReal      sigma,xctr,zctr,L1,L2,LINF;
   int            flow_type;
-  PetscTruth     param_test, output_to_file;
+  PetscBool      param_test, output_to_file;
   char           output_filename[FNAME_LENGTH];
   /* timestep stuff */
   PetscReal      t; /* the time */
@@ -58,7 +58,7 @@ int DoOutput             (DMMG*, int);
 int DASetFieldNames      (const char*,const char*,const char*,const char*,const char*,const char*,DA);
 PetscReal BiCubicInterp  (FieldArr**, PetscReal, PetscReal, int);
 PetscReal CubicInterp    (PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
-PetscTruth OptionsHasName(const char*);
+PetscBool  OptionsHasName(const char*);
 
 /* characteristic call-backs (static interface) */
 PetscErrorCode InterpVelocity2D(void*, PetscReal[], PetscInt, PetscInt[], PetscReal[], void*);
@@ -465,10 +465,10 @@ int DASetFieldNames(const char n0[], const char n1[], const char n2[],
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "OptionsHasName"
-PetscTruth OptionsHasName(const char name[])
+PetscBool  OptionsHasName(const char name[])
 /* ------------------------------------------------------------------- */
 {
-  PetscTruth retval; 
+  PetscBool  retval; 
   int ierr;
   ierr = PetscOptionsHasName(PETSC_NULL,name,&retval);
   return retval;

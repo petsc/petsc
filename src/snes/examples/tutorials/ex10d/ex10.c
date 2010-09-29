@@ -119,7 +119,7 @@ int main(int argc,char **argv)
   PetscInt               *tmp1,*tmp2;
 #endif
   MatFDColoring          matfdcoloring = 0;
-  PetscTruth             fd_jacobian_coloring = PETSC_FALSE;
+  PetscBool              fd_jacobian_coloring = PETSC_FALSE;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program

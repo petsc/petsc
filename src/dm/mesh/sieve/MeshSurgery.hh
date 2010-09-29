@@ -191,7 +191,7 @@ d = order[5];
     return;
   }
 
-  PetscTruth Surgery_2D_22Flip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices, int * order) {
+  PetscBool  Surgery_2D_22Flip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices, int * order) {
     const double pi = M_PI;
     //VALIDITY CONDITION FOR THIS FLIP: cad and cbd must be (much) less than 180. 
     //we could probably have some angle heuristic for local delaunay approximation, but whatever.
@@ -216,7 +216,7 @@ d = order[5];
 
   //if this flip improves the ratio between the maximum angle, do it
 
-  PetscTruth Surgery_2D_22Flip_Preferable(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices, int * order) {
+  PetscBool  Surgery_2D_22Flip_Preferable(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices, int * order) {
     //does a BASIC test to see if this edge would do better flipped
     //change of plan: ALWAYS chuck the maximum angle
     //if abc + abd + bac + bad < cda + cdb + dca + dcb then flip (divide the larger angle)
@@ -376,7 +376,7 @@ a---------------b     a---------------b
     //PetscPrintf(m->comm(), "3-1 Flip: %d %d %d %d, %d %d %d\n", vertices[0], vertices[1], vertices[2], vertices[3], cells[0], cells[1], cells[2]);
   }
 
-  PetscTruth Surgery_2D_31Flip_Possible(Obj<Mesh> m, Mesh::point_type * vertices, Mesh::point_type * cells) {
+  PetscBool  Surgery_2D_31Flip_Possible(Obj<Mesh> m, Mesh::point_type * vertices, Mesh::point_type * cells) {
     //VALIDITY CONDITION FOR THIS FLIP: acd, dcb, and acb MUST be (much) less than 180.
     // BUT this should be essentially guaranteed and we don't need to test it
     return PETSC_TRUE;
@@ -502,7 +502,7 @@ c-----------d      c-----------d
   }
 
 
-  PetscTruth Surgery_2D_42Flip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
+  PetscBool  Surgery_2D_42Flip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
     //criterion for this flip:  
     // 1. bac and bdc must be < 180 degrees
     //    if this isn't true, we can reorient the flip here and make it true. (a four-sided figure may have one concave vertex)
@@ -768,7 +768,7 @@ b------a------c ->  b-------------c
     return;
   }
 
-  PetscTruth Surgery_2D_LineContract_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
+  PetscBool  Surgery_2D_LineContract_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
     //for now this is last-ditch for 3D... do this to form the exterior and let tetgen deal with collisions
     //TODO: Tetgen flakes out; fix this
     return PETSC_TRUE;
@@ -846,7 +846,7 @@ a------d------c   a-------------c
     return;
   }
 
-  PetscTruth Surgery_2D_21BoundFlip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
+  PetscBool  Surgery_2D_21BoundFlip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
     //criterion for this flip: abc must be convex, otherwise the interior point would be exposed
     double pi = M_PI;
     //    double pi = 3.14159265359;
@@ -898,7 +898,7 @@ b-------------c   b-------------c
     cells[0] = *cell_points->begin();
   }
 
-  PetscTruth Surgery_2D_10BoundFlip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
+  PetscBool  Surgery_2D_10BoundFlip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
     //no degenerate cases;
     return PETSC_TRUE;
   }
@@ -968,7 +968,7 @@ b----a----c -> b1---a---3c
 
   }
 
-  PetscTruth Surgery_3D_23Flip_Possible (Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices){
+  PetscBool  Surgery_3D_23Flip_Possible (Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices){
     //The 2-3 flip is only possible if the line between a and d lies inside the volume; this occurs when, for example,
     //volume(abde + bcde + cade) <== volume(abcd + abce)
     
@@ -1211,7 +1211,7 @@ c1---2---3e -> c----d----e
     }
     //    PetscPrintf(m->comm(), "3-2 Flip: %d %d %d, %d %d %d %d %d\n", cells[0], cells[1], cells[2], vertices[0], vertices[1], vertices[2], vertices[3], vertices[4]);
   }
-  PetscTruth Surgery_3D_32Flip_Possible (Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices){
+  PetscBool  Surgery_3D_32Flip_Possible (Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices){
     //The 3-2 flip is only possible if each new subvolume will have volume less than the previous three combined (convex)
     int dim = m->getDimension();
     if (dim != 3) throw ALE::Exception("Wrong dimension");
@@ -1440,7 +1440,7 @@ a---------------b     b---------------a
     return;
   }
 
-  PetscTruth Surgery_3D_41Flip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
+  PetscBool  Surgery_3D_41Flip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
     //criteria have to be true if we've gotten this far;
     return PETSC_TRUE;
   }
@@ -1524,7 +1524,7 @@ b-------a-------c     b-------a-------c
     return;
   }
 
-  PetscTruth Surgery_3D_31BoundFlip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
+  PetscBool  Surgery_3D_31BoundFlip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
     int dim = m->getDimension();
     if (dim != 3) throw ALE::Exception("Wrong dimension");
     const int nDim = 3;
@@ -1603,7 +1603,7 @@ a, b, c, and d are on the boundary in question
     return;
   }
 
-  PetscTruth Surgery_3D_22BoundFlip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
+  PetscBool  Surgery_3D_22BoundFlip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
 
     //criterion for success:  both new volumes are less than the old volume. (they don't overlap)
     int dim = m->getDimension();
@@ -2108,7 +2108,7 @@ a, b, c, and d are on the boundary in question
   }
 }
 
-PetscTruth Surgery_2D_CheckConsistency(Obj<Mesh> m) {
+PetscBool  Surgery_2D_CheckConsistency(Obj<Mesh> m) {
 
   //debugging function for all of this in order to allow 
   return PETSC_FALSE;

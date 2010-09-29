@@ -19,7 +19,7 @@ void PETSC_STDCALL petscbinaryopen_(CHAR name PETSC_MIXED_LEN(len),PetscFileMode
   FREECHAR(name,c1);
 }
 
-void PETSC_STDCALL petsctestfile_(CHAR name PETSC_MIXED_LEN(len),CHAR mode PETSC_MIXED_LEN(len1),PetscTruth *flg,PetscErrorCode *ierr PETSC_END_LEN(len) PETSC_END_LEN(len1))
+void PETSC_STDCALL petsctestfile_(CHAR name PETSC_MIXED_LEN(len),CHAR mode PETSC_MIXED_LEN(len1),PetscBool  *flg,PetscErrorCode *ierr PETSC_END_LEN(len) PETSC_END_LEN(len1))
 {
   char *c1,*m1;
 

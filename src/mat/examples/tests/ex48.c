@@ -15,7 +15,7 @@ int main(int argc,char **args)
   PetscRandom     rdm;
   IS              is1,is2;
   PetscReal       s1norm,s2norm,rnorm,tol = 1.e-4;
-  PetscTruth      flg;
+  PetscBool       flg;
   MatFactorInfo   info;
   
   PetscInitialize(&argc,&args,(char *)0,help);

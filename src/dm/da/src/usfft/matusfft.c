@@ -174,7 +174,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MatCreateSeqUSFFT(Vec sampleCoords, DA freqDA, 
   Mat_USFFT      *usfft;
   PetscInt       m,n,M,N,i;
   const char     *p_flags[]={"FFTW_ESTIMATE","FFTW_MEASURE","FFTW_PATIENT","FFTW_EXHAUSTIVE"};
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscInt       p_flag;
   PetscInt       dof, dim, freqSizes[3];
   MPI_Comm       comm;

@@ -14,10 +14,10 @@ typedef struct {
   PetscInt   n;                 /* number of global blocks */
   PetscInt   n_local;           /* number of blocks in this subcommunicator or in this process */
   PetscInt   first_local;       /* number of first block on processor */
-  PetscTruth use_true_local;    /* use block from true matrix, not preconditioner matrix for local MatMult() */
+  PetscBool  use_true_local;    /* use block from true matrix, not preconditioner matrix for local MatMult() */
   KSP        *ksp;              /* KSP contexts for blocks */
   void       *data;             /* implementation-specific data */
-  PetscTruth same_local_solves; /* flag indicating whether all local solvers are same (used for PCView()) */
+  PetscBool  same_local_solves; /* flag indicating whether all local solvers are same (used for PCView()) */
   PetscInt   *l_lens;           /* lens of each block */
   PetscInt   *g_lens;
   Mat        tp_mat,tp_pmat;    /* diagonal block of matrix for this processor */

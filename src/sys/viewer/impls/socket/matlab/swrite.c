@@ -9,7 +9,7 @@
 #include "../src/sys/viewer/impls/socket/socket.h"
 #include "mex.h"
 
-PetscErrorCode PetscBinaryWrite(int,void *p,int,PetscDataType,PetscTruth);
+PetscErrorCode PetscBinaryWrite(int,void *p,int,PetscDataType,PetscBool );
 
 #define PETSC_MEX_ERROR(a) {fprintf(stdout,"sread: %s \n",a); return ;}
 /*-----------------------------------------------------------------*/

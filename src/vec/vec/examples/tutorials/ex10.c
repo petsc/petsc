@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PetscScalar    v;
   Vec            u;
   PetscViewer    viewer;
-  PetscTruth     vstage2,vstage3,mpiio_use,isbinary,ishdf5;
+  PetscBool      vstage2,vstage3,mpiio_use,isbinary,ishdf5;
 #if defined(PETSC_USE_LOG)
   PetscLogEvent  VECTOR_GENERATE,VECTOR_READ;
 #endif

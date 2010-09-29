@@ -17,7 +17,7 @@ struct _p_ADDA {
   PetscInt            dof;                   /* degrees of freedom per node */
   PetscInt            *nodes;                /* array of number of nodes in each dimension */
   PetscInt            *procs;                /* processor layout */
-  PetscTruth          *periodic;             /* true, if that dimension is periodic */
+  PetscBool           *periodic;             /* true, if that dimension is periodic */
   PetscInt            *lcs, *lce;            /* corners of the locally stored portion of the grid */
   PetscInt            *lgs, *lge;            /* corners of the local portion of the grid
 						including the ghost points */

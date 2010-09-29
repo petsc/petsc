@@ -20,7 +20,7 @@ typedef struct {
   PetscInt       nb,rstart;
   VecScatter     ctx;
   IS             is_pla,is_petsc;
-  PetscTruth     pla_solved;
+  PetscBool      pla_solved;
   MatStructure   mstruct;
 } Mat_Plapack;
 #endif
@@ -45,7 +45,7 @@ PetscErrorCode MatDenseGetLocalMatrix(Mat A,Mat *B)
 {
   Mat_MPIDense   *mat = (Mat_MPIDense*)A->data;
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)A,MATMPIDENSE,&flg);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ PetscErrorCode MatRestoreRow_MPIDense(Mat mat,PetscInt row,PetscInt *nz,PetscInt
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonalBlock_MPIDense"
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock_MPIDense(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *B)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock_MPIDense(Mat A,PetscBool  *iscopy,MatReuse reuse,Mat *B)
 {
   Mat_MPIDense   *mdn = (Mat_MPIDense*)A->data;
   PetscErrorCode ierr;
@@ -123,7 +123,7 @@ PetscErrorCode MatSetValues_MPIDense(Mat mat,PetscInt m,const PetscInt idxm[],Pe
   Mat_MPIDense   *A = (Mat_MPIDense*)mat->data;
   PetscErrorCode ierr;
   PetscInt       i,j,rstart = mat->rmap->rstart,rend = mat->rmap->rend,row;
-  PetscTruth     roworiented = A->roworiented;
+  PetscBool      roworiented = A->roworiented;
 
   PetscFunctionBegin;
   if (v) PetscValidScalarPointer(v,6);
@@ -354,7 +354,7 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
   MPI_Comm       comm = ((PetscObject)A)->comm;
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
-  PetscTruth     found;
+  PetscBool      found;
 
   PetscFunctionBegin;
   /*  first count number of contributors to each processor */
@@ -666,7 +666,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
   PetscErrorCode        ierr;
   PetscMPIInt           size = mdn->size,rank = mdn->rank; 
   const PetscViewerType vtype;
-  PetscTruth            iascii,isdraw;
+  PetscBool             iascii,isdraw;
   PetscViewer           sviewer;
   PetscViewerFormat     format;
 #if defined(PETSC_HAVE_PLAPACK)
@@ -703,7 +703,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
     }
   } else if (isdraw) {
     PetscDraw  draw;
-    PetscTruth isnull;
+    PetscBool  isnull;
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
@@ -759,7 +759,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
 PetscErrorCode MatView_MPIDense(Mat mat,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     iascii,isbinary,isdraw,issocket;
+  PetscBool      iascii,isbinary,isdraw,issocket;
  
   PetscFunctionBegin;
   
@@ -821,7 +821,7 @@ PetscErrorCode MatGetInfo_MPIDense(Mat A,MatInfoType flag,MatInfo *info)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_MPIDense"
-PetscErrorCode MatSetOption_MPIDense(Mat A,MatOption op,PetscTruth flg)
+PetscErrorCode MatSetOption_MPIDense(Mat A,MatOption op,PetscBool  flg)
 {
   Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
   PetscErrorCode ierr;
@@ -1311,7 +1311,7 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIDense(Mat F,Mat A,const MatFactorInfo
 PetscErrorCode MatCholeskyFactorSymbolic_MPIDense(Mat F,Mat A,IS perm,const MatFactorInfo *info)
 { 
   PetscErrorCode ierr;
-  PetscTruth     issymmetric,set;
+  PetscBool      issymmetric,set;
 
   PetscFunctionBegin;
   ierr = MatIsSymmetricKnown(A,&set,&issymmetric);CHKERRQ(ierr);
@@ -2138,11 +2138,11 @@ PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatEqual_MPIDense"
-PetscErrorCode MatEqual_MPIDense(Mat A,Mat B,PetscTruth *flag)
+PetscErrorCode MatEqual_MPIDense(Mat A,Mat B,PetscBool  *flag)
 {
   Mat_MPIDense   *matB = (Mat_MPIDense*)B->data,*matA = (Mat_MPIDense*)A->data;
   Mat            a,b;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

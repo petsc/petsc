@@ -19,7 +19,7 @@ static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 #include "petscdmmg.h"
 
 extern PetscErrorCode ComputeMatrix(DMMG,Mat,Mat);
-extern PetscErrorCode ComputeRHS(DMMG,Vec, PetscTruth);
+extern PetscErrorCode ComputeRHS(DMMG,Vec, PetscBool );
 extern PetscErrorCode Solve_FFT(DA, Vec, Vec);
 extern PetscErrorCode CalculateXYStdDev(DA, Vec, Vec *);
 extern PetscErrorCode VecViewCenterSingle(DA da, Vec v, PetscViewer viewer, const char name[], PetscInt i, PetscInt j);
@@ -124,7 +124,7 @@ int main(int argc,char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-PetscErrorCode ComputeRHS(DMMG dmmg,Vec b, PetscTruth withBC= PETSC_TRUE)
+PetscErrorCode ComputeRHS(DMMG dmmg,Vec b, PetscBool  withBC= PETSC_TRUE)
 {
   DA             da = (DA) dmmg->dm;
   PetscInt       bathIndex;

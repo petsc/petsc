@@ -274,7 +274,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
    PetscScalar      * lvec;
    PetscScalar      epsdiag;
    PetscInt         i,j,k;
-   const PetscTruth do_values = PETSC_TRUE;
+   const PetscBool  do_values = PETSC_TRUE;
    PetscInt         * r1_icol;
    PetscScalar      *r1_val;
    PetscInt         * r_icol;

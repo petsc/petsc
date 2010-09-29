@@ -11,7 +11,7 @@
       PetscDrawLG       lg
       PetscDrawAxis     axis
       PetscErrorCode    ierr
-      PetscTruth        flg
+      PetscBool         flg
       integer           x,y,width,height
       PetscScalar       xd,yd
       PetscInt          i,n,w,h

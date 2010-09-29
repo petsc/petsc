@@ -35,9 +35,9 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateStride(MPI_Comm,PetscInt,Pets
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISDestroy(IS);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSetPermutation(IS);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISPermutation(IS,PetscTruth*); 
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISPermutation(IS,PetscBool *); 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSetIdentity(IS);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISIdentity(IS,PetscTruth*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISIdentity(IS,PetscBool *);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetIndices(IS,const PetscInt *[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISRestoreIndices(IS,const PetscInt *[]);
@@ -45,21 +45,21 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetSize(IS,PetscInt *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetLocalSize(IS,PetscInt *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISInvertPermutation(IS,PetscInt,IS*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISView(IS,PetscViewer);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISEqual(IS,IS,PetscTruth *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISEqual(IS,IS,PetscBool  *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSort(IS);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSorted(IS,PetscTruth *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSorted(IS,PetscBool  *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISDifference(IS,IS,IS*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSum(IS,IS,IS*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISExpand(IS,IS,IS*);
 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlock(IS,PetscTruth*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlock(IS,PetscBool *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockGetIndices(IS,const PetscInt *[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockRestoreIndices(IS,const PetscInt *[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockGetLocalSize(IS,PetscInt *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockGetSize(IS,PetscInt *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockGetBlockSize(IS,PetscInt *);
 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISStride(IS,PetscTruth*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISStride(IS,PetscBool *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISStrideGetInfo(IS,PetscInt *,PetscInt*);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISStrideToGeneral(IS);

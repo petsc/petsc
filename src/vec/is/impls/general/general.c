@@ -34,7 +34,7 @@ PetscErrorCode ISDestroy_General(IS is)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISIdentity_General" 
-PetscErrorCode ISIdentity_General(IS is,PetscTruth *ident)
+PetscErrorCode ISIdentity_General(IS is,PetscBool  *ident)
 {
   IS_General *is_general = (IS_General*)is->data;
   PetscInt   i,n = is_general->n,*idx = is_general->idx;
@@ -165,7 +165,7 @@ PetscErrorCode ISView_General(IS is,PetscViewer viewer)
   IS_General     *sub = (IS_General *)is->data;
   PetscErrorCode ierr;
   PetscInt       i,n = sub->n,*idx = sub->idx;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -217,7 +217,7 @@ PetscErrorCode ISSort_General(IS is)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISSorted_General" 
-PetscErrorCode ISSorted_General(IS is,PetscTruth *flg)
+PetscErrorCode ISSorted_General(IS is,PetscBool  *flg)
 {
   IS_General *sub = (IS_General *)is->data;
 
@@ -248,8 +248,8 @@ PetscErrorCode ISCreateGeneral_Private(MPI_Comm comm,IS *is)
   IS_General     *sub = (IS_General*)Nindex->data;
   PetscInt       n = sub->n,i,min,max;
   const PetscInt *idx = sub->idx;
-  PetscTruth     sorted = PETSC_TRUE;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      sorted = PETSC_TRUE;
+  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidPointer(is,4);

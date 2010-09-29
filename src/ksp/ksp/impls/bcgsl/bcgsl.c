@@ -26,8 +26,8 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   PetscReal      kappa0, kappaA, kappa1;
   PetscReal      ghat, epsilon, abstol;
   PetscReal      zeta, zeta0, rnmax_computed, rnmax_true, nrm0;
-  PetscTruth     bUpdateX;
-  PetscTruth     bBombed = PETSC_FALSE;
+  PetscBool      bUpdateX;
+  PetscBool      bBombed = PETSC_FALSE;
 
   PetscInt       maxit;
   PetscInt       h, i, j, k, vi, ell;
@@ -254,7 +254,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       if (rnmax_computed<zeta) rnmax_computed = zeta;
       if (rnmax_true<zeta) rnmax_true = zeta;
 
-      bUpdateX = (PetscTruth) (zeta<bcgsl->delta*zeta0 && zeta0<=rnmax_computed);
+      bUpdateX = (PetscBool ) (zeta<bcgsl->delta*zeta0 && zeta0<=rnmax_computed);
       if ((zeta<bcgsl->delta*rnmax_true && zeta0<=rnmax_true) || bUpdateX) {
         /* r0 <- b-inv(K)*A*X */
         ierr = KSP_PCApplyBAorAB(ksp, VX, VVR[0], VTM);CHKERRQ(ierr);
@@ -342,7 +342,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 
 .seealso: @()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP ksp, PetscTruth uMROR)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP ksp, PetscBool  uMROR)
 {
   KSP_BCGSL      *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscErrorCode ierr;
@@ -412,7 +412,7 @@ PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
 {
   KSP_BCGSL       *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscErrorCode  ierr;
-  PetscTruth      isascii, isstring;
+  PetscBool       isascii, isstring;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
@@ -435,7 +435,7 @@ PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp)
   PetscErrorCode ierr;
   PetscInt       this_ell;
   PetscReal      delta;
-  PetscTruth     flga = PETSC_FALSE, flg;
+  PetscBool      flga = PETSC_FALSE, flg;
 
   PetscFunctionBegin;
   /* PetscOptionsBegin/End are called in KSPSetFromOptions. They

@@ -24,9 +24,9 @@
      Indicates if PETSc started up MPI, or it was 
    already started before PETSc was initialized.
 */
-PetscTruth  PETSCSYS_DLLEXPORT PetscBeganMPI         = PETSC_FALSE;
-PetscTruth  PETSCSYS_DLLEXPORT PetscInitializeCalled = PETSC_FALSE;
-PetscTruth  PETSCSYS_DLLEXPORT PetscFinalizeCalled   = PETSC_FALSE;
+PetscBool   PETSCSYS_DLLEXPORT PetscBeganMPI         = PETSC_FALSE;
+PetscBool   PETSCSYS_DLLEXPORT PetscInitializeCalled = PETSC_FALSE;
+PetscBool   PETSCSYS_DLLEXPORT PetscFinalizeCalled   = PETSC_FALSE;
 PetscMPIInt PETSCSYS_DLLEXPORT PetscGlobalRank = -1;
 PetscMPIInt PETSCSYS_DLLEXPORT PetscGlobalSize = -1;
 
@@ -65,7 +65,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT (*PetscVFPrintf)(FILE*,const char[],va_list)  
 
 /*
   This is needed to turn on/off cuda synchronization */
-PetscTruth PETSC_DLL_EXPORT synchronizeCUDA = PETSC_FALSE;
+PetscBool  PETSC_DLL_EXPORT synchronizeCUDA = PETSC_FALSE;
 
 /* ------------------------------------------------------------------------------*/
 /* 
@@ -196,9 +196,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscEnd(void)
   return 0;
 }
 
-PetscTruth   PetscOptionsPublish = PETSC_FALSE;
+PetscBool    PetscOptionsPublish = PETSC_FALSE;
 EXTERN PetscErrorCode        PetscSetUseTrMalloc_Private(void);
-extern PetscTruth petscsetmallocvisited;
+extern PetscBool  petscsetmallocvisited;
 static char       emacsmachinename[256];
 
 PetscErrorCode (*PetscExternalVersionFunction)(MPI_Comm) = 0;
@@ -234,7 +234,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Private(void)
 {
   char           string[64],mname[PETSC_MAX_PATH_LEN],*f;
   MPI_Comm       comm = PETSC_COMM_WORLD;
-  PetscTruth     flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flag,flgz,flgzout;
+  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flag,flgz,flgzout;
   PetscErrorCode ierr;
   PetscReal      si;
   int            i;

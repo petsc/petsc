@@ -17,7 +17,7 @@ PetscLogEvent  DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction;
    DMDestroy_Private - handles the work vectors created by DMGetGlobalVector() and DMGetLocalVector()
 
 */
-PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_Private(DM dm,PetscTruth *done)
+PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_Private(DM dm,PetscBool  *done)
 {
   PetscErrorCode ierr;
   PetscErrorCode i,cnt = 0;
@@ -71,7 +71,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
 {
   PetscErrorCode ierr;
   PetscErrorCode i;
-  PetscTruth     done;
+  PetscBool      done;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);

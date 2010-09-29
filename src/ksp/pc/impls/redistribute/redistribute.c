@@ -22,7 +22,7 @@ static PetscErrorCode PCView_Redistribute(PC pc,PetscViewer viewer)
 {
   PC_Redistribute *red = (PC_Redistribute*)pc->data;
   PetscErrorCode  ierr;
-  PetscTruth      iascii,isstring;
+  PetscBool       iascii,isstring;
   PetscInt        ncnt,N;
 
   PetscFunctionBegin;

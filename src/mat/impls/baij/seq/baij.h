@@ -22,7 +22,7 @@
                                                                                                      \
                                                                                                      \
   MatScalar        *idiag;           /* inverse of block diagonal  */                                \
-  PetscTruth       idiagvalid       /* if above has correct/current values */
+  PetscBool        idiagvalid       /* if above has correct/current values */
 
 
 typedef struct {
@@ -40,7 +40,7 @@ EXTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat,Mat,IS,const MatFact
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatDuplicate_SeqBAIJ(Mat,MatDuplicateOption,Mat*);
-EXTERN PetscErrorCode MatMissingDiagonal_SeqBAIJ(Mat,PetscTruth*,PetscInt*);
+EXTERN PetscErrorCode MatMissingDiagonal_SeqBAIJ(Mat,PetscBool *,PetscInt*);
 EXTERN PetscErrorCode MatMarkDiagonal_SeqBAIJ(Mat);
 EXTERN PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat,IS,IS,const MatFactorInfo*,Mat*);
 
@@ -56,7 +56,7 @@ EXTERN PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatScale_SeqBAIJ(Mat,PetscScalar);
 EXTERN PetscErrorCode MatNorm_SeqBAIJ(Mat,NormType,PetscReal *);
-EXTERN PetscErrorCode MatEqual_SeqBAIJ(Mat,Mat,PetscTruth*);
+EXTERN PetscErrorCode MatEqual_SeqBAIJ(Mat,Mat,PetscBool *);
 EXTERN PetscErrorCode MatGetDiagonal_SeqBAIJ(Mat,Vec);
 EXTERN PetscErrorCode MatDiagonalScale_SeqBAIJ(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatGetInfo_SeqBAIJ(Mat,MatInfoType,MatInfo *);
@@ -211,8 +211,8 @@ EXTERN PetscErrorCode MatMultAdd_SeqBAIJ_6(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatLoad_SeqBAIJ(Mat,PetscViewer);
-EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat,PetscTruth);
-EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscTruth);
+EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat,PetscBool );
+EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
 
 /*
   Kernel_A_gets_A_times_B_2: A = A * B with size bs=2

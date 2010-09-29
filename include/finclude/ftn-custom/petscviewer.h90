@@ -9,7 +9,7 @@
           PETSCVIEWER_HIDE v
           PetscInt a(*)
           PetscInt cnt
-          PetscTruth tmp
+          PetscBool  tmp
           PetscErrorCode ierr
         End Subroutine
         
@@ -18,7 +18,7 @@
           PETSCVIEWER_HIDE v
           PetscScalar a(*)
           PetscInt cnt
-          PetscTruth tmp
+          PetscBool  tmp
           PetscErrorCode ierr
         End Subroutine
 
@@ -28,7 +28,7 @@
           PETSCVIEWER_HIDE v
           PetscReal a(*)
           PetscInt cnt
-          PetscTruth tmp
+          PetscBool  tmp
           PetscErrorCode ierr
         End Subroutine
 #endif

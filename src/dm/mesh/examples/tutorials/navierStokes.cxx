@@ -21,15 +21,15 @@ typedef struct {
   RunType       run;                                          // The run type
   SolutionType  solnType;                                     // The type of exact solution
   PetscInt      dim;                                          // The topological mesh dimension
-  PetscTruth    generateMesh;                                 // Generate the unstructure mesh
-  PetscTruth    interpolate;                                  // Generate intermediate mesh elements
+  PetscBool     generateMesh;                                 // Generate the unstructure mesh
+  PetscBool     interpolate;                                  // Generate intermediate mesh elements
   PetscReal     refinementLimit;                              // The largest allowable cell volume
   char          baseFilename[2048];                           // The base filename for mesh files
   double      (*funcs[4])(const double []);                   // The function to project
   BCType        bcType;                                       // The type of boundary conditions
   ExactSolType  exactSol;                                     // The discrete exact solution
   AssemblyType  operatorAssembly;                             // The type of operator assembly 
-  PetscTruth    outputEquation;                               // Output a text form of the equations
+  PetscBool     outputEquation;                               // Output a text form of the equations
 } Options;
 
 #include "navierStokes_quadrature.h"
@@ -222,7 +222,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
 
   PetscFunctionBegin;
   Mesh        mesh;
-  PetscTruth  view;
+  PetscBool   view;
   PetscMPIInt size;
 
   if (options->generateMesh) {
@@ -1009,7 +1009,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
 PetscErrorCode CreateExactSolution(DM dm, Options *options)
 {
   const int      dim = options->dim;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1091,7 +1091,7 @@ PetscErrorCode CheckResidual(DM dm, ExactSolType sol, Options *options)
   MPI_Comm       comm;
   const char    *name;
   PetscScalar    norm;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1118,7 +1118,7 @@ PetscErrorCode CheckJacobian(DM dm, ExactSolType sol, Options *options)
   MPI_Comm       comm;
   const char    *name;
   PetscScalar    norm;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1193,7 +1193,7 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
   SNES                snes;
   MPI_Comm            comm;
   PetscInt            its;
-  PetscTruth          flag;
+  PetscBool           flag;
   SNESConvergedReason reason;
   PetscErrorCode      ierr;
 

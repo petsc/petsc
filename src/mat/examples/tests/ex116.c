@@ -20,9 +20,9 @@ PetscInt main(PetscInt argc,char **args)
   Vec            *evecs;
   PetscViewer    fd;                /* viewer */
   char           file[1][PETSC_MAX_PATH_LEN];     /* input file name */
-  PetscTruth     flg,flgA=PETSC_FALSE,flgB=PETSC_FALSE,TestSYEVX=PETSC_TRUE; 
+  PetscBool      flg,flgA=PETSC_FALSE,flgB=PETSC_FALSE,TestSYEVX=PETSC_TRUE; 
   PetscErrorCode ierr;
-  PetscTruth     isSymmetric;
+  PetscBool      isSymmetric;
   PetscScalar    sigma,*arrayA,*arrayB,*evecs_array,*work,*evals;
   PetscMPIInt    size;
   PetscInt       m,n,i,j,nevs,il,iu,cklvl=2; 

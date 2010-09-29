@@ -86,7 +86,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate(MPI_Comm comm, TS *ts) {
 #define __FUNCT__ "TSScaleShiftMatrices"
 PetscErrorCode TSScaleShiftMatrices(TS ts,Mat A,Mat B,MatStructure str)
 {
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscErrorCode ierr;
   PetscScalar    mdt = 1.0/ts->time_step;
 

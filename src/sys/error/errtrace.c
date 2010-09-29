@@ -49,7 +49,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscIgnoreErrorHandler(MPI_Comm comm,int line
 /* ---------------------------------------------------------------------------------------*/
 
 static char  arch[10],hostname[64],username[16],pname[PETSC_MAX_PATH_LEN],date[64];
-static PetscTruth PetscErrorPrintfInitializeCalled = PETSC_FALSE;
+static PetscBool  PetscErrorPrintfInitializeCalled = PETSC_FALSE;
 static char version[256];
 
 #undef __FUNCT__  
@@ -61,7 +61,7 @@ static char version[256];
 PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorPrintfInitialize()
 {
   PetscErrorCode ierr;
-  PetscTruth     use_stdout = PETSC_FALSE,use_none = PETSC_FALSE;
+  PetscBool      use_stdout = PETSC_FALSE,use_none = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
@@ -95,7 +95,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorPrintfNone(const char format[],...)
 PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
 {
   va_list           Argp;
-  static PetscTruth PetscErrorPrintfCalled = PETSC_FALSE;
+  static PetscBool  PetscErrorPrintfCalled = PETSC_FALSE;
 
   /*
       This function does not call PetscFunctionBegin and PetscFunctionReturn() because
@@ -170,7 +170,7 @@ $     SETERRQ(comm,number,n,mess)
 PetscErrorCode PETSCSYS_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscLogDouble    mem,rss;
-  PetscTruth        flg1 = PETSC_FALSE,flg2 = PETSC_FALSE;
+  PetscBool         flg1 = PETSC_FALSE,flg2 = PETSC_FALSE;
   PetscMPIInt       rank = 0;
 
   PetscFunctionBegin;
@@ -269,7 +269,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTraceBackErrorHandlerCxx(MPI_Comm comm,in
 
   if (p == PETSC_ERROR_INITIAL) {
     PetscLogDouble mem, rss;
-    PetscTruth     flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
+    PetscBool      flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
 
     (*msg) << "--------------------- Error Message ------------------------------------" << std::endl;
     if (n == PETSC_ERR_MEM) {

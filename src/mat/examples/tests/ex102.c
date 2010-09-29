@@ -19,7 +19,7 @@ int main(int argc,char **args)
   Mat            A,U,V,LR;    
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,rstart,rend;
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscScalar    *u,a;
 
   PetscInitialize(&argc,&args,(char *)0,help);

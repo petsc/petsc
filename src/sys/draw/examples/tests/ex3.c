@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscDrawLG        lg;
   PetscDrawAxis      axis;
   PetscInt           n = 20,i,x = 0,y = 0,width = 300,height = 300,nports = 1;
-  PetscTruth         flg;
+  PetscBool          flg;
   const char         *xlabel,*ylabel,*toplabel;
   PetscReal          xd,yd;
   PetscDrawViewPorts *ports;

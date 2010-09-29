@@ -12,7 +12,7 @@
 PetscViewer  PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE = PETSC_NULL;
 static void *mathematicaEnv                   = PETSC_NULL;
 
-static PetscTruth PetscViewerMathematicaPackageInitialized = PETSC_FALSE;
+static PetscBool  PetscViewerMathematicaPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerMathematicaFinalizePackage"
 /*@C
@@ -201,7 +201,7 @@ EXTERN_C_END
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerMathematicaParseLinkMode_Private"
 PetscErrorCode PetscViewerMathematicaParseLinkMode_Private(char *modename, LinkMode *mode) {
-  PetscTruth     isCreate, isConnect, isLaunch;
+  PetscBool      isCreate, isConnect, isLaunch;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -235,7 +235,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMathematicaSetFromOptions(PetscView
   int                      h;
   char                     **hosts;
   PetscMPIInt              size, rank;
-  PetscTruth               opt;
+  PetscBool                opt;
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
@@ -287,7 +287,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMathematicaSetFromOptions(PetscView
   /* Get graphics type */
   ierr = PetscOptionsGetString("viewer_", "-math_graphics", type, 256, &opt);CHKERRQ(ierr);
   if (opt) {
-    PetscTruth isMotif, isPS, isPSFile;
+    PetscBool  isMotif, isPS, isPSFile;
 
     ierr = PetscStrcasecmp(type, "Motif",  &isMotif);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(type, "PS",     &isPS);CHKERRQ(ierr);
@@ -303,7 +303,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMathematicaSetFromOptions(PetscView
   /* Get plot type */
   ierr = PetscOptionsGetString("viewer_", "-math_type", type, 256, &opt);CHKERRQ(ierr);
   if (opt) {
-    PetscTruth isTri, isVecTri, isVec, isSurface;
+    PetscBool  isTri, isVecTri, isVec, isSurface;
 
     ierr = PetscStrcasecmp(type, "Triangulation",       &isTri);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(type, "VectorTriangulation", &isVecTri);CHKERRQ(ierr);
@@ -697,7 +697,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMathematicaPutCSRMatrix(PetscViewer
   MLINK                   link  = vmath->link; /* The link to Mathematica */
   const char              *symbol;
   char                    *name;
-  PetscTruth              match;
+  PetscBool               match;
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;

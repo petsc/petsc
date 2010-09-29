@@ -648,7 +648,7 @@ Returns the real_section_type associated with "spacing"; which it defines if not
 
 
 
-ALE::Obj<ALE::Mesh::real_section_type> Hierarchy_defineSpacingFunction(ALE::Obj<ALE::Mesh> m, PetscTruth recalculate = PETSC_FALSE) {
+ALE::Obj<ALE::Mesh::real_section_type> Hierarchy_defineSpacingFunction(ALE::Obj<ALE::Mesh> m, PetscBool  recalculate = PETSC_FALSE) {
   if (m->hasRealSection("spacing") && !recalculate) {
     return m->getRealSection("spacing");
   }  
@@ -985,7 +985,7 @@ ALE::Obj<ALE::Mesh> * Hierarchy_createHierarchy(ALE::Obj<ALE::Mesh> original_mes
                                                 int nLevels,
                                                 double beta, 
                                                 ALE::Obj<ALE::Mesh> boundary_mesh = PETSC_NULL,
-                                                PetscTruth CtF = PETSC_FALSE) {
+                                                PetscBool  CtF = PETSC_FALSE) {
 
     ALE::Obj<ALE::Mesh> * meshes = new ALE::Obj<ALE::Mesh>[nLevels];
     if (CtF) {
@@ -1006,7 +1006,7 @@ ALE::Obj<ALE::Mesh> * Hierarchy_createHierarchy(ALE::Obj<ALE::Mesh> original_mes
                                                 double beta,
 						int * nMeshes,
                                                 ALE::Obj<ALE::Mesh> boundary_mesh = PETSC_NULL,
-                                                PetscTruth CtF = PETSC_FALSE) {
+                                                PetscBool  CtF = PETSC_FALSE) {
     ALE::Obj<ALE::Mesh> * meshes;
     if (CtF) {
       throw ALE::Exception ("Coarse-to-Fine not yet implemented.");
@@ -1047,7 +1047,7 @@ Assume that
 =+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 */
 
-PetscTruth Hierarchy_CellsCollide(const int dim, const double * a_coords, const double * b_coords) {
+PetscBool  Hierarchy_CellsCollide(const int dim, const double * a_coords, const double * b_coords) {
     int corners = dim+1; //simplices
     double * hyperplane = new double[dim]; 
     double * pivotpoint = new double[dim];
@@ -1162,7 +1162,7 @@ Sees whether the bounding boxes of the simplices collide; quick check for traver
 =+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
  */
 
-PetscTruth Hierarchy_BBoxesCollide (int dim, const double * a_coords, const double * b_coords) {
+PetscBool  Hierarchy_BBoxesCollide (int dim, const double * a_coords, const double * b_coords) {
   double * max_a_coords = new double[dim]; 
   double * min_a_coords = new double[dim];
   double * max_b_coords = new double[dim];
@@ -1188,7 +1188,7 @@ PetscTruth Hierarchy_BBoxesCollide (int dim, const double * a_coords, const doub
     if (max_a_coords[i] < min_a_coords[i]) throw ALE::Exception("a erroneous");
     if (max_b_coords[i] < min_b_coords[i]) throw ALE::Exception("b erroneous");
   }
-  PetscTruth collides = PETSC_TRUE;
+  PetscBool  collides = PETSC_TRUE;
   //if any set of max and min coords are in proper order, then they don't collide;
   for (int i = 0; i < dim; i++) {
     if ((max_b_coords[i] < min_a_coords[i]) || (max_a_coords[i] < min_b_coords[i])) {

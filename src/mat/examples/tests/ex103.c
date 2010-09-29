@@ -17,7 +17,7 @@ int main(int argc,char **args)
   IS             perm,iperm;
   MatFactorInfo  info;
   PetscRandom    rand;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);

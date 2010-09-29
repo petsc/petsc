@@ -16,7 +16,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
 {
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
   Mat            mat = pc->mat,pmat = pc->pmat;
-  PetscErrorCode ierr,(*f)(Mat,PetscTruth*,MatReuse,Mat*);
+  PetscErrorCode ierr,(*f)(Mat,PetscBool *,MatReuse,Mat*);
   PetscInt       N,M,start,i,sum,end;
   PetscInt       bs,i_start=-1,i_end=-1;
   PetscMPIInt    rank,size;
@@ -113,7 +113,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
     mat  = pc->mat;
     pmat = pc->pmat;
   } else {
-    PetscTruth iscopy;
+    PetscBool  iscopy;
     MatReuse   scall;
 
     if (jac->use_true_local) {
@@ -206,7 +206,7 @@ static PetscErrorCode PCSetFromOptions_BJacobi(PC pc)
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
   PetscErrorCode ierr;
   PetscInt       blocks;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Block Jacobi options");CHKERRQ(ierr);
@@ -232,7 +232,7 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       i;
-  PetscTruth     iascii,isstring;
+  PetscBool      iascii,isstring;
   PetscViewer    sviewer;
 
   PetscFunctionBegin;
@@ -894,7 +894,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
   KSP                    ksp;
   Vec                    x,y;
   PC_BJacobi_Singleblock *bjac;
-  PetscTruth             wasSetup;
+  PetscBool              wasSetup;
 
   PetscFunctionBegin;
 
@@ -1104,7 +1104,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
   n_local = jac->n_local;
 
   if (jac->use_true_local) {
-    PetscTruth same;
+    PetscBool  same;
     ierr = PetscTypeCompare((PetscObject)mat,((PetscObject)pmat)->type_name,&same);CHKERRQ(ierr);
     if (!same) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_INCOMP,"Matrices not of same type");
   }

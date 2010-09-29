@@ -22,7 +22,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscTruth     diagonalscale;
+  PetscBool      diagonalscale;
   PetscScalar    dpi,a=1.0,beta,betaold=1.0,b,ma; 
   PetscReal      dp;
   Vec            X,B,Zl,Zr,Rl,Rr,Pl,Pr;

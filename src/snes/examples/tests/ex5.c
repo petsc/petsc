@@ -80,7 +80,7 @@ int main(int argc,char **argv)
   AppCtx         user;                /* user-defined work context */
   PetscInt       its;                 /* iterations for convergence */
   PetscInt       Nx,Ny;              /* number of preocessors in x- and y- directions */
-  PetscTruth     matrix_free = PETSC_FALSE;         /* flag - 1 indicates matrix-free version */
+  PetscBool      matrix_free = PETSC_FALSE;         /* flag - 1 indicates matrix-free version */
   PetscMPIInt    size;                /* number of processors */
   PetscInt       m,N;
   PetscErrorCode ierr;
@@ -171,7 +171,7 @@ int main(int argc,char **argv)
   */
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
   if (!matrix_free) {
-    PetscTruth matrix_free_operator = PETSC_FALSE;
+    PetscBool  matrix_free_operator = PETSC_FALSE;
     ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf_operator",&matrix_free_operator,PETSC_NULL);CHKERRQ(ierr);
     if (matrix_free_operator) matrix_free = PETSC_FALSE;
   }

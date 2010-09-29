@@ -28,7 +28,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetName(PetscObject obj,const char 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscValidPointer(name,2);
-  if (!obj->name) { ierr = PetscObjectName(obj);CHKERRQ(ierr); }
+  ierr = PetscObjectName(obj);CHKERRQ(ierr);
   *name = obj->name;
   PetscFunctionReturn(0);
 }

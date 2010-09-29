@@ -15,6 +15,85 @@ PETSC_CUDA_EXTERN_C_BEGIN
 PETSC_CUDA_EXTERN_C_END
 #include "../src/mat/impls/aij/seq/seqcuda/cudamatimpl.h"
 
+#undef __FUNCT__
+#define __FUNCT__ "MatCUDACopyToGPU"
+PetscErrorCode MatCUDACopyToGPU(Mat A)
+{
+  Mat_SeqAIJCUDA *cudastruct  = (Mat_SeqAIJCUDA*)A->spptr;
+  Mat_SeqAIJ      *a          = (Mat_SeqAIJ*)A->data;
+  PetscInt        m           = A->rmap->n,*ii,*ridx;
+
+  PetscFunctionBegin;
+  if (A->valid_GPU_matrix == PETSC_CUDA_UNALLOCATED){
+    try {
+      cudastruct->mat = new CUSPMATRIX;
+      if (a->compressedrow.use) {
+	m    = a->compressedrow.nrows;
+	ii   = a->compressedrow.i;
+	ridx = a->compressedrow.rindex;
+	cudastruct->mat->resize(m,A->cmap->n,a->nz);
+	cudastruct->mat->row_offsets.assign(ii,ii+m+1);
+	cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
+	cudastruct->mat->values.assign(a->a,a->a+a->nz);
+	cudastruct->indices = new CUSPINTARRAYGPU;
+	cudastruct->indices->assign(ridx,ridx+m);
+	cudastruct->tempvec = new CUSPARRAY;
+	cudastruct->tempvec->resize(m);
+      } else {
+	cudastruct->mat->resize(m,A->cmap->n,a->nz);
+	cudastruct->mat->row_offsets.assign(a->i,a->i+m+1);
+	cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
+	cudastruct->mat->values.assign(a->a,a->a+a->nz);
+      }
+    } catch(char* ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+    }
+  } else if (A->valid_GPU_matrix == PETSC_CUDA_CPU) {
+  /*
+       It may be possible to reuse nonzero structure with new matrix values but 
+     for simplicity and insured correctness we delete and build a new matrix on
+     the GPU. Likely a very small performance hit.
+  */
+    if (cudastruct->mat){
+      try {
+	delete (cudastruct->mat);
+	if (cudastruct->tempvec) {
+	  delete (cudastruct->tempvec);
+	}
+	if (cudastruct->indices) {
+	  delete (cudastruct->indices);
+	}
+      } catch(char* ex) {
+	SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+      } 
+    }
+    try {
+      cudastruct->mat = new CUSPMATRIX;
+      if (a->compressedrow.use) {
+	m    = a->compressedrow.nrows;
+	ii   = a->compressedrow.i;
+	ridx = a->compressedrow.rindex;
+	cudastruct->mat->resize(m,A->cmap->n,a->nz);
+	cudastruct->mat->row_offsets.assign(ii,ii+m+1);
+	cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
+	cudastruct->mat->values.assign(a->a,a->a+a->nz);
+	cudastruct->indices = new CUSPINTARRAYGPU;
+	cudastruct->indices->assign(ridx,ridx+m);
+	cudastruct->tempvec = new CUSPARRAY;
+	cudastruct->tempvec->resize(m);
+      } else {
+	cudastruct->mat->resize(m,A->cmap->n,a->nz);
+	cudastruct->mat->row_offsets.assign(a->i,a->i+m+1);
+	cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
+	cudastruct->mat->values.assign(a->a,a->a+a->nz);
+      }
+    } catch(char* ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+    } 
+  }
+  A->valid_GPU_matrix = PETSC_CUDA_BOTH;
+  PetscFunctionReturn(0);
+}
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqAIJCUDA"
 PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
@@ -22,10 +101,11 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       nonzerorow=0;
-  PetscTruth     usecprow    = a->compressedrow.use;
+  PetscBool      usecprow    = a->compressedrow.use;
   Mat_SeqAIJCUDA *cudastruct = (Mat_SeqAIJCUDA *)A->spptr;
 
   PetscFunctionBegin;
+  ierr = MatCUDACopyToGPU(A);CHKERRQ(ierr);
   ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(yy);CHKERRQ(ierr);
   if (usecprow){ /* use compressed row format */
@@ -65,10 +145,11 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscTruth     usecprow=a->compressedrow.use;
+  PetscBool      usecprow=a->compressedrow.use;
   Mat_SeqAIJCUDA *cudastruct = (Mat_SeqAIJCUDA *)A->spptr;
 
-  PetscFunctionBegin; 
+  PetscFunctionBegin;
+  ierr = MatCUDACopyToGPU(A);CHKERRQ(ierr);
   ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
   ierr = VecCUDACopyToGPU(yy);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(zz);CHKERRQ(ierr);
@@ -124,55 +205,14 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
 #define __FUNCT__ "MatAssemblyEnd_SeqAIJCUDA"
 PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
 {
-  Mat_SeqAIJ      *a          = (Mat_SeqAIJ*)A->data;
   PetscErrorCode  ierr;
-  PetscInt        m           = A->rmap->n,*ii,*ridx;
-  Mat_SeqAIJCUDA  *cudastruct = (Mat_SeqAIJCUDA *)A->spptr;
-
+  
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
-  /*
-       It may be possible to reuse nonzero structure with new matrix values but 
-     for simplicity and insured correctness we delete and build a new matrix on
-     the GPU. Likely a very small performance hit.
-  */
-  if (cudastruct->mat){
-    try {
-      delete (cudastruct->mat);
-      if (cudastruct->tempvec) {
-	delete (cudastruct->tempvec);
-      }
-      if (cudastruct->indices) {
-	delete (cudastruct->indices);
-      }
-    } catch(char* ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
-    } 
+  if (A->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED){
+    A->valid_GPU_matrix = PETSC_CUDA_CPU;
   }
-  try {
-    cudastruct->mat = new CUSPMATRIX;
-    if (a->compressedrow.use) {
-      m    = a->compressedrow.nrows;
-      ii   = a->compressedrow.i;
-      ridx = a->compressedrow.rindex;
-      cudastruct->mat->resize(m,A->cmap->n,a->nz);
-      cudastruct->mat->row_offsets.assign(ii,ii+m+1);
-      cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
-      cudastruct->mat->values.assign(a->a,a->a+a->nz);
-      cudastruct->indices = new CUSPINTARRAYGPU;
-      cudastruct->indices->assign(ridx,ridx+m);
-      cudastruct->tempvec = new CUSPARRAY;
-      cudastruct->tempvec->resize(m);
-    } else {
-      cudastruct->mat->resize(m,A->cmap->n,a->nz);
-      cudastruct->mat->row_offsets.assign(a->i,a->i+m+1);
-      cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
-      cudastruct->mat->values.assign(a->a,a->a+a->nz);
-    }
-  } catch(char* ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
-  } 
   PetscFunctionReturn(0);
 }
 
@@ -250,8 +290,11 @@ PetscErrorCode MatDestroy_SeqAIJCUDA(Mat A)
 
   PetscFunctionBegin;
   try {
-    delete (CUSPMATRIX *)(cudacontainer->mat);
+    if (A->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED){
+      delete (CUSPMATRIX *)(cudacontainer->mat);
+    }
     delete cudacontainer;
+    A->valid_GPU_matrix = PETSC_CUDA_UNALLOCATED;
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
   } 
@@ -275,7 +318,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCUDA(Mat B)
   aij->inode.use  = PETSC_FALSE;
   B->ops->mult    = MatMult_SeqAIJCUDA;
   B->ops->multadd = MatMultAdd_SeqAIJCUDA;
-  B->spptr = new Mat_SeqAIJCUDA;
+  B->spptr        = new Mat_SeqAIJCUDA;
   ((Mat_SeqAIJCUDA *)B->spptr)->mat = 0;
   ((Mat_SeqAIJCUDA *)B->spptr)->tempvec = 0;
   ((Mat_SeqAIJCUDA *)B->spptr)->indices = 0;
@@ -283,6 +326,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCUDA(Mat B)
   B->ops->assemblyend = MatAssemblyEnd_SeqAIJCUDA;
   B->ops->destroy     = MatDestroy_SeqAIJCUDA;
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUDA);CHKERRQ(ierr);
+  B->valid_GPU_matrix = PETSC_CUDA_UNALLOCATED;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

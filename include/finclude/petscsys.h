@@ -15,10 +15,10 @@
 !    
 !     Flags
 !
-      PetscTruth PETSC_TRUE
-      PetscTruth PETSC_FALSE
-      PetscTruth PETSC_YES
-      PetscTruth PETSC_NO
+      PetscBool  PETSC_TRUE
+      PetscBool  PETSC_FALSE
+      PetscBool  PETSC_YES
+      PetscBool  PETSC_NO
 #if defined(PETSC_FORTRAN_PETSCTRUTH_INT)
       parameter (PETSC_TRUE = 1,PETSC_FALSE = 0)
       parameter (PETSC_YES= 1, PETSC_NO = 0)
@@ -85,7 +85,7 @@
       PetscEnum PETSC_CHAR
       PetscEnum PETSC_BIT_LOGICAL
       PetscEnum PETSC_ENUM
-      PetscEnum PETSC_TRUTH
+      PetscEnum PETSC_BOOL
       PetscEnum PETSC_LONG_DOUBLE
 
 #if defined(PETSC_USE_SCALAR_SINGLE)
@@ -102,7 +102,7 @@
       parameter (PETSC_INT=0,PETSC_DOUBLE=1,PETSC_COMPLEX=2)
       parameter (PETSC_LONG=3,PETSC_SHORT=4,PETSC_FLOAT=5)
       parameter (PETSC_CHAR=6,PETSC_BIT_LOGICAL=7,PETSC_ENUM=8)
-      parameter (PETSC_TRUTH=9,PETSC_LONG_DOUBLE=10)
+      parameter (PETSC_BOOL=9,PETSC_LONG_DOUBLE=10)
 !
 ! ------------------------------------------------------------------------
 !     PETSc mathematics include file. Defines certain basic mathematical 
@@ -189,7 +189,7 @@
       external PETSC_NULL_FUNCTION
       PetscScalar   PETSC_NULL_SCALAR
       PetscReal     PETSC_NULL_REAL
-      PetscTruth    PETSC_NULL_TRUTH
+      PetscBool     PETSC_NULL_TRUTH
 !
 !     Common Block to store some of the PETSc constants.
 !     which can be set - only at runtime.
@@ -218,8 +218,8 @@
 !
       external PetscIsInfOrNanScalar
       external PetscIsInfOrNanReal
-      PetscTruth PetscIsInfOrNanScalar
-      PetscTruth PetscIsInfOrNanReal
+      PetscBool  PetscIsInfOrNanScalar
+      PetscBool  PetscIsInfOrNanReal
 
   
 !    END COMMON-BLOCK VARIABLES

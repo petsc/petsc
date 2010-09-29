@@ -309,7 +309,7 @@ class Configure(config.base.Configure):
       # since they are already copied into the PETSc dynamic library.
       self.setOtherLibs([])
     self.pushLanguage(self.languages.clanguage)
-    isShared = self.libraries.checkShared('#include <petscsys.h>\n', 'PetscInitialize', 'PetscInitialized', 'PetscFinalize', checkLink = self.checkPETScLink, libraries = libraries, initArgs = '&argc, &argv, 0, 0', boolType = 'PetscTruth', executor = self.mpi.mpiexec)
+    isShared = self.libraries.checkShared('#include <petscsys.h>\n', 'PetscInitialize', 'PetscInitialized', 'PetscFinalize', checkLink = self.checkPETScLink, libraries = libraries, initArgs = '&argc, &argv, 0, 0', boolType = 'PetscBool ', executor = self.mpi.mpiexec)
     self.popLanguage()
     return isShared
 

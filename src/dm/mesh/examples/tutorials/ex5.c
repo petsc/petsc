@@ -54,10 +54,10 @@ int main(int argc, char *argv[])
   PetscViewer    viewer;
   Vec            partition, material, spacing;
   char           baseFilename[2048];
-  PetscTruth     useZeroBase;
+  PetscBool      useZeroBase;
   const char    *fileTypes[2] = {"pcice", "pylith"};
   FileType       fileType, outputFileType;
-  PetscTruth     distribute, interpolate, outputLocal, outputVTK, setOutputType;
+  PetscBool      distribute, interpolate, outputLocal, outputVTK, setOutputType;
   PetscInt       dim, ft, outputFt;
   int            verbosity;
   int            debug;

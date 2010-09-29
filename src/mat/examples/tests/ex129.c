@@ -33,7 +33,7 @@ int main(int argc,char **args)
   PetscInt          dof=1,M=-8,m,n,nrhs;
   PetscScalar       one = 1.0;
   PetscReal         norm;
-  PetscTruth        InplaceLU;
+  PetscBool         InplaceLU;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

@@ -47,7 +47,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec vin,VecScatter *ctx,
   IS             is;
   Vec            tmp;
   Vec           *tmpv;
-  PetscTruth     tmpvout = PETSC_FALSE;
+  PetscBool      tmpvout = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin,VEC_CLASSID,1);
@@ -120,7 +120,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToZero(Vec vin,VecScatter *ctx
   IS             is;
   Vec            tmp;
   Vec           *tmpv;
-  PetscTruth     tmpvout = PETSC_FALSE;
+  PetscBool      tmpvout = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin,VEC_CLASSID,1);

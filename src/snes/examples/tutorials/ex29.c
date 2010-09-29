@@ -77,7 +77,7 @@ typedef struct {
   PetscReal      t;
   PetscReal      fnorm;
 
-  PetscTruth     ts_monitor;           /* print information about each time step */
+  PetscBool      ts_monitor;           /* print information about each time step */
   PetscReal      dump_time;            /* time to dump solution to a file */
   PetscViewer    socketviewer;         /* socket to dump solution at each timestep for visualization */
 } TstepCtx;
@@ -94,9 +94,9 @@ typedef struct {
   PetscInt     mglevels;
   PetscInt     cycles;           /* number of time steps for integration */ 
   PassiveReal  nu,eta,d_e,rho_s; /* physical parameters */
-  PetscTruth   draw_contours;    /* flag - 1 indicates drawing contours */
-  PetscTruth   second_order;
-  PetscTruth   PreLoading;
+  PetscBool    draw_contours;    /* flag - 1 indicates drawing contours */
+  PetscBool    second_order;
+  PetscBool    PreLoading;
 } Parameters;
 
 typedef struct {
@@ -220,7 +220,7 @@ int main(int argc,char **argv)
     tsCtx.socketviewer = 0;
 #if defined(PETSC_USE_SOCKET_VIEWER)
     {
-      PetscTruth flg;
+      PetscBool  flg;
       ierr = PetscOptionsHasName(PETSC_NULL, "-socket_viewer", &flg);CHKERRQ(ierr);
       if (flg && !PreLoading) {
         tsCtx.ts_monitor = PETSC_TRUE;
@@ -359,7 +359,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
   PetscReal      d_e,rho_s,de2,xx,yy;
   Field          **x, **localx;
   Vec            localX;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(0,"-restart",&flg);CHKERRQ(ierr);
@@ -626,7 +626,7 @@ PetscErrorCode Update(DMMG *dmmg)
   PetscInt        max_steps;
   PetscInt        nfailsCum = 0,nfails = 0;
   static PetscInt ic_out;
-  PetscTruth      ts_monitor = (tsCtx->ts_monitor && !param->PreLoading) ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool       ts_monitor = (tsCtx->ts_monitor && !param->PreLoading) ? PETSC_TRUE : PETSC_FALSE;
 
   PetscFunctionBegin;
 

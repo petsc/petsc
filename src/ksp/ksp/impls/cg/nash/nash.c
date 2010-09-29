@@ -119,7 +119,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
 
   PetscInt       max_cg_its;
 
-  PetscTruth     diagonalscale;
+  PetscBool      diagonalscale;
 
   PetscFunctionBegin;
   /***************************************************************************/

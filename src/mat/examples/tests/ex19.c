@@ -29,7 +29,7 @@ int main(int argc,char **args)
   PetscMPIInt    size,rank;
   PetscInt       i,m = 5,N,start,end,M,idx[4];
   PetscInt       j,nrsub,ncsub,*rsub,*csub,mystart,myend;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscScalar    one = 1.0,Ke[16],*vals;
   PetscReal      h,norm;
 

@@ -39,9 +39,9 @@ PetscErrorCode SieveConeTest(MPI_Comm comm)
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
-  PetscTruth     coneTests;
-  PetscTruth     presieveTests;
-  PetscTruth     sieveTests;
+  PetscBool      coneTests;
+  PetscBool      presieveTests;
+  PetscBool      sieveTests;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

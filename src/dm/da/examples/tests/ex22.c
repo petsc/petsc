@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   DA             da;
   Mat            mat;
   DAStencilType  stencil_type = DA_STENCIL_BOX;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
   MatStencil     idx[2],idy[2];
   PetscScalar    *values;
 

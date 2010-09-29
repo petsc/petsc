@@ -14,7 +14,7 @@
           USE_MAT_HIDE
           PetscInt, pointer :: ia(:), ja(:)
           PetscInt  n,shift
-          PetscTruth sym,blckcmp,done
+          PetscBool  sym,blckcmp,done
           PetscErrorCode ierr
           MAT_HIDE     v
         End Subroutine
@@ -26,7 +26,7 @@
           USE_MAT_HIDE
           PetscInt, pointer :: ia(:), ja(:)
           PetscInt  n,shift
-          PetscTruth sym,blckcmp,done
+          PetscBool  sym,blckcmp,done
           PetscErrorCode ierr
           MAT_HIDE     v
         End Subroutine

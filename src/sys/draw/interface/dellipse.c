@@ -24,7 +24,7 @@
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawEllipse(PetscDraw draw, PetscReal x, PetscReal y, PetscReal a, PetscReal b, int c)
 {
-  PetscTruth isdrawnull;
+  PetscBool  isdrawnull;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

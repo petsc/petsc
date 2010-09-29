@@ -36,12 +36,12 @@
     put it in a universal location like a .chsrc file
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],size_t len,PetscTruth *flag)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],size_t len,PetscBool  *flag)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   char           *str,work[256];
-  PetscTruth     flg = PETSC_FALSE,spetsc;
+  PetscBool      flg = PETSC_FALSE,spetsc;
    
   PetscFunctionBegin;
 
@@ -87,12 +87,12 @@ static char PetscDisplay[256];
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscWorldIsSingleHost"
-static PetscErrorCode PetscWorldIsSingleHost(PetscTruth *onehost)
+static PetscErrorCode PetscWorldIsSingleHost(PetscBool  *onehost)
 {
   PetscErrorCode ierr;
   char hostname[256],roothostname[256];
   PetscMPIInt localmatch,allmatch;
-  PetscTruth flag;
+  PetscBool  flag;
 
   PetscFunctionBegin;
   ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
@@ -101,7 +101,7 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscTruth *onehost)
   ierr = PetscStrcmp(hostname,roothostname,&flag);CHKERRQ(ierr);
   localmatch = (PetscMPIInt)flag;
   ierr = MPI_Allreduce(&localmatch,&allmatch,1,MPI_INT,MPI_LAND,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  *onehost = (PetscTruth)allmatch;
+  *onehost = (PetscBool )allmatch;
   PetscFunctionReturn(0);
 }
 
@@ -112,7 +112,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDisplay(void)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
-  PetscTruth     flag,singlehost=PETSC_FALSE;
+  PetscBool      flag,singlehost=PETSC_FALSE;
   char           display[sizeof PetscDisplay];
   const char     *str;
 

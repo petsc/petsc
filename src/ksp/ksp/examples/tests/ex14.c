@@ -105,7 +105,7 @@ int main(int argc,char **argv)
   PetscInt       lin_its;             /* number of linear solver iterations for each step */
   PetscInt       i;                   /* nonlinear solve iteration number */
   MatStructure   mat_flag;        /* flag indicating structure of preconditioner matrix */
-  PetscTruth     no_output = PETSC_FALSE;           /* flag indicating whether to surpress output */
+  PetscBool      no_output = PETSC_FALSE;           /* flag indicating whether to surpress output */
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;

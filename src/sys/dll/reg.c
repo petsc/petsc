@@ -35,7 +35,7 @@ PetscDLLibrary DLLibrariesLoaded = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLoadDynamicLibrary"
-static PetscErrorCode PETSCSYS_DLLEXPORT PetscLoadDynamicLibrary(const char *name,PetscTruth *found)
+static PetscErrorCode PETSCSYS_DLLEXPORT PetscLoadDynamicLibrary(const char *name,PetscBool  *found)
 {
   char           libs[PETSC_MAX_PATH_LEN],dlib[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -71,7 +71,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscInitialize_DynamicLibraries(void)
   PetscErrorCode ierr;
   PetscInt       nmax,i;
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  PetscTruth     found;
+  PetscBool      found;
 #endif
 
   PetscFunctionBegin;
@@ -136,7 +136,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscInitialize_DynamicLibraries(void)
 PetscErrorCode PetscFinalize_DynamicLibraries(void)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-dll_view",&flg,PETSC_NULL);CHKERRQ(ierr);
@@ -221,7 +221,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFListAdd(PetscFList *fl,const char name[]
     /* search list to see if it is already there */
     ne = *fl;
     while (ne) {
-      PetscTruth founddup;
+      PetscBool  founddup;
 
       ierr = PetscStrcmp(ne->name,name,&founddup);CHKERRQ(ierr);
       if (founddup) { /* found duplicate */
@@ -342,7 +342,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFListFind(PetscFList fl,MPI_Comm comm,con
   PetscFList     entry = fl;
   PetscErrorCode ierr;
   char           *function,*path;
-  PetscTruth     flg,f1,f2,f3;
+  PetscBool      flg,f1,f2,f3;
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
   char           *newpath;
 #endif
@@ -368,11 +368,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFListFind(PetscFList fl,MPI_Comm comm,con
       ierr = PetscStrcmp(path,entry->path,&f1);CHKERRQ(ierr);
       ierr = PetscStrcmp(function,entry->rname,&f2);CHKERRQ(ierr);
       ierr = PetscStrcmp(function,entry->name,&f3);CHKERRQ(ierr);
-      flg =  (PetscTruth) ((f1 && f2) || (f1 && f3));
+      flg =  (PetscBool ) ((f1 && f2) || (f1 && f3));
     } else if (!path) {
       ierr = PetscStrcmp(function,entry->name,&f1);CHKERRQ(ierr);
       ierr = PetscStrcmp(function,entry->rname,&f2);CHKERRQ(ierr);
-      flg =  (PetscTruth) (f1 || f2);
+      flg =  (PetscBool ) (f1 || f2);
     } else {
       ierr = PetscStrcmp(function,entry->name,&flg);CHKERRQ(ierr);
       if (flg) {
@@ -447,7 +447,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFListFind(PetscFList fl,MPI_Comm comm,con
 PetscErrorCode PETSCSYS_DLLEXPORT PetscFListView(PetscFList list,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;

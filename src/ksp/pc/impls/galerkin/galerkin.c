@@ -34,7 +34,7 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
 {
   PetscErrorCode  ierr;
   PC_Galerkin     *jac = (PC_Galerkin*)pc->data;
-  PetscTruth      a;
+  PetscBool       a;
   Vec             *xx,*yy;
 
   PetscFunctionBegin;
@@ -77,7 +77,7 @@ static PetscErrorCode PCView_Galerkin(PC pc,PetscViewer viewer)
 {
   PC_Galerkin     *jac = (PC_Galerkin*)pc->data;
   PetscErrorCode   ierr;
-  PetscTruth       iascii;
+  PetscBool        iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);

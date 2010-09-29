@@ -9,7 +9,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   char           option2[20],option3[30];
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscInt       option1;
 
   PetscInitialize(&argc,&argv,"ex19options",help);

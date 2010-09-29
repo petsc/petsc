@@ -16,8 +16,8 @@ typedef struct {
   int        debug;              // The debugging level
   int        dim;                // The topological mesh dimension
   char       baseFilename[2048]; // The base filename for mesh files
-  PetscTruth useZeroBase;        // Use zero-based indexing
-  PetscTruth interpolate;        // Construct missing elements of the mesh
+  PetscBool  useZeroBase;        // Use zero-based indexing
+  PetscBool  interpolate;        // Construct missing elements of the mesh
 } Options;
 
 #undef __FUNCT__

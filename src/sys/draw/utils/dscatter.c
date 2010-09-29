@@ -45,7 +45,7 @@ struct _p_DrawSP {
 PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
 {
   PetscErrorCode ierr;
-  PetscTruth     isnull;
+  PetscBool      isnull;
   PetscObject    obj = (PetscObject)draw;
   PetscDrawSP    sp;
 

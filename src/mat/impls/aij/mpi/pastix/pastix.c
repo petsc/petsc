@@ -35,11 +35,11 @@ typedef struct Mat_Pastix_ {
   MPI_Comm       pastix_comm;              /* PaStiX MPI communicator                              */
   PetscMPIInt    commRank;                 /* MPI rank                                             */
   PetscMPIInt    commSize;                 /* MPI communicator size                                */
-  PetscTruth     CleanUpPastix;            /* Boolean indicating if we call PaStiX clean step      */
+  PetscBool      CleanUpPastix;            /* Boolean indicating if we call PaStiX clean step      */
   VecScatter     scat_rhs;
   VecScatter     scat_sol;
   Vec            b_seq;
-  PetscTruth     isAIJ;
+  PetscBool      isAIJ;
   PetscErrorCode (*MatDestroy)(Mat);
 } Mat_Pastix;
 
@@ -60,7 +60,7 @@ EXTERN PetscErrorCode MatDuplicate_Pastix(Mat,MatDuplicateOption,Mat*);
     row     - Row of each element of the matrix                   
     values  - Value of each element of the matrix                 
  */
-PetscErrorCode MatConvertToCSC(Mat A,PetscTruth valOnly,PetscInt *n,PetscInt **colptr,PetscInt **row,PetscScalar **values) 
+PetscErrorCode MatConvertToCSC(Mat A,PetscBool  valOnly,PetscInt *n,PetscInt **colptr,PetscInt **row,PetscScalar **values) 
 {
   Mat_SeqAIJ     *aa      = (Mat_SeqAIJ*)A->data;
   PetscInt       *rowptr  = aa->i;
@@ -74,10 +74,10 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscTruth valOnly,PetscInt *n,PetscInt **c
   PetscErrorCode  ierr;
   PetscInt        colidx;
   PetscInt       *colcount; 
-  PetscTruth      isSBAIJ;
-  PetscTruth      isSeqSBAIJ;
-  PetscTruth      isMpiSBAIJ;
-  PetscTruth      isSym;
+  PetscBool       isSBAIJ;
+  PetscBool       isSeqSBAIJ;
+  PetscBool       isMpiSBAIJ;
+  PetscBool       isSym;
 
   PetscFunctionBegin;
   ierr = MatIsSymmetric(A,0.0,&isSym);CHKERRQ(ierr);
@@ -313,12 +313,12 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
   PetscErrorCode ierr = 0;
   PetscInt       icntl;
   PetscInt       M=A->rmap->N;
-  PetscTruth     valOnly,flg, isSym;
+  PetscBool      valOnly,flg, isSym;
   Mat            F_diag; 
   IS             is_iden;
   Vec            b;
   IS             isrow;
-  PetscTruth     isSeqAIJ,isSeqSBAIJ;
+  PetscBool      isSeqAIJ,isSeqSBAIJ;
 
   PetscFunctionBegin; 	
   
@@ -495,7 +495,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SBAIJPASTIX(Mat F,Mat A,IS r,const MatF
 PetscErrorCode MatView_PaStiX(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
-  PetscTruth        iascii;
+  PetscBool         iascii;
   PetscViewerFormat format;
 
   PetscFunctionBegin;

@@ -25,7 +25,7 @@ struct _CharacteristicOps {
 struct _p_Characteristic {
   PETSCHEADER(struct _CharacteristicOps);
   PetscInt     setupcalled;
-  PetscTruth   structured;      /* Flag for mesh type */
+  PetscBool    structured;      /* Flag for mesh type */
   PetscInt     numIds;          /* Number of integers necessary to identify a mesh element */
   /* Velocity interpolation structures */
   DA           velocityDA;      /* DA for the velocity field */
@@ -74,7 +74,7 @@ EXTERN PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic);
 EXTERN PetscErrorCode CharacteristicGetValuesBegin(Characteristic);
 EXTERN PetscErrorCode CharacteristicGetValuesEnd(Characteristic);
 
-extern PetscTruth  CharacteristicRegisterAllCalled;
+extern PetscBool   CharacteristicRegisterAllCalled;
 extern PetscFList  CharacteristicList;
 
 #endif /*__CHARACTERISTICIMPL_H*/

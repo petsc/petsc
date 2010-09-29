@@ -25,7 +25,7 @@ typedef struct {
   PetscScalar *aux;
   int         naux;
 
-  PetscTruth CleanUpESSL;
+  PetscBool  CleanUpESSL;
 } Mat_Essl;
 
 #undef __FUNCT__  

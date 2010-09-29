@@ -26,7 +26,7 @@ void adjustFilter(ArrowContainer& ac, ArrowContainer::filter_object_type& f, Arr
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscInt       verbosity;
   PetscErrorCode ierr;
 
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 PetscErrorCode testCone()
 {
   PetscInt       verbosity;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -130,7 +130,7 @@ PetscErrorCode testCone()
 PetscErrorCode testArrowFilters()
 {
   PetscInt       verbosity;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

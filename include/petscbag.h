@@ -41,7 +41,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBagRegisterString(PetscBag,void*,P
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBagRegisterScalar(PetscBag,void*,PetscScalar,const  char*,const  char*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBagRegisterInt(PetscBag,void*,PetscInt,const  char*,const  char*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBagRegisterEnum(PetscBag,void*,const  char*[],PetscEnum,const char*,const  char*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBagRegisterTruth(PetscBag,void*,PetscTruth,const  char*,const  char*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBagRegisterTruth(PetscBag,void*,PetscBool ,const  char*,const  char*);
 
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBagSetFromOptions(PetscBag);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBagGetName(PetscBag, char **);

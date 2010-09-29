@@ -4,8 +4,8 @@
 #include "private/pcimpl.h"   /*I "petscpc.h" I*/
 
 typedef struct {
-  PetscTruth allocated;
-  PetscTruth scalediag;
+  PetscBool  allocated;
+  PetscBool  scalediag;
   KSP        kspL;
   Vec        scale;
   Vec        x0,y0,x1;

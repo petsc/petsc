@@ -371,11 +371,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortIntWithScalarArray(PetscInt n,PetscIn
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscProcessTree(PetscInt n,const PetscTruth mask[],const PetscInt parentid[],PetscInt *Nlevels,PetscInt **Level,PetscInt **Levelcnt,PetscInt **Idbylevel,PetscInt **Column)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscProcessTree(PetscInt n,const PetscBool  mask[],const PetscInt parentid[],PetscInt *Nlevels,PetscInt **Level,PetscInt **Levelcnt,PetscInt **Idbylevel,PetscInt **Column)
 {
   PetscInt       i,j,cnt,nmask = 0,nlevels = 0,*level,*levelcnt,levelmax = 0,*workid,*workparentid,tcnt = 0,*idbylevel,*column;
   PetscErrorCode ierr;
-  PetscTruth     done = PETSC_FALSE;
+  PetscBool      done = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (!mask[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mask of 0th location must be set");

@@ -6,8 +6,8 @@
 static const char *TSGLErrorDirections[] = {"FORWARD","BACKWARD","TSGLErrorDirection","TSGLERROR_",0};
 static PetscFList TSGLList;
 static PetscFList TSGLAcceptList;
-static PetscTruth TSGLPackageInitialized;
-static PetscTruth TSGLRegisterAllCalled;
+static PetscBool  TSGLPackageInitialized;
+static PetscBool  TSGLRegisterAllCalled;
 
 /* This function is pure */
 static PetscScalar Factorial(PetscInt n)
@@ -243,7 +243,7 @@ static PetscErrorCode TSGLDestroy_Default(TS_GL *gl)
 static PetscErrorCode ViewTable_Private(PetscViewer viewer,PetscInt m,PetscInt n,const PetscScalar a[],const char name[])
 {
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
   PetscInt       i,j;
 
   PetscFunctionBegin;
@@ -268,10 +268,10 @@ static PetscErrorCode ViewTable_Private(PetscViewer viewer,PetscInt m,PetscInt n
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLSchemeView"
-static PetscErrorCode TSGLSchemeView(TSGLScheme sc,PetscTruth view_details,PetscViewer viewer)
+static PetscErrorCode TSGLSchemeView(TSGLScheme sc,PetscBool  view_details,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -650,7 +650,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLGetAdapt(TS ts,TSGLAdapt *adapt)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLAccept_Always"
-static PetscErrorCode TSGLAccept_Always(TS ts,PetscReal tleft,PetscReal h,const PetscReal enorms[],PetscTruth *accept)
+static PetscErrorCode TSGLAccept_Always(TS ts,PetscReal tleft,PetscReal h,const PetscReal enorms[],PetscBool  *accept)
 {
   PetscFunctionBegin;
   *accept = PETSC_TRUE;
@@ -708,7 +708,7 @@ static PetscErrorCode TSGLVecNormWRMS(TS ts,Vec X,PetscReal *nrm)
 static PetscErrorCode TSGLSetType_GL(TS ts,const TSGLType type)
 {
   PetscErrorCode ierr,(*r)(TS);
-  PetscTruth same;
+  PetscBool  same;
   TS_GL *gl = (TS_GL*)ts->data;
 
   PetscFunctionBegin;
@@ -760,7 +760,7 @@ static PetscErrorCode TSGLGetAdapt_GL(TS ts,TSGLAdapt *adapt)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLChooseNextScheme"
-static PetscErrorCode TSGLChooseNextScheme(TS ts,PetscReal h,const PetscReal hmnorm[],PetscInt *next_scheme,PetscReal *next_h,PetscTruth *finish)
+static PetscErrorCode TSGLChooseNextScheme(TS ts,PetscReal h,const PetscReal hmnorm[],PetscInt *next_scheme,PetscReal *next_h,PetscBool  *finish)
 {
   PetscErrorCode ierr;
   TS_GL *gl = (TS_GL*)ts->data;
@@ -812,7 +812,7 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
 {
   TS_GL          *gl = (TS_GL*)ts->data;
   PetscInt       i,k,max_steps = ts->max_steps,its,lits,max_r,max_s;
-  PetscTruth     final_step,finish;
+  PetscBool      final_step,finish;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -846,7 +846,7 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
   for (k=0,final_step=PETSC_FALSE,finish=PETSC_FALSE; k<max_steps && !finish; k++) {
     PetscInt j,r,s,next_scheme = 0,rejections;
     PetscReal h,hmnorm[4],enorm[3],next_h;
-    PetscTruth accept;
+    PetscBool  accept;
     const PetscScalar *c,*a,*u;
     Vec *X,*Ydot,Y;
     TSGLScheme scheme = gl->schemes[gl->current_scheme];
@@ -1096,7 +1096,7 @@ static PetscErrorCode TSSetFromOptions_GL(TS ts)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("General Linear ODE solver options");CHKERRQ(ierr);
   {
-    PetscTruth flg;
+    PetscBool  flg;
     ierr = PetscOptionsList("-ts_gl_type","Type of GL method","TSGLSetType",TSGLList,gl->type_name[0]?gl->type_name:tname,tname,sizeof(tname),&flg);CHKERRQ(ierr);
     if (flg || !gl->type_name[0]) {
       ierr = TSGLSetType(ts,tname);CHKERRQ(ierr);
@@ -1111,7 +1111,7 @@ static PetscErrorCode TSSetFromOptions_GL(TS ts)
     ierr = PetscOptionsReal("-ts_gl_rtol","Relative tolerance","TSGLSetTolerances",gl->wrms_rtol,&gl->wrms_rtol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-ts_gl_complete","Method to use for completing the step","none",completef,completef,sizeof completef,&flg);CHKERRQ(ierr);
     if (flg) {
-      PetscTruth match1,match2;
+      PetscBool  match1,match2;
       ierr = PetscStrcmp(completef,"rescale",&match1);CHKERRQ(ierr);
       ierr = PetscStrcmp(completef,"rescale-and-modify",&match2);CHKERRQ(ierr);
       if (match1)      gl->CompleteStep = TSGLCompleteStep_Rescale;
@@ -1141,7 +1141,7 @@ static PetscErrorCode TSView_GL(TS ts,PetscViewer viewer)
 {
   TS_GL          *gl = (TS_GL*)ts->data;
   PetscInt        i;
-  PetscTruth      iascii,details;
+  PetscBool       iascii,details;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;

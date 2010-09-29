@@ -18,12 +18,12 @@ typedef struct {
   PetscScalar      *solves_work; /* work space used in MatSolves */
   PetscInt         solves_work_n;/* size of solves_work */  
   PetscInt         *a2anew;        /* map used for symm permutation */
-  PetscTruth       permute;        /* if true, a non-trivial permutation is used for factorization */
-  PetscTruth       ignore_ltriangular; /* if true, ignore the lower triangular values inserted by users */
-  PetscTruth       getrow_utriangular; /* if true, MatGetRow_SeqSBAIJ() is enabled to get the upper part of the row */
+  PetscBool        permute;        /* if true, a non-trivial permutation is used for factorization */
+  PetscBool        ignore_ltriangular; /* if true, ignore the lower triangular values inserted by users */
+  PetscBool        getrow_utriangular; /* if true, MatGetRow_SeqSBAIJ() is enabled to get the upper part of the row */
   Mat_SeqAIJ_Inode inode;
   unsigned short   *jshort;
-  PetscTruth       free_jshort;
+  PetscBool        free_jshort;
 } Mat_SeqSBAIJ;
 
 EXTERN_C_BEGIN
@@ -41,7 +41,7 @@ EXTERN PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat,IS,IS,MatReuse,Mat*);
 EXTERN PetscErrorCode MatGetSubMatrices_SeqSBAIJ(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*[]);
 EXTERN PetscErrorCode MatScale_SeqSBAIJ(Mat,PetscScalar);
 EXTERN PetscErrorCode MatNorm_SeqSBAIJ(Mat,NormType,PetscReal *);
-EXTERN PetscErrorCode MatEqual_SeqSBAIJ(Mat,Mat,PetscTruth*);
+EXTERN PetscErrorCode MatEqual_SeqSBAIJ(Mat,Mat,PetscBool *);
 EXTERN PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat,Vec);
 EXTERN PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatGetInfo_SeqSBAIJ(Mat,MatInfoType,MatInfo *);
@@ -157,6 +157,6 @@ EXTERN PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat,Vec,Vec,Vec);
 
 EXTERN PetscErrorCode MatSOR_SeqSBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
 EXTERN PetscErrorCode MatLoad_SeqSBAIJ(Mat,PetscViewer);
-EXTERN PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat,PetscTruth);
+EXTERN PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat,PetscBool );
 
 #endif

@@ -55,7 +55,7 @@
       Vec   localwork,solution
       Vec   u_local
       PetscInt   M
-      PetscTruth debug
+      PetscBool  debug
       PetscMPIInt size,rank
       PetscReal  zero_d0,one_d0
       PetscReal  two_d0,four_d0

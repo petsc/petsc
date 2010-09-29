@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   PetscMPIInt    rank;
   PetscInt       M = -10,N = -8;
   PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
   DA             da;
   PetscViewer    viewer;
   Vec            local,global;

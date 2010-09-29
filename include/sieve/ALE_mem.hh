@@ -442,7 +442,7 @@ namespace ALE {
   void logged_allocator<T, O>::__log_initialize() {
     if(!logged_allocator::_log_initialized) {
       // First of all we make sure PETSc is initialized
-      PetscTruth     flag;
+      PetscBool      flag;
       PetscErrorCode ierr = PetscInitialized(&flag);CHKERROR(ierr, "Error in PetscInitialized");
       if(!flag) {
         // I guess it would be nice to initialize PETSc here, but we'd need argv/argc here

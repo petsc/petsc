@@ -44,13 +44,13 @@ int main(int argc,char **args)
   Vec            x,b,u;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
   char           file[4][PETSC_MAX_PATH_LEN];     /* input file name */
-  PetscTruth     table=PETSC_FALSE,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,initialguess = PETSC_FALSE;
-  PetscTruth     outputSoln=PETSC_FALSE;
+  PetscBool      table=PETSC_FALSE,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,initialguess = PETSC_FALSE;
+  PetscBool      outputSoln=PETSC_FALSE;
   PetscErrorCode ierr;
   PetscInt       its,num_numfac,m,n,M;
   PetscReal      norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
-  PetscTruth     preload=PETSC_TRUE,isSymmetric,cknorm=PETSC_FALSE,initialguessfile = PETSC_FALSE;
+  PetscBool      preload=PETSC_TRUE,isSymmetric,cknorm=PETSC_FALSE,initialguessfile = PETSC_FALSE;
   PetscMPIInt    rank;
   char           initialguessfilename[PETSC_MAX_PATH_LEN];
 
@@ -147,7 +147,7 @@ int main(int argc,char **args)
       PetscInt          row,ncols;
       const PetscInt    *cols;
       const PetscScalar *vals;
-      PetscTruth        flg1=PETSC_FALSE;
+      PetscBool         flg1=PETSC_FALSE;
       PetscScalar       *zeros;
       row = 0;      
       ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);     
@@ -281,7 +281,7 @@ int main(int argc,char **args)
     num_numfac = 1;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-num_numfac",&num_numfac,PETSC_NULL);CHKERRQ(ierr);
     while ( num_numfac-- ){
-      PetscTruth lsqr;
+      PetscBool  lsqr;
       char       str[32];
       ierr = PetscOptionsGetString(PETSC_NULL,"-ksp_type",str,32,&lsqr);CHKERRQ(ierr);
       if (lsqr) {

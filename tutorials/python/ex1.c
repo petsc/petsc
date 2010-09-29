@@ -7,7 +7,7 @@
 PetscErrorCode RunTest(void)
 {
   PetscInt       N    = 100;
-  PetscTruth     draw = PETSC_FALSE;
+  PetscBool      draw = PETSC_FALSE;
   PetscReal      rnorm;
   Mat      	 A;
   Vec      	 b,x,r;

@@ -93,7 +93,7 @@ typedef struct {
   PetscInt       ires,iramp,itstep;
   PetscInt       max_steps,print_freq;
   PetscInt       LocalTimeStepping;                         
-  PetscTruth     use_parabolic;
+  PetscBool      use_parabolic;
 } TstepCtx;
 
 /*
@@ -116,8 +116,8 @@ typedef struct {
   PetscInt     mglevels;
   PetscInt     cycles;                       /* numbers of time steps for integration */ 
   PassiveReal  lidvelocity,prandtl,grashof;  /* physical parameters */
-  PetscTruth   draw_contours;                /* indicates drawing contours of solution */
-  PetscTruth   PreLoading;
+  PetscBool    draw_contours;                /* indicates drawing contours of solution */
+  PetscBool    PreLoading;
 } Parameter;
 
 typedef struct {
@@ -375,7 +375,7 @@ PetscErrorCode AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,void *ptr)
   PetscReal      hx,hy,dhx,dhy,hxhy;
   PassiveScalar  dtinv;
   PassiveField   **xold;
-  PetscTruth     use_parab = tsCtx->use_parabolic;
+  PetscBool      use_parab = tsCtx->use_parabolic;
 
   PetscFunctionBegin; 
   xints = info->xs; xinte = info->xs+info->xm; yints = info->ys; yinte = info->ys+info->ym;
@@ -662,7 +662,7 @@ PetscErrorCode Update(DMMG *dmmg)
  PetscScalar 	fratio;
  PetscScalar 	time1,time2,cpuloc;
  PetscInt       max_steps,its;
- PetscTruth     print_flag = PETSC_FALSE;
+ PetscBool      print_flag = PETSC_FALSE;
  PetscInt       nfailsCum = 0,nfails = 0;
 
   PetscFunctionBegin;

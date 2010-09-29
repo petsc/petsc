@@ -11,16 +11,16 @@
 typedef struct  {
   int           fdes;            /* file descriptor, ignored if using MPI IO */
 #if defined(PETSC_HAVE_MPIIO)
-  PetscTruth    MPIIO;
+  PetscBool     MPIIO;
   MPI_File      mfdes;           /* ignored unless using MPI IO */    
   MPI_Offset    moff;
 #endif
   PetscFileMode btype;           /* read or write? */
   FILE          *fdes_info;      /* optional file containing info on binary file*/
-  PetscTruth    storecompressed; /* gzip the write binary file when closing it*/
+  PetscBool     storecompressed; /* gzip the write binary file when closing it*/
   char          *filename;
-  PetscTruth    skipinfo;        /* Don't create info file for writing; don't use for reading */
-  PetscTruth    skipoptions;     /* don't use PETSc options database when loading */
+  PetscBool     skipinfo;        /* Don't create info file for writing; don't use for reading */
+  PetscBool     skipoptions;     /* don't use PETSc options database when loading */
   PetscInt      flowcontrol;     /* allow only <flowcontrol> messages outstanding at a time while doing IO */
 } PetscViewer_Binary;
 
@@ -186,7 +186,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetMPIIODescriptor(PetscViewe
 
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetInfoPointer()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetMPIIO(PetscViewer viewer,PetscTruth *flg)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetMPIIO(PetscViewer viewer,PetscBool  *flg)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -320,7 +320,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySkipInfo(PetscViewer viewer)
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySkipInfo(),
           PetscViewerBinaryGetSkipOptions()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySetSkipOptions(PetscViewer viewer,PetscTruth skip)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySetSkipOptions(PetscViewer viewer,PetscBool  skip)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -351,7 +351,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySetSkipOptions(PetscViewer vi
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySkipInfo(),
           PetscViewerBinarySetSkipOptions()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetSkipOptions(PetscViewer viewer,PetscTruth *skip)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetSkipOptions(PetscViewer viewer,PetscBool  *skip)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -546,7 +546,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryOpen(MPI_Comm comm,const char
 #if defined(PETSC_HAVE_MPIIO)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryMPIIO" 
-static PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryMPIIO(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype,PetscTruth write)
+static PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryMPIIO(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype,PetscBool  write)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   PetscErrorCode     ierr;
@@ -632,7 +632,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryRead(PetscViewer viewer,void 
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(), PetscDataType
           PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscBinaryViewerRead()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryWrite(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype,PetscTruth istemp)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryWrite(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype,PetscBool  istemp)
 {
   PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
@@ -895,7 +895,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileSetName_Binary(PetscViewer view
   PetscViewer_Binary  *vbinary = (PetscViewer_Binary*)viewer->data;
   const char          *fname;
   char                bname[PETSC_MAX_PATH_LEN],*gz;
-  PetscTruth          found;
+  PetscBool           found;
   PetscFileMode       type = vbinary->btype;
 
   PetscFunctionBegin;
@@ -1022,7 +1022,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileSetName_MPIIO(PetscViewer viewe
   size_t              len;
   PetscViewer_Binary  *vbinary = (PetscViewer_Binary*)viewer->data;
   char                *gz;
-  PetscTruth          found;
+  PetscBool           found;
   PetscFileMode       type = vbinary->btype;
 
   PetscFunctionBegin;
@@ -1108,7 +1108,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerCreate_Binary(PetscViewer v)
   PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary;
 #if defined(PETSC_HAVE_MPIIO)
-  PetscTruth         useMPIIO = PETSC_FALSE;
+  PetscBool          useMPIIO = PETSC_FALSE;
 #endif
 
   PetscFunctionBegin;
@@ -1194,7 +1194,7 @@ $       XXXView(XXX object,PETSC_VIEWER_BINARY_(comm));
 PetscViewer PETSCSYS_DLLEXPORT PETSC_VIEWER_BINARY_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscViewer    viewer;
   char           fname[PETSC_MAX_PATH_LEN];
   MPI_Comm       ncomm;

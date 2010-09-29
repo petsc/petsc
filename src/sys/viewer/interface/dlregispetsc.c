@@ -4,7 +4,7 @@
 
 extern PetscLogEvent PETSCSYS_DLLEXPORT PETSC_Barrier;
 
-static PetscTruth PetscSysPackageInitialized = PETSC_FALSE;
+static PetscBool  PetscSysPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSysFinalizePackage"
 /*@C
@@ -42,7 +42,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSysInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
-  PetscTruth        opt;
+  PetscBool         opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;

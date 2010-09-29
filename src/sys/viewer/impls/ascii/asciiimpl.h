@@ -11,7 +11,7 @@ typedef struct {
   PetscViewer   bviewer;        /* if PetscViewer is a singleton, this points to mother */
   PetscViewer   sviewer;        /* if PetscViewer has a singleton, this points to singleton */
   char          *filename;
-  PetscTruth    storecompressed; 
+  PetscBool     storecompressed; 
 } PetscViewer_ASCII;
 
 typedef struct PetscViewerLink_t PetscViewerLink;

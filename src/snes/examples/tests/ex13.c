@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   AppCtx         user;                      /* user-defined work context */
   PetscInt       i,its,N,Nx = PETSC_DECIDE,Ny = PETSC_DECIDE;
   PetscErrorCode ierr;
-  PetscTruth     matrix_free = PETSC_FALSE;
+  PetscBool      matrix_free = PETSC_FALSE;
   PetscMPIInt    size; 
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
 #if defined(PETSC_USE_LOG)
@@ -100,7 +100,7 @@ int main(int argc,char **argv)
        */
     ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
     if (!matrix_free) {
-      PetscTruth matrix_free_operator = PETSC_FALSE;
+      PetscBool  matrix_free_operator = PETSC_FALSE;
       ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf_operator",&matrix_free_operator,PETSC_NULL);CHKERRQ(ierr);
       if (matrix_free_operator) matrix_free = PETSC_FALSE;
     }

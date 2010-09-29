@@ -46,7 +46,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
   KSP_LCD        *lcd;
   Mat            Amat,Pmat;
   MatStructure   pflag;
-  PetscTruth     diagonalscale;
+  PetscBool      diagonalscale;
 
   PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -158,7 +158,7 @@ PetscErrorCode KSPView_LCD(KSP ksp,PetscViewer viewer)
 
   KSP_LCD         *lcd = (KSP_LCD *)ksp->data; 
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -180,7 +180,7 @@ PetscErrorCode KSPView_LCD(KSP ksp,PetscViewer viewer)
 PetscErrorCode KSPSetFromOptions_LCD(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   KSP_LCD        *lcd = (KSP_LCD *)ksp->data;
   
   PetscFunctionBegin;

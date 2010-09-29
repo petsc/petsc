@@ -58,7 +58,7 @@ static size_t     TRallocated  = 0;
 static int        TRfrags      = 0;
 static TRSPACE    *TRhead      = 0;
 static int        TRid         = 0;
-static PetscTruth TRdebugLevel = PETSC_FALSE;
+static PetscBool  TRdebugLevel = PETSC_FALSE;
 static size_t     TRMaxMem     = 0;
 /*
       Arrays to log information on all Mallocs
@@ -537,7 +537,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocDumpLog(FILE *fp)
   size_t         *shortlength;
   int            *shortcount,err;
   PetscMPIInt    rank,size,tag = 1212 /* very bad programming */;
-  PetscTruth     match;
+  PetscBool      match;
   const char     **shortfunction;
   PetscLogDouble rss;
   MPI_Status     status;
@@ -624,7 +624,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocDumpLog(FILE *fp)
 
 .seealso: CHKMEMQ(), PetscMallocValidate()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocDebug(PetscTruth level)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocDebug(PetscBool  level)
 {
   PetscFunctionBegin;
   TRdebugLevel = level;

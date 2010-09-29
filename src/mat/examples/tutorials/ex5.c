@@ -148,7 +148,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   Mat            A;
   char           name[1024];
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&args,0,0);
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",name,1024,&flg);CHKERRQ(ierr);

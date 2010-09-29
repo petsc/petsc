@@ -44,7 +44,7 @@ int main(int argc,char **args)
   PetscMPIInt    rank,size;
   PetscInt       its,nlocal,first,Istart,Iend;
   PetscScalar    v,one = 1.0,none = -1.0;
-  PetscTruth     isbjacobi,flg = PETSC_FALSE;
+  PetscBool      isbjacobi,flg = PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);

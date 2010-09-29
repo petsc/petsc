@@ -132,7 +132,7 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
   PC_PBJacobi    *jac = (PC_PBJacobi*)pc->data;
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscTruth     seqbaij,mpibaij,baij;
+  PetscBool      seqbaij,mpibaij,baij;
   Mat            A = pc->pmat;
   Mat_SeqBAIJ    *a;
 

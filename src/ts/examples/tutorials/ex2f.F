@@ -75,7 +75,7 @@
       TS               ts
       Vec              u
       Mat              A
-      PetscTruth       flg,monitor
+      PetscBool        flg,monitor
       PetscErrorCode ierr
       PetscInt  time_steps_max,steps,i1
       PetscReal dt,ftime,time_total_max

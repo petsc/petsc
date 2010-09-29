@@ -28,7 +28,7 @@ long int spbas_memory_requirement( spbas_matrix matrix)
 {
    long int memreq = 6 * sizeof(PetscInt)         + /* nrows, ncols, nnz, n_alloc_icol,
 						       n_alloc_val, col_idx_type */
-     sizeof(PetscTruth)                 + /* block_data */
+     sizeof(PetscBool )                 + /* block_data */
      sizeof(PetscScalar**)        + /* values */
      sizeof(PetscScalar*)         + /* alloc_val */
      2 * sizeof(int**)            + /* icols, icols0 */
@@ -58,7 +58,7 @@ long int spbas_memory_requirement( spbas_matrix matrix)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "spbas_allocate_pattern"
-PetscErrorCode spbas_allocate_pattern( spbas_matrix * result, PetscTruth do_values)
+PetscErrorCode spbas_allocate_pattern( spbas_matrix * result, PetscBool  do_values)
 {
    PetscErrorCode ierr;
    PetscInt       nrows = result->nrows;
@@ -102,8 +102,8 @@ PetscErrorCode spbas_allocate_data( spbas_matrix * result)
    PetscInt       nrows = result->nrows;
    PetscInt       r_nnz;
    PetscErrorCode ierr;
-   PetscTruth     do_values = (result->values != PETSC_NULL) ? PETSC_TRUE : PETSC_FALSE;
-   PetscTruth     block_data = result->block_data;
+   PetscBool      do_values = (result->values != PETSC_NULL) ? PETSC_TRUE : PETSC_FALSE;
+   PetscBool      block_data = result->block_data;
 
    PetscFunctionBegin;
    if (block_data) {
@@ -267,10 +267,10 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
    PetscInt         *icols;
    PetscInt         row_nnz;
    PetscInt         *ipoint;
-   PetscTruth       *used;
+   PetscBool        *used;
    PetscInt         ptr;
    PetscInt         i,j;
-   const PetscTruth no_values = PETSC_FALSE;
+   const PetscBool  no_values = PETSC_FALSE;
 
    PetscFunctionBegin;
    /* Allocate the structure of the new matrix */
@@ -289,10 +289,10 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
    /* Allocate the ordering for the rows */
    ierr = PetscMalloc(nrows*sizeof(PetscInt),&isort);CHKERRQ(ierr);
    ierr = PetscMalloc(nrows*sizeof(PetscInt),&ipoint);CHKERRQ(ierr);
-   ierr = PetscMalloc(nrows*sizeof(PetscTruth),&used);CHKERRQ(ierr);
+   ierr = PetscMalloc(nrows*sizeof(PetscBool ),&used);CHKERRQ(ierr);
 
    /*  Initialize the sorting */
-   ierr = PetscMemzero((void*) used, nrows*sizeof(PetscTruth));CHKERRQ(ierr);
+   ierr = PetscMemzero((void*) used, nrows*sizeof(PetscBool ));CHKERRQ(ierr);
    for (i = 0; i<nrows; i++)  {
       B->row_nnz[i] = irow_in[i+1]-irow_in[i];
       isort[i] = i;
@@ -412,7 +412,7 @@ PetscErrorCode spbas_matrix_to_crs(spbas_matrix matrix_A,MatScalar **val_out, Pe
    MatScalar      *val;
    PetscScalar    *val_A;
    PetscInt       col_idx_type = matrix_A.col_idx_type;
-   PetscTruth     do_values = matrix_A.values ? PETSC_TRUE : PETSC_FALSE;
+   PetscBool      do_values = matrix_A.values ? PETSC_TRUE : PETSC_FALSE;
    PetscErrorCode ierr;
 
    PetscFunctionBegin;
@@ -662,7 +662,7 @@ PetscErrorCode spbas_apply_reordering_rows(spbas_matrix *matrix_A, const PetscIn
    PetscInt       nrows=matrix_A->nrows;
    PetscInt       * row_nnz;
    PetscInt       **icols;
-   PetscTruth     do_values = matrix_A->values ? PETSC_TRUE : PETSC_FALSE;
+   PetscBool      do_values = matrix_A->values ? PETSC_TRUE : PETSC_FALSE;
    PetscScalar    **vals=PETSC_NULL;
    PetscErrorCode ierr;
 
@@ -707,7 +707,7 @@ PetscErrorCode spbas_apply_reordering_cols( spbas_matrix *matrix_A,const PetscIn
    PetscInt    nrows=matrix_A->nrows;
    PetscInt    row_nnz;
    PetscInt    *icols;
-   PetscTruth  do_values = matrix_A->values ? PETSC_TRUE : PETSC_FALSE;
+   PetscBool   do_values = matrix_A->values ? PETSC_TRUE : PETSC_FALSE;
    PetscScalar *vals=PETSC_NULL;
    PetscErrorCode ierr;
 

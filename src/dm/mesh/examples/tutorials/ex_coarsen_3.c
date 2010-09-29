@@ -21,17 +21,17 @@ using ALE::Obj;
 typedef struct {
   int        dim;                // The mesh dimension
   int        debug;              // The debugging level
-  PetscTruth useZeroBase;        // Use zero-based indexing
+  PetscBool  useZeroBase;        // Use zero-based indexing
   char       baseFilename[2048]; // The base filename for mesh files
   PetscInt   levels;             // The number of levels in the hierarchy
   PetscReal  coarseFactor;       // The maximum coarsening factor
   PetscReal  zScale;             // The relative spread of levels for visualization
-  PetscTruth outputVTK;          // Output the mesh in VTK
-  PetscTruth generate;           // Generate the mesh rather than reading it in
+  PetscBool  outputVTK;          // Output the mesh in VTK
+  PetscBool  generate;           // Generate the mesh rather than reading it in
   PetscReal  curvatureCutoff;     // the cutoff for the curvature
   PetscReal  refinementLimit;    // the maximum cell volume used in the finest mesh 
-  PetscTruth refinementGrading;  //grade the L-shaped and Fichera corner meshes as C0r^-2 \leq h \leq C1r^-2
-  PetscTruth interpolate;        //construct the subdimensional elements of the mesh
+  PetscBool  refinementGrading;  //grade the L-shaped and Fichera corner meshes as C0r^-2 \leq h \leq C1r^-2
+  PetscBool  interpolate;        //construct the subdimensional elements of the mesh
 } Options;
 
 #undef __FUNCT__
@@ -78,7 +78,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 
 #undef __FUNCT__  
 #define __FUNCT__ "Coarsen_RefineSingularity_Fichera"
-PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity_Fichera(ALE::Obj<ALE::Mesh> mesh, MPI_Comm comm, double * singularity, double factor, ALE::Obj<ALE::Mesh> * refinedMesh, PetscTruth interpolate = PETSC_FALSE)
+PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity_Fichera(ALE::Obj<ALE::Mesh> mesh, MPI_Comm comm, double * singularity, double factor, ALE::Obj<ALE::Mesh> * refinedMesh, PetscBool  interpolate = PETSC_FALSE)
 {
   ALE::Obj<ALE::Mesh> oldMesh = mesh;
   double              oldLimit;

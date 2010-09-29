@@ -641,7 +641,7 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
   MPI_Comm       comm;
   MatScalar      **rbuf4,**sbuf_aa,*vals,*mat_a,*sbuf_aa_i,*vworkA,*vworkB;
   MatScalar      *a_a=a->a,*b_a=b->a;
-  PetscTruth     flag;
+  PetscBool      flag;
   PetscMPIInt    *onodes1,*olengths1;
 
 #if defined (PETSC_USE_CTABLE)

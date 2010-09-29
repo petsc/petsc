@@ -13,7 +13,7 @@ typedef struct {
 
   /* The following variables are used for matrix assembly */
 
-  PetscTruth    donotstash;             /* PETSC_TRUE if off processor entries dropped */
+  PetscBool     donotstash;             /* PETSC_TRUE if off processor entries dropped */
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   PetscInt      nsends,nrecvs;         /* numbers of sends and receives */
@@ -31,13 +31,13 @@ typedef struct {
   Vec           lvec;              /* local vector */
   Vec           diag;
   VecScatter    Mvctx;             /* scatter context for vector */
-  PetscTruth    roworiented;       /* if true, row-oriented input, default true */
+  PetscBool     roworiented;       /* if true, row-oriented input, default true */
 
   /* The following variables are for MatGetRow() */
 
   PetscInt      *rowindices;       /* column indices for row */
   PetscScalar   *rowvalues;        /* nonzero values in row */
-  PetscTruth    getrowactive;      /* indicates MatGetRow(), not restored */
+  PetscBool     getrowactive;      /* indicates MatGetRow(), not restored */
 
   /* Used by MatDistribute_MPIAIJ() to allow reuse of previous matrix allocation  and nonzero pattern */
   PetscInt      *ld;               /* number of entries per row left of diagona block */
@@ -109,7 +109,7 @@ EXTERN PetscErrorCode MatSolve_MPIAIJ(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatILUFactor_MPIAIJ(Mat,IS,IS,const MatFactorInfo *);
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock_MPIAIJ(Mat,PetscTruth *,MatReuse,Mat *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock_MPIAIJ(Mat,PetscBool  *,MatReuse,Mat *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
 EXTERN_C_END
 

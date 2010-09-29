@@ -10,13 +10,13 @@
 
 typedef struct {
   PetscScalar  *v;                /* matrix elements */
-  PetscTruth   roworiented;       /* if true, row oriented input (default) */
+  PetscBool    roworiented;       /* if true, row oriented input (default) */
   PetscInt     pad;               /* padding */        
   PetscBLASInt *pivots;           /* pivots in LU factorization */
   PetscBLASInt lda;               /* Lapack leading dimension of data */
-  PetscTruth   changelda;         /* change lda on resize? Default unless user set lda */ 
+  PetscBool    changelda;         /* change lda on resize? Default unless user set lda */ 
   PetscBLASInt Mmax,Nmax;         /* indicates the largest dimensions of data possible */
-  PetscTruth   user_alloc;        /* true if the user provided the dense data */
+  PetscBool    user_alloc;        /* true if the user provided the dense data */
 } Mat_SeqDense;
 
 EXTERN PetscErrorCode MatMult_SeqDense(Mat A,Vec,Vec);

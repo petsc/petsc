@@ -11,7 +11,7 @@ int main(int argc,char **args)
   PetscInt       i, n = 10,midx[3],bs=1;
   PetscErrorCode ierr;
   PetscScalar    v[3];
-  PetscTruth     flg,isAIJ;
+  PetscBool      flg,isAIJ;
   const MatType  type;
   PetscMPIInt    size;
 

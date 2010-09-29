@@ -53,8 +53,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscPermuteInt(AO, Petsc
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationPermuteReal(AO, PetscInt, PetscReal[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscPermuteReal(AO, PetscInt, PetscReal[]);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasApplicationIndex(AO, PetscInt, PetscTruth *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasPetscIndex(AO, PetscInt, PetscTruth *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasApplicationIndex(AO, PetscInt, PetscBool  *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasPetscIndex(AO, PetscInt, PetscBool  *);
 
 /* ----------------------------------------------------*/
 PETSC_EXTERN_CXX_END

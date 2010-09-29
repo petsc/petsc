@@ -314,13 +314,13 @@ extern PetscInt       PetscExceptionsCount;
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscExceptionPush(PetscErrorCode);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscExceptionPop(PetscErrorCode);
 
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode,PetscTruth);
-EXTERN PetscTruth PETSCSYS_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode,PetscBool );
+EXTERN PetscBool  PETSCSYS_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
 /*MC
    PetscExceptionCaught - Indicates if a specific exception zierr was caught.
 
    Synopsis:
-     PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscErrorCode zierr);
+     PetscBool  PetscExceptionCaught(PetscErrorCode xierr,PetscErrorCode zierr);
 
    Not Collective
 
@@ -340,7 +340,7 @@ EXTERN PetscTruth PETSCSYS_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
           CHKERRQ(), PetscExceptionTry1(), PetscExceptionValue()
 M*/
-PETSC_STATIC_INLINE PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscErrorCode zierr) 
+PETSC_STATIC_INLINE PetscBool  PetscExceptionCaught(PetscErrorCode xierr,PetscErrorCode zierr) 
 {
   PetscInt i;
   if (xierr != zierr) return PETSC_FALSE;
@@ -356,7 +356,7 @@ PETSC_STATIC_INLINE PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscEr
    PetscExceptionValue - Indicates if the error code is one that is currently being tried
 
    Synopsis:
-     PetscTruth PetscExceptionValue(PetscErrorCode xierr);
+     PetscBool  PetscExceptionValue(PetscErrorCode xierr);
 
    Not Collective
 
@@ -375,7 +375,7 @@ PETSC_STATIC_INLINE PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscEr
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
           CHKERRQ(), PetscExceptionTry1(), PetscExceptionCaught()
 M*/
-PETSC_STATIC_INLINE PetscTruth PetscExceptionValue(PetscErrorCode zierr) 
+PETSC_STATIC_INLINE PetscBool  PetscExceptionValue(PetscErrorCode zierr) 
 {
   PetscInt i;
   for (i=0; i<PetscExceptionsCount; i++) {

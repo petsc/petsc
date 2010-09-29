@@ -121,7 +121,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       */
       static PetscInt stateId = -1;
       int outputState = 0;
-      PetscTruth hasState;
+      PetscBool  hasState;
       int doOutput = 0;
       PetscInt bs, b;
 
@@ -387,7 +387,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
   PetscScalar    *values,*xarray;
   FILE           *file;
 #if defined(PETSC_HAVE_MPIIO)
-  PetscTruth     isMPIIO;
+  PetscBool      isMPIIO;
 #endif
   PetscInt message_count;
 
@@ -482,7 +482,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
 {
   PetscDraw      draw;
-  PetscTruth     isnull;
+  PetscBool      isnull;
   PetscErrorCode ierr;
 
 #if defined(PETSC_USE_64BIT_INDICES)
@@ -567,7 +567,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecView_MPI_Draw(Vec xin,PetscViewer viewer)
   MPI_Status     status;
   PetscReal      coors[4],ymin,ymax,xmin,xmax,tmp;
   PetscDraw      draw;
-  PetscTruth     isnull;
+  PetscBool      isnull;
   PetscDrawAxis  axis;
   PetscScalar    *xarray;
 
@@ -759,15 +759,15 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     iascii,isbinary,isdraw;
+  PetscBool      iascii,isbinary,isdraw;
 #if defined(PETSC_HAVE_MATHEMATICA)
-  PetscTruth     ismathematica;
+  PetscBool      ismathematica;
 #endif
 #if defined(PETSC_HAVE_HDF5)
-  PetscTruth     ishdf5;
+  PetscBool      ishdf5;
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SCALAR_SINGLE) && !defined(PETSC_USE_SCALAR_MAT_SINGLE)
-  PetscTruth     ismatlab;
+  PetscBool      ismatlab;
 #endif
 
   PetscFunctionBegin;

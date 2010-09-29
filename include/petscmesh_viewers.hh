@@ -917,7 +917,7 @@ template<typename Bundle, typename Section>
     static PetscInt   stateId     = -1;
     PetscInt          doOutput    = 0;
     PetscInt          outputState = 0;
-    PetscTruth        hasState;
+    PetscBool         hasState;
 
     if (stateId < 0) {
       ierr = PetscObjectComposedDataRegister(&stateId);CHKERRQ(ierr);

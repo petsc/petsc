@@ -120,7 +120,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
   PetscInt       max_cg_its;
 
-  PetscTruth     diagonalscale;
+  PetscBool      diagonalscale;
 
   PetscFunctionBegin;
   /***************************************************************************/

@@ -4,12 +4,12 @@
 #include "../src/mat/impls/mffd/mffdimpl.h"   /*I  "petscmat.h"   I*/
 
 PetscFList MatMFFDList        = 0;
-PetscTruth MatMFFDRegisterAllCalled = PETSC_FALSE;
+PetscBool  MatMFFDRegisterAllCalled = PETSC_FALSE;
 
 PetscClassId PETSCMAT_DLLEXPORT MATMFFD_CLASSID;
 PetscLogEvent  MATMFFD_Mult;
 
-static PetscTruth MatMFFDPackageInitialized = PETSC_FALSE;
+static PetscBool  MatMFFDPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDFinalizePackage"
 /*@C
@@ -49,7 +49,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
-  PetscTruth        opt;
+  PetscBool         opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -109,7 +109,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat mat,const MatMFFDType ftype
 {
   PetscErrorCode ierr,(*r)(MatMFFD);
   MatMFFD        ctx = (MatMFFD)mat->data;
-  PetscTruth     match;
+  PetscBool      match;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -238,7 +238,7 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   MatMFFD        ctx = (MatMFFD)J->data;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -296,7 +296,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   PetscScalar    h;
   Vec            w,U,F;
   PetscErrorCode ierr;
-  PetscTruth     zeroa;
+  PetscBool      zeroa;
 
   PetscFunctionBegin;
   /* We log matrix-free matrix-vector products separately, so that we can
@@ -538,7 +538,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFromOptions(Mat mat)
 {
   MatMFFD        mfctx = (MatMFFD)mat->data;
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   char           ftype[256];
 
   PetscFunctionBegin;

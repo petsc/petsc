@@ -15,7 +15,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscReal      fill=4.0;
   char           file[128]; 
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   

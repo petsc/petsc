@@ -16,20 +16,20 @@ struct _ISOps {
   PetscErrorCode (*restoreindices)(IS,const PetscInt*[]);
   PetscErrorCode (*invertpermutation)(IS,PetscInt,IS*);
   PetscErrorCode (*sortindices)(IS);
-  PetscErrorCode (*sorted)(IS,PetscTruth *);
+  PetscErrorCode (*sorted)(IS,PetscBool  *);
   PetscErrorCode (*duplicate)(IS,IS *);
   PetscErrorCode (*destroy)(IS);
   PetscErrorCode (*view)(IS,PetscViewer);
-  PetscErrorCode (*identity)(IS,PetscTruth*);
+  PetscErrorCode (*identity)(IS,PetscBool *);
   PetscErrorCode (*copy)(IS,IS);
 };
 
 struct _p_IS {
   PETSCHEADER(struct _ISOps);
-  PetscTruth   isperm;          /* if is a permutation */
+  PetscBool    isperm;          /* if is a permutation */
   PetscInt     max,min;         /* range of possible values */
   void         *data;
-  PetscTruth   isidentity;
+  PetscBool    isidentity;
 };
 
 

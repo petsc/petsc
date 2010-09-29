@@ -16,7 +16,7 @@ int main(int argc,char **args)
   const MatType  type[9]; 
   char           file[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
-  PetscTruth     equal,flg_loadmat,flg;
+  PetscBool      equal,flg_loadmat,flg;
   PetscScalar    value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);

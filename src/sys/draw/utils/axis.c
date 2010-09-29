@@ -18,7 +18,7 @@ struct _p_DrawAxis {
     PetscDraw  win;
     int        ac,tc,cc;                     /* axis,tick, character color */
     char       *xlabel,*ylabel,*toplabel;
-    PetscTruth hold;
+    PetscBool  hold;
 };
 
 #define MAXSEGS 20
@@ -59,7 +59,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisCreate(PetscDraw draw,PetscDrawAx
   PetscDrawAxis  ad;
   PetscObject    obj = (PetscObject)draw;
   PetscErrorCode ierr;
-  PetscTruth     isnull;
+  PetscBool      isnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
@@ -189,7 +189,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisSetLabels(PetscDrawAxis axis,cons
 .seealso:  PetscDrawAxisSetLimits()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscTruth hold)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscBool  hold)
 {
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);

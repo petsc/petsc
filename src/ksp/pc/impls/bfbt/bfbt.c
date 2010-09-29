@@ -8,8 +8,8 @@ typedef struct {
   Mat        GtG;
   Vec        s, t, X;  /* s is [M], t is [N], X is [M] */
   KSP        ksp;
-  PetscTruth form_GtG; /* Don't allow anything else yet */
-  PetscTruth scaled;   /* Use K for M */
+  PetscBool  form_GtG; /* Don't allow anything else yet */
+  PetscBool  scaled;   /* Use K for M */
 } PC_BFBt;
 
 EXTERN_C_BEGIN
@@ -266,14 +266,14 @@ PetscErrorCode PCSetUp_BFBt(PC pc)
 {
   PC_BFBt       *ctx = (PC_BFBt*) pc->data;
   MPI_Comm       comm;
-  PetscTruth     hasPmat;
+  PetscBool      hasPmat;
   PetscErrorCode ierr;
 
   ierr = PetscObjectGetComm((PetscObject) pc, &comm);CHKERRQ(ierr);
   ierr = PCGetOperatorsSet(pc, PETSC_NULL, &hasPmat);CHKERRQ(ierr);
   if (hasPmat) {
     Mat        pmat;
-    PetscTruth isSchur;
+    PetscBool  isSchur;
 
     ierr = PCGetOperators(pc, PETSC_NULL, &pmat, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject) pmat, MATSCHURCOMPLEMENT, &isSchur);CHKERRQ(ierr);

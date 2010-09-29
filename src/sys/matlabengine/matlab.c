@@ -283,7 +283,7 @@ $      PetscMatlabEngineYYY(XXX object,PETSC_MATLAB_ENGINE_(comm));
 PetscMatlabEngine PETSCSYS_DLLEXPORT PETSC_MATLAB_ENGINE_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  PetscTruth        flg;
+  PetscBool         flg;
   PetscMatlabEngine mengine;
 
   PetscFunctionBegin;

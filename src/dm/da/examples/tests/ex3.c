@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   Vec            local,global,copy;
   PetscScalar    *localptr,*copyptr;
   PetscReal      a,h,k;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

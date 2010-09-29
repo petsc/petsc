@@ -10,7 +10,7 @@ typedef struct {
   Vec                    x,y;           /* work space for ghost values for matrix vector product */
   ISLocalToGlobalMapping mapping;
   int                    rstart,rend;   /* local row ownership */
-  PetscTruth             pure_neumann;
+  PetscBool              pure_neumann;
 } Mat_IS;
 
 #endif

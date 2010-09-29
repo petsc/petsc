@@ -15,7 +15,7 @@
       PetscInt i,j,ia(1),ja(1)
       PetscInt n,icol(1),rstart
       PetscInt zero,one,rend
-      PetscTruth  done
+      PetscBool   done
       PetscOffset iia,jja,aaa,iicol
       PetscScalar aa(1)
 

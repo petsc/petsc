@@ -50,7 +50,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES snes,Vec x1,M
   PetscReal      dx_min = 1.e-16,dx_par = 1.e-1,unorm;
   MPI_Comm       comm;
   PetscErrorCode (*eval_fct)(SNES,Vec,Vec)=0;
-  PetscTruth     assembled,use_wp = PETSC_TRUE,flg;
+  PetscBool      assembled,use_wp = PETSC_TRUE,flg;
   const char     *list[2] = {"ds","wp"};
   PetscMPIInt    size;
   const PetscInt *ranges;

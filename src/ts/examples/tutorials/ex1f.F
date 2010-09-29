@@ -53,7 +53,7 @@
       Vec               x,r
       Mat               J
       PetscInt           its,N,i1000
-      PetscTruth flg
+      PetscBool  flg
       PetscErrorCode      ierr
       double precision  param_max,param_min,dt,tmax,zero
       double precision  ftime

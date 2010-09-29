@@ -2180,7 +2180,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B,Mat A,IS perm,const MatFa
   PetscInt       *prowl,*q,jmin,jmax,juidx,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
   PetscInt       incrlev,*lev,shift,prow,nz;
   PetscReal      f = info->fill,levels = info->levels; 
-  PetscTruth     perm_identity;
+  PetscBool      perm_identity;
 
   PetscFunctionBegin;
   /* check whether perm is the identity mapping */  
@@ -2377,7 +2377,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
 {
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b;
   PetscErrorCode     ierr;
-  PetscTruth         perm_identity,free_ij = PETSC_TRUE,missing;
+  PetscBool          perm_identity,free_ij = PETSC_TRUE,missing;
   PetscInt           bs=A->rmap->bs,am=a->mbs,d,*ai=a->i,*aj= a->j;
   const PetscInt     *rip;
   PetscInt           reallocs=0,i,*ui,*udiag,*cols;
@@ -2573,7 +2573,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data;
   Mat_SeqSBAIJ       *b;
   PetscErrorCode     ierr;
-  PetscTruth         perm_identity,free_ij = PETSC_TRUE,missing;
+  PetscBool          perm_identity,free_ij = PETSC_TRUE,missing;
   PetscInt           bs=A->rmap->bs,am=a->mbs,d;
   const PetscInt     *cols,*rip,*ai=a->i,*aj=a->j;
   PetscInt           reallocs=0,i,*ui;

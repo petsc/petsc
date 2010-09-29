@@ -10,7 +10,7 @@ int main(int argc,char **args)
   Mat            C; 
   PetscInt       i,n = 5,midx[3],nidx[2];
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscScalar    v[6];
 
   PetscInitialize(&argc,&args,(char *)0,help);

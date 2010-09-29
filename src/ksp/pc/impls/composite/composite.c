@@ -19,7 +19,7 @@ typedef struct {
   Vec              work1;
   Vec              work2;
   PetscScalar      alpha;
-  PetscTruth       use_true_matrix;
+  PetscBool        use_true_matrix;
 } PC_Composite;
 
 #undef __FUNCT__  
@@ -151,7 +151,7 @@ static PetscErrorCode PCSetFromOptions_Composite(PC pc)
   PetscInt         nmax = 8,i;
   PC_CompositeLink next;
   char             *pcs[8];
-  PetscTruth       flg;
+  PetscBool        flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Composite preconditioner options");CHKERRQ(ierr);
@@ -188,7 +188,7 @@ static PetscErrorCode PCView_Composite(PC pc,PetscViewer viewer)
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PetscErrorCode   ierr;
   PC_CompositeLink next = jac->head;
-  PetscTruth       iascii;
+  PetscBool        iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -260,6 +260,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeAddPC_Composite(PC pc,PCType type)
   ierr        = PetscNewLog(pc,struct _PC_CompositeLink,&ilink);CHKERRQ(ierr);
   ilink->next = 0;
   ierr = PCCreate(((PetscObject)pc)->comm,&ilink->pc);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilink->pc);CHKERRQ(ierr);
 
   jac  = (PC_Composite*)pc->data;
   next = jac->head;

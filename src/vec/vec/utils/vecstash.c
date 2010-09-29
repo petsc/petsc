@@ -24,7 +24,7 @@ PetscErrorCode VecStashCreate_Private(MPI_Comm comm,PetscInt bs,VecStash *stash)
 {
   PetscErrorCode ierr;
   PetscInt       max,*opt,nopt;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   /* Require 2 tags, get the second using PetscCommGetNewTag() */
@@ -364,7 +364,7 @@ PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash,PetscMPIInt *nvals
   PetscInt       *flg_v;
   PetscInt       i1,i2,bs=stash->bs;
   MPI_Status     recv_status;
-  PetscTruth     match_found = PETSC_FALSE;
+  PetscBool      match_found = PETSC_FALSE;
 
   PetscFunctionBegin;
 

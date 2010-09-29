@@ -43,8 +43,8 @@ PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 PetscErrorCode FormInitialGuess(Vec);
 PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void *);
-PetscErrorCode PreCheck(SNES,Vec,Vec,void*,PetscTruth *);
-PetscErrorCode PostCheck(SNES,Vec,Vec,Vec,void*,PetscTruth *,PetscTruth *);
+PetscErrorCode PreCheck(SNES,Vec,Vec,void*,PetscBool  *);
+PetscErrorCode PostCheck(SNES,Vec,Vec,Vec,void*,PetscBool  *,PetscBool  *);
 
 /* 
    User-defined application context
@@ -84,7 +84,7 @@ int main(int argc,char **argv)
   Vec            x,r,U,F;              /* vectors */
   MonitorCtx     monP;                 /* monitoring context */
   StepCheckCtx   checkP;               /* step-checking context */
-  PetscTruth     pre_check,post_check; /* flag indicating whether we're checking
+  PetscBool      pre_check,post_check; /* flag indicating whether we're checking
                                           candidate iterates */
   PetscScalar    xp,*FF,*UU,none = -1.0;
   PetscErrorCode ierr;
@@ -510,7 +510,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
    y    - proposed step (search direction and length) (possibly changed)
    
  */
-PetscErrorCode PreCheck(SNES snes,Vec xcurrent,Vec y,void *ctx,PetscTruth *changed_y)
+PetscErrorCode PreCheck(SNES snes,Vec xcurrent,Vec y,void *ctx,PetscBool  *changed_y)
 {
   PetscFunctionBegin;
   *changed_y = PETSC_FALSE;
@@ -537,7 +537,7 @@ PetscErrorCode PreCheck(SNES snes,Vec xcurrent,Vec y,void *ctx,PetscTruth *chang
    x    - current iterate (possibly modified)
    
  */
-PetscErrorCode PostCheck(SNES snes,Vec xcurrent,Vec y,Vec x,void *ctx,PetscTruth *changed_y,PetscTruth *changed_x)
+PetscErrorCode PostCheck(SNES snes,Vec xcurrent,Vec y,Vec x,void *ctx,PetscBool  *changed_y,PetscBool  *changed_x)
 {
   PetscErrorCode ierr;
   PetscInt       i,iter,xs,xm;

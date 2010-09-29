@@ -14,7 +14,7 @@ typedef struct {
   PetscErrorCode (*mult)(Mat,Vec,Vec);
   PetscErrorCode (*multtranspose)(Mat,Vec,Vec);
   PetscErrorCode (*getdiagonal)(Mat,Vec);
-  PetscTruth     scale,shift;
+  PetscBool      scale,shift;
   PetscScalar    vscale,vshift;
   void           *ctx;
 } Mat_Shell;      
@@ -45,7 +45,7 @@ typedef struct {
 PetscErrorCode PETSCMAT_DLLEXPORT MatShellGetContext(Mat mat,void **ctx)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -453,7 +453,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetContext(Mat mat,void *ctx)
 {
   Mat_Shell      *shell = (Mat_Shell*)mat->data;
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -513,7 +513,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -569,7 +569,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 PetscErrorCode PETSCMAT_DLLEXPORT MatShellGetOperation(Mat mat,MatOperation op,void(**f)(void))
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);

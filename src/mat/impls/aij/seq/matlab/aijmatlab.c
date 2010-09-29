@@ -196,7 +196,7 @@ PetscErrorCode MatFactorInfo_Matlab(Mat A,PetscViewer viewer)
 PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer) 
 {
   PetscErrorCode    ierr;
-  PetscTruth        iascii;
+  PetscBool         iascii;
   PetscViewerFormat format;
 
   PetscFunctionBegin;

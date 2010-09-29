@@ -26,7 +26,7 @@ int main(int argc,char **args)
   PetscErrorCode        ierr;
   PetscReal             *norms;
   PetscInt              n,cstart,cend;
-  PetscTruth            flg;
+  PetscBool             flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

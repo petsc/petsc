@@ -127,7 +127,7 @@ PetscErrorCode ConeTest()
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
-  PetscTruth     memTest, arrowTest, coneTest;
+  PetscBool      memTest, arrowTest, coneTest;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

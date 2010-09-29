@@ -15,7 +15,7 @@ typedef ALE::New::Numbering<topology_type>        numbering_type;
 
 typedef struct {
   int        debug;       // The debugging level
-  PetscTruth interpolate; // Construct missing elements of the mesh
+  PetscBool  interpolate; // Construct missing elements of the mesh
 } Options;
 
 #undef __FUNCT__

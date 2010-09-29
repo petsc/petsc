@@ -9,12 +9,12 @@ using ALE::Obj;
 
 typedef struct {
   int        debug;              // The debugging level
-  PetscTruth useZeroBase;        // Use zero-based indexing
+  PetscBool  useZeroBase;        // Use zero-based indexing
   char       baseFilename[2048]; // The base filename for mesh files
   PetscInt   levels;             // The number of levels in the hierarchy
   PetscReal  coarseFactor;       // The maximum coarsening factor
   PetscReal  zScale;             // The relative spread of levels for visualization
-  PetscTruth outputVTK;          // Output the mesh in VTK
+  PetscBool  outputVTK;          // Output the mesh in VTK
 } Options;
 
 #undef __FUNCT__

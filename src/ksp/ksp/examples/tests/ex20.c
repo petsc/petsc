@@ -25,7 +25,7 @@ int main(int argc,char **args)
   Mat          C; 
   int          i,m = 5,rank,size,N,start,end,M;
   int          ierr,idx[4];
-  PetscTruth   flg;
+  PetscBool    flg;
   PetscScalar  Ke[16];
   PetscReal    h;
   Vec          u,b;

@@ -70,7 +70,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSolveTranspose(KSP,Vec,Vec);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP);
 
 extern PetscFList KSPList;
-extern PetscTruth KSPRegisterAllCalled;
+extern PetscBool  KSPRegisterAllCalled;
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterAll(const char[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterDestroy(void);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPRegister(const char[],const char[],const char[],PetscErrorCode (*)(KSP));
@@ -129,16 +129,16 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPCSide(KSP,PCSide);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetPCSide(KSP,PCSide*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetTolerances(KSP,PetscReal*,PetscReal*,PetscReal*,PetscInt*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetTolerances(KSP,PetscReal,PetscReal,PetscReal,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessNonzero(KSP,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessNonzero(KSP,PetscTruth *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessKnoll(KSP,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessKnoll(KSP,PetscTruth*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetErrorIfNotConverged(KSP,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetErrorIfNotConverged(KSP,PetscTruth *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeEigenvalues(KSP,PetscTruth*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeEigenvalues(KSP,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeSingularValues(KSP,PetscTruth*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeSingularValues(KSP,PetscTruth);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessNonzero(KSP,PetscBool );
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessNonzero(KSP,PetscBool  *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessKnoll(KSP,PetscBool );
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessKnoll(KSP,PetscBool *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetErrorIfNotConverged(KSP,PetscBool );
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetErrorIfNotConverged(KSP,PetscBool  *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeEigenvalues(KSP,PetscBool *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeEigenvalues(KSP,PetscBool );
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeSingularValues(KSP,PetscBool *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeSingularValues(KSP,PetscBool );
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetRhs(KSP,Vec *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetSolution(KSP,Vec *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetResidualNorm(KSP,PetscReal*);
@@ -154,7 +154,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSet(KSP,PetscErrorCode (*)(KS
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorCancel(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetMonitorContext(KSP,void **);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetResidualHistory(KSP,PetscReal*[],PetscInt *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetResidualHistory(KSP,PetscReal[],PetscInt,PetscTruth);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetResidualHistory(KSP,PetscReal[],PetscInt,PetscBool );
 
 /* not sure where to put this */
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCKSPGetKSP(PC,KSP*);
@@ -168,7 +168,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildSolution(KSP,Vec,Vec *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildResidual(KSP,Vec,Vec,Vec *);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetScale(KSP,PetscReal);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetSelfScale(KSP,PetscTruth);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetSelfScale(KSP,PetscBool );
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPChebychevSetEigenvalues(KSP,PetscReal,PetscReal);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExtremeSingularValues(KSP,PetscReal*,PetscReal*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvalues(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt *);
@@ -256,7 +256,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetQuadratic(KSP,PetscReal*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetTrialStepNorm(KSP,PetscReal*);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetXRes(KSP,PetscReal);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP,PetscTruth);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP,PetscBool );
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetEll(KSP,PetscInt);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP);
@@ -278,15 +278,15 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPInitialResidual(KSP,Vec,Vec,Vec,Vec,
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOperators(KSP,Mat,Mat,MatStructure);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperators(KSP,Mat*,Mat*,MatStructure*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperatorsSet(KSP,PetscTruth*,PetscTruth*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperatorsSet(KSP,PetscBool *,PetscBool *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOptionsPrefix(KSP,const char[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPAppendOptionsPrefix(KSP,const char[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOptionsPrefix(KSP,const char*[]);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScale(KSP,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDiagonalScale(KSP,PetscTruth*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScaleFix(KSP,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDiagonalScaleFix(KSP,PetscTruth*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScale(KSP,PetscBool );
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDiagonalScale(KSP,PetscBool *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScaleFix(KSP,PetscBool );
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDiagonalScaleFix(KSP,PetscBool *);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPView(KSP,PetscViewer);
 
@@ -351,7 +351,7 @@ M*/
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP,KSPNormType);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetNormType(KSP,KSPNormType*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetCheckNormIteration(KSP,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetLagNorm(KSP,PetscTruth);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetLagNorm(KSP,PetscBool );
 
 /*E
     KSPConvergedReason - reason a Krylov method was said to 
@@ -538,7 +538,7 @@ typedef enum {KSP_CG_SYMMETRIC=0,KSP_CG_HERMITIAN=1} KSPCGType;
 extern const char *KSPCGTypes[];
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType(KSP,KSPCGType);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCGUseSingleReduction(KSP,PetscTruth);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCGUseSingleReduction(KSP,PetscBool );
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHSetRadius(KSP,PetscReal);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHGetNormD(KSP,PetscReal *);
@@ -573,7 +573,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPreSolve(PC,PetscErrorCode (*
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostSolve(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec));
 
 /* see src/ksp/ksp/interface/iguess.c */
-typedef struct _p_KSPFischerGuess {PetscInt method,curl,maxl,refcnt;PetscTruth monitor;Mat mat; KSP ksp;}* KSPFischerGuess;
+typedef struct _p_KSPFischerGuess {PetscInt method,curl,maxl,refcnt;PetscBool  monitor;Mat mat; KSP ksp;}* KSPFischerGuess;
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessCreate(KSP,PetscInt,PetscInt,KSPFischerGuess*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessDestroy(KSPFischerGuess);
@@ -593,7 +593,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatSchurComplementGetSubmatrices(Mat,Ma
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatGetSchurComplement(Mat,IS,IS,IS,IS,MatReuse,Mat *,MatReuse,Mat *);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDM(KSP,DM);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDMActive(KSP,PetscTruth);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDMActive(KSP,PetscBool );
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDM(KSP,DM*);
 
 PETSC_EXTERN_CXX_END

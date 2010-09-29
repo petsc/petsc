@@ -108,7 +108,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   PetscReal         coors[4],ymin,ymax,min,max,xmin,xmax,tmp,xgtmp;
   const PetscScalar *array,*xg;
   PetscDraw         draw;
-  PetscTruth        isnull,showpoints = PETSC_FALSE;
+  PetscBool         isnull,showpoints = PETSC_FALSE;
   MPI_Comm          comm;
   PetscDrawAxis     axis;
   Vec               xcoor;

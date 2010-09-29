@@ -4,7 +4,7 @@
 
 PetscClassId PETSC_VIEWER_CLASSID;
 
-static PetscTruth PetscViewerPackageInitialized = PETSC_FALSE;
+static PetscBool  PetscViewerPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFinalizePackage"
 /*@C
@@ -41,7 +41,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerInitializePackage(const char path[]
 {
   char              logList[256];
   char              *className;
-  PetscTruth        opt;
+  PetscBool         opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -300,7 +300,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSetUp(PetscViewer viewer)
 PetscErrorCode PETSCVEC_DLLEXPORT PetscViewerView(PetscViewer v,PetscViewer viewer)
 {
   PetscErrorCode        ierr;
-  PetscTruth            iascii;
+  PetscBool             iascii;
   const PetscViewerType cstr;
   PetscViewerFormat     format;
 

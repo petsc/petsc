@@ -15,8 +15,8 @@ This example also demonstrates matrix-free methods\n\n";
 #include "petscmg.h"
 
 PetscErrorCode  residual(Mat,Vec,Vec,Vec);
-PetscErrorCode  gauss_seidel(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscTruth,PetscInt*,PCRichardsonConvergedReason*);
-PetscErrorCode  jacobi(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscTruth,PetscInt*,PCRichardsonConvergedReason*);
+PetscErrorCode  gauss_seidel(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*);
+PetscErrorCode  jacobi(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*);
 PetscErrorCode  interpolate(Mat,Vec,Vec,Vec);
 PetscErrorCode  restrct(Mat,Vec,Vec);
 PetscErrorCode  Create1dLaplacian(PetscInt,Mat*);
@@ -39,7 +39,7 @@ int main(int Argc,char **Args)
   char            *shellname;
   Vec             x,solution,X[20],R[20],B[20];
   PC              pcmg,pc;
-  PetscTruth      flg;
+  PetscBool       flg;
 
   PetscInitialize(&Argc,&Args,(char *)0,help);
 
@@ -218,7 +218,7 @@ PetscErrorCode amult(Mat mat,Vec xx,Vec yy)
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "gauss_seidel"
-PetscErrorCode gauss_seidel(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscTruth guesszero,PetscInt *its,PCRichardsonConvergedReason *reason)
+PetscErrorCode gauss_seidel(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscBool  guesszero,PetscInt *its,PCRichardsonConvergedReason *reason)
 {
   PetscInt       i,n1;
   PetscErrorCode ierr;
@@ -248,7 +248,7 @@ PetscErrorCode gauss_seidel(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal a
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "jacobi"
-PetscErrorCode jacobi(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscTruth guesszero,PetscInt *its,PCRichardsonConvergedReason *reason)
+PetscErrorCode jacobi(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscBool  guesszero,PetscInt *its,PCRichardsonConvergedReason *reason)
 {
   PetscInt       i,n,n1;
   PetscErrorCode ierr;

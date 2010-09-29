@@ -14,18 +14,18 @@ typedef struct {
   PetscInt   rank;
   PetscInt   size;
   // Classes
-  PetscTruth sifter;      // Run the Sifter tests
-  PetscTruth label;       // Run the label tests
-  PetscTruth sieve;       // Run the Sieve tests
-  PetscTruth mesh;        // Run the Mesh tests
-  PetscTruth section;     // Run the Section tests
-  PetscTruth isection;    // Run the ISection tests
-  PetscTruth sectionDist; // Run the Section distribution tests
+  PetscBool  sifter;      // Run the Sifter tests
+  PetscBool  label;       // Run the label tests
+  PetscBool  sieve;       // Run the Sieve tests
+  PetscBool  mesh;        // Run the Mesh tests
+  PetscBool  section;     // Run the Section tests
+  PetscBool  isection;    // Run the ISection tests
+  PetscBool  sectionDist; // Run the Section distribution tests
   // Run flags
   PetscInt   number;      // Number of each class to create
   // Mesh flags
   PetscInt   numCells;    // If possible, set the total number of cells
-  PetscTruth interpolate; // Interpolate the mesh
+  PetscBool  interpolate; // Interpolate the mesh
   PetscReal  refine;      // The refinement limit
   // Section flags
   PetscInt   components;  // Number of section components

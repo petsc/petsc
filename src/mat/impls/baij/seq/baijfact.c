@@ -428,7 +428,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B,Mat A,const MatFactorInfo *inf
   const PetscInt   *ajtmp,*bjtmp;
   MatScalar        *rtmp,*pc,multiplier,*pv;
   const  MatScalar *aa=a->a,*v;
-  PetscTruth       row_identity,col_identity;
+  PetscBool        row_identity,col_identity;
   FactorShiftCtx   sctx;
   const PetscInt   *ddiag;
   PetscReal        rs;
@@ -591,7 +591,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1_inplace(Mat C,Mat A,const MatFactorI
   PetscInt       *diag_offset = b->diag,diag,*pj;
   MatScalar      *pv,*v,*rtmp,multiplier,*pc;
   MatScalar      *ba = b->a,*aa = a->a;
-  PetscTruth     row_identity, col_identity;
+  PetscBool      row_identity, col_identity;
 
   PetscFunctionBegin;
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -680,7 +680,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactorAvailable_seqbaij_petsc"
-PetscErrorCode MatGetFactorAvailable_seqbaij_petsc(Mat A,MatFactorType ftype,PetscTruth *flg)
+PetscErrorCode MatGetFactorAvailable_seqbaij_petsc(Mat A,MatFactorType ftype,PetscBool  *flg)
 {
   PetscFunctionBegin;
   *flg = PETSC_TRUE;
@@ -969,7 +969,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
   Mat_SeqSBAIJ       *b;
   Mat                B;
   PetscErrorCode     ierr;
-  PetscTruth         perm_identity;
+  PetscBool          perm_identity;
   PetscInt           reallocs=0,i,*ai=a->i,*aj=a->j,am=a->mbs,bs=A->rmap->bs,*ui;
   const PetscInt     *rip;
   PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
@@ -1186,7 +1186,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
   Mat_SeqSBAIJ       *b;
   Mat                B;
   PetscErrorCode     ierr;
-  PetscTruth         perm_identity;
+  PetscBool          perm_identity;
   PetscReal          fill = info->fill;
   const PetscInt     *rip;
   PetscInt           i,mbs=a->mbs,bs=A->rmap->bs,*ai=a->i,*aj=a->j,reallocs=0,prow;
@@ -1491,13 +1491,13 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   PetscInt           row,nzi,nzi_bl,nzi_bu,*im,dtcount,nzi_al,nzi_au;
   PetscInt           nlnk,*lnk;
   PetscBT            lnkbt;
-  PetscTruth         row_identity,icol_identity;
+  PetscBool          row_identity,icol_identity;
   MatScalar          *aatmp,*pv,*batmp,*ba,*rtmp,*pc,*multiplier,*vtmp;
   PetscInt           j,nz,*pj,*bjtmp,k,ncut,*jtmp;
   
   PetscReal          dt=info->dt; /* shift=info->shiftamount; */
   PetscInt           nnz_max;
-  PetscTruth         missing;
+  PetscBool          missing;
   PetscReal          *vtmp_abs;
   MatScalar          *v_work;
   PetscInt           *v_pivots;

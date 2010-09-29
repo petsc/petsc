@@ -55,9 +55,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 
 .keywords: KSP, Richardson, set, scale
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetSelfScale(KSP ksp,PetscTruth scale)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetSelfScale(KSP ksp,PetscBool  scale)
 {
-  PetscErrorCode ierr,(*f)(KSP,PetscTruth);
+  PetscErrorCode ierr,(*f)(KSP,PetscBool );
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);

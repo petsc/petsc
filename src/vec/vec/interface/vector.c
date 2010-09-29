@@ -148,7 +148,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMappingBlock(Vec x,ISLocalT
 PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyBegin(Vec vec)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
@@ -182,7 +182,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyBegin(Vec vec)
 PetscErrorCode PETSCVEC_DLLEXPORT VecView_Private(Vec vec)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(((PetscObject)vec)->comm,((PetscObject)vec)->prefix,"Vector Options","Vec");CHKERRQ(ierr);
@@ -888,7 +888,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRanges(Vec x,const PetscInt *ra
    Level: intermediate
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecSetOption(Vec x,VecOption op,PetscTruth flag)
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetOption(Vec x,VecOption op,PetscBool  flag)
 {
   PetscErrorCode ierr;
 
@@ -1025,7 +1025,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(Vec newvec, PetscViewer viewer)
   MPI_Comm       comm;
   PetscMPIInt    size;
   const char     *prefix;
-  PetscTruth     flg;
+  PetscBool      flg;
   char           vtype[256];
   const VecType  outtype=0;
 
@@ -1324,7 +1324,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecZeroEntries(Vec vec)
 */
 static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
 {
-  PetscTruth     opt;
+  PetscBool      opt;
   const VecType  defaultType;
   char           typeName[256];
   PetscMPIInt    size;
@@ -1522,7 +1522,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetBlockSize(Vec v,PetscInt *bs)
    Level: developer
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecValid(Vec v,PetscTruth *flg)
+PetscErrorCode PETSCVEC_DLLEXPORT VecValid(Vec v,PetscBool  *flg)
 {
   PetscFunctionBegin;
   PetscValidIntPointer(flg,2);
@@ -1696,7 +1696,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetUp(Vec v)
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
 {
-  PetscTruth     flgs[4];
+  PetscBool      flgs[4];
   PetscReal      norms[4] = {0.0,0.0,0.0,0.0};
   PetscErrorCode ierr;
   PetscInt       i;
@@ -1751,7 +1751,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
 PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec x,Vec y)
 {
   PetscReal      normxs[4]={0.0,0.0,0.0,0.0},normys[4]={0.0,0.0,0.0,0.0};
-  PetscTruth     flgxs[4],flgys[4];
+  PetscBool      flgxs[4],flgys[4];
   PetscErrorCode ierr;
   PetscInt       i;
 
@@ -1812,7 +1812,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStashView(Vec v,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       i,j;
-  PetscTruth     match;
+  PetscBool      match;
   VecStash       *s;
   PetscScalar    val;
 
