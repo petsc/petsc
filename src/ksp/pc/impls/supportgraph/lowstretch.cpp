@@ -31,7 +31,7 @@ typedef property<vertex_parent_t, PetscInt,
 			  property<vertex_depth_t, PetscScalar, 
 				   property<vertex_index_t, PetscInt> > > > VertexProperty;
 typedef property<edge_length_t, PetscScalar,
-		 property<edge_keep_t, PetscTruth, 
+		 property<edge_keep_t, PetscBool, 
 			  property<edge_index_t, PetscInt> > >  EdgeProperty2;
 typedef property<edge_weight_t, PetscScalar, EdgeProperty2> EdgeProperty;
 // I wish I knew a better way to make a convenient edge property constructor
@@ -136,7 +136,7 @@ typedef std::priority_queue<PQNode> ShortestPathPriorityQueue;
 */
 PetscErrorCode LowStretchSpanningTree(Mat mat,Mat *pre,
 				      PetscReal tol,PetscReal& maxCong);
-PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscTruth augment,
+PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscBool augment,
 					       PetscReal tol,PetscReal& maxCong);
 PetscErrorCode LowStretchSpanningTreeHelper(Graph& g,const PetscInt root,const PetscScalar alpha,PetscInt perm[]);
 PetscErrorCode StarDecomp(const Graph g,const PetscInt root,const PetscScalar delta,const PetscScalar epsilon,
@@ -203,7 +203,7 @@ PetscErrorCode LowStretchSpanningTree(Mat mat,Mat *prefact,
  */
 #undef __FUNCT__  
 #define __FUNCT__ "AugmentedLowStretchSpanningTree"
-PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscTruth augment,
+PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscBool augment,
 					       PetscReal tol,PetscReal& maxCong)
 {
 #ifndef PETSC_USE_COMPLEX
@@ -448,7 +448,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
   std::vector<PetscInt> *succ = new std::vector<PetscInt>[n];
   std::vector<PetscInt>::iterator i;
   PetscScalar *dist = new PetscScalar[n];
-  std::vector<PetscTruth> taken(n,PETSC_FALSE);
+  std::vector<PetscBool> taken(n,PETSC_FALSE);
 
   /** form tree of shortest paths to root **/
   graph_traits<Graph>::out_edge_iterator e, e_end;  
@@ -532,7 +532,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
   std::queue<PetscInt> anchor_q;
   ShortestPathPriorityQueue cone_pq;
   std::vector<PetscInt> *cone_succ = new std::vector<PetscInt>[n];
-  std::vector<PetscTruth> cone_found(n,PETSC_FALSE);
+  std::vector<PetscBool> cone_found(n,PETSC_FALSE);
 
   /** form tree of shortest paths to an anchor **/
   while (!pq.empty()) {
@@ -569,7 +569,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
       std::vector<PetscInt> thisIdx;
       std::queue<PetscInt> q;
       ShortestPathPriorityQueue mycone_pq;
-      std::vector<PetscTruth> mycone_taken(n,PETSC_FALSE);
+      std::vector<PetscBool> mycone_taken(n,PETSC_FALSE);
       PetscInt initialInternalConeEdges = 0;
 
       boundary = 0;
@@ -937,7 +937,7 @@ PetscErrorCode AddBridges(Graph& g,
 
 #ifndef PETSC_USE_COMPLEX
   const PetscInt m = num_edges(g);
-  std::vector<PetscTruth> edgeSupported(m); // edgeSupported[i] if edge i's component pair has been bridged
+  std::vector<PetscBool> edgeSupported(m); // edgeSupported[i] if edge i's component pair has been bridged
   const EdgeLength edge_length_g = get(edge_length_t(),g);
   const EdgeWeight edge_weight_g = get(edge_weight_t(),g);
   const EdgeIndex edge_index_g = get(edge_index_t(),g);
