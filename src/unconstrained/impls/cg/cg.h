@@ -13,9 +13,9 @@ typedef struct {
     Vec X_old;
     Vec W; // work vector
     
-    double eta;         // Restart tolerance
-    double delta_max;   // Minimum value for scaling
-    double delta_min;   // Maximum value for scaling
+    PetscReal eta;         // Restart tolerance
+    PetscReal delta_max;   // Minimum value for scaling
+    PetscReal delta_min;   // Maximum value for scaling
 
 
     // The algorithm restarts when the gradient at the current point g_k, 
