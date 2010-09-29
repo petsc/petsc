@@ -9,6 +9,23 @@ HISTORY: PETSc for Python
 :Address:      CCT CONICET, 3000 Santa Fe, Argentina
 
 
+Release 1.1.2
+=============
+
+This is a new-features and bug-fix release.
+
+- Add support for copying and computing complements in ``IS``
+  (``IS.copy()`` and ``IS.complement()``).
+
+- Add support for coarsening in ``DA`` (``DA.coarsen()``).
+
+- Support for shallow copy and deep copy operations (use ``copy.copy``
+  and ``copy.deepcopy``). Deep copy is only supported for a bunch of
+  types (``IS``, ``Scatter``, ``Vec``, ``Mat``)
+
+- Support for ``pip install petsc4py`` to download and install PETSc.
+
+
 Release 1.1.1
 =============
 

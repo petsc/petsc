@@ -118,7 +118,6 @@ cdef inline PetscInt asDims(dims,
         M, N = dims
     elif ndim == 3: 
         M, N, P = dims
-    _M[0] = _N[0] = _P[0] = PETSC_DECIDE
     if ndim >= 1: _M[0] = asInt(M)
     if ndim >= 2: _N[0] = asInt(N)
     if ndim >= 3: _P[0] = asInt(P)

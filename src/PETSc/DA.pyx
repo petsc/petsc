@@ -60,9 +60,9 @@ cdef class DA(Object):
         #
         cdef PetscInt ndim = PETSC_DECIDE
         cdef PetscInt ndof = 1
-        cdef PetscInt M = PETSC_DECIDE, m = PETSC_DECIDE, *lx = NULL
-        cdef PetscInt N = PETSC_DECIDE, n = PETSC_DECIDE, *ly = NULL
-        cdef PetscInt P = PETSC_DECIDE, p = PETSC_DECIDE, *lz = NULL
+        cdef PetscInt M = 1, m = PETSC_DECIDE, *lx = NULL
+        cdef PetscInt N = 1, n = PETSC_DECIDE, *ly = NULL
+        cdef PetscInt P = 1, p = PETSC_DECIDE, *lz = NULL
         cdef PetscDAPeriodicType ptype = DA_PERIODIC_NONE
         cdef PetscDAStencilType  stype = DA_STENCIL_BOX
         cdef PetscInt            swidth = 1
