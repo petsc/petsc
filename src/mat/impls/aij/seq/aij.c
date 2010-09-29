@@ -2345,7 +2345,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   } else {
     Mat B;
     PetscInt *nnz;
-    ierr = PetscMalloc(Y->cmap->N*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
+    ierr = PetscMalloc(Y->rmap->N*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
     ierr = MatCreate(((PetscObject)Y)->comm,&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,Y->rmap->n,Y->cmap->n,Y->rmap->N,Y->cmap->N);CHKERRQ(ierr);
     ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
