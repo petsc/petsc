@@ -317,6 +317,8 @@ PetscErrorCode MatHeaderReplace(Mat A,Mat C)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidHeaderSpecific(C,MAT_CLASSID,2);
   if (A == C) PetscFunctionReturn(0);
+  PetscCheckSameComm(A,1,C,2);
+  if (((PetscObject)C)->refct != 1) SETERRQ1(((PetscObject)C)->comm,PETSC_ERR_ARG_WRONGSTATE,"Object C has refct %D > 1, would leave hanging reference",((PetscObject)C)->refct);
 
   /* free all the interior data structures from mat */
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
