@@ -2474,7 +2474,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSubcommCreate(MPI_Comm,PetscSubcom
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscSubcommDestroy(PetscSubcomm);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommSetNumber(PetscSubcomm,PetscInt);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommSetType(PetscSubcomm,const PetscSubcommType);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommSetTypeGeneral(PetscSubcomm);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,PetscMPIInt,PetscMPIInt);
 
 PETSC_EXTERN_CXX_END
 
