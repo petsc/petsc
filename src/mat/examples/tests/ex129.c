@@ -33,7 +33,7 @@ int main(int argc,char **args)
   PetscInt          dof=1,M=-8,m,n,nrhs;
   PetscScalar       one = 1.0;
   PetscReal         norm;
-  PetscBool         InplaceLU;
+  PetscBool         InplaceLU=PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -69,9 +69,9 @@ int main(int argc,char **args)
   
   
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-inplacelu",&InplaceLU,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
   if (!InplaceLU){
     ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
-    ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
     info.fill = 5.0;
     ierr = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
     ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
