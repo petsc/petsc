@@ -13,12 +13,12 @@ extern PetscErrorCode TaoSolverCreate_CG(TaoSolver);
 
 extern PetscErrorCode TaoSolverCreate_BLMVM(TaoSolver);
 extern PetscErrorCode TaoSolverCreate_GPCG(TaoSolver);
+extern PetscErrorCode TaoSolverCreate_BQPIP(TaoSolver);
 
 extern PetscErrorCode TaoSolverCreate_POUNDERS(TaoSolver);
 /*
 
 extern PetscErrorCode TaoSolverCreate_TRON(TaoSolver);
-extern PetscErrorCode TaoSolverCreate_BQPIP(TaoSolver);
 extern PetscErrorCode TaoSolverCreate_BNLS(TaoSolver);
 extern PetscErrorCode TaoSolverCreate_QPIP(TaoSolver);
 
@@ -91,12 +91,14 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegisterAll(const char path[])
   ierr = TaoSolverRegisterDynamic("tao_cg",path,"TaoSolverCreate_CG",TaoSolverCreate_CG); CHKERRQ(ierr);
 
   ierr = TaoSolverRegisterDynamic("tao_blmvm",path,"TaoSolverCreate_BLMVM",TaoSolverCreate_BLMVM); CHKERRQ(ierr);
-  ierr = TaoSolverRegisterDynamic("tao_nm",path,"TaoSolverCreate_NM",TaoSolverCreate_NM); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_bqpip",path,"TaoSolverCreate_BQPIP",TaoSolverCreate_BQPIP); CHKERRQ(ierr);
+
   ierr = TaoSolverRegisterDynamic("tao_gpcg",path,"TaoSolverCreate_GPCG",TaoSolverCreate_GPCG); CHKERRQ(ierr);
+
+  ierr = TaoSolverRegisterDynamic("tao_nm",path,"TaoSolverCreate_NM",TaoSolverCreate_NM); CHKERRQ(ierr);
 
   ierr = TaoSolverRegisterDynamic("tao_pounders",path,"TaoSolverCreate_POUNDERS",TaoSolverCreate_POUNDERS); CHKERRQ(ierr);
 /*
-  ierr = TaoSolverRegisterDynamic("tao_bqpip",path,"TaoSolverCreate_BQPIP",TaoSolverCreate_BQPIP); CHKERRQ(ierr);
   ierr = TaoSolverRegisterDynamic("tao_bnls",path,"TaoSolverCreate_BNLS",TaoSolverCreate_BNLS); CHKERRQ(ierr);
   ierr = TaoSolverRegisterDynamic("tao_tron",path,"TaoSolverCreate_TRON",TaoSolverCreate_TRON); CHKERRQ(ierr);
   ierr = TaoSolverRegisterDynamic("tao_nm",path,"TaoSolverCreate_NM",TaoSolverCreate_NM); CHKERRQ(ierr);
