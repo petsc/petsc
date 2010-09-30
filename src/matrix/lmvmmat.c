@@ -241,13 +241,22 @@ EXTERN PetscErrorCode MatView_LMVM(Mat A, PetscViewer pv)
 EXTERN PetscErrorCode MatDestroy_LMVM(Mat M)
 {
     MatLMVMCtx     *ctx;
-    PetscErrorCode info;
+    PetscErrorCode ierr;
     PetscFunctionBegin;
-    info = MatShellGetContext(M,(void**)&ctx); CHKERRQ(info);
+    ierr = MatShellGetContext(M,(void**)&ctx); CHKERRQ(ierr);
 
-    /* TODO - free vectors */
-
-    info = PetscFree(ctx); CHKERRQ(info);
+    ierr = VecDestroyVecs(ctx->S, ctx->lm+1); CHKERRQ(ierr);
+    ierr = VecDestroyVecs(ctx->Y, ctx->lm+1); CHKERRQ(ierr);
+    ierr = VecDestroy(ctx->D); CHKERRQ(ierr);
+    ierr = VecDestroy(ctx->U); CHKERRQ(ierr);
+    ierr = VecDestroy(ctx->V); CHKERRQ(ierr);
+    ierr = VecDestroy(ctx->W); CHKERRQ(ierr);
+    ierr = VecDestroy(ctx->P); CHKERRQ(ierr);
+    ierr = VecDestroy(ctx->Q); CHKERRQ(ierr);
+    ierr = VecDestroy(ctx->Xprev); CHKERRQ(ierr);
+    ierr = VecDestroy(ctx->Gprev); CHKERRQ(ierr);
+    
+    ierr = PetscFree(ctx); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 	
 }
