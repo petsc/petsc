@@ -127,7 +127,7 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
       }
       if (doOutput) {
-        ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", n);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", n/bs);CHKERRQ(ierr);
       }
     } else {
       if (outputState == 0) {
