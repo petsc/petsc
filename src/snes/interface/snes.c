@@ -131,7 +131,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESView(SNES snes,PetscViewer viewer)
   SNESKSPEW           *kctx;
   PetscErrorCode      ierr;
   KSP                 ksp;
-  const SNESType      type;
   PetscBool           iascii,isstring;
 
   PetscFunctionBegin;
@@ -145,17 +144,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESView(SNES snes,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
-    if (((PetscObject)snes)->prefix) {
-      ierr = PetscViewerASCIIPrintf(viewer,"SNES Object:(%s)\n",((PetscObject)snes)->prefix);CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"SNES Object:\n");CHKERRQ(ierr);
-    }
-    ierr = SNESGetType(snes,&type);CHKERRQ(ierr);
-    if (type) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",type);CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  type: not set yet\n");CHKERRQ(ierr);
-    }
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)snes,viewer,"SNES Object");CHKERRQ(ierr);
     if (snes->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*snes->ops->view)(snes,viewer);CHKERRQ(ierr);
@@ -185,6 +174,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESView(SNES snes,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is rebuilt every %D Newton iterations\n",snes->lagjacobian);CHKERRQ(ierr);
     }
   } else if (isstring) {
+    const char *type;
     ierr = SNESGetType(snes,&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(ierr);
   }

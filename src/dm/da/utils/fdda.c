@@ -595,7 +595,6 @@ PetscErrorCode PETSCDM_DLLEXPORT MatView_MPI_DA(Mat A,PetscViewer viewer)
   ierr = ISDestroy(is);CHKERRQ(ierr);
   ierr = PetscObjectGetOptionsPrefix((PetscObject)A,&prefix);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)Anatural,prefix);CHKERRQ(ierr);
-  ierr = PetscObjectName((PetscObject)A);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)Anatural,((PetscObject)A)->name);CHKERRQ(ierr);
   ierr = MatView(Anatural,viewer);CHKERRQ(ierr);
   ierr = MatDestroy(Anatural);CHKERRQ(ierr);

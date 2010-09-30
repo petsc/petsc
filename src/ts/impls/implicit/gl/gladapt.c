@@ -167,17 +167,12 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptSetOptionsPrefix(TSGLAdapt adapt,const
 PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptView(TSGLAdapt adapt,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscBool  iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    if (((PetscObject)adapt)->prefix) {
-      ierr = PetscViewerASCIIPrintf(viewer,"TSGLAdapt object: (%s)\n",((PetscObject)adapt)->prefix);CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"TSGLAdapt object:\n");CHKERRQ(ierr);
-    }
-    ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",((PetscObject)adapt)->type_name?((PetscObject)adapt)->type_name:"(not set yet)");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)adapt,viewer,"TSGLAdapt Object");CHKERRQ(ierr);
     if (adapt->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*adapt->ops->view)(adapt,viewer);CHKERRQ(ierr);

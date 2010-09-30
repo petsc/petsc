@@ -236,6 +236,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
     if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL) {
       ierr = DAView_VTK(da, viewer);CHKERRQ(ierr);
     } else {
+      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)da,viewer,"DA Object");CHKERRQ(ierr);
       for (i=0; i<dof; i++) {
         if (da->fieldname[i]) {
           fieldsnamed = PETSC_TRUE;

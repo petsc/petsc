@@ -1400,6 +1400,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetType(PetscObject,const ch
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetType(PetscObject,const char *[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetName(PetscObject,const char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetName(PetscObject,const char*[]);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectPrintClassNamePrefixType(PetscObject,PetscViewer,const char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetTabLevel(PetscObject,PetscInt);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetTabLevel(PetscObject,PetscInt*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectIncrementTabLevel(PetscObject,PetscObject,PetscInt);

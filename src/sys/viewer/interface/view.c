@@ -317,11 +317,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscViewerView(PetscViewer v,PetscViewer view
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-      if (((PetscObject)v)->prefix) {
-        ierr = PetscViewerASCIIPrintf(viewer,"PetscViewer Object:(%s)\n",((PetscObject)v)->prefix);CHKERRQ(ierr);
-      } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"PetscViewer Object:\n");CHKERRQ(ierr);
-      }
+      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)v,viewer,"PetscViewer Object");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerGetType(v,&cstr);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"type=%s\n",cstr);CHKERRQ(ierr);

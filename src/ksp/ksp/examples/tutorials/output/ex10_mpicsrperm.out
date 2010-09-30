@@ -1,14 +1,17 @@
 Matrix Object:
-  type=mpicsrperm, rows=36, cols=36
+  type: mpicsrperm
+  rows=36, cols=36
   total: nonzeros=156, allocated nonzeros=156
     not using I-node (on process 0) routines
 Matrix Object:
-  type=seqaij, rows=18, cols=18
+  type: seqaij
+  rows=18, cols=18
   package used to perform factorization: petsc
   total: nonzeros=72, allocated nonzeros=72
     not using I-node routines
 Matrix Object:
-  type=seqaij, rows=18, cols=18
+  type: seqaij
+  rows=18, cols=18
   package used to perform factorization: petsc
   total: nonzeros=72, allocated nonzeros=72
     not using I-node routines
@@ -52,18 +55,21 @@ PC Object:
       ILU: factor fill ratio needed 1
            Factored matrix follows
           Matrix Object:
-            type=seqaij, rows=18, cols=18
+            type: seqaij
+            rows=18, cols=18
             package used to perform factorization: petsc
             total: nonzeros=72, allocated nonzeros=72
               not using I-node routines
     linear system matrix = precond matrix:
     Matrix Object:
-      type=seqcsrperm, rows=18, cols=18
+      type: seqcsrperm
+      rows=18, cols=18
       total: nonzeros=72, allocated nonzeros=72
         not using I-node routines
   linear system matrix = precond matrix:
   Matrix Object:
-    type=mpicsrperm, rows=36, cols=36
+    type: mpicsrperm
+    rows=36, cols=36
     total: nonzeros=156, allocated nonzeros=156
       not using I-node (on process 0) routines
 Number of iterations =   9

@@ -486,7 +486,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
   ierr = PetscTypeCompare((PetscObject)view,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)view,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerASCIIPrintf(view,"PetscBag Object:  %s %s\n",bag->bagname,bag->baghelp);CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)bag,view,"PetscBag Object");CHKERRQ(ierr);
     while (nitem) {
       if (nitem->dtype == PETSC_CHAR) {
         char* value = (char*)(((char*)bag) + nitem->offset);

@@ -82,18 +82,21 @@ SNES Object:
             factor fill ratio given 1, needed 1
               Factored matrix follows:
                 Matrix Object:
-                  type=seqaij, rows=21, cols=21
+                  type: seqaij
+                  rows=21, cols=21
                   package used to perform factorization: petsc
                   total: nonzeros=85, allocated nonzeros=85
                     not using I-node routines
           linear system matrix = precond matrix:
           Matrix Object:
-            type=seqaij, rows=21, cols=21
+            type: seqaij
+            rows=21, cols=21
             total: nonzeros=85, allocated nonzeros=85
               not using I-node routines
         linear system matrix = precond matrix:
         Matrix Object:
-          type=mpiaij, rows=49, cols=49
+          type: mpiaij
+          rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
             not using I-node (on process 0) routines
       Split number 1 Fields  1
@@ -123,18 +126,21 @@ SNES Object:
             factor fill ratio given 1, needed 1
               Factored matrix follows:
                 Matrix Object:
-                  type=seqaij, rows=21, cols=21
+                  type: seqaij
+                  rows=21, cols=21
                   package used to perform factorization: petsc
                   total: nonzeros=85, allocated nonzeros=85
                     not using I-node routines
           linear system matrix = precond matrix:
           Matrix Object:
-            type=seqaij, rows=21, cols=21
+            type: seqaij
+            rows=21, cols=21
             total: nonzeros=85, allocated nonzeros=85
               not using I-node routines
         linear system matrix = precond matrix:
         Matrix Object:
-          type=mpiaij, rows=49, cols=49
+          type: mpiaij
+          rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
             not using I-node (on process 0) routines
       Split number 2 Fields  2
@@ -164,18 +170,21 @@ SNES Object:
             factor fill ratio given 1, needed 1
               Factored matrix follows:
                 Matrix Object:
-                  type=seqaij, rows=21, cols=21
+                  type: seqaij
+                  rows=21, cols=21
                   package used to perform factorization: petsc
                   total: nonzeros=85, allocated nonzeros=85
                     not using I-node routines
           linear system matrix = precond matrix:
           Matrix Object:
-            type=seqaij, rows=21, cols=21
+            type: seqaij
+            rows=21, cols=21
             total: nonzeros=85, allocated nonzeros=85
               not using I-node routines
         linear system matrix = precond matrix:
         Matrix Object:
-          type=mpiaij, rows=49, cols=49
+          type: mpiaij
+          rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
             not using I-node (on process 0) routines
       Split number 3 Fields  3
@@ -205,30 +214,35 @@ SNES Object:
             factor fill ratio given 1, needed 1
               Factored matrix follows:
                 Matrix Object:
-                  type=seqaij, rows=21, cols=21
+                  type: seqaij
+                  rows=21, cols=21
                   package used to perform factorization: petsc
                   total: nonzeros=85, allocated nonzeros=85
                     not using I-node routines
           linear system matrix = precond matrix:
           Matrix Object:
-            type=seqaij, rows=21, cols=21
+            type: seqaij
+            rows=21, cols=21
             total: nonzeros=85, allocated nonzeros=85
               not using I-node routines
         linear system matrix = precond matrix:
         Matrix Object:
-          type=mpiaij, rows=49, cols=49
+          type: mpiaij
+          rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
             not using I-node (on process 0) routines
     linear system matrix followed by preconditioner matrix:
     Matrix Object:
-      type=mffd, rows=196, cols=196
+      type: mffd
+      rows=196, cols=196
           matrix-free approximation:
             err=1e-07 (relative error in function evaluation)
             Using wp compute h routine
             Computes normA
             Does not compute normU
     Matrix Object:
-      type=mpiaij, rows=196, cols=196
+      type: mpiaij
+      rows=196, cols=196
       total: nonzeros=3472, allocated nonzeros=3472
         using I-node (on process 0) routines: found 21 nodes, limit used is 5
 Number of Newton iterations = 2

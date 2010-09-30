@@ -62,14 +62,16 @@ SNES Object:
           factor fill ratio given 1, needed 1
             Factored matrix follows:
               Matrix Object:
-                type=seqaij, rows=49, cols=49
+                type: seqaij
+                rows=49, cols=49
                 package used to perform factorization: petsc
                 total: nonzeros=217, allocated nonzeros=217
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
         linear system matrix = precond matrix:
         Matrix Object:
-          type=seqaij, rows=49, cols=49
+          type: seqaij
+          rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
@@ -90,14 +92,16 @@ SNES Object:
           factor fill ratio given 1, needed 1
             Factored matrix follows:
               Matrix Object:
-                type=seqaij, rows=49, cols=49
+                type: seqaij
+                rows=49, cols=49
                 package used to perform factorization: petsc
                 total: nonzeros=217, allocated nonzeros=217
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
         linear system matrix = precond matrix:
         Matrix Object:
-          type=seqaij, rows=49, cols=49
+          type: seqaij
+          rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
@@ -118,14 +122,16 @@ SNES Object:
           factor fill ratio given 1, needed 1
             Factored matrix follows:
               Matrix Object:
-                type=seqaij, rows=49, cols=49
+                type: seqaij
+                rows=49, cols=49
                 package used to perform factorization: petsc
                 total: nonzeros=217, allocated nonzeros=217
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
         linear system matrix = precond matrix:
         Matrix Object:
-          type=seqaij, rows=49, cols=49
+          type: seqaij
+          rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
@@ -146,20 +152,23 @@ SNES Object:
           factor fill ratio given 1, needed 1
             Factored matrix follows:
               Matrix Object:
-                type=seqaij, rows=49, cols=49
+                type: seqaij
+                rows=49, cols=49
                 package used to perform factorization: petsc
                 total: nonzeros=217, allocated nonzeros=217
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
         linear system matrix = precond matrix:
         Matrix Object:
-          type=seqaij, rows=49, cols=49
+          type: seqaij
+          rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
     linear system matrix = precond matrix:
     Matrix Object:
-      type=seqaij, rows=196, cols=196
+      type: seqaij
+      rows=196, cols=196
       total: nonzeros=3472, allocated nonzeros=3472
       total number of mallocs used during MatSetValues calls =0
         using I-node routines: found 49 nodes, limit used is 5

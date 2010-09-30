@@ -446,7 +446,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningView(MatPartitioning part,Petsc
 {
   PetscErrorCode            ierr;
   PetscBool                 iascii;
-  const MatPartitioningType name;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
@@ -458,8 +457,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningView(MatPartitioning part,Petsc
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = MatPartitioningGetType(part,&name);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"MatPartitioning Object: %s\n",name);CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)part,viewer,"MatPartitioning Object");CHKERRQ(ierr);
     if (part->vertex_weights) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Using vertex weights\n");CHKERRQ(ierr);
     }

@@ -1,6 +1,7 @@
 original matrix:
 Matrix Object:
-  type=seqaij, rows=25, cols=25
+  type: seqaij
+  rows=25, cols=25
   total: nonzeros=113, allocated nonzeros=125
   total number of mallocs used during MatSetValues calls =0
     not using I-node routines
@@ -32,7 +33,8 @@ row 24: (19, -1)  (23, -1)  (24, 4)
 Test ILU...
 factored matrix:
 Matrix Object:
-  type=seqaij, rows=25, cols=25
+  type: seqaij
+  rows=25, cols=25
   package used to perform factorization: petsc
   total: nonzeros=113, allocated nonzeros=113
   total number of mallocs used during MatSetValues calls =0

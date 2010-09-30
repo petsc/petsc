@@ -276,7 +276,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFApply(PF pf,PetscInt n,const PetscScalar* x,
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT PFView(PF pf,PetscViewer viewer)
 {
-  const PFType      cstr;
   PetscErrorCode    ierr;
   PetscBool         iascii;
   PetscViewerFormat format;
@@ -292,13 +291,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFView(PF pf,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"PF Object:\n");CHKERRQ(ierr);
-    ierr = PFGetType(pf,&cstr);CHKERRQ(ierr);
-    if (cstr) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",cstr);CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  type: not yet set\n");CHKERRQ(ierr);
-    }
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)pf,viewer,"PF Object");CHKERRQ(ierr);
     if (pf->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*pf->ops->view)(pf->data,viewer);CHKERRQ(ierr);

@@ -457,7 +457,6 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
     ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,prefix);CHKERRQ(ierr);
     ierr = DAGlobalToNaturalBegin(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
     ierr = DAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
-    ierr = PetscObjectName((PetscObject)xin);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)natural,((PetscObject)xin)->name);CHKERRQ(ierr);
     ierr = VecView(natural,viewer);CHKERRQ(ierr);
     ierr = VecDestroy(natural);CHKERRQ(ierr);

@@ -48,10 +48,12 @@ PC Object:
          matrix ordering: natural
   linear system matrix = precond matrix:
 Matrix Object:
-  type=seqaij, rows=13, cols=13
+  type: seqaij
+  rows=13, cols=13
   total: nonzeros=32, allocated nonzeros=34
   linear system matrix = precond matrix:
 Matrix Object:
-  type=seqaij, rows=49, cols=49
+  type: seqaij
+  rows=49, cols=49
   total: nonzeros=172, allocated nonzeros=172
 Norm of RHS difference=2.37549e-06, Iterations=21

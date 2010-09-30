@@ -1,5 +1,6 @@
 Matrix Object:
-  type=mpiaij, rows=110, cols=110
+  type: mpiaij
+  rows=110, cols=110
   total: nonzeros=434, allocated nonzeros=434
   0 KSP Residual norm 2.06585 
   1 KSP Residual norm 0.449121 
@@ -50,10 +51,12 @@ PC Object:
          matrix ordering: natural
   linear system matrix = precond matrix:
 Matrix Object:
-  type=seqaij, rows=30, cols=30
+  type: seqaij
+  rows=30, cols=30
   total: nonzeros=111, allocated nonzeros=111
   linear system matrix = precond matrix:
 Matrix Object:
-  type=mpiaij, rows=110, cols=110
+  type: mpiaij
+  rows=110, cols=110
   total: nonzeros=434, allocated nonzeros=434
 Norm of RHS difference=1.31566e-06, Iterations=25

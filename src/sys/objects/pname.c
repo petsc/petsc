@@ -33,6 +33,42 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetName(PetscObject obj,const char 
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscObjectPrintClassNamePrefixType"
+/*@C
+      PetscObjectPrintTypeNamePrefix - used in the XXXView() methods to display information about the class, name, prefix and type of an object
+
+   Input Parameters:
++     obj - the PETSc object
+.     viewer - ASCII viewer where the information is printed
+-     string - for example "Matrix Object"
+
+   Level: developer
+
+.seealso: PetscObjectSetName(), PetscObjectName()
+
+@*/
+PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer viewer,const char string[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerASCIIPrintf(viewer,"%s:",string);CHKERRQ(ierr);
+  if (obj->name) {
+    ierr = PetscViewerASCIIPrintf(viewer,"%s",obj->name);CHKERRQ(ierr);
+  }
+  if (obj->prefix) {
+    ierr = PetscViewerASCIIPrintf(viewer,"(%s)",obj->prefix);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+  if (obj->type_name) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",obj->type_name);CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerASCIIPrintf(viewer,"  type not yet set\n");CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscObjectName"
 /*@C
    PetscObjectName - Gives an object a name if it does not have one
@@ -42,11 +78,14 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetName(PetscObject obj,const char 
    Input Parameters:
 .  obj - the Petsc variable
          Thus must be cast with a (PetscObject), for example, 
-         PetscObjectSetName((PetscObject)mat,name);
+         PetscObjectName((PetscObject)mat,name);
 
-   Level: advanced
+   Level: developer
 
    Concepts: object name^setting default
+
+   Notes: This is used in a small number of places when an object NEEDS a name, for example when it is saved to Matlab with that variable name. 
+          Use PetscObjectSetName() to set the name of an object to what you want.
 
 .seealso: PetscObjectGetName(), PetscObjectSetName()
 @*/

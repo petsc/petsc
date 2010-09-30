@@ -1,5 +1,6 @@
 Matrix Object:
-  type=mpisbaij, rows=1000, cols=1000
+  type: mpisbaij
+  rows=1000, cols=1000
   total: nonzeros=1999, allocated nonzeros=2000
   total number of mallocs used during MatSetValues calls =0
     [0] Local rows 250 nz 500 nz alloced 500 bs 1 mem SKIP

@@ -610,6 +610,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp(Mat A)
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatView"
 /*@C
@@ -688,7 +689,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscInt          rows,cols;
   PetscBool         iascii;
-  const MatType     cstr;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -707,15 +707,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-      if (((PetscObject)mat)->prefix) {
-        ierr = PetscViewerASCIIPrintf(viewer,"Matrix Object:(%s)\n",((PetscObject)mat)->prefix);CHKERRQ(ierr);
-      } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"Matrix Object:\n");CHKERRQ(ierr);
-      }
+      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)mat,viewer,"Matrix Object");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = MatGetType(mat,&cstr);CHKERRQ(ierr);
       ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"type=%s, rows=%D, cols=%D\n",cstr,rows,cols);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"rows=%D, cols=%D\n",rows,cols);CHKERRQ(ierr);
       if (mat->factortype) {
         const MatSolverPackage solver;
         ierr = MatFactorGetSolverPackage(mat,&solver);CHKERRQ(ierr);

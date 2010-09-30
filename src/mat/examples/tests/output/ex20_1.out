@@ -1,5 +1,6 @@
 Matrix Object:
-  type=seqaij, rows=20, cols=20
+  type: seqaij
+  rows=20, cols=20
   total: nonzeros=41, allocated nonzeros=100
   total number of mallocs used during MatSetValues calls =0
     using I-node routines: found 15 nodes, limit used is 5
@@ -24,7 +25,8 @@ row 17: (13, -1)  (16, -1)  (17, 4)  (18, -1)
 row 18:
 row 19:
 Matrix Object:
-  type=seqaij, rows=20, cols=20
+  type: seqaij
+  rows=20, cols=20
   total: nonzeros=41, allocated nonzeros=41
   total number of mallocs used during MatSetValues calls =0
     using I-node routines: found 15 nodes, limit used is 5

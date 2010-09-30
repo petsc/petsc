@@ -85,12 +85,14 @@ PC Object:
       SOR: type = local_symmetric, iterations = 1, omega = 1
     linear system matrix = precond matrix:
     Matrix Object:
-      type=mpiaij, rows=181, cols=181
+      type: mpiaij
+      rows=181, cols=181
       total: nonzeros=2245, allocated nonzeros=2245
         using I-node (on process 0) routines: found 31 nodes, limit used is 5
   linear system matrix = precond matrix:
   Matrix Object:
-    type=seqaij, rows=181, cols=181
+    type: seqaij
+    rows=181, cols=181
     total: nonzeros=2245, allocated nonzeros=2245
       using I-node routines: found 61 nodes, limit used is 5
 Number of iterations =   2

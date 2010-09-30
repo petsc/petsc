@@ -1442,17 +1442,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCView(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (((PetscObject)pc)->prefix) {
-      ierr = PetscViewerASCIIPrintf(viewer,"PC Object:(%s)\n",((PetscObject)pc)->prefix);CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"PC Object:\n");CHKERRQ(ierr);
-    }
-    ierr = PCGetType(pc,&cstr);CHKERRQ(ierr);
-    if (cstr) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",cstr);CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  type: not yet set\n");CHKERRQ(ierr);
-    }
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)pc,viewer,"PC Object");CHKERRQ(ierr);
     if (pc->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);

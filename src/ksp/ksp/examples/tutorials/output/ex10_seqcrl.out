@@ -1,9 +1,11 @@
 Matrix Object:
-  type=seqcrl, rows=36, cols=36
+  type: seqcrl
+  rows=36, cols=36
   total: nonzeros=156, allocated nonzeros=156
     not using I-node routines
 Matrix Object:
-  type=seqaij, rows=36, cols=36
+  type: seqaij
+  rows=36, cols=36
   package used to perform factorization: petsc
   total: nonzeros=156, allocated nonzeros=156
     not using I-node routines
@@ -34,13 +36,15 @@ PC Object:
     ILU: factor fill ratio needed 1
          Factored matrix follows
         Matrix Object:
-          type=seqaij, rows=36, cols=36
+          type: seqaij
+          rows=36, cols=36
           package used to perform factorization: petsc
           total: nonzeros=156, allocated nonzeros=156
             not using I-node routines
   linear system matrix = precond matrix:
   Matrix Object:
-    type=seqcrl, rows=36, cols=36
+    type: seqcrl
+    rows=36, cols=36
     total: nonzeros=156, allocated nonzeros=156
       not using I-node routines
 Number of iterations =   6

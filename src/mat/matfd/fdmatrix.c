@@ -112,7 +112,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringView(MatFDColoring c,PetscViewer 
   if (isdraw) { 
     ierr = MatFDColoringView_Draw(c,viewer);CHKERRQ(ierr);
   } else if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"MatFDColoring Object:\n");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)c,viewer,"MatFDColoring Object");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Error tolerance=%G\n",c->error_rel);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Umin=%G\n",c->umin);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Number of colors=%D\n",c->ncolors);CHKERRQ(ierr);

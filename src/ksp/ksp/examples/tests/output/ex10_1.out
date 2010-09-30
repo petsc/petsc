@@ -1,6 +1,7 @@
 m = 1, N=81
 Matrix Object:
-  type=seqaij, rows=36, cols=36
+  type: seqaij
+  rows=36, cols=36
   total: nonzeros=1200, allocated nonzeros=1200
   total number of mallocs used during MatSetValues calls =0
     using I-node routines: found 21 nodes, limit used is 5

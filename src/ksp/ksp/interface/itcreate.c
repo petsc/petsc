@@ -48,7 +48,6 @@ PetscBool  KSPRegisterAllCalled = PETSC_FALSE;
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPView(KSP ksp,PetscViewer viewer)
 {
-  const KSPType  type;
   PetscErrorCode ierr;
   PetscBool      iascii;
 
@@ -60,17 +59,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPView(KSP ksp,PetscViewer viewer)
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = KSPGetType(ksp,&type);CHKERRQ(ierr);
-    if (((PetscObject)ksp)->prefix) {
-      ierr = PetscViewerASCIIPrintf(viewer,"KSP Object:(%s)\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"KSP Object:\n");CHKERRQ(ierr);
-    }
-    if (type) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",type);CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  type: not yet set\n");CHKERRQ(ierr);
-    }
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ksp,viewer,"KSP Object");CHKERRQ(ierr);
     if (ksp->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
