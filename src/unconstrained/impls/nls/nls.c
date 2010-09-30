@@ -83,7 +83,6 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
   PetscErrorCode ierr;
   TAO_NLS *nlsP = (TAO_NLS *)tao->data;
 
-  KSP ksp;
   PC pc;
 
   KSPConvergedReason ksp_reason;
@@ -131,7 +130,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
   case NLS_KSP_CG:
     ierr = KSPSetType(tao->ksp, KSPCG); CHKERRQ(ierr);
     if (tao->ksp->ops->setfromoptions) {
-	(*tao->ksp->ops->setfromoptions)(ksp);
+	(*tao->ksp->ops->setfromoptions)(tao->ksp);
     }
     break;
 

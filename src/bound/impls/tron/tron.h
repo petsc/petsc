@@ -59,7 +59,7 @@ typedef struct {
   PetscInt n_upper;
   PetscInt n_lower;
   PetscInt n_bind;       /* Number of binding varibles */
-  TaoSubsetType subset_type;
+  PetscInt subset_type;
 
 } TAO_TRON;
 

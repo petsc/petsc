@@ -2,8 +2,8 @@
 
 PetscTruth TaoInitializeCalled = PETSC_FALSE;
 
-static int TaoGlobalArgc=0;
-static char** TaoGlogalArgs = 0;
+//static int TaoGlobalArgc=0;
+//static char** TaoGlogalArgs = 0;
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoInitialize"

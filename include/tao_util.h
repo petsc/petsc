@@ -11,7 +11,7 @@ PetscErrorCode VecSFischer(Vec, Vec, Vec, Vec, PetscScalar, Vec);
 
 PetscErrorCode VecBoundGradientProjection(Vec, Vec, Vec, Vec, Vec);
 PetscErrorCode VecStepBoundInfo(Vec,Vec,Vec,Vec,PetscReal*, PetscReal*,PetscReal*);
-
+PetscErrorCode VecStepMax(Vec, Vec, PetscReal *);
 
 
 /*
@@ -22,12 +22,18 @@ PetscErrorCode VecStepBoundInfo(Vec,Vec,Vec,Vec,PetscReal*, PetscReal*,PetscReal
 .seealso: TaoSubsetCreate()
 */
 
-#define TaoSubsetType const char*
-#define TAOSUBSET_SINGLEPROCESSOR "singleprocessor"
-#define TAOSUBSET_NOREDISTRIBUTE "noredistribute"
-#define TAOSUBSET_REDISTRIBUTE   "redistribute"
-#define TAOSUBSET_MASK           "mask"
-#define TAOSUBSET_MATRIXFREE     "matrixfree"
+
+
+#define TAOSUBSET_SINGLEPROCESSOR 0
+#define TAOSUBSET_NOREDISTRIBUTE  1
+#define TAOSUBSET_REDISTRIBUTE    2
+#define TAOSUBSET_MASK            3
+#define TAOSUBSET_MATRIXFREE      4
+#define TAOSUBSET_TYPES           5
+
+const char *TAOSUBSET[64] = {
+    "singleprocessor", "noredistribute", "redistribute", "mask", "matrixfree"
+};
 
 PetscErrorCode VecWhichBetween(Vec, Vec, Vec, IS *);
 PetscErrorCode VecWhichBetweenOrEqual(Vec, Vec, Vec, IS *);

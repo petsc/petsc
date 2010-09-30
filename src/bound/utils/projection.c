@@ -100,10 +100,10 @@ PetscErrorCode TAOSOLVER_DLLEXPORT VecStepBoundInfo(Vec X, Vec XL, Vec XU, Vec D
   MPI_Comm comm;
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(X,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(XL,VEC_COOKIE,3);
-  PetscValidHeaderSpecific(XU,VEC_COOKIE,4);
-  PetscValidHeaderSpecific(DX,VEC_COOKIE,5);
+  PetscValidHeaderSpecific(X,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(XL,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(XU,VEC_COOKIE,3);
+  PetscValidHeaderSpecific(DX,VEC_COOKIE,4);
 
   ierr=VecGetArray(X,&x);CHKERRQ(ierr);
   ierr=VecGetArray(XL,&xl);CHKERRQ(ierr);
@@ -140,3 +140,34 @@ PetscErrorCode TAOSOLVER_DLLEXPORT VecStepBoundInfo(Vec X, Vec XL, Vec XU, Vec D
   ierr = PetscInfo3(X,"Step Bound Info: Closest Bound: %6.4e, Wolfe: %6.4e, Max: %6.4e \n",*boundmin,*wolfemin,*boundmax); CHKERRQ(ierr);
   PetscFunctionReturn(0);  
 }
+
+
+#undef __FUNCT__
+#define __FUNCT__ "VecStepMax"
+PetscErrorCode TAOSOLVER_DLLEXPORT VecStepMax(Vec X, Vec DX, PetscReal *step){
+  PetscErrorCode ierr;
+  PetscInt i, nn;
+  PetscReal stepmax=TAO_INFINITY;
+  PetscReal *xx, *dx;
+    
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(X,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(DX,VEC_COOKIE,2);
+
+  ierr = VecGetLocalSize(X,&nn);CHKERRQ(ierr);
+  ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(DX,&dx);CHKERRQ(ierr);
+  for (i=0;i<nn;i++){
+    if (xx[i] < 0){
+      SETERRQ(1,"Vector must be positive");
+    } else if (dx[i]<0){ stepmax=PetscMin(stepmax,-xx[i]/dx[i]);
+    }
+  }
+  ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(DX,&dx);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&stepmax,step,1,MPIU_REAL,MPI_MIN,((PetscObject)X)->comm);
+  CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+    
+    

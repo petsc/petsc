@@ -5,7 +5,6 @@
 static PetscErrorCode gqtwrap(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qmin) {
     PetscReal atol=1.0e-10;
     PetscInt info,its;
-    PetscReal one = 1.0;
     PetscFunctionBegin;
 
     gqt(mfqP->n,mfqP->Hres,mfqP->n,mfqP->Gres,1.0,mfqP->gqt_rtol,atol,

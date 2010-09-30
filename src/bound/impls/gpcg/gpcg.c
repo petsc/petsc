@@ -58,7 +58,6 @@ static PetscErrorCode TaoSolverSetFromOptions_GPCG(TaoSolver tao)
   PetscTruth flg;
   MPI_Comm   comm;
   PetscMPIInt size;
-  PetscTruth value;
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Gradient Projection, Conjugate Gradient method for bound constrained optimization");CHKERRQ(ierr);
 
@@ -68,24 +67,8 @@ static PetscErrorCode TaoSolverSetFromOptions_GPCG(TaoSolver tao)
   comm = ((PetscObject)tao)->comm;
   gpcg->subset_type = TAOSUBSET_MASK;
   ierr = MPI_Comm_size(comm,&size); CHKERRQ(ierr);
-  if (size == 1) {
-      gpcg->subset_type = TAOSUBSET_SINGLEPROCESSOR;
-  } else {
-      PetscOptionsGetTruth(0,"-redistribute",&value,&flg);
-      if (flg && value==PETSC_FALSE) {
-	  gpcg->subset_type = TAOSUBSET_NOREDISTRIBUTE;
-      } else if (flg && value==PETSC_TRUE) {
-	  gpcg->subset_type = TAOSUBSET_REDISTRIBUTE;
-      }
-  }
-  ierr = PetscOptionsHasName(0,"-taomask",&flg); CHKERRQ(ierr);
-  if (flg) {
-      gpcg->subset_type = TAOSUBSET_MASK;
-  }
-  ierr = PetscOptionsHasName(0,"-taosubmatrixfree",&flg); CHKERRQ(ierr);
-  if (flg) {
-      gpcg->subset_type = TAOSUBSET_MATRIXFREE;
-  }
+  ierr = PetscOptionsEList("-tao_subset_type","subset type", "", TAOSUBSET, TAOSUBSET_TYPES,TAOSUBSET[gpcg->subset_type], &gpcg->subset_type, 0); CHKERRQ(ierr);
+
 
   ierr = PetscOptionsEList("-tao_gpcg_ksp_type", "ksp type", "", GPCG_KSP, GPCG_KSP_NTYPES,
 			 GPCG_KSP[gpcg->ksp_type], &gpcg->ksp_type,0); CHKERRQ(ierr);

@@ -60,7 +60,7 @@ typedef struct{
   PetscInt n_lower;
   PetscInt n_bind;       /* Number of binding varibles */
   PetscInt ksp_type;
-  TaoSubsetType subset_type;
+  PetscInt subset_type;
 }TAO_GPCG;
 
 
