@@ -53,7 +53,7 @@ static int TaoSolverSetFromOptions_TRON(TaoSolver tao);
   
   ierr = PetscOptionsInt("-tron_maxgpits","maximum number of gradient projections per TRON iterate","TaoSetMaxGPIts",tron->maxgpits,&tron->maxgpits,&flg);
   CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_tron_subset_type","tron subset type", "", TRON_SUBSET,TRON_SUBSET_TYPES,TRON_SUBSET[tron->subset_type], &tron->subset_type, 0); CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_subset_type","subset type", "", TAOSUBSET, TAOSUBSET_TYPES,TAOSUBSET[tron->subset_type], &tron->subset_type, 0); CHKERRQ(ierr);
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
