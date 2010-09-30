@@ -311,8 +311,11 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
 PetscErrorCode MatHeaderReplace(Mat A,Mat C)
 {
   PetscErrorCode ierr;
+  PetscInt refct;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(C,MAT_CLASSID,2);
   if (A == C) PetscFunctionReturn(0);
 
   /* free all the interior data structures from mat */
@@ -328,12 +331,12 @@ PetscErrorCode MatHeaderReplace(Mat A,Mat C)
   if (A->bmapping) {
     ierr = ISLocalToGlobalMappingDestroy(A->bmapping);CHKERRQ(ierr);
   }
-  
+
   /* copy C over to A */
-  if (C) {
-    ierr = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
-    ierr = PetscLogObjectDestroy((PetscObject)C);CHKERRQ(ierr);
-    ierr = PetscFree(C);CHKERRQ(ierr);
-  }
+  refct = ((PetscObject)A)->refct;
+  ierr = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
+  ((PetscObject)A)->refct = refct;
+  ierr = PetscLogObjectDestroy((PetscObject)C);CHKERRQ(ierr);
+  ierr = PetscFree(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
