@@ -322,6 +322,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         }
       }
     } else {
+      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)xin,viewer,"Vector Object");CHKERRQ(ierr);
       if (format != PETSC_VIEWER_ASCII_COMMON) {ierr = PetscViewerASCIIPrintf(viewer,"Process [%d]\n",rank);CHKERRQ(ierr);}
       cnt = 0;
       for (i=0; i<xin->map->n; i++) {

@@ -235,6 +235,7 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
   } else {
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)xin,viewer,"Vector Object");CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       if (format == PETSC_VIEWER_ASCII_INDEX) {
         ierr = PetscViewerASCIIPrintf(viewer,"%D: ",i);CHKERRQ(ierr);
