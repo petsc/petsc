@@ -56,8 +56,7 @@ class Configure(PETSc.package.NewPackage):
       g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n')
       self.setCompilers.popLanguage()
     else:
-      g.write('FORTRAN    = \n')
-      g.write('FFLAGS     = \n')
+      raise RuntimeError('SuperLU requires a Fortran compiler to build')
     g.write('MATLAB       =\n')
     g.write('NOOPTS       = '+self.blasLapack.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n')
     g.close()
