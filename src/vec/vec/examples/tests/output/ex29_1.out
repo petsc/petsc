@@ -1,3 +1,5 @@
+Vector Object:
+  type: mpi
 Process [0]
 0
 1
@@ -379,6 +381,8 @@ Process [2]
 375
 376
 377
+Vector Object:
+  type: mpi
 Process [0]
 0
 1
