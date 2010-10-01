@@ -584,7 +584,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,cons
   options->argc     = (argc) ? *argc : 0;
   options->args     = (args) ? *args : PETSC_NULL;
 
-  if (file) {
+  if (file && file[0]) {
     ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,file,PETSC_TRUE);CHKERRQ(ierr);
   }
   /*

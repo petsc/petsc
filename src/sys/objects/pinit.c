@@ -754,8 +754,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFinalize(void)
   PetscFunctionBegin;
 
   if (!PetscInitializeCalled) {
-    (*PetscErrorPrintf)("PetscInitialize() must be called before PetscFinalize()\n");
-    PetscFunctionReturn(0);
+    printf("PetscInitialize() must be called before PetscFinalize()\n");
+    PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
   }
   ierr = PetscInfo(PETSC_NULL,"PetscFinalize() called\n");
 
