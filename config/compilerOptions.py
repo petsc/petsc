@@ -66,7 +66,7 @@ class CompilerOptions(config.base.Configure):
         elif bopt == 'g':
           flags.extend(['-Z7'])
         elif bopt == 'O':
-          flags.extend(['-O3', '-QxW'])
+          flags.extend(['-O2', '-QxW'])
       # Windows Borland
       elif compiler.find('win32fe bcc32') >= 0:
         if bopt == '':

@@ -1288,7 +1288,7 @@ class Configure(config.base.Configure):
         self.dynamicLibraryFlags = goodFlags
         self.dynamicLibraryExt = ext
         testMethod = 'foo'
-        if self.checkLink(includes = 'int '+testMethod+'(void) {return 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 'dynamic'):
+        if self.checkLink(includes = '#include <stdio.h>\nint '+testMethod+'(void) {printf("test");return 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 'dynamic'):
           oldLib  = self.linkerObj
           code = '''
 void *handle = dlopen("%s", 0);

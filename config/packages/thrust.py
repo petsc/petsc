@@ -4,14 +4,14 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download        = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/thrust_0_1.tar.gz']
+    self.download        = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/thrust_100_201.tar.gz']
     self.includes        = ['thrust/version.h']
     self.includedir      = ''
     self.forceLanguage   = 'CUDA'
     self.cxx             = 0
     self.archIndependent = 1
     self.worksonWindows  = 1
-    self.version         = '100300'
+    self.version         = '100201'
     return
 
   def Install(self):

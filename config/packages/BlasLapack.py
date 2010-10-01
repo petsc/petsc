@@ -142,13 +142,11 @@ class Configure(config.package.Package):
       raise RuntimeError('You cannot set both the library containing BLAS/LAPACK with --with-blas-lapack-lib=<lib>\nand the directory to search with --with-blas-lapack-dir=<dir>')
 
     if self.framework.argDB['download-c-blas-lapack']:
-      self.download= 'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.1.1.tar.gz'
-      self.downloadname = 'c-blas-lapack'
-      self.downloaddirname = 'f2cblaslapack-3.1.1'
+      self.download= ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.1.1.tar.gz']
+      self.downloadname = 'f2cblaslapack-3.1.1'
     elif self.framework.argDB['download-f-blas-lapack']:
-      self.download= 'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fblaslapack-3.1.1.tar.gz'
-      self.downloadname = 'f-blas-lapack'
-      self.downloaddirname = 'fblaslapack-3.1.1'
+      self.download= ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fblaslapack-3.1.1.tar.gz']
+      self.downloadname = 'fblaslapack-3.1.1'
 
     if self.framework.argDB['download-c-blas-lapack'] == 1 or isinstance(self.framework.argDB['download-c-blas-lapack'], str):
       if isinstance(self.framework.argDB['download-c-blas-lapack'], str):
@@ -310,6 +308,9 @@ class Configure(config.package.Package):
       yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libfblas.a'), os.path.join(libdir,'libflapack.a'), 1)
     return
 
+  def Install(self):
+    return self.installDir
+
   def getSharedFlag(self,cflags):
     for flag in ['-PIC', '-fPIC', '-KPIC', '-qpic']:
       if cflags.find(flag) >=0: return flag
@@ -332,37 +333,16 @@ class Configure(config.package.Package):
     return ''
 
   def downLoadBlasLapack(self, f2c, l):
-    self.framework.log.write('Downloading '+self.downloaddirname+'\n')
-    if self.framework.externalPackagesDir is None:
-      packages = os.path.abspath('externalpackages')
-    else:
-      packages = self.framework.externalPackagesDir
-    if not os.path.isdir(packages):
-      os.mkdir(packages)
     if f2c == 'f':
       self.setCompilers.pushLanguage('FC')
       if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker()):
         raise RuntimeError('Cannot compile fortran blaslapack with NAG compiler - install blas/lapack compiled with g77 instead')
       self.setCompilers.popLanguage()
-    libdir = os.path.join(self.defaultInstallDir,self.arch,'lib')
-    confdir = os.path.join(self.defaultInstallDir,self.arch,'conf')
-    if not os.path.isdir(os.path.join(packages,self.downloaddirname)):
-      self.framework.log.write('Actually need to ftp '+self.downloaddirname+'\n')
+    self.getInstallDir()
+    libdir = self.libDir
+    confdir = self.confDir
+    blasDir = self.packageDir
 
-      import retrieval
-      retriever = retrieval.Retriever(self.sourceControl, argDB = self.framework.argDB)
-      retriever.setup()
-          
-      try:
-        retriever.genericRetrieve(self.download,packages,self.downloadname)
-      except RuntimeError, e:
-        raise RuntimeError(e)
-      self.framework.actions.addArgument('BLAS/LAPACK', 'Download', 'Downloaded PETSc '+self.downloaddirname + ' into '+os.path.dirname(libdir))
-    else:
-      self.framework.log.write('Found '+self.downloaddirname+', do not need to download\n')
-    if not os.path.isdir(libdir):
-      os.mkdir(libdir)
-    blasDir = os.path.join(packages,self.downloaddirname)
     g = open(os.path.join(blasDir,'tmpmakefile'),'w')
     f = open(os.path.join(blasDir,'makefile'),'r')    
     line = f.readline()
@@ -419,18 +399,19 @@ class Configure(config.package.Package):
       line = f.readline()
     f.close()
     g.close()
-    if os.path.isfile(os.path.join(confdir,self.package)) and (SourceDB.getChecksum(os.path.join(confdir,self.package)) == SourceDB.getChecksum(os.path.join(blasDir,'tmpmakefile'))):
-      self.framework.log.write('Do not need to compile '+self.downloaddirname+', already compiled\n')
+
+    if not self.installNeeded('tmpmakefile'):
       return libdir
+
     try:
       self.logPrintBox('Compiling '+l.upper()+'BLASLAPACK; this may take several minutes')
       output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile', timeout=2500, log = self.framework.log)
     except RuntimeError, e:
-      raise RuntimeError('Error running make on '+self.downloaddirname+': '+str(e))
+      raise RuntimeError('Error running make on '+blasDir+': '+str(e))
     try:
       output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && mv -f lib'+f2c+'blas.'+self.setCompilers.AR_LIB_SUFFIX+' lib'+f2c+'lapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=30, log = self.framework.log)
     except RuntimeError, e:
-      raise RuntimeError('Error moving '+self.downloaddirname+' libraries: '+str(e))
+      raise RuntimeError('Error moving '+blasDir+' libraries: '+str(e))
 
     if self.framework.argDB['with-iphone']:
       # Build version of C BLAS/LAPACK suitable for the iPhone
@@ -443,14 +424,14 @@ class Configure(config.package.Package):
       try:
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+os.path.join(blasDir,'BlasLapack')+' && xcodebuild -configuration '+debug, timeout=3000, log = self.framework.log)
       except RuntimeError, e:
-        raise RuntimeError('Error making iPhone version of BLAS/LAPACK on '+self.downloaddirname+': '+str(e))
+        raise RuntimeError('Error making iPhone version of BLAS/LAPACK on '+blasDir+': '+str(e))
       try:
         output,err,ret  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(blasDir,'BlasLapack','build',debugdir,'libBlasLapack.a')+' '+libdir, timeout=30, log = self.framework.log)
       except RuntimeError, e:
-        raise RuntimeError('Error copying iPhone version of BLAS/LAPACK libraries on '+self.downloaddirname+': '+str(e))
+        raise RuntimeError('Error copying iPhone version of BLAS/LAPACK libraries on '+blasDir+': '+str(e))
       
     try:
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && cp -f tmpmakefile '+os.path.join(confdir,self.package), timeout=30, log = self.framework.log)
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && cp -f tmpmakefile '+os.path.join(self.confDir, self.name), timeout=30, log = self.framework.log)
     except RuntimeError, e:
       pass
     return libdir

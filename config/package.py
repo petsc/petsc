@@ -303,8 +303,10 @@ class Package(config.base.Configure):
     return ''
 
   def installNeeded(self, mkfile):
-    if not os.path.isfile(os.path.join(self.confDir, self.name)) or not (self.getChecksum(os.path.join(self.confDir, self.name)) == self.getChecksum(os.path.join(self.packageDir, mkfile))):
-      self.framework.log.write('Have to rebuild '+self.name+', '+mkfile+' != '+os.path.join(self.confDir, self.name)+'\n')
+    makefile      = os.path.join(self.packageDir, mkfile)
+    makefileSaved = os.path.join(self.confDir, self.name)
+    if not os.path.isfile(makefileSaved) or not (self.getChecksum(makefileSaved) == self.getChecksum(makefile)):
+      self.framework.log.write('Have to rebuild '+self.name+', '+makefile+' != '+makefileSaved+'\n')
       return 1
     else:
       self.framework.log.write('Do not need to rebuild '+self.name+'\n')
@@ -416,6 +418,9 @@ class Package(config.base.Configure):
       libs += self.libraries.math
       
     for location, directory, lib, incl in self.generateGuesses():
+      if directory and not os.path.isdir(directory):
+        self.framework.logPrint('Directory does not exist: %s (while checking "%s" for "%r")' % (directory,location,lib))
+        continue
       if lib == '': lib = []
       elif not isinstance(lib, list): lib = [lib]
       if incl == '': incl = []
@@ -426,6 +431,7 @@ class Package(config.base.Configure):
           incl.append(loc)
       if self.functions:
         self.framework.logPrint('Checking for library in '+location+': '+str(lib))
+        if directory: self.framework.logPrint('Contents: '+str(os.listdir(directory)))
       else:
         self.framework.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
       if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2]}):

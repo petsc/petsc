@@ -4,14 +4,14 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download        = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cusp_1_2.tar.gz']
+    self.download        = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cusp_101.tar.gz']
     self.includes        = ['cusp/version.h']
     self.includedir      = ''
     self.forceLanguage   = 'CUDA'
     self.cxx             = 0
     self.archIndependent = 1
     self.worksonWindows  = 1
-    self.version         = '100'
+    self.version         = '101'
     return
 
   def setupDependencies(self, framework):

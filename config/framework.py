@@ -76,12 +76,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
       argDB = RDict.RDict(load = loadArgDB)
     # Storage for intermediate test results
-    if tmpDir is None:
-      self.tmpDir        = tempfile.mkdtemp(prefix = 'petsc-')
-    else:
-      self.tmpDir        = tmpDir
+    self.tmpDir          = tmpDir
     script.LanguageProcessor.__init__(self, clArgs, argDB)
-    config.base.Configure.__init__(self, self, self.tmpDir)
+    config.base.Configure.__init__(self, self)
     self.childGraph      = graph.DirectedGraph()
     self.substRE         = re.compile(r'@(?P<name>[^@]+)@')
     self.substFiles      = {}
@@ -112,7 +109,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.createChildren()
     # Create argDB for user specified options only
     self.clArgDB = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.clArgs])
-    self.logPrint('All intermediate test results are stored in '+self.tmpDir)
     return
 
   def __getstate__(self):
@@ -178,6 +174,22 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       raise RuntimeError('Unable to parse output of '+configSub+': '+output)
     return (m.group('cpu'), m.group('vendor'), m.group('os'))
 
+  def getTmpDir(self):
+    if not hasattr(self, '_tmpDir'):
+      self._tmpDir = tempfile.mkdtemp(prefix = 'petsc-')
+      self.logPrint('All intermediate test results are stored in '+self._tmpDir)
+    return self._tmpDir
+  def setTmpDir(self, temp):
+    if hasattr(self, '_tmpDir'):
+      if os.path.isdir(self._tmpDir):
+        import shutil
+        shutil.rmtree(self._tmpDir)
+      if temp is None:
+        delattr(self, '_tmpDir')
+    if not temp is None:
+      self._tmpDir = temp
+    return
+  tmpDir = property(getTmpDir, setTmpDir, doc = 'Temporary directory for test byproducts')
   def getHostCPU(self):
     if not hasattr(self, '_host_cpu'):
       return self.argDB['known-host-cpu']
@@ -292,9 +304,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.actions.addArgument('Framework', 'File creation', 'Created C specific configure header '+self.cHeader)
     self.log.write('\n')
     self.actions.output(self.log)
-    if os.path.isdir(self.tmpDir):
-      import shutil
-      shutil.rmtree(self.tmpDir)
+    self.tmpDir = None
     return
 
   def printSummary(self):
@@ -900,8 +910,15 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       import nargs
       import sys
 
+      if self.arch:
+        confname = 'conftest-%s' % (self.arch,)
+        reconfname = 'reconfigure-%s.py' % (self.arch,)
+      else:
+        confname = 'conftest'
+        reconfname = reconfigure.py
       args = self.clArgs[:]
-      body = ['FILE *output = fopen("reconfigure.py","w");']
+      body = ['const char reconfname[] = "' + reconfname + '";',
+              'FILE *output = fopen(reconfname,"w");']
       body.append('fprintf(output, "#!'+sys.executable+'\\n");')
       body.append('fprintf(output, "\\nconfigure_options = [\\n");')
       body.extend(self.batchSetup)
@@ -920,7 +937,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
                 '  configure.petsc_configure(configure_options)\\n");']
       body.append('\\n'.join(driver))
       body.append('\nfclose(output);\n')
-      body.append('chmod("reconfigure.py",0744);')
+      body.append('chmod(reconfname,0744);')
 
       oldFlags = self.compilers.CPPFLAGS
       oldLibs  = self.compilers.LIBS
@@ -929,14 +946,18 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.batchIncludes.insert(0, '#include <stdio.h>\n#include <sys/types.h>\n#include <sys/stat.h>')
       if not self.checkLink('\n'.join(self.batchIncludes)+'\n', '\n'.join(body), cleanup = 0, codeBegin = '\nint main(int argc, char **argv) {\n'):
         sys.exit('Unable to generate test file for cross-compilers/batch-system\n')
+      import shutil
+      # Could use shutil.copy, but want an error if confname exists as a directory
+      shutil.copyfile(os.path.join(self.tmpDir,'conftest'),confname)
+      shutil.copymode(os.path.join(self.tmpDir,'conftest'),confname)
       self.compilers.CPPFLAGS = oldFlags
       self.compilers.LIBS = oldLibs
       self.logClear()
       print '=================================================================================\r'
       print '    Since your compute nodes require use of a batch system or mpiexec you must:  \r'
-      print ' 1) Submit ./conftest to 1 processor of your batch system or system you are      \r'
+      print ' 1) Submit ./'+confname+' to 1 processor of your batch system or system you are  \r'
       print '    cross-compiling for; this will generate the file reconfigure.py              \r'
-      print ' 2) Run ./reconfigure.py (to complete the configure process).                    \r'
+      print ' 2) Run ./'+reconfname+' (to complete the configure process).                    \r'
       print '=================================================================================\r'
       sys.exit(0)
     return

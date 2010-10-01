@@ -12,7 +12,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.4/downloads/openmpi-1.4.2.tar.gz']
-    self.download_mpich     = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/mpich2-trunk-r7115.tar.gz']
+    self.download_mpich     = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/mpich2-trunk-r7290.tar.gz']
     self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
     self.includes           = ['mpi.h']
@@ -388,17 +388,12 @@ class Configure(config.package.Package):
     if not self.framework.argDB['with-shared-libraries']:
       args.append('--enable-shared=no')
       args.append('--enable-static=yes')
-        
     args = ' '.join(args)
-    configArgsFilename = os.path.join(confDir,self.downloadname)
-    try:
-      fd      = file(configArgsFilename)
-      oldargs = fd.readline()
-      fd.close()
-    except:
-      oldargs = ''
-    if not oldargs == args:
-      self.framework.log.write('Have to rebuild OPENMPI oldargs = '+oldargs+'\n new args = '+args+'\n')
+
+    f = file(os.path.join(self.packageDir, 'args.petsc'), 'w')
+    f.write(args)
+    f.close()
+    if self.installNeeded('args.petsc'):
       try:
         self.logPrintBox('Configuring OPENMPI/MPI; this may take several minutes')
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && ./configure '+args, timeout=1500, log = self.framework.log)
@@ -421,10 +416,13 @@ class Configure(config.package.Package):
         output,err,ret  = config.base.Configure.executeShellCommand('cp '+os.path.join(installDir,'lib','*.mod ')+os.path.join(installDir,'include'), timeout=30, log = self.framework.log)
       except RuntimeError, e:
         pass
-    
-      fd = file(configArgsFilename, 'w')
-      fd.write(args)
-      fd.close()
+
+      try:
+        fd = file(os.path.join(self.confDir, self.name), 'w')
+        fd.write(args)
+        fd.close()
+      except:
+        self.framework.logPrint('Unable to output configure arguments into '+os.path.join(self.confDir, self.name))
       #need to run ranlib on the libraries using the full path
       try:
         if not self.framework.argDB['with-shared-libraries']:
@@ -504,16 +502,11 @@ class Configure(config.package.Package):
     args.append('--enable-g=meminit')    
     args.append('--enable-fast')    
     args = ' '.join(args)
-    configArgsFilename = os.path.join(confDir,self.downloadname)
-    try:
-      fd      = file(configArgsFilename)
-      oldargs = fd.readline()
-      fd.close()
-    except:
-      self.framework.logPrint('Unable to find old configure arguments in '+configArgsFilename)
-      oldargs = ''
-    if not oldargs == args:
-      self.framework.logPrint('Have to rebuild MPICH oldargs = '+oldargs+'\n new args = '+args)
+
+    f = file(os.path.join(self.packageDir, 'args.petsc'), 'w')
+    f.write(args)
+    f.close()
+    if self.installNeeded('args.petsc'):
       try:
         self.logPrintBox('Running configure on MPICH; this may take several minutes')
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && ./configure '+args, timeout=2000, log = self.framework.log)
@@ -545,11 +538,11 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running make; make install on MPICH: '+str(e))
 
       try:
-        fd = file(configArgsFilename, 'w')
+        fd = file(os.path.join(self.confDir, self.name), 'w')
         fd.write(args)
         fd.close()
       except:
-        self.framework.logPrint('Unable to output configure arguments into '+configArgsFilename)
+        self.framework.logPrint('Unable to output configure arguments into '+os.path.join(self.confDir, self.name))
       if self.argDB['download-mpich-pm'] == 'mpd':
         homedir = os.getenv('HOME')
         if homedir:
