@@ -45,7 +45,7 @@ values::
 
 Now you can use :program:`pip`::
 
-    $ [sudo] pip install petsc4py
+    $ [sudo] pip install [--user] petsc4py
 
 Alternatively, you can use *setuptools* :program:`easy_install`
 (deprecated)::
