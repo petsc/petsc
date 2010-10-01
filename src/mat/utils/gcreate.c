@@ -311,9 +311,14 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
 PetscErrorCode MatHeaderReplace(Mat A,Mat C)
 {
   PetscErrorCode ierr;
+  PetscInt refct;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(C,MAT_CLASSID,2);
   if (A == C) PetscFunctionReturn(0);
+  PetscCheckSameComm(A,1,C,2);
+  if (((PetscObject)C)->refct != 1) SETERRQ1(((PetscObject)C)->comm,PETSC_ERR_ARG_WRONGSTATE,"Object C has refct %D > 1, would leave hanging reference",((PetscObject)C)->refct);
 
   /* free all the interior data structures from mat */
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
@@ -328,12 +333,12 @@ PetscErrorCode MatHeaderReplace(Mat A,Mat C)
   if (A->bmapping) {
     ierr = ISLocalToGlobalMappingDestroy(A->bmapping);CHKERRQ(ierr);
   }
-  
+
   /* copy C over to A */
-  if (C) {
-    ierr = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
-    ierr = PetscLogObjectDestroy((PetscObject)C);CHKERRQ(ierr);
-    ierr = PetscFree(C);CHKERRQ(ierr);
-  }
+  refct = ((PetscObject)A)->refct;
+  ierr = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
+  ((PetscObject)A)->refct = refct;
+  ierr = PetscLogObjectDestroy((PetscObject)C);CHKERRQ(ierr);
+  ierr = PetscFree(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

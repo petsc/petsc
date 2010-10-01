@@ -1871,6 +1871,7 @@ PetscErrorCode MatAXPY_MPIAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = PetscMalloc(yy->A->rmap->N*sizeof(PetscInt),&nnz_d);CHKERRQ(ierr);
     ierr = PetscMalloc(yy->B->rmap->N*sizeof(PetscInt),&nnz_o);CHKERRQ(ierr);
     ierr = MatCreate(((PetscObject)Y)->comm,&B);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)B,((PetscObject)Y)->name);CHKERRQ(ierr);
     ierr = MatSetSizes(B,Y->rmap->n,Y->cmap->n,Y->rmap->N,Y->cmap->N);CHKERRQ(ierr);
     ierr = MatSetType(B,MATMPIAIJ);CHKERRQ(ierr);
     ierr = MatAXPYGetPreallocation_SeqAIJ(yy->A,xx->A,nnz_d);CHKERRQ(ierr);
