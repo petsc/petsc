@@ -1,3 +1,5 @@
+Vector Object:
+  type: seq
 0
 1
 2
@@ -10,6 +12,8 @@
 9
 writing vector in binary to vector.dat ...
 reading vector in binary from vector.dat ...
+Vector Object:
+  type: seq
 0
 1
 2

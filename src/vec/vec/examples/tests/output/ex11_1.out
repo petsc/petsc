@@ -1,9 +1,13 @@
+Vector Object:
+  type: mpi
 Process [0]
 0
 Process [1]
 1
 2
 ----
+Vector Object:
+  type: seq
 0
 1
 2
