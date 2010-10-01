@@ -1902,7 +1902,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
     ierr = PetscObjectGetNewTag((PetscObject)ctx,&temptag);CHKERRQ(ierr);
     winsize = (to->n ? to->starts[to->n] : 0)*bs*sizeof(PetscScalar);
     ierr = MPI_Win_create(to->values ? to->values : MPI_BOTTOM,winsize,sizeof(PetscScalar),MPI_INFO_NULL,comm,&to->window);CHKERRQ(ierr); 
-    ierr = PetscMalloc(to->n,&to->winstarts);CHKERRQ(ierr);
+    ierr = PetscMalloc(to->n*sizeof(PetscInt),&to->winstarts);CHKERRQ(ierr);
     ierr = PetscMalloc2(to->n,MPI_Request,&request,to->n,MPI_Status,&status);CHKERRQ(ierr);
     for (i=0; i<to->n; i++) {
       ierr = MPI_Irecv(to->winstarts+i,1,MPIU_INT,to->procs[i],temptag,comm,request+i);CHKERRQ(ierr);
@@ -1915,7 +1915,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
 
     winsize = (from->n ? from->starts[from->n] : 0)*bs*sizeof(PetscScalar);
     ierr = MPI_Win_create(from->values ? from->values : MPI_BOTTOM,winsize,sizeof(PetscScalar),MPI_INFO_NULL,comm,&from->window);CHKERRQ(ierr); 
-    ierr = PetscMalloc(from->n,&from->winstarts);CHKERRQ(ierr);
+    ierr = PetscMalloc(from->n*sizeof(PetscInt),&from->winstarts);CHKERRQ(ierr);
     ierr = PetscMalloc2(from->n,MPI_Request,&request,from->n,MPI_Status,&status);CHKERRQ(ierr);
     for (i=0; i<from->n; i++) {
       ierr = MPI_Irecv(from->winstarts+i,1,MPIU_INT,from->procs[i],temptag,comm,request+i);CHKERRQ(ierr);
