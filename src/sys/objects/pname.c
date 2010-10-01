@@ -85,7 +85,12 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
    Concepts: object name^setting default
 
    Notes: This is used in a small number of places when an object NEEDS a name, for example when it is saved to Matlab with that variable name. 
-          Use PetscObjectSetName() to set the name of an object to what you want.
+          Use PetscObjectSetName() to set the name of an object to what you want. The AMS viewer requires that no two published objects 
+          share the same name.
+
+   Developer Note: this needs to generate the exact same string on all ranks that share the object. The current algorithm may not always work.
+
+
 
 .seealso: PetscObjectGetName(), PetscObjectSetName()
 @*/

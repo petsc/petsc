@@ -816,8 +816,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscWebServeRequest(int port)
       ierr = PetscOptionsPrint(fd);CHKERRQ(ierr);
       fprintf(fd, "<HR>\r\n");
 #if defined(PETSC_HAVE_AMS)
-      fprintf(fd, "<a href=\"./ams\">Connect to memory snooper</a></p>\r\n\r\n");
-      fprintf(fd, "<a href=\"./ams-tree\">Connect to memory snooper--Tree display</a></p>\r\n\r\n");
+      if (PetscAMSPublishAll) {
+	fprintf(fd, "<a href=\"./ams-tree\">Connect to Memory Snooper--Tree Display</a></p>\r\n\r\n");
+        fprintf(fd, "<a href=\"./ams\">Connect to Memory Snooper</a></p>\r\n\r\n");
+      }
 #endif
       ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
       goto theend;
