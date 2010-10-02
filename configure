@@ -1,1 +1,3 @@
-config/configure.py
+#!/usr/bin/env python
+import os
+execfile(os.path.join(os.path.dirname(__file__), 'config', 'configure.py'))
