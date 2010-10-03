@@ -728,6 +728,9 @@ EXTERN PetscErrorCode VecScatterCreate_StoP(PetscInt,const PetscInt *,PetscInt,c
 /* =======================================================================*/
 #define VEC_SEQ_ID 0
 #define VEC_MPI_ID 1
+#define IS_GENERAL_ID 0
+#define IS_STRIDE_ID  1
+#define IS_BLOCK_ID   2
 
 /*
    Blocksizes we have optimized scatters for 
@@ -832,6 +835,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       totalv,xin_type = VEC_SEQ_ID,yin_type = VEC_SEQ_ID,*range; 
+  PetscInt       ix_type = IS_GENERAL_ID,iy_type = IS_GENERAL_ID;
   MPI_Comm       comm,ycomm;
   PetscBool      ixblock,iyblock,iystride,islocal,cando,flag;
   IS             tix = 0,tiy = 0;
@@ -852,6 +856,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
   ierr = PetscObjectGetComm((PetscObject)yin,&ycomm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(ycomm,&size);CHKERRQ(ierr);
   if (size > 1) {comm = ycomm; yin_type = VEC_MPI_ID;}
+
+
   
   /* generate the Scatter context */
   ierr = PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_CLASSID,0,"VecScatter",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
@@ -912,12 +918,24 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"iy not given, but not Seq or MPI vector");
   }
 
+  /*
+     Determine types of index sets
+  */
+  ierr = ISBlock(ix,&flag);CHKERRQ(ierr);
+  if (flag) ix_type = IS_BLOCK_ID;
+  ierr = ISBlock(iy,&flag);CHKERRQ(ierr);
+  if (flag) iy_type = IS_BLOCK_ID;
+  ierr = ISStride(ix,&flag);CHKERRQ(ierr);
+  if (flag) ix_type = IS_STRIDE_ID;
+  ierr = ISStride(iy,&flag);CHKERRQ(ierr);
+  if (flag) iy_type = IS_STRIDE_ID;
+
   /* ===========================================================================================================
         Check for special cases
      ==========================================================================================================*/
   /* ---------------------------------------------------------------------------*/
   if (xin_type == VEC_SEQ_ID && yin_type == VEC_SEQ_ID) {
-    if (((PetscObject)ix)->type == IS_GENERAL && ((PetscObject)iy)->type == IS_GENERAL){
+    if (ix_type == IS_GENERAL_ID && iy_type == IS_GENERAL_ID){
       PetscInt               nx,ny;
       const PetscInt         *idx,*idy;
       VecScatter_Seq_General *to = PETSC_NULL,*from = PETSC_NULL;
@@ -949,7 +967,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       ctx->copy         = VecScatterCopy_SGToSG;
       ierr = PetscInfo(xin,"Special case: sequential vector general scatter\n");CHKERRQ(ierr);
       goto functionend;
-    } else if (((PetscObject)ix)->type == IS_STRIDE &&  ((PetscObject)iy)->type == IS_STRIDE){
+    } else if (ix_type == IS_STRIDE_ID &&  iy_type == IS_STRIDE_ID){
       PetscInt               nx,ny,to_first,to_step,from_first,from_step;
       VecScatter_Seq_Stride  *from8 = PETSC_NULL,*to8 = PETSC_NULL;
 
@@ -975,7 +993,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       ctx->copy         = VecScatterCopy_SStoSS;
       ierr = PetscInfo(xin,"Special case: sequential vector stride to stride\n");CHKERRQ(ierr);
       goto functionend; 
-    } else if (((PetscObject)ix)->type == IS_GENERAL && ((PetscObject)iy)->type == IS_STRIDE){
+    } else if (ix_type == IS_GENERAL_ID && iy_type == IS_STRIDE_ID){
       PetscInt               nx,ny,first,step;
       const PetscInt         *idx;
       VecScatter_Seq_General *from9 = PETSC_NULL;
@@ -1006,7 +1024,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       from9->type    = VEC_SCATTER_SEQ_GENERAL;
       ierr = PetscInfo(xin,"Special case: sequential vector general to stride\n");CHKERRQ(ierr);
       goto functionend;
-    } else if (((PetscObject)ix)->type == IS_STRIDE && ((PetscObject)iy)->type == IS_GENERAL){
+    } else if (ix_type == IS_STRIDE_ID && iy_type == IS_GENERAL_ID){
       PetscInt               nx,ny,first,step;
       const PetscInt         *idy;
       VecScatter_Seq_General *to10 = PETSC_NULL;
@@ -1107,7 +1125,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
      ==========================================================================================================*/
     islocal = PETSC_FALSE;
     /* special case extracting (subset of) local portion */ 
-    if (((PetscObject)ix)->type == IS_STRIDE && ((PetscObject)iy)->type == IS_STRIDE){
+    if (ix_type == IS_STRIDE_ID && iy_type == IS_STRIDE_ID){
       PetscInt              nx,ny,to_first,to_step,from_first,from_step;
       PetscInt              start,end;
       VecScatter_Seq_Stride *from12 = PETSC_NULL,*to12 = PETSC_NULL;
@@ -1146,7 +1164,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
     /* test for special case of all processors getting entire vector */
     /* contains check that PetscMPIInt can handle the sizes needed */
     totalv = 0;
-    if (((PetscObject)ix)->type == IS_STRIDE && ((PetscObject)iy)->type == IS_STRIDE){
+    if (ix_type == IS_STRIDE_ID && iy_type == IS_STRIDE_ID){
       PetscInt             i,nx,ny,to_first,to_step,from_first,from_step,N;
       PetscMPIInt          *count = PETSC_NULL,*displx;
       VecScatter_MPI_ToAll *sto = PETSC_NULL;
@@ -1197,7 +1215,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
     /* test for special case of processor 0 getting entire vector */
     /* contains check that PetscMPIInt can handle the sizes needed */
     totalv = 0;
-    if (((PetscObject)ix)->type == IS_STRIDE && ((PetscObject)iy)->type == IS_STRIDE){
+    if (ix_type == IS_STRIDE_ID && iy_type == IS_STRIDE_ID){
       PetscInt             i,nx,ny,to_first,to_step,from_first,from_step,N;
       PetscMPIInt          rank,*count = PETSC_NULL,*displx;
       VecScatter_MPI_ToAll *sto = PETSC_NULL;
@@ -1323,7 +1341,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
      ==========================================================================================================*/
     /* special case local copy portion */ 
     islocal = PETSC_FALSE;
-    if (((PetscObject)ix)->type == IS_STRIDE && ((PetscObject)iy)->type == IS_STRIDE){
+    if (ix_type == IS_STRIDE_ID && iy_type == IS_STRIDE_ID){
       PetscInt              nx,ny,to_first,to_step,from_step,start,end,from_first;
       VecScatter_Seq_Stride *from = PETSC_NULL,*to = PETSC_NULL;
 
@@ -1358,7 +1376,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       ierr = MPI_Allreduce(&islocal,&cando,1,MPI_INT,MPI_LAND,((PetscObject)yin)->comm);CHKERRQ(ierr);
     }
       /* special case block to stride */
-    if (((PetscObject)ix)->type == IS_BLOCK && ((PetscObject)iy)->type == IS_STRIDE){
+    if (ix_type == IS_BLOCK_ID && iy_type == IS_STRIDE_ID){
       PetscInt ystart,ystride,ysize,bsx;
       ierr = ISStrideGetInfo(iy,&ystart,&ystride);CHKERRQ(ierr);
       ierr = ISGetLocalSize(iy,&ysize);CHKERRQ(ierr);

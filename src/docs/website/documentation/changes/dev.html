@@ -10,7 +10,7 @@
 <table width="100%">
   <tbody>
     <tr>
-      <td valign="top" width="25%">
+      <td width="25%" valign="top">
       <h1><font color="#ff0000" size="7">PETSc</font></h1>
       <ul>
         <li><a href="../../index.html"><strong>Home</strong></a></li>
@@ -25,7 +25,7 @@
       <hr color="#ff5b5b" size="4"> </td>
     </tr>
     <tr>
-      <td valign="top" width="25%">
+      <td width="25%" valign="top">
       <ul>
         <li><a href="../../download/index.html"><strong>Download</strong></a></li>
         <li><a href="../../features/index.html"><strong>Features</strong></a></li>
@@ -81,7 +81,7 @@ Software</strong></a></li>
         <li><a href="../developers/index.html"><strong>Developers Site</strong></a></li>
       </ul>
       </td>
-      <td valign="top" width="75%"><!--##begin-->
+      <td width="75%" valign="top"><!--##begin-->
       <p align="center"><font color="#ff0000" size="5"><a name="CHANGES">CHANGES</a>
 in the PETSc Development Version</font></p>
       <p><u><b>General:</b></u></p>
@@ -93,7 +93,8 @@ what communicator use then pass in PETSC_COMM_SELF </li>
 routines to any object that are called to process options when
 XXXSetFromOptions() is called.<br>
         </li>
-        <li>Changed PetscTruth to PetscBool and PETSC_TRUTH to PETSC_BOOL</li>
+        <li>Changed PetscTruth to PetscBool and PETSC_TRUTH to
+PETSC_BOOL</li>
       </ul>
       <u><b>Logging:<br>
       </b></u>
@@ -117,10 +118,18 @@ to --with-dynamic-loading</li>
         <li>'ifneeded' support removed. '--download-package=ifneeded'
 should now be '--download-package=1'</li>
       </ul>
-      <p><u><b>IS:</b></u></p>
+      <p><u><b>IS:<br>
+      </b></u></p>
+      <ul>
+        <li>Added ISCreate(), ISSetType(), ISRegister() etc to match
+style of other PETSc objects. Also added ISGeneralSetIndices(),
+ISBlockSetIndices(), ISStrideSetStride()<br>
+        </li>
+      </ul>
       <p><u><b>PF:</b></u></p>
       <ul>
-        <li>The source array is marked constant in PFApply and the callback.</li>
+        <li>The source array is marked constant in PFApply and the
+callback.</li>
       </ul>
       <p><u><b>Vec: <br>
       </b></u></p>
@@ -213,8 +222,8 @@ but the cast is no longer necessary).</li>
 DAGetCoordinateDA() now return borrowed references. The returned object
 should not be destroyed by the user.</li>
         <li>Added DAVecGetArrayF90()<br>
-        <li>Changed DASetVertexDivision to DASetOwnershipRanges</li>
         </li>
+        <li>Changed DASetVertexDivision to DASetOwnershipRanges</li>
       </ul>
       <p><u><b>DMMG:</b></u></p>
       <ul>

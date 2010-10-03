@@ -22,15 +22,91 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISInitializePackage(const char[]);
 S*/
 typedef struct _p_IS* IS;
 
+/*E
+    ISType - String with the name of a PETSc vector or the creation function
+       with an optional dynamic library name, for example
+       http://www.mcs.anl.gov/petsc/lib.a:myveccreate()
+
+   Level: beginner
+
+.seealso: ISSetType(), IS
+E*/
+#define ISType char*
+#define ISGENERAL      "general"
+#define ISSTRIDE       "stride"
+#define ISBLOCK        "block"
+
+/* Dynamic creation and loading functions */
+extern PetscFList ISList;
+extern PetscBool  ISRegisterAllCalled;
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISSetType(IS, const ISType);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISGetType(IS, const ISType *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISRegister(const char[],const char[],const char[],PetscErrorCode (*)(IS));
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISRegisterAll(const char []);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISRegisterDestroy(void);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISCreate(MPI_Comm,IS*);
+
+/*MC
+  ISRegisterDynamic - Adds a new vector component implementation
+
+  Synopsis:
+  PetscErrorCode ISRegisterDynamic(const char *name, const char *path, const char *func_name, PetscErrorCode (*create_func)(IS))
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+. path        - The path (either absolute or relative) of the library containing this routine
+. func_name   - The name of routine to create method context
+- create_func - The creation routine itself
+
+  Notes:
+  ISRegisterDynamic() may be called multiple times to add several user-defined vectors
+
+  If dynamic libraries are used, then the fourth input argument (routine_create) is ignored.
+
+  Sample usage:
+.vb
+    ISRegisterDynamic("my_is","/home/username/my_lib/lib/libO/solaris/libmy.a", "MyIStorCreate", MyIStorCreate);
+.ve
+
+  Then, your vector type can be chosen with the procedural interface via
+.vb
+    ISCreate(MPI_Comm, IS *);
+    ISSetType(IS,"my_vector_name");
+.ve
+   or at runtime via the option
+.vb
+    -vec_type my_vector_name
+.ve
+
+  Notes: $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
+         If your function is not being put into a shared library then use ISRegister() instead
+        
+  Level: advanced
+
+.keywords: IS, register
+.seealso: ISRegisterAll(), ISRegisterDestroy(), ISRegister()
+M*/
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#define ISRegisterDynamic(a,b,c,d) ISRegister(a,b,c,0)
+#else
+#define ISRegisterDynamic(a,b,c,d) ISRegister(a,b,c,d)
+#endif
+
 /*
     Default index set data structures that PETSc provides.
 */
-typedef enum {IS_GENERAL=0,IS_STRIDE=1,IS_BLOCK = 2} ISType;
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateGeneral(MPI_Comm,PetscInt,const PetscInt[],IS *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGeneralSetIndices(IS,PetscInt,const PetscInt[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateGeneralNC(MPI_Comm,PetscInt,const PetscInt[],IS *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGeneralSetIndicesNC(IS,PetscInt,const PetscInt[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateGeneralWithArray(MPI_Comm,PetscInt,PetscInt[],IS *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGeneralSetIndicesWithArray(IS,PetscInt,const PetscInt[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateBlock(MPI_Comm,PetscInt,PetscInt,const PetscInt[],IS *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockSetIndices(IS,PetscInt,PetscInt,const PetscInt[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateStride(MPI_Comm,PetscInt,PetscInt,PetscInt,IS *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISStrideSetStride(IS,PetscInt,PetscInt,PetscInt);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISDestroy(IS);
 

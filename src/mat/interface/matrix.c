@@ -2717,7 +2717,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLUFactorNumeric(Mat fact,Mat mat,const MatF
   if (mat->rmap->N != (fact)->rmap->N || mat->cmap->N != (fact)->cmap->N) {
     SETERRQ4(((PetscObject)mat)->comm,PETSC_ERR_ARG_SIZ,"Mat mat,Mat fact: global dimensions are different %D should = %D %D should = %D",mat->rmap->N,(fact)->rmap->N,mat->cmap->N,(fact)->cmap->N);
   }
-  if (!(fact)->ops->lufactornumeric) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (!(fact)->ops->lufactornumeric) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s numeric LU",((PetscObject)mat)->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_LUFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
   ierr = (fact->ops->lufactornumeric)(fact,mat,info);CHKERRQ(ierr);
@@ -2831,7 +2831,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorSymbolic(Mat fact,Mat mat,IS 
   if (mat->rmap->N != mat->cmap->N) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONG,"Matrix must be square");
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!(fact)->ops->choleskyfactorsymbolic) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (!(fact)->ops->choleskyfactorsymbolic) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s symbolic factor Cholesky",((PetscObject)mat)->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
@@ -2882,7 +2882,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorNumeric(Mat fact,Mat mat,cons
   PetscValidPointer(fact,2);
   PetscValidHeaderSpecific(fact,MAT_CLASSID,2);
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (!(fact)->ops->choleskyfactornumeric) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (!(fact)->ops->choleskyfactornumeric) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s numeric factor Cholesky",((PetscObject)mat)->type_name);
   if (mat->rmap->N != (fact)->rmap->N || mat->cmap->N != (fact)->cmap->N) {
     SETERRQ4(((PetscObject)mat)->comm,PETSC_ERR_ARG_SIZ,"Mat mat,Mat fact: global dim %D should = %D %D should = %D",mat->rmap->N,(fact)->rmap->N,mat->cmap->N,(fact)->cmap->N);
   }

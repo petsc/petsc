@@ -67,7 +67,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideToGeneral(IS inis)
   /* Remove the old stride data set */
   ierr = PetscFree(inis->data);CHKERRQ(ierr);
 
-  ((PetscObject)inis)->type         = IS_GENERAL;
   inis->data         = (void*)sub;
   inis->isperm       = PETSC_FALSE;
   ierr = PetscMemcpy(inis->ops,&myops,sizeof(myops));CHKERRQ(ierr);

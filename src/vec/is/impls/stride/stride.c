@@ -109,7 +109,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideGetInfo(IS is,PetscInt *first,PetscInt
   if (step) PetscValidIntPointer(step,3);
 
   sub = (IS_Stride*)is->data;
-  if (((PetscObject)is)->type != IS_STRIDE) PetscFunctionReturn(0);
   if (first) *first = sub->first; 
   if (step)  *step  = sub->step;
   PetscFunctionReturn(0);
@@ -137,13 +136,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideGetInfo(IS is,PetscInt *first,PetscInt
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISStride(IS is,PetscBool  *flag)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(flag,2);
 
-  if (((PetscObject)is)->type != IS_STRIDE) *flag = PETSC_FALSE;
-  else                       *flag = PETSC_TRUE;
-
+  ierr = PetscTypeCompare((PetscObject)is,ISSTRIDE,flag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -289,6 +288,55 @@ static struct _ISOps myops = { ISGetSize_Stride,
                                ISIdentity_Stride,
                                ISCopy_Stride };
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISStrideSetStride" 
+/*@
+   ISStrideSetStride - Sets the stride information for a stride index set.
+
+   Collective on IS
+
+   Input Parameters:
++  is - the index set
+.  n - the length of the locally owned portion of the index set
+.  first - the first element of the locally owned portion of the index set
+-  step - the change to the next index
+
+   Level: beginner
+
+  Concepts: IS^stride
+  Concepts: index sets^stride
+  Concepts: stride^index set
+
+.seealso: ISCreateGeneral(), ISCreateBlock(), ISAllGather()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISStrideSetStride(IS is,PetscInt n,PetscInt first,PetscInt step)
+{
+  PetscErrorCode ierr;
+  PetscInt       min,max;
+  IS_Stride      *sub = (IS_Stride*)is->data;
+
+  PetscFunctionBegin;
+  sub->n         = n;
+  ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,((PetscObject)is)->comm);CHKERRQ(ierr);
+  sub->first     = first;
+  sub->step      = step;
+  if (step > 0) {min = first; max = first + step*(n-1);}
+  else          {max = first; min = first + step*(n-1);}
+
+  is->min     = min;
+  is->max     = max;
+  is->data    = (void*)sub;
+  ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
+
+  if ((!first && step == 1) || (first == max && step == -1 && !min)) {
+    is->isperm  = PETSC_TRUE;
+  } else {
+    is->isperm  = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "ISCreateStride" 
 /*@
@@ -322,48 +370,28 @@ static struct _ISOps myops = { ISGetSize_Stride,
 PetscErrorCode PETSCVEC_DLLEXPORT ISCreateStride(MPI_Comm comm,PetscInt n,PetscInt first,PetscInt step,IS *is)
 {
   PetscErrorCode ierr;
-  PetscInt       min,max;
-  IS             Nindex;
-  IS_Stride      *sub;
-  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscValidPointer(is,5);
-  *is = PETSC_NULL;
-  if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of indices < 0");
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#endif
-
-  ierr = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_CLASSID,IS_STRIDE,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
-  ierr = PetscNewLog(Nindex,IS_Stride,&sub);CHKERRQ(ierr);
-  sub->n         = n;
-  ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  sub->first     = first;
-  sub->step      = step;
-  if (step > 0) {min = first; max = first + step*(n-1);}
-  else          {max = first; min = first + step*(n-1);}
-
-  Nindex->min     = min;
-  Nindex->max     = max;
-  Nindex->data    = (void*)sub;
-  ierr = PetscMemcpy(Nindex->ops,&myops,sizeof(myops));CHKERRQ(ierr);
-
-  if ((!first && step == 1) || (first == max && step == -1 && !min)) {
-    Nindex->isperm  = PETSC_TRUE;
-  } else {
-    Nindex->isperm  = PETSC_FALSE;
-  }
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-is_view",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg) {
-    PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)Nindex)->comm,&viewer);CHKERRQ(ierr);
-    ierr = ISView(Nindex,viewer);CHKERRQ(ierr);
-  }
-  *is = Nindex; 
+  ierr = ISCreate(comm,is);CHKERRQ(ierr);
+  ierr = ISSetType(*is,ISSTRIDE);CHKERRQ(ierr);
+  ierr = ISStrideSetStride(*is,n,first,step);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "ISCreate_Stride" 
+PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_Stride(IS is)
+{
+  PetscErrorCode ierr;
+  IS_Stride      *sub;
+
+  PetscFunctionBegin;
+  ierr = PetscNewLog(is,IS_Stride,&sub);CHKERRQ(ierr);
+  is->data = sub;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 
 

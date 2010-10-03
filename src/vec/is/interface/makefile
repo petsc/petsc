@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = index.c 
+SOURCEC  = index.c isregall.c isreg.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = index.o 
+OBJSC    = index.o isregall.o isreg.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = IS
