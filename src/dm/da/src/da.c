@@ -219,6 +219,19 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DA da, PetscInt width)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DACheckOwnershipRanges_Private"
+static PetscErrorCode DACheckOwnershipRanges_Private(DA da,PetscInt M,PetscInt m,const PetscInt lx[])
+{
+  PetscInt i,sum;
+
+  PetscFunctionBegin;
+  if (M < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"Global dimension not set");
+  for (i=sum=0; i<m; i++) sum += lx[i];
+  if (sum != M) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"Ownership ranges sum to %D but global dimension is %D",sum,M);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DASetOwnershipRanges"
 /*@
   DASetOwnershipRanges - Sets the number of nodes in each direction on each process
@@ -243,21 +256,24 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetOwnershipRanges(DA da, const PetscInt lx[]
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (lx) {
-    if (da->m < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot set vertex division before setting number of procs");
+    if (da->m < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
+    ierr = DACheckOwnershipRanges_Private(da,da->M,da->m,lx);CHKERRQ(ierr);
     if (!da->lx) {
       ierr = PetscMalloc(da->m*sizeof(PetscInt), &da->lx);CHKERRQ(ierr);
     }
     ierr = PetscMemcpy(da->lx, lx, da->m*sizeof(PetscInt));CHKERRQ(ierr);
   }
   if (ly) {
-    if (da->n < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot set vertex division before setting number of procs");
+    if (da->n < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
+    ierr = DACheckOwnershipRanges_Private(da,da->N,da->n,ly);CHKERRQ(ierr);
     if (!da->ly) {
       ierr = PetscMalloc(da->n*sizeof(PetscInt), &da->ly);CHKERRQ(ierr);
     }
     ierr = PetscMemcpy(da->ly, ly, da->n*sizeof(PetscInt));CHKERRQ(ierr);
   }
   if (lz) {
-    if (da->p < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot set vertex division before setting number of procs");
+    if (da->p < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
+    ierr = DACheckOwnershipRanges_Private(da,da->P,da->p,lz);CHKERRQ(ierr);
     if (!da->lz) {
       ierr = PetscMalloc(da->p*sizeof(PetscInt), &da->lz);CHKERRQ(ierr);
     }
@@ -587,13 +603,19 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetGetMatrix(DA da,PetscErrorCode (*f)(DA, co
 
   Uses a greedy algorithm to handle non-ideal layouts, could probably do something better.
 */
-static PetscErrorCode DARefineOwnershipRanges(PetscBool  periodic,PetscInt stencil_width,PetscInt ratio,PetscInt m,const PetscInt lc[],PetscInt lf[])
+static PetscErrorCode DARefineOwnershipRanges(DA da,PetscBool periodic,PetscInt stencil_width,PetscInt ratio,PetscInt m,const PetscInt lc[],PetscInt lf[])
 {
   PetscInt i,totalc = 0,remaining,startc = 0,startf = 0;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (ratio < 1) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_USER,"Requested refinement ratio %D must be at least 1",ratio);
+  if (ratio == 1) {
+    ierr = PetscMemcpy(lf,lc,m*sizeof(lc[0]));CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   for (i=0; i<m; i++) totalc += lc[i];
-  remaining = totalc * ratio - (!periodic);
+  remaining = (!periodic) + ratio * (totalc - (!periodic));
   for (i=0; i<m; i++) {
     PetscInt want = remaining/(m-i) + !!(remaining%(m-i));
     if (i == m-1) lf[i] = want;
@@ -667,22 +689,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
   if (da->dim == 3) {
     PetscInt *lx,*ly,*lz;
     ierr = PetscMalloc3(da->m,PetscInt,&lx,da->n,PetscInt,&ly,da->p,PetscInt,&lz);CHKERRQ(ierr);
-    ierr = DARefineOwnershipRanges((PetscBool )(DAXPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
-    ierr = DARefineOwnershipRanges((PetscBool )(DAYPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_y,da->n,da->ly,ly);CHKERRQ(ierr);
-    ierr = DARefineOwnershipRanges((PetscBool )(DAZPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_z,da->p,da->lz,lz);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges(da,(PetscBool)(DAXPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges(da,(PetscBool)(DAYPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_y,da->n,da->ly,ly);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges(da,(PetscBool)(DAZPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_z,da->p,da->lz,lz);CHKERRQ(ierr);
     ierr = DACreate3d(((PetscObject)da)->comm,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,lx,ly,lz,&da2);CHKERRQ(ierr);
     ierr = PetscFree3(lx,ly,lz);CHKERRQ(ierr);
   } else if (da->dim == 2) {
     PetscInt *lx,*ly;
     ierr = PetscMalloc2(da->m,PetscInt,&lx,da->n,PetscInt,&ly);CHKERRQ(ierr);
-    ierr = DARefineOwnershipRanges((PetscBool )(DAXPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
-    ierr = DARefineOwnershipRanges((PetscBool )(DAYPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_y,da->n,da->ly,ly);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges(da,(PetscBool)(DAXPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges(da,(PetscBool)(DAYPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_y,da->n,da->ly,ly);CHKERRQ(ierr);
     ierr = DACreate2d(((PetscObject)da)->comm,da->wrap,da->stencil_type,M,N,da->m,da->n,da->w,da->s,lx,ly,&da2);CHKERRQ(ierr);
     ierr = PetscFree2(lx,ly);CHKERRQ(ierr);
   } else if (da->dim == 1) {
     PetscInt *lx;
     ierr = PetscMalloc(da->m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
-    ierr = DARefineOwnershipRanges((PetscBool )(DAXPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
+    ierr = DARefineOwnershipRanges(da,(PetscBool)(DAXPeriodic(da->wrap) || da->interptype == DA_Q0),da->s,da->refine_x,da->m,da->lx,lx);CHKERRQ(ierr);
     ierr = DACreate1d(((PetscObject)da)->comm,da->wrap,M,da->w,da->s,lx,&da2);CHKERRQ(ierr);
     ierr = PetscFree(lx);CHKERRQ(ierr);
   }
