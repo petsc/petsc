@@ -640,7 +640,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostWithArray(MPI_Comm comm,PetscInt
   ierr = ISLocalToGlobalMappingCreate(comm,n+nghost,indices,PETSC_OWN_POINTER,&ltog);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMapping(*vv,ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRQ(ierr);
-  ierr = PetscFree(indices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
