@@ -128,6 +128,7 @@ TestMeshExodus: TestMeshExodus.o chkopts
 
 TestMesh: TestMesh.o chkopts
 	-${CLINKER} -o TestMesh TestMesh.o ${PETSC_SNES_LIB}
+	${DSYMUTIL} TestMesh
 	${RM} -f TestMesh.o
 #-----------------------------------------------------------------
 BOOST_LIBS = -Wl,-rpath,${BOOST_DIR}/lib -L${BOOST_DIR}/lib -lboost_program_options-gcc41
