@@ -256,6 +256,8 @@ static struct _ISOps myops = { ISGetSize_Block,
   Concepts: index sets^block
   Concepts: block^index set
 
+  Developer Note: Eventually may want to support the PetscCopyMode argument as ISGeneralSetIndices() does.
+
 .seealso: ISCreateStride(), ISCreateGeneral(), ISAllGather()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISBlockSetIndices(IS is,PetscInt bs,PetscInt n,const PetscInt idx[])
@@ -322,6 +324,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockSetIndices(IS is,PetscInt bs,PetscInt n
   Concepts: IS^block
   Concepts: index sets^block
   Concepts: block^index set
+
+  Developer Note: Eventually may want to support the PetscCopyMode argument as ISCreateGeneral() does.
 
 .seealso: ISCreateStride(), ISCreateGeneral(), ISAllGather()
 @*/

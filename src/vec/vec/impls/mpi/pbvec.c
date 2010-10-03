@@ -637,7 +637,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostWithArray(MPI_Comm comm,PetscInt
   for (i=0; i<nghost; i++) {
     indices[n+i] = ghosts[i];
   }
-  ierr = ISLocalToGlobalMappingCreate(comm,n+nghost,indices,&ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,n+nghost,indices,PETSC_COPY_VALUES,&ltog);CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMapping(*vv,ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRQ(ierr);
@@ -829,7 +829,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostBlockWithArray(MPI_Comm comm,Pet
   for (i=0; i<nghost; i++) {
     indices[nb+i] = ghosts[i];
   }
-  ierr = ISLocalToGlobalMappingCreate(comm,nb+nghost,indices,&ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,nb+nghost,indices,PETSC_COPY_VALUES,&ltog);CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMappingBlock(*vv,ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRQ(ierr);

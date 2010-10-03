@@ -61,7 +61,7 @@ int main(int argc,char **argv)
   if (gindices[ng-1] == M)  gindices[ng-1] = 0;
   {
     ISLocalToGlobalMapping ltog;
-    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,ng,gindices,&ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,ng,gindices,PETSC_COPY_VALUES,&ltog);CHKERRQ(ierr);
     ierr = VecSetLocalToGlobalMapping(x,ltog);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRQ(ierr);
   }

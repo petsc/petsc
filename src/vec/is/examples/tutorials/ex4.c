@@ -26,7 +26,7 @@ int main(int argc,char **argv)
       Create a local to global mapping. Each processor independently
      creates a mapping  
   */
-  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,n,indices,&mapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,n,indices,PETSC_COPY_VALUES,&mapping);CHKERRQ(ierr);
 
   /*
      Map a set of local indices to their global values 
