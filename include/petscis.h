@@ -97,12 +97,8 @@ M*/
 /*
     Default index set data structures that PETSc provides.
 */
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateGeneral(MPI_Comm,PetscInt,const PetscInt[],IS *);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGeneralSetIndices(IS,PetscInt,const PetscInt[]);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateGeneralNC(MPI_Comm,PetscInt,const PetscInt[],IS *);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGeneralSetIndicesNC(IS,PetscInt,const PetscInt[]);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateGeneralWithArray(MPI_Comm,PetscInt,PetscInt[],IS *);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGeneralSetIndicesWithArray(IS,PetscInt,const PetscInt[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateGeneral(MPI_Comm,PetscInt,const PetscInt[],PetscCopyMode,IS *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGeneralSetIndices(IS,PetscInt,const PetscInt[],PetscCopyMode);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateBlock(MPI_Comm,PetscInt,PetscInt,const PetscInt[],IS *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockSetIndices(IS,PetscInt,PetscInt,const PetscInt[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateStride(MPI_Comm,PetscInt,PetscInt,PetscInt,IS *);

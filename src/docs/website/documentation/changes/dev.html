@@ -95,6 +95,8 @@ XXXSetFromOptions() is called.<br>
         </li>
         <li>Changed PetscTruth to PetscBool and PETSC_TRUTH to
 PETSC_BOOL</li>
+        <li>Introduced PetscCopyMode<br>
+        </li>
       </ul>
       <u><b>Logging:<br>
       </b></u>
@@ -123,7 +125,14 @@ should now be '--download-package=1'</li>
       <ul>
         <li>Added ISCreate(), ISSetType(), ISRegister() etc to match
 style of other PETSc objects. Also added ISGeneralSetIndices(),
-ISBlockSetIndices(), ISStrideSetStride()<br>
+ISBlockSetIndices(), ISStrideSetStride()</li>
+        <li>ISCreateGeneral() now takes PetscCopyMode as an argument
+and hence ISCreateGeneralNC() and ISCreateGeneralWithArray() are not
+needed and removed. Use ISCreateGeneral() with the argument
+PETSC_OWN_POINTER and PETSC_USE_POINTER instead.</li>
+        <li>ISLocalToGlobalMappingCreate() now takes PetscCopyMode as
+an additional argument and ISLocalToGlobalMappingCreateNC() is no
+longer needed and removed<br>
         </li>
       </ul>
       <p><u><b>PF:</b></u></p>

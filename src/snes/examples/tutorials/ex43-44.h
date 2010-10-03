@@ -98,7 +98,7 @@ PetscErrorCode SolveSubproblem(SNES snes)
 
   printf("number in subproblem %d\n",cnt);CHKERRQ(ierr);
   ierr = VecRestoreArray(residual,&r);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,cnt,indices,&ctx.is);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,cnt,indices,PETSC_COPY_VALUES,&ctx.is);CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
 
   ierr = SNESGetJacobian(snes,0,&mat,0,0);CHKERRQ(ierr);

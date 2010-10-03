@@ -118,8 +118,8 @@ int main(int argc,char **args)
       idx[j*bs] = bs*(int)(PetscRealPart(rval)*m);
       for (k=1; k<bs; k++) idx[j*bs+k] = idx[j*bs]+k;
     }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,size*bs,idx,is1+i);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,size*bs,idx,is2+i);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,size*bs,idx,PETSC_COPY_VALUES,is1+i);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,size*bs,idx,PETSC_COPY_VALUES,is2+i);CHKERRQ(ierr);
   }
   /* for debugging */
   /*

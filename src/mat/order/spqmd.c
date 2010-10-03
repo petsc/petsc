@@ -30,8 +30,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_QMD(Mat mat,const MatOrderingTy
   ierr = PetscFree2(qsize,qlink);CHKERRQ(ierr);
   ierr = PetscFree5(iperm,deg,marker,rchset,nbrhd);CHKERRQ(ierr);
   for (i=0; i<nrow; i++) perm[i]--;
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,row);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,col);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,row);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,col);CHKERRQ(ierr);
   ierr = PetscFree(perm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

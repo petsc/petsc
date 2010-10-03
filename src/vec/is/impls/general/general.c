@@ -13,7 +13,7 @@ PetscErrorCode ISDuplicate_General(IS is,IS *newIS)
   IS_General     *sub = (IS_General *)is->data;
 
   PetscFunctionBegin;
-  ierr = ISCreateGeneral(((PetscObject)is)->comm,sub->n,sub->idx,newIS);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(((PetscObject)is)->comm,sub->n,sub->idx,PETSC_COPY_VALUES,newIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -128,7 +128,7 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
     for (i=0; i<n; i++) {
       ii[idx[i]] = i;
     }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,isout);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_COPY_VALUES,isout);CHKERRQ(ierr);
     ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
     ierr = PetscFree(ii);CHKERRQ(ierr);
   } else {
@@ -151,7 +151,7 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
 #endif
     nstart -= nlocal;
     ierr    = ISGetIndices(nistmp,&idx);CHKERRQ(ierr);
-    ierr    = ISCreateGeneral(((PetscObject)is)->comm,nlocal,idx+nstart,isout);CHKERRQ(ierr);    
+    ierr    = ISCreateGeneral(((PetscObject)is)->comm,nlocal,idx+nstart,PETSC_COPY_VALUES,isout);CHKERRQ(ierr);    
     ierr    = ISRestoreIndices(nistmp,&idx);CHKERRQ(ierr);
     ierr    = ISDestroy(nistmp);CHKERRQ(ierr);
   }
@@ -286,40 +286,34 @@ PetscErrorCode ISCreateGeneral_Private(IS is)
    Input Parameters:
 +  comm - the MPI communicator
 .  n - the length of the index set
--  idx - the list of integers
+.  idx - the list of integers
+-  mode - see PetscCopyMode for meaning of this flag.
 
    Output Parameter:
 .  is - the new index set
 
    Notes:
-   The index array is copied to internally allocated storage. After the call,
-   the user can free the index array. Use ISCreateGeneralNC() to use the pointers
-   passed in and NOT make a copy of the index array.
-
    When the communicator is not MPI_COMM_SELF, the operations on IS are NOT
    conceptually the same as MPI_Group operations. The IS are then
    distributed sets of indices and thus certain operations on them are
    collective.
 
-   ISCreateGeneral() allocates space for the list and indices and copies that list over. ISCreateGeneralNC() does not copy the list over,
-   instead keeps the pointer to the list and frees the list when the ISDestroy() is called. ISCreateGeneralWithArray() is the 
-   same as ISCreateGeneralNC() except it does NOT free the list when ISDestroy() is called.
-
+   
    Level: beginner
 
   Concepts: index sets^creating
   Concepts: IS^creating
 
-.seealso: ISCreateGeneralWithArray(), ISCreateStride(), ISCreateBlock(), ISAllGather(), ISCreateGeneralNC()
+.seealso: ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],IS *is)
+PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],PetscCopyMode mode,IS *is)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = ISCreate(comm,is);CHKERRQ(ierr);
   ierr = ISSetType(*is,ISGENERAL);CHKERRQ(ierr);
-  ierr = ISGeneralSetIndices(*is,n,idx);CHKERRQ(ierr);
+  ierr = ISGeneralSetIndices(*is,n,idx,mode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -333,22 +327,17 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneral(MPI_Comm comm,PetscInt n,const
    Input Parameters:
 +  is - the index set
 .  n - the length of the index set
--  idx - the list of integers
-
-
-   Notes:
-   The index array is copied to internally allocated storage. After the call,
-   the user can free the index array. Use ISCreateGeneralNC() or ISGeneralSetIndicesNC() to use the pointers
-   passed in and NOT make a copy of the index array.
+.  idx - the list of integers
+-  mode - see PetscCopyMode for meaning of this flag.
 
    Level: beginner
 
   Concepts: index sets^creating
   Concepts: IS^creating
 
-.seealso: ISCreateGeneralWithArray(), ISCreateStride(), ISCreateBlock(), ISAllGather(), ISCreateGeneralNC()
+.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISGeneralSetIndices(IS is,PetscInt n,const PetscInt idx[])
+PetscErrorCode PETSCVEC_DLLEXPORT ISGeneralSetIndices(IS is,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
 {
   PetscErrorCode ierr;
   IS_General     *sub = (IS_General*)is->data;
@@ -357,92 +346,19 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGeneralSetIndices(IS is,PetscInt n,const Pet
   if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
   if (n) {PetscValidIntPointer(idx,3);}
 
-  ierr           = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
-  ierr           = PetscLogObjectMemory(is,n*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr           = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
-  sub->n         = n;
-  sub->allocated = PETSC_TRUE;
-  ierr = ISCreateGeneral_Private(is); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "ISGeneralSetIndicesNC" 
-/*@C
-   ISGeneralSetIndicesNC - Sets the indices for an ISGENERAL index set reuses the index array passed in
-
-   Collective on IS
-
-   Input Parameters:
-+  is - the index set
-.  n - the length of the index set
--  idx - the list of integers
-
-
-   Notes:
-   The index array is not to internally allocated storage. After the call,
-   the user can free the index array. Use ISCreateGeneralNC() or ISGeneralSetIndicesNC() to use the pointers
-   passed in and NOT make a copy of the index array.
-
-   Level: beginner
-
-  Concepts: index sets^creating
-  Concepts: IS^creating
-
-.seealso: ISCreateGeneralWithArray(), ISCreateStride(), ISCreateBlock(), ISAllGather(), ISCreateGeneralNC()
-@*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISGeneralSetIndicesNC(IS is,PetscInt n,const PetscInt idx[])
-{
-  PetscErrorCode ierr;
-  IS_General     *sub = (IS_General*)is->data;
-
-  PetscFunctionBegin;
-  if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
-  if (n) {PetscValidIntPointer(idx,3);}
-
-  sub->idx      = (PetscInt*)idx;
-  sub->n         = n;
-  sub->allocated = PETSC_TRUE;
-  ierr = ISCreateGeneral_Private(is); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "ISGeneralSetIndicesWithArray" 
-/*@C
-   ISGeneralSetIndicesWithArray - Sets the indices for an ISGENERAL index set reuses the index array passed in
-
-   Collective on IS
-
-   Input Parameters:
-+  is - the index set
-.  n - the length of the index set
--  idx - the list of integers
-
-
-   Notes:
-   The index array is not to internally allocated storage. After the call,
-   the user can free the index array. Use ISCreateGeneral() or ISGeneralSetIndices() to copy the data in.
-
-   Level: beginner
-
-  Concepts: index sets^creating
-  Concepts: IS^creating
-
-.seealso: ISCreateGeneralWithArray(), ISCreateStride(), ISCreateBlock(), ISAllGather(), ISCreateGeneralNC()
-@*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISGeneralSetIndicesWithArray(IS is,PetscInt n,const PetscInt idx[])
-{
-  PetscErrorCode ierr;
-  IS_General     *sub = (IS_General*)is->data;
-
-  PetscFunctionBegin;
-  if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
-  if (n) {PetscValidIntPointer(idx,3);}
-
-  sub->idx      = (PetscInt*)idx;
-  sub->n         = n;
-  sub->allocated = PETSC_FALSE;
+  sub->n = n;
+  if (mode == PETSC_COPY_VALUES) {
+    ierr           = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
+    ierr           = PetscLogObjectMemory(is,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr           = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
+    sub->allocated = PETSC_TRUE;
+  } else if (mode == PETSC_OWN_POINTER) {
+    sub->idx       = (PetscInt*)idx;
+    sub->allocated = PETSC_TRUE;
+  } else {
+    sub->idx       = (PetscInt*)idx;
+    sub->allocated = PETSC_FALSE;
+  }    
   ierr = ISCreateGeneral_Private(is); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -462,101 +378,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_General(IS is)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISCreateGeneralNC"
-/*@C
-   ISCreateGeneralNC - Creates a data structure for an index set 
-   containing a list of integers.
 
-   Collective on IS
-
-   Input Parameters:
-+  comm - the MPI communicator
-.  n - the length of the index set
--  idx - the list of integers, must be obtained with PetscMalloc()
-
-   Output Parameter:
-.  is - the new index set
-
-   Notes: This routine does not copy the indices, just keeps the pointer to the
-   indices. The ISDestroy() will free the space so it must be obtained
-   with PetscMalloc() and it must not be freed nor modified elsewhere.
-   Use ISCreateGeneral() if you wish to copy the indices passed into the routine.
-   Use ISCreateGeneralWithArray() to NOT copy the indices and NOT free the space when
-   ISDestroy() is called.
-
-   When the communicator is not MPI_COMM_SELF, the operations on IS are NOT
-   conceptually the same as MPI_Group operations. The IS are then
-   distributed sets of indices and thus certain operations on them are
-   collective.
-
-   ISCreateGeneral() allocates space for the list and indices and copies that list over. ISCreateGeneralNC() does not copy the list over,
-   instead keeps the pointer to the list and frees the list when the ISDestroy() is called. ISCreateGeneralWithArray() is the 
-   same as ISCreateGeneralNC() except it does NOT free the list when ISDestroy() is called.
-
-   Level: beginner
-
-  Concepts: index sets^creating
-  Concepts: IS^creating
-
-.seealso: ISCreateGeneral(), ISCreateGeneralWithArray(), ISCreateStride(), ISCreateBlock(), ISAllGather()
-@*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneralNC(MPI_Comm comm,PetscInt n,const PetscInt idx[],IS *is)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = ISCreate(comm,is);CHKERRQ(ierr);
-  ierr = ISSetType(*is,ISGENERAL);CHKERRQ(ierr);
-  ierr = ISGeneralSetIndicesNC(*is,n,idx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "ISCreateGeneralWithArray"
-/*@C
-   ISCreateGeneralWithArray - Creates a data structure for an index set 
-   containing a list of integers.
-
-   Collective on MPI_Comm
-
-   Input Parameters:
-+  comm - the MPI communicator
-.  n - the length of the index set
--  idx - the list of integers
-
-   Output Parameter:
-.  is - the new index set
-
-   Notes:
-   Unlike with ISCreateGeneral(), the indices are not copied to internally
-   allocated storage. The user array is not freed by ISDestroy().
-
-   When the communicator is not MPI_COMM_SELF, the operations on IS are NOT
-   conceptually the same as MPI_Group operations. The IS are then
-   distributed sets of indices and thus certain operations on them are collective.
-
-   ISCreateGeneral() allocates space for the list and indices and copies that list over. ISCreateGeneralNC() does not copy the list over,
-   instead keeps the pointer to the list and frees the list when the ISDestroy() is called. ISCreateGeneralWithArray() is the 
-   same as ISCreateGeneralNC() except it does NOT free the list when ISDestroy() is called.
-
-   Level: beginner
-
-  Concepts: index sets^creating
-  Concepts: IS^creating
-
-.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather(), ISCreateGeneralNC()
-@*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneralWithArray(MPI_Comm comm,PetscInt n,PetscInt idx[],IS *is)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = ISCreate(comm,is);CHKERRQ(ierr);
-  ierr = ISSetType(*is,ISGENERAL);CHKERRQ(ierr);
-  ierr = ISGeneralSetIndicesWithArray(*is,n,idx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 
 

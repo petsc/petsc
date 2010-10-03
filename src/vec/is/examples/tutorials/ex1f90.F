@@ -39,7 +39,8 @@
       indices(3) = rank + 3 
       indices(4) = rank + 4 
       indices(5) = rank + 5 
-      call ISCreateGeneral(PETSC_COMM_SELF,five,indices,is,ierr)
+      call ISCreateGeneral(PETSC_COMM_SELF,five,indices,                   &
+     &                     PETSC_COPY_VALUES,is,ierr)
 
 !  Print the index set to stdout
 

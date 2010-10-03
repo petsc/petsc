@@ -158,7 +158,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringGetIS(ISColoring iscoloring,PetscInt
      
       ierr = PetscMalloc(nc*sizeof(IS),&is);CHKERRQ(ierr);
       for (i=0; i<nc; i++) {
-	ierr = ISCreateGeneral(iscoloring->comm,mcolors[i],ii[i],is+i);CHKERRQ(ierr);
+	ierr = ISCreateGeneral(iscoloring->comm,mcolors[i],ii[i],PETSC_COPY_VALUES,is+i);CHKERRQ(ierr);
       }
 
       iscoloring->is   = is;
@@ -360,7 +360,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningToNumbering(IS part,IS *is)
   ierr = PetscFree3(lsizes,starts,sums);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(part,&indices);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n,newi,is);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,n,newi,PETSC_COPY_VALUES,is);CHKERRQ(ierr);
   ierr = PetscFree(newi);CHKERRQ(ierr);
   ierr = ISSetPermutation(*is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -513,7 +513,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGather(IS is,IS *isout)
     ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
     ierr = PetscFree2(sizes,offsets);CHKERRQ(ierr);
 
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,N,indices,isout);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,N,indices,PETSC_COPY_VALUES,isout);CHKERRQ(ierr);
     ierr = PetscFree(indices);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -695,7 +695,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISComplement(IS is,PetscInt nmin,PetscInt nmax
     else nindices[cnt++] = i;
   }
   if (cnt != nmax-nmin-unique) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of entries found in complement %D does not match expected %D",cnt,nmax-nmin-unique);
-  ierr = ISCreateGeneralNC(((PetscObject)is)->comm,cnt,nindices,isout);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(((PetscObject)is)->comm,cnt,nindices,PETSC_OWN_POINTER,isout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

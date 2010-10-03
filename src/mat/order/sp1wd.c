@@ -25,8 +25,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_1WD(Mat mat,const MatOrderingTy
 
   for (i=0; i<nrow; i++) perm[i]--;
 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,row);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,col);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,row);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,col);CHKERRQ(ierr);
   ierr = PetscFree5(mask,xls,ls,xblk,perm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

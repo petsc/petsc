@@ -1342,7 +1342,7 @@ static PetscErrorCode DABCApplySymmetricCompression(DA elas_da,Mat A,Vec f,IS *d
   }
   ierr = VecRestoreArray(x,&_x);CHKERRQ(ierr);
 
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,cnt,unconstrained,&is);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,cnt,unconstrained,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = PetscFree(unconstrained);CHKERRQ(ierr);
 
   /* define correction for dirichlet in the rhs */

@@ -241,7 +241,7 @@ int main(int argc,char **args)
     i = nip_ptr[1]; nip_ptr[1] = nip_ptr[mbs-2]; nip_ptr[mbs-2] = i; 
     i = nip_ptr[0]; nip_ptr[0] = nip_ptr[mbs-1]; nip_ptr[mbs-1] = i; 
     ierr = ISRestoreIndices(ip,&ip_ptr);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,mbs,nip_ptr,&nip);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,mbs,nip_ptr,PETSC_COPY_VALUES,&nip);CHKERRQ(ierr);
     ierr = PetscFree(nip_ptr);CHKERRQ(ierr);
 
     ierr = MatReorderingSeqSBAIJ(sA, ip);CHKERRQ(ierr);  

@@ -77,10 +77,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesGeneral(PetscInt n,PetscInt b
       j++;
     }
     if (j != isz) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"table error: jj != isz"); }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz,nidx,(is_out+i));CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz,nidx,PETSC_COPY_VALUES,(is_out+i));CHKERRQ(ierr);
     ierr = PetscFree(nidx);CHKERRQ(ierr);
 #else
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz,nidx,(is_out+i));CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz,nidx,PETSC_COPY_VALUES,(is_out+i));CHKERRQ(ierr);
 #endif
   }
 #if defined (PETSC_USE_CTABLE)
@@ -137,7 +137,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt n,PetscInt bs
         ierr = ISBlockGetIndices(is_in[i],&idx);CHKERRQ(ierr);
         for (j=0; j<len; j++) nidx[j] = idx[j]/bs;
         ierr = ISBlockRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
-        ierr = ISCreateGeneral(PETSC_COMM_SELF,len,nidx,(is_out+i));CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,len,nidx,PETSC_COPY_VALUES,(is_out+i));CHKERRQ(ierr);
         continue;
       }
     }
@@ -156,7 +156,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt n,PetscInt bs
       idx_local +=bs;
     }
     ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,len,nidx,(is_out+i));CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,len,nidx,PETSC_COPY_VALUES,(is_out+i));CHKERRQ(ierr);
   }
   ierr = PetscFree(nidx);CHKERRQ(ierr);
 
@@ -198,7 +198,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISExpandIndicesGeneral(PetscInt n,PetscInt bs,
         nidx[j*bs+k] = idx[j]*bs+k;
     }
     ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,len*bs,nidx,is_out+i);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,len*bs,nidx,PETSC_COPY_VALUES,is_out+i);CHKERRQ(ierr);
   }
   ierr = PetscFree(nidx);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -64,7 +64,7 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
     IS             tmp;
     const PetscInt *indices,n = isstride->n;
     ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(((PetscObject)is)->comm,n,indices,&tmp);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(((PetscObject)is)->comm,n,indices,PETSC_COPY_VALUES,&tmp);CHKERRQ(ierr);
     ierr = ISSetPermutation(tmp); CHKERRQ(ierr);
     ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
     ierr = ISInvertPermutation(tmp,nlocal,perm);CHKERRQ(ierr);

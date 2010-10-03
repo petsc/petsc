@@ -817,7 +817,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscR
   ierr = PetscMalloc((N-last+first)*sizeof(PetscInt),&notme);CHKERRQ(ierr);
   for (i=0; i<first; i++) notme[i] = i;
   for (i=last; i<M; i++) notme[i-last+first] = i;
-  ierr = ISCreateGeneral(MPI_COMM_SELF,N-last+first,notme,&Notme);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,N-last+first,notme,PETSC_COPY_VALUES,&Notme);CHKERRQ(ierr);
   ierr = ISCreateStride(MPI_COMM_SELF,last-first,first,1,&Me);CHKERRQ(ierr);
   ierr = MatGetSubMatrices(Amat,1,&Me,&Notme,MAT_INITIAL_MATRIX,&Aoffs);CHKERRQ(ierr);
   Aoff = Aoffs[0];
@@ -1329,7 +1329,7 @@ PetscErrorCode MatPermute_MPIAIJ(Mat A,IS rowp,IS colp,Mat *B)
   } else {
     ierr = ISGetSize(rowp,&nrows);CHKERRQ(ierr);
     ierr = ISGetIndices(rowp,&rows);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(comm,nrows,rows,&crowp);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm,nrows,rows,PETSC_COPY_VALUES,&crowp);CHKERRQ(ierr);
     ierr = ISRestoreIndices(rowp,&rows);CHKERRQ(ierr);
   }
   /* collect the global row permutation and invert it */
@@ -1343,7 +1343,7 @@ PetscErrorCode MatPermute_MPIAIJ(Mat A,IS rowp,IS colp,Mat *B)
   ierr = MatGetOwnershipRange(A,&first,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&local_size,PETSC_NULL);CHKERRQ(ierr);
   ierr = ISGetIndices(irowp,&rows);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,local_size,rows+first,&lrowp);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,local_size,rows+first,PETSC_COPY_VALUES,&lrowp);CHKERRQ(ierr);
   ierr = ISRestoreIndices(irowp,&rows);CHKERRQ(ierr);
   ierr = ISDestroy(irowp);CHKERRQ(ierr);
   /* the column permutation is so much easier;
@@ -1355,7 +1355,7 @@ PetscErrorCode MatPermute_MPIAIJ(Mat A,IS rowp,IS colp,Mat *B)
   } else {
     ierr = ISGetSize(colp,&nrows);CHKERRQ(ierr);
     ierr = ISGetIndices(colp,&rows);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(MPI_COMM_SELF,nrows,rows,&lcolp);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,nrows,rows,PETSC_COPY_VALUES,&lcolp);CHKERRQ(ierr);
   }
   ierr = ISSetPermutation(lcolp);CHKERRQ(ierr);
   ierr = ISInvertPermutation(lcolp,PETSC_DECIDE,&icolp);CHKERRQ(ierr);
@@ -4633,7 +4633,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalMatCondensed(Mat A,MatReuse scall,I
     imark = i;
     for (i=0; i<nzA; i++) idx[ncols++] = start + i;
     for (i=imark; i<nzB; i++) idx[ncols++] = cmap[i];
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,&iscola);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,PETSC_COPY_VALUES,&iscola);CHKERRQ(ierr);
     ierr = PetscFree(idx);CHKERRQ(ierr); 
   } else {
     iscola = *col;
@@ -4703,7 +4703,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,
     imark = i;
     for (i=0; i<nzA; i++) idx[ncols++] = start + i;  /* local rows */
     for (i=imark; i<nzB; i++) idx[ncols++] = cmap[i]; /* row > local row index */
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,&isrowb);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,PETSC_COPY_VALUES,&isrowb);CHKERRQ(ierr);
     ierr = PetscFree(idx);CHKERRQ(ierr); 
     *brstart = imark;
     ierr = ISCreateStride(PETSC_COMM_SELF,B->cmap->N,0,1,&iscolb);CHKERRQ(ierr);

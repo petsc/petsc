@@ -3922,9 +3922,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A,IS 
     for (j = start_val; j<end_val; ++j,++col) permc[col]= j;
   }
 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,rperm);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,PETSC_COPY_VALUES,rperm);CHKERRQ(ierr);
   ierr = ISSetPermutation(*rperm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permc,cperm);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permc,PETSC_COPY_VALUES,cperm);CHKERRQ(ierr);
   ierr = ISSetPermutation(*cperm);CHKERRQ(ierr);
  
   ierr  = ISRestoreIndices(ris,&ridx);CHKERRQ(ierr);

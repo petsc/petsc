@@ -352,7 +352,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
         locals += rank;
     } else
         locals += mat->rmap->N % size;
-    ierr = ISCreateGeneral(((PetscObject)part)->comm, nb_locals, locals, partitioning);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(((PetscObject)part)->comm, nb_locals, locals,PETSC_COPY_VALUES, partitioning);CHKERRQ(ierr);
 
     /* destroying old objects */
     ierr = PetscFree(parttab);CHKERRQ(ierr);

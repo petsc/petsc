@@ -46,8 +46,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_Natural(Mat mat,const MatOrderi
     */
     ierr = PetscMalloc(n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) ii[i] = i;
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,irow);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,icol);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_COPY_VALUES,irow);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_COPY_VALUES,icol);CHKERRQ(ierr);
     ierr = PetscFree(ii);CHKERRQ(ierr);
   } else {
     PetscInt start,end;
@@ -89,8 +89,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_RowLength(Mat mat,const MatOrde
 
   ierr = PetscSortIntWithPermutation(n,lens,permr);CHKERRQ(ierr);
 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,irow);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,icol);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,PETSC_COPY_VALUES,irow);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,PETSC_COPY_VALUES,icol);CHKERRQ(ierr);
   ierr = PetscFree2(lens,permr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

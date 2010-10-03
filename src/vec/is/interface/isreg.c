@@ -29,7 +29,7 @@ PetscBool  ISRegisterAllCalled          = PETSC_FALSE;
   Concepts: index sets^creating
   Concepts: IS^creating
 
-.seealso: ISCreateGeneralWithArray(), ISCreateStride(), ISCreateBlock(), ISAllGather(), ISCreateGeneralNC()
+.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISCreate(MPI_Comm comm,IS *is)
 {

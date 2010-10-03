@@ -64,10 +64,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISSetUp(PC pc)
     ierr = ISLocalToGlobalMappingApply(matis->mapping,pcis->n_B,idx_B_local,idx_B_global);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingApply(matis->mapping,n_I,      idx_I_local,idx_I_global);CHKERRQ(ierr);
     /* Creating the index sets. */
-    ierr = ISCreateGeneral(MPI_COMM_SELF,pcis->n_B,idx_B_local, &pcis->is_B_local);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(MPI_COMM_SELF,pcis->n_B,idx_B_global,&pcis->is_B_global);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(MPI_COMM_SELF,n_I      ,idx_I_local, &pcis->is_I_local);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(MPI_COMM_SELF,n_I      ,idx_I_global,&pcis->is_I_global);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,pcis->n_B,idx_B_local,PETSC_COPY_VALUES, &pcis->is_B_local);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,pcis->n_B,idx_B_global,PETSC_COPY_VALUES,&pcis->is_B_global);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,n_I      ,idx_I_local,PETSC_COPY_VALUES, &pcis->is_I_local);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,n_I      ,idx_I_global,PETSC_COPY_VALUES,&pcis->is_I_global);CHKERRQ(ierr);
     /* Freeing memory and restoring arrays */
     ierr = PetscFree(idx_B_local);CHKERRQ(ierr);
     ierr = PetscFree(idx_I_local);CHKERRQ(ierr);

@@ -5416,7 +5416,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,PetscInt numRows,cons
     const PetscInt *newRows;
 
     if (!mat->mapping) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to provide local to global mapping to matrix first");
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,numRows,rows,&is);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,numRows,rows,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingApplyIS(mat->mapping,is,&newis);CHKERRQ(ierr);
     ierr = ISGetIndices(newis,&newRows);CHKERRQ(ierr);
     ierr = (*mat->ops->zerorows)(mat,numRows,newRows,diag);CHKERRQ(ierr);

@@ -234,7 +234,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRQ(ierr);
         if (nout != m_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"is_local not a subset of is");
         ierr = ISRestoreIndices(osm->is_local[i], &idx_local);CHKERRQ(ierr);
-        ierr = ISCreateGeneral(PETSC_COMM_SELF,m_local,idx,&isll);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,m_local,idx,PETSC_COPY_VALUES,&isll);CHKERRQ(ierr);
         ierr = PetscFree(idx);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF,m_local,0,1,&isl);CHKERRQ(ierr);
         ierr = VecCreateSeq(PETSC_COMM_SELF,m_local,&osm->y_local[i]);CHKERRQ(ierr);
@@ -1202,7 +1202,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMCreateSubdomains(Mat A, PetscInt n, IS* o
     
     /* Build the index sets for each block */
     for (i=0; i<n; i++) {
-      ierr   = ISCreateGeneral(PETSC_COMM_SELF,count[i],&indices[start],&is[i]);CHKERRQ(ierr);
+      ierr   = ISCreateGeneral(PETSC_COMM_SELF,count[i],&indices[start],PETSC_COPY_VALUES,&is[i]);CHKERRQ(ierr);
       ierr   = ISSort(is[i]);CHKERRQ(ierr);
       start += count[i];
     }
@@ -1319,7 +1319,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMCreateSubdomains2D(PetscInt m,PetscInt n,
           idx[loc++] = count++;
         }
       }
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,nidx,idx,(*is)+loc_outer);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,nidx,idx,PETSC_COPY_VALUES,(*is)+loc_outer);CHKERRQ(ierr);
       if (overlap == 0) {
         ierr = PetscObjectReference((PetscObject)(*is)[loc_outer]);CHKERRQ(ierr);
         (*is_local)[loc_outer] = (*is)[loc_outer];
@@ -1329,7 +1329,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMCreateSubdomains2D(PetscInt m,PetscInt n,
             idx[loc++] = m*ii + jj;
           }
         }
-        ierr = ISCreateGeneral(PETSC_COMM_SELF,loc,idx,*is_local+loc_outer);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,loc,idx,PETSC_COPY_VALUES,*is_local+loc_outer);CHKERRQ(ierr);
       }
       ierr = PetscFree(idx);CHKERRQ(ierr);
       xstart += width;

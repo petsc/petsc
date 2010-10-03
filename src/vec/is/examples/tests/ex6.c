@@ -27,7 +27,7 @@ int main(int argc,char **argv)
     for (j=0; j<size; j++) indices[cnt++] = rstart+i*(size+2)+j;
   }
   if (cnt != n) SETERRQ(PETSC_COMM_SELF,1,"inconsistent count");
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,indices,&is);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,indices,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
   ierr = ISComplement(is,rstart,rend,&isc);CHKERRQ(ierr);
   ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

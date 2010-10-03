@@ -272,7 +272,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA da)
     else                   {for (i=xe; i<(M*dof); i++) {idx[nn++]=i;}}
   }
 
-  ierr = ISCreateGeneral(comm,nn,idx,&from);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,nn,idx,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,to);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,from);CHKERRQ(ierr);

@@ -2177,7 +2177,7 @@ PetscErrorCode MatPermute_MPIBAIJ(Mat A,IS rowp,IS colp,Mat *B)
   } else {
     ierr = ISGetSize(rowp,&nrows);CHKERRQ(ierr);
     ierr = ISGetIndices(rowp,&rows);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(comm,nrows,rows,&crowp);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm,nrows,rows,PETSC_COPY_VALUES,&crowp);CHKERRQ(ierr);
     ierr = ISRestoreIndices(rowp,&rows);CHKERRQ(ierr);
   }
   /* collect the global row permutation and invert it */
@@ -2191,7 +2191,7 @@ PetscErrorCode MatPermute_MPIBAIJ(Mat A,IS rowp,IS colp,Mat *B)
   ierr = MatGetOwnershipRange(A,&first,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&local_size,PETSC_NULL);CHKERRQ(ierr);
   ierr = ISGetIndices(irowp,&rows);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,local_size,rows+first,&lrowp);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,local_size,rows+first,PETSC_COPY_VALUES,&lrowp);CHKERRQ(ierr);
   ierr = ISRestoreIndices(irowp,&rows);CHKERRQ(ierr);
   ierr = ISDestroy(irowp);CHKERRQ(ierr);
   /* the column permutation is so much easier;
@@ -2203,7 +2203,7 @@ PetscErrorCode MatPermute_MPIBAIJ(Mat A,IS rowp,IS colp,Mat *B)
   } else {
     ierr = ISGetSize(colp,&nrows);CHKERRQ(ierr);
     ierr = ISGetIndices(colp,&rows);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(MPI_COMM_SELF,nrows,rows,&lcolp);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,nrows,rows,PETSC_COPY_VALUES,&lcolp);CHKERRQ(ierr);
   }
   ierr = ISSetPermutation(lcolp);CHKERRQ(ierr);
   ierr = ISInvertPermutation(lcolp,PETSC_DECIDE,&icolp);CHKERRQ(ierr);

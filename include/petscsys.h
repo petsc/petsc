@@ -437,8 +437,23 @@ PETSC_EXTERN_CXX_BEGIN
       boolean values. It is not easy to have a simple macro that that will work properly in all circumstances with all three mechanisms.
 
 E*/
-typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool ;
+typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool;
 extern const char *PetscBools[];
+
+/*E
+    PetscCopyMode  - Determines how an array passed to certain functions is copied or retained
+
+   Level: beginner
+
+$   PETSC_COPY_VALUES - the array values are copied into new space, the user is free to reuse or delete the passed in array
+$   PETSC_OWN_POINTER - the array values are NOT copied, the object takes ownership of the array and will free it later, the user cannot change or 
+$                       delete the array. The array MUST have been obtained with PetscMalloc(). Hence this mode cannot be used in Fortran.
+$   PETSC_USE_POINTER - the array values are NOT copied, the object uses the array but does NOT take ownership of the array. The user cannot use 
+                        the array but the user must delete the array after the object is destroyed.
+
+E*/
+typedef enum { PETSC_COPY_VALUES, PETSC_OWN_POINTER, PETSC_USE_POINTER} PetscCopyMode;
+extern const char *PetscCopyModes[];
 
 /*MC
     PETSC_FALSE - False value of PetscBool 

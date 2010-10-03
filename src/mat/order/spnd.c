@@ -26,8 +26,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_ND(Mat mat,const MatOrderingTyp
   /* shift because Sparsepack indices start at one */
   for (i=0; i<nrow; i++) perm[i]--;
 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,row);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,col);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,row);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,col);CHKERRQ(ierr);
   ierr = PetscFree4(mask,perm,xls,ls);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -120,7 +120,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   ierr = PetscMalloc4(size,PetscInt,&len_s,size,PetscInt,&btable,size,PetscInt,&iwork,size+1,PetscInt,&Bowners);CHKERRQ(ierr);
 
   /* gather c->garray from all processors */
-  ierr = ISCreateGeneral(comm,Bnbs,c->garray,&garray_local);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,Bnbs,c->garray,PETSC_COPY_VALUES,&garray_local);CHKERRQ(ierr);
   ierr = ISAllGather(garray_local, &garray_gl);CHKERRQ(ierr);
   ierr = ISDestroy(garray_local);CHKERRQ(ierr);
   ierr = MPI_Allgather(&Bnbs,1,MPIU_INT,Bowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
@@ -341,7 +341,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   /*--------------------*/ 
   for (i=0; i<is_max; i++) {
     data_i = data + 1 + is_max + Mbs*i;
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,data[1+i],data_i,is+i);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,data[1+i],data_i,PETSC_COPY_VALUES,is+i);CHKERRQ(ierr);
   }
   for (k=0; k<=nodata2; k++){
     ierr = PetscFree(odata2_ptr[k]);CHKERRQ(ierr); 

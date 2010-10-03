@@ -131,8 +131,8 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
           idx2[j++] = i + m*k;
         }
       }
-      ierr = ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx1,&is1);CHKERRQ(ierr);
-      ierr = ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx2,&is2);CHKERRQ(ierr);      
+      ierr = ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx1,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx2,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);      
       ierr = VecScatterCreate(vec,is1,red->xdup,is2,&red->scatterin);CHKERRQ(ierr);
       ierr = ISDestroy(is1);CHKERRQ(ierr);
       ierr = ISDestroy(is2);CHKERRQ(ierr);

@@ -25,7 +25,8 @@
 
       one  = 1
       zero = 0
-      call ISCreateGeneral(PETSC_COMM_SELF,one,zero,isrow,ierr)
+      call ISCreateGeneral(PETSC_COMM_SELF,one,zero,PETSC_COPY_VALUES,    &
+     &                     isrow,ierr)
 
       call MatGetSubmatrices(A,one,isrow,isrow,                           &
      &        MAT_INITIAL_MATRIX,B,ierr)

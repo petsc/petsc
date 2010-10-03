@@ -473,8 +473,10 @@
 !-----------------------------------------------------------------------
       CALL AOApplicationToPetsc(toao,nscat,to,ierr)
       CALL AOApplicationToPetsc(globalao,nscat,from,ierr)
-      CALL ISCreateGeneral(PETSC_COMM_WORLD,nscat,to,tois,ierr)
-      CALL ISCreateGeneral(PETSC_COMM_WORLD,nscat,from,globalis,ierr)
+      CALL ISCreateGeneral(PETSC_COMM_WORLD,nscat,to,PETSC_COPY_VALUES,               &
+     &                     tois,ierr)
+      CALL ISCreateGeneral(PETSC_COMM_WORLD,nscat,from,PETSC_COPY_VALUES              &
+     &                     ,globalis,ierr)
       CALL VecCreateMPI(PETSC_COMM_WORLD,tonglobal,PETSC_DETERMINE,                   &
      &     tovec,ierr)
       CALL VecCreateMPI(PETSC_COMM_WORLD,fromnglobal,PETSC_DETERMINE,                 &

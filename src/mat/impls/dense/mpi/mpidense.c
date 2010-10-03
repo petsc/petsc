@@ -1210,8 +1210,8 @@ PetscErrorCode MatSolve_MPIDense(Mat A,Vec b,Vec x)
 
     for (i=0; i<loc_m; i++) idx_pla[i] = i*loc_stride;
 
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,loc_m,idx_pla,&lu->is_pla);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,loc_m,idx_petsc,&lu->is_petsc);CHKERRQ(ierr);  
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,loc_m,idx_pla,PETSC_COPY_VALUES,&lu->is_pla);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,loc_m,idx_petsc,PETSC_COPY_VALUES,&lu->is_petsc);CHKERRQ(ierr);  
     ierr = PetscFree2(idx_pla,idx_petsc);CHKERRQ(ierr);
     ierr = VecScatterCreate(loc_x,lu->is_pla,x,lu->is_petsc,&lu->ctx);CHKERRQ(ierr);
   }

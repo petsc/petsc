@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   for (i=0; i<n; i++) {
     indices[i] = rank + i;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,indices,&is);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,indices,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
 
   /*

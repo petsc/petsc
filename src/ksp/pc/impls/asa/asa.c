@@ -657,7 +657,7 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscBool  construc
   for (i=0; i<cand_vecs_num; i++) {
     idxn_B[i] = i;
   }
-  ierr = ISCreateGeneral(asa_lev->comm, asa_lev->cand_vecs, idxn_B, &idxn_is_B);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(asa_lev->comm, asa_lev->cand_vecs, idxn_B,PETSC_COPY_VALUES, &idxn_is_B);CHKERRQ(ierr);
   ierr = PetscFree(idxn_B);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(IS)*mat_agg_loc_size, &idxn_is_B_arr);CHKERRQ(ierr);
   for (a=0; a<mat_agg_loc_size; a++) {
@@ -685,7 +685,7 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscBool  construc
        ierr = MatRestoreRow(logical_agg, a+mat_agg_loc_start, &cand_vec_length[a], &agg, 0);CHKERRQ(ierr);
        
        /* create index sets */
-       ierr = ISCreateGeneral(PETSC_COMM_SELF, cand_vec_length[a], agg_arr[a], &(idxm_is_B_arr[a]));CHKERRQ(ierr);
+       ierr = ISCreateGeneral(PETSC_COMM_SELF, cand_vec_length[a], agg_arr[a],PETSC_COPY_VALUES, &(idxm_is_B_arr[a]));CHKERRQ(ierr);
        /* maximum candidate vector length */
        if (cand_vec_length[a] > max_cand_vec_length) { max_cand_vec_length = cand_vec_length[a]; }
   }

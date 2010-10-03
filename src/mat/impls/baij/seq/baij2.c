@@ -64,7 +64,7 @@ PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat A,PetscInt is_max,IS is[],PetscInt
       for (k=0; k<bs; k++)
         nidx2[j*bs+k] = nidx[j]*bs+k;
     }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz*bs,nidx2,is+i);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz*bs,nidx2,PETSC_COPY_VALUES,is+i);CHKERRQ(ierr);
   }
   ierr = PetscBTDestroy(table);CHKERRQ(ierr);
   ierr = PetscFree(nidx);CHKERRQ(ierr);
@@ -184,7 +184,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
     if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Index set does not match blocks");
     if (vary[i]==bs) iary[count++] = i;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,&is1);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
   
   ierr = PetscMemzero(vary,(a->mbs)*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<ncols; i++) vary[icol[i]/bs]++;
@@ -193,7 +193,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
     if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error in PETSc");
     if (vary[i]==bs) iary[count++] = i;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,&is2);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&icol);CHKERRQ(ierr);
   ierr = PetscFree2(vary,iary);CHKERRQ(ierr);

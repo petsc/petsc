@@ -588,7 +588,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MatView_MPI_DA(Mat A,PetscViewer viewer)
   ierr = PetscMalloc((rend-rstart)*sizeof(PetscInt),&petsc);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) petsc[i-rstart] = i;
   ierr = AOApplicationToPetsc(ao,rend-rstart,petsc);CHKERRQ(ierr);
-  ierr = ISCreateGeneralNC(comm,rend-rstart,petsc,&is);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,rend-rstart,petsc,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
 
   /* call viewer on natural ordering */
   ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&Anatural);CHKERRQ(ierr);
@@ -632,7 +632,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MatLoad_MPI_DA(Mat A,PetscViewer viewer)
   ierr = PetscMalloc((rend-rstart)*sizeof(PetscInt),&app);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) app[i-rstart] = i;
   ierr = AOPetscToApplication(ao,rend-rstart,app);CHKERRQ(ierr);
-  ierr = ISCreateGeneralNC(comm,rend-rstart,app,&is);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,rend-rstart,app,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
 
   /* Do permutation and replace header */
   ierr = MatGetSubMatrix(Anatural,is,is,MAT_INITIAL_MATRIX,&Aapp);CHKERRQ(ierr);

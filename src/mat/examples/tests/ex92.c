@@ -131,8 +131,8 @@ int main(int argc,char **args)
       idx[j*bs] = bs*(PetscInt)(PetscRealPart(rval)*Mbs);
       for (k=1; k<bs; k++) idx[j*bs+k] = idx[j*bs]+k;
     }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,is1+i);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,is2+i);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,PETSC_COPY_VALUES,is1+i);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,PETSC_COPY_VALUES,is2+i);CHKERRQ(ierr);
   }
 
   ierr = PetscLogStageRegister("MatOv_SBAIJ",&stages[0]);

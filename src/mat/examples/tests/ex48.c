@@ -154,8 +154,8 @@ int main(int argc,char **args)
   /* Do LUFactor() on both the matrices */
   ierr = PetscMalloc(M*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   for (i=0; i<M; i++) idx[i] = i;
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,M,idx,&is1);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,M,idx,&is2);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,M,idx,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,M,idx,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
   ierr = PetscFree(idx);CHKERRQ(ierr);
   ierr = ISSetPermutation(is1);CHKERRQ(ierr);
   ierr = ISSetPermutation(is2);CHKERRQ(ierr);

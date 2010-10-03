@@ -301,12 +301,12 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat F,Mat A,const MatFactorInfo 
         for (j=0; j<lu->bs; j++)
           lu->local_cols_old_num[next++] = iold++;
       }
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->num_local_cols,lu->local_cols_old_num,&lu->my_cols);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->num_local_cols,lu->local_cols_old_num,PETSC_COPY_VALUES,&lu->my_cols);CHKERRQ(ierr);
       
     } else {    /* lu->dsc_id == -1 */  
       lu->num_local_cols = 0; 
       lu->local_cols_old_num = 0; 
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->num_local_cols,lu->local_cols_old_num,&lu->my_cols);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->num_local_cols,lu->local_cols_old_num,PETSC_COPY_VALUES,&lu->my_cols);CHKERRQ(ierr);
     } 
     /* generate vec_dsc and iden_dsc to be used later */
     ierr = VecCreateSeq(PETSC_COMM_SELF,lu->num_local_cols,&lu->vec_dsc);CHKERRQ(ierr);  
@@ -336,7 +336,7 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat F,Mat A,const MatFactorInfo 
           iidx[idx[i]] = i;       /* inverse of idx */
         }
       } /* end of (lu->dsc_id == -1) */
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->num_local_cols,itmp,&my_cols_sorted);CHKERRQ(ierr); 
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->num_local_cols,itmp,PETSC_COPY_VALUES,&my_cols_sorted);CHKERRQ(ierr); 
       ierr = MatGetSubMatrices(A,1,&my_cols_sorted,&lu->iden,MAT_INITIAL_MATRIX,&tseq);CHKERRQ(ierr); 
       ierr = ISDestroy(my_cols_sorted);CHKERRQ(ierr);
       A_seq = tseq[0];

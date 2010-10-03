@@ -142,7 +142,7 @@ static PetscErrorCode MatPartitioningApply_Jostle(MatPartitioning part, IS * par
         ierr = PetscFree(degree);CHKERRQ(ierr);
 
         /* Creation of the index set */
-        ierr = ISCreateGeneral(((PetscObject)part)->comm, mat->m, partition, partitioning);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(((PetscObject)part)->comm, mat->m, partition,PETSC_COPY_VALUES, partitioning);CHKERRQ(ierr);
 
         if (matMPI != mat) {
             ierr = MatDestroy(matMPI);CHKERRQ(ierr);

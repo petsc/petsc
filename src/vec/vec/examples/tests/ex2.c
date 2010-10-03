@@ -23,8 +23,8 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
 
   /* create two index sets */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,2,idx1,&is1);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,2,idx2,&is2);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,2,idx1,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,2,idx2,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
 
   ierr = VecSet(x,one);CHKERRQ(ierr);
   ierr = VecSet(y,two);CHKERRQ(ierr);

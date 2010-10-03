@@ -322,7 +322,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
   }
   
   for (i=0; i<imax; ++i) {
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz[i],data[i],is+i);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz[i],data[i],PETSC_COPY_VALUES,is+i);CHKERRQ(ierr);
   }
   
   ierr = PetscFree(onodes2);CHKERRQ(ierr);

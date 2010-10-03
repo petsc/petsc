@@ -834,9 +834,9 @@ operations on vectors and matrices.
 The following command creates a index set based on a list 
 of integers: 
 \begin{tabbing}
-  ISCreateGeneral(MPI\_Comm comm,int n,int *indices, IS *is);
+  ISCreateGeneral(MPI\_Comm comm,int n,int *indices,PetscCopyMode mode, IS *is);
 \end{tabbing}
-This routine essentially copies the \trl{n} indices passed 
+When mode is PETSC\_COPY\_VALUES this routine copies the \trl{n} indices passed 
 to it by the integer array \trl{indices}.  
 Thus, the user should be sure to free the integer array \trl{indices} 
 when it is no longer needed, perhaps directly after the call to 
@@ -978,8 +978,8 @@ elements it needed, or none by creating an index set with no entries.
    int         \trl{idx_from[] = {100,200}, idx_to[] = {0,1};}\\
 
    VecCreateSeq(PETSC_COMM_SELF,2,\&x);\\
-   ISCreateGeneral(PETSC_COMM_SELF,2,idx\_from,\&from);\\
-   ISCreateGeneral(PETSC_COMM_SELF,2,idx\_to,\&to);\\
+   ISCreateGeneral(PETSC_COMM_SELF,2,idx\_from,PETSC\_COPY\_VALUES,\&from);\\
+   ISCreateGeneral(PETSC_COMM_SELF,2,idx\_to,PETSC\_COPY\_VALUES,\&to);\\
    VecScatterCreate(p,from,x,to,\&scatter);\\
    VecScatterBegin(scatter,p,x,INSERT_VALUES,SCATTER_FORWARD);\\
    VecScatterEnd(scatter,p,x,INSERT_VALUES,SCATTER_FORWARD);\\

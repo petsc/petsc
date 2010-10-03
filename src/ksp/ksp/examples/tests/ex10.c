@@ -157,7 +157,7 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
     if (nz) rowkeep[ict++] = i;
     ierr = MatRestoreRow(mat,i,&nz,0,0);CHKERRQ(ierr);
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,ict,rowkeep,&iskeep);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,ict,rowkeep,PETSC_COPY_VALUES,&iskeep);CHKERRQ(ierr);
   ierr = MatGetSubMatrices(mat,1,&iskeep,&iskeep,MAT_INITIAL_MATRIX,&submatb);CHKERRQ(ierr);
   submat = *submatb; 
   ierr = PetscFree(submatb);CHKERRQ(ierr);

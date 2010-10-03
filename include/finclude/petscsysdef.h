@@ -79,6 +79,8 @@
 #define PetscBool  PetscEnum
 #endif
 !
+#define PetscCopyMode PetscEnum
+!
 #define PetscDataType PetscEnum
 #define PetscFPTrap PetscEnum
 !

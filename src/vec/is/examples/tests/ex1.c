@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   /*
      Test IS of size 0 
   */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,0,&n,&is);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,0,&n,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = ISGetSize(is,&n);CHKERRQ(ierr);
   if (n != 0) SETERRQ(PETSC_COMM_SELF,1,"ISGetSize");
   ierr = ISDestroy(is);CHKERRQ(ierr);
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   for (i=0; i<n; i++) {
     indices[i] = rank + i;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,indices,&is);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&ii);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (ii[i] != indices[i]) SETERRQ(PETSC_COMM_SELF,1,"ISGetIndices");
@@ -87,7 +87,7 @@ int main(int argc,char **argv)
   for (i=0; i<n; i++) {
     indices[i] = n - i - 1;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,indices,&is);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
   ierr = ISSetPermutation(is);CHKERRQ(ierr);
   ierr = ISInvertPermutation(is,PETSC_DECIDE,&newis);CHKERRQ(ierr);

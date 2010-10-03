@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   indices[2] = rank + 3; 
   indices[3] = rank + 4; 
   indices[4] = rank + 5; 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,5,indices,&is);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,5,indices,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   /*
      Note that ISCreateGeneral() has made a copy of the indices
      so we may (and generally should) free indices[]

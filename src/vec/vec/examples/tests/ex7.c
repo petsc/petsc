@@ -22,7 +22,7 @@ int main(int argc,char **argv)
 
   /* create two index sets */
   ierr = ISCreateStride(PETSC_COMM_SELF,3,0,2,&is1);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,3,idx1,&is2);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,3,idx1,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
 
   ierr = VecSetValues(x,6,loc,vals,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);

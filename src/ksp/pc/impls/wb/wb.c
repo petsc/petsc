@@ -139,9 +139,9 @@ PetscErrorCode DAGetWireBasketInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,
   ierr = ISLocalToGlobalMappingApply(ltg,Nint,IIint,IIint);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltg,Nsurf,IIsurf,IIsurf);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,N,II,&is);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,Nint,Iint,&isint);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,Nsurf,Isurf,&issurf);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,N,II,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,Nint,Iint,PETSC_COPY_VALUES,&isint);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,Nsurf,Isurf,PETSC_COPY_VALUES,&issurf);CHKERRQ(ierr);
   ierr = PetscFree3(II,Iint,Isurf);CHKERRQ(ierr);
 
   ierr = MatGetSubMatrices(Aglobal,1,&is,&is,MAT_INITIAL_MATRIX,&Aholder);CHKERRQ(ierr);
@@ -412,9 +412,9 @@ PetscErrorCode DAGetFaceInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,MatReu
   ierr = ISLocalToGlobalMappingApply(ltg,Nint,IIint,IIint);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltg,Nsurf,IIsurf,IIsurf);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,N,II,&is);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,Nint,Iint,&isint);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,Nsurf,Isurf,&issurf);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,N,II,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,Nint,Iint,PETSC_COPY_VALUES,&isint);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,Nsurf,Isurf,PETSC_COPY_VALUES,&issurf);CHKERRQ(ierr);
   ierr = PetscFree3(II,Iint,Isurf);CHKERRQ(ierr);
 
   ierr = MatGetSubMatrices(Aglobal,1,&is,&is,MAT_INITIAL_MATRIX,&Aholder);CHKERRQ(ierr);

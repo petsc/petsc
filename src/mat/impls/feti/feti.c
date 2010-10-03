@@ -498,8 +498,8 @@ int MatFetiCreateScatter(Mat A)         /* name may be misleading */
     matfeti->scatter_len=pos;  /* test with < */
     ASSERT2(pos==is_len,"pos==is_len",pos,is_len);
 
-    ISCreateGeneral(PETSC_COMM_SELF ,is_len,is_idx_local ,&ISlocal);     /* this is local */
-    ISCreateGeneral(PETSC_COMM_SELF ,is_len,is_idx_global,&ISglobal);    /* this is going to be distributed */
+    ISCreateGeneral(PETSC_COMM_SELF ,is_len,is_idx_local ,PETSC_COPY_VALUES,&ISlocal);     /* this is local */
+    ISCreateGeneral(PETSC_COMM_SELF ,is_len,is_idx_global,PETSC_COPY_VALUES,&ISglobal);    /* this is going to be distributed */
 
     VecScatterCreate(matfeti->contrib,
 		     ISlocal,
@@ -606,8 +606,8 @@ int MatFetiCreateScatterBc(Mat A)
     matfeti->BcT_scatter_len=pos; 
     ASSERT2(pos==is_len,"pos==is_len",pos,is_len);
 
-    ISCreateGeneral(PETSC_COMM_SELF ,is_len,is_idx_local ,&ISlocal);     /* this is local */
-    ISCreateGeneral(PETSC_COMM_SELF ,is_len,is_idx_global,&ISglobal);    /* this is going to be distributed */
+    ISCreateGeneral(PETSC_COMM_SELF ,is_len,is_idx_local ,PETSC_COPY_VALUES,&ISlocal);     /* this is local */
+    ISCreateGeneral(PETSC_COMM_SELF ,is_len,is_idx_global,PETSC_COPY_VALUES,&ISglobal);    /* this is going to be distributed */
 
     VecScatterCreate(matfeti->BcT_contrib,
 		     ISlocal,

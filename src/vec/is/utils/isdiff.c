@@ -87,7 +87,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISDifference(IS is1,IS is2,IS *isout)
     if (PetscBTLookup(mask,i)) iout[nout++] = i + imin;
   }
   ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneralNC(comm,nout,iout,isout);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,nout,iout,PETSC_OWN_POINTER,isout);CHKERRQ(ierr);
 
   ierr = PetscBTDestroy(mask);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -205,7 +205,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSum(IS is1,IS is2,IS *is3)
 
   ierr = ISRestoreIndices(is1,&i1); CHKERRQ(ierr);
   ierr = ISRestoreIndices(is2,&i2); CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n3,iout,is3); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,n3,iout,PETSC_COPY_VALUES,is3); CHKERRQ(ierr);
   ierr = PetscFree(iout); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -297,7 +297,7 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
 
   /* create the new IS containing the sum */
   ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,nout,iout,isout);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,nout,iout,PETSC_COPY_VALUES,isout);CHKERRQ(ierr);
   ierr = PetscFree(iout);CHKERRQ(ierr);
 
   ierr = PetscBTDestroy(mask);CHKERRQ(ierr);

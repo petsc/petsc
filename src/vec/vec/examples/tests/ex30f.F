@@ -79,8 +79,10 @@
       to(8)=7
 
       eight = 8
-      call ISCreateGeneral(PETSC_COMM_SELF,eight,from,fromis,ierr)
-      call ISCreateGeneral(PETSC_COMM_SELF,eight,to,tois,ierr)
+      call ISCreateGeneral(PETSC_COMM_SELF,eight,from,PETSC_COPY_VALUES,      &
+     &                     fromis,ierr)
+      call ISCreateGeneral(PETSC_COMM_SELF,eight,to,PETSC_COPY_VALUES,        &
+     &                     tois,ierr)
       call VecScatterCreate(v1,fromis,v2,tois,scat1,ierr)
       call VecScatterCreate(v1,fromis,v3,tois,scat2,ierr)
       call ISDestroy(fromis,ierr)

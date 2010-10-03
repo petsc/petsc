@@ -136,8 +136,8 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&tmp_vec);CHKERRQ(ierr);
 
   /* Create scatter context */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&from);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&to);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,PETSC_COPY_VALUES,&to);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,tmp_vec,to,&scatter);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -179,8 +179,8 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   ierr = VecDuplicate(tmp_in,&tmp_out);CHKERRQ(ierr);
 
   /* Create scatter context */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&from);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&to);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,PETSC_COPY_VALUES,&to);CHKERRQ(ierr);
   ierr = VecScatterCreate(globalin,from,tmp_in,to,&scatter);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

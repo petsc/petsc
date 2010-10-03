@@ -193,7 +193,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
         locals += rank;
     } else
         locals += mat->rmap->N % size;
-    ierr = ISCreateGeneral(((PetscObject)part)->comm, nb_locals, locals, partitioning);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(((PetscObject)part)->comm, nb_locals, locals,PETSC_COPY_VALUES, partitioning);CHKERRQ(ierr);
 
     /* destroy temporary objects */
     ierr = PetscFree(parttab);CHKERRQ(ierr);

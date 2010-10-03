@@ -406,8 +406,8 @@ PetscErrorCode FACreate(FA *infa)
   }
   ierr = AOApplicationToPetsc(toao,nscat,to);CHKERRQ(ierr);
   ierr = AOApplicationToPetsc(globalao,nscat,from);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,nscat,to,&tois);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,nscat,from,&globalis);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,nscat,to,PETSC_COPY_VALUES,&tois);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,nscat,from,PETSC_COPY_VALUES,&globalis);CHKERRQ(ierr);
   ierr = PetscFree(to);CHKERRQ(ierr);
   ierr = PetscFree(from);CHKERRQ(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,tonglobal,PETSC_DETERMINE,&tovec);CHKERRQ(ierr);

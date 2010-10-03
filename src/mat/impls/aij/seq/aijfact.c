@@ -85,7 +85,7 @@ PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS 
     current = newcurrent;
     order[i+1] = current;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,order,irow);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,order,PETSC_COPY_VALUES,irow);CHKERRQ(ierr);
   *icol = *irow;
   ierr = PetscObjectReference((PetscObject)*irow);CHKERRQ(ierr);
   ierr = PetscFree(done);CHKERRQ(ierr);

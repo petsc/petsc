@@ -104,6 +104,16 @@
       parameter (PETSC_CHAR=6,PETSC_BIT_LOGICAL=7,PETSC_ENUM=8)
       parameter (PETSC_BOOL=9,PETSC_LONG_DOUBLE=10)
 !
+!
+!
+      PetscEnum PETSC_COPY_VALUES
+      PetscEnum PETSC_OWN_POINTER
+      PetscEnum PETSC_USE_POINTER
+
+      parameter (PETSC_COPY_VALUES = 0)
+      parameter (PETSC_OWN_POINTER = 1)
+      parameter (PETSC_USE_POINTER = 2)
+!
 ! ------------------------------------------------------------------------
 !     PETSc mathematics include file. Defines certain basic mathematical 
 !    constants and functions for working with single and double precision

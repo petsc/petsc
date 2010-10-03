@@ -2031,7 +2031,7 @@ PetscErrorCode MatIncreaseOverlap_SeqAIJ(Mat A,PetscInt is_max,IS is[],PetscInt 
         }
       }
     }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz,nidx,(is+i));CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz,nidx,PETSC_COPY_VALUES,(is+i));CHKERRQ(ierr);
   }
   ierr = PetscBTDestroy(table);CHKERRQ(ierr);
   ierr = PetscFree(nidx);CHKERRQ(ierr);

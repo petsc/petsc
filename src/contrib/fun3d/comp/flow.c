@@ -1812,14 +1812,14 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
    for ( i = 0; i < nvertices; i++ )
      for ( j = 0; j < bs; j++ )
        svertices[j+bs*i] = j + bs*loc2pet[i];
-   ierr = ISCreateGeneral(MPI_COMM_SELF,bs*nvertices,svertices,&isglobal);CHKERRQ(ierr);
+   ierr = ISCreateGeneral(MPI_COMM_SELF,bs*nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #endif
 #else
    ICALLOC(bs*nvertices, &svertices);
    for ( j = 0; j < bs; j++ )
     for ( i = 0; i < nvertices; i++ )
        svertices[j*nvertices+i] = j*nvertices + loc2pet[i];
-   ierr = ISCreateGeneral(MPI_COMM_SELF,bs*nvertices,svertices,&isglobal);CHKERRQ(ierr);
+   ierr = ISCreateGeneral(MPI_COMM_SELF,bs*nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #endif
    ierr = PetscFree(svertices);CHKERRQ(ierr);
    ierr = VecScatterCreate(grid->qnode,isglobal,grid->qnodeLoc,islocal,
@@ -1840,14 +1840,14 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
    for ( i = 0; i < nvertices; i++ )
      for ( j = 0; j < 3*bs; j++ )
        svertices[j+3*bs*i] = j + 3*bs*loc2pet[i];
-   ierr = ISCreateGeneral(MPI_COMM_SELF,3*bs*nvertices,svertices,&isglobal);CHKERRQ(ierr);
+   ierr = ISCreateGeneral(MPI_COMM_SELF,3*bs*nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #endif
 #else
    ICALLOC(3*bs*nvertices, &svertices);
    for ( j = 0; j < 3*bs; j++ )
     for ( i = 0; i < nvertices; i++ )
        svertices[j*nvertices+i] = j*nvertices + loc2pet[i];
-   ierr = ISCreateGeneral(MPI_COMM_SELF,3*bs*nvertices,svertices,&isglobal);CHKERRQ(ierr);
+   ierr = ISCreateGeneral(MPI_COMM_SELF,3*bs*nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #endif
    ierr = PetscFree(svertices);CHKERRQ(ierr);
    ierr = VecScatterCreate(grid->grad,isglobal,grid->gradLoc,islocal,
@@ -2349,14 +2349,14 @@ int WriteRestartFile(GRID *grid, int timeStep)
    for ( i = 0; i < nnodesLoc; i++ )
      for ( j = 0; j < bs; j++ )
        svertices[j+bs*i] = j + bs*loc2pet[i];
-   ierr = ISCreateGeneral(MPI_COMM_SELF,bs*nnodesLoc,svertices,&isglobal);CHKERRQ(ierr);
+   ierr = ISCreateGeneral(MPI_COMM_SELF,bs*nnodesLoc,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #endif
 #else
    ICALLOC(bs*nnodesLoc, &svertices);
    for ( j = 0; j < bs; j++ )
     for ( i = 0; i < nnodesLoc; i++ )
        svertices[j*nnodesLoc+i] = j*nnodesLoc + loc2pet[i];
-   ierr = ISCreateGeneral(MPI_COMM_SELF,bs*nnodesLoc,svertices,&isglobal);CHKERRQ(ierr);
+   ierr = ISCreateGeneral(MPI_COMM_SELF,bs*nnodesLoc,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #endif
   ierr = PetscFree(loc2pet);CHKERRQ(ierr);
   ierr = PetscFree(svertices);CHKERRQ(ierr);

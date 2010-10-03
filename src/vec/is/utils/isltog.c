@@ -324,7 +324,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingApplyIS(ISLocalToGlobalM
     idxout[i] = idxmap[idxin[i]];
   }
   ierr = ISRestoreIndices(is,&idxin);CHKERRQ(ierr);
-  ierr = ISCreateGeneralNC(PETSC_COMM_SELF,n,idxout,newis);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idxout,PETSC_OWN_POINTER,newis);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

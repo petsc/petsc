@@ -167,7 +167,7 @@ PetscErrorCode MatSolve_MPISpooles(Mat A,Vec b,Vec x)
     ierr = VecCreateSeq(PETSC_COMM_SELF,lu->nmycol,&lu->vec_spooles);CHKERRQ(ierr);
 #endif 
     ierr = ISCreateStride(PETSC_COMM_SELF,lu->nmycol,0,1,&lu->iden);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->nmycol,lu->rowindX,&lu->is_petsc);CHKERRQ(ierr);  
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->nmycol,lu->rowindX,PETSC_COPY_VALUES,&lu->is_petsc);CHKERRQ(ierr);  
     ierr = VecScatterCreate(lu->vec_spooles,lu->iden,x,lu->is_petsc,&lu->scat);CHKERRQ(ierr); 
   }
 #if defined(PETSC_USE_COMPLEX)

@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
 
   /* create two index sets */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,3,idx1,&is1);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,3,idx1,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,3,0,2,&is2);CHKERRQ(ierr);
 
   ierr = VecSetValues(x,6,loc,vals,INSERT_VALUES);CHKERRQ(ierr);

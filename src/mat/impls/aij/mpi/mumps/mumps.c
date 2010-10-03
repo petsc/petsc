@@ -557,7 +557,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
       for (i=0; i<lu->id.lsol_loc; i++){
         lu->id.isol_loc[i] -= 1; /* change Fortran style to C style */
       }
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->id.lsol_loc,lu->id.isol_loc,&is_petsc);CHKERRQ(ierr);  /* to */
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->id.lsol_loc,lu->id.isol_loc,PETSC_COPY_VALUES,&is_petsc);CHKERRQ(ierr);  /* to */
       ierr = VecScatterCreate(lu->x_seq,is_iden,x,is_petsc,&lu->scat_sol);CHKERRQ(ierr);
       ierr = ISDestroy(is_iden);CHKERRQ(ierr);
       ierr = ISDestroy(is_petsc);CHKERRQ(ierr);

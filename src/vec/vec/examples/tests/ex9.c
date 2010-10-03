@@ -26,8 +26,8 @@ int main(int argc,char **argv)
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);
 
   /* create two index sets */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,3,idx1,&is1);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,3,idx2,&is2);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,3,idx1,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,3,idx2,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
 
   /* fill local part of parallel vector */
   for (i=n*rank; i<n*(rank+1); i++) {

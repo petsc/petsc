@@ -132,7 +132,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
     ierr = ISCreateBlock(((PetscObject)mat)->comm,bs,iec,ga,&from);CHKERRQ(ierr);
     ierr = PetscFree(ga);CHKERRQ(ierr);
   } else {
-    ierr = ISCreateGeneral(((PetscObject)mat)->comm,ec,garray,&from);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(((PetscObject)mat)->comm,ec,garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
   }
   ierr = ISCreateStride(PETSC_COMM_SELF,ec,0,1,&to);CHKERRQ(ierr);
 
