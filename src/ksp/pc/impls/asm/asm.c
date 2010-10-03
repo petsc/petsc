@@ -234,8 +234,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRQ(ierr);
         if (nout != m_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"is_local not a subset of is");
         ierr = ISRestoreIndices(osm->is_local[i], &idx_local);CHKERRQ(ierr);
-        ierr = ISCreateGeneral(PETSC_COMM_SELF,m_local,idx,PETSC_COPY_VALUES,&isll);CHKERRQ(ierr);
-        ierr = PetscFree(idx);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,m_local,idx,PETSC_OWN_POINTER,&isll);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF,m_local,0,1,&isl);CHKERRQ(ierr);
         ierr = VecCreateSeq(PETSC_COMM_SELF,m_local,&osm->y_local[i]);CHKERRQ(ierr);
         ierr = VecScatterCreate(osm->y[i],isll,osm->y_local[i],isl,&osm->localization[i]);CHKERRQ(ierr);

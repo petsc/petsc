@@ -74,8 +74,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_AMD(Mat mat,const MatOrderingTy
   ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,row);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,col);CHKERRQ(ierr);
-  ierr = PetscFree(perm);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_OWN_POINTER,col);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

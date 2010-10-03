@@ -99,10 +99,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m
       printf("[%d] localIndex[%d]: %d globalIndex[%d]: %d\n", m->commRank(), i, localIndices[i], i, globalIndices[i]);
     }
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, localSize, localIndices,PETSC_COPY_VALUES,  &localIS);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, localSize, globalIndices,PETSC_COPY_VALUES, &globalIS);CHKERRQ(ierr);
-  ierr = PetscFree(localIndices);CHKERRQ(ierr);
-  ierr = PetscFree(globalIndices);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, localSize, localIndices,PETSC_OWN_POINTER,  &localIS);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, localSize, globalIndices,PETSC_OWN_POINTER, &globalIS);CHKERRQ(ierr);
   // Can remove this when I test it with NULL
 #ifdef PETSC_USE_COMPLEX
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->getStorageSize(), PETSC_NULL, &localVec);CHKERRQ(ierr);

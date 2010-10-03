@@ -105,12 +105,11 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
         newlocals[bs*i + j] = locals[i];
       }
     }
-    ierr = ISCreateGeneral(((PetscObject)part)->comm,bs*mat->rmap->n,newlocals,PETSC_COPY_VALUES,partitioning);CHKERRQ(ierr);
-    ierr = PetscFree(newlocals);CHKERRQ(ierr);
+    ierr = PetscFree(locals);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(((PetscObject)part)->comm,bs*mat->rmap->n,newlocals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
   } else {
-    ierr = ISCreateGeneral(((PetscObject)part)->comm,mat->rmap->n,locals,PETSC_COPY_VALUES,partitioning);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(((PetscObject)part)->comm,mat->rmap->n,locals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
   }
-  ierr = PetscFree(locals);CHKERRQ(ierr);
 
   if (!flg) {
     ierr = MatDestroy(mat);CHKERRQ(ierr);

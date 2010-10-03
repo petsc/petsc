@@ -106,8 +106,7 @@ PetscErrorCode DAGetNatural_Private(DA da,PetscInt *outNlocal,IS *isnatural)
     }
   }
   *outNlocal = Nlocal;
-  ierr = ISCreateGeneral(((PetscObject)da)->comm,Nlocal,lidx,PETSC_COPY_VALUES,isnatural);CHKERRQ(ierr);
-  ierr = PetscFree(lidx);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(((PetscObject)da)->comm,Nlocal,lidx,PETSC_OWN_POINTER,isnatural);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

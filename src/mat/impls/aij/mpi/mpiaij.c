@@ -4633,8 +4633,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalMatCondensed(Mat A,MatReuse scall,I
     imark = i;
     for (i=0; i<nzA; i++) idx[ncols++] = start + i;
     for (i=imark; i<nzB; i++) idx[ncols++] = cmap[i];
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,PETSC_COPY_VALUES,&iscola);CHKERRQ(ierr);
-    ierr = PetscFree(idx);CHKERRQ(ierr); 
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,PETSC_OWN_POINTER,&iscola);CHKERRQ(ierr);
   } else {
     iscola = *col;
   }
@@ -4703,8 +4702,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,
     imark = i;
     for (i=0; i<nzA; i++) idx[ncols++] = start + i;  /* local rows */
     for (i=imark; i<nzB; i++) idx[ncols++] = cmap[i]; /* row > local row index */
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,PETSC_COPY_VALUES,&isrowb);CHKERRQ(ierr);
-    ierr = PetscFree(idx);CHKERRQ(ierr); 
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,PETSC_OWN_POINTER,&isrowb);CHKERRQ(ierr);
     *brstart = imark;
     ierr = ISCreateStride(PETSC_COMM_SELF,B->cmap->N,0,1,&iscolb);CHKERRQ(ierr);
   } else {

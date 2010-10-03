@@ -47,8 +47,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_Natural(Mat mat,const MatOrderi
     ierr = PetscMalloc(n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) ii[i] = i;
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_COPY_VALUES,irow);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_COPY_VALUES,icol);CHKERRQ(ierr);
-    ierr = PetscFree(ii);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_OWN_POINTER,icol);CHKERRQ(ierr);
   } else {
     PetscInt start,end;
 

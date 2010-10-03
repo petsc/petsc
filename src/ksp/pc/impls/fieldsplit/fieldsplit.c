@@ -290,8 +290,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
               ii[nfields*j + k] = rstart + bs*j + fields[k];
             }
           }
-          ierr = ISCreateGeneral(((PetscObject)pc)->comm,nslots*nfields,ii,PETSC_COPY_VALUES,&ilink->is);CHKERRQ(ierr);       
-          ierr = PetscFree(ii);CHKERRQ(ierr);
+          ierr = ISCreateGeneral(((PetscObject)pc)->comm,nslots*nfields,ii,PETSC_OWN_POINTER,&ilink->is);CHKERRQ(ierr);       
         } else { 
           ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+ilink->fields[0],bs,&ilink->is);CHKERRQ(ierr);
         }

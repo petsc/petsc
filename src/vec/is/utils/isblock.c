@@ -77,8 +77,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesGeneral(PetscInt n,PetscInt b
       j++;
     }
     if (j != isz) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"table error: jj != isz"); }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz,nidx,PETSC_COPY_VALUES,(is_out+i));CHKERRQ(ierr);
-    ierr = PetscFree(nidx);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz,nidx,PETSC_OWN_POINTER,(is_out+i));CHKERRQ(ierr);
 #else
     ierr = ISCreateGeneral(PETSC_COMM_SELF,isz,nidx,PETSC_COPY_VALUES,(is_out+i));CHKERRQ(ierr);
 #endif

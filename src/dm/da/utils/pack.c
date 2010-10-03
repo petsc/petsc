@@ -1028,8 +1028,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetGlobalIndices(DMComposite packer,
         ierr   = VecRestoreArray(global,&array);CHKERRQ(ierr);
       }
       ierr = MPI_Bcast(idx,next->n,MPIU_INT,next->rank,((PetscObject)packer)->comm);CHKERRQ(ierr);
-      ierr = ISCreateGeneral(((PetscObject)packer)->comm,next->n,idx,PETSC_COPY_VALUES,&(*is)[cnt]);CHKERRQ(ierr);
-      ierr = PetscFree(idx);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(((PetscObject)packer)->comm,next->n,idx,PETSC_OWN_POINTER,&(*is)[cnt]);CHKERRQ(ierr);
     } else if (next->type == DMCOMPOSITE_DM) {
       Vec local;
 
@@ -1051,8 +1050,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetGlobalIndices(DMComposite packer,
       for (i=0; i<n; i++) idx[i] = (PetscInt)PetscRealPart(array[i]);
       ierr    = VecRestoreArray(local,&array);CHKERRQ(ierr);
       ierr    = VecDestroy(local);CHKERRQ(ierr);
-      ierr    = ISCreateGeneral(((PetscObject)packer)->comm,next->n,idx,PETSC_COPY_VALUES,&(*is)[cnt]);CHKERRQ(ierr);
-      ierr    = PetscFree(idx);CHKERRQ(ierr);
+      ierr    = ISCreateGeneral(((PetscObject)packer)->comm,next->n,idx,PETSC_OWN_POINTER,&(*is)[cnt]);CHKERRQ(ierr);
 
     } else {
       SETERRQ(((PetscObject)global)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");

@@ -52,9 +52,7 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *parti
   for (cell=rstart; cell<rend; cell++) {
     color[cell-rstart] = ((cell%n) / (n/p)) + p * ((cell/n) / (n/p));
   }
-  ierr = ISCreateGeneral(((PetscObject)part)->comm,rend-rstart,color,PETSC_COPY_VALUES,partitioning);CHKERRQ(ierr);
-  ierr = PetscFree(color);CHKERRQ(ierr);
-
+  ierr = ISCreateGeneral(((PetscObject)part)->comm,rend-rstart,color,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

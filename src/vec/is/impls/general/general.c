@@ -128,9 +128,8 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
     for (i=0; i<n; i++) {
       ii[idx[i]] = i;
     }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_COPY_VALUES,isout);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_OWN_POINTER,isout);CHKERRQ(ierr);
     ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
-    ierr = PetscFree(ii);CHKERRQ(ierr);
   } else {
     /* crude, nonscalable get entire IS on each processor */
     if (nlocal == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Do not yet support nlocal of PETSC_DECIDE");

@@ -360,8 +360,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningToNumbering(IS part,IS *is)
   ierr = PetscFree3(lsizes,starts,sums);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(part,&indices);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n,newi,PETSC_COPY_VALUES,is);CHKERRQ(ierr);
-  ierr = PetscFree(newi);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,n,newi,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
   ierr = ISSetPermutation(*is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -513,8 +512,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGather(IS is,IS *isout)
     ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
     ierr = PetscFree2(sizes,offsets);CHKERRQ(ierr);
 
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,N,indices,PETSC_COPY_VALUES,isout);CHKERRQ(ierr);
-    ierr = PetscFree(indices);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,N,indices,PETSC_OWN_POINTER,isout);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

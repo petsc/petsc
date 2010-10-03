@@ -66,13 +66,12 @@ PetscErrorCode GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
   
   /* Create the "from" and "to" index set */
   /* This is to scatter from the global vector */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nslice,sliceindices,PETSC_COPY_VALUES,&isfrom);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,nslice,sliceindices,PETSC_OWN_POINTER,&isfrom);CHKERRQ(ierr);
   /* This is to gather into the local vector */
   ierr = ISCreateStride(PETSC_COMM_SELF,nslice,0,1,&isto);CHKERRQ(ierr);
   ierr = VecScatterCreate(vglobal,isfrom,*vslice,isto,scatter);CHKERRQ(ierr);
   ierr = ISDestroy(isfrom);CHKERRQ(ierr); 
   ierr = ISDestroy(isto);CHKERRQ(ierr);
-  ierr = PetscFree(sliceindices);CHKERRQ(ierr);
   return 0;
 }
 
