@@ -4,7 +4,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version         = '100201'
+    self.version         = '100201' #Version 1.2.1
     self.versionStr       = str(int(self.version)/100000) + '.' + str(int(self.version)/100%1000) + '.' + str(int(self.version)%100)
     self.download        = ['http://thrust.googlecode.com/files/thrust-v'+self.versionStr+'.zip']
     self.includes        = ['thrust/version.h']
