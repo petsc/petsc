@@ -8,7 +8,24 @@
 #define ISSTRIDE  "stride"
 #define ISBLOCK   "block"
 
-/*
+typedef enum {
+  PETSC_COPY_VALUES,
+  PETSC_OWN_POINTER,
+  PETSC_USE_POINTER
+} PetscCopyMode;
+
+#undef __FUNCT__
+#define __FUNCT__ "ISCreate"
+static PetscErrorCode
+ISCreate_Compat(MPI_Comm comm, IS *is)
+{
+  PetscFunctionBegin;
+  PetscValidCharPointer(is,2);
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  PetscFunctionReturn(0);
+}
+#define ISCreate ISCreate_Compat
+
 #undef __FUNCT__
 #define __FUNCT__ "ISSetType"
 static PetscErrorCode
@@ -21,7 +38,6 @@ ISSetType_Compat(IS is, const char *istype)
   PetscFunctionReturn(0);
 }
 #define ISSetType ISSetType_Compat
-*/
 
 #undef __FUNCT__
 #define __FUNCT__ "ISGetType"
@@ -37,11 +53,44 @@ ISGetType_Compat(IS is, const char **istype)
 }
 #define ISGetType ISGetType_Compat
 
-typedef enum {
-  PETSC_COPY_VALUES,
-  PETSC_OWN_POINTER,
-  PETSC_USE_POINTER
-} PetscCopyMode;
+#undef __FUNCT__
+#define __FUNCT__ "ISGeneralSetIndices"
+static PetscErrorCode
+ISGeneralSetIndices_Compat(IS is,PetscInt n,const PetscInt idx[],
+                           PetscCopyMode mode)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  if (n) PetscValidIntPointer(idx,3);
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  PetscFunctionReturn(0);
+}
+#define ISGeneralSetIndices ISGeneralSetIndices_Compat
+
+#undef __FUNCT__
+#define __FUNCT__ "ISBlockSetIndices"
+static PetscErrorCode
+ISBlockSetIndices_Compat(IS is,PetscInt bs, PetscInt n,const PetscInt idx[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  if (n) PetscValidIntPointer(idx,3);
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  PetscFunctionReturn(0);
+}
+#define ISBlockSetIndices ISBlockSetIndices_Compat
+
+#undef __FUNCT__
+#define __FUNCT__ "ISStrideSetStride"
+static PetscErrorCode
+ISStrideSetStride_Compat(IS is,PetscInt n,PetscInt first,PetscInt step)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  PetscFunctionReturn(0);
+}
+#define ISStrideSetStride ISStrideSetStride_Compat
 
 #undef __FUNCT__
 #define __FUNCT__ "ISCreateGeneral"

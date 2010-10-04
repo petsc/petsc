@@ -143,13 +143,13 @@ class TestISBlock(BaseTestIS, unittest.TestCase):
         self.assertEqual(bs, self.bsize)
 
     def testGetIndicesBlock(self):
-        index = list(self.iset.getIndicesBlock())
+        index = list(self.iset.getBlockIndices())
         self.assertEqual(index, self.index)
 
     def testGetIndices(self):
         bs = self.bsize
         idx = []
-        for i in self.iset.getIndicesBlock():
+        for i in self.iset.getBlockIndices():
             for j in range(bs):
                 idx.append(i+j)
         index = list(self.iset.getIndices())

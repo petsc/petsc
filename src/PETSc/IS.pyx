@@ -22,7 +22,7 @@ cdef class IS(Object):
     def __getbuffer__(self, Py_buffer *view, int flags):
         cdef _IS_buffer buf = _IS_buffer(self)
         buf.acquirebuffer(view, flags)
-   
+
     def __releasebuffer__(self, Py_buffer *view):
         cdef _IS_buffer buf = <_IS_buffer>(view.obj)
         buf.releasebuffer(view)
@@ -39,19 +39,22 @@ cdef class IS(Object):
         self.iset = NULL
         return self
 
-    def create(self, indices, bsize=None, comm=None):
+    def create(self, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscInt bs = PETSC_DECIDE, nidx = 0, *idx = NULL
-        cdef PetscCopyMode cm = PETSC_COPY_VALUES
         cdef PetscIS newiset = NULL
-        indices = iarray_i(indices, &nidx, &idx)
-        if bsize is not None: bs = asInt(bsize)
-        if bs == PETSC_DECIDE:
-            CHKERR( ISCreateGeneral(ccomm, nidx, idx, cm, &newiset) )
-        else:
-            CHKERR( ISCreateBlock(ccomm, bs, nidx, idx, &newiset) )
+        CHKERR( ISCreate(ccomm, &newiset) )
         PetscCLEAR(self.obj); self.iset = newiset
         return self
+
+    def setType(self, is_type):
+        cdef PetscISType cval = NULL
+        is_type = str2bytes(is_type, &cval)
+        CHKERR( ISSetType(self.iset, cval) )
+
+    def getType(self):
+        cdef PetscISType cval = NULL
+        CHKERR( ISGetType(self.iset, &cval) )
+        return bytes2str(cval)
 
     def createGeneral(self, indices, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
@@ -73,20 +76,15 @@ cdef class IS(Object):
         PetscCLEAR(self.obj); self.iset = newiset
         return self
 
-    def createStride(self, size, first=None, step=None, comm=None):
+    def createStride(self, size, first=0, step=0, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscInt csize = asInt(size), cfirst = 0, cstep = 1
-        if first is not None: cfirst = asInt(first)
-        if step  is not None: cstep  = asInt(step)
+        cdef PetscInt csize  = asInt(size)
+        cdef PetscInt cfirst = asInt(first)
+        cdef PetscInt cstep  = asInt(step)
         cdef PetscIS newiset = NULL
         CHKERR( ISCreateStride(ccomm, csize, cfirst, cstep, &newiset) )
         PetscCLEAR(self.obj); self.iset = newiset
         return self
-
-    def getType(self):
-        cdef PetscISType cval = NULL
-        CHKERR( ISGetType(self.iset, &cval) )
-        return bytes2str(cval)
 
     def duplicate(self, copy=False):
         cdef IS iset = IS()
@@ -108,11 +106,16 @@ cdef class IS(Object):
         return iset
 
     def toGeneral(self):
-        cdef PetscBool flag = PETSC_FALSE
-        CHKERR( ISStride(self.iset, &flag) )
-        if flag == PETSC_FALSE: return self
-        CHKERR( ISStrideToGeneral(self.iset) )
-        return self # XXX IS_BLOCK ?
+        cdef PetscBool stride = PETSC_FALSE
+        cdef PetscBool block  = PETSC_FALSE
+        CHKERR( ISStride(self.iset, &stride) )
+        CHKERR( ISBlock(self.iset, &block) )
+        if stride == PETSC_TRUE:
+            CHKERR( ISStrideToGeneral(self.iset) )
+        elif block == PETSC_TRUE:
+            # CHKERR( ISBlockToGeneral(self.iset) )
+            raise NotImplementedError # XXX what to do here?
+        return self
 
     def invertPermutation(self, nlocal=None):
         cdef PetscInt cnlocal = PETSC_DECIDE
@@ -144,42 +147,6 @@ cdef class IS(Object):
         if block != PETSC_FALSE:
             CHKERR( ISBlockGetBlockSize(self.iset, &bs) )
         return toInt(bs)
-
-    def getIndices(self):
-        cdef PetscInt size = 0
-        cdef const_PetscInt *indices = NULL
-        CHKERR( ISGetLocalSize(self.iset, &size) )
-        CHKERR( ISGetIndices(self.iset, &indices) )
-        cdef object oindices = None
-        try:
-            oindices = array_i(size, indices)
-        finally:
-            CHKERR( ISRestoreIndices(self.iset, &indices) )
-        return oindices
-
-    def getIndicesBlock(self):
-        cdef PetscBool block = PETSC_FALSE
-        CHKERR( ISBlock(self.iset, &block) )
-        if block == PETSC_FALSE: return self.getIndices()
-        cdef PetscInt size = 0, bs = 0
-        cdef const_PetscInt *indices = NULL
-        CHKERR( ISGetLocalSize(self.iset, &size) )
-        CHKERR( ISBlockGetBlockSize(self.iset, &bs) )
-        CHKERR( ISBlockGetIndices(self.iset, &indices) )
-        cdef object oindices = None
-        try:
-            oindices = array_i(size//bs, indices)
-        finally:
-            CHKERR( ISBlockRestoreIndices(self.iset, &indices) )
-        return oindices
-
-    def getInfo(self):
-        cdef PetscBool stride = PETSC_FALSE
-        CHKERR( ISStride(self.iset, &stride) )
-        if stride == PETSC_FALSE: return None
-        cdef PetscInt first = 0, step = 0
-        CHKERR( ISStrideGetInfo(self.iset, &first, &step) )
-        return (toInt(first), toInt(step))
 
     def sort(self):
         CHKERR( ISSort(self.iset) )
@@ -240,11 +207,78 @@ cdef class IS(Object):
         return out
 
     def complement(self, nmin, nmax):
-        cdef PetscInt ival1 = asInt(nmin)
-        cdef PetscInt ival2 = asInt(nmax)
+        cdef PetscInt cnmin = asInt(nmin)
+        cdef PetscInt cnmax = asInt(nmax)
         cdef IS out = IS()
-        CHKERR( ISComplement(self.iset, ival1, ival2, &out.iset) )
+        CHKERR( ISComplement(self.iset, cnmin, cnmax, &out.iset) )
         return out
+
+    #
+
+    def setIndices(self, indices):
+        cdef PetscInt nidx = 0, *idx = NULL
+        cdef PetscCopyMode cm = PETSC_COPY_VALUES
+        indices = iarray_i(indices, &nidx, &idx)
+        CHKERR( ISGeneralSetIndices(self.iset, nidx, idx, cm) )
+
+    def getIndices(self):
+        cdef PetscInt size = 0
+        cdef const_PetscInt *indices = NULL
+        CHKERR( ISGetLocalSize(self.iset, &size) )
+        CHKERR( ISGetIndices(self.iset, &indices) )
+        cdef object oindices = None
+        try:
+            oindices = array_i(size, indices)
+        finally:
+            CHKERR( ISRestoreIndices(self.iset, &indices) )
+        return oindices
+
+    def setBlockIndices(self, bsize, indices):
+        cdef PetscInt bs = asInt(bsize)
+        cdef PetscInt nidx = 0, *idx = NULL
+        indices = iarray_i(indices, &nidx, &idx)
+        CHKERR( ISBlockSetIndices(self.iset, bs, nidx, idx) )
+
+    def getBlockIndices(self):
+        cdef PetscInt size = 0
+        cdef const_PetscInt *indices = NULL
+        cdef object oindices = None
+        cdef PetscBool block = PETSC_FALSE
+        CHKERR( ISBlock(self.iset, &block) )
+        try:
+            if block == PETSC_TRUE:
+                CHKERR( ISBlockGetLocalSize(self.iset, &size) )
+                CHKERR( ISBlockGetIndices(self.iset, &indices) )
+            else:
+                CHKERR( ISGetLocalSize(self.iset, &size) )
+                CHKERR( ISGetIndices(self.iset, &indices) )
+            oindices = array_i(size, indices)
+        finally:
+            if block == PETSC_TRUE:
+                CHKERR( ISBlockRestoreIndices(self.iset, &indices) )
+            else:
+                CHKERR( ISRestoreIndices(self.iset, &indices) )
+        return oindices
+
+    def setStride(self, size, first=0, step=1):
+        cdef PetscInt csize = asInt(size)
+        cdef PetscInt cfirst = asInt(first)
+        cdef PetscInt cstep = asInt(step)
+        CHKERR( ISStrideSetStride(self.iset, csize, cfirst, cstep) )
+
+    def getStride(self):
+        cdef PetscInt size=0, first=0, step=0
+        CHKERR( ISGetLocalSize(self.iset, &size) )
+        CHKERR( ISStrideGetInfo(self.iset, &first, &step) )
+        return (toInt(size), toInt(first), toInt(step))
+
+    def getInfo(self):
+        cdef PetscBool stride = PETSC_FALSE
+        CHKERR( ISStride(self.iset, &stride) )
+        if stride == PETSC_FALSE: return None
+        cdef PetscInt first = 0, step = 0
+        CHKERR( ISStrideGetInfo(self.iset, &first, &step) )
+        return (toInt(first), toInt(step))
 
     #
 
@@ -277,7 +311,7 @@ cdef class IS(Object):
     property block_size:
         def __get__(self):
             return self.getBlockSize()
-    
+
     property array:
         def __get__(self):
             return asarray(self)
@@ -329,12 +363,13 @@ cdef class LGMap(Object):
         cdef PetscLGMap newlgm = NULL
         if isinstance(indices, IS):
             iset = indices
-            CHKERR( ISLocalToGlobalMappingCreateIS(iset.iset, &newlgm) )
+            CHKERR( ISLocalToGlobalMappingCreateIS(
+                    iset.iset, &newlgm) )
         else:
             ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
             indices = iarray_i(indices, &nidx, &idx)
-            CHKERR( ISLocalToGlobalMappingCreate(ccomm, nidx, idx, 
-                                                 cm, &newlgm) )
+            CHKERR( ISLocalToGlobalMappingCreate(
+                    ccomm, nidx, idx, cm, &newlgm) )
         PetscCLEAR(self.obj); self.lgm = newlgm
         return self
 
