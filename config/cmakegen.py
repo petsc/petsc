@@ -33,14 +33,26 @@ def pkgsources(pkg):
   Walks the source tree associated with 'pkg', analyzes the conditional written into the makefiles,
   and returns a list of sources associated with each unique conditional (as a dictionary).
   '''
+  from distutils.sysconfig import parse_makefile
+  autodirs = set('ftn-auto ftn-custom f90-custom'.split()) # Automatically recurse into these, if they exist
+  skipdirs = set('examples benchmarks'.split())            # Skip these during the build
+  def compareDirLists(mdirs,dirs):
+    smdirs = set(mdirs)
+    sdirs  = set(dirs).difference(autodirs)
+    if smdirs != sdirs:
+      from sys import stderr
+      print >>stderr, 'Directory mismatch at %s:\n\tmdirs=%r\n\t dirs=%r\n\t  sym=%r' % (root,sorted(smdirs),sorted(sdirs),smdirs.symmetric_difference(sdirs))
   allconditions = defaultdict(set)
   sources = defaultdict(deque)
   for root,dirs,files in os.walk(os.path.join('src',pkg)):
     conditions = allconditions[os.path.dirname(root)].copy()
-    dirs[:] = [dir for dir in dirs if dir not in 'examples benchmarks'.split()]
     makefile = os.path.join(root,'makefile')
     if not os.path.exists(makefile):
       continue
+    mdirs = parse_makefile(makefile).get('DIRS','').split() # Directories specified in the makefile
+    #compareDirLists(mdirs,dirs)                            # diagnostic output to find unused directories
+    candidates = set(mdirs).union(autodirs).difference(skipdirs)
+    dirs[:] = list(candidates.intersection(dirs))
     with open(makefile) as lines:
       def stripsplit(line):
         return filter(lambda c: c!="'", line[len('#requires'):]).split()
