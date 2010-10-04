@@ -21,7 +21,6 @@
 
 #define VECSEQ 'seq'
 #define VECMPI 'mpi'
-#define VECFETI 'feti'
 #define VECSHARED 'shared'
 #define VECESI 'esi'
 #define VECPETSCESI 'petscesi'

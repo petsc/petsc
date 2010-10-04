@@ -1,3 +1,5 @@
+Matrix Object:
+  type: mpiaij
 row 0: (0, 1) 
 row 1: (0, 0.9)  (1, 0.1) 
 row 2: (1, 1) 

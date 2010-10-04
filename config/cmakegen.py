@@ -33,14 +33,26 @@ def pkgsources(pkg):
   Walks the source tree associated with 'pkg', analyzes the conditional written into the makefiles,
   and returns a list of sources associated with each unique conditional (as a dictionary).
   '''
+  from distutils.sysconfig import parse_makefile
+  autodirs = set('ftn-auto ftn-custom f90-custom'.split()) # Automatically recurse into these, if they exist
+  skipdirs = set('examples benchmarks'.split())            # Skip these during the build
+  def compareDirLists(mdirs,dirs):
+    smdirs = set(mdirs)
+    sdirs  = set(dirs).difference(autodirs)
+    if smdirs != sdirs:
+      from sys import stderr
+      print >>stderr, 'Directory mismatch at %s:\n\tmdirs=%r\n\t dirs=%r\n\t  sym=%r' % (root,sorted(smdirs),sorted(sdirs),smdirs.symmetric_difference(sdirs))
   allconditions = defaultdict(set)
   sources = defaultdict(deque)
   for root,dirs,files in os.walk(os.path.join('src',pkg)):
     conditions = allconditions[os.path.dirname(root)].copy()
-    dirs[:] = [dir for dir in dirs if dir not in 'examples benchmarks'.split()]
     makefile = os.path.join(root,'makefile')
     if not os.path.exists(makefile):
       continue
+    mdirs = parse_makefile(makefile).get('DIRS','').split() # Directories specified in the makefile
+    #compareDirLists(mdirs,dirs)                            # diagnostic output to find unused directories
+    candidates = set(mdirs).union(autodirs).difference(skipdirs)
+    dirs[:] = list(candidates.intersection(dirs))
     with open(makefile) as lines:
       def stripsplit(line):
         return filter(lambda c: c!="'", line[len('#requires'):]).split()
@@ -97,25 +109,35 @@ endif ()
 ''' % dict(pkg=pkg, PKG=pkg.upper(), pkgdeps=' '.join('petsc%s'%p for p in pkgdeps)))
 
 def main(petscdir):
-  with open(os.path.join(petscdir, 'CMakeLists.txt'), 'w') as f:
-    writeRoot(f)
-    f.write('include_directories (${PETSC_PACKAGE_INCLUDES})\n')
-    pkglist = [('sys'            , ''),
-               ('vec'            , 'sys'),
-               ('mat'            , 'vec sys'),
-               ('dm'             , 'mat vec sys'),
-               ('characteristic' , 'dm vec sys'),
-               ('ksp'            , 'dm mat vec sys'),
-               ('snes'           , 'ksp dm mat vec sys'),
-               ('ts'             , 'snes ksp dm mat vec sys')]
-    for pkg,deps in pkglist:
-      writePackage(f,pkg,deps.split())
-    f.write ('''
+  import tempfile, shutil
+  written = False               # We delete the temporary file if it wasn't finished, otherwise rename (atomic)
+  fd,tmplists = tempfile.mkstemp(prefix='CMakeLists.txt.',dir=petscdir,text=True)
+  try:
+    with os.fdopen(fd,'w') as f:
+      writeRoot(f)
+      f.write('include_directories (${PETSC_PACKAGE_INCLUDES})\n')
+      pkglist = [('sys'            , ''),
+                 ('vec'            , 'sys'),
+                 ('mat'            , 'vec sys'),
+                 ('dm'             , 'mat vec sys'),
+                 ('characteristic' , 'dm vec sys'),
+                 ('ksp'            , 'dm mat vec sys'),
+                 ('snes'           , 'ksp dm mat vec sys'),
+                 ('ts'             , 'snes ksp dm mat vec sys')]
+      for pkg,deps in pkglist:
+        writePackage(f,pkg,deps.split())
+      f.write ('''
 if (PETSC_USE_SINGLE_LIBRARY)
   add_library (petsc %s)
   target_link_libraries (petsc ${PETSC_PACKAGE_LIBS})
 endif ()
 ''' % (' '.join([r'${PETSC' + pkg.upper() + r'_SRCS}' for pkg,deps in pkglist]),))
+    written = True
+  finally:
+    if written:
+      shutil.move(tmplists,os.path.join(petscdir,'CMakeLists.txt'))
+    else:
+      os.remove(tmplists)
 
 if __name__ == "__main__":
   main(petscdir=os.environ['PETSC_DIR'])

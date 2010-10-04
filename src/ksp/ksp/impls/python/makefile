@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    = pythonK.o
 OBJSF    =
 LIBBASE  = libpetscksp
-DIRS     = ftn-custom
+DIRS     =
 LOCDIR   = src/ksp/ksp/impls/python/
 MANSEC   = KSP
 

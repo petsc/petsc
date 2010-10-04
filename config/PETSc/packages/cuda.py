@@ -4,9 +4,9 @@ import os
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.functions = ['cublasInit']
-    self.includes  = ['cublas.h']
-    self.liblist   = [['libcublas.a','libcudart.a']]
+    self.functions = ['cublasInit', 'cufftDestroy']
+    self.includes  = ['cublas.h', 'cufft.h']
+    self.liblist   = [['libcufft.a', 'libcublas.a','libcudart.a']]
     self.double    = 0   # 1 means requires double precision 
     self.cxx       = 0
     return
@@ -23,19 +23,6 @@ class Configure(PETSc.package.NewPackage):
 
   def getSearchDirectories(self):
     return [os.path.join('/usr','local','cuda')]
-
-  def configureTypes(self):
-    if self.scalartypes.scalartype == 'complex':
-      raise RuntimeError('Must use real numbers with CUDA') 
-    if not self.scalartypes.precision in ['double', 'single']:
-      raise RuntimeError('Must use either single or double precision with CUDA') 
-    else:
-      self.setCompilers.pushLanguage('CUDA')
-      if self.scalartypes.precision == 'double':
-        self.setCompilers.addCompilerFlag('-arch sm_13')
-      self.setCompilers.popLanguage()
-    self.checkSizeofVoidP()
-    return
   
   def checkSizeofVoidP(self):
     '''Checks if the CUDA compiler agrees with the C compiler on what size of void * should be'''
@@ -62,8 +49,22 @@ class Configure(PETSc.package.NewPackage):
       raise RuntimeError('CUDA Error: sizeof(void*) with CUDA compiler is ' + str(size) + ' which differs from sizeof(void*) with C compiler')
     self.popLanguage()
 
+  def configureTypes(self):
+    if self.scalartypes.scalartype == 'complex':
+      raise RuntimeError('Must use real numbers with CUDA') 
+    if not self.scalartypes.precision in ['double', 'single']:
+      raise RuntimeError('Must use either single or double precision with CUDA') 
+    else:
+      self.setCompilers.pushLanguage('CUDA')
+      if self.scalartypes.precision == 'double':
+        self.setCompilers.addCompilerFlag('-arch sm_13')
+      self.setCompilers.popLanguage()
+    self.checkSizeofVoidP()
+    return
+
   def checkVersion(self):
     pass
+
   def configureLibrary(self):
     PETSc.package.NewPackage.configureLibrary(self)
     if not self.cusp.found or not self.thrust.found:
@@ -75,10 +76,4 @@ class Configure(PETSc.package.NewPackage):
       self.addDefine('CUDA_EXTERN_C_BEGIN',' ')
       self.addDefine('CUDA_EXTERN_C_END',' ')
     self.configureTypes()
-    #self.include = self.include+[os.path.join('/usr','local','cuda')]
-    #if hasattr(self.compilers, 'CXX') and self.languages.clanguage == 'C':
-    #  self.setCompilers.pushLanguage('Cxx')
-    #  cxx_linker = self.setCompilers.getLinker()
-    #  self.setCompilers.popLanguage()
-    #  self.addMakeMacro('CLINKER', cxx_linker)
     return

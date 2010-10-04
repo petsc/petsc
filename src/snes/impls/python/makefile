@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    = pythonsnes.o
 OBJSF    =
 LIBBASE  = libpetscsnes
-DIRS     = ftn-custom
+DIRS     =
 LOCDIR   = src/snes/impls/python/
 MANSEC   = SNES
 

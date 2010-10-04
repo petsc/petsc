@@ -1,23 +1,33 @@
+Vector Object:
+  type: seq
 0.666016
 0.332031
 0.164062
 0.078125
 0.03125
+Vector Object:
+  type: seq
 0.332031
 0.664062
 0.328125
 0.15625
 0.0625
+Vector Object:
+  type: seq
 0.164062
 0.328125
 0.65625
 0.3125
 0.125
+Vector Object:
+  type: seq
 0.078125
 0.15625
 0.3125
 0.625
 0.25
+Vector Object:
+  type: seq
 0.03125
 0.0625
 0.125
