@@ -3,7 +3,7 @@
 
 path(path,'../../')
 
-PetscInitialize({'-info','-malloc_dump'});
+PetscInitialize({'-info','-malloc_dump','-snes_mf'});
 
 viewer = PetscViewer();
 viewer.SetType('ascii');
@@ -67,7 +67,8 @@ ksp.Destroy();
 
 snes = SNES;
 snes.SetType('ls');
-snes.SetFunction(b,myfunc);
+snes.SetFunction(b,@nlfunction);
+snes.SetFromOptions();
 snes.Solve(x);
 x.View(viewer);
 snes.View(viewer);

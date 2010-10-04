@@ -3081,3 +3081,87 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetDM(SNES snes,DM *dm)
   *dm = snes->dm;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESComputeFunction_Matlab"
+/*
+   SNESComputeFunction_Matlab - Calls the function that has been set with
+                         SNESSetFunctionMatlab().  
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+-  x - input vector
+
+   Output Parameter:
+.  y - function vector, as set by SNESSetFunction()
+
+   Notes:
+   SNESComputeFunction() is typically used within nonlinear solvers
+   implementations, so most users would not generally call this routine
+   themselves.
+
+   Level: developer
+
+.keywords: SNES, nonlinear, compute, function
+
+.seealso: SNESSetFunction(), SNESGetFunction()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction_Matlab(SNES snes,Vec x,Vec y, void *ctx)
+{
+  PetscErrorCode ierr;
+  const char     *funcname = (const char*)ctx;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,3);
+  PetscCheckSameComm(snes,1,x,2);
+  PetscCheckSameComm(snes,1,y,3);
+
+  /* call Matlab function in ctx with arguments x and y */
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetFunctionMatlab"
+/*@C
+   SNESSetFunctionMatlab - Sets the function evaluation routine and function 
+   vector for use by the SNES routines in solving systems of nonlinear
+   equations from Matlab. Here the function is a string containing the name of a Matlab function
+
+   Logically Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  r - vector to store function value
+-  func - function evaluation routine
+
+   Calling sequence of func:
+$    func (SNES snes,Vec x,Vec f);
+
+
+   Notes:
+   The Newton-like methods typically solve linear systems of the form
+$      f'(x) x = -f(x),
+   where f'(x) denotes the Jacobian matrix and f(x) is the function.
+
+   Level: beginner
+
+.keywords: SNES, nonlinear, set, function
+
+.seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetFunction()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFunctionMatlab(SNES snes,Vec r,const char *func)
+{
+  PetscErrorCode ierr;
+  char           *funcname;
+
+  PetscFunctionBegin;
+  /* currently funcname is memory bleed */
+  ierr = PetscStrallocpy(func,&funcname);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,r,SNESComputeFunction_Matlab,funcname);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

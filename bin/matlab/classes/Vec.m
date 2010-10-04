@@ -11,6 +11,9 @@ classdef Vec < PetscObject
         err = calllib('libpetsc', 'VecAssemblyEnd', obj.pobj);
       end
     end
+    function err = SetFromOptions(obj)
+      err = calllib('libpetsc', 'VecSetFromOptions', obj.pobj);
+    end
     function err = SetType(obj,name)
       err = calllib('libpetsc', 'VecSetType', obj.pobj,name);
     end

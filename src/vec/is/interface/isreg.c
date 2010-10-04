@@ -134,7 +134,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGetType(IS is, const ISType *type)
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(IS))
 {
-  char fullname[PETSC_MAX_PATH_LEN];
+  char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
