@@ -584,33 +584,67 @@ runex4_2:
 	    ${RM} -f ex4_2.tmp; \
 	done;
 runex5:
-	-@for mattype in seqaij seqdense; do \
-	  for shape in ${MATSHAPES}; do \
-	    ${MPIEXEC} -n 1 ./ex5 -mat_type $$mattype -rect$$shape > ex5_1.tmp 2>&1; \
-	      if (${DIFF} output/ex5_1_$$shape.out ex5_1.tmp) then true; \
-	      else echo "Possible problem with ex5_1_"$$shape" for" $$mattype", diffs above"; fi; \
-	      ${RM} -f ex5_1.tmp; \
-	  done; \
-	done;
+	-@${MPIEXEC} -n 1 ./ex5 -mat_type seqaij -rectA > ex5_1.tmp 2>&1; \
+	if (${DIFF} output/ex5_11_A.out ex5_1.tmp) then true; \
+	else echo "Possible problem with ex5_11_A for seqaij, diffs above"; fi; \
+	${RM} -f ex5_1.tmp;
+
+	-@${MPIEXEC} -n 1 ./ex5 -mat_type seqdense -rectA > ex5_1.tmp 2>&1; \
+	if (${DIFF} output/ex5_12_A.out ex5_1.tmp) then true; \
+	else echo "Possible problem with ex5_12_A for seqdense, diffs above"; fi; \
+	${RM} -f ex5_1.tmp;
+
+	-@${MPIEXEC} -n 1 ./ex5 -mat_type seqaij -rectB > ex5_1.tmp 2>&1; \
+	if (${DIFF} output/ex5_11_B.out ex5_1.tmp) then true; \
+	else echo "Possible problem with ex5_11_B for seqaij, diffs above"; fi; \
+	${RM} -f ex5_1.tmp;
+
+	-@${MPIEXEC} -n 1 ./ex5 -mat_type seqdense -rectB > ex5_1.tmp 2>&1; \
+	if (${DIFF} output/ex5_12_B.out ex5_1.tmp) then true; \
+	else echo "Possible problem with ex5_12_B for seqdense, diffs above"; fi; \
+	${RM} -f ex5_1.tmp;
+
 runex5_2:
-	@-for np in ${NPROCS}; do \
-	  for mattype in mpiaij mpidense; do \
-	    ${MPIEXEC} -n $$np ./ex5 -mat_type $$mattype > ex5_2.tmp 2>&1; \
-	      if (${DIFF} output/ex5_2.out ex5_2.tmp) then true; \
-	      else echo "Possible problem with ex5_2 for" $$mattype", -np="$$np", diffs above"; fi; \
-	      ${RM} -f ex5_2.tmp; \
-	  done; \
-	done;
+	-@${MPIEXEC} -n 1 ./ex5 -mat_type mpiaij > ex5_1.tmp 2>&1; \
+	if (${DIFF} output/ex5_21.out ex5_1.tmp) then true; \
+	else echo "Possible problem with ex5_21 for mpiaij,np = 1,diffs above"; fi; \
+	${RM} -f ex5_1.tmp;
+
+	-@${MPIEXEC} -n 1 ./ex5 -mat_type mpidense > ex5_1.tmp 2>&1; \
+	if (${DIFF} output/ex5_22.out ex5_1.tmp) then true; \
+	else echo "Possible problem with ex5_22 for mpidense,np = 1,diffs above"; fi; \
+	${RM} -f ex5_1.tmp;
+
+	-@${MPIEXEC} -n 3 ./ex5 -mat_type mpiaij > ex5_1.tmp 2>&1; \
+	if (${DIFF} output/ex5_23.out ex5_1.tmp) then true; \
+	else echo "Possible problem with ex5_23 for mpiaij,np = 3,diffs above"; fi; \
+	${RM} -f ex5_1.tmp;
+
+	-@${MPIEXEC} -n 3 ./ex5 -mat_type mpidense > ex5_1.tmp 2>&1; \
+	if (${DIFF} output/ex5_24.out ex5_1.tmp) then true; \
+	else echo "Possible problem with ex5_24 for mpidense,np = 3,diffs above"; fi; \
+	${RM} -f ex5_1.tmp;
+
 runex5_3:	
-	@-for np in ${NPROCS}; do \
-	  for mattype in mpiaij mpibaij; do \
-	    ${MPIEXEC} -n $$np ./ex5 -mat_type $$mattype -test_diagonalscale > ex5_3.tmp 2>&1; \
-	    if (${DIFF} output/ex5_3.out ex5_3.tmp) then true; \
-	    else echo "Possible problem with ex5_3 for" $$mattype", -np="$$np", diffs above"; fi; \
-	    ${RM} -f ex5_3.tmp; \
-	  done; \
-	done;
-runex5_4:
+	-@${MPIEXEC} -n 1 ./ex5 -mat_type mpiaij -test_diagonalscale > ex5_3.tmp 2>&1; \
+	if (${DIFF} output/ex5_31.out ex5_3.tmp) then true; \
+	else echo "Possible problem with ex5_31 for mpiaij,np = 1,diffs above"; fi; \
+	${RM} -f ex5_3.tmp;
+
+	-@${MPIEXEC} -n 1 ./ex5 -mat_type mpibaij -test_diagonalscale > ex5_3.tmp 2>&1; \
+	if (${DIFF} output/ex5_32.out ex5_3.tmp) then true; \
+	else echo "Possible problem with ex5_32 for mpibaij,np = 1,diffs above"; fi; \
+	${RM} -f ex5_3.tmp;
+
+	-@${MPIEXEC} -n 3 ./ex5 -mat_type mpiaij -test_diagonalscale > ex5_3.tmp 2>&1; \
+	if (${DIFF} output/ex5_33.out ex5_3.tmp) then true; \
+	else echo "Possible problem with ex5_33 for mpiaij,np = 3,diffs above"; fi; \
+	${RM} -f ex5_3.tmp;
+
+	-@${MPIEXEC} -n 3 ./ex5 -mat_type mpibaij -test_diagonalscale > ex5_3.tmp 2>&1; \
+	if (${DIFF} output/ex5_34.out ex5_3.tmp) then true; \
+	else echo "Possible problem with ex5_34 for mpibaij,np = 3,diffs above"; fi; \
+	${RM} -f ex5_3.tmp;
 
 runex6:
 	-@${MPIEXEC} -n 1  ./ex6 > ex6_1.tmp 2>&1;   \
