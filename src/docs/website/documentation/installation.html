@@ -110,7 +110,8 @@ PETSC_DIR $PWD</font></li>
 --help
 for
 options
-or the <a href="#ExampleUsage">example usages</a>
+or
+the <a href="#ExampleUsage">example usages</a>
 below)</li>
         <li> <font color="#ff0000">make all</font><br>
         </li>
@@ -150,9 +151,11 @@ We
 use
 some
 of
-these scripts locally for testing - <span style="font-weight: bold;"></span>for
+these
+scripts locally for testing - <span style="font-weight: bold;"></span>for
 example
-one can update these
+one
+can update these
 files and run as:<span style="font-weight: bold;"><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span
  style="color: rgb(255, 0, 0);">config/examples/arch-osx-10.6.py</span><br>
@@ -219,6 +222,7 @@ make
 
 
 
+
           </font><font color="#ff0000">PETSC_ARCH=linux-gnu test</font><font
  color="#ff0000"><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -230,6 +234,7 @@ make
 make </font><font color="#ff0000">PETSC_ARCH=linux-gnu-intel</font><br>
           <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make
+
 
 
 
@@ -262,7 +267,8 @@ this
 variable
 should
 point
-to the location of the
+to
+the location of the
 PETSc installation that is used. Multiple PETSc versions can coexist
 on the same file-system. By changing PETSC_DIR value, one can switch
 between these installed versions of PETSc.</p>
@@ -678,7 +684,8 @@ the following cygwin components are installed.<br>
 link.exe
 can
 conflict
-with Intel ifort and Comapq F90 compilers. If you
+with
+Intel ifort and Comapq F90 compilers. If you
 are using these compilers - please do [from cygwin/bash shell]:<br>
       </p>
       <ul>
@@ -723,7 +730,8 @@ cl'
 --with-fc='win32fe
 ifort'&nbsp;
 --with-cxx='win32fe
-cl'&nbsp; --download-f-blas-lapack=1</font></p>
+cl'&nbsp;
+--download-f-blas-lapack=1</font></p>
       <p>If fortran usage is not required, use:<br>
       </p>
       <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -790,7 +798,8 @@ or GNU Debugger <b>gdb&nbsp;ex1.exe</b>.<br>
 can
 install
 and
-use PETSc with gcc/gfortran compilers from cygwin. In
+use
+PETSc with gcc/gfortran compilers from cygwin. In
 this case follow the regular instructions.<br>
       </p>
       <p><b><font color="#551a8b"><a name="Win32fe"></a>PETSc Win32
@@ -852,7 +861,8 @@ After the install is done, one has to switch to using <span
 you've
 installed
 PETSc
-with the --prefix option then you DO
+with
+the --prefix option then you DO
 NOT use a PETSC_ARCH variable. You should install different
 configurations using different --prefix names.<br>
       <hr>
@@ -861,7 +871,8 @@ on
 machine
 requiring
 cross
-compiler or a job scheduler, such as IBM SP or IBM Blue Gene:</font></a></h3>
+compiler
+or a job scheduler, such as IBM SP or IBM Blue Gene:</font></a></h3>
       <p>If one has to use a cross compiler - or go through the job
 scheduler to use MPI on a
 given machine - use the configure option <span
@@ -933,32 +944,52 @@ Check config/config/asterix-tops.py for an example.<br>
       <h3><a name="CUDA"><font color="#551a8b">Installing PETSc to use
 NVidia GPUs (aka CUDA)</font></a></h3>
       <ul>
-        <li>Install <a href="http://developer.nvidia.com/object/cuda_3_1_downloads.html">CUDA-3.1</a>,
-  <a href="http://code.google.com/p/thrust/">Thrust</a>,
-  <a href="http://code.google.com/p/cusp-library/">Cusp</a> in default locations. The versions you should use are listed in config/BuildSystem/config/packages/thrust.py and cusp.py</li>
+        <li>Install <a
+ href="http://developer.nvidia.com/object/cuda_3_1_downloads.html">CUDA-3.1</a>,
+
+          <a href="http://code.google.com/p/thrust/">Thrust</a>, <a
+ href="http://code.google.com/p/cusp-library/">Cusp</a> in default
+locations. The versions you should use are listed in
+config/BuildSystem/config/packages/thrust.py and cusp.py. To install
+Thrust and Cusp us<br>
+        </li>
+      </ul>
+      <div style="margin-left: 40px;">cd /usr/local/cuda/include/<br>
+sudo unzip /YOURPATH/cusp-v*.zip <br>
+sudo unzip /YOURPATH/thrust-v*.zip <br>
+      </div>
+      <br>
+      <ul>
         <ul>
-          <li>If not in the default location, you can indicate them using --with-thrust-dir and --with-cusp-dir</li>
+          <li>It is highly recommended you install in the default
+location given above. If not in the default location, you can indicate
+them using --with-thrust-dir and --with-cusp-dir</li>
         </ul>
         <li>Make sure nvcc is in PATH</li>
         <li>On Linux</li>
         <ul>
-          <li>install compatible NVidia
-          kernel <a href="http://developer.nvidia.com/object/cuda_3_1_downloads.html#Linux">developer driver</a> by
-          running the executable you download, as root</li>
-          <li>make sure&nbsp; LD_LIBRARY_PATH is set to point to the CUDA libraries, for instance
+          <li>install compatible NVidia kernel <a
+ href="http://developer.nvidia.com/object/cuda_3_1_downloads.html#Linux">developer
+driver</a> by running the executable you download, as root</li>
+          <li>make sure&nbsp; LD_LIBRARY_PATH is set to point to the
+CUDA libraries, for instance
             <ul>
               <li>LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib</li>
             </ul>
           </li>
-          <li>verify CUDA installation with Nvidia CUDA SDK [by compiling the SDK - and then running 'deviceQuery'
-          &amp;&amp; 'binomialOptions -type=double'] (how do you do this????)<br>
+          <li>verify CUDA installation with Nvidia CUDA SDK [by
+compiling the SDK - and then running 'deviceQuery' &amp;&amp;
+'binomialOptions -type=double'] (how do you do this????)<br>
           </li>
         </ul>
-        <li>Configure and build PETSc with the additional configure options
+        <li>Configure and build PETSc with the additional configure
+options
           <ul>
             <li> --with-cuda=1 --with-cusp=1 --with-thrust=1</li>
-            <li>if the GPU card only supports single precision add --with-precision=single</li>
-            <li>if you did not install in default locations add --with-thrust-dir=path_to_thrust and --with-cusp-dir=path_to_cusp</li>
+            <li>if the GPU card only supports single precision add
+--with-precision=single</li>
+            <li>if you did not install in default locations add
+--with-thrust-dir=path_to_thrust and --with-cusp-dir=path_to_cusp</li>
           </ul>
         </li>
         <li>Run a sample example with:</li>
