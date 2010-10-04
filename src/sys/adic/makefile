@@ -11,7 +11,7 @@ SOURCEH  =  ../../../include/adic/ad_deriv.h             ../../../include/adic/r
             ../../../include/adic/adintr_proto.h         ../../../include/adic/adintrinsics.h \
             ../../../include/adic/initcommon.h           ../../../include/adic/initenum.h \
             ../../../include/adic/knr-compat.h           ../../../include/adic/run-alloc.h
-DIRS     = adic adintrinsics Gradient
+DIRS     = adic adintrinsics Gradient utils
 LOCDIR   = src/sys/adic/
 NOADIC   = false
 MANSEC   = Sys

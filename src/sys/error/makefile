@@ -11,7 +11,7 @@ OBJSC	  = ${SOURCEC:.c=.o}
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
-DIRS	  = 
+DIRS	  = examples
 LOCDIR	  = src/sys/error/
 
 include ${PETSC_DIR}/conf/variables

@@ -11,7 +11,7 @@ OBJSC    = hdf5v.o
 OBJSF    =
 MANSEC   = Viewer
 LIBBASE  = libpetscsys
-DIRS     = ftn-custom
+DIRS     =
 LOCDIR   = src/sys/viewer/impls/hdf5/
 
 include ${PETSC_DIR}/conf/variables
