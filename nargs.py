@@ -523,7 +523,12 @@ class ArgDownload(Arg):
         value = str(value)
     except:
       raise TypeError('Invalid download value: '+str(value)+' for key '+str(self.key))
-    if isinstance(value, str) and not os.path.isfile(value):
-      raise ValueError('Invalid download location: '+str(value)+' for key '+str(self.key))
+    if isinstance(value, str):
+      import urlparse
+      if not urlparse.urlparse(value)[0]: # how do we check if the URL is invalid?
+        if os.path.isfile(value):
+          value = 'file://'+os.path.abspath(value)
+        else:
+          raise ValueError('Invalid download location: '+str(value)+' for key '+str(self.key))
     self.value = value
     return

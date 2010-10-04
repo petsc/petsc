@@ -281,12 +281,13 @@ class Package(config.base.Configure):
     if not self.download:
       return ''
     downloadPackage = 0
-    if requireDownload and isinstance(self.framework.argDB['download-'+self.downloadname.lower()], str):
-      self.download = ['file://'+os.path.abspath(self.framework.argDB['download-'+self.downloadname.lower()])]
+    downloadPackageVal = self.framework.argDB['download-'+self.downloadname.lower()]
+    if requireDownload and isinstance(downloadPackageVal, str):
+      self.download = [downloadPackageVal]
       downloadPackage = 1
-    elif self.framework.argDB['download-'+self.downloadname.lower()] == 1 and requireDownload:
+    elif downloadPackageVal == 1 and requireDownload:
       downloadPackage = 1
-    elif self.framework.argDB['download-'+self.downloadname.lower()] == 2 and not requireDownload:
+    elif downloadPackageVal == 2 and not requireDownload:
       downloadPackage = 1
 
     if downloadPackage:
