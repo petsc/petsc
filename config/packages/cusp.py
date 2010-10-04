@@ -48,6 +48,8 @@ class Configure(config.package.Package):
 
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional tests needed by CUSP'''
+    if not self.thrust.found:
+      raise RuntimeError('CUSP support requires the THRUST package\nRerun configure using --with-thrust-dir')
     config.package.Package.configureLibrary(self)
     self.executeTest(self.configurePC)
     self.executeTest(self.checkVersion)
@@ -55,7 +57,11 @@ class Configure(config.package.Package):
 
   def checkVersion(self):
     self.pushLanguage('CUDA')
-    if not self.checkRun('#include <cusp/version.h>\n', 'if (CUSP_VERSION != ' + self.version +') return 1'):
+    oldFlags = self.compilers.CUDAPPFLAGS
+    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
+    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.thrust.include)
+    if not self.checkRun('#include <cusp/version.h>\n#include <stdio.h>', 'if (CUSP_VERSION < ' + self.version +') {printf("Invalid version %d\\n", CUSP_VERSION); return 1;}'):
       raise RuntimeError('Cusp version error: PETSC currently requires Cusp version '+ str(int(self.version) / 100000) + '.' + str(int(self.version) / 100 % 1000) + '.' + str(int(self.version) % 100) + ' when compiling with CUDA')
+    self.compilers.CUDAPPFLAGS = oldFlags
     self.popLanguage()
     return

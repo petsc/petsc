@@ -41,7 +41,10 @@ class Configure(config.package.Package):
 
   def checkVersion(self):
     self.pushLanguage('CUDA')
-    if not self.checkRun('#include <thrust/version.h>\n', 'if (THRUST_VERSION != ' + self.version +') return 1'):
+    oldFlags = self.compilers.CUDAPPFLAGS
+    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
+    if not self.checkRun('#include <thrust/version.h>\n#include <stdio.h>', 'if (THRUST_VERSION < ' + self.version +') {printf("Invalid version %d\\n", THRUST_VERSION); return 1;}'):
       raise RuntimeError('Thrust version error: PETSC currently requires Thrust version '+ str(int(self.version)/100000) + '.' + str(int(self.version) / 100 % 1000) + '.' + str(int(self.version) % 100) + ' when compiling with CUDA')
+    self.compilers.CUDAPPFLAGS = oldFlags
     self.popLanguage()
     return
