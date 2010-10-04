@@ -9,7 +9,7 @@
 <table width="100%">
   <tbody>
     <tr>
-      <td width="25%" valign="top">
+      <td valign="top" width="25%">
       <h1><font color="#ff0000" size="7">PETSc</font></h1>
       <ul>
         <li><a href="../index.html"><strong>Home</strong></a></li>
@@ -24,7 +24,7 @@
       <hr color="#ff5b5b" size="4"> </td>
     </tr>
     <tr>
-      <td width="25%" valign="top">
+      <td valign="top" width="25%">
       <ul>
         <li><a href="../download/index.html"><strong>Download</strong></a></li>
         <li><a href="../features/index.html"><strong>Features</strong></a></li>
@@ -55,7 +55,7 @@ Software</strong></a></li>
 Site</strong></a></li>
       </ul>
       </td>
-      <td width="75%" valign="top"><!--##begin-->
+      <td valign="top" width="75%"><!--##begin-->
       <h4><a href="faq.html#General">General</a></h4>
       <menu>
       <li><a href="faq.html#petsc-mailing-list">How
@@ -157,7 +157,8 @@ system with Dirichlet boundary conditions I can use MatZeroRows() to
 eliminate the Dirichlet rows but this results in a non-symmetric
 system. How come there is no MatZeroColumns() to keep the matrix
 symmetric?</a></li>
-        <li><a href="faq.html#matlab">How can I get PETSc Vecs and Mats
+        <li><a href="faq.html#matlab">How can I use PETSc with Matlab?
+How can I get PETSc Vecs and Mats
 to Matlab or vice versa?</a></li>
       </ul>
       <h4><a href="faq.html#Execution">Execution</a></h4>
@@ -173,6 +174,7 @@ can I understand what is really happening within my program? </a></li>
 large sparse matrices takes a long time. What can I do make this
 process faster? or MatSetValues() is <span style="font-weight: bold;">so
 slow,
+
 
 
 
@@ -778,7 +780,7 @@ communication </li>
       <table width="100%">
         <tbody>
           <tr>
-            <td width="75%" valign="top">
+            <td valign="top" width="75%">
             <li> Actually do the
 communication; this can be done
 repeatedly as needed</li>
@@ -1005,7 +1007,8 @@ command.
 How
 can
 one
-use them together?<br>
+use
+them together?<br>
             <br>
             </span>The MPI_Cart_create() first divides the mesh along
 the z direction, then the y, then the x. DA divides along the x, then
@@ -1056,7 +1059,8 @@ use
 MatZeroRows()
 to
 eliminate
-the Dirichlet rows but this results in a
+the
+Dirichlet rows but this results in a
 non-symmetric system. How come there is no MatZeroColumns() to keep the
 matrix symmetric?<br>
             <br>
@@ -1081,10 +1085,11 @@ I
 get
 PETSc
 Vecs
-and Mats to Matlab or vice versa?<br>
+and
+Mats to Matlab or vice versa?<br>
             </span><br>
             <span style="color: rgb(255, 0, 0);"><br>
-            </span>There are four was to work with PETSc and Matlab<br>
+            </span>There are five was to work with PETSc and Matlab<br>
             <br>
             <ol>
               <li>Using the Matlab Engine, this allows PETSc to
@@ -1107,16 +1112,22 @@ access
 from
 the
 PETSc
-side and PetscOpenSocket in bin/matlab for
+side
+and PetscOpenSocket in bin/matlab for
 access from the Matlab side.</li>
-              <li>Finally you can save PETSc Vecs (not Mats) with the <a
+              <li>You can save PETSc Vecs (not Mats) with the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
 viewer
 that
 saves
 .mat
 files
-can then be loaded into Matlab.<br>
+can
+then be loaded into Matlab.</li>
+              <li>We are just being to develop in <a
+ href="../developers/index.html">petsc-dev</a> an API to call most of
+the PETSc function directly from Matlab; we could use help in
+developing this. See bin/matlab/classes/PetscInitialize.m<br>
               </li>
             </ol>
             <hr> </td>
@@ -1175,7 +1186,8 @@ so slow, what can I do to speed it up?</font></a><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manual.pdf#nameddest=ch_performance">Performance
 chapter
 of
-the users manual</a> for
+the
+users manual</a> for
 many
 tips on this.</p>
       <p>a) Preallocate enough space for the sparse matrix. For
@@ -1215,7 +1227,8 @@ with PETSc?</font> </a></p>
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manual.pdf#nameddest=ch_performance">Performance
 chapter
 of
-the users manual</a>
+the
+users manual</a>
 for information on interpreting
 the summary data. If using the PETSc (non)linear solvers, one can also
 specify -snes_view or -ksp_view for a printout of solver info. Only the
@@ -1283,6 +1296,7 @@ in
 
 
 
+
           <a href="faq.html#slow">generating the
 matrix</a> or some other operation.</li>
         <li>There must be enough work for each process to
@@ -1316,7 +1330,8 @@ may
 also
 consider
 multigrid
-preconditioners like <a
+preconditioners
+like <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
 or BoomerAMG in <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCHYPRE.html">PCHYPRE</a>.</li>
@@ -1395,7 +1410,8 @@ does
 not
 work
 on
-my machine?</font> </a></p>
+my
+machine?</font> </a></p>
       <p>For a uniprocessor job, just try&nbsp;the debugger
 directly, for example: gdb ex1. You can also use Totalview which is a
 good graphical parallel debugger.<br>
@@ -1450,7 +1466,8 @@ object
 file:
 No
 such
-file or directory.</span></p>
+file
+or directory.</span></p>
       <p>The Intel compilers use shared libraries (like libimf)
 that
 cannot by default at run time. When using the Intel compilers (and
@@ -1507,7 +1524,8 @@ VecCreateXXX()
 or
 MatCreateXXX()
 you
-passed in local and global sizes that do not make
+passed
+in local and global sizes that do not make
 sense for the correct number of processors. For example if you pass in
 a local size of 2 and a global size of 100 and run on two processors,
 this cannot work since the sum of the local sizes is 4, not 100.</span></font><br>
@@ -1536,6 +1554,7 @@ problem.<br>
 &nbsp; <br>
 If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
 machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
+
 
 
 
@@ -1589,6 +1608,7 @@ that the matrix is singular. You can use -pc_factor_shift_nonzero or
 -pc_factor_shift_positive_definite,
 -[level]_pc_factor_shift_nonzero,&nbsp; </span></font><font
  style="color: rgb(0, 0, 0);" color="#ff0000">-[level]_pc_factor_shift_postive_definite
+
 
 
 

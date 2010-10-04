@@ -40,6 +40,10 @@ classdef Vec < PetscObject
     function err = AssemblyEnd(obj)
       err = calllib('libpetsc', 'VecAssemblyEnd', obj.pobj);
     end
+    function [vec,err] = Duplicate(obj)
+      vec = Vec;
+      [err,vec.pobj] = calllib('libpetsc', 'VecDuplicate', obj.pobj,vec.pobj);
+    end
     function err = View(obj,viewer)
       err = calllib('libpetsc', 'VecView', obj.pobj,viewer.pobj);
     end

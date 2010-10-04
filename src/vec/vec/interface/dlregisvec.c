@@ -47,6 +47,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISInitializePackage(const char path[])
   PetscFunctionBegin;
   if (ISPackageInitialized) PetscFunctionReturn(0);
   ISPackageInitialized = PETSC_TRUE;
+  /* Register Constructors */
+  ierr = ISRegisterAll(path);CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("Index Set",&IS_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("IS L to G Mapping",&IS_LTOGM_CLASSID);CHKERRQ(ierr);
