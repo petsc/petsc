@@ -26,6 +26,7 @@ class Configure(config.package.Package):
       shutil.copytree(srcdir,destdir)
     except RuntimeError,e:
       raise RuntimeError('Error installing Thrust include files: '+str(e))
+    self.includedir = 'include' # default and --download have different includedirs
     return self.installDir
 
   def getSearchDirectories(self):
