@@ -72,6 +72,28 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Components(void)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscInitializeNonPointers"
+/*@C
+      PetscInitializeNonPointers - Calls PetscInitialize() from C/C++ without the pointers to argc and args
+
+   Collective
+  
+   Level: advanced
+
+.seealso: PetscInitialize(), PetscInitializeFortran(), PetscInitializeNoArguments()
+@*/
+PetscErrorCode PETSCSYS_DLLEXPORT PetscInitializeNonPointers(int argc,char **args,const char *filename,const char *help)
+{
+  PetscErrorCode ierr;
+  int            myargc = argc;
+  char           **myargs = args;
+
+  PetscFunctionBegin;
+  ierr = PetscInitialize(&myargc,&myargs,filename,help);
+  PetscFunctionReturn(ierr);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscInitializeNoArguments"
 /*@C
       PetscInitializeNoArguments - Calls PetscInitialize() from C/C++ without

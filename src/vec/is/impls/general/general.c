@@ -345,6 +345,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGeneralSetIndices(IS is,PetscInt n,const Pet
   if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
   if (n) {PetscValidIntPointer(idx,3);}
 
+  if (sub->allocated) {ierr = PetscFree(sub->idx);CHKERRQ(ierr);}
   sub->n = n;
   if (mode == PETSC_COPY_VALUES) {
     ierr           = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);

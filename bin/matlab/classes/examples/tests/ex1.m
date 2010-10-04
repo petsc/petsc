@@ -4,7 +4,7 @@
 
 path(path,'../../')
 
-PetscInitialize(1);
+PetscInitialize('-info');
 
 [err,vec] = calllib('libpetsc', 'VecCreate', 0,0)
 err = calllib('libpetsc', 'VecSetType', vec,'seq')

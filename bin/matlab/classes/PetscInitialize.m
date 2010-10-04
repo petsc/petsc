@@ -1,6 +1,10 @@
-function err = PetscInitialize(args)
+function err = PetscInitialize(args,argfile,arghelp)
 %
-%  args is currently ignored
+%  PETSc must be configured with --with-shared-libraries --with-mpi=0
+%
+%  There is currently no MPI in the API, the MPI_Comm is not in any of the 
+%  argument lists but otherwise the argument lists try to mimic the C binding
+%
 %
 if libisloaded('libpetsc')
   unloadlibrary('libpetsc');
@@ -17,6 +21,20 @@ end
 if (nargin == 0)
   args = '';
 end
+if (nargin < 2) 
+  argfile = '';
+end
+if (nargin < 3) 
+  arghelp = '';
+end
+if (ischar(args)) 
+  args = {args};
+end
+arg = cell(1,length(args)+1);
+arg{1} = 'matlab'
+for i=1:length(args)
+  arg{i+1} = args{i};
+end
 loadlibrary([PETSC_DIR '/' PETSC_ARCH '/lib/' 'libpetsc'], [PETSC_DIR '/bin/matlab/classes/matlabheader.h']);
-err = calllib('libpetsc', 'PetscInitialize', 0, 0,'','');
+err = calllib('libpetsc', 'PetscInitializeNonPointers', length(arg), arg,argfile,arghelp);
 

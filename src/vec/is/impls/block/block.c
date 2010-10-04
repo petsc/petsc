@@ -264,11 +264,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockSetIndices(IS is,PetscInt bs,PetscInt n
 {
   PetscErrorCode ierr;
   PetscInt       i,min,max;
-  IS_Block       *sub;
+  IS_Block       *sub = (IS_Block*)is->data;
   PetscBool      sorted = PETSC_TRUE;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(is,IS_Block,&sub);CHKERRQ(ierr);
+  if (sub->idx) {ierr = PetscFree(sub->idx);CHKERRQ(ierr);}
   ierr = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(is,n*sizeof(PetscInt));CHKERRQ(ierr);
   sub->n = n;
@@ -354,6 +354,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_Block(IS is)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(is,IS_Block,&sub);CHKERRQ(ierr);
+  is->data = sub;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

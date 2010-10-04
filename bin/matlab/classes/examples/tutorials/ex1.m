@@ -3,7 +3,7 @@
 
 path(path,'../../')
 
-PetscInitialize(1);
+PetscInitialize('-info');
 
 viewer = PetscViewer();
 viewer.SetType('ascii');
@@ -28,6 +28,8 @@ vec.View(viewer);
 vec(:)
 vec.Destroy();
 
+is = ISCreateGeneral([1 2 5]);
+is.View(viewer);
 
 viewer.Destroy();
 

@@ -7,7 +7,7 @@
 */
 
 /* Matlab cannot handle char ***, so lie to it about the argument */
-int PetscInitialize(int*,int *,const char*,const char*);
+int PetscInitializeNonPointers(int,char **,const char*,const char*);
 int PetscFinalize(void);
 
 typedef int MPI_Comm;
@@ -30,3 +30,9 @@ int VecAssemblyEnd(Vec);
 int VecView(Vec,PetscViewer);
 int VecDestroy(Vec);
 
+typedef int IS;
+int ISCreate(MPI_Comm,IS *);
+int ISSetType(IS,const char*);
+int ISGeneralSetIndices(IS,int,const int*);
+int ISView(IS,PetscViewer);
+int ISDestroy(IS);

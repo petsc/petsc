@@ -11,13 +11,13 @@ classdef Vec < PetscObject
         err = calllib('libpetsc', 'VecAssemblyEnd', obj.pobj);
       end
     end
-    function SetType(obj,name)
+    function err = SetType(obj,name)
       err = calllib('libpetsc', 'VecSetType', obj.pobj,name);
     end
-    function SetSizes(obj,m,n)
+    function err = SetSizes(obj,m,n)
       err = calllib('libpetsc', 'VecSetSizes', obj.pobj,m,n);
     end
-    function SetValues(obj,idx,values,insertmode)
+    function err = SetValues(obj,idx,values,insertmode)
       if (nargin < 3) 
         values = idx;
         idx = 0:length(values)-1;
@@ -27,23 +27,23 @@ classdef Vec < PetscObject
       end
       err = calllib('libpetsc', 'VecSetValues', obj.pobj,length(idx),idx,values,insertmode);
     end
-    function values = GetValues(obj,idx)
+    function [values,err] = GetValues(obj,idx)
       if (ischar(idx)) % assume it is ':' 
         idx = 0:2;
       end
       values = zeros(1,length(idx));
       [err,idx,values] = calllib('libpetsc', 'VecGetValues', obj.pobj,length(idx),idx,values);
     end
-    function AssemblyBegin(obj)
+    function err = AssemblyBegin(obj)
       err = calllib('libpetsc', 'VecAssemblyBegin', obj.pobj);
     end
-    function AssemblyEnd(obj)
+    function err = AssemblyEnd(obj)
       err = calllib('libpetsc', 'VecAssemblyEnd', obj.pobj);
     end
-    function View(obj,viewer)
+    function err = View(obj,viewer)
       err = calllib('libpetsc', 'VecView', obj.pobj,viewer.pobj);
     end
-    function Destroy(obj)
+    function err = Destroy(obj)
       err = calllib('libpetsc', 'VecDestroy', obj.pobj);
     end
 %
