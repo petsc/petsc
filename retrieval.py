@@ -45,11 +45,15 @@ class Retriever(logger.Logger):
     '''Fetch the gzipped tarfile indicated by url and expand it into root
        - All the logic for removing old versions, updating etc. must move'''
 
-    archive    = '_d_'+name+'.tar'
-    if url.find(".bz") > -1 or url.find(".tbz") > -1:
-      archiveZip = archive+'.bz2'
+    archive    = '_d_'+name
+    if url.endswith(".bz") or url.endswith(".tbz"):
+      archiveZip = archive+'.tar.bz2'
+    elif url.endswith(".zip") or url.endswith('.ZIP'):
+      archiveZip = archive+'.zip'
+    elif url.endswith('.tgz') or url.endswith('.tar.gz'):
+      archiveZip = archive+'tar.gz'
     else:
-      archiveZip = archive+'.gz'
+      raise RuntimeError('Unknown comression type in URL: '+ url)
     localFile  = os.path.join(root, archiveZip)
 
     self.logPrint('Downloading '+url+' to '+localFile)
@@ -63,6 +67,7 @@ class Retriever(logger.Logger):
 
       failureMessage = '''\
 Unable to download package %s from: %s
+* If URL specified manually - perhaps there is a typo?
 * If your network is disconnected - please reconnect and rerun ./configure
 * Alternatively, you can download the above URL manually, to /yourselectedlocation/%s
   and use the configure option:
@@ -70,13 +75,16 @@ Unable to download package %s from: %s
 ''' % (name, url, filename, name, filename)
       raise RuntimeError(failureMessage)
     self.logPrint('Uncompressing '+localFile)
-    localFile  = os.path.join(root, archive)
-    # just in case old local file is still hanging around get rid of it
-    if os.path.exists(localFile):
-      os.remove(localFile)
+    if not archiveZip.endswith(".zip"):
+      localFile  = os.path.join(root, archive)
+      # just in case old local .tar file is still hanging around get rid of it
+      if os.path.exists(localFile):
+        os.remove(localFile)
     try:
-      if archiveZip.find("bz2") > -1:
+      if archiveZip.endswith(".bz2"):
         config.base.Configure.executeShellCommand('cd '+root+'; bunzip2 '+archiveZip, log = self.log)
+      elif archiveZip.endswith(".zip"):
+        config.base.Configure.executeShellCommand('cd '+root+'; unzip '+archiveZip, log = self.log)
       else:
         config.base.Configure.executeShellCommand('cd '+root+'; gunzip '+archiveZip, log = self.log)
     except RuntimeError, e:
@@ -95,12 +103,16 @@ Unable to unzip downloaded package %s from: %s
         raise RuntimeError('Error unzipping '+archiveZip+': '+str(e))
     self.logPrint('Expanding '+localFile)
     try:
-      config.base.Configure.executeShellCommand('cd '+root+'; tar -xf '+archive, log = self.log)
+      if not archiveZip.endswith(".zip"):
+        config.base.Configure.executeShellCommand('cd '+root+'; tar -xf '+archive, log = self.log)
     except RuntimeError, e:
       raise RuntimeError('Error doing tar -xf '+archive+': '+str(e))
     # now find the dirname - and do a chmod
     try:
-      output = config.base.Configure.executeShellCommand('cd '+root+'; tar -tf '+archive+' | head -n 1', log = self.log)
+      if archiveZip.endswith(".zip"):
+        output = config.base.Configure.executeShellCommand('cd '+root+'; zipinfo -1 '+archive+' | head -n 1', log = self.log)
+      else:
+        output = config.base.Configure.executeShellCommand('cd '+root+'; tar -tf '+archive+' | head -n 1', log = self.log)
       dirname = os.path.normpath(output[0].strip())
       # some tarfiles list packagename/ but some list packagename/filename in the first entry - so handle both cases
       apath,bpath=os.path.split(dirname)
