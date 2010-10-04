@@ -125,6 +125,11 @@ rbfPrecon: rbfPrecon.o chkopts
 TestMeshExodus: TestMeshExodus.o chkopts
 	-${CLINKER} -o TestMeshExodus TestMeshExodus.o ${PETSC_SNES_LIB}
 	${RM} -f TestMeshExodus.o
+
+TestMesh: TestMesh.o chkopts
+	-${CLINKER} -o TestMesh TestMesh.o ${PETSC_SNES_LIB}
+	${DSYMUTIL} TestMesh
+	${RM} -f TestMesh.o
 #-----------------------------------------------------------------
 BOOST_LIBS = -Wl,-rpath,${BOOST_DIR}/lib -L${BOOST_DIR}/lib -lboost_program_options-gcc41
 args0: args0.o chkopts
