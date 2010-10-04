@@ -47,11 +47,13 @@ class Retriever(logger.Logger):
 
     archive    = '_d_'+name
     if url.endswith(".bz") or url.endswith(".tbz"):
-      archiveZip = archive+'.tar.bz2'
+      archive += '.tar'
+      archiveZip = archive+'.bz2'
+    elif url.endswith('.tgz') or url.endswith('.tar.gz'):
+      archive += '.tar'
+      archiveZip = archive+'.gz'
     elif url.endswith(".zip") or url.endswith('.ZIP'):
       archiveZip = archive+'.zip'
-    elif url.endswith('.tgz') or url.endswith('.tar.gz'):
-      archiveZip = archive+'tar.gz'
     else:
       raise RuntimeError('Unknown comression type in URL: '+ url)
     localFile  = os.path.join(root, archiveZip)
