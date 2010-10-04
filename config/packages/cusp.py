@@ -4,14 +4,15 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download        = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cusp_101.tar.gz']
+    self.version         = '101' #Version 0.1.1
+    self.versionStr       = str(int(self.version)/100000) + '.' + str(int(self.version)/100%1000) + '.' + str(int(self.version)%100)
+    self.download        = ['http://cusp-library.googlecode.com/files/cusp-v'+self.versionStr+'.zip']
     self.includes        = ['cusp/version.h']
     self.includedir      = ''
     self.forceLanguage   = 'CUDA'
     self.cxx             = 0
     self.archIndependent = 1
     self.worksonWindows  = 1
-    self.version         = '101'
     return
 
   def setupDependencies(self, framework):
@@ -61,7 +62,7 @@ class Configure(config.package.Package):
     self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
     self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.thrust.include)
     if not self.checkRun('#include <cusp/version.h>\n#include <stdio.h>', 'if (CUSP_VERSION < ' + self.version +') {printf("Invalid version %d\\n", CUSP_VERSION); return 1;}'):
-      raise RuntimeError('Cusp version error: PETSC currently requires Cusp version '+ str(int(self.version) / 100000) + '.' + str(int(self.version) / 100 % 1000) + '.' + str(int(self.version) % 100) + ' when compiling with CUDA')
+      raise RuntimeError('Cusp version error: PETSC currently requires Cusp version '+self.versionStr+' when compiling with CUDA')
     self.compilers.CUDAPPFLAGS = oldFlags
     self.popLanguage()
     return
