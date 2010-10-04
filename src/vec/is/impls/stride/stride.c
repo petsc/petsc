@@ -30,7 +30,7 @@ PetscErrorCode ISIdentity_Stride(IS is,PetscBool  *ident)
 #define __FUNCT__ "ISCopy_Stride"
 static PetscErrorCode ISCopy_Stride(IS is,IS isy)
 {
-  IS_Stride *is_stride = (IS_Stride*)is->data,*isy_stride = (IS_Stride*)isy->data;
+  IS_Stride      *is_stride = (IS_Stride*)is->data,*isy_stride = (IS_Stride*)isy->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -43,7 +43,7 @@ static PetscErrorCode ISCopy_Stride(IS is,IS isy)
 PetscErrorCode ISDuplicate_Stride(IS is,IS *newIS)
 {
   PetscErrorCode ierr;
-  IS_Stride *sub = (IS_Stride*)is->data;
+  IS_Stride      *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
   ierr = ISCreateStride(((PetscObject)is)->comm,sub->n,sub->first,sub->step,newIS);CHKERRQ(ierr);
