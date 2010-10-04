@@ -109,25 +109,35 @@ endif ()
 ''' % dict(pkg=pkg, PKG=pkg.upper(), pkgdeps=' '.join('petsc%s'%p for p in pkgdeps)))
 
 def main(petscdir):
-  with open(os.path.join(petscdir, 'CMakeLists.txt'), 'w') as f:
-    writeRoot(f)
-    f.write('include_directories (${PETSC_PACKAGE_INCLUDES})\n')
-    pkglist = [('sys'            , ''),
-               ('vec'            , 'sys'),
-               ('mat'            , 'vec sys'),
-               ('dm'             , 'mat vec sys'),
-               ('characteristic' , 'dm vec sys'),
-               ('ksp'            , 'dm mat vec sys'),
-               ('snes'           , 'ksp dm mat vec sys'),
-               ('ts'             , 'snes ksp dm mat vec sys')]
-    for pkg,deps in pkglist:
-      writePackage(f,pkg,deps.split())
-    f.write ('''
+  import tempfile, shutil
+  written = False               # We delete the temporary file if it wasn't finished, otherwise rename (atomic)
+  fd,tmplists = tempfile.mkstemp(prefix='CMakeLists.txt.',dir=petscdir,text=True)
+  try:
+    with os.fdopen(fd,'w') as f:
+      writeRoot(f)
+      f.write('include_directories (${PETSC_PACKAGE_INCLUDES})\n')
+      pkglist = [('sys'            , ''),
+                 ('vec'            , 'sys'),
+                 ('mat'            , 'vec sys'),
+                 ('dm'             , 'mat vec sys'),
+                 ('characteristic' , 'dm vec sys'),
+                 ('ksp'            , 'dm mat vec sys'),
+                 ('snes'           , 'ksp dm mat vec sys'),
+                 ('ts'             , 'snes ksp dm mat vec sys')]
+      for pkg,deps in pkglist:
+        writePackage(f,pkg,deps.split())
+      f.write ('''
 if (PETSC_USE_SINGLE_LIBRARY)
   add_library (petsc %s)
   target_link_libraries (petsc ${PETSC_PACKAGE_LIBS})
 endif ()
 ''' % (' '.join([r'${PETSC' + pkg.upper() + r'_SRCS}' for pkg,deps in pkglist]),))
+    written = True
+  finally:
+    if written:
+      shutil.move(tmplists,os.path.join(petscdir,'CMakeLists.txt'))
+    else:
+      os.remove(tmplists)
 
 if __name__ == "__main__":
   main(petscdir=os.environ['PETSC_DIR'])
