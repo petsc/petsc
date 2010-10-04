@@ -1,3 +1,5 @@
+Matrix Object:
+  type: mpisbaij
 row 0: (0, 0)  (1, 1) 
 row 1: (1, 2)  (2, 3)  (6, 4) 
 row 2: (3, 5)  (7, 6) 

@@ -4,6 +4,8 @@ Matrix Object:
   total: nonzeros=41, allocated nonzeros=100
   total number of mallocs used during MatSetValues calls =0
     using I-node routines: found 15 nodes, limit used is 5
+Matrix Object:
+  type: seqaij
 row 0: (0, 4)  (1, -1)  (4, -1) 
 row 1: (0, -1)  (1, 4)  (2, -1)  (5, -1) 
 row 2:
@@ -30,6 +32,8 @@ Matrix Object:
   total: nonzeros=41, allocated nonzeros=41
   total number of mallocs used during MatSetValues calls =0
     using I-node routines: found 15 nodes, limit used is 5
+Matrix Object:
+  type: seqaij
 row 0: (0, 4)  (1, -1)  (4, -1) 
 row 1: (0, -1)  (1, 4)  (2, -1)  (5, -1) 
 row 2:
