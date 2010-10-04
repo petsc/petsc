@@ -19,7 +19,7 @@ class Configure(config.package.Package):
     import shutil
     import os
     self.framework.log.write('thrustDir = '+self.packageDir+' installDir '+self.installDir+'\n')
-    srcdir = os.path.join(self.packageDir, 'thrust')
+    srcdir = self.packageDir
     destdir = os.path.join(self.installDir, 'include', 'thrust')
     try:
       if os.path.isdir(destdir): shutil.rmtree(destdir)
