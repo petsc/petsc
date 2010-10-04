@@ -36,7 +36,7 @@ def test_cases():
     directory = os.path.split(__file__)[0]
     pattern = os.path.join(directory, 'test_*.py')
     test_list = []
-    for test_file in glob(pattern):
+    for test_file in sorted(glob(pattern)):
         filename = os.path.basename(test_file)
         modulename = os.path.splitext(filename)[0]
         if modulename in exclude:
