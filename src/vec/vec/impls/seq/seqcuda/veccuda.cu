@@ -159,6 +159,7 @@ PetscErrorCode VecCUDACopyFromGPUSome(Vec v,CUSPINTARRAYCPU *indicesCPU,CUSPINTA
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = VecCUDAAllocateCheck(v);CHKERRCUDA(ierr);
   s = (Vec_Seq*)v->data;
   if (s->array == 0){
     ierr               = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
