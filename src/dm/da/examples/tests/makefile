@@ -241,7 +241,6 @@ runex24:
 	   if (${DIFF} output/ex24_1.out ex24_1.tmp) then true; \
 	   else echo "Possible problem with ex24_1 6 processes, diffs above"; fi; ${RM} -f ex24_1.tmp
 
-
 runex25:
 	-@${MPIEXEC} -n 1 ./ex25  | grep -v Process > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \

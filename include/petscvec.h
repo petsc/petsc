@@ -99,7 +99,6 @@ E*/
 #define VECSEQ         "seq"
 #define VECMPI         "mpi"
 #define VECSTANDARD    "standard"   /* seq on one process and mpi on several */
-#define VECFETI        "feti"
 #define VECSHARED      "shared"
 #define VECSIEVE       "sieve"
 #define VECSEQCUDA     "seqcuda"
