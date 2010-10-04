@@ -54,7 +54,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
       ierr = PetscCUSPIndicesCreate(n,sindices,(PetscCUSPIndices*)&ctx->spptr);CHKERRQ(ierr);
       ierr = PetscFree(sindices);CHKERRQ(ierr);
     }
-    ierr = VecCUDACopyToGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
+    ierr = VecCUDACopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
     ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
   } else {
     ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);

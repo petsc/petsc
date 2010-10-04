@@ -546,6 +546,7 @@ typedef struct _p_PetscCUSPIndices* PetscCUSPIndices;
 extern PetscErrorCode PetscCUSPIndicesCreate(PetscInt,const PetscInt*,PetscCUSPIndices*);
 extern PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices);
 extern PetscErrorCode VecCUDACopyToGPUSome_Public(Vec,PetscCUSPIndices);
+extern PetscErrorCode VecCUDACopyFromGPUSome_Public(Vec,PetscCUSPIndices);
 #endif
 
 PETSC_EXTERN_CXX_END

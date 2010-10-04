@@ -90,7 +90,7 @@ PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices ci)
 #undef __FUNCT__
 #define __FUNCT__ "VecCUDACopyToGPUSome_Public"
 /*
-    VecCUDACopyToGPUSome_Public - Copies certain entries up to the CPU from the GPU of a vector 
+    VecCUDACopyToGPUSome_Public - Copies certain entries down to the GPU from the CPU of a vector 
 
    Input Parameters:
 +    v - the vector 
@@ -105,6 +105,8 @@ PetscErrorCode VecCUDACopyToGPUSome_Public(Vec v, PetscCUSPIndices ci)
   ierr = VecCUDACopyToGPUSome(v,&ci->indicesCPU,&ci->indicesGPU);CHKERRCUDA(ierr);
   PetscFunctionReturn(0);
 }
+
+
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUDACopyFromGPU"
@@ -176,7 +178,23 @@ PetscErrorCode VecCUDACopyFromGPUSome(Vec v,CUSPINTARRAYCPU *indicesCPU,CUSPINTA
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "VecCUDACopyFromGPUSome_Public"
+/*
+  VecCUDACopyFromGPUSome_Public - Copies certain entries up to the CPU from the GPU of a vector
 
+  Input Parameters:
+ +    v - the vector
+ -    indices - the requested indices, this should be created with CUSPIndicesCreate()
+*/
+PetscErrorCode VecCUDACopyFromGPUSome_Public(Vec v, PetscCUSPIndices ci)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecCUDACopyFromGPUSome(v,&ci->indicesCPU,&ci->indicesGPU);CHKERRCUDA(ierr);
+  PetscFunctionReturn(0);
+}
 
 
 /*MC
