@@ -1,16 +1,17 @@
 cdef extern from "petscis.h" nogil:
 
-    ctypedef enum PetscISType "ISType":
-        IS_GENERAL
-        IS_STRIDE
-        IS_BLOCK
+    ctypedef char* PetscISType "const char*"
+    PetscISType ISGENERAL
+    PetscISType ISSTRIDE
+    PetscISType ISBLOCK
 
     int ISView(PetscIS,PetscViewer)
     int ISDestroy(PetscIS)
-    int ISCreateGeneral(MPI_Comm,PetscInt,PetscInt[],PetscIS*)
+    int ISCreateGeneral(MPI_Comm,PetscInt,PetscInt[],PetscCopyMode,PetscIS*)
     int ISCreateBlock(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscIS*)
     int ISCreateStride(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscIS*)
     int ISGetType(PetscIS,PetscISType*)
+    int ISSetType(PetscIS,PetscISType)
 
     int ISDuplicate(PetscIS,PetscIS*)
     int ISCopy(PetscIS,PetscIS)
@@ -54,8 +55,7 @@ cdef extern from "petscis.h" nogil:
         IS_GTOLM_MASK
         IS_GTOLM_DROP
 
-    int ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,PetscInt[],PetscLGMap*)
-    int ISLocalToGlobalMappingCreateNC(MPI_Comm,PetscInt,PetscInt[],PetscLGMap*)
+    int ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,PetscInt[],PetscCopyMode,PetscLGMap*)
     int ISLocalToGlobalMappingCreateIS(PetscIS,PetscLGMap*)
     int ISLocalToGlobalMappingBlock(PetscLGMap,PetscInt,PetscLGMap*)
     int ISLocalToGlobalMappingView(PetscLGMap,PetscViewer)

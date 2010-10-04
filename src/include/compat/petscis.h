@@ -1,6 +1,86 @@
 #ifndef _COMPAT_PETSC_IS_H
 #define _COMPAT_PETSC_IS_H
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+
+#define ISGENERAL "general"
+#define ISSTRIDE  "stride"
+#define ISBLOCK   "block"
+
+/*
+#undef __FUNCT__
+#define __FUNCT__ "ISSetType"
+static PetscErrorCode
+ISSetType_Compat(IS is, const char *istype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidCharPointer(istype,3);
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  PetscFunctionReturn(0);
+}
+#define ISSetType ISSetType_Compat
+*/
+
+#undef __FUNCT__
+#define __FUNCT__ "ISGetType"
+static PetscErrorCode
+ISGetType_Compat(IS is, const char **istype)
+{
+  static const char* ISTypes[] = {ISGENERAL,ISSTRIDE,ISBLOCK};
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidPointer(istype,3);
+  *istype = ISTypes[((PetscObject)is)->type];
+  PetscFunctionReturn(0);
+}
+#define ISGetType ISGetType_Compat
+
+typedef enum {
+  PETSC_COPY_VALUES,
+  PETSC_OWN_POINTER,
+  PETSC_USE_POINTER
+} PetscCopyMode;
+
+#undef __FUNCT__
+#define __FUNCT__ "ISCreateGeneral"
+static PetscErrorCode
+ISCreateGeneral_Compat(MPI_Comm comm,PetscInt n,const PetscInt idx[],PetscCopyMode mode, IS *is)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  switch(mode) {
+  case PETSC_OWN_POINTER:
+    ierr = ISCreateGeneralNC(comm,n,idx,is);CHKERRQ(ierr);break;
+  case PETSC_USE_POINTER:
+    ierr = ISCreateGeneralWithArray(comm,n,(PetscInt*)idx,is);CHKERRQ(ierr);break;
+  default:
+    ierr = ISCreateGeneral(comm,n,idx,is);CHKERRQ(ierr);break;
+  }
+  PetscFunctionReturn(0);
+}
+#define ISCreateGeneral ISCreateGeneral_Compat
+
+#undef __FUNCT__
+#define __FUNCT__ "ISLocalToGlobalMappingCreate"
+static PetscErrorCode
+ISLocalToGlobalMappingCreate_Compat(MPI_Comm comm,PetscInt n,const PetscInt idx[],PetscCopyMode mode, ISLocalToGlobalMapping *isltog)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  switch(mode) {
+  case PETSC_OWN_POINTER:
+    ierr = ISLocalToGlobalMappingCreateNC(comm,n,idx,isltog);CHKERRQ(ierr);break;
+  default:
+    ierr = ISLocalToGlobalMappingCreate(comm,n,idx,isltog);CHKERRQ(ierr);break;
+  }
+  PetscFunctionReturn(0);
+}
+#define ISLocalToGlobalMappingCreate ISLocalToGlobalMappingCreate_Compat
+
+#endif
+
 #if PETSC_VERSION_(3,0,0)
 #undef __FUNCT__
 #define __FUNCT__ "ISComplement"
@@ -39,8 +119,7 @@ static PetscErrorCode ISComplement_Compat(IS is,PetscInt nmin,PetscInt nmax,IS *
     else nindices[cnt++] = i;
   }
   if (cnt != nmax-nmin-unique) SETERRQ2(PETSC_ERR_PLIB,"Number of entries found in complement %D does not match expected %D",cnt,nmax-nmin-unique);
-  ierr = ISCreateGeneral(((PetscObject)is)->comm,cnt,nindices,isout);CHKERRQ(ierr);
-  ierr = PetscFree(nindices);CHKERRQ(ierr);
+  ierr = ISCreateGeneralNC(((PetscObject)is)->comm,cnt,nindices,isout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

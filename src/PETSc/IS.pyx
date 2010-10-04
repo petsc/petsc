@@ -1,9 +1,9 @@
 # --------------------------------------------------------------------
 
 class ISType(object):
-    GENERAL = IS_GENERAL
-    BLOCK   = IS_BLOCK
-    STRIDE  = IS_STRIDE
+    GENERAL = S_(ISGENERAL)
+    BLOCK   = S_(ISBLOCK)
+    STRIDE  = S_(ISSTRIDE)
 
 # --------------------------------------------------------------------
 
@@ -42,11 +42,12 @@ cdef class IS(Object):
     def create(self, indices, bsize=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs = PETSC_DECIDE, nidx = 0, *idx = NULL
+        cdef PetscCopyMode cm = PETSC_COPY_VALUES
         cdef PetscIS newiset = NULL
         indices = iarray_i(indices, &nidx, &idx)
         if bsize is not None: bs = asInt(bsize)
         if bs == PETSC_DECIDE:
-            CHKERR( ISCreateGeneral(ccomm, nidx, idx, &newiset) )
+            CHKERR( ISCreateGeneral(ccomm, nidx, idx, cm, &newiset) )
         else:
             CHKERR( ISCreateBlock(ccomm, bs, nidx, idx, &newiset) )
         PetscCLEAR(self.obj); self.iset = newiset
@@ -55,9 +56,10 @@ cdef class IS(Object):
     def createGeneral(self, indices, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt nidx = 0, *idx = NULL
+        cdef PetscCopyMode cm = PETSC_COPY_VALUES
         cdef PetscIS newiset = NULL
         indices = iarray_i(indices, &nidx, &idx)
-        CHKERR( ISCreateGeneral(ccomm, nidx, idx, &newiset) )
+        CHKERR( ISCreateGeneral(ccomm, nidx, idx, cm, &newiset) )
         PetscCLEAR(self.obj); self.iset = newiset
         return self
 
@@ -82,9 +84,9 @@ cdef class IS(Object):
         return self
 
     def getType(self):
-        cdef PetscISType istype = IS_GENERAL
-        CHKERR( ISGetType(self.iset, &istype) )
-        return istype
+        cdef PetscISType cval = NULL
+        CHKERR( ISGetType(self.iset, &cval) )
+        return bytes2str(cval)
 
     def duplicate(self, copy=False):
         cdef IS iset = IS()
@@ -323,6 +325,7 @@ cdef class LGMap(Object):
         cdef IS iset
         cdef MPI_Comm ccomm = MPI_COMM_NULL
         cdef PetscInt nidx = 0, *idx = NULL
+        cdef PetscCopyMode cm = PETSC_COPY_VALUES
         cdef PetscLGMap newlgm = NULL
         if isinstance(indices, IS):
             iset = indices
@@ -330,7 +333,8 @@ cdef class LGMap(Object):
         else:
             ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
             indices = iarray_i(indices, &nidx, &idx)
-            CHKERR( ISLocalToGlobalMappingCreate(ccomm, nidx, idx, &newlgm) )
+            CHKERR( ISLocalToGlobalMappingCreate(ccomm, nidx, idx, 
+                                                 cm, &newlgm) )
         PetscCLEAR(self.obj); self.lgm = newlgm
         return self
 
