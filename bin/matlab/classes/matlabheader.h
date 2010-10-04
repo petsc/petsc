@@ -19,6 +19,13 @@ int PetscViewerSetType(PetscViewer,const char*);
 int PetscViewerView(PetscViewer,PetscViewer);
 int PetscViewerDestroy(PetscViewer);
 
+typedef int IS;
+int ISCreate(MPI_Comm,IS *);
+int ISSetType(IS,const char*);
+int ISGeneralSetIndices(IS,int,const int*);
+int ISView(IS,PetscViewer);
+int ISDestroy(IS);
+
 typedef int Vec;
 int VecCreate(MPI_Comm,Vec *);
 int VecSetType(Vec,const char*);
@@ -30,9 +37,12 @@ int VecAssemblyEnd(Vec);
 int VecView(Vec,PetscViewer);
 int VecDestroy(Vec);
 
-typedef int IS;
-int ISCreate(MPI_Comm,IS *);
-int ISSetType(IS,const char*);
-int ISGeneralSetIndices(IS,int,const int*);
-int ISView(IS,PetscViewer);
-int ISDestroy(IS);
+typedef int Mat;
+typedef int MatAssemblyType;
+int MatCreate(MPI_Comm,Mat *);
+int MatSetType(Mat,const char*);
+int MatSetSizes(Mat,int,int,int,int);
+int MatAssemblyBegin(Mat,MatAssemblyType);
+int MatAssemblyEnd(Mat,MatAssemblyType);
+int MatView(Mat,PetscViewer);
+int MatDestroy(Mat);

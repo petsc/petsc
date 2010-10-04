@@ -3,7 +3,7 @@
 
 path(path,'../../')
 
-PetscInitialize('-info');
+PetscInitialize({'-info','-malloc_dump'});
 
 viewer = PetscViewer();
 viewer.SetType('ascii');
@@ -30,6 +30,13 @@ vec.Destroy();
 
 is = ISCreateGeneral([1 2 5]);
 is.View(viewer);
+
+mat = Mat;
+mat.SetType('seqaij');
+mat.SetSizes(10,10,10,10);
+mat.AssemblyBegin(Mat.MAT_FINAL_ASSEMBLY);
+mat.AssemblyEnd(Mat.MAT_FINAL_ASSEMBLY);
+mat.View(viewer);
 
 viewer.Destroy();
 

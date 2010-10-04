@@ -2,6 +2,8 @@ function err = PetscInitialize(args,argfile,arghelp)
 %
 %  PETSc must be configured with --with-shared-libraries --with-mpi=0
 %
+%  You currently must run matlab -nodesktop to get any output from PETSc
+%
 %  There is currently no MPI in the API, the MPI_Comm is not in any of the 
 %  argument lists but otherwise the argument lists try to mimic the C binding
 %
