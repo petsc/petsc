@@ -8,7 +8,7 @@ PYTHON   = python
 
 PETSC_30=/usr/local/petsc/3.0.0
 PETSC_31=/usr/local/petsc/3.1
-PETSC_DEV=${HOME}/Devel/PETSc/petsc-dev
+PETSC_DEV=/usr/local/petsc/dev
 
 PETSC_ARCH=linux-gnu
 
@@ -24,12 +24,15 @@ petsc-dev:
 
 
 TEST_DIR=/tmp/petsc4py-build-test
-PETSC_OPTIONS='-malloc_dump -log_summary'
 test:
-	${RM} -r build ${TEST_DIR}/lib/python/petsc4py*
+	${RM} -r build
+	${RM} -r ${TEST_DIR}/lib/python/petsc4py*
+	${RM} -r ${TEST_DIR}/lib64/python/petsc4py*
 	${PYTHON} setup.py clean --all
 	${PYTHON} setup.py install --home=${TEST_DIR}
-	PYTHONPATH=${TEST_DIR}/lib/python PETSC_OPTIONS=${PETSC_OPTIONS} \
-	${MPIEXEC} ${VALGRIND} ${PYTHON} test/runtests.py
+	${RM} -r build
+	PYTHONPATH=${TEST_DIR}/lib64/python:${TEST_DIR}/lib/python \
+	${MPIEXEC} ${VALGRIND} ${PYTHON} test/runtests.py --summary
 	${RM} tests/*.py[co]
-	${RM} -r build ${TEST_DIR}/lib/python/petsc4py*
+	${RM} -r ${TEST_DIR}/lib/python/petsc4py*
+	${RM} -r ${TEST_DIR}/lib64/python/petsc4py*
