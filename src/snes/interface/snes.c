@@ -3110,9 +3110,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetDM(SNES snes,DM *dm)
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction_Matlab(SNES snes,Vec x,Vec y, void *ctx)
 {
-  PetscErrorCode ierr;
-  const char     *funcname = (const char*)ctx;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
