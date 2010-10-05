@@ -25,16 +25,12 @@ static PetscErrorCode QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,Petsc
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
 {
-  PetscErrorCode ierr,(*f)(KSP,PetscReal);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (delta < 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be non-negative");
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,delta);CHKERRQ(ierr);
-  }
-
+  ierr = PetscTryMethod(ksp,"KSPQCGSetTrustRegionRadius_C",(KSP,PetscReal),(ksp,delta));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -56,14 +52,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal d
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetTrialStepNorm(KSP ksp,PetscReal *tsnorm)
 {
-  PetscErrorCode ierr,(*f)(KSP,PetscReal*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPQCGGetTrialStepNorm_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,tsnorm);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(ksp,"KSPQCGGetTrialStepNorm_C",(KSP,PetscReal*),(ksp,tsnorm));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -97,14 +90,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetTrialStepNorm(KSP ksp,PetscReal *tsno
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetQuadratic(KSP ksp,PetscReal *quadratic)
 {
-  PetscErrorCode ierr,(*f)(KSP,PetscReal*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPQCGGetQuadratic_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,quadratic);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(ksp,"KSPQCGGetQuadratic_C",(KSP,PetscReal*),(ksp,quadratic));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

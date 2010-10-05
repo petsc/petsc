@@ -22,7 +22,12 @@ PetscErrorCode ISDestroy_Block(IS is)
 
   PetscFunctionBegin;
   ierr = PetscFree(is_block->idx);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockSetIndices_C",0,0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockSetIndices_C","",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetIndices_C","",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockRestoreIndices_C","",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetSize_C","",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetLocalSize_C","",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetBlockSize_C","",0);CHKERRQ(ierr);
   ierr = PetscFree(is_block);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

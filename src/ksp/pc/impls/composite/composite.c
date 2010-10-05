@@ -342,16 +342,12 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSetType(PC pc,PCCompositeType type)
 {
-  PetscErrorCode ierr,(*f)(PC,PCCompositeType);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveEnum(pc,type,2);
-
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCompositeSetType_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,type);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCCompositeSetType_C",(PC,PCCompositeType),(pc,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

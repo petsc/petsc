@@ -22,15 +22,12 @@
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 {
-  PetscErrorCode ierr,(*f)(KSP,PetscReal);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveReal(ksp,scale,2);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,scale);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ksp,"KSPRichardsonSetScale_C",(KSP,PetscReal),(ksp,scale));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -57,14 +54,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetSelfScale(KSP ksp,PetscBool  scale)
 {
-  PetscErrorCode ierr,(*f)(KSP,PetscBool );
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveTruth(ksp,scale,2);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPRichardsonSetSelfScale_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,scale);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ksp,"KSPRichardsonSetSelfScale_C",(KSP,PetscBool),(ksp,scale));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

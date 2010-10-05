@@ -737,15 +737,12 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType type)
 {
-  PetscErrorCode ierr,(*f)(KSP,KSPGMRESCGSRefinementType);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveEnum(ksp,type,2);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,type);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ksp,"KSPGMRESSetCGSRefinementType_C",(KSP,KSPGMRESCGSRefinementType),(ksp,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -775,14 +772,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESC
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType *type)
 {
-  PetscErrorCode ierr,(*f)(KSP,KSPGMRESCGSRefinementType*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,type);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(ksp,"KSPGMRESGetCGSRefinementType_C",(KSP,KSPGMRESCGSRefinementType *),(ksp,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

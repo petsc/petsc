@@ -30,16 +30,13 @@ static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius(KSP ksp, PetscReal radius)
 {
-  PetscErrorCode ierr, (*f)(KSP, PetscReal);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (radius < 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE, "Radius negative");
   PetscValidLogicalCollectiveReal(ksp,radius,2);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPGLTRSetRadius_C", (void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp, radius);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ksp,"KSPGLTRSetRadius_C",(KSP,PetscReal),(ksp,radius));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -60,14 +57,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius(KSP ksp, PetscReal radius)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD(KSP ksp, PetscReal *norm_d)
 {
-  PetscErrorCode ierr, (*f)(KSP, PetscReal *);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPGLTRGetNormD_C", (void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp, norm_d);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(ksp,"KSPGLTRGetNormD_C",(KSP,PetscReal*),(ksp,norm_d));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -88,14 +82,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD(KSP ksp, PetscReal *norm_d)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn(KSP ksp, PetscReal *o_fcn)
 {
-  PetscErrorCode ierr, (*f)(KSP, PetscReal *);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPGLTRGetObjFcn_C", (void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp, o_fcn);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(ksp,"KSPGLTRGetObjFcn_C",(KSP,PetscReal*),(ksp,o_fcn));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -116,14 +107,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn(KSP ksp, PetscReal *o_fcn)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 {
-  PetscErrorCode ierr, (*f)(KSP, PetscReal *);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPGLTRGetMinEig_C", (void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp, e_min);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(ksp,"KSPGLTRGetMinEig_C",(KSP,PetscReal*),(ksp,e_min));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -144,14 +132,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
 {
-  PetscErrorCode ierr, (*f)(KSP, PetscReal *);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPGLTRGetLambda_C", (void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp, lambda);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(ksp,"KSPGLTRGetLambda_C",(KSP,PetscReal*),(ksp,lambda));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

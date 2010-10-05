@@ -432,15 +432,11 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetUseTrueLocal(PC pc)
 {
-  PetscErrorCode ierr,(*f)(PC);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetUseTrueLocal_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc);CHKERRQ(ierr);
-  } 
-
+  ierr = PetscTryMethod(pc,"PCBJacobiSetUseTrueLocal_C",(PC),(pc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -476,14 +472,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetUseTrueLocal(PC pc)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp[])
 {
-  PetscErrorCode ierr,(*f)(PC,PetscInt *,PetscInt *,KSP **);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiGetSubKSP_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,n_local,first_local,ksp);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"Cannot get subsolvers for this preconditioner");
+  ierr = PetscUseMethod(pc,"PCBJacobiGetSubKSP_C",(PC,PetscInt *,PetscInt *,KSP **),(pc,n_local,first_local,ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -515,15 +508,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetSubKSP(PC pc,PetscInt *n_local,Pet
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,const PetscInt lens[])
 {
-  PetscErrorCode ierr,(*f)(PC,PetscInt,const PetscInt[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (blocks <= 0) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Must have positive blocks");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetTotalBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCBJacobiSetTotalBlocks_C",(PC,PetscInt,const PetscInt[]),(pc,blocks,lens));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -550,15 +540,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt *lens[])
 {
-  PetscErrorCode ierr,(*f)(PC,PetscInt*, const PetscInt *[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID,1);
   PetscValidIntPointer(blocks,2);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiGetTotalBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
-  } 
+  ierr = PetscUseMethod(pc,"PCBJacobiGetTotalBlocks_C",(PC,PetscInt*, const PetscInt *[]),(pc,blocks,lens));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
   
@@ -586,15 +573,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetTotalBlocks(PC pc, PetscInt *block
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetLocalBlocks(PC pc,PetscInt blocks,const PetscInt lens[])
 {
-  PetscErrorCode ierr,(*f)(PC,PetscInt,const PetscInt []);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (blocks < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must have nonegative blocks");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetLocalBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCBJacobiSetLocalBlocks_C",(PC,PetscInt,const PetscInt []),(pc,blocks,lens));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
   
@@ -622,15 +606,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetLocalBlocks(PC pc,PetscInt blocks,
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt *lens[])
 {
-  PetscErrorCode ierr,(*f)(PC,PetscInt*, const PetscInt *[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID,1);
   PetscValidIntPointer(blocks,2);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiGetLocalBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
-  } 
+  ierr = PetscUseMethod(pc,"PCBJacobiGetLocalBlocks_C",(PC,PetscInt*, const PetscInt *[]),(pc,blocks,lens));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -71,14 +71,11 @@ PetscBool  asa_events_registered = PETSC_FALSE;
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCASASetDM(PC pc,DM dm)
 {
-  PetscErrorCode ierr,(*f)(PC,DM);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASASetDM_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,dm);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCASASetDM_C",(PC,DM),(pc,dm));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -122,14 +119,11 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCASASetTolerances(PC pc, PetscReal rtol, PetscReal abstol,PetscReal dtol, PetscInt maxits)
 {
-  PetscErrorCode ierr,(*f)(PC,PetscReal,PetscReal,PetscReal,PetscInt);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASASetTolerances_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,rtol,abstol,dtol,maxits);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCASASetTolerances",(PC,PetscReal,PetscReal,PetscReal,PetscInt),(pc,rtol,abstol,dtol,maxits));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

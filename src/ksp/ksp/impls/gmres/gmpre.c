@@ -25,13 +25,10 @@
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetPreAllocateVectors(KSP ksp)
 {
-  PetscErrorCode ierr,(*f)(KSP);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ksp,"KSPGMRESSetPreAllocateVectors_C",(KSP),(ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -693,14 +693,11 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetLocalSubdomains(PC pc,PetscInt n,IS is[],IS is_local[])
 {
-  PetscErrorCode ierr,(*f)(PC,PetscInt,IS[],IS[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetLocalSubdomains_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,n,is,is_local);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCASMSetLocalSubdomains_C",(PC,PetscInt,IS[],IS[]),(pc,n,is,is_local));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -745,14 +742,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetLocalSubdomains(PC pc,PetscInt n,IS is
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetTotalSubdomains(PC pc,PetscInt N,IS is[],IS is_local[])
 {
-  PetscErrorCode ierr,(*f)(PC,PetscInt,IS[],IS[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetTotalSubdomains_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,N,is,is_local);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCASMSetTotalSubdomains_C",(PC,PetscInt,IS[],IS[]),(pc,N,is,is_local));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -799,15 +793,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetTotalSubdomains(PC pc,PetscInt N,IS is
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetOverlap(PC pc,PetscInt ovl)
 {
-  PetscErrorCode ierr,(*f)(PC,PetscInt);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,ovl,2);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetOverlap_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,ovl);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCASMSetOverlap_C",(PC,PetscInt),(pc,ovl));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -841,15 +832,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetOverlap(PC pc,PetscInt ovl)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetType(PC pc,PCASMType type)
 {
-  PetscErrorCode ierr,(*f)(PC,PCASMType);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveEnum(pc,type,2);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetType_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,type);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCASMSetType_C",(PC,PCASMType),(pc,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -873,15 +861,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetType(PC pc,PCASMType type)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetSortIndices(PC pc,PetscBool  doSort)
 {
-  PetscErrorCode ierr,(*f)(PC,PetscBool );
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveTruth(pc,doSort,2);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetSortIndices_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,doSort);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCASMSetSortIndices_C",(PC,PetscBool),(pc,doSort));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -919,14 +904,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetSortIndices(PC pc,PetscBool  doSort)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp[])
 {
-  PetscErrorCode ierr,(*f)(PC,PetscInt*,PetscInt*,KSP **);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMGetSubKSP_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,n_local,first_local,ksp);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"Cannot get subksp for this type of PC");
+  ierr = PetscUseMethod(pc,"PCASMGetSubKSP_C",(PC,PetscInt*,PetscInt*,KSP **),(pc,n_local,first_local,ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

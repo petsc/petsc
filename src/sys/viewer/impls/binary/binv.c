@@ -775,15 +775,12 @@ $    FILE_MODE_APPEND - open existing file for binary output
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileGetMode(PetscViewer viewer,PetscFileMode *type)
 {
-  PetscErrorCode ierr,(*f)(PetscViewer,PetscFileMode*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(type,2);
-  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerFileGetMode_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(viewer,type);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(viewer,"PetscViewerFileGetMode_C",(PetscViewer,PetscFileMode*),(viewer,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -810,14 +807,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileGetMode(PetscViewer viewer,Pets
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySetMPIIO(PetscViewer viewer)
 {
-  PetscErrorCode ierr,(*f)(PetscViewer);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerBinarySetMPIIO_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(viewer);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(viewer,"PetscViewerBinarySetMPIIO_C",(PetscViewer),(viewer));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -843,15 +837,12 @@ $    FILE_MODE_APPEND - open existing file for binary output
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileSetMode(PetscViewer viewer,PetscFileMode type)
 {
-  PetscErrorCode ierr,(*f)(PetscViewer,PetscFileMode);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveEnum(viewer,type,2);
-  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(viewer,type);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(viewer,"PetscViewerFileSetMode_C",(PetscViewer,PetscFileMode),(viewer,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -32,14 +32,11 @@
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType(KSP ksp,KSPCGType type)
 {
-  PetscErrorCode ierr,(*f)(KSP,KSPCGType);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPCGSetType_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,type);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ksp,"KSPCGSetType_C",(KSP,KSPCGType),(ksp,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -69,15 +66,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType(KSP ksp,KSPCGType type)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPCGUseSingleReduction(KSP ksp,PetscBool  flg)
 {
-  PetscErrorCode ierr,(*f)(KSP,PetscBool );
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveTruth(ksp,flg,2);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPCGUseSingleReduction_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,flg);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ksp,"KSPCGUseSingleReduction_C",(KSP,PetscBool),(ksp,flg));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

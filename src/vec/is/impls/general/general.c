@@ -28,7 +28,7 @@ PetscErrorCode ISDestroy_General(IS is)
   if (is_general->allocated) {
     ierr = PetscFree(is_general->idx);CHKERRQ(ierr);
   }
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISGeneralSetIndices_C",0,0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISGeneralSetIndices_C","",0);CHKERRQ(ierr);
   ierr = PetscFree(is_general);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

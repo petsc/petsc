@@ -552,15 +552,12 @@ EXTERN PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA,Mat);
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT MatSetDA(Mat mat,DA da)
 {
-  PetscErrorCode ierr,(*f)(Mat,DA);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSetDA_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(mat,da);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(mat,"MatSetDA_C",(Mat,DA),(mat,da));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

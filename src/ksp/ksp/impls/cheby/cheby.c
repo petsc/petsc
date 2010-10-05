@@ -56,16 +56,13 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPChebychevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
 {
-  PetscErrorCode ierr,(*f)(KSP,PetscReal,PetscReal);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveReal(ksp,emax,2);
   PetscValidLogicalCollectiveReal(ksp,emin,3);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,emax,emin);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ksp,"KSPChebychevSetEigenvalues_C",(KSP,PetscReal,PetscReal),(ksp,emax,emin));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

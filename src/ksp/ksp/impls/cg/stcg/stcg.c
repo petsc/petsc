@@ -29,17 +29,13 @@ static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP ksp, PetscReal radius)
 {
-  PetscErrorCode ierr, (*f)(KSP, PetscReal);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (radius < 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE, "Radius negative");
   PetscValidLogicalCollectiveReal(ksp,radius,2);
-
-  ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPSTCGSetRadius_C", (void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp, radius);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(ksp,"KSPSTCGSetRadius_C",(KSP,PetscReal),(ksp,radius));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -60,14 +56,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP ksp, PetscReal radius)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetNormD(KSP ksp, PetscReal *norm_d)
 {
-  PetscErrorCode ierr, (*f)(KSP, PetscReal *);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPSTCGGetNormD_C", (void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp, norm_d);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(ksp,"KSPSTCGGetNormD_C",(KSP,PetscReal*),(ksp,norm_d));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -88,14 +81,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetNormD(KSP ksp, PetscReal *norm_d)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
 {
-  PetscErrorCode ierr, (*f)(KSP, PetscReal *);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPSTCGGetObjFcn_C", (void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp, o_fcn);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(ksp,"KSPSTCGGetObjFcn_C",(KSP,PetscReal*),(ksp,o_fcn));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

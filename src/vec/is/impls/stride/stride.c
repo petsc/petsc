@@ -153,7 +153,7 @@ PetscErrorCode ISDestroy_Stride(IS is)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISStrideSetStride_C",0,0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISStrideSetStride_C","",0);CHKERRQ(ierr);
   ierr = PetscFree(is->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

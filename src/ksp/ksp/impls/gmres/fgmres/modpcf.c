@@ -41,14 +41,11 @@
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPFGMRESSetModifyPC(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt,PetscInt,PetscReal,void*),void* ctx,PetscErrorCode (*d)(void*))
 {
-  PetscErrorCode ierr,(*f)(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscInt,PetscReal,void*),void*,PetscErrorCode (*)(void*));
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPFGMRESSetModifyPC_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,fcn,ctx,d);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ksp,"KSPFGMRESSetModifyPC_C",(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscInt,PetscReal,void*),void*,PetscErrorCode (*)(void*)),(ksp,fcn,ctx,d));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

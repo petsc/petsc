@@ -41,14 +41,11 @@ $    i.e. the size of Krylov space minus one
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetOrthogonalization(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt))
 {
-  PetscErrorCode ierr,(*f)(KSP,PetscErrorCode (*)(KSP,PetscInt));
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,fcn);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ksp,"KSPGMRESSetOrthogonalization_C",(KSP,PetscErrorCode (*)(KSP,PetscInt)),(ksp,fcn));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -93,13 +90,10 @@ $    i.e. the size of Krylov space minus one
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetOrthogonalization(KSP ksp,PetscErrorCode (**fcn)(KSP,PetscInt))
 {
-  PetscErrorCode ierr,(*f)(KSP,PetscErrorCode (**)(KSP,PetscInt));
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESGetOrthogonalization_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,fcn);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(ksp,"KSPGMRESGetOrthogonalization_C",(KSP,PetscErrorCode (**)(KSP,PetscInt)),(ksp,fcn));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

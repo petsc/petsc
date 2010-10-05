@@ -245,13 +245,10 @@ EXTERN_C_END
  @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,PetscInt,PetscReal,void*),void *data,PetscErrorCode (*destroy)(void*))
 {
-  PetscErrorCode ierr,(*f)(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*),void *data,PetscErrorCode (*)(void*));
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGCRSetModifyPC_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,function,data,destroy);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(ksp,"KSPGCRSetModifyPC_C",(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*),void *data,PetscErrorCode (*)(void*)),(ksp,function,data,destroy));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
