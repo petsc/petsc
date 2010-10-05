@@ -175,7 +175,7 @@ PetscErrorCode VecCUDACopyFromGPUSome(Vec v,CUSPINTARRAYCPU *indicesCPU,CUSPINTA
 		 thrust::make_permutation_iterator(s->array,indicesCPU->begin()));
     ierr = PetscLogEventEnd(VEC_CUDACopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
   }
-  v->valid_GPU_array = PETSC_CUDA_GPU;
+  /*v->valid_GPU_array = PETSC_CUDA_CPU; */
   PetscFunctionReturn(0);
 }
 
