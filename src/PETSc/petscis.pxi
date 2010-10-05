@@ -1,16 +1,19 @@
 cdef extern from "petscis.h" nogil:
 
-    ctypedef enum PetscISType "ISType":
-        IS_GENERAL
-        IS_STRIDE
-        IS_BLOCK
+    ctypedef char* PetscISType "const char*"
+    PetscISType ISGENERAL
+    PetscISType ISSTRIDE
+    PetscISType ISBLOCK
 
     int ISView(PetscIS,PetscViewer)
     int ISDestroy(PetscIS)
-    int ISCreateGeneral(MPI_Comm,PetscInt,PetscInt[],PetscIS*)
+    int ISCreate(MPI_Comm,PetscIS*)
+    int ISSetType(PetscIS,PetscISType)
+    int ISGetType(PetscIS,PetscISType*)
+
+    int ISCreateGeneral(MPI_Comm,PetscInt,PetscInt[],PetscCopyMode,PetscIS*)
     int ISCreateBlock(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscIS*)
     int ISCreateStride(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscIS*)
-    int ISGetType(PetscIS,PetscISType*)
 
     int ISDuplicate(PetscIS,PetscIS*)
     int ISCopy(PetscIS,PetscIS)
@@ -37,12 +40,17 @@ cdef extern from "petscis.h" nogil:
     int ISDifference(PetscIS,PetscIS,PetscIS*)
     int ISComplement(PetscIS,PetscInt,PetscInt,PetscIS*)
 
+    int ISGeneralSetIndices(PetscIS,PetscInt,PetscInt[],PetscCopyMode)
+
     int ISBlock(PetscIS,PetscBool*)
+    int ISBlockSetIndices(PetscIS,PetscInt,PetscInt,PetscInt[])
     int ISBlockGetIndices(PetscIS,const_PetscInt*[])
     int ISBlockRestoreIndices(PetscIS,const_PetscInt*[])
     int ISBlockGetSize(PetscIS,PetscInt*)
     int ISBlockGetLocalSize(PetscIS,PetscInt*)
     int ISBlockGetBlockSize(PetscIS,PetscInt*)
+
+    int ISStrideSetStride(PetscIS,PetscInt,PetscInt,PetscInt)
     int ISStride(PetscIS,PetscBool*)
     int ISStrideGetInfo(PetscIS,PetscInt*,PetscInt*)
     int ISStrideToGeneral(PetscIS)
@@ -54,8 +62,7 @@ cdef extern from "petscis.h" nogil:
         IS_GTOLM_MASK
         IS_GTOLM_DROP
 
-    int ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,PetscInt[],PetscLGMap*)
-    int ISLocalToGlobalMappingCreateNC(MPI_Comm,PetscInt,PetscInt[],PetscLGMap*)
+    int ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,PetscInt[],PetscCopyMode,PetscLGMap*)
     int ISLocalToGlobalMappingCreateIS(PetscIS,PetscLGMap*)
     int ISLocalToGlobalMappingBlock(PetscLGMap,PetscInt,PetscLGMap*)
     int ISLocalToGlobalMappingView(PetscLGMap,PetscViewer)

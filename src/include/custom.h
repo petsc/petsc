@@ -293,18 +293,6 @@ EXTERN_C_END
 /* ---------------------------------------------------------------- */
 
 #undef __FUNCT__
-#define __FUNCT__ "ISGetType"
-static PetscErrorCode
-ISGetType(IS is, ISType *istype)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidPointer(istype,3);
-  *istype = (ISType) ((PetscObject)is)->type;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "VecGetArrayC"
 PETSC_STATIC_INLINE PetscErrorCode
 VecGetArrayC(Vec v, PetscScalar *a[])

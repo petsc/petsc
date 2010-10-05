@@ -27,6 +27,12 @@ cdef extern from "petsc.h" nogil:
         PETSC_NORM_INFINITY   "NORM_INFINITY"
         PETSC_NORM_MAX        "NORM_MAX"
 
+    ctypedef enum PetscCopyMode:
+        PETSC_COPY_VALUES
+        PETSC_OWN_POINTER
+        PETSC_USE_POINTER
+    
+
 cdef extern from "petsc.h" nogil:
 
     enum: PETSC_ERR_MEM
