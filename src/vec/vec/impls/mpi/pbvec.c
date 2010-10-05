@@ -830,8 +830,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostBlockWithArray(MPI_Comm comm,Pet
   ierr = ISLocalToGlobalMappingCreate(comm,nb+nghost,indices,PETSC_OWN_POINTER,&ltog);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMappingBlock(*vv,ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRQ(ierr);
-  ierr = PetscFree(indices);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
