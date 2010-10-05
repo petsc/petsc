@@ -426,7 +426,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposeFunction(PetscObject obj,con
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscValidCharPointer(name,2);
-  PetscValidCharPointer(fname,2);
+  PetscValidCharPointer(fname,3);
   ierr = (*obj->bops->composefunction)(obj,name,fname,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -58,7 +58,6 @@ E*/
 #define PETSCVIEWERDRAW         "draw"
 #define PETSCVIEWERVU           "vu"
 #define PETSCVIEWERMATHEMATICA  "mathematica"
-#define PETSCVIEWERSILO         "silo"
 #define PETSCVIEWERNETCDF       "netcdf"
 #define PETSCVIEWERHDF5         "hdf5"
 #define PETSCVIEWERMATLAB       "matlab"
