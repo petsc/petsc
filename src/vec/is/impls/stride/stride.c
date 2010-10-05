@@ -153,6 +153,7 @@ PetscErrorCode ISDestroy_Stride(IS is)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISStrideSetStride_C",0,0);CHKERRQ(ierr);
   ierr = PetscFree(is->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -313,6 +314,17 @@ static struct _ISOps myops = { ISGetSize_Stride,
 PetscErrorCode PETSCVEC_DLLEXPORT ISStrideSetStride(IS is,PetscInt n,PetscInt first,PetscInt step)
 {
   PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(is,"ISStrideSetStride_C",(IS,PetscInt,PetscInt,PetscInt),(is,n,first,step));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "ISStrideSetStride_Stride" 
+PetscErrorCode PETSCVEC_DLLEXPORT ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscInt step)
+{
+  PetscErrorCode ierr;
   PetscInt       min,max;
   IS_Stride      *sub = (IS_Stride*)is->data;
 
@@ -336,6 +348,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideSetStride(IS is,PetscInt n,PetscInt fi
   }
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISCreateStride" 
@@ -389,6 +402,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_Stride(IS is)
   PetscFunctionBegin;
   ierr = PetscNewLog(is,IS_Stride,&sub);CHKERRQ(ierr);
   is->data = sub;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISStrideSetStride_C","ISStrideSetStride_Stride",
+					   ISStrideSetStride_Stride);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -28,6 +28,7 @@ PetscErrorCode ISDestroy_General(IS is)
   if (is_general->allocated) {
     ierr = PetscFree(is_general->idx);CHKERRQ(ierr);
   }
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISGeneralSetIndices_C",0,0);CHKERRQ(ierr);
   ierr = PetscFree(is_general);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -339,6 +340,17 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneral(MPI_Comm comm,PetscInt n,const
 PetscErrorCode PETSCVEC_DLLEXPORT ISGeneralSetIndices(IS is,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
 {
   PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(is,"ISGeneralSetIndices_C",(IS,PetscInt,const PetscInt[],PetscCopyMode),(is,n,idx,mode));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "ISGeneralSetIndices_General" 
+PetscErrorCode PETSCVEC_DLLEXPORT ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
+{
+  PetscErrorCode ierr;
   IS_General     *sub = (IS_General*)is->data;
 
   PetscFunctionBegin;
@@ -362,6 +374,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGeneralSetIndices(IS is,PetscInt n,const Pet
   ierr = ISCreateGeneral_Private(is); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -374,6 +387,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_General(IS is)
   PetscFunctionBegin;
   ierr       = PetscNewLog(is,IS_General,&sub);CHKERRQ(ierr);
   is->data   = (void*)sub;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISGeneralSetIndices_C","ISGeneralSetIndices_General",
+					   ISGeneralSetIndices_General);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

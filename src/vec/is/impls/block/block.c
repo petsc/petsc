@@ -22,6 +22,7 @@ PetscErrorCode ISDestroy_Block(IS is)
 
   PetscFunctionBegin;
   ierr = PetscFree(is_block->idx);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockSetIndices_C",0,0);CHKERRQ(ierr);
   ierr = PetscFree(is_block);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -263,6 +264,17 @@ static struct _ISOps myops = { ISGetSize_Block,
 PetscErrorCode PETSCVEC_DLLEXPORT ISBlockSetIndices(IS is,PetscInt bs,PetscInt n,const PetscInt idx[])
 {
   PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(is,"ISBlockSetIndices_C",(IS,PetscInt,PetscInt,const PetscInt[]),(is,bs,n,idx));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "ISBlockSetIndices_Block" 
+PetscErrorCode PETSCVEC_DLLEXPORT ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,const PetscInt idx[])
+{
+  PetscErrorCode ierr;
   PetscInt       i,min,max;
   IS_Block       *sub = (IS_Block*)is->data;
   PetscBool      sorted = PETSC_TRUE;
@@ -291,6 +303,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockSetIndices(IS is,PetscInt bs,PetscInt n
   is->isperm  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISCreateBlock" 
@@ -346,15 +359,23 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscI
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "ISCreate_Block" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_Block(IS is)
+#define __FUNCT__ "ISBlockGetIndices_Block" 
+PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetIndices_Block(IS is,const PetscInt *idx[])
 {
-  PetscErrorCode ierr;
-  IS_Block       *sub;
+  IS_Block       *sub = (IS_Block*)is->data;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(is,IS_Block,&sub);CHKERRQ(ierr);
-  is->data = sub;
+  *idx = sub->idx; 
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "ISBlockRestoreIndices_Block" 
+PetscErrorCode PETSCVEC_DLLEXPORT ISBlockRestoreIndices_Block(IS is,const PetscInt *idx[])
+{
+  PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -382,18 +403,9 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetIndices(IS is,const PetscInt *idx[])
 {
-  IS_Block       *sub;
-  PetscBool      flg;
   PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidPointer(idx,2);
-  ierr = PetscTypeCompare((PetscObject)is,ISBLOCK,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a block index set");
-
-  sub = (IS_Block*)is->data;
-  *idx = sub->idx; 
+  ierr = PetscUseMethod(is,"ISBlockGetIndices_C",(IS,const PetscInt*[]),(is,idx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -420,14 +432,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetIndices(IS is,const PetscInt *idx[])
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISBlockRestoreIndices(IS is,const PetscInt *idx[])
 {
-  PetscBool      flg;
   PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidPointer(idx,2);
-  ierr = PetscTypeCompare((PetscObject)is,ISBLOCK,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a block index set");
+  ierr = PetscUseMethod(is,"ISBlockRestoreIndices_C",(IS,const PetscInt*[]),(is,idx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -453,20 +460,23 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockRestoreIndices(IS is,const PetscInt *id
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetBlockSize(IS is,PetscInt *size)
 {
-  IS_Block       *sub;
-  PetscBool      flg;
   PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidIntPointer(size,2);
-  ierr = PetscTypeCompare((PetscObject)is,ISBLOCK,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a block index set");
+  ierr = PetscUseMethod(is,"ISBlockGetBlockSize_C",(IS,PetscInt*),(is,size));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-  sub = (IS_Block *)is->data;
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "ISBlockGetBlockSize_Block" 
+PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetBlockSize_Block(IS is,PetscInt *size)
+{
+  IS_Block *sub = (IS_Block *)is->data;
+  PetscFunctionBegin;
   *size = sub->bs; 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISBlock" 
@@ -521,19 +531,24 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlock(IS is,PetscBool  *flag)
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetLocalSize(IS is,PetscInt *size)
 {
-  IS_Block       *sub;
-  PetscBool      flg;
   PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(is,"ISBlockGetLocalSize_C",(IS,PetscInt*),(is,size));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "ISBlockGetLocalSize_Block" 
+PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetLocalSize_Block(IS is,PetscInt *size)
+{
+  IS_Block *sub = (IS_Block *)is->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidIntPointer(size,2);
-  ierr = PetscTypeCompare((PetscObject)is,ISBLOCK,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a block index set");
-  sub = (IS_Block *)is->data;
   *size = sub->n; 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISBlockGetSize" 
@@ -557,17 +572,48 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetLocalSize(IS is,PetscInt *size)
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetSize(IS is,PetscInt *size)
 {
-  IS_Block       *sub;
-  PetscBool      flg;
   PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(is,"ISBlockGetSize_C",(IS,PetscInt*),(is,size));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "ISBlockGetSize_Block" 
+PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetSize_Block(IS is,PetscInt *size)
+{
+  IS_Block *sub = (IS_Block *)is->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidIntPointer(size,2);
-  ierr = PetscTypeCompare((PetscObject)is,ISBLOCK,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a block index set");
-
-  sub = (IS_Block *)is->data;
   *size = sub->N;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "ISCreate_Block" 
+PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_Block(IS is)
+{
+  PetscErrorCode ierr;
+  IS_Block       *sub;
+
+  PetscFunctionBegin;
+  ierr = PetscNewLog(is,IS_Block,&sub);CHKERRQ(ierr);
+  is->data = sub;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockSetIndices_C","ISBlockSetIndices_Block",
+					   ISBlockSetIndices_Block);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetIndices_C","ISBlockGetIndices_Block",
+					   ISBlockGetIndices_Block);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockRestoreIndices_C","ISBlockRestoreIndices_Block",
+					   ISBlockRestoreIndices_Block);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetSize_C","ISBlockGetSize_Block",
+					   ISBlockGetSize_Block);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetLocalSize_C","ISBlockGetLocalSize_Block",
+					   ISBlockGetLocalSize_Block);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetBlockSize_C","ISBlockGetBlockSize_Block",
+					   ISBlockGetBlockSize_Block);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
