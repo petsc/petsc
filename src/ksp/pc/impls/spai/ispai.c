@@ -308,12 +308,9 @@ EXTERN_C_END
   @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetEpsilon(PC pc,double epsilon1)
 {
-  PetscErrorCode ierr,(*f)(PC,double);
+  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetEpsilon_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,epsilon1);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCSPAISetEpsilon_C",(PC,double),(pc,epsilon1));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
     
@@ -342,12 +339,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetEpsilon(PC pc,double epsilon1)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetNBSteps(PC pc,int nbsteps1)
 {
-  PetscErrorCode ierr,(*f)(PC,int);
+  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetNBSteps_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,nbsteps1);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCSPAISetNBSteps_C",(PC,int),(pc,nbsteps1));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -370,12 +364,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetNBSteps(PC pc,int nbsteps1)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetMax(PC pc,int max1)
 {
-  PetscErrorCode ierr,(*f)(PC,int);
+  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetMax_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,max1);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCSPAISetMax_C",(PC,int),(pc,max1));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -397,12 +388,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetMax(PC pc,int max1)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetMaxNew(PC pc,int maxnew1)
 {
-  PetscErrorCode ierr,(*f)(PC,int);
+  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetMaxNew_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,maxnew1);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCSPAISetMaxNew_C",(PC,int),(pc,maxnew1));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -441,12 +429,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetMaxNew(PC pc,int maxnew1)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetBlockSize(PC pc,int block_size1)
 {
-  PetscErrorCode ierr,(*f)(PC,int);
+  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetBlockSize_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,block_size1);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCSPAISetBlockSize_C",(PC,int),(pc,block_size1));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -472,12 +457,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetBlockSize(PC pc,int block_size1)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetCacheSize(PC pc,int cache_size)
 {
-  PetscErrorCode ierr,(*f)(PC,int);
+  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetCacheSize_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,cache_size);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCSPAISetCacheSize_C",(PC,int),(pc,cache_size));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -500,12 +482,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetCacheSize(PC pc,int cache_size)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetVerbose(PC pc,int verbose)
 {
-  PetscErrorCode ierr,(*f)(PC,int);
+  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetVerbose_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,verbose);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCSPAISetVerbose_C",(PC,int),(pc,verbose));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -534,12 +513,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetVerbose(PC pc,int verbose)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetSp(PC pc,int sp)
 {
-  PetscErrorCode ierr,(*f)(PC,int);
+  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetSp_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,sp);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCSPAISetSp_C",(PC,int),(pc,sp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -2746,17 +2746,12 @@ EXTERN_C_END
 @*/ 
 PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetColumnIndices(Mat mat,PetscInt *indices)
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscInt *);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(indices,2);
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqAIJSetColumnIndices_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(mat,indices);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Wrong type of matrix to set column indices");
-  }
+  ierr = PetscUseMethod(mat,"MatSeqAIJSetColumnIndices_C",(Mat,PetscInt *),(mat,indices));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2839,19 +2834,13 @@ $    endloop
 @*/ 
 PetscErrorCode PETSCMAT_DLLEXPORT MatStoreValues(Mat mat)
 {
-  PetscErrorCode ierr,(*f)(Mat);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (!mat->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatStoreValues_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(mat);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Wrong type of matrix to store values");
-  }
+  ierr = PetscUseMethod(mat,"MatStoreValues_C",(Mat),(mat));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2896,19 +2885,13 @@ EXTERN_C_END
 @*/ 
 PetscErrorCode PETSCMAT_DLLEXPORT MatRetrieveValues(Mat mat)
 {
-  PetscErrorCode ierr,(*f)(Mat);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (!mat->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatRetrieveValues_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(mat);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Wrong type of matrix to retrieve values");
-  }
+  ierr = PetscUseMethod(mat,"MatRetrieveValues_C",(Mat),(mat));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3035,13 +3018,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,Petsc
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocation(Mat B,PetscInt nz,const PetscInt nnz[])
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscInt,const PetscInt[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)B,"MatSeqAIJSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(B,nz,nnz);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(B,"MatSeqAIJSetPreallocation_C",(Mat,PetscInt,const PetscInt[]),(B,nz,nnz));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3140,15 +3120,11 @@ EXTERN_C_END
 @*/
 PetscErrorCode MatSeqAIJSetPreallocationCSR(Mat B,const PetscInt i[],const PetscInt j[],const PetscScalar v[])
 {
-  PetscErrorCode (*f)(Mat,const PetscInt[],const PetscInt[],const PetscScalar[]);
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)B,"MatSeqAIJSetPreallocationCSR_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(B,i,j,v);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(B,"MatSeqAIJSetPreallocationCSR_C",(Mat,const PetscInt[],const PetscInt[],const PetscScalar[]),(B,i,j,v));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

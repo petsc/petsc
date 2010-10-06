@@ -199,14 +199,11 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCKSPSetUseTrue(PC pc)
 {
-  PetscErrorCode ierr,(*f)(PC);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCKSPSetUseTrue_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCKSPSetUseTrue_C",(PC),(pc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -232,15 +229,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCKSPSetUseTrue(PC pc)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCKSPGetKSP(PC pc,KSP *ksp)
 {
-  PetscErrorCode ierr,(*f)(PC,KSP*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ksp,2);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCKSPGetKSP_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,ksp);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCKSPGetKSP_C",(PC,KSP*),(pc,ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

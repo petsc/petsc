@@ -925,17 +925,14 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC pc,const char splitname[],PetscInt n,const PetscInt *fields)
 {
-  PetscErrorCode ierr,(*f)(PC,const char[],PetscInt,const PetscInt *);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidCharPointer(splitname,2);
   if (n < 1) SETERRQ2(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Provided number of fields %D in split \"%s\" not positive",n,splitname);
   PetscValidIntPointer(fields,3);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFieldSplitSetFields_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,splitname,n,fields);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCFieldSplitSetFields_C",(PC,const char[],PetscInt,const PetscInt *),(pc,splitname,n,fields));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -965,16 +962,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC pc,const char splitna
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS(PC pc,const char splitname[],IS is)
 {
-  PetscErrorCode ierr,(*f)(PC,const char[],IS);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidCharPointer(splitname,2);
   PetscValidHeaderSpecific(is,IS_CLASSID,3);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFieldSplitSetIS_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,splitname,is);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCFieldSplitSetIS_C",(PC,const char[],IS),(pc,splitname,is));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -997,15 +991,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS(PC pc,const char splitname[]
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetBlockSize(PC pc,PetscInt bs)
 {
-  PetscErrorCode ierr,(*f)(PC,PetscInt);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,bs,2);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFieldSplitSetBlockSize_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,bs);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCFieldSplitSetBlockSize_C",(PC,PetscInt),(pc,bs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1035,15 +1026,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetBlockSize(PC pc,PetscInt bs)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
 {
-  PetscErrorCode ierr,(*f)(PC,PetscInt*,KSP **);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidIntPointer(n,2);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFieldSplitGetSubKSP_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,n,subksp);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"Cannot get subksp for this type of PC");
+  ierr = PetscUseMethod(pc,"PCFieldSplitGetSubKSP_C",(PC,PetscInt*,KSP **),(pc,n,subksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1075,14 +1063,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *s
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSchurPrecondition(PC pc,PCFieldSplitSchurPreType ptype,Mat pre)
 {
-  PetscErrorCode ierr,(*f)(PC,PCFieldSplitSchurPreType,Mat);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFieldSplitSchurPrecondition_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,ptype,pre);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCFieldSplitSchurPrecondition_C",(PC,PCFieldSplitSchurPreType,Mat),(pc,ptype,pre));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1203,14 +1188,11 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType(PC pc,PCCompositeType type)
 {
-  PetscErrorCode ierr,(*f)(PC,PCCompositeType);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFieldSplitSetType_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,type);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCFieldSplitSetType_C",(PC,PCCompositeType),(pc,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

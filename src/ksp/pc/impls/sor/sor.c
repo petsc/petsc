@@ -208,15 +208,12 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetSymmetric(PC pc,MatSORType flag)
 {
-  PetscErrorCode ierr,(*f)(PC,MatSORType);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveEnum(pc,flag,2);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetSymmetric_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,flag);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCSORSetSymmetric_C",(PC,MatSORType),(pc,flag));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -243,15 +240,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetSymmetric(PC pc,MatSORType flag)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetOmega(PC pc,PetscReal omega)
 {
-  PetscErrorCode ierr,(*f)(PC,PetscReal);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveReal(pc,omega,2);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetOmega_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,omega);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCSORSetOmega_C",(PC,PetscReal),(pc,omega));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -282,15 +276,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetOmega(PC pc,PetscReal omega)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetIterations(PC pc,PetscInt its,PetscInt lits)
 {
-  PetscErrorCode ierr,(*f)(PC,PetscInt,PetscInt);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,its,2);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetIterations_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,its,lits);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCSORSetIterations_C",(PC,PetscInt,PetscInt),(pc,its,lits));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

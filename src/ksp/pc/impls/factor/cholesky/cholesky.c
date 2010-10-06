@@ -256,15 +256,12 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering(PC pc,PetscBool  flag)
 {
-  PetscErrorCode ierr,(*f)(PC,PetscBool );
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveTruth(pc,flag,2);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetReuseOrdering_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,flag);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCFactorSetReuseOrdering_C",(PC,PetscBool),(pc,flag));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

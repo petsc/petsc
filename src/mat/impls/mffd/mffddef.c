@@ -227,14 +227,11 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDDSSetUmin(Mat A,PetscReal umin)
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscReal);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatMFFDDSSetUmin_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(A,umin);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(A,"MatMFFDDSSetUmin_C",(Mat,PetscReal),(A,umin));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

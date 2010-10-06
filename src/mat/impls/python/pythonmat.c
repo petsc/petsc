@@ -22,14 +22,11 @@
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType(Mat mat,const char pyname[])
 {
-  PetscErrorCode (*f)(Mat, const char[]) = 0;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidCharPointer(pyname,2);
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatPythonSetType_C",
-				  (PetscVoidFunction*)&f);CHKERRQ(ierr);
-  if (f) {ierr = (*f)(mat,pyname);CHKERRQ(ierr);}
+  ierr = PetscTryMethod(mat,"MatPythonSetType_C",(Mat, const char[]),(mat,pyname));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

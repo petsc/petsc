@@ -254,15 +254,12 @@ $    -pc_type  sor  -pc_sor_symmetric
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCEisenstatSetOmega(PC pc,PetscReal omega)
 {
-  PetscErrorCode ierr,(*f)(PC,PetscReal);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveReal(pc,omega,2);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCEisenstatSetOmega_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,omega);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCEisenstatSetOmega_C",(PC,PetscReal),(pc,omega));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -293,14 +290,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCEisenstatSetOmega(PC pc,PetscReal omega)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCEisenstatNoDiagonalScaling(PC pc)
 {
-  PetscErrorCode ierr,(*f)(PC);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCEisenstatNoDiagonalScaling_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCEisenstatNoDiagonalScaling_C",(PC),(pc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

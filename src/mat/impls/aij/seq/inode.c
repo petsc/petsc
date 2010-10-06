@@ -3866,13 +3866,10 @@ PetscErrorCode Mat_CheckInode_FactorLU(Mat A,PetscBool  samestructure)
 #define __FUNCT__ "MatInodeAdjustForInodes"
 PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes(Mat A,IS *rperm,IS *cperm)
 {
-  PetscErrorCode ierr,(*f)(Mat,IS*,IS*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatInodeAdjustForInodes_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(A,rperm,cperm);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(A,"MatInodeAdjustForInodes_C",(Mat,IS*,IS*),(A,rperm,cperm));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

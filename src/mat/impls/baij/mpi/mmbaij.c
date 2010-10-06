@@ -290,13 +290,10 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
 PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJDiagonalScaleLocal(Mat A,Vec scale)
 {
   /* This routine should really be abandoned as it duplicates MatDiagonalScaleLocal */
-  PetscErrorCode ierr,(*f)(Mat,Vec);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatDiagonalScaleLocal_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(A,scale);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(A,"MatDiagonalScaleLocal_C",(Mat,Vec),(A,scale));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

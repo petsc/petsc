@@ -460,14 +460,11 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseAbs(PC pc)
 {
-  PetscErrorCode ierr,(*f)(PC);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCJacobiSetUseAbs_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCJacobiSetUseAbs_C",(PC),(pc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -495,14 +492,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseAbs(PC pc)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowMax(PC pc)
 {
-  PetscErrorCode ierr,(*f)(PC);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCJacobiSetUseRowMax_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCJacobiSetUseRowMax_C",(PC),(pc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -530,14 +524,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowMax(PC pc)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowSum(PC pc)
 {
-  PetscErrorCode ierr,(*f)(PC);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCJacobiSetUseRowSum_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCJacobiSetUseRowSum_C",(PC),(pc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

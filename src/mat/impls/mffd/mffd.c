@@ -802,14 +802,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunction(Mat mat,PetscErrorCode (*fu
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioni(Mat mat,PetscErrorCode (*funci)(void*,PetscInt,Vec,PetscScalar*))
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscErrorCode (*)(void*,PetscInt,Vec,PetscScalar*));
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatMFFDSetFunctioni_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(mat,funci);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(mat,"MatMFFDSetFunctioni_C",(Mat,PetscErrorCode (*)(void*,PetscInt,Vec,PetscScalar*)),(mat,funci));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -839,14 +836,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioni(Mat mat,PetscErrorCode (*f
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioniBase(Mat mat,PetscErrorCode (*func)(void*,Vec))
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscErrorCode (*)(void*,Vec));
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatMFFDSetFunctioniBase_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(mat,func);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(mat,"MatMFFDSetFunctioniBase_C",(Mat,PetscErrorCode (*)(void*,Vec)),(mat,func));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1049,16 +1043,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDResetHHistory(Mat J)
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase(Mat J,Vec U,Vec F)
 {
-  PetscErrorCode ierr,(*f)(Mat,Vec,Vec);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,2);
   if (F) PetscValidHeaderSpecific(F,VEC_CLASSID,3);
-  ierr = PetscObjectQueryFunction((PetscObject)J,"MatMFFDSetBase_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(J,U,F);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(J,"MatMFFDSetBase_C",(Mat,Vec,Vec),(J,U,F));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1087,14 +1078,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase(Mat J,Vec U,Vec F)
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetCheckh(Mat J,PetscErrorCode (*fun)(void*,Vec,Vec,PetscScalar*),void* ctx)
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscErrorCode (*)(void*,Vec,Vec,PetscScalar*),void*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)J,"MatMFFDSetCheckh_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(J,fun,ctx);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(J,"MatMFFDSetCheckh_C",(Mat,PetscErrorCode (*)(void*,Vec,Vec,PetscScalar*),void*),(J,fun,ctx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

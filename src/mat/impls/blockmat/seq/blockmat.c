@@ -925,13 +925,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatBlockMatSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const PetscInt nnz[])
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscInt,PetscInt,const PetscInt[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)B,"MatBlockMatSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(B,bs,nz,nnz);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(B,"MatBlockMatSetPreallocation_C",(Mat,PetscInt,PetscInt,const PetscInt[]),(B,bs,nz,nnz));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

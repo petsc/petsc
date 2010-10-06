@@ -3405,13 +3405,10 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
 {
-  PetscErrorCode ierr,(*f)(Mat,const PetscInt[],const PetscInt[],const PetscScalar[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIAIJSetPreallocationCSR_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(B,i,j,v);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(B,"MatMPIAIJSetPreallocationCSR_C",(Mat,const PetscInt[],const PetscInt[],const PetscScalar[]),(B,i,j,v));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3549,13 +3546,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR(Mat B,const Petsc
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIAIJSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(B,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(B,"MatMPIAIJSetPreallocation_C",(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]),(B,d_nz,d_nnz,o_nz,o_nnz));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

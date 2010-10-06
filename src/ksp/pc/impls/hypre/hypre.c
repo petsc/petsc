@@ -932,15 +932,12 @@ static PetscErrorCode PCSetFromOptions_HYPRE(PC pc)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType(PC pc,const char name[])
 {
-  PetscErrorCode ierr,(*f)(PC,const char[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidCharPointer(name,2);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCHYPRESetType_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,name);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCHYPRESetType_C",(PC,const char[]),(pc,name));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -963,15 +960,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType(PC pc,const char name[])
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCHYPREGetType(PC pc,const char *name[])
 {
-  PetscErrorCode ierr,(*f)(PC,const char*[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(name,2);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCHYPREGetType_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,name);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCHYPREGetType_C",(PC,const char*[]),(pc,name));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

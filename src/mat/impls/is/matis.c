@@ -361,17 +361,12 @@ EXTERN_C_END
 @*/ 
 PetscErrorCode PETSCMAT_DLLEXPORT MatISGetLocalMat(Mat mat,Mat *local)
 {
-  PetscErrorCode ierr,(*f)(Mat,Mat *);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(local,2);
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatISGetLocalMat_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(mat,local);CHKERRQ(ierr);
-  } else {
-    local = 0;
-  }
+  ierr = PetscUseMethod(mat,"MatISGetLocalMat_C",(Mat,Mat *),(mat,local));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

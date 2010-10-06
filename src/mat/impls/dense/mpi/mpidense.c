@@ -1772,13 +1772,10 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMPIDenseSetPreallocation(Mat mat,PetscScalar *data)
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscScalar *);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatMPIDenseSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(mat,data);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(mat,"MatMPIDenseSetPreallocation_C",(Mat,PetscScalar *),(mat,data));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -199,14 +199,11 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDWPSetComputeNormU(Mat A,PetscBool  flag)
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscBool );
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatMFFDWPSetComputeNormU_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(A,flag);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(A,"MatMFFDWPSetComputeNormU_C",(Mat,PetscBool),(A,flag));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

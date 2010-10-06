@@ -929,13 +929,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES snes,void *lsctx
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSet(SNES snes,PetscErrorCode (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *),void *lsctx)
 {
-  PetscErrorCode ierr,(*f)(SNES,PetscErrorCode (*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *),void*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESLineSearchSet_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(snes,func,lsctx);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(snes,"SNESLineSearchSet_C",(SNES,PetscErrorCode (*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *),void*),(snes,func,lsctx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1011,13 +1008,10 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPostCheck(SNES snes,PetscErrorCode (*func)(SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *),void *checkctx)
 {
-  PetscErrorCode ierr,(*f)(SNES,PetscErrorCode (*)(SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *),void*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESLineSearchSetPostCheck_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(snes,func,checkctx);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(snes,"SNESLineSearchSetPostCheck_C",(SNES,PetscErrorCode (*)(SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *),void*),(snes,func,checkctx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1061,13 +1055,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPostCheck(SNES snes,PetscErr
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPreCheck(SNES snes,PetscErrorCode (*func)(SNES,Vec,Vec,void*,PetscBool *),void *checkctx)
 {
-  PetscErrorCode ierr,(*f)(SNES,PetscErrorCode (*)(SNES,Vec,Vec,void*,PetscBool *),void*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESLineSearchSetPreCheck_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(snes,func,checkctx);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(snes,"SNESLineSearchSetPreCheck_C",(SNES,PetscErrorCode (*)(SNES,Vec,Vec,void*,PetscBool *),void*),(snes,func,checkctx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1092,13 +1083,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPreCheck(SNES snes,PetscErro
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetMonitor(SNES snes,PetscBool  flg)
 {
-  PetscErrorCode ierr,(*f)(SNES,PetscBool );
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESLineSearchSetMonitor_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(snes,flg);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(snes,"SNESLineSearchSetMonitor_C",(SNES,PetscBool),(snes,flg));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

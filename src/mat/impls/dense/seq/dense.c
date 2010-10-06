@@ -1960,13 +1960,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqDense(MPI_Comm comm,PetscInt m,Pet
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetPreallocation(Mat B,PetscScalar data[])
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscScalar[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)B,"MatSeqDenseSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(B,data);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(B,"MatSeqDenseSetPreallocation_C",(Mat,PetscScalar[]),(B,data));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

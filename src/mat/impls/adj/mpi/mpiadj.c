@@ -488,13 +488,10 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAdjSetPreallocation(Mat B,PetscInt *i,PetscInt *j,PetscInt *values)
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscInt*,PetscInt*,PetscInt*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIAdjSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(B,i,j,values);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(B,"MatMPIAdjSetPreallocation_C",(Mat,PetscInt*,PetscInt*,PetscInt*),(B,i,j,values));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

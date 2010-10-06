@@ -53,13 +53,10 @@
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatReorderForNonzeroDiagonal(Mat mat,PetscReal abstol,IS ris,IS cis)
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscReal,IS,IS);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatReorderForNonzeroDiagonal_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(mat,abstol,ris,cis);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(mat,"MatReorderForNonzeroDiagonal_C",(Mat,PetscReal,IS,IS),(mat,abstol,ris,cis));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

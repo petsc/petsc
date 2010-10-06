@@ -22,19 +22,13 @@
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJInvertBlockDiagonal(Mat mat)
 {
-  PetscErrorCode ierr,(*f)(Mat);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (!mat->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqBAIJInvertBlockDiagonal_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(mat);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently only implemented for SeqBAIJ.");
-  }
+  ierr = PetscUseMethod(mat,"MatSeqBAIJInvertBlockDiagonal_C",(Mat),(mat));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2415,15 +2409,12 @@ EXTERN_C_END
 @*/ 
 PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetColumnIndices(Mat mat,PetscInt *indices)
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscInt *);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(indices,2);
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqBAIJSetColumnIndices_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(mat,indices);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong type of matrix to set column indices");
+  ierr = PetscUseMethod(mat,"MatSeqBAIJSetColumnIndices_C",(Mat,PetscInt *),(mat,indices));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3699,13 +3690,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqBAIJ(MPI_Comm comm,PetscInt bs,Pet
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const PetscInt nnz[])
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscInt,PetscInt,const PetscInt[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)B,"MatSeqBAIJSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(B,bs,nz,nnz);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(B,"MatSeqBAIJSetPreallocation_C",(Mat,PetscInt,PetscInt,const PetscInt[]),(B,bs,nz,nnz));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3731,13 +3719,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation(Mat B,PetscInt bs,P
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)B,"MatSeqBAIJSetPreallocationCSR_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(B,bs,i,j,v);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(B,"MatSeqBAIJSetPreallocationCSR_C",(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]),(B,bs,i,j,v));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

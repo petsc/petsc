@@ -460,15 +460,12 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA(Mat A,DA da)
 {
-  PetscErrorCode ierr,(*f)(Mat,void*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidHeaderSpecific(da,DM_CLASSID,2);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatDAADSetDA_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(A,da);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(A,"MatDAADSetDA_C",(Mat,void*),(A,da));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -492,15 +489,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA(Mat A,DA da)
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetSNES(Mat A,SNES snes)
 {
-  PetscErrorCode ierr,(*f)(Mat,void*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidHeaderSpecific(snes,SNES_CLASSID,2);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatDAADSetSNES_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(A,snes);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(A,"MatDAADSetSNES_C",(Mat,void*),(A,snes));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -522,14 +516,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetSNES(Mat A,SNES snes)
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetCtx(Mat A,void *ctx)
 {
-  PetscErrorCode ierr,(*f)(Mat,void*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatDAADSetCtx_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(A,ctx);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(A,"MatDAADSetCtx_C",(Mat,void*),(A,ctx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

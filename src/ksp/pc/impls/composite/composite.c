@@ -369,16 +369,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSetType(PC pc,PCCompositeType type)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSpecialSetAlpha(PC pc,PetscScalar alpha)
 {
-  PetscErrorCode ierr,(*f)(PC,PetscScalar);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveScalar(pc,alpha,2);
-
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCompositeSpecialSetAlpha_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,alpha);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCCompositeSpecialSetAlpha_C",(PC,PetscScalar),(pc,alpha));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -399,14 +395,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSpecialSetAlpha(PC pc,PetscScalar a
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeAddPC(PC pc,PCType type)
 {
-  PetscErrorCode ierr,(*f)(PC,PCType);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCompositeAddPC_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,type);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(pc,"PCCompositeAddPC_C",(PC,PCType),(pc,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -432,15 +425,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeAddPC(PC pc,PCType type)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 {
-  PetscErrorCode ierr,(*f)(PC,PetscInt,PC *);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(subpc,3);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCompositeGetPC_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,n,subpc);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"Cannot get pc, not composite type");
+  ierr = PetscUseMethod(pc,"PCCompositeGetPC_C",(PC,PetscInt,PC *),(pc,n,subpc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -471,14 +461,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSetUseTrue(PC pc)
 {
-  PetscErrorCode ierr,(*f)(PC);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCompositeSetUseTrue_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCCompositeSetUseTrue_C",(PC),(pc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

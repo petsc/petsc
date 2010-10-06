@@ -77,14 +77,11 @@ EXTERN_C_END
 #define __FUNCT__ "PetscViewerAMSSetCommName" 
 PetscErrorCode PetscViewerAMSSetCommName(PetscViewer v,const char name[])
 {
-  int ierr,(*f)(PetscViewer,const char[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)v,"PetscViewerAMSSetCommName_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(v,name);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(v,"PetscViewerAMSSetCommName_C",(PetscViewer,const char[]),(v,name));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -115,14 +112,11 @@ PetscErrorCode PetscViewerAMSSetCommName(PetscViewer v,const char name[])
 @*/
 PetscErrorCode PetscViewerAMSGetAMSComm(PetscViewer v,AMS_Comm *ams_comm)
 {
-  int ierr,(*f)(PetscViewer,AMS_Comm *);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)v,"PetscViewerAMSGetAMSComm_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(v,ams_comm);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(v,"PetscViewerAMSGetAMSComm_C",(PetscViewer,AMS_Comm *),(v,ams_comm));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

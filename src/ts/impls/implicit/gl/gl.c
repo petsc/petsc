@@ -563,16 +563,12 @@ static PetscErrorCode TSGLCreate_IRKS(TS ts)
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSGLSetType(TS ts,const TSGLType type)
 {
-  PetscErrorCode ierr,(*r)(TS,const TSGLType);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidCharPointer(type,2);
-
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSGLSetType_C",(void(**)(void))&r);CHKERRQ(ierr);
-  if (r) {
-    ierr = (*r)(ts,type);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ts,"TSGLSetType_C",(TS,const TSGLType),(ts,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -599,16 +595,12 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLSetType(TS ts,const TSGLType type)
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSGLSetAcceptType(TS ts,const TSGLAcceptType type)
 {
-  PetscErrorCode ierr,(*r)(TS,const TSGLAcceptType);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidCharPointer(type,2);
-
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSGLSetAcceptType_C",(void(**)(void))&r);CHKERRQ(ierr);
-  if (r) {
-    ierr = (*r)(ts,type);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ts,"TSGLSetAcceptType_C",(TS,const TSGLAcceptType),(ts,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -635,16 +627,12 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLSetAcceptType(TS ts,const TSGLAcceptType ty
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSGLGetAdapt(TS ts,TSGLAdapt *adapt)
 {
-  PetscErrorCode ierr,(*r)(TS,TSGLAdapt*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(adapt,2);
-
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSGLGetAdapt_C",(void(**)(void))&r);CHKERRQ(ierr);
-  if (r) {
-    ierr = (*r)(ts,adapt);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(ts,"TSGLGetAdapt_C",(TS,TSGLAdapt*),(ts,adapt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -432,14 +432,11 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetDestroy(PC pc,PetscErrorCode (*destroy)(PC))
 {
-  PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(PC));
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetDestroy_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,destroy);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCShellSetDestroy_C",(PC,PetscErrorCode (*)(PC)),(pc,destroy));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -473,14 +470,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetDestroy(PC pc,PetscErrorCode (*destr
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(PC))
 {
-  PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(PC));
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetSetUp_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,setup);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCShellSetSetUp_C",(PC,PetscErrorCode (*)(PC)),(pc,setup));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -514,14 +508,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetView(PC pc,PetscErrorCode (*view)(PC,PetscViewer))
 {
-  PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(PC,PetscViewer));
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetView_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,view);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCShellSetView_C",(PC,PetscErrorCode (*)(PC,PetscViewer)),(pc,view));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -555,14 +546,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetView(PC pc,PetscErrorCode (*view)(PC
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApply(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
 {
-  PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(PC,Vec,Vec));
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApply_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,apply);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCShellSetApply_C",(PC,PetscErrorCode (*)(PC,Vec,Vec)),(pc,apply));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -596,14 +584,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApply(PC pc,PetscErrorCode (*apply)(
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyBA(PC pc,PetscErrorCode (*applyBA)(PC,PCSide,Vec,Vec,Vec))
 {
-  PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(PC,PCSide,Vec,Vec,Vec));
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApplyBA_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,applyBA);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCShellSetApplyBA_C",(PC,PetscErrorCode (*)(PC,PCSide,Vec,Vec,Vec)),(pc,applyBA));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -640,14 +625,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyBA(PC pc,PetscErrorCode (*apply
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyTranspose(PC pc,PetscErrorCode (*applytranspose)(PC,Vec,Vec))
 {
-  PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(PC,Vec,Vec));
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApplyTranspose_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,applytranspose);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCShellSetApplyTranspose_C",(PC,PetscErrorCode (*)(PC,Vec,Vec)),(pc,applytranspose));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -683,14 +665,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyTranspose(PC pc,PetscErrorCode 
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPreSolve(PC pc,PetscErrorCode (*presolve)(PC,KSP,Vec,Vec))
 {
-  PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec));
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetPreSolve_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,presolve);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCShellSetPreSolve_C",(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec)),(pc,presolve));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -726,14 +705,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPreSolve(PC pc,PetscErrorCode (*pres
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostSolve(PC pc,PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec))
 {
-  PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec));
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetPostSolve_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,postsolve);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCShellSetPostSolve_C",(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec)),(pc,postsolve));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -757,14 +733,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostSolve(PC pc,PetscErrorCode (*pos
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetName(PC pc,const char name[])
 {
-  PetscErrorCode ierr,(*f)(PC,const char []);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetName_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,name);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCShellSetName_C",(PC,const char []),(pc,name));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -790,15 +763,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetName(PC pc,const char name[])
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetName(PC pc,char *name[])
 {
-  PetscErrorCode ierr,(*f)(PC,char *[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(name,2);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellGetName_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,name);CHKERRQ(ierr);
-  } else  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not shell preconditioner, cannot get name");
+  ierr = PetscUseMethod(pc,"PCShellGetName_C",(PC,char *[]),(pc,name));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -838,14 +808,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetName(PC pc,char *name[])
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyRichardson(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*))
 {
-  PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*));
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApplyRichardson_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,apply);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(pc,"PCShellSetApplyRichardson_C",(PC,PetscErrorCode (*)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*)),(pc,apply));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

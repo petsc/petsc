@@ -1117,17 +1117,12 @@ EXTERN_C_END
 @*/ 
 PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetColumnIndices(Mat mat,PetscInt *indices)
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscInt *);
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(indices,2);
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqSBAIJSetColumnIndices_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(mat,indices);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Wrong type of matrix to set column indices");
-  }
+  ierr = PetscUseMethod(mat,"MatSeqSBAIJSetColumnIndices_C",(Mat,PetscInt *),(mat,indices));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1911,13 +1906,10 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const PetscInt nnz[]) 
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscInt,PetscInt,const PetscInt[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)B,"MatSeqSBAIJSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(B,bs,nz,nnz);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(B,"MatSeqSBAIJSetPreallocation_C",(Mat,PetscInt,PetscInt,const PetscInt[]),(B,bs,nz,nnz));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -651,13 +651,10 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSSundialsGetIterations(TS ts,int *nonlin,int *lin)
 {
-  PetscErrorCode ierr,(*f)(TS,int*,int*);
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSSundialsGetIterations_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ts,nonlin,lin);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(ts,"TSSundialsGetIterations_C",(TS,int*,int*),(ts,nonlin,lin));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -684,13 +681,10 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsGetIterations(TS ts,int *nonlin,int *
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetType(TS ts,TSSundialsLmmType type)
 {
-  PetscErrorCode ierr,(*f)(TS,TSSundialsLmmType);
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSSundialsSetType_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ts,type);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ts,"TSSundialsSetType_C",(TS,TSSundialsLmmType),(ts,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -720,14 +714,11 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetType(TS ts,TSSundialsLmmType type)
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetGMRESRestart(TS ts,int restart)
 {
-  PetscErrorCode ierr,(*f)(TS,int);  
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidLogicalCollectiveInt(ts,restart,2);
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSSundialsSetGMRESRestart_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ts,restart);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ts,"TSSundialsSetGMRESRestart_C",(TS,int),(ts,restart));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -757,14 +748,11 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetGMRESRestart(TS ts,int restart)
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetLinearTolerance(TS ts,double tol)
 {
-  PetscErrorCode ierr,(*f)(TS,double);  
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
   PetscValidLogicalCollectiveReal(ts,tol,2);
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSSundialsSetLinearTolerance_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ts,tol);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ts,"TSSundialsSetLinearTolerance_C",(TS,double),(ts,tol));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -793,13 +781,10 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetLinearTolerance(TS ts,double tol)
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType type)
 {
-  PetscErrorCode ierr,(*f)(TS,TSSundialsGramSchmidtType);  
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSSundialsSetGramSchmidtType_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ts,type);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ts,"TSSundialsSetGramSchmidtType_C",(TS,TSSundialsGramSchmidtType),(ts,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -832,13 +817,10 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetGramSchmidtType(TS ts,TSSundialsGr
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetTolerance(TS ts,double aabs,double rel)
 {
-  PetscErrorCode ierr,(*f)(TS,double,double);  
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSSundialsSetTolerance_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ts,aabs,rel);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ts,"TSSundialsSetTolerance_C",(TS,double,double),(ts,aabs,rel));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -862,16 +844,10 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetTolerance(TS ts,double aabs,double
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSSundialsGetPC(TS ts,PC *pc)
 { 
-  PetscErrorCode ierr,(*f)(TS,PC *);  
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSSundialsGetPC_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ts,pc);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TS must be of Sundials type to extract the PC");
-  }
-
+  ierr = PetscUseMethod(ts,"TSSundialsGetPC_C",(TS,PC *),(ts,pc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -895,13 +871,10 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsGetPC(TS ts,PC *pc)
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetExactFinalTime(TS ts,PetscBool  ft)
 { 
-  PetscErrorCode ierr,(*f)(TS,PetscBool );  
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSSundialsSetExactFinalTime_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ts,ft);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(ts,"TSSundialsSetExactFinalTime_C",(TS,PetscBool),(ts,ft));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -924,11 +897,10 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetExactFinalTime(TS ts,PetscBool  ft
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetMinTimeStep(TS ts,PetscReal mindt)
 {
-  PetscErrorCode ierr,(*f)(TS,PetscReal);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSSundialsSetMinTimeStep_C",(void(**)(void))&f);CHKERRQ(ierr);
-  if (f) {ierr = (*f)(ts,mindt);CHKERRQ(ierr);}
+  ierr = PetscTryMethod(ts,"TSSundialsSetMinTimeStep_C",(TS,PetscReal),(ts,mindt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -947,11 +919,10 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetMinTimeStep(TS ts,PetscReal mindt)
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetMaxTimeStep(TS ts,PetscReal maxdt)
 {
-  PetscErrorCode ierr,(*f)(TS,PetscReal);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSSundialsSetMaxTimeStep_C",(void(**)(void))&f);CHKERRQ(ierr);
-  if (f) {ierr = (*f)(ts,maxdt);CHKERRQ(ierr);}
+  ierr = PetscTryMethod(ts,"TSSundialsSetMaxTimeStep_C",(TS,PetscReal),(ts,maxdt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -973,13 +944,10 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetMaxTimeStep(TS ts,PetscReal maxdt)
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSSundialsMonitorInternalSteps(TS ts,PetscBool  ft)
 { 
-  PetscErrorCode ierr,(*f)(TS,PetscBool );  
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSSundialsMonitorInternalSteps_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ts,ft);CHKERRQ(ierr);
-  } 
+  ierr = PetscTryMethod(ts,"TSSundialsMonitorInternalSteps_C",(TS,PetscBool),(ts,ft));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------------------------*/

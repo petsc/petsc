@@ -476,15 +476,12 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIPrintf(PetscViewer viewer,cons
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileSetName(PetscViewer viewer,const char name[])
 {
-  PetscErrorCode ierr,(*f)(PetscViewer,const char[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(name,2);
-  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerFileSetName_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(viewer,name);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(viewer,"PetscViewerFileSetName_C",(PetscViewer,const char[]),(viewer,name));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -508,14 +505,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileSetName(PetscViewer viewer,cons
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileGetName(PetscViewer viewer,char **name)
 {
-  PetscErrorCode ierr,(*f)(PetscViewer,char **);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerFileGetName_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(viewer,name);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(viewer,"PetscViewerFileGetName_C",(PetscViewer,char **),(viewer,name));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

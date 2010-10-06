@@ -7183,13 +7183,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalScaleLocal(Mat mat,Vec diag)
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supported for sequential matrices when no ghost points/periodic conditions");
     }
   } else {
-    PetscErrorCode (*f)(Mat,Vec);
-    ierr = PetscObjectQueryFunction((PetscObject)mat,"MatDiagonalScaleLocal_C",(void (**)(void))&f);CHKERRQ(ierr);
-    if (f) {
-      ierr = (*f)(mat,diag);CHKERRQ(ierr);
-    } else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supported for MPIAIJ and MPIBAIJ parallel matrices");
-    }
+    ierr = PetscUseMethod(mat,"MatDiagonalScaleLocal_C",(Mat,Vec),(mat,diag));CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);

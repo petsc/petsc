@@ -2952,13 +2952,10 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIBAIJSetPreallocationCSR_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(B,bs,i,j,v);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(B,"MatMPIBAIJSetPreallocationCSR_C",(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]),(B,bs,i,j,v));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3326,13 +3323,10 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIBAIJSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(B,bs,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(B,"MatMPIBAIJSetPreallocation_C",(Mat,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[]),(B,bs,d_nz,d_nnz,o_nz,o_nnz));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3824,13 +3818,10 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat newmat,PetscViewer viewer)
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetHashTableFactor(Mat mat,PetscReal fact)
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscReal);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSetHashTableFactor_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(mat,fact);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(mat,"MatSetHashTableFactor_C",(Mat,PetscReal),(mat,fact));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
