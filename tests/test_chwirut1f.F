@@ -41,7 +41,7 @@
       PetscInt         i
       integer          size,rank    ! number of processes running
       PetscReal      zero
-      TaoSolverConvergedReason reason
+      TaoSolverTerminationReason reason
 
       
 

@@ -31,9 +31,6 @@ PetscErrorCode VecStepMax(Vec, Vec, PetscReal *);
 #define TAOSUBSET_MATRIXFREE      4
 #define TAOSUBSET_TYPES           5
 
-const char *TAOSUBSET[64] = {
-    "singleprocessor", "noredistribute", "redistribute", "mask", "matrixfree"
-};
 
 PetscErrorCode VecWhichBetween(Vec, Vec, Vec, IS *);
 PetscErrorCode VecWhichBetweenOrEqual(Vec, Vec, Vec, IS *);

@@ -87,7 +87,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
   PC pc;
 
   KSPConvergedReason ksp_reason;
-  TaoSolverConvergedReason reason;
+  TaoSolverTerminationReason reason;
 
   MatStructure matflag;
   

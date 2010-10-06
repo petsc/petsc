@@ -86,7 +86,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 
   PC pc;
   KSPConvergedReason ksp_reason;
-  TaoSolverConvergedReason reason;
+  TaoSolverTerminationReason reason;
   TaoLineSearchTerminationReason ls_reason;
 
   PetscReal fmin, ftrial, prered, actred, kappa, sigma;

@@ -12,6 +12,9 @@
 static const char *GPCG_KSP[64] = {
     "nash","stcg","gltr"
 };
+static const char *TAOSUBSET[64] = {
+    "singleprocessor", "noredistribute", "redistribute", "mask", "matrixfree"
+};
 
 //static PetscErrorCode TaoGradProjections(TaoSolver);
 //static PetscErrorCode GPCGCheckOptimalFace(Vec, Vec, Vec, Vec, Vec, IS, IS, PetscTruth *);
@@ -36,10 +39,13 @@ static PetscErrorCode TaoSolverDestroy_GPCG(TaoSolver tao)
   ierr = VecDestroy(gpcg->B);CHKERRQ(ierr);
   ierr = VecDestroy(gpcg->PG);CHKERRQ(ierr);
   
+  if (tao->ksp) {
+      ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
+      tao->ksp = PETSC_NULL;
+  }
   ierr = ISDestroy(gpcg->Free_Local);CHKERRQ(ierr);
-  ierr = MatDestroy(gpcg->Hsub);CHKERRQ(ierr);
-  ierr = MatDestroy(gpcg->Hsub_pre);CHKERRQ(ierr);
-  
+
+
   tao->gradient = PETSC_NULL;
   tao->stepdirection=PETSC_NULL;
   tao->linesearch = PETSC_NULL;
@@ -92,6 +98,9 @@ static PetscErrorCode TaoSolverView_GPCG(TaoSolver tao, PetscViewer viewer)
   comm = ((PetscObject)tao)->comm;
   ierr = PetscPrintf(comm," Total PG its: %d,",gpcg->total_gp_its);CHKERRQ(ierr);
   ierr = PetscPrintf(comm," PG tolerance: %4.3f \n",gpcg->pg_ftol);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm," KSP type: %s\n",GPCG_KSP[gpcg->ksp_type]); CHKERRQ(ierr);
+  ierr = PetscPrintf(comm," Subset type: %s\n", TAOSUBSET[gpcg->subset_type]); CHKERRQ(ierr);
+		     
 
   ierr = TaoLineSearchView(tao->linesearch,viewer);CHKERRQ(ierr);
 
@@ -175,11 +184,13 @@ static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
   PetscReal actred,f,f_new,gnorm,gdx,stepsize,xtb;
   PetscReal xtHx;
   MatStructure structure;
-  TaoSolverConvergedReason reason = TAO_CONTINUE_ITERATING;
+  TaoSolverTerminationReason reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
-
+  gpcg->Hsub=PETSC_NULL;
+  gpcg->Hsub_pre=PETSC_NULL;
+  tao->ksp = PETSC_NULL;
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution); CHKERRQ(ierr);
   
   /* Using f = .5*x'Hx + x'b + c and g=Hx + b,  compute b,c */
@@ -214,8 +225,9 @@ static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
     f=gpcg->f; gnorm=gpcg->gnorm; 
 
     if (gpcg->subset_type != TAOSUBSET_REDISTRIBUTE) {
-      if (tao->ksp) {
+      if (tao->ksp != PETSC_NULL) {
 	ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
+	tao->ksp = PETSC_NULL;
       }
       ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
 
@@ -241,12 +253,13 @@ static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
       ierr = VecScale(gpcg->R, -1.0); CHKERRQ(ierr);
       ierr = VecGetSubVec(tao->stepdirection,gpcg->Free_Local, &gpcg->DXFree); CHKERRQ(ierr);
       ierr = VecSet(gpcg->DXFree,0.0); CHKERRQ(ierr);
+
+      
       ierr = MatGetSubMatrix(tao->hessian, gpcg->Free_Local, gpcg->Free_Local, MAT_INITIAL_MATRIX,&gpcg->Hsub); CHKERRQ(ierr);
-//      ierr = MatCreateSubset(tao->hessian, gpcg->subset_type, gpcg->Free_Local, gpcg->Free_Local, &gpcg->Hsub); CHKERRQ(ierr);
 
       if (tao->hessian_pre == tao->hessian) {
 	  gpcg->Hsub_pre = gpcg->Hsub;
-	  ierr = PetscObjectReference((PetscObject)tao->hessian_pre); CHKERRQ(ierr);
+	  ierr = PetscObjectReference((PetscObject)gpcg->Hsub); CHKERRQ(ierr);
       }	 else {
 	  ierr = MatGetSubMatrix(tao->hessian_pre,  gpcg->Free_Local, gpcg->Free_Local, MAT_INITIAL_MATRIX,&gpcg->Hsub_pre); CHKERRQ(ierr);
       }
@@ -255,6 +268,7 @@ static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
 	  // Need to create ksp each time  (really only if size changes...)
 	  if (tao->ksp) {
 	      ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
+	      tao->ksp = PETSC_NULL;
 	  }
 	  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
 
@@ -273,7 +287,12 @@ static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
       }      
       
       ierr = KSPSetOperators(tao->ksp,gpcg->Hsub,gpcg->Hsub_pre,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr); //give options for this...
+      ierr = PetscObjectDereference((PetscObject)gpcg->Hsub); CHKERRQ(ierr);
+      ierr = PetscObjectDereference((PetscObject)gpcg->Hsub_pre); CHKERRQ(ierr);
+
       ierr = KSPSolve(tao->ksp,gpcg->R,gpcg->DXFree); CHKERRQ(ierr);
+      ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
+      tao->ksp = PETSC_NULL;
 
       ierr = VecSet(tao->stepdirection,0.0); CHKERRQ(ierr);
       ierr = VecReducedXPY(tao->stepdirection,gpcg->DXFree,gpcg->Free_Local);CHKERRQ(ierr);
@@ -297,7 +316,6 @@ static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
 
       actred = 0; gpcg->step=1.0;
       /* if there were no free variables, no cg method */
-
     }
 
     iter++;

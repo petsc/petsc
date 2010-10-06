@@ -39,8 +39,6 @@ typedef struct{
   Vec X;
   Vec X_New;
   Vec G, PG;
-  Vec XU;
-  Vec XL;
   Vec Work;
 
   Mat H;

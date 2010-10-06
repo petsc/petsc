@@ -447,7 +447,7 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 
   PetscInt i,ii,j,k,l,iter=0;
   PetscReal step=1.0;
-  TaoSolverConvergedReason reason = TAO_CONTINUE_ITERATING;
+  TaoSolverTerminationReason reason = TAO_CONTINUE_ITERATING;
 
   PetscInt low,high;
   PetscReal minnorm;

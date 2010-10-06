@@ -5,14 +5,11 @@ LineSearch
 TaoSolver
 * Check lower bound <= than upper bound
 * Check bounds for bounded methods, give warning for unbounded methods
-* TaoSolverConvergedReason -> TaoSolverTerminationReason
 
 Mesh Refinement
 
 TRON -- use current C++ version for now, but will have to eventually fix
-NTR
-NTL
-BQPIP?
+POUNDer
 BCG?
 KT?
 BNLS?
@@ -25,8 +22,6 @@ Check fortran stubs
 finish examples
 
 documentation
-
-buildscripts
 
 build documentation
 

@@ -76,7 +76,7 @@ int main( int argc, char **argv )
   ISLocalToGlobalMapping isltog; /* local-to-global mapping object */
   PetscInt nloc;                      /* The number of local elements */
   PetscInt *ltog;                     /* mapping of local elements to global elements */
-  TaoSolverConvergedReason reason;
+  TaoSolverTerminationReason reason;
   AppCtx     user;               /* user-defined work context */
   PetscReal     zero=0.0;           /* lower bound on all variables */
 

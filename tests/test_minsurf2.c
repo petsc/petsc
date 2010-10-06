@@ -67,7 +67,7 @@ int main( int argc, char **argv )
   PetscTruth      flg, viewmat;        /* flags */
   PetscTruth      fddefault, fdcoloring;   /* flags */
   KSP             ksp;                 /* Krylov subspace method */
-  TaoSolverConvergedReason reason;           
+  TaoSolverTerminationReason reason;           
   TaoSolver       tao;                 /* TAO solver context */
   AppCtx          user;                /* user-defined work context */
   ISColoring     iscoloring;

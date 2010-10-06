@@ -134,9 +134,9 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSolve(TaoSolver tao)
 
   if (tao->printreason) { 
       if (tao->reason > 0) {
-	  ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve converged due to %s\n",TaoSolverConvergedReasons[tao->reason]); CHKERRQ(ierr);
+	  ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve converged due to %s\n",TaoSolverTerminationReasons[tao->reason]); CHKERRQ(ierr);
       } else {
-	  ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve did not converge due to %s\n",TaoSolverConvergedReasons[tao->reason]); CHKERRQ(ierr);
+	  ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve did not converge due to %s\n",TaoSolverTerminationReasons[tao->reason]); CHKERRQ(ierr);
       }
   }
   
@@ -804,7 +804,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultConvergenceTest(TaoSolver tao
   PetscReal fatol=tao->fatol,frtol=tao->frtol,catol=tao->catol,crtol=tao->crtol;
   PetscReal fmin=tao->fmin, cnorm=tao->cnorm, cnorm0=tao->cnorm0;
   PetscReal gnorm2;
-  TaoSolverConvergedReason reason=TAO_CONTINUE_ITERATING;
+  TaoSolverTerminationReason reason=TAO_CONTINUE_ITERATING;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -931,7 +931,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegisterDestroy(void)
 /*@ 
   TaoSolverGetConvergedReason - get the reason why TAO stopped
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetConvergedReason(TaoSolver tao, TaoSolverConvergedReason *reason) 
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetConvergedReason(TaoSolver tao, TaoSolverTerminationReason *reason) 
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
@@ -953,7 +953,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetType(TaoSolver tao, TaoSolverType
 
 #undef __FUNCT__ 
 #define __FUNCT__ "TaoSolverMonitor"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverMonitor(TaoSolver tao, PetscInt its, PetscReal f, PetscReal res, PetscReal cnorm, PetscReal steplength, TaoSolverConvergedReason *reason) 
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverMonitor(TaoSolver tao, PetscInt its, PetscReal f, PetscReal res, PetscReal cnorm, PetscReal steplength, TaoSolverTerminationReason *reason) 
 {
     PetscErrorCode ierr;
     int i;

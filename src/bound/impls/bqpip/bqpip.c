@@ -240,7 +240,7 @@ static PetscErrorCode TaoSolverSolve_BQPIP(TaoSolver tao)
   PetscReal    sigmamu;
   PetscReal    dstep,pstep,step=0;
   PetscReal    gap[4];
-  TaoSolverConvergedReason reason;
+  TaoSolverTerminationReason reason;
   MatStructure matflag;
   
   PetscFunctionBegin;

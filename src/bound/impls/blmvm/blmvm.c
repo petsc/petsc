@@ -11,7 +11,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
   PetscErrorCode ierr;
   TAO_BLMVM *blmP = (TAO_BLMVM *)tao->data;
 
-  TaoSolverConvergedReason reason = TAO_CONTINUE_ITERATING;
+  TaoSolverTerminationReason reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   Vec Xold,Gold;

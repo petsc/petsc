@@ -87,7 +87,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
 
   KSPConvergedReason ksp_reason;
   TaoLineSearchTerminationReason ls_reason;
-  TaoSolverConvergedReason reason;
+  TaoSolverTerminationReason reason;
   
   PetscReal fmin, ftrial, f_full, prered, actred, kappa, sigma;
   PetscReal tau, tau_1, tau_2, tau_max, tau_min, max_radius;

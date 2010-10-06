@@ -28,9 +28,9 @@ typedef enum {/* converged */
               TAO_DIVERGED_TR_REDUCTION   = -7,
               TAO_DIVERGED_USER           = -8, /* User defined */
               /* keep going */
-              TAO_CONTINUE_ITERATING      =  0} TaoSolverConvergedReason;
+              TAO_CONTINUE_ITERATING      =  0} TaoSolverTerminationReason;
 
-extern const char **TaoSolverConvergedReasons;
+extern const char **TaoSolverTerminationReasons;
 EXTERN PetscErrorCode TaoInitialize(int*,char***,const char[], const char[]);
 EXTERN PetscErrorCode TaoFinalize();
 
@@ -59,7 +59,7 @@ EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegister(const char [], const
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegisterAll(const char[]);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegisterDestroy(void);
 
-EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetConvergedReason(TaoSolver,TaoSolverConvergedReason*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetConvergedReason(TaoSolver,TaoSolverTerminationReason*);
 
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetInitialVector(TaoSolver, Vec);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetSolutionVector(TaoSolver, Vec*);
@@ -96,7 +96,7 @@ EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultConvergenceTest(TaoSol
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetMonitor(TaoSolver, PetscErrorCode (*)(TaoSolver,void*),void *);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultMonitor(TaoSolver, void*);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultSMonitor(TaoSolver, void*);
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverMonitor(TaoSolver, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoSolverConvergedReason*); 
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverMonitor(TaoSolver, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoSolverTerminationReason*); 
 
 
 

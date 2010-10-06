@@ -58,7 +58,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
   /* ls->maxfev  - maximum number of function evaluations */
 
   ls->reason = TAOLINESEARCH_CONTINUE_ITERATING;
-
+  ls->step = ls->initstep;
   if (!neP->W2) {
       ierr = VecDuplicate(x,&neP->W2); CHKERRQ(ierr);
       ierr = VecDuplicate(x,&neP->W1); CHKERRQ(ierr);

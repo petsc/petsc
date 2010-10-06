@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   TaoSolver  tao;                   /* TAO_SOLVER solver context */
   PetscTruth  flg;
   int        size,rank;                  /* number of processes running */
-  TaoSolverConvergedReason reason;
+  TaoSolverTerminationReason reason;
   AppCtx     user;                  /* user-defined application context */
 
   /* Initialize TAO and PETSc */

@@ -42,7 +42,7 @@ struct _p_TaoSolver {
     void *monitorcontext[MAXTAOMONITORS];
     PetscInt numbermonitors;
     void *cnvP; 
-    TaoSolverConvergedReason reason;
+    TaoSolverTerminationReason reason;
 
     PetscTruth setupcalled;
     void *data;

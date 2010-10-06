@@ -99,7 +99,7 @@ PetscErrorCode TaoSolverSolve_NM(TaoSolver tao)
 {
   PetscErrorCode ierr;
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
-  TaoSolverConvergedReason reason;
+  TaoSolverTerminationReason reason;
   PetscReal *x;
   PetscInt iter=0,i;
   Vec Xmur=nm->Xmur, Xmue=nm->Xmue, Xmuc=nm->Xmuc, Xbar=nm->Xbar;

@@ -71,7 +71,7 @@ int main( int argc, char **argv )
   PetscReal  ff,gnorm,cnorm;       /* iteration information */
   PetscInt   iter;
   ISLocalToGlobalMapping isltog;   /* local-to-global mapping object */
-  TaoSolverConvergedReason reason;
+  TaoSolverTerminationReason reason;
   AppCtx     user;                 /* user-defined work context */
 
   /* Initialize PETSc, TAO */

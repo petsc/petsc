@@ -21,7 +21,7 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
   PetscErrorCode ierr;
   PetscInt stepType;
   PetscInt iter = 0;
-  TaoSolverConvergedReason reason = TAO_CONTINUE_ITERATING;
+  TaoSolverTerminationReason reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;

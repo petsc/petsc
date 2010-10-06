@@ -19,7 +19,7 @@ static PetscErrorCode TaoSolverSolve_CG(TaoSolver tao)
 {
     TAO_CG *cgP = (TAO_CG*)tao->data;
     PetscErrorCode ierr;
-    TaoSolverConvergedReason reason = TAO_CONTINUE_ITERATING;
+    TaoSolverTerminationReason reason = TAO_CONTINUE_ITERATING;
     TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
     PetscReal step=1.0,f,gnorm,gnorm2,delta,gd,ginner,beta;
     PetscReal gd_old,gnorm2_old,f_old;

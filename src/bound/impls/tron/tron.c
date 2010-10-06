@@ -1,15 +1,10 @@
 #include "tron.h"
 
 
-#define TRON_SUBSET_NOREDISTRIBUTE 0
-#define TRON_SUBSET_REDISTRIBUTE   1
-#define TRON_SUBSET_MASK           2
-#define TRON_SUBSET_MATRIXFREE     3
-#define TRON_SUBSET_TYPES          4
-
-static const char *TRON_SUBSET[64] = {
-    "redistribute","noredistribute","mask","matrixfree"
+static const char *TAOSUBSET[64] = {
+    "singleprocessor", "noredistribute", "redistribute", "mask", "matrixfree"
 };
+
 
 /* TRON Routines */
 static PetscErrorCode TronGradientProjections(TaoSolver,TAO_TRON*);
@@ -125,7 +120,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
   TAO_TRON *tron = (TAO_TRON *)tao->data;;
   PetscErrorCode ierr;
   PetscInt lsflag,iter=0;
-  TaoSolverConvergedReason reason = TAO_CONTINUE_ITERATING;
+  TaoSolverTerminationReason reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscScalar prered,actred,delta,f,f_new,f_full,rhok,gnorm,gdx,xdiff,stepsize;
   VecScatter scatter;

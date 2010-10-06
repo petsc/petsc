@@ -41,7 +41,7 @@ EXTERN_C_END
    Offset the convergence reasons so negative number represent diverged and
    positive represent converged.
 */
-const char *TaoSolverConvergedReasons_Shifted[] = {
+const char *TaoSolverTerminationReasons_Shifted[] = {
     "DIVERGED_USER",
     "DIVERGED_TR_REDUCTION",
     "DIVERGED_LS_FAILURE",
@@ -58,7 +58,7 @@ const char *TaoSolverConvergedReasons_Shifted[] = {
     "CONVERGED_TRTOL",
     "CONVERGED_MINF",
     "CONVERGED_USER" };
-const char **TaoSolverConvergedReasons = TaoSolverConvergedReasons_Shifted + 8;
+const char **TaoSolverTerminationReasons = TaoSolverTerminationReasons_Shifted + 8;
 
 						   
 

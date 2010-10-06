@@ -1,5 +1,5 @@
 #define TaoSolver PetscFortranAddr
-#define TaoSolverConvergedReason integer
+#define TaoSolverTerminationReason integer
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
