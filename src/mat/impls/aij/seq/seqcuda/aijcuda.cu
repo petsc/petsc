@@ -13,6 +13,7 @@ PETSC_CUDA_EXTERN_C_BEGIN
 #include "../src/vec/vec/impls/dvecimpl.h"
 #include "private/vecimpl.h"
 PETSC_CUDA_EXTERN_C_END
+#undef VecType
 #include "../src/mat/impls/aij/seq/seqcuda/cudamatimpl.h"
 
 #undef __FUNCT__
