@@ -5,7 +5,6 @@ cdef extern from "petscvec.h" nogil:
     ctypedef char* PetscVecType "const char*"
     PetscVecType VECSEQ
     PetscVecType VECMPI
-    PetscVecType VECFETI
     PetscVecType VECSHARED
     PetscVecType VECSIEVE
 

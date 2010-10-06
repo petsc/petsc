@@ -3,7 +3,6 @@
 class VecType(object):
     SEQ    = S_(VECSEQ)
     MPI    = S_(VECMPI)
-    FETI   = S_(VECFETI)
     SHARED = S_(VECSHARED)
     SIEVE  = S_(VECSIEVE)
 
