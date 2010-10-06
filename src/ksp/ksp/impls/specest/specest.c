@@ -1,10 +1,5 @@
 #define PETSCKSP_DLL
 
-/*
- This KSP estimates the extremal singular values on the first pass, then uses them to configure a smoother that uses fewer
- dot products.  It is intended for use on the levels of multigrid, especially at high process counts, where dot products
- are very expensive.
-*/
 #include "private/kspimpl.h"
 
 typedef struct {
@@ -163,9 +158,14 @@ EXTERN_C_BEGIN
    Options Database Keys:
 .   see KSPSolve()
 
+   Note:
+    This KSP estimates the extremal singular values on the first pass, then uses them to configure a smoother that
+    uses fewer dot products.  It is intended for use on the levels of multigrid, especially at high process counts,
+    where dot products are very expensive.
+
    Level: intermediate
 
-.seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS, KSPSetPCSide()
+.seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGMRES, KSPCG, KSPCHEBYCHEV, KSPRICHARDSON
 M*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_SpecEst(KSP ksp)
 {
