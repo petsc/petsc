@@ -1,18 +1,18 @@
 # --------------------------------------------------------------------
 
 class DAPeriodicType(object):
-    NONE = DA_PERIODIC_NONE
+    NONE = DA_NONPERIODIC
     #
-    X    = DA_PERIODIC_X
-    Y    = DA_PERIODIC_Y
-    Z    = DA_PERIODIC_Z
-    XY   = DA_PERIODIC_XY
-    XZ   = DA_PERIODIC_XZ
-    YZ   = DA_PERIODIC_YZ
-    XYZ  = DA_PERIODIC_XYZ
+    X    = DA_XPERIODIC
+    Y    = DA_YPERIODIC
+    Z    = DA_ZPERIODIC
+    XY   = DA_XYPERIODIC
+    XZ   = DA_XZPERIODIC
+    YZ   = DA_YZPERIODIC
+    XYZ  = DA_XYZPERIODIC
     #
-    PERIODIC_XYZ = DA_PERIODIC_XYZ
-    GHOSTED_XYZ  = DA_GHOSTED_XYZ
+    PERIODIC_XYZ = DA_XYZPERIODIC
+    GHOSTED_XYZ  = DA_XYZGHOSTED
 
 class DAStencilType(object):
     STAR = DA_STENCIL_STAR
@@ -50,7 +50,7 @@ cdef class DA(Object):
         return self
 
     def create(self, dim=None, dof=1,
-               sizes=None, proc_sizes=None, periodic_type=None,
+               sizes=None, proc_sizes=None, periodic=None,
                stencil_type=None, stencil_width=1, comm=None):
         #
         cdef object arg = None
@@ -63,7 +63,7 @@ cdef class DA(Object):
         cdef PetscInt M = 1, m = PETSC_DECIDE, *lx = NULL
         cdef PetscInt N = 1, n = PETSC_DECIDE, *ly = NULL
         cdef PetscInt P = 1, p = PETSC_DECIDE, *lz = NULL
-        cdef PetscDAPeriodicType ptype = DA_PERIODIC_NONE
+        cdef PetscDAPeriodicType ptype = DA_NONPERIODIC
         cdef PetscDAStencilType  stype = DA_STENCIL_BOX
         cdef PetscInt            swidth = 1
         # global grid sizes
@@ -85,11 +85,11 @@ cdef class DA(Object):
         # dim and dof, periodicity, stencil type & width
         if dim is not None: ndim = asInt(dim)
         if dof is not None: ndof = asInt(dof)
-        if periodic_type is not None: ptype = periodic_type
-        if stencil_type  is not None: stype = stencil_type
-        if stencil_width is not None: swidth = asInt(stencil_width)
         if ndim==PETSC_DECIDE and gdim>0: ndim = gdim
         if ndof==PETSC_DECIDE: ndof = 1
+        ptype = asPeriodic(ndim, periodic)
+        stype = asStencil(stencil_type)
+        swidth = asInt(stencil_width)
         # create the DA object
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDA newda = NULL
@@ -155,8 +155,19 @@ cdef class DA(Object):
                           NULL, NULL) )
         return (toInt(m), toInt(n), toInt(p))[:<Py_ssize_t>dim]
 
+    def getPeriodic(self):
+        cdef PetscInt dim = 0
+        cdef PetscDAPeriodicType ptype = DA_NONPERIODIC
+        CHKERR( DAGetInfo(self.da,
+                          &dim,
+                          NULL, NULL, NULL,
+                          NULL, NULL, NULL,
+                          NULL, NULL,
+                          &ptype, NULL) )
+        return toPeriodic(dim, ptype)
+
     def getPeriodicType(self):
-        cdef PetscDAPeriodicType ptype = DA_PERIODIC_NONE
+        cdef PetscDAPeriodicType ptype = DA_NONPERIODIC
         CHKERR( DAGetInfo(self.da,
                           NULL,
                           NULL, NULL, NULL,
@@ -164,6 +175,16 @@ cdef class DA(Object):
                           NULL, NULL,
                           &ptype, NULL) )
         return ptype
+
+    def getStencil(self):
+        cdef PetscDAStencilType  stype = DA_STENCIL_BOX
+        CHKERR( DAGetInfo(self.da,
+                          NULL,
+                          NULL, NULL, NULL,
+                          NULL, NULL, NULL,
+                          NULL, NULL,
+                          NULL, &stype) )
+        return toStencil(stype)
 
     def getStencilType(self):
         cdef PetscDAStencilType  stype = DA_STENCIL_BOX
@@ -424,9 +445,17 @@ cdef class DA(Object):
         def __get__(self):
             return self.getProcSizes()
 
+    property periodic:
+        def __get__(self):
+            return self.getPeriodic()
+
     property periodic_type:
         def __get__(self):
             return self.getPeriodicType()
+
+    property stencil:
+        def __get__(self):
+            return self.getStencil()
 
     property stencil_type:
         def __get__(self):

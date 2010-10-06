@@ -7,7 +7,7 @@ class BaseTestDA(object):
 
     COMM = PETSc.COMM_WORLD
     SIZES = None
-    PERIODIC = PETSc.DA.PeriodicType.NONE
+    PERIODIC = None
     DOF = 1
     STENCIL = PETSc.DA.StencilType.STAR
     SWIDTH = 1
@@ -16,7 +16,7 @@ class BaseTestDA(object):
         self.da = PETSc.DA().create(dim=len(self.SIZES),
                                     dof=self.DOF,
                                     sizes=self.SIZES,
-                                    periodic_type=self.PERIODIC,
+                                    periodic=self.PERIODIC,
                                     stencil_type=self.STENCIL,
                                     stencil_width=self.SWIDTH,
                                     comm=self.COMM)
@@ -30,13 +30,13 @@ class BaseTestDA(object):
         dof = self.da.getDof()
         sizes = self.da.getSizes()
         psizes = self.da.getProcSizes()
-        periodic_type = self.da.getPeriodicType()
+        periodic = self.da.getPeriodic()
         stencil_type = self.da.getStencilType()
         stencil_width = self.da.getStencilWidth()
         self.assertEqual(dim, len(self.SIZES))
         self.assertEqual(dof, self.DOF)
         self.assertEqual(sizes, tuple(self.SIZES))
-        self.assertEqual(periodic_type, self.PERIODIC)
+        self.assertEqual(periodic, (False,)*dim)
         self.assertEqual(stencil_type, self.STENCIL)
         self.assertEqual(stencil_width, self.SWIDTH)
 
@@ -143,6 +143,22 @@ class TestDA_3D_W0_N2(TestDA_3D):
 ## class TestDA_3D_W2_N2(TestDA_3D):
 ##     DOF = 2
 ##     SWIDTH = 2
+
+# --------------------------------------------------------------------
+
+class TestDACreate(unittest.TestCase):
+
+    def testCreate(self):
+        da = PETSc.DA()
+        for dim in (3,2,1):
+            for periodic in (None, False, True,
+                            "periodic", "ghosted",
+                            (False,)*dim, (True,)*dim,):
+                for stencil_type in (None, "box", "star"):
+                    da.create([8]*dim, dof=1,
+                              periodic=periodic,
+                              stencil_type=stencil_type)
+                    da.destroy()
 
 # --------------------------------------------------------------------
 

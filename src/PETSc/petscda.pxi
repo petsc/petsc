@@ -7,15 +7,15 @@ cdef extern from "petscda.h" nogil:
         DA_STENCIL_BOX
 
     ctypedef enum PetscDAPeriodicType "DAPeriodicType":
-        DA_PERIODIC_NONE  "DA_NONPERIODIC"
-        DA_PERIODIC_X     "DA_XPERIODIC"
-        DA_PERIODIC_Y     "DA_YPERIODIC"
-        DA_PERIODIC_Z     "DA_ZPERIODIC"
-        DA_PERIODIC_XY    "DA_XYPERIODIC"
-        DA_PERIODIC_XZ    "DA_XZPERIODIC"
-        DA_PERIODIC_YZ    "DA_YZPERIODIC"
-        DA_PERIODIC_XYZ   "DA_XYZPERIODIC"
-        DA_GHOSTED_XYZ    "DA_XYZGHOSTED"
+        DA_NONPERIODIC
+        DA_XPERIODIC
+        DA_YPERIODIC
+        DA_ZPERIODIC
+        DA_XYPERIODIC
+        DA_XZPERIODIC
+        DA_YZPERIODIC
+        DA_XYZPERIODIC
+        DA_XYZGHOSTED
 
     ctypedef enum PetscDAInterpolationType "DAInterpolationType":
         DA_INTERPOLATION_Q0 "DA_Q0"
@@ -99,6 +99,82 @@ cdef extern from "petscda.h" nogil:
 
 # --------------------------------------------------------------------
 
+cdef enum:
+    DA_PERIODIC_NONE = 0
+    DA_PERIODIC_X    = 1
+    DA_PERIODIC_Y    = 2
+    DA_PERIODIC_Z    = 4
+
+cdef PetscDAPeriodicType daperiodic[8]
+daperiodic[DA_PERIODIC_NONE] = DA_NONPERIODIC
+daperiodic[DA_PERIODIC_X] = DA_XPERIODIC
+daperiodic[DA_PERIODIC_Y] = DA_YPERIODIC
+daperiodic[DA_PERIODIC_Z] = DA_ZPERIODIC
+daperiodic[DA_PERIODIC_X|DA_PERIODIC_Y] = DA_XYPERIODIC
+daperiodic[DA_PERIODIC_X|DA_PERIODIC_Z] = DA_XZPERIODIC
+daperiodic[DA_PERIODIC_Y|DA_PERIODIC_Z] = DA_YZPERIODIC
+daperiodic[DA_PERIODIC_X|DA_PERIODIC_Y|DA_PERIODIC_Z] = DA_XYZPERIODIC
+
+cdef inline PetscDAPeriodicType DA_PERIODIC(PetscInt dim,
+                                            bint x, bint y, bint z):
+    cdef int flag = DA_PERIODIC_NONE
+    if dim >= 1 and x: flag |= DA_PERIODIC_X
+    if dim >= 2 and y: flag |= DA_PERIODIC_Y
+    if dim >= 3 and z: flag |= DA_PERIODIC_Z
+    return daperiodic[flag]
+
+cdef inline PetscDAPeriodicType DA_GHOSTED(PetscInt dim):
+    return DA_XYZGHOSTED
+
+cdef inline PetscDAPeriodicType asPeriodic(PetscInt dim, object periodic) \
+    except <PetscDAPeriodicType>(-1):
+    if periodic is None:
+        return DA_PERIODIC(dim,0,0,0)
+    if periodic is False:
+        return DA_PERIODIC(dim,0,0,0)
+    if periodic is True:
+        return DA_PERIODIC(dim,1,1,1)
+    if isinstance(periodic, str):
+        if   periodic == 'periodic': return DA_PERIODIC(dim,1,1,1)
+        elif periodic == 'ghosted':  return DA_GHOSTED(dim)
+        else: raise ValueError("unknown periodic type: %s" % periodic)
+    if isinstance(periodic, int):
+        return periodic
+    cdef PetscInt pdim = len(periodic)
+    cdef bint x=0, y=0, z=0
+    if   pdim == 1: (x,) = periodic
+    elif pdim == 2: (x,y) = periodic
+    elif pdim == 3: (x,y,z) = periodic
+    return DA_PERIODIC(dim,x,y,z)
+
+cdef inline object toPeriodic(PetscInt dim, PetscDAPeriodicType ptype):
+    cdef bint x=0, y=0, z=0
+    if   ptype == DA_NONPERIODIC: pass
+    elif ptype == DA_XPERIODIC:   x = 1
+    elif ptype == DA_YPERIODIC:   y = 1
+    elif ptype == DA_ZPERIODIC:   z = 1
+    elif ptype == DA_XYPERIODIC:  x = y = 1
+    elif ptype == DA_XZPERIODIC:  x = z = 1
+    elif ptype == DA_YZPERIODIC:  y = z = 1
+    elif ptype == DA_XYZPERIODIC: x = y = z = 1
+    if   dim == 1: return (x,)
+    elif dim == 2: return (x,y)
+    elif dim == 3: return (x,y,z)
+
+cdef inline PetscDAStencilType asStencil(object stencil) \
+    except <PetscDAStencilType>(-1):
+    if stencil is None:
+        return DA_STENCIL_BOX
+    if isinstance(stencil, str):
+        if   stencil == "star": return DA_STENCIL_STAR
+        elif stencil == "box":  return DA_STENCIL_BOX
+        else: raise ValueError("unknown stencil type: %s" % stencil)
+    return stencil
+
+cdef inline object toStencil(PetscDAStencilType stype):
+    if   stype == DA_STENCIL_STAR: return "star"
+    elif stype == DA_STENCIL_BOX:  return "box"
+
 cdef inline int DAGetDim(PetscDA da, PetscInt *dim) nogil:
      return DAGetInfo(da, dim,
                       NULL, NULL, NULL,
@@ -107,17 +183,14 @@ cdef inline int DAGetDim(PetscDA da, PetscInt *dim) nogil:
                       NULL, NULL)
 
 cdef inline PetscInt asDims(dims,
-                            PetscInt *_M, 
-                            PetscInt *_N, 
+                            PetscInt *_M,
+                            PetscInt *_N,
                             PetscInt *_P) except -1:
     cdef PetscInt ndim = len(dims)
     cdef object M, N, P
-    if ndim == 1: 
-        M, = dims
-    elif ndim == 2: 
-        M, N = dims
-    elif ndim == 3: 
-        M, N, P = dims
+    if   ndim == 1: M, = dims
+    elif ndim == 2: M, N = dims
+    elif ndim == 3: M, N, P = dims
     if ndim >= 1: _M[0] = asInt(M)
     if ndim >= 2: _N[0] = asInt(N)
     if ndim >= 3: _P[0] = asInt(P)
@@ -125,16 +198,11 @@ cdef inline PetscInt asDims(dims,
 
 cdef inline tuple toDims(PetscInt dim,
                          PetscInt M,
-                         PetscInt N, 
+                         PetscInt N,
                          PetscInt P):
-        if dim == 0:
-            return ()
-        elif dim == 1:
-            return (toInt(M),)
-        elif dim == 2:
-            return (toInt(M), toInt(N))
-        else:
-            return (toInt(M), toInt(N), toInt(P))
+        if   dim == 1: return (toInt(M),)
+        elif dim == 2: return (toInt(M), toInt(N))
+        elif dim == 3: return (toInt(M), toInt(N), toInt(P))
 
 # --------------------------------------------------------------------
 
