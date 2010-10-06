@@ -18,10 +18,14 @@ static PetscErrorCode KSPSetUp_SpecEst(KSP ksp)
 {
   KSP_SpecEst    *spec = (KSP_SpecEst*)ksp->data;
   PetscErrorCode ierr;
+  PetscBool      nonzero;
 
   PetscFunctionBegin;
   ierr = KSPSetPC(spec->kspest,ksp->pc);CHKERRQ(ierr);
   ierr = KSPSetPC(spec->kspcheap,ksp->pc);CHKERRQ(ierr);
+  ierr = KSPGetInitialGuessNonzero(ksp,&nonzero);CHKERRQ(ierr);
+  ierr = KSPSetInitialGuessNonzero(spec->kspest,nonzero);CHKERRQ(ierr);
+  ierr = KSPSetInitialGuessNonzero(spec->kspcheap,nonzero);CHKERRQ(ierr);
   ierr = KSPSetComputeSingularValues(spec->kspest,PETSC_TRUE);CHKERRQ(ierr);
   ierr = KSPSetUp(spec->kspest);CHKERRQ(ierr);
   spec->current    = PETSC_FALSE;
