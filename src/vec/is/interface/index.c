@@ -430,6 +430,35 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSort(IS is)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "ISToGeneral" 
+/*@
+   ISToGeneral - Converts an IS object of any type to ISGENERAL type
+
+   Collective on IS
+
+   Input Parameters:
+.  is - the index set
+
+   Level: intermediate
+
+   Concepts: index sets^sorting
+   Concepts: sorting^index set
+
+.seealso: ISSorted()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISToGeneral(IS is)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  if (is->ops->togeneral) {
+    ierr = (*is->ops->togeneral)(is);CHKERRQ(ierr);
+  } else SETERRQ1(((PetscObject)is)->comm,PETSC_ERR_SUP,"Not written for this type %s",((PetscObject)is)->type_name);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "ISSorted" 
 /*@
    ISSorted - Checks the indices to determine whether they have been sorted.

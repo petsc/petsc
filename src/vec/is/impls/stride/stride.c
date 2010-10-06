@@ -158,6 +158,23 @@ PetscErrorCode ISDestroy_Stride(IS is)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISToGeneral_Stride" 
+PetscErrorCode PETSCVEC_DLLEXPORT ISToGeneral_Stride(IS inis)
+{
+  PetscErrorCode ierr;
+  const PetscInt *idx;
+  PetscInt       n;
+
+  PetscFunctionBegin;
+  ierr = ISGetLocalSize(inis,&n);CHKERRQ(ierr);
+  ierr = ISGetIndices(inis,&idx);CHKERRQ(ierr);
+  ierr = ISSetType(inis,ISGENERAL);CHKERRQ(ierr);
+  ierr = ISGeneralSetIndices(inis,n,idx,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 /*
      Returns a legitimate index memory even if 
    the stride index set is empty.
@@ -287,7 +304,8 @@ static struct _ISOps myops = { ISGetSize_Stride,
                                ISDestroy_Stride,
                                ISView_Stride,
                                ISIdentity_Stride,
-                               ISCopy_Stride };
+                               ISCopy_Stride,
+                               ISToGeneral_Stride};
 
 
 #undef __FUNCT__  
@@ -339,7 +357,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideSetStride_Stride(IS is,PetscInt n,Pets
   is->min     = min;
   is->max     = max;
   is->data    = (void*)sub;
-  ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
 
   if ((!first && step == 1) || (first == max && step == -1 && !min)) {
     is->isperm  = PETSC_TRUE;
@@ -400,10 +417,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_Stride(IS is)
   IS_Stride      *sub;
 
   PetscFunctionBegin;
+  ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ierr = PetscNewLog(is,IS_Stride,&sub);CHKERRQ(ierr);
   is->data = sub;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISStrideSetStride_C","ISStrideSetStride_Stride",
-					   ISStrideSetStride_Stride);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISStrideSetStride_C","ISStrideSetStride_Stride",ISStrideSetStride_Stride);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

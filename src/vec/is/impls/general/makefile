@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = general.c strgen.c
+SOURCEC  = general.c 
 SOURCEF  =
 SOURCEH  = general.h
-OBJSC    = general.o strgen.o
+OBJSC    = general.o 
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = IS

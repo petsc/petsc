@@ -10,7 +10,7 @@
 <table width="100%">
   <tbody>
     <tr>
-      <td width="25%" valign="top">
+      <td valign="top" width="25%">
       <h1><font color="#ff0000" size="7">PETSc</font></h1>
       <ul>
         <li><a href="../../index.html"><strong>Home</strong></a></li>
@@ -25,7 +25,7 @@
       <hr color="#ff5b5b" size="4"> </td>
     </tr>
     <tr>
-      <td width="25%" valign="top">
+      <td valign="top" width="25%">
       <ul>
         <li><a href="../../download/index.html"><strong>Download</strong></a></li>
         <li><a href="../../features/index.html"><strong>Features</strong></a></li>
@@ -81,7 +81,7 @@ Software</strong></a></li>
         <li><a href="../developers/index.html"><strong>Developers Site</strong></a></li>
       </ul>
       </td>
-      <td width="75%" valign="top"><!--##begin-->
+      <td valign="top" width="75%"><!--##begin-->
       <p align="center"><font color="#ff0000" size="5"><a name="CHANGES">CHANGES</a>
 in the PETSc Development Version</font></p>
       <p><u><b>General:</b></u></p>
@@ -132,7 +132,9 @@ needed and removed. Use ISCreateGeneral() with the argument
 PETSC_OWN_POINTER and PETSC_USE_POINTER instead.</li>
         <li>ISLocalToGlobalMappingCreate() now takes PetscCopyMode as
 an additional argument and ISLocalToGlobalMappingCreateNC() is no
-longer needed and removed<br>
+longer needed and removed</li>
+        <li>ISStrideToGeneral() is replaced with ISToGeneral() that
+works for all basic IS types.<br>
         </li>
       </ul>
       <p><u><b>PF:</b></u></p>

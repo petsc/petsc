@@ -1,5 +1,5 @@
 
-static char help[] = "Tests ISStrideToGeneral().\n\n";
+static char help[] = "Tests ISToGeneral().\n\n";
 
 #include "petscis.h"
 
@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-step",&step,PETSC_NULL);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,10,0,step,&is);CHKERRQ(ierr);
 
-  ierr = ISStrideToGeneral(is);CHKERRQ(ierr);
+  ierr = ISToGeneral(is);CHKERRQ(ierr);
 
   ierr = ISDestroy(is);CHKERRQ(ierr);
 

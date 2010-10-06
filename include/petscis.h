@@ -134,7 +134,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockGetBlockSize(IS,PetscInt *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISStride(IS,PetscBool *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISStrideGetInfo(IS,PetscInt *,PetscInt*);
 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISStrideToGeneral(IS);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISToGeneral(IS);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISDuplicate(IS,IS*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCopy(IS,IS);

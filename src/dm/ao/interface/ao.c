@@ -117,20 +117,16 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationIS(AO ao,IS is)
   PetscErrorCode ierr;
   PetscInt       n;
   PetscInt       *ia;
-  PetscBool      flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
   PetscValidHeaderSpecific(is,IS_CLASSID,2);
-  ierr = ISBlock(is,&flag);CHKERRQ(ierr);
-  if (flag) SETERRQ(((PetscObject)ao)->comm,PETSC_ERR_SUP,"Cannot translate block index sets");
-  ierr = ISStride(is,&flag);CHKERRQ(ierr);
-  if (flag) {
-    ierr = ISStrideToGeneral(is);CHKERRQ(ierr);
-  }
-  ia   = ((IS_General*)is->data)->idx;
+  ierr = ISToGeneral(is);CHKERRQ(ierr);
+  /* we cheat because we know the is is general and that we can change the indices */
+  ierr = ISGetIndices(is,(const PetscInt**)&ia);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = (*ao->ops->petsctoapplication)(ao,n,ia);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,(const PetscInt**)&ia);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -164,21 +160,16 @@ PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscIS(AO ao,IS is)
 {
   PetscErrorCode ierr;
   PetscInt       n,*ia;
-  PetscBool      flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
   PetscValidHeaderSpecific(is,IS_CLASSID,2);
-  ierr = ISBlock(is,&flag);CHKERRQ(ierr);
-  if (flag) SETERRQ(((PetscObject)ao)->comm,PETSC_ERR_SUP,"Cannot translate block index sets");
-  ierr = ISStride(is,&flag);CHKERRQ(ierr);
-  if (flag) {
-    ierr = ISStrideToGeneral(is);CHKERRQ(ierr);
-  }
-
-  ia   = ((IS_General*)is->data)->idx;
+  ierr = ISToGeneral(is);CHKERRQ(ierr);
+  /* we cheat because we know the is is general and that we can change the indices */
+  ierr = ISGetIndices(is,(const PetscInt**)&ia);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = (*ao->ops->applicationtopetsc)(ao,n,ia);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,(const PetscInt**)&ia);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

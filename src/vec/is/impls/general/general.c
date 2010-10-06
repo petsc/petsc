@@ -263,7 +263,6 @@ PetscErrorCode ISCreateGeneral_Private(IS is)
   sub->sorted = sorted;
   is->min     = min;
   is->max     = max;
-  ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   is->isperm     = PETSC_FALSE;
   is->isidentity = PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-is_view",&flg,PETSC_NULL);CHKERRQ(ierr);
@@ -376,6 +375,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGeneralSetIndices_General(IS is,PetscInt n,c
 }
 EXTERN_C_END
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISToGeneral_General" 
+PetscErrorCode PETSCVEC_DLLEXPORT ISToGeneral_General(IS is)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISCreate_General" 
@@ -385,6 +393,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_General(IS is)
   IS_General     *sub;
 
   PetscFunctionBegin;
+  ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ierr       = PetscNewLog(is,IS_General,&sub);CHKERRQ(ierr);
   is->data   = (void*)sub;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISGeneralSetIndices_C","ISGeneralSetIndices_General",

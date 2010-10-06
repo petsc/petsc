@@ -596,6 +596,22 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetSize_Block(IS is,PetscInt *size)
 }
 EXTERN_C_END
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISToGeneral_Block" 
+PetscErrorCode PETSCVEC_DLLEXPORT ISToGeneral_Block(IS inis)
+{
+  PetscErrorCode ierr;
+  const PetscInt *idx;
+  PetscInt       n;
+
+  PetscFunctionBegin;
+  ierr = ISGetLocalSize(inis,&n);CHKERRQ(ierr);
+  ierr = ISGetIndices(inis,&idx);CHKERRQ(ierr);
+  ierr = ISSetType(inis,ISGENERAL);CHKERRQ(ierr);
+  ierr = ISGeneralSetIndices(inis,n,idx,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISCreate_Block" 
