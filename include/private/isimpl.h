@@ -15,13 +15,14 @@ struct _ISOps {
   PetscErrorCode (*getindices)(IS,const PetscInt*[]);
   PetscErrorCode (*restoreindices)(IS,const PetscInt*[]);
   PetscErrorCode (*invertpermutation)(IS,PetscInt,IS*);
-  PetscErrorCode (*sortindices)(IS);
-  PetscErrorCode (*sorted)(IS,PetscBool  *);
-  PetscErrorCode (*duplicate)(IS,IS *);
+  PetscErrorCode (*sort)(IS);
+  PetscErrorCode (*sorted)(IS,PetscBool*);
+  PetscErrorCode (*duplicate)(IS,IS*);
   PetscErrorCode (*destroy)(IS);
   PetscErrorCode (*view)(IS,PetscViewer);
-  PetscErrorCode (*identity)(IS,PetscBool *);
+  PetscErrorCode (*identity)(IS,PetscBool*);
   PetscErrorCode (*copy)(IS,IS);
+  PetscErrorCode (*togeneral)(IS);
 };
 
 struct _p_IS {

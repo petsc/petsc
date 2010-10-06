@@ -21,7 +21,7 @@ typedef struct {
 #define __FUNCT__ "KSPSetUp_SpecEst"
 static PetscErrorCode KSPSetUp_SpecEst(KSP ksp)
 {
-  KSP_SpecEst *spec = (KSP_SpecEst*)ksp->data;
+  KSP_SpecEst    *spec = (KSP_SpecEst*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -50,14 +50,14 @@ static PetscErrorCode KSPSpecEstPropagateUp(KSP ksp,KSP subksp)
 static PetscErrorCode  KSPSolve_SpecEst(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_SpecEst *spec = (KSP_SpecEst*)ksp->data;
+  KSP_SpecEst    *spec = (KSP_SpecEst*)ksp->data;
 
   PetscFunctionBegin;
   if (spec->current) {
     ierr = KSPSolve(spec->kspcheap,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
     ierr = KSPSpecEstPropagateUp(ksp,spec->kspcheap);CHKERRQ(ierr);
   } else {
-    PetscInt i,its,neig;
+    PetscInt  i,its,neig;
     PetscReal *real,*imag,rad = 0;
     ierr = KSPSolve(spec->kspest,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
     ierr = KSPSpecEstPropagateUp(ksp,spec->kspest);CHKERRQ(ierr);
@@ -112,8 +112,8 @@ static PetscErrorCode KSPView_SpecEst(KSP ksp,PetscViewer viewer)
 static PetscErrorCode KSPSetFromOptions_SpecEst(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_SpecEst *spec = (KSP_SpecEst*)ksp->data;
-  char prefix[256];
+  KSP_SpecEst    *spec = (KSP_SpecEst*)ksp->data;
+  char           prefix[256];
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP SpecEst Options");CHKERRQ(ierr);
@@ -144,7 +144,7 @@ static PetscErrorCode KSPSetFromOptions_SpecEst(KSP ksp)
 static PetscErrorCode KSPDestroy_SpecEst(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_SpecEst *spec = (KSP_SpecEst*)ksp->data;
+  KSP_SpecEst    *spec = (KSP_SpecEst*)ksp->data;
 
   PetscFunctionBegin;
   ierr = KSPDestroy(spec->kspest);CHKERRQ(ierr);
@@ -154,6 +154,9 @@ static PetscErrorCode KSPDestroy_SpecEst(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "KSPCreate_SpecEst"
 /*MC
      KSPSPECEST - Estimate the spectrum on the first KSPSolve, then use cheaper smoother for subsequent solves.
 
@@ -164,12 +167,9 @@ static PetscErrorCode KSPDestroy_SpecEst(KSP ksp)
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS, KSPSetPCSide()
 M*/
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "KSPCreate_SpecEst"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_SpecEst(KSP ksp)
 {
-  KSP_SpecEst *spec;
+  KSP_SpecEst    *spec;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

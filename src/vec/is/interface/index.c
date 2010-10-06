@@ -425,7 +425,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSort(IS is)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  ierr = (*is->ops->sortindices)(is);CHKERRQ(ierr);
+  ierr = (*is->ops->sort)(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

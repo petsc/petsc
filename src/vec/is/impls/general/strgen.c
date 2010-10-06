@@ -65,7 +65,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideToGeneral(IS inis)
   sub->allocated = PETSC_TRUE;
 
   /* Remove the old stride data set */
-  ierr = PetscFree(inis->data);CHKERRQ(ierr);
+  ierr = (*inis->ops->destroy)(inis);CHKERRQ(ierr);
 
   inis->data         = (void*)sub;
   inis->isperm       = PETSC_FALSE;

@@ -5,7 +5,7 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = specest.c
 SOURCEF  =
-OBJSC    = $(SOURCEC:.o=.c)
+OBJSC    = specest.o
 OBJSF    = 
 LIBBASE  = libpetscksp
 LOCDIR   = src/ksp/ksp/impls/specest/
