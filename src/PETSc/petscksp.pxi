@@ -145,6 +145,8 @@ cdef extern from "petscksp.h" nogil:
 
     int KSPGetVecs(PetscKSP,PetscInt,PetscVec**,PetscInt,PetscVec**)
 
+    int KSPGMRESSetRestart(PetscKSP,PetscInt)
+
 cdef extern from "custom.h" nogil:
     int KSPSetIterationNumber(PetscKSP,PetscInt)
     int KSPSetResidualNorm(PetscKSP,PetscReal)

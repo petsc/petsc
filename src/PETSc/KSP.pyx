@@ -396,6 +396,12 @@ cdef class KSP(Object):
         CHKERR( KSPGetConvergedReason(self.ksp, &reason) )
         return reason
 
+    #
+
+    def setGMRESRestart(self, restart):
+        cdef PetscInt ival = asInt(restart)
+        CHKERR( KSPGMRESSetRestart(self.ksp, ival) )
+
     # --- xxx ---
 
     def createPython(self, context=None, comm=None):
