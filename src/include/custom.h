@@ -1422,6 +1422,8 @@ DACreateND(MPI_Comm comm,
 
 /* ---------------------------------------------------------------- */
 
+#if !PETSC_VERSION_(3,0,0)
+
 #include "private/daimpl.h"
 
 #undef __FUNCT__
@@ -1605,6 +1607,8 @@ DAGetElements_Custom(DA da, PetscInt *n,const PetscInt *e[])
 #define DASetElementType DASetElementType_Custom
 #define DAGetElementType DAGetElementType_Custom
 #define DAGetElements    DAGetElements_Custom
+
+#endif
 
 /* ---------------------------------------------------------------- */
 

@@ -1,6 +1,34 @@
 #ifndef _COMPAT_PETSC_DA_H
 #define _COMPAT_PETSC_DA_H
 
+#if (PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
+#define __FUNCT__ "DAGetElementType"
+static PetscErrorCode
+DAGetElementType_Compat(DA da, DAElementType *etype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidPointer(etype,2);
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  PetscFunctionReturn(PETSC_ERR_SUP);
+}
+#define DAGetElementType DAGetElementType_Compat
+#undef __FUNCT__
+#define __FUNCT__ "DASetElementType"
+static PetscErrorCode
+DASetElementType_Compat(DA da, DAElementType etype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidPointer(etype,2);
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  PetscFunctionReturn(PETSC_ERR_SUP);
+}
+#define DASetElementType DASetElementType_Compat
+#endif
+
+
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 #define DASetOwnershipRanges DASetVertexDivision
