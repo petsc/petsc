@@ -40,7 +40,6 @@ cdef extern from "petscda.h" nogil:
 
     int DASetOptionsPrefix(PetscDA,char[])
     int DASetFromOptions(PetscDA)
-    int DASetElementType(PetscDA,PetscDAElementType)
     int DASetInterpolationType(PetscDA,PetscDAInterpolationType)
     int DAGetInterpolation(PetscDA,PetscDA,PetscMat*,PetscVec*)
     int DAGetInfo(PetscDA,
@@ -93,6 +92,11 @@ cdef extern from "petscda.h" nogil:
     int DAGetRefinementFactor(PetscDA,PetscInt*,PetscInt*,PetscInt*)
     int DARefine(PetscDA,MPI_Comm,PetscDA*)
     int DACoarsen(PetscDA,MPI_Comm,PetscDA*)
+
+    int DASetElementType(PetscDA,PetscDAElementType)
+    int DAGetElementType(PetscDA,PetscDAElementType*)
+    int DAGetElements(PetscDA,PetscInt*,const_PetscInt**)
+    int DARestoreElements(PetscDA,PetscInt*,const_PetscInt**)
 
     #int DASetFieldName(PetscDA,PetscInt,const_char[])
     #int DAGetFieldName(PetscDA,PetscInt,char**)
@@ -174,6 +178,22 @@ cdef inline PetscDAStencilType asStencil(object stencil) \
 cdef inline object toStencil(PetscDAStencilType stype):
     if   stype == DA_STENCIL_STAR: return "star"
     elif stype == DA_STENCIL_BOX:  return "box"
+
+cdef inline PetscDAInterpolationType dainterpolationtype(object itype) \
+    except <PetscDAInterpolationType>(-1):
+    if (isinstance(itype, str)):
+        if itype in ("q0", "Q0"): return DA_INTERPOLATION_Q0
+        if itype in ("q1", "Q1"): return DA_INTERPOLATION_Q1
+        else: raise ValueError("unknown interpolation type: %s" % itype)
+    return itype
+
+cdef inline PetscDAElementType daelementtype(object etype) \
+    except <PetscDAElementType>(-1):
+    if (isinstance(etype, str)):
+        if etype in ("p1", "P1"): return DA_ELEMENT_P1
+        if etype in ("q1", "Q1"): return DA_ELEMENT_Q1
+        else: raise ValueError("unknown element type: %s" % etype)
+    return etype
 
 cdef inline int DAGetDim(PetscDA da, PetscInt *dim) nogil:
      return DAGetInfo(da, dim,
