@@ -1806,7 +1806,7 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
    ICALLOC(nvertices, &svertices);
    for ( i=0; i < nvertices; i++ ) 
        svertices[i] = loc2pet[i];
-   ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,svertices,&isglobal);CHKERRQ(ierr);
+   ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #else
    ICALLOC(bs*nvertices, &svertices);
    for ( i = 0; i < nvertices; i++ )
@@ -1834,7 +1834,7 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
    ICALLOC(nvertices, &svertices);
    for ( i=0; i < nvertices; i++ )
        svertices[i] = 3*loc2pet[i];
-   ierr = ISCreateBlock(MPI_COMM_SELF,3*bs,nvertices,svertices,&isglobal);CHKERRQ(ierr);
+   ierr = ISCreateBlock(MPI_COMM_SELF,3*bs,nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #else
    ICALLOC(3*bs*nvertices, &svertices);
    for ( i = 0; i < nvertices; i++ )
@@ -2010,13 +2010,13 @@ int FieldOutput(GRID *grid, int timeStep)
     ICALLOC(nsnode, &svertices);
     for (i = 0; i < nsnode; i++ ) 
        svertices[i] = isnodePet[i];
-    ierr = ISCreateBlock(MPI_COMM_SELF,bs,nsnode,svertices,&isglobal);CHKERRQ(ierr);
+    ierr = ISCreateBlock(MPI_COMM_SELF,bs,nsnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
   }
   else {
     int one = 1;
     ierr = VecCreateSeq(MPI_COMM_SELF,bs,&qnodeLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,bs,0,1,&islocal);CHKERRQ(ierr);
-    ierr = ISCreateBlock(MPI_COMM_SELF,bs,1,&one,&isglobal);CHKERRQ(ierr);
+    ierr = ISCreateBlock(MPI_COMM_SELF,bs,1,&one,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
   }
   ierr = VecScatterCreate(grid->qnode,isglobal,qnodeLoc,islocal,
                           &scatter);CHKERRQ(ierr);
@@ -2042,7 +2042,7 @@ int FieldOutput(GRID *grid, int timeStep)
     ICALLOC(nsnode, &svertices);
     for (i = 0; i < nsnode; i++ ) 
        svertices[i] = isnodePet[i];
-    ierr = ISCreateBlock(MPI_COMM_SELF,3,nsnode,svertices,&isglobal);CHKERRQ(ierr);
+    ierr = ISCreateBlock(MPI_COMM_SELF,3,nsnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
     ierr = PetscFree(isnodePet);CHKERRQ(ierr);
     ierr = PetscFree(svertices);CHKERRQ(ierr);
   }
@@ -2050,7 +2050,7 @@ int FieldOutput(GRID *grid, int timeStep)
     int one = 1;
     ierr = VecCreateSeq(MPI_COMM_SELF,3,&xyzLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,3,0,1,&islocal);CHKERRQ(ierr);
-    ierr = ISCreateBlock(MPI_COMM_SELF,3,1,&one,&isglobal);CHKERRQ(ierr);
+    ierr = ISCreateBlock(MPI_COMM_SELF,3,1,&one,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
   }
   ierr = VecScatterCreate(xyzGlo,isglobal,xyzLoc,islocal,
                           &scatter);CHKERRQ(ierr);
@@ -2121,13 +2121,13 @@ int FieldOutput(GRID *grid, int timeStep)
     ICALLOC(nvnode, &svertices);
     for (i = 0; i < nvnode; i++ ) 
        svertices[i] = ivnodePet[i];
-    ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvnode,svertices,&isglobal);CHKERRQ(ierr);
+    ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
   }
   else {
     int one = 1;
     ierr = VecCreateSeq(MPI_COMM_SELF,bs,&qnodeLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,bs,0,1,&islocal);CHKERRQ(ierr);
-    ierr = ISCreateBlock(MPI_COMM_SELF,bs,1,&one,&isglobal);CHKERRQ(ierr);
+    ierr = ISCreateBlock(MPI_COMM_SELF,bs,1,&one,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
   }
   ierr = VecScatterCreate(grid->qnode,isglobal,qnodeLoc,islocal,
                           &scatter);CHKERRQ(ierr);
@@ -2143,7 +2143,7 @@ int FieldOutput(GRID *grid, int timeStep)
     ICALLOC(nvnode, &svertices);
     for (i = 0; i < nvnode; i++ ) 
        svertices[i] = ivnodePet[i];
-    ierr = ISCreateBlock(MPI_COMM_SELF,3,nvnode,svertices,&isglobal);CHKERRQ(ierr);
+    ierr = ISCreateBlock(MPI_COMM_SELF,3,nvnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
     ierr = PetscFree(ivnodePet);CHKERRQ(ierr);
     ierr = PetscFree(svertices);CHKERRQ(ierr);
   }
@@ -2151,7 +2151,7 @@ int FieldOutput(GRID *grid, int timeStep)
     int one = 1;
     ierr = VecCreateSeq(MPI_COMM_SELF,3,&xyzLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,3,0,1,&islocal);CHKERRQ(ierr);
-    ierr = ISCreateBlock(MPI_COMM_SELF,3,1,&one,&isglobal);CHKERRQ(ierr);
+    ierr = ISCreateBlock(MPI_COMM_SELF,3,1,&one,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
   }
   ierr = VecScatterCreate(xyzGlo,isglobal,xyzLoc,islocal,
                           &scatter);CHKERRQ(ierr);
@@ -2225,13 +2225,13 @@ int FieldOutput(GRID *grid, int timeStep)
        assert((ifnodePet[i] >= 0) && (ifnodePet[i] < nnodes));*/
        svertices[i] = ifnodePet[i];
     }
-    ierr = ISCreateBlock(MPI_COMM_SELF,bs,nfnode,svertices,&isglobal);CHKERRQ(ierr);
+    ierr = ISCreateBlock(MPI_COMM_SELF,bs,nfnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
   }
   else {
     int one = 1;
     ierr = VecCreateSeq(MPI_COMM_SELF,bs,&qnodeLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,bs,0,1,&islocal);CHKERRQ(ierr);
-    ierr = ISCreateBlock(MPI_COMM_SELF,bs,1,&one,&isglobal);CHKERRQ(ierr);
+    ierr = ISCreateBlock(MPI_COMM_SELF,bs,1,&one,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
   }
   ierr = VecScatterCreate(grid->qnode,isglobal,qnodeLoc,islocal,
                           &scatter);CHKERRQ(ierr);
@@ -2247,7 +2247,7 @@ int FieldOutput(GRID *grid, int timeStep)
     ICALLOC(nfnode, &svertices);
     for (i = 0; i < nfnode; i++ ) 
        svertices[i] = ifnodePet[i];
-    ierr = ISCreateBlock(MPI_COMM_SELF,3,nfnode,svertices,&isglobal);CHKERRQ(ierr);
+    ierr = ISCreateBlock(MPI_COMM_SELF,3,nfnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
     ierr = PetscFree(ifnodePet);CHKERRQ(ierr);
     ierr = PetscFree(svertices);CHKERRQ(ierr);
   }
@@ -2255,7 +2255,7 @@ int FieldOutput(GRID *grid, int timeStep)
     int one = 1;
     ierr = VecCreateSeq(MPI_COMM_SELF,3,&xyzLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,3,0,1,&islocal);CHKERRQ(ierr);
-    ierr = ISCreateBlock(MPI_COMM_SELF,3,1,&one,&isglobal);CHKERRQ(ierr);
+    ierr = ISCreateBlock(MPI_COMM_SELF,3,1,&one,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
   }
   ierr = VecScatterCreate(xyzGlo,isglobal,xyzLoc,islocal,
                           &scatter);CHKERRQ(ierr);
@@ -2343,7 +2343,7 @@ int WriteRestartFile(GRID *grid, int timeStep)
   ICALLOC(nnodesLoc, &svertices);
   for (i = 0; i < nnodesLoc; i++)
        svertices[i] = loc2pet[i];
-  ierr = ISCreateBlock(MPI_COMM_SELF,bs,nnodesLoc,svertices,&isglobal);CHKERRQ(ierr);
+  ierr = ISCreateBlock(MPI_COMM_SELF,bs,nnodesLoc,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #else
    ICALLOC(bs*nnodesLoc, &svertices);
    for ( i = 0; i < nnodesLoc; i++ )
@@ -2549,7 +2549,7 @@ int ReadRestartFile(GRID *grid)
    loc2pet[i] = rstart+i;
   ierr = AOApplicationToPetsc(grid->ao,nnodesLoc,loc2pet);CHKERRQ(ierr);
   ierr = ISCreateStride(MPI_COMM_SELF,bs*nnodesLoc,0,1,&islocal);CHKERRQ(ierr);
-  ierr = ISCreateBlock(MPI_COMM_SELF,bs,nnodesLoc,loc2pet,&isglobal);CHKERRQ(ierr);
+  ierr = ISCreateBlock(MPI_COMM_SELF,bs,nnodesLoc,loc2pet,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
   ierr = PetscFree(loc2pet);CHKERRQ(ierr);
   ierr = VecScatterCreate(qnodeLoc,islocal,grid->qnode,isglobal,
                           &scatter);CHKERRQ(ierr);

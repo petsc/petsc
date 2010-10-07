@@ -581,7 +581,8 @@
          IF(diagnose)WRITE(*,'(2i4)')i,indices(i)
       ENDDO
       CALL VecRestoreArray(localvec,localarray,il,ierr)
-      CALL ISCreateBlock(PETSC_COMM_WORLD,2,nlocal,indices,is,ierr)
+      CALL ISCreateBlock(PETSC_COMM_WORLD,2,nlocal,indices,                     &
+     &                   PETSC_COPY_VALUES,is,ierr)
       DEALLOCATE(indices)
 !-----------------------------------------------------------------------
 !     create local and global vectors.

@@ -510,7 +510,7 @@ PetscErrorCode DataMoveElements(GridData *gdata)
   for (i=0; i<gdata->mlocal_ele; i++) {
     tidx[i] = idx[i];
   }
-  ierr = ISCreateBlock(PETSC_COMM_WORLD,3,gdata->mlocal_ele,tidx,&isscat);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_WORLD,3,gdata->mlocal_ele,tidx,PETSC_COPY_VALUES,&isscat);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isnum,&idx);CHKERRQ(ierr);
   ierr = PetscFree(tidx);CHKERRQ(ierr);
   ierr = ISDestroy(isnum);CHKERRQ(ierr);
@@ -736,7 +736,7 @@ PetscErrorCode DataMoveVertices(GridData *gdata)
       There are two data items per vertex, the x and y coordinates (i.e. one can think 
     of the vectors of having a block size of 2 and there is one index in localvert[] for each block)
   */
-  ierr = ISCreateBlock(PETSC_COMM_WORLD,2,gdata->nlocal,gdata->localvert,&isscat);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_WORLD,2,gdata->nlocal,gdata->localvert,PETSC_COPY_VALUES,&isscat);CHKERRQ(ierr);
   ierr = PetscFree(gdata->localvert);CHKERRQ(ierr);
 
   /* 

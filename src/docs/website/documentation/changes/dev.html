@@ -126,7 +126,8 @@ should now be '--download-package=1'</li>
         <li>Added ISCreate(), ISSetType(), ISRegister() etc to match
 style of other PETSc objects. Also added ISGeneralSetIndices(),
 ISBlockSetIndices(), ISStrideSetStride()</li>
-        <li>ISCreateGeneral() now takes PetscCopyMode as an argument
+        <li>ISCreateGeneral() and ISCreateBlock() now takes
+PetscCopyMode as an argument
 and hence ISCreateGeneralNC() and ISCreateGeneralWithArray() are not
 needed and removed. Use ISCreateGeneral() with the argument
 PETSC_OWN_POINTER and PETSC_USE_POINTER instead.</li>
@@ -202,9 +203,9 @@ KSPGMRESGetCGSRefinementType()</li>
         <li>KSPAddOptionsChecker() is replaced with
 PetscObjectAddOptionsHandler()</li>
         <li>Added KSPSPECEST which estimates the spectrum on the first
-        solve and uses it to configure a reduction-free method for
-        subsequent solves, intended for use when reductions are
-        expensive such as levels of multigrid.</li>
+solve and uses it to configure a reduction-free method for subsequent
+solves, intended for use when reductions are expensive such as levels
+of multigrid.</li>
       </ul>
       <ul>
       </ul>

@@ -29,7 +29,7 @@ int main(int argc,char **argv)
     Note each processor is generating its own index set 
     (in this case they are all identical)
   */
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,n,inputindices,&set);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,n,inputindices,PETSC_COPY_VALUES,&set);CHKERRQ(ierr);
   ierr = ISView(set,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /*

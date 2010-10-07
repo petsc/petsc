@@ -111,9 +111,8 @@ PetscErrorCode ISInvertPermutation_Block(IS is,PetscInt nlocal,IS *isout)
     for (i=0; i<n; i++) {
       ii[idx[i]] = i;
     }
-    ierr = ISCreateBlock(PETSC_COMM_SELF,sub->bs,n,ii,isout);CHKERRQ(ierr);
+    ierr = ISCreateBlock(PETSC_COMM_SELF,sub->bs,n,ii,PETSC_OWN_POINTER,isout);CHKERRQ(ierr);
     ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
-    ierr = PetscFree(ii);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No inversion written yet for block IS");
   }
@@ -181,7 +180,7 @@ PetscErrorCode ISDuplicate_Block(IS is,IS *newIS)
   IS_Block       *sub = (IS_Block *)is->data;
 
   PetscFunctionBegin;
-  ierr = ISCreateBlock(((PetscObject)is)->comm,sub->bs,sub->n,sub->idx,newIS);CHKERRQ(ierr);
+  ierr = ISCreateBlock(((PetscObject)is)->comm,sub->bs,sub->n,sub->idx,PETSC_COPY_VALUES,newIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -241,9 +240,10 @@ static struct _ISOps myops = { ISGetSize_Block,
 
    Input Parameters:
 +  is - the index set
-+  n - the length of the index set (the number of blocks)
 .  bs - number of elements in each block, one for each block and count of block not indices
--  idx - the list of integers
+.   n - the length of the index set (the number of blocks)
+.  idx - the list of integers, these are by block, not by location
++  mode - see PetscCopyMode, only PETSC_COPY_VALUES and PETSC_OWN_POINTER are supported
 
 
    Notes:
@@ -266,18 +266,18 @@ static struct _ISOps myops = { ISGetSize_Block,
 
 .seealso: ISCreateStride(), ISCreateGeneral(), ISAllGather()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISBlockSetIndices(IS is,PetscInt bs,PetscInt n,const PetscInt idx[])
+PetscErrorCode PETSCVEC_DLLEXPORT ISBlockSetIndices(IS is,PetscInt bs,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscUseMethod(is,"ISBlockSetIndices_C",(IS,PetscInt,PetscInt,const PetscInt[]),(is,bs,n,idx));CHKERRQ(ierr);
+  ierr = PetscUseMethod(is,"ISBlockSetIndices_C",(IS,PetscInt,PetscInt,const PetscInt[],PetscCopyMode),(is,bs,n,idx,mode));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISBlockSetIndices_Block" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,const PetscInt idx[])
+PetscErrorCode PETSCVEC_DLLEXPORT ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
 {
   PetscErrorCode ierr;
   PetscInt       i,min,max;
@@ -286,8 +286,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockSetIndices_Block(IS is,PetscInt bs,Pets
 
   PetscFunctionBegin;
   if (sub->idx) {ierr = PetscFree(sub->idx);CHKERRQ(ierr);}
-  ierr = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(is,n*sizeof(PetscInt));CHKERRQ(ierr);
   sub->n = n;
   ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,((PetscObject)is)->comm);CHKERRQ(ierr);
   for (i=1; i<n; i++) {
@@ -298,7 +296,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockSetIndices_Block(IS is,PetscInt bs,Pets
     if (idx[i] < min) min = idx[i];
     if (idx[i] > max) max = idx[i];
   }
-  ierr = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
+  if (mode == PETSC_COPY_VALUES) {
+    ierr = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(is,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
+  } else if (mode == PETSC_OWN_POINTER) {
+    sub->idx = (PetscInt*) idx;
+  } else SETERRQ(((PetscObject)is)->comm,PETSC_ERR_SUP,"Only supports PETSC_COPY_VALUES and PETSC_OWN_POINTER");
   sub->sorted = sorted;
   sub->bs     = bs;
   is->min     = bs*min;
@@ -319,10 +323,11 @@ EXTERN_C_END
    Collective on MPI_Comm
 
    Input Parameters:
-+  n - the length of the index set (the number of blocks)
++  comm - the MPI communicator
 .  bs - number of elements in each block
+.  n - the length of the index set (the number of blocks)
 .  idx - the list of integers, one for each block and count of block not indices
--  comm - the MPI communicator
+-  mode - see PetscCopyMode, only PETSC_COPY_VALUES and PETSC_OWN_POINTER are supported in this routine
 
    Output Parameter:
 .  is - the new index set
@@ -347,7 +352,7 @@ EXTERN_C_END
 
 .seealso: ISCreateStride(), ISCreateGeneral(), ISAllGather()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscInt idx[],IS *is)
+PetscErrorCode PETSCVEC_DLLEXPORT ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscInt idx[],PetscCopyMode mode,IS *is)
 {
   PetscErrorCode ierr;
 
@@ -358,7 +363,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscI
 
   ierr = ISCreate(comm,is);CHKERRQ(ierr);
   ierr = ISSetType(*is,ISBLOCK);CHKERRQ(ierr);
-  ierr = ISBlockSetIndices(*is,bs,n,idx);CHKERRQ(ierr);
+  ierr = ISBlockSetIndices(*is,bs,n,idx,mode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

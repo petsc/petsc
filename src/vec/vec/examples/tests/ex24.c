@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   for (i=1; i<m; i++) {
     blks[i] = blks[i-1] + 1;   
   }
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,m,blks,&is1);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,m,blks,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
   ierr = PetscFree(blks);CHKERRQ(ierr);
 
   ierr = VecCreateSeq(PETSC_COMM_SELF,bs*m,&y);CHKERRQ(ierr);

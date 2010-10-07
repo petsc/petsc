@@ -3490,7 +3490,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
       ierr = VecSetBlockSize(b->w,dof);CHKERRQ(ierr);
 
       /* create two temporary Index sets for build scatter gather */
-      ierr = ISCreateBlock(((PetscObject)A)->comm,dof,n,mpiaij->garray,&from);CHKERRQ(ierr);
+      ierr = ISCreateBlock(((PetscObject)A)->comm,dof,n,mpiaij->garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,n*dof,0,1,&to);CHKERRQ(ierr);
 
       /* create temporary global vector to generate scatter context */

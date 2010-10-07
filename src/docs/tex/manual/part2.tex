@@ -877,7 +877,7 @@ may have used to generate the list of indices.
 
 A blocked version of the index sets can be created with the command
 \begin{tabbing}
-  ISCreateBlock(MPI\_Comm comm,int bs,int n,int *indices, IS *is);
+  ISCreateBlock(MPI\_Comm comm,int bs,int n,int *indices,PetscCopyMode mode, IS *is);
 \end{tabbing}
 This version is used for defining operations in which each element of the index
 set refers to a block of \trl{bs} vector entries.  Related routines analogous

@@ -42,7 +42,7 @@ int main(int argc,char **argv)
   } else {
     blocks[0] = 1; blocks[1] = 2;
   }
-  ierr = ISCreateBlock(PETSC_COMM_SELF,4,2,blocks,&is1);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_SELF,4,2,blocks,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,8,0,1,&is2);CHKERRQ(ierr);
 
   for (i=0; i<12; i++) {

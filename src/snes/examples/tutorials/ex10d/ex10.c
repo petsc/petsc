@@ -366,7 +366,7 @@ int main(int argc,char **argv)
     local representation
   */
   ierr = ISCreateStride(MPI_COMM_SELF,bs*nvertices,0,1,&islocal);CHKERRQ(ierr);
-  ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,vertices,&isglobal);CHKERRQ(ierr);
+  ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,vertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
   ierr = VecScatterCreate(x,isglobal,user.localX,islocal,&user.scatter);CHKERRQ(ierr);  
   ierr = ISDestroy(isglobal);CHKERRQ(ierr); 
   ierr = ISDestroy(islocal);CHKERRQ(ierr); 

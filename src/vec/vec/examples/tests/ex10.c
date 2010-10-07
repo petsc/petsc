@@ -33,11 +33,11 @@ int main(int argc,char **argv)
 
   /* create two index sets */
   if (!rank) {
-    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,ix0,&isx);CHKERRQ(ierr);
-    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,iy0,&isy);CHKERRQ(ierr);
+    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,ix0,PETSC_COPY_VALUES,&isx);CHKERRQ(ierr);
+    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,iy0,PETSC_COPY_VALUES,&isy);CHKERRQ(ierr);
   } else {
-    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,ix1,&isx);CHKERRQ(ierr);
-    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,iy1,&isy);CHKERRQ(ierr);
+    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,ix1,PETSC_COPY_VALUES,&isx);CHKERRQ(ierr);
+    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,iy1,PETSC_COPY_VALUES,&isy);CHKERRQ(ierr);
   }
 
   /* fill local part of parallel vector */

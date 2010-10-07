@@ -1816,7 +1816,7 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
    ICALLOC(nvertices,&svertices);
    for (i=0; i < nvertices; i++) 
        svertices[i] = loc2pet[i];
-   ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,svertices,&isglobal);CHKERRQ(ierr);
+   ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #else
    ICALLOC(bs*nvertices,&svertices);
    for (i = 0; i < nvertices; i++)
@@ -1843,7 +1843,7 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
    ICALLOC(nvertices,&svertices);
    for (i=0; i < nvertices; i++)
        svertices[i] = loc2pet[i];
-   ierr = ISCreateBlock(MPI_COMM_SELF,3*bs,nvertices,svertices,&isglobal);CHKERRQ(ierr);
+   ierr = ISCreateBlock(MPI_COMM_SELF,3*bs,nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #else
    ICALLOC(3*bs*nvertices,&svertices);
    for (i = 0; i < nvertices; i++)

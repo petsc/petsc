@@ -395,8 +395,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
     }
   }
 
-  ierr = ISCreateBlock(comm,dof,count,idx,&from);CHKERRQ(ierr);
-  ierr = PetscFree(idx);CHKERRQ(ierr);
+  ierr = ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&from);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,ltog);CHKERRQ(ierr);
@@ -442,8 +441,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
       }
     }
     for (i=0; i<count; i++) idx[i] = idx[i]/dof;
-    ierr = ISCreateBlock(comm,dof,count,idx,&to);CHKERRQ(ierr);
-    ierr = PetscFree(idx);CHKERRQ(ierr);
+    ierr = ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&to);CHKERRQ(ierr);
   }
 
   /* determine who lies on each side of use stored in    n24 n25 n26
@@ -950,8 +948,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
     for (i=0; i<nnn; i++) {
       iidx[i] = idx[dof*i]/dof;
     }
-    ierr = ISCreateBlock(comm,dof,nnn,iidx,&from);CHKERRQ(ierr);
-    ierr = PetscFree(iidx);CHKERRQ(ierr);
+    ierr = ISCreateBlock(comm,dof,nnn,iidx,PETSC_OWN_POINTER,&from);CHKERRQ(ierr);
   }
   ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,gtol);CHKERRQ(ierr);

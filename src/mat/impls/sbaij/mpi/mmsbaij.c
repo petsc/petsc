@@ -73,9 +73,9 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 
   /* create two temporary index sets for building scatter-gather */
   ierr = PetscMalloc(2*ec*sizeof(PetscInt),&stmp);CHKERRQ(ierr);
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,garray,&from);CHKERRQ(ierr);   
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);   
   for (i=0; i<ec; i++) { stmp[i] = i; } 
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,&to);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,PETSC_COPY_VALUES,&to);CHKERRQ(ierr);
 
   /* generate the scatter context 
      -- Mvctx and lvec are not used by MatMult_MPISBAIJ(), but usefule for some applications */
@@ -108,7 +108,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   /* b index in the IS sfrom */
   k = sowners[rank]/bs + mbs;
   for (i=ec,j=0; i< 2*ec; i++,j++) sgarray[i] = k + j;
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2*ec,sgarray,&from);CHKERRQ(ierr);   
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2*ec,sgarray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);   
  
   /* x index in the IS sto */
   k = sowners[rank]/bs + mbs;
@@ -116,7 +116,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   /* b index in the IS sto */
   for (i=ec; i<2*ec; i++) stmp[i] = sgarray[i-ec]; 
 
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2*ec,stmp,&to);CHKERRQ(ierr); 
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2*ec,stmp,PETSC_COPY_VALUES,&to);CHKERRQ(ierr); 
 
   ierr = VecScatterCreate(sbaij->slvec0,from,sbaij->slvec1,to,&sbaij->sMvctx);CHKERRQ(ierr);  
  
@@ -250,12 +250,11 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   ierr = VecCreateSeq(PETSC_COMM_SELF,ec*bs,&baij->lvec);CHKERRQ(ierr);
 
   /* create two temporary index sets for building scatter-gather */
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,garray,&from);CHKERRQ(ierr);   
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);   
 
   ierr = PetscMalloc(ec*sizeof(PetscInt),&stmp);CHKERRQ(ierr);
   for (i=0; i<ec; i++) { stmp[i] = i; } 
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,&to);CHKERRQ(ierr);
-  ierr = PetscFree(stmp);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,PETSC_OWN_POINTER,&to);CHKERRQ(ierr);
 
   /* create temporary global vector to generate scatter context */
   ierr = VecCreateMPIWithArray(((PetscObject)mat)->comm,mat->cmap->n,mat->cmap->N,PETSC_NULL,&gvec);CHKERRQ(ierr);

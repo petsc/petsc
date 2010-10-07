@@ -958,8 +958,7 @@ PetscErrorCode DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
     }
   }
 
-  ierr = ISCreateBlock(((PetscObject)daf)->comm,dof,nc,cols,&isf);CHKERRQ(ierr);
-  ierr = PetscFree(cols);CHKERRQ(ierr);
+  ierr = ISCreateBlock(((PetscObject)daf)->comm,dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
   ierr = DAGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
   ierr = DAGetGlobalVector(daf,&vecf);CHKERRQ(ierr);
   ierr = VecScatterCreate(vecf,isf,vecc,PETSC_NULL,inject);CHKERRQ(ierr);
