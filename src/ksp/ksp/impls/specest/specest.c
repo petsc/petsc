@@ -5,6 +5,7 @@
 typedef struct {
   KSP kspest;                   /* KSP capable of estimating eigenvalues */
   KSP kspcheap;                 /* Cheap smoother (should have few dot products) */
+  PC  pcnone;                   /* Dummy PC to drop in so PCSetFromOptions doesn't get called extra times */
   PetscReal min,max;            /* Singular value estimates */
   PetscReal radius;             /* Spectral radius of 1-B where B is the preconditioned operator */
   PetscBool current;            /* Eigenvalue estimates are current */
@@ -66,6 +67,8 @@ static PetscErrorCode  KSPSolve_SpecEst(KSP ksp)
     ierr = PetscMalloc2(its,PetscReal,&real,its,PetscReal,&imag);CHKERRQ(ierr);
     ierr = KSPComputeEigenvalues(spec->kspest,its,real,imag,&neig);CHKERRQ(ierr);
     for (i=0; i<neig; i++) {
+      /* We would really like to compute w (nominally 1/radius) to minimize |1-wB|.  Empirically it
+         is better to compute rad = |1-B| than rad = |B|.  There must be a cheap way to do better. */
       rad = PetscMax(rad,PetscRealPart(PetscSqrtScalar(PetscSqr(real[i]-1.) + PetscSqr(imag[i]))));
     }
     ierr = PetscFree2(real,imag);CHKERRQ(ierr);
@@ -121,6 +124,10 @@ static PetscErrorCode KSPSetFromOptions_SpecEst(KSP ksp)
   ierr = PetscOptionsReal("-ksp_specest_richfactor","Multiplier on the richimum eigen/singular value","None",spec->richfactor,&spec->richfactor,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
+  /* Mask the PC so that PCSetFromOptions does not do anything */
+  ierr = KSPSetPC(spec->kspest,spec->pcnone);CHKERRQ(ierr);
+  ierr = KSPSetPC(spec->kspcheap,spec->pcnone);CHKERRQ(ierr);
+
   ierr = PetscSNPrintf(prefix,sizeof prefix,"%sspecest_",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(spec->kspest,prefix);CHKERRQ(ierr);
   ierr = PetscSNPrintf(prefix,sizeof prefix,"%sspeccheap_",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
@@ -134,6 +141,10 @@ static PetscErrorCode KSPSetFromOptions_SpecEst(KSP ksp)
   }
   ierr = KSPSetFromOptions(spec->kspest);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(spec->kspcheap);CHKERRQ(ierr);
+
+  /* Unmask the PC */
+  ierr = KSPSetPC(spec->kspest,ksp->pc);CHKERRQ(ierr);
+  ierr = KSPSetPC(spec->kspcheap,ksp->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -160,12 +171,20 @@ EXTERN_C_BEGIN
      KSPSPECEST - Estimate the spectrum on the first KSPSolve, then use cheaper smoother for subsequent solves.
 
    Options Database Keys:
-.   see KSPSolve()
++  -ksp_specest_minfactor <0.9> - Multiplier on the minimum eigen/singular value
+.  -ksp_specest_maxfactor <1.1> - Multiplier on the maximum eigen/singular value
+.  -ksp_specest_richfactor <1>  - Multiplier on the richimum eigen/singular value
+.  -specest_ksp_type <type>     - KSP used to estimate the spectrum (usually CG or GMRES)
+.  -speccheap_ksp_type <type>   - KSP used as a cheap smoother once the spectrum has been estimated (usually Chebychev or Richardson)
+-   see KSPSolve() for more
 
-   Note:
+   Notes:
     This KSP estimates the extremal singular values on the first pass, then uses them to configure a smoother that
     uses fewer dot products.  It is intended for use on the levels of multigrid, especially at high process counts,
     where dot products are very expensive.
+
+    The same PC is used for both the estimator and the cheap smoother, it is only set up once.  There are no options
+    keys for -specest_pc_ or speccheap_pc_ since it is the same object as -pc_.
 
    Level: intermediate
 
@@ -194,6 +213,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_SpecEst(KSP ksp)
 
   ierr = KSPCreate(((PetscObject)ksp)->comm,&spec->kspest);CHKERRQ(ierr);
   ierr = KSPCreate(((PetscObject)ksp)->comm,&spec->kspcheap);CHKERRQ(ierr);
+
+  /* Hold an empty PC */
+  ierr = KSPGetPC(spec->kspest,&spec->pcnone);CHKERRQ(ierr);
+  ierr = PCSetType(spec->pcnone,PCNONE);CHKERRQ(ierr);
+  ierr = KSPSetPC(spec->kspcheap,spec->pcnone);CHKERRQ(ierr);
 
   ierr = KSPSetTolerances(spec->kspest,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,5);CHKERRQ(ierr);
 
