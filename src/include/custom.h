@@ -1436,9 +1436,10 @@ DASetElementType_Custom(DA da, DAElementType etype)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (da->elementtype != etype) {
     ierr = PetscFree(da->e);CHKERRQ(ierr);
-    da->ne = 0; da->e = PETSC_NULL;
+    da->elementtype = etype;
+    da->ne          = 0; 
+    da->e           = PETSC_NULL;
   }
-  da->elementtype = etype;
   PetscFunctionReturn(0);
 }
 
