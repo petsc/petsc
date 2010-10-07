@@ -90,20 +90,29 @@ def getprocessorinfo():
     name =  os.uname()[1]
     return (rank, name)
 
+def getlibraryinfo():
+    from petsc4py import PETSc
+    (major, minor, micro), patch = PETSc.Sys.getVersion(patch=True)
+    r = PETSc.Sys.getVersionInfo()['release']
+    if r: release = 'release'
+    else: release = 'development'
+    arch = PETSc.__arch__
+    return ("PETSc %d.%d.%d-p%d %s (conf: '%s')"
+            % (major, minor, micro, patch, release, arch) )
+    
 def writeln(message='', endl='\n'):
-    sys.stderr.flush()
-    sys.stderr.write(message+endl)
-    sys.stderr.flush()
+    from petsc4py.PETSc import Sys
+    rank, name = getprocessorinfo()
+    Sys.syncPrint(("[%d@%s] " % (rank, name))+message, flush=True)
 
 def print_banner(options, package):
-    rank, name = getprocessorinfo()
     x, y = sys.version_info[:2]
     if options.verbose:
-        writeln("[%d@%s] Py%d%d (%s) - %s (%s)"
-                % (rank, name, x, y,
-                   sys.executable,
-                   package.__name__,
-                   package.__path__[0]))
+        writeln("Python %d.%d (%s)" % (x, y, sys.executable))
+        writeln(getlibraryinfo())
+        writeln("%s %s (%s)" % (package.__name__,
+                                package.__version__,
+                                package.__path__[0]))
 
 def load_tests(options, args):
     from glob import glob
@@ -146,7 +155,6 @@ def run_tests(options, testsuite):
 def run_tests_leaks(options, testsuite):
     from sys import gettotalrefcount
     from gc import collect
-    rank, name = getprocessorinfo()
     r1 = r2 = 0
     repeats = options.repeats
     while repeats:
@@ -156,8 +164,8 @@ def run_tests_leaks(options, testsuite):
         run_tests(options, testsuite)
         collect()
         r2 = gettotalrefcount()
-        writeln('[%d@%s] refleaks:  (%d - %d) --> %d'
-                % (rank, name, r2, r1, r2-r1))
+        writeln('refleaks:  (%d - %d) --> %d'
+                % (r2, r1, r2-r1))
 
 def main(pkgname):
     parser = getoptionparser()
