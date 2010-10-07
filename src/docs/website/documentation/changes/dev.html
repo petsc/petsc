@@ -192,8 +192,7 @@ split-name parameter which is used to define the options database keys.</li>
       </b></u></p>
       <ul>
         <li>KSPSetPreconditionerSide() changed to KSPSetPCSide() to
-match name of second argument<br>
-        </li>
+match name of second argument</li>
         <li>-ksp_right_pc -ksp_left_pc changed to
 -ksp_pc_side left,right,symmetric to match
 KSPSetPCSide()</li>
@@ -201,8 +200,11 @@ KSPSetPCSide()</li>
 KSPGMRESGetCGSRefinementType()</li>
         <li>Added KSPGMRESGetOrthogonalization()</li>
         <li>KSPAddOptionsChecker() is replaced with
-PetscObjectAddOptionsHandler()<br>
-        </li>
+PetscObjectAddOptionsHandler()</li>
+        <li>Added KSPSPECEST which estimates the spectrum on the first
+        solve and uses it to configure a reduction-free method for
+        subsequent solves, intended for use when reductions are
+        expensive such as levels of multigrid.</li>
       </ul>
       <ul>
       </ul>

@@ -384,14 +384,16 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFListFind(PetscFList fl,MPI_Comm comm,con
     }
 
     if (flg) {
-
       if (entry->routine) {
-        *r   = entry->routine; 
+        *r   = entry->routine;
         ierr = PetscFree(path);CHKERRQ(ierr);
         ierr = PetscFree(function);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
- 
+      if (!(entry->rname && entry->rname[0])) { /* The entry has been cleared */
+        ierr = PetscFree(function);CHKERRQ(ierr);
+        PetscFunctionReturn(0);
+      }
       if ((path && entry->path && f3) || (!path && f1)) { /* convert name of function (alias) to actual function name */
         ierr = PetscFree(function);CHKERRQ(ierr);
         ierr = PetscStrallocpy(entry->rname,&function);CHKERRQ(ierr);

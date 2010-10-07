@@ -1,10 +1,5 @@
 #define PETSCKSP_DLL
 
-/*
- This KSP estimates the extremal singular values on the first pass, then uses them to configure a smoother that uses fewer
- dot products.  It is intended for use on the levels of multigrid, especially at high process counts, where dot products
- are very expensive.
-*/
 #include "private/kspimpl.h"
 
 typedef struct {
@@ -23,10 +18,14 @@ static PetscErrorCode KSPSetUp_SpecEst(KSP ksp)
 {
   KSP_SpecEst    *spec = (KSP_SpecEst*)ksp->data;
   PetscErrorCode ierr;
+  PetscBool      nonzero;
 
   PetscFunctionBegin;
   ierr = KSPSetPC(spec->kspest,ksp->pc);CHKERRQ(ierr);
   ierr = KSPSetPC(spec->kspcheap,ksp->pc);CHKERRQ(ierr);
+  ierr = KSPGetInitialGuessNonzero(ksp,&nonzero);CHKERRQ(ierr);
+  ierr = KSPSetInitialGuessNonzero(spec->kspest,nonzero);CHKERRQ(ierr);
+  ierr = KSPSetInitialGuessNonzero(spec->kspcheap,nonzero);CHKERRQ(ierr);
   ierr = KSPSetComputeSingularValues(spec->kspest,PETSC_TRUE);CHKERRQ(ierr);
   ierr = KSPSetUp(spec->kspest);CHKERRQ(ierr);
   spec->current    = PETSC_FALSE;
@@ -163,9 +162,14 @@ EXTERN_C_BEGIN
    Options Database Keys:
 .   see KSPSolve()
 
+   Note:
+    This KSP estimates the extremal singular values on the first pass, then uses them to configure a smoother that
+    uses fewer dot products.  It is intended for use on the levels of multigrid, especially at high process counts,
+    where dot products are very expensive.
+
    Level: intermediate
 
-.seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS, KSPSetPCSide()
+.seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGMRES, KSPCG, KSPCHEBYCHEV, KSPRICHARDSON
 M*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_SpecEst(KSP ksp)
 {

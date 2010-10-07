@@ -13,6 +13,8 @@ def cmakeconditional(key,val):
   if key == 'precision':
     if val == 'double':
       return 'PETSC_USE_SCALAR_DOUBLE'
+    elif val == 'single':
+      return 'PETSC_USE_SCALAR_SINGLE'
     raise RuntimeError('Unexpected precision: %r'%val)
   if key == 'scalar':
     if val == 'real':
