@@ -407,6 +407,64 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetNeighbors(DA da,const PetscMPIInt *ranks[]
   PetscFunctionReturn(0);
 }
 
+/*@C
+      DASetElementType - Sets the element type to be returned by DAGetElements()
+
+    Not Collective
+
+   Input Parameter:
+.     da - the DA object
+
+   Output Parameters:
+.     etype - the element type, currently either DA_ELEMENT_P1 or ELEMENT_Q1
+
+   Level: intermediate
+
+.seealso: DAElementType, DAGetElementType(), DAGetElements(), DARestoreElements()
+@*/
+#undef __FUNCT__
+#define __FUNCT__ "DASetElementType"
+PetscErrorCode PETSCDM_DLLEXPORT DASetElementType(DA da, DAElementType etype)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(da,etype,2);
+  if (da->elementtype != etype) {
+    ierr = PetscFree(da->e);CHKERRQ(ierr);
+    da->elementtype = etype;
+    da->ne          = 0; 
+    da->e           = PETSC_NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+      DAGetElementType - Gets the element type to be returned by DAGetElements()
+
+    Not Collective
+
+   Input Parameter:
+.     da - the DA object
+
+   Output Parameters:
+.     etype - the element type, currently either DA_ELEMENT_P1 or ELEMENT_Q1
+
+   Level: intermediate
+
+.seealso: DAElementType, DASetElementType(), DAGetElements(), DARestoreElements()
+@*/
+#undef __FUNCT__
+#define __FUNCT__ "DAGetElementType"
+PetscErrorCode PETSCDM_DLLEXPORT DAGetElementType(DA da, DAElementType *etype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidPointer(etype,2);
+  *etype = da->elementtype;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetElements"
 /*@C

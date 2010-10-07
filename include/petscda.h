@@ -92,6 +92,7 @@ E*/
 typedef enum { DA_ELEMENT_P1, DA_ELEMENT_Q1 } DAElementType;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetElementType(DA,DAElementType);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetElementType(DA,DAElementType*);
 /*MC
    DAGetElements - same as DMGetElements()
    uses DA instead of DM as input
