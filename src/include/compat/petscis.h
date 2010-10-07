@@ -32,7 +32,7 @@ static PetscErrorCode
 ISSetType_Compat(IS is, const char *istype)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
   PetscValidCharPointer(istype,3);
   SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
   PetscFunctionReturn(0);
@@ -46,7 +46,7 @@ ISGetType_Compat(IS is, const char **istype)
 {
   static const char* ISTypes[] = {ISGENERAL,ISSTRIDE,ISBLOCK};
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
   PetscValidPointer(istype,3);
   *istype = ISTypes[((PetscObject)is)->type];
   PetscFunctionReturn(0);
@@ -60,7 +60,7 @@ ISGeneralSetIndices_Compat(IS is,PetscInt n,const PetscInt idx[],
                            PetscCopyMode mode)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
   if (n) PetscValidIntPointer(idx,3);
   SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
   PetscFunctionReturn(0);
@@ -73,7 +73,7 @@ static PetscErrorCode
 ISBlockSetIndices_Compat(IS is,PetscInt bs, PetscInt n,const PetscInt idx[])
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
   if (n) PetscValidIntPointer(idx,3);
   SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
   PetscFunctionReturn(0);
@@ -86,7 +86,7 @@ static PetscErrorCode
 ISStrideSetStride_Compat(IS is,PetscInt n,PetscInt first,PetscInt step)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
   SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
   PetscFunctionReturn(0);
 }
@@ -110,6 +110,28 @@ ISCreateGeneral_Compat(MPI_Comm comm,PetscInt n,const PetscInt idx[],PetscCopyMo
   PetscFunctionReturn(0);
 }
 #define ISCreateGeneral ISCreateGeneral_Compat
+
+#undef __FUNCT__
+#define __FUNCT__ "ISToGeneral"
+static PetscErrorCode
+ISToGeneral_Compat(IS is)
+{
+  PetscTruth     match;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  ierr = ISBlock(is,&match);CHKERRQ(ierr);
+  if (match) {
+    SETERRQ(PETSC_ERR_SUP, __FUNCT__"() not supported in this PETSc version");
+    PetscFunctionReturn(PETSC_ERR_SUP);
+  }
+  ierr = ISStride(is,&match);CHKERRQ(ierr);
+  if (match) {
+    ierr = ISStrideToGeneral(is);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+#define ISToGeneral ISToGeneral_Compat
 
 #undef __FUNCT__
 #define __FUNCT__ "ISLocalToGlobalMappingCreate"

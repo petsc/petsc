@@ -53,7 +53,8 @@ cdef extern from "petscis.h" nogil:
     int ISStrideSetStride(PetscIS,PetscInt,PetscInt,PetscInt)
     int ISStride(PetscIS,PetscBool*)
     int ISStrideGetInfo(PetscIS,PetscInt*,PetscInt*)
-    int ISStrideToGeneral(PetscIS)
+
+    int ISToGeneral(PetscIS)
 
 
 cdef extern from "petscis.h" nogil:

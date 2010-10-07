@@ -106,15 +106,7 @@ cdef class IS(Object):
         return iset
 
     def toGeneral(self):
-        cdef PetscBool stride = PETSC_FALSE
-        cdef PetscBool block  = PETSC_FALSE
-        CHKERR( ISStride(self.iset, &stride) )
-        CHKERR( ISBlock(self.iset, &block) )
-        if stride == PETSC_TRUE:
-            CHKERR( ISStrideToGeneral(self.iset) )
-        elif block == PETSC_TRUE:
-            # CHKERR( ISBlockToGeneral(self.iset) )
-            raise NotImplementedError # XXX what to do here?
+        CHKERR( ISToGeneral(self.iset) )
         return self
 
     def invertPermutation(self, nlocal=None):
