@@ -577,7 +577,7 @@
      &     "nlocal = ", nlocal,", offl = ",fa%offl,", indices = "
       DO i=0,nlocal-1
          k=k+1
-         indices(i)= int(2*localarray(k))
+         indices(i)= int(localarray(k))
          IF(diagnose)WRITE(*,'(2i4)')i,indices(i)
       ENDDO
       CALL VecRestoreArray(localvec,localarray,il,ierr)

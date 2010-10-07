@@ -1094,7 +1094,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetGlobalIndices(DMComposite packer,
 PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetGlobalISs(DMComposite packer,IS *is[])
 {
   PetscErrorCode         ierr;
-  PetscInt               cnt = 0;
+  PetscInt               cnt = 0,*idx,i;
   struct DMCompositeLink *next;
   PetscMPIInt            rank;
 
@@ -1110,15 +1110,17 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetGlobalISs(DMComposite packer,IS *
     if (next->type == DMCOMPOSITE_ARRAY) {
       
       if (rank == next->rank) {
-        ierr = ISCreateBlock(((PetscObject)packer)->comm,next->n,1,&next->grstart,&(*is)[cnt]);CHKERRQ(ierr);
+        ierr = PetscMalloc(next->n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+        for (i=0; i<next->n; i++) idx[i] = next->grstart + i;
+        ierr = ISCreateGeneral(((PetscObject)packer)->comm,next->n,idx,PETSC_OWN_POINTER,&(*is)[cnt]);CHKERRQ(ierr);
         cnt++;
       }
 
     } else if (next->type == DMCOMPOSITE_DM) {
-
-      ierr = ISCreateBlock(((PetscObject)packer)->comm,next->n,1,&next->grstart,&(*is)[cnt]);CHKERRQ(ierr);
+      ierr = PetscMalloc(next->n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+      for (i=0; i<next->n; i++) idx[i] = next->grstart + i;
+      ierr = ISCreateGeneral(((PetscObject)packer)->comm,next->n,idx,PETSC_OWN_POINTER,&(*is)[cnt]);CHKERRQ(ierr);
       cnt++;
-
     } else {
       SETERRQ(((PetscObject)packer)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }

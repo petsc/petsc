@@ -1452,7 +1452,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
   count = 0;
   for (i=down; i<up; i++) {
     for (j=0; j<x/dof; j++) {
-      idx[count++] = left + i*(Xe-Xs) + j*dof;
+      idx[count++] = (left + i*(Xe-Xs) + j*dof)/dof;
     }
   }
   ierr = ISCreateBlock(comm,dof,count,idx,&from);CHKERRQ(ierr);
@@ -1496,9 +1496,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
     /* top */
     for (i=up; i<Ye-Ys; i++) {
       for (j=0; j<xe-xs; j += dof) {
-        idx[count++] = left + i*(Xe-Xs) + j;
+        idx[count++] = (left + i*(Xe-Xs) + j);
       }
     }
+    for (i=0; i<count; i++) idx[i] = idx[i]/dof;
     ierr = ISCreateBlock(comm,dof,count,idx,&to);CHKERRQ(ierr);
     ierr = PetscFree(idx);CHKERRQ(ierr);
   }
@@ -1658,7 +1659,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
     PetscInt nnn = nn/dof,*iidx;
     ierr = PetscMalloc(nnn*sizeof(PetscInt),&iidx);CHKERRQ(ierr);
     for (i=0; i<nnn; i++) {
-      iidx[i] = idx[dof*i];
+      iidx[i] = idx[dof*i]/dof;
     }
     ierr = ISCreateBlock(comm,dof,nnn,iidx,&from);CHKERRQ(ierr);
     ierr = PetscFree(iidx);CHKERRQ(ierr);

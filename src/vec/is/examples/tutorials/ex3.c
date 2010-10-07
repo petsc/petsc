@@ -16,7 +16,7 @@ T*/
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt       i,n = 4, inputindices[] = {0,3,9,12},bs = 3,issize;
+  PetscInt       i,n = 4, inputindices[] = {0,1,3,4},bs = 3,issize;
   const PetscInt *indices;
   IS             set;
   PetscBool      isblock;

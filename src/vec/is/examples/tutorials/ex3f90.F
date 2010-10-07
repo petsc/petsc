@@ -31,9 +31,9 @@
       n               = 4
       bs              = 3
       inputindices(1) = 0
-      inputindices(2) = 3
-      inputindices(3) = 9
-      inputindices(4) = 12
+      inputindices(2) = 1
+      inputindices(3) = 3
+      inputindices(4) = 4
     
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       

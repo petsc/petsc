@@ -50,7 +50,7 @@ PetscErrorCode ISGetIndices_Block(IS in,const PetscInt *idx[])
     ii   = sub->idx;
     for (i=0; i<n; i++) {
       for (j=0; j<bs; j++) {
-        jj[k++] = ii[i] + j;
+        jj[k++] = bs*ii[i] + j;
       }
     }
   }
@@ -242,7 +242,7 @@ static struct _ISOps myops = { ISGetSize_Block,
    Input Parameters:
 +  is - the index set
 +  n - the length of the index set (the number of blocks)
-.  bs - number of elements in each block
+.  bs - number of elements in each block, one for each block and count of block not indices
 -  idx - the list of integers
 
 
@@ -254,7 +254,7 @@ static struct _ISOps myops = { ISGetSize_Block,
 
    Example:
    If you wish to index the values {0,1,4,5}, then use
-   a block size of 2 and idx of {0,4}.
+   a block size of 2 and idx of {0,2}.
 
    Level: beginner
 
@@ -299,10 +299,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockSetIndices_Block(IS is,PetscInt bs,Pets
     if (idx[i] > max) max = idx[i];
   }
   ierr = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
-  sub->sorted     = sorted;
-  sub->bs         = bs;
-  is->min     = min;
-  is->max     = max;
+  sub->sorted = sorted;
+  sub->bs     = bs;
+  is->min     = bs*min;
+  is->max     = bs*max+bs-1;
   is->data    = (void*)sub;
   ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   is->isperm  = PETSC_FALSE;
@@ -321,7 +321,7 @@ EXTERN_C_END
    Input Parameters:
 +  n - the length of the index set (the number of blocks)
 .  bs - number of elements in each block
-.  idx - the list of integers
+.  idx - the list of integers, one for each block and count of block not indices
 -  comm - the MPI communicator
 
    Output Parameter:
@@ -335,7 +335,7 @@ EXTERN_C_END
 
    Example:
    If you wish to index the values {0,1,4,5}, then use
-   a block size of 2 and idx of {0,4}.
+   a block size of 2 and idx of {0,2}.
 
    Level: beginner
 
@@ -396,7 +396,7 @@ EXTERN_C_END
 .  is - the index set
 
    Output Parameter:
-.  idx - the integer indices
+.  idx - the integer indices, one for each block and count of block not indices
 
    Level: intermediate
 

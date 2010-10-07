@@ -3475,7 +3475,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
       Mat_MPIMAIJ *b;
       IS          from,to;
       Vec         gvec;
-      PetscInt    *garray,i;
 
       ierr = MatSetType(B,MATMPIMAIJ);CHKERRQ(ierr);
       B->ops->destroy = MatDestroy_MPIMAIJ;
@@ -3491,10 +3490,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
       ierr = VecSetBlockSize(b->w,dof);CHKERRQ(ierr);
 
       /* create two temporary Index sets for build scatter gather */
-      ierr = PetscMalloc((n+1)*sizeof(PetscInt),&garray);CHKERRQ(ierr);
-      for (i=0; i<n; i++) garray[i] = dof*mpiaij->garray[i];
-      ierr = ISCreateBlock(((PetscObject)A)->comm,dof,n,garray,&from);CHKERRQ(ierr);
-      ierr = PetscFree(garray);CHKERRQ(ierr);
+      ierr = ISCreateBlock(((PetscObject)A)->comm,dof,n,mpiaij->garray,&from);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,n*dof,0,1,&to);CHKERRQ(ierr);
 
       /* create temporary global vector to generate scatter context */

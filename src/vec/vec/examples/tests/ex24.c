@@ -37,9 +37,9 @@ int main(int argc,char **argv)
     m = n;
   }
   ierr = PetscMalloc((m)*sizeof(PetscInt),&blks);CHKERRQ(ierr);
-  blks[0] = n*rank*bs;
+  blks[0] = n*rank;
   for (i=1; i<m; i++) {
-    blks[i] = blks[i-1] + bs;   
+    blks[i] = blks[i-1] + 1;   
   }
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,m,blks,&is1);CHKERRQ(ierr);
   ierr = PetscFree(blks);CHKERRQ(ierr);

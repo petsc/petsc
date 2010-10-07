@@ -1607,7 +1607,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   j      = 0;
   nsends = 0;
   for (i=0; i<nx; i++) {
-    idx = inidx[i];
+    idx = bs*inidx[i];
     if (idx < owners[j]) j = 0;
     for (; j<size; j++) {
       if (idx < owners[j+1]) {
@@ -1643,7 +1643,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for (i=0; i<nx; i++) {
     if (owner[i] != rank) {
-      svalues[starts[owner[i]]++] = inidx[i];
+      svalues[starts[owner[i]]++] = bs*inidx[i];
     }
   }
 
@@ -1718,8 +1718,8 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
 
   for (i=0; i<nx; i++) {
     if (owner[i] != rank) {
-      from->indices[start[lowner[owner[i]]]++] = inidy[i];
-      if (inidy[i] >= lengthy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scattering past end of TO vector");
+      from->indices[start[lowner[owner[i]]]++] = bs*inidy[i];
+      if (bs*inidy[i] >= lengthy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scattering past end of TO vector");
     }
   }
   ierr = PetscFree2(lowner,start);CHKERRQ(ierr);
@@ -1740,11 +1740,11 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
     ierr = PetscMalloc(nt*sizeof(PetscInt),&from->local.vslots);CHKERRQ(ierr);
     nt   = 0;
     for (i=0; i<nx; i++) {
-      idx = inidx[i];
+      idx = bs*inidx[i];
       if (idx >= owners[rank] && idx < owners[rank+1]) {
         to->local.vslots[nt]     = idx - owners[rank];        
-        from->local.vslots[nt++] = inidy[i];        
-        if (inidy[i] >= lengthy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scattering past end of TO vector");
+        from->local.vslots[nt++] = bs*inidy[i];        
+        if (bs*inidy[i] >= lengthy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scattering past end of TO vector");
       }
     }
   } else { 
@@ -2079,7 +2079,7 @@ PetscErrorCode VecScatterCreate_StoP(PetscInt nx,const PetscInt *inidx,PetscInt 
 /* ---------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCreate_PtoP"
-PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,VecScatter ctx)
+PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag,imdex,n;
@@ -2103,7 +2103,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = VecScatterCreate_StoP(nx,inidx,ny,inidy,xin,yin,1,ctx);CHKERRQ(ierr);
+    ierr = VecScatterCreate_StoP(nx,inidx,ny,inidy,xin,yin,bs,ctx);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -2118,7 +2118,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   j       = 0;
   for (i=0; i<nx; i++) {
     /* if indices are NOT locally sorted, need to start search at the beginning */
-    if (lastidx > (idx = inidx[i])) j = 0;
+    if (lastidx > (idx = bs*inidx[i])) j = 0;
     lastidx = idx;
     for (; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
@@ -2160,8 +2160,8 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   starts[0]= 0; 
   for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for (i=0; i<nx; i++) {
-    svalues[2*starts[owner[i]]]       = inidx[i];
-    svalues[1 + 2*starts[owner[i]]++] = inidy[i];
+    svalues[2*starts[owner[i]]]       = bs*inidx[i];
+    svalues[1 + 2*starts[owner[i]]++] = bs*inidy[i];
   }
 
   starts[0] = 0;
@@ -2242,7 +2242,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   if (duplicate) {
     ierr = PetscInfo(ctx,"Duplicate from to indices passed in VecScatterCreate(), they are ignored\n");CHKERRQ(ierr);
   }
-  ierr = VecScatterCreate_StoP(slen,local_inidx,slen,local_inidy,xin,yin,1,ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate_StoP(slen,local_inidx,slen,local_inidy,xin,yin,bs,ctx);CHKERRQ(ierr);
   ierr = PetscFree2(local_inidx,local_inidy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

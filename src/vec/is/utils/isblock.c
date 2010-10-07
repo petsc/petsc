@@ -134,9 +134,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt n,PetscInt bs
       if (bs == bbs) {
         len = len/bs;
         ierr = ISBlockGetIndices(is_in[i],&idx);CHKERRQ(ierr);
-        for (j=0; j<len; j++) nidx[j] = idx[j]/bs;
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,len,idx,PETSC_COPY_VALUES,(is_out+i));CHKERRQ(ierr);
         ierr = ISBlockRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
-        ierr = ISCreateGeneral(PETSC_COMM_SELF,len,nidx,PETSC_COPY_VALUES,(is_out+i));CHKERRQ(ierr);
         continue;
       }
     }

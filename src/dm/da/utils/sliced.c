@@ -345,7 +345,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedDestroy(Sliced slice)
 PetscErrorCode PETSCDM_DLLEXPORT SlicedCreateGlobalVector(Sliced slice,Vec *gvec)
 {
   PetscErrorCode     ierr;
-  PetscInt           bs,cnt,i;
+  PetscInt           bs,cnt;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(slice,DM_CLASSID,1);
@@ -362,11 +362,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedCreateGlobalVector(Sliced slice,Vec *gvec
     }
   } else {
     bs = slice->bs;
-    /* VecCreateGhostBlock requires ghosted blocks to be given in terms of first entry, not block.  Here, we munge the
-    * ghost array for this call, then put it back. */
-    for (i=0; i<slice->Nghosts; i++) slice->ghosts[i] *= bs;
     ierr = VecCreateGhostBlock(((PetscObject)slice)->comm,bs,slice->n*bs,PETSC_DETERMINE,slice->Nghosts,slice->ghosts,&slice->globalvector);CHKERRQ(ierr);
-    for (i=0; i<slice->Nghosts; i++) slice->ghosts[i] /= bs;
     *gvec = slice->globalvector;
     ierr = PetscObjectReference((PetscObject)*gvec);CHKERRQ(ierr);
   }

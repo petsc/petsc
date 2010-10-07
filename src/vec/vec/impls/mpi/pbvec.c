@@ -753,7 +753,7 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
 .  n - local vector length 
 .  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 .  nghost - number of local ghost blocks
-.  ghosts - global indices of ghost blocks (or PETSC_NULL if not needed)
+.  ghosts - global indices of ghost blocks (or PETSC_NULL if not needed), counts are by block not by index
 -  array - the space to store the vector values (as long as n + nghost*bs)
 
    Output Parameter:
@@ -847,7 +847,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostBlockWithArray(MPI_Comm comm,Pet
 .  n - local vector length 
 .  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 .  nghost - number of local ghost blocks
--  ghosts - global indices of ghost blocks
+-  ghosts - global indices of ghost blocks, counts are by block, not by individual index
 
    Output Parameter:
 .  vv - the global vector representation (without ghost points as part of vector)

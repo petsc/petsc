@@ -110,16 +110,10 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   ierr = VecCreateSeq(PETSC_COMM_SELF,ec*bs,&baij->lvec);CHKERRQ(ierr);
 
   /* create two temporary index sets for building scatter-gather */
-  for (i=0; i<ec; i++) {
-    garray[i] = bs*garray[i];
-  }
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,garray,&from);CHKERRQ(ierr);   
-  for (i=0; i<ec; i++) {
-    garray[i] = garray[i]/bs;
-  }
 
   ierr = PetscMalloc((ec+1)*sizeof(PetscInt),&stmp);CHKERRQ(ierr);
-  for (i=0; i<ec; i++) { stmp[i] = bs*i; } 
+  for (i=0; i<ec; i++) { stmp[i] = i; } 
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,&to);CHKERRQ(ierr);
   ierr = PetscFree(stmp);CHKERRQ(ierr);
 

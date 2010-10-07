@@ -390,7 +390,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
   for (i=down; i<up; i++) {
     for (j=bottom; j<top; j++) {
       for (k=0; k<x; k += dof) {
-        idx[count++] = (left+j*(Xe-Xs))+i*(Xe-Xs)*(Ye-Ys) + k;
+        idx[count++] = ((left+j*(Xe-Xs))+i*(Xe-Xs)*(Ye-Ys) + k)/dof;
       }
     }
   }
@@ -441,6 +441,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
         for (k=0; k<x; k += dof) idx[count++] = left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys)+k;
       }
     }
+    for (i=0; i<count; i++) idx[i] = idx[i]/dof;
     ierr = ISCreateBlock(comm,dof,count,idx,&to);CHKERRQ(ierr);
     ierr = PetscFree(idx);CHKERRQ(ierr);
   }
@@ -947,7 +948,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
     PetscInt nnn = nn/dof,*iidx;
     ierr = PetscMalloc(nnn*sizeof(PetscInt),&iidx);CHKERRQ(ierr);
     for (i=0; i<nnn; i++) {
-      iidx[i] = idx[dof*i];
+      iidx[i] = idx[dof*i]/dof;
     }
     ierr = ISCreateBlock(comm,dof,nnn,iidx,&from);CHKERRQ(ierr);
     ierr = PetscFree(iidx);CHKERRQ(ierr);

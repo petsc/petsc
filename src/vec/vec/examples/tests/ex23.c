@@ -38,9 +38,9 @@ int main(int argc,char **argv)
 
   /* create two index sets */
   if (!rank) {
-    blocks[0] = 0; blocks[1] = 8;
+    blocks[0] = 0; blocks[1] = 2;
   } else {
-    blocks[0] = 4; blocks[1] = 8;
+    blocks[0] = 1; blocks[1] = 2;
   }
   ierr = ISCreateBlock(PETSC_COMM_SELF,4,2,blocks,&is1);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,8,0,1,&is2);CHKERRQ(ierr);

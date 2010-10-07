@@ -134,7 +134,10 @@ PETSC_OWN_POINTER and PETSC_USE_POINTER instead.</li>
 an additional argument and ISLocalToGlobalMappingCreateNC() is no
 longer needed and removed</li>
         <li>ISStrideToGeneral() is replaced with ISToGeneral() that
-works for all basic IS types.<br>
+works for all basic IS types.</li>
+        <li>ISCreateBlock() now takes indexing relative to block, no
+longer relative to element. This is to match the paradigm of
+Vec/MatSetValuesBlocked()<br>
         </li>
       </ul>
       <p><u><b>PF:</b></u></p>

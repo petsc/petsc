@@ -953,19 +953,19 @@ PetscErrorCode DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
       if (i_c*ratioi == i && j_c*ratioj == j) { 
 	/* convert to local "natural" numbering and then to PETSc global numbering */
 	row    = idx_f[dof*(m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
-        cols[nc++] = row; 
+        cols[nc++] = row/dof; 
       }
     }
   }
 
   ierr = ISCreateBlock(((PetscObject)daf)->comm,dof,nc,cols,&isf);CHKERRQ(ierr);
+  ierr = PetscFree(cols);CHKERRQ(ierr);
   ierr = DAGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
   ierr = DAGetGlobalVector(daf,&vecf);CHKERRQ(ierr);
   ierr = VecScatterCreate(vecf,isf,vecc,PETSC_NULL,inject);CHKERRQ(ierr);
   ierr = DARestoreGlobalVector(dac,&vecc);CHKERRQ(ierr);
   ierr = DARestoreGlobalVector(daf,&vecf);CHKERRQ(ierr);
   ierr = ISDestroy(isf);CHKERRQ(ierr);
-  ierr = PetscFree(cols);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

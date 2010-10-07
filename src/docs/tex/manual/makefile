@@ -39,6 +39,7 @@ manual.pdf: chk_loc intro.tex abstract.tex acknowl.tex manual.tex part1.tex part
 # Now make the intro part ... note that this depends on latexing the manual
 	${CP} manual1.aux intro.aux
 	${PDFLATEX} intro 
+	${RM} part1tmp.tex part2tmp.tex
 #	${MAKE} rclean
 
 developers.pdf: chk_loc developers.tex

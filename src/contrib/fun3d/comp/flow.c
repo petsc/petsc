@@ -1805,7 +1805,7 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
 #if defined(BLOCKING)
    ICALLOC(nvertices, &svertices);
    for ( i=0; i < nvertices; i++ ) 
-       svertices[i] = bs*loc2pet[i];
+       svertices[i] = loc2pet[i];
    ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,svertices,&isglobal);CHKERRQ(ierr);
 #else
    ICALLOC(bs*nvertices, &svertices);
@@ -1833,7 +1833,7 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
 #if defined(BLOCKING)
    ICALLOC(nvertices, &svertices);
    for ( i=0; i < nvertices; i++ )
-       svertices[i] = 3*bs*loc2pet[i];
+       svertices[i] = 3*loc2pet[i];
    ierr = ISCreateBlock(MPI_COMM_SELF,3*bs,nvertices,svertices,&isglobal);CHKERRQ(ierr);
 #else
    ICALLOC(3*bs*nvertices, &svertices);
@@ -2009,7 +2009,7 @@ int FieldOutput(GRID *grid, int timeStep)
     ierr = ISCreateStride(MPI_COMM_SELF,bs*nsnode,0,1,&islocal);CHKERRQ(ierr);
     ICALLOC(nsnode, &svertices);
     for (i = 0; i < nsnode; i++ ) 
-       svertices[i] = bs*isnodePet[i];
+       svertices[i] = isnodePet[i];
     ierr = ISCreateBlock(MPI_COMM_SELF,bs,nsnode,svertices,&isglobal);CHKERRQ(ierr);
   }
   else {
@@ -2041,7 +2041,7 @@ int FieldOutput(GRID *grid, int timeStep)
     ierr = ISCreateStride(MPI_COMM_SELF,3*nsnode,0,1,&islocal);CHKERRQ(ierr);
     ICALLOC(nsnode, &svertices);
     for (i = 0; i < nsnode; i++ ) 
-       svertices[i] = 3*isnodePet[i];
+       svertices[i] = isnodePet[i];
     ierr = ISCreateBlock(MPI_COMM_SELF,3,nsnode,svertices,&isglobal);CHKERRQ(ierr);
     ierr = PetscFree(isnodePet);CHKERRQ(ierr);
     ierr = PetscFree(svertices);CHKERRQ(ierr);
@@ -2120,7 +2120,7 @@ int FieldOutput(GRID *grid, int timeStep)
     ierr = ISCreateStride(MPI_COMM_SELF,bs*nvnode,0,1,&islocal);CHKERRQ(ierr);
     ICALLOC(nvnode, &svertices);
     for (i = 0; i < nvnode; i++ ) 
-       svertices[i] = bs*ivnodePet[i];
+       svertices[i] = ivnodePet[i];
     ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvnode,svertices,&isglobal);CHKERRQ(ierr);
   }
   else {
@@ -2142,7 +2142,7 @@ int FieldOutput(GRID *grid, int timeStep)
     ierr = ISCreateStride(MPI_COMM_SELF,3*nvnode,0,1,&islocal);CHKERRQ(ierr);
     ICALLOC(nvnode, &svertices);
     for (i = 0; i < nvnode; i++ ) 
-       svertices[i] = 3*ivnodePet[i];
+       svertices[i] = ivnodePet[i];
     ierr = ISCreateBlock(MPI_COMM_SELF,3,nvnode,svertices,&isglobal);CHKERRQ(ierr);
     ierr = PetscFree(ivnodePet);CHKERRQ(ierr);
     ierr = PetscFree(svertices);CHKERRQ(ierr);
@@ -2223,7 +2223,7 @@ int FieldOutput(GRID *grid, int timeStep)
     for (i = 0; i < nfnode; i++ ) {
        /*assert((ifnode[i] >= 0) && (ifnode[i] < nnodes));
        assert((ifnodePet[i] >= 0) && (ifnodePet[i] < nnodes));*/
-       svertices[i] = bs*ifnodePet[i];
+       svertices[i] = ifnodePet[i];
     }
     ierr = ISCreateBlock(MPI_COMM_SELF,bs,nfnode,svertices,&isglobal);CHKERRQ(ierr);
   }
@@ -2246,7 +2246,7 @@ int FieldOutput(GRID *grid, int timeStep)
     ierr = ISCreateStride(MPI_COMM_SELF,3*nfnode,0,1,&islocal);CHKERRQ(ierr);
     ICALLOC(nfnode, &svertices);
     for (i = 0; i < nfnode; i++ ) 
-       svertices[i] = 3*ifnodePet[i];
+       svertices[i] = ifnodePet[i];
     ierr = ISCreateBlock(MPI_COMM_SELF,3,nfnode,svertices,&isglobal);CHKERRQ(ierr);
     ierr = PetscFree(ifnodePet);CHKERRQ(ierr);
     ierr = PetscFree(svertices);CHKERRQ(ierr);
@@ -2342,7 +2342,7 @@ int WriteRestartFile(GRID *grid, int timeStep)
 #if defined(BLOCKING)
   ICALLOC(nnodesLoc, &svertices);
   for (i = 0; i < nnodesLoc; i++)
-       svertices[i] = bs*loc2pet[i];
+       svertices[i] = loc2pet[i];
   ierr = ISCreateBlock(MPI_COMM_SELF,bs,nnodesLoc,svertices,&isglobal);CHKERRQ(ierr);
 #else
    ICALLOC(bs*nnodesLoc, &svertices);
@@ -2548,8 +2548,6 @@ int ReadRestartFile(GRID *grid)
   for (i = 0; i < nnodesLoc; i++)
    loc2pet[i] = rstart+i;
   ierr = AOApplicationToPetsc(grid->ao,nnodesLoc,loc2pet);CHKERRQ(ierr);
-  for (i = 0; i < nnodesLoc; i++)
-   loc2pet[i] *= bs;
   ierr = ISCreateStride(MPI_COMM_SELF,bs*nnodesLoc,0,1,&islocal);CHKERRQ(ierr);
   ierr = ISCreateBlock(MPI_COMM_SELF,bs,nnodesLoc,loc2pet,&isglobal);CHKERRQ(ierr);
   ierr = PetscFree(loc2pet);CHKERRQ(ierr);

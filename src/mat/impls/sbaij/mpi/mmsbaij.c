@@ -73,10 +73,8 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 
   /* create two temporary index sets for building scatter-gather */
   ierr = PetscMalloc(2*ec*sizeof(PetscInt),&stmp);CHKERRQ(ierr);
-  for (i=0; i<ec; i++) stmp[i] = bs*garray[i];  
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,&from);CHKERRQ(ierr);   
-  
-  for (i=0; i<ec; i++) { stmp[i] = bs*i; } 
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,garray,&from);CHKERRQ(ierr);   
+  for (i=0; i<ec; i++) { stmp[i] = i; } 
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,&to);CHKERRQ(ierr);
 
   /* generate the scatter context 
@@ -110,15 +108,13 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   /* b index in the IS sfrom */
   k = sowners[rank]/bs + mbs;
   for (i=ec,j=0; i< 2*ec; i++,j++) sgarray[i] = k + j;
-  
-  for (i=0; i<2*ec; i++) stmp[i] = bs*sgarray[i];  
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2*ec,stmp,&from);CHKERRQ(ierr);   
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2*ec,sgarray,&from);CHKERRQ(ierr);   
  
   /* x index in the IS sto */
   k = sowners[rank]/bs + mbs;
-  for (i=0; i<ec; i++) stmp[i] = bs*(k + i);  
+  for (i=0; i<ec; i++) stmp[i] = (k + i);  
   /* b index in the IS sto */
-  for (i=ec; i<2*ec; i++) stmp[i] = bs*sgarray[i-ec]; 
+  for (i=ec; i<2*ec; i++) stmp[i] = sgarray[i-ec]; 
 
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2*ec,stmp,&to);CHKERRQ(ierr); 
 
@@ -254,16 +250,10 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   ierr = VecCreateSeq(PETSC_COMM_SELF,ec*bs,&baij->lvec);CHKERRQ(ierr);
 
   /* create two temporary index sets for building scatter-gather */
-  for (i=0; i<ec; i++) {
-    garray[i] = bs*garray[i];
-  }
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,garray,&from);CHKERRQ(ierr);   
-  for (i=0; i<ec; i++) {
-    garray[i] = garray[i]/bs;
-  }
 
   ierr = PetscMalloc(ec*sizeof(PetscInt),&stmp);CHKERRQ(ierr);
-  for (i=0; i<ec; i++) { stmp[i] = bs*i; } 
+  for (i=0; i<ec; i++) { stmp[i] = i; } 
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,&to);CHKERRQ(ierr);
   ierr = PetscFree(stmp);CHKERRQ(ierr);
 

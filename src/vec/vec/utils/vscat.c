@@ -722,7 +722,7 @@ PetscErrorCode VecScatterCopy_SStoSS(VecScatter in,VecScatter out)
 }
 
 EXTERN PetscErrorCode VecScatterCreate_PtoS(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,PetscInt,VecScatter);
-EXTERN PetscErrorCode VecScatterCreate_PtoP(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,VecScatter);
+EXTERN PetscErrorCode VecScatterCreate_PtoP(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,PetscInt,VecScatter);
 EXTERN PetscErrorCode VecScatterCreate_StoP(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,PetscInt,VecScatter);
 
 /* =======================================================================*/
@@ -1303,12 +1303,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
         if (VecScatterOptimizedBS(bsx) && ((ystart % bsx) == 0) && (ystride == 1) && ((ysize % bsx) == 0)) {
           PetscInt       nx,il,*idy;
           const PetscInt *idx;
-          ierr = ISBlockGetLocalSize(ix,&nx); ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
+          ierr = ISBlockGetLocalSize(ix,&nx);CHKERRQ(ierr);
+          ierr = ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
           if (ysize != bsx*nx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
 	  ierr = PetscMalloc(nx*sizeof(PetscInt),&idy);CHKERRQ(ierr);
           if (nx) {
-            idy[0] = ystart;
-            for (il=1; il<nx; il++) idy[il] = idy[il-1] + bsx; 
+            idy[0] = ystart/bsx;
+            for (il=1; il<nx; il++) idy[il] = idy[il-1] + 1; 
           }
           ierr = VecScatterCreate_PtoS(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
           ierr = PetscFree(idy);CHKERRQ(ierr);
@@ -1385,12 +1386,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       if (VecScatterOptimizedBS(bsx) && ((ystart % bsx) == 0) && (ystride == 1) && ((ysize % bsx) == 0)) {
         PetscInt       nx,il,*idy;
         const PetscInt *idx;
-        ierr = ISBlockGetLocalSize(ix,&nx); ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
+        ierr = ISBlockGetLocalSize(ix,&nx);CHKERRQ(ierr);
+        ierr = ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
         if (ysize != bsx*nx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
         ierr = PetscMalloc(nx*sizeof(PetscInt),&idy);CHKERRQ(ierr);
         if (nx) {
-          idy[0] = ystart;
-          for (il=1; il<nx; il++) idy[il] = idy[il-1] + bsx; 
+          idy[0] = ystart/bsx;
+          for (il=1; il<nx; il++) idy[il] = idy[il-1] + 1; 
         }
         ierr = VecScatterCreate_StoP(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
         ierr = PetscFree(idy);CHKERRQ(ierr);
@@ -1426,7 +1428,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
     ierr    = ISGetLocalSize(iy,&ny);CHKERRQ(ierr); 
     ierr    = ISGetIndices(iy,&idy);CHKERRQ(ierr);
     if (nx != ny) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
-    ierr    = VecScatterCreate_PtoP(nx,idx,ny,idy,xin,yin,ctx);CHKERRQ(ierr);
+    ierr    = VecScatterCreate_PtoP(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
     ierr    = ISRestoreIndices(ix,&idx);CHKERRQ(ierr); 
     ierr    = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
     ierr    = PetscInfo(xin,"General case: MPI to MPI\n");CHKERRQ(ierr);

@@ -32,11 +32,6 @@ int main(int argc,char **argv)
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);
 
   /* create two index sets */
-  for (i=0; i<3; i++) {
-    ix0[i] *= bs; ix1[i] *= bs; 
-    iy0[i] *= bs; iy1[i] *= bs; 
-  }
-
   if (!rank) {
     ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,ix0,&isx);CHKERRQ(ierr);
     ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,iy0,&isy);CHKERRQ(ierr);

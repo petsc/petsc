@@ -70,11 +70,11 @@
 
 
       if (rank .eq. 0) then
-        ifrom(1) = bs*11
-        ifrom(2) = bs*6
+        ifrom(1) = 11
+        ifrom(2) = 6
       else
-        ifrom(1) = bs*0
-        ifrom(2) = bs*5
+        ifrom(1) = 0
+        ifrom(2) = 5
       endif
 
 !     Create the vector with two slots for ghost points. Note that both 

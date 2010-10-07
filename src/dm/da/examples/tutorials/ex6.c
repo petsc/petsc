@@ -485,7 +485,7 @@ PetscErrorCode FACreate(FA *infa)
   ierr = PetscMalloc(nlocal*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   ierr = VecGetArray(localvec,&localarray);CHKERRQ(ierr);
   for (i=0; i<nlocal; i++) {
-    indices[i] = (PetscInt) (2*localarray[i]);
+    indices[i] = (PetscInt) (localarray[i]);
   }
   ierr = VecRestoreArray(localvec,&localarray);CHKERRQ(ierr);
   ierr = ISCreateBlock(PETSC_COMM_WORLD,2,nlocal,indices,&is);CHKERRQ(ierr);
