@@ -1443,6 +1443,7 @@ DASetElementType_Custom(DA da, DAElementType etype)
   PetscFunctionReturn(0);
 }
 
+#if 0
 #undef __FUNCT__
 #define __FUNCT__ "DAGetElementType"
 static PetscErrorCode
@@ -1454,11 +1455,12 @@ DAGetElementType_Custom(DA da, DAElementType *etype)
   *etype = da->elementtype;
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "DAGetElements_1D"
 static PetscErrorCode
-DAGetElements_1D(DA da, PetscInt *n,const PetscInt *e[])
+DAGetElements_1D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
   PetscInt       i,xs,xe,Xs,Xe;
@@ -1475,33 +1477,34 @@ DAGetElements_1D(DA da, PetscInt *n,const PetscInt *e[])
       da->e[cnt++] = (i-Xs+1);
     }
   }
-  *n = da->ne;
-  *e = da->e;
+  *nel = da->ne;
+  *nen = 2;
+  *e   = da->e;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetElements_2D"
 static PetscErrorCode 
-DAGetElements_2D(DA da,PetscInt *n,const PetscInt *e[])
+DAGetElements_2D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
   PetscInt       i,xs,xe,Xs,Xe;
   PetscInt       j,ys,ye,Ys,Ye;
-  PetscInt       cnt=0, cell[4], nel=2, nen=3;
+  PetscInt       cnt=0, cell[4], ns=2, nn=3;
   DAElementType  etype = da->elementtype;
   PetscInt       c, split[] = {0,1,3,
                                2,3,1};
   PetscFunctionBegin;
   if (!da->e) {
-    if (etype == DA_ELEMENT_P1) {nel=2; nen=3;}
-    if (etype == DA_ELEMENT_Q1) {nel=1; nen=4;}
+    if (etype == DA_ELEMENT_P1) {ns=2; nn=3;}
+    if (etype == DA_ELEMENT_Q1) {ns=1; nn=4;}
     ierr = DAGetCorners(da,&xs,&ys,0,&xe,&ye,0);CHKERRQ(ierr);
     ierr = DAGetGhostCorners(da,&Xs,&Ys,0,&Xe,&Ye,0);CHKERRQ(ierr);
     xe += xs; Xe += Xs; if (xs != Xs) xs -= 1;
     ye += ys; Ye += Ys; if (ys != Ys) ys -= 1;
-    da->ne = nel*(xe - xs - 1)*(ye - ys - 1);
-    ierr = PetscMalloc((1 + nen*da->ne)*sizeof(PetscInt),&da->e);CHKERRQ(ierr);
+    da->ne = ns*(xe - xs - 1)*(ye - ys - 1);
+    ierr = PetscMalloc((1 + nn*da->ne)*sizeof(PetscInt),&da->e);CHKERRQ(ierr);
     for (j=ys; j<ye-1; j++) {
       for (i=xs; i<xe-1; i++) {
         cell[0] = (i-Xs  ) + (j-Ys  )*(Xe-Xs);
@@ -1509,31 +1512,32 @@ DAGetElements_2D(DA da,PetscInt *n,const PetscInt *e[])
         cell[2] = (i-Xs+1) + (j-Ys+1)*(Xe-Xs);
         cell[3] = (i-Xs  ) + (j-Ys+1)*(Xe-Xs);
         if (etype == DA_ELEMENT_P1) {
-          for (c=0; c<nel*nen; c++)
+          for (c=0; c<ns*nn; c++)
             da->e[cnt++] = cell[split[c]];
         }
         if (etype == DA_ELEMENT_Q1) {
-          for (c=0; c<nel*nen; c++)
+          for (c=0; c<ns*nn; c++)
             da->e[cnt++] = cell[c];
         }
       }
     }
   }
-  *n = da->ne;
-  *e = da->e;
+  *nel = da->ne;
+  *nen = nn;
+  *e   = da->e;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetElements_3D"
 static PetscErrorCode 
-DAGetElements_3D(DA da,PetscInt *n,const PetscInt *e[])
+DAGetElements_3D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
   PetscInt       i,xs,xe,Xs,Xe;
   PetscInt       j,ys,ye,Ys,Ye;
   PetscInt       k,zs,ze,Zs,Ze;
-  PetscInt       cnt=0, cell[8], nel=6, nen=4;
+  PetscInt       cnt=0, cell[8], ns=6, nn=4;
   DAElementType  etype = da->elementtype;
   PetscInt       c, split[] = {0,1,3,7,
                                0,1,7,4,
@@ -1543,15 +1547,15 @@ DAGetElements_3D(DA da,PetscInt *n,const PetscInt *e[])
                                1,5,6,7};
   PetscFunctionBegin;
   if (!da->e) {
-    if (etype == DA_ELEMENT_P1) {nel=6; nen=4;}
-    if (etype == DA_ELEMENT_Q1) {nel=1; nen=8;}
+    if (etype == DA_ELEMENT_P1) {ns=6; nn=4;}
+    if (etype == DA_ELEMENT_Q1) {ns=1; nn=8;}
     ierr = DAGetCorners(da,&xs,&ys,&zs,&xe,&ye,&ze);CHKERRQ(ierr);
     ierr = DAGetGhostCorners(da,&Xs,&Ys,&Zs,&Xe,&Ye,&Ze);CHKERRQ(ierr);
     xe += xs; Xe += Xs; if (xs != Xs) xs -= 1;
     ye += ys; Ye += Ys; if (ys != Ys) ys -= 1;
     ze += zs; Ze += Zs; if (zs != Zs) zs -= 1;
-    da->ne = nel*(xe - xs - 1)*(ye - ys - 1)*(ze - zs - 1);
-    ierr = PetscMalloc((1 + nen*da->ne)*sizeof(PetscInt),&da->e);CHKERRQ(ierr);
+    da->ne = ns*(xe - xs - 1)*(ye - ys - 1)*(ze - zs - 1);
+    ierr = PetscMalloc((1 + nn*da->ne)*sizeof(PetscInt),&da->e);CHKERRQ(ierr);
     for (k=zs; k<ze-1; k++) {
       for (j=ys; j<ye-1; j++) {
         for (i=xs; i<xe-1; i++) {
@@ -1564,50 +1568,68 @@ DAGetElements_3D(DA da,PetscInt *n,const PetscInt *e[])
           cell[6] = (i-Xs+1) + (j-Ys+1)*(Xe-Xs) + (k-Zs+1)*(Xe-Xs)*(Ye-Ys);
           cell[7] = (i-Xs  ) + (j-Ys+1)*(Xe-Xs) + (k-Zs+1)*(Xe-Xs)*(Ye-Ys);
           if (etype == DA_ELEMENT_P1) {
-            for (c=0; c<nel*nen; c++)
+            for (c=0; c<ns*nn; c++)
               da->e[cnt++] = cell[split[c]];
           }
           if (etype == DA_ELEMENT_Q1) {
-            for (c=0; c<nel*nen; c++)
+            for (c=0; c<ns*nn; c++)
               da->e[cnt++] = cell[c];
           }
         }
       }
     }
   }
-  *n = da->ne;
-  *e = da->e;
+  *nel = da->ne;
+  *nen = nn;
+  *e   = da->e;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DAGetElements"
 static PetscErrorCode
-DAGetElements_Custom(DA da, PetscInt *n,const PetscInt *e[])
+DAGetElements_Custom(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscInt       dim;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscValidIntPointer(n,2);
-  PetscValidPointer(e,2);
+  PetscValidIntPointer(nel,2);
+  PetscValidIntPointer(nen,3);
+  PetscValidPointer(e,4);
   ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  if (dim==-1) { 
-    *n = 0; *e = PETSC_NULL; 
+  if (dim==-1) {
+    *nel = 0; *nen = 0; *e = PETSC_NULL;
   } else if (dim==1) {
-    ierr = DAGetElements_1D(da,n,e);CHKERRQ(ierr);
+    ierr = DAGetElements_1D(da,nel,nen,e);CHKERRQ(ierr);
   } else if (dim==2) {
-    ierr = DAGetElements_2D(da,n,e);CHKERRQ(ierr);
+    ierr = DAGetElements_2D(da,nel,nen,e);CHKERRQ(ierr);
   } else if (dim==3) {
-    ierr = DAGetElements_3D(da,n,e);CHKERRQ(ierr);
+    ierr = DAGetElements_3D(da,nel,nen,e);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef  DAGetElements
-#define DASetElementType DASetElementType_Custom
-#define DAGetElementType DAGetElementType_Custom
-#define DAGetElements    DAGetElements_Custom
+#undef __FUNCT__
+#define __FUNCT__ "DARestoreElements"
+static PetscErrorCode
+DARestoreElements_Custom(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidIntPointer(nel,2);
+  PetscValidIntPointer(nen,3);
+  PetscValidPointer(e,4);
+  PetscFunctionReturn(0);
+}
+
+#undef DASetElementType
+#undef DAGetElements
+#undef DARestoreElements
+
+#define DASetElementType  DASetElementType_Custom
+#define DAGetElements     DAGetElements_Custom
+#define DARestoreElements DARestoreElements_Custom
 
 #endif
 

@@ -434,8 +434,8 @@ cdef class DA(Object):
         CHKERR( DASetElementType(self.da, ival) )
 
     def getElements(self, elem_type=None):
-        cdef PetscInt dim=0 
-        cdef PetscDAElementType etype=DA_ELEMENT_P1
+        cdef PetscInt dim=0
+        cdef PetscDAElementType etype
         cdef PetscInt nel=0, nen=0
         cdef const_PetscInt *elems=NULL
         cdef object elements
@@ -443,18 +443,14 @@ cdef class DA(Object):
         if elem_type is not None:
             etype = daelementtype(elem_type)
             CHKERR( DASetElementType(self.da, etype) )
-        else:
-            CHKERR( DAGetElementType(self.da, &etype) )
-        if etype == DA_ELEMENT_P1: nen = dim+1
-        if etype == DA_ELEMENT_Q1: nen = 1<<dim
         try:
-            CHKERR( DAGetElements(self.da, &nel, &elems) )
+            CHKERR( DAGetElements(self.da, &nel, &nen, &elems) )
             elements = array_i(nel*nen, elems)
+            elements.shape = (toInt(nel), toInt(nen))
         finally:
-            CHKERR( DARestoreElements(self.da, &nel, &elems) )
-        elements.shape = (toInt(nel), toInt(nen))
+            CHKERR( DARestoreElements(self.da, &nel, &nen, &elems) )
         return elements
-        
+
     #
 
     property dim:

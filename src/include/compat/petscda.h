@@ -3,18 +3,6 @@
 
 #if (PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
-#define __FUNCT__ "DAGetElementType"
-static PetscErrorCode
-DAGetElementType_Compat(DA da, DAElementType *etype)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
-  PetscValidPointer(etype,2);
-  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
-  PetscFunctionReturn(PETSC_ERR_SUP);
-}
-#define DAGetElementType DAGetElementType_Compat
-#undef __FUNCT__
 #define __FUNCT__ "DASetElementType"
 static PetscErrorCode
 DASetElementType_Compat(DA da, DAElementType etype)
@@ -26,6 +14,41 @@ DASetElementType_Compat(DA da, DAElementType etype)
   PetscFunctionReturn(PETSC_ERR_SUP);
 }
 #define DASetElementType DASetElementType_Compat
+#undef __FUNCT__
+#define __FUNCT__ "DAGetElements"
+static PetscErrorCode
+DAGetElements_Compat(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
+{
+  PetscInt       dim;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidIntPointer(nel,2);
+  PetscValidIntPointer(nen,3);
+  PetscValidPointer(e,4);
+  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  *nen = dim+1;
+  ierr = DAGetElements(da,nel,e);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#undef  DAGetElements
+#define DAGetElements DAGetElements_Compat
+#undef __FUNCT__
+#define __FUNCT__ "DARestoreElements"
+static PetscErrorCode
+DARestoreElements_Compat(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidIntPointer(nel,2);
+  PetscValidIntPointer(nen,3);
+  PetscValidPointer(e,4);
+  ierr = DARestoreElements(da,nel,e);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#undef  DARestoreElements
+#define DARestoreElements DARestoreElements_Compat
 #endif
 
 

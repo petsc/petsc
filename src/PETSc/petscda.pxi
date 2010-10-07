@@ -95,8 +95,8 @@ cdef extern from "petscda.h" nogil:
 
     int DASetElementType(PetscDA,PetscDAElementType)
     int DAGetElementType(PetscDA,PetscDAElementType*)
-    int DAGetElements(PetscDA,PetscInt*,const_PetscInt**)
-    int DARestoreElements(PetscDA,PetscInt*,const_PetscInt**)
+    int DAGetElements(PetscDA,PetscInt*,PetscInt*,const_PetscInt**)
+    int DARestoreElements(PetscDA,PetscInt*,PetscInt*,const_PetscInt**)
 
     #int DASetFieldName(PetscDA,PetscInt,const_char[])
     #int DAGetFieldName(PetscDA,PetscInt,char**)
