@@ -66,7 +66,7 @@ static PetscErrorCode  KSPSolve_SpecEst(KSP ksp)
     ierr = PetscMalloc2(its,PetscReal,&real,its,PetscReal,&imag);CHKERRQ(ierr);
     ierr = KSPComputeEigenvalues(spec->kspest,its,real,imag,&neig);CHKERRQ(ierr);
     for (i=0; i<neig; i++) {
-      rad = PetscMax(rad,PetscSqrtScalar(PetscSqr(real[i]-1.) + PetscSqr(imag[i])));
+      rad = PetscMax(rad,PetscRealPart(PetscSqrtScalar(PetscSqr(real[i]-1.) + PetscSqr(imag[i]))));
     }
     ierr = PetscFree2(real,imag);CHKERRQ(ierr);
     spec->radius = rad;
@@ -121,9 +121,9 @@ static PetscErrorCode KSPSetFromOptions_SpecEst(KSP ksp)
   ierr = PetscOptionsReal("-ksp_specest_richfactor","Multiplier on the richimum eigen/singular value","None",spec->richfactor,&spec->richfactor,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
-  ierr = PetscSNPrintf(prefix,sizeof prefix,"%sspec_est_",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
+  ierr = PetscSNPrintf(prefix,sizeof prefix,"%sspecest_",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(spec->kspest,prefix);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(prefix,sizeof prefix,"%sspec_cheap_",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
+  ierr = PetscSNPrintf(prefix,sizeof prefix,"%sspeccheap_",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(spec->kspcheap,prefix);CHKERRQ(ierr);
 
   if (!((PetscObject)spec->kspest)->type_name) {
