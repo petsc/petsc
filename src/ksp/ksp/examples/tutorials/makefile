@@ -321,7 +321,7 @@ runex2_specest_1:
            ${DIFF} output/ex2_specest_1.out ex2.tmp || echo "Possible problem with ex2_specest_1, diffs above"; \
            ${RM} -f ex2.tmp
 runex2_specest_2:
-	-@${MPIEXEC} -n 1 ./ex2 -m 80 -n 80 -ksp_type fgmres -pc_type ksp -ksp_ksp_type specest -ksp_monitor_short -ksp_spec_est_ksp_type cg > ex2.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex2 -m 80 -n 80 -ksp_type fgmres -pc_type ksp -ksp_ksp_type specest -ksp_monitor_short -ksp_specest_ksp_type cg > ex2.tmp 2>&1; \
            ${DIFF} output/ex2_specest_2.out ex2.tmp || echo "Possible problem with ex2_specest_2, diffs above"; \
            ${RM} -f ex2.tmp
 runex2_umfpack:
