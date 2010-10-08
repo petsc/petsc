@@ -27,7 +27,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEngineGetOutput(PetscMatlabE
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEnginePrintOutput(PetscMatlabEngine,FILE*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEnginePut(PetscMatlabEngine,PetscObject);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEngineGet(PetscMatlabEngine,PetscObject);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEnginePutArray(PetscMatlabEngine,int,int,PetscScalar*,const char[]);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEnginePutArray(PetscMatlabEngine,int,int,const PetscScalar*,const char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEngineGetArray(PetscMatlabEngine,int,int,PetscScalar*,const char[]);
 
 EXTERN PetscMatlabEngine PETSCSYS_DLLEXPORT PETSC_MATLAB_ENGINE_(MPI_Comm);

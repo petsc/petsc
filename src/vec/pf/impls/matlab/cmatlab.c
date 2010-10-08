@@ -43,7 +43,7 @@ PetscErrorCode PFDestroy_Matlab(void *value)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFApply_Matlab"
-PetscErrorCode PFApply_Matlab(void *value,PetscInt n,PetscScalar *in,PetscScalar *out)
+PetscErrorCode PFApply_Matlab(void *value,PetscInt n,const PetscScalar *in,PetscScalar *out)
 {
   PF_Matlab      *matlab = (PF_Matlab*)value;
   PetscErrorCode ierr;

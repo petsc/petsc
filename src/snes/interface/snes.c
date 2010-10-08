@@ -3082,6 +3082,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetDM(SNES snes,DM *dm)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+
 #undef __FUNCT__  
 #define __FUNCT__ "SNESComputeFunction_Matlab"
 /*
@@ -3162,3 +3164,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFunctionMatlab(SNES snes,Vec r,const c
   ierr = SNESSetFunction(snes,r,SNESComputeFunction_Matlab,funcname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#include "mex.h"
+
+#endif

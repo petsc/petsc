@@ -109,7 +109,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEngineEvaluate(PetscMatlabEngine me
   va_list        Argp;
   char           buffer[1024];
   PetscErrorCode ierr;
-  size_t         fullLength, len;
+  size_t         fullLength;
 
   PetscFunctionBegin;  
   va_start(Argp,string);
@@ -312,7 +312,7 @@ PetscMatlabEngine PETSCSYS_DLLEXPORT PETSC_MATLAB_ENGINE_(MPI_Comm comm)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMatlabEnginePutArray"
 /*@C
-    PetscMatlabEnginePutArray - Puts a Petsc object into the Matlab space. For parallel objects,
+    PetscMatlabEnginePutArray - Puts an array into the Matlab space, treating it as a Fortran style (column major ordering) array. For parallel objects,
       each processors part is put in a separate  Matlab process.
 
     Collective on PetscObject
@@ -329,7 +329,7 @@ PetscMatlabEngine PETSCSYS_DLLEXPORT PETSC_MATLAB_ENGINE_(MPI_Comm comm)
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePut(), MatlabEngineGetArray(), PetscMatlabEngine
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEnginePutArray(PetscMatlabEngine mengine,int m,int n,PetscScalar *array,const char name[])
+PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEnginePutArray(PetscMatlabEngine mengine,int m,int n,const PetscScalar *array,const char name[])
 {
   PetscErrorCode ierr;
   mxArray *mat;

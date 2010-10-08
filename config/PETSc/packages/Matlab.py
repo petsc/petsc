@@ -43,6 +43,9 @@ class Configure(PETSc.package.NewPackage):
     for matlab in self.generateGuesses():
       self.framework.log.write('Testing Matlab at '+matlab+'\n')
       interpreter = os.path.join(matlab,'bin','matlab')
+      if 'with-matlab-arch' in self.framework.argDB:
+        interpreter = interpreter+' -'+self.framework.argDB['with-matlab-arch']
+        
       output      = ''
       try:
         output,err,ret = PETSc.package.NewPackage.executeShellCommand(interpreter+' -nojvm -nodisplay -r "[\'Version \' version]; exit"', log = self.framework.log)
@@ -72,8 +75,11 @@ class Configure(PETSc.package.NewPackage):
             matlab_arch = ls[0]
           self.framework.log.write('Configuring PETSc to use the Matlab at '+matlab+' Matlab arch '+matlab_arch+'\n')
           self.mex = os.path.join(matlab,'bin','mex')
+          if 'with-matlab-arch' in self.framework.argDB:
+            self.mex = self.mex+' -'+self.framework.argDB['with-matlab-arch']
+
           self.cc = '${CC}'
-          self.command = os.path.join(matlab,'bin','matlab')
+          self.command = os.path.join(matlab,'bin','matlab -'+matlab_arch)
           self.include = [os.path.join(matlab,'extern','include')]
           if self.framework.argDB['with-matlab-engine']:          
             if matlab_arch == 'mac':
@@ -82,13 +88,15 @@ class Configure(PETSc.package.NewPackage):
               matlab_dl = ['']
             # Matlab libraries require libstdc++-libc6.1-2.so.3 which they provide in the sys/os directory
             if matlab_arch == 'glnx86':
-              matlab_sys = ':'+os.path.join(matlab,'sys','os',matlab_arch)
+              matlab_sys = self.setCompilers.CSharedLinkerFlag+os.path.join(matlab,'sys','os',matlab_arch)
+              matlab_sys += ':'+os.path.join(matlab,'bin',matlab_arch)+':'+os.path.join(matlab,'extern','lib',matlab_arch)
             else:
               matlab_sys = ''
-            matlab_sys += ':'+os.path.join(matlab,'bin',matlab_arch)+':'+os.path.join(matlab,'extern','lib',matlab_arch)
-            self.lib = [self.setCompilers.CSharedLinkerFlag+matlab_sys,'-L'+os.path.join(matlab,'bin',matlab_arch),'-L'+os.path.join(matlab,'extern','lib',matlab_arch),'-leng','-lmx','-lmat','-lut','-licudata','-licui18n','-licuuc','-lustdio'] + matlab_dl
+            self.lib = [matlab_sys,'-L'+os.path.join(matlab,'bin',matlab_arch),'-L'+os.path.join(matlab,'extern','lib',matlab_arch),'-leng','-lmx','-lmat','-lut','-licudata','-licui18n','-licuuc','-lustdio'] + matlab_dl
 
             self.addDefine('HAVE_MATLAB_ENGINE', 1)
+            if self.setCompilers.isDarwin():
+              self.logPrintBox('You may need to set DYLD_LIBRARY_PATH to '+os.path.join(matlab,'bin',matlab_arch))
           self.framework.packages.append(self)
           self.addMakeMacro('MATLAB_MEX',self.mex)
           self.addMakeMacro('MATLAB_COMMAND',self.command)        
