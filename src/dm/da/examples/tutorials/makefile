@@ -85,10 +85,16 @@ runex3_3:
 runex10:
 	-@${MPIEXEC} -n 4 ./ex10
 
+runex11f90:
+	-@${MPIEXEC} -n 1 ./ex11f90  > ex11f90.tmp 2>&1;   \
+	   if (${DIFF} output/ex11f90.out ex11f90.tmp) then true; \
+	   else echo "Possible problem with ex11f90, diffs above"; fi; \
+	   ${RM} -f ex11f90.tmp
+
 TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm ex12.PETSc ex12.rm
 TESTEXAMPLES_C_X11	  = ex1.PETSc runex1 ex1.rm ex5.PETSc ex5.rm  
 TESTEXAMPLES_FORTRAN	  = 
-TESTEXAMPLES_F90_NOCOMPLEX= ex6f90.PETSc ex6f90.rm ex11f90.PETSc ex11f90.rm
+TESTEXAMPLES_F90_NOCOMPLEX= ex6f90.PETSc ex6f90.rm ex11f90.PETSc runex11f90 ex11f90.rm
 TESTEXAMPLES_C_X11_MPIUNI = 
 TESTEXAMPLES_C_COMPLEX	  = 
 TESTEXAMPLES_C_NOCOMPLEX  = ex2.PETSc runex2 ex2.rm ex6.PETSc ex6.rm
