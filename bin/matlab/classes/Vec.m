@@ -1,8 +1,14 @@
 classdef Vec < PetscObject
   methods
-    function obj = Vec(array)
+function obj = Vec(array,flg)
+      if (nargin > 1) 
+        %  Vec(pid,'pobj') uses an already existing PETSc Vec object
+        obj.pobj = array;
+        return
+      end
       [err,obj.pobj] = calllib('libpetsc', 'VecCreate', 0,0);
       if (nargin > 0) 
+        % Vec(array) creates a Vec initialized with the given array
         err = calllib('libpetsc', 'VecSetType', obj.pobj,'seq');
         err = calllib('libpetsc', 'VecSetSizes', obj.pobj,length(array),length(array));
         idx = 0:length(array)-1;
@@ -21,6 +27,11 @@ classdef Vec < PetscObject
       err = calllib('libpetsc', 'VecSetSizes', obj.pobj,m,n);
     end
     function err = SetValues(obj,idx,values,insertmode)
+      if (ischar(idx)) % assume it is ':' 
+        n = 0;
+        [err,n] = calllib('libpetsc', 'VecGetLocalSize', obj.pobj,n);
+        idx = 0:n-1;
+      end
       if (nargin < 3) 
         values = idx;
         idx = 0:length(values)-1;
@@ -32,7 +43,9 @@ classdef Vec < PetscObject
     end
     function [values,err] = GetValues(obj,idx)
       if (ischar(idx)) % assume it is ':' 
-        idx = 0:2;
+        n = 0;
+        [err,n] = calllib('libpetsc', 'VecGetLocalSize', obj.pobj,n);
+        idx = 0:n-1;
       end
       values = zeros(1,length(idx));
       [err,idx,values] = calllib('libpetsc', 'VecGetValues', obj.pobj,length(idx),idx,values);
@@ -46,6 +59,9 @@ classdef Vec < PetscObject
     function [vec,err] = Duplicate(obj)
       vec = Vec;
       [err,vec.pobj] = calllib('libpetsc', 'VecDuplicate', obj.pobj,vec.pobj);
+    end
+    function err = Copy(obj,v)
+      err = calllib('libpetsc', 'VecCopy', obj.pobj,v.pobj);
     end
     function err = View(obj,viewer)
       err = calllib('libpetsc', 'VecView', obj.pobj,viewer.pobj);

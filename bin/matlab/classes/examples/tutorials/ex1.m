@@ -3,7 +3,7 @@
 
 path(path,'../../')
 
-PetscInitialize({'-info','-malloc_dump','-snes_mf'});
+PetscInitialize({'-info','-malloc_dump','-snes_mf','-snes_monitor','-ksp_monitor'});
 
 viewer = PetscViewer();
 viewer.SetType('ascii');
@@ -56,6 +56,8 @@ b.SetValues([1,2],[11.5,12.5],PetscObject.ADD_VALUES);
 b.AssemblyBegin();
 b.AssemblyEnd();
 x = b.Duplicate();
+
+b.Copy(x);
 
 ksp = KSP;
 ksp.SetType('gmres');
