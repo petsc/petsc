@@ -112,8 +112,8 @@
       call DAVecGetArrayF90(ada,g,x2,ierr)
       do i=xs,xs+xl-1
          CHKMEMQ
-         x2(1,i) = i
-         x2(2,i) = -i
+         x2(0,i) = i
+         x2(1,i) = -i
          CHKMEMQ
       enddo
       call DAVecRestoreArrayF90(ada,g,x1,ierr)
@@ -132,8 +132,8 @@
       do i=xs,xs+xl-1
         do j=ys,ys+yl-1
            CHKMEMQ
-           x3(1,i,j) = i + j
-           x3(2,i,j) = -(i + j)
+           x3(0,i,j) = i + j
+           x3(1,i,j) = -(i + j)
            CHKMEMQ
         enddo
       enddo
@@ -156,9 +156,9 @@
         do j=ys,ys+yl-1
           do k=zs,zs+zl-1
             CHKMEMQ
-            x4(1,i,j,k) = i + j + k
-            x4(2,i,j,k) = -(i + j + k)
-            x4(3,i,j,k) = i + j + k
+            x4(0,i,j,k) = i + j + k
+            x4(1,i,j,k) = -(i + j + k)
+            x4(2,i,j,k) = i + j + k
             CHKMEMQ
           enddo
         enddo

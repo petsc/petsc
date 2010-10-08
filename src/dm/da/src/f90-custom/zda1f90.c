@@ -53,7 +53,7 @@ void PETSC_STDCALL davecgetarrayf901_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode
     *ierr = PETSC_ERR_ARG_INCOMP;
   }
   *ierr = VecGetArray(*v,&aa);if (*ierr) return;
-  *ierr = F90Array1dCreate(aa,PETSC_SCALAR,gxs,gxm-1,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array1dCreate(aa,PETSC_SCALAR,gxs,gxm,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
 }
 
 void PETSC_STDCALL davecrestorearrayf901_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -90,7 +90,7 @@ void PETSC_STDCALL davecgetarrayf902_(DA *da,Vec *v,F90Array2d *a,PetscErrorCode
     gxm = dof;
   }
   *ierr = VecGetArray(*v,&aa);if (*ierr) return;
-  *ierr = F90Array2dCreate(aa,PETSC_SCALAR,gxs,gxm-1,gys,gym-1,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array2dCreate(aa,PETSC_SCALAR,gxs,gxm,gys,gym,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
 }
 
 void PETSC_STDCALL davecrestorearrayf902_(DA *da,Vec *v,F90Array2d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -129,7 +129,7 @@ void PETSC_STDCALL davecgetarrayf903_(DA *da,Vec *v,F90Array3d *a,PetscErrorCode
     gxm = dof;
   }
   *ierr = VecGetArray(*v,&aa);if (*ierr) return;
-  *ierr = F90Array3dCreate(aa,PETSC_SCALAR,gxs,gxm-1,gys,gym-1,gzs,gzm-1,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array3dCreate(aa,PETSC_SCALAR,gxs,gxm,gys,gym,gzs,gzm,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
 }
 
 void PETSC_STDCALL davecrestorearrayf903_(DA *da,Vec *v,F90Array3d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -140,7 +140,7 @@ void PETSC_STDCALL davecrestorearrayf903_(DA *da,Vec *v,F90Array3d *a,PetscError
 
 void PETSC_STDCALL davecgetarrayf904_(DA *da,Vec *v,F90Array4d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  PetscInt    xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof,one = 1;
+  PetscInt    xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof,zero = 0;
   PetscScalar *aa;
 
   *ierr = DAGetCorners(*da,&xs,&ys,&zs,&xm,&ym,&zm);if (*ierr) return;
@@ -160,7 +160,7 @@ void PETSC_STDCALL davecgetarrayf904_(DA *da,Vec *v,F90Array4d *a,PetscErrorCode
     *ierr = PETSC_ERR_ARG_INCOMP;
   }
   *ierr = VecGetArray(*v,&aa);if (*ierr) return;
-  *ierr = F90Array4dCreate(aa,PETSC_SCALAR,one,dof,gxs,gxm-1,gys,gym-1,gzs,gzm-1,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array4dCreate(aa,PETSC_SCALAR,zero,dof,gxs,gxm,gys,gym,gzs,gzm,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
 }
 
 void PETSC_STDCALL davecrestorearrayf904_(DA *da,Vec *v,F90Array4d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -192,9 +192,9 @@ void PETSC_STDCALL davecgetarrayf90user1_(DA *da,Vec *v,F90Array1d *a,PetscError
   }
   *ierr = VecGetArray(*v,&aa);if (*ierr) return;
   if (dof > 1) {
-    *ierr = F90Array1dCreate(aa,(PetscDataType)(-1*dof*sizeof(PetscScalar)),gxs,gxs+gxm-1,a PETSC_F90_2PTR_PARAM(ptrd));
+    *ierr = F90Array1dCreate(aa,(PetscDataType)(-1*dof*sizeof(PetscScalar)),gxs,gxs+gxm,a PETSC_F90_2PTR_PARAM(ptrd));
   } else {
-    *ierr = F90Array1dCreate(aa,PETSC_SCALAR,gxs,gxs+gxm-1,a PETSC_F90_2PTR_PARAM(ptrd));
+    *ierr = F90Array1dCreate(aa,PETSC_SCALAR,gxs,gxs+gxm,a PETSC_F90_2PTR_PARAM(ptrd));
   }
 }
 
