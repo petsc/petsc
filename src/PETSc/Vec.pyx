@@ -656,19 +656,19 @@ cdef class Vec(Object):
         CHKERR( VecGhostGetLocalForm(self.vec, &vec.vec) )
         return vec
 
-    def ghostUpdateBegin(self, insert_mode, scatter_mode):
-        cdef PetscInsertMode  caddv = insertmode(insert_mode)
-        cdef PetscScatterMode csctm = scattermode(scatter_mode)
+    def ghostUpdateBegin(self, addv=None, mode=None):
+        cdef PetscInsertMode  caddv = insertmode(addv)
+        cdef PetscScatterMode csctm = scattermode(mode)
         CHKERR( VecGhostUpdateBegin(self.vec, caddv, csctm) )
 
-    def ghostUpdateEnd(self, insert_mode, scatter_mode):
-        cdef PetscInsertMode  caddv = insertmode(insert_mode)
-        cdef PetscScatterMode csctm = scattermode(scatter_mode)
+    def ghostUpdateEnd(self, addv=None, mode=None):
+        cdef PetscInsertMode  caddv = insertmode(addv)
+        cdef PetscScatterMode csctm = scattermode(mode)
         CHKERR( VecGhostUpdateEnd(self.vec, caddv, csctm) )
 
-    def ghostUpdate(self, insert_mode, scatter_mode):
-        cdef PetscInsertMode  caddv = insertmode(insert_mode)
-        cdef PetscScatterMode csctm = scattermode(scatter_mode)
+    def ghostUpdate(self, addv=None, mode=None):
+        cdef PetscInsertMode  caddv = insertmode(addv)
+        cdef PetscScatterMode csctm = scattermode(mode)
         CHKERR( VecGhostUpdateBegin(self.vec, caddv, csctm) )
         CHKERR( VecGhostUpdateEnd(self.vec, caddv, csctm) )
 
@@ -775,39 +775,39 @@ cdef class Scatter(Object):
     #
 
     def begin(self, Vec vec_from not None, Vec vec_to not None,
-              insert_mode, scatter_mode):
-        cdef PetscInsertMode  caddv = insertmode(insert_mode)
-        cdef PetscScatterMode csctm = scattermode(scatter_mode)
+              addv=None, mode=None):
+        cdef PetscInsertMode  caddv = insertmode(addv)
+        cdef PetscScatterMode csctm = scattermode(mode)
         CHKERR( VecScatterBegin(self.sct, vec_from.vec, vec_to.vec,
                                 caddv, csctm) )
 
     def end(self, Vec vec_from not None, Vec vec_to not None,
-            insert_mode, scatter_mode):
-        cdef PetscInsertMode  caddv = insertmode(insert_mode)
-        cdef PetscScatterMode csctm = scattermode(scatter_mode)
+            addv=None, mode=None):
+        cdef PetscInsertMode  caddv = insertmode(addv)
+        cdef PetscScatterMode csctm = scattermode(mode)
         CHKERR( VecScatterEnd(self.sct, vec_from.vec, vec_to.vec,
                               caddv, csctm) )
 
     #
 
     def scatterBegin(self, Vec vec_from not None, Vec vec_to not None,
-                     insert_mode, scatter_mode):
-        cdef PetscInsertMode  caddv = insertmode(insert_mode)
-        cdef PetscScatterMode csctm = scattermode(scatter_mode)
+                     addv=None, mode=None):
+        cdef PetscInsertMode  caddv = insertmode(addv)
+        cdef PetscScatterMode csctm = scattermode(mode)
         CHKERR( VecScatterBegin(self.sct, vec_from.vec, vec_to.vec,
                                 caddv, csctm) )
 
     def scatterEnd(self, Vec vec_from not None, Vec vec_to not None,
-                   insert_mode, scatter_mode):
-        cdef PetscInsertMode  caddv = insertmode(insert_mode)
-        cdef PetscScatterMode csctm = scattermode(scatter_mode)
+                   addv=None, mode=None):
+        cdef PetscInsertMode  caddv = insertmode(addv)
+        cdef PetscScatterMode csctm = scattermode(mode)
         CHKERR( VecScatterEnd(self.sct, vec_from.vec, vec_to.vec,
                               caddv, csctm) )
 
     def scatter(self, Vec vec_from not None, Vec vec_to not None,
-                insert_mode, scatter_mode):
-        cdef PetscInsertMode  caddv = insertmode(insert_mode)
-        cdef PetscScatterMode csctm = scattermode(scatter_mode)
+                addv=None, mode=None):
+        cdef PetscInsertMode  caddv = insertmode(addv)
+        cdef PetscScatterMode csctm = scattermode(mode)
         CHKERR( VecScatterBegin(self.sct, vec_from.vec, vec_to.vec,
                                 caddv, csctm) )
         CHKERR( VecScatterEnd(self.sct, vec_from.vec, vec_to.vec,

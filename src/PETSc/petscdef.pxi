@@ -43,15 +43,21 @@ cdef extern from "petsc.h" nogil:
     enum: PETSC_ERR_SYS
 
 
-cdef inline PetscInsertMode insertmode(object mode) except <PetscInsertMode>(-1):
+cdef inline PetscInsertMode insertmode(object mode) \
+    except <PetscInsertMode>(-1):
     if   mode is None:  return PETSC_INSERT_VALUES
     elif mode is True:  return PETSC_ADD_VALUES
     elif mode is False: return PETSC_INSERT_VALUES
     else:               return mode
 
-cdef inline PetscScatterMode scattermode(object mode) except <PetscScatterMode>(-1):
-    if   mode is None:  return PETSC_SCATTER_FORWARD
-    elif mode is False: return PETSC_SCATTER_FORWARD
-    elif mode is True:  return PETSC_SCATTER_REVERSE
-    else:               return mode
+cdef inline PetscScatterMode scattermode(object mode) \
+    except <PetscScatterMode>(-1):
+    if mode is None:  return PETSC_SCATTER_FORWARD
+    if mode is False: return PETSC_SCATTER_FORWARD
+    if mode is True:  return PETSC_SCATTER_REVERSE
+    if isinstance(mode, str):
+        if mode == 'forward': return PETSC_SCATTER_FORWARD
+        if mode == 'reverse': return PETSC_SCATTER_REVERSE
+        else: raise ValueError("unknown scatter mode: %s" % mode)
+    return mode
 
