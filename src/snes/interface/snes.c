@@ -3115,9 +3115,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction_Matlab(SNES snes,Vec x,Ve
 {
   PetscErrorCode ierr;
   char           *funcname = (char*)ctx;
-  int            nlhs = 1,nrhs = 3;
-  mxArray	 *plhs[1],*prhs[3];
-  long long int  lx = 0,ly = 0;
+  int            nlhs = 1,nrhs = 4;
+  mxArray	 *plhs[1],*prhs[4];
+  long long int  lx = 0,ly = 0,ls = 0;
     
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -3128,11 +3128,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction_Matlab(SNES snes,Vec x,Ve
 
   /* call Matlab function in ctx with arguments x and y */
 
+  ierr = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr); 
   ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 
   ierr = PetscMemcpy(&ly,&y,sizeof(x));CHKERRQ(ierr); 
-  prhs[0] =  mxCreateDoubleScalar((double)lx);
-  prhs[1] =  mxCreateDoubleScalar((double)ly);
-  prhs[2] =  mxCreateString(funcname);
+  prhs[0] =  mxCreateDoubleScalar((double)ls);
+  prhs[1] =  mxCreateDoubleScalar((double)lx);
+  prhs[2] =  mxCreateDoubleScalar((double)ly);
+  prhs[3] =  mxCreateString(funcname);
   ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"SNESComputeFunctionInternal");CHKERRQ(ierr);
   ierr    =  mxGetScalar(plhs[0]);CHKERRQ(ierr);
   mxDestroyArray(prhs[0]);

@@ -1,6 +1,11 @@
 classdef SNES < PetscObject
   methods
-    function obj = SNES()
+    function obj = SNES(pid,flg)
+      if (nargin > 1) 
+        %  SNES(pid,'pobj') uses an already existing PETSc SNES object
+        obj.pobj = pid;
+        return
+      end
       [err,obj.pobj] = calllib('libpetsc', 'SNESCreate', 0,0);
     end
     function err = SetType(obj,name)

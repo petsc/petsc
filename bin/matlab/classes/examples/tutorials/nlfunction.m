@@ -1,4 +1,4 @@
-function err = nlfunction(x,f)
+function err = nlfunction(snes,x,f)
 %
 %  Example of a nonlinear function needed by SNES
 %
