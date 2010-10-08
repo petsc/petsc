@@ -73,7 +73,7 @@ cdef class PC(Object):
     ASMType       = PCASMType
     CompositeType = PCCompositeType
 
-    #
+    # --- xxx ---
 
     def __cinit__(self):
         self.obj = <PetscObject*> &self.pc
@@ -85,7 +85,7 @@ cdef class PC(Object):
         self.apply(x, y)
         return y
 
-    #
+    # --- xxx ---
 
     def view(self, Viewer viewer=None):
         cdef PetscViewer vwr = NULL
@@ -161,9 +161,7 @@ cdef class PC(Object):
     def applySymmetricRight(self, Vec x not None, Vec y not None):
         CHKERR( PCApplySymmetricRight(self.pc, x.vec, y.vec) )
 
-
-    # Python
-    # ------
+    # --- Python ---
 
     def createPython(self, context=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
@@ -188,8 +186,7 @@ cdef class PC(Object):
         py_type = str2bytes(py_type, &cval)
         CHKERR( PCPythonSetType(self.pc, cval) )
 
-    # ASM
-    # ---
+    # --- ASM ---
 
     def setASMType(self, asmtype):
         cdef PetscPCASMType  cval = asmtype
@@ -213,8 +210,7 @@ cdef class PC(Object):
         CHKERR( PCASMGetSubKSP(self.pc, &n, NULL, &p) )
         return [ref_KSP(p[i]) for i from 0 <= i <n]
 
-    # FieldSplit
-    # ----------
+    # --- FieldSplit ---
 
     def setFieldSplitType(self, ctype):
         cdef PetscPCCompositeType cval = ctype

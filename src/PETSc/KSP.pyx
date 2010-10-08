@@ -127,7 +127,7 @@ cdef class KSP(Object):
     def setFromOptions(self):
         CHKERR( KSPSetFromOptions(self.ksp) )
 
-    # --- xxx ---
+    # --- application context ---
 
     def setAppCtx(self, appctx):
         self.set_attr('__appctx__', appctx)
@@ -135,7 +135,7 @@ cdef class KSP(Object):
     def getAppCtx(self):
         return self.get_attr('__appctx__')
 
-    # --- xxx ---
+    # --- operators and preconditioner ---
 
     def setOperators(self, Mat A=None, Mat P=None, structure=None):
         cdef PetscMat amat=NULL
@@ -171,61 +171,7 @@ cdef class KSP(Object):
         PetscIncref(<PetscObject>pc.pc)
         return pc
 
-    def setPCSide(self, side):
-        CHKERR( KSPSetPCSide(self.ksp, side) )
-
-    def getPCSide(self):
-        cdef PetscPCSide side = PC_LEFT
-        CHKERR( KSPGetPCSide(self.ksp, &side) )
-        return side
-
-    def setNormType(self, normtype):
-        CHKERR( KSPSetNormType(self.ksp, normtype) )
-
-    def getNormType(self):
-        cdef PetscKSPNormType normtype = KSP_NORM_NO
-        CHKERR( KSPGetNormType(self.ksp, &normtype) )
-        return normtype
-
-    def getRhs(self):
-        cdef Vec vec = Vec()
-        CHKERR( KSPGetRhs(self.ksp, &vec.vec) )
-        PetscIncref(<PetscObject>vec.vec)
-        return vec
-
-    def getSolution(self):
-        cdef Vec vec = Vec()
-        CHKERR( KSPGetSolution(self.ksp, &vec.vec) )
-        PetscIncref(<PetscObject>vec.vec)
-        return vec
-
-    def getWorkVecs(self, right=None, left=None):
-        cdef bint R = right is not None
-        cdef bint L = left is not None
-        cdef PetscInt i=0, nr=0, nl=0
-        cdef PetscVec *vr=NULL, *vl=NULL
-        if R: nr = asInt(right)
-        if L: nl = asInt(left)
-        cdef object vecsr = [] if R else None
-        cdef object vecsl = [] if L else None
-        CHKERR( KSPGetVecs(self.ksp, nr, &vr, nl, &vr) )
-        try:
-            for i from 0 <= i < nr:
-                vecsr.append(ref_Vec(vr[i]))
-            for i from 0 <= i < nl:
-                vecsl.append(ref_Vec(vl[i]))
-        finally:
-            if nr > 0 and vr != NULL:
-                VecDestroyVecs(vr, nr) # XXX errors?
-            if nl > 0 and vl !=NULL:
-                VecDestroyVecs(vl, nl) # XXX errors?
-        #
-        if R and L: return (vecsr, vecsl)
-        elif R:     return vecsr
-        elif L:     return vecsl
-        else:       return None
-
-    # --- xxx ---
+    # --- tolerances and convergence ---
 
     def setTolerances(self, rtol=None, atol=None, divtol=None, max_it=None):
         cdef PetscReal crtol, catol, cdivtol
@@ -298,6 +244,8 @@ cdef class KSP(Object):
         cdef PetscReal rval = asReal(rnorm)
         CHKERR( KSPLogConvergenceHistory(self.ksp, ival, rval) )
 
+    # --- monitoring ---
+
     def setMonitor(self, monitor, args=None, kargs=None):
         cdef object monitorlist = None
         if monitor is not None:
@@ -321,15 +269,25 @@ cdef class KSP(Object):
         CHKERR( KSPMonitorCancel(self.ksp) )
         self.set_attr('__monitor__', None)
 
-    # --- xxx ---
+    # --- customization ---
 
-    def buildSolution(self, Vec x not None):
-        CHKERR( KSPBuildSolution(self.ksp, x.vec, NULL) )
+    def setPCSide(self, side):
+        CHKERR( KSPSetPCSide(self.ksp, side) )
 
-    def buildResidual(self, Vec r not None):
-        CHKERR( KSPBuildResidual(self.ksp , NULL, r.vec, &r.vec) )
+    def getPCSide(self):
+        cdef PetscPCSide side = PC_LEFT
+        CHKERR( KSPGetPCSide(self.ksp, &side) )
+        return side
 
-    # --- xxx ---
+    def setNormType(self, normtype):
+        CHKERR( KSPSetNormType(self.ksp, normtype) )
+
+    def getNormType(self):
+        cdef PetscKSPNormType normtype = KSP_NORM_NO
+        CHKERR( KSPGetNormType(self.ksp, &normtype) )
+        return normtype
+
+    # --- initial guess ---
 
     def setInitialGuessNonzero(self, bint flag):
         cdef PetscBool guess_nonzero = PETSC_FALSE
@@ -356,7 +314,7 @@ cdef class KSP(Object):
         cdef PetscInt ival2 = asInt(size)
         CHKERR( KSPSetUseFischerGuess(self.ksp, ival1, ival2) )
 
-    # --- xxx ---
+    # --- solving ---
 
     def setUp(self):
         CHKERR( KSPSetUp(self.ksp) )
@@ -397,13 +355,57 @@ cdef class KSP(Object):
         CHKERR( KSPGetConvergedReason(self.ksp, &reason) )
         return reason
 
-    #
+    def getRhs(self):
+        cdef Vec vec = Vec()
+        CHKERR( KSPGetRhs(self.ksp, &vec.vec) )
+        PetscIncref(<PetscObject>vec.vec)
+        return vec
+
+    def getSolution(self):
+        cdef Vec vec = Vec()
+        CHKERR( KSPGetSolution(self.ksp, &vec.vec) )
+        PetscIncref(<PetscObject>vec.vec)
+        return vec
+
+    def getWorkVecs(self, right=None, left=None):
+        cdef bint R = right is not None
+        cdef bint L = left is not None
+        cdef PetscInt i=0, nr=0, nl=0
+        cdef PetscVec *vr=NULL, *vl=NULL
+        if R: nr = asInt(right)
+        if L: nl = asInt(left)
+        cdef object vecsr = [] if R else None
+        cdef object vecsl = [] if L else None
+        CHKERR( KSPGetVecs(self.ksp, nr, &vr, nl, &vr) )
+        try:
+            for i from 0 <= i < nr:
+                vecsr.append(ref_Vec(vr[i]))
+            for i from 0 <= i < nl:
+                vecsl.append(ref_Vec(vl[i]))
+        finally:
+            if nr > 0 and vr != NULL:
+                VecDestroyVecs(vr, nr) # XXX errors?
+            if nl > 0 and vl !=NULL:
+                VecDestroyVecs(vl, nl) # XXX errors?
+        #
+        if R and L: return (vecsr, vecsl)
+        elif R:     return vecsr
+        elif L:     return vecsl
+        else:       return None
+
+    def buildSolution(self, Vec x not None):
+        CHKERR( KSPBuildSolution(self.ksp, x.vec, NULL) )
+
+    def buildResidual(self, Vec r not None):
+        CHKERR( KSPBuildResidual(self.ksp , NULL, r.vec, &r.vec) )
+
+    # --- GMRES ---
 
     def setGMRESRestart(self, restart):
         cdef PetscInt ival = asInt(restart)
         CHKERR( KSPGMRESSetRestart(self.ksp, ival) )
 
-    # --- xxx ---
+    # --- Python ---
 
     def createPython(self, context=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)

@@ -82,7 +82,7 @@ cdef class SNES(Object):
     def setFromOptions(self):
         CHKERR( SNESSetFromOptions(self.snes) )
 
-    # --- xxx ---
+    # --- application context ---
 
     def setAppCtx(self, appctx):
         self.set_attr('__appctx__', appctx)
@@ -90,7 +90,7 @@ cdef class SNES(Object):
     def getAppCtx(self):
         return self.get_attr('__appctx__')
 
-    # --- xxx ---
+    # --- user Function/Jacobian routines ---
 
     def setFunction(self, function, Vec f not None, args=None, kargs=None):
         CHKERR( SNESSetFunction(self.snes, f.vec, SNES_Function, NULL) )
@@ -147,16 +147,7 @@ cdef class SNES(Object):
         CHKERR( SNESComputeJacobian(self.snes, x.vec, jmat, pmat, &flag) )
         return flag
 
-    def setKSP(self, KSP ksp not None):
-        CHKERR( SNESSetKSP(self.snes, ksp.ksp) )
-
-    def getKSP(self):
-        cdef KSP ksp = KSP()
-        CHKERR( SNESGetKSP(self.snes, &ksp.ksp) )
-        PetscIncref(<PetscObject>ksp.ksp)
-        return ksp
-
-    # --- xxx ---
+    # --- tolerances and convergence ---
 
     def setTolerances(self, rtol=None, atol=None, stol=None, max_it=None):
         cdef PetscReal crtol, catol, cstol
@@ -177,13 +168,13 @@ cdef class SNES(Object):
         return (toReal(crtol), toReal(catol), toReal(cstol), toInt(cmaxit))
 
     def setConvergenceTest(self, converged, args=None, kargs=None):
-        if converged is not None: 
+        if converged is not None:
             CHKERR( SNESSetConvergenceTest(
                     self.snes, SNES_Converged, NULL, NULL) )
             if args is None: args = ()
             if kargs is None: kargs = {}
             self.set_attr('__converged__', (converged, args, kargs))
-        else: 
+        else:
             CHKERR( SNESSetConvergenceTest(
                     self.snes, SNESDefaultConverged, NULL, NULL) )
             self.set_attr('__converged__', None)
@@ -230,6 +221,8 @@ cdef class SNES(Object):
         cdef PetscInt  ival2 = asInt(linear_its)
         CHKERR( SNESLogConvergenceHistory(self.snes, ival1, rval, ival2) )
 
+    # --- monitoring ---
+
     def setMonitor(self, monitor, args=None, kargs=None):
         cdef object monitorlist = None
         if monitor is not None:
@@ -253,7 +246,7 @@ cdef class SNES(Object):
         CHKERR( SNESMonitorCancel(self.snes) )
         self.set_attr('__monitor__', None)
 
-    # --- xxx ---
+    # --- more tolerances ---
 
     def setMaxFunctionEvaluations(self, max_funcs):
         cdef PetscReal r = PETSC_DEFAULT
@@ -301,7 +294,7 @@ cdef class SNES(Object):
         CHKERR( SNESGetLinearSolveFailures(self.snes, &ival) )
         return toInt(ival)
 
-    # --- xxx ---
+    # --- solving ---
 
     def setUp(self):
         CHKERR( SNESSetUp(self.snes) )
@@ -361,7 +354,16 @@ cdef class SNES(Object):
         PetscIncref(<PetscObject>vec.vec)
         return vec
 
-    # --- xxx ---
+    # --- linear solver ---
+
+    def setKSP(self, KSP ksp not None):
+        CHKERR( SNESSetKSP(self.snes, ksp.ksp) )
+
+    def getKSP(self):
+        cdef KSP ksp = KSP()
+        CHKERR( SNESGetKSP(self.snes, &ksp.ksp) )
+        PetscIncref(<PetscObject>ksp.ksp)
+        return ksp
 
     def setUseEW(self, flag=True, *targs, **kargs):
         CHKERR( SNESKSPSetUseEW(self.snes, flag) )
@@ -410,7 +412,7 @@ cdef class SNES(Object):
                 'alpha2'    : toReal(alpha2),
                 'threshold' : toReal(threshold),}
 
-    # --- xxx ---
+    # --- matrix free / finite diferences ---
 
     def setUseMF(self, flag=True):
         cdef PetscBool cflag = flag
@@ -430,7 +432,7 @@ cdef class SNES(Object):
         CHKERR( SNESGetUseFDColoring(self.snes, &flag) )
         return <bint> flag
 
-    # --- xxx ---
+    # --- Python ---
 
     def createPython(self, context=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
@@ -455,7 +457,7 @@ cdef class SNES(Object):
         py_type = str2bytes(py_type, &cval)
         CHKERR( SNESPythonSetType(self.snes, cval) )
 
-    # --- xxx ---
+    # --- application context ---
 
     property appctx:
         def __get__(self):

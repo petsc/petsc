@@ -86,7 +86,7 @@ cdef class TS(Object):
     def setFromOptions(self):
         CHKERR( TSSetFromOptions(self.ts) )
 
-    # --- xxx ---
+    # --- application context ---
 
     def setAppCtx(self, appctx):
         self.set_attr('__appctx__', appctx)
@@ -94,7 +94,7 @@ cdef class TS(Object):
     def getAppCtx(self):
         return self.get_attr('__appctx__')
 
-    # --- xxx ---
+    # --- user LHS Matrix routines ---
 
     def setLHSMatrix(self, Mat Alhs not None,
                      lhsmatrix=None, args=None, kargs=None):
@@ -124,7 +124,7 @@ cdef class TS(Object):
             if kargs is None: kargs = {}
             self.set_attr('__rhsmatrix__', (rhsmatrix, args, kargs))
 
-    # --- xxx ---
+    # --- user RHS Function/Jacobian routines ---
 
     def setRHSFunction(self, function, Vec f not None, args=None, kargs=None):
         cdef PetscVec fvec = NULL
@@ -172,7 +172,7 @@ cdef class TS(Object):
         cdef object jacobian = self.get_attr('__rhsjacobian__')
         return (J, P, jacobian)
 
-    #
+    # --- user Implicit Function/Jacobian routines ---
 
     def setIFunction(self, function, Vec f not None, args=None, kargs=None):
         cdef PetscVec fvec=NULL
@@ -225,7 +225,7 @@ cdef class TS(Object):
         cdef object jacobian = self.get_attr('__ijacobian__')
         return (J, P, jacobian)
 
-    #
+    # --- solution ---
 
     def setSolution(self, Vec u not None):
         CHKERR( TSSetSolution(self.ts, u.vec) )
@@ -235,7 +235,8 @@ cdef class TS(Object):
         CHKERR( TSGetSolution(self.ts, &u.vec) )
         PetscIncref(<PetscObject>u.vec)
         return u
-    #
+
+    # --- inner solver ---
 
     def getSNES(self):
         cdef SNES snes = SNES()
@@ -249,7 +250,7 @@ cdef class TS(Object):
         PetscIncref(<PetscObject>ksp.ksp)
         return ksp
 
-    #
+    # --- finite diferences ---
 
     def setUseFD(self, flag=True):
         cdef PetscBool cflag = flag
@@ -260,7 +261,7 @@ cdef class TS(Object):
         CHKERR( TSGetUseFDColoring(self.ts, &flag) )
         return <bint> flag
 
-    # --- xxx ---
+    # --- customization ---
 
     def setTime(self, t):
         cdef PetscReal rval = asReal(t)
@@ -330,7 +331,7 @@ cdef class TS(Object):
         CHKERR( TSGetDuration(self.ts, &ival, &rval) )
         return (toReal(rval), toInt(ival))
 
-    #
+    # --- monitoring ---
 
     def setMonitor(self, monitor, args=None, kargs=None):
         cdef object monitorlist = None
@@ -358,7 +359,8 @@ cdef class TS(Object):
     def cancelMonitor(self):
         CHKERR( TSMonitorCancel(self.ts) )
         self.set_attr('__monitor__', None)
-    #
+
+    # --- solving ---
 
     def setPreStep(self, prestep, args=None, kargs=None):
         if prestep is not None:
@@ -392,8 +394,7 @@ cdef class TS(Object):
     def solve(self, Vec u not None):
         CHKERR( TSSolve(self.ts, u.vec) )
 
-    # Python
-    # ------
+    # --- Python ---
 
     def createPython(self, context=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
@@ -418,8 +419,7 @@ cdef class TS(Object):
         py_type = str2bytes(py_type, &cval)
         CHKERR( TSPythonSetType(self.ts, cval) )
 
-    # Theta
-    # -----
+    # --- Theta ---
 
     def setTheta(self, theta):
         cdef PetscReal rval = asReal(theta)
@@ -430,7 +430,7 @@ cdef class TS(Object):
         CHKERR( TSThetaGetTheta(self.ts, &rval) )
         return toReal(rval)
 
-    # --- xxx ---
+    # --- application context ---
 
     property appctx:
         def __get__(self):
