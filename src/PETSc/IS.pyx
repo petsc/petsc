@@ -70,9 +70,10 @@ cdef class IS(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs = asInt(bsize)
         cdef PetscInt nidx = 0, *idx = NULL
+        cdef PetscCopyMode cm = PETSC_COPY_VALUES
         cdef PetscIS newiset = NULL
         indices = iarray_i(indices, &nidx, &idx)
-        CHKERR( ISCreateBlock(ccomm, bs, nidx, idx, &newiset) )
+        CHKERR( ISCreateBlock(ccomm, bs, nidx, idx, cm, &newiset) )
         PetscCLEAR(self.obj); self.iset = newiset
         return self
 
@@ -228,8 +229,9 @@ cdef class IS(Object):
     def setBlockIndices(self, bsize, indices):
         cdef PetscInt bs = asInt(bsize)
         cdef PetscInt nidx = 0, *idx = NULL
+        cdef PetscCopyMode cm = PETSC_COPY_VALUES
         indices = iarray_i(indices, &nidx, &idx)
-        CHKERR( ISBlockSetIndices(self.iset, bs, nidx, idx) )
+        CHKERR( ISBlockSetIndices(self.iset, bs, nidx, idx, cm) )
 
     def getBlockIndices(self):
         cdef PetscInt size = 0

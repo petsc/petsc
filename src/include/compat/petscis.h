@@ -70,7 +70,8 @@ ISGeneralSetIndices_Compat(IS is,PetscInt n,const PetscInt idx[],
 #undef __FUNCT__
 #define __FUNCT__ "ISBlockSetIndices"
 static PetscErrorCode
-ISBlockSetIndices_Compat(IS is,PetscInt bs, PetscInt n,const PetscInt idx[])
+ISBlockSetIndices_Compat(IS is,PetscInt bs, PetscInt n,const PetscInt idx[],
+                         PetscCopyMode mode)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -110,6 +111,25 @@ ISCreateGeneral_Compat(MPI_Comm comm,PetscInt n,const PetscInt idx[],PetscCopyMo
   PetscFunctionReturn(0);
 }
 #define ISCreateGeneral ISCreateGeneral_Compat
+
+#undef __FUNCT__
+#define __FUNCT__ "ISCreateBlock"
+static PetscErrorCode
+ISCreateBlock_Compat(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscInt idx[],PetscCopyMode mode, IS *is)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  switch(mode) {
+
+  case PETSC_COPY_VALUES:
+    ierr = ISCreateBlock(comm,bs,n,idx,is);CHKERRQ(ierr);break;
+  default:
+    SETERRQ(PETSC_ERR_SUP, __FUNCT__"() not supported in this PETSc version");
+    PetscFunctionReturn(PETSC_ERR_SUP);
+  }
+  PetscFunctionReturn(0);
+}
+#define ISCreateBlock ISCreateBlock_Compat
 
 #undef __FUNCT__
 #define __FUNCT__ "ISToGeneral"

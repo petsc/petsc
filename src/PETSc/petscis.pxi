@@ -12,7 +12,7 @@ cdef extern from "petscis.h" nogil:
     int ISGetType(PetscIS,PetscISType*)
 
     int ISCreateGeneral(MPI_Comm,PetscInt,PetscInt[],PetscCopyMode,PetscIS*)
-    int ISCreateBlock(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscIS*)
+    int ISCreateBlock(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscCopyMode,PetscIS*)
     int ISCreateStride(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscIS*)
 
     int ISDuplicate(PetscIS,PetscIS*)
@@ -43,7 +43,7 @@ cdef extern from "petscis.h" nogil:
     int ISGeneralSetIndices(PetscIS,PetscInt,PetscInt[],PetscCopyMode)
 
     int ISBlock(PetscIS,PetscBool*)
-    int ISBlockSetIndices(PetscIS,PetscInt,PetscInt,PetscInt[])
+    int ISBlockSetIndices(PetscIS,PetscInt,PetscInt,PetscInt[],PetscCopyMode)
     int ISBlockGetIndices(PetscIS,const_PetscInt*[])
     int ISBlockRestoreIndices(PetscIS,const_PetscInt*[])
     int ISBlockGetSize(PetscIS,PetscInt*)
