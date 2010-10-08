@@ -811,7 +811,7 @@ runex35:
 runex36f:
 	-@${MPIEXEC} -n 1  ./ex36f > ex36_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex36_1.out ex36_1.tmp) then true; \
-	   else echo "Possible problem with ex36_1, diffs above"; fi; \
+	   else echo "Possible problem with ex36f_1, diffs above"; fi; \
 	   ${RM} -f ex36_1.tmp
 runex37:
 	-@${MPIEXEC} -n 1 ./ex37 > ex37_1.tmp 2>&1;   \
@@ -1021,7 +1021,7 @@ runex61:
 
 runex61_2:
 	-@${MPIEXEC} -n 1  ./ex61 -baij  > ex61_2.tmp 2>&1;   \
-	   if (${DIFF} output/ex61_1.out ex61_2.tmp) then true; \
+	   if (${DIFF} output/ex61_2.out ex61_2.tmp) then true; \
 	   else echo "Possible problem with ex61_2, diffs above"; fi; \
 	   ${RM} -f ex61_2.tmp
 runex63f:
