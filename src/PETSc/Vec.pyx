@@ -1,10 +1,14 @@
 # --------------------------------------------------------------------
 
 class VecType(object):
-    SEQ    = S_(VECSEQ)
-    MPI    = S_(VECMPI)
-    SHARED = S_(VECSHARED)
-    SIEVE  = S_(VECSIEVE)
+    SEQ      = S_(VECSEQ)
+    MPI      = S_(VECMPI)
+    STANDARD = S_(VECSTANDARD)
+    SHARED   = S_(VECSHARED)
+    SIEVE    = S_(VECSIEVE)
+    SEQCUDA  = S_(VECSEQCUDA)
+    MPICUDA  = S_(VECMPICUDA)
+    CUDA     = S_(VECCUDA)
 
 class VecOption(object):
     IGNORE_OFF_PROC_ENTRIES = VEC_IGNORE_OFF_PROC_ENTRIES

@@ -11,6 +11,12 @@
 #define MATSEQAIJCRL   MATSEQCRL
 #define MATMPIAIJCRL   MATMPICRL
 #define MATAIJCRL      MATCRL
+#define MATAIJCUDA     "aijcuda"
+#define MATSEQAIJCUDA  "seqaijcuda"
+#define MATMPIAIJCUDA  "mpiaijcuda"
+#define MATSEQCUFFT    "seqcufft"
+#define MATDD          "dd"
+#define MATIM          "im"
 #endif
 
 #if (PETSC_VERSION_(3,1,0) || \

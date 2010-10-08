@@ -5,7 +5,9 @@
 
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
-#define SNESPICARD "picard"
+#define SNESKSPONLY "ksponly"
+#define SNESPICARD  "picard"
+#define SNESVI      "vi"
 #define SNES_DIVERGED_LINE_SEARCH SNES_DIVERGED_LS_FAILURE
 #endif
 

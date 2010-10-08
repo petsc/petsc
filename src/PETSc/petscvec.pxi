@@ -5,8 +5,12 @@ cdef extern from "petscvec.h" nogil:
     ctypedef char* PetscVecType "const char*"
     PetscVecType VECSEQ
     PetscVecType VECMPI
+    PetscVecType VECSTANDARD
     PetscVecType VECSHARED
     PetscVecType VECSIEVE
+    PetscVecType VECSEQCUDA
+    PetscVecType VECMPICUDA
+    PetscVecType VECCUDA
 
     ctypedef enum PetscVecOption "VecOption":
         VEC_IGNORE_OFF_PROC_ENTRIES

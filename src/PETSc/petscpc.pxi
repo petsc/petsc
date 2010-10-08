@@ -37,6 +37,7 @@ cdef extern from "petscpc.h" nogil:
     PetscPCType PCPFMG
     PetscPCType PCSYSPFMG
     PetscPCType PCREDISTRIBUTE
+    PetscPCType PCSACUDA
 
     ctypedef enum PetscPCSide "PCSide":
         PC_LEFT

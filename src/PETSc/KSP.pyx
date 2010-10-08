@@ -26,9 +26,10 @@ class KSPType(object):
     SYMMLQ     = S_(KSPSYMMLQ)
     LCD        = S_(KSPLCD)
     BROYDEN    = S_(KSPBROYDEN)
+    PYTHON     = S_(KSPPYTHON)
     GCR        = S_(KSPGCR)
-    #
-    PYTHON = S_(KSPPYTHON)
+    NGMRES     = S_(KSPNGMRES)
+    SPECEST    = S_(KSPSPECEST)
 
 class KSPNormType(object):
     # native

@@ -2,44 +2,50 @@ cdef extern from "petscmat.h" nogil:
 
     ctypedef char* PetscMatType "const char*"
     PetscMatType MATSAME
-    PetscMatType MATSEQMAIJ
-    PetscMatType MATMPIMAIJ
     PetscMatType MATMAIJ
+    PetscMatType   MATSEQMAIJ
+    PetscMatType   MATMPIMAIJ
     PetscMatType MATIS
-    PetscMatType MATSEQAIJ
-    PetscMatType MATMPIAIJ
     PetscMatType MATAIJ
+    PetscMatType   MATSEQAIJ
+    PetscMatType   MATMPIAIJ
+    PetscMatType     MATAIJCRL
+    PetscMatType       MATSEQAIJCRL
+    PetscMatType       MATMPIAIJCRL
+    PetscMatType     MATAIJCUDA
+    PetscMatType       MATSEQAIJCUDA
+    PetscMatType       MATMPIAIJCUDA
+    PetscMatType     MATAIJPERM
+    PetscMatType       MATSEQAIJPERM
+    PetscMatType       MATMPIAIJPERM
     PetscMatType MATSHELL
-    PetscMatType MATSEQDENSE
-    PetscMatType MATMPIDENSE
     PetscMatType MATDENSE
-    PetscMatType MATSEQBAIJ
-    PetscMatType MATMPIBAIJ
+    PetscMatType   MATSEQDENSE
+    PetscMatType   MATMPIDENSE
     PetscMatType MATBAIJ
+    PetscMatType   MATSEQBAIJ
+    PetscMatType   MATMPIBAIJ
     PetscMatType MATMPIADJ
-    PetscMatType MATSEQSBAIJ
-    PetscMatType MATMPISBAIJ
     PetscMatType MATSBAIJ
+    PetscMatType   MATSEQSBAIJ
+    PetscMatType   MATMPISBAIJ
     PetscMatType MATDAAD
     PetscMatType MATMFFD
     PetscMatType MATNORMAL
     PetscMatType MATLRC
-    PetscMatType MATSEQAIJPERM
-    PetscMatType MATMPIAIJPERM
-    PetscMatType MATAIJPERM
-    PetscMatType MATSEQAIJCRL
-    PetscMatType MATMPIAIJCRL
-    PetscMatType MATAIJCRL
     PetscMatType MATSCATTER
     PetscMatType MATBLOCKMAT
     PetscMatType MATCOMPOSITE
     PetscMatType MATSEQFFTW
+    PetscMatType MATSEQCUFFT
     PetscMatType MATTRANSPOSEMAT
     PetscMatType MATSCHURCOMPLEMENT
     #PetscMatType MATPYTHON
     PetscMatType MATHYPRESTRUCT
     PetscMatType MATHYPRESSTRUCT
     PetscMatType MATSUBMATRIX
+    PetscMatType MATDD
+    PetscMatType MATIM
 
     ctypedef char* PetscMatOrderingType "const char*"
     PetscMatOrderingType MATORDERINGNATURAL

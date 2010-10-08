@@ -1,11 +1,13 @@
 # --------------------------------------------------------------------
 
 class SNESType(object):
-    LS     = S_(SNESLS)
-    TR     = S_(SNESTR)
-    PICARD = S_(SNESPICARD)
-    #
-    PYTHON = S_(SNESPYTHON)
+    LS      = S_(SNESLS)
+    TR      = S_(SNESTR)
+    PYTHON  = S_(SNESPYTHON)
+    TEST    = S_(SNESTEST)
+    PICARD  = S_(SNESPICARD)
+    KSPONLY = S_(SNESKSPONLY)
+    VI      = S_(SNESVI)
 
 class SNESConvergedReason(object):
     # iterating

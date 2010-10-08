@@ -2,17 +2,17 @@
 
 class TSType(object):
     # native
-    EULER           = S_(TSEULER)
-    BEULER          = S_(TSBEULER)
-    CN              = S_(TSCN)
-    RK              = S_(TSRK)
-    PSEUDO          = S_(TSPSEUDO)
-    SUNDIALS        = S_(TSSUNDIALS)
-    THETA           = S_(TSTHETA)
-    GL              = S_(TSGL)
-    SSP             = S_(TSSSP)
+    EULER    = S_(TSEULER)
+    BEULER   = S_(TSBEULER)
+    PSEUDO   = S_(TSPSEUDO)
+    CN       = S_(TSCN)
+    SUNDIALS = S_(TSSUNDIALS)
+    RK       = S_(TSRK)
+    PYTHON   = S_(TSPYTHON)
+    THETA    = S_(TSTHETA)
+    GL       = S_(TSGL)
+    SSP      = S_(TSSSP)
     #
-    PYTHON = S_(TSPYTHON)
     # aliases
     FE = EULER
     BE = BEULER

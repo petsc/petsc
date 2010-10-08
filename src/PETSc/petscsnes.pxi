@@ -3,8 +3,11 @@ cdef extern from "petscsnes.h" nogil:
     ctypedef char* PetscSNESType "const char*"
     PetscSNESType SNESLS
     PetscSNESType SNESTR
-    PetscSNESType SNESPICARD
+    #PetscSNESType SNESPYTHON
     PetscSNESType SNESTEST
+    PetscSNESType SNESPICARD
+    PetscSNESType SNESKSPONLY
+    PetscSNESType SNESVI
 
     ctypedef enum PetscSNESConvergedReason "SNESConvergedReason":
       # iterating

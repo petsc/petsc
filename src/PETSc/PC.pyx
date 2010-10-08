@@ -34,11 +34,11 @@ class PCType(object):
     CP           = S_(PCCP)
     BFBT         = S_(PCBFBT)
     LSC          = S_(PCLSC)
+    PYTHON       = S_(PCPYTHON)
     PFMG         = S_(PCPFMG)
     SYSPFMG      = S_(PCSYSPFMG)
     REDISTRIBUTE = S_(PCREDISTRIBUTE)
-    #
-    PYTHON = S_(PCPYTHON)
+    SACUDA       = S_(PCSACUDA)
 
 class PCSide(object):
     # native

@@ -5,6 +5,11 @@
 
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
+#define PCSACUDA "sacuda"
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
 /* PCFieldSplitSetFields */
 #undef __FUNCT__
 #define __FUNCT__ "PCFieldSplitSetFields"

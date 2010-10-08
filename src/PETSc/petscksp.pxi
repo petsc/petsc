@@ -28,6 +28,9 @@ cdef extern from "petscksp.h" nogil:
     #PetscKSPType KSPPYTHON
     PetscKSPType KSPBROYDEN
     PetscKSPType KSPGCR
+    PetscKSPType KSPNGMRES
+    PetscKSPType KSPSPECEST
+
 
 
     ctypedef enum PetscKSPNormType "KSPNormType":

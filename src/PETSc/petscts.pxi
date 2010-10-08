@@ -7,6 +7,7 @@ cdef extern from "petscts.h" nogil:
     PetscTSType TSCN
     PetscTSType TSSUNDIALS
     PetscTSType TSRK
+    #PetscTSType TSPYTHON
     PetscTSType TSTHETA
     PetscTSType TSGL
     PetscTSType TSSSP
