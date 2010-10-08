@@ -69,7 +69,7 @@ static PetscErrorCode  KSPSolve_SpecEst(KSP ksp)
     for (i=0; i<neig; i++) {
       /* We would really like to compute w (nominally 1/radius) to minimize |1-wB|.  Empirically it
          is better to compute rad = |1-B| than rad = |B|.  There must be a cheap way to do better. */
-      rad = PetscMax(rad,PetscRealPart(PetscSqrtScalar(PetscScalar(PetscSqr(real[i]-1.) + PetscSqr(imag[i])))));
+      rad = PetscMax(rad,PetscRealPart(PetscSqrtScalar((PetscScalar)(PetscSqr(real[i]-1.) + PetscSqr(imag[i])))));
     }
     ierr = PetscFree2(real,imag);CHKERRQ(ierr);
     spec->radius = rad;
