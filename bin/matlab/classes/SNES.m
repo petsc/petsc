@@ -11,6 +11,9 @@ classdef SNES < PetscObject
     function err = SetType(obj,name)
       err = calllib('libpetsc', 'SNESSetType', obj.pobj,name);
     end
+    function err = SetDM(obj,da)
+      err = calllib('libpetsc', 'SNESSetDM', obj.pobj,da.pobj);
+    end
     function err = SetFromOptions(obj)
       err = calllib('libpetsc', 'SNESSetFromOptions', obj.pobj);
     end

@@ -67,7 +67,6 @@ function obj = Vec(array,flg)
       err = calllib('libpetsc', 'VecView', obj.pobj,viewer.pobj);
     end
     function err = Destroy(obj)
-      obj.pobj
       err = calllib('libpetsc', 'VecDestroy', obj.pobj);
     end
 %

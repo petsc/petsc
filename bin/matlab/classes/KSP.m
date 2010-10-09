@@ -6,6 +6,9 @@ classdef KSP < PetscObject
     function err = SetType(obj,name)
       err = calllib('libpetsc', 'KSPSetType', obj.pobj,name);
     end
+    function err = SetDM(obj,da)
+      err = calllib('libpetsc', 'KSPSetDM', obj.pobj,da.pobj);
+    end
     function err = SetFromOptions(obj)
       err = calllib('libpetsc', 'KSPSetFromOptions', obj.pobj);
     end
