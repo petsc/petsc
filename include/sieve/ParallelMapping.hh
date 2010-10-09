@@ -15,8 +15,6 @@
 
 #include <functional>
 
-extern "C" PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);
-
 namespace ALE {
   template<class _Tp>
   struct Identity : public std::unary_function<_Tp,_Tp>

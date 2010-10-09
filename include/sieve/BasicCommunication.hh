@@ -5,6 +5,8 @@
 #include <ALE.hh>
 #endif
 
+extern "C" PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);
+
 namespace ALE {
   // TODO: Check status of Waits
   template<typename Value_>
