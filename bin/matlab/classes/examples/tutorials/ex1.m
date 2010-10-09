@@ -3,7 +3,7 @@
 
 path(path,'../../')
 
-PetscInitialize({'-malloc_dump','-snes_mf','-snes_monitor','-ksp_monitor'});
+PetscInitialize({'-malloc_dump','-snes_monitor','-snes_mf_operator','-ksp_monitor'});
 
 viewer = PetscViewer();
 viewer.SetType('ascii');
@@ -44,8 +44,8 @@ mat.SetSizes(10,10,10,10);
 for i=0:9
   mat.SetValues(i,i,10.0);
 end
-mat.AssemblyBegin(Mat.MAT_FINAL_ASSEMBLY);
-mat.AssemblyEnd(Mat.MAT_FINAL_ASSEMBLY);
+mat.AssemblyBegin(Mat.FINAL_ASSEMBLY);
+mat.AssemblyEnd(Mat.FINAL_ASSEMBLY);
 mat.View(viewer);
 
 b = Vec;
@@ -71,6 +71,7 @@ arg = [1 2 4];
 snes = SNES;
 snes.SetType('ls');
 snes.SetFunction(b,'nlfunction',arg);
+snes.SetJacobian(mat,mat,'nljacobian',arg);
 snes.SetFromOptions();
 snes.Solve(x);
 x.View(viewer);

@@ -24,11 +24,17 @@ classdef SNES < PetscObject
         err = calllib('libpetsc', 'SNESSolve', obj.pobj,b.pboj,x.pobj);
       end
     end
-      function [err,arg] = SetFunction(obj,f,func,arg)
+    function err = SetFunction(obj,f,func,arg)
       if (nargin < 4) 
         arg = 0;
       end
-      [err,arg] = calllib('libpetsc', 'SNESSetFunctionMatlab', obj.pobj,f.pobj,func,arg);
+      err = calllib('libpetsc', 'SNESSetFunctionMatlab', obj.pobj,f.pobj,func,arg);
+    end
+    function err = SetJacobian(obj,A,B,func,arg)
+      if (nargin < 5) 
+        arg = 0;
+      end
+      err = calllib('libpetsc', 'SNESSetJacobianMatlab', obj.pobj,A.pobj,B.pobj,func,arg);
     end
     function err = View(obj,viewer)
       err = calllib('libpetsc', 'SNESView', obj.pobj,viewer.pobj);

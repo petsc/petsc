@@ -71,6 +71,7 @@ int SNESCreate(MPI_Comm,SNES *);
 int SNESSetType(SNES,const char*);
 int SNESSetFromOptions(SNES);
 int SNESSetFunctionMatlab(SNES,Vec,const char*,mxArray*);
+int SNESSetJacobianMatlab(SNES,Mat,Mat,const char*,mxArray*);
 int SNESSolve(SNES,Vec,Vec);
 int SNESSetUp(SNES);
 int SNESView(SNES,PetscViewer);

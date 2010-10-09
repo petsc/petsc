@@ -3112,7 +3112,7 @@ typedef struct {char *funcname; mxArray *ctx;} SNESMatlabContext;
 .keywords: SNES, nonlinear, compute, function
 
 .seealso: SNESSetFunction(), SNESGetFunction()
-@*/
+*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction_Matlab(SNES snes,Vec x,Vec y, void *ctx)
 {
   PetscErrorCode    ierr;
@@ -3151,7 +3151,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction_Matlab(SNES snes,Vec x,Ve
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetFunctionMatlab"
-/*@C
+/*
    SNESSetFunctionMatlab - Sets the function evaluation routine and function 
    vector for use by the SNES routines in solving systems of nonlinear
    equations from Matlab. Here the function is a string containing the name of a Matlab function
@@ -3164,7 +3164,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction_Matlab(SNES snes,Vec x,Ve
 -  func - function evaluation routine
 
    Calling sequence of func:
-$    func (SNES snes,Vec x,Vec f);
+$    func (SNES snes,Vec x,Vec f,void *ctx);
 
 
    Notes:
@@ -3177,7 +3177,7 @@ $      f'(x) x = -f(x),
 .keywords: SNES, nonlinear, set, function
 
 .seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetFunction()
-@*/
+*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFunctionMatlab(SNES snes,Vec r,const char *func,mxArray *ctx)
 {
   PetscErrorCode    ierr;
@@ -3197,5 +3197,109 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFunctionMatlab(SNES snes,Vec r,const c
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "SNESComputeJacobian_Matlab"
+/*
+   SNESComputeJacobian_Matlab - Calls the function that has been set with
+                         SNESSetJacobianMatlab().  
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  x - input vector
+.  A, B - the matrices
+-  ctx - user context
+
+   Output Parameter:
+.  flag - structure of the matrix
+
+   Level: developer
+
+.keywords: SNES, nonlinear, compute, function
+
+.seealso: SNESSetFunction(), SNESGetFunction()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeJacobian_Matlab(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag, void *ctx)
+{
+  PetscErrorCode    ierr;
+  SNESMatlabContext *sctx = (SNESMatlabContext *)ctx;
+  int               nlhs = 2,nrhs = 6;
+  mxArray	    *plhs[2],*prhs[6];
+  long long int     lx = 0,lA = 0,ls = 0, lB = 0;
+      
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,2);
+
+  /* call Matlab function in ctx with arguments x and y */
+
+  ierr = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&lA,A,sizeof(x));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&lB,B,sizeof(x));CHKERRQ(ierr); 
+  prhs[0] =  mxCreateDoubleScalar((double)ls);
+  prhs[1] =  mxCreateDoubleScalar((double)lx);
+  prhs[2] =  mxCreateDoubleScalar((double)lA);
+  prhs[3] =  mxCreateDoubleScalar((double)lB);
+  prhs[4] =  mxCreateString(sctx->funcname);
+  prhs[5] =  sctx->ctx;
+  ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"SNESComputeJacobianInternal");CHKERRQ(ierr);
+  ierr    =  mxGetScalar(plhs[0]);CHKERRQ(ierr);
+  *flag   =  (MatStructure) mxGetScalar(plhs[1]);CHKERRQ(ierr);
+  mxDestroyArray(prhs[0]);
+  mxDestroyArray(prhs[1]);
+  mxDestroyArray(prhs[2]);
+  mxDestroyArray(prhs[3]);
+  mxDestroyArray(prhs[4]);
+  mxDestroyArray(plhs[0]);
+  mxDestroyArray(plhs[1]);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetJacobianMatlab"
+/*
+   SNESSetJacobianMatlab - Sets the Jacobian function evaluation routine and two empty Jacobian matrices
+   vector for use by the SNES routines in solving systems of nonlinear
+   equations from Matlab. Here the function is a string containing the name of a Matlab function
+
+   Logically Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  A,B - Jacobian matrices
+.  func - function evaluation routine
+-  ctx - user context
+
+   Calling sequence of func:
+$    flag = func (SNES snes,Vec x,Mat A,Mat B,void *ctx);
+
+
+   Level: developer
+
+.keywords: SNES, nonlinear, set, function
+
+.seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetFunction()
+*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetJacobianMatlab(SNES snes,Mat A,Mat B,const char *func,mxArray *ctx)
+{
+  PetscErrorCode    ierr;
+  SNESMatlabContext *sctx;
+
+  PetscFunctionBegin;
+  /* currently sctx is memory bleed */
+  ierr = PetscMalloc(sizeof(SNESMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
+  /* 
+     This should work, but it doesn't 
+  sctx->ctx = ctx; 
+  mexMakeArrayPersistent(sctx->ctx);
+  */
+  sctx->ctx = mxDuplicateArray(ctx);
+  ierr = SNESSetJacobian(snes,A,B,SNESComputeJacobian_Matlab,sctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #endif

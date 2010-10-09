@@ -1,7 +1,7 @@
 classdef Mat < PetscObject
   properties (Constant)
-    MAT_FLUSH_ASSEMBLY=1;
-    MAT_FINAL_ASSEMBLY=0;
+    FLUSH_ASSEMBLY=1;
+    FINAL_ASSEMBLY=0;
 
     SAME_NONZERO_PATTERN=0;
     DIFFERENT_NONZERO_PATTERN=1;
@@ -9,7 +9,12 @@ classdef Mat < PetscObject
     SUBSET_NONZERO_PATTERN=3;
   end
   methods
-    function obj = Mat()
+    function obj = Mat(array,flg)
+      if (nargin > 1) 
+        %  Mat(pid,'pobj') uses an already existing PETSc Mat object
+        obj.pobj = array;
+        return
+      end
       [err,obj.pobj] = calllib('libpetsc', 'MatCreate', 0,0);
     end
     function err = SetType(obj,name)
