@@ -3085,6 +3085,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetDM(SNES snes,DM *dm)
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include "mex.h"
 
+typedef struct {char *funcname; mxArray *ctx;} SNESMatlabContext;
+
 #undef __FUNCT__  
 #define __FUNCT__ "SNESComputeFunction_Matlab"
 /*
@@ -3113,12 +3115,12 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetDM(SNES snes,DM *dm)
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction_Matlab(SNES snes,Vec x,Vec y, void *ctx)
 {
-  PetscErrorCode ierr;
-  char           *funcname = (char*)ctx;
-  int            nlhs = 1,nrhs = 4;
-  mxArray	 *plhs[1],*prhs[4];
-  long long int  lx = 0,ly = 0,ls = 0;
-    
+  PetscErrorCode    ierr;
+  SNESMatlabContext *sctx = (SNESMatlabContext *)ctx;
+  int               nlhs = 1,nrhs = 5;
+  mxArray	    *plhs[1],*prhs[5];
+  long long int     lx = 0,ly = 0,ls = 0;
+      
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
@@ -3134,12 +3136,14 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction_Matlab(SNES snes,Vec x,Ve
   prhs[0] =  mxCreateDoubleScalar((double)ls);
   prhs[1] =  mxCreateDoubleScalar((double)lx);
   prhs[2] =  mxCreateDoubleScalar((double)ly);
-  prhs[3] =  mxCreateString(funcname);
+  prhs[3] =  mxCreateString(sctx->funcname);
+  prhs[4] =  sctx->ctx;
   ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"SNESComputeFunctionInternal");CHKERRQ(ierr);
   ierr    =  mxGetScalar(plhs[0]);CHKERRQ(ierr);
   mxDestroyArray(prhs[0]);
   mxDestroyArray(prhs[1]);
   mxDestroyArray(prhs[2]);
+  mxDestroyArray(prhs[3]);
   mxDestroyArray(plhs[0]);
   PetscFunctionReturn(0);
 }
@@ -3174,15 +3178,22 @@ $      f'(x) x = -f(x),
 
 .seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetFunction()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFunctionMatlab(SNES snes,Vec r,const char *func)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFunctionMatlab(SNES snes,Vec r,const char *func,mxArray *ctx)
 {
-  PetscErrorCode ierr;
-  char           *funcname;
+  PetscErrorCode    ierr;
+  SNESMatlabContext *sctx;
 
   PetscFunctionBegin;
-  /* currently funcname is memory bleed */
-  ierr = PetscStrallocpy(func,&funcname);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes,r,SNESComputeFunction_Matlab,funcname);CHKERRQ(ierr);
+  /* currently sctx is memory bleed */
+  ierr = PetscMalloc(sizeof(SNESMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
+  /* 
+     This should work, but it doesn't 
+  sctx->ctx = ctx; 
+  mexMakeArrayPersistent(sctx->ctx);
+  */
+  sctx->ctx = mxDuplicateArray(ctx);
+  ierr = SNESSetFunction(snes,r,SNESComputeFunction_Matlab,sctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
