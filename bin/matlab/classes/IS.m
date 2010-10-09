@@ -12,6 +12,9 @@ classdef IS < PetscObject
     function err = View(obj,viewer)
       err = calllib('libpetsc', 'ISView', obj.pobj,viewer.pobj);
     end
+    function err = Destroy(obj)
+      err = calllib('libpetsc', 'ISDestroy', obj.pobj);
+    end
   end
 end
 

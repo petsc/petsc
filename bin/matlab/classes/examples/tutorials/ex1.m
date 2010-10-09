@@ -8,35 +8,34 @@ PetscInitialize({'-malloc_dump','-snes_monitor','-snes_mf_operator','-ksp_monito
 viewer = PetscViewer();
 viewer.SetType('ascii');
 
-vec = Vec;
-vec.SetType('seq');
-vec.SetSizes(10,10);
-vec.SetValues(1:10);
-vec.SetValues([1,2],[11.5,12.5],PetscObject.ADD_VALUES);
-vec.AssemblyBegin();
-vec.AssemblyEnd();
-values = vec.GetValues([2 4])
+%vec = Vec;
+%vec.SetType('seq');
+%vec.SetSizes(10,10);
+%vec.SetValues(1:10);
+%vec.SetValues([1,2],[11.5,12.5],PetscObject.ADD_VALUES);
+%vec.AssemblyBegin();
+%vec.AssemblyEnd();
+%values = vec.GetValues([2 4])
 
 % You can access PETSc Vec elements with regular Matlab indexing
-vec([5 6])
+%vec([5 6])
 
 % You can directly access all elements of a Vec
-vec(:)
+%vec(:)
 
 % You can assign PETSc Vec elements with regular Matlab indexing
-vec(9) = 99;
-
-vec.View(viewer);
-vec.Destroy();
+%vec(9) = 99;
+%vec.View(viewer);
+%vec.Destroy();
 
 % You can directly create a PETSc Vec with a Matlab array
-vec = Vec([2 3.1 4.5]);
-vec.View(viewer);
+%vec = Vec([2 3.1 4.5]);
+%vec.View(viewer);
+%vec.Destroy();
 
-vec.Destroy();
-
-is = ISCreateGeneral([1 2 5]);
-is.View(viewer);
+%is = ISCreateGeneral([1 2 5]);
+%is.View(viewer);
+%is.Destroy();
 
 mat = Mat;
 mat.SetType('seqaij');
@@ -48,7 +47,7 @@ mat.AssemblyBegin(Mat.FINAL_ASSEMBLY);
 mat.AssemblyEnd(Mat.FINAL_ASSEMBLY);
 mat.View(viewer);
 
-b = Vec;
+b = Vec();
 b.SetType('seq');
 b.SetSizes(10,10);
 b.SetValues(1:10);
@@ -59,13 +58,13 @@ x = b.Duplicate();
 
 b.Copy(x);
 
-ksp = KSP;
-ksp.SetType('gmres');
-ksp.SetOperators(mat,mat,Mat.SAME_NONZERO_PATTERN);
-ksp.Solve(b,x);
-x.View(viewer);
-ksp.View(viewer);
-ksp.Destroy();
+%ksp = KSP;
+%ksp.SetType('gmres');
+%ksp.SetOperators(mat,mat,Mat.SAME_NONZERO_PATTERN);
+%ksp.Solve(b,x);
+%x.View(viewer);
+%ksp.View(viewer);
+%ksp.Destroy();
 
 arg = [1 2 4];
 snes = SNES;
@@ -85,3 +84,5 @@ x.Destroy();
 viewer.Destroy();
 
 arg
+
+PetscFinalize()

@@ -57,8 +57,8 @@ function obj = Vec(array,flg)
       err = calllib('libpetsc', 'VecAssemblyEnd', obj.pobj);
     end
     function [vec,err] = Duplicate(obj)
-      vec = Vec;
-      [err,vec.pobj] = calllib('libpetsc', 'VecDuplicate', obj.pobj,vec.pobj);
+      [err,pid] = calllib('libpetsc', 'VecDuplicate', obj.pobj,0);
+      vec = Vec(pid,'pobj');
     end
     function err = Copy(obj,v)
       err = calllib('libpetsc', 'VecCopy', obj.pobj,v.pobj);
@@ -67,6 +67,7 @@ function obj = Vec(array,flg)
       err = calllib('libpetsc', 'VecView', obj.pobj,viewer.pobj);
     end
     function err = Destroy(obj)
+      obj.pobj
       err = calllib('libpetsc', 'VecDestroy', obj.pobj);
     end
 %
