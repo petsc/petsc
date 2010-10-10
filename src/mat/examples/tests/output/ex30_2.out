@@ -5,6 +5,8 @@ Matrix Object:
   total: nonzeros=113, allocated nonzeros=125
   total number of mallocs used during MatSetValues calls =0
     not using I-node routines
+Matrix Object:
+  type: seqaij
 row 0: (0, 4)  (1, -1)  (5, -1) 
 row 1: (0, -1)  (1, 4)  (2, -1)  (6, -1) 
 row 2: (1, -1)  (2, 4)  (3, -1)  (7, -1) 
@@ -39,6 +41,8 @@ Matrix Object:
   total: nonzeros=221, allocated nonzeros=221
   total number of mallocs used during MatSetValues calls =0
     not using I-node routines
+Matrix Object:
+  type: seqaij
 row 0: (0, 0.25)  (1, -1)  (2, -1) 
 row 1: (0, -0.25)  (1, 0.266667)  (2, -0.25)  (3, -1)  (4, -1) 
 row 2: (0, -0.25)  (1, -0.0666667)  (2, 0.267857)  (3, -0.0666667)  (4, -1.06667)  (5, -1)  (6, -1) 

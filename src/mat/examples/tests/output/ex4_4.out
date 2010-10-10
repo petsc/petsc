@@ -1,6 +1,6 @@
 Original matrix
 Matrix Object:
-  type: seqdense
+  type: mpidense
 row 0: (0, 1)  (5, 6) 
 row 1: (1, 2)  (6, 7) 
 row 2: (2, 3)  (7, 8) 
@@ -17,9 +17,19 @@ Matrix Object:
 row 0: (3, 8) 
 row 1: (4, 9) 
 row 2: (0, 5) 
-Original zeroed matrix
 Matrix Object:
   type: seqdense
+row 0: (3, 8) 
+row 1: (4, 9) 
+row 2: (0, 5) 
+Matrix Object:
+  type: seqdense
+row 0: (3, 8) 
+row 1: (4, 9) 
+row 2: (0, 5) 
+Original zeroed matrix
+Matrix Object:
+  type: mpidense
 row 0:
 row 1:
 row 2:
