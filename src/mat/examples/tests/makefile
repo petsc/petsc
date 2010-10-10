@@ -535,34 +535,59 @@ runex1:
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
+
 runex2:
-	-@for mattype in seqaij seqdense; do \
-	  for shape in ${MATSHAPES}; do \
-	    ${MPIEXEC} -n 1 ./ex2 -mat_type $$mattype -rect$$shape > ex2_1.tmp 2>&1; \
-	      if (${DIFF} output/ex2_1_$$shape.out ex2_1.tmp) then true; \
-	      else echo "Possible problem with ex2_1_"$$shape" for" $$mattype", diffs above"; fi; \
-	      ${RM} -f ex2_1.tmp; \
-	  done; \
-	done;
+	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqaij -rectA > ex2_1.tmp 2>&1; \
+	if (${DIFF} output/ex2_11_A.out ex2_1.tmp) then true; \
+	else echo "Possible problem with ex2_11_A for seqaij, diffs above"; fi; \
+	${RM} -f ex2_1.tmp;
+
+	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqdense -rectA > ex2_1.tmp 2>&1; \
+	if (${DIFF} output/ex2_12_A.out ex2_1.tmp) then true; \
+	else echo "Possible problem with ex2_12_A for seqdense, diffs above"; fi; \
+	${RM} -f ex2_1.tmp;
+
+	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqaij -rectB > ex2_1.tmp 2>&1; \
+	if (${DIFF} output/ex2_11_B.out ex2_1.tmp) then true; \
+	else echo "Possible problem with ex2_11_B for seqaij, diffs above"; fi; \
+	${RM} -f ex2_1.tmp;
+
+	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqdense -rectB > ex2_1.tmp 2>&1; \
+	if (${DIFF} output/ex2_12_B.out ex2_1.tmp) then true; \
+	else echo "Possible problem with ex2_12_B for seqdense, diffs above"; fi; \
+	${RM} -f ex2_1.tmp;
+
 runex2_2:
-	@-for np in ${NPROCS}; do \
-	  for mattype in mpiaij mpidense; do \
-	    ${MPIEXEC} -n $$np ./ex2 -mat_type $$mattype > ex2_2.tmp 2>&1; \
-	      if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
-	      else echo "Possible problem with ex2_2 for" $$mattype", -np="$$np", diffs above"; fi; \
-	      ${RM} -f ex2_2.tmp; \
-	  done; \
-	done;
+	-@${MPIEXEC} -n 1 ./ex2 -mat_type mpiaij > ex2_1.tmp 2>&1; \
+	if (${DIFF} output/ex2_21.out ex2_1.tmp) then true; \
+	else echo "Possible problem with ex2_21 for mpiaij,np = 1,diffs above"; fi; \
+	${RM} -f ex2_1.tmp;
+
+	-@${MPIEXEC} -n 1 ./ex2 -mat_type mpidense > ex2_1.tmp 2>&1; \
+	if (${DIFF} output/ex2_22.out ex2_1.tmp) then true; \
+	else echo "Possible problem with ex2_22 for mpidense,np = 1,diffs above"; fi; \
+	${RM} -f ex2_1.tmp;
+
+	-@${MPIEXEC} -n 3 ./ex2 -mat_type mpiaij > ex2_1.tmp 2>&1; \
+	if (${DIFF} output/ex2_23.out ex2_1.tmp) then true; \
+	else echo "Possible problem with ex2_23 for mpiaij,np = 3,diffs above"; fi; \
+	${RM} -f ex2_1.tmp;
+
+	-@${MPIEXEC} -n 3 ./ex2 -mat_type mpidense > ex2_1.tmp 2>&1; \
+	if (${DIFF} output/ex2_24.out ex2_1.tmp) then true; \
+	else echo "Possible problem with ex2_24 for mpidense,np = 3,diffs above"; fi; \
+	${RM} -f ex2_1.tmp;
+
 runex2_3:
 	-@${MPIEXEC} -n 2 ./ex2 -mat_type mpiaij -rectA > ex2_3.tmp 2>&1;   \
 	   if (${DIFF} output/ex2_3.out ex2_3.tmp) then true; \
 	   else echo "Possible problem with ex2_3, diffs above"; fi; \
 	   ${RM} -f ex2_3.tmp
 runex2_4:
-	-@${MPIEXEC} -n 2 ./ex2 -mat_type mpidense -rectA > ex2_3.tmp 2>&1;   \
-	   if (${DIFF} output/ex2_3.out ex2_3.tmp) then true; \
+	-@${MPIEXEC} -n 2 ./ex2 -mat_type mpidense -rectA > ex2_4.tmp 2>&1;   \
+	   if (${DIFF} output/ex2_4.out ex2_4.tmp) then true; \
 	   else echo "Possible problem with ex2_4, diffs above"; fi; \
-	   ${RM} -f ex2_3.tmp
+	   ${RM} -f ex2_4.tmp
 
 runex3:
 	-@${MPIEXEC} -n 1 ./ex3 > ex3_1.tmp 2>&1;   \
