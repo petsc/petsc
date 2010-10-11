@@ -12,7 +12,7 @@ OBJSC    = da2.o da1.o da3.o daghost.o dacorn.o dagtol.o daltol.o \
            dadist.o daview.o dasub.o gr1.o gr2.o daload.o dagtona.o \
 	   dainterp.o dapf.o dagetarray.o da.o dareg.o daregall.o fdda.o mhyp.o
 SOURCEH  = private/daimpl.h petscda.h ../src/dm/impls/da/mhyp.h
-DIRS     = ftn-custom usfft f90-custom
+DIRS     = ftn-custom usfft f90-custom utils
 LOCDIR   = src/dm/impls/da/
 MANSEC   = DA
 

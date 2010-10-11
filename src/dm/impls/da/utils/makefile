@@ -10,6 +10,7 @@ OBJSC    = sda2.o binaryMatlab.o
 OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = DA
+DIRS     = ftn-custom
 LOCDIR   = src/dm/impls/da/utils/
 
 include ${PETSC_DIR}/conf/variables

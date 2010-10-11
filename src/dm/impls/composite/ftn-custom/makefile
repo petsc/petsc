@@ -3,13 +3,13 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zfddaf.c zsda2f.c
+SOURCEC  = zfddaf.c 
 OBJSC    = ${SOURCEC:.c=.o}
 SOURCEF  =
 SOURCEH  =
 DIRS     =
 LIBBASE  = libpetscdm
-LOCDIR   = src/dm/da/utils/ftn-custom/
+LOCDIR   = src/dm/impls/composite/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

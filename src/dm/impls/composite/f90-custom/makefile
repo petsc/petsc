@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    = ${SOURCEC:.c=.o}
 OBJSF    = 
 LIBBASE  = libpetscdm
-LOCDIR   = src/dm/da/utils/f90-custom/
+LOCDIR   = src/dm/impls/composite/f90-custom/
 
 
 include ${PETSC_DIR}/conf/variables
