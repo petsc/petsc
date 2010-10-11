@@ -1,8 +1,7 @@
-
 ALL: lib
 
-DIRS     = ao mesh impls f90-mod
-LOCDIR   = src/dm/
+DIRS     = da adda
+LOCDIR   = src/dm/impls
 MANSEC   = DA
 
 include ${PETSC_DIR}/conf/variables
