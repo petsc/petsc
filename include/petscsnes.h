@@ -361,6 +361,9 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetParams(SNES,PetscReal
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchGetParams(SNES,PetscReal*,PetscReal*,PetscReal*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetMonitor(SNES,PetscBool );
 
+/* Routine for semismooth algorithm */
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESVISetVariableBounds(SNES,Vec,Vec);
+
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESTestLocalMin(SNES);
 
 /* Should this routine be private? */

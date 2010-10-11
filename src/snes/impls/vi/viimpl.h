@@ -54,4 +54,3 @@ typedef struct {
 
 #endif
 
-extern PetscErrorCode SNESVISetVariableBounds(SNES,Vec,Vec);
