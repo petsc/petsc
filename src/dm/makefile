@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = ao mesh impls f90-mod
+DIRS     = ao mesh impls f90-mod interface examples
 LOCDIR   = src/dm/
 MANSEC   = DA
 

@@ -1,6 +1,6 @@
 ALL: lib
 
-DIRS     = da adda
+DIRS     = da adda sliced composite
 LOCDIR   = src/dm/impls
 MANSEC   = DA
 

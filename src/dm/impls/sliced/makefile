@@ -1,20 +1,17 @@
-#requirespackage   'PETSC_HAVE_FORTRAN'
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zda.c
+SOURCEC  = sliced.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = zda.o
-OBJSF    = 
+OBJSC    = sliced.o
+OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = DA
-LOCDIR   = src/dm/ftn-custom/
+LOCDIR   = src/dm/impls/sliced
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
-
-
