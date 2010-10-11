@@ -1,3 +1,5 @@
+Matrix Object:
+  type: seqaij
 row 0: (0, 4)  (1, -1)  (4, -1) 
 row 1: (0, -1)  (1, 4)  (2, -1)  (5, -1) 
 row 2: (1, -1)  (2, 4)  (3, -1)  (6, -1) 
@@ -16,6 +18,8 @@ row 14: (10, -1)  (13, -1)  (14, 4)  (15, -1)
 row 15: (11, -1)  (14, -1)  (15, 4) 
 writing matrix in binary to matrix.dat ...
 reading matrix in binary from matrix.dat ...
+Matrix Object:
+  type: seqaij
 row 0: (0, 4)  (1, -1)  (4, -1) 
 row 1: (0, -1)  (1, 4)  (2, -1)  (5, -1) 
 row 2: (1, -1)  (2, 4)  (3, -1)  (6, -1) 
