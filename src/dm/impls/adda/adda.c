@@ -5,7 +5,7 @@
        Extension of DA object to any number of dimensions.
 
 */
-#include "../src/dm/adda/addaimpl.h"                          /*I "petscda.h" I*/
+#include "../src/dm/impls/adda/addaimpl.h"                          /*I "petscda.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "ADDACreate"
