@@ -1192,8 +1192,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
   ierr = PetscTypeCompare((PetscObject)DMMGGetDM(dmmg),"DMComposite",&dmcomposite);CHKERRQ(ierr);
   if (fieldsplit && dmcomposite) {
     ierr = PetscInfo(ksp,"Setting up physics based fieldsplit preconditioner\n");CHKERRQ(ierr);
-    ierr = DMCompositeGetNumberDM((DMComposite)DMMGGetDM(dmmg),&nDM);CHKERRQ(ierr);
-    ierr = DMCompositeGetGlobalISs((DMComposite)DMMGGetDM(dmmg),&fields);CHKERRQ(ierr);
+    ierr = DMCompositeGetNumberDM(DMMGGetDM(dmmg),&nDM);CHKERRQ(ierr);
+    ierr = DMCompositeGetGlobalISs(DMMGGetDM(dmmg),&fields);CHKERRQ(ierr);
     for (i=0; i<nDM; i++) {
       char splitname[8];
       ierr = PetscSNPrintf(splitname,sizeof splitname,"%D",(int)i);CHKERRQ(ierr);

@@ -27,11 +27,12 @@
 PetscErrorCode PETSCDM_DLLEXPORT DACreatePF(DA da,PF *pf)
 {
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(pf,2);
-  ierr = PFCreate(((PetscObject)da)->comm,da->dim,da->w,pf);CHKERRQ(ierr);
+  ierr = PFCreate(((PetscObject)da)->comm,dd->dim,dd->w,pf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
  

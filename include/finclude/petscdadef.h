@@ -20,7 +20,6 @@
 #define DADirection PetscEnum
 #define DMMG PetscFortranAddr
 #define DMMGArray PetscFortranAddr
-#define DMComposite PetscFortranAddr
 
 
 #define DALocalInfo PetscInt

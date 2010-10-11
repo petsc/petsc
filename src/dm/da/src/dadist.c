@@ -39,17 +39,18 @@
 PetscErrorCode PETSCDM_DLLEXPORT DACreateGlobalVector(DA da,Vec* g)
 {
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(g,2);
   ierr = VecCreate(((PetscObject)da)->comm,g);CHKERRQ(ierr);
-  ierr = VecSetSizes(*g,da->Nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetSizes(*g,dd->Nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
-  ierr = VecSetLocalToGlobalMapping(*g,da->ltogmap);CHKERRQ(ierr);
-  ierr = VecSetLocalToGlobalMappingBlock(*g,da->ltogmapb);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(*g,da->w);CHKERRQ(ierr);
+  ierr = VecSetLocalToGlobalMapping(*g,dd->ltogmap);CHKERRQ(ierr);
+  ierr = VecSetLocalToGlobalMappingBlock(*g,dd->ltogmapb);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(*g,dd->w);CHKERRQ(ierr);
   ierr = VecSetOperation(*g,VECOP_VIEW,(void(*)(void))VecView_MPI_DA);CHKERRQ(ierr);
   ierr = VecSetOperation(*g,VECOP_LOAD,(void(*)(void))VecLoad_Default_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -88,24 +89,25 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateGlobalVector(DA da,Vec* g)
 PetscErrorCode PETSCDM_DLLEXPORT DACreateNaturalVector(DA da,Vec* g)
 {
   PetscErrorCode ierr;
-  PetscInt cnt;
+  PetscInt       cnt;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(g,2);
-  if (da->natural) {
-    ierr = PetscObjectGetReference((PetscObject)da->natural,&cnt);CHKERRQ(ierr);
+  if (dd->natural) {
+    ierr = PetscObjectGetReference((PetscObject)dd->natural,&cnt);CHKERRQ(ierr);
     if (cnt == 1) { /* object is not currently used by anyone */
-      ierr = PetscObjectReference((PetscObject)da->natural);CHKERRQ(ierr);
-      *g   = da->natural;
+      ierr = PetscObjectReference((PetscObject)dd->natural);CHKERRQ(ierr);
+      *g   = dd->natural;
     } else {
-      ierr = VecDuplicate(da->natural,g);CHKERRQ(ierr);
+      ierr = VecDuplicate(dd->natural,g);CHKERRQ(ierr);
     }
   } else { /* create the first version of this guy */
-    ierr = VecCreateMPI(((PetscObject)da)->comm,da->Nlocal,PETSC_DETERMINE,g);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(*g, da->w);CHKERRQ(ierr);
+    ierr = VecCreateMPI(((PetscObject)da)->comm,dd->Nlocal,PETSC_DETERMINE,g);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(*g, dd->w);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)*g);CHKERRQ(ierr);
-    da->natural = *g;
+    dd->natural = *g;
   }
   PetscFunctionReturn(0);
 }

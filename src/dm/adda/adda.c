@@ -31,10 +31,10 @@
   Level: intermediate
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm comm, PetscInt dim, PetscInt *nodes,PetscInt *procs,PetscInt dof, PetscBool  *periodic,ADDA *adda_p)
+PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm comm, PetscInt dim, PetscInt *nodes,PetscInt *procs,PetscInt dof, PetscBool  *periodic,DM *dm_p)
 {
   PetscErrorCode ierr;
-  ADDA           adda;
+  DM             dm;
   PetscInt       s=1; /* stencil width, fixed to 1 at the moment */
   PetscMPIInt    rank,size;
   PetscInt       i;
@@ -44,44 +44,46 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm comm, PetscInt dim, PetscIn
   PetscInt       procsdimi;
   PetscInt       ranki;
   PetscInt       rpq;
+  DM_ADDA        *dd;
 
   PetscFunctionBegin;
   PetscValidPointer(nodes,3);
-  PetscValidPointer(adda_p,6);
+  PetscValidPointer(dm_p,6);
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(*adda_p,_p_ADDA,struct _ADDAOps,ADDA_CLASSID,0,"ADDA",comm,ADDADestroy,0);CHKERRQ(ierr);
-  adda = *adda_p;
-  adda->ops->view = ADDAView;
-  adda->ops->createglobalvector = ADDACreateGlobalVector;
-  adda->ops->getcoloring = ADDAGetColoring;
-  adda->ops->getmatrix = ADDAGetMatrix;
-  adda->ops->getinterpolation = ADDAGetInterpolation;
-  adda->ops->refine = ADDARefine;
-  adda->ops->coarsen = ADDACoarsen;
-  adda->ops->getinjection = ADDAGetInjection;
-  adda->ops->getaggregates = ADDAGetAggregates;
+  ierr = PetscHeaderCreate(*dm_p,_p_DM,struct _DMOps,DM_CLASSID,0,"DM",comm,ADDADestroy,0);CHKERRQ(ierr);
+  ierr = PetscNewLog(*dm_p,DM_ADDA,&dd);CHKERRQ(ierr);
+  dm = *dm_p;
+  dm->ops->view = ADDAView;
+  dm->ops->createglobalvector = ADDACreateGlobalVector;
+  dm->ops->getcoloring = ADDAGetColoring;
+  dm->ops->getmatrix = ADDAGetMatrix;
+  dm->ops->getinterpolation = ADDAGetInterpolation;
+  dm->ops->refine = ADDARefine;
+  dm->ops->coarsen = ADDACoarsen;
+  dm->ops->getinjection = ADDAGetInjection;
+  dm->ops->getaggregates = ADDAGetAggregates;
   
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
   
-  adda->dim = dim;
-  adda->dof = dof;
+  dd->dim = dim;
+  dd->dof = dof;
 
   /* nodes */
-  ierr = PetscMalloc(dim*sizeof(PetscInt), &(adda->nodes));CHKERRQ(ierr);
-  ierr = PetscMemcpy(adda->nodes, nodes, dim*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->nodes));CHKERRQ(ierr);
+  ierr = PetscMemcpy(dd->nodes, nodes, dim*sizeof(PetscInt));CHKERRQ(ierr);
   /* total number of nodes */
   nodes_total = 1;
   for(i=0; i<dim; i++) nodes_total *= nodes[i];
 
   /* procs */
-  ierr = PetscMalloc(dim*sizeof(PetscInt), &(adda->procs));CHKERRQ(ierr);
+  ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->procs));CHKERRQ(ierr);
   /* create distribution of nodes to processors */
   if(procs == PETSC_NULL) {
-    procs = adda->procs;
+    procs = dd->procs;
     nodesleft = nodes_total;
     procsleft = size;
     /* figure out a good way to split the array to several processors */
@@ -104,7 +106,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm comm, PetscInt dim, PetscIn
     }
   } else {
     /* user provided the number of processors */
-    ierr = PetscMemcpy(adda->procs, procs, dim*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(dd->procs, procs, dim*sizeof(PetscInt));CHKERRQ(ierr);
   }
   /* check for validity */
   procsleft = 1;
@@ -117,11 +119,11 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm comm, PetscInt dim, PetscIn
   if (procsleft != size) SETERRQ(comm,PETSC_ERR_PLIB, "Created or was provided with inconsistent distribution of processors");
 
   /* periodicity */
-  adda->periodic = periodic;
+  dd->periodic = periodic;
   
   /* find out local region */
-  ierr = PetscMalloc(dim*sizeof(PetscInt), &(adda->lcs));CHKERRQ(ierr);
-  ierr = PetscMalloc(dim*sizeof(PetscInt), &(adda->lce));CHKERRQ(ierr);
+  ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->lcs));CHKERRQ(ierr);
+  ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->lce));CHKERRQ(ierr);
   procsdimi=size;
   ranki=rank;
   for(i=0; i<dim; i++) {
@@ -129,55 +131,55 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm comm, PetscInt dim, PetscIn
     procsdimi /= procs[i];
     /* these are all nodes that come before our region */
     rpq = ranki / procsdimi;
-    adda->lcs[i] = rpq * (nodes[i]/procs[i]);
+    dd->lcs[i] = rpq * (nodes[i]/procs[i]);
     if( rpq + 1 < procs[i] ) {
-      adda->lce[i] = (rpq + 1) * (nodes[i]/procs[i]);
+      dd->lce[i] = (rpq + 1) * (nodes[i]/procs[i]);
     } else {
       /* last one gets all the rest */
-      adda->lce[i] = nodes[i];
+      dd->lce[i] = nodes[i];
     }
     ranki = ranki - rpq*procsdimi;
   }
   
   /* compute local size */
-  adda->lsize=1;
+  dd->lsize=1;
   for(i=0; i<dim; i++) {
-    adda->lsize *= (adda->lce[i]-adda->lcs[i]);
+    dd->lsize *= (dd->lce[i]-dd->lcs[i]);
   }
-  adda->lsize *= dof;
+  dd->lsize *= dof;
 
   /* find out ghost points */
-  ierr = PetscMalloc(dim*sizeof(PetscInt), &(adda->lgs));CHKERRQ(ierr);
-  ierr = PetscMalloc(dim*sizeof(PetscInt), &(adda->lge));CHKERRQ(ierr);
+  ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->lgs));CHKERRQ(ierr);
+  ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->lge));CHKERRQ(ierr);
   for(i=0; i<dim; i++) {
     if( periodic[i] ) {
-      adda->lgs[i] = adda->lcs[i] - s;
-      adda->lge[i] = adda->lce[i] + s;
+      dd->lgs[i] = dd->lcs[i] - s;
+      dd->lge[i] = dd->lce[i] + s;
     } else {
-      adda->lgs[i] = PetscMax(adda->lcs[i] - s, 0);
-      adda->lge[i] = PetscMin(adda->lce[i] + s, nodes[i]);
+      dd->lgs[i] = PetscMax(dd->lcs[i] - s, 0);
+      dd->lge[i] = PetscMin(dd->lce[i] + s, nodes[i]);
     }
   }
   
   /* compute local size with ghost points */
-  adda->lgsize=1;
+  dd->lgsize=1;
   for(i=0; i<dim; i++) {
-    adda->lgsize *= (adda->lge[i]-adda->lgs[i]);
+    dd->lgsize *= (dd->lge[i]-dd->lgs[i]);
   }
-  adda->lgsize *= dof;
+  dd->lgsize *= dof;
 
   /* create global and local prototype vector */
-  ierr = VecCreateMPIWithArray(comm,adda->lsize,PETSC_DECIDE,0,&(adda->global));CHKERRQ(ierr);
-  ierr = VecSetBlockSize(adda->global,adda->dof);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(comm,dd->lsize,PETSC_DECIDE,0,&(dd->global));CHKERRQ(ierr);
+  ierr = VecSetBlockSize(dd->global,dd->dof);CHKERRQ(ierr);
 #if ADDA_NEEDS_LOCAL_VECTOR
   /* local includes ghost points */
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,adda->lgsize,0,&(adda->local));CHKERRQ(ierr);
-  ierr = VecSetBlockSize(adda->local,dof);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dd->lgsize,0,&(dd->local));CHKERRQ(ierr);
+  ierr = VecSetBlockSize(dd->local,dof);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscMalloc(dim*sizeof(PetscInt), &(adda->refine));CHKERRQ(ierr);
-  for(i=0; i<dim; i++) adda->refine[i] = 3;
-  adda->dofrefine = 1;
+  ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->refine));CHKERRQ(ierr);
+  for(i=0; i<dim; i++) dd->refine[i] = 3;
+  dd->dofrefine = 1;
 
   PetscFunctionReturn(0);
 }
@@ -198,27 +200,29 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm comm, PetscInt dim, PetscIn
 
 .seealso: ADDACreate()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDADestroy(ADDA adda)
+PetscErrorCode PETSCDM_DLLEXPORT ADDADestroy(DM dm)
 {
   PetscErrorCode ierr;
+  DM_ADDA        *dd = (DM_ADDA*)dm->data;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adda,ADDA_CLASSID,1);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
 
   /* check reference count */
-  if(--((PetscObject)adda)->refct > 0) PetscFunctionReturn(0);
+  if(--((PetscObject)dm)->refct > 0) PetscFunctionReturn(0);
 
   /* destroy the allocated data */
-  ierr = PetscFree(adda->nodes);CHKERRQ(ierr);
-  ierr = PetscFree(adda->procs);CHKERRQ(ierr);
-  ierr = PetscFree(adda->lcs);CHKERRQ(ierr);
-  ierr = PetscFree(adda->lce);CHKERRQ(ierr);
-  ierr = PetscFree(adda->lgs);CHKERRQ(ierr);
-  ierr = PetscFree(adda->lge);CHKERRQ(ierr);
-  ierr = PetscFree(adda->refine);CHKERRQ(ierr);
+  ierr = PetscFree(dd->nodes);CHKERRQ(ierr);
+  ierr = PetscFree(dd->procs);CHKERRQ(ierr);
+  ierr = PetscFree(dd->lcs);CHKERRQ(ierr);
+  ierr = PetscFree(dd->lce);CHKERRQ(ierr);
+  ierr = PetscFree(dd->lgs);CHKERRQ(ierr);
+  ierr = PetscFree(dd->lge);CHKERRQ(ierr);
+  ierr = PetscFree(dd->refine);CHKERRQ(ierr);
 
-  ierr = VecDestroy(adda->global);CHKERRQ(ierr);
+  ierr = VecDestroy(dd->global);CHKERRQ(ierr);
 
-  ierr = PetscHeaderDestroy(adda);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -239,10 +243,10 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDADestroy(ADDA adda)
 
 .seealso: DMView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDAView(ADDA adda, PetscViewer v) 
+PetscErrorCode PETSCDM_DLLEXPORT ADDAView(DM dm, PetscViewer v) 
 {
   PetscFunctionBegin;
-  SETERRQ(((PetscObject)adda)->comm,PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -265,13 +269,15 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAView(ADDA adda, PetscViewer v)
 
 .seealso: DMCreateGlobalVector()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDACreateGlobalVector(ADDA adda, Vec *vec) 
+PetscErrorCode PETSCDM_DLLEXPORT ADDACreateGlobalVector(DM dm, Vec *vec) 
 {
   PetscErrorCode ierr;
+  DM_ADDA        *dd = (DM_ADDA*)dm->data;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adda,ADDA_CLASSID,1);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(vec,2);
-  ierr = VecDuplicate(adda->global, vec);CHKERRQ(ierr);
+  ierr = VecDuplicate(dd->global, vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -295,10 +301,10 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACreateGlobalVector(ADDA adda, Vec *vec)
 
 .seealso: DMGetColoring()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetColoring(ADDA adda, ISColoringType ctype,const MatType mtype,ISColoring *coloring) 
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetColoring(DM dm, ISColoringType ctype,const MatType mtype,ISColoring *coloring) 
 {
   PetscFunctionBegin;
-  SETERRQ(((PetscObject)adda)->comm,PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -323,13 +329,15 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetColoring(ADDA adda, ISColoringType ctype
 
 .seealso: DMGetMatrix()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrix(ADDA adda, const MatType mtype, Mat *mat) 
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrix(DM dm, const MatType mtype, Mat *mat) 
 {
   PetscErrorCode ierr;
+  DM_ADDA        *dd = (DM_ADDA*)dm->data;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adda, ADDA_CLASSID, 1);
-  ierr = MatCreate(((PetscObject)adda)->comm, mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(*mat, adda->lsize, adda->lsize, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = MatCreate(((PetscObject)dm)->comm, mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*mat, dd->lsize, dd->lsize, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(*mat, mtype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -356,14 +364,18 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrix(ADDA adda, const MatType mtype, M
 
 .seealso: DMGetMatrix()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrixNS(ADDA addar, ADDA addac, const MatType mtype, Mat *mat) {
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrixNS(DM dm, DM dmc, const MatType mtype, Mat *mat) 
+{
   PetscErrorCode ierr;
+  DM_ADDA        *dd = (DM_ADDA*)dm->data;
+  DM_ADDA        *ddc = (DM_ADDA*)dmc->data;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(addar, ADDA_CLASSID, 1);
-  PetscValidHeaderSpecific(addac, ADDA_CLASSID, 2);
-  PetscCheckSameComm(addar, 1, addac, 2);
-  ierr = MatCreate(((PetscObject)addar)->comm, mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(*mat, addar->lsize, addac->lsize, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dmc, DM_CLASSID, 2);
+  PetscCheckSameComm(dm, 1, dmc, 2);
+  ierr = MatCreate(((PetscObject)dm)->comm, mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*mat, dd->lsize, ddc->lsize, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(*mat, mtype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -389,10 +401,10 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrixNS(ADDA addar, ADDA addac, const M
 
 .seealso: DMGetInterpolation()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInterpolation(ADDA adda1,ADDA adda2,Mat *mat,Vec *vec) 
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec) 
 {
   PetscFunctionBegin;
-  SETERRQ(((PetscObject)adda1)->comm,PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -416,10 +428,10 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInterpolation(ADDA adda1,ADDA adda2,Mat 
 
 .seealso: DMRefine()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDARefine(ADDA adda, MPI_Comm comm, ADDA *addaf) 
+PetscErrorCode PETSCDM_DLLEXPORT ADDARefine(DM dm, MPI_Comm comm, DM *dmf) 
 {
   PetscFunctionBegin;
-  SETERRQ(((PetscObject)adda)->comm,PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -443,23 +455,26 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDARefine(ADDA adda, MPI_Comm comm, ADDA *adda
 
 .seealso: DMCoarsen()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDACoarsen(ADDA adda, MPI_Comm comm,ADDA *addac) {
+PetscErrorCode PETSCDM_DLLEXPORT ADDACoarsen(DM dm, MPI_Comm comm,DM *dmc)
+{
   PetscErrorCode ierr;
   PetscInt       *nodesc;
   PetscInt       dofc;
   PetscInt       i;
+  DM_ADDA        *dd = (DM_ADDA*)dm->data;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adda, ADDA_CLASSID, 1);
-  PetscValidPointer(addac, 3);
-  ierr = PetscMalloc(adda->dim*sizeof(PetscInt), &nodesc);CHKERRQ(ierr);
-  for(i=0; i<adda->dim; i++) {
-    nodesc[i] = (adda->nodes[i] % adda->refine[i]) ? adda->nodes[i] / adda->refine[i] + 1 : adda->nodes[i] / adda->refine[i];
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(dmc, 3);
+  ierr = PetscMalloc(dd->dim*sizeof(PetscInt), &nodesc);CHKERRQ(ierr);
+  for(i=0; i<dd->dim; i++) {
+    nodesc[i] = (dd->nodes[i] % dd->refine[i]) ? dd->nodes[i] / dd->refine[i] + 1 : dd->nodes[i] / dd->refine[i];
   }
-  dofc = (adda->dof % adda->dofrefine) ? adda->dof / adda->dofrefine + 1 : adda->dof / adda->dofrefine;
-  ierr = ADDACreate(((PetscObject)adda)->comm, adda->dim, nodesc, adda->procs, dofc, adda->periodic, addac);CHKERRQ(ierr);
+  dofc = (dd->dof % dd->dofrefine) ? dd->dof / dd->dofrefine + 1 : dd->dof / dd->dofrefine;
+  ierr = ADDACreate(((PetscObject)dm)->comm, dd->dim, nodesc, dd->procs, dofc, dd->periodic, dmc);CHKERRQ(ierr);
   ierr = PetscFree(nodesc);CHKERRQ(ierr);
   /* copy refinement factors */
-  ierr = ADDASetRefinement(*addac, adda->refine, adda->dofrefine);CHKERRQ(ierr);
+  ierr = ADDASetRefinement(*dmc, dd->refine, dd->dofrefine);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -483,10 +498,10 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACoarsen(ADDA adda, MPI_Comm comm,ADDA *adda
 
 .seealso: DMGetInjection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInjection(ADDA adda1, ADDA adda2, VecScatter *ctx)
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInjection(DM dm1,DM dm2, VecScatter *ctx)
 {
   PetscFunctionBegin;
-  SETERRQ(((PetscObject)adda1)->comm,PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -584,7 +599,7 @@ PetscBool  ADDAHCiter(const PetscInt dim, const PetscInt *const lc, const PetscI
 
 .seealso: ADDARefine(), ADDAGetInjection(), ADDAGetInterpolation()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetAggregates(ADDA addac,ADDA addaf,Mat *rest)
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetAggregates(DM dmc,DM dmf,Mat *rest)
 {
   PetscErrorCode ierr=0;
   PetscInt       i;
@@ -600,24 +615,26 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetAggregates(ADDA addac,ADDA addaf,Mat *re
   ADDAIdx        *fine_nodes;
   PetscInt       fn_idx;
   PetscScalar    *one_vec;
+  DM_ADDA        *ddc = (DM_ADDA*)dmc->data;
+  DM_ADDA        *ddf = (DM_ADDA*)dmf->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(addac, ADDA_CLASSID, 1);
-  PetscValidHeaderSpecific(addaf, ADDA_CLASSID, 2);
+  PetscValidHeaderSpecific(dmc, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dmf, DM_CLASSID, 2);
   PetscValidPointer(rest,3);
-  if (addac->dim != addaf->dim) SETERRQ2(((PetscObject)addaf)->comm,PETSC_ERR_ARG_INCOMP,"Dimensions of ADDA do not match %D %D", addac->dim, addaf->dim);CHKERRQ(ierr);
-/*   if (addac->dof != addaf->dof) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"DOF of ADDA do not match %D %D", addac->dof, addaf->dof);CHKERRQ(ierr); */
-  dim = addac->dim;
-  dofc = addac->dof;
-  doff = addaf->dof;
+  if (ddc->dim != ddf->dim) SETERRQ2(((PetscObject)dmf)->comm,PETSC_ERR_ARG_INCOMP,"Dimensions of ADDA do not match %D %D", ddc->dim, ddf->dim);CHKERRQ(ierr);
+/*   if (dmc->dof != dmf->dof) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"DOF of ADDA do not match %D %D", dmc->dof, dmf->dof);CHKERRQ(ierr); */
+  dim = ddc->dim;
+  dofc = ddc->dof;
+  doff = ddf->dof;
 
-  ierr = ADDAGetCorners(addac, &lcs_c, &lce_c);CHKERRQ(ierr);
-  ierr = ADDAGetCorners(addaf, &lcs_f, &lce_f);CHKERRQ(ierr);
+  ierr = ADDAGetCorners(dmc, &lcs_c, &lce_c);CHKERRQ(ierr);
+  ierr = ADDAGetCorners(dmf, &lcs_f, &lce_f);CHKERRQ(ierr);
   
   /* compute maximum size of aggregate */
   max_agg_size = 1;
   for(i=0; i<dim; i++) {
-    max_agg_size *= addaf->nodes[i] / addac->nodes[i] + 1;
+    max_agg_size *= ddf->nodes[i] / ddc->nodes[i] + 1;
   }
   max_agg_size *= doff / dofc + 1;
 
@@ -626,10 +643,10 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetAggregates(ADDA addac,ADDA addaf,Mat *re
 
   /* construct matrix */
   if( comm_size == 1 ) {
-    ierr = ADDAGetMatrixNS(addac, addaf, MATSEQAIJ, rest);CHKERRQ(ierr);
+    ierr = ADDAGetMatrixNS(dmc, dmf, MATSEQAIJ, rest);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(*rest, max_agg_size, PETSC_NULL);CHKERRQ(ierr);
   } else {
-    ierr = ADDAGetMatrixNS(addac, addaf, MATMPIAIJ, rest);CHKERRQ(ierr);
+    ierr = ADDAGetMatrixNS(dmc, dmf, MATMPIAIJ, rest);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(*rest, max_agg_size, PETSC_NULL, max_agg_size, PETSC_NULL);CHKERRQ(ierr);
   }
   /* store nodes in the fine grid here */
@@ -656,8 +673,8 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetAggregates(ADDA addac,ADDA addaf,Mat *re
     do {
       /* find corresponding fine grid nodes */
       for(i=0; i<dim; i++) {
-	fgs[i] = iter_c.x[i]*addaf->nodes[i]/addac->nodes[i];
-	fge[i] = PetscMin((iter_c.x[i]+1)*addaf->nodes[i]/addac->nodes[i], addaf->nodes[i]);
+	fgs[i] = iter_c.x[i]*ddf->nodes[i]/ddc->nodes[i];
+	fge[i] = PetscMin((iter_c.x[i]+1)*ddf->nodes[i]/ddc->nodes[i], ddf->nodes[i]);
       }
       /* treat all dof of the coarse grid */
       for(iter_c.d=0; iter_c.d<dofc; iter_c.d++) {
@@ -678,7 +695,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetAggregates(ADDA addac,ADDA addaf,Mat *re
 	  } while( ADDAHCiter(dim, fgs, fge, iter_f.x) );
 	}
 	/* add all these points to one aggregate */
-	ierr = ADDAMatSetValues(*rest, addac, 1, &iter_c, addaf, fn_idx, fine_nodes, one_vec, INSERT_VALUES);CHKERRQ(ierr);
+	ierr = ADDAMatSetValues(*rest, dmc, 1, &iter_c, dmf, fn_idx, fine_nodes, one_vec, INSERT_VALUES);CHKERRQ(ierr);
       }
     } while( ADDAHCiter(dim, lcs_c, lce_c, iter_c.x) );
   }
@@ -719,13 +736,16 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetAggregates(ADDA addac,ADDA addaf,Mat *re
 
 .keywords: distributed array, refinement
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDASetRefinement(ADDA adda, PetscInt *refine, PetscInt dofrefine) {
+PetscErrorCode PETSCDM_DLLEXPORT ADDASetRefinement(DM dm, PetscInt *refine, PetscInt dofrefine) 
+{
+  DM_ADDA        *dd = (DM_ADDA*)dm->data;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adda, ADDA_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(refine,3);
-  ierr = PetscMemcpy(adda->refine, refine, adda->dim*sizeof(PetscInt));CHKERRQ(ierr);
-  adda->dofrefine = dofrefine;
+  ierr = PetscMemcpy(dd->refine, refine, dd->dim*sizeof(PetscInt));CHKERRQ(ierr);
+  dd->dofrefine = dofrefine;
   PetscFunctionReturn(0);
 }
 
@@ -744,22 +764,25 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDASetRefinement(ADDA adda, PetscInt *refine, 
 -  ucorner - the "upper" corner
 
    Both lcorner and ucorner are allocated by this procedure and will point to an
-   array of size adda->dim.
+   array of size dd->dim.
 
    Level: beginner
 
 .keywords: distributed array, refinement
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetCorners(ADDA adda, PetscInt **lcorner, PetscInt **ucorner) {
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetCorners(DM dm, PetscInt **lcorner, PetscInt **ucorner) 
+{
+  DM_ADDA        *dd = (DM_ADDA*)dm->data;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adda, ADDA_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(lcorner,2);
   PetscValidPointer(ucorner,3);
-  ierr = PetscMalloc(adda->dim*sizeof(PetscInt), lcorner);CHKERRQ(ierr);
-  ierr = PetscMalloc(adda->dim*sizeof(PetscInt), ucorner);CHKERRQ(ierr);
-  ierr = PetscMemcpy(*lcorner, adda->lcs, adda->dim*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemcpy(*ucorner, adda->lce, adda->dim*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc(dd->dim*sizeof(PetscInt), lcorner);CHKERRQ(ierr);
+  ierr = PetscMalloc(dd->dim*sizeof(PetscInt), ucorner);CHKERRQ(ierr);
+  ierr = PetscMemcpy(*lcorner, dd->lcs, dd->dim*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(*ucorner, dd->lce, dd->dim*sizeof(PetscInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -778,22 +801,25 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetCorners(ADDA adda, PetscInt **lcorner, P
 -  ucorner - the "upper" corner of the ghosted area
 
    Both lcorner and ucorner are allocated by this procedure and will point to an
-   array of size adda->dim.
+   array of size dd->dim.
 
    Level: beginner
 
 .keywords: distributed array, refinement
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetGhostCorners(ADDA adda, PetscInt **lcorner, PetscInt **ucorner) {
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetGhostCorners(DM dm, PetscInt **lcorner, PetscInt **ucorner) 
+{
+  DM_ADDA        *dd = (DM_ADDA*)dm->data;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adda, ADDA_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(lcorner,2);
   PetscValidPointer(ucorner,3);
-  ierr = PetscMalloc(adda->dim*sizeof(PetscInt), lcorner);CHKERRQ(ierr);
-  ierr = PetscMalloc(adda->dim*sizeof(PetscInt), ucorner);CHKERRQ(ierr);
-  ierr = PetscMemcpy(*lcorner, adda->lgs, adda->dim*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemcpy(*ucorner, adda->lge, adda->dim*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc(dd->dim*sizeof(PetscInt), lcorner);CHKERRQ(ierr);
+  ierr = PetscMalloc(dd->dim*sizeof(PetscInt), ucorner);CHKERRQ(ierr);
+  ierr = PetscMemcpy(*lcorner, dd->lgs, dd->dim*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(*ucorner, dd->lge, dd->dim*sizeof(PetscInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -841,9 +867,11 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetGhostCorners(ADDA adda, PetscInt **lcorn
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), ADDAMatSetValuesBlocked(),
           InsertMode, INSERT_VALUES, ADD_VALUES
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDAMatSetValues(Mat mat, ADDA addam, PetscInt m, const ADDAIdx idxm[],
-						  ADDA addan, PetscInt n, const ADDAIdx idxn[],
-						  const PetscScalar v[], InsertMode addv) {
+PetscErrorCode PETSCDM_DLLEXPORT ADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx idxm[],DM dmn, PetscInt n, const ADDAIdx idxn[],
+						  const PetscScalar v[], InsertMode addv) 
+{
+  DM_ADDA        *ddm = (DM_ADDA*)dmm->data;
+  DM_ADDA        *ddn = (DM_ADDA*)dmn->data;
   PetscErrorCode ierr;
   PetscInt       *nodemult;
   PetscInt       i, j;
@@ -853,28 +881,28 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAMatSetValues(Mat mat, ADDA addam, PetscInt 
 
   PetscFunctionBegin;
   /* find correct multiplying factors */
-  ierr = PetscMalloc(addam->dim*sizeof(PetscInt), &nodemult);CHKERRQ(ierr);
-  nodemult[addam->dim-1] = 1;
-  for(j=addam->dim-2; j>=0; j--) {
-    nodemult[j] = nodemult[j+1]*(addam->nodes[j+1]);
+  ierr = PetscMalloc(ddm->dim*sizeof(PetscInt), &nodemult);CHKERRQ(ierr);
+  nodemult[ddm->dim-1] = 1;
+  for(j=ddm->dim-2; j>=0; j--) {
+    nodemult[j] = nodemult[j+1]*(ddm->nodes[j+1]);
   }
   /* convert each coordinate in idxm to the matrix row index */
   ierr = PetscMalloc(m*sizeof(PetscInt), &matidxm);CHKERRQ(ierr);
   for(i=0; i<m; i++) {
     x = idxm[i].x; d = idxm[i].d;
     idx = 0;
-    for(j=addam->dim-1; j>=0; j--) {
+    for(j=ddm->dim-1; j>=0; j--) {
       if( x[j] < 0 ) { /* "left", "below", etc. of boundary */
-	if( addam->periodic[j] ) { /* periodic wraps around */
-	  x[j] += addam->nodes[j];
+	if( ddm->periodic[j] ) { /* periodic wraps around */
+	  x[j] += ddm->nodes[j];
 	} else { /* non-periodic get discarded */
 	  matidxm[i] = -1; /* entries with -1 are ignored by MatSetValues() */
 	  goto endofloop_m;
 	}
       }
-      if( x[j] >= addam->nodes[j] ) { /* "right", "above", etc. of boundary */
-	if( addam->periodic[j] ) { /* periodic wraps around */
-	  x[j] -= addam->nodes[j];
+      if( x[j] >= ddm->nodes[j] ) { /* "right", "above", etc. of boundary */
+	if( ddm->periodic[j] ) { /* periodic wraps around */
+	  x[j] -= ddm->nodes[j];
 	} else { /* non-periodic get discarded */
 	  matidxm[i] = -1; /* entries with -1 are ignored by MatSetValues() */
 	  goto endofloop_m;
@@ -882,35 +910,35 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAMatSetValues(Mat mat, ADDA addam, PetscInt 
       }
       idx += x[j]*nodemult[j];
     }
-    matidxm[i] = idx*(addam->dof) + d;
+    matidxm[i] = idx*(ddm->dof) + d;
   endofloop_m:
     ;
   }
   ierr = PetscFree(nodemult);CHKERRQ(ierr);
 
   /* find correct multiplying factors */
-  ierr = PetscMalloc(addan->dim*sizeof(PetscInt), &nodemult);CHKERRQ(ierr);
-  nodemult[addan->dim-1] = 1;
-  for(j=addan->dim-2; j>=0; j--) {
-    nodemult[j] = nodemult[j+1]*(addan->nodes[j+1]);
+  ierr = PetscMalloc(ddn->dim*sizeof(PetscInt), &nodemult);CHKERRQ(ierr);
+  nodemult[ddn->dim-1] = 1;
+  for(j=ddn->dim-2; j>=0; j--) {
+    nodemult[j] = nodemult[j+1]*(ddn->nodes[j+1]);
   }
   /* convert each coordinate in idxn to the matrix colum index */
   ierr = PetscMalloc(n*sizeof(PetscInt), &matidxn);CHKERRQ(ierr);
   for(i=0; i<n; i++) {
     x = idxn[i].x; d = idxn[i].d;
     idx = 0;
-    for(j=addan->dim-1; j>=0; j--) {
+    for(j=ddn->dim-1; j>=0; j--) {
       if( x[j] < 0 ) { /* "left", "below", etc. of boundary */
-	if( addan->periodic[j] ) { /* periodic wraps around */
-	  x[j] += addan->nodes[j];
+	if( ddn->periodic[j] ) { /* periodic wraps around */
+	  x[j] += ddn->nodes[j];
 	} else { /* non-periodic get discarded */
 	  matidxn[i] = -1; /* entries with -1 are ignored by MatSetValues() */
 	  goto endofloop_n;
 	}
       }
-      if( x[j] >= addan->nodes[j] ) { /* "right", "above", etc. of boundary */
-	if( addan->periodic[j] ) { /* periodic wraps around */
-	  x[j] -= addan->nodes[j];
+      if( x[j] >= ddn->nodes[j] ) { /* "right", "above", etc. of boundary */
+	if( ddn->periodic[j] ) { /* periodic wraps around */
+	  x[j] -= ddn->nodes[j];
 	} else { /* non-periodic get discarded */
 	  matidxn[i] = -1; /* entries with -1 are ignored by MatSetValues() */
 	  goto endofloop_n;
@@ -918,7 +946,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAMatSetValues(Mat mat, ADDA addam, PetscInt 
       }
       idx += x[j]*nodemult[j];
     }
-    matidxn[i] = idx*(addan->dof) + d;
+    matidxn[i] = idx*(ddn->dof) + d;
   endofloop_n:
     ;
   }

@@ -13,6 +13,7 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscBool      iascii,isdraw;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
@@ -26,26 +27,26 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
     if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL) {
       DALocalInfo info;
       ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D N %D P %D m %D n %D p %D w %D s %D\n",rank,da->M,da->N,da->P,da->m,da->n,da->p,da->w,da->s);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D N %D P %D m %D n %D p %D w %D s %D\n",rank,dd->M,dd->N,dd->P,dd->m,dd->n,dd->p,dd->w,dd->s);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D, Y range of indices: %D %D, Z range of indices: %D %D\n",
                                                 info.xs,info.xs+info.xm,info.ys,info.ys+info.ym,info.zs,info.zs+info.zm);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-      if (da->coordinates) {
+      if (dd->coordinates) {
         PetscInt        last;
         const PetscReal *coors;
-        ierr = VecGetArrayRead(da->coordinates,&coors);CHKERRQ(ierr);
-        ierr = VecGetLocalSize(da->coordinates,&last);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(dd->coordinates,&coors);CHKERRQ(ierr);
+        ierr = VecGetLocalSize(dd->coordinates,&last);CHKERRQ(ierr);
         last = last - 3;
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Lower left corner %G %G %G : Upper right %G %G %G\n",coors[0],coors[1],coors[2],coors[last],coors[last+1],coors[last+2]);CHKERRQ(ierr);
-        ierr = VecRestoreArrayRead(da->coordinates,&coors);CHKERRQ(ierr);
+        ierr = VecRestoreArrayRead(dd->coordinates,&coors);CHKERRQ(ierr);
       }
 #endif
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     }
   } else if (isdraw) {
     PetscDraw       draw;
-    PetscReal     ymin = -1.0,ymax = (PetscReal)da->N;
-    PetscReal     xmin = -1.0,xmax = (PetscReal)((da->M+2)*da->P),x,y,ycoord,xcoord;
+    PetscReal     ymin = -1.0,ymax = (PetscReal)dd->N;
+    PetscReal     xmin = -1.0,xmax = (PetscReal)((dd->M+2)*dd->P),x,y,ycoord,xcoord;
     PetscInt        k,plane,base,*idx;
     char       node[10];
     PetscBool  isnull;
@@ -57,14 +58,14 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
 
     /* first processor draw all node lines */
     if (!rank) {
-      for (k=0; k<da->P; k++) {
-        ymin = 0.0; ymax = (PetscReal)(da->N - 1);
-        for (xmin=(PetscReal)(k*(da->M+1)); xmin<(PetscReal)(da->M+(k*(da->M+1))); xmin++) {
+      for (k=0; k<dd->P; k++) {
+        ymin = 0.0; ymax = (PetscReal)(dd->N - 1);
+        for (xmin=(PetscReal)(k*(dd->M+1)); xmin<(PetscReal)(dd->M+(k*(dd->M+1))); xmin++) {
           ierr = PetscDrawLine(draw,xmin,ymin,xmin,ymax,PETSC_DRAW_BLACK);CHKERRQ(ierr);
         }
       
-        xmin = (PetscReal)(k*(da->M+1)); xmax = xmin + (PetscReal)(da->M - 1);
-        for (ymin=0; ymin<(PetscReal)da->N; ymin++) {
+        xmin = (PetscReal)(k*(dd->M+1)); xmax = xmin + (PetscReal)(dd->M - 1);
+        for (ymin=0; ymin<(PetscReal)dd->N; ymin++) {
           ierr = PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_BLACK);CHKERRQ(ierr);
         }
       }
@@ -72,31 +73,31 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
 
-    for (k=0; k<da->P; k++) {  /*Go through and draw for each plane*/
-      if ((k >= da->zs) && (k < da->ze)) {
+    for (k=0; k<dd->P; k++) {  /*Go through and draw for each plane*/
+      if ((k >= dd->zs) && (k < dd->ze)) {
         /* draw my box */
-        ymin = da->ys;       
-        ymax = da->ye - 1; 
-        xmin = da->xs/da->w    + (da->M+1)*k; 
-        xmax =(da->xe-1)/da->w + (da->M+1)*k;
+        ymin = dd->ys;       
+        ymax = dd->ye - 1; 
+        xmin = dd->xs/dd->w    + (dd->M+1)*k; 
+        xmax =(dd->xe-1)/dd->w + (dd->M+1)*k;
 
         ierr = PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_RED);CHKERRQ(ierr);
         ierr = PetscDrawLine(draw,xmin,ymin,xmin,ymax,PETSC_DRAW_RED);CHKERRQ(ierr);
         ierr = PetscDrawLine(draw,xmin,ymax,xmax,ymax,PETSC_DRAW_RED);CHKERRQ(ierr);
         ierr = PetscDrawLine(draw,xmax,ymin,xmax,ymax,PETSC_DRAW_RED);CHKERRQ(ierr); 
 
-        xmin = da->xs/da->w; 
-        xmax =(da->xe-1)/da->w;
+        xmin = dd->xs/dd->w; 
+        xmax =(dd->xe-1)/dd->w;
 
         /* put in numbers*/
-        base = (da->base+(da->xe-da->xs)*(da->ye-da->ys)*(k-da->zs))/da->w;
+        base = (dd->base+(dd->xe-dd->xs)*(dd->ye-dd->ys)*(k-dd->zs))/dd->w;
 
         /* Identify which processor owns the box */
         sprintf(node,"%d",rank);
-        ierr = PetscDrawString(draw,xmin+(da->M+1)*k+.2,ymin+.3,PETSC_DRAW_RED,node);CHKERRQ(ierr);
+        ierr = PetscDrawString(draw,xmin+(dd->M+1)*k+.2,ymin+.3,PETSC_DRAW_RED,node);CHKERRQ(ierr);
 
         for (y=ymin; y<=ymax; y++) {
-          for (x=xmin+(da->M+1)*k; x<=xmax+(da->M+1)*k; x++) {
+          for (x=xmin+(dd->M+1)*k; x<=xmax+(dd->M+1)*k; x++) {
             sprintf(node,"%d",(int)base++);
             ierr = PetscDrawString(draw,x,y,PETSC_DRAW_BLACK,node);CHKERRQ(ierr);
           }
@@ -107,33 +108,33 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
 
-    for (k=0-da->s; k<da->P+da->s; k++) {  
+    for (k=0-dd->s; k<dd->P+dd->s; k++) {  
       /* Go through and draw for each plane */
-      if ((k >= da->Zs) && (k < da->Ze)) {
+      if ((k >= dd->Zs) && (k < dd->Ze)) {
   
         /* overlay ghost numbers, useful for error checking */
-        base = (da->Xe-da->Xs)*(da->Ye-da->Ys)*(k-da->Zs); idx = da->idx;
+        base = (dd->Xe-dd->Xs)*(dd->Ye-dd->Ys)*(k-dd->Zs); idx = dd->idx;
         plane=k;  
         /* Keep z wrap around points on the dradrawg */
-        if (k<0)    { plane=da->P+k; }  
-        if (k>=da->P) { plane=k-da->P; }
-        ymin = da->Ys; ymax = da->Ye; 
-        xmin = (da->M+1)*plane*da->w; 
-        xmax = (da->M+1)*plane*da->w+da->M*da->w;
+        if (k<0)    { plane=dd->P+k; }  
+        if (k>=dd->P) { plane=k-dd->P; }
+        ymin = dd->Ys; ymax = dd->Ye; 
+        xmin = (dd->M+1)*plane*dd->w; 
+        xmax = (dd->M+1)*plane*dd->w+dd->M*dd->w;
         for (y=ymin; y<ymax; y++) {
-          for (x=xmin+da->Xs; x<xmin+da->Xe; x+=da->w) {
-            sprintf(node,"%d",(int)(idx[base]/da->w));
+          for (x=xmin+dd->Xs; x<xmin+dd->Xe; x+=dd->w) {
+            sprintf(node,"%d",(int)(idx[base]/dd->w));
             ycoord = y;
             /*Keep y wrap around points on drawing */  
-            if (y<0)      { ycoord = da->N+y; } 
+            if (y<0)      { ycoord = dd->N+y; } 
 
-            if (y>=da->N) { ycoord = y-da->N; }
+            if (y>=dd->N) { ycoord = y-dd->N; }
             xcoord = x;   /* Keep x wrap points on drawing */          
 
             if (x<xmin)  { xcoord = xmax - (xmin-x); }
             if (x>=xmax) { xcoord = xmin + (x-xmax); }
-            ierr = PetscDrawString(draw,xcoord/da->w,ycoord,PETSC_DRAW_BLUE,node);CHKERRQ(ierr);
-            base+=da->w;
+            ierr = PetscDrawString(draw,xcoord/dd->w,ycoord,PETSC_DRAW_BLUE,node);CHKERRQ(ierr);
+            base+=dd->w;
           }
         }
       }         
@@ -151,20 +152,21 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "DACreate_3D"
 PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
 {
-  const PetscInt       dim          = da->dim;
-  const PetscInt       M            = da->M;
-  const PetscInt       N            = da->N;
-  const PetscInt       P            = da->P;
-  PetscInt             m            = da->m;
-  PetscInt             n            = da->n;
-  PetscInt             p            = da->p;
-  const PetscInt       dof          = da->w;
-  const PetscInt       s            = da->s;
-  const DAPeriodicType wrap         = da->wrap;
-  const DAStencilType  stencil_type = da->stencil_type;
-  PetscInt            *lx           = da->lx;
-  PetscInt            *ly           = da->ly;
-  PetscInt            *lz           = da->lz;
+  DM_DA               *dd           = (DM_DA*)da->data;
+  const PetscInt       dim          = dd->dim;
+  const PetscInt       M            = dd->M;
+  const PetscInt       N            = dd->N;
+  const PetscInt       P            = dd->P;
+  PetscInt             m            = dd->m;
+  PetscInt             n            = dd->n;
+  PetscInt             p            = dd->p;
+  const PetscInt       dof          = dd->w;
+  const PetscInt       s            = dd->s;
+  const DAPeriodicType wrap         = dd->wrap;
+  const DAStencilType  stencil_type = dd->stencil_type;
+  PetscInt            *lx           = dd->lx;
+  PetscInt            *ly           = dd->ly;
+  PetscInt            *lz           = dd->lz;
   MPI_Comm             comm;
   PetscMPIInt    rank,size;
   PetscInt       xs = 0,xe,ys = 0,ye,zs = 0,ze,x = 0,y = 0,z = 0,Xs,Xe,Ys,Ye,Zs,Ze,start,end,pm;
@@ -193,9 +195,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
 
-  da->dim = 3;
-  ierr = PetscMalloc(dof*sizeof(char*),&da->fieldname);CHKERRQ(ierr);
-  ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
+  dd->dim = 3;
+  ierr = PetscMalloc(dof*sizeof(char*),&dd->fieldname);CHKERRQ(ierr);
+  ierr = PetscMemzero(dd->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
 
   if (m != PETSC_DECIDE) {
     if (m < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);
@@ -281,8 +283,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
   */
 
   if (!lx) {
-    ierr = PetscMalloc(m*sizeof(PetscInt), &da->lx);CHKERRQ(ierr);
-    lx = da->lx;
+    ierr = PetscMalloc(m*sizeof(PetscInt), &dd->lx);CHKERRQ(ierr);
+    lx = dd->lx;
     for (i=0; i<m; i++) {
       lx[i] = M/m + ((M % m) > (i % m));
     }
@@ -293,8 +295,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
   if (m > 1 && x < s) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column width is too thin for stencil! %D %D",x,s);
 
   if (!ly) {
-    ierr = PetscMalloc(n*sizeof(PetscInt), &da->ly);CHKERRQ(ierr);
-    ly = da->ly;
+    ierr = PetscMalloc(n*sizeof(PetscInt), &dd->ly);CHKERRQ(ierr);
+    ly = dd->ly;
     for (i=0; i<n; i++) {
       ly[i] = N/n + ((N % n) > (i % n));
     }
@@ -305,8 +307,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
   for (i=0; i<(rank % (m*n))/m; i++) { ys += ly[i];}
 
   if (!lz) {
-    ierr = PetscMalloc(p*sizeof(PetscInt), &da->lz);CHKERRQ(ierr);
-    lz = da->lz;
+    ierr = PetscMalloc(p*sizeof(PetscInt), &dd->lz);CHKERRQ(ierr);
+    lz = dd->lz;
     for (i=0; i<p; i++) {
       lz[i] = P/p + ((P % p) > (i % p));
     }
@@ -369,11 +371,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
   }
 
   /* allocate the base parallel and sequential vectors */
-  da->Nlocal = x*y*z;
-  ierr = VecCreateMPIWithArray(comm,da->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
+  dd->Nlocal = x*y*z;
+  ierr = VecCreateMPIWithArray(comm,dd->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
   ierr = VecSetBlockSize(global,dof);CHKERRQ(ierr);
-  da->nlocal = (Xe-Xs)*(Ye-Ys)*(Ze-Zs);
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,da->nlocal,0,&local);CHKERRQ(ierr);
+  dd->nlocal = (Xe-Xs)*(Ye-Ys)*(Ze-Zs);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,dd->nlocal,0,&local);CHKERRQ(ierr);
   ierr = VecSetBlockSize(local,dof);CHKERRQ(ierr);
 
   /* generate appropriate vector scatters */
@@ -669,34 +671,34 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
     if (ze==P)   {n18 = n19 = n20 = n21 = n22 = n23 = n24 = n25 = n26 = -2;}
   }
 
-  ierr = PetscMalloc(27*sizeof(PetscInt),&da->neighbors);CHKERRQ(ierr);
-  da->neighbors[0] = n0;
-  da->neighbors[1] = n1;
-  da->neighbors[2] = n2;
-  da->neighbors[3] = n3;
-  da->neighbors[4] = n4;
-  da->neighbors[5] = n5;
-  da->neighbors[6] = n6;
-  da->neighbors[7] = n7;
-  da->neighbors[8] = n8;
-  da->neighbors[9] = n9;
-  da->neighbors[10] = n10;
-  da->neighbors[11] = n11;
-  da->neighbors[12] = n12;
-  da->neighbors[13] = rank;
-  da->neighbors[14] = n14;
-  da->neighbors[15] = n15;
-  da->neighbors[16] = n16;
-  da->neighbors[17] = n17;
-  da->neighbors[18] = n18;
-  da->neighbors[19] = n19;
-  da->neighbors[20] = n20;
-  da->neighbors[21] = n21;
-  da->neighbors[22] = n22;
-  da->neighbors[23] = n23;
-  da->neighbors[24] = n24; 
-  da->neighbors[25] = n25;
-  da->neighbors[26] = n26;
+  ierr = PetscMalloc(27*sizeof(PetscInt),&dd->neighbors);CHKERRQ(ierr);
+  dd->neighbors[0] = n0;
+  dd->neighbors[1] = n1;
+  dd->neighbors[2] = n2;
+  dd->neighbors[3] = n3;
+  dd->neighbors[4] = n4;
+  dd->neighbors[5] = n5;
+  dd->neighbors[6] = n6;
+  dd->neighbors[7] = n7;
+  dd->neighbors[8] = n8;
+  dd->neighbors[9] = n9;
+  dd->neighbors[10] = n10;
+  dd->neighbors[11] = n11;
+  dd->neighbors[12] = n12;
+  dd->neighbors[13] = rank;
+  dd->neighbors[14] = n14;
+  dd->neighbors[15] = n15;
+  dd->neighbors[16] = n16;
+  dd->neighbors[17] = n17;
+  dd->neighbors[18] = n18;
+  dd->neighbors[19] = n19;
+  dd->neighbors[20] = n20;
+  dd->neighbors[21] = n21;
+  dd->neighbors[22] = n22;
+  dd->neighbors[23] = n23;
+  dd->neighbors[24] = n24; 
+  dd->neighbors[25] = n25;
+  dd->neighbors[26] = n26;
 
   /* If star stencil then delete the corner neighbors */
   if (stencil_type == DA_STENCIL_STAR) { 
@@ -955,9 +957,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
 
-  da->m  = m;  da->n  = n;  da->p  = p;
-  da->xs = xs; da->xe = xe; da->ys = ys; da->ye = ye; da->zs = zs; da->ze = ze;
-  da->Xs = Xs; da->Xe = Xe; da->Ys = Ys; da->Ye = Ye; da->Zs = Zs; da->Ze = Ze;
+  dd->m  = m;  dd->n  = n;  dd->p  = p;
+  dd->xs = xs; dd->xe = xe; dd->ys = ys; dd->ye = ye; dd->zs = zs; dd->ze = ze;
+  dd->Xs = Xs; dd->Xe = Xe; dd->Ys = Ys; dd->Ye = Ye; dd->Zs = Zs; dd->Ze = Ze;
 
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
@@ -1640,23 +1642,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
     }
   }
   ierr = PetscFree2(bases,ldims);CHKERRQ(ierr);
-  da->gtol      = gtol;
-  da->ltog      = ltog;
-  da->idx       = idx;
-  da->Nl        = nn;
-  da->base      = base;
+  dd->gtol      = gtol;
+  dd->ltog      = ltog;
+  dd->idx       = idx;
+  dd->Nl        = nn;
+  dd->base      = base;
   da->ops->view = DAView_3d;
 
   /* 
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
-  ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,PETSC_OWN_POINTER,&da->ltogmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingBlock(da->ltogmap,da->w,&da->ltogmapb);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,PETSC_OWN_POINTER,&dd->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingBlock(dd->ltogmap,dd->w,&dd->ltogmapb);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(da,dd->ltogmap);CHKERRQ(ierr);
 
-  da->ltol = PETSC_NULL;
-  da->ao   = PETSC_NULL;
+  dd->ltol = PETSC_NULL;
+  dd->ao   = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

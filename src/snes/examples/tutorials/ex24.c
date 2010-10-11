@@ -64,12 +64,12 @@ PetscErrorCode myPCApply(PC pc,Vec x,Vec y)
   PetscScalar    *xw,*yw;
   PetscErrorCode ierr;
   DMMG           dmmg;
-  DMComposite    packer;
+  DM             packer;
   AppCtx         *appctx;
 
   PetscFunctionBegin;
   ierr = PCShellGetContext(pc,(void**)&dmmg);CHKERRQ(ierr);
-  packer = (DMComposite)dmmg->dm;
+  packer = dmmg->dm;
   appctx = (AppCtx*)dmmg->user;
   ierr = DMCompositeGetAccess(packer,x,&xw,&xu,&xlambda);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(packer,y,&yw,&yu,&ylambda);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ int main(int argc,char **argv)
   PetscInt       nlevels,i,j;
   DA             da;
   DMMG           *dmmg;
-  DMComposite        packer;
+  DM             packer;
   AppCtx         *appctx;
   ISColoring     iscoloring;
   PetscBool      bdp;
@@ -148,7 +148,7 @@ int main(int argc,char **argv)
   /* Create Jacobian of PDE function for each level */
   nlevels = DMMGGetLevels(dmmg);
   for (i=0; i<nlevels; i++) {
-    packer = (DMComposite)dmmg[i]->dm;
+    packer = dmmg[i]->dm;
     ierr   = DMCompositeGetEntries(packer,PETSC_NULL,&da,PETSC_NULL);CHKERRQ(ierr);
     ierr   = PetscNew(AppCtx,&appctx);CHKERRQ(ierr);
     ierr   = DAGetColoring(da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
@@ -252,7 +252,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   PetscScalar    *u,*w,*fw,*fu,*lambda,*flambda,d,h,h2;
   Vec            vu,vlambda,vfu,vflambda,vglambda;
   DA             da;
-  DMComposite        packer = (DMComposite)dmmg->dm;
+  DM             packer = (DM)dmmg->dm;
   PetscBool      useadic = PETSC_TRUE;
 #if defined(PETSC_HAVE_ADIC)
   AppCtx         *appctx = (AppCtx*)dmmg->user;

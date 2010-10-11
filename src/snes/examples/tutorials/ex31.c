@@ -59,7 +59,7 @@ typedef struct {
 
   MPI_Comm    comm;
 
-  DMComposite pack;
+  DM          pack;
 
   DMMG        *fdmmg;                              /* used by PCShell to solve diffusion problem */
   Vec         dx,dy;
@@ -336,7 +336,7 @@ PetscErrorCode FormFunctionLocalFuel(DALocalInfo *info,FuelField **U,FuelField *
  */
 PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 {
-  DMComposite    dm = (DMComposite)dmmg->dm;
+  DM             dm = (DM)dmmg->dm;
   DALocalInfo    info1,info2,info3;
   DA             da1,da2,da3;
   FluidField     *x1;
@@ -381,7 +381,7 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
 {
   DMMG           dmmg = (DMMG)ctx;
-  DMComposite    dm = (DMComposite)dmmg->dm;
+  DM             dm = (DM)dmmg->dm;
   DALocalInfo    info1,info2,info3;
   DA             da1,da2,da3;
   FluidField     *x1,*f1;

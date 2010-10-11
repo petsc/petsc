@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscInt       nredundant1 = 5,nredundant2 = 2,i,*ridx1,*ridx2,*lidx1,*lidx2,nlocal;
   PetscMPIInt    rank;
   PetscScalar    *redundant1,*redundant2;
-  DMComposite        packer;
+  DM             packer;
   Vec            global,local1,local2;
   PF             pf;
   DA             da1,da2;

@@ -54,10 +54,12 @@
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetGlobalIndices(DA da,PetscInt *n,PetscInt **idx)
 {
+  DM_DA          *dd = (DM_DA*)da->data;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (n)   *n   = da->Nl;
-  if (idx) *idx = da->idx;
+  if (n)   *n   = dd->Nl;
+  if (idx) *idx = dd->idx;
   PetscFunctionReturn(0);
 }
 
@@ -71,36 +73,37 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetGlobalIndices(DA da,PetscInt *n,PetscInt *
 PetscErrorCode DAGetNatural_Private(DA da,PetscInt *outNlocal,IS *isnatural)
 {
   PetscErrorCode ierr;
-  PetscInt Nlocal,i,j,k,*lidx,lict = 0;
+  PetscInt       Nlocal,i,j,k,*lidx,lict = 0;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  Nlocal = (da->xe-da->xs);
-  if (da->dim > 1) {
-    Nlocal *= (da->ye-da->ys);
+  Nlocal = (dd->xe-dd->xs);
+  if (dd->dim > 1) {
+    Nlocal *= (dd->ye-dd->ys);
   } 
-  if (da->dim > 2) {
-    Nlocal *= (da->ze-da->zs);
+  if (dd->dim > 2) {
+    Nlocal *= (dd->ze-dd->zs);
   }
   
   ierr = PetscMalloc(Nlocal*sizeof(PetscInt),&lidx);CHKERRQ(ierr);
   
-  if (da->dim == 1) {
-    for (i=da->xs; i<da->xe; i++) {
+  if (dd->dim == 1) {
+    for (i=dd->xs; i<dd->xe; i++) {
       /*  global number in natural ordering */
       lidx[lict++] = i;
     }
-  } else if (da->dim == 2) {
-    for (j=da->ys; j<da->ye; j++) {
-      for (i=da->xs; i<da->xe; i++) {
+  } else if (dd->dim == 2) {
+    for (j=dd->ys; j<dd->ye; j++) {
+      for (i=dd->xs; i<dd->xe; i++) {
 	/*  global number in natural ordering */
-	lidx[lict++] = i + j*da->M*da->w;
+	lidx[lict++] = i + j*dd->M*dd->w;
       }
     }
-  } else if (da->dim == 3) {
-    for (k=da->zs; k<da->ze; k++) {
-      for (j=da->ys; j<da->ye; j++) {
-	for (i=da->xs; i<da->xe; i++) {
-	  lidx[lict++] = i + j*da->M*da->w + k*da->M*da->N*da->w;
+  } else if (dd->dim == 3) {
+    for (k=dd->zs; k<dd->ze; k++) {
+      for (j=dd->ys; j<dd->ye; j++) {
+	for (i=dd->xs; i<dd->xe; i++) {
+	  lidx[lict++] = i + j*dd->M*dd->w + k*dd->M*dd->N*dd->w;
 	}
       }
     }
@@ -140,6 +143,8 @@ PetscErrorCode DAGetNatural_Private(DA da,PetscInt *outNlocal,IS *isnatural)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetAO(DA da,AO *ao)
 {
+  DM_DA *dd = (DM_DA*)da->data;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(ao,2);
@@ -147,19 +152,19 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAO(DA da,AO *ao)
   /* 
      Build the natural ordering to PETSc ordering mappings.
   */
-  if (!da->ao) {
+  if (!dd->ao) {
     IS             ispetsc,isnatural;
     PetscErrorCode ierr;
     PetscInt       Nlocal;
 
     ierr = DAGetNatural_Private(da,&Nlocal,&isnatural);CHKERRQ(ierr);
-    ierr = ISCreateStride(((PetscObject)da)->comm,Nlocal,da->base,1,&ispetsc);CHKERRQ(ierr);
-    ierr = AOCreateBasicIS(isnatural,ispetsc,&da->ao);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(da,da->ao);CHKERRQ(ierr);
+    ierr = ISCreateStride(((PetscObject)da)->comm,Nlocal,dd->base,1,&ispetsc);CHKERRQ(ierr);
+    ierr = AOCreateBasicIS(isnatural,ispetsc,&dd->ao);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(da,dd->ao);CHKERRQ(ierr);
     ierr = ISDestroy(ispetsc);CHKERRQ(ierr);
     ierr = ISDestroy(isnatural);CHKERRQ(ierr);
   }
-  *ao = da->ao;
+  *ao = dd->ao;
   PetscFunctionReturn(0);
 }
 

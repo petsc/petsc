@@ -13,7 +13,7 @@ static char help[] = "Model multi-physics solver. Modified from src/snes/example
 extern PetscErrorCode FormInitialGuessComp(DMMG,Vec);
 extern PetscErrorCode FormFunctionComp(SNES,Vec,Vec,void*); 
 extern PetscLogEvent  EVENT_FORMFUNCTIONLOCAL1, EVENT_FORMFUNCTIONLOCAL2;
-extern PetscErrorCode FormCoupleLocations(DMComposite,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt);
+extern PetscErrorCode FormCoupleLocations(DM,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   SNES           snes;
   DA             da1,da2;
-  DMComposite    pack;
+  DM             pack;
   PetscBool      couple = PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -118,7 +118,7 @@ PetscErrorCode FormInitialGuessComp(DMMG dmmg,Vec X)
 {
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*)dmmg->user;
-  DMComposite    dm = (DMComposite)dmmg->dm;
+  DM             dm = dmmg->dm;
   Vec            X1,X2;
   Field1         **x1;
   Field2         **x2;
@@ -156,7 +156,7 @@ PetscErrorCode FormFunctionComp(SNES snes,Vec X,Vec F,void *ctx)
   PetscErrorCode ierr;
   DMMG           dmmg = (DMMG)ctx;
   AppCtx         *user = (AppCtx*)dmmg->user;
-  DMComposite    dm = (DMComposite)dmmg->dm;
+  DM             dm = dmmg->dm;
   DALocalInfo    info1,info2;
   DA             da1,da2;
   Field1         **x1,**f1;
@@ -203,7 +203,7 @@ PetscErrorCode FormFunctionComp(SNES snes,Vec X,Vec F,void *ctx)
 /* 
    Computes the coupling between DA1 and DA2. This determines the location of each coupling between DA1 and DA2.
 */
-PetscErrorCode FormCoupleLocations(DMComposite dmcomposite,Mat A,PetscInt *dnz,PetscInt *onz,PetscInt __rstart,PetscInt __nrows,PetscInt __start,PetscInt __end)
+PetscErrorCode FormCoupleLocations(DM dmcomposite,Mat A,PetscInt *dnz,PetscInt *onz,PetscInt __rstart,PetscInt __nrows,PetscInt __start,PetscInt __end)
 {
   PetscInt       i,j,cols[2],istart,jstart,in,jn,row,col,M;
   PetscErrorCode ierr;

@@ -70,8 +70,10 @@ static PetscErrorCode DASetBlockFills_Private(PetscInt *dfill,PetscInt w,PetscIn
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DASetMatPreallocateOnly(DA da,PetscBool  only)
 {
+  DM_DA *dd = (DM_DA*)da->data;
+
   PetscFunctionBegin;
-  da->prealloc_only = only;
+  dd->prealloc_only = only;
   PetscFunctionReturn(0);
 }
 
@@ -113,11 +115,12 @@ $                         0, 1, 1}
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DASetBlockFills(DA da,PetscInt *dfill,PetscInt *ofill)
 {
+  DM_DA          *dd = (DM_DA*)da->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DASetBlockFills_Private(dfill,da->w,&da->dfill);CHKERRQ(ierr);
-  ierr = DASetBlockFills_Private(ofill,da->w,&da->ofill);CHKERRQ(ierr);
+  ierr = DASetBlockFills_Private(dfill,dd->w,&dd->dfill);CHKERRQ(ierr);
+  ierr = DASetBlockFills_Private(ofill,dd->w,&dd->ofill);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -158,6 +161,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,const 
   MPI_Comm       comm;
   PetscMPIInt    size;
   PetscBool      isBAIJ;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*
@@ -202,11 +206,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,const 
   if (!isBAIJ) {ierr = PetscStrcmp(mtype,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);}
   if (!isBAIJ) {ierr = PetscStrcmp(mtype,MATSEQBAIJ,&isBAIJ);CHKERRQ(ierr);}
   if (isBAIJ) {
-    da->w = 1;
-    da->xs = da->xs/nc;
-    da->xe = da->xe/nc;
-    da->Xs = da->Xs/nc;
-    da->Xe = da->Xe/nc;
+    dd->w = 1;
+    dd->xs = dd->xs/nc;
+    dd->xe = dd->xe/nc;
+    dd->Xs = dd->Xs/nc;
+    dd->Xe = dd->Xe/nc;
   }
 
   /*
@@ -224,11 +228,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,const 
     SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not done for %D dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
   }
   if (isBAIJ) {
-    da->w = nc;
-    da->xs = da->xs*nc;
-    da->xe = da->xe*nc;
-    da->Xs = da->Xs*nc;
-    da->Xe = da->Xe*nc;
+    dd->w = nc;
+    dd->xs = dd->xs*nc;
+    dd->xe = dd->xe*nc;
+    dd->Xs = dd->Xs*nc;
+    dd->Xe = dd->Xe*nc;
   }
   PetscFunctionReturn(0);
 }
@@ -246,6 +250,7 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
   DAPeriodicType         wrap;
   DAStencilType          st;
   ISColoringValue        *colors;
+  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -273,7 +278,7 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
                  by 2*stencil_width + 1 (%d)\n", n, col);
     }
     if (ctype == IS_COLORING_GLOBAL) {
-      if (!da->localcoloring) {
+      if (!dd->localcoloring) {
 	ierr = PetscMalloc(nc*nx*ny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
 	ii = 0;
 	for (j=ys; j<ys+ny; j++) {
@@ -284,11 +289,11 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 	  }
 	}
         ncolors = nc + nc*(col-1 + col*(col-1));
-	ierr = ISColoringCreate(comm,ncolors,nc*nx*ny,colors,&da->localcoloring);CHKERRQ(ierr);
+	ierr = ISColoringCreate(comm,ncolors,nc*nx*ny,colors,&dd->localcoloring);CHKERRQ(ierr);
       }
-      *coloring = da->localcoloring;
+      *coloring = dd->localcoloring;
     } else if (ctype == IS_COLORING_GHOSTED) {
-      if (!da->ghostedcoloring) {
+      if (!dd->ghostedcoloring) {
 	ierr = PetscMalloc(nc*gnx*gny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
 	ii = 0;
 	for (j=gys; j<gys+gny; j++) {
@@ -300,12 +305,12 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 	  }
 	}
         ncolors = nc + nc*(col - 1 + col*(col-1));
-	ierr = ISColoringCreate(comm,ncolors,nc*gnx*gny,colors,&da->ghostedcoloring);CHKERRQ(ierr);
+	ierr = ISColoringCreate(comm,ncolors,nc*gnx*gny,colors,&dd->ghostedcoloring);CHKERRQ(ierr);
         /* PetscIntView(ncolors,(PetscInt *)colors,0); */
 
-	ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
+	ierr = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
       }
-      *coloring = da->ghostedcoloring;
+      *coloring = dd->ghostedcoloring;
     } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   }
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
@@ -325,6 +330,7 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
   DAPeriodicType  wrap;
   DAStencilType   st;
   ISColoringValue *colors;
+  DM_DA           *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -353,7 +359,7 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 
   /* create the coloring */
   if (ctype == IS_COLORING_GLOBAL) {
-    if (!da->localcoloring) {
+    if (!dd->localcoloring) {
       ierr = PetscMalloc(nc*nx*ny*nz*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       ii = 0;
       for (k=zs; k<zs+nz; k++) {
@@ -366,11 +372,11 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
         }
       }
       ncolors = nc + nc*(col-1 + col*(col-1)+ col*col*(col-1));
-      ierr = ISColoringCreate(comm,ncolors,nc*nx*ny*nz,colors,&da->localcoloring);CHKERRQ(ierr);
+      ierr = ISColoringCreate(comm,ncolors,nc*nx*ny*nz,colors,&dd->localcoloring);CHKERRQ(ierr);
     }
-    *coloring = da->localcoloring;
+    *coloring = dd->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
-    if (!da->ghostedcoloring) {
+    if (!dd->ghostedcoloring) {
       ierr = PetscMalloc(nc*gnx*gny*gnz*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       ii = 0;
       for (k=gzs; k<gzs+gnz; k++) {
@@ -384,10 +390,10 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
         }
       }
       ncolors = nc + nc*(col-1 + col*(col-1)+ col*col*(col-1));
-      ierr = ISColoringCreate(comm,ncolors,nc*gnx*gny*gnz,colors,&da->ghostedcoloring);CHKERRQ(ierr);
-      ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
+      ierr = ISColoringCreate(comm,ncolors,nc*gnx*gny*gnz,colors,&dd->ghostedcoloring);CHKERRQ(ierr);
+      ierr = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
-    *coloring = da->ghostedcoloring;
+    *coloring = dd->ghostedcoloring;
   } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -405,6 +411,7 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
   MPI_Comm        comm;
   DAPeriodicType  wrap;
   ISColoringValue *colors;
+  DM_DA           *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -426,7 +433,7 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 
   /* create the coloring */
   if (ctype == IS_COLORING_GLOBAL) {
-    if (!da->localcoloring) {
+    if (!dd->localcoloring) {
       ierr = PetscMalloc(nc*nx*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       i1 = 0;
       for (i=xs; i<xs+nx; i++) {
@@ -435,11 +442,11 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
         }
       }
       ncolors = nc + nc*(col-1);
-      ierr = ISColoringCreate(comm,ncolors,nc*nx,colors,&da->localcoloring);CHKERRQ(ierr);
+      ierr = ISColoringCreate(comm,ncolors,nc*nx,colors,&dd->localcoloring);CHKERRQ(ierr);
     }
-    *coloring = da->localcoloring;
+    *coloring = dd->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
-    if (!da->ghostedcoloring) {
+    if (!dd->ghostedcoloring) {
       ierr = PetscMalloc(nc*gnx*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       i1 = 0;
       for (i=gxs; i<gxs+gnx; i++) {
@@ -449,10 +456,10 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
         }
       }
       ncolors = nc + nc*(col-1);
-      ierr = ISColoringCreate(comm,ncolors,nc*gnx,colors,&da->ghostedcoloring);CHKERRQ(ierr);
-      ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
+      ierr = ISColoringCreate(comm,ncolors,nc*gnx,colors,&dd->ghostedcoloring);CHKERRQ(ierr);
+      ierr = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
-    *coloring = da->ghostedcoloring;
+    *coloring = dd->ghostedcoloring;
   } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -468,6 +475,7 @@ PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring 
   MPI_Comm        comm;
   DAPeriodicType  wrap;
   ISColoringValue *colors;
+  DM_DA           *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -491,7 +499,7 @@ PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring 
 
   /* create the coloring */
   if (ctype == IS_COLORING_GLOBAL) {
-    if (!da->localcoloring) {
+    if (!dd->localcoloring) {
       ierr = PetscMalloc(nc*nx*ny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       ii = 0;
       for (j=ys; j<ys+ny; j++) {
@@ -502,11 +510,11 @@ PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring 
 	}
       }
       ncolors = 5*nc;
-      ierr = ISColoringCreate(comm,ncolors,nc*nx*ny,colors,&da->localcoloring);CHKERRQ(ierr);
+      ierr = ISColoringCreate(comm,ncolors,nc*nx*ny,colors,&dd->localcoloring);CHKERRQ(ierr);
     }
-    *coloring = da->localcoloring;
+    *coloring = dd->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
-    if (!da->ghostedcoloring) {
+    if (!dd->ghostedcoloring) {
       ierr = PetscMalloc(nc*gnx*gny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       ii = 0;
       for (j=gys; j<gys+gny; j++) {
@@ -517,10 +525,10 @@ PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring 
 	}
       }
       ncolors = 5*nc;
-      ierr = ISColoringCreate(comm,ncolors,nc*gnx*gny,colors,&da->ghostedcoloring);CHKERRQ(ierr);
-      ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
+      ierr = ISColoringCreate(comm,ncolors,nc*gnx*gny,colors,&dd->ghostedcoloring);CHKERRQ(ierr);
+      ierr = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
-    *coloring = da->ghostedcoloring;
+    *coloring = dd->ghostedcoloring;
   } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   PetscFunctionReturn(0);
 }
@@ -686,6 +694,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
   MatType        ttype[256];
   PetscBool      flg;
   PetscMPIInt    size;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
@@ -757,13 +766,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
     if (dim == 1) {
       ierr = DAGetMatrix1d_MPIAIJ(da,A);CHKERRQ(ierr);
     } else if (dim == 2) {
-      if (da->ofill) {
+      if (dd->ofill) {
         ierr = DAGetMatrix2d_MPIAIJ_Fill(da,A);CHKERRQ(ierr);
       } else {
         ierr = DAGetMatrix2d_MPIAIJ(da,A);CHKERRQ(ierr);
       }
     } else if (dim == 3) {
-      if (da->ofill) {
+      if (dd->ofill) {
         ierr = DAGetMatrix3d_MPIAIJ_Fill(da,A);CHKERRQ(ierr);
       } else {
         ierr = DAGetMatrix3d_MPIAIJ(da,A);CHKERRQ(ierr);
@@ -814,6 +823,7 @@ PetscErrorCode DAGetMatrix2d_MPIAIJ(DA da,Mat J)
   DAPeriodicType         wrap;
   ISLocalToGlobalMapping ltog,ltogb;
   DAStencilType          st;
+  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -871,7 +881,7 @@ PetscErrorCode DAGetMatrix2d_MPIAIJ(DA da,Mat J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
-  if (!da->prealloc_only) {
+  if (!dd->prealloc_only) {
     ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
@@ -915,7 +925,8 @@ PetscErrorCode DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat J)
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   PetscInt               m,n,dim,s,*cols,k,nc,row,col,cnt,l,p;
   PetscInt               lstart,lend,pstart,pend,*dnz,*onz;
-  PetscInt               ifill_col,*ofill = da->ofill, *dfill = da->dfill;
+  DM_DA                  *dd = (DM_DA*)da->data;
+  PetscInt               ifill_col,*ofill = dd->ofill, *dfill = dd->dfill;
   MPI_Comm               comm;
   PetscScalar            *values;
   DAPeriodicType         wrap;
@@ -987,7 +998,7 @@ PetscErrorCode DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
-  if (!da->prealloc_only) {
+  if (!dd->prealloc_only) {
     ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
@@ -1049,6 +1060,7 @@ PetscErrorCode DAGetMatrix3d_MPIAIJ(DA da,Mat J)
   DAPeriodicType         wrap;
   ISLocalToGlobalMapping ltog,ltogb;
   DAStencilType          st;
+  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -1110,7 +1122,7 @@ PetscErrorCode DAGetMatrix3d_MPIAIJ(DA da,Mat J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
-  if (!da->prealloc_only) {
+  if (!dd->prealloc_only) {
     ierr = PetscMalloc(col*col*col*nc*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
@@ -1163,6 +1175,7 @@ PetscErrorCode DAGetMatrix1d_MPIAIJ(DA da,Mat J)
   PetscScalar            *values;
   DAPeriodicType         wrap;
   ISLocalToGlobalMapping ltog,ltogb;
+  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -1191,7 +1204,7 @@ PetscErrorCode DAGetMatrix1d_MPIAIJ(DA da,Mat J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
-  if (!da->prealloc_only) {
+  if (!dd->prealloc_only) {
     ierr = PetscMalloc(col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
@@ -1229,6 +1242,7 @@ PetscErrorCode DAGetMatrix2d_MPIBAIJ(DA da,Mat J)
   DAPeriodicType         wrap;
   DAStencilType          st;
   ISLocalToGlobalMapping ltog,ltogb;
+  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -1281,7 +1295,7 @@ PetscErrorCode DAGetMatrix2d_MPIBAIJ(DA da,Mat J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
-  if (!da->prealloc_only) {
+  if (!dd->prealloc_only) {
     ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
@@ -1323,6 +1337,7 @@ PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
   DAPeriodicType         wrap;
   DAStencilType          st;
   ISLocalToGlobalMapping ltog,ltogb;
+  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -1383,7 +1398,7 @@ PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
-  if (!da->prealloc_only) {
+  if (!dd->prealloc_only) {
     ierr  = PetscMalloc(col*col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr  = PetscMemzero(values,col*col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
@@ -1454,6 +1469,7 @@ PetscErrorCode DAGetMatrix2d_MPISBAIJ(DA da,Mat J)
   DAPeriodicType         wrap;
   DAStencilType          st;
   ISLocalToGlobalMapping ltog,ltogb;
+  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -1507,7 +1523,7 @@ PetscErrorCode DAGetMatrix2d_MPISBAIJ(DA da,Mat J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
-  if (!da->prealloc_only) {
+  if (!dd->prealloc_only) {
     ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
@@ -1552,6 +1568,7 @@ PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
   DAPeriodicType         wrap;
   DAStencilType          st;
   ISLocalToGlobalMapping ltog,ltogb;
+  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -1613,7 +1630,7 @@ PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
-  if (!da->prealloc_only) {
+  if (!dd->prealloc_only) {
     ierr = PetscMalloc(col*col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,col*col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
@@ -1661,7 +1678,8 @@ PetscErrorCode DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat J)
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   PetscInt               m,n,dim,s,*cols,k,nc,row,col,cnt,l,p,*dnz,*onz;
   PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
-  PetscInt               ifill_col,*dfill = da->dfill,*ofill = da->ofill;
+  DM_DA                  *dd = (DM_DA*)da->data;
+  PetscInt               ifill_col,*dfill = dd->dfill,*ofill = dd->ofill;
   MPI_Comm               comm;
   PetscScalar            *values;
   DAPeriodicType         wrap;
@@ -1752,7 +1770,7 @@ PetscErrorCode DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
-  if (!da->prealloc_only) {
+  if (!dd->prealloc_only) {
     ierr = PetscMalloc(col*col*col*nc*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {

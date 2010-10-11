@@ -6,13 +6,8 @@
 /* vector was allocated and never referenced, clearly some task was not finished */
 #define ADDA_HAS_LOCAL_VECTOR 0
 
-typedef struct _ADDAOps *ADDAOps;
-struct _ADDAOps {
-  DMOPS(ADDA)
-};
 
-struct _p_ADDA {
-  PETSCHEADER(struct _ADDAOps);
+typedef struct {
   PetscInt            dim;                   /* dimension of lattice */
   PetscInt            dof;                   /* degrees of freedom per node */
   PetscInt            *nodes;                /* array of number of nodes in each dimension */
@@ -29,6 +24,6 @@ struct _p_ADDA {
 #endif
   PetscInt            *refine;               /* refinement factors for each dimension */
   PetscInt            dofrefine;             /* refinement factor for the dof */
-};
+} DM_ADDA;
 
 #endif

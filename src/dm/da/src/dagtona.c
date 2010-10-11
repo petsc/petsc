@@ -38,6 +38,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalAllCreate(DA da,VecScatter *sc
   IS             from,to;
   Vec            tmplocal,global;
   AO             ao;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -45,14 +46,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalAllCreate(DA da,VecScatter *sc
   ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
 
   /* create the scatter context */
-  ierr = VecCreateMPIWithArray(((PetscObject)da)->comm,da->Nlocal,PETSC_DETERMINE,0,&global);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)da)->comm,dd->Nlocal,PETSC_DETERMINE,0,&global);CHKERRQ(ierr);
   ierr = VecGetSize(global,&N);CHKERRQ(ierr);
   ierr = ISCreateStride(((PetscObject)da)->comm,N,0,1,&to);CHKERRQ(ierr);
   ierr = AOPetscToApplicationIS(ao,to);CHKERRQ(ierr);
   ierr = ISCreateStride(((PetscObject)da)->comm,N,0,1,&from);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,N,0,&tmplocal);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(tmplocal,da->w);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(global,da->w);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(tmplocal,dd->w);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(global,dd->w);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,tmplocal,to,scatter);CHKERRQ(ierr);
   ierr = VecDestroy(tmplocal);CHKERRQ(ierr);  
   ierr = VecDestroy(global);CHKERRQ(ierr);  
@@ -85,7 +86,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalAllCreate(DA da,VecScatter *sc
 PetscErrorCode PETSCDM_DLLEXPORT DANaturalAllToGlobalCreate(DA da,VecScatter *scatter)
 {
   PetscErrorCode ierr;
-  PetscInt       M,m = da->Nlocal,start;
+  DM_DA          *dd = (DM_DA*)da->data;
+  PetscInt       M,m = dd->Nlocal,start;
   IS             from,to;
   Vec            tmplocal,global;
   AO             ao;
@@ -103,8 +105,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DANaturalAllToGlobalCreate(DA da,VecScatter *sc
   ierr = AOPetscToApplicationIS(ao,from);CHKERRQ(ierr);
   ierr = ISCreateStride(((PetscObject)da)->comm,m,start,1,&to);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,M,0,&tmplocal);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(tmplocal,da->w);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(global,da->w);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(tmplocal,dd->w);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(global,dd->w);CHKERRQ(ierr);
   ierr = VecScatterCreate(tmplocal,from,global,to,scatter);CHKERRQ(ierr);
   ierr = VecDestroy(tmplocal);CHKERRQ(ierr);  
   ierr = VecDestroy(global);CHKERRQ(ierr);  

@@ -9,6 +9,7 @@ PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscBool      iascii,isdraw;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
@@ -22,14 +23,14 @@ PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
     if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL) {
       DALocalInfo info;
       ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D N %D m %D n %D w %D s %D\n",rank,da->M,da->N,da->m,da->n,da->w,da->s);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D N %D m %D n %D w %D s %D\n",rank,dd->M,dd->N,dd->m,dd->n,dd->w,dd->s);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D, Y range of indices: %D %D\n",info.xs,info.xs+info.xm,info.ys,info.ys+info.ym);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     }
   } else if (isdraw) {
     PetscDraw       draw;
-    double     ymin = -1*da->s-1,ymax = da->N+da->s;
-    double     xmin = -1*da->s-1,xmax = da->M+da->s;
+    double     ymin = -1*dd->s-1,ymax = dd->N+dd->s;
+    double     xmin = -1*dd->s-1,xmax = dd->M+dd->s;
     double     x,y;
     PetscInt   base,*idx;
     char       node[10];
@@ -37,19 +38,19 @@ PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
  
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
-    if (!da->coordinates) {
+    if (!dd->coordinates) {
       ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
     }
     ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
 
     /* first processor draw all node lines */
     if (!rank) {
-      ymin = 0.0; ymax = da->N - 1;
-      for (xmin=0; xmin<da->M; xmin++) {
+      ymin = 0.0; ymax = dd->N - 1;
+      for (xmin=0; xmin<dd->M; xmin++) {
         ierr = PetscDrawLine(draw,xmin,ymin,xmin,ymax,PETSC_DRAW_BLACK);CHKERRQ(ierr);
       }
-      xmin = 0.0; xmax = da->M - 1;
-      for (ymin=0; ymin<da->N; ymin++) {
+      xmin = 0.0; xmax = dd->M - 1;
+      for (ymin=0; ymin<dd->N; ymin++) {
         ierr = PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_BLACK);CHKERRQ(ierr);
       }
     }
@@ -57,15 +58,15 @@ PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
 
     /* draw my box */
-    ymin = da->ys; ymax = da->ye - 1; xmin = da->xs/da->w; 
-    xmax =(da->xe-1)/da->w;
+    ymin = dd->ys; ymax = dd->ye - 1; xmin = dd->xs/dd->w; 
+    xmax =(dd->xe-1)/dd->w;
     ierr = PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_RED);CHKERRQ(ierr);
     ierr = PetscDrawLine(draw,xmin,ymin,xmin,ymax,PETSC_DRAW_RED);CHKERRQ(ierr);
     ierr = PetscDrawLine(draw,xmin,ymax,xmax,ymax,PETSC_DRAW_RED);CHKERRQ(ierr);
     ierr = PetscDrawLine(draw,xmax,ymin,xmax,ymax,PETSC_DRAW_RED);CHKERRQ(ierr);
 
     /* put in numbers */
-    base = (da->base)/da->w;
+    base = (dd->base)/dd->w;
     for (y=ymin; y<=ymax; y++) {
       for (x=xmin; x<=xmax; x++) {
         sprintf(node,"%d",(int)base++);
@@ -78,13 +79,13 @@ PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
     /* overlay ghost numbers, useful for error checking */
     /* put in numbers */
 
-    base = 0; idx = da->idx;
-    ymin = da->Ys; ymax = da->Ye; xmin = da->Xs; xmax = da->Xe;
+    base = 0; idx = dd->idx;
+    ymin = dd->Ys; ymax = dd->Ye; xmin = dd->Xs; xmax = dd->Xe;
     for (y=ymin; y<ymax; y++) {
       for (x=xmin; x<xmax; x++) {
-        if ((base % da->w) == 0) {
-          sprintf(node,"%d",(int)(idx[base]/da->w));
-          ierr = PetscDrawString(draw,x/da->w,y,PETSC_DRAW_BLUE,node);CHKERRQ(ierr);
+        if ((base % dd->w) == 0) {
+          sprintf(node,"%d",(int)(idx[base]/dd->w));
+          ierr = PetscDrawString(draw,x/dd->w,y,PETSC_DRAW_BLUE,node);CHKERRQ(ierr);
         }
         base++;
       }
@@ -157,30 +158,31 @@ PetscErrorCode PETSCDM_DLLEXPORT DASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt
 PetscErrorCode DAGetElements_2d_P1(DA da,PetscInt *n,const PetscInt *e[])
 {
   PetscErrorCode ierr;
-  PetscInt       i,j,cnt,xs,xe = da->xe,ys,ye = da->ye,Xs = da->Xs, Xe = da->Xe, Ys = da->Ys;
+  DM_DA          *dd = (DM_DA*)da->data;
+  PetscInt       i,j,cnt,xs,xe = dd->xe,ys,ye = dd->ye,Xs = dd->Xs, Xe = dd->Xe, Ys = dd->Ys;
 
   PetscFunctionBegin;
-  if (!da->e) {
-    if (da->xs == Xs) xs = da->xs; else xs = da->xs - 1;
-    if (da->ys == Ys) ys = da->ys; else ys = da->ys - 1;
-    da->ne = 2*(xe - xs - 1)*(ye - ys - 1);
-    ierr   = PetscMalloc((1 + 3*da->ne)*sizeof(PetscInt),&da->e);CHKERRQ(ierr);
+  if (!dd->e) {
+    if (dd->xs == Xs) xs = dd->xs; else xs = dd->xs - 1;
+    if (dd->ys == Ys) ys = dd->ys; else ys = dd->ys - 1;
+    dd->ne = 2*(xe - xs - 1)*(ye - ys - 1);
+    ierr   = PetscMalloc((1 + 3*dd->ne)*sizeof(PetscInt),&dd->e);CHKERRQ(ierr);
     cnt    = 0;
     for (j=ys; j<ye-1; j++) {
       for (i=xs; i<xe-1; i++) {
-        da->e[cnt]   = i - Xs + (j - Ys)*(Xe - Xs);
-        da->e[cnt+1] = i - Xs + 1 + (j - Ys)*(Xe - Xs);
-        da->e[cnt+2] = i - Xs + (j - Ys + 1)*(Xe - Xs);
+        dd->e[cnt]   = i - Xs + (j - Ys)*(Xe - Xs);
+        dd->e[cnt+1] = i - Xs + 1 + (j - Ys)*(Xe - Xs);
+        dd->e[cnt+2] = i - Xs + (j - Ys + 1)*(Xe - Xs);
 
-        da->e[cnt+3] = i - Xs + 1 + (j - Ys + 1)*(Xe - Xs);
-        da->e[cnt+4] = i - Xs + (j - Ys + 1)*(Xe - Xs);
-        da->e[cnt+5] = i - Xs + 1 + (j - Ys)*(Xe - Xs);
+        dd->e[cnt+3] = i - Xs + 1 + (j - Ys + 1)*(Xe - Xs);
+        dd->e[cnt+4] = i - Xs + (j - Ys + 1)*(Xe - Xs);
+        dd->e[cnt+5] = i - Xs + 1 + (j - Ys)*(Xe - Xs);
         cnt += 6;
       }
     }
   }
-  *n = da->ne;
-  *e = da->e;
+  *n = dd->ne;
+  *e = dd->e;
   PetscFunctionReturn(0);
 }
 
@@ -205,9 +207,10 @@ PetscErrorCode DAGetElements_2d_P1(DA da,PetscInt *n,const PetscInt *e[])
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunction(DA da,DALocalFunction1 lf)
 {
+  DM_DA          *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  da->lf    = lf;
+  dd->lf    = lf;
   PetscFunctionReturn(0);
 }
 
@@ -230,9 +233,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunction(DA da,DALocalFunction1 lf)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunctioni(DA da,PetscErrorCode (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))
 {
+  DM_DA          *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  da->lfi = lfi;
+  dd->lfi = lfi;
   PetscFunctionReturn(0);
 }
 
@@ -255,9 +259,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunctioni(DA da,PetscErrorCode (*lfi)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunctionib(DA da,PetscErrorCode (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))
 {
+  DM_DA          *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  da->lfib = lfi;
+  dd->lfib = lfi;
   PetscFunctionReturn(0);
 }
 
@@ -265,9 +270,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunctionib(DA da,PetscErrorCode (*lfi
 #define __FUNCT__ "DASetLocalAdicFunction_Private"
 PetscErrorCode DASetLocalAdicFunction_Private(DA da,DALocalFunction1 ad_lf)
 {
+  DM_DA          *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  da->adic_lf = ad_lf;
+  dd->adic_lf = ad_lf;
   PetscFunctionReturn(0);
 }
 
@@ -295,9 +301,10 @@ M*/
 #define __FUNCT__ "DASetLocalAdicFunctioni_Private"
 PetscErrorCode DASetLocalAdicFunctioni_Private(DA da,PetscErrorCode (*ad_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
+  DM_DA          *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  da->adic_lfi = ad_lfi;
+  dd->adic_lfi = ad_lfi;
   PetscFunctionReturn(0);
 }
 
@@ -325,9 +332,10 @@ M*/
 #define __FUNCT__ "DASetLocalAdicMFFunctioni_Private"
 PetscErrorCode DASetLocalAdicMFFunctioni_Private(DA da,PetscErrorCode (*admf_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
+  DM_DA          *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  da->adicmf_lfi = admf_lfi;
+  dd->adicmf_lfi = admf_lfi;
   PetscFunctionReturn(0);
 }
 
@@ -355,9 +363,10 @@ M*/
 #define __FUNCT__ "DASetLocalAdicFunctionib_Private"
 PetscErrorCode DASetLocalAdicFunctionib_Private(DA da,PetscErrorCode (*ad_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
+  DM_DA          *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  da->adic_lfib = ad_lfi;
+  dd->adic_lfib = ad_lfi;
   PetscFunctionReturn(0);
 }
 
@@ -385,9 +394,10 @@ M*/
 #define __FUNCT__ "DASetLocalAdicMFFunctionib_Private"
 PetscErrorCode DASetLocalAdicMFFunctionib_Private(DA da,PetscErrorCode (*admf_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
+  DM_DA          *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  da->adicmf_lfib = admf_lfi;
+  dd->adicmf_lfib = admf_lfi;
   PetscFunctionReturn(0);
 }
 
@@ -415,9 +425,10 @@ M*/
 #define __FUNCT__ "DASetLocalAdicMFFunction_Private"
 PetscErrorCode DASetLocalAdicMFFunction_Private(DA da,DALocalFunction1 ad_lf)
 {
+  DM_DA          *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  da->adicmf_lf = ad_lf;
+  dd->adicmf_lf = ad_lf;
   PetscFunctionReturn(0);
 }
 
@@ -443,9 +454,10 @@ PetscErrorCode DASetLocalAdicMFFunction_Private(DA da,DALocalFunction1 ad_lf)
 #define __FUNCT__ "DASetLocalJacobian"
 PetscErrorCode PETSCDM_DLLEXPORT DASetLocalJacobian(DA da,DALocalFunction1 lj)
 {
+  DM_DA          *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  da->lj    = lj;
+  dd->lj    = lj;
   PetscFunctionReturn(0);
 }
 
@@ -470,9 +482,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetLocalJacobian(DA da,DALocalFunction1 lj)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalFunction(DA da,DALocalFunction1 *lf)
 {
+  DM_DA          *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (lf)       *lf = da->lf;
+  if (lf)       *lf = dd->lf;
   PetscFunctionReturn(0);
 }
 
@@ -497,9 +510,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalFunction(DA da,DALocalFunction1 *lf)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalJacobian(DA da,DALocalFunction1 *lj)
 {
+  DM_DA          *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (lj) *lj = da->lj;
+  if (lj) *lj = dd->lj;
   PetscFunctionReturn(0);
 }
 
@@ -691,6 +705,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunction1(DA da,Vec vu,Vec vfu,void *w)
   PetscErrorCode ierr;
   void           *u,*fu;
   DALocalInfo    info;
+  DM_DA          *dd = (DM_DA*)da->data;
   
   PetscFunctionBegin;
 
@@ -699,7 +714,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunction1(DA da,Vec vu,Vec vfu,void *w)
   ierr = DAVecGetArray(da,vfu,&fu);CHKERRQ(ierr);
 
   CHKMEMQ;
-  ierr = (*da->lf)(&info,u,fu,w);
+  ierr = (*dd->lf)(&info,u,fu,w);
   if (PetscExceptionValue(ierr)) {
     PetscErrorCode pierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(pierr);
     pierr = DAVecRestoreArray(da,vfu,&fu);CHKERRQ(pierr);
@@ -779,6 +794,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctioni1(DA da,PetscInt i,Vec vu,PetscS
   void           *u;
   DALocalInfo    info;
   MatStencil     stencil;
+  DM_DA          *dd = (DM_DA*)da->data;
   
   PetscFunctionBegin;
 
@@ -791,7 +807,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctioni1(DA da,PetscInt i,Vec vu,PetscS
   stencil.j = (i % (info.xm*info.ym*info.dof))/(info.xm*info.dof);
   stencil.k = i/(info.xm*info.ym*info.dof);
 
-  ierr = (*da->lfi)(&info,&stencil,u,vfu,w);CHKERRQ(ierr);
+  ierr = (*dd->lfi)(&info,&stencil,u,vfu,w);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -822,6 +838,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctionib1(DA da,PetscInt i,Vec vu,Petsc
   void           *u;
   DALocalInfo    info;
   MatStencil     stencil;
+  DM_DA          *dd = (DM_DA*)da->data;
   
   PetscFunctionBegin;
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
@@ -834,7 +851,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctionib1(DA da,PetscInt i,Vec vu,Petsc
   stencil.j = (i % (info.xm*info.ym*info.dof))/(info.xm*info.dof);
   stencil.k = i/(info.xm*info.ym*info.dof);
 
-  ierr = (*da->lfib)(&info,&stencil,u,vfu,w);CHKERRQ(ierr);
+  ierr = (*dd->lfib)(&info,&stencil,u,vfu,w);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -944,7 +961,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,v
   PetscADSetIndepDone();
 
   ierr = PetscLogEventBegin(DA_LocalADFunction,0,0,0,0);CHKERRQ(ierr);
-  ierr = (*da->adic_lf)(&info,ad_u,ad_f,w);CHKERRQ(ierr);
+  ierr = (*dd->adic_lf)(&info,ad_u,ad_f,w);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DA_LocalADFunction,0,0,0,0);CHKERRQ(ierr);
 
   /* stick the values into the matrix */
@@ -1006,7 +1023,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec 
   ierr = PetscADIncrementTotalGradSize(1);CHKERRQ(ierr);
   PetscADSetIndepDone();
 
-  ierr = (*da->adicmf_lf)(&info,ad_vu,ad_f,w);CHKERRQ(ierr);
+  ierr = (*dd->adicmf_lf)(&info,ad_vu,ad_f,w);CHKERRQ(ierr);
 
   /* stick the values into the vector */
   ierr = VecGetArray(f,&af);CHKERRQ(ierr);  
@@ -1046,11 +1063,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DAComputeJacobian1(DA da,Vec vu,Mat J,void *w)
   PetscErrorCode ierr;
   void           *u;
   DALocalInfo    info;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,vu,&u);CHKERRQ(ierr);
-  ierr = (*da->lj)(&info,u,J,w);CHKERRQ(ierr);
+  ierr = (*dd->lj)(&info,u,J,w);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1081,8 +1099,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J
   DALocalInfo     info;
   PetscScalar     *u,*g_u,*g_f,*f = 0,*p_u;
   ISColoring      iscoloring;
+  DM_DA          *dd = (DM_DA*)da->data;
   void            (*lf)(PetscInt*,DALocalInfo*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*,PetscScalar*,PetscInt*,void*,PetscErrorCode*) = 
-                  (void (*)(PetscInt*,DALocalInfo*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*,PetscScalar*,PetscInt*,void*,PetscErrorCode*))*da->adifor_lf;
+                  (void (*)(PetscInt*,DALocalInfo*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*,PetscScalar*,PetscInt*,void*,PetscErrorCode*))*dd->adifor_lf;
 
   PetscFunctionBegin;
   ierr = DAGetColoring(da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
@@ -1197,15 +1216,16 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormJacobianLocal(DA da, DALocalFunction1 fun
 PetscErrorCode PETSCDM_DLLEXPORT DAMultiplyByJacobian1WithAD(DA da,Vec u,Vec v,Vec f,void *w)
 {
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  if (da->adicmf_lf) {
+  if (dd->adicmf_lf) {
 #if defined(PETSC_HAVE_ADIC)
     ierr = DAMultiplyByJacobian1WithAdic(da,u,v,f,w);CHKERRQ(ierr);
 #else
     SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP_SYS,"Requires ADIC to be installed and cannot use complex numbers");
 #endif
-  } else if (da->adiformf_lf) {
+  } else if (dd->adiformf_lf) {
     ierr = DAMultiplyByJacobian1WithAdifor(da,u,v,f,w);CHKERRQ(ierr);
   } else {
     SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ORDER,"Must call DASetLocalAdiforMFFunction() or DASetLocalAdicMFFunction() before using");
@@ -1240,8 +1260,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAMultiplyByJacobian1WithAdifor(DA da,Vec u,Vec
   PetscScalar    *au,*av,*af,*awork;
   Vec            work;
   DALocalInfo    info;
+  DM_DA          *dd = (DM_DA*)da->data;
   void           (*lf)(DALocalInfo*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*) = 
-                 (void (*)(DALocalInfo*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*))*da->adiformf_lf;
+                 (void (*)(DALocalInfo*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*))*dd->adiformf_lf;
 
   PetscFunctionBegin;
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
@@ -1266,17 +1287,18 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "DACreate_2D"
 PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
 {
-  const PetscInt       dim          = da->dim;
-  const PetscInt       M            = da->M;
-  const PetscInt       N            = da->N;
-  PetscInt             m            = da->m;
-  PetscInt             n            = da->n;
-  const PetscInt       dof          = da->w;
-  const PetscInt       s            = da->s;
-  const DAPeriodicType wrap         = da->wrap;
-  const DAStencilType  stencil_type = da->stencil_type;
-  PetscInt            *lx           = da->lx;
-  PetscInt            *ly           = da->ly;
+  DM_DA               *dd = (DM_DA*)da->data;
+  const PetscInt       dim          = dd->dim;
+  const PetscInt       M            = dd->M;
+  const PetscInt       N            = dd->N;
+  PetscInt             m            = dd->m;
+  PetscInt             n            = dd->n;
+  const PetscInt       dof          = dd->w;
+  const PetscInt       s            = dd->s;
+  const DAPeriodicType wrap         = dd->wrap;
+  const DAStencilType  stencil_type = dd->stencil_type;
+  PetscInt            *lx           = dd->lx;
+  PetscInt            *ly           = dd->ly;
   MPI_Comm             comm;
   PetscMPIInt          rank,size;
   PetscInt             xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,start,end;
@@ -1304,10 +1326,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
 
   da->ops->getelements = DAGetElements_2d_P1;
 
-  da->dim         = 2;
-  da->elementtype = DA_ELEMENT_P1;
-  ierr = PetscMalloc(dof*sizeof(char*),&da->fieldname);CHKERRQ(ierr);
-  ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
+  dd->dim         = 2;
+  dd->elementtype = DA_ELEMENT_P1;
+  ierr = PetscMalloc(dof*sizeof(char*),&dd->fieldname);CHKERRQ(ierr);
+  ierr = PetscMemzero(dd->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
 
   if (m != PETSC_DECIDE) {
     if (m < 1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);
@@ -1345,8 +1367,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
      xs is the first local node number, x is the number of local nodes 
   */
   if (!lx) {
-    ierr = PetscMalloc(m*sizeof(PetscInt), &da->lx);CHKERRQ(ierr);
-    lx = da->lx;
+    ierr = PetscMalloc(m*sizeof(PetscInt), &dd->lx);CHKERRQ(ierr);
+    lx = dd->lx;
     for (i=0; i<m; i++) {
       lx[i] = M/m + ((M % m) > i);
     }
@@ -1369,8 +1391,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
      ys is the first local node number, y is the number of local nodes 
   */
   if (!ly) {
-    ierr = PetscMalloc(n*sizeof(PetscInt), &da->ly);CHKERRQ(ierr);
-    ly = da->ly;
+    ierr = PetscMalloc(n*sizeof(PetscInt), &dd->ly);CHKERRQ(ierr);
+    ly = dd->ly;
     for (i=0; i<n; i++) {
       ly[i] = N/n + ((N % n) > i);
     }
@@ -1434,11 +1456,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
   }
 
   /* allocate the base parallel and sequential vectors */
-  da->Nlocal = x*y;
-  ierr = VecCreateMPIWithArray(comm,da->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
+  dd->Nlocal = x*y;
+  ierr = VecCreateMPIWithArray(comm,dd->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
   ierr = VecSetBlockSize(global,dof);CHKERRQ(ierr);
-  da->nlocal = (Xe-Xs)*(Ye-Ys);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,da->nlocal,0,&local);CHKERRQ(ierr);
+  dd->nlocal = (Xe-Xs)*(Ye-Ys);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dd->nlocal,0,&local);CHKERRQ(ierr);
   ierr = VecSetBlockSize(local,dof);CHKERRQ(ierr);
 
 
@@ -1458,7 +1480,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
   ierr = ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&from);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,ltog);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(dd,ltog);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
 
@@ -1570,16 +1592,16 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
     if ((n7 >= 0) && (n6 < 0)) n6 = rank+2*m-1;
     if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
   }
-  ierr = PetscMalloc(9*sizeof(PetscInt),&da->neighbors);CHKERRQ(ierr);
-  da->neighbors[0] = n0;
-  da->neighbors[1] = n1;
-  da->neighbors[2] = n2;
-  da->neighbors[3] = n3;
-  da->neighbors[4] = rank;
-  da->neighbors[5] = n5;
-  da->neighbors[6] = n6;
-  da->neighbors[7] = n7;
-  da->neighbors[8] = n8;
+  ierr = PetscMalloc(9*sizeof(PetscInt),&dd->neighbors);CHKERRQ(ierr);
+  dd->neighbors[0] = n0;
+  dd->neighbors[1] = n1;
+  dd->neighbors[2] = n2;
+  dd->neighbors[3] = n3;
+  dd->neighbors[4] = rank;
+  dd->neighbors[5] = n5;
+  dd->neighbors[6] = n6;
+  dd->neighbors[7] = n7;
+  dd->neighbors[8] = n8;
 
   if (stencil_type == DA_STENCIL_STAR) {
     /* save corner processor numbers */
@@ -1736,30 +1758,30 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
   }
   ierr = PetscFree2(bases,ldims);CHKERRQ(ierr); 
 
-  da->m  = m;  da->n  = n;
-  da->xs = xs; da->xe = xe; da->ys = ys; da->ye = ye; da->zs = 0; da->ze = 1;
-  da->Xs = Xs; da->Xe = Xe; da->Ys = Ys; da->Ye = Ye; da->Zs = 0; da->Ze = 1;
+  dd->m  = m;  dd->n  = n;
+  dd->xs = xs; dd->xe = xe; dd->ys = ys; dd->ye = ye; dd->zs = 0; dd->ze = 1;
+  dd->Xs = Xs; dd->Xe = Xe; dd->Ys = Ys; dd->Ye = Ye; dd->Zs = 0; dd->Ze = 1;
 
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
 
-  da->gtol      = gtol;
-  da->ltog      = ltog;
-  da->idx       = idx;
-  da->Nl        = nn;
-  da->base      = base;
+  dd->gtol      = gtol;
+  dd->ltog      = ltog;
+  dd->idx       = idx;
+  dd->Nl        = nn;
+  dd->base      = base;
   da->ops->view = DAView_2d;
 
   /* 
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
-  ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,PETSC_OWN_POINTER,&da->ltogmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingBlock(da->ltogmap,da->w,&da->ltogmapb);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,PETSC_OWN_POINTER,&dd->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingBlock(dd->ltogmap,dd->w,&dd->ltogmapb);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(da,dd->ltogmap);CHKERRQ(ierr);
 
-  da->ltol = PETSC_NULL;
-  da->ao   = PETSC_NULL;
+  dd->ltol = PETSC_NULL;
+  dd->ao   = PETSC_NULL;
 
   PetscFunctionReturn(0);
 }

@@ -37,16 +37,17 @@ EXTERN PetscErrorCode DALocalToLocalCreate(DA);
 PetscErrorCode PETSCDM_DLLEXPORT DAGetScatter(DA da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol)
 {
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (ltog) *ltog = da->ltog;
-  if (gtol) *gtol = da->gtol;
+  if (ltog) *ltog = dd->ltog;
+  if (gtol) *gtol = dd->gtol;
   if (ltol) {
-    if (!da->ltol) {
+    if (!dd->ltol) {
       ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
     }
-    *ltol = da->ltol;
+    *ltol = dd->ltol;
   }
   PetscFunctionReturn(0);
 }

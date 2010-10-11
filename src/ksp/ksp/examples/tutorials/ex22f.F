@@ -72,7 +72,7 @@
       DMMG         dmmg
       DA           da
 
-      call DMMGGetDA(dmmg,da,ierr)
+      call DMMGGetDM(dmmg,da,ierr)
       call DAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                        &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
@@ -107,7 +107,7 @@
 
       i1 = 1
       i7 = 7
-      call DMMGGetDA(dmmg,da,ierr)
+      call DMMGGetDM(dmmg,da,ierr)
       call DAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                       &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &

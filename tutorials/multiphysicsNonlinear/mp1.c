@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   SNES           snes;
   DA             da1,da2;
-  DMComposite    pack;
+  DM             pack;
 
   DMMG           *dmmg1,*dmmg2;
   PetscBool      SolveSubPhysics=PETSC_FALSE,GaussSeidel=PETSC_TRUE,Jacobi=PETSC_FALSE;
@@ -243,7 +243,7 @@ PetscErrorCode FormInitialGuessComp(DMMG dmmg,Vec X)
 {
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*)dmmg->user;
-  DMComposite    dm = (DMComposite)dmmg->dm;
+  DM             dm = (DMComposite)dmmg->dm;
   Vec            X1,X2;
   Field1         **x1;
   Field2         **x2;
@@ -281,7 +281,7 @@ PetscErrorCode FormFunctionComp(SNES snes,Vec X,Vec F,void *ctx)
   PetscErrorCode ierr;
   DMMG           dmmg = (DMMG)ctx;
   AppCtx         *user = (AppCtx*)dmmg->user;
-  DMComposite    dm = (DMComposite)dmmg->dm;
+  DM             dm = (DMComposite)dmmg->dm;
   DALocalInfo    info1,info2;
   DA             da1,da2;
   Field1         **x1,**f1;

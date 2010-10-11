@@ -88,7 +88,7 @@ int main(int argc,char **argv)
   UserCtx        user;
   DA             da;
   DMMG           *dmmg;
-  DMComposite    packer;
+  DM             packer;
   PetscBool      use_matrix_based = PETSC_FALSE,use_monitor = PETSC_FALSE;
   PetscInt       i;
 
@@ -165,7 +165,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   PetscScalar    d,h,*w,*fw;
   Vec            vu_lambda,vfu_lambda;
   DA             da;
-  DMComposite        packer = (DMComposite)dmmg->dm;
+  DM             packer = (DM)dmmg->dm;
 
   PetscFunctionBegin;
   ierr = DMCompositeGetEntries(packer,&nredundant,&da);CHKERRQ(ierr);
@@ -226,7 +226,7 @@ PetscErrorCode u_solution(void *dummy,PetscInt n,const PetscScalar *x,PetscScala
 
 #undef __FUNCT__  
 #define __FUNCT__ "ExactSolution"
-PetscErrorCode ExactSolution(DMComposite packer,Vec U) 
+PetscErrorCode ExactSolution(DM packer,Vec U) 
 {
   PF             pf;
   Vec            x,u_global;
@@ -263,7 +263,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   PetscInt       m,N;
   PetscScalar    *w,*dw;
   Vec            u_lambda,U,F,Uexact;
-  DMComposite        packer = (DMComposite)dmmg->dm;
+  DM             packer = (DM)dmmg->dm;
   PetscReal      norm;
   DA             da;
 

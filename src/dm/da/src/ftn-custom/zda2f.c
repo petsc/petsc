@@ -20,10 +20,11 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL dagetneighbors_(DA *da,PetscMPIInt *ranks,PetscErrorCode *ierr)
 {
   const PetscMPIInt *r;
-  PetscInt       n;
+  PetscInt          n;
+  DM_DA            *dd = (DM_DA*)(*da)->data;
 
   *ierr = DAGetNeighbors(*da,&r);if (*ierr) return;
-  if ((*da)->dim == 2) n = 9; else n = 27;
+  if (dd->dim == 2) n = 9; else n = 27;
   *ierr = PetscMemcpy(ranks,r,n*sizeof(PetscMPIInt));  
 }
 

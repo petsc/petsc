@@ -55,74 +55,74 @@ void PETSC_STDCALL dmgetmatrix_(DM *dm,CHAR mat_type PETSC_MIXED_LEN(len),Mat *J
   FREECHAR(mat_type,t);
 }
 
-void PETSC_STDCALL dmcompositegetentries1_(DMComposite *dm,DA *da1,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositegetentries1_(DM *dm,DA *da1,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeGetEntries(*dm,da1);
 }
 
-void PETSC_STDCALL dmcompositegetentries2_(DMComposite *dm,DA *da1,DA *da2,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositegetentries2_(DM *dm,DA *da1,DA *da2,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeGetEntries(*dm,da1,da2);
 }
 
-void PETSC_STDCALL dmcompositegetentries3_(DMComposite *dm,DA *da1,DA *da2,DA *da3,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositegetentries3_(DM *dm,DA *da1,DA *da2,DA *da3,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeGetEntries(*dm,da1,da2,da3);
 }
 
-void PETSC_STDCALL dmcompositegetentries4_(DMComposite *dm,DA *da1,DA *da2,DA *da3,DA *da4,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositegetentries4_(DM *dm,DA *da1,DA *da2,DA *da3,DA *da4,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeGetEntries(*dm,da1,da2,da3,da4);
 }
 
-void PETSC_STDCALL dmcompositegetentries5_(DMComposite *dm,DA *da1,DA *da2,DA *da3,DA *da4,DA *da5,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositegetentries5_(DM *dm,DA *da1,DA *da2,DA *da3,DA *da4,DA *da5,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeGetEntries(*dm,da1,da2,da3,da4,da5);
 }
 
-void PETSC_STDCALL  dmcompositecreate_(MPI_Fint * comm,DMComposite *A, int *ierr ){
+void PETSC_STDCALL  dmcompositecreate_(MPI_Fint * comm,DM *A, int *ierr ){
   *ierr = DMCompositeCreate(MPI_Comm_f2c( *(comm) ),A);
 }
 
-void PETSC_STDCALL dmcompositeadddm_(DMComposite *dm,DM *da,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositeadddm_(DM *dm,DM *da,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeAddDM(*dm,*da);
 }
 
-void PETSC_STDCALL dmcompositedestroy_(DMComposite *dm,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositedestroy_(DM *dm,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeDestroy(*dm);
 }
 
-void PETSC_STDCALL dmcompositeaddarray_(DMComposite *dm,PetscInt *r,PetscInt *n,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositeaddarray_(DM *dm,PetscInt *r,PetscInt *n,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeAddArray(*dm,*r,*n);
 }
 
-void PETSC_STDCALL dmcompositegetaccess4_(DMComposite *dm,Vec *v,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositegetaccess4_(DM *dm,Vec *v,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
 {
   Vec *vv1 = (Vec*)v1,*vv2 = (Vec*)v2;
   *ierr = DMCompositeGetAccess(*dm,*v,vv1,(PetscScalar*)p1,vv2,(PetscScalar*)p2);
 }
 
-void PETSC_STDCALL dmcompositescatter4_(DMComposite *dm,Vec *v,void *v1,void *p1,void *v2,void *p2,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositescatter4_(DM *dm,Vec *v,void *v1,void *p1,void *v2,void *p2,PetscErrorCode *ierr)
 {
   Vec *vv1 = (Vec*)v1,*vv2 = (Vec*)v2;
   *ierr = DMCompositeScatter(*dm,*v,*vv1,(PetscScalar*)p1,*vv2,(PetscScalar*)p2);
 }
 
-void PETSC_STDCALL dmcompositerestoreaccess4_(DMComposite *dm,Vec *v,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositerestoreaccess4_(DM *dm,Vec *v,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeRestoreAccess(*dm,*v,(Vec*)v1,0,(Vec*)v2,0);
 }
 
-void PETSC_STDCALL dmcompositegetlocalvectors4_(DMComposite *dm,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositegetlocalvectors4_(DM *dm,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
 {
   Vec *vv1 = (Vec*)v1,*vv2 = (Vec*)v2;
   *ierr = DMCompositeGetLocalVectors(*dm,vv1,(PetscScalar*)p1,vv2,(PetscScalar*)p2);
 }
 
-void PETSC_STDCALL dmcompositerestorelocalvectors4_(DMComposite *dm,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositerestorelocalvectors4_(DM *dm,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
 {
   Vec *vv1 = (Vec*)v1,*vv2 = (Vec*)v2;
   *ierr = DMCompositeRestoreLocalVectors(*dm,vv1,(PetscScalar*)p1,vv2,(PetscScalar*)p2);

@@ -72,6 +72,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
   PetscErrorCode ierr;
   PetscErrorCode i;
   PetscBool      done;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -84,74 +85,74 @@ PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
   }
   /* destroy the external/common part */
   for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-    ierr = PetscFree(da->adstartghostedout[i]);CHKERRQ(ierr);
-    ierr = PetscFree(da->adstartghostedin[i]);CHKERRQ(ierr);
-    ierr = PetscFree(da->adstartout[i]);CHKERRQ(ierr);
-    ierr = PetscFree(da->adstartin[i]);CHKERRQ(ierr);
+    ierr = PetscFree(dd->adstartghostedout[i]);CHKERRQ(ierr);
+    ierr = PetscFree(dd->adstartghostedin[i]);CHKERRQ(ierr);
+    ierr = PetscFree(dd->adstartout[i]);CHKERRQ(ierr);
+    ierr = PetscFree(dd->adstartin[i]);CHKERRQ(ierr);
   }
   for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-    ierr = PetscFree(da->admfstartghostedout[i]);CHKERRQ(ierr);
-    ierr = PetscFree(da->admfstartghostedin[i]);CHKERRQ(ierr);
-    ierr = PetscFree(da->admfstartout[i]);CHKERRQ(ierr);
-    ierr = PetscFree(da->admfstartin[i]);CHKERRQ(ierr);
+    ierr = PetscFree(dd->admfstartghostedout[i]);CHKERRQ(ierr);
+    ierr = PetscFree(dd->admfstartghostedin[i]);CHKERRQ(ierr);
+    ierr = PetscFree(dd->admfstartout[i]);CHKERRQ(ierr);
+    ierr = PetscFree(dd->admfstartin[i]);CHKERRQ(ierr);
   }
   for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
-    ierr = PetscFree(da->startghostedout[i]);CHKERRQ(ierr);
-    ierr = PetscFree(da->startghostedin[i]);CHKERRQ(ierr);
-    ierr = PetscFree(da->startout[i]);CHKERRQ(ierr);
-    ierr = PetscFree(da->startin[i]);CHKERRQ(ierr);
+    ierr = PetscFree(dd->startghostedout[i]);CHKERRQ(ierr);
+    ierr = PetscFree(dd->startghostedin[i]);CHKERRQ(ierr);
+    ierr = PetscFree(dd->startout[i]);CHKERRQ(ierr);
+    ierr = PetscFree(dd->startin[i]);CHKERRQ(ierr);
   }
 
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(da);CHKERRQ(ierr);
 
-  if (da->ltog)   {ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);}
-  if (da->gtol)   {ierr = VecScatterDestroy(da->gtol);CHKERRQ(ierr);}
-  if (da->ltol)   {ierr = VecScatterDestroy(da->ltol);CHKERRQ(ierr);}
-  if (da->natural){
-    ierr = VecDestroy(da->natural);CHKERRQ(ierr);
+  if (dd->ltog)   {ierr = VecScatterDestroy(dd->ltog);CHKERRQ(ierr);}
+  if (dd->gtol)   {ierr = VecScatterDestroy(dd->gtol);CHKERRQ(ierr);}
+  if (dd->ltol)   {ierr = VecScatterDestroy(dd->ltol);CHKERRQ(ierr);}
+  if (dd->natural){
+    ierr = VecDestroy(dd->natural);CHKERRQ(ierr);
   }
-  if (da->gton) {
-    ierr = VecScatterDestroy(da->gton);CHKERRQ(ierr);
-  }
-
-  if (da->ao) {
-    ierr = AODestroy(da->ao);CHKERRQ(ierr);
-  }
-  if (da->ltogmap) {
-    ierr = ISLocalToGlobalMappingDestroy(da->ltogmap);CHKERRQ(ierr);
-  }
-  if (da->ltogmapb) {
-    ierr = ISLocalToGlobalMappingDestroy(da->ltogmapb);CHKERRQ(ierr);
+  if (dd->gton) {
+    ierr = VecScatterDestroy(dd->gton);CHKERRQ(ierr);
   }
 
-  ierr = PetscFree(da->lx);CHKERRQ(ierr);
-  ierr = PetscFree(da->ly);CHKERRQ(ierr);
-  ierr = PetscFree(da->lz);CHKERRQ(ierr);
+  if (dd->ao) {
+    ierr = AODestroy(dd->ao);CHKERRQ(ierr);
+  }
+  if (dd->ltogmap) {
+    ierr = ISLocalToGlobalMappingDestroy(dd->ltogmap);CHKERRQ(ierr);
+  }
+  if (dd->ltogmapb) {
+    ierr = ISLocalToGlobalMappingDestroy(dd->ltogmapb);CHKERRQ(ierr);
+  }
+
+  ierr = PetscFree(dd->lx);CHKERRQ(ierr);
+  ierr = PetscFree(dd->ly);CHKERRQ(ierr);
+  ierr = PetscFree(dd->lz);CHKERRQ(ierr);
   ierr = PetscFree(da->vectype);CHKERRQ(ierr);
 
-  if (da->fieldname) {
-    for (i=0; i<da->w; i++) {
-      ierr = PetscFree(da->fieldname[i]);CHKERRQ(ierr);
+  if (dd->fieldname) {
+    for (i=0; i<dd->w; i++) {
+      ierr = PetscFree(dd->fieldname[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFree(da->fieldname);CHKERRQ(ierr);
+    ierr = PetscFree(dd->fieldname);CHKERRQ(ierr);
   }
 
-  if (da->localcoloring) {
-    ierr = ISColoringDestroy(da->localcoloring);CHKERRQ(ierr);
+  if (dd->localcoloring) {
+    ierr = ISColoringDestroy(dd->localcoloring);CHKERRQ(ierr);
   }
-  if (da->ghostedcoloring) {
-    ierr = ISColoringDestroy(da->ghostedcoloring);CHKERRQ(ierr);
+  if (dd->ghostedcoloring) {
+    ierr = ISColoringDestroy(dd->ghostedcoloring);CHKERRQ(ierr);
   }
 
-  if (da->coordinates) {ierr = VecDestroy(da->coordinates);CHKERRQ(ierr);}
-  if (da->ghosted_coordinates) {ierr = VecDestroy(da->ghosted_coordinates);CHKERRQ(ierr);}
-  if (da->da_coordinates && da != da->da_coordinates) {ierr = DADestroy(da->da_coordinates);CHKERRQ(ierr);}
+  if (dd->coordinates) {ierr = VecDestroy(dd->coordinates);CHKERRQ(ierr);}
+  if (dd->ghosted_coordinates) {ierr = VecDestroy(dd->ghosted_coordinates);CHKERRQ(ierr);}
+  if (dd->da_coordinates && da != dd->da_coordinates) {ierr = DADestroy(dd->da_coordinates);CHKERRQ(ierr);}
 
-  ierr = PetscFree(da->neighbors);CHKERRQ(ierr);
-  ierr = PetscFree(da->dfill);CHKERRQ(ierr);
-  ierr = PetscFree(da->ofill);CHKERRQ(ierr);
-  ierr = PetscFree(da->e);CHKERRQ(ierr);
+  ierr = PetscFree(dd->neighbors);CHKERRQ(ierr);
+  ierr = PetscFree(dd->dfill);CHKERRQ(ierr);
+  ierr = PetscFree(dd->ofill);CHKERRQ(ierr);
+  ierr = PetscFree(dd->e);CHKERRQ(ierr);
 
   ierr = PetscHeaderDestroy(da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -186,10 +187,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map)
 {
+  DM_DA *dd = (DM_DA*)da->data;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(map,2);
-  *map = da->ltogmap;
+  *map = dd->ltogmap;
   PetscFunctionReturn(0);
 }
 
@@ -222,10 +225,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetISLocalToGlobalMapping(DA da,ISLocalToGlob
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetISLocalToGlobalMappingBlck(DA da,ISLocalToGlobalMapping *map)
 {
+  DM_DA *dd = (DM_DA*)da->data;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(map,2);
-  *map = da->ltogmapb;
+  *map = dd->ltogmapb;
   PetscFunctionReturn(0);
 }
 

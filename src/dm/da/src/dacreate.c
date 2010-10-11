@@ -47,9 +47,10 @@ static PetscErrorCode DASetTypeFromOptions_Private(DA da)
   char           typeName[256];
   PetscBool      opt = PETSC_FALSE;
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  switch (da->dim) {
+  switch (dd->dim) {
     case 1: defaultType = DA1D; break;
     case 2: defaultType = DA2D; break;
     case 3: defaultType = DA3D; break;
@@ -58,7 +59,7 @@ static PetscErrorCode DASetTypeFromOptions_Private(DA da)
     defaultType = ((PetscObject)da)->type_name;
   }
   if (!DARegisterAllCalled) {ierr = DARegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  if (da->dim == PETSC_DECIDE) {
+  if (dd->dim == PETSC_DECIDE) {
     ierr = PetscOptionsList("-da_type","DA type","DASetType",DAList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   }
   if (opt) {
@@ -95,35 +96,36 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
   PetscErrorCode ierr;
   PetscBool      flg;
   char           typeName[256];
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
 
   ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DA Options","DA");CHKERRQ(ierr);
     /* Handle DA grid sizes */
-    if (da->M < 0) {
-      PetscInt newM = -da->M;
+    if (dd->M < 0) {
+      PetscInt newM = -dd->M;
       ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DASetSizes",newM,&newM,PETSC_NULL);CHKERRQ(ierr);
-      da->M = newM;
+      dd->M = newM;
     }
-    if (da->dim > 1 && da->N < 0) {
-      PetscInt newN = -da->N;
+    if (dd->dim > 1 && dd->N < 0) {
+      PetscInt newN = -dd->N;
       ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DASetSizes",newN,&newN,PETSC_NULL);CHKERRQ(ierr);
-      da->N = newN;
+      dd->N = newN;
     }
-    if (da->dim > 2 && da->P < 0) {
-      PetscInt newP = -da->P;
+    if (dd->dim > 2 && dd->P < 0) {
+      PetscInt newP = -dd->P;
       ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DASetSizes",newP,&newP,PETSC_NULL);CHKERRQ(ierr);
-      da->P = newP;
+      dd->P = newP;
     }
     /* Handle DA parallel distibution */
-    ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DASetNumProcs",da->m,&da->m,PETSC_NULL);CHKERRQ(ierr);
-    if (da->dim > 1) {ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DASetNumProcs",da->n,&da->n,PETSC_NULL);CHKERRQ(ierr);}
-    if (da->dim > 2) {ierr = PetscOptionsInt("-da_processors_z","Number of processors in z direction","DASetNumProcs",da->p,&da->p,PETSC_NULL);CHKERRQ(ierr);}
+    ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DASetNumProcs",dd->m,&dd->m,PETSC_NULL);CHKERRQ(ierr);
+    if (dd->dim > 1) {ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DASetNumProcs",dd->n,&dd->n,PETSC_NULL);CHKERRQ(ierr);}
+    if (dd->dim > 2) {ierr = PetscOptionsInt("-da_processors_z","Number of processors in z direction","DASetNumProcs",dd->p,&dd->p,PETSC_NULL);CHKERRQ(ierr);}
     /* Handle DA refinement */
-    ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DASetRefinementFactor",da->refine_x,&da->refine_x,PETSC_NULL);CHKERRQ(ierr);
-    if (da->dim > 1) {ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DASetRefinementFactor",da->refine_y,&da->refine_y,PETSC_NULL);CHKERRQ(ierr);}
-    if (da->dim > 2) {ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DASetRefinementFactor",da->refine_z,&da->refine_z,PETSC_NULL);CHKERRQ(ierr);}
+    ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DASetRefinementFactor",dd->refine_x,&dd->refine_x,PETSC_NULL);CHKERRQ(ierr);
+    if (dd->dim > 1) {ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DASetRefinementFactor",dd->refine_y,&dd->refine_y,PETSC_NULL);CHKERRQ(ierr);}
+    if (dd->dim > 2) {ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DASetRefinementFactor",dd->refine_z,&dd->refine_z,PETSC_NULL);CHKERRQ(ierr);}
     /* Handle DA type options; only makes sense to call if dimension has not yet been set  */
     ierr = DASetTypeFromOptions_Private(da);CHKERRQ(ierr);
 
@@ -172,6 +174,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DA *da)
 {
   DA             d;
   PetscErrorCode ierr;
+  DM_DA          *dd;
 
   PetscFunctionBegin;
   PetscValidPointer(da,2);
@@ -180,43 +183,45 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DA *da)
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(d, _p_DA, struct _DAOps, DM_CLASSID, 0, "DM", comm, DADestroy, DAView);CHKERRQ(ierr);
-  ierr = PetscMemzero(d->ops, sizeof(struct _DAOps));CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(d, _p_DM, struct _DMOps, DM_CLASSID, 0, "DM", comm, DADestroy, DAView);CHKERRQ(ierr);
+  ierr = PetscMemzero(d->ops, sizeof(struct _DMOps));CHKERRQ(ierr);
+  ierr = PetscNewLog(d,DM_DA,&dd);CHKERRQ(ierr);
+  d->data = dd;
 
-  d->dim        = -1;
-  d->interptype = DA_Q1;
-  d->refine_x   = 2;
-  d->refine_y   = 2;
-  d->refine_z   = 2;
-  d->fieldname  = PETSC_NULL;
-  d->nlocal     = -1;
-  d->Nlocal     = -1;
-  d->M          = -1;
-  d->N          = -1;
-  d->P          = -1;
-  d->m          = -1;
-  d->n          = -1;
-  d->p          = -1;
-  d->w          = -1;
-  d->s          = -1;
-  d->xs = -1; d->xe = -1; d->ys = -1; d->ye = -1; d->zs = -1; d->ze = -1;
-  d->Xs = -1; d->Xe = -1; d->Ys = -1; d->Ye = -1; d->Zs = -1; d->Ze = -1;
+  dd->dim        = -1;
+  dd->interptype = DA_Q1;
+  dd->refine_x   = 2;
+  dd->refine_y   = 2;
+  dd->refine_z   = 2;
+  dd->fieldname  = PETSC_NULL;
+  dd->nlocal     = -1;
+  dd->Nlocal     = -1;
+  dd->M          = -1;
+  dd->N          = -1;
+  dd->P          = -1;
+  dd->m          = -1;
+  dd->n          = -1;
+  dd->p          = -1;
+  dd->w          = -1;
+  dd->s          = -1;
+  dd->xs = -1; dd->xe = -1; dd->ys = -1; dd->ye = -1; dd->zs = -1; dd->ze = -1;
+  dd->Xs = -1; dd->Xe = -1; dd->Ys = -1; dd->Ye = -1; dd->Zs = -1; dd->Ze = -1;
 
-  d->gtol         = PETSC_NULL;
-  d->ltog         = PETSC_NULL;
-  d->ltol         = PETSC_NULL;
-  d->ltogmap      = PETSC_NULL;
-  d->ltogmapb     = PETSC_NULL;
-  d->ao           = PETSC_NULL;
-  d->base         = -1;
-  d->wrap         = DA_NONPERIODIC;
-  d->stencil_type = DA_STENCIL_BOX;
-  d->interptype   = DA_Q1;
-  d->idx          = PETSC_NULL;
-  d->Nl           = -1;
-  d->lx           = PETSC_NULL;
-  d->ly           = PETSC_NULL;
-  d->lz           = PETSC_NULL;
+  dd->gtol         = PETSC_NULL;
+  dd->ltog         = PETSC_NULL;
+  dd->ltol         = PETSC_NULL;
+  dd->ltogmap      = PETSC_NULL;
+  dd->ltogmapb     = PETSC_NULL;
+  dd->ao           = PETSC_NULL;
+  dd->base         = -1;
+  dd->wrap         = DA_NONPERIODIC;
+  dd->stencil_type = DA_STENCIL_BOX;
+  dd->interptype   = DA_Q1;
+  dd->idx          = PETSC_NULL;
+  dd->Nl           = -1;
+  dd->lx           = PETSC_NULL;
+  dd->ly           = PETSC_NULL;
+  dd->lz           = PETSC_NULL;
 
   ierr = PetscStrallocpy(VECSTANDARD,&d->vectype);CHKERRQ(ierr);
   d->ops->globaltolocalbegin = DAGlobalToLocalBegin;

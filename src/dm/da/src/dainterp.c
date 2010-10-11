@@ -55,6 +55,7 @@ PetscErrorCode DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   Mat            mat;
   DAPeriodicType pt;
   Vec            vcoors,cvcoors;
+  DM_DA          *ddc = (DM_DA*)dac->data, *ddf = (DM_DA*)daf->data;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
@@ -85,8 +86,8 @@ PetscErrorCode DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   ierr = DAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
   if (vcoors) {
     ierr = DAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
-    ierr = DAVecGetArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
-    ierr = DAVecGetArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
+    ierr = DAVecGetArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
+    ierr = DAVecGetArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
   /* loop over local fine grid nodes setting interpolation for those*/
   for (i=i_start; i<i_start+m_f; i++) {
@@ -123,8 +124,8 @@ PetscErrorCode DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
     ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
   }
   if (vcoors) {
-    ierr = DAVecRestoreArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
-    ierr = DAVecRestoreArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -146,7 +147,7 @@ PetscErrorCode DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
   PetscScalar    v[2],x;
   Mat            mat;
   DAPeriodicType pt;
-
+  
   PetscFunctionBegin;
   ierr = DAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
@@ -221,6 +222,7 @@ PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
   DAPeriodicType pt;
   DACoor2d       **coors = 0,**ccoors;
   Vec            vcoors,cvcoors;
+  DM_DA          *ddc = (DM_DA*)dac->data, *ddf = (DM_DA*)daf->data;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
@@ -313,8 +315,8 @@ PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
   ierr = DAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
   if (vcoors) {
     ierr = DAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
-    ierr = DAVecGetArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
-    ierr = DAVecGetArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
+    ierr = DAVecGetArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
+    ierr = DAVecGetArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
 
   /* loop over local fine grid nodes setting interpolation for those*/
@@ -366,8 +368,8 @@ PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
     }
   }
   if (vcoors) {
-    ierr = DAVecRestoreArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
-    ierr = DAVecRestoreArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -504,7 +506,7 @@ PetscErrorCode DAGetInterpolation_3D_Q0(DA dac,DA daf,Mat *A)
   PetscScalar    v[8];
   Mat            mat;
   DAPeriodicType pt;
-
+  
   PetscFunctionBegin;
   ierr = DAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
@@ -626,6 +628,7 @@ PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
   DAPeriodicType pt;
   DACoor3d       ***coors = 0,***ccoors;
   Vec            vcoors,cvcoors;
+  DM_DA          *ddc = (DM_DA*)dac->data, *ddf = (DM_DA*)daf->data;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
@@ -727,8 +730,8 @@ PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
   ierr = DAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
   if (vcoors) {
     ierr = DAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
-    ierr = DAVecGetArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
-    ierr = DAVecGetArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
+    ierr = DAVecGetArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
+    ierr = DAVecGetArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
 
   /* loop over local fine grid nodes setting interpolation for those*/
@@ -807,8 +810,8 @@ PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
     }
   }
   if (vcoors) {
-    ierr = DAVecRestoreArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
-    ierr = DAVecRestoreArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -848,6 +851,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *sc
   PetscInt       dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
   DAPeriodicType wrapc,wrapf;
   DAStencilType  stc,stf;
+  DM_DA          *ddc = (DM_DA*)dac->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dac,DM_CLASSID,1);
@@ -866,7 +870,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *sc
   if (dimc > 1 && Nc < 2 && Nf > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
   if (dimc > 2 && Pc < 2 && Pf > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
 
-  if (dac->interptype == DA_Q1){
+  if (ddc->interptype == DA_Q1){
     if (dimc == 1){
       ierr = DAGetInterpolation_1D_Q1(dac,daf,A);CHKERRQ(ierr);
     } else if (dimc == 2){
@@ -874,9 +878,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *sc
     } else if (dimc == 3){
       ierr = DAGetInterpolation_3D_Q1(dac,daf,A);CHKERRQ(ierr);
     } else {
-      SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DA dimension %D for interpolation type %d",dimc,(int)dac->interptype);
+      SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
     }
-  } else if (dac->interptype == DA_Q0){
+  } else if (ddc->interptype == DA_Q0){
     if (dimc == 1){
       ierr = DAGetInterpolation_1D_Q0(dac,daf,A);CHKERRQ(ierr);
     } else if (dimc == 2){
@@ -884,7 +888,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *sc
     } else if (dimc == 3){
        ierr = DAGetInterpolation_3D_Q0(dac,daf,A);CHKERRQ(ierr);
     } else {
-      SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DA dimension %D for interpolation type %d",dimc,(int)dac->interptype);
+      SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
     }
   }
   if (scale) {

@@ -38,7 +38,6 @@
         PETSC_COMM_WORLD = "static int PETSC_COMM_WORLD;"
         PETSC_COMM_SELF  = "static int PETSC_COMM_SELF;"
         CHKMEMQ          = "CHKMEMQ;"
-        DMComposite          = "typedef int DMComposite;"
 
 [DEFINES]
 	PetscAbsScalar     = fabs

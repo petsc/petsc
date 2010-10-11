@@ -71,7 +71,7 @@ typedef struct {
   PetscBool    draw_contours;                /* flag - 1 indicates drawing contours */
   DMMG         *dmmg,*dmmg_comp;             /* used by MySolutionView() */
   DMMG         *dmmg1,*dmmg2; /* passing objects of sub-physics into the composite physics - used by FormInitialGuessComp() */
-  DMComposite  pack;
+  DM           pack;
   PetscBool    COMPOSITE_MODEL;
   Field        **x;   /* passing DMMGGetx(dmmg) - final solution of original coupled physics */
   Field1       **x1;  /* passing local ghosted vector array of Physics 1 */
@@ -412,7 +412,7 @@ PetscErrorCode FormInitialGuessComp(DMMG dmmg,Vec X)
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*)dmmg->user;
   DMMG           *dmmg1 = user->dmmg1,*dmmg2=user->dmmg2;
-  DMComposite    dm = (DMComposite)dmmg->dm;
+  DM             dm = (DMComposite)dmmg->dm;
   Vec            X1,X2;
 
   PetscFunctionBegin;
@@ -796,7 +796,7 @@ PetscErrorCode FormFunctionComp(SNES snes,Vec X,Vec F,void *ctx)
   PetscErrorCode ierr;
   DMMG           dmmg = (DMMG)ctx;
   AppCtx         *user = (AppCtx*)dmmg->user;
-  DMComposite    dm = (DMComposite)dmmg->dm;
+  DM             dm = (DMComposite)dmmg->dm;
   DALocalInfo    info1,info2;
   DA             da1,da2;
   Field1         **x1,**f1;
@@ -913,7 +913,7 @@ PetscErrorCode MySolutionView(MPI_Comm comm,PetscInt phy_num,void *ctx)
       Field       **x;
       Field1      **x1;
       Field2      **x2;
-      DMComposite dm = (DMComposite)(*dmmg_comp)->dm;
+      DM          dm = (DMComposite)(*dmmg_comp)->dm;
       PetscReal   err,err_tmp;
       if (phy_num == 3){
         ierr = PetscPrintf(PETSC_COMM_SELF,"Composite physics %d, U,V,Omega,Temp: \n",phy_num);

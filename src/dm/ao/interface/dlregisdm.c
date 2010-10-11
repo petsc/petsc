@@ -136,7 +136,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[])
   DMPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscClassIdRegister("Distributed array",&DM_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("Arbitrary Dimension Distributed array",&ADDA_CLASSID);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
   ierr = PetscClassIdRegister("Mesh",&MESH_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("SectionReal",&SECTIONREAL_CLASSID);CHKERRQ(ierr);

@@ -1221,6 +1221,7 @@ static PetscErrorCode DARefineHierarchy_THI(DA dac0,PetscInt nlevels,DA hierarch
   PetscInt dim,M,N,m,n,s,dof;
   DA dac,daf;
   DAStencilType  st;
+  DM_DA *ddf,*ddc;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)dac0,"THI",(PetscObject*)&thi);CHKERRQ(ierr);
@@ -1238,7 +1239,9 @@ static PetscErrorCode DARefineHierarchy_THI(DA dac0,PetscInt nlevels,DA hierarch
   daf->ops->getmatrix        = dac->ops->getmatrix;
   daf->ops->getinterpolation = dac->ops->getinterpolation;
   daf->ops->getcoloring      = dac->ops->getcoloring;
-  daf->interptype            = dac->interptype;
+  ddf = (DM_DA*)daf->data;
+  ddc = (DM_DA*)dac->data;
+  ddf->interptype            = ddc->interptype;
 
   ierr = DASetFieldName(daf,0,"x-velocity");CHKERRQ(ierr);
   ierr = DASetFieldName(daf,1,"y-velocity");CHKERRQ(ierr);

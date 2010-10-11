@@ -37,7 +37,7 @@ static char help[] = "Solves PDE optimization problem.\n\n";
 typedef struct {
   DA           da1,da2;
   PetscInt     nredundant;
-  DMComposite  packer;
+  DM           packer;
   PetscViewer  u_viewer,lambda_viewer;
   PetscViewer  fu_viewer,flambda_viewer;
 } UserCtx;

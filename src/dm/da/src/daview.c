@@ -53,6 +53,7 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
   DAStencilType  stencil;
   DAPeriodicType periodic;
   MPI_Comm       comm;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
@@ -68,8 +69,8 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
 
       ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-daload_info %D,%D,%D,%D,%D,%D,%D,%D\n",dim,m,n,p,dof,swidth,stencil,periodic);CHKERRQ(ierr);
       for (i=0; i<dof; i++) {
-        if (da->fieldname[i]) {
-          ierr = PetscStrncpy(fieldname,da->fieldname[i],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+        if (dd->fieldname[i]) {
+          ierr = PetscStrncpy(fieldname,dd->fieldname[i],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
           ierr = PetscStrlen(fieldname,&len);CHKERRQ(ierr);
           len  = PetscMin(PETSC_MAX_PATH_LEN,len);CHKERRQ(ierr);
           for (j=0; j<len; j++) {
@@ -78,14 +79,14 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
           ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-daload_fieldname_%D %s\n",i,fieldname);CHKERRQ(ierr);
         }
       }
-      if (da->coordinates) { /* save the DA's coordinates */
+      if (dd->coordinates) { /* save the DA's coordinates */
         ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-daload_coordinates\n");CHKERRQ(ierr);
       }
     }
   } 
 
   /* save the coordinates if they exist to disk (in the natural ordering) */
-  if (da->coordinates) {
+  if (dd->coordinates) {
     DA             dac;
     const PetscInt *lx,*ly,*lz;
     Vec            natural;
@@ -103,8 +104,8 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
     }
     ierr = DACreateNaturalVector(dac,&natural);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,"coor_");CHKERRQ(ierr);
-    ierr = DAGlobalToNaturalBegin(dac,da->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);
-    ierr = DAGlobalToNaturalEnd(dac,da->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);
+    ierr = DAGlobalToNaturalBegin(dac,dd->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);
+    ierr = DAGlobalToNaturalEnd(dac,dd->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);
     ierr = VecView(natural,viewer);CHKERRQ(ierr);
     ierr = VecDestroy(natural);CHKERRQ(ierr);
     ierr = DADestroy(dac);CHKERRQ(ierr);
@@ -119,11 +120,12 @@ PetscErrorCode DAView_VTK(DA da, PetscViewer viewer)
 {
   PetscInt       dim, dof, M = 0, N = 0, P = 0;
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(da, &dim, &M, &N, &P, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   /* if (dim != 3) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "VTK output only works for three dimensional DAs.");} */
-  if (!da->coordinates) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP, "VTK output requires DA coordinates.");
+  if (!dd->coordinates) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP, "VTK output requires DA coordinates.");
   /* Write Header */
   ierr = PetscViewerASCIIPrintf(viewer,"# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Structured Mesh Example\n");CHKERRQ(ierr);
@@ -131,15 +133,15 @@ PetscErrorCode DAView_VTK(DA da, PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"DATASET STRUCTURED_GRID\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"DIMENSIONS %d %d %d\n", M, N, P);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"POINTS %d double\n", M*N*P);CHKERRQ(ierr);
-  if (da->coordinates) {
+  if (dd->coordinates) {
     DA  dac;
     Vec natural;
 
     ierr = DAGetCoordinateDA(da, &dac);CHKERRQ(ierr);
     ierr = DACreateNaturalVector(dac, &natural);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject) natural, "coor_");CHKERRQ(ierr);
-    ierr = DAGlobalToNaturalBegin(dac, da->coordinates, INSERT_VALUES, natural);CHKERRQ(ierr);
-    ierr = DAGlobalToNaturalEnd(dac, da->coordinates, INSERT_VALUES, natural);CHKERRQ(ierr);
+    ierr = DAGlobalToNaturalBegin(dac, dd->coordinates, INSERT_VALUES, natural);CHKERRQ(ierr);
+    ierr = DAGlobalToNaturalEnd(dac, dd->coordinates, INSERT_VALUES, natural);CHKERRQ(ierr);
     ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_COORDS);CHKERRQ(ierr);
     ierr = VecView(natural, viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
@@ -211,7 +213,8 @@ PetscErrorCode DAView_VTK(DA da, PetscViewer viewer)
 PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscInt       i,dof = da->w;
+  DM_DA          *dd = (DM_DA*)da->data;
+  PetscInt       i,dof = dd->w;
   PetscBool      iascii,fieldsnamed = PETSC_FALSE,isbinary;
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   PetscBool      ismatlab;
@@ -238,7 +241,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
     } else {
       ierr = PetscObjectPrintClassNamePrefixType((PetscObject)da,viewer,"DA Object");CHKERRQ(ierr);
       for (i=0; i<dof; i++) {
-        if (da->fieldname[i]) {
+        if (dd->fieldname[i]) {
           fieldsnamed = PETSC_TRUE;
           break;
         }
@@ -246,8 +249,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
       if (fieldsnamed) {
         ierr = PetscViewerASCIIPrintf(viewer,"FieldNames: ");CHKERRQ(ierr);
         for (i=0; i<dof; i++) {
-          if (da->fieldname[i]) {
-            ierr = PetscViewerASCIIPrintf(viewer,"%s ",da->fieldname[i]);CHKERRQ(ierr);
+          if (dd->fieldname[i]) {
+            ierr = PetscViewerASCIIPrintf(viewer,"%s ",dd->fieldname[i]);CHKERRQ(ierr);
           } else {
             ierr = PetscViewerASCIIPrintf(viewer,"(not named) ");CHKERRQ(ierr);
           }
@@ -299,19 +302,21 @@ PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetInfo(DA da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *dof,PetscInt *s,DAPeriodicType *wrap,DAStencilType *st)
 {
+  DM_DA *dd = (DM_DA*)da->data;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (dim)  *dim  = da->dim;
-  if (M)    *M    = da->M;
-  if (N)    *N    = da->N;
-  if (P)    *P    = da->P;
-  if (m)    *m    = da->m;
-  if (n)    *n    = da->n;
-  if (p)    *p    = da->p;
-  if (dof)  *dof  = da->w;
-  if (s)    *s    = da->s;
-  if (wrap) *wrap = da->wrap;
-  if (st)   *st   = da->stencil_type;
+  if (dim)  *dim  = dd->dim;
+  if (M)    *M    = dd->M;
+  if (N)    *N    = dd->N;
+  if (P)    *P    = dd->P;
+  if (m)    *m    = dd->m;
+  if (n)    *n    = dd->n;
+  if (p)    *p    = dd->p;
+  if (dof)  *dof  = dd->w;
+  if (s)    *s    = dd->s;
+  if (wrap) *wrap = dd->wrap;
+  if (st)   *st   = dd->stencil_type;
   PetscFunctionReturn(0);
 }  
 
@@ -337,38 +342,39 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInfo(DA da,PetscInt *dim,PetscInt *M,Petsc
 PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalInfo(DA da,DALocalInfo *info)
 {
   PetscInt w;
+  DM_DA    *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(info,2);
   info->da   = da;
-  info->dim  = da->dim;
-  info->mx   = da->M;
-  info->my   = da->N;
-  info->mz   = da->P;
-  info->dof  = da->w;
-  info->sw   = da->s;
-  info->pt   = da->wrap;
-  info->st   = da->stencil_type;
+  info->dim  = dd->dim;
+  info->mx   = dd->M;
+  info->my   = dd->N;
+  info->mz   = dd->P;
+  info->dof  = dd->w;
+  info->sw   = dd->s;
+  info->pt   = dd->wrap;
+  info->st   = dd->stencil_type;
 
   /* since the xs, xe ... have all been multiplied by the number of degrees 
-     of freedom per cell, w = da->w, we divide that out before returning.*/
-  w = da->w;  
-  info->xs = da->xs/w; 
-  info->xm = (da->xe - da->xs)/w;
+     of freedom per cell, w = dd->w, we divide that out before returning.*/
+  w = dd->w;  
+  info->xs = dd->xs/w; 
+  info->xm = (dd->xe - dd->xs)/w;
   /* the y and z have NOT been multiplied by w */
-  info->ys = da->ys;
-  info->ym = (da->ye - da->ys);
-  info->zs = da->zs;
-  info->zm = (da->ze - da->zs); 
+  info->ys = dd->ys;
+  info->ym = (dd->ye - dd->ys);
+  info->zs = dd->zs;
+  info->zm = (dd->ze - dd->zs); 
 
-  info->gxs = da->Xs/w; 
-  info->gxm = (da->Xe - da->Xs)/w;
+  info->gxs = dd->Xs/w; 
+  info->gxm = (dd->Xe - dd->Xs)/w;
   /* the y and z have NOT been multiplied by w */
-  info->gys = da->Ys;
-  info->gym = (da->Ye - da->Ys);
-  info->gzs = da->Zs;
-  info->gzm = (da->Ze - da->Zs); 
+  info->gys = dd->Ys;
+  info->gym = (dd->Ye - dd->Ys);
+  info->gzs = dd->Zs;
+  info->gzm = (dd->Ze - dd->Zs); 
   PetscFunctionReturn(0);
 }  
 

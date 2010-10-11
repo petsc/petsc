@@ -42,13 +42,14 @@
 PetscErrorCode PETSCDM_DLLEXPORT DALocalToGlobal(DA da,Vec l,InsertMode mode,Vec g)
 {
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidHeaderSpecific(g,VEC_CLASSID,2);
   PetscValidHeaderSpecific(g,VEC_CLASSID,4);
-  ierr = VecScatterBegin(da->ltog,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(da->ltog,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterBegin(dd->ltog,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(dd->ltog,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

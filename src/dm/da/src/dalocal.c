@@ -75,17 +75,18 @@ EXTERN_C_END
 PetscErrorCode PETSCDM_DLLEXPORT DACreateLocalVector(DA da,Vec* g)
 {
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(g,2);
   ierr = VecCreate(PETSC_COMM_SELF,g);CHKERRQ(ierr);
-  ierr = VecSetSizes(*g,da->nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetSizes(*g,dd->nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(*g,da->w);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(*g,dd->w);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  if (da->w == 1  && da->dim == 2) {
+  if (dd->w == 1  && dd->dim == 2) {
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)*g,"PetscMatlabEnginePut_C","VecMatlabEnginePut_DA2d",VecMatlabEnginePut_DA2d);CHKERRQ(ierr);
   }
 #endif
@@ -339,49 +340,50 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DA da,PetscBool  ghosted,void *v
   PetscInt       j,i,deriv_type_size,xs,ys,xm,ym,zs,zm,itdof;
   char           *iarray_start;
   void           **iptr = (void**)vptr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (da->adarrayghostedin[i]) {
-        *iptr                   = da->adarrayghostedin[i];
-        iarray_start            = (char*)da->adstartghostedin[i];
-        itdof                   = da->ghostedtdof;
-        da->adarrayghostedin[i] = PETSC_NULL;
-        da->adstartghostedin[i] = PETSC_NULL;
+      if (dd->adarrayghostedin[i]) {
+        *iptr                   = dd->adarrayghostedin[i];
+        iarray_start            = (char*)dd->adstartghostedin[i];
+        itdof                   = dd->ghostedtdof;
+        dd->adarrayghostedin[i] = PETSC_NULL;
+        dd->adstartghostedin[i] = PETSC_NULL;
         
         goto done;
       }
     }
-    xs = da->Xs;
-    ys = da->Ys;
-    zs = da->Zs;
-    xm = da->Xe-da->Xs;
-    ym = da->Ye-da->Ys;
-    zm = da->Ze-da->Zs;
+    xs = dd->Xs;
+    ys = dd->Ys;
+    zs = dd->Zs;
+    xm = dd->Xe-dd->Xs;
+    ym = dd->Ye-dd->Ys;
+    zm = dd->Ze-dd->Zs;
   } else {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (da->adarrayin[i]) {
-        *iptr            = da->adarrayin[i];
-        iarray_start     = (char*)da->adstartin[i];
-        itdof            = da->tdof;
-        da->adarrayin[i] = PETSC_NULL;
-        da->adstartin[i] = PETSC_NULL;
+      if (dd->adarrayin[i]) {
+        *iptr            = dd->adarrayin[i];
+        iarray_start     = (char*)dd->adstartin[i];
+        itdof            = dd->tdof;
+        dd->adarrayin[i] = PETSC_NULL;
+        dd->adstartin[i] = PETSC_NULL;
         
         goto done;
       }
     }
-    xs = da->xs;
-    ys = da->ys;
-    zs = da->zs;
-    xm = da->xe-da->xs;
-    ym = da->ye-da->ys;
-    zm = da->ze-da->zs;
+    xs = dd->xs;
+    ys = dd->ys;
+    zs = dd->zs;
+    xm = dd->xe-dd->xs;
+    ym = dd->ye-dd->ys;
+    zm = dd->ze-dd->zs;
   }
   deriv_type_size = PetscADGetDerivTypeSize();
 
-  switch (da->dim) {
+  switch (dd->dim) {
     case 1: {
       void *ptr;
       itdof = xm;
@@ -424,26 +426,26 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DA da,PetscBool  ghosted,void *v
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
   }
 
   done:
   /* add arrays to the checked out list */
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (!da->adarrayghostedout[i]) {
-        da->adarrayghostedout[i] = *iptr ;
-        da->adstartghostedout[i] = iarray_start;
-        da->ghostedtdof          = itdof;
+      if (!dd->adarrayghostedout[i]) {
+        dd->adarrayghostedout[i] = *iptr ;
+        dd->adstartghostedout[i] = iarray_start;
+        dd->ghostedtdof          = itdof;
         break;
       }
     }
   } else {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (!da->adarrayout[i]) {
-        da->adarrayout[i] = *iptr ;
-        da->adstartout[i] = iarray_start;
-        da->tdof          = itdof;
+      if (!dd->adarrayout[i]) {
+        dd->adarrayout[i] = *iptr ;
+        dd->adstartout[i] = iarray_start;
+        dd->tdof          = itdof;
         break;
       }
     }
@@ -482,35 +484,35 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicArray(DA da,PetscBool  ghosted,voi
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (da->adarrayghostedout[i] == *iptr) {
-        iarray_start             = da->adstartghostedout[i];
-        da->adarrayghostedout[i] = PETSC_NULL;
-        da->adstartghostedout[i] = PETSC_NULL;
+      if (dd->adarrayghostedout[i] == *iptr) {
+        iarray_start             = dd->adstartghostedout[i];
+        dd->adarrayghostedout[i] = PETSC_NULL;
+        dd->adstartghostedout[i] = PETSC_NULL;
         break;
       }
     }
     if (!iarray_start) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Could not find array in checkout list");
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (!da->adarrayghostedin[i]){
-        da->adarrayghostedin[i] = *iptr;
-        da->adstartghostedin[i] = iarray_start;
+      if (!dd->adarrayghostedin[i]){
+        dd->adarrayghostedin[i] = *iptr;
+        dd->adstartghostedin[i] = iarray_start;
         break;
       }
     }
   } else {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (da->adarrayout[i] == *iptr) {
-        iarray_start      = da->adstartout[i];
-        da->adarrayout[i] = PETSC_NULL;
-        da->adstartout[i] = PETSC_NULL;
+      if (dd->adarrayout[i] == *iptr) {
+        iarray_start      = dd->adstartout[i];
+        dd->adarrayout[i] = PETSC_NULL;
+        dd->adstartout[i] = PETSC_NULL;
         break;
       }
     }
     if (!iarray_start) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Could not find array in checkout list");
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (!da->adarrayin[i]){
-        da->adarrayin[i]   = *iptr;
-        da->adstartin[i]   = iarray_start;
+      if (!dd->adarrayin[i]){
+        dd->adarrayin[i]   = *iptr;
+        dd->adstartin[i]   = iarray_start;
         break;
       }
     }
@@ -566,46 +568,47 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DA da,PetscBool  ghosted,void *vptr)
   PetscInt       j,i,xs,ys,xm,ym,zs,zm;
   char           *iarray_start;
   void           **iptr = (void**)vptr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
-      if (da->arrayghostedin[i]) {
-        *iptr                 = da->arrayghostedin[i];
-        iarray_start          = (char*)da->startghostedin[i];
-        da->arrayghostedin[i] = PETSC_NULL;
-        da->startghostedin[i] = PETSC_NULL;
+      if (dd->arrayghostedin[i]) {
+        *iptr                 = dd->arrayghostedin[i];
+        iarray_start          = (char*)dd->startghostedin[i];
+        dd->arrayghostedin[i] = PETSC_NULL;
+        dd->startghostedin[i] = PETSC_NULL;
         
         goto done;
       }
     }
-    xs = da->Xs;
-    ys = da->Ys;
-    zs = da->Zs;
-    xm = da->Xe-da->Xs;
-    ym = da->Ye-da->Ys;
-    zm = da->Ze-da->Zs;
+    xs = dd->Xs;
+    ys = dd->Ys;
+    zs = dd->Zs;
+    xm = dd->Xe-dd->Xs;
+    ym = dd->Ye-dd->Ys;
+    zm = dd->Ze-dd->Zs;
   } else {
     for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
-      if (da->arrayin[i]) {
-        *iptr          = da->arrayin[i];
-        iarray_start   = (char*)da->startin[i];
-        da->arrayin[i] = PETSC_NULL;
-        da->startin[i] = PETSC_NULL;
+      if (dd->arrayin[i]) {
+        *iptr          = dd->arrayin[i];
+        iarray_start   = (char*)dd->startin[i];
+        dd->arrayin[i] = PETSC_NULL;
+        dd->startin[i] = PETSC_NULL;
         
         goto done;
       }
     }
-    xs = da->xs;
-    ys = da->ys;
-    zs = da->zs;
-    xm = da->xe-da->xs;
-    ym = da->ye-da->ys;
-    zm = da->ze-da->zs;
+    xs = dd->xs;
+    ys = dd->ys;
+    zs = dd->zs;
+    xm = dd->xe-dd->xs;
+    ym = dd->ye-dd->ys;
+    zm = dd->ze-dd->zs;
   }
 
-  switch (da->dim) {
+  switch (dd->dim) {
     case 1: {
       void *ptr;
 
@@ -644,24 +647,24 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DA da,PetscBool  ghosted,void *vptr)
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
   }
 
   done:
   /* add arrays to the checked out list */
   if (ghosted) {
     for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
-      if (!da->arrayghostedout[i]) {
-        da->arrayghostedout[i] = *iptr ;
-        da->startghostedout[i] = iarray_start;
+      if (!dd->arrayghostedout[i]) {
+        dd->arrayghostedout[i] = *iptr ;
+        dd->startghostedout[i] = iarray_start;
         break;
       }
     }
   } else {
     for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
-      if (!da->arrayout[i]) {
-        da->arrayout[i] = *iptr ;
-        da->startout[i] = iarray_start;
+      if (!dd->arrayout[i]) {
+        dd->arrayout[i] = *iptr ;
+        dd->startout[i] = iarray_start;
         break;
       }
     }
@@ -688,38 +691,39 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DA da,PetscBool  ghosted,void *v
 {
   PetscInt  i;
   void      **iptr = (void**)vptr,*iarray_start = 0;
+  DM_DA     *dd = (DM_DA*)da->data;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
-      if (da->arrayghostedout[i] == *iptr) {
-        iarray_start           = da->startghostedout[i];
-        da->arrayghostedout[i] = PETSC_NULL;
-        da->startghostedout[i] = PETSC_NULL;
+      if (dd->arrayghostedout[i] == *iptr) {
+        iarray_start           = dd->startghostedout[i];
+        dd->arrayghostedout[i] = PETSC_NULL;
+        dd->startghostedout[i] = PETSC_NULL;
         break;
       }
     }
     for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
-      if (!da->arrayghostedin[i]){
-        da->arrayghostedin[i] = *iptr;
-        da->startghostedin[i] = iarray_start;
+      if (!dd->arrayghostedin[i]){
+        dd->arrayghostedin[i] = *iptr;
+        dd->startghostedin[i] = iarray_start;
         break;
       }
     }
   } else {
     for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
-      if (da->arrayout[i] == *iptr) {
-        iarray_start    = da->startout[i];
-        da->arrayout[i] = PETSC_NULL;
-        da->startout[i] = PETSC_NULL;
+      if (dd->arrayout[i] == *iptr) {
+        iarray_start    = dd->startout[i];
+        dd->arrayout[i] = PETSC_NULL;
+        dd->startout[i] = PETSC_NULL;
         break;
       }
     }
     for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
-      if (!da->arrayin[i]){
-        da->arrayin[i]  = *iptr;
-        da->startin[i]  = iarray_start;
+      if (!dd->arrayin[i]){
+        dd->arrayin[i]  = *iptr;
+        dd->startin[i]  = iarray_start;
         break;
       }
     }
@@ -759,48 +763,49 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscBool  ghosted,void 
   PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
   char           *iarray_start;
   void           **iptr = (void**)vptr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (da->admfarrayghostedin[i]) {
-        *iptr                     = da->admfarrayghostedin[i];
-        iarray_start              = (char*)da->admfstartghostedin[i];
-        itdof                     = da->ghostedtdof;
-        da->admfarrayghostedin[i] = PETSC_NULL;
-        da->admfstartghostedin[i] = PETSC_NULL;
+      if (dd->admfarrayghostedin[i]) {
+        *iptr                     = dd->admfarrayghostedin[i];
+        iarray_start              = (char*)dd->admfstartghostedin[i];
+        itdof                     = dd->ghostedtdof;
+        dd->admfarrayghostedin[i] = PETSC_NULL;
+        dd->admfstartghostedin[i] = PETSC_NULL;
         
         goto done;
       }
     }
-    xs = da->Xs;
-    ys = da->Ys;
-    zs = da->Zs;
-    xm = da->Xe-da->Xs;
-    ym = da->Ye-da->Ys;
-    zm = da->Ze-da->Zs;
+    xs = dd->Xs;
+    ys = dd->Ys;
+    zs = dd->Zs;
+    xm = dd->Xe-dd->Xs;
+    ym = dd->Ye-dd->Ys;
+    zm = dd->Ze-dd->Zs;
   } else {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (da->admfarrayin[i]) {
-        *iptr              = da->admfarrayin[i];
-        iarray_start       = (char*)da->admfstartin[i];
-        itdof              = da->tdof;
-        da->admfarrayin[i] = PETSC_NULL;
-        da->admfstartin[i] = PETSC_NULL;
+      if (dd->admfarrayin[i]) {
+        *iptr              = dd->admfarrayin[i];
+        iarray_start       = (char*)dd->admfstartin[i];
+        itdof              = dd->tdof;
+        dd->admfarrayin[i] = PETSC_NULL;
+        dd->admfstartin[i] = PETSC_NULL;
         
         goto done;
       }
     }
-    xs = da->xs;
-    ys = da->ys;
-    zs = da->zs;
-    xm = da->xe-da->xs;
-    ym = da->ye-da->ys;
-    zm = da->ze-da->zs;
+    xs = dd->xs;
+    ys = dd->ys;
+    zs = dd->zs;
+    xm = dd->xe-dd->xs;
+    ym = dd->ye-dd->ys;
+    zm = dd->ze-dd->zs;
   }
 
-  switch (da->dim) {
+  switch (dd->dim) {
     case 1: {
       void *ptr;
       itdof = xm;
@@ -842,26 +847,26 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscBool  ghosted,void 
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
   }
 
   done:
   /* add arrays to the checked out list */
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (!da->admfarrayghostedout[i]) {
-        da->admfarrayghostedout[i] = *iptr ;
-        da->admfstartghostedout[i] = iarray_start;
-        da->ghostedtdof            = itdof;
+      if (!dd->admfarrayghostedout[i]) {
+        dd->admfarrayghostedout[i] = *iptr ;
+        dd->admfstartghostedout[i] = iarray_start;
+        dd->ghostedtdof            = itdof;
         break;
       }
     }
   } else {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (!da->admfarrayout[i]) {
-        da->admfarrayout[i] = *iptr ;
-        da->admfstartout[i] = iarray_start;
-        da->tdof            = itdof;
+      if (!dd->admfarrayout[i]) {
+        dd->admfarrayout[i] = *iptr ;
+        dd->admfstartout[i] = iarray_start;
+        dd->tdof            = itdof;
         break;
       }
     }
@@ -880,48 +885,49 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscBool  ghosted,void
   PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
   char           *iarray_start;
   void           **iptr = (void**)vptr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (da->admfarrayghostedin[i]) {
-        *iptr                     = da->admfarrayghostedin[i];
-        iarray_start              = (char*)da->admfstartghostedin[i];
-        itdof                     = da->ghostedtdof;
-        da->admfarrayghostedin[i] = PETSC_NULL;
-        da->admfstartghostedin[i] = PETSC_NULL;
+      if (dd->admfarrayghostedin[i]) {
+        *iptr                     = dd->admfarrayghostedin[i];
+        iarray_start              = (char*)dd->admfstartghostedin[i];
+        itdof                     = dd->ghostedtdof;
+        dd->admfarrayghostedin[i] = PETSC_NULL;
+        dd->admfstartghostedin[i] = PETSC_NULL;
         
         goto done;
       }
     }
-    xs = da->Xs;
-    ys = da->Ys;
-    zs = da->Zs;
-    xm = da->Xe-da->Xs;
-    ym = da->Ye-da->Ys;
-    zm = da->Ze-da->Zs;
+    xs = dd->Xs;
+    ys = dd->Ys;
+    zs = dd->Zs;
+    xm = dd->Xe-dd->Xs;
+    ym = dd->Ye-dd->Ys;
+    zm = dd->Ze-dd->Zs;
   } else {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (da->admfarrayin[i]) {
-        *iptr              = da->admfarrayin[i];
-        iarray_start       = (char*)da->admfstartin[i];
-        itdof              = da->tdof;
-        da->admfarrayin[i] = PETSC_NULL;
-        da->admfstartin[i] = PETSC_NULL;
+      if (dd->admfarrayin[i]) {
+        *iptr              = dd->admfarrayin[i];
+        iarray_start       = (char*)dd->admfstartin[i];
+        itdof              = dd->tdof;
+        dd->admfarrayin[i] = PETSC_NULL;
+        dd->admfstartin[i] = PETSC_NULL;
         
         goto done;
       }
     }
-    xs = da->xs;
-    ys = da->ys;
-    zs = da->zs;
-    xm = da->xe-da->xs;
-    ym = da->ye-da->ys;
-    zm = da->ze-da->zs;
+    xs = dd->xs;
+    ys = dd->ys;
+    zs = dd->zs;
+    xm = dd->xe-dd->xs;
+    ym = dd->ye-dd->ys;
+    zm = dd->ze-dd->zs;
   }
 
-  switch (da->dim) {
+  switch (dd->dim) {
     case 2: {
       void **ptr;
       itdof = xm*ym;
@@ -935,26 +941,26 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscBool  ghosted,void
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
   }
 
   done:
   /* add arrays to the checked out list */
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (!da->admfarrayghostedout[i]) {
-        da->admfarrayghostedout[i] = *iptr ;
-        da->admfstartghostedout[i] = iarray_start;
-        da->ghostedtdof            = itdof;
+      if (!dd->admfarrayghostedout[i]) {
+        dd->admfarrayghostedout[i] = *iptr ;
+        dd->admfstartghostedout[i] = iarray_start;
+        dd->ghostedtdof            = itdof;
         break;
       }
     }
   } else {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (!da->admfarrayout[i]) {
-        da->admfarrayout[i] = *iptr ;
-        da->admfstartout[i] = iarray_start;
-        da->tdof            = itdof;
+      if (!dd->admfarrayout[i]) {
+        dd->admfarrayout[i] = *iptr ;
+        dd->admfstartout[i] = iarray_start;
+        dd->tdof            = itdof;
         break;
       }
     }
@@ -973,48 +979,49 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DA da,PetscBool  ghosted,void
   PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
   char           *iarray_start;
   void           **iptr = (void**)vptr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (da->admfarrayghostedin[i]) {
-        *iptr                     = da->admfarrayghostedin[i];
-        iarray_start              = (char*)da->admfstartghostedin[i];
-        itdof                     = da->ghostedtdof;
-        da->admfarrayghostedin[i] = PETSC_NULL;
-        da->admfstartghostedin[i] = PETSC_NULL;
+      if (dd->admfarrayghostedin[i]) {
+        *iptr                     = dd->admfarrayghostedin[i];
+        iarray_start              = (char*)dd->admfstartghostedin[i];
+        itdof                     = dd->ghostedtdof;
+        dd->admfarrayghostedin[i] = PETSC_NULL;
+        dd->admfstartghostedin[i] = PETSC_NULL;
         
         goto done;
       }
     }
-    xs = da->Xs;
-    ys = da->Ys;
-    zs = da->Zs;
-    xm = da->Xe-da->Xs;
-    ym = da->Ye-da->Ys;
-    zm = da->Ze-da->Zs;
+    xs = dd->Xs;
+    ys = dd->Ys;
+    zs = dd->Zs;
+    xm = dd->Xe-dd->Xs;
+    ym = dd->Ye-dd->Ys;
+    zm = dd->Ze-dd->Zs;
   } else {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (da->admfarrayin[i]) {
-        *iptr              = da->admfarrayin[i];
-        iarray_start       = (char*)da->admfstartin[i];
-        itdof              = da->tdof;
-        da->admfarrayin[i] = PETSC_NULL;
-        da->admfstartin[i] = PETSC_NULL;
+      if (dd->admfarrayin[i]) {
+        *iptr              = dd->admfarrayin[i];
+        iarray_start       = (char*)dd->admfstartin[i];
+        itdof              = dd->tdof;
+        dd->admfarrayin[i] = PETSC_NULL;
+        dd->admfstartin[i] = PETSC_NULL;
         
         goto done;
       }
     }
-    xs = da->xs;
-    ys = da->ys;
-    zs = da->zs;
-    xm = da->xe-da->xs;
-    ym = da->ye-da->ys;
-    zm = da->ze-da->zs;
+    xs = dd->xs;
+    ys = dd->ys;
+    zs = dd->zs;
+    xm = dd->xe-dd->xs;
+    ym = dd->ye-dd->ys;
+    zm = dd->ze-dd->zs;
   }
 
-  switch (da->dim) {
+  switch (dd->dim) {
     case 2: {
       void **ptr;
       itdof = xm*ym;
@@ -1028,26 +1035,26 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DA da,PetscBool  ghosted,void
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
   }
 
   done:
   /* add arrays to the checked out list */
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (!da->admfarrayghostedout[i]) {
-        da->admfarrayghostedout[i] = *iptr ;
-        da->admfstartghostedout[i] = iarray_start;
-        da->ghostedtdof            = itdof;
+      if (!dd->admfarrayghostedout[i]) {
+        dd->admfarrayghostedout[i] = *iptr ;
+        dd->admfstartghostedout[i] = iarray_start;
+        dd->ghostedtdof            = itdof;
         break;
       }
     }
   } else {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (!da->admfarrayout[i]) {
-        da->admfarrayout[i] = *iptr ;
-        da->admfstartout[i] = iarray_start;
-        da->tdof            = itdof;
+      if (!dd->admfarrayout[i]) {
+        dd->admfarrayout[i] = *iptr ;
+        dd->admfstartout[i] = iarray_start;
+        dd->tdof            = itdof;
         break;
       }
     }
@@ -1090,49 +1097,50 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DA da,PetscBool  ghosted,void
   PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
   char           *iarray_start;
   void           **iptr = (void**)vptr;
-  PetscInt       bs = da->w,bs1 = bs+1;
+  DM_DA          *dd = (DM_DA*)da->data;
+  PetscInt       bs = dd->w,bs1 = bs+1;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (da->admfarrayghostedin[i]) {
-        *iptr                     = da->admfarrayghostedin[i];
-        iarray_start              = (char*)da->admfstartghostedin[i];
-        itdof                     = da->ghostedtdof;
-        da->admfarrayghostedin[i] = PETSC_NULL;
-        da->admfstartghostedin[i] = PETSC_NULL;
+      if (dd->admfarrayghostedin[i]) {
+        *iptr                     = dd->admfarrayghostedin[i];
+        iarray_start              = (char*)dd->admfstartghostedin[i];
+        itdof                     = dd->ghostedtdof;
+        dd->admfarrayghostedin[i] = PETSC_NULL;
+        dd->admfstartghostedin[i] = PETSC_NULL;
         
         goto done;
       }
     }
-    xs = da->Xs;
-    ys = da->Ys;
-    zs = da->Zs;
-    xm = da->Xe-da->Xs;
-    ym = da->Ye-da->Ys;
-    zm = da->Ze-da->Zs;
+    xs = dd->Xs;
+    ys = dd->Ys;
+    zs = dd->Zs;
+    xm = dd->Xe-dd->Xs;
+    ym = dd->Ye-dd->Ys;
+    zm = dd->Ze-dd->Zs;
   } else {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (da->admfarrayin[i]) {
-        *iptr              = da->admfarrayin[i];
-        iarray_start       = (char*)da->admfstartin[i];
-        itdof              = da->tdof;
-        da->admfarrayin[i] = PETSC_NULL;
-        da->admfstartin[i] = PETSC_NULL;
+      if (dd->admfarrayin[i]) {
+        *iptr              = dd->admfarrayin[i];
+        iarray_start       = (char*)dd->admfstartin[i];
+        itdof              = dd->tdof;
+        dd->admfarrayin[i] = PETSC_NULL;
+        dd->admfstartin[i] = PETSC_NULL;
         
         goto done;
       }
     }
-    xs = da->xs;
-    ys = da->ys;
-    zs = da->zs;
-    xm = da->xe-da->xs;
-    ym = da->ye-da->ys;
-    zm = da->ze-da->zs;
+    xs = dd->xs;
+    ys = dd->ys;
+    zs = dd->zs;
+    xm = dd->xe-dd->xs;
+    ym = dd->ye-dd->ys;
+    zm = dd->ze-dd->zs;
   }
 
-  switch (da->dim) {
+  switch (dd->dim) {
     case 1: {
       void *ptr;
       itdof = xm;
@@ -1174,26 +1182,26 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DA da,PetscBool  ghosted,void
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
   }
 
   done:
   /* add arrays to the checked out list */
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (!da->admfarrayghostedout[i]) {
-        da->admfarrayghostedout[i] = *iptr ;
-        da->admfstartghostedout[i] = iarray_start;
-        da->ghostedtdof            = itdof;
+      if (!dd->admfarrayghostedout[i]) {
+        dd->admfarrayghostedout[i] = *iptr ;
+        dd->admfstartghostedout[i] = iarray_start;
+        dd->ghostedtdof            = itdof;
         break;
       }
     }
   } else {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (!da->admfarrayout[i]) {
-        da->admfarrayout[i] = *iptr ;
-        da->admfstartout[i] = iarray_start;
-        da->tdof            = itdof;
+      if (!dd->admfarrayout[i]) {
+        dd->admfarrayout[i] = *iptr ;
+        dd->admfstartout[i] = iarray_start;
+        dd->tdof            = itdof;
         break;
       }
     }
@@ -1227,40 +1235,41 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicMFArray(DA da,PetscBool  ghosted,v
 {
   PetscInt  i;
   void      **iptr = (void**)vptr,*iarray_start = 0;
+  DM_DA     *dd = (DM_DA*)da->data;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (da->admfarrayghostedout[i] == *iptr) {
-        iarray_start               = da->admfstartghostedout[i];
-        da->admfarrayghostedout[i] = PETSC_NULL;
-        da->admfstartghostedout[i] = PETSC_NULL;
+      if (dd->admfarrayghostedout[i] == *iptr) {
+        iarray_start               = dd->admfstartghostedout[i];
+        dd->admfarrayghostedout[i] = PETSC_NULL;
+        dd->admfstartghostedout[i] = PETSC_NULL;
         break;
       }
     }
     if (!iarray_start) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Could not find array in checkout list");
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (!da->admfarrayghostedin[i]){
-        da->admfarrayghostedin[i] = *iptr;
-        da->admfstartghostedin[i] = iarray_start;
+      if (!dd->admfarrayghostedin[i]){
+        dd->admfarrayghostedin[i] = *iptr;
+        dd->admfstartghostedin[i] = iarray_start;
         break;
       }
     }
   } else {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (da->admfarrayout[i] == *iptr) {
-        iarray_start        = da->admfstartout[i];
-        da->admfarrayout[i] = PETSC_NULL;
-        da->admfstartout[i] = PETSC_NULL;
+      if (dd->admfarrayout[i] == *iptr) {
+        iarray_start        = dd->admfstartout[i];
+        dd->admfarrayout[i] = PETSC_NULL;
+        dd->admfstartout[i] = PETSC_NULL;
         break;
       }
     }
     if (!iarray_start) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Could not find array in checkout list");
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-      if (!da->admfarrayin[i]){
-        da->admfarrayin[i] = *iptr;
-        da->admfstartin[i] = iarray_start;
+      if (!dd->admfarrayin[i]){
+        dd->admfarrayin[i] = *iptr;
+        dd->admfstartin[i] = iarray_start;
         break;
       }
     }

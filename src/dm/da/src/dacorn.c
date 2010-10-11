@@ -30,17 +30,18 @@
 PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DA da,Vec c)
 {
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidHeaderSpecific(c,VEC_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
-  if (da->coordinates) {ierr = VecDestroy(da->coordinates);CHKERRQ(ierr);}
-  da->coordinates = c;
-  ierr = VecSetBlockSize(c,da->dim);CHKERRQ(ierr);
-  if (da->ghosted_coordinates) { /* The ghosted coordinates are no longer valid */
-    ierr = VecDestroy(da->ghosted_coordinates);CHKERRQ(ierr);
-    da->ghosted_coordinates = PETSC_NULL;
+  if (dd->coordinates) {ierr = VecDestroy(dd->coordinates);CHKERRQ(ierr);}
+  dd->coordinates = c;
+  ierr = VecSetBlockSize(c,dd->dim);CHKERRQ(ierr);
+  if (dd->ghosted_coordinates) { /* The ghosted coordinates are no longer valid */
+    ierr = VecDestroy(dd->ghosted_coordinates);CHKERRQ(ierr);
+    dd->ghosted_coordinates = PETSC_NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -73,10 +74,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DA da,Vec c)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinates(DA da,Vec *c)
 {
+  DM_DA          *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(c,2);
-  *c = da->coordinates;
+  *c = dd->coordinates;
   PetscFunctionReturn(0);
 }
 
@@ -103,20 +105,21 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
 {
   PetscMPIInt    size;
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  if (!da->da_coordinates) {
+  if (!dd->da_coordinates) {
     ierr = MPI_Comm_size(((PetscObject)da)->comm,&size);CHKERRQ(ierr);
-    if (da->dim == 1) {
+    if (dd->dim == 1) {
       PetscInt            s,m,*lc,l;
       DAPeriodicType pt;
       ierr = DAGetInfo(da,0,&m,0,0,0,0,0,0,&s,&pt,0);CHKERRQ(ierr);
       ierr = DAGetCorners(da,0,0,0,&l,0,0);CHKERRQ(ierr);
       ierr = PetscMalloc(size*sizeof(PetscInt),&lc);CHKERRQ(ierr);
       ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
-      ierr = DACreate1d(((PetscObject)da)->comm,pt,m,1,s,lc,&da->da_coordinates);CHKERRQ(ierr);
+      ierr = DACreate1d(((PetscObject)da)->comm,pt,m,1,s,lc,&dd->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree(lc);CHKERRQ(ierr);
-    } else if (da->dim == 2) {
+    } else if (dd->dim == 2) {
       PetscInt            i,s,m,*lc,*ld,l,k,n,M,N;
       DAPeriodicType pt;
       ierr = DAGetInfo(da,0,&m,&n,0,&M,&N,0,0,&s,&pt,0);CHKERRQ(ierr);
@@ -129,9 +132,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
       for ( i=0; i<N; i++) {
         ld[i] = ld[M*i];
       }
-      ierr = DACreate2d(((PetscObject)da)->comm,pt,DA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,&da->da_coordinates);CHKERRQ(ierr);
+      ierr = DACreate2d(((PetscObject)da)->comm,pt,DA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,&dd->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree2(lc,ld);CHKERRQ(ierr);
-    } else if (da->dim == 3) {
+    } else if (dd->dim == 3) {
       PetscInt            i,s,m,*lc,*ld,*le,l,k,q,n,M,N,P,p;
       DAPeriodicType pt;
       ierr = DAGetInfo(da,0,&m,&n,&p,&M,&N,&P,0,&s,&pt,0);CHKERRQ(ierr);
@@ -148,11 +151,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
       for ( i=0; i<P; i++) {
         le[i] = le[M*N*i];
       }
-      ierr = DACreate3d(((PetscObject)da)->comm,pt,DA_STENCIL_BOX,m,n,p,M,N,P,3,s,lc,ld,le,&da->da_coordinates);CHKERRQ(ierr);
+      ierr = DACreate3d(((PetscObject)da)->comm,pt,DA_STENCIL_BOX,m,n,p,M,N,P,3,s,lc,ld,le,&dd->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree3(lc,ld,le);CHKERRQ(ierr);
     }
   }
-  *cda = da->da_coordinates;
+  *cda = dd->da_coordinates;
   PetscFunctionReturn(0);
 }
 
@@ -185,19 +188,20 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
 PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostedCoordinates(DA da,Vec *c)
 {
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(c,2);
-  if (!da->coordinates) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"You must call DASetCoordinates() before this call");
-  if (!da->ghosted_coordinates) {
+  if (!dd->coordinates) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"You must call DASetCoordinates() before this call");
+  if (!dd->ghosted_coordinates) {
     DA dac;
     ierr = DAGetCoordinateDA(da,&dac);CHKERRQ(ierr);
-    ierr = DACreateLocalVector(dac,&da->ghosted_coordinates);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalBegin(dac,da->coordinates,INSERT_VALUES,da->ghosted_coordinates);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(dac,da->coordinates,INSERT_VALUES,da->ghosted_coordinates);CHKERRQ(ierr);
+    ierr = DACreateLocalVector(dac,&dd->ghosted_coordinates);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalBegin(dac,dd->coordinates,INSERT_VALUES,dd->ghosted_coordinates);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalEnd(dac,dd->coordinates,INSERT_VALUES,dd->ghosted_coordinates);CHKERRQ(ierr);
   }
-  *c = da->ghosted_coordinates;
+  *c = dd->ghosted_coordinates;
   PetscFunctionReturn(0);
 }
 
@@ -224,12 +228,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostedCoordinates(DA da,Vec *c)
 PetscErrorCode PETSCDM_DLLEXPORT DASetFieldName(DA da,PetscInt nf,const char name[])
 {
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
    PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
-  if (da->fieldname[nf]) {ierr = PetscFree(da->fieldname[nf]);CHKERRQ(ierr);}
-   ierr = PetscStrallocpy(name,&da->fieldname[nf]);CHKERRQ(ierr);
+  if (nf < 0 || nf >= dd->w) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
+  if (dd->fieldname[nf]) {ierr = PetscFree(dd->fieldname[nf]);CHKERRQ(ierr);}
+   ierr = PetscStrallocpy(name,&dd->fieldname[nf]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -257,12 +262,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFieldName(DA da,PetscInt nf,const char nam
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetFieldName(DA da,PetscInt nf,const char **name)
 {
+  DM_DA          *dd = (DM_DA*)da->data;
+
   PetscFunctionBegin;
- 
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(name,3);
-  if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
-  *name = da->fieldname[nf];
+  if (nf < 0 || nf >= dd->w) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
+  *name = dd->fieldname[nf];
   PetscFunctionReturn(0);
 }
 
@@ -299,16 +305,17 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetFieldName(DA da,PetscInt nf,const char **n
 PetscErrorCode PETSCDM_DLLEXPORT DAGetCorners(DA da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {
   PetscInt w;
+  DM_DA    *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   /* since the xs, xe ... have all been multiplied by the number of degrees 
-     of freedom per cell, w = da->w, we divide that out before returning.*/
-  w = da->w;  
-  if (x) *x = da->xs/w; if(m) *m = (da->xe - da->xs)/w;
+     of freedom per cell, w = dd->w, we divide that out before returning.*/
+  w = dd->w;  
+  if (x) *x = dd->xs/w; if(m) *m = (dd->xe - dd->xs)/w;
   /* the y and z have NOT been multiplied by w */
-  if (y) *y = da->ys;   if (n) *n = (da->ye - da->ys);
-  if (z) *z = da->zs;   if (p) *p = (da->ze - da->zs); 
+  if (y) *y = dd->ys;   if (n) *n = (dd->ye - dd->ys);
+  if (z) *z = dd->zs;   if (p) *p = (dd->ze - dd->zs); 
   PetscFunctionReturn(0);
 } 
 
@@ -340,10 +347,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalBoundingBox(DA da,PetscReal lmin[],Pe
   const PetscScalar *local_coords;
   PetscReal         min[3]={PETSC_MAX,PETSC_MAX,PETSC_MAX},max[3]={PETSC_MIN,PETSC_MIN,PETSC_MIN};
   PetscInt          N,Ni;
+  DM_DA             *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  dim = da->dim;
+  dim = dd->dim;
   ierr = DAGetCoordinates(da,&coords);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coords,&local_coords);CHKERRQ(ierr);
   ierr = VecGetLocalSize(coords,&N);CHKERRQ(ierr);
@@ -385,10 +393,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetBoundingBox(DA da,PetscReal gmin[],PetscRe
   PetscErrorCode ierr;
   PetscMPIInt    count;
   PetscReal      lmin[3],lmax[3];
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  count = PetscMPIIntCast(da->dim);
+  count = PetscMPIIntCast(dd->dim);
   ierr = DAGetLocalBoundingBox(da,lmin,lmax);CHKERRQ(ierr);
   if (gmin) {ierr = MPI_Allreduce(lmin,gmin,count,MPIU_REAL,MPI_MIN,((PetscObject)da)->comm);CHKERRQ(ierr);}
   if (gmax) {ierr = MPI_Allreduce(lmax,gmax,count,MPIU_REAL,MPI_MAX,((PetscObject)da)->comm);CHKERRQ(ierr);}

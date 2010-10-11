@@ -361,6 +361,7 @@ static PetscErrorCode DAArrayMPIIO(DA da,PetscViewer viewer,Vec xin,PetscBool  w
   MPI_Offset        off;
   MPI_Aint          ub,ul;
   PetscInt          type,rows,vecrows,tr[2];
+  DM_DA             *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   ierr = VecGetSize(xin,&vecrows);CHKERRQ(ierr);
@@ -377,11 +378,11 @@ static PetscErrorCode DAArrayMPIIO(DA da,PetscViewer viewer,Vec xin,PetscBool  w
     ierr = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
   }
 
-  dof = PetscMPIIntCast(da->w);
-  gsizes[0]  = dof; gsizes[1] = PetscMPIIntCast(da->M); gsizes[2] = PetscMPIIntCast(da->N); gsizes[3] = PetscMPIIntCast(da->P);
-  lsizes[0]  = dof;lsizes[1] = PetscMPIIntCast((da->xe-da->xs)/dof); lsizes[2] = PetscMPIIntCast(da->ye-da->ys); lsizes[3] = PetscMPIIntCast(da->ze-da->zs);
-  lstarts[0] = 0;  lstarts[1] = PetscMPIIntCast(da->xs/dof); lstarts[2] = PetscMPIIntCast(da->ys); lstarts[3] = PetscMPIIntCast(da->zs);
-  ierr = MPI_Type_create_subarray(da->dim+1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
+  dof = PetscMPIIntCast(dd->w);
+  gsizes[0]  = dof; gsizes[1] = PetscMPIIntCast(dd->M); gsizes[2] = PetscMPIIntCast(dd->N); gsizes[3] = PetscMPIIntCast(dd->P);
+  lsizes[0]  = dof;lsizes[1] = PetscMPIIntCast((dd->xe-dd->xs)/dof); lsizes[2] = PetscMPIIntCast(dd->ye-dd->ys); lsizes[3] = PetscMPIIntCast(dd->ze-dd->zs);
+  lstarts[0] = 0;  lstarts[1] = PetscMPIIntCast(dd->xs/dof); lstarts[2] = PetscMPIIntCast(dd->ys); lstarts[3] = PetscMPIIntCast(dd->zs);
+  ierr = MPI_Type_create_subarray(dd->dim+1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&view);CHKERRQ(ierr);
   
   ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
@@ -484,17 +485,18 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   hid_t          memspace;  /* memory dataspace identifier */
   hid_t          file_id;
   herr_t         status;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
 
   /* Create the dataspace for the dataset */
-  dim       = PetscHDF5IntCast(da->dim + ((da->w == 1) ? 0 : 1));
-  if (da->dim == 3) dims[cnt++]   = PetscHDF5IntCast(da->P);
-  if (da->dim > 1)  dims[cnt++]   = PetscHDF5IntCast(da->N);
-  dims[cnt++]     = PetscHDF5IntCast(da->M);
-  if (da->w > 1) PetscHDF5IntCast(dims[cnt++] = da->w);
+  dim       = PetscHDF5IntCast(dd->dim + ((dd->w == 1) ? 0 : 1));
+  if (dd->dim == 3) dims[cnt++]   = PetscHDF5IntCast(dd->P);
+  if (dd->dim > 1)  dims[cnt++]   = PetscHDF5IntCast(dd->N);
+  dims[cnt++]     = PetscHDF5IntCast(dd->M);
+  if (dd->w > 1) PetscHDF5IntCast(dims[cnt++] = dd->w);
 #if defined(PETSC_USE_COMPLEX)
   dim++;
   dims[cnt++] = 2;
@@ -512,18 +514,18 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 
   /* Each process defines a dataset and reads it from the hyperslab in the file */
   cnt = 0; 
-  if (da->dim == 3) offset[cnt++] = PetscHDF5IntCast(da->zs);
-  if (da->dim > 1)  offset[cnt++] = PetscHDF5IntCast(da->ys);
-  offset[cnt++] = PetscHDF5IntCast(da->xs/da->w);
-  if (da->w > 1) offset[cnt++] = 0;
+  if (dd->dim == 3) offset[cnt++] = PetscHDF5IntCast(dd->zs);
+  if (dd->dim > 1)  offset[cnt++] = PetscHDF5IntCast(dd->ys);
+  offset[cnt++] = PetscHDF5IntCast(dd->xs/dd->w);
+  if (dd->w > 1) offset[cnt++] = 0;
 #if defined(PETSC_USE_COMPLEX)
   offset[cnt++] = 0;
 #endif
   cnt = 0; 
-  if (da->dim == 3) count[cnt++] = PetscHDF5IntCast(da->ze - da->zs);
-  if (da->dim > 1)  count[cnt++] = PetscHDF5IntCast(da->ye - da->ys);
-  count[cnt++] = PetscHDF5IntCast((da->xe - da->xs)/da->w);
-  if (da->w > 1) count[cnt++] = PetscHDF5IntCast(da->w);
+  if (dd->dim == 3) count[cnt++] = PetscHDF5IntCast(dd->ze - dd->zs);
+  if (dd->dim > 1)  count[cnt++] = PetscHDF5IntCast(dd->ye - dd->ys);
+  count[cnt++] = PetscHDF5IntCast((dd->xe - dd->xs)/dd->w);
+  if (dd->w > 1) count[cnt++] = PetscHDF5IntCast(dd->w);
 #if defined(PETSC_USE_COMPLEX)
   count[cnt++] = 2;
 #endif
@@ -563,12 +565,14 @@ PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
   const char     *prefix;
   PetscInt       bs;
   PetscBool      flag;
+  DM_DA          *dd;
 #if defined(PETSC_HAVE_MPIIO)
   PetscBool      isMPIIO;
 #endif
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
+  dd   = (DM_DA*)da->data;
 #if defined(PETSC_HAVE_MPIIO)
   ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
   if (isMPIIO) {
@@ -587,8 +591,8 @@ PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
   ierr = VecDestroy(natural);CHKERRQ(ierr);
   ierr = PetscInfo(xin,"Loading vector from natural ordering into DA\n");CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(((PetscObject)xin)->prefix,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
-  if (flag && bs != da->w) {
-    ierr = PetscInfo2(xin,"Block size in file %D not equal to DA's dof %D\n",bs,da->w);CHKERRQ(ierr);
+  if (flag && bs != dd->w) {
+    ierr = PetscInfo2(xin,"Block size in file %D not equal to DA's dof %D\n",bs,dd->w);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -40,15 +40,16 @@
 PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostCorners(DA da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {
   PetscInt w;
+  DM_DA    *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   /* since the xs, xe ... have all been multiplied by the number of degrees 
-     of freedom per cell, w = da->w, we divide that out before returning.*/
-  w = da->w;  
-  if (x) *x = da->Xs/w; if (m) *m = (da->Xe - da->Xs)/w;
-  if (y) *y = da->Ys;   if (n) *n = (da->Ye - da->Ys);
-  if (z) *z = da->Zs;   if (p) *p = (da->Ze - da->Zs); 
+     of freedom per cell, w = dd->w, we divide that out before returning.*/
+  w = dd->w;  
+  if (x) *x = dd->Xs/w; if (m) *m = (dd->Xe - dd->Xs)/w;
+  if (y) *y = dd->Ys;   if (n) *n = (dd->Ye - dd->Ys);
+  if (z) *z = dd->Zs;   if (p) *p = (dd->Ze - dd->Zs); 
   PetscFunctionReturn(0);
 }
 

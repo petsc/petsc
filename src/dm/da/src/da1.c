@@ -16,6 +16,7 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscBool      iascii,isdraw;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
@@ -29,13 +30,13 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
     if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL) {
       DALocalInfo info;
       ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D m %D w %D s %D\n",rank,da->M,da->m,da->w,da->s);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D m %D w %D s %D\n",rank,dd->M,dd->m,dd->w,dd->s);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D\n",info.xs,info.xs+info.xm);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     }
   } else if (isdraw) {
     PetscDraw  draw;
-    double     ymin = -1,ymax = 1,xmin = -1,xmax = da->M,x;
+    double     ymin = -1,ymax = 1,xmin = -1,xmax = dd->M,x;
     PetscInt   base;
     char       node[10];
     PetscBool  isnull;
@@ -52,11 +53,11 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
       ymin = 0.0; ymax = 0.3;
       
       /* ADIC doesn't like doubles in a for loop */
-      for (xmin_tmp =0; xmin_tmp < da->M; xmin_tmp++) {
+      for (xmin_tmp =0; xmin_tmp < dd->M; xmin_tmp++) {
          ierr = PetscDrawLine(draw,(double)xmin_tmp,ymin,(double)xmin_tmp,ymax,PETSC_DRAW_BLACK);CHKERRQ(ierr);
       }
 
-      xmin = 0.0; xmax = da->M - 1;
+      xmin = 0.0; xmax = dd->M - 1;
       ierr = PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_BLACK);CHKERRQ(ierr);
       ierr = PetscDrawLine(draw,xmin,ymax,xmax,ymax,PETSC_DRAW_BLACK);CHKERRQ(ierr);
     }
@@ -65,14 +66,14 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
 
     /* draw my box */
-    ymin = 0; ymax = 0.3; xmin = da->xs / da->w; xmax = (da->xe / da->w)  - 1;
+    ymin = 0; ymax = 0.3; xmin = dd->xs / dd->w; xmax = (dd->xe / dd->w)  - 1;
     ierr = PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_RED);CHKERRQ(ierr);
     ierr = PetscDrawLine(draw,xmin,ymin,xmin,ymax,PETSC_DRAW_RED);CHKERRQ(ierr);
     ierr = PetscDrawLine(draw,xmin,ymax,xmax,ymax,PETSC_DRAW_RED);CHKERRQ(ierr);
     ierr = PetscDrawLine(draw,xmax,ymin,xmax,ymax,PETSC_DRAW_RED);CHKERRQ(ierr);
 
     /* Put in index numbers */
-    base = da->base / da->w;
+    base = dd->base / dd->w;
     for (x=xmin; x<=xmax; x++) {
       sprintf(node,"%d",(int)base++);
       ierr = PetscDrawString(draw,x,ymin,PETSC_DRAW_RED,node);CHKERRQ(ierr);
@@ -117,13 +118,14 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "DACreate_1D"
 PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA da)
 {
-  const PetscInt       dim   = da->dim;
-  const PetscInt       M     = da->M;
-  const PetscInt       dof   = da->w;
-  const PetscInt       s     = da->s;
+  DM_DA                *dd = (DM_DA*)da->data;
+  const PetscInt       dim   = dd->dim;
+  const PetscInt       M     = dd->M;
+  const PetscInt       dof   = dd->w;
+  const PetscInt       s     = dd->s;
   const PetscInt       sDist = s*dof;  /* absolute stencil distance */
-  const PetscInt      *lx    = da->lx;
-  const DAPeriodicType wrap  = da->wrap;
+  const PetscInt      *lx    = dd->lx;
+  const DAPeriodicType wrap  = dd->wrap;
   MPI_Comm             comm;
   Vec                  local, global;
   VecScatter           ltog, gtol;
@@ -138,15 +140,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA da)
   if (dof < 1) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
   if (s < 0) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
 
-  da->dim = 1;
-  ierr = PetscMalloc(dof*sizeof(char*),&da->fieldname);CHKERRQ(ierr);
-  ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
+  dd->dim = 1;
+  ierr = PetscMalloc(dof*sizeof(char*),&dd->fieldname);CHKERRQ(ierr);
+  ierr = PetscMemzero(dd->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  da->m = size;
-  m     = da->m;
+  dd->m = size;
+  m     = dd->m;
 
   if (s > 0) {
     /* if not communicating data then should be ok to have nothing on some processes */
@@ -203,11 +205,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA da)
   }
 
   /* allocate the base parallel and sequential vectors */
-  da->Nlocal = x;
-  ierr = VecCreateMPIWithArray(comm,da->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
+  dd->Nlocal = x;
+  ierr = VecCreateMPIWithArray(comm,dd->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
   ierr = VecSetBlockSize(global,dof);CHKERRQ(ierr);
-  da->nlocal = (Xe-Xs);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,da->nlocal,0,&local);CHKERRQ(ierr);
+  dd->nlocal = (Xe-Xs);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dd->nlocal,0,&local);CHKERRQ(ierr);
   ierr = VecSetBlockSize(local,dof);CHKERRQ(ierr);
     
   /* Create Local to Global Vector Scatter Context */
@@ -282,12 +284,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA da)
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
 
-  da->xs = xs; da->xe = xe; da->ys = 0; da->ye = 1; da->zs = 0; da->ze = 1;
-  da->Xs = Xs; da->Xe = Xe; da->Ys = 0; da->Ye = 1; da->Zs = 0; da->Ze = 1;
+  dd->xs = xs; dd->xe = xe; dd->ys = 0; dd->ye = 1; dd->zs = 0; dd->ze = 1;
+  dd->Xs = Xs; dd->Xe = Xe; dd->Ys = 0; dd->Ye = 1; dd->Zs = 0; dd->Ze = 1;
 
-  da->gtol      = gtol;
-  da->ltog      = ltog;
-  da->base      = xs;
+  dd->gtol      = gtol;
+  dd->ltog      = ltog;
+  dd->base      = xs;
   da->ops->view = DAView_1d;
 
   /* 
@@ -320,12 +322,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA da)
       nn  += sDist;
     }
   }
-  ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,PETSC_OWN_POINTER,&da->ltogmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingBlock(da->ltogmap,da->w,&da->ltogmapb);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,PETSC_OWN_POINTER,&dd->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingBlock(dd->ltogmap,dd->w,&dd->ltogmapb);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(da,dd->ltogmap);CHKERRQ(ierr);
 
-  da->idx = idx;
-  da->Nl  = nn;
+  dd->idx = idx;
+  dd->Nl  = nn;
 
   PetscFunctionReturn(0);
 }

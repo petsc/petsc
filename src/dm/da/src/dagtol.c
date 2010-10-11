@@ -42,12 +42,13 @@
 PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidHeaderSpecific(g,VEC_CLASSID,2);
   PetscValidHeaderSpecific(l,VEC_CLASSID,4);
-  ierr = VecScatterBegin(da->gtol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterBegin(dd->gtol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -85,12 +86,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToLocalBegin(DA da,Vec g,InsertMode mod
 PetscErrorCode PETSCDM_DLLEXPORT DALocalToGlobalBegin(DA da,Vec l,Vec g)
 {
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidHeaderSpecific(l,VEC_CLASSID,2);
   PetscValidHeaderSpecific(g,VEC_CLASSID,3);
-  ierr = VecScatterBegin(da->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterBegin(dd->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -128,12 +130,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToGlobalBegin(DA da,Vec l,Vec g)
 PetscErrorCode PETSCDM_DLLEXPORT DALocalToGlobalEnd(DA da,Vec l,Vec g)
 {
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidHeaderSpecific(l,VEC_CLASSID,2);
   PetscValidHeaderSpecific(g,VEC_CLASSID,3);
-  ierr = VecScatterEnd(da->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(dd->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -170,12 +173,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToGlobalEnd(DA da,Vec l,Vec g)
 PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidHeaderSpecific(g,VEC_CLASSID,2);
   PetscValidHeaderSpecific(l,VEC_CLASSID,4);
-  ierr = VecScatterEnd(da->gtol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(dd->gtol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -206,23 +210,24 @@ PetscErrorCode DAGlobalToNatural_Create(DA da)
   PetscInt       m,start,Nlocal;
   IS             from,to;
   Vec            global;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (!da->natural) {
+  if (!dd->natural) {
     SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ORDER,"Natural layout vector not yet created; cannot scatter into it");
   }
 
   /* create the scatter context */
-  ierr = VecGetLocalSize(da->natural,&m);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(da->natural,&start,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(dd->natural,&m);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(dd->natural,&start,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = DAGetNatural_Private(da,&Nlocal,&to);CHKERRQ(ierr);
   if (Nlocal != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error: Nlocal %D local vector size %D",Nlocal,m);
   ierr = ISCreateStride(((PetscObject)da)->comm,m,start,1,&from);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(((PetscObject)da)->comm,da->Nlocal,PETSC_DETERMINE,0,&global);
-  ierr = VecSetBlockSize(global,da->w);CHKERRQ(ierr);
-  ierr = VecScatterCreate(global,from,da->natural,to,&da->gton);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)da)->comm,dd->Nlocal,PETSC_DETERMINE,0,&global);
+  ierr = VecSetBlockSize(global,dd->w);CHKERRQ(ierr);
+  ierr = VecScatterCreate(global,from,dd->natural,to,&dd->gton);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
@@ -265,16 +270,17 @@ PetscErrorCode DAGlobalToNatural_Create(DA da)
 PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalBegin(DA da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidHeaderSpecific(l,VEC_CLASSID,2);
   PetscValidHeaderSpecific(g,VEC_CLASSID,4);
-  if (!da->gton) {
+  if (!dd->gton) {
     /* create the scatter context */
     ierr = DAGlobalToNatural_Create(da);CHKERRQ(ierr);
   }
-  ierr = VecScatterBegin(da->gton,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterBegin(dd->gton,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -311,12 +317,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalBegin(DA da,Vec g,InsertMode m
 PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalEnd(DA da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidHeaderSpecific(l,VEC_CLASSID,2);
   PetscValidHeaderSpecific(g,VEC_CLASSID,4);
-  ierr = VecScatterEnd(da->gton,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(dd->gton,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -355,16 +362,17 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalEnd(DA da,Vec g,InsertMode mod
 PetscErrorCode PETSCDM_DLLEXPORT DANaturalToGlobalBegin(DA da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidHeaderSpecific(l,VEC_CLASSID,2);
   PetscValidHeaderSpecific(g,VEC_CLASSID,4);
-  if (!da->gton) {
+  if (!dd->gton) {
     /* create the scatter context */
     ierr = DAGlobalToNatural_Create(da);CHKERRQ(ierr);
   }
-  ierr = VecScatterBegin(da->gton,g,l,mode,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterBegin(dd->gton,g,l,mode,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -402,12 +410,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DANaturalToGlobalBegin(DA da,Vec g,InsertMode m
 PetscErrorCode PETSCDM_DLLEXPORT DANaturalToGlobalEnd(DA da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidHeaderSpecific(l,VEC_CLASSID,2);
   PetscValidHeaderSpecific(g,VEC_CLASSID,4);
-  ierr = VecScatterEnd(da->gton,g,l,mode,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(dd->gton,g,l,mode,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

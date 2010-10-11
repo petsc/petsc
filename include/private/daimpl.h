@@ -7,14 +7,7 @@
 
 #include "private/dmimpl.h"
 
-typedef struct _DAOps *DAOps;
-struct _DAOps {
-  DMOPS(DA)
-};
-
-struct _p_DA {
-  PETSCHEADER(struct _DAOps);
-  DMHEADER
+typedef struct {
   PetscInt            M,N,P;                 /* array dimensions */
   PetscInt            m,n,p;                 /* processor layout */
   PetscInt            w;                     /* degrees of freedom per node */
@@ -92,7 +85,7 @@ struct _p_DA {
 
   /* used by DASetMatPreallocateOnly() */
   PetscBool              prealloc_only;
-};
+} DM_DA;
 
 /*
   Vectors:
