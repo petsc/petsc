@@ -15,10 +15,10 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   /* Create distributed array and get vectors */
-  ierr = ADDACreate(PETSC_COMM_WORLD, 4, nodes, PETSC_NULL, 2, periodic, &adda);CHKERRQ(ierr);
+  ierr = DMADDACreate(PETSC_COMM_WORLD, 4, nodes, PETSC_NULL, 2, periodic, &adda);CHKERRQ(ierr);
 
   /* Free memory */
-  ierr = ADDADestroy(adda);CHKERRQ(ierr);
+  ierr = DMDestroy(adda);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

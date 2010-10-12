@@ -1,4 +1,4 @@
-static char help[] = "Tests Sliced operations\n\n";
+static char help[] = "Tests DMSliced operations\n\n";
 
 #include "petscda.h"
 
@@ -10,7 +10,7 @@ int main(int argc,char *argv[])
   PetscErrorCode ierr;
   MPI_Comm       comm;
   PetscMPIInt    rank,size;
-  Sliced         slice;
+  DM             slice;
   PetscInt       i,bs=1,N=5,n,m,rstart,ghosts[2],*d_nnz,*o_nnz,dfill[4]={1,0,0,1},ofill[4]={1,1,1,1};
   PetscReal      alpha=1,K=1,rho0=1,u0=0,sigma=0.2;
   PetscBool      useblock=PETSC_TRUE;
@@ -23,7 +23,7 @@ int main(int argc,char *argv[])
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(comm,0,"Options for Sliced test",0);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm,0,"Options for DMSliced test",0);CHKERRQ(ierr);
   {
     ierr = PetscOptionsInt("-n","Global number of nodes","",N,&N,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-bs","Block size (1 or 2)","",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
@@ -49,8 +49,8 @@ int main(int argc,char *argv[])
   ghosts[0] = (N+rstart-1)%N;
   ghosts[1] = (rstart+n)%N;
 
-  ierr = SlicedCreate(comm,&slice);CHKERRQ(ierr);
-  ierr = SlicedSetGhosts(slice,bs,n,2,ghosts);CHKERRQ(ierr);
+  ierr = DMSlicedCreate(comm,&slice);CHKERRQ(ierr);
+  ierr = DMSlicedSetGhosts(slice,bs,n,2,ghosts);CHKERRQ(ierr);
   ierr = PetscMalloc2(n,PetscInt,&d_nnz,n,PetscInt,&o_nnz);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (size > 1 && (i==0 || i==n-1)) {
@@ -61,14 +61,14 @@ int main(int argc,char *argv[])
       o_nnz[i] = 0;
     }
   }
-  ierr = SlicedSetPreallocation(slice,0,d_nnz,0,o_nnz);CHKERRQ(ierr); /* Currently does not copy X_nnz so we can't free them until after SlicedGetMatrix */
+  ierr = DMSlicedSetPreallocation(slice,0,d_nnz,0,o_nnz);CHKERRQ(ierr); /* Currently does not copy X_nnz so we can't free them until after DMSlicedGetMatrix */
 
-  if (!useblock) {ierr = SlicedSetBlockFills(slice,dfill,ofill);CHKERRQ(ierr);} /* Irrelevant for baij formats */
-  ierr = SlicedGetMatrix(slice,mat_type,&A);CHKERRQ(ierr);
+  if (!useblock) {ierr = DMSlicedSetBlockFills(slice,dfill,ofill);CHKERRQ(ierr);} /* Irrelevant for baij formats */
+  ierr = DMGetMatrix(slice,mat_type,&A);CHKERRQ(ierr);
   ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
 
-  ierr = SlicedCreateGlobalVector(slice,&x);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(slice,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
 
   ierr = VecGhostGetLocalForm(x,&lf);CHKERRQ(ierr);
@@ -131,7 +131,7 @@ int main(int argc,char *argv[])
     ierr = VecGhostRestoreLocalForm(b,&lf);CHKERRQ(ierr);
   }
 
-  ierr = SlicedDestroy(slice);CHKERRQ(ierr);
+  ierr = DMDestroy(slice);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);

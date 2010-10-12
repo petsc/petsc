@@ -275,7 +275,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DAVecRestoreArray(DMMGGetDA(dmmg),solu_local,(Field **)&user.x);CHKERRQ(ierr);
   ierr = VecDestroy(solu_local);CHKERRQ(ierr);
-  ierr = DMCompositeDestroy(user.pack);CHKERRQ(ierr);
+  ierr = DMDestroy(user.pack);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg1);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg2);CHKERRQ(ierr);

@@ -92,7 +92,7 @@ struct _p_DM {
     --------------
       From global vectors 
          -DAVecGetArray   - for DA
-         -VecGetArray - for Sliced
+         -VecGetArray - for DMSliced
          ADD for DMComposite???  maybe
 
       From individual vector

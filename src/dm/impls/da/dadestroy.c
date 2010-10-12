@@ -79,10 +79,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
 
   ierr = DMDestroy_Private((DM)da,&done);CHKERRQ(ierr);
   if (!done) PetscFunctionReturn(0);
-  /* destroy the internal part */
-  if (da->ops->destroy) {
-    ierr = (*da->ops->destroy)(da);CHKERRQ(ierr);
-  }
+
   /* destroy the external/common part */
   for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
     ierr = PetscFree(dd->adstartghostedout[i]);CHKERRQ(ierr);

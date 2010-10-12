@@ -31,7 +31,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = (*((PetscObject)dm)->bops->destroy)((PetscObject)dm);CHKERRQ(ierr);
+  ierr = (*dm->ops->destroy)(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -56,8 +56,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMView(DM dm,PetscViewer v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (((PetscObject)dm)->bops->view) {
-    ierr = (*((PetscObject)dm)->bops->view)((PetscObject)dm,v);CHKERRQ(ierr);
+  if (dm->ops->view) {
+    ierr = (*dm->ops->view)(dm,v);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

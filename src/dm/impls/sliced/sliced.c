@@ -7,41 +7,18 @@
 /* CSR storage of the nonzero structure of a bs*bs matrix */
 typedef struct {
   PetscInt bs,nz,*i,*j;
-} SlicedBlockFills;
+} DMSlicedBlockFills;
 
 typedef struct  {
-  Vec              globalvector;
-  PetscInt         bs,n,N,Nghosts,*ghosts;
-  PetscInt         d_nz,o_nz,*d_nnz,*o_nnz;
-  SlicedBlockFills *dfill,*ofill;
+  Vec                globalvector;
+  PetscInt           bs,n,N,Nghosts,*ghosts;
+  PetscInt           d_nz,o_nz,*d_nnz,*o_nnz;
+  DMSlicedBlockFills *dfill,*ofill;
 } DM_Sliced;
 
 #undef __FUNCT__  
-#define __FUNCT__ "SlicedGetMatrix" 
-/*@C
-    SlicedGetMatrix - Creates a matrix with the correct parallel layout required for 
-      computing the Jacobian on a function defined using the informatin in Sliced.
-
-    Collective on Sliced
-
-    Input Parameter:
-+   slice - the slice object
--   mtype - Supported types are MATSEQAIJ, MATMPIAIJ, MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ,
-            or any type which inherits from one of these (such as MATAIJ, MATLUSOL, etc.).
-
-    Output Parameters:
-.   J  - matrix with the correct nonzero preallocation
-        (obviously without the correct Jacobian values)
-
-    Level: advanced
-
-    Notes: This properly preallocates the number of nonzeros in the sparse matrix so you 
-       do not need to do it yourself.
-
-.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DASetBlockFills()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT SlicedGetMatrix(DM dm, const MatType mtype,Mat *J)
+#define __FUNCT__ "DMGetMatrix_Sliced" 
+PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_Sliced(DM dm, const MatType mtype,Mat *J)
 {
   PetscErrorCode         ierr;
   PetscInt               *globals,*sd_nnz,*so_nnz,rstart,bs,i;
@@ -70,7 +47,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedGetMatrix(DM dm, const MatType mtype,Mat 
       ierr = MatSeqAIJSetPreallocation(*J,slice->d_nz*bs,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatMPIAIJSetPreallocation(*J,slice->d_nz*bs,PETSC_NULL,slice->o_nz*bs,PETSC_NULL);CHKERRQ(ierr);
     } else {
-      /* The user has provided preallocation per block-row, convert it to per scalar-row respecting SlicedSetBlockFills() if applicable */
+      /* The user has provided preallocation per block-row, convert it to per scalar-row respecting DMSlicedSetBlockFills() if applicable */
       ierr = PetscMalloc2(slice->n*bs,PetscInt,&sd_nnz,(!!slice->o_nnz)*slice->n*bs,PetscInt,&so_nnz);CHKERRQ(ierr);
       for (i=0; i<slice->n*bs; i++) {
         sd_nnz[i] = (slice->d_nnz[i/bs]-1) * (slice->ofill ? slice->ofill->i[i%bs+1]-slice->ofill->i[i%bs] : bs)
@@ -106,15 +83,15 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedGetMatrix(DM dm, const MatType mtype,Mat 
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SlicedSetGhosts"
+#define __FUNCT__ "DMSlicedSetGhosts"
 /*@C
-    SlicedSetGhosts - Sets the global indices of other processes elements that will
+    DMSlicedSetGhosts - Sets the global indices of other processes elements that will
       be ghosts on this process
 
     Not Collective
 
     Input Parameters:
-+    slice - the Sliced object
++    slice - the DM object
 .    bs - block size
 .    nlocal - number of local (owned, non-ghost) blocks
 .    Nghosts - number of ghost blocks on this process
@@ -122,16 +99,16 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedGetMatrix(DM dm, const MatType mtype,Mat 
 
     Level: advanced
 
-.seealso SlicedDestroy(), SlicedCreateGlobalVector(), SlicedGetGlobalIndices()
+.seealso DMDestroy(), DMCreateGlobalVector(), DMSlicedGetGlobalIndices()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SlicedSetGhosts(DM dm,PetscInt bs,PetscInt nlocal,PetscInt Nghosts,const PetscInt ghosts[])
+PetscErrorCode PETSCDM_DLLEXPORT DMSlicedSetGhosts(DM dm,PetscInt bs,PetscInt nlocal,PetscInt Nghosts,const PetscInt ghosts[])
 {
   PetscErrorCode ierr;
   DM_Sliced      *slice = (DM_Sliced*)dm->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(slice,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = PetscFree(slice->ghosts);CHKERRQ(ierr);
   ierr = PetscMalloc(Nghosts*sizeof(PetscInt),&slice->ghosts);CHKERRQ(ierr);
   ierr = PetscMemcpy(slice->ghosts,ghosts,Nghosts*sizeof(PetscInt));CHKERRQ(ierr);
@@ -142,14 +119,14 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedSetGhosts(DM dm,PetscInt bs,PetscInt nloc
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SlicedSetPreallocation"
+#define __FUNCT__ "DMSlicedSetPreallocation"
 /*@C
-    SlicedSetPreallocation - sets the matrix memory preallocation for matrices computed by Sliced
+    DMSlicedSetPreallocation - sets the matrix memory preallocation for matrices computed by DMSliced
 
     Not Collective
 
     Input Parameters:
-+    slice - the Sliced object
++    slice - the DM object
 .    d_nz  - number of block nonzeros per block row in diagonal portion of local
            submatrix  (same for all local rows)
 .    d_nnz - array containing the number of block nonzeros in the various block rows
@@ -163,15 +140,15 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedSetGhosts(DM dm,PetscInt bs,PetscInt nloc
 
     Notes:
     See MatMPIBAIJSetPreallocation() for more details on preallocation.  If a scalar matrix (AIJ) is
-    obtained with SlicedGetMatrix(), the correct preallocation will be set, respecting SlicedSetBlockFills().
+    obtained with DMSlicedGetMatrix(), the correct preallocation will be set, respecting DMSlicedSetBlockFills().
 
     Level: advanced
 
-.seealso SlicedDestroy(), SlicedCreateGlobalVector(), SlicedGetGlobalIndices(), MatMPIAIJSetPreallocation(),
-         MatMPIBAIJSetPreallocation(), SlicedGetMatrix(), SlicedSetBlockFills()
+.seealso DMDestroy(), DMCreateGlobalVector(), DMSlicedGetGlobalIndices(), MatMPIAIJSetPreallocation(),
+         MatMPIBAIJSetPreallocation(), DMSlicedGetMatrix(), DMSlicedSetBlockFills()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SlicedSetPreallocation(DM dm,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
+PetscErrorCode PETSCDM_DLLEXPORT DMSlicedSetPreallocation(DM dm,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   DM_Sliced *slice = (DM_Sliced*)dm->data;
 
@@ -185,19 +162,19 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedSetPreallocation(DM dm,PetscInt d_nz,cons
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SlicedSetBlockFills_Private"
-static PetscErrorCode SlicedSetBlockFills_Private(PetscInt bs,const PetscInt *fill,SlicedBlockFills **inf)
+#define __FUNCT__ "DMSlicedSetBlockFills_Private"
+static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs,const PetscInt *fill,DMSlicedBlockFills **inf)
 {
-  PetscErrorCode   ierr;
-  PetscInt         i,j,nz,*fi,*fj;
-  SlicedBlockFills *f;
+  PetscErrorCode     ierr;
+  PetscInt           i,j,nz,*fi,*fj;
+  DMSlicedBlockFills *f;
 
   PetscFunctionBegin;
   PetscValidPointer(inf,3);
   if (*inf) {ierr = PetscFree3((*inf)->i,(*inf)->j,*inf);CHKERRQ(ierr);}
   if (!fill) PetscFunctionReturn(0);
   for (i=0,nz=0; i<bs*bs; i++) if (fill[i]) nz++;
-  ierr = PetscMalloc3(1,SlicedBlockFills,&f,bs+1,PetscInt,&fi,nz,PetscInt,&fj);CHKERRQ(ierr);
+  ierr = PetscMalloc3(1,DMSlicedBlockFills,&f,bs+1,PetscInt,&fi,nz,PetscInt,&fj);CHKERRQ(ierr);
   f->bs = bs;
   f->nz = nz;
   f->i  = fi;
@@ -212,15 +189,15 @@ static PetscErrorCode SlicedSetBlockFills_Private(PetscInt bs,const PetscInt *fi
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SlicedSetBlockFills"
+#define __FUNCT__ "DMSlicedSetBlockFills"
 /*@C
-    SlicedSetBlockFills - Sets the fill pattern in each block for a multi-component problem
-    of the matrix returned by SlicedGetMatrix().
+    DMSlicedSetBlockFills - Sets the fill pattern in each block for a multi-component problem
+    of the matrix returned by DMSlicedGetMatrix().
 
-    Logically Collective on Sliced
+    Logically Collective on DM
 
     Input Parameter:
-+   sliced - the Sliced object
++   sliced - the DM object
 .   dfill - the fill pattern in the diagonal block (may be PETSC_NULL, means use dense block)
 -   ofill - the fill pattern in the off-diagonal blocks
 
@@ -230,80 +207,25 @@ static PetscErrorCode SlicedSetBlockFills_Private(PetscInt bs,const PetscInt *fi
 
     Level: advanced
 
-.seealso SlicedGetMatrix(), DASetBlockFills()
+.seealso DMSlicedGetMatrix(), DASetBlockFills()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SlicedSetBlockFills(DM dm,const PetscInt *dfill,const PetscInt *ofill)
+PetscErrorCode PETSCDM_DLLEXPORT DMSlicedSetBlockFills(DM dm,const PetscInt *dfill,const PetscInt *ofill)
 {
   DM_Sliced      *slice = (DM_Sliced*)dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(slice,DM_CLASSID,1);
-  ierr = SlicedSetBlockFills_Private(slice->bs,dfill,&slice->dfill);CHKERRQ(ierr);
-  ierr = SlicedSetBlockFills_Private(slice->bs,ofill,&slice->ofill);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "SlicedCreate"
-/*@C
-    SlicedCreate - Creates a DM object, used to manage data for a unstructured problem
-
-    Collective on MPI_Comm
-
-    Input Parameter:
-.   comm - the processors that will share the global vector
-
-    Output Parameters:
-.   slice - the slice object
-
-    Level: advanced
-
-.seealso SlicedDestroy(), SlicedCreateGlobalVector(), SlicedGetGlobalIndices()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT SlicedCreate(MPI_Comm comm,DM *dm)
-{
-  PetscErrorCode ierr;
-  DM             p;
-  DM_Sliced      *slice;
-
-  PetscFunctionBegin;
-  PetscValidPointer(slice,2);
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#endif
-
-  ierr = PetscHeaderCreate(p,_p_DM,struct _DMOps,DM_CLASSID,0,"DM",comm,SlicedDestroy,0);CHKERRQ(ierr);
-  ierr = PetscNewLog(p,DM_Sliced,&slice);CHKERRQ(ierr);
-  p->data = slice;
-
-  ierr = PetscObjectChangeTypeName((PetscObject)p,"Sliced");CHKERRQ(ierr);
-  p->ops->createglobalvector = SlicedCreateGlobalVector;
-  p->ops->getmatrix          = SlicedGetMatrix;
-  p->ops->destroy            = SlicedDestroy;
-  *dm = p;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMSlicedSetBlockFills_Private(slice->bs,dfill,&slice->dfill);CHKERRQ(ierr);
+  ierr = DMSlicedSetBlockFills_Private(slice->bs,ofill,&slice->ofill);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 extern PetscErrorCode DMDestroy_Private(DM,PetscBool *);
 
 #undef __FUNCT__  
-#define __FUNCT__ "SlicedDestroy"
-/*@C
-    SlicedDestroy - Destroys a vector slice.
-
-    Collective on Sliced
-
-    Input Parameter:
-.   slice - the slice object
-
-    Level: advanced
-
-.seealso SlicedCreate(), SlicedCreateGlobalVector(), SlicedGetGlobalIndices()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT SlicedDestroy(DM dm)
+#define __FUNCT__ "DMDestroy_Sliced"
+PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_Sliced(DM dm)
 {
   PetscErrorCode ierr;
   PetscBool      done;
@@ -323,28 +245,10 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedDestroy(DM dm)
 }
 
 
+
 #undef __FUNCT__  
-#define __FUNCT__ "SlicedCreateGlobalVector"
-/*@C
-    SlicedCreateGlobalVector - Creates a vector of the correct size to be gathered into
-        by the slice.
-
-    Collective on Sliced
-
-    Input Parameter:
-.    slice - the slice object
-
-    Output Parameters:
-.   gvec - the global vector
-
-    Level: advanced
-
-    Notes: Once this has been created you cannot add additional arrays or vectors to be packed.
-
-.seealso SlicedDestroy(), SlicedCreate(), SlicedGetGlobalIndices()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT SlicedCreateGlobalVector(DM dm,Vec *gvec)
+#define __FUNCT__ "DMCreateGlobalVector_Sliced"
+PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_Sliced(DM dm,Vec *gvec)
 {
   PetscErrorCode     ierr;
   PetscInt           bs,cnt;
@@ -373,11 +277,54 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedCreateGlobalVector(DM dm,Vec *gvec)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SlicedGetGlobalIndices"
+#define __FUNCT__ "DMSlicedCreate"
 /*@C
-    SlicedGetGlobalIndices - Gets the global indices for all the local entries
+    DMSlicedCreate - Creates a DM object, used to manage data for a unstructured problem
 
-    Collective on Sliced
+    Collective on MPI_Comm
+
+    Input Parameter:
+.   comm - the processors that will share the global vector
+
+    Output Parameters:
+.   slice - the slice object
+
+    Level: advanced
+
+.seealso DMDestroy(), DMCreateGlobalVector(), DMSlicedGetGlobalIndices()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMSlicedCreate(MPI_Comm comm,DM *dm)
+{
+  PetscErrorCode ierr;
+  DM             p;
+  DM_Sliced      *slice;
+
+  PetscFunctionBegin;
+  PetscValidPointer(dm,2);
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
+
+  ierr = PetscHeaderCreate(p,_p_DM,struct _DMOps,DM_CLASSID,0,"DM",comm,DMDestroy,DMView);CHKERRQ(ierr);
+    ierr = PetscNewLog(p,DM_Sliced,&slice);CHKERRQ(ierr);
+  p->data = slice;
+
+  ierr = PetscObjectChangeTypeName((PetscObject)p,"Sliced");CHKERRQ(ierr);
+  p->ops->createglobalvector = DMCreateGlobalVector_Sliced;
+  p->ops->getmatrix          = DMGetMatrix_Sliced;
+  p->ops->destroy            = DMDestroy_Sliced;
+  *dm = p;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMSlicedGetGlobalIndices"
+/*@C
+    DMSlicedGetGlobalIndices - Gets the global indices for all the local entries
+
+    Collective on DM
 
     Input Parameter:
 .    slice - the slice object
@@ -390,10 +337,10 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedCreateGlobalVector(DM dm,Vec *gvec)
     Notes:
        The idx parameters should be freed by the calling routine with PetscFree()
 
-.seealso SlicedDestroy(), SlicedCreateGlobalVector(), SlicedCreate()
+.seealso DMSlicedDestroy(), DMSlicedCreateGlobalVector(), DMSlicedCreate()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SlicedGetGlobalIndices(DM dm,PetscInt *idx[])
+PetscErrorCode PETSCDM_DLLEXPORT DMSlicedGetGlobalIndices(DM dm,PetscInt *idx[])
 {
   PetscFunctionReturn(0);
 }
@@ -401,15 +348,15 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedGetGlobalIndices(DM dm,PetscInt *idx[])
 
 /* Explanation of the missing functions for DA-style handling of the local vector:
 
-   SlicedCreateLocalVector()
-   SlicedGlobalToLocalBegin()
-   SlicedGlobalToLocalEnd()
+   DMSlicedCreateLocalVector()
+   DMSlicedGlobalToLocalBegin()
+   DMSlicedGlobalToLocalEnd()
 
- There is no way to get the global form from a local form, so SlicedCreateLocalVector() is a memory leak without
- external accounting for the global vector.  Also, Sliced intends the user to work with the VecGhost interface since the
+ There is no way to get the global form from a local form, so DMSlicedCreateLocalVector() is a memory leak without
+ external accounting for the global vector.  Also, DMSliced intends the user to work with the VecGhost interface since the
  ghosts are already ordered after the owned entries.  Contrast this to a DA where the local vector has a special
  ordering described by the structured grid, hence it cannot share memory with the global form.  For this reason, users
- of Sliced should work with the global vector and use
+ of DMSliced should work with the global vector and use
 
    VecGhostGetLocalForm(), VecGhostRestoreLocalForm()
    VecGhostUpdateBegin(), VecGhostUpdateEnd()

@@ -572,8 +572,6 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  admf_DARestoreArray(DA,PetscBool ,void*
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DACreatePF(DA,PF*);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeCreate(MPI_Comm,DM*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeDestroy(DM);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeView(DM,PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddArray(DM,PetscMPIInt,PetscInt);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddDM(DM,DM);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeSetCoupling(DM,PetscErrorCode (*)(DM,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt));
@@ -588,26 +586,14 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeRestoreAccess(DM,Vec,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetLocalVectors(DM,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetEntries(DM,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeRestoreLocalVectors(DM,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeCreateGlobalVector(DM,Vec*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeCreateLocalVector(DM,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetLocalISs(DM,IS*[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetGlobalISs(DM,IS*[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeRefine(DM,MPI_Comm,DM*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetInterpolation(DM,DM,Mat*,Vec*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetMatrix(DM,const MatType,Mat*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetColoring(DM,ISColoringType,const MatType,ISColoring*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGlobalToLocalBegin(DM,Vec,InsertMode,Vec);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGlobalToLocalEnd(DM,Vec,InsertMode,Vec);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedView(DM,PetscViewer);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedCreate(MPI_Comm,DM*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedDestroy(DM);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedCreateGlobalVector(DM,Vec*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedGetMatrix(DM, const MatType,Mat*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedGetGlobalIndices(DM,PetscInt*[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedSetPreallocation(DM,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedSetBlockFills(DM,const PetscInt*,const PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedSetGhosts(DM,PetscInt,PetscInt,PetscInt,const PetscInt[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSlicedCreate(MPI_Comm,DM*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSlicedGetGlobalIndices(DM,PetscInt*[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSlicedSetPreallocation(DM,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSlicedSetBlockFills(DM,const PetscInt*,const PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSlicedSetGhosts(DM,PetscInt,PetscInt,PetscInt,const PetscInt[]);
 
 
 typedef struct NLF_DAAD* NLF;
@@ -621,25 +607,11 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryMatlabOutputVec(PetscV
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryMatlabOutputVecDA(PetscViewer, const char [], Vec, DA);
 
 
-PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm,PetscInt,PetscInt*,PetscInt*,PetscInt,PetscBool *,DM*);
-PetscErrorCode PETSCDM_DLLEXPORT ADDADestroy(DM);
-
-/* DM interface functions */
-PetscErrorCode PETSCDM_DLLEXPORT ADDAView(DM,PetscViewer);
-PetscErrorCode PETSCDM_DLLEXPORT ADDACreateGlobalVector(DM,Vec*);
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetColoring(DM,ISColoringType,const MatType,ISColoring*);
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrix(DM,const MatType, Mat*);
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInterpolation(DM,DM,Mat*,Vec*);
-PetscErrorCode PETSCDM_DLLEXPORT ADDARefine(DM, MPI_Comm,DM *);
-PetscErrorCode PETSCDM_DLLEXPORT ADDACoarsen(DM, MPI_Comm, DM*);
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInjection(DM, DM, VecScatter*);
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetAggregates(DM, DM, Mat *);
-
-/* functions only supported by ADDA */
-PetscErrorCode PETSCDM_DLLEXPORT ADDASetRefinement(DM, PetscInt *,PetscInt);
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetCorners(DM, PetscInt **, PetscInt **);
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetGhostCorners(DM, PetscInt **, PetscInt **);
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrixNS(DM, DM, const MatType , Mat *);
+PetscErrorCode PETSCDM_DLLEXPORT DMADDACreate(MPI_Comm,PetscInt,PetscInt*,PetscInt*,PetscInt,PetscBool *,DM*);
+PetscErrorCode PETSCDM_DLLEXPORT DMADDASetRefinement(DM, PetscInt *,PetscInt);
+PetscErrorCode PETSCDM_DLLEXPORT DMADDAGetCorners(DM, PetscInt **, PetscInt **);
+PetscErrorCode PETSCDM_DLLEXPORT DMADDAGetGhostCorners(DM, PetscInt **, PetscInt **);
+PetscErrorCode PETSCDM_DLLEXPORT DMADDAGetMatrixNS(DM, DM, const MatType , Mat *);
 
 /* functions to set values in vectors and matrices */
 struct _ADDAIdx_s {
@@ -648,9 +620,7 @@ struct _ADDAIdx_s {
 };
 typedef struct _ADDAIdx_s ADDAIdx;
 
-PetscErrorCode PETSCDM_DLLEXPORT ADDAMatSetValues(Mat, DM, PetscInt, const ADDAIdx[], DM, PetscInt,
-						  const ADDAIdx[], const PetscScalar[], InsertMode);
-
+PetscErrorCode PETSCDM_DLLEXPORT DMADDAMatSetValues(Mat, DM, PetscInt, const ADDAIdx[], DM, PetscInt, const ADDAIdx[], const PetscScalar[], InsertMode);
 PetscBool  ADDAHCiterStartup(const PetscInt, const PetscInt *const, const PetscInt *const, PetscInt *const);
 PetscBool  ADDAHCiter(const PetscInt, const PetscInt *const, const PetscInt *const, PetscInt *const);
 

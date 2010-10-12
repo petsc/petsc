@@ -132,7 +132,7 @@ int main(int argc,char **argv)
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
   ierr = DADestroy(da);CHKERRQ(ierr);
-  ierr = DMCompositeDestroy(packer);CHKERRQ(ierr);
+  ierr = DMDestroy(packer);CHKERRQ(ierr);
   if (use_monitor) {
     ierr = PetscViewerDestroy(user.u_lambda_viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(user.fu_lambda_viewer);CHKERRQ(ierr);

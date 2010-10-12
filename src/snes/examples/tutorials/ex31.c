@@ -209,7 +209,7 @@ int main(int argc,char **argv)
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     ierr = PetscViewerDestroy(v1);CHKERRQ(ierr);
-    ierr = DMCompositeDestroy(app.pack);CHKERRQ(ierr);
+    ierr = DMDestroy(app.pack);CHKERRQ(ierr);
     ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   PreLoadEnd();
 

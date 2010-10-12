@@ -219,7 +219,7 @@ TOPS::UnstructuredSolver_impl::setGhostPoints_impl (
 #undef __FUNCT__
 #define __FUNCT__ "TOPS::UnstructuredSolver_impl::setGhostPoints"
 
-  SlicedSetGhosts(this->slice,this->bs,this->n,ghosts.length(0),ghosts.first());
+  DMSlicedSetGhosts(this->slice,this->bs,this->n,ghosts.length(0),ghosts.first());
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setGhostPoints)
 }
 
@@ -248,7 +248,7 @@ TOPS::UnstructuredSolver_impl::setPreallocation_impl (
 #undef __FUNCT__
 #define __FUNCT__ "TOPS::UnstructuredSolver_impl::setPreallocation"
 
-  SlicedSetPreallocation(this->slice,d,PETSC_NULL,od,PETSC_NULL);
+  DMSlicedSetPreallocation(this->slice,d,PETSC_NULL,od,PETSC_NULL);
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setPreallocation)
 }
 
@@ -264,7 +264,7 @@ TOPS::UnstructuredSolver_impl::setPreallocation_impl (
 #undef __FUNCT__
 #define __FUNCT__ "TOPS::UnstructuredSolver_impl::setPreallocation"
 
-  SlicedSetPreallocation(this->slice,0,d.first(),0,od.first());
+  DMSlicedSetPreallocation(this->slice,0,d.first(),0,od.first());
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setPreallocations)
 }
 
@@ -287,7 +287,7 @@ TOPS::UnstructuredSolver_impl::Initialize_impl ()
   }
   this->startedpetsc = 1;
   PetscInitializeNoArguments();
-  SlicedCreate(PETSC_COMM_WORLD,&this->slice);
+  DMSlicedCreate(PETSC_COMM_WORLD,&this->slice);
 
   // Process runtime parameters
   params = ::babel_cast< gov::cca::ports::ParameterPort >( myServices.getPort("tops_options") );

@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   ierr = DACreateLocalVector(da2,&local2);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da2);CHKERRQ(ierr);
 
-  ierr = DMCompositeCreateGlobalVector(packer,&global);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(packer,&global);CHKERRQ(ierr);
   ierr = PFCreate(PETSC_COMM_WORLD,1,1,&pf);CHKERRQ(ierr);
   ierr = PFSetType(pf,PFIDENTITY,PETSC_NULL);CHKERRQ(ierr);
   ierr = PFApplyVec(pf,PETSC_NULL,global);CHKERRQ(ierr);
@@ -88,7 +88,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(local1);CHKERRQ(ierr);
   ierr = VecDestroy(local2);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = DMCompositeDestroy(packer);CHKERRQ(ierr);
+  ierr = DMDestroy(packer);CHKERRQ(ierr);
   ierr = PetscFree(redundant1);CHKERRQ(ierr);
   ierr = PetscFree(redundant2);CHKERRQ(ierr);
   ierr = PetscFinalize();

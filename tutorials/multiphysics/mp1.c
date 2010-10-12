@@ -97,7 +97,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free spaces 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMCompositeDestroy(pack);CHKERRQ(ierr);
+  ierr = DMDestroy(pack);CHKERRQ(ierr);
   ierr = DADestroy(da1);CHKERRQ(ierr);
   ierr = DADestroy(da2);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg_comp);CHKERRQ(ierr);

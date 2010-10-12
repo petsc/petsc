@@ -143,7 +143,7 @@ int main(int argc,char **argv)
   /* create nonlinear multi-level solver */
   ierr = DMMGCreate(PETSC_COMM_WORLD,2,PETSC_NULL,&dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)packer);CHKERRQ(ierr);
-  ierr = DMCompositeDestroy(packer);CHKERRQ(ierr);
+  ierr = DMDestroy(packer);CHKERRQ(ierr);
 
   /* Create Jacobian of PDE function for each level */
   nlevels = DMMGGetLevels(dmmg);

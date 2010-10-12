@@ -183,7 +183,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DA *da)
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(d, _p_DM, struct _DMOps, DM_CLASSID, 0, "DM", comm, DADestroy, DAView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(d, _p_DM, struct _DMOps, DM_CLASSID, 0, "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
   ierr = PetscMemzero(d->ops, sizeof(struct _DMOps));CHKERRQ(ierr);
   ierr = PetscNewLog(d,DM_DA,&dd);CHKERRQ(ierr);
   d->data = dd;
@@ -238,6 +238,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DA *da)
   d->ops->coarsenhierarchy   = DACoarsenHierarchy;
   d->ops->getinjection       = DAGetInjection;
   d->ops->getaggregates      = DAGetAggregates;
+  d->ops->destroy            = DADestroy;
+  d->ops->view               = DAView;
 
   *da = d; 
   PetscFunctionReturn(0);

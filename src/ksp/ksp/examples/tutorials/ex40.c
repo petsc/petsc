@@ -20,7 +20,7 @@ int main(int Argc,char **Args)
   PetscScalar     rho = 1.0;
   PetscReal       h;
   PetscReal       beta = 1.0;
-  ADDA            adda;
+  DM              adda;
   PetscInt        nodes[2];
   PetscBool       periodic[2];
   PetscInt        refine[2];
@@ -55,9 +55,8 @@ int main(int Argc,char **Args)
     periodic[i] = PETSC_TRUE;
     refine[i] = 3;
   }
-  ierr = ADDACreate(PETSC_COMM_WORLD, 2, nodes, PETSC_NULL, 2 /* this is the # of dof's */,
-		    periodic, &adda);CHKERRQ(ierr);
-  ierr = ADDASetRefinement(adda, refine, 2);CHKERRQ(ierr);
+  ierr = DMADDACreate(PETSC_COMM_WORLD, 2, nodes, PETSC_NULL, 2,periodic, &adda);CHKERRQ(ierr);
+  ierr = DMADDASetRefinement(adda, refine, 2);CHKERRQ(ierr);
   
   /* Random numbers */
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
@@ -68,13 +67,13 @@ int main(int Argc,char **Args)
 
   /* construct matrix */
   if( comm_size == 1 ) {
-    ierr = ADDAGetMatrix(adda, MATSEQAIJ, &H);CHKERRQ(ierr);
+    ierr = DMGetMatrix(adda, MATSEQAIJ, &H);CHKERRQ(ierr);
   } else {
-    ierr = ADDAGetMatrix(adda, MATMPIAIJ, &H);CHKERRQ(ierr);
+    ierr = DMGetMatrix(adda, MATMPIAIJ, &H);CHKERRQ(ierr);
   }
 
   /* get local corners for this processor, user is responsible for freeing lcs,lce */
-  ierr = ADDAGetCorners(adda, &lcs, &lce);CHKERRQ(ierr);
+  ierr = DMADDAGetCorners(adda, &lcs, &lce);CHKERRQ(ierr);
 
   /* Allocate space for the indices that we use to construct the matrix */
   ierr = PetscMalloc(2*sizeof(PetscInt), &(sxy.x));CHKERRQ(ierr);
@@ -103,46 +102,46 @@ int main(int Argc,char **Args)
 
       /* center action */
       sxy.d = 0; /* spin 0, 0 */
-      ierr = ADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy, &rho, ADD_VALUES);CHKERRQ(ierr);
+      ierr = DMADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy, &rho, ADD_VALUES);CHKERRQ(ierr);
       sxy.d = 1; /* spin 1, 1 */
       val = -rho;
-      ierr = ADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr = DMADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
       
       sxy_m.x[0] = x+1; sxy_m.x[1] = y; /* right action */
       sxy.d = 0; sxy_m.d = 0; /* spin 0, 0 */
       val = -uxy1; valconj = PetscConj(val);
-      ierr = ADDAMatSetValues(H, adda, 1, &sxy_m, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
-      ierr = ADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
+      ierr = DMADDAMatSetValues(H, adda, 1, &sxy_m, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr = DMADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
       sxy.d = 0; sxy_m.d = 1; /* spin 0, 1 */
       val = -uxy1; valconj = PetscConj(val);
-      ierr = ADDAMatSetValues(H, adda, 1, &sxy_m, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
-      ierr = ADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
+      ierr = DMADDAMatSetValues(H, adda, 1, &sxy_m, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr = DMADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
       sxy.d = 1; sxy_m.d = 0; /* spin 1, 0 */
       val = uxy1; valconj = PetscConj(val);
-      ierr = ADDAMatSetValues(H, adda, 1, &sxy_m, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
-      ierr = ADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
+      ierr = DMADDAMatSetValues(H, adda, 1, &sxy_m, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr = DMADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
       sxy.d = 1; sxy_m.d = 1; /* spin 1, 1 */
       val = uxy1; valconj = PetscConj(val);
-      ierr = ADDAMatSetValues(H, adda, 1, &sxy_m, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
-      ierr = ADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
+      ierr = DMADDAMatSetValues(H, adda, 1, &sxy_m, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr = DMADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
 
       sxy_m.x[0] = x; sxy_m.x[1] = y+1; /* down action */
       sxy.d = 0; sxy_m.d = 0; /* spin 0, 0 */
       val = -uxy2; valconj = PetscConj(val);
-      ierr = ADDAMatSetValues(H, adda, 1, &sxy_m, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
-      ierr = ADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
+      ierr = DMADDAMatSetValues(H, adda, 1, &sxy_m, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr = DMADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
       sxy.d = 0; sxy_m.d = 1; /* spin 0, 1 */
       val = -PETSC_i*uxy2; valconj = PetscConj(val);
-      ierr = ADDAMatSetValues(H, adda, 1, &sxy_m, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
-      ierr = ADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
+      ierr = DMADDAMatSetValues(H, adda, 1, &sxy_m, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr = DMADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
       sxy.d = 1; sxy_m.d = 0; /* spin 1, 0 */
       val = -PETSC_i*uxy2; valconj = PetscConj(val);
-      ierr = ADDAMatSetValues(H, adda, 1, &sxy_m, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
-      ierr = ADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
+      ierr = DMADDAMatSetValues(H, adda, 1, &sxy_m, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr = DMADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
       sxy.d = 1; sxy_m.d = 1; /* spin 1, 1 */
       val = PetscConj(uxy2); valconj = PetscConj(val);
-      ierr = ADDAMatSetValues(H, adda, 1, &sxy_m, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
-      ierr = ADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
+      ierr = DMADDAMatSetValues(H, adda, 1, &sxy_m, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr = DMADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
     }
   }
   
@@ -192,7 +191,7 @@ int main(int Argc,char **Args)
 /*   ierr = MatView(HtHperm, PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD));CHKERRQ(ierr); */
 
   /* right hand side */
-  ierr = ADDACreateGlobalVector(adda, &b);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(adda, &b);CHKERRQ(ierr);
   ierr = VecSet(b,0.0);CHKERRQ(ierr);
   PetscInt ix[1] = {0};
   PetscScalar vals[1] = {1.0};
@@ -216,7 +215,7 @@ int main(int Argc,char **Args)
   ierr = KSPSetOperators(kspmg, HtH, HtH, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   ierr = PCASASetDM(pcmg, (DM) adda);CHKERRQ(ierr);
-  ierr = ADDADestroy(adda);CHKERRQ(ierr);
+  ierr = DMDestroy(adda);CHKERRQ(ierr);
 
   ierr = PCASASetTolerances(pcmg, 1.e-6, 1.e-10,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 

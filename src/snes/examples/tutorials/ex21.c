@@ -66,7 +66,7 @@ int main(int argc,char **argv)
   ierr = DMCompositeAddDM(user.packer,(DM)user.da1);CHKERRQ(ierr);
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,1,1,PETSC_NULL,&user.da2);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(user.packer,(DM)user.da2);CHKERRQ(ierr);
-  ierr = DMCompositeCreateGlobalVector(user.packer,&U);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(user.packer,&U);CHKERRQ(ierr);
   ierr = VecDuplicate(U,&FU);CHKERRQ(ierr);
 
   /* create graphics windows */
@@ -87,7 +87,7 @@ int main(int argc,char **argv)
 
   ierr = DADestroy(user.da1);CHKERRQ(ierr);
   ierr = DADestroy(user.da2);CHKERRQ(ierr);
-  ierr = DMCompositeDestroy(user.packer);CHKERRQ(ierr);
+  ierr = DMDestroy(user.packer);CHKERRQ(ierr);
   ierr = VecDestroy(U);CHKERRQ(ierr);
   ierr = VecDestroy(FU);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(user.u_viewer);CHKERRQ(ierr);

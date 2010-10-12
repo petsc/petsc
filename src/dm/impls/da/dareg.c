@@ -42,9 +42,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetType(DA da, const DAType method)
   ierr = PetscFListFind(DAList, ((PetscObject)da)->comm, method,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DA type: %s", method);
 
-  if (da->ops->destroy) {
+  /* if (da->ops->destroy) {
     ierr = (*da->ops->destroy)(da);CHKERRQ(ierr);
-  }
+    } */
   ierr = (*r)(da);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)da,method);CHKERRQ(ierr);
   PetscFunctionReturn(0);

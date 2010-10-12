@@ -91,7 +91,7 @@ void PETSC_STDCALL dmcompositeadddm_(DM *dm,DM *da,PetscErrorCode *ierr)
 
 void PETSC_STDCALL dmcompositedestroy_(DM *dm,PetscErrorCode *ierr)
 {
-  *ierr = DMCompositeDestroy(*dm);
+  *ierr = DMDestroy(*dm);
 }
 
 void PETSC_STDCALL dmcompositeaddarray_(DM *dm,PetscInt *r,PetscInt *n,PetscErrorCode *ierr)
