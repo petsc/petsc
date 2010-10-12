@@ -23,7 +23,10 @@ class Configure(PETSc.package.NewPackage):
 
   def getSearchDirectories(self):
     '''By default, do not search any particular directories'''
-    return [os.path.join('/usr','local'),os.path.join('/opt','local')]
+    yield ''
+    yield os.path.join('/usr','local')
+    yield os.path.join('/opt','local')
+    return
   
   def Install(self):
     raise RuntimeError('--download-valgrind not supported\n')
