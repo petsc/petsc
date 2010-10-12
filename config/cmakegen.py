@@ -24,7 +24,7 @@ def cmakeconditional(key,val):
     raise RuntimeError('Unexpected scalar: %r'%val)
   if key == 'language':
     if val == 'CXXONLY':
-      return 'PETSC_CLANGUAGE_CXX'
+      return 'PETSC_CLANGUAGE_Cxx'
     if val == 'CONLY':
       return 'PETSC_CLANGUAGE_C'
     raise RuntimeError('Unexpected language: %r'%val)
@@ -74,7 +74,7 @@ include (${PETSc_BINARY_DIR}/conf/PETScConfig.cmake)
 if (PETSC_HAVE_FORTRAN)
   enable_language (Fortran)
 endif ()
-if (PETSC_CLANGUAGE_CXX)
+if (PETSC_CLANGUAGE_Cxx)
   enable_language (CXX)
 endif ()
 
@@ -134,6 +134,14 @@ if (PETSC_USE_SINGLE_LIBRARY)
   target_link_libraries (petsc ${PETSC_PACKAGE_LIBS})
 endif ()
 ''' % (' '.join([r'${PETSC' + pkg.upper() + r'_SRCS}' for pkg,deps in pkglist]),))
+      f.write('''
+if (PETSC_CLANGUAGE_Cxx)
+  foreach (file IN LISTS %s)
+    if (file MATCHES "^.*\\\\.c$")
+      set_source_files_properties(${file} PROPERTIES LANGUAGE CXX)
+    endif ()
+  endforeach ()
+endif()''' % ('\n  '.join([r'PETSC' + pkg.upper() + r'_SRCS' for (pkg,_) in pkglist])))
     written = True
   finally:
     if written:
