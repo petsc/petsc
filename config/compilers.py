@@ -508,11 +508,11 @@ class Configure(config.base.Configure):
   def mangleFortranFunction(self, name):
     if self.fortranMangling == 'underscore':
       if self.fortranManglingDoubleUnderscore and name.find('_') >= 0:
-        return name+'__'
+        return name.lower()+'__'
       else:
-        return name+'_'
+        return name.lower()+'_'
     elif self.fortranMangling == 'unchanged':
-      return name
+      return name.lower()
     elif self.fortranMangling == 'caps':
       return name.upper()
     elif self.fortranMangling == 'stdcall':
