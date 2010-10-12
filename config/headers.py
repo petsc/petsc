@@ -50,23 +50,13 @@ class Configure(config.base.Configure):
     '''Converts a list of includes to a string suitable for a compiler'''
     return ' '.join([self.getIncludeArgument(include) for include in includes])
 
-  def toStringNoDupes(self,includes):
-    '''Converts a list of -Iincludes to a string suitable for a compiler, removes duplicates'''
+  def toStringNoDupes(self,includes,modincludes=[]):
+    '''Converts a list of -Iincludes and -fmodule flags to a string suitable for a compiler, removes duplicates'''
     newincludes = []
     for include in includes:
       newincludes += self.getIncludeArgumentList(include)
-    includes = newincludes
-    newincludes = []
-    for j in includes:
-      if j in newincludes: continue
-      newincludes.append(j)
-    return ' '.join(newincludes)
-
-  def toStringModulesNoDupes(self,includes):
-    '''Converts a list of -fmodule flags includes to a string suitable for a compiler, removes duplicates'''
-    newincludes = []
-    for include in includes:
-      newincludes += self.getIncludeModulesArgumentList(include)
+    for modinclude in modincludes:
+      newincludes += self.getIncludeModulesArgumentList(modinclude)
     includes = newincludes
     newincludes = []
     for j in includes:
