@@ -228,7 +228,7 @@ for consistency.</li>
         <li> <br>
         </li>
       </ul>
-      <p><u><b>DA:</b></u></p>
+      <p><u><b>DM/DA:</b></u></p>
       <ul>
         <li>Change array argument of DAGetArray and related functions
 from void** to void* to avoid the need for an explicit cast (the
@@ -241,6 +241,18 @@ should not be destroyed by the user.</li>
         <li>Added DAVecGetArrayF90()<br>
         </li>
         <li>Changed DASetVertexDivision to DASetOwnershipRanges</li>
+        <li>The SDA object and all its method have been removed<br>
+        </li>
+        <li>The ADDA, Slice and DMComposite objects are now all
+represented by a DM object. <br>
+        </li>
+        <li>Routines that began with ADDA and Slice now begin with
+DMADDA and DMSlice</li>
+        <li>ADDA/Slice/DMCompositeGetMatrix() -&gt; DMGetMatrix(),
+similar for all other routines that have a DM version</li>
+        <li>DA is now a simple macro for DM.</li>
+        <li><br>
+        </li>
       </ul>
       <p><u><b>DMMG:</b></u></p>
       <ul>

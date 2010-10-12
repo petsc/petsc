@@ -203,6 +203,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAVecRestoreArrayDOF(DA,Vec,void *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DASplitComm2d(MPI_Comm,PetscInt,PetscInt,PetscInt,MPI_Comm*);
 
 /* Dynamic creation and loading functions */
+#define DMType char*
 extern PetscFList DAList;
 extern PetscBool  DARegisterAllCalled;
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetType(DA, const DAType);
@@ -257,6 +258,63 @@ M*/
 #define DARegisterDynamic(a,b,c,d) DARegister(a,b,c,0)
 #else
 #define DARegisterDynamic(a,b,c,d) DARegister(a,b,c,d)
+#endif
+
+/* Dynamic creation and loading functions */
+extern PetscFList DMList;
+extern PetscBool  DMRegisterAllCalled;
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMSetType(DM, const DMType);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMGetType(DM, const DMType *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMRegister(const char[],const char[],const char[],PetscErrorCode (*)(DM));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMRegisterAll(const char []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMRegisterDestroy(void);
+
+/*MC
+  DMRegisterDynamic - Adds a new DM component implementation
+
+  Synopsis:
+  PetscErrorCode DMRegisterDynamic(const char *name,const char *path,const char *func_name, PetscErrorCode (*create_func)(DM))
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+. path        - The path (either absolute or relative) of the library containing this routine
+. func_name   - The name of routine to create method context
+- create_func - The creation routine itself
+
+  Notes:
+  DMRegisterDynamic() may be called multiple times to add several user-defined DMs
+
+  If dynamic libraries are used, then the fourth input argument (routine_create) is ignored.
+
+  Sample usage:
+.vb
+    DMRegisterDynamic("my_da","/home/username/my_lib/lib/libO/solaris/libmy.a", "MyDMCreate", MyDMCreate);
+.ve
+
+  Then, your DM type can be chosen with the procedural interface via
+.vb
+    DMCreate(MPI_Comm, DM *);
+    DMSetType(DM,"my_da_name");
+.ve
+   or at runtime via the option
+.vb
+    -da_type my_da_name
+.ve
+
+  Notes: $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
+         If your function is not being put into a shared library then use DMRegister() instead
+        
+  Level: advanced
+
+.keywords: DM, register
+.seealso: DMRegisterAll(), DMRegisterDestroy(), DMRegister()
+M*/
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#define DMRegisterDynamic(a,b,c,d) DMRegister(a,b,c,0)
+#else
+#define DMRegisterDynamic(a,b,c,d) DMRegister(a,b,c,d)
 #endif
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    MatRegisterDAAD(void);

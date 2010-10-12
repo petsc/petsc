@@ -244,8 +244,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_Sliced(DM dm)
   PetscFunctionReturn(0);
 }
 
-
-
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreateGlobalVector_Sliced"
 PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_Sliced(DM dm,Vec *gvec)

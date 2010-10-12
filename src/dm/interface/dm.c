@@ -820,3 +820,130 @@ PetscErrorCode PETSCDM_DLLEXPORT DMComputeJacobian(DM dm,Vec x,Mat A,Mat B,MatSt
   ierr = (*dm->ops->jacobian)(dm,x,A,B,stflag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+PetscFList DMList                       = PETSC_NULL;
+PetscBool  DMRegisterAllCalled          = PETSC_FALSE;
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMSetType"
+/*@C
+  DMSetType - Builds a DM, for a particular DM implementation.
+
+  Collective on DM
+
+  Input Parameters:
++ dm     - The DM object
+- method - The name of the DM type
+
+  Options Database Key:
+. -dm_type <type> - Sets the DM type; use -help for a list of available types
+
+  Notes:
+  See "petsc/include/petscda.h" for available DM types (for instance, DM1D, DM2D, or DM3D).
+
+  Level: intermediate
+
+.keywords: DM, set, type
+.seealso: DMGetType(), DMCreate()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMSetType(DM dm, const DMType method)
+{
+  PetscErrorCode (*r)(DM);
+  PetscBool      match;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID,1);
+  ierr = PetscTypeCompare((PetscObject) dm, method, &match);CHKERRQ(ierr);
+  if (match) PetscFunctionReturn(0);
+
+  if (!DMRegisterAllCalled) {ierr = DMRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  ierr = PetscFListFind(DMList, ((PetscObject)dm)->comm, method,(void (**)(void)) &r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DM type: %s", method);
+
+  if (dm->ops->destroy) {
+    ierr = (*dm->ops->destroy)(dm);CHKERRQ(ierr);
+  } 
+  ierr = (*r)(dm);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)dm,method);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMGetType"
+/*@C
+  DMGetType - Gets the DM type name (as a string) from the DM.
+
+  Not Collective
+
+  Input Parameter:
+. dm  - The DM
+
+  Output Parameter:
+. type - The DM type name
+
+  Level: intermediate
+
+.keywords: DM, get, type, name
+.seealso: DMSetType(), DMCreate()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMGetType(DM dm, const DMType *type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID,1);
+  PetscValidCharPointer(type,2);
+  if (!DMRegisterAllCalled) {
+    ierr = DMRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+  }
+  *type = ((PetscObject)dm)->type_name;
+  PetscFunctionReturn(0);
+}
+
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMRegister"
+/*@C
+  DMRegister - See DMRegisterDynamic()
+
+  Level: advanced
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(DM))
+{
+  char fullname[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
+  ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
+  ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&DMList, sname, fullname, (void (*)(void)) function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+#undef __FUNCT__  
+#define __FUNCT__ "DMRegisterDestroy"
+/*@C
+   DMRegisterDestroy - Frees the list of DM methods that were registered by DMRegister()/DMRegisterDynamic().
+
+   Not Collective
+
+   Level: advanced
+
+.keywords: DM, register, destroy
+.seealso: DMRegister(), DMRegisterAll(), DMRegisterDynamic()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMRegisterDestroy(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFListDestroy(&DMList);CHKERRQ(ierr);
+  DMRegisterAllCalled = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}

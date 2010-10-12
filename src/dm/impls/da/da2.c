@@ -1324,7 +1324,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
 
-  da->ops->getelements = DMGetElements_DM_2d_P1;
+  da->ops->getelements = DMGetElements_DA_2d_P1;
 
   dd->dim         = 2;
   dd->elementtype = DA_ELEMENT_P1;
