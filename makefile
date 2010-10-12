@@ -65,13 +65,11 @@ info:
 	-@echo "Using configuration flags:"
 	-@grep "\#define " ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h
 	-@echo "-----------------------------------------"
-	-@echo "Using include paths: ${PETSC_INCLUDE}"
-	-@echo "------------------------------------------"
+	-@echo "Using C/C++ include paths: ${PETSC_CC_INCLUDES}"
 	-@echo "Using C/C++ compiler: ${PCC} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS}"
-	-@echo "C/C++ Compiler version: " `${CCV}`
 	-@if [ "${FC}" != "" ]; then \
+	   echo "Using Fortran include/module paths: ${PETSC_FC_INCLUDES}";\
 	   echo "Using Fortran compiler: ${FC} ${FC_FLAGS} ${FFLAGS} ${FPP_FLAGS}";\
-	   echo "Fortran Compiler version: " `${FCV}`;\
          fi
 	-@echo "-----------------------------------------"
 	-@echo "Using C/C++ linker: ${PCC_LINKER}"
@@ -354,7 +352,7 @@ alladiclib:
 	-@echo "Using configuration flags:"
 	-@grep "define " ${PETSC_ARCH}/include/petscconf.h
 	-@echo "-----------------------------------------"
-	-@echo "Using include paths: ${PETSC_INCLUDE}"
+	-@echo "Using include paths: ${CC_PETSC_INCLUDE}"
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc directory: ${PETSC_DIR}"
 	-@echo "Using PETSc arch: ${PETSC_ARCH}"
@@ -446,7 +444,7 @@ exercises:
 
 getsigs:
 	-@if [ ! -d src/sigs ]; then mkdir -p sigs; fi
-	-@echo ${PETSC_INCLUDE} > sigs/petsc_include
+	-@echo ${CC_PETSC_INCLUDE} > sigs/cc_petsc_include
 	-@echo "#include \"petscvec.h\"" > sigs/vec.sigs.h
 	-@grep -h "enum " include/petscsys.h include/petscvec.h >> sigs/vec.sigs.h
 	-@grep " Vec[a-zA-Z][a-zA-Z]*(Vec," include/petscvec.h | grep EXTERN | grep -v "(\*)" | grep -v IS |grep -v VecType | sed "s/EXTERN PetscErrorCode PETSCVEC_DLLEXPORT//g" >> sigs/vec.sigs.h
