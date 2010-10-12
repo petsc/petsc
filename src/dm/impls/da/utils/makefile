@@ -1,16 +1,16 @@
-
+\
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = sda2.c binaryMatlab.c
+SOURCEC  = binaryMatlab.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = sda2.o binaryMatlab.o
+OBJSC    = binaryMatlab.o
 OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = DA
-DIRS     = ftn-custom
+DIRS     = 
 LOCDIR   = src/dm/impls/da/utils/
 
 include ${PETSC_DIR}/conf/variables

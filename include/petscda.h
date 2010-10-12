@@ -23,18 +23,19 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char[]);
     NOT dependent on the SNES or KSP library. In fact, the KSP and SNES libraries depend on
     DM. (This is not great design, but not trivial to fix).
 
-.seealso:  DMCompositeCreate(), DA, DMComposite
+.seealso:  DMCompositeCreate(), DACreate()
 S*/
 typedef struct _p_DM* DM;
 
 /*S
      DA - Abstract PETSc object that manages distributed field data for a single structured grid
+          This is depredicated and is simply a macro for DM.
 
    Level: beginner
 
   Concepts: distributed array
 
-.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), VecScatter, DACreate(), DM, DMComposite
+.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), VecScatter, DACreate(), DM
 S*/
 #define DA DM
 
@@ -99,32 +100,17 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetInterpolationType(DA,DAInterpolati
 
 /*E
     DAElementType - Defines the type of elements that will be returned by 
-       DAGetElements.
+       DMGetElements()
 
    Level: beginner
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA, DAGetInterpolation(), DASetInterpolationType(), 
-          DASetElementType(), DAGetElements(), DARestoreElements(), DACreate()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DMGetInterpolation(), DASetInterpolationType(), 
+          DASetElementType(), DMGetElements(), DMRestoreElements(), DACreate()
 E*/
 typedef enum { DA_ELEMENT_P1, DA_ELEMENT_Q1 } DAElementType;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetElementType(DA,DAElementType);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetElementType(DA,DAElementType*);
-/*MC
-   DAGetElements - same as DMGetElements()
-   uses DA instead of DM as input
-
-   Level: beginner
-M*/
-#define DAGetElements(da,a,b)      DMGetElements((DM)da,a,b)
-/*MC
-   DARestoreElements - same as DMRestoreElements()
-   uses DA instead of DM as input
-
-   Level: beginner
-M*/
-#define DARestoreElements(da,a,b)  DMRestoreElements((DM)da,a,b)
-
 
 #define DAXPeriodic(pt) ((pt)==DA_XPERIODIC||(pt)==DA_XYPERIODIC||(pt)==DA_XZPERIODIC||(pt)==DA_XYZPERIODIC)
 #define DAYPeriodic(pt) ((pt)==DA_YPERIODIC||(pt)==DA_XYPERIODIC||(pt)==DA_YZPERIODIC||(pt)==DA_XYZPERIODIC)
@@ -162,21 +148,22 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALocalToGlobalBegin(DA,Vec,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALocalToGlobalEnd(DA,Vec,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateGlobalVector(DA,Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateLocalVector(DA,Vec *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DARefine(DA,MPI_Comm,DA*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACoarsen(DA,MPI_Comm,DA*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DARefineHierarchy(DA,PetscInt,DA[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACoarsenHierarchy(DA,PetscInt,DA[]);
+
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateNaturalVector(DA,Vec *);
-#define  DAGetLocalVector(da,v)      DMGetLocalVector((DM)da,v)
-#define  DARestoreLocalVector(da,v)  DMRestoreLocalVector((DM)da,v)
-#define  DAGetGlobalVector(da,v)     DMGetGlobalVector((DM)da,v)
-#define  DARestoreGlobalVector(da,v) DMRestoreGlobalVector((DM)da,v)
+#define  DAGetLocalVector(da,v)      DMGetLocalVector(da,v)
+#define  DARestoreLocalVector(da,v)  DMRestoreLocalVector(da,v)
+#define  DAGetGlobalVector(da,v)     DMGetGlobalVector(da,v)
+#define  DARestoreGlobalVector(da,v) DMRestoreGlobalVector(da,v)
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALoad(PetscViewer,PetscInt,PetscInt,PetscInt,DA *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetCorners(DA,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetGhostCorners(DA,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetInfo(DA,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,DAPeriodicType*,DAStencilType*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetProcessorSubset(DA,DADirection,PetscInt,MPI_Comm*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetProcessorSubsets(DA,DADirection,MPI_Comm*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DARefine(DA,MPI_Comm,DA*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACoarsen(DA,MPI_Comm,DA*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DARefineHierarchy(DA,PetscInt,DA[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACoarsenHierarchy(DA,PetscInt,DA[]);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGlobalToNaturalAllCreate(DA,VecScatter*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DANaturalAllToGlobalCreate(DA,VecScatter*);
@@ -271,36 +258,6 @@ M*/
 #else
 #define DARegisterDynamic(a,b,c,d) DARegister(a,b,c,d)
 #endif
-
-/*S
-     SDA - This provides a simplified interface to the DA distributed
-           array object in PETSc. This is intended for people who are
-           NOT using PETSc vectors or objects but just want to distribute
-           simple rectangular arrays amoung a number of procesors and have
-           PETSc handle moving the ghost-values when needed.
-
-          In certain applications this can serve as a replacement for 
-          BlockComm (which is apparently being phased out?).
-
-
-   Level: beginner
-
-  Concepts: simplified distributed array
-
-.seealso:  SDACreate1d(), SDACreate2d(), SDACreate3d(), SDADestroy(), DA, SDALocalToLocalBegin(),
-           SDALocalToLocalEnd(), SDAGetCorners(), SDAGetGhostCorners()
-S*/
-typedef struct _n_SDA* SDA;
-
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],SDA*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],SDA*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDACreate1d(MPI_Comm,DAPeriodicType,PetscInt,PetscInt,PetscInt,const PetscInt[],SDA*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDADestroy(SDA);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDALocalToLocalBegin(SDA,PetscScalar*,InsertMode,PetscScalar*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDALocalToLocalEnd(SDA,PetscScalar*,InsertMode,PetscScalar*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDAGetCorners(SDA,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDAGetGhostCorners(SDA,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDAArrayView(SDA,PetscScalar*,PetscViewer);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    MatRegisterDAAD(void);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    MatCreateDAAD(DA,Mat*);

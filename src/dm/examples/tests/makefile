@@ -6,9 +6,9 @@ FPPFLAGS        =
 LOCDIR          = src/dm/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c\
                   ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex19.c \
-	          ex20.c ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c \
+	          ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c \
 	          ex31.c ex32.c
-EXAMPLESF       = ex21f.F
+EXAMPLESF       = 
 MANSEC          = DA
 
 include ${PETSC_DIR}/conf/variables
@@ -192,24 +192,6 @@ runex13:
 runex14:
 	-@${MPIEXEC} -n 4 ./ex14 ; sleep 1
 
-runex20:
-	-@${MPIEXEC} -n 2 ./ex20 -2d -periodic 1 -dof 2 -stencil_width 1 -stencil_type 0
-
-runex20_2:
-	-@for d in -1d -2d -3d; do \
-            for np in 1 2 3 4; do \
-              for per in 0 1; do \
-                for dof in 1 2 3; do \
-                  for stencil_width in 1 2; do \
-                    for stencil_type in 0 1; do \
-                      ${MPIEXEC} -n $$np ./ex20 $$d -periodic $$per -dof $$dof -stencil_width $$stencil_width -stencil_type $$stencil_type ;\
-                    done; \
-                  done; \
-                done; \
-              done; \
-            done; \
-          done;
-
 runex23:
 	-@for d in -1d -2d -3d; do \
             for np in 1 2 3 4; do \
@@ -283,9 +265,9 @@ runex32:
 TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm ex24.PETSc runex24 ex24.rm ex25.PETSc \
                             runex25 ex25.rm ex31.PETSc runex31 ex31.rm ex32.PETSc runex32 ex32.rm ex30.PETSc runex30 runex30_2 runex30_3 ex30.rm
 TESTEXAMPLES_C_X11	  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 \
-                            ex6.rm ex7.PETSc ex7.rm  ex20.PETSc runex20 runex20_2 ex20.rm ex14.PETSc runex14 ex14.rm \
+                            ex6.rm ex7.PETSc ex7.rm  ex14.PETSc runex14 ex14.rm \
                             ex13.PETSc runex13 ex13.rm ex23.PETSc runex23 ex23.rm
-TESTEXAMPLES_FORTRAN	  = ex21f.PETSc ex21f.rm
+TESTEXAMPLES_FORTRAN	  = 
 TESTEXAMPLES_C_X11_MPIUNI = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
                             ex6.PETSc ex6.rm ex12.PETSc ex12.rm
 TESTEXAMPLES_C_COMPLEX	  = 

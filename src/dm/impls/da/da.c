@@ -425,7 +425,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetNeighbors(DA da,const PetscMPIInt *ranks[]
 }
 
 /*@C
-      DASetElementType - Sets the element type to be returned by DAGetElements()
+      DASetElementType - Sets the element type to be returned by DMGetElements()
 
     Not Collective
 
@@ -437,7 +437,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetNeighbors(DA da,const PetscMPIInt *ranks[]
 
    Level: intermediate
 
-.seealso: DAElementType, DAGetElementType(), DAGetElements(), DARestoreElements()
+.seealso: DAElementType, DAGetElementType(), DMGetElements(), DMRestoreElements()
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "DASetElementType"
@@ -459,7 +459,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetElementType(DA da, DAElementType etype)
 }
 
 /*@C
-      DAGetElementType - Gets the element type to be returned by DAGetElements()
+      DAGetElementType - Gets the element type to be returned by DMGetElements()
 
     Not Collective
 
@@ -471,7 +471,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetElementType(DA da, DAElementType etype)
 
    Level: intermediate
 
-.seealso: DAElementType, DASetElementType(), DAGetElements(), DARestoreElements()
+.seealso: DAElementType, DASetElementType(), DMGetElements(), DMRestoreElements()
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "DAGetElementType"

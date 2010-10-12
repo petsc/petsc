@@ -1,5 +1,5 @@
 
-static char help[] = "Tests DAGetElements() and VecView() contour plotting for 2d DAs.\n\n";
+static char help[] = "Tests DMGetElements() and VecView() contour plotting for 2d DAs.\n\n";
 
 #include "petscda.h"
 
@@ -40,14 +40,14 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
-  ierr = DAGetElements(da,&ne,&e);CHKERRQ(ierr);
+  ierr = DMGetElements(da,&ne,&e);CHKERRQ(ierr);
   ierr = VecGetArray(local,&lv);CHKERRQ(ierr);
   for (i=0; i<ne; i++) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"i %D e[3*i] %D %D %D\n",i,e[3*i],e[3*i+1],e[3*i+2]);
     lv[e[3*i]] = i; 
   }
   ierr = VecRestoreArray(local,&lv);CHKERRQ(ierr);
-  ierr = DARestoreElements(da,&ne,&e);CHKERRQ(ierr);
+  ierr = DMRestoreElements(da,&ne,&e);CHKERRQ(ierr);
 
   ierr = DALocalToGlobal(da,local,ADD_VALUES,global);CHKERRQ(ierr);
 

@@ -154,8 +154,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetElements_2d_P1"
-PetscErrorCode DAGetElements_2d_P1(DA da,PetscInt *n,const PetscInt *e[])
+#define __FUNCT__ "DMGetElements_DA_2d_P1"
+PetscErrorCode DMGetElements_DA_2d_P1(DA da,PetscInt *n,const PetscInt *e[])
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -1324,7 +1324,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
 
-  da->ops->getelements = DAGetElements_2d_P1;
+  da->ops->getelements = DMGetElements_DM_2d_P1;
 
   dd->dim         = 2;
   dd->elementtype = DA_ELEMENT_P1;
