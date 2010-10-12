@@ -22,6 +22,7 @@ class Configure(config.package.Package):
                              ['libmpich.a', 'libpmpich.a'],
                              ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                              ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
+                             ['libmpich.a','librt.a','libaio.a','libsnl.a','libpthread.a'],
                              ['libmpich.a','libssl.a','libuuid.a','libpthread.a','librt.a','libdl.a'],
                              ['libmpich.a','libnsl.a','libsocket.a','librt.a','libnsl.a','libsocket.a'],
                              ['libmpich.a','libgm.a','libpthread.a']]
@@ -599,19 +600,6 @@ class Configure(config.package.Package):
     self.compilerFlags.configure()
     return
 
-  def addExtraLibraries(self):
-    '''Check for various auxiliary libraries we may need'''
-    extraLib = []
-    if not self.setCompilers.usedMPICompilers:
-      if self.executeTest(self.libraries.check, [['rt'], 'timer_create', None, extraLib]):
-        extraLib.append('librt.a')
-      if self.executeTest(self.libraries.check, [['aio'], 'aio_read', None, extraLib]):
-        extraLib.insert(0, 'libaio.a')
-      if self.executeTest(self.libraries.check, [['nsl'], 'exit', None, extraLib]):
-        extraLib.insert(0, 'libnsl.a')
-      self.extraLib.extend(extraLib)
-    return
-
   def SGIMPICheck(self):
     '''Returns true if SGI MPI is used'''
     if self.libraries.check(self.lib, 'MPI_SGI_barrier') :
@@ -706,7 +694,6 @@ class Configure(config.package.Package):
     '''Calls the regular package configureLibrary and then does an additional test needed by MPI'''
     if 'with-'+self.package+'-shared' in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1
-    self.addExtraLibraries()
     config.package.Package.configureLibrary(self)
     # Satish check here if the self.directory is truly the MPI root directory with mpicc underneath it
     # if not then set it to None
