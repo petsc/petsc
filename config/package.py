@@ -426,6 +426,7 @@ class Package(config.base.Configure):
       elif not isinstance(lib, list): lib = [lib]
       if incl == '': incl = []
       elif not isinstance(incl, list): incl = [incl]
+      testedincl = list(incl)
       # weed out duplicates when adding fincs
       for loc in self.compilers.fincs:
         if not loc in incl:
@@ -440,7 +441,7 @@ class Package(config.base.Configure):
         self.framework.logPrint('Checking for headers '+location+': '+str(incl))
         if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 1800.0):
           if self.includes:
-            self.include = incl
+            self.include = testedincl
           self.found     = 1
           self.dlib      = self.lib+libs
           if not hasattr(self.framework, 'packages'):
