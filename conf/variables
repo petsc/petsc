@@ -9,7 +9,7 @@
 # PETSC_[C,F]SH_LIB_PATH - linker_add_sh_lib_path:sh_lib_path pairs for all the shared library locations
 #
 PETSC_LIB_DIR	     = ${PETSC_DIR}/${PETSC_ARCH}/lib
-PETSC_INCLUDE	     =  -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE}
+PETSC_INCLUDE	     =  -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include ${PACKAGES_INCLUDES}
 PETSC_MODULE_INCLUDE = ${FC_MODULE_FLAG}${PETSC_DIR}/${PETSC_ARCH}/include
 
 PETSC_CC_INCLUDES = ${PETSC_INCLUDE}
@@ -59,7 +59,7 @@ FLINKER = ${FC_LINKER} ${FC_LINKER_FLAGS}
 # The order of listing these libraries is important!
 #
 
-PETSC_EXTERNAL_LIB_BASIC       = ${EXTERNAL_LIB} ${PACKAGES_LIBS} ${PCC_LINKER_LIBS}
+PETSC_EXTERNAL_LIB_BASIC       =  ${PACKAGES_LIBS} ${PCC_LINKER_LIBS}
 PETSC_SYS_LIB_BASIC            = -lpetscsys
 PETSC_VEC_LIB_BASIC            = -lpetscvec ${PETSC_SYS_LIB_BASIC}
 PETSC_MAT_LIB_BASIC            = -lpetscmat ${PETSC_VEC_LIB_BASIC}

@@ -393,7 +393,7 @@ class PETScMaker(script.Script):
  def linkShared(self, sharedLib, libDir, tmpDir):
    '''
    CLINKER                  = ${PCC_LINKER} ${PCC_LINKER_FLAGS}
-   PETSC_EXTERNAL_LIB_BASIC = ${EXTERNAL_LIB} ${PACKAGES_LIBS} ${PCC_LINKER_LIBS}
+   PETSC_EXTERNAL_LIB_BASIC =  ${PACKAGES_LIBS} ${PCC_LINKER_LIBS}
    SYS_LIB                  = ???
    '''
    osName = self.arch.hostOsBase
