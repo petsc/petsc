@@ -212,9 +212,9 @@ class Configure(config.base.Configure):
       self.addDefine('USE_SOCKET_VIEWER','1')
 
 #-----------------------------------------------------------------------------------------------------
-    # print include and lib for external packages
+    # print include and lib for makefiles
     self.framework.packages.reverse()
-    includes = []
+    includes = [os.path.join(self.petscdir.dir,'include'),os.path.join(self.petscdir.dir,self.arch.arch,'include')]
     libs = []
     for i in self.framework.packages:
       if i.useddirectly:
@@ -230,11 +230,11 @@ class Configure(config.base.Configure):
         self.addMakeMacro(i.PACKAGE+'_INCLUDE',self.headers.toStringNoDupes(i.include))
     self.addMakeMacro('PACKAGES_LIBS',self.libraries.toStringNoDupes(libs+self.libraries.math))
     self.PACKAGES_LIBS = self.libraries.toStringNoDupes(libs+self.libraries.math)
-    self.addMakeMacro('PACKAGES_INCLUDES',self.headers.toStringNoDupes(includes))
-    self.PACKAGES_INCLUDES = self.headers.toStringNoDupes(includes)
+    self.addMakeMacro('PETSC_CC_INCLUDES',self.headers.toStringNoDupes(includes))
+    self.PETSC_CC_INCLUDES = self.headers.toStringNoDupes(includes)
     if hasattr(self.compilers, 'FC'):
       if self.compilers.fortranIsF90:
-        self.addMakeMacro('PACKAGES_MODULES_INCLUDES',self.headers.toStringModulesNoDupes(includes))    
+        self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringModulesNoDupes(includes))    
     
     self.addMakeMacro('DESTDIR',self.installdir)
     self.addDefine('LIB_DIR','"'+os.path.join(self.installdir,'lib')+'"')
@@ -291,7 +291,7 @@ class Configure(config.base.Configure):
       self.setCompilers.popLanguage()
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsccompilerflagsinfo = \"\\n\"\n')
-    fd.write('\"Using include paths: %s %s %s\\n\"\n' % ('-I'+os.path.join(self.petscdir.dir, self.arch.arch, 'include'), '-I'+os.path.join(self.petscdir.dir, 'include'), self.PACKAGES_INCLUDES))
+    fd.write('\"Using include paths: %s %s %s\\n\"\n' % ('-I'+os.path.join(self.petscdir.dir, self.arch.arch, 'include'), '-I'+os.path.join(self.petscdir.dir, 'include'), self.PETSC_CC_INCLUDES))
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsclinkerinfo = \"\\n\"\n')
     self.setCompilers.pushLanguage(self.languages.clanguage)
