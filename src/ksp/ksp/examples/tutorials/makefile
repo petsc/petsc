@@ -6,7 +6,7 @@ FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
                    ex12.c ex13.c ex15.c ex16.c ex22.c ex23.c ex25.c ex27.c ex28.c ex29.c ex32.c ex33.c ex34.c ex35.c ex37.c ex38.c \
-                   ex39.c ex40.c ex41.c ex45.c ex49.c
+                   ex39.c ex40.c ex41.c ex45.c ex49.c ex51.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90
 MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
@@ -240,6 +240,10 @@ ex49: ex49.o chkopts
 ex50: ex50.o chkopts
 	-${CLINKER} -o ex50 ex50.o ${PETSC_KSP_LIB}
 	${RM} ex50.o
+
+ex51: ex51.o chkopts
+	-${CLINKER} -o ex51 ex51.o ${PETSC_KSP_LIB}
+	${RM} ex51.o
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \

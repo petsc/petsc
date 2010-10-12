@@ -1286,7 +1286,7 @@ static PetscErrorCode SNESView_VI(SNES snes,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESVISetVariableBounds"
-PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
 {
   SNES_VI        *vi = (SNES_VI*)snes->data;
 
