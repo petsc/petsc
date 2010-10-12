@@ -375,16 +375,10 @@ class PETScMaker(script.Script):
    return
 
  def linkShared(self, sharedLib, libDir, tmpDir):
-   '''
-   CLINKER                  = ${PCC_LINKER} ${PCC_LINKER_FLAGS}
-   PETSC_EXTERNAL_LIB_BASIC =  ${PACKAGES_LIBS} ${PCC_LINKER_LIBS}
-   SYS_LIB                  = ???
-   '''
    osName = self.arch.hostOsBase
    # PCC_LINKER PCC_LINKER_FLAGS
    linker      = self.setCompilers.getLinker()
    linkerFlags = self.setCompilers.getLinkerFlags()
-   # PACKAGES_LIBS PCC_LINKER_LIBS
    packageIncludes, packageLibs = self.getPackageInfo()
    extraLibs = self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
    sysLib      = ''
