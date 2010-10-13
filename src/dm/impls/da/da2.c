@@ -1284,11 +1284,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DAMultiplyByJacobian1WithAdifor(DA da,Vec u,Vec
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "DACreate_2D"
-PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
+#define __FUNCT__ "DASetUp_2D"
+PetscErrorCode PETSCDM_DLLEXPORT DASetUp_2D(DA da)
 {
   DM_DA               *dd = (DM_DA*)da->data;
-  const PetscInt       dim          = dd->dim;
   const PetscInt       M            = dd->M;
   const PetscInt       N            = dd->N;
   PetscInt             m            = dd->m;
@@ -1312,12 +1311,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#endif
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
-  if (dim != PETSC_DECIDE && dim != 2) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Dimension should be 2: %D",dim);
   if (dof < 1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
   if (s < 0) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
 
@@ -1859,6 +1854,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   ierr = DASetOwnershipRanges(*da, lx, ly, PETSC_NULL);CHKERRQ(ierr);
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
   ierr = DASetFromOptions(*da);CHKERRQ(ierr);
-  ierr = DASetType(*da, DA2D);CHKERRQ(ierr);
+  ierr = DASetUp(*da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

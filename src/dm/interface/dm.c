@@ -2,15 +2,6 @@
  
 #include "private/dmimpl.h"     /*I      "petscda.h"     I*/
 
-/*
-   Provides an interface for functionality needed by the DAMG routines.
-   Currently this interface is supported by the DA and DMComposite objects
-  
-   Note: this is actually no such thing as a DM object, rather it is 
-   the common set of functions shared by DA and DMComposite.
-
-*/
-
 #undef __FUNCT__  
 #define __FUNCT__ "DMDestroy"
 /*@
@@ -32,6 +23,58 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy(DM dm)
 
   PetscFunctionBegin;
   ierr = (*dm->ops->destroy)(dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMSetUp"
+/*@
+    DMSetUp - sets up the data structures inside a DM object
+
+    Collective on DM
+
+    Input Parameter:
+.   dm - the DM object to setup
+
+    Level: developer
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMSetUp(DM dm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (dm->ops->setup) {
+    ierr = (*dm->ops->setup)(dm);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMSetFromOptions"
+/*@
+    DMSetFromOptions - sets parameters in a DM from the options database
+
+    Collective on DM
+
+    Input Parameter:
+.   dm - the DM object to set options for
+
+    Level: developer
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMSetFromOptions(DM dm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (dm->ops->setfromoptions) {
+    ierr = (*dm->ops->setfromoptions)(dm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

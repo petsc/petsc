@@ -204,61 +204,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DASplitComm2d(MPI_Comm,PetscInt,Petsc
 
 /* Dynamic creation and loading functions */
 #define DMType char*
-extern PetscFList DAList;
-extern PetscBool  DARegisterAllCalled;
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetType(DA, const DAType);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DAGetType(DA, const DAType *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DARegister(const char[],const char[],const char[],PetscErrorCode (*)(DA));
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DARegisterAll(const char []);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DARegisterDestroy(void);
-
-/*MC
-  DARegisterDynamic - Adds a new DA component implementation
-
-  Synopsis:
-  PetscErrorCode DARegisterDynamic(const char *name,const char *path,const char *func_name, PetscErrorCode (*create_func)(DA))
-
-  Not Collective
-
-  Input Parameters:
-+ name        - The name of a new user-defined creation routine
-. path        - The path (either absolute or relative) of the library containing this routine
-. func_name   - The name of routine to create method context
-- create_func - The creation routine itself
-
-  Notes:
-  DARegisterDynamic() may be called multiple times to add several user-defined DAs
-
-  If dynamic libraries are used, then the fourth input argument (routine_create) is ignored.
-
-  Sample usage:
-.vb
-    DARegisterDynamic("my_da","/home/username/my_lib/lib/libO/solaris/libmy.a", "MyDACreate", MyDACreate);
-.ve
-
-  Then, your DA type can be chosen with the procedural interface via
-.vb
-    DACreate(MPI_Comm, DA *);
-    DASetType(DA,"my_da_name");
-.ve
-   or at runtime via the option
-.vb
-    -da_type my_da_name
-.ve
-
-  Notes: $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
-         If your function is not being put into a shared library then use DARegister() instead
-        
-  Level: advanced
-
-.keywords: DA, register
-.seealso: DARegisterAll(), DARegisterDestroy(), DARegister()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define DARegisterDynamic(a,b,c,d) DARegister(a,b,c,0)
-#else
-#define DARegisterDynamic(a,b,c,d) DARegister(a,b,c,d)
-#endif
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetUp(DA);
 
 /* Dynamic creation and loading functions */
 extern PetscFList DMList;
@@ -536,6 +482,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRefine(DM,MPI_Comm,DM*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCoarsen(DM,MPI_Comm,DM*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRefineHierarchy(DM,PetscInt,DM[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCoarsenHierarchy(DM,PetscInt,DM[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSetFromOptions(DM);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSetUp(DM);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetInterpolationScale(DM,DM,Mat,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetAggregates(DM,DM,Mat*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGlobalToLocalBegin(DM,Vec,InsertMode,Vec);

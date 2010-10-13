@@ -1326,6 +1326,7 @@ int main(int argc,char *argv[])
   }
   /* Allow customization of the DA at runtime, mostly to change problem size with -da_grid_x M */
   ierr = DASetFromOptions(ctx.da);CHKERRQ(ierr);
+  ierr = DASetUp(ctx.da);CHKERRQ(ierr);
   ierr = DAGetInfo(ctx.da,0, &Mx,0,0, 0,0,0, &dof,0,0,0);CHKERRQ(ierr);
   ierr = DAGetCorners(ctx.da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
 

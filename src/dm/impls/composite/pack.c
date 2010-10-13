@@ -183,8 +183,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMView_Composite(DM dm,PetscViewer v)
 
 /* --------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "DMCompositeSetUp"
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetUp(DM dm)
+#define __FUNCT__ "DMSetUp_Composite"
+PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_Composite(DM dm)
 {
   PetscErrorCode         ierr;
   PetscInt               nprev = 0;
@@ -423,7 +423,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetAccess(DM dm,Vec gvec,...)
   PetscValidHeaderSpecific(gvec,VEC_CLASSID,2);
   next = com->next;
   if (!com->setup) {
-    ierr = DMCompositeSetUp(dm);CHKERRQ(ierr);
+    ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
 
   /* loop over packed objects, handling one at at time */
@@ -478,7 +478,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeRestoreAccess(DM dm,Vec gvec,...)
   PetscValidHeaderSpecific(gvec,VEC_CLASSID,2);
   next = com->next;
   if (!com->setup) {
-    ierr = DMCompositeSetUp(dm);CHKERRQ(ierr);
+    ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
 
   /* loop over packed objects, handling one at at time */
@@ -533,7 +533,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeScatter(DM dm,Vec gvec,...)
   PetscValidHeaderSpecific(gvec,VEC_CLASSID,2);
   next = com->next;
   if (!com->setup) {
-    ierr = DMCompositeSetUp(dm);CHKERRQ(ierr);
+    ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
 
   /* loop over packed objects, handling one at at time */
@@ -589,7 +589,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGather(DM dm,Vec gvec,...)
   PetscValidHeaderSpecific(gvec,VEC_CLASSID,2);
   next = com->next;
   if (!com->setup) {
-    ierr = DMCompositeSetUp(dm);CHKERRQ(ierr);
+    ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
 
   /* loop over packed objects, handling one at at time */
@@ -796,7 +796,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_Composite(DM dm,Vec *gvec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (!com->setup) {
-    ierr = DMCompositeSetUp(dm);CHKERRQ(ierr);
+    ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
   ierr = VecCreateMPI(((PetscObject)dm)->comm,com->n,com->N,gvec);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)*gvec,"DMComposite",(PetscObject)dm);CHKERRQ(ierr);
@@ -814,7 +814,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateLocalVector_Composite(DM dm,Vec *lvec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (!com->setup) {
-    ierr = DMCompositeSetUp(dm);CHKERRQ(ierr);
+    ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
   ierr = VecCreateSeq(((PetscObject)dm)->comm,com->nghost,lvec);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)*lvec,"DMComposite",(PetscObject)dm);CHKERRQ(ierr);
@@ -1715,7 +1715,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalBegin_Composite(DM dm,Vec gvec,I
   PetscValidHeaderSpecific(gvec,VEC_CLASSID,2);
   next = com->next;
   if (!com->setup) {
-    ierr = DMCompositeSetUp(dm);CHKERRQ(ierr);
+    ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
   ierr = MPI_Comm_rank(((PetscObject)dm)->comm,&rank);CHKERRQ(ierr);
   ierr = VecGetArray(gvec,&garray);CHKERRQ(ierr);
@@ -1820,6 +1820,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeCreate(MPI_Comm comm,DM *packer)
   p->ops->globaltolocalend   = DMGlobalToLocalEnd_Composite;
   p->ops->destroy            = DMDestroy_Composite;
   p->ops->view               = DMView_Composite;
+  p->ops->setup              = DMSetUp_Composite;
 
   *packer = p;
   PetscFunctionReturn(0);

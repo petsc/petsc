@@ -95,8 +95,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage(void)
 
   PetscFunctionBegin;
   DMPackageInitialized = PETSC_FALSE;
-  DAList               = PETSC_NULL;
-  DARegisterAllCalled  = PETSC_FALSE;
+  DMList               = PETSC_NULL;
+  DMRegisterAllCalled  = PETSC_FALSE;
 #ifdef PETSC_HAVE_SIEVE
   ierr = MeshFinalize();CHKERRQ(ierr);
 #endif
@@ -147,7 +147,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[])
 #endif
 
   /* Register Constructors */
-  ierr = DARegisterAll(path);CHKERRQ(ierr);
+  ierr = DMRegisterAll(path);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
   ierr = MeshRegisterAll(path);CHKERRQ(ierr);
 #endif

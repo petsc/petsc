@@ -113,13 +113,11 @@ PetscErrorCode DAView_Private(DA da)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "DACreate_1D"
-PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA da)
+#define __FUNCT__ "DASetUp_1D"
+PetscErrorCode PETSCDM_DLLEXPORT DASetUp_1D(DA da)
 {
   DM_DA                *dd = (DM_DA*)da->data;
-  const PetscInt       dim   = dd->dim;
   const PetscInt       M     = dd->M;
   const PetscInt       dof   = dd->w;
   const PetscInt       s     = dd->s;
@@ -136,7 +134,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA da)
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  if (dim != PETSC_DECIDE && dim != 1) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Dimension should be 1: %D",dim);
   if (dof < 1) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
   if (s < 0) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
 
@@ -331,7 +328,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA da)
 
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "DACreate1d"
@@ -392,6 +389,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm, DAPeriodicType wrap, 
   ierr = DASetOwnershipRanges(*da, lx, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
   ierr = DASetFromOptions(*da);CHKERRQ(ierr);
-  ierr = DASetType(*da, DA1D);CHKERRQ(ierr);
+  ierr = DASetUp(*da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

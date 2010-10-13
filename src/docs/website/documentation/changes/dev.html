@@ -251,7 +251,12 @@ DMADDA and DMSlice</li>
         <li>ADDA/Slice/DMCompositeGetMatrix() -&gt; DMGetMatrix(),
 similar for all other routines that have a DM version</li>
         <li>DA is now a simple macro for DM.</li>
-        <li><br>
+        <li>Removed DASetType(), DARegister() etc since they will all
+be handled via DMSetType() etc</li>
+        <li>Added DMSetUp() that is called, for example, after all the
+parameters are passed to the DA object to actually construct the data
+structures; replace all calls to DASetType() with calls to DASetUp() or
+DMSetUp()<br>
         </li>
       </ul>
       <p><u><b>DMMG:</b></u></p>

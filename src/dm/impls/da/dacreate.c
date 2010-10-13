@@ -27,50 +27,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DAViewFromOptions(DA da, const char title[])
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetTypeFromOptions_Private"
-/*
-  DASetTypeFromOptions_Private - Sets the type of DA from user options. Defaults to a 1D DA.
-
-  Collective on Vec
-
-  Input Parameter:
-. da - The DA
-
-  Level: intermediate
-
-.keywords: DA, set, options, database, type
-.seealso: DASetFromOptions(), DASetType()
-*/
-static PetscErrorCode DASetTypeFromOptions_Private(DA da)
-{
-  const DAType   defaultType = DA1D;
-  char           typeName[256];
-  PetscBool      opt = PETSC_FALSE;
-  PetscErrorCode ierr;
-  DM_DA          *dd = (DM_DA*)da->data;
-
-  PetscFunctionBegin;
-  switch (dd->dim) {
-    case 1: defaultType = DA1D; break;
-    case 2: defaultType = DA2D; break;
-    case 3: defaultType = DA3D; break;
-  }
-  if (((PetscObject)da)->type_name) {
-    defaultType = ((PetscObject)da)->type_name;
-  }
-  if (!DARegisterAllCalled) {ierr = DARegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  if (dd->dim == PETSC_DECIDE) {
-    ierr = PetscOptionsList("-da_type","DA type","DASetType",DAList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
-  }
-  if (opt) {
-    ierr = DASetType(da, typeName);CHKERRQ(ierr);
-  } else {
-    ierr = DASetType(da, defaultType);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "DASetFromOptions"
 /*@
   DASetFromOptions - Configures the vector from the options database.
@@ -126,18 +82,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
     ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DASetRefinementFactor",dd->refine_x,&dd->refine_x,PETSC_NULL);CHKERRQ(ierr);
     if (dd->dim > 1) {ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DASetRefinementFactor",dd->refine_y,&dd->refine_y,PETSC_NULL);CHKERRQ(ierr);}
     if (dd->dim > 2) {ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DASetRefinementFactor",dd->refine_z,&dd->refine_z,PETSC_NULL);CHKERRQ(ierr);}
-    /* Handle DA type options; only makes sense to call if dimension has not yet been set  */
-    ierr = DASetTypeFromOptions_Private(da);CHKERRQ(ierr);
 
     if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
     ierr = PetscOptionsList("-da_vec_type","Vector type used for created vectors","DASetVecType",VecList,da->vectype,typeName,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = DASetVecType(da,typeName);CHKERRQ(ierr);
-    }
-   
-    /* Handle specific DA options */
-    if (da->ops->setfromoptions) {
-      ierr = (*da->ops->setfromoptions)(da);CHKERRQ(ierr);
     }
 
     /* process any options handlers added with PetscObjectAddOptionsHandler() */
@@ -151,11 +100,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
 #undef __FUNCT__  
 #define __FUNCT__ "DACreate"
 /*@
-  DACreate - Creates an empty DA object. The type can then be set with DASetType(),
-  or DASetFromOptions().
-
-   If you never  call DASetType() or DASetFromOptions() it will generate an 
-   error when you try to use the DA.
+  DACreate - Creates a DA object. 
 
   Collective on MPI_Comm
 
@@ -168,7 +113,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
   Level: beginner
 
 .keywords: DA, create
-.seealso: DASetType(), DASetSizes(), DADuplicate()
+.seealso:  DASetSizes(), DADuplicate()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DA *da)
 {
@@ -240,6 +185,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DA *da)
   d->ops->getaggregates      = DAGetAggregates;
   d->ops->destroy            = DADestroy;
   d->ops->view               = DAView;
+  d->ops->setfromoptions     = DASetFromOptions;
+  d->ops->setup              = DASetUp;
 
   *da = d; 
   PetscFunctionReturn(0);

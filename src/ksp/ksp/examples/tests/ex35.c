@@ -39,6 +39,7 @@ int main(int argc,char **argv)
   ierr = DASetStencilWidth(da,1);CHKERRQ(ierr);
   ierr = DASetOwnershipRanges(da,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DASetFromOptions(da);CHKERRQ(ierr);
+  ierr = DASetUp(da);CHKERRQ(ierr);
 
   ierr = DACreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = DACreateGlobalVector(da,&b);CHKERRQ(ierr);
