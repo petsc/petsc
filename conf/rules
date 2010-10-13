@@ -951,8 +951,8 @@ shared_darwin10: shared_darwin7
 
 shared_darwin7: 
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-        if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="${PACKAGES_LIBS} ${EXTERNAL_LIB}  ${SYS_LIB}  ${OTHERSHAREDLIBS}  ${SL_LINKER_LIBS} -lm -lc "; fi;\
-        if [ "${LIBNAME}" = "libpetscsys" ]; then OTHERLIBS="${EXTERNAL_LIB}  ${SYS_LIB}  ${OTHERSHAREDLIBS}  ${SL_LINKER_LIBS} -lm -lc "; fi;\
+        if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="${PETSC_EXTERNAL_LIB_BASIC}   ${SYS_LIB}  ${OTHERSHAREDLIBS}  ${SL_LINKER_LIBS} -lm -lc "; fi;\
+        if [ "${LIBNAME}" = "libpetscsys" ]; then OTHERLIBS="  ${SYS_LIB}  ${OTHERSHAREDLIBS}  ${SL_LINKER_LIBS} -lm -lc "; fi;\
         if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="${HYPRE_LIB} ${PETSC_SYS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${PLAPACK_LIB} ${SCOTCH_LIB} ${PARTY_LIB} ${CHACO_LIB} ${JOSTLE_LIB} ${SUPERLU_LIB} ${SUPERLU_DIST_LIB} ${SPOOLES_LIB} ${MUMPS_LIB} ${SCALAPACK_LIB} ${BLACS_LIB} ${PARMETIS_LIB} ${UMFPACK_LIB} ${LUSOL_LIB} ${DSCPACK_LIB} ${PETSC_VEC_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscdm" ]; then OTHERLIBS="${TRIANGLE_LIB} ${TETGEN_LIB} ${HYPRE_LIB} ${PETSC_MAT_LIB_BASIC} ${MPI_LIB}"  ; fi;\

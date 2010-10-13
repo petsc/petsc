@@ -126,7 +126,6 @@ class Configure(config.base.Configure):
     self.setCompilers.popLanguage()
     # '' for Unix, .exe for Windows
     self.addMakeMacro('CC_LINKER_SUFFIX','')
-    self.addMakeMacro('PCC_LINKER_LIBS',self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS)
 
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
@@ -184,9 +183,7 @@ class Configure(config.base.Configure):
       self.addMakeMacro('SL_LINKER_SUFFIX', self.setCompilers.sharedLibraryExt)
       self.addDefine('SLSUFFIX','"'+self.setCompilers.sharedLibraryExt+'"')
       
-    #SL_LINKER_LIBS is currently same as PCC_LINKER_LIBS - so simplify
-    self.addMakeMacro('SL_LINKER_LIBS','${PCC_LINKER_LIBS}')
-    #self.addMakeMacro('SL_LINKER_LIBS',self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' ')))
+    self.addMakeMacro('SL_LINKER_LIBS','${PETSC_EXTERNAL_LIB_BASIC}')
 
 #-----------------------------------------------------------------------------------------------------
 
@@ -212,9 +209,9 @@ class Configure(config.base.Configure):
       self.addDefine('USE_SOCKET_VIEWER','1')
 
 #-----------------------------------------------------------------------------------------------------
-    # print include and lib for external packages
+    # print include and lib for makefiles
     self.framework.packages.reverse()
-    includes = []
+    includes = [os.path.join(self.petscdir.dir,'include'),os.path.join(self.petscdir.dir,self.arch.arch,'include')]
     libs = []
     for i in self.framework.packages:
       if i.useddirectly:
@@ -228,13 +225,18 @@ class Configure(config.base.Configure):
           i.include = [i.include]
         includes.extend(i.include)
         self.addMakeMacro(i.PACKAGE+'_INCLUDE',self.headers.toStringNoDupes(i.include))
-    self.addMakeMacro('PACKAGES_LIBS',self.libraries.toStringNoDupes(libs+self.libraries.math))
-    self.PACKAGES_LIBS = self.libraries.toStringNoDupes(libs+self.libraries.math)
-    self.addMakeMacro('PACKAGES_INCLUDES',self.headers.toStringNoDupes(includes))
-    self.PACKAGES_INCLUDES = self.headers.toStringNoDupes(includes)
+    if self.framework.argDB['with-single-library']:
+      self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),' -lpetsc']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS)      
+    else:
+      self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS)
+    self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
+    self.addMakeMacro('PETSC_CC_INCLUDES',self.headers.toStringNoDupes(includes))
+    self.PETSC_CC_INCLUDES = self.headers.toStringNoDupes(includes)
     if hasattr(self.compilers, 'FC'):
       if self.compilers.fortranIsF90:
-        self.addMakeMacro('PACKAGES_MODULES_INCLUDES',self.headers.toStringModulesNoDupes(includes))    
+        self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(includes,includes))
+      else:
+        self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(includes))
     
     self.addMakeMacro('DESTDIR',self.installdir)
     self.addDefine('LIB_DIR','"'+os.path.join(self.installdir,'lib')+'"')
@@ -242,17 +244,28 @@ class Configure(config.base.Configure):
     if self.framework.argDB['with-single-library']:
       # overrides the values set in conf/variables
       self.addMakeMacro('LIBNAME','${INSTALL_LIB_DIR}/libpetsc.${AR_LIB_SUFFIX}')
-      self.addMakeMacro('PETSC_SYS_LIB_BASIC','-lpetsc')
-      self.addMakeMacro('PETSC_VEC_LIB_BASIC','-lpetsc')
-      self.addMakeMacro('PETSC_MAT_LIB_BASIC','-lpetsc')
-      self.addMakeMacro('PETSC_DM_LIB_BASIC','-lpetsc')
-      self.addMakeMacro('PETSC_KSP_LIB_BASIC','-lpetsc')
-      self.addMakeMacro('PETSC_SNES_LIB_BASIC','-lpetsc')
-      self.addMakeMacro('PETSC_TS_LIB_BASIC','-lpetsc')
-      self.addMakeMacro('PETSC_LIB_BASIC','-lpetsc')
-      self.addMakeMacro('PETSC_CONTRIB_BASIC','-lpetsc')
       self.addMakeMacro('SHLIBS','libpetsc')
       self.addDefine('USE_SINGLE_LIBRARY', '1')
+      if self.sharedlibraries.useShared:
+        self.addMakeMacro('PETSC_SYS_LIB','${C_SH_LIB_PATH} ${PETSC_EXTERNAL_LIB_BASIC}')
+        self.addMakeMacro('PETSC_VEC_LIB','${C_SH_LIB_PATH} ${PETSC_EXTERNAL_LIB_BASIC}')
+        self.addMakeMacro('PETSC_MAT_LIB','${C_SH_LIB_PATH} ${PETSC_EXTERNAL_LIB_BASIC}')
+        self.addMakeMacro('PETSC_DM_LIB','${C_SH_LIB_PATH} ${PETSC_EXTERNAL_LIB_BASIC}')
+        self.addMakeMacro('PETSC_KSP_LIB','${C_SH_LIB_PATH} ${PETSC_EXTERNAL_LIB_BASIC}')
+        self.addMakeMacro('PETSC_SNES_LIB','${C_SH_LIB_PATH} ${PETSC_EXTERNAL_LIB_BASIC}')
+        self.addMakeMacro('PETSC_TS_LIB','${C_SH_LIB_PATH} ${PETSC_EXTERNAL_LIB_BASIC}')
+        self.addMakeMacro('PETSC_LIB','${C_SH_LIB_PATH} ${PETSC_EXTERNAL_LIB_BASIC}')
+        self.addMakeMacro('PETSC_CONTRIB','${C_SH_LIB_PATH} ${PETSC_EXTERNAL_LIB_BASIC}')
+      else:
+        self.addMakeMacro('PETSC_SYS_LIB','${PETSC_EXTERNAL_LIB_BASIC}')
+        self.addMakeMacro('PETSC_VEC_LIB','${PETSC_EXTERNAL_LIB_BASIC}')
+        self.addMakeMacro('PETSC_MAT_LIB','${PETSC_EXTERNAL_LIB_BASIC}')
+        self.addMakeMacro('PETSC_DM_LIB','${PETSC_EXTERNAL_LIB_BASIC}')
+        self.addMakeMacro('PETSC_KSP_LIB','${PETSC_EXTERNAL_LIB_BASIC}')
+        self.addMakeMacro('PETSC_SNES_LIB','${PETSC_EXTERNAL_LIB_BASIC}')
+        self.addMakeMacro('PETSC_TS_LIB','${PETSC_EXTERNAL_LIB_BASIC}')
+        self.addMakeMacro('PETSC_LIB','${PETSC_EXTERNAL_LIB_BASIC}')
+        self.addMakeMacro('PETSC_CONTRIB','${PETSC_EXTERNAL_LIB_BASIC}')
       
     if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib')):
       os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib'))
@@ -291,7 +304,7 @@ class Configure(config.base.Configure):
       self.setCompilers.popLanguage()
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsccompilerflagsinfo = \"\\n\"\n')
-    fd.write('\"Using include paths: %s %s %s\\n\"\n' % ('-I'+os.path.join(self.petscdir.dir, self.arch.arch, 'include'), '-I'+os.path.join(self.petscdir.dir, 'include'), self.PACKAGES_INCLUDES))
+    fd.write('\"Using include paths: %s %s %s\\n\"\n' % ('-I'+os.path.join(self.petscdir.dir, self.arch.arch, 'include'), '-I'+os.path.join(self.petscdir.dir, 'include'), self.PETSC_CC_INCLUDES))
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsclinkerinfo = \"\\n\"\n')
     self.setCompilers.pushLanguage(self.languages.clanguage)
@@ -301,7 +314,7 @@ class Configure(config.base.Configure):
       self.setCompilers.pushLanguage('FC')
       fd.write('\"Using Fortran linker: %s\\n\"\n' % (self.setCompilers.getLinker()))
       self.setCompilers.popLanguage()
-    fd.write('\"Using libraries: %s%s -L%s %s %s %s\\n\"\n' % (self.setCompilers.CSharedLinkerFlag, os.path.join(self.petscdir.dir, self.arch.arch, 'lib'), os.path.join(self.petscdir.dir, self.arch.arch, 'lib'), '-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys', self.PACKAGES_LIBS, self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS))
+    fd.write('\"Using libraries: %s%s -L%s %s %s\\n\"\n' % (self.setCompilers.CSharedLinkerFlag, os.path.join(self.petscdir.dir, self.arch.arch, 'lib'), os.path.join(self.petscdir.dir, self.arch.arch, 'lib'), '-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys', self.PETSC_EXTERNAL_LIB_BASIC))
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.close()
     return

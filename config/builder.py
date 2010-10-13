@@ -291,14 +291,6 @@ class PETScMaker(script.Script):
    return {'C': cnames, 'Cxx': cxxnames, 'Cuda': cudanames, 'F77': f77names, 'F90': f90names, 'Fortran': f77names+f90names, 'Objects': [self.getObjectName(s, objDir) for s in source]}
 
  def compileC(self, source, objDir = None):
-   '''PETSC_INCLUDE         = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
-                               ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE}
-      PETSC_CC_INCLUDES     = ${PETSC_INCLUDE}
-      PETSC_CCPPFLAGS	    = ${PETSC_CC_INCLUDES} ${PETSCFLAGS} ${CPP_FLAGS} ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
-      CCPPFLAGS	            = ${PETSC_CCPPFLAGS}
-      PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC} ${SSOURCE}
-      PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}'''
-   # PETSCFLAGS, CFLAGS and CPPFLAGS are taken from user input (or empty)
    includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
    self.setCompilers.pushLanguage(self.languages.clanguage)
    compiler = self.setCompilers.getCompiler()
@@ -333,14 +325,6 @@ class PETScMaker(script.Script):
    return objects
 
  def compileF(self, source, objDir = None):
-   '''PETSC_INCLUDE	        = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
-                              ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE}
-      PETSC_CC_INCLUDES     = ${PETSC_INCLUDE}
-      PETSC_CCPPFLAGS	    = ${PETSC_CC_INCLUDES} ${PETSCFLAGS} ${CPP_FLAGS} ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
-      CCPPFLAGS	            = ${PETSC_CCPPFLAGS}
-      PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC} ${SSOURCE}
-      PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}'''
-   # PETSCFLAGS, CFLAGS and CPPFLAGS are taken from user input (or empty)
    flags           = []
 
    includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
@@ -391,16 +375,10 @@ class PETScMaker(script.Script):
    return
 
  def linkShared(self, sharedLib, libDir, tmpDir):
-   '''
-   CLINKER                  = ${PCC_LINKER} ${PCC_LINKER_FLAGS}
-   PETSC_EXTERNAL_LIB_BASIC = ${EXTERNAL_LIB} ${PACKAGES_LIBS} ${PCC_LINKER_LIBS}
-   SYS_LIB                  = ???
-   '''
    osName = self.arch.hostOsBase
    # PCC_LINKER PCC_LINKER_FLAGS
    linker      = self.setCompilers.getLinker()
    linkerFlags = self.setCompilers.getLinkerFlags()
-   # PACKAGES_LIBS PCC_LINKER_LIBS
    packageIncludes, packageLibs = self.getPackageInfo()
    extraLibs = self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
    sysLib      = ''
