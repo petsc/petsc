@@ -234,7 +234,7 @@ class Configure(config.base.Configure):
     self.PETSC_CC_INCLUDES = self.headers.toStringNoDupes(includes)
     if hasattr(self.compilers, 'FC'):
       if self.compilers.fortranIsF90:
-        self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(includes))
+        self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(includes,includes))
       else:
         self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(includes))
     
