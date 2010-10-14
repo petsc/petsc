@@ -305,6 +305,13 @@ namespace ALE {
     int getFiberDimension(const point_type& p) {
       return this->_atlas->restrictPoint(p)[0];
     };
+    int size() {
+      int s = 0;
+      for(int p = this->_sieve->getChart().min(); p < this->_sieve->getChart().max(); ++p) {
+        s += this->getFiberDimension(p);
+      }
+      return s;
+    };
   public: // Restriction and update
     const value_type *restrictPoint(const point_type& p) {
       this->_cV->clear();
