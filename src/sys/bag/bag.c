@@ -351,7 +351,7 @@ PetscErrorCode PetscBagRegisterBool(PetscBag bag,void *addr,PetscBool  mdefault,
   if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next   = 0;
   item->msize  = 1;
-  *(PetscBool *)addr = mdefault;
+  *(PetscBool*)addr = mdefault;
   ierr = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -442,7 +442,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscBagSetFromOptions(PetscBag bag)
         while (nitem->list[i++]);
         ierr = PetscOptionsEnum(name,nitem->help,nitem->list[i-3],nitem->list,*value,value,PETSC_NULL);CHKERRQ(ierr);
       } else if (nitem->dtype == PETSC_BOOL) {
-        PetscBool  *value = (PetscBool *)(((char*)bag) + nitem->offset);
+        PetscBool  *value = (PetscBool*)(((char*)bag) + nitem->offset);
         ierr = PetscOptionsBool(name,nitem->help,"",*value,value,PETSC_NULL);CHKERRQ(ierr);
       }
       nitem = nitem->next;
@@ -508,7 +508,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
         PetscInt value = *(PetscInt*)(((char*)bag) + nitem->offset);
         ierr = PetscViewerASCIIPrintf(view,"  %s = %D; %s\n",nitem->name,value,nitem->help);CHKERRQ(ierr);
       } else if (nitem->dtype == PETSC_BOOL) {
-        PetscBool  value = *(PetscBool *)(((char*)bag) + nitem->offset);
+        PetscBool  value = *(PetscBool*)(((char*)bag) + nitem->offset);
         /* some Fortran compilers use -1 as boolean */
         if (((int) value) == -1) value = PETSC_TRUE;
         /* the checks here with != PETSC_FALSE and PETSC_TRUE is a special case; here we truly demand that the value be 0 or 1 */

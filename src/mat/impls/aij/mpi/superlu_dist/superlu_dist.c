@@ -636,7 +636,7 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
       options.PrintStat = NO;
     }
     ierr = PetscOptionsBool("-mat_superlu_dist_statprint","Print factorization information","None",
-                              (PetscBool)options.PrintStat,(PetscBool *)&options.PrintStat,0);CHKERRQ(ierr); 
+                              (PetscBool)options.PrintStat,(PetscBool*)&options.PrintStat,0);CHKERRQ(ierr); 
   PetscOptionsEnd();
 
   lu->options             = options; 
