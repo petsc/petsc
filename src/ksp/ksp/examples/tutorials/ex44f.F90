@@ -1,7 +1,7 @@
       program main   !   Solves the linear system  J x = f
 #include "finclude/petscdef.h"
       use petscksp; use petscda
-      Vec x,f; Mat J; DA da; KSP ksp; PetscErrorCode ierr
+      Vec x,f; Mat J; DM da; KSP ksp; PetscErrorCode ierr
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
       call DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,8,1,1,PETSC_NULL_INTEGER,da,ierr)
@@ -17,13 +17,13 @@
       call KSPSolve(ksp,f,x,ierr)
 
       call MatDestroy(J,ierr); call VecDestroy(x,ierr); call VecDestroy(f,ierr)
-      call KSPDestroy(ksp,ierr); call DADestroy(da,ierr)
+      call KSPDestroy(ksp,ierr); call DMDestroy(da,ierr)
       call PetscFinalize(ierr)
       end
       subroutine  ComputeRHS(da,x,ierr)
 #include "finclude/petscdef.h"
       use petscda
-      DA da; Vec x; PetscErrorCode ierr; PetscInt xs,xm,i,mx; PetscScalar hx; PetscScalar, pointer :: xx(:)
+      DM da; Vec x; PetscErrorCode ierr; PetscInt xs,xm,i,mx; PetscScalar hx; PetscScalar, pointer :: xx(:)
       call DAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       call DAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       hx     = 1.d0/(mx-1)
@@ -37,7 +37,7 @@
       subroutine ComputeMatrix(da,J,ierr)
 #include "finclude/petscdef.h"
       use petscda
-      Mat J; DA da; PetscErrorCode ierr; PetscInt xs,xm,i,mx; PetscScalar hx
+      Mat J; DM da; PetscErrorCode ierr; PetscInt xs,xm,i,mx; PetscScalar hx
       call DAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       call DAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       hx     = 1.d0/(mx-1)

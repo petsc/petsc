@@ -224,7 +224,7 @@ c      call flush(6)
       call VecDestroy(ctx(2),ierr)
       call MatDestroy(J,ierr)
       call SNESDestroy(snes,ierr)
-      call DADestroy(ctx(1),ierr)
+      call DMDestroy(ctx(1),ierr)
       call PetscFinalize(ierr)
       end
 
@@ -251,8 +251,8 @@ c      call flush(6)
       rank  = ctx(4)
       size  = ctx(5)
       h     = 1.d0/(ctx(6) - 1.d0)
-      call DAGlobalToLocalBegin(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
-      call DAGlobalToLocalEnd(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
+      call DMGlobalToLocalBegin(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
+      call DMGlobalToLocalEnd(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
 
       call VecGetLocalSize(ctx(3),n,ierr)
       if (n .gt. 1000) then 

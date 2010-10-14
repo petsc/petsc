@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   MPI_Comm       comm;
   SNES           snes;
-  DA             da1,da2;
+  DM             da1,da2;
   DM             pack;
   PetscBool      couple = PETSC_FALSE;
 
@@ -100,8 +100,8 @@ int main(int argc,char **argv)
      Free spaces 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDestroy(pack);CHKERRQ(ierr);
-  ierr = DADestroy(da1);CHKERRQ(ierr);
-  ierr = DADestroy(da2);CHKERRQ(ierr);
+  ierr = DMDestroy(da1);CHKERRQ(ierr);
+  ierr = DMDestroy(da2);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg_comp);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
@@ -123,7 +123,7 @@ PetscErrorCode FormInitialGuessComp(DMMG dmmg,Vec X)
   Field1         **x1;
   Field2         **x2;
   DALocalInfo    info1,info2;
-  DA             da1,da2;
+  DM             da1,da2;
 
   PetscFunctionBegin;
   ierr = DMCompositeGetEntries(dm,&da1,&da2);CHKERRQ(ierr);
@@ -158,7 +158,7 @@ PetscErrorCode FormFunctionComp(SNES snes,Vec X,Vec F,void *ctx)
   AppCtx         *user = (AppCtx*)dmmg->user;
   DM             dm = dmmg->dm;
   DALocalInfo    info1,info2;
-  DA             da1,da2;
+  DM             da1,da2;
   Field1         **x1,**f1;
   Field2         **x2,**f2;
   Vec            X1,X2,F1,F2;
@@ -207,7 +207,7 @@ PetscErrorCode FormCoupleLocations(DM dmcomposite,Mat A,PetscInt *dnz,PetscInt *
 {
   PetscInt       i,j,cols[2],istart,jstart,in,jn,row,col,M;
   PetscErrorCode ierr;
-  DA             da1,da2;
+  DM             da1,da2;
 
   PetscFunctionBegin;
   ierr =  DMCompositeGetEntries(dmcomposite,&da1,&da2);CHKERRQ(ierr);

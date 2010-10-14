@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   DM             packer;
   Vec            global,local1,local2;
   PF             pf;
-  DA             da1,da2;
+  DM             da1,da2;
   PetscViewer    sviewer;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
@@ -83,8 +83,8 @@ int main(int argc,char **argv)
   ierr = PetscFree(ridx2);CHKERRQ(ierr);
   ierr = PetscFree(lidx2);CHKERRQ(ierr);
 
-  ierr = DADestroy(da1);CHKERRQ(ierr);
-  ierr = DADestroy(da2);CHKERRQ(ierr);
+  ierr = DMDestroy(da1);CHKERRQ(ierr);
+  ierr = DMDestroy(da2);CHKERRQ(ierr);
   ierr = VecDestroy(local1);CHKERRQ(ierr);
   ierr = VecDestroy(local2);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);

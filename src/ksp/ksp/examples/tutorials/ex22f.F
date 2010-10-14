@@ -28,7 +28,7 @@
 #include "finclude/petscda.h"
       DMMG             dmmg
       PetscErrorCode   ierr
-      DA               da
+      DM               da
       external         ComputeRHS,ComputeJacobian
       Vec              x
       PetscInt i1,i3
@@ -43,7 +43,7 @@
      &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                        &
      &                PETSC_NULL_INTEGER,da,ierr)  
       call DMMGSetDM(dmmg,da,ierr)
-      call DADestroy(da,ierr)
+      call DMDestroy(da,ierr)
 
 
       call DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian,ierr)
@@ -70,7 +70,7 @@
       PetscScalar  h
       Vec          b
       DMMG         dmmg
-      DA           da
+      DM           da
 
       call DMMGGetDM(dmmg,da,ierr)
       call DAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                        &
@@ -97,7 +97,7 @@
       Mat          jac,JJ
       PetscErrorCode    ierr
 
-      DA           da
+      DM           da
       PetscInt    i,j,k,mx,my,mz,xm
       PetscInt    ym,zm,xs,ys,zs,i1,i7
       PetscScalar  v(7),Hx,Hy,Hz

@@ -48,7 +48,7 @@ T*/
    FormFunctionLocal().
 */
 typedef struct {
-  DA          da; /* distributed array data structure */
+  DM          da; /* distributed array data structure */
   PassiveReal D;  /* The diffusion coefficient */
   PassiveReal K;  /* The advection coefficient */
   PetscInt    m;  /* Exponent for A */
@@ -242,7 +242,7 @@ PetscScalar funcADer(PetscScalar z, AppCtx *user)
 */
 PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
 {
-  DA             coordDA;
+  DM             coordDA;
   Vec            coordinates;
   DACoor2d     **coords;
   PetscScalar    u, ux, uy, uxx, uyy;

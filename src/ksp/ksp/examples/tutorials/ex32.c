@@ -52,7 +52,7 @@ typedef struct {
 int main(int argc,char **argv)
 {
   DMMG           *dmmg;
-  DA             da;
+  DM             da;
   UserContext    user;
   PetscReal      norm;
   const char     *bcTypes[2] = {"dirichlet","neumann"};
@@ -66,7 +66,7 @@ int main(int argc,char **argv)
   ierr = DASetInterpolationType(da, DA_Q0);CHKERRQ(ierr);  
   
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   for (l = 0; l < DMMGGetLevels(dmmg); l++) {
     ierr = DMMGSetUser(dmmg,l,&user);CHKERRQ(ierr);
   }
@@ -100,7 +100,7 @@ int main(int argc,char **argv)
 #define __FUNCT__ "ComputeRHS"
 PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 {
-  DA             da = (DA)dmmg->dm;
+  DM             da = dmmg->dm;
   UserContext    *user = (UserContext *) dmmg->user;
   PetscErrorCode ierr;
   PetscInt       i,j,mx,my,xm,ym,xs,ys;
@@ -139,7 +139,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 #define __FUNCT__ "ComputeMatrix"
 PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
 {
-  DA             da = (DA) dmmg->dm;
+  DM             da =  dmmg->dm;
   UserContext    *user = (UserContext *) dmmg->user;
   PetscErrorCode ierr;
   PetscInt       i,j,mx,my,xm,ym,xs,ys,num, numi, numj;

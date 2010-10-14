@@ -14,7 +14,7 @@
 
       DMMG             dmmg
       PetscErrorCode   ierr
-      DA               da
+      DM               da
       external         FormFunctionLocal
 
 
@@ -29,7 +29,7 @@
 
       call DMMGCreate(PETSC_COMM_WORLD,1,PETSC_NULL_OBJECT,dmmg,ierr)
       call DMMGSetDM(dmmg,da,ierr)
-      call DADestroy(da,ierr)
+      call DMDestroy(da,ierr)
 
       call DMMGSetSNESLocal(dmmg,FormFunctionLocal,                                 &
      &             PETSC_NULL_FUNCTION,0,0,ierr)

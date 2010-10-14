@@ -107,7 +107,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   PetscInt       nlevels,i,j;
-  DA             da;
+  DM             da;
   DMMG           *dmmg;
   DM             packer;
   AppCtx         *appctx;
@@ -138,7 +138,7 @@ int main(int argc,char **argv)
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
 
   /* create nonlinear multi-level solver */
   ierr = DMMGCreate(PETSC_COMM_WORLD,2,PETSC_NULL,&dmmg);CHKERRQ(ierr);
@@ -203,7 +203,7 @@ int main(int argc,char **argv)
  
 /*
      Enforces the PDE on the grid
-     This local function acts on the ghosted version of U (accessed via DAGetLocalVector())
+     This local function acts on the ghosted version of U (accessed via DMGetLocalVector())
      BUT the global, nonghosted version of FU
 
      Process adiC(36): PDEFormFunctionLocal
@@ -251,7 +251,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   PetscInt       xs,xm,i,N,nredundant;
   PetscScalar    *u,*w,*fw,*fu,*lambda,*flambda,d,h,h2;
   Vec            vu,vlambda,vfu,vflambda,vglambda;
-  DA             da;
+  DM             da;
   DM             packer = (DM)dmmg->dm;
   PetscBool      useadic = PETSC_TRUE;
 #if defined(PETSC_HAVE_ADIC)

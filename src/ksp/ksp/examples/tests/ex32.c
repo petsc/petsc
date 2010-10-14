@@ -14,8 +14,8 @@ static char help[] = "Solves 3D Laplacian using wirebasket based multigrid.\n\n"
 #include "petscksp.h"
 #include "petscmg.h"
 
-extern PetscErrorCode ComputeMatrix(DA,Mat);
-extern PetscErrorCode ComputeRHS(DA,Vec);
+extern PetscErrorCode ComputeMatrix(DM,Mat);
+extern PetscErrorCode ComputeRHS(DM,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   KSP            ksp;
   PC             pc;
   Vec            x,b;
-  DA             da;
+  DM             da;
   Mat            A,Atrans;
   PetscInt       dof=1,M=-8;
   PetscBool      flg,trans=PETSC_FALSE;
@@ -44,11 +44,11 @@ int main(int argc,char **argv)
   ierr = DASetDof(da,dof);CHKERRQ(ierr);
   ierr = DASetStencilWidth(da,1);CHKERRQ(ierr);
   ierr = DASetOwnershipRanges(da,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DASetFromOptions(da);CHKERRQ(ierr);
-  ierr = DASetUp(da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
 
-  ierr = DACreateGlobalVector(da,&x);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&b);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&b);CHKERRQ(ierr);
   ierr = ComputeRHS(da,b);CHKERRQ(ierr);
   ierr = DAGetMatrix(da,MATBAIJ,&A);CHKERRQ(ierr);
   ierr = ComputeMatrix(da,A);CHKERRQ(ierr);
@@ -101,14 +101,14 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-PetscErrorCode ComputeRHS(DA da,Vec b)
+PetscErrorCode ComputeRHS(DM da,Vec b)
 {
   PetscErrorCode ierr;
   PetscInt       mx,my,mz;
@@ -123,7 +123,7 @@ PetscErrorCode ComputeRHS(DA da,Vec b)
     
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(DA da,Mat B)
+PetscErrorCode ComputeMatrix(DM da,Mat B)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,dof,k1,k2,k3;

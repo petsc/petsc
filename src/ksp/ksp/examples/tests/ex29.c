@@ -32,7 +32,7 @@ static char help[] ="Tests ML interface. Modified from ~src/ksp/ksp/examples/tes
 typedef struct {
   PetscInt   mx,my;            /* number grid points in x and y direction */
   Vec        localX,localF;    /* local vectors with ghost region */
-  DA         da;
+  DM         da;
   Vec        x,b,r;            /* global vectors */
   Mat        J;                /* Jacobian on grid */
   Mat        A,P,R;
@@ -106,7 +106,7 @@ int main(int argc,char **argv)
   /* free data structures */
   ierr = VecDestroy(fine_ctx.x);CHKERRQ(ierr);
   ierr = VecDestroy(fine_ctx.b);CHKERRQ(ierr);
-  ierr = DADestroy(fine_ctx.da);CHKERRQ(ierr);
+  ierr = DMDestroy(fine_ctx.da);CHKERRQ(ierr);
   ierr = VecDestroy(fine_ctx.localX);CHKERRQ(ierr);
   ierr = VecDestroy(fine_ctx.localF);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr); 

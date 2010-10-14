@@ -67,8 +67,8 @@ Options: \n\
 #include "petscksp.h"
 #include "petscda.h"
 
-static PetscErrorCode DABCApplyCompression(DA,Mat,Vec);
-static PetscErrorCode DABCApplySymmetricCompression(DA elas_da,Mat A,Vec f,IS *dofs,Mat *AA,Vec *ff);
+static PetscErrorCode DABCApplyCompression(DM,Mat,Vec);
+static PetscErrorCode DABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS *dofs,Mat *AA,Vec *ff);
 
 
 #define NSD            2 /* number of spatial dimensions */
@@ -194,7 +194,7 @@ static void ConstructGaussQuadrature(PetscInt *ngp,PetscScalar gp_xi[][2],PetscS
 /* procs to the left claim the ghost node as their element */
 #undef __FUNCT__
 #define __FUNCT__ "DAGetLocalElementSize"
-static PetscErrorCode DAGetLocalElementSize(DA da,PetscInt *mxl,PetscInt *myl,PetscInt *mzl)
+static PetscErrorCode DAGetLocalElementSize(DM da,PetscInt *mxl,PetscInt *myl,PetscInt *mzl)
 {
   PetscErrorCode ierr;
   PetscInt m,n,p,M,N,P;
@@ -236,7 +236,7 @@ static PetscErrorCode DAGetLocalElementSize(DA da,PetscInt *mxl,PetscInt *myl,Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "DAGetElementCorners"
-static PetscErrorCode DAGetElementCorners(DA da,
+static PetscErrorCode DAGetElementCorners(DM da,
                                           PetscInt *sx,PetscInt *sy,PetscInt *sz,
                                           PetscInt *mx,PetscInt *my,PetscInt *mz)
 {
@@ -273,7 +273,7 @@ static PetscErrorCode DAGetElementCorners(DA da,
 
 #undef __FUNCT__
 #define __FUNCT__ "DAGetElementOwnershipRanges2d"
-static PetscErrorCode DAGetElementOwnershipRanges2d(DA da,PetscInt **_lx,PetscInt **_ly)
+static PetscErrorCode DAGetElementOwnershipRanges2d(DM da,PetscInt **_lx,PetscInt **_ly)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -346,9 +346,9 @@ static PetscErrorCode DAGetElementOwnershipRanges2d(DA da,PetscInt **_lx,PetscIn
 
 #undef __FUNCT__
 #define __FUNCT__ "DACoordViewGnuplot2d"
-static PetscErrorCode DACoordViewGnuplot2d(DA da,const char prefix[])
+static PetscErrorCode DACoordViewGnuplot2d(DM da,const char prefix[])
 {
-  DA             cda;
+  DM             cda;
   Vec            coords;
   DACoor2d       **_coords;
   PetscInt       si,sj,nx,ny,i,j;
@@ -387,10 +387,10 @@ static PetscErrorCode DACoordViewGnuplot2d(DA da,const char prefix[])
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DAViewGnuplot2d"
-static PetscErrorCode DAViewGnuplot2d(DA da,Vec fields,const char comment[],const char prefix[])
+#define __FUNCT__ "DMDAViewGnuplot2d"
+static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],const char prefix[])
 {
-  DA             cda;
+  DM             cda;
   Vec            coords,local_fields;
   DACoor2d       **_coords;
   FILE           *fp;
@@ -426,8 +426,8 @@ static PetscErrorCode DAViewGnuplot2d(DA da,Vec fields,const char comment[],cons
   ierr = DAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
 
   ierr = DACreateLocalVector(da,&local_fields);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,fields,INSERT_VALUES,local_fields);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,fields,INSERT_VALUES,local_fields);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,fields,INSERT_VALUES,local_fields);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,fields,INSERT_VALUES,local_fields);CHKERRQ(ierr);
   ierr = VecGetArray(local_fields,&_fields);CHKERRQ(ierr);
 
   for (j = sj; j < sj+ny; j++) {
@@ -456,10 +456,10 @@ static PetscErrorCode DAViewGnuplot2d(DA da,Vec fields,const char comment[],cons
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DAViewCoefficientsGnuplot2d"
-static PetscErrorCode DAViewCoefficientsGnuplot2d(DA da,Vec fields,const char comment[],const char prefix[])
+#define __FUNCT__ "DMDAViewCoefficientsGnuplot2d"
+static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da,Vec fields,const char comment[],const char prefix[])
 {
-  DA                     cda;
+  DM                     cda;
   Vec                    local_fields;
   FILE                   *fp;
   char                   fname[PETSC_MAX_PATH_LEN];
@@ -490,8 +490,8 @@ static PetscErrorCode DAViewCoefficientsGnuplot2d(DA da,Vec fields,const char co
   ierr = DAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
 
   ierr = DACreateLocalVector(da,&local_fields);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,fields,INSERT_VALUES,local_fields);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,fields,INSERT_VALUES,local_fields);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,fields,INSERT_VALUES,local_fields);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,fields,INSERT_VALUES,local_fields);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,local_fields,&_coefficients);CHKERRQ(ierr);
 
   for (j = sj; j < sj+ny; j++) {
@@ -651,9 +651,9 @@ static PetscErrorCode GetElementCoords(DACoor2d **_coords,PetscInt ei,PetscInt e
 
 #undef __FUNCT__
 #define __FUNCT__ "AssembleA_Elasticity"
-static PetscErrorCode AssembleA_Elasticity(Mat A,DA elas_da,DA properties_da,Vec properties)
+static PetscErrorCode AssembleA_Elasticity(Mat A,DM elas_da,DM properties_da,Vec properties)
 {
-  DA                     cda;
+  DM                     cda;
   Vec                    coords;
   DACoor2d               **_coords;
   MatStencil             u_eqn[NODES_PER_EL*U_DOFS]; /* 2 degrees of freedom */
@@ -674,8 +674,8 @@ static PetscErrorCode AssembleA_Elasticity(Mat A,DA elas_da,DA properties_da,Vec
 
   /* setup for coefficients */
   ierr = DACreateLocalVector(properties_da,&local_properties);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(properties_da,properties,INSERT_VALUES,local_properties);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(properties_da,properties,INSERT_VALUES,local_properties);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(properties_da,properties,INSERT_VALUES,local_properties);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(properties_da,properties,INSERT_VALUES,local_properties);CHKERRQ(ierr);
   ierr = DAVecGetArray(properties_da,local_properties,&props);CHKERRQ(ierr);
 
   ierr = DAGetElementCorners(elas_da,&sex,&sey,0,&mx,&my,0);CHKERRQ(ierr);
@@ -727,9 +727,9 @@ static PetscErrorCode DASetValuesLocalStencil_ADD_VALUES(ElasticityDOF **fields_
 
 #undef __FUNCT__
 #define __FUNCT__ "AssembleF_Elasticity"
-static PetscErrorCode AssembleF_Elasticity(Vec F,DA elas_da,DA properties_da,Vec properties)
+static PetscErrorCode AssembleF_Elasticity(Vec F,DM elas_da,DM properties_da,Vec properties)
 {
-  DA                     cda;
+  DM                     cda;
   Vec                    coords;
   DACoor2d               **_coords;
   MatStencil             u_eqn[NODES_PER_EL*U_DOFS]; /* 2 degrees of freedom */
@@ -751,13 +751,13 @@ static PetscErrorCode AssembleF_Elasticity(Vec F,DA elas_da,DA properties_da,Vec
   ierr = DAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   /* setup for coefficients */
-  ierr = DAGetLocalVector(properties_da,&local_properties);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(properties_da,properties,INSERT_VALUES,local_properties);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(properties_da,properties,INSERT_VALUES,local_properties);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(properties_da,&local_properties);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(properties_da,properties,INSERT_VALUES,local_properties);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(properties_da,properties,INSERT_VALUES,local_properties);CHKERRQ(ierr);
   ierr = DAVecGetArray(properties_da,local_properties,&props);CHKERRQ(ierr);
 
   /* get acces to the vector */
-  ierr = DAGetLocalVector(elas_da,&local_F);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(elas_da,&local_F);CHKERRQ(ierr);
   ierr = VecZeroEntries(local_F);CHKERRQ(ierr);
   ierr = DAVecGetArray(elas_da,local_F,&ff);CHKERRQ(ierr);
 
@@ -786,14 +786,14 @@ static PetscErrorCode AssembleF_Elasticity(Vec F,DA elas_da,DA properties_da,Vec
   }
 
   ierr = DAVecRestoreArray(elas_da,local_F,&ff);CHKERRQ(ierr);
-  ierr = DALocalToGlobalBegin(elas_da,local_F,F);CHKERRQ(ierr);
-  ierr = DALocalToGlobalEnd(elas_da,local_F,F);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(elas_da,&local_F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(elas_da,local_F,ADD_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(elas_da,local_F,ADD_VALUES,F);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(elas_da,&local_F);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(properties_da,local_properties,&props);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(properties_da,&local_properties);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(properties_da,&local_properties);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -801,11 +801,11 @@ static PetscErrorCode AssembleF_Elasticity(Vec F,DA elas_da,DA properties_da,Vec
 #define __FUNCT__ "solve_elasticity_2d"
 static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
 {
-  DA                     elas_da,da_prop;
+  DM                     elas_da,da_prop;
   PetscInt               u_dof,dof,stencil_width;
   Mat                    A;
   PetscInt               mxl,myl;
-  DA                     prop_cda,vel_cda;
+  DM                     prop_cda,vel_cda;
   Vec                    prop_coords,vel_coords;
   PetscInt               si,sj,nx,ny,i,j,p;
   Vec                    f,X;
@@ -1047,12 +1047,12 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   ierr = DAVecRestoreArray(vel_cda,vel_coords,&_vel_coords);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(da_prop,l_properties,&element_props);CHKERRQ(ierr);
-  ierr = DALocalToGlobalBegin(da_prop,l_properties,properties);CHKERRQ(ierr);
-  ierr = DALocalToGlobalEnd(da_prop,l_properties,properties);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da_prop,l_properties,ADD_VALUES,properties);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da_prop,l_properties,ADD_VALUES,properties);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-no_view",&no_view,PETSC_NULL);CHKERRQ(ierr);
   if (!no_view) {
-    ierr = DAViewCoefficientsGnuplot2d(da_prop,properties,"Coeffcients for elasticity eqn.","properties");CHKERRQ(ierr);
+    ierr = DMDAViewCoefficientsGnuplot2d(da_prop,properties,"Coeffcients for elasticity eqn.","properties");CHKERRQ(ierr);
     ierr = DACoordViewGnuplot2d(elas_da,"mesh");CHKERRQ(ierr);
   }
 
@@ -1109,15 +1109,15 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
     ierr = KSPSolve(ksp_E,f,X);CHKERRQ(ierr);
   }
 
-  if (!no_view) {ierr = DAViewGnuplot2d(elas_da,X,"Displacement solution for elasticity eqn.","X");CHKERRQ(ierr);}
+  if (!no_view) {ierr = DMDAViewGnuplot2d(elas_da,X,"Displacement solution for elasticity eqn.","X");CHKERRQ(ierr);}
   ierr = KSPDestroy(ksp_E);CHKERRQ(ierr);
 
   ierr = VecDestroy(X);CHKERRQ(ierr);
   ierr = VecDestroy(f);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
 
-  ierr = DADestroy(elas_da);CHKERRQ(ierr);
-  ierr = DADestroy(da_prop);CHKERRQ(ierr);
+  ierr = DMDestroy(elas_da);CHKERRQ(ierr);
+  ierr = DMDestroy(da_prop);CHKERRQ(ierr);
 
   ierr = VecDestroy(properties);CHKERRQ(ierr);
   ierr = VecDestroy(l_properties);CHKERRQ(ierr);
@@ -1148,9 +1148,9 @@ int main(int argc,char **args)
 
 #undef __FUNCT__
 #define __FUNCT__ "BCApply_EAST"
-static PetscErrorCode BCApply_EAST(DA da,PetscInt d_idx,PetscScalar bc_val,Mat A,Vec b)
+static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A,Vec b)
 {
-  DA             cda;
+  DM             cda;
   Vec            coords;
   PetscInt       si,sj,nx,ny,i,j;
   PetscInt       M,N;
@@ -1220,9 +1220,9 @@ static PetscErrorCode BCApply_EAST(DA da,PetscInt d_idx,PetscScalar bc_val,Mat A
 
 #undef __FUNCT__
 #define __FUNCT__ "BCApply_WEST"
-static PetscErrorCode BCApply_WEST(DA da,PetscInt d_idx,PetscScalar bc_val,Mat A,Vec b)
+static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A,Vec b)
 {
-  DA             cda;
+  DM             cda;
   Vec            coords;
   PetscInt       si,sj,nx,ny,i,j;
   PetscInt       M,N;
@@ -1292,7 +1292,7 @@ static PetscErrorCode BCApply_WEST(DA da,PetscInt d_idx,PetscScalar bc_val,Mat A
 
 #undef __FUNCT__
 #define __FUNCT__ "DABCApplyCompression"
-static PetscErrorCode DABCApplyCompression(DA elas_da,Mat A,Vec f)
+static PetscErrorCode DABCApplyCompression(DM elas_da,Mat A,Vec f)
 {
   PetscErrorCode ierr;
 
@@ -1306,7 +1306,7 @@ static PetscErrorCode DABCApplyCompression(DA elas_da,Mat A,Vec f)
 
 #undef __FUNCT__
 #define __FUNCT__ "DABCApplySymmetricCompression"
-static PetscErrorCode DABCApplySymmetricCompression(DA elas_da,Mat A,Vec f,IS *dofs,Mat *AA,Vec *ff)
+static PetscErrorCode DABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS *dofs,Mat *AA,Vec *ff)
 {
   PetscErrorCode ierr;
   PetscInt start,end,m;

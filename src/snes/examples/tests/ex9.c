@@ -31,7 +31,7 @@ typedef struct {
     PetscReal param;           /* test problem nonlinearity parameter */
     PetscInt  mx,my,mz;      /* discretization in x,y,z-directions */
     Vec       localX,localF;  /* ghosted local vectors */
-    DA        da;              /* distributed array datastructure */
+    DM        da;              /* distributed array datastructure */
 } AppCtx;
 
 extern PetscErrorCode  FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(AppCtx*,Vec);
@@ -100,7 +100,7 @@ int main(int argc,char **argv)
   /* Free data structures */
   ierr = VecDestroy(user.localX);CHKERRQ(ierr);
   ierr = VecDestroy(user.localF);CHKERRQ(ierr);
-  ierr = DADestroy(user.da);CHKERRQ(ierr);
+  ierr = DMDestroy(user.da);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr); ierr = VecDestroy(r);CHKERRQ(ierr);
   ierr = MatDestroy(J);CHKERRQ(ierr); ierr = SNESDestroy(snes);CHKERRQ(ierr);
 
@@ -142,7 +142,8 @@ PetscErrorCode  FormInitialGuess1(AppCtx *user,Vec X)
 
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
   /* stick values into global vector */
-  ierr = DALocalToGlobal(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   return 0;
 }/* --------------------  Evaluate Function F(x) --------------------- */
 #undef __FUNCT__
@@ -163,8 +164,8 @@ PetscErrorCode  FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   sc      = Hx*Hy*Hz*lambda; HxHzdHy  = Hx*Hz/Hy; HyHzdHx  = Hy*Hz/Hx;
   HxHydHz = Hx*Hy/Hz;
 
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);
+  ierr = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);
+  ierr = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
   ierr = VecGetArray(localF,&f);CHKERRQ(ierr);
 
@@ -193,7 +194,8 @@ PetscErrorCode  FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(localF,&f);CHKERRQ(ierr);
   /* stick values into global vector */
-  ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm*zm);CHKERRQ(ierr);
   return 0; 
 }

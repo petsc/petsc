@@ -9,7 +9,7 @@ int main(int argc,char **argv)
 {
   PetscInt       M1 = 3,M2,dof = 1,s = 1,ratio = 2,dim = 1;
   PetscErrorCode ierr;
-  DA             da_c,da_f;
+  DM             da_c,da_f;
   Vec            v_c,v_f;
   Mat            I;
   PetscScalar    one = 1.0;
@@ -59,9 +59,9 @@ int main(int argc,char **argv)
 
   ierr = MatDestroy(I);CHKERRQ(ierr);
   ierr = VecDestroy(v_c);CHKERRQ(ierr);
-  ierr = DADestroy(da_c);CHKERRQ(ierr);
+  ierr = DMDestroy(da_c);CHKERRQ(ierr);
   ierr = VecDestroy(v_f);CHKERRQ(ierr);
-  ierr = DADestroy(da_f);CHKERRQ(ierr);
+  ierr = DMDestroy(da_f);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

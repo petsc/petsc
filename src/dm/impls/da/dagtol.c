@@ -7,39 +7,8 @@
 #include "private/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGlobalToLocalBegin"
-/*@
-   DAGlobalToLocalBegin - Maps values from the global vector to the local
-   patch; the ghost points are included. Must be followed by 
-   DAGlobalToLocalEnd() to complete the exchange.
-
-   Neighbor-wise Collective on DA
-
-   Input Parameters:
-+  da - the distributed array context
-.  g - the global vector
--  mode - one of INSERT_VALUES or ADD_VALUES
-
-   Output Parameter:
-.  l  - the local values
-
-   Level: beginner
-
-   Notes:
-   The global and local vectors used here need not be the same as those
-   obtained from DACreateGlobalVector() and DACreateLocalVector(), BUT they
-   must have the same parallel data layout; they could, for example, be 
-   obtained with VecDuplicate() from the DA originating vectors.
-
-.keywords: distributed array, global to local, begin
-
-.seealso: DAGlobalToLocalEnd(), DALocalToGlobal(), DACreate2d(), 
-          DALocalToLocalBegin(), DALocalToLocalEnd(),
-          DALocalToGlobalBegin(), DALocalToGlobalEnd()
-          
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
+#define __FUNCT__ "DMGlobalToLocalBegin_DA"
+PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalBegin_DA(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -52,125 +21,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToLocalBegin(DA da,Vec g,InsertMode mod
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "DALocalToGlobalBegin"
-/*@
-   DALocalToGlobalBegin - Adds values from the local (ghosted) vector
-   into the global (nonghosted) vector.
-
-   Neighbor-wise Collective on DA
-
-   Input Parameters:
-+  da - the distributed array context
--  l  - the local values
-
-   Output Parameter:
-.  g - the global vector
-
-   Level: beginner
-
-   Notes:
-   Use DALocalToGlobal() to discard the ghost point values
-
-   The global and local vectors used here need not be the same as those
-   obtained from DACreateGlobalVector() and DACreateLocalVector(), BUT they
-   must have the same parallel data layout; they could, for example, be 
-   obtained with VecDuplicate() from the DA originating vectors.
-
-.keywords: distributed array, global to local, begin
-
-.seealso: DAGlobalToLocalEnd(), DALocalToGlobal(), DACreate2d(), 
-          DALocalToLocalBegin(), DALocalToLocalEnd(), DALocalToGlobalEnd()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DALocalToGlobalBegin(DA da,Vec l,Vec g)
-{
-  PetscErrorCode ierr;
-  DM_DA          *dd = (DM_DA*)da->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscValidHeaderSpecific(l,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(g,VEC_CLASSID,3);
-  ierr = VecScatterBegin(dd->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
-#define __FUNCT__ "DALocalToGlobalEnd"
-/*@
-   DALocalToGlobalEnd - Adds values from the local (ghosted) vector
-   into the global (nonghosted) vector.
-
-   Neighbor-wise Collective on DA
-
-   Input Parameters:
-+  da - the distributed array context
--  l  - the local values
-
-   Output Parameter:
-.  g - the global vector
-
-   Level: beginner
-
-   Notes:
-   Use DALocalToGlobal() to discard the ghost point values
-
-   The global and local vectors used here need not be the same as those
-   obtained from DACreateGlobalVector() and DACreateLocalVector(), BUT they
-   must have the same parallel data layout; they could, for example, be 
-   obtained with VecDuplicate() from the DA originating vectors.
-
-.keywords: distributed array, global to local, begin
-
-.seealso: DAGlobalToLocalEnd(), DALocalToGlobal(), DACreate2d(), 
-          DALocalToLocalBegin(), DALocalToLocalEnd(), DALocalToGlobalBegin()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DALocalToGlobalEnd(DA da,Vec l,Vec g)
-{
-  PetscErrorCode ierr;
-  DM_DA          *dd = (DM_DA*)da->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscValidHeaderSpecific(l,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(g,VEC_CLASSID,3);
-  ierr = VecScatterEnd(dd->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "DAGlobalToLocalEnd"
-/*@
-   DAGlobalToLocalEnd - Maps values from the global vector to the local
-   patch; the ghost points are included. Must be preceeded by 
-   DAGlobalToLocalBegin().
-
-   Neighbor-wise Collective on DA
-
-   Input Parameters:
-+  da - the distributed array context
-.  g - the global vector
--  mode - one of INSERT_VALUES or ADD_VALUES
-
-   Output Parameter:
-.  l  - the local values
-
-   Level: beginner
-
-   Notes:
-   The global and local vectors used here need not be the same as those
-   obtained from DACreateGlobalVector() and DACreateLocalVector(), BUT they
-   must have the same parallel data layout; they could, for example, be 
-   obtained with VecDuplicate() from the DA originating vectors.
-
-.keywords: distributed array, global to local, end
-
-.seealso: DAGlobalToLocalBegin(), DALocalToGlobal(), DACreate2d(),
-     DALocalToLocalBegin(), DALocalToLocalEnd(), DALocalToGlobalBegin(), DALocalToGlobalEnd()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
+#define __FUNCT__ "DMGlobalToLocalEnd_DA"
+PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd_DA(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -183,7 +37,45 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToLocalEnd(DA da,Vec g,InsertMode mode,
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode DAGetNatural_Private(DA,PetscInt*,IS*);
+#undef __FUNCT__  
+#define __FUNCT__ "DMLocalToGlobalBegin_DA"
+PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalBegin_DA(DM da,Vec l,InsertMode mode,Vec g)
+{
+  PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecific(l,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(g,VEC_CLASSID,3);
+  if (mode == ADD_VALUES) {
+    ierr = VecScatterBegin(dd->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  } else if (mode == INSERT_VALUES) {
+    ierr = VecScatterBegin(dd->ltog,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  } else SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not yet implemented");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMLocalToGlobalEnd_DA"
+PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalEnd_DA(DM da,Vec l,InsertMode mode,Vec g)
+{
+  PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecific(l,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(g,VEC_CLASSID,3);
+  if (mode == ADD_VALUES) {
+    ierr = VecScatterEnd(dd->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  } else if (mode == INSERT_VALUES) {
+    ierr = VecScatterEnd(dd->ltog,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  } else SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not yet implemented");
+  PetscFunctionReturn(0);
+}
+
+EXTERN PetscErrorCode DAGetNatural_Private(DM,PetscInt*,IS*);
 #undef __FUNCT__  
 #define __FUNCT__ "DAGlobalToNatural_Create"
 /*
@@ -201,10 +93,10 @@ EXTERN PetscErrorCode DAGetNatural_Private(DA,PetscInt*,IS*);
 
 .keywords: distributed array, global to local, begin
 
-.seealso: DAGlobalToNaturalBegin(), DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(), 
-          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
+.seealso: DAGlobalToNaturalBegin(), DAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DACreate2d(), 
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DACreateNaturalVector()
 */
-PetscErrorCode DAGlobalToNatural_Create(DA da)
+PetscErrorCode DAGlobalToNatural_Create(DM da)
 {
   PetscErrorCode ierr;
   PetscInt       m,start,Nlocal;
@@ -263,11 +155,11 @@ PetscErrorCode DAGlobalToNatural_Create(DA da)
 
 .keywords: distributed array, global to local, begin
 
-.seealso: DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(), 
-          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector(),
-          DALocalToGlobalBegin(), DALocalToGlobalEnd()
+.seealso: DAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DACreate2d(), 
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DACreateNaturalVector()
+
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalBegin(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalBegin(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -310,11 +202,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalBegin(DA da,Vec g,InsertMode m
 
 .keywords: distributed array, global to local, end
 
-.seealso: DAGlobalToNaturalBegin(), DALocalToGlobal(), DACreate2d(),
-          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector(),
-          DALocalToGlobalBegin(), DALocalToGlobalEnd()
+.seealso: DAGlobalToNaturalBegin(), DMLocalToGlobalBegin(), DACreate2d(),
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DACreateNaturalVector()
+
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalEnd(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalEnd(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -354,12 +246,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalEnd(DA da,Vec g,InsertMode mod
 
 .keywords: distributed array, global to local, begin
 
-.seealso: DAGlobalToNaturalEnd(), DAGlobalToNaturalBegin(), DALocalToGlobal(), DACreate2d(), 
-          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector(),
-          DALocalToGlobalBegin(), DALocalToGlobalEnd()
+.seealso: DAGlobalToNaturalEnd(), DAGlobalToNaturalBegin(), DMLocalToGlobalBegin(), DACreate2d(), 
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DACreateNaturalVector()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DANaturalToGlobalBegin(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode PETSCDM_DLLEXPORT DANaturalToGlobalBegin(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -402,12 +293,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DANaturalToGlobalBegin(DA da,Vec g,InsertMode m
 
 .keywords: distributed array, global to local, end
 
-.seealso: DAGlobalToNaturalBegin(), DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(),
-          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector(),
-          DALocalToGlobalBegin(), DALocalToGlobalEnd()
+.seealso: DAGlobalToNaturalBegin(), DAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DACreate2d(),
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DACreateNaturalVector()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DANaturalToGlobalEnd(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode PETSCDM_DLLEXPORT DANaturalToGlobalEnd(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;

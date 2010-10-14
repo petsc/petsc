@@ -11,7 +11,7 @@ int main(int argc,char **argv)
 {
   Mat            J;                   
   PetscErrorCode ierr; 
-  DA             da;
+  DM             da;
   MatFDColoring  matfdcoloring = 0;
   ISColoring     iscoloring;
 
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   /* free spaces */
   ierr = MatDestroy(J);CHKERRQ(ierr);
   ierr = MatFDColoringDestroy(matfdcoloring);CHKERRQ(ierr); 
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

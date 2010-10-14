@@ -34,7 +34,7 @@
    Fortran Note:
    This routine is used differently from Fortran
 .vb
-        DA          da
+        DM          da
         integer     n,da_array(1)
         PetscOffset i_da
         integer     ierr
@@ -48,11 +48,11 @@
 
 .keywords: distributed array, get, global, indices, local-to-global
 
-.seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlobal()
-          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToLocalBegin(), DAGetAO(), DAGetGlobalIndicesF90()
+.seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DMLocalToGlobalBegin()
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DALocalToLocalBegin(), DAGetAO(), DAGetGlobalIndicesF90()
           DAGetISLocalToGlobalMapping(), DACreate3d(), DACreate1d(), DALocalToLocalEnd(), DAGetOwnershipRanges()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetGlobalIndices(DA da,PetscInt *n,PetscInt **idx)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetGlobalIndices(DM da,PetscInt *n,PetscInt **idx)
 {
   DM_DA          *dd = (DM_DA*)da->data;
 
@@ -70,7 +70,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetGlobalIndices(DA da,PetscInt *n,PetscInt *
 
    Used by DAGetAO() and DAGlobalToNatural_Create()
 */
-PetscErrorCode DAGetNatural_Private(DA da,PetscInt *outNlocal,IS *isnatural)
+PetscErrorCode DAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
 {
   PetscErrorCode ierr;
   PetscInt       Nlocal,i,j,k,*lidx,lict = 0;
@@ -138,10 +138,10 @@ PetscErrorCode DAGetNatural_Private(DA da,PetscInt *outNlocal,IS *isnatural)
 .keywords: distributed array, get, global, indices, local-to-global
 
 .seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlocal()
-          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToLocalBegin(), DALocalToLocalEnd(), DAGetGlobalIndices(), DAGetOwnershipRanges(),
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DALocalToLocalBegin(), DALocalToLocalEnd(), DAGetGlobalIndices(), DAGetOwnershipRanges(),
           AO, AOPetscToApplication(), AOApplicationToPetsc()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAO(DA da,AO *ao)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetAO(DM da,AO *ao)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -174,7 +174,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAO(DA da,AO *ao)
     ghost nodes).
 
     Synopsis:
-    DAGetGlobalIndicesF90(DA da,integer n,{integer, pointer :: idx(:)},integer ierr)
+    DAGetGlobalIndicesF90(DM da,integer n,{integer, pointer :: idx(:)},integer ierr)
 
     Not Collective
 

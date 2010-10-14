@@ -110,7 +110,7 @@ extern PetscErrorCode Update(DMMG *);
 extern PetscErrorCode Initialize(DMMG *);
 extern PetscErrorCode AddTSTermLocal(DALocalInfo*,Field **,Field **,AppCtx *);
 extern PetscErrorCode AddTSTermLocal2(DALocalInfo*,Field **,Field **,AppCtx *);
-extern PetscErrorCode Gnuplot(DA, Vec, double);
+extern PetscErrorCode Gnuplot(DM, Vec, double);
 extern PetscErrorCode FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
 extern PetscErrorCode FormFunctionLocali4(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
 extern PetscErrorCode CreateNullSpace(DMMG,Vec*);
@@ -125,7 +125,7 @@ int main(int argc,char **argv)
   TstepCtx       tsCtx;       /* time-step parameters (one total) */
   Parameters      param;       /* physical parameters (one total) */
   PetscInt       i,m,n,mx,my;
-  DA             da;
+  DM             da;
   PetscReal      dt_ratio;
   PetscInt       dfill[16] = {1,0,1,0,
                               0,1,0,1,
@@ -158,7 +158,7 @@ int main(int argc,char **argv)
     ierr = DASetBlockFills(da,dfill,ofill);CHKERRQ(ierr);
 
     ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-    ierr = DADestroy(da);CHKERRQ(ierr);
+    ierr = DMDestroy(da);CHKERRQ(ierr);
 
     /* default physical parameters */
     param.nu    = 0;
@@ -179,19 +179,19 @@ int main(int argc,char **argv)
 
     ierr = PetscOptionsHasName(PETSC_NULL, "-second_order", &param.second_order);CHKERRQ(ierr);
 
-    ierr = DASetFieldName(DMMGGetDA(dmmg), 0, "phi");CHKERRQ(ierr);
+    ierr = DASetFieldName(DMMGGetDM(dmmg), 0, "phi");CHKERRQ(ierr);
 
-    ierr = DASetFieldName(DMMGGetDA(dmmg), 1, "psi");CHKERRQ(ierr);
+    ierr = DASetFieldName(DMMGGetDM(dmmg), 1, "psi");CHKERRQ(ierr);
 
-    ierr = DASetFieldName(DMMGGetDA(dmmg), 2, "U");CHKERRQ(ierr);
+    ierr = DASetFieldName(DMMGGetDM(dmmg), 2, "U");CHKERRQ(ierr);
 
-    ierr = DASetFieldName(DMMGGetDA(dmmg), 3, "F");CHKERRQ(ierr);
+    ierr = DASetFieldName(DMMGGetDM(dmmg), 3, "F");CHKERRQ(ierr);
 
     /*======================================================================*/
     /* Initialize stuff related to time stepping */
     /*======================================================================*/
 
-    ierr = DAGetInfo(DMMGGetDA(dmmg),0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+    ierr = DAGetInfo(DMMGGetDM(dmmg),0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 
     tsCtx.fnorm_ini   = 0;  
     tsCtx.max_steps   = 1000000;   
@@ -265,7 +265,7 @@ int main(int argc,char **argv)
       ierr = PetscPrintf(PETSC_COMM_WORLD, "# viscosity = %G, resistivity = %G, "
 			 "skin_depth # = %G, larmor_radius # = %G\n",
 			 param.nu, param.eta, param.d_e, param.rho_s);CHKERRQ(ierr);
-      ierr = DAGetInfo(DMMGGetDA(dmmg),0,&m,&n,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+      ierr = DAGetInfo(DMMGGetDM(dmmg),0,&m,&n,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Problem size %D by %D\n",m,n);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"dx %G dy %G dt %G ratio dt/min(dx,dy) %G\n",lx/mx,ly/my,tsCtx.dt,dt_ratio);CHKERRQ(ierr);
     }
@@ -306,7 +306,7 @@ int main(int argc,char **argv)
 #undef __FUNCT__
 #define __FUNCT__ "Gnuplot"
 /* ------------------------------------------------------------------- */
-PetscErrorCode Gnuplot(DA da, Vec X, double mtime)
+PetscErrorCode Gnuplot(DM da, Vec X, double mtime)
 {
   PetscInt       i,j,xs,ys,xm,ym;
   PetscInt       xints,xinte,yints,yinte;
@@ -351,7 +351,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
 {
   AppCtx         *appCtx = (AppCtx*)DMMGGetUser(dmmg,0);
   Parameters      *param = appCtx->param;
-  DA             da;
+  DM             da;
   PetscErrorCode ierr;
   PetscInt       i,j,mx,my,xs,ys,xm,ym;
   PetscReal      two = 2.0,one = 1.0;
@@ -375,7 +375,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
   rho_s = param->rho_s;
   de2   = sqr(param->d_e);
 
-  da   = (DA)(dmmg[param->mglevels-1]->dm);
+  da   = (dmmg[param->mglevels-1]->dm);
   ierr = DAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 
   dhx   = mx/lx;              dhy = my/ly;
@@ -390,7 +390,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
   */
   ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   /*
      Get a pointer to vector data.
        - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -452,14 +452,14 @@ PetscErrorCode Initialize(DMMG *dmmg)
   */
   ierr = DAVecRestoreArray(da,dmmg[param->mglevels-1]->x,&x);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,localX,&localx);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 } 
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMaxima"
-PetscErrorCode ComputeMaxima(DA da, Vec X, PetscReal t)
+PetscErrorCode ComputeMaxima(DM da, Vec X, PetscReal t)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,mx,my,xs,ys,xm,ym;
@@ -729,17 +729,17 @@ PetscErrorCode Update(DMMG *dmmg)
 
       if (1 && ts_monitor) {
 	/* compute maxima */
-	ComputeMaxima((DA) dmmg[param->mglevels-1]->dm,dmmg[param->mglevels-1]->x,tsCtx->t);
+	ComputeMaxima( dmmg[param->mglevels-1]->dm,dmmg[param->mglevels-1]->x,tsCtx->t);
 	/* output */
 	if (ic_out++ == (int)(tsCtx->dt_out / tsCtx->dt + .5)) {
 #ifdef HAVE_DA_HDF
           char fname[PETSC_MAX_PATH_LEN];
 
           sprintf(fname, "out-%G.hdf", tsCtx->t);
-          ierr = DAVecHDFOutput(DMMGGetDA(dmmg), DMMGGetx(dmmg), fname);CHKERRQ(ierr);
+          ierr = DAVecHDFOutput(DMMGGetDM(dmmg), DMMGGetx(dmmg), fname);CHKERRQ(ierr);
 #else
 /*
-          ierr = Gnuplot(DMMGGetDA(dmmg), DMMGGetx(dmmg), tsCtx->t);CHKERRQ(ierr);
+          ierr = Gnuplot(DMMGGetDM(dmmg), DMMGGetx(dmmg), tsCtx->t);CHKERRQ(ierr);
 */
 #endif
 	  ic_out = 1;
@@ -768,7 +768,7 @@ PetscErrorCode AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,AppCtx *user
 /*---------------------------------------------------------------------*/
 {
   TstepCtx       *tsCtx = user->tsCtx;
-  DA             da = info->da;
+  DM             da = info->da;
   PetscErrorCode ierr;
   PetscInt       i,j;
   PetscInt       xints,xinte,yints,yinte;
@@ -807,7 +807,7 @@ PetscErrorCode AddTSTermLocal2(DALocalInfo* info,Field **x,Field **f,AppCtx *use
 /*---------------------------------------------------------------------*/
 {
   TstepCtx       *tsCtx = user->tsCtx;
-  DA             da = info->da;
+  DM             da = info->da;
   PetscErrorCode ierr;
   PetscInt       i,j,xints,xinte,yints,yinte;
   PassiveReal    hx,hy,dhx,dhy,hxhy;

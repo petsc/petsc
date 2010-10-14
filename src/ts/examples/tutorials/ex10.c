@@ -37,7 +37,7 @@ typedef struct _n_RD *RD;
 
 struct _n_RD {
   void           (*MaterialEnergy)(RD,const RDNode*,PetscScalar*,RDNode*);
-  DA             da;
+  DM             da;
   PetscBool      monitor_residual;
   DiscretizationType discretization;
   QuadratureType quadrature;
@@ -68,7 +68,7 @@ static PetscErrorCode RDDestroy(RD rd)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DADestroy(rd->da);CHKERRQ(ierr);
+  ierr = DMDestroy(rd->da);CHKERRQ(ierr);
   ierr = PetscFree(rd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -262,14 +262,14 @@ static PetscErrorCode RDGetLocalArrays(RD rd,TS ts,Vec X,Vec Xdot,PetscReal *The
   PetscBool  istheta;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalVector(rd->da,X0loc);CHKERRQ(ierr);
-  ierr = DAGetLocalVector(rd->da,Xloc);CHKERRQ(ierr);
-  ierr = DAGetLocalVector(rd->da,Xloc_t);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(rd->da,X0loc);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(rd->da,Xloc);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(rd->da,Xloc_t);CHKERRQ(ierr);
 
-  ierr = DAGlobalToLocalBegin(rd->da,X,INSERT_VALUES,*Xloc);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(rd->da,X,INSERT_VALUES,*Xloc);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(rd->da,Xdot,INSERT_VALUES,*Xloc_t);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(rd->da,Xdot,INSERT_VALUES,*Xloc_t);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(rd->da,X,INSERT_VALUES,*Xloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(rd->da,X,INSERT_VALUES,*Xloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(rd->da,Xdot,INSERT_VALUES,*Xloc_t);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(rd->da,Xdot,INSERT_VALUES,*Xloc_t);CHKERRQ(ierr);
 
   /*
     The following is a hack to subvert TSTHETA which is like an implicit midpoint method to behave more like a trapezoid
@@ -304,9 +304,9 @@ static PetscErrorCode RDRestoreLocalArrays(RD rd,Vec *X0loc,RDNode **x0,Vec *Xlo
   ierr = DAVecRestoreArray(rd->da,*X0loc,x0);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(rd->da,*Xloc,x);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(rd->da,*Xloc_t,xdot);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(rd->da,X0loc);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(rd->da,Xloc);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(rd->da,Xloc_t);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(rd->da,X0loc);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(rd->da,Xloc);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(rd->da,Xloc_t);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -601,7 +601,7 @@ static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
   RDCheckDomain(rd,ts,X);
   ierr = RDGetLocalArrays(rd,ts,X,Xdot,&Theta,&dt,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
 
-  ierr = DAGetLocalVector(rd->da,&Floc);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(rd->da,&Floc);CHKERRQ(ierr);
   ierr = VecZeroEntries(Floc);CHKERRQ(ierr);
   ierr = DAVecGetArray(rd->da,Floc,&f);CHKERRQ(ierr);
   ierr = DAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
@@ -663,9 +663,9 @@ static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
   ierr = RDRestoreLocalArrays(rd,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(rd->da,Floc,&f);CHKERRQ(ierr);
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
-  ierr = DALocalToGlobalBegin(rd->da,Floc,F);CHKERRQ(ierr);
-  ierr = DALocalToGlobalEnd(rd->da,Floc,F);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(rd->da,&Floc);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(rd->da,Floc,ADD_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(rd->da,Floc,ADD_VALUES,F);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(rd->da,&Floc);CHKERRQ(ierr);
 
   if (rd->monitor_residual) {ierr = RDStateView(rd,X,Xdot,F);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -793,7 +793,7 @@ static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
   PetscScalar    *y;
   PetscInt       i,m,M;
   const PetscInt *lx;
-  DA             da;
+  DM             da;
 
   PetscFunctionBegin;
   /*
@@ -820,7 +820,7 @@ static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
 
   ierr = VecView(Y,viewer);CHKERRQ(ierr);
   ierr = VecDestroy(Y);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

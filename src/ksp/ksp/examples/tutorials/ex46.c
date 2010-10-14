@@ -28,7 +28,7 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DA             da;            /* distributed array */
+  DM             da;            /* distributed array */
   Vec            x,b,u;         /* approx solution, RHS, exact solution */
   Mat            A;             /* linear system matrix */
   KSP            ksp;           /* linear solver context */
@@ -185,7 +185,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

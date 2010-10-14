@@ -9,7 +9,7 @@ int main(int argc,char *argv[])
   Mat            M;
   Vec            x,y;
   PetscErrorCode ierr;
-  DA             da,daf;
+  DM             da,daf;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,4,5,PETSC_DECIDE,PETSC_DECIDE,41,1,0,0,&da);CHKERRQ(ierr);
@@ -20,8 +20,8 @@ int main(int argc,char *argv[])
 
   ierr = MatMult(M,x,y);CHKERRQ(ierr);
   ierr = MatMultTranspose(M,y,x);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
-  ierr = DADestroy(daf);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(daf);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);
   ierr = MatDestroy(M);CHKERRQ(ierr);

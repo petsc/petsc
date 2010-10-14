@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   PetscBool      flg2,flg3,isbinary,mpiio;
   DAPeriodicType periodic = DA_NONPERIODIC;
   DAStencilType  stencil_type = DA_STENCIL_STAR;
-  DA             da,da2;
+  DM             da,da2;
   Vec            global1,global2;
   PetscScalar    mone = -1.0;
   PetscReal      norm;
@@ -116,8 +116,8 @@ int main(int argc,char **argv)
   }
 
   ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
-  ierr = DADestroy(da2);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da2);CHKERRQ(ierr);
   ierr = VecDestroy(global1);CHKERRQ(ierr);
   ierr = VecDestroy(global2);CHKERRQ(ierr);
   ierr = PetscFinalize();

@@ -156,7 +156,7 @@ int main(int argc,char **argv)
   PetscInt       nits;
   PetscErrorCode ierr;
   MPI_Comm       comm;
-  DA             da;
+  DM             da;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   PetscOptionsSetValue("-file","ex30_output");
@@ -189,11 +189,11 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(comm,grid.mglevels,user,&dmmg);CHKERRQ(ierr); 
   ierr = DACreate2d(comm,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),0,"x-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),1,"y-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),2,"pressure");CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),3,"temperature");CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDM(dmmg),0,"x-velocity");CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDM(dmmg),1,"y-velocity");CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDM(dmmg),2,"pressure");CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDM(dmmg),3,"temperature");CHKERRQ(ierr);
   ierr = VecDuplicate(dmmg[0]->x, &(user->Xguess));CHKERRQ(ierr);
 #else
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -203,11 +203,11 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(comm,grid.mglevels,&user,&dmmg);CHKERRQ(ierr); 
   ierr = DACreate2d(comm,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),0,"x-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),1,"y-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),2,"pressure");CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),3,"temperature");CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDM(dmmg),0,"x-velocity");CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDM(dmmg),1,"y-velocity");CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDM(dmmg),2,"pressure");CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDM(dmmg),3,"temperature");CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
@@ -1104,13 +1104,13 @@ PetscErrorCode Initialize(DMMG *dmmg)
   AppCtx         *user = (AppCtx*)dmmg[0]->user;
   Parameter      *param = user->param;
   GridInfo       *grid  = user->grid;
-  DA             da;
+  DM             da;
   PetscInt       i,j,is,js,im,jm;
   PetscErrorCode ierr;
   Field          **x;
 
   /* Get the fine grid */
-  da = (DA)(dmmg[0]->dm); 
+  da = (dmmg[0]->dm); 
   ierr = DAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,((AppCtx*)dmmg[0]->user)->Xguess,(void**)&x);CHKERRQ(ierr);
 
@@ -1237,7 +1237,7 @@ PetscErrorCode DoOutput(DMMG *dmmg, PetscInt its)
 PetscErrorCode ViscosityField(DMMG dmmg, Vec X, Vec V)
 /* ------------------------------------------------------------------- */
 {
-  DA             da    = (DA) dmmg->dm;
+  DM             da    =  dmmg->dm;
   AppCtx         *user  = (AppCtx *) dmmg->user;
   Parameter      *param = user->param;
   GridInfo       *grid  = user->grid;
@@ -1252,8 +1252,8 @@ PetscErrorCode ViscosityField(DMMG dmmg, Vec X, Vec V)
   param->ivisc = param->output_ivisc;
 
   ierr = DACreateLocalVector(da, &localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da, X, INSERT_VALUES, localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,localX,(void**)&x);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,V,(void**)&v);CHKERRQ(ierr);
 
@@ -1295,18 +1295,18 @@ PetscErrorCode StressField(DMMG *dmmg)
   AppCtx         *user = (AppCtx*)dmmg[0]->user;
   PetscInt       i,j,is,js,im,jm;
   PetscErrorCode ierr;
-  DA             da;
+  DM             da;
   Vec            locVec;
   Field          **x, **y;
 
   /* Get the fine grid of Xguess and X */
-  da = (DA)(dmmg[0]->dm); 
+  da = (dmmg[0]->dm); 
   ierr = DAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,((AppCtx*)dmmg[0]->user)->Xguess,(void**)&x);CHKERRQ(ierr);
 
   ierr = DACreateLocalVector(da, &locVec);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da, DMMGGetx(dmmg), INSERT_VALUES, locVec);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da, DMMGGetx(dmmg), INSERT_VALUES, locVec);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da, DMMGGetx(dmmg), INSERT_VALUES, locVec);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da, DMMGGetx(dmmg), INSERT_VALUES, locVec);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,locVec,(void**)&y);CHKERRQ(ierr);
 
   /* Compute stress on the corner points */

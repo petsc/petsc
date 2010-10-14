@@ -10,7 +10,7 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL dagetinterpolation_(DA *dac,DA *daf,Mat *A,Vec *scale,PetscErrorCode *ierr)
+void PETSC_STDCALL dagetinterpolation_(DM *dac,DM *daf,Mat *A,Vec *scale,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(scale);
   *ierr = DAGetInterpolation(*dac,*daf,A,scale);

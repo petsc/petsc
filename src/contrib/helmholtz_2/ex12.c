@@ -30,7 +30,7 @@ a Helmholtz equation in a half-plane.  Input parameters include:\n\
    Routines: SLESSolve(); SLESView(); SLESGetPC(); SLESGetKSP();
    Routines: KSPSetTolerances(); PCSetModifySubMatrices();
    Routines: MatCreateSeqAIJ(); MatCreateMPIAIJ();
-   Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DAView();
+   Routines: DACreate2d(); DMDestroy(); DACreateGlobalVector(); DMView();
    Routines: DAGetCorners(); DAGetGhostCorners(); DAGetGlobalIndices();
    Routines: ISCreateGeneral(); ISDestroy(); MatZeroRows();
    Routines: ViewerSetFormat();
@@ -128,7 +128,7 @@ typedef struct {
   int      problem;           /* model problem number */
   int      m_eta, m_xi;       /* global dimensions in eta and xi directions */
   int      m_dim, m_ldim;     /* global, local system size */
-  DA       da;                /* distributed array */
+  DM       da;                /* distributed array */
   Vec      phi;               /* solution vector */
   MPI_Comm comm;              /* communicator */
   int      rank, size;        /* rank, size of communicator */
@@ -223,7 +223,7 @@ int main(int argc,char **args)
   user.k1Dbeta_sq = k1/beta_sq;
   user.ampDbeta   = user.amp/sqrt(beta_sq);
 
-  /* Create distributed array (DA) and vectors */
+  /* Create distributed array  and vectors */
   MPI_Comm_size(user.comm,&user.size);
   MPI_Comm_rank(user.comm,&user.rank);
   N_xi = PETSC_DECIDE; N_eta = PETSC_DECIDE;
@@ -327,7 +327,7 @@ int main(int argc,char **args)
   ierr = SLESDestroy(sles);CHKERRA(ierr);
   ierr = DACreateLocalVector(user.da,&localv);CHKERRA(ierr);
   ierr = VecDestroy(localv);CHKERRA(ierr);
-  ierr = DADestroy(user.da);CHKERRA(ierr);
+  ierr = DMDestroy(user.da);CHKERRA(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -630,7 +630,7 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
 
   ierr = OptionsHasName(PETSC_NULL,"-print_grid",&flg);CHKERRA(ierr);
   if (flg) {
-    ierr = DAView(user->da,VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = DMView(user->da,VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     PetscPrintf(user->comm,"global grid: %d X %d ==> global vector dimension %d\n",
       user->m_eta,user->m_xi,user->m_dim); fflush(stdout);
     PetscSequentialPhaseBegin(user->comm,1);

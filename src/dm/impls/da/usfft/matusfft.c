@@ -13,9 +13,9 @@ typedef struct {
   PetscInt       dim;
   Vec            sampleCoords;
   PetscInt       dof;
-  DA             freqDA;       /* frequency DA */
+  DM             freqDA;       /* frequency DA */
   PetscInt       *freqSizes;   // sizes of the frequency DA, one per each dim
-  DA             resampleDa;   /* the Battle-Lemarie interpolant DA */
+  DM             resampleDa;   /* the Battle-Lemarie interpolant DA */
   Vec            resample;     // Vec of samples, one per dof per sample point
   fftw_plan      p_forward,p_backward;
   unsigned       p_flag; /* planner flags, FFTW_ESTIMATE,FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */

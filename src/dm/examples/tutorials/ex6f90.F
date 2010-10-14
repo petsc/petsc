@@ -222,22 +222,22 @@
          CALL DACreate2d(fa%comm(1),DA_XPERIODIC,DA_STENCIL_BOX,             &
      &        fa%p2,fa%r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa%sw,                &
      &        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da2,ierr)
-         CALL DAGetLocalVector(da2,vl2,ierr)
-         CALL DAGetGlobalVector(da2,vg2,ierr)
+         CALL DMGetLocalVector(da2,vl2,ierr)
+         CALL DMGetGlobalVector(da2,vg2,ierr)
       ENDIF
       IF(fa%comm(2) /= 0)THEN
          CALL DACreate2d(fa%comm(2),DA_NONPERIODIC,DA_STENCIL_BOX,           &
      &        fa%p1-fa%p2,fa%r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa%sw,          &
      &        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da3,ierr)
-         CALL DAGetLocalVector(da3,vl3,ierr)
-         CALL DAGetGlobalVector(da3,vg3,ierr)
+         CALL DMGetLocalVector(da3,vl3,ierr)
+         CALL DMGetGlobalVector(da3,vg3,ierr)
       ENDIF
       IF(fa%comm(0) /= 0)THEN
          CALL DACreate2d(fa%comm(0),DA_NONPERIODIC,DA_STENCIL_BOX,           &
      &        fa%p1,fa%r1g,PETSC_DECIDE,PETSC_DECIDE,1,fa%sw,                &
      &        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da1,ierr)
-         CALL DAGetLocalVector(da1,vl1,ierr)
-         CALL DAGetGlobalVector(da1,vg1,ierr)
+         CALL DMGetLocalVector(da1,vl1,ierr)
+         CALL DMGetGlobalVector(da1,vg1,ierr)
       ENDIF
 !-----------------------------------------------------------------------
 !     count the number of unknowns owned on each processor and determine
@@ -542,23 +542,23 @@
       IF(fa%comm(1) /= 0)THEN
          CALL VecPlaceArray(vl2,localarray(il+1+fa%offl(1)),ierr)
          CALL VecPlaceArray(vg2,toarray(it+1+offt(1)),ierr)
-         CALL DAGlobalToLocalBegin(da2,vg2,INSERT_VALUES,vl2,ierr)
-         CALL DAGlobalToLocalEnd(da2,vg2,INSERT_VALUES,vl2,ierr)
-         CALL DARestoreGlobalVector(da2,vg2,ierr)
+         CALL DMGlobalToLocalBegin(da2,vg2,INSERT_VALUES,vl2,ierr)
+         CALL DMGlobalToLocalEnd(da2,vg2,INSERT_VALUES,vl2,ierr)
+         CALL DMRestoreGlobalVector(da2,vg2,ierr)
       ENDIF
       IF(fa%comm(2) /= 0)THEN
          CALL VecPlaceArray(vl3,localarray(il+1+fa%offl(2)),ierr)
          CALL VecPlaceArray(vg3,toarray(it+1+offt(2)),ierr)
-         CALL DAGlobalToLocalBegin(da3,vg3,INSERT_VALUES,vl3,ierr)
-         CALL DAGlobalToLocalEnd(da3,vg3,INSERT_VALUES,vl3,ierr)
-         CALL DARestoreGlobalVector(da3,vg3,ierr)
+         CALL DMGlobalToLocalBegin(da3,vg3,INSERT_VALUES,vl3,ierr)
+         CALL DMGlobalToLocalEnd(da3,vg3,INSERT_VALUES,vl3,ierr)
+         CALL DMRestoreGlobalVector(da3,vg3,ierr)
       ENDIF
       IF(fa%comm(0) /= 0)THEN
          CALL VecPlaceArray(vl1,localarray(il+1+fa%offl(0)),ierr)
          CALL VecPlaceArray(vg1,toarray(it+1+offt(0)),ierr)
-         CALL DAGlobalToLocalBegin(da1,vg1,INSERT_VALUES,vl1,ierr)
-         CALL DAGlobalToLocalEnd(da1,vg1,INSERT_VALUES,vl1,ierr)
-         CALL DARestoreGlobalVector(da1,vg1,ierr)
+         CALL DMGlobalToLocalBegin(da1,vg1,INSERT_VALUES,vl1,ierr)
+         CALL DMGlobalToLocalEnd(da1,vg1,INSERT_VALUES,vl1,ierr)
+         CALL DMRestoreGlobalVector(da1,vg1,ierr)
       ENDIF
       CALL VecRestoreArray(localvec,localarray,il,ierr)
       CALL VecRestoreArray(tovec,toarray,it,ierr)
@@ -603,16 +603,16 @@
       CALL VecDestroy(globalvec,ierr)
       CALL VecDestroy(localvec,ierr)
       IF(fa%comm(0) /= 0)THEN
-         CALL DARestoreLocalVector(da1,vl1,ierr)
-         CALL DADestroy(da1,ierr)
+         CALL DMRestoreLocalVector(da1,vl1,ierr)
+         CALL DMDestroy(da1,ierr)
       ENDIF
       IF(fa%comm(1) /= 0)THEN
-         CALL DARestoreLocalVector(da2,vl2,ierr)
-         CALL DADestroy(da2,ierr)
+         CALL DMRestoreLocalVector(da2,vl2,ierr)
+         CALL DMDestroy(da2,ierr)
       ENDIF
       IF(fa%comm(2) /= 0)THEN
-         CALL DARestoreLocalVector(da3,vl3,ierr)
-         CALL DADestroy(da3,ierr)
+         CALL DMRestoreLocalVector(da3,vl3,ierr)
+         CALL DMDestroy(da3,ierr)
       ENDIF
 !-----------------------------------------------------------------------
 !     terminate.

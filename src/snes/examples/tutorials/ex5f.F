@@ -237,7 +237,7 @@
       call VecDestroy(x,ierr)
       call VecDestroy(r,ierr)
       call SNESDestroy(snes,ierr)
-      call DADestroy(da,ierr)
+      call DMDestroy(da,ierr)
       call PetscFinalize(ierr)
       end
 
@@ -296,7 +296,8 @@
 
 !  Insert values into global vector
 
-      call DALocalToGlobal(da,localX,INSERT_VALUES,X,ierr)
+      call DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X,ierr)
+      call DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X,ierr)
       call DMRestoreLocalVector(da,localX,ierr)
       return
       end

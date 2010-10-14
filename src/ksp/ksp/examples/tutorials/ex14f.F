@@ -68,7 +68,7 @@
       MPI_Comm comm
       Vec      X,Y,F,localX,localF
       Mat      J,B
-      DA       da
+      DM       da
       KSP      ksp
 
       PetscInt  Nx,Ny,N,mx,my,ifive,ithree
@@ -280,7 +280,7 @@
        call VecDestroy(localF,ierr)
        call VecDestroy(F,ierr)
        call KSPDestroy(ksp,ierr)
-       call DADestroy(da,ierr)
+       call DMDestroy(da,ierr)
        call PetscFinalize(ierr)
        end
 
@@ -317,7 +317,7 @@
       PetscInt  ym,gxm,gym,gxs,gys
       double precision one,lambda,temp1,temp,hx,hy
       PetscScalar      xx(1)
-      DA               da
+      DM               da
       Mat              B
       common   /mycommon/ mx,my,B,localX,localF,da
  
@@ -365,7 +365,8 @@
 
 !     Insert values into global vector
 
-       call DALocalToGlobal(da,localX,INSERT_VALUES,X,ierr)
+       call DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X,ierr)
+       call DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X,ierr)
        return 
        end
 
@@ -403,7 +404,7 @@
       double precision two,one,lambda,hx
       double precision hy,hxdhy,hydhx,sc
       PetscScalar      u,uxx,uyy,xx(1),ff(1)
-      DA               da
+      DM               da
       Mat              B
       common   /mycommon/ mx,my,B,localX,localF,da
 
@@ -418,12 +419,12 @@
       hydhx  = hy/hx
 
 !  Scatter ghost points to local vector, using the 2-step process
-!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+!     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
 !  By placing code between these two statements, computations can be
 !  done while messages are in transition.
 !  
-      call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
-      call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
+      call DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
+      call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
 
 !  Get pointers to vector data
 
@@ -464,7 +465,8 @@
 
 !  Insert values into global vector
 
-       call DALocalToGlobal(da,localF,INSERT_VALUES,F,ierr)
+       call DMLocalToGlobalBegin(da,localF,INSERT_VALUES,F,ierr)
+       call DMLocalToGlobalEnd(da,localF,INSERT_VALUES,F,ierr)
        return 
        end
 
@@ -505,7 +507,7 @@
       Vec         X
       Mat         jac
       Vec         localX,localF
-      DA          da
+      DM          da
       PetscInt     ltog(1)
       PetscOffset idltog,idx
       PetscErrorCode ierr
@@ -532,12 +534,12 @@
       lambda = 6.d0
 
 !  Scatter ghost points to local vector, using the 2-step process
-!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+!     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
 !  By placing code between these two statements, computations can be
 !  done while messages are in transition.
 
-      call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
-      call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
+      call DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
+      call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
 
 !  Get pointer to vector data
 
@@ -619,7 +621,7 @@
       Vec     X,F
       PetscErrorCode ierr
       PetscInt mx,my
-      DA      da
+      DM      da
       Vec     localX,localF
 
       common   /mycommon/ mx,my,B,localX,localF,da

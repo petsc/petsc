@@ -1,37 +1,6 @@
 #define PETSCDM_DLL
 #include "private/daimpl.h"    /*I   "petscda.h"   I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "DASetOptionsPrefix"
-/*@C
-   DASetOptionsPrefix - Sets the prefix used for searching for all 
-   DA options in the database.
-
-   Logically Collective on DA
-
-   Input Parameter:
-+  da - the DA context
--  prefix - the prefix to prepend to all option names
-
-   Notes:
-   A hyphen (-) must NOT be given at the beginning of the prefix name.
-   The first character of all runtime options is AUTOMATICALLY the hyphen.
-
-   Level: advanced
-
-.keywords: DA, set, options, prefix, database
-
-.seealso: DASetFromOptions()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetOptionsPrefix(DA da,const char prefix[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)da,prefix);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "DASetDim"
@@ -48,7 +17,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetOptionsPrefix(DA da,const char prefix[])
 
 .seealso: DaGetDim(), DASetSizes()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetDim(DA da, PetscInt dim)
+PetscErrorCode PETSCDM_DLLEXPORT DASetDim(DM da, PetscInt dim)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -76,7 +45,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetDim(DA da, PetscInt dim)
 
 .seealso: DAGetSize(), PetscSplitOwnership()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetSizes(DA da, PetscInt M, PetscInt N, PetscInt P)
+PetscErrorCode PETSCDM_DLLEXPORT DASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -109,7 +78,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetSizes(DA da, PetscInt M, PetscInt N, Petsc
 
 .seealso: DASetSizes(), DAGetSize(), PetscSplitOwnership()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetNumProcs(DA da, PetscInt m, PetscInt n, PetscInt p)
+PetscErrorCode PETSCDM_DLLEXPORT DASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -138,9 +107,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetNumProcs(DA da, PetscInt m, PetscInt n, Pe
   Level: intermediate
 
 .keywords:  distributed array, periodicity
-.seealso: DACreate(), DADestroy(), DA, DAPeriodicType
+.seealso: DACreate(), DMDestroy(), DA, DAPeriodicType
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetPeriodicity(DA da, DAPeriodicType ptype)
+PetscErrorCode PETSCDM_DLLEXPORT DASetPeriodicity(DM da, DAPeriodicType ptype)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -164,9 +133,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetPeriodicity(DA da, DAPeriodicType ptype)
   Level: intermediate
 
 .keywords:  distributed array, degrees of freedom
-.seealso: DACreate(), DADestroy(), DA
+.seealso: DACreate(), DMDestroy(), DA
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetDof(DA da, int dof)
+PetscErrorCode PETSCDM_DLLEXPORT DASetDof(DM da, int dof)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -190,9 +159,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetDof(DA da, int dof)
   Level: intermediate
 
 .keywords:  distributed array, stencil
-.seealso: DACreate(), DADestroy(), DA
+.seealso: DACreate(), DMDestroy(), DA
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetStencilType(DA da, DAStencilType stype)
+PetscErrorCode PETSCDM_DLLEXPORT DASetStencilType(DM da, DAStencilType stype)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -217,9 +186,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetStencilType(DA da, DAStencilType stype)
   Level: intermediate
 
 .keywords:  distributed array, stencil
-.seealso: DACreate(), DADestroy(), DA
+.seealso: DACreate(), DMDestroy(), DA
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DA da, PetscInt width)
+PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DM da, PetscInt width)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -232,7 +201,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DA da, PetscInt width)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DACheckOwnershipRanges_Private"
-static PetscErrorCode DACheckOwnershipRanges_Private(DA da,PetscInt M,PetscInt m,const PetscInt lx[])
+static PetscErrorCode DACheckOwnershipRanges_Private(DM da,PetscInt M,PetscInt m,const PetscInt lx[])
 {
   PetscInt i,sum;
 
@@ -259,9 +228,9 @@ static PetscErrorCode DACheckOwnershipRanges_Private(DA da,PetscInt M,PetscInt m
   Level: intermediate
 
 .keywords:  distributed array
-.seealso: DACreate(), DADestroy(), DA
+.seealso: DACreate(), DMDestroy(), DA
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetOwnershipRanges(DA da, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[])
+PetscErrorCode PETSCDM_DLLEXPORT DASetOwnershipRanges(DM da, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[])
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -300,7 +269,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetOwnershipRanges(DA da, const PetscInt lx[]
 /*
  Ensure that da->lx, ly, and lz exist.  Collective on DA.
 */
-PetscErrorCode PETSCDM_DLLEXPORT DACreateOwnershipRanges(DA da)
+PetscErrorCode PETSCDM_DLLEXPORT DACreateOwnershipRanges(DM da)
 {
   DM_DA          *dd = (DM_DA*)da->data;
   PetscErrorCode ierr;
@@ -349,9 +318,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateOwnershipRanges(DA da)
 
 .keywords:  distributed array, interpolation
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DA, DAInterpolationType
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DMDestroy(), DA, DAInterpolationType
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetInterpolationType(DA da,DAInterpolationType ctype)
+PetscErrorCode PETSCDM_DLLEXPORT DASetInterpolationType(DM da,DAInterpolationType ctype)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -362,34 +331,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetInterpolationType(DA da,DAInterpolationTyp
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "DASetVecType"
-/*@
-       DASetVecType - Sets the type of vector created with DACreateLocalVector() and DACreateGlobalVector()
-
-   Logically Collective on DA
-
-   Input Parameter:
-+  da - initial distributed array
-.  ctype - the vector type, currently either VECSTANDARD or VECCUDA
-
-   Options Database:
-.   -da_vec_type ctype
-
-   Level: intermediate
-
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DA, DAInterpolationType, VecType
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetVecType(DA da,const VecType ctype)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  ierr = PetscFree(da->vectype);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(ctype,&da->vectype);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetNeighbors"
@@ -415,7 +356,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetVecType(DA da,const VecType ctype)
    Level: intermediate
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetNeighbors(DA da,const PetscMPIInt *ranks[])
+PetscErrorCode PETSCDM_DLLEXPORT DAGetNeighbors(DM da,const PetscMPIInt *ranks[])
 {
   DM_DA *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
@@ -441,7 +382,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetNeighbors(DA da,const PetscMPIInt *ranks[]
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "DASetElementType"
-PetscErrorCode PETSCDM_DLLEXPORT DASetElementType(DA da, DAElementType etype)
+PetscErrorCode PETSCDM_DLLEXPORT DASetElementType(DM da, DAElementType etype)
 {
   DM_DA          *dd = (DM_DA*)da->data;
   PetscErrorCode ierr;
@@ -475,7 +416,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetElementType(DA da, DAElementType etype)
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "DAGetElementType"
-PetscErrorCode PETSCDM_DLLEXPORT DAGetElementType(DA da, DAElementType *etype)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetElementType(DM da, DAElementType *etype)
 {
   DM_DA *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
@@ -568,7 +509,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRestoreElements(DM dm,PetscInt *n,const Petsc
 
 .seealso: DAGetCorners(), DAGetGhostCorners(), DACreate(), DACreate1d(), DACreate2d(), DACreate3d(), VecGetOwnershipRanges()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRanges(DA da,const PetscInt *lx[],const PetscInt *ly[],const PetscInt *lz[])
+PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRanges(DM da,const PetscInt *lx[],const PetscInt *ly[],const PetscInt *lz[])
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -604,7 +545,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRanges(DA da,const PetscInt *lx[]
 
 .seealso: DARefine(), DAGetRefinementFactor()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetRefinementFactor(DA da, PetscInt refine_x, PetscInt refine_y,PetscInt refine_z)
+PetscErrorCode PETSCDM_DLLEXPORT DASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refine_y,PetscInt refine_z)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -641,7 +582,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetRefinementFactor(DA da, PetscInt refine_x,
 
 .seealso: DARefine(), DASetRefinementFactor()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetRefinementFactor(DA da, PetscInt *refine_x, PetscInt *refine_y,PetscInt *refine_z)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *refine_y,PetscInt *refine_z)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -671,7 +612,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetRefinementFactor(DA da, PetscInt *refine_x
 
 .seealso: DAGetMatrix(), DASetBlockFills()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetGetMatrix(DA da,PetscErrorCode (*f)(DA, const MatType,Mat*))
+PetscErrorCode PETSCDM_DLLEXPORT DASetGetMatrix(DM da,PetscErrorCode (*f)(DM, const MatType,Mat*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -687,7 +628,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetGetMatrix(DA da,PetscErrorCode (*f)(DA, co
 
   Uses a greedy algorithm to handle non-ideal layouts, could probably do something better.
 */
-static PetscErrorCode DARefineOwnershipRanges(DA da,PetscBool periodic,PetscInt stencil_width,PetscInt ratio,PetscInt m,const PetscInt lc[],PetscInt lf[])
+static PetscErrorCode DARefineOwnershipRanges(DM da,PetscBool periodic,PetscInt stencil_width,PetscInt ratio,PetscInt m,const PetscInt lc[],PetscInt lf[])
 {
   PetscInt i,totalc = 0,remaining,startc = 0,startf = 0;
   PetscErrorCode ierr;
@@ -742,13 +683,13 @@ static PetscErrorCode DARefineOwnershipRanges(DA da,PetscBool periodic,PetscInt 
 
 .keywords:  distributed array, refine
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetOwnershipRanges()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DMDestroy(), DAGetOwnershipRanges()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
+PetscErrorCode PETSCDM_DLLEXPORT DARefine(DM da,MPI_Comm comm,DM *daref)
 {
   PetscErrorCode ierr;
   PetscInt       M,N,P;
-  DA             da2;
+  DM             da2;
   DM_DA          *dd = (DM_DA*)da->data,*dd2;
 
   PetscFunctionBegin;
@@ -845,13 +786,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
 
 .keywords:  distributed array, coarsen
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetOwnershipRanges()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DMDestroy(), DAGetOwnershipRanges()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DACoarsen(DA da, MPI_Comm comm,DA *daref)
+PetscErrorCode PETSCDM_DLLEXPORT DACoarsen(DM da, MPI_Comm comm,DM *daref)
 {
   PetscErrorCode ierr;
   PetscInt       M,N,P;
-  DA             da2;
+  DM             da2;
   DM_DA          *dd = (DM_DA*)da->data,*dd2;
 
   PetscFunctionBegin;
@@ -953,7 +894,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACoarsen(DA da, MPI_Comm comm,DA *daref)
 
 .seealso: DARefine(), DACoarsenHierarchy()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DARefineHierarchy(DA da,PetscInt nlevels,DA daf[])
+PetscErrorCode PETSCDM_DLLEXPORT DARefineHierarchy(DM da,PetscInt nlevels,DM daf[])
 {
   PetscErrorCode ierr;
   PetscInt       i,n,*refx,*refy,*refz;
@@ -1006,7 +947,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefineHierarchy(DA da,PetscInt nlevels,DA daf
 
 .seealso: DACoarsen(), DARefineHierarchy()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DACoarsenHierarchy(DA da,PetscInt nlevels,DA dac[])
+PetscErrorCode PETSCDM_DLLEXPORT DACoarsenHierarchy(DM da,PetscInt nlevels,DM dac[])
 {
   PetscErrorCode ierr;
   PetscInt i;

@@ -185,7 +185,7 @@ typedef struct {
 
   MPI_Comm comm;
   char prefix[256];
-  DA da;
+  DM da;
   /* Local work arrays */
   PetscScalar *R,*Rinv;         /* Characteristic basis, and it's inverse.  COLUMN-MAJOR */
   PetscScalar *cjmpLR;          /* Jumps at left and right edge of cell, in characteristic basis, len=2*dof */
@@ -1057,11 +1057,11 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
   Vec             Xloc;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalVector(ctx->da,&Xloc);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(ctx->da,&Xloc);CHKERRQ(ierr);
   ierr = DAGetInfo(ctx->da,0, &Mx,0,0, 0,0,0, &dof,0,0,0);CHKERRQ(ierr);
   hx = (ctx->xmax - ctx->xmin)/Mx;
-  ierr = DAGlobalToLocalBegin(ctx->da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd  (ctx->da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(ctx->da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd  (ctx->da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
 
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
 
@@ -1132,7 +1132,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
   ierr = DAVecRestoreArray(ctx->da,Xloc,&x);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(ctx->da,F,&f);CHKERRQ(ierr);
   ierr = DARestoreArray(ctx->da,PETSC_TRUE,&slope);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(ctx->da,&Xloc);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(ctx->da,&Xloc);CHKERRQ(ierr);
 
   ierr = MPI_Allreduce(&cfl_idt,&ctx->cfl_idt,1,MPIU_REAL,MPI_MAX,((PetscObject)ctx->da)->comm);CHKERRQ(ierr);
   if (0) {
@@ -1183,7 +1183,7 @@ static PetscErrorCode FVSample(FVCtx *ctx,PetscReal time,Vec U)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SolutionStatsView"
-static PetscErrorCode SolutionStatsView(DA da,Vec X,PetscViewer viewer)
+static PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscReal xmin,xmax;
@@ -1196,9 +1196,9 @@ static PetscErrorCode SolutionStatsView(DA da,Vec X,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     /* PETSc lacks a function to compute total variation norm (difficult in multiple dimensions), we do it here */
-    ierr = DAGetLocalVector(da,&Xloc);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd  (da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd  (da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
     ierr = DAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
     ierr = DAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
     ierr = DAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0);CHKERRQ(ierr);
@@ -1208,7 +1208,7 @@ static PetscErrorCode SolutionStatsView(DA da,Vec X,PetscViewer viewer)
     }
     ierr = MPI_Allreduce(&tvsum,&tvgsum,1,MPIU_REAL,MPI_MAX,((PetscObject)da)->comm);CHKERRQ(ierr);
     ierr = DAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
-    ierr = DARestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
 
     ierr = VecMin(X,&imin,&xmin);CHKERRQ(ierr);
     ierr = VecMax(X,&imax,&xmax);CHKERRQ(ierr);
@@ -1325,7 +1325,7 @@ int main(int argc,char *argv[])
     ierr = DASetFieldName(ctx.da,i,ctx.physics.fieldname[i]);CHKERRQ(ierr);
   }
   /* Allow customization of the DA at runtime, mostly to change problem size with -da_grid_x M */
-  ierr = DASetFromOptions(ctx.da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(ctx.da);CHKERRQ(ierr);
   ierr = DASetUp(ctx.da);CHKERRQ(ierr);
   ierr = DAGetInfo(ctx.da,0, &Mx,0,0, 0,0,0, &dof,0,0,0);CHKERRQ(ierr);
   ierr = DAGetCorners(ctx.da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
@@ -1400,7 +1400,7 @@ int main(int argc,char *argv[])
   ierr = PetscFree2(ctx.uLR,ctx.flux);CHKERRQ(ierr);
   ierr = VecDestroy(X);CHKERRQ(ierr);
   ierr = VecDestroy(X0);CHKERRQ(ierr);
-  ierr = DADestroy(ctx.da);CHKERRQ(ierr);
+  ierr = DMDestroy(ctx.da);CHKERRQ(ierr);
   ierr = TSDestroy(ts);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

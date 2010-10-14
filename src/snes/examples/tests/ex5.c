@@ -60,7 +60,7 @@ typedef struct {
    PetscReal   param2;         /* test problem parameter */
    PetscInt    mx,my;          /* discretization in x, y directions */
    Vec         localX,localF; /* ghosted local vector */
-   DA          da;             /* distributed array data structure */
+   DM          da;             /* distributed array data structure */
    PetscMPIInt rank;           /* processor rank */
 } AppCtx;
 
@@ -127,7 +127,7 @@ int main(int argc,char **argv)
   /*
      Visualize the distribution of the array across the processors
   */
-  /* ierr =  DAView(user.da,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr); */
+  /* ierr =  DMView(user.da,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr); */
 
 
   /*
@@ -218,7 +218,7 @@ int main(int argc,char **argv)
   }
   ierr = VecDestroy(user.localX);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(user.localF);CHKERRQ(ierr); ierr = VecDestroy(r);CHKERRQ(ierr);      
-  ierr = SNESDestroy(snes);CHKERRQ(ierr);  ierr = DADestroy(user.da);CHKERRQ(ierr);
+  ierr = SNESDestroy(snes);CHKERRQ(ierr);  ierr = DMDestroy(user.da);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   return 0;
@@ -291,7 +291,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   /*
      Insert values into global vector
   */
-  ierr = DALocalToGlobal(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   return 0;
 } 
 /* ------------------------------------------------------------------- */
@@ -325,12 +326,12 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
   /*
      Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+        DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
   /*
      Get pointers to vector data
@@ -372,7 +373,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Insert values into global vector
   */
-  ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
   return 0; 
 } 
@@ -416,12 +418,12 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
 
   /*
      Scatter ghost points to local vector,using the 2-step process
-        DAGlobalToLocalBegin(),DAGlobalToLocalEnd().
+        DMGlobalToLocalBegin(),DMGlobalToLocalEnd().
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
   /*
      Get pointer to vector data

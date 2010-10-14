@@ -58,7 +58,7 @@ namespace ALE {
 
       PetscFunctionBegin;
       if (structured) {
-        DA             da;
+        DM             da;
         const PetscInt dof = 1;
         const PetscInt pd  = PETSC_DECIDE;
 

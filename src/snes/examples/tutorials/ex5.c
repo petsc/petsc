@@ -54,7 +54,7 @@ T*/
    FormFunctionLocal().
 */
 typedef struct {
-   DA          da;             /* distributed array data structure */
+   DM          da;             /* distributed array data structure */
    PassiveReal param;          /* test problem parameter */
 } AppCtx;
 
@@ -232,7 +232,7 @@ int main(int argc,char **argv)
     ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "ex5_sol.vtk");CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = DAView(user.da, viewer);CHKERRQ(ierr);
+    ierr = DMView(user.da, viewer);CHKERRQ(ierr);
     ierr = VecView(x, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   }
@@ -252,7 +252,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(r);CHKERRQ(ierr);      
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
-  ierr = DADestroy(user.da);CHKERRQ(ierr);
+  ierr = DMDestroy(user.da);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   PetscFunctionReturn(0);
@@ -450,8 +450,8 @@ PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalVector(user->da,&localX);CHKERRQ(ierr);
-  ierr = DAGetLocalVector(user->da,&localF);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(user->da,&localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(user->da,&localF);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)localX,"localX");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)localF,"localF");CHKERRQ(ierr);
   ierr = DAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
@@ -464,12 +464,12 @@ PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
   ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
   /*
      Scatter ghost points to local vector,using the 2-step process
-        DAGlobalToLocalBegin(),DAGlobalToLocalEnd().
+        DMGlobalToLocalBegin(),DMGlobalToLocalEnd().
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_(comm),(PetscObject)localX);CHKERRQ(ierr);
   ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(comm),"localF=ex5m(localX,%18.16e,%18.16e,%18.16e)",hx,hy,lambda);CHKERRQ(ierr);
   ierr = PetscMatlabEngineGet(PETSC_MATLAB_ENGINE_(comm),(PetscObject)localF);CHKERRQ(ierr);
@@ -477,9 +477,10 @@ PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Insert values into global vector
   */
-  ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(user->da,&localF);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(user->da,&localF);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 #endif
@@ -501,7 +502,7 @@ PetscErrorCode MySNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,
   Vec            f;
   PetscErrorCode (*ff)(void),(*fd)(void);
   void           *fctx;
-  DA             da;
+  DM             da;
   Vec            x1_loc;
 
   PetscFunctionBegin;
@@ -512,12 +513,12 @@ PetscErrorCode MySNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,
     ierr  = MatFDColoringSetF(color,f);CHKERRQ(ierr);
   }
   /* Now, get x1_loc and scatter global x1 onto x1_loc */ 
-  da = *(DA*)fctx;
-  ierr = DAGetLocalVector(da,&x1_loc);CHKERRQ(ierr); 
-  ierr = DAGlobalToLocalBegin(da,x1,INSERT_VALUES,x1_loc);CHKERRQ(ierr); 
-  ierr = DAGlobalToLocalEnd(da,x1,INSERT_VALUES,x1_loc);CHKERRQ(ierr);   
+  da = *(DM*)fctx;
+  ierr = DMGetLocalVector(da,&x1_loc);CHKERRQ(ierr); 
+  ierr = DMGlobalToLocalBegin(da,x1,INSERT_VALUES,x1_loc);CHKERRQ(ierr); 
+  ierr = DMGlobalToLocalEnd(da,x1,INSERT_VALUES,x1_loc);CHKERRQ(ierr);   
   ierr  = MatFDColoringApply(*B,color,x1_loc,flag,snes);CHKERRQ(ierr);   
-  ierr = DARestoreLocalVector(da,&x1_loc);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&x1_loc);CHKERRQ(ierr);
   if (*J != *B) {
     ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

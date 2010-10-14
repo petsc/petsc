@@ -37,7 +37,7 @@
 .seealso: DAGetCorners(), DACreate1d(), DACreate2d(), DACreate3d(), DAGetOwnershipRanges()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostCorners(DA da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {
   PetscInt w;
   DM_DA    *dd = (DM_DA*)da->data;

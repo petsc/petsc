@@ -3,6 +3,67 @@
 #include "private/dmimpl.h"     /*I      "petscda.h"     I*/
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMSetVecType"
+/*@C
+       DMSetVecType - Sets the type of vector created with DACreateLocalVector() and DACreateGlobalVector()
+
+   Logically Collective on DA
+
+   Input Parameter:
++  da - initial distributed array
+.  ctype - the vector type, currently either VECSTANDARD or VECCUDA
+
+   Options Database:
+.   -da_vec_type ctype
+
+   Level: intermediate
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DMDestroy(), DA, DAInterpolationType, VecType
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMSetVecType(DM da,const VecType ctype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  ierr = PetscFree(da->vectype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(ctype,&da->vectype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMSetOptionsPrefix"
+/*@C
+   DMSetOptionsPrefix - Sets the prefix used for searching for all 
+   DA options in the database.
+
+   Logically Collective on DA
+
+   Input Parameter:
++  da - the DA context
+-  prefix - the prefix to prepend to all option names
+
+   Notes:
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOMATICALLY the hyphen.
+
+   Level: advanced
+
+.keywords: DA, set, options, prefix, database
+
+.seealso: DMSetFromOptions()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMSetOptionsPrefix(DM dm,const char prefix[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)dm,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMDestroy"
 /*@
     DMDestroy - Destroys a vector packer or DA.
@@ -319,7 +380,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 
     Level: beginner
 
-.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGlobalToLocalEnd(), DMLocalToGlobal()
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
@@ -347,7 +408,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mod
 
     Level: beginner
 
-.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGlobalToLocalEnd(), DMLocalToGlobal()
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
@@ -360,9 +421,41 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMLocalToGlobal"
+#define __FUNCT__ "DMLocalToGlobalBegin"
 /*@
-    DMLocalToGlobal - updates global vectors from local vectors
+    DMLocalToGlobalBegin - updates global vectors from local vectors
+
+    Neighbor-wise Collective on DM
+
+    Input Parameters:
++   dm - the DM object
+.   g - the global vector
+.   mode - if INSERT_VALUES then no parallel communication is used, if ADD_VALUES then all ghost points from the same base point accumulate into that
+           base point. 
+-   l - the local vector
+
+    Notes: In the ADD_VALUES case you normally would zero the receiving vector before beginning this operation. If you would like to simply add the non-ghosted values in the local
+           array into the global array you need to either (1) zero the ghosted locations and use ADD_VALUES or (2) use INSERT_VALUES into a work global array and then add the work 
+           global array to the final global array with VecAXPY().
+
+    Level: beginner
+
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGlobalToLocalEnd(), DMGlobalToLocalBegin()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalBegin(DM dm,Vec g,InsertMode mode,Vec l)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = (*dm->ops->localtoglobalbegin)(dm,g,mode,l);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMLocalToGlobalEnd"
+/*@
+    DMLocalToGlobalEnd - updates global vectors from local vectors
 
     Neighbor-wise Collective on DM
 
@@ -375,15 +468,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,
 
     Level: beginner
 
-.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGlobalToLocalEnd(), DMGlobalToLocalBegin()
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGlobalToLocalEnd(), DMGlobalToLocalEnd()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobal(DM dm,Vec g,InsertMode mode,Vec l)
+PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalEnd(DM dm,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = (*dm->ops->localtoglobal)(dm,g,mode,l);CHKERRQ(ierr);
+  ierr = (*dm->ops->localtoglobalend)(dm,g,mode,l);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

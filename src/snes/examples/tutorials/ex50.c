@@ -94,7 +94,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   MPI_Comm       comm;
   SNES           snes;
-  DA             da;
+  DM             da;
   Vec            x;
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return(1);
@@ -159,7 +159,7 @@ int main(int argc,char **argv)
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
   
   ierr = PetscFinalize();
@@ -181,7 +181,7 @@ int main(int argc,char **argv)
    Output Parameter:
    X - vector
  */
-PetscErrorCode FormInitialGuess(AppCtx *user,DA da,Vec X)
+PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
 {
   PetscInt       i,j,mx,xs,ys,xm,ym;
   PetscErrorCode ierr;
@@ -372,24 +372,24 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *user)
   void          *fu;
   PetscErrorCode ierr;
   Vec            localX;
-  DA             da;
+  DM             da;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,(DM*)&da);CHKERRQ(ierr);
-  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   /*
      Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+        DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
   */
-  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,localX,&u);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,F,&fu);CHKERRQ(ierr);
   ierr = FormFunctionLocal(&info,u,fu,user);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,localX,&u);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,F,&fu);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 

@@ -7,7 +7,7 @@ static char help[] = "Tests DA with variable multiple degrees of freedom per nod
 
 #include "petscda.h"
 
-PetscErrorCode doit(DA da,Vec global)
+PetscErrorCode doit(DM da,Vec global)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k,M,N,dof;
@@ -35,7 +35,7 @@ int main(int argc,char **argv)
 {
   PetscInt       dof = 2,M = 3,N = 3,m = PETSC_DECIDE,n = PETSC_DECIDE;
   PetscErrorCode ierr;
-  DA             da;
+  DM             da;
   Vec            global,local;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
@@ -55,7 +55,7 @@ int main(int argc,char **argv)
   /* Free memory */
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

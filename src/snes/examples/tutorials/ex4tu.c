@@ -45,7 +45,7 @@ T*/
    FormFunctionLocal().
 */
 typedef struct {
-  //  DA        da;             /* distributed array data structure */
+  //  DM        da;             /* distributed array data structure */
    PetscReal alpha;          /* parameter controlling linearity */
    PetscReal lambda;         /* parameter controlling nonlinearity */
   PetscBool      draw_contours;                /* flag - 1 indicates drawing contours */
@@ -76,7 +76,7 @@ int main(int argc,char **argv)
   PetscReal              lambda_max = 6.81, lambda_min = 0.0;
   MPI_Comm       comm;
    PetscInt       mx,my;
-   DA                    da;
+   DM                    da;
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -106,9 +106,9 @@ comm = PETSC_COMM_WORLD;
     ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
     
     ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-    ierr = DADestroy(da);CHKERRQ(ierr);
+    ierr = DMDestroy(da);CHKERRQ(ierr);
 
-    ierr = DAGetInfo(DMMGGetDA(dmmg),0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+    ierr = DAGetInfo(DMMGGetDM(dmmg),0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"mx = %d, my= %d\n",
 		       mx,my);CHKERRQ(ierr);
@@ -179,7 +179,7 @@ comm = PETSC_COMM_WORLD;
 PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 {
   AppCtx         *user = (AppCtx*)dmmg->user;
-  DA             da = (DA)dmmg->dm;
+  DM             da = dmmg->dm;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscErrorCode ierr;
   PetscReal      lambda,temp1,temp,hx,hy;

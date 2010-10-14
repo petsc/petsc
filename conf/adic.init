@@ -29,7 +29,7 @@
 	PetscBool      = "typedef int PetscBool ;"
 	PetscReal      = "typedef double PetscReal;"
 	PetscScalar    = "typedef double PetscScalar;"
-        DALocalInfo    = "typedef struct {int dim,dof,sw;DAPeriodicType pt;DAStencilType st;int mx,my,mz;int xs,ys,zs;int xm,ym,zm;int gxs,gys,gzs;int gxm,gym,gzm; DA da;} DALocalInfo;"
+        DALocalInfo    = "typedef struct {int dim,dof,sw;DAPeriodicType pt;DAStencilType st;int mx,my,mz;int xs,ys,zs;int xm,ym,zm;int gxs,gys,gzs;int gxm,gym,gzm; DM da;} DALocalInfo;"
         MatStencil     = "typedef struct {int k,j,i,c;} MatStencil;"
         PassiveReal    = "typedef double PassiveReal;"
         PassiveScalar  = "typedef double PassiveScalar;"

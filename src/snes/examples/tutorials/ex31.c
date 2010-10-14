@@ -92,7 +92,7 @@ int main(int argc,char **argv)
 {
   DMMG           *dmmg;               /* multilevel grid structure */
   PetscErrorCode ierr;
-  DA             da;
+  DM             da;
   AppCtx         app;
   PC             pc;
   KSP            ksp;
@@ -131,18 +131,18 @@ int main(int argc,char **argv)
     ierr = DASetFieldName(da,4,"velg");CHKERRQ(ierr);
     ierr = DASetFieldName(da,5,"velf");CHKERRQ(ierr);
     ierr = DMCompositeAddDM(app.pack,(DM)da);CHKERRQ(ierr);
-    ierr = DADestroy(da);CHKERRQ(ierr);
+    ierr = DMDestroy(da);CHKERRQ(ierr);
 
     ierr = DACreate2d(app.comm,DA_YPERIODIC,DA_STENCIL_STAR,app.nxv,app.nyv,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
     ierr = DASetFieldName(da,0,"Tempature");CHKERRQ(ierr);
     ierr = DMCompositeAddDM(app.pack,(DM)da);CHKERRQ(ierr);
-    ierr = DADestroy(da);CHKERRQ(ierr);
+    ierr = DMDestroy(da);CHKERRQ(ierr);
 
     ierr = DACreate2d(app.comm,DA_XYPERIODIC,DA_STENCIL_STAR,app.nxv,app.nyvf,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
     ierr = DASetFieldName(da,0,"Phi");CHKERRQ(ierr);
     ierr = DASetFieldName(da,1,"Pre");CHKERRQ(ierr);
     ierr = DMCompositeAddDM(app.pack,(DM)da);CHKERRQ(ierr);
-    ierr = DADestroy(da);CHKERRQ(ierr);
+    ierr = DMDestroy(da);CHKERRQ(ierr);
    
     app.pri = 1.0135e+5;
     app.ugi = 2.5065e+6;
@@ -338,7 +338,7 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 {
   DM             dm = (DM)dmmg->dm;
   DALocalInfo    info1,info2,info3;
-  DA             da1,da2,da3;
+  DM             da1,da2,da3;
   FluidField     *x1;
   PetscScalar    **x2;
   FuelField      **x3;
@@ -383,7 +383,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
   DMMG           dmmg = (DMMG)ctx;
   DM             dm = (DM)dmmg->dm;
   DALocalInfo    info1,info2,info3;
-  DA             da1,da2,da3;
+  DM             da1,da2,da3;
   FluidField     *x1,*f1;
   PetscScalar    **x2,**f2;
   FuelField      **x3,**f3;
@@ -518,7 +518,7 @@ PetscErrorCode MyPCSetUp(PC pc)
 {
   AppCtx         *app;
   PetscErrorCode ierr;
-  DA             da;
+  DM             da;
 
   PetscFunctionBegin;
   ierr = PCShellGetContext(pc,(void**)&app);CHKERRQ(ierr);
@@ -532,7 +532,7 @@ PetscErrorCode MyPCSetUp(PC pc)
   app->dx = DMMGGetRHS(app->fdmmg);
   app->dy = DMMGGetx(app->fdmmg);
   ierr = VecDuplicate(app->dy,&app->c);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -552,7 +552,7 @@ PetscErrorCode MyPCApply(PC pc,Vec X,Vec Y)
   PetscErrorCode ierr;
   Vec            X1,X2,X3,x1,x2,Y1,Y2,Y3;
   DALocalInfo    info1,info2,info3;
-  DA             da1,da2,da3;
+  DM             da1,da2,da3;
   PetscInt       i,j;
   FluidField     *ax1,*aY1;
   PetscScalar    **ax2,**aY2;
@@ -568,10 +568,10 @@ PetscErrorCode MyPCApply(PC pc,Vec X,Vec Y)
   /* get ghosted version of fluid and thermal conduction, global for phi and C */
   ierr = DMCompositeGetAccess(app->pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(app->pack,&x1,&x2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da1,X1,INSERT_VALUES,x1);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da1,X1,INSERT_VALUES,x1);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da2,X2,INSERT_VALUES,x2);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da2,X2,INSERT_VALUES,x2);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da1,X1,INSERT_VALUES,x1);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da1,X1,INSERT_VALUES,x1);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da2,X2,INSERT_VALUES,x2);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da2,X2,INSERT_VALUES,x2);CHKERRQ(ierr);
 
   /* get global version of result vector */
   ierr = DMCompositeGetAccess(app->pack,Y,&Y1,&Y2,&Y3);CHKERRQ(ierr);

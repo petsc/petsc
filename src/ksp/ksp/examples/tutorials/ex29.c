@@ -48,7 +48,7 @@ typedef struct {
 int main(int argc,char **argv)
 {
   DMMG           *dmmg;
-  DA             da;
+  DM             da;
   UserContext    user;
   PetscReal      norm;
   const char     *bcTypes[2] = {"dirichlet","neumann"};
@@ -60,7 +60,7 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-3,-3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   for (l = 0; l < DMMGGetLevels(dmmg); l++) {
     ierr = DMMGSetUser(dmmg,l,&user);CHKERRQ(ierr);
   }
@@ -101,7 +101,7 @@ int main(int argc,char **argv)
 #define __FUNCT__ "ComputeRHS"
 PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 {
-  DA             da = (DA)dmmg->dm;
+  DM             da = dmmg->dm;
   UserContext    *user = (UserContext *) dmmg->user;
   PetscErrorCode ierr;
   PetscInt       i,j,mx,my,xm,ym,xs,ys;
@@ -152,7 +152,7 @@ PetscErrorCode ComputeRho(PetscInt i, PetscInt j, PetscInt mx, PetscInt my, Pets
 #define __FUNCT__ "ComputeMatrix"
 PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
 {
-  DA             da = (DA) dmmg->dm;
+  DM             da =  dmmg->dm;
   UserContext    *user = (UserContext *) dmmg->user;
   PetscScalar    centerRho = user->rho;
   PetscErrorCode ierr;
@@ -217,7 +217,7 @@ PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
 PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
 {
   MPI_Comm           comm;
-  DA                 da;
+  DM                 da;
   Vec                coords;
   PetscViewer        viewer;
   PetscScalar       *array, *values;

@@ -14,13 +14,13 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL dasetlocaladiforfunction_(DA *da,void (PETSC_STDCALL *jfunc)(PetscInt*,DALocalInfo*,void*,void*,PetscInt*,void*,void*,PetscInt*,void*,PetscErrorCode*),PetscErrorCode *ierr)
+void PETSC_STDCALL dasetlocaladiforfunction_(DM *da,void (PETSC_STDCALL *jfunc)(PetscInt*,DALocalInfo*,void*,void*,PetscInt*,void*,void*,PetscInt*,void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   DM_DA *dd = (DM_DA*)(*da)->data;
   (dd)->adifor_lf = (DALocalFunction1)jfunc;
 }
 
-void PETSC_STDCALL dasetlocaladiformffunction_(DA *da,void (PETSC_STDCALL *jfunc)(DALocalInfo*,void*,void*,void*,void*,void*,PetscErrorCode*),PetscErrorCode *ierr)
+void PETSC_STDCALL dasetlocaladiformffunction_(DM *da,void (PETSC_STDCALL *jfunc)(DALocalInfo*,void*,void*,void*,void*,void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   DM_DA *dd = (DM_DA*)(*da)->data;
   (dd)->adiformf_lf = (DALocalFunction1)jfunc;

@@ -303,28 +303,6 @@ M*/
 #define DMMGGetDM(ctx)             ((ctx)[(ctx)[0]->nlevels-1]->dm)
 
 /*MC
-   DMMGGetDA - Gets the DA object on the finest level
-
-   Synopsis:
-   DA DMMGGetDA(DMMG *dmmg)
-
-   Not Collective
-
-   Input Parameter:
-.   dmmg - DMMG solve context
-
-   Level: intermediate
-
-   Notes: Use only if the DMMG was created with a DA, not a DMComposite
-
-.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetKSP(), DMMGGetDMComposite()
-
-M*/
-#define DMMGGetDA(ctx)             (DA)((ctx)[(ctx)[0]->nlevels-1]->dm)
-
-#define DMMGGetDMComposite(ctx)        (DMComposite)((ctx)[(ctx)[0]->nlevels-1]->dm)
-
-/*MC
    DMMGGetUser - Returns the user context for a particular level
 
    Synopsis:

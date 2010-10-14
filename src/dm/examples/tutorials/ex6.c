@@ -161,7 +161,7 @@ PetscErrorCode FACreate(FA *infa)
      Each DA can belong on any subset (overlapping between DA's or not) of processors
      For processes that a particular DA does not exist on, the corresponding comm should be set to zero
   */
-  DA             da1 = 0,da2 = 0,da3 = 0;
+  DM             da1 = 0,da2 = 0,da3 = 0;
   /* 
       v1, v2, v3 represent the local vector for a single DA
   */
@@ -228,18 +228,18 @@ PetscErrorCode FACreate(FA *infa)
 
   if (fa->comm[1]) {
     ierr = DACreate2d(fa->comm[1],DA_XPERIODIC,DA_STENCIL_BOX,fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,PETSC_NULL,PETSC_NULL,&da2);CHKERRQ(ierr);
-    ierr = DAGetLocalVector(da2,&vl2);CHKERRQ(ierr);
-    ierr = DAGetGlobalVector(da2,&vg2);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(da2,&vl2);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(da2,&vg2);CHKERRQ(ierr);
   }
   if (fa->comm[2]) {
     ierr = DACreate2d(fa->comm[2],DA_NONPERIODIC,DA_STENCIL_BOX,fa->p1-fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,PETSC_NULL,PETSC_NULL,&da3);CHKERRQ(ierr);
-    ierr = DAGetLocalVector(da3,&vl3);CHKERRQ(ierr);
-    ierr = DAGetGlobalVector(da3,&vg3);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(da3,&vl3);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(da3,&vg3);CHKERRQ(ierr);
   }
   if (fa->comm[0]) {
     ierr = DACreate2d(fa->comm[0],DA_NONPERIODIC,DA_STENCIL_BOX,fa->p1,fa->r1g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,PETSC_NULL,PETSC_NULL,&da1);CHKERRQ(ierr);
-    ierr = DAGetLocalVector(da1,&vl1);CHKERRQ(ierr);
-    ierr = DAGetGlobalVector(da1,&vg1);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(da1,&vl1);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(da1,&vg1);CHKERRQ(ierr);
   }
 
   /* count the number of unknowns owned on each processor and determine the starting point of each processors ownership 
@@ -455,23 +455,23 @@ PetscErrorCode FACreate(FA *infa)
   if (fa->comm[1]) {
     ierr = VecPlaceArray(vl2,localarray+fa->offl[1]);CHKERRQ(ierr);
     ierr = VecPlaceArray(vg2,toarray+offt[1]);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalBegin(da2,vg2,INSERT_VALUES,vl2);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(da2,vg2,INSERT_VALUES,vl2);CHKERRQ(ierr);
-    ierr = DARestoreGlobalVector(da2,&vg2);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(da2,vg2,INSERT_VALUES,vl2);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(da2,vg2,INSERT_VALUES,vl2);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(da2,&vg2);CHKERRQ(ierr);
   }  
   if (fa->comm[2]) {
     ierr = VecPlaceArray(vl3,localarray+fa->offl[2]);CHKERRQ(ierr);
     ierr = VecPlaceArray(vg3,toarray+offt[2]);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalBegin(da3,vg3,INSERT_VALUES,vl3);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(da3,vg3,INSERT_VALUES,vl3);CHKERRQ(ierr);
-    ierr = DARestoreGlobalVector(da3,&vg3);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(da3,vg3,INSERT_VALUES,vl3);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(da3,vg3,INSERT_VALUES,vl3);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(da3,&vg3);CHKERRQ(ierr);
   }  
   if (fa->comm[0]) {
     ierr = VecPlaceArray(vl1,localarray+fa->offl[0]);CHKERRQ(ierr);
     ierr = VecPlaceArray(vg1,toarray+offt[0]);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalBegin(da1,vg1,INSERT_VALUES,vl1);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(da1,vg1,INSERT_VALUES,vl1);CHKERRQ(ierr);
-    ierr = DARestoreGlobalVector(da1,&vg1);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(da1,vg1,INSERT_VALUES,vl1);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(da1,vg1,INSERT_VALUES,vl1);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(da1,&vg1);CHKERRQ(ierr);
   }  
   ierr = VecRestoreArray(localvec,&localarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(tovec,&toarray);CHKERRQ(ierr);
@@ -500,16 +500,16 @@ PetscErrorCode FACreate(FA *infa)
   ierr = VecDestroy(globalvec);CHKERRQ(ierr);
   ierr = VecDestroy(localvec);CHKERRQ(ierr);
   if (fa->comm[0]) {
-    ierr = DARestoreLocalVector(da1,&vl1);CHKERRQ(ierr);
-    ierr = DADestroy(da1);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(da1,&vl1);CHKERRQ(ierr);
+    ierr = DMDestroy(da1);CHKERRQ(ierr);
   }
   if (fa->comm[1]) {
-    ierr = DARestoreLocalVector(da2,&vl2);CHKERRQ(ierr);
-    ierr = DADestroy(da2);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(da2,&vl2);CHKERRQ(ierr);
+    ierr = DMDestroy(da2);CHKERRQ(ierr);
   }
   if (fa->comm[2]) {
-    ierr = DARestoreLocalVector(da3,&vl3);CHKERRQ(ierr);
-    ierr = DADestroy(da3);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(da3,&vl3);CHKERRQ(ierr);
+    ierr = DMDestroy(da3);CHKERRQ(ierr);
   }
   *infa = fa;
   PetscFunctionReturn(0);

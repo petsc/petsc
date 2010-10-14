@@ -41,7 +41,7 @@ typedef struct {
 int main(int argc,char **argv)
 {
   DMMG           *dmmg;
-  DA             da;
+  DM             da;
   UserContext    user;
   PetscReal      norm;
   const char     *bcTypes[2] = {"dirichlet","neumann"};
@@ -60,7 +60,7 @@ int main(int argc,char **argv)
   ierr = DASetInterpolationType(da, DA_Q0);CHKERRQ(ierr);  
 
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   for (l = 0; l < DMMGGetLevels(dmmg); l++) {
     ierr = DMMGSetUser(dmmg,l,&user);CHKERRQ(ierr);
   } 
@@ -83,12 +83,12 @@ int main(int argc,char **argv)
   ierr = VecNorm(DMMGGetr(dmmg),NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr); 
   
-  ierr = DAGetInfo(DMMGGetDA(dmmg), 0, &mx, &my, &mz, 0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(DMMGGetDM(dmmg), 0, &mx, &my, &mz, 0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx   = 1.0 / (PetscReal)(mx);
   Hy   = 1.0 / (PetscReal)(my);
   Hz   = 1.0 / (PetscReal)(mz);
-  ierr = DAGetCorners(DMMGGetDA(dmmg),&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr = DAVecGetArray(DMMGGetDA(dmmg), DMMGGetx(dmmg), &array);CHKERRQ(ierr);
+  ierr = DAGetCorners(DMMGGetDM(dmmg),&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DAVecGetArray(DMMGGetDM(dmmg), DMMGGetx(dmmg), &array);CHKERRQ(ierr);
 
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){
@@ -100,7 +100,7 @@ int main(int argc,char **argv)
       }
     }
   }
-  ierr = DAVecRestoreArray(DMMGGetDA(dmmg), DMMGGetx(dmmg), &array);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(DMMGGetDM(dmmg), DMMGGetx(dmmg), &array);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(DMMGGetx(dmmg));CHKERRQ(ierr);
   ierr = VecAssemblyEnd(DMMGGetx(dmmg));CHKERRQ(ierr);
 
@@ -120,7 +120,7 @@ int main(int argc,char **argv)
 #define __FUNCT__ "ComputeRHS"
 PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 {
-  DA             da = (DA)dmmg->dm;
+  DM             da = dmmg->dm;
   UserContext    *user = (UserContext *) dmmg->user;
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
@@ -167,7 +167,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 #define __FUNCT__ "ComputeMatrix"
 PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
 {
-  DA             da = (DA) dmmg->dm;
+  DM             da =  dmmg->dm;
   UserContext    *user = (UserContext *) dmmg->user;
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,num, numi, numj, numk;

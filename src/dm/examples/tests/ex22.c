@@ -10,7 +10,7 @@ int main(int argc,char **argv)
 {
   PetscInt       M = 3,N = 4,P = 2,s = 1,w = 2,i, m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE;
   PetscErrorCode ierr;
-  DA             da;
+  DM             da;
   Mat            mat;
   DAStencilType  stencil_type = DA_STENCIL_BOX;
   PetscBool      flg = PETSC_FALSE;
@@ -50,7 +50,7 @@ int main(int argc,char **argv)
   /* Free memory */
   ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr); 
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

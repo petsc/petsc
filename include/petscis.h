@@ -222,7 +222,7 @@ $   IS_COLORING_GHOSTED - includes colors for ghost points, this is used when th
 $                         seperately on individual processes with the ghost points already filled in. Does not
 $                         require a "parallel coloring", rather each process colors its local + ghost part.
 $                         Using this can result in much less parallel communication. In the paradigm of 
-$                         DAGetLocalVector() and DAGetGlobalVector() this could be called IS_COLORING_LOCAL
+$                         DMGetLocalVector() and DMGetGlobalVector() this could be called IS_COLORING_LOCAL
 
 .seealso: DAGetColoring()
 E*/

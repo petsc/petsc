@@ -9,7 +9,7 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL daload_(PetscViewer *viewer,PetscInt *M,PetscInt *N,PetscInt *P,DA *da,PetscErrorCode *ierr)
+void PETSC_STDCALL daload_(PetscViewer *viewer,PetscInt *M,PetscInt *N,PetscInt *P,DM *da,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);

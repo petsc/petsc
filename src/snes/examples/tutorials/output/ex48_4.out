@@ -215,9 +215,6 @@ Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
 DMMG Object with 4 levels
 Using ghosted Jacobian coloring computation
-  DA Object:  
-    type: da3d
-  FieldNames:   x-velocity   y-velocity   
   Processor [0] M 2 N 4 P 4 m 1 n 2 p 3 w 2 s 1
   X range of indices: 0 2, Y range of indices: 0 2, Z range of indices: 0 2
   Processor [1] M 2 N 4 P 4 m 1 n 2 p 3 w 2 s 1
@@ -230,8 +227,6 @@ Using ghosted Jacobian coloring computation
   X range of indices: 0 2, Y range of indices: 0 2, Z range of indices: 3 4
   Processor [5] M 2 N 4 P 4 m 1 n 2 p 3 w 2 s 1
   X range of indices: 0 2, Y range of indices: 2 4, Z range of indices: 3 4
-  DA Object:  
-    type: da3d
   Processor [0] M 2 N 8 P 8 m 1 n 2 p 3 w 2 s 1
   X range of indices: 0 2, Y range of indices: 0 4, Z range of indices: 0 3
   Processor [1] M 2 N 8 P 8 m 1 n 2 p 3 w 2 s 1
@@ -244,8 +239,6 @@ Using ghosted Jacobian coloring computation
   X range of indices: 0 2, Y range of indices: 0 4, Z range of indices: 6 8
   Processor [5] M 2 N 8 P 8 m 1 n 2 p 3 w 2 s 1
   X range of indices: 0 2, Y range of indices: 4 8, Z range of indices: 6 8
-  DA Object:  
-    type: da3d
   Processor [0] M 2 N 16 P 16 m 1 n 2 p 3 w 2 s 1
   X range of indices: 0 2, Y range of indices: 0 8, Z range of indices: 0 6
   Processor [1] M 2 N 16 P 16 m 1 n 2 p 3 w 2 s 1
@@ -258,8 +251,6 @@ Using ghosted Jacobian coloring computation
   X range of indices: 0 2, Y range of indices: 0 8, Z range of indices: 11 16
   Processor [5] M 2 N 16 P 16 m 1 n 2 p 3 w 2 s 1
   X range of indices: 0 2, Y range of indices: 8 16, Z range of indices: 11 16
-  DA Object:  
-    type: da3d
   Processor [0] M 4 N 16 P 16 m 1 n 2 p 3 w 2 s 1
   X range of indices: 0 4, Y range of indices: 0 8, Z range of indices: 0 6
   Processor [1] M 4 N 16 P 16 m 1 n 2 p 3 w 2 s 1

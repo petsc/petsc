@@ -50,7 +50,7 @@ timestepping.  Runtime options include:\n\
 */
 typedef struct {
   MPI_Comm   comm;          /* communicator */
-  DA         da;            /* distributed array data structure */
+  DM         da;            /* distributed array data structure */
   Vec        localwork;     /* local ghosted work vector */
   Vec        u_local;       /* local ghosted approximate solution vector */
   Vec        solution;      /* global exact solution vector */
@@ -204,7 +204,7 @@ int main(int argc,char **argv)
   ierr = TSDestroy(ts);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = DADestroy(appctx.da);CHKERRQ(ierr);
+  ierr = DMDestroy(appctx.da);CHKERRQ(ierr);
   ierr = VecDestroy(appctx.localwork);CHKERRQ(ierr);
   ierr = VecDestroy(appctx.solution);CHKERRQ(ierr);
   ierr = VecDestroy(appctx.u_local);CHKERRQ(ierr);
@@ -427,7 +427,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *ctx)
 {
   AppCtx         *appctx = (AppCtx*) ctx;       /* user-defined application context */
-  DA             da = appctx->da;               /* distributed array */
+  DM             da = appctx->da;               /* distributed array */
   Vec            local_in = appctx->u_local;    /* local ghosted input vector */
   Vec            localwork = appctx->localwork; /* local ghosted work vector */
   PetscErrorCode ierr;
@@ -440,12 +440,12 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
      Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+        DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  ierr = DAGlobalToLocalBegin(da,global_in,INSERT_VALUES,local_in);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,global_in,INSERT_VALUES,local_in);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,global_in,INSERT_VALUES,local_in);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,global_in,INSERT_VALUES,local_in);CHKERRQ(ierr);
 
   /*
       Access directly the values in our local INPUT work array
@@ -500,7 +500,8 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
      Insert values from the local OUTPUT vector into the global 
      output vector
   */
-  ierr = DALocalToGlobal(da,localwork,INSERT_VALUES,global_out);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,localwork,INSERT_VALUES,global_out);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da,localwork,INSERT_VALUES,global_out);CHKERRQ(ierr);
 
   /* Print debugging information if desired */
   if (appctx->debug) {
@@ -546,7 +547,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatSt
   Mat            B = *BB;                      /* Jacobian matrix */
   AppCtx         *appctx = (AppCtx*)ctx;     /* user-defined application context */
   Vec            local_in = appctx->u_local;   /* local ghosted input vector */
-  DA             da = appctx->da;              /* distributed array */
+  DM             da = appctx->da;              /* distributed array */
   PetscScalar    v[3],*localptr,sc;
   PetscErrorCode ierr;
   PetscInt       i,mstart,mend,mstarts,mends,idx[3],is;
@@ -556,12 +557,12 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatSt
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
      Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+        DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  ierr = DAGlobalToLocalBegin(da,global_in,INSERT_VALUES,local_in);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,global_in,INSERT_VALUES,local_in);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,global_in,INSERT_VALUES,local_in);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,global_in,INSERT_VALUES,local_in);CHKERRQ(ierr);
 
   /*
      Get pointer to vector data

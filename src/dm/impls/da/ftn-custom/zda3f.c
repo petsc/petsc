@@ -12,7 +12,7 @@ EXTERN_C_BEGIN
 
 void PETSC_STDCALL dacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType 
                  *stencil_type,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,
-                 PetscInt *w,PetscInt *s,PetscInt *lx,PetscInt *ly,PetscInt *lz,DA *inra,PetscErrorCode *ierr)
+                 PetscInt *w,PetscInt *s,PetscInt *lx,PetscInt *ly,PetscInt *lz,DM *inra,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(lx);
   CHKFORTRANNULLINTEGER(ly);

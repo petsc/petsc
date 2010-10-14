@@ -9,7 +9,7 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL dagetscatter_(DA *da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,PetscErrorCode *ierr)
+void PETSC_STDCALL dagetscatter_(DM *da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(ltog);
   CHKFORTRANNULLOBJECT(gtol);

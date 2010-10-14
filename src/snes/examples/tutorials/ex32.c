@@ -100,7 +100,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   MPI_Comm       comm;
   SNES           snes;
-  DA             da;
+  DM             da;
   PetscBool      ViewSolu=PETSC_FALSE,CompSolu=PETSC_TRUE,DoSubPhysics=PETSC_FALSE;
   Vec            solu_true,solu_local;
 
@@ -117,9 +117,9 @@ int main(int argc,char **argv)
   dof  = 4;
   ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
 
-  ierr = DAGetInfo(DMMGGetDA(dmmg),0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+  ierr = DAGetInfo(DMMGGetDM(dmmg),0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   /* Problem parameters (velocity of lid, prandtl, and grashof numbers) */
@@ -133,10 +133,10 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(PETSC_NULL,"-view_solu",&ViewSolu);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-do_subphysics",&DoSubPhysics);CHKERRQ(ierr);
 
-  ierr = DASetFieldName(DMMGGetDA(dmmg),0,"x-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),1,"y-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),2,"Omega");CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),3,"temperature");CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDM(dmmg),0,"x-velocity");CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDM(dmmg),1,"y-velocity");CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDM(dmmg),2,"Omega");CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDM(dmmg),3,"temperature");CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
@@ -158,11 +158,11 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(comm,"Origianl Physics: Number of Newton iterations = %D\n\n", its);CHKERRQ(ierr);
  
   /* Save the ghosted local solu_true to be used by Physics 1 and Physics 2 */
-  da        = DMMGGetDA(dmmg);
+  da        = DMMGGetDM(dmmg);
   solu_true = DMMGGetx(dmmg);
   ierr = DACreateLocalVector(da,&solu_local);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,solu_true,INSERT_VALUES,solu_local);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,solu_true,INSERT_VALUES,solu_local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,solu_true,INSERT_VALUES,solu_local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,solu_true,INSERT_VALUES,solu_local);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,solu_local,(Field **)&user.x);CHKERRQ(ierr);
 
   /* Visualize solution */
@@ -189,7 +189,7 @@ int main(int argc,char **argv)
   ierr = DASetFieldName(da,0,"x-velocity");CHKERRQ(ierr);
   ierr = DASetFieldName(da,1,"y-velocity");CHKERRQ(ierr);
   ierr = DASetFieldName(da,2,"Omega");CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
 
   if (DoSubPhysics){
     ierr = DMMGSetSNESLocal(dmmg1,FormFunctionLocal1,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
@@ -218,7 +218,7 @@ int main(int argc,char **argv)
   ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg2,(DM)da);CHKERRQ(ierr);
   ierr = DASetFieldName(da,0,"temperature");CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
 
   if (DoSubPhysics){
     ierr = DMMGSetSNESLocal(dmmg2,FormFunctionLocal2,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
@@ -239,8 +239,8 @@ int main(int argc,char **argv)
     Create the DMComposite object to manage the two grids/physics. 
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCompositeCreate(comm,&user.pack);CHKERRQ(ierr);
-  ierr = DMCompositeAddDM(user.pack,(DM)DMMGGetDA(dmmg1));CHKERRQ(ierr);
-  ierr = DMCompositeAddDM(user.pack,(DM)DMMGGetDA(dmmg2));CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(user.pack,(DM)DMMGGetDM(dmmg1));CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(user.pack,(DM)DMMGGetDM(dmmg2));CHKERRQ(ierr);
 
   /* Create the solver object and attach the grid/physics info */
   ierr = DMMGCreate(comm,nlevels,&user,&dmmg_comp);CHKERRQ(ierr);
@@ -273,7 +273,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free spaces 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DAVecRestoreArray(DMMGGetDA(dmmg),solu_local,(Field **)&user.x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(DMMGGetDM(dmmg),solu_local,(Field **)&user.x);CHKERRQ(ierr);
   ierr = VecDestroy(solu_local);CHKERRQ(ierr);
   ierr = DMDestroy(user.pack);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
@@ -301,7 +301,7 @@ int main(int argc,char **argv)
 PetscErrorCode FormInitialGuessLocal(DMMG dmmg,Vec X)
 {
   AppCtx         *user = (AppCtx*)dmmg->user;
-  DA             da = (DA)dmmg->dm;
+  DM             da = dmmg->dm;
   PetscInt       i,j,mx,xs,ys,xm,ym;
   PetscErrorCode ierr;
   PetscReal      grashof,dx;
@@ -352,7 +352,7 @@ PetscErrorCode FormInitialGuessLocal(DMMG dmmg,Vec X)
 PetscErrorCode FormInitialGuessLocal1(DMMG dmmg,Vec X)
 {
   AppCtx         *user = (AppCtx*)dmmg->user;
-  DA             da = (DA)dmmg->dm;
+  DM             da = dmmg->dm;
   PetscInt       i,j,mx,xs,ys,xm,ym;
   PetscErrorCode ierr;
   Field1         **x;
@@ -378,7 +378,7 @@ PetscErrorCode FormInitialGuessLocal1(DMMG dmmg,Vec X)
 PetscErrorCode FormInitialGuessLocal2(DMMG dmmg,Vec X)
 {
   AppCtx         *user = (AppCtx*)dmmg->user;
-  DA             da = (DA)dmmg->dm;
+  DM             da = dmmg->dm;
   PetscInt       i,j,mx,xs,ys,xm,ym;
   PetscErrorCode ierr;
   PetscReal      grashof,dx;
@@ -798,7 +798,7 @@ PetscErrorCode FormFunctionComp(SNES snes,Vec X,Vec F,void *ctx)
   AppCtx         *user = (AppCtx*)dmmg->user;
   DM             dm = (DMComposite)dmmg->dm;
   DALocalInfo    info1,info2;
-  DA             da1,da2;
+  DM             da1,da2;
   Field1         **x1,**f1;
   Field2         **x2,**f2;
   Vec            X1,X2,F1,F2;
@@ -849,7 +849,7 @@ PetscErrorCode MySolutionView(MPI_Comm comm,PetscInt phy_num,void *ctx)
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*)ctx;
   DMMG           *dmmg = user->dmmg;
-  DA             da=DMMGGetDA(dmmg);
+  DM             da=DMMGGetDM(dmmg);
   Field          **x = user->x;
   Field1         **x1 = user->x1;
   PetscInt       i,j,mx,xs,ys,xm,ym;
@@ -877,7 +877,7 @@ PetscErrorCode MySolutionView(MPI_Comm comm,PetscInt phy_num,void *ctx)
       ierr = PetscPrintf(PETSC_COMM_SELF,"------------------------\n");
       DMMG *dmmg1=user->dmmg1;
       Vec  solu_true = DMMGGetx(dmmg1);
-      DA   da=DMMGGetDA(dmmg1);
+      DM   da=DMMGGetDM(dmmg1);
       Field1 **x1;
       ierr = DAVecGetArray(da,solu_true,&x1);CHKERRQ(ierr);
       for (j=ys; j<ys+ym; j++) {
@@ -894,7 +894,7 @@ PetscErrorCode MySolutionView(MPI_Comm comm,PetscInt phy_num,void *ctx)
       ierr = PetscPrintf(PETSC_COMM_SELF,"--------------------------\n");
       DMMG *dmmg2=user->dmmg2;
       Vec  solu_true = DMMGGetx(dmmg2);
-      DA   da=DMMGGetDA(dmmg2);
+      DM   da=DMMGGetDM(dmmg2);
       Field2 **x2;
       ierr = DAVecGetArray(da,solu_true,&x2);CHKERRQ(ierr);
       for (j=ys; j<ys+ym; j++) {
@@ -908,7 +908,7 @@ PetscErrorCode MySolutionView(MPI_Comm comm,PetscInt phy_num,void *ctx)
   default:
     if (size == 1){
       DMMG        *dmmg_comp=user->dmmg_comp;
-      DA          da1,da2,da=DMMGGetDA(dmmg);
+      DM          da1,da2,da=DMMGGetDM(dmmg);
       Vec         X1,X2,solu_true = DMMGGetx(dmmg);
       Field       **x;
       Field1      **x1;

@@ -7,9 +7,9 @@
 #include "private/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "DALocalToLocalCreate"
+#define __FUNCT__ "DMDALocalToLocalCreate"
 /*
-   DALocalToLocalCreate - Creates the local to local scatter
+   DMDALocalToLocalCreate - Creates the local to local scatter
 
    Collective on DA
 
@@ -17,7 +17,7 @@
 .  da - the distributed array
 
 */
-PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalCreate(DA da)
+PetscErrorCode PETSCDM_DLLEXPORT DMDALocalToLocalCreate(DM da)
 {
   PetscErrorCode ierr;
   PetscInt       *idx,left,j,count,up,down,i,bottom,top,k;
@@ -97,9 +97,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalCreate(DA da)
 
 .keywords: distributed array, local-to-local, begin
 
-.seealso: DALocalToLocalEnd(), DALocalToGlobal()
+.seealso: DALocalToLocalEnd(), DMLocalToGlobalBegin()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalBegin(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -107,7 +107,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalBegin(DA da,Vec g,InsertMode mode
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (!dd->ltol) {
-    ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
+    ierr = DMDALocalToLocalCreate(da);CHKERRQ(ierr);
   }
   ierr = VecScatterBegin(dd->ltol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -141,9 +141,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalBegin(DA da,Vec g,InsertMode mode
 
 .keywords: distributed array, local-to-local, end
 
-.seealso: DALocalToLocalBegin(), DALocalToGlobal()
+.seealso: DALocalToLocalBegin(), DMLocalToGlobalBegin()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalEnd(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;

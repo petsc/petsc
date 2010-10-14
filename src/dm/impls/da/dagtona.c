@@ -28,10 +28,10 @@
 
 .keywords: distributed array, global to local, begin, coarse problem
 
-.seealso: DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(), 
-          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
+.seealso: DAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DACreate2d(), 
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DACreateNaturalVector()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
+PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
 {
   PetscErrorCode ierr;
   PetscInt       N;
@@ -80,10 +80,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalAllCreate(DA da,VecScatter *sc
 
 .keywords: distributed array, global to local, begin, coarse problem
 
-.seealso: DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(), 
-          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
+.seealso: DAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DACreate2d(), 
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DACreateNaturalVector()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DANaturalAllToGlobalCreate(DA da,VecScatter *scatter)
+PetscErrorCode PETSCDM_DLLEXPORT DANaturalAllToGlobalCreate(DM da,VecScatter *scatter)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;

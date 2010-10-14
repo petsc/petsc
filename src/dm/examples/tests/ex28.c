@@ -29,7 +29,7 @@ PetscInt main(PetscInt argc,char **args)
   PetscReal      norm, enorm;
   PetscInt       func;
   FuncType       function = TANH;
-  DA             da, da1, coordsda;
+  DM             da, da1, coordsda;
   PetscBool      view_x = PETSC_FALSE, view_y = PETSC_FALSE, view_z = PETSC_FALSE;
   PetscErrorCode ierr;
 
@@ -67,7 +67,7 @@ PetscInt main(PetscInt argc,char **args)
   
   // Coordinates
   ierr = DAGetCoordinateDA(da, &coordsda);
-  ierr = DAGetGlobalVector(coordsda, &coords);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(coordsda, &coords);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coords, "Grid coordinates");CHKERRQ(ierr);  
   for(i = 0, N = 1; i < 3; i++) {
     h[i] = 1.0/dim[i];
@@ -89,25 +89,25 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecDestroy(coords);CHKERRQ(ierr);
 
   // Work vectors
-  ierr = DAGetGlobalVector(da, &x);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &x);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da, &xx);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &xx);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) xx, "Real space vector");CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da, &y);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &y);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) y, "USFFT frequency space vector");CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da, &yy);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &yy);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) yy, "FFTW frequency space vector");CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da, &z);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &z);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) z, "USFFT reconstructed vector");CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da, &zz);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &zz);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) zz, "FFTW reconstructed vector");CHKERRQ(ierr);
   // Split vectors for FFTW
   for(int ii = 0; ii < 3; ++ii) {
-    ierr = DAGetGlobalVector(da1, &xxsplit[ii]);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(da1, &xxsplit[ii]);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) xxsplit[ii], "Real space split vector");CHKERRQ(ierr);
-    ierr = DAGetGlobalVector(da1, &yysplit[ii]);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(da1, &yysplit[ii]);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) yysplit[ii], "FFTW frequency space split vector");CHKERRQ(ierr);
-    ierr = DAGetGlobalVector(da1, &zzsplit[ii]);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(da1, &zzsplit[ii]);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) zzsplit[ii], "FFTW reconstructed split vector");CHKERRQ(ierr);
   }
 
@@ -221,12 +221,12 @@ PetscInt main(PetscInt argc,char **args)
   
 
   /* free spaces */
-  ierr = DARestoreGlobalVector(da,&x);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da,&xx);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da,&y);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da,&yy);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da,&z);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da,&zz);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da,&x);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da,&xx);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da,&y);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da,&yy);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da,&z);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da,&zz);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

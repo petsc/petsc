@@ -35,7 +35,7 @@ PetscErrorCode myfunction(void *ctx,PetscInt n,const PetscScalar *xy,PetscScalar
 int main(int argc,char **argv)
 {
   Vec            u,xy;
-  DA             da;
+  DM             da;
   PetscErrorCode ierr;
   PetscInt       m = 10, n = 10, dof = 2;
   PF             pf;
@@ -60,7 +60,7 @@ int main(int argc,char **argv)
      are no longer needed.
   */
   ierr = PFDestroy(pf);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

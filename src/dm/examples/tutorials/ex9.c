@@ -14,7 +14,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer;
-  DA             da;
+  DM             da;
   Vec            global,local,global2;
   PetscMPIInt    rank;
   PetscBool      flg;
@@ -35,11 +35,12 @@ int main(int argc,char **argv)
   ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
   ierr = VecSet(global,-1.0);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = VecScale(local,rank+1);CHKERRQ(ierr);
-  ierr = DALocalToGlobal(da,local,ADD_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,local,ADD_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da,local,ADD_VALUES,global);CHKERRQ(ierr);
 
   /* 
      Write output file with PetscViewerHDF5 viewer. 
@@ -62,7 +63,7 @@ int main(int argc,char **argv)
   }
 
   /* clean up and exit */
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
   ierr = VecDestroy(global2);CHKERRQ(ierr);

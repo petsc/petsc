@@ -355,7 +355,8 @@ PetscErrorCode DMCompositeGather_DM(DM dm,struct DMCompositeLink *mine,Vec vec,V
   ierr = DMGetGlobalVector(mine->dm,&global);CHKERRQ(ierr);
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
   ierr = VecPlaceArray(global,array+mine->rstart);CHKERRQ(ierr);
-  ierr = DMLocalToGlobal(mine->dm,local,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(mine->dm,local,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(mine->dm,local,INSERT_VALUES,global);CHKERRQ(ierr);
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   ierr = VecResetArray(global);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(mine->dm,&global);CHKERRQ(ierr);

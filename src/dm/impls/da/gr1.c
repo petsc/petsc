@@ -24,10 +24,10 @@
 .seealso: DASetCoordinates(), DAGetCoordinates(), DACreate1d(), DACreate2d(), DACreate3d()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DA da,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
+PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
 {
   MPI_Comm       comm;
-  DA             cda;
+  DM             cda;
   DAPeriodicType periodic;
   Vec            xcoor;
   PetscScalar   *coors;
@@ -100,7 +100,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DA da,PetscReal xmin,Pe
 #define __FUNCT__ "VecView_MPI_Draw_DA1d"
 PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
 {
-  DA                da;
+  DM                da;
   PetscErrorCode    ierr;
   PetscMPIInt       rank,size,tag1,tag2;
   PetscInt          i,n,N,step,istart,isize,j;

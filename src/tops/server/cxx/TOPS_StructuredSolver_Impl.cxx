@@ -38,7 +38,7 @@
 #include "TOPS_ParameterHandling.hxx"  // not from SIDL
   // This code is the same as DAVecGetArray() except instead of generating
   // raw C multidimensional arrays it gets a Babel array
-::sidl::array<double> DAVecGetArrayBabel(DA da,Vec vec)
+::sidl::array<double> DAVecGetArrayBabel(DM da,Vec vec)
 {
   double *uu;
   VecGetArray(vec,&uu);
@@ -92,11 +92,11 @@ static PetscErrorCode FormFunction(SNES snes,Vec uu,Vec f,void *vdmmg)
     PetscFunctionReturn(1);
   }
 
-  DA da = (DA) dmmg->dm;
+  DM da =  dmmg->dm;
   Vec u; 
-  DAGetLocalVector(da,&u);
-  DAGlobalToLocalBegin(da,uu,INSERT_VALUES,u);
-  DAGlobalToLocalEnd(da,uu,INSERT_VALUES,u);
+  DMGetLocalVector(da,&u);
+  DMGlobalToLocalBegin(da,uu,INSERT_VALUES,u);
+  DMGlobalToLocalEnd(da,uu,INSERT_VALUES,u);
 
   int mx,my,mz;
   DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);
@@ -107,7 +107,7 @@ static PetscErrorCode FormFunction(SNES snes,Vec uu,Vec f,void *vdmmg)
   sidl::array<double> fa = DAVecGetArrayBabel(da,f);;
   system.computeResidual(ua,fa);
   VecRestoreArray(u,0);
-  DARestoreLocalVector(da,&u);
+  DMRestoreLocalVector(da,&u);
   VecRestoreArray(f,0);
 
   solver->getServices().releasePort("TOPS.System.Compute.Residual");
@@ -130,11 +130,11 @@ static PetscErrorCode FormInitialGuess(DMMG dmmg,Vec f)
   }
 
   int mx,my,mz;
-  DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
+  DAGetInfo(dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
   solver->setLength(0,mx);
   solver->setLength(1,my);
   solver->setLength(2,mz);
-  sidl::array<double> fa = DAVecGetArrayBabel((DA)dmmg->dm,f);
+  sidl::array<double> fa = DAVecGetArrayBabel(dmmg->dm,f);
 
   system.computeInitialGuess(fa);
   VecRestoreArray(f,0);
@@ -153,9 +153,9 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
   //TOPS::Structured::Matrix matrix2 = TOPS::Structured::Matrix::_create();
 
   PetscInt  xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,dof,mx,my,mz;
-  DAGetCorners((DA)dmmg->dm,&xs,&ys,&zs,&xm,&ym,&zm);
-  DAGetGhostCorners((DA)dmmg->dm,&gxs,&gys,&gzs,&gxm,&gym,&gzm);
-  DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);
+  DAGetCorners(dmmg->dm,&xs,&ys,&zs,&xm,&ym,&zm);
+  DAGetGhostCorners(dmmg->dm,&gxs,&gys,&gzs,&gxm,&gym,&gzm);
+  DAGetInfo(dmmg->dm,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);
   
   // Jacobian settings
   int32_t l[1] = {0}, u[1] = {2};
@@ -232,7 +232,7 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
 //  imatrix1->mat = J;
 //  imatrix2->mat = B;
 
-  DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
+  DAGetInfo(dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
   solver->setLength(0,mx);
   solver->setLength(1,my);
   solver->setLength(2,mz);
@@ -279,11 +279,11 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
   system = ::babel_cast< TOPS::System::Compute::RightHandSide >(
   	solver->getServices().getPort("TOPS.System.Compute.RightHandSide"));
 
-  DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
+  DAGetInfo(dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
   solver->setLength(0,mx);
   solver->setLength(1,my);
   solver->setLength(2,mz);
-  sidl::array<double> fa = DAVecGetArrayBabel((DA)dmmg->dm,f);;
+  sidl::array<double> fa = DAVecGetArrayBabel(dmmg->dm,f);;
 
   if (system._not_nil()) {
     system.computeRightHandSide(fa);

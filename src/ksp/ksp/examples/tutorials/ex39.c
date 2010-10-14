@@ -19,7 +19,7 @@ int main(int Argc,char **Args)
   PetscScalar     rho = 1.0;
   PetscReal       h;
   PetscReal       beta = 1.0;
-  DA              da;
+  DM              da;
   PetscRandom     rctx;
   PetscMPIInt     comm_size;
   Mat             H,HtH;
@@ -215,7 +215,7 @@ int main(int Argc,char **Args)
   ierr = MatDestroy(HtH);CHKERRQ(ierr);
   ierr = MatDestroy(H);CHKERRQ(ierr);
 
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

@@ -44,7 +44,7 @@ typedef struct {
 int main(int argc,char **argv)
 {
   DMMG           *dmmg;
-  DA             da;
+  DM             da;
   UserContext    user;
   PetscInt       l, bc, mglevels, M, N, stages[3];
   PetscReal      norm;
@@ -71,7 +71,7 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(PETSC_COMM_WORLD,mglevels,PETSC_NULL,&dmmg); CHKERRQ(ierr);
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da); CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);
-  ierr = DADestroy(da); CHKERRQ(ierr);
+  ierr = DMDestroy(da); CHKERRQ(ierr);
   
   /* Set user contex */
   user.uu = 1.0;
@@ -119,7 +119,7 @@ int main(int argc,char **argv)
 #define __FUNCT__ "ComputeRHS" 
 PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 {
-  DA             da = (DA)dmmg->dm;
+  DM             da = dmmg->dm;
   UserContext    *user = (UserContext *) dmmg->user;
   PetscErrorCode ierr;
   PetscInt       i, j, M, N, xm ,ym ,xs, ys;
@@ -160,7 +160,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 #define __FUNCT__ "ComputeJacobian" 
 PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
 {
-  DA             da = (DA) dmmg->dm;
+  DM             da =  dmmg->dm;
   UserContext    *user = (UserContext *) dmmg->user;
   PetscErrorCode ierr;
   PetscInt       i, j, M, N, xm, ym, xs, ys, num, numi, numj;
@@ -223,7 +223,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
 #define __FUNCT__ "ComputeTrueSolution" 
 PetscErrorCode ComputeTrueSolution(DMMG *dmmg, Vec b)
 {
-  DA             da = (DA)(*dmmg)->dm;
+  DM             da = (*dmmg)->dm;
   UserContext    *user = (UserContext *) (*dmmg)->user;
   PetscErrorCode ierr;
   PetscInt       i, j, M, N, xm ,ym ,xs, ys;
@@ -257,7 +257,7 @@ PetscErrorCode ComputeTrueSolution(DMMG *dmmg, Vec b)
 PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
 {
   MPI_Comm           comm;
-  DA                 da;
+  DM                 da;
   Vec                coords;
   PetscViewer        viewer;
   PetscScalar        *array, *values;

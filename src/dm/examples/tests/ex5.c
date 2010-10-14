@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscMPIInt    rank,size;
   PetscErrorCode ierr;
   PetscInt       M = 14,time_steps = 1000,w=1,s=1,localsize,j,i,mybase,myend;
-  DA             da;
+  DM             da;
   PetscViewer    viewer;
   PetscDraw      draw;
   Vec            local,global,copy;
@@ -56,7 +56,8 @@ int main(int argc,char **argv)
 
   ierr = VecRestoreArray(local,&localptr);CHKERRQ(ierr);
   ierr = VecRestoreArray(copy,&copyptr);CHKERRQ(ierr);
-  ierr = DALocalToGlobal(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
 
   /* Assign Parameters */
   h= 1.0/M; 
@@ -65,8 +66,8 @@ int main(int argc,char **argv)
   for (j=0; j<time_steps; j++) {  
 
     /* Global to Local */
-    ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
     /*Extract local array */ 
     ierr = VecGetArray(local,&localptr);CHKERRQ(ierr);
@@ -83,7 +84,8 @@ int main(int argc,char **argv)
     ierr = VecRestoreArray(local,&localptr);CHKERRQ(ierr);
 
     /* Local to Global */
-    ierr = DALocalToGlobal(da,copy,INSERT_VALUES,global);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalBegin(da,copy,INSERT_VALUES,global);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(da,copy,INSERT_VALUES,global);CHKERRQ(ierr);
   
     /* View Wave */ 
     ierr = VecView(global,viewer);CHKERRQ(ierr);
@@ -94,7 +96,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(copy);CHKERRQ(ierr);
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

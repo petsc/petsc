@@ -1,5 +1,5 @@
 
-static char help[] = "Tests DAGetGlobalVector() and DARestoreGlobalVector().\n\n";
+static char help[] = "Tests DMGetGlobalVector() and DMRestoreGlobalVector().\n\n";
 
 /*
 Use the options
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   PetscInt       M = -10,N = -8;
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
-  DA             da;
+  DM             da;
   Vec            global1,global2,global3;
   DAPeriodicType ptype = DA_NONPERIODIC;
   DAStencilType  stype = DA_STENCIL_BOX;
@@ -29,23 +29,23 @@ int main(int argc,char **argv)
       
   /* Create distributed array and get vectors */
   ierr = DACreate2d(PETSC_COMM_WORLD,ptype,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da,&global1);CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da,&global2);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da,&global1);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da,&global2);CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da,&global1);CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da,&global3);CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da,&global2);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da,&global1);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da,&global3);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da,&global2);CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da,&global1);CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da,&global3);CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da,&global2);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da,&global1);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da,&global3);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da,&global2);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da,&global1);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da,&global2);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da,&global1);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da,&global2);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da,&global1);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da,&global3);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da,&global2);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da,&global1);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da,&global3);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da,&global2);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da,&global1);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da,&global3);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da,&global2);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da,&global1);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da,&global3);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da,&global2);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

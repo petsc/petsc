@@ -108,7 +108,7 @@ EXTERN_C_END
    Checks for periodicity of a DA and Maps points outside of a domain back onto the domain
    using appropriate periodicity. At the moment assumes only a 2-D DA.
    ----------------------------------------------------------------------------------------*/
-PetscErrorCode DAMapCoordsToPeriodicDomain(DA da, PetscScalar *x, PetscScalar *y)
+PetscErrorCode DAMapCoordsToPeriodicDomain(DM da, PetscScalar *x, PetscScalar *y)
 {
   DAPeriodicType periodic_type;
   PetscInt       dim, gx, gy;

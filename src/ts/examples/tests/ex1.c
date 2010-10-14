@@ -21,7 +21,7 @@ static char help[] = "Solves 1D heat equation.\n\n";
 
 typedef struct {
   Vec         global,local,localwork,solution;    /* location for local work (with ghost points) vector */
-  DA          da;                    /* manages ghost point communication */
+  DM          da;                    /* manages ghost point communication */
   PetscViewer viewer1,viewer2;
   PetscInt    M;                     /* total number of grid points */
   PetscReal   h;                     /* mesh width h = 1/(M-1) */
@@ -226,7 +226,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(appctx.solution);CHKERRQ(ierr);
   ierr = VecDestroy(appctx.local);CHKERRQ(ierr);
   ierr = VecDestroy(appctx.global);CHKERRQ(ierr);
-  ierr = DADestroy(appctx.da);CHKERRQ(ierr);
+  ierr = DMDestroy(appctx.da);CHKERRQ(ierr);
   if (A) {ierr= MatDestroy(A);CHKERRQ(ierr);}
   if (Alhs) {ierr= MatDestroy(Alhs);CHKERRQ(ierr);}
 
@@ -342,7 +342,7 @@ PetscErrorCode RHSMatrixFree(Mat mat,Vec x,Vec y)
 PetscErrorCode RHSFunctionHeat(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 {
   AppCtx         *appctx = (AppCtx*) ctx;
-  DA             da = appctx->da;
+  DM             da = appctx->da;
   Vec            local = appctx->local,localwork = appctx->localwork;
   PetscErrorCode ierr;
   PetscInt       i,localsize; 
@@ -350,8 +350,8 @@ PetscErrorCode RHSFunctionHeat(TS ts,PetscReal t,Vec globalin,Vec globalout,void
 
   PetscFunctionBegin;
   /*Extract local array */ 
-  ierr = DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,globalin,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,globalin,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = VecGetArray(local,&localptr);CHKERRQ(ierr);
 
   /* Extract work vector */
@@ -371,7 +371,8 @@ PetscErrorCode RHSFunctionHeat(TS ts,PetscReal t,Vec globalin,Vec globalout,void
   ierr = VecRestoreArray(localwork,&copyptr);CHKERRQ(ierr);
 
   /* Local to Global */
-  ierr = DALocalToGlobal(da,localwork,INSERT_VALUES,globalout);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,localwork,INSERT_VALUES,globalout);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da,localwork,INSERT_VALUES,globalout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

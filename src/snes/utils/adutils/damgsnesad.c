@@ -26,14 +26,14 @@ PetscErrorCode DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStru
   DMMG           dmmg = (DMMG) ptr;
   PetscErrorCode ierr;
   Vec            localX;
-  DA             da = (DA) dmmg->dm;
+  DM             da =  dmmg->dm;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAComputeJacobian1WithAdic(da,localX,*B,dmmg->user);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   /* Assemble true Jacobian; if it is different */
   if (*J != *B) {
     ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -68,16 +68,16 @@ PetscErrorCode DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStru
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  DA             da = *(DA*) ptr;
+  DM             da = *(DA*) ptr;
   PetscErrorCode ierr;
   Vec            localX;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAComputeJacobian1WithAdic(da,localX,*B,ptr);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   /* Assemble true Jacobian; if it is different */
   if (*J != *B) {
     ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

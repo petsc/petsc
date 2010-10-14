@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   SNES           snes; 
   Vec            x,f;  
   Mat            J;
-  DA             da;
+  DM             da;
   PetscErrorCode ierr;
   char           *tmp,typeName[256];
   PetscBool      flg;
@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(f);CHKERRQ(ierr);
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;
@@ -70,7 +70,7 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   PetscInt       i,Mx,xs,xm,xstartshift,xendshift,fstart;
   PetscScalar    *xx,*ff,hx;
-  DA             da = (DA) ctx; 
+  DM             da = (DM) ctx; 
   Vec            xlocal;
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -78,9 +78,9 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
 
   ierr = DAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   hx     = 1.0/(PetscReal)(Mx-1);
-  ierr = DAGetLocalVector(da,&xlocal);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&xlocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
 
   if (useCUDA) {
     ierr = VecCUDACopyToGPU(xlocal);CHKERRQ(ierr);
@@ -129,7 +129,7 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
     }
     ierr = DAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
     ierr = DAVecRestoreArray(da,f,&ff);CHKERRQ(ierr);
-    ierr = DARestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
   }
   //  VecView(x,0);printf("f\n");
   //  VecView(f,0);
@@ -138,7 +138,7 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
 }
 PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
-  DA             da = (DA) ctx; 
+  DM             da = (DM) ctx; 
   PetscInt       i,Mx,xm,xs; 
   PetscScalar    hx,*xx; 
   Vec            xlocal;
@@ -146,8 +146,8 @@ PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,
 
   ierr = DAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   hx = 1.0/(PetscReal)(Mx-1);
-  ierr = DAGetLocalVector(da,&xlocal);DAGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&xlocal);DMGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
@@ -164,6 +164,6 @@ PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
   ierr = DAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
   return 0;}
 

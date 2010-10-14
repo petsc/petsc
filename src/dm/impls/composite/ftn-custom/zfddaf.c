@@ -39,7 +39,7 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL dagetmatrix_(DA *da,CHAR mat_type PETSC_MIXED_LEN(len),Mat *J,PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL dagetmatrix_(DM *da,CHAR mat_type PETSC_MIXED_LEN(len),Mat *J,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(mat_type,len,t);
@@ -55,27 +55,27 @@ void PETSC_STDCALL dmgetmatrix_(DM *dm,CHAR mat_type PETSC_MIXED_LEN(len),Mat *J
   FREECHAR(mat_type,t);
 }
 
-void PETSC_STDCALL dmcompositegetentries1_(DM *dm,DA *da1,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositegetentries1_(DM *dm,DM *da1,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeGetEntries(*dm,da1);
 }
 
-void PETSC_STDCALL dmcompositegetentries2_(DM *dm,DA *da1,DA *da2,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositegetentries2_(DM *dm,DM *da1,DM *da2,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeGetEntries(*dm,da1,da2);
 }
 
-void PETSC_STDCALL dmcompositegetentries3_(DM *dm,DA *da1,DA *da2,DA *da3,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositegetentries3_(DM *dm,DM *da1,DM *da2,DM *da3,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeGetEntries(*dm,da1,da2,da3);
 }
 
-void PETSC_STDCALL dmcompositegetentries4_(DM *dm,DA *da1,DA *da2,DA *da3,DA *da4,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositegetentries4_(DM *dm,DM *da1,DM *da2,DM *da3,DM *da4,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeGetEntries(*dm,da1,da2,da3,da4);
 }
 
-void PETSC_STDCALL dmcompositegetentries5_(DM *dm,DA *da1,DA *da2,DA *da3,DA *da4,DA *da5,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositegetentries5_(DM *dm,DM *da1,DM *da2,DM *da3,DM *da4,DM *da5,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeGetEntries(*dm,da1,da2,da3,da4,da5);
 }

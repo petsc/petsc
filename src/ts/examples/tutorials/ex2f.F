@@ -214,7 +214,7 @@
       call VecDestroy(solution,ierr)
       call VecDestroy(u_local,ierr)
       call VecDestroy(u,ierr)
-      call DADestroy(da,ierr)
+      call DMDestroy(da,ierr)
       call MatDestroy(A,ierr)
 
 !  Always call PetscFinalize() before exiting a program.  This routine
@@ -463,12 +463,12 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 !  Scatter ghost points to local vector, using the 2-step process
-!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+!     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
 !  By placing code between these two statements, computations can be
 !  done while messages are in transition.
 
-      call DAGlobalToLocalBegin(da,global_in,INSERT_VALUES,u_local,ierr)
-      call DAGlobalToLocalEnd(da,global_in,INSERT_VALUES,u_local,ierr)
+      call DMGlobalToLocalBegin(da,global_in,INSERT_VALUES,u_local,ierr)
+      call DMGlobalToLocalEnd(da,global_in,INSERT_VALUES,u_local,ierr)
 
 !  Access directly the values in our local INPUT work vector
       call VecGetArray(u_local,localptr,idx_l,ierr) 
@@ -511,7 +511,10 @@
 !  Return the values from our local OUTPUT vector into our global 
 !  output vector.
 
-      call DALocalToGlobal(da,localwork,INSERT_VALUES,global_out,ierr)
+      call DMLocalToGlobalBegin(da,localwork,INSERT_VALUES,global_out   &
+     &                          ,ierr)
+      call DMLocalToGlobalEnd(da,localwork,INSERT_VALUES,global_out,    &
+     &                          ierr)
 
 !  Print debugging information if desired
       if (debug) then
@@ -577,12 +580,12 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 !  Scatter ghost points to local vector, using the 2-step process
-!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+!     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
 !  By placing code between these two statements, computations can be
 !  done while messages are in transition.
 
-      call DAGlobalToLocalBegin(da,global_in,INSERT_VALUES,u_local,ierr)
-      call DAGlobalToLocalEnd(da,global_in,INSERT_VALUES,u_local,ierr)
+      call DMGlobalToLocalBegin(da,global_in,INSERT_VALUES,u_local,ierr)
+      call DMGlobalToLocalEnd(da,global_in,INSERT_VALUES,u_local,ierr)
 
 !  Get pointer to vector data
       call VecGetArray(u_local,localptr,idx,ierr) 

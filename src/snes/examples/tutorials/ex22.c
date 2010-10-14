@@ -86,7 +86,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   UserCtx        user;
-  DA             da;
+  DM             da;
   DMMG           *dmmg;
   DM             packer;
   PetscBool      use_matrix_based = PETSC_FALSE,use_monitor = PETSC_FALSE;
@@ -131,7 +131,7 @@ int main(int argc,char **argv)
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = DMDestroy(packer);CHKERRQ(ierr);
   if (use_monitor) {
     ierr = PetscViewerDestroy(user.u_lambda_viewer);CHKERRQ(ierr);
@@ -164,7 +164,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ULambda        *u_lambda,*fu_lambda;
   PetscScalar    d,h,*w,*fw;
   Vec            vu_lambda,vfu_lambda;
-  DA             da;
+  DM             da;
   DM             packer = (DM)dmmg->dm;
 
   PetscFunctionBegin;
@@ -231,7 +231,7 @@ PetscErrorCode ExactSolution(DM packer,Vec U)
   PF             pf;
   Vec            x,u_global;
   PetscScalar    *w;
-  DA             da;
+  DM             da;
   PetscErrorCode ierr;
   PetscInt       m;
 
@@ -265,7 +265,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   Vec            u_lambda,U,F,Uexact;
   DM             packer = (DM)dmmg->dm;
   PetscReal      norm;
-  DA             da;
+  DM             da;
 
   PetscFunctionBegin;
   ierr = SNESGetSolution(snes,&U);CHKERRQ(ierr);

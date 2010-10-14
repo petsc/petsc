@@ -99,7 +99,7 @@ int main(int argc,char **argv)
 {
   AppCtx         *user;               /* user-defined work context */
   Parameter      *param;
-  DA              da;
+  DM              da;
   GridInfo        grid;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
@@ -124,17 +124,17 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(comm,grid.mglevels,user,&user->dmmg);CHKERRQ(ierr); 
   ierr = DACreate2d(comm,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(user->dmmg,(DM) da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = DMMGSetSNESLocal(user->dmmg,FormNewTimeFunctionLocal,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMMGSetFromOptions(user->dmmg);CHKERRQ(ierr);
-  ierr = DAGetInfo(DMMGGetDA(user->dmmg),PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&(param->pi),&(param->pj),PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGetInfo(DMMGGetDM(user->dmmg),PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&(param->pi),&(param->pj),PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   REG_INTG(user->bag,&param->pi,param->pi ,"procs_x","<DO NOT SET> Processors in the x-direction");
   REG_INTG(user->bag,&param->pj,param->pj ,"procs_y","<DO NOT SET> Processors in the y-direction");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */   
-  ierr = DAGetGlobalVector(DMMGGetDA(user->dmmg), &(user->Xold));CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(DMMGGetDM(user->dmmg), &(user->Xold));CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize and solve the nonlinear system
@@ -145,7 +145,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space. 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DARestoreGlobalVector(DMMGGetDA(user->dmmg), &(user->Xold));CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(DMMGGetDM(user->dmmg), &(user->Xold));CHKERRQ(ierr);
   ierr = PetscBagDestroy(user->bag);CHKERRQ(ierr); 
   ierr = DMMGDestroy(user->dmmg);CHKERRQ(ierr);
   ierr = PetscFree(user);CHKERRQ(ierr);
@@ -261,7 +261,7 @@ int Initialize(DMMG *dmmg)
 {
   AppCtx    *user  = (AppCtx*)dmmg[0]->user;
   Parameter *param;
-  DA        da;
+  DM        da;
   PetscReal amp, sigma, xc, zc ;
   PetscReal dx=user->grid->dx,dz=user->grid->dz;
   int       i,j,ierr,is,js,im,jm;
@@ -273,7 +273,7 @@ int Initialize(DMMG *dmmg)
   xc = param->xctr; zc = param->zctr;
 
   /* Get the DA and grid */
-  da = DMMGGetDA(dmmg); 
+  da = DMMGGetDM(dmmg); 
   ierr = DAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
 
@@ -300,12 +300,12 @@ int DoSolve(DMMG *dmmg)
   Parameter      *param;
   PetscReal      t_output = 0.0;
   int            ierr, n_plot = 0, Ncomponents, components[3];
-  DA             da = DMMGGetDA(dmmg);
+  DM             da = DMMGGetDM(dmmg);
   Vec            Xstar;
   Characteristic c;
   ierr = PetscBagGetData(user->bag,(void**)&param);CHKERRQ(ierr);
 
-  ierr = DAGetGlobalVector(da, &Xstar);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &Xstar);CHKERRQ(ierr);
 
   /*------------ BEGIN CHARACTERISTIC SETUP ---------------*/
   ierr = CharacteristicCreate(PETSC_COMM_WORLD, &c);CHKERRQ(ierr);
@@ -355,7 +355,7 @@ int DoSolve(DMMG *dmmg)
       t_output += param->t_output_interval; n_plot++;
     }
   }
-  ierr = DARestoreGlobalVector(da, &Xstar);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da, &Xstar);CHKERRQ(ierr);
   ierr = CharacteristicDestroy(c);CHKERRQ(ierr);
   return 0; 
 }
@@ -403,7 +403,7 @@ PetscErrorCode InterpFields2D(void *f, PetscReal ij_real[], PetscInt numComp,
 
   /* map back to periodic domain if out of bounds */
   if ( ir < 0 || ir > ni-1 || jr < 0 || jr> nj-1 ) { 
-    ierr = DAMapCoordsToPeriodicDomain(DMMGGetDA(user->dmmg), &ir, &jr);CHKERRQ(ierr);
+    ierr = DAMapCoordsToPeriodicDomain(DMMGGetDM(user->dmmg), &ir, &jr);CHKERRQ(ierr);
   } 
   field[0] = BiCubicInterp(x, ir, jr);
   return 0;
@@ -452,9 +452,9 @@ int DoOutput(DMMG *dmmg, int n_plot)
   int         ierr;
   char        filename[FNAME_LENGTH];
   PetscViewer viewer;
-  DA          da;
+  DM          da;
   ierr = PetscBagGetData(user->bag,(void**)&param);CHKERRQ(ierr);
-  da = DMMGGetDA(dmmg);
+  da = DMMGGetDM(dmmg);
 
   if (param->output_to_file) { /* send output to binary file */
     /* generate filename for time t */
@@ -495,7 +495,7 @@ PetscBool  OptionsHasName(const char name[])
 */
 PetscErrorCode FormNewTimeFunctionLocal(DALocalInfo *info, PetscScalar **x, PetscScalar **f, AppCtx *user)
 {
-  DA             da = DMMGGetDA(user->dmmg);
+  DM             da = DMMGGetDM(user->dmmg);
   PetscScalar  **fold;
   Parameter     *param;
   PetscScalar    u,uxx,uyy;

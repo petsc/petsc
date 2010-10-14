@@ -20,7 +20,7 @@ int main(int Argc,char **Args)
   Vec             b,x;
   KSP             kspmg;
   PC              pcmg;
-  DA              da;
+  DM              da;
 
   PetscInitialize(&Argc,&Args,(char *)0,help);
   
@@ -57,7 +57,7 @@ int main(int Argc,char **Args)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr); 
   ierr = MatDestroy(cmat);CHKERRQ(ierr); 
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

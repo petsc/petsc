@@ -18,7 +18,7 @@ static char help[] = "Test to write HDF5 file from PETSc DA Vec.\n\n";
 int main(int argc,char **argv) 
 {
   PetscErrorCode ierr;
-  DA             da2D;
+  DM             da2D;
   PetscInt       i,j,ixs, ixm, iys, iym;;
   PetscViewer    H5viewer;
   PetscScalar    xm=-1.0, xp=1.0;
@@ -68,7 +68,7 @@ int main(int argc,char **argv)
   // Cleaning stage
   ierr = PetscViewerDestroy(H5viewer);CHKERRQ(ierr);
   ierr = VecDestroy(gauss);CHKERRQ(ierr);
-  ierr = DADestroy(da2D);CHKERRQ(ierr);
+  ierr = DMDestroy(da2D);CHKERRQ(ierr);
   ierr = PetscFinalize();
     return 0;
 }

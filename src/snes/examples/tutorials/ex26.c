@@ -37,7 +37,7 @@ T*/
    FormFunction().
 */
 typedef struct {
-  DA            da;               /* distributed array data structure */
+  DM            da;               /* distributed array data structure */
   Vec           psi,r;            /* solution, residual vectors */
   Mat           A,J;              /* Jacobian matrix */
   Vec           coordinates;      /* grid coordinates */
@@ -228,7 +228,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(user.psi);CHKERRQ(ierr);
   ierr = VecDestroy(user.r);CHKERRQ(ierr);      
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
-  ierr = DADestroy(user.da);CHKERRQ(ierr);
+  ierr = DMDestroy(user.da);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   PetscFunctionReturn(0);
@@ -406,7 +406,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
     ierr = MatZeroEntries(*B);CHKERRQ(ierr);
   }
 
-  ierr = DAGetLocalVector(user->da,&localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(user->da,&localX);CHKERRQ(ierr);
   ierr = DAGetInfo(user->da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
@@ -419,12 +419,12 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
 
   /*
      Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+        DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
   /*
      Get pointer to vector data
@@ -482,7 +482,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   }
   
   ierr = DAVecRestoreArray(user->da,localX,&x);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
 
   /* 
      Assemble matrix, using the 2-step process:

@@ -28,7 +28,7 @@ The command line options are:\n\
 */
 
 typedef struct {
-  DA           da;
+  DM           da;
   PetscScalar  *bottom, *top, *left, *right;
   PetscInt     mx,my;
 } AppCtx;
@@ -114,7 +114,7 @@ int main(int argc, char **argv)
   info = SNESDestroy(snes); CHKERRQ(info);
 
   /* Free user-created data structures */
-  info = DADestroy(user.da);CHKERRQ(info);
+  info = DMDestroy(user.da);CHKERRQ(info);
   info = PetscFree(user.bottom); CHKERRQ(info);
   info = PetscFree(user.top); CHKERRQ(info);
   info = PetscFree(user.left); CHKERRQ(info);
@@ -156,10 +156,10 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
   info = VecSet(G,0.0);CHKERRQ(info);
 
   /* Get local vector */
-  info = DAGetLocalVector(user->da,&localX);CHKERRQ(info);
+  info = DMGetLocalVector(user->da,&localX);CHKERRQ(info);
   /* Get ghost points */
-  info = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
-  info = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
+  info = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
+  info = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
   /* Get pointers to local vector data */
   info = DAVecGetArray(user->da,localX, &x); CHKERRQ(info);
   info = DAVecGetArray(user->da,G, &g); CHKERRQ(info);
@@ -254,7 +254,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
   /* Restore vectors */
   info = DAVecRestoreArray(user->da,localX, &x); CHKERRQ(info);
   info = DAVecRestoreArray(user->da,G, &g); CHKERRQ(info);
-  info = DARestoreLocalVector(user->da,&localX);CHKERRQ(info);
+  info = DMRestoreLocalVector(user->da,&localX);CHKERRQ(info);
   info = PetscLogFlops(67*mx*my); CHKERRQ(info);
   PetscFunctionReturn(0);
 }
@@ -297,10 +297,10 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   *flag=SAME_NONZERO_PATTERN;
 
   /* Get local vector */
-  info = DAGetLocalVector(user->da,&localX);CHKERRQ(info);
+  info = DMGetLocalVector(user->da,&localX);CHKERRQ(info);
   /* Get ghost points */
-  info = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
-  info = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
+  info = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
+  info = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
  
   /* Get pointers to vector data */
   info = DAVecGetArray(user->da,localX, &x); CHKERRQ(info);
@@ -440,7 +440,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   info = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
   info = DAVecRestoreArray(user->da,localX,&x);CHKERRQ(info);
   info = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
-  info = DARestoreLocalVector(user->da,&localX);CHKERRQ(info);
+  info = DMRestoreLocalVector(user->da,&localX);CHKERRQ(info);
 
   info = PetscLogFlops(199*mx*my); CHKERRQ(info);
   PetscFunctionReturn(0);

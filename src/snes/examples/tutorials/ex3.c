@@ -50,7 +50,7 @@ PetscErrorCode PostCheck(SNES,Vec,Vec,Vec,void*,PetscBool  *,PetscBool  *);
    User-defined application context
 */
 typedef struct {
-   DA          da;     /* distributed array */
+   DM          da;     /* distributed array */
    Vec         F;      /* right-hand-side of PDE */
    PetscMPIInt rank;   /* rank of processor */
    PetscMPIInt size;   /* size of communicator */
@@ -270,7 +270,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(F);CHKERRQ(ierr);
   ierr = MatDestroy(J);CHKERRQ(ierr);
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
-  ierr = DADestroy(ctx.da);CHKERRQ(ierr);
+  ierr = DMDestroy(ctx.da);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   PetscFunctionReturn(0);
@@ -314,22 +314,22 @@ PetscErrorCode FormInitialGuess(Vec x)
 PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   ApplicationCtx *user = (ApplicationCtx*) ctx;
-  DA             da = user->da;
+  DM             da = user->da;
   PetscScalar    *xx,*ff,*FF,d;
   PetscErrorCode ierr;
   PetscInt       i,M,xs,xm;
   Vec            xlocal;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalVector(da,&xlocal);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&xlocal);CHKERRQ(ierr);
   /*
      Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+        DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
      By placing code between these two statements, computations can
      be done while messages are in transition.
   */
-  ierr = DAGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
 
   /*
      Get pointers to vector data.
@@ -377,7 +377,7 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   ierr = DAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,f,&ff);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,user->F,&FF);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
@@ -402,7 +402,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,vo
   PetscScalar    *xx,d,A[3];
   PetscErrorCode ierr;           
   PetscInt       i,j[3],M,xs,xm;
-  DA             da = user->da;
+  DM             da = user->da;
 
   PetscFunctionBegin;
   /*
@@ -545,7 +545,7 @@ PetscErrorCode PostCheck(SNES snes,Vec xcurrent,Vec y,Vec x,void *ctx,PetscBool 
   ApplicationCtx *user = check->user;
   PetscScalar    *xa,*xa_last,tmp;
   PetscReal      rdiff;
-  DA             da;
+  DM             da;
 
   PetscFunctionBegin;
   *changed_x = PETSC_FALSE;

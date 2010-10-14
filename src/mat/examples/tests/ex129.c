@@ -15,8 +15,8 @@ Example usage: ./ex129 -mat_type aij -dof 2\n\n";
 #include "petscda.h"
 #include "petscmg.h"
 
-extern PetscErrorCode ComputeMatrix(DA,Mat);
-extern PetscErrorCode ComputeRHS(DA,Vec);
+extern PetscErrorCode ComputeMatrix(DM,Mat);
+extern PetscErrorCode ComputeRHS(DM,Vec);
 extern PetscErrorCode ComputeRHSMatrix(PetscInt,PetscInt,Mat*);
 
 #undef __FUNCT__
@@ -26,7 +26,7 @@ int main(int argc,char **args)
   PetscErrorCode    ierr;
   PetscMPIInt       size;
   Vec               x,b,y,b1;
-  DA                da;
+  DM                da;
   Mat               A,F,RHS,X,C1;
   MatFactorInfo     info;
   IS                perm,iperm;
@@ -50,11 +50,11 @@ int main(int argc,char **args)
   ierr = DASetDof(da,dof);CHKERRQ(ierr);
   ierr = DASetStencilWidth(da,1);CHKERRQ(ierr);
   ierr = DASetOwnershipRanges(da,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DASetFromOptions(da);CHKERRQ(ierr);
-  ierr = DASetUp(da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
 
-  ierr = DACreateGlobalVector(da,&x);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&b);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&y);CHKERRQ(ierr);
   ierr = ComputeRHS(da,b);CHKERRQ(ierr);
   ierr = VecSet(y,one);CHKERRQ(ierr);
@@ -152,14 +152,14 @@ int main(int argc,char **args)
   ierr = MatDestroy(X);CHKERRQ(ierr);
   ierr = ISDestroy(perm);CHKERRQ(ierr);
   ierr = ISDestroy(iperm);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-PetscErrorCode ComputeRHS(DA da,Vec b)
+PetscErrorCode ComputeRHS(DM da,Vec b)
 {
   PetscErrorCode ierr;
   PetscInt       mx,my,mz;
@@ -212,7 +212,7 @@ PetscErrorCode ComputeRHSMatrix(PetscInt m,PetscInt nrhs,Mat* C)
     
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(DA da,Mat B)
+PetscErrorCode ComputeMatrix(DM da,Mat B)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,dof,k1,k2,k3;

@@ -11,7 +11,7 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL dasetfieldname_(DA *da,PetscInt *nf,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL dasetfieldname_(DM *da,PetscInt *nf,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(name,len,t);
@@ -19,7 +19,7 @@ void PETSC_STDCALL dasetfieldname_(DA *da,PetscInt *nf,CHAR name PETSC_MIXED_LEN
   FREECHAR(name,t);
 }
 
-void PETSC_STDCALL dagetfieldname_(DA *da,PetscInt *nf,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL dagetfieldname_(DM *da,PetscInt *nf,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 

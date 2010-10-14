@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   MPI_Comm       comm;
   SNES           snes;
-  DA             da1;
+  DM             da1;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscLogEventRegister("FormFunc1", 0,&EVENT_FORMFUNCTIONLOCAL1);CHKERRQ(ierr);
@@ -73,7 +73,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free spaces 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DADestroy(da1);CHKERRQ(ierr);
+  ierr = DMDestroy(da1);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
@@ -84,7 +84,7 @@ int main(int argc,char **argv)
 PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 {
   PetscErrorCode ierr;
-  DA             da1 = (DA)dmmg->dm;
+  DM             da1 = dmmg->dm;
   Field1         **x1;
   DALocalInfo    info1;
 
@@ -109,7 +109,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
   PetscErrorCode ierr;
   DMMG           dmmg = (DMMG)ctx;
   AppCtx         *user = (AppCtx*)dmmg->user;
-  DA             da1 = (DA)dmmg->dm;
+  DM             da1 = dmmg->dm;
   DALocalInfo    info1;
   Field1         **x1,**f1;
   Vec            X1;
@@ -119,9 +119,9 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
   ierr = DAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
 
   /* Get local vectors to hold ghosted parts of X */
-  ierr = DAGetLocalVector(da1,&X1);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da1,X,INSERT_VALUES,X1);CHKERRQ(ierr); 
-  ierr = DAGlobalToLocalEnd(da1,X,INSERT_VALUES,X1);CHKERRQ(ierr); 
+  ierr = DMGetLocalVector(da1,&X1);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da1,X,INSERT_VALUES,X1);CHKERRQ(ierr); 
+  ierr = DMGlobalToLocalEnd(da1,X,INSERT_VALUES,X1);CHKERRQ(ierr); 
 
   /* Access the arrays inside X1 */
   ierr = DAVecGetArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
@@ -136,7 +136,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
 
   ierr = DAVecRestoreArray(da1,F,(void**)&f1);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da1,&X1);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da1,&X1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

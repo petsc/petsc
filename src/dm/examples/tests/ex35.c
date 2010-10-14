@@ -13,7 +13,7 @@ int main(int argc,char **argv)
 {
   PetscInt       X = 10,Y = 8,Z=8;
   PetscErrorCode ierr;
-  DA             da;
+  DM             da;
   PetscViewer    viewer;
   Mat            A;
 
@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   /* Free memory */
   ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

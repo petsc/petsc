@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   PetscBool      flg = PETSC_FALSE,flg2,flg3;
   DAPeriodicType periodic;
   DAStencilType  stencil_type;
-  DA             da;
+  DM             da;
   Vec            local,global,local_copy;
   PetscScalar    value;
   PetscReal      norm,work;
@@ -63,8 +63,8 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(global);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(global);CHKERRQ(ierr);
 
-  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
 
   ierr = DALocalToLocalBegin(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
@@ -91,7 +91,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(local_copy);CHKERRQ(ierr);
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

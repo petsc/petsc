@@ -29,7 +29,8 @@ struct _DMOps {
 
   PetscErrorCode (*globaltolocalbegin)(DM,Vec,InsertMode,Vec);		
   PetscErrorCode (*globaltolocalend)(DM,Vec,InsertMode,Vec); 
-  PetscErrorCode (*localtoglobal)(DM,Vec,InsertMode,Vec); 
+  PetscErrorCode (*localtoglobalbegin)(DM,Vec,InsertMode,Vec); 
+  PetscErrorCode (*localtoglobalend)(DM,Vec,InsertMode,Vec); 
 
   PetscErrorCode (*getelements)(DM,PetscInt*,const PetscInt*[]);   
   PetscErrorCode (*restoreelements)(DM,PetscInt*,const PetscInt*[]); 
@@ -66,7 +67,7 @@ struct _p_DM {
 
       Subsets of individual as a single????? Do we handle this by having DMComposite inside composite??????
 
-       DA da_u, da_v, da_p
+       DM da_u, da_v, da_p
 
        DM dm_velocities
 

@@ -52,22 +52,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_Private(DM dm,PetscBool  *done)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DADestroy"
-/*@
-   DADestroy - Destroys a distributed array.
-
-   Collective on DA
-
-   Input Parameter:
-.  da - the distributed array to destroy 
-
-   Level: beginner
-
-.keywords: distributed array, destroy
-
-.seealso: DACreate1d(), DACreate2d(), DACreate3d()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
+#define __FUNCT__ "DMDestroy_DA"
+PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_DA(DM da)
 {
   PetscErrorCode ierr;
   PetscErrorCode i;
@@ -144,7 +130,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
 
   if (dd->coordinates) {ierr = VecDestroy(dd->coordinates);CHKERRQ(ierr);}
   if (dd->ghosted_coordinates) {ierr = VecDestroy(dd->ghosted_coordinates);CHKERRQ(ierr);}
-  if (dd->da_coordinates && da != dd->da_coordinates) {ierr = DADestroy(dd->da_coordinates);CHKERRQ(ierr);}
+  if (dd->da_coordinates && da != dd->da_coordinates) {ierr = DMDestroy(dd->da_coordinates);CHKERRQ(ierr);}
 
   ierr = PetscFree(dd->neighbors);CHKERRQ(ierr);
   ierr = PetscFree(dd->dfill);CHKERRQ(ierr);
@@ -182,7 +168,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), VecSetLocalToGlobalMapping(),
           MatSetLocalToGlobalMapping(), DAGetGlobalIndices(), DAGetISLocalToGlobalMappingBlck()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetISLocalToGlobalMapping(DM da,ISLocalToGlobalMapping *map)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -220,7 +206,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetISLocalToGlobalMapping(DA da,ISLocalToGlob
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), VecSetLocalToGlobalMapping(),
           MatSetLocalToGlobalMapping(), DAGetGlobalIndices(), DAGetISLocalToGlobalMapping()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetISLocalToGlobalMappingBlck(DA da,ISLocalToGlobalMapping *map)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetISLocalToGlobalMappingBlck(DM da,ISLocalToGlobalMapping *map)
 {
   DM_DA *dd = (DM_DA*)da->data;
 

@@ -4,10 +4,10 @@
 #include "petscmat.h"         /*I      "petscmat.h"    I*/
 #include "private/matimpl.h"
 
-EXTERN PetscErrorCode DAGetColoring1d_MPIAIJ(DA,ISColoringType,ISColoring *);
-EXTERN PetscErrorCode DAGetColoring2d_MPIAIJ(DA,ISColoringType,ISColoring *);
-EXTERN PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA,ISColoringType,ISColoring *);
-EXTERN PetscErrorCode DAGetColoring3d_MPIAIJ(DA,ISColoringType,ISColoring *);
+EXTERN PetscErrorCode DAGetColoring1d_MPIAIJ(DM,ISColoringType,ISColoring *);
+EXTERN PetscErrorCode DAGetColoring2d_MPIAIJ(DM,ISColoringType,ISColoring *);
+EXTERN PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DM,ISColoringType,ISColoring *);
+EXTERN PetscErrorCode DAGetColoring3d_MPIAIJ(DM,ISColoringType,ISColoring *);
 
 /*
    For ghost i that may be negative or greater than the upper bound this
@@ -68,7 +68,7 @@ static PetscErrorCode DASetBlockFills_Private(PetscInt *dfill,PetscInt w,PetscIn
 .seealso DAGetMatrix(), DASetGetMatrix(), DASetBlockSize(), DASetBlockFills()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetMatPreallocateOnly(DA da,PetscBool  only)
+PetscErrorCode PETSCDM_DLLEXPORT DASetMatPreallocateOnly(DM da,PetscBool  only)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -113,7 +113,7 @@ $                         0, 1, 1}
 .seealso DAGetMatrix(), DASetGetMatrix(), DASetMatPreallocateOnly()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetBlockFills(DA da,PetscInt *dfill,PetscInt *ofill)
+PetscErrorCode PETSCDM_DLLEXPORT DASetBlockFills(DM da,PetscInt *dfill,PetscInt *ofill)
 {
   DM_DA          *dd = (DM_DA*)da->data;
   PetscErrorCode ierr;
@@ -153,7 +153,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetBlockFills(DA da,PetscInt *dfill,PetscInt 
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), ISColoringType, ISColoring
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DM da,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
 {
   PetscErrorCode ierr;
   PetscInt       dim,m,n,p,nc;
@@ -241,7 +241,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,const 
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetColoring2d_MPIAIJ" 
-PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
+PetscErrorCode DAGetColoring2d_MPIAIJ(DM da,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny,m,n,M,N,dim,s,k,nc,col;
@@ -321,7 +321,7 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetColoring3d_MPIAIJ" 
-PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
+PetscErrorCode DAGetColoring3d_MPIAIJ(DM da,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode  ierr;
   PetscInt        xs,ys,nx,ny,i,j,gxs,gys,gnx,gny,m,n,p,dim,s,k,nc,col,zs,gzs,ii,l,nz,gnz,M,N,P;
@@ -403,7 +403,7 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetColoring1d_MPIAIJ" 
-PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
+PetscErrorCode DAGetColoring1d_MPIAIJ(DM da,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode  ierr;
   PetscInt        xs,nx,i,i1,gxs,gnx,l,m,M,dim,s,nc,col;
@@ -467,7 +467,7 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetColoring2d_5pt_MPIAIJ" 
-PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
+PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DM da,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode  ierr;
   PetscInt        xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny,m,n,dim,s,k,nc;
@@ -534,15 +534,15 @@ PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring 
 }
 
 /* =========================================================================== */
-EXTERN PetscErrorCode DAGetMatrix1d_MPIAIJ(DA,Mat);
-EXTERN PetscErrorCode DAGetMatrix2d_MPIAIJ(DA,Mat);
-EXTERN PetscErrorCode DAGetMatrix2d_MPIAIJ_Fill(DA,Mat);
-EXTERN PetscErrorCode DAGetMatrix3d_MPIAIJ(DA,Mat);
-EXTERN PetscErrorCode DAGetMatrix3d_MPIAIJ_Fill(DA,Mat);
-EXTERN PetscErrorCode DAGetMatrix2d_MPIBAIJ(DA,Mat);
-EXTERN PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA,Mat);
-EXTERN PetscErrorCode DAGetMatrix2d_MPISBAIJ(DA,Mat);
-EXTERN PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA,Mat);
+EXTERN PetscErrorCode DAGetMatrix1d_MPIAIJ(DM,Mat);
+EXTERN PetscErrorCode DAGetMatrix2d_MPIAIJ(DM,Mat);
+EXTERN PetscErrorCode DAGetMatrix2d_MPIAIJ_Fill(DM,Mat);
+EXTERN PetscErrorCode DAGetMatrix3d_MPIAIJ(DM,Mat);
+EXTERN PetscErrorCode DAGetMatrix3d_MPIAIJ_Fill(DM,Mat);
+EXTERN PetscErrorCode DAGetMatrix2d_MPIBAIJ(DM,Mat);
+EXTERN PetscErrorCode DAGetMatrix3d_MPIBAIJ(DM,Mat);
+EXTERN PetscErrorCode DAGetMatrix2d_MPISBAIJ(DM,Mat);
+EXTERN PetscErrorCode DAGetMatrix3d_MPISBAIJ(DM,Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetDA"
@@ -558,14 +558,14 @@ EXTERN PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA,Mat);
    Level: intermediate
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MatSetDA(Mat mat,DA da)
+PetscErrorCode PETSCDM_DLLEXPORT MatSetDA(Mat mat,DM da)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  ierr = PetscTryMethod(mat,"MatSetDA_C",(Mat,DA),(mat,da));CHKERRQ(ierr);
+  ierr = PetscTryMethod(mat,"MatSetDA_C",(Mat,DM),(mat,da));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -574,7 +574,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatView_MPI_DA"
 PetscErrorCode PETSCDM_DLLEXPORT MatView_MPI_DA(Mat A,PetscViewer viewer)
 {
-  DA             da;
+  DM             da;
   PetscErrorCode ierr;
   const char     *prefix;
   Mat            Anatural;
@@ -612,7 +612,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatLoad_MPI_DA"
 PetscErrorCode PETSCDM_DLLEXPORT MatLoad_MPI_DA(Mat A,PetscViewer viewer)
 {
-  DA             da;
+  DM             da;
   PetscErrorCode ierr;
   Mat            Anatural,Aapp;
   AO             ao;
@@ -683,7 +683,7 @@ EXTERN_C_END
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DASetBlockFills(), DASetMatPreallocateOnly()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DM da, const MatType mtype,Mat *J)
 {
   PetscErrorCode ierr;
   PetscInt       dim,dof,nx,ny,nz,dims[3],starts[3],M,N,P;
@@ -813,7 +813,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
 /* ---------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix2d_MPIAIJ" 
-PetscErrorCode DAGetMatrix2d_MPIAIJ(DA da,Mat J)
+PetscErrorCode DAGetMatrix2d_MPIAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny,m,n,dim,s,*cols = PETSC_NULL,k,nc,*rows = PETSC_NULL,col,cnt,l,p;
@@ -919,7 +919,7 @@ PetscErrorCode DAGetMatrix2d_MPIAIJ(DA da,Mat J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix2d_MPIAIJ_Fill" 
-PetscErrorCode DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat J)
+PetscErrorCode DAGetMatrix2d_MPIAIJ_Fill(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
@@ -1049,7 +1049,7 @@ PetscErrorCode DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix3d_MPIAIJ" 
-PetscErrorCode DAGetMatrix3d_MPIAIJ(DA da,Mat J)
+PetscErrorCode DAGetMatrix3d_MPIAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
@@ -1166,7 +1166,7 @@ PetscErrorCode DAGetMatrix3d_MPIAIJ(DA da,Mat J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix1d_MPIAIJ" 
-PetscErrorCode DAGetMatrix1d_MPIAIJ(DA da,Mat J)
+PetscErrorCode DAGetMatrix1d_MPIAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,nx,i,i1,slot,gxs,gnx;           
@@ -1231,7 +1231,7 @@ PetscErrorCode DAGetMatrix1d_MPIAIJ(DA da,Mat J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix2d_MPIBAIJ" 
-PetscErrorCode DAGetMatrix2d_MPIBAIJ(DA da,Mat J)
+PetscErrorCode DAGetMatrix2d_MPIBAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
@@ -1326,7 +1326,7 @@ PetscErrorCode DAGetMatrix2d_MPIBAIJ(DA da,Mat J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix3d_MPIBAIJ" 
-PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
+PetscErrorCode DAGetMatrix3d_MPIBAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
@@ -1458,7 +1458,7 @@ static PetscErrorCode L2GFilterUpperTriangular(ISLocalToGlobalMapping ltog,Petsc
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix2d_MPISBAIJ" 
-PetscErrorCode DAGetMatrix2d_MPISBAIJ(DA da,Mat J)
+PetscErrorCode DAGetMatrix2d_MPISBAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
@@ -1557,7 +1557,7 @@ PetscErrorCode DAGetMatrix2d_MPISBAIJ(DA da,Mat J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix3d_MPISBAIJ" 
-PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
+PetscErrorCode DAGetMatrix3d_MPISBAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
@@ -1672,7 +1672,7 @@ PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix3d_MPIAIJ_Fill" 
-PetscErrorCode DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat J)
+PetscErrorCode DAGetMatrix3d_MPIAIJ_Fill(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           

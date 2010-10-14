@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   Mat                    J;                    /* Jacobian matrix */
   PetscInt               steps,maxsteps = 100;     /* iterations for convergence */
   PetscErrorCode         ierr;
-  DA                     da;
+  DM                     da;
   MatFDColoring          matfdcoloring;
   ISColoring             iscoloring;
   PetscReal              ftime;
@@ -122,7 +122,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(r);CHKERRQ(ierr);      
   ierr = TSDestroy(ts);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   PetscFunctionReturn(0);
@@ -143,7 +143,7 @@ int main(int argc,char **argv)
  */
 PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
 {
-  DA             da = (DA)ptr;
+  DM             da = (DM)ptr;
   PetscErrorCode ierr;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscReal      two = 2.0,hx,hy,hxdhy,hydhx,sx,sy;
@@ -151,7 +151,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   Vec            localX;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
@@ -162,12 +162,12 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
 
   /*
      Scatter ghost points to local vector,using the 2-step process
-        DAGlobalToLocalBegin(),DAGlobalToLocalEnd().
+        DMGlobalToLocalBegin(),DMGlobalToLocalEnd().
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
   /*
      Get pointers to vector data
@@ -203,7 +203,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   */
   ierr = DAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
@@ -211,7 +211,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialSolution"
-PetscErrorCode FormInitialSolution(DA da,Vec U)
+PetscErrorCode FormInitialSolution(DM da,Vec U)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,xs,ys,xm,ym,Mx,My;

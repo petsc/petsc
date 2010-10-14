@@ -28,7 +28,7 @@ struct _p_Characteristic {
   PetscBool    structured;      /* Flag for mesh type */
   PetscInt     numIds;          /* Number of integers necessary to identify a mesh element */
   /* Velocity interpolation structures */
-  DA           velocityDA;      /* DA for the velocity field */
+  DM           velocityDA;      /* DA for the velocity field */
   Vec          velocity;        /* Velocity field at t_n */
   Vec          velocityOld;     /* Velocity field at t_n-1 */
   PetscInt     numVelocityComp; /* Number of velocity components (should be the mesh dimension) */
@@ -37,7 +37,7 @@ struct _p_Characteristic {
   PetscErrorCode (*velocityInterpLocal)(void *, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *);
   void        *velocityCtx;     /* User context for velocity inteprolation */
   /* Field interpolation structures */
-  DA           fieldDA;         /* DA for the field field */
+  DM           fieldDA;         /* DA for the field field */
   Vec          field;           /* Field field at t_n */
   Vec          fieldOld;        /* Field field at t_n-1 */
   PetscInt     numFieldComp;    /* Number of field components (should be the mesh dimension) */

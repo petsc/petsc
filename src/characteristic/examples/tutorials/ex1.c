@@ -81,7 +81,7 @@ int main(int argc,char **argv)
   GridInfo       grid;
   int            ierr,result;
   MPI_Comm       comm;
-  DA             da;
+  DM             da;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -103,7 +103,7 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(comm,grid.mglevels,user,&dmmg);CHKERRQ(ierr); 
   ierr = DACreate2d(comm,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = DAGetInfo(da,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&(param->pi),&(param->pj),PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   REG_INTG(user->bag,&param->pi,param->pi ,"procs_x","<DO NOT SET> Processors in the x-direction");
   REG_INTG(user->bag,&param->pj,param->pj ,"procs_y","<DO NOT SET> Processors in the y-direction");
@@ -111,7 +111,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */   
-  ierr = DAGetGlobalVector(da, &(user->Xold));CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &(user->Xold));CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize and solve the nonlinear system
@@ -123,7 +123,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space. 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DARestoreGlobalVector(da, &(user->Xold));CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da, &(user->Xold));CHKERRQ(ierr);
   ierr = PetscBagDestroy(user->bag);CHKERRQ(ierr); 
   ierr = PetscFree(user);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
@@ -243,7 +243,7 @@ int Initialize(DMMG *dmmg)
 {
   AppCtx    *user  = (AppCtx*)dmmg[0]->user;
   Parameter *param;
-  DA        da;
+  DM        da;
   PetscReal PI = 3.14159265358979323846;
   PetscReal sigma,xc,zc;
   PetscReal dx=user->grid->dx,dz=user->grid->dz;
@@ -253,7 +253,7 @@ int Initialize(DMMG *dmmg)
   sigma=param->sigma; xc=param->xctr; zc=param->zctr;
 
   /* Get the DA and grid */
-  da = (DA)(dmmg[0]->dm); 
+  da = (dmmg[0]->dm); 
   ierr = DAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
 
@@ -286,12 +286,12 @@ int DoSolve(DMMG *dmmg)
   Parameter      *param;
   PetscReal      t_output = 0.0;
   int            ierr, n_plot = 0, Ncomponents, components[3];
-  DA             da = DMMGGetDA(dmmg);
+  DM             da = DMMGGetDM(dmmg);
   Vec            Xstar;
   Characteristic c;
   ierr = PetscBagGetData(user->bag,(void**)&param);CHKERRQ(ierr);
 
-  ierr = DAGetGlobalVector(da, &Xstar);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &Xstar);CHKERRQ(ierr);
 
   /*------------ BEGIN CHARACTERISTIC SETUP ---------------*/
   ierr = CharacteristicCreate(PETSC_COMM_WORLD, &c);CHKERRQ(ierr);
@@ -347,7 +347,7 @@ int DoSolve(DMMG *dmmg)
       t_output += param->t_output_interval; n_plot++;
     }
   }
-  ierr = DARestoreGlobalVector(da, &Xstar);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da, &Xstar);CHKERRQ(ierr);
   ierr = CharacteristicDestroy(c);CHKERRQ(ierr);
   return 0; 
 }
@@ -482,9 +482,9 @@ int DoOutput(DMMG *dmmg, int n_plot)
   int         ierr;
   char        filename[FNAME_LENGTH];
   PetscViewer viewer;
-  DA          da;
+  DM          da;
   ierr = PetscBagGetData(user->bag,(void**)&param);CHKERRQ(ierr);
-  da = DMMGGetDA(dmmg);
+  da = DMMGGetDM(dmmg);
 
   if (param->output_to_file) { /* send output to binary file */
     /* generate filename for time t */
@@ -505,8 +505,7 @@ int DoOutput(DMMG *dmmg, int n_plot)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "DASetFieldNames"
-int DASetFieldNames(const char n0[], const char n1[], const char n2[], 
-		    DA da)
+int DASetFieldNames(const char n0[], const char n1[], const char n2[], DM da)
 /* ------------------------------------------------------------------- */
 {
   int ierr;

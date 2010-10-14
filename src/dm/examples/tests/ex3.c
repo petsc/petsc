@@ -10,7 +10,7 @@ int main(int argc,char **argv)
   PetscMPIInt    rank,size;
   PetscErrorCode ierr;
   PetscInt       M = 60,time_steps = 100, localsize,j,i,mybase,myend,width,xbase,*localnodes = PETSC_NULL;
-  DA             da;
+  DM             da;
   PetscViewer    viewer,viewer_private;
   PetscDraw      draw;
   Vec            local,global,copy;
@@ -70,7 +70,8 @@ int main(int argc,char **argv)
   }
 
   ierr = VecRestoreArray(local,&localptr);CHKERRQ(ierr);
-  ierr = DALocalToGlobal(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
 
   /* Make copy of local array for doing updates */
   ierr = VecDuplicate(local,&copy);CHKERRQ(ierr);
@@ -83,8 +84,8 @@ int main(int argc,char **argv)
   for (j=0; j<time_steps; j++) {  
 
     /* Global to Local */
-    ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
     /*Extract local array */ 
     ierr = VecGetArray(local,&localptr);CHKERRQ(ierr);
@@ -100,7 +101,8 @@ int main(int argc,char **argv)
     ierr = VecRestoreArray(local,&localptr);CHKERRQ(ierr);
 
     /* Local to Global */
-    ierr = DALocalToGlobal(da,copy,INSERT_VALUES,global);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalBegin(da,copy,INSERT_VALUES,global);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(da,copy,INSERT_VALUES,global);CHKERRQ(ierr);
   
     /* View my part of Wave */ 
     ierr = VecView(copy,viewer_private);CHKERRQ(ierr);
@@ -109,7 +111,7 @@ int main(int argc,char **argv)
     ierr = VecView(global,viewer);CHKERRQ(ierr);
   }
 
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer_private);CHKERRQ(ierr);
   ierr = VecDestroy(copy);CHKERRQ(ierr);

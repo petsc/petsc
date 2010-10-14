@@ -12,7 +12,7 @@
 
 typedef struct {
   MPI_Comm            hcomm;
-  DA                  da;
+  DM                  da;
   HYPRE_StructGrid    hgrid;
   HYPRE_StructStencil hstencil;
   HYPRE_StructMatrix  hmat;
@@ -27,7 +27,7 @@ typedef struct {
 
 typedef struct {
   MPI_Comm               hcomm;
-  DA                     da;
+  DM                     da;
   HYPRE_SStructGrid      ss_grid;
   HYPRE_SStructGraph     ss_graph;
   HYPRE_SStructStencil   ss_stencil;

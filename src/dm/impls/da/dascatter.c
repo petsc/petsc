@@ -5,7 +5,7 @@
 */
 
 #include "private/daimpl.h"    /*I   "petscda.h"   I*/
-EXTERN PetscErrorCode DALocalToLocalCreate(DA);
+EXTERN PetscErrorCode DMDALocalToLocalCreate(DM);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetScatter"
@@ -32,9 +32,9 @@ EXTERN PetscErrorCode DALocalToLocalCreate(DA);
 .keywords: distributed array, get, scatter, context, global-to-local,
            local-to-global, local-to-local
 
-.seealso: DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToGlobal()
+.seealso: DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetScatter(DA da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetScatter(DM da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -45,7 +45,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetScatter(DA da,VecScatter *ltog,VecScatter 
   if (gtol) *gtol = dd->gtol;
   if (ltol) {
     if (!dd->ltol) {
-      ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
+      ierr = DMDALocalToLocalCreate(da);CHKERRQ(ierr);
     }
     *ltol = dd->ltol;
   }

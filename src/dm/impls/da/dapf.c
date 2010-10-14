@@ -22,9 +22,9 @@
 
 .keywords:  distributed array, grid function
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DACreateGlobalVector()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DMDestroy(), DACreateGlobalVector()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DACreatePF(DA da,PF *pf)
+PetscErrorCode PETSCDM_DLLEXPORT DACreatePF(DM da,PF *pf)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;

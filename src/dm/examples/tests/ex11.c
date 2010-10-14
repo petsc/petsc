@@ -9,7 +9,7 @@ int main(int argc,char **argv)
 {
   PetscInt       M = 5,N = 4,dof=1,s=1,wrap=0,i,n,j,k,m,cnt;
   PetscErrorCode ierr;
-  DA             da;
+  DM             da;
   PetscViewer    viewer;
   Vec            local,locala,global,coors;
   PetscScalar    *xy,*alocal;
@@ -39,7 +39,7 @@ int main(int argc,char **argv)
     ierr = DASetFieldName(da,i,fname);CHKERRQ(ierr);
   }
 
-  ierr = DAView(da,viewer);CHKERRQ(ierr);
+  ierr = DMView(da,viewer);CHKERRQ(ierr);
   ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
   ierr = DACreateLocalVector(da,&locala);CHKERRQ(ierr);
@@ -64,20 +64,21 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(local,&alocal);CHKERRQ(ierr);
   ierr = VecRestoreArray(coors,&xy);CHKERRQ(ierr);
 
-  ierr = DALocalToGlobal(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
 
   ierr = VecView(global,viewer);CHKERRQ(ierr); 
 
   /* Send ghost points to local vectors */
-  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,locala);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,locala);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,locala);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,locala);CHKERRQ(ierr);
 
   /* Free memory */
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(locala);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

@@ -257,7 +257,7 @@
       call VecDestroy(csolution,ierr)
       call VecDestroy(local,ierr) 
       call VecDestroy(global,ierr) 
-      call DADestroy(da,ierr) 
+      call DMDestroy(da,ierr) 
       if (A .ne. 0) then
         call MatDestroy(A,ierr) 
       endif
@@ -450,8 +450,8 @@
 !  Extract local array  
 
       call DACreateLocalVector(da,local,ierr) 
-      call DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local,ierr) 
-      call DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local,ierr) 
+      call DMGlobalToLocalBegin(da,globalin,INSERT_VALUES,local,ierr) 
+      call DMGlobalToLocalEnd(da,globalin,INSERT_VALUES,local,ierr) 
       call VecGetArray(local,localptr,ldx,ierr) 
 
 !  Extract work vector 
@@ -476,7 +476,10 @@
 
 !   Local to Global 
 
-      call DALocalToGlobal(da,localwork,INSERT_VALUES,globalout,ierr) 
+      call DMLocalToGlobalBegin(da,localwork,INSERT_VALUES,globalout,    &
+     &             ierr) 
+      call DMLocalToGlobalEnd(da,localwork,INSERT_VALUES,globalout,      &
+     &            ierr) 
       return 
       end
 

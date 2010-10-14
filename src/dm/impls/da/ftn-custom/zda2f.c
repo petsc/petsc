@@ -17,7 +17,7 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL dagetneighbors_(DA *da,PetscMPIInt *ranks,PetscErrorCode *ierr)
+void PETSC_STDCALL dagetneighbors_(DM *da,PetscMPIInt *ranks,PetscErrorCode *ierr)
 {
   const PetscMPIInt *r;
   PetscInt          n;
@@ -51,7 +51,7 @@ static PetscErrorCode ourlj3d(DALocalInfo *info,PetscScalar ***in,Mat m,void *pt
   return 0;
 }
 
-void PETSC_STDCALL dasetlocaljacobian_(DA *da,void (PETSC_STDCALL *jac)(DALocalInfo*,void*,void*,void*,PetscErrorCode*),PetscErrorCode *ierr)
+void PETSC_STDCALL dasetlocaljacobian_(DM *da,void (PETSC_STDCALL *jac)(DALocalInfo*,void*,void*,void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   PetscInt dim;
 
@@ -92,7 +92,7 @@ static PetscErrorCode ourlf3d(DALocalInfo *info,PetscScalar ***in,PetscScalar **
   return 0;
 }
 
-void PETSC_STDCALL dasetlocalfunction_(DA *da,void (PETSC_STDCALL *func)(DALocalInfo*,void*,void*,void*,PetscErrorCode*),PetscErrorCode *ierr)
+void PETSC_STDCALL dasetlocalfunction_(DM *da,void (PETSC_STDCALL *func)(DALocalInfo*,void*,void*,void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   PetscInt dim;
 
@@ -114,14 +114,14 @@ void PETSC_STDCALL dasetlocalfunction_(DA *da,void (PETSC_STDCALL *func)(DALocal
 
 void PETSC_STDCALL dacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
                   *stencil_type,PetscInt *M,PetscInt *N,PetscInt *m,PetscInt *n,PetscInt *w,
-                  PetscInt *s,PetscInt *lx,PetscInt *ly,DA *inra,PetscErrorCode *ierr)
+                  PetscInt *s,PetscInt *lx,PetscInt *ly,DM *inra,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(lx);
   CHKFORTRANNULLINTEGER(ly);
   *ierr = DACreate2d(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*wrap,*stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,inra);
 }
 
-void PETSC_STDCALL dagetownershipranges_(DA *da,PetscInt lx[],PetscInt ly[],PetscInt lz[],PetscErrorCode *ierr)
+void PETSC_STDCALL dagetownershipranges_(DM *da,PetscInt lx[],PetscInt ly[],PetscInt lz[],PetscErrorCode *ierr)
 {
   const PetscInt *gx,*gy,*gz;
   PetscInt       M,N,P,i;

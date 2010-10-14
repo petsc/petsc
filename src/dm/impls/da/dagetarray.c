@@ -26,7 +26,7 @@
     If vec is a local vector (obtained with DACreateLocalVector() etc) then they ghost point locations are accessable. If it is 
     a global vector then the ghost points are not accessable. Of course with the local vector you will have had to do the 
 
-    appropriate DALocalToGlobalBegin() and DALocalToGlobalEnd() to have correct values in the ghost locations.
+    appropriate DMLocalToGlobalBegin() and DMLocalToGlobalEnd() to have correct values in the ghost locations.
 
   Fortran Notes: From Fortran use DAVecGetArrayF90() and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate 
        dimension. For a DA created with a dof of 1 use the dimension of the DA, for a DA created with a dof greater than 1 use one more than the 
@@ -43,7 +43,7 @@
 .seealso: DAGetGhostCorners(), DAGetCorners(), VecGetArray(), VecRestoreArray(), DAVecRestoreArray(), DAVecRestoreArrayDOF()
           DAVecGetarrayDOF()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArray(DA da,Vec vec,void *array)
+PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArray(DM da,Vec vec,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
@@ -100,7 +100,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArray(DA da,Vec vec,void *array)
 
 .seealso: DAGetGhostCorners(), DAGetCorners(), VecGetArray(), VecRestoreArray(), DAVecGetArray()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAVecRestoreArray(DA da,Vec vec,void *array)
+PetscErrorCode PETSCDM_DLLEXPORT DAVecRestoreArray(DM da,Vec vec,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
@@ -162,7 +162,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecRestoreArray(DA da,Vec vec,void *array)
 
 .seealso: DAGetGhostCorners(), DAGetCorners(), VecGetArray(), VecRestoreArray(), DAVecRestoreArray(), DAVecGetArray(), DAVecRestoreArrayDOF()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArrayDOF(DA da,Vec vec,void *array)
+PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArrayDOF(DM da,Vec vec,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
@@ -216,7 +216,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArrayDOF(DA da,Vec vec,void *array)
 
 .seealso: DAGetGhostCorners(), DAGetCorners(), VecGetArray(), VecRestoreArray(), DAVecGetArray(), DAVecGetArrayDOF(), DAVecRestoreArrayDOF()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAVecRestoreArrayDOF(DA da,Vec vec,void *array)
+PetscErrorCode PETSCDM_DLLEXPORT DAVecRestoreArrayDOF(DM da,Vec vec,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;

@@ -107,7 +107,7 @@ extern PetscErrorCode PrintVector(DMMG, Vec);
 int main(int argc,char **argv)
 {
   DMMG                  *dmmg;                 /* hierarchy manager */
-  DA                     da;
+  DM                     da;
   SNES                   snes;                 /* nonlinear solver */
   AppCtx                *user;                 /* user-defined work context */
   PetscBag               bag;
@@ -138,7 +138,7 @@ int main(int argc,char **argv)
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create multilevel DA data structure (DMMG) to manage hierarchical solvers
+     Create multilevel DM data structure (DMMG) to manage hierarchical solvers
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMMGCreate(PETSC_COMM_WORLD,1,user,&dmmg);CHKERRQ(ierr);
 
@@ -149,7 +149,7 @@ int main(int argc,char **argv)
                     3,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DASetFieldName(da, 0, "ooblek");CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg, (DM) da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set the discretization functions
@@ -181,7 +181,7 @@ int main(int argc,char **argv)
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D, %s\n",its,SNESConvergedReasons[reason]);CHKERRQ(ierr);
-  ierr = L_2Error(DMMGGetDA(dmmg), DMMGGetx(dmmg), &error, user);CHKERRQ(ierr);
+  ierr = L_2Error(DMMGGetDM(dmmg), DMMGGetx(dmmg), &error, user);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"L_2 error in the solution: %G\n", error);CHKERRQ(ierr);
   ierr = PrintVector(dmmg[0], DMMGGetx(dmmg));CHKERRQ(ierr);
 
@@ -199,7 +199,7 @@ int main(int argc,char **argv)
 #define __FUNCT__ "PrintVector"
 PetscErrorCode PrintVector(DMMG dmmg, Vec U)
 {
-  DA             da = (DA) dmmg->dm;
+  DM             da =  dmmg->dm;
   Field        **u;
   PetscInt       i,j,xs,ys,xm,ym;
   PetscErrorCode ierr;
@@ -232,7 +232,7 @@ PetscErrorCode ExactSolution(PetscReal x, PetscReal y, Field *u)
 #define __FUNCT__ "CreateNullSpace"
 PetscErrorCode CreateNullSpace(DMMG dmmg, Vec *nulls)
 {
-  DA             da = (DA) dmmg->dm;
+  DM             da =  dmmg->dm;
   Vec            X = nulls[0];
   Field        **x;
   PetscInt       xs,ys,xm,ym,i,j;
@@ -268,7 +268,7 @@ PetscErrorCode CreateNullSpace(DMMG dmmg, Vec *nulls)
 PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 {
   AppCtx        *user = (AppCtx *) dmmg->user;
-  DA             da = (DA) dmmg->dm;
+  DM             da =  dmmg->dm;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscErrorCode ierr;
   PetscReal      lambda,temp1,temp,hx,hy;
@@ -884,7 +884,7 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info, Field **x, Mat jac, AppCtx *
 /*
   L_2Error - Integrate the L_2 error of our solution over each face
 */
-PetscErrorCode L_2Error(DA da, Vec fVec, double *error, AppCtx *user)
+PetscErrorCode L_2Error(DM da, Vec fVec, double *error, AppCtx *user)
 {
   DALocalInfo info;
   Vec fLocalVec;
@@ -896,9 +896,9 @@ PetscErrorCode L_2Error(DA da, Vec fVec, double *error, AppCtx *user)
 
   PetscFunctionBegin;
   ierr = DAGetLocalInfo(da, &info);CHKERRQ(ierr);
-  ierr = DAGetLocalVector(da, &fLocalVec);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,fVec, INSERT_VALUES, fLocalVec);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,fVec, INSERT_VALUES, fLocalVec);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da, &fLocalVec);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,fVec, INSERT_VALUES, fLocalVec);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,fVec, INSERT_VALUES, fLocalVec);CHKERRQ(ierr);
   ierr = DAVecGetArray(da, fLocalVec, &f);CHKERRQ(ierr);
 
   *error = 0.0;
@@ -947,8 +947,8 @@ PetscErrorCode L_2Error(DA da, Vec fVec, double *error, AppCtx *user)
   }
 
   ierr = DAVecRestoreArray(da, fLocalVec, &f);CHKERRQ(ierr);
-  /* ierr = DALocalToGlobalBegin(da,xLocalVec,xVec);CHKERRQ(ierr); */
-  /* ierr = DALocalToGlobalEnd(da,xLocalVec,xVec);CHKERRQ(ierr); */
-  ierr = DARestoreLocalVector(da, &fLocalVec);CHKERRQ(ierr);
+  /* ierr = DMLocalToGlobalBegin(da,xLocalVec,ADD_VALUES,xVec);CHKERRQ(ierr); */
+  /* ierr = DMLocalToGlobalEnd(da,xLocalVec,ADD_VALUES,xVec);CHKERRQ(ierr); */
+  ierr = DMRestoreLocalVector(da, &fLocalVec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

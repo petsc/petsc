@@ -29,7 +29,7 @@ typedef struct {
 
   ISLocalToGlobalMapping ltogmap,ltogmapb;   /* local to global mapping for associated vectors */
   Vec                    coordinates;        /* coordinates (x,y,z) of local nodes, not including ghosts*/
-  DA                     da_coordinates;     /* da for getting ghost values of coordinates */
+  DM                     da_coordinates;     /* da for getting ghost values of coordinates */
   Vec                    ghosted_coordinates;/* coordinates with ghost nodes */
   char                   **fieldname;        /* names of individual components in vectors */
 
@@ -106,7 +106,10 @@ EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec,PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT VecLoad_Default_DA(Vec, PetscViewer);
 EXTERN_C_END
-EXTERN PetscErrorCode DAView_Private(DA);
+EXTERN PetscErrorCode DMView_DA_Private(DM);
+EXTERN PetscErrorCode DMView_DA_Matlab(DM,PetscViewer);
+EXTERN PetscErrorCode DMView_DA_Binary(DM,PetscViewer);
+EXTERN PetscErrorCode DMView_DA_VTK(DM,PetscViewer);
 
 extern PetscLogEvent  DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction;
 

@@ -20,7 +20,7 @@
    Level: intermediate
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DALoad(PetscViewer viewer,PetscInt M,PetscInt N,PetscInt P,DA *da)
+PetscErrorCode PETSCDM_DLLEXPORT DALoad(PetscViewer viewer,PetscInt M,PetscInt N,PetscInt P,DM *da)
 {
   PetscErrorCode ierr;
   PetscInt       info[8],nmax = 8,i;
@@ -66,7 +66,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DALoad(PetscViewer viewer,PetscInt M,PetscInt N
   flag = PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-daload_coordinates",&flag,PETSC_NULL);CHKERRQ(ierr);
   if (flag) {
-    DA      dac;
+    DM      dac;
     Vec     tmpglobal,global;
     PetscInt mlocal;
 
@@ -89,7 +89,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DALoad(PetscViewer viewer,PetscInt M,PetscInt N
     ierr = VecCreateMPI(comm,mlocal,PETSC_DETERMINE,&global);CHKERRQ(ierr);
     ierr = VecCopy(tmpglobal,global);CHKERRQ(ierr);
     ierr = VecDestroy(tmpglobal);CHKERRQ(ierr); 
-    ierr = DADestroy(dac);CHKERRQ(ierr);
+    ierr = DMDestroy(dac);CHKERRQ(ierr);
     ierr = DASetCoordinates(*da,global);CHKERRQ(ierr);
     ierr = VecDestroy(global);CHKERRQ(ierr);
   }

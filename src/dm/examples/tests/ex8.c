@@ -15,7 +15,7 @@ static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
   For multiple degrees of freedom per node use ISCreateBlock()
   instead of ISCreateGeneral().
 */
-PetscErrorCode GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
+PetscErrorCode GenerateSliceScatter(DM da,VecScatter *scatter,Vec *vslice)
 {
   AO             ao;
   PetscInt       M,N,P,nslice,*sliceindices,count,i,j;
@@ -85,7 +85,7 @@ int main(int argc,char **argv)
   PetscInt       *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
-  DA             da;
+  DM             da;
   Vec            local,global,vslice;
   PetscScalar    value;
   DAPeriodicType wrap = DA_XYPERIODIC;
@@ -109,7 +109,7 @@ int main(int argc,char **argv)
   /* Create distributed array and get vectors */
   ierr = DACreate3d(PETSC_COMM_WORLD,wrap,stencil_type,M,N,P,m,n,p,1,s,
                     lx,ly,lz,&da);CHKERRQ(ierr);
-  ierr = DAView(da,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+  ierr = DMView(da,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
 
@@ -125,7 +125,7 @@ int main(int argc,char **argv)
 
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

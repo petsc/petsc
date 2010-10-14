@@ -152,8 +152,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[])
   ierr = MeshRegisterAll(path);CHKERRQ(ierr);
 #endif
   /* Register Events */
-  ierr = PetscLogEventRegister("DAGlobalToLocal",      DM_CLASSID,&DA_GlobalToLocal);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DALocalToGlobal",      DM_CLASSID,&DA_LocalToGlobal);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMGlobalToLocal",      DM_CLASSID,&DA_GlobalToLocal);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMLocalToGlobal",      DM_CLASSID,&DA_LocalToGlobal);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DALocalADFunc",        DM_CLASSID,&DA_LocalADFunction);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
   ierr = PetscLogEventRegister("MeshView",             MESH_CLASSID,&Mesh_View);CHKERRQ(ierr);

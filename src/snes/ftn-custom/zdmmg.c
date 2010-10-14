@@ -60,11 +60,6 @@ void PETSC_STDCALL dmmggetlevels_(DMMG **dmmg,PetscInt *x,PetscErrorCode *ierr)
 
 /* ----------------------------------------------------------------------------------------------------------*/
 
-void PETSC_STDCALL dmmggetda_(DMMG *dmmg,DA *da,PetscErrorCode *ierr)
-{
-  *da   = (DA)(*dmmg)->dm;
-  *ierr = 0;
-}
 
 EXTERN_C_END
 

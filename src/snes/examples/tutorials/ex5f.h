@@ -57,7 +57,7 @@
 !     gxs, gys - local starting grid indices (including ghost points)
 !     gxm, gym - widths of local grid (including ghost points)
 
-      DA      da
+      DM      da
       PetscInt xs,xe,xm,gxs,gxe,gxm
       PetscInt ys,ye,ym,gys,gye,gym
       PetscInt mx,my

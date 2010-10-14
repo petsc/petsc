@@ -22,7 +22,7 @@ extern PetscErrorCode ComputeMatrix(DMMG,Mat,Mat);
 extern PetscErrorCode ComputeRHS(DMMG,Vec, PetscBool );
 extern PetscErrorCode Solve_FFT(DA, Vec, Vec);
 extern PetscErrorCode CalculateXYStdDev(DA, Vec, Vec *);
-extern PetscErrorCode VecViewCenterSingle(DA da, Vec v, PetscViewer viewer, const char name[], PetscInt i, PetscInt j);
+extern PetscErrorCode VecViewCenterSingle(DM da, Vec v, PetscViewer viewer, const char name[], PetscInt i, PetscInt j);
 
 PetscReal L[3] = {1.0, 1.0, 1.0};
 
@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   DMMG           *dmmg;
   PetscReal      norm, normTotal;
-  DA             da;
+  DM             da;
   Vec            phi, phiRhs;
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
   ierr = DACreate3d(PETSC_COMM_WORLD,DA_XYZPERIODIC,DA_STENCIL_STAR,-3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
 
   ierr = DMMGSetKSP(dmmg,(PetscErrorCode (*)(DMMG, Vec)) ComputeRHS,ComputeMatrix);CHKERRQ(ierr);
   //ierr = DMMGSetNullSpace(dmmg, PETSC_TRUE, 0, PETSC_NULL);CHKERRQ(ierr);
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(DMMGGetx(dmmg), &phi);CHKERRQ(ierr);
   ierr = VecDuplicate(DMMGGetx(dmmg), &phiRhs);CHKERRQ(ierr);
   ierr = ComputeRHS(dmmg[0], phiRhs, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = Solve_FFT(DMMGGetDA(dmmg), phiRhs, phi);CHKERRQ(ierr);
+  ierr = Solve_FFT(DMMGGetDM(dmmg), phiRhs, phi);CHKERRQ(ierr);
 
   Vec       stddev;
   PetscReal s;
@@ -126,7 +126,7 @@ int main(int argc,char **argv)
 #define __FUNCT__ "ComputeRHS"
 PetscErrorCode ComputeRHS(DMMG dmmg,Vec b, PetscBool  withBC= PETSC_TRUE)
 {
-  DA             da = (DA) dmmg->dm;
+  DM             da =  dmmg->dm;
   PetscInt       bathIndex;
   PetscScalar ***a;
   PetscScalar    sc;
@@ -164,7 +164,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg,Vec b, PetscBool  withBC= PETSC_TRUE)
 #define __FUNCT__ "ComputeMatrix"
 PetscErrorCode ComputeMatrix(DMMG dmmg,Mat jac,Mat B)
 {
-  DA             da = (DA)dmmg->dm;
+  DM             da = dmmg->dm;
   PetscInt       bathIndex;
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
@@ -207,7 +207,7 @@ PetscErrorCode ComputeMatrix(DMMG dmmg,Mat jac,Mat B)
 
 #undef __FUNCT__
 #define __FUNCT__ "Solve_FFT"
-PetscErrorCode Solve_FFT(DA da, Vec rhs, Vec phi)
+PetscErrorCode Solve_FFT(DM da, Vec rhs, Vec phi)
 {
   PetscReal      h[3];
   PetscInt       dim[3];
@@ -229,9 +229,9 @@ PetscErrorCode Solve_FFT(DA da, Vec rhs, Vec phi)
   h[2] = L[2]/(P - 1);
   scale = 1.0/((PetscReal) M*N*P);
   sc    = (M-1)*(N-1)*(P-1);
-  ierr = DAGetGlobalVector(da, &rhsHat);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &rhsHat);CHKERRQ(ierr);
   ierr = MatMult(F, rhs, rhsHat);CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da, &phiHat);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &phiHat);CHKERRQ(ierr);
   ierr = DAVecGetArray(da, rhsHat, &rhsHatArray);CHKERRQ(ierr);
   ierr = DAVecGetArray(da, phiHat, &phiHatArray);CHKERRQ(ierr);
   for(PetscInt k = zs; k < zs+zm; ++k) {
@@ -267,8 +267,8 @@ PetscErrorCode Solve_FFT(DA da, Vec rhs, Vec phi)
   ierr = DAVecRestoreArray(da, phiHat, &phiHatArray);CHKERRQ(ierr);
   ierr = MatMultTranspose(F, phiHat, phi);CHKERRQ(ierr);
   ierr = VecScale(phi, scale);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da, &phiHat);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da, &rhsHat);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da, &phiHat);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da, &rhsHat);CHKERRQ(ierr);
   ierr = MatDestroy(F);CHKERRQ(ierr);
 
   // Force potential in the bath to be 0
@@ -285,7 +285,7 @@ PetscErrorCode Solve_FFT(DA da, Vec rhs, Vec phi)
 
 #undef __FUNCT__
 #define __FUNCT__ "CalculateXYStdDev"
-PetscErrorCode CalculateXYStdDev(DA da, Vec v, Vec *std) {
+PetscErrorCode CalculateXYStdDev(DM da, Vec v, Vec *std) {
   DALocalInfo    info;
   MPI_Comm       comm;
   PetscScalar ***a;
@@ -323,7 +323,7 @@ PetscErrorCode CalculateXYStdDev(DA da, Vec v, Vec *std) {
 
 #undef __FUNCT__
 #define __FUNCT__ "VecViewCenterSingle"
-PetscErrorCode VecViewCenterSingle(DA da, Vec v, PetscViewer viewer, const char name[], PetscInt i, PetscInt j)
+PetscErrorCode VecViewCenterSingle(DM da, Vec v, PetscViewer viewer, const char name[], PetscInt i, PetscInt j)
 {
   DALocalInfo    info;
   MPI_Comm       comm;

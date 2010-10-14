@@ -27,7 +27,7 @@
 
 .seealso: DAGetGhostCorners(), DAGetCoordinates(), DASetUniformCoordinates(). DAGetGhostedCoordinates(), DAGetCoordinateDA()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DA da,Vec c)
+PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DM da,Vec c)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -72,7 +72,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DA da,Vec c)
 
 .seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetGhostedCoordinates(), DAGetCoordinateDA()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinates(DA da,Vec *c)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinates(DM da,Vec *c)
 {
   DM_DA          *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
@@ -101,7 +101,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinates(DA da,Vec *c)
 
 .seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetCoordinates(), DAGetGhostedCoordinates()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DM da,DM *cda)
 {
   PetscMPIInt    size;
   PetscErrorCode ierr;
@@ -185,7 +185,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
 
 .seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetCoordinates(), DAGetCoordinateDA()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostedCoordinates(DA da,Vec *c)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostedCoordinates(DM da,Vec *c)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -195,11 +195,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostedCoordinates(DA da,Vec *c)
   PetscValidPointer(c,2);
   if (!dd->coordinates) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"You must call DASetCoordinates() before this call");
   if (!dd->ghosted_coordinates) {
-    DA dac;
+    DM dac;
     ierr = DAGetCoordinateDA(da,&dac);CHKERRQ(ierr);
     ierr = DACreateLocalVector(dac,&dd->ghosted_coordinates);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalBegin(dac,dd->coordinates,INSERT_VALUES,dd->ghosted_coordinates);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(dac,dd->coordinates,INSERT_VALUES,dd->ghosted_coordinates);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(dac,dd->coordinates,INSERT_VALUES,dd->ghosted_coordinates);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dac,dd->coordinates,INSERT_VALUES,dd->ghosted_coordinates);CHKERRQ(ierr);
   }
   *c = dd->ghosted_coordinates;
   PetscFunctionReturn(0);
@@ -225,7 +225,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostedCoordinates(DA da,Vec *c)
 
 .seealso: DAGetFieldName()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetFieldName(DA da,PetscInt nf,const char name[])
+PetscErrorCode PETSCDM_DLLEXPORT DASetFieldName(DM da,PetscInt nf,const char name[])
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -260,7 +260,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFieldName(DA da,PetscInt nf,const char nam
 
 .seealso: DASetFieldName()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetFieldName(DA da,PetscInt nf,const char **name)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetFieldName(DM da,PetscInt nf,const char **name)
 {
   DM_DA          *dd = (DM_DA*)da->data;
 
@@ -302,7 +302,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetFieldName(DA da,PetscInt nf,const char **n
 
 .seealso: DAGetGhostCorners(), DAGetOwnershipRanges()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetCorners(DA da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {
   PetscInt w;
   DM_DA    *dd = (DM_DA*)da->data;
@@ -339,7 +339,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCorners(DA da,PetscInt *x,PetscInt *y,Pets
 
 .seealso: DAGetCoordinateDA(), DAGetCoordinates(), DAGetBoundingBox()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalBoundingBox(DA da,PetscReal lmin[],PetscReal lmax[])
+PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalBoundingBox(DM da,PetscReal lmin[],PetscReal lmax[])
 {
   PetscErrorCode    ierr;
   Vec               coords  = PETSC_NULL;
@@ -388,7 +388,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalBoundingBox(DA da,PetscReal lmin[],Pe
 
 .seealso: DAGetCoordinateDA(), DAGetCoordinates(), DAGetLocalBoundingBox()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetBoundingBox(DA da,PetscReal gmin[],PetscReal gmax[])
+PetscErrorCode PETSCDM_DLLEXPORT DAGetBoundingBox(DM da,PetscReal gmin[],PetscReal gmax[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    count;

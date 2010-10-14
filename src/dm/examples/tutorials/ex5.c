@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   const PetscInt *e;
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
-  DA             da;
+  DM             da;
   PetscViewer    viewer;
   Vec            local,global;
   PetscScalar    value;
@@ -37,8 +37,8 @@ int main(int argc,char **argv)
 
   value = -3.0;
   ierr = VecSet(global,value);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
   ierr = DMGetElements(da,&ne,&e);CHKERRQ(ierr);
   ierr = VecGetArray(local,&lv);CHKERRQ(ierr);
@@ -49,16 +49,17 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(local,&lv);CHKERRQ(ierr);
   ierr = DMRestoreElements(da,&ne,&e);CHKERRQ(ierr);
 
-  ierr = DALocalToGlobal(da,local,ADD_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,local,ADD_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da,local,ADD_VALUES,global);CHKERRQ(ierr);
 
-  ierr = DAView(da,viewer);CHKERRQ(ierr);
+  ierr = DMView(da,viewer);CHKERRQ(ierr);
   ierr = VecView(global,viewer);CHKERRQ(ierr);
 
   /* Free memory */
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

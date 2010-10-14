@@ -29,7 +29,7 @@ static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
 typedef struct {
    PetscInt   mx,my;            /* number grid points in x and y direction */
    Vec        localX,localF;    /* local vectors with ghost region */
-   DA         da;
+   DM         da;
    Vec        x,b,r;            /* global vectors */
    Mat        J;                /* Jacobian on grid */
 } GridCtx;
@@ -157,14 +157,14 @@ int main(int argc,char **argv)
   ierr = VecDestroy(user.fine.x);CHKERRQ(ierr);
   ierr = VecDestroy(user.fine.r);CHKERRQ(ierr);
   ierr = VecDestroy(user.fine.b);CHKERRQ(ierr);
-  ierr = DADestroy(user.fine.da);CHKERRQ(ierr);
+  ierr = DMDestroy(user.fine.da);CHKERRQ(ierr);
   ierr = VecDestroy(user.fine.localX);CHKERRQ(ierr);
   ierr = VecDestroy(user.fine.localF);CHKERRQ(ierr);
 
   ierr = MatDestroy(user.coarse.J);CHKERRQ(ierr);
   ierr = VecDestroy(user.coarse.x);CHKERRQ(ierr);
   ierr = VecDestroy(user.coarse.b);CHKERRQ(ierr);
-  ierr = DADestroy(user.coarse.da);CHKERRQ(ierr);
+  ierr = DMDestroy(user.coarse.da);CHKERRQ(ierr);
   ierr = VecDestroy(user.coarse.localX);CHKERRQ(ierr);
   ierr = VecDestroy(user.coarse.localF);CHKERRQ(ierr);
 

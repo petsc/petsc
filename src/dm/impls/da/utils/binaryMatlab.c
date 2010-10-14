@@ -163,7 +163,7 @@ PetscErrorCode PetscViewerBinaryMatlabOutputVec(PetscViewer viewer, const char n
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryMatlabOutputVecDA"
-PetscErrorCode PetscViewerBinaryMatlabOutputVecDA(PetscViewer viewer, const char name[], Vec vec, DA da)
+PetscErrorCode PetscViewerBinaryMatlabOutputVecDA(PetscViewer viewer, const char name[], Vec vec, DM da)
 {
   MPI_Comm       comm;
   FILE          *info;

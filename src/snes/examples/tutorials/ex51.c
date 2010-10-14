@@ -2,7 +2,7 @@
 #include <petscda.h>
 
 int main(int argc, char *argv[]) {
-  DA              da, daX, daY;
+  DM              da, daX, daY;
   DALocalInfo     info;
   MPI_Comm        commX, commY;
   Vec             basisX, basisY;
@@ -33,8 +33,8 @@ int main(int argc, char *argv[]) {
   ierr = DACreate1d(commX, DA_NONPERIODIC, M, dof, 1, lx, &daX);CHKERRQ(ierr);
   ierr = DACreate1d(commY, DA_NONPERIODIC, N, dof, 1, ly, &daY);CHKERRQ(ierr);
   /* Create 1D vectors for basis functions */
-  ierr = DAGetGlobalVector(daX, &basisX);CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(daY, &basisY);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(daX, &basisX);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(daY, &basisY);CHKERRQ(ierr);
   /* Extract basis functions */
   ierr = DAVecGetArrayDOF(daX, basisX, &arrayX);CHKERRQ(ierr);
   ierr = DAVecGetArrayDOF(daY, basisY, &arrayY);CHKERRQ(ierr);
@@ -43,12 +43,12 @@ int main(int argc, char *argv[]) {
   ierr = DAVecRestoreArrayDOF(daX, basisX, &arrayX);CHKERRQ(ierr);
   ierr = DAVecRestoreArrayDOF(daY, basisY, &arrayY);CHKERRQ(ierr);
   /* Return basis vectors */
-  ierr = DARestoreGlobalVector(daX, &basisX);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(daY, &basisY);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(daX, &basisX);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(daY, &basisY);CHKERRQ(ierr);
   /* Cleanup */
-  ierr = DADestroy(daX);CHKERRQ(ierr);
-  ierr = DADestroy(daY);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(daX);CHKERRQ(ierr);
+  ierr = DMDestroy(daY);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

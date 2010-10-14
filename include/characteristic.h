@@ -39,15 +39,15 @@ extern PetscLogEvent  CHARACTERISTIC_HalfTimeLocal, CHARACTERISTIC_HalfTimeRemot
 extern PetscLogEvent  CHARACTERISTIC_FullTimeLocal, CHARACTERISTIC_FullTimeRemote, CHARACTERISTIC_FullTimeExchange;
 
 /* function to wrap coordinates around boundary */
-EXTERN PetscErrorCode DAMapCoordsToPeriodicDomain(DA, PetscScalar*, PetscScalar*);
+EXTERN PetscErrorCode DAMapCoordsToPeriodicDomain(DM, PetscScalar*, PetscScalar*);
 
 EXTERN PetscErrorCode CharacteristicCreate(MPI_Comm, Characteristic *);
 EXTERN PetscErrorCode CharacteristicSetType(Characteristic, const CharacteristicType);
 EXTERN PetscErrorCode CharacteristicSetUp(Characteristic);
-EXTERN PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic, DA, Vec, Vec, PetscInt, PetscInt[], PetscErrorCode (*)(Vec, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *);
-EXTERN PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic, DA, Vec, Vec, PetscInt, PetscInt[], PetscErrorCode (*)(void *, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *);
-EXTERN PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic, DA, Vec, PetscInt, PetscInt[], PetscErrorCode (*)(Vec, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *);
-EXTERN PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic, DA, Vec, PetscInt, PetscInt[], PetscErrorCode (*)(void *, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *);
+EXTERN PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic, DM, Vec, Vec, PetscInt, PetscInt[], PetscErrorCode (*)(Vec, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *);
+EXTERN PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic, DM, Vec, Vec, PetscInt, PetscInt[], PetscErrorCode (*)(void *, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *);
+EXTERN PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic, DM, Vec, PetscInt, PetscInt[], PetscErrorCode (*)(Vec, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *);
+EXTERN PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic, DM, Vec, PetscInt, PetscInt[], PetscErrorCode (*)(void *, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *);
 EXTERN PetscErrorCode CharacteristicSolve(Characteristic, PetscReal, Vec);
 EXTERN PetscErrorCode CharacteristicDestroy(Characteristic);
 

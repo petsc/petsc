@@ -47,19 +47,19 @@ PetscErrorCode DMMGFormFunctionFortran(SNES snes,Vec X,Vec F,void *ptr)
   DMMG           dmmg = (DMMG)ptr;
   PetscErrorCode ierr;
   Vec            localX;
-  DA             da = (DA)dmmg->dm;
+  DM             da = dmmg->dm;
   DALocalInfo    info;
   PetscScalar     *xx,*ff;
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   /*
      Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+        DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
   */
-  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = VecGetArray(localX,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(F,&ff);CHKERRQ(ierr);
@@ -68,7 +68,7 @@ PetscErrorCode DMMGFormFunctionFortran(SNES snes,Vec X,Vec F,void *ptr)
   CHKMEMQ;
   ierr = VecRestoreArray(localX,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&ff);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 
@@ -79,22 +79,22 @@ PetscErrorCode DMMGComputeJacobianFortran(SNES snes,Vec X,Mat *J,Mat *B,MatStruc
   DMMG           dmmg = (DMMG) ptr;
   PetscErrorCode ierr;
   Vec            localX;
-  DA             da = (DA) dmmg->dm;
+  DM             da =  dmmg->dm;
   PetscScalar    *xx;
   DALocalInfo    info;
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = VecGetArray(localX,&xx);CHKERRQ(ierr);
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
   CHKMEMQ;
   (*(void (PETSC_STDCALL *)(DALocalInfo*,void*,Mat*,void*,PetscErrorCode*))(dd->lj))(&info,xx,B,dmmg->user,&ierr);CHKERRQ(ierr);
   CHKMEMQ;
   ierr = VecRestoreArray(localX,&xx);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   /* Assemble true Jacobian; if it is different */
   if (*J != *B) {
     ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -116,8 +116,8 @@ void PETSC_STDCALL dmmgsetsneslocal_(DMMG **dmmg,void (PETSC_STDCALL *rhs)(SNES*
   *ierr = DMMGSetSNES(*dmmg,DMMGFormFunctionFortran,computejacobian);if (*ierr) return;
 
   for (i=0; i<nlevels; i++) {
-    *ierr = DASetLocalFunction((DA)(*dmmg)[i]->dm,(DALocalFunction1) (void*)rhs);if (*ierr) return;
-    *ierr = DASetLocalJacobian((DA)(*dmmg)[i]->dm,(DALocalFunction1) (void*)mat);if (*ierr) return;
+    *ierr = DASetLocalFunction((*dmmg)[i]->dm,(DALocalFunction1) (void*)rhs);if (*ierr) return;
+    *ierr = DASetLocalJacobian((*dmmg)[i]->dm,(DALocalFunction1) (void*)mat);if (*ierr) return;
   }
 }
 

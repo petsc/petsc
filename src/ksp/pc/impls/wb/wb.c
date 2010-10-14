@@ -22,7 +22,7 @@ const char *PCExoticTypes[] = {"face","wirebasket","PCExoticType","PC_Exotic",0}
       DAGetWireBasketInterpolation - Gets the interpolation for a wirebasket based coarse space
 
 */
-PetscErrorCode DAGetWireBasketInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,MatReuse reuse,Mat *P)
+PetscErrorCode DAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatReuse reuse,Mat *P)
 {
   PetscErrorCode         ierr;
   PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*II,N,c = 0;
@@ -300,7 +300,7 @@ PetscErrorCode DAGetWireBasketInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,
       DAGetFaceInterpolation - Gets the interpolation for a face based coarse space
 
 */
-PetscErrorCode DAGetFaceInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,MatReuse reuse,Mat *P)
+PetscErrorCode DAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatReuse reuse,Mat *P)
 {
   PetscErrorCode         ierr;
   PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*II,N,c = 0;
@@ -632,9 +632,9 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
   if (!pc->dm) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to call PCSetDM() before using this PC");
   ierr = PCGetOperators(pc,PETSC_NULL,&A,PETSC_NULL);CHKERRQ(ierr);
   if (ex->type == PC_EXOTIC_FACE) {
-    ierr = DAGetFaceInterpolation((DA)pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
+    ierr = DAGetFaceInterpolation(pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
   } else if (ex->type == PC_EXOTIC_WIREBASKET) {
-    ierr = DAGetWireBasketInterpolation((DA)pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
+    ierr = DAGetWireBasketInterpolation(pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
   } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_PLIB,"Unknown exotic coarse space %d",ex->type);
   ierr = PCMGSetInterpolation(pc,1,ex->P);CHKERRQ(ierr);
   ierr = PCSetUp_MG(pc);CHKERRQ(ierr);

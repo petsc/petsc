@@ -78,7 +78,7 @@ struct TOPS_CStructuredSolver__data {
   int ignore; /* dummy to force non-empty struct; remove if you add data */
 
   DMMG                                  *dmmg;
-  DA                                    da;
+  DM                                    da;
   int                                   lengths[4],m,n,p,dim,s,levels,bs;
   DAStencilType                         stencil_type;
   DAPeriodicType                        wrap;

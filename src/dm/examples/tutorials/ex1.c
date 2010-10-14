@@ -13,7 +13,7 @@ them. In 2d 5 by 2 DA this means the numbering is
      5  6   7   8   9
      0  1   2   3   4
 
-Now the default split across 2 processors with the DA  is (by rank)
+Now the default split across 2 processors with the DM  is (by rank)
 
     0  0   0  1   1
     0  0   0  1   1
@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   PetscInt       M = -10,N = -8;
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
-  DA             da;
+  DM             da;
   PetscViewer    viewer;
   Vec            local,global;
   PetscScalar    value;
@@ -66,23 +66,24 @@ int main(int argc,char **argv)
 
   value = -3.0;
   ierr = VecSet(global,value);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   value = rank+1;
   ierr = VecScale(local,value);CHKERRQ(ierr);
-  ierr = DALocalToGlobal(da,local,ADD_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,local,ADD_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da,local,ADD_VALUES,global);CHKERRQ(ierr);
   
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL, "-view_global", &flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) { /* view global vector in natural ordering */
     ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  ierr = DAView(da,viewer);CHKERRQ(ierr);
+  ierr = DMView(da,viewer);CHKERRQ(ierr);
   ierr = VecView(global,viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  ierr = DAView(da,mviewer);CHKERRQ(ierr);
+  ierr = DMView(da,mviewer);CHKERRQ(ierr);
   ierr = VecView(global,mviewer);CHKERRQ(ierr);
 #endif
 
@@ -93,7 +94,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

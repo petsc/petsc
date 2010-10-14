@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscInt       i,M = 3,N = 5,P=3,s=1,w=2,m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE;
   PetscErrorCode ierr;
   PetscInt       *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
-  DA             da;
+  DM             da;
   PetscBool      flg = PETSC_FALSE,test_order = PETSC_FALSE;
   ISColoring     coloring;
   Mat            mat;
@@ -71,7 +71,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(lvec);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr); 
   ierr = ISColoringDestroy(coloring);CHKERRQ(ierr); 
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

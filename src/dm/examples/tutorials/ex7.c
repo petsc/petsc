@@ -23,7 +23,7 @@ int main(int argc,char **argv)
   PetscBag       bag;
   Parameter      *params;
   PetscViewer    viewer;
-  DA             da;
+  DM             da;
   Vec            global,local;
   PetscMPIInt    rank;
 
@@ -44,11 +44,12 @@ int main(int argc,char **argv)
   ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
   ierr = VecSet(global,-1.0);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = VecScale(local,rank+1);CHKERRQ(ierr);
-  ierr = DALocalToGlobal(da,local,ADD_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,local,ADD_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da,local,ADD_VALUES,global);CHKERRQ(ierr);
 
   /* Create an empty bag */
   ierr = PetscBagCreate(PETSC_COMM_WORLD,sizeof(Parameter),&bag);CHKERRQ(ierr);
@@ -75,7 +76,7 @@ int main(int argc,char **argv)
   
   /* clean up and exit */
   ierr = PetscBagDestroy(bag);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
   ierr = PetscFinalize();

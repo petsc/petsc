@@ -73,7 +73,7 @@ typedef struct {
 int main(int argc,char **argv)
 {
   DMMG           *dmmg;
-  DA             da;
+  DM             da;
   UserContext    user;
   PetscErrorCode ierr;
   PetscInt       l;
@@ -83,7 +83,7 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   for (l = 0; l < DMMGGetLevels(dmmg); l++) {
     ierr = DMMGSetUser(dmmg,l,&user);CHKERRQ(ierr);
   }
@@ -115,7 +115,7 @@ int main(int argc,char **argv)
 #define __FUNCT__ "CreateStructures"
 PetscErrorCode CreateStructures(DMMG dmmg)
 {
-  DA              da   = (DA)dmmg->dm;
+  DM              da   = dmmg->dm;
   UserContext    *user = (UserContext *) dmmg->user;
   const PetscInt *necon;
   PetscInt        ne;
@@ -191,7 +191,7 @@ PetscErrorCode ComputeInitialGuess(DMMG dmmg)
 #undef __FUNCT__
 #define __FUNCT__ "CalculateElementVelocity"
 /* Average the velocity (u,v) at time t^n over each element for time n+\phi */
-PetscErrorCode CalculateElementVelocity(DA da, UserContext *user)
+PetscErrorCode CalculateElementVelocity(DM da, UserContext *user)
 {
   PetscScalar    *u_n,   *v_n;
   PetscScalar    *u_phi, *v_phi;
@@ -241,7 +241,7 @@ and the x and y components of the convective fluxes F are
 
    f^n = {\rho u  \rho u^2  \rho uv}^n      g^n = {\rho v  \rho uv  \rho v^2}^n
 */
-PetscErrorCode TaylorGalerkinStepI(DA da, UserContext *user)
+PetscErrorCode TaylorGalerkinStepI(DM da, UserContext *user)
 {
   PetscScalar     phi_dt = user->phi*user->dt;
   PetscScalar    *u_n,     *v_n;
@@ -334,7 +334,7 @@ The element stiffness matrix for the identity in linear elements is
   12 \1 1 2/
 
   no matter what the shape of the triangle. */
-PetscErrorCode TaylorGalerkinStepIIMomentum(DA da, UserContext *user)
+PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
 {
   MPI_Comm        comm;
   KSP             ksp;
@@ -359,8 +359,8 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DA da, UserContext *user)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
   ierr = DAGetMatrix(da, MATAIJ, &mat);CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da, &rhs_u);CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da, &rhs_v);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &rhs_u);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &rhs_v);CHKERRQ(ierr);
   ierr = KSPCreate(comm, &ksp);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
@@ -445,8 +445,8 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DA da, UserContext *user)
   ierr = KSPSolve(ksp, rhs_v, user->sol_np1.rho_v);CHKERRQ(ierr);
   ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da, &rhs_u);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da, &rhs_v);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da, &rhs_u);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da, &rhs_v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -461,7 +461,7 @@ The element stiffness matrix for the identity in linear elements is
   12 \1 1 2/
 
   no matter what the shape of the triangle. */
-PetscErrorCode TaylorGalerkinStepIIMassEnergy(DA da, UserContext *user)
+PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
 {
   MPI_Comm        comm;
   Mat             mat;
@@ -488,8 +488,8 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DA da, UserContext *user)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
   ierr = DAGetMatrix(da, MATAIJ, &mat);CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da, &rhs_m);CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da, &rhs_e);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &rhs_m);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &rhs_e);CHKERRQ(ierr);
   ierr = KSPCreate(comm, &ksp);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
@@ -598,8 +598,8 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DA da, UserContext *user)
   ierr = KSPSolve(ksp, rhs_e, user->sol_np1.rho_e);CHKERRQ(ierr);
   ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da, &rhs_m);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da, &rhs_e);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da, &rhs_m);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da, &rhs_e);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -607,7 +607,7 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DA da, UserContext *user)
 #define __FUNCT__ "ComputePredictor"
 PetscErrorCode ComputePredictor(DMMG dmmg)
 {
-  DA             da   = (DA)dmmg->dm;
+  DM             da   = dmmg->dm;
   UserContext   *user = (UserContext *) dmmg->user;
   Vec            uOldLocal, uLocal,uOld;
   PetscScalar   *pOld;
@@ -615,11 +615,11 @@ PetscErrorCode ComputePredictor(DMMG dmmg)
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  ierr = DAGetGlobalVector(da, &uOld);CHKERRQ(ierr);
-  ierr = DAGetLocalVector(da, &uOldLocal);CHKERRQ(ierr);
-  ierr = DAGetLocalVector(da, &uLocal);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &uOld);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da, &uOldLocal);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da, &uLocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
   ierr = VecGetArray(uOldLocal, &pOld);CHKERRQ(ierr);
   ierr = VecGetArray(uLocal,    &p);CHKERRQ(ierr);
 
@@ -638,10 +638,10 @@ PetscErrorCode ComputePredictor(DMMG dmmg)
   ierr = VecRestoreArray(uOldLocal, &pOld);CHKERRQ(ierr);
   ierr = VecRestoreArray(uLocal,    &p);CHKERRQ(ierr);
 #if 0
-  ierr = DALocalToGlobalBegin(da, uLocal, u);CHKERRQ(ierr);
-  ierr = DALocalToGlobalEnd(da, uLocal, u);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da, &uOldLocal);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da, &uLocal);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da, uLocal, ADD_VALUES,u);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da, uLocal, ADD_VALUES,u);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da, &uOldLocal);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da, &uLocal);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -663,7 +663,7 @@ PetscErrorCode ComputePredictor(DMMG dmmg)
 */
 PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 {
-  DA             da   = (DA)dmmg->dm;
+  DM             da   = dmmg->dm;
   UserContext   *user = (UserContext *) dmmg->user;
   PetscScalar    phi  = user->phi;
   PetscScalar   *array;
@@ -674,7 +674,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 
   PetscFunctionBegin;
   /* access a local vector with room for the ghost points */
-  ierr = DAGetLocalVector(da,&blocal);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&blocal);CHKERRQ(ierr);
   ierr = VecGetArray(blocal, (PetscScalar **) &array);CHKERRQ(ierr);
 
   /* access the list of elements on this processor and loop over them */
@@ -690,9 +690,9 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   ierr = DMRestoreElements(da,&ne,&e);CHKERRQ(ierr);
 
   /* add our partial sums over all processors into b */
-  ierr = DALocalToGlobalBegin(da,blocal,b);CHKERRQ(ierr);
-  ierr = DALocalToGlobalEnd(da,blocal,b);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&blocal);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,blocal,ADD_VALUES,b);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da,blocal, ADD_VALUES,b);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&blocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -727,7 +727,7 @@ where A is the area of the triangle, and (x_i, y_i) is its i'th vertex.
 */
 PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
 {
-  DA             da   = (DA) dmmg->dm;
+  DM             da   =  dmmg->dm;
   UserContext   *user = (UserContext *) dmmg->user;
   /* not being used!
   PetscScalar    identity[9] = {0.16666666667, 0.08333333333, 0.08333333333,
@@ -774,7 +774,7 @@ PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
 #define __FUNCT__ "ComputeCorrector"
 PetscErrorCode ComputeCorrector(DMMG dmmg, Vec uOld, Vec u)
 {
-  DA             da   = (DA)dmmg->dm;
+  DM             da   = dmmg->dm;
   Vec            uOldLocal, uLocal;
   PetscScalar    *cOld;
   PetscScalar    *c;
@@ -784,11 +784,11 @@ PetscErrorCode ComputeCorrector(DMMG dmmg, Vec uOld, Vec u)
   
   PetscFunctionBegin;
   ierr = VecSet(u,0.0);CHKERRQ(ierr);
-  ierr = DAGetLocalVector(da, &uOldLocal);CHKERRQ(ierr);
-  ierr = DAGetLocalVector(da, &uLocal);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da, &uOldLocal);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da, &uLocal);CHKERRQ(ierr);
   ierr = VecSet(uLocal,0.0);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
   ierr = VecGetArray(uOldLocal, &cOld);CHKERRQ(ierr);
   ierr = VecGetArray(uLocal,    &c);CHKERRQ(ierr);
 
@@ -804,9 +804,9 @@ PetscErrorCode ComputeCorrector(DMMG dmmg, Vec uOld, Vec u)
   ierr = DMRestoreElements(da,&ne,&e);CHKERRQ(ierr);
   ierr = VecRestoreArray(uOldLocal, &cOld);CHKERRQ(ierr);
   ierr = VecRestoreArray(uLocal,    &c);CHKERRQ(ierr);
-  ierr = DALocalToGlobalBegin(da, uLocal, u);CHKERRQ(ierr);
-  ierr = DALocalToGlobalEnd(da, uLocal, u);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da, &uOldLocal);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da, &uLocal);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da, uLocal, ADD_VALUES,u);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da, uLocal, ADD_VALUES,u);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da, &uOldLocal);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da, &uLocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

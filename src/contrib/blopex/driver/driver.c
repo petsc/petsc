@@ -51,7 +51,7 @@ typedef struct
   mv_InterfaceInterpreter  ii;
 } aux_data_struct;
 
-PetscErrorCode FillMatrix(DA da,Mat jac)
+PetscErrorCode FillMatrix(DM da,Mat jac)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,idx;
@@ -132,7 +132,7 @@ int main(int argc,char **args)
    int                         seed = 1;
    int                         i,j;
    PetscLogDouble              t1,t2,elapsed_time;
-   DA                          da;
+   DM                          da;
    double                      tol=1e-08;
    PetscBool                   option_present;
    PetscBool                   freepart=PETSC_FALSE;
@@ -430,7 +430,7 @@ int main(int argc,char **args)
    ierr = VecDestroy(u);CHKERRQ(ierr);
    ierr = MatDestroy(A);CHKERRQ(ierr);
    ierr = KSPDestroy(ksp);CHKERRQ(ierr);
-   ierr = DADestroy(da); CHKERRQ(ierr);
+   ierr = DMDestroy(da); CHKERRQ(ierr);
 
    LOBPCG_DestroyRandomContext();
    mv_MultiVectorDestroy(eigenvectors);

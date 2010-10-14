@@ -9,7 +9,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   PetscInt       M = PETSC_DECIDE,N = PETSC_DECIDE;
-  DA             da;
+  DM             da;
   Vec            global;
   PetscViewer    bviewer;
 
@@ -31,7 +31,7 @@ int main(int argc,char **argv)
 
   /* Free memory */
   ierr = VecDestroy(global);CHKERRQ(ierr); 
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

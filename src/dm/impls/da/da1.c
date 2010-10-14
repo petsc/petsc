@@ -10,19 +10,26 @@ const char *DAPeriodicTypes[] = {"NONPERIODIC","XPERIODIC","YPERIODIC","XYPERIOD
                                  "XYZPERIODIC","XZPERIODIC","YZPERIODIC","ZPERIODIC","XYZGHOSTED","DAPeriodicType","DA_",0};
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAView_1d"
-PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
+#define __FUNCT__ "DMView_DA_1d"
+PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscBool      iascii,isdraw;
+  PetscBool      iascii,isdraw,isbinary;
   DM_DA          *dd = (DM_DA*)da->data;
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+  PetscBool      ismatlab;
+#endif
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERMATLAB,&ismatlab);CHKERRQ(ierr);
+#endif
   if (iascii) {
     PetscViewerFormat format;
 
@@ -33,6 +40,8 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D m %D w %D s %D\n",rank,dd->M,dd->m,dd->w,dd->s);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D\n",info.xs,info.xs+info.xm);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    } else {
+      ierr = DMView_DA_VTK(da, viewer);CHKERRQ(ierr);
     }
   } else if (isdraw) {
     PetscDraw  draw;
@@ -81,19 +90,23 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
 
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for DA 1d",((PetscObject)viewer)->type_name);
-  }
+  } else if (isbinary){
+    ierr = DMView_DA_Binary(da,viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+  } else if (ismatlab) {
+    ierr = DMView_DA_Matlab(da,viewer);CHKERRQ(ierr);
+#endif
+  } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for DA 1d",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAView_Private"
+#define __FUNCT__ "DMView_DA_Private"
 /*
     Processes command line options to determine if/how a DA
   is to be viewed. Called by DACreateXX()
 */
-PetscErrorCode DAView_Private(DA da)
+PetscErrorCode DMView_DA_Private(DM da)
 {
   PetscErrorCode ierr;
   PetscBool      flg1 = PETSC_FALSE;
@@ -101,21 +114,21 @@ PetscErrorCode DAView_Private(DA da)
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DA viewing options","DA");CHKERRQ(ierr); 
-    ierr = PetscOptionsTruth("-da_view","Print information about the DA's distribution","DAView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-da_view","Print information about the DA's distribution","DMView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
     if (flg1) {
       ierr = PetscViewerASCIIGetStdout(((PetscObject)da)->comm,&view);CHKERRQ(ierr);
-      ierr = DAView(da,view);CHKERRQ(ierr);
+      ierr = DMView(da,view);CHKERRQ(ierr);
     }
     flg1 = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-da_view_draw","Draw how the DA is distributed","DAView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
-    if (flg1) {ierr = DAView(da,PETSC_VIEWER_DRAW_(((PetscObject)da)->comm));CHKERRQ(ierr);}
+    ierr = PetscOptionsTruth("-da_view_draw","Draw how the DA is distributed","DMView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
+    if (flg1) {ierr = DMView(da,PETSC_VIEWER_DRAW_(((PetscObject)da)->comm));CHKERRQ(ierr);}
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetUp_1D"
-PetscErrorCode PETSCDM_DLLEXPORT DASetUp_1D(DA da)
+#define __FUNCT__ "DMSetUp_DA_1D"
+PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_1D(DM da)
 {
   DM_DA                *dd = (DM_DA*)da->data;
   const PetscInt       M     = dd->M;
@@ -287,7 +300,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUp_1D(DA da)
   dd->gtol      = gtol;
   dd->ltog      = ltog;
   dd->base      = xs;
-  da->ops->view = DAView_1d;
+  da->ops->view = DMView_DA_1d;
 
   /* 
      Set the local to global ordering in the global vector, this allows use
@@ -353,7 +366,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUp_1D(DA da)
 .  da - the resulting distributed array object
 
    Options Database Key:
-+  -da_view - Calls DAView() at the conclusion of DACreate1d()
++  -da_view - Calls DMView() at the conclusion of DACreate1d()
 .  -da_grid_x <nx> - number of grid points in x direction; can set if M < 0
 -  -da_refine_x - refinement factor 
 
@@ -367,12 +380,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUp_1D(DA da)
 
 .keywords: distributed array, create, one-dimensional
 
-.seealso: DADestroy(), DAView(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(), DASetRefinementFactor(),
-          DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(), DAGetRefinementFactor(),
-          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView(), DAGetOwnershipRanges()
+.seealso: DMDestroy(), DMView(), DACreate2d(), DACreate3d(), DMGlobalToLocalBegin(), DASetRefinementFactor(),
+          DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DALocalToLocalBegin(), DALocalToLocalEnd(), DAGetRefinementFactor(),
+          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAGetOwnershipRanges()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm, DAPeriodicType wrap, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DA *da)
+PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm, DAPeriodicType wrap, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -388,7 +401,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm, DAPeriodicType wrap, 
   ierr = DASetStencilWidth(*da, s);CHKERRQ(ierr);
   ierr = DASetOwnershipRanges(*da, lx, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
-  ierr = DASetFromOptions(*da);CHKERRQ(ierr);
-  ierr = DASetUp(*da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*da);CHKERRQ(ierr);
+  ierr = DMSetUp(*da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -44,7 +44,7 @@ options are:\n\
 typedef struct {
    PetscInt   mx,my;            /* number grid points in x and y direction */
    Vec        localX,localF;    /* local vectors with ghost region */
-   DA         da;
+   DM         da;
    Vec        x,b,r;            /* global vectors */
    Mat        J;                /* Jacobian on grid */
 } GridCtx;
@@ -212,14 +212,14 @@ int main( int argc, char **argv )
   ierr = VecDestroy(user.fine.x);CHKERRQ(ierr);
   ierr = VecDestroy(user.fine.r);CHKERRQ(ierr);
   ierr = VecDestroy(user.fine.b);CHKERRQ(ierr);
-  ierr = DADestroy(user.fine.da);CHKERRQ(ierr);
+  ierr = DMDestroy(user.fine.da);CHKERRQ(ierr);
   ierr = VecDestroy(user.fine.localX);CHKERRQ(ierr);
   ierr = VecDestroy(user.fine.localF);CHKERRQ(ierr);
 
   ierr = MatDestroy(user.coarse.J);CHKERRQ(ierr);
   ierr = VecDestroy(user.coarse.x);CHKERRQ(ierr);
   ierr = VecDestroy(user.coarse.b);CHKERRQ(ierr);
-  ierr = DADestroy(user.coarse.da);CHKERRQ(ierr);
+  ierr = DMDestroy(user.coarse.da);CHKERRQ(ierr);
 
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
   ierr = MatDestroy(user.R);CHKERRQ(ierr); 
@@ -264,7 +264,8 @@ PetscErrorCode FormInitialGuess1(AppCtx *user,Vec X)
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
 
   /* Insert values into global vector */
-  ierr = DALocalToGlobal(user->fine.da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(user->fine.da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(user->fine.da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   return 0;
 }
 
@@ -285,8 +286,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
 
   /* Get ghost points */
-  ierr = DAGlobalToLocalBegin(user->fine.da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->fine.da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(user->fine.da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(user->fine.da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGetCorners(user->fine.da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(user->fine.da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
@@ -313,7 +314,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecRestoreArray(localF,&f);CHKERRQ(ierr);
 
   /* Insert values into global vector */
-  ierr = DALocalToGlobal(user->fine.da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(user->fine.da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(user->fine.da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
   return 0; 
 } 
@@ -336,8 +338,8 @@ PetscErrorCode FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B
   sc = hx*hy;               hxdhy = hx/hy;            hydhx = hy/hx;
 
   /* Get ghost points */
-  ierr = DAGlobalToLocalBegin(grid->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(grid->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(grid->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(grid->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
   ierr = DAGetGlobalIndices(grid->da,&nloc,&ltog);CHKERRQ(ierr);

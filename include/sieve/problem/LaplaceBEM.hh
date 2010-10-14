@@ -122,7 +122,7 @@ namespace ALE {
 
         PetscFunctionBegin;
         if (structured()) {
-          DA       da;
+          DM       da;
           PetscInt dof = 1;
           PetscInt pd  = PETSC_DECIDE;
 
@@ -224,7 +224,7 @@ namespace ALE {
 
         PetscFunctionBegin;
         if (structured()) {
-          ierr = DADestroy((DA) this->_dm);CHKERRQ(ierr);
+          ierr = DMDestroy( this->_dm);CHKERRQ(ierr);
         } else {
           ierr = MeshDestroy((::Mesh) this->_dm);CHKERRQ(ierr);
         }
@@ -636,14 +636,14 @@ namespace ALE {
 
         PetscFunctionBegin;
         if (structured()) {
-          DA  da = (DA) this->_dm;
+          DM  da =  this->_dm;
           Vec error;
 
-          ierr = DAGetGlobalVector(da, &error);CHKERRQ(ierr);
+          ierr = DMGetGlobalVector(da, &error);CHKERRQ(ierr);
           ierr = VecCopy(sol.vec, error);CHKERRQ(ierr);
           ierr = VecAXPY(error, -1.0, exactSolution().vec);CHKERRQ(ierr);
           ierr = VecNorm(error, NORM_2, &norm);CHKERRQ(ierr);
-          ierr = DARestoreGlobalVector(da, &error);CHKERRQ(ierr);
+          ierr = DMRestoreGlobalVector(da, &error);CHKERRQ(ierr);
           ierr = PetscObjectGetName((PetscObject) sol.vec, &name);CHKERRQ(ierr);
         } else {
           ierr = this->calculateError(sol.section, &norm);CHKERRQ(ierr);

@@ -76,7 +76,7 @@ extern PetscErrorCode PrintVector(DMMG, Vec);
 int main(int argc,char **argv)
 {
   DMMG                  *dmmg;                 /* hierarchy manager */
-  DA                     da;
+  DM                     da;
   SNES                   snes;                 /* nonlinear solver */
   AppCtx                *user;                 /* user-defined work context */
   PetscBag               bag;
@@ -106,7 +106,7 @@ int main(int argc,char **argv)
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create multilevel DA data structure (DMMG) to manage hierarchical solvers
+     Create multilevel DM data structure (DMMG) to manage hierarchical solvers
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMMGCreate(PETSC_COMM_WORLD,1,user,&dmmg);CHKERRQ(ierr);
 
@@ -117,7 +117,7 @@ int main(int argc,char **argv)
                     1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DASetFieldName(da, 0, "ooblek");CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg, (DM) da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set the discretization functions
@@ -160,7 +160,7 @@ int main(int argc,char **argv)
 #define __FUNCT__ "PrintVector"
 PetscErrorCode PrintVector(DMMG dmmg, Vec U)
 {
-  DA             da = (DA) dmmg->dm;
+  DM             da =  dmmg->dm;
   PetscScalar  **u;
   PetscInt       i,j,xs,ys,xm,ym;
   PetscErrorCode ierr;
@@ -202,7 +202,7 @@ PetscErrorCode ExactSolution(PetscReal x, PetscReal y, PetscScalar *u)
 PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 {
   AppCtx        *user = (AppCtx *) dmmg->user;
-  DA             da = (DA) dmmg->dm;
+  DM             da =  dmmg->dm;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscErrorCode ierr;
   PetscReal      lambda,temp1,temp,hx,hy;

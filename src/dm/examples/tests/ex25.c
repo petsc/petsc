@@ -9,7 +9,7 @@ int main(int argc,char **argv)
 {
   PetscInt       M = 6,N = 5,P = 4, m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,i,j,k,is,js,ks,in,jen,kn;
   PetscErrorCode ierr;
-  DA             da;
+  DM             da;
   Vec            local,global;
   PetscScalar    ****l;
 
@@ -31,14 +31,15 @@ int main(int argc,char **argv)
     }
   }
   ierr = DAVecRestoreArrayDOF(da,local,&l);CHKERRQ(ierr);
-  ierr = DALocalToGlobal(da,local,ADD_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,local,ADD_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da,local,ADD_VALUES,global);CHKERRQ(ierr);
 
   ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Free memory */
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

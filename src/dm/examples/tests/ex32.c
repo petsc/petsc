@@ -22,7 +22,7 @@ static PetscErrorCode CompareGhostedCoords(Vec gc1,Vec gc2)
 #define __FUNCT__ "TestQ2Q1DA"
 static PetscErrorCode TestQ2Q1DA( void )
 {
-  DA             Q2_da,Q1_da,cda;
+  DM             Q2_da,Q1_da,cda;
   PetscInt       mx,my,mz;
   Vec            coords,gcoords,gcoords2;
   PetscErrorCode ierr;
@@ -42,20 +42,20 @@ static PetscErrorCode TestQ2Q1DA( void )
   /* And another */
   ierr = DAGetCoordinates(Q1_da,&coords);CHKERRQ(ierr);
   ierr = DAGetCoordinateDA(Q1_da,&cda);CHKERRQ(ierr);
-  ierr = DAGetLocalVector(cda,&gcoords2);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(cda,coords,INSERT_VALUES,gcoords2);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(cda,coords,INSERT_VALUES,gcoords2);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(cda,&gcoords2);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(cda,coords,INSERT_VALUES,gcoords2);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(cda,coords,INSERT_VALUES,gcoords2);CHKERRQ(ierr);
 
   ierr = CompareGhostedCoords(gcoords,gcoords2);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(cda,&gcoords2);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(cda,&gcoords2);CHKERRQ(ierr);
 
   ierr = VecScale(coords,10.0);CHKERRQ(ierr);
   ierr = VecScale(gcoords,10.0);CHKERRQ(ierr);
   ierr = DAGetGhostedCoordinates(Q1_da,&gcoords2);CHKERRQ(ierr);
   ierr = CompareGhostedCoords(gcoords,gcoords2);CHKERRQ(ierr);
 
-  ierr = DADestroy(Q2_da);CHKERRQ(ierr);
-  ierr = DADestroy(Q1_da);CHKERRQ(ierr);
+  ierr = DMDestroy(Q2_da);CHKERRQ(ierr);
+  ierr = DMDestroy(Q1_da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

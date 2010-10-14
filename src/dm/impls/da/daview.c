@@ -10,8 +10,8 @@
 #include "mat.h"   /* Matlab include file */
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAView_Matlab"
-PetscErrorCode DAView_Matlab(DA da,PetscViewer viewer)
+#define __FUNCT__ "DMView_DA_Matlab"
+PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -43,8 +43,8 @@ PetscErrorCode DAView_Matlab(DA da,PetscViewer viewer)
 #endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAView_Binary"
-PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
+#define __FUNCT__ "DMView_DA_Binary"
+PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -87,7 +87,7 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
 
   /* save the coordinates if they exist to disk (in the natural ordering) */
   if (dd->coordinates) {
-    DA             dac;
+    DM             dac;
     const PetscInt *lx,*ly,*lz;
     Vec            natural;
 
@@ -108,15 +108,15 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
     ierr = DAGlobalToNaturalEnd(dac,dd->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);
     ierr = VecView(natural,viewer);CHKERRQ(ierr);
     ierr = VecDestroy(natural);CHKERRQ(ierr);
-    ierr = DADestroy(dac);CHKERRQ(ierr);
+    ierr = DMDestroy(dac);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAView_VTK"
-PetscErrorCode DAView_VTK(DA da, PetscViewer viewer)
+#define __FUNCT__ "DMView_DA_VTK"
+PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 {
   PetscInt       dim, dof, M = 0, N = 0, P = 0;
   PetscErrorCode ierr;
@@ -134,7 +134,7 @@ PetscErrorCode DAView_VTK(DA da, PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"DIMENSIONS %d %d %d\n", M, N, P);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"POINTS %d double\n", M*N*P);CHKERRQ(ierr);
   if (dd->coordinates) {
-    DA  dac;
+    DM  dac;
     Vec natural;
 
     ierr = DAGetCoordinateDA(da, &dac);CHKERRQ(ierr);
@@ -149,127 +149,6 @@ PetscErrorCode DAView_VTK(DA da, PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__  
-#define __FUNCT__ "DAView"
-/*@C
-   DAView - Visualizes a distributed array object.
-
-   Collective on DA
-
-   Input Parameters:
-+  da - the distributed array
--  ptr - an optional visualization context
-
-   Notes:
-   The available visualization contexts include
-+     PETSC_VIEWER_STDOUT_SELF - standard output (default)
-.     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
-         output where only the first processor opens
-         the file.  All other processors send their 
-         data to the first processor to print. 
--     PETSC_VIEWER_DRAW_WORLD - to default window
-
-   The user can open alternative visualization contexts with
-+    PetscViewerASCIIOpen() - Outputs vector to a specified file
--    PetscViewerDrawOpen() - Outputs vector to an X window display
-
-   Default Output Format:
-  (for 3d arrays)
-.vb
-   Processor [proc] M  N  P  m  n  p  w  s
-   X range: xs xe, Y range: ys, ye, Z range: zs, ze
-
-   where
-      M,N,P - global dimension in each direction of the array
-      m,n,p - corresponding number of procs in each dimension 
-      w - number of degrees of freedom per node
-      s - stencil width
-      xs, xe - internal local starting/ending grid points
-               in x-direction, (augmented to handle multiple 
-               degrees of freedom per node)
-      ys, ye - local starting/ending grid points in y-direction
-      zs, ze - local starting/ending grid points in z-direction
-.ve
-
-   Options Database Key:
-.  -da_view - Calls DAView() at the conclusion of DACreate1d(),
-              DACreate2d(), and DACreate3d()
-
-   Level: beginner
-
-   Notes:
-   Use DAGetCorners() and DAGetGhostCorners() to get the starting
-   and ending grid points (ghost points) in each direction.
-
-   When drawing the DA grid it only draws the logical grid and does not
-   respect the grid coordinates set with DASetCoordinates()
-
-.keywords: distributed array, view, visualize
-
-.seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), DAGetInfo(), DAGetCorners(),
-          DAGetGhostCorners(), DAGetOwnershipRanges(), DACreate(), DACreate1d(), DACreate2d(), DACreate3d()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
-{
-  PetscErrorCode ierr;
-  DM_DA          *dd = (DM_DA*)da->data;
-  PetscInt       i,dof = dd->w;
-  PetscBool      iascii,fieldsnamed = PETSC_FALSE,isbinary;
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-  PetscBool      ismatlab;
-#endif
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)da)->comm,&viewer);CHKERRQ(ierr);
-  }
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERMATLAB,&ismatlab);CHKERRQ(ierr);
-#endif
-  if (iascii) {
-    PetscViewerFormat format;
-
-    ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL) {
-      ierr = DAView_VTK(da, viewer);CHKERRQ(ierr);
-    } else {
-      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)da,viewer,"DA Object");CHKERRQ(ierr);
-      for (i=0; i<dof; i++) {
-        if (dd->fieldname[i]) {
-          fieldsnamed = PETSC_TRUE;
-          break;
-        }
-      }
-      if (fieldsnamed) {
-        ierr = PetscViewerASCIIPrintf(viewer,"FieldNames: ");CHKERRQ(ierr);
-        for (i=0; i<dof; i++) {
-          if (dd->fieldname[i]) {
-            ierr = PetscViewerASCIIPrintf(viewer,"%s ",dd->fieldname[i]);CHKERRQ(ierr);
-          } else {
-            ierr = PetscViewerASCIIPrintf(viewer,"(not named) ");CHKERRQ(ierr);
-          }
-        }
-        ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
-      }
-    }
-  }
-  if (isbinary){
-    ierr = DAView_Binary(da,viewer);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-  } else if (ismatlab) {
-    ierr = DAView_Matlab(da,viewer);CHKERRQ(ierr);
-#endif
-  } else {
-    ierr = (*da->ops->view)(da,viewer);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}  
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetInfo"
@@ -298,9 +177,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
 
 .keywords: distributed array, get, information
 
-.seealso: DAView(), DAGetCorners(), DAGetLocalInfo()
+.seealso: DMView(), DAGetCorners(), DAGetLocalInfo()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetInfo(DA da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *dof,PetscInt *s,DAPeriodicType *wrap,DAStencilType *st)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *dof,PetscInt *s,DAPeriodicType *wrap,DAStencilType *st)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -339,7 +218,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInfo(DA da,PetscInt *dim,PetscInt *M,Petsc
 
 .seealso: DAGetInfo(), DAGetCorners()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalInfo(DA da,DALocalInfo *info)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalInfo(DM da,DALocalInfo *info)
 {
   PetscInt w;
   DM_DA    *dd = (DM_DA*)da->data;

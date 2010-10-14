@@ -35,7 +35,7 @@ static char help[] = "Solves PDE optimization problem.\n\n";
 */
 
 typedef struct {
-  DA           da1,da2;
+  DM           da1,da2;
   PetscInt     nredundant;
   DM           packer;
   PetscViewer  u_viewer,lambda_viewer;
@@ -85,8 +85,8 @@ int main(int argc,char **argv)
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
 
-  ierr = DADestroy(user.da1);CHKERRQ(ierr);
-  ierr = DADestroy(user.da2);CHKERRQ(ierr);
+  ierr = DMDestroy(user.da1);CHKERRQ(ierr);
+  ierr = DMDestroy(user.da2);CHKERRQ(ierr);
   ierr = DMDestroy(user.packer);CHKERRQ(ierr);
   ierr = VecDestroy(U);CHKERRQ(ierr);
   ierr = VecDestroy(FU);CHKERRQ(ierr);

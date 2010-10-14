@@ -108,7 +108,7 @@ namespace ALE {
       PetscErrorCode Function_Structured_2d(DALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx) {
         BratuOptions  *options = (BratuOptions *) ctx;
         PetscScalar  (*func)(const double *) = options->func;
-        DA             coordDA;
+        DM             coordDA;
         Vec            coordinates;
         DACoor2d     **coords;
         PetscInt       i, j;
@@ -133,7 +133,7 @@ namespace ALE {
         PetscScalar  (*func)(const double *)   = options->func;
         PetscScalar  (*bcFunc)(const double *) = options->exactFunc;
         const double   lambda                  = options->lambda;
-        DA             coordDA;
+        DM             coordDA;
         Vec            coordinates;
         DACoor2d     **coords;
         PetscReal      hxa, hxb, hx, hya, hyb, hy;
@@ -172,7 +172,7 @@ namespace ALE {
       PetscErrorCode Jac_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], Mat J, void *ctx) {
         BratuOptions  *options = (BratuOptions *) ctx;
         const double   lambda  = options->lambda;
-        DA             coordDA;
+        DM             coordDA;
         Vec            coordinates;
         DACoor2d     **coords;
         MatStencil     row, col[5];
@@ -220,7 +220,7 @@ namespace ALE {
       PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx) {
         BratuOptions  *options = (BratuOptions *) ctx;
         PetscScalar  (*func)(const double *) = options->func;
-        DA             coordDA;
+        DM             coordDA;
         Vec            coordinates;
         DACoor3d    ***coords;
         PetscInt       i, j, k;
@@ -247,7 +247,7 @@ namespace ALE {
         PetscScalar  (*func)(const double *)   = options->func;
         PetscScalar  (*bcFunc)(const double *) = options->exactFunc;
         const double   lambda                  = options->lambda;
-        DA             coordDA;
+        DM             coordDA;
         Vec            coordinates;
         DACoor3d    ***coords;
         PetscReal      hxa, hxb, hx, hya, hyb, hy, hza, hzb, hz;
@@ -293,7 +293,7 @@ namespace ALE {
       PetscErrorCode Jac_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], Mat J, void *ctx) {
         BratuOptions  *options = (BratuOptions *) ctx;
         const double   lambda  = options->lambda;
-        DA             coordDA;
+        DM             coordDA;
         Vec            coordinates;
         DACoor3d    ***coords;
         MatStencil     row, col[7];

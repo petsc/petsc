@@ -29,14 +29,14 @@ int main(int argc,char **argv)
   DMMG           *dmmg;
   PetscReal      norm;
   PetscInt       nlevels = 3;
-  DA             da;
+  DM             da;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-nlevels",&nlevels,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMMGCreate(PETSC_COMM_WORLD,nlevels,PETSC_NULL,&dmmg);CHKERRQ(ierr);
   ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
 
   ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);
 
@@ -62,7 +62,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
   PetscScalar    h;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
   h    = 1.0/((mx-1)*(my-1)*(mz-1));
   ierr = VecSet(b,h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -72,7 +72,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
 #define __FUNCT__ "ComputeMatrix"
 PetscErrorCode ComputeMatrix(DMMG dmmg,Mat jac,Mat B)
 {
-  DA             da = (DA)dmmg->dm;
+  DM             da = dmmg->dm;
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
   PetscScalar    v[7],Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;

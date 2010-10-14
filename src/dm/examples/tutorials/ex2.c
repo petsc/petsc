@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscMPIInt    rank;
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
-  DA             da;
+  DM             da;
   PetscViewer    viewer;
   Vec            localall,global;
   PetscScalar    value,*vlocal;
@@ -76,7 +76,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = VecDestroy(localall);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

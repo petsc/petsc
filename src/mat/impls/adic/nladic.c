@@ -17,7 +17,7 @@ EXTERN_C_END
 #include "../src/mat/blockinvert.h"
 
 struct NLF_DAAD {
-  DA         da;
+  DM         da;
   void       *ctx;
   Vec        residual;
   int        newton_its;
@@ -260,7 +260,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD(NLF A,MatSORType flag,int its,Ve
   PetscFunctionBegin;
   if (its <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
 
-  ierr = DAGetLocalVector(A->da,&localxx);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(A->da,&localxx);CHKERRQ(ierr);
   /* get space for derivative object.  */
   ierr = DAGetAdicMFArray(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   ierr = VecGetArray(A->residual,&residual);CHKERRQ(ierr);
@@ -275,8 +275,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD(NLF A,MatSORType flag,int its,Ve
   while (its--) {
 
     /* get initial solution properly ghosted */
-    ierr = DAGlobalToLocalBegin(A->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(A->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(A->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(A->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
 
     /* copy input vector into derivative object */
     ierr = VecGetArray(localxx,&avu);CHKERRQ(ierr);
@@ -323,12 +323,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD(NLF A,MatSORType flag,int its,Ve
     }
     ierr = VecRestoreArray(localxx,&av);CHKERRQ(ierr);
     /* stick relaxed solution back into global solution */
-    ierr = DALocalToGlobal(A->da,localxx,INSERT_VALUES,xx);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalBegin(A->da,localxx,INSERT_VALUES,xx);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(A->da,localxx,INSERT_VALUES,xx);CHKERRQ(ierr);
   }
 
 
   ierr = VecRestoreArray(A->residual,&residual);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(A->da,&localxx);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(A->da,&localxx);CHKERRQ(ierr);
   ierr = DARestoreAdicMFArray(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -350,7 +351,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD4(NLF A,MatSORType flag,int its,V
   PetscFunctionBegin;
   if (its <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
   
-  ierr = DAGetLocalVector(A->da,&localxx);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(A->da,&localxx);CHKERRQ(ierr);
   /* get space for derivative object.  */
   ierr = DAGetAdicMFArray4(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   ierr = VecGetArray(A->residual,&residual);CHKERRQ(ierr);
@@ -365,8 +366,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD4(NLF A,MatSORType flag,int its,V
   while (its--) {
 
     /* get initial solution properly ghosted */
-    ierr = DAGlobalToLocalBegin(A->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(A->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(A->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(A->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
 
     /* copy input vector into derivative object */
     ierr = VecGetArray(localxx,&avu);CHKERRQ(ierr);
@@ -416,12 +417,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD4(NLF A,MatSORType flag,int its,V
     }
     ierr = VecRestoreArray(localxx,&av);CHKERRQ(ierr);
     /* stick relaxed solution back into global solution */
-    ierr = DALocalToGlobal(A->da,localxx,INSERT_VALUES,xx);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalBegin(A->da,localxx,INSERT_VALUES,xx);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(A->da,localxx,INSERT_VALUES,xx);CHKERRQ(ierr);
   }
 
 
   ierr = VecRestoreArray(A->residual,&residual);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(A->da,&localxx);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(A->da,&localxx);CHKERRQ(ierr);
   ierr = DARestoreAdicMFArray(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -442,7 +444,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD9(NLF A,MatSORType flag,int its,V
   PetscFunctionBegin;
   if (its <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
   
-  ierr = DAGetLocalVector(A->da,&localxx);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(A->da,&localxx);CHKERRQ(ierr);
   /* get space for derivative object.  */
   ierr = DAGetAdicMFArray9(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   ierr = VecGetArray(A->residual,&residual);CHKERRQ(ierr);
@@ -457,8 +459,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD9(NLF A,MatSORType flag,int its,V
   while (its--) {
 
     /* get initial solution properly ghosted */
-    ierr = DAGlobalToLocalBegin(A->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(A->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(A->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(A->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
 
     /* copy input vector into derivative object */
     ierr = VecGetArray(localxx,&avu);CHKERRQ(ierr);
@@ -512,12 +514,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD9(NLF A,MatSORType flag,int its,V
     }
     ierr = VecRestoreArray(localxx,&av);CHKERRQ(ierr);
     /* stick relaxed solution back into global solution */
-    ierr = DALocalToGlobal(A->da,localxx,INSERT_VALUES,xx);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalBegin(A->da,localxx,INSERT_VALUES,xx);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(A->da,localxx,INSERT_VALUES,xx);CHKERRQ(ierr);
   }
 
 
   ierr = VecRestoreArray(A->residual,&residual);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(A->da,&localxx);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(A->da,&localxx);CHKERRQ(ierr);
   ierr = DARestoreAdicMFArray(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -547,7 +550,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAADb(NLF A,MatSORType flag,int its,V
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Point block nonlinear relaxation currently not for this block size",bs);
   }
 
-  ierr = DAGetLocalVector(A->da,&localxx);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(A->da,&localxx);CHKERRQ(ierr);
   /* get space for derivative object.  */
   ierr = DAGetAdicMFArrayb(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   ierr = VecGetArray(A->residual,&residual);CHKERRQ(ierr);
@@ -562,8 +565,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAADb(NLF A,MatSORType flag,int its,V
   while (its--) {
 
     /* get initial solution properly ghosted */
-    ierr = DAGlobalToLocalBegin(A->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(A->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(A->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(A->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
 
     /* copy input vector into derivative object */
     ierr = VecGetArray(localxx,&avu);CHKERRQ(ierr);
@@ -607,11 +610,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAADb(NLF A,MatSORType flag,int its,V
     }
     ierr = VecRestoreArray(localxx,&av);CHKERRQ(ierr);
     /* stick relaxed solution back into global solution */
-    ierr = DALocalToGlobal(A->da,localxx,INSERT_VALUES,xx);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalBegin(A->da,localxx,INSERT_VALUES,xx);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(A->da,localxx,INSERT_VALUES,xx);CHKERRQ(ierr);
   }
 
   ierr = VecRestoreArray(A->residual,&residual);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(A->da,&localxx);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(A->da,&localxx);CHKERRQ(ierr);
   ierr = DARestoreAdicMFArray(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -625,7 +629,7 @@ PetscErrorCode NLFDestroy_DAAD(NLF A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DADestroy(A->da);CHKERRQ(ierr);
+  ierr = DMDestroy(A->da);CHKERRQ(ierr);
   ierr = PetscFree(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -633,13 +637,13 @@ PetscErrorCode NLFDestroy_DAAD(NLF A)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "NLFDAADSetDA_DAAD"
-PetscErrorCode PETSCMAT_DLLEXPORT NLFDAADSetDA_DAAD(NLF A,DA da)
+PetscErrorCode PETSCMAT_DLLEXPORT NLFDAADSetDA_DAAD(NLF A,DM da)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
-  if (A->da) {ierr = DADestroy(A->da);CHKERRQ(ierr);}
+  if (A->da) {ierr = DMDestroy(A->da);CHKERRQ(ierr);}
   A->da = da;
   PetscFunctionReturn(0);
 }

@@ -11,7 +11,7 @@ extern PetscErrorCode ComputeMatrix(DA,Mat);
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  DA             da;
+  DM             da;
   Mat            Aglobal,P;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
@@ -24,14 +24,14 @@ int main(int argc,char **argv)
 
   ierr = MatDestroy(P);CHKERRQ(ierr);
   ierr = MatDestroy(Aglobal);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
  
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(DA da,Mat B)
+PetscErrorCode ComputeMatrix(DM da,Mat B)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,cnt;

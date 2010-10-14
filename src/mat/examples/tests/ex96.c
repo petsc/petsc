@@ -22,7 +22,7 @@ static char help[] ="Tests sequential and parallel DAGetMatrix(), MatMatMult() a
 typedef struct {
    PetscInt   mx,my,mz;         /* number grid points in x, y and z direction */
    Vec        localX,localF;    /* local vectors with ghost region */
-   DA         da;
+   DM         da;
    Vec        x,b,r;            /* global vectors */
    Mat        J;                /* Jacobian on grid */
 } GridCtx;
@@ -260,8 +260,8 @@ int main(int argc,char **argv)
   ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
   ierr = VecDestroy(v1);CHKERRQ(ierr);
   ierr = VecDestroy(v2);CHKERRQ(ierr);
-  ierr = DADestroy(user.fine.da);CHKERRQ(ierr);
-  ierr = DADestroy(user.coarse.da);CHKERRQ(ierr);
+  ierr = DMDestroy(user.fine.da);CHKERRQ(ierr);
+  ierr = DMDestroy(user.coarse.da);CHKERRQ(ierr);
   ierr = MatDestroy(P);CHKERRQ(ierr); 
 
   ierr = PetscFinalize();

@@ -33,10 +33,10 @@
 .keywords: distributed array, create, global, distributed, vector
 
 .seealso: DACreateLocalVector(), VecDuplicate(), VecDuplicateVecs(),
-          DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
-          DAGlobalToLocalEnd(), DALocalToGlobal(), DACreateNaturalVector()
+          DACreate1d(), DACreate2d(), DACreate3d(), DMGlobalToLocalBegin(),
+          DMGlobalToLocalEnd(), DALocalToGlobalBegin(), DACreateNaturalVector()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DACreateGlobalVector(DA da,Vec* g)
+PetscErrorCode PETSCDM_DLLEXPORT DACreateGlobalVector(DM da,Vec* g)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -83,10 +83,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateGlobalVector(DA da,Vec* g)
 .keywords: distributed array, create, global, distributed, vector
 
 .seealso: DACreateLocalVector(), VecDuplicate(), VecDuplicateVecs(),
-          DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
-          DAGlobalToLocalEnd(), DALocalToGlobal()
+          DACreate1d(), DACreate2d(), DACreate3d(), DMGlobalToLocalBegin(),
+          DMGlobalToLocalEnd(), DALocalToGlobalBegin()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DACreateNaturalVector(DA da,Vec* g)
+PetscErrorCode PETSCDM_DLLEXPORT DACreateNaturalVector(DM da,Vec* g)
 {
   PetscErrorCode ierr;
   PetscInt       cnt;

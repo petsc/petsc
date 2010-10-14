@@ -51,7 +51,7 @@
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Common block data:
-      DA    da
+      DM    da
       Vec   localwork,solution
       Vec   u_local
       PetscInt   M

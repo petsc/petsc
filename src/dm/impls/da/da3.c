@@ -7,19 +7,26 @@
 #include "private/daimpl.h"     /*I   "petscda.h"    I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAView_3d"
-PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
+#define __FUNCT__ "DMView_DA_3d"
+PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscBool      iascii,isdraw;
+  PetscBool      iascii,isdraw,isbinary;
   DM_DA          *dd = (DM_DA*)da->data;
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+  PetscBool      ismatlab;
+#endif
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERMATLAB,&ismatlab);CHKERRQ(ierr);
+#endif
   if (iascii) {
     PetscViewerFormat format;
 
@@ -141,16 +148,20 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
     } 
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for DA 3d",((PetscObject)viewer)->type_name);
-  }
+  } else if (isbinary){
+    ierr = DMView_DA_Binary(da,viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+  } else if (ismatlab) {
+    ierr = DMView_DA_Matlab(da,viewer);CHKERRQ(ierr);
+#endif
+  } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for DA 1d",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "DASetUp_3D"
-PetscErrorCode PETSCDM_DLLEXPORT DASetUp_3D(DA da)
+#define __FUNCT__ "DMSetUp_DA_3D"
+PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_3D(DM da)
 {
   DM_DA               *dd           = (DM_DA*)da->data;
   const PetscInt       M            = dd->M;
@@ -1641,7 +1652,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUp_3D(DA da)
   dd->idx       = idx;
   dd->Nl        = nn;
   dd->base      = base;
-  da->ops->view = DAView_3d;
+  da->ops->view = DMView_DA_3d;
 
   /* 
      Set the local to global ordering in the global vector, this allows use
@@ -1686,7 +1697,7 @@ EXTERN_C_END
 .  da - the resulting distributed array object
 
    Options Database Key:
-+  -da_view - Calls DAView() at the conclusion of DACreate3d()
++  -da_view - Calls DMView() at the conclusion of DACreate3d()
 .  -da_grid_x <nx> - number of grid points in x direction, if M < 0
 .  -da_grid_y <ny> - number of grid points in y direction, if N < 0
 .  -da_grid_z <nz> - number of grid points in z direction, if P < 0
@@ -1710,13 +1721,13 @@ EXTERN_C_END
 
 .keywords: distributed array, create, three-dimensional
 
-.seealso: DADestroy(), DAView(), DACreate1d(), DACreate2d(), DAGlobalToLocalBegin(), DAGetRefinementFactor(),
-          DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(), DASetRefinementFactor(),
-          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView(), DAGetOwnershipRanges()
+.seealso: DMDestroy(), DMView(), DACreate1d(), DACreate2d(), DMGlobalToLocalBegin(), DAGetRefinementFactor(),
+          DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DALocalToLocalBegin(), DALocalToLocalEnd(), DASetRefinementFactor(),
+          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAGetOwnershipRanges()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,
-               PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof,PetscInt s,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],DA *da)
+               PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof,PetscInt s,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],DM *da)
 {
   PetscErrorCode ierr;
 
@@ -1731,7 +1742,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   ierr = DASetStencilWidth(*da, s);CHKERRQ(ierr);
   ierr = DASetOwnershipRanges(*da, lx, ly, lz);CHKERRQ(ierr);
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
-  ierr = DASetFromOptions(*da);CHKERRQ(ierr);
-  ierr = DASetUp(*da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*da);CHKERRQ(ierr);
+  ierr = DMSetUp(*da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

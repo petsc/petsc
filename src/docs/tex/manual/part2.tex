@@ -25,7 +25,7 @@ sides for linear systems, etc. This chapter is organized as follows:
   \item (AO) Mapping between different global numberings
   \item (ISLocalToGlobalMapping) Mapping between local and global numberings
   \end{itemize}
-\item (DA) Section \ref{sec_struct} - management of structured grids
+\item (DM) Section \ref{sec_struct} - management of grids
 \item (IS, VecScatter) Section \ref{sec_unstruct} - management of vectors related to 
       unstructured grids
 \end{itemize}
@@ -544,7 +544,7 @@ One creates a distributed array communication data structure
 in two dimensions with the command 
 \begin{tabbing}
   DACreate2d(MPI\_Comm comm,DAPeriodicType wrap,DAStencilType st,int M,\\
-             int N,int m,int n,int dof,int s,int *lx,int *ly,DA *da);
+             int N,int m,int n,int dof,int s,int *lx,int *ly,DM *da);
 \end{tabbing}
 The  \sindex{array, distributed} arguments
 \sindex{distributed array} \trl{M} and \trl{N} indicate the global
@@ -591,9 +591,9 @@ discretization technique).
 The commands for creating distributed array communication data structures
 in one and three dimensions are analogous:
 \begin{tabbing}
-  DACreate1d(MPI\_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *inra);\\
+  DACreate1d(MPI\_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DM *inra);\\
   DACreate3d\=(MPI\_Comm comm,DAPeriodicType wrap,DAStencilType stencil\_type,\\
-             \>int M,int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,DA *inra);
+             \>int M,int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,DM *inra);
 \end{tabbing}
 \trl{DA_ZPERIODIC}, \findex{DA_ZPERIODIC}
 \trl{DA_XZPERIODIC}, \findex{DA_XZPERIODIC}
@@ -614,8 +614,8 @@ allocate any associated storage space for field values.  Instead, the
 user can create vector objects that use the DA layout
 information with the routines
 \begin{tabbing}
-  DACreateGlobalVector(DA da,Vec *g);\\
-  DACreateLocalVector(DA da,Vec *l);
+  DACreateGlobalVector(DM da,Vec *g);\\
+  DACreateLocalVector(DM da,Vec *l);
 \end{tabbing}
 These vectors will generally serve as the building blocks for local
 and global PDE solutions, etc.  If additional vectors with such
@@ -631,7 +631,7 @@ design of the DA object makes this easy, as each DA
 operation may operate on vectors of the appropriate size, as obtained
 via DACreateLocalVector() and DACreateGlobalVector() or as
 produced by VecDuplicate().  As such, the DA
-scatter/gather operations (e.g., DAGlobalToLocalBegin()) require
+scatter/gather operations (e.g., DMGlobalToLocalBegin()) require
 vector input/output arguments, as discussed below.
 
 PETSc currently provides no container for multiple arrays sharing the
@@ -643,8 +643,8 @@ on a local portion of the vector, including the ghost points.
 This may be done by scattering a global vector into its 
 local parts by using the two-stage commands
 \begin{tabbing}
-  DAGlobalToLocalBegin(DA da,Vec g,InsertMode iora,Vec l);\\
-  DAGlobalToLocalEnd(DA da,Vec g,InsertMode iora,Vec l);
+  DMGlobalToLocalBegin(DM da,Vec g,InsertMode iora,Vec l);\\
+  DMGlobalToLocalEnd(DM da,Vec g,InsertMode iora,Vec l);
 \end{tabbing}
 which allow the overlap of communication and computation.
 Since the global and local vectors, given by \trl{g} and \trl{l}, respectively,
@@ -657,7 +657,8 @@ The InsertMode can be either ADD_VALUES or INSERT_VALUES.
 One can scatter the local patches into the distributed vector
 with the command
 \begin{tabbing}
-  DALocalToGlobal(DA da,Vec l,InsertMode mode,Vec g);
+  DMLocalToGlobalBegin(DM da,Vec l,InsertMode mode,Vec g);
+  DMLocalToGlobalEnd(DM da,Vec l,InsertMode mode,Vec g);
 \end{tabbing}
 Note that this function is not
 subdivided into beginning and ending phases, since it is purely local.
@@ -668,8 +669,8 @@ a local vector with correct ghost point values.
 This scatter may be done by
 commands
 \begin{tabbing}
-  DALocalToLocalBegin(DA da,Vec l1,InsertMode iora,Vec l2);\\
-  DALocalToLocalEnd(DA da,Vec l1,InsertMode iora,Vec l2);
+  DALocalToLocalBegin(DM da,Vec l1,InsertMode iora,Vec l2);\\
+  DALocalToLocalEnd(DM da,Vec l1,InsertMode iora,Vec l2);
 \end{tabbing}
 Since both local vectors, \trl{l1} and \trl{l2},
 must be compatible with the distributed array, \trl{da}, they should be
@@ -682,7 +683,7 @@ used in the local-to-global (\trl{ltog}), global-to-local
 (\trl{gtol}), and local-to-local (\trl{ltol})
 scatters with the command
 \begin{tabbing}
-  DAGetScatter(DA da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol);
+  DAGetScatter(DM da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol);
 \end{tabbing}
 Most users should not need to use these contexts.
 
@@ -692,19 +693,19 @@ In most applications the local ghosted vectors are only needed during user
 essentially no CPU time) way to obtain these work vectors and return them when
 they are no longer needed. This is done with the routines
 \begin{tabbing}
-  DAGetLocalVector(DA da,Vec *l);\\
+  DMGetLocalVector(DM da,Vec *l);\\
    .... use the local vector l\\
-  DARestoreLocalVector(DA da,Vec *l);
+  DMRestoreLocalVector(DM da,Vec *l);
 \end{tabbing}
 
 \subsection{Accessing the Vector Entries for DA Vectors}
 PETSc provides an easy way to set values into the DA Vectors and access them using
 the natural grid indexing. This is done with the routines 
 \begin{tabbing}
-  DAVecGetArray(DA da,Vec l,void *array);\\
+  DAVecGetArray(DM da,Vec l,void *array);\\
    ... use the array indexing it with 1 or 2 or 3 dimensions \\
    ... depending on the dimension of the DA\\
-  DAVecRestoreArray(DA da,Vec l,void *array);
+  DAVecRestoreArray(DM da,Vec l,void *array);
 \end{tabbing}
 where {\tt array} is a multidimensional C array with the same dimension as
 {\tt da}. The vector l can be either a global vector or a local vector.
@@ -715,13 +716,13 @@ scalar problem in two dimensions one could do
 \begin{tabbing}
    PetscScalar **f,**u;\\
    ...\\
-  DAVecGetArray(DA da,Vec local,(void*)\&u);\\
-  DAVecGetArray(DA da,Vec global,(void*)\&f);\\
+  DAVecGetArray(DM da,Vec local,(void*)\&u);\\
+  DAVecGetArray(DM da,Vec global,(void*)\&f);\\
    ...\\
       f[i][j] = u[i][j] - ...\\
    ...\\
-  DAVecRestoreArray(DA da,Vec local,(void*)\&u);\\
-  DAVecRestoreArray(DA da,Vec global,(void*)\&f);
+  DAVecRestoreArray(DM da,Vec local,(void*)\&u);\\
+  DAVecRestoreArray(DM da,Vec global,(void*)\&f);
 \end{tabbing}
 See \trl{${PETSC_DIR}/src/snes/examples/tutorials/ex5.c} for a 
 complete example and see \trl{${PETSC_DIR}/src/snes/examples/tutorials/ex19.c} for an
@@ -733,8 +734,8 @@ example for a multi-component PDE.
 The global indices of the lower left corner of the local portion of the array 
 as well as the local array size can be obtained with the commands
 \begin{tabbing}
-  DAGetCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p);\\
-  DAGetGhostCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p);
+  DAGetCorners(DM da,int *x,int *y,int *z,int *m,int *n,int *p);\\
+  DAGetGhostCorners(DM da,int *x,int *y,int *z,int *m,int *n,int *p);
 \end{tabbing}
 The first version excludes any ghost points, while the second version
 includes them. 
@@ -760,7 +761,7 @@ the global node number of each local node
 including the ghost nodes. This number may be determined by using the 
 command 
 \begin{tabbing}
-  DAGetGlobalIndices(DA da,int *n,int *idx[]);
+  DAGetGlobalIndices(DM da,int *n,int *idx[]);
 \end{tabbing}
 The output argument \trl{n} contains the number of 
 local nodes, including ghost nodes, while \trl{idx} contains a list of length
@@ -771,7 +772,7 @@ interface differs slightly; see Section~\ref{sec_fortranarrays} for details.
 or to set up the vectors and matrices so that their entries may be
 added using the local numbering. This is done by first calling 
 \begin{tabbing}
-  DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map);
+  DAGetISLocalToGlobalMapping(DM da,ISLocalToGlobalMapping *map);
 \end{tabbing}
 followed by 
 \begin{tabbing}
@@ -789,7 +790,7 @@ an application ordering AO (see Section \ref{sec_ao}) that maps
 between the natural ordering on a rectangular grid and the ordering PETSc
 uses to parallize. This ordering context can be obtained with the command
 \begin{tabbing}
-  DAGetAO(DA da,AO *ao);
+  DAGetAO(DM da,AO *ao);
 \end{tabbing}
 In Figure \ref{fig_daao} we indicate the orderings for a two-dimensional distributed 
 array, divided among four processes.
@@ -4347,7 +4348,7 @@ For linear problems the examples \trl{src/ksp/ksp/examples/tutorials/ex22.c} and
 to guide your development. We give a short summary here.
 \begin{tabbing}
   DMMG        *dmmg;\\
-  DA          da;\\
+  DM          da;\\
   Vec         soln;\\
 
   /* Create the DA that stores information about the coarsest grid you wish to use */\\
@@ -4373,7 +4374,7 @@ to guide your development. We give a short summary here.
   soln = DMMGGetx(dmmg);\\
 
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);\\
-  ierr = DADestroy(da);CHKERRQ(ierr);\\
+  ierr = DMDestroy(da);CHKERRQ(ierr);\\
 \end{tabbing}
 The option \trl{-ksp_monitor} \findex{-ksp_monitor} and \trl{-mg_levels_ksp_monitor} and optionally \trl{-mg_coarse_ksp_monitor} 
  causes the DMMG code to print the residual norms for each level of the solver to the screen so that
@@ -4749,7 +4750,7 @@ The Fortran interface for several routines is as follows:
    Vec x\\
    Mat A\\
    IS  s\\
-   DA  d \\
+   DM  d \\
  
    call VecGetArray(x,xx\_v,xx\_i,ierr)\\
    call MatGetArray(A,aa\_v,aa\_i,ierr)\\

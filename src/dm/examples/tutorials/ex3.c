@@ -5,13 +5,13 @@ static char help[] = "Tests DAGetInterpolation for nonuniform DA coordinates.\n\
 
 #undef __FUNCT__
 #define __FUNCT__ "SetCoordinates1d"
-PetscErrorCode SetCoordinates1d(DA da)
+PetscErrorCode SetCoordinates1d(DM da)
 {
   PetscErrorCode ierr;
   PetscInt       i,start,m;
   Vec            gc,global;
   PetscScalar    *coors;
-  DA             cda;
+  DM             cda;
 
   PetscFunctionBegin;
   ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
@@ -26,19 +26,20 @@ PetscErrorCode SetCoordinates1d(DA da)
   }
   ierr = DAVecRestoreArray(cda,gc,&coors);CHKERRQ(ierr);
   ierr = DAGetCoordinates(da,&global);CHKERRQ(ierr);
-  ierr = DALocalToGlobal(cda,gc,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(cda,gc,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(cda,gc,INSERT_VALUES,global);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "SetCoordinates2d"
-PetscErrorCode SetCoordinates2d(DA da)
+PetscErrorCode SetCoordinates2d(DM da)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,mstart,m,nstart,n;
   Vec            gc,global;
   DACoor2d       **coors;
-  DA             cda;
+  DM             cda;
 
   PetscFunctionBegin;
   ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
@@ -58,19 +59,20 @@ PetscErrorCode SetCoordinates2d(DA da)
   }
   ierr = DAVecRestoreArray(cda,gc,&coors);CHKERRQ(ierr);
   ierr = DAGetCoordinates(da,&global);CHKERRQ(ierr);
-  ierr = DALocalToGlobal(cda,gc,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(cda,gc,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(cda,gc,INSERT_VALUES,global);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "SetCoordinates3d"
-PetscErrorCode SetCoordinates3d(DA da)
+PetscErrorCode SetCoordinates3d(DM da)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,mstart,m,nstart,n,pstart,p,k;
   Vec            gc,global;
   DACoor3d       ***coors;
-  DA             cda;
+  DM             cda;
 
   PetscFunctionBegin;
   ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
@@ -95,7 +97,8 @@ PetscErrorCode SetCoordinates3d(DA da)
   }
   ierr = DAVecRestoreArray(cda,gc,&coors);CHKERRQ(ierr);
   ierr = DAGetCoordinates(da,&global);CHKERRQ(ierr);
-  ierr = DALocalToGlobal(cda,gc,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(cda,gc,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(cda,gc,INSERT_VALUES,global);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -105,7 +108,7 @@ int main(int argc,char **argv)
 {
   PetscInt       M = 5,N = 4,P = 3, m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,dim = 1;
   PetscErrorCode ierr;
-  DA             dac,daf;
+  DM             dac,daf;
   DAPeriodicType ptype = DA_NONPERIODIC;
   DAStencilType  stype = DA_STENCIL_BOX;
   Mat            A;
@@ -144,8 +147,8 @@ int main(int argc,char **argv)
 
 
   /* Free memory */
-  ierr = DADestroy(dac);CHKERRQ(ierr);
-  ierr = DADestroy(daf);CHKERRQ(ierr);
+  ierr = DMDestroy(dac);CHKERRQ(ierr);
+  ierr = DMDestroy(daf);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

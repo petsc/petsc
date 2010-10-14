@@ -36,7 +36,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   UserCtx        user;
-  DA             da;
+  DM             da;
   DMMG           *dmmg;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
@@ -73,7 +73,7 @@ int main(int argc,char **argv)
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(user.u_viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(user.fu_viewer);CHKERRQ(ierr);
 
@@ -84,7 +84,7 @@ int main(int argc,char **argv)
 #undef __FUNCT__  
 #define __FUNCT__ "FormFunction"
 /*
-     This local function acts on the ghosted version of U (accessed via DAGetLocalVector())
+     This local function acts on the ghosted version of U (accessed via DMGetLocalVector())
      BUT the global, nonghosted version of FU
 
 */
@@ -95,12 +95,12 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   PetscInt       xs,xm,i,N;
   PetscScalar    *u,*fu,d,h;
   Vec            vu;
-  DA             da = (DA) dmmg->dm;
+  DM             da =  dmmg->dm;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalVector(da,&vu);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,U,INSERT_VALUES,vu);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,U,INSERT_VALUES,vu);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&vu);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,vu);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,vu);CHKERRQ(ierr);
 
   ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -117,7 +117,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 
   ierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,FU,&fu);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&vu);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&vu);CHKERRQ(ierr);
   ierr = PetscLogFlops(9.0*N);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

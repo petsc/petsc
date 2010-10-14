@@ -73,7 +73,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
 #define __FUNCT__ "VecView_MPI_Draw_DA2d"
 PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 {
-  DA                 da,dac,dag;
+  DM                 da,dac,dag;
   PetscErrorCode     ierr;
   PetscMPIInt        rank;
   PetscInt           igstart,N,s,M,istart,isize,jgstart,w;
@@ -125,7 +125,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     ierr = DACreateLocalVector(dac,&xlocal);CHKERRQ(ierr);
     if (dac != da) {
       /* don't keep any public reference of this DA, is is only available through xlocal */
-      ierr = DADestroy(dac);CHKERRQ(ierr);
+      ierr = DMDestroy(dac);CHKERRQ(ierr);
     } else {
       /* remove association between xlocal and da, because below we compose in the opposite
          direction and if we left this connect we'd get a loop, so the objects could 
@@ -145,8 +145,8 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   /*
       Get local (ghosted) values of vector
   */
-  ierr = DAGlobalToLocalBegin(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = VecGetArray(xlocal,&zctx.v);CHKERRQ(ierr);
 
   /* get coordinates of nodes */
@@ -177,13 +177,13 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     ierr = PetscInfo(dag,"Creating auxilary DA for managing graphics coordinates ghost points\n");CHKERRQ(ierr);
     ierr = DACreateLocalVector(dag,&xcoorl);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl);CHKERRQ(ierr);
-    ierr = DADestroy(dag);CHKERRQ(ierr);/* dereference dag */
+    ierr = DMDestroy(dag);CHKERRQ(ierr);/* dereference dag */
     ierr = PetscObjectDereference((PetscObject)xcoorl);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectQuery((PetscObject)xcoorl,"DA",(PetscObject*)&dag);CHKERRQ(ierr);
   }
-  ierr = DAGlobalToLocalBegin(dag,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(dag,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dag,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dag,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
   ierr = VecGetArray(xcoorl,&zctx.xy);CHKERRQ(ierr);
   
   /*
@@ -256,7 +256,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  DA             da;
+  DM             da;
   hsize_t        dim,dims[5];
   hsize_t        count[5];
   hsize_t        offset[5];
@@ -351,7 +351,7 @@ EXTERN PetscErrorCode VecView_MPI_Draw_DA1d(Vec,PetscViewer);
 #if defined(PETSC_HAVE_MPIIO)
 #undef __FUNCT__  
 #define __FUNCT__ "DAArrayMPIIO"
-static PetscErrorCode DAArrayMPIIO(DA da,PetscViewer viewer,Vec xin,PetscBool  write)
+static PetscErrorCode DAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool  write)
 {
   PetscErrorCode    ierr;
   MPI_File          mfdes;
@@ -408,7 +408,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "VecView_MPI_DA"
 PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
 {
-  DA             da;
+  DM             da;
   PetscErrorCode ierr;
   PetscInt       dim;
   Vec            natural;
@@ -471,7 +471,7 @@ EXTERN_C_END
 #define __FUNCT__ "VecLoad_HDF5_DA"
 PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 {
-  DA             da;
+  DM             da;
   PetscErrorCode ierr;
   hsize_t        dim,dims[5];
   hsize_t        count[5];
@@ -559,7 +559,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 #define __FUNCT__ "VecLoad_Binary_DA"
 PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
 {
-  DA             da;
+  DM             da;
   PetscErrorCode ierr;
   Vec            natural;
   const char     *prefix;
@@ -603,7 +603,7 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCDM_DLLEXPORT VecLoad_Default_DA(Vec xin, PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  DA             da;
+  DM             da;
   PetscBool      isbinary;
 #if defined(PETSC_HAVE_HDF5)
   PetscBool      ishdf5;

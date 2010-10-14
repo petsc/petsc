@@ -67,7 +67,7 @@ Input parameters include:\n\
 */
 typedef struct {
   MPI_Comm    comm;              /* communicator */
-  DA          da;                /* distributed array data structure */
+  DM          da;                /* distributed array data structure */
   Vec         localwork;         /* local ghosted work vector */
   Vec         u_local;           /* local ghosted approximate solution vector */
   Vec         solution;          /* global exact solution vector */
@@ -266,7 +266,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(appctx.localwork);CHKERRQ(ierr);
   ierr = VecDestroy(appctx.solution);CHKERRQ(ierr);
   ierr = VecDestroy(appctx.u_local);CHKERRQ(ierr);
-  ierr = DADestroy(appctx.da);CHKERRQ(ierr);
+  ierr = DMDestroy(appctx.da);CHKERRQ(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   KSP            ksp;
   PetscReal      norm;
-  DA             da;
+  DM             da;
   Vec            x,b,r;
   Mat            A;
 
@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   ierr = DMSetFunction((DM)da,ComputeRHS);CHKERRQ(ierr);
   ierr = DMSetJacobian((DM)da,ComputeMatrix);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
 
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
@@ -77,15 +77,15 @@ PetscErrorCode ComputeRHS(DM dm,Vec x,Vec b)
   PetscScalar    h;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo((DA)dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
   h    = 1.0/((mx-1)*(my-1)*(mz-1));
   ierr = VecSet(b,h);CHKERRQ(ierr);
 
   if (x) {
     PetscScalar ***xx,***bb;
-    ierr = DAVecGetArray((DA)dm,x,&xx);CHKERRQ(ierr);
-    ierr = DAVecGetArray((DA)dm,b,&bb);CHKERRQ(ierr);
-  DA             da = (DA)dm;
+    ierr = DAVecGetArray(dm,x,&xx);CHKERRQ(ierr);
+    ierr = DAVecGetArray(dm,b,&bb);CHKERRQ(ierr);
+  DM             da = dm;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
   PetscScalar    Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
 
@@ -104,8 +104,8 @@ PetscErrorCode ComputeRHS(DM dm,Vec x,Vec b)
       }
     }
   }
-    ierr = DAVecRestoreArray((DA)dm,x,&xx);CHKERRQ(ierr);
-    ierr = DAVecRestoreArray((DA)dm,b,&bb);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(dm,x,&xx);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(dm,b,&bb);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -125,7 +125,7 @@ PetscErrorCode ComputeInitialGuess(DM dm,Vec b)
 #define __FUNCT__ "ComputeMatrix"
 PetscErrorCode ComputeMatrix(DM dm,Vec x,Mat jac,Mat B,MatStructure *stflg)
 {
-  DA             da = (DA)dm;
+  DM             da = dm;
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
   PetscScalar    v[7],Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;

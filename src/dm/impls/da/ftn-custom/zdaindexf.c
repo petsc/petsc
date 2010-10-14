@@ -9,7 +9,7 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL dagetglobalindices_(DA *da,PetscInt *n,PetscInt *indices,size_t *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL dagetglobalindices_(DM *da,PetscInt *n,PetscInt *indices,size_t *ia,PetscErrorCode *ierr)
 {
   PetscInt *idx;
   *ierr = DAGetGlobalIndices(*da,n,&idx);

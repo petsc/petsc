@@ -10,7 +10,7 @@ int main(int argc,char **argv)
   PetscMPIInt    rank;
   PetscInt       M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE, dof = 1;
   PetscErrorCode ierr;
-  DA             da;
+  DM             da;
   Vec            local,global,natural;
   PetscScalar    value;
   PetscViewer    bviewer;
@@ -32,13 +32,14 @@ int main(int argc,char **argv)
 
   value = -3.0;
   ierr = VecSet(global,value);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   value = rank+1;
   ierr = VecScale(local,value);CHKERRQ(ierr);
-  ierr = DALocalToGlobal(da,local,ADD_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,local,ADD_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da,local,ADD_VALUES,global);CHKERRQ(ierr);
 
   ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
   ierr = DAGlobalToNaturalBegin(da,global,INSERT_VALUES,natural);CHKERRQ(ierr);
@@ -48,7 +49,7 @@ int main(int argc,char **argv)
   /*  ierr = VecView(global,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr); */
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",FILE_MODE_WRITE,&bviewer);CHKERRQ(ierr);
-  ierr = DAView(da,bviewer);CHKERRQ(ierr);
+  ierr = DMView(da,bviewer);CHKERRQ(ierr);
   ierr = VecView(global,bviewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(bviewer);CHKERRQ(ierr);
 
@@ -56,7 +57,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
   ierr = VecDestroy(natural);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

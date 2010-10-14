@@ -1,53 +1,9 @@
 #define PETSCDM_DLL
 #include "private/daimpl.h"    /*I   "petscda.h"   I*/
 
-#undef  __FUNCT__
-#define __FUNCT__ "DAViewFromOptions"
-/*@
-  DAViewFromOptions - This function visualizes the DA based upon user options.
-
-  Collective on DA
-
-  Input Parameters:
-+ da   - The DA
-- title - The title (currently ignored)
-
-  Level: intermediate
-
-.keywords: DA, view, options, database
-.seealso: DASetFromOptions(), DAView()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DAViewFromOptions(DA da, const char title[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DAView_Private(da);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__  
-#define __FUNCT__ "DASetFromOptions"
-/*@
-  DASetFromOptions - Configures the vector from the options database.
-
-  Collective on DA
-
-  Input Parameter:
-. da - The DA
-
-  Notes:  To see all options, run your program with the -help option, or consult the <A href="../../docs/manual.pdf">Users Manual</A>.
-          Must be called after DACreate() but before the DA is used.
-
-  Level: beginner
-
-  Concepts: DA^setting options
-  Concepts: DA^setting type
-
-.keywords: DA, set, options, database
-.seealso: DACreate(), DASetOptionsPrefix()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
+#define __FUNCT__ "DMSetFromOptions_DA"
+PetscErrorCode PETSCDM_DLLEXPORT DMSetFromOptions_DA(DM da)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -84,18 +40,25 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
     if (dd->dim > 2) {ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DASetRefinementFactor",dd->refine_z,&dd->refine_z,PETSC_NULL);CHKERRQ(ierr);}
 
     if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-    ierr = PetscOptionsList("-da_vec_type","Vector type used for created vectors","DASetVecType",VecList,da->vectype,typeName,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-da_vec_type","Vector type used for created vectors","DMSetVecType",VecList,da->vectype,typeName,256,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = DASetVecType(da,typeName);CHKERRQ(ierr);
+      ierr = DMSetVecType(da,typeName);CHKERRQ(ierr);
     }
 
     /* process any options handlers added with PetscObjectAddOptionsHandler() */
     ierr = PetscObjectProcessOptionsHandlers((PetscObject)da);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = DAViewFromOptions(da, ((PetscObject)da)->name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+extern PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalBegin_DA(DM,Vec,InsertMode,Vec);
+extern PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd_DA(DM,Vec,InsertMode,Vec);
+extern PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalBegin_DA(DM,Vec,InsertMode,Vec);
+extern PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalEnd_DA(DM,Vec,InsertMode,Vec);
+extern PetscErrorCode PETSCDM_DLLEXPORT DMView_DA(DM,PetscViewer);
+extern PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA(DM);
+extern PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_DA(DM);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DACreate"
@@ -115,9 +78,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
 .keywords: DA, create
 .seealso:  DASetSizes(), DADuplicate()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DA *da)
+PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DM *da)
 {
-  DA             d;
+  DM             d;
   PetscErrorCode ierr;
   DM_DA          *dd;
 
@@ -169,9 +132,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DA *da)
   dd->lz           = PETSC_NULL;
 
   ierr = PetscStrallocpy(VECSTANDARD,&d->vectype);CHKERRQ(ierr);
-  d->ops->globaltolocalbegin = DAGlobalToLocalBegin;
-  d->ops->globaltolocalend   = DAGlobalToLocalEnd;
-  d->ops->localtoglobal      = DALocalToGlobal;
+  d->ops->globaltolocalbegin = DMGlobalToLocalBegin_DA;
+  d->ops->globaltolocalend   = DMGlobalToLocalEnd_DA;
+  d->ops->localtoglobalbegin = DMLocalToGlobalBegin_DA;
+  d->ops->localtoglobalend   = DMLocalToGlobalEnd_DA;
   d->ops->createglobalvector = DACreateGlobalVector;
   d->ops->createlocalvector  = DACreateLocalVector;
   d->ops->getinterpolation   = DAGetInterpolation;
@@ -183,10 +147,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DA *da)
   d->ops->coarsenhierarchy   = DACoarsenHierarchy;
   d->ops->getinjection       = DAGetInjection;
   d->ops->getaggregates      = DAGetAggregates;
-  d->ops->destroy            = DADestroy;
-  d->ops->view               = DAView;
-  d->ops->setfromoptions     = DASetFromOptions;
-  d->ops->setup              = DASetUp;
+  d->ops->destroy            = DMDestroy_DA;
+  d->ops->view               = 0;
+  d->ops->setfromoptions     = DMSetFromOptions_DA;
+  d->ops->setup              = DMSetUp_DA;
 
   *da = d; 
   PetscFunctionReturn(0);

@@ -12,8 +12,8 @@
        Note: Currently can only save PETSc vectors to .mat files, not matrices (use the PETSCVIEWERBINARY and 
              ${PETSC_DIR}/bin/matlab/PetscBinaryRead.m to read matrices into matlab).
 
-             For parallel vectors obtained with DACreateGlobalVector() or DAGetGlobalVector() the vectors are saved to
-             the .mat file in natural ordering. You can use DAView() to save the DA information to the .mat file
+             For parallel vectors obtained with DACreateGlobalVector() or DMGetGlobalVector() the vectors are saved to
+             the .mat file in natural ordering. You can use DMView() to save the DA information to the .mat file
              the fields in the Matlab loaded da variable give the array dimensions so you can reshape the Matlab
              vector to the same multidimensional shape as it had in PETSc for plotting etc. For example,
 
@@ -21,7 +21,7 @@ $             In your PETSc C/C++ code (assuming a two dimensional DA with one d
 $                PetscObjectSetName((PetscObject)x,"x");
 $                VecView(x,PETSC_VIEWER_MATLAB_WORLD);
 $                PetscObjectSetName((PetscObject)da,"da");
-$                DAView(x,PETSC_VIEWER_MATLAB_WORLD);
+$                DMView(x,PETSC_VIEWER_MATLAB_WORLD);
 $             Then from Matlab
 $                load('matlaboutput.mat')   % matlaboutput.mat is the default filename
 $                xnew = zeros(da.n,da.m);
@@ -33,8 +33,8 @@ $                xnew(:) = x;    % reshape one dimensional vector back to two di
               Use PetscViewerMatlabPutArray() to just put an array of doubles into the .mat file
 
 .seealso:  PETSC_VIEWER_MATLAB_(),PETSC_VIEWER_MATLAB_SELF(), PETSC_VIEWER_MATLAB_WORLD(),PetscViewerCreate(),
-           PetscViewerMatlabOpen(), VecView(), DAView(), PetscViewerMatlabPutArray(), PETSCVIEWERBINARY,
-           PETSC_ASCII_VIEWER, DAView(), PetscViewerFileSetName(), PetscViewerFileSetMode()
+           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERBINARY,
+           PETSC_ASCII_VIEWER, PetscViewerFileSetName(), PetscViewerFileSetMode()
 
 M*/
 

@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscInt       *lx = PETSC_NULL,*ly = PETSC_NULL;
   PetscBool      testorder = PETSC_FALSE,flg;
   DAPeriodicType wrap = DA_NONPERIODIC;
-  DA             da;
+  DM             da;
   PetscViewer    viewer;
   Vec            local,global;
   PetscScalar    value;
@@ -67,21 +67,22 @@ int main(int argc,char **argv)
     ierr = PetscFree(ly);CHKERRQ(ierr);
   }
 
-  ierr = DAView(da,viewer);CHKERRQ(ierr);
+  ierr = DMView(da,viewer);CHKERRQ(ierr);
   ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
 
   /* Set global vector; send ghost points to local vectors */
   value = 1;
   ierr = VecSet(global,value);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
   /* Scale local vectors according to processor rank; pass to global vector */
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   value = rank;
   ierr = VecScale(local,value);CHKERRQ(ierr);
-  ierr = DALocalToGlobal(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
 
   if (!testorder) { /* turn off printing when testing ordering mappings */
     ierr = PetscPrintf (PETSC_COMM_WORLD,"\nGlobal Vectors:\n");CHKERRQ(ierr);
@@ -90,8 +91,8 @@ int main(int argc,char **argv)
   }
 
   /* Send ghost points to local vectors */
-  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-local_print",&flg,PETSC_NULL);CHKERRQ(ierr);
@@ -149,7 +150,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

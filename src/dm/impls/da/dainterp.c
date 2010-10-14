@@ -44,7 +44,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolationScale(DM dac,DM daf,Mat mat,V
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetInterpolation_1D_Q1"
-PetscErrorCode DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
+PetscErrorCode DAGetInterpolation_1D_Q1(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode ierr;
   PetscInt       i,i_start,m_f,Mx,*idx_f;
@@ -137,7 +137,7 @@ PetscErrorCode DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetInterpolation_1D_Q0"
-PetscErrorCode DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
+PetscErrorCode DAGetInterpolation_1D_Q0(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode ierr;
   PetscInt       i,i_start,m_f,Mx,*idx_f;
@@ -209,7 +209,7 @@ PetscErrorCode DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetInterpolation_2D_Q1"
-PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
+PetscErrorCode DAGetInterpolation_2D_Q1(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
@@ -384,7 +384,7 @@ PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetInterpolation_2D_Q0"
-PetscErrorCode DAGetInterpolation_2D_Q0(DA dac,DA daf,Mat *A)
+PetscErrorCode DAGetInterpolation_2D_Q0(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
@@ -495,7 +495,7 @@ PetscErrorCode DAGetInterpolation_2D_Q0(DA dac,DA daf,Mat *A)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetInterpolation_3D_Q0"
-PetscErrorCode DAGetInterpolation_3D_Q0(DA dac,DA daf,Mat *A)
+PetscErrorCode DAGetInterpolation_3D_Q0(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,l,i_start,j_start,l_start,m_f,n_f,p_f,Mx,My,Mz,*idx_f,dof;
@@ -614,7 +614,7 @@ PetscErrorCode DAGetInterpolation_3D_Q0(DA dac,DA daf,Mat *A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetInterpolation_3D_Q1"
-PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
+PetscErrorCode DAGetInterpolation_3D_Q1(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof,l;
@@ -845,7 +845,7 @@ PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
 
 .seealso: DARefine(), DAGetInjection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetInterpolation(DM dac,DM daf,Mat *A,Vec *scale)
 {
   PetscErrorCode ierr;
   PetscInt       dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
@@ -899,7 +899,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *sc
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetInjection_2D"
-PetscErrorCode DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
+PetscErrorCode DAGetInjection_2D(DM dac,DM daf,VecScatter *inject)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
@@ -963,11 +963,11 @@ PetscErrorCode DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
   }
 
   ierr = ISCreateBlock(((PetscObject)daf)->comm,dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(daf,&vecf);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(daf,&vecf);CHKERRQ(ierr);
   ierr = VecScatterCreate(vecf,isf,vecc,PETSC_NULL,inject);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(dac,&vecc);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(daf,&vecf);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dac,&vecc);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(daf,&vecf);CHKERRQ(ierr);
   ierr = ISDestroy(isf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -993,7 +993,7 @@ PetscErrorCode DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
 
 .seealso: DARefine(), DAGetInterpolation()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetInjection(DA dac,DA daf,VecScatter *inject)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetInjection(DM dac,DM daf,VecScatter *inject)
 {
   PetscErrorCode ierr;
   PetscInt       dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
@@ -1045,7 +1045,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInjection(DA dac,DA daf,VecScatter *inject
 
 .seealso: DARefine(), DAGetInjection(), DAGetInterpolation()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAggregates(DA dac,DA daf,Mat *rest)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetAggregates(DM dac,DM daf,Mat *rest)
 {
   PetscErrorCode ierr;
   PetscInt       dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc;

@@ -38,7 +38,7 @@
 #include "finclude/petscsysdef.h"
 #include "finclude/petscvecdef.h"
 #include "finclude/petscdadef.h"
-        DA      da
+        DM      da
         integer xs,xe,xm,gxs,gxe,gxm
         integer ys,ye,ym,gys,gye,gym
         integer mx,my,rank
@@ -94,14 +94,14 @@
       write(*,*)"Inside FormFunction, user%xm=",user%xm
 
 !  Scatter ghost points to local vector, using the 2-step process
-!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+!     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
 !  By placing code between these two statements, computations can
 !  be done while messages are in transition.
 
-      call DAGetLocalVector(user%da,localX,ierr)
-      call DAGlobalToLocalBegin(user%da,X,INSERT_VALUES,                &
+      call DMGetLocalVector(user%da,localX,ierr)
+      call DMGlobalToLocalBegin(user%da,X,INSERT_VALUES,                &
      &     localX,ierr)
-      call DAGlobalToLocalEnd(user%da,X,INSERT_VALUES,localX,ierr)
+      call DMGlobalToLocalEnd(user%da,X,INSERT_VALUES,localX,ierr)
 
 !  Get a pointer to vector data.
 !    - For default PETSc vectors, VecGetArray90() returns a pointer to
@@ -125,7 +125,7 @@
 
 !  Insert values into global vector
 
-      call DARestoreLocalVector(user%da,localX,ierr)
+      call DMRestoreLocalVector(user%da,localX,ierr)
       call PetscLogFlops(11.0d0*user%ym*user%xm,ierr)
 
 !      call VecView(X,PETSC_VIEWER_STDOUT_WORLD,ierr)
@@ -228,7 +228,7 @@
 !
 !   Visualize the distribution of the array across the processors
 !
-!     call DAView(user%da,PETSC_VIEWER_DRAW_WORLD,ierr)
+!     call DMView(user%da,PETSC_VIEWER_DRAW_WORLD,ierr)
 
 !  Extract global and local vectors from DA; then duplicate for remaining
 !  vectors that are the same types
@@ -342,7 +342,7 @@
       call VecDestroy(x,ierr)
       call VecDestroy(r,ierr)
       call SNESDestroy(snes,ierr)
-      call DADestroy(user%da,ierr)
+      call DMDestroy(user%da,ierr)
       call PetscFinalize(ierr)
       end
 
@@ -434,7 +434,7 @@
 !    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
 !      and is useable from Fortran-90 Only.
 
-      call DAGetLocalVector(user%da,localX,ierr)
+      call DMGetLocalVector(user%da,localX,ierr)
       call VecGetArrayF90(localX,lx_v,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
@@ -447,8 +447,9 @@
 
 !  Insert values into global vector
 
-      call DALocalToGlobal(user%da,localX,INSERT_VALUES,X,ierr)
-      call DARestoreLocalVector(user%da,localX,ierr)
+      call DMLocalToGlobalBegin(user%da,localX,INSERT_VALUES,X,ierr)
+      call DMLocalToGlobalEnd(user%da,localX,INSERT_VALUES,X,ierr)
+      call DMRestoreLocalVector(user%da,localX,ierr)
 
       return 
       end
@@ -652,14 +653,14 @@
       Vec            localX
 
 !  Scatter ghost points to local vector, using the 2-step process
-!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd()
+!     DMGlobalToLocalBegin(), DMGlobalToLocalEnd()
 !  Computations can be done while messages are in transition,
 !  by placing code between these two statements.
 
-      call DAGetLocalVector(user%da,localX,ierr)
-      call DAGlobalToLocalBegin(user%da,X,INSERT_VALUES,localX,            &
+      call DMGetLocalVector(user%da,localX,ierr)
+      call DMGlobalToLocalBegin(user%da,X,INSERT_VALUES,localX,            &
      &     ierr)
-      call DAGlobalToLocalEnd(user%da,X,INSERT_VALUES,localX,ierr)
+      call DMGlobalToLocalEnd(user%da,X,INSERT_VALUES,localX,ierr)
 
 !  Get a pointer to vector data
 
@@ -676,7 +677,7 @@
 
       call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
       call VecRestoreArrayF90(localX,lx_v,ierr)
-      call DARestoreLocalVector(user%da,localX,ierr)
+      call DMRestoreLocalVector(user%da,localX,ierr)
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
 
 !  Set flag to indicate that the Jacobian matrix retains an identical

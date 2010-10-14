@@ -92,7 +92,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   MPI_Comm       comm;
   SNES           snes;
-  DA             da;
+  DM             da;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -108,11 +108,11 @@ int main(int argc,char **argv)
     */
     ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
     ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-    ierr = DADestroy(da);CHKERRQ(ierr);
+    ierr = DMDestroy(da);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"mx = %d, my= %d\n",
 		       mx,my);CHKERRQ(ierr);
 
-    ierr = DAGetInfo(DMMGGetDA(dmmg),0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+    ierr = DAGetInfo(DMMGGetDM(dmmg),0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"mx = %d, my= %d\n",
 		       mx,my);CHKERRQ(ierr);
@@ -129,10 +129,10 @@ int main(int argc,char **argv)
     ierr = PetscOptionsGetReal(PETSC_NULL,"-re",&user.re,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
 
-    ierr = DASetFieldName(DMMGGetDA(dmmg),0,"x-velocity");CHKERRQ(ierr);
-    ierr = DASetFieldName(DMMGGetDA(dmmg),1,"y-velocity");CHKERRQ(ierr);
-    ierr = DASetFieldName(DMMGGetDA(dmmg),2,"Omega");CHKERRQ(ierr);
-    //  ierr = DASetFieldName(DMMGGetDA(dmmg),3,"temperature");CHKERRQ(ierr);
+    ierr = DASetFieldName(DMMGGetDM(dmmg),0,"x-velocity");CHKERRQ(ierr);
+    ierr = DASetFieldName(DMMGGetDM(dmmg),1,"y-velocity");CHKERRQ(ierr);
+    ierr = DASetFieldName(DMMGGetDM(dmmg),2,"Omega");CHKERRQ(ierr);
+    //  ierr = DASetFieldName(DMMGGetDM(dmmg),3,"temperature");CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Create user context, set problem data, create vector data structures.
@@ -204,7 +204,7 @@ int main(int argc,char **argv)
 PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 {
   AppCtx         *user = (AppCtx*)dmmg->user;
-  DA             da = (DA)dmmg->dm;
+  DM             da = dmmg->dm;
   PetscInt       i,j,mx,xs,ys,xm,ym;
   PetscErrorCode ierr;
   PetscReal      grashof,dx;

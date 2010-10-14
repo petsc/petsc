@@ -226,7 +226,7 @@ class Configure(config.base.Configure):
        - PetscInitialize from libpetsc
        - VecCreate from libpetscvec
        - MatCreate from libpetscmat
-       - DADestroy from libpetscdm
+       - DMDestroy from libpetscdm
        - KSPCreate from libpetscksp
        - SNESCreate from libpetscsnes
        - TSCreate from libpetscts
@@ -237,7 +237,7 @@ class Configure(config.base.Configure):
     found   = (self.libraries.check(libraries, 'PetscInitializeNoArguments', otherLibs = self.otherLibs, prototype = 'int PetscInitializeNoArguments(void);', cxxMangle = not self.languages.cSupport) and
                self.libraries.check(libraries, 'VecDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_Vec *Vec;int VecDestroy(Vec);', call = 'VecDestroy((Vec) 0)', cxxMangle = not self.languages.cSupport) and
                self.libraries.check(libraries, 'MatDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_Mat *Mat;int MatDestroy(Mat);', call = 'MatDestroy((Mat) 0)', cxxMangle = not self.languages.cSupport) and
-               self.libraries.check(libraries, 'DADestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_DM *DA;int DADestroy(DA);', call = 'DADestroy((DA) 0)', cxxMangle = not self.languages.cSupport) and
+               self.libraries.check(libraries, 'DMDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_DM *DA;int DMDestroy(DA);', call = 'DMDestroy((DA) 0)', cxxMangle = not self.languages.cSupport) and
                self.libraries.check(libraries, 'KSPDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_KSP *KSP;int KSPDestroy(KSP);', call = 'KSPDestroy((KSP) 0)', cxxMangle = not self.languages.cSupport) and
                self.libraries.check(libraries, 'SNESDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_SNES *SNES;int SNESDestroy(SNES);', call = 'SNESDestroy((SNES) 0)', cxxMangle = not self.languages.cSupport) and
                self.libraries.check(libraries, 'TSDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_TS *TS;int TSDestroy(TS);', call = 'TSDestroy((TS) 0)', cxxMangle = not self.languages.cSupport))

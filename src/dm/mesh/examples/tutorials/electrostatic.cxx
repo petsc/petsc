@@ -293,7 +293,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
 
   PetscFunctionBegin;
   if (options->structured) {
-    DA       da;
+    DM       da;
     PetscInt dof = 1;
 
     if (dim == 2) {
@@ -380,7 +380,7 @@ PetscErrorCode DestroyMesh(DM dm, Options *options)
 
   PetscFunctionBegin;
   if (options->structured) {
-    ierr = DADestroy((DA) dm);CHKERRQ(ierr);
+    ierr = DMDestroy( dm);CHKERRQ(ierr);
   } else {
     ierr = MeshDestroy(options->bdMesh);CHKERRQ(ierr);
     ierr = MeshDestroy((Mesh) dm);CHKERRQ(ierr);
@@ -410,7 +410,7 @@ PetscErrorCode Function_Structured_2d(DALocalInfo *info, PetscScalar *x[], Petsc
 {
   Options       *options = (Options *) ctx;
   PetscScalar  (*func)(const double *) = options->func;
-  DA             coordDA;
+  DM             coordDA;
   Vec            coordinates;
   DACoor2d     **coords;
   PetscInt       i, j;
@@ -435,7 +435,7 @@ PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], Pets
 {
   Options       *options = (Options *) ctx;
   PetscScalar  (*func)(const double *) = options->func;
-  DA             coordDA;
+  DM             coordDA;
   Vec            coordinates;
   DACoor3d    ***coords;
   PetscInt       i, j, k;
@@ -487,7 +487,7 @@ PetscErrorCode Rhs_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], PetscSc
   PetscScalar  (*func)(const double *)   = options->func;
   PetscScalar  (*bcFunc)(const double *) = options->exactFunc;
   const double   lambda                  = options->lambda;
-  DA             coordDA;
+  DM             coordDA;
   Vec            coordinates;
   DACoor2d     **coords;
   PetscReal      hxa, hxb, hx, hya, hyb, hy;
@@ -530,7 +530,7 @@ PetscErrorCode Rhs_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], PetscS
   PetscScalar  (*func)(const double *)   = options->func;
   PetscScalar  (*bcFunc)(const double *) = options->exactFunc;
   const double   lambda                  = options->lambda;
-  DA             coordDA;
+  DM             coordDA;
   Vec            coordinates;
   DACoor3d    ***coords;
   PetscReal      hxa, hxb, hx, hya, hyb, hy, hza, hzb, hz;
@@ -972,7 +972,7 @@ PetscErrorCode Jac_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], Mat J, 
 {
   Options       *options = (Options *) ctx;
   const double   lambda  = options->lambda;
-  DA             coordDA;
+  DM             coordDA;
   Vec            coordinates;
   DACoor2d     **coords;
   MatStencil     row, col[5];
@@ -1022,7 +1022,7 @@ PetscErrorCode Jac_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], Mat J,
 {
   Options       *options = (Options *) ctx;
   const double   lambda  = options->lambda;
-  DA             coordDA;
+  DM             coordDA;
   Vec            coordinates;
   DACoor3d    ***coords;
   MatStencil     row, col[7];
@@ -1673,11 +1673,11 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
 
   PetscFunctionBegin;
   if (options->structured) {
-    DA  da = (DA) dm;
+    DM  da = dm;
     PetscScalar (*func)(const double *) = options->func;
     Vec X, U;
 
-    ierr = DAGetGlobalVector(da, &X);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(da, &X);CHKERRQ(ierr);
     ierr = DACreateGlobalVector(da, &options->exactSol.vec);CHKERRQ(ierr);
     options->func = options->exactFunc;
     U             = options->exactSol.vec;
@@ -1688,7 +1688,7 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
     } else {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
     }
-    ierr = DARestoreGlobalVector(da, &X);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(da, &X);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
     if (flag) {ierr = VecView(U, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
     ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_draw", &flag);CHKERRQ(ierr);
@@ -1754,14 +1754,14 @@ PetscErrorCode CheckError(DM dm, ExactSolType sol, Options *options)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   if (options->structured) {
-    DA  da = (DA) dm;
+    DM  da = dm;
     Vec error;
 
-    ierr = DAGetGlobalVector(da, &error);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(da, &error);CHKERRQ(ierr);
     ierr = VecCopy(sol.vec, error);CHKERRQ(ierr);
     ierr = VecAXPY(error, -1.0, options->exactSol.vec);CHKERRQ(ierr);
     ierr = VecNorm(error, NORM_2, &norm);CHKERRQ(ierr);
-    ierr = DARestoreGlobalVector(da, &error);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(da, &error);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) sol.vec, &name);CHKERRQ(ierr);
   } else {
     Mesh mesh = (Mesh) dm;
@@ -1786,10 +1786,10 @@ PetscErrorCode CheckResidual(DM dm, ExactSolType sol, Options *options)
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
   if (options->structured) {
-    DA  da = (DA) dm;
+    DM  da =  dm;
     Vec residual;
 
-    ierr = DAGetGlobalVector(da, &residual);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(da, &residual);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) residual, "residual");CHKERRQ(ierr);
     if (options->dim == 2) {
       ierr = DAFormFunctionLocal(da, (DALocalFunction1) Rhs_Structured_2d_FD, sol.vec, residual, (void *) options);CHKERRQ(ierr);
@@ -1800,7 +1800,7 @@ PetscErrorCode CheckResidual(DM dm, ExactSolType sol, Options *options)
     }
     ierr = VecNorm(residual, NORM_2, &norm);CHKERRQ(ierr);
     if (flag) {ierr = VecView(residual, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
-    ierr = DARestoreGlobalVector(da, &residual);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(da, &residual);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) sol.vec, &name);CHKERRQ(ierr);
   } else {
     Mesh        mesh = (Mesh) dm;
@@ -1885,7 +1885,7 @@ PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
     }
     ierr = DMMGSetFromOptions(*dmmg);CHKERRQ(ierr);
     for(int l = 0; l < DMMGGetLevels(*dmmg); l++) {
-      ierr = DASetUniformCoordinates((DA) (*dmmg)[l]->dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
+      ierr = DASetUniformCoordinates( (*dmmg)[l]->dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
     }
   } else {
     if (options->operatorAssembly == ASSEMBLY_FULL) {
