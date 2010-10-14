@@ -254,7 +254,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       if (rnmax_computed<zeta) rnmax_computed = zeta;
       if (rnmax_true<zeta) rnmax_true = zeta;
 
-      bUpdateX = (PetscBool ) (zeta<bcgsl->delta*zeta0 && zeta0<=rnmax_computed);
+      bUpdateX = (PetscBool) (zeta<bcgsl->delta*zeta0 && zeta0<=rnmax_computed);
       if ((zeta<bcgsl->delta*rnmax_true && zeta0<=rnmax_true) || bUpdateX) {
         /* r0 <- b-inv(K)*A*X */
         ierr = KSP_PCApplyBAorAB(ksp, VX, VVR[0], VTM);CHKERRQ(ierr);

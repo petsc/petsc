@@ -2342,7 +2342,7 @@ PetscErrorCode MeshHasSectionReal(Mesh mesh, const char name[], PetscBool  *flag
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  *flag = (PetscBool ) m->hasRealSection(std::string(name));
+  *flag = (PetscBool) m->hasRealSection(std::string(name));
   PetscFunctionReturn(0);
 }
 
@@ -2447,7 +2447,7 @@ PetscErrorCode MeshHasSectionInt(Mesh mesh, const char name[], PetscBool  *flag)
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  *flag = (PetscBool ) m->hasIntSection(std::string(name));
+  *flag = (PetscBool) m->hasIntSection(std::string(name));
   PetscFunctionReturn(0);
 }
 

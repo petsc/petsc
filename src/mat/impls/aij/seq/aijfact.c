@@ -39,8 +39,8 @@ PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS 
     }
   }
 
-  ierr = PetscMalloc(n*sizeof(PetscBool ),&done);CHKERRQ(ierr);
-  ierr = PetscMemzero(done,n*sizeof(PetscBool ));CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscBool),&done);CHKERRQ(ierr);
+  ierr = PetscMemzero(done,n*sizeof(PetscBool));CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscInt),&order);CHKERRQ(ierr);
   order[0] = current;
   for (i=0; i<n-1; i++) {

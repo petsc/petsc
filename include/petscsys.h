@@ -1157,7 +1157,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocDump(FILE *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocDumpLog(FILE *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocGetCurrentUsage(PetscLogDouble *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocGetMaximumUsage(PetscLogDouble *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocDebug(PetscBool );
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocDebug(PetscBool);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocValidate(int,const char[],const char[],const char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocSetDumpLog(void);
 

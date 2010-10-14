@@ -1857,7 +1857,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
     if (no_inode) {ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_inode\n");CHKERRQ(ierr);}
     ierr = PetscOptionsInt("-mat_inode_limit","Do not use inodes larger then this value",PETSC_NULL,b->inode.limit,&b->inode.limit,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  b->inode.use = (PetscBool )(!(no_unroll || no_inode));
+  b->inode.use = (PetscBool)(!(no_unroll || no_inode));
   if (b->inode.limit > b->inode.max_limit) b->inode.limit = b->inode.max_limit;
 
   PetscFunctionReturn(0);

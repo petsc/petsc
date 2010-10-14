@@ -933,7 +933,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessNonzero(KSP ksp,PetscBool  f
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveBool(ksp,flg,2);
-  ksp->guess_zero   = (PetscBool )!(int)flg;
+  ksp->guess_zero   = (PetscBool)!(int)flg;
   PetscFunctionReturn(0);
 }
 

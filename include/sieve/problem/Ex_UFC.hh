@@ -422,7 +422,7 @@ namespace ALE {
       Ex_UFCOptions *getOptions() {return &this->_options;};
       int  dim() const {return this->_options.dim;};
       bool interpolated() const {return this->_options.interpolate;};
-      void interpolated(const bool i) {this->_options.interpolate = (PetscBool ) i;};
+      void interpolated(const bool i) {this->_options.interpolate = (PetscBool) i;};
       BCType bcType() const {return this->_options.bcType;};
       UFCHook * ufcHook() const {return this->_ufchook;};
       void ufcHook(UFCHook * uh) {this->_ufchook = uh;};
@@ -494,7 +494,7 @@ namespace ALE {
         if (_options.refinementLimit > 0.0) {
           ::Mesh refinedMesh;
 
-          ierr = MeshRefine((::Mesh) this->_dm, _options.refinementLimit, (PetscBool ) interpolated(), &refinedMesh);CHKERRQ(ierr);
+          ierr = MeshRefine((::Mesh) this->_dm, _options.refinementLimit, (PetscBool) interpolated(), &refinedMesh);CHKERRQ(ierr);
           ierr = MeshDestroy((::Mesh) this->_dm);CHKERRQ(ierr);
           this->_dm = (DM) refinedMesh;
           ierr = MeshGetMesh((::Mesh) this->_dm, this->_mesh);CHKERRQ(ierr);

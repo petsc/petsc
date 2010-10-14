@@ -498,9 +498,9 @@ static PetscErrorCode PetscOptionsInsertArgs_Private(int argc,char *args[])
     ierr = PetscStrcasecmp(eargs[0],"-p4yourname",&isp4yourname);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(eargs[0],"-p4rmrank",&isp4rmrank);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(eargs[0],"-p4wd",&tisp4);CHKERRQ(ierr);
-    isp4 = (PetscBool ) (isp4 || tisp4);
+    isp4 = (PetscBool) (isp4 || tisp4);
     ierr = PetscStrcasecmp(eargs[0],"-np",&tisp4);CHKERRQ(ierr);
-    isp4 = (PetscBool ) (isp4 || tisp4);
+    isp4 = (PetscBool) (isp4 || tisp4);
     ierr = PetscStrcasecmp(eargs[0],"-p4amslave",&tisp4);CHKERRQ(ierr);
 
     if (eargs[0][0] != '-') {

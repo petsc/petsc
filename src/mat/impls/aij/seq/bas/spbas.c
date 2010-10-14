@@ -28,7 +28,7 @@ long int spbas_memory_requirement( spbas_matrix matrix)
 {
    long int memreq = 6 * sizeof(PetscInt)         + /* nrows, ncols, nnz, n_alloc_icol,
 						       n_alloc_val, col_idx_type */
-     sizeof(PetscBool )                 + /* block_data */
+     sizeof(PetscBool)                 + /* block_data */
      sizeof(PetscScalar**)        + /* values */
      sizeof(PetscScalar*)         + /* alloc_val */
      2 * sizeof(int**)            + /* icols, icols0 */
@@ -289,10 +289,10 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
    /* Allocate the ordering for the rows */
    ierr = PetscMalloc(nrows*sizeof(PetscInt),&isort);CHKERRQ(ierr);
    ierr = PetscMalloc(nrows*sizeof(PetscInt),&ipoint);CHKERRQ(ierr);
-   ierr = PetscMalloc(nrows*sizeof(PetscBool ),&used);CHKERRQ(ierr);
+   ierr = PetscMalloc(nrows*sizeof(PetscBool),&used);CHKERRQ(ierr);
 
    /*  Initialize the sorting */
-   ierr = PetscMemzero((void*) used, nrows*sizeof(PetscBool ));CHKERRQ(ierr);
+   ierr = PetscMemzero((void*) used, nrows*sizeof(PetscBool));CHKERRQ(ierr);
    for (i = 0; i<nrows; i++)  {
       B->row_nnz[i] = irow_in[i+1]-irow_in[i];
       isort[i] = i;

@@ -1494,7 +1494,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetStencil(Mat mat,PetscInt dim,const Petsc
   }
   mat->stencil.dims[dim]   = dof;
   mat->stencil.starts[dim] = 0;
-  mat->stencil.noc         = (PetscBool )(dof == 1);
+  mat->stencil.noc         = (PetscBool)(dof == 1);
   PetscFunctionReturn(0);
 }
 

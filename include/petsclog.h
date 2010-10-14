@@ -214,8 +214,8 @@ EXTERN PETSCSYS_DLLEXPORT PetscErrorCode (*_PetscLogPHD)(PetscObject);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogBegin(void);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogAllBegin(void);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogTraceBegin(FILE *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogActions(PetscBool );
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjects(PetscBool );
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogActions(PetscBool);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjects(PetscBool);
 /* General functions */
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogGetRGBColor(const char*[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogDestroy(void);
@@ -452,7 +452,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjectState(PetscObject,const c
     } else {\
       _3_ierr = PetscLogStageRegister(name,&_stageNum);CHKERRQ(_3_ierr); \
     }\
-    _3_ierr = PetscLogStageSetActive(_stageNum,(PetscBool )(!PreLoadMax || PreLoadIt));\
+    _3_ierr = PetscLogStageSetActive(_stageNum,(PetscBool)(!PreLoadMax || PreLoadIt));\
     _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);
 
 #define PreLoadEnd() \
@@ -468,7 +468,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjectState(PetscObject,const c
   } else {\
     _3_ierr = PetscLogStageRegister(name,&_stageNum);CHKERRQ(_3_ierr);	\
   }\
-  _3_ierr = PetscLogStageSetActive(_stageNum,(PetscBool )(!PreLoadMax || PreLoadIt));\
+  _3_ierr = PetscLogStageSetActive(_stageNum,(PetscBool)(!PreLoadMax || PreLoadIt));\
   _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);
 
 PETSC_EXTERN_CXX_END

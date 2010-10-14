@@ -682,12 +682,12 @@ static PetscErrorCode PCSetFromOptions_HYPRE_ParaSails(PC pc)
     PetscStackCallHypre("",HYPRE_ParaSailsSetLoadbal(jac->hsolver,jac->loadbal));
   }
 
-  ierr = PetscOptionsBool("-pc_hypre_parasails_logging","Print info to screen","None",(PetscBool )jac->logging,(PetscBool *)&jac->logging,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_hypre_parasails_logging","Print info to screen","None",(PetscBool)jac->logging,(PetscBool *)&jac->logging,&flag);CHKERRQ(ierr);
   if (flag) {
     PetscStackCallHypre("",HYPRE_ParaSailsSetLogging(jac->hsolver,jac->logging));
   }
 
-  ierr = PetscOptionsBool("-pc_hypre_parasails_reuse","Reuse nonzero pattern in preconditioner","None",(PetscBool )jac->ruse,(PetscBool *)&jac->ruse,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_hypre_parasails_reuse","Reuse nonzero pattern in preconditioner","None",(PetscBool)jac->ruse,(PetscBool *)&jac->ruse,&flag);CHKERRQ(ierr);
   if (flag) {
     PetscStackCallHypre("",HYPRE_ParaSailsSetReuse(jac->hsolver,jac->ruse));
   }

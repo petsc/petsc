@@ -1408,10 +1408,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char
        This seems best accomplished by assoicating a communicator with each stage.
   */
   ierr = MPI_Allreduce(&stageLog->numStages, &numStages, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
-  ierr = PetscMalloc(numStages * sizeof(PetscBool ), &localStageUsed);CHKERRQ(ierr);
-  ierr = PetscMalloc(numStages * sizeof(PetscBool ), &stageUsed);CHKERRQ(ierr);
-  ierr = PetscMalloc(numStages * sizeof(PetscBool ), &localStageVisible);CHKERRQ(ierr);
-  ierr = PetscMalloc(numStages * sizeof(PetscBool ), &stageVisible);CHKERRQ(ierr);
+  ierr = PetscMalloc(numStages * sizeof(PetscBool), &localStageUsed);CHKERRQ(ierr);
+  ierr = PetscMalloc(numStages * sizeof(PetscBool), &stageUsed);CHKERRQ(ierr);
+  ierr = PetscMalloc(numStages * sizeof(PetscBool), &localStageVisible);CHKERRQ(ierr);
+  ierr = PetscMalloc(numStages * sizeof(PetscBool), &stageVisible);CHKERRQ(ierr);
   if (numStages > 0) {
     stageInfo = stageLog->stageInfo;
     for(stage = 0; stage < numStages; stage++) {
@@ -1805,8 +1805,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogPrintDetailed(MPI_Comm comm, const cha
 
 
   numStages = stageLog->numStages;
-  ierr = PetscMalloc(numStages * sizeof(PetscBool ), &stageUsed);CHKERRQ(ierr);
-  ierr = PetscMalloc(numStages * sizeof(PetscBool ), &stageVisible);CHKERRQ(ierr);
+  ierr = PetscMalloc(numStages * sizeof(PetscBool), &stageUsed);CHKERRQ(ierr);
+  ierr = PetscMalloc(numStages * sizeof(PetscBool), &stageVisible);CHKERRQ(ierr);
   if (numStages > 0) {
     stageInfo = stageLog->stageInfo;
     for(stage = 0; stage < numStages; stage++) {
@@ -2289,10 +2289,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogPrintSummaryPython(PetscViewer viewer)
        This seems best accomplished by assoicating a communicator with each stage.
   */
   ierr = MPI_Allreduce(&stageLog->numStages, &numStages, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
-  ierr = PetscMalloc(numStages * sizeof(PetscBool ), &localStageUsed);CHKERRQ(ierr);
-  ierr = PetscMalloc(numStages * sizeof(PetscBool ), &stageUsed);CHKERRQ(ierr);
-  ierr = PetscMalloc(numStages * sizeof(PetscBool ), &localStageVisible);CHKERRQ(ierr);
-  ierr = PetscMalloc(numStages * sizeof(PetscBool ), &stageVisible);CHKERRQ(ierr);
+  ierr = PetscMalloc(numStages * sizeof(PetscBool), &localStageUsed);CHKERRQ(ierr);
+  ierr = PetscMalloc(numStages * sizeof(PetscBool), &stageUsed);CHKERRQ(ierr);
+  ierr = PetscMalloc(numStages * sizeof(PetscBool), &localStageVisible);CHKERRQ(ierr);
+  ierr = PetscMalloc(numStages * sizeof(PetscBool), &stageVisible);CHKERRQ(ierr);
   if (numStages > 0) {
     stageInfo = stageLog->stageInfo;
     for(stage = 0; stage < numStages; stage++) {

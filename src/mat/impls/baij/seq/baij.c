@@ -2352,7 +2352,7 @@ PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,const MatFactorInfo *i
   ierr = ISInvertPermutation(col,PETSC_DECIDE,&a->icol);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(inA,a->icol);CHKERRQ(ierr);
   
-  ierr = MatSeqBAIJSetNumericFactorization_inplace(inA,(PetscBool )(row_identity && col_identity));CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetNumericFactorization_inplace(inA,(PetscBool)(row_identity && col_identity));CHKERRQ(ierr);
   if (!a->solve_work) {
     ierr = PetscMalloc((inA->rmap->N+inA->rmap->bs)*sizeof(PetscScalar),&a->solve_work);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(inA,(inA->rmap->N+inA->rmap->bs)*sizeof(PetscScalar));CHKERRQ(ierr);

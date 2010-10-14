@@ -212,7 +212,7 @@ PetscErrorCode PetscFwkGraphTopologicalSort(PetscFwkGraph graph, PetscInt *n, Pe
   }
   *n = graph->vcount;
   ierr = PetscMalloc(sizeof(PetscInt)*graph->vcount, queue); CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscBool )*graph->vcount, &queued); CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscBool)*graph->vcount, &queued); CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*graph->vcount, &indegree); CHKERRQ(ierr);
   for(ii = 0; ii < graph->vcount; ++ii) {
     queued[ii]   = PETSC_FALSE;
@@ -477,7 +477,7 @@ PetscErrorCode PetscFwkFListFind(PetscFList fl,MPI_Comm comm,const char function
     flg = PETSC_FALSE;
     ierr = PetscStrcmp(function,entry->name,&f1);CHKERRQ(ierr);
     ierr = PetscStrcmp(function,entry->rname,&f2);CHKERRQ(ierr);
-    flg =  (PetscBool ) (f1 || f2);
+    flg =  (PetscBool) (f1 || f2);
 
     if (flg) {
       if (entry->routine) {

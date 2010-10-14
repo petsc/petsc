@@ -141,7 +141,7 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
   }
 
   cmap_base = 0;
-  ierr = PetscMemzero(cmap_pixvalues_used,256*sizeof(PetscBool ));CHKERRQ(ierr);
+  ierr = PetscMemzero(cmap_pixvalues_used,256*sizeof(PetscBool));CHKERRQ(ierr);
 
   /* set the basic colors into the color map */
   for (i=0; i<PETSC_DRAW_BASIC_COLORS; i++) {

@@ -825,7 +825,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsName(const char opt[],const char t
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_LOGICAL,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscBool ),&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscBool),&amsopt->data);CHKERRQ(ierr);
     *(PetscBool *)amsopt->data = PETSC_FALSE;
   } 
   ierr = PetscOptionsHasName(PetscOptionsObject.prefix,opt,flg);CHKERRQ(ierr);
@@ -989,7 +989,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBoolGroupBegin(const char opt[],co
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_LOGICAL,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscBool ),&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscBool),&amsopt->data);CHKERRQ(ierr);
     *(PetscBool *)amsopt->data = PETSC_FALSE;
   } 
   *flg = PETSC_FALSE;
@@ -1040,7 +1040,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBoolGroup(const char opt[],const c
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_LOGICAL,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscBool ),&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscBool),&amsopt->data);CHKERRQ(ierr);
     *(PetscBool *)amsopt->data = PETSC_FALSE;
   } 
   *flg = PETSC_FALSE;
@@ -1090,7 +1090,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBoolGroupEnd(const char opt[],cons
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_LOGICAL,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscBool ),&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscBool),&amsopt->data);CHKERRQ(ierr);
     *(PetscBool *)amsopt->data = PETSC_FALSE;
   } 
   *flg = PETSC_FALSE;
@@ -1140,7 +1140,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBool(const char opt[],const char t
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_LOGICAL,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscBool ),&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscBool),&amsopt->data);CHKERRQ(ierr);
     *(PetscBool *)amsopt->data = deflt;
   } 
   ierr = PetscOptionsGetBool(PetscOptionsObject.prefix,opt,flg,&iset);CHKERRQ(ierr);
@@ -1387,7 +1387,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBoolArray(const char opt[],const c
     PetscBool  *vals;
 
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_LOGICAL_ARRAY,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc((*n)*sizeof(PetscBool ),&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscMalloc((*n)*sizeof(PetscBool),&amsopt->data);CHKERRQ(ierr);
     vals = (PetscBool *)amsopt->data;
     for (i=0; i<*n; i++) vals[i] = value[i];
     amsopt->arraylength = *n;
