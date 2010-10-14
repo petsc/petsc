@@ -71,7 +71,7 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
   stash->nprocessed  = 0;
 
   stash->reproduce   = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-matstash_reproduce",&stash->reproduce,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-matstash_reproduce",&stash->reproduce,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

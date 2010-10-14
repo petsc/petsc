@@ -87,7 +87,7 @@ PetscErrorCode FormNewTimeFunctionLocal(DALocalInfo *, PetscScalar **, PetscScal
 /* a few macros for convenience */
 #define REG_REAL(A,B,C,D,E)   ierr=PetscBagRegisterReal(A,B,C,D,E);CHKERRQ(ierr)
 #define REG_INTG(A,B,C,D,E)   ierr=PetscBagRegisterInt(A,B,C,D,E);CHKERRQ(ierr)
-#define REG_TRUE(A,B,C,D,E)   ierr=PetscBagRegisterTruth(A,B,C,D,E);CHKERRQ(ierr)
+#define REG_TRUE(A,B,C,D,E)   ierr=PetscBagRegisterBool(A,B,C,D,E);CHKERRQ(ierr)
 #define REG_STRG(A,B,C,D,E,F) ierr=PetscBagRegisterString(A,B,C,D,E,F);CHKERRQ(ierr)
 #define REG_ENUM(A,B,C,D,E,F) ierr=PetscBagRegisterEnum(A,B,C,D,E,F);CHKERRQ(ierr)
 

@@ -752,7 +752,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawCreate_X(PetscDraw draw)
   ierr = PetscDrawClear(draw);CHKERRQ(ierr);
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-draw_double_buffer",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_double_buffer",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
      ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
   } 

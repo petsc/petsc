@@ -49,13 +49,13 @@ int main(int argc, char *argv[])
     dim  = 2;
     ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex2.c", 2, &dim, PETSC_NULL);CHKERRQ(ierr);
     interpolate = PETSC_TRUE;
-    ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ex2.c", PETSC_TRUE, &interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Construct missing elements of the mesh", "ex2.c", PETSC_TRUE, &interpolate, PETSC_NULL);CHKERRQ(ierr);
     refinementLimit = 0.0;
     ierr = PetscOptionsReal("-refinement_limit", "The area of the largest triangle in the mesh", "ex2.c", 1.0, &refinementLimit, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscStrcpy(baseFilename, "none");CHKERRQ(ierr);
     ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex2.c", "ex2", baseFilename, 2048, &readFile);CHKERRQ(ierr);
     makeField = PETSC_TRUE;
-    ierr = PetscOptionsTruth("-make_field", "Construct the field", "ex3.c", PETSC_TRUE, &makeField, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-make_field", "Construct the field", "ex3.c", PETSC_TRUE, &makeField, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ALE::Obj<ALE::Two::Mesh> meshBoundary = ALE::Two::Mesh(comm, dim-1, debug);

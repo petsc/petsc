@@ -215,7 +215,7 @@ static PetscErrorCode PCSetFromOptions_BJacobi(PC pc)
       ierr = PCBJacobiSetTotalBlocks(pc,blocks,PETSC_NULL);CHKERRQ(ierr); 
     }
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_bjacobi_truelocal","Use the true matrix, not preconditioner matrix to define matrix vector product in sub-problems","PCBJacobiSetUseTrueLocal",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_bjacobi_truelocal","Use the true matrix, not preconditioner matrix to define matrix vector product in sub-problems","PCBJacobiSetUseTrueLocal",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = PCBJacobiSetUseTrueLocal(pc);CHKERRQ(ierr);
     }

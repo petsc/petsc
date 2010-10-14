@@ -40,9 +40,9 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscOptionsEList("-function", "Function type", "ex27", funcNames, NUM_FUNCS, funcNames[function], &func, PETSC_NULL);CHKERRQ(ierr);
     function = (FuncType) func;
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-view_x",&view_x,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-view_y",&view_y,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-view_z",&view_z,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-view_x",&view_x,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-view_y",&view_y,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-view_z",&view_z,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsGetIntArray(PETSC_NULL,"-dim",dim,&ndim,PETSC_NULL);CHKERRQ(ierr); 
 
   

@@ -131,10 +131,10 @@ int main(int argc,char **argv)
   ierr = DAGetMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
   
   A    = J;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-fd_jacobian",&fd_jacobian,0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-fd_jacobian_ghosted",&fd_jacobian_ghosted,0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-adic_jacobian",&adic_jacobian,0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-adicmf_jacobian",&adicmf_jacobian,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-fd_jacobian",&fd_jacobian,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-fd_jacobian_ghosted",&fd_jacobian_ghosted,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-adic_jacobian",&adic_jacobian,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-adicmf_jacobian",&adicmf_jacobian,0);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ADIC)
   if (adicmf_jacobian) {
     ierr = DASetLocalAdicMFFunction(user.da,admf_FormFunctionLocal);CHKERRQ(ierr);
@@ -179,7 +179,7 @@ int main(int argc,char **argv)
   ierr = DASetLocalAdicFunction(user.da,ad_FormFunctionLocal);CHKERRQ(ierr);
 
   /* Decide which FormFunction to use */
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-matlab_function",&matlab_function,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-matlab_function",&matlab_function,0);CHKERRQ(ierr);
 
   ierr = SNESSetFunction(snes,r,SNESDAFormFunction,&user);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
@@ -203,7 +203,7 @@ int main(int argc,char **argv)
 
   {
     PetscBool  test_appctx = PETSC_FALSE;
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-test_appctx",&test_appctx,0);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-test_appctx",&test_appctx,0);CHKERRQ(ierr);
     if (test_appctx) {
       AppCtx *puser;
       ierr = SNESSetApplicationContext(snes,&user);CHKERRQ(ierr);

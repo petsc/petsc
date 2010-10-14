@@ -30,9 +30,9 @@ int main(int argc, char **argv)
     ierr = PetscOptionsInt("-debug", "The debugging level", "dolfin.cxx", debug, &debug, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscStrcpy(filename, "triangle.xml");CHKERRQ(ierr);
     ierr = PetscOptionsString("-filename", "The mesh filename", "dolfin.cxx", filename, filename, 2048, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-boundary", "Construct the boundary mesh", "dolfin.cxx", doBoundary, &doBoundary, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-interpolate", "Interpolate the mesh", "dolfin.cxx", interpolate, &interpolate, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-view", "Interpolate the mesh", "dolfin.cxx", view, &view, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-boundary", "Construct the boundary mesh", "dolfin.cxx", doBoundary, &doBoundary, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", "dolfin.cxx", interpolate, &interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-view", "Interpolate the mesh", "dolfin.cxx", view, &view, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   Obj<ALE::Mesh>             mesh  = new ALE::Mesh(PETSC_COMM_WORLD, 2, debug);

@@ -90,7 +90,7 @@ int main(int argc,char **args)
       - Always specify global rows and columns of matrix entries.
   */
 
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-norandom",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-norandom",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) use_random = 0;
   else     use_random = 1;
   if (use_random) {
@@ -188,7 +188,7 @@ int main(int argc,char **args)
       real and imaginary components of the complex vector, x.
   */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-print_x3",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-print_x3",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = VecGetArray(x,&xa);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"The first three entries of x are:\n");CHKERRQ(ierr);

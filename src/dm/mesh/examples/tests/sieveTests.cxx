@@ -33,10 +33,10 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "Debugging flag", "sieveTests", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-overlap", "Run Overlap tests", "sieveTests", options->overlap, &options->overlap, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-preallocation", "Run Preallocation tests", "sieveTests", options->preallocation, &options->preallocation, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-label", "Run Label tests", "sieveTests", options->label, &options->label, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-interpolate", "Interpolate the mesh", "sieveTests", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-overlap", "Run Overlap tests", "sieveTests", options->overlap, &options->overlap, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-preallocation", "Run Preallocation tests", "sieveTests", options->preallocation, &options->preallocation, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-label", "Run Label tests", "sieveTests", options->label, &options->label, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", "sieveTests", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-refine", "The refinement limit", "sieveTests", options->refine, &options->refine, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 

@@ -49,7 +49,7 @@ int main(int argc,char **args)
   /*
      Set flag if we are doing a nonsymmetric problem; the default is symmetric.
   */
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-mat_nonsym",&mat_nonsymmetric,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_nonsym",&mat_nonsymmetric,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Register two stages for separate profiling of the two linear solves.

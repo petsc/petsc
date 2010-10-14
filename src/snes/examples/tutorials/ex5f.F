@@ -169,7 +169,7 @@
 
       call DAGetMatrix(da,MATAIJ,J,ierr)
 #if defined(PETSC_HAVE_ADIFOR)
-      call PetscOptionsGetTruth(PETSC_NULL_CHARACTER                            &
+      call PetscOptionsGetBool(PETSC_NULL_CHARACTER                            &
      &     ,'-adiformf_jacobian',                                                 &
      &     adiformf_jacobian,PETSC_NULL_INTEGER,ierr)
       if (adiformf_jacobian .eq. 1) then
@@ -188,7 +188,7 @@
       call SNESSetJacobian(snes,A,J,SNESDAComputeJacobian,                        &
      &                       da,ierr)
 #if defined(PETSC_HAVE_ADIFOR)
-      call PetscOptionsGetTruth(PETSC_NULL_CHARACTER                            &
+      call PetscOptionsGetBool(PETSC_NULL_CHARACTER                            &
      &     ,'-adifor_jacobian',                                                   &
      &     adifor_jacobian,PETSC_NULL_INTEGER,ierr)
       if (adifor_jacobian .eq. 1) then

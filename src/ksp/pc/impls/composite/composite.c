@@ -160,7 +160,7 @@ static PetscErrorCode PCSetFromOptions_Composite(PC pc)
       ierr = PCCompositeSetType(pc,jac->type);CHKERRQ(ierr);
     }
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_composite_true","Use true matrix for inner solves","PCCompositeSetUseTrue",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_composite_true","Use true matrix for inner solves","PCCompositeSetUseTrue",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = PCCompositeSetUseTrue(pc);CHKERRQ(ierr);
     }

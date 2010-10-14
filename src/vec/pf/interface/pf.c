@@ -70,7 +70,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFDestroy(PF pf)
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
   if (--((PetscObject)pf)->refct > 0) PetscFunctionReturn(0);
 
-  ierr = PetscOptionsGetTruth(((PetscObject)pf)->prefix,"-pf_view",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)pf)->prefix,"-pf_view",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(((PetscObject)pf)->comm,&viewer);CHKERRQ(ierr);

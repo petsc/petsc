@@ -915,7 +915,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   }
 
   /* define the coefficients */
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-use_gp_coords",&use_gp_coords,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_gp_coords",&use_gp_coords,&flg);CHKERRQ(ierr);
 
   for (j = sj; j < sj+ny; j++) {
     for (i = si; i < si+nx; i++) {
@@ -1050,7 +1050,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   ierr = DALocalToGlobalBegin(da_prop,l_properties,properties);CHKERRQ(ierr);
   ierr = DALocalToGlobalEnd(da_prop,l_properties,properties);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-no_view",&no_view,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-no_view",&no_view,PETSC_NULL);CHKERRQ(ierr);
   if (!no_view) {
     ierr = DAViewCoefficientsGnuplot2d(da_prop,properties,"Coeffcients for elasticity eqn.","properties");CHKERRQ(ierr);
     ierr = DACoordViewGnuplot2d(elas_da,"mesh");CHKERRQ(ierr);
@@ -1072,7 +1072,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp_E);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(ksp_E,"elas_");CHKERRQ(ierr);  /* elasticity */
 
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-use_nonsymbc",&use_nonsymbc,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_nonsymbc",&use_nonsymbc,&flg);CHKERRQ(ierr);
   /* solve */
   if (use_nonsymbc == PETSC_FALSE) {
     Mat AA;

@@ -98,10 +98,10 @@ int main(int argc,char **argv)
        (unless user explicitly sets preconditioner) 
        -snes_fd : default finite differencing approximation of Jacobian
        */
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
     if (!matrix_free) {
       PetscBool  matrix_free_operator = PETSC_FALSE;
-      ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf_operator",&matrix_free_operator,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_mf_operator",&matrix_free_operator,PETSC_NULL);CHKERRQ(ierr);
       if (matrix_free_operator) matrix_free = PETSC_FALSE;
     }
     if (!matrix_free) {

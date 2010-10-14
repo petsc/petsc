@@ -1075,11 +1075,11 @@ PetscErrorCode DMMGSolveFASCycle(DMMG *dmmg,PetscInt level)
 
   PetscFunctionBegin;
   ierr =  DMMGSolveFASSetUp(dmmg,level);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-dmmg_fas_9",&flgb,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-dmmg_fas_9",&flgb,PETSC_NULL);CHKERRQ(ierr);
  
   if(flgb){
 
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-dmmg_fas_full",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-dmmg_fas_full",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       for(i=0;i<1000;i++){
 	ierr = PetscPrintf(dmmg[level]->comm,"%D ",i+1);CHKERRQ(ierr);
@@ -1108,7 +1108,7 @@ PetscErrorCode DMMGSolveFASCycle(DMMG *dmmg,PetscInt level)
   }
   else {
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-dmmg_fas_full",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-dmmg_fas_full",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       for(i=0;i<1000;i++){
 	ierr = PetscPrintf(dmmg[level]->comm,"%D ",i+1);CHKERRQ(ierr);
@@ -1161,11 +1161,11 @@ PetscErrorCode DMMGSolveFASCyclen(DMMG *dmmg,PetscInt level)
 
   PetscFunctionBegin;
   ierr =  DMMGSolveFASSetUp(dmmg,level);CHKERRQ(ierr);
-     ierr = PetscOptionsGetTruth(PETSC_NULL,"-dmmg_fas_9",&flgb,PETSC_NULL);CHKERRQ(ierr);
+     ierr = PetscOptionsGetBool(PETSC_NULL,"-dmmg_fas_9",&flgb,PETSC_NULL);CHKERRQ(ierr);
  
   if(flgb){
 
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-dmmg_fas_full",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-dmmg_fas_full",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
     
 	ierr = DMMGSolveFASFCycle9(dmmg,level,&converged);CHKERRQ(ierr); 
@@ -1190,7 +1190,7 @@ PetscErrorCode DMMGSolveFASCyclen(DMMG *dmmg,PetscInt level)
   }
   else {
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-dmmg_fas_full",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-dmmg_fas_full",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
    
 	ierr = DMMGSolveFASFCycle(dmmg,level,&converged);CHKERRQ(ierr); 
@@ -1722,7 +1722,7 @@ PetscErrorCode DMMGSolveFAS_QNewton(DMMG *dmmg, PetscInt level)
 
  PetscFunctionBegin;
 
- ierr = PetscOptionsGetTruth(PETSC_NULL,"-dmmg_fas_initialJacobian",&flg,PETSC_NULL);CHKERRQ(ierr);
+ ierr = PetscOptionsGetBool(PETSC_NULL,"-dmmg_fas_initialJacobian",&flg,PETSC_NULL);CHKERRQ(ierr);
  ierr = VecDuplicate(dmmg[level]->x,&X);CHKERRQ(ierr);
  ierr = VecDuplicate(dmmg[level]->x,&F);CHKERRQ(ierr);
  ierr = VecDuplicate(dmmg[level]->x,&W);CHKERRQ(ierr);

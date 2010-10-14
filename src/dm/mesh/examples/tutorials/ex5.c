@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     dim  = 2;
     ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex1.c", 2, &dim, PETSC_NULL);CHKERRQ(ierr);
     useZeroBase = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-use_zero_base", "Use zero-based indexing", "ex1.c", PETSC_FALSE, &useZeroBase, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-use_zero_base", "Use zero-based indexing", "ex1.c", PETSC_FALSE, &useZeroBase, PETSC_NULL);CHKERRQ(ierr);
     ft   = (PetscInt) PCICE;
     ierr = PetscOptionsEList("-file_type", "Type of input files", "ex1.c", fileTypes, 2, fileTypes[0], &ft, PETSC_NULL);CHKERRQ(ierr);
     fileType = (FileType) ft;
@@ -85,13 +85,13 @@ int main(int argc, char *argv[])
     ierr = PetscStrcpy(baseFilename, "data/ex1_2d");CHKERRQ(ierr);
     ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex33.c", "ex1", baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
     distribute = PETSC_TRUE;
-    ierr = PetscOptionsTruth("-distribute", "Distribute the mesh among processes", "ex1.c", PETSC_TRUE, &distribute, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-distribute", "Distribute the mesh among processes", "ex1.c", PETSC_TRUE, &distribute, PETSC_NULL);CHKERRQ(ierr);
     outputLocal = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-output_local", "Output the local form of the mesh", "ex1.c", PETSC_FALSE, &outputLocal, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-output_local", "Output the local form of the mesh", "ex1.c", PETSC_FALSE, &outputLocal, PETSC_NULL);CHKERRQ(ierr);
     outputVTK = PETSC_TRUE;
-    ierr = PetscOptionsTruth("-output_vtk", "Output the mesh in VTK", "ex1.c", PETSC_TRUE, &outputVTK, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-output_vtk", "Output the mesh in VTK", "ex1.c", PETSC_TRUE, &outputVTK, PETSC_NULL);CHKERRQ(ierr);
     interpolate = PETSC_TRUE;
-    ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ex1.c", PETSC_TRUE, &interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Construct missing elements of the mesh", "ex1.c", PETSC_TRUE, &interpolate, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   ierr = PetscOptionsBegin(comm, "", "Debugging options", "ALE");
     verbosity = 0;

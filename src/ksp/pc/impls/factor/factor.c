@@ -461,7 +461,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks(PC pc,PetscBool  pivo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidLogicalCollectiveTruth(pc,pivot,2);
+  PetscValidLogicalCollectiveBool(pc,pivot,2);
   ierr = PetscTryMethod(pc,"PCFactorSetPivotInBlocks_C",(PC,PetscBool),(pc,pivot));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -493,7 +493,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill(PC pc,PetscBool  flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,2);
-  PetscValidLogicalCollectiveTruth(pc,flag,2);
+  PetscValidLogicalCollectiveBool(pc,flag,2);
   ierr = PetscTryMethod(pc,"PCFactorSetReuseFill_C",(PC,PetscBool),(pc,flag));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

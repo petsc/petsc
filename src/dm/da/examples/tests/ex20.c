@@ -77,7 +77,7 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-same_array",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-same_array",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     /* test the case where the input and output array is the same */
     ierr = VecCopy(local,local_copy);CHKERRQ(ierr);
@@ -95,7 +95,7 @@ int main(int argc,char **argv)
   }
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-save",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-save",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     sprintf(filename,"local.%d",rank);

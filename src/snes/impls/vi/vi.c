@@ -1334,7 +1334,7 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
     ierr = PetscOptionsReal("-snes_vi_delta","descent test fraction","None",vi->delta,&vi->delta,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-snes_vi_rho","descent test power","None",vi->rho,&vi->rho,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-snes_vi_const_tol","constraint tolerance","None",vi->const_tol,&vi->const_tol,0);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-snes_vi_lsmonitor","Print progress of line searches","SNESLineSearchSetMonitor",vi->lsmonitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-snes_vi_lsmonitor","Print progress of line searches","SNESLineSearchSetMonitor",vi->lsmonitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
     if (set) {ierr = SNESLineSearchSetMonitor(snes,flg);CHKERRQ(ierr);}
 
     ierr = PetscOptionsEList("-snes_vi_ls","Line search used","SNESLineSearchSet",lses,4,"cubic",&indx,&flg);CHKERRQ(ierr);

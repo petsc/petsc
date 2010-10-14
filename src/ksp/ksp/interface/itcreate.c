@@ -205,7 +205,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetLagNorm(KSP ksp,PetscBool  flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveTruth(ksp,flg,2);
+  PetscValidLogicalCollectiveBool(ksp,flg,2);
   ksp->lagnorm = flg;
   PetscFunctionReturn(0);
 }

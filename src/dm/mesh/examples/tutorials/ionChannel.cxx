@@ -48,10 +48,10 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 
   ierr = PetscOptionsBegin(comm, "", "PFLOTRAN Options", "DMMG");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level", "ionChannel.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ionChannel.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Construct missing elements of the mesh", "ionChannel.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-refinement_limit", "The area of the largest triangle in the mesh", "ionChannel.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-refinement_exp", "The exponent of the radius for refinement", "ionChannel.cxx", options->refinementExp, &options->refinementExp, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-view_dielectric", "View the dielectric constant as a field", "ionChannel.cxx", options->viewDielectric, &options->viewDielectric, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-view_dielectric", "View the dielectric constant as a field", "ionChannel.cxx", options->viewDielectric, &options->viewDielectric, PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsEnd();
 

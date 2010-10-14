@@ -44,12 +44,12 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscByteSwapEnum(PetscEnum *buff,PetscInt n)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscByteSwapTruth"
+#define __FUNCT__ "PetscByteSwapBool"
 /*
-  PetscByteSwapTruth - Swap bytes in a  PETSc Truth
+  PetscByteSwapBool - Swap bytes in a  PETSc Bool
 
 */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscByteSwapTruth(PetscBool  *buff,PetscInt n)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscByteSwapBool(PetscBool *buff,PetscInt n)
 {
   PetscInt    i,j;
   PetscBool   tmp = PETSC_FALSE;
@@ -177,7 +177,7 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
   PetscFunctionBegin;
   if      (pdtype == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_ENUM)   {ierr = PetscByteSwapEnum((PetscEnum*)data,count);CHKERRQ(ierr);}        
-  else if (pdtype == PETSC_BOOL)  {ierr = PetscByteSwapTruth((PetscBool *)data,count);CHKERRQ(ierr);}        
+  else if (pdtype == PETSC_BOOL)   {ierr = PetscByteSwapBool((PetscBool*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)data,count);CHKERRQ(ierr);}

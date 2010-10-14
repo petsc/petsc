@@ -110,7 +110,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm,&user.rank);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-no_output",&no_output,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-no_output",&no_output,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Initialize problem parameters

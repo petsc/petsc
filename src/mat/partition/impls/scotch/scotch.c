@@ -649,7 +649,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Scotch(MatPartitioning part)
     }
 
     flag = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-mat_partitioning_scotch_mapping", "Use mapping","MatPartitioningScotchSetMapping", flag,&flag,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_partitioning_scotch_mapping", "Use mapping","MatPartitioningScotchSetMapping", flag,&flag,PETSC_NULL);CHKERRQ(ierr);
     if (flag) {
       ierr = MatPartitioningScotchSetMapping(part);CHKERRQ(ierr);
     }
@@ -673,7 +673,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Scotch(MatPartitioning part)
         ierr = MatPartitioningScotchSetCoarseLevel(part, r);CHKERRQ(ierr);
 
     flag = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-mat_partitioning_scotch_mul", "Use coarse level","MatPartitioningScotchSetMultilevel", flag,&flag,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_partitioning_scotch_mul", "Use coarse level","MatPartitioningScotchSetMultilevel", flag,&flag,PETSC_NULL);CHKERRQ(ierr);
     if (flag) {
       ierr = MatPartitioningScotchSetMultilevel(part);CHKERRQ(ierr);
     }

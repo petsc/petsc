@@ -55,16 +55,16 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "Debugging flag", "memTests", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-sifter", "Run Sifter tests", "memTests", options->sifter, &options->sifter, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-label", "Run Label tests", "memTests", options->label, &options->label, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-sieve", "Run Sieve tests", "memTests", options->sieve, &options->sieve, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mesh", "Run Mesh tests", "memTests", options->mesh, &options->mesh, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-section", "Run Section tests", "memTests", options->section, &options->section, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-isection", "Run ISection tests", "memTests", options->isection, &options->isection, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-sectionDist", "Run Section distribution tests", "memTests", options->sectionDist, &options->sectionDist, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-sifter", "Run Sifter tests", "memTests", options->sifter, &options->sifter, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-label", "Run Label tests", "memTests", options->label, &options->label, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-sieve", "Run Sieve tests", "memTests", options->sieve, &options->sieve, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mesh", "Run Mesh tests", "memTests", options->mesh, &options->mesh, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-section", "Run Section tests", "memTests", options->section, &options->section, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-isection", "Run ISection tests", "memTests", options->isection, &options->isection, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-sectionDist", "Run Section distribution tests", "memTests", options->sectionDist, &options->sectionDist, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-num", "Number of each class to create", "memTests", options->number, &options->number, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-numCells", "Number of mesh cells", "memTests", options->numCells, &options->numCells, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-interpolate", "Interpolate the mesh", "memTests", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", "memTests", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-refine", "The refinement limit", "memTests", options->refine, &options->refine, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-components", "Number of section components", "memTests", options->components, &options->components, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();

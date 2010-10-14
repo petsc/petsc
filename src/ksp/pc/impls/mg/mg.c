@@ -335,7 +335,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
       ierr = PCMGSetCycleType(pc,mgctype);CHKERRQ(ierr);
     };
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_mg_galerkin","Use Galerkin process to compute coarser operators","PCMGSetGalerkin",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_mg_galerkin","Use Galerkin process to compute coarser operators","PCMGSetGalerkin",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = PCMGSetGalerkin(pc);CHKERRQ(ierr);
     } 
@@ -359,7 +359,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
       }
     }
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_mg_log","Log times for each multigrid level","None",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_mg_log","Log times for each multigrid level","None",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       PetscInt i;
       char     eventname[128];
@@ -518,7 +518,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   } 
 
   if (!pc->setupcalled) {
-    ierr = PetscOptionsGetTruth(((PetscObject)pc)->prefix,"-pc_mg_monitor",&monitor,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_mg_monitor",&monitor,PETSC_NULL);CHKERRQ(ierr);
      
     for (i=0; i<n; i++) {
       if (monitor) {
@@ -649,13 +649,13 @@ PetscErrorCode PCSetUp_MG(PC pc)
    Only support one or the other at the same time.
   */
 #if defined(PETSC_USE_SOCKET_VIEWER)
-  ierr = PetscOptionsGetTruth(((PetscObject)pc)->prefix,"-pc_mg_dump_matlab",&dump,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_mg_dump_matlab",&dump,PETSC_NULL);CHKERRQ(ierr);
   if (dump) {
     viewer = PETSC_VIEWER_SOCKET_(((PetscObject)pc)->comm);
   }
   dump = PETSC_FALSE;
 #endif
-  ierr = PetscOptionsGetTruth(((PetscObject)pc)->prefix,"-pc_mg_dump_binary",&dump,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_mg_dump_binary",&dump,PETSC_NULL);CHKERRQ(ierr);
   if (dump) {
     viewer = PETSC_VIEWER_BINARY_(((PetscObject)pc)->comm);
   }

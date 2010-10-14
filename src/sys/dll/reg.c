@@ -139,7 +139,7 @@ PetscErrorCode PetscFinalize_DynamicLibraries(void)
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-dll_view",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-dll_view",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) { ierr = PetscDLLibraryPrintPath(DLLibrariesLoaded);CHKERRQ(ierr); }
   ierr = PetscDLLibraryClose(DLLibrariesLoaded);CHKERRQ(ierr);
   DLLibrariesLoaded = 0;

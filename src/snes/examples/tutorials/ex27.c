@@ -193,7 +193,7 @@ int main(int argc,char **argv)
     tsCtx.dt        = 0.01; tsCtx.fnorm_ratio = 1.0e+10;
     tsCtx.LocalTimeStepping = 0;
     tsCtx.use_parabolic     = PETSC_FALSE;
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-use_parabolic",&tsCtx.use_parabolic,PETSC_IGNORE);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-use_parabolic",&tsCtx.use_parabolic,PETSC_IGNORE);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(PETSC_NULL,"-max_st",&tsCtx.max_steps,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetReal(PETSC_NULL,"-ts_rtol",&tsCtx.fnorm_ratio,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetReal(PETSC_NULL,"-cfl_ini",&tsCtx.cfl_ini,PETSC_NULL);CHKERRQ(ierr);

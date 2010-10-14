@@ -311,7 +311,7 @@
       call SNESSetFromOptions(snes,ierr)
 
 !     Test Fortran90 wrapper for SNESSet/Get ApplicationContext()
-      call PetscOptionsGetTruth(PETSC_NULL_CHARACTER,'-test_appctx',             &
+      call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-test_appctx',             &
      &     flg,PETSC_NULL_CHARACTER,ierr)
       if (flg) then
         call SNESGetApplicationContext(snes,puser,ierr)

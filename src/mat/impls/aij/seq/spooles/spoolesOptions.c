@@ -68,7 +68,7 @@ PetscErrorCode SetSpoolesOptions(Mat A, Spooles_options *options)
                            options->maxzeros,&options->maxzeros,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_spooles_maxsize","maxsize","None",\
                            options->maxsize,&options->maxsize,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_spooles_FrontMtxInfo","FrontMtxInfo","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_spooles_FrontMtxInfo","FrontMtxInfo","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
     if (flg) options->FrontMtxInfo = PETSC_TRUE; 
 
     if ( options->symflag == SPOOLES_SYMMETRIC ) {

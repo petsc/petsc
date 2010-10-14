@@ -441,7 +441,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjectState(PetscObject,const c
   int            PreLoadMax,PreLoadIt;\
   PetscLogStage  _stageNum;\
   PetscErrorCode _3_ierr;	\
-  _3_ierr = PetscOptionsGetTruth(PETSC_NULL,"-preload",&PreLoading,PETSC_NULL);CHKERRQ(_3_ierr);\
+  _3_ierr = PetscOptionsGetBool(PETSC_NULL,"-preload",&PreLoading,PETSC_NULL);CHKERRQ(_3_ierr);\
   PreLoadMax = (int)(PreLoading);\
   PetscPreLoadingUsed = PreLoading ? PETSC_TRUE : PetscPreLoadingUsed;\
   for (PreLoadIt=0; PreLoadIt<=PreLoadMax; PreLoadIt++) {\

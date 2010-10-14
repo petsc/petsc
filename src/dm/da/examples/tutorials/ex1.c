@@ -56,7 +56,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerMatlabOpen(PETSC_COMM_WORLD,"tmp.mat",FILE_MODE_WRITE,&mviewer);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-star_stencil",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-star_stencil",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) stype = DA_STENCIL_STAR;
       
   /* Create distributed array and get vectors */
@@ -75,7 +75,7 @@ int main(int argc,char **argv)
   ierr = DALocalToGlobal(da,local,ADD_VALUES,global);CHKERRQ(ierr);
   
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL, "-view_global", &flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL, "-view_global", &flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) { /* view global vector in natural ordering */
     ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }

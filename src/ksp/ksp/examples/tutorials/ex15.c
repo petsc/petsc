@@ -156,7 +156,7 @@ int main(int argc,char **args)
   /*
      Set a user-defined "shell" preconditioner if desired
   */
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-user_defined_pc",&user_defined_pc,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-user_defined_pc",&user_defined_pc,PETSC_NULL);CHKERRQ(ierr);
   if (user_defined_pc) {
     /* (Required) Indicate to PETSc that we're using a "shell" preconditioner */
     ierr = PCSetType(pc,PCSHELL);CHKERRQ(ierr);

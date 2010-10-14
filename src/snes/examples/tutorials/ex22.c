@@ -97,14 +97,14 @@ int main(int argc,char **argv)
 
   /* Hardwire several options; can be changed at command line */
   ierr = PetscOptionsInsertString(common_options);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-use_matrix_based",&use_matrix_based,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_matrix_based",&use_matrix_based,PETSC_IGNORE);CHKERRQ(ierr);
   if (use_matrix_based) {
     ierr = PetscOptionsInsertString(matrix_based_options);CHKERRQ(ierr);
   } else {
     ierr = PetscOptionsInsertString(matrix_free_options);CHKERRQ(ierr);
   }
   ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-use_monitor",&use_monitor,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_monitor",&use_monitor,PETSC_IGNORE);CHKERRQ(ierr);
 
   /* Create a global vector that includes a single redundant array and two da arrays */
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);

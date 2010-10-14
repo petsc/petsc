@@ -44,9 +44,9 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   ierr = PetscOptionsBegin(comm, "", "Bratu Problem Options", "DMMG");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level", "refinement.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "refinement.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-generate", "Generate the unstructured mesh", "refinement.cxx", options->generateMesh, &options->generateMesh, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-interpolate", "Generate intermediate mesh elements", "refinement.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-refine_local", "Locally refine the mesh", "refinement.cxx", options->refineLocal, &options->refineLocal, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-generate", "Generate the unstructured mesh", "refinement.cxx", options->generateMesh, &options->generateMesh, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "refinement.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-refine_local", "Locally refine the mesh", "refinement.cxx", options->refineLocal, &options->refineLocal, PETSC_NULL);CHKERRQ(ierr);
     numLimits = size;
     ierr = PetscOptionsRealArray("-refinement_limit", "The largest allowable cell volume per process", "refinement.cxx", options->refinementLimit, &numLimits, &flag);CHKERRQ(ierr);
     if (flag) {

@@ -90,7 +90,7 @@ void PETSC_STDCALL petscbagregistertruth_(PetscBag *bag,void *ptr,PetscBool  *de
   if (*def) flg = PETSC_TRUE;
   FIXCHAR(s1,l1,t1);
   FIXCHAR(s2,l2,t2);
-  *ierr = PetscBagRegisterTruth(*bag,ptr,flg,t1,t2);
+  *ierr = PetscBagRegisterBool(*bag,ptr,flg,t1,t2);
   FREECHAR(s1,t1);
   FREECHAR(s2,t2);
 }

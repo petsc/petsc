@@ -265,7 +265,7 @@ PetscErrorCode ISCreateGeneral_Private(IS is)
   is->max     = max;
   is->isperm     = PETSC_FALSE;
   is->isidentity = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-is_view",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-is_view",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(((PetscObject)is)->comm,&viewer);CHKERRQ(ierr);

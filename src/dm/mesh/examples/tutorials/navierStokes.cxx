@@ -124,8 +124,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsEList("-solution", "The solution type", "navierStokes.cxx", solnTypes, 2, solnTypes[options->solnType], &soln, PETSC_NULL);CHKERRQ(ierr);
     options->solnType = (SolutionType) soln;
     ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "navierStokes.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-generate", "Generate the unstructured mesh", "navierStokes.cxx", options->generateMesh, &options->generateMesh, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-interpolate", "Generate intermediate mesh elements", "navierStokes.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-generate", "Generate the unstructured mesh", "navierStokes.cxx", options->generateMesh, &options->generateMesh, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "navierStokes.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "navierStokes.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
     filename << "data/stokes_" << options->dim <<"d";
     ierr = PetscStrcpy(options->baseFilename, filename.str().c_str());CHKERRQ(ierr);
@@ -136,7 +136,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     as = options->operatorAssembly;
     ierr = PetscOptionsEList("-assembly_type","Type of operator assembly","navierStokes.cxx",asTypes,3,asTypes[options->operatorAssembly],&as,PETSC_NULL);CHKERRQ(ierr);
     options->operatorAssembly = (AssemblyType) as;
-    ierr = PetscOptionsTruth("-output_eq", "Output the equations as text", "navierStokes.cxx", options->outputEquation, &options->outputEquation, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-output_eq", "Output the equations as text", "navierStokes.cxx", options->outputEquation, &options->outputEquation, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   PetscFunctionReturn(0);

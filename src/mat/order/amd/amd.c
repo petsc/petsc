@@ -50,7 +50,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_AMD(Mat mat,const MatOrderingTy
   Control[AMD_DENSE] = (double)val;
 
   tval = (PetscBool )Control[AMD_AGGRESSIVE];
-  ierr = PetscOptionsTruth("-mat_ordering_amd_aggressive","use aggressive absorption","None",tval,&tval,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_ordering_amd_aggressive","use aggressive absorption","None",tval,&tval,PETSC_NULL);CHKERRQ(ierr);
   Control[AMD_AGGRESSIVE] = (double)tval;
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 

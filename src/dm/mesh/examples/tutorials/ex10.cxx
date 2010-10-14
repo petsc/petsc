@@ -38,7 +38,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   ierr = PetscOptionsBegin(comm, "", "PFLOTRAN Options", "DMMG");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level", "pflotran.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-test", "The testing level", "pflotran.cxx", options->test, &options->test, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-postpone_ghosts", "Number ghost variables last", "pflotran.cxx", options->postponeGhosts, &options->postponeGhosts, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-postpone_ghosts", "Number ghost variables last", "pflotran.cxx", options->postponeGhosts, &options->postponeGhosts, PETSC_NULL);CHKERRQ(ierr);
 
     ierr = PetscStrcpy(options->baseFilename, "data/ex10");CHKERRQ(ierr);
     ierr = PetscOptionsString("-base_filename", "The base filename for mesh files", "pflotran.cxx", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);

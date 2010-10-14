@@ -1508,7 +1508,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCView(PC pc,PetscViewer viewer)
 PetscErrorCode PETSCKSP_DLLEXPORT PCSetInitialGuessNonzero(PC pc,PetscBool  flg)
 {
   PetscFunctionBegin;
-  PetscValidLogicalCollectiveTruth(pc,flg,2);
+  PetscValidLogicalCollectiveBool(pc,flg,2);
   pc->nonzero_guess   = flg;
   PetscFunctionReturn(0);
 }

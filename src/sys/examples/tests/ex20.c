@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
   ierr = PetscOptionsGetInt(0,"-five",&opts[5],0);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"opts = {%D %D %D %D %D %D}\n",opts[0],opts[1],opts[2],opts[3],opts[4],opts[5]);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetTruth(0,"-cl",&hascl,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(0,"-cl",&hascl,0);CHKERRQ(ierr);
   if (hascl) {
     ierr = PetscMemzero(opts,sizeof opts);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(0,"-cl_zero",&opts[0],0);CHKERRQ(ierr);
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     ierr = PetscPrintf(PETSC_COMM_WORLD,"cl_opts = {%D %D %D %D %D %D}\n",opts[0],opts[1],opts[2],opts[3],opts[4],opts[5]);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetTruth(0,"-str",&hasstr,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(0,"-str",&hasstr,0);CHKERRQ(ierr);
   if (hasstr) {
     ierr = PetscOptionsInsertString("-prefix_push str_ -zero 100 -prefix_push a_ -one 101 -prefix_push bb_ -two 102 -prefix_pop -three 103 -prefix_push cc_ -prefix_push ddd_ -four 104 -prefix_pop -prefix_pop -prefix_pop -five 105 -prefix_pop");CHKERRQ(ierr);
     ierr = PetscMemzero(opts,sizeof opts);CHKERRQ(ierr);

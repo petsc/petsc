@@ -288,7 +288,7 @@ valid
 #define PetscValidLogicalCollectiveScalar(a,b,c)
 #define PetscValidLogicalCollectiveReal(a,b,c)
 #define PetscValidLogicalCollectiveInt(a,b,c)
-#define PetscValidLogicalCollectiveTruth(a,b,c)
+#define PetscValidLogicalCollectiveBool(a,b,c)
 #define PetscValidLogicalCollectiveEnum(a,b,c)
 
 #else
@@ -346,7 +346,7 @@ valid
     if (-b2[0] != b2[1]) SETERRQ1(((PetscObject)a)->comm,PETSC_ERR_ARG_WRONG,"Int value must be same on all processes, argument # %d",c); \
   } while (0)
 
-#define PetscValidLogicalCollectiveTruth(a,b,c)                         \
+#define PetscValidLogicalCollectiveBool(a,b,c)                         \
   do {                                                                  \
     PetscErrorCode _7_ierr;                                             \
     PetscMPIInt b1[2] = {-(PetscMPIInt)b,(PetscMPIInt)b},b2[2];         \

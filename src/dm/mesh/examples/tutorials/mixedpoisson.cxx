@@ -115,8 +115,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   ierr = PetscOptionsEList("-solution", "The solution type", "mixedpoisson.cxx", solnTypes, 2, solnTypes[options->solnType], &soln, PETSC_NULL);CHKERRQ(ierr);
   options->solnType = (SolutionType) soln;
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "mixedpoisson.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-generate", "Generate the unstructured mesh", "mixedpoisson.cxx", options->generateMesh, &options->generateMesh, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-interpolate", "Generate intermediate mesh elements", "mixedpoisson.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-generate", "Generate the unstructured mesh", "mixedpoisson.cxx", options->generateMesh, &options->generateMesh, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "mixedpoisson.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "mixedpoisson.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   filename << "data/mixedpoisson_" << options->dim <<"d";
   ierr = PetscStrcpy(options->baseFilename, filename.str().c_str());CHKERRQ(ierr);

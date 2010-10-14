@@ -354,7 +354,7 @@ PetscErrorCode KSPSetFromOptions_CG(KSP ksp)
   ierr = PetscOptionsEnum("-ksp_cg_type","Matrix is Hermitian or complex symmetric","KSPCGSetType",KSPCGTypes,(PetscEnum)cg->type,
                           (PetscEnum*)&cg->type,PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscOptionsTruth("-ksp_cg_single_reduction","Merge inner products into single MPI_Allreduce()",
+  ierr = PetscOptionsBool("-ksp_cg_single_reduction","Merge inner products into single MPI_Allreduce()",
                            "KSPCGUseSingleReduction",cg->singlereduction,&cg->singlereduction,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

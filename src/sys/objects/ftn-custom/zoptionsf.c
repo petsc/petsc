@@ -118,7 +118,7 @@ void PETSC_STDCALL petscoptionsgettruth_(CHAR pre PETSC_MIXED_LEN(len1),CHAR nam
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = PetscOptionsGetTruth(c1,c2,ivalue,&flag);
+  *ierr = PetscOptionsGetBool(c1,c2,ivalue,&flag);
   if (!FORTRANNULLTRUTH(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);

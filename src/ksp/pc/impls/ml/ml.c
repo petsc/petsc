@@ -748,9 +748,9 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   pc_ml->CoarsenScheme = indx;
   ierr = PetscOptionsReal("-pc_ml_DampingFactor","P damping factor","ML_Aggregate_Set_DampingFactor",pc_ml->DampingFactor,&pc_ml->DampingFactor,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_ml_Threshold","Smoother drop tol","ML_Aggregate_Set_Threshold",pc_ml->Threshold,&pc_ml->Threshold,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-pc_ml_SpectralNormScheme_Anorm","Method used for estimating spectral radius","ML_Set_SpectralNormScheme_Anorm",pc_ml->SpectralNormScheme_Anorm,&pc_ml->SpectralNormScheme_Anorm,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-pc_ml_Symmetrize","Symmetrize aggregation","ML_Set_Symmetrize",pc_ml->Symmetrize,&pc_ml->Symmetrize,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-pc_ml_BlockScaling","Scale all dofs at each node together","None",pc_ml->BlockScaling,&pc_ml->BlockScaling,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_ml_SpectralNormScheme_Anorm","Method used for estimating spectral radius","ML_Set_SpectralNormScheme_Anorm",pc_ml->SpectralNormScheme_Anorm,&pc_ml->SpectralNormScheme_Anorm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_ml_Symmetrize","Symmetrize aggregation","ML_Set_Symmetrize",pc_ml->Symmetrize,&pc_ml->Symmetrize,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_ml_BlockScaling","Scale all dofs at each node together","None",pc_ml->BlockScaling,&pc_ml->BlockScaling,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_ml_EnergyMinimization","Energy minimization norm type (0=no minimization; see ML manual for 1,2,3; -1 and 4 undocumented)","None",pc_ml->EnergyMinimization,&pc_ml->EnergyMinimization,PETSC_NULL);CHKERRQ(ierr);
   /*
     The following checks a number of conditions.  If we let this stuff slip by, then ML's error handling will take over.
@@ -767,14 +767,14 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   }
   if (pc_ml->EnergyMinimization == 2) {
     /* According to ml_MultiLevelPreconditioner.cpp, this option is only meaningful for norm type (2) */
-    ierr = PetscOptionsTruth("-pc_ml_EnergyMinimizationCheap","Use cheaper variant of norm type 2","None",pc_ml->EnergyMinimizationCheap,&pc_ml->EnergyMinimizationCheap,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_ml_EnergyMinimizationCheap","Use cheaper variant of norm type 2","None",pc_ml->EnergyMinimizationCheap,&pc_ml->EnergyMinimizationCheap,PETSC_NULL);CHKERRQ(ierr);
   }
   /* energy minimization sometimes breaks if this is turned off, the more classical stuff should be okay without it */
   if (pc_ml->EnergyMinimization) pc_ml->KeepAggInfo = PETSC_TRUE;
-  ierr = PetscOptionsTruth("-pc_ml_KeepAggInfo","Allows the preconditioner to be reused, or auxilliary matrices to be generated","None",pc_ml->KeepAggInfo,&pc_ml->KeepAggInfo,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_ml_KeepAggInfo","Allows the preconditioner to be reused, or auxilliary matrices to be generated","None",pc_ml->KeepAggInfo,&pc_ml->KeepAggInfo,PETSC_NULL);CHKERRQ(ierr);
   /* Option (-1) doesn't work at all (calls exit(1)) if the tentative restriction operator isn't stored. */
   if (pc_ml->EnergyMinimization == -1) pc_ml->Reusable = PETSC_TRUE;
-  ierr = PetscOptionsTruth("-pc_ml_Reusable","Store intermedaiate data structures so that the multilevel hierarchy is reusable","None",pc_ml->Reusable,&pc_ml->Reusable,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_ml_Reusable","Store intermedaiate data structures so that the multilevel hierarchy is reusable","None",pc_ml->Reusable,&pc_ml->Reusable,PETSC_NULL);CHKERRQ(ierr);
   /*
     ML's C API is severely underdocumented and lacks significant functionality.  The C++ API calls
     ML_Gen_MultiLevelHierarchy_UsingAggregation() which is a modified copy (!?) of the documented function
@@ -782,7 +782,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
     functionality in the old function, so some users may still want to use it.  Note that many options are ignored in
     this context, but ML doesn't provide a way to find out which ones.
    */
-  ierr = PetscOptionsTruth("-pc_ml_OldHierarchy","Use old routine to generate hierarchy","None",pc_ml->OldHierarchy,&pc_ml->OldHierarchy,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_ml_OldHierarchy","Use old routine to generate hierarchy","None",pc_ml->OldHierarchy,&pc_ml->OldHierarchy,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -27,7 +27,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options * options) {
   ierr = PetscOptionsBegin(comm, "", "Options for meshing testing", "Meshing");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "meshing.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The embedded dimension", "meshing.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-interpolate", "construct (don't eliminate) intermediate elements", "meshing.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interpolate", "construct (don't eliminate) intermediate elements", "meshing.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

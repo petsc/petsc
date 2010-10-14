@@ -1954,7 +1954,7 @@ static PetscErrorCode PCSetFromOptions_ASA(PC pc)
   ierr = PetscOptionsInt("-pc_asa_mu","Number of cycles to relax in setup stages","No manual page yet",asa->mu,&(asa->mu),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_asa_mu_initial","Number of cycles to relax for generating first candidate vector","No manual page yet",asa->mu_initial,&(asa->mu_initial),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_asa_direct_solver","For which matrix size should we use the direct solver?","No manual page yet",asa->direct_solver,&(asa->direct_solver),&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-pc_asa_scale_diag","Should we scale the matrix with the inverse of its diagonal?","No manual page yet",asa->scale_diag,&(asa->scale_diag),&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_asa_scale_diag","Should we scale the matrix with the inverse of its diagonal?","No manual page yet",asa->scale_diag,&(asa->scale_diag),&flg);CHKERRQ(ierr);
   /* type of smoother used */
   ierr = PetscOptionsList("-pc_asa_smoother_ksp_type","The type of KSP to be used in the smoothers","No manual page yet",KSPList,asa->ksptype_smooth,type,20,&flg);CHKERRQ(ierr);
   if (flg) {

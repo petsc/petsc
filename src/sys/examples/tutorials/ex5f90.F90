@@ -60,7 +60,7 @@
       call PetscBagGetData(bag,ctx,ierr)
       call PetscBagRegisterInt(bag,ctx%nxc ,56,'nxc','nxc_variable help message',ierr)
       call PetscBagRegisterScalar(bag,ctx%x ,103.2d0,'x','x variable help message',ierr)
-      call PetscBagRegisterTruth(bag,ctx%t ,PETSC_TRUE,'t','t boolean help message',ierr)
+      call PetscBagRegisterBool(bag,ctx%t ,PETSC_TRUE,'t','t boolean help message',ierr)
       call PetscBagRegisterString(bag,ctx%c,'hello','c','string help message',ierr)
       call PetscBagRegisterReal(bag,ctx%y ,-11.0d0,'y','y variable help message',ierr)
       ctx%nxc = 23

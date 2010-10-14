@@ -201,7 +201,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Set ParMeTiS partitioning options");CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-mat_partitioning_parmetis_coarse_sequential","Use sequential coarse partitioner","MatPartitioningParmetisSetCoarseSequential",flag,&flag,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_partitioning_parmetis_coarse_sequential","Use sequential coarse partitioner","MatPartitioningParmetisSetCoarseSequential",flag,&flag,PETSC_NULL);CHKERRQ(ierr);
     if (flag) {
       ierr = MatPartitioningParmetisSetCoarseSequential(part);CHKERRQ(ierr);
     }
