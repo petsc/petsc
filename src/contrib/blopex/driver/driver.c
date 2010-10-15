@@ -201,7 +201,7 @@ int main(int argc,char **args)
 
   /* create matrix, whose nonzero structure and probably partitioning corresponds to
   grid and stencil structure */
-  ierr=DAGetMatrix(da,MATMPIAIJ,&A); CHKERRQ(ierr);
+  ierr=DMGetMatrix(da,MATMPIAIJ,&A); CHKERRQ(ierr);
 
   /* fill the matrix with values. I intend to build 7-pt Laplas */
   /* this procedure includes matrix assembly */

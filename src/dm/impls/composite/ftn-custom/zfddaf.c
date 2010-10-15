@@ -4,7 +4,6 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmgetmatrix_                 DMGETMATRIX
-#define dagetmatrix_                 DAGETMATRIX
 #define dmcompositegetentries1_      DMCOMPOSITEGETENTRIES1
 #define dmcompositegetentries2_      DMCOMPOSITEGETENTRIES2
 #define dmcompositegetentries3_      DMCOMPOSITEGETENTRIES3
@@ -20,7 +19,6 @@
 #define dmcompositegetlocalvectors4_ DMCOMPOSITEGETLOCALVECTORS4
 #define dmcompositerestorelocalvectors4_ DMCOMPOSITERESTORELOCALVECTORS4
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define dagetmatrix_                 dagetmatrix
 #define dmgetmatrix_                 dmgetmatrix
 #define dmcompositegetentries1_      dmcompositegetentries1
 #define dmcompositegetentries2_      dmcompositegetentries2
@@ -39,13 +37,6 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL dagetmatrix_(DM *da,CHAR mat_type PETSC_MIXED_LEN(len),Mat *J,PetscErrorCode *ierr PETSC_END_LEN(len))
-{
-  char *t;
-  FIXCHAR(mat_type,len,t);
-  *ierr = DAGetMatrix(*da,t,J);
-  FREECHAR(mat_type,t);
-}
 
 void PETSC_STDCALL dmgetmatrix_(DM *dm,CHAR mat_type PETSC_MIXED_LEN(len),Mat *J,PetscErrorCode *ierr PETSC_END_LEN(len))
 {

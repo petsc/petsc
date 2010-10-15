@@ -75,7 +75,7 @@ int main(int argc, char **argv)
   info = VecDuplicate(x, &r); CHKERRQ(info);
 
   N = user.mx*user.my;
-  info = DAGetMatrix(user.da,MATAIJ,&J);CHKERRQ(info);
+  info = DMGetMatrix(user.da,MATAIJ,&J);CHKERRQ(info);
 
   /* Create nonlinear solver context */
   info = SNESCreate(PETSC_COMM_WORLD,&snes); CHKERRQ(info);

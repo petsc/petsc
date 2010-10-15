@@ -1250,7 +1250,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesRow(Mat mat,PetscInt row,const Pet
 
    For setting/accessing vector values via array coordinates you can use the DAVecGetArray() routine
 
-   In order to use this routine you must either obtain the matrix with DAGetMatrix()
+   In order to use this routine you must either obtain the matrix with DMGetMatrix()
    or call MatSetLocalToGlobalMapping() and MatSetStencil() first.
 
    The columns and rows in the stencil passed in MUST be contained within the 
@@ -1288,7 +1288,7 @@ $    idxm(MatStencil_c,1) = c
    Concepts: matrices^putting entries in
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
-          MatSetValues(), MatSetValuesBlockedStencil(), MatSetStencil(), DAGetMatrix(), DAVecGetArray(), MatStencil
+          MatSetValues(), MatSetValuesBlockedStencil(), MatSetStencil(), DMGetMatrix(), DAVecGetArray(), MatStencil
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],PetscInt n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
 {
@@ -1370,7 +1370,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesStencil(Mat mat,PetscInt m,const M
 
    For setting/accessing vector values via array coordinates you can use the DAVecGetArray() routine
 
-   In order to use this routine you must either obtain the matrix with DAGetMatrix()
+   In order to use this routine you must either obtain the matrix with DMGetMatrix()
    or call MatSetBlockSize(), MatSetLocalToGlobalMapping() and MatSetStencil() first.
 
    The columns and rows in the stencil passed in MUST be contained within the 
@@ -1400,7 +1400,7 @@ $    idxm(MatStencil_k,1) = k
    Concepts: matrices^putting entries in
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
-          MatSetValues(), MatSetValuesStencil(), MatSetStencil(), DAGetMatrix(), DAVecGetArray(), MatStencil,
+          MatSetValues(), MatSetValuesStencil(), MatSetStencil(), DMGetMatrix(), DAVecGetArray(), MatStencil,
           MatSetBlockSize(), MatSetLocalToGlobalMapping()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil idxm[],PetscInt n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
@@ -1468,7 +1468,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedStencil(Mat mat,PetscInt m,
    Inspired by the structured grid interface to the HYPRE package
    (www.llnl.gov/CASC/hyper)
 
-   For matrices generated with DAGetMatrix() this routine is automatically called and so not needed by the
+   For matrices generated with DMGetMatrix() this routine is automatically called and so not needed by the
    user.
    
    Level: beginner

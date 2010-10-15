@@ -71,11 +71,11 @@ extern const char *DAPeriodicTypes[];
 
 /*E
     DAInterpolationType - Defines the type of interpolation that will be returned by 
-       DAGetInterpolation.
+       DMGetInterpolation.
 
    Level: beginner
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA, DAGetInterpolation(), DASetInterpolationType(), DACreate()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA, DMGetInterpolation(), DASetInterpolationType(), DACreate()
 E*/
 typedef enum { DA_Q0, DA_Q1 } DAInterpolationType;
 
@@ -120,10 +120,9 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DANaturalToGlobalBegin(DM,Vec,InsertM
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DANaturalToGlobalEnd(DM,Vec,InsertMode,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALocalToLocalBegin(DM,Vec,InsertMode,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALocalToLocalEnd(DM,Vec,InsertMode,Vec);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DARefine(DM,MPI_Comm,DM*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACoarsen(DM,MPI_Comm,DM*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMCoarsen(DM,MPI_Comm,DM*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DARefineHierarchy(DM,PetscInt,DM[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACoarsenHierarchy(DM,PetscInt,DM[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMCoarsenHierarchy(DM,PetscInt,DM[]);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateNaturalVector(DM,Vec *);
 
@@ -473,12 +472,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMComputeJacobian(DM,Vec,Mat,Mat,MatStr
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMComputeJacobianDefault(DM,Vec,Mat,Mat,MatStructure *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMFinalizePackage(void);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetColoring(DM,ISColoringType,const MatType,ISColoring *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetMatrix(DM, const MatType,Mat *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetMatrix(DM, const MatType,Mat *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetGetMatrix(DM,PetscErrorCode (*)(DM, const MatType,Mat *));
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetInterpolation(DM,DM,Mat*,Vec*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAggregates(DM,DM,Mat*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetInjection(DM,DM,VecScatter*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetBlockFills(DM,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetMatPreallocateOnly(DM,PetscBool );
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetRefinementFactor(DM,PetscInt,PetscInt,PetscInt);

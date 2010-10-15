@@ -1213,8 +1213,8 @@ static PetscErrorCode THIJacobianLocal_3D_Tridiagonal(DALocalInfo *info,Node ***
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DARefineHierarchy_THI"
-static PetscErrorCode DARefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarchy[])
+#define __FUNCT__ "DMRefineHierarchy_THI"
+static PetscErrorCode DMRefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarchy[])
 {
   PetscErrorCode ierr;
   THI thi;
@@ -1227,7 +1227,7 @@ static PetscErrorCode DARefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarch
   ierr = PetscObjectQuery((PetscObject)dac0,"THI",(PetscObject*)&thi);CHKERRQ(ierr);
   if (!thi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot refine this DA, missing composed THI instance");
   if (nlevels > 1) {
-    ierr = DARefineHierarchy(dac0,nlevels-1,hierarchy);CHKERRQ(ierr);
+    ierr = DMRefineHierarchy(dac0,nlevels-1,hierarchy);CHKERRQ(ierr);
     dac = hierarchy[nlevels-2];
   } else {
     dac = dac0;
@@ -1250,8 +1250,8 @@ static PetscErrorCode DARefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarch
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetInterpolation_THI"
-static PetscErrorCode DAGetInterpolation_THI(DM dac,DM daf,Mat *A,Vec *scale)
+#define __FUNCT__ "DMGetInterpolation_DA_THI"
+static PetscErrorCode DMGetInterpolation_DA_THI(DM dac,DM daf,Mat *A,Vec *scale)
 {
   PetscErrorCode ierr;
   PetscInt       dim;  
@@ -1264,7 +1264,7 @@ static PetscErrorCode DAGetInterpolation_THI(DM dac,DM daf,Mat *A,Vec *scale)
   ierr = DAGetInfo(daf,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   if (dim  == 2) {
     /* We are in the 2D problem and use normal DA interpolation */
-    ierr = DAGetInterpolation(dac,daf,A,scale);CHKERRQ(ierr);
+    ierr = DMGetInterpolation(dac,daf,A,scale);CHKERRQ(ierr);
   } else {
     PetscInt i,j,k,xs,ys,zs,xm,ym,zm,mx,my,mz,rstart,cstart;
     Mat B;
@@ -1298,8 +1298,8 @@ static PetscErrorCode DAGetInterpolation_THI(DM dac,DM daf,Mat *A,Vec *scale)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetMatrix_THI_Tridiagonal"
-static PetscErrorCode DAGetMatrix_THI_Tridiagonal(DM da,const MatType mtype,Mat *J)
+#define __FUNCT__ "DMGetMatrix_THI_Tridiagonal"
+static PetscErrorCode DMGetMatrix_THI_Tridiagonal(DM da,const MatType mtype,Mat *J)
 {
   PetscErrorCode ierr;
   Mat A;
@@ -1468,8 +1468,8 @@ int main(int argc,char *argv[])
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (thi->coarse2d) {
       ierr = DACreate2d(comm,DA_XYPERIODIC,DA_STENCIL_BOX,N,M,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,&da);CHKERRQ(ierr);
-      da->ops->refinehierarchy  = DARefineHierarchy_THI;
-      da->ops->getinterpolation = DAGetInterpolation_THI;
+      da->ops->refinehierarchy  = DMRefineHierarchy_THI;
+      da->ops->getinterpolation = DMGetInterpolation_DA_THI;
       ierr = PetscObjectCompose((PetscObject)da,"THI",(PetscObject)thi);CHKERRQ(ierr);
     } else {
       ierr = DACreate3d(comm,DA_YZPERIODIC,DA_STENCIL_BOX,P,N,M,1,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,0,&da);CHKERRQ(ierr);
@@ -1480,7 +1480,7 @@ int main(int argc,char *argv[])
     ierr = DMDestroy(da);CHKERRQ(ierr);
   }
   if (thi->tridiagonal) {
-    (DMMGGetDM(dmmg))->ops->getmatrix = DAGetMatrix_THI_Tridiagonal;
+    (DMMGGetDM(dmmg))->ops->getmatrix = DMGetMatrix_THI_Tridiagonal;
   }
   {
     /* Use the user-defined matrix type on all but the coarse level */

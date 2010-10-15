@@ -130,7 +130,7 @@ int main(int argc,char **argv)
   ierr = PCMGSetResidual(pc,FINE_LEVEL,PCMGDefaultResidual,user.fine.J);CHKERRQ(ierr);
 
   /* Create interpolation between the levels */
-  ierr = DAGetInterpolation(user.coarse.da,user.fine.da,&user.Ii,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMGetInterpolation(user.coarse.da,user.fine.da,&user.Ii,PETSC_NULL);CHKERRQ(ierr);
   ierr = PCMGSetInterpolation(pc,FINE_LEVEL,user.Ii);CHKERRQ(ierr);
   ierr = PCMGSetRestriction(pc,FINE_LEVEL,user.Ii);CHKERRQ(ierr);
 

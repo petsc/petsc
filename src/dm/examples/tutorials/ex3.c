@@ -1,5 +1,5 @@
 
-static char help[] = "Tests DAGetInterpolation for nonuniform DA coordinates.\n\n";
+static char help[] = "Tests DMGetInterpolation for nonuniform DA coordinates.\n\n";
 
 #include "petscda.h"
 
@@ -133,7 +133,7 @@ int main(int argc,char **argv)
     ierr = DACreate3d(PETSC_COMM_WORLD,ptype,stype,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&dac);CHKERRQ(ierr);
   }
 
-  ierr = DARefine(dac,PETSC_COMM_WORLD,&daf);CHKERRQ(ierr);
+  ierr = DMRefine(dac,PETSC_COMM_WORLD,&daf);CHKERRQ(ierr);
 
   ierr = DASetUniformCoordinates(dac,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
   if (dim == 1) {
@@ -143,7 +143,7 @@ int main(int argc,char **argv)
   } else if (dim == 3) {
     ierr = SetCoordinates3d(daf);CHKERRQ(ierr);
   }
-  ierr = DAGetInterpolation(dac,daf,&A,0);CHKERRQ(ierr);
+  ierr = DMGetInterpolation(dac,daf,&A,0);CHKERRQ(ierr);
 
 
   /* Free memory */

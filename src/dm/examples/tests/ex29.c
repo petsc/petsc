@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,3,5,5,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
-  ierr = DAGetMatrix(da,MATAIJ,&Aglobal);CHKERRQ(ierr);
+  ierr = DMGetMatrix(da,MATAIJ,&Aglobal);CHKERRQ(ierr);
   ierr = ComputeMatrix(da,Aglobal);CHKERRQ(ierr);
   ierr = DAGetWireBasketInterpolation(da,Aglobal,MAT_INITIAL_MATRIX,&P);CHKERRQ(ierr);
   ierr = MatView(P,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

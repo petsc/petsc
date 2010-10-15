@@ -13,8 +13,8 @@ int main(int argc,char *argv[])
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,4,5,PETSC_DECIDE,PETSC_DECIDE,41,1,0,0,&da);CHKERRQ(ierr);
-  ierr = DARefine(da,PETSC_COMM_WORLD,&daf);CHKERRQ(ierr);
-  ierr = DAGetInterpolation(da,daf,&M,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMRefine(da,PETSC_COMM_WORLD,&daf);CHKERRQ(ierr);
+  ierr = DMGetInterpolation(da,daf,&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(daf,&y);CHKERRQ(ierr);
 

@@ -355,7 +355,7 @@ PetscErrorCode MatFDColoringView_Private(MatFDColoring fd)
 
    Input Parameters:
 +  mat - the matrix containing the nonzero structure of the Jacobian
--  iscoloring - the coloring of the matrix; usually obtained with MatGetColoring() or DAGetColoring()
+-  iscoloring - the coloring of the matrix; usually obtained with MatGetColoring() or DMGetColoring()
 
     Output Parameter:
 .   color - the new coloring context
@@ -364,7 +364,7 @@ PetscErrorCode MatFDColoringView_Private(MatFDColoring fd)
 
 .seealso: MatFDColoringDestroy(),SNESDefaultComputeJacobianColor(), ISColoringCreate(),
           MatFDColoringSetFunction(), MatFDColoringSetFromOptions(), MatFDColoringApply(),
-          MatFDColoringView(), MatFDColoringSetParameters(), MatGetColoring(), DAGetColoring()
+          MatFDColoringView(), MatFDColoringSetParameters(), MatGetColoring(), DMGetColoring()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
 {

@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,stencil_type,M,N,P,m,n,p,w,s,
                     0,0,0,&da);CHKERRQ(ierr);
 
-  ierr = DAGetMatrix(da,MATMPIBAIJ,&mat);CHKERRQ(ierr);
+  ierr = DMGetMatrix(da,MATMPIBAIJ,&mat);CHKERRQ(ierr);
 
   idx[0].i = 1;   idx[0].j = 1; idx[0].k = 0;
   idx[1].i = 2;   idx[1].j = 1; idx[1].k = 0;

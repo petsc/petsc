@@ -1,5 +1,5 @@
       
-static char help[] = "Tests DAGetColoring() in 3d.\n\n";
+static char help[] = "Tests DMGetColoring() in 3d.\n\n";
 
 #include "petscmat.h"
 #include "petscda.h"
@@ -58,8 +58,8 @@ int main(int argc,char **argv)
     ierr = PetscFree(lz);CHKERRQ(ierr);
   }
 
-  ierr = DAGetColoring(da,IS_COLORING_GLOBAL,MATMPIAIJ,&coloring);CHKERRQ(ierr);
-  ierr = DAGetMatrix(da,MATMPIAIJ,&mat);CHKERRQ(ierr);
+  ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATMPIAIJ,&coloring);CHKERRQ(ierr);
+  ierr = DMGetMatrix(da,MATMPIAIJ,&mat);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(mat,coloring,&fdcoloring);CHKERRQ(ierr); 
 
   ierr = DMCreateGlobalVector(da,&dvec);CHKERRQ(ierr);

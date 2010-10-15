@@ -128,7 +128,7 @@ int main(int argc,char **argv)
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /* J can be type of MATAIJ,MATBAIJ or MATSBAIJ */
-  ierr = DAGetMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMGetMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
   
   A    = J;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-fd_jacobian",&fd_jacobian,0);CHKERRQ(ierr);
@@ -146,14 +146,14 @@ int main(int argc,char **argv)
 #endif
 
   if (fd_jacobian) {
-    ierr = DAGetColoring(user.da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    ierr = DMGetColoring(user.da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDAFormFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,A,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
   } else if (fd_jacobian_ghosted) {
-    ierr = DAGetColoring(user.da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    ierr = DMGetColoring(user.da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDAFormFunction,&user);CHKERRQ(ierr);
@@ -162,7 +162,7 @@ int main(int argc,char **argv)
     ierr = SNESSetJacobian(snes,A,J,MySNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ADIC)
   } else if (adic_jacobian) {
-    ierr = DAGetColoring(user.da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    ierr = DMGetColoring(user.da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatSetColoring(J,iscoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,A,J,SNESDAComputeJacobianWithAdic,&user);CHKERRQ(ierr);

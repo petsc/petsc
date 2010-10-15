@@ -151,8 +151,8 @@ int main(int argc,char **argv)
     packer = dmmg[i]->dm;
     ierr   = DMCompositeGetEntries(packer,PETSC_NULL,&da,PETSC_NULL);CHKERRQ(ierr);
     ierr   = PetscNew(AppCtx,&appctx);CHKERRQ(ierr);
-    ierr   = DAGetColoring(da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
-    ierr   = DAGetMatrix(da,MATAIJ,&appctx->J);CHKERRQ(ierr);
+    ierr   = DMGetColoring(da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    ierr   = DMGetMatrix(da,MATAIJ,&appctx->J);CHKERRQ(ierr);
     ierr   = MatSetColoring(appctx->J,iscoloring);CHKERRQ(ierr);
     ierr   = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
     ierr   = DASetLocalFunction(da,(DALocalFunction1)PDEFormFunctionLocal);CHKERRQ(ierr);

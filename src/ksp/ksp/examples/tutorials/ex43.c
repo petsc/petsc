@@ -1425,8 +1425,8 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
 
 
   /* Generate a matrix with the correct non-zero pattern of type AIJ. This will work in parallel and serial */
-  ierr = DAGetMatrix(da_Stokes,MATAIJ,&A);CHKERRQ(ierr);
-  ierr = DAGetMatrix(da_Stokes,MATAIJ,&B);CHKERRQ(ierr);
+  ierr = DMGetMatrix(da_Stokes,MATAIJ,&A);CHKERRQ(ierr);
+  ierr = DMGetMatrix(da_Stokes,MATAIJ,&B);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&f,&X);CHKERRQ(ierr);
 
   /* assemble A11 */

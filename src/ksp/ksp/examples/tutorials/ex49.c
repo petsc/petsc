@@ -1057,7 +1057,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   }
 
   /* Generate a matrix with the correct non-zero pattern of type AIJ. This will work in parallel and serial */
-  ierr = DAGetMatrix(elas_da,MATAIJ,&A);CHKERRQ(ierr);
+  ierr = DMGetMatrix(elas_da,MATAIJ,&A);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&f,&X);CHKERRQ(ierr);
 
   /* assemble A11 */

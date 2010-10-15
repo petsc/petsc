@@ -317,12 +317,24 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring(DM dm,ISColoringType ctype,const 
     Input Parameter:
 +   dm - the DM object
 -   mtype - Supported types are MATSEQAIJ, MATMPIAIJ, MATSEQBAIJ, MATMPIBAIJ, or
-            any type which inherits from one of these (such as MATAIJ, MATLUSOL, etc.).
+            any type which inherits from one of these (such as MATAIJ)
 
     Output Parameter:
 .   mat - the empty Jacobian 
 
     Level: developer
+
+    Notes: This properly preallocates the number of nonzeros in the sparse matrix so you 
+       do not need to do it yourself. 
+
+       By default it also sets the nonzero structure and puts in the zero entries. To prevent setting 
+       the nonzero pattern call DASetMatPreallocateOnly()
+
+       For structured grid problems, when you call MatView() on this matrix it is displayed using the global natural ordering, NOT in the ordering used
+       internally by PETSc.
+
+       For structured grid problems, in general it is easiest to use MatSetValuesStencil() or MatSetValuesLocal() to put values into the matrix because MatSetValues() requires 
+       the indices for the global numbering for DAs which is complicated.
 
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
 

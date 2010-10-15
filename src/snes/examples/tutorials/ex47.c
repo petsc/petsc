@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-8,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&f);CHKERRQ(ierr);
-  ierr = DAGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
 
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes,f,ComputeFunction,da);CHKERRQ(ierr);

@@ -303,9 +303,9 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
    Notes: Unlike the more general support for blocks in hypre this allows only one block per process and requires the block
           be defined by a DA.
 
-          The matrix needs a DA associated with it by either a call to MatSetDA() or if the matrix is obtained from DAGetMatrix()
+          The matrix needs a DA associated with it by either a call to MatSetDA() or if the matrix is obtained from DMGetMatrix()
 
-.seealso: MatCreate(), PCPFMG, MatSetDA(), DAGetMatrix()
+.seealso: MatCreate(), PCPFMG, MatSetDA(), DMGetMatrix()
 M*/
 
 
@@ -611,7 +611,7 @@ EXTERN_C_END
           Unlike the more general support for parts and blocks in hypre this allows only one part, and one block per process and requires the block
           be defined by a DA.
   
-          The matrix needs a DA associated with it by either a call to MatSetDA() or if the matrix is obtained from DAGetMatrix()
+          The matrix needs a DA associated with it by either a call to MatSetDA() or if the matrix is obtained from DMGetMatrix()
   
 M*/
 

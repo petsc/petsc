@@ -38,7 +38,7 @@ typedef struct {
   VecScatter             gton;               /* vector scatter from global to natural */
   PetscMPIInt            *neighbors;         /* ranks of all neighbors and self */
 
-  ISColoring             localcoloring;       /* set by DAGetColoring() */
+  ISColoring             localcoloring;       /* set by DMGetColoring() */
   ISColoring             ghostedcoloring;  
 
   DAElementType          elementtype;

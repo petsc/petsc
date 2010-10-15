@@ -3,17 +3,17 @@
 #include "petscda.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define dagetinterpolation_          DAGETINTERPOLATION
+#define dmgetinterpolation_          DMGETINTERPOLATION
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define dagetinterpolation_          dagetinterpolation
+#define dmgetinterpolation_          dmgetinterpolation
 #endif
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL dagetinterpolation_(DM *dac,DM *daf,Mat *A,Vec *scale,PetscErrorCode *ierr)
+void PETSC_STDCALL dmgetinterpolation_(DM *dac,DM *daf,Mat *A,Vec *scale,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(scale);
-  *ierr = DAGetInterpolation(*dac,*daf,A,scale);
+  *ierr = DMGetInterpolation(*dac,*daf,A,scale);
 }
 
 EXTERN_C_END

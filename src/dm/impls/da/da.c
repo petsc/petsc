@@ -304,7 +304,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateOwnershipRanges(DM da)
 #define __FUNCT__ "DASetInterpolationType"
 /*@
        DASetInterpolationType - Sets the type of interpolation that will be 
-          returned by DAGetInterpolation()
+          returned by DMGetInterpolation()
 
    Logically Collective on DA
 
@@ -314,7 +314,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateOwnershipRanges(DM da)
 
    Level: intermediate
 
-   Notes: you should call this on the coarser of the two DAs you pass to DAGetInterpolation()
+   Notes: you should call this on the coarser of the two DAs you pass to DMGetInterpolation()
 
 .keywords:  distributed array, interpolation
 
@@ -543,7 +543,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRanges(DM da,const PetscInt *lx[]
 
     Notes: Pass PETSC_IGNORE to leave a value unchanged
 
-.seealso: DARefine(), DAGetRefinementFactor()
+.seealso: DMRefine(), DAGetRefinementFactor()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refine_y,PetscInt refine_z)
 {
@@ -580,7 +580,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetRefinementFactor(DM da, PetscInt refine_x,
 
     Notes: Pass PETSC_NULL for values you do not need
 
-.seealso: DARefine(), DASetRefinementFactor()
+.seealso: DMRefine(), DASetRefinementFactor()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *refine_y,PetscInt *refine_z)
 {
@@ -610,7 +610,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetRefinementFactor(DM da, PetscInt *refine_x
    Notes: See DASetBlockFills() that provides a simple way to provide the nonzero structure for 
        the diagonal and off-diagonal blocks of the matrix
 
-.seealso: DAGetMatrix(), DASetBlockFills()
+.seealso: DMGetMatrix(), DASetBlockFills()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DASetGetMatrix(DM da,PetscErrorCode (*f)(DM, const MatType,Mat*))
 {
@@ -621,14 +621,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetGetMatrix(DM da,PetscErrorCode (*f)(DM, co
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DARefineOwnershipRanges"
+#define __FUNCT__ "DMDARefineOwnershipRanges"
 /*
   Creates "balanced" ownership ranges after refinement, constrained by the need for the
   fine grid boundaries to fall within one stencil width of the coarse partition.
 
   Uses a greedy algorithm to handle non-ideal layouts, could probably do something better.
 */
-static PetscErrorCode DARefineOwnershipRanges(DM da,PetscBool periodic,PetscInt stencil_width,PetscInt ratio,PetscInt m,const PetscInt lc[],PetscInt lf[])
+static PetscErrorCode DMDARefineOwnershipRanges(DM da,PetscBool periodic,PetscInt stencil_width,PetscInt ratio,PetscInt m,const PetscInt lc[],PetscInt lf[])
 {
   PetscInt i,totalc = 0,remaining,startc = 0,startf = 0;
   PetscErrorCode ierr;
@@ -660,32 +660,8 @@ static PetscErrorCode DARefineOwnershipRanges(DM da,PetscBool periodic,PetscInt 
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DARefine"
-/*@
-   DARefine - Creates a new distributed array that is a refinement of a given
-   distributed array.
-
-   Collective on DA
-
-   Input Parameter:
-+  da - initial distributed array
--  comm - communicator to contain refined DA, must be either same as the da communicator or include the 
-          da communicator and be 2, 4, or 8 times larger. Currently ignored
-
-   Output Parameter:
-.  daref - refined distributed array
-
-   Level: advanced
-
-   Note:
-   Currently, refinement consists of just doubling the number of grid spaces
-   in each dimension of the DA.
-
-.keywords:  distributed array, refine
-
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DMDestroy(), DAGetOwnershipRanges()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DARefine(DM da,MPI_Comm comm,DM *daref)
+#define __FUNCT__ "DMRefine_DA"
+PetscErrorCode PETSCDM_DLLEXPORT DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
 {
   PetscErrorCode ierr;
   PetscInt       M,N,P;
@@ -715,22 +691,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DM da,MPI_Comm comm,DM *daref)
   if (dd->dim == 3) {
     PetscInt *lx,*ly,*lz;
     ierr = PetscMalloc3(dd->m,PetscInt,&lx,dd->n,PetscInt,&ly,dd->p,PetscInt,&lz);CHKERRQ(ierr);
-    ierr = DARefineOwnershipRanges(da,(PetscBool)(DAXPeriodic(dd->wrap) || dd->interptype == DA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
-    ierr = DARefineOwnershipRanges(da,(PetscBool)(DAYPeriodic(dd->wrap) || dd->interptype == DA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
-    ierr = DARefineOwnershipRanges(da,(PetscBool)(DAZPeriodic(dd->wrap) || dd->interptype == DA_Q0),dd->s,dd->refine_z,dd->p,dd->lz,lz);CHKERRQ(ierr);
+    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DAXPeriodic(dd->wrap) || dd->interptype == DA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
+    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DAYPeriodic(dd->wrap) || dd->interptype == DA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
+    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DAZPeriodic(dd->wrap) || dd->interptype == DA_Q0),dd->s,dd->refine_z,dd->p,dd->lz,lz);CHKERRQ(ierr);
     ierr = DACreate3d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,P,dd->m,dd->n,dd->p,dd->w,dd->s,lx,ly,lz,&da2);CHKERRQ(ierr);
     ierr = PetscFree3(lx,ly,lz);CHKERRQ(ierr);
   } else if (dd->dim == 2) {
     PetscInt *lx,*ly;
     ierr = PetscMalloc2(dd->m,PetscInt,&lx,dd->n,PetscInt,&ly);CHKERRQ(ierr);
-    ierr = DARefineOwnershipRanges(da,(PetscBool)(DAXPeriodic(dd->wrap) || dd->interptype == DA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
-    ierr = DARefineOwnershipRanges(da,(PetscBool)(DAYPeriodic(dd->wrap) || dd->interptype == DA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
+    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DAXPeriodic(dd->wrap) || dd->interptype == DA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
+    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DAYPeriodic(dd->wrap) || dd->interptype == DA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
     ierr = DACreate2d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,dd->m,dd->n,dd->w,dd->s,lx,ly,&da2);CHKERRQ(ierr);
     ierr = PetscFree2(lx,ly);CHKERRQ(ierr);
   } else if (dd->dim == 1) {
     PetscInt *lx;
     ierr = PetscMalloc(dd->m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
-    ierr = DARefineOwnershipRanges(da,(PetscBool)(DAXPeriodic(dd->wrap) || dd->interptype == DA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
+    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DAXPeriodic(dd->wrap) || dd->interptype == DA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
     ierr = DACreate1d(((PetscObject)da)->comm,dd->wrap,M,dd->w,dd->s,lx,&da2);CHKERRQ(ierr);
     ierr = PetscFree(lx);CHKERRQ(ierr);
   }
@@ -764,31 +740,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DM da,MPI_Comm comm,DM *daref)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DACoarsen"
-/*@
-   DACoarsen - Creates a new distributed array that is a coarsenment of a given
-   distributed array.
-
-   Collective on DA
-
-   Input Parameter:
-+  da - initial distributed array
--  comm - communicator to contain coarsend DA. Currently ignored
-
-   Output Parameter:
-.  daref - coarsend distributed array
-
-   Level: advanced
-
-   Note:
-   Currently, coarsenment consists of just dividing the number of grid spaces
-   in each dimension of the DA by refinex_x, refinex_y, ....
-
-.keywords:  distributed array, coarsen
-
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DMDestroy(), DAGetOwnershipRanges()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DACoarsen(DM da, MPI_Comm comm,DM *daref)
+#define __FUNCT__ "DMCoarsen_DA"
+PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
 {
   PetscErrorCode ierr;
   PetscInt       M,N,P;
@@ -870,31 +823,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACoarsen(DM da, MPI_Comm comm,DM *daref)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DARefineHierarchy"
-/*@
-   DARefineHierarchy - Perform multiple levels of refinement.
-
-   Collective on DA
-
-   Input Parameter:
-+  da - initial distributed array
--  nlevels - number of levels of refinement to perform
-
-   Output Parameter:
-.  daf - array of refined DAs
-
-   Options Database:
-+  -da_refine_hierarchy_x - list of refinement ratios in x direction
-.  -da_refine_hierarchy_y - list of refinement ratios in y direction
--  -da_refine_hierarchy_z - list of refinement ratios in z direction
-
-   Level: advanced
-
-.keywords: distributed array, refine
-
-.seealso: DARefine(), DACoarsenHierarchy()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DARefineHierarchy(DM da,PetscInt nlevels,DM daf[])
+#define __FUNCT__ "DMRefineHierarchy_DA"
+PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy_DA(DM da,PetscInt nlevels,DM daf[])
 {
   PetscErrorCode ierr;
   PetscInt       i,n,*refx,*refy,*refz;
@@ -918,36 +848,18 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefineHierarchy(DM da,PetscInt nlevels,DM daf
   ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_z",refz,&n,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = DASetRefinementFactor(da,refx[0],refy[0],refz[0]);CHKERRQ(ierr);
-  ierr = DARefine(da,((PetscObject)da)->comm,&daf[0]);CHKERRQ(ierr);
+  ierr = DMRefine(da,((PetscObject)da)->comm,&daf[0]);CHKERRQ(ierr);
   for (i=1; i<nlevels; i++) {
     ierr = DASetRefinementFactor(daf[i-1],refx[i],refy[i],refz[i]);CHKERRQ(ierr);
-    ierr = DARefine(daf[i-1],((PetscObject)da)->comm,&daf[i]);CHKERRQ(ierr);
+    ierr = DMRefine(daf[i-1],((PetscObject)da)->comm,&daf[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree3(refx,refy,refz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DACoarsenHierarchy"
-/*@
-   DACoarsenHierarchy - Perform multiple levels of coarsening
-
-   Collective on DA
-
-   Input Parameter:
-+  da - initial distributed array
--  nlevels - number of levels of coarsening to perform
-
-   Output Parameter:
-.  dac - array of coarsened DAs
-
-   Level: advanced
-
-.keywords: distributed array, coarsen
-
-.seealso: DACoarsen(), DARefineHierarchy()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DACoarsenHierarchy(DM da,PetscInt nlevels,DM dac[])
+#define __FUNCT__ "DMCoarsenHierarchy_DA"
+PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy_DA(DM da,PetscInt nlevels,DM dac[])
 {
   PetscErrorCode ierr;
   PetscInt i;
@@ -957,9 +869,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACoarsenHierarchy(DM da,PetscInt nlevels,DM da
   if (nlevels < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(0);
   PetscValidPointer(dac,3);
-  ierr = DACoarsen(da,((PetscObject)da)->comm,&dac[0]);CHKERRQ(ierr);
+  ierr = DMCoarsen(da,((PetscObject)da)->comm,&dac[0]);CHKERRQ(ierr);
   for (i=1; i<nlevels; i++) {
-    ierr = DACoarsen(dac[i-1],((PetscObject)da)->comm,&dac[i]);CHKERRQ(ierr);
+    ierr = DMCoarsen(dac[i-1],((PetscObject)da)->comm,&dac[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

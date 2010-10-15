@@ -3890,10 +3890,10 @@ works only on sequential routines.  Extensions may be forthcoming. However,
 if one can compute the coloring \trl{iscoloring} some other way, the routine
 MatFDColoringCreate() does work in parallel. An example of this for 
 2D distributed arrays is given below that uses the utility routine
-DAGetColoring().
+DMGetColoring().
 
 \begin{tabbing}
-   DAGetColoring(da,IS\_COLORING\_GHOSTED,\&iscoloring);\\
+   DMGetColoring(da,IS\_COLORING\_GHOSTED,\&iscoloring);\\
    MatFDColoringCreate(J,iscoloring,\&fdcoloring); \\
    MatFDColoringSetFromOptions(fdcoloring);\\
    ISColoringDestroy(iscoloring);

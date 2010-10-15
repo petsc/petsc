@@ -147,7 +147,7 @@ int main(int argc,char **argv)
     ierr      = MatMPIAIJSetPreallocation(user.J,5,PETSC_NULL,3,PETSC_NULL);CHKERRQ(ierr);
     user.A    = user.J;
   } else {
-    ierr      = DAGetMatrix(user.da,MATAIJ,&user.J);CHKERRQ(ierr);
+    ierr      = DMGetMatrix(user.da,MATAIJ,&user.J);CHKERRQ(ierr);
     user.A    = user.J;
   }
 
@@ -163,7 +163,7 @@ int main(int argc,char **argv)
 #endif
 
   if (fd_jacobian) {
-    ierr = DAGetColoring(user.da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    ierr = DMGetColoring(user.da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(user.J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDAFormFunction,&user);CHKERRQ(ierr);
