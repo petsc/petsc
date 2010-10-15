@@ -495,3 +495,529 @@ class Package(config.base.Configure):
     else:
       self.executeTest(self.alternateConfigureLibrary)
     return
+'''
+config.package.GNUPackage is a helper class whose intent is to simplify writing configure modules
+for GNU-style packages that are installed using the "configure; make; make install" idiom.
+
+Brief overview of how BuildSystem\'s configuration of packages works.
+---------------------------------------------------------------------
+    Configuration is carried out by "configure objects": instances of classes desendant from config.base.Configure.
+  These configure objects implement the "configure()" method, and are inserted into a "framework" object,
+  which makes the "configure()" calls according to the dependencies between the configure objects.
+    config.package.Package extends config.base.Configure and adds instance variables and methods that facilitate
+  writing classes that configure packages.  Customized package configuration classes are written by subclassing
+  config.package.Package -- the "parent class". 
+
+    Packages essentially encapsulate libraries, that are either 
+    (A) (prefix-)installed already somewhere on the system or
+    (B) need to be dowloaded and built first
+  If (A), the parent class provides a generic mechanism for locating the installation, by looking in user-specified and standard locations.
+  If (B), the parent class provides a generic mechanism for determining whether a download is necessary, downloading and unpacking
+  the source (if the download is, indeed, required), determining whether the package needs to be built, providing the build and
+  installation directories, and a few other helper tasks.  The package subclass is responsible for implementing the "Install" hook,
+  which is called by the parent class when the actual installation (building the source code, etc.) is done.  As an aside, BuildSystem-
+  controled build and install of a package at configuration time has a much better chance of guaranteeing language, compiler and library
+  (shared or not) consistency among packages.
+    No matter whether (A) or (B) is realized, the parent class control flow demands that the located or installed package
+  be checked to ensure it is functional.  Since a package is conceptualized as a library, the check consists in testing whether
+  a specified set of libraries can be linked against and the specified headers can be located.  The libraries and headers are specified
+  by name, and the corresponding paths are supplied by the location or the install process.  The verified paths and library names are
+  then are stored by the configure object as instance variables.  These can be used by other packages dependent on the package being
+  configured; likewise, the package being configured will use the information from the packages it depends on by examining their instance
+  variables.
+
+    Thus, the parent class provides for the overall control and data flow, which goes through several configuration stages:
+  "init", "setup", "location/installation", "testing".  At each stage, various "hooks" -- methods -- are called.
+  Some hooks (e.g., Install) are left unimplemented by the parent class and must be implemented by the package subclass;
+  other hooks are implemented by the parent class and provide generic functionality that is likely to suit most packages,
+  but can be overridden for custom purposes.  Each hook typically prepares the state -- instance variables -- of the configure object
+  for the next phase of configuration.  Below we describe the stages, some of the more typically-used hooks and instance variables in some
+  detail.
+
+
+  init:
+  ----
+  The init stage constructs the configure object; it is implemented by its __init__ method.
+  Parent package class sets up the following useful state variables:
+    self.name             - derived from module name                      [string]
+    self.package          - lowercase name                                [string]
+    self.PACKAGE          - uppercase name                                [string]
+    self.downloadname     - same as self.name (usage a bit inconsistent)  [string]
+  Package subclass typically sets up the following state variables:
+    self.download         - url to download source from                   [string] 
+    self.includes         - names of header files to locate               [list of strings] 
+    self.liblist          - names of library files to locate              [list of lists of strings] 
+    self.functions        - names of functions to locate in libraries     [list of strings]
+    self.cxx              - whether C++ is required for this package      [bool]
+    self.functionsFortran - whether to mangle self.functions symbols      [bool]
+  Most of these instance variables determine the behavior of the location/installation and the testing stages.
+  Ideally, a package subclass would extend only the __init__ method and parameterize the remainder of
+  the configure process by the appropriate variables.  This is not always possible, since some
+  of the package-specific choices depend on 
+
+
+  setup:
+  -----
+  The setup stage follows init and is accomplished by the configure framework calling each configure objects
+  setup hooks:
+  
+    setupHelp:
+    ---------
+    This is used to define the command-line arguments expected by this configure object.
+    The parent package class sets up generic arguments:
+      --with-<package>         [bool]
+      --with-<package>-dir     [string: directory]
+      --download-<package>     [string:"yes","no","filename"]
+      --with-<package>-include [string: directory]
+      --with-<package>-lib     [string: directory]
+    Here <package> is self.package defined in the init stage.
+    The package subclass can add to these arguments.  These arguments\' values are set
+    from the defaults specified in setupHelp or from the user-supplied command-line arguments.
+    Their values can be queried at any time during the configure process.
+    
+    setupDependencies:
+    -----------------
+    This is used to specify other conifigure objects that the package being configured depends on.
+    This is done via the configure framework\'s "require" mechanism:
+      self.framework.require(<dependentObject>, self)
+    dependentObject is a string -- the name of the configure module this package depends on.
+    
+    The parent package class requires some of the common dependencies:
+      config.compilers, config.types, config.headers, config.libraries, config.packages.MPI,
+    among others.
+    The package subclass should add package-specific dependencies as well as list them in
+    self.deps [list].  This list is used during the location/installation stage to ensure that
+    the package\'s dependencies have been configured correctly.
+
+  Comment:
+  There appears to be no good reason for separating setupHelp and setupDependencies
+  from the init stage: these hooks are called immediately following configure object construction
+  and do no depend on any other intervening computation.
+
+  It appears to me that hooks/callbacks are necessary only when a customizable action must be carried out
+  at a specific point in the configure process, which is not known a priori and/or is controlled by the framework.
+  For example, setupDownload (see GNUPackage below) must be called only after it has been determined
+  (by the code outside of the package class) that a download is necessary.  Otherwise (e.g., if setupDownload
+  is called from __init__) setupDownload the user for the version of the package to download even when no download
+  is necessary (and this is annoying).
+  
+  Location/installation:
+  ---------------------
+  These stages (somewhat mutually-exclusive), as well as the testing stage are carried out by the code in
+  configureLibrary.  These stages calls back to certain hooks that allow the user to control the
+  location/installation process by overriding these hooks in the package subclass.
+
+  Location:
+  --------
+  [Not much to say here, yet.]
+
+  Installation:
+  ------------
+  This stage is carried out by configure and functions called from it, most notably, configureLibrary 
+  The essential difficulty here is that the function calls are deeply nested (A-->B-->C--> ...),
+  as opposed to a single driver repeatedly calling small single-purpose callback hooks.  This means that any
+  customization would not be able to be self-contained by would need to know to call further down the chain.
+  Moreover, the individual functions on the call stack combine generic code with the code that is naturally meant
+  for customization by a package subclass.  Thus, a customization would have to reproduce this generic code.
+  Some of the potentially customizable functionality is split between different parts of the code below
+  configure (see, e.g., the comment at the end of this paragraph).
+    Because of this, there are few opportunities for customization in the installation stage, without a substantial
+  restructuring of configure, configureLibrary and/or its callees. Here we mention the main customizable callback
+  Install along with two generic services, installNeeded and postInstall, which are provided by the parent class and
+  can be used in implementing a custom Install.
+    Comment: Note that configure decides whether to configure the package, in part, based on whether
+             self.download is a non-empty list at the beginning of configure.
+             This means that resetting self.download cannot take place later than this.
+             On the other hand, constructing the correct self.download here might be premature, as it might result
+             in unnecessary prompts for user input, only to discover later that a download is not required.
+             Because of this a package configure class must always have at least dummy string for self.download, if
+             a download is possible.
+            
+  Here is a schematic description of the main point on the call chain:
+
+  configure:
+    check whether to configure the package:
+    package is configured only if
+      self.download is not an empty string list and the command-line download flag is on
+      OR if
+      the command-line flag "-with-"self.package is present, prompting a search for the package on the system
+      OR if
+      the command-line flag(s) pointing to a package installation "-with-"self.package+"-dir or ...-lib, ...-include are present
+    ...
+    configureLibrary:
+      consistencyChecks: 
+        ...
+        check that appropriate language support is on:
+          self.cxx            == 1 implies C++ compiler must be present 
+          self.fc             == 1 implies Fortran compiler must be present
+          self.noMPIUni       == 1 implies real MPI must be present
+          self.worksonWindows == 0 implies we cannot use Cygwin compilers
+          check that download of this package works on Windows (if Windows is being used)
+      ...
+      generateGuesses:
+        ...
+        checkDownload:
+          ...
+          check val = argDB[\'download-\'self.downloadname.tolower()\']
+          /*
+           note the inconsistency with setupHelp: it declares \'download-\'self.package
+           Thus, in order for the correct variable to be queried here, we have to have
+           self.downloadname.tolower() == self.package
+          */
+          if val is a string, set self.download = [val]
+          check the package license
+          getInstallDir:
+            ...
+            set the following instance variables, creating directories, if necessary:
+            self.installDir   /* This is where the package will be installed, after it is built. */
+            self.confDir      /* subdir of self.installDir */
+            self.includeDir   /* subdir of self.installDir */
+            self.libDir       /* subdir of self.installDir */
+            self.packageDir = /* this dir is where the source is unpacked and built */
+            self.getDir():    
+              ...
+              if a package dir starting with self.downloadname does not exist already
+                create the package dir
+                downLoad():
+                  ...
+                  download and unpack the source to self.packageDir, 
+          Install():
+            /* This must be implemented by a package subclass */
+  
+    Install:
+    ------
+    Note that it follows from the above pseudocode, that the package source is already in self.packageDir
+    and the dir instance variables (e.g., installDir, confDir) already point to existing directories.
+    The user can implement whatever actions are necessary to configure, build and install
+    the package.  Typically, the package is built using GNU\'s "configure; make; make install"
+    idiom, so the customized Install forms GNU configure arguments using the compilers,
+    system libraries and dependent packages (their locations, libs and includes) discovered
+    by configure up to this point.
+
+    It is important to check whether the package source in self.packageDir needs rebuilding, since it might
+    have been downloaded in a previous configure run, as is checked by getDir() above.
+    However, the package might now need to be built with different options.  For that reason,
+    the parent class provides a helper method
+      installNeeded(self, mkfile):
+        This method compares two files: the file with name mkfile in self.packageDir and
+        the file with name self.name in self.confDir (a subdir of the installation dir).
+        If the former is absent or differs from the latter, this means the source has never
+        been built or was built with different arguments, and needs to be rebuilt.
+        This helper method should be run at the beginning of an Install implementation,
+        to determine whether an install is actually needed.
+    The other useful helper method provided by the parent class is
+       postInstall(self, output,mkfile):
+         This method will simply save string output in the file with name mkfile in self.confDir.
+         Storing package configuration parameters there will enable installNeeded to do its job
+         next time this package is being configured.  
+  
+    
+  testing:
+  -------
+  The testing is carried out by part of the code in config.package.configureLibrary,
+  after the package library has been located or installed.  
+  The library is considered functional if two conditions are satisfied:
+   (1) all of the symbols in self.functions have been resolved when linking against the libraries in self.liblist,
+       either located on the system or newly installed;
+   (2) the headers in self.includes have been located.
+  If no symbols are supplied in self.functions, no link OR header testing is done.
+
+
+
+  Extending package class:
+  -----------------------
+  Generally, extending the parent package configure class is done by overriding some
+  or all of its methods (see config/PETSc/packages/hdf5.py, for example).
+  Because convenient (i.e., localized) hooks are available onto to some parts of the
+  configure process, frequently writing a custom configure class amounts to overriding
+  configureLibrary so that pre- and post-code can be inserted before calling to
+  config.package.Package.configureLibrary.
+
+  In any event, Install must be implemented anew for any package configure class extending
+  config.package.Package.  Naturally, instance variables have to be set appropriately
+  in __init__ (or elsewhere), package-specific help options and dependencies must be defined.
+  Therefore, the general pattern for package configure subclassing is this:
+    - override __init__ and set package-specific instance variables
+    - override setupHelp and setupDependencies hooks to set package-specific command-line
+      arguments and dependencies on demand
+    - override Install, making use of the parent class\'s installNeeded and postInstall
+    - override configureLibrary, if necessary, to insert pre- and post-configure fixup code.
+
+  GNUPackage class:
+  ----------------
+  This class is an attempt at making writing package configure classes easier for the packages
+  that use the "configure; make; make install" idiom for the installation -- "GNU packages".
+  The main contribution is in the implementation of a generic Install method, which attempts
+  to automate the building of a package based on the mostly standard instance variables.
+
+  Install:
+  -------
+  GNUPackage.Install defines a new list of optional dependendies in __init__
+    self.odeps (Cf. self.deps),
+  which can be, like self.deps set in the setupDependencies callback, as well as a new callback
+    formGNUConfigureDepArgs,
+  which constructs the GNU configure options based on self.deps and self.odeps the following way:
+    for each d in self.deps and in self.odeps, configure option \'--with-\'+d.package+\'=\'+d.directory
+    is added to the argument list.
+  The formGNUConfigureDepArgs method is called from another callback
+    formGNUConfigureArgs,
+  which adds the prefix and compiler arguments to the list of GNU configure arguments.
+  GNUPackage.Install then runs GNU configure on the package with the arguments obtained from formGNUConfigureArgs.
+  Each of the formGNUConfigure*Args callbacks can be overriden to provide more specific options.
+  Note that dependencies on self.odeps are optional in the sense that if they are not found,
+  the package is still configured, but the corresponding "--with-" argument is omitted from the GNU
+  configure options.
+
+  Besides running GNU configure, GNUPackage.Install runs installNeeded, make and postInstall
+  at the appropriate times, automatically determining whether a rebuild is necessary, saving
+  a GNU configure arguments stamp to perform the check in the future, etc.
+
+  setupDownload:
+  -------------
+  GNUPackage provides a new callback
+    setupDownload
+  which is called only when the package is downloaded (as opposed to being used from a tar file).
+  By default this method constructs self.download from the other instance variables as follows:
+    self.download = [self.downloadpath+self.downloadversion+self.downloadext]
+  Variables self.downloadpath, self.downloadext and self.downloadversion can be set in __init__ or
+  using the following hook, which is called at the beginning of setupDownload:
+    setupVersion
+  is provided that will set self.downloadversion from the command-line argument "--download-"+self.package+"-version",
+  prompting for user input, if necessary. 
+  Clearly, both setupDownload and setupDownloadVersion can be overridden by specific package configure subclasses.
+  They are intended to be a convenient hooks for isolating the download url management based on the command-line arguments
+  and user input.
+
+  setupHelp:
+  ---------
+  This method extends config.Package.setupHelp by adding two command-line arguments:
+    "-download-"+self.package+"-version" with self.downloadversion as default or None, if it does not exist
+    "-download-"+self.package+"-shared" with False as the default.
+
+  Summary:
+  -------
+  In order to customize GNUPackage:
+    - set up the usual instance variables in __init__, plus the following instance variables, if necessary/appropriate:
+        self.downloadpath
+        self.downloadext
+        self.downloadversion
+    - override setupHelp to declare command-line arguments that can be used anywhere below
+      (GNUPackage takes care of some of the basic args, including the download version)
+    - override setupDependencies to "require" dependent objects and to set up the following instance veriables
+        self.deps
+        self.odeps
+      as appropriate
+    - override setupDownload to control the precise download URL and/or
+    - override setupDownloadVersion to control the self.downloadversion string inserted into self.download between self.downloadpath and self.downloadext
+    - override formGNUConfigureDepArgs and/or formGNUConfigureArgs to control the GNU configure options
+'''
+
+class GNUPackage(Package):
+  def __init__(self, framework):
+    Package.__init__(self,framework)
+    self.downloadpath=''
+    self.downloadversion=''
+    self.downloadext=''
+    return
+
+  def setupHelp(self, help):
+    config.package.Package.setupHelp(self,help)
+    import nargs
+    downloadversion = None
+    if hasattr(self, 'downloadversion'):
+      downloadversion = self.downloadversion
+    help.addArgument(self.PACKAGE, '-download-'+self.package+'-version=<string>',  nargs.Arg(None, downloadversion, 'Version number of '+self.PACKAGE+' to download'))
+    help.addArgument(self.PACKAGE, '-download-'+self.package+'-shared=<bool>',     nargs.ArgBool(None, 0, 'Install '+self.PACKAGE+' with shared libraries'))    
+
+  def setupDependencies(self,framework):
+    config.package.Package.setupDependencies(self, framework)
+    # optional dependencies, that will be turned off in GNU configure, if they are absent
+    self.odeps = []
+
+  def setupDownloadVersion(self):
+    '''Use this to construct a valid download URL.'''
+    if self.framework.argDB['download-'+self.package+'-version']:
+      self.downloadversion = self.framework.argDB['download-'+self.package+'-version']
+
+  def setupDefaultDownload(self):
+    '''This is used to set up the default download url, without potentially prompting for user input,
+    to make sure that the package configuration is not skipped by configureLibrary.'''
+    if hasattr(self,'downloadpath') and hasattr(self,'downloadname') and hasattr(self,'downloadversion') and hasattr(self,'downloadext'):
+      self.download = [self.downloadpath+self.downloadname+'-'+self.downloadversion+self.downloadext]
+
+  def setupDownload(self):
+    '''Override this, if necessary, to set up a custom download URL.'''
+    self.setupDownloadVersion()
+    self.setupDefaultDownload()
+
+  def checkDownload(self, requireDownload = 1):
+    self.setupDownload()
+    return Package.checkDownload(self,requireDownload)
+ 
+
+  def formGNUConfigureDepArgs(self):
+    '''Add args corresponding to --with-<deppackage>=<deppackage-dir>.'''
+    args = []
+    for d in self.deps:
+      args.append('--with-'+d.package+'='+d.directory)
+    for d in self.odeps:
+      if hasattr(d,'found') and d.found:
+        args.append('--with-'+d.package+'='+d.directory)
+    return args
+
+  def formGNUConfigureArgs(self):
+    '''This sets up the prefix, compiler flags, shared flags, and other generic arguments
+       that are fed into the configure script supplied with the package.'''
+    args=[]
+    ## prefix
+    args.append('--prefix='+self.installDir)
+    ## compiler args
+    self.pushLanguage('C')
+    compiler = self.getCompiler()
+    args.append('CC="'+self.getCompiler()+'"')
+    args.append('CFLAGS="'+self.getCompilerFlags()+'"')
+    self.popLanguage()
+    if hasattr(self.compilers, 'CXX'):
+      self.pushLanguage('Cxx')
+      args.append('CXX="'+self.getCompiler()+'"')
+      args.append('CXXFLAGS="'+self.getCompilerFlags()+'"')
+      self.popLanguage()
+    else:
+      args.append('--disable-cxx')
+    if hasattr(self.compilers, 'FC'):
+      self.pushLanguage('FC')      
+      fc = self.getCompiler()
+      if self.compilers.fortranIsF90:
+        try:
+          output, error, status = self.executeShellCommand(fc+' -v')
+          output += error
+        except:
+          output = ''
+        if output.find('IBM') >= 0:
+          fc = os.path.join(os.path.dirname(fc), 'xlf')
+          self.framework.log.write('Using IBM f90 compiler, switching to xlf for compiling ' + self.PACKAGE + '\n')
+        # now set F90
+        args.append('F90="'+fc+'"')
+        args.append('F90FLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
+      else:
+        args.append('--disable-f90')
+      args.append('F77="'+fc+'"')
+      args.append('FFLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
+      self.popLanguage()
+    else:
+      args.append('--disable-f77')
+      args.append('--disable-f90')
+    if self.framework.argDB['with-shared-libraries'] or self.framework.argDB['download-'+self.package+'-shared']:
+      if self.compilers.isGCC or config.setCompilers.Configure.isIntel(compiler):
+        if config.setCompilers.Configure.isDarwin():
+          args.append('--enable-sharedlibs=gcc-osx')
+        else:
+          args.append('--enable-sharedlibs=gcc')
+      elif config.setCompilers.Configure.isSun(compiler):
+        args.append('--enable-sharedlibs=solaris-cc')
+      else:
+        args.append('--enable-sharedlibs=libtool')
+    else:
+        args.append('--disable-shared')
+    args.extend(self.formGNUConfigureDepArgs())
+    return args
+  
+
+    
+  def Install(self):
+    ##### getInstallDir calls this, and it sets up self.packageDir (source download), self.confDir and self.installDir
+    if not os.path.isdir(self.installDir):
+      os.mkdir(self.installDir)
+    ### Build the configure arg list, dump it into a conffile
+    args = self.formGNUConfigureArgs()
+    args = ' '.join(args)
+    conffile = os.path.join(self.packageDir,self.package)
+    fd = file(conffile, 'w')
+    fd.write(args)
+    fd.close()
+    ### Use conffile to check whether a reconfigure/rebuild is required
+    if not self.installNeeded(conffile):
+      return self.installDir
+    ### Configure and Build package
+    try:
+      self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
+      output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=2000, log = self.framework.log)
+    except RuntimeError, e:
+      raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
+    try:
+      self.logPrintBox('Running make on '+self.PACKAGE+'; this may take several minutes')
+      output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && make && make install', timeout=6000, log = self.framework.log)
+      output3,err3,ret3  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && make clean', timeout=200, log = self.framework.log)
+    except RuntimeError, e:
+      raise RuntimeError('Error running make; make install on '+self.PACKAGE+': '+str(e))
+    self.postInstall(output1+err1+output2+err2+output3+err3, self.package)
+    return self.installDir
+
+  def configure(self):
+    self.setupDefaultDownload()
+    Package.configure(self)
+
+  def configureLibrary(self):
+    '''Find an installation and check if it can work with PETSc'''
+    self.framework.log.write('==================================================================================\n')
+    self.framework.logPrint('Checking for a functional '+self.name)
+    foundLibrary = 0
+    foundHeader  = 0
+
+    # get any libraries and includes we depend on
+    libs         = []
+    incls        = []
+    for package in self.deps:
+      if not hasattr(package, 'found'):
+        raise RuntimeError('Package '+package.name+' does not have found attribute!')
+      if not package.found:
+        if self.framework.argDB['with-'+package.package] == 1:
+          raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
+        else:
+          raise RuntimeError('Did not find package '+package.PACKAGE+' needed by '+self.name+'.\nEnable the package using --with-'+package.package)
+      if hasattr(package, 'dlib'):    libs  += package.dlib
+      if hasattr(package, 'include'): incls += package.include
+    for package in self.odeps:
+      if not package.found:
+        if self.framework.argDB['with-'+package.package] == 1:
+          raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
+      if hasattr(package, 'dlib'):    libs  += package.dlib
+      if hasattr(package, 'include'): incls += package.include
+    if self.needsMath:
+      if self.libraries.math is None:
+        raise RuntimeError('Math library not found')
+      libs += self.libraries.math
+      
+    for location, directory, lib, incl in self.generateGuesses():
+      if directory and not os.path.isdir(directory):
+        self.framework.logPrint('Directory does not exist: %s (while checking "%s" for "%r")' % (directory,location,lib))
+        continue
+      if lib == '': lib = []
+      elif not isinstance(lib, list): lib = [lib]
+      if incl == '': incl = []
+      elif not isinstance(incl, list): incl = [incl]
+      testedincl = list(incl)
+      # weed out duplicates when adding fincs
+      for loc in self.compilers.fincs:
+        if not loc in incl:
+          incl.append(loc)
+      if self.functions:
+        self.framework.logPrint('Checking for library in '+location+': '+str(lib))
+        if directory: self.framework.logPrint('Contents: '+str(os.listdir(directory)))
+      else:
+        self.framework.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
+      if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2]}):
+        self.lib = lib	
+        self.framework.logPrint('Checking for headers '+location+': '+str(incl))
+        if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 1800.0):
+          if self.includes:
+            self.include = testedincl
+          self.found     = 1
+          self.dlib      = self.lib+libs
+          if not hasattr(self.framework, 'packages'):
+            self.framework.packages = []
+          self.directory = directory
+          self.framework.packages.append(self)
+          return
+    if not self.lookforbydefault:
+      raise RuntimeError('Could not find a functional '+self.name+'\n')
