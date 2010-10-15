@@ -40,9 +40,9 @@ int main(int argc,char **argv)
   }
 
   ierr = DMView(da,viewer);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(da,&locala);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da,&locala);CHKERRQ(ierr);
   ierr = DAGetCoordinates(da,&coors);CHKERRQ(ierr);
   ierr = VecGetArray(coors,&xy);CHKERRQ(ierr);
 

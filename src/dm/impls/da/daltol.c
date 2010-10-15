@@ -91,7 +91,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDALocalToLocalCreate(DM da)
 
    Notes:
    The local vectors used here need not be the same as those
-   obtained from DACreateLocalVector(), BUT they
+   obtained from DMCreateLocalVector(), BUT they
    must have the same parallel data layout; they could, for example, be 
    obtained with VecDuplicate() from the DA originating vectors.
 
@@ -135,7 +135,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalBegin(DM da,Vec g,InsertMode mode
 
    Note:
    The local vectors used here need not be the same as those
-   obtained from DACreateLocalVector(), BUT they
+   obtained from DMCreateLocalVector(), BUT they
    must have the same parallel data layout; they could, for example, be 
    obtained with VecDuplicate() from the DA originating vectors.
 

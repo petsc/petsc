@@ -1054,7 +1054,7 @@ PetscErrorCode DMMGSetSNESLocali_Private(DMMG *dmmg,PetscErrorCode (*functioni)(
     ierr = MatMFFDSetFunctioni(dmmg[i]->J,DMMGFunctioni);CHKERRQ(ierr);
     ierr = MatMFFDSetFunctioniBase(dmmg[i]->J,DMMGFunctioniBase);CHKERRQ(ierr);    
     if (!dmmg[i]->lwork1) {
-      ierr = DACreateLocalVector(dmmg[i]->dm,&dmmg[i]->lwork1);CHKERRQ(ierr);
+      ierr = DMCreateLocalVector(dmmg[i]->dm,&dmmg[i]->lwork1);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -1073,7 +1073,7 @@ PetscErrorCode DMMGSetSNESLocalib_Private(DMMG *dmmg,PetscErrorCode (*functioni)
     ierr = DASetLocalAdicFunctionib(dmmg[i]->dm,adi);CHKERRQ(ierr);
     ierr = DASetLocalAdicMFFunctionib(dmmg[i]->dm,adimf);CHKERRQ(ierr);
     if (!dmmg[i]->lwork1) {
-      ierr = DACreateLocalVector(dmmg[i]->dm,&dmmg[i]->lwork1);CHKERRQ(ierr);
+      ierr = DMCreateLocalVector(dmmg[i]->dm,&dmmg[i]->lwork1);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

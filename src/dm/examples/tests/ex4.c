@@ -68,8 +68,8 @@ int main(int argc,char **argv)
   }
 
   ierr = DMView(da,viewer);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
 
   /* Set global vector; send ghost points to local vectors */
   value = 1;

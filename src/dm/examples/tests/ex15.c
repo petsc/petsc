@@ -47,8 +47,8 @@ int main(int argc,char **argv)
     ierr = DACreate3d(PETSC_COMM_WORLD,pt,DA_STENCIL_BOX,M2,M2,M2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,PETSC_NULL,&da_f);CHKERRQ(ierr);
   }
 
-  ierr = DACreateGlobalVector(da_c,&v_c);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da_f,&v_f);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da_c,&v_c);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da_f,&v_f);CHKERRQ(ierr);
 
   ierr = VecSet(v_c,one);CHKERRQ(ierr);
   ierr = DAGetInterpolation(da_c,da_f,&I,PETSC_NULL);CHKERRQ(ierr);

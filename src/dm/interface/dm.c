@@ -5,7 +5,7 @@
 #undef __FUNCT__  
 #define __FUNCT__ "DMSetVecType"
 /*@C
-       DMSetVecType - Sets the type of vector created with DACreateLocalVector() and DACreateGlobalVector()
+       DMSetVecType - Sets the type of vector created with DMCreateLocalVector() and DMCreateGlobalVector()
 
    Logically Collective on DA
 

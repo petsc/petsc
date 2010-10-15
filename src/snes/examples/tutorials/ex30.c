@@ -1251,7 +1251,7 @@ PetscErrorCode ViscosityField(DMMG dmmg, Vec X, Vec V)
   ivt          = param->ivisc;
   param->ivisc = param->output_ivisc;
 
-  ierr = DACreateLocalVector(da, &localX);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da, &localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,localX,(void**)&x);CHKERRQ(ierr);
@@ -1304,7 +1304,7 @@ PetscErrorCode StressField(DMMG *dmmg)
   ierr = DAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,((AppCtx*)dmmg[0]->user)->Xguess,(void**)&x);CHKERRQ(ierr);
 
-  ierr = DACreateLocalVector(da, &locVec);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da, &locVec);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da, DMMGGetx(dmmg), INSERT_VALUES, locVec);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da, DMMGGetx(dmmg), INSERT_VALUES, locVec);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,locVec,(void**)&y);CHKERRQ(ierr);

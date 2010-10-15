@@ -42,7 +42,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DM da,PetscReal xmin,Pe
   ierr = DAGetInfo(da,&dim,&M,&N,&P,0,0,0,0,0,&periodic,0);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&istart,&jstart,&kstart,&isize,&jsize,&ksize);CHKERRQ(ierr);
   ierr = DAGetCoordinateDA(da, &cda);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(cda, &xcoor);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(cda, &xcoor);CHKERRQ(ierr);
   if (dim == 1) {
     if (periodic == DA_NONPERIODIC) hx = (xmax-xmin)/(M-1);
     else                            hx = (xmax-xmin)/M;

@@ -83,21 +83,21 @@ int main(int argc,char **argv)
   /* Set up distributed array for fine grid */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.fine.mx,
                     user.fine.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(user.fine.da,&user.fine.x);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(user.fine.da,&user.fine.x);CHKERRQ(ierr);
   ierr = VecDuplicate(user.fine.x,&user.fine.r);CHKERRQ(ierr);
   ierr = VecDuplicate(user.fine.x,&user.fine.b);CHKERRQ(ierr);
   ierr = VecGetLocalSize(user.fine.x,&nlocal);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(user.fine.da,&user.fine.localX);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(user.fine.da,&user.fine.localX);CHKERRQ(ierr);
   ierr = VecDuplicate(user.fine.localX,&user.fine.localF);CHKERRQ(ierr);
   ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&user.fine.J);CHKERRQ(ierr);
 
   /* Set up distributed array for coarse grid */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.coarse.mx,
                     user.coarse.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(user.coarse.da,&user.coarse.x);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(user.coarse.da,&user.coarse.x);CHKERRQ(ierr);
   ierr = VecDuplicate(user.coarse.x,&user.coarse.b);CHKERRQ(ierr);
   ierr = VecGetLocalSize(user.coarse.x,&Nlocal);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(user.coarse.da,&user.coarse.localX);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(user.coarse.da,&user.coarse.localX);CHKERRQ(ierr);
   ierr = VecDuplicate(user.coarse.localX,&user.coarse.localF);CHKERRQ(ierr);
   ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,Nlocal,Nlocal,N,N,5,PETSC_NULL,3,PETSC_NULL,&user.coarse.J);CHKERRQ(ierr);
 

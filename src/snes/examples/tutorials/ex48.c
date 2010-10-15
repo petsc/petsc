@@ -564,7 +564,7 @@ static PetscErrorCode THISetDMMG(THI thi,DMMG *dmmg)
       ierr = DAGetInfo(da,&dim, &My,&Mx,0, &my,&mx,0, 0,&s,0,&st);CHKERRQ(ierr);
     }
     ierr = DACreate2d(((PetscObject)thi)->comm,DA_XYPERIODIC,st,My,Mx,my,mx,sizeof(PrmNode)/sizeof(PetscScalar),s,0,0,&da2prm);CHKERRQ(ierr);
-    ierr = DACreateLocalVector(da2prm,&X);CHKERRQ(ierr);
+    ierr = DMCreateLocalVector(da2prm,&X);CHKERRQ(ierr);
     {
       PetscReal Lx = thi->Lx / thi->units->meter,Ly = thi->Ly / thi->units->meter,Lz = thi->Lz / thi->units->meter;
       if (dim == 2) {

@@ -130,7 +130,7 @@ PetscErrorCode MatSOR_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscRea
   if (its <= 0 || lits <= 0) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
 
   if (!a->diagonal) {
-    ierr = DACreateGlobalVector(a->da,&a->diagonal);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(a->da,&a->diagonal);CHKERRQ(ierr);
   }
   if (!a->diagonalvalid) {
     ierr             = MatGetDiagonal(A,a->diagonal);CHKERRQ(ierr);
@@ -374,7 +374,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA_AD(Mat A,DM da)
   ierr  = DAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
   A->rmap->n  = A->cmap->n = nc*nx*ny*nz;
   A->rmap->N  = A->cmap->N = nc*Nx*Ny*Nz;
-  ierr  = DACreateLocalVector(da,&a->localu);CHKERRQ(ierr);
+  ierr  = DMCreateLocalVector(da,&a->localu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

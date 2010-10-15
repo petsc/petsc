@@ -74,9 +74,9 @@ int main(int argc,char **argv)
 
   /* Set up the ghost point communication pattern */ 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,appctx.M,1,1,PETSC_NULL,&appctx.da);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(appctx.da,&appctx.global);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(appctx.da,&appctx.global);CHKERRQ(ierr);
   ierr = VecGetLocalSize(appctx.global,&m);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(appctx.da,&appctx.local);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(appctx.da,&appctx.local);CHKERRQ(ierr);
 
   /* Set up display to show wave graph */
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,380,400,160,&appctx.viewer1);CHKERRQ(ierr);

@@ -1577,7 +1577,7 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
     Vec X, U;
 
     ierr = DMGetGlobalVector(da, &X);CHKERRQ(ierr);
-    ierr = DACreateGlobalVector(da, &options->exactSol.vec);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(da, &options->exactSol.vec);CHKERRQ(ierr);
     options->func = options->exactFunc;
     U             = options->exactSol.vec;
     if (dim == 2) {
@@ -1593,7 +1593,7 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
     ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_draw", &flag);CHKERRQ(ierr);
     if (flag) {ierr = VecView(U, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
     options->func = func;
-    ierr = DACreateGlobalVector(da, &options->error.vec);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(da, &options->error.vec);CHKERRQ(ierr);
   } else {
     Mesh mesh = (Mesh) dm;
 

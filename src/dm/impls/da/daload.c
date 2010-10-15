@@ -82,7 +82,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DALoad(PetscViewer viewer,PetscInt M,PetscInt N
 
     /* this nonsense is so that the vector set to DASetCoordinates() does NOT have a DA */
     /* We should change the handling of coordinates so there is always a coordinate DA when there is a coordinate vector */
-    ierr = DACreateGlobalVector(dac,&tmpglobal);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(dac,&tmpglobal);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject)tmpglobal,"coor_");CHKERRQ(ierr);
     ierr = VecLoad(tmpglobal,viewer);CHKERRQ(ierr);
     ierr = VecGetLocalSize(tmpglobal,&mlocal);CHKERRQ(ierr);

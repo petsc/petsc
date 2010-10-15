@@ -117,7 +117,7 @@
 !  Extract global and local vectors from DA; then duplicate for remaining
 !  vectors that are the same types
 
-      call DACreateGlobalVector(da,x,ierr)
+      call DMCreateGlobalVector(da,x,ierr)
       call VecDuplicate(x,r,ierr)
 
 !  Get local grid boundaries (for 2-dimensional DA)

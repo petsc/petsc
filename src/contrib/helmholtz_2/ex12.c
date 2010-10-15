@@ -30,7 +30,7 @@ a Helmholtz equation in a half-plane.  Input parameters include:\n\
    Routines: SLESSolve(); SLESView(); SLESGetPC(); SLESGetKSP();
    Routines: KSPSetTolerances(); PCSetModifySubMatrices();
    Routines: MatCreateSeqAIJ(); MatCreateMPIAIJ();
-   Routines: DACreate2d(); DMDestroy(); DACreateGlobalVector(); DMView();
+   Routines: DACreate2d(); DMDestroy(); DMCreateGlobalVector(); DMView();
    Routines: DAGetCorners(); DAGetGhostCorners(); DAGetGlobalIndices();
    Routines: ISCreateGeneral(); ISDestroy(); MatZeroRows();
    Routines: ViewerSetFormat();
@@ -242,7 +242,7 @@ int main(int argc,char **args)
   */
   ierr = DACreate2d(user.comm,DA_NONPERIODIC,DA_STENCIL_STAR,user.m_eta,
                     user.m_xi,N_eta,N_xi,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRA(ierr);
-  ierr = DACreateGlobalVector(user.da,&user.phi);CHKERRA(ierr);
+  ierr = DMCreateGlobalVector(user.da,&user.phi);CHKERRA(ierr);
   ierr = VecGetLocalSize(user.phi,&user.m_ldim);CHKERRA(ierr);
   ierr = VecDuplicate(user.phi,&b);CHKERRA(ierr);
   ierr = VecDuplicate(user.phi,&b2);CHKERRA(ierr);
@@ -325,7 +325,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(b2);CHKERRA(ierr);
   ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = SLESDestroy(sles);CHKERRA(ierr);
-  ierr = DACreateLocalVector(user.da,&localv);CHKERRA(ierr);
+  ierr = DMCreateLocalVector(user.da,&localv);CHKERRA(ierr);
   ierr = VecDestroy(localv);CHKERRA(ierr);
   ierr = DMDestroy(user.da);CHKERRA(ierr);
 

@@ -100,7 +100,7 @@ int main(int argc,char **argv)
   /*
      Create parallel vectors compatible with the DA.
   */
-  ierr = DACreateGlobalVector(da,&u);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&x);CHKERRQ(ierr);
 

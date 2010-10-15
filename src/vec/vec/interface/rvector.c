@@ -1652,9 +1652,9 @@ M*/
    Level: developer
 
   Notes:
-   For a vector obtained from DACreateLocalVector() mstart and nstart are likely
+   For a vector obtained from DMCreateLocalVector() mstart and nstart are likely
    obtained from the corner indices obtained from DAGetGhostCorners() while for
-   DACreateGlobalVector() they are the corner indices from DAGetCorners(). In both cases
+   DMCreateGlobalVector() they are the corner indices from DAGetCorners(). In both cases
    the arguments from DAGet[Ghost]Corners() are reversed in the call to VecGetArray2d().
    
    For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
@@ -1749,9 +1749,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray2d(Vec x,PetscInt m,PetscInt n,
    Level: developer
 
   Notes:
-   For a vector obtained from DACreateLocalVector() mstart are likely
+   For a vector obtained from DMCreateLocalVector() mstart are likely
    obtained from the corner indices obtained from DAGetGhostCorners() while for
-   DACreateGlobalVector() they are the corner indices from DAGetCorners(). 
+   DMCreateGlobalVector() they are the corner indices from DAGetCorners(). 
    
    For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
@@ -1840,9 +1840,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray1d(Vec x,PetscInt m,PetscInt ms
    Level: developer
 
   Notes:
-   For a vector obtained from DACreateLocalVector() mstart, nstart, and pstart are likely
+   For a vector obtained from DMCreateLocalVector() mstart, nstart, and pstart are likely
    obtained from the corner indices obtained from DAGetGhostCorners() while for
-   DACreateGlobalVector() they are the corner indices from DAGetCorners(). In both cases
+   DMCreateGlobalVector() they are the corner indices from DAGetCorners(). In both cases
    the arguments from DAGet[Ghost]Corners() are reversed in the call to VecGetArray3d().
    
    For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
@@ -1951,9 +1951,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray3d(Vec x,PetscInt m,PetscInt n,
    Level: beginner
 
   Notes:
-   For a vector obtained from DACreateLocalVector() mstart, nstart, and pstart are likely
+   For a vector obtained from DMCreateLocalVector() mstart, nstart, and pstart are likely
    obtained from the corner indices obtained from DAGetGhostCorners() while for
-   DACreateGlobalVector() they are the corner indices from DAGetCorners(). In both cases
+   DMCreateGlobalVector() they are the corner indices from DAGetCorners(). In both cases
    the arguments from DAGet[Ghost}Corners() are reversed in the call to VecGetArray3d().
    
    For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.

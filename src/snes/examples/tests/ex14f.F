@@ -128,8 +128,8 @@ c      call flush(6)
       call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,i1,i1,            &
      &     PETSC_NULL_INTEGER,ctx(1),ierr)
 
-      call DACreateGlobalVector(ctx(1),x,ierr)
-      call DACreateLocalVector(ctx(1),ctx(3),ierr)
+      call DMCreateGlobalVector(ctx(1),x,ierr)
+      call DMCreateLocalVector(ctx(1),ctx(3),ierr)
 
       call PetscObjectSetName(x,'Approximate Solution',ierr)
       call VecDuplicate(x,r,ierr)

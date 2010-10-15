@@ -1294,7 +1294,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DAMultiplyByJacobian1WithAdifor(DM da,Vec u,Vec
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "DMSetUp_DA_2D"
 PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_2D(DM da)
@@ -1792,7 +1791,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_2D(DM da)
 
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "DACreate2d"
@@ -1839,14 +1837,14 @@ EXTERN_C_END
    the standard 9-pt stencil.
 
    The array data itself is NOT stored in the DA, it is stored in Vec objects;
-   The appropriate vector objects can be obtained with calls to DACreateGlobalVector()
-   and DACreateLocalVector() and calls to VecDuplicate() if more are needed.
+   The appropriate vector objects can be obtained with calls to DMCreateGlobalVector()
+   and DMCreateLocalVector() and calls to VecDuplicate() if more are needed.
 
 .keywords: distributed array, create, two-dimensional
 
 .seealso: DMDestroy(), DMView(), DACreate1d(), DACreate3d(), DMGlobalToLocalBegin(), DAGetRefinementFactor(),
           DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DALocalToLocalBegin(), DALocalToLocalEnd(), DASetRefinementFactor(),
-          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAGetOwnershipRanges()
+          DAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DACreateNaturalVector(), DALoad(), DAGetOwnershipRanges()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,

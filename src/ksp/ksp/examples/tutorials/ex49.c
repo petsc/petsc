@@ -425,7 +425,7 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],co
   ierr = DAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
 
-  ierr = DACreateLocalVector(da,&local_fields);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da,&local_fields);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,fields,INSERT_VALUES,local_fields);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,fields,INSERT_VALUES,local_fields);CHKERRQ(ierr);
   ierr = VecGetArray(local_fields,&_fields);CHKERRQ(ierr);
@@ -489,7 +489,7 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da,Vec fields,const char 
   ierr = DAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
 
-  ierr = DACreateLocalVector(da,&local_fields);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da,&local_fields);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,fields,INSERT_VALUES,local_fields);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,fields,INSERT_VALUES,local_fields);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,local_fields,&_coefficients);CHKERRQ(ierr);
@@ -673,7 +673,7 @@ static PetscErrorCode AssembleA_Elasticity(Mat A,DM elas_da,DM properties_da,Vec
   ierr = DAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   /* setup for coefficients */
-  ierr = DACreateLocalVector(properties_da,&local_properties);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(properties_da,&local_properties);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(properties_da,properties,INSERT_VALUES,local_properties);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(properties_da,properties,INSERT_VALUES,local_properties);CHKERRQ(ierr);
   ierr = DAVecGetArray(properties_da,local_properties,&props);CHKERRQ(ierr);
@@ -868,8 +868,8 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   /* define coefficients */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-c_str",&coefficient_structure,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DACreateGlobalVector(da_prop,&properties);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(da_prop,&l_properties);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da_prop,&properties);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da_prop,&l_properties);CHKERRQ(ierr);
   ierr = DAVecGetArray(da_prop,l_properties,&element_props);CHKERRQ(ierr);
 
   ierr = DAGetCoordinateDA(da_prop,&prop_cda);CHKERRQ(ierr);

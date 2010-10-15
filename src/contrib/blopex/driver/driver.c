@@ -218,7 +218,7 @@ int main(int argc,char **args)
       - We form 1 vector from scratch and then duplicate as needed.
   */
 
-  ierr = DACreateGlobalVector(da,&u); CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&u); CHKERRQ(ierr);
   /* ierr = VecSetFromOptions(u);CHKERRQ(ierr); */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

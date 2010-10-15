@@ -120,8 +120,6 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DANaturalToGlobalBegin(DM,Vec,InsertM
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DANaturalToGlobalEnd(DM,Vec,InsertMode,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALocalToLocalBegin(DM,Vec,InsertMode,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALocalToLocalEnd(DM,Vec,InsertMode,Vec);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateGlobalVector(DM,Vec *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateLocalVector(DM,Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DARefine(DM,MPI_Comm,DM*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACoarsen(DM,MPI_Comm,DM*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DARefineHierarchy(DM,PetscInt,DM[]);

@@ -134,8 +134,8 @@ int main(int argc,char **argv)
      Extract global and local vectors from DA; then duplicate for remaining
      vectors that are the same types
   */
-  ierr = DACreateGlobalVector(user.da,&x);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(user.da,&user.localX);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(user.da,&x);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(user.da,&user.localX);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
   ierr = VecDuplicate(user.localX,&user.localF);CHKERRQ(ierr);
 

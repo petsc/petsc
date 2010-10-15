@@ -61,8 +61,8 @@ int main(int argc,char **argv)
       
   /* Create distributed array and get vectors */
   ierr = DACreate2d(PETSC_COMM_WORLD,ptype,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
 
   value = -3.0;
   ierr = VecSet(global,value);CHKERRQ(ierr);

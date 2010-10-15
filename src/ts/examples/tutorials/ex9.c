@@ -1338,7 +1338,7 @@ int main(int argc,char *argv[])
   ierr = PetscMalloc2(2*dof,PetscScalar,&ctx.uLR,dof,PetscScalar,&ctx.flux);CHKERRQ(ierr);
 
   /* Create a vector to store the solution and to save the initial state */
-  ierr = DACreateGlobalVector(ctx.da,&X);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(ctx.da,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&X0);CHKERRQ(ierr);
 
   /* Create a time-stepping object */

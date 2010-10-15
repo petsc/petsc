@@ -124,8 +124,8 @@
 !  Extract global and local vectors from DA; then duplicate for remaining
 !  vectors that are the same types.
 
-      call DACreateGlobalVector(da,u,ierr)
-      call DACreateLocalVector(da,u_local,ierr)
+      call DMCreateGlobalVector(da,u,ierr)
+      call DMCreateLocalVector(da,u_local,ierr)
 
 !  Make local work vector for evaluating right-hand-side function
       call VecDuplicate(u_local,localwork,ierr)

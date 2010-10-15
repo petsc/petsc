@@ -374,15 +374,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_1D(DM da)
 
    Notes:
    The array data itself is NOT stored in the DA, it is stored in Vec objects;
-   The appropriate vector objects can be obtained with calls to DACreateGlobalVector()
-   and DACreateLocalVector() and calls to VecDuplicate() if more are needed.
+   The appropriate vector objects can be obtained with calls to DMCreateGlobalVector()
+   and DMCreateLocalVector() and calls to VecDuplicate() if more are needed.
 
 
 .keywords: distributed array, create, one-dimensional
 
 .seealso: DMDestroy(), DMView(), DACreate2d(), DACreate3d(), DMGlobalToLocalBegin(), DASetRefinementFactor(),
           DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DALocalToLocalBegin(), DALocalToLocalEnd(), DAGetRefinementFactor(),
-          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAGetOwnershipRanges()
+          DAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DACreateNaturalVector(), DALoad(), DAGetOwnershipRanges()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm, DAPeriodicType wrap, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da)

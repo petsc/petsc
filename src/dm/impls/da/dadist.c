@@ -7,36 +7,8 @@
 #include "private/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "DACreateGlobalVector"
-/*@
-   DACreateGlobalVector - Creates a parallel PETSc vector that
-   may be used with the DAXXX routines.
-
-   Collective on DA
-
-   Input Parameter:
-.  da - the distributed array
-
-   Output Parameter:
-.  g - the distributed global vector
-
-   Level: beginner
-
-   Note:
-   The output parameter, g, is a regular PETSc vector that should be destroyed
-   with a call to VecDestroy() when usage is finished.
-
-   When you view this vector (or one obtained via VecDuplicate()) it is printed in the global natural ordering NOT 
-   in the PETSc parallel global ordering that is used internally. Similarly VecLoad() into this vector loads from a global natural ordering. 
-   This means that vectors saved to disk from one DA parallel distribution can be reloaded into a different DA parallel distribution correctly.
-
-.keywords: distributed array, create, global, distributed, vector
-
-.seealso: DACreateLocalVector(), VecDuplicate(), VecDuplicateVecs(),
-          DACreate1d(), DACreate2d(), DACreate3d(), DMGlobalToLocalBegin(),
-          DMGlobalToLocalEnd(), DALocalToGlobalBegin(), DACreateNaturalVector()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DACreateGlobalVector(DM da,Vec* g)
+#define __FUNCT__ "DMCreateGlobalVector_DA"
+PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_DA(DM da,Vec* g)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -78,11 +50,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateGlobalVector(DM da,Vec* g)
    with a call to VecDestroy() when usage is finished.
 
    The number of local entries in the vector on each process is the same
-   as in a vector created with DACreateGlobalVector().
+   as in a vector created with DMCreateGlobalVector().
 
 .keywords: distributed array, create, global, distributed, vector
 
-.seealso: DACreateLocalVector(), VecDuplicate(), VecDuplicateVecs(),
+.seealso: DMCreateLocalVector(), VecDuplicate(), VecDuplicateVecs(),
           DACreate1d(), DACreate2d(), DACreate3d(), DMGlobalToLocalBegin(),
           DMGlobalToLocalEnd(), DALocalToGlobalBegin()
 @*/

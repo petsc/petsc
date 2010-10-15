@@ -130,10 +130,10 @@ int main( int argc, char **argv )
   for (i=0; i<user.nlevels; i++) {
     ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.grid[i].mx,
                       user.grid[i].my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.grid[i].da);CHKERRA(ierr);
-    ierr = DACreateGlobalVector(user.grid[i].da,&user.grid[i].x);CHKERRA(ierr);
+    ierr = DMCreateGlobalVector(user.grid[i].da,&user.grid[i].x);CHKERRA(ierr);
     ierr = VecDuplicate(user.grid[i].x,&user.grid[i].r);CHKERRA(ierr);
     ierr = VecDuplicate(user.grid[i].x,&user.grid[i].b);CHKERRA(ierr);
-    ierr = DACreateLocalVector(user.grid[i].da,&user.grid[i].localX);CHKERRA(ierr);
+    ierr = DMCreateLocalVector(user.grid[i].da,&user.grid[i].localX);CHKERRA(ierr);
     ierr = VecDuplicate(user.grid[i].localX,&user.grid[i].localF);CHKERRA(ierr);
     ierr = VecGetLocalSize(user.grid[i].x,&nlocal);CHKERRA(ierr);
     ierr = VecGetSize(user.grid[i].x,&n);CHKERRA(ierr);

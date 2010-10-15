@@ -62,8 +62,8 @@ int main(int argc,char **argv)
   ierr = DAGetMatrix(da,MATMPIAIJ,&mat);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(mat,coloring,&fdcoloring);CHKERRQ(ierr); 
 
-  ierr = DACreateGlobalVector(da,&dvec);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(da,&lvec);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&dvec);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da,&lvec);CHKERRQ(ierr);
 
   /* Free memory */
   ierr = MatFDColoringDestroy(fdcoloring);CHKERRQ(ierr);

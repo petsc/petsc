@@ -1678,7 +1678,7 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
     Vec X, U;
 
     ierr = DMGetGlobalVector(da, &X);CHKERRQ(ierr);
-    ierr = DACreateGlobalVector(da, &options->exactSol.vec);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(da, &options->exactSol.vec);CHKERRQ(ierr);
     options->func = options->exactFunc;
     U             = options->exactSol.vec;
     if (dim == 2) {

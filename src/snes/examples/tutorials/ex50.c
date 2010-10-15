@@ -146,7 +146,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve the nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DACreateGlobalVector(da,&x);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = FormInitialGuess(&user,da,x);CHKERRQ(ierr);
   
   ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr); 

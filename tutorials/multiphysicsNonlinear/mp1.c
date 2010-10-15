@@ -127,8 +127,8 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve system 1 and 2 iteratively 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DACreateLocalVector(da1,&X1_local);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(da2,&X2_local);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da1,&X1_local);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da2,&X2_local);CHKERRQ(ierr);
 
   /* Only 1 snes iteration is allowed for each subphysics */
   /*

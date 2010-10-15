@@ -169,7 +169,7 @@ int main(int Argc,char **Args)
 /*   ierr = MatView(HtHperm, PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD));CHKERRQ(ierr); */
 
   /* right hand side */
-  ierr = DACreateGlobalVector(da, &b);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da, &b);CHKERRQ(ierr);
   ierr = VecSet(b,0.0);CHKERRQ(ierr);
   ierr = VecSetValues(b, 1, ix, vals, INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);

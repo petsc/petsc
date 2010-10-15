@@ -147,7 +147,7 @@ PetscErrorCode DAGlobalToNatural_Create(DM da)
 
    Notes:
    The global and natrual vectors used here need not be the same as those
-   obtained from DACreateGlobalVector() and DACreateNaturalVector(), BUT they
+   obtained from DMCreateGlobalVector() and DACreateNaturalVector(), BUT they
    must have the same parallel data layout; they could, for example, be 
    obtained with VecDuplicate() from the DA originating vectors.
 
@@ -196,7 +196,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalBegin(DM da,Vec g,InsertMode m
 
    Notes:
    The global and local vectors used here need not be the same as those
-   obtained from DACreateGlobalVector() and DACreateNaturalVector(), BUT they
+   obtained from DMCreateGlobalVector() and DACreateNaturalVector(), BUT they
    must have the same parallel data layout; they could, for example, be 
    obtained with VecDuplicate() from the DA originating vectors.
 
@@ -240,7 +240,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalEnd(DM da,Vec g,InsertMode mod
 
    Notes:
    The global and natural vectors used here need not be the same as those
-   obtained from DACreateGlobalVector() and DACreateNaturalVector(), BUT they
+   obtained from DMCreateGlobalVector() and DACreateNaturalVector(), BUT they
    must have the same parallel data layout; they could, for example, be 
    obtained with VecDuplicate() from the DA originating vectors.
 
@@ -287,7 +287,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DANaturalToGlobalBegin(DM da,Vec g,InsertMode m
 
    Notes:
    The global and local vectors used here need not be the same as those
-   obtained from DACreateGlobalVector() and DACreateNaturalVector(), BUT they
+   obtained from DMCreateGlobalVector() and DACreateNaturalVector(), BUT they
    must have the same parallel data layout; they could, for example, be 
    obtained with VecDuplicate() from the DA originating vectors.
 

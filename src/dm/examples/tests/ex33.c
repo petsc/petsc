@@ -56,7 +56,7 @@ int main(int argc,char **argv)
     ierr = DACreate1d(PETSC_COMM_WORLD,periodic,M,dof,stencil_width,PETSC_NULL,&da);CHKERRQ(ierr);
   }
 
-  ierr = DACreateGlobalVector(da,&global1);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&global1);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)global1,"Test_Vec");CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
@@ -98,7 +98,7 @@ int main(int argc,char **argv)
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Invalid Viewer : Run with -binary or -hdf5 option\n");
   }
 
-  ierr = DACreateGlobalVector(da2,&global2);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da2,&global2);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)global2,"Test_Vec");CHKERRQ(ierr);
   ierr = VecLoad(global2,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);

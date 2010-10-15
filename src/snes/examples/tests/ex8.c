@@ -71,7 +71,7 @@ int main(int argc, char **argv)
   info = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(info);
   info = DAGetInfo(user.da,PETSC_IGNORE,&user.mx,&user.my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(info);
   /* Extract global vectors from DA; */
-  info = DACreateGlobalVector(user.da,&x);CHKERRQ(info);
+  info = DMCreateGlobalVector(user.da,&x);CHKERRQ(info);
   info = VecDuplicate(x, &r); CHKERRQ(info);
 
   N = user.mx*user.my;

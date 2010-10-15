@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   DASetUniformCoordinates(da2D, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0);
   
   // Declare gauss as a DA component
-  ierr = DACreateGlobalVector(da2D,&gauss);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da2D,&gauss);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) gauss, "pressure");CHKERRQ(ierr);
   
   // Initialize vector gauss with a constant value (=1)

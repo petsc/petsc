@@ -297,7 +297,7 @@ namespace ALE {
           Vec           X, U;
 
           ierr = DMGetGlobalVector(da, &X);CHKERRQ(ierr);
-          ierr = DACreateGlobalVector(da, &this->_options.exactSol.vec);CHKERRQ(ierr);
+          ierr = DMCreateGlobalVector(da, &this->_options.exactSol.vec);CHKERRQ(ierr);
           this->_options.func = this->_options.exactFunc;
           U                   = exactSolution().vec;
           if (dim() == 2) {
@@ -313,7 +313,7 @@ namespace ALE {
           ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_draw", &flag);CHKERRQ(ierr);
           if (flag) {ierr = VecView(U, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
           this->_options.func = func;
-          ierr = DACreateGlobalVector(da, &this->_options.error.vec);CHKERRQ(ierr);
+          ierr = DMCreateGlobalVector(da, &this->_options.error.vec);CHKERRQ(ierr);
         } else {
           ::Mesh mesh = (::Mesh) this->_dm;
 

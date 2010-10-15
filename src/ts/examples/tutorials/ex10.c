@@ -806,7 +806,7 @@ static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
   ierr = DACreate1d(((PetscObject)rd->da)->comm,DA_NONPERIODIC,M,1,0,lx,&da);CHKERRQ(ierr);
   ierr = DASetUniformCoordinates(da,0.,rd->L,0.,0.,0.,0.);CHKERRQ(ierr);
   ierr = DASetFieldName(da,0,"T_rad");CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&Y);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&Y);CHKERRQ(ierr);
 
   /* Compute the radiation temperature from the solution at each node */
   ierr = VecGetLocalSize(Y,&m);CHKERRQ(ierr);
@@ -1040,7 +1040,7 @@ int main(int argc, char *argv[])
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = RDCreate(PETSC_COMM_WORLD,&rd);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(rd->da,&X);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(rd->da,&X);CHKERRQ(ierr);
   ierr = DAGetMatrix(rd->da,MATAIJ,&B);CHKERRQ(ierr);
   ierr = RDInitialState(rd,X);CHKERRQ(ierr);
 

@@ -13,7 +13,7 @@
    Input Parameter:
 +  da - the distributed array
 -  vec - the vector, either a vector the same size as one obtained with 
-         DACreateGlobalVector() or DACreateLocalVector()
+         DMCreateGlobalVector() or DMCreateLocalVector()
    
    Output Parameter:
 .  array - the array
@@ -23,7 +23,7 @@
 
     In C, the indexing is "backwards" from what expects: array[k][j][i] NOT array[i][j][k]!
 
-    If vec is a local vector (obtained with DACreateLocalVector() etc) then they ghost point locations are accessable. If it is 
+    If vec is a local vector (obtained with DMCreateLocalVector() etc) then they ghost point locations are accessable. If it is 
     a global vector then the ghost points are not accessable. Of course with the local vector you will have had to do the 
 
     appropriate DMLocalToGlobalBegin() and DMLocalToGlobalEnd() to have correct values in the ghost locations.
@@ -89,7 +89,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArray(DM da,Vec vec,void *array)
    Input Parameter:
 +  da - the distributed array
 .  vec - the vector, either a vector the same size as one obtained with 
-         DACreateGlobalVector() or DACreateLocalVector()
+         DMCreateGlobalVector() or DMCreateLocalVector()
 -  array - the array
 
   Level: intermediate
@@ -146,7 +146,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecRestoreArray(DM da,Vec vec,void *array)
    Input Parameter:
 +  da - the distributed array
 -  vec - the vector, either a vector the same size as one obtained with 
-         DACreateGlobalVector() or DACreateLocalVector()
+         DMCreateGlobalVector() or DMCreateLocalVector()
    
    Output Parameter:
 .  array - the array
@@ -207,7 +207,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArrayDOF(DM da,Vec vec,void *array)
    Input Parameter:
 +  da - the distributed array
 .  vec - the vector, either a vector the same size as one obtained with 
-         DACreateGlobalVector() or DACreateLocalVector()
+         DMCreateGlobalVector() or DMCreateLocalVector()
 -  array - the array
 
   Level: intermediate

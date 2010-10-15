@@ -77,9 +77,9 @@
 
       call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,i1,i1,            &
      &     PETSC_NULL_INTEGER,da,ierr)
-      call DACreateGlobalVector(da,global,ierr) 
+      call DMCreateGlobalVector(da,global,ierr) 
       call VecGetLocalSize(global,m,ierr) 
-      call DACreateLocalVector(da,local,ierr) 
+      call DMCreateLocalVector(da,local,ierr) 
 
 !   Set up display to show wave graph 
 
@@ -449,7 +449,7 @@
 
 !  Extract local array  
 
-      call DACreateLocalVector(da,local,ierr) 
+      call DMCreateLocalVector(da,local,ierr) 
       call DMGlobalToLocalBegin(da,globalin,INSERT_VALUES,local,ierr) 
       call DMGlobalToLocalEnd(da,globalin,INSERT_VALUES,local,ierr) 
       call VecGetArray(local,localptr,ldx,ierr) 

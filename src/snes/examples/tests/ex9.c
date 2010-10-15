@@ -72,9 +72,9 @@ int main(int argc,char **argv)
   /* Set up distributed array */
   ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,stencil,user.mx,user.my,user.mz,
                     Nx,Ny,Nz,1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(user.da,&x);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(user.da,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(user.da,&user.localX);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(user.da,&user.localX);CHKERRQ(ierr);
   ierr = VecDuplicate(user.localX,&user.localF);CHKERRQ(ierr);
 
   /* Create nonlinear solver */

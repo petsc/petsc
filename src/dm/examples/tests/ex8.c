@@ -42,7 +42,7 @@ PetscErrorCode GenerateSliceScatter(DM da,VecScatter *scatter,Vec *vslice)
      Generate the local vector to hold this processors slice
   */
   ierr = VecCreateSeq(PETSC_COMM_SELF,nslice,vslice);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&vglobal);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&vglobal);CHKERRQ(ierr);
 
   /*
        Generate the indices for the slice in the "natural" global ordering
@@ -110,8 +110,8 @@ int main(int argc,char **argv)
   ierr = DACreate3d(PETSC_COMM_WORLD,wrap,stencil_type,M,N,P,m,n,p,1,s,
                     lx,ly,lz,&da);CHKERRQ(ierr);
   ierr = DMView(da,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
 
   ierr = GenerateSliceScatter(da,&scatter,&vslice);CHKERRQ(ierr);
 

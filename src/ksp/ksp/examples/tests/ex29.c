@@ -71,10 +71,10 @@ int main(int argc,char **argv)
 
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,fine_ctx.mx,
                     fine_ctx.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&fine_ctx.da);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(fine_ctx.da,&fine_ctx.x);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(fine_ctx.da,&fine_ctx.x);CHKERRQ(ierr);
   ierr = VecDuplicate(fine_ctx.x,&fine_ctx.b);CHKERRQ(ierr);
   ierr = VecGetLocalSize(fine_ctx.x,&nlocal);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(fine_ctx.da,&fine_ctx.localX);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(fine_ctx.da,&fine_ctx.localX);CHKERRQ(ierr);
   ierr = VecDuplicate(fine_ctx.localX,&fine_ctx.localF);CHKERRQ(ierr);
   ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&A);CHKERRQ(ierr);
   ierr = FormJacobian_Grid(&fine_ctx,&A);CHKERRQ(ierr);

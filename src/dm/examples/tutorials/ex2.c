@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   /* Create distributed array and get vectors */
   ierr = DACreate2d(PETSC_COMM_WORLD,ptype,stype,
                     M,N,m,n,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,M*N,&localall);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

@@ -35,8 +35,8 @@ int main(int argc,char **argv)
     ;
   }
 
-  ierr = DACreateGlobalVector(da_c,&v_c);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da_f,&v_f);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da_c,&v_c);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da_f,&v_f);CHKERRQ(ierr);
 
   ierr = VecSet(v_c,one);CHKERRQ(ierr);
   ierr = DAGetInterpolation(da_c,da_f,&I,PETSC_NULL);CHKERRQ(ierr);

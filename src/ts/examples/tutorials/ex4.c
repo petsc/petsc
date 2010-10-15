@@ -138,8 +138,8 @@ int main(int argc,char **argv)
      approximate solution.  Then duplicate these for remaining vectors that
      have the same types.
   */ 
-  ierr = DACreateGlobalVector(appctx.da,&u);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(appctx.da,&appctx.u_local);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(appctx.da,&u);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(appctx.da,&appctx.u_local);CHKERRQ(ierr);
 
   /* 
      Create local work vector for use in evaluating right-hand-side function;

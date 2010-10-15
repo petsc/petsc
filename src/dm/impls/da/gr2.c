@@ -122,7 +122,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
       dac = da;
     }
     /* create local vector for holding ghosted values used in graphics */
-    ierr = DACreateLocalVector(dac,&xlocal);CHKERRQ(ierr);
+    ierr = DMCreateLocalVector(dac,&xlocal);CHKERRQ(ierr);
     if (dac != da) {
       /* don't keep any public reference of this DA, is is only available through xlocal */
       ierr = DMDestroy(dac);CHKERRQ(ierr);
@@ -175,7 +175,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     /* create DA to get local version of graphics */
     ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,zctx.m,zctx.n,2,1,lx,ly,&dag);CHKERRQ(ierr); 
     ierr = PetscInfo(dag,"Creating auxilary DA for managing graphics coordinates ghost points\n");CHKERRQ(ierr);
-    ierr = DACreateLocalVector(dag,&xcoorl);CHKERRQ(ierr);
+    ierr = DMCreateLocalVector(dag,&xcoorl);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl);CHKERRQ(ierr);
     ierr = DMDestroy(dag);CHKERRQ(ierr);/* dereference dag */
     ierr = PetscObjectDereference((PetscObject)xcoorl);CHKERRQ(ierr);

@@ -47,32 +47,8 @@ EXTERN_C_END
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "DACreateLocalVector"
-/*@
-   DACreateLocalVector - Creates a Seq PETSc vector that
-   may be used with the DAXXX routines.
-
-   Not Collective
-
-   Input Parameter:
-.  da - the distributed array
-
-   Output Parameter:
-.  g - the local vector
-
-   Level: beginner
-
-   Note:
-   The output parameter, g, is a regular PETSc vector that should be destroyed
-   with a call to VecDestroy() when usage is finished.
-
-.keywords: distributed array, create, local, vector
-
-.seealso: DACreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
-          DACreate1d(), DACreate2d(), DACreate3d(), DMGlobalToLocalBegin(),
-          DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMGetLocalVector(), DMRestoreLocalVector()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DACreateLocalVector(DM da,Vec* g)
+#define __FUNCT__ "DMCreateLocalVector_DA"
+PetscErrorCode PETSCDM_DLLEXPORT DMCreateLocalVector_DA(DM da,Vec* g)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;

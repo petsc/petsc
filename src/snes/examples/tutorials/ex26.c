@@ -106,7 +106,7 @@ int main(int argc,char **argv)
      Extract global vectors from DA; then duplicate for remaining
      vectors that are the same types
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DACreateGlobalVector(user.da,&user.psi);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(user.da,&user.psi);CHKERRQ(ierr);
   ierr = VecDuplicate(user.psi,&user.r);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

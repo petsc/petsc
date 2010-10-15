@@ -52,6 +52,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetFromOptions_DA(DM da)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_DA(DM,Vec*);
+extern PetscErrorCode PETSCDM_DLLEXPORT DMCreateLocalVector_DA(DM,Vec*);
 extern PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalBegin_DA(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd_DA(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalBegin_DA(DM,Vec,InsertMode,Vec);
@@ -136,8 +138,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DM *da)
   d->ops->globaltolocalend   = DMGlobalToLocalEnd_DA;
   d->ops->localtoglobalbegin = DMLocalToGlobalBegin_DA;
   d->ops->localtoglobalend   = DMLocalToGlobalEnd_DA;
-  d->ops->createglobalvector = DACreateGlobalVector;
-  d->ops->createlocalvector  = DACreateLocalVector;
+  d->ops->createglobalvector = DMCreateGlobalVector_DA;
+  d->ops->createlocalvector  = DMCreateLocalVector_DA;
   d->ops->getinterpolation   = DAGetInterpolation;
   d->ops->getcoloring        = DAGetColoring;
   d->ops->getmatrix          = DAGetMatrix;

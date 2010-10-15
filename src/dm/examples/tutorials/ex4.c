@@ -44,7 +44,7 @@ int main(int argc,char **argv)
  
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
   ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&u);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&u);CHKERRQ(ierr);
   ierr = DAGetCoordinates(da,&xy);CHKERRQ(ierr);
 
   ierr = DACreatePF(da,&pf);CHKERRQ(ierr);

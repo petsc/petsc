@@ -34,8 +34,8 @@ int main(int argc,char **argv)
   /* Create distributed array and get vectors */
   ierr = DACreate1d(PETSC_COMM_WORLD,wrap,M,dof,s,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMView(da,viewer);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
 
   /* Set global vector; send ghost points to local vectors */
   value = 1;

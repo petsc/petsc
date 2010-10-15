@@ -160,7 +160,7 @@ int main(int argc,char **argv)
   /* Save the ghosted local solu_true to be used by Physics 1 and Physics 2 */
   da        = DMMGGetDM(dmmg);
   solu_true = DMMGGetx(dmmg);
-  ierr = DACreateLocalVector(da,&solu_local);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da,&solu_local);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,solu_true,INSERT_VALUES,solu_local);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,solu_true,INSERT_VALUES,solu_local);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,solu_local,(Field **)&user.x);CHKERRQ(ierr);

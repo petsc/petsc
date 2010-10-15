@@ -197,7 +197,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostedCoordinates(DM da,Vec *c)
   if (!dd->ghosted_coordinates) {
     DM dac;
     ierr = DAGetCoordinateDA(da,&dac);CHKERRQ(ierr);
-    ierr = DACreateLocalVector(dac,&dd->ghosted_coordinates);CHKERRQ(ierr);
+    ierr = DMCreateLocalVector(dac,&dd->ghosted_coordinates);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dac,dd->coordinates,INSERT_VALUES,dd->ghosted_coordinates);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dac,dd->coordinates,INSERT_VALUES,dd->ghosted_coordinates);CHKERRQ(ierr);
   }

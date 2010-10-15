@@ -797,7 +797,7 @@ needed</li>
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Vec/VecScatterDestroy.html">VecScatterDestroy</a>(ctx);</li>
             </ul>
 Note that this simply concatenates in the parallel ordering of the
-vector. If you are using a vector from DACreateGlobalVector() you
+vector. If you are using a vector from DMCreateGlobalVector() you
 likely want to first call DAGlobalToNaturalBegin/End() to scatter the
 original vector into the natural ordering in a new global vector before
 calling VecScatterBegin/End() to scatter the natural vector onto all
@@ -830,7 +830,7 @@ needed</li>
               </ul>
             </ul>
 Note that this simply concatenates in the parallel ordering of the
-vector. If you are using a vector from DACreateGlobalVector() you
+vector. If you are using a vector from DMCreateGlobalVector() you
 likely want to first call DAGlobalToNaturalBegin/End() to scatter the
 original vector into the natural ordering in a new global vector before
 calling VecScatterBegin/End() to scatter the natural vector onto

@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-8,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&x);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&f);CHKERRQ(ierr);
   ierr = DAGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
 

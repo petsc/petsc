@@ -158,7 +158,6 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "DMSetUp_DA_3D"
 PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_3D(DM da)
@@ -1666,7 +1665,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_3D(DM da)
   dd->ao   = PETSC_NULL;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "DACreate3d"
@@ -1716,14 +1715,14 @@ EXTERN_C_END
    the standard 27-pt stencil.
 
    The array data itself is NOT stored in the DA, it is stored in Vec objects;
-   The appropriate vector objects can be obtained with calls to DACreateGlobalVector()
-   and DACreateLocalVector() and calls to VecDuplicate() if more are needed.
+   The appropriate vector objects can be obtained with calls to DMCreateGlobalVector()
+   and DMCreateLocalVector() and calls to VecDuplicate() if more are needed.
 
 .keywords: distributed array, create, three-dimensional
 
 .seealso: DMDestroy(), DMView(), DACreate1d(), DACreate2d(), DMGlobalToLocalBegin(), DAGetRefinementFactor(),
           DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DALocalToLocalBegin(), DALocalToLocalEnd(), DASetRefinementFactor(),
-          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAGetOwnershipRanges()
+          DAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DACreateNaturalVector(), DALoad(), DAGetOwnershipRanges()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,

@@ -14,3 +14,4 @@ void PETSC_STDCALL daview_(DM *da,PetscViewer *vin,PetscErrorCode *ierr)
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = DMView(*da,v);
 }
+EXTERN_C_END

@@ -44,12 +44,12 @@ int main(int argc,char **argv)
     ierr = DACreate1d(PETSC_COMM_WORLD,periodic,M,dof,stencil_width,PETSC_NULL,&da);CHKERRQ(ierr);
   }
 
-  ierr = DACreateGlobalVector(da,&global1);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&global1);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&global2);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&global3);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&global4);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&global2);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&global3);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&global4);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = VecSetRandom(global1,rdm);CHKERRQ(ierr);

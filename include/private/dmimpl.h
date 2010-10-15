@@ -52,7 +52,7 @@ struct _p_DM {
   void          *ctx;    /* a user context */  
   Vec           x;       /* location at which the functions/Jacobian are computed */  
   MatFDColoring fd;      /* used by DMComputeJacobianDefault() */   
-  VecType       vectype;  /* type of vector created with DACreateLocalVector() and DACreateGlobalVector() */
+  VecType       vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
   void          *data;
 };
 

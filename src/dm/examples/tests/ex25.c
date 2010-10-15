@@ -17,8 +17,8 @@ int main(int argc,char **argv)
 
   /* Create distributed array and get vectors */
   ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,P,m,n,p,2,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
 
   ierr = DAGetCorners(da,&is,&js,&ks,&in,&jen,&kn);CHKERRQ(ierr);
   ierr = DAVecGetArrayDOF(da,local,&l);CHKERRQ(ierr);

@@ -5,7 +5,7 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
       call DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,8,1,1,PETSC_NULL_INTEGER,da,ierr)
-      call DACreateGlobalVector(da,x,ierr); call VecDuplicate(x,f,ierr)
+      call DMCreateGlobalVector(da,x,ierr); call VecDuplicate(x,f,ierr)
       call DAGetMatrix(da,MATAIJ,J,ierr)
 
       call ComputeRHS(da,f,ierr)

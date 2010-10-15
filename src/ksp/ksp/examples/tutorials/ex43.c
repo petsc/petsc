@@ -422,7 +422,7 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],co
   ierr = DAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
 
-  ierr = DACreateLocalVector(da,&local_fields);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da,&local_fields);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,fields,INSERT_VALUES,local_fields);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,fields,INSERT_VALUES,local_fields);CHKERRQ(ierr);
   ierr = VecGetArray(local_fields,&_fields);CHKERRQ(ierr);
@@ -487,7 +487,7 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da,Vec fields,const char 
   ierr = DAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
 
-  ierr = DACreateLocalVector(da,&local_fields);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da,&local_fields);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,fields,INSERT_VALUES,local_fields);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,fields,INSERT_VALUES,local_fields);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,local_fields,&_coefficients);CHKERRQ(ierr);
@@ -791,7 +791,7 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,DM properties_da,Vec p
   ierr = DAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   /* setup for coefficients */
-  ierr = DACreateLocalVector(properties_da,&local_properties);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(properties_da,&local_properties);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(properties_da,properties,INSERT_VALUES,local_properties);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(properties_da,properties,INSERT_VALUES,local_properties);CHKERRQ(ierr);
   ierr = DAVecGetArray(properties_da,local_properties,&props);CHKERRQ(ierr);
@@ -863,7 +863,7 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,DM properties_da,Vec
   ierr = DAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   /* setup for coefficients */
-  ierr = DACreateLocalVector(properties_da,&local_properties);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(properties_da,&local_properties);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(properties_da,properties,INSERT_VALUES,local_properties);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(properties_da,properties,INSERT_VALUES,local_properties);CHKERRQ(ierr);
   ierr = DAVecGetArray(properties_da,local_properties,&props);CHKERRQ(ierr);
@@ -1029,8 +1029,8 @@ static PetscErrorCode DACreateSolCx(PetscReal eta0,PetscReal eta1,PetscReal xc,P
   ierr = DAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
   ierr = DAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
-  ierr = DACreateGlobalVector(da,&X);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(da,&local_X);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&X);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da,&local_X);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,local_X,&_stokes);CHKERRQ(ierr);
 
   ierr = DAGetGhostCorners(da,&si,&sj,0,&ei,&ej,0);CHKERRQ(ierr);
@@ -1110,13 +1110,13 @@ static PetscErrorCode DAIntegrateErrors(DM stokes_da,Vec X,Vec X_analytic)
   ierr = DAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   /* setup for analytic */
-  ierr = DACreateLocalVector(stokes_da,&X_analytic_local);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(stokes_da,&X_analytic_local);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(stokes_da,X_analytic,INSERT_VALUES,X_analytic_local);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(stokes_da,X_analytic,INSERT_VALUES,X_analytic_local);CHKERRQ(ierr);
   ierr = DAVecGetArray(stokes_da,X_analytic_local,&stokes_analytic);CHKERRQ(ierr);
 
   /* setup for solution */
-  ierr = DACreateLocalVector(stokes_da,&X_local);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(stokes_da,&X_local);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(stokes_da,X,INSERT_VALUES,X_local);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(stokes_da,X,INSERT_VALUES,X_local);CHKERRQ(ierr);
   ierr = DAVecGetArray(stokes_da,X_local,&stokes);CHKERRQ(ierr);
@@ -1258,8 +1258,8 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-c_str",&coefficient_structure,PETSC_NULL);CHKERRQ(ierr);
   /*     PetscPrintf( PETSC_COMM_WORLD, "Using coeficient structure %D \n", coefficient_structure ); */
 
-  ierr = DACreateGlobalVector(da_prop,&properties);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(da_prop,&l_properties);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da_prop,&properties);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da_prop,&l_properties);CHKERRQ(ierr);
   ierr = DAVecGetArray(da_prop,l_properties,&element_props);CHKERRQ(ierr);
 
   ierr = DAGetCoordinateDA(da_prop,&prop_cda);CHKERRQ(ierr);
