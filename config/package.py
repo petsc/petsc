@@ -828,6 +828,7 @@ class GNUPackage(Package):
       downloadversion = self.downloadversion
     help.addArgument(self.PACKAGE, '-download-'+self.package+'-version=<string>',  nargs.Arg(None, downloadversion, 'Version number of '+self.PACKAGE+' to download'))
     help.addArgument(self.PACKAGE, '-download-'+self.package+'-shared=<bool>',     nargs.ArgBool(None, 0, 'Install '+self.PACKAGE+' with shared libraries'))    
+    self.download = [self.downloadpath+self.downloadname+'-'+self.downloadversion+'.'+self.downloadext]
 
   def setupDependencies(self,framework):
     config.package.Package.setupDependencies(self, framework)
