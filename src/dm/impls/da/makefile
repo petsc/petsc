@@ -14,7 +14,7 @@ OBJSC    = da2.o da1.o da3.o daghost.o dacorn.o dagtol.o daltol.o \
 SOURCEH  = private/daimpl.h petscda.h ../src/dm/impls/da/mhyp.h
 DIRS     = ftn-custom usfft f90-custom utils
 LOCDIR   = src/dm/impls/da/
-MANSEC   = DA
+MANSEC   = DMDA
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

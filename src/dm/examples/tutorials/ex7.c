@@ -38,8 +38,8 @@ int main(int argc,char **argv)
   */
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
 
-  /* Create a DA and an associated vector */
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,10,10,
+  /* Create a DMDA and an associated vector */
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,10,10,
 		    PETSC_DECIDE,PETSC_DECIDE,2,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
@@ -69,8 +69,8 @@ int main(int argc,char **argv)
   */
   ierr = PetscViewerBinaryMatlabOpen(PETSC_COMM_WORLD,params->filename,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerBinaryMatlabOutputBag(viewer,"params",bag);CHKERRQ(ierr);
-  ierr = DASetFieldName(da,0,"field1");CHKERRQ(ierr);
-  ierr = DASetFieldName(da,1,"field2");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,0,"field1");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,1,"field2");CHKERRQ(ierr);
   ierr = PetscViewerBinaryMatlabOutputVecDA(viewer,"da1",global,da);CHKERRQ(ierr);
   ierr = PetscViewerBinaryMatlabDestroy(viewer);CHKERRQ(ierr);
   

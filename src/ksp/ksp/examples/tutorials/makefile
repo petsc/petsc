@@ -6,7 +6,7 @@ FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
                    ex12.c ex13.c ex15.c ex16.c ex22.c ex23.c ex25.c ex27.c ex28.c ex29.c ex32.c ex33.c ex34.c ex35.c ex37.c ex38.c \
-                   ex39.c ex40.c ex41.c ex45.c ex49.c ex51.c
+                   ex39.c ex40.c ex41.c ex45.c ex47.c ex49.c ex51.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90
 MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
@@ -957,6 +957,7 @@ TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_
 				 runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 runex10_mumps_redundant \
                                  runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 ex10.rm 
 TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm 
+TESTEXAMPLES_FFTW              = ex47.PETSc ex47.rm 
 TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm 
 TESTEXAMPLES_SPOOLES           = ex10.PETSc runex10_spooles_lu_1  runex10_spooles_lu_2 runex10_spooles_cholesky_1 runex10_spooles_cholesky_1sbaij  runex10_spooles_cholesky_2 ex10.rm 
 TESTEXAMPLES_PLAPACK           = ex5.PETSc runex5_plapack_lu runex5_plapack_cholesky ex5.rm ex10.PETSc runex10_plapack_lu runex10_plapack_cholesky ex10.rm

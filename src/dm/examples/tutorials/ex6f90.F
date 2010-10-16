@@ -193,7 +193,7 @@
       PetscScalar, DIMENSION(1) :: localarray
       PetscScalar, DIMENSION(1) :: toarray
 
-      DA :: da1=0,da2=0,da3=0
+      DM :: da1=0,da2=0,da3=0
       Vec :: vl1=0,vl2=0,vl3=0
       Vec :: vg1=0,vg2=0,vg3=0
       AO :: toao,globalao
@@ -219,21 +219,21 @@
 !     set up distributed arrays.
 !-----------------------------------------------------------------------
       IF(fa%comm(1) /= 0)THEN
-         CALL DACreate2d(fa%comm(1),DA_XPERIODIC,DA_STENCIL_BOX,             &
+         CALL DMDACreate2d(fa%comm(1),DMDA_XPERIODIC,DMDA_STENCIL_BOX,             &
      &        fa%p2,fa%r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa%sw,                &
      &        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da2,ierr)
          CALL DMGetLocalVector(da2,vl2,ierr)
          CALL DMGetGlobalVector(da2,vg2,ierr)
       ENDIF
       IF(fa%comm(2) /= 0)THEN
-         CALL DACreate2d(fa%comm(2),DA_NONPERIODIC,DA_STENCIL_BOX,           &
+         CALL DMDACreate2d(fa%comm(2),DMDA_NONPERIODIC,DMDA_STENCIL_BOX,           &
      &        fa%p1-fa%p2,fa%r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa%sw,          &
      &        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da3,ierr)
          CALL DMGetLocalVector(da3,vl3,ierr)
          CALL DMGetGlobalVector(da3,vg3,ierr)
       ENDIF
       IF(fa%comm(0) /= 0)THEN
-         CALL DACreate2d(fa%comm(0),DA_NONPERIODIC,DA_STENCIL_BOX,           &
+         CALL DMDACreate2d(fa%comm(0),DMDA_NONPERIODIC,DMDA_STENCIL_BOX,           &
      &        fa%p1,fa%r1g,PETSC_DECIDE,PETSC_DECIDE,1,fa%sw,                &
      &        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da1,ierr)
          CALL DMGetLocalVector(da1,vl1,ierr)
@@ -246,15 +246,15 @@
 !-----------------------------------------------------------------------
       tonglobal = 0
       IF(fa%comm(1) /= 0)THEN
-         CALL DAGetCorners(da2,x,y,0,nx,ny,0,ierr)
+         CALL DMDAGetCorners(da2,x,y,0,nx,ny,0,ierr)
          tonglobal=tonglobal+nx*ny
       ENDIF
       IF(fa%comm(2) /= 0)THEN
-         CALL DAGetCorners(da3,x,y,0,nx,ny,0,ierr)
+         CALL DMDAGetCorners(da3,x,y,0,nx,ny,0,ierr)
          tonglobal=tonglobal+nx*ny
       ENDIF
       IF(fa%comm(0) /= 0)THEN
-         CALL DAGetCorners(da1,x,y,0,nx,ny,0,ierr)
+         CALL DMDAGetCorners(da1,x,y,0,nx,ny,0,ierr)
          tonglobal=tonglobal+nx*ny
       ENDIF
       WRITE(*,'("[",i1,"]",a,i3)')                                               &
@@ -265,7 +265,7 @@
       ALLOCATE(tonatural(0:tonglobal))
       tonglobal=0
       IF(fa%comm(1) /= 0)THEN
-         CALL DAGetCorners(da2,x,y,0,nx,ny,0,ierr)
+         CALL DMDAGetCorners(da2,x,y,0,nx,ny,0,ierr)
          DO j=0,ny-1
             DO i=0,nx-1
                tonatural(tonglobal)=(fa%p1-fa%p2)/2+x+i+fa%p1*(y+j)
@@ -274,7 +274,7 @@
          ENDDO
       ENDIF
       IF(fa%comm(2) /= 0)THEN
-         CALL DAGetCorners(da3,x,y,0,nx,ny,0,ierr)
+         CALL DMDAGetCorners(da3,x,y,0,nx,ny,0,ierr)
          DO j=0,ny-1
             DO i=0,nx-1
                IF(x+i < (fa%p1-fa%p2)/2)THEN
@@ -287,7 +287,7 @@
          ENDDO
       ENDIF
       IF(fa%comm(0) /= 0)THEN
-         CALL DAGetCorners(da1,x,y,0,nx,ny,0,ierr)
+         CALL DMDAGetCorners(da1,x,y,0,nx,ny,0,ierr)
          DO j=0,ny-1
             DO i=0,nx-1
                tonatural(tonglobal)=fa%p1*fa%r2g+x+i+fa%p1*(y+j)
@@ -317,7 +317,7 @@
       fa%offg(1)=0
       offt(1)=0
       IF(fa%comm(1) /= 0)THEN
-         CALL DAGetCorners(da2,x,y,0,nx,ny,0,ierr)
+         CALL DMDAGetCorners(da2,x,y,0,nx,ny,0,ierr)
          offt(2)=nx*ny
          IF(y+ny == fa%r2g)ny=ny-1
          fromnglobal=fromnglobal+nx*ny
@@ -327,7 +327,7 @@
          fa%offg(2)=0
       ENDIF
       IF(fa%comm(2) /= 0)THEN
-         CALL DAGetCorners(da3,x,y,0,nx,ny,0,ierr)
+         CALL DMDAGetCorners(da3,x,y,0,nx,ny,0,ierr)
          offt(0)=offt(2)+nx*ny
          IF(y+ny == fa%r2g)ny=ny-1
          fromnglobal=fromnglobal+nx*ny
@@ -337,7 +337,7 @@
          fa%offg(0)=fromnglobal
       ENDIF
       IF(fa%comm(0) /= 0)THEN
-         CALL DAGetCorners(da1,x,y,0,nx,ny,0,ierr)
+         CALL DMDAGetCorners(da1,x,y,0,nx,ny,0,ierr)
          IF(y == 0)ny=ny-1
          fromnglobal=fromnglobal+nx*ny
       ENDIF
@@ -352,13 +352,13 @@
       ALLOCATE(fromnatural(0:fromnglobal))
       fromnglobal=0
       IF(fa%comm(1) /= 0)THEN
-         CALL DAGetCorners(da2,x,y,0,nx,ny,0,ierr)
+         CALL DMDAGetCorners(da2,x,y,0,nx,ny,0,ierr)
          IF(y+ny == fa%r2g)ny=ny-1
          fa%xg(1)=x
          fa%yg(1)=y
          fa%mg(1)=nx
          fa%ng(1)=ny
-         CALL DAGetGhostCorners(da2,fa%xl(1),fa%yl(1),0,fa%ml(1),                &
+         CALL DMDAGetGhostCorners(da2,fa%xl(1),fa%yl(1),0,fa%ml(1),                &
      &        fa%nl(1),0,ierr)
          DO j=0,ny-1
             DO i=0,nx-1
@@ -369,13 +369,13 @@
          ENDDO
       ENDIF
       IF(fa%comm(2) /= 0)THEN
-         CALL DAGetCorners(da3,x,y,0,nx,ny,0,ierr)
+         CALL DMDAGetCorners(da3,x,y,0,nx,ny,0,ierr)
          IF(y+ny == fa%r2g)ny=ny-1
          fa%xg(2)=x
          fa%yg(2)=y
          fa%mg(2)=nx
          fa%ng(2)=ny
-         CALL DAGetGhostCorners(da3,fa%xl(2),fa%yl(2),0,fa%ml(2),                &
+         CALL DMDAGetGhostCorners(da3,fa%xl(2),fa%yl(2),0,fa%ml(2),                &
      &        fa%nl(2),0,ierr)
          DO j=0,ny-1
             DO i=0,nx-1
@@ -389,7 +389,7 @@
          ENDDO
       ENDIF
       IF(fa%comm(0) /= 0)THEN
-         CALL DAGetCorners(da1,x,y,0,nx,ny,0,ierr)
+         CALL DMDAGetCorners(da1,x,y,0,nx,ny,0,ierr)
          IF(y == 0)THEN
             ny=ny-1
          ELSE 
@@ -399,7 +399,7 @@
          fa%yg(0)=y
          fa%mg(0)=nx
          fa%ng(0)=ny
-         CALL DAGetGhostCorners(da1,fa%xl(0),fa%yl(0),0,fa%ml(0),               &
+         CALL DMDAGetGhostCorners(da1,fa%xl(0),fa%yl(0),0,fa%ml(0),               &
      &        fa%nl(0),0,ierr)
          DO j=0,ny-1
             DO i=0,nx-1
@@ -428,7 +428,7 @@
       ALLOCATE(to(0:tonglobal),from(0:tonglobal))
       nscat=0
       IF(fa%comm(1) /= 0)THEN
-         CALL DAGetCorners(da2,x,y,0,nx,ny,0,ierr)
+         CALL DMDAGetCorners(da2,x,y,0,nx,ny,0,ierr)
          DO j=0,ny-1
             DO i=0,nx-1
                to(nscat)=(fa%p1-fa%p2)/2+x+i+fa%p1*(y+j)
@@ -438,7 +438,7 @@
          ENDDO
       ENDIF
       IF(fa%comm(2) /= 0)THEN
-         CALL DAGetCorners(da3,x,y,0,nx,ny,0,ierr)
+         CALL DMDAGetCorners(da3,x,y,0,nx,ny,0,ierr)
          DO j=0,ny-1
             DO i=0,nx-1
                IF(x+i < (fa%p1-fa%p2)/2)THEN
@@ -452,7 +452,7 @@
          ENDDO
       ENDIF
       IF(fa%comm(0) /= 0)THEN
-         CALL DAGetCorners(da1,x,y,0,nx,ny,0,ierr)
+         CALL DMDAGetCorners(da1,x,y,0,nx,ny,0,ierr)
          DO j=0,ny-1
             DO i=0,nx-1
                to(nscat)=fa%p1*fa%r2g+x+i+fa%p1*(y+j)

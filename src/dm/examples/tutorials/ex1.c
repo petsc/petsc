@@ -1,5 +1,5 @@
 
-static char help[] = "Tests VecView() contour plotting for 2d DAs.\n\n";
+static char help[] = "Tests VecView() contour plotting for 2d DMDAs.\n\n";
 
 /* 
   MATLAB must be installed to configure PETSc to have MATLAB engine.
@@ -7,8 +7,8 @@ Unless you have specific important reasons for using the Matlab engine, we do no
 recommend it. If you want to use Matlab for visualization and maybe a little post processing
 then you can use the socket viewer and send the data to Matlab via that.
 
-  VecView() on DA vectors first puts the Vec elements into global natural ordering before printing (or plotting)
-them. In 2d 5 by 2 DA this means the numbering is
+  VecView() on DMDA vectors first puts the Vec elements into global natural ordering before printing (or plotting)
+them. In 2d 5 by 2 DMDA this means the numbering is
 
      5  6   7   8   9
      0  1   2   3   4
@@ -44,8 +44,8 @@ int main(int argc,char **argv)
   PetscViewer    viewer;
   Vec            local,global;
   PetscScalar    value;
-  DAPeriodicType ptype = DA_NONPERIODIC;
-  DAStencilType  stype = DA_STENCIL_BOX;
+  DMDAPeriodicType ptype = DMDA_NONPERIODIC;
+  DMDAStencilType  stype = DMDA_STENCIL_BOX;
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   PetscViewer    mviewer;
 #endif
@@ -57,10 +57,10 @@ int main(int argc,char **argv)
 #endif
 
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-star_stencil",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg) stype = DA_STENCIL_STAR;
+  if (flg) stype = DMDA_STENCIL_STAR;
       
   /* Create distributed array and get vectors */
-  ierr = DACreate2d(PETSC_COMM_WORLD,ptype,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,ptype,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
 

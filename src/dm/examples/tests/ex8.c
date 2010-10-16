@@ -1,5 +1,5 @@
       
-static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
+static char help[] = "Demonstrates generating a slice from a DMDA Vector.\n\n";
 
 #include "petscda.h"
 #include "petscao.h"
@@ -7,7 +7,7 @@ static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
 #undef __FUNCT__
 #define __FUNCT__ "GenerateSliceScatter"
 /*
-    Given a DA generates a VecScatter context that will deliver a slice
+    Given a DMDA generates a VecScatter context that will deliver a slice
   of the global vector to each processor. In this example, each processor
   receives the values i=*, j=*, k=rank, i.e. one z plane.
 
@@ -28,8 +28,8 @@ PetscErrorCode GenerateSliceScatter(DM da,VecScatter *scatter,Vec *vslice)
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
-  ierr = DAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0);CHKERRQ(ierr);
 
   /* 
      nslice is number of degrees of freedom in this processors slice
@@ -88,8 +88,8 @@ int main(int argc,char **argv)
   DM             da;
   Vec            local,global,vslice;
   PetscScalar    value;
-  DAPeriodicType wrap = DA_XYPERIODIC;
-  DAStencilType  stencil_type = DA_STENCIL_BOX;
+  DMDAPeriodicType wrap = DMDA_XYPERIODIC;
+  DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
   VecScatter     scatter;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
@@ -104,10 +104,10 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-star",&flg,PETSC_NULL);CHKERRQ(ierr); 
-  if (flg) stencil_type =  DA_STENCIL_STAR;
+  if (flg) stencil_type =  DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
-  ierr = DACreate3d(PETSC_COMM_WORLD,wrap,stencil_type,M,N,P,m,n,p,1,s,
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,wrap,stencil_type,M,N,P,m,n,p,1,s,
                     lx,ly,lz,&da);CHKERRQ(ierr);
   ierr = DMView(da,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);

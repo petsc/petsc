@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    = zda.o  zda1f.o zda2f.o zda3f.o zdacornf.o zdagetscatterf.o zdaindexf.o zdainterpf.o zdaloadf.o zdaviewf.o
 OBJSF    = 
 LIBBASE  = libpetscdm
-MANSEC   = DA
+MANSEC   = DMDA
 LOCDIR   = src/dm/impls/da/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables

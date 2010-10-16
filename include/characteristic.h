@@ -39,7 +39,7 @@ extern PetscLogEvent  CHARACTERISTIC_HalfTimeLocal, CHARACTERISTIC_HalfTimeRemot
 extern PetscLogEvent  CHARACTERISTIC_FullTimeLocal, CHARACTERISTIC_FullTimeRemote, CHARACTERISTIC_FullTimeExchange;
 
 /* function to wrap coordinates around boundary */
-EXTERN PetscErrorCode DAMapCoordsToPeriodicDomain(DM, PetscScalar*, PetscScalar*);
+EXTERN PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM, PetscScalar*, PetscScalar*);
 
 EXTERN PetscErrorCode CharacteristicCreate(MPI_Comm, Characteristic *);
 EXTERN PetscErrorCode CharacteristicSetType(Characteristic, const CharacteristicType);

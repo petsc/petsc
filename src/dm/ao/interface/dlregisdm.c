@@ -16,7 +16,7 @@ static PetscBool  AOPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: AO, DA, initialize, package
+.keywords: AO, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT AOFinalizePackage(void)
@@ -37,7 +37,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOFinalizePackage(void)
 
   Level: developer
 
-.keywords: AO, DA, initialize, package
+.keywords: AO, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT AOInitializePackage(const char path[]) 
@@ -84,7 +84,7 @@ static PetscBool  DMPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.keywords: AO, DA, initialize, package
+.keywords: AO, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage(void)
@@ -114,14 +114,14 @@ EXTERN_C_END
 /*@C
   DMInitializePackage - This function initializes everything in the DM package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to AOCreate()
-  or DACreate() when using static libraries.
+  or DMDACreate() when using static libraries.
 
   Input Parameter:
   path - The dynamic library path, or PETSC_NULL
 
   Level: developer
 
-.keywords: AO, DA, initialize, package
+.keywords: AO, initialize, package
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) 
@@ -152,9 +152,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[])
   ierr = MeshRegisterAll(path);CHKERRQ(ierr);
 #endif
   /* Register Events */
-  ierr = PetscLogEventRegister("DMGlobalToLocal",      DM_CLASSID,&DA_GlobalToLocal);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMLocalToGlobal",      DM_CLASSID,&DA_LocalToGlobal);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DALocalADFunc",        DM_CLASSID,&DA_LocalADFunction);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMGlobalToLocal",      DM_CLASSID,&DMDA_GlobalToLocal);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMLocalToGlobal",      DM_CLASSID,&DMDA_LocalToGlobal);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMDALocalADFunc",        DM_CLASSID,&DMDA_LocalADFunction);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
   ierr = PetscLogEventRegister("MeshView",             MESH_CLASSID,&Mesh_View);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MeshGetGlobalScatter", MESH_CLASSID,&Mesh_GetGlobalScatter);CHKERRQ(ierr);

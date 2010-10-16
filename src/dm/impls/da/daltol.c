@@ -11,7 +11,7 @@
 /*
    DMDALocalToLocalCreate - Creates the local to local scatter
 
-   Collective on DA
+   Collective on DMDA
 
    Input Parameter:
 .  da - the distributed array
@@ -63,7 +63,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDALocalToLocalCreate(DM da)
 	}
       }
     }
-  } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_CORRUPT,"DA has invalid dimension %D",dd->dim);
+  } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_CORRUPT,"DMDA has invalid dimension %D",dd->dim);
 
   ierr = VecScatterRemap(dd->ltol,idx,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscFree(idx);CHKERRQ(ierr);
@@ -71,13 +71,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDALocalToLocalCreate(DM da)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DALocalToLocalBegin"
+#define __FUNCT__ "DMDALocalToLocalBegin"
 /*@
-   DALocalToLocalBegin - Maps from a local vector (including ghost points
+   DMDALocalToLocalBegin - Maps from a local vector (including ghost points
    that contain irrelevant values) to another local vector where the ghost
-   points in the second are set correctly. Must be followed by DALocalToLocalEnd().
+   points in the second are set correctly. Must be followed by DMDALocalToLocalEnd().
 
-   Neighbor-wise Collective on DA and Vec
+   Neighbor-wise Collective on DMDA and Vec
 
    Input Parameters:
 +  da - the distributed array context
@@ -93,13 +93,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDALocalToLocalCreate(DM da)
    The local vectors used here need not be the same as those
    obtained from DMCreateLocalVector(), BUT they
    must have the same parallel data layout; they could, for example, be 
-   obtained with VecDuplicate() from the DA originating vectors.
+   obtained with VecDuplicate() from the DMDA originating vectors.
 
 .keywords: distributed array, local-to-local, begin
 
-.seealso: DALocalToLocalEnd(), DMLocalToGlobalBegin()
+.seealso: DMDALocalToLocalEnd(), DMLocalToGlobalBegin()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalBegin(DM da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode PETSCDM_DLLEXPORT DMDALocalToLocalBegin(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -114,14 +114,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalBegin(DM da,Vec g,InsertMode mode
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DALocalToLocalEnd"
+#define __FUNCT__ "DMDALocalToLocalEnd"
 /*@
-   DALocalToLocalEnd - Maps from a local vector (including ghost points
+   DMDALocalToLocalEnd - Maps from a local vector (including ghost points
    that contain irrelevant values) to another local vector where the ghost
    points in the second are set correctly.  Must be preceeded by 
-   DALocalToLocalBegin().
+   DMDALocalToLocalBegin().
 
-   Neighbor-wise Collective on DA and Vec
+   Neighbor-wise Collective on DMDA and Vec
 
    Input Parameters:
 +  da - the distributed array context
@@ -137,13 +137,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalBegin(DM da,Vec g,InsertMode mode
    The local vectors used here need not be the same as those
    obtained from DMCreateLocalVector(), BUT they
    must have the same parallel data layout; they could, for example, be 
-   obtained with VecDuplicate() from the DA originating vectors.
+   obtained with VecDuplicate() from the DMDA originating vectors.
 
 .keywords: distributed array, local-to-local, end
 
-.seealso: DALocalToLocalBegin(), DMLocalToGlobalBegin()
+.seealso: DMDALocalToLocalBegin(), DMLocalToGlobalBegin()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalEnd(DM da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode PETSCDM_DLLEXPORT DMDALocalToLocalEnd(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;

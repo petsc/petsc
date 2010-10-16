@@ -27,7 +27,7 @@ int main(int argc,char **argv)
     if (tmp) useCUDA = PETSC_TRUE;
   }
 
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-8,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,-8,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&x); VecDuplicate(x,&f);CHKERRQ(ierr);
   ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
 
@@ -76,7 +76,7 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   PetscMPIInt    rank,size;
   MPI_Comm       comm;
 
-  ierr = DAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   hx     = 1.0/(PetscReal)(Mx-1);
   ierr = DMGetLocalVector(da,&xlocal);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
@@ -119,16 +119,16 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
     f->valid_GPU_array = PETSC_CUDA_GPU;
     ierr = PetscObjectStateIncrease((PetscObject)f);CHKERRQ(ierr);
   } else {
-    ierr = DAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
-    ierr = DAVecGetArray(da,f,&ff);CHKERRQ(ierr);
-    ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(da,f,&ff);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     
     for (i=xs; i<xs+xm; i++) {
       if (i == 0 || i == Mx-1) ff[i] = xx[i]/hx; 
       else  ff[i] =  (2.0*xx[i] - xx[i-1] - xx[i+1])/hx - hx*PetscExpScalar(xx[i]); 
     }
-    ierr = DAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
-    ierr = DAVecRestoreArray(da,f,&ff);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(da,f,&ff);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
   }
   //  VecView(x,0);printf("f\n");
@@ -144,12 +144,12 @@ PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,
   Vec            xlocal;
   PetscErrorCode ierr;
 
-  ierr = DAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   hx = 1.0/(PetscReal)(Mx-1);
   ierr = DMGetLocalVector(da,&xlocal);DMGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
-  ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   for (i=xs; i<xs+xm; i++) {
     if (i == 0 || i == Mx-1) { 
@@ -163,7 +163,7 @@ PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
-  ierr = DAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
   return 0;}
 

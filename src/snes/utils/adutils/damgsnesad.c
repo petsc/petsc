@@ -32,7 +32,7 @@ PetscErrorCode DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStru
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAComputeJacobian1WithAdic(da,localX,*B,dmmg->user);CHKERRQ(ierr);
+  ierr = DMDAComputeJacobian1WithAdic(da,localX,*B,dmmg->user);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   /* Assemble true Jacobian; if it is different */
   if (*J != *B) {
@@ -48,8 +48,8 @@ PetscErrorCode DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStru
 #define __FUNCT__ "SNESDAComputeJacobianWithAdic"
 /*@
     SNESDAComputeJacobianWithAdic - This is a universal Jacobian evaluation routine
-    that may be used with SNESSetJacobian() as long as the user context has a DA as
-    its first record and DASetLocalAdicFunction() has been called.  
+    that may be used with SNESSetJacobian() as long as the user context has a DMDA as
+    its first record and DMDASetLocalAdicFunction() has been called.  
 
    Collective on SNES
 
@@ -63,12 +63,12 @@ PetscErrorCode DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStru
 
    Level: intermediate
 
-.seealso: DASetLocalFunction(), DASetLocalAdicFunction(), SNESSetFunction(), SNESSetJacobian()
+.seealso: DMDASetLocalFunction(), DMDASetLocalAdicFunction(), SNESSetFunction(), SNESSetJacobian()
 
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  DM             da = *(DA*) ptr;
+  DM             da = *(DM*) ptr;
   PetscErrorCode ierr;
   Vec            localX;
 
@@ -76,7 +76,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobianWithAdic(SNES snes,Vec X
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAComputeJacobian1WithAdic(da,localX,*B,ptr);CHKERRQ(ierr);
+  ierr = DMDAComputeJacobian1WithAdic(da,localX,*B,ptr);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   /* Assemble true Jacobian; if it is different */
   if (*J != *B) {

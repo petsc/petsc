@@ -6,16 +6,16 @@
 */
 
 #include "private/matimpl.h"          /*I "petscmat.h" I*/
-#include "petscda.h"                  /*I "petscda.h"  I*/ /* Unlike equispaced FFT, USFFT requires geometric information encoded by a DA */
+#include "petscda.h"                  /*I "petscda.h"  I*/ /* Unlike equispaced FFT, USFFT requires geometric information encoded by a DMDA */
 #include "fftw3.h"
 
 typedef struct {
   PetscInt       dim;
   Vec            sampleCoords;
   PetscInt       dof;
-  DM             freqDA;       /* frequency DA */
-  PetscInt       *freqSizes;   // sizes of the frequency DA, one per each dim
-  DM             resampleDa;   /* the Battle-Lemarie interpolant DA */
+  DM             freqDA;       /* frequency DMDA */
+  PetscInt       *freqSizes;   // sizes of the frequency DMDA, one per each dim
+  DM             resampleDa;   /* the Battle-Lemarie interpolant DMDA */
   Vec            resample;     // Vec of samples, one per dof per sample point
   fftw_plan      p_forward,p_backward;
   unsigned       p_flag; /* planner flags, FFTW_ESTIMATE,FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */
@@ -157,7 +157,7 @@ PetscErrorCode MatDestroy_SeqUSFFT(Mat A)
    Collective on MPI_Comm
 
    Input Parameter:
-+   da - geometry of the domain encoded by a DA
++   da - geometry of the domain encoded by a DMDA
 
    Output Parameter:
 .   A  - the matrix
@@ -168,7 +168,7 @@ PetscErrorCode MatDestroy_SeqUSFFT(Mat A)
    Level: intermediate
    
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MatCreateSeqUSFFT(Vec sampleCoords, DA freqDA, Mat* A)
+PetscErrorCode PETSCDM_DLLEXPORT MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat* A)
 {
   PetscErrorCode ierr;
   Mat_USFFT      *usfft;
@@ -183,44 +183,44 @@ PetscErrorCode PETSCDM_DLLEXPORT MatCreateSeqUSFFT(Vec sampleCoords, DA freqDA, 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)inda, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(comm,PETSC_ERR_USER, "Parallel DA (in) not yet supported by USFFT"); 
+  if (size > 1) SETERRQ(comm,PETSC_ERR_USER, "Parallel DMDA (in) not yet supported by USFFT"); 
   ierr = PetscObjectGetComm((PetscObject)outda, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(comm,PETSC_ERR_USER, "Parallel DA (out) not yet supported by USFFT"); 
+  if (size > 1) SETERRQ(comm,PETSC_ERR_USER, "Parallel DMDA (out) not yet supported by USFFT"); 
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
   ierr = PetscNewLog(*A,Mat_USFFT,&usfft);CHKERRQ(ierr);
   (*A)->data = (void*)usfft;
   usfft->inda = inda;
   usfft->outda = outda;
   /* inda */
-  ierr = DAGetInfo(usfft->inda, &ndim, dim+0, dim+1, dim+2, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(usfft->inda, &ndim, dim+0, dim+1, dim+2, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   if (ndim <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"ndim %d must be > 0",ndim);
   if (dof <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"dof %d must be > 0",dof);
   usfft->ndim = ndim;
   usfft->dof = dof;
   usfft->freqDA     = freqDA;
-  /* NB: we reverse the freq and resample DA sizes, since the DA ordering (natural on x-y-z, with x varying the fastest) 
+  /* NB: we reverse the freq and resample DMDA sizes, since the DMDA ordering (natural on x-y-z, with x varying the fastest) 
      is the order opposite of that assumed by FFTW: z varying the fastest */
   ierr = PetscMalloc((usfft->ndim+1)*sizeof(PetscInt),&usfft->indim);CHKERRQ(ierr);
   for(i = usfft->ndim; i > 0; --i) {
     usfft->indim[usfft->ndim-i] = dim[i-1];
   }
   /* outda */
-  ierr = DAGetInfo(usfft->outda, &ndim, dim+0, dim+1, dim+2, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  if (ndim != usfft->ndim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"in and out DA dimensions must match: %d != %d",usfft->ndim, ndim);
-  if (dof != usfft->dof) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"in and out DA dof must match: %d != %d",usfft->dof, dof);
+  ierr = DMDAGetInfo(usfft->outda, &ndim, dim+0, dim+1, dim+2, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  if (ndim != usfft->ndim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"in and out DMDA dimensions must match: %d != %d",usfft->ndim, ndim);
+  if (dof != usfft->dof) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"in and out DMDA dof must match: %d != %d",usfft->dof, dof);
   /* Store output dimensions */
-  /* NB: we reverse the DA dimensions, since the DA ordering (natural on x-y-z, with x varying the fastest) 
+  /* NB: we reverse the DMDA dimensions, since the DMDA ordering (natural on x-y-z, with x varying the fastest) 
      is the order opposite of that assumed by FFTW: z varying the fastest */
   ierr = PetscMalloc((usfft->ndim+1)*sizeof(PetscInt),&usfft->outdim);CHKERRQ(ierr);
   for(i = usfft->ndim; i > 0; --i) {
     usfft->outdim[usfft->ndim-i] = dim[i-1];
   }
 
-  // TODO: Use the new form of DACreate()
-  //ierr = DACreate(comm,usfft->dim, DA_NONPERIODIC, DA_STENCIL_STAR, usfft->freqSizes[0], usfft->freqSizes[1], usfft->freqSizes[2],
+  // TODO: Use the new form of DMDACreate()
+  //ierr = DMDACreate(comm,usfft->dim, DMDA_NONPERIODIC, DMDA_STENCIL_STAR, usfft->freqSizes[0], usfft->freqSizes[1], usfft->freqSizes[2],
   //                PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 0, PETSC_NULL, PETSC_NULL, PETSC_NULL,  0, &(usfft->resampleDA)); CHKERRQ(ierr);
-  ierr = DAGetVec(usfft->resampleDA, usfft->resample); CHKERRQ(ierr);
+  ierr = DMDAGetVec(usfft->resampleDA, usfft->resample); CHKERRQ(ierr);
 
 
   // CONTINUE: Need to build the connectivity "Sieve" attaching sample points to the resample points they are close to

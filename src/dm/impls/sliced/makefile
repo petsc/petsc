@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    = sliced.o
 OBJSF    =
 LIBBASE  = libpetscdm
-MANSEC   = DA
+MANSEC   = DMDA
 LOCDIR   = src/dm/impls/sliced
 
 include ${PETSC_DIR}/conf/variables

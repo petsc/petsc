@@ -2,7 +2,7 @@
 
       Contributed by Arvid Bessen, Columbia University, June 2007
 
-       Extension of DA object to any number of dimensions.
+       Extension of DMDA object to any number of dimensions.
 
 */
 #include "../src/dm/impls/adda/addaimpl.h"                          /*I "petscda.h" I*/
@@ -86,7 +86,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_ADDA(DM dm, const MatType mtype, Ma
 #undef __FUNCT__  
 #define __FUNCT__ "DMADDAGetMatrixNS"
 /*@
-   DMADDMGetMatrixNS - Creates matrix compatiable with two distributed arrays
+   DMADDAGetMatrixNS - Creates matrix compatiable with two distributed arrays
 
    Collective on ADDA
 

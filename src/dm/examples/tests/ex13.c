@@ -1,5 +1,5 @@
 
-static char help[] = "Tests loading DA vector from file.\n\n";
+static char help[] = "Tests loading DMDA vector from file.\n\n";
 
 #include "petscda.h"
 
@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",FILE_MODE_READ,&bviewer);CHKERRQ(ierr);
-  ierr = DALoad(bviewer,M,N,PETSC_DECIDE,&da);CHKERRQ(ierr);
+  ierr = DMDALoad(bviewer,M,N,PETSC_DECIDE,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr); 
   ierr = VecLoad(global,bviewer);CHKERRQ(ierr); 
   ierr = PetscViewerDestroy(bviewer);CHKERRQ(ierr);

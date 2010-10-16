@@ -19,16 +19,16 @@ class Viz:
         if e is None:
             raise Exception("No Electrolyte object found in the Viz framework: '"+str(v.getName()) +"'")
         # Then extract objects attached to e:
-        #   a DA and a Vec
+        #   a DMDA and a Vec
         da       = e.query("mesh")
         rho      = e.query("rho").getArray()
-        # Get DA parameters and make sure rho conforms to them
+        # Get DMDA parameters and make sure rho conforms to them
         N              = da.getSizes()
         dim            = da.getDim()
         d              = da.getDof()-1
         assert dim    == 3
         assert rho.size == N[0]*N[1]*N[2]*(d)
-        # Reshape the Vec's data array to conform to the DA shape
+        # Reshape the Vec's data array to conform to the DMDA shape
         shape = list(N)
         shape.append(d)
         rho = rho.reshape(shape)
@@ -46,16 +46,16 @@ class Viz:
         # Extract a PetscObject e with key "Electrolyte"
         e = v.query("Electrolyte")
         # Then extract objects attached to e:
-        #   a DA and a Vec
+        #   a DMDA and a Vec
         da       = e.query("mesh")
         rhoGamma = e.query("rhoGamma").getArray()
-        # Get DA parameters and make sure rhoGamma conforms to them
+        # Get DMDA parameters and make sure rhoGamma conforms to them
         N              = da.getSizes()
         dim            = da.getDim()
         d              = da.getDof()-1
         assert dim    == 3
         assert rhoGamma.size == N[0]*N[1]*N[2]*(d+1)
-        # Reshape the Vec's data array to conform to the DA shape
+        # Reshape the Vec's data array to conform to the DMDA shape
         shape = list(N)
         shape.append(d+1)
         rhoGamma = rhoGamma.reshape(shape)

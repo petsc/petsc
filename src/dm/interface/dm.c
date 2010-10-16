@@ -7,7 +7,7 @@
 /*@C
        DMSetVecType - Sets the type of vector created with DMCreateLocalVector() and DMCreateGlobalVector()
 
-   Logically Collective on DA
+   Logically Collective on DMDA
 
    Input Parameter:
 +  da - initial distributed array
@@ -18,7 +18,7 @@
 
    Level: intermediate
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DMDestroy(), DA, DAInterpolationType, VecType
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMDA, DMDAInterpolationType, VecType
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMSetVecType(DM da,const VecType ctype)
 {
@@ -35,12 +35,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetVecType(DM da,const VecType ctype)
 #define __FUNCT__ "DMSetOptionsPrefix"
 /*@C
    DMSetOptionsPrefix - Sets the prefix used for searching for all 
-   DA options in the database.
+   DMDA options in the database.
 
-   Logically Collective on DA
+   Logically Collective on DMDA
 
    Input Parameter:
-+  da - the DA context
++  da - the DMDA context
 -  prefix - the prefix to prepend to all option names
 
    Notes:
@@ -49,7 +49,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetVecType(DM da,const VecType ctype)
 
    Level: advanced
 
-.keywords: DA, set, options, prefix, database
+.keywords: DMDA, set, options, prefix, database
 
 .seealso: DMSetFromOptions()
 @*/
@@ -66,7 +66,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetOptionsPrefix(DM dm,const char prefix[])
 #undef __FUNCT__  
 #define __FUNCT__ "DMDestroy"
 /*@
-    DMDestroy - Destroys a vector packer or DA.
+    DMDestroy - Destroys a vector packer or DMDA.
 
     Collective on DM
 
@@ -142,7 +142,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetFromOptions(DM dm)
 #undef __FUNCT__  
 #define __FUNCT__ "DMView"
 /*@
-    DMView - Views a vector packer or DA.
+    DMView - Views a vector packer or DMDA.
 
     Collective on DM
 
@@ -169,7 +169,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMView(DM dm,PetscViewer v)
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreateGlobalVector"
 /*@
-    DMCreateGlobalVector - Creates a global vector from a DA or DMComposite object
+    DMCreateGlobalVector - Creates a global vector from a DMDA or DMComposite object
 
     Collective on DM
 
@@ -196,7 +196,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector(DM dm,Vec *vec)
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreateLocalVector"
 /*@
-    DMCreateLocalVector - Creates a local vector from a DA or DMComposite object
+    DMCreateLocalVector - Creates a local vector from a DMDA or DMComposite object
 
     Not Collective
 
@@ -223,7 +223,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateLocalVector(DM dm,Vec *vec)
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetInterpolation"
 /*@
-    DMGetInterpolation - Gets interpolation matrix between two DA or DMComposite objects
+    DMGetInterpolation - Gets interpolation matrix between two DMDA or DMComposite objects
 
     Collective on DM
 
@@ -252,7 +252,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetInjection"
 /*@
-    DMGetInjection - Gets injection matrix between two DA or DMComposite objects
+    DMGetInjection - Gets injection matrix between two DMDA or DMComposite objects
 
     Collective on DM
 
@@ -280,7 +280,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetColoring"
 /*@
-    DMGetColoring - Gets coloring for a DA or DMComposite
+    DMGetColoring - Gets coloring for a DMDA or DMComposite
 
     Collective on DM
 
@@ -310,7 +310,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring(DM dm,ISColoringType ctype,const 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetMatrix"
 /*@C
-    DMGetMatrix - Gets empty Jacobian for a DA or DMComposite
+    DMGetMatrix - Gets empty Jacobian for a DMDA or DMComposite
 
     Collective on DM
 
@@ -328,13 +328,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring(DM dm,ISColoringType ctype,const 
        do not need to do it yourself. 
 
        By default it also sets the nonzero structure and puts in the zero entries. To prevent setting 
-       the nonzero pattern call DASetMatPreallocateOnly()
+       the nonzero pattern call DMDASetMatPreallocateOnly()
 
        For structured grid problems, when you call MatView() on this matrix it is displayed using the global natural ordering, NOT in the ordering used
        internally by PETSc.
 
        For structured grid problems, in general it is easiest to use MatSetValuesStencil() or MatSetValuesLocal() to put values into the matrix because MatSetValues() requires 
-       the indices for the global numbering for DAs which is complicated.
+       the indices for the global numbering for DMDAs which is complicated.
 
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
 

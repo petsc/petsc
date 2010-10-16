@@ -1,5 +1,5 @@
   
-static char help[] = "Tests various 2-dimensional DA routines.\n\n";
+static char help[] = "Tests various 2-dimensional DMDA routines.\n\n";
 
 #include "petscda.h"
 
@@ -14,12 +14,12 @@ int main(int argc,char **argv)
   PetscInt       Xs,Xm,Ys,Ym,iloc,*iglobal,*ltog;
   PetscInt       *lx = PETSC_NULL,*ly = PETSC_NULL;
   PetscBool      testorder = PETSC_FALSE,flg;
-  DAPeriodicType wrap = DA_NONPERIODIC;
+  DMDAPeriodicType wrap = DMDA_NONPERIODIC;
   DM             da;
   PetscViewer    viewer;
   Vec            local,global;
   PetscScalar    value;
-  DAStencilType  st = DA_STENCIL_BOX;
+  DMDAStencilType  st = DMDA_STENCIL_BOX;
   AO             ao;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
@@ -33,13 +33,13 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-xwrap",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg)  wrap = DA_XPERIODIC;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-xwrap",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg)  wrap = DMDA_XPERIODIC;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-ywrap",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg)  wrap = DA_YPERIODIC;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-ywrap",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg)  wrap = DMDA_YPERIODIC;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-xywrap",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) wrap = DA_XYPERIODIC;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-xywrap",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) wrap = DMDA_XYPERIODIC;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-star",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg)   st = DA_STENCIL_STAR;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-star",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg)   st = DMDA_STENCIL_STAR;
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-testorder",&testorder,PETSC_NULL);CHKERRQ(ierr);
   /*
@@ -61,7 +61,7 @@ int main(int argc,char **argv)
 
 
   /* Create distributed array and get vectors */
-  ierr = DACreate2d(PETSC_COMM_WORLD,wrap,st,M,N,m,n,w,s,lx,ly,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,wrap,st,M,N,m,n,w,s,lx,ly,&da);CHKERRQ(ierr);
   if (lx) { 
     ierr = PetscFree(lx);CHKERRQ(ierr);
     ierr = PetscFree(ly);CHKERRQ(ierr);
@@ -106,13 +106,13 @@ int main(int argc,char **argv)
 
   /* Tests mappings betweeen application/PETSc orderings */
   if (testorder) {
-    ierr = DAGetGhostCorners(da,&Xs,&Ys,PETSC_NULL,&Xm,&Ym,PETSC_NULL);CHKERRQ(ierr);
-    ierr = DAGetGlobalIndices(da,&nloc,&ltog);CHKERRQ(ierr);
-    ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
+    ierr = DMDAGetGhostCorners(da,&Xs,&Ys,PETSC_NULL,&Xm,&Ym,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAGetGlobalIndices(da,&nloc,&ltog);CHKERRQ(ierr);
+    ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
     ierr = PetscMalloc(nloc*sizeof(PetscInt),&iglobal);CHKERRQ(ierr);
 
     /* Set iglobal to be global indices for each processor's local and ghost nodes,
-       using the DA ordering of grid points */
+       using the DMDA ordering of grid points */
     kk = 0;
     for (j=Ys; j<Ys+Ym; j++) {
       for (i=Xs; i<Xs+Xm; i++) {
@@ -123,11 +123,11 @@ int main(int argc,char **argv)
       }
     } 
 
-    /* Map this to the application ordering (which for DAs is just the natural ordering
+    /* Map this to the application ordering (which for DMDAs is just the natural ordering
        that would be used for 1 processor, numbering most rapidly by x, then y) */
     ierr = AOPetscToApplication(ao,nloc,iglobal);CHKERRQ(ierr); 
 
-    /* Then map the application ordering back to the PETSc DA ordering */
+    /* Then map the application ordering back to the PETSc DMDA ordering */
     ierr = AOApplicationToPetsc(ao,nloc,iglobal);CHKERRQ(ierr); 
 
     /* Verify the mappings */

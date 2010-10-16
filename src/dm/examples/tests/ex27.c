@@ -1,4 +1,4 @@
-static char help[] = "Test sequential USFFT interface on a uniform DA and compares the result to FFTW\n\n";
+static char help[] = "Test sequential USFFT interface on a uniform DMDA and compares the result to FFTW\n\n";
 
 /*
   Compiling the code:
@@ -47,14 +47,14 @@ PetscInt main(PetscInt argc,char **args)
 
   
 
-  ierr = DACreate3d(PETSC_COMM_SELF,DA_NONPERIODIC,DA_STENCIL_STAR, 
+  ierr = DMDACreate3d(PETSC_COMM_SELF,DMDA_NONPERIODIC,DMDA_STENCIL_STAR, 
                     dim[0], dim[1], dim[2], 
                     PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 
                     dof, stencil,
                     PETSC_NULL, PETSC_NULL, PETSC_NULL,
                     &da);CHKERRQ(ierr);
   // Coordinates
-  ierr = DAGetCoordinateDA(da, &coordsda);
+  ierr = DMDAGetCoordinateDA(da, &coordsda);
   ierr = DMGetGlobalVector(coordsda, &coords);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coords, "Grid coordinates");CHKERRQ(ierr);  
   for(i = 0, N = 1; i < 3; i++) {
@@ -73,7 +73,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecRestoreArray(coords, &a);CHKERRQ(ierr);
 
   }
-  ierr = DASetCoordinates(da, coords);CHKERRQ(ierr);
+  ierr = DMDASetCoordinates(da, coords);CHKERRQ(ierr);
 
   // Work vectors
   ierr = DMGetGlobalVector(da, &x);CHKERRQ(ierr);

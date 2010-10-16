@@ -1,12 +1,12 @@
 
-static char help[] = "Demonstrates using 3 DA's to manage a slightly non-trivial grid";
+static char help[] = "Demonstrates using 3 DMDA's to manage a slightly non-trivial grid";
 
 #include "petscda.h"
 
 struct _p_FA {
   MPI_Comm   comm[3];
-  PetscInt   xl[3],yl[3],ml[3],nl[3];    /* corners and sizes of local vector in DA */
-  PetscInt   xg[3],yg[3],mg[3],ng[3];    /* corners and sizes of global vector in DA */
+  PetscInt   xl[3],yl[3],ml[3],nl[3];    /* corners and sizes of local vector in DMDA */
+  PetscInt   xg[3],yg[3],mg[3],ng[3];    /* corners and sizes of global vector in DMDA */
   PetscInt   offl[3],offg[3];            /* offset in local and global vector of region 1, 2 and 3 portions */
   Vec        g,l;
   VecScatter vscat;
@@ -157,13 +157,13 @@ PetscErrorCode FACreate(FA *infa)
   PetscInt       *fromnatural,fromnglobal,nscat,nlocal,cntl1,cntl2,cntl3,*indices;
   PetscErrorCode ierr;
 
-  /* Each DA manages the local vector for the portion of region 1, 2, and 3 for that processor
-     Each DA can belong on any subset (overlapping between DA's or not) of processors
-     For processes that a particular DA does not exist on, the corresponding comm should be set to zero
+  /* Each DMDA manages the local vector for the portion of region 1, 2, and 3 for that processor
+     Each DMDA can belong on any subset (overlapping between DMDA's or not) of processors
+     For processes that a particular DMDA does not exist on, the corresponding comm should be set to zero
   */
   DM             da1 = 0,da2 = 0,da3 = 0;
   /* 
-      v1, v2, v3 represent the local vector for a single DA
+      v1, v2, v3 represent the local vector for a single DMDA
   */
   Vec            vl1 = 0,vl2 = 0,vl3 = 0, vg1 = 0, vg2 = 0,vg3 = 0;
 
@@ -207,7 +207,7 @@ PetscErrorCode FACreate(FA *infa)
   fa->comm[1] = PETSC_COMM_WORLD;
   fa->comm[2] = PETSC_COMM_WORLD;
   /* Test case with different communicators */
-  /* Normally one would use MPI_Comm routines to build MPI communicators on which you wish to partition the DAs*/
+  /* Normally one would use MPI_Comm routines to build MPI communicators on which you wish to partition the DMDAs*/
   /*
   if (rank == 0) {
     fa->comm[0] = PETSC_COMM_SELF;
@@ -227,17 +227,17 @@ PetscErrorCode FACreate(FA *infa)
   if (!((fa->p2 - fa->p1) % 2)) SETERRQ(PETSC_COMM_SELF,1,"width of region 3 must NOT be divisible by 2");
 
   if (fa->comm[1]) {
-    ierr = DACreate2d(fa->comm[1],DA_XPERIODIC,DA_STENCIL_BOX,fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,PETSC_NULL,PETSC_NULL,&da2);CHKERRQ(ierr);
+    ierr = DMDACreate2d(fa->comm[1],DMDA_XPERIODIC,DMDA_STENCIL_BOX,fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,PETSC_NULL,PETSC_NULL,&da2);CHKERRQ(ierr);
     ierr = DMGetLocalVector(da2,&vl2);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(da2,&vg2);CHKERRQ(ierr);
   }
   if (fa->comm[2]) {
-    ierr = DACreate2d(fa->comm[2],DA_NONPERIODIC,DA_STENCIL_BOX,fa->p1-fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,PETSC_NULL,PETSC_NULL,&da3);CHKERRQ(ierr);
+    ierr = DMDACreate2d(fa->comm[2],DMDA_NONPERIODIC,DMDA_STENCIL_BOX,fa->p1-fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,PETSC_NULL,PETSC_NULL,&da3);CHKERRQ(ierr);
     ierr = DMGetLocalVector(da3,&vl3);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(da3,&vg3);CHKERRQ(ierr);
   }
   if (fa->comm[0]) {
-    ierr = DACreate2d(fa->comm[0],DA_NONPERIODIC,DA_STENCIL_BOX,fa->p1,fa->r1g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,PETSC_NULL,PETSC_NULL,&da1);CHKERRQ(ierr);
+    ierr = DMDACreate2d(fa->comm[0],DMDA_NONPERIODIC,DMDA_STENCIL_BOX,fa->p1,fa->r1g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,PETSC_NULL,PETSC_NULL,&da1);CHKERRQ(ierr);
     ierr = DMGetLocalVector(da1,&vl1);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(da1,&vg1);CHKERRQ(ierr);
   }
@@ -246,15 +246,15 @@ PetscErrorCode FACreate(FA *infa)
      for global vector with redundancy */
   tonglobal = 0;
   if (fa->comm[1]) {
-    ierr = DAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     tonglobal += nx*ny;
   }
   if (fa->comm[2]) {
-    ierr = DAGetCorners(da3,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da3,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     tonglobal += nx*ny;
   }
   if (fa->comm[0]) {
-    ierr = DAGetCorners(da1,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da1,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     tonglobal += nx*ny;
   }
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Number of unknowns owned %d\n",rank,tonglobal);CHKERRQ(ierr);
@@ -264,7 +264,7 @@ PetscErrorCode FACreate(FA *infa)
   ierr = PetscMalloc((tonglobal+1)*sizeof(PetscInt),&tonatural);CHKERRQ(ierr);
   tonglobal = 0;
   if (fa->comm[1]) {
-    ierr = DAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
         tonatural[tonglobal++] = (fa->p1 - fa->p2)/2 + x + i + fa->p1*(y + j);
@@ -272,7 +272,7 @@ PetscErrorCode FACreate(FA *infa)
     }
   }
   if (fa->comm[2]) {
-    ierr = DAGetCorners(da3,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da3,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
         if (x + i < (fa->p1 - fa->p2)/2) tonatural[tonglobal++] = x + i + fa->p1*(y + j);
@@ -281,7 +281,7 @@ PetscErrorCode FACreate(FA *infa)
     }
   }
   if (fa->comm[0]) {
-    ierr = DAGetCorners(da1,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da1,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
         tonatural[tonglobal++] = fa->p1*fa->r2g + x + i + fa->p1*(y + j);
@@ -298,7 +298,7 @@ PetscErrorCode FACreate(FA *infa)
   fa->offg[1] = 0;
   offt[1]     = 0;
   if (fa->comm[1]) {
-    ierr = DAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     offt[2] = nx*ny;
     if (y+ny == fa->r2g) {ny--;}  /* includes the ghost points on the upper side */
     fromnglobal += nx*ny;
@@ -308,7 +308,7 @@ PetscErrorCode FACreate(FA *infa)
     fa->offg[2] = 0;
   }
   if (fa->comm[2]) {
-    ierr = DAGetCorners(da3,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da3,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     offt[0] = offt[2] + nx*ny;
     if (y+ny == fa->r2g) {ny--;}  /* includes the ghost points on the upper side */
     fromnglobal += nx*ny;
@@ -318,7 +318,7 @@ PetscErrorCode FACreate(FA *infa)
     fa->offg[0] = fromnglobal;
   }
   if (fa->comm[0]) {
-    ierr = DAGetCorners(da1,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da1,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     if (y == 0) {ny--;}  /* includes the ghost points on the lower side */
     fromnglobal += nx*ny;
   }
@@ -331,10 +331,10 @@ PetscErrorCode FACreate(FA *infa)
   ierr = PetscMalloc((fromnglobal+1)*sizeof(PetscInt),&fromnatural);CHKERRQ(ierr);
   fromnglobal = 0;
   if (fa->comm[1]) {
-    ierr = DAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     if (y+ny == fa->r2g) {ny--;}  /* includes the ghost points on the upper side */
     fa->xg[1] = x; fa->yg[1] = y; fa->mg[1] = nx; fa->ng[1] = ny;
-    ierr = DAGetGhostCorners(da2,&fa->xl[1],&fa->yl[1],0,&fa->ml[1],&fa->nl[1],0);CHKERRQ(ierr);
+    ierr = DMDAGetGhostCorners(da2,&fa->xl[1],&fa->yl[1],0,&fa->ml[1],&fa->nl[1],0);CHKERRQ(ierr);
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
         fromnatural[fromnglobal++] = (fa->p1 - fa->p2)/2 + x + i + fa->p1*(y + j);
@@ -342,10 +342,10 @@ PetscErrorCode FACreate(FA *infa)
     }
   }
   if (fa->comm[2]) {
-    ierr = DAGetCorners(da3,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da3,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     if (y+ny == fa->r2g) {ny--;}  /* includes the ghost points on the upper side */
     fa->xg[2] = x; fa->yg[2] = y; fa->mg[2] = nx; fa->ng[2] = ny;
-    ierr = DAGetGhostCorners(da3,&fa->xl[2],&fa->yl[2],0,&fa->ml[2],&fa->nl[2],0);CHKERRQ(ierr);
+    ierr = DMDAGetGhostCorners(da3,&fa->xl[2],&fa->yl[2],0,&fa->ml[2],&fa->nl[2],0);CHKERRQ(ierr);
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
         if (x + i < (fa->p1 - fa->p2)/2) fromnatural[fromnglobal++] = x + i + fa->p1*(y + j);
@@ -354,11 +354,11 @@ PetscErrorCode FACreate(FA *infa)
     }
   }
   if (fa->comm[0]) {
-    ierr = DAGetCorners(da1,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da1,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     if (y == 0) {ny--;}  /* includes the ghost points on the lower side */
     else y--;
     fa->xg[0] = x; fa->yg[0] = y; fa->mg[0] = nx; fa->ng[0] = ny;
-    ierr = DAGetGhostCorners(da1,&fa->xl[0],&fa->yl[0],0,&fa->ml[0],&fa->nl[0],0);CHKERRQ(ierr);
+    ierr = DMDAGetGhostCorners(da1,&fa->xl[0],&fa->yl[0],0,&fa->ml[0],&fa->nl[0],0);CHKERRQ(ierr);
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
         fromnatural[fromnglobal++] = fa->p1*fa->r2 + x + i + fa->p1*(y + j);
@@ -376,7 +376,7 @@ PetscErrorCode FACreate(FA *infa)
   ierr = PetscMalloc(tonglobal*sizeof(PetscInt),&from);CHKERRQ(ierr);
   nscat = 0;
   if (fa->comm[1]) {
-    ierr = DAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
         to[nscat] = from[nscat] = (fa->p1 - fa->p2)/2 + x + i + fa->p1*(y + j);nscat++;
@@ -384,7 +384,7 @@ PetscErrorCode FACreate(FA *infa)
     }
   }
   if (fa->comm[2]) {
-    ierr = DAGetCorners(da3,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da3,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
         if (x + i < (fa->p1 - fa->p2)/2) {
@@ -396,7 +396,7 @@ PetscErrorCode FACreate(FA *infa)
     }
   }
   if (fa->comm[0]) {
-    ierr = DAGetCorners(da1,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da1,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
         to[nscat]     = fa->p1*fa->r2g + x + i + fa->p1*(y + j);

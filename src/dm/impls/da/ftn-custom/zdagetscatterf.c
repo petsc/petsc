@@ -3,18 +3,18 @@
 #include "petscda.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define dagetscatter_                DAGETSCATTER
+#define dmdagetscatter_                DMDAGETSCATTER
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define dagetscatter_                dagetscatter
+#define dmdagetscatter_                dmdagetscatter
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL dagetscatter_(DM *da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,PetscErrorCode *ierr)
+void PETSC_STDCALL dmdagetscatter_(DM *da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(ltog);
   CHKFORTRANNULLOBJECT(gtol);
   CHKFORTRANNULLOBJECT(ltol);
-  *ierr = DAGetScatter(*da,ltog,gtol,ltol);
+  *ierr = DMDAGetScatter(*da,ltog,gtol,ltol);
 }
 
 EXTERN_C_END

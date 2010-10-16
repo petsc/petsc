@@ -56,8 +56,8 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
-  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
-  ierr = DASetInterpolationType(da, DA_Q0);CHKERRQ(ierr);  
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
+  ierr = DMDASetInterpolationType(da, DMDA_Q0);CHKERRQ(ierr);  
 
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DMDestroy(da);CHKERRQ(ierr);
@@ -83,12 +83,12 @@ int main(int argc,char **argv)
   ierr = VecNorm(DMMGGetr(dmmg),NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr); 
   
-  ierr = DAGetInfo(DMMGGetDM(dmmg), 0, &mx, &my, &mz, 0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(DMMGGetDM(dmmg), 0, &mx, &my, &mz, 0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx   = 1.0 / (PetscReal)(mx);
   Hy   = 1.0 / (PetscReal)(my);
   Hz   = 1.0 / (PetscReal)(mz);
-  ierr = DAGetCorners(DMMGGetDM(dmmg),&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr = DAVecGetArray(DMMGGetDM(dmmg), DMMGGetx(dmmg), &array);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(DMMGGetDM(dmmg),&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(DMMGGetDM(dmmg), DMMGGetx(dmmg), &array);CHKERRQ(ierr);
 
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){
@@ -100,7 +100,7 @@ int main(int argc,char **argv)
       }
     }
   }
-  ierr = DAVecRestoreArray(DMMGGetDM(dmmg), DMMGGetx(dmmg), &array);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(DMMGGetDM(dmmg), DMMGGetx(dmmg), &array);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(DMMGGetx(dmmg));CHKERRQ(ierr);
   ierr = VecAssemblyEnd(DMMGGetx(dmmg));CHKERRQ(ierr);
 
@@ -128,12 +128,12 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   PetscScalar    ***array;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(da, 0, &mx, &my, &mz, 0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, 0, &mx, &my, &mz, 0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx   = 1.0 / (PetscReal)(mx);
   Hy   = 1.0 / (PetscReal)(my);
   Hz   = 1.0 / (PetscReal)(mz);
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da, b, &array);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da, b, &array);CHKERRQ(ierr);
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){
       for(i=xs; i<xs+xm; i++){
@@ -145,7 +145,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
       }
     }
   }
-  ierr = DAVecRestoreArray(da, b, &array);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da, b, &array);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
@@ -175,14 +175,14 @@ PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
   MatStencil     row, col[7];
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);  
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx    = 1.0 / (PetscReal)(mx);
   Hy    = 1.0 / (PetscReal)(my);
   Hz    = 1.0 / (PetscReal)(mz);
   HyHzdHx = Hy*Hz/Hx;
   HxHzdHy = Hx*Hz/Hy;
   HxHydHz = Hx*Hy/Hz;
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   for (k=zs; k<zs+zm; k++)
     {
       for (j=ys; j<ys+ym; j++)

@@ -9,15 +9,15 @@ PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  /* Pull out field names from DA */
+  /* Pull out field names from DMDA */
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERSTRING, &isstring);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  DA: dummy=%D\n", da->dummy);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  DMDA: dummy=%D\n", da->dummy);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"dummy %D", da->dummy);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Viewer type %s not supported for Characteristic DA", ((PetscObject) viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Viewer type %s not supported for Characteristic DMDA", ((PetscObject) viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -44,7 +44,7 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
   PetscInt       dim, numValues;
   PetscErrorCode ierr;
 
-  ierr = DAGetInfo(c->velocityDA, &dim, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(c->velocityDA, &dim, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);CHKERRQ(ierr);
   if (c->structured) {
     c->numIds = dim;
   } else {
@@ -103,28 +103,28 @@ PetscErrorCode CharacteristicCreate_DA(Characteristic c)
 EXTERN_C_END
 
 #undef __FUNCT__
-#define __FUNCT__ "DAMapCoordsToPeriodicDomain"
+#define __FUNCT__ "DMDAMapCoordsToPeriodicDomain"
 /* -----------------------------------------------------------------------------
-   Checks for periodicity of a DA and Maps points outside of a domain back onto the domain
-   using appropriate periodicity. At the moment assumes only a 2-D DA.
+   Checks for periodicity of a DMDA and Maps points outside of a domain back onto the domain
+   using appropriate periodicity. At the moment assumes only a 2-D DMDA.
    ----------------------------------------------------------------------------------------*/
-PetscErrorCode DAMapCoordsToPeriodicDomain(DM da, PetscScalar *x, PetscScalar *y)
+PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM da, PetscScalar *x, PetscScalar *y)
 {
-  DAPeriodicType periodic_type;
+  DMDAPeriodicType periodic_type;
   PetscInt       dim, gx, gy;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, &periodic_type, 0);
+  ierr = DMDAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, &periodic_type, 0);
 
-  if ( periodic_type == DA_NONPERIODIC ) {
+  if ( periodic_type == DMDA_NONPERIODIC ) {
     ierr = 0;
   } else {
-    if (periodic_type==DA_XPERIODIC || periodic_type==DA_XYPERIODIC) {
+    if (periodic_type==DMDA_XPERIODIC || periodic_type==DMDA_XYPERIODIC) {
       while (*x >= ( PetscScalar ) gx ) { *x -= ( PetscScalar ) gx; }
       while (*x < 0.0 )                 { *x += ( PetscScalar ) gx; }
     }
-    if (periodic_type==DA_YPERIODIC || periodic_type==DA_XYPERIODIC) {
+    if (periodic_type==DMDA_YPERIODIC || periodic_type==DMDA_XYPERIODIC) {
       while (*y >= ( PetscScalar ) gy ) { *y -= ( PetscScalar ) gy; }
       while (*y < 0.0 )                 { *y += ( PetscScalar ) gy; }
     }

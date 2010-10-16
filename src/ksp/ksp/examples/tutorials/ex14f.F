@@ -10,7 +10,7 @@
 !  possible, as it offers many advantages over coding nonlinear solvers independently.
 !
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
-!  domain, using distributed arrays (DAs) to partition the parallel grid.
+!  domain, using distributed arrays (DMDAs) to partition the parallel grid.
 !
 !  The command line options include:
 !  -par <parameter>, where <parameter> indicates the problem's nonlinearity
@@ -23,7 +23,7 @@
 !
 !/*T
 !   Concepts: KSP^writing a user-defined nonlinear solver
-!   Concepts: DA^using distributed arrays
+!   Concepts: DMDA^using distributed arrays
 !   Processors: n
 !T*/
 !  ------------------------------------------------------------------------
@@ -123,18 +123,18 @@
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 !  
-!  Create distributed array (DA) to manage parallel grid and vectors
+!  Create distributed array (DMDA) to manage parallel grid and vectors
 !  
       Nx = PETSC_DECIDE
       Ny = PETSC_DECIDE
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
-      call DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,mx,           &
+      call DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,mx,           &
      &     my,Nx,Ny,one,one,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,       &
      &     da,ierr)
 
 !  
-!  Extract global and local vectors from DA then duplicate for remaining
+!  Extract global and local vectors from DMDA then duplicate for remaining
 !  vectors that are the same types
 !  
        call DMCreateGlobalVector(da,X,ierr)
@@ -149,8 +149,8 @@
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  
 !     Note:  For the parallel case, vectors and matrices MUST be partitioned
-!     accordingly.  When using distributed arrays (DAs) to create vectors,
-!     the DAs determine the problem partitioning.  We must explicitly
+!     accordingly.  When using distributed arrays (DMDAs) to create vectors,
+!     the DMDAs determine the problem partitioning.  We must explicitly
 !     specify the local matrix dimensions upon its creation for compatibility
 !     with the vector distribution.
 !
@@ -333,15 +333,15 @@
 !      the array.
        call VecGetArray(localX,xx,idx,ierr)
 
-!  Get local grid boundaries (for 2-dimensional DA):
+!  Get local grid boundaries (for 2-dimensional DMDA):
 !    xs, ys   - starting grid indices (no ghost points)
 !    xm, ym   - widths of local grid (no ghost points)
 !    gxs, gys - starting grid indices (including ghost points)
 !    gxm, gym - widths of local grid (including ghost points)
 
-       call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,             &
+       call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,             &
      &      PETSC_NULL_INTEGER,ierr)
-       call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,    &
+       call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,    &
      &      PETSC_NULL_INTEGER,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
@@ -433,9 +433,9 @@
 
 !  Get local grid boundaries
 
-      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
+      call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
      &     PETSC_NULL_INTEGER,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
+      call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
      &     PETSC_NULL_INTEGER,ierr)
 
 !  Compute function over the locally owned part of the grid
@@ -482,9 +482,9 @@
 !   flag - flag indicating matrix structure
 !
 !   Notes:
-!   Due to grid point reordering with DAs, we must always work
+!   Due to grid point reordering with DMDAs, we must always work
 !   with the local grid points, and then transform them to the new
-!   global numbering with the 'ltog' mapping (via DAGetGlobalIndices()).
+!   global numbering with the 'ltog' mapping (via DMDAGetGlobalIndices()).
 !   We cannot work directly with the global numbers for the original
 !   uniprocessor grid!
 !
@@ -547,14 +547,14 @@
 
 !  Get local grid boundaries
 
-      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
+      call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
      &     PETSC_NULL_INTEGER,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
+      call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
      &                        PETSC_NULL_INTEGER,ierr)
 
 !  Get the global node numbers for all local nodes, including ghost points
 
-      call DAGetGlobalIndices(da,nloc,ltog,idltog,ierr)
+      call DMDAGetGlobalIndices(da,nloc,ltog,idltog,ierr)
 
 !  Compute entries for the locally owned part of the Jacobian.
 !   - Currently, all PETSc parallel matrix formats are partitioned by

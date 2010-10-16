@@ -19,7 +19,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_DA(DM da,Vec* g)
   ierr = VecCreate(((PetscObject)da)->comm,g);CHKERRQ(ierr);
   ierr = VecSetSizes(*g,dd->Nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*g,"DMDA",(PetscObject)da);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMapping(*g,dd->ltogmap);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMappingBlock(*g,dd->ltogmapb);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*g,dd->w);CHKERRQ(ierr);
@@ -29,13 +29,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_DA(DM da,Vec* g)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DACreateNaturalVector"
+#define __FUNCT__ "DMDACreateNaturalVector"
 /*@
-   DACreateNaturalVector - Creates a parallel PETSc vector that
+   DMDACreateNaturalVector - Creates a parallel PETSc vector that
    will hold vector values in the natural numbering, rather than in 
-   the PETSc parallel numbering associated with the DA.
+   the PETSc parallel numbering associated with the DMDA.
 
-   Collective on DA
+   Collective on DMDA
 
    Input Parameter:
 .  da - the distributed array
@@ -55,10 +55,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_DA(DM da,Vec* g)
 .keywords: distributed array, create, global, distributed, vector
 
 .seealso: DMCreateLocalVector(), VecDuplicate(), VecDuplicateVecs(),
-          DACreate1d(), DACreate2d(), DACreate3d(), DMGlobalToLocalBegin(),
-          DMGlobalToLocalEnd(), DALocalToGlobalBegin()
+          DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGlobalToLocalBegin(),
+          DMGlobalToLocalEnd(), DMDALocalToGlobalBegin()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DACreateNaturalVector(DM da,Vec* g)
+PetscErrorCode PETSCDM_DLLEXPORT DMDACreateNaturalVector(DM da,Vec* g)
 {
   PetscErrorCode ierr;
   PetscInt       cnt;

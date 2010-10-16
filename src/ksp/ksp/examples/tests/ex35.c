@@ -29,15 +29,15 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
-  ierr = DASetDim(da,3);CHKERRQ(ierr);
-  ierr = DASetPeriodicity(da,DA_NONPERIODIC);CHKERRQ(ierr);
-  ierr = DASetStencilType(da,DA_STENCIL_STAR);CHKERRQ(ierr);
-  ierr = DASetSizes(da,3,3,3);CHKERRQ(ierr);
-  ierr = DASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = DASetDof(da,dof);CHKERRQ(ierr);
-  ierr = DASetStencilWidth(da,1);CHKERRQ(ierr);
-  ierr = DASetOwnershipRanges(da,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
+  ierr = DMDASetDim(da,3);CHKERRQ(ierr);
+  ierr = DMDASetPeriodicity(da,DMDA_NONPERIODIC);CHKERRQ(ierr);
+  ierr = DMDASetStencilType(da,DMDA_STENCIL_STAR);CHKERRQ(ierr);
+  ierr = DMDASetSizes(da,3,3,3);CHKERRQ(ierr);
+  ierr = DMDASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = DMDASetDof(da,dof);CHKERRQ(ierr);
+  ierr = DMDASetStencilWidth(da,1);CHKERRQ(ierr);
+  ierr = DMDASetOwnershipRanges(da,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
 

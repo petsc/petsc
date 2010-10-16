@@ -7,7 +7,7 @@
 #include "private/daimpl.h"    /*I   "petscda.h"   I*/
 
 /*
-   This allows the DA vectors to properly tell Matlab their dimensions
+   This allows the DMDA vectors to properly tell Matlab their dimensions
 */
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include "engine.h"   /* Matlab include file */
@@ -25,9 +25,9 @@ PetscErrorCode PETSCDM_DLLEXPORT VecMatlabEnginePut_DA2d(PetscObject obj,void *m
   DM             da;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)vec,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(((PetscObject)vec)->comm,PETSC_ERR_ARG_WRONGSTATE,"Vector not associated with a DA");
-  ierr = DAGetGhostCorners(da,0,0,0,&m,&n,0);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)vec,"DMDA",(PetscObject*)&da);CHKERRQ(ierr);
+  if (!da) SETERRQ(((PetscObject)vec)->comm,PETSC_ERR_ARG_WRONGSTATE,"Vector not associated with a DMDA");
+  ierr = DMDAGetGhostCorners(da,0,0,0,&m,&n,0);CHKERRQ(ierr);
 
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
@@ -60,7 +60,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateLocalVector_DA(DM da,Vec* g)
   ierr = VecSetSizes(*g,dd->nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*g,dd->w);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*g,"DMDA",(PetscObject)da);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   if (dd->w == 1  && dd->dim == 2) {
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)*g,"PetscMatlabEnginePut_C","VecMatlabEnginePut_DA2d",VecMatlabEnginePut_DA2d);CHKERRQ(ierr);
@@ -97,7 +97,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateLocalVector_DA(DM da,Vec* g)
 .keywords: distributed array, create, local, vector
 
 .seealso: DMCreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
-          DACreate1d(), DACreate2d(), DACreate3d(), DMGlobalToLocalBegin(),
+          DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGlobalToLocalBegin(),
           DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMCreateLocalVector(), DMRestoreLocalVector(),
           VecStrideMax(), VecStrideMin(), VecStrideNorm()
 @*/
@@ -145,7 +145,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetLocalVector(DM dm,Vec* g)
 .keywords: distributed array, create, local, vector
 
 .seealso: DMCreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
-          DACreate1d(), DACreate2d(), DACreate3d(), DMGlobalToLocalBegin(),
+          DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGlobalToLocalBegin(),
           DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMCreateLocalVector(), DMGetLocalVector()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMRestoreLocalVector(DM dm,Vec* g)
@@ -200,7 +200,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRestoreLocalVector(DM dm,Vec* g)
 .keywords: distributed array, create, Global, vector
 
 .seealso: DMCreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
-          DACreate1d(), DACreate2d(), DACreate3d(), DMGlobalToLocalBegin(),
+          DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGlobalToLocalBegin(),
           DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMCreateLocalVector(), DMRestoreLocalVector()
           VecStrideMax(), VecStrideMin(), VecStrideNorm()
 
@@ -250,7 +250,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetGlobalVector(DM dm,Vec* g)
 .keywords: distributed array, create, global, vector
 
 .seealso: DMCreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
-          DACreate1d(), DACreate2d(), DACreate3d(), DMGlobalToGlobalBegin(),
+          DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGlobalToGlobalBegin(),
           DMGlobalToGlobalEnd(), DMGlobalToGlobal(), DMCreateLocalVector(), DMGetGlobalVector()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMRestoreGlobalVector(DM dm,Vec* g)
@@ -285,9 +285,9 @@ EXTERN_C_BEGIN
 EXTERN_C_END
 
 #undef __FUNCT__
-#define __FUNCT__ "DAGetAdicArray"
+#define __FUNCT__ "DMDAGetAdicArray"
 /*@C
-     DAGetAdicArray - Gets an array of derivative types for a DA
+     DMDAGetAdicArray - Gets an array of derivative types for a DMDA
           
     Input Parameter:
 +    da - information about my local patch
@@ -302,15 +302,15 @@ EXTERN_C_END
        The vector values are NOT initialized and may have garbage in them, so you may need
        to zero them.
 
-       Returns the same type of object as the DAVecGetArray() except its elements are 
+       Returns the same type of object as the DMDAVecGetArray() except its elements are 
            derivative types instead of PetscScalars
 
      Level: advanced
 
-.seealso: DARestoreAdicArray()
+.seealso: DMDARestoreAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DM da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetAdicArray(DM da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,deriv_type_size,xs,ys,xm,ym,zs,zm,itdof;
@@ -321,7 +321,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DM da,PetscBool  ghosted,void *v
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (dd->adarrayghostedin[i]) {
         *iptr                   = dd->adarrayghostedin[i];
         iarray_start            = (char*)dd->adstartghostedin[i];
@@ -339,7 +339,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DM da,PetscBool  ghosted,void *v
     ym = dd->Ye-dd->Ys;
     zm = dd->Ze-dd->Zs;
   } else {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (dd->adarrayin[i]) {
         *iptr            = dd->adarrayin[i];
         iarray_start     = (char*)dd->adstartin[i];
@@ -408,7 +408,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DM da,PetscBool  ghosted,void *v
   done:
   /* add arrays to the checked out list */
   if (ghosted) {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (!dd->adarrayghostedout[i]) {
         dd->adarrayghostedout[i] = *iptr ;
         dd->adstartghostedout[i] = iarray_start;
@@ -417,7 +417,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DM da,PetscBool  ghosted,void *v
       }
     }
   } else {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (!dd->adarrayout[i]) {
         dd->adarrayout[i] = *iptr ;
         dd->adstartout[i] = iarray_start;
@@ -426,16 +426,16 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DM da,PetscBool  ghosted,void *v
       }
     }
   }
-  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Too many DA ADIC arrays obtained");
+  if (i == DMDA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Too many DMDA ADIC arrays obtained");
   if (tdof)        *tdof = itdof;
   if (array_start) *(void**)array_start = iarray_start;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DARestoreAdicArray"
+#define __FUNCT__ "DMDARestoreAdicArray"
 /*@C
-     DARestoreAdicArray - Restores an array of derivative types for a DA
+     DMDARestoreAdicArray - Restores an array of derivative types for a DMDA
           
     Input Parameter:
 +    da - information about my local patch
@@ -448,10 +448,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DM da,PetscBool  ghosted,void *v
 
      Level: advanced
 
-.seealso: DAGetAdicArray()
+.seealso: DMDAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicArray(DM da,PetscBool  ghosted,void *ptr,void *array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DMDARestoreAdicArray(DM da,PetscBool  ghosted,void *ptr,void *array_start,PetscInt *tdof)
 {
   PetscInt  i;
   void      **iptr = (void**)ptr,iarray_start = 0;
@@ -459,7 +459,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicArray(DM da,PetscBool  ghosted,voi
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (dd->adarrayghostedout[i] == *iptr) {
         iarray_start             = dd->adstartghostedout[i];
         dd->adarrayghostedout[i] = PETSC_NULL;
@@ -468,7 +468,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicArray(DM da,PetscBool  ghosted,voi
       }
     }
     if (!iarray_start) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Could not find array in checkout list");
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (!dd->adarrayghostedin[i]){
         dd->adarrayghostedin[i] = *iptr;
         dd->adstartghostedin[i] = iarray_start;
@@ -476,7 +476,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicArray(DM da,PetscBool  ghosted,voi
       }
     }
   } else {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (dd->adarrayout[i] == *iptr) {
         iarray_start      = dd->adstartout[i];
         dd->adarrayout[i] = PETSC_NULL;
@@ -485,7 +485,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicArray(DM da,PetscBool  ghosted,voi
       }
     }
     if (!iarray_start) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Could not find array in checkout list");
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (!dd->adarrayin[i]){
         dd->adarrayin[i]   = *iptr;
         dd->adstartin[i]   = iarray_start;
@@ -502,7 +502,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ad_DAGetArray(DM da,PetscBool  ghosted,void *ip
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = DAGetAdicArray(da,ghosted,iptr,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetAdicArray(da,ghosted,iptr,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -512,16 +512,16 @@ PetscErrorCode PETSCDM_DLLEXPORT ad_DARestoreArray(DM da,PetscBool  ghosted,void
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = DARestoreAdicArray(da,ghosted,iptr,0,0);CHKERRQ(ierr);
+  ierr = DMDARestoreAdicArray(da,ghosted,iptr,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #endif
 
 #undef __FUNCT__
-#define __FUNCT__ "DAGetArray"
+#define __FUNCT__ "DMDAGetArray"
 /*@C
-     DAGetArray - Gets a work array for a DA
+     DMDAGetArray - Gets a work array for a DMDA
 
     Input Parameter:
 +    da - information about my local patch
@@ -535,10 +535,10 @@ PetscErrorCode PETSCDM_DLLEXPORT ad_DARestoreArray(DM da,PetscBool  ghosted,void
 
   Level: advanced
 
-.seealso: DARestoreArray(), DAGetAdicArray()
+.seealso: DMDARestoreArray(), DMDAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DM da,PetscBool  ghosted,void *vptr)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetArray(DM da,PetscBool  ghosted,void *vptr)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,xs,ys,xm,ym,zs,zm;
@@ -549,7 +549,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DM da,PetscBool  ghosted,void *vptr)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
-    for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
       if (dd->arrayghostedin[i]) {
         *iptr                 = dd->arrayghostedin[i];
         iarray_start          = (char*)dd->startghostedin[i];
@@ -566,7 +566,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DM da,PetscBool  ghosted,void *vptr)
     ym = dd->Ye-dd->Ys;
     zm = dd->Ze-dd->Zs;
   } else {
-    for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
       if (dd->arrayin[i]) {
         *iptr          = dd->arrayin[i];
         iarray_start   = (char*)dd->startin[i];
@@ -629,7 +629,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DM da,PetscBool  ghosted,void *vptr)
   done:
   /* add arrays to the checked out list */
   if (ghosted) {
-    for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
       if (!dd->arrayghostedout[i]) {
         dd->arrayghostedout[i] = *iptr ;
         dd->startghostedout[i] = iarray_start;
@@ -637,7 +637,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DM da,PetscBool  ghosted,void *vptr)
       }
     }
   } else {
-    for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
       if (!dd->arrayout[i]) {
         dd->arrayout[i] = *iptr ;
         dd->startout[i] = iarray_start;
@@ -649,9 +649,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DM da,PetscBool  ghosted,void *vptr)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DARestoreArray"
+#define __FUNCT__ "DMDARestoreArray"
 /*@C
-     DARestoreArray - Restores an array of derivative types for a DA
+     DMDARestoreArray - Restores an array of derivative types for a DMDA
           
     Input Parameter:
 +    da - information about my local patch
@@ -660,10 +660,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DM da,PetscBool  ghosted,void *vptr)
 
      Level: advanced
 
-.seealso: DAGetArray(), DAGetAdicArray()
+.seealso: DMDAGetArray(), DMDAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DM da,PetscBool  ghosted,void *vptr)
+PetscErrorCode PETSCDM_DLLEXPORT DMDARestoreArray(DM da,PetscBool  ghosted,void *vptr)
 {
   PetscInt  i;
   void      **iptr = (void**)vptr,*iarray_start = 0;
@@ -672,7 +672,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DM da,PetscBool  ghosted,void *v
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
-    for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
       if (dd->arrayghostedout[i] == *iptr) {
         iarray_start           = dd->startghostedout[i];
         dd->arrayghostedout[i] = PETSC_NULL;
@@ -680,7 +680,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DM da,PetscBool  ghosted,void *v
         break;
       }
     }
-    for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
       if (!dd->arrayghostedin[i]){
         dd->arrayghostedin[i] = *iptr;
         dd->startghostedin[i] = iarray_start;
@@ -688,7 +688,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DM da,PetscBool  ghosted,void *v
       }
     }
   } else {
-    for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
       if (dd->arrayout[i] == *iptr) {
         iarray_start    = dd->startout[i];
         dd->arrayout[i] = PETSC_NULL;
@@ -696,7 +696,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DM da,PetscBool  ghosted,void *v
         break;
       }
     }
-    for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
       if (!dd->arrayin[i]){
         dd->arrayin[i]  = *iptr;
         dd->startin[i]  = iarray_start;
@@ -708,9 +708,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DM da,PetscBool  ghosted,void *v
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DAGetAdicMFArray"
+#define __FUNCT__ "DMDAGetAdicMFArray"
 /*@C
-     DAGetAdicMFArray - Gets an array of derivative types for a DA for matrix-free ADIC.
+     DMDAGetAdicMFArray - Gets an array of derivative types for a DMDA for matrix-free ADIC.
           
      Input Parameter:
 +    da - information about my local patch
@@ -725,15 +725,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DM da,PetscBool  ghosted,void *v
      The vector values are NOT initialized and may have garbage in them, so you may need
      to zero them.
 
-     This routine returns the same type of object as the DAVecGetArray(), except its
+     This routine returns the same type of object as the DMDAVecGetArray(), except its
      elements are derivative types instead of PetscScalars.
 
      Level: advanced
 
-.seealso: DARestoreAdicMFArray(), DAGetArray(), DAGetAdicArray()
+.seealso: DMDARestoreAdicMFArray(), DMDAGetArray(), DMDAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
@@ -744,7 +744,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DM da,PetscBool  ghosted,void 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (dd->admfarrayghostedin[i]) {
         *iptr                     = dd->admfarrayghostedin[i];
         iarray_start              = (char*)dd->admfstartghostedin[i];
@@ -762,7 +762,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DM da,PetscBool  ghosted,void 
     ym = dd->Ye-dd->Ys;
     zm = dd->Ze-dd->Zs;
   } else {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (dd->admfarrayin[i]) {
         *iptr              = dd->admfarrayin[i];
         iarray_start       = (char*)dd->admfstartin[i];
@@ -829,7 +829,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DM da,PetscBool  ghosted,void 
   done:
   /* add arrays to the checked out list */
   if (ghosted) {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (!dd->admfarrayghostedout[i]) {
         dd->admfarrayghostedout[i] = *iptr ;
         dd->admfstartghostedout[i] = iarray_start;
@@ -838,7 +838,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DM da,PetscBool  ghosted,void 
       }
     }
   } else {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (!dd->admfarrayout[i]) {
         dd->admfarrayout[i] = *iptr ;
         dd->admfstartout[i] = iarray_start;
@@ -847,15 +847,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DM da,PetscBool  ghosted,void 
       }
     }
   }
-  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
+  if (i == DMDA_MAX_AD_ARRAYS+1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Too many DMDA ADIC arrays obtained");
   if (tdof)        *tdof = itdof;
   if (array_start) *(void**)array_start = iarray_start;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DAGetAdicMFArray4"
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DM da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
+#define __FUNCT__ "DMDAGetAdicMFArray4"
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetAdicMFArray4(DM da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
@@ -866,7 +866,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DM da,PetscBool  ghosted,void
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (dd->admfarrayghostedin[i]) {
         *iptr                     = dd->admfarrayghostedin[i];
         iarray_start              = (char*)dd->admfstartghostedin[i];
@@ -884,7 +884,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DM da,PetscBool  ghosted,void
     ym = dd->Ye-dd->Ys;
     zm = dd->Ze-dd->Zs;
   } else {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (dd->admfarrayin[i]) {
         *iptr              = dd->admfarrayin[i];
         iarray_start       = (char*)dd->admfstartin[i];
@@ -923,7 +923,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DM da,PetscBool  ghosted,void
   done:
   /* add arrays to the checked out list */
   if (ghosted) {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (!dd->admfarrayghostedout[i]) {
         dd->admfarrayghostedout[i] = *iptr ;
         dd->admfstartghostedout[i] = iarray_start;
@@ -932,7 +932,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DM da,PetscBool  ghosted,void
       }
     }
   } else {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (!dd->admfarrayout[i]) {
         dd->admfarrayout[i] = *iptr ;
         dd->admfstartout[i] = iarray_start;
@@ -941,15 +941,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DM da,PetscBool  ghosted,void
       }
     }
   }
-  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
+  if (i == DMDA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Too many DMDA ADIC arrays obtained");
   if (tdof)        *tdof = itdof;
   if (array_start) *(void**)array_start = iarray_start;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DAGetAdicMFArray9"
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DM da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
+#define __FUNCT__ "DMDAGetAdicMFArray9"
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetAdicMFArray9(DM da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
@@ -960,7 +960,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DM da,PetscBool  ghosted,void
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (dd->admfarrayghostedin[i]) {
         *iptr                     = dd->admfarrayghostedin[i];
         iarray_start              = (char*)dd->admfstartghostedin[i];
@@ -978,7 +978,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DM da,PetscBool  ghosted,void
     ym = dd->Ye-dd->Ys;
     zm = dd->Ze-dd->Zs;
   } else {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (dd->admfarrayin[i]) {
         *iptr              = dd->admfarrayin[i];
         iarray_start       = (char*)dd->admfstartin[i];
@@ -1017,7 +1017,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DM da,PetscBool  ghosted,void
   done:
   /* add arrays to the checked out list */
   if (ghosted) {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (!dd->admfarrayghostedout[i]) {
         dd->admfarrayghostedout[i] = *iptr ;
         dd->admfstartghostedout[i] = iarray_start;
@@ -1026,7 +1026,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DM da,PetscBool  ghosted,void
       }
     }
   } else {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (!dd->admfarrayout[i]) {
         dd->admfarrayout[i] = *iptr ;
         dd->admfstartout[i] = iarray_start;
@@ -1035,16 +1035,16 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DM da,PetscBool  ghosted,void
       }
     }
   }
-  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
+  if (i == DMDA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Too many DMDA ADIC arrays obtained");
   if (tdof)        *tdof = itdof;
   if (array_start) *(void**)array_start = iarray_start;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DAGetAdicMFArrayb"
+#define __FUNCT__ "DMDAGetAdicMFArrayb"
 /*@C
-     DAGetAdicMFArrayb - Gets an array of derivative types for a DA for matrix-free ADIC.
+     DMDAGetAdicMFArrayb - Gets an array of derivative types for a DMDA for matrix-free ADIC.
           
      Input Parameter:
 +    da - information about my local patch
@@ -1059,15 +1059,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DM da,PetscBool  ghosted,void
      The vector values are NOT initialized and may have garbage in them, so you may need
      to zero them.
 
-     This routine returns the same type of object as the DAVecGetArray(), except its
+     This routine returns the same type of object as the DMDAVecGetArray(), except its
      elements are derivative types instead of PetscScalars.
 
      Level: advanced
 
-.seealso: DARestoreAdicMFArray(), DAGetArray(), DAGetAdicArray()
+.seealso: DMDARestoreAdicMFArray(), DMDAGetArray(), DMDAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DM da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetAdicMFArrayb(DM da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
@@ -1079,7 +1079,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DM da,PetscBool  ghosted,void
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (dd->admfarrayghostedin[i]) {
         *iptr                     = dd->admfarrayghostedin[i];
         iarray_start              = (char*)dd->admfstartghostedin[i];
@@ -1097,7 +1097,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DM da,PetscBool  ghosted,void
     ym = dd->Ye-dd->Ys;
     zm = dd->Ze-dd->Zs;
   } else {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (dd->admfarrayin[i]) {
         *iptr              = dd->admfarrayin[i];
         iarray_start       = (char*)dd->admfstartin[i];
@@ -1164,7 +1164,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DM da,PetscBool  ghosted,void
   done:
   /* add arrays to the checked out list */
   if (ghosted) {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (!dd->admfarrayghostedout[i]) {
         dd->admfarrayghostedout[i] = *iptr ;
         dd->admfstartghostedout[i] = iarray_start;
@@ -1173,7 +1173,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DM da,PetscBool  ghosted,void
       }
     }
   } else {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (!dd->admfarrayout[i]) {
         dd->admfarrayout[i] = *iptr ;
         dd->admfstartout[i] = iarray_start;
@@ -1182,16 +1182,16 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DM da,PetscBool  ghosted,void
       }
     }
   }
-  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
+  if (i == DMDA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Too many DMDA ADIC arrays obtained");
   if (tdof)        *tdof = itdof;
   if (array_start) *(void**)array_start = iarray_start;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DARestoreAdicMFArray"
+#define __FUNCT__ "DMDARestoreAdicMFArray"
 /*@C
-     DARestoreAdicMFArray - Restores an array of derivative types for a DA.
+     DMDARestoreAdicMFArray - Restores an array of derivative types for a DMDA.
           
      Input Parameter:
 +    da - information about my local patch
@@ -1204,10 +1204,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DM da,PetscBool  ghosted,void
 
      Level: advanced
 
-.seealso: DAGetAdicArray()
+.seealso: DMDAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DMDARestoreAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscInt  i;
   void      **iptr = (void**)vptr,*iarray_start = 0;
@@ -1216,7 +1216,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicMFArray(DM da,PetscBool  ghosted,v
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (dd->admfarrayghostedout[i] == *iptr) {
         iarray_start               = dd->admfstartghostedout[i];
         dd->admfarrayghostedout[i] = PETSC_NULL;
@@ -1225,7 +1225,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicMFArray(DM da,PetscBool  ghosted,v
       }
     }
     if (!iarray_start) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Could not find array in checkout list");
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (!dd->admfarrayghostedin[i]){
         dd->admfarrayghostedin[i] = *iptr;
         dd->admfstartghostedin[i] = iarray_start;
@@ -1233,7 +1233,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicMFArray(DM da,PetscBool  ghosted,v
       }
     }
   } else {
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (dd->admfarrayout[i] == *iptr) {
         iarray_start        = dd->admfstartout[i];
         dd->admfarrayout[i] = PETSC_NULL;
@@ -1242,7 +1242,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicMFArray(DM da,PetscBool  ghosted,v
       }
     }
     if (!iarray_start) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Could not find array in checkout list");
-    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (!dd->admfarrayin[i]){
         dd->admfarrayin[i] = *iptr;
         dd->admfstartin[i] = iarray_start;
@@ -1259,7 +1259,7 @@ PetscErrorCode PETSCDM_DLLEXPORT admf_DAGetArray(DM da,PetscBool  ghosted,void *
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = DAGetAdicMFArray(da,ghosted,iptr,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetAdicMFArray(da,ghosted,iptr,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1269,7 +1269,7 @@ PetscErrorCode PETSCDM_DLLEXPORT admf_DARestoreArray(DM da,PetscBool  ghosted,vo
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = DARestoreAdicMFArray(da,ghosted,iptr,0,0);CHKERRQ(ierr);
+  ierr = DMDARestoreAdicMFArray(da,ghosted,iptr,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

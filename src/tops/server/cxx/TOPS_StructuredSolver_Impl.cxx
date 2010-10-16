@@ -36,16 +36,16 @@
 #include <iostream>
 #include "TOPS_StructuredMatrix_Impl.hxx"
 #include "TOPS_ParameterHandling.hxx"  // not from SIDL
-  // This code is the same as DAVecGetArray() except instead of generating
+  // This code is the same as DMDAVecGetArray() except instead of generating
   // raw C multidimensional arrays it gets a Babel array
-::sidl::array<double> DAVecGetArrayBabel(DM da,Vec vec)
+::sidl::array<double> DMDAVecGetArrayBabel(DM da,Vec vec)
 {
   double *uu;
   VecGetArray(vec,&uu);
   PetscInt  xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,dim,dof,N;
-  DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);
-  DAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);
-  DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);
+  DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);
+  DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);
+  DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);
 
   /* Handle case where user passes in global vector as opposed to local */
   VecGetLocalSize(vec,&N);
@@ -99,12 +99,12 @@ static PetscErrorCode FormFunction(SNES snes,Vec uu,Vec f,void *vdmmg)
   DMGlobalToLocalEnd(da,uu,INSERT_VALUES,u);
 
   int mx,my,mz;
-  DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);
+  DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);
   solver->setLength(0,mx);
   solver->setLength(1,my);
   solver->setLength(2,mz);
-  sidl::array<double> ua = DAVecGetArrayBabel(da,u);
-  sidl::array<double> fa = DAVecGetArrayBabel(da,f);;
+  sidl::array<double> ua = DMDAVecGetArrayBabel(da,u);
+  sidl::array<double> fa = DMDAVecGetArrayBabel(da,f);;
   system.computeResidual(ua,fa);
   VecRestoreArray(u,0);
   DMRestoreLocalVector(da,&u);
@@ -130,11 +130,11 @@ static PetscErrorCode FormInitialGuess(DMMG dmmg,Vec f)
   }
 
   int mx,my,mz;
-  DAGetInfo(dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
+  DMDAGetInfo(dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
   solver->setLength(0,mx);
   solver->setLength(1,my);
   solver->setLength(2,mz);
-  sidl::array<double> fa = DAVecGetArrayBabel(dmmg->dm,f);
+  sidl::array<double> fa = DMDAVecGetArrayBabel(dmmg->dm,f);
 
   system.computeInitialGuess(fa);
   VecRestoreArray(f,0);
@@ -153,9 +153,9 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
   //TOPS::Structured::Matrix matrix2 = TOPS::Structured::Matrix::_create();
 
   PetscInt  xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,dof,mx,my,mz;
-  DAGetCorners(dmmg->dm,&xs,&ys,&zs,&xm,&ym,&zm);
-  DAGetGhostCorners(dmmg->dm,&gxs,&gys,&gzs,&gxm,&gym,&gzm);
-  DAGetInfo(dmmg->dm,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);
+  DMDAGetCorners(dmmg->dm,&xs,&ys,&zs,&xm,&ym,&zm);
+  DMDAGetGhostCorners(dmmg->dm,&gxs,&gys,&gzs,&gxm,&gym,&gzm);
+  DMDAGetInfo(dmmg->dm,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);
   
   // Jacobian settings
   int32_t l[1] = {0}, u[1] = {2};
@@ -232,7 +232,7 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
 //  imatrix1->mat = J;
 //  imatrix2->mat = B;
 
-  DAGetInfo(dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
+  DMDAGetInfo(dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
   solver->setLength(0,mx);
   solver->setLength(1,my);
   solver->setLength(2,mz);
@@ -279,11 +279,11 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
   system = ::babel_cast< TOPS::System::Compute::RightHandSide >(
   	solver->getServices().getPort("TOPS.System.Compute.RightHandSide"));
 
-  DAGetInfo(dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
+  DMDAGetInfo(dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
   solver->setLength(0,mx);
   solver->setLength(1,my);
   solver->setLength(2,mz);
-  sidl::array<double> fa = DAVecGetArrayBabel(dmmg->dm,f);;
+  sidl::array<double> fa = DMDAVecGetArrayBabel(dmmg->dm,f);;
 
   if (system._not_nil()) {
     system.computeRightHandSide(fa);
@@ -321,9 +321,9 @@ void TOPS::StructuredSolver_impl::_ctor() {
   this->lengths[2] = 3;
   this->dim  = 2;
   this->s    = 1;
-  this->wrap = DA_NONPERIODIC;
+  this->wrap = DMDA_NONPERIODIC;
   this->bs   = 1;
-  this->stencil_type = DA_STENCIL_STAR;
+  this->stencil_type = DMDA_STENCIL_STAR;
   this->levels       = 3;
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._ctor)
 }
@@ -502,7 +502,7 @@ TOPS::StructuredSolver_impl::solve_impl ()
 
     // create DMMG object 
     DMMGCreate(PETSC_COMM_WORLD,this->levels,(void*)this,&this->dmmg);
-    DACreate(PETSC_COMM_WORLD,this->dim,this->wrap,this->stencil_type,this->lengths[0],
+    DMDACreate(PETSC_COMM_WORLD,this->dim,this->wrap,this->stencil_type,this->lengths[0],
 	     this->lengths[1],this->lengths[2],this->m,this->n,
              this->p,this->bs,this->s,PETSC_NULL,PETSC_NULL,PETSC_NULL,&this->da);
     DMMGSetDM(this->dmmg,(DM)this->da);

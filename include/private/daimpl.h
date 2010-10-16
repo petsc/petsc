@@ -17,11 +17,11 @@ typedef struct {
                                                    values above already scaled by w */
   PetscInt            *idx,Nl;               /* local to global map */
   PetscInt            base;                  /* global number of 1st local node */
-  DAPeriodicType      wrap;                  /* indicates type of periodic boundaries */
+  DMDAPeriodicType      wrap;                  /* indicates type of periodic boundaries */
   VecScatter          gtol,ltog,ltol;        /* scatters, see below for details */
-  DAStencilType       stencil_type;          /* stencil, either box or star */
-  PetscInt            dim;                   /* DA dimension (1,2, or 3) */
-  DAInterpolationType interptype;
+  DMDAStencilType       stencil_type;          /* stencil, either box or star */
+  PetscInt            dim;                   /* DMDA dimension (1,2, or 3) */
+  DMDAInterpolationType interptype;
 
   PetscInt            nlocal,Nlocal;         /* local size of local vector and global vector */
 
@@ -41,49 +41,49 @@ typedef struct {
   ISColoring             localcoloring;       /* set by DMGetColoring() */
   ISColoring             ghostedcoloring;  
 
-  DAElementType          elementtype;
+  DMDAElementType          elementtype;
   PetscInt               ne;                  /* number of elements */
   PetscInt               *e;                  /* the elements */
 
   PetscInt               refine_x,refine_y,refine_z; /* ratio used in refining */
 
-#define DA_MAX_AD_ARRAYS 2 /* work arrays for holding derivative type data, via DAGetAdicArray() */
-  void                   *adarrayin[DA_MAX_AD_ARRAYS],*adarrayout[DA_MAX_AD_ARRAYS]; 
-  void                   *adarrayghostedin[DA_MAX_AD_ARRAYS],*adarrayghostedout[DA_MAX_AD_ARRAYS];
-  void                   *adstartin[DA_MAX_AD_ARRAYS],*adstartout[DA_MAX_AD_ARRAYS]; 
-  void                   *adstartghostedin[DA_MAX_AD_ARRAYS],*adstartghostedout[DA_MAX_AD_ARRAYS];
+#define DMDA_MAX_AD_ARRAYS 2 /* work arrays for holding derivative type data, via DMDAGetAdicArray() */
+  void                   *adarrayin[DMDA_MAX_AD_ARRAYS],*adarrayout[DMDA_MAX_AD_ARRAYS]; 
+  void                   *adarrayghostedin[DMDA_MAX_AD_ARRAYS],*adarrayghostedout[DMDA_MAX_AD_ARRAYS];
+  void                   *adstartin[DMDA_MAX_AD_ARRAYS],*adstartout[DMDA_MAX_AD_ARRAYS]; 
+  void                   *adstartghostedin[DMDA_MAX_AD_ARRAYS],*adstartghostedout[DMDA_MAX_AD_ARRAYS];
   PetscInt                    tdof,ghostedtdof;
 
-                            /* work arrays for holding derivative type data, via DAGetAdicMFArray() */
-  void                   *admfarrayin[DA_MAX_AD_ARRAYS],*admfarrayout[DA_MAX_AD_ARRAYS]; 
-  void                   *admfarrayghostedin[DA_MAX_AD_ARRAYS],*admfarrayghostedout[DA_MAX_AD_ARRAYS];
-  void                   *admfstartin[DA_MAX_AD_ARRAYS],*admfstartout[DA_MAX_AD_ARRAYS]; 
-  void                   *admfstartghostedin[DA_MAX_AD_ARRAYS],*admfstartghostedout[DA_MAX_AD_ARRAYS];
+                            /* work arrays for holding derivative type data, via DMDAGetAdicMFArray() */
+  void                   *admfarrayin[DMDA_MAX_AD_ARRAYS],*admfarrayout[DMDA_MAX_AD_ARRAYS]; 
+  void                   *admfarrayghostedin[DMDA_MAX_AD_ARRAYS],*admfarrayghostedout[DMDA_MAX_AD_ARRAYS];
+  void                   *admfstartin[DMDA_MAX_AD_ARRAYS],*admfstartout[DMDA_MAX_AD_ARRAYS]; 
+  void                   *admfstartghostedin[DMDA_MAX_AD_ARRAYS],*admfstartghostedout[DMDA_MAX_AD_ARRAYS];
 
-#define DA_MAX_WORK_ARRAYS 2 /* work arrays for holding work via DAGetArray() */
-  void                   *arrayin[DA_MAX_WORK_ARRAYS],*arrayout[DA_MAX_WORK_ARRAYS]; 
-  void                   *arrayghostedin[DA_MAX_WORK_ARRAYS],*arrayghostedout[DA_MAX_WORK_ARRAYS];
-  void                   *startin[DA_MAX_WORK_ARRAYS],*startout[DA_MAX_WORK_ARRAYS]; 
-  void                   *startghostedin[DA_MAX_WORK_ARRAYS],*startghostedout[DA_MAX_WORK_ARRAYS];
+#define DMDA_MAX_WORK_ARRAYS 2 /* work arrays for holding work via DMDAGetArray() */
+  void                   *arrayin[DMDA_MAX_WORK_ARRAYS],*arrayout[DMDA_MAX_WORK_ARRAYS]; 
+  void                   *arrayghostedin[DMDA_MAX_WORK_ARRAYS],*arrayghostedout[DMDA_MAX_WORK_ARRAYS];
+  void                   *startin[DMDA_MAX_WORK_ARRAYS],*startout[DMDA_MAX_WORK_ARRAYS]; 
+  void                   *startghostedin[DMDA_MAX_WORK_ARRAYS],*startghostedout[DMDA_MAX_WORK_ARRAYS];
 
-  DALocalFunction1       lf;
-  DALocalFunction1       lj;
-  DALocalFunction1       adic_lf;
-  DALocalFunction1       adicmf_lf;
-  DALocalFunction1       adifor_lf;
-  DALocalFunction1       adiformf_lf;
+  DMDALocalFunction1       lf;
+  DMDALocalFunction1       lj;
+  DMDALocalFunction1       adic_lf;
+  DMDALocalFunction1       adicmf_lf;
+  DMDALocalFunction1       adifor_lf;
+  DMDALocalFunction1       adiformf_lf;
 
-  PetscErrorCode (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*);
-  PetscErrorCode (*adic_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*);
-  PetscErrorCode (*adicmf_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*);
-  PetscErrorCode (*lfib)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*);
-  PetscErrorCode (*adic_lfib)(DALocalInfo*,MatStencil*,void*,void*,void*);
-  PetscErrorCode (*adicmf_lfib)(DALocalInfo*,MatStencil*,void*,void*,void*);
+  PetscErrorCode (*lfi)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*);
+  PetscErrorCode (*adic_lfi)(DMDALocalInfo*,MatStencil*,void*,void*,void*);
+  PetscErrorCode (*adicmf_lfi)(DMDALocalInfo*,MatStencil*,void*,void*,void*);
+  PetscErrorCode (*lfib)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*);
+  PetscErrorCode (*adic_lfib)(DMDALocalInfo*,MatStencil*,void*,void*,void*);
+  PetscErrorCode (*adicmf_lfib)(DMDALocalInfo*,MatStencil*,void*,void*,void*);
 
-  /* used by DASetBlockFills() */
+  /* used by DMDASetBlockFills() */
   PetscInt               *ofill,*dfill;
 
-  /* used by DASetMatPreallocateOnly() */
+  /* used by DMDASetMatPreallocateOnly() */
   PetscBool              prealloc_only;
 } DM_DA;
 
@@ -111,6 +111,6 @@ EXTERN PetscErrorCode DMView_DA_Matlab(DM,PetscViewer);
 EXTERN PetscErrorCode DMView_DA_Binary(DM,PetscViewer);
 EXTERN PetscErrorCode DMView_DA_VTK(DM,PetscViewer);
 
-extern PetscLogEvent  DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction;
+extern PetscLogEvent  DMDA_GlobalToLocal, DMDA_LocalToGlobal, DMDA_LocalADFunction;
 
 #endif

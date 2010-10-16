@@ -114,14 +114,14 @@
 !  Create vector data structures
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-!  Create distributed array (DA) to manage parallel grid and vectors
+!  Create distributed array (DMDA) to manage parallel grid and vectors
 !  Set up the ghost point communication pattern.  There are m total
 !  grid values spread equally among all the processors.
       i1 = 1
-      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,m,i1,i1,                &
+      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,m,i1,i1,                &
      &     PETSC_NULL_INTEGER,da,ierr)
 
-!  Extract global and local vectors from DA; then duplicate for remaining
+!  Extract global and local vectors from DMDA; then duplicate for remaining
 !  vectors that are the same types.
 
       call DMCreateGlobalVector(da,u,ierr)

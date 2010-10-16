@@ -7,12 +7,12 @@
 #include "private/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetCoordinates"
+#define __FUNCT__ "DMDASetCoordinates"
 /*@
-   DASetCoordinates - Sets into the DA a vector that indicates the 
+   DMDASetCoordinates - Sets into the DMDA a vector that indicates the 
       coordinates of the local nodes (NOT including ghost nodes).
 
-   Collective on DA
+   Collective on DMDA
 
    Input Parameter:
 +  da - the distributed array
@@ -25,9 +25,9 @@
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DAGetGhostCorners(), DAGetCoordinates(), DASetUniformCoordinates(). DAGetGhostedCoordinates(), DAGetCoordinateDA()
+.seealso: DMDAGetGhostCorners(), DMDAGetCoordinates(), DMDASetUniformCoordinates(). DMDAGetGhostedCoordinates(), DMDAGetCoordinateDA()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DM da,Vec c)
+PetscErrorCode PETSCDM_DLLEXPORT DMDASetCoordinates(DM da,Vec c)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -47,9 +47,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DM da,Vec c)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetCoordinates"
+#define __FUNCT__ "DMDAGetCoordinates"
 /*@
-   DAGetCoordinates - Gets the node coordinates associated with a DA.
+   DMDAGetCoordinates - Gets the node coordinates associated with a DMDA.
 
    Not Collective
 
@@ -70,9 +70,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DM da,Vec c)
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetGhostedCoordinates(), DAGetCoordinateDA()
+.seealso: DMDAGetGhostCorners(), DMDASetCoordinates(), DMDASetUniformCoordinates(), DMDAGetGhostedCoordinates(), DMDAGetCoordinateDA()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinates(DM da,Vec *c)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetCoordinates(DM da,Vec *c)
 {
   DM_DA          *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
@@ -83,25 +83,25 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinates(DM da,Vec *c)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetCoordinateDA"
+#define __FUNCT__ "DMDAGetCoordinateDA"
 /*@
-   DAGetCoordinateDA - Gets the DA that scatters between global and local DA coordinates
+   DMDAGetCoordinateDA - Gets the DMDA that scatters between global and local DMDA coordinates
 
-   Collective on DA
+   Collective on DMDA
 
    Input Parameter:
 .  da - the distributed array
 
    Output Parameter:
-.  dac - coordinate DA
+.  dac - coordinate DMDA
 
   Level: intermediate
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetCoordinates(), DAGetGhostedCoordinates()
+.seealso: DMDAGetGhostCorners(), DMDASetCoordinates(), DMDASetUniformCoordinates(), DMDAGetCoordinates(), DMDAGetGhostedCoordinates()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DM da,DM *cda)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetCoordinateDA(DM da,DM *cda)
 {
   PetscMPIInt    size;
   PetscErrorCode ierr;
@@ -112,18 +112,18 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DM da,DM *cda)
     ierr = MPI_Comm_size(((PetscObject)da)->comm,&size);CHKERRQ(ierr);
     if (dd->dim == 1) {
       PetscInt            s,m,*lc,l;
-      DAPeriodicType pt;
-      ierr = DAGetInfo(da,0,&m,0,0,0,0,0,0,&s,&pt,0);CHKERRQ(ierr);
-      ierr = DAGetCorners(da,0,0,0,&l,0,0);CHKERRQ(ierr);
+      DMDAPeriodicType pt;
+      ierr = DMDAGetInfo(da,0,&m,0,0,0,0,0,0,&s,&pt,0);CHKERRQ(ierr);
+      ierr = DMDAGetCorners(da,0,0,0,&l,0,0);CHKERRQ(ierr);
       ierr = PetscMalloc(size*sizeof(PetscInt),&lc);CHKERRQ(ierr);
       ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
-      ierr = DACreate1d(((PetscObject)da)->comm,pt,m,1,s,lc,&dd->da_coordinates);CHKERRQ(ierr);
+      ierr = DMDACreate1d(((PetscObject)da)->comm,pt,m,1,s,lc,&dd->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree(lc);CHKERRQ(ierr);
     } else if (dd->dim == 2) {
       PetscInt            i,s,m,*lc,*ld,l,k,n,M,N;
-      DAPeriodicType pt;
-      ierr = DAGetInfo(da,0,&m,&n,0,&M,&N,0,0,&s,&pt,0);CHKERRQ(ierr);
-      ierr = DAGetCorners(da,0,0,0,&l,&k,0);CHKERRQ(ierr);
+      DMDAPeriodicType pt;
+      ierr = DMDAGetInfo(da,0,&m,&n,0,&M,&N,0,0,&s,&pt,0);CHKERRQ(ierr);
+      ierr = DMDAGetCorners(da,0,0,0,&l,&k,0);CHKERRQ(ierr);
       ierr = PetscMalloc2(size,PetscInt,&lc,size,PetscInt,&ld);CHKERRQ(ierr);
       /* only first M values in lc matter */
       ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
@@ -132,13 +132,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DM da,DM *cda)
       for ( i=0; i<N; i++) {
         ld[i] = ld[M*i];
       }
-      ierr = DACreate2d(((PetscObject)da)->comm,pt,DA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,&dd->da_coordinates);CHKERRQ(ierr);
+      ierr = DMDACreate2d(((PetscObject)da)->comm,pt,DMDA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,&dd->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree2(lc,ld);CHKERRQ(ierr);
     } else if (dd->dim == 3) {
       PetscInt            i,s,m,*lc,*ld,*le,l,k,q,n,M,N,P,p;
-      DAPeriodicType pt;
-      ierr = DAGetInfo(da,0,&m,&n,&p,&M,&N,&P,0,&s,&pt,0);CHKERRQ(ierr);
-      ierr = DAGetCorners(da,0,0,0,&l,&k,&q);CHKERRQ(ierr);
+      DMDAPeriodicType pt;
+      ierr = DMDAGetInfo(da,0,&m,&n,&p,&M,&N,&P,0,&s,&pt,0);CHKERRQ(ierr);
+      ierr = DMDAGetCorners(da,0,0,0,&l,&k,&q);CHKERRQ(ierr);
       ierr = PetscMalloc3(size,PetscInt,&lc,size,PetscInt,&ld,size,PetscInt,&le);CHKERRQ(ierr);
       /* only first M values in lc matter */
       ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
@@ -151,7 +151,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DM da,DM *cda)
       for ( i=0; i<P; i++) {
         le[i] = le[M*N*i];
       }
-      ierr = DACreate3d(((PetscObject)da)->comm,pt,DA_STENCIL_BOX,m,n,p,M,N,P,3,s,lc,ld,le,&dd->da_coordinates);CHKERRQ(ierr);
+      ierr = DMDACreate3d(((PetscObject)da)->comm,pt,DMDA_STENCIL_BOX,m,n,p,M,N,P,3,s,lc,ld,le,&dd->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree3(lc,ld,le);CHKERRQ(ierr);
     }
   }
@@ -161,11 +161,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DM da,DM *cda)
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetGhostedCoordinates"
+#define __FUNCT__ "DMDAGetGhostedCoordinates"
 /*@
-   DAGetGhostedCoordinates - Gets the node coordinates associated with a DA.
+   DMDAGetGhostedCoordinates - Gets the node coordinates associated with a DMDA.
 
-   Collective on DA
+   Collective on DMDA
 
    Input Parameter:
 .  da - the distributed array
@@ -183,9 +183,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DM da,DM *cda)
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetCoordinates(), DAGetCoordinateDA()
+.seealso: DMDAGetGhostCorners(), DMDASetCoordinates(), DMDASetUniformCoordinates(), DMDAGetCoordinates(), DMDAGetCoordinateDA()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostedCoordinates(DM da,Vec *c)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetGhostedCoordinates(DM da,Vec *c)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -193,10 +193,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostedCoordinates(DM da,Vec *c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(c,2);
-  if (!dd->coordinates) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"You must call DASetCoordinates() before this call");
+  if (!dd->coordinates) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"You must call DMDASetCoordinates() before this call");
   if (!dd->ghosted_coordinates) {
     DM dac;
-    ierr = DAGetCoordinateDA(da,&dac);CHKERRQ(ierr);
+    ierr = DMDAGetCoordinateDA(da,&dac);CHKERRQ(ierr);
     ierr = DMCreateLocalVector(dac,&dd->ghosted_coordinates);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dac,dd->coordinates,INSERT_VALUES,dd->ghosted_coordinates);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dac,dd->coordinates,INSERT_VALUES,dd->ghosted_coordinates);CHKERRQ(ierr);
@@ -206,26 +206,26 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostedCoordinates(DM da,Vec *c)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetFieldName"
+#define __FUNCT__ "DMDASetFieldName"
 /*@C
-   DASetFieldName - Sets the names of individual field components in multicomponent
-   vectors associated with a DA.
+   DMDASetFieldName - Sets the names of individual field components in multicomponent
+   vectors associated with a DMDA.
 
    Not Collective
 
    Input Parameters:
 +  da - the distributed array
-.  nf - field number for the DA (0, 1, ... dof-1), where dof indicates the 
-        number of degrees of freedom per node within the DA
+.  nf - field number for the DMDA (0, 1, ... dof-1), where dof indicates the 
+        number of degrees of freedom per node within the DMDA
 -  names - the name of the field (component)
 
   Level: intermediate
 
 .keywords: distributed array, get, component name
 
-.seealso: DAGetFieldName()
+.seealso: DMDAGetFieldName()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetFieldName(DM da,PetscInt nf,const char name[])
+PetscErrorCode PETSCDM_DLLEXPORT DMDASetFieldName(DM da,PetscInt nf,const char name[])
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -239,17 +239,17 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFieldName(DM da,PetscInt nf,const char nam
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetFieldName"
+#define __FUNCT__ "DMDAGetFieldName"
 /*@C
-   DAGetFieldName - Gets the names of individual field components in multicomponent
-   vectors associated with a DA.
+   DMDAGetFieldName - Gets the names of individual field components in multicomponent
+   vectors associated with a DMDA.
 
    Not Collective
 
    Input Parameter:
 +  da - the distributed array
--  nf - field number for the DA (0, 1, ... dof-1), where dof indicates the 
-        number of degrees of freedom per node within the DA
+-  nf - field number for the DMDA (0, 1, ... dof-1), where dof indicates the 
+        number of degrees of freedom per node within the DMDA
 
    Output Parameter:
 .  names - the name of the field (component)
@@ -258,9 +258,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFieldName(DM da,PetscInt nf,const char nam
 
 .keywords: distributed array, get, component name
 
-.seealso: DASetFieldName()
+.seealso: DMDASetFieldName()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetFieldName(DM da,PetscInt nf,const char **name)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetFieldName(DM da,PetscInt nf,const char **name)
 {
   DM_DA          *dd = (DM_DA*)da->data;
 
@@ -273,9 +273,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetFieldName(DM da,PetscInt nf,const char **n
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetCorners"
+#define __FUNCT__ "DMDAGetCorners"
 /*@
-   DAGetCorners - Returns the global (x,y,z) indices of the lower left
+   DMDAGetCorners - Returns the global (x,y,z) indices of the lower left
    corner of the local region, excluding ghost points.
 
    Not Collective
@@ -291,7 +291,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetFieldName(DM da,PetscInt nf,const char **n
 
    Note:
    The corner information is independent of the number of degrees of 
-   freedom per node set with the DACreateXX() routine. Thus the x, y, z, and
+   freedom per node set with the DMDACreateXX() routine. Thus the x, y, z, and
    m, n, p can be thought of as coordinates on a logical grid, where each
    grid point has (potentially) several degrees of freedom.
    Any of y, z, n, and p can be passed in as PETSC_NULL if not needed.
@@ -300,9 +300,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetFieldName(DM da,PetscInt nf,const char **n
 
 .keywords: distributed array, get, corners, nodes, local indices
 
-.seealso: DAGetGhostCorners(), DAGetOwnershipRanges()
+.seealso: DMDAGetGhostCorners(), DMDAGetOwnershipRanges()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {
   PetscInt w;
   DM_DA    *dd = (DM_DA*)da->data;
@@ -320,9 +320,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCorners(DM da,PetscInt *x,PetscInt *y,Pets
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetLocalBoundingBox"
+#define __FUNCT__ "DMDAGetLocalBoundingBox"
 /*@
-   DAGetLocalBoundingBox - Returns the local bounding box for the DA.
+   DMDAGetLocalBoundingBox - Returns the local bounding box for the DMDA.
 
    Not Collective
 
@@ -337,9 +337,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCorners(DM da,PetscInt *x,PetscInt *y,Pets
 
 .keywords: distributed array, get, coordinates
 
-.seealso: DAGetCoordinateDA(), DAGetCoordinates(), DAGetBoundingBox()
+.seealso: DMDAGetCoordinateDA(), DMDAGetCoordinates(), DMDAGetBoundingBox()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalBoundingBox(DM da,PetscReal lmin[],PetscReal lmax[])
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetLocalBoundingBox(DM da,PetscReal lmin[],PetscReal lmax[])
 {
   PetscErrorCode    ierr;
   Vec               coords  = PETSC_NULL;
@@ -352,7 +352,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalBoundingBox(DM da,PetscReal lmin[],Pe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   dim = dd->dim;
-  ierr = DAGetCoordinates(da,&coords);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinates(da,&coords);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coords,&local_coords);CHKERRQ(ierr);
   ierr = VecGetLocalSize(coords,&N);CHKERRQ(ierr);
   Ni = N/dim;
@@ -369,11 +369,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalBoundingBox(DM da,PetscReal lmin[],Pe
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetBoundingBox"
+#define __FUNCT__ "DMDAGetBoundingBox"
 /*@
-   DAGetBoundingBox - Returns the global bounding box for the DA.
+   DMDAGetBoundingBox - Returns the global bounding box for the DMDA.
 
-   Collective on DA
+   Collective on DMDA
 
    Input Parameter:
 .  da - the distributed array
@@ -386,9 +386,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalBoundingBox(DM da,PetscReal lmin[],Pe
 
 .keywords: distributed array, get, coordinates
 
-.seealso: DAGetCoordinateDA(), DAGetCoordinates(), DAGetLocalBoundingBox()
+.seealso: DMDAGetCoordinateDA(), DMDAGetCoordinates(), DMDAGetLocalBoundingBox()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetBoundingBox(DM da,PetscReal gmin[],PetscReal gmax[])
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetBoundingBox(DM da,PetscReal gmin[],PetscReal gmax[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    count;
@@ -398,7 +398,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetBoundingBox(DM da,PetscReal gmin[],PetscRe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   count = PetscMPIIntCast(dd->dim);
-  ierr = DAGetLocalBoundingBox(da,lmin,lmax);CHKERRQ(ierr);
+  ierr = DMDAGetLocalBoundingBox(da,lmin,lmax);CHKERRQ(ierr);
   if (gmin) {ierr = MPI_Allreduce(lmin,gmin,count,MPIU_REAL,MPI_MIN,((PetscObject)da)->comm);CHKERRQ(ierr);}
   if (gmax) {ierr = MPI_Allreduce(lmax,gmax,count,MPIU_REAL,MPI_MAX,((PetscObject)da)->comm);CHKERRQ(ierr);}
   PetscFunctionReturn(0);

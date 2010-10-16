@@ -382,7 +382,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<PETSC_MES
   Notes: This properly preallocates the number of nonzeros in the sparse matrix so you 
        do not need to do it yourself.
 
-.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DASetBlockFills()
+.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DMDASetBlockFills()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, SectionReal section, MatType mtype, Mat *J)
 {
@@ -438,7 +438,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexMatrix(Mesh mesh, MatType mtype, M
     Notes: This properly preallocates the number of nonzeros in the sparse matrix so you 
        do not need to do it yourself.
 
-.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DASetBlockFills()
+.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DMDASetBlockFills()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, const MatType mtype, Mat *J)

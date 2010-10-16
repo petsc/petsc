@@ -58,8 +58,8 @@ PetscErrorCode FillMatrix(DM da,Mat jac)
   PetscScalar    v[7];
   MatStencil     row,col[7];
 
-  ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
 
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){
@@ -176,7 +176,7 @@ int main(int argc,char **args)
   if (PreLoadIt==0)
   {
       /* small problem */
-      ierr=DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,10,10,10,
+      ierr=DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,10,10,10,
             1,PETSC_DECIDE,1,1,1,0,0,0,&da); CHKERRQ(ierr);
   }
   else
@@ -184,17 +184,17 @@ int main(int argc,char **args)
      /* actual problem */
       if (freepart)     /* petsc determines partitioning */
       {
-        ierr=DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-10,-10,-10,
+        ierr=DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-10,-10,-10,
             PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da); CHKERRQ(ierr);
       }
       else             /* (1,NP,1) partitioning */
       {
-        ierr=DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-10,-10,-10,
+        ierr=DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-10,-10,-10,
             1,PETSC_DECIDE,1,1,1,0,0,0,&da); CHKERRQ(ierr);
       }
 
       /* now we print what partitioning is chosen */
-      ierr=DAGetInfo(da,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&m,
+      ierr=DMDAGetInfo(da,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&m,
                       &n,&p,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
       PetscPrintf(PETSC_COMM_WORLD,"Partitioning: %u %u %u\n",m,n,p);
   }

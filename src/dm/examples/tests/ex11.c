@@ -1,5 +1,5 @@
 
-static char help[] = "Tests various 1-dimensional DA routines.\n\n";
+static char help[] = "Tests various 1-dimensional DMDA routines.\n\n";
 
 #include "petscda.h"
 
@@ -31,26 +31,26 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic",&wrap,PETSC_NULL);CHKERRQ(ierr); 
 
   /* Create distributed array and get vectors */
-  ierr = DACreate2d(PETSC_COMM_WORLD,(DAPeriodicType)wrap,DA_STENCIL_BOX,M,N,PETSC_DECIDE,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,(DMDAPeriodicType)wrap,DMDA_STENCIL_BOX,M,N,PETSC_DECIDE,
                     PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
-  ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRQ(ierr);
   for (i=0; i<dof; i++) {
     sprintf(fname,"Field %d",(int)i);
-    ierr = DASetFieldName(da,i,fname);CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,i,fname);CHKERRQ(ierr);
   }
 
   ierr = DMView(da,viewer);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&locala);CHKERRQ(ierr);
-  ierr = DAGetCoordinates(da,&coors);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinates(da,&coors);CHKERRQ(ierr);
   ierr = VecGetArray(coors,&xy);CHKERRQ(ierr);
 
   ierr = VecView(coors,PETSC_VIEWER_STDOUT_SELF);
 
   /* Set values into local vectors */
   ierr = VecGetArray(local,&alocal);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,0,0,0,&m,&n,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,0,0,0,&m,&n,0);CHKERRQ(ierr);
   n    = n/dof;
   for (k=0; k<dof; k++) {
     cnt = 0;

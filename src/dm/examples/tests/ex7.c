@@ -1,5 +1,5 @@
 
-static char help[] = "Tests DALocalToLocalxxx().\n\n";
+static char help[] = "Tests DMDALocalToLocalxxx().\n\n";
 
 #include "petscda.h"
 
@@ -11,8 +11,8 @@ int main(int argc,char **argv)
   PetscInt       M=8,dof=1,stencil_width=1,i,start,end,P=5,N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE,pt = 0,st = 0;
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE,flg2,flg3;
-  DAPeriodicType periodic;
-  DAStencilType  stencil_type;
+  DMDAPeriodicType periodic;
+  DMDAStencilType  stencil_type;
   DM             da;
   Vec            local,global,local_copy;
   PetscScalar    value;
@@ -28,21 +28,21 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_width",&stencil_width,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic",&pt,PETSC_NULL);CHKERRQ(ierr); 
-  periodic = (DAPeriodicType) pt;
+  periodic = (DMDAPeriodicType) pt;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_type",&st,PETSC_NULL);CHKERRQ(ierr); 
-  stencil_type = (DAStencilType) st;
+  stencil_type = (DMDAStencilType) st;
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-2d",&flg2);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-3d",&flg3);CHKERRQ(ierr);
   if (flg2) {
-    ierr = DACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,M,N,m,n,dof,stencil_width,
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,M,N,m,n,dof,stencil_width,
                       PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   } else if (flg3) {
-    ierr = DACreate3d(PETSC_COMM_WORLD,periodic,stencil_type,M,N,P,m,n,p,dof,stencil_width,
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,periodic,stencil_type,M,N,P,m,n,p,dof,stencil_width,
                       PETSC_NULL,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   }
   else {
-    ierr = DACreate1d(PETSC_COMM_WORLD,periodic,M,dof,stencil_width,PETSC_NULL,&da);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,periodic,M,dof,stencil_width,PETSC_NULL,&da);CHKERRQ(ierr);
   }
 
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
@@ -67,8 +67,8 @@ int main(int argc,char **argv)
   ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
 
-  ierr = DALocalToLocalBegin(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
-  ierr = DALocalToLocalEnd(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
+  ierr = DMDALocalToLocalBegin(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
+  ierr = DMDALocalToLocalEnd(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
 
   
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-save",&flg,PETSC_NULL);CHKERRQ(ierr);

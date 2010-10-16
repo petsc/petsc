@@ -27,7 +27,7 @@ struct DMCompositeLink {
 
 typedef struct {
   PetscInt               n,N,rstart;           /* rstart is relative to all processors, n unknowns owned by this process, N is total unknowns */
-  PetscInt               nghost;               /* number of all local entries include DA ghost points and any shared redundant arrays */
+  PetscInt               nghost;               /* number of all local entries include DMDA ghost points and any shared redundant arrays */
   PetscInt               nDM,nredundant,nmine; /* how many DM's and seperate redundant arrays used to build DM(nmine is ones on this process) */
   PetscBool              setup;                /* after this is set, cannot add new links to the DM*/
   struct DMCompositeLink *next;
@@ -39,7 +39,7 @@ typedef struct {
 #define __FUNCT__ "DMCompositeSetCoupling"
 /*@C
     DMCompositeSetCoupling - Sets user provided routines that compute the coupling between the 
-      seperate components (DA's and arrays) in a DMto build the correct matrix nonzero structure.
+      seperate components (DMDA's and arrays) in a DMto build the correct matrix nonzero structure.
 
 
     Logically Collective on MPI_Comm
@@ -450,7 +450,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetAccess(DM dm,Vec gvec,...)
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeRestoreAccess"
 /*@C
-    DMCompositeRestoreAccess - Returns the vectors obtained with DACompositeGetAccess()
+    DMCompositeRestoreAccess - Returns the vectors obtained with DMCompositeGetAccess()
        representation.
 
     Collective on DMComposite
@@ -464,7 +464,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetAccess(DM dm,Vec gvec,...)
 
 .seealso  DMCompositeAddArray(), DMCompositeAddDM(), DMCreateGlobalVector(),
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeScatter(),
-         DMCompositeRestoreAccess(), DACompositeGetAccess()
+         DMCompositeRestoreAccess(), DMCompositeGetAccess()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMCompositeRestoreAccess(DM dm,Vec gvec,...)
@@ -680,7 +680,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeAddArray(DM dm,PetscMPIInt orank,Pet
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeAddDM"
 /*@C
-    DMCompositeAddDM - adds a DM (includes DA) vector to a DMComposite
+    DMCompositeAddDM - adds a DM  vector to a DMComposite
 
     Collective on DMComposite
 
@@ -707,7 +707,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeAddDM(DM dmc,DM dm)
   PetscValidHeaderSpecific(dmc,DM_CLASSID,1);
   PetscValidHeaderSpecific(dm,DM_CLASSID,2);
   next = com->next;
-  if (com->setup) SETERRQ(((PetscObject)dmc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot add a DA once you have used the DMComposite");
+  if (com->setup) SETERRQ(((PetscObject)dmc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot add a DM once you have used the DMComposite");
 
   /* create new link */
   ierr = PetscNew(struct DMCompositeLink,&mine);CHKERRQ(ierr);
@@ -834,7 +834,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateLocalVector_Composite(DM dm,Vec *lvec)
 
     Output Parameters:
 .    is - the individual indices for each packed vector/array. Note that this includes
-           all the ghost points that individual ghosted DA's may have. Also each process has an 
+           all the ghost points that individual ghosted DMDA's may have. Also each process has an 
            is for EACH redundant array (not just the local redundant arrays).
  
     Level: advanced
@@ -1160,7 +1160,7 @@ PetscErrorCode DMCompositeGetEntries_DM(DM dmi,struct DMCompositeLink *mine,DM *
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeGetEntries"
 /*@C
-    DMCompositeGetEntries - Gets the DA, redundant size, etc for each entry in a DMComposite.
+    DMCompositeGetEntries - Gets the DM, redundant size, etc for each entry in a DMComposite.
 
     Not Collective
 
@@ -1168,7 +1168,7 @@ PetscErrorCode DMCompositeGetEntries_DM(DM dmi,struct DMCompositeLink *mine,DM *
 .    dm - the packer object
  
     Output Parameter:
-.    ... - the individual entries, DAs or integer sizes)
+.    ... - the individual entries, DMs or integer sizes)
  
     Level: advanced
 

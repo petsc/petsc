@@ -1,7 +1,7 @@
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
-!  domain, using distributed arrays (DAs) to partition the parallel grid.
+!  domain, using distributed arrays (DMDAs) to partition the parallel grid.
 !  The command line options include:
 !    -par <param>, where <param> indicates the nonlinearity of the problem
 !       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)
@@ -10,7 +10,7 @@
 !
 !/*T
 !  Concepts: SNES^parallel Bratu example
-!  Concepts: DA^using distributed arrays;
+!  Concepts: DMDA^using distributed arrays;
 !  Processors: n
 !T*/
 !
@@ -106,30 +106,30 @@
 !  Create vector data structures; set function evaluation routine
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-!  Create distributed array (DA) to manage parallel grid and vectors
+!  Create distributed array (DMDA) to manage parallel grid and vectors
 
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
-      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,            &
-     &     i4,i4,PETSC_DECIDE,PETSC_DECIDE,i1,i1,PETSC_NULL_INTEGER,                &
-     &     PETSC_NULL_INTEGER,da,ierr)
+      call DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,                      &
+     &     DMDA_STENCIL_STAR,i4,i4,PETSC_DECIDE,PETSC_DECIDE,i1,i1,                &
+     &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
 
-!  Extract global and local vectors from DA; then duplicate for remaining
+!  Extract global and local vectors from DMDA; then duplicate for remaining
 !  vectors that are the same types
 
       call DMCreateGlobalVector(da,x,ierr)
       call VecDuplicate(x,r,ierr)
 
-!  Get local grid boundaries (for 2-dimensional DA)
+!  Get local grid boundaries (for 2-dimensional DMDA)
 
-      call DAGetInfo(da,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,            &
+      call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,            &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
      &               PETSC_NULL_INTEGER,ierr)
-      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,                      &
+      call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,                      &
      &     PETSC_NULL_INTEGER,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,             &
+      call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,             &
      &     PETSC_NULL_INTEGER,ierr)
 
 !  Here we shift the starting indices up by one so that we can easily
@@ -147,10 +147,10 @@
 
 !  Set function evaluation routine and vector
 
-      call DASetLocalFunction(da,FormFunctionLocal,ierr)
-      call DASetLocalJacobian(da,FormJacobianLocal,ierr)
+      call DMDASetLocalFunction(da,FormFunctionLocal,ierr)
+      call DMDASetLocalJacobian(da,FormJacobianLocal,ierr)
 #if defined(PETSC_HAVE_ADIFOR)
-      call DASetLocalAdiforFunction(da,                                             &
+      call DMDASetLocalAdiforFunction(da,                                             &
      &         g_FormFunctionLocal,ierr)
 #endif
       call SNESSetFunction(snes,r,SNESDAFormFunction,da,ierr)
@@ -173,7 +173,7 @@
      &     ,'-adiformf_jacobian',                                                 &
      &     adiformf_jacobian,PETSC_NULL_INTEGER,ierr)
       if (adiformf_jacobian .eq. 1) then
-        call DASetLocalAdiforMFFunction(da,                                       &
+        call DMDASetLocalAdiforMFFunction(da,                                       &
      &         m_FormFunctionLocal,ierr)
         call MatRegisterDAAD(ierr)
         call MatCreateDAAD(da,A,ierr)
@@ -379,7 +379,7 @@
 #include "ex5f.h"
 
 !  Input/output variables:
-      DALocalInfo info(DA_LOCAL_INFO_SIZE)
+      DMDALocalInfo info(DMDA_LOCAL_INFO_SIZE)
       PetscScalar x(gxs:gxe,gys:gye)
       PetscScalar f(xs:xe,ys:ye)
       PetscErrorCode     ierr
@@ -391,12 +391,12 @@
       PetscScalar u,uxx,uyy
       PetscInt  i,j
 
-      xs     = info(DA_LOCAL_INFO_XS)+1
-      xe     = xs+info(DA_LOCAL_INFO_XM)-1
-      ys     = info(DA_LOCAL_INFO_YS)+1
-      ye     = ys+info(DA_LOCAL_INFO_YM)-1
-      mx     = info(DA_LOCAL_INFO_MX)
-      my     = info(DA_LOCAL_INFO_MY)
+      xs     = info(DMDA_LOCAL_INFO_XS)+1
+      xe     = xs+info(DMDA_LOCAL_INFO_XM)-1
+      ys     = info(DMDA_LOCAL_INFO_YS)+1
+      ye     = ys+info(DMDA_LOCAL_INFO_YM)-1
+      mx     = info(DMDA_LOCAL_INFO_MX)
+      my     = info(DMDA_LOCAL_INFO_MY)
 
       one    = 1.0
       two    = 2.0
@@ -445,9 +445,9 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
 !  Notes:
-!  Due to grid point reordering with DAs, we must always work
+!  Due to grid point reordering with DMDAs, we must always work
 !  with the local grid points, and then transform them to the new
-!  global numbering with the "ltog" mapping (via DAGetGlobalIndices()).
+!  global numbering with the "ltog" mapping (via DMDAGetGlobalIndices()).
 !  We cannot work directly with the global numbers for the original
 !  uniprocessor grid!
 !
@@ -455,13 +455,13 @@
 !  when setting matrix entries:
 !    (A) MatSetValuesLocal(), using the local ordering (including
 !        ghost points!)
-!        - Use DAGetGlobalIndices() to extract the local-to-global map
+!        - Use DMDAGetGlobalIndices() to extract the local-to-global map
 !        - Associate this map with the matrix by calling
 !          MatSetLocalToGlobalMapping() once
 !        - Set matrix entries using the local ordering
 !          by calling MatSetValuesLocal()
 !    (B) MatSetValues(), using the global ordering 
-!        - Use DAGetGlobalIndices() to extract the local-to-global map
+!        - Use DMDAGetGlobalIndices() to extract the local-to-global map
 !        - Then apply this map explicitly yourself
 !        - Set matrix entries using the global ordering by calling
 !          MatSetValues()
@@ -478,7 +478,7 @@
       Mat         jac
       PetscErrorCode  ierr
       integer ctx
-      DALocalInfo info(DA_LOCAL_INFO_SIZE)
+      DMDALocalInfo info(DMDA_LOCAL_INFO_SIZE)
       
 
 !  Local variables:

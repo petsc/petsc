@@ -35,12 +35,12 @@ namespace ALE {
       PetscScalar linear_nder_2d(const double x[]);
       PetscScalar quadratic_nder_2d(const double x[]);
 
-      PetscErrorCode Function_Structured_2d(DALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx);
-      PetscErrorCode Rhs_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx);
-      PetscErrorCode Jac_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], Mat J, void *ctx);
-      PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx);
-      PetscErrorCode Rhs_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx);
-      PetscErrorCode Jac_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], Mat J, void *ctx);
+      PetscErrorCode Function_Structured_2d(DMDALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx);
+      PetscErrorCode Rhs_Structured_2d_FD(DMDALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx);
+      PetscErrorCode Jac_Structured_2d_FD(DMDALocalInfo *info, PetscScalar *x[], Mat J, void *ctx);
+      PetscErrorCode Function_Structured_3d(DMDALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx);
+      PetscErrorCode Rhs_Structured_3d_FD(DMDALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx);
+      PetscErrorCode Jac_Structured_3d_FD(DMDALocalInfo *info, PetscScalar **x[], Mat J, void *ctx);
       PetscErrorCode Rhs_Unstructured(::Mesh mesh, SectionReal X, SectionReal section, void *ctx);
       PetscErrorCode Jac_Unstructured(::Mesh mesh, SectionReal section, Mat A, void *ctx);
 

@@ -17,9 +17,9 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create distributed array (DA) to manage parallel grid and vectors
+     Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_XPERIODIC,DA_STENCIL_BOX,-5,-5,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_XPERIODIC,DMDA_STENCIL_BOX,-5,-5,
                     PETSC_DECIDE,PETSC_DECIDE,1,2,0,0,&da);CHKERRQ(ierr);
   ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = DMGetColoring(da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 
-static char help[] = "Tests DAGlobalToNaturalAllCreate() using contour plotting for 2d DAs.\n\n";
+static char help[] = "Tests DMDAGlobalToNaturalAllCreate() using contour plotting for 2d DMDAs.\n\n";
 
 #include "petscda.h"
 
@@ -15,8 +15,8 @@ int main(int argc,char **argv)
   PetscViewer    viewer;
   Vec            localall,global;
   PetscScalar    value,*vlocal;
-  DAPeriodicType ptype = DA_NONPERIODIC;
-  DAStencilType  stype = DA_STENCIL_BOX;
+  DMDAPeriodicType ptype = DMDA_NONPERIODIC;
+  DMDAStencilType  stype = DMDA_STENCIL_BOX;
   VecScatter     tolocalall,fromlocalall;
   PetscInt       start,end;
   
@@ -30,10 +30,10 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-star_stencil",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg) stype = DA_STENCIL_STAR;
+  if (flg) stype = DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
-  ierr = DACreate2d(PETSC_COMM_WORLD,ptype,stype,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,ptype,stype,
                     M,N,m,n,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,M*N,&localall);CHKERRQ(ierr);
@@ -47,11 +47,11 @@ int main(int argc,char **argv)
   ierr = VecView(global,viewer);CHKERRQ(ierr);
 
   /*
-     Create Scatter from global DA parallel vector to local vector that
+     Create Scatter from global DMDA parallel vector to local vector that
    contains all entries
   */
-  ierr = DAGlobalToNaturalAllCreate(da,&tolocalall);CHKERRQ(ierr);
-  ierr = DANaturalAllToGlobalCreate(da,&fromlocalall);CHKERRQ(ierr);
+  ierr = DMDAGlobalToNaturalAllCreate(da,&tolocalall);CHKERRQ(ierr);
+  ierr = DMDANaturalAllToGlobalCreate(da,&fromlocalall);CHKERRQ(ierr);
 
   ierr = VecScatterBegin(tolocalall,global,localall,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(tolocalall,global,localall,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

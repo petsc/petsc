@@ -3,18 +3,18 @@
 #include "petscda.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define dacreate1d_                  DACREATE1D
+#define dmdacreate1d_                  DMDACREATE1D
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define dacreate1d_                  dacreate1d
+#define dmdacreate1d_                  dmdacreate1d
 #endif
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL dacreate1d_(MPI_Comm *comm,DAPeriodicType *wrap,PetscInt *M,PetscInt *w,PetscInt *s,
+void PETSC_STDCALL dmdacreate1d_(MPI_Comm *comm,DMDAPeriodicType *wrap,PetscInt *M,PetscInt *w,PetscInt *s,
                  PetscInt *lc,DM *inra,PetscErrorCode *ierr)
 {
  CHKFORTRANNULLINTEGER(lc);
-  *ierr = DACreate1d(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*wrap,*M,*w,*s,lc,inra);
+  *ierr = DMDACreate1d(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*wrap,*M,*w,*s,lc,inra);
 }
 EXTERN_C_END
 

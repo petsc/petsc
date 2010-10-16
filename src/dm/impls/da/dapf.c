@@ -4,12 +4,12 @@
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "DACreatePF"
+#define __FUNCT__ "DMDACreatePF"
 /*@C
-   DACreatePF - Creates an appropriately dimensioned PF mathematical function object
-      from a DA.
+   DMDACreatePF - Creates an appropriately dimensioned PF mathematical function object
+      from a DMDA.
 
-   Collective on DA
+   Collective on DMDA
 
    Input Parameter:
 .  da - initial distributed array
@@ -22,9 +22,9 @@
 
 .keywords:  distributed array, grid function
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DMDestroy(), DMCreateGlobalVector()
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMCreateGlobalVector()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DACreatePF(DM da,PF *pf)
+PetscErrorCode PETSCDM_DLLEXPORT DMDACreatePF(DM da,PF *pf)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;

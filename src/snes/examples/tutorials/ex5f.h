@@ -27,7 +27,7 @@
 !     petscpc.h     - preconditioners
 !     petscsnes.h   - SNES interface
 !  In addition, we need the following for use of distributed arrays
-!     petscda.h     - distributed arrays (DAs)
+!     petscda.h     - distributed arrays (DMDAs)
 
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"

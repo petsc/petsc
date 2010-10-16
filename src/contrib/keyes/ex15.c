@@ -128,7 +128,7 @@ int main( int argc, char **argv )
 
   /* Set up distributed array for  each level */
   for (i=0; i<user.nlevels; i++) {
-    ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.grid[i].mx,
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,user.grid[i].mx,
                       user.grid[i].my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.grid[i].da);CHKERRA(ierr);
     ierr = DMCreateGlobalVector(user.grid[i].da,&user.grid[i].x);CHKERRA(ierr);
     ierr = VecDuplicate(user.grid[i].x,&user.grid[i].r);CHKERRA(ierr);
@@ -242,8 +242,8 @@ int FormInitialGuess1(AppCtx *user,Vec X)
   tleft = user->tleft;      tright = user->tright;
 
   /* Get ghost points */
-  ierr = DAGetCorners(finegrid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(finegrid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(finegrid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(finegrid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
 
   /* Compute initial guess */
@@ -287,8 +287,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /* Get ghost points */
   ierr = DMGlobalToLocalBegin(finegrid->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(finegrid->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGetCorners(finegrid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(finegrid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(finegrid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(finegrid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
   ierr = VecGetArray(localF,&f);CHKERRQ(ierr);
 
@@ -468,9 +468,9 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
   /* Get ghost points */
   ierr = DMGlobalToLocalBegin(grid->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(grid->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(grid->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(grid->da,&nloc,&ltog);CHKERRQ(ierr);
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
 
   /* Evaluate Jacobian of function */
@@ -824,13 +824,13 @@ int FormInterpolation(AppCtx *user,GridCtx *g_f,GridCtx *g_c)
   Vec	   Rscale; 
 
   PetscFunctionBegin;
-  ierr = DAGetCorners(g_f->da,&i_start,&j_start,0,&m,&n,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(g_f->da,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(g_f->da,PETSC_NULL,&idx);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(g_f->da,&i_start,&j_start,0,&m,&n,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(g_f->da,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(g_f->da,PETSC_NULL,&idx);CHKERRQ(ierr);
 
-  ierr = DAGetCorners(g_c->da,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(g_c->da,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(g_c->da,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(g_c->da,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(g_c->da,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(g_c->da,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix */
   ierr = VecGetLocalSize(g_f->x,&m_f_local);CHKERRQ(ierr);

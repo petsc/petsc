@@ -5,7 +5,7 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
 
 
 /* 
-   Include "petscda.h" so that we can use distributed arrays (DAs).
+   Include "petscda.h" so that we can use distributed arrays (DMDAs).
    Include "petscts.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -47,13 +47,13 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-max_steps",&maxsteps,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create distributed array (DA) to manage parallel grid and vectors
+     Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-8,-8,PETSC_DECIDE,PETSC_DECIDE,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-8,-8,PETSC_DECIDE,PETSC_DECIDE,
                     1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Extract global vectors from DA; then duplicate for remaining
+     Extract global vectors from DMDA; then duplicate for remaining
      vectors that are the same types
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
@@ -152,7 +152,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
 
   PetscFunctionBegin;
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
-  ierr = DAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   hx     = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
@@ -172,13 +172,13 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   /*
      Get pointers to vector data
   */
-  ierr = DAVecGetArray(da,localX,&x);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
   */
-  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
@@ -201,8 +201,8 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  ierr = DAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
@@ -219,7 +219,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   PetscReal      hx,hy,x,y,r;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   hx     = 1.0/(PetscReal)(Mx-1);
@@ -228,12 +228,12 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   /*
      Get pointers to vector data
   */
-  ierr = DAVecGetArray(da,U,&u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
   */
-  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
@@ -254,7 +254,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   /*
      Restore vectors
   */
-  ierr = DAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 

@@ -1,19 +1,19 @@
 
 /* Program usage:  mpiexec -n <procs> ex46 [-help] [all PETSc options] */
 
-static char help[] = "Solves a linear system in parallel with KSP and DA.\n\
-Compare this to ex2 which solves the same problem without a DA.\n\n";
+static char help[] = "Solves a linear system in parallel with KSP and DM.\n\
+Compare this to ex2 which solves the same problem without a DM.\n\n";
 
 /*T
    Concepts: KSP^basic parallel example;
    Concepts: KSP^Laplacian, 2d
-   Concepts: DA^using distributed arrays;
+   Concepts: DM^using distributed arrays;
    Concepts: Laplacian, 2d
    Processors: n
 T*/
 
 /*
-  Include "petscda.h" so that we can use distributed arrays (DAs).
+  Include "petscda.h" so that we can use distributed arrays (DMDAs).
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -38,7 +38,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
   PetscLogStage  stage;
-  DALocalInfo    info;
+  DMDALocalInfo    info;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
@@ -47,14 +47,14 @@ int main(int argc,char **argv)
      The problem size will default to 8 by 7, but this can be
      changed using -da_grid_x M -da_grid_y N
   */
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-8,-7,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-8,-7,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
-     Create parallel matrix preallocated according to the DA, format AIJ by default.
+     Create parallel matrix preallocated according to the DMDA, format AIJ by default.
      To use symmetric storage, run with -da_mat_type sbaij -mat_ignore_lower_triangular
   */
   ierr = DMGetMatrix(da,MATAIJ,&A);CHKERRQ(ierr);
@@ -69,7 +69,7 @@ int main(int argc,char **argv)
    */
   ierr = PetscLogStageRegister("Assembly", &stage);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   for (j=info.ys; j<info.ys+info.ym; j++) {
     for (i=info.xs; i<info.xs+info.xm; i++) {
       PetscReal hx   = 1./info.mx,hy = 1./info.my;
@@ -98,7 +98,7 @@ int main(int argc,char **argv)
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   /*
-     Create parallel vectors compatible with the DA.
+     Create parallel vectors compatible with the DMDA.
   */
   ierr = DMCreateGlobalVector(da,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);

@@ -3,9 +3,9 @@
 #include "petscda.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAVecGetArray"
+#define __FUNCT__ "DMDAVecGetArray"
 /*@C
-   DAVecGetArray - Returns a multiple dimension array that shares data with 
+   DMDAVecGetArray - Returns a multiple dimension array that shares data with 
       the underlying vector and is indexed using the global dimensions.
 
    Not Collective
@@ -19,7 +19,7 @@
 .  array - the array
 
    Notes:
-    Call DAVecRestoreArray() once you have finished accessing the vector entries.
+    Call DMDAVecRestoreArray() once you have finished accessing the vector entries.
 
     In C, the indexing is "backwards" from what expects: array[k][j][i] NOT array[i][j][k]!
 
@@ -28,30 +28,30 @@
 
     appropriate DMLocalToGlobalBegin() and DMLocalToGlobalEnd() to have correct values in the ghost locations.
 
-  Fortran Notes: From Fortran use DAVecGetArrayF90() and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate 
-       dimension. For a DA created with a dof of 1 use the dimension of the DA, for a DA created with a dof greater than 1 use one more than the 
-       dimension of the DA. The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
+  Fortran Notes: From Fortran use DMDAVecGetArrayF90() and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate 
+       dimension. For a DMDA created with a dof of 1 use the dimension of the DMDA, for a DMDA created with a dof greater than 1 use one more than the 
+       dimension of the DMDA. The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
        array(1:dof,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from 
-       DAGetCorners() for a global array or DAGetGhostCorners() for a local array. Include finclude/petscda.h90 to access this routine.
+       DMDAGetCorners() for a global array or DMDAGetGhostCorners() for a local array. Include finclude/petscda.h90 to access this routine.
 
-  Due to bugs in the compiler DAVecGetArrayF90() does not work with gfortran versions before 2.5
+  Due to bugs in the compiler DMDAVecGetArrayF90() does not work with gfortran versions before 2.5
 
   Level: intermediate
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DAGetGhostCorners(), DAGetCorners(), VecGetArray(), VecRestoreArray(), DAVecRestoreArray(), DAVecRestoreArrayDOF()
-          DAVecGetarrayDOF()
+.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecRestoreArrayDOF()
+          DMDAVecGetarrayDOF()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArray(DM da,Vec vec,void *array)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAVecGetArray(DM da,Vec vec,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
 
   PetscFunctionBegin;
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
-  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
 
   /* Handle case where user passes in global vector as opposed to local */
   ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);
@@ -63,7 +63,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArray(DM da,Vec vec,void *array)
     gys = ys;
     gzs = zs;
   } else if (N != gxm*gym*gzm*dof) {
-    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DA local sizes %D %D\n",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D\n",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
   }
 
   if (dim == 1) {
@@ -73,16 +73,16 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArray(DM da,Vec vec,void *array)
   } else if (dim == 3) {
     ierr = VecGetArray3d(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DA dimension not 1, 2, or 3, it is %D\n",dim);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D\n",dim);
   }
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAVecRestoreArray"
+#define __FUNCT__ "DMDAVecRestoreArray"
 /*@
-   DAVecRestoreArray - Restores a multiple dimension array obtained with DAVecGetArray()
+   DMDAVecRestoreArray - Restores a multiple dimension array obtained with DMDAVecGetArray()
 
    Not Collective
 
@@ -94,21 +94,21 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArray(DM da,Vec vec,void *array)
 
   Level: intermediate
 
-  Fortran Notes: From Fortran use DAVecRestoreArrayF90()
+  Fortran Notes: From Fortran use DMDAVecRestoreArrayF90()
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DAGetGhostCorners(), DAGetCorners(), VecGetArray(), VecRestoreArray(), DAVecGetArray()
+.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAVecRestoreArray(DM da,Vec vec,void *array)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAVecRestoreArray(DM da,Vec vec,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
 
   PetscFunctionBegin;
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
-  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
 
   /* Handle case where user passes in global vector as opposed to local */
   ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);
@@ -120,7 +120,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecRestoreArray(DM da,Vec vec,void *array)
     gys = ys;
     gzs = zs;
   } else if (N != gxm*gym*gzm*dof) {
-    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DA local sizes %D %D\n",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D\n",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
   }
 
   if (dim == 1) {
@@ -130,15 +130,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecRestoreArray(DM da,Vec vec,void *array)
   } else if (dim == 3) {
     ierr = VecRestoreArray3d(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DA dimension not 1, 2, or 3, it is %D\n",dim);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D\n",dim);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAVecGetArrayDOF"
+#define __FUNCT__ "DMDAVecGetArrayDOF"
 /*@C
-   DAVecGetArrayDOF - Returns a multiple dimension array that shares data with 
+   DMDAVecGetArrayDOF - Returns a multiple dimension array that shares data with 
       the underlying vector and is indexed using the global dimensions.
 
    Not Collective
@@ -152,7 +152,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecRestoreArray(DM da,Vec vec,void *array)
 .  array - the array
 
    Notes:
-    Call DAVecRestoreArrayDOF() once you have finished accessing the vector entries.
+    Call DMDAVecRestoreArrayDOF() once you have finished accessing the vector entries.
 
     In C, the indexing is "backwards" from what expects: array[k][j][i][DOF] NOT array[i][j][k][DOF]!
 
@@ -160,17 +160,17 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecRestoreArray(DM da,Vec vec,void *array)
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DAGetGhostCorners(), DAGetCorners(), VecGetArray(), VecRestoreArray(), DAVecRestoreArray(), DAVecGetArray(), DAVecRestoreArrayDOF()
+.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecGetArray(), DMDAVecRestoreArrayDOF()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArrayDOF(DM da,Vec vec,void *array)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAVecGetArrayDOF(DM da,Vec vec,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
 
   PetscFunctionBegin;
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
-  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
 
   /* Handle case where user passes in global vector as opposed to local */
   ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);
@@ -182,7 +182,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArrayDOF(DM da,Vec vec,void *array)
     gys = ys;
     gzs = zs;
   } else if (N != gxm*gym*gzm*dof) {
-    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DA local sizes %D %D\n",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D\n",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
   }
 
   if (dim == 1) {
@@ -192,15 +192,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArrayDOF(DM da,Vec vec,void *array)
   } else if (dim == 3) {
     ierr = VecGetArray4d(vec,gzm,gym,gxm,dof,gzs,gys,gxs,0,(PetscScalar*****)array);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DA dimension not 1, 2, or 3, it is %D\n",dim);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D\n",dim);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAVecRestoreArrayDOF"
+#define __FUNCT__ "DMDAVecRestoreArrayDOF"
 /*@
-   DAVecRestoreArrayDOF - Restores a multiple dimension array obtained with DAVecGetArrayDOF()
+   DMDAVecRestoreArrayDOF - Restores a multiple dimension array obtained with DMDAVecGetArrayDOF()
 
    Not Collective
 
@@ -214,17 +214,17 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArrayDOF(DM da,Vec vec,void *array)
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DAGetGhostCorners(), DAGetCorners(), VecGetArray(), VecRestoreArray(), DAVecGetArray(), DAVecGetArrayDOF(), DAVecRestoreArrayDOF()
+.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray(), DMDAVecGetArrayDOF(), DMDAVecRestoreArrayDOF()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAVecRestoreArrayDOF(DM da,Vec vec,void *array)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAVecRestoreArrayDOF(DM da,Vec vec,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
 
   PetscFunctionBegin;
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
-  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
 
   /* Handle case where user passes in global vector as opposed to local */
   ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);
@@ -244,7 +244,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecRestoreArrayDOF(DM da,Vec vec,void *array)
   } else if (dim == 3) {
     ierr = VecRestoreArray4d(vec,gzm,gym,gxm,dof,gzs,gys,gxs,0,(PetscScalar*****)array);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DA dimension not 1, 2, or 3, it is %D\n",dim);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D\n",dim);
   }
   PetscFunctionReturn(0);
 }

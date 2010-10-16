@@ -42,12 +42,12 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
  
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
-  ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&u);CHKERRQ(ierr);
-  ierr = DAGetCoordinates(da,&xy);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinates(da,&xy);CHKERRQ(ierr);
 
-  ierr = DACreatePF(da,&pf);CHKERRQ(ierr);
+  ierr = DMDACreatePF(da,&pf);CHKERRQ(ierr);
   ierr = PFSet(pf,myfunction,0,0,0,0);CHKERRQ(ierr);
   ierr = PFSetFromOptions(pf);CHKERRQ(ierr);
 

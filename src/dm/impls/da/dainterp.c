@@ -1,7 +1,7 @@
 #define PETSCDM_DLL
 
 /*
-  Code for interpolating between grids represented by DAs
+  Code for interpolating between grids represented by DMDAs
 */
 
 #include "private/daimpl.h"    /*I   "petscda.h"   I*/
@@ -53,14 +53,14 @@ PetscErrorCode DMGetInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
   PetscInt       i_c,i_start_c,i_start_ghost_c,cols[2],dof;
   PetscScalar    v[2],x,*coors = 0,*ccoors;
   Mat            mat;
-  DAPeriodicType pt;
+  DMDAPeriodicType pt;
   Vec            vcoors,cvcoors;
   DM_DA          *ddc = (DM_DA*)dac->data, *ddf = (DM_DA*)daf->data;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
-  ierr = DAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
-  if (pt == DA_XPERIODIC) {
+  ierr = DMDAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  if (pt == DMDA_XPERIODIC) {
     ratio = mx/Mx;
     if (ratio*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
@@ -68,13 +68,13 @@ PetscErrorCode DMGetInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
     if (ratio*(Mx-1) != mx-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
 
-  ierr = DAGetCorners(daf,&i_start,0,0,&m_f,0,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(daf,&i_start_ghost,0,0,&m_ghost,0,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(daf,&i_start,0,0,&m_f,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,0,0,&m_ghost,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
 
-  ierr = DAGetCorners(dac,&i_start_c,0,0,&m_c,0,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(dac,&i_start_ghost_c,0,0,&m_ghost_c,0,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(dac,&i_start_c,0,0,&m_c,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,0,0,&m_ghost_c,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix */
   ierr = MatCreate(((PetscObject)dac)->comm,&mat);CHKERRQ(ierr);
@@ -83,11 +83,11 @@ PetscErrorCode DMGetInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
   ierr = MatSeqAIJSetPreallocation(mat,2,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
   if (vcoors) {
-    ierr = DAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
-    ierr = DAVecGetArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
-    ierr = DAVecGetArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
+    ierr = DMDAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
   /* loop over local fine grid nodes setting interpolation for those*/
   for (i=i_start; i<i_start+m_f; i++) {
@@ -95,7 +95,7 @@ PetscErrorCode DMGetInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
     row    = idx_f[dof*(i-i_start_ghost)]/dof;
 
     i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
-    if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
+    if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
 
     /* 
@@ -124,8 +124,8 @@ PetscErrorCode DMGetInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
     ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
   }
   if (vcoors) {
-    ierr = DAVecRestoreArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
-    ierr = DAVecRestoreArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -146,12 +146,12 @@ PetscErrorCode DMGetInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
   PetscInt       i_c,i_start_c,i_start_ghost_c,cols[2],dof;
   PetscScalar    v[2],x;
   Mat            mat;
-  DAPeriodicType pt;
+  DMDAPeriodicType pt;
   
   PetscFunctionBegin;
-  ierr = DAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
-  ierr = DAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
-  if (pt == DA_XPERIODIC) {
+  ierr = DMDAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  if (pt == DMDA_XPERIODIC) {
     ratio = mx/Mx;
     if (ratio*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
@@ -159,13 +159,13 @@ PetscErrorCode DMGetInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
     if (ratio*(Mx-1) != mx-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
 
-  ierr = DAGetCorners(daf,&i_start,0,0,&m_f,0,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(daf,&i_start_ghost,0,0,&m_ghost,0,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(daf,&i_start,0,0,&m_f,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,0,0,&m_ghost,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
 
-  ierr = DAGetCorners(dac,&i_start_c,0,0,&m_c,0,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(dac,&i_start_ghost_c,0,0,&m_ghost_c,0,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(dac,&i_start_c,0,0,&m_c,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,0,0,&m_ghost_c,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix */
   ierr = MatCreate(((PetscObject)dac)->comm,&mat);CHKERRQ(ierr);
@@ -219,22 +219,22 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   PetscMPIInt    size_c,size_f,rank_f;
   PetscScalar    v[4],x,y;
   Mat            mat;
-  DAPeriodicType pt;
-  DACoor2d       **coors = 0,**ccoors;
+  DMDAPeriodicType pt;
+  DMDACoor2d       **coors = 0,**ccoors;
   Vec            vcoors,cvcoors;
   DM_DA          *ddc = (DM_DA*)dac->data, *ddf = (DM_DA*)daf->data;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
-  ierr = DAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
-  if (DAXPeriodic(pt)){
+  ierr = DMDAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  if (DMDAXPeriodic(pt)){
     ratioi = mx/Mx;
     if (ratioi*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
     ratioi = (mx-1)/(Mx-1);
     if (ratioi*(Mx-1) != mx-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
-  if (DAYPeriodic(pt)){
+  if (DMDAYPeriodic(pt)){
     ratioj = my/My;
     if (ratioj*My != my) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
   } else {
@@ -243,16 +243,16 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   }
 
 
-  ierr = DAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
 
-  ierr = DAGetCorners(dac,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /*
-     Used for handling a coarse DA that lives on 1/4 the processors of the fine DA.
+     Used for handling a coarse DMDA that lives on 1/4 the processors of the fine DMDA.
      The coarse vector is then duplicated 4 times (each time it lives on 1/4 of the 
      processors). It's effective length is hence 4 times its normal length, this is
      why the col_scale is multiplied by the interpolation matrix column sizes.
@@ -276,9 +276,9 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
       i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
       j_c = (j/ratioj);    /* coarse grid node below fine grid node */
 
-      if (j_c < j_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
+      if (j_c < j_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
-      if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
+      if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
 
       /* 
@@ -312,11 +312,11 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
-  ierr = DAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
   if (vcoors) {
-    ierr = DAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
-    ierr = DAVecGetArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
-    ierr = DAVecGetArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
+    ierr = DMDAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
 
   /* loop over local fine grid nodes setting interpolation for those*/
@@ -368,8 +368,8 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
     }
   }
   if (vcoors) {
-    ierr = DAVecRestoreArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
-    ierr = DAVecRestoreArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -394,13 +394,13 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
   PetscMPIInt    size_c,size_f,rank_f;
   PetscScalar    v[4];
   Mat            mat;
-  DAPeriodicType pt;
+  DMDAPeriodicType pt;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
-  ierr = DAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
-  if (DAXPeriodic(pt)) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in x");
-  if (DAYPeriodic(pt)) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in y");
+  ierr = DMDAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  if (DMDAXPeriodic(pt)) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in x");
+  if (DMDAYPeriodic(pt)) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in y");
   ratioi = mx/Mx;
   ratioj = my/My;
   if (ratioi*Mx != mx) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
@@ -408,16 +408,16 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
   if (ratioi != 2) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 2");
   if (ratioj != 2) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 2");
 
-  ierr = DAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
 
-  ierr = DAGetCorners(dac,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /*
-     Used for handling a coarse DA that lives on 1/4 the processors of the fine DA.
+     Used for handling a coarse DMDA that lives on 1/4 the processors of the fine DMDA.
      The coarse vector is then duplicated 4 times (each time it lives on 1/4 of the 
      processors). It's effective length is hence 4 times its normal length, this is
      why the col_scale is multiplied by the interpolation matrix column sizes.
@@ -441,9 +441,9 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
       i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
       j_c = (j/ratioj);    /* coarse grid node below fine grid node */
 
-      if (j_c < j_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
+      if (j_c < j_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
-      if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
+      if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
 
       /* 
@@ -505,14 +505,14 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   PetscMPIInt    size_c,size_f,rank_f;
   PetscScalar    v[8];
   Mat            mat;
-  DAPeriodicType pt;
+  DMDAPeriodicType pt;
   
   PetscFunctionBegin;
-  ierr = DAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
-  ierr = DAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
-  if (DAXPeriodic(pt)) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in x");
-  if (DAYPeriodic(pt)) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in y");
-  if (DAZPeriodic(pt)) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in z");
+  ierr = DMDAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  if (DMDAXPeriodic(pt)) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in x");
+  if (DMDAYPeriodic(pt)) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in y");
+  if (DMDAZPeriodic(pt)) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in z");
   ratioi = mx/Mx;
   ratioj = my/My;
   ratiol = mz/Mz;
@@ -523,15 +523,15 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   if (ratioj != 2 && ratioj != 1) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 1 or 2");
   if (ratiol != 2 && ratiol != 1) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Coarsening factor in z must be 1 or 2");
 
-  ierr = DAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
 
-  ierr = DAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
   /*
-     Used for handling a coarse DA that lives on 1/4 the processors of the fine DA.
+     Used for handling a coarse DMDA that lives on 1/4 the processors of the fine DMDA.
      The coarse vector is then duplicated 4 times (each time it lives on 1/4 of the 
      processors). It's effective length is hence 4 times its normal length, this is
      why the col_scale is multiplied by the interpolation matrix column sizes.
@@ -557,11 +557,11 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 	j_c = (j/ratioj);    /* coarse grid node below fine grid node */
 	l_c = (l/ratiol);   
 
-	if (l_c < l_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
+	if (l_c < l_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     l_start %D l_c %D l_start_ghost_c %D",l_start,l_c,l_start_ghost_c);
-	if (j_c < j_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
+	if (j_c < j_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
-	if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
+	if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
 
 	/* 
@@ -625,17 +625,17 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   PetscInt       l_start_ghost_c,p_ghost_c,l_c,*dnz,*onz;
   PetscScalar    v[8],x,y,z;
   Mat            mat;
-  DAPeriodicType pt;
-  DACoor3d       ***coors = 0,***ccoors;
+  DMDAPeriodicType pt;
+  DMDACoor3d       ***coors = 0,***ccoors;
   Vec            vcoors,cvcoors;
   DM_DA          *ddc = (DM_DA*)dac->data, *ddf = (DM_DA*)daf->data;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
-  ierr = DAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   if (mx == Mx) {
     ratioi = 1;
-  } else if (DAXPeriodic(pt)){
+  } else if (DMDAXPeriodic(pt)){
     ratioi = mx/Mx;
     if (ratioi*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
@@ -644,7 +644,7 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   }
   if (my == My) {
     ratioj = 1;
-  } else if (DAYPeriodic(pt)){
+  } else if (DMDAYPeriodic(pt)){
     ratioj = my/My;
     if (ratioj*My != my) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
   } else {
@@ -653,7 +653,7 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   }
   if (mz == Mz) {
     ratiok = 1;
-  } else if (DAZPeriodic(pt)){
+  } else if (DMDAZPeriodic(pt)){
     ratiok = mz/Mz;
     if (ratiok*Mz != mz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mz/Mz  must be integer: mz %D Mz %D",mz,Mz);
   } else {
@@ -661,13 +661,13 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
     if (ratiok*(Mz-1) != mz-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mz - 1)/(Mz - 1) must be integer: mz %D Mz %D",mz,Mz);
   }
 
-  ierr = DAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
 
-  ierr = DAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix, determining exact preallocation */
   ierr = MatPreallocateInitialize(((PetscObject)dac)->comm,m_f*n_f*p_f,m_c*n_c*p_c,dnz,onz);CHKERRQ(ierr);
@@ -680,11 +680,11 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
         i_c = (i/ratioi);
         j_c = (j/ratioj);
         l_c = (l/ratiok);
-        if (l_c < l_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
+        if (l_c < l_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
           l_start %D l_c %D l_start_ghost_c %D",l_start,l_c,l_start_ghost_c);
-        if (j_c < j_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
+        if (j_c < j_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
           j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
-        if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
+        if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
           i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
 
         /* 
@@ -727,11 +727,11 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
-  ierr = DAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
   if (vcoors) {
-    ierr = DAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
-    ierr = DAVecGetArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
-    ierr = DAVecGetArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
+    ierr = DMDAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
 
   /* loop over local fine grid nodes setting interpolation for those*/
@@ -810,8 +810,8 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
     }
   }
   if (vcoors) {
-    ierr = DAVecRestoreArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
-    ierr = DAVecRestoreArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -828,8 +828,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation_DA(DM dac,DM daf,Mat *A,Vec 
 {
   PetscErrorCode ierr;
   PetscInt       dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
-  DAPeriodicType wrapc,wrapf;
-  DAStencilType  stc,stf;
+  DMDAPeriodicType wrapc,wrapf;
+  DMDAStencilType  stc,stf;
   DM_DA          *ddc = (DM_DA*)dac->data;
 
   PetscFunctionBegin;
@@ -838,18 +838,18 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation_DA(DM dac,DM daf,Mat *A,Vec 
   PetscValidPointer(A,3);
   if (scale) PetscValidPointer(scale,4);
 
-  ierr = DAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
-  ierr = DAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);
-  if (dimc != dimf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Dimensions of DA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
-  if (dofc != doff) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"DOF of DA do not match %D %D",dofc,doff);CHKERRQ(ierr);
-  if (sc != sf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil width of DA do not match %D %D",sc,sf);CHKERRQ(ierr);
-  if (wrapc != wrapf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Periodic type different in two DAs");CHKERRQ(ierr);
-  if (stc != stf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DAs");CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);
+  if (dimc != dimf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
+  if (dofc != doff) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);CHKERRQ(ierr);
+  if (sc != sf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);CHKERRQ(ierr);
+  if (wrapc != wrapf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Periodic type different in two DMDAs");CHKERRQ(ierr);
+  if (stc != stf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");CHKERRQ(ierr);
   if (Mc < 2 && Mf > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
   if (dimc > 1 && Nc < 2 && Nf > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
   if (dimc > 2 && Pc < 2 && Pf > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
 
-  if (ddc->interptype == DA_Q1){
+  if (ddc->interptype == DMDA_Q1){
     if (dimc == 1){
       ierr = DMGetInterpolation_DA_1D_Q1(dac,daf,A);CHKERRQ(ierr);
     } else if (dimc == 2){
@@ -857,9 +857,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation_DA(DM dac,DM daf,Mat *A,Vec 
     } else if (dimc == 3){
       ierr = DMGetInterpolation_DA_3D_Q1(dac,daf,A);CHKERRQ(ierr);
     } else {
-      SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
+      SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DMDA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
     }
-  } else if (ddc->interptype == DA_Q0){
+  } else if (ddc->interptype == DMDA_Q0){
     if (dimc == 1){
       ierr = DMGetInterpolation_DA_1D_Q0(dac,daf,A);CHKERRQ(ierr);
     } else if (dimc == 2){
@@ -867,7 +867,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation_DA(DM dac,DM daf,Mat *A,Vec 
     } else if (dimc == 3){
        ierr = DMGetInterpolation_DA_3D_Q0(dac,daf,A);CHKERRQ(ierr);
     } else {
-      SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
+      SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DMDA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
     }
   }
   if (scale) {
@@ -886,22 +886,22 @@ PetscErrorCode DMGetInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
   PetscInt       row,i_start_ghost,j_start_ghost,mx,m_c,my,nc,ratioi,ratioj;
   PetscInt       i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
   PetscInt       *cols;
-  DAPeriodicType pt;
+  DMDAPeriodicType pt;
   Vec            vecf,vecc;
   IS             isf;
 
   PetscFunctionBegin;
 
-  ierr = DAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
-  ierr = DAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
-  if (DAXPeriodic(pt)){
+  ierr = DMDAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  if (DMDAXPeriodic(pt)){
     ratioi = mx/Mx;
     if (ratioi*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
     ratioi = (mx-1)/(Mx-1);
     if (ratioi*(Mx-1) != mx-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
-  if (DAYPeriodic(pt)){
+  if (DMDAYPeriodic(pt)){
     ratioj = my/My;
     if (ratioj*My != my) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
   } else {
@@ -910,13 +910,13 @@ PetscErrorCode DMGetInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
   }
 
 
-  ierr = DAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
 
-  ierr = DAGetCorners(dac,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
 
   /* loop over local fine grid nodes setting interpolation for those*/
@@ -928,9 +928,9 @@ PetscErrorCode DMGetInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
       i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
       j_c = (j/ratioj);    /* coarse grid node below fine grid node */
 
-      if (j_c < j_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
+      if (j_c < j_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
-      if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
+      if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
 
       if (i_c*ratioi == i && j_c*ratioj == j) { 
@@ -957,21 +957,21 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInjection_DA(DM dac,DM daf,VecScatter *inj
 {
   PetscErrorCode ierr;
   PetscInt       dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
-  DAPeriodicType wrapc,wrapf;
-  DAStencilType  stc,stf;
+  DMDAPeriodicType wrapc,wrapf;
+  DMDAStencilType  stc,stf;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dac,DM_CLASSID,1);
   PetscValidHeaderSpecific(daf,DM_CLASSID,2);
   PetscValidPointer(inject,3);
 
-  ierr = DAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
-  ierr = DAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);
-  if (dimc != dimf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Dimensions of DA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
-  if (dofc != doff) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"DOF of DA do not match %D %D",dofc,doff);CHKERRQ(ierr);
-  if (sc != sf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil width of DA do not match %D %D",sc,sf);CHKERRQ(ierr);
-  if (wrapc != wrapf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Periodic type different in two DAs");CHKERRQ(ierr);
-  if (stc != stf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DAs");CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);
+  if (dimc != dimf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
+  if (dofc != doff) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);CHKERRQ(ierr);
+  if (sc != sf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);CHKERRQ(ierr);
+  if (wrapc != wrapf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Periodic type different in two DMDAs");CHKERRQ(ierr);
+  if (stc != stf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");CHKERRQ(ierr);
   if (Mc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
   if (dimc > 1 && Nc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
   if (dimc > 2 && Pc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
@@ -979,7 +979,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInjection_DA(DM dac,DM daf,VecScatter *inj
   if (dimc == 2){
     ierr = DMGetInjection_DA_2D(dac,daf,inject);CHKERRQ(ierr);
   } else {
-    SETERRQ1(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DA dimension %D",dimc);
+    SETERRQ1(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DMDA dimension %D",dimc);
   }
   PetscFunctionReturn(0);
 } 
@@ -991,8 +991,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetAggregates_DA(DM dac,DM daf,Mat *rest)
   PetscErrorCode ierr;
   PetscInt       dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc;
   PetscInt       dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
-  DAPeriodicType wrapc,wrapf;
-  DAStencilType  stc,stf;
+  DMDAPeriodicType wrapc,wrapf;
+  DMDAStencilType  stc,stf;
 /*   PetscReal      r_x, r_y, r_z; */
 
   PetscInt       i,j,l;
@@ -1015,13 +1015,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetAggregates_DA(DM dac,DM daf,Mat *rest)
   PetscValidHeaderSpecific(daf,DM_CLASSID,2);
   PetscValidPointer(rest,3);
 
-  ierr = DAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
-  ierr = DAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);
-  if (dimc != dimf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Dimensions of DA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
-  if (dofc != doff) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"DOF of DA do not match %D %D",dofc,doff);CHKERRQ(ierr);
-  if (sc != sf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil width of DA do not match %D %D",sc,sf);CHKERRQ(ierr);
-  if (wrapc != wrapf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Periodic type different in two DAs");CHKERRQ(ierr);
-  if (stc != stf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DAs");CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);
+  if (dimc != dimf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
+  if (dofc != doff) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);CHKERRQ(ierr);
+  if (sc != sf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);CHKERRQ(ierr);
+  if (wrapc != wrapf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Periodic type different in two DMDAs");CHKERRQ(ierr);
+  if (stc != stf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");CHKERRQ(ierr);
 
   if( Mf < Mc ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Mc %D, Mf %D", Mc, Mf);
   if( Nf < Nc ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Nc %D, Nf %D", Nc, Nf);
@@ -1032,13 +1032,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetAggregates_DA(DM dac,DM daf,Mat *rest)
   if (Nc < 0) Nc = 1;
   if (Nf < 0) Nf = 1;
 
-  ierr = DAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
 
-  ierr = DAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /* 
      Basic idea is as follows. Here's a 2D example, suppose r_x, r_y are the ratios

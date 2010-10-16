@@ -13,7 +13,7 @@ The flow can be driven with the lid or with bouyancy or both:\n\
 
 /*T
    Concepts: SNES^solving a system of nonlinear equations (parallel multicomponent example);
-   Concepts: DA^using distributed arrays;
+   Concepts: DMDA^using distributed arrays;
    Concepts: multicomponent
    Processors: n
 T*/
@@ -54,7 +54,7 @@ T*/
   ------------------------------------------------------------------------- */
 
 /* 
-   Include "petscda.h" so that we can use distributed arrays (DAs).
+   Include "petscda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -75,7 +75,7 @@ typedef struct {
 } Field;
 
 PetscErrorCode FormInitialGuess(DMMG,Vec);
-PetscErrorCode FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
+PetscErrorCode FormFunctionLocal(DMDALocalInfo*,Field**,Field**,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 
 typedef struct {
@@ -105,11 +105,11 @@ int main(int argc,char **argv)
       Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
       for principal unknowns (x) and governing residuals (f)
     */
-    ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
     ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
     ierr = DMDestroy(da);CHKERRQ(ierr);
 
-    ierr = DAGetInfo(DMMGGetDM(dmmg),0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+    ierr = DMDAGetInfo(DMMGGetDM(dmmg),0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
     /* 
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
@@ -122,10 +122,10 @@ int main(int argc,char **argv)
     ierr = PetscOptionsGetReal(PETSC_NULL,"-grashof",&user.grashof,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
 
-    ierr = DASetFieldName(DMMGGetDM(dmmg),0,"x-velocity");CHKERRQ(ierr);
-    ierr = DASetFieldName(DMMGGetDM(dmmg),1,"y-velocity");CHKERRQ(ierr);
-    ierr = DASetFieldName(DMMGGetDM(dmmg),2,"Omega");CHKERRQ(ierr);
-    ierr = DASetFieldName(DMMGGetDM(dmmg),3,"temperature");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(DMMGGetDM(dmmg),0,"x-velocity");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(DMMGGetDM(dmmg),1,"y-velocity");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(DMMGGetDM(dmmg),2,"Omega");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(DMMGGetDM(dmmg),3,"temperature");CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Create user context, set problem data, create vector data structures.
@@ -203,15 +203,15 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 
   grashof = user->grashof;
 
-  ierr = DAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   dx  = 1.0/(mx-1);
 
   /*
-     Get local grid boundaries (for 2-dimensional DA):
+     Get local grid boundaries (for 2-dimensional DMDA):
        xs, ys   - starting grid indices (no ghost points)
        xm, ym   - widths of local grid (no ghost points)
   */
-  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Get a pointer to vector data.
@@ -220,7 +220,7 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = DAVecGetArray(da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -238,11 +238,11 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
   /*
      Restore vector
   */
-  ierr = DAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   return 0;
 }
  
-PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
+PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *ptr)
  {
   AppCtx         *user = (AppCtx*)ptr;
   PetscErrorCode ierr;
@@ -380,7 +380,7 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr
 #define __FUNCT__ "FormFunction"
 PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ctx)
 {
-  DALocalInfo    info;
+  DMDALocalInfo    info;
   void          *u;
   void          *fu;
   PetscErrorCode ierr;
@@ -396,12 +396,12 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ctx)
   */
   ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,localX,&u);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,F,&fu);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,localX,&u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,F,&fu);CHKERRQ(ierr);
   ierr = FormFunctionLocal(&info,u,fu,dmmg->user);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,localX,&u);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,F,&fu);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,localX,&u);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,F,&fu);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }

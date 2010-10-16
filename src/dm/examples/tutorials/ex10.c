@@ -1,5 +1,5 @@
 /*
-   Demonstrates using the HDF5 viewer with a DA Vec
+   Demonstrates using the HDF5 viewer with a DMDA Vec
  - create a global vector containing a gauss profile (exp(-x^2-y^2))
  - write the global vector in a hdf5 file 
 
@@ -13,7 +13,7 @@
 #include "petscda.h"
 #include "petscsys.h"
 
-static char help[] = "Test to write HDF5 file from PETSc DA Vec.\n\n";
+static char help[] = "Test to write HDF5 file from PETSc DMDA Vec.\n\n";
 
 int main(int argc,char **argv) 
 {
@@ -34,13 +34,13 @@ int main(int argc,char **argv)
   // Initialize the Petsc context
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   
-  // Build of the DA
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,Nx,Ny,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da2D);CHKERRQ(ierr);
+  // Build of the DMDA
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,Nx,Ny,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da2D);CHKERRQ(ierr);
   
   // Set the coordinates
-  DASetUniformCoordinates(da2D, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0);
+  DMDASetUniformCoordinates(da2D, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0);
   
-  // Declare gauss as a DA component
+  // Declare gauss as a DMDA component
   ierr = DMCreateGlobalVector(da2D,&gauss);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) gauss, "pressure");CHKERRQ(ierr);
   
@@ -48,16 +48,16 @@ int main(int argc,char **argv)
   ierr = VecSet(gauss,value);CHKERRQ(ierr);
   
   // Get the coordinates of the corners for each process
-  ierr = DAGetCorners(da2D, &ixs, &iys, 0, &ixm, &iym, 0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da2D, &ixs, &iys, 0, &ixm, &iym, 0);CHKERRQ(ierr);
   
   /* Build the gaussian profile (exp(-x^2-y^2)) */
-  ierr = DAVecGetArray(da2D,gauss,&gauss_ptr);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2D,gauss,&gauss_ptr);CHKERRQ(ierr);
   for (j=iys; j<iys+iym; j++){
     for (i=ixs; i<ixs+ixm; i++){
       gauss_ptr[j][i]=exp(-(xm+i*dx)*(xm+i*dx)-(ym+j*dy)*(ym+j*dy));
     }
   }
-  ierr = DAVecRestoreArray(da2D,gauss,&gauss_ptr);CHKERRQ(ierr);	
+  ierr = DMDAVecRestoreArray(da2D,gauss,&gauss_ptr);CHKERRQ(ierr);	
   
   // Create the HDF5 viewer
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"gauss.h5",FILE_MODE_WRITE,&H5viewer); CHKERRQ(ierr);	

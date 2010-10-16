@@ -20,15 +20,15 @@ int main(int argc,char **argv)
   PetscBool      flg = PETSC_FALSE;
   DM             da;
   Vec            global1,global2,global3;
-  DAPeriodicType ptype = DA_NONPERIODIC;
-  DAStencilType  stype = DA_STENCIL_BOX;
+  DMDAPeriodicType ptype = DMDA_NONPERIODIC;
+  DMDAStencilType  stype = DMDA_STENCIL_BOX;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-star_stencil",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg) stype = DA_STENCIL_STAR;
+  if (flg) stype = DMDA_STENCIL_STAR;
       
   /* Create distributed array and get vectors */
-  ierr = DACreate2d(PETSC_COMM_WORLD,ptype,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,ptype,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da,&global1);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da,&global2);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da,&global1);CHKERRQ(ierr);

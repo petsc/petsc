@@ -301,9 +301,9 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
    Level: intermediate
 
    Notes: Unlike the more general support for blocks in hypre this allows only one block per process and requires the block
-          be defined by a DA.
+          be defined by a DMDA.
 
-          The matrix needs a DA associated with it by either a call to MatSetDA() or if the matrix is obtained from DMGetMatrix()
+          The matrix needs a DMDA associated with it by either a call to MatSetDA() or if the matrix is obtained from DMGetMatrix()
 
 .seealso: MatCreate(), PCPFMG, MatSetDA(), DMGetMatrix()
 M*/
@@ -398,15 +398,15 @@ PetscErrorCode PETSCDM_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DM da)
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
   PetscInt         dim,dof,sw[3],nx,ny,nz;
   int              ilower[3],iupper[3],ssize,i;
-  DAPeriodicType   p;
-  DAStencilType    st;
+  DMDAPeriodicType   p;
+  DMDAStencilType    st;
 
   PetscFunctionBegin;
   ex->da = da;
   ierr   = PetscObjectReference((PetscObject)da);CHKERRQ(ierr); 
 
-  ierr = DAGetInfo(ex->da,&dim,0,0,0,0,0,0,&dof,&sw[0],&p,&st);CHKERRQ(ierr);
-  ierr = DAGetCorners(ex->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(ex->da,&dim,0,0,0,0,0,0,&dof,&sw[0],&p,&st);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(ex->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
   iupper[0] += ilower[0] - 1;    
   iupper[1] += ilower[1] - 1;    
   iupper[2] += ilower[2] - 1;    
@@ -432,7 +432,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DM da)
 
   /* create the hypre stencil object and set its information */
   if (sw[0] > 1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Ask us to add support for wider stencils"); 
-  if (st == DA_STENCIL_BOX) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Ask us to add support for box stencils"); 
+  if (st == DMDA_STENCIL_BOX) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Ask us to add support for box stencils"); 
   if (dim == 1) {
     int offsets[3][1] = {{-1},{0},{1}};
     ssize = 3;
@@ -474,7 +474,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DM da)
   }
 
   /* set the global and local sizes of the matrix */
-  ierr = DAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,dof*nx*ny*nz,dof*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(mat->rmap,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(mat->cmap,1);CHKERRQ(ierr);
@@ -486,14 +486,14 @@ PetscErrorCode PETSCDM_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DM da)
     mat->ops->zerorowslocal  = MatZeroRowsLocal_HYPREStruct_3d;
     mat->ops->zeroentries    = MatZeroEntries_HYPREStruct_3d;
     ierr = MatZeroEntries_HYPREStruct_3d(mat);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only support for 3d DA currently");
+  } else SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only support for 3d DMDA currently");
 
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
   ierr = MatGetOwnershipRange(mat,&ex->rstart,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(ex->da,PETSC_NULL,&ex->gindices);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(ex->da,0,0,0,&ex->gnx,&ex->gnxgny,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(ex->da,PETSC_NULL,&ex->gindices);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(ex->da,0,0,0,&ex->gnx,&ex->gnxgny,0);CHKERRQ(ierr);
   ex->gnxgny *= ex->gnx;
-  ierr = DAGetCorners(ex->da,&ex->xs,&ex->ys,&ex->zs,&ex->nx,&ex->ny,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(ex->da,&ex->xs,&ex->ys,&ex->zs,&ex->nx,&ex->ny,0);CHKERRQ(ierr);
   ex->nxny = ex->nx*ex->ny;
   PetscFunctionReturn(0);
 }
@@ -508,7 +508,7 @@ PetscErrorCode MatMult_HYPREStruct(Mat A,Vec x,Vec y)
   Mat_HYPREStruct *mx = (Mat_HYPREStruct *)(A->data);
 
   PetscFunctionBegin;
-  ierr = DAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
   iupper[0] += ilower[0] - 1;    
   iupper[1] += ilower[1] - 1;    
   iupper[2] += ilower[2] - 1;    
@@ -546,7 +546,7 @@ PetscErrorCode MatAssemblyEnd_HYPREStruct(Mat mat,MatAssemblyType mode)
 PetscErrorCode MatZeroEntries_HYPREStruct(Mat mat)
 {
   PetscFunctionBegin;
-  /* before the DA is set to the matrix the zero doesn't need to do anything */
+  /* before the DMDA is set to the matrix the zero doesn't need to do anything */
   PetscFunctionReturn(0);
 }
 
@@ -609,9 +609,9 @@ EXTERN_C_END
           grid objects, we will restrict the semi-struct objects to consist of only structured-grid components.
 
           Unlike the more general support for parts and blocks in hypre this allows only one part, and one block per process and requires the block
-          be defined by a DA.
+          be defined by a DMDA.
   
-          The matrix needs a DA associated with it by either a call to MatSetDA() or if the matrix is obtained from DMGetMatrix()
+          The matrix needs a DMDA associated with it by either a call to MatSetDA() or if the matrix is obtained from DMGetMatrix()
   
 M*/
 
@@ -838,8 +838,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MatSetDA_HYPRESStruct(Mat mat,DM da)
   Mat_HYPRESStruct *ex = (Mat_HYPRESStruct*) mat->data;
   PetscInt          dim,dof,sw[3],nx,ny,nz;
   int               ilower[3],iupper[3],ssize,i;
-  DAPeriodicType    p;
-  DAStencilType     st;
+  DMDAPeriodicType    p;
+  DMDAStencilType     st;
   int               nparts= 1; /* assuming only one part */
   int               part  = 0;
 
@@ -847,8 +847,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MatSetDA_HYPRESStruct(Mat mat,DM da)
   ex->da = da;
   ierr   = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
 
-  ierr = DAGetInfo(ex->da,&dim,0,0,0,0,0,0,&dof,&sw[0],&p,&st);CHKERRQ(ierr);
-  ierr = DAGetCorners(ex->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(ex->da,&dim,0,0,0,0,0,0,&dof,&sw[0],&p,&st);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(ex->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
   iupper[0] += ilower[0] - 1;
   iupper[1] += ilower[1] - 1;
   iupper[2] += ilower[2] - 1;
@@ -888,7 +888,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MatSetDA_HYPRESStruct(Mat mat,DM da)
 
   /* create the hypre stencil object and set its information */
   if (sw[0] > 1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Ask us to add support for wider stencils");
-  if (st == DA_STENCIL_BOX) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Ask us to add support for box stencils");
+  if (st == DMDA_STENCIL_BOX) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Ask us to add support for box stencils");
 
   if (dim == 1) {
     int offsets[3][1] = {{-1},{0},{1}};
@@ -959,7 +959,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MatSetDA_HYPRESStruct(Mat mat,DM da)
   }
 
   /* set the global and local sizes of the matrix */
-  ierr = DAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,dof*nx*ny*nz,dof*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(mat->rmap,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(mat->cmap,1);CHKERRQ(ierr);
@@ -971,15 +971,15 @@ PetscErrorCode PETSCDM_DLLEXPORT MatSetDA_HYPRESStruct(Mat mat,DM da)
     mat->ops->zerorowslocal  = MatZeroRowsLocal_HYPRESStruct_3d;
     mat->ops->zeroentries    = MatZeroEntries_HYPRESStruct_3d;
     ierr = MatZeroEntries_HYPRESStruct_3d(mat);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only support for 3d DA currently");
+  } else SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only support for 3d DMDA currently");
   
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
   ierr = MatGetOwnershipRange(mat,&ex->rstart,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(ex->da,PETSC_NULL,&ex->gindices);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(ex->da,0,0,0,&ex->gnx,&ex->gnxgny,&ex->gnxgnygnz);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(ex->da,PETSC_NULL,&ex->gindices);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(ex->da,0,0,0,&ex->gnx,&ex->gnxgny,&ex->gnxgnygnz);CHKERRQ(ierr);
   ex->gnxgny    *= ex->gnx;
   ex->gnxgnygnz *= ex->gnxgny;
-  ierr = DAGetCorners(ex->da,&ex->xs,&ex->ys,&ex->zs,&ex->nx,&ex->ny,&ex->nz);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(ex->da,&ex->xs,&ex->ys,&ex->zs,&ex->nx,&ex->ny,&ex->nz);CHKERRQ(ierr);
   ex->nxny   = ex->nx*ex->ny; 
   ex->nxnynz = ex->nz*ex->nxny;
   PetscFunctionReturn(0);
@@ -1000,7 +1000,7 @@ PetscErrorCode MatMult_HYPRESStruct(Mat A,Vec x,Vec y)
   int               i;
     
   PetscFunctionBegin;
-  ierr = DAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
   iupper[0] += ilower[0] - 1;    
   iupper[1] += ilower[1] - 1;
   iupper[2] += ilower[2] - 1;
@@ -1084,7 +1084,7 @@ PetscErrorCode MatAssemblyEnd_HYPRESStruct(Mat mat,MatAssemblyType mode)
 PetscErrorCode MatZeroEntries_HYPRESStruct(Mat mat)
 {
   PetscFunctionBegin;
-  /* before the DA is set to the matrix the zero doesn't need to do anything */
+  /* before the DMDA is set to the matrix the zero doesn't need to do anything */
   PetscFunctionReturn(0);
 }
 

@@ -125,7 +125,7 @@ c      call flush(6)
       ctx(5) = size
 
 ! Set up data structures
-      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,i1,i1,            &
+      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,N,i1,i1,            &
      &     PETSC_NULL_INTEGER,ctx(1),ierr)
 
       call DMCreateGlobalVector(ctx(1),x,ierr)

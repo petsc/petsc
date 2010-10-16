@@ -81,7 +81,7 @@ int main(int argc,char **argv)
     if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE)) SETERRQ(PETSC_COMM_SELF,1,"Incompatible number of processors:  Nx * Ny != size");
     
     /* Set up distributed array */
-    ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,
                       PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
     ierr = DMCreateGlobalVector(user.da,&x);CHKERRQ(ierr);
     ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
@@ -149,8 +149,8 @@ PetscErrorCode FormInitialGuess1(AppCtx *user,Vec X)
   /* Get ghost points */
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
   temp1 = lambda/(lambda + one);
-  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
 
   /* Compute initial guess */
   for (j=ys; j<ys+ym; j++) {
@@ -191,8 +191,8 @@ PetscErrorCode FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
   ierr = VecGetArray(localF,&f);CHKERRQ(ierr);
-  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
 
   /* Evaluate function */
   for (j=ys; j<ys+ym; j++) {
@@ -238,9 +238,9 @@ PetscErrorCode FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,vo
   ierr = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
-  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
 
   /* Evaluate function */
   for (j=ys; j<ys+ym; j++) {

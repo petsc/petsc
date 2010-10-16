@@ -2,7 +2,7 @@
 #include "../src/snes/impls/vi/viimpl.h"
 #include "petscda.h"
 
-static char  help[] = "Parallel version of the minimum surface area problem using DAs.\n\
+static char  help[] = "Parallel version of the minimum surface area problem using DMs.\n\
 See ex10.c for the serial version. It solves a system of nonlinear equations in mixed\n\
 complementarity form using semismooth newton algorithm.This example is based on a\n\
 problem from the MINPACK-2 test suite.  Given a rectangular 2-D domain and\n\
@@ -68,9 +68,9 @@ int main(int argc, char **argv)
   info = PetscOptionsGetScalar(PETSC_NULL, "-ub", &ub, &flg_u);CHKERRQ(info);
 
   /* Create distributed array to manage the 2d grid */
-  info = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(info);
-  info = DAGetInfo(user.da,PETSC_IGNORE,&user.mx,&user.my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(info);
-  /* Extract global vectors from DA; */
+  info = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(info);
+  info = DMDAGetInfo(user.da,PETSC_IGNORE,&user.mx,&user.my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(info);
+  /* Extract global vectors from DMDA; */
   info = DMCreateGlobalVector(user.da,&x);CHKERRQ(info);
   info = VecDuplicate(x, &r); CHKERRQ(info);
 
@@ -161,10 +161,10 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
   info = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
   info = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
   /* Get pointers to local vector data */
-  info = DAVecGetArray(user->da,localX, &x); CHKERRQ(info);
-  info = DAVecGetArray(user->da,G, &g); CHKERRQ(info);
+  info = DMDAVecGetArray(user->da,localX, &x); CHKERRQ(info);
+  info = DMDAVecGetArray(user->da,G, &g); CHKERRQ(info);
 
-  info = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
+  info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
   /* Compute function over the locally owned part of the mesh */
   for (j=ys; j < ys+ym; j++){
     for (i=xs; i< xs+xm; i++){
@@ -252,8 +252,8 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
   }
   
   /* Restore vectors */
-  info = DAVecRestoreArray(user->da,localX, &x); CHKERRQ(info);
-  info = DAVecRestoreArray(user->da,G, &g); CHKERRQ(info);
+  info = DMDAVecRestoreArray(user->da,localX, &x); CHKERRQ(info);
+  info = DMDAVecRestoreArray(user->da,G, &g); CHKERRQ(info);
   info = DMRestoreLocalVector(user->da,&localX);CHKERRQ(info);
   info = PetscLogFlops(67*mx*my); CHKERRQ(info);
   PetscFunctionReturn(0);
@@ -303,9 +303,9 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   info = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
  
   /* Get pointers to vector data */
-  info = DAVecGetArray(user->da,localX, &x); CHKERRQ(info);
+  info = DMDAVecGetArray(user->da,localX, &x); CHKERRQ(info);
 
-  info = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
+  info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
   /* Compute Jacobian over the locally owned part of the mesh */
   for (j=ys; j< ys+ym; j++){
     for (i=xs; i< xs+xm; i++){
@@ -438,7 +438,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 
   /* Assemble the matrix */
   info = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
-  info = DAVecRestoreArray(user->da,localX,&x);CHKERRQ(info);
+  info = DMDAVecRestoreArray(user->da,localX,&x);CHKERRQ(info);
   info = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
   info = DMRestoreLocalVector(user->da,&localX);CHKERRQ(info);
 
@@ -568,8 +568,8 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     PetscInt    xs,xm,ys,ym;
     
     /* Get pointers to vector data */
-    info = DAVecGetArray(user->da,X,&x); CHKERRQ(info);
-    info = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
+    info = DMDAVecGetArray(user->da,X,&x); CHKERRQ(info);
+    info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
 
     /* Perform local computations */    
     for (j=ys; j<ys+ym; j++){
@@ -580,7 +580,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     }
     
     /* Restore vectors */
-    info = DAVecRestoreArray(user->da,X,&x); CHKERRQ(info);
+    info = DMDAVecRestoreArray(user->da,X,&x); CHKERRQ(info);
     
   }
   PetscFunctionReturn(0);

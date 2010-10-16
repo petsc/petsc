@@ -7,9 +7,9 @@
 #include "private/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetGhostCorners"
+#define __FUNCT__ "DMDAGetGhostCorners"
 /*@
-   DAGetGhostCorners - Returns the global (x,y,z) indices of the lower left
+   DMDAGetGhostCorners - Returns the global (x,y,z) indices of the lower left
    corner of the local region, including ghost points.
 
    Not Collective
@@ -27,17 +27,17 @@
 
    Note:
    The corner information is independent of the number of degrees of 
-   freedom per node set with the DACreateXX() routine. Thus the x, y, z, and
+   freedom per node set with the DMDACreateXX() routine. Thus the x, y, z, and
    m, n, p can be thought of as coordinates on a logical grid, where each
    grid point has (potentially) several degrees of freedom.
    Any of y, z, n, and p can be passed in as PETSC_NULL if not needed.
 
 .keywords: distributed array, get, ghost, corners, nodes, local indices
 
-.seealso: DAGetCorners(), DACreate1d(), DACreate2d(), DACreate3d(), DAGetOwnershipRanges()
+.seealso: DMDAGetCorners(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDAGetOwnershipRanges()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetGhostCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {
   PetscInt w;
   DM_DA    *dd = (DM_DA*)da->data;

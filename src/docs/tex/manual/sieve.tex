@@ -32,9 +32,9 @@ element methods will be given an element vector, finite volume methods a vector 
 a stencil. At the process level, we create storage which is partially assembled over the process subdomain, but
 unassembled between processes. The Sieve calls these objects \code{Sections}, which become PETSc \code{VecGhost} when
 reduced to linear algebra operations. A single piece of the process level representation is called \emph{local vector}
-by the DA. Global representatives are completely assembled, and stored in \code{Vec} objects.
+by the DMDA. Global representatives are completely assembled, and stored in \code{Vec} objects.
 
-    The simplest example of communication is the trading of ghost values in a DA. These values can be communicated in a
+    The simplest example of communication is the trading of ghost values in a DMDA. These values can be communicated in a
 number of ways. First, the user can just call
 \begin{quote}
   \code{Mesh}
@@ -43,6 +43,6 @@ number of ways. First, the user can just call
 
 \subsection{Local Interaction}
 
-    Here we deviate from the DA model in order to allow more flexible data layout, and also an access interface which is
+    Here we deviate from the DMDA model in order to allow more flexible data layout, and also an access interface which is
 independent of mesh dimension, element shape, and discretization.
 

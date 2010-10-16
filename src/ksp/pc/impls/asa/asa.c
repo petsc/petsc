@@ -64,7 +64,7 @@ PetscBool  asa_events_registered = PETSC_FALSE;
 
     Input Parameter:
 +   pc - the context
--   dm - the DA or ADDA or VecPack object
+-   dm - the DM object
 
     Level: advanced
 

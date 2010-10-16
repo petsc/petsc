@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscBool      flg = PETSC_FALSE,test_order = PETSC_FALSE;
   ISColoring     coloring;
   Mat            mat;
-  DAStencilType  stencil_type = DA_STENCIL_BOX;
+  DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
   Vec            lvec,dvec;
   MatFDColoring  fdcoloring;
 
@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-star",&flg,PETSC_NULL);CHKERRQ(ierr); 
-  if (flg) stencil_type =  DA_STENCIL_STAR;
+  if (flg) stencil_type =  DMDA_STENCIL_STAR;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-test_order",&test_order,PETSC_NULL);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-distribute",&flg,PETSC_NULL);CHKERRQ(ierr);
@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   }
 
   /* Create distributed array and get vectors */
-  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,stencil_type,M,N,P,m,n,p,w,s,lx,ly,lz,&da);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,stencil_type,M,N,P,m,n,p,w,s,lx,ly,lz,&da);CHKERRQ(ierr);
   if (lx) {
     ierr = PetscFree(lx);CHKERRQ(ierr);
     ierr = PetscFree(ly);CHKERRQ(ierr);

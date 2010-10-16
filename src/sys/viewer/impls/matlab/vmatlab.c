@@ -13,11 +13,11 @@
              ${PETSC_DIR}/bin/matlab/PetscBinaryRead.m to read matrices into matlab).
 
              For parallel vectors obtained with DMCreateGlobalVector() or DMGetGlobalVector() the vectors are saved to
-             the .mat file in natural ordering. You can use DMView() to save the DA information to the .mat file
+             the .mat file in natural ordering. You can use DMView() to save the DMDA information to the .mat file
              the fields in the Matlab loaded da variable give the array dimensions so you can reshape the Matlab
              vector to the same multidimensional shape as it had in PETSc for plotting etc. For example,
 
-$             In your PETSc C/C++ code (assuming a two dimensional DA with one degree of freedom per node)
+$             In your PETSc C/C++ code (assuming a two dimensional DMDA with one degree of freedom per node)
 $                PetscObjectSetName((PetscObject)x,"x");
 $                VecView(x,PETSC_VIEWER_MATLAB_WORLD);
 $                PetscObjectSetName((PetscObject)da,"da");

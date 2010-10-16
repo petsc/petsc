@@ -28,7 +28,7 @@ struct NLF_DAAD {
 */
 #undef __FUNCT__  
 #define __FUNCT__ "NLFNewton_DAAD"
-PetscErrorCode NLFNewton_DAAD(NLF A,DALocalInfo *info,MatStencil *stencil,void *ad_vu,PetscScalar *ad_vustart,int nI,int gI,PetscScalar residual)
+PetscErrorCode NLFNewton_DAAD(NLF A,DMDALocalInfo *info,MatStencil *stencil,void *ad_vu,PetscScalar *ad_vustart,int nI,int gI,PetscScalar residual)
 {
   PetscErrorCode ierr;
   PetscInt       cnt = A->newton_its;
@@ -54,7 +54,7 @@ PetscErrorCode NLFNewton_DAAD(NLF A,DALocalInfo *info,MatStencil *stencil,void *
 */
 #undef __FUNCT__  
 #define __FUNCT__ "NLFNewton_DAAD4"
-PetscErrorCode NLFNewton_DAAD4(NLF A,DALocalInfo *info,MatStencil *stencil,void *ad_vu,PetscScalar *ad_vustart,int nI,int gI,PetscScalar *residual)
+PetscErrorCode NLFNewton_DAAD4(NLF A,DMDALocalInfo *info,MatStencil *stencil,void *ad_vu,PetscScalar *ad_vustart,int nI,int gI,PetscScalar *residual)
 {
   PetscErrorCode ierr;
   PetscInt       cnt = A->newton_its;
@@ -144,7 +144,7 @@ PetscErrorCode NLFNewton_DAAD4(NLF A,DALocalInfo *info,MatStencil *stencil,void 
 
 #undef __FUNCT__  
 #define __FUNCT__ "NLFNewton_DAAD9"
-PetscErrorCode NLFNewton_DAAD9(NLF A,DALocalInfo *info,MatStencil *stencil,void *ad_vu,PetscScalar *ad_vustart,int nI,int gI,PetscScalar *residual)
+PetscErrorCode NLFNewton_DAAD9(NLF A,DMDALocalInfo *info,MatStencil *stencil,void *ad_vu,PetscScalar *ad_vustart,int nI,int gI,PetscScalar *residual)
 {
   PetscErrorCode ierr;
   PetscInt       cnt = A->newton_its;
@@ -253,7 +253,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD(NLF A,MatSORType flag,int its,Ve
   PetscInt       j,gtdof,nI,gI;
   PetscScalar    *avu,*av,*ad_vustart,*residual;
   Vec            localxx;
-  DALocalInfo    info;
+  DMDALocalInfo    info;
   MatStencil     stencil;
   void*          *ad_vu;
 
@@ -262,7 +262,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD(NLF A,MatSORType flag,int its,Ve
 
   ierr = DMGetLocalVector(A->da,&localxx);CHKERRQ(ierr);
   /* get space for derivative object.  */
-  ierr = DAGetAdicMFArray(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DMDAGetAdicMFArray(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   ierr = VecGetArray(A->residual,&residual);CHKERRQ(ierr);
 
 
@@ -271,7 +271,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD(NLF A,MatSORType flag,int its,Ve
   ierr = PetscADIncrementTotalGradSize(1);CHKERRQ(ierr);
   PetscADSetIndepDone();
 
-  ierr = DAGetLocalInfo(A->da,&info);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(A->da,&info);CHKERRQ(ierr);
   while (its--) {
 
     /* get initial solution properly ghosted */
@@ -330,7 +330,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD(NLF A,MatSORType flag,int its,Ve
 
   ierr = VecRestoreArray(A->residual,&residual);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(A->da,&localxx);CHKERRQ(ierr);
-  ierr = DARestoreAdicMFArray(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DMDARestoreAdicMFArray(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -344,7 +344,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD4(NLF A,MatSORType flag,int its,V
   PetscInt       j,gtdof,nI,gI;
   PetscScalar    *avu,*av,*ad_vustart,*residual;
   Vec            localxx;
-  DALocalInfo    info;
+  DMDALocalInfo    info;
   MatStencil     stencil;
   void*          *ad_vu;
 
@@ -353,7 +353,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD4(NLF A,MatSORType flag,int its,V
   
   ierr = DMGetLocalVector(A->da,&localxx);CHKERRQ(ierr);
   /* get space for derivative object.  */
-  ierr = DAGetAdicMFArray4(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DMDAGetAdicMFArray4(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   ierr = VecGetArray(A->residual,&residual);CHKERRQ(ierr);
 
 
@@ -362,7 +362,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD4(NLF A,MatSORType flag,int its,V
   ierr = PetscADIncrementTotalGradSize(4);CHKERRQ(ierr);
   PetscADSetIndepDone();
 
-  ierr = DAGetLocalInfo(A->da,&info);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(A->da,&info);CHKERRQ(ierr);
   while (its--) {
 
     /* get initial solution properly ghosted */
@@ -424,7 +424,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD4(NLF A,MatSORType flag,int its,V
 
   ierr = VecRestoreArray(A->residual,&residual);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(A->da,&localxx);CHKERRQ(ierr);
-  ierr = DARestoreAdicMFArray(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DMDARestoreAdicMFArray(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -437,7 +437,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD9(NLF A,MatSORType flag,int its,V
   PetscInt       j,gtdof,nI,gI;
   PetscScalar    *avu,*av,*ad_vustart,*residual;
   Vec            localxx;
-  DALocalInfo    info;
+  DMDALocalInfo    info;
   MatStencil     stencil;
   void*          *ad_vu;
 
@@ -446,7 +446,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD9(NLF A,MatSORType flag,int its,V
   
   ierr = DMGetLocalVector(A->da,&localxx);CHKERRQ(ierr);
   /* get space for derivative object.  */
-  ierr = DAGetAdicMFArray9(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DMDAGetAdicMFArray9(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   ierr = VecGetArray(A->residual,&residual);CHKERRQ(ierr);
 
 
@@ -455,7 +455,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD9(NLF A,MatSORType flag,int its,V
   ierr = PetscADIncrementTotalGradSize(9);CHKERRQ(ierr);
   PetscADSetIndepDone();
 
-  ierr = DAGetLocalInfo(A->da,&info);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(A->da,&info);CHKERRQ(ierr);
   while (its--) {
 
     /* get initial solution properly ghosted */
@@ -521,7 +521,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD9(NLF A,MatSORType flag,int its,V
 
   ierr = VecRestoreArray(A->residual,&residual);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(A->da,&localxx);CHKERRQ(ierr);
-  ierr = DARestoreAdicMFArray(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DMDARestoreAdicMFArray(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -537,10 +537,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAADb(NLF A,MatSORType flag,int its,V
   PetscInt       i,j,gtdof,nI,gI, bs = A->da->w, bs1 = bs + 1;
   PetscScalar    *avu,*av,*ad_vustart,*residual;
   Vec            localxx;
-  DALocalInfo    info;
+  DMDALocalInfo    info;
   MatStencil     stencil;
   void*          *ad_vu;
-  PetscErrorCode (*NLFNewton_DAADb)(NLF,DALocalInfo*,MatStencil*,void*,PetscScalar*,int,int,PetscScalar*);
+  PetscErrorCode (*NLFNewton_DAADb)(NLF,DMDALocalInfo*,MatStencil*,void*,PetscScalar*,int,int,PetscScalar*);
 
   PetscFunctionBegin;
   if (its <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
@@ -552,7 +552,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAADb(NLF A,MatSORType flag,int its,V
 
   ierr = DMGetLocalVector(A->da,&localxx);CHKERRQ(ierr);
   /* get space for derivative object.  */
-  ierr = DAGetAdicMFArrayb(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DMDAGetAdicMFArrayb(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   ierr = VecGetArray(A->residual,&residual);CHKERRQ(ierr);
 
 
@@ -561,7 +561,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAADb(NLF A,MatSORType flag,int its,V
   ierr = PetscADIncrementTotalGradSize(bs);CHKERRQ(ierr);
   PetscADSetIndepDone();
 
-  ierr = DAGetLocalInfo(A->da,&info);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(A->da,&info);CHKERRQ(ierr);
   while (its--) {
 
     /* get initial solution properly ghosted */
@@ -616,7 +616,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAADb(NLF A,MatSORType flag,int its,V
 
   ierr = VecRestoreArray(A->residual,&residual);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(A->da,&localxx);CHKERRQ(ierr);
-  ierr = DARestoreAdicMFArray(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DMDARestoreAdicMFArray(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

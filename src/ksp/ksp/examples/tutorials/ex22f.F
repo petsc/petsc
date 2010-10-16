@@ -38,9 +38,9 @@
       i3 = 3
       i1 = 1
       call DMMGCreate(PETSC_COMM_WORLD,i3,PETSC_NULL_INTEGER,dmmg,ierr)
-      call DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,            &
-     &            i3,i3,i3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,i1,i1,               &
-     &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                        &
+      call DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,                               &
+     &    DMDA_STENCIL_STAR,i3,i3,i3,PETSC_DECIDE,PETSC_DECIDE,                        &
+     &    PETSC_DECIDE,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                        &
      &                PETSC_NULL_INTEGER,da,ierr)  
       call DMMGSetDM(dmmg,da,ierr)
       call DMDestroy(da,ierr)
@@ -73,7 +73,7 @@
       DM           da
 
       call DMMGGetDM(dmmg,da,ierr)
-      call DAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                        &
+      call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                        &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
@@ -108,7 +108,7 @@
       i1 = 1
       i7 = 7
       call DMMGGetDM(dmmg,da,ierr)
-      call DAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                       &
+      call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                       &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
@@ -120,7 +120,7 @@
       HxHydHz = Hx*Hy/Hz
       HxHzdHy = Hx*Hz/Hy
       HyHzdHx = Hy*Hz/Hx
-      call DAGetCorners(da,xs,ys,zs,xm,ym,zm,ierr)        
+      call DMDAGetCorners(da,xs,ys,zs,xm,ym,zm,ierr)        
   
       do 10,k=zs,zs+zm-1    
         do 20,j=ys,ys+ym-1

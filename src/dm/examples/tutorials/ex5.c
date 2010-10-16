@@ -1,5 +1,5 @@
 
-static char help[] = "Tests DMGetElements() and VecView() contour plotting for 2d DAs.\n\n";
+static char help[] = "Tests DMGetElements() and VecView() contour plotting for 2d DMDAs.\n\n";
 
 #include "petscda.h"
 
@@ -15,8 +15,8 @@ int main(int argc,char **argv)
   PetscViewer    viewer;
   Vec            local,global;
   PetscScalar    value;
-  DAPeriodicType ptype = DA_NONPERIODIC;
-  DAStencilType  stype = DA_STENCIL_BOX;
+  DMDAPeriodicType ptype = DMDA_NONPERIODIC;
+  DMDAStencilType  stype = DMDA_STENCIL_BOX;
   PetscScalar    *lv;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
@@ -28,10 +28,10 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-star_stencil",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg) stype = DA_STENCIL_STAR;
+  if (flg) stype = DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
-  ierr = DACreate2d(PETSC_COMM_WORLD,ptype,stype,M,N,m,n,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,ptype,stype,M,N,m,n,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
 

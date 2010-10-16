@@ -1,7 +1,7 @@
 !
 !  Description: Solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
-!  domain, using distributed arrays (DAs) to partition the parallel grid.
+!  domain, using distributed arrays (DMDAs) to partition the parallel grid.
 !  The command line options include:
 !    -par <parameter>, where <parameter> indicates the nonlinearity of the problem
 !       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)
@@ -211,14 +211,14 @@
 !  Create vector data structures; set function evaluation routine
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-!  Create distributed array (DA) to manage parallel grid and vectors
+!  Create distributed array (DMDA) to manage parallel grid and vectors
 
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
-      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,   &
+      call DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,   &
      &     -4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,                         &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,user%da,ierr)
-      call DAGetInfo(user%da,PETSC_NULL_INTEGER,user%mx,user%my,        &
+      call DMDAGetInfo(user%da,PETSC_NULL_INTEGER,user%mx,user%my,        &
      &               PETSC_NULL_INTEGER,                                &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
@@ -230,17 +230,17 @@
 !
 !     call DMView(user%da,PETSC_VIEWER_DRAW_WORLD,ierr)
 
-!  Extract global and local vectors from DA; then duplicate for remaining
+!  Extract global and local vectors from DMDA; then duplicate for remaining
 !  vectors that are the same types
 
       call DMCreateGlobalVector(user%da,x,ierr)
       call VecDuplicate(x,r,ierr)
 
-!  Get local grid boundaries (for 2-dimensional DA)
+!  Get local grid boundaries (for 2-dimensional DMDA)
 
-      call DAGetCorners(user%da,user%xs,user%ys,PETSC_NULL_INTEGER,     &
+      call DMDAGetCorners(user%da,user%xs,user%ys,PETSC_NULL_INTEGER,     &
      &     user%xm,user%ym,PETSC_NULL_INTEGER,ierr)
-      call DAGetGhostCorners(user%da,user%gxs,user%gys,                 &
+      call DMDAGetGhostCorners(user%da,user%gxs,user%gys,                 &
      &     PETSC_NULL_INTEGER,user%gxm,user%gym,                        &
      &     PETSC_NULL_INTEGER,ierr)
 
@@ -275,8 +275,8 @@
 !                         products within Newton-Krylov method
 !
 !  Note:  For the parallel case, vectors and matrices MUST be partitioned
-!     accordingly.  When using distributed arrays (DAs) to create vectors,
-!     the DAs determine the problem partitioning.  We must explicitly
+!     accordingly.  When using distributed arrays (DMDAs) to create vectors,
+!     the DMDAs determine the problem partitioning.  We must explicitly
 !     specify the local matrix dimensions upon its creation for compatibility
 !     with the vector distribution.  Thus, the generic MatCreate() routine
 !     is NOT sufficient when working with distributed arrays.
@@ -602,9 +602,9 @@
 !  VecGetArrayF90() and VecRestoreArrayF90().
 !
 !  Notes:
-!  Due to grid point reordering with DAs, we must always work
+!  Due to grid point reordering with DMDAs, we must always work
 !  with the local grid points, and then transform them to the new
-!  global numbering with the "ltog" mapping (via DAGetGlobalIndicesF90()).
+!  global numbering with the "ltog" mapping (via DMDAGetGlobalIndicesF90()).
 !  We cannot work directly with the global numbers for the original
 !  uniprocessor grid!
 !
@@ -612,13 +612,13 @@
 !  when setting matrix entries:
 !    (A) MatSetValuesLocal(), using the local ordering (including
 !        ghost points!)
-!        - Use DAGetGlobalIndicesF90() to extract the local-to-global map
+!        - Use DMDAGetGlobalIndicesF90() to extract the local-to-global map
 !        - Associate this map with the matrix by calling
 !          MatSetLocalToGlobalMapping() once
 !        - Set matrix entries using the local ordering
 !          by calling MatSetValuesLocal()
 !    (B) MatSetValues(), using the global ordering 
-!        - Use DAGetGlobalIndicesF90() to extract the local-to-global map
+!        - Use DMDAGetGlobalIndicesF90() to extract the local-to-global map
 !        - Then apply this map explicitly yourself
 !        - Set matrix entries using the global ordering by calling
 !          MatSetValues()
@@ -723,9 +723,9 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
 !  Notes:
-!  Due to grid point reordering with DAs, we must always work
+!  Due to grid point reordering with DMDAs, we must always work
 !  with the local grid points, and then transform them to the new
-!  global numbering with the "ltog" mapping (via DAGetGlobalIndicesF90()).
+!  global numbering with the "ltog" mapping (via DMDAGetGlobalIndicesF90()).
 !  We cannot work directly with the global numbers for the original
 !  uniprocessor grid!
 !
@@ -733,13 +733,13 @@
 !  when setting matrix entries:
 !    (A) MatSetValuesLocal(), using the local ordering (including
 !        ghost points!)
-!        - Use DAGetGlobalIndicesF90() to extract the local-to-global map
+!        - Use DMDAGetGlobalIndicesF90() to extract the local-to-global map
 !        - Associate this map with the matrix by calling
 !          MatSetLocalToGlobalMapping() once
 !        - Set matrix entries using the local ordering
 !          by calling MatSetValuesLocal()
 !    (B) MatSetValues(), using the global ordering 
-!        - Use DAGetGlobalIndicesF90() to extract the local-to-global map
+!        - Use DMDAGetGlobalIndicesF90() to extract the local-to-global map
 !        - Then apply this map explicitly yourself
 !        - Set matrix entries using the global ordering by calling
 !          MatSetValues()

@@ -45,10 +45,10 @@ int main(int argc,char **argv)
 	- Lap(Omega) + Div([U*Omega,V*Omega]) - GR*Grad_x(T) = 0
         where T is given by the given x.temp
         - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,3,1,0,0,&da1);CHKERRQ(ierr);
-  ierr = DASetFieldName(da1,0,"x-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(da1,1,"y-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(da1,2,"Omega");CHKERRQ(ierr);
+  ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,3,1,0,0,&da1);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da1,0,"x-velocity");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da1,1,"y-velocity");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da1,2,"Omega");CHKERRQ(ierr);
 
   /* Create the solver object and attach the grid/physics info */
   ierr = DMMGCreate(comm,1,&user,&dmmg);CHKERRQ(ierr);
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
   ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);
   ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
 
-  ierr = DAGetInfo(da1,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da1,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   user.lidvelocity = 1.0/(mx*my);
   user.prandtl     = 1.0;
   user.grashof     = 1.0;
@@ -86,19 +86,19 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
   PetscErrorCode ierr;
   DM             da1 = dmmg->dm;
   Field1         **x1;
-  DALocalInfo    info1;
+  DMDALocalInfo    info1;
 
   PetscFunctionBegin;
 
   /* Access the array inside of X */
-  ierr = DAVecGetArray(da1,X,(void**)&x1);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da1,X,(void**)&x1);CHKERRQ(ierr);
 
-  ierr = DAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
 
   /* Evaluate local user provided function */
   ierr = FormInitialGuessLocal1(&info1,x1);CHKERRQ(ierr);
 
-  ierr = DAVecRestoreArray(da1,X,(void**)&x1);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da1,X,(void**)&x1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -110,13 +110,13 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
   DMMG           dmmg = (DMMG)ctx;
   AppCtx         *user = (AppCtx*)dmmg->user;
   DM             da1 = dmmg->dm;
-  DALocalInfo    info1;
+  DMDALocalInfo    info1;
   Field1         **x1,**f1;
   Vec            X1;
 
   PetscFunctionBegin;
 
-  ierr = DAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
 
   /* Get local vectors to hold ghosted parts of X */
   ierr = DMGetLocalVector(da1,&X1);CHKERRQ(ierr);
@@ -124,18 +124,18 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
   ierr = DMGlobalToLocalEnd(da1,X,INSERT_VALUES,X1);CHKERRQ(ierr); 
 
   /* Access the arrays inside X1 */
-  ierr = DAVecGetArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
 
   /* Access the subvectors in F. 
      These are not ghosted so directly access the memory locations in F */
-  ierr = DAVecGetArray(da1,F,(void**)&f1);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da1,F,(void**)&f1);CHKERRQ(ierr);
 
   /* Evaluate local user provided function */    
   ierr = FormFunctionLocal1(&info1,x1,0,f1,(void**)user);CHKERRQ(ierr);
 
 
-  ierr = DAVecRestoreArray(da1,F,(void**)&f1);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da1,F,(void**)&f1);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da1,&X1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

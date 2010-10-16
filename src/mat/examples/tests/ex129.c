@@ -41,15 +41,15 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
-  ierr = DASetDim(da,3);CHKERRQ(ierr);
-  ierr = DASetPeriodicity(da,DA_NONPERIODIC);CHKERRQ(ierr);
-  ierr = DASetStencilType(da,DA_STENCIL_STAR);CHKERRQ(ierr);
-  ierr = DASetSizes(da,M,M,M);CHKERRQ(ierr);
-  ierr = DASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = DASetDof(da,dof);CHKERRQ(ierr);
-  ierr = DASetStencilWidth(da,1);CHKERRQ(ierr);
-  ierr = DASetOwnershipRanges(da,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
+  ierr = DMDASetDim(da,3);CHKERRQ(ierr);
+  ierr = DMDASetPeriodicity(da,DMDA_NONPERIODIC);CHKERRQ(ierr);
+  ierr = DMDASetStencilType(da,DMDA_STENCIL_STAR);CHKERRQ(ierr);
+  ierr = DMDASetSizes(da,M,M,M);CHKERRQ(ierr);
+  ierr = DMDASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = DMDASetDof(da,dof);CHKERRQ(ierr);
+  ierr = DMDASetStencilWidth(da,1);CHKERRQ(ierr);
+  ierr = DMDASetOwnershipRanges(da,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
 
@@ -78,7 +78,7 @@ int main(int argc,char **args)
     ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
   } else { /* Test inplace factorization */  
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&F);CHKERRQ(ierr); 
-    /* or create F without DA 
+    /* or create F without DMDA 
     const MatType     type;
     PetscInt          i,ncols;
     const PetscInt    *cols;
@@ -166,7 +166,7 @@ PetscErrorCode ComputeRHS(DM da,Vec b)
   PetscScalar    h;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
   h    = 1.0/((mx-1)*(my-1)*(mz-1));
   ierr = VecSet(b,h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -227,7 +227,7 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   ierr = PetscRandomSetInterval(rand,-.001,.001);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 
-  ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr); 
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr); 
   /* For simplicity, this example only works on mx=my=mz */
   if ( mx != my || mx != mz) SETERRQ3(PETSC_COMM_SELF,1,"This example only works with mx %d = my %d = mz %d\n",mx,my,mz);
 
@@ -252,7 +252,7 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
       k3++;
     }
   }
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){

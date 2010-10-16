@@ -135,7 +135,7 @@ PetscErrorCode DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
   */
   ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAFormFunction1(da,localX,F,dmmg->user);CHKERRQ(ierr);
+  ierr = DMDAFormFunction1(da,localX,F,dmmg->user);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
@@ -160,7 +160,7 @@ PetscErrorCode DMMGFormFunctionGhost(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = VecSet(localF, 0.0);CHKERRQ(ierr);
-  ierr = DAFormFunction1(da,localX,localF,dmmg->user);CHKERRQ(ierr);
+  ierr = DMDAFormFunction1(da,localX,localF,dmmg->user);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(da,localF,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(da,localF,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
@@ -279,7 +279,7 @@ PetscErrorCode DMMGFormFunctionFD(SNES snes,Vec X,Vec F,void *ptr)
     ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
     localX = X;
   }
-  ierr = DAFormFunction(da,dmmg->lfj,localX,F,dmmg->user);CHKERRQ(ierr);
+  ierr = DMDAFormFunction(da,dmmg->lfj,localX,F,dmmg->user);CHKERRQ(ierr);
   if (n != N){
     ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   }
@@ -290,8 +290,8 @@ PetscErrorCode DMMGFormFunctionFD(SNES snes,Vec X,Vec F,void *ptr)
 #define __FUNCT__ "SNESDAFormFunction"
 /*@C 
    SNESDAFormFunction - This is a universal function evaluation routine that
-   may be used with SNESSetFunction() as long as the user context has a DA
-   as its first record and the user has called DASetLocalFunction().
+   may be used with SNESSetFunction() as long as the user context has a DMDA
+   as its first record and the user has called DMDASetLocalFunction().
 
    Collective on SNES
 
@@ -299,12 +299,12 @@ PetscErrorCode DMMGFormFunctionFD(SNES snes,Vec X,Vec F,void *ptr)
 +  snes - the SNES context
 .  X - input vector
 .  F - function vector
--  ptr - pointer to a structure that must have a DA as its first entry. For example this 
+-  ptr - pointer to a structure that must have a DMDA as its first entry. For example this 
          could be a DMMG, this ptr must have been passed into SNESDAFormFunction() as the context
 
    Level: intermediate
 
-.seealso: DASetLocalFunction(), DASetLocalJacobian(), DASetLocalAdicFunction(), DASetLocalAdicMFFunction(),
+.seealso: DMDASetLocalFunction(), DMDASetLocalJacobian(), DMDASetLocalAdicFunction(), DMDASetLocalAdicMFFunction(),
           SNESSetFunction(), SNESSetJacobian()
 
 @*/
@@ -316,7 +316,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAFormFunction(SNES snes,Vec X,Vec F,void
   PetscInt       N,n;
   
   PetscFunctionBegin;
-  if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Looks like you called SNESSetFromFuntion(snes,SNESDAFormFunction,) without the DA context");
+  if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Looks like you called SNESSetFromFuntion(snes,SNESDAFormFunction,) without the DMDA context");
 
   /* determine whether X=localX */
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
@@ -334,7 +334,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAFormFunction(SNES snes,Vec X,Vec F,void
     ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
     localX = X;
   }
-  ierr = DAFormFunction1(da,localX,F,ptr);
+  ierr = DMDAFormFunction1(da,localX,F,ptr);
   if (n != N){
     if (PetscExceptionValue(ierr)) {
       PetscErrorCode pierr = DMRestoreLocalVector(da,&localX);CHKERRQ(pierr);
@@ -399,7 +399,7 @@ PetscErrorCode DMMGComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *f
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAComputeJacobian1(da,localX,*B,dmmg->user);CHKERRQ(ierr);
+  ierr = DMDAComputeJacobian1(da,localX,*B,dmmg->user);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   /* Assemble true Jacobian; if it is different */
   if (*J != *B) {
@@ -416,7 +416,7 @@ PetscErrorCode DMMGComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *f
 /*
     SNESDAComputeJacobianWithAdifor - This is a universal Jacobian evaluation routine
     that may be used with SNESSetJacobian() from Fortran as long as the user context has 
-    a DA as its first record and DASetLocalAdiforFunction() has been called.  
+    a DMDA as its first record and DMDASetLocalAdiforFunction() has been called.  
 
    Collective on SNES
 
@@ -430,7 +430,7 @@ PetscErrorCode DMMGComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *f
 
    Level: intermediate
 
-.seealso: DASetLocalFunction(), DASetLocalAdicFunction(), SNESSetFunction(), SNESSetJacobian()
+.seealso: DMDASetLocalFunction(), DMDASetLocalAdicFunction(), SNESSetFunction(), SNESSetJacobian()
 
 */
 PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
@@ -443,7 +443,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobianWithAdifor(SNES snes,Vec
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAComputeJacobian1WithAdifor(da,localX,*B,ptr);CHKERRQ(ierr);
+  ierr = DMDAComputeJacobian1WithAdifor(da,localX,*B,ptr);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   /* Assemble true Jacobian; if it is different */
   if (*J != *B) {
@@ -473,7 +473,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobianWithAdifor(SNES snes,Vec
 
    Level: intermediate
 
-.seealso: DASetLocalFunction(), DASetLocalJacobian(), SNESSetFunction(), SNESSetJacobian()
+.seealso: DMDASetLocalFunction(), DMDASetLocalJacobian(), SNESSetFunction(), SNESSetJacobian()
 
 */
 PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
@@ -486,7 +486,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobian(SNES snes,Vec X,Mat *J,
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAComputeJacobian1(da,localX,*B,ptr);CHKERRQ(ierr);
+  ierr = DMDAComputeJacobian1(da,localX,*B,ptr);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   /* Assemble true Jacobian; if it is different */
   if (*J != *B) {
@@ -837,7 +837,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetFromOptions(DMMG *dmmg)
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNES(), DMMGSetSNESLocal()
 
 @*/
-PetscErrorCode DMMGSetSNESLocalFD(DMMG *dmmg,DALocalFunction1 function)
+PetscErrorCode DMMGSetSNESLocalFD(DMMG *dmmg,DMDALocalFunction1 function)
 {
   PetscInt       i,nlevels = dmmg[0]->nlevels;
 
@@ -867,7 +867,7 @@ PetscErrorCode DMMGSetSNESLocalFD(DMMG *dmmg,DALocalFunction1 function)
 
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNES(), DMMGSetSNESLocal()
 @*/
-PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DALocalFunction1 *function, DALocalFunction1 *jacobian)
+PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DMDALocalFunction1 *function, DMDALocalFunction1 *jacobian)
 {
   PetscClassId   classid;
   PetscErrorCode ierr;
@@ -875,8 +875,8 @@ PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DALocalFunction1 *function, DALocalFu
   PetscFunctionBegin;
   ierr = PetscObjectGetClassId((PetscObject) dmmg[0]->dm, &classid);CHKERRQ(ierr);
   if (classid == DM_CLASSID) {
-    ierr = DAGetLocalFunction( dmmg[0]->dm, function);CHKERRQ(ierr);
-    ierr = DAGetLocalJacobian( dmmg[0]->dm, jacobian);CHKERRQ(ierr);
+    ierr = DMDAGetLocalFunction( dmmg[0]->dm, function);CHKERRQ(ierr);
+    ierr = DMDAGetLocalJacobian( dmmg[0]->dm, jacobian);CHKERRQ(ierr);
   } else {
 #ifdef PETSC_HAVE_SIEVE
     ierr = MeshGetLocalFunction((Mesh) dmmg[0]->dm, (PetscErrorCode (**)(Mesh,SectionReal,SectionReal,void*)) function);CHKERRQ(ierr);
@@ -893,8 +893,8 @@ PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DALocalFunction1 *function, DALocalFu
     that will use the grid hierarchy and (optionally) its derivative.
 
    Synopsis:
-   PetscErrorCode DMMGSetSNESLocal(DMMG *dmmg,DALocalFunction1 function, DALocalFunction1 jacobian,
-                        DALocalFunction1 ad_function, DALocalFunction1 admf_function);
+   PetscErrorCode DMMGSetSNESLocal(DMMG *dmmg,DMDALocalFunction1 function, DMDALocalFunction1 jacobian,
+                        DMDALocalFunction1 ad_function, DMDALocalFunction1 admf_function);
 
     Logically Collective on DMMG
 
@@ -926,7 +926,7 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetSNESLocal_Private"
-PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DALocalFunction1 jacobian,DALocalFunction1 ad_function,DALocalFunction1 admf_function)
+PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DMDALocalFunction1 function,DMDALocalFunction1 jacobian,DMDALocalFunction1 ad_function,DMDALocalFunction1 admf_function)
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels;
@@ -953,11 +953,11 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
     }
     for (i=0; i<nlevels; i++) {
       dmmg[i]->isctype  = IS_COLORING_GHOSTED;   /* switch to faster version since have local function evaluation */
-      ierr = DASetLocalFunction(dmmg[i]->dm,function);CHKERRQ(ierr);
+      ierr = DMDASetLocalFunction(dmmg[i]->dm,function);CHKERRQ(ierr);
       dmmg[i]->lfj = (PetscErrorCode (*)(void))function; 
-      ierr = DASetLocalJacobian(dmmg[i]->dm,jacobian);CHKERRQ(ierr);
-      ierr = DASetLocalAdicFunction(dmmg[i]->dm,ad_function);CHKERRQ(ierr);
-      ierr = DASetLocalAdicMFFunction(dmmg[i]->dm,admf_function);CHKERRQ(ierr);
+      ierr = DMDASetLocalJacobian(dmmg[i]->dm,jacobian);CHKERRQ(ierr);
+      ierr = DMDASetLocalAdicFunction(dmmg[i]->dm,ad_function);CHKERRQ(ierr);
+      ierr = DMDASetLocalAdicMFFunction(dmmg[i]->dm,admf_function);CHKERRQ(ierr);
     }
     CHKMEMQ;
   } else {
@@ -1000,10 +1000,10 @@ PetscErrorCode DMMGFunctioni(void* ctx,PetscInt i,Vec u,PetscScalar* r)
 
   PetscFunctionBegin;
   /* copy u into interior part of U */
-  ierr = DAGetScatter(dmmg->dm,0,&gtol,0);CHKERRQ(ierr);
+  ierr = DMDAGetScatter(dmmg->dm,0,&gtol,0);CHKERRQ(ierr);
   ierr = VecScatterBegin(gtol,u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL);CHKERRQ(ierr);
   ierr = VecScatterEnd(gtol,u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL);CHKERRQ(ierr);
-  ierr = DAFormFunctioni1(dmmg->dm,i,U,r,dmmg->user);CHKERRQ(ierr);
+  ierr = DMDAFormFunctioni1(dmmg->dm,i,U,r,dmmg->user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1018,10 +1018,10 @@ PetscErrorCode DMMGFunctionib(PetscInt i,Vec u,PetscScalar* r,void* ctx)
 
   PetscFunctionBegin;
   /* copy u into interior part of U */
-  ierr = DAGetScatter(dmmg->dm,0,&gtol,0);CHKERRQ(ierr);
+  ierr = DMDAGetScatter(dmmg->dm,0,&gtol,0);CHKERRQ(ierr);
   ierr = VecScatterBegin(gtol,u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL);CHKERRQ(ierr);
   ierr = VecScatterEnd(gtol,u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL);CHKERRQ(ierr);
-  ierr = DAFormFunctionib1(dmmg->dm,i,U,r,dmmg->user);CHKERRQ(ierr);
+  ierr = DMDAFormFunctionib1(dmmg->dm,i,U,r,dmmg->user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1041,16 +1041,16 @@ PetscErrorCode DMMGFunctioniBase(void* ctx,Vec u)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetSNESLocali_Private"
-PetscErrorCode DMMGSetSNESLocali_Private(DMMG *dmmg,PetscErrorCode (*functioni)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*),PetscErrorCode (*adi)(DALocalInfo*,MatStencil*,void*,void*,void*),PetscErrorCode (*adimf)(DALocalInfo*,MatStencil*,void*,void*,void*))
+PetscErrorCode DMMGSetSNESLocali_Private(DMMG *dmmg,PetscErrorCode (*functioni)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*),PetscErrorCode (*adi)(DMDALocalInfo*,MatStencil*,void*,void*,void*),PetscErrorCode (*adimf)(DMDALocalInfo*,MatStencil*,void*,void*,void*))
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
   for (i=0; i<nlevels; i++) {
-    ierr = DASetLocalFunctioni(dmmg[i]->dm,functioni);CHKERRQ(ierr);
-    ierr = DASetLocalAdicFunctioni(dmmg[i]->dm,adi);CHKERRQ(ierr);
-    ierr = DASetLocalAdicMFFunctioni(dmmg[i]->dm,adimf);CHKERRQ(ierr);
+    ierr = DMDASetLocalFunctioni(dmmg[i]->dm,functioni);CHKERRQ(ierr);
+    ierr = DMDASetLocalAdicFunctioni(dmmg[i]->dm,adi);CHKERRQ(ierr);
+    ierr = DMDASetLocalAdicMFFunctioni(dmmg[i]->dm,adimf);CHKERRQ(ierr);
     ierr = MatMFFDSetFunctioni(dmmg[i]->J,DMMGFunctioni);CHKERRQ(ierr);
     ierr = MatMFFDSetFunctioniBase(dmmg[i]->J,DMMGFunctioniBase);CHKERRQ(ierr);    
     if (!dmmg[i]->lwork1) {
@@ -1062,16 +1062,16 @@ PetscErrorCode DMMGSetSNESLocali_Private(DMMG *dmmg,PetscErrorCode (*functioni)(
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetSNESLocalib_Private"
-PetscErrorCode DMMGSetSNESLocalib_Private(DMMG *dmmg,PetscErrorCode (*functioni)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*),PetscErrorCode (*adi)(DALocalInfo*,MatStencil*,void*,void*,void*),PetscErrorCode (*adimf)(DALocalInfo*,MatStencil*,void*,void*,void*))
+PetscErrorCode DMMGSetSNESLocalib_Private(DMMG *dmmg,PetscErrorCode (*functioni)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*),PetscErrorCode (*adi)(DMDALocalInfo*,MatStencil*,void*,void*,void*),PetscErrorCode (*adimf)(DMDALocalInfo*,MatStencil*,void*,void*,void*))
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
   for (i=0; i<nlevels; i++) {
-    ierr = DASetLocalFunctionib(dmmg[i]->dm,functioni);CHKERRQ(ierr);
-    ierr = DASetLocalAdicFunctionib(dmmg[i]->dm,adi);CHKERRQ(ierr);
-    ierr = DASetLocalAdicMFFunctionib(dmmg[i]->dm,adimf);CHKERRQ(ierr);
+    ierr = DMDASetLocalFunctionib(dmmg[i]->dm,functioni);CHKERRQ(ierr);
+    ierr = DMDASetLocalAdicFunctionib(dmmg[i]->dm,adi);CHKERRQ(ierr);
+    ierr = DMDASetLocalAdicMFFunctionib(dmmg[i]->dm,adimf);CHKERRQ(ierr);
     if (!dmmg[i]->lwork1) {
       ierr = DMCreateLocalVector(dmmg[i]->dm,&dmmg[i]->lwork1);CHKERRQ(ierr);
     }

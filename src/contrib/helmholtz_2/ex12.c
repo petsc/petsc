@@ -21,7 +21,7 @@ a Helmholtz equation in a half-plane.  Input parameters include:\n\
 /*T
    Concepts: SLES^Solving a Helmholtz equation (advanced parallel example);
    Concepts: Helmholtz equation
-   Concepts: DA^Using distributed arrays;
+   Concepts: DMDA^Using distributed arrays;
    Concepts: Complex numbers; 
    Concepts: Matrices^Preallocating matrix memory
    Concepts: Error Handling^Using the macro __FUNC__ to define routine names;
@@ -30,14 +30,14 @@ a Helmholtz equation in a half-plane.  Input parameters include:\n\
    Routines: SLESSolve(); SLESView(); SLESGetPC(); SLESGetKSP();
    Routines: KSPSetTolerances(); PCSetModifySubMatrices();
    Routines: MatCreateSeqAIJ(); MatCreateMPIAIJ();
-   Routines: DACreate2d(); DMDestroy(); DMCreateGlobalVector(); DMView();
-   Routines: DAGetCorners(); DAGetGhostCorners(); DAGetGlobalIndices();
+   Routines: DMDACreate2d(); DMDestroy(); DMCreateGlobalVector(); DMView();
+   Routines: DMDAGetCorners(); DMDAGetGhostCorners(); DMDAGetGlobalIndices();
    Routines: ISCreateGeneral(); ISDestroy(); MatZeroRows();
    Routines: ViewerSetFormat();
 T*/
 
 /* 
-   Include "da.h" so that we can use distributed arrays (DAs).
+   Include "da.h" so that we can use distributed arrays (DMDAs).
    Include "sles.h" so that we can use SLES solvers.  Note that this file
    automatically includes:
      petscsys.h  - base PETSc routines   vec.h - vectors
@@ -73,7 +73,7 @@ T*/
      providing routines (analogous to "FormSystem1") to compute the matrix
      and right-hand-side vector that define each linear system.  To define
      problems with different stencils or multiple degrees of freedom per node,
-     the call to DACreate2d() should be modified accordingly.
+     the call to DMDACreate2d() should be modified accordingly.
 
    ------------------
     Model Problem 1:
@@ -234,13 +234,13 @@ int main(int argc,char **args)
   }
 
   /* Note: Although the ghost width overlap is 0 for this problem, we need to
-     create a DA with width 1, so that each processor generates the local-to-global
+     create a DMDA with width 1, so that each processor generates the local-to-global
      mapping for its neighbors in the north/south/east/west (needed for
      matrix assembly for the 5-point, 2D finite difference stencil). This
      mapping is needed when we determine the global column numbers for
      grid points on a processor edge.
   */
-  ierr = DACreate2d(user.comm,DA_NONPERIODIC,DA_STENCIL_STAR,user.m_eta,
+  ierr = DMDACreate2d(user.comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,user.m_eta,
                     user.m_xi,N_eta,N_xi,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRA(ierr);
   ierr = DMCreateGlobalVector(user.da,&user.phi);CHKERRA(ierr);
   ierr = VecGetLocalSize(user.phi,&user.m_ldim);CHKERRA(ierr);
@@ -439,13 +439,13 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
     /* Note: vector and matrix distribution is identical */
     ierr = VecGetOwnershipRange(user->phi,&istart,&iend);CHKERRQ(ierr);
   } SETERRQ(PETSC_COMM_SELF,1,0,"UserDetermineMatrixNonzeros: Code not yet written for this type");
-  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
   *nz_o = nnz_o; *nz_d = nnz_d;
 
   /* Get corners and global indices */
-  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   xe = xs + xm;
   ye = ys + ym;
 
@@ -478,10 +478,10 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
                used in conjunction with the local-to-global
                mapping to determine the global column numbers
                for the parallel grid.  Recall that due to grid
-               point reordering with DAs, we must always work
+               point reordering with DMDAs, we must always work
                with the local grid points, and then transform 
                them to the new global numbering with the "ltog"
-               mapping (via DAGetGlobalIndices()).  We cannot work
+               mapping (via DMDAGetGlobalIndices()).  We cannot work
                directly with the global numbers for the original
                uniprocessor grid!
   */
@@ -589,9 +589,9 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
       stay tuned!
 
    Notes:
-   Due to grid point reordering with DAs, we must always work
+   Due to grid point reordering with DMDAs, we must always work
    with the local grid points, and then transform them to the new
-   global numbering with the "ltog" mapping (via DAGetGlobalIndices()).
+   global numbering with the "ltog" mapping (via DMDAGetGlobalIndices()).
    We cannot work directly with the global numbers for the original
    uniprocessor grid!
 
@@ -622,9 +622,9 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
   rh_xi = 1.0/h_xi;
 
   /* Get corners and global indices */
-  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   xe = xs + xm;
   ye = ys + ym;
 

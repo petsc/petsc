@@ -45,7 +45,7 @@ int main(int Argc,char **Args)
   rho *= 1./(2.*h);
   
   /* Geometry info */
-  ierr = DACreate2d(PETSC_COMM_WORLD, DA_XYPERIODIC, DA_STENCIL_STAR, n, n,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_XYPERIODIC, DMDA_STENCIL_STAR, n, n,
 		    PETSC_DECIDE, PETSC_DECIDE, 2 /* this is the # of dof's */,
 		    1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
   
@@ -64,7 +64,7 @@ int main(int Argc,char **Args)
   }
 
   /* get local corners for this processor */
-  ierr = DAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
 
   /* Assemble the matrix */
   for( x=xs; x<xs+xm; x++ ) {
@@ -190,7 +190,7 @@ int main(int Argc,char **Args)
 
   ierr = KSPSetOperators(kspmg, HtH, HtH, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  ierr = DASetRefinementFactor(da, 3, 3, 3);CHKERRQ(ierr);
+  ierr = DMDASetRefinementFactor(da, 3, 3, 3);CHKERRQ(ierr);
   ierr = PCASASetDM(pcmg, (DM) da);CHKERRQ(ierr);
 
   ierr = PCASASetTolerances(pcmg, 1.e-6, 1.e-10,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);

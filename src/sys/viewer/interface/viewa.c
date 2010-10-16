@@ -34,7 +34,7 @@
 .    PETSC_VIEWER_ASCII_VTK - outputs the object to a VTK file
 .    PETSC_VIEWER_NATIVE - store the object to the binary
        file in its native format (for example, dense
-       matrices are stored as dense), DA vectors are dumped directly to the
+       matrices are stored as dense), DMDA vectors are dumped directly to the
        file instead of being first put in the natural ordering
 .    PETSC_VIEWER_DRAW_BASIC - views the vector with a simple 1d plot
 .    PETSC_VIEWER_DRAW_LG - views the vector with a line graph
@@ -89,7 +89,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSetFormat(PetscViewer viewer,PetscV
        element number next to each vector entry
 .    PETSC_VIEWER_NATIVE - store the object to the binary
        file in its native format (for example, dense
-       matrices are stored as dense), for DA vectors displays vectors in DA ordering, not natural
+       matrices are stored as dense), for DMDA vectors displays vectors in DMDA ordering, not natural
 .    PETSC_VIEWER_DRAW_BASIC - views the vector with a simple 1d plot
 .    PETSC_VIEWER_DRAW_LG - views the vector with a line graph
 -    PETSC_VIEWER_DRAW_CONTOUR - views the vector with a contour plot

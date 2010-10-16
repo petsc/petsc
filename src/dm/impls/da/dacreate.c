@@ -13,31 +13,31 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetFromOptions_DA(DM da)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
 
-  ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DA Options","DA");CHKERRQ(ierr);
-    /* Handle DA grid sizes */
+  ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DMDA Options","DMDA");CHKERRQ(ierr);
+    /* Handle DMDA grid sizes */
     if (dd->M < 0) {
       PetscInt newM = -dd->M;
-      ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DASetSizes",newM,&newM,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",newM,&newM,PETSC_NULL);CHKERRQ(ierr);
       dd->M = newM;
     }
     if (dd->dim > 1 && dd->N < 0) {
       PetscInt newN = -dd->N;
-      ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DASetSizes",newN,&newN,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",newN,&newN,PETSC_NULL);CHKERRQ(ierr);
       dd->N = newN;
     }
     if (dd->dim > 2 && dd->P < 0) {
       PetscInt newP = -dd->P;
-      ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DASetSizes",newP,&newP,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",newP,&newP,PETSC_NULL);CHKERRQ(ierr);
       dd->P = newP;
     }
-    /* Handle DA parallel distibution */
-    ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DASetNumProcs",dd->m,&dd->m,PETSC_NULL);CHKERRQ(ierr);
-    if (dd->dim > 1) {ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DASetNumProcs",dd->n,&dd->n,PETSC_NULL);CHKERRQ(ierr);}
-    if (dd->dim > 2) {ierr = PetscOptionsInt("-da_processors_z","Number of processors in z direction","DASetNumProcs",dd->p,&dd->p,PETSC_NULL);CHKERRQ(ierr);}
-    /* Handle DA refinement */
-    ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DASetRefinementFactor",dd->refine_x,&dd->refine_x,PETSC_NULL);CHKERRQ(ierr);
-    if (dd->dim > 1) {ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DASetRefinementFactor",dd->refine_y,&dd->refine_y,PETSC_NULL);CHKERRQ(ierr);}
-    if (dd->dim > 2) {ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DASetRefinementFactor",dd->refine_z,&dd->refine_z,PETSC_NULL);CHKERRQ(ierr);}
+    /* Handle DMDA parallel distibution */
+    ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DMDASetNumProcs",dd->m,&dd->m,PETSC_NULL);CHKERRQ(ierr);
+    if (dd->dim > 1) {ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DMDASetNumProcs",dd->n,&dd->n,PETSC_NULL);CHKERRQ(ierr);}
+    if (dd->dim > 2) {ierr = PetscOptionsInt("-da_processors_z","Number of processors in z direction","DMDASetNumProcs",dd->p,&dd->p,PETSC_NULL);CHKERRQ(ierr);}
+    /* Handle DMDA refinement */
+    ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DMDASetRefinementFactor",dd->refine_x,&dd->refine_x,PETSC_NULL);CHKERRQ(ierr);
+    if (dd->dim > 1) {ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DMDASetRefinementFactor",dd->refine_y,&dd->refine_y,PETSC_NULL);CHKERRQ(ierr);}
+    if (dd->dim > 2) {ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DMDASetRefinementFactor",dd->refine_z,&dd->refine_z,PETSC_NULL);CHKERRQ(ierr);}
 
     if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
     ierr = PetscOptionsList("-da_vec_type","Vector type used for created vectors","DMSetVecType",VecList,da->vectype,typeName,256,&flg);CHKERRQ(ierr);
@@ -72,24 +72,24 @@ extern PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA(DM);
 extern PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_DA(DM);
 
 #undef __FUNCT__  
-#define __FUNCT__ "DACreate"
+#define __FUNCT__ "DMDACreate"
 /*@
-  DACreate - Creates a DA object. 
+  DMDACreate - Creates a DMDA object. 
 
   Collective on MPI_Comm
 
   Input Parameter:
-. comm - The communicator for the DA object
+. comm - The communicator for the DMDA object
 
   Output Parameter:
-. da  - The DA object
+. da  - The DMDA object
 
   Level: beginner
 
-.keywords: DA, create
-.seealso:  DASetSizes(), DADuplicate()
+.keywords: DMDA, create
+.seealso:  DMDASetSizes(), DMDADuplicate()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DM *da)
+PetscErrorCode PETSCDM_DLLEXPORT DMDACreate(MPI_Comm comm, DM *da)
 {
   DM             d;
   PetscErrorCode ierr;
@@ -108,7 +108,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DM *da)
   d->data = dd;
 
   dd->dim        = -1;
-  dd->interptype = DA_Q1;
+  dd->interptype = DMDA_Q1;
   dd->refine_x   = 2;
   dd->refine_y   = 2;
   dd->refine_z   = 2;
@@ -133,9 +133,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DM *da)
   dd->ltogmapb     = PETSC_NULL;
   dd->ao           = PETSC_NULL;
   dd->base         = -1;
-  dd->wrap         = DA_NONPERIODIC;
-  dd->stencil_type = DA_STENCIL_BOX;
-  dd->interptype   = DA_Q1;
+  dd->wrap         = DMDA_NONPERIODIC;
+  dd->stencil_type = DMDA_STENCIL_BOX;
+  dd->interptype   = DMDA_Q1;
   dd->idx          = PETSC_NULL;
   dd->Nl           = -1;
   dd->lx           = PETSC_NULL;

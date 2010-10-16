@@ -86,10 +86,10 @@ and then by specifying an interpolation prescription for both the field and its 
   CharacteristicSetFieldInterpolationLocal(\=c, da, Phi, numComp, daComponents,\\
                                            \>InterpFields2D, ctx);
 \end{tabbing}
-We need to specify the DA and a work vector on it, the number of field (velocity) components and the DA component
-numbers for them, and finally an interpolation function and user context. In the example above, we use a single DA which
-holds the field velocity in the first two DA components, and the field in the third. The interpolation function accepts
-the field as a multidimensional array from the DA along with a real (i,j) in the grid, and returns the field values. The
+We need to specify the DM and a work vector on it, the number of field (velocity) components and the DM component
+numbers for them, and finally an interpolation function and user context. In the example above, we use a single DM which
+holds the field velocity in the first two DM components, and the field in the third. The interpolation function accepts
+the field as a multidimensional array from the DM along with a real (i,j) in the grid, and returns the field values. The
 main operation of advection is accomplished using
 \begin{tabbing}
   CharacteristicSolve(c, dt, PhiStar);
@@ -120,7 +120,7 @@ and then solve
   u^+ = \left( I - {\Delta t\over 2} \nabla^2 \right)^{-1} \left( u + {\Delta t\over 2} \nabla^2 u \right)^*.
 \end{equation}
 
-Our implementation for the DA uses the midpoint method to integrate along a characteristic. First, the velocity field at
+Our implementation for the DM uses the midpoint method to integrate along a characteristic. First, the velocity field at
 the current time is used to find the positions at time $t^{n-1/2}$ of each field point. Some of these points will lie on
 other processes and are thus communicated. Next, the velocity field for time $t^{n-1/2}$ is calculated on these points
 using the trapezoid rule for times $t^n$ and $t^{n-1}$ and this result communicated back to the original point

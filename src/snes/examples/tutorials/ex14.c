@@ -3,14 +3,14 @@
 
 static char help[] = "Bratu nonlinear PDE in 3d.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 3D rectangular\n\
-domain, using distributed arrays (DAs) to partition the parallel grid.\n\
+domain, using distributed arrays (DMDAs) to partition the parallel grid.\n\
 The command line options include:\n\
   -par <parameter>, where <parameter> indicates the problem's nonlinearity\n\
      problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)\n\n";
 
 /*T
    Concepts: SNES^parallel Bratu example
-   Concepts: DA^using distributed arrays;
+   Concepts: DMDA^using distributed arrays;
    Processors: n
 T*/
 
@@ -33,7 +33,7 @@ T*/
   ------------------------------------------------------------------------- */
 
 /* 
-   Include "petscda.h" so that we can use distributed arrays (DAs).
+   Include "petscda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -95,13 +95,13 @@ int main(int argc,char **argv)
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create distributed array (DA) to manage parallel grid and vectors
+     Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,4,4,4,PETSC_DECIDE,PETSC_DECIDE,
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,4,4,4,PETSC_DECIDE,PETSC_DECIDE,
                     PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Extract global vectors from DA; then duplicate for remaining
+     Extract global vectors from DMDA; then duplicate for remaining
      vectors that are the same types
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(user.da,&x);CHKERRQ(ierr);
@@ -211,7 +211,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   PetscScalar    ***x;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,&Mz,PETSC_IGNORE,PETSC_IGNORE,
+  ierr = DMDAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,&Mz,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   lambda = user->param;
@@ -227,15 +227,15 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = DAVecGetArray(user->da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(user->da,X,&x);CHKERRQ(ierr);
 
   /*
-     Get local grid boundaries (for 3-dimensional DA):
+     Get local grid boundaries (for 3-dimensional DMDA):
        xs, ys, zs   - starting grid indices (no ghost points)
        xm, ym, zm   - widths of local grid (no ghost points)
 
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -258,7 +258,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   /*
      Restore vector
   */
-  ierr = DAVecRestoreArray(user->da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(user->da,X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 /* ------------------------------------------------------------------- */
@@ -286,7 +286,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
   PetscFunctionBegin;
   ierr = DMGetLocalVector(user->da,&localX);CHKERRQ(ierr);
-  ierr = DAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,&Mz,PETSC_IGNORE,PETSC_IGNORE,
+  ierr = DMDAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,&Mz,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   lambda = user->param;
@@ -310,13 +310,13 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Get pointers to vector data
   */
-  ierr = DAVecGetArray(user->da,localX,&x);CHKERRQ(ierr);
-  ierr = DAVecGetArray(user->da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(user->da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(user->da,F,&f);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
@@ -346,8 +346,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  ierr = DAVecRestoreArray(user->da,localX,&x);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(user->da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(user->da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(user->da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
@@ -383,7 +383,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   PetscFunctionBegin;
 
   ierr = DMGetLocalVector(user->da,&localX);CHKERRQ(ierr);
-  ierr = DAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,&Mz,PETSC_IGNORE,PETSC_IGNORE,
+  ierr = DMDAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,&Mz,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   lambda = user->param;
@@ -407,12 +407,12 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   /*
      Get pointer to vector data
   */
-  ierr = DAVecGetArray(user->da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(user->da,localX,&x);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
 
   /* 
      Compute entries for the locally owned part of the Jacobian.
@@ -447,7 +447,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
       }
     }
   }
-  ierr = DAVecRestoreArray(user->da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(user->da,localX,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
 
   /* 

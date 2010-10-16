@@ -1,6 +1,6 @@
 !
 !
-!  Additional DA include file for use of PETSc with Fortran 90/HPF
+!  Additional DMDA include file for use of PETSc with Fortran 90/HPF
 !
 #include "finclude/ftn-custom/petscda.h90"
 #if defined(PETSC_USE_FORTRAN_INTERFACES)

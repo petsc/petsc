@@ -1,5 +1,5 @@
 
-static char help[] = "Tests DA interpolation for coarse DA on a subset of processors.\n\n";
+static char help[] = "Tests DMDA interpolation for coarse DMDA on a subset of processors.\n\n";
 
 #include "petscda.h"
 
@@ -24,13 +24,13 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
 
   comm_f = PETSC_COMM_WORLD;
-  ierr = DASplitComm2d(comm_f,M,M,s,&comm_c);CHKERRQ(ierr);
+  ierr = DMDASplitComm2d(comm_f,M,M,s,&comm_c);CHKERRQ(ierr);
     
   /* Set up the array */ 
   if (dim == 2) {
-    ierr = DACreate2d(comm_c,DA_NONPERIODIC,DA_STENCIL_BOX,M,M,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,&da_c);CHKERRQ(ierr);
+    ierr = DMDACreate2d(comm_c,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,M,M,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,&da_c);CHKERRQ(ierr);
     M    = ratio*(M-1) + 1;
-    ierr = DACreate2d(comm_f,DA_NONPERIODIC,DA_STENCIL_BOX,M,M,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,&da_f);CHKERRQ(ierr);
+    ierr = DMDACreate2d(comm_f,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,M,M,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,&da_f);CHKERRQ(ierr);
   } else if (dim == 3) {
     ;
   }

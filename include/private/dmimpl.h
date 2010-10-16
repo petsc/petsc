@@ -73,13 +73,13 @@ struct _p_DM {
 
        DM dm
 
-       DACreate(,&da_u);
-       DACreate(,&da_v);
+       DMDACreate(,&da_u);
+       DMDACreate(,&da_v);
        DMCompositeCreate(,&dm_velocities);
        DMCompositeAddDM(dm_velocities,(DM)du);
        DMCompositeAddDM(dm_velocities,(DM)dv);
 
-       DACreate(,&da_p);
+       DMDACreate(,&da_p);
        DMCompositeCreate(,&dm_velocities);
        DMCompositeAddDM(dm,(DM)dm_velocities);     
        DMCompositeAddDM(dm,(DM)dm_p);     
@@ -93,12 +93,12 @@ struct _p_DM {
     Element access
     --------------
       From global vectors 
-         -DAVecGetArray   - for DA
+         -DAVecGetArray   - for DMDA
          -VecGetArray - for DMSliced
          ADD for DMComposite???  maybe
 
       From individual vector
-          -DAVecGetArray - for DA
+          -DAVecGetArray - for DMDA
           -VecGetArray -for sliced  
          ADD for DMComposite??? maybe
 

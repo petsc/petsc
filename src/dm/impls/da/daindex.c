@@ -7,9 +7,9 @@
 #include "private/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetGlobalIndices"
+#define __FUNCT__ "DMDAGetGlobalIndices"
 /*@C
-   DAGetGlobalIndices - Returns the global node number of all local nodes,
+   DMDAGetGlobalIndices - Returns the global node number of all local nodes,
    including ghost nodes.
 
    Not Collective
@@ -24,12 +24,12 @@
    Level: intermediate
 
    Note: 
-   For DA_STENCIL_STAR stencils the inactive corner ghost nodes are also included
+   For DMDA_STENCIL_STAR stencils the inactive corner ghost nodes are also included
    in the list of local indices (even though those nodes are not updated 
-   during calls to DAXXXToXXX().
+   during calls to DMDAXXXToXXX().
 
    Essentially the same data is returned in the form of a local-to-global mapping
-   with the routine DAGetISLocalToGlobalMapping();
+   with the routine DMDAGetISLocalToGlobalMapping();
 
    Fortran Note:
    This routine is used differently from Fortran
@@ -38,7 +38,7 @@
         integer     n,da_array(1)
         PetscOffset i_da
         integer     ierr
-        call DAGetGlobalIndices(da,n,da_array,i_da,ierr)
+        call DMDAGetGlobalIndices(da,n,da_array,i_da,ierr)
 
    C Access first local entry in list
         value = da_array(i_da + 1)
@@ -48,11 +48,11 @@
 
 .keywords: distributed array, get, global, indices, local-to-global
 
-.seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DMLocalToGlobalBegin()
-          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DALocalToLocalBegin(), DAGetAO(), DAGetGlobalIndicesF90()
-          DAGetISLocalToGlobalMapping(), DACreate3d(), DACreate1d(), DALocalToLocalEnd(), DAGetOwnershipRanges()
+.seealso: DMDACreate2d(), DMDAGetGhostCorners(), DMDAGetCorners(), DMLocalToGlobalBegin()
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDALocalToLocalBegin(), DMDAGetAO(), DMDAGetGlobalIndicesF90()
+          DMDAGetISLocalToGlobalMapping(), DMDACreate3d(), DMDACreate1d(), DMDALocalToLocalEnd(), DMDAGetOwnershipRanges()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetGlobalIndices(DM da,PetscInt *n,PetscInt **idx)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetGlobalIndices(DM da,PetscInt *n,PetscInt **idx)
 {
   DM_DA          *dd = (DM_DA*)da->data;
 
@@ -64,13 +64,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetGlobalIndices(DM da,PetscInt *n,PetscInt *
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetNatural_Private"
+#define __FUNCT__ "DMDAGetNatural_Private"
 /*
    Gets the natural number for each global number on the process.
 
-   Used by DAGetAO() and DAGlobalToNatural_Create()
+   Used by DMDAGetAO() and DMDAGlobalToNatural_Create()
 */
-PetscErrorCode DAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
+PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
 {
   PetscErrorCode ierr;
   PetscInt       Nlocal,i,j,k,*lidx,lict = 0;
@@ -114,34 +114,34 @@ PetscErrorCode DAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetAO"
+#define __FUNCT__ "DMDAGetAO"
 /*@
-   DAGetAO - Gets the application ordering context for a distributed array.
+   DMDAGetAO - Gets the application ordering context for a distributed array.
 
-   Collective on DA
+   Collective on DMDA
 
    Input Parameter:
 .  da - the distributed array
 
    Output Parameters:
-.  ao - the application ordering context for DAs
+.  ao - the application ordering context for DMDAs
 
    Level: intermediate
 
    Notes:
    In this case, the AO maps to the natural grid ordering that would be used
-   for the DA if only 1 processor were employed (ordering most rapidly in the
+   for the DMDA if only 1 processor were employed (ordering most rapidly in the
    x-direction, then y, then z).  Multiple degrees of freedom are numbered
    for each node (rather than 1 component for the whole grid, then the next
    component, etc.)
 
 .keywords: distributed array, get, global, indices, local-to-global
 
-.seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlocal()
-          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DALocalToLocalBegin(), DALocalToLocalEnd(), DAGetGlobalIndices(), DAGetOwnershipRanges(),
+.seealso: DMDACreate2d(), DMDAGetGhostCorners(), DMDAGetCorners(), DMDALocalToGlocal()
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDALocalToLocalBegin(), DMDALocalToLocalEnd(), DMDAGetGlobalIndices(), DMDAGetOwnershipRanges(),
           AO, AOPetscToApplication(), AOApplicationToPetsc()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAO(DM da,AO *ao)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetAO(DM da,AO *ao)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -157,7 +157,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAO(DM da,AO *ao)
     PetscErrorCode ierr;
     PetscInt       Nlocal;
 
-    ierr = DAGetNatural_Private(da,&Nlocal,&isnatural);CHKERRQ(ierr);
+    ierr = DMDAGetNatural_Private(da,&Nlocal,&isnatural);CHKERRQ(ierr);
     ierr = ISCreateStride(((PetscObject)da)->comm,Nlocal,dd->base,1,&ispetsc);CHKERRQ(ierr);
     ierr = AOCreateBasicIS(isnatural,ispetsc,&dd->ao);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(da,dd->ao);CHKERRQ(ierr);
@@ -169,12 +169,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAO(DM da,AO *ao)
 }
 
 /*MC
-    DAGetGlobalIndicesF90 - Returns a Fortran90 pointer to the list of 
+    DMDAGetGlobalIndicesF90 - Returns a Fortran90 pointer to the list of 
     global indices (global node number of all local nodes, including
     ghost nodes).
 
     Synopsis:
-    DAGetGlobalIndicesF90(DM da,integer n,{integer, pointer :: idx(:)},integer ierr)
+    DMDAGetGlobalIndicesF90(DM da,integer n,{integer, pointer :: idx(:)},integer ierr)
 
     Not Collective
 
@@ -193,5 +193,5 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAO(DM da,AO *ao)
 
 .keywords: distributed array, get, global, indices, local-to-global, f90
 
-.seealso: DAGetGlobalIndices()
+.seealso: DMDAGetGlobalIndices()
 M*/

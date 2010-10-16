@@ -4,7 +4,7 @@
       Vec x,f; Mat J; DM da; KSP ksp; PetscErrorCode ierr
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      call DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,8,1,1,PETSC_NULL_INTEGER,da,ierr)
+      call DMDACreate1d(MPI_COMM_WORLD,DMDA_NONPERIODIC,8,1,1,PETSC_NULL_INTEGER,da,ierr)
       call DMCreateGlobalVector(da,x,ierr); call VecDuplicate(x,f,ierr)
       call DMGetMatrix(da,MATAIJ,J,ierr)
 
@@ -24,8 +24,8 @@
 #include "finclude/petscdef.h"
       use petscda
       DM da; Vec x; PetscErrorCode ierr; PetscInt xs,xm,i,mx; PetscScalar hx; PetscScalar, pointer :: xx(:)
-      call DAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
-      call DAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+      call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+      call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       hx     = 1.d0/(mx-1)
       call VecGetArrayF90(x,xx,ierr)
       do i=xs,xs+xm-1
@@ -38,8 +38,8 @@
 #include "finclude/petscdef.h"
       use petscda
       Mat J; DM da; PetscErrorCode ierr; PetscInt xs,xm,i,mx; PetscScalar hx
-      call DAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
-      call DAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+      call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+      call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       hx     = 1.d0/(mx-1)
       do i=xs,xs+xm-1
         if ((i .eq. 0) .or. (i .eq. mx-1)) then

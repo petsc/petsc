@@ -3,16 +3,16 @@
 #include "petscda.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define dagetglobalindices_          DAGETGLOBALINDICES
+#define dmdagetglobalindices_          DMDAGETGLOBALINDICES
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define dagetglobalindices_          dagetglobalindices
+#define dmdagetglobalindices_          dmdagetglobalindices
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL dagetglobalindices_(DM *da,PetscInt *n,PetscInt *indices,size_t *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL dmdagetglobalindices_(DM *da,PetscInt *n,PetscInt *indices,size_t *ia,PetscErrorCode *ierr)
 {
   PetscInt *idx;
-  *ierr = DAGetGlobalIndices(*da,n,&idx);
+  *ierr = DMDAGetGlobalIndices(*da,n,&idx);
   *ia   = PetscIntAddressToFortran(indices,idx);
 }
 

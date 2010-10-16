@@ -1137,7 +1137,7 @@ PetscErrorCode PCApply_PFMG(PC pc,Vec x,Vec y)
   Mat_HYPREStruct *mx = (Mat_HYPREStruct *)(pc->pmat->data);
 
   PetscFunctionBegin;
-  ierr = DAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
   iupper[0] += ilower[0] - 1;    
   iupper[1] += ilower[1] - 1;    
   iupper[2] += ilower[2] - 1;    
@@ -1221,7 +1221,7 @@ PetscErrorCode PCSetUp_PFMG(PC pc)
    Notes:  This is for CELL-centered descretizations
 
            This must be used with the MATHYPRESTRUCT matrix type.
-           This is less general than in hypre, it supports only one block per process defined by a PETSc DA.
+           This is less general than in hypre, it supports only one block per process defined by a PETSc DMDA.
 
 .seealso:  PCMG, MATHYPRESTRUCT
 M*/
@@ -1353,7 +1353,7 @@ PetscErrorCode PCApply_SysPFMG(PC pc,Vec x,Vec y)
   int               i;
 
   PetscFunctionBegin;
-  ierr = DAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
   iupper[0] += ilower[0] - 1;    
   iupper[1] += ilower[1] - 1;    
   iupper[2] += ilower[2] - 1;    
@@ -1482,7 +1482,7 @@ PetscErrorCode PCSetUp_SysPFMG(PC pc)
    Notes:  This is for CELL-centered descretizations
 
            This must be used with the MATHYPRESSTRUCT matrix type.
-           This is less general than in hypre, it supports only one part, and one block per process defined by a PETSc DA.
+           This is less general than in hypre, it supports only one part, and one block per process defined by a PETSc DMDA.
            Also, only cell-centered variables.
 
 .seealso:  PCMG, MATHYPRESSTRUCT

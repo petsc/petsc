@@ -32,8 +32,8 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
 
     ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
     if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL) {
-      DALocalInfo info;
-      ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+      DMDALocalInfo info;
+      ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D N %D P %D m %D n %D p %D w %D s %D\n",rank,dd->M,dd->N,dd->P,dd->m,dd->n,dd->p,dd->w,dd->s);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D, Y range of indices: %D %D, Z range of indices: %D %D\n",
                                                 info.xs,info.xs+info.xm,info.ys,info.ys+info.ym,info.zs,info.zs+info.zm);CHKERRQ(ierr);
@@ -154,7 +154,7 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
   } else if (ismatlab) {
     ierr = DMView_DA_Matlab(da,viewer);CHKERRQ(ierr);
 #endif
-  } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for DA 1d",((PetscObject)viewer)->type_name);
+  } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for DMDA 1d",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 
@@ -171,8 +171,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_3D(DM da)
   PetscInt             p            = dd->p;
   const PetscInt       dof          = dd->w;
   const PetscInt       s            = dd->s;
-  const DAPeriodicType wrap         = dd->wrap;
-  const DAStencilType  stencil_type = dd->stencil_type;
+  const DMDAPeriodicType wrap         = dd->wrap;
+  const DMDAStencilType  stencil_type = dd->stencil_type;
   PetscInt            *lx           = dd->lx;
   PetscInt            *ly           = dd->ly;
   PetscInt            *lz           = dd->lz;
@@ -335,19 +335,19 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_3D(DM da)
   if (ze+s <= P) Ze = ze + s; else Ze = P;
 
   /* X Periodic */
-  if (DAXPeriodic(wrap)){
+  if (DMDAXPeriodic(wrap)){
     Xs = xs - s; 
     Xe = xe + s; 
   }
 
   /* Y Periodic */
-  if (DAYPeriodic(wrap)){
+  if (DMDAYPeriodic(wrap)){
     Ys = ys - s;
     Ye = ye + s;
   }
 
   /* Z Periodic */
-  if (DAZPeriodic(wrap)){
+  if (DMDAZPeriodic(wrap)){
     Zs = zs - s;
     Ze = ze + s;
   }
@@ -409,7 +409,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_3D(DM da)
   ierr = ISDestroy(to);CHKERRQ(ierr);
 
   /* global to local must include ghost points */
-  if (stencil_type == DA_STENCIL_BOX) {
+  if (stencil_type == DMDA_STENCIL_BOX) {
     ierr = ISCreateStride(comm,(Xe-Xs)*(Ye-Ys)*(Ze-Zs),0,1,&to);CHKERRQ(ierr);
   } else {
     /* This is way ugly! We need to list the funny cross type region */
@@ -655,22 +655,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_3D(DM da)
   /* Check for when not X,Y, and Z Periodic */
 
   /* If not X periodic */
-  if ((wrap != DA_XPERIODIC)  && (wrap != DA_XYPERIODIC) && 
-     (wrap != DA_XZPERIODIC) && (wrap != DA_XYZPERIODIC)) {
+  if ((wrap != DMDA_XPERIODIC)  && (wrap != DMDA_XYPERIODIC) && 
+     (wrap != DMDA_XZPERIODIC) && (wrap != DMDA_XYZPERIODIC)) {
     if (xs==0)   {n0  = n3  = n6  = n9  = n12 = n15 = n18 = n21 = n24 = -2;}
     if (xe==M*dof) {n2  = n5  = n8  = n11 = n14 = n17 = n20 = n23 = n26 = -2;}
   }
 
   /* If not Y periodic */
-  if ((wrap != DA_YPERIODIC)  && (wrap != DA_XYPERIODIC) && 
-      (wrap != DA_YZPERIODIC) && (wrap != DA_XYZPERIODIC)) {
+  if ((wrap != DMDA_YPERIODIC)  && (wrap != DMDA_XYPERIODIC) && 
+      (wrap != DMDA_YZPERIODIC) && (wrap != DMDA_XYZPERIODIC)) {
     if (ys==0)   {n0  = n1  = n2  = n9  = n10 = n11 = n18 = n19 = n20 = -2;}
     if (ye==N)   {n6  = n7  = n8  = n15 = n16 = n17 = n24 = n25 = n26 = -2;}
   }
 
   /* If not Z periodic */
-  if ((wrap != DA_ZPERIODIC)  && (wrap != DA_XZPERIODIC) && 
-      (wrap != DA_YZPERIODIC) && (wrap != DA_XYZPERIODIC)) {
+  if ((wrap != DMDA_ZPERIODIC)  && (wrap != DMDA_XZPERIODIC) && 
+      (wrap != DMDA_YZPERIODIC) && (wrap != DMDA_XYZPERIODIC)) {
     if (zs==0)   {n0  = n1  = n2  = n3  = n4  = n5  = n6  = n7  = n8  = -2;}
     if (ze==P)   {n18 = n19 = n20 = n21 = n22 = n23 = n24 = n25 = n26 = -2;}
   }
@@ -705,7 +705,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_3D(DM da)
   dd->neighbors[26] = n26;
 
   /* If star stencil then delete the corner neighbors */
-  if (stencil_type == DA_STENCIL_STAR) { 
+  if (stencil_type == DMDA_STENCIL_STAR) { 
      /* save information about corner neighbors */
      sn0 = n0; sn1 = n1; sn2 = n2; sn3 = n3; sn5 = n5; sn6 = n6; sn7 = n7;
      sn8 = n8; sn9 = n9; sn11 = n11; sn15 = n15; sn17 = n17; sn18 = n18;
@@ -968,7 +968,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_3D(DM da)
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
 
-  if (stencil_type == DA_STENCIL_STAR) { 
+  if (stencil_type == DMDA_STENCIL_STAR) { 
     /*
         Recompute the local to global mappings, this time keeping the 
       information about the cross corner processor numbers.
@@ -1400,19 +1400,19 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_3D(DM da)
   /* Check for when not X,Y, and Z Periodic */
 
   /* If not X periodic */
-  if (!DAXPeriodic(wrap)){
+  if (!DMDAXPeriodic(wrap)){
     if (xs==0)   {n0  = n3  = n6  = n9  = n12 = n15 = n18 = n21 = n24 = -2;}
     if (xe==M*dof) {n2  = n5  = n8  = n11 = n14 = n17 = n20 = n23 = n26 = -2;}
   }
 
   /* If not Y periodic */
-  if (!DAYPeriodic(wrap)){
+  if (!DMDAYPeriodic(wrap)){
     if (ys==0)   {n0  = n1  = n2  = n9  = n10 = n11 = n18 = n19 = n20 = -2;}
     if (ye==N)   {n6  = n7  = n8  = n15 = n16 = n17 = n24 = n25 = n26 = -2;}
   }
 
   /* If not Z periodic */
-  if (!DAZPeriodic(wrap)){
+  if (!DMDAZPeriodic(wrap)){
     if (zs==0)   {n0  = n1  = n2  = n3  = n4  = n5  = n6  = n7  = n8  = -2;}
     if (ze==P)   {n18 = n19 = n20 = n21 = n22 = n23 = n24 = n25 = n26 = -2;}
   }
@@ -1668,9 +1668,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_3D(DM da)
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "DACreate3d"
+#define __FUNCT__ "DMDACreate3d"
 /*@C
-   DACreate3d - Creates an object that will manage the communication of three-dimensional 
+   DMDACreate3d - Creates an object that will manage the communication of three-dimensional 
    regular array data that is distributed across some processors.
 
    Collective on MPI_Comm
@@ -1678,8 +1678,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_3D(DM da)
    Input Parameters:
 +  comm - MPI communicator
 .  wrap - type of periodicity the array should have, if any.  Use one
-          of DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_ZPERIODIC, DA_XYPERIODIC, DA_XZPERIODIC, DA_YZPERIODIC, DA_XYZPERIODIC, or DA_XYZGHOSTED.
-.  stencil_type - Type of stencil (DA_STENCIL_STAR or DA_STENCIL_BOX)
+          of DMDA_NONPERIODIC, DMDA_XPERIODIC, DMDA_YPERIODIC, DMDA_ZPERIODIC, DMDA_XYPERIODIC, DMDA_XZPERIODIC, DMDA_YZPERIODIC, DMDA_XYZPERIODIC, or DMDA_XYZGHOSTED.
+.  stencil_type - Type of stencil (DMDA_STENCIL_STAR or DMDA_STENCIL_BOX)
 .  M,N,P - global dimension in each direction of the array (use -M, -N, and or -P to indicate that it may be set to a different value 
             from the command line with -da_grid_x <M> -da_grid_y <N> -da_grid_z <P>)
 .  m,n,p - corresponding number of processors in each dimension 
@@ -1696,7 +1696,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_3D(DM da)
 .  da - the resulting distributed array object
 
    Options Database Key:
-+  -da_view - Calls DMView() at the conclusion of DACreate3d()
++  -da_view - Calls DMView() at the conclusion of DMDACreate3d()
 .  -da_grid_x <nx> - number of grid points in x direction, if M < 0
 .  -da_grid_y <ny> - number of grid points in y direction, if N < 0
 .  -da_grid_z <nz> - number of grid points in z direction, if P < 0
@@ -1710,36 +1710,36 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_3D(DM da)
    Level: beginner
 
    Notes:
-   The stencil type DA_STENCIL_STAR with width 1 corresponds to the 
-   standard 7-pt stencil, while DA_STENCIL_BOX with width 1 denotes
+   The stencil type DMDA_STENCIL_STAR with width 1 corresponds to the 
+   standard 7-pt stencil, while DMDA_STENCIL_BOX with width 1 denotes
    the standard 27-pt stencil.
 
-   The array data itself is NOT stored in the DA, it is stored in Vec objects;
+   The array data itself is NOT stored in the DMDA, it is stored in Vec objects;
    The appropriate vector objects can be obtained with calls to DMCreateGlobalVector()
    and DMCreateLocalVector() and calls to VecDuplicate() if more are needed.
 
 .keywords: distributed array, create, three-dimensional
 
-.seealso: DMDestroy(), DMView(), DACreate1d(), DACreate2d(), DMGlobalToLocalBegin(), DAGetRefinementFactor(),
-          DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DALocalToLocalBegin(), DALocalToLocalEnd(), DASetRefinementFactor(),
-          DAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DACreateNaturalVector(), DALoad(), DAGetOwnershipRanges()
+.seealso: DMDestroy(), DMView(), DMDACreate1d(), DMDACreate2d(), DMGlobalToLocalBegin(), DMDAGetRefinementFactor(),
+          DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMDALocalToLocalBegin(), DMDALocalToLocalEnd(), DMDASetRefinementFactor(),
+          DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMDALoad(), DMDAGetOwnershipRanges()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,
+PetscErrorCode PETSCDM_DLLEXPORT DMDACreate3d(MPI_Comm comm,DMDAPeriodicType wrap,DMDAStencilType stencil_type,PetscInt M,
                PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof,PetscInt s,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],DM *da)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DACreate(comm, da);CHKERRQ(ierr);
-  ierr = DASetDim(*da, 3);CHKERRQ(ierr);
-  ierr = DASetSizes(*da, M, N, P);CHKERRQ(ierr);
-  ierr = DASetNumProcs(*da, m, n, p);CHKERRQ(ierr);
-  ierr = DASetPeriodicity(*da, wrap);CHKERRQ(ierr);
-  ierr = DASetDof(*da, dof);CHKERRQ(ierr);
-  ierr = DASetStencilType(*da, stencil_type);CHKERRQ(ierr);
-  ierr = DASetStencilWidth(*da, s);CHKERRQ(ierr);
-  ierr = DASetOwnershipRanges(*da, lx, ly, lz);CHKERRQ(ierr);
+  ierr = DMDACreate(comm, da);CHKERRQ(ierr);
+  ierr = DMDASetDim(*da, 3);CHKERRQ(ierr);
+  ierr = DMDASetSizes(*da, M, N, P);CHKERRQ(ierr);
+  ierr = DMDASetNumProcs(*da, m, n, p);CHKERRQ(ierr);
+  ierr = DMDASetPeriodicity(*da, wrap);CHKERRQ(ierr);
+  ierr = DMDASetDof(*da, dof);CHKERRQ(ierr);
+  ierr = DMDASetStencilType(*da, stencil_type);CHKERRQ(ierr);
+  ierr = DMDASetStencilWidth(*da, s);CHKERRQ(ierr);
+  ierr = DMDASetOwnershipRanges(*da, lx, ly, lz);CHKERRQ(ierr);
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
   ierr = DMSetFromOptions(*da);CHKERRQ(ierr);
   ierr = DMSetUp(*da);CHKERRQ(ierr);

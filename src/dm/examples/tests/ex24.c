@@ -1,5 +1,5 @@
 
-static char help[] = "Tests DALocalToGlocal() for dof > 1\n\n";
+static char help[] = "Tests DMDALocalToGlocal() for dof > 1\n\n";
 
 #include "petscda.h"
 
@@ -16,12 +16,12 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   /* Create distributed array and get vectors */
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,m,n,3,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,M,N,m,n,3,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
 
-  ierr = DAGetCorners(da,&is,&js,0,&in,&jen,0);CHKERRQ(ierr);
-  ierr = DAVecGetArrayDOF(da,local,&l);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&is,&js,0,&in,&jen,0);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayDOF(da,local,&l);CHKERRQ(ierr);
   for (i=is; i<is+in; i++) {
     for (j=js; j<js+jen; j++) {
       l[j][i][0] = 3*(i + j*M);
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
       l[j][i][2] = 3*(i + j*M) + 2;
     }
   }
-  ierr = DAVecRestoreArrayDOF(da,local,&l);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayDOF(da,local,&l);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(da,local,ADD_VALUES,global);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(da,local,ADD_VALUES,global);CHKERRQ(ierr);
 

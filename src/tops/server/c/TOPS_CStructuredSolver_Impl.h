@@ -80,8 +80,8 @@ struct TOPS_CStructuredSolver__data {
   DMMG                                  *dmmg;
   DM                                    da;
   int                                   lengths[4],m,n,p,dim,s,levels,bs;
-  DAStencilType                         stencil_type;
-  DAPeriodicType                        wrap;
+  DMDAStencilType                         stencil_type;
+  DMDAPeriodicType                        wrap;
   int                                   startedpetsc;
   gov_cca_Services			myServices;
   gov_cca_ports_ParameterPortFactory 	ppf;

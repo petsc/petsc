@@ -6,8 +6,8 @@
 
 #include "private/daimpl.h"     /*I  "petscda.h"   I*/
 
-const char *DAPeriodicTypes[] = {"NONPERIODIC","XPERIODIC","YPERIODIC","XYPERIODIC",
-                                 "XYZPERIODIC","XZPERIODIC","YZPERIODIC","ZPERIODIC","XYZGHOSTED","DAPeriodicType","DA_",0};
+const char *DMDAPeriodicTypes[] = {"NONPERIODIC","XPERIODIC","YPERIODIC","XYPERIODIC",
+                                 "XYZPERIODIC","XZPERIODIC","YZPERIODIC","ZPERIODIC","XYZGHOSTED","DMDAPeriodicType","DMDA_",0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMView_DA_1d"
@@ -35,8 +35,8 @@ PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
 
     ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
     if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL) {
-      DALocalInfo info;
-      ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+      DMDALocalInfo info;
+      ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D m %D w %D s %D\n",rank,dd->M,dd->m,dd->w,dd->s);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D\n",info.xs,info.xs+info.xm);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -96,15 +96,15 @@ PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
   } else if (ismatlab) {
     ierr = DMView_DA_Matlab(da,viewer);CHKERRQ(ierr);
 #endif
-  } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for DA 1d",((PetscObject)viewer)->type_name);
+  } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for DMDA 1d",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMView_DA_Private"
 /*
-    Processes command line options to determine if/how a DA
-  is to be viewed. Called by DACreateXX()
+    Processes command line options to determine if/how a DMDA
+  is to be viewed. Called by DMDACreateXX()
 */
 PetscErrorCode DMView_DA_Private(DM da)
 {
@@ -113,14 +113,14 @@ PetscErrorCode DMView_DA_Private(DM da)
   PetscViewer    view;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DA viewing options","DA");CHKERRQ(ierr); 
-    ierr = PetscOptionsTruth("-da_view","Print information about the DA's distribution","DMView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DMDA viewing options","DMDA");CHKERRQ(ierr); 
+    ierr = PetscOptionsTruth("-da_view","Print information about the DMDA's distribution","DMView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
     if (flg1) {
       ierr = PetscViewerASCIIGetStdout(((PetscObject)da)->comm,&view);CHKERRQ(ierr);
       ierr = DMView(da,view);CHKERRQ(ierr);
     }
     flg1 = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-da_view_draw","Draw how the DA is distributed","DMView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-da_view_draw","Draw how the DMDA is distributed","DMView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
     if (flg1) {ierr = DMView(da,PETSC_VIEWER_DRAW_(((PetscObject)da)->comm));CHKERRQ(ierr);}
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -136,7 +136,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_1D(DM da)
   const PetscInt       s     = dd->s;
   const PetscInt       sDist = s*dof;  /* absolute stencil distance */
   const PetscInt      *lx    = dd->lx;
-  const DAPeriodicType wrap  = dd->wrap;
+  const DMDAPeriodicType wrap  = dd->wrap;
   MPI_Comm             comm;
   Vec                  local, global;
   VecScatter           ltog, gtol;
@@ -206,7 +206,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_1D(DM da)
   xe  = xs + x;
 
   /* determine ghost region */
-  if (wrap == DA_XPERIODIC || wrap == DA_XYZGHOSTED) {
+  if (wrap == DMDA_XPERIODIC || wrap == DMDA_XYZGHOSTED) {
     Xs = xs - sDist; 
     Xe = xe + sDist;
   } else {
@@ -234,7 +234,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_1D(DM da)
 
   /* Create Global to Local Vector Scatter Context */
   /* global to local must retrieve ghost points */
-  if  (wrap == DA_XYZGHOSTED) {
+  if  (wrap == DMDA_XYZGHOSTED) {
     if (size == 1) {
       ierr = ISCreateStride(comm,(xe-xs),sDist,1,&to);CHKERRQ(ierr);
     } else if (!rank) {
@@ -252,7 +252,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_1D(DM da)
   ierr = PetscLogObjectMemory(da,(x+2*sDist)*sizeof(PetscInt));CHKERRQ(ierr);
 
   nn = 0;
-  if (wrap == DA_XPERIODIC) {    /* Handle all cases with wrap first */
+  if (wrap == DMDA_XPERIODIC) {    /* Handle all cases with wrap first */
 
     for (i=0; i<sDist; i++) {  /* Left ghost points */
       if ((xs-sDist+i)>=0) { idx[nn++] = xs-sDist+i;}
@@ -265,7 +265,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_1D(DM da)
       if ((xe+i)<M*dof) { idx [nn++] =  xe+i; }
       else              { idx [nn++] = (xe+i) - M*dof;}
     }
-  } else if (wrap == DA_XYZGHOSTED) { 
+  } else if (wrap == DMDA_XYZGHOSTED) { 
 
     if (sDist <= xs) {for (i=0; i<sDist; i++) {idx[nn++] = xs - sDist + i;}}
 
@@ -306,7 +306,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_1D(DM da)
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
-  if (wrap == DA_XYZGHOSTED) {
+  if (wrap == DMDA_XYZGHOSTED) {
     PetscInt *tmpidx;
     if (size == 1) {
       ierr = PetscMalloc((nn+2*sDist)*sizeof(PetscInt),&tmpidx);CHKERRQ(ierr);
@@ -344,9 +344,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_1D(DM da)
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "DACreate1d"
+#define __FUNCT__ "DMDACreate1d"
 /*@C
-   DACreate1d - Creates an object that will manage the communication of  one-dimensional 
+   DMDACreate1d - Creates an object that will manage the communication of  one-dimensional 
    regular array data that is distributed across some processors.
 
    Collective on MPI_Comm
@@ -354,7 +354,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_1D(DM da)
    Input Parameters:
 +  comm - MPI communicator
 .  wrap - type of periodicity should the array have, if any. Use 
-          either DA_NONPERIODIC or DA_XPERIODIC
+          either DMDA_NONPERIODIC or DMDA_XPERIODIC
 .  M - global dimension of the array (use -M to indicate that it may be set to a different value 
             from the command line with -da_grid_x <M>)
 .  dof - number of degrees of freedom per node
@@ -366,40 +366,40 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_1D(DM da)
 .  da - the resulting distributed array object
 
    Options Database Key:
-+  -da_view - Calls DMView() at the conclusion of DACreate1d()
++  -da_view - Calls DMView() at the conclusion of DMDACreate1d()
 .  -da_grid_x <nx> - number of grid points in x direction; can set if M < 0
 -  -da_refine_x - refinement factor 
 
    Level: beginner
 
    Notes:
-   The array data itself is NOT stored in the DA, it is stored in Vec objects;
+   The array data itself is NOT stored in the DMDA, it is stored in Vec objects;
    The appropriate vector objects can be obtained with calls to DMCreateGlobalVector()
    and DMCreateLocalVector() and calls to VecDuplicate() if more are needed.
 
 
 .keywords: distributed array, create, one-dimensional
 
-.seealso: DMDestroy(), DMView(), DACreate2d(), DACreate3d(), DMGlobalToLocalBegin(), DASetRefinementFactor(),
-          DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DALocalToLocalBegin(), DALocalToLocalEnd(), DAGetRefinementFactor(),
-          DAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DACreateNaturalVector(), DALoad(), DAGetOwnershipRanges()
+.seealso: DMDestroy(), DMView(), DMDACreate2d(), DMDACreate3d(), DMGlobalToLocalBegin(), DMDASetRefinementFactor(),
+          DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMDALocalToLocalBegin(), DMDALocalToLocalEnd(), DMDAGetRefinementFactor(),
+          DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMDALoad(), DMDAGetOwnershipRanges()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm, DAPeriodicType wrap, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da)
+PetscErrorCode PETSCDM_DLLEXPORT DMDACreate1d(MPI_Comm comm, DMDAPeriodicType wrap, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = DACreate(comm, da);CHKERRQ(ierr);
-  ierr = DASetDim(*da, 1);CHKERRQ(ierr);
-  ierr = DASetSizes(*da, M, 1, 1);CHKERRQ(ierr);
+  ierr = DMDACreate(comm, da);CHKERRQ(ierr);
+  ierr = DMDASetDim(*da, 1);CHKERRQ(ierr);
+  ierr = DMDASetSizes(*da, M, 1, 1);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr = DASetNumProcs(*da, size, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = DASetPeriodicity(*da, wrap);CHKERRQ(ierr);
-  ierr = DASetDof(*da, dof);CHKERRQ(ierr);
-  ierr = DASetStencilWidth(*da, s);CHKERRQ(ierr);
-  ierr = DASetOwnershipRanges(*da, lx, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDASetNumProcs(*da, size, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = DMDASetPeriodicity(*da, wrap);CHKERRQ(ierr);
+  ierr = DMDASetDof(*da, dof);CHKERRQ(ierr);
+  ierr = DMDASetStencilWidth(*da, s);CHKERRQ(ierr);
+  ierr = DMDASetOwnershipRanges(*da, lx, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
   ierr = DMSetFromOptions(*da);CHKERRQ(ierr);
   ierr = DMSetUp(*da);CHKERRQ(ierr);

@@ -69,7 +69,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
 
   /* Set up distributed array for fine grid */
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,fine_ctx.mx,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,fine_ctx.mx,
                     fine_ctx.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&fine_ctx.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(fine_ctx.da,&fine_ctx.x);CHKERRQ(ierr);
   ierr = VecDuplicate(fine_ctx.x,&fine_ctx.b);CHKERRQ(ierr);
@@ -127,9 +127,9 @@ int FormJacobian_Grid(GridCtx *grid,Mat *J)
   hxdhy = hx/hy;            hydhx = hy/hx;
 
   /* Get ghost points */
-  ierr = DAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(grid->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(grid->da,&nloc,&ltog);CHKERRQ(ierr);
 
   /* Evaluate Jacobian of function */
   for (j=ys; j<ys+ym; j++) {

@@ -33,8 +33,8 @@ typedef struct parameter_s {
 } Parameter;
 
 typedef struct gridinfo_s {
-  DAPeriodicType periodic;
-  DAStencilType  stencil;
+  DMDAPeriodicType periodic;
+  DMDAStencilType  stencil;
   int            ni,nj,dof,stencil_width,mglevels;
   PetscReal      dx,dz;
 } GridInfo;
@@ -53,7 +53,7 @@ int DoSolve              (DMMG*);
 int DoOutput             (DMMG*, int);
 int CalcSolnNorms        (DMMG*, PetscReal*);
 int DoVerification       (DMMG*, AppCtx*);
-int DASetFieldNames      (const char*, const char*, const char*, DA);
+int DMDASetFieldNames      (const char*, const char*, const char*, DM);
 PetscReal BiCubicInterp  (Field**, PetscReal, PetscReal);
 PetscReal CubicInterp    (PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
 PetscBool  OptionsHasName(const char*);
@@ -101,10 +101,10 @@ int main(int argc,char **argv)
      for principal unknowns (x) and governing residuals (f)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
   ierr = DMMGCreate(comm,grid.mglevels,user,&dmmg);CHKERRQ(ierr); 
-  ierr = DACreate2d(comm,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(comm,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DMDestroy(da);CHKERRQ(ierr);
-  ierr = DAGetInfo(da,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&(param->pi),&(param->pj),PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&(param->pi),&(param->pj),PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   REG_INTG(user->bag,&param->pi,param->pi ,"procs_x","<DO NOT SET> Processors in the x-direction");
   REG_INTG(user->bag,&param->pj,param->pj ,"procs_y","<DO NOT SET> Processors in the y-direction");
 
@@ -190,8 +190,8 @@ int SetParams(AppCtx *user)
 
   grid->ni            = p->ni;
   grid->nj            = p->nj;
-  grid->periodic      = DA_XYPERIODIC;
-  grid->stencil       = DA_STENCIL_BOX;
+  grid->periodic      = DMDA_XYPERIODIC;
+  grid->stencil       = DMDA_STENCIL_BOX;
   grid->dof           = 3;
   grid->stencil_width = 2;
   grid->mglevels      = 1;
@@ -252,10 +252,10 @@ int Initialize(DMMG *dmmg)
   ierr = PetscBagGetData(user->bag,(void**)&param);CHKERRQ(ierr);
   sigma=param->sigma; xc=param->xctr; zc=param->zctr;
 
-  /* Get the DA and grid */
+  /* Get the DMDA and grid */
   da = (dmmg[0]->dm); 
-  ierr = DAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
 
   for (j=js; j<js+jm; j++) {
     for (i=is; i<is+im; i++) {
@@ -271,7 +271,7 @@ int Initialize(DMMG *dmmg)
   }
   
   /* restore the grid to it's vector */
-  ierr = DAVecRestoreArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
   ierr = VecCopy(user->Xold, DMMGGetx(dmmg));CHKERRQ(ierr);
   return 0;
 }
@@ -495,7 +495,7 @@ int DoOutput(DMMG *dmmg, int n_plot)
     /* make output files */
     ierr = PetscViewerBinaryMatlabOpen(PETSC_COMM_WORLD,filename,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerBinaryMatlabOutputBag(viewer,"par",user->bag);CHKERRQ(ierr);
-    ierr = DASetFieldNames("u","v","phi",da);CHKERRQ(ierr);
+    ierr = DMDASetFieldNames("u","v","phi",da);CHKERRQ(ierr);
     ierr = PetscViewerBinaryMatlabOutputVecDA(viewer,"field",DMMGGetx(dmmg),da);CHKERRQ(ierr);
     ierr = PetscViewerBinaryMatlabDestroy(viewer);CHKERRQ(ierr);
   }  
@@ -504,14 +504,14 @@ int DoOutput(DMMG *dmmg, int n_plot)
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "DASetFieldNames"
-int DASetFieldNames(const char n0[], const char n1[], const char n2[], DM da)
+#define __FUNCT__ "DMDASetFieldNames"
+int DMDASetFieldNames(const char n0[], const char n1[], const char n2[], DM da)
 /* ------------------------------------------------------------------- */
 {
   int ierr;
-  ierr = DASetFieldName(da,0,n0);CHKERRQ(ierr);
-  ierr = DASetFieldName(da,1,n1);CHKERRQ(ierr);
-  ierr = DASetFieldName(da,2,n2);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,0,n0);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,1,n1);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,2,n2);CHKERRQ(ierr);
   return 0;
 }
 

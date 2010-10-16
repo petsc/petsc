@@ -2,7 +2,7 @@
 #include "petscda.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define daview_                      DAVIEW
+#define daview_                      DMDAVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define daview_                      daview
 #endif

@@ -23,7 +23,7 @@ extern MPI_Op VecMin_Local_Op;
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride 
-   information, or use a vector created from a multicomponent DA.
+   information, or use a vector created from a multicomponent DMDA.
 
    This will only work if the desire subvector is a stride subvector
 
@@ -83,7 +83,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScale(Vec v,PetscInt start,PetscScala
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride 
-   information, or use a vector created from a multicomponent DA.
+   information, or use a vector created from a multicomponent DMDA.
 
    If x is the array representing the vector x then this computes the norm 
    of the array (x[start],x[start+stride],x[start+2*stride], ....)
@@ -174,7 +174,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNorm(Vec v,PetscInt start,NormType nt
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride 
-   information, or use a vector created from a multicomponent DA.
+   information, or use a vector created from a multicomponent DMDA.
 
    If xa is the array representing the vector x, then this computes the max
    of the array (xa[start],xa[start+stride],xa[start+2*stride], ....)
@@ -272,7 +272,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMax(Vec v,PetscInt start,PetscInt *id
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride 
-   information, or use a vector created from a multicomponent DA.
+   information, or use a vector created from a multicomponent DMDA.
 
    If xa is the array representing the vector x, then this computes the min
    of the array (xa[start],xa[start+stride],xa[start+2*stride], ....)
@@ -362,7 +362,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMin(Vec v,PetscInt start,PetscInt *id
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride 
-   information, or use a vector created from a multicomponent DA.
+   information, or use a vector created from a multicomponent DMDA.
 
 
    Level: advanced
@@ -413,7 +413,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScaleAll(Vec v,PetscScalar *scales)
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride 
-   information, or use a vector created from a multicomponent DA.
+   information, or use a vector created from a multicomponent DMDA.
 
    If x is the array representing the vector x then this computes the norm 
    of the array (x[start],x[start+stride],x[start+2*stride], ....)
@@ -513,7 +513,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNormAll(Vec v,NormType ntype,PetscRea
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride 
-   information, or use a vector created from a multicomponent DA.
+   information, or use a vector created from a multicomponent DMDA.
 
    This is useful for computing, say the maximum of the pressure variable when
    the pressure is stored (interlaced) with other variables, e.g., density, etc.
@@ -593,7 +593,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMaxAll(Vec v,PetscInt idex[],PetscRea
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride 
-   information, or use a vector created from a multicomponent DA.
+   information, or use a vector created from a multicomponent DMDA.
 
    This is useful for computing, say the minimum of the pressure variable when
    the pressure is stored (interlaced) with other variables, e.g., density, etc.
@@ -669,7 +669,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMinAll(Vec v,PetscInt idex[],PetscRea
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride 
-   information, or use a vector created from a multicomponent DA.
+   information, or use a vector created from a multicomponent DMDA.
 
    If x is the array representing the vector x then this gathers
    the arrays (x[start],x[start+stride],x[start+2*stride], ....)
@@ -778,7 +778,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec v,Vec s[],InsertMode ad
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride 
-   information, or use a vector created from a multicomponent DA.
+   information, or use a vector created from a multicomponent DMDA.
 
    The parallel layout of the vector and the subvector must be the same;
    i.e., nlocal of v = stride*(nlocal of s) 
@@ -883,7 +883,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatterAll(Vec s[],Vec v,InsertMode a
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride 
-   information, or use a vector created from a multicomponent DA.
+   information, or use a vector created from a multicomponent DMDA.
 
    If x is the array representing the vector x then this gathers
    the array (x[start],x[start+stride],x[start+2*stride], ....)
@@ -932,7 +932,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGather(Vec v,PetscInt start,Vec s,Ins
 
    Notes:
    One must call VecSetBlockSize() on the multi-component vector before this
-   routine to set the stride  information, or use a vector created from a multicomponent DA.
+   routine to set the stride  information, or use a vector created from a multicomponent DMDA.
 
    The parallel layout of the vector and the subvector must be the same;
    i.e., nlocal of v = stride*(nlocal of s) 

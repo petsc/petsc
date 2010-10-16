@@ -9,7 +9,7 @@
 /* Logging support */
 PetscClassId PETSCDM_DLLEXPORT DM_CLASSID;
 PetscClassId PETSCDM_DLLEXPORT ADDA_CLASSID;
-PetscLogEvent  DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction;
+PetscLogEvent  DMDA_GlobalToLocal, DMDA_LocalToGlobal, DMDA_LocalADFunction;
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDestroy_Private"
@@ -67,19 +67,19 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_DA(DM da)
   if (!done) PetscFunctionReturn(0);
 
   /* destroy the external/common part */
-  for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+  for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
     ierr = PetscFree(dd->adstartghostedout[i]);CHKERRQ(ierr);
     ierr = PetscFree(dd->adstartghostedin[i]);CHKERRQ(ierr);
     ierr = PetscFree(dd->adstartout[i]);CHKERRQ(ierr);
     ierr = PetscFree(dd->adstartin[i]);CHKERRQ(ierr);
   }
-  for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+  for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
     ierr = PetscFree(dd->admfstartghostedout[i]);CHKERRQ(ierr);
     ierr = PetscFree(dd->admfstartghostedin[i]);CHKERRQ(ierr);
     ierr = PetscFree(dd->admfstartout[i]);CHKERRQ(ierr);
     ierr = PetscFree(dd->admfstartin[i]);CHKERRQ(ierr);
   }
-  for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
+  for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
     ierr = PetscFree(dd->startghostedout[i]);CHKERRQ(ierr);
     ierr = PetscFree(dd->startghostedin[i]);CHKERRQ(ierr);
     ierr = PetscFree(dd->startout[i]);CHKERRQ(ierr);
@@ -142,9 +142,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_DA(DM da)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetISLocalToGlobalMapping"
+#define __FUNCT__ "DMDAGetISLocalToGlobalMapping"
 /*@
-   DAGetISLocalToGlobalMapping - Accesses the local-to-global mapping in a DA.
+   DMDAGetISLocalToGlobalMapping - Accesses the local-to-global mapping in a DMDA.
 
    Not Collective
 
@@ -161,14 +161,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_DA(DM da)
    MatSetLocalToGlobalMapping().
 
    Essentially the same data is returned in the form of an integer array
-   with the routine DAGetGlobalIndices().
+   with the routine DMDAGetGlobalIndices().
 
 .keywords: distributed array, destroy
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), VecSetLocalToGlobalMapping(),
-          MatSetLocalToGlobalMapping(), DAGetGlobalIndices(), DAGetISLocalToGlobalMappingBlck()
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), VecSetLocalToGlobalMapping(),
+          MatSetLocalToGlobalMapping(), DMDAGetGlobalIndices(), DMDAGetISLocalToGlobalMappingBlck()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetISLocalToGlobalMapping(DM da,ISLocalToGlobalMapping *map)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetISLocalToGlobalMapping(DM da,ISLocalToGlobalMapping *map)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -180,9 +180,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetISLocalToGlobalMapping(DM da,ISLocalToGlob
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetISLocalToGlobalMappingBlck"
+#define __FUNCT__ "DMDAGetISLocalToGlobalMappingBlck"
 /*@
-   DAGetISLocalToGlobalMappingBlck - Accesses the local-to-global mapping in a DA.
+   DMDAGetISLocalToGlobalMappingBlck - Accesses the local-to-global mapping in a DMDA.
 
    Not Collective
 
@@ -199,14 +199,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetISLocalToGlobalMapping(DM da,ISLocalToGlob
    MatSetLocalToGlobalMappingBlock().
 
    Essentially the same data is returned in the form of an integer array
-   with the routine DAGetGlobalIndices().
+   with the routine DMDAGetGlobalIndices().
 
 .keywords: distributed array, destroy
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), VecSetLocalToGlobalMapping(),
-          MatSetLocalToGlobalMapping(), DAGetGlobalIndices(), DAGetISLocalToGlobalMapping()
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), VecSetLocalToGlobalMapping(),
+          MatSetLocalToGlobalMapping(), DMDAGetGlobalIndices(), DMDAGetISLocalToGlobalMapping()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetISLocalToGlobalMappingBlck(DM da,ISLocalToGlobalMapping *map)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetISLocalToGlobalMappingBlck(DM da,ISLocalToGlobalMapping *map)
 {
   DM_DA *dd = (DM_DA*)da->data;
 

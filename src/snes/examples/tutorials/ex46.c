@@ -2,7 +2,7 @@ static char help[] = "Surface processes in geophysics.\n\n";
 
 /*T
    Concepts: SNES^parallel Surface process example
-   Concepts: DA^using distributed arrays;
+   Concepts: DMDA^using distributed arrays;
    Concepts: IS coloirng types;
    Processors: n
 T*/
@@ -30,7 +30,7 @@ T*/
   ------------------------------------------------------------------------- */
 
 /* 
-   Include "petscda.h" so that we can use distributed arrays (DAs).
+   Include "petscda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -57,8 +57,8 @@ typedef struct {
 /* 
    User-defined routines
 */
-extern PetscErrorCode FormFunctionLocal(DALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
-extern PetscErrorCode FormJacobianLocal(DALocalInfo*,PetscScalar**,Mat,AppCtx*);
+extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
+extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,AppCtx*);
 extern PetscErrorCode FormInitialGuess(AppCtx *,Vec);
 
 #undef __FUNCT__
@@ -90,11 +90,11 @@ int main(int argc,char **argv)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create distributed array (DA) to manage parallel grid and vectors
+     Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
                     1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
-  ierr = DASetUniformCoordinates(user.da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(user.da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = DMMGCreate(PETSC_COMM_WORLD, 1, &user, &dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg, (DM) user.da);CHKERRQ(ierr);
 
@@ -156,7 +156,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   PetscScalar    **x;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+  ierr = DMDAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   D      = user->D;
@@ -171,15 +171,15 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = DAVecGetArray(user->da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(user->da,X,&x);CHKERRQ(ierr);
 
   /*
-     Get local grid boundaries (for 2-dimensional DA):
+     Get local grid boundaries (for 2-dimensional DMDA):
        xs, ys   - starting grid indices (no ghost points)
        xm, ym   - widths of local grid (no ghost points)
 
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -199,14 +199,14 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   /*
      Restore vector
   */
-  ierr = DAVecRestoreArray(user->da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(user->da,X,&x);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 } 
 
 #undef __FUNCT__
 #define __FUNCT__ "funcU"
-PetscScalar funcU(DACoor2d *coords)
+PetscScalar funcU(DMDACoor2d *coords)
 {
   return coords->x + coords->y;
 }
@@ -240,11 +240,11 @@ PetscScalar funcADer(PetscScalar z, AppCtx *user)
 /* 
    FormFunctionLocal - Evaluates nonlinear function, F(x).
 */
-PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
+PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
 {
   DM             coordDA;
   Vec            coordinates;
-  DACoor2d     **coords;
+  DMDACoor2d     **coords;
   PetscScalar    u, ux, uy, uxx, uyy;
   PetscReal      D, K, hx, hy, hxdhy, hydhx;
   PetscInt       i,j;
@@ -261,9 +261,9 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
   /*
      Compute function over the locally owned part of the grid
   */
-  ierr = DAGetCoordinateDA(user->da, &coordDA);CHKERRQ(ierr);
-  ierr = DAGetCoordinates(user->da, &coordinates);CHKERRQ(ierr);
-  ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinateDA(user->da, &coordDA);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinates(user->da, &coordinates);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
@@ -279,7 +279,7 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
       }
     }
   }
-  ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   ierr = PetscLogFlops(11*info->ym*info->xm);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
@@ -289,7 +289,7 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
 /*
    FormJacobianLocal - Evaluates Jacobian matrix.
 */
-PetscErrorCode FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCtx *user)
+PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,AppCtx *user)
 {
   MatStencil     col[5], row;
   PetscScalar    D, K, A, v[5], hx, hy, hxdhy, hydhx, ux, uy, normGradZ;

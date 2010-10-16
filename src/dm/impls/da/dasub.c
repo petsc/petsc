@@ -7,17 +7,17 @@
 #include "private/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetProcessorSubset"
+#define __FUNCT__ "DMDAGetProcessorSubset"
 /*@C
-   DAGetProcessorSubset - Returns a communicator consisting only of the
-   processors in a DA that own a particular global x, y, or z grid point
+   DMDAGetProcessorSubset - Returns a communicator consisting only of the
+   processors in a DMDA that own a particular global x, y, or z grid point
    (corresponding to a logical plane in a 3D grid or a line in a 2D grid).
 
-   Collective on DA
+   Collective on DMDA
 
    Input Parameters:
 +  da - the distributed array
-.  dir - Cartesian direction, either DA_X, DA_Y, or DA_Z
+.  dir - Cartesian direction, either DMDA_X, DMDA_Y, or DMDA_Z
 -  gp - global grid point number in this direction
 
    Output Parameters:
@@ -26,7 +26,7 @@
    Level: advanced
 
    Notes:
-   All processors that share the DA must call this with the same gp value
+   All processors that share the DMDA must call this with the same gp value
 
    This routine is particularly useful to compute boundary conditions
    or other application-specific calculations that require manipulating
@@ -34,7 +34,7 @@
 
 .keywords: distributed array, get, processor subset
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetProcessorSubset(DM da,DADirection dir,PetscInt gp,MPI_Comm *comm)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_Comm *comm)
 {
   MPI_Group      group,subgroup;
   PetscErrorCode ierr;
@@ -45,17 +45,17 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetProcessorSubset(DM da,DADirection dir,Pets
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   flag = 0; 
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)da)->comm,&size);CHKERRQ(ierr);
-  if (dir == DA_Z) {
-    if (dd->dim < 3) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"DA_Z invalid for DA dim < 3");
+  if (dir == DMDA_Z) {
+    if (dd->dim < 3) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"DMDA_Z invalid for DMDA dim < 3");
     if (gp < 0 || gp > dd->P) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
     if (gp >= zs && gp < zs+zm) flag = 1;
-  } else if (dir == DA_Y) {
-    if (dd->dim == 1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"DA_Y invalid for DA dim = 1");
+  } else if (dir == DMDA_Y) {
+    if (dd->dim == 1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"DMDA_Y invalid for DMDA dim = 1");
     if (gp < 0 || gp > dd->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
     if (gp >= ys && gp < ys+ym) flag = 1;
-  } else if (dir == DA_X) {
+  } else if (dir == DMDA_X) {
     if (gp < 0 || gp > dd->M) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
     if (gp >= xs && gp < xs+xm) flag = 1;
   } else SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
@@ -63,7 +63,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetProcessorSubset(DM da,DADirection dir,Pets
   ierr = PetscMalloc2(size,PetscInt,&owners,size,PetscMPIInt,&ranks);CHKERRQ(ierr);
   ierr = MPI_Allgather(&flag,1,MPIU_INT,owners,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
   ict  = 0;
-  ierr = PetscInfo2(da,"DAGetProcessorSubset: dim=%D, direction=%d, procs: ",dd->dim,(int)dir);CHKERRQ(ierr);
+  ierr = PetscInfo2(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",dd->dim,(int)dir);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
     if (owners[i]) {
       ranks[ict] = i; ict++;
@@ -81,17 +81,17 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetProcessorSubset(DM da,DADirection dir,Pets
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetProcessorSubsets"
+#define __FUNCT__ "DMDAGetProcessorSubsets"
 /*@C
-   DAGetProcessorSubsets - Returns communicators consisting only of the
-   processors in a DA adjacent in a particular dimension,
+   DMDAGetProcessorSubsets - Returns communicators consisting only of the
+   processors in a DMDA adjacent in a particular dimension,
    corresponding to a logical plane in a 3D grid or a line in a 2D grid.
 
-   Collective on DA
+   Collective on DMDA
 
    Input Parameters:
 +  da - the distributed array
--  dir - Cartesian direction, either DA_X, DA_Y, or DA_Z
+-  dir - Cartesian direction, either DMDA_X, DMDA_Y, or DMDA_Z
 
    Output Parameters:
 .  subcomm - new communicator
@@ -103,7 +103,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetProcessorSubset(DM da,DADirection dir,Pets
 
 .keywords: distributed array, get, processor subset
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetProcessorSubsets(DM da, DADirection dir, MPI_Comm *subcomm)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetProcessorSubsets(DM da, DMDADirection dir, MPI_Comm *subcomm)
 {
   MPI_Comm       comm;
   MPI_Group      group, subgroup;
@@ -117,21 +117,21 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetProcessorSubsets(DM da, DADirection dir, M
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
   comm = ((PetscObject) da)->comm;
-  ierr = DAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  if (dir == DA_Z) {
-    if (dd->dim < 3) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"DA_Z invalid for DA dim < 3");
+  if (dir == DMDA_Z) {
+    if (dd->dim < 3) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"DMDA_Z invalid for DMDA dim < 3");
     firstPoint = zs;
-  } else if (dir == DA_Y) {
-    if (dd->dim == 1) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"DA_Y invalid for DA dim = 1");
+  } else if (dir == DMDA_Y) {
+    if (dd->dim == 1) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"DMDA_Y invalid for DMDA dim = 1");
     firstPoint = ys;
-  } else if (dir == DA_X) {
+  } else if (dir == DMDA_X) {
     firstPoint = xs;
   } else SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
 
   ierr = PetscMalloc2(size, PetscInt, &firstPoints, size, PetscMPIInt, &subgroupRanks);CHKERRQ(ierr);
   ierr = MPI_Allgather(&firstPoint, 1, MPIU_INT, firstPoints, 1, MPIU_INT, comm);CHKERRQ(ierr);
-  ierr = PetscInfo2(da,"DAGetProcessorSubset: dim=%D, direction=%d, procs: ",dd->dim,(int)dir);CHKERRQ(ierr);
+  ierr = PetscInfo2(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",dd->dim,(int)dir);CHKERRQ(ierr);
   for(p = 0; p < size; ++p) {
     if (firstPoints[p] == firstPoint) {
       subgroupRanks[subgroupSize++] = p;

@@ -3,7 +3,7 @@ static char help[] = "Model multi-physics solver. Modified from ex19.c \n\\n";
 
 /*T
    Concepts: SNES^solving a system of nonlinear equations (parallel multicomponent example);
-   Concepts: DA^using distributed arrays;
+   Concepts: DMDA^using distributed arrays;
    Concepts: multicomponent
    Processors: n
 T*/
@@ -54,10 +54,10 @@ int main(int argc,char **argv)
         where T is given by the given x.temp
         - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   dof  = 3;
-  ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da1);CHKERRQ(ierr);
-  ierr = DASetFieldName(da1,0,"x-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(da1,1,"y-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(da1,2,"Omega");CHKERRQ(ierr);
+  ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da1);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da1,0,"x-velocity");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da1,1,"y-velocity");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da1,2,"Omega");CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Setup Physics 2: 
@@ -65,8 +65,8 @@ int main(int argc,char **argv)
         where U and V are given by the given x.u and x.v
         - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   dof  = 1;
-  ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da2);CHKERRQ(ierr);
-  ierr = DASetFieldName(da2,0,"temperature");CHKERRQ(ierr);
+  ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da2);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da2,0,"temperature");CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create the DMComposite object to manage the two grids/physics. 
@@ -83,7 +83,7 @@ int main(int argc,char **argv)
   ierr = DMMGSetInitialGuess(dmmg_comp,FormInitialGuessComp);CHKERRQ(ierr);
   ierr = DMMGSetSNES(dmmg_comp,FormFunctionComp,0);CHKERRQ(ierr);
 
-  ierr = DAGetInfo(da1,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da1,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   user.lidvelocity = 1.0/(mx*my);
   user.prandtl     = 1.0;
   user.grashof     = 1.0;
@@ -120,7 +120,7 @@ PetscErrorCode FormInitialGuessComp(DMMG dmmg,Vec X)
   Vec            X1,X2;
   Field1         **x1;
   Field2         **x2;
-  DALocalInfo    info1,info2;
+  DMDALocalInfo    info1,info2;
   DM             da1,da2;
 
   PetscFunctionBegin;
@@ -128,18 +128,18 @@ PetscErrorCode FormInitialGuessComp(DMMG dmmg,Vec X)
   /* Access the subvectors in X */
   ierr = DMCompositeGetAccess(dm,X,&X1,&X2);CHKERRQ(ierr);
   /* Access the arrays inside the subvectors of X */
-  ierr = DAVecGetArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
 
-  ierr = DAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da2,&info2);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da2,&info2);CHKERRQ(ierr);
 
   /* Evaluate local user provided function */
   ierr = FormInitialGuessLocal1(&info1,x1);CHKERRQ(ierr);
   ierr = FormInitialGuessLocal2(&info2,x2,user);CHKERRQ(ierr);
 
-  ierr = DAVecRestoreArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(dm,X,&X1,&X2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -155,7 +155,7 @@ PetscErrorCode FormFunctionComp(SNES snes,Vec X,Vec F,void *ctx)
   DMMG           dmmg = (DMMG)ctx;
   AppCtx         *user = (AppCtx*)dmmg->user;
   DM             dm = (DMComposite)dmmg->dm;
-  DALocalInfo    info1,info2;
+  DMDALocalInfo    info1,info2;
   DM             da1,da2;
   Field1         **x1,**f1;
   Field2         **x2,**f2;
@@ -164,34 +164,34 @@ PetscErrorCode FormFunctionComp(SNES snes,Vec X,Vec F,void *ctx)
   PetscFunctionBegin;
 
   ierr = DMCompositeGetEntries(dm,&da1,&da2);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da2,&info2);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da2,&info2);CHKERRQ(ierr);
 
   /* Get local vectors to hold ghosted parts of X */
   ierr = DMCompositeGetLocalVectors(dm,&X1,&X2);CHKERRQ(ierr);
   ierr = DMCompositeScatter(dm,X,X1,X2);CHKERRQ(ierr); 
 
   /* Access the arrays inside the subvectors of X */
-  ierr = DAVecGetArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
 
   /* Access the subvectors in F. 
      These are not ghosted so directly access the memory locations in F */
   ierr = DMCompositeGetAccess(dm,F,&F1,&F2);CHKERRQ(ierr);
 
   /* Access the arrays inside the subvectors of F */  
-  ierr = DAVecGetArray(da1,F1,(void**)&f1);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da2,F2,(void**)&f2);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da1,F1,(void**)&f1);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2,F2,(void**)&f2);CHKERRQ(ierr);
 
   /* Evaluate local user provided function */    
   ierr = FormFunctionLocal1(&info1,x1,x2,f1,(void**)user);CHKERRQ(ierr);
   ierr = FormFunctionLocal2(&info2,x1,x2,f2,(void**)user);CHKERRQ(ierr);
 
-  ierr = DAVecRestoreArray(da1,F1,(void**)&f1);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da2,F2,(void**)&f2);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da1,F1,(void**)&f1);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da2,F2,(void**)&f2);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(dm,F,&F1,&F2);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(dm,&X1,&X2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

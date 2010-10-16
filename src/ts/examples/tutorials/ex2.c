@@ -106,15 +106,15 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /*
-     Create distributed array (DA) to manage parallel grid and vectors
+     Create distributed array (DMDA) to manage parallel grid and vectors
      and to set up the ghost point communication pattern.  There are M 
      total grid values spread equally among all the processors.
   */ 
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,appctx.m,1,1,PETSC_NULL,
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,appctx.m,1,1,PETSC_NULL,
                     &appctx.da);CHKERRQ(ierr);
 
   /*
-     Extract global and local vectors from DA; we use these to store the
+     Extract global and local vectors from DMDA; we use these to store the
      approximate solution.  Then duplicate these for remaining vectors that
      have the same types.
   */ 

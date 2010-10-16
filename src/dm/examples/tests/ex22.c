@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   DM             da;
   Mat            mat;
-  DAStencilType  stencil_type = DA_STENCIL_BOX;
+  DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
   PetscBool      flg = PETSC_FALSE;
   MatStencil     idx[2],idy[2];
   PetscScalar    *values;
@@ -29,10 +29,10 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-star",&flg,PETSC_NULL);CHKERRQ(ierr); 
-  if (flg) stencil_type =  DA_STENCIL_STAR;
+  if (flg) stencil_type =  DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
-  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,stencil_type,M,N,P,m,n,p,w,s,
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,stencil_type,M,N,P,m,n,p,w,s,
                     0,0,0,&da);CHKERRQ(ierr);
 
   ierr = DMGetMatrix(da,MATMPIBAIJ,&mat);CHKERRQ(ierr);

@@ -54,8 +54,8 @@ typedef struct parameter_s {
 } Parameter;
 
 typedef struct gridinfo_s {
-  DAPeriodicType periodic;
-  DAStencilType  stencil;
+  DMDAPeriodicType periodic;
+  DMDAStencilType  stencil;
   int            ni,nj,dof,stencil_width,mglevels;
   PassiveScalar  dx,dz;
 } GridInfo;
@@ -81,8 +81,8 @@ PetscBool  OptionsHasName(const char*);
 PetscErrorCode InterpVelocity2D(void*, PetscReal[], PetscInt, PetscInt[], PetscReal[], void*);
 PetscErrorCode InterpFields2D  (void*, PetscReal[], PetscInt, PetscInt[], PetscReal[], void*);
 
-PetscErrorCode FormOldTimeFunctionLocal(DALocalInfo *, PetscScalar **, PetscScalar **, AppCtx *);
-PetscErrorCode FormNewTimeFunctionLocal(DALocalInfo *, PetscScalar **, PetscScalar **, AppCtx *);
+PetscErrorCode FormOldTimeFunctionLocal(DMDALocalInfo *, PetscScalar **, PetscScalar **, AppCtx *);
+PetscErrorCode FormNewTimeFunctionLocal(DMDALocalInfo *, PetscScalar **, PetscScalar **, AppCtx *);
 
 /* a few macros for convenience */
 #define REG_REAL(A,B,C,D,E)   ierr=PetscBagRegisterReal(A,B,C,D,E);CHKERRQ(ierr)
@@ -122,12 +122,12 @@ int main(int argc,char **argv)
      for principal unknowns (x) and governing residuals (f)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
   ierr = DMMGCreate(comm,grid.mglevels,user,&user->dmmg);CHKERRQ(ierr); 
-  ierr = DACreate2d(comm,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(comm,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(user->dmmg,(DM) da);CHKERRQ(ierr);
   ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = DMMGSetSNESLocal(user->dmmg,FormNewTimeFunctionLocal,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMMGSetFromOptions(user->dmmg);CHKERRQ(ierr);
-  ierr = DAGetInfo(DMMGGetDM(user->dmmg),PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&(param->pi),&(param->pj),PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(DMMGGetDM(user->dmmg),PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&(param->pi),&(param->pj),PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   REG_INTG(user->bag,&param->pi,param->pi ,"procs_x","<DO NOT SET> Processors in the x-direction");
   REG_INTG(user->bag,&param->pj,param->pj ,"procs_y","<DO NOT SET> Processors in the y-direction");
 
@@ -210,8 +210,8 @@ int SetParams(AppCtx *user)
 
   grid->ni            = p->ni;
   grid->nj            = p->nj;
-  grid->periodic      = DA_XYPERIODIC;
-  grid->stencil       = DA_STENCIL_BOX;
+  grid->periodic      = DMDA_XYPERIODIC;
+  grid->stencil       = DMDA_STENCIL_BOX;
   grid->dof           = 1;
   grid->stencil_width = 2;
   grid->mglevels      = 1;
@@ -272,10 +272,10 @@ int Initialize(DMMG *dmmg)
   sigma = param->sigma;
   xc = param->xctr; zc = param->zctr;
 
-  /* Get the DA and grid */
+  /* Get the DMDA and grid */
   da = DMMGGetDM(dmmg); 
-  ierr = DAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
 
   for (j=js; j<js+jm; j++) {
     for (i=is; i<is+im; i++) {
@@ -284,7 +284,7 @@ int Initialize(DMMG *dmmg)
   }
   
   /* restore the grid to it's vector */
-  ierr = DAVecRestoreArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
   ierr = VecCopy(user->Xold, DMMGGetx(dmmg));CHKERRQ(ierr);
 
   return 0;
@@ -333,7 +333,7 @@ int DoSolve(DMMG *dmmg)
        Solve at time t & copy solution into solution vector.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     /* Evaluate operator (I + \Delta t/2 L) u^-  = X^- */
-    ierr = DAFormFunctionLocal(da, (DALocalFunction1) FormOldTimeFunctionLocal, DMMGGetx(dmmg), user->Xold, user);CHKERRQ(ierr);
+    ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) FormOldTimeFunctionLocal, DMMGGetx(dmmg), user->Xold, user);CHKERRQ(ierr);
     /* Advect Xold into Xstar */
     ierr = CharacteristicSolve(c, param->dt, Xstar);CHKERRQ(ierr);
     /* Xstar -> Xold */
@@ -403,7 +403,7 @@ PetscErrorCode InterpFields2D(void *f, PetscReal ij_real[], PetscInt numComp,
 
   /* map back to periodic domain if out of bounds */
   if ( ir < 0 || ir > ni-1 || jr < 0 || jr> nj-1 ) { 
-    ierr = DAMapCoordsToPeriodicDomain(DMMGGetDM(user->dmmg), &ir, &jr);CHKERRQ(ierr);
+    ierr = DMDAMapCoordsToPeriodicDomain(DMMGGetDM(user->dmmg), &ir, &jr);CHKERRQ(ierr);
   } 
   field[0] = BiCubicInterp(x, ir, jr);
   return 0;
@@ -465,7 +465,7 @@ int DoOutput(DMMG *dmmg, int n_plot)
     /* make output files */
     ierr = PetscViewerBinaryMatlabOpen(PETSC_COMM_WORLD,filename,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerBinaryMatlabOutputBag(viewer,"par",user->bag);CHKERRQ(ierr);
-    ierr = DASetFieldName(da,0,"phi");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,0,"phi");CHKERRQ(ierr);
     ierr = PetscViewerBinaryMatlabOutputVecDA(viewer,"field",DMMGGetx(dmmg),da);CHKERRQ(ierr);
     ierr = PetscViewerBinaryMatlabDestroy(viewer);CHKERRQ(ierr);
   }  
@@ -493,7 +493,7 @@ PetscBool  OptionsHasName(const char name[])
 
   Process adiC(36): FormNewTimeFunctionLocal
 */
-PetscErrorCode FormNewTimeFunctionLocal(DALocalInfo *info, PetscScalar **x, PetscScalar **f, AppCtx *user)
+PetscErrorCode FormNewTimeFunctionLocal(DMDALocalInfo *info, PetscScalar **x, PetscScalar **f, AppCtx *user)
 {
   DM             da = DMMGGetDM(user->dmmg);
   PetscScalar  **fold;
@@ -510,7 +510,7 @@ PetscErrorCode FormNewTimeFunctionLocal(DALocalInfo *info, PetscScalar **x, Pets
   hydhx  = hy/hx;
 
   ierr = PetscBagGetData(user->bag, (void**) &param);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da, user->Xold, &fold);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da, user->Xold, &fold);CHKERRQ(ierr);
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {
       u       = x[j][i];
@@ -519,7 +519,7 @@ PetscErrorCode FormNewTimeFunctionLocal(DALocalInfo *info, PetscScalar **x, Pets
       f[j][i] = u*hx*hy + param->dt*0.5*(uxx + uyy) - fold[j][i];
     }
   }
-  ierr = DAVecRestoreArray(da, user->Xold, &fold);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da, user->Xold, &fold);CHKERRQ(ierr);
 
   ierr = PetscLogFlops(13.0*info->ym*info->xm);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
@@ -532,7 +532,7 @@ PetscErrorCode FormNewTimeFunctionLocal(DALocalInfo *info, PetscScalar **x, Pets
 
   Process adiC(36): FormOldTimeFunctionLocal
 */
-PetscErrorCode FormOldTimeFunctionLocal(DALocalInfo *info, PetscScalar **x, PetscScalar **f, AppCtx *user)
+PetscErrorCode FormOldTimeFunctionLocal(DMDALocalInfo *info, PetscScalar **x, PetscScalar **f, AppCtx *user)
 {
   Parameter     *param;
   PetscScalar    u,uxx,uyy;

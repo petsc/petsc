@@ -1,5 +1,5 @@
 
-static char help[] = "Tests DA with variable multiple degrees of freedom per node.\n\n";
+static char help[] = "Tests DMDA with variable multiple degrees of freedom per node.\n\n";
 
 /*
    This code only compiles with gcc, since it is not ANSI C
@@ -12,10 +12,10 @@ PetscErrorCode doit(DM da,Vec global)
   PetscErrorCode ierr;
   PetscInt       i,j,k,M,N,dof;
 
-  ierr = DAGetInfo(da,0,&M,&N,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   {
     struct {PetscScalar inside[dof];} **mystruct;
-    ierr = DAVecGetArray(da,global,(void*) &mystruct);
+    ierr = DMDAVecGetArray(da,global,(void*) &mystruct);
     for ( i=0; i<N; i++) {
       for ( j=0; j<M; j++) {
 	for ( k=0; k<dof; k++) {
@@ -24,7 +24,7 @@ PetscErrorCode doit(DM da,Vec global)
 	}
       }
     }
-    ierr = DAVecRestoreArray(da,global,(void*) &mystruct);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(da,global,(void*) &mystruct);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -42,7 +42,7 @@ int main(int argc,char **argv)
 
   ierr = PetscOptionsGetInt(0,"-dof",&dof,0);CHKERRQ(ierr);
   /* Create distributed array and get vectors */
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,
                     M,N,m,n,dof,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);

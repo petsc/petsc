@@ -1,7 +1,7 @@
 #define PETSCDM_DLL
 
 /* 
-   Plots vectors obtained with DACreate2d()
+   Plots vectors obtained with DMDACreate2d()
 */
 
 #include "private/daimpl.h"      /*I  "petscda.h"   I*/
@@ -83,8 +83,8 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   PetscBool          isnull,useports = PETSC_FALSE;
   MPI_Comm           comm;
   Vec                xlocal,xcoor,xcoorl;
-  DAPeriodicType     periodic;
-  DAStencilType      st;
+  DMDAPeriodicType     periodic;
+  DMDAStencilType      st;
   ZoomCtx            zctx;
   PetscDrawViewPorts *ports;
   PetscViewerFormat  format;
@@ -94,29 +94,29 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
-  ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
+  ierr = PetscObjectQuery((PetscObject)xin,"DMDA",(PetscObject*)&da);CHKERRQ(ierr);
+  if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
 
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  ierr = DAGetInfo(da,0,&M,&N,0,&zctx.m,&zctx.n,0,&w,&s,&periodic,&st);CHKERRQ(ierr);
-  ierr = DAGetOwnershipRanges(da,&lx,&ly,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&M,&N,0,&zctx.m,&zctx.n,0,&w,&s,&periodic,&st);CHKERRQ(ierr);
+  ierr = DMDAGetOwnershipRanges(da,&lx,&ly,PETSC_NULL);CHKERRQ(ierr);
 
   /* 
         Obtain a sequential vector that is going to contain the local values plus ONE layer of 
-     ghosted values to draw the graphics from. We also need its corresponding DA (dac) that will
+     ghosted values to draw the graphics from. We also need its corresponding DMDA (dac) that will
      update the local values pluse ONE layer of ghost values. 
   */
   ierr = PetscObjectQuery((PetscObject)da,"GraphicsGhosted",(PetscObject*)&xlocal);CHKERRQ(ierr);
   if (!xlocal) {
-    if (periodic != DA_NONPERIODIC || s != 1 || st != DA_STENCIL_BOX) {
+    if (periodic != DMDA_NONPERIODIC || s != 1 || st != DMDA_STENCIL_BOX) {
       /* 
          if original da is not of stencil width one, or periodic or not a box stencil then
-         create a special DA to handle one level of ghost points for graphics
+         create a special DMDA to handle one level of ghost points for graphics
       */
-      ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,zctx.m,zctx.n,w,1,lx,ly,&dac);CHKERRQ(ierr); 
-      ierr = PetscInfo(da,"Creating auxilary DA for managing graphics ghost points\n");CHKERRQ(ierr);
+      ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,w,1,lx,ly,&dac);CHKERRQ(ierr); 
+      ierr = PetscInfo(da,"Creating auxilary DMDA for managing graphics ghost points\n");CHKERRQ(ierr);
     } else {
       /* otherwise we can use the da we already have */
       dac = da;
@@ -124,21 +124,21 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     /* create local vector for holding ghosted values used in graphics */
     ierr = DMCreateLocalVector(dac,&xlocal);CHKERRQ(ierr);
     if (dac != da) {
-      /* don't keep any public reference of this DA, is is only available through xlocal */
+      /* don't keep any public reference of this DMDA, is is only available through xlocal */
       ierr = DMDestroy(dac);CHKERRQ(ierr);
     } else {
       /* remove association between xlocal and da, because below we compose in the opposite
          direction and if we left this connect we'd get a loop, so the objects could 
          never be destroyed */
-      ierr = PetscObjectCompose((PetscObject)xlocal,"DA",0);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject)xlocal,"DMDA",0);CHKERRQ(ierr);
     }
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsGhosted",(PetscObject)xlocal);CHKERRQ(ierr);
     ierr = PetscObjectDereference((PetscObject)xlocal);CHKERRQ(ierr);
   } else {
-    if (periodic == DA_NONPERIODIC && s == 1 && st == DA_STENCIL_BOX) {
+    if (periodic == DMDA_NONPERIODIC && s == 1 && st == DMDA_STENCIL_BOX) {
       dac = da;
     } else {
-      ierr = PetscObjectQuery((PetscObject)xlocal,"DA",(PetscObject*)&dac);CHKERRQ(ierr);
+      ierr = PetscObjectQuery((PetscObject)xlocal,"DMDA",(PetscObject*)&dac);CHKERRQ(ierr);
     }
   }
 
@@ -150,10 +150,10 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = VecGetArray(xlocal,&zctx.v);CHKERRQ(ierr);
 
   /* get coordinates of nodes */
-  ierr = DAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   if (!xcoor) {
-    ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRQ(ierr);
-    ierr = DAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
+    ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRQ(ierr);
+    ierr = DMDAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   }
 
   /*
@@ -165,22 +165,22 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = VecStrideMax(xcoor,1,PETSC_NULL,&ymax);CHKERRQ(ierr);
   coors[0] = xmin - .05*(xmax- xmin); coors[2] = xmax + .05*(xmax - xmin);
   coors[1] = ymin - .05*(ymax- ymin); coors[3] = ymax + .05*(ymax - ymin);
-  ierr = PetscInfo4(da,"Preparing DA 2d contour plot coordinates %G %G %G %G\n",coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
+  ierr = PetscInfo4(da,"Preparing DMDA 2d contour plot coordinates %G %G %G %G\n",coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
 
   /*
        get local ghosted version of coordinates 
   */
   ierr = PetscObjectQuery((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject*)&xcoorl);CHKERRQ(ierr);
   if (!xcoorl) {
-    /* create DA to get local version of graphics */
-    ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,zctx.m,zctx.n,2,1,lx,ly,&dag);CHKERRQ(ierr); 
-    ierr = PetscInfo(dag,"Creating auxilary DA for managing graphics coordinates ghost points\n");CHKERRQ(ierr);
+    /* create DMDA to get local version of graphics */
+    ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,2,1,lx,ly,&dag);CHKERRQ(ierr); 
+    ierr = PetscInfo(dag,"Creating auxilary DMDA for managing graphics coordinates ghost points\n");CHKERRQ(ierr);
     ierr = DMCreateLocalVector(dag,&xcoorl);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl);CHKERRQ(ierr);
     ierr = DMDestroy(dag);CHKERRQ(ierr);/* dereference dag */
     ierr = PetscObjectDereference((PetscObject)xcoorl);CHKERRQ(ierr);
   } else {
-    ierr = PetscObjectQuery((PetscObject)xcoorl,"DA",(PetscObject*)&dag);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject)xcoorl,"DMDA",(PetscObject*)&dag);CHKERRQ(ierr);
   }
   ierr = DMGlobalToLocalBegin(dag,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dag,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
@@ -189,9 +189,9 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   /*
         Get information about size of area each processor must do graphics for
   */
-  ierr = DAGetInfo(dac,0,&M,&N,0,0,0,0,&zctx.step,0,&periodic,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(dac,&igstart,&jgstart,0,&zctx.m,&zctx.n,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(dac,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dac,0,&M,&N,0,0,0,0,&zctx.step,0,&periodic,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(dac,&igstart,&jgstart,0,&zctx.m,&zctx.n,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(dac,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-draw_contour_grid",&zctx.showgrid,PETSC_NULL);CHKERRQ(ierr);
 
@@ -225,13 +225,13 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     if (!rank) {
       const char *title;
 
-      ierr = DAGetFieldName(da,zctx.k,&title);CHKERRQ(ierr);
+      ierr = DMDAGetFieldName(da,zctx.k,&title);CHKERRQ(ierr);
       if (title) {
         ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);
       }
     }
     ierr = PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
-    ierr = PetscInfo2(da,"DA 2d contour plot min %G max %G\n",zctx.min,zctx.max);CHKERRQ(ierr);
+    ierr = PetscInfo2(da,"DMDA 2d contour plot min %G max %G\n",zctx.min,zctx.max);CHKERRQ(ierr);
 
     ierr = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
     if (popup) {ierr = PetscDrawScalePopup(popup,zctx.min,zctx.max);CHKERRQ(ierr);}
@@ -272,8 +272,8 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
+  ierr = PetscObjectQuery((PetscObject)xin,"DMDA",(PetscObject*)&da);CHKERRQ(ierr);
+  if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
 
   /* Create the dataspace for the dataset */
   dim       = PetscHDF5IntCast(da->dim + ((da->w == 1) ? 0 : 1));
@@ -350,8 +350,8 @@ EXTERN PetscErrorCode VecView_MPI_Draw_DA1d(Vec,PetscViewer);
 
 #if defined(PETSC_HAVE_MPIIO)
 #undef __FUNCT__  
-#define __FUNCT__ "DAArrayMPIIO"
-static PetscErrorCode DAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool  write)
+#define __FUNCT__ "DMDAArrayMPIIO"
+static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool  write)
 {
   PetscErrorCode    ierr;
   MPI_File          mfdes;
@@ -371,7 +371,7 @@ static PetscErrorCode DAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool  w
     type = tr[0];
     rows = tr[1];
     if (type != VEC_FILE_CLASSID) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Not vector next in file");
-    if (rows != vecrows) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_SIZ,"Vector in file not same size as DA vector");
+    if (rows != vecrows) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_SIZ,"Vector in file not same size as DMDA vector");
   } else {
     tr[0] = VEC_FILE_CLASSID;
     tr[1] = vecrows;
@@ -419,20 +419,20 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
   const char     *prefix;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
+  ierr = PetscObjectQuery((PetscObject)xin,"DMDA",(PetscObject*)&da);CHKERRQ(ierr);
+  if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HDF5)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
 #endif
   if (isdraw) {
-    ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
     if (dim == 1) {
       ierr = VecView_MPI_Draw_DA1d(xin,viewer);CHKERRQ(ierr);
     } else if (dim == 2) {
       ierr = VecView_MPI_Draw_DA2d(xin,viewer);CHKERRQ(ierr);
     } else {
-      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Cannot graphically view vector associated with this dimensional DA %D",dim);
+      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Cannot graphically view vector associated with this dimensional DMDA %D",dim);
     }
 #if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {
@@ -446,7 +446,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
     if (isbinary) {
       ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
       if (isMPIIO) {
-       ierr = DAArrayMPIIO(da,viewer,xin,PETSC_TRUE);CHKERRQ(ierr);
+       ierr = DMDAArrayMPIIO(da,viewer,xin,PETSC_TRUE);CHKERRQ(ierr);
        PetscFunctionReturn(0);
       }
     }
@@ -454,10 +454,10 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
     
     /* call viewer on natural ordering */
     ierr = PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix);CHKERRQ(ierr);
-    ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
+    ierr = DMDACreateNaturalVector(da,&natural);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,prefix);CHKERRQ(ierr);
-    ierr = DAGlobalToNaturalBegin(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
-    ierr = DAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
+    ierr = DMDAGlobalToNaturalBegin(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
+    ierr = DMDAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)natural,((PetscObject)xin)->name);CHKERRQ(ierr);
     ierr = VecView(natural,viewer);CHKERRQ(ierr);
     ierr = VecDestroy(natural);CHKERRQ(ierr);
@@ -489,7 +489,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)xin,"DMDA",(PetscObject*)&da);CHKERRQ(ierr);
 
   /* Create the dataspace for the dataset */
   dim       = PetscHDF5IntCast(dd->dim + ((dd->w == 1) ? 0 : 1));
@@ -571,28 +571,28 @@ PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
 #endif
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)xin,"DMDA",(PetscObject*)&da);CHKERRQ(ierr);
   dd   = (DM_DA*)da->data;
 #if defined(PETSC_HAVE_MPIIO)
   ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
   if (isMPIIO) {
-    ierr = DAArrayMPIIO(da,viewer,xin,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMDAArrayMPIIO(da,viewer,xin,PETSC_FALSE);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 #endif
 
   ierr = PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix);CHKERRQ(ierr);
-  ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
+  ierr = DMDACreateNaturalVector(da,&natural);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)natural,((PetscObject)xin)->name);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,prefix);CHKERRQ(ierr);
   ierr = VecLoad_Binary(natural,viewer);CHKERRQ(ierr);
-  ierr = DANaturalToGlobalBegin(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
-  ierr = DANaturalToGlobalEnd(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
+  ierr = DMDANaturalToGlobalBegin(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
+  ierr = DMDANaturalToGlobalEnd(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
   ierr = VecDestroy(natural);CHKERRQ(ierr);
-  ierr = PetscInfo(xin,"Loading vector from natural ordering into DA\n");CHKERRQ(ierr);
+  ierr = PetscInfo(xin,"Loading vector from natural ordering into DMDA\n");CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(((PetscObject)xin)->prefix,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
   if (flag && bs != dd->w) {
-    ierr = PetscInfo2(xin,"Block size in file %D not equal to DA's dof %D\n",bs,dd->w);CHKERRQ(ierr);
+    ierr = PetscInfo2(xin,"Block size in file %D not equal to DMDA's dof %D\n",bs,dd->w);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -610,8 +610,8 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoad_Default_DA(Vec xin, PetscViewer viewer)
 #endif
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
+  ierr = PetscObjectQuery((PetscObject)xin,"DMDA",(PetscObject*)&da);CHKERRQ(ierr);
+  if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
 
 #if defined(PETSC_HAVE_HDF5)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);

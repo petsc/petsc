@@ -1248,14 +1248,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesRow(Mat mat,PetscInt row,const Pet
    MatSetValuesStencil() uses 0-based row and column numbers in Fortran 
    as well as in C.
 
-   For setting/accessing vector values via array coordinates you can use the DAVecGetArray() routine
+   For setting/accessing vector values via array coordinates you can use the DMDAVecGetArray() routine
 
    In order to use this routine you must either obtain the matrix with DMGetMatrix()
    or call MatSetLocalToGlobalMapping() and MatSetStencil() first.
 
    The columns and rows in the stencil passed in MUST be contained within the 
-   ghost region of the given process as set with DACreateXXX() or MatSetStencil(). For example,
-   if you create a DA with an overlap of one grid level and on a particular process its first
+   ghost region of the given process as set with DMDACreateXXX() or MatSetStencil(). For example,
+   if you create a DMDA with an overlap of one grid level and on a particular process its first
    local nonghost x logical coordinate is 6 (so its first ghost x logical coordinate is 5) the
    first i index you can use in your column and row indices in MatSetStencil() is 5.
 
@@ -1270,7 +1270,7 @@ $    idxm(MatStencil_c,1) = c
  
    For periodic boundary conditions use negative indices for values to the left (below 0; that are to be 
    obtained by wrapping values from right edge). For values to the right of the last entry using that index plus one
-   etc to obtain values that obtained by wrapping the values from the left edge. This does not work for the DA_NONPERIODIC
+   etc to obtain values that obtained by wrapping the values from the left edge. This does not work for the DMDA_NONPERIODIC
    wrap.
 
    For indices that don't mean anything for your case (like the k index when working in 2d) or the c index when you have
@@ -1288,7 +1288,7 @@ $    idxm(MatStencil_c,1) = c
    Concepts: matrices^putting entries in
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
-          MatSetValues(), MatSetValuesBlockedStencil(), MatSetStencil(), DMGetMatrix(), DAVecGetArray(), MatStencil
+          MatSetValues(), MatSetValuesBlockedStencil(), MatSetStencil(), DMGetMatrix(), DMDAVecGetArray(), MatStencil
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],PetscInt n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
 {
@@ -1368,14 +1368,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesStencil(Mat mat,PetscInt m,const M
    MatSetValuesBlockedStencil() uses 0-based row and column numbers in Fortran 
    as well as in C.
 
-   For setting/accessing vector values via array coordinates you can use the DAVecGetArray() routine
+   For setting/accessing vector values via array coordinates you can use the DMDAVecGetArray() routine
 
    In order to use this routine you must either obtain the matrix with DMGetMatrix()
    or call MatSetBlockSize(), MatSetLocalToGlobalMapping() and MatSetStencil() first.
 
    The columns and rows in the stencil passed in MUST be contained within the 
-   ghost region of the given process as set with DACreateXXX() or MatSetStencil(). For example,
-   if you create a DA with an overlap of one grid level and on a particular process its first
+   ghost region of the given process as set with DMDACreateXXX() or MatSetStencil(). For example,
+   if you create a DMDA with an overlap of one grid level and on a particular process its first
    local nonghost x logical coordinate is 6 (so its first ghost x logical coordinate is 5) the
    first i index you can use in your column and row indices in MatSetStencil() is 5.
 
@@ -1400,7 +1400,7 @@ $    idxm(MatStencil_k,1) = k
    Concepts: matrices^putting entries in
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
-          MatSetValues(), MatSetValuesStencil(), MatSetStencil(), DMGetMatrix(), DAVecGetArray(), MatStencil,
+          MatSetValues(), MatSetValuesStencil(), MatSetStencil(), DMGetMatrix(), DMDAVecGetArray(), MatStencil,
           MatSetBlockSize(), MatSetLocalToGlobalMapping()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil idxm[],PetscInt n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
@@ -5309,7 +5309,7 @@ $    idxm(MatStencil_c,1) = c
 
    For periodic boundary conditions use negative indices for values to the left (below 0; that are to be 
    obtained by wrapping values from right edge). For values to the right of the last entry using that index plus one
-   etc to obtain values that obtained by wrapping the values from the left edge. This does not work for the DA_NONPERIODIC
+   etc to obtain values that obtained by wrapping the values from the left edge. This does not work for the DMDA_NONPERIODIC
    wrap.
 
    For indices that don't mean anything for your case (like the k index when working in 2d) or the c index when you have

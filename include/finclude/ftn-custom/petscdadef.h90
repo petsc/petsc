@@ -4,9 +4,9 @@
       type DM
         PetscFortranAddr:: v
       end type DM
-      type DA
+      type DMDA
         PetscFortranAddr:: v
-      end type DA
+      end type DMDA
       type ADDA
         PetscFortranAddr:: v
       end type ADDA

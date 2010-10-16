@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    = zdmf.o
 OBJSF    = 
 LIBBASE  = libpetscdm
-MANSEC   = DA
+MANSEC   = DMDA
 LOCDIR   = src/dm/interface/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables

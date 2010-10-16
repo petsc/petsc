@@ -412,7 +412,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFGetType(PF pf,const PFType *type)
 
 .keywords: PF, set, method, type
 
-.seealso: PFSet(), PFRegisterDynamic(), PFCreate(), DACreatePF()
+.seealso: PFSet(), PFRegisterDynamic(), PFCreate(), DMDACreatePF()
 
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF pf,const PFType type,void *ctx)

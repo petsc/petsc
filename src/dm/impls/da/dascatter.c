@@ -8,12 +8,12 @@
 EXTERN PetscErrorCode DMDALocalToLocalCreate(DM);
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetScatter"
+#define __FUNCT__ "DMDAGetScatter"
 /*@C
-   DAGetScatter - Gets the local-to-global, local-to-global, and 
+   DMDAGetScatter - Gets the local-to-global, local-to-global, and 
    local-to-local vector scatter contexts for a distributed array.
 
-   Collective on DA
+   Collective on DMDA
 
    Input Parameter:
 .  da - the distributed array
@@ -34,7 +34,7 @@ EXTERN PetscErrorCode DMDALocalToLocalCreate(DM);
 
 .seealso: DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetScatter(DM da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetScatter(DM da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;

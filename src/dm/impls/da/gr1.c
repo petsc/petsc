@@ -1,17 +1,17 @@
 #define PETSCDM_DLL
 
 /* 
-   Plots vectors obtained with DACreate1d()
+   Plots vectors obtained with DMDACreate1d()
 */
 
 #include "petscda.h"      /*I  "petscda.h"   I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetUniformCoordinates"
+#define __FUNCT__ "DMDASetUniformCoordinates"
 /*@
-    DASetUniformCoordinates - Sets a DA coordinates to be a uniform grid
+    DMDASetUniformCoordinates - Sets a DMDA coordinates to be a uniform grid
 
-  Collective on DA
+  Collective on DMDA
 
   Input Parameters:
 +  da - the distributed array object
@@ -21,14 +21,14 @@
 
   Level: beginner
 
-.seealso: DASetCoordinates(), DAGetCoordinates(), DACreate1d(), DACreate2d(), DACreate3d()
+.seealso: DMDASetCoordinates(), DMDAGetCoordinates(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
+PetscErrorCode PETSCDM_DLLEXPORT DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
 {
   MPI_Comm       comm;
   DM             cda;
-  DAPeriodicType periodic;
+  DMDAPeriodicType periodic;
   Vec            xcoor;
   PetscScalar   *coors;
   PetscReal      hx,hy,hz_;
@@ -39,12 +39,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DM da,PetscReal xmin,Pe
   if (xmax <= xmin) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"xmax must be larger than xmin %G %G",xmin,xmax);
 
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = DAGetInfo(da,&dim,&M,&N,&P,0,0,0,0,0,&periodic,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(da,&istart,&jstart,&kstart,&isize,&jsize,&ksize);CHKERRQ(ierr);
-  ierr = DAGetCoordinateDA(da, &cda);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&M,&N,&P,0,0,0,0,0,&periodic,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&istart,&jstart,&kstart,&isize,&jsize,&ksize);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinateDA(da, &cda);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(cda, &xcoor);CHKERRQ(ierr);
   if (dim == 1) {
-    if (periodic == DA_NONPERIODIC) hx = (xmax-xmin)/(M-1);
+    if (periodic == DMDA_NONPERIODIC) hx = (xmax-xmin)/(M-1);
     else                            hx = (xmax-xmin)/M;
     ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
     for (i=0; i<isize; i++) {
@@ -53,9 +53,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DM da,PetscReal xmin,Pe
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 2) {
     if (ymax <= ymin) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %G %G",ymin,ymax);
-    if (DAXPeriodic(periodic)) hx = (xmax-xmin)/(M);
+    if (DMDAXPeriodic(periodic)) hx = (xmax-xmin)/(M);
     else                       hx = (xmax-xmin)/(M-1);
-    if (DAYPeriodic(periodic)) hy = (ymax-ymin)/(N);
+    if (DMDAYPeriodic(periodic)) hy = (ymax-ymin)/(N);
     else                       hy = (ymax-ymin)/(N-1);
     ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
     cnt  = 0;
@@ -69,11 +69,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DM da,PetscReal xmin,Pe
   } else if (dim == 3) {
     if (ymax <= ymin) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %G %G",ymin,ymax);
     if (zmax <= zmin) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"zmax must be larger than zmin %G %G",zmin,zmax);
-    if (DAXPeriodic(periodic)) hx = (xmax-xmin)/(M);
+    if (DMDAXPeriodic(periodic)) hx = (xmax-xmin)/(M);
     else                       hx = (xmax-xmin)/(M-1);
-    if (DAYPeriodic(periodic)) hy = (ymax-ymin)/(N);
+    if (DMDAYPeriodic(periodic)) hy = (ymax-ymin)/(N);
     else                       hy = (ymax-ymin)/(N-1);
-    if (DAZPeriodic(periodic)) hz_ = (zmax-zmin)/(P);
+    if (DMDAZPeriodic(periodic)) hz_ = (zmax-zmin)/(P);
     else                       hz_ = (zmax-zmin)/(P-1);
     ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
     cnt  = 0;
@@ -90,7 +90,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DM da,PetscReal xmin,Pe
   } else {
     SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Cannot create uniform coordinates for this dimension %D\n",dim);
   }
-  ierr = DASetCoordinates(da,xcoor);CHKERRQ(ierr);
+  ierr = DMDASetCoordinates(da,xcoor);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,xcoor);CHKERRQ(ierr);
   ierr = VecDestroy(xcoor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -112,28 +112,28 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   MPI_Comm          comm;
   PetscDrawAxis     axis;
   Vec               xcoor;
-  DAPeriodicType    periodic;
+  DMDAPeriodicType    periodic;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
-  ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
+  ierr = PetscObjectQuery((PetscObject)xin,"DMDA",(PetscObject*)&da);CHKERRQ(ierr);
+  if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
 
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-draw_vec_mark_points",&showpoints,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DAGetInfo(da,0,&N,0,0,0,0,0,&step,0,&periodic,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(da,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&N,0,0,0,0,0,&step,0,&periodic,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xin,&array);CHKERRQ(ierr);
   ierr = VecGetLocalSize(xin,&n);CHKERRQ(ierr);
   n    = n/step;
 
   /* get coordinates of nodes */
-  ierr = DAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   if (!xcoor) {
-    ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,0.0,0.0,0.0);CHKERRQ(ierr);
-    ierr = DAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
+    ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,0.0,0.0,0.0);CHKERRQ(ierr);
+    ierr = DMDAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   }
   ierr = VecGetArrayRead(xcoor,&xg);CHKERRQ(ierr);
 
@@ -186,7 +186,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
       ierr = PetscDrawAxisSetLimits(axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
       ierr = PetscDrawAxisDraw(axis);CHKERRQ(ierr);
       ierr = PetscDrawGetCoordinates(draw,coors,coors+1,coors+2,coors+3);CHKERRQ(ierr);
-      ierr = DAGetFieldName(da,j,&title);CHKERRQ(ierr);
+      ierr = DMDAGetFieldName(da,j,&title);CHKERRQ(ierr);
       if (title) {ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);}
     }
     ierr = MPI_Bcast(coors,4,MPIU_REAL,0,comm);CHKERRQ(ierr);

@@ -3,7 +3,7 @@
 
 int main(int argc, char *argv[]) {
   DM              da, daX, daY;
-  DALocalInfo     info;
+  DMDALocalInfo     info;
   MPI_Comm        commX, commY;
   Vec             basisX, basisY;
   PetscScalar   **arrayX, **arrayY;
@@ -17,31 +17,31 @@ int main(int argc, char *argv[]) {
 
   ierr = PetscInitialize(&argc,&argv,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
-  /* Create 2D DA */
-  ierr = DACreate2d(PETSC_COMM_WORLD, DA_NONPERIODIC, DA_STENCIL_STAR, M, N, PETSC_DECIDE, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
-  /* Create 1D DAs along two directions */
-  ierr = DAGetOwnershipRanges(da, &lx, &ly, PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da, &info);CHKERRQ(ierr);
-  ierr = DAGetProcessorSubsets(da, DA_X, &commX);CHKERRQ(ierr);
-  ierr = DAGetProcessorSubsets(da, DA_Y, &commY);CHKERRQ(ierr);
+  /* Create 2D DMDA */
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_NONPERIODIC, DMDA_STENCIL_STAR, M, N, PETSC_DECIDE, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
+  /* Create 1D DMDAs along two directions */
+  ierr = DMDAGetOwnershipRanges(da, &lx, &ly, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da, &info);CHKERRQ(ierr);
+  ierr = DMDAGetProcessorSubsets(da, DMDA_X, &commX);CHKERRQ(ierr);
+  ierr = DMDAGetProcessorSubsets(da, DMDA_Y, &commY);CHKERRQ(ierr);
   ierr = MPI_Comm_size(commX, &subsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(commX, &subrank);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]X subrank: %d subsize: %d\n", rank, subrank, subsize);
   ierr = MPI_Comm_size(commY, &subsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(commY, &subrank);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]Y subrank: %d subsize: %d\n", rank, subrank, subsize);
-  ierr = DACreate1d(commX, DA_NONPERIODIC, M, dof, 1, lx, &daX);CHKERRQ(ierr);
-  ierr = DACreate1d(commY, DA_NONPERIODIC, N, dof, 1, ly, &daY);CHKERRQ(ierr);
+  ierr = DMDACreate1d(commX, DMDA_NONPERIODIC, M, dof, 1, lx, &daX);CHKERRQ(ierr);
+  ierr = DMDACreate1d(commY, DMDA_NONPERIODIC, N, dof, 1, ly, &daY);CHKERRQ(ierr);
   /* Create 1D vectors for basis functions */
   ierr = DMGetGlobalVector(daX, &basisX);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(daY, &basisY);CHKERRQ(ierr);
   /* Extract basis functions */
-  ierr = DAVecGetArrayDOF(daX, basisX, &arrayX);CHKERRQ(ierr);
-  ierr = DAVecGetArrayDOF(daY, basisY, &arrayY);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayDOF(daX, basisX, &arrayX);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayDOF(daY, basisY, &arrayY);CHKERRQ(ierr);
   //arrayX[i][ndof];
   //arrayY[j][ndof];
-  ierr = DAVecRestoreArrayDOF(daX, basisX, &arrayX);CHKERRQ(ierr);
-  ierr = DAVecRestoreArrayDOF(daY, basisY, &arrayY);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayDOF(daX, basisX, &arrayX);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayDOF(daY, basisY, &arrayY);CHKERRQ(ierr);
   /* Return basis vectors */
   ierr = DMRestoreGlobalVector(daX, &basisX);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(daY, &basisY);CHKERRQ(ierr);

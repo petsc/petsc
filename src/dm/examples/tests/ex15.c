@@ -1,5 +1,5 @@
 
-static char help[] = "Tests DA interpolation.\n\n";
+static char help[] = "Tests DMDA interpolation.\n\n";
 
 #include "petscda.h"
 
@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   Vec            v_c,v_f;
   Mat            I;
   PetscScalar    one = 1.0;
-  DAPeriodicType pt = DA_NONPERIODIC;
+  DMDAPeriodicType pt = DMDA_NONPERIODIC;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
@@ -24,12 +24,12 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-periodic",(PetscBool *)&pt,PETSC_NULL);CHKERRQ(ierr);
 
-  if (pt != DA_NONPERIODIC) {
-    if (dim == 1) pt = DA_XPERIODIC;
-    if (dim == 2) pt = DA_XYPERIODIC;
-    if (dim == 3) pt = DA_XYZPERIODIC;
+  if (pt != DMDA_NONPERIODIC) {
+    if (dim == 1) pt = DMDA_XPERIODIC;
+    if (dim == 2) pt = DMDA_XYPERIODIC;
+    if (dim == 3) pt = DMDA_XYZPERIODIC;
   }
-  if (pt == DA_NONPERIODIC) {
+  if (pt == DMDA_NONPERIODIC) {
     M2   = ratio*(M1-1) + 1;
   } else {
     M2 = ratio*M1;
@@ -37,14 +37,14 @@ int main(int argc,char **argv)
 
   /* Set up the array */ 
   if (dim == 1) {
-    ierr = DACreate1d(PETSC_COMM_WORLD,pt,M1,dof,s,PETSC_NULL,&da_c);CHKERRQ(ierr);
-    ierr = DACreate1d(PETSC_COMM_WORLD,pt,M2,dof,s,PETSC_NULL,&da_f);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,pt,M1,dof,s,PETSC_NULL,&da_c);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,pt,M2,dof,s,PETSC_NULL,&da_f);CHKERRQ(ierr);
   } else if (dim == 2) {
-    ierr = DACreate2d(PETSC_COMM_WORLD,pt,DA_STENCIL_BOX,M1,M1,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,&da_c);CHKERRQ(ierr);
-    ierr = DACreate2d(PETSC_COMM_WORLD,pt,DA_STENCIL_BOX,M2,M2,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,&da_f);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,pt,DMDA_STENCIL_BOX,M1,M1,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,&da_c);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,pt,DMDA_STENCIL_BOX,M2,M2,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,&da_f);CHKERRQ(ierr);
   } else if (dim == 3) {
-    ierr = DACreate3d(PETSC_COMM_WORLD,pt,DA_STENCIL_BOX,M1,M1,M1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,PETSC_NULL,&da_c);CHKERRQ(ierr);
-    ierr = DACreate3d(PETSC_COMM_WORLD,pt,DA_STENCIL_BOX,M2,M2,M2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,PETSC_NULL,&da_f);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,pt,DMDA_STENCIL_BOX,M1,M1,M1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,PETSC_NULL,&da_c);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,pt,DMDA_STENCIL_BOX,M2,M2,M2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,PETSC_NULL,&da_f);CHKERRQ(ierr);
   }
 
   ierr = DMCreateGlobalVector(da_c,&v_c);CHKERRQ(ierr);

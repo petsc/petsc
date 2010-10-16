@@ -203,11 +203,11 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs,const PetscInt *
 
     Notes:
     This only makes sense for multicomponent problems using scalar matrix formats (AIJ).
-    See DASetBlockFills() for example usage.
+    See DMDASetBlockFills() for example usage.
 
     Level: advanced
 
-.seealso DMSlicedGetMatrix(), DASetBlockFills()
+.seealso DMSlicedGetMatrix(), DMDASetBlockFills()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMSlicedSetBlockFills(DM dm,const PetscInt *dfill,const PetscInt *ofill)
 {
@@ -344,7 +344,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSlicedGetGlobalIndices(DM dm,PetscInt *idx[])
 }
 
 
-/* Explanation of the missing functions for DA-style handling of the local vector:
+/* Explanation of the missing functions for DMDA-style handling of the local vector:
 
    DMSlicedCreateLocalVector()
    DMSlicedGlobalToLocalBegin()
@@ -352,13 +352,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSlicedGetGlobalIndices(DM dm,PetscInt *idx[])
 
  There is no way to get the global form from a local form, so DMSlicedCreateLocalVector() is a memory leak without
  external accounting for the global vector.  Also, DMSliced intends the user to work with the VecGhost interface since the
- ghosts are already ordered after the owned entries.  Contrast this to a DA where the local vector has a special
+ ghosts are already ordered after the owned entries.  Contrast this to a DMDA where the local vector has a special
  ordering described by the structured grid, hence it cannot share memory with the global form.  For this reason, users
  of DMSliced should work with the global vector and use
 
    VecGhostGetLocalForm(), VecGhostRestoreLocalForm()
    VecGhostUpdateBegin(), VecGhostUpdateEnd()
 
- rather than the missing DA-style functions.  This is conceptually simpler and offers better performance than is
- possible with the DA-style interface.
+ rather than the missing DMDA-style functions.  This is conceptually simpler and offers better performance than is
+ possible with the DMDA-style interface.
 */

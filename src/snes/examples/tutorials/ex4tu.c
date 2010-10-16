@@ -2,11 +2,11 @@
 
 static char help[] = "Nonlinear PDE in 2d.\n\
 We solve the Lane-Emden equation in a 2D rectangular\n\
-domain, using distributed arrays (DAs) to partition the parallel grid.\n\n";
+domain, using distributed arrays (DMDAs) to partition the parallel grid.\n\n";
 
 /*T
    Concepts: SNES^parallel Lane-Emden example
-   Concepts: DA^using distributed arrays;
+   Concepts: DMDA^using distributed arrays;
    Processors: n
 T*/
 
@@ -26,7 +26,7 @@ T*/
   ------------------------------------------------------------------------- */
 
 /* 
-   Include "petscda.h" so that we can use distributed arrays (DAs).
+   Include "petscda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -56,10 +56,10 @@ typedef struct {
    User-defined routines
 */
 extern PetscErrorCode FormInitialGuess(DMMG,Vec);
-extern PetscErrorCode FormFunctionLocal(DALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
-extern PetscErrorCode FormFunctionLocali(DALocalInfo*,MatStencil*,PetscScalar**,PetscScalar*,AppCtx*);
-extern PetscErrorCode FormFunctionLocali4(DALocalInfo*,MatStencil*,PetscScalar**,PetscScalar*,AppCtx*);
-extern PetscErrorCode FormJacobianLocal(DALocalInfo*,PetscScalar**,Mat,AppCtx*);
+extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
+extern PetscErrorCode FormFunctionLocali(DMDALocalInfo*,MatStencil*,PetscScalar**,PetscScalar*,AppCtx*);
+extern PetscErrorCode FormFunctionLocali4(DMDALocalInfo*,MatStencil*,PetscScalar**,PetscScalar*,AppCtx*);
+extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,AppCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -103,12 +103,12 @@ comm = PETSC_COMM_WORLD;
       Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
       for principal unknowns (x) and governing residuals (f)
     */
-    ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
     
     ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
     ierr = DMDestroy(da);CHKERRQ(ierr);
 
-    ierr = DAGetInfo(DMMGGetDM(dmmg),0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+    ierr = DMDAGetInfo(DMMGGetDM(dmmg),0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"mx = %d, my= %d\n",
 		       mx,my);CHKERRQ(ierr);
@@ -186,7 +186,7 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
   PetscScalar    **x;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
  
   lambda = user->lambda;
@@ -205,15 +205,15 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = DAVecGetArray(da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
 
   /*
-     Get local grid boundaries (for 2-dimensional DA):
+     Get local grid boundaries (for 2-dimensional DMDA):
        xs, ys   - starting grid indices (no ghost points)
        xm, ym   - widths of local grid (no ghost points)
 
   */
-  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -234,7 +234,7 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
   /*
      Restore vector
   */
-  ierr = DAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -248,7 +248,7 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
        Process adiC(36): FormFunctionLocal nonlinearResidual FormFunctionLocali FormFunctionLocali4
 
  */
-PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
+PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
 
 {
   PetscScalar    uLocal[4];
@@ -365,7 +365,7 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocali"
 
-PetscErrorCode FormFunctionLocali(DALocalInfo *info,MatStencil *st,PetscScalar **x,PetscScalar *f,AppCtx *user)
+PetscErrorCode FormFunctionLocali(DMDALocalInfo *info,MatStencil *st,PetscScalar **x,PetscScalar *f,AppCtx *user)
 {
   PetscScalar    uLocal[4];
   PetscScalar    rLocal[4];
@@ -532,7 +532,7 @@ PetscErrorCode FormFunctionLocali(DALocalInfo *info,MatStencil *st,PetscScalar *
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocali4"
-PetscErrorCode FormFunctionLocali4(DALocalInfo *info,MatStencil *st,PetscScalar **x,PetscScalar *f,AppCtx *user)
+PetscErrorCode FormFunctionLocali4(DMDALocalInfo *info,MatStencil *st,PetscScalar **x,PetscScalar *f,AppCtx *user)
 { 
   PetscScalar    uLocal[4],fLocal[5][5];
   PetscScalar    rLocal[4];

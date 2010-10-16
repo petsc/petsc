@@ -3,49 +3,49 @@
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetDim"
+#define __FUNCT__ "DMDASetDim"
 /*@
-  DASetDim - Sets the dimension
+  DMDASetDim - Sets the dimension
 
-  Collective on DA
+  Collective on DMDA
 
   Input Parameters:
-+ da - the DA
++ da - the DMDA
 - dim - the dimension (or PETSC_DECIDE)
 
   Level: intermediate
 
-.seealso: DaGetDim(), DASetSizes()
+.seealso: DaGetDim(), DMDASetSizes()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetDim(DM da, PetscInt dim)
+PetscErrorCode PETSCDM_DLLEXPORT DMDASetDim(DM da, PetscInt dim)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
-  if (dd->dim > 0 && dim != dd->dim) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot change DA dim from %D after it was set to %D",dd->dim,dim);
+  if (dd->dim > 0 && dim != dd->dim) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot change DMDA dim from %D after it was set to %D",dd->dim,dim);
   dd->dim = dim;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetSizes"
+#define __FUNCT__ "DMDASetSizes"
 /*@
-  DASetSizes - Sets the global sizes
+  DMDASetSizes - Sets the global sizes
 
-  Logically Collective on DA
+  Logically Collective on DMDA
 
   Input Parameters:
-+ da - the DA
++ da - the DMDA
 . M - the global X size (or PETSC_DECIDE)
 . N - the global Y size (or PETSC_DECIDE)
 - P - the global Z size (or PETSC_DECIDE)
 
   Level: intermediate
 
-.seealso: DAGetSize(), PetscSplitOwnership()
+.seealso: DMDAGetSize(), PetscSplitOwnership()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
+PetscErrorCode PETSCDM_DLLEXPORT DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -62,23 +62,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetSizes(DM da, PetscInt M, PetscInt N, Petsc
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetNumProcs"
+#define __FUNCT__ "DMDASetNumProcs"
 /*@
-  DASetNumProcs - Sets the number of processes in each dimension
+  DMDASetNumProcs - Sets the number of processes in each dimension
 
-  Logically Collective on DA
+  Logically Collective on DMDA
 
   Input Parameters:
-+ da - the DA
++ da - the DMDA
 . m - the number of X procs (or PETSC_DECIDE)
 . n - the number of Y procs (or PETSC_DECIDE)
 - p - the number of Z procs (or PETSC_DECIDE)
 
   Level: intermediate
 
-.seealso: DASetSizes(), DAGetSize(), PetscSplitOwnership()
+.seealso: DMDASetSizes(), DMDAGetSize(), PetscSplitOwnership()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
+PetscErrorCode PETSCDM_DLLEXPORT DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -94,22 +94,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetNumProcs(DM da, PetscInt m, PetscInt n, Pe
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetPeriodicity"
+#define __FUNCT__ "DMDASetPeriodicity"
 /*@
-  DASetPeriodicity - Sets the type of periodicity
+  DMDASetPeriodicity - Sets the type of periodicity
 
   Not collective
 
   Input Parameter:
-+ da    - The DA
-- ptype - One of DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_ZPERIODIC, DA_XYPERIODIC, DA_XZPERIODIC, DA_YZPERIODIC, or DA_XYZPERIODIC
++ da    - The DMDA
+- ptype - One of DMDA_NONPERIODIC, DMDA_XPERIODIC, DMDA_YPERIODIC, DMDA_ZPERIODIC, DMDA_XYPERIODIC, DMDA_XZPERIODIC, DMDA_YZPERIODIC, or DMDA_XYZPERIODIC
 
   Level: intermediate
 
 .keywords:  distributed array, periodicity
-.seealso: DACreate(), DMDestroy(), DA, DAPeriodicType
+.seealso: DMDACreate(), DMDestroy(), DMDA, DMDAPeriodicType
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetPeriodicity(DM da, DAPeriodicType ptype)
+PetscErrorCode PETSCDM_DLLEXPORT DMDASetPeriodicity(DM da, DMDAPeriodicType ptype)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -120,22 +120,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetPeriodicity(DM da, DAPeriodicType ptype)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetDof"
+#define __FUNCT__ "DMDASetDof"
 /*@
-  DASetDof - Sets the number of degrees of freedom per vertex
+  DMDASetDof - Sets the number of degrees of freedom per vertex
 
   Not collective
 
   Input Parameter:
-+ da  - The DA
++ da  - The DMDA
 - dof - Number of degrees of freedom
 
   Level: intermediate
 
 .keywords:  distributed array, degrees of freedom
-.seealso: DACreate(), DMDestroy(), DA
+.seealso: DMDACreate(), DMDestroy(), DMDA
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetDof(DM da, int dof)
+PetscErrorCode PETSCDM_DLLEXPORT DMDASetDof(DM da, int dof)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -146,22 +146,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetDof(DM da, int dof)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetStencilType"
+#define __FUNCT__ "DMDASetStencilType"
 /*@
-  DASetStencilType - Sets the type of the communication stencil
+  DMDASetStencilType - Sets the type of the communication stencil
 
-  Logically Collective on DA
+  Logically Collective on DMDA
 
   Input Parameter:
-+ da    - The DA
-- stype - The stencil type, use either DA_STENCIL_BOX or DA_STENCIL_STAR.
++ da    - The DMDA
+- stype - The stencil type, use either DMDA_STENCIL_BOX or DMDA_STENCIL_STAR.
 
   Level: intermediate
 
 .keywords:  distributed array, stencil
-.seealso: DACreate(), DMDestroy(), DA
+.seealso: DMDACreate(), DMDestroy(), DMDA
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetStencilType(DM da, DAStencilType stype)
+PetscErrorCode PETSCDM_DLLEXPORT DMDASetStencilType(DM da, DMDAStencilType stype)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -173,22 +173,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetStencilType(DM da, DAStencilType stype)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetStencilWidth"
+#define __FUNCT__ "DMDASetStencilWidth"
 /*@
-  DASetStencilWidth - Sets the width of the communication stencil
+  DMDASetStencilWidth - Sets the width of the communication stencil
 
-  Logically Collective on DA
+  Logically Collective on DMDA
 
   Input Parameter:
-+ da    - The DA
++ da    - The DMDA
 - width - The stencil width
 
   Level: intermediate
 
 .keywords:  distributed array, stencil
-.seealso: DACreate(), DMDestroy(), DA
+.seealso: DMDACreate(), DMDestroy(), DMDA
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DM da, PetscInt width)
+PetscErrorCode PETSCDM_DLLEXPORT DMDASetStencilWidth(DM da, PetscInt width)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -200,8 +200,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DM da, PetscInt width)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DACheckOwnershipRanges_Private"
-static PetscErrorCode DACheckOwnershipRanges_Private(DM da,PetscInt M,PetscInt m,const PetscInt lx[])
+#define __FUNCT__ "DMDACheckOwnershipRanges_Private"
+static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da,PetscInt M,PetscInt m,const PetscInt lx[])
 {
   PetscInt i,sum;
 
@@ -213,14 +213,14 @@ static PetscErrorCode DACheckOwnershipRanges_Private(DM da,PetscInt M,PetscInt m
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetOwnershipRanges"
+#define __FUNCT__ "DMDASetOwnershipRanges"
 /*@
-  DASetOwnershipRanges - Sets the number of nodes in each direction on each process
+  DMDASetOwnershipRanges - Sets the number of nodes in each direction on each process
 
-  Logically Collective on DA
+  Logically Collective on DMDA
 
   Input Parameter:
-+ da - The DA
++ da - The DMDA
 . lx - array containing number of nodes in the X direction on each process, or PETSC_NULL. If non-null, must be of length da->m
 . ly - array containing number of nodes in the Y direction on each process, or PETSC_NULL. If non-null, must be of length da->n
 - lz - array containing number of nodes in the Z direction on each process, or PETSC_NULL. If non-null, must be of length da->p.
@@ -228,9 +228,9 @@ static PetscErrorCode DACheckOwnershipRanges_Private(DM da,PetscInt M,PetscInt m
   Level: intermediate
 
 .keywords:  distributed array
-.seealso: DACreate(), DMDestroy(), DA
+.seealso: DMDACreate(), DMDestroy(), DMDA
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetOwnershipRanges(DM da, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[])
+PetscErrorCode PETSCDM_DLLEXPORT DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[])
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -239,7 +239,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetOwnershipRanges(DM da, const PetscInt lx[]
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (lx) {
     if (dd->m < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
-    ierr = DACheckOwnershipRanges_Private(da,dd->M,dd->m,lx);CHKERRQ(ierr);
+    ierr = DMDACheckOwnershipRanges_Private(da,dd->M,dd->m,lx);CHKERRQ(ierr);
     if (!dd->lx) {
       ierr = PetscMalloc(dd->m*sizeof(PetscInt), &dd->lx);CHKERRQ(ierr);
     }
@@ -247,7 +247,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetOwnershipRanges(DM da, const PetscInt lx[]
   }
   if (ly) {
     if (dd->n < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
-    ierr = DACheckOwnershipRanges_Private(da,dd->N,dd->n,ly);CHKERRQ(ierr);
+    ierr = DMDACheckOwnershipRanges_Private(da,dd->N,dd->n,ly);CHKERRQ(ierr);
     if (!dd->ly) {
       ierr = PetscMalloc(dd->n*sizeof(PetscInt), &dd->ly);CHKERRQ(ierr);
     }
@@ -255,7 +255,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetOwnershipRanges(DM da, const PetscInt lx[]
   }
   if (lz) {
     if (dd->p < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
-    ierr = DACheckOwnershipRanges_Private(da,dd->P,dd->p,lz);CHKERRQ(ierr);
+    ierr = DMDACheckOwnershipRanges_Private(da,dd->P,dd->p,lz);CHKERRQ(ierr);
     if (!dd->lz) {
       ierr = PetscMalloc(dd->p*sizeof(PetscInt), &dd->lz);CHKERRQ(ierr);
     }
@@ -265,11 +265,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetOwnershipRanges(DM da, const PetscInt lx[]
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DACreateOwnershipRanges"
+#define __FUNCT__ "DMDACreateOwnershipRanges"
 /*
- Ensure that da->lx, ly, and lz exist.  Collective on DA.
+ Ensure that da->lx, ly, and lz exist.  Collective on DMDA.
 */
-PetscErrorCode PETSCDM_DLLEXPORT DACreateOwnershipRanges(DM da)
+PetscErrorCode PETSCDM_DLLEXPORT DMDACreateOwnershipRanges(DM da)
 {
   DM_DA          *dd = (DM_DA*)da->data;
   PetscErrorCode ierr;
@@ -280,20 +280,20 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateOwnershipRanges(DM da)
   PetscFunctionBegin;
   if (!dd->lx) {
     ierr = PetscMalloc(dd->m*sizeof(PetscInt),&dd->lx);CHKERRQ(ierr);
-    ierr = DAGetProcessorSubset(da,DA_X,dd->xs,&comm);CHKERRQ(ierr);
+    ierr = DMDAGetProcessorSubset(da,DMDA_X,dd->xs,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     n = (dd->xe-dd->xs)/dd->w;
     ierr = MPI_Allgather(&n,1,MPIU_INT,dd->lx,1,MPIU_INT,comm);CHKERRQ(ierr);
   }
   if (dd->dim > 1 && !dd->ly) {
     ierr = PetscMalloc(dd->n*sizeof(PetscInt),&dd->ly);CHKERRQ(ierr);
-    ierr = DAGetProcessorSubset(da,DA_Y,dd->ys,&comm);CHKERRQ(ierr);
+    ierr = DMDAGetProcessorSubset(da,DMDA_Y,dd->ys,&comm);CHKERRQ(ierr);
     n = dd->ye-dd->ys;
     ierr = MPI_Allgather(&n,1,MPIU_INT,dd->ly,1,MPIU_INT,comm);CHKERRQ(ierr);
   }
   if (dd->dim > 2 && !dd->lz) {
     ierr = PetscMalloc(dd->p*sizeof(PetscInt),&dd->lz);CHKERRQ(ierr);
-    ierr = DAGetProcessorSubset(da,DA_Z,dd->zs,&comm);CHKERRQ(ierr);
+    ierr = DMDAGetProcessorSubset(da,DMDA_Z,dd->zs,&comm);CHKERRQ(ierr);
     n = dd->ze-dd->zs;
     ierr = MPI_Allgather(&n,1,MPIU_INT,dd->lz,1,MPIU_INT,comm);CHKERRQ(ierr);
   }
@@ -301,26 +301,26 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateOwnershipRanges(DM da)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetInterpolationType"
+#define __FUNCT__ "DMDASetInterpolationType"
 /*@
-       DASetInterpolationType - Sets the type of interpolation that will be 
+       DMDASetInterpolationType - Sets the type of interpolation that will be 
           returned by DMGetInterpolation()
 
-   Logically Collective on DA
+   Logically Collective on DMDA
 
    Input Parameter:
 +  da - initial distributed array
-.  ctype - DA_Q1 and DA_Q0 are currently the only supported forms
+.  ctype - DMDA_Q1 and DMDA_Q0 are currently the only supported forms
 
    Level: intermediate
 
-   Notes: you should call this on the coarser of the two DAs you pass to DMGetInterpolation()
+   Notes: you should call this on the coarser of the two DMDAs you pass to DMGetInterpolation()
 
 .keywords:  distributed array, interpolation
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DMDestroy(), DA, DAInterpolationType
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMDA, DMDAInterpolationType
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetInterpolationType(DM da,DAInterpolationType ctype)
+PetscErrorCode PETSCDM_DLLEXPORT DMDASetInterpolationType(DM da,DMDAInterpolationType ctype)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -333,15 +333,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetInterpolationType(DM da,DAInterpolationTyp
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetNeighbors"
+#define __FUNCT__ "DMDAGetNeighbors"
 /*@C
-      DAGetNeighbors - Gets an array containing the MPI rank of all the current
+      DMDAGetNeighbors - Gets an array containing the MPI rank of all the current
         processes neighbors.
 
     Not Collective
 
    Input Parameter:
-.     da - the DA object
+.     da - the DMDA object
 
    Output Parameters:
 .     ranks - the neighbors ranks, stored with the x index increasing most rapidly.
@@ -349,14 +349,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetInterpolationType(DM da,DAInterpolationTyp
 
    Notes: In 2d the array is of length 9, in 3d of length 27
           Not supported in 1d
-          Do not free the array, it is freed when the DA is destroyed.
+          Do not free the array, it is freed when the DMDA is destroyed.
 
    Fortran Notes: In fortran you must pass in an array of the appropriate length.
 
    Level: intermediate
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetNeighbors(DM da,const PetscMPIInt *ranks[])
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetNeighbors(DM da,const PetscMPIInt *ranks[])
 {
   DM_DA *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
@@ -366,23 +366,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetNeighbors(DM da,const PetscMPIInt *ranks[]
 }
 
 /*@C
-      DASetElementType - Sets the element type to be returned by DMGetElements()
+      DMDASetElementType - Sets the element type to be returned by DMGetElements()
 
     Not Collective
 
    Input Parameter:
-.     da - the DA object
+.     da - the DMDA object
 
    Output Parameters:
-.     etype - the element type, currently either DA_ELEMENT_P1 or ELEMENT_Q1
+.     etype - the element type, currently either DMDA_ELEMENT_P1 or ELEMENT_Q1
 
    Level: intermediate
 
-.seealso: DAElementType, DAGetElementType(), DMGetElements(), DMRestoreElements()
+.seealso: DMDAElementType, DMDAGetElementType(), DMGetElements(), DMRestoreElements()
 @*/
 #undef __FUNCT__
-#define __FUNCT__ "DASetElementType"
-PetscErrorCode PETSCDM_DLLEXPORT DASetElementType(DM da, DAElementType etype)
+#define __FUNCT__ "DMDASetElementType"
+PetscErrorCode PETSCDM_DLLEXPORT DMDASetElementType(DM da, DMDAElementType etype)
 {
   DM_DA          *dd = (DM_DA*)da->data;
   PetscErrorCode ierr;
@@ -400,23 +400,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetElementType(DM da, DAElementType etype)
 }
 
 /*@C
-      DAGetElementType - Gets the element type to be returned by DMGetElements()
+      DMDAGetElementType - Gets the element type to be returned by DMGetElements()
 
     Not Collective
 
    Input Parameter:
-.     da - the DA object
+.     da - the DMDA object
 
    Output Parameters:
-.     etype - the element type, currently either DA_ELEMENT_P1 or ELEMENT_Q1
+.     etype - the element type, currently either DMDA_ELEMENT_P1 or ELEMENT_Q1
 
    Level: intermediate
 
-.seealso: DAElementType, DASetElementType(), DMGetElements(), DMRestoreElements()
+.seealso: DMDAElementType, DMDASetElementType(), DMGetElements(), DMRestoreElements()
 @*/
 #undef __FUNCT__
-#define __FUNCT__ "DAGetElementType"
-PetscErrorCode PETSCDM_DLLEXPORT DAGetElementType(DM da, DAElementType *etype)
+#define __FUNCT__ "DMDAGetElementType"
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetElementType(DM da, DMDAElementType *etype)
 {
   DM_DA *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
@@ -483,14 +483,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRestoreElements(DM dm,PetscInt *n,const Petsc
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetOwnershipRanges"
+#define __FUNCT__ "DMDAGetOwnershipRanges"
 /*@C
-      DAGetOwnershipRanges - Gets the ranges of indices in the x, y and z direction that are owned by each process
+      DMDAGetOwnershipRanges - Gets the ranges of indices in the x, y and z direction that are owned by each process
 
     Not Collective
 
    Input Parameter:
-.     da - the DA object
+.     da - the DMDA object
 
    Output Parameter:
 +     lx - ownership along x direction (optional)
@@ -499,17 +499,17 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRestoreElements(DM dm,PetscInt *n,const Petsc
 
    Level: intermediate
 
-    Note: these correspond to the optional final arguments passed to DACreate(), DACreate2d(), DACreate3d()
+    Note: these correspond to the optional final arguments passed to DMDACreate(), DMDACreate2d(), DMDACreate3d()
 
     In Fortran one must pass in arrays lx, ly, and lz that are long enough to hold the values; the sixth, seventh and
-    eighth arguments from DAGetInfo()
+    eighth arguments from DMDAGetInfo()
 
      In C you should not free these arrays, nor change the values in them. They will only have valid values while the
-    DA they came from still exists (has not been destroyed).
+    DMDA they came from still exists (has not been destroyed).
 
-.seealso: DAGetCorners(), DAGetGhostCorners(), DACreate(), DACreate1d(), DACreate2d(), DACreate3d(), VecGetOwnershipRanges()
+.seealso: DMDAGetCorners(), DMDAGetGhostCorners(), DMDACreate(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), VecGetOwnershipRanges()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRanges(DM da,const PetscInt *lx[],const PetscInt *ly[],const PetscInt *lz[])
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetOwnershipRanges(DM da,const PetscInt *lx[],const PetscInt *ly[],const PetscInt *lz[])
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -522,14 +522,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRanges(DM da,const PetscInt *lx[]
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetRefinementFactor"
+#define __FUNCT__ "DMDASetRefinementFactor"
 /*@
-     DASetRefinementFactor - Set the ratios that the DA grid is refined
+     DMDASetRefinementFactor - Set the ratios that the DMDA grid is refined
 
-    Logically Collective on DA
+    Logically Collective on DMDA
 
   Input Parameters:
-+    da - the DA object
++    da - the DMDA object
 .    refine_x - ratio of fine grid to coarse in x direction (2 by default)
 .    refine_y - ratio of fine grid to coarse in y direction (2 by default)
 -    refine_z - ratio of fine grid to coarse in z direction (2 by default)
@@ -543,9 +543,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRanges(DM da,const PetscInt *lx[]
 
     Notes: Pass PETSC_IGNORE to leave a value unchanged
 
-.seealso: DMRefine(), DAGetRefinementFactor()
+.seealso: DMRefine(), DMDAGetRefinementFactor()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refine_y,PetscInt refine_z)
+PetscErrorCode PETSCDM_DLLEXPORT DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refine_y,PetscInt refine_z)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -562,14 +562,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetRefinementFactor(DM da, PetscInt refine_x,
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetRefinementFactor"
+#define __FUNCT__ "DMDAGetRefinementFactor"
 /*@C
-     DAGetRefinementFactor - Gets the ratios that the DA grid is refined
+     DMDAGetRefinementFactor - Gets the ratios that the DMDA grid is refined
 
     Not Collective
 
   Input Parameter:
-.    da - the DA object
+.    da - the DMDA object
 
   Output Parameters:
 +    refine_x - ratio of fine grid to coarse in x direction (2 by default)
@@ -580,9 +580,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetRefinementFactor(DM da, PetscInt refine_x,
 
     Notes: Pass PETSC_NULL for values you do not need
 
-.seealso: DMRefine(), DASetRefinementFactor()
+.seealso: DMRefine(), DMDASetRefinementFactor()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *refine_y,PetscInt *refine_z)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *refine_y,PetscInt *refine_z)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -595,24 +595,24 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetRefinementFactor(DM da, PetscInt *refine_x
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetGetMatrix"
+#define __FUNCT__ "DMDASetGetMatrix"
 /*@C
-     DASetGetMatrix - Sets the routine used by the DA to allocate a matrix.
+     DMDASetGetMatrix - Sets the routine used by the DMDA to allocate a matrix.
 
-    Logically Collective on DA
+    Logically Collective on DMDA
 
   Input Parameters:
-+    da - the DA object
--    f - the function that allocates the matrix for that specific DA
++    da - the DMDA object
+-    f - the function that allocates the matrix for that specific DMDA
 
   Level: developer
 
-   Notes: See DASetBlockFills() that provides a simple way to provide the nonzero structure for 
+   Notes: See DMDASetBlockFills() that provides a simple way to provide the nonzero structure for 
        the diagonal and off-diagonal blocks of the matrix
 
-.seealso: DMGetMatrix(), DASetBlockFills()
+.seealso: DMGetMatrix(), DMDASetBlockFills()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetGetMatrix(DM da,PetscErrorCode (*f)(DM, const MatType,Mat*))
+PetscErrorCode PETSCDM_DLLEXPORT DMDASetGetMatrix(DM da,PetscErrorCode (*f)(DM, const MatType,Mat*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -672,42 +672,42 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(daref,3);
 
-  if (DAXPeriodic(dd->wrap) || dd->interptype == DA_Q0){
+  if (DMDAXPeriodic(dd->wrap) || dd->interptype == DMDA_Q0){
     M = dd->refine_x*dd->M;
   } else {
     M = 1 + dd->refine_x*(dd->M - 1);
   }
-  if (DAYPeriodic(dd->wrap) || dd->interptype == DA_Q0){
+  if (DMDAYPeriodic(dd->wrap) || dd->interptype == DMDA_Q0){
     N = dd->refine_y*dd->N;
   } else {
     N = 1 + dd->refine_y*(dd->N - 1);
   }
-  if (DAZPeriodic(dd->wrap) || dd->interptype == DA_Q0){
+  if (DMDAZPeriodic(dd->wrap) || dd->interptype == DMDA_Q0){
     P = dd->refine_z*dd->P;
   } else {
     P = 1 + dd->refine_z*(dd->P - 1);
   }
-  ierr = DACreateOwnershipRanges(da);CHKERRQ(ierr);
+  ierr = DMDACreateOwnershipRanges(da);CHKERRQ(ierr);
   if (dd->dim == 3) {
     PetscInt *lx,*ly,*lz;
     ierr = PetscMalloc3(dd->m,PetscInt,&lx,dd->n,PetscInt,&ly,dd->p,PetscInt,&lz);CHKERRQ(ierr);
-    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DAXPeriodic(dd->wrap) || dd->interptype == DA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
-    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DAYPeriodic(dd->wrap) || dd->interptype == DA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
-    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DAZPeriodic(dd->wrap) || dd->interptype == DA_Q0),dd->s,dd->refine_z,dd->p,dd->lz,lz);CHKERRQ(ierr);
-    ierr = DACreate3d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,P,dd->m,dd->n,dd->p,dd->w,dd->s,lx,ly,lz,&da2);CHKERRQ(ierr);
+    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DMDAXPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
+    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DMDAYPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
+    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DMDAZPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_z,dd->p,dd->lz,lz);CHKERRQ(ierr);
+    ierr = DMDACreate3d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,P,dd->m,dd->n,dd->p,dd->w,dd->s,lx,ly,lz,&da2);CHKERRQ(ierr);
     ierr = PetscFree3(lx,ly,lz);CHKERRQ(ierr);
   } else if (dd->dim == 2) {
     PetscInt *lx,*ly;
     ierr = PetscMalloc2(dd->m,PetscInt,&lx,dd->n,PetscInt,&ly);CHKERRQ(ierr);
-    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DAXPeriodic(dd->wrap) || dd->interptype == DA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
-    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DAYPeriodic(dd->wrap) || dd->interptype == DA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
-    ierr = DACreate2d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,dd->m,dd->n,dd->w,dd->s,lx,ly,&da2);CHKERRQ(ierr);
+    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DMDAXPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
+    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DMDAYPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
+    ierr = DMDACreate2d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,dd->m,dd->n,dd->w,dd->s,lx,ly,&da2);CHKERRQ(ierr);
     ierr = PetscFree2(lx,ly);CHKERRQ(ierr);
   } else if (dd->dim == 1) {
     PetscInt *lx;
     ierr = PetscMalloc(dd->m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
-    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DAXPeriodic(dd->wrap) || dd->interptype == DA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
-    ierr = DACreate1d(((PetscObject)da)->comm,dd->wrap,M,dd->w,dd->s,lx,&da2);CHKERRQ(ierr);
+    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DMDAXPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
+    ierr = DMDACreate1d(((PetscObject)da)->comm,dd->wrap,M,dd->w,dd->s,lx,&da2);CHKERRQ(ierr);
     ierr = PetscFree(lx);CHKERRQ(ierr);
   }
   dd2 = (DM_DA*)da2->data;
@@ -752,7 +752,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(daref,3);
 
-  if (DAXPeriodic(dd->wrap) || dd->interptype == DA_Q0){
+  if (DMDAXPeriodic(dd->wrap) || dd->interptype == DMDA_Q0){
     if(dd->refine_x)
       M = dd->M / dd->refine_x;
     else
@@ -763,7 +763,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
     else
       M = dd->M;
   }
-  if (DAYPeriodic(dd->wrap) || dd->interptype == DA_Q0){
+  if (DMDAYPeriodic(dd->wrap) || dd->interptype == DMDA_Q0){
     if(dd->refine_y)
       N = dd->N / dd->refine_y;
     else
@@ -774,7 +774,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
     else
       N = dd->M;
   }
-  if (DAZPeriodic(dd->wrap) || dd->interptype == DA_Q0){
+  if (DMDAZPeriodic(dd->wrap) || dd->interptype == DMDA_Q0){
     if(dd->refine_z)
       P = dd->P / dd->refine_z;
     else
@@ -786,11 +786,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
       P = dd->P;
   }
   if (dd->dim == 3) {
-    ierr = DACreate3d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,P,dd->m,dd->n,dd->p,dd->w,dd->s,0,0,0,&da2);CHKERRQ(ierr);
+    ierr = DMDACreate3d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,P,dd->m,dd->n,dd->p,dd->w,dd->s,0,0,0,&da2);CHKERRQ(ierr);
   } else if (dd->dim == 2) {
-    ierr = DACreate2d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,dd->m,dd->n,dd->w,dd->s,0,0,&da2);CHKERRQ(ierr);
+    ierr = DMDACreate2d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,dd->m,dd->n,dd->w,dd->s,0,0,&da2);CHKERRQ(ierr);
   } else if (dd->dim == 1) {
-    ierr = DACreate1d(((PetscObject)da)->comm,dd->wrap,M,dd->w,dd->s,0,&da2);CHKERRQ(ierr);
+    ierr = DMDACreate1d(((PetscObject)da)->comm,dd->wrap,M,dd->w,dd->s,0,&da2);CHKERRQ(ierr);
   }
   dd2 = (DM_DA*)da2->data;
 
@@ -835,10 +835,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy_DA(DM da,PetscInt nlevels,DM 
   if (nlevels == 0) PetscFunctionReturn(0);
   PetscValidPointer(daf,3);
 
-  /* Get refinement factors, defaults taken from the coarse DA */
+  /* Get refinement factors, defaults taken from the coarse DMDA */
   ierr = PetscMalloc3(nlevels,PetscInt,&refx,nlevels,PetscInt,&refy,nlevels,PetscInt,&refz);CHKERRQ(ierr);
   for (i=0; i<nlevels; i++) {
-    ierr = DAGetRefinementFactor(da,&refx[i],&refy[i],&refz[i]);CHKERRQ(ierr);
+    ierr = DMDAGetRefinementFactor(da,&refx[i],&refy[i],&refz[i]);CHKERRQ(ierr);
   }
   n = nlevels;
   ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_x",refx,&n,PETSC_NULL);CHKERRQ(ierr);
@@ -847,10 +847,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy_DA(DM da,PetscInt nlevels,DM 
   n = nlevels;
   ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_z",refz,&n,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DASetRefinementFactor(da,refx[0],refy[0],refz[0]);CHKERRQ(ierr);
+  ierr = DMDASetRefinementFactor(da,refx[0],refy[0],refz[0]);CHKERRQ(ierr);
   ierr = DMRefine(da,((PetscObject)da)->comm,&daf[0]);CHKERRQ(ierr);
   for (i=1; i<nlevels; i++) {
-    ierr = DASetRefinementFactor(daf[i-1],refx[i],refy[i],refz[i]);CHKERRQ(ierr);
+    ierr = DMDASetRefinementFactor(daf[i-1],refx[i],refy[i],refz[i]);CHKERRQ(ierr);
     ierr = DMRefine(daf[i-1],((PetscObject)da)->comm,&daf[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree3(refx,refy,refz);CHKERRQ(ierr);

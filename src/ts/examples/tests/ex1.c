@@ -73,7 +73,7 @@ int main(int argc,char **argv)
   appctx.norm_2 = 0.0; appctx.norm_max = 0.0;
 
   /* Set up the ghost point communication pattern */ 
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,appctx.M,1,1,PETSC_NULL,&appctx.da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,appctx.M,1,1,PETSC_NULL,&appctx.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(appctx.da,&appctx.global);CHKERRQ(ierr);
   ierr = VecGetLocalSize(appctx.global,&m);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(appctx.da,&appctx.local);CHKERRQ(ierr);

@@ -14,7 +14,7 @@
 !     petscviewer.h - viewers
 !     petscdraw.h   - drawing
 !  In addition, we need the following for use of distributed arrays
-!     petscda.h     - distributed arrays (DAs)
+!     petscda.h     - distributed arrays (DMDAs)
 !  Other include statements may be needed if using additional PETSc
 !  routines in a Fortran program, e.g.,
 !     petscis.h     - index sets

@@ -4,7 +4,7 @@
  *	This is a library of functions to write .info files with matlab code
  *      for interpreting PETSc binary files.
  *
- *	Note all "name" and "DAFieldName" variables must be Matlab-Kosher
+ *	Note all "name" and "DMDAFieldName" variables must be Matlab-Kosher
  *	i.e. no whitespace or illegal characters such as grouping 
  *	operators, quotations, math/boolean operators, etc. 
  * ----------------------------------------------------------------------*/
@@ -146,20 +146,20 @@ PetscErrorCode PetscViewerBinaryMatlabOutputVec(PetscViewer viewer, const char n
 }
 
 /*@C
-  PetscViewerBinaryMatlabOutputVecDA - Output a Vec object associtated with a DA to the viewer and write matlab code
-  to the info file to read a DA's Vec from binary.
+  PetscViewerBinaryMatlabOutputVecDA - Output a Vec object associtated with a DMDA to the viewer and write matlab code
+  to the info file to read a DMDA's Vec from binary.
 
   Input Parameters:
 + viewer - The viewer object
 . name - The name of the field variable to be written
 . vec - The Vec containing the field data to output
-- da - The DA governing layout of Vec
+- da - The DMDA governing layout of Vec
 
   Level: intermediate
 
-  Note: This method requires dof names to have been set using DASetFieldName().
+  Note: This method requires dof names to have been set using DMDASetFieldName().
 
-.seealso: PetscViewerBinaryMatlabOpen(), PetscViewerBinaryMatlabOutputBag(), PetscViewerBinaryMatlabOutputVec(), DASetFieldName()
+.seealso: PetscViewerBinaryMatlabOpen(), PetscViewerBinaryMatlabOutputBag(), PetscViewerBinaryMatlabOutputVec(), DMDASetFieldName()
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryMatlabOutputVecDA"
@@ -175,7 +175,7 @@ PetscErrorCode PetscViewerBinaryMatlabOutputVecDA(PetscViewer viewer, const char
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
-  ierr = DAGetInfo(da,&dim,&ni,&nj,&nk,&pi,&pj,&pk,&dof,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&ni,&nj,&nk,&pi,&pj,&pk,&dof,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecView(vec,viewer);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinaryMatlabOutputVecDA ---%\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%$$ tmp = PetscBinaryRead(fd); \n");CHKERRQ(ierr);
@@ -184,7 +184,7 @@ PetscErrorCode PetscViewerBinaryMatlabOutputVecDA(PetscViewer viewer, const char
   if (dim == 3) { ierr = PetscFPrintf(comm,info,"%%$$ tmp = reshape(tmp,%d,%d,%d,%d);\n",dof,ni,nj,nk);CHKERRQ(ierr); }
 
   for(n=0; n<dof; n++) {
-    ierr = DAGetFieldName(da,n,&fieldname);CHKERRQ(ierr);
+    ierr = DMDAGetFieldName(da,n,&fieldname);CHKERRQ(ierr);
     ierr = PetscStrcmp(fieldname,"",&flg);CHKERRQ(ierr);
     if (!flg) {
       if (dim == 1) { ierr = PetscFPrintf(comm,info,"%%$$ Set.%s.%s = squeeze(tmp(%d,:))';\n",name,fieldname,n+1);CHKERRQ(ierr); }

@@ -11,12 +11,12 @@
 #include "private/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGlobalToNaturalAllCreate"
+#define __FUNCT__ "DMDAGlobalToNaturalAllCreate"
 /*@
-   DAGlobalToNaturalAllCreate - Creates a scatter context that maps from the 
+   DMDAGlobalToNaturalAllCreate - Creates a scatter context that maps from the 
      global vector the entire vector to each processor in natural numbering
 
-   Collective on DA
+   Collective on DMDA
 
    Input Parameter:
 .  da - the distributed array context
@@ -28,10 +28,10 @@
 
 .keywords: distributed array, global to local, begin, coarse problem
 
-.seealso: DAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DACreate2d(), 
-          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DACreateNaturalVector()
+.seealso: DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(), 
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
+PetscErrorCode PETSCDM_DLLEXPORT DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
 {
   PetscErrorCode ierr;
   PetscInt       N;
@@ -43,7 +43,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalAllCreate(DM da,VecScatter *sc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(scatter,2);
-  ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
+  ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
 
   /* create the scatter context */
   ierr = VecCreateMPIWithArray(((PetscObject)da)->comm,dd->Nlocal,PETSC_DETERMINE,0,&global);CHKERRQ(ierr);
@@ -63,12 +63,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalAllCreate(DM da,VecScatter *sc
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DANaturalAllToGlobalCreate"
+#define __FUNCT__ "DMDANaturalAllToGlobalCreate"
 /*@
-   DANaturalAllToGlobalCreate - Creates a scatter context that maps from a copy
+   DMDANaturalAllToGlobalCreate - Creates a scatter context that maps from a copy
      of the entire vector on each processor to its local part in the global vector.
 
-   Collective on DA
+   Collective on DMDA
 
    Input Parameter:
 .  da - the distributed array context
@@ -80,10 +80,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalAllCreate(DM da,VecScatter *sc
 
 .keywords: distributed array, global to local, begin, coarse problem
 
-.seealso: DAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DACreate2d(), 
-          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DACreateNaturalVector()
+.seealso: DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(), 
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DANaturalAllToGlobalCreate(DM da,VecScatter *scatter)
+PetscErrorCode PETSCDM_DLLEXPORT DMDANaturalAllToGlobalCreate(DM da,VecScatter *scatter)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -95,7 +95,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DANaturalAllToGlobalCreate(DM da,VecScatter *sc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(scatter,2);
-  ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
+  ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
 
   /* create the scatter context */
   ierr = MPI_Allreduce(&m,&M,1,MPIU_INT,MPI_SUM,((PetscObject)da)->comm);CHKERRQ(ierr);

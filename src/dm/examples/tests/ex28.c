@@ -1,4 +1,4 @@
-static char help[] = "Test sequential USFFT interface on a 3-dof field over a uniform DA and compares to the result of FFTW acting on a split version of the field\n\n";
+static char help[] = "Test sequential USFFT interface on a 3-dof field over a uniform DMDA and compares to the result of FFTW acting on a split version of the field\n\n";
 
 /*
   Compiling the code:
@@ -48,16 +48,16 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-view_z",&view_z,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsGetIntArray(PETSC_NULL,"-dim",dim,&ndim,PETSC_NULL);CHKERRQ(ierr); 
 
-  // DA with the correct fiber dimension
-  ierr = DACreate3d(PETSC_COMM_SELF,DA_NONPERIODIC,DA_STENCIL_STAR, 
+  // DMDA with the correct fiber dimension
+  ierr = DMDACreate3d(PETSC_COMM_SELF,DMDA_NONPERIODIC,DMDA_STENCIL_STAR, 
                     dim[0], dim[1], dim[2], 
                     PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 
                     dof, stencil,
                     PETSC_NULL, PETSC_NULL, PETSC_NULL,
                     &da); 
  CHKERRQ(ierr);
-  // DA with fiber dimension 1 for split fields
-  ierr = DACreate3d(PETSC_COMM_SELF,DA_NONPERIODIC,DA_STENCIL_STAR, 
+  // DMDA with fiber dimension 1 for split fields
+  ierr = DMDACreate3d(PETSC_COMM_SELF,DMDA_NONPERIODIC,DMDA_STENCIL_STAR, 
                     dim[0], dim[1], dim[2], 
                     PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 
                     1, stencil,
@@ -66,7 +66,7 @@ PetscInt main(PetscInt argc,char **args)
  CHKERRQ(ierr);
   
   // Coordinates
-  ierr = DAGetCoordinateDA(da, &coordsda);
+  ierr = DMDAGetCoordinateDA(da, &coordsda);
   ierr = DMGetGlobalVector(coordsda, &coords);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coords, "Grid coordinates");CHKERRQ(ierr);  
   for(i = 0, N = 1; i < 3; i++) {
@@ -85,7 +85,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecRestoreArray(coords, &a);CHKERRQ(ierr);
 
   }
-  ierr = DASetCoordinates(da, coords);CHKERRQ(ierr);
+  ierr = DMDASetCoordinates(da, coords);CHKERRQ(ierr);
   ierr = VecDestroy(coords);CHKERRQ(ierr);
 
   // Work vectors

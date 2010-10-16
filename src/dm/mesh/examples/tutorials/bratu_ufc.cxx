@@ -422,13 +422,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     PetscInt dof = 1;
 
     if (options->dim == 2) {
-      ierr = DACreate2d(comm, DA_NONPERIODIC, DA_STENCIL_BOX, -3, -3, PETSC_DECIDE, PETSC_DECIDE, dof, 1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
+      ierr = DMDACreate2d(comm, DMDA_NONPERIODIC, DMDA_STENCIL_BOX, -3, -3, PETSC_DECIDE, PETSC_DECIDE, dof, 1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
     } else if (options->dim == 3) {
-      ierr = DACreate3d(comm, DA_NONPERIODIC, DA_STENCIL_BOX, -3, -3, -3, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 1, PETSC_NULL, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
+      ierr = DMDACreate3d(comm, DMDA_NONPERIODIC, DMDA_STENCIL_BOX, -3, -3, -3, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 1, PETSC_NULL, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
     } else {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
-    ierr = DASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
+    ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
     *dm = (DM) da;
   } else {
     Mesh        mesh;
@@ -597,45 +597,45 @@ PetscErrorCode DestroyExactSolution(ExactSolType sol, Options *options)
 
 #undef __FUNCT__
 #define __FUNCT__ "Function_Structured_2d"
-PetscErrorCode Function_Structured_2d(DALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx)
+PetscErrorCode Function_Structured_2d(DMDALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx)
 {
   Options       *options = (Options *) ctx;
   PetscScalar  (*func)(const double *) = options->func;
   DM             coordDA;
   Vec            coordinates;
-  DACoor2d     **coords;
+  DMDACoor2d     **coords;
   PetscInt       i, j;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-  ierr = DAGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-  ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   for(j = info->ys; j < info->ys+info->ym; j++) {
     for(i = info->xs; i < info->xs+info->xm; i++) {
       f[j][i] = func((PetscReal *) &coords[j][i]);
     }
   }
-  ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "Function_Structured_3d"
-PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx)
+PetscErrorCode Function_Structured_3d(DMDALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx)
 {
   Options       *options = (Options *) ctx;
   PetscScalar  (*func)(const double *) = options->func;
   DM             coordDA;
   Vec            coordinates;
-  DACoor3d    ***coords;
+  DMDACoor3d    ***coords;
   PetscInt       i, j, k;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-  ierr = DAGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-  ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   for(k = info->zs; k < info->zs+info->zm; k++) {
     for(j = info->ys; j < info->ys+info->ym; j++) {
       for(i = info->xs; i < info->xs+info->xm; i++) {
@@ -643,7 +643,7 @@ PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], Pets
       }
     }
   }
-  ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 
@@ -687,17 +687,17 @@ PetscErrorCode FormFunctions(DM dm, Options *options)
     ierr = DMGetGlobalVector(da, &F);CHKERRQ(ierr);
     if (options->dim == 2) {
       options->func = linear_2d;
-      ierr = DAFormFunctionLocal(da, (DALocalFunction1) Function_Structured_2d, X, F, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Function_Structured_2d, X, F, (void *) options);CHKERRQ(ierr);
       if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
       options->func = cos_x;
-      ierr = DAFormFunctionLocal(da, (DALocalFunction1) Function_Structured_2d, X, F, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Function_Structured_2d, X, F, (void *) options);CHKERRQ(ierr);
       if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
     } else {
       options->func = linear_3d;
-      ierr = DAFormFunctionLocal(da, (DALocalFunction1) Function_Structured_3d, X, F, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Function_Structured_3d, X, F, (void *) options);CHKERRQ(ierr);
       if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
       options->func = cos_x;
-      ierr = DAFormFunctionLocal(da, (DALocalFunction1) Function_Structured_3d, X, F, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Function_Structured_3d, X, F, (void *) options);CHKERRQ(ierr);
       if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
     }
     ierr = DMRestoreGlobalVector(da, &X);CHKERRQ(ierr);
@@ -725,7 +725,7 @@ PetscErrorCode FormFunctions(DM dm, Options *options)
 
 #undef __FUNCT__
 #define __FUNCT__ "Rhs_Structured_2d_FD"
-PetscErrorCode Rhs_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx)
+PetscErrorCode Rhs_Structured_2d_FD(DMDALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx)
 {
   Options       *options = (Options *) ctx;
   PetscScalar  (*func)(const double *)   = options->func;
@@ -733,16 +733,16 @@ PetscErrorCode Rhs_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], PetscSc
   const double   lambda                  = options->lambda;
   DM             coordDA;
   Vec            coordinates;
-  DACoor2d     **coords;
+  DMDACoor2d     **coords;
   PetscReal      hxa, hxb, hx, hya, hyb, hy;
   PetscInt       ie = info->xs+info->xm;
   PetscInt       je = info->ys+info->ym;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-  ierr = DAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-  ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
+  ierr = DMDAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   // Loop over stencils
   for(int j = info->ys; j < je; j++) {
     for(int i = info->xs; i < ie; i++) {
@@ -762,13 +762,13 @@ PetscErrorCode Rhs_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], PetscSc
       }
     }
   }
-  ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "Rhs_Structured_3d_FD"
-PetscErrorCode Rhs_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx)
+PetscErrorCode Rhs_Structured_3d_FD(DMDALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx)
 {
   Options       *options = (Options *) ctx;
   PetscScalar  (*func)(const double *)   = options->func;
@@ -776,7 +776,7 @@ PetscErrorCode Rhs_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], PetscS
   const double   lambda                  = options->lambda;
   DM             coordDA;
   Vec            coordinates;
-  DACoor3d    ***coords;
+  DMDACoor3d    ***coords;
   PetscReal      hxa, hxb, hx, hya, hyb, hy, hza, hzb, hz;
   PetscInt       ie = info->xs+info->xm;
   PetscInt       je = info->ys+info->ym;
@@ -784,9 +784,9 @@ PetscErrorCode Rhs_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], PetscS
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-  ierr = DAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-  ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
+  ierr = DMDAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   // Loop over stencils
   for(int k = info->zs; k < ke; k++) {
     for(int j = info->ys; j < je; j++) {
@@ -812,7 +812,7 @@ PetscErrorCode Rhs_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], PetscS
       }
     }
   }
-  ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 
@@ -1018,22 +1018,22 @@ PetscErrorCode FormWeakForms(DM dm, Options *options)
     if (options->dim == 2) {
       options->func      = linear_2d;
       options->exactFunc = linear_2d;
-      ierr = DAFormFunctionLocalGhost(da, (DALocalFunction1) Rhs_Structured_2d_FD, X, F, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAFormFunctionLocalGhost(da, (DMDALocalFunction1) Rhs_Structured_2d_FD, X, F, (void *) options);CHKERRQ(ierr);
       if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
       ierr = VecSet(F, 0.0);CHKERRQ(ierr);
       options->func      = cos_x;
       options->exactFunc = cos_x;
-      ierr = DAFormFunctionLocalGhost(da, (DALocalFunction1) Rhs_Structured_2d_FD, X, F, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAFormFunctionLocalGhost(da, (DMDALocalFunction1) Rhs_Structured_2d_FD, X, F, (void *) options);CHKERRQ(ierr);
       if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
     } else if (options->dim == 3) {
       options->func      = linear_3d;
       options->exactFunc = linear_3d;
-      ierr = DAFormFunctionLocalGhost(da, (DALocalFunction1) Rhs_Structured_3d_FD, X, F, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAFormFunctionLocalGhost(da, (DMDALocalFunction1) Rhs_Structured_3d_FD, X, F, (void *) options);CHKERRQ(ierr);
       if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
       ierr = VecSet(F, 0.0);CHKERRQ(ierr);
       options->func      = cos_x;
       options->exactFunc = cos_x;
-      ierr = DAFormFunctionLocalGhost(da, (DALocalFunction1) Rhs_Structured_3d_FD, X, F, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAFormFunctionLocalGhost(da, (DMDALocalFunction1) Rhs_Structured_3d_FD, X, F, (void *) options);CHKERRQ(ierr);
       if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
     } else {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
@@ -1061,13 +1061,13 @@ PetscErrorCode FormWeakForms(DM dm, Options *options)
 
 #undef __FUNCT__
 #define __FUNCT__ "Jac_Structured_2d_FD"
-PetscErrorCode Jac_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], Mat J, void *ctx)
+PetscErrorCode Jac_Structured_2d_FD(DMDALocalInfo *info, PetscScalar *x[], Mat J, void *ctx)
 {
   Options       *options = (Options *) ctx;
   const double   lambda  = options->lambda;
   DM             coordDA;
   Vec            coordinates;
-  DACoor2d     **coords;
+  DMDACoor2d     **coords;
   MatStencil     row, col[5];
   PetscScalar    v[5];
   PetscReal      hxa, hxb, hx, hya, hyb, hy;
@@ -1076,9 +1076,9 @@ PetscErrorCode Jac_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], Mat J, 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-  ierr = DAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-  ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
+  ierr = DMDAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   // Loop over stencils
   for(int j = info->ys; j < je; j++) {
     for(int i = info->xs; i < ie; i++) {
@@ -1103,7 +1103,7 @@ PetscErrorCode Jac_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], Mat J, 
       }
     }
   }
-  ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
@@ -1111,13 +1111,13 @@ PetscErrorCode Jac_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], Mat J, 
 
 #undef __FUNCT__
 #define __FUNCT__ "Jac_Structured_3d_FD"
-PetscErrorCode Jac_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], Mat J, void *ctx)
+PetscErrorCode Jac_Structured_3d_FD(DMDALocalInfo *info, PetscScalar **x[], Mat J, void *ctx)
 {
   Options       *options = (Options *) ctx;
   const double   lambda  = options->lambda;
   DM             coordDA;
   Vec            coordinates;
-  DACoor3d    ***coords;
+  DMDACoor3d    ***coords;
   MatStencil     row, col[7];
   PetscScalar    v[7];
   PetscReal      hxa, hxb, hx, hya, hyb, hy, hza, hzb, hz;
@@ -1127,9 +1127,9 @@ PetscErrorCode Jac_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], Mat J,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-  ierr = DAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-  ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
+  ierr = DMDAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   // Loop over stencils
   for(int k = info->zs; k < ke; k++) {
     for(int j = info->ys; j < je; j++) {
@@ -1161,7 +1161,7 @@ PetscErrorCode Jac_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], Mat J,
       }
     }
   }
-  ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
@@ -1426,9 +1426,9 @@ PetscErrorCode FormOperator(DM dm, Options *options)
     ierr = DMGetGlobalVector(da, &X);CHKERRQ(ierr);
     ierr = DMGetMatrix(da, MATAIJ, &J);CHKERRQ(ierr);
     if (options->dim == 2) {
-      ierr = DAFormJacobianLocal(da, (DALocalFunction1) Jac_Structured_2d_FD, X, J, options);CHKERRQ(ierr);
+      ierr = DMDAFormJacobianLocal(da, (DMDALocalFunction1) Jac_Structured_2d_FD, X, J, options);CHKERRQ(ierr);
     } else if (options->dim == 3) {
-      ierr = DAFormJacobianLocal(da, (DALocalFunction1) Jac_Structured_3d_FD, X, J, options);CHKERRQ(ierr);
+      ierr = DMDAFormJacobianLocal(da, (DMDALocalFunction1) Jac_Structured_3d_FD, X, J, options);CHKERRQ(ierr);
     } else {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
@@ -1511,7 +1511,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
   }
   if (options->structured) {
-    // The DA defines most of the problem during creation
+    // The DMDA defines most of the problem during creation
   } else {
     Mesh           mesh = (Mesh) dm;
     Obj<ALE::Mesh> m;
@@ -1581,9 +1581,9 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
     options->func = options->exactFunc;
     U             = options->exactSol.vec;
     if (dim == 2) {
-      ierr = DAFormFunctionLocal(da, (DALocalFunction1) Function_Structured_2d, X, U, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Function_Structured_2d, X, U, (void *) options);CHKERRQ(ierr);
     } else if (dim == 3) {
-      ierr = DAFormFunctionLocal(da, (DALocalFunction1) Function_Structured_3d, X, U, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Function_Structured_3d, X, U, (void *) options);CHKERRQ(ierr);
     } else {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
     }
@@ -1667,9 +1667,9 @@ PetscErrorCode CheckResidual(DM dm, ExactSolType sol, Options *options)
     ierr = DMGetGlobalVector(da, &residual);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) residual, "residual");CHKERRQ(ierr);
     if (options->dim == 2) {
-      ierr = DAFormFunctionLocal(da, (DALocalFunction1) Rhs_Structured_2d_FD, sol.vec, residual, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Rhs_Structured_2d_FD, sol.vec, residual, (void *) options);CHKERRQ(ierr);
     } else if (options->dim == 3) {
-      ierr = DAFormFunctionLocal(da, (DALocalFunction1) Rhs_Structured_3d_FD, sol.vec, residual, (void *) options);CHKERRQ(ierr);
+      ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) Rhs_Structured_3d_FD, sol.vec, residual, (void *) options);CHKERRQ(ierr);
     } else {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
@@ -1716,7 +1716,7 @@ PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
     }
     ierr = DMMGSetFromOptions(*dmmg);CHKERRQ(ierr);
     for(int l = 0; l < DMMGGetLevels(*dmmg); l++) {
-      ierr = DASetUniformCoordinates( (*dmmg)[l]->dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
+      ierr = DMDASetUniformCoordinates( (*dmmg)[l]->dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
     }
   } else {
     PetscPrintf(comm, "Unstructured Problem...\n");

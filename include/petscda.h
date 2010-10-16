@@ -1,6 +1,5 @@
 /*
-      Regular array object, for easy parallelism of simple grid 
-   problems on regular distributed arrays.
+      Objects to manage the interactions between the mesh data structures and the algebraic objects
 */
 #if !defined(__PETSCDA_H)
 #define __PETSCDA_H
@@ -17,158 +16,154 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char[]);
 
   Concepts: grids, grid refinement
 
-   Notes: The DA object and the Composite object are examples of DMs
+   Notes: The DMDA object and the Composite object are examples of DMs
 
-          Though the DA objects require the petscsnes.h include files the DM library is
+          Though the DMDA objects require the petscsnes.h include files the DM library is
     NOT dependent on the SNES or KSP library. In fact, the KSP and SNES libraries depend on
     DM. (This is not great design, but not trivial to fix).
 
-.seealso:  DMCompositeCreate(), DACreate()
+.seealso:  DMCompositeCreate(), DMDACreate()
 S*/
 typedef struct _p_DM* DM;
 
 /*E
-    DAStencilType - Determines if the stencil extends only along the coordinate directions, or also
+    DMDAStencilType - Determines if the stencil extends only along the coordinate directions, or also
       to the northeast, northwest etc
 
    Level: beginner
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA, DACreate()
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDACreate()
 E*/
-typedef enum { DA_STENCIL_STAR,DA_STENCIL_BOX } DAStencilType;
+typedef enum { DMDA_STENCIL_STAR,DMDA_STENCIL_BOX } DMDAStencilType;
 
 /*MC
-     DA_STENCIL_STAR - "Star"-type stencil. In logical grid coordinates, only (i,j,k), (i+s,j,k), (i,j+s,k),
+     DMDA_STENCIL_STAR - "Star"-type stencil. In logical grid coordinates, only (i,j,k), (i+s,j,k), (i,j+s,k),
                        (i,j,k+s) are in the stencil  NOT, for example, (i+s,j+s,k)
 
      Level: beginner
 
-.seealso: DA_STENCIL_BOX, DAStencilType
+.seealso: DMDA_STENCIL_BOX, DMDAStencilType
 M*/
 
 /*MC
-     DA_STENCIL_BOX - "Box"-type stencil. In logical grid coordinates, any of (i,j,k), (i+s,j+r,k+t) may 
+     DMDA_STENCIL_BOX - "Box"-type stencil. In logical grid coordinates, any of (i,j,k), (i+s,j+r,k+t) may 
                       be in the stencil.
 
      Level: beginner
 
-.seealso: DA_STENCIL_STAR, DAStencilType
+.seealso: DMDA_STENCIL_STAR, DMDAStencilType
 M*/
 
 /*E
-    DAPeriodicType - Is the domain periodic in one or more directions
+    DMDAPeriodicType - Is the domain periodic in one or more directions
 
    Level: beginner
 
-   DA_XYZGHOSTED means that ghost points are put around all the physical boundaries
-   in the local representation of the Vec (i.e. DACreate/GetLocalVector().
+   DMDA_XYZGHOSTED means that ghost points are put around all the physical boundaries
+   in the local representation of the Vec (i.e. DMDACreate/GetLocalVector().
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA, DACreate()
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDACreate()
 E*/
-typedef enum { DA_NONPERIODIC,DA_XPERIODIC,DA_YPERIODIC,DA_XYPERIODIC,
-               DA_XYZPERIODIC,DA_XZPERIODIC,DA_YZPERIODIC,DA_ZPERIODIC,DA_XYZGHOSTED} DAPeriodicType;
-extern const char *DAPeriodicTypes[];
+typedef enum { DMDA_NONPERIODIC,DMDA_XPERIODIC,DMDA_YPERIODIC,DMDA_XYPERIODIC,
+               DMDA_XYZPERIODIC,DMDA_XZPERIODIC,DMDA_YZPERIODIC,DMDA_ZPERIODIC,DMDA_XYZGHOSTED} DMDAPeriodicType;
+extern const char *DMDAPeriodicTypes[];
 
 /*E
-    DAInterpolationType - Defines the type of interpolation that will be returned by 
+    DMDAInterpolationType - Defines the type of interpolation that will be returned by 
        DMGetInterpolation.
 
    Level: beginner
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA, DMGetInterpolation(), DASetInterpolationType(), DACreate()
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGetInterpolation(), DMDASetInterpolationType(), DMDACreate()
 E*/
-typedef enum { DA_Q0, DA_Q1 } DAInterpolationType;
+typedef enum { DMDA_Q0, DMDA_Q1 } DMDAInterpolationType;
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetInterpolationType(DM,DAInterpolationType);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetInterpolationType(DM,DMDAInterpolationType);
 
 /*E
-    DAElementType - Defines the type of elements that will be returned by 
+    DMDAElementType - Defines the type of elements that will be returned by 
        DMGetElements()
 
    Level: beginner
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DMGetInterpolation(), DASetInterpolationType(), 
-          DASetElementType(), DMGetElements(), DMRestoreElements(), DACreate()
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGetInterpolation(), DMDASetInterpolationType(), 
+          DMDASetElementType(), DMGetElements(), DMRestoreElements(), DMDACreate()
 E*/
-typedef enum { DA_ELEMENT_P1, DA_ELEMENT_Q1 } DAElementType;
+typedef enum { DMDA_ELEMENT_P1, DMDA_ELEMENT_Q1 } DMDAElementType;
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetElementType(DM,DAElementType);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetElementType(DM,DAElementType*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetElementType(DM,DMDAElementType);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAGetElementType(DM,DMDAElementType*);
 
-#define DAXPeriodic(pt) ((pt)==DA_XPERIODIC||(pt)==DA_XYPERIODIC||(pt)==DA_XZPERIODIC||(pt)==DA_XYZPERIODIC)
-#define DAYPeriodic(pt) ((pt)==DA_YPERIODIC||(pt)==DA_XYPERIODIC||(pt)==DA_YZPERIODIC||(pt)==DA_XYZPERIODIC)
-#define DAZPeriodic(pt) ((pt)==DA_ZPERIODIC||(pt)==DA_XZPERIODIC||(pt)==DA_YZPERIODIC||(pt)==DA_XYZPERIODIC)
+#define DMDAXPeriodic(pt) ((pt)==DMDA_XPERIODIC||(pt)==DMDA_XYPERIODIC||(pt)==DMDA_XZPERIODIC||(pt)==DMDA_XYZPERIODIC)
+#define DMDAYPeriodic(pt) ((pt)==DMDA_YPERIODIC||(pt)==DMDA_XYPERIODIC||(pt)==DMDA_YZPERIODIC||(pt)==DMDA_XYZPERIODIC)
+#define DMDAZPeriodic(pt) ((pt)==DMDA_ZPERIODIC||(pt)==DMDA_XZPERIODIC||(pt)==DMDA_YZPERIODIC||(pt)==DMDA_XYZPERIODIC)
 
-typedef enum { DA_X,DA_Y,DA_Z } DADirection;
+typedef enum { DMDA_X,DMDA_Y,DMDA_Z } DMDADirection;
 
 extern PetscClassId PETSCDM_DLLEXPORT DM_CLASSID;
 
 #define MATSEQUSFFT        "sequsfft"
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm,DM*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetDim(DM,PetscInt);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetSizes(DM,PetscInt,PetscInt,PetscInt);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate1d(MPI_Comm,DAPeriodicType,PetscInt,PetscInt,PetscInt,const PetscInt[],DM *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],DM*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],DM*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMDACreate(MPI_Comm,DM*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMDASetDim(DM,PetscInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMDASetSizes(DM,PetscInt,PetscInt,PetscInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDACreate1d(MPI_Comm,DMDAPeriodicType,PetscInt,PetscInt,PetscInt,const PetscInt[],DM *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDACreate2d(MPI_Comm,DMDAPeriodicType,DMDAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],DM*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDACreate3d(MPI_Comm,DMDAPeriodicType,DMDAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],DM*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMSetOptionsPrefix(DM,const char []);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMSetVecType(DM,const VecType);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGlobalToNaturalBegin(DM,Vec,InsertMode,Vec);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGlobalToNaturalEnd(DM,Vec,InsertMode,Vec);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DANaturalToGlobalBegin(DM,Vec,InsertMode,Vec);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DANaturalToGlobalEnd(DM,Vec,InsertMode,Vec);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALocalToLocalBegin(DM,Vec,InsertMode,Vec);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALocalToLocalEnd(DM,Vec,InsertMode,Vec);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMCoarsen(DM,MPI_Comm,DM*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DARefineHierarchy(DM,PetscInt,DM[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMCoarsenHierarchy(DM,PetscInt,DM[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGlobalToNaturalBegin(DM,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGlobalToNaturalEnd(DM,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDANaturalToGlobalBegin(DM,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDANaturalToGlobalEnd(DM,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDALocalToLocalBegin(DM,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDALocalToLocalEnd(DM,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDACreateNaturalVector(DM,Vec *);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateNaturalVector(DM,Vec *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDALoad(PetscViewer,PetscInt,PetscInt,PetscInt,DM *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetGhostCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetInfo(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,DMDAPeriodicType*,DMDAStencilType*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetProcessorSubset(DM,DMDADirection,PetscInt,MPI_Comm*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetProcessorSubsets(DM,DMDADirection,MPI_Comm*);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALoad(PetscViewer,PetscInt,PetscInt,PetscInt,DM *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetGhostCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetInfo(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,DAPeriodicType*,DAStencilType*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetProcessorSubset(DM,DADirection,PetscInt,MPI_Comm*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetProcessorSubsets(DM,DADirection,MPI_Comm*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGlobalToNaturalAllCreate(DM,VecScatter*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDANaturalAllToGlobalCreate(DM,VecScatter*);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGlobalToNaturalAllCreate(DM,VecScatter*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DANaturalAllToGlobalCreate(DM,VecScatter*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetGlobalIndices(DM,PetscInt*,PetscInt**);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetISLocalToGlobalMapping(DM,ISLocalToGlobalMapping*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetISLocalToGlobalMappingBlck(DM,ISLocalToGlobalMapping*);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetGlobalIndices(DM,PetscInt*,PetscInt**);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetISLocalToGlobalMapping(DM,ISLocalToGlobalMapping*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetISLocalToGlobalMappingBlck(DM,ISLocalToGlobalMapping*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetScatter(DM,VecScatter*,VecScatter*,VecScatter*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetNeighbors(DM,const PetscMPIInt**);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetScatter(DM,VecScatter*,VecScatter*,VecScatter*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetNeighbors(DM,const PetscMPIInt**);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetAO(DM,AO*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDASetCoordinates(DM,Vec); 
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetCoordinates(DM,Vec *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetGhostedCoordinates(DM,Vec *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetCoordinateDA(DM,DM *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDASetUniformCoordinates(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetBoundingBox(DM,PetscReal[],PetscReal[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetLocalBoundingBox(DM,PetscReal[],PetscReal[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDASetFieldName(DM,PetscInt,const char[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetFieldName(DM,PetscInt,const char**);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetAO(DM,AO*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DASetCoordinates(DM,Vec); 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetCoordinates(DM,Vec *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetGhostedCoordinates(DM,Vec *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetCoordinateDA(DM,DM *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DASetUniformCoordinates(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetBoundingBox(DM,PetscReal[],PetscReal[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetLocalBoundingBox(DM,PetscReal[],PetscReal[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DASetFieldName(DM,PetscInt,const char[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetFieldName(DM,PetscInt,const char**);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMDASetPeriodicity(DM, DMDAPeriodicType);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMDASetDof(DM, int);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMDASetStencilWidth(DM, PetscInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMDASetOwnershipRanges(DM,const PetscInt[],const PetscInt[],const PetscInt[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMDAGetOwnershipRanges(DM,const PetscInt**,const PetscInt**,const PetscInt**);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMDASetNumProcs(DM, PetscInt, PetscInt, PetscInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMDASetStencilType(DM, DMDAStencilType);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetPeriodicity(DM, DAPeriodicType);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetDof(DM, int);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DM, PetscInt);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetOwnershipRanges(DM,const PetscInt[],const PetscInt[],const PetscInt[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRanges(DM,const PetscInt**,const PetscInt**,const PetscInt**);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetNumProcs(DM, PetscInt, PetscInt, PetscInt);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetStencilType(DM, DAStencilType);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAVecGetArray(DM,Vec,void *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAVecRestoreArray(DM,Vec,void *);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAVecGetArray(DM,Vec,void *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAVecRestoreArray(DM,Vec,void *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAVecGetArrayDOF(DM,Vec,void *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAVecRestoreArrayDOF(DM,Vec,void *);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAVecGetArrayDOF(DM,Vec,void *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAVecRestoreArrayDOF(DM,Vec,void *);
-
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DASplitComm2d(MPI_Comm,PetscInt,PetscInt,PetscInt,MPI_Comm*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDASplitComm2d(MPI_Comm,PetscInt,PetscInt,PetscInt,MPI_Comm*);
 
 /* Dynamic creation and loading functions */
 #define DMType char*
@@ -233,7 +228,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    MatCreateDAAD(DM,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT   MatCreateSeqUSFFT(Vec, DM,Mat*);
 
 /*S
-     DALocalInfo - C struct that contains information about a structured grid and a processors logical
+     DMDALocalInfo - C struct that contains information about a structured grid and a processors logical
               location in it.
 
    Level: beginner
@@ -243,7 +238,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT   MatCreateSeqUSFFT(Vec, DM,Mat*);
   Developer note: Then entries in this struct are int instead of PetscInt so that the elements may
                   be extracted in Fortran as if from an integer array
 
-.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DMDestroy(), DM, DAGetLocalInfo(), DAGetInfo()
+.seealso:  DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DM, DMDAGetLocalInfo(), DMDAGetInfo()
 S*/
 typedef struct {
   PetscInt       dim,dof,sw;
@@ -252,56 +247,56 @@ typedef struct {
   PetscInt       xm,ym,zm;    /* number of grid points on this processor, excluding ghosts */
   PetscInt       gxs,gys,gzs;    /* starting point of this processor including ghosts */
   PetscInt       gxm,gym,gzm;    /* number of grid points on this processor including ghosts */
-  DAPeriodicType pt;
-  DAStencilType  st;
+  DMDAPeriodicType pt;
+  DMDAStencilType  st;
   DM             da;
-} DALocalInfo;
+} DMDALocalInfo;
 
 /*MC
-      DAForEachPointBegin2d - Starts a loop over the local part of a two dimensional DA
+      DMDAForEachPointBegin2d - Starts a loop over the local part of a two dimensional DMDA
 
    Synopsis:
-   void  DAForEachPointBegin2d(DALocalInfo *info,PetscInt i,PetscInt j);
+   void  DMDAForEachPointBegin2d(DALocalInfo *info,PetscInt i,PetscInt j);
    
    Not Collective
 
    Level: intermediate
 
-.seealso: DAForEachPointEnd2d(), DAVecGetArray()
+.seealso: DMDAForEachPointEnd2d(), DMDAVecGetArray()
 M*/
-#define DAForEachPointBegin2d(info,i,j) {\
+#define DMDAForEachPointBegin2d(info,i,j) {\
   PetscInt _xints = info->xs,_xinte = info->xs+info->xm,_yints = info->ys,_yinte = info->ys+info->ym;\
   for (j=_yints; j<_yinte; j++) {\
     for (i=_xints; i<_xinte; i++) {\
 
 /*MC
-      DAForEachPointEnd2d - Ends a loop over the local part of a two dimensional DA
+      DMDAForEachPointEnd2d - Ends a loop over the local part of a two dimensional DMDA
 
    Synopsis:
-   void  DAForEachPointEnd2d;
+   void  DMDAForEachPointEnd2d;
    
    Not Collective
 
    Level: intermediate
 
-.seealso: DAForEachPointBegin2d(), DAVecGetArray()
+.seealso: DMDAForEachPointBegin2d(), DMDAVecGetArray()
 M*/
-#define DAForEachPointEnd2d }}}
+#define DMDAForEachPointEnd2d }}}
 
 /*MC
-      DACoor2d - Structure for holding 2d (x and y) coordinates.
+      DMDACoor2d - Structure for holding 2d (x and y) coordinates.
 
     Level: intermediate
 
     Sample Usage:
-      DACoor2d **coors;
+      DMDACoor2d **coors;
       Vec      vcoors;
       DM       cda;     
 
-      DAGetCoordinates(da,&vcoors); 
-      DAGetCoordinateDA(da,&cda);
-      DAVecGetArray(cda,vcoors,&coors);
-      DAGetCorners(cda,&mstart,&nstart,0,&m,&n,0)
+      DMDAGetCoordinates(da,&vcoors); 
+      DMDAGetCoordinateDA(da,&cda);
+      DMDAVecGetArray(cda,vcoors,&coors);
+      DMDAGetCorners(cda,&mstart,&nstart,0,&m,&n,0)
       for (i=mstart; i<mstart+m; i++) {
         for (j=nstart; j<nstart+n; j++) {
           x = coors[j][i].x;
@@ -309,26 +304,26 @@ M*/
           ......
         }
       }
-      DAVecRestoreArray(dac,vcoors,&coors);
+      DMDAVecRestoreArray(dac,vcoors,&coors);
 
-.seealso: DACoor3d, DAForEachPointBegin(), DAGetCoordinateDA(), DAGetCoordinates(), DAGetGhostCoordinates()
+.seealso: DMDACoor3d, DMDAForEachPointBegin(), DMDAGetCoordinateDA(), DMDAGetCoordinates(), DMDAGetGhostCoordinates()
 M*/
-typedef struct {PetscScalar x,y;} DACoor2d;
+typedef struct {PetscScalar x,y;} DMDACoor2d;
 
 /*MC
-      DACoor3d - Structure for holding 3d (x, y and z) coordinates.
+      DMDACoor3d - Structure for holding 3d (x, y and z) coordinates.
 
     Level: intermediate
 
     Sample Usage:
-      DACoor3d ***coors;
+      DMDACoor3d ***coors;
       Vec      vcoors;
       DM       cda;     
 
-      DAGetCoordinates(da,&vcoors); 
-      DAGetCoordinateDA(da,&cda);
-      DAVecGetArray(cda,vcoors,&coors);
-      DAGetCorners(cda,&mstart,&nstart,&pstart,&m,&n,&p)
+      DMDAGetCoordinates(da,&vcoors); 
+      DMDAGetCoordinateDA(da,&cda);
+      DMDAVecGetArray(cda,vcoors,&coors);
+      DMDAGetCorners(cda,&mstart,&nstart,&pstart,&m,&n,&p)
       for (i=mstart; i<mstart+m; i++) {
         for (j=nstart; j<nstart+n; j++) {
           for (k=pstart; k<pstart+p; k++) {
@@ -338,42 +333,42 @@ typedef struct {PetscScalar x,y;} DACoor2d;
           ......
         }
       }
-      DAVecRestoreArray(dac,vcoors,&coors);
+      DMDAVecRestoreArray(dac,vcoors,&coors);
 
-.seealso: DACoor2d, DAForEachPointBegin(), DAGetCoordinateDA(), DAGetCoordinates(), DAGetGhostCoordinates()
+.seealso: DMDACoor2d, DMDAForEachPointBegin(), DMDAGetCoordinateDA(), DMDAGetCoordinates(), DMDAGetGhostCoordinates()
 M*/
-typedef struct {PetscScalar x,y,z;} DACoor3d;
+typedef struct {PetscScalar x,y,z;} DMDACoor3d;
     
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetLocalInfo(DM,DALocalInfo*);
-typedef PetscErrorCode (*DALocalFunction1)(DALocalInfo*,void*,void*,void*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormFunctionLocal(DM, DALocalFunction1, Vec, Vec, void *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormFunctionLocalGhost(DM, DALocalFunction1, Vec, Vec, void *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormJacobianLocal(DM, DALocalFunction1, Vec, Mat, void *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormFunction1(DM,Vec,Vec,void*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormFunction(DM,PetscErrorCode (*)(void),Vec,Vec,void*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormFunctioni1(DM,PetscInt,Vec,PetscScalar*,void*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormFunctionib1(DM,PetscInt,Vec,PetscScalar*,void*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAComputeJacobian1WithAdic(DM,Vec,Mat,void*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAComputeJacobian1WithAdifor(DM,Vec,Mat,void*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAMultiplyByJacobian1WithAdic(DM,Vec,Vec,Vec,void*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAMultiplyByJacobian1WithAdifor(DM,Vec,Vec,Vec,void*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAMultiplyByJacobian1WithAD(DM,Vec,Vec,Vec,void*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAComputeJacobian1(DM,Vec,Mat,void*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetLocalFunction(DM,DALocalFunction1*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalFunction(DM,DALocalFunction1);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalFunctioni(DM,PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*));
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalFunctionib(DM,PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*));
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetLocalJacobian(DM,DALocalFunction1*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalJacobian(DM,DALocalFunction1);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalAdicFunction_Private(DM,DALocalFunction1);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAGetLocalInfo(DM,DMDALocalInfo*);
+typedef PetscErrorCode (*DMDALocalFunction1)(DMDALocalInfo*,void*,void*,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAFormFunctionLocal(DM, DMDALocalFunction1, Vec, Vec, void *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAFormFunctionLocalGhost(DM, DMDALocalFunction1, Vec, Vec, void *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAFormJacobianLocal(DM, DMDALocalFunction1, Vec, Mat, void *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAFormFunction1(DM,Vec,Vec,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAFormFunction(DM,PetscErrorCode (*)(void),Vec,Vec,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAFormFunctioni1(DM,PetscInt,Vec,PetscScalar*,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAFormFunctionib1(DM,PetscInt,Vec,PetscScalar*,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAComputeJacobian1WithAdic(DM,Vec,Mat,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAComputeJacobian1WithAdifor(DM,Vec,Mat,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAMultiplyByJacobian1WithAdic(DM,Vec,Vec,Vec,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAMultiplyByJacobian1WithAdifor(DM,Vec,Vec,Vec,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAMultiplyByJacobian1WithAD(DM,Vec,Vec,Vec,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAComputeJacobian1(DM,Vec,Mat,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAGetLocalFunction(DM,DMDALocalFunction1*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetLocalFunction(DM,DMDALocalFunction1);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetLocalFunctioni(DM,PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetLocalFunctionib(DM,PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAGetLocalJacobian(DM,DMDALocalFunction1*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetLocalJacobian(DM,DMDALocalFunction1);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetLocalAdicFunction_Private(DM,DMDALocalFunction1);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  MatSetDA(Mat,DM);
 
 /*MC
-       DASetLocalAdicFunction - Caches in a DM a local function computed by ADIC/ADIFOR
+       DMDASetLocalAdicFunction - Caches in a DM a local function computed by ADIC/ADIFOR
 
    Synopsis:
-   PetscErrorCode DASetLocalAdicFunction(DM da,DALocalFunction1 ad_lf)
+   PetscErrorCode DMDASetLocalAdicFunction(DM da,DMDALocalFunction1 ad_lf)
    
    Logically Collective on DM
 
@@ -385,48 +380,48 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  MatSetDA(Mat,DM);
 
 .keywords:  distributed array, refine
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DMDestroy(), DAGetLocalFunction(), DASetLocalFunction(),
-          DASetLocalJacobian()
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMDAGetLocalFunction(), DMDASetLocalFunction(),
+          DMDASetLocalJacobian()
 M*/
 #if defined(PETSC_HAVE_ADIC)
-#  define DASetLocalAdicFunction(a,d) DASetLocalAdicFunction_Private(a,(DALocalFunction1)d)
+#  define DMDASetLocalAdicFunction(a,d) DMDASetLocalAdicFunction_Private(a,(DMDALocalFunction1)d)
 #else
-#  define DASetLocalAdicFunction(a,d) DASetLocalAdicFunction_Private(a,0)
+#  define DMDASetLocalAdicFunction(a,d) DMDASetLocalAdicFunction_Private(a,0)
 #endif
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalAdicMFFunction_Private(DM,DALocalFunction1);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetLocalAdicMFFunction_Private(DM,DMDALocalFunction1);
 #if defined(PETSC_HAVE_ADIC)
-#  define DASetLocalAdicMFFunction(a,d) DASetLocalAdicMFFunction_Private(a,(DALocalFunction1)d)
+#  define DMDASetLocalAdicMFFunction(a,d) DMDASetLocalAdicMFFunction_Private(a,(DMDALocalFunction1)d)
 #else
-#  define DASetLocalAdicMFFunction(a,d) DASetLocalAdicMFFunction_Private(a,0)
+#  define DMDASetLocalAdicMFFunction(a,d) DMDASetLocalAdicMFFunction_Private(a,0)
 #endif
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalAdicFunctioni_Private(DM,PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,void*,void*));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetLocalAdicFunctioni_Private(DM,PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,void*,void*));
 #if defined(PETSC_HAVE_ADIC)
-#  define DASetLocalAdicFunctioni(a,d) DASetLocalAdicFunctioni_Private(a,(PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,void*,void*))d)
+#  define DMDASetLocalAdicFunctioni(a,d) DMDASetLocalAdicFunctioni_Private(a,(PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,void*,void*))d)
 #else
-#  define DASetLocalAdicFunctioni(a,d) DASetLocalAdicFunctioni_Private(a,0)
+#  define DMDASetLocalAdicFunctioni(a,d) DMDASetLocalAdicFunctioni_Private(a,0)
 #endif
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalAdicMFFunctioni_Private(DM,PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,void*,void*));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetLocalAdicMFFunctioni_Private(DM,PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,void*,void*));
 #if defined(PETSC_HAVE_ADIC)
-#  define DASetLocalAdicMFFunctioni(a,d) DASetLocalAdicMFFunctioni_Private(a,(PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,void*,void*))d)
+#  define DMDASetLocalAdicMFFunctioni(a,d) DMDASetLocalAdicMFFunctioni_Private(a,(PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,void*,void*))d)
 #else
-#  define DASetLocalAdicMFFunctioni(a,d) DASetLocalAdicMFFunctioni_Private(a,0)
-#endif
-
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalAdicFunctionib_Private(DM,PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,void*,void*));
-#if defined(PETSC_HAVE_ADIC)
-#  define DASetLocalAdicFunctionib(a,d) DASetLocalAdicFunctionib_Private(a,(PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,void*,void*))d)
-#else
-#  define DASetLocalAdicFunctionib(a,d) DASetLocalAdicFunctionib_Private(a,0)
-#endif
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalAdicMFFunctionib_Private(DM,PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,void*,void*));
-#if defined(PETSC_HAVE_ADIC)
-#  define DASetLocalAdicMFFunctionib(a,d) DASetLocalAdicMFFunctionib_Private(a,(PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,void*,void*))d)
-#else
-#  define DASetLocalAdicMFFunctionib(a,d) DASetLocalAdicMFFunctionib_Private(a,0)
+#  define DMDASetLocalAdicMFFunctioni(a,d) DMDASetLocalAdicMFFunctioni_Private(a,0)
 #endif
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormFunctioniTest1(DM,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetLocalAdicFunctionib_Private(DM,PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,void*,void*));
+#if defined(PETSC_HAVE_ADIC)
+#  define DMDASetLocalAdicFunctionib(a,d) DMDASetLocalAdicFunctionib_Private(a,(PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,void*,void*))d)
+#else
+#  define DMDASetLocalAdicFunctionib(a,d) DMDASetLocalAdicFunctionib_Private(a,0)
+#endif
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetLocalAdicMFFunctionib_Private(DM,PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,void*,void*));
+#if defined(PETSC_HAVE_ADIC)
+#  define DMDASetLocalAdicMFFunctionib(a,d) DMDASetLocalAdicMFFunctionib_Private(a,(PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,void*,void*))d)
+#else
+#  define DMDASetLocalAdicMFFunctionib(a,d) DMDASetLocalAdicMFFunctionib_Private(a,0)
+#endif
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAFormFunctioniTest1(DM,void*);
 
 #include "petscmat.h"
 
@@ -473,28 +468,28 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMComputeJacobianDefault(DM,Vec,Mat,Mat
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMFinalizePackage(void);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetMatrix(DM, const MatType,Mat *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetGetMatrix(DM,PetscErrorCode (*)(DM, const MatType,Mat *));
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetBlockFills(DM,PetscInt*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetMatPreallocateOnly(DM,PetscBool );
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetRefinementFactor(DM,PetscInt,PetscInt,PetscInt);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetRefinementFactor(DM,PetscInt*,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetGetMatrix(DM,PetscErrorCode (*)(DM, const MatType,Mat *));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetBlockFills(DM,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetMatPreallocateOnly(DM,PetscBool );
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetRefinementFactor(DM,PetscInt,PetscInt,PetscInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAGetRefinementFactor(DM,PetscInt*,PetscInt*,PetscInt*);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicArray(DM,PetscBool ,void*,void*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DARestoreAdicArray(DM,PetscBool ,void*,void*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicMFArray(DM,PetscBool ,void*,void*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicMFArray4(DM,PetscBool ,void*,void*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicMFArray9(DM,PetscBool ,void*,void*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicMFArrayb(DM,PetscBool ,void*,void*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DARestoreAdicMFArray(DM,PetscBool ,void*,void*,PetscInt*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetArray(DM,PetscBool ,void*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DARestoreArray(DM,PetscBool ,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAGetAdicArray(DM,PetscBool ,void*,void*,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDARestoreAdicArray(DM,PetscBool ,void*,void*,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAGetAdicMFArray(DM,PetscBool ,void*,void*,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAGetAdicMFArray4(DM,PetscBool ,void*,void*,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAGetAdicMFArray9(DM,PetscBool ,void*,void*,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAGetAdicMFArrayb(DM,PetscBool ,void*,void*,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDARestoreAdicMFArray(DM,PetscBool ,void*,void*,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDAGetArray(DM,PetscBool ,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDARestoreArray(DM,PetscBool ,void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  ad_DAGetArray(DM,PetscBool ,void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  ad_DARestoreArray(DM,PetscBool ,void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  admf_DAGetArray(DM,PetscBool ,void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  admf_DARestoreArray(DM,PetscBool ,void*);
 
 #include "petscpf.h"
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DACreatePF(DM,PF*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDACreatePF(DM,PF*);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeCreate(MPI_Comm,DM*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddArray(DM,PetscMPIInt,PetscInt);

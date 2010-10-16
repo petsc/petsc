@@ -48,7 +48,7 @@ Input parameters include:\n\
   ------------------------------------------------------------------------- */
 
 /* 
-   Include "petscda.h" so that we can use distributed arrays (DAs) to manage
+   Include "petscda.h" so that we can use distributed arrays (DMDAs) to manage
    the parallel grid.  Include "petscts.h" so that we can use TS solvers.  
    Note that this file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h  - vectors
@@ -126,15 +126,15 @@ int main(int argc,char **argv)
      Create vector data structures
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
-     Create distributed array (DA) to manage parallel grid and vectors
+     Create distributed array (DMDA) to manage parallel grid and vectors
      and to set up the ghost point communication pattern.  There are M 
      total grid values spread equally among all the processors.
   */ 
 
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,m,1,1,PETSC_NULL,&appctx.da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,m,1,1,PETSC_NULL,&appctx.da);CHKERRQ(ierr);
 
   /*
-     Extract global and local vectors from DA; we use these to store the
+     Extract global and local vectors from DMDA; we use these to store the
      approximate solution.  Then duplicate these for remaining vectors that
      have the same types.
   */ 

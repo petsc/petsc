@@ -1,7 +1,7 @@
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the modified Bratu problem in a 2D rectangular domain,\n\
-using distributed arrays (DAs) to partition the parallel grid.\n\
+using distributed arrays (DMDAs) to partition the parallel grid.\n\
 The command line options include:\n\
   -lambda <parameter>, where <parameter> indicates the problem's nonlinearity\n\
   -kappa  <parameter>, where <parameter> indicates the problem's nonlinearity\n\
@@ -12,7 +12,7 @@ The command line options include:\n\
 
 /*T
    Concepts: SNES^solving a system of nonlinear equations (parallel Bratu example);
-   Concepts: DA^using distributed arrays;
+   Concepts: DM^using distributed arrays;
    Processors: n
 T*/
 
@@ -38,7 +38,7 @@ T*/
   ------------------------------------------------------------------------- */
 
 /* 
-   Include "petscda.h" so that we can use distributed arrays (DAs).
+   Include "petscda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -115,14 +115,14 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /*
-     Create distributed array (DA) to manage parallel grid and vectors
+     Create distributed array (DMDA) to manage parallel grid and vectors
   */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE)) SETERRQ(PETSC_COMM_SELF,1,"Incompatible number of processors:  Nx * Ny != size");
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
 
   /*
      Visualize the distribution of the array across the processors
@@ -131,7 +131,7 @@ int main(int argc,char **argv)
 
 
   /*
-     Extract global and local vectors from DA; then duplicate for remaining
+     Extract global and local vectors from DMDA; then duplicate for remaining
      vectors that are the same types
   */
   ierr = DMCreateGlobalVector(user.da,&x);CHKERRQ(ierr);
@@ -159,8 +159,8 @@ int main(int argc,char **argv)
                          products within Newton-Krylov method
 
      Note:  For the parallel case, vectors and matrices MUST be partitioned
-     accordingly.  When using distributed arrays (DAs) to create vectors,
-     the DAs determine the problem partitioning.  We must explicitly
+     accordingly.  When using distributed arrays (DMDAs) to create vectors,
+     the DMDAs determine the problem partitioning.  We must explicitly
      specify the local matrix dimensions upon its creation for compatibility
      with the vector distribution.  Thus, the generic MatCreate() routine
      is NOT sufficient when working with distributed arrays.
@@ -259,14 +259,14 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
 
   /*
-     Get local grid boundaries (for 2-dimensional DA):
+     Get local grid boundaries (for 2-dimensional DMDA):
        xs, ys   - starting grid indices (no ghost points)
        xm, ym   - widths of local grid (no ghost points)
        gxs, gys - starting grid indices (including ghost points)
        gxm, gym - widths of local grid (including ghost points)
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -342,8 +342,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Get local grid boundaries
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
@@ -395,9 +395,9 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 .  flag - flag indicating matrix structure
 
    Notes:
-   Due to grid point reordering with DAs, we must always work
+   Due to grid point reordering with DMDAs, we must always work
    with the local grid points, and then transform them to the new
-   global numbering with the "ltog" mapping (via DAGetGlobalIndices()).
+   global numbering with the "ltog" mapping (via DMDAGetGlobalIndices()).
    We cannot work directly with the global numbers for the original
    uniprocessor grid!
 */
@@ -433,13 +433,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   /*
      Get local grid boundaries
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Get the global node numbers for all local nodes, including ghost points
   */
-  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
 
   /* 
      Compute entries for the locally owned part of the Jacobian.

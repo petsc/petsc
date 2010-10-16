@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   Mat            J;                    /* Jacobian matrix */
   AppCtx         user;                 /* user-defined application context */
   Vec            x,r;                  /* vectors */
-  DAStencilType  stencil = DA_STENCIL_BOX;
+  DMDAStencilType  stencil = DMDA_STENCIL_BOX;
   PetscErrorCode ierr;
   PetscBool      flg;
   PetscInt       Nx = PETSC_DECIDE,Ny = PETSC_DECIDE,Nz = PETSC_DECIDE,its;
@@ -54,7 +54,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsHasName(PETSC_NULL,"-star",&flg);CHKERRQ(ierr);
-  if (flg) stencil = DA_STENCIL_STAR;
+  if (flg) stencil = DMDA_STENCIL_STAR;
 
   user.mx    = 4; 
   user.my    = 4; 
@@ -70,7 +70,7 @@ int main(int argc,char **argv)
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   
   /* Set up distributed array */
-  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,stencil,user.mx,user.my,user.mz,
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,stencil,user.mx,user.my,user.mz,
                     Nx,Ny,Nz,1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.da,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
@@ -122,8 +122,8 @@ PetscErrorCode  FormInitialGuess1(AppCtx *user,Vec X)
 
   ierr  = VecGetArray(localX,&x);CHKERRQ(ierr);
   temp1 = lambda/(lambda + one);
-  ierr  = DAGetCorners(user->da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr  = DAGetGhostCorners(user->da,&Xs,&Ys,&Zs,&Xm,&Ym,&Zm);CHKERRQ(ierr);
+  ierr  = DMDAGetCorners(user->da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr  = DMDAGetGhostCorners(user->da,&Xs,&Ys,&Zs,&Xm,&Ym,&Zm);CHKERRQ(ierr);
  
   for (k=zs; k<zs+zm; k++) {
     base1 = (Xm*Ym)*(k-Zs);
@@ -169,8 +169,8 @@ PetscErrorCode  FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
   ierr = VecGetArray(localF,&f);CHKERRQ(ierr);
 
-  ierr = DAGetCorners(user->da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,&Zs,&Xm,&Ym,&Zm);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&Xs,&Ys,&Zs,&Xm,&Ym,&Zm);CHKERRQ(ierr);
 
   for (k=zs; k<zs+zm; k++) {
     base1 = (Xm*Ym)*(k-Zs); 
