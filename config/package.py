@@ -844,7 +844,7 @@ class GNUPackage(Package):
     '''This is used to set up the default download url, without potentially prompting for user input,
     to make sure that the package configuration is not skipped by configureLibrary.'''
     if hasattr(self,'downloadpath') and hasattr(self,'downloadname') and hasattr(self,'downloadversion') and hasattr(self,'downloadext'):
-      self.download = [self.downloadpath+self.downloadname+'-'+self.downloadversion+self.downloadext]
+      self.download = [self.downloadpath+self.downloadname+'-'+self.downloadversion+'.'+self.downloadext]
 
   def setupDownload(self):
     '''Override this, if necessary, to set up a custom download URL.'''
