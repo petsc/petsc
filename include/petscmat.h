@@ -1561,7 +1561,7 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_HERMITIANTRANSPOSE=120,
                MATOP_MULTHERMITIANTRANSPOSE=121,
                MATOP_MULTHERMITIANTRANSPOSEADD=122,
-	       MATOP_GETMULTIPROCBLOCK=123,
+               MATOP_GETMULTIPROCBLOCK=123
              } MatOperation;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat,MatOperation,PetscBool *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat,MatOperation,void(*)(void));
