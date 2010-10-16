@@ -4,6 +4,7 @@
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 typedef PetscTruth PetscBool;
+#define PetscOptionsGetBool PetscOptionsGetTruth
 #endif
 
 #if (PETSC_VERSION_(3,1,0) || \

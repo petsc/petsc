@@ -14,7 +14,7 @@ cdef extern from "petsc.h" nogil:
     int PetscOptionsInsertFile(char[])
     int PetscOptionsGetAll(char*[])
 
-    int PetscOptionsGetTruth(char[],char[],PetscBool*,PetscBool*)
+    int PetscOptionsGetBool(char[],char[],PetscBool*,PetscBool*)
     int PetscOptionsGetInt(char[],char[],PetscInt*,PetscBool*)
     int PetscOptionsGetReal(char[],char[],PetscReal*,PetscBool*)
     int PetscOptionsGetScalar(char[],char[],PetscScalar*,PetscBool*)
@@ -55,7 +55,7 @@ cdef opt2str(const_char *pre, const_char *name):
 cdef getopt_Bool(const_char *pre, const_char *name, object deft):
     cdef PetscBool value = PETSC_FALSE
     cdef PetscBool flag  = PETSC_FALSE
-    CHKERR( PetscOptionsGetTruth(pre, name, &value, &flag) )
+    CHKERR( PetscOptionsGetBool(pre, name, &value, &flag) )
     if flag==PETSC_TRUE: return <bint>value
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
