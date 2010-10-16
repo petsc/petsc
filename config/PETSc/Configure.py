@@ -244,6 +244,7 @@ class Configure(config.base.Configure):
       # overrides the values set in conf/variables
       self.addMakeMacro('LIBNAME','${INSTALL_LIB_DIR}/libpetsc.${AR_LIB_SUFFIX}')
       self.addMakeMacro('SHLIBS','libpetsc')
+      self.addMakeMacro('PETSC_LIB_BASIC','-lpetsc')
       self.addDefine('USE_SINGLE_LIBRARY', '1')
       if self.sharedlibraries.useShared:
         self.addMakeMacro('PETSC_SYS_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
