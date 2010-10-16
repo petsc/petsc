@@ -83,12 +83,12 @@ class Package(config.base.Configure):
     import nargs
     help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,self.required+self.lookforbydefault,'Indicate if you wish to test for '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
-    if self.download and not self.download[0] == 'redefine':
-      help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,filename>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
     if hasattr(self, 'usePkgConfig'):
       help.addArgument(self.PACKAGE, '-with-'+self.package+'-pkg-config=<dir>', nargs.ArgDir(None, None, 'Indicate the root directory of the '+self.name+' installation'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of the '+self.name+' include files'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))    
+    if self.download and not self.download[0] == 'redefine':
+      help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,filename>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
     return
 
   def setNames(self):
@@ -818,6 +818,7 @@ class GNUPackage(Package):
     self.downloadpath=''
     self.downloadversion=''
     self.downloadext=''
+    self.setupDefaultDownload()
     return
 
   def setupHelp(self, help):
@@ -828,7 +829,6 @@ class GNUPackage(Package):
       downloadversion = self.downloadversion
     help.addArgument(self.PACKAGE, '-download-'+self.package+'-version=<string>',  nargs.Arg(None, downloadversion, 'Version number of '+self.PACKAGE+' to download'))
     help.addArgument(self.PACKAGE, '-download-'+self.package+'-shared=<bool>',     nargs.ArgBool(None, 0, 'Install '+self.PACKAGE+' with shared libraries'))    
-    self.download = [self.downloadpath+self.downloadname+'-'+self.downloadversion+'.'+self.downloadext]
 
   def setupDependencies(self,framework):
     config.package.Package.setupDependencies(self, framework)
