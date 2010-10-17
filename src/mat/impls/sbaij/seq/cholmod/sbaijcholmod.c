@@ -68,15 +68,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT CholmodStart(Mat F)
     c->name = (size_t)tmp;                                               \
   } while (0)
 #define CHOLMOD_OPTION_TRUTH(name,help) do {                             \
-    PetscBool  tmp = (PetscBool )!!c->name;                              \
-    ierr = PetscOptionsTruth("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
+    PetscBool  tmp = (PetscBool)!!c->name;                              \
+    ierr = PetscOptionsBool("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
     c->name = (int)tmp;                                                  \
   } while (0)
 
   ierr = PetscOptionsBegin(((PetscObject)F)->comm,((PetscObject)F)->prefix,"CHOLMOD Options","Mat");CHKERRQ(ierr);
   /* CHOLMOD handles first-time packing and refactor-packing separately, but we usually want them to be the same. */
-  chol->pack = (PetscBool )c->final_pack;
-  ierr = PetscOptionsTruth("-mat_cholmod_pack","Pack factors after factorization [disable for frequent repeat factorization]","None",chol->pack,&chol->pack,0);CHKERRQ(ierr);
+  chol->pack = (PetscBool)c->final_pack;
+  ierr = PetscOptionsBool("-mat_cholmod_pack","Pack factors after factorization [disable for frequent repeat factorization]","None",chol->pack,&chol->pack,0);CHKERRQ(ierr);
   c->final_pack = (int)chol->pack;
 
   CHOLMOD_OPTION_DOUBLE(dbound,"Minimum absolute value of diagonal entries of D");

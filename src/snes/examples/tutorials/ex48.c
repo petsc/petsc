@@ -485,11 +485,11 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
     ierr = PetscOptionsReal("-thi_dirichlet_scale","Scale Dirichlet boundary conditions by this factor","",thi->dirichlet_scale,&thi->dirichlet_scale,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-thi_ssa_friction_scale","Scale slip boundary conditions by this factor in SSA (2D) assembly","",thi->ssa_friction_scale,&thi->ssa_friction_scale,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-thi_nlevels","Number of levels of refinement","",thi->nlevels,&thi->nlevels,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-thi_coarse2d","Use a 2D coarse space corresponding to SSA","",thi->coarse2d,&thi->coarse2d,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-thi_tridiagonal","Assemble a tridiagonal system (column coupling only) on the finest level","",thi->tridiagonal,&thi->tridiagonal,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-thi_coarse2d","Use a 2D coarse space corresponding to SSA","",thi->coarse2d,&thi->coarse2d,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-thi_tridiagonal","Assemble a tridiagonal system (column coupling only) on the finest level","",thi->tridiagonal,&thi->tridiagonal,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsList("-thi_mat_type","Matrix type","MatSetType",MatList,mtype,(char*)mtype,sizeof(mtype),NULL);CHKERRQ(ierr);
     ierr = PetscStrallocpy(mtype,&thi->mattype);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-thi_verbose","Enable verbose output (like matrix sizes and statistics)","",thi->verbose,&thi->verbose,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-thi_verbose","Enable verbose output (like matrix sizes and statistics)","",thi->verbose,&thi->verbose,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -1440,7 +1440,7 @@ int main(int argc,char *argv[])
   /* We define two stages.  The first includes all setup costs and solves from a naive initial guess.  The second solve
   * is more indicative of what might occur during time-stepping.  The initial guess is interpolated from the next
   * coarser (as in the last step of grid sequencing), and so requires fewer Newton steps. */
-  ierr = PetscOptionsGetTruth(NULL,"-repeat_fine_solve",&repeat_fine_solve,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-repeat_fine_solve",&repeat_fine_solve,NULL);CHKERRQ(ierr);
   ierr = PetscLogStageRegister("Full solve",&stages[0]);CHKERRQ(ierr);
   if (repeat_fine_solve) {
     ierr = PetscLogStageRegister("Fine-1 solve",&stages[1]);CHKERRQ(ierr);

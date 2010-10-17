@@ -107,7 +107,7 @@ int main(int argc,char **args)
   /* 
      Set user-defined monitoring routine for first linear system.
   */
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-my_ksp_monitor",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-my_ksp_monitor",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {ierr = KSPMonitorSet(ksp1,MyKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);}
 
   /*

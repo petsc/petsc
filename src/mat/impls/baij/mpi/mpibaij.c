@@ -2334,7 +2334,7 @@ PetscErrorCode MatFDColoringCreate_MPIBAIJ(Mat mat,ISColoring iscoloring,MatFDCo
     */
     /* Temporary option to allow for debugging/testing */
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-matfdcoloring_slow",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-matfdcoloring_slow",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (!flg) {/*-----------------------------------------------------------------------------*/
       /* crude, fast version */
       ierr = PetscMemzero(rowhit,M*sizeof(PetscInt));CHKERRQ(ierr);
@@ -3163,7 +3163,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBAIJ(Mat B)
   b->ht_insert_ct = 0;
 
   ierr = PetscOptionsBegin(((PetscObject)B)->comm,PETSC_NULL,"Options for loading MPIBAIJ matrix 1","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_use_hash_table","Use hash table to save memory in constructing matrix","MatSetOption",PETSC_FALSE,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_use_hash_table","Use hash table to save memory in constructing matrix","MatSetOption",PETSC_FALSE,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) { 
       PetscReal fact = 1.39;
       ierr = MatSetOption(B,MAT_USE_HASH_TABLE,PETSC_TRUE);CHKERRQ(ierr);

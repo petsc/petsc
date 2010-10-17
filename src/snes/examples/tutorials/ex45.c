@@ -88,7 +88,7 @@ int main(int argc,char **argv)
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,1,PETSC_NULL,&JPrec);CHKERRQ(ierr);
   
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_jacobian_default",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_jacobian_default",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg){ 
     /* Jacobian using finite differences. Slow and expensive, not take advantage of sparsity */ 
     ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
@@ -98,7 +98,7 @@ int main(int argc,char **argv)
   } 
 
   fd_jacobian_coloring = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-fd_jacobian_coloring",&fd_jacobian_coloring,PETSC_NULL);CHKERRQ(ierr);  
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-fd_jacobian_coloring",&fd_jacobian_coloring,PETSC_NULL);CHKERRQ(ierr);  
   if (fd_jacobian_coloring){ 
     /* Jacobian using finite differences with matfdcoloring based on the sparse structure.
      In this case, only three calls to FormFunction() for each Jacobian evaluation - very fast! */
@@ -106,7 +106,7 @@ int main(int argc,char **argv)
     
     /* Get the data structure of J */
     flg = PETSC_FALSE;
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-my_jacobian_struct",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-my_jacobian_struct",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg){ 
       /* use user-provided jacobian data structure */
       ierr = MyApproxJacobianStructure(&J,PETSC_NULL);CHKERRQ(ierr);

@@ -29,7 +29,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-reorder",&reorder,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-testaij",&TestAIJ,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-testaij",&TestAIJ,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-testShift",&TestShift,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-displ",&displ,PETSC_NULL);CHKERRQ(ierr);
 

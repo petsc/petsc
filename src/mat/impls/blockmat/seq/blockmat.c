@@ -323,7 +323,7 @@ PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
   ierr = MatGetLocalSize(tmpA,&m,&n);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(PETSC_COMM_SELF,PETSC_NULL,"Options for loading BlockMat matrix 1","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-matload_symmetric","Store the matrix as symmetric","MatLoad",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-matload_symmetric","Store the matrix as symmetric","MatLoad",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* Determine number of nonzero blocks for each block row */

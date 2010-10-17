@@ -555,7 +555,7 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
     ierr = PetscOptionsEnum("-mat_superlu_dist_matinput","Matrix input mode (global or distributed)","None",SuperLU_MatInputModes,(PetscEnum)lu->MatInputMode,(PetscEnum*)&lu->MatInputMode,PETSC_NULL);CHKERRQ(ierr);
     if(lu->MatInputMode == DISTRIBUTED && size == 1) lu->MatInputMode = GLOBAL;
 
-    ierr = PetscOptionsTruth("-mat_superlu_dist_equil","Equilibrate matrix","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr); 
+    ierr = PetscOptionsBool("-mat_superlu_dist_equil","Equilibrate matrix","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr); 
     if (!flg) {
       options.Equil = NO;
     }
@@ -595,13 +595,13 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
       }
     }
 
-    ierr = PetscOptionsTruth("-mat_superlu_dist_replacetinypivot","Replace tiny pivots","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr); 
+    ierr = PetscOptionsBool("-mat_superlu_dist_replacetinypivot","Replace tiny pivots","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr); 
     if (!flg) {
       options.ReplaceTinyPivot = NO;
     }
 
     options.ParSymbFact = NO;
-    ierr = PetscOptionsTruth("-mat_superlu_dist_parsymbfact","Parallel symbolic factorization","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr); 
+    ierr = PetscOptionsBool("-mat_superlu_dist_parsymbfact","Parallel symbolic factorization","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr); 
     if (flg){
 #ifdef PETSC_HAVE_PARMETIS
       options.ParSymbFact = YES;
@@ -625,7 +625,7 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
     } 
     
     options.IterRefine = NOREFINE;
-    ierr = PetscOptionsTruth("-mat_superlu_dist_iterrefine","Use iterative refinement","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_superlu_dist_iterrefine","Use iterative refinement","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
     if (flg) {
       options.IterRefine = DOUBLE;    
     }
@@ -635,8 +635,8 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
     } else {
       options.PrintStat = NO;
     }
-    ierr = PetscOptionsTruth("-mat_superlu_dist_statprint","Print factorization information","None",
-                              (PetscBool )options.PrintStat,(PetscBool *)&options.PrintStat,0);CHKERRQ(ierr); 
+    ierr = PetscOptionsBool("-mat_superlu_dist_statprint","Print factorization information","None",
+                              (PetscBool)options.PrintStat,(PetscBool*)&options.PrintStat,0);CHKERRQ(ierr); 
   PetscOptionsEnd();
 
   lu->options             = options; 

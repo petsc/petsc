@@ -72,7 +72,7 @@ int main(int argc,char **argv)
   ierr = PetscBagRegisterReal  (bag,&params->rho,3.0,"rho","Density, kg/m^3");CHKERRQ(ierr);
   ierr = PetscBagRegisterScalar(bag,&params->W,  5.0,"W","Vertical velocity, m/sec");CHKERRQ(ierr);
   ierr = PetscBagRegisterInt   (bag,&params->Ii, 2,"modes_x","Number of modes in x-direction");CHKERRQ(ierr);
-  ierr = PetscBagRegisterTruth (bag,&params->T,  PETSC_FALSE,"do_output","Write output file (yes/no)");CHKERRQ(ierr);
+  ierr = PetscBagRegisterBool (bag,&params->T,  PETSC_FALSE,"do_output","Write output file (yes/no)");CHKERRQ(ierr);
   ierr = PetscBagRegisterEnum  (bag,&params->dt, PetscDataTypes,(PetscEnum)PETSC_INT,"dt","meaningless datatype");CHKERRQ(ierr);
   ierr = PetscBagRegisterReal  (bag,&params->pos.x1,1.0,"x1","x position");CHKERRQ(ierr);
   ierr = PetscBagRegisterReal  (bag,&params->pos.x2,1.9,"x2","y position");CHKERRQ(ierr);

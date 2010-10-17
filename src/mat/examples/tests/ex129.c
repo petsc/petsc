@@ -69,7 +69,7 @@ int main(int argc,char **args)
   ierr = MatGetOrdering(A,MATORDERINGND,&perm,&iperm);CHKERRQ(ierr);
   
   
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-inplacelu",&InplaceLU,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-inplacelu",&InplaceLU,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
   if (!InplaceLU){
     ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);

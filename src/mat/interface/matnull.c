@@ -240,8 +240,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat,Petsc
   PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1);
   PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
   n = sp->n;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-mat_null_space_test_view",&flg1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-mat_null_space_test_view_draw",&flg2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_null_space_test_view",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_null_space_test_view_draw",&flg2,PETSC_NULL);CHKERRQ(ierr);
 
   if (!sp->vec) {
     if (n) {

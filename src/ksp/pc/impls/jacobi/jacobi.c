@@ -341,11 +341,11 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Jacobi options");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-pc_jacobi_rowmax","Use row maximums for diagonal","PCJacobiSetUseRowMax",jac->userowmax,
+    ierr = PetscOptionsBool("-pc_jacobi_rowmax","Use row maximums for diagonal","PCJacobiSetUseRowMax",jac->userowmax,
                           &jac->userowmax,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-pc_jacobi_rowsum","Use row sums for diagonal","PCJacobiSetUseRowSum",jac->userowsum,
+    ierr = PetscOptionsBool("-pc_jacobi_rowsum","Use row sums for diagonal","PCJacobiSetUseRowSum",jac->userowsum,
                           &jac->userowsum,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-pc_jacobi_abs","Use absolute values of diagaonal entries","PCJacobiSetUseAbs",jac->useabs,
+    ierr = PetscOptionsBool("-pc_jacobi_abs","Use absolute values of diagaonal entries","PCJacobiSetUseAbs",jac->useabs,
                           &jac->useabs,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

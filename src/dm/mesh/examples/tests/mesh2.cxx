@@ -26,7 +26,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   ierr = PetscOptionsBegin(comm, "", "Options for mesh test", "Mesh");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level",            "mesh2.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-dim",   "The topological mesh dimension", "mesh2.cxx", options->dim, &options->dim,   PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "mesh2.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Construct missing elements of the mesh", "mesh2.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "mesh2.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);

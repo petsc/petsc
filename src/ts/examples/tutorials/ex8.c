@@ -290,7 +290,7 @@ int main(int argc,char **argv)
   {
     ierr = PetscOptionsList("-problem_type","Name of problem to run","",plist,pname,pname,sizeof(pname),PETSC_NULL);CHKERRQ(ierr);
     use_monitor = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-monitor_error","Display errors relative to exact solutions","",use_monitor,&use_monitor,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-monitor_error","Display errors relative to exact solutions","",use_monitor,&use_monitor,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 

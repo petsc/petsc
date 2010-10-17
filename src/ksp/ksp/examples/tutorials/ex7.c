@@ -209,7 +209,7 @@ int main(int argc,char **args)
   /*
      View info about the solver
   */
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-nokspview",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-nokspview",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (!flg) {
     ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }

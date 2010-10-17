@@ -32,9 +32,9 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-partition",&partition,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-displayIS",&displayIS,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-displayMat",&displayMat,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-partition",&partition,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-displayIS",&displayIS,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-displayMat",&displayMat,PETSC_NULL);CHKERRQ(ierr);
 
   /* Determine file from which we read the matrix.*/
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -142,7 +142,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL, "-ksp_reason", &flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL, "-ksp_reason", &flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg){
     KSPConvergedReason reason;
     ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);

@@ -1501,7 +1501,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
   B->ops->multadd          = MatMultAdd_SeqSBAIJ_N;
   B->ops->multtranspose    = MatMult_SeqSBAIJ_N;
   B->ops->multtransposeadd = MatMultAdd_SeqSBAIJ_N;
-  ierr  = PetscOptionsGetTruth(((PetscObject)B)->prefix,"-mat_no_unroll",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)B)->prefix,"-mat_no_unroll",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (!flg) {
     switch (bs) {
     case 1:
@@ -1618,7 +1618,7 @@ PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat B,PetscBool  natur
   PetscInt       bs = B->rmap->bs;
 
   PetscFunctionBegin;
-  ierr    = PetscOptionsGetTruth(((PetscObject)B)->prefix,"-mat_no_unroll",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetBool(((PetscObject)B)->prefix,"-mat_no_unroll",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) bs = 8;
 
   if (!natural) {
@@ -1794,10 +1794,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   b->permute          = PETSC_FALSE;
 
   b->ignore_ltriangular = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(((PetscObject)B)->prefix,"-mat_ignore_lower_triangular",&b->ignore_ltriangular,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)B)->prefix,"-mat_ignore_lower_triangular",&b->ignore_ltriangular,PETSC_NULL);CHKERRQ(ierr);
 
   b->getrow_utriangular = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(((PetscObject)B)->prefix,"-mat_getrow_uppertriangular",&b->getrow_utriangular,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)B)->prefix,"-mat_getrow_uppertriangular",&b->getrow_utriangular,PETSC_NULL);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_PASTIX)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_pastix_C",
@@ -1851,13 +1851,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQSBAIJ);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(((PetscObject)B)->comm,((PetscObject)B)->prefix,"Options for SEQSBAIJ matrix","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_no_unroll","Do not optimize for inodes (slower)",PETSC_NULL,no_unroll,&no_unroll,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_no_unroll","Do not optimize for inodes (slower)",PETSC_NULL,no_unroll,&no_unroll,PETSC_NULL);CHKERRQ(ierr);
     if (no_unroll) {ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_unroll\n");CHKERRQ(ierr);}
-    ierr = PetscOptionsTruth("-mat_no_inode","Do not optimize for inodes (slower)",PETSC_NULL,no_inode,&no_inode,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_no_inode","Do not optimize for inodes (slower)",PETSC_NULL,no_inode,&no_inode,PETSC_NULL);CHKERRQ(ierr);
     if (no_inode) {ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_inode\n");CHKERRQ(ierr);}
     ierr = PetscOptionsInt("-mat_inode_limit","Do not use inodes larger then this value",PETSC_NULL,b->inode.limit,&b->inode.limit,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  b->inode.use = (PetscBool )(!(no_unroll || no_inode));
+  b->inode.use = (PetscBool)(!(no_unroll || no_inode));
   if (b->inode.limit > b->inode.max_limit) b->inode.limit = b->inode.max_limit;
 
   PetscFunctionReturn(0);

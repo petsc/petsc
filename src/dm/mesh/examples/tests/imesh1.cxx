@@ -67,8 +67,8 @@ public:
       ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "imesh.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsInt("-size", "The interval size", "imesh.c", this->_size, &this->_size, PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsInt("-dim", "The mesh dimension", "imesh.c", this->_dim, &this->_dim, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsTruth("-interpolate", "Flag for mesh interpolation", "imesh.c", this->_interpolate, &this->_interpolate, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsTruth("-only_parallel", "Shut off serial tests", "isieve.c", this->_onlyParallel, &this->_onlyParallel, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-interpolate", "Flag for mesh interpolation", "imesh.c", this->_interpolate, &this->_interpolate, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-only_parallel", "Shut off serial tests", "isieve.c", this->_onlyParallel, &this->_onlyParallel, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
@@ -619,7 +619,7 @@ public:
       ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsInt("-size", "The number of points", "isection.c", this->_size, &this->_size, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsTruth("-interpolate", "Flag for mesh interpolation", "imesh.c", this->_interpolate, &this->_interpolate, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-interpolate", "Flag for mesh interpolation", "imesh.c", this->_interpolate, &this->_interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };

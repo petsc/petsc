@@ -137,7 +137,7 @@ int main(int argc,char **args)
      elements of 1.0;  Alternatively, using the runtime option
      -random_sol forms a solution vector with random components.
   */
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-random_exact_sol",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-random_exact_sol",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
@@ -152,7 +152,7 @@ int main(int argc,char **args)
      View the exact solution vector if desired
   */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-view_exact_sol",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-view_exact_sol",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -192,8 +192,8 @@ int main(int argc,char **args)
   */
 #ifdef PETSC_HAVE_MUMPS 
   PetscBool  flg_lu=PETSC_FALSE,flg_ch=PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-use_mumps_lu",&flg_lu,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-use_mumps_ch",&flg_ch,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mumps_lu",&flg_lu,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mumps_ch",&flg_ch,PETSC_NULL);CHKERRQ(ierr);
   if (flg_lu || flg_ch){
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
     PC       pc;

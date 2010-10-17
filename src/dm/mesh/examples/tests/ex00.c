@@ -136,11 +136,11 @@ int main(int argc, char *argv[])
   MPI_Comm  comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm, "", "Options for ALE memory management and logging testing", "Mesh");
     memTest = PETSC_TRUE;
-    ierr = PetscOptionsTruth("-mem_test", "Perform the mem test", "ex0.c", PETSC_TRUE, &memTest, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mem_test", "Perform the mem test", "ex0.c", PETSC_TRUE, &memTest, PETSC_NULL);CHKERRQ(ierr);
     arrowTest = PETSC_TRUE;
-    ierr = PetscOptionsTruth("-arrow_test", "Perform the arrow test", "ex0.c", PETSC_TRUE, &arrowTest, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-arrow_test", "Perform the arrow test", "ex0.c", PETSC_TRUE, &arrowTest, PETSC_NULL);CHKERRQ(ierr);
     coneTest = PETSC_TRUE;
-    ierr = PetscOptionsTruth("-cone_test", "Perform the cone test", "ex0.c", PETSC_TRUE, &coneTest, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-cone_test", "Perform the cone test", "ex0.c", PETSC_TRUE, &coneTest, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   try {
     if (memTest) {

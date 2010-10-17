@@ -215,7 +215,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG *dmmg, DM dm)
   if (!dmmg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Passing null as DMMG");
 
   /* Create DM data structure for all the levels */
-  ierr = PetscOptionsGetTruth(PETSC_NULL, "-dmmg_refine", &doRefine, PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL, "-dmmg_refine", &doRefine, PETSC_IGNORE);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
   ierr = PetscMalloc(nlevels*sizeof(DM),&hierarchy);CHKERRQ(ierr);
   if (doRefine) {
@@ -283,8 +283,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
   PetscBool      gridseq = PETSC_FALSE,vecmonitor = PETSC_FALSE,flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetTruth(0,"-dmmg_grid_sequence",&gridseq,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(0,"-dmmg_monitor_solution",&vecmonitor,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(0,"-dmmg_grid_sequence",&gridseq,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(0,"-dmmg_monitor_solution",&vecmonitor,PETSC_NULL);CHKERRQ(ierr);
   if (gridseq) {
     if (dmmg[0]->initialguess) {
       ierr = (*dmmg[0]->initialguess)(dmmg[0],dmmg[0]->x);CHKERRQ(ierr);
@@ -316,14 +316,14 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
   }
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-dmmg_view",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-dmmg_view",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(dmmg[0]->comm,&viewer);CHKERRQ(ierr);
     ierr = DMMGView(dmmg,viewer);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-dmmg_view_binary",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-dmmg_view_binary",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
     ierr = DMMGView(dmmg,PETSC_VIEWER_BINARY_(dmmg[0]->comm));CHKERRQ(ierr);
   }

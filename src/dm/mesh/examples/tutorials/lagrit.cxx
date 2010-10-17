@@ -38,10 +38,10 @@ int main(int argc, char **argv)
     pset[0] = '\0';
     ierr = PetscOptionsString("-pset", "The fault pset filename", "lagrit.cxx", pset, pset, 2048, PETSC_NULL);CHKERRQ(ierr);
     psetFilename = pset;
-    ierr = PetscOptionsTruth("-boundary", "Construct the boundary mesh", "lagrit.cxx", doBoundary, &doBoundary, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-interpolate", "Interpolate the mesh", "lagrit.cxx", interpolate, &interpolate, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-split", "Split the mesh along a fault", "lagrit.cxx", split, &split, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-view", "View the mesh", "lagrit.cxx", view, &view, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-boundary", "Construct the boundary mesh", "lagrit.cxx", doBoundary, &doBoundary, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", "lagrit.cxx", interpolate, &interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-split", "Split the mesh along a fault", "lagrit.cxx", split, &split, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-view", "View the mesh", "lagrit.cxx", view, &view, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   try {

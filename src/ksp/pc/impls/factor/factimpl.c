@@ -229,7 +229,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC pc)
 
   PetscFunctionBegin;
   if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscOptionsTruth("-pc_factor_in_place","Form factored matrix in the same memory as the matrix","PCFactorSetUseInPlace",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_factor_in_place","Form factored matrix in the same memory as the matrix","PCFactorSetUseInPlace",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFactorSetUseInPlace(pc);CHKERRQ(ierr);
   }
@@ -246,18 +246,18 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC pc)
   ierr = PetscOptionsReal("-pc_factor_column_pivot","Column pivot tolerance (used only for some factorization)","PCFactorSetColumnPivot",((PC_Factor*)factor)->info.dtcol,&((PC_Factor*)factor)->info.dtcol,&flg);CHKERRQ(ierr);
 
   flg = ((PC_Factor*)factor)->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE;
-  ierr = PetscOptionsTruth("-pc_factor_pivot_in_blocks","Pivot inside matrix dense blocks for BAIJ and SBAIJ","PCFactorSetPivotInBlocks",flg,&flg,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_factor_pivot_in_blocks","Pivot inside matrix dense blocks for BAIJ and SBAIJ","PCFactorSetPivotInBlocks",flg,&flg,&set);CHKERRQ(ierr);
   if (set) {
     ierr = PCFactorSetPivotInBlocks(pc,flg);CHKERRQ(ierr);
   }
   
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsTruth("-pc_factor_reuse_fill","Use fill from previous factorization","PCFactorSetReuseFill",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_factor_reuse_fill","Use fill from previous factorization","PCFactorSetReuseFill",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFactorSetReuseFill(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsTruth("-pc_factor_reuse_ordering","Reuse ordering from previous factorization","PCFactorSetReuseOrdering",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_factor_reuse_ordering","Reuse ordering from previous factorization","PCFactorSetReuseOrdering",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFactorSetReuseOrdering(pc,PETSC_TRUE);CHKERRQ(ierr);
   }

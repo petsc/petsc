@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #endif
 
+#define ManSection(str) ((str)?(str):"None")
+
 /*
     Keep a linked list of options that have been posted and we are waiting for 
    user selection. See the manual page for PetscOptionsBegin()
@@ -499,9 +501,9 @@ PetscErrorCode PetscOptionsEnd_Private(void)
           sprintf(value,"%d",*(int*)PetscOptionsObject.next->data);
           break;
       case OPTION_LOGICAL_ARRAY:
-          sprintf(value,"%d",(int)((PetscBool *)PetscOptionsObject.next->data)[0]);
+          sprintf(value,"%d",(int)((PetscBool*)PetscOptionsObject.next->data)[0]);
           for (j=1; j<PetscOptionsObject.next->arraylength; j++) {
-            sprintf(tmp,"%d",(int)((PetscBool *)PetscOptionsObject.next->data)[j]);
+            sprintf(tmp,"%d",(int)((PetscBool*)PetscOptionsObject.next->data)[j]);
             ierr = PetscStrcat(value,",");CHKERRQ(ierr);
             ierr = PetscStrcat(value,tmp);CHKERRQ(ierr);
           }
@@ -565,11 +567,11 @@ PetscErrorCode PetscOptionsEnd_Private(void)
           list is usually something like PCASMTypes or some other predefined list of enum names
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
-          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth()
-          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsTruth(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsEnum(const char opt[],const char text[],const char man[],const char *const*list,PetscEnum defaultv,PetscEnum *value,PetscBool  *set)
@@ -617,11 +619,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsEnum(const char opt[],const char t
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
-          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth()
-          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsTruth(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsInt(const char opt[],const char text[],const char man[],PetscInt defaultv,PetscInt *value,PetscBool  *set)
@@ -637,7 +639,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsInt(const char opt[],const char te
   }
   ierr = PetscOptionsGetInt(PetscOptionsObject.prefix,opt,value,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%d>: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,defaultv,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%d>: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,defaultv,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -667,11 +669,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsInt(const char opt[],const char te
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
-          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth()
-          PetscOptionsInt(), PetscOptionsReal(), PetscOptionsTruth(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+          PetscOptionsInt(), PetscOptionsReal(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsString(const char opt[],const char text[],const char man[],const char defaultv[],char value[],size_t len,PetscBool  *set)
@@ -687,7 +689,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsString(const char opt[],const char
   } 
   ierr = PetscOptionsGetString(PetscOptionsObject.prefix,opt,value,len,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%s>: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,defaultv,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%s>: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,defaultv,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -716,11 +718,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsString(const char opt[],const char
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
-          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth()
-          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsTruth(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsReal(const char opt[],const char text[],const char man[],PetscReal defaultv,PetscReal *value,PetscBool  *set)
@@ -736,7 +738,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsReal(const char opt[],const char t
   }
   ierr = PetscOptionsGetReal(PetscOptionsObject.prefix,opt,value,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%G>: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,defaultv,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%G>: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,defaultv,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -765,11 +767,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsReal(const char opt[],const char t
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
-          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth()
-          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsTruth(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsScalar(const char opt[],const char text[],const char man[],PetscScalar defaultv,PetscScalar *value,PetscBool  *set)
@@ -808,11 +810,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsScalar(const char opt[],const char
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
-          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth()
-          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsTruth(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsName(const char opt[],const char text[],const char man[],PetscBool  *flg)
@@ -823,12 +825,12 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsName(const char opt[],const char t
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_LOGICAL,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscBool ),&amsopt->data);CHKERRQ(ierr);
-    *(PetscBool *)amsopt->data = PETSC_FALSE;
+    ierr = PetscMalloc(sizeof(PetscBool),&amsopt->data);CHKERRQ(ierr);
+    *(PetscBool*)amsopt->data = PETSC_FALSE;
   } 
   ierr = PetscOptionsHasName(PetscOptionsObject.prefix,opt,flg);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -864,10 +866,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsName(const char opt[],const char t
    Concepts: options database^list
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
-           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsList(const char opt[],const char ltext[],const char man[],PetscFList list,const char defaultv[],char value[],size_t len,PetscBool  *set)
@@ -917,10 +919,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsList(const char opt[],const char l
    Concepts: options database^list
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
-           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsEList(const char opt[],const char ltext[],const char man[],const char *const*list,PetscInt ntext,const char defaultv[],PetscInt *value,PetscBool  *set)
@@ -943,15 +945,15 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsEList(const char opt[],const char 
     for (i=0; i<ntext; i++){
       ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm," %s",list[i]);CHKERRQ(ierr);
     }
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm," (%s)\n",ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsTruthGroupBegin"
+#define __FUNCT__ "PetscOptionsBoolGroupBegin"
 /*@C
-     PetscOptionsTruthGroupBegin - First in a series of logical queries on the options database for
+     PetscOptionsBoolGroupBegin - First in a series of logical queries on the options database for
        which at most a single value can be true.
 
    Logically Collective on the communicator passed in PetscOptionsBegin()
@@ -968,18 +970,18 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsEList(const char opt[],const char 
 
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
-   Must be followed by 0 or more PetscOptionsTruthGroup()s and PetscOptionsTruthGroupEnd()
+   Must be followed by 0 or more PetscOptionsBoolGroup()s and PetscOptionsBoolGroupEnd()
 
     Concepts: options database^logical group
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
-           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsTruthGroupBegin(const char opt[],const char text[],const char man[],PetscBool  *flg)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBoolGroupBegin(const char opt[],const char text[],const char man[],PetscBool  *flg)
 {
   PetscErrorCode ierr;
   PetscOptions   amsopt;
@@ -987,22 +989,22 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsTruthGroupBegin(const char opt[],c
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_LOGICAL,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscBool ),&amsopt->data);CHKERRQ(ierr);
-    *(PetscBool *)amsopt->data = PETSC_FALSE;
+    ierr = PetscMalloc(sizeof(PetscBool),&amsopt->data);CHKERRQ(ierr);
+    *(PetscBool*)amsopt->data = PETSC_FALSE;
   } 
   *flg = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PetscOptionsObject.prefix,opt,flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PetscOptionsObject.prefix,opt,flg,PETSC_NULL);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
     ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  Pick at most one of -------------\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"    -%s%s: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"    -%s%s: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsTruthGroup"
+#define __FUNCT__ "PetscOptionsBoolGroup"
 /*@C
-     PetscOptionsTruthGroup - One in a series of logical queries on the options database for
+     PetscOptionsBoolGroup - One in a series of logical queries on the options database for
        which at most a single value can be true.
 
    Logically Collective on the communicator passed in PetscOptionsBegin()
@@ -1019,18 +1021,18 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsTruthGroupBegin(const char opt[],c
 
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
-   Must follow a PetscOptionsTruthGroupBegin() and preceded a PetscOptionsTruthGroupEnd()
+   Must follow a PetscOptionsBoolGroupBegin() and preceded a PetscOptionsBoolGroupEnd()
 
     Concepts: options database^logical group
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
-           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsTruthGroup(const char opt[],const char text[],const char man[],PetscBool  *flg)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBoolGroup(const char opt[],const char text[],const char man[],PetscBool  *flg)
 {
   PetscErrorCode ierr;
   PetscOptions   amsopt;
@@ -1038,21 +1040,21 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsTruthGroup(const char opt[],const 
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_LOGICAL,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscBool ),&amsopt->data);CHKERRQ(ierr);
-    *(PetscBool *)amsopt->data = PETSC_FALSE;
+    ierr = PetscMalloc(sizeof(PetscBool),&amsopt->data);CHKERRQ(ierr);
+    *(PetscBool*)amsopt->data = PETSC_FALSE;
   } 
   *flg = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PetscOptionsObject.prefix,opt,flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PetscOptionsObject.prefix,opt,flg,PETSC_NULL);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"    -%s%s: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"    -%s%s: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsTruthGroupEnd"
+#define __FUNCT__ "PetscOptionsBoolGroupEnd"
 /*@C
-     PetscOptionsTruthGroupEnd - Last in a series of logical queries on the options database for
+     PetscOptionsBoolGroupEnd - Last in a series of logical queries on the options database for
        which at most a single value can be true.
 
    Logically Collective on the communicator passed in PetscOptionsBegin()
@@ -1069,18 +1071,18 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsTruthGroup(const char opt[],const 
 
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
-   Must follow a PetscOptionsTruthGroupBegin()
+   Must follow a PetscOptionsBoolGroupBegin()
 
     Concepts: options database^logical group
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
-           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsTruthGroupEnd(const char opt[],const char text[],const char man[],PetscBool  *flg)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBoolGroupEnd(const char opt[],const char text[],const char man[],PetscBool  *flg)
 {
   PetscErrorCode ierr;
   PetscOptions   amsopt;
@@ -1088,21 +1090,21 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsTruthGroupEnd(const char opt[],con
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_LOGICAL,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscBool ),&amsopt->data);CHKERRQ(ierr);
-    *(PetscBool *)amsopt->data = PETSC_FALSE;
+    ierr = PetscMalloc(sizeof(PetscBool),&amsopt->data);CHKERRQ(ierr);
+    *(PetscBool*)amsopt->data = PETSC_FALSE;
   } 
   *flg = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PetscOptionsObject.prefix,opt,flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PetscOptionsObject.prefix,opt,flg,PETSC_NULL);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"    -%s%s: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"    -%s%s: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsTruth"
+#define __FUNCT__ "PetscOptionsBool"
 /*@C
-   PetscOptionsTruth - Determines if a particular option is in the database with a true or false
+   PetscOptionsBool - Determines if a particular option is in the database with a true or false
 
    Logically Collective on the communicator passed in PetscOptionsBegin()
 
@@ -1122,14 +1124,14 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsTruthGroupEnd(const char opt[],con
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
-          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth()
-          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsTruth(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsTruth(const char opt[],const char text[],const char man[],PetscBool  deflt,PetscBool  *flg,PetscBool  *set)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBool(const char opt[],const char text[],const char man[],PetscBool  deflt,PetscBool  *flg,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscBool      iset;
@@ -1138,17 +1140,17 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsTruth(const char opt[],const char 
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_LOGICAL,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscBool ),&amsopt->data);CHKERRQ(ierr);
-    *(PetscBool *)amsopt->data = deflt;
+    ierr = PetscMalloc(sizeof(PetscBool),&amsopt->data);CHKERRQ(ierr);
+    *(PetscBool*)amsopt->data = deflt;
   } 
-  ierr = PetscOptionsGetTruth(PetscOptionsObject.prefix,opt,flg,&iset);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PetscOptionsObject.prefix,opt,flg,&iset);CHKERRQ(ierr);
   if (!iset) {
     if (flg) *flg = deflt;
   }
   if (set) *set = iset;
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
     const char *v = PetscBools[deflt];
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s: <%s> %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,v,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s: <%s> %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,v,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1183,10 +1185,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsTruth(const char opt[],const char 
    Concepts: options database^array of strings
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
-           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsRealArray(const char opt[],const char text[],const char man[],PetscReal value[],PetscInt *n,PetscBool  *set)
@@ -1211,7 +1213,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsRealArray(const char opt[],const c
     for (i=1; i<*n; i++) {
       ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,",%G",value[i]);CHKERRQ(ierr);
     }
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,">: %s (%s)\n",text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,">: %s (%s)\n",text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1247,10 +1249,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsRealArray(const char opt[],const c
    Concepts: options database^array of strings
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
-           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList(), PetscOptionsRealArray()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsIntArray(const char opt[],const char text[],const char man[],PetscInt value[],PetscInt *n,PetscBool  *set)
@@ -1275,7 +1277,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsIntArray(const char opt[],const ch
     for (i=1; i<*n; i++) {
       ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,",%d",value[i]);CHKERRQ(ierr);
     }
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,">: %s (%s)\n",text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,">: %s (%s)\n",text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1314,10 +1316,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsIntArray(const char opt[],const ch
    Concepts: options database^array of strings
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
-           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsStringArray(const char opt[],const char text[],const char man[],char *value[],PetscInt *nmax,PetscBool  *set)
@@ -1333,15 +1335,15 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsStringArray(const char opt[],const
   } 
   ierr = PetscOptionsGetStringArray(PetscOptionsObject.prefix,opt,value,nmax,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <string1,string2,...>: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <string1,string2,...>: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsTruthArray"
+#define __FUNCT__ "PetscOptionsBoolArray"
 /*@C
-   PetscOptionsTruthArray - Gets an array of logical values (true or false) for a particular
+   PetscOptionsBoolArray - Gets an array of logical values (true or false) for a particular
    option in the database. The values must be separated with commas with 
    no intervening spaces. 
 
@@ -1368,13 +1370,13 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsStringArray(const char opt[],const
    Concepts: options database^array of strings
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
-           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsTruthArray(const char opt[],const char text[],const char man[],PetscBool  value[],PetscInt *n,PetscBool  *set)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBoolArray(const char opt[],const char text[],const char man[],PetscBool  value[],PetscInt *n,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -1385,18 +1387,18 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsTruthArray(const char opt[],const 
     PetscBool  *vals;
 
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_LOGICAL_ARRAY,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc((*n)*sizeof(PetscBool ),&amsopt->data);CHKERRQ(ierr);
-    vals = (PetscBool *)amsopt->data;
+    ierr = PetscMalloc((*n)*sizeof(PetscBool),&amsopt->data);CHKERRQ(ierr);
+    vals = (PetscBool*)amsopt->data;
     for (i=0; i<*n; i++) vals[i] = value[i];
     amsopt->arraylength = *n;
   }
-  ierr = PetscOptionsGetTruthArray(PetscOptionsObject.prefix,opt,value,n,set);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBoolArray(PetscOptionsObject.prefix,opt,value,n,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
     ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%d",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,value[0]);CHKERRQ(ierr);
     for (i=1; i<*n; i++) {
       ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,",%d",value[i]);CHKERRQ(ierr);
     }
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,">: %s (%s)\n",text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,">: %s (%s)\n",text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1423,10 +1425,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsTruthArray(const char opt[],const 
    Concepts: options database^subheading
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
-           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsHead(const char head[])

@@ -132,12 +132,12 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsEList("-run", "The run type", "fetidp.cxx", runTypes, 3, runTypes[options->run], &run, PETSC_NULL);CHKERRQ(ierr);
     options->run = (RunType) run;
     ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "fetidp.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-reentrant", "Make a reentrant-corner mesh", "fetidp.cxx", options->reentrantMesh, &options->reentrantMesh, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-circular_mesh", "Make a reentrant-corner mesh", "fetidp.cxx", options->circularMesh, &options->circularMesh, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-singularity", "Refine the mesh around a singularity with a priori poisson error estimation", "fetidp.cxx", options->refineSingularity, &options->refineSingularity, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-structured", "Use a structured mesh", "fetidp.cxx", options->structured, &options->structured, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-generate", "Generate the unstructured mesh", "fetidp.cxx", options->generateMesh, &options->generateMesh, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-interpolate", "Generate intermediate mesh elements", "fetidp.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-reentrant", "Make a reentrant-corner mesh", "fetidp.cxx", options->reentrantMesh, &options->reentrantMesh, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-circular_mesh", "Make a reentrant-corner mesh", "fetidp.cxx", options->circularMesh, &options->circularMesh, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-singularity", "Refine the mesh around a singularity with a priori poisson error estimation", "fetidp.cxx", options->refineSingularity, &options->refineSingularity, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-structured", "Use a structured mesh", "fetidp.cxx", options->structured, &options->structured, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-generate", "Generate the unstructured mesh", "fetidp.cxx", options->generateMesh, &options->generateMesh, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "fetidp.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "fetidp.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
     filename << "data/bratu_" << options->dim <<"d";
     ierr = PetscStrcpy(options->baseFilename, filename.str().c_str());CHKERRQ(ierr);

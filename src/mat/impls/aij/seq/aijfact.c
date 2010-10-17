@@ -39,8 +39,8 @@ PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS 
     }
   }
 
-  ierr = PetscMalloc(n*sizeof(PetscBool ),&done);CHKERRQ(ierr);
-  ierr = PetscMemzero(done,n*sizeof(PetscBool ));CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscBool),&done);CHKERRQ(ierr);
+  ierr = PetscMemzero(done,n*sizeof(PetscBool));CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscInt),&order);CHKERRQ(ierr);
   order[0] = current;
   for (i=0; i<n-1; i++) {
@@ -297,7 +297,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
 
   PetscFunctionBegin; 
   /* Uncomment the oldatastruct part only while testing new data structure for MatSolve() */
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-lu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-lu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
   if(olddatastruct){
     ierr = MatLUFactorSymbolic_SeqAIJ_inplace(B,A,isrow,iscol,info);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -440,7 +440,7 @@ PetscErrorCode MatFactorDumpMatrix(Mat A)
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-mat_factor_dump_on_error",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_factor_dump_on_error",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
     char        filename[PETSC_MAX_PATH_LEN];
@@ -1726,7 +1726,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   /* Uncomment the old data struct part only while testing new data structure for MatSolve() */
   /*
   PetscBool          olddatastruct=PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-ilu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-ilu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
   if(olddatastruct){
     ierr = MatILUFactorSymbolic_SeqAIJ_inplace(fact,A,isrow,iscol,info);CHKERRQ(ierr);
     PetscFunctionReturn(0);

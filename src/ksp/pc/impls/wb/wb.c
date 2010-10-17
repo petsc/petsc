@@ -709,7 +709,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc)
     if (flg) {
       ierr = PCExoticSetType(pc,mgctype);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsTruth("-pc_exotic_direct_solver","use direct solver to construct interpolation","None",ctx->directSolve,&ctx->directSolve,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_exotic_direct_solver","use direct solver to construct interpolation","None",ctx->directSolve,&ctx->directSolve,PETSC_NULL);CHKERRQ(ierr);
     if (!ctx->directSolve) {
       if (!ctx->ksp) {
         const char *prefix;

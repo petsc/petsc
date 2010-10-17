@@ -156,7 +156,7 @@ int main(int argc,char **args)
     /*
        View the exact solution vector if desired
     */
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-view_exact_sol",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-view_exact_sol",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
     ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);

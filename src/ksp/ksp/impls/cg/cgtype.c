@@ -70,7 +70,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCGUseSingleReduction(KSP ksp,PetscBool  flg
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveTruth(ksp,flg,2);
+  PetscValidLogicalCollectiveBool(ksp,flg,2);
   ierr = PetscTryMethod(ksp,"KSPCGUseSingleReduction_C",(KSP,PetscBool),(ksp,flg));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

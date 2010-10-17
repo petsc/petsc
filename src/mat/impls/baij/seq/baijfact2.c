@@ -5778,7 +5778,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
 
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(isicol,&col_identity);CHKERRQ(ierr);
-  both_identity = (PetscBool ) (row_identity && col_identity);
+  both_identity = (PetscBool) (row_identity && col_identity);
   if (both_identity){
     C->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering;
   } else {
@@ -5896,7 +5896,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
 
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
-  both_identity = (PetscBool ) (row_identity && col_identity);
+  both_identity = (PetscBool) (row_identity && col_identity);
   
   if (!levels && both_identity) { 
     /* special case: ilu(0) with natural ordering */
@@ -6085,7 +6085,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
 
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
-  both_identity = (PetscBool ) (row_identity && col_identity);
+  both_identity = (PetscBool) (row_identity && col_identity);
 
   if (!levels && both_identity) {  /* special case copy the nonzero structure */  
     ierr = MatDuplicateNoCreate_SeqBAIJ(fact,A,MAT_DO_NOT_COPY_VALUES,PETSC_TRUE);CHKERRQ(ierr);

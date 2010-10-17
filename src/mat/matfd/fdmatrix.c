@@ -325,19 +325,19 @@ PetscErrorCode MatFDColoringView_Private(MatFDColoring fd)
 
   PetscFunctionBegin;
   ierr = PetscViewerASCIIGetStdout(((PetscObject)fd)->comm,&viewer);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-mat_fd_coloring_view",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_fd_coloring_view",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MatFDColoringView(fd,viewer);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-mat_fd_coloring_view_info",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_fd_coloring_view_info",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
     ierr = MatFDColoringView(fd,viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-mat_fd_coloring_view_draw",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_fd_coloring_view_draw",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MatFDColoringView(fd,PETSC_VIEWER_DRAW_(((PetscObject)fd)->comm));CHKERRQ(ierr);
     ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(((PetscObject)fd)->comm));CHKERRQ(ierr);
@@ -546,7 +546,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply_AIJ(Mat J,MatFDColoring col
 
   ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscInfo(coloring,"Not calling MatZeroEntries()\n");CHKERRQ(ierr);
   } else {
@@ -702,7 +702,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply_AIJ(Mat J,MatFDColoring col
   ierr = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-mat_null_space_test",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_null_space_test",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MatNullSpaceTest(J->nullsp,J,PETSC_NULL);CHKERRQ(ierr);
   }
@@ -756,7 +756,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApplyTS(Mat J,MatFDColoring color
 
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscInfo(coloring,"Not calling MatZeroEntries()\n");CHKERRQ(ierr);
   } else {

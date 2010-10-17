@@ -121,7 +121,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       dir->col=0; 
 
       flg  = PETSC_FALSE;
-      ierr = PetscOptionsGetTruth(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&flg,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&flg,PETSC_NULL);CHKERRQ(ierr);
       if (flg) {
         PetscReal tol = 1.e-10;
         ierr = PetscOptionsGetReal(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
@@ -151,7 +151,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
           dir->col=0;
         }
         flg  = PETSC_FALSE;
-        ierr = PetscOptionsGetTruth(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&flg,PETSC_NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&flg,PETSC_NULL);CHKERRQ(ierr);
         if (flg) {
           PetscReal tol = 1.e-10;
           ierr = PetscOptionsGetReal(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
@@ -260,7 +260,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering(PC pc,PetscBool  flag
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidLogicalCollectiveTruth(pc,flag,2);
+  PetscValidLogicalCollectiveBool(pc,flag,2);
   ierr = PetscTryMethod(pc,"PCFactorSetReuseOrdering_C",(PC,PetscBool),(pc,flag));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

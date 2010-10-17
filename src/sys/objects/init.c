@@ -247,9 +247,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   /*
       Setup the memory management; support for tracing malloc() usage 
   */
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-malloc_log",&flg3,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_log",&flg3,PETSC_NULL);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-malloc",&flg1,&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc",&flg1,&flg2);CHKERRQ(ierr);
   if ((!flg2 || flg1) && !petscsetmallocvisited) {
 #if defined(PETSC_HAVE_VALGRIND)
     if (flg2 || !(RUNNING_ON_VALGRIND)) {
@@ -261,25 +261,25 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Private(void)
 #endif
   }
 #else
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-malloc",&flg2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc",&flg2,PETSC_NULL);CHKERRQ(ierr);
   if (flg1 || flg2 || flg3) {ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);}
 #endif
   if (flg3) {
     ierr = PetscMallocSetDumpLog();CHKERRQ(ierr); 
   }
   flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-malloc_debug",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_debug",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) { 
     ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);
     ierr = PetscMallocDebug(PETSC_TRUE);CHKERRQ(ierr);
   }
 
   flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-malloc_info",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_info",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (!flg1) {
     flg1 = PETSC_FALSE;
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-memory_info",&flg1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-memory_info",&flg1,PETSC_NULL);CHKERRQ(ierr);
   }
   if (flg1) {
     ierr = PetscMemorySetGetMaximumUsage();CHKERRQ(ierr);
@@ -332,21 +332,21 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Private(void)
       Setup the error handling
   */
   flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-on_error_abort",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-on_error_abort",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) { ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr);}
   flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-on_error_mpiabort",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-on_error_mpiabort",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) { ierr = PetscPushErrorHandler(PetscMPIAbortErrorHandler,0);CHKERRQ(ierr);}
   flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-mpi_return_on_error",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-mpi_return_on_error",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) {
     ierr = MPI_Errhandler_set(comm,MPI_ERRORS_RETURN);CHKERRQ(ierr);
   }
   flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-no_signal_handler",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-no_signal_handler",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (!flg1) {ierr = PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0);CHKERRQ(ierr);}
   flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-fp_trap",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-fp_trap",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) {ierr = PetscSetFPTrap(PETSC_FP_TRAP_ON);CHKERRQ(ierr);}
 
   /*
@@ -460,7 +460,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   */
 #if defined (PETSC_USE_INFO)
   flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-info",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-info",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) { 
     char logname[PETSC_MAX_PATH_LEN]; logname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-info",logname,250,&flg1);CHKERRQ(ierr);
@@ -483,14 +483,14 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   }
 #if defined(PETSC_HAVE_MPE)
   flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-log_mpe",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-log_mpe",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) PetscLogMPEBegin();
 #endif
   flg1 = PETSC_FALSE;
   flg2 = PETSC_FALSE;
   flg3 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-log_all",&flg1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-log",&flg2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-log_all",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-log",&flg2,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-log_summary",&flg3);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-log_summary_python",&flg4);CHKERRQ(ierr);
   if (flg1)                      {  ierr = PetscLogAllBegin();CHKERRQ(ierr); }
@@ -521,7 +521,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   ierr = PetscStackCreate();CHKERRQ(ierr);
 #endif
 
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-options_gui",&PetscOptionsPublish,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-options_gui",&PetscOptionsPublish,PETSC_NULL);CHKERRQ(ierr);
 
   /*
        Print basic help message
@@ -594,7 +594,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   } else {
     flg1 = PETSC_FALSE;
   }
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-cuda_synchronize",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-cuda_synchronize",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) synchronizeCUDA = PETSC_TRUE;
 #endif
 

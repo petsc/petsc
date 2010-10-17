@@ -90,7 +90,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Ob
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetTruth(PETSC_NULL, "-interpolate", &interpolate, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL, "-interpolate", &interpolate, PETSC_NULL);CHKERRQ(ierr);
   // Open EXODUS II file
   exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);CHKERRQ(!exoid);
   // Read database parameters

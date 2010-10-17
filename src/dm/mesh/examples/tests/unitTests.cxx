@@ -61,18 +61,18 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->idistribution = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-function", "Run functionality tests", "unitTests", options->function, &options->function, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-stress", "Run stress tests", "unitTests", options->stress, &options->stress, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-memory", "Run memory tests", "unitTests", options->memory, &options->memory, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-stl", "Run STL tests", "unitTests", options->stl, &options->stl, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-sifter", "Run Sifter tests", "unitTests", options->sifter, &options->sifter, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-sieve", "Run Sieve tests", "unitTests", options->sieve, &options->sieve, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-isieve", "Run ISieve tests", "unitTests", options->isieve, &options->isieve, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-section", "Run Section tests", "unitTests", options->section, &options->section, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-isection", "Run ISection tests", "unitTests", options->isection, &options->isection, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-imesh", "Run IMesh tests", "unitTests", options->imesh, &options->imesh, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-distribution", "Run Distribution tests", "unitTests", options->distribution, &options->distribution, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-idistribution", "Run IDistribution tests", "unitTests", options->idistribution, &options->idistribution, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-function", "Run functionality tests", "unitTests", options->function, &options->function, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-stress", "Run stress tests", "unitTests", options->stress, &options->stress, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-memory", "Run memory tests", "unitTests", options->memory, &options->memory, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-stl", "Run STL tests", "unitTests", options->stl, &options->stl, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-sifter", "Run Sifter tests", "unitTests", options->sifter, &options->sifter, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-sieve", "Run Sieve tests", "unitTests", options->sieve, &options->sieve, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-isieve", "Run ISieve tests", "unitTests", options->isieve, &options->isieve, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-section", "Run Section tests", "unitTests", options->section, &options->section, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-isection", "Run ISection tests", "unitTests", options->isection, &options->isection, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-imesh", "Run IMesh tests", "unitTests", options->imesh, &options->imesh, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-distribution", "Run Distribution tests", "unitTests", options->distribution, &options->distribution, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-idistribution", "Run IDistribution tests", "unitTests", options->idistribution, &options->idistribution, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

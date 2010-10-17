@@ -1815,7 +1815,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJ(Mat B)
   b->v_loc        = 0;
   b->n_loc        = 0;
   ierr = PetscOptionsBegin(((PetscObject)B)->comm,PETSC_NULL,"Options for loading MPISBAIJ matrix 1","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_use_hash_table","Use hash table to save memory in constructing matrix","MatSetOption",PETSC_FALSE,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_use_hash_table","Use hash table to save memory in constructing matrix","MatSetOption",PETSC_FALSE,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) { 
       PetscReal fact = 1.39;
       ierr = MatSetOption(B,MAT_USE_HASH_TABLE,PETSC_TRUE);CHKERRQ(ierr);

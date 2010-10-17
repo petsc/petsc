@@ -2164,7 +2164,7 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
 
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(((PetscObject)coloring)->prefix,"-mat_fd_coloring_dont_rezero",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)coloring)->prefix,"-mat_fd_coloring_dont_rezero",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscInfo(coloring,"Not calling MatZeroEntries()\n");CHKERRQ(ierr);
   } else {

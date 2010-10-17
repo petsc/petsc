@@ -43,11 +43,11 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->laplaceBEM    = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-function", "Run functionality tests", "unitTests", options->function, &options->function, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-stress", "Run stress tests", "unitTests", options->stress, &options->stress, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-convergence", "Run convergence tests", "unitTests", options->convergence, &options->convergence, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-bratu", "Run Bratu tests", "unitTests", options->bratu, &options->bratu, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-laplace_bem", "Run Laplace BEM tests", "unitTests", options->laplaceBEM, &options->laplaceBEM, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-function", "Run functionality tests", "unitTests", options->function, &options->function, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-stress", "Run stress tests", "unitTests", options->stress, &options->stress, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-convergence", "Run convergence tests", "unitTests", options->convergence, &options->convergence, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-bratu", "Run Bratu tests", "unitTests", options->bratu, &options->bratu, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-laplace_bem", "Run Laplace BEM tests", "unitTests", options->laplaceBEM, &options->laplaceBEM, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

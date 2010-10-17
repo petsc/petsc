@@ -328,7 +328,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
-  both_identity = (PetscBool ) (row_identity && col_identity);
+  both_identity = (PetscBool) (row_identity && col_identity);
   ierr = MatSeqBAIJSetNumericFactorization(B,both_identity);CHKERRQ(ierr);
   PetscFunctionReturn(0);
  }
@@ -476,7 +476,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
 
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
-  both_identity = (PetscBool ) (row_identity && col_identity);
+  both_identity = (PetscBool) (row_identity && col_identity);
   ierr = MatSeqBAIJSetNumericFactorization_inplace(B,both_identity);CHKERRQ(ierr);
   PetscFunctionReturn(0);
  }

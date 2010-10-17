@@ -697,7 +697,7 @@ PetscErrorCode PetscSetMUMPSOptions(Mat F, Mat A)
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"MUMPS Options","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-mat_mumps_view","View MUMPS parameters","None",lu->mumpsview,&lu->mumpsview,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_mumps_view","View MUMPS parameters","None",lu->mumpsview,&lu->mumpsview,PETSC_NULL);CHKERRQ(ierr);
   if (lu->size == 1){
     lu->id.ICNTL(18) = 0;   /* centralized assembled matrix input */
   } else {

@@ -190,7 +190,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
   }
   /* Special processing */
   opt = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL, "-log_sync", &opt,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL, "-log_sync", &opt,PETSC_NULL);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscLogEventSetActiveAll(VEC_ScatterBarrier, PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscLogEventSetActiveAll(VEC_NormBarrier, PETSC_TRUE);CHKERRQ(ierr);

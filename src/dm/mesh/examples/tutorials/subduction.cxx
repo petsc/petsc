@@ -97,7 +97,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsReal("-lid_depth", "The depth of the lid (km)", "subduction.cxx", options->lidDepth, &options->lidDepth, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-slab_dip", "The slab dip angle (degrees)", "subduction.cxx", options->slabDip, &options->slabDip, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-feature_size", "An initial discretzation size (m)", "subduction.cxx", options->featureSize, &options->featureSize, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-interpolate", "Create intermediate mesh elements", "subduction.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Create intermediate mesh elements", "subduction.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-refinement_limit", "The maximum size of any cell", "subduction.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   // Fix units

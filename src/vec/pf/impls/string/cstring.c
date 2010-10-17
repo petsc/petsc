@@ -78,7 +78,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFStringCreateFunction(PF pf,char *string,void
     ierr = PetscStrcpy(tmp,".");CHKERRQ(ierr);
     comm = ((PetscObject)pf)->comm;
   } 
-  ierr = PetscOptionsGetTruth(((PetscObject)pf)->prefix,"-pf_string_keep_files",&keeptmpfiles,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)pf)->prefix,"-pf_string_keep_files",&keeptmpfiles,PETSC_NULL);CHKERRQ(ierr);
   if (keeptmpfiles) {
     sprintf(task,"cd %s ; mkdir ${USERNAME} ; cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./makefile ; ke  MIN=%d NOUT=%d petscdlib STRINGFUNCTION=\"%s\" ; sync\n",tmp,(int)pf->dimin,(int)pf->dimout,string);
   } else {

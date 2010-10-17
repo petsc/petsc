@@ -398,7 +398,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
 
-   ierr = PetscOptionsGetTruth(PETSC_NULL,"-fd_jacobian_coloring",&fd_jacobian_coloring,0);CHKERRQ(ierr);
+   ierr = PetscOptionsGetBool(PETSC_NULL,"-fd_jacobian_coloring",&fd_jacobian_coloring,0);CHKERRQ(ierr);
    if (!fd_jacobian_coloring){
      ierr = SNESSetJacobian(snes,Jac,Jac,FormJacobian,(void*)&user);CHKERRQ(ierr);
    } else { /* Use matfdcoloring */

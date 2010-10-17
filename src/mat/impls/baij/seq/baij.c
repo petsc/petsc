@@ -2352,7 +2352,7 @@ PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,const MatFactorInfo *i
   ierr = ISInvertPermutation(col,PETSC_DECIDE,&a->icol);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(inA,a->icol);CHKERRQ(ierr);
   
-  ierr = MatSeqBAIJSetNumericFactorization_inplace(inA,(PetscBool )(row_identity && col_identity));CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetNumericFactorization_inplace(inA,(PetscBool)(row_identity && col_identity));CHKERRQ(ierr);
   if (!a->solve_work) {
     ierr = PetscMalloc((inA->rmap->N+inA->rmap->bs)*sizeof(PetscScalar),&a->solve_work);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(inA,(inA->rmap->N+inA->rmap->bs)*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -2674,7 +2674,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply_BAIJ(Mat J,MatFDColoring co
 
   ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscInfo(coloring,"Not calling MatZeroEntries()\n");CHKERRQ(ierr);
   } else {
@@ -3063,7 +3063,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
 
   b       = (Mat_SeqBAIJ*)B->data;
   ierr = PetscOptionsBegin(((PetscObject)B)->comm,PETSC_NULL,"Optimize options for SEQBAIJ matrix 2 ","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_no_unroll","Do not optimize for block size (slow)",PETSC_NULL,PETSC_FALSE,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_no_unroll","Do not optimize for block size (slow)",PETSC_NULL,PETSC_FALSE,&flg,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (!flg) {

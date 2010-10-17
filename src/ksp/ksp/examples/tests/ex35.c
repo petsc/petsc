@@ -48,7 +48,7 @@ int main(int argc,char **argv)
 
   /* Test sbaij matrix */
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-test_sbaij",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-test_sbaij",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     Mat sA;
     ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
@@ -66,7 +66,7 @@ int main(int argc,char **argv)
 
   /* check final residual */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL, "-check_final_residual", &flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL, "-check_final_residual", &flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg){
     Vec            b1;
     PetscReal      norm;

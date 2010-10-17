@@ -27,12 +27,12 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options * options) {
   options->useZeroBase = PETSC_FALSE;
   options->flips = 100000000;
   ierr = PetscStrcpy(options->baseFilename, "data/flip_test");CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-generate", "generates a basic mesh for testing.", "mesh_surgery.cxx", options->generate, &options->generate, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-generate", "generates a basic mesh for testing.", "mesh_surgery.cxx", options->generate, &options->generate, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(comm, "", "Options:", "mesh_surgery.cxx");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The Mesh Dimension", "mesh_surgery.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-use_zero_base", "Use zero-base feature indexing", "mesh_surgery.cxx", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-use_zero_base", "Use zero-base feature indexing", "mesh_surgery.cxx", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-flips", "the number of flips to perform", "mesh_surgery.cxx", options->flips, &options->flips, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-dolfin", "The mesh is a dolfin mesh", "mesh_surgery.cxx", options->dolfin, &options->dolfin, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dolfin", "The mesh is a dolfin mesh", "mesh_surgery.cxx", options->dolfin, &options->dolfin, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-base_filename", "the base filename of the mesh used", "mesh_surgery.cxx", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);

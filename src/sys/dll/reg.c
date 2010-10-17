@@ -139,7 +139,7 @@ PetscErrorCode PetscFinalize_DynamicLibraries(void)
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-dll_view",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-dll_view",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) { ierr = PetscDLLibraryPrintPath(DLLibrariesLoaded);CHKERRQ(ierr); }
   ierr = PetscDLLibraryClose(DLLibrariesLoaded);CHKERRQ(ierr);
   DLLibrariesLoaded = 0;
@@ -368,11 +368,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFListFind(PetscFList fl,MPI_Comm comm,con
       ierr = PetscStrcmp(path,entry->path,&f1);CHKERRQ(ierr);
       ierr = PetscStrcmp(function,entry->rname,&f2);CHKERRQ(ierr);
       ierr = PetscStrcmp(function,entry->name,&f3);CHKERRQ(ierr);
-      flg =  (PetscBool ) ((f1 && f2) || (f1 && f3));
+      flg =  (PetscBool) ((f1 && f2) || (f1 && f3));
     } else if (!path) {
       ierr = PetscStrcmp(function,entry->name,&f1);CHKERRQ(ierr);
       ierr = PetscStrcmp(function,entry->rname,&f2);CHKERRQ(ierr);
-      flg =  (PetscBool ) (f1 || f2);
+      flg =  (PetscBool) (f1 || f2);
     } else {
       ierr = PetscStrcmp(function,entry->name,&flg);CHKERRQ(ierr);
       if (flg) {

@@ -133,7 +133,7 @@ static PetscErrorCode MatMFFDSetFromOptions_WP(MatMFFD ctx)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Walker-Pernice options");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_mffd_compute_normu","Compute the norm of u","MatMFFDWPSetComputeNormU",
+    ierr = PetscOptionsBool("-mat_mffd_compute_normu","Compute the norm of u","MatMFFDWPSetComputeNormU",
                           hctx->computenormU,&hctx->computenormU,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

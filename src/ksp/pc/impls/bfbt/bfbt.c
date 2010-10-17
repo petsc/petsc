@@ -353,7 +353,7 @@ PetscErrorCode PCSetFromOptions_BFBt(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("BFBt options");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-pc_bfbt_scaled","Scale by the diagonal of K","PCBFBtSetScaled",ctx->scaled,&ctx->scaled,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_bfbt_scaled","Scale by the diagonal of K","PCBFBtSetScaled",ctx->scaled,&ctx->scaled,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ctx->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -339,13 +339,13 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Pseudo-timestepping options");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-ts_monitor","Monitor convergence","TSPseudoMonitorDefault",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ts_monitor","Monitor convergence","TSPseudoMonitorDefault",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ts)->comm,"stdout",0,&viewer);CHKERRQ(ierr);
       ierr = TSMonitorSet(ts,TSPseudoMonitorDefault,viewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-ts_pseudo_increment_dt_from_initial_dt","Increase dt as a ratio from original dt","TSPseudoIncrementDtFromInitialDt",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ts_pseudo_increment_dt_from_initial_dt","Increase dt as a ratio from original dt","TSPseudoIncrementDtFromInitialDt",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = TSPseudoIncrementDtFromInitialDt(ts);CHKERRQ(ierr);
     }

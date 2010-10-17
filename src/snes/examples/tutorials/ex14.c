@@ -125,8 +125,8 @@ int main(int argc,char **argv)
      -fdcoloring : using finite differences with coloring to compute the Jacobian
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-fdcoloring",&coloring,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-fdcoloring",&coloring,PETSC_NULL);CHKERRQ(ierr);
   if (!matrix_free) {
     if (coloring) {
       ISColoring    iscoloring;

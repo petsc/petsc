@@ -393,9 +393,9 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
       if (mat->nooffprocentries) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process row %D even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set",im[i]);
       if (!aij->donotstash) {
         if (roworiented) {
-          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n,(PetscBool )(ignorezeroentries && (addv == ADD_VALUES)));CHKERRQ(ierr);
+          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n,(PetscBool)(ignorezeroentries && (addv == ADD_VALUES)));CHKERRQ(ierr);
         } else {
-          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m,(PetscBool )(ignorezeroentries && (addv == ADD_VALUES)));CHKERRQ(ierr);
+          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m,(PetscBool)(ignorezeroentries && (addv == ADD_VALUES)));CHKERRQ(ierr);
         }
       }
     }
@@ -1127,7 +1127,7 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     if (mat->rmap->N > 1024) {
       PetscBool  flg = PETSC_FALSE;
 
-      ierr = PetscOptionsGetTruth(((PetscObject) mat)->prefix, "-mat_ascii_output_large", &flg,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(((PetscObject) mat)->prefix, "-mat_ascii_output_large", &flg,PETSC_NULL);CHKERRQ(ierr);
       if (!flg) {
         SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"ASCII matrix output not allowed for matrices with more than 1024 rows, use binary format instead.\nYou can override this restriction using -mat_ascii_output_large.");
       }
@@ -5391,9 +5391,9 @@ void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[
     } else {
       if (!aij->donotstash) {
         if (roworiented) {
-          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n,(PetscBool )(ignorezeroentries && (addv == ADD_VALUES)));CHKERRQ(ierr);
+          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n,(PetscBool)(ignorezeroentries && (addv == ADD_VALUES)));CHKERRQ(ierr);
         } else {
-          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m,(PetscBool )(ignorezeroentries && (addv == ADD_VALUES)));CHKERRQ(ierr);
+          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m,(PetscBool)(ignorezeroentries && (addv == ADD_VALUES)));CHKERRQ(ierr);
         }
       }
     }

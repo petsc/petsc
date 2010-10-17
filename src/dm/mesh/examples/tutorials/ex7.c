@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     dim  = 2;
     ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex2.c", 2, &dim, PETSC_NULL);CHKERRQ(ierr);
     interpolate = PETSC_TRUE;
-    ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ex2.c", PETSC_TRUE, &interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Construct missing elements of the mesh", "ex2.c", PETSC_TRUE, &interpolate, PETSC_NULL);CHKERRQ(ierr);
     refinementLimit = 0.0;
     ierr = PetscOptionsReal("-refinement_limit", "The area of the largest triangle in the mesh", "ex2.c", 1.0, &refinementLimit, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-beta", "The coarsening constant beta", "ex2.c", 1.0, &beta, PETSC_NULL);CHKERRQ(ierr);

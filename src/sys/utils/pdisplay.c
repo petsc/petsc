@@ -101,7 +101,7 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscBool  *onehost)
   ierr = PetscStrcmp(hostname,roothostname,&flag);CHKERRQ(ierr);
   localmatch = (PetscMPIInt)flag;
   ierr = MPI_Allreduce(&localmatch,&allmatch,1,MPI_INT,MPI_LAND,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  *onehost = (PetscBool )allmatch;
+  *onehost = (PetscBool)allmatch;
   PetscFunctionReturn(0);
 }
 

@@ -301,13 +301,13 @@
       call SNESSetFromOptions(snes,ierr)
       test_linesearch = 0
       test_check      = 0
-      call PetscOptionsGetTruth(PETSC_NULL_CHARACTER,'-test_check',
+      call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-test_check',
      &                          test_check,PETSC_NULL_INTEGER,ierr)
       if (test_check.eq.1) then
         call SNESLineSearchSetPreCheck(snes,FormPreCheck,user,ierr)
         call SNESLineSearchSetPostCheck(snes,FormPostCheck,user,ierr) 
       else
-        call PetscOptionsGetTruth(PETSC_NULL_CHARACTER,
+        call PetscOptionsGetBool(PETSC_NULL_CHARACTER,
      &       '-test_linesearch',test_linesearch,PETSC_NULL_INTEGER,ierr)
         if (test_linesearch.eq.1) then
           call SNESLineSearchSet(snes,FormLineSearch,user,ierr)

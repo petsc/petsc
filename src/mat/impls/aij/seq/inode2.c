@@ -42,7 +42,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ_Inode(Mat A, MatAssemblyType mode)
 
   PetscFunctionBegin;
   /* info.nz_unneeded of zero denotes no structural change was made to the matrix during Assembly */
-  samestructure = (PetscBool )(!A->info.nz_unneeded);
+  samestructure = (PetscBool)(!A->info.nz_unneeded);
   /* check for identical nodes. If found, use inode functions */
   ierr = Mat_CheckInode(A,samestructure);CHKERRQ(ierr);
   a->inode.ibdiagvalid = PETSC_FALSE;
@@ -89,13 +89,13 @@ PetscErrorCode MatCreate_SeqAIJ_Inode(Mat B)
   b->inode.bdiag       = 0;
 
   ierr = PetscOptionsBegin(((PetscObject)B)->comm,((PetscObject)B)->prefix,"Options for SEQAIJ matrix","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_no_unroll","Do not optimize for inodes (slower)",PETSC_NULL,no_unroll,&no_unroll,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_no_unroll","Do not optimize for inodes (slower)",PETSC_NULL,no_unroll,&no_unroll,PETSC_NULL);CHKERRQ(ierr);
     if (no_unroll) {ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_unroll\n");CHKERRQ(ierr);}
-    ierr = PetscOptionsTruth("-mat_no_inode","Do not optimize for inodes -slower-",PETSC_NULL,no_inode,&no_inode,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_no_inode","Do not optimize for inodes -slower-",PETSC_NULL,no_inode,&no_inode,PETSC_NULL);CHKERRQ(ierr);
     if (no_inode) {ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_inode\n");CHKERRQ(ierr);}
     ierr = PetscOptionsInt("-mat_inode_limit","Do not use inodes larger then this value",PETSC_NULL,b->inode.limit,&b->inode.limit,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  b->inode.use = (PetscBool )(!(no_unroll || no_inode));
+  b->inode.use = (PetscBool)(!(no_unroll || no_inode));
   if (b->inode.limit > b->inode.max_limit) b->inode.limit = b->inode.max_limit;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatInodeAdjustForInodes_C",

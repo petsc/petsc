@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   /*
       Test putting two nodes on each processor, exact last processor gets the rest
   */
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-distribute",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-distribute",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscMalloc(size*sizeof(PetscInt),&localnodes);CHKERRQ(ierr);
     for (i=0; i<size-1; i++) { localnodes[i] = 2;}

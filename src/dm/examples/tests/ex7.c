@@ -71,7 +71,7 @@ int main(int argc,char **argv)
   ierr = DMDALocalToLocalEnd(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
 
   
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-save",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-save",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     sprintf(filename,"local.%d",rank);

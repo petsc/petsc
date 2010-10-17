@@ -572,7 +572,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     ierr = PetscOptionsName("-dmmg_monitor","Monitor DMMG iterations","DMMG",&monitor);CHKERRQ(ierr);
     ierr = PetscOptionsName("-dmmg_monitor_all","Monitor all DMMG iterations","DMMG",&monitorAll);CHKERRQ(ierr);
     /*
-    ierr = PetscOptionsTruth("-dmmg_fas","Use the Full Approximation Scheme","DMMGSetSNES",useFAS,&useFAS,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-dmmg_fas","Use the Full Approximation Scheme","DMMGSetSNES",useFAS,&useFAS,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsName("-dmmg_fas_block","Use point-block smoothing","DMMG",&fasBlock);CHKERRQ(ierr);
     ierr = PetscOptionsName("-dmmg_fas_ngmres","Use Nonlinear GMRES","DMMG",&fasGMRES);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-dmmg_fas_presmooth","Number of downward smoother iterates","DMMG",fasPresmooth,&fasPresmooth,PETSC_NULL);CHKERRQ(ierr);
@@ -583,7 +583,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     ierr = PetscOptionsInt("-dmmg_fas_max_its","Maximum number of iterates per smoother","DMMG",fasMaxIter,&fasMaxIter,PETSC_NULL);CHKERRQ(ierr);
     */
 
-    ierr = PetscOptionsTruth("-dmmg_coloring_from_mat","Compute the coloring directly from the matrix nonzero structure","DMMGSetSNES",dmmg[0]->getcoloringfrommat,&dmmg[0]->getcoloringfrommat,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-dmmg_coloring_from_mat","Compute the coloring directly from the matrix nonzero structure","DMMGSetSNES",dmmg[0]->getcoloringfrommat,&dmmg[0]->getcoloringfrommat,PETSC_NULL);CHKERRQ(ierr);
 
     ierr = PetscOptionsName("-dmmg_jacobian_fd","Compute sparse Jacobian explicitly with finite differencing","DMMGSetSNES",&fdjacobian);CHKERRQ(ierr);
     if (fdjacobian) jacobian = DMMGComputeJacobianWithFD;
@@ -592,12 +592,12 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     if (adjacobian) jacobian = DMMGComputeJacobianWithAdic;
 #endif
 
-    ierr = PetscOptionsTruthGroupBegin("-dmmg_jacobian_mf_fd_operator","Apply Jacobian via matrix free finite differencing","DMMGSetSNES",&mffdoperator);CHKERRQ(ierr);
-    ierr = PetscOptionsTruthGroupEnd("-dmmg_jacobian_mf_fd","Apply Jacobian via matrix free finite differencing even in computing preconditioner","DMMGSetSNES",&mffd);CHKERRQ(ierr);
+    ierr = PetscOptionsBoolGroupBegin("-dmmg_jacobian_mf_fd_operator","Apply Jacobian via matrix free finite differencing","DMMGSetSNES",&mffdoperator);CHKERRQ(ierr);
+    ierr = PetscOptionsBoolGroupEnd("-dmmg_jacobian_mf_fd","Apply Jacobian via matrix free finite differencing even in computing preconditioner","DMMGSetSNES",&mffd);CHKERRQ(ierr);
     if (mffd) mffdoperator = PETSC_TRUE;
 #if defined(PETSC_HAVE_ADIC)
-    ierr = PetscOptionsTruthGroupBegin("-dmmg_jacobian_mf_ad_operator","Apply Jacobian via matrix free ADIC (automatic differentiation)","DMMGSetSNES",&mfadoperator);CHKERRQ(ierr);
-    ierr = PetscOptionsTruthGroupEnd("-dmmg_jacobian_mf_ad","Apply Jacobian via matrix free ADIC (automatic differentiation) even in computing preconditioner","DMMGSetSNES",&mfad);CHKERRQ(ierr);
+    ierr = PetscOptionsBoolGroupBegin("-dmmg_jacobian_mf_ad_operator","Apply Jacobian via matrix free ADIC (automatic differentiation)","DMMGSetSNES",&mfadoperator);CHKERRQ(ierr);
+    ierr = PetscOptionsBoolGroupEnd("-dmmg_jacobian_mf_ad","Apply Jacobian via matrix free ADIC (automatic differentiation) even in computing preconditioner","DMMGSetSNES",&mfad);CHKERRQ(ierr);
     if (mfad) mfadoperator = PETSC_TRUE;
 #endif
     ierr = PetscOptionsEnum("-dmmg_iscoloring_type","Type of ISColoring","None",ISColoringTypes,(PetscEnum)dmmg[0]->isctype,(PetscEnum*)&dmmg[0]->isctype,PETSC_NULL);CHKERRQ(ierr);
@@ -762,7 +762,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     }
 
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsGetTruth(0, "-dmmg_fas_view", &flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(0, "-dmmg_fas_view", &flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       for(i = 0; i < nlevels; i++) {
         if (i == 0) {

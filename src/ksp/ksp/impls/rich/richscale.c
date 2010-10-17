@@ -58,7 +58,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetSelfScale(KSP ksp,PetscBool  s
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveTruth(ksp,scale,2);
+  PetscValidLogicalCollectiveBool(ksp,scale,2);
   ierr = PetscTryMethod(ksp,"KSPRichardsonSetSelfScale_C",(KSP,PetscBool),(ksp,scale));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

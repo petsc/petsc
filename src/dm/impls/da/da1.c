@@ -171,8 +171,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_1D(DM da)
      xs is the first local node number, x is the number of local nodes 
   */
   if (!lx) {
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-da_partition_blockcomm",&flg1,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-da_partition_nodes_at_end",&flg2,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-da_partition_blockcomm",&flg1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-da_partition_nodes_at_end",&flg2,PETSC_NULL);CHKERRQ(ierr);
     if (flg1) {      /* Block Comm type Distribution */
       xs = rank*M/m;
       x  = (rank + 1)*M/m - xs;

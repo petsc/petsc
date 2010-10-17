@@ -131,7 +131,7 @@ static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Eisenstat SSOR options");CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_eisenstat_omega","Relaxation factor 0 < omega < 2","PCEisenstatSetOmega",eis->omega,&eis->omega,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-pc_eisenstat_no_diagonal_scaling","Do not use standard diagonal scaling","PCEisenstatNoDiagonalScaling",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_eisenstat_no_diagonal_scaling","Do not use standard diagonal scaling","PCEisenstatNoDiagonalScaling",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = PCEisenstatNoDiagonalScaling(pc);CHKERRQ(ierr);
     }

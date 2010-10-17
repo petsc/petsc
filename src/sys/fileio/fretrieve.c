@@ -221,7 +221,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSharedTmp(MPI_Comm comm,PetscBool  *share
     *tagvalp = (int)*shared;
     ierr = PetscInfo2(0,"processors %s %s\n",(*shared) ? "share":"do NOT share",(iflg ? tmpname:"/tmp"));CHKERRQ(ierr);
   } else {
-    *shared = (PetscBool ) *tagvalp;
+    *shared = (PetscBool) *tagvalp;
   }
   PetscFunctionReturn(0);
 }
@@ -343,7 +343,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSharedWorkingDirectory(MPI_Comm comm,Pets
     }
     *tagvalp = (int)*shared;
   } else {
-    *shared = (PetscBool ) *tagvalp;
+    *shared = (PetscBool) *tagvalp;
   }
   ierr = PetscInfo1(0,"processors %s working directory\n",(*shared) ? "shared" : "do NOT share");CHKERRQ(ierr);
   PetscFunctionReturn(0);

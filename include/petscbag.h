@@ -27,7 +27,7 @@ $      ierr = PetscBagRegisterInt(bag,&params.height,22,"height","Height of the 
 $       
 
 .seealso:  PetscBagSetName(), PetscBagGetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
-           PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
+           PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterBool(), PetscBagRegisterScalar()
            PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
 S*/
 typedef struct _n_PetscBag*     PetscBag;
@@ -41,7 +41,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBagRegisterString(PetscBag,void*,P
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBagRegisterScalar(PetscBag,void*,PetscScalar,const  char*,const  char*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBagRegisterInt(PetscBag,void*,PetscInt,const  char*,const  char*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBagRegisterEnum(PetscBag,void*,const  char*[],PetscEnum,const char*,const  char*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBagRegisterTruth(PetscBag,void*,PetscBool ,const  char*,const  char*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBagRegisterBool(PetscBag,void*,PetscBool ,const  char*,const  char*);
 
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBagSetFromOptions(PetscBag);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscBagGetName(PetscBag, char **);

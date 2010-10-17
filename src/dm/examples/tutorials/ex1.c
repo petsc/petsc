@@ -76,7 +76,7 @@ int main(int argc,char **argv)
   ierr = DMLocalToGlobalEnd(da,local,ADD_VALUES,global);CHKERRQ(ierr);
   
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL, "-view_global", &flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL, "-view_global", &flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) { /* view global vector in natural ordering */
     ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }

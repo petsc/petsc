@@ -985,7 +985,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDMActive(KSP ksp,PetscBool  flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveTruth(ksp,flg,2);
+  PetscValidLogicalCollectiveBool(ksp,flg,2);
   ksp->dmActive = flg;
   PetscFunctionReturn(0);
 }

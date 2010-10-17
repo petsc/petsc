@@ -29,7 +29,7 @@
       wmumps = PETSC_FALSE
 
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg, ierr)
-      call PetscOptionsGetTruth(PETSC_NULL_CHARACTER,'-use_mumps',
+      call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-use_mumps',
      > wmumps,flg,ierr)
 
       call MatCreate(PETSC_COMM_WORLD, A, ierr)

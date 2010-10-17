@@ -254,7 +254,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       if (rnmax_computed<zeta) rnmax_computed = zeta;
       if (rnmax_true<zeta) rnmax_true = zeta;
 
-      bUpdateX = (PetscBool ) (zeta<bcgsl->delta*zeta0 && zeta0<=rnmax_computed);
+      bUpdateX = (PetscBool) (zeta<bcgsl->delta*zeta0 && zeta0<=rnmax_computed);
       if ((zeta<bcgsl->delta*rnmax_true && zeta0<=rnmax_true) || bUpdateX) {
         /* r0 <- b-inv(K)*A*X */
         ierr = KSP_PCApplyBAorAB(ksp, VX, VVR[0], VTM);CHKERRQ(ierr);
@@ -348,7 +348,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP ksp, PetscBool  uMROR)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidLogicalCollectiveTruth(ksp,uMROR,2);
+  PetscValidLogicalCollectiveBool(ksp,uMROR,2);
 
   if (!ksp->setupstage) {
     bcgsl->bConvex = uMROR;
@@ -450,12 +450,12 @@ PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp)
   }
 
   /* Set polynomial type */
-  ierr = PetscOptionsTruth("-ksp_bcgsl_cxpoly", "Polynomial part of BiCGStabL is MinRes + OR", "KSPBCGSLSetPol", flga,&flga,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_bcgsl_cxpoly", "Polynomial part of BiCGStabL is MinRes + OR", "KSPBCGSLSetPol", flga,&flga,PETSC_NULL);CHKERRQ(ierr);
   if (flga) {
     ierr = KSPBCGSLSetPol(ksp, PETSC_TRUE);CHKERRQ(ierr);
   } else {
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-ksp_bcgsl_mrpoly", "Polynomial part of BiCGStabL is MinRes", "KSPBCGSLSetPol", flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ksp_bcgsl_mrpoly", "Polynomial part of BiCGStabL is MinRes", "KSPBCGSLSetPol", flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     ierr = KSPBCGSLSetPol(ksp, PETSC_FALSE);CHKERRQ(ierr);
   }
 

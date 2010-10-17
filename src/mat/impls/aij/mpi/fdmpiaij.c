@@ -100,7 +100,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     */
     /* Temporary option to allow for debugging/testing */
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-matfdcoloring_slow",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-matfdcoloring_slow",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (!flg) {/*-----------------------------------------------------------------------------*/
       /* crude, fast version */
       ierr = PetscMemzero(rowhit,M*sizeof(PetscInt));CHKERRQ(ierr);

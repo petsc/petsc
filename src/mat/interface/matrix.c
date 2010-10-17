@@ -857,13 +857,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(Mat newmat,PetscViewer viewer)
   ierr = PetscLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(((PetscObject)newmat)->prefix,"-matload_symmetric",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)newmat)->prefix,"-matload_symmetric",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetOption(newmat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatSetOption(newmat,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(((PetscObject)newmat)->prefix,"-matload_spd",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)newmat)->prefix,"-matload_spd",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetOption(newmat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
   }
@@ -984,7 +984,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatUseScaledForm(Mat mat,PetscBool  scaled)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidLogicalCollectiveTruth(mat,scaled,2);
+  PetscValidLogicalCollectiveBool(mat,scaled,2);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   if (mat->ops->usescaledform) {
     ierr = (*mat->ops->usescaledform)(mat,scaled);CHKERRQ(ierr);
@@ -1494,7 +1494,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetStencil(Mat mat,PetscInt dim,const Petsc
   }
   mat->stencil.dims[dim]   = dof;
   mat->stencil.starts[dim] = 0;
-  mat->stencil.noc         = (PetscBool )(dof == 1);
+  mat->stencil.noc         = (PetscBool)(dof == 1);
   PetscFunctionReturn(0);
 }
 
@@ -4770,15 +4770,15 @@ PetscErrorCode MatView_Private(Mat mat)
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
   ierr = PetscOptionsBegin(((PetscObject)mat)->comm,((PetscObject)mat)->prefix,"Matrix Options","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_view_info","Information on matrix size","MatView",flg1,&flg1,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_view_info_detailed","Nonzeros in the matrix","MatView",flg2,&flg2,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_view","Print matrix to stdout","MatView",flg3,&flg3,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_view_matlab","Print matrix to stdout in a format Matlab can read","MatView",flg4,&flg4,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_view_info","Information on matrix size","MatView",flg1,&flg1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_view_info_detailed","Nonzeros in the matrix","MatView",flg2,&flg2,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_view","Print matrix to stdout","MatView",flg3,&flg3,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_view_matlab","Print matrix to stdout in a format Matlab can read","MatView",flg4,&flg4,PETSC_NULL);CHKERRQ(ierr);
 #if defined(PETSC_USE_SOCKET_VIEWER)
-    ierr = PetscOptionsTruth("-mat_view_socket","Send matrix to socket (can be read from matlab)","MatView",flg5,&flg5,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_view_socket","Send matrix to socket (can be read from matlab)","MatView",flg5,&flg5,PETSC_NULL);CHKERRQ(ierr);
 #endif
-    ierr = PetscOptionsTruth("-mat_view_binary","Save matrix to file in binary format","MatView",flg6,&flg6,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_view_draw","Draw the matrix nonzero structure","MatView",flg7,&flg7,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_view_binary","Save matrix to file in binary format","MatView",flg6,&flg6,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_view_draw","Draw the matrix nonzero structure","MatView",flg7,&flg7,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (flg1) {
@@ -4822,7 +4822,7 @@ PetscErrorCode MatView_Private(Mat mat)
     ierr = PetscViewerFlush(PETSC_VIEWER_BINARY_(((PetscObject)mat)->comm));CHKERRQ(ierr);
   }
   if (flg7) {
-    ierr = PetscOptionsGetTruth(((PetscObject)mat)->prefix,"-mat_view_contour",&flg8,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(((PetscObject)mat)->prefix,"-mat_view_contour",&flg8,PETSC_NULL);CHKERRQ(ierr);
     if (flg8) {
       PetscViewerPushFormat(PETSC_VIEWER_DRAW_(((PetscObject)mat)->comm),PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
     }
@@ -4911,7 +4911,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
   }
   if (inassm == 1 && type != MAT_FLUSH_ASSEMBLY) {
     ierr = MatView_Private(mat);CHKERRQ(ierr);
-    ierr = PetscOptionsGetTruth(((PetscObject)mat)->prefix,"-mat_is_symmetric",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(((PetscObject)mat)->prefix,"-mat_is_symmetric",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       PetscReal tol = 0.0;
       ierr = PetscOptionsGetReal(((PetscObject)mat)->prefix,"-mat_is_symmetric",&tol,PETSC_NULL);CHKERRQ(ierr);
@@ -5047,7 +5047,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat mat,MatOption op,PetscBool  f
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
   PetscValidLogicalCollectiveEnum(mat,op,2);
-  PetscValidLogicalCollectiveTruth(mat,flg,3);
+  PetscValidLogicalCollectiveBool(mat,flg,3);
 
   if (((int) op) < 0 || ((int) op) >= NUM_MAT_OPTIONS) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)op);
   if (!((PetscObject)mat)->type_name) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_TYPENOTSET,"Cannot set options until type and size have been set, see MatSetType() and MatSetSizes()");

@@ -236,7 +236,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Jostle(MatPartitioning part)
     }
 
     flag = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-mat_partitioning_jostle_coarse_sequential","Use sequential coarse partitioner","MatPartitioningJostleSetCoarseSequential",flag,&flag,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_partitioning_jostle_coarse_sequential","Use sequential coarse partitioner","MatPartitioningJostleSetCoarseSequential",flag,&flag,PETSC_NULL);CHKERRQ(ierr);
     if (flag) {
       ierr = MatPartitioningJostleSetCoarseSequential(part);CHKERRQ(ierr);
     }

@@ -1510,7 +1510,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_Composite(DM dm, const MatType mtyp
   /*
      Extremely inefficient but will compute entire Jacobian for testing
   */
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-dmcomposite_dense_jacobian",&dense,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-dmcomposite_dense_jacobian",&dense,PETSC_NULL);CHKERRQ(ierr);
   if (dense) {
     PetscInt    rstart,rend,*indices;
     PetscScalar *values;
@@ -1661,7 +1661,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring_Composite(DM dm,ISColoringType ct
   } else SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown ISColoringType");
   ierr = PetscMalloc(n*sizeof(ISColoringValue),&colors);CHKERRQ(ierr); /* freed in ISColoringDestroy() */
 
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-dmcomposite_dense_jacobian",&dense,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-dmcomposite_dense_jacobian",&dense,PETSC_NULL);CHKERRQ(ierr);
   if (dense) {
     for (i=0; i<n; i++) {
       colors[i] = (ISColoringValue)(com->rstart + i);

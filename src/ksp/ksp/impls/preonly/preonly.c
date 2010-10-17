@@ -23,7 +23,7 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
   if (!ksp->guess_zero) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_USER,"Running KSP of preonly doesn't make sense with nonzero initial guess\n\
                you probably want a KSP type of Richardson");
   ksp->its    = 0;
-  ierr        = PCSetInitialGuessNonzero(ksp->pc,(PetscBool )!(int)ksp->guess_zero);CHKERRQ(ierr);
+  ierr        = PCSetInitialGuessNonzero(ksp->pc,(PetscBool)!(int)ksp->guess_zero);CHKERRQ(ierr);
   ierr        = KSP_PCApply(ksp,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
   ksp->its    = 1;
   ksp->reason = KSP_CONVERGED_ITS;

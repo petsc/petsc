@@ -260,10 +260,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsValidKey(const char in_str[],Petsc
   Contributed by Boyana Norris
 
 .seealso: PetscOptionsSetValue(), PetscOptionsPrint(), PetscOptionsHasName(), PetscOptionsGetInt(),
-          PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsTruth(),
+          PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList(), PetscOptionsInsertFile()
 
 @*/
@@ -348,10 +348,10 @@ static char *Petscgetline(FILE * f)
   Level: intermediate
 
 .seealso: PetscOptionsSetValue(), PetscOptionsPrint(), PetscOptionsHasName(), PetscOptionsGetInt(),
-          PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsTruth(),
+          PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 
 @*/
@@ -498,9 +498,9 @@ static PetscErrorCode PetscOptionsInsertArgs_Private(int argc,char *args[])
     ierr = PetscStrcasecmp(eargs[0],"-p4yourname",&isp4yourname);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(eargs[0],"-p4rmrank",&isp4rmrank);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(eargs[0],"-p4wd",&tisp4);CHKERRQ(ierr);
-    isp4 = (PetscBool ) (isp4 || tisp4);
+    isp4 = (PetscBool) (isp4 || tisp4);
     ierr = PetscStrcasecmp(eargs[0],"-np",&tisp4);CHKERRQ(ierr);
-    isp4 = (PetscBool ) (isp4 || tisp4);
+    isp4 = (PetscBool) (isp4 || tisp4);
     ierr = PetscStrcasecmp(eargs[0],"-p4amslave",&tisp4);CHKERRQ(ierr);
 
     if (eargs[0][0] != '-') {
@@ -592,7 +592,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,cons
      should take precedence, we insert it twice.  It would be sufficient to just scan for -skip_petscrc.
   */
   if (argc && args && *argc) {ierr = PetscOptionsInsertArgs_Private(*argc,*args);CHKERRQ(ierr);}
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-skip_petscrc",&flag,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-skip_petscrc",&flag,PETSC_NULL);CHKERRQ(ierr);
   if (!flag) {
     ierr = PetscGetHomeDirectory(pfile,PETSC_MAX_PATH_LEN-16);CHKERRQ(ierr);
     /* warning: assumes all processes have a home directory or none, but nothing in between */
@@ -1034,10 +1034,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsClearValue(const char iname[])
    Level: advanced
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),OptionsHasName(),
-           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(),PetscOptionsTruth(),
+           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(),PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsSetAlias(const char inewname[],const char ioldname[])
@@ -1151,10 +1151,10 @@ static PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char n
    Concepts: options database^rejecting option
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),OptionsHasName(),
-           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsReject(const char name[],const char mess[])
@@ -1195,13 +1195,13 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsReject(const char name[],const cha
 
    Notes: Name cannot be simply -h
 
-          In many cases you probably want to use PetscOptionsGetTruth() instead of calling this, to allowing toggling values.
+          In many cases you probably want to use PetscOptionsGetBool() instead of calling this, to allowing toggling values.
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
-           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsHasName(const char pre[],const char name[],PetscBool  *set)
@@ -1236,11 +1236,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsHasName(const char pre[],const cha
    Concepts: options database^has int
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
-          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth()
-          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsTruth(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetInt(const char pre[],const char name[],PetscInt *ivalue,PetscBool  *set)
@@ -1289,10 +1289,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetInt(const char pre[],const char
    Concepts: options database^list
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
-           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetEList(const char pre[],const char opt[],const char *const*list,PetscInt ntext,PetscInt *value,PetscBool  *set)
@@ -1354,11 +1354,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetEList(const char pre[],const ch
           list is usually something like PCASMTypes or some other predefined list of enum names
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
-          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth()
-          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsTruth(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList(), PetscOptionsGetEList(), PetscOptionsEnum()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetEnum(const char pre[],const char opt[],const char *const*list,PetscEnum *value,PetscBool  *set)
@@ -1381,9 +1381,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetEnum(const char pre[],const cha
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsGetTruth"
+#define __FUNCT__ "PetscOptionsGetBool"
 /*@C
-   PetscOptionsGetTruth - Gets the Logical (true or false) value for a particular 
+   PetscOptionsGetBool - Gets the Logical (true or false) value for a particular 
             option in the database.
 
    Not Collective
@@ -1408,13 +1408,13 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetEnum(const char pre[],const cha
    Concepts: options database^has logical
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
-          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsGetInt(), PetscOptionsTruth(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsGetInt(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetTruth(const char pre[],const char name[],PetscBool  *ivalue,PetscBool  *set)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetBool(const char pre[],const char name[],PetscBool  *ivalue,PetscBool  *set)
 {
   char           *value;
   PetscBool      flag;
@@ -1438,9 +1438,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetTruth(const char pre[],const ch
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsGetTruthArray"
+#define __FUNCT__ "PetscOptionsGetBoolArray"
 /*@C
-   PetscOptionsGetTruthArray - Gets an array of Logical (true or false) values for a particular 
+   PetscOptionsGetBoolArray - Gets an array of Logical (true or false) values for a particular 
    option in the database.  The values must be separated with commas with 
    no intervening spaces. 
 
@@ -1465,13 +1465,13 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetTruth(const char pre[],const ch
        FALSE, false, NO, no, and 0 all translate to PETSC_FALSE
 
 .seealso: PetscOptionsGetInt(), PetscOptionsHasName(), 
-           PetscOptionsGetString(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+           PetscOptionsGetString(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetTruthArray(const char pre[],const char name[],PetscBool  dvalue[],PetscInt *nmax,PetscBool  *set)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetBoolArray(const char pre[],const char name[],PetscBool  dvalue[],PetscInt *nmax,PetscBool  *set)
 {
   char           *value;
   PetscErrorCode ierr;
@@ -1523,10 +1523,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetTruthArray(const char pre[],con
    Concepts: options database^has double
 
 .seealso: PetscOptionsGetInt(), PetscOptionsHasName(), 
-           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(),PetscOptionsTruth(),
+           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(),PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetReal(const char pre[],const char name[],PetscReal *dvalue,PetscBool  *set)
@@ -1573,10 +1573,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetReal(const char pre[],const cha
    Concepts: options database^has scalar
 
 .seealso: PetscOptionsGetInt(), PetscOptionsHasName(), 
-           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetScalar(const char pre[],const char name[],PetscScalar *dvalue,PetscBool  *set)
@@ -1645,10 +1645,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetScalar(const char pre[],const c
    Concepts: options database^array of doubles
 
 .seealso: PetscOptionsGetInt(), PetscOptionsHasName(), 
-           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsTruth(),
+           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetRealArray(const char pre[],const char name[],PetscReal dvalue[],PetscInt *nmax,PetscBool  *set)
@@ -1705,10 +1705,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetRealArray(const char pre[],cons
    Concepts: options database^array of ints
 
 .seealso: PetscOptionsGetInt(), PetscOptionsHasName(), 
-           PetscOptionsGetString(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+           PetscOptionsGetString(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const char name[],PetscInt dvalue[],PetscInt *nmax,PetscBool  *set)
@@ -1797,10 +1797,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const
    Concepts: options database^string
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
-           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetString(const char pre[],const char name[],char string[],size_t len,PetscBool  *set)
@@ -1859,10 +1859,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetString(const char pre[],const c
    Concepts: options database^array of strings
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
-           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetStringArray(const char pre[],const char name[],char *strings[],PetscInt *nmax,PetscBool  *set)
@@ -2012,7 +2012,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsSetFromOptions(void)
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options database options","PetscOptions");CHKERRQ(ierr);
     ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flgm);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-options_monitor_cancel","Cancel all options database monitors","PetscOptionsMonitorCancel",PETSC_FALSE,&flgc,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-options_monitor_cancel","Cancel all options database monitors","PetscOptionsMonitorCancel",PETSC_FALSE,&flgc,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (flgm) {
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,monfilename,&monviewer);CHKERRQ(ierr);

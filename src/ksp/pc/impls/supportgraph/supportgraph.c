@@ -188,7 +188,7 @@ static PetscErrorCode PCSetFromOptions_SupportGraph(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SupportGraph options");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-pc_sg_augment","Max congestion","",sg->augment,&sg->augment,0);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_sg_augment","Max congestion","",sg->augment,&sg->augment,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_sg_cong","Max congestion","",sg->maxCong,&sg->maxCong,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_sg_tol","Smallest usable value","",sg->tol,&sg->tol,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);

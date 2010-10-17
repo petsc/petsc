@@ -94,7 +94,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPermutation(IS is,PetscBool  *perm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(perm,2);
-  *perm = (PetscBool ) is->isperm;
+  *perm = (PetscBool) is->isperm;
   PetscFunctionReturn(0);
 }
 

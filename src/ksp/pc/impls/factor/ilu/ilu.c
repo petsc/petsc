@@ -114,7 +114,7 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     ierr = PetscOptionsInt("-pc_factor_levels","levels of fill","PCFactorSetLevels",(PetscInt)((PC_Factor*)ilu)->info.levels,&itmp,&flg);CHKERRQ(ierr);
     if (flg) ((PC_Factor*)ilu)->info.levels = itmp;
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_factor_diagonal_fill","Allow fill into empty diagonal entry","PCFactorSetAllowDiagonalFill",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_factor_diagonal_fill","Allow fill into empty diagonal entry","PCFactorSetAllowDiagonalFill",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     ((PC_Factor*)ilu)->info.diagonal_fill = (double) flg;
     /*
     dt[0] = ((PC_Factor*)ilu)->info.dt;

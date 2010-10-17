@@ -49,8 +49,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_AMD(Mat mat,const MatOrderingTy
   ierr = PetscOptionsReal("-mat_ordering_amd_dense","threshold for \"dense\" rows/columns","None",val,&val,PETSC_NULL);CHKERRQ(ierr);
   Control[AMD_DENSE] = (double)val;
 
-  tval = (PetscBool )Control[AMD_AGGRESSIVE];
-  ierr = PetscOptionsTruth("-mat_ordering_amd_aggressive","use aggressive absorption","None",tval,&tval,PETSC_NULL);CHKERRQ(ierr);
+  tval = (PetscBool)Control[AMD_AGGRESSIVE];
+  ierr = PetscOptionsBool("-mat_ordering_amd_aggressive","use aggressive absorption","None",tval,&tval,PETSC_NULL);CHKERRQ(ierr);
   Control[AMD_AGGRESSIVE] = (double)tval;
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 

@@ -34,12 +34,12 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 
   ierr = PetscOptionsBegin(comm, "", "Options for mesh coarsening", "DMMG");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level", "ex_coarsen", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-use_zero_base", "Use zero-based indexing", "ex1.c", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-use_zero_base", "Use zero-based indexing", "ex1.c", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex_coarsen", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-levels", "The number of coarse levels", "ex_coarsen.c", options->levels, &options->levels, PETSC_NULL);    
     ierr = PetscOptionsReal("-coarsen", "The maximum coarsening factor", "ex_coarsen.c", options->coarseFactor, &options->coarseFactor, PETSC_NULL);    
     ierr = PetscOptionsReal("-z_scale", "The relative spread of levels for visualization", "ex_coarsen.c", options->zScale, &options->zScale, PETSC_NULL);    
-    ierr = PetscOptionsTruth("-output_vtk", "Output the mesh in VTK", "ex1.c", options->outputVTK, &options->outputVTK, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-output_vtk", "Output the mesh in VTK", "ex1.c", options->outputVTK, &options->outputVTK, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

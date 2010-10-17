@@ -120,7 +120,7 @@ int main(int argc,char **argv)
     user.voltage = 1.0;
     ierr = PetscOptionsScalar("-voltage", "The voltage of the clamp", "ex37.c", 1.0, &user.voltage, PETSC_NULL);CHKERRQ(ierr);
     viewEnergy = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-view_energy", "View the energy density as a field", "ex37.c", PETSC_FALSE, &viewEnergy, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-view_energy", "View the energy density as a field", "ex37.c", PETSC_FALSE, &viewEnergy, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ALE::Obj<ALE::Mesh> meshBoundary = ALE::Mesh(comm, dim-1, meshDebug);

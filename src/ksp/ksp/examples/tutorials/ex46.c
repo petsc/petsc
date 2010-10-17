@@ -110,7 +110,7 @@ int main(int argc,char **argv)
      elements of 1.0;  Alternatively, using the runtime option
      -random_sol forms a solution vector with random components.
   */
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-random_exact_sol",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-random_exact_sol",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
@@ -125,7 +125,7 @@ int main(int argc,char **argv)
      View the exact solution vector if desired
   */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-view_exact_sol",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-view_exact_sol",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

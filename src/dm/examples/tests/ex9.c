@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   if (flg) stencil_type =  DMDA_STENCIL_STAR;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-test_order",&test_order,PETSC_NULL);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-distribute",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-distribute",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     if (m == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,1,"Must set -m option with -distribute option");
     ierr = PetscMalloc(m*sizeof(PetscInt),&lx);CHKERRQ(ierr);

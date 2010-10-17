@@ -71,11 +71,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorPrintfInitialize()
   ierr = PetscGetDate(date,64);CHKERRQ(ierr);
   ierr = PetscGetVersion(version,256);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-error_output_stdout",&use_stdout,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-error_output_stdout",&use_stdout,PETSC_NULL);CHKERRQ(ierr);
   if (use_stdout) {
     PETSC_STDERR = PETSC_STDOUT;
   }
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-error_output_none",&use_none,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-error_output_none",&use_none,PETSC_NULL);CHKERRQ(ierr);
   if (use_none) {
     PetscErrorPrintf = PetscErrorPrintfNone;
   }
@@ -186,8 +186,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm comm,int l
 	(*PetscErrorPrintf)("destroying unneeded objects.\n");
 	PetscMallocGetCurrentUsage(&mem);
 	PetscMemoryGetCurrentUsage(&rss);
-	PetscOptionsGetTruth(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);
-	PetscOptionsGetTruth(PETSC_NULL,"-malloc_log",&flg2,PETSC_NULL);
+	PetscOptionsGetBool(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);
+	PetscOptionsGetBool(PETSC_NULL,"-malloc_log",&flg2,PETSC_NULL);
 	if (flg2) {
 	  PetscMallocDumpLog(stdout);
 	} else {
@@ -278,8 +278,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTraceBackErrorHandlerCxx(MPI_Comm comm,in
       (*msg) << "destroying unneeded objects." << std::endl;
       PetscMallocGetCurrentUsage(&mem);
       PetscMemoryGetCurrentUsage(&rss);
-      PetscOptionsGetTruth(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);
-      PetscOptionsGetTruth(PETSC_NULL,"-malloc_log",&flg2,PETSC_NULL);
+      PetscOptionsGetBool(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);
+      PetscOptionsGetBool(PETSC_NULL,"-malloc_log",&flg2,PETSC_NULL);
       if (flg2) {
         //PetscMallocDumpLog(stdout);
         (*msg) << "Option -malloc_log does not work in C++." << std::endl;
