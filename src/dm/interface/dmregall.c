@@ -1,6 +1,6 @@
 #define PETSCDM_DLL
 
-#include "private/daimpl.h"     /*I  "petscda.h"  I*/
+#include "private/daimpl.h"     /*I  "petscdm.h"  I*/
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT DMCreate_DA(DM);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT DMCreate_Composite(DM);

@@ -14,7 +14,7 @@
 
 static char help[] = "Solves 1D heat equation.\n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscts.h"
 
 #define PETSC_NEAR(a,b,c) (!(PetscAbsReal((a)-(b)) > (c)*PetscMax(PetscAbsReal(a),PetscAbsReal(b))))

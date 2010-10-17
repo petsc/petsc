@@ -26,7 +26,7 @@ static char help[] ="Tests ML interface. Modified from ~src/ksp/ksp/examples/tes
 */
 
 #include "petscksp.h"
-#include "petscda.h"
+#include "petscdm.h"
 
 /* User-defined application contexts */
 typedef struct {

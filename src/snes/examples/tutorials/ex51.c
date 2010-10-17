@@ -1,5 +1,5 @@
 #include <petscsnes.h>
-#include <petscda.h>
+#include <petscdm.h>
 
 int main(int argc, char *argv[]) {
   DM              da, daX, daY;

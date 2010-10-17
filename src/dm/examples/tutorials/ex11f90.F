@@ -7,7 +7,7 @@
 !#define PETSC_USE_FORTRAN_MODULES 1
 #include "finclude/petscsysdef.h"
 #include "finclude/petscvecdef.h"
-#include "finclude/petscdadef.h"
+#include "finclude/petscdmdef.h"
 #if defined(PETSC_USE_FORTRAN_MODULES) || defined(PETSC_USE_FORTRAN_DATATYPES)
       use petsc
 #endif
@@ -15,9 +15,9 @@
 #if !defined(PETSC_USE_FORTRAN_MODULES) && !defined(PETSC_USE_FORTRAN_DATATYPES)
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 #include "finclude/petscvec.h90"
-#include "finclude/petscda.h90"
+#include "finclude/petscdm.h90"
 #include "finclude/petscviewer.h"
 #endif
 

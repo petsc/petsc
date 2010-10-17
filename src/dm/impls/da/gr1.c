@@ -4,7 +4,7 @@
    Plots vectors obtained with DMDACreate1d()
 */
 
-#include "petscda.h"      /*I  "petscda.h"   I*/
+#include "petscdm.h"      /*I  "petscdm.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDASetUniformCoordinates"

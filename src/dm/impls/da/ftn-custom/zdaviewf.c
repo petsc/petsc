@@ -1,6 +1,6 @@
 
 #include "private/fortranimpl.h"
-#include "petscda.h"
+#include "petscdm.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmdagetinfo_                   DMDAGETINFO

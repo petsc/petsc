@@ -3,7 +3,7 @@
 #if !defined(_DMIMPL_H)
 #define _DMIMPL_H
 
-#include "petscda.h"
+#include "petscdm.h"
 
 typedef struct _DMOps *DMOps;
 struct _DMOps {

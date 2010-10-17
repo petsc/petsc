@@ -1,6 +1,6 @@
       program main   !   Solves the linear system  J x = f
 #include "finclude/petscdef.h"
-      use petscksp; use petscda
+      use petscksp; use petscdm
       Vec x,f; Mat J; DM da; KSP ksp; PetscErrorCode ierr
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
@@ -22,7 +22,7 @@
       end
       subroutine  ComputeRHS(da,x,ierr)
 #include "finclude/petscdef.h"
-      use petscda
+      use petscdm
       DM da; Vec x; PetscErrorCode ierr; PetscInt xs,xm,i,mx; PetscScalar hx; PetscScalar, pointer :: xx(:)
       call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
@@ -36,7 +36,7 @@
       end
       subroutine ComputeMatrix(da,J,ierr)
 #include "finclude/petscdef.h"
-      use petscda
+      use petscdm
       Mat J; DM da; PetscErrorCode ierr; PetscInt xs,xm,i,mx; PetscScalar hx
       call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)

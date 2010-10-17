@@ -2,7 +2,7 @@
 !
 !  Include file for Fortran use of the DMDA (distributed array) package in PETSc
 !
-#include "finclude/petscdadef.h"
+#include "finclude/petscdmdef.h"
 
 
 !

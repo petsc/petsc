@@ -13,4 +13,4 @@
 #include "finclude/petscmeshdef.h"
 #include "finclude/petscsnesdef.h"
 #include "finclude/petsctsdef.h"
-#include "finclude/petscdadef.h"
+#include "finclude/petscdmdef.h"

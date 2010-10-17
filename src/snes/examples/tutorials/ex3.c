@@ -26,7 +26,7 @@ T*/
      petscksp.h   - linear solvers
 */
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscsnes.h"
 
 /* 

@@ -15,7 +15,7 @@ with boundary conditions
 
 static char help[] = "Solves 1D variable coefficient Laplacian using multigrid.\n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscksp.h"
 #include "petscdmmg.h"
 

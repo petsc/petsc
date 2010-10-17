@@ -1,6 +1,6 @@
 #define PETSCDM_DLL
  
-#include "private/dmimpl.h"     /*I      "petscda.h"     I*/
+#include "private/dmimpl.h"     /*I      "petscdm.h"     I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreate"
@@ -1026,7 +1026,7 @@ PetscBool  DMRegisterAllCalled          = PETSC_FALSE;
 . -dm_type <type> - Sets the DM type; use -help for a list of available types
 
   Notes:
-  See "petsc/include/petscda.h" for available DM types (for instance, DM1D, DM2D, or DM3D).
+  See "petsc/include/petscdm.h" for available DM types (for instance, DM1D, DM2D, or DM3D).
 
   Level: intermediate
 

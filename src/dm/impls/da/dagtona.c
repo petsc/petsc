@@ -8,7 +8,7 @@
   out this processors piece in GLOBAL numbering
 */
 
-#include "private/daimpl.h"    /*I   "petscda.h"   I*/
+#include "private/daimpl.h"    /*I   "petscdm.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDAGlobalToNaturalAllCreate"

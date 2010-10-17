@@ -1,5 +1,5 @@
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "../src/sys/f90-src/f90impl.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS

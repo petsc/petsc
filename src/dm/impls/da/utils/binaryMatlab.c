@@ -9,7 +9,7 @@
  *	operators, quotations, math/boolean operators, etc. 
  * ----------------------------------------------------------------------*/
 #include <petscviewer.h>
-#include <petscda.h>
+#include <petscdm.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryMatlabOpen"

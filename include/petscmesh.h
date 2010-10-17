@@ -11,7 +11,7 @@
 #include <CartesianSieve.hh>
 #include <Distribution.hh>
 #include <Generator.hh>
-#include "petscda.h"
+#include "petscdm.h"
 PETSC_EXTERN_CXX_BEGIN
 
 /*S

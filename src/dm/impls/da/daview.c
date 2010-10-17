@@ -4,7 +4,7 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "private/daimpl.h"    /*I   "petscda.h"   I*/
+#include "private/daimpl.h"    /*I   "petscdm.h"   I*/
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include "mat.h"   /* Matlab include file */

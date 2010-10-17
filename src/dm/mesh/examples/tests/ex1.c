@@ -1,6 +1,6 @@
 static char help[] = "Tests basic Sieve operations.\n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 
 #include <IndexBundle.hh>
 

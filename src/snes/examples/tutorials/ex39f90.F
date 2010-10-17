@@ -37,7 +37,7 @@
       type userctx
 #include "finclude/petscsysdef.h"
 #include "finclude/petscvecdef.h"
-#include "finclude/petscdadef.h"
+#include "finclude/petscdmdef.h"
         DM      da
         integer xs,xe,xm,gxs,gxe,gxm
         integer ys,ye,ym,gys,gye,gym
@@ -71,7 +71,7 @@
 
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 #include "finclude/petscis.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"
@@ -144,14 +144,14 @@
 !
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 #include "finclude/petscis.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscsnes.h"
 #include "finclude/petscvec.h90"
-#include "finclude/petscda.h90"
+#include "finclude/petscdm.h90"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                   Variable declarations
@@ -408,7 +408,7 @@
 #include "finclude/petscvec.h90"
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 #include "finclude/petscis.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"
@@ -475,7 +475,7 @@
 
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 #include "finclude/petscis.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"
@@ -631,7 +631,7 @@
 
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 #include "finclude/petscis.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"
@@ -752,7 +752,7 @@
 
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 #include "finclude/petscis.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"

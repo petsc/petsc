@@ -27,7 +27,7 @@ mpirun -np 2 driver -n_eigs 3 -tol 1e-6 -itr 20\n";
 */
 
 #include "petscksp.h"
-#include "petscda.h"
+#include "petscdm.h"
 #include <assert.h>
 
 #include "fortran_matrix.h"

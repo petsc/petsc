@@ -1,5 +1,5 @@
 #include "../src/sys/f90-src/f90impl.h"
-#include "petscda.h"
+#include "petscdm.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmcompositegetaccessvpvp_             DMCOMPOSITEGETACCESSVPVP

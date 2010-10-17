@@ -20,7 +20,7 @@
 
 static char help[] = "Solves 2D Poisson equation using multigrid.\n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscksp.h"
 #include "petscmg.h"
 #include "petscdmmg.h"

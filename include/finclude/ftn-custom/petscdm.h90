@@ -1,8 +1,8 @@
 #if !defined(PETSC_USE_FORTRAN_MODULES) 
-#include "finclude/ftn-custom/petscdadef.h90"
+#include "finclude/ftn-custom/petscdmdef.h90"
 #endif
 #include "finclude/ftn-custom/petscvechide.h90"
-#include "finclude/ftn-custom/petscdahide.h90"
+#include "finclude/ftn-custom/petscdmhide.h90"
 
       Interface 
         Subroutine DMDAGetGlobalIndicesF90(v,n,array,ierr)

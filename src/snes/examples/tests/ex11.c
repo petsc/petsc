@@ -36,7 +36,7 @@ options are:\n\
 */
 
 #include "petscsnes.h"
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscmg.h"
 
 /* User-defined application contexts */

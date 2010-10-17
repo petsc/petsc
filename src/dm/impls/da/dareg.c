@@ -1,6 +1,6 @@
 #define PETSCDM_DLL
 
-#include "private/daimpl.h"    /*I "petscda.h"  I*/
+#include "private/daimpl.h"    /*I "petscdm.h"  I*/
 
 extern PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_1D(DM);
 extern PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_2D(DM);

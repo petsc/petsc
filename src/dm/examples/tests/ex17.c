@@ -1,7 +1,7 @@
 
 static char help[] = "Tests DMDA interpolation for coarse DMDA on a subset of processors.\n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

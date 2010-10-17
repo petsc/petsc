@@ -13,7 +13,7 @@ Compare this to ex2 which solves the same problem without a DM.\n\n";
 T*/
 
 /*
-  Include "petscda.h" so that we can use distributed arrays (DMDAs).
+  Include "petscdm.h" so that we can use distributed arrays (DMDAs).
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -21,7 +21,7 @@ T*/
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscksp.h"
 
 #undef __FUNCT__

@@ -1,5 +1,5 @@
 #define PETSCDM_DLL
-#include "private/daimpl.h"    /*I   "petscda.h"   I*/
+#include "private/daimpl.h"    /*I   "petscdm.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMSetFromOptions_DA"

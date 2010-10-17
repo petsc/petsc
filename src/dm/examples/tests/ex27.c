@@ -8,7 +8,7 @@ static char help[] = "Test sequential USFFT interface on a uniform DMDA and comp
 */
 
 #include "petscmat.h"
-#include "petscda.h"
+#include "petscdm.h"
 #undef __FUNCT__
 #define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)

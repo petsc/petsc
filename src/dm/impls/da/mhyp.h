@@ -2,7 +2,7 @@
 #if !defined(_MHYP_H)
 #define _MHYP_H
 
-#include "petscda.h"   /*I "petscda.h" I*/
+#include "petscdm.h"   /*I "petscdm.h" I*/
 #include "HYPRE_struct_mv.h"
 #include "HYPRE_struct_ls.h"
 #include "_hypre_struct_mv.h"

@@ -1,6 +1,6 @@
 #define PETSCSNES_DLL
  
-#include "petscda.h"            /*I "petscda.h"   I*/
+#include "petscdm.h"            /*I "petscdm.h"   I*/
 #include "petscksp.h"           /*I "petscksp.h"  I*/
 #include "petscmg.h"            /*I "petscmg.h"   I*/
 #include "petscdmmg.h"          /*I "petscdmmg.h" I*/

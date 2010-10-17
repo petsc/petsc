@@ -48,7 +48,7 @@ Input parameters include:\n\
   ------------------------------------------------------------------------- */
 
 /* 
-   Include "petscda.h" so that we can use distributed arrays (DMDAs) to manage
+   Include "petscdm.h" so that we can use distributed arrays (DMDAs) to manage
    the parallel grid.  Include "petscts.h" so that we can use TS solvers.  
    Note that this file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h  - vectors
@@ -58,7 +58,7 @@ Input parameters include:\n\
      petscksp.h   - linear solvers        petscsnes.h - nonlinear solvers
 */
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscts.h"
 
 /* 

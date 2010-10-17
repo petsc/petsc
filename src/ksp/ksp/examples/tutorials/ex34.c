@@ -22,7 +22,7 @@ This uses multigrid to solve the linear system
 
 static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscksp.h"
 #include "petscmg.h"
 #include "petscdmmg.h"

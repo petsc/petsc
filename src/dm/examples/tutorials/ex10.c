@@ -10,7 +10,7 @@
  */
 
 #include <math.h>
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscsys.h"
 
 static char help[] = "Test to write HDF5 file from PETSc DMDA Vec.\n\n";

@@ -2,10 +2,10 @@
 !
 !  Additional DMDA include file for use of PETSc with Fortran 90/HPF
 !
-#include "finclude/ftn-custom/petscda.h90"
+#include "finclude/ftn-custom/petscdm.h90"
 #if defined(PETSC_USE_FORTRAN_INTERFACES)
       interface
-#include "finclude/ftn-auto/petscda.h90"
+#include "finclude/ftn-auto/petscdm.h90"
       end interface
 #endif
 

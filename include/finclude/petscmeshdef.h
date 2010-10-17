@@ -5,7 +5,7 @@
 #if !defined (__PETSCMESHDEF_H)
 #define __PETSCMESHDEF_H
 
-#include "finclude/petscdadef.h"
+#include "finclude/petscdmdef.h"
 
 #if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define Mesh PetscFortranAddr

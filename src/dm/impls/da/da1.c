@@ -4,7 +4,7 @@
    This file was created by Peter Mell   6/30/95    
 */
 
-#include "private/daimpl.h"     /*I  "petscda.h"   I*/
+#include "private/daimpl.h"     /*I  "petscdm.h"   I*/
 
 const char *DMDAPeriodicTypes[] = {"NONPERIODIC","XPERIODIC","YPERIODIC","XYPERIODIC",
                                  "XYZPERIODIC","XZPERIODIC","YZPERIODIC","ZPERIODIC","XYZGHOSTED","DMDAPeriodicType","DMDA_",0};

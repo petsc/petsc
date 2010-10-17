@@ -4,7 +4,7 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "private/daimpl.h"    /*I   "petscda.h"   I*/
+#include "private/daimpl.h"    /*I   "petscdm.h"   I*/
 
 PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobal_DA(DM da,Vec l,InsertMode mode,Vec g)
 {

@@ -9,12 +9,12 @@ static char help[] = "Demonstrates various vector routines.\n\n";
 T*/
 
 /* 
-  Include "petscpf.h" so that we can use pf functions and "petscda.h" so
+  Include "petscpf.h" so that we can use pf functions and "petscdm.h" so
  we can use the PETSc distributed arrays
 */
 
 #include "petscpf.h"
-#include "petscda.h"
+#include "petscdm.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "myfunction"

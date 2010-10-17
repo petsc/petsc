@@ -1,5 +1,5 @@
 static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1\n\n";
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscsnes.h"
 extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*), ComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 

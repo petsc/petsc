@@ -6,7 +6,7 @@
 #define __PETSCPCDEF_H
 
 #include "finclude/petscmatdef.h"
-#include "finclude/petscdadef.h"
+#include "finclude/petscdmdef.h"
 
 #if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define PC PetscFortranAddr

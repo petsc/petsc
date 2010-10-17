@@ -2,7 +2,7 @@
 static char help[] = "Tests DMGetColoring() in 3d.\n\n";
 
 #include "petscmat.h"
-#include "petscda.h"
+#include "petscdm.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

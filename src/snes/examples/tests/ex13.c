@@ -28,7 +28,7 @@ options are:\n\
 */
 
 #include "petscsnes.h"
-#include "petscda.h"
+#include "petscdm.h"
 
 /* User-defined application context */
 typedef struct {

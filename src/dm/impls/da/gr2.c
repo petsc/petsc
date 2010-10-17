@@ -4,7 +4,7 @@
    Plots vectors obtained with DMDACreate2d()
 */
 
-#include "private/daimpl.h"      /*I  "petscda.h"   I*/
+#include "private/daimpl.h"      /*I  "petscdm.h"   I*/
 #include "private/vecimpl.h" 
 
 /*

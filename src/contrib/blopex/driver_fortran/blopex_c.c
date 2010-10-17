@@ -39,7 +39,7 @@ Contains C routines for the interface with BLOPEX compiled with PETSc.
 #include <assert.h>
 #include "fortran_matrix.h"
 #include "fortran_interpreter.h"
-#include "petscda.h"
+#include "petscdm.h"
 #include "lobpcg.h"
 
 #ifdef BLOPEX_DIR

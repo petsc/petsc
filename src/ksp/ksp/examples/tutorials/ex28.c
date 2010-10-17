@@ -2,7 +2,7 @@
 
 static char help[] = "Solves 1D wave equation using multigrid.\n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscksp.h"
 #include "petscdmmg.h"
 

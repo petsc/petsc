@@ -4,7 +4,7 @@
   Code for interpolating between grids represented by DMDAs
 */
 
-#include "private/daimpl.h"    /*I   "petscda.h"   I*/
+#include "private/daimpl.h"    /*I   "petscdm.h"   I*/
 #include "petscmg.h"
 
 #undef __FUNCT__  

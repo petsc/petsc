@@ -3,7 +3,7 @@
 
 #include "petscpc.h"   /*I "petscpc.h" I*/
 #include "petscmg.h"   /*I "petscmg.h" I*/
-#include "petscda.h"   /*I "petscda.h" I*/
+#include "petscdm.h"   /*I "petscdm.h" I*/
 #include "../src/ksp/pc/impls/mg/mgimpl.h"
 
 typedef struct {

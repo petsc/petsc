@@ -6,7 +6,7 @@
 #include "petscsys.h"
 #if defined(PETSC_HAVE_HYPRE)
 #include "private/matimpl.h"          /*I "petscmat.h" I*/
-#include "petscda.h"                  /*I "petscda.h" I*/
+#include "petscdm.h"                  /*I "petscdm.h" I*/
 #include "../src/dm/da/utils/mhyp.h"
 
 #undef __FUNCT__

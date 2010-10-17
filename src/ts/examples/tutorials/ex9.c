@@ -32,7 +32,7 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
 
 #include <unistd.h>             /* usleep */
 #include "petscts.h"
-#include "petscda.h"
+#include "petscdm.h"
 
 #include "../src/mat/blockinvert.h" /* For the Kernel_*_gets_* stuff for BAIJ */
 

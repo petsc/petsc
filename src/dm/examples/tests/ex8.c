@@ -1,7 +1,7 @@
       
 static char help[] = "Demonstrates generating a slice from a DMDA Vector.\n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscao.h"
 
 #undef __FUNCT__

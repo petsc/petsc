@@ -1,7 +1,7 @@
 
 static char help[] = "Solves PDE optimization problem of ex22.c with AD for adjoint.\n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscpf.h"
 #include "petscmg.h"
 #include "petscsnes.h"

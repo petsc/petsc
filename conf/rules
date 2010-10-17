@@ -334,7 +334,7 @@ getmpiexec:
                   echo Running adiC on function $${r};\
                   ${PETSC_DIR}/bin/adprocess.py $< $${r}; \
                   ${CP} $<.tmp1 $<.tmp2;\
-	          echo '#include "petscda.h"' > $*.ad.c ; \
+	          echo '#include "petscdm.h"' > $*.ad.c ; \
 	          echo '#include "petscsnes.h"' >> $*.ad.c ;\
                   echo '#include "petscdmmg.h"' >> $*.ad.c ;\
 	          echo '#define ad_GRAD_MAX ' $${c} >> $*.ad.c ;\

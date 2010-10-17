@@ -30,7 +30,7 @@ T*/
   ------------------------------------------------------------------------- */
 
 /* 
-   Include "petscda.h" so that we can use distributed arrays (DMDAs).
+   Include "petscdm.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  
    Include "petscmg.h" to control the multigrid solvers. 
    Note that these automatically include:
@@ -41,7 +41,7 @@ T*/
      petscksp.h   - linear solvers 
 */
 #include "petscsnes.h"
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscmg.h"
 #include "petscdmmg.h"
 

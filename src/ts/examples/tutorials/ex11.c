@@ -5,7 +5,7 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
 
 
 /* 
-   Include "petscda.h" so that we can use distributed arrays (DMDAs).
+   Include "petscdm.h" so that we can use distributed arrays (DMDAs).
    Include "petscts.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -17,7 +17,7 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
    Compare to snes/examples/tutorials/ex50.c and ksp/examples/tutorials/ex45.c
 
 */
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscts.h"
 
 

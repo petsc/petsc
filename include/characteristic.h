@@ -5,7 +5,7 @@
 #define __PETSCCHARACTERISTICS_H
 
 #include <petscvec.h>
-#include <petscda.h>
+#include <petscdm.h>
 
 EXTERN PetscErrorCode CharacteristicInitializePackage(const char[]);
 

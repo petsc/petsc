@@ -1,7 +1,7 @@
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

@@ -5,7 +5,7 @@
        Extension of DMDA object to any number of dimensions.
 
 */
-#include "../src/dm/impls/adda/addaimpl.h"                          /*I "petscda.h" I*/
+#include "../src/dm/impls/adda/addaimpl.h"                          /*I "petscdm.h" I*/
 
 
 #undef __FUNCT__  

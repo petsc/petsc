@@ -29,7 +29,7 @@ T*/
 */
 
 #include "petscsnes.h"
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscmg.h"
 #include "petscdmmg.h"
 

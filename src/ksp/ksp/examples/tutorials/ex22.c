@@ -14,7 +14,7 @@ with boundary conditions
 
 static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscksp.h"
 #include "petscdmmg.h"
 

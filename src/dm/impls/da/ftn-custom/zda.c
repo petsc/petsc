@@ -2,7 +2,7 @@
 #include "private/daimpl.h"
 #include "private/fortranimpl.h"
 #include "petscmat.h"
-#include "petscda.h"
+#include "petscdm.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define dmdasetLocaladiforfunction_    DMDASETLOCALADIFORFUNCTION

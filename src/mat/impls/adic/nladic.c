@@ -7,7 +7,7 @@
 
 */
 #include "petscsys.h"
-#include "petscda.h"
+#include "petscdm.h"
 
 EXTERN_C_BEGIN
 #include "adic/ad_utils.h"

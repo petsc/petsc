@@ -25,7 +25,7 @@ ignition) test problem. The command line options are:\n\
 */
 
 #include "petscsnes.h"
-#include "petscda.h"
+#include "petscdm.h"
 
 typedef struct {
     PetscReal param;           /* test problem nonlinearity parameter */

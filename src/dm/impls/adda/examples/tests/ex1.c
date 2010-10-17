@@ -1,7 +1,7 @@
 
 static char help[] = "Tests various ADDA routines.\n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
