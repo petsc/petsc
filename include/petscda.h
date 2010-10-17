@@ -165,10 +165,25 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAVecRestoreArrayDOF(DM,Vec,void *)
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDASplitComm2d(MPI_Comm,PetscInt,PetscInt,PetscInt,MPI_Comm*);
 
-/* Dynamic creation and loading functions */
+/*E
+    DMType - String with the name of a PETSc DM or the creation function
+       with an optional dynamic library name, for example
+       http://www.mcs.anl.gov/petsc/lib.a:myveccreate()
+
+   Level: beginner
+
+.seealso: DMSetType(), DM
+E*/
+
 #define DMType char*
+#define DMDA        "da"
+#define DMADDA      "adda"
+#define DMCOMPOSITE "composite"
+#define DMSLICED    "sliced"
+
 extern PetscFList DMList;
 extern PetscBool  DMRegisterAllCalled;
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMCreate(MPI_Comm,DM*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMSetType(DM, const DMType);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMGetType(DM, const DMType *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMRegister(const char[],const char[],const char[],PetscErrorCode (*)(DM));
@@ -528,6 +543,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryMatlabOutputVecDA(Pets
 
 
 PetscErrorCode PETSCDM_DLLEXPORT DMADDACreate(MPI_Comm,PetscInt,PetscInt*,PetscInt*,PetscInt,PetscBool *,DM*);
+PetscErrorCode PETSCDM_DLLEXPORT DMADDASetParameters(DM,PetscInt,PetscInt*,PetscInt*,PetscInt,PetscBool*);
 PetscErrorCode PETSCDM_DLLEXPORT DMADDASetRefinement(DM, PetscInt *,PetscInt);
 PetscErrorCode PETSCDM_DLLEXPORT DMADDAGetCorners(DM, PetscInt **, PetscInt **);
 PetscErrorCode PETSCDM_DLLEXPORT DMADDAGetGhostCorners(DM, PetscInt **, PetscInt **);

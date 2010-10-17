@@ -3,6 +3,45 @@
 #include "private/dmimpl.h"     /*I      "petscda.h"     I*/
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMCreate"
+/*@
+  DMCreate - Creates an empty vector object. The type can then be set with DMetType().
+
+   If you never  call DMSetType()  it will generate an 
+   error when you try to use the vector.
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. comm - The communicator for the DM object
+
+  Output Parameter:
+. dm - The DM object
+
+  Level: beginner
+
+.seealso: DMSetType(), DMDA, DMSLICED, DMCOMPOSITE
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT DMCreate(MPI_Comm comm, DM *vec)
+{
+  DM             v;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(vec,2);
+  *vec = PETSC_NULL;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
+
+  ierr = PetscHeaderCreate(v, _p_DM, struct _DMOps, DM_CLASSID, -1, "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
+  ierr = PetscMemzero(v->ops, sizeof(struct _DMOps));CHKERRQ(ierr);
+  *vec = v; 
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMSetVecType"
 /*@C
        DMSetVecType - Sets the type of vector created with DMCreateLocalVector() and DMCreateGlobalVector()

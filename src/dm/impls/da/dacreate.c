@@ -71,41 +71,18 @@ extern PetscErrorCode PETSCDM_DLLEXPORT DMView_DA(DM,PetscViewer);
 extern PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA(DM);
 extern PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_DA(DM);
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "DMDACreate"
-/*@
-  DMDACreate - Creates a DMDA object. 
-
-  Collective on MPI_Comm
-
-  Input Parameter:
-. comm - The communicator for the DMDA object
-
-  Output Parameter:
-. da  - The DMDA object
-
-  Level: beginner
-
-.keywords: DMDA, create
-.seealso:  DMDASetSizes(), DMDADuplicate()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDACreate(MPI_Comm comm, DM *da)
+#define __FUNCT__ "DMCreate_DA"
+PetscErrorCode PETSCDM_DLLEXPORT DMCreate_DA(DM da)
 {
-  DM             d;
   PetscErrorCode ierr;
   DM_DA          *dd;
 
   PetscFunctionBegin;
-  PetscValidPointer(da,2);
-  *da = PETSC_NULL;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#endif
-
-  ierr = PetscHeaderCreate(d, _p_DM, struct _DMOps, DM_CLASSID, 0, "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
-  ierr = PetscMemzero(d->ops, sizeof(struct _DMOps));CHKERRQ(ierr);
-  ierr = PetscNewLog(d,DM_DA,&dd);CHKERRQ(ierr);
-  d->data = dd;
+  PetscValidPointer(da,1);
+  ierr = PetscNewLog(da,DM_DA,&dd);CHKERRQ(ierr);
+  da->data = dd;
 
   dd->dim        = -1;
   dd->interptype = DMDA_Q1;
@@ -142,27 +119,55 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDACreate(MPI_Comm comm, DM *da)
   dd->ly           = PETSC_NULL;
   dd->lz           = PETSC_NULL;
 
-  ierr = PetscStrallocpy(VECSTANDARD,&d->vectype);CHKERRQ(ierr);
-  d->ops->globaltolocalbegin = DMGlobalToLocalBegin_DA;
-  d->ops->globaltolocalend   = DMGlobalToLocalEnd_DA;
-  d->ops->localtoglobalbegin = DMLocalToGlobalBegin_DA;
-  d->ops->localtoglobalend   = DMLocalToGlobalEnd_DA;
-  d->ops->createglobalvector = DMCreateGlobalVector_DA;
-  d->ops->createlocalvector  = DMCreateLocalVector_DA;
-  d->ops->getinterpolation   = DMGetInterpolation_DA;
-  d->ops->getcoloring        = DMGetColoring_DA;
-  d->ops->getmatrix          = DMGetMatrix_DA;
-  d->ops->refine             = DMRefine_DA;
-  d->ops->coarsen            = DMCoarsen_DA;
-  d->ops->refinehierarchy    = DMRefineHierarchy_DA;
-  d->ops->coarsenhierarchy   = DMCoarsenHierarchy_DA;
-  d->ops->getinjection       = DMGetInjection_DA;
-  d->ops->getaggregates      = DMGetAggregates_DA;
-  d->ops->destroy            = DMDestroy_DA;
-  d->ops->view               = 0;
-  d->ops->setfromoptions     = DMSetFromOptions_DA;
-  d->ops->setup              = DMSetUp_DA;
+  ierr = PetscStrallocpy(VECSTANDARD,&da->vectype);CHKERRQ(ierr);
+  da->ops->globaltolocalbegin = DMGlobalToLocalBegin_DA;
+  da->ops->globaltolocalend   = DMGlobalToLocalEnd_DA;
+  da->ops->localtoglobalbegin = DMLocalToGlobalBegin_DA;
+  da->ops->localtoglobalend   = DMLocalToGlobalEnd_DA;
+  da->ops->createglobalvector = DMCreateGlobalVector_DA;
+  da->ops->createlocalvector  = DMCreateLocalVector_DA;
+  da->ops->getinterpolation   = DMGetInterpolation_DA;
+  da->ops->getcoloring        = DMGetColoring_DA;
+  da->ops->getmatrix          = DMGetMatrix_DA;
+  da->ops->refine             = DMRefine_DA;
+  da->ops->coarsen            = DMCoarsen_DA;
+  da->ops->refinehierarchy    = DMRefineHierarchy_DA;
+  da->ops->coarsenhierarchy   = DMCoarsenHierarchy_DA;
+  da->ops->getinjection       = DMGetInjection_DA;
+  da->ops->getaggregates      = DMGetAggregates_DA;
+  da->ops->destroy            = DMDestroy_DA;
+  da->ops->view               = 0;
+  da->ops->setfromoptions     = DMSetFromOptions_DA;
+  da->ops->setup              = DMSetUp_DA;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
-  *da = d; 
+#undef __FUNCT__  
+#define __FUNCT__ "DMDACreate"
+/*@
+  DMDACreate - Creates a DMDA object. 
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. comm - The communicator for the DMDA object
+
+  Output Parameter:
+. da  - The DMDA object
+
+  Level: beginner
+
+.keywords: DMDA, create
+.seealso:  DMDASetSizes(), DMDADuplicate()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMDACreate(MPI_Comm comm, DM *da)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(da,2);
+  ierr = DMCreate(comm,da);CHKERRQ(ierr);
+  ierr = DMSetType(*da,DMDA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

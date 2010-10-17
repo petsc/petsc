@@ -274,6 +274,26 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_Sliced(DM dm,Vec *gvec)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "DMCreate_Sliced"
+PetscErrorCode PETSCDM_DLLEXPORT DMCreate_Sliced(DM p)
+{
+  PetscErrorCode ierr;
+  DM_Sliced      *slice;
+
+  PetscFunctionBegin;
+  ierr = PetscNewLog(p,DM_Sliced,&slice);CHKERRQ(ierr);
+  p->data = slice;
+
+  ierr = PetscObjectChangeTypeName((PetscObject)p,"Sliced");CHKERRQ(ierr);
+  p->ops->createglobalvector = DMCreateGlobalVector_Sliced;
+  p->ops->getmatrix          = DMGetMatrix_Sliced;
+  p->ops->destroy            = DMDestroy_Sliced;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "DMSlicedCreate"
 /*@C
@@ -295,24 +315,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_Sliced(DM dm,Vec *gvec)
 PetscErrorCode PETSCDM_DLLEXPORT DMSlicedCreate(MPI_Comm comm,DM *dm)
 {
   PetscErrorCode ierr;
-  DM             p;
-  DM_Sliced      *slice;
 
   PetscFunctionBegin;
   PetscValidPointer(dm,2);
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#endif
-
-  ierr = PetscHeaderCreate(p,_p_DM,struct _DMOps,DM_CLASSID,0,"DM",comm,DMDestroy,DMView);CHKERRQ(ierr);
-    ierr = PetscNewLog(p,DM_Sliced,&slice);CHKERRQ(ierr);
-  p->data = slice;
-
-  ierr = PetscObjectChangeTypeName((PetscObject)p,"Sliced");CHKERRQ(ierr);
-  p->ops->createglobalvector = DMCreateGlobalVector_Sliced;
-  p->ops->getmatrix          = DMGetMatrix_Sliced;
-  p->ops->destroy            = DMDestroy_Sliced;
-  *dm = p;
+  ierr = DMCreate(comm,dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm,DMSLICED);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

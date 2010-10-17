@@ -516,7 +516,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMADDAGetGhostCorners(DM dm, PetscInt **lcorner
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), ADDAMatSetValuesBlocked(),
           InsertMode, INSERT_VALUES, ADD_VALUES
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MDADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx idxm[],DM dmn, PetscInt n, const ADDAIdx idxn[],
+PetscErrorCode PETSCDM_DLLEXPORT DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx idxm[],DM dmn, PetscInt n, const ADDAIdx idxn[],
 						  const PetscScalar v[], InsertMode addv) 
 {
   DM_ADDA        *ddm = (DM_ADDA*)dmm->data;
@@ -609,76 +609,29 @@ PetscErrorCode PETSCDM_DLLEXPORT MDADDAMatSetValues(Mat mat, DM dmm, PetscInt m,
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMADDACreate"
-/*@C
-  DMADDACreate - Creates and ADDA object that translate between coordinates
-  in a geometric grid of arbitrary dimension and data in a PETSc vector
-  distributed on several processors.
-
-  Collective on MPI_Comm
-
-   Input Parameters:
-+  comm - MPI communicator
-.  dim - the dimension of the grid
-.  nodes - array with d entries that give the number of nodes in each dimension
-.  procs - array with d entries that give the number of processors in each dimension
-          (or PETSC_NULL if to be determined automatically)
-.  dof - number of degrees of freedom per node
--  periodic - array with d entries that, i-th entry is set to  true iff dimension i is periodic
-
-   Output Parameters:
-.  adda - pointer to ADDA data structure that is created
-
-  Level: intermediate
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DMADDACreate(MPI_Comm comm, PetscInt dim, PetscInt *nodes,PetscInt *procs,PetscInt dof, PetscBool  *periodic,DM *dm_p)
+#define __FUNCT__ "DMADDASetParameters"
+PetscErrorCode PETSCDM_DLLEXPORT DMADDASetParameters(DM dm,PetscInt dim, PetscInt *nodes,PetscInt *procs,PetscInt dof,PetscBool *periodic)
 {
   PetscErrorCode ierr;
-  DM             dm;
-  PetscInt       s=1; /* stencil width, fixed to 1 at the moment */
   PetscMPIInt    rank,size;
+  MPI_Comm       comm;
   PetscInt       i;
   PetscInt       nodes_total;
   PetscInt       nodesleft;
   PetscInt       procsleft;
-  PetscInt       procsdimi;
-  PetscInt       ranki;
-  PetscInt       rpq;
-  DM_ADDA        *dd;
+  DM_ADDA        *dd = (DM_ADDA*)dm->data;
 
   PetscFunctionBegin;
-  PetscValidPointer(nodes,3);
-  PetscValidPointer(dm_p,6);
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#endif
-
-  ierr = PetscHeaderCreate(*dm_p,_p_DM,struct _DMOps,DM_CLASSID,0,"DM",comm,DMDestroy,DMView);CHKERRQ(ierr);
-  ierr = PetscNewLog(*dm_p,DM_ADDA,&dd);CHKERRQ(ierr);
-  dm = *dm_p;
-  dm->ops->view = DMView;
-  dm->ops->createglobalvector = DMCreateGlobalVector_ADDA;
-  dm->ops->getcoloring = DMGetColoring_ADDA;
-  dm->ops->getmatrix = DMGetMatrix_ADDA;
-  dm->ops->getinterpolation = DMGetInterpolation_ADDA;
-  dm->ops->refine = DMRefine_ADDA;
-  dm->ops->coarsen = DMCoarsen_ADDA;
-  dm->ops->getinjection = DMGetInjection_ADDA;
-  dm->ops->getaggregates = DMGetAggregates_ADDA;
-  
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
   
   dd->dim = dim;
   dd->dof = dof;
+  dd->periodic = periodic;
 
-  /* nodes */
   ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->nodes));CHKERRQ(ierr);
   ierr = PetscMemcpy(dd->nodes, nodes, dim*sizeof(PetscInt));CHKERRQ(ierr);
-  /* total number of nodes */
-  nodes_total = 1;
-  for(i=0; i<dim; i++) nodes_total *= nodes[i];
 
   /* procs */
   ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->procs));CHKERRQ(ierr);
@@ -709,6 +662,40 @@ PetscErrorCode PETSCDM_DLLEXPORT DMADDACreate(MPI_Comm comm, PetscInt dim, Petsc
     /* user provided the number of processors */
     ierr = PetscMemcpy(dd->procs, procs, dim*sizeof(PetscInt));CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMSetUp_ADDA"
+PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_ADDA(DM dm)
+{
+  PetscErrorCode ierr;
+  PetscInt       s=1; /* stencil width, fixed to 1 at the moment */
+  PetscMPIInt    rank,size;
+  PetscInt       i;
+  PetscInt       nodes_total;
+  PetscInt       procsleft;
+  PetscInt       procsdimi;
+  PetscInt       ranki;
+  PetscInt       rpq;
+  DM_ADDA        *dd = (DM_ADDA*)dm->data;
+  MPI_Comm       comm;
+  PetscInt       *nodes,*procs,dim,dof;
+  PetscBool      *periodic;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
+  procs = dd->procs;
+  nodes = dd->nodes;
+  dim   = dd->dim;
+  dof   = dd->dof;
+  periodic = dd->periodic;
+  /* total number of nodes */
+  nodes_total = 1;
+  for(i=0; i<dim; i++) nodes_total *= nodes[i];
+
   /* check for validity */
   procsleft = 1;
   for(i=0; i<dim; i++) {
@@ -719,8 +706,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DMADDACreate(MPI_Comm comm, PetscInt dim, Petsc
   }
   if (procsleft != size) SETERRQ(comm,PETSC_ERR_PLIB, "Created or was provided with inconsistent distribution of processors");
 
-  /* periodicity */
-  dd->periodic = periodic;
   
   /* find out local region */
   ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->lcs));CHKERRQ(ierr);
@@ -781,6 +766,66 @@ PetscErrorCode PETSCDM_DLLEXPORT DMADDACreate(MPI_Comm comm, PetscInt dim, Petsc
   ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->refine));CHKERRQ(ierr);
   for(i=0; i<dim; i++) dd->refine[i] = 3;
   dd->dofrefine = 1;
+  PetscFunctionReturn(0);
+}
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "DMCreate_ADDA"
+PetscErrorCode PETSCDM_DLLEXPORT DMCreate_ADDA(DM dm)
+{
+  PetscErrorCode ierr;
+  DM_ADDA        *dd;
+
+  PetscFunctionBegin;
+  ierr = PetscNewLog(dm,DM_ADDA,&dd);CHKERRQ(ierr);
+  dm->ops->view = DMView;
+  dm->ops->createglobalvector = DMCreateGlobalVector_ADDA;
+  dm->ops->getcoloring = DMGetColoring_ADDA;
+  dm->ops->getmatrix = DMGetMatrix_ADDA;
+  dm->ops->getinterpolation = DMGetInterpolation_ADDA;
+  dm->ops->refine = DMRefine_ADDA;
+  dm->ops->coarsen = DMCoarsen_ADDA;
+  dm->ops->getinjection = DMGetInjection_ADDA;
+  dm->ops->getaggregates = DMGetAggregates_ADDA;
+  dm->ops->setup = DMSetUp_ADDA;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMADDACreate"
+/*@C
+  DMADDACreate - Creates and ADDA object that translate between coordinates
+  in a geometric grid of arbitrary dimension and data in a PETSc vector
+  distributed on several processors.
+
+  Collective on MPI_Comm
+
+   Input Parameters:
++  comm - MPI communicator
+.  dim - the dimension of the grid
+.  nodes - array with d entries that give the number of nodes in each dimension
+.  procs - array with d entries that give the number of processors in each dimension
+          (or PETSC_NULL if to be determined automatically)
+.  dof - number of degrees of freedom per node
+-  periodic - array with d entries that, i-th entry is set to  true iff dimension i is periodic
+
+   Output Parameters:
+.  adda - pointer to ADDA data structure that is created
+
+  Level: intermediate
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMADDACreate(MPI_Comm comm, PetscInt dim, PetscInt *nodes,PetscInt *procs,PetscInt dof, PetscBool  *periodic,DM *dm_p)
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = DMCreate(comm,dm_p);CHKERRQ(ierr);
+  ierr = DMSetType(*dm_p,DMADDA);CHKERRQ(ierr);
+  ierr = DMADDASetParameters(*dm_p,dim,nodes,procs,dof,periodic);CHKERRQ(ierr);
+  ierr = DMSetUp(*dm_p);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

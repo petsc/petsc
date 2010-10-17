@@ -1768,6 +1768,38 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd_Composite(DM dm,Vec gvec,Ins
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "DMCreate_Composite"
+PetscErrorCode PETSCDM_DLLEXPORT DMCreate_Composite(DM p)
+{
+  PetscErrorCode ierr;
+  DM_Composite   *com;
+
+  PetscFunctionBegin;
+  ierr = PetscNewLog(p,DM_Composite,&com);CHKERRQ(ierr);
+  p->data = com;
+  ierr = PetscObjectChangeTypeName((PetscObject)p,"DMComposite");CHKERRQ(ierr);
+  com->n            = 0;
+  com->next         = PETSC_NULL;
+  com->nredundant   = 0;
+  com->nDM          = 0;
+
+  p->ops->createglobalvector = DMCreateGlobalVector_Composite;
+  p->ops->createlocalvector  = DMCreateLocalVector_Composite;
+  p->ops->refine             = DMRefine_Composite;
+  p->ops->getinterpolation   = DMGetInterpolation_Composite;
+  p->ops->getmatrix          = DMGetMatrix_Composite;
+  p->ops->getcoloring        = DMGetColoring_Composite;
+  p->ops->globaltolocalbegin = DMGlobalToLocalBegin_Composite;
+  p->ops->globaltolocalend   = DMGlobalToLocalEnd_Composite;
+  p->ops->destroy            = DMDestroy_Composite;
+  p->ops->view               = DMView_Composite;
+  p->ops->setup              = DMSetUp_Composite;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeCreate"
 /*@C
@@ -1792,37 +1824,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd_Composite(DM dm,Vec gvec,Ins
 PetscErrorCode PETSCDM_DLLEXPORT DMCompositeCreate(MPI_Comm comm,DM *packer)
 {
   PetscErrorCode ierr;
-  DM             p;
-  DM_Composite   *com;
 
   PetscFunctionBegin;
   PetscValidPointer(packer,2);
-  *packer = PETSC_NULL;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#endif
-
-  ierr = PetscHeaderCreate(p,_p_DM,struct _DMOps,DM_CLASSID,0,"DM",comm,DMDestroy,DMView);CHKERRQ(ierr);
-  ierr = PetscNewLog(p,DM_Composite,&com);CHKERRQ(ierr);
-  p->data = com;
-  ierr = PetscObjectChangeTypeName((PetscObject)p,"DMComposite");CHKERRQ(ierr);
-  com->n            = 0;
-  com->next         = PETSC_NULL;
-  com->nredundant   = 0;
-  com->nDM          = 0;
-
-  p->ops->createglobalvector = DMCreateGlobalVector_Composite;
-  p->ops->createlocalvector  = DMCreateLocalVector_Composite;
-  p->ops->refine             = DMRefine_Composite;
-  p->ops->getinterpolation   = DMGetInterpolation_Composite;
-  p->ops->getmatrix          = DMGetMatrix_Composite;
-  p->ops->getcoloring        = DMGetColoring_Composite;
-  p->ops->globaltolocalbegin = DMGlobalToLocalBegin_Composite;
-  p->ops->globaltolocalend   = DMGlobalToLocalEnd_Composite;
-  p->ops->destroy            = DMDestroy_Composite;
-  p->ops->view               = DMView_Composite;
-  p->ops->setup              = DMSetUp_Composite;
-
-  *packer = p;
+  ierr = DMCreate(comm,packer);CHKERRQ(ierr);
+  ierr = DMSetType(*packer,DMCOMPOSITE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

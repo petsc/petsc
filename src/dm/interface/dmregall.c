@@ -2,6 +2,10 @@
 
 #include "private/daimpl.h"     /*I  "petscda.h"  I*/
 EXTERN_C_BEGIN
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT DMCreate_DA(DM);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT DMCreate_Composite(DM);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT DMCreate_Sliced(DM);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT DMCreate_ADDA(DM);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -25,6 +29,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRegisterAll(const char path[])
 
   PetscFunctionBegin;
   DMRegisterAllCalled = PETSC_TRUE;
+  ierr = DMRegisterDynamic(DMDA,        path, "DMCreate_DA",        DMCreate_DA);CHKERRQ(ierr);
+  ierr = DMRegisterDynamic(DMCOMPOSITE, path, "DMCreate_Composite", DMCreate_Composite);CHKERRQ(ierr);
+  ierr = DMRegisterDynamic(DMSLICED,    path, "DMCreate_Sliced",    DMCreate_Sliced);CHKERRQ(ierr);
+  ierr = DMRegisterDynamic(DMADDA,      path, "DMCreate_ADDA",      DMCreate_ADDA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
