@@ -136,6 +136,9 @@ def makefile(fileobj, dct=None):
                 try: v = int(v)
                 except ValueError: pass
                 done[n] = v
+                try: del notdone[n]
+                except KeyError: pass
+    fp.close()
 
     # do variable interpolation here
     while notdone:
@@ -144,25 +147,17 @@ def makefile(fileobj, dct=None):
             m = _findvar1_rx.search(value) or _findvar2_rx.search(value)
             if m:
                 n = m.group(1)
+                found = True
                 if n in done:
-                    after = value[m.end():]
-                    value = value[:m.start()] + str(done[n]) + after
-                    if "$" in after:
-                        notdone[name] = value
-                    else:
-                        try: value = int(value)
-                        except ValueError:
-                            done[name] = str.strip(value)
-                        else:
-                            done[name] = value
-                        del notdone[name]
+                    item = str(done[n])
                 elif n in notdone:
                     # get it on a subsequent round
-                    pass
+                    found = False
                 else:
-                    done[n] = ""
+                    done[n] = item = ""
+                if found:
                     after = value[m.end():]
-                    value = value[:m.start()] + after
+                    value = value[:m.start()] + item + after
                     if "$" in after:
                         notdone[name] = value
                     else:
@@ -173,11 +168,9 @@ def makefile(fileobj, dct=None):
                             done[name] = value
                         del notdone[name]
             else:
-                # bogus variable reference; just drop it since we can't deal
+                # bogus variable reference; 
+                # just drop it since we can't deal
                 del notdone[name]
-
-    fp.close()
-
     # save the results in the global dictionary
     dct.update(done)
     return dct
