@@ -482,7 +482,6 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMComputeJacobian(DM,Vec,Mat,Mat,MatStr
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMComputeJacobianDefault(DM,Vec,Mat,Mat,MatStructure *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMFinalizePackage(void);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetMatrix(DM, const MatType,Mat *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetGetMatrix(DM,PetscErrorCode (*)(DM, const MatType,Mat *));
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetBlockFills(DM,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDASetMatPreallocateOnly(DM,PetscBool );
