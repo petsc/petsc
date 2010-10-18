@@ -68,8 +68,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscEmacsClientErrorHandler(MPI_Comm comm,int
 
   PetscFunctionBegin;
   /* Note: don't check error codes since this an error handler :-) */
-  ierr = PetscGetPetscDir(&pdir);CHKERRQ(ierr);
-  sprintf(command,"emacsclient +%d %s/%s%s\n",line,pdir,dir,file);
+  ierr = PetscGetPetscDir(&pdir);
+  sprintf(command,"cd %s; emacsclient --no-wait +%d %s%s\n",pdir,line,dir,file);
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(MPI_COMM_WORLD,(char*)ctx,command,"r",&fp);
   ierr = PetscPClose(MPI_COMM_WORLD,fp);

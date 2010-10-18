@@ -7,7 +7,7 @@
 #include "private/fortranimpl.h" 
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define petscoptionsgettruth_              PETSCOPTIONSGETTRUTH
+#define petscoptionsgetbool_               PETSCOPTIONSGETBOOL
 #define petscoptionsgetintarray_           PETSCOPTIONSGETINTARRAY
 #define petscoptionssetvalue_              PETSCOPTIONSSETVALUE
 #define petscoptionsclearvalue_            PETSCOPTIONSCLEARVALUE
@@ -21,7 +21,7 @@
 #define petscoptionsclear_                 PETSCOPTIONSCLEAR
 #define petscoptionsinsertstring_          PETSCOPTIONSINSERTSTRING
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscoptionsgettruth_              petscoptionsgettruth
+#define petscoptionsgetbool_               petscoptionsgetbool
 #define petscoptionssetvalue_              petscoptionssetvalue
 #define petscoptionsclearvalue_            petscoptionsclearvalue
 #define petscoptionshasname_               petscoptionshasname
@@ -110,7 +110,7 @@ void PETSC_STDCALL petscoptionsgetint_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name 
   FREECHAR(name,c2);
 }
 
-void PETSC_STDCALL petscoptionsgettruth_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+void PETSC_STDCALL petscoptionsgetbool_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
                     PetscBool  *ivalue,PetscBool  *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
