@@ -58,8 +58,8 @@
      &             Y_RANGE)
       PetscErrorCode ierr
 
-      do i=in(DMDA_LOCAL_INFO_XS)+1,in(DMDA_LOCAL_INFO_XS)+in(DMDA_LOCAL_INFO_MX)
-         do j=in(DMDA_LOCAL_INFO_YS)+1,in(DMDA_LOCAL_INFO_YS)+in(DMDA_LOCAL_INFO_MY)
+      do i=in(DMDA_LOCAL_INFO_XS)+1,in(DMDA_LOCAL_INFO_XS)+in(DMDA_LOCAL_INFO_XM)
+         do j=in(DMDA_LOCAL_INFO_YS)+1,in(DMDA_LOCAL_INFO_YS)+in(DMDA_LOCAL_INFO_YM)
             do k=1,in(DMDA_LOCAL_INFO_DOF)
                f(k,i,j) = x(k,i,j)*x(k,i,j) - 2.0
                CHKMEMQ
