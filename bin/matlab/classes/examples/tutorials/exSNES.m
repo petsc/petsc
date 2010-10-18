@@ -15,7 +15,7 @@ b.SetType('seq');
 b.SetSizes(10,10);
 x = b.Duplicate();
 %%
-%  Create a matrix for the Jacobian for Newton's method
+%  Create a matrix for the Jacobian for Newton method
 mat = Mat();
 mat.SetType('seqaij');
 mat.SetSizes(10,10,10,10);
@@ -44,4 +44,5 @@ b.Destroy();
 x.Destroy();
 mat.Destroy();
 snes.Destroy();
+viewer.Destroy();
 PetscFinalize();

@@ -133,14 +133,11 @@ def main():
   try: os.unlink('CTAGS')
   except: pass
   etagfile = os.path.join(os.getcwd(),'ETAGS')
-  ctagfile = os.path.join(os.getcwd(),'ECTAGS')  
+  ctagfile = os.path.join(os.getcwd(),'CTAGS')  
   os.path.walk(os.getcwd(),processDir,[etagfile,ctagfile])
   processFiles(os.getcwd(),etagfile,ctagfile)
   addFileNameTags(etagfile)
-  (status,output) = commands.getstatusoutput('sort ECTAGS > CTAGS')
   try: os.unlink('ETAGS')
-  except: pass
-  try: os.unlink('ECTAGS')
   except: pass
 #
 # The classes in this file can also be used in other python-programs by using 'import'

@@ -5,6 +5,6 @@ function [da,err] = DMDACreate1d(wrap,M,dof,s,lx)
   da.SetSizes([M 1 1]);
   da.SetDof(dof);
   da.SetStencilWidth(s);
-  da.SetDim(s);
+  da.SetDim(1);
   err = da.SetUp(); 
 

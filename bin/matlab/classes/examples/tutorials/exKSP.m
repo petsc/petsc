@@ -47,4 +47,5 @@ x.Destroy();
 b.Destroy();
 mat.Destroy();
 ksp.Destroy();
+viewer.Destroy();
 PetscFinalize();
