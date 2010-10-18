@@ -20,8 +20,9 @@
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      call DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,         &
-     &                -10,-10,PETSC_DECIDE,PETSC_DECIDE,2,1,                  &
+      call DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,              &
+     &                DMDA_STENCIL_BOX,                                 &
+     &                -10,-10,PETSC_DECIDE,PETSC_DECIDE,2,1,            &
      &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
 
 
@@ -31,7 +32,7 @@
       call DMMGSetDM(dmmg,da,ierr)
       call DMDestroy(da,ierr)
 
-      call DMMGSetSNESLocal(dmmg,FormFunctionLocal,                                 &
+      call DMMGSetSNESLocal(dmmg,FormFunctionLocal,                     &
      &             PETSC_NULL_FUNCTION,0,0,ierr)
       call DMMGSetFromOptions(dmmg,ierr)
 
@@ -49,23 +50,21 @@
       DMMG dmmg
       PetscInt i,j,k
       DMDALocalInfo in(DMDA_LOCAL_INFO_SIZE)
-      PetscScalar x(in(DMDA_LOCAL_INFO_DOF),                                          &
-     &              XG_RANGE,                                            &
+      PetscScalar x(in(DMDA_LOCAL_INFO_DOF),                            &
+     &              XG_RANGE,                                           &
      &              YG_RANGE)  
-      PetscScalar f(in(DMDA_LOCAL_INFO_DOF),                                 &
+      PetscScalar f(in(DMDA_LOCAL_INFO_DOF),                            &
      &             X_RANGE,                                             &
      &             Y_RANGE)
       PetscErrorCode ierr
 
-      do i=in(DMDA_LOCAL_INFO_XS)+1,in(DMDA_LOCAL_INFO_XS)+              &
-     &         in(DMDA_LOCAL_INFO_MX)
-      do j=in(DMDA_LOCAL_INFO_YS)+1,in(DMDA_LOCAL_INFO_YS)+              &
-     &         in(DMDA_LOCAL_INFO_MY)
-      do k=1,in(DMDA_LOCAL_INFO_DOF)
-         f(k,i,j) = x(k,i,j)*x(k,i,j) - 2.0
-      CHKMEMQ
-      enddo
-      enddo
+      do i=in(DMDA_LOCAL_INFO_XS)+1,in(DMDA_LOCAL_INFO_XS)+in(DMDA_LOCAL_INFO_MX)
+         do j=in(DMDA_LOCAL_INFO_YS)+1,in(DMDA_LOCAL_INFO_YS)+in(DMDA_LOCAL_INFO_MY)
+            do k=1,in(DMDA_LOCAL_INFO_DOF)
+               f(k,i,j) = x(k,i,j)*x(k,i,j) - 2.0
+               CHKMEMQ
+            enddo
+         enddo
       enddo
 
       return
