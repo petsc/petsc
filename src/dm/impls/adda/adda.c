@@ -626,7 +626,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DMADDASetParameters(DM dm,PetscInt dim, PetscIn
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
-  
+
+  /* total number of nodes */
+  nodes_total = 1;
+  for(i=0; i<dim; i++) nodes_total *= nodes[i];
   dd->dim = dim;
   dd->dof = dof;
   dd->periodic = periodic;
@@ -674,7 +677,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_ADDA(DM dm)
   PetscInt       s=1; /* stencil width, fixed to 1 at the moment */
   PetscMPIInt    rank,size;
   PetscInt       i;
-  PetscInt       nodes_total;
   PetscInt       procsleft;
   PetscInt       procsdimi;
   PetscInt       ranki;
@@ -693,9 +695,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_ADDA(DM dm)
   dim   = dd->dim;
   dof   = dd->dof;
   periodic = dd->periodic;
-  /* total number of nodes */
-  nodes_total = 1;
-  for(i=0; i<dim; i++) nodes_total *= nodes[i];
 
   /* check for validity */
   procsleft = 1;
@@ -780,6 +779,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreate_ADDA(DM dm)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(dm,DM_ADDA,&dd);CHKERRQ(ierr);
+  dm->data = (void*)dd;
+
   dm->ops->view = DMView;
   dm->ops->createglobalvector = DMCreateGlobalVector_ADDA;
   dm->ops->getcoloring = DMGetColoring_ADDA;
@@ -790,6 +791,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreate_ADDA(DM dm)
   dm->ops->getinjection = DMGetInjection_ADDA;
   dm->ops->getaggregates = DMGetAggregates_ADDA;
   dm->ops->setup = DMSetUp_ADDA;
+  dm->ops->destroy = DMDestroy_ADDA;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
