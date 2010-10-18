@@ -33,7 +33,7 @@ if (ischar(args))
   args = {args};
 end
 arg = cell(1,length(args)+1);
-arg{1} = 'matlab'
+arg{1} = 'matlab';
 for i=1:length(args)
   arg{i+1} = args{i};
 end

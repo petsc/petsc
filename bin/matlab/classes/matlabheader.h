@@ -101,10 +101,11 @@ int TSCreate(MPI_Comm,TS *);
 int TSSetType(TS,const char*);
 int TSSetDM(TS,DM);
 int TSSetFromOptions(TS);
-int TSSetIFunctionMatlab(TS,const char*,mxArray*);
-int TSSetIJacobianMatlab(TS,Mat,Mat,const char*,mxArray*);
 int TSSolve(TS,Vec);
 int TSSetUp(TS);
 int TSView(TS,PetscViewer);
 int TSDestroy(TS);
-
+/*
+int TSSetIFunctionMatlab(TS,const char*,mxArray*);
+int TSSetIJacobianMatlab(TS,Mat,Mat,const char*,mxArray*);
+*/
