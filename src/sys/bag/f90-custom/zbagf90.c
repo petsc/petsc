@@ -12,7 +12,7 @@
 #define petscbagregisterscalar_ PETSCBAGREGISTERSCALAR
 #define petscbagregisterstring_ PETSCBAGREGISTERSTRING
 #define petscbagregisterreal_ PETSCBAGREGISTERREAL
-#define petscbagregistertruth_ PETSCBAGREGISTERTRUTH
+#define petscbagregisterbool_ PETSCBAGREGISTERBOOL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscbagdestroy_ petscbagdestroy
 #define petscbagview_ petscbagview
@@ -22,7 +22,7 @@
 #define petscbagregisterscalar_ petscbagregisterscalar
 #define petscbagregisterstring_ petscbagregisterstring
 #define petscbagregisterreal_ petscbagregisterreal
-#define petscbagregistertruth_ petscbagregistertruth
+#define petscbagregisterbool_ petscbagregisterbool
 #endif
 
 EXTERN_C_BEGIN
@@ -80,7 +80,7 @@ void PETSC_STDCALL petscbagregisterreal_(PetscBag *bag,void *ptr,PetscReal *def,
   FREECHAR(s2,t2);
 }
 
-void PETSC_STDCALL petscbagregistertruth_(PetscBag *bag,void *ptr,PetscBool  *def,CHAR s1 PETSC_MIXED_LEN(l1),
+void PETSC_STDCALL petscbagregisterbool_(PetscBag *bag,void *ptr,PetscBool  *def,CHAR s1 PETSC_MIXED_LEN(l1),
 					CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
 {
   char       *t1,*t2;
