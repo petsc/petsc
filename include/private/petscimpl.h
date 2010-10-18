@@ -351,7 +351,7 @@ valid
     PetscErrorCode _7_ierr;                                             \
     PetscMPIInt b1[2] = {-(PetscMPIInt)b,(PetscMPIInt)b},b2[2];         \
     _7_ierr = MPI_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,((PetscObject)a)->comm);CHKERRQ(_7_ierr); \
-    if (-b2[0] != b2[1]) SETERRQ1(((PetscObject)a)->comm,PETSC_ERR_ARG_WRONG,"Truth value must be same on all processes, argument # %d",c); \
+    if (-b2[0] != b2[1]) SETERRQ1(((PetscObject)a)->comm,PETSC_ERR_ARG_WRONG,"Bool value must be same on all processes, argument # %d",c); \
   } while (0)
 
 #define PetscValidLogicalCollectiveEnum(a,b,c)                          \

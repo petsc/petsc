@@ -137,6 +137,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_DA(DM da)
   ierr = PetscFree(dd->ofill);CHKERRQ(ierr);
   ierr = PetscFree(dd->e);CHKERRQ(ierr);
 
+  ierr = PetscFree(dd);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

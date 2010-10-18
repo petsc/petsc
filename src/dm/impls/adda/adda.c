@@ -32,6 +32,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_ADDA(DM dm)
 
   ierr = VecDestroy(dd->global);CHKERRQ(ierr);
 
+  ierr = PetscFree(dd);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

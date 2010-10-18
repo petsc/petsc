@@ -114,13 +114,13 @@ PetscErrorCode DMView_DA_Private(DM da)
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DMDA viewing options","DMDA");CHKERRQ(ierr); 
-    ierr = PetscOptionsTruth("-da_view","Print information about the DMDA's distribution","DMView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-da_view","Print information about the DMDA's distribution","DMView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
     if (flg1) {
       ierr = PetscViewerASCIIGetStdout(((PetscObject)da)->comm,&view);CHKERRQ(ierr);
       ierr = DMView(da,view);CHKERRQ(ierr);
     }
     flg1 = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-da_view_draw","Draw how the DMDA is distributed","DMView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-da_view_draw","Draw how the DMDA is distributed","DMView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
     if (flg1) {ierr = DMView(da,PETSC_VIEWER_DRAW_(((PetscObject)da)->comm));CHKERRQ(ierr);}
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);

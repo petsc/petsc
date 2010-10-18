@@ -81,7 +81,7 @@ mat.Destroy();
 b.Destroy();
 x.Destroy();
 
-da = DACreate1d(DA.NONPERIODIC,10,1,1);
+da = DMDACreate1d(DM.NONPERIODIC,10,1,1);
 da.View(viewer);
 
 ksp = KSP();
