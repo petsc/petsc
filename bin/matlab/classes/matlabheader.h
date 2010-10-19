@@ -68,6 +68,7 @@ int DMSetFromOptions(DM);
 int DMDestroy(DM);
 int DMView(DM,PetscViewer);
 int DMSetFunctionMatlab(DM,const char*);
+int DMSetJacobianMatlab(DM,const char*);
 int DMDASetPeriodicity(DM, DMDAPeriodicType);
 int DMDASetDof(DM, int);
 int DMSetUp(DM);

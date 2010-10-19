@@ -31,6 +31,9 @@ classdef DM < PetscObject
     function err = SetFunction(obj,func)
       err = calllib('libpetsc', 'DMSetFunctionMatlab', obj.pobj,func);
     end
+    function err = SetJacobian(obj,func)
+      err = calllib('libpetsc', 'DMSetJacobianMatlab', obj.pobj,func);
+    end
     function err = SetDim(obj,dim)
       err = calllib('libpetsc', 'DMDASetDim', obj.pobj,dim);
     end

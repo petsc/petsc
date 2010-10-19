@@ -199,6 +199,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMView(DM dm,PetscViewer v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+ if (!v) {
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)dm)->comm,&v);CHKERRQ(ierr);
+  }
   if (dm->ops->view) {
     ierr = (*dm->ops->view)(dm,v);CHKERRQ(ierr);
   }
@@ -1138,7 +1141,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRegisterDestroy(void)
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include "mex.h"
 
-typedef struct {char *funcname; mxArray *ctx;} DMMatlabContext;
+typedef struct {char *funcname; char *jacname; mxArray *ctx;} DMMatlabContext;
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMComputeFunction_Matlab"
@@ -1167,7 +1170,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMComputeFunction_Matlab(DM dm,Vec x,Vec y)
   ierr = DMGetContext(dm,(void**)&sctx);CHKERRQ(ierr);
   ierr = PetscMemcpy(&ls,&dm,sizeof(dm));CHKERRQ(ierr); 
   ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 
-  ierr = PetscMemcpy(&ly,&y,sizeof(x));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&ly,&y,sizeof(y));CHKERRQ(ierr); 
   prhs[0] =  mxCreateDoubleScalar((double)ls);
   prhs[1] =  mxCreateDoubleScalar((double)lx);
   prhs[2] =  mxCreateDoubleScalar((double)ly);
@@ -1196,11 +1199,83 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetFunctionMatlab(DM dm,const char *func)
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr = PetscMalloc(sizeof(DMMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = DMGetContext(dm,(void**)&sctx);CHKERRQ(ierr);
+  if (!sctx) {
+    ierr = PetscMalloc(sizeof(DMMatlabContext),&sctx);CHKERRQ(ierr);
+  }
   ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
-
   ierr = DMSetContext(dm,sctx);CHKERRQ(ierr);
   ierr = DMSetFunction(dm,DMComputeFunction_Matlab);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMComputeJacobian_Matlab"
+/*
+   DMComputeJacobian_Matlab - Calls the function that has been set with
+                         DMSetJacobianMatlab().  
+
+   For linear problems x is null
+   
+.seealso: DMSetFunction(), DMGetFunction()
+*/
+PetscErrorCode PETSCDM_DLLEXPORT DMComputeJacobian_Matlab(DM dm,Vec x,Mat A,Mat B,MatStructure *str)
+{
+  PetscErrorCode    ierr;
+  DMMatlabContext   *sctx;
+  int               nlhs = 2,nrhs = 5;
+  mxArray	    *plhs[2],*prhs[5];
+  long long int     lx = 0,lA = 0,lB = 0,ls = 0;
+      
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,3);
+
+  /* call Matlab function in ctx with arguments x, A, and B */
+  ierr = DMGetContext(dm,(void**)&sctx);CHKERRQ(ierr);
+  ierr = PetscMemcpy(&ls,&dm,sizeof(dm));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&lA,&A,sizeof(A));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&lB,&B,sizeof(B));CHKERRQ(ierr); 
+  prhs[0] =  mxCreateDoubleScalar((double)ls);
+  prhs[1] =  mxCreateDoubleScalar((double)lx);
+  prhs[2] =  mxCreateDoubleScalar((double)lA);
+  prhs[3] =  mxCreateDoubleScalar((double)lB);
+  prhs[4] =  mxCreateString(sctx->jacname);
+  ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"DMComputeJacobianInternal");CHKERRQ(ierr);
+  *str    =  mxGetScalar(plhs[0]);CHKERRQ(ierr);
+  ierr    =  mxGetScalar(plhs[1]);CHKERRQ(ierr);
+  mxDestroyArray(prhs[0]);
+  mxDestroyArray(prhs[1]);
+  mxDestroyArray(prhs[2]);
+  mxDestroyArray(prhs[3]);
+  mxDestroyArray(prhs[4]);
+  mxDestroyArray(plhs[0]);
+  mxDestroyArray(plhs[1]);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMSetJacobianMatlab"
+/*
+   DMSetJacobianMatlab - Sets the Jacobian function evaluation routine 
+
+*/
+PetscErrorCode PETSCDM_DLLEXPORT DMSetJacobianMatlab(DM dm,const char *func)
+{
+  PetscErrorCode    ierr;
+  DMMatlabContext   *sctx;
+
+  PetscFunctionBegin;
+  /* currently sctx is memory bleed */
+  ierr = DMGetContext(dm,(void**)&sctx);CHKERRQ(ierr);
+  if (!sctx) {
+    ierr = PetscMalloc(sizeof(DMMatlabContext),&sctx);CHKERRQ(ierr);
+  }
+  ierr = PetscStrallocpy(func,&sctx->jacname);CHKERRQ(ierr);
+  ierr = DMSetContext(dm,sctx);CHKERRQ(ierr);
+  ierr = DMSetJacobian(dm,DMComputeJacobian_Matlab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif

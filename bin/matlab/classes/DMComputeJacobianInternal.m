@@ -1,11 +1,10 @@
-function err = DMComputeFunctionInternal(piddm,pidx,pidf,funcname)
+function [str,err] = DMComputeJacobianInternal(piddm,pidx,pidA,pidB,funcname)
 %
-%   Used by DMComputeFunction_Matlab() to apply user Matlab function
-%
-%   pidx and pidf are the raw C pointers to the to Vecs
+%   Used by DMComputeJacobian_Matlab() to apply user Matlab function
 %
 err = 0;
 x = Vec(pidx,'pobj');
-f = Vec(pidf,'pobj');
+A = Mat(pidA,'pobj');
+B = Mat(pidB,'pobj');
 dm = DM(piddm,'pobj');
-err = feval(funcname,dm,x,f);
+[str,err] = feval(funcname,dm,x,A,B);
