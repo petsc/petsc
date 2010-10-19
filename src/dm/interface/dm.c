@@ -1134,3 +1134,73 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRegisterDestroy(void)
   DMRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#include "mex.h"
+
+typedef struct {char *funcname; mxArray *ctx;} DMMatlabContext;
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMComputeFunction_Matlab"
+/*
+   DMComputeFunction_Matlab - Calls the function that has been set with
+                         DMSetFunctionMatlab().  
+
+   For linear problems x is null
+   
+.seealso: DMSetFunction(), DMGetFunction()
+*/
+PetscErrorCode PETSCDM_DLLEXPORT DMComputeFunction_Matlab(DM dm,Vec x,Vec y)
+{
+  PetscErrorCode    ierr;
+  DMMatlabContext   *sctx;
+  int               nlhs = 1,nrhs = 4;
+  mxArray	    *plhs[1],*prhs[4];
+  long long int     lx = 0,ly = 0,ls = 0;
+      
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,3);
+  PetscCheckSameComm(dm,1,y,3);
+
+  /* call Matlab function in ctx with arguments x and y */
+  ierr = DMGetContext(dm,(void**)&sctx);CHKERRQ(ierr);
+  ierr = PetscMemcpy(&ls,&dm,sizeof(dm));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&ly,&y,sizeof(x));CHKERRQ(ierr); 
+  prhs[0] =  mxCreateDoubleScalar((double)ls);
+  prhs[1] =  mxCreateDoubleScalar((double)lx);
+  prhs[2] =  mxCreateDoubleScalar((double)ly);
+  prhs[3] =  mxCreateString(sctx->funcname);
+  ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"DMComputeFunctionInternal");CHKERRQ(ierr);
+  ierr    =  mxGetScalar(plhs[0]);CHKERRQ(ierr);
+  mxDestroyArray(prhs[0]);
+  mxDestroyArray(prhs[1]);
+  mxDestroyArray(prhs[2]);
+  mxDestroyArray(prhs[3]);
+  mxDestroyArray(plhs[0]);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMSetFunctionMatlab"
+/*
+   DMSetFunctionMatlab - Sets the function evaluation routine 
+
+*/
+PetscErrorCode PETSCDM_DLLEXPORT DMSetFunctionMatlab(DM dm,const char *func)
+{
+  PetscErrorCode    ierr;
+  DMMatlabContext   *sctx;
+
+  PetscFunctionBegin;
+  /* currently sctx is memory bleed */
+  ierr = PetscMalloc(sizeof(DMMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
+
+  ierr = DMSetContext(dm,sctx);CHKERRQ(ierr);
+  ierr = DMSetFunction(dm,DMComputeFunction_Matlab);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif

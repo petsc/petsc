@@ -28,6 +28,9 @@ classdef DM < PetscObject
     function err = SetType(obj,name)
       err = calllib('libpetsc', 'DMSetType', obj.pobj,name);
     end
+    function err = SetFunction(obj,func)
+      err = calllib('libpetsc', 'DMSetFunctionMatlab', obj.pobj,func);
+    end
     function err = SetDim(obj,dim)
       err = calllib('libpetsc', 'DMDASetDim', obj.pobj,dim);
     end

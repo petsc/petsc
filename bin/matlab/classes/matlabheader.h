@@ -67,6 +67,7 @@ int DMSetVecType(DM,const char*);
 int DMSetFromOptions(DM);
 int DMDestroy(DM);
 int DMView(DM,PetscViewer);
+int DMSetFunctionMatlab(DM,const char*);
 int DMDASetPeriodicity(DM, DMDAPeriodicType);
 int DMDASetDof(DM, int);
 int DMSetUp(DM);
@@ -81,6 +82,7 @@ int KSPSetFromOptions(KSP);
 int KSPSetOperators(KSP,Mat,Mat,MatStructure);
 int KSPSolve(KSP,Vec,Vec);
 int KSPSetUp(KSP);
+int KSPGetSolution(KSP,Vec*);
 int KSPView(KSP,PetscViewer);
 int KSPDestroy(KSP);
 
