@@ -390,7 +390,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_MPIIO)
   PetscBool      isMPIIO;
 #endif
-  PetscInt message_count;
+  PetscInt       message_count,flowcontrolcount;
 
   PetscFunctionBegin;
   ierr = VecGetArrayPrivate(xin,&xarray);CHKERRQ(ierr);
@@ -408,7 +408,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
   ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
   if (!isMPIIO) {
 #endif
-    ierr = PetscViewerBinaryGetFlowControl(viewer,&message_count);CHKERRQ(ierr);
+    ierr = PetscViewerFlowControlStart(viewer,&message_count,&flowcontrolcount);CHKERRQ(ierr);
     if (!rank) {
       ierr = PetscBinaryWrite(fdes,xarray,xin->map->n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
       
@@ -418,30 +418,19 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
       mesgsize = PetscMPIIntCast(len);
       /* receive and save messages */
       for (j=1; j<size; j++) {
-        if (j >= message_count) {
-          message_count += 256;
-          ierr = MPI_Bcast(&message_count,1,MPIU_INT,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
-        }
+        ierr = PetscViewerFlowControlStepMaster(viewer,j,message_count,flowcontrolcount);CHKERRQ(ierr);
 	ierr = MPI_Recv(values,mesgsize,MPIU_SCALAR,j,tag,((PetscObject)xin)->comm,&status);CHKERRQ(ierr);
 	ierr = MPI_Get_count(&status,MPIU_SCALAR,&mesglen);CHKERRQ(ierr);         
         n = (PetscInt)mesglen;
 	ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
       }
-      message_count = 0;
-      ierr = MPI_Bcast(&message_count,1,MPIU_INT,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
+      ierr = PetscViewerFlowControlEndMaster(viewer,message_count);CHKERRQ(ierr);
       ierr = PetscFree(values);CHKERRQ(ierr);
     } else {
-      while (1) {
-        if (rank < message_count) break;
-        ierr = MPI_Bcast(&message_count,1,MPIU_INT,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
-      }
-      /* send values */
+      ierr = PetscViewerFlowControlStepWorker(viewer,rank,message_count);CHKERRQ(ierr);
       mesgsize = PetscMPIIntCast(xin->map->n);
       ierr = MPI_Send(xarray,mesgsize,MPIU_SCALAR,0,tag,((PetscObject)xin)->comm);CHKERRQ(ierr);
-      while (1) {
-        if (message_count == 0) break;
-        ierr = MPI_Bcast(&message_count,1,MPIU_INT,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
-      }
+      ierr = PetscViewerFlowControlStepWorker(viewer,rank,message_count);CHKERRQ(ierr);
     }
 #if defined(PETSC_HAVE_MPIIO)
   } else {

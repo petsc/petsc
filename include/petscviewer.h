@@ -372,6 +372,14 @@ M*/
 
 #define PETSC_VIEWER_MATHEMATICA_WORLD (PetscViewerInitializeMathematicaWorld_Private(),PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE) 
 
+#define PetscViewerFlowControlStart(viewer,mcnt,cnt)  (PetscViewerBinaryGetFlowControl(viewer,mcnt) || PetscViewerBinaryGetFlowControl(viewer,cnt))
+#define PetscViewerFlowControlStepMaster(viewer,i,mcnt,cnt) ((i > mcnt) ?  (mcnt += cnt,MPI_Bcast(&mcnt,1,MPIU_INT,0,((PetscObject)viewer)->comm)) : 0)
+#define PetscViewerFlowControlEndMaster(viewer,mcnt) (mcnt = 0,MPI_Bcast(&mcnt,1,MPIU_INT,0,((PetscObject)viewer)->comm))
+#define PetscViewerFlowControlStepWorker(viewer,rank,mcnt) 0; while (0) { PetscErrorCode _ierr; \
+    if ((mcnt == 0) || (rank < mcnt)) break;				\
+  _ierr = MPI_Bcast(&mcnt,1,MPIU_INT,0,((PetscObject)viewer)->comm);CHKERRQ(_ierr);\
+  }
+
 /*
    petscViewer writes to Matlab .mat file
 */
