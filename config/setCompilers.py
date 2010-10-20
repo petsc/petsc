@@ -513,7 +513,7 @@ class Configure(config.base.Configure):
 
   def checkCUDACompiler(self):
     '''Locate a functional CUDA compiler'''
-    requiredVersion = '3.1'
+    requiredVersion = '3.2'
     if 'with-cudac' in self.framework.argDB and self.framework.argDB['with-cudac'] == '0':
       if 'CUDAC' in self.framework.argDB:
         del self.framework.argDB['CUDAC']
