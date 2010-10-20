@@ -5175,6 +5175,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroEntries(Mat mat)
    Each processor can indicate any rows in the entire matrix to be zeroed (i.e. each process does NOT have to
    list only rows local to itself).
 
+   You can call MatSetOption(mat,MAT_NO_OFF_PROC_ZERO_ROWS,PETSC_TRUE) if each process indicates only rows it
+   owns that are to be zeroed. This saves a global synchronization in the implementation.
+
    Level: intermediate
 
    Concepts: matrices^zeroing rows
@@ -5236,7 +5239,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat mat,PetscInt numRows,const Pet
    routine, regardless of whether any rows being zeroed are owned by
    them.
 
-   Each processor should list the rows that IT wants zeroed
+   Each processor can indicate any rows in the entire matrix to be zeroed (i.e. each process does NOT have to
+   list only rows local to itself).
+
+   You can call MatSetOption(mat,MAT_NO_OFF_PROC_ZERO_ROWS,PETSC_TRUE) if each process indicates only rows it
+   owns that are to be zeroed. This saves a global synchronization in the implementation.
 
    Level: intermediate
 
