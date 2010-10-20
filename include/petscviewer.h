@@ -121,6 +121,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIOpen(MPI_Comm,const cha
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryCreate(MPI_Comm,PetscViewer*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetFlowControl(PetscViewer,PetscInt*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySetFlowControl(PetscViewer,PetscInt);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySetMPIIO(PetscViewer);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetMPIIO(PetscViewer,PetscBool *);
 #if defined(PETSC_HAVE_MPIIO)
@@ -375,9 +376,13 @@ M*/
 #define PetscViewerFlowControlStart(viewer,mcnt,cnt)  (PetscViewerBinaryGetFlowControl(viewer,mcnt) || PetscViewerBinaryGetFlowControl(viewer,cnt))
 #define PetscViewerFlowControlStepMaster(viewer,i,mcnt,cnt) ((i > mcnt) ?  (mcnt += cnt,MPI_Bcast(&mcnt,1,MPIU_INT,0,((PetscObject)viewer)->comm)) : 0)
 #define PetscViewerFlowControlEndMaster(viewer,mcnt) (mcnt = 0,MPI_Bcast(&mcnt,1,MPIU_INT,0,((PetscObject)viewer)->comm))
-#define PetscViewerFlowControlStepWorker(viewer,rank,mcnt) 0; while (0) { PetscErrorCode _ierr; \
-    if ((mcnt == 0) || (rank < mcnt)) break;				\
+#define PetscViewerFlowControlStepWorker(viewer,rank,mcnt) 0; while (1) { PetscErrorCode _ierr; \
+    if (rank < mcnt) break;				\
   _ierr = MPI_Bcast(&mcnt,1,MPIU_INT,0,((PetscObject)viewer)->comm);CHKERRQ(_ierr);\
+  }
+#define PetscViewerFlowControlEndWorker(viewer,mcnt) 0; while (1) { PetscErrorCode _ierr; \
+  _ierr = MPI_Bcast(&mcnt,1,MPIU_INT,0,((PetscObject)viewer)->comm);CHKERRQ(_ierr);\
+    if (mcnt == 0) break;				\
   }
 
 /*

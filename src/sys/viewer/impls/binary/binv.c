@@ -866,8 +866,14 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileSetMode(PetscViewer viewer,Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  CHKMEMQ;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidLogicalCollectiveEnum(viewer,type,2);
+  do {                                                                  
+    PetscErrorCode _7_ierr;                                             
+    PetscMPIInt b1[2] = {-(PetscMPIInt)type,(PetscMPIInt)type},b2[2];         
+    _7_ierr = MPI_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,((PetscObject)viewer)->comm);CHKERRQ(_7_ierr); 
+    if (-b2[0] != b2[1]) SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_ARG_WRONG,"Enum value must be same on all processes, argument # %d",2); 
+  } while (0);
   ierr = PetscTryMethod(viewer,"PetscViewerFileSetMode_C",(PetscViewer,PetscFileMode),(viewer,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

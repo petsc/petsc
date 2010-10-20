@@ -418,7 +418,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
       mesgsize = PetscMPIIntCast(len);
       /* receive and save messages */
       for (j=1; j<size; j++) {
-        ierr = PetscViewerFlowControlStepMaster(viewer,j,message_count,flowcontrolcount);CHKERRQ(ierr);
+	ierr = PetscViewerFlowControlStepMaster(viewer,j,message_count,flowcontrolcount);CHKERRQ(ierr);
 	ierr = MPI_Recv(values,mesgsize,MPIU_SCALAR,j,tag,((PetscObject)xin)->comm,&status);CHKERRQ(ierr);
 	ierr = MPI_Get_count(&status,MPIU_SCALAR,&mesglen);CHKERRQ(ierr);         
         n = (PetscInt)mesglen;
@@ -430,7 +430,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
       ierr = PetscViewerFlowControlStepWorker(viewer,rank,message_count);CHKERRQ(ierr);
       mesgsize = PetscMPIIntCast(xin->map->n);
       ierr = MPI_Send(xarray,mesgsize,MPIU_SCALAR,0,tag,((PetscObject)xin)->comm);CHKERRQ(ierr);
-      ierr = PetscViewerFlowControlStepWorker(viewer,rank,message_count);CHKERRQ(ierr);
+      ierr = PetscViewerFlowControlEndWorker(viewer,message_count);CHKERRQ(ierr);
     }
 #if defined(PETSC_HAVE_MPIIO)
   } else {
