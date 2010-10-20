@@ -1,73 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-
 <head>
-<title>PETSc:&nbsp; Features:&nbsp; Component Details</title>
-</head>
 
-<body bgcolor="#D5EAFF">
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  <title>PETSc:&nbsp; Features:&nbsp; Component Details</title>
+</head>
+<body bgcolor="#d5eaff">
 <table border="0" width="100%">
-  <tr>
-    <td width="25%" valign="top"><h1><font color="#FF0000" size="7">PETSc</font></h1>
-    <ul>
-      <li><a href="../index.html"><strong>Home</strong></a></li>
-    </ul>
-    </td>
-    <td width="75%"><h1>Features:&nbsp; Component Details</h1>
-    </td>
-  </tr>
-  <tr>
-    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
-    </td>
-  </tr>
-  <tr>
-    <td width="25%" valign="top"><ul>
-      <li><a href="../download/index.html"><strong>Download</strong></a></li>
-      <li><a href="index.html"><strong>Features</strong></a><ul>
-          <li><font color="#FF0000"><strong>Component Details</strong></font></li>
-          <li><a href="diagram.html"><strong>Diagram</strong></a></li>
-        </ul>
-      </li>
-      <li><a href="../documentation/index.html"><strong>Documentation</strong></a></li>
-      <li><strong><a href="../publications/index.html">Applications/Publications</a></strong></li>
-      <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
-        <li><a href="../miscellaneous/external.html"><strong>External Software</strong></a></li>
+  <tbody>
+    <tr>
+      <td valign="top" width="25%">
+      <h1><font color="#ff0000" size="7">PETSc</font></h1>
+      <ul>
+        <li><a href="../index.html"><strong>Home</strong></a></li>
+      </ul>
+      </td>
+      <td width="75%">
+      <h1>Features:&nbsp; Component Details</h1>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" width="100%">
+      <hr color="#ff5b5b" size="4"> </td>
+    </tr>
+    <tr>
+      <td valign="top" width="25%">
+      <ul>
+        <li><a href="../download/index.html"><strong>Download</strong></a></li>
+        <li><a href="index.html"><strong>Features</strong></a>
+          <ul>
+            <li><font color="#ff0000"><strong>Component Details</strong></font></li>
+            <li><a href="diagram.html"><strong>Diagram</strong></a></li>
+            <li><strong><a href="gpus.html"><strong>GPUs</strong></a></strong></li>
+          </ul>
+        </li>
+        <li><a href="../documentation/index.html"><strong>Documentation</strong></a></li>
+        <li><strong><a href="../publications/index.html">Applications/Publications</a></strong></li>
+        <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
+        <li><a href="../miscellaneous/external.html"><strong>External
+Software</strong></a></li>
         <li><a href="../developers/index.html"><strong>Developers Site</strong></a></li>
-    </ul>
-    </td>
-    <td width="75%" valign="top">PETSc components provide the functionality required for many
-    parallel solutions of PDEs.<dl>
-      <dt><tt>Vec</tt></dt>
-      <dd>Provides the vector operations required for setting up and solving large-scale linear
-        and nonlinear problems. Includes easy-to-use parallel scatter and gather operations, as
-        well as special-purpose code for handling ghost points for regular data structures. </dd>
-      <dt><tt>Mat</tt></dt>
-      <dd>A large suite of data structures and code for the manipulation of parallel sparse
-        matrices. Includes four different parallel matrix data structures, each appropriate for a
-        different class of problems. </dd>
-      <dt><tt>PC</tt></dt>
-      <dd>A collection of sequential and parallel preconditioners, including (sequential) ILU(k),
-        LU, and (both sequential and parallel) block Jacobi, overlapping additive Schwarz methods
-        and structured MG using DMMG. </dd>
-      <dt><tt>KSP</tt></dt>
-      <dd>Parallel implementations of many popular Krylov subspace iterative methods, including
-        GMRES, CG, CGS, Bi-CG-Stab, two variants of TFQMR, CR, and LSQR. All are coded so that
-        they are immediately usable with any preconditioners and any matrix data structures,
-        including matrix-free methods. </dd>
-      <dt><tt>SNES</tt></dt>
-      <dd>Data-structure-neutral implementations of Newton-like methods for nonlinear systems.
-        Includes both line search and trust region techniques with a single interface. Employs by
-        default the above data structures and linear solvers. Users can set custom monitoring
-        routines, convergence criteria, etc. </dd>
-      <dt><tt>TS</tt></dt>
-      <dd>Code for the time evolution of solutions of PDEs. In addition, provides pseudo-transient
-        continuation techniques for computing steady-state solutions. </dd>
-    </dl>
-    </td>
-  </tr>
-  <tr>
-    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
-    </td>
-  </tr>
+      </ul>
+      </td>
+      <td valign="top" width="75%">PETSc components provide the
+functionality required for many parallel solutions of PDEs.
+      <dl>
+        <dt><tt>Vec</tt></dt>
+        <dd>Provides the vector operations required for setting up and
+solving large-scale linear and nonlinear problems. Includes easy-to-use
+parallel scatter and gather operations, as well as special-purpose code
+for handling ghost points for regular data structures. </dd>
+        <dt><tt>Mat</tt></dt>
+        <dd>A large suite of data structures and code for the
+manipulation of parallel sparse matrices. Includes four different
+parallel matrix data structures, each appropriate for a different class
+of problems. </dd>
+        <dt><tt>PC</tt></dt>
+        <dd>A collection of sequential and parallel preconditioners,
+including (sequential) ILU(k), LU, and (both sequential and parallel)
+block Jacobi, overlapping additive Schwarz methods and structured MG
+using DMMG. </dd>
+        <dt><tt>KSP</tt></dt>
+        <dd>Parallel implementations of many popular Krylov subspace
+iterative methods, including GMRES, CG, CGS, Bi-CG-Stab, two variants
+of TFQMR, CR, and LSQR. All are coded so that they are immediately
+usable with any preconditioners and any matrix data structures,
+including matrix-free methods. </dd>
+        <dt><tt>SNES</tt></dt>
+        <dd>Data-structure-neutral implementations of Newton-like
+methods for nonlinear systems. Includes both line search and trust
+region techniques with a single interface. Employs by default the above
+data structures and linear solvers. Users can set custom monitoring
+routines, convergence criteria, etc. </dd>
+        <dt><tt>TS</tt></dt>
+        <dd>Code for the time evolution of solutions of PDEs. In
+addition, provides pseudo-transient continuation techniques for
+computing steady-state solutions. </dd>
+      </dl>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" width="100%">
+      <hr color="#ff5b5b" size="4"> </td>
+    </tr>
+  </tbody>
 </table>
 </body>
 </html>
