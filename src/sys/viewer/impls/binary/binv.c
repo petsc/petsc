@@ -244,7 +244,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySetFlowControl(PetscViewer vi
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
   PetscFunctionBegin;
-  if (fc <= 0) SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Flow control count must be positive, %D was set",fc);
+  if (fc <= 1) SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Flow control count must be greater than 1, %D was set",fc);
   vbinary->flowcontrol = fc;
   PetscFunctionReturn(0);
 }

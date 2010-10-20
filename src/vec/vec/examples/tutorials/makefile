@@ -236,6 +236,21 @@ runex9:
 	   if (${DIFF} output/ex9_1.out ex9_1.tmp) then true; \
 	   else echo "Possible problem with ex9_1, diffs above"; fi;\
 	   ${RM} -f ex9_1.tmp
+runex10:
+	-@${MPIEXEC} -n 2 ./ex10 -binary > ex10_1.tmp 2>&1;\
+	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
+	   else echo "Possible problem with ex10_1, diffs above"; fi;\
+	   ${RM} -f ex10_1.tmp
+runex10_2:
+	-@${MPIEXEC} -n 3 ./ex10 -binary > ex10_2.tmp 2>&1;\
+	   if (${DIFF} output/ex10_2.out ex10_2.tmp) then true; \
+	   else echo "Possible problem with ex10_2, diffs above"; fi;\
+	   ${RM} -f ex10_2.tmp
+runex10_3:
+	-@${MPIEXEC} -n 5 ./ex10 -binary > ex10_3.tmp 2>&1;\
+	   if (${DIFF} output/ex10_3.out ex10_3.tmp) then true; \
+	   else echo "Possible problem with ex10_3, diffs above"; fi;\
+	   ${RM} -f ex10_3.tmp
 runex9_2:
 	-@${MPIEXEC} -n 2 ./ex9 -allocate > ex9_2.tmp 2>&1;\
 	   if (${DIFF} output/ex9_1.out ex9_2.tmp) then true; \
@@ -284,7 +299,7 @@ runex20f90:
 
 TESTEXAMPLES_C		    = ex1.PETSc runex1 runex1_2 ex1.rm ex1e.PETSc runex1e runex1e_2 ex1e.rm \
                               ex2.PETSc runex2 ex2.rm ex5.PETSc runex5 runex5_2 ex5.rm ex6.PETSc \
-                              runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex11.PETSc runex11 ex11.rm \
+                              runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex10.PETSc runex10 runex10_2 runex10_3 ex10.rm ex11.PETSc runex11 ex11.rm \
                               ex12.PETSc runex12 ex12.rm ex16.PETSc runex16 ex16.rm ex9.PETSc runex9 runex9_2 ex9.rm ex16.PETSc \
                               ex16.rm ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_C_X11	    = ex3.PETSc runex3 ex3.rm

@@ -40,7 +40,7 @@ int main(int argc,char **args)
      reading from this file.
   */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"fileoutput",FILE_MODE_WRITE,&fd);CHKERRQ(ierr);
-
+  ierr = PetscViewerBinarySetFlowControl(fd,3);CHKERRQ(ierr);
   /*
      Save the matrix and vector; then destroy the viewer.
   */

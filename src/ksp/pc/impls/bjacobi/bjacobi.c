@@ -227,13 +227,13 @@ static PetscErrorCode PCSetFromOptions_BJacobi(PC pc)
 #define __FUNCT__ "PCView_BJacobi"
 static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
 {
-  PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
+  PC_BJacobi           *jac = (PC_BJacobi*)pc->data;
   PC_BJacobi_Multiproc *mpjac = (PC_BJacobi_Multiproc*)jac->data;
-  PetscErrorCode ierr;
-  PetscMPIInt    rank;
-  PetscInt       i;
-  PetscBool      iascii,isstring;
-  PetscViewer    sviewer;
+  PetscErrorCode       ierr;
+  PetscMPIInt          rank;
+  PetscInt             i;
+  PetscBool            iascii,isstring;
+  PetscViewer          sviewer;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
