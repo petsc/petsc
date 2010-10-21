@@ -1449,6 +1449,56 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatZeroRowsColumns_SeqAIJ"
+PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  PetscInt          i,j,m = A->rmap->n - 1,d = 0;
+  PetscErrorCode    ierr;
+  PetscBool         missing,*zeroed;
+  const PetscScalar *xx;
+  PetscScalar       *bb;
+
+  PetscFunctionBegin;
+  if (x && b) {
+    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
+  }
+  ierr = PetscMalloc(A->rmap->n*sizeof(PetscBool),&zeroed);CHKERRQ(ierr);
+  ierr = PetscMemzero(zeroed,A->rmap->n*sizeof(PetscBool));CHKERRQ(ierr);
+  for (i=0; i<N; i++) {
+    if (rows[i] < 0 || rows[i] > m) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"row %D out of range", rows[i]);
+    ierr = PetscMemzero(&a->a[a->i[rows[i]]],a->ilen[rows[i]]*sizeof(PetscScalar));CHKERRQ(ierr);
+    zeroed[rows[i]] = PETSC_TRUE;
+  }
+  for (i=0; i<A->rmap->n; i++) {
+    if (!zeroed[i]) {
+      for (j=a->i[i]; j<a->i[i+1]; j++) {
+        if (zeroed[a->j[j]]) {
+          bb[i] -= a->a[j]*xx[a->j[j]];
+          a->a[j] = 0.0;
+        }          
+      }
+    }
+  }
+ if (x && b) {
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(zeroed);CHKERRQ(ierr);
+  if (diag != 0.0) {
+    ierr = MatMissingDiagonal_SeqAIJ(A,&missing,&d);CHKERRQ(ierr);
+    if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in row %D",d);
+    for (i=0; i<N; i++) {
+      a->a[a->diag[rows[i]]] = diag;
+    }
+  }
+  A->same_nonzero = PETSC_TRUE;
+  ierr = MatAssemblyEnd_SeqAIJ(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_SeqAIJ"
 PetscErrorCode MatGetRow_SeqAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
@@ -2613,7 +2663,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatScale_SeqAIJ,
        0,
        MatDiagonalSet_SeqAIJ,
-       0,
+       MatZeroRowsColumns_SeqAIJ,
 /*49*/ MatSetBlockSize_SeqAIJ,
        MatGetRowIJ_SeqAIJ,
        MatRestoreRowIJ_SeqAIJ,

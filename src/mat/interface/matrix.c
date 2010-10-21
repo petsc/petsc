@@ -5141,6 +5141,69 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroEntries(Mat mat)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatZeroRowsColumns"
+/*@C
+   MatZeroRowsColumns - Zeros all entries (except possibly the main diagonal)
+   of a set of rows and columns of a matrix.
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+.  numRows - the number of rows to remove
+.  rows - the global row indices
+.  diag - value put in all diagonals of eliminated rows (0.0 will even eliminate diagonal entry)
+.  x - optional vector of solutions for zeroed rows
+-  b - optioonal vector of right hand side, that will be adjusted by solution
+
+   Notes:
+   This does not change the nonzero structure of the matrix, it merely zeros those entries in the matrix.
+
+   The user can set a value in the diagonal entry (or for the AIJ and
+   row formats can optionally remove the main diagonal entry from the
+   nonzero structure as well, by passing 0.0 as the final argument).
+
+   For the parallel case, all processes that share the matrix (i.e.,
+   those in the communicator used for matrix creation) MUST call this
+   routine, regardless of whether any rows being zeroed are owned by
+   them.
+
+   Each processor can indicate any rows in the entire matrix to be zeroed (i.e. each process does NOT have to
+   list only rows local to itself).
+
+   The option MAT_NO_OFF_PROC_ZERO_ROWS does not apply to this routine.
+
+   Level: intermediate
+
+   Concepts: matrices^zeroing rows
+
+.seealso: MatZeroRowsIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsColumns(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  if (numRows) PetscValidIntPointer(rows,3);
+  if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!mat->ops->zerorows) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+
+  ierr = (*mat->ops->zerorowscolumns)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
+  ierr = MatView_Private(mat);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows"
 /*@C
    MatZeroRows - Zeros all entries (except possibly the main diagonal)
