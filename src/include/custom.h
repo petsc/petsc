@@ -1373,6 +1373,102 @@ DACreateND(MPI_Comm comm,
 
 #else
 
+#if !(PETSC_VERSION_(3,1,0))
+
+#define _p_DA  _p_DM
+#define DA     DM
+
+#define DACreate           DMDACreate
+#define DADestroy          DMDestroy
+#define DASetUp            DMSetUp
+#define DAView             DMView              
+#define DASetOptionsPrefix DMSetOptionsPrefix 
+#define DASetFromOptions   DMSetFromOptions   
+
+#define DASetDim             DMDASetDim              
+#define DASetDof             DMDASetDof              
+#define DASetSizes           DMDASetSizes            
+#define DASetNumProcs        DMDASetNumProcs         
+#define DASetOwnershipRanges DMDASetOwnershipRanges  
+#define DASetPeriodicity     DMDASetPeriodicity      
+#define DASetStencilType     DMDASetStencilType      
+#define DASetStencilWidth    DMDASetStencilWidth          
+
+#define DAPeriodicType DMDAPeriodicType
+#define DA_NONPERIODIC DMDA_NONPERIODIC 
+#define DA_XPERIODIC   DMDA_XPERIODIC   
+#define DA_YPERIODIC   DMDA_YPERIODIC   
+#define DA_ZPERIODIC   DMDA_ZPERIODIC   
+#define DA_XYPERIODIC  DMDA_XYPERIODIC  
+#define DA_XZPERIODIC  DMDA_XZPERIODIC  
+#define DA_YZPERIODIC  DMDA_YZPERIODIC  
+#define DA_XYZPERIODIC DMDA_XYZPERIODIC 
+#define DA_XYZGHOSTED  DMDA_XYZGHOSTED  
+
+#define DADirection DMDADirection 
+#define DA_X        DMDA_X
+#define DA_Y        DMDA_Y
+#define DA_Z        DMDA_Z
+
+#define DAStencilType   DMDAStencilType  
+#define DA_STENCIL_STAR DMDA_STENCIL_STAR
+#define DA_STENCIL_BOX  DMDA_STENCIL_BOX
+
+#define DAInterpolationType DMDAInterpolationType
+#define DA_Q0 DMDA_Q0
+#define DA_Q1 DMDA_Q1
+#define DAElementType DMDAElementType
+#define DA_ELEMENT_P1 DMDA_ELEMENT_P1
+#define DA_ELEMENT_Q1 DMDA_ELEMENT_Q1
+
+#define DAGetOwnershipRanges DMDAGetOwnershipRanges  
+#define DAGetCorners         DMDAGetCorners
+#define DAGetGhostCorners    DMDAGetGhostCorners
+#define DAGetInfo            DMDAGetInfo
+
+#define DASetUniformCoordinates DMDASetUniformCoordinates
+#define DASetCoordinates        DMDASetCoordinates       
+#define DAGetCoordinates        DMDAGetCoordinates       
+#define DAGetCoordinateDA       DMDAGetCoordinateDA      
+#define DAGetGhostedCoordinates DMDAGetGhostedCoordinates
+
+#define DACreateNaturalVector DMDACreateNaturalVector 
+#define DACreateGlobalVector  DMCreateGlobalVector  
+#define DACreateLocalVector   DMCreateLocalVector   
+#define DAGetMatrix           DMGetMatrix           
+
+#define DAGlobalToNaturalBegin DMDAGlobalToNaturalBegin  
+#define DAGlobalToNaturalEnd   DMDAGlobalToNaturalEnd    
+#define DANaturalToGlobalBegin DMDANaturalToGlobalBegin  
+#define DANaturalToGlobalEnd   DMDANaturalToGlobalEnd    
+#define DALocalToLocalBegin    DMDALocalToLocalBegin     
+#define DALocalToLocalEnd      DMDALocalToLocalEnd        
+
+#define DAGlobalToLocalBegin   DMGlobalToLocalBegin    
+#define DAGlobalToLocalEnd     DMGlobalToLocalEnd      
+
+#define DALocalToGlobalBegin(da,l,g) \
+        DMLocalToGlobalBegin(da,l,ADD_VALUES,g)
+#define DALocalToGlobalEnd(da,l,g) \
+        DMLocalToGlobalEnd(da,l,ADD_VALUES,g)
+#define DALocalToGlobal(da,l,im,g) \
+        (DMLocalToGlobalBegin(da,l,INSERT_VALUES,g) || \
+         DMLocalToGlobalEnd(da,l,INSERT_VALUES,g))
+
+#define DAGetAO                         DMDAGetAO                        
+#define DAGetScatter                    DMDAGetScatter                   
+#define DAGetISLocalToGlobalMapping     DMDAGetISLocalToGlobalMapping    
+#define DAGetISLocalToGlobalMappingBlck DMDAGetISLocalToGlobalMappingBlck
+
+#define DASetRefinementFactor   DMDASetRefinementFactor  
+#define DAGetRefinementFactor   DMDAGetRefinementFactor  
+#define DARefine                DMRefine               
+#define DACoarsen               DMCoarsen              
+#define DASetInterpolationType  DMDASetInterpolationType 
+#define DAGetInterpolation      DMGetInterpolation     
+
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "DACreateND"
 static PetscErrorCode
@@ -1387,7 +1483,6 @@ DACreateND(MPI_Comm comm,
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-
   ierr = DACreate(comm,da);CHKERRQ(ierr);
   ierr = DASetDim(*da,dim);CHKERRQ(ierr);
   ierr = DASetDof(*da,dof);CHKERRQ(ierr);
@@ -1397,23 +1492,7 @@ DACreateND(MPI_Comm comm,
   ierr = DASetPeriodicity(*da,wrap);CHKERRQ(ierr);
   ierr = DASetStencilType(*da,stencil_type);CHKERRQ(ierr);
   ierr = DASetStencilWidth(*da,stencil_width);CHKERRQ(ierr);
-  {
-    const DAType defaultType = DA1D;
-    switch (dim) {
-    case 1: defaultType = DA1D; break;
-    case 2: defaultType = DA2D; break;
-    case 3: defaultType = DA3D; break;
-    }
-    ierr = DASetType(*da,defaultType);CHKERRQ(ierr);
-  }
-
-  /* This violates the behavior for other classes, but right now users
-     expect negative dimensions to be handled this way */
-  /*
-    ierr = DASetOptionsPrefix(*da,prefix);CHKERRQ(ierr);CHKERRQ(ierr);
-    ierr = DASetFromOptions(*da);CHKERRQ(ierr);CHKERRQ(ierr);
-  */
-
+  ierr = DASetUp(*da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1429,11 +1508,13 @@ DACreateND(MPI_Comm comm,
 #undef __FUNCT__
 #define __FUNCT__ "DASetElementType"
 static PetscErrorCode
-DASetElementType_Custom(DA da, DAElementType etype)
+DASetElementType_Custom(DA dm, DAElementType etype)
 {
+  DM_DA          *da;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  da = (DM_DA*)dm->data;
   if (da->elementtype != etype) {
     ierr = PetscFree(da->e);CHKERRQ(ierr);
     da->elementtype = etype;
@@ -1447,11 +1528,13 @@ DASetElementType_Custom(DA da, DAElementType etype)
 #undef __FUNCT__
 #define __FUNCT__ "DAGetElementType"
 static PetscErrorCode
-DAGetElementType_Custom(DA da, DAElementType *etype)
+DAGetElementType_Custom(DA dm, DAElementType *etype)
 {
+  DM_DA          *da;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(etype,2);
+  da = (DM_DA*)dm->data;
   *etype = da->elementtype;
   PetscFunctionReturn(0);
 }
@@ -1460,15 +1543,17 @@ DAGetElementType_Custom(DA da, DAElementType *etype)
 #undef __FUNCT__
 #define __FUNCT__ "DAGetElements_1D"
 static PetscErrorCode
-DAGetElements_1D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
+DAGetElements_1D(DA dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
+  DM_DA          *da;
   PetscInt       i,xs,xe,Xs,Xe;
   PetscInt       cnt=0;
   PetscFunctionBegin;
+  da = (DM_DA*)dm->data;
   if (!da->e) {
-    ierr = DAGetCorners(da,&xs,0,0,&xe,0,0);CHKERRQ(ierr);
-    ierr = DAGetGhostCorners(da,&Xs,0,0,&Xe,0,0);CHKERRQ(ierr);
+    ierr = DAGetCorners(dm,&xs,0,0,&xe,0,0);CHKERRQ(ierr);
+    ierr = DAGetGhostCorners(dm,&Xs,0,0,&Xe,0,0);CHKERRQ(ierr);
     xe += xs; Xe += Xs; if (xs != Xs) xs -= 1;
     da->ne = 1*(xe - xs - 1);
     ierr = PetscMalloc((1 + 2*da->ne)*sizeof(PetscInt),&da->e);CHKERRQ(ierr);
@@ -1486,21 +1571,22 @@ DAGetElements_1D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetElements_2D"
 static PetscErrorCode 
-DAGetElements_2D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
+DAGetElements_2D(DA dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
+  DM_DA          *da;
   PetscInt       i,xs,xe,Xs,Xe;
   PetscInt       j,ys,ye,Ys,Ye;
   PetscInt       cnt=0, cell[4], ns=2, nn=3;
-  DAElementType  etype = da->elementtype;
   PetscInt       c, split[] = {0,1,3,
                                2,3,1};
   PetscFunctionBegin;
+  da = (DM_DA*)dm->data;
   if (!da->e) {
-    if (etype == DA_ELEMENT_P1) {ns=2; nn=3;}
-    if (etype == DA_ELEMENT_Q1) {ns=1; nn=4;}
-    ierr = DAGetCorners(da,&xs,&ys,0,&xe,&ye,0);CHKERRQ(ierr);
-    ierr = DAGetGhostCorners(da,&Xs,&Ys,0,&Xe,&Ye,0);CHKERRQ(ierr);
+    if (da->elementtype == DA_ELEMENT_P1) {ns=2; nn=3;}
+    if (da->elementtype == DA_ELEMENT_Q1) {ns=1; nn=4;}
+    ierr = DAGetCorners(dm,&xs,&ys,0,&xe,&ye,0);CHKERRQ(ierr);
+    ierr = DAGetGhostCorners(dm,&Xs,&Ys,0,&Xe,&Ye,0);CHKERRQ(ierr);
     xe += xs; Xe += Xs; if (xs != Xs) xs -= 1;
     ye += ys; Ye += Ys; if (ys != Ys) ys -= 1;
     da->ne = ns*(xe - xs - 1)*(ye - ys - 1);
@@ -1511,11 +1597,11 @@ DAGetElements_2D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
         cell[1] = (i-Xs+1) + (j-Ys  )*(Xe-Xs);
         cell[2] = (i-Xs+1) + (j-Ys+1)*(Xe-Xs);
         cell[3] = (i-Xs  ) + (j-Ys+1)*(Xe-Xs);
-        if (etype == DA_ELEMENT_P1) {
+        if (da->elementtype == DA_ELEMENT_P1) {
           for (c=0; c<ns*nn; c++)
             da->e[cnt++] = cell[split[c]];
         }
-        if (etype == DA_ELEMENT_Q1) {
+        if (da->elementtype == DA_ELEMENT_Q1) {
           for (c=0; c<ns*nn; c++)
             da->e[cnt++] = cell[c];
         }
@@ -1531,14 +1617,14 @@ DAGetElements_2D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetElements_3D"
 static PetscErrorCode 
-DAGetElements_3D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
+DAGetElements_3D(DA dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
+  DM_DA          *da;
   PetscInt       i,xs,xe,Xs,Xe;
   PetscInt       j,ys,ye,Ys,Ye;
   PetscInt       k,zs,ze,Zs,Ze;
   PetscInt       cnt=0, cell[8], ns=6, nn=4;
-  DAElementType  etype = da->elementtype;
   PetscInt       c, split[] = {0,1,3,7,
                                0,1,7,4,
                                1,2,3,7,
@@ -1546,11 +1632,12 @@ DAGetElements_3D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
                                1,4,5,7,
                                1,5,6,7};
   PetscFunctionBegin;
+  da = (DM_DA*)dm->data;
   if (!da->e) {
-    if (etype == DA_ELEMENT_P1) {ns=6; nn=4;}
-    if (etype == DA_ELEMENT_Q1) {ns=1; nn=8;}
-    ierr = DAGetCorners(da,&xs,&ys,&zs,&xe,&ye,&ze);CHKERRQ(ierr);
-    ierr = DAGetGhostCorners(da,&Xs,&Ys,&Zs,&Xe,&Ye,&Ze);CHKERRQ(ierr);
+    if (da->elementtype == DA_ELEMENT_P1) {ns=6; nn=4;}
+    if (da->elementtype == DA_ELEMENT_Q1) {ns=1; nn=8;}
+    ierr = DAGetCorners(dm,&xs,&ys,&zs,&xe,&ye,&ze);CHKERRQ(ierr);
+    ierr = DAGetGhostCorners(dm,&Xs,&Ys,&Zs,&Xe,&Ye,&Ze);CHKERRQ(ierr);
     xe += xs; Xe += Xs; if (xs != Xs) xs -= 1;
     ye += ys; Ye += Ys; if (ys != Ys) ys -= 1;
     ze += zs; Ze += Zs; if (zs != Zs) zs -= 1;
@@ -1567,11 +1654,11 @@ DAGetElements_3D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
           cell[5] = (i-Xs+1) + (j-Ys  )*(Xe-Xs) + (k-Zs+1)*(Xe-Xs)*(Ye-Ys);
           cell[6] = (i-Xs+1) + (j-Ys+1)*(Xe-Xs) + (k-Zs+1)*(Xe-Xs)*(Ye-Ys);
           cell[7] = (i-Xs  ) + (j-Ys+1)*(Xe-Xs) + (k-Zs+1)*(Xe-Xs)*(Ye-Ys);
-          if (etype == DA_ELEMENT_P1) {
+          if (da->elementtype == DA_ELEMENT_P1) {
             for (c=0; c<ns*nn; c++)
               da->e[cnt++] = cell[split[c]];
           }
-          if (etype == DA_ELEMENT_Q1) {
+          if (da->elementtype == DA_ELEMENT_Q1) {
             for (c=0; c<ns*nn; c++)
               da->e[cnt++] = cell[c];
           }

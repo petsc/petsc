@@ -53,11 +53,11 @@ cdef extern from "petscts.h":
     struct _p_TS
     ctypedef _p_TS* PetscTS "TS"
 
-cdef extern from "petscao.h":
+cdef extern from *:
     struct _p_AO
     ctypedef _p_AO* PetscAO "AO"
 
-cdef extern from "petscda.h":
+cdef extern from *:
     struct _p_DA
     ctypedef _p_DA* PetscDA "DA"
 

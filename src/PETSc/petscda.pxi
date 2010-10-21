@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-cdef extern from "petscda.h" nogil:
+cdef extern from * nogil:
 
     ctypedef enum PetscDAStencilType "DAStencilType":
         DA_STENCIL_STAR

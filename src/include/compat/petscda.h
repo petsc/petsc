@@ -1,6 +1,20 @@
 #ifndef _COMPAT_PETSC_DA_H
 #define _COMPAT_PETSC_DA_H
 
+#if (PETSC_VERSION_(3,0,0) || \
+     PETSC_VERSION_(3,1,0))
+#undef __FUNCT__
+#define __FUNCT__ "DASetUp"
+static PetscErrorCode
+DASetUp_Compat(DA da)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscFunctionReturn(0);
+}
+#define DASetUp_Compat DASetUp
+#endif
+
 #if (PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "DASetElementType"

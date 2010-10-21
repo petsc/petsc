@@ -8,14 +8,17 @@
 
 #include <petsc.h>
 #include <petscsys.h>
-#include <petscis.h>
 #include <petscvec.h>
 #include <petscmat.h>
 #include <petscksp.h>
 #include <petscsnes.h>
 #include <petscts.h>
-#include <petscao.h>
-#include <petscda.h>
+
+#if !PETSC_VERSION_(3,1,0)
+#if !PETSC_VERSION_(3,0,0)
+#define DA DM
+#endif
+#endif
 
 #include "petsc4py.PETSc_api.h"
 
