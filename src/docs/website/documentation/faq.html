@@ -1064,20 +1064,14 @@ Dirichlet rows but this results in a
 non-symmetric system. How come there is no MatZeroColumns() to keep the
 matrix symmetric?<br>
             <br>
-            </span>For the default PETSc sparse matrix data structures
-(parallel and sequential) which are row based, zeroing certain columns
-is very expensive (it would require either searches or additional data
-structures). Hence we don't provide this functionality. One can solve
-Dirichilet boundary condition problems using symmetric methods three
-ways. (1) Manually call MatGetSubMatrix() to extract your symmetric
-subproblem or (2) call MatZeroRows() then use the PCREDISTRIBUTE
-preconditioner to solve the reduced system using. (3) When assemblying
+            </span>One can solve
+Dirichilet boundary condition problems using three
+ways. (1) Manually call MatGetSubMatrix() to extract your submatrix
+subproblem or (2) call MatZeroRows() or MatZeroRowsColumns(). (3) When assemblying
 the matrix, (generating values and passing them to the matrix), never
 include locations for the Dirichlet grid points in the vector and
 matrix, instead take them into account as you put the other values into
-the load. This approach has the advantage of less memory usage since
-(1) and (2) will require essentially twice as much memory.
-symmetric methods. See its manual page.<br>
+the load. 
             <br>
             <span style="color: rgb(255, 0, 0);"><a name="matlab"></a>How
 can

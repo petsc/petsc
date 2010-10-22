@@ -258,29 +258,36 @@ void PETSC_STDCALL matdestroymatrices_(Mat *mat,PetscInt *n,Mat *smat,PetscError
   }
 }
 
-void PETSC_STDCALL matzerorows_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,PetscErrorCode *ierr)
+void PETSC_STDCALL matzerorows_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
 {
-  *ierr = MatZeroRows(*mat,*numRows,rows,*diag);
+  CHKFORTRANNULLOBJECTDEREFERENCE(x);
+  CHKFORTRANNULLOBJECTDEREFERENCE(b);
+  *ierr = MatZeroRows(*mat,*numRows,rows,*diag,*x,*b);
 }
 
-void PETSC_STDCALL matzerorowsis_(Mat *mat,IS *is,PetscScalar *diag,PetscErrorCode *ierr)
+void PETSC_STDCALL matzerorowsis_(Mat *mat,IS *is,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
 {
-  *ierr = MatZeroRowsIS(*mat,*is,*diag);
+  CHKFORTRANNULLOBJECTDEREFERENCE(x);
+  CHKFORTRANNULLOBJECTDEREFERENCE(b);
+  *ierr = MatZeroRowsIS(*mat,*is,*diag,*x,*b);
 }
 
-void PETSC_STDCALL matzerorowslocal_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,PetscErrorCode *ierr)
+void PETSC_STDCALL matzerorowslocal_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
 {
-  *ierr = MatZeroRowsLocal(*mat,*numRows,rows,*diag);
+  CHKFORTRANNULLOBJECTDEREFERENCE(x);
+  CHKFORTRANNULLOBJECTDEREFERENCE(b);
+  *ierr = MatZeroRowsLocal(*mat,*numRows,rows,*diag,*x,*b);
 }
 
-void PETSC_STDCALL matzerorowslocalis_(Mat *mat,IS *is,PetscScalar *diag,PetscErrorCode *ierr)
+void PETSC_STDCALL matzerorowslocalis_(Mat *mat,IS *is,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
 {
-  *ierr = MatZeroRowsLocalIS(*mat,*is,*diag);
+  CHKFORTRANNULLOBJECTDEREFERENCE(x);
+  CHKFORTRANNULLOBJECTDEREFERENCE(b);
+  *ierr = MatZeroRowsLocalIS(*mat,*is,*diag,*x,*b);
 }
 
 
-void PETSC_STDCALL matsetoptionsprefix_(Mat *mat,CHAR prefix PETSC_MIXED_LEN(len),
-                                        PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL matsetoptionsprefix_(Mat *mat,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 

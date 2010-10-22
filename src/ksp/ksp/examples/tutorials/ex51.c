@@ -186,7 +186,7 @@ int main(int argc,char **args)
     ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = MatZeroRows(A,4*p*m,rows,1.0);CHKERRQ(ierr);
+  ierr = MatZeroRows(A,4*p*m,rows,1.0,0,0);CHKERRQ(ierr);
   ierr = PetscFree(rows);CHKERRQ(ierr);
   ierr = PetscFree(rowsx);CHKERRQ(ierr);
   ierr = PetscFree(rowsy);CHKERRQ(ierr);

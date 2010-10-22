@@ -339,8 +339,8 @@ EXTERN_C_END
    on them are collective. 
 
    Example:
-   If you wish to index the values {0,1,4,5}, then use
-   a block size of 2 and idx of {0,2}.
+   If you wish to index the values {0,1,6,7}, then use
+   a block size of 2 and idx of {0,3}.
 
    Level: beginner
 

@@ -1,8 +1,8 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-
-<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
   <title>PETSc:&nbsp; Features:&nbsp; Component Details</title>
 </head>
 <body bgcolor="#d5eaff">
@@ -48,7 +48,36 @@ Software</strong></a></li>
       </td>
       <td valign="top" width="75%">PETSc algebraic solvers now run on
 Nvidia GPU systems. This sometimes provides an alternative high
-performance low cost solution technique.</td>
+performance low cost solution technique. <br>
+      <br>
+Nvidia GPU usage of PETSc is currently only available in <a
+ href="../developers/index.html">petsc-dev,</a> it will be available in
+the 3.2 release.<br>
+      <ul>
+        <li><a href="../documentation/installation.html#CUDA">Installing
+PETSc
+to use the Nvidia GPUs</a></li>
+        <li><a href="gpus.pdf">How the GPU solvers are implemented in
+PETSc.</a></li>
+        <li>Quick summary of usage</li>
+        <ul>
+          <li>The VecType VECSEQCUDA, VECMPICUDA, or VECCUDA maybe used
+with VecSetType() or -vec_type seqcuda,mpicuda, or cuda when
+VecSetFromOptions() is used.<br>
+          </li>
+          <li>The MatType MATSEQAIJCUDA, MATMPIAIJCUDA, or MATAIJCUDA
+maybe used with MatSetType or -mat_type seqaijcuda,mpiaijcuda, or
+aijcuda when MatSetOptions() is used.<br>
+          </li>
+          <li>If you are creating the vectors and matrices with a DM
+you can use -da_vec_type cuda and -da_mat_type cuda</li>
+          <li>It is useful to develop your code with the default
+vectors and then run production runs with the command line options to
+use the GPU since debugging on GPUs is difficult.<br>
+          </li>
+        </ul>
+      </ul>
+      </td>
     </tr>
     <tr>
       <td colspan="2" width="100%">

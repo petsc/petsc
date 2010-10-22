@@ -37,7 +37,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = ISCreateStride(PETSC_COMM_SELF,(m*n)/2,0,2,&isrow);CHKERRQ(ierr);
-  ierr = MatZeroRowsIS(C,isrow,five);CHKERRQ(ierr);
+  ierr = MatZeroRowsIS(C,isrow,five,0,0);CHKERRQ(ierr);
 
   ierr = VecCreateSeq(PETSC_COMM_SELF,m*n,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&x);CHKERRQ(ierr);

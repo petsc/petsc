@@ -341,7 +341,7 @@ PetscErrorCode MatZeroEntries_MPIDense(Mat A)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIDense"
-PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag)
+PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   Mat_MPIDense   *l = (Mat_MPIDense*)A->data;
   PetscErrorCode ierr;
@@ -438,7 +438,7 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
   ierr = PetscFree(nprocs);CHKERRQ(ierr);
     
   /* actually zap the local rows */
-  ierr = MatZeroRows(l->A,slen,lrows,diag);CHKERRQ(ierr);
+  ierr = MatZeroRows(l->A,slen,lrows,diag,0,0);CHKERRQ(ierr);
   ierr = PetscFree(lrows);CHKERRQ(ierr);
 
   /* wait on sends */

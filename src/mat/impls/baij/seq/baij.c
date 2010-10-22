@@ -2172,7 +2172,7 @@ static PetscErrorCode MatZeroRows_SeqBAIJ_Check_Blocks(PetscInt idx[],PetscInt n
   
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_SeqBAIJ"
-PetscErrorCode MatZeroRows_SeqBAIJ(Mat A,PetscInt is_n,const PetscInt is_idx[],PetscScalar diag)
+PetscErrorCode MatZeroRows_SeqBAIJ(Mat A,PetscInt is_n,const PetscInt is_idx[],PetscScalar diag,Vec x, Vec b)
 {
   Mat_SeqBAIJ    *baij=(Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;

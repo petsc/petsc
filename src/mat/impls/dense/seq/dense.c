@@ -1339,7 +1339,7 @@ PetscErrorCode MatZeroEntries_SeqDense(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_SeqDense"
-PetscErrorCode MatZeroRows_SeqDense(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag)
+PetscErrorCode MatZeroRows_SeqDense(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   Mat_SeqDense   *l = (Mat_SeqDense*)A->data;
   PetscInt       n = A->cmap->n,i,j;

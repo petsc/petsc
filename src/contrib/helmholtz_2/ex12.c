@@ -814,7 +814,7 @@ int ModifySubmatrices1(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
        the communicator PETSC_COMM_SELF.
     */
     ierr = ISCreateGeneral(PETSC_COMM_SELF,1,&m,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-    ierr = MatZeroRowsIS(submat[i],is,&one);CHKERRQ(ierr);
+    ierr = MatZeroRowsIS(submat[i],is,&one,0,0);CHKERRQ(ierr);
     ierr = ISDestroy(is);CHKERRQ(ierr);
 
     /*

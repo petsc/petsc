@@ -12,7 +12,7 @@ EXTERN PetscErrorCode MatSetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscIn
 EXTERN PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 EXTERN PetscErrorCode MatGetRow_SeqBAIJ(Mat,PetscInt,PetscInt*,PetscInt*[],PetscScalar*[]);
 EXTERN PetscErrorCode MatRestoreRow_SeqBAIJ(Mat,PetscInt,PetscInt*,PetscInt*[],PetscScalar*[]);
-EXTERN PetscErrorCode MatZeroRows_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscScalar);
+EXTERN PetscErrorCode MatZeroRows_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscScalar,Vec,Vec);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowMaxAbs_MPIBAIJ"
@@ -1730,7 +1730,7 @@ PetscErrorCode MatDiagonalScale_MPIBAIJ(Mat mat,Vec ll,Vec rr)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIBAIJ"
-PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag)
+PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   Mat_MPIBAIJ    *l = (Mat_MPIBAIJ*)A->data;
   PetscErrorCode ierr;
@@ -1853,11 +1853,11 @@ PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscS
 
   */
   /* must zero l->B before l->A because the (diag) case below may put values into l->B*/
-  ierr = MatZeroRows_SeqBAIJ(l->B,slen,lrows,0.0);CHKERRQ(ierr); 
+  ierr = MatZeroRows_SeqBAIJ(l->B,slen,lrows,0.0,0,0);CHKERRQ(ierr); 
   if ((diag != 0.0) && (l->A->rmap->N == l->A->cmap->N)) {
-    ierr = MatZeroRows_SeqBAIJ(l->A,slen,lrows,diag);CHKERRQ(ierr);
+    ierr = MatZeroRows_SeqBAIJ(l->A,slen,lrows,diag,0,0);CHKERRQ(ierr);
   } else if (diag != 0.0) {
-    ierr = MatZeroRows_SeqBAIJ(l->A,slen,lrows,0.0);CHKERRQ(ierr);
+    ierr = MatZeroRows_SeqBAIJ(l->A,slen,lrows,0.0,0,0);CHKERRQ(ierr);
     if (((Mat_SeqBAIJ*)l->A->data)->nonew) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatZeroRows() on rectangular matrices cannot be used with the Mat options \n\
        MAT_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCATION_ERR");
     for (i=0; i<slen; i++) {
@@ -1867,7 +1867,7 @@ PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscS
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   } else {
-    ierr = MatZeroRows_SeqBAIJ(l->A,slen,lrows,0.0);CHKERRQ(ierr);
+    ierr = MatZeroRows_SeqBAIJ(l->A,slen,lrows,0.0,0,0);CHKERRQ(ierr);
   }
 
   ierr = PetscFree(lrows);CHKERRQ(ierr);

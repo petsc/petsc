@@ -1759,11 +1759,11 @@ matrix associated with known boundary conditions, by rows of the
 identity matrix (or some scaling of it). This action can be done with 
 the command
 \begin{tabbing}
-  MatZeroRowsIS(Mat A,PetscInt numRows,PetscInt rows[],PetscScalar diag\_value),
+  MatZeroRowsIS(Mat A,PetscInt numRows,PetscInt rows[],PetscScalar diag\_value,Vec x,Vec b),
 \end{tabbing}
 or equivalently,
 \begin{tabbing}
-  MatZeroRowsIS(Mat A,IS rows,PetscScalar diag\_value);
+  MatZeroRowsIS(Mat A,IS rows,PetscScalar diag\_value,Vec x,Vec b);
 \end{tabbing}
 For sparse matrices this removes the data structures for certain rows 
 of the matrix. If the pointer \trl{diag_value} is PETSC_NULL, it 

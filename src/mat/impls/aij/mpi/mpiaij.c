@@ -558,7 +558,7 @@ PetscErrorCode MatZeroEntries_MPIAIJ(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIAIJ"
-PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag)
+PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   Mat_MPIAIJ     *l = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
@@ -680,11 +680,11 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
 
   */
   /* must zero l->B before l->A because the (diag) case below may put values into l->B*/
-  ierr = MatZeroRows(l->B,slen,lrows,0.0);CHKERRQ(ierr); 
+  ierr = MatZeroRows(l->B,slen,lrows,0.0,0,0);CHKERRQ(ierr); 
   if ((diag != 0.0) && (l->A->rmap->N == l->A->cmap->N)) {
-    ierr      = MatZeroRows(l->A,slen,lrows,diag);CHKERRQ(ierr);
+    ierr = MatZeroRows(l->A,slen,lrows,diag,0,0);CHKERRQ(ierr);
   } else if (diag != 0.0) {
-    ierr = MatZeroRows(l->A,slen,lrows,0.0);CHKERRQ(ierr);
+    ierr = MatZeroRows(l->A,slen,lrows,0.0,0,0);CHKERRQ(ierr);
     if (((Mat_SeqAIJ*)l->A->data)->nonew) {
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatZeroRows() on rectangular matrices cannot be used with the Mat options\n\
 MAT_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCATION_ERR");
@@ -696,7 +696,7 @@ MAT_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCATIO
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   } else {
-    ierr = MatZeroRows(l->A,slen,lrows,0.0);CHKERRQ(ierr);
+    ierr = MatZeroRows(l->A,slen,lrows,0.0,0,0);CHKERRQ(ierr);
   }
   ierr = PetscFree(lrows);CHKERRQ(ierr);
 

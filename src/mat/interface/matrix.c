@@ -5153,8 +5153,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroEntries(Mat mat)
 .  numRows - the number of rows to remove
 .  rows - the global row indices
 .  diag - value put in all diagonals of eliminated rows (0.0 will even eliminate diagonal entry)
-.  x - optional vector of solutions for zeroed rows
--  b - optioonal vector of right hand side, that will be adjusted by solution
+.  x - optional vector of solutions for zeroed rows (other entries in vector are not used)
+-  b - optioonal vector of right hand side, that will be adjusted by provided solution
 
    Notes:
    This does not change the nonzero structure of the matrix, it merely zeros those entries in the matrix.
@@ -5177,7 +5177,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroEntries(Mat mat)
 
    Concepts: matrices^zeroing rows
 
-.seealso: MatZeroRowsIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
+.seealso: MatZeroRowsIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(), MatZeroRowsColumnsIS()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsColumns(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
@@ -5204,6 +5204,62 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsColumns(Mat mat,PetscInt numRows,co
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatZeroRowsColumnsIS"
+/*@C
+   MatZeroRowsColumnsIS - Zeros all entries (except possibly the main diagonal)
+   of a set of rows and columns of a matrix.
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+.  is - the rows to zero
+.  diag - value put in all diagonals of eliminated rows (0.0 will even eliminate diagonal entry)
+.  x - optional vector of solutions for zeroed rows (other entries in vector are not used)
+-  b - optioonal vector of right hand side, that will be adjusted by provided solution
+
+   Notes:
+   This does not change the nonzero structure of the matrix, it merely zeros those entries in the matrix.
+
+   The user can set a value in the diagonal entry (or for the AIJ and
+   row formats can optionally remove the main diagonal entry from the
+   nonzero structure as well, by passing 0.0 as the final argument).
+
+   For the parallel case, all processes that share the matrix (i.e.,
+   those in the communicator used for matrix creation) MUST call this
+   routine, regardless of whether any rows being zeroed are owned by
+   them.
+
+   Each processor can indicate any rows in the entire matrix to be zeroed (i.e. each process does NOT have to
+   list only rows local to itself).
+
+   The option MAT_NO_OFF_PROC_ZERO_ROWS does not apply to this routine.
+
+   Level: intermediate
+
+   Concepts: matrices^zeroing rows
+
+.seealso: MatZeroRowsIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(), MatZeroRowsColumns()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsColumnsIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
+{
+  PetscErrorCode ierr;
+  PetscInt       numRows;
+  const PetscInt *rows;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscValidType(mat,1);
+  PetscValidType(is,2);
+  ierr = ISGetLocalSize(is,&numRows);CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
+  ierr = MatZeroRowsColumns(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,&rows);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows"
 /*@C
    MatZeroRows - Zeros all entries (except possibly the main diagonal)
@@ -5215,7 +5271,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsColumns(Mat mat,PetscInt numRows,co
 +  mat - the matrix
 .  numRows - the number of rows to remove
 .  rows - the global row indices
--  diag - value put in all diagonals of eliminated rows (0.0 will even eliminate diagonal entry)
+.  diag - value put in all diagonals of eliminated rows (0.0 will even eliminate diagonal entry)
+.  x - optional vector of solutions for zeroed rows (other entries in vector are not used)
+-  b - optioonal vector of right hand side, that will be adjusted by provided solution
 
    Notes:
    For the AIJ and BAIJ matrix formats this removes the old nonzero structure,
@@ -5247,7 +5305,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsColumns(Mat mat,PetscInt numRows,co
 
 .seealso: MatZeroRowsIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag)
+PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   PetscErrorCode ierr;
 
@@ -5260,7 +5318,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat mat,PetscInt numRows,const Pet
   if (!mat->ops->zerorows) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
-  ierr = (*mat->ops->zerorows)(mat,numRows,rows,diag);CHKERRQ(ierr);
+  ierr = (*mat->ops->zerorows)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
   ierr = MatView_Private(mat);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA)
@@ -5282,7 +5340,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat mat,PetscInt numRows,const Pet
    Input Parameters:
 +  mat - the matrix
 .  is - index set of rows to remove
--  diag - value put in all diagonals of eliminated rows
+.  diag - value put in all diagonals of eliminated rows
+.  x - optional vector of solutions for zeroed rows (other entries in vector are not used)
+-  b - optioonal vector of right hand side, that will be adjusted by provided solution
 
    Notes:
    For the AIJ and BAIJ matrix formats this removes the old nonzero structure,
@@ -5314,7 +5374,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat mat,PetscInt numRows,const Pet
 
 .seealso: MatZeroRows(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsIS(Mat mat,IS is,PetscScalar diag)
+PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
 {
   PetscInt       numRows;
   const PetscInt *rows;
@@ -5326,7 +5386,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsIS(Mat mat,IS is,PetscScalar diag)
   PetscValidHeaderSpecific(is,IS_CLASSID,2);
   ierr = ISGetLocalSize(is,&numRows);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
-  ierr = MatZeroRows(mat,numRows,rows,diag);CHKERRQ(ierr);
+  ierr = MatZeroRows(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&rows);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -5343,7 +5403,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsIS(Mat mat,IS is,PetscScalar diag)
 +  mat - the matrix
 .  numRows - the number of rows to remove
 .  rows - the grid coordinates (and component number when dof > 1) for matrix rows
--  diag - value put in all diagonals of eliminated rows (0.0 will even eliminate diagonal entry)
+.  diag - value put in all diagonals of eliminated rows (0.0 will even eliminate diagonal entry)
+.  x - optional vector of solutions for zeroed rows (other entries in vector are not used)
+-  b - optioonal vector of right hand side, that will be adjusted by provided solution
 
    Notes:
    For the AIJ and BAIJ matrix formats this removes the old nonzero structure,
@@ -5391,7 +5453,7 @@ $    idxm(MatStencil_c,1) = c
 
 .seealso: MatZeroRows(), MatZeroRowsIS(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsStencil(Mat mat,PetscInt numRows,const MatStencil rows[],PetscScalar diag)
+PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsStencil(Mat mat,PetscInt numRows,const MatStencil rows[],PetscScalar diag,Vec x,Vec b)
 {
   PetscInt       dim    = mat->stencil.dim;
   PetscInt       sdim   = dim - (1 - (PetscInt) mat->stencil.noc);
@@ -5426,7 +5488,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsStencil(Mat mat,PetscInt numRows,co
       jdxm[numNewRows++] = tmp;
     }
   }
-  ierr = MatZeroRowsLocal(mat,numNewRows,jdxm,diag);CHKERRQ(ierr);
+  ierr = MatZeroRowsLocal(mat,numNewRows,jdxm,diag,0,0);CHKERRQ(ierr);
   ierr = PetscFree(jdxm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -5443,7 +5505,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsStencil(Mat mat,PetscInt numRows,co
 +  mat - the matrix
 .  numRows - the number of rows to remove
 .  rows - the global row indices
--  diag - value put in all diagonals of eliminated rows
+.  diag - value put in all diagonals of eliminated rows
+.  x - optional vector of solutions for zeroed rows (other entries in vector are not used)
+-  b - optioonal vector of right hand side, that will be adjusted by provided solution
 
    Notes:
    Before calling MatZeroRowsLocal(), the user must first set the
@@ -5467,7 +5531,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsStencil(Mat mat,PetscInt numRows,co
 
 .seealso: MatZeroRows(), MatZeroRowsLocalIS(), MatZeroEntries(), MatZeroRows(), MatSetLocalToGlobalMapping
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag)
+PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   PetscErrorCode ierr;
 
@@ -5480,7 +5544,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,PetscInt numRows,cons
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   if (mat->ops->zerorowslocal) {
-    ierr = (*mat->ops->zerorowslocal)(mat,numRows,rows,diag);CHKERRQ(ierr);
+    ierr = (*mat->ops->zerorowslocal)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
   } else {
     IS             is, newis;
     const PetscInt *newRows;
@@ -5489,7 +5553,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,PetscInt numRows,cons
     ierr = ISCreateGeneral(PETSC_COMM_SELF,numRows,rows,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingApplyIS(mat->mapping,is,&newis);CHKERRQ(ierr);
     ierr = ISGetIndices(newis,&newRows);CHKERRQ(ierr);
-    ierr = (*mat->ops->zerorows)(mat,numRows,newRows,diag);CHKERRQ(ierr);
+    ierr = (*mat->ops->zerorows)(mat,numRows,newRows,diag,0,0);CHKERRQ(ierr);
     ierr = ISRestoreIndices(newis,&newRows);CHKERRQ(ierr);
     ierr = ISDestroy(newis);CHKERRQ(ierr);
     ierr = ISDestroy(is);CHKERRQ(ierr);
@@ -5514,7 +5578,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,PetscInt numRows,cons
    Input Parameters:
 +  mat - the matrix
 .  is - index set of rows to remove
--  diag - value put in all diagonals of eliminated rows
+.  diag - value put in all diagonals of eliminated rows
+.  x - optional vector of solutions for zeroed rows (other entries in vector are not used)
+-  b - optioonal vector of right hand side, that will be adjusted by provided solution
 
    Notes:
    Before calling MatZeroRowsLocalIS(), the user must first set the
@@ -5538,7 +5604,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,PetscInt numRows,cons
 
 .seealso: MatZeroRows(), MatZeroRowsLocal(), MatZeroEntries(), MatZeroRows(), MatSetLocalToGlobalMapping
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocalIS(Mat mat,IS is,PetscScalar diag)
+PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocalIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
 {
   PetscErrorCode ierr;
   PetscInt       numRows;
@@ -5554,7 +5620,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocalIS(Mat mat,IS is,PetscScalar d
 
   ierr = ISGetLocalSize(is,&numRows);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
-  ierr = MatZeroRowsLocal(mat,numRows,rows,diag);CHKERRQ(ierr);
+  ierr = MatZeroRowsLocal(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&rows);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
