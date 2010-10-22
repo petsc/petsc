@@ -328,6 +328,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm,PetscInt,co
 typedef enum {MAT_COMPOSITE_ADDITIVE,MAT_COMPOSITE_MULTIPLICATIVE} MatCompositeType;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeSetType(Mat,MatCompositeType);
 
+#if defined PETSC_HAVE_MATDD
 typedef enum {MATDD_BLOCK_COMM_DEFAULT = 0, MATDD_BLOCK_COMM_SELF = -1, MATDD_BLOCK_COMM_DETERMINE = -2} MatDDBlockCommType;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDAIJSetPreallocation(Mat A,PetscInt nz,PetscInt *nnz);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDGetDefaltBlockType(Mat A, const MatType *type);
@@ -338,6 +339,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetBlock(Mat A, PetscInt rowblock,
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDGetBlock(Mat A, PetscInt rowblock, PetscInt colblock, Mat *block);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetScatters(Mat A, PetscInt blockcount, Mat scatters[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetGathers(Mat A, PetscInt blockcount,  Mat gathers[]);
+#endif
 
 #if defined PETSC_HAVE_MATIM
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIMSetIS(Mat A, IS in, IS out);

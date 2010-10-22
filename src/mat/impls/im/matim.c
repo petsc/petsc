@@ -72,7 +72,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIMSetIS(Mat A, IS in, IS out) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatIMGetIS"
-PetscErrorCode PETSCMAT_DLLEXPORT MatFwkGetIS(Mat A, IS *_in, IS *_out) {
+PetscErrorCode PETSCMAT_DLLEXPORT MatIMGetIS(Mat A, IS *_in, IS *_out) {
   PetscErrorCode ierr;
   Mat_IM*               im = (Mat_IM*)A->data;
   PetscFunctionBegin;
