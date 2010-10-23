@@ -25,6 +25,7 @@ PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat A,Vec xx,Vec zz)
   const PetscInt       *ib=a->j;
   PetscInt             ibt;
 #endif
+  PetscInt             nonzerorow;
 
   PetscFunctionBegin;
   ierr = VecSet(zz,0.0);CHKERRQ(ierr);
@@ -33,7 +34,9 @@ PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat A,Vec xx,Vec zz)
 
   v  = a->a; 
   for (i=0; i<mbs; i++) {
-    nz   = ai[i+1] - ai[i];  /* length of i_th row of A */    
+    nz   = ai[i+1] - ai[i];  /* length of i_th row of A */
+    if (!nz) continue; /* Move to the next row if the current row is empty */
+    nonzerorow++;
     x1   = x[i];
     sum  = v[0]*x1;          /* diagonal term */
     for (j=1; j<nz; j++) {
@@ -49,7 +52,7 @@ PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*(2.0*a->nz - mbs) - mbs);CHKERRQ(ierr); 
+  ierr = PetscLogFlops(2.0*(2.0*a->nz - nonzerorow) - nonzerorow);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -76,6 +79,7 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
   const PetscInt       *ib=a->j;
   PetscInt             ibt;
 #endif
+  PetscInt             nonzerorow=0;
 
   PetscFunctionBegin;
   ierr = VecSet(zz,0.0);CHKERRQ(ierr);
@@ -84,7 +88,9 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
 
   v  = a->a; 
   for (i=0; i<mbs; i++) {
-    nz   = ai[i+1] - ai[i];        /* length of i_th row of A */    
+    nz   = ai[i+1] - ai[i];        /* length of i_th row of A */
+    if (!nz) continue; /* Move to the next row if the current row is empty */
+    nonzerorow++;
     x1   = x[i];
     sum  = v[0]*x1;                /* diagonal term */
     for (j=1; j<nz; j++) {
@@ -100,7 +106,7 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*(2.0*a->nz - mbs) - mbs);CHKERRQ(ierr); 
+  ierr = PetscLogFlops(2.0*(2.0*a->nz - nonzerorow) - nonzerorow);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
