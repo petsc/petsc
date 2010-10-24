@@ -149,7 +149,7 @@ inverse of a PETSc matrix?</a></li>
 Schur complement: Kbb - Kba *inverse(Kaa)*Kab?</a></li>
         <li><a href="faq.html#fem">Do you have examples of doing
 unstructured grid finite element computations (FEM) with PETSc?</a></li>
-        <li><a href="faq.html#da_mpi_cart">The PETSc DA object
+        <li><a href="faq.html#da_mpi_cart">The PETSc DMDA object
 decomposes the domain differently than the MPI_Cart_create() command.
 How can one use them together?</a></li>
         <li><a href="faq.html#redistribute">When solving a symmetric
@@ -745,7 +745,7 @@ manual</a> for <b>PCASMxxx</b>().<br>
 or face based two level method where the coarse mesh to fine mesh
 interpolation is defined by solving specific local subdomain problems.
 It currently only works for 3D scalar problems on structured grids
-created with PETSc DAs. See the manual page for PCEXOTIC and
+created with PETSc DMDAs. See the manual page for PCEXOTIC and
 src/ksp/ksp/examples/tutorials/ex45.c for any example.<br>
       </p>
       <p>PETSc also contains a balancing Neumann-Neumann
@@ -797,8 +797,8 @@ needed</li>
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Vec/VecScatterDestroy.html">VecScatterDestroy</a>(ctx);</li>
             </ul>
 Note that this simply concatenates in the parallel ordering of the
-vector. If you are using a vector from DACreateGlobalVector() you
-likely want to first call DAGlobalToNaturalBegin/End() to scatter the
+vector. If you are using a vector from DMCreateGlobalVector() you
+likely want to first call DMDAGlobalToNaturalBegin/End() to scatter the
 original vector into the natural ordering in a new global vector before
 calling VecScatterBegin/End() to scatter the natural vector onto all
 processes.
@@ -830,8 +830,8 @@ needed</li>
               </ul>
             </ul>
 Note that this simply concatenates in the parallel ordering of the
-vector. If you are using a vector from DACreateGlobalVector() you
-likely want to first call DAGlobalToNaturalBegin/End() to scatter the
+vector. If you are using a vector from DMCreateGlobalVector() you
+likely want to first call DMDAGlobalToNaturalBegin/End() to scatter the
 original vector into the natural ordering in a new global vector before
 calling VecScatterBegin/End() to scatter the natural vector onto
 process 0.
@@ -1011,12 +1011,12 @@ use
 them together?<br>
             <br>
             </span>The MPI_Cart_create() first divides the mesh along
-the z direction, then the y, then the x. DA divides along the x, then
+the z direction, then the y, then the x. DMDA divides along the x, then
 y, then z. Thus, for example, rank 1 of the processes will be in a
 different part of the mesh for the two schemes. To resolve this you can
-create a new MPI communicator that you pass to DACreate() that
+create a new MPI communicator that you pass to DMDACreate() that
 renumbers the process ranks so that each physical process shares the
-same part of the mesh with both the DA and the MPI_Cart_create(). The
+same part of the mesh with both the DMDA and the MPI_Cart_create(). The
 code to determine the new numbering was provided by Rolf Kuiper. <br>
             <br>
 // the numbers of processors per direction are (int) x_procs, y_procs,

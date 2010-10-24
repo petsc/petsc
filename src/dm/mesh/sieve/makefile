@@ -12,8 +12,8 @@ LIBBASE  = libpetscdm
 MANSEC   = Mesh
 LOCDIR   = src/dm/mesh/sieve/
 
-ALE.o:  ALE.hh 
-ALE.hh: ALE_mem.hh ALE_log.hh ALE_containers.hh 
+ALE.o:  ../../../../include/sieve/ALE.hh
+ALE.hh: ../../../../include/sieve/ALE_mem.hh ../../../../include/sieve/ALE_log.hh ../../../../include/sieve/ALE_containers.hh 
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

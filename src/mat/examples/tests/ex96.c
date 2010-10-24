@@ -1,5 +1,5 @@
 
-static char help[] ="Tests sequential and parallel DAGetMatrix(), MatMatMult() and MatPtAP()\n\
+static char help[] ="Tests sequential and parallel DMGetMatrix(), MatMatMult() and MatPtAP()\n\
   -Mx <xg>, where <xg> = number of coarse grid points in the x-direction\n\
   -My <yg>, where <yg> = number of coarse grid points in the y-direction\n\
   -Mz <zg>, where <zg> = number of coarse grid points in the z-direction\n\
@@ -13,7 +13,7 @@ static char help[] ="Tests sequential and parallel DAGetMatrix(), MatMatMult() a
 */
 
 #include "petscksp.h"
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscmg.h"
 #include "../src/mat/impls/aij/seq/aij.h"
 #include "../src/mat/impls/aij/mpi/mpiaij.h"
@@ -22,7 +22,7 @@ static char help[] ="Tests sequential and parallel DAGetMatrix(), MatMatMult() a
 typedef struct {
    PetscInt   mx,my,mz;         /* number grid points in x, y and z direction */
    Vec        localX,localF;    /* local vectors with ghost region */
-   DA         da;
+   DM         da;
    Vec        x,b,r;            /* global vectors */
    Mat        J;                /* Jacobian on grid */
 } GridCtx;
@@ -80,18 +80,18 @@ int main(int argc,char **argv)
 
   /* Set up distributed array for fine grid */
   if (!Test_3D){
-    ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.fine.mx,
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,user.fine.mx,
                     user.fine.my,Npx,Npy,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
   } else {
-    ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,
                     user.fine.mx,user.fine.my,user.fine.mz,Npx,Npy,Npz,
                     1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
   }
 
-  /* Test DAGetMatrix()                                         */
+  /* Test DMGetMatrix()                                         */
   /*------------------------------------------------------------*/
-  ierr = DAGetMatrix(user.fine.da,MATAIJ,&A);CHKERRQ(ierr);
-  ierr = DAGetMatrix(user.fine.da,MATBAIJ,&C);CHKERRQ(ierr);
+  ierr = DMGetMatrix(user.fine.da,MATAIJ,&A);CHKERRQ(ierr);
+  ierr = DMGetMatrix(user.fine.da,MATBAIJ,&C);CHKERRQ(ierr);
   
   ierr = MatConvert(C,MATAIJ,MAT_INITIAL_MATRIX,&A_tmp);CHKERRQ(ierr); /* not work for mpisbaij matrix! */
   ierr = MatEqual(A,A_tmp,&flg);CHKERRQ(ierr);
@@ -127,16 +127,16 @@ int main(int argc,char **argv)
 
   /* Set up distributed array for coarse grid */
   if (!Test_3D){
-    ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.coarse.mx,
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,user.coarse.mx,
                     user.coarse.my,Npx,Npy,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
   } else {
-    ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,
                     user.coarse.mx,user.coarse.my,user.coarse.mz,Npx,Npy,Npz,
                     1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
   }
 
   /* Create interpolation between the levels */
-  ierr = DAGetInterpolation(user.coarse.da,user.fine.da,&P,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMGetInterpolation(user.coarse.da,user.fine.da,&P,PETSC_NULL);CHKERRQ(ierr);
   
   ierr = MatGetLocalSize(P,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(P,&M,&N);CHKERRQ(ierr);
@@ -260,8 +260,8 @@ int main(int argc,char **argv)
   ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
   ierr = VecDestroy(v1);CHKERRQ(ierr);
   ierr = VecDestroy(v2);CHKERRQ(ierr);
-  ierr = DADestroy(user.fine.da);CHKERRQ(ierr);
-  ierr = DADestroy(user.coarse.da);CHKERRQ(ierr);
+  ierr = DMDestroy(user.fine.da);CHKERRQ(ierr);
+  ierr = DMDestroy(user.coarse.da);CHKERRQ(ierr);
   ierr = MatDestroy(P);CHKERRQ(ierr); 
 
   ierr = PetscFinalize();

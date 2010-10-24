@@ -10,7 +10,7 @@ The flow can be driven with the lid or with bouyancy or both:\n\
 
 /*T
    Concepts: SNES^solving a system of nonlinear equations (parallel multicomponent example);
-   Concepts: DA^using distributed arrays;
+   Concepts: DMDA^using distributed arrays;
    Concepts: multicomponent
    Processors: n
 T*/
@@ -67,7 +67,7 @@ T*/
   ------------------------------------------------------------------------- */
 
 /* 
-   Include "petscda.h" so that we can use distributed arrays (DAs).
+   Include "petscdm.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -77,7 +77,7 @@ T*/
      petscksp.h   - linear solvers 
 */
 #include "petscsnes.h"
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscdmmg.h"
 
 /* 
@@ -127,12 +127,12 @@ typedef struct {
 } AppCtx;
 
 extern PetscErrorCode FormInitialGuess(DMMG,Vec);
-extern PetscErrorCode FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
-extern PetscErrorCode FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
+extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,Field**,Field**,void*);
+extern PetscErrorCode FormFunctionLocali(DMDALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
 extern PetscErrorCode Update(DMMG *);
 extern PetscErrorCode Initialize(DMMG *);
 extern PetscErrorCode ComputeTimeStep(SNES,void*);
-extern PetscErrorCode AddTSTermLocal(DALocalInfo*,Field**,Field**,void*);
+extern PetscErrorCode AddTSTermLocal(DMDALocalInfo*,Field**,Field**,void*);
 
 
 #undef __FUNCT__
@@ -146,7 +146,7 @@ int main(int argc,char **argv)
   PetscInt       mx,my,i;
   PetscErrorCode ierr;
   MPI_Comm       comm;
-  DA             da;
+  DM             da;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -163,11 +163,11 @@ int main(int argc,char **argv)
       Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
       for principal unknowns (x) and governing residuals (f)
     */
-    ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
     ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-    ierr = DADestroy(da);CHKERRQ(ierr);
+    ierr = DMDestroy(da);CHKERRQ(ierr);
 
-    ierr = DAGetInfo(DMMGGetDA(dmmg),0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+    ierr = DMDAGetInfo(DMMGGetDM(dmmg),0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
     /* 
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
@@ -180,10 +180,10 @@ int main(int argc,char **argv)
     ierr = PetscOptionsGetReal(PETSC_NULL,"-grashof",&param.grashof,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL,"-contours",&param.draw_contours);CHKERRQ(ierr);
 
-    ierr = DASetFieldName(DMMGGetDA(dmmg),0,"x-velocity");CHKERRQ(ierr);
-    ierr = DASetFieldName(DMMGGetDA(dmmg),1,"y-velocity");CHKERRQ(ierr);
-    ierr = DASetFieldName(DMMGGetDA(dmmg),2,"Omega");CHKERRQ(ierr);
-    ierr = DASetFieldName(DMMGGetDA(dmmg),3,"temperature");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(DMMGGetDM(dmmg),0,"x-velocity");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(DMMGGetDM(dmmg),1,"y-velocity");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(DMMGGetDM(dmmg),2,"Omega");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(DMMGGetDM(dmmg),3,"temperature");CHKERRQ(ierr);
 
     /*======================================================================*/
     /* Initilize stuff related to time stepping */
@@ -267,25 +267,25 @@ int main(int argc,char **argv)
 PetscErrorCode Initialize(DMMG *dmmg)
 {
   AppCtx         *user = (AppCtx*)dmmg[0]->user;
-  DA             da;
+  DM             da;
   Parameter      *param = user->param;
   PetscInt       i,j,mx,xs,ys,xm,ym,mglevel;
   PetscErrorCode ierr;
   PetscReal      grashof,dx;
   Field          **x;
 
-  da = (DA)(dmmg[param->mglevels-1]->dm);
+  da = (dmmg[param->mglevels-1]->dm);
   grashof = user->param->grashof;
 
-  ierr = DAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   dx  = 1.0/(mx-1);
 
   /*
-     Get local grid boundaries (for 2-dimensional DA):
+     Get local grid boundaries (for 2-dimensional DMDA):
        xs, ys   - starting grid indices (no ghost points)
        xm, ym   - widths of local grid (no ghost points)
   */
-  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Get a pointer to vector data.
@@ -294,7 +294,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = DAVecGetArray(da,((AppCtx*)dmmg[param->mglevels-1]->user)->Xold,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,((AppCtx*)dmmg[param->mglevels-1]->user)->Xold,&x);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -312,7 +312,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
   /*
      Restore vector
   */
-  ierr = DAVecRestoreArray(da,((AppCtx*)dmmg[param->mglevels-1]->user)->Xold,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,((AppCtx*)dmmg[param->mglevels-1]->user)->Xold,&x);CHKERRQ(ierr);
   /* Restrict Xold to coarser levels */
   for (mglevel=param->mglevels-1; mglevel>0; mglevel--) {
     ierr = MatRestrict(dmmg[mglevel]->R, ((AppCtx*)dmmg[mglevel]->user)->Xold, ((AppCtx*)dmmg[mglevel-1]->user)->Xold);CHKERRQ(ierr);
@@ -364,12 +364,12 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "AddTSTermLocal"
-PetscErrorCode AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,void *ptr)
+PetscErrorCode AddTSTermLocal(DMDALocalInfo* info,Field **x,Field **f,void *ptr)
 /*---------------------------------------------------------------------*/
 {
   AppCtx         *user = (AppCtx*)ptr;
   TstepCtx       *tsCtx = user->tsCtx;
-  DA             da = info->da;
+  DM             da = info->da;
   PetscErrorCode ierr;
   PetscInt       i,j, xints,xinte,yints,yinte;
   PetscReal      hx,hy,dhx,dhy,hxhy;
@@ -382,11 +382,11 @@ PetscErrorCode AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,void *ptr)
   dhx = (PetscReal)(info->mx-1);  dhy = (PetscReal)(info->my-1);
   hx = 1.0/dhx;                   hy = 1.0/dhy;
   hxhy = hx*hy;
-  ierr = DAVecGetArray(da,user->Xold,&xold);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,user->Xold,&xold);CHKERRQ(ierr);
   dtinv = hxhy/(tsCtx->cfl*tsCtx->dt);
   /* 
      use_parab = PETSC_TRUE for parabolic equations; all the four equations have temporal term.
-               = PETSC_FALSE for differential algebraic equtions (DAE); 
+               = PETSC_FALSE for differential algebraic equtions (DMDAE); 
                  velocity equations do not have temporal term.
   */
   for (j=yints; j<yinte; j++) {
@@ -399,13 +399,13 @@ PetscErrorCode AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,void *ptr)
       f[j][i].temp  += dtinv*(x[j][i].temp-xold[j][i].temp);
     }
   }
-  ierr = DAVecRestoreArray(da,user->Xold,&xold);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,user->Xold,&xold);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal"
-PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
+PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *ptr)
  {
   AppCtx         *user = (AppCtx*)ptr;
   TstepCtx       *tsCtx = user->tsCtx;
@@ -543,7 +543,7 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocali"
-PetscErrorCode FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f,void *ptr)
+PetscErrorCode FormFunctionLocali(DMDALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f,void *ptr)
  {
   AppCtx      *user = (AppCtx*)ptr;
   PetscInt    i,j,c;

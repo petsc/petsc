@@ -3,11 +3,11 @@ static char help[] = \
 "Sets up a simple component framework consisting of \n\
  a computational component \"Electrolyte\" and a vizualization component \"Viz\".\n\
  * \"Electrolyte\" is implemented in Python (electrolyte.py); during the \"init\" \n\
-  configuration stage, it sets up a DA and a Vec over that DA that needs \n\
+  configuration stage, it sets up a DMDA and a Vec over that DMDA that needs \n\
   to be plotted.\n\
  * \"Viz\" is implemented in Python (viz.py).  It depends on \"Electrolyte\", \n\
   so at each stage it is configured after \"Electrolyte.\"\n\
-  During the \"init\" stage, \"Viz\" retrieves (and stores) the DA and the Vec\n\
+  During the \"init\" stage, \"Viz\" retrieves (and stores) the DMDA and the Vec\n\
   From \"Electrolute\"; during the \"viewRho\" stage, all but last components of the Vec\n\
   are plotted using mayavi.\n\
 \n\

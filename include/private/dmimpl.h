@@ -3,64 +3,57 @@
 #if !defined(_DMIMPL_H)
 #define _DMIMPL_H
 
-#include "petscda.h"
-
-/*  
-    Operations shared by all DM implementations
-*/
-#define DMOPS(type)	\
-  PetscErrorCode (*view)(type,PetscViewer); \
-  PetscErrorCode (*setfromoptions)(type); \
-  PetscErrorCode (*createglobalvector)(type,Vec*);\
-  PetscErrorCode (*createlocalvector)(type,Vec*);\
-\
-  PetscErrorCode (*getcoloring)(type,ISColoringType,const MatType,ISColoring*);	\
-  PetscErrorCode (*getmatrix)(type, const MatType,Mat*);\
-  PetscErrorCode (*getinterpolation)(type,type,Mat*,Vec*);\
-  PetscErrorCode (*getaggregates)(type,type,Mat*);\
-  PetscErrorCode (*getinjection)(type,type,VecScatter*);\
-\
-  PetscErrorCode (*refine)(type,MPI_Comm,type*);\
-  PetscErrorCode (*coarsen)(type,MPI_Comm,type*);\
-  PetscErrorCode (*refinehierarchy)(type,PetscInt,type*);\
-  PetscErrorCode (*coarsenhierarchy)(type,PetscInt,type*);\
-\
-  PetscErrorCode (*forminitialguess)(type,PetscErrorCode (*)(void),Vec,void*);\
-  PetscErrorCode (*formfunction)(type,PetscErrorCode (*)(void),Vec,Vec);\
-\
-  PetscErrorCode (*globaltolocalbegin)(type,Vec,InsertMode,Vec);		\
-  PetscErrorCode (*globaltolocalend)(type,Vec,InsertMode,Vec); \
-  PetscErrorCode (*localtoglobal)(type,Vec,InsertMode,Vec); \
-\
-  PetscErrorCode (*getelements)(type,PetscInt*,const PetscInt*[]);   \
-  PetscErrorCode (*restoreelements)(type,PetscInt*,const PetscInt*[]); \
-\
-  PetscErrorCode (*initialguess)(type,Vec); \
-  PetscErrorCode (*function)(type,Vec,Vec);			\
-  PetscErrorCode (*functionj)(type,Vec,Vec);			\
-  PetscErrorCode (*jacobian)(type,Vec,Mat,Mat,MatStructure*);	\
-\
-  PetscErrorCode (*destroy)(type);
-
+#include "petscdm.h"
 
 typedef struct _DMOps *DMOps;
 struct _DMOps {
-  DMOPS(DM)
+  PetscErrorCode (*view)(DM,PetscViewer); 
+  PetscErrorCode (*setfromoptions)(DM); 
+  PetscErrorCode (*setup)(DM); 
+  PetscErrorCode (*createglobalvector)(DM,Vec*);
+  PetscErrorCode (*createlocalvector)(DM,Vec*);
+
+  PetscErrorCode (*getcoloring)(DM,ISColoringType,const MatType,ISColoring*);	
+  PetscErrorCode (*getmatrix)(DM, const MatType,Mat*);
+  PetscErrorCode (*getinterpolation)(DM,DM,Mat*,Vec*);
+  PetscErrorCode (*getaggregates)(DM,DM,Mat*);
+  PetscErrorCode (*getinjection)(DM,DM,VecScatter*);
+
+  PetscErrorCode (*refine)(DM,MPI_Comm,DM*);
+  PetscErrorCode (*coarsen)(DM,MPI_Comm,DM*);
+  PetscErrorCode (*refinehierarchy)(DM,PetscInt,DM*);
+  PetscErrorCode (*coarsenhierarchy)(DM,PetscInt,DM*);
+
+  PetscErrorCode (*forminitialguess)(DM,PetscErrorCode (*)(void),Vec,void*);
+  PetscErrorCode (*formfunction)(DM,PetscErrorCode (*)(void),Vec,Vec);
+
+  PetscErrorCode (*globaltolocalbegin)(DM,Vec,InsertMode,Vec);		
+  PetscErrorCode (*globaltolocalend)(DM,Vec,InsertMode,Vec); 
+  PetscErrorCode (*localtoglobalbegin)(DM,Vec,InsertMode,Vec); 
+  PetscErrorCode (*localtoglobalend)(DM,Vec,InsertMode,Vec); 
+
+  PetscErrorCode (*getelements)(DM,PetscInt*,const PetscInt*[]);   
+  PetscErrorCode (*restoreelements)(DM,PetscInt*,const PetscInt*[]); 
+
+  PetscErrorCode (*initialguess)(DM,Vec); 
+  PetscErrorCode (*function)(DM,Vec,Vec);			
+  PetscErrorCode (*functionj)(DM,Vec,Vec);			
+  PetscErrorCode (*jacobian)(DM,Vec,Mat,Mat,MatStructure*);	
+
+  PetscErrorCode (*destroy)(DM);
 };
 
 #define DM_MAX_WORK_VECTORS 100 /* work vectors available to users  via DMGetGlobalVector(), DMGetLocalVector() */
 
-#define DMHEADER \
-  Vec           localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];   \
-  Vec           globalin[DM_MAX_WORK_VECTORS],globalout[DM_MAX_WORK_VECTORS]; \
-  void          *ctx;    /* a user context */  \
-  Vec           x;       /* location at which the functions/Jacobian are computed */  \
-  MatFDColoring fd;      /* used by DMComputeJacobianDefault() */   \
-  VecType       vectype;  /* type of vector created with DACreateLocalVector() and DACreateGlobalVector() */
-
 struct _p_DM {
   PETSCHEADER(struct _DMOps);
-  DMHEADER
+  Vec           localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];   
+  Vec           globalin[DM_MAX_WORK_VECTORS],globalout[DM_MAX_WORK_VECTORS]; 
+  void          *ctx;    /* a user context */  
+  Vec           x;       /* location at which the functions/Jacobian are computed */  
+  MatFDColoring fd;      /* used by DMComputeJacobianDefault() */   
+  VecType       vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
+  void          *data;
 };
 
 /*
@@ -74,25 +67,25 @@ struct _p_DM {
 
       Subsets of individual as a single????? Do we handle this by having DMComposite inside composite??????
 
-       DA da_u, da_v, da_p
+       DM da_u, da_v, da_p
 
-       DMComposite dm_velocities
+       DM dm_velocities
 
-       DMComposite dm
+       DM dm
 
-       DACreate(,&da_u);
-       DACreate(,&da_v);
+       DMDACreate(,&da_u);
+       DMDACreate(,&da_v);
        DMCompositeCreate(,&dm_velocities);
        DMCompositeAddDM(dm_velocities,(DM)du);
        DMCompositeAddDM(dm_velocities,(DM)dv);
 
-       DACreate(,&da_p);
+       DMDACreate(,&da_p);
        DMCompositeCreate(,&dm_velocities);
        DMCompositeAddDM(dm,(DM)dm_velocities);     
        DMCompositeAddDM(dm,(DM)dm_p);     
 
 
-    Access parts of composite vectors (DMComposite only)
+    Access parts of composite vectors (Composite only)
     ---------------------------------
       DMCompositeGetAccess  - access the global vector as subvectors and array (for redundant arrays)
       ADD for local vector - 
@@ -100,12 +93,12 @@ struct _p_DM {
     Element access
     --------------
       From global vectors 
-         -DAVecGetArray   - for DA
-         -VecGetArray - for Sliced
+         -DAVecGetArray   - for DMDA
+         -VecGetArray - for DMSliced
          ADD for DMComposite???  maybe
 
       From individual vector
-          -DAVecGetArray - for DA
+          -DAVecGetArray - for DMDA
           -VecGetArray -for sliced  
          ADD for DMComposite??? maybe
 

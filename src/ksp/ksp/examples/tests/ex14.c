@@ -11,7 +11,7 @@ We urge users to employ the SNES component for solving nonlinear problems whenev
 possible, as it offers many advantages over coding nonlinear solvers independently.\n\
 \n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
-domain, using distributed arrays (DAs) to partition the parallel grid.\n\
+domain, using distributed arrays (DMDAs) to partition the parallel grid.\n\
 The command line options include:\n\
   -par <parameter>, where <parameter> indicates the problem's nonlinearity\n\
      problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)\n\
@@ -22,7 +22,7 @@ The command line options include:\n\
 
 /*T
    Concepts: KSP^writing a user-defined nonlinear solver (parallel Bratu example);
-   Concepts: DA^using distributed arrays;
+   Concepts: DMDA^using distributed arrays;
    Processors: n
 T*/
 
@@ -49,7 +49,7 @@ T*/
   ------------------------------------------------------------------------- */
 
 /* 
-   Include "petscda.h" so that we can use distributed arrays (DAs).
+   Include "petscdm.h" so that we can use distributed arrays (DMDAs).
    Include "petscksp.h" so that we can use KSP solvers.  Note that this
    file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -57,7 +57,7 @@ T*/
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscksp.h"
 
 /* 
@@ -69,7 +69,7 @@ typedef struct {
    PetscReal   param;          /* test problem parameter */
    PetscInt    mx,my;          /* discretization in x,y directions */
    Vec         localX,localF; /* ghosted local vector */
-   DA          da;             /* distributed array data structure */
+   DM          da;             /* distributed array data structure */
    PetscInt    rank;           /* processor rank */
 } AppCtx;
 
@@ -135,7 +135,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /*
-     Create distributed array (DA) to manage parallel grid and vectors
+     Create distributed array (DMDA) to manage parallel grid and vectors
   */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
@@ -143,15 +143,15 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
     SETERRQ(PETSC_COMM_WORLD,1,"Incompatible number of processors:  Nx * Ny != size");
-  ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
+  ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,user.mx,
                     user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
 
   /*
-     Extract global and local vectors from DA; then duplicate for remaining
+     Extract global and local vectors from DMDA; then duplicate for remaining
      vectors that are the same types
   */
-  ierr = DACreateGlobalVector(user.da,&X);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(user.da,&user.localX);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(user.da,&X);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(user.da,&user.localX);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
   ierr = VecDuplicate(user.localX,&user.localF);CHKERRQ(ierr);
@@ -162,8 +162,8 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
      Note:  For the parallel case, vectors and matrices MUST be partitioned
-     accordingly.  When using distributed arrays (DAs) to create vectors,
-     the DAs determine the problem partitioning.  We must explicitly
+     accordingly.  When using distributed arrays (DMDAs) to create vectors,
+     the DMDAs determine the problem partitioning.  We must explicitly
      specify the local matrix dimensions upon its creation for compatibility
      with the vector distribution.  Thus, the generic MatCreate() routine
      is NOT sufficient when working with distributed arrays.
@@ -285,7 +285,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(J);CHKERRQ(ierr);           ierr = VecDestroy(Y);CHKERRQ(ierr);
   ierr = VecDestroy(user.localX);CHKERRQ(ierr); ierr = VecDestroy(X);CHKERRQ(ierr);
   ierr = VecDestroy(user.localF);CHKERRQ(ierr); ierr = VecDestroy(F);CHKERRQ(ierr);      
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr);  ierr = DADestroy(user.da);CHKERRQ(ierr);
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr);  ierr = DMDestroy(user.da);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   return 0;
@@ -324,14 +324,14 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
 
   /*
-     Get local grid boundaries (for 2-dimensional DA):
+     Get local grid boundaries (for 2-dimensional DMDA):
        xs, ys   - starting grid indices (no ghost points)
        xm, ym   - widths of local grid (no ghost points)
        gxs, gys - starting grid indices (including ghost points)
        gxm, gym - widths of local grid (including ghost points)
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -356,7 +356,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   /*
      Insert values into global vector
   */
-  ierr = DALocalToGlobal(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   return 0;
 } 
 /* ------------------------------------------------------------------- */
@@ -386,12 +387,12 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
 
   /*
      Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+        DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
   /*
      Get pointers to vector data
@@ -402,8 +403,8 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
   /*
      Get local grid boundaries
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
@@ -432,7 +433,8 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
   /*
      Insert values into global vector
   */
-  ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
   return 0; 
 } 
@@ -451,9 +453,9 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
 .  flag - flag indicating matrix structure
 
    Notes:
-   Due to grid point reordering with DAs, we must always work
+   Due to grid point reordering with DMDAs, we must always work
    with the local grid points, and then transform them to the new
-   global numbering with the "ltog" mapping (via DAGetGlobalIndices()).
+   global numbering with the "ltog" mapping (via DMDAGetGlobalIndices()).
    We cannot work directly with the global numbers for the original
    uniprocessor grid!
 */
@@ -472,12 +474,12 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
 
   /*
      Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+        DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
   /*
      Get pointer to vector data
@@ -487,13 +489,13 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
   /*
      Get local grid boundaries
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Get the global node numbers for all local nodes, including ghost points
   */
-  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
 
   /* 
      Compute entries for the locally owned part of the Jacobian.

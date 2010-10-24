@@ -1,0 +1,7 @@
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(DM_HIDE)
+#define DM_HIDE type(DM)
+#define USE_DM_HIDE use petscdmdef
+#elif !defined(DM_HIDE)
+#define DM_HIDE DM
+#define USE_DM_HIDE
+#endif

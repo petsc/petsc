@@ -73,7 +73,7 @@ struct _MatOps {
   PetscErrorCode (*scale)(Mat,PetscScalar);
   PetscErrorCode (*shift)(Mat,PetscScalar);
   PetscErrorCode (*diagonalset)(Mat,Vec,InsertMode);
-  PetscErrorCode (*dummy)(void);
+  PetscErrorCode (*zerorowscolumns)(Mat,PetscInt,const PetscInt[],PetscScalar,Vec,Vec);
   /*49*/
   PetscErrorCode (*setblocksize)(Mat,PetscInt);
   PetscErrorCode (*getrowij)(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt*,PetscInt *[],PetscInt *[],PetscBool  *);

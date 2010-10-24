@@ -4,7 +4,7 @@
 #if !defined(__PETSCPC_H)
 #define __PETSCPC_H
 #include "petscmat.h"
-#include "petscda.h"
+#include "petscdm.h"
 PETSC_EXTERN_CXX_BEGIN
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT  PCInitializePackage(const char[]);

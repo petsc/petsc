@@ -10,12 +10,12 @@
 
 static char help[] = "Solves 3D Laplacian using wirebasket based multigrid.\n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscksp.h"
 #include "petscmg.h"
 
-extern PetscErrorCode ComputeMatrix(DA,Mat);
-extern PetscErrorCode ComputeRHS(DA,Vec);
+extern PetscErrorCode ComputeMatrix(DM,Mat);
+extern PetscErrorCode ComputeRHS(DM,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   KSP            ksp;
   PC             pc;
   Vec            x,b;
-  DA             da;
+  DM             da;
   Mat            A,Atrans;
   PetscInt       dof=1,M=-8;
   PetscBool      flg,trans=PETSC_FALSE;
@@ -35,21 +35,22 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-trans",&trans,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
-  ierr = DASetDim(da,3);CHKERRQ(ierr);
-  ierr = DASetPeriodicity(da,DA_NONPERIODIC);CHKERRQ(ierr);
-  ierr = DASetStencilType(da,DA_STENCIL_STAR);CHKERRQ(ierr);
-  ierr = DASetSizes(da,M,M,M);CHKERRQ(ierr);
-  ierr = DASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = DASetDof(da,dof);CHKERRQ(ierr);
-  ierr = DASetStencilWidth(da,1);CHKERRQ(ierr);
-  ierr = DASetOwnershipRanges(da,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DASetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMDACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
+  ierr = DMDASetDim(da,3);CHKERRQ(ierr);
+  ierr = DMDASetPeriodicity(da,DMDA_NONPERIODIC);CHKERRQ(ierr);
+  ierr = DMDASetStencilType(da,DMDA_STENCIL_STAR);CHKERRQ(ierr);
+  ierr = DMDASetSizes(da,M,M,M);CHKERRQ(ierr);
+  ierr = DMDASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = DMDASetDof(da,dof);CHKERRQ(ierr);
+  ierr = DMDASetStencilWidth(da,1);CHKERRQ(ierr);
+  ierr = DMDASetOwnershipRanges(da,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
 
-  ierr = DACreateGlobalVector(da,&x);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&b);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&b);CHKERRQ(ierr);
   ierr = ComputeRHS(da,b);CHKERRQ(ierr);
-  ierr = DAGetMatrix(da,MATBAIJ,&A);CHKERRQ(ierr);
+  ierr = DMGetMatrix(da,MATBAIJ,&A);CHKERRQ(ierr);
   ierr = ComputeMatrix(da,A);CHKERRQ(ierr);
 
 
@@ -100,21 +101,21 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-PetscErrorCode ComputeRHS(DA da,Vec b)
+PetscErrorCode ComputeRHS(DM da,Vec b)
 {
   PetscErrorCode ierr;
   PetscInt       mx,my,mz;
   PetscScalar    h;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
   h    = 1.0/((mx-1)*(my-1)*(mz-1));
   ierr = VecSet(b,h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -122,7 +123,7 @@ PetscErrorCode ComputeRHS(DA da,Vec b)
     
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(DA da,Mat B)
+PetscErrorCode ComputeMatrix(DM da,Mat B)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,dof,k1,k2,k3;
@@ -130,7 +131,7 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
   MatStencil     row,col;
  
   PetscFunctionBegin;
-  ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr); 
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr); 
   /* For simplicity, this example only works on mx=my=mz */
   if ( mx != my || mx != mz) SETERRQ3(PETSC_COMM_SELF,1,"This example only works with mx %d = my %d = mz %d\n",mx,my,mz);
 
@@ -153,7 +154,7 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
       k3++;
     }
   }
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){

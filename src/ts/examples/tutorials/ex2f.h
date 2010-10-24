@@ -14,14 +14,14 @@
 !     petscviewer.h - viewers
 !     petscdraw.h   - drawing
 !  In addition, we need the following for use of distributed arrays
-!     petscda.h     - distributed arrays (DAs)
+!     petscdm.h     - distributed arrays (DMDAs)
 !  Other include statements may be needed if using additional PETSc
 !  routines in a Fortran program, e.g.,
 !     petscis.h     - index sets
 
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"
 #include "finclude/petscpc.h"
@@ -51,7 +51,7 @@
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Common block data:
-      DA    da
+      DM    da
       Vec   localwork,solution
       Vec   u_local
       PetscInt   M

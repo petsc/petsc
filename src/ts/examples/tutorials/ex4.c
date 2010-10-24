@@ -48,7 +48,7 @@ Input parameters include:\n\
   ------------------------------------------------------------------------- */
 
 /* 
-   Include "petscda.h" so that we can use distributed arrays (DAs) to manage
+   Include "petscdm.h" so that we can use distributed arrays (DMDAs) to manage
    the parallel grid.  Include "petscts.h" so that we can use TS solvers.  
    Note that this file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h  - vectors
@@ -58,7 +58,7 @@ Input parameters include:\n\
      petscksp.h   - linear solvers        petscsnes.h - nonlinear solvers
 */
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscts.h"
 
 /* 
@@ -67,7 +67,7 @@ Input parameters include:\n\
 */
 typedef struct {
   MPI_Comm    comm;              /* communicator */
-  DA          da;                /* distributed array data structure */
+  DM          da;                /* distributed array data structure */
   Vec         localwork;         /* local ghosted work vector */
   Vec         u_local;           /* local ghosted approximate solution vector */
   Vec         solution;          /* global exact solution vector */
@@ -126,20 +126,20 @@ int main(int argc,char **argv)
      Create vector data structures
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
-     Create distributed array (DA) to manage parallel grid and vectors
+     Create distributed array (DMDA) to manage parallel grid and vectors
      and to set up the ghost point communication pattern.  There are M 
      total grid values spread equally among all the processors.
   */ 
 
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,m,1,1,PETSC_NULL,&appctx.da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,m,1,1,PETSC_NULL,&appctx.da);CHKERRQ(ierr);
 
   /*
-     Extract global and local vectors from DA; we use these to store the
+     Extract global and local vectors from DMDA; we use these to store the
      approximate solution.  Then duplicate these for remaining vectors that
      have the same types.
   */ 
-  ierr = DACreateGlobalVector(appctx.da,&u);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(appctx.da,&appctx.u_local);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(appctx.da,&u);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(appctx.da,&appctx.u_local);CHKERRQ(ierr);
 
   /* 
      Create local work vector for use in evaluating right-hand-side function;
@@ -266,7 +266,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(appctx.localwork);CHKERRQ(ierr);
   ierr = VecDestroy(appctx.solution);CHKERRQ(ierr);
   ierr = VecDestroy(appctx.u_local);CHKERRQ(ierr);
-  ierr = DADestroy(appctx.da);CHKERRQ(ierr);
+  ierr = DMDestroy(appctx.da);CHKERRQ(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

@@ -1,7 +1,7 @@
 
 static char help[] = "Solves PDE optimization problem of ex22.c with AD for adjoint.\n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscpf.h"
 #include "petscmg.h"
 #include "petscsnes.h"
@@ -49,7 +49,7 @@ static char help[] = "Solves PDE optimization problem of ex22.c with AD for adjo
 
 
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode PDEFormFunctionLocal(DALocalInfo*,PetscScalar*,PetscScalar*,PassiveScalar*);
+extern PetscErrorCode PDEFormFunctionLocal(DMDALocalInfo*,PetscScalar*,PetscScalar*,PassiveScalar*);
 
 typedef struct {
   Mat        J;           /* Jacobian of PDE system */
@@ -64,12 +64,12 @@ PetscErrorCode myPCApply(PC pc,Vec x,Vec y)
   PetscScalar    *xw,*yw;
   PetscErrorCode ierr;
   DMMG           dmmg;
-  DMComposite    packer;
+  DM             packer;
   AppCtx         *appctx;
 
   PetscFunctionBegin;
   ierr = PCShellGetContext(pc,(void**)&dmmg);CHKERRQ(ierr);
-  packer = (DMComposite)dmmg->dm;
+  packer = dmmg->dm;
   appctx = (AppCtx*)dmmg->user;
   ierr = DMCompositeGetAccess(packer,x,&xw,&xu,&xlambda);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(packer,y,&yw,&yu,&ylambda);CHKERRQ(ierr);
@@ -107,9 +107,9 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   PetscInt       nlevels,i,j;
-  DA             da;
+  DM             da;
   DMMG           *dmmg;
-  DMComposite        packer;
+  DM             packer;
   AppCtx         *appctx;
   ISColoring     iscoloring;
   PetscBool      bdp;
@@ -135,28 +135,28 @@ int main(int argc,char **argv)
   /* create DMComposite object to manage composite vector */
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
   ierr = DMCompositeAddArray(packer,0,1);CHKERRQ(ierr);
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,-5,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
 
   /* create nonlinear multi-level solver */
   ierr = DMMGCreate(PETSC_COMM_WORLD,2,PETSC_NULL,&dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)packer);CHKERRQ(ierr);
-  ierr = DMCompositeDestroy(packer);CHKERRQ(ierr);
+  ierr = DMDestroy(packer);CHKERRQ(ierr);
 
   /* Create Jacobian of PDE function for each level */
   nlevels = DMMGGetLevels(dmmg);
   for (i=0; i<nlevels; i++) {
-    packer = (DMComposite)dmmg[i]->dm;
+    packer = dmmg[i]->dm;
     ierr   = DMCompositeGetEntries(packer,PETSC_NULL,&da,PETSC_NULL);CHKERRQ(ierr);
     ierr   = PetscNew(AppCtx,&appctx);CHKERRQ(ierr);
-    ierr   = DAGetColoring(da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
-    ierr   = DAGetMatrix(da,MATAIJ,&appctx->J);CHKERRQ(ierr);
+    ierr   = DMGetColoring(da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    ierr   = DMGetMatrix(da,MATAIJ,&appctx->J);CHKERRQ(ierr);
     ierr   = MatSetColoring(appctx->J,iscoloring);CHKERRQ(ierr);
     ierr   = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-    ierr   = DASetLocalFunction(da,(DALocalFunction1)PDEFormFunctionLocal);CHKERRQ(ierr);
-    ierr   = DASetLocalAdicFunction(da,ad_PDEFormFunctionLocal);CHKERRQ(ierr);
+    ierr   = DMDASetLocalFunction(da,(DMDALocalFunction1)PDEFormFunctionLocal);CHKERRQ(ierr);
+    ierr   = DMDASetLocalAdicFunction(da,ad_PDEFormFunctionLocal);CHKERRQ(ierr);
     dmmg[i]->user = (void*)appctx;
   }
 
@@ -203,14 +203,14 @@ int main(int argc,char **argv)
  
 /*
      Enforces the PDE on the grid
-     This local function acts on the ghosted version of U (accessed via DAGetLocalVector())
+     This local function acts on the ghosted version of U (accessed via DMGetLocalVector())
      BUT the global, nonghosted version of FU
 
      Process adiC(36): PDEFormFunctionLocal
 */
 #undef __FUNCT__
 #define __FUNCT__ "PDEFormFunctionLocal"
-PetscErrorCode PDEFormFunctionLocal(DALocalInfo *info,PetscScalar *u,PetscScalar *fu,PassiveScalar *w)
+PetscErrorCode PDEFormFunctionLocal(DMDALocalInfo *info,PetscScalar *u,PetscScalar *fu,PassiveScalar *w)
 {
   PetscInt       xs = info->xs,xm = info->xm,i,mx = info->mx;
   PetscScalar    d,h;
@@ -251,8 +251,8 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   PetscInt       xs,xm,i,N,nredundant;
   PetscScalar    *u,*w,*fw,*fu,*lambda,*flambda,d,h,h2;
   Vec            vu,vlambda,vfu,vflambda,vglambda;
-  DA             da;
-  DMComposite        packer = (DMComposite)dmmg->dm;
+  DM             da;
+  DM             packer = (DM)dmmg->dm;
   PetscBool      useadic = PETSC_TRUE;
 #if defined(PETSC_HAVE_ADIC)
   AppCtx         *appctx = (AppCtx*)dmmg->user;
@@ -265,8 +265,8 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 #endif
 
   ierr = DMCompositeGetEntries(packer,&nredundant,&da,PETSC_IGNORE);CHKERRQ(ierr);
-  ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   d    = (N-1.0);
   h    = 1.0/d;
   h2   = 2.0*h;
@@ -277,12 +277,12 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = DMCompositeGetAccess(packer,U,0,0,&vglambda);CHKERRQ(ierr);
 
   /* G() */
-  ierr = DAFormFunction1(da,vu,vfu,w);CHKERRQ(ierr);
+  ierr = DMDAFormFunction1(da,vu,vfu,w);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_ADIC)
   if (useadic) { 
     /* lambda^T G_u() */
-    ierr = DAComputeJacobian1WithAdic(da,vu,appctx->J,w);CHKERRQ(ierr);  
+    ierr = DMDAComputeJacobian1WithAdic(da,vu,appctx->J,w);CHKERRQ(ierr);  
     if (appctx->ksp) {
       ierr = KSPSetOperators(appctx->ksp,appctx->J,appctx->J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     }
@@ -290,10 +290,10 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   }
 #endif
 
-  ierr = DAVecGetArray(da,vu,&u);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,vfu,&fu);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,vlambda,&lambda);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,vflambda,&flambda);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,vu,&u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,vfu,&fu);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,vlambda,&lambda);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,vflambda,&flambda);CHKERRQ(ierr);
 
   /* L_w */
   if (xs == 0) { /* only first processor computes this */
@@ -320,10 +320,10 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     else               flambda[i]   +=    h2*u[i];
   } 
 
-  ierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,vfu,&fu);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,vlambda,&lambda);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,vflambda,&flambda);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,vfu,&fu);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,vlambda,&lambda);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,vflambda,&flambda);CHKERRQ(ierr);
 
   ierr = DMCompositeRestoreLocalVectors(packer,&w,&vu,&vlambda);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(packer,FU,&fw,&vfu,&vflambda);CHKERRQ(ierr);

@@ -38,14 +38,14 @@ PetscErrorCode MatCUDACopyToGPU(Mat A)
 	cudastruct->mat->values.assign(a->a,a->a+a->nz);
 	cudastruct->indices = new CUSPINTARRAYGPU;
 	cudastruct->indices->assign(ridx,ridx+m);
-	cudastruct->tempvec = new CUSPARRAY;
-	cudastruct->tempvec->resize(m);
-      } else {
+	} else {
 	cudastruct->mat->resize(m,A->cmap->n,a->nz);
 	cudastruct->mat->row_offsets.assign(a->i,a->i+m+1);
 	cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
 	cudastruct->mat->values.assign(a->a,a->a+a->nz);
       }
+      cudastruct->tempvec = new CUSPARRAY;
+      cudastruct->tempvec->resize(m);
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
     }
@@ -80,14 +80,14 @@ PetscErrorCode MatCUDACopyToGPU(Mat A)
 	cudastruct->mat->values.assign(a->a,a->a+a->nz);
 	cudastruct->indices = new CUSPINTARRAYGPU;
 	cudastruct->indices->assign(ridx,ridx+m);
-	cudastruct->tempvec = new CUSPARRAY;
-	cudastruct->tempvec->resize(m);
-      } else {
+	} else {
 	cudastruct->mat->resize(m,A->cmap->n,a->nz);
 	cudastruct->mat->row_offsets.assign(a->i,a->i+m+1);
 	cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
 	cudastruct->mat->values.assign(a->a,a->a+a->nz);
       }
+      cudastruct->tempvec = new CUSPARRAY;
+      cudastruct->tempvec->resize(m);
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
     } 
@@ -194,10 +194,6 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   ierr = WaitForGPU();CHKERRCUDA(ierr);
   zz->valid_GPU_array = PETSC_CUDA_GPU;
-  /*ierr = VecView(xx,0);CHKERRQ(ierr);
-  ierr = VecView(zz,0);CHKERRQ(ierr);
-  ierr = MatView(A,0);CHKERRQ(ierr);
-  */
   PetscFunctionReturn(0);
 }
 

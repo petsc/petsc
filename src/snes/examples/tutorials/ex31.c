@@ -6,14 +6,14 @@ static char help[] = "Model multi-physics solver\n\n";
 
      There are three grids:
 
-            --------------------- DA1        
+            --------------------- DMDA1        
 
-                    nyv  -->       --------------------- DA2
+                    nyv  -->       --------------------- DMDA2
                                    |                    | 
                                    |                    | 
                                    |                    |   
                                    |                    | 
-                    nyvf-1 -->     |                    |         --------------------- DA3
+                    nyvf-1 -->     |                    |         --------------------- DMDA3
                                    |                    |        |                    |
                                    |                    |        |                    |
                                    |                    |        |                    |
@@ -28,7 +28,7 @@ static char help[] = "Model multi-physics solver\n\n";
     Notes:
      * The discretization approach used is to have ghost nodes OUTSIDE the physical domain
       that are used to apply the stencil near the boundary; in order to implement this with
-      PETSc DAs we simply define the DAs to have periodic boundary conditions and use those
+      PETSc DMDAs we simply define the DMDAs to have periodic boundary conditions and use those
       periodic ghost points to store the needed extra variables (which do not equations associated
       with them). Note that these periodic ghost nodes have NOTHING to do with the ghost nodes
       used for parallel computing.
@@ -59,7 +59,7 @@ typedef struct {
 
   MPI_Comm    comm;
 
-  DMComposite pack;
+  DM          pack;
 
   DMMG        *fdmmg;                              /* used by PCShell to solve diffusion problem */
   Vec         dx,dy;
@@ -92,7 +92,7 @@ int main(int argc,char **argv)
 {
   DMMG           *dmmg;               /* multilevel grid structure */
   PetscErrorCode ierr;
-  DA             da;
+  DM             da;
   AppCtx         app;
   PC             pc;
   KSP            ksp;
@@ -123,26 +123,26 @@ int main(int argc,char **argv)
     ierr = DMCompositeCreate(app.comm,&app.pack);CHKERRQ(ierr);
 
     /* 6 fluid unknowns, 3 ghost points on each end for either periodicity or simply boundary conditions */
-    ierr = DACreate1d(app.comm,DA_XPERIODIC,app.nxv,6,3,0,&da);CHKERRQ(ierr);
-    ierr = DASetFieldName(da,0,"prss");CHKERRQ(ierr);
-    ierr = DASetFieldName(da,1,"ergg");CHKERRQ(ierr);
-    ierr = DASetFieldName(da,2,"ergf");CHKERRQ(ierr);
-    ierr = DASetFieldName(da,3,"alfg");CHKERRQ(ierr);
-    ierr = DASetFieldName(da,4,"velg");CHKERRQ(ierr);
-    ierr = DASetFieldName(da,5,"velf");CHKERRQ(ierr);
+    ierr = DMDACreate1d(app.comm,DMDA_XPERIODIC,app.nxv,6,3,0,&da);CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,0,"prss");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,1,"ergg");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,2,"ergf");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,3,"alfg");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,4,"velg");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,5,"velf");CHKERRQ(ierr);
     ierr = DMCompositeAddDM(app.pack,(DM)da);CHKERRQ(ierr);
-    ierr = DADestroy(da);CHKERRQ(ierr);
+    ierr = DMDestroy(da);CHKERRQ(ierr);
 
-    ierr = DACreate2d(app.comm,DA_YPERIODIC,DA_STENCIL_STAR,app.nxv,app.nyv,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
-    ierr = DASetFieldName(da,0,"Tempature");CHKERRQ(ierr);
+    ierr = DMDACreate2d(app.comm,DMDA_YPERIODIC,DMDA_STENCIL_STAR,app.nxv,app.nyv,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,0,"Tempature");CHKERRQ(ierr);
     ierr = DMCompositeAddDM(app.pack,(DM)da);CHKERRQ(ierr);
-    ierr = DADestroy(da);CHKERRQ(ierr);
+    ierr = DMDestroy(da);CHKERRQ(ierr);
 
-    ierr = DACreate2d(app.comm,DA_XYPERIODIC,DA_STENCIL_STAR,app.nxv,app.nyvf,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
-    ierr = DASetFieldName(da,0,"Phi");CHKERRQ(ierr);
-    ierr = DASetFieldName(da,1,"Pre");CHKERRQ(ierr);
+    ierr = DMDACreate2d(app.comm,DMDA_XYPERIODIC,DMDA_STENCIL_STAR,app.nxv,app.nyvf,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,0,"Phi");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,1,"Pre");CHKERRQ(ierr);
     ierr = DMCompositeAddDM(app.pack,(DM)da);CHKERRQ(ierr);
-    ierr = DADestroy(da);CHKERRQ(ierr);
+    ierr = DMDestroy(da);CHKERRQ(ierr);
    
     app.pri = 1.0135e+5;
     app.ugi = 2.5065e+6;
@@ -209,7 +209,7 @@ int main(int argc,char **argv)
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     ierr = PetscViewerDestroy(v1);CHKERRQ(ierr);
-    ierr = DMCompositeDestroy(app.pack);CHKERRQ(ierr);
+    ierr = DMDestroy(app.pack);CHKERRQ(ierr);
     ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   PreLoadEnd();
 
@@ -226,7 +226,7 @@ int main(int argc,char **argv)
  */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuessLocalFluid"
-PetscErrorCode FormInitialGuessLocalFluid(AppCtx *app,DALocalInfo *info,FluidField *f)
+PetscErrorCode FormInitialGuessLocalFluid(AppCtx *app,DMDALocalInfo *info,FluidField *f)
 {
   PetscInt       i;
 
@@ -245,7 +245,7 @@ PetscErrorCode FormInitialGuessLocalFluid(AppCtx *app,DALocalInfo *info,FluidFie
 
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuessLocalThermal"
-PetscErrorCode FormInitialGuessLocalThermal(AppCtx *app,DALocalInfo *info2,PetscScalar **T)
+PetscErrorCode FormInitialGuessLocalThermal(AppCtx *app,DMDALocalInfo *info2,PetscScalar **T)
 {
   PetscInt i,j;
 
@@ -260,7 +260,7 @@ PetscErrorCode FormInitialGuessLocalThermal(AppCtx *app,DALocalInfo *info2,Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuessLocalFuel"
-PetscErrorCode FormInitialGuessLocalFuel(AppCtx *app,DALocalInfo *info2,FuelField **F)
+PetscErrorCode FormInitialGuessLocalFuel(AppCtx *app,DMDALocalInfo *info2,FuelField **F)
 {
   PetscInt i,j;
 
@@ -280,7 +280,7 @@ PetscErrorCode FormInitialGuessLocalFuel(AppCtx *app,DALocalInfo *info2,FuelFiel
 */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocalFluid"
-PetscErrorCode FormFunctionLocalFluid(DALocalInfo *info,FluidField *u,FluidField *f)
+PetscErrorCode FormFunctionLocalFluid(DMDALocalInfo *info,FluidField *u,FluidField *f)
 {
   PetscInt       i;
 
@@ -298,7 +298,7 @@ PetscErrorCode FormFunctionLocalFluid(DALocalInfo *info,FluidField *u,FluidField
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocalThermal"
-PetscErrorCode FormFunctionLocalThermal(DALocalInfo *info,PetscScalar **T,PetscScalar **f)
+PetscErrorCode FormFunctionLocalThermal(DMDALocalInfo *info,PetscScalar **T,PetscScalar **f)
 {
   PetscInt i,j;
 
@@ -313,7 +313,7 @@ PetscErrorCode FormFunctionLocalThermal(DALocalInfo *info,PetscScalar **T,PetscS
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocalFuel"
-PetscErrorCode FormFunctionLocalFuel(DALocalInfo *info,FuelField **U,FuelField **F)
+PetscErrorCode FormFunctionLocalFuel(DMDALocalInfo *info,FuelField **U,FuelField **F)
 {
   PetscInt i,j;
 
@@ -336,9 +336,9 @@ PetscErrorCode FormFunctionLocalFuel(DALocalInfo *info,FuelField **U,FuelField *
  */
 PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 {
-  DMComposite    dm = (DMComposite)dmmg->dm;
-  DALocalInfo    info1,info2,info3;
-  DA             da1,da2,da3;
+  DM             dm = (DM)dmmg->dm;
+  DMDALocalInfo    info1,info2,info3;
+  DM             da1,da2,da3;
   FluidField     *x1;
   PetscScalar    **x2;
   FuelField      **x3;
@@ -348,26 +348,26 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 
   PetscFunctionBegin;
   ierr = DMCompositeGetEntries(dm,&da1,&da2,&da3);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da2,&info2);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da3,&info3);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da2,&info2);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da3,&info3);CHKERRQ(ierr);
 
   /* Access the three subvectors in X */
   ierr = DMCompositeGetAccess(dm,X,&X1,&X2,&X3);CHKERRQ(ierr);
 
   /* Access the arrays inside the subvectors of X */
-  ierr = DAVecGetArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da3,X3,(void**)&x3);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da3,X3,(void**)&x3);CHKERRQ(ierr);
 
   /* Evaluate local user provided function */
   ierr = FormInitialGuessLocalFluid(app,&info1,x1);CHKERRQ(ierr);
   ierr = FormInitialGuessLocalThermal(app,&info2,x2);CHKERRQ(ierr);
   ierr = FormInitialGuessLocalFuel(app,&info3,x3);CHKERRQ(ierr);
 
-  ierr = DAVecRestoreArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da3,X3,(void**)&x3);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da3,X3,(void**)&x3);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(dm,X,&X1,&X2,&X3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -381,9 +381,9 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
 {
   DMMG           dmmg = (DMMG)ctx;
-  DMComposite    dm = (DMComposite)dmmg->dm;
-  DALocalInfo    info1,info2,info3;
-  DA             da1,da2,da3;
+  DM             dm = (DM)dmmg->dm;
+  DMDALocalInfo    info1,info2,info3;
+  DM             da1,da2,da3;
   FluidField     *x1,*f1;
   PetscScalar    **x2,**f2;
   FuelField      **x3,**f3;
@@ -394,18 +394,18 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
 
   PetscFunctionBegin;
   ierr = DMCompositeGetEntries(dm,&da1,&da2,&da3);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da2,&info2);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da3,&info3);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da2,&info2);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da3,&info3);CHKERRQ(ierr);
 
   /* Get local vectors to hold ghosted parts of X; then fill in the ghosted vectors from the unghosted global vector X */
   ierr = DMCompositeGetLocalVectors(dm,&X1,&X2,&X3);CHKERRQ(ierr);
   ierr = DMCompositeScatter(dm,X,X1,X2,X3);CHKERRQ(ierr);
 
   /* Access the arrays inside the subvectors of X */
-  ierr = DAVecGetArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da3,X3,(void**)&x3);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da3,X3,(void**)&x3);CHKERRQ(ierr);
 
    /*
     Ghost points for periodicity are used to "force" inflow/outflow fluid boundary conditions 
@@ -476,23 +476,23 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
   ierr = DMCompositeGetAccess(dm,F,&F1,&F2,&F3);CHKERRQ(ierr);
 
   /* Access the arrays inside the subvectors of F */
-  ierr = DAVecGetArray(da1,F1,(void**)&f1);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da2,F2,(void**)&f2);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da3,F3,(void**)&f3);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da1,F1,(void**)&f1);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2,F2,(void**)&f2);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da3,F3,(void**)&f3);CHKERRQ(ierr);
 
   /* Evaluate local user provided function */
   ierr = FormFunctionLocalFluid(&info1,x1,f1);CHKERRQ(ierr);
   ierr = FormFunctionLocalThermal(&info2,x2,f2);CHKERRQ(ierr);
   ierr = FormFunctionLocalFuel(&info3,x3,f3);CHKERRQ(ierr);
 
-  ierr = DAVecRestoreArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da3,X3,(void**)&x3);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da3,X3,(void**)&x3);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(dm,&X1,&X2,&X3);CHKERRQ(ierr);
 
-  ierr = DAVecRestoreArray(da1,F1,(void**)&f1);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da2,F2,(void**)&f2);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da3,F3,(void**)&f3);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da1,F1,(void**)&f1);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da2,F2,(void**)&f2);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da3,F3,(void**)&f3);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(dm,F,&F1,&F2,&F3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -518,7 +518,7 @@ PetscErrorCode MyPCSetUp(PC pc)
 {
   AppCtx         *app;
   PetscErrorCode ierr;
-  DA             da;
+  DM             da;
 
   PetscFunctionBegin;
   ierr = PCShellGetContext(pc,(void**)&app);CHKERRQ(ierr);
@@ -526,13 +526,13 @@ PetscErrorCode MyPCSetUp(PC pc)
   ierr = DMMGCreate(app->comm,1,0,&app->fdmmg);CHKERRQ(ierr);
   ierr = DMMGSetOptionsPrefix(app->fdmmg,"phi_");CHKERRQ(ierr);
   ierr = DMMGSetUser(app->fdmmg,0,app);CHKERRQ(ierr);
-  ierr = DACreate2d(app->comm,DA_NONPERIODIC,DA_STENCIL_STAR,app->nxv,app->nyvf,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(app->comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,app->nxv,app->nyvf,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(app->fdmmg,(DM)da);CHKERRQ(ierr); 
   ierr = DMMGSetKSP(app->fdmmg,PETSC_NULL,MyFormMatrix);CHKERRQ(ierr);
   app->dx = DMMGGetRHS(app->fdmmg);
   app->dy = DMMGGetx(app->fdmmg);
   ierr = VecDuplicate(app->dy,&app->c);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -551,8 +551,8 @@ PetscErrorCode MyPCApply(PC pc,Vec X,Vec Y)
   AppCtx         *app;
   PetscErrorCode ierr;
   Vec            X1,X2,X3,x1,x2,Y1,Y2,Y3;
-  DALocalInfo    info1,info2,info3;
-  DA             da1,da2,da3;
+  DMDALocalInfo    info1,info2,info3;
+  DM             da1,da2,da3;
   PetscInt       i,j;
   FluidField     *ax1,*aY1;
   PetscScalar    **ax2,**aY2;
@@ -561,17 +561,17 @@ PetscErrorCode MyPCApply(PC pc,Vec X,Vec Y)
   ierr = PCShellGetContext(pc,(void**)&app);CHKERRQ(ierr);
   /* obtain information about the three meshes */
   ierr = DMCompositeGetEntries(app->pack,&da1,&da2,&da3);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da2,&info2);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da3,&info3);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da2,&info2);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da3,&info3);CHKERRQ(ierr);
 
   /* get ghosted version of fluid and thermal conduction, global for phi and C */
   ierr = DMCompositeGetAccess(app->pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(app->pack,&x1,&x2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da1,X1,INSERT_VALUES,x1);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da1,X1,INSERT_VALUES,x1);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da2,X2,INSERT_VALUES,x2);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da2,X2,INSERT_VALUES,x2);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da1,X1,INSERT_VALUES,x1);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da1,X1,INSERT_VALUES,x1);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da2,X2,INSERT_VALUES,x2);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da2,X2,INSERT_VALUES,x2);CHKERRQ(ierr);
 
   /* get global version of result vector */
   ierr = DMCompositeGetAccess(app->pack,Y,&Y1,&Y2,&Y3);CHKERRQ(ierr);
@@ -591,12 +591,12 @@ PetscErrorCode MyPCApply(PC pc,Vec X,Vec Y)
   ierr = VecStrideScatter(app->dy,0,Y3,INSERT_VALUES);CHKERRQ(ierr);
 
   /* access the ghosted x1 and x2 as arrays */
-  ierr = DAVecGetArray(da1,x1,&ax1);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da2,x2,&ax2);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da1,x1,&ax1);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2,x2,&ax2);CHKERRQ(ierr);
 
   /* access global y1 and y2 as arrays */
-  ierr = DAVecGetArray(da1,Y1,&aY1);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da2,Y2,&aY2);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da1,Y1,&aY1);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2,Y2,&aY2);CHKERRQ(ierr);
 
   for (i=info1.xs; i<info1.xs+info1.xm; i++) {
     aY1[i].prss = ax1[i].prss;
@@ -613,10 +613,10 @@ PetscErrorCode MyPCApply(PC pc,Vec X,Vec Y)
     }
   }
 
-  ierr = DAVecRestoreArray(da1,x1,&ax1);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da2,x2,&ax2);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da1,Y1,&aY1);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da2,Y2,&aY2);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da1,x1,&ax1);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da2,x2,&ax2);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da1,Y1,&aY1);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da2,Y2,&aY2);CHKERRQ(ierr);
 
   ierr = DMCompositeRestoreLocalVectors(app->pack,&x1,&x2,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(app->pack,X,&X1,&X2,&X3);CHKERRQ(ierr);

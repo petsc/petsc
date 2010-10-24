@@ -28,14 +28,14 @@ options are:\n\
 */
 
 #include "petscsnes.h"
-#include "petscda.h"
+#include "petscdm.h"
 
 /* User-defined application context */
 typedef struct {
    PetscReal   param;         /* test problem parameter */
    PetscInt    mx,my;         /* discretization in x, y directions */
    Vec         localX,localF; /* ghosted local vector */
-   DA          da;            /* distributed array data structure */
+   DM          da;            /* distributed array data structure */
 } AppCtx;
 
 extern PetscErrorCode FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(AppCtx*,Vec);
@@ -81,11 +81,11 @@ int main(int argc,char **argv)
     if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE)) SETERRQ(PETSC_COMM_SELF,1,"Incompatible number of processors:  Nx * Ny != size");
     
     /* Set up distributed array */
-    ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,
                       PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
-    ierr = DACreateGlobalVector(user.da,&x);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(user.da,&x);CHKERRQ(ierr);
     ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
-    ierr = DACreateLocalVector(user.da,&user.localX);CHKERRQ(ierr);
+    ierr = DMCreateLocalVector(user.da,&user.localX);CHKERRQ(ierr);
     ierr = VecDuplicate(user.localX,&user.localF);CHKERRQ(ierr);
 
     /* Create nonlinear solver and set function evaluation routine */
@@ -127,7 +127,7 @@ int main(int argc,char **argv)
     ierr = VecDestroy(user.localX);CHKERRQ(ierr);
     ierr = VecDestroy(user.localF);CHKERRQ(ierr);
     ierr = SNESDestroy(snes);CHKERRQ(ierr);
-    ierr = DADestroy(user.da);CHKERRQ(ierr);
+    ierr = DMDestroy(user.da);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();
 
@@ -149,8 +149,8 @@ PetscErrorCode FormInitialGuess1(AppCtx *user,Vec X)
   /* Get ghost points */
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
   temp1 = lambda/(lambda + one);
-  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
 
   /* Compute initial guess */
   for (j=ys; j<ys+ym; j++) {
@@ -167,7 +167,8 @@ PetscErrorCode FormInitialGuess1(AppCtx *user,Vec X)
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
 
   /* Insert values into global vector */
-  ierr = DALocalToGlobal(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   return 0;
 } /* --------------------  Evaluate Function F(x) --------------------- */
 #undef __FUNCT__
@@ -186,12 +187,12 @@ PetscErrorCode FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
 
   /* Get ghost points */
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
   ierr = VecGetArray(localF,&f);CHKERRQ(ierr);
-  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
 
   /* Evaluate function */
   for (j=ys; j<ys+ym; j++) {
@@ -212,7 +213,8 @@ PetscErrorCode FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecRestoreArray(localF,&f);CHKERRQ(ierr);
 
   /* Insert values into global vector */
-  ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
   return 0; 
 } /* --------------------  Evaluate Jacobian F'(x) --------------------- */
@@ -233,12 +235,12 @@ PetscErrorCode FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,vo
   sc = hx*hy;               hxdhy = hx/hy;            hydhx = hy/hx;
 
   /* Get ghost points */
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
-  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
 
   /* Evaluate function */
   for (j=ys; j<ys+ym; j++) {

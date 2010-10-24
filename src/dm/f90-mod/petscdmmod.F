@@ -12,26 +12,26 @@
 !#include "finclude/petscao.h90"
         end module
 
-        module petscdadef
+        module petscdmdef
         use petscaodef
-#include "finclude/petscda.h"
-#include "finclude/ftn-custom/petscdadef.h90"
+#include "finclude/petscdm.h"
+#include "finclude/ftn-custom/petscdmdef.h90"
         end module
 
-        module petscda
-        use petscdadef
+        module petscdm
+        use petscdmdef
         use petscao
-#include "finclude/petscda.h90"
+#include "finclude/petscdm.h90"
         end module
 
         module petscmeshdef
-        use petscdadef
+        use petscdmdef
 #include "finclude/petscmesh.h"
 #include "finclude/ftn-custom/petscmeshdef.h90"
         end module
 
         module petscmesh
         use petscmeshdef
-        use petscda
+        use petscdm
 #include "finclude/petscmesh.h90"
         end module

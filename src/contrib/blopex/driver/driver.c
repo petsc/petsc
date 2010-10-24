@@ -27,7 +27,7 @@ mpirun -np 2 driver -n_eigs 3 -tol 1e-6 -itr 20\n";
 */
 
 #include "petscksp.h"
-#include "petscda.h"
+#include "petscdm.h"
 #include <assert.h>
 
 #include "fortran_matrix.h"
@@ -51,15 +51,15 @@ typedef struct
   mv_InterfaceInterpreter  ii;
 } aux_data_struct;
 
-PetscErrorCode FillMatrix(DA da,Mat jac)
+PetscErrorCode FillMatrix(DM da,Mat jac)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,idx;
   PetscScalar    v[7];
   MatStencil     row,col[7];
 
-  ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
 
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){
@@ -132,7 +132,7 @@ int main(int argc,char **args)
    int                         seed = 1;
    int                         i,j;
    PetscLogDouble              t1,t2,elapsed_time;
-   DA                          da;
+   DM                          da;
    double                      tol=1e-08;
    PetscBool                   option_present;
    PetscBool                   freepart=PETSC_FALSE;
@@ -176,7 +176,7 @@ int main(int argc,char **args)
   if (PreLoadIt==0)
   {
       /* small problem */
-      ierr=DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,10,10,10,
+      ierr=DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,10,10,10,
             1,PETSC_DECIDE,1,1,1,0,0,0,&da); CHKERRQ(ierr);
   }
   else
@@ -184,24 +184,24 @@ int main(int argc,char **args)
      /* actual problem */
       if (freepart)     /* petsc determines partitioning */
       {
-        ierr=DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-10,-10,-10,
+        ierr=DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-10,-10,-10,
             PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da); CHKERRQ(ierr);
       }
       else             /* (1,NP,1) partitioning */
       {
-        ierr=DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-10,-10,-10,
+        ierr=DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-10,-10,-10,
             1,PETSC_DECIDE,1,1,1,0,0,0,&da); CHKERRQ(ierr);
       }
 
       /* now we print what partitioning is chosen */
-      ierr=DAGetInfo(da,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&m,
+      ierr=DMDAGetInfo(da,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&m,
                       &n,&p,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
       PetscPrintf(PETSC_COMM_WORLD,"Partitioning: %u %u %u\n",m,n,p);
   }
 
   /* create matrix, whose nonzero structure and probably partitioning corresponds to
   grid and stencil structure */
-  ierr=DAGetMatrix(da,MATMPIAIJ,&A); CHKERRQ(ierr);
+  ierr=DMGetMatrix(da,MATMPIAIJ,&A); CHKERRQ(ierr);
 
   /* fill the matrix with values. I intend to build 7-pt Laplas */
   /* this procedure includes matrix assembly */
@@ -218,7 +218,7 @@ int main(int argc,char **args)
       - We form 1 vector from scratch and then duplicate as needed.
   */
 
-  ierr = DACreateGlobalVector(da,&u); CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&u); CHKERRQ(ierr);
   /* ierr = VecSetFromOptions(u);CHKERRQ(ierr); */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -430,7 +430,7 @@ int main(int argc,char **args)
    ierr = VecDestroy(u);CHKERRQ(ierr);
    ierr = MatDestroy(A);CHKERRQ(ierr);
    ierr = KSPDestroy(ksp);CHKERRQ(ierr);
-   ierr = DADestroy(da); CHKERRQ(ierr);
+   ierr = DMDestroy(da); CHKERRQ(ierr);
 
    LOBPCG_DestroyRandomContext();
    mv_MultiVectorDestroy(eigenvectors);

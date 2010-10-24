@@ -64,7 +64,7 @@ PetscBool  asa_events_registered = PETSC_FALSE;
 
     Input Parameter:
 +   pc - the context
--   dm - the DA or ADDA or VecPack object
+-   dm - the DM object
 
     Level: advanced
 
@@ -123,7 +123,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASASetTolerances(PC pc, PetscReal rtol, Pets
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCASASetTolerances",(PC,PetscReal,PetscReal,PetscReal,PetscInt),(pc,rtol,abstol,dtol,maxits));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCASASetTolerances_C",(PC,PetscReal,PetscReal,PetscReal,PetscInt),(pc,rtol,abstol,dtol,maxits));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -4,7 +4,7 @@
 #ifndef __PETSCDMMG_H
 #define __PETSCDMMG_H
 #include "petscsnes.h"
-#include "petscda.h"
+#include "petscdm.h"
 PETSC_EXTERN_CXX_BEGIN
 
 /*S
@@ -17,7 +17,7 @@ PETSC_EXTERN_CXX_BEGIN
 
   Concepts: multigrid, Newton-multigrid
 
-.seealso:  DMCompositeCreate(), DA, DMComposite, DM, DMMGCreate(), DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess(),
+.seealso:  DMCompositeCreate(),  DMComposite, DM, DMMGCreate(), DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess(),
            DMMGSetNullSpace(), DMMGSetMatType()
 S*/
 
@@ -30,7 +30,7 @@ S*/
 
   Concepts: multigrid, Newton-multigrid
 
-.seealso:  DMCompositeCreate(), DA, DMComposite, DM, DMMGCreate(), DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess(),
+.seealso:  DMCompositeCreate(), DMComposite, DM, DMMGCreate(), DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess(),
            DMMGSetNullSpace(),  DMMGSetMatType()
 S*/
 typedef struct _n_DMMG* DMMG;
@@ -99,30 +99,30 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetISColoringType(DMMG*,ISColoring
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetOptionsPrefix(DMMG*,const char[]);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGFormFunction(SNES,Vec,Vec,void *);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGGetSNESLocal(DMMG*,DALocalFunction1*,DALocalFunction1*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNESLocal_Private(DMMG*,DALocalFunction1,DALocalFunction1,DALocalFunction1,DALocalFunction1);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGGetSNESLocal(DMMG*,DMDALocalFunction1*,DMDALocalFunction1*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNESLocal_Private(DMMG*,DMDALocalFunction1,DMDALocalFunction1,DMDALocalFunction1,DMDALocalFunction1);
 #if defined(PETSC_HAVE_ADIC)
 #  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function,admf_function) \
-  DMMGSetSNESLocal_Private(dmmg,(DALocalFunction1)function,(DALocalFunction1)jacobian,(DALocalFunction1)(ad_function),(DALocalFunction1)(admf_function))
+  DMMGSetSNESLocal_Private(dmmg,(DMDALocalFunction1)function,(DMDALocalFunction1)jacobian,(DMDALocalFunction1)(ad_function),(DMDALocalFunction1)(admf_function))
 #else
-#  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function,admf_function) DMMGSetSNESLocal_Private(dmmg,(DALocalFunction1)function,(DALocalFunction1)jacobian,(DALocalFunction1)0,(DALocalFunction1)0)
+#  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function,admf_function) DMMGSetSNESLocal_Private(dmmg,(DMDALocalFunction1)function,(DMDALocalFunction1)jacobian,(DMDALocalFunction1)0,(DMDALocalFunction1)0)
 #endif
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNESLocali_Private(DMMG*,PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*),PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,void*,void*),PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,void*,void*));
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNESLocali_Private(DMMG*,PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*),PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*),PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*));
 #if defined(PETSC_HAVE_ADIC)
-#  define DMMGSetSNESLocali(dmmg,function,ad_function,admf_function) DMMGSetSNESLocali_Private(dmmg,(PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,(PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,void*,void*))(ad_function),(PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,void*,void*))(admf_function))
+#  define DMMGSetSNESLocali(dmmg,function,ad_function,admf_function) DMMGSetSNESLocali_Private(dmmg,(PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,(PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*))(ad_function),(PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*))(admf_function))
 #else
-#  define DMMGSetSNESLocali(dmmg,function,ad_function,admf_function) DMMGSetSNESLocali_Private(dmmg,(PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,0,0)
+#  define DMMGSetSNESLocali(dmmg,function,ad_function,admf_function) DMMGSetSNESLocali_Private(dmmg,(PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,0,0)
 #endif
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNESLocalib_Private(DMMG*,PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*),PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,void*,void*),PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,void*,void*));
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNESLocalib_Private(DMMG*,PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*),PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*),PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*));
 #if defined(PETSC_HAVE_ADIC)
-#  define DMMGSetSNESLocalib(dmmg,function,ad_function,admf_function) DMMGSetSNESLocalib_Private(dmmg,(PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,(PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,void*,void*))(ad_function),(PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,void*,void*))(admf_function))
+#  define DMMGSetSNESLocalib(dmmg,function,ad_function,admf_function) DMMGSetSNESLocalib_Private(dmmg,(PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,(PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*))(ad_function),(PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*))(admf_function))
 #else
-#  define DMMGSetSNESLocalib(dmmg,function,ad_function,admf_function) DMMGSetSNESLocalib_Private(dmmg,(PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,0,0)
+#  define DMMGSetSNESLocalib(dmmg,function,ad_function,admf_function) DMMGSetSNESLocalib_Private(dmmg,(PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,0,0)
 #endif
 
-extern PetscErrorCode DMMGSetSNESLocalFD(DMMG*,DALocalFunction1);
+extern PetscErrorCode DMMGSetSNESLocalFD(DMMG*,DMDALocalFunction1);
 
 /*MC
    DMMGGetRHS - Returns the right hand side vector from a DMMG solve on the finest grid
@@ -301,46 +301,6 @@ M*/
 
 M*/
 #define DMMGGetDM(ctx)             ((ctx)[(ctx)[0]->nlevels-1]->dm)
-
-/*MC
-   DMMGGetDA - Gets the DA object on the finest level
-
-   Synopsis:
-   DA DMMGGetDA(DMMG *dmmg)
-
-   Not Collective
-
-   Input Parameter:
-.   dmmg - DMMG solve context
-
-   Level: intermediate
-
-   Notes: Use only if the DMMG was created with a DA, not a DMComposite
-
-.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetKSP(), DMMGGetDMComposite()
-
-M*/
-#define DMMGGetDA(ctx)             (DA)((ctx)[(ctx)[0]->nlevels-1]->dm)
-
-/*MC
-   DMMGGetDMComposite - Gets the DMComposite object on the finest level
-
-   Synopsis:
-   DMComposite DMMGGetDMComposite(DMMG *dmmg)
-
-   Not Collective
-
-   Input Parameter:
-.   dmmg - DMMG solve context
-
-   Level: intermediate
-
-   Notes: Use only if the DMMG was created with a DA, not a DMComposite
-
-.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetKSP(), DMMGGetDA()
-
-M*/
-#define DMMGGetDMComposite(ctx)        (DMComposite)((ctx)[(ctx)[0]->nlevels-1]->dm)
 
 /*MC
    DMMGGetUser - Returns the user context for a particular level

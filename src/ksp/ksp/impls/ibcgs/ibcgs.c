@@ -16,7 +16,9 @@ static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
 
 /* 
     The code below "cheats" from PETSc style
-       1) VecRestoreArray() is called immediately after VecGetArray() and the array values are still accessed
+       1) VecRestoreArray() is called immediately after VecGetArray() and the array values are still accessed; the reason for the immediate
+          restore is that Vec operations are done on some of the vectors during the solve and if we did not restore immediately it would
+          generate two VecGetArray() (the second one inside the Vec operation) calls without a restore between them.
        2) The vector operations on done directly on the arrays instead of with VecXXXX() calls
 
        For clarity in the code we name single VECTORS with two names, for example, Rn_1 and R, but they actually always

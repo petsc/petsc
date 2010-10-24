@@ -7,7 +7,7 @@ Uses 2-dimensional distributed arrays.\n\
 
 /*T
    Concepts: SNES^solving a system of nonlinear equations
-   Concepts: DA^using distributed arrays
+   Concepts: DMDA^using distributed arrays
    Concepts: multigrid;
    Processors: n
 T*/
@@ -29,12 +29,12 @@ T*/
 */
 
 #include "petscsnes.h"
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscmg.h"
 #include "petscdmmg.h"
 
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode FormFunctionLocal(DALocalInfo*,PetscScalar**,PetscScalar**,void*);
+extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -45,22 +45,22 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       its,lits;
   PetscReal      litspit;
-  DA             da;
+  DM             da;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
 
   /*
-      Create the multilevel DA data structure 
+      Create the multilevel DM data structure 
   */
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,0,&dmmg);CHKERRQ(ierr);
 
   /*
-      Set the DA (grid structure) for the grids.
+      Set the DMDA (grid structure) for the grids.
   */
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-5,-5,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-5,-5,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
 
   /*
        Process adiC(36): FormFunctionLocal FormFunctionLocali
@@ -108,16 +108,16 @@ PetscErrorCode FormFunction(SNES snes,Vec T,Vec F,void* ptr)
   Vec            localT;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalVector((DA)dmmg->dm,&localT);CHKERRQ(ierr);
-  ierr = DAGetInfo((DA)dmmg->dm,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dmmg->dm,&localT);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dmmg->dm,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   hx    = 1.0/(PetscReal)(mx-1);  hy    = 1.0/(PetscReal)(my-1);
  
   /* Get ghost points */
-  ierr = DAGlobalToLocalBegin((DA)dmmg->dm,T,INSERT_VALUES,localT);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd((DA)dmmg->dm,T,INSERT_VALUES,localT);CHKERRQ(ierr);
-  ierr = DAGetCorners((DA)dmmg->dm,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAVecGetArray((DA)dmmg->dm,localT,&t);CHKERRQ(ierr);
-  ierr = DAVecGetArray((DA)dmmg->dm,F,&f);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dmmg->dm,T,INSERT_VALUES,localT);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dmmg->dm,T,INSERT_VALUES,localT);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(dmmg->dm,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(dmmg->dm,localT,&t);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(dmmg->dm,F,&f);CHKERRQ(ierr);
 
   /* Evaluate function */
   for (j=ys; j<ys+ym; j++) {
@@ -149,15 +149,15 @@ PetscErrorCode FormFunction(SNES snes,Vec T,Vec F,void* ptr)
 
     }
   }
-  ierr = DAVecRestoreArray((DA)dmmg->dm,localT,&t);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray((DA)dmmg->dm,F,&f);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector((DA)dmmg->dm,&localT);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(dmmg->dm,localT,&t);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(dmmg->dm,F,&f);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dmmg->dm,&localT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
 #undef __FUNCT__  
 #define __FUNCT__ "FormFunctionLocal"
-PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **t,PetscScalar **f,void *ptr)
+PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **t,PetscScalar **f,void *ptr)
 {
   PetscInt     i,j;
   PetscScalar  hx,hy;

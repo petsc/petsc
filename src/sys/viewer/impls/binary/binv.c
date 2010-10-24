@@ -224,6 +224,32 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetFlowControl(PetscViewer vi
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinarySetFlowControl" 
+/*@C
+    PetscViewerBinarySetFlowControl - Returns how many messages are allowed to outstanding at the same time during parallel IO reads/writes
+
+    Not Collective
+
+    Input Parameter:
++   viewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
+-   fc - the number of messages, defaults to 256
+
+    Level: advanced
+
+.seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer(), PetscViewerBinaryGetFlowControl()
+
+@*/
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySetFlowControl(PetscViewer viewer,PetscInt fc)
+{
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+
+  PetscFunctionBegin;
+  if (fc <= 1) SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Flow control count must be greater than 1, %D was set",fc);
+  vbinary->flowcontrol = fc;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryGetDescriptor" 
 /*@C
     PetscViewerBinaryGetDescriptor - Extracts the file descriptor from a PetscViewer.

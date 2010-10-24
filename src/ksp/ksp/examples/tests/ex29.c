@@ -26,13 +26,13 @@ static char help[] ="Tests ML interface. Modified from ~src/ksp/ksp/examples/tes
 */
 
 #include "petscksp.h"
-#include "petscda.h"
+#include "petscdm.h"
 
 /* User-defined application contexts */
 typedef struct {
   PetscInt   mx,my;            /* number grid points in x and y direction */
   Vec        localX,localF;    /* local vectors with ghost region */
-  DA         da;
+  DM         da;
   Vec        x,b,r;            /* global vectors */
   Mat        J;                /* Jacobian on grid */
   Mat        A,P,R;
@@ -69,12 +69,12 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,fine_ctx.mx,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,fine_ctx.mx,
                     fine_ctx.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&fine_ctx.da);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(fine_ctx.da,&fine_ctx.x);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(fine_ctx.da,&fine_ctx.x);CHKERRQ(ierr);
   ierr = VecDuplicate(fine_ctx.x,&fine_ctx.b);CHKERRQ(ierr);
   ierr = VecGetLocalSize(fine_ctx.x,&nlocal);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(fine_ctx.da,&fine_ctx.localX);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(fine_ctx.da,&fine_ctx.localX);CHKERRQ(ierr);
   ierr = VecDuplicate(fine_ctx.localX,&fine_ctx.localF);CHKERRQ(ierr);
   ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&A);CHKERRQ(ierr);
   ierr = FormJacobian_Grid(&fine_ctx,&A);CHKERRQ(ierr);
@@ -106,7 +106,7 @@ int main(int argc,char **argv)
   /* free data structures */
   ierr = VecDestroy(fine_ctx.x);CHKERRQ(ierr);
   ierr = VecDestroy(fine_ctx.b);CHKERRQ(ierr);
-  ierr = DADestroy(fine_ctx.da);CHKERRQ(ierr);
+  ierr = DMDestroy(fine_ctx.da);CHKERRQ(ierr);
   ierr = VecDestroy(fine_ctx.localX);CHKERRQ(ierr);
   ierr = VecDestroy(fine_ctx.localF);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr); 
@@ -130,9 +130,9 @@ int FormJacobian_Grid(GridCtx *grid,Mat *J)
   hxdhy = hx/hy;            hydhx = hy/hx;
 
   /* Get ghost points */
-  ierr = DAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(grid->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(grid->da,&nloc,&ltog);CHKERRQ(ierr);
 
   /* Evaluate Jacobian of function */
   for (j=ys; j<ys+ym; j++) {

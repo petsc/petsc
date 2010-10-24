@@ -24,7 +24,7 @@ class Configure(PETSc.package.NewPackage):
       # check if flex or lex are in PATH
       self.getExecutable('flex')
       self.getExecutable('lex')
-      if not hasattr(self, 'flex') or not hasattr(self, 'lex'):
+      if not hasattr(self, 'flex') and not hasattr(self, 'lex'):
         raise RuntimeError('Cannot build c2html. It requires either "flex" or "lex" in PATH. Please install flex and retry.\n\
  Or disable c2html with --with-c2html=0')
       try:

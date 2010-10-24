@@ -1,7 +1,7 @@
 #define PETSC_USE_FORTRAN_MODULES
 
         module petscpcdef
-        use petscdadef
+        use petscdmdef
 #include "finclude/petscpc.h"
 #include "finclude/ftn-custom/petscpcdef.h90"
         end module
@@ -14,7 +14,7 @@
 
         module petscpc
         use petsckspdef
-        use petscda
+        use petscdm
 #include "finclude/petscpc.h90"
         end module
 

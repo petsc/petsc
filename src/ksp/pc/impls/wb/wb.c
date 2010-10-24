@@ -3,7 +3,7 @@
 
 #include "petscpc.h"   /*I "petscpc.h" I*/
 #include "petscmg.h"   /*I "petscmg.h" I*/
-#include "petscda.h"   /*I "petscda.h" I*/
+#include "petscdm.h"   /*I "petscdm.h" I*/
 #include "../src/ksp/pc/impls/mg/mgimpl.h"
 
 typedef struct {
@@ -17,12 +17,12 @@ const char *PCExoticTypes[] = {"face","wirebasket","PCExoticType","PC_Exotic",0}
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetWireBasketInterpolation"
+#define __FUNCT__ "DMDAGetWireBasketInterpolation"
 /*
-      DAGetWireBasketInterpolation - Gets the interpolation for a wirebasket based coarse space
+      DMDAGetWireBasketInterpolation - Gets the interpolation for a wirebasket based coarse space
 
 */
-PetscErrorCode DAGetWireBasketInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,MatReuse reuse,Mat *P)
+PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatReuse reuse,Mat *P)
 {
   PetscErrorCode         ierr;
   PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*II,N,c = 0;
@@ -40,11 +40,11 @@ PetscErrorCode DAGetWireBasketInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,
   PetscTable             ht;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(da,&dim,0,0,0,&mp,&np,&pp,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,0,0,0,&mp,&np,&pp,&dof,0,0,0);CHKERRQ(ierr);
   if (dof != 1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only for single field problems");
   if (dim != 3) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only coded for 3d problems");
-  ierr = DAGetCorners(da,0,0,0,&m,&n,&p);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&istart,&jstart,&kstart,&mwidth,&nwidth,&pwidth);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,0,0,0,&m,&n,&p);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&istart,&jstart,&kstart,&mwidth,&nwidth,&pwidth);CHKERRQ(ierr);
   istart = istart ? -1 : 0;
   jstart = jstart ? -1 : 0;
   kstart = kstart ? -1 : 0;
@@ -110,7 +110,7 @@ PetscErrorCode DAGetWireBasketInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,
        I are the indices for all the needed vertices (in global numbering)
        Iint are the indices for the interior values, I surf for the surface values
             (This is just for the part of the global matrix obtained with MatGetSubMatrix(), it 
-             is NOT the local DA ordering.)
+             is NOT the local DMDA ordering.)
        IIint and IIsurf are the same as the Iint, Isurf except they are in the global numbering
   */
 #define Endpoint(a,start,b) (a == 0 || a == (b-1-start))
@@ -134,7 +134,7 @@ PetscErrorCode DAGetWireBasketInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,
   if (c != N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"c != N");
   if (cint != Nint) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"cint != Nint");
   if (csurf != Nsurf) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"csurf != Nsurf");
-  ierr = DAGetISLocalToGlobalMapping(da,&ltg);CHKERRQ(ierr);
+  ierr = DMDAGetISLocalToGlobalMapping(da,&ltg);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltg,N,II,II);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltg,Nint,IIint,IIint);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltg,Nsurf,IIsurf,IIsurf);CHKERRQ(ierr);
@@ -295,12 +295,12 @@ PetscErrorCode DAGetWireBasketInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetFaceInterpolation"
+#define __FUNCT__ "DMDAGetFaceInterpolation"
 /*
-      DAGetFaceInterpolation - Gets the interpolation for a face based coarse space
+      DMDAGetFaceInterpolation - Gets the interpolation for a face based coarse space
 
 */
-PetscErrorCode DAGetFaceInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,MatReuse reuse,Mat *P)
+PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatReuse reuse,Mat *P)
 {
   PetscErrorCode         ierr;
   PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*II,N,c = 0;
@@ -318,11 +318,11 @@ PetscErrorCode DAGetFaceInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,MatReu
   PetscTable             ht;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(da,&dim,0,0,0,&mp,&np,&pp,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,0,0,0,&mp,&np,&pp,&dof,0,0,0);CHKERRQ(ierr);
   if (dof != 1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only for single field problems");
   if (dim != 3) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only coded for 3d problems");
-  ierr = DAGetCorners(da,0,0,0,&m,&n,&p);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&istart,&jstart,&kstart,&mwidth,&nwidth,&pwidth);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,0,0,0,&m,&n,&p);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&istart,&jstart,&kstart,&mwidth,&nwidth,&pwidth);CHKERRQ(ierr);
   istart = istart ? -1 : 0;
   jstart = jstart ? -1 : 0;
   kstart = kstart ? -1 : 0;
@@ -383,7 +383,7 @@ PetscErrorCode DAGetFaceInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,MatReu
        I are the indices for all the needed vertices (in global numbering)
        Iint are the indices for the interior values, I surf for the surface values
             (This is just for the part of the global matrix obtained with MatGetSubMatrix(), it 
-             is NOT the local DA ordering.)
+             is NOT the local DMDA ordering.)
        IIint and IIsurf are the same as the Iint, Isurf except they are in the global numbering
   */
 #define Endpoint(a,start,b) (a == 0 || a == (b-1-start))
@@ -407,7 +407,7 @@ PetscErrorCode DAGetFaceInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,MatReu
   if (c != N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"c != N");
   if (cint != Nint) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"cint != Nint");
   if (csurf != Nsurf) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"csurf != Nsurf");
-  ierr = DAGetISLocalToGlobalMapping(da,&ltg);CHKERRQ(ierr);
+  ierr = DMDAGetISLocalToGlobalMapping(da,&ltg);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltg,N,II,II);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltg,Nint,IIint,IIint);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltg,Nsurf,IIsurf,IIsurf);CHKERRQ(ierr);
@@ -632,9 +632,9 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
   if (!pc->dm) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to call PCSetDM() before using this PC");
   ierr = PCGetOperators(pc,PETSC_NULL,&A,PETSC_NULL);CHKERRQ(ierr);
   if (ex->type == PC_EXOTIC_FACE) {
-    ierr = DAGetFaceInterpolation((DA)pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
+    ierr = DMDAGetFaceInterpolation(pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
   } else if (ex->type == PC_EXOTIC_WIREBASKET) {
-    ierr = DAGetWireBasketInterpolation((DA)pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
+    ierr = DMDAGetWireBasketInterpolation(pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
   } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_PLIB,"Unknown exotic coarse space %d",ex->type);
   ierr = PCMGSetInterpolation(pc,1,ex->P);CHKERRQ(ierr);
   ierr = PCSetUp_MG(pc);CHKERRQ(ierr);

@@ -11,7 +11,7 @@
 struct Mat_SeqAIJCUDA {
   CUSPMATRIX*       mat; /* pointer to the matrix on the GPU */
   CUSPINTARRAYGPU*  indices; /*pointer to an array containing the nonzero row indices, should usecprow be true*/
-  CUSPARRAY*        tempvec; /*if usecprow, pointer to a workvector to which we can copy the relevant indices of a vector we want to multiply */
+  CUSPARRAY*        tempvec; /*pointer to a workvector to which we can copy the relevant indices of a vector we want to multiply */
 };
 
 #endif

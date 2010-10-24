@@ -6,7 +6,7 @@ static char help[] = "\n";
    phi is advected explicitly.
    - - - - - - - - - - - - - - - - - - - - - - - - */
 #include "petscsnes.h"
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscdmmg.h"
 #include "petscbag.h"
 #include "characteristic.h"
@@ -33,8 +33,8 @@ typedef struct parameter_s {
 } Parameter;
 
 typedef struct gridinfo_s {
-  DAPeriodicType periodic;
-  DAStencilType  stencil;
+  DMDAPeriodicType periodic;
+  DMDAStencilType  stencil;
   int            ni,nj,dof,stencil_width,mglevels;
   PetscReal      dx,dz;
 } GridInfo;
@@ -53,7 +53,7 @@ int DoSolve              (DMMG*);
 int DoOutput             (DMMG*, int);
 int CalcSolnNorms        (DMMG*, PetscReal*);
 int DoVerification       (DMMG*, AppCtx*);
-int DASetFieldNames      (const char*, const char*, const char*, DA);
+int DMDASetFieldNames      (const char*, const char*, const char*, DM);
 PetscReal BiCubicInterp  (Field**, PetscReal, PetscReal);
 PetscReal CubicInterp    (PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
 PetscBool  OptionsHasName(const char*);
@@ -81,7 +81,7 @@ int main(int argc,char **argv)
   GridInfo       grid;
   int            ierr,result;
   MPI_Comm       comm;
-  DA             da;
+  DM             da;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -101,17 +101,17 @@ int main(int argc,char **argv)
      for principal unknowns (x) and governing residuals (f)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
   ierr = DMMGCreate(comm,grid.mglevels,user,&dmmg);CHKERRQ(ierr); 
-  ierr = DACreate2d(comm,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(comm,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
-  ierr = DAGetInfo(da,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&(param->pi),&(param->pj),PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&(param->pi),&(param->pj),PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   REG_INTG(user->bag,&param->pi,param->pi ,"procs_x","<DO NOT SET> Processors in the x-direction");
   REG_INTG(user->bag,&param->pj,param->pj ,"procs_y","<DO NOT SET> Processors in the y-direction");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */   
-  ierr = DAGetGlobalVector(da, &(user->Xold));CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &(user->Xold));CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize and solve the nonlinear system
@@ -123,7 +123,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space. 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DARestoreGlobalVector(da, &(user->Xold));CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da, &(user->Xold));CHKERRQ(ierr);
   ierr = PetscBagDestroy(user->bag);CHKERRQ(ierr); 
   ierr = PetscFree(user);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
@@ -190,8 +190,8 @@ int SetParams(AppCtx *user)
 
   grid->ni            = p->ni;
   grid->nj            = p->nj;
-  grid->periodic      = DA_XYPERIODIC;
-  grid->stencil       = DA_STENCIL_BOX;
+  grid->periodic      = DMDA_XYPERIODIC;
+  grid->stencil       = DMDA_STENCIL_BOX;
   grid->dof           = 3;
   grid->stencil_width = 2;
   grid->mglevels      = 1;
@@ -243,7 +243,7 @@ int Initialize(DMMG *dmmg)
 {
   AppCtx    *user  = (AppCtx*)dmmg[0]->user;
   Parameter *param;
-  DA        da;
+  DM        da;
   PetscReal PI = 3.14159265358979323846;
   PetscReal sigma,xc,zc;
   PetscReal dx=user->grid->dx,dz=user->grid->dz;
@@ -252,10 +252,10 @@ int Initialize(DMMG *dmmg)
   ierr = PetscBagGetData(user->bag,(void**)&param);CHKERRQ(ierr);
   sigma=param->sigma; xc=param->xctr; zc=param->zctr;
 
-  /* Get the DA and grid */
-  da = (DA)(dmmg[0]->dm); 
-  ierr = DAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
+  /* Get the DMDA and grid */
+  da = (dmmg[0]->dm); 
+  ierr = DMDAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
 
   for (j=js; j<js+jm; j++) {
     for (i=is; i<is+im; i++) {
@@ -271,7 +271,7 @@ int Initialize(DMMG *dmmg)
   }
   
   /* restore the grid to it's vector */
-  ierr = DAVecRestoreArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
   ierr = VecCopy(user->Xold, DMMGGetx(dmmg));CHKERRQ(ierr);
   return 0;
 }
@@ -286,12 +286,12 @@ int DoSolve(DMMG *dmmg)
   Parameter      *param;
   PetscReal      t_output = 0.0;
   int            ierr, n_plot = 0, Ncomponents, components[3];
-  DA             da = DMMGGetDA(dmmg);
+  DM             da = DMMGGetDM(dmmg);
   Vec            Xstar;
   Characteristic c;
   ierr = PetscBagGetData(user->bag,(void**)&param);CHKERRQ(ierr);
 
-  ierr = DAGetGlobalVector(da, &Xstar);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &Xstar);CHKERRQ(ierr);
 
   /*------------ BEGIN CHARACTERISTIC SETUP ---------------*/
   ierr = CharacteristicCreate(PETSC_COMM_WORLD, &c);CHKERRQ(ierr);
@@ -347,7 +347,7 @@ int DoSolve(DMMG *dmmg)
       t_output += param->t_output_interval; n_plot++;
     }
   }
-  ierr = DARestoreGlobalVector(da, &Xstar);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da, &Xstar);CHKERRQ(ierr);
   ierr = CharacteristicDestroy(c);CHKERRQ(ierr);
   return 0; 
 }
@@ -482,9 +482,9 @@ int DoOutput(DMMG *dmmg, int n_plot)
   int         ierr;
   char        filename[FNAME_LENGTH];
   PetscViewer viewer;
-  DA          da;
+  DM          da;
   ierr = PetscBagGetData(user->bag,(void**)&param);CHKERRQ(ierr);
-  da = DMMGGetDA(dmmg);
+  da = DMMGGetDM(dmmg);
 
   if (param->output_to_file) { /* send output to binary file */
     /* generate filename for time t */
@@ -495,7 +495,7 @@ int DoOutput(DMMG *dmmg, int n_plot)
     /* make output files */
     ierr = PetscViewerBinaryMatlabOpen(PETSC_COMM_WORLD,filename,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerBinaryMatlabOutputBag(viewer,"par",user->bag);CHKERRQ(ierr);
-    ierr = DASetFieldNames("u","v","phi",da);CHKERRQ(ierr);
+    ierr = DMDASetFieldNames("u","v","phi",da);CHKERRQ(ierr);
     ierr = PetscViewerBinaryMatlabOutputVecDA(viewer,"field",DMMGGetx(dmmg),da);CHKERRQ(ierr);
     ierr = PetscViewerBinaryMatlabDestroy(viewer);CHKERRQ(ierr);
   }  
@@ -504,15 +504,14 @@ int DoOutput(DMMG *dmmg, int n_plot)
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "DASetFieldNames"
-int DASetFieldNames(const char n0[], const char n1[], const char n2[], 
-		    DA da)
+#define __FUNCT__ "DMDASetFieldNames"
+int DMDASetFieldNames(const char n0[], const char n1[], const char n2[], DM da)
 /* ------------------------------------------------------------------- */
 {
   int ierr;
-  ierr = DASetFieldName(da,0,n0);CHKERRQ(ierr);
-  ierr = DASetFieldName(da,1,n1);CHKERRQ(ierr);
-  ierr = DASetFieldName(da,2,n2);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,0,n0);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,1,n1);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,2,n2);CHKERRQ(ierr);
   return 0;
 }
 

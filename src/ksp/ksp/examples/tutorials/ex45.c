@@ -34,19 +34,19 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   KSP            ksp;
   PetscReal      norm;
-  DA             da;
+  DM             da;
   Vec            x,b,r;
   Mat            A;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-7,-7,-7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-7,-7,-7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
   ierr = DMSetInitialGuess((DM)da,ComputeInitialGuess);CHKERRQ(ierr);
   ierr = DMSetFunction((DM)da,ComputeRHS);CHKERRQ(ierr);
   ierr = DMSetJacobian((DM)da,ComputeMatrix);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
 
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
@@ -77,22 +77,22 @@ PetscErrorCode ComputeRHS(DM dm,Vec x,Vec b)
   PetscScalar    h;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo((DA)dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
   h    = 1.0/((mx-1)*(my-1)*(mz-1));
   ierr = VecSet(b,h);CHKERRQ(ierr);
 
   if (x) {
     PetscScalar ***xx,***bb;
-    ierr = DAVecGetArray((DA)dm,x,&xx);CHKERRQ(ierr);
-    ierr = DAVecGetArray((DA)dm,b,&bb);CHKERRQ(ierr);
-  DA             da = (DA)dm;
+    ierr = DMDAVecGetArray(dm,x,&xx);CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(dm,b,&bb);CHKERRQ(ierr);
+  DM             da = dm;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
   PetscScalar    Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
 
-  ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);  
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){
@@ -104,8 +104,8 @@ PetscErrorCode ComputeRHS(DM dm,Vec x,Vec b)
       }
     }
   }
-    ierr = DAVecRestoreArray((DA)dm,x,&xx);CHKERRQ(ierr);
-    ierr = DAVecRestoreArray((DA)dm,b,&bb);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(dm,x,&xx);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(dm,b,&bb);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -125,16 +125,16 @@ PetscErrorCode ComputeInitialGuess(DM dm,Vec b)
 #define __FUNCT__ "ComputeMatrix"
 PetscErrorCode ComputeMatrix(DM dm,Vec x,Mat jac,Mat B,MatStructure *stflg)
 {
-  DA             da = (DA)dm;
+  DM             da = dm;
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
   PetscScalar    v[7],Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
   MatStencil     row,col[7];
 
-  ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);  
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){

@@ -1,19 +1,19 @@
 #define PETSCSNES_DLL
  
-#include "petscda.h"            /*I "petscda.h"   I*/
+#include "petscdm.h"            /*I "petscdm.h"   I*/
 #include "petscksp.h"           /*I "petscksp.h"  I*/
 #include "petscmg.h"            /*I "petscmg.h"   I*/
 #include "petscdmmg.h"          /*I "petscdmmg.h" I*/
 #include "private/pcimpl.h"     /*I "petscpc.h"   I*/
 
 /*
-   Code for almost fully managing multigrid/multi-level linear solvers for DA grids
+   Code for almost fully managing multigrid/multi-level linear solvers for DMDA grids
 */
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGCreate"
 /*@C
-    DMMGCreate - Creates a DA based multigrid solver object. This allows one to 
+    DMMGCreate - Creates a DMDA based multigrid solver object. This allows one to 
       easily implement MG methods on regular grids.
 
     Collective on MPI_Comm
@@ -137,7 +137,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetOptionsPrefix(DMMG *dmmg,const char pr
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGDestroy"
 /*@C
-    DMMGDestroy - Destroys a DA based multigrid solver object. 
+    DMMGDestroy - Destroys a DMDA based multigrid solver object. 
 
     Collective on DMMG
 
@@ -193,7 +193,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG *dmmg)
 
     Input Parameter:
 +   dmmg - the context
--   dm - the DA or DMComposite object
+-   dm - the DMDA or DMComposite object
 
     Options Database Keys:
 .   -dmmg_refine: Use the input problem as the coarse level and refine. Otherwise, use it as the fine level and coarsen.
@@ -511,7 +511,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGView"
 /*@C
-    DMMGView - prints information on a DA based multi-level preconditioner
+    DMMGView - prints information on a DMDA based multi-level preconditioner
 
     Collective on DMMG and PetscViewer
 

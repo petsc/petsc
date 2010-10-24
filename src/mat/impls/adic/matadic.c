@@ -5,14 +5,14 @@
 */
 
 #include "private/matimpl.h"
-#include "petscda.h"          /*I   "petscda.h"    I*/
+#include "petscdm.h"          /*I   "petscdm.h"    I*/
 #include "petscsnes.h"        /*I   "petscsnes.h"  I*/
 EXTERN_C_BEGIN
 #include "adic/ad_utils.h"
 EXTERN_C_END
 
 typedef struct {
-  DA         da;
+  DM         da;
   Vec        localu;         /* point at which Jacobian is evaluated */
   void       *ctx;
   SNES       snes;
@@ -32,8 +32,8 @@ PetscErrorCode MatAssemblyEnd_DAAD(Mat A,MatAssemblyType atype)
   a->diagonalvalid = PETSC_FALSE;
   if (a->snes) {
     ierr = SNESGetSolution(a->snes,&u);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalBegin(a->da,u,INSERT_VALUES,a->localu);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(a->da,u,INSERT_VALUES,a->localu);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(a->da,u,INSERT_VALUES,a->localu);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(a->da,u,INSERT_VALUES,a->localu);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -47,11 +47,11 @@ PetscErrorCode MatMult_DAAD(Mat A,Vec xx,Vec yy)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalVector(a->da,&localxx);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(a->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(a->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
-  ierr = DAMultiplyByJacobian1WithAD(a->da,a->localu,localxx,yy,a->ctx);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(a->da,&localxx);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(a->da,&localxx);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(a->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(a->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
+  ierr = DMDAMultiplyByJacobian1WithAD(a->da,a->localu,localxx,yy,a->ctx);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(a->da,&localxx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -65,14 +65,14 @@ PetscErrorCode MatGetDiagonal_DAAD(Mat A,Vec dd)
   PetscErrorCode ierr;
   int j,nI,gI,gtdof;
   PetscScalar   *avu,*ad_vustart,ad_f[2],*d;
-  DALocalInfo   info;
+  DMDALocalInfo   info;
   MatStencil    stencil;
   void*         *ad_vu;
 
   PetscFunctionBegin;
 
   /* get space for derivative object.  */
-  ierr = DAGetAdicMFArray(a->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DMDAGetAdicMFArray(a->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
 
   /* copy input vector into derivative object */
   ierr = VecGetArray(a->localu,&avu);CHKERRQ(ierr);
@@ -88,7 +88,7 @@ PetscErrorCode MatGetDiagonal_DAAD(Mat A,Vec dd)
 
   ierr = VecGetArray(dd,&d);CHKERRQ(ierr);
 
-  ierr = DAGetLocalInfo(a->da,&info);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(a->da,&info);CHKERRQ(ierr);
   nI = 0;
   for (stencil.k = info.zs; stencil.k<info.zs+info.zm; stencil.k++) {
     for (stencil.j = info.ys; stencil.j<info.ys+info.ym; stencil.j++) {
@@ -106,7 +106,7 @@ PetscErrorCode MatGetDiagonal_DAAD(Mat A,Vec dd)
   }
 
   ierr = VecRestoreArray(dd,&d);CHKERRQ(ierr);
-  ierr = DARestoreAdicMFArray(a->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DMDARestoreAdicMFArray(a->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -120,7 +120,7 @@ PetscErrorCode MatSOR_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscRea
   int j,gtdof,nI,gI;
   PetscScalar   *avu,*av,*ad_vustart,ad_f[2],*d,*b;
   Vec           localxx,dd;
-  DALocalInfo   info;
+  DMDALocalInfo   info;
   MatStencil    stencil;
   void*         *ad_vu;
 
@@ -130,7 +130,7 @@ PetscErrorCode MatSOR_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscRea
   if (its <= 0 || lits <= 0) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
 
   if (!a->diagonal) {
-    ierr = DACreateGlobalVector(a->da,&a->diagonal);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(a->da,&a->diagonal);CHKERRQ(ierr);
   }
   if (!a->diagonalvalid) {
     ierr             = MatGetDiagonal(A,a->diagonal);CHKERRQ(ierr);
@@ -139,16 +139,16 @@ PetscErrorCode MatSOR_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscRea
   dd   = a->diagonal;
 
 
-  ierr = DAGetLocalVector(a->da,&localxx);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(a->da,&localxx);CHKERRQ(ierr);
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     ierr = VecSet(localxx,0.0);CHKERRQ(ierr);
   } else {
-    ierr = DAGlobalToLocalBegin(a->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(a->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(a->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(a->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
   }
 
   /* get space for derivative object.  */
-  ierr = DAGetAdicMFArray(a->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DMDAGetAdicMFArray(a->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
 
   /* copy input vector into derivative object */
   ierr = VecGetArray(a->localu,&avu);CHKERRQ(ierr);
@@ -167,7 +167,7 @@ PetscErrorCode MatSOR_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscRea
   ierr = VecGetArray(dd,&d);CHKERRQ(ierr);
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
 
-  ierr = DAGetLocalInfo(a->da,&info);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(a->da,&info);CHKERRQ(ierr);
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
       nI = 0;
@@ -209,10 +209,11 @@ PetscErrorCode MatSOR_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscRea
     av[j] = ad_vustart[2*j+1];
   }
   ierr = VecRestoreArray(localxx,&av);CHKERRQ(ierr);
-  ierr = DALocalToGlobal(a->da,localxx,INSERT_VALUES,xx);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(a->da,localxx,INSERT_VALUES,xx);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(a->da,localxx,INSERT_VALUES,xx);CHKERRQ(ierr);
 
-  ierr = DARestoreLocalVector(a->da,&localxx);CHKERRQ(ierr);
-  ierr = DARestoreAdicMFArray(a->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(a->da,&localxx);CHKERRQ(ierr);
+  ierr = DMDARestoreAdicMFArray(a->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -226,7 +227,7 @@ PetscErrorCode MatDestroy_DAAD(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DADestroy(a->da);CHKERRQ(ierr);
+  ierr = DMDestroy(a->da);CHKERRQ(ierr);
   ierr = VecDestroy(a->localu);CHKERRQ(ierr);
   if (a->diagonal) {ierr = VecDestroy(a->diagonal);CHKERRQ(ierr);}
   ierr = PetscFree(a);CHKERRQ(ierr);
@@ -350,8 +351,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_AD(Mat J,Vec U,Vec F)
 
   PetscFunctionBegin;
   a->diagonalvalid = PETSC_FALSE;
-  ierr = DAGlobalToLocalBegin(a->da,U,INSERT_VALUES,a->localu);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(a->da,U,INSERT_VALUES,a->localu);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(a->da,U,INSERT_VALUES,a->localu);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(a->da,U,INSERT_VALUES,a->localu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -359,7 +360,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatDAADSetDA_AD"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA_AD(Mat A,DA da)
+PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA_AD(Mat A,DM da)
 {
   Mat_DAAD       *a = (Mat_DAAD*)A->data;
   PetscErrorCode ierr;
@@ -367,13 +368,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA_AD(Mat A,DA da)
 
   PetscFunctionBegin;
   ierr  = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
-  if (a->da) { ierr = DADestroy(a->da);CHKERRQ(ierr); }
+  if (a->da) { ierr = DMDestroy(a->da);CHKERRQ(ierr); }
   a->da = da;
-  ierr  = DAGetInfo(da,0,&Nx,&Ny,&Nz,0,0,0,&nc,0,0,0);CHKERRQ(ierr);
-  ierr  = DAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
+  ierr  = DMDAGetInfo(da,0,&Nx,&Ny,&Nz,0,0,0,&nc,0,0,0);CHKERRQ(ierr);
+  ierr  = DMDAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
   A->rmap->n  = A->cmap->n = nc*nx*ny*nz;
   A->rmap->N  = A->cmap->N = nc*Nx*Ny*Nz;
-  ierr  = DACreateLocalVector(da,&a->localu);CHKERRQ(ierr);
+  ierr  = DMCreateLocalVector(da,&a->localu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -445,20 +446,20 @@ EXTERN_C_END
 #undef __FUNCT__  
 #define __FUNCT__ "MatDAADSetDA"
 /*@C
-   MatDAADSetDA - Tells the matrix what DA it is using for layout and Jacobian.
+   MatDAADSetDA - Tells the matrix what DMDA it is using for layout and Jacobian.
 
-   Logically Collective on Mat and DA
+   Logically Collective on Mat and DMDA
 
    Input Parameters:
 +  mat - the matrix
--  da - the DA
+-  da - the DMDA
 
    Level: intermediate
 
-.seealso: MatCreate(), DASetLocalAdicMFFunction(), MatCreateDAAD()
+.seealso: MatCreate(), DMDASetLocalAdicMFFunction(), MatCreateDAAD()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA(Mat A,DA da)
+PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA(Mat A,DM da)
 {
   PetscErrorCode ierr;
 
@@ -484,7 +485,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA(Mat A,DA da)
 
    Notes: this is currently turned off for Fortran usage
 
-.seealso: MatCreate(), DASetLocalAdicMFFunction(), MatCreateDAAD(), MatDAADSetDA()
+.seealso: MatCreate(), DMDASetLocalAdicMFFunction(), MatCreateDAAD(), MatDAADSetDA()
 
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetSNES(Mat A,SNES snes)
@@ -501,7 +502,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetSNES(Mat A,SNES snes)
 #undef __FUNCT__  
 #define __FUNCT__ "MatDAADSetCtx"
 /*@C
-   MatDAADSetCtx - Sets the user context for a DAAD (ADIC matrix-free) matrix.
+   MatDAADSetCtx - Sets the user context for a DMDAAD (ADIC matrix-free) matrix.
 
    Logically Collective on Mat
 
@@ -511,7 +512,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetSNES(Mat A,SNES snes)
 
    Level: intermediate
 
-.seealso: MatCreate(), DASetLocalAdicMFFunction(), MatCreateDAAD(), MatDAADSetDA()
+.seealso: MatCreate(), DMDASetLocalAdicMFFunction(), MatCreateDAAD(), MatDAADSetDA()
 
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetCtx(Mat A,void *ctx)
@@ -530,10 +531,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetCtx(Mat A,void *ctx)
    MatCreateDAAD - Creates a matrix that can do matrix-vector products using a local 
    function that is differentiated with ADIFOR or ADIC.
 
-   Collective on DA
+   Collective on DMDA
 
    Input Parameters:
-.  da - the DA that defines the distribution of the vectors
+.  da - the DMDA that defines the distribution of the vectors
 
    Output Parameter:
 .  A - the matrix 
@@ -542,10 +543,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetCtx(Mat A,void *ctx)
 
    Notes: this is currently turned off for Fortran
 
-.seealso: MatCreate(), DASetLocalAdicMFFunction()
+.seealso: MatCreate(), DMDASetLocalAdicMFFunction()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateDAAD(DA da,Mat *A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateDAAD(DM da,Mat *A)
 {
   PetscErrorCode ierr;
   MPI_Comm comm;
@@ -562,11 +563,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateDAAD(DA da,Mat *A)
 #undef __FUNCT__  
 #define __FUNCT__ "MatRegisterDAAD"
 /*@
-   MatRegisterDAAD - Registers DAAD matrix type
+   MatRegisterDAAD - Registers DMDAAD matrix type
 
    Level: advanced
 
-.seealso: MatCreateDAAD(), DASetLocalAdicMFFunction()
+.seealso: MatCreateDAAD(), DMDASetLocalAdicMFFunction()
 
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterDAAD(void)

@@ -105,46 +105,46 @@ namespace ALE {
 
       #undef __FUNCT__
       #define __FUNCT__ "Function_Structured_2d"
-      PetscErrorCode Function_Structured_2d(DALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx) {
+      PetscErrorCode Function_Structured_2d(DMDALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx) {
         BratuOptions  *options = (BratuOptions *) ctx;
         PetscScalar  (*func)(const double *) = options->func;
-        DA             coordDA;
+        DM             coordDA;
         Vec            coordinates;
-        DACoor2d     **coords;
+        DMDACoor2d     **coords;
         PetscInt       i, j;
         PetscErrorCode ierr;
 
         PetscFunctionBegin;
-        ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-        ierr = DAGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-        ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+        ierr = DMDAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
+        ierr = DMDAGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+        ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
         for(j = info->ys; j < info->ys+info->ym; j++) {
           for(i = info->xs; i < info->xs+info->xm; i++) {
             f[j][i] = func((PetscReal *) &coords[j][i]);
           }
         }
-        ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+        ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
         PetscFunctionReturn(0); 
       };
       #undef __FUNCT__
       #define __FUNCT__ "Rhs_Structured_2d_FD"
-      PetscErrorCode Rhs_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx) {
+      PetscErrorCode Rhs_Structured_2d_FD(DMDALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx) {
         BratuOptions  *options = (BratuOptions *) ctx;
         PetscScalar  (*func)(const double *)   = options->func;
         PetscScalar  (*bcFunc)(const double *) = options->exactFunc;
         const double   lambda                  = options->lambda;
-        DA             coordDA;
+        DM             coordDA;
         Vec            coordinates;
-        DACoor2d     **coords;
+        DMDACoor2d     **coords;
         PetscReal      hxa, hxb, hx, hya, hyb, hy;
         PetscInt       ie = info->xs+info->xm;
         PetscInt       je = info->ys+info->ym;
         PetscErrorCode ierr;
 
         PetscFunctionBegin;
-        ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-        ierr = DAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-        ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+        ierr = DMDAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
+        ierr = DMDAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+        ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
         // Loop over stencils
         for(int j = info->ys; j < je; j++) {
           for(int i = info->xs; i < ie; i++) {
@@ -164,17 +164,17 @@ namespace ALE {
             }
           }
         }
-        ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+        ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
         PetscFunctionReturn(0); 
       };
       #undef __FUNCT__
       #define __FUNCT__ "Jac_Structured_2d_FD"
-      PetscErrorCode Jac_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], Mat J, void *ctx) {
+      PetscErrorCode Jac_Structured_2d_FD(DMDALocalInfo *info, PetscScalar *x[], Mat J, void *ctx) {
         BratuOptions  *options = (BratuOptions *) ctx;
         const double   lambda  = options->lambda;
-        DA             coordDA;
+        DM             coordDA;
         Vec            coordinates;
-        DACoor2d     **coords;
+        DMDACoor2d     **coords;
         MatStencil     row, col[5];
         PetscScalar    v[5];
         PetscReal      hxa, hxb, hx, hya, hyb, hy;
@@ -183,9 +183,9 @@ namespace ALE {
         PetscErrorCode ierr;
 
         PetscFunctionBegin;
-        ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-        ierr = DAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-        ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+        ierr = DMDAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
+        ierr = DMDAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+        ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
         // Loop over stencils
         for(int j = info->ys; j < je; j++) {
           for(int i = info->xs; i < ie; i++) {
@@ -210,26 +210,26 @@ namespace ALE {
             }
           }
         }
-        ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+        ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
         ierr = MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
         PetscFunctionReturn(0); 
       };
       #undef __FUNCT__
       #define __FUNCT__ "Function_Structured_3d"
-      PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx) {
+      PetscErrorCode Function_Structured_3d(DMDALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx) {
         BratuOptions  *options = (BratuOptions *) ctx;
         PetscScalar  (*func)(const double *) = options->func;
-        DA             coordDA;
+        DM             coordDA;
         Vec            coordinates;
-        DACoor3d    ***coords;
+        DMDACoor3d    ***coords;
         PetscInt       i, j, k;
         PetscErrorCode ierr;
 
         PetscFunctionBegin;
-        ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-        ierr = DAGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-        ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+        ierr = DMDAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
+        ierr = DMDAGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+        ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
         for(k = info->zs; k < info->zs+info->zm; k++) {
           for(j = info->ys; j < info->ys+info->ym; j++) {
             for(i = info->xs; i < info->xs+info->xm; i++) {
@@ -237,19 +237,19 @@ namespace ALE {
             }
           }
         }
-        ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+        ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
         PetscFunctionReturn(0); 
       };
       #undef __FUNCT__
       #define __FUNCT__ "Rhs_Structured_3d_FD"
-      PetscErrorCode Rhs_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx) {
+      PetscErrorCode Rhs_Structured_3d_FD(DMDALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx) {
         BratuOptions  *options = (BratuOptions *) ctx;
         PetscScalar  (*func)(const double *)   = options->func;
         PetscScalar  (*bcFunc)(const double *) = options->exactFunc;
         const double   lambda                  = options->lambda;
-        DA             coordDA;
+        DM             coordDA;
         Vec            coordinates;
-        DACoor3d    ***coords;
+        DMDACoor3d    ***coords;
         PetscReal      hxa, hxb, hx, hya, hyb, hy, hza, hzb, hz;
         PetscInt       ie = info->xs+info->xm;
         PetscInt       je = info->ys+info->ym;
@@ -257,9 +257,9 @@ namespace ALE {
         PetscErrorCode ierr;
 
         PetscFunctionBegin;
-        ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-        ierr = DAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-        ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+        ierr = DMDAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
+        ierr = DMDAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+        ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
         // Loop over stencils
         for(int k = info->zs; k < ke; k++) {
           for(int j = info->ys; j < je; j++) {
@@ -285,17 +285,17 @@ namespace ALE {
             }
           }
         }
-        ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+        ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
         PetscFunctionReturn(0); 
       };
       #undef __FUNCT__
       #define __FUNCT__ "Jac_Structured_3d_FD"
-      PetscErrorCode Jac_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], Mat J, void *ctx) {
+      PetscErrorCode Jac_Structured_3d_FD(DMDALocalInfo *info, PetscScalar **x[], Mat J, void *ctx) {
         BratuOptions  *options = (BratuOptions *) ctx;
         const double   lambda  = options->lambda;
-        DA             coordDA;
+        DM             coordDA;
         Vec            coordinates;
-        DACoor3d    ***coords;
+        DMDACoor3d    ***coords;
         MatStencil     row, col[7];
         PetscScalar    v[7];
         PetscReal      hxa, hxb, hx, hya, hyb, hy, hza, hzb, hz;
@@ -305,9 +305,9 @@ namespace ALE {
         PetscErrorCode ierr;
 
         PetscFunctionBegin;
-        ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-        ierr = DAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-        ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+        ierr = DMDAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
+        ierr = DMDAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+        ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
         // Loop over stencils
         for(int k = info->zs; k < ke; k++) {
           for(int j = info->ys; j < je; j++) {
@@ -339,7 +339,7 @@ namespace ALE {
             }
           }
         }
-        ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+        ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
         ierr = MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
         PetscFunctionReturn(0); 

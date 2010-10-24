@@ -1652,17 +1652,17 @@ M*/
    Level: developer
 
   Notes:
-   For a vector obtained from DACreateLocalVector() mstart and nstart are likely
-   obtained from the corner indices obtained from DAGetGhostCorners() while for
-   DACreateGlobalVector() they are the corner indices from DAGetCorners(). In both cases
-   the arguments from DAGet[Ghost]Corners() are reversed in the call to VecGetArray2d().
+   For a vector obtained from DMCreateLocalVector() mstart and nstart are likely
+   obtained from the corner indices obtained from DMDAGetGhostCorners() while for
+   DMCreateGlobalVector() they are the corner indices from DMDAGetCorners(). In both cases
+   the arguments from DMDAGet[Ghost]Corners() are reversed in the call to VecGetArray2d().
    
    For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
    Concepts: vector^accessing local values as 2d array
 
 .seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
-          VecRestoreArray2d(), DAVecGetArray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
+          VecRestoreArray2d(), DMDAVecGetArray(), DMDAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
           VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscInt nstart,PetscScalar **a[])
@@ -1711,7 +1711,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray2d(Vec x,PetscInt m,PetscInt n,Pets
    This routine actually zeros out the a pointer. 
 
 .seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
-          VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
+          VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DMDAVecGetArray(), DMDAVecRestoreArray()
           VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscInt nstart,PetscScalar **a[])
@@ -1749,14 +1749,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray2d(Vec x,PetscInt m,PetscInt n,
    Level: developer
 
   Notes:
-   For a vector obtained from DACreateLocalVector() mstart are likely
-   obtained from the corner indices obtained from DAGetGhostCorners() while for
-   DACreateGlobalVector() they are the corner indices from DAGetCorners(). 
+   For a vector obtained from DMCreateLocalVector() mstart are likely
+   obtained from the corner indices obtained from DMDAGetGhostCorners() while for
+   DMCreateGlobalVector() they are the corner indices from DMDAGetCorners(). 
    
    For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
 .seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
-          VecRestoreArray2d(), DAVecGetArray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
+          VecRestoreArray2d(), DMDAVecGetArray(), DMDAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
           VecGetArray2d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
@@ -1801,7 +1801,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray1d(Vec x,PetscInt m,PetscInt mstart
    Concepts: vector^accessing local values as 1d array
 
 .seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
-          VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
+          VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DMDAVecGetArray(), DMDAVecRestoreArray()
           VecGetArray1d(), VecRestoreArray2d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
@@ -1840,17 +1840,17 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray1d(Vec x,PetscInt m,PetscInt ms
    Level: developer
 
   Notes:
-   For a vector obtained from DACreateLocalVector() mstart, nstart, and pstart are likely
-   obtained from the corner indices obtained from DAGetGhostCorners() while for
-   DACreateGlobalVector() they are the corner indices from DAGetCorners(). In both cases
-   the arguments from DAGet[Ghost]Corners() are reversed in the call to VecGetArray3d().
+   For a vector obtained from DMCreateLocalVector() mstart, nstart, and pstart are likely
+   obtained from the corner indices obtained from DMDAGetGhostCorners() while for
+   DMCreateGlobalVector() they are the corner indices from DMDAGetCorners(). In both cases
+   the arguments from DMDAGet[Ghost]Corners() are reversed in the call to VecGetArray3d().
    
    For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
    Concepts: vector^accessing local values as 3d array
 
 .seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
-          VecRestoreArray2d(), DAVecGetarray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
+          VecRestoreArray2d(), DMDAVecGetarray(), DMDAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
           VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscScalar ***a[])
@@ -1907,7 +1907,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray3d(Vec x,PetscInt m,PetscInt n,Pets
    This routine actually zeros out the a pointer. 
 
 .seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
-          VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
+          VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DMDAVecGetArray(), DMDAVecRestoreArray()
           VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d(), VecGet
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscScalar ***a[])
@@ -1951,17 +1951,17 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray3d(Vec x,PetscInt m,PetscInt n,
    Level: beginner
 
   Notes:
-   For a vector obtained from DACreateLocalVector() mstart, nstart, and pstart are likely
-   obtained from the corner indices obtained from DAGetGhostCorners() while for
-   DACreateGlobalVector() they are the corner indices from DAGetCorners(). In both cases
-   the arguments from DAGet[Ghost}Corners() are reversed in the call to VecGetArray3d().
+   For a vector obtained from DMCreateLocalVector() mstart, nstart, and pstart are likely
+   obtained from the corner indices obtained from DMDAGetGhostCorners() while for
+   DMCreateGlobalVector() they are the corner indices from DMDAGetCorners(). In both cases
+   the arguments from DMDAGet[Ghost}Corners() are reversed in the call to VecGetArray3d().
    
    For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
    Concepts: vector^accessing local values as 3d array
 
 .seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
-          VecRestoreArray2d(), DAVecGetarray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
+          VecRestoreArray2d(), DMDAVecGetarray(), DMDAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
           VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscInt qstart,PetscScalar ****a[])
@@ -2028,7 +2028,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray4d(Vec x,PetscInt m,PetscInt n,Pets
    This routine actually zeros out the a pointer. 
 
 .seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
-          VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
+          VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DMDAVecGetArray(), DMDAVecRestoreArray()
           VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d(), VecGet
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscInt qstart,PetscScalar ****a[])

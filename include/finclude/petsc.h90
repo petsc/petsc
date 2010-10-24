@@ -6,5 +6,5 @@
 #include "finclude/petscis.h90"
 #include "finclude/petscvec.h90"
 #include "finclude/petscmat.h90"
-#include "finclude/petscda.h90"
+#include "finclude/petscdm.h90"
 #include "finclude/petscmesh.h90"

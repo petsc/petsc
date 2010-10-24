@@ -3,7 +3,7 @@
 !
       double precision h,nrm_2,nrm_max,nox
       Vec    localwork,csolution
-      DA     da
+      DM     da
       PetscViewer viewer1,viewer2
       PetscInt    M
       common /tsctx/   h,nrm_2,nrm_max,nox

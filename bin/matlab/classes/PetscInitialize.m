@@ -1,6 +1,6 @@
 function err = PetscInitialize(args,argfile,arghelp)
 %
-%  PETSc must be configured with --with-shared-libraries --with-mpi=0
+%  PETSc must be configured with --with-shared-libraries --with-mpi=0 --with-matlab-engine
 %
 %  You currently must run matlab -nodesktop to get any output from PETSc
 %
@@ -33,7 +33,7 @@ if (ischar(args))
   args = {args};
 end
 arg = cell(1,length(args)+1);
-arg{1} = 'matlab'
+arg{1} = 'matlab';
 for i=1:length(args)
   arg{i+1} = args{i};
 end

@@ -3,7 +3,7 @@ static char help[] = "Tests the aSA multigrid code.\n"
 "Parameters:\n"
 "-n n          to use a matrix size of n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscksp.h"
 #include "petscasa.h"
 
@@ -20,7 +20,7 @@ int main(int Argc,char **Args)
   Vec             b,x;
   KSP             kspmg;
   PC              pcmg;
-  DA              da;
+  DM              da;
 
   PetscInitialize(&Argc,&Args,(char *)0,help);
   
@@ -42,8 +42,8 @@ int main(int Argc,char **Args)
 
   ierr = KSPSetOperators(kspmg,cmat,cmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  ierr = DACreate1d(PETSC_COMM_WORLD, DA_NONPERIODIC, n, 1, 1, 0, &da);CHKERRQ(ierr);
-  ierr = DASetRefinementFactor(da, 3, 3, 3);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_NONPERIODIC, n, 1, 1, 0, &da);CHKERRQ(ierr);
+  ierr = DMDASetRefinementFactor(da, 3, 3, 3);CHKERRQ(ierr);
   ierr = PCASASetDM(pcmg, (DM) da);CHKERRQ(ierr);
 
   ierr = PCASASetTolerances(pcmg, 1.e-10, 1.e-10, PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
@@ -57,7 +57,7 @@ int main(int Argc,char **Args)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr); 
   ierr = MatDestroy(cmat);CHKERRQ(ierr); 
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

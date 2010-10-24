@@ -13,8 +13,8 @@ class ScreeningAvg:
         
     @staticmethod
     def setup(a):
-        # Extract the "DensityField" component, and from it, the mesh (DA) and vectors of mesh spacings and ion radii
-        # The DA supports vectors with d+1 degrees of freedom: d ion species + Gamma (local screening parameter).
+        # Extract the "DensityField" component, and from it, the mesh (DMDA) and vectors of mesh spacings and ion radii
+        # The DMDA supports vectors with d+1 degrees of freedom: d ion species + Gamma (local screening parameter).
         # The screening average operator averages the first d components (ion densities),
         # over a ball of radius constructed using the densities and Gamma.
         e     = a.query("Electrolyte")

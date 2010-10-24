@@ -12,7 +12,7 @@
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscksp.h"
 #include "finclude/petscsnes.h"
@@ -75,11 +75,11 @@
 
 !   Set up the ghost point communication pattern                       
 
-      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,i1,i1,            &
+      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,M,i1,i1,            &
      &     PETSC_NULL_INTEGER,da,ierr)
-      call DACreateGlobalVector(da,global,ierr) 
+      call DMCreateGlobalVector(da,global,ierr) 
       call VecGetLocalSize(global,m,ierr) 
-      call DACreateLocalVector(da,local,ierr) 
+      call DMCreateLocalVector(da,local,ierr) 
 
 !   Set up display to show wave graph 
 
@@ -257,7 +257,7 @@
       call VecDestroy(csolution,ierr)
       call VecDestroy(local,ierr) 
       call VecDestroy(global,ierr) 
-      call DADestroy(da,ierr) 
+      call DMDestroy(da,ierr) 
       if (A .ne. 0) then
         call MatDestroy(A,ierr) 
       endif
@@ -272,7 +272,7 @@
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscksp.h"
 #include "finclude/petscsnes.h"
@@ -313,7 +313,7 @@
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscksp.h"
 #include "finclude/petscsnes.h"
@@ -356,7 +356,7 @@
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscksp.h"
 #include "finclude/petscsnes.h"
@@ -401,7 +401,7 @@
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscksp.h"
 #include "finclude/petscsnes.h"
@@ -428,7 +428,7 @@
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscksp.h"
 #include "finclude/petscsnes.h"
@@ -449,9 +449,9 @@
 
 !  Extract local array  
 
-      call DACreateLocalVector(da,local,ierr) 
-      call DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local,ierr) 
-      call DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local,ierr) 
+      call DMCreateLocalVector(da,local,ierr) 
+      call DMGlobalToLocalBegin(da,globalin,INSERT_VALUES,local,ierr) 
+      call DMGlobalToLocalEnd(da,globalin,INSERT_VALUES,local,ierr) 
       call VecGetArray(local,localptr,ldx,ierr) 
 
 !  Extract work vector 
@@ -476,7 +476,10 @@
 
 !   Local to Global 
 
-      call DALocalToGlobal(da,localwork,INSERT_VALUES,globalout,ierr) 
+      call DMLocalToGlobalBegin(da,localwork,INSERT_VALUES,globalout,    &
+     &             ierr) 
+      call DMLocalToGlobalEnd(da,localwork,INSERT_VALUES,globalout,      &
+     &            ierr) 
       return 
       end
 
@@ -487,7 +490,7 @@
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscksp.h"
 #include "finclude/petscsnes.h"
@@ -556,7 +559,7 @@
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscksp.h"
 #include "finclude/petscsnes.h"

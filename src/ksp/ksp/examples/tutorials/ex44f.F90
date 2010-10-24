@@ -1,12 +1,12 @@
       program main   !   Solves the linear system  J x = f
 #include "finclude/petscdef.h"
-      use petscksp; use petscda
-      Vec x,f; Mat J; DA da; KSP ksp; PetscErrorCode ierr
+      use petscksp; use petscdm
+      Vec x,f; Mat J; DM da; KSP ksp; PetscErrorCode ierr
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      call DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,8,1,1,PETSC_NULL_INTEGER,da,ierr)
-      call DACreateGlobalVector(da,x,ierr); call VecDuplicate(x,f,ierr)
-      call DAGetMatrix(da,MATAIJ,J,ierr)
+      call DMDACreate1d(MPI_COMM_WORLD,DMDA_NONPERIODIC,8,1,1,PETSC_NULL_INTEGER,da,ierr)
+      call DMCreateGlobalVector(da,x,ierr); call VecDuplicate(x,f,ierr)
+      call DMGetMatrix(da,MATAIJ,J,ierr)
 
       call ComputeRHS(da,f,ierr)
       call ComputeMatrix(da,J,ierr)
@@ -17,15 +17,15 @@
       call KSPSolve(ksp,f,x,ierr)
 
       call MatDestroy(J,ierr); call VecDestroy(x,ierr); call VecDestroy(f,ierr)
-      call KSPDestroy(ksp,ierr); call DADestroy(da,ierr)
+      call KSPDestroy(ksp,ierr); call DMDestroy(da,ierr)
       call PetscFinalize(ierr)
       end
       subroutine  ComputeRHS(da,x,ierr)
 #include "finclude/petscdef.h"
-      use petscda
-      DA da; Vec x; PetscErrorCode ierr; PetscInt xs,xm,i,mx; PetscScalar hx; PetscScalar, pointer :: xx(:)
-      call DAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
-      call DAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+      use petscdm
+      DM da; Vec x; PetscErrorCode ierr; PetscInt xs,xm,i,mx; PetscScalar hx; PetscScalar, pointer :: xx(:)
+      call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+      call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       hx     = 1.d0/(mx-1)
       call VecGetArrayF90(x,xx,ierr)
       do i=xs,xs+xm-1
@@ -36,10 +36,10 @@
       end
       subroutine ComputeMatrix(da,J,ierr)
 #include "finclude/petscdef.h"
-      use petscda
-      Mat J; DA da; PetscErrorCode ierr; PetscInt xs,xm,i,mx; PetscScalar hx
-      call DAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
-      call DAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+      use petscdm
+      Mat J; DM da; PetscErrorCode ierr; PetscInt xs,xm,i,mx; PetscScalar hx
+      call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+      call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       hx     = 1.d0/(mx-1)
       do i=xs,xs+xm-1
         if ((i .eq. 0) .or. (i .eq. mx-1)) then

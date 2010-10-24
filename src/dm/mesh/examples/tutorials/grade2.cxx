@@ -75,7 +75,7 @@ static char help[] = "This example uses a Grade 2 Fluid model on a journal beari
 
 // ---------------------------------------------------------------------------------------------------------------------
 //  Includes and Namespace
-#include <petscda.h>
+#include <petscdm.h>
 #include <petscmesh.h>
 #include <petscdmmg.h>
 

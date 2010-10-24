@@ -14,15 +14,15 @@ with boundary conditions
 
 static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscksp.h"
 #include "petscdmmg.h"
 
 extern PetscErrorCode ComputeMatrix(DMMG,Mat,Mat);
 extern PetscErrorCode ComputeRHS(DMMG,Vec, PetscBool );
-extern PetscErrorCode Solve_FFT(DA, Vec, Vec);
-extern PetscErrorCode CalculateXYStdDev(DA, Vec, Vec *);
-extern PetscErrorCode VecViewCenterSingle(DA da, Vec v, PetscViewer viewer, const char name[], PetscInt i, PetscInt j);
+extern PetscErrorCode Solve_FFT(DM, Vec, Vec);
+extern PetscErrorCode CalculateXYStdDev(DM, Vec, Vec *);
+extern PetscErrorCode VecViewCenterSingle(DM da, Vec v, PetscViewer viewer, const char name[], PetscInt i, PetscInt j);
 
 PetscReal L[3] = {1.0, 1.0, 1.0};
 
@@ -33,15 +33,15 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   DMMG           *dmmg;
   PetscReal      norm, normTotal;
-  DA             da;
+  DM             da;
   Vec            phi, phiRhs;
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
 
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
-  ierr = DACreate3d(PETSC_COMM_WORLD,DA_XYZPERIODIC,DA_STENCIL_STAR,-3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_XYZPERIODIC,DMDA_STENCIL_STAR,-3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
 
   ierr = DMMGSetKSP(dmmg,(PetscErrorCode (*)(DMMG, Vec)) ComputeRHS,ComputeMatrix);CHKERRQ(ierr);
   //ierr = DMMGSetNullSpace(dmmg, PETSC_TRUE, 0, PETSC_NULL);CHKERRQ(ierr);
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(DMMGGetx(dmmg), &phi);CHKERRQ(ierr);
   ierr = VecDuplicate(DMMGGetx(dmmg), &phiRhs);CHKERRQ(ierr);
   ierr = ComputeRHS(dmmg[0], phiRhs, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = Solve_FFT(DMMGGetDA(dmmg), phiRhs, phi);CHKERRQ(ierr);
+  ierr = Solve_FFT(DMMGGetDM(dmmg), phiRhs, phi);CHKERRQ(ierr);
 
   Vec       stddev;
   PetscReal s;
@@ -126,7 +126,7 @@ int main(int argc,char **argv)
 #define __FUNCT__ "ComputeRHS"
 PetscErrorCode ComputeRHS(DMMG dmmg,Vec b, PetscBool  withBC= PETSC_TRUE)
 {
-  DA             da = (DA) dmmg->dm;
+  DM             da =  dmmg->dm;
   PetscInt       bathIndex;
   PetscScalar ***a;
   PetscScalar    sc;
@@ -134,13 +134,13 @@ PetscErrorCode ComputeRHS(DMMG dmmg,Vec b, PetscBool  withBC= PETSC_TRUE)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   sc   = 1.0/((mx-1)*(my-1)*(mz-1));
   //wallPos = (mz-1)/20;
   wallPos = -1;
   bathIndex = mz/2;
-  ierr = DAVecGetArray(da, b, &a);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da, b, &a);CHKERRQ(ierr);
   for(k = zs; k < zs+zm; ++k) {
     for(j = ys; j < ys+ym; ++j) {
       for(i = xs; i < xs+xm; ++i) {
@@ -156,7 +156,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg,Vec b, PetscBool  withBC= PETSC_TRUE)
       }
     }
   }
-  ierr = DAVecRestoreArray(da, b, &a);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da, b, &a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
     
@@ -164,19 +164,19 @@ PetscErrorCode ComputeRHS(DMMG dmmg,Vec b, PetscBool  withBC= PETSC_TRUE)
 #define __FUNCT__ "ComputeMatrix"
 PetscErrorCode ComputeMatrix(DMMG dmmg,Mat jac,Mat B)
 {
-  DA             da = (DA)dmmg->dm;
+  DM             da = dmmg->dm;
   PetscInt       bathIndex;
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
   PetscScalar    v[7],Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
   MatStencil     row,col[7];
 
-  ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);  
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   //Hx = L[0] / (PetscReal)(mx-1); Hy = L[1] / (PetscReal)(my-1); Hz = L[2] / (PetscReal)(mz-1);
   //HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
   HxHydHz = 1.0/PetscSqr(Hz); HxHzdHy = 1.0/PetscSqr(Hy); HyHzdHx = 1.0/PetscSqr(Hx);
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   bathIndex = mz/2;
   PetscFunctionBegin;
   for (k=zs; k<zs+zm; k++){
@@ -207,7 +207,7 @@ PetscErrorCode ComputeMatrix(DMMG dmmg,Mat jac,Mat B)
 
 #undef __FUNCT__
 #define __FUNCT__ "Solve_FFT"
-PetscErrorCode Solve_FFT(DA da, Vec rhs, Vec phi)
+PetscErrorCode Solve_FFT(DM da, Vec rhs, Vec phi)
 {
   PetscReal      h[3];
   PetscInt       dim[3];
@@ -220,20 +220,20 @@ PetscErrorCode Solve_FFT(DA da, Vec rhs, Vec phi)
   PetscErrorCode ierr;
 	
   PetscFunctionBegin;
-  ierr = DAGetInfo(da, 0, &M, &N, &P, 0, 0, 0, 0, 0, 0, 0);CHKERRQ(ierr);
-  ierr = DAGetInfo(da, 0, &dim[2], &dim[1], &dim[0], 0, 0, 0, 0, 0, 0, 0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, 0, &M, &N, &P, 0, 0, 0, 0, 0, 0, 0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, 0, &dim[2], &dim[1], &dim[0], 0, 0, 0, 0, 0, 0, 0);CHKERRQ(ierr);
   ierr = MatCreateSeqFFTW(PETSC_COMM_WORLD, 3, dim, &F);CHKERRQ(ierr);
-  ierr = DAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm);CHKERRQ(ierr);
   h[0] = L[0]/(M - 1);
   h[1] = L[1]/(N - 1);
   h[2] = L[2]/(P - 1);
   scale = 1.0/((PetscReal) M*N*P);
   sc    = (M-1)*(N-1)*(P-1);
-  ierr = DAGetGlobalVector(da, &rhsHat);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &rhsHat);CHKERRQ(ierr);
   ierr = MatMult(F, rhs, rhsHat);CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da, &phiHat);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da, rhsHat, &rhsHatArray);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da, phiHat, &phiHatArray);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &phiHat);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da, rhsHat, &rhsHatArray);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da, phiHat, &phiHatArray);CHKERRQ(ierr);
   for(PetscInt k = zs; k < zs+zm; ++k) {
     PetscReal kz = k <= P/2 ? 2.0*M_PI*k/(P) : -2.0*M_PI*(P-k)/(P);
 
@@ -264,11 +264,11 @@ PetscErrorCode Solve_FFT(DA da, Vec rhs, Vec phi)
       }
     }
   }
-  ierr = DAVecRestoreArray(da, phiHat, &phiHatArray);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da, phiHat, &phiHatArray);CHKERRQ(ierr);
   ierr = MatMultTranspose(F, phiHat, phi);CHKERRQ(ierr);
   ierr = VecScale(phi, scale);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da, &phiHat);CHKERRQ(ierr);
-  ierr = DARestoreGlobalVector(da, &rhsHat);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da, &phiHat);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da, &rhsHat);CHKERRQ(ierr);
   ierr = MatDestroy(F);CHKERRQ(ierr);
 
   // Force potential in the bath to be 0
@@ -276,17 +276,17 @@ PetscErrorCode Solve_FFT(DA da, Vec rhs, Vec phi)
   PetscScalar ***phiArray;
   PetscScalar    bathPotential;
 
-  ierr = DAVecGetArray(da, phi, &phiArray);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da, phi, &phiArray);CHKERRQ(ierr);
   bathPotential = phiArray[bathIndex[2]][bathIndex[1]][bathIndex[0]];
-  ierr = DAVecRestoreArray(da, phi, &phiArray);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da, phi, &phiArray);CHKERRQ(ierr);
   ierr = VecShift(phi, -bathPotential);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "CalculateXYStdDev"
-PetscErrorCode CalculateXYStdDev(DA da, Vec v, Vec *std) {
-  DALocalInfo    info;
+PetscErrorCode CalculateXYStdDev(DM da, Vec v, Vec *std) {
+  DMDALocalInfo    info;
   MPI_Comm       comm;
   PetscScalar ***a;
   PetscScalar   *r;
@@ -294,8 +294,8 @@ PetscErrorCode CalculateXYStdDev(DA da, Vec v, Vec *std) {
   
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da, &info);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da, v, &a);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da, &info);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da, v, &a);CHKERRQ(ierr);
     ierr = VecCreate(comm, std);CHKERRQ(ierr);
     ierr = VecSetSizes(*std, info.zm - info.zs, info.mz);CHKERRQ(ierr);
     ierr = VecSetFromOptions(*std);CHKERRQ(ierr);
@@ -317,15 +317,15 @@ PetscErrorCode CalculateXYStdDev(DA da, Vec v, Vec *std) {
       r[k] = sqrt(var);
 	}
     ierr = VecRestoreArray(*std, &r);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da, v, &a);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da, v, &a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "VecViewCenterSingle"
-PetscErrorCode VecViewCenterSingle(DA da, Vec v, PetscViewer viewer, const char name[], PetscInt i, PetscInt j)
+PetscErrorCode VecViewCenterSingle(DM da, Vec v, PetscViewer viewer, const char name[], PetscInt i, PetscInt j)
 {
-  DALocalInfo    info;
+  DMDALocalInfo    info;
   MPI_Comm       comm;
   Vec            c;
   PetscScalar ***a;
@@ -343,16 +343,16 @@ PetscErrorCode VecViewCenterSingle(DA da, Vec v, PetscViewer viewer, const char 
       ierr = PetscPrintf(comm, "Viewing %s[%d,%d]\n", name, i, j);
     }
   }
-  ierr = DAGetLocalInfo(da, &info);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da, &info);CHKERRQ(ierr);
   ierr = VecCreate(comm, &c);CHKERRQ(ierr);
   ierr = VecSetSizes(c, info.zm - info.zs, info.mz);CHKERRQ(ierr);
   ierr = VecSetFromOptions(c);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da, v, &a);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da, v, &a);CHKERRQ(ierr);
   ierr = VecGetArray(c, &b);CHKERRQ(ierr);
   for(PetscInt k = 0, i = info.mx/2, j = info.my/2; k < info.mz; ++k) {
     b[k] = a[k][j][i];
   }
-  ierr = DAVecRestoreArray(da, v, &a);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da, v, &a);CHKERRQ(ierr);
   ierr = VecRestoreArray(c, &b);CHKERRQ(ierr);
   ierr = VecView(c, viewer);
   ierr = VecDestroy(c);

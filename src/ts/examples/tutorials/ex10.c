@@ -12,7 +12,7 @@ static const char help[] = "1D nonequilibrium radiation diffusion with Saha ioni
 */
 
 #include "petscts.h"
-#include "petscda.h"
+#include "petscdm.h"
 
 typedef enum {BC_DIRICHLET,BC_NEUMANN,BC_ROBIN} BCType;
 static const char *const BCTypes[] = {"DIRICHLET","NEUMANN","ROBIN","BCType","BC_",0};
@@ -37,7 +37,7 @@ typedef struct _n_RD *RD;
 
 struct _n_RD {
   void           (*MaterialEnergy)(RD,const RDNode*,PetscScalar*,RDNode*);
-  DA             da;
+  DM             da;
   PetscBool      monitor_residual;
   DiscretizationType discretization;
   QuadratureType quadrature;
@@ -68,7 +68,7 @@ static PetscErrorCode RDDestroy(RD rd)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DADestroy(rd->da);CHKERRQ(ierr);
+  ierr = DMDestroy(rd->da);CHKERRQ(ierr);
   ierr = PetscFree(rd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -177,23 +177,23 @@ static void RDDiffusionCoefficient(RD rd,PetscBool  limit,RDNode *n,RDNode *nx,P
 static PetscErrorCode RDStateView(RD rd,Vec X,Vec Xdot,Vec F)
 {
   PetscErrorCode ierr;
-  DALocalInfo info;
+  DMDALocalInfo info;
   PetscInt i;
   RDNode *x,*xdot,*f;
   MPI_Comm comm = ((PetscObject)rd->da)->comm;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
-  ierr = DAVecGetArray(rd->da,X,&x);CHKERRQ(ierr);
-  ierr = DAVecGetArray(rd->da,Xdot,&xdot);CHKERRQ(ierr);
-  ierr = DAVecGetArray(rd->da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(rd->da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(rd->da,Xdot,&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(rd->da,F,&f);CHKERRQ(ierr);
   for (i=info.xs; i<info.xs+info.xm; i++) {
     ierr = PetscSynchronizedPrintf(comm,"x[%D] (%10.2G,%10.2G) (%10.2G,%10.2G) (%10.2G,%10.2G)\n",i,PetscRealPart(x[i].E),PetscRealPart(x[i].T),
                                    PetscRealPart(xdot[i].E),PetscRealPart(xdot[i].T), PetscRealPart(f[i].E),PetscRealPart(f[i].T));CHKERRQ(ierr);
   }
-  ierr = DAVecRestoreArray(rd->da,X,&x);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(rd->da,Xdot,&xdot);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(rd->da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(rd->da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(rd->da,Xdot,&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(rd->da,F,&f);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -262,14 +262,14 @@ static PetscErrorCode RDGetLocalArrays(RD rd,TS ts,Vec X,Vec Xdot,PetscReal *The
   PetscBool  istheta;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalVector(rd->da,X0loc);CHKERRQ(ierr);
-  ierr = DAGetLocalVector(rd->da,Xloc);CHKERRQ(ierr);
-  ierr = DAGetLocalVector(rd->da,Xloc_t);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(rd->da,X0loc);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(rd->da,Xloc);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(rd->da,Xloc_t);CHKERRQ(ierr);
 
-  ierr = DAGlobalToLocalBegin(rd->da,X,INSERT_VALUES,*Xloc);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(rd->da,X,INSERT_VALUES,*Xloc);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(rd->da,Xdot,INSERT_VALUES,*Xloc_t);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(rd->da,Xdot,INSERT_VALUES,*Xloc_t);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(rd->da,X,INSERT_VALUES,*Xloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(rd->da,X,INSERT_VALUES,*Xloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(rd->da,Xdot,INSERT_VALUES,*Xloc_t);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(rd->da,Xdot,INSERT_VALUES,*Xloc_t);CHKERRQ(ierr);
 
   /*
     The following is a hack to subvert TSTHETA which is like an implicit midpoint method to behave more like a trapezoid
@@ -288,9 +288,9 @@ static PetscErrorCode RDGetLocalArrays(RD rd,TS ts,Vec X,Vec Xdot,PetscReal *The
     ierr = VecWAXPY(*Xloc,*dt,*Xloc_t,*X0loc);CHKERRQ(ierr);      /* move the abscissa to the end of the step */
   }
 
-  ierr = DAVecGetArray(rd->da,*X0loc,x0);CHKERRQ(ierr);
-  ierr = DAVecGetArray(rd->da,*Xloc,x);CHKERRQ(ierr);
-  ierr = DAVecGetArray(rd->da,*Xloc_t,xdot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(rd->da,*X0loc,x0);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(rd->da,*Xloc,x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(rd->da,*Xloc_t,xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -301,12 +301,12 @@ static PetscErrorCode RDRestoreLocalArrays(RD rd,Vec *X0loc,RDNode **x0,Vec *Xlo
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DAVecRestoreArray(rd->da,*X0loc,x0);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(rd->da,*Xloc,x);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(rd->da,*Xloc_t,xdot);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(rd->da,X0loc);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(rd->da,Xloc);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(rd->da,Xloc_t);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(rd->da,*X0loc,x0);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(rd->da,*Xloc,x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(rd->da,*Xloc_t,xdot);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(rd->da,X0loc);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(rd->da,Xloc);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(rd->da,Xloc_t);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -348,14 +348,14 @@ static PetscErrorCode RDIFunction_FD(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
   RDNode         *x,*x0,*xdot,*f;
   Vec            X0loc,Xloc,Xloc_t;
   PetscReal      hx,Theta,dt;
-  DALocalInfo    info;
+  DMDALocalInfo    info;
   PetscInt       i;
 
   PetscFunctionBegin;
   RDCheckDomain(rd,ts,X);
   ierr = RDGetLocalArrays(rd,ts,X,Xdot,&Theta,&dt,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
-  ierr = DAVecGetArray(rd->da,F,&f);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(rd->da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
   VecZeroEntries(F);
 
   hx = rd->L / (info.mx-1);
@@ -403,7 +403,7 @@ static PetscErrorCode RDIFunction_FD(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
     }
   }
   ierr = RDRestoreLocalArrays(rd,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(rd->da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(rd->da,F,&f);CHKERRQ(ierr);
   if (rd->monitor_residual) {ierr = RDStateView(rd,X,Xdot,F);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -417,13 +417,13 @@ static PetscErrorCode RDIJacobian_FD(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
   RDNode         *x,*x0,*xdot;
   Vec            X0loc,Xloc,Xloc_t;
   PetscReal      hx,Theta,dt;
-  DALocalInfo    info;
+  DMDALocalInfo    info;
   PetscInt       i;
 
   PetscFunctionBegin;
   RDCheckDomain(rd,ts,X);
   ierr = RDGetLocalArrays(rd,ts,X,Xdot,&Theta,&dt,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
   hx = rd->L / (info.mx-1);
   ierr = MatZeroEntries(*B);CHKERRQ(ierr);
 
@@ -594,17 +594,17 @@ static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
   RDNode         *x,*x0,*xdot,*f;
   Vec            X0loc,Xloc,Xloc_t,Floc;
   PetscReal      hx,Theta,dt,weight[5],interp[5][2],deriv[5][2];
-  DALocalInfo    info;
+  DMDALocalInfo    info;
   PetscInt       i,j,q,nq;
 
   PetscFunctionBegin;
   RDCheckDomain(rd,ts,X);
   ierr = RDGetLocalArrays(rd,ts,X,Xdot,&Theta,&dt,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
 
-  ierr = DAGetLocalVector(rd->da,&Floc);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(rd->da,&Floc);CHKERRQ(ierr);
   ierr = VecZeroEntries(Floc);CHKERRQ(ierr);
-  ierr = DAVecGetArray(rd->da,Floc,&f);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(rd->da,Floc,&f);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
 
   /* Set up shape functions and quadrature for elements (assumes a uniform grid) */
   hx = rd->L / (info.mx-1);
@@ -661,11 +661,11 @@ static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
   }
 
   ierr = RDRestoreLocalArrays(rd,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(rd->da,Floc,&f);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(rd->da,Floc,&f);CHKERRQ(ierr);
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
-  ierr = DALocalToGlobalBegin(rd->da,Floc,F);CHKERRQ(ierr);
-  ierr = DALocalToGlobalEnd(rd->da,Floc,F);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(rd->da,&Floc);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(rd->da,Floc,ADD_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(rd->da,Floc,ADD_VALUES,F);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(rd->da,&Floc);CHKERRQ(ierr);
 
   if (rd->monitor_residual) {ierr = RDStateView(rd,X,Xdot,F);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -680,14 +680,14 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
   RDNode         *x,*x0,*xdot;
   Vec            X0loc,Xloc,Xloc_t;
   PetscReal      hx,Theta,dt,weight[5],interp[5][2],deriv[5][2];
-  DALocalInfo    info;
+  DMDALocalInfo    info;
   PetscInt       i,j,k,q,nq;
   PetscScalar    K[4][4];
 
   PetscFunctionBegin;
   RDCheckDomain(rd,ts,X);
   ierr = RDGetLocalArrays(rd,ts,X,Xdot,&Theta,&dt,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
   hx = rd->L / (info.mx-1);
   ierr = RDGetQuadrature(rd,hx,&nq,weight,interp,deriv);CHKERRQ(ierr);
   ierr = MatZeroEntries(*B);CHKERRQ(ierr);
@@ -753,14 +753,14 @@ static PetscScalar RDRadiationTemperature(RD rd,PetscScalar E)
 #define __FUNCT__ "RDInitialState"
 static PetscErrorCode RDInitialState(RD rd,Vec X)
 {
-  DALocalInfo info;
+  DMDALocalInfo info;
   PetscInt i;
   RDNode *x;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
-  ierr = DAVecGetArray(rd->da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(rd->da,X,&x);CHKERRQ(ierr);
   for (i=info.xs; i<info.xs+info.xm; i++) {
     PetscReal coord = i*rd->L/(info.mx-1);
     switch (rd->initial) {
@@ -779,7 +779,7 @@ static PetscErrorCode RDInitialState(RD rd,Vec X)
     default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No initial state %D",rd->initial);
     }
   }
-  ierr = DAVecRestoreArray(rd->da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(rd->da,X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -793,20 +793,20 @@ static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
   PetscScalar    *y;
   PetscInt       i,m,M;
   const PetscInt *lx;
-  DA             da;
+  DM             da;
 
   PetscFunctionBegin;
   /*
-    Create a DA (one dof per node, zero stencil width, same layout) to hold Trad
-    (radiation temperature).  It is not necessary to create a DA for this, but this way
+    Create a DMDA (one dof per node, zero stencil width, same layout) to hold Trad
+    (radiation temperature).  It is not necessary to create a DMDA for this, but this way
     output and visualization will have meaningful variable names and correct scales.
   */
-  ierr = DAGetInfo(rd->da,0, &M,0,0, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
-  ierr = DAGetOwnershipRanges(rd->da,&lx,0,0);CHKERRQ(ierr);
-  ierr = DACreate1d(((PetscObject)rd->da)->comm,DA_NONPERIODIC,M,1,0,lx,&da);CHKERRQ(ierr);
-  ierr = DASetUniformCoordinates(da,0.,rd->L,0.,0.,0.,0.);CHKERRQ(ierr);
-  ierr = DASetFieldName(da,0,"T_rad");CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&Y);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(rd->da,0, &M,0,0, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetOwnershipRanges(rd->da,&lx,0,0);CHKERRQ(ierr);
+  ierr = DMDACreate1d(((PetscObject)rd->da)->comm,DMDA_NONPERIODIC,M,1,0,lx,&da);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(da,0.,rd->L,0.,0.,0.,0.);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,0,"T_rad");CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&Y);CHKERRQ(ierr);
 
   /* Compute the radiation temperature from the solution at each node */
   ierr = VecGetLocalSize(Y,&m);CHKERRQ(ierr);
@@ -820,7 +820,7 @@ static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
 
   ierr = VecView(Y,viewer);CHKERRQ(ierr);
   ierr = VecDestroy(Y);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1015,10 +1015,10 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
     break;
   }
 
-  ierr = DACreate1d(comm,DA_NONPERIODIC,-20,sizeof(RDNode)/sizeof(PetscScalar),1,PETSC_NULL,&rd->da);CHKERRQ(ierr);
-  ierr = DASetFieldName(rd->da,0,"E");CHKERRQ(ierr);
-  ierr = DASetFieldName(rd->da,1,"T");CHKERRQ(ierr);
-  ierr = DASetUniformCoordinates(rd->da,0.,1.,0.,0.,0.,0.);CHKERRQ(ierr);
+  ierr = DMDACreate1d(comm,DMDA_NONPERIODIC,-20,sizeof(RDNode)/sizeof(PetscScalar),1,PETSC_NULL,&rd->da);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(rd->da,0,"E");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(rd->da,1,"T");CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(rd->da,0.,1.,0.,0.,0.,0.);CHKERRQ(ierr);
 
   *inrd = rd;
   PetscFunctionReturn(0);
@@ -1040,8 +1040,8 @@ int main(int argc, char *argv[])
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = RDCreate(PETSC_COMM_WORLD,&rd);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(rd->da,&X);CHKERRQ(ierr);
-  ierr = DAGetMatrix(rd->da,MATAIJ,&B);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(rd->da,&X);CHKERRQ(ierr);
+  ierr = DMGetMatrix(rd->da,MATAIJ,&B);CHKERRQ(ierr);
   ierr = RDInitialState(rd,X);CHKERRQ(ierr);
 
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
@@ -1071,7 +1071,7 @@ int main(int argc, char *argv[])
     break;
   case JACOBIAN_FD_COLORING: {
     ISColoring     iscoloring;
-    ierr = DAGetColoring(rd->da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    ierr = DMGetColoring(rd->da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(B,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);

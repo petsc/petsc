@@ -38,7 +38,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   indices  = to->indices;
   sstarts  = to->starts;
 #if defined(PETSC_HAVE_CUDA)
-  if (xin->valid_GPU_array == PETSC_CUDA_GPU) {
+  if ((xin->valid_GPU_array == PETSC_CUDA_GPU) && !(to->local.n)) {
     if (!ctx->spptr) {
       PetscInt k,*tindices,n = sstarts[nsends],*sindices;
       ierr = PetscMalloc(n*sizeof(PetscInt),&tindices);CHKERRQ(ierr);
@@ -56,7 +56,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
     }
     ierr = VecCUDACopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
     xv   = *(PetscScalar**)xin->data;
-    ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
+    /*ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);*/
   } else {
     ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
   }

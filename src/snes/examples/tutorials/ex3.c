@@ -15,7 +15,7 @@ The command line options include:\n\
 T*/
 
 /* 
-   Include "petscdraw.h" so that we can use distributed arrays (DAs).
+   Include "petscdraw.h" so that we can use distributed arrays (DMDAs).
    Include "petscdraw.h" so that we can use PETSc drawing routines.
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
@@ -26,7 +26,7 @@ T*/
      petscksp.h   - linear solvers
 */
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscsnes.h"
 
 /* 
@@ -50,7 +50,7 @@ PetscErrorCode PostCheck(SNES,Vec,Vec,Vec,void*,PetscBool  *,PetscBool  *);
    User-defined application context
 */
 typedef struct {
-   DA          da;     /* distributed array */
+   DM          da;     /* distributed array */
    Vec         F;      /* right-hand-side of PDE */
    PetscMPIInt rank;   /* rank of processor */
    PetscMPIInt size;   /* size of communicator */
@@ -108,15 +108,15 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /*
-     Create distributed array (DA) to manage parallel grid and vectors
+     Create distributed array (DMDA) to manage parallel grid and vectors
   */
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,1,1,PETSC_NULL,&ctx.da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,N,1,1,PETSC_NULL,&ctx.da);CHKERRQ(ierr);
 
   /*
-     Extract global and local vectors from DA; then duplicate for remaining
+     Extract global and local vectors from DMDA; then duplicate for remaining
      vectors that are the same types
   */
-  ierr = DACreateGlobalVector(ctx.da,&x);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(ctx.da,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&F);CHKERRQ(ierr); ctx.F = F;
   ierr = VecDuplicate(x,&U);CHKERRQ(ierr); 
@@ -205,16 +205,16 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /*
-     Get local grid boundaries (for 1-dimensional DA):
+     Get local grid boundaries (for 1-dimensional DMDA):
        xs, xm - starting grid index, width of local grid (no ghost points)
   */
-  ierr = DAGetCorners(ctx.da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(ctx.da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Get pointers to vector data
   */
-  ierr = DAVecGetArray(ctx.da,F,&FF);CHKERRQ(ierr);
-  ierr = DAVecGetArray(ctx.da,U,&UU);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(ctx.da,F,&FF);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(ctx.da,U,&UU);CHKERRQ(ierr);
 
   /*
      Compute local vector entries
@@ -229,8 +229,8 @@ int main(int argc,char **argv)
   /*
      Restore vectors
   */
-  ierr = DAVecRestoreArray(ctx.da,F,&FF);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(ctx.da,U,&UU);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(ctx.da,F,&FF);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(ctx.da,U,&UU);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
@@ -270,7 +270,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(F);CHKERRQ(ierr);
   ierr = MatDestroy(J);CHKERRQ(ierr);
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
-  ierr = DADestroy(ctx.da);CHKERRQ(ierr);
+  ierr = DMDestroy(ctx.da);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   PetscFunctionReturn(0);
@@ -314,39 +314,39 @@ PetscErrorCode FormInitialGuess(Vec x)
 PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   ApplicationCtx *user = (ApplicationCtx*) ctx;
-  DA             da = user->da;
+  DM             da = user->da;
   PetscScalar    *xx,*ff,*FF,d;
   PetscErrorCode ierr;
   PetscInt       i,M,xs,xm;
   Vec            xlocal;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalVector(da,&xlocal);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&xlocal);CHKERRQ(ierr);
   /*
      Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+        DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
      By placing code between these two statements, computations can
      be done while messages are in transition.
   */
-  ierr = DAGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
 
   /*
      Get pointers to vector data.
        - The vector xlocal includes ghost point; the vectors x and f do
          NOT include ghost points.
-       - Using DAVecGetArray() allows accessing the values using global ordering
+       - Using DMDAVecGetArray() allows accessing the values using global ordering
   */
-  ierr = DAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,f,&ff);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,user->F,&FF);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,f,&ff);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,user->F,&FF);CHKERRQ(ierr);
 
   /*
-     Get local grid boundaries (for 1-dimensional DA):
+     Get local grid boundaries (for 1-dimensional DMDA):
        xs, xm  - starting grid index, width of local grid (no ghost points)
   */
-  ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetInfo(da,PETSC_NULL,&M,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_NULL,&M,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,
                    PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   /*
@@ -374,10 +374,10 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   /*
      Restore vectors
   */
-  ierr = DAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,f,&ff);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,user->F,&FF);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,f,&ff);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,user->F,&FF);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
@@ -402,19 +402,19 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,vo
   PetscScalar    *xx,d,A[3];
   PetscErrorCode ierr;           
   PetscInt       i,j[3],M,xs,xm;
-  DA             da = user->da;
+  DM             da = user->da;
 
   PetscFunctionBegin;
   /*
      Get pointer to vector data
   */
-  ierr = DAVecGetArray(da,x,&xx);CHKERRQ(ierr);
-  ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,x,&xx);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   /*
     Get range of locally owned matrix
   */
-  ierr = DAGetInfo(da,PETSC_NULL,&M,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+  ierr = DMDAGetInfo(da,PETSC_NULL,&M,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,
                    PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   /*
@@ -455,7 +455,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,vo
   */
 
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,x,&xx);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,x,&xx);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   *flag = SAME_NONZERO_PATTERN;
@@ -545,7 +545,7 @@ PetscErrorCode PostCheck(SNES snes,Vec xcurrent,Vec y,Vec x,void *ctx,PetscBool 
   ApplicationCtx *user = check->user;
   PetscScalar    *xa,*xa_last,tmp;
   PetscReal      rdiff;
-  DA             da;
+  DM             da;
 
   PetscFunctionBegin;
   *changed_x = PETSC_FALSE;
@@ -558,9 +558,9 @@ PetscErrorCode PostCheck(SNES snes,Vec xcurrent,Vec y,Vec x,void *ctx,PetscBool 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Checking candidate step at iteration %D with tolerance %G\n",iter,check->tolerance);CHKERRQ(ierr);
 
     /* Access local array data */
-    ierr = DAVecGetArray(da,check->last_step,&xa_last);CHKERRQ(ierr);
-    ierr = DAVecGetArray(da,x,&xa);CHKERRQ(ierr);
-    ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(da,check->last_step,&xa_last);CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(da,x,&xa);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
     /* 
        If we fail the user-defined check for validity of the candidate iterate,
@@ -578,8 +578,8 @@ PetscErrorCode PostCheck(SNES snes,Vec xcurrent,Vec y,Vec x,void *ctx,PetscBool 
                                 i,PetscAbsScalar(tmp),PetscAbsScalar(xa_last[i]),rdiff,PetscAbsScalar(xa[i]));CHKERRQ(ierr);
       }
     }
-    ierr = DAVecRestoreArray(da,check->last_step,&xa_last);CHKERRQ(ierr);
-    ierr = DAVecRestoreArray(da,x,&xa);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(da,check->last_step,&xa_last);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(da,x,&xa);CHKERRQ(ierr);
   }
   ierr = VecCopy(x,check->last_step);CHKERRQ(ierr);
   PetscFunctionReturn(0);

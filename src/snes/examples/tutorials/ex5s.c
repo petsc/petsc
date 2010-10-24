@@ -189,7 +189,7 @@ int main(int argc,char **argv)
      then use a simple loop for the interior nodes.
        Note that for this code we use the "natural" number of the nodes on the 
      grid (since that is what is good for the user provided function). In the 
-     DA examples we must use the DA numbering where each processor is assigned a
+     DMDA examples we must use the DMDA numbering where each processor is assigned a
      chunk of data.
   */
   ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,rend-rstart,rend-rstart,N,

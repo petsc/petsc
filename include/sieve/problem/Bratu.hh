@@ -112,18 +112,18 @@ namespace ALE {
 
         PetscFunctionBegin;
         if (structured()) {
-          DA       da;
+          DM       da;
           PetscInt dof = 1;
           PetscInt pd  = PETSC_DECIDE;
 
           if (dim() == 2) {
-            ierr = DACreate2d(comm(), DA_NONPERIODIC, DA_STENCIL_BOX, -3, -3, pd, pd, dof, 1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
+            ierr = DMDACreate2d(comm(), DMDA_NONPERIODIC, DMDA_STENCIL_BOX, -3, -3, pd, pd, dof, 1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
           } else if (dim() == 3) {
-            ierr = DACreate3d(comm(), DA_NONPERIODIC, DA_STENCIL_BOX, -3, -3, -3, pd, pd, pd, dof, 1, PETSC_NULL, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
+            ierr = DMDACreate3d(comm(), DMDA_NONPERIODIC, DMDA_STENCIL_BOX, -3, -3, -3, pd, pd, pd, dof, 1, PETSC_NULL, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
           } else {
             SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim());
           }
-          ierr = DASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
+          ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
           this->_dm = (DM) da;
           PetscFunctionReturn(0);
         }
@@ -211,7 +211,7 @@ namespace ALE {
 
         PetscFunctionBegin;
         if (structured()) {
-          ierr = DADestroy((DA) this->_dm);CHKERRQ(ierr);
+          ierr = DMDestroy( this->_dm);CHKERRQ(ierr);
         } else {
           ierr = MeshDestroy((::Mesh) this->_dm);CHKERRQ(ierr);
         }
@@ -292,28 +292,28 @@ namespace ALE {
 
         PetscFunctionBegin;
         if (structured()) {
-          DA            da = (DA) this->_dm;
+          DM            da =  this->_dm;
           PetscScalar (*func)(const double *) = this->_options.func;
           Vec           X, U;
 
-          ierr = DAGetGlobalVector(da, &X);CHKERRQ(ierr);
-          ierr = DACreateGlobalVector(da, &this->_options.exactSol.vec);CHKERRQ(ierr);
+          ierr = DMGetGlobalVector(da, &X);CHKERRQ(ierr);
+          ierr = DMCreateGlobalVector(da, &this->_options.exactSol.vec);CHKERRQ(ierr);
           this->_options.func = this->_options.exactFunc;
           U                   = exactSolution().vec;
           if (dim() == 2) {
-            ierr = DAFormFunctionLocal(da, (DALocalFunction1) ALE::Problem::Functions::Function_Structured_2d, X, U, (void *) &this->_options);CHKERRQ(ierr);
+            ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) ALE::Problem::Functions::Function_Structured_2d, X, U, (void *) &this->_options);CHKERRQ(ierr);
           } else if (dim() == 3) {
-            ierr = DAFormFunctionLocal(da, (DALocalFunction1) ALE::Problem::Functions::Function_Structured_3d, X, U, (void *) &this->_options);CHKERRQ(ierr);
+            ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) ALE::Problem::Functions::Function_Structured_3d, X, U, (void *) &this->_options);CHKERRQ(ierr);
           } else {
             SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim());
           }
-          ierr = DARestoreGlobalVector(da, &X);CHKERRQ(ierr);
+          ierr = DMRestoreGlobalVector(da, &X);CHKERRQ(ierr);
           ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
           if (flag) {ierr = VecView(U, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
           ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_draw", &flag);CHKERRQ(ierr);
           if (flag) {ierr = VecView(U, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
           this->_options.func = func;
-          ierr = DACreateGlobalVector(da, &this->_options.error.vec);CHKERRQ(ierr);
+          ierr = DMCreateGlobalVector(da, &this->_options.error.vec);CHKERRQ(ierr);
         } else {
           ::Mesh mesh = (::Mesh) this->_dm;
 
@@ -407,7 +407,7 @@ namespace ALE {
           }
           ierr = DMMGSetFromOptions(this->_dmmg);CHKERRQ(ierr);
           for(int l = 0; l < DMMGGetLevels(this->_dmmg); l++) {
-            ierr = DASetUniformCoordinates((DA) (this->_dmmg)[l]->dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
+            ierr = DMDASetUniformCoordinates( (this->_dmmg)[l]->dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
           }
         } else {
           if (opAssembly() == ALE::Problem::ASSEMBLY_FULL) {
@@ -593,14 +593,14 @@ namespace ALE {
 
         PetscFunctionBegin;
         if (structured()) {
-          DA  da = (DA) this->_dm;
+          DM  da =  this->_dm;
           Vec error;
 
-          ierr = DAGetGlobalVector(da, &error);CHKERRQ(ierr);
+          ierr = DMGetGlobalVector(da, &error);CHKERRQ(ierr);
           ierr = VecCopy(sol.vec, error);CHKERRQ(ierr);
           ierr = VecAXPY(error, -1.0, exactSolution().vec);CHKERRQ(ierr);
           ierr = VecNorm(error, NORM_2, &norm);CHKERRQ(ierr);
-          ierr = DARestoreGlobalVector(da, &error);CHKERRQ(ierr);
+          ierr = DMRestoreGlobalVector(da, &error);CHKERRQ(ierr);
           ierr = PetscObjectGetName((PetscObject) sol.vec, &name);CHKERRQ(ierr);
         } else {
           ierr = this->calculateError(sol.section, &norm);CHKERRQ(ierr);
@@ -620,21 +620,21 @@ namespace ALE {
         PetscFunctionBegin;
         ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
         if (structured()) {
-          DA  da = (DA) this->_dm;
+          DM  da =  this->_dm;
           Vec residual;
 
-          ierr = DAGetGlobalVector(da, &residual);CHKERRQ(ierr);
+          ierr = DMGetGlobalVector(da, &residual);CHKERRQ(ierr);
           ierr = PetscObjectSetName((PetscObject) residual, "residual");CHKERRQ(ierr);
           if (dim() == 2) {
-            ierr = DAFormFunctionLocal(da, (DALocalFunction1) ALE::Problem::Functions::Rhs_Structured_2d_FD, sol.vec, residual, &this->_options);CHKERRQ(ierr);
+            ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) ALE::Problem::Functions::Rhs_Structured_2d_FD, sol.vec, residual, &this->_options);CHKERRQ(ierr);
           } else if (dim() == 3) {
-            ierr = DAFormFunctionLocal(da, (DALocalFunction1) ALE::Problem::Functions::Rhs_Structured_3d_FD, sol.vec, residual, &this->_options);CHKERRQ(ierr);
+            ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) ALE::Problem::Functions::Rhs_Structured_3d_FD, sol.vec, residual, &this->_options);CHKERRQ(ierr);
           } else {
             SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim());
           }
           ierr = VecNorm(residual, NORM_2, &norm);CHKERRQ(ierr);
           if (flag) {ierr = VecView(residual, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
-          ierr = DARestoreGlobalVector(da, &residual);CHKERRQ(ierr);
+          ierr = DMRestoreGlobalVector(da, &residual);CHKERRQ(ierr);
           ierr = PetscObjectGetName((PetscObject) sol.vec, &name);CHKERRQ(ierr);
         } else {
           ::Mesh      mesh = (::Mesh) this->_dm;

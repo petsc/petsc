@@ -1,7 +1,7 @@
 
 static char help[] = "Solves PDE problem from ex22.c\n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscpf.h"
 #include "petscsnes.h"
 #include "petscdmmg.h"
@@ -28,7 +28,7 @@ typedef struct {
 } UserCtx;
 
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode FormFunctionLocali(DALocalInfo*,MatStencil*,PetscScalar*,PetscScalar*,void*);
+extern PetscErrorCode FormFunctionLocali(DMDALocalInfo*,MatStencil*,PetscScalar*,PetscScalar*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -36,7 +36,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   UserCtx        user;
-  DA             da;
+  DM             da;
   DMMG           *dmmg;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
   
   /* Create a global vector from a da arrays */
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,-5,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
 
   /* create graphics windows */
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"u - state variables",-1,-1,-1,-1,&user.u_viewer);CHKERRQ(ierr);
@@ -73,7 +73,7 @@ int main(int argc,char **argv)
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(user.u_viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(user.fu_viewer);CHKERRQ(ierr);
 
@@ -84,7 +84,7 @@ int main(int argc,char **argv)
 #undef __FUNCT__  
 #define __FUNCT__ "FormFunction"
 /*
-     This local function acts on the ghosted version of U (accessed via DAGetLocalVector())
+     This local function acts on the ghosted version of U (accessed via DMGetLocalVector())
      BUT the global, nonghosted version of FU
 
 */
@@ -95,17 +95,17 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   PetscInt       xs,xm,i,N;
   PetscScalar    *u,*fu,d,h;
   Vec            vu;
-  DA             da = (DA) dmmg->dm;
+  DM             da =  dmmg->dm;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalVector(da,&vu);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,U,INSERT_VALUES,vu);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,U,INSERT_VALUES,vu);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&vu);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,vu);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,vu);CHKERRQ(ierr);
 
-  ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,vu,&u);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,FU,&fu);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,vu,&u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,FU,&fu);CHKERRQ(ierr);
   d    = N-1.0;
   h    = 1.0/d;
 
@@ -115,16 +115,16 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     else               fu[i]   = -(d*(u[i+1] - 2.0*u[i] + u[i-1]) - 2.0*h) + h*u[i]*u[i];
   } 
 
-  ierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,FU,&fu);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&vu);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,FU,&fu);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&vu);CHKERRQ(ierr);
   ierr = PetscLogFlops(9.0*N);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "FormFunctionLocali"
-PetscErrorCode FormFunctionLocali(DALocalInfo *info,MatStencil *pt,PetscScalar *u,PetscScalar *fu,void* dummy)
+PetscErrorCode FormFunctionLocali(DMDALocalInfo *info,MatStencil *pt,PetscScalar *u,PetscScalar *fu,void* dummy)
 {
   PetscInt     i,N = info->mx;
   PetscScalar  d,h;

@@ -51,7 +51,7 @@ static char help[] =
   ------------------------------------------------------------------------- */
 
 #include "petscsnes.h"
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscdmmg.h"
 
 #define VISC_CONST   0
@@ -90,8 +90,8 @@ typedef struct { /* physical and miscelaneous parameters */
 } Parameter;
 
 typedef struct { /* grid parameters */
-  DAPeriodicType periodic;
-  DAStencilType  stencil;
+  DMDAPeriodicType periodic;
+  DMDAStencilType  stencil;
   PetscInt       corner,ni,nj,jlid,jfault,inose;
   PetscInt       dof,stencil_width,mglevels;
   PassiveScalar  dx,dz;
@@ -105,7 +105,7 @@ typedef struct { /* application context */
 
 /* Callback functions (static interface) */
 extern PetscErrorCode FormInitialGuess(DMMG,Vec);
-extern PetscErrorCode FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
+extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,Field**,Field**,void*);
 
 /* Main routines */
 extern PetscErrorCode SetParams(Parameter *param, GridInfo *grid);
@@ -156,7 +156,7 @@ int main(int argc,char **argv)
   PetscInt       nits;
   PetscErrorCode ierr;
   MPI_Comm       comm;
-  DA             da;
+  DM             da;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   PetscOptionsSetValue("-file","ex30_output");
@@ -187,13 +187,13 @@ int main(int argc,char **argv)
      for principal unknowns (x) and governing residuals (f)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
   ierr = DMMGCreate(comm,grid.mglevels,user,&dmmg);CHKERRQ(ierr); 
-  ierr = DACreate2d(comm,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(comm,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),0,"x-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),1,"y-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),2,"pressure");CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),3,"temperature");CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(DMMGGetDM(dmmg),0,"x-velocity");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(DMMGGetDM(dmmg),1,"y-velocity");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(DMMGGetDM(dmmg),2,"pressure");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(DMMGGetDM(dmmg),3,"temperature");CHKERRQ(ierr);
   ierr = VecDuplicate(dmmg[0]->x, &(user->Xguess));CHKERRQ(ierr);
 #else
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -201,13 +201,13 @@ int main(int argc,char **argv)
      for principal unknowns (x) and governing residuals (f)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
   ierr = DMMGCreate(comm,grid.mglevels,&user,&dmmg);CHKERRQ(ierr); 
-  ierr = DACreate2d(comm,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(comm,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),0,"x-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),1,"y-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),2,"pressure");CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),3,"temperature");CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(DMMGGetDM(dmmg),0,"x-velocity");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(DMMGGetDM(dmmg),1,"y-velocity");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(DMMGGetDM(dmmg),2,"pressure");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(DMMGGetDM(dmmg),3,"temperature");CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
@@ -355,7 +355,7 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 #define __FUNCT__ "FormFunctionLocal"
 /*  main call-back function that computes the processor-local piece 
     of the residual */
-PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
+PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *ptr)
 /*---------------------------------------------------------------------*/
 {
   AppCtx         *user = (AppCtx*)ptr;
@@ -927,8 +927,8 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->depth         = grid->dz*(grid->nj-2);                            /* km */
   grid->inose          = 0;                                         /* gridpoints*/
   ierr = PetscOptionsGetInt(PETSC_NULL,"-inose",&(grid->inose),PETSC_NULL);CHKERRQ(ierr);
-  grid->periodic       = DA_NONPERIODIC;
-  grid->stencil        = DA_STENCIL_BOX;
+  grid->periodic       = DMDA_NONPERIODIC;
+  grid->stencil        = DMDA_STENCIL_BOX;
   grid->dof            = 4;
   grid->stencil_width  = 2;
   grid->mglevels       = 1;
@@ -1104,15 +1104,15 @@ PetscErrorCode Initialize(DMMG *dmmg)
   AppCtx         *user = (AppCtx*)dmmg[0]->user;
   Parameter      *param = user->param;
   GridInfo       *grid  = user->grid;
-  DA             da;
+  DM             da;
   PetscInt       i,j,is,js,im,jm;
   PetscErrorCode ierr;
   Field          **x;
 
   /* Get the fine grid */
-  da = (DA)(dmmg[0]->dm); 
-  ierr = DAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,((AppCtx*)dmmg[0]->user)->Xguess,(void**)&x);CHKERRQ(ierr);
+  da = (dmmg[0]->dm); 
+  ierr = DMDAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,((AppCtx*)dmmg[0]->user)->Xguess,(void**)&x);CHKERRQ(ierr);
 
   /* Compute initial guess */
   for (j=js; j<js+jm; j++) {
@@ -1141,7 +1141,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
   }
 
   /* Restore x to Xguess */
-  ierr = DAVecRestoreArray(da,((AppCtx*)dmmg[0]->user)->Xguess,(void**)&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,((AppCtx*)dmmg[0]->user)->Xguess,(void**)&x);CHKERRQ(ierr);
 
   return 0;
 } 
@@ -1237,7 +1237,7 @@ PetscErrorCode DoOutput(DMMG *dmmg, PetscInt its)
 PetscErrorCode ViscosityField(DMMG dmmg, Vec X, Vec V)
 /* ------------------------------------------------------------------- */
 {
-  DA             da    = (DA) dmmg->dm;
+  DM             da    =  dmmg->dm;
   AppCtx         *user  = (AppCtx *) dmmg->user;
   Parameter      *param = user->param;
   GridInfo       *grid  = user->grid;
@@ -1251,18 +1251,18 @@ PetscErrorCode ViscosityField(DMMG dmmg, Vec X, Vec V)
   ivt          = param->ivisc;
   param->ivisc = param->output_ivisc;
 
-  ierr = DACreateLocalVector(da, &localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da, X, INSERT_VALUES, localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da, X, INSERT_VALUES, localX);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,localX,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,V,(void**)&v);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da, &localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,localX,(void**)&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,V,(void**)&v);CHKERRQ(ierr);
 
   /* Parameters */
   dx   = grid->dx;   dz   = grid->dz;
   ilim = grid->ni-1; jlim = grid->nj-1;
 
   /* Compute real temperature, strain rate and viscosity */
-  ierr = DAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
   for (j=js; j<js+jm; j++) {
     for (i=is; i<is+im; i++) {
       T  = param->potentialT * x[j][i].T * exp( (j-0.5)*dz*param->z_scale );
@@ -1279,8 +1279,8 @@ PetscErrorCode ViscosityField(DMMG dmmg, Vec X, Vec V)
       v[j][i].T = Viscosity(TC,epsC,dz*j,param);
     }
   }
-  ierr = DAVecRestoreArray(da,V,(void**)&v);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,localX,(void**)&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,V,(void**)&v);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,localX,(void**)&x);CHKERRQ(ierr);
   param->ivisc = ivt;
   PetscFunctionReturn(0);
 }
@@ -1295,19 +1295,19 @@ PetscErrorCode StressField(DMMG *dmmg)
   AppCtx         *user = (AppCtx*)dmmg[0]->user;
   PetscInt       i,j,is,js,im,jm;
   PetscErrorCode ierr;
-  DA             da;
+  DM             da;
   Vec            locVec;
   Field          **x, **y;
 
   /* Get the fine grid of Xguess and X */
-  da = (DA)(dmmg[0]->dm); 
-  ierr = DAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,((AppCtx*)dmmg[0]->user)->Xguess,(void**)&x);CHKERRQ(ierr);
+  da = (dmmg[0]->dm); 
+  ierr = DMDAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,((AppCtx*)dmmg[0]->user)->Xguess,(void**)&x);CHKERRQ(ierr);
 
-  ierr = DACreateLocalVector(da, &locVec);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da, DMMGGetx(dmmg), INSERT_VALUES, locVec);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da, DMMGGetx(dmmg), INSERT_VALUES, locVec);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,locVec,(void**)&y);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da, &locVec);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da, DMMGGetx(dmmg), INSERT_VALUES, locVec);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da, DMMGGetx(dmmg), INSERT_VALUES, locVec);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,locVec,(void**)&y);CHKERRQ(ierr);
 
   /* Compute stress on the corner points */
   for (j=js; j<js+jm; j++) {
@@ -1321,8 +1321,8 @@ PetscErrorCode StressField(DMMG *dmmg)
   }
 
   /* Restore the fine grid of Xguess and X */
-  ierr = DAVecRestoreArray(da,((AppCtx*)dmmg[0]->user)->Xguess,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,locVec,(void**)&y);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,((AppCtx*)dmmg[0]->user)->Xguess,(void**)&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,locVec,(void**)&y);CHKERRQ(ierr);
 
   return 0;
 }

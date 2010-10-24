@@ -58,8 +58,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType 
   SectionReal      sectionX, sectionB, cellX;
   Mesh             smallMesh;
   DMMG            *smallDmmg;
-  DALocalFunction1 func;
-  DALocalFunction1 jac;
+  DMDALocalFunction1 func;
+  DMDALocalFunction1 jac;
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> sX;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> sB;

@@ -4,4 +4,3 @@ function err = nlfunction(snes,x,f,ctx)
 %
 err = 0;
 f(:) = x(:).*x(:) - 1;
-%err =  x.Copy(f);

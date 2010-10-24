@@ -25,10 +25,10 @@
 #include "finclude/petscmat.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscksp.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
       DMMG             dmmg
       PetscErrorCode   ierr
-      DA               da
+      DM               da
       external         ComputeRHS,ComputeJacobian
       Vec              x
       PetscInt i1,i3
@@ -38,12 +38,12 @@
       i3 = 3
       i1 = 1
       call DMMGCreate(PETSC_COMM_WORLD,i3,PETSC_NULL_INTEGER,dmmg,ierr)
-      call DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,            &
-     &            i3,i3,i3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,i1,i1,               &
-     &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                        &
+      call DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,                               &
+     &    DMDA_STENCIL_STAR,i3,i3,i3,PETSC_DECIDE,PETSC_DECIDE,                        &
+     &    PETSC_DECIDE,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                        &
      &                PETSC_NULL_INTEGER,da,ierr)  
       call DMMGSetDM(dmmg,da,ierr)
-      call DADestroy(da,ierr)
+      call DMDestroy(da,ierr)
 
 
       call DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian,ierr)
@@ -63,17 +63,17 @@
 
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 
       PetscErrorCode  ierr
       PetscInt mx,my,mz
       PetscScalar  h
       Vec          b
       DMMG         dmmg
-      DA           da
+      DM           da
 
-      call DMMGGetDA(dmmg,da,ierr)
-      call DAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                        &
+      call DMMGGetDM(dmmg,da,ierr)
+      call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                        &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
@@ -91,13 +91,13 @@
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 
       DMMG         dmmg
       Mat          jac,JJ
       PetscErrorCode    ierr
 
-      DA           da
+      DM           da
       PetscInt    i,j,k,mx,my,mz,xm
       PetscInt    ym,zm,xs,ys,zs,i1,i7
       PetscScalar  v(7),Hx,Hy,Hz
@@ -107,8 +107,8 @@
 
       i1 = 1
       i7 = 7
-      call DMMGGetDA(dmmg,da,ierr)
-      call DAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                       &
+      call DMMGGetDM(dmmg,da,ierr)
+      call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                       &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
@@ -120,7 +120,7 @@
       HxHydHz = Hx*Hy/Hz
       HxHzdHy = Hx*Hz/Hy
       HyHzdHx = Hy*Hz/Hx
-      call DAGetCorners(da,xs,ys,zs,xm,ym,zm,ierr)        
+      call DMDAGetCorners(da,xs,ys,zs,xm,ym,zm,ierr)        
   
       do 10,k=zs,zs+zm-1    
         do 20,j=ys,ys+ym-1

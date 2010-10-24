@@ -20,7 +20,7 @@
 
 static char help[] = "Solves 2D Poisson equation using multigrid.\n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscksp.h"
 #include "petscmg.h"
 #include "petscdmmg.h"
@@ -44,7 +44,7 @@ typedef struct {
 int main(int argc,char **argv)
 {
   DMMG           *dmmg;
-  DA             da;
+  DM             da;
   UserContext    user;
   PetscInt       l, bc, mglevels, M, N, stages[3];
   PetscReal      norm;
@@ -69,9 +69,9 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);  CHKERRQ(ierr);
   
   ierr = DMMGCreate(PETSC_COMM_WORLD,mglevels,PETSC_NULL,&dmmg); CHKERRQ(ierr);
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da); CHKERRQ(ierr);  
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da); CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);
-  ierr = DADestroy(da); CHKERRQ(ierr);
+  ierr = DMDestroy(da); CHKERRQ(ierr);
   
   /* Set user contex */
   user.uu = 1.0;
@@ -119,7 +119,7 @@ int main(int argc,char **argv)
 #define __FUNCT__ "ComputeRHS" 
 PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 {
-  DA             da = (DA)dmmg->dm;
+  DM             da = dmmg->dm;
   UserContext    *user = (UserContext *) dmmg->user;
   PetscErrorCode ierr;
   PetscInt       i, j, M, N, xm ,ym ,xs, ys;
@@ -127,21 +127,21 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   PetscScalar    **array;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0); CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0); CHKERRQ(ierr);
   uu = user->uu; tt = user->tt;
   pi = 4*atan(1.0); 
   Hx   = 1.0/(PetscReal)(M);
   Hy   = 1.0/(PetscReal)(N);
 
-  ierr = DAGetCorners(da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr); // Fine grid
+  ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr); // Fine grid
   //printf(" M N: %d %d; xm ym: %d %d; xs ys: %d %d\n",M,N,xm,ym,xs,ys);
-  ierr = DAVecGetArray(da, b, &array); CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da, b, &array); CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++){
     for(i=xs; i<xs+xm; i++){
       array[j][i] = -PetscCosScalar(uu*pi*((PetscReal)i+0.5)*Hx)*cos(tt*pi*((PetscReal)j+0.5)*Hy)*Hx*Hy;
     }
   }
-  ierr = DAVecRestoreArray(da, b, &array); CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da, b, &array); CHKERRQ(ierr);
   ierr = VecAssemblyBegin(b); CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b); CHKERRQ(ierr);
 
@@ -160,7 +160,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 #define __FUNCT__ "ComputeJacobian" 
 PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
 {
-  DA             da = (DA) dmmg->dm;
+  DM             da =  dmmg->dm;
   UserContext    *user = (UserContext *) dmmg->user;
   PetscErrorCode ierr;
   PetscInt       i, j, M, N, xm, ym, xs, ys, num, numi, numj;
@@ -168,12 +168,12 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   MatStencil     row, col[5];
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(da,0,&M,&N,0,0,0,0,0,0,0,0); CHKERRQ(ierr);  
+  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,0,0,0,0); CHKERRQ(ierr);  
   Hx    = 1.0 / (PetscReal)(M);
   Hy    = 1.0 / (PetscReal)(N);
   HxdHy = Hx/Hy;
   HydHx = Hy/Hx;
-  ierr = DAGetCorners(da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++){
     for(i=xs; i<xs+xm; i++){
       row.i = i; row.j = j;
@@ -223,7 +223,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
 #define __FUNCT__ "ComputeTrueSolution" 
 PetscErrorCode ComputeTrueSolution(DMMG *dmmg, Vec b)
 {
-  DA             da = (DA)(*dmmg)->dm;
+  DM             da = (*dmmg)->dm;
   UserContext    *user = (UserContext *) (*dmmg)->user;
   PetscErrorCode ierr;
   PetscInt       i, j, M, N, xm ,ym ,xs, ys;
@@ -231,7 +231,7 @@ PetscErrorCode ComputeTrueSolution(DMMG *dmmg, Vec b)
   PetscScalar    *array;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0); CHKERRQ(ierr); /* level_0 ! */
+  ierr = DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0); CHKERRQ(ierr); /* level_0 ! */
   //printf("ComputeTrueSolution - M N: %d %d;\n",M,N);
 
   uu = user->uu; tt = user->tt;
@@ -240,7 +240,7 @@ PetscErrorCode ComputeTrueSolution(DMMG *dmmg, Vec b)
   Hx   = 1.0/(PetscReal)(M);
   Hy   = 1.0/(PetscReal)(N);
 
-  ierr = DAGetCorners(da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
   ierr = VecGetArray(b, &array); CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++){
     for(i=xs; i<xs+xm; i++){
@@ -257,7 +257,7 @@ PetscErrorCode ComputeTrueSolution(DMMG *dmmg, Vec b)
 PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
 {
   MPI_Comm           comm;
-  DA                 da;
+  DM                 da;
   Vec                coords;
   PetscViewer        viewer;
   PetscScalar        *array, *values;
@@ -274,19 +274,19 @@ PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
 
   ierr = VecGetSize(x, &NN); CHKERRQ(ierr);
   ierr = VecGetLocalSize(x, &nn); CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) x, "DA", (PetscObject *) &da); CHKERRQ(ierr);
-  if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
+  ierr = PetscObjectQuery((PetscObject) x, "DMDA", (PetscObject *) &da); CHKERRQ(ierr);
+  if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
 
-  ierr = DAGetInfo(da, 0, &M, &N, 0,0,0,0,&dof,0,0,0); CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,&dof,0,0,0); CHKERRQ(ierr);
 
   ierr = PetscViewerASCIIPrintf(viewer, "# vtk DataFile Version 2.0\n"); CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Inhomogeneous Poisson Equation with %s boundary conditions\n", bcName); CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "ASCII\n"); CHKERRQ(ierr);
   // get coordinates of nodes 
-  ierr = DAGetCoordinates(da, &coords); CHKERRQ(ierr);
+  ierr = DMDAGetCoordinates(da, &coords); CHKERRQ(ierr);
   if (!coords) {
-    ierr = DASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0); CHKERRQ(ierr);
-    ierr = DAGetCoordinates(da, &coords); CHKERRQ(ierr);
+    ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0); CHKERRQ(ierr);
+    ierr = DMDAGetCoordinates(da, &coords); CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPrintf(viewer, "DATASET RECTILINEAR_GRID\n"); CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "DIMENSIONS %d %d %d\n", M, N, 1); CHKERRQ(ierr);

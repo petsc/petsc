@@ -10,7 +10,7 @@
 !  possible, as it offers many advantages over coding nonlinear solvers independently.
 !
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
-!  domain, using distributed arrays (DAs) to partition the parallel grid.
+!  domain, using distributed arrays (DMDAs) to partition the parallel grid.
 !
 !  The command line options include:
 !  -par <parameter>, where <parameter> indicates the problem's nonlinearity
@@ -23,7 +23,7 @@
 !
 !/*T
 !   Concepts: KSP^writing a user-defined nonlinear solver
-!   Concepts: DA^using distributed arrays
+!   Concepts: DMDA^using distributed arrays
 !   Processors: n
 !T*/
 !  ------------------------------------------------------------------------
@@ -63,12 +63,12 @@
 #include "finclude/petscmat.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscksp.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 
       MPI_Comm comm
       Vec      X,Y,F,localX,localF
       Mat      J,B
-      DA       da
+      DM       da
       KSP      ksp
 
       PetscInt  Nx,Ny,N,mx,my,ifive,ithree
@@ -123,22 +123,22 @@
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 !  
-!  Create distributed array (DA) to manage parallel grid and vectors
+!  Create distributed array (DMDA) to manage parallel grid and vectors
 !  
       Nx = PETSC_DECIDE
       Ny = PETSC_DECIDE
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
-      call DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,mx,           &
+      call DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,mx,           &
      &     my,Nx,Ny,one,one,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,       &
      &     da,ierr)
 
 !  
-!  Extract global and local vectors from DA then duplicate for remaining
+!  Extract global and local vectors from DMDA then duplicate for remaining
 !  vectors that are the same types
 !  
-       call DACreateGlobalVector(da,X,ierr)
-       call DACreateLocalVector(da,localX,ierr)
+       call DMCreateGlobalVector(da,X,ierr)
+       call DMCreateLocalVector(da,localX,ierr)
        call VecDuplicate(X,F,ierr)
        call VecDuplicate(X,Y,ierr)
        call VecDuplicate(localX,localF,ierr)
@@ -149,8 +149,8 @@
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  
 !     Note:  For the parallel case, vectors and matrices MUST be partitioned
-!     accordingly.  When using distributed arrays (DAs) to create vectors,
-!     the DAs determine the problem partitioning.  We must explicitly
+!     accordingly.  When using distributed arrays (DMDAs) to create vectors,
+!     the DMDAs determine the problem partitioning.  We must explicitly
 !     specify the local matrix dimensions upon its creation for compatibility
 !     with the vector distribution.
 !
@@ -280,7 +280,7 @@
        call VecDestroy(localF,ierr)
        call VecDestroy(F,ierr)
        call KSPDestroy(ksp,ierr)
-       call DADestroy(da,ierr)
+       call DMDestroy(da,ierr)
        call PetscFinalize(ierr)
        end
 
@@ -308,7 +308,7 @@
 #include "finclude/petscmat.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscksp.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
       PetscErrorCode    ierr
       PetscOffset      idx
       Vec       X,localX,localF
@@ -317,7 +317,7 @@
       PetscInt  ym,gxm,gym,gxs,gys
       double precision one,lambda,temp1,temp,hx,hy
       PetscScalar      xx(1)
-      DA               da
+      DM               da
       Mat              B
       common   /mycommon/ mx,my,B,localX,localF,da
  
@@ -333,15 +333,15 @@
 !      the array.
        call VecGetArray(localX,xx,idx,ierr)
 
-!  Get local grid boundaries (for 2-dimensional DA):
+!  Get local grid boundaries (for 2-dimensional DMDA):
 !    xs, ys   - starting grid indices (no ghost points)
 !    xm, ym   - widths of local grid (no ghost points)
 !    gxs, gys - starting grid indices (including ghost points)
 !    gxm, gym - widths of local grid (including ghost points)
 
-       call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,             &
+       call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,             &
      &      PETSC_NULL_INTEGER,ierr)
-       call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,    &
+       call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,    &
      &      PETSC_NULL_INTEGER,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
@@ -365,7 +365,8 @@
 
 !     Insert values into global vector
 
-       call DALocalToGlobal(da,localX,INSERT_VALUES,X,ierr)
+       call DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X,ierr)
+       call DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X,ierr)
        return 
        end
 
@@ -393,7 +394,7 @@
 #include "finclude/petscmat.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscksp.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 
       Vec              X,F,localX,localF
       PetscInt         gys,gxm,gym
@@ -403,7 +404,7 @@
       double precision two,one,lambda,hx
       double precision hy,hxdhy,hydhx,sc
       PetscScalar      u,uxx,uyy,xx(1),ff(1)
-      DA               da
+      DM               da
       Mat              B
       common   /mycommon/ mx,my,B,localX,localF,da
 
@@ -418,12 +419,12 @@
       hydhx  = hy/hx
 
 !  Scatter ghost points to local vector, using the 2-step process
-!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+!     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
 !  By placing code between these two statements, computations can be
 !  done while messages are in transition.
 !  
-      call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
-      call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
+      call DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
+      call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
 
 !  Get pointers to vector data
 
@@ -432,9 +433,9 @@
 
 !  Get local grid boundaries
 
-      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
+      call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
      &     PETSC_NULL_INTEGER,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
+      call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
      &     PETSC_NULL_INTEGER,ierr)
 
 !  Compute function over the locally owned part of the grid
@@ -464,7 +465,8 @@
 
 !  Insert values into global vector
 
-       call DALocalToGlobal(da,localF,INSERT_VALUES,F,ierr)
+       call DMLocalToGlobalBegin(da,localF,INSERT_VALUES,F,ierr)
+       call DMLocalToGlobalEnd(da,localF,INSERT_VALUES,F,ierr)
        return 
        end
 
@@ -480,9 +482,9 @@
 !   flag - flag indicating matrix structure
 !
 !   Notes:
-!   Due to grid point reordering with DAs, we must always work
+!   Due to grid point reordering with DMDAs, we must always work
 !   with the local grid points, and then transform them to the new
-!   global numbering with the 'ltog' mapping (via DAGetGlobalIndices()).
+!   global numbering with the 'ltog' mapping (via DMDAGetGlobalIndices()).
 !   We cannot work directly with the global numbers for the original
 !   uniprocessor grid!
 !
@@ -500,12 +502,12 @@
 #include "finclude/petscmat.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscksp.h"
-#include "finclude/petscda.h"
+#include "finclude/petscdm.h"
 
       Vec         X
       Mat         jac
       Vec         localX,localF
-      DA          da
+      DM          da
       PetscInt     ltog(1)
       PetscOffset idltog,idx
       PetscErrorCode ierr
@@ -532,12 +534,12 @@
       lambda = 6.d0
 
 !  Scatter ghost points to local vector, using the 2-step process
-!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+!     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
 !  By placing code between these two statements, computations can be
 !  done while messages are in transition.
 
-      call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
-      call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
+      call DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
+      call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
 
 !  Get pointer to vector data
 
@@ -545,14 +547,14 @@
 
 !  Get local grid boundaries
 
-      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
+      call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
      &     PETSC_NULL_INTEGER,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
+      call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
      &                        PETSC_NULL_INTEGER,ierr)
 
 !  Get the global node numbers for all local nodes, including ghost points
 
-      call DAGetGlobalIndices(da,nloc,ltog,idltog,ierr)
+      call DMDAGetGlobalIndices(da,nloc,ltog,idltog,ierr)
 
 !  Compute entries for the locally owned part of the Jacobian.
 !   - Currently, all PETSc parallel matrix formats are partitioned by
@@ -619,7 +621,7 @@
       Vec     X,F
       PetscErrorCode ierr
       PetscInt mx,my
-      DA      da
+      DM      da
       Vec     localX,localF
 
       common   /mycommon/ mx,my,B,localX,localF,da

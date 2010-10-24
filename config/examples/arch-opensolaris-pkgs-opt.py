@@ -4,8 +4,11 @@ configure_options = [
   '--with-debugger=/bin/true',
   '--with-debugging=0',
 
+  #'--download-mpich=1', # mpich2-1.3rc2 is currently broken so use mpich2-1.2.1p1
+  '--with-mpi-dir=/export/home/petsc/soft/mpich2-1.2.1p1',
+  '--with-c2html=0',
+
   #'-download-f-blas-lapack=1',
-  '--download-mpich=1',
   '--download-plapack=1',
   '--download-parmetis=1',
   '--download-triangle=1',

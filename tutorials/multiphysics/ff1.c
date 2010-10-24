@@ -5,7 +5,7 @@
 */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuessLocal1"
-PetscErrorCode FormInitialGuessLocal1(DALocalInfo *info,Field1 **x)
+PetscErrorCode FormInitialGuessLocal1(DMDALocalInfo *info,Field1 **x)
 {
   PetscInt       i,j;
   
@@ -26,7 +26,7 @@ PetscLogEvent EVENT_FORMFUNCTIONLOCAL1;
 /* 
       x2 contains given tempature field
 */
-PetscErrorCode FormFunctionLocal1(DALocalInfo *info,Field1 **x,Field2 **x2,Field1 **f,void *ptr)
+PetscErrorCode FormFunctionLocal1(DMDALocalInfo *info,Field1 **x,Field2 **x2,Field1 **f,void *ptr)
  {
   AppCtx         *user = (AppCtx*)ptr;
   PetscInt       xints,xinte,yints,yinte,i,j;

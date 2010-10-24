@@ -1248,14 +1248,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesRow(Mat mat,PetscInt row,const Pet
    MatSetValuesStencil() uses 0-based row and column numbers in Fortran 
    as well as in C.
 
-   For setting/accessing vector values via array coordinates you can use the DAVecGetArray() routine
+   For setting/accessing vector values via array coordinates you can use the DMDAVecGetArray() routine
 
-   In order to use this routine you must either obtain the matrix with DAGetMatrix()
+   In order to use this routine you must either obtain the matrix with DMGetMatrix()
    or call MatSetLocalToGlobalMapping() and MatSetStencil() first.
 
    The columns and rows in the stencil passed in MUST be contained within the 
-   ghost region of the given process as set with DACreateXXX() or MatSetStencil(). For example,
-   if you create a DA with an overlap of one grid level and on a particular process its first
+   ghost region of the given process as set with DMDACreateXXX() or MatSetStencil(). For example,
+   if you create a DMDA with an overlap of one grid level and on a particular process its first
    local nonghost x logical coordinate is 6 (so its first ghost x logical coordinate is 5) the
    first i index you can use in your column and row indices in MatSetStencil() is 5.
 
@@ -1270,7 +1270,7 @@ $    idxm(MatStencil_c,1) = c
  
    For periodic boundary conditions use negative indices for values to the left (below 0; that are to be 
    obtained by wrapping values from right edge). For values to the right of the last entry using that index plus one
-   etc to obtain values that obtained by wrapping the values from the left edge. This does not work for the DA_NONPERIODIC
+   etc to obtain values that obtained by wrapping the values from the left edge. This does not work for the DMDA_NONPERIODIC
    wrap.
 
    For indices that don't mean anything for your case (like the k index when working in 2d) or the c index when you have
@@ -1288,7 +1288,7 @@ $    idxm(MatStencil_c,1) = c
    Concepts: matrices^putting entries in
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
-          MatSetValues(), MatSetValuesBlockedStencil(), MatSetStencil(), DAGetMatrix(), DAVecGetArray(), MatStencil
+          MatSetValues(), MatSetValuesBlockedStencil(), MatSetStencil(), DMGetMatrix(), DMDAVecGetArray(), MatStencil
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],PetscInt n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
 {
@@ -1368,14 +1368,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesStencil(Mat mat,PetscInt m,const M
    MatSetValuesBlockedStencil() uses 0-based row and column numbers in Fortran 
    as well as in C.
 
-   For setting/accessing vector values via array coordinates you can use the DAVecGetArray() routine
+   For setting/accessing vector values via array coordinates you can use the DMDAVecGetArray() routine
 
-   In order to use this routine you must either obtain the matrix with DAGetMatrix()
+   In order to use this routine you must either obtain the matrix with DMGetMatrix()
    or call MatSetBlockSize(), MatSetLocalToGlobalMapping() and MatSetStencil() first.
 
    The columns and rows in the stencil passed in MUST be contained within the 
-   ghost region of the given process as set with DACreateXXX() or MatSetStencil(). For example,
-   if you create a DA with an overlap of one grid level and on a particular process its first
+   ghost region of the given process as set with DMDACreateXXX() or MatSetStencil(). For example,
+   if you create a DMDA with an overlap of one grid level and on a particular process its first
    local nonghost x logical coordinate is 6 (so its first ghost x logical coordinate is 5) the
    first i index you can use in your column and row indices in MatSetStencil() is 5.
 
@@ -1400,7 +1400,7 @@ $    idxm(MatStencil_k,1) = k
    Concepts: matrices^putting entries in
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
-          MatSetValues(), MatSetValuesStencil(), MatSetStencil(), DAGetMatrix(), DAVecGetArray(), MatStencil,
+          MatSetValues(), MatSetValuesStencil(), MatSetStencil(), DMGetMatrix(), DMDAVecGetArray(), MatStencil,
           MatSetBlockSize(), MatSetLocalToGlobalMapping()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil idxm[],PetscInt n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
@@ -1468,7 +1468,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedStencil(Mat mat,PetscInt m,
    Inspired by the structured grid interface to the HYPRE package
    (www.llnl.gov/CASC/hyper)
 
-   For matrices generated with DAGetMatrix() this routine is automatically called and so not needed by the
+   For matrices generated with DMGetMatrix() this routine is automatically called and so not needed by the
    user.
    
    Level: beginner
@@ -5141,6 +5141,69 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroEntries(Mat mat)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatZeroRowsColumns"
+/*@C
+   MatZeroRowsColumns - Zeros all entries (except possibly the main diagonal)
+   of a set of rows and columns of a matrix.
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+.  numRows - the number of rows to remove
+.  rows - the global row indices
+.  diag - value put in all diagonals of eliminated rows (0.0 will even eliminate diagonal entry)
+.  x - optional vector of solutions for zeroed rows
+-  b - optioonal vector of right hand side, that will be adjusted by solution
+
+   Notes:
+   This does not change the nonzero structure of the matrix, it merely zeros those entries in the matrix.
+
+   The user can set a value in the diagonal entry (or for the AIJ and
+   row formats can optionally remove the main diagonal entry from the
+   nonzero structure as well, by passing 0.0 as the final argument).
+
+   For the parallel case, all processes that share the matrix (i.e.,
+   those in the communicator used for matrix creation) MUST call this
+   routine, regardless of whether any rows being zeroed are owned by
+   them.
+
+   Each processor can indicate any rows in the entire matrix to be zeroed (i.e. each process does NOT have to
+   list only rows local to itself).
+
+   The option MAT_NO_OFF_PROC_ZERO_ROWS does not apply to this routine.
+
+   Level: intermediate
+
+   Concepts: matrices^zeroing rows
+
+.seealso: MatZeroRowsIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsColumns(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  if (numRows) PetscValidIntPointer(rows,3);
+  if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!mat->ops->zerorows) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+
+  ierr = (*mat->ops->zerorowscolumns)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
+  ierr = MatView_Private(mat);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows"
 /*@C
    MatZeroRows - Zeros all entries (except possibly the main diagonal)
@@ -5174,6 +5237,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroEntries(Mat mat)
 
    Each processor can indicate any rows in the entire matrix to be zeroed (i.e. each process does NOT have to
    list only rows local to itself).
+
+   You can call MatSetOption(mat,MAT_NO_OFF_PROC_ZERO_ROWS,PETSC_TRUE) if each process indicates only rows it
+   owns that are to be zeroed. This saves a global synchronization in the implementation.
 
    Level: intermediate
 
@@ -5236,7 +5302,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat mat,PetscInt numRows,const Pet
    routine, regardless of whether any rows being zeroed are owned by
    them.
 
-   Each processor should list the rows that IT wants zeroed
+   Each processor can indicate any rows in the entire matrix to be zeroed (i.e. each process does NOT have to
+   list only rows local to itself).
+
+   You can call MatSetOption(mat,MAT_NO_OFF_PROC_ZERO_ROWS,PETSC_TRUE) if each process indicates only rows it
+   owns that are to be zeroed. This saves a global synchronization in the implementation.
 
    Level: intermediate
 
@@ -5309,7 +5379,7 @@ $    idxm(MatStencil_c,1) = c
 
    For periodic boundary conditions use negative indices for values to the left (below 0; that are to be 
    obtained by wrapping values from right edge). For values to the right of the last entry using that index plus one
-   etc to obtain values that obtained by wrapping the values from the left edge. This does not work for the DA_NONPERIODIC
+   etc to obtain values that obtained by wrapping the values from the left edge. This does not work for the DMDA_NONPERIODIC
    wrap.
 
    For indices that don't mean anything for your case (like the k index when working in 2d) or the c index when you have

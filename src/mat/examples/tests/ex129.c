@@ -12,11 +12,11 @@
 static char help[] = "This example is for testing different MatSolve routines :MatSolve,MatSolveAdd,MatSolveTranspose,MatSolveTransposeAdd and MatMatSolve.\n\
 Example usage: ./ex129 -mat_type aij -dof 2\n\n";
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscmg.h"
 
-extern PetscErrorCode ComputeMatrix(DA,Mat);
-extern PetscErrorCode ComputeRHS(DA,Vec);
+extern PetscErrorCode ComputeMatrix(DM,Mat);
+extern PetscErrorCode ComputeRHS(DM,Vec);
 extern PetscErrorCode ComputeRHSMatrix(PetscInt,PetscInt,Mat*);
 
 #undef __FUNCT__
@@ -26,7 +26,7 @@ int main(int argc,char **args)
   PetscErrorCode    ierr;
   PetscMPIInt       size;
   Vec               x,b,y,b1;
-  DA                da;
+  DM                da;
   Mat               A,F,RHS,X,C1;
   MatFactorInfo     info;
   IS                perm,iperm;
@@ -41,23 +41,24 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
-  ierr = DASetDim(da,3);CHKERRQ(ierr);
-  ierr = DASetPeriodicity(da,DA_NONPERIODIC);CHKERRQ(ierr);
-  ierr = DASetStencilType(da,DA_STENCIL_STAR);CHKERRQ(ierr);
-  ierr = DASetSizes(da,M,M,M);CHKERRQ(ierr);
-  ierr = DASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = DASetDof(da,dof);CHKERRQ(ierr);
-  ierr = DASetStencilWidth(da,1);CHKERRQ(ierr);
-  ierr = DASetOwnershipRanges(da,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DASetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMDACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
+  ierr = DMDASetDim(da,3);CHKERRQ(ierr);
+  ierr = DMDASetPeriodicity(da,DMDA_NONPERIODIC);CHKERRQ(ierr);
+  ierr = DMDASetStencilType(da,DMDA_STENCIL_STAR);CHKERRQ(ierr);
+  ierr = DMDASetSizes(da,M,M,M);CHKERRQ(ierr);
+  ierr = DMDASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = DMDASetDof(da,dof);CHKERRQ(ierr);
+  ierr = DMDASetStencilWidth(da,1);CHKERRQ(ierr);
+  ierr = DMDASetOwnershipRanges(da,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
 
-  ierr = DACreateGlobalVector(da,&x);CHKERRQ(ierr);
-  ierr = DACreateGlobalVector(da,&b);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&y);CHKERRQ(ierr);
   ierr = ComputeRHS(da,b);CHKERRQ(ierr);
   ierr = VecSet(y,one);CHKERRQ(ierr);
-  ierr = DAGetMatrix(da,MATBAIJ,&A);CHKERRQ(ierr);
+  ierr = DMGetMatrix(da,MATBAIJ,&A);CHKERRQ(ierr);
   ierr = ComputeMatrix(da,A);CHKERRQ(ierr);
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   nrhs = 2;
@@ -77,7 +78,7 @@ int main(int argc,char **args)
     ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
   } else { /* Test inplace factorization */  
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&F);CHKERRQ(ierr); 
-    /* or create F without DA 
+    /* or create F without DMDA 
     const MatType     type;
     PetscInt          i,ncols;
     const PetscInt    *cols;
@@ -151,21 +152,21 @@ int main(int argc,char **args)
   ierr = MatDestroy(X);CHKERRQ(ierr);
   ierr = ISDestroy(perm);CHKERRQ(ierr);
   ierr = ISDestroy(iperm);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-PetscErrorCode ComputeRHS(DA da,Vec b)
+PetscErrorCode ComputeRHS(DM da,Vec b)
 {
   PetscErrorCode ierr;
   PetscInt       mx,my,mz;
   PetscScalar    h;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
   h    = 1.0/((mx-1)*(my-1)*(mz-1));
   ierr = VecSet(b,h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -211,7 +212,7 @@ PetscErrorCode ComputeRHSMatrix(PetscInt m,PetscInt nrhs,Mat* C)
     
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(DA da,Mat B)
+PetscErrorCode ComputeMatrix(DM da,Mat B)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,dof,k1,k2,k3;
@@ -226,7 +227,7 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
   ierr = PetscRandomSetInterval(rand,-.001,.001);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 
-  ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr); 
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr); 
   /* For simplicity, this example only works on mx=my=mz */
   if ( mx != my || mx != mz) SETERRQ3(PETSC_COMM_SELF,1,"This example only works with mx %d = my %d = mz %d\n",mx,my,mz);
 
@@ -251,7 +252,7 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
       k3++;
     }
   }
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){

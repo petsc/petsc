@@ -1,0 +1,17 @@
+#if !defined(__PETSCDADEF_H90)
+#define __PETSCDADEF_H90
+#if defined(PETSC_USE_FORTRAN_DATATYPES)
+      type DM
+        PetscFortranAddr:: v
+      end type DM
+      type DMDA
+        PetscFortranAddr:: v
+      end type DMDA
+      type ADDA
+        PetscFortranAddr:: v
+      end type ADDA
+      type SDA
+        PetscFortranAddr:: v
+      end type SDA
+#endif
+#endif

@@ -114,18 +114,18 @@
 !  Create vector data structures
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-!  Create distributed array (DA) to manage parallel grid and vectors
+!  Create distributed array (DMDA) to manage parallel grid and vectors
 !  Set up the ghost point communication pattern.  There are m total
 !  grid values spread equally among all the processors.
       i1 = 1
-      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,m,i1,i1,                &
+      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,m,i1,i1,                &
      &     PETSC_NULL_INTEGER,da,ierr)
 
-!  Extract global and local vectors from DA; then duplicate for remaining
+!  Extract global and local vectors from DMDA; then duplicate for remaining
 !  vectors that are the same types.
 
-      call DACreateGlobalVector(da,u,ierr)
-      call DACreateLocalVector(da,u_local,ierr)
+      call DMCreateGlobalVector(da,u,ierr)
+      call DMCreateLocalVector(da,u_local,ierr)
 
 !  Make local work vector for evaluating right-hand-side function
       call VecDuplicate(u_local,localwork,ierr)
@@ -214,7 +214,7 @@
       call VecDestroy(solution,ierr)
       call VecDestroy(u_local,ierr)
       call VecDestroy(u,ierr)
-      call DADestroy(da,ierr)
+      call DMDestroy(da,ierr)
       call MatDestroy(A,ierr)
 
 !  Always call PetscFinalize() before exiting a program.  This routine
@@ -463,12 +463,12 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 !  Scatter ghost points to local vector, using the 2-step process
-!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+!     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
 !  By placing code between these two statements, computations can be
 !  done while messages are in transition.
 
-      call DAGlobalToLocalBegin(da,global_in,INSERT_VALUES,u_local,ierr)
-      call DAGlobalToLocalEnd(da,global_in,INSERT_VALUES,u_local,ierr)
+      call DMGlobalToLocalBegin(da,global_in,INSERT_VALUES,u_local,ierr)
+      call DMGlobalToLocalEnd(da,global_in,INSERT_VALUES,u_local,ierr)
 
 !  Access directly the values in our local INPUT work vector
       call VecGetArray(u_local,localptr,idx_l,ierr) 
@@ -511,7 +511,10 @@
 !  Return the values from our local OUTPUT vector into our global 
 !  output vector.
 
-      call DALocalToGlobal(da,localwork,INSERT_VALUES,global_out,ierr)
+      call DMLocalToGlobalBegin(da,localwork,INSERT_VALUES,global_out   &
+     &                          ,ierr)
+      call DMLocalToGlobalEnd(da,localwork,INSERT_VALUES,global_out,    &
+     &                          ierr)
 
 !  Print debugging information if desired
       if (debug) then
@@ -577,12 +580,12 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 !  Scatter ghost points to local vector, using the 2-step process
-!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+!     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
 !  By placing code between these two statements, computations can be
 !  done while messages are in transition.
 
-      call DAGlobalToLocalBegin(da,global_in,INSERT_VALUES,u_local,ierr)
-      call DAGlobalToLocalEnd(da,global_in,INSERT_VALUES,u_local,ierr)
+      call DMGlobalToLocalBegin(da,global_in,INSERT_VALUES,u_local,ierr)
+      call DMGlobalToLocalEnd(da,global_in,INSERT_VALUES,u_local,ierr)
 
 !  Get pointer to vector data
       call VecGetArray(u_local,localptr,idx,ierr) 

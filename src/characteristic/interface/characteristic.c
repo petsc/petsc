@@ -11,9 +11,9 @@ PetscBool   CharacteristicRegisterAllCalled = PETSC_FALSE;
 */
 PetscFList  CharacteristicList = PETSC_NULL;
 
-PetscErrorCode DAGetNeighborsRank(DA, PetscMPIInt []);
-PetscInt DAGetNeighborRelative(DA, PassiveReal, PassiveReal);
-PetscErrorCode DAMapToPeriodicDomain(DA, PetscScalar [] ); 
+PetscErrorCode DMDAGetNeighborsRank(DM, PetscMPIInt []);
+PetscInt DMDAGetNeighborRelative(DM, PassiveReal, PassiveReal);
+PetscErrorCode DMDAMapToPeriodicDomain(DM, PetscScalar [] ); 
 
 PetscErrorCode HeapSort(Characteristic, Queue, PetscInt);
 PetscErrorCode SiftDown(Characteristic, Queue, PetscInt, PetscInt);
@@ -250,7 +250,7 @@ PetscErrorCode CharacteristicRegister(const char sname[],const char path[],const
 
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicSetVelocityInterpolation"
-PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic c, DA da, Vec v, Vec vOld, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(Vec, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
+PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic c, DM da, Vec v, Vec vOld, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(Vec, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
 {
   PetscFunctionBegin;
   c->velocityDA      = da;
@@ -265,7 +265,7 @@ PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic c, DA da, V
 
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicSetVelocityInterpolationLocal"
-PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic c, DA da, Vec v, Vec vOld, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(void *, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
+PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic c, DM da, Vec v, Vec vOld, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(void *, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
 {
   PetscFunctionBegin;
   c->velocityDA          = da;
@@ -280,7 +280,7 @@ PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic c, DA 
 
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicSetFieldInterpolation"
-PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DA da, Vec v, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(Vec, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
+PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DM da, Vec v, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(Vec, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
 {
   PetscFunctionBegin;
 #if 0
@@ -297,7 +297,7 @@ PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DA da, Vec 
 
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicSetFieldInterpolationLocal"
-PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic c, DA da, Vec v, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(void *, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
+PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic c, DM da, Vec v, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(void *, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
 {
   PetscFunctionBegin;
 #if 0
@@ -317,11 +317,11 @@ PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic c, DA da,
 PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
 {
   CharacteristicPointDA2D Qi;
-  DA                      da = c->velocityDA;
+  DM                      da = c->velocityDA;
   Vec                     velocityLocal, velocityLocalOld;
   Vec                     fieldLocal;
-  DALocalInfo             info;
-  DAPeriodicType          periodic_type;
+  DMDALocalInfo             info;
+  DMDAPeriodicType          periodic_type;
   PetscScalar             **solArray;
   void                    *velocityArray;
   void                    *velocityArrayOld;
@@ -341,12 +341,12 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   PetscFunctionBegin;
   c->queueSize = 0;
   ierr = MPI_Comm_rank(((PetscObject)c)->comm, &rank);CHKERRQ(ierr);
-  ierr = DAGetNeighborsRank(da, neighbors);CHKERRQ(ierr);
+  ierr = DMDAGetNeighborsRank(da, neighbors);CHKERRQ(ierr);
   ierr = CharacteristicSetNeighbors(c, 9, neighbors);CHKERRQ(ierr);
   ierr = CharacteristicSetUp(c);CHKERRQ(ierr);
   /* global and local grid info */
-  ierr = DAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, &periodic_type, 0);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da, &info);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, &periodic_type, 0);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da, &info);CHKERRQ(ierr);
   ni   = info.mx;          nj   = info.my;
   is   = info.xs;          ie   = info.xs+info.xm; 
   js   = info.ys;          je   = info.ys+info.ym;
@@ -364,14 +364,14 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   ierr = PetscLogEventBegin(CHARACTERISTIC_QueueSetup,0,0,0,0);CHKERRQ(ierr);
   /* GET POSITION AT HALF TIME IN THE PAST */
   if (c->velocityInterpLocal) {
-    ierr = DAGetLocalVector(c->velocityDA, &velocityLocal);CHKERRQ(ierr);
-    ierr = DAGetLocalVector(c->velocityDA, &velocityLocalOld);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalBegin(c->velocityDA, c->velocity, INSERT_VALUES, velocityLocal);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(c->velocityDA, c->velocity, INSERT_VALUES, velocityLocal);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalBegin(c->velocityDA, c->velocityOld, INSERT_VALUES, velocityLocalOld);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(c->velocityDA, c->velocityOld, INSERT_VALUES, velocityLocalOld);CHKERRQ(ierr);
-    ierr = DAVecGetArray(c->velocityDA, velocityLocal,    &velocityArray);   CHKERRQ(ierr);
-    ierr = DAVecGetArray(c->velocityDA, velocityLocalOld, &velocityArrayOld);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(c->velocityDA, &velocityLocal);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(c->velocityDA, &velocityLocalOld);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(c->velocityDA, c->velocity, INSERT_VALUES, velocityLocal);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(c->velocityDA, c->velocity, INSERT_VALUES, velocityLocal);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(c->velocityDA, c->velocityOld, INSERT_VALUES, velocityLocalOld);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(c->velocityDA, c->velocityOld, INSERT_VALUES, velocityLocalOld);CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(c->velocityDA, velocityLocal,    &velocityArray);   CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(c->velocityDA, velocityLocalOld, &velocityArrayOld);CHKERRQ(ierr);
   }
   ierr = PetscInfo(PETSC_NULL, "Calculating position at t_{n - 1/2}\n");CHKERRQ(ierr);
   for(Qi.j = js; Qi.j < je; Qi.j++) { 
@@ -387,10 +387,10 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
       Qi.y = Qi.j - velocityValues[1]*dt/2.0;
 
       /* Determine whether the position at t - dt/2 is local */
-      Qi.proc = DAGetNeighborRelative(da, Qi.x, Qi.y); 
+      Qi.proc = DMDAGetNeighborRelative(da, Qi.x, Qi.y); 
 
       /* Check for Periodic boundaries and move all periodic points back onto the domain */
-      ierr = DAMapCoordsToPeriodicDomain(da,&(Qi.x),&(Qi.y));CHKERRQ(ierr);
+      ierr = DMDAMapCoordsToPeriodicDomain(da,&(Qi.x),&(Qi.y));CHKERRQ(ierr);
 
       if (Qi.proc && verbose) {
         printf("[%d]Remote point (%d) at n+1/2 to neighbor %d: (i:%d, j:%d) (x:%g, y:%g)\n", rank, (int)c->queueSize+1, Qi.proc, Qi.i, Qi.j, Qi.x, Qi.y);
@@ -454,10 +454,10 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   ierr = CharacteristicGetValuesBegin(c);CHKERRQ(ierr);
   ierr = CharacteristicGetValuesEnd(c);CHKERRQ(ierr);
   if (c->velocityInterpLocal) {
-    ierr = DAVecRestoreArray(c->velocityDA, velocityLocal,    &velocityArray);   CHKERRQ(ierr);
-    ierr = DAVecRestoreArray(c->velocityDA, velocityLocalOld, &velocityArrayOld);CHKERRQ(ierr);
-    ierr = DARestoreLocalVector(c->velocityDA, &velocityLocal);CHKERRQ(ierr);
-    ierr = DARestoreLocalVector(c->velocityDA, &velocityLocalOld);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(c->velocityDA, velocityLocal,    &velocityArray);   CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(c->velocityDA, velocityLocalOld, &velocityArrayOld);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(c->velocityDA, &velocityLocal);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(c->velocityDA, &velocityLocalOld);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(CHARACTERISTIC_HalfTimeExchange,0,0,0,0);CHKERRQ(ierr);
 
@@ -474,10 +474,10 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
     Qi.y = Qi.j - Qi.y*dt;
 
     /* Determine whether the position at t-dt is local */
-    Qi.proc = DAGetNeighborRelative(da, Qi.x, Qi.y);
+    Qi.proc = DMDAGetNeighborRelative(da, Qi.x, Qi.y);
 
     /* Check for Periodic boundaries and move all periodic points back onto the domain */
-    ierr = DAMapCoordsToPeriodicDomain(da,&(Qi.x),&(Qi.y));CHKERRQ(ierr);
+    ierr = DMDAMapCoordsToPeriodicDomain(da,&(Qi.x),&(Qi.y));CHKERRQ(ierr);
 
     if (Qi.proc && verbose) {
       printf("[%d]Remote point (%d) at n to neighbor %d: (i:%d, j:%d) (x:%g, y:%g)\n", rank, (int)n, Qi.proc, Qi.i, Qi.j, Qi.x, Qi.y);
@@ -493,10 +493,10 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   /* GET VALUE AT FULL TIME IN THE PAST (LOCAL REQUESTS) */
   ierr = PetscLogEventBegin(CHARACTERISTIC_FullTimeLocal,0,0,0,0);CHKERRQ(ierr);
   if (c->fieldInterpLocal) {
-    ierr = DAGetLocalVector(c->fieldDA, &fieldLocal);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalBegin(c->fieldDA, c->field, INSERT_VALUES, fieldLocal);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(c->fieldDA, c->field, INSERT_VALUES, fieldLocal);CHKERRQ(ierr);
-    ierr = DAVecGetArray(c->fieldDA, fieldLocal, &fieldArray);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(c->fieldDA, &fieldLocal);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(c->fieldDA, c->field, INSERT_VALUES, fieldLocal);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(c->fieldDA, c->field, INSERT_VALUES, fieldLocal);CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(c->fieldDA, fieldLocal, &fieldArray);CHKERRQ(ierr);
   }
   ierr = PetscInfo(PETSC_NULL, "Calculating local field at t_{n}\n");CHKERRQ(ierr);
   for(n = 0; n < c->queueSize; n++) {
@@ -552,22 +552,22 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   ierr = CharacteristicGetValuesBegin(c);CHKERRQ(ierr);
   ierr = CharacteristicGetValuesEnd(c);CHKERRQ(ierr);
   if (c->fieldInterpLocal) {
-    ierr = DAVecRestoreArray(c->fieldDA, fieldLocal, &fieldArray);CHKERRQ(ierr);
-    ierr = DARestoreLocalVector(c->fieldDA, &fieldLocal);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(c->fieldDA, fieldLocal, &fieldArray);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(c->fieldDA, &fieldLocal);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(CHARACTERISTIC_FullTimeExchange,0,0,0,0);CHKERRQ(ierr);
 
   /* Return field of characteristics at t_n-1 */
   ierr = PetscLogEventBegin(CHARACTERISTIC_DAUpdate,0,0,0,0);CHKERRQ(ierr);
-  ierr = DAGetInfo(c->fieldDA, 0, 0, 0, 0, 0, 0, 0, &dof, 0, 0, 0);CHKERRQ(ierr);
-  ierr = DAVecGetArray(c->fieldDA, solution, &solArray);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(c->fieldDA, 0, 0, 0, 0, 0, 0, 0, &dof, 0, 0, 0);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(c->fieldDA, solution, &solArray);CHKERRQ(ierr);
   for(n = 0; n < c->queueSize; n++) {
     Qi = c->queue[n];
     for(comp = 0; comp < c->numFieldComp; comp++) {
       solArray[Qi.j][Qi.i*dof+c->fieldComp[comp]] = Qi.field[comp];
     }
   }
-  ierr = DAVecRestoreArray(c->fieldDA, solution, &solArray);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(c->fieldDA, solution, &solArray);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(CHARACTERISTIC_DAUpdate,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(CHARACTERISTIC_Solve,0,0,0,0);CHKERRQ(ierr);
 
@@ -786,11 +786,11 @@ PetscErrorCode SiftDown(Characteristic c, Queue queue, PetscInt root, PetscInt b
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DAGetNeighborsRank"
+#define __FUNCT__ "DMDAGetNeighborsRank"
 /* [center, left, top-left, top, top-right, right, bottom-right, bottom, bottom-left] */
-PetscErrorCode DAGetNeighborsRank(DA da, PetscMPIInt neighbors[])
+PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
 {
-  DAPeriodicType periodic_type;
+  DMDAPeriodicType periodic_type;
   PetscBool      IPeriodic = PETSC_FALSE, JPeriodic = PETSC_FALSE;
   MPI_Comm       comm;
   PetscMPIInt    rank;
@@ -800,12 +800,12 @@ PetscErrorCode DAGetNeighborsRank(DA da, PetscMPIInt neighbors[])
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = DAGetInfo(da, 0, 0, 0, 0, &PI,&PJ, 0, 0, 0, &periodic_type, 0);
+  ierr = DMDAGetInfo(da, 0, 0, 0, 0, &PI,&PJ, 0, 0, 0, &periodic_type, 0);
 
-  if (periodic_type==DA_XPERIODIC || periodic_type==DA_XYPERIODIC) {
+  if (periodic_type==DMDA_XPERIODIC || periodic_type==DMDA_XYPERIODIC) {
     IPeriodic = PETSC_TRUE;
   }
-  if (periodic_type==DA_YPERIODIC || periodic_type==DA_XYPERIODIC) {
+  if (periodic_type==DMDA_YPERIODIC || periodic_type==DMDA_XYPERIODIC) {
     JPeriodic = PETSC_TRUE;
   }
 
@@ -854,7 +854,7 @@ PetscErrorCode DAGetNeighborsRank(DA da, PetscMPIInt neighbors[])
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DAGetNeighborRelative"
+#define __FUNCT__ "DMDAGetNeighborRelative"
 /*
   SUBDOMAIN NEIGHBORHOOD PROCESS MAP: 
     2 | 3 | 4
@@ -864,13 +864,13 @@ PetscErrorCode DAGetNeighborsRank(DA da, PetscMPIInt neighbors[])
     8 | 7 | 6
       |   |
 */
-PetscInt DAGetNeighborRelative(DA da, PassiveReal ir, PassiveReal jr)
+PetscInt DMDAGetNeighborRelative(DM da, PassiveReal ir, PassiveReal jr)
 {
-  DALocalInfo    info;
+  DMDALocalInfo    info;
   PassiveReal    is,ie,js,je;
   PetscErrorCode ierr;
   
-  ierr = DAGetLocalInfo(da, &info);
+  ierr = DMDAGetLocalInfo(da, &info);
   is = (PassiveReal) info.xs - 0.5; ie = (PassiveReal) info.xs + info.xm - 0.5; 
   js = (PassiveReal) info.ys - 0.5; je = (PassiveReal) info.ys + info.ym - 0.5;
   

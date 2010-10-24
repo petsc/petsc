@@ -228,7 +228,7 @@ for consistency.</li>
         <li> <br>
         </li>
       </ul>
-      <p><u><b>DA:</b></u></p>
+      <p><u><b>DM/DA:</b></u></p>
       <ul>
         <li>Change array argument of DAGetArray and related functions
 from void** to void* to avoid the need for an explicit cast (the
@@ -241,6 +241,25 @@ should not be destroyed by the user.</li>
         <li>Added DAVecGetArrayF90()<br>
         </li>
         <li>Changed DASetVertexDivision to DASetOwnershipRanges</li>
+        <li>The SDA object and all its method have been removed<br>
+        </li>
+        <li>The DA, ADDA, Slice and DMComposite objects are now all
+represented by a DM object. <br>
+        </li>
+        <li>Routines that began with ADDA and Slice now begin with
+DMADDA and DMSlice</li>
+        <li>DA/ADDA/Slice/DMCompositeGetMatrix() -&gt; DMGetMatrix(),
+similar for all other routines that have a DM version</li>
+        <li>Removed DASetType(), DARegister() etc since they will all
+be handled via DMSetType() etc</li>
+        <li>Added DMSetUp() that is called, for example, after all the
+parameters are passed to the DM object to actually construct the data
+structures; replace all calls to DASetType() with calls to DMSetUp()</li>
+        <li>DAXXX() routines are now either DMXXX() or DMDAXXX() see
+petscdm.h for details</li>
+        <li>petscda.h, petscdadef.h and petscda.h90 are now petscdm.h,
+petscdmdef.h, and petscdm.h90<br>
+        </li>
       </ul>
       <p><u><b>DMMG:</b></u></p>
       <ul>
