@@ -552,12 +552,11 @@ extern PetscErrorCode VecCUDACopyFromGPUSome_Public(Vec,PetscCUSPIndices);
 #endif
 
 #if defined PETSC_HAVE_VECDD
-extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDSetDomains(Vec v, PetscInt domain_count, PetscInt supported_domains[], PetscInt domain_limits[], PetscTruth covering);
-extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDSetDomainsIS(Vec v, IS supported_domains, IS domain_limits[], PetscTruth covering);
-extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDGetDomainArray(Vec v, PetscInt i, PetscScalar **array);
-extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDRestoreDomainArray(Vec v, PetscInt i, PetscScalar **array);
-extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDGetDomainVec(Vec v, PetscInt i, Vec *dv);
-extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDRestoreDomainVec(Vec v, PetscInt i, Vec *dv);
+extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDSetDomainsLocal(Vec v, PetscInt domain_count, PetscInt supported_domains[], PetscInt domain_limits[], PetscTruth covering);
+extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDSetDomainsLocalIS(Vec v, IS supported_domains, IS domain_limits[], PetscTruth covering);
+extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDGetDomainInfoLocal(Vec v, PetscInt i, PetscInt *d, PetscInt *size);
+extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDGetDomainArrayLocal(Vec v, PetscInt i, PetscScalar **array);
+extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDRestoreDomainArrayLocal(Vec v, PetscInt i, PetscScalar **array);
 #endif
 
 

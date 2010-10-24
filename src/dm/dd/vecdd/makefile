@@ -3,15 +3,15 @@ ALL: lib
 CPPFLAGS = 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = matdd.c
+SOURCEC  = ddlayout.c vecdd.c
 SOURCEF  = 
-SOURCEH  = matdd.h
-OBJSC    = matdd.o
+SOURCEH  = ddlayout.h
+OBJSC    = ddlayout.o vecdd.o
 OBJSF    =
 DIRS     = 
-LIBBASE  = libpetscmat
+LIBBASE  = libpetscdm
 MANSEC   = Mat
-LOCDIR   = src/mat/impls/dd/
+LOCDIR   = src/dm/dd/vecdd/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
