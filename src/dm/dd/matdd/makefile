@@ -3,13 +3,13 @@ ALL: lib
 CPPFLAGS = 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = matdd.c
+SOURCEC  = matdd.c matddaij.c
 SOURCEF  = 
 SOURCEH  = matdd.h
-OBJSC    = matdd.o
+OBJSC    = matdd.o matddaij.o
 OBJSF    =
 DIRS     = 
-LIBBASE  = libpetscmat
+LIBBASE  = libpetscdm
 MANSEC   = Mat
 LOCDIR   = src/dm/dd/matdd/
 

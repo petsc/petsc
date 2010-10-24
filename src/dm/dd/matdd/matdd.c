@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "../src/mat/impls/dd/matdd.h"          /*I "petscmat.h" I*/
+#include "../src/dm/dd/matdd/matdd.h"          /*I "petscmat.h" I*/
 
 
 
@@ -18,31 +18,32 @@
   although that is a nontrivial operation to carry out efficiently.
 
   The block structure of A can be stored in various ways.  In particular, blocks can be logical blocks within a single
-  Mat of a fixed type, resulting in MATDDXXX, where XXX is a matrix type (e.g., MATDDAIJ, MATDDDENSE, etc).
-  Alternatively, blocks can be stored in a *metamatrix* of blocks. Currently, we support MATDDMETAAIJ, where an AIJ-like
-  structure keeps track of the nonzero blocks. We anticipate supporting MATDDMETADENSE (easier, in many ways),
-  and MATDDMETASHELL (even easier).
+  Mat of a fixed type, resulting in MATXXXDD, where XXX is a matrix type (e.g., MATAIJDD, MATDENSEDD, etc).
+  Alternatively, blocks can be stored in a *metamatrix* of blocks MATDDXXX. The XXX matrix format is used to organize
+  the block matrices. Currently, we support MATDDAIJ, where an AIJ-like structure keeps track of the nonzero blocks. 
+  We anticipate supporting MATDDDENSE (easier, in many ways), and MATDDSHELL (even easier).
 
-  MATDDMETAAIJ:
-  Blocks are set by calling MatDDMetaAddBlock(A, i,j, B). This is analogous to declaring a nonzero element in an 
+  MATDDAIJ:
+  Blocks are set by calling MatDDAddBlock(A, i,j, B). This is analogous to declaring a nonzero element in an 
   AIJ matrix.  Although generally there will be only a few nonzero blocks, it might be benefitial to 
-  preallocate the local (per rank) block nonzero structure by calling MatDDMetaAIJSetPreallocation(Mat A, PetscInt nz, PetscInt *nnz),
+  preallocate the local (per rank) block nonzero structure by calling MatDDAIJSetPreallocation(Mat A, PetscInt nz, PetscInt *nnz),
   where nz is the number of nonzero blocks per block row or nnz is an array of such numbers, and the usage 
   of nz and nnz is mutually exclusive.
 
-  MATDDMETADENSE:
+  MATDDDENSE:
   This type will preallocate the I \times J array of block data structures.  
 
-  MATDDMETASHELL:
+  MATDDSHELL:
   This type will require the user to supply a routine that applies the (i,j)-th block,
-  with the type PetscErrorCode (*MatDDMetaShellBlockMult)(Mat A, PetscInt i, PetscInt j, Vec x, Vec y).
+  with the type PetscErrorCode (*MatDDShellBlockMult)(Mat A, PetscInt i, PetscInt j, Vec x, Vec y).
 
 
-  MATDDXXX:
+  MATXXXDD:
   This will use a single matrix of a given type (MATAIJ or MATDENSE) to store the blocks, essentially, as in \overline A.
-  MATDD will manage the translation of block and in-block indices to global indices into \overline A.
-  This can be useful, if many blocks are desired (all FEM or SEM blocks), and the overhead of maintaining the 
-  individual matrix blocks becomes prohibitive.
+  MATXXXDD will manage the translation of block and in-block indices to global indices into \overline A.
+  Each MATXXXDD will be an extension of the corresponding MATXXX and MATDD.
+  MATXXXDD formats can be useful, if many blocks are desired (all FEM or SEM blocks), 
+  and the overhead  of maintaining the individual matrix blocks as in MATDDXXX becomes prohibitive.
 
 
 Use cases that must work:
@@ -62,108 +63,174 @@ Scatter construction should be simplified with helper routines for the following
    - "tensor product" of a scatter with a block
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDDMultRow"
-PetscErrorCode MatDDMultRow(Mat M, PetscInt i, Vec x, Vec y) {
-  struct Mat_DD* dd = (struct Mat_DD*)M->data;
+
+#undef  __FUNCT__
+#define __FUNCT__ "MatDD_BlockInit"
+PetscErrorCode PETSCMAT_DLLEXPORT MatDD_BlockInit(Mat A, PetscInt i, PetscInt j, const MatType blockmattype, MatDDBlockCommType subcommtype, MatDD_Block *block) {
+  PetscErrorCode        ierr;
+  Mat_DD*               dd = (Mat_DD*)A->data;
+  PetscInt              m,n;
+  MPI_Comm              comm = ((PetscObject)A)->comm, subcomm;
+  PetscMPIInt           commsize, commrank, subcommsize;
+  PetscMPIInt           subcommcolor;
+  
   PetscFunctionBegin;
-  if(!dd->ops->multrow) {
-    SETERRQ(PETSC_ERR_SUP, __FUNCT__ " not supported by this MatDD type");
+  
+  /**/
+  m = dd->rmapdd->dn[2*i+1]-dd->rmapdd->dn[2*i];
+  n = dd->cmapdd->dn[2*j+1]-dd->cmapdd->dn[2*j];
+  switch(subcommtype) {
+  case MATDDMETA_BLOCK_COMM_SELF:
+    subcomm = PETSC_COMM_SELF;
+    subcommsize = 1;
+    break;
+  case MATDDMETA_BLOCK_COMM_SAME:
+    subcomm = comm;
+    ierr = MPI_Comm_size(subcomm, &subcommsize); CHKERRQ(ierr);
+    break;
+  case MATDDMETA_BLOCK_COMM_DETERMINE:
+    /* determine and construct a subcomm that includes all of the procs with nonzero m and n */
+    ierr = MPI_Comm_size(comm, &commsize); CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm, &commrank); CHKERRQ(ierr);
+    if(m || n) {
+      subcommcolor = 1;
+    }
+    else {
+      subcommcolor = MPI_UNDEFINED;
+    }
+    ierr = MPI_Comm_split(comm, subcommcolor, commrank, &subcomm); CHKERRQ(ierr);
+    ierr = MPI_Comm_size(subcomm, &subcommsize);                   CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ1(PETSC_ERR_USER, "Unknown block comm type: %d", commsize);
+    break;
+  }/* switch(subcommtype) */
+  if(subcomm != MPI_COMM_NULL) {
+    ierr = MatCreate(subcomm, &(block->mat)); CHKERRQ(ierr);
+    ierr = MatSetSizes(block->mat,m,n,PETSC_DETERMINE,PETSC_DETERMINE); CHKERRQ(ierr);
+    /**/
+    if(!blockmattype) {
+      ierr = MatSetType(block->mat,meta->default_block_type); CHKERRQ(ierr);
+    }
+    else {
+      ierr = MatSetType(block->mat,blockmattype); CHKERRQ(ierr);
+    }
   }
-  if(i < 0 || i >= dd->rmapdd->dcount) {
-    SETERRQ2(PETSC_ERR_USER, "Invalid MatDD row block %d: must be between 0 <= and < %d", i, dd->rmapdd->dcount);
+  else {
+    block->mat = PETSC_NULL;
   }
-  ierr = dd->ops->multrow(M,i,x,y); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/* MatDDMultRow() */
+}/* MatDD_BlockInit() */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDDMultAddCol"
-PetscErrorCode MatDDMultAddCol(Mat M, PetscInt j, Vec x, Vec y) {
-  struct Mat_DD* dd = (struct Mat_DD*)M->data;
+#undef  __FUNCT__
+#define __FUNCT__ "MatDDAddBlockLocal"
+PetscErrorCode PETSCMAT_DLLEXPORT MatDDAddBlockLocal(Mat A, PetscInt i, PetscInt j, const MatType blockmattype, MatDDBlockCommType blockcommtype, Mat *_B) {
+  PetscErrorCode   ierr;
+  Mat_DD*          dd = (Mat_DD*)A->data;
+  MatDD_Block     *_block;
+  
   PetscFunctionBegin;
-  if(!dd->ops->multaddcol) {
-    SETERRQ(PETSC_ERR_SUP, __FUNCT__ " not supported by this MatDD type");
+  ierr = MatPreallocated(A); CHKERRQ(ierr);
+  if(i < 0 || i > dd->rmapdd->dcount){
+    SETERRQ2(PETSC_ERR_USER, "row domain id %d is invalid; must be >= 0 and < %d", i, dd->rmapdd->dcount);
   }
-  if(j < 0 || j >= dd->cmapdd->dcount) {
-    SETERRQ2(PETSC_ERR_USER, "Invalid MatDD col block %d: must be between 0 <= and < %d", j, dd->cmapdd->dcount);
+  if(j < 0 || j > dd->cmapdd->dcount){
+    SETERRQ2(PETSC_ERR_USER, "col domain id %d is invalid; must be >= 0 and < %d", j, dd->cmapdd->dcount);
   }
-  ierr = dd->ops->multaddcol(M,j,x,y); CHKERRQ(ierr);
+  ierr = meta->ops->locateblock(A,i,j, PETSC_TRUE, &_block); CHKERRQ(ierr);
+  ierr = MatDD_BlockInit(A,i,j,blockmattype, blockcommtype, _block); CHKERRQ(ierr);
+  if(_B) {
+    ierr = MatDD_BlockGetMat(A, i, j, _block, _B); CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)(*_B)); CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
-}/* MatDDMultAddCol() */
+}/* MatDDAddBlockLocal() */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDDMultTransposeAddRow"
-PetscErrorCode MatDDMultTransposeAddRow(Mat M, PetscInt i, Vec x, Vec y) {
-  struct Mat_DD* dd = (struct Mat_DD*)M->data;
+
+#undef  __FUNCT__
+#define __FUNCT__ "MatDDMetaSetBlock"
+PetscErrorCode PETSCMAT_DLLEXPORT MatDDMetaSetBlock(Mat A, PetscInt i, PetscInt j, Mat B) {
+  PetscErrorCode        ierr;
+  Mat_DD*              dd = (Mat_DD*)A->data;
+  Mat_DDMeta*          meta = (Mat_DDMeta*)A->data;
+  MatDDMeta_Block     *_block;
+  
   PetscFunctionBegin;
-  if(!dd->ops->multtransposeaddrow) {
-    SETERRQ(PETSC_ERR_SUP, __FUNCT__ " not supported by this MatDD type");
+  ierr = MatPreallocated(A); CHKERRQ(ierr);
+  if(i < 0 || i > dd->rmapdd->dcount){
+    SETERRQ2(PETSC_ERR_USER, "row domain id %d is invalid; must be >= 0 and < %d", i, dd->rmapdd->dcount);
   }
-  if(i < 0 || i >= dd->rmapdd->dcount) {
-    SETERRQ2(PETSC_ERR_USER, "Invalid MatDD row block %d: must be between 0 <= and < %d", i, dd->rmapdd->dcount);
+  if(j < 0 || j > dd->cmapdd->dcount){
+    SETERRQ2(PETSC_ERR_USER, "col domain id %d is invalid; must be >= 0 and < %d", j, dd->cmapdd->dcount);
   }
-  ierr = dd->ops->multtransposeaddrow(M,i,x,y); CHKERRQ(ierr);
+  ierr = meta->ops->locateblock(A,i, j, PETSC_TRUE, &_block); CHKERRQ(ierr);
+  ierr = MatDDMeta_BlockSetMat(A,i,j,_block, B); CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)(B)); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/* MatDDMultTransposeAddRow() */
+}/* MatDDMetaSetBlock() */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDDMultTransposeCol"
-PetscErrorCode MatDDMultTransposeCol(Mat M, PetscInt j, Vec x, Vec y) {
-  struct Mat_DD* dd = (struct Mat_DD*)M->data;
+
+#undef  __FUNCT__
+#define __FUNCT__ "MatDDMetaGetBlock"
+PetscErrorCode PETSCMAT_DLLEXPORT MatDDMetaGetBlock(Mat A, PetscInt i, PetscInt j, Mat *_B) {
+  PetscErrorCode     ierr;
+  Mat_DD*            dd = (Mat_DD*)A->data;
+  Mat_DDmeta*         meta = (Mat_DDMeta*)A->data;
+  MatDDMeta_Block     *_block;
+  
   PetscFunctionBegin;
-  if(!dd->ops->multtransposecol) {
-    SETERRQ(PETSC_ERR_SUP, __FUNCT__ " not supported by this MatDD type");
+  if(i < 0 || i > dd->rmapdd->dcount){
+    SETERRQ2(PETSC_ERR_USER, "row domain id %d is invalid; must be >= 0 and < %d", i, dd->rmapdd->dcount);
   }
-  if(j < 0 || j >= dd->cmapdd->dcount) {
-    SETERRQ2(PETSC_ERR_USER, "Invalid MatDD col block %d: must be between 0 <= and < %d", j, dd->cmapdd->dcoount);
+  if(j < 0 || j > dd->cmapdd->dcount){
+    SETERRQ2(PETSC_ERR_USER, "col domain id %d is invalid; must be >= 0 and < %d", j, dd->cmapdd->dcount);
   }
-  ierr = dd->ops->multtranposecol(M,j,x,y); CHKERRQ(ierr);
+  ierr = meta->ops->locateblock(A, i, j, PETSC_FALSE, &_block); CHKERRQ(ierr);
+  if(_block == PETSC_NULL) {
+    SETERRQ2(PETSC_ERR_USER, "Domain block not found: row %d col %d", i, j);
+  }
+  ierr = MatDDMetaBlockGetMat(A,i,j,_block, _B); CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)(*_B)); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/* MatDDMultTransposeCol() */
+}/* MatDDMetaGetBlock() */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDDMultAddBlock"
-PetscErrorCode MatDDMultAddBlock(Mat M, PetscInt i, PetscInt j, Vec x, Vec y) {
-  struct Mat_DD* dd = (struct Mat_DD*)M->data;
+#undef  __FUNCT__
+#define __FUNCT__ "MatDDMetaRestoreBlock"
+PetscErrorCode PETSCMAT_DLLEXPORT MatDDMetaRestoreBlock(Mat A, PetscInt i, PetscInt j, Mat *_B) {
+  PetscErrorCode     ierr;
+  Mat_DD*            dd = (Mat_DD*)A->data;
+  Mat_DDmeta*        meta = (Mat_DDMeta*)A->data;
+  MatDDMeta_Block   *_block;
+  Mat               *_B2;
+  PetscInt          refcnt;
+  
   PetscFunctionBegin;
-  if(!dd->ops->multaddblock) {
-    SETERRQ(PETSC_ERR_SUP, __FUNCT__ " not supported by this MatDD type");
+  if(i < 0 || i > dd->rmapdd->dcount){
+    SETERRQ2(PETSC_ERR_USER, "row domain id %d is invalid; must be >= 0 and < %d", i, dd->rmapdd->dcount);
   }
-  if(i < 0 || i >= dd->rmapdd->dcount) {
-    SETERRQ2(PETSC_ERR_USER, "Invalid MatDD row block %d: must be between 0 <= and < %d", i, dd->rmapdd->dcount);
+  if(j < 0 || j > dd->cmapdd->dcount){
+    SETERRQ2(PETSC_ERR_USER, "col domain block id %d is invalid; must be >= 0 and < %d", j, dd->cmapdd->dcount);
   }
-  if(j < 0 || j >= dd->cmapdd->dcount) {
-    SETERRQ2(PETSC_ERR_USER, "Invalid MatDD col block %d: must be between 0 <= and < %d", j, dd->cmapdd->dcount);
+  ierr = meta->ops->locateblock(A, i, j, PETSC_FALSE, &_block); CHKERRQ(ierr);
+  if(_block == PETSC_NULL) {
+    SETERRQ2(PETSC_ERR_USER, "Domain block not found: row %d col %d", i, j);
   }
-  ierr = dd->ops->multaddblock(M,i,j,x,y); CHKERRQ(ierr);
+  ierr = MatDDMetaBlockGetMat(A,i,j,_block, _B2); CHKERRQ(ierr);
+  if(*_B != *_B2) {
+    SETERRQ2(PETSC_ERR_USER, "Domain block mat for row %d col %d being restored is not the same that was gotten", i, j);
+  }
+  ierr = PetscObjectGetReference((PetscObject)(*_B), &refcnt); CHKERRQ(ierr);
+  if(refcnt <= 1) {
+    SETERRQ2(PETSC_ERR_USER, "Restoring domain block mat for row %d col %d too low a reference count.\nPerhaps restoring a block that was not gotten?", i, j);
+  }
+  ierr = PetscObjectReference((PetscObject)(*_B)); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/* MatDDMultAddBlock() */
+}/* MatDDMetaRestoreBlock() */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDDMultTransposeAddBlock"
-PetscErrorCode MatDDMultTransposeAddBlock(MatDD M, PetscInt i, PetscInt j, Vec x, Vec y) {
-  struct Mat_DD* dd = (struct Mat_DD*)M->data;
-  PetscFunctionBegin;
-  if(!dd->multaddblock) {
-    SETERRQ(PETSC_ERR_SUP, __FUNCT__ " not supported by this MatDD type");
-  }
-  if(i < 0 || i >= dd->rmapdd->dcount) {
-    SETERRQ2(PETSC_ERR_USER, "Invalid MatDD row block %d: must be between 0 <= and < %d", i, dd->rmapdd->dcount);
-  }
-  if(j < 0 || j >= dd->cmapdd->dcount) {
-    SETERRQ2(PETSC_ERR_USER, "Invalid MatDD col block %d: must be between 0 <= and < %d", j, dd->cmapdd->dcount);
-  }
-  ierr = dd->ops->multtransposeaddblock(M,i,j,x,y); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}/* MatDDMultTransposeAddBlock() */
-
-
-/****************************************************************************/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDDSetGather"
-PetscErrorCode MatDDSetGather(Mat A, Mat G, PetscInt rowd_count, PetscInt **row_dN) { 
+PetscErrorCode MatDDSetGather(Mat A, Mat G) { 
   PetscErrorCode ierr;
   Mat_DD *dd = (Mat_DD*) A->data;
   PetscInt m,M;
@@ -184,32 +251,12 @@ PetscErrorCode MatDDSetGather(Mat A, Mat G, PetscInt rowd_count, PetscInt **row_
 }/* MatDDSetGather() */
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatDDSetGatherLocal"
-PetscErrorCode MatDDSetGatherLocal(Mat A, Mat G, PetscInt rowd_count, PetscInt **row_dn) { 
-  PetscErrorCode ierr;
-  Mat_DD *dd = (Mat_DD*) A->data;
-  PetscInt m,M;
-  PetscFunctionBegin;
-  if(dd->gather) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Cannot reset gather");
-  }
-  if(G){
-    m = G->cmap->n; M = G->cmap->M;
-  }
-  else {
-    m = A->rmap->n; M = A->rmap->N;
-  }
-  ierr = VecCreateDDLocal(((PetscObject)A)->comm, m, M, rowdcount, row_dn, &dd->outvec); CHKERRQ(ierr);
-  ierr = VecDDGetDDLayout(dd->outvec, &dd->rmapdd); CHKERRQ(ierr);
-  dd->gather = G;
-  PetscFunctionReturn(0);
-}/* MatDDSetGatherLocal() */
+
 
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDDSetScatter"
-PetscErrorCode MatDDSetScatter(Mat A, Mat S, PetscInt col_dcount, PetscInt **col_dN) { 
+PetscErrorCode MatDDSetScatter(Mat A, Mat S) { 
   PetscErrorCode ierr;
   Mat_DD *dd = (Mat_DD*) A->data;
   PetscInt n,N;
@@ -230,27 +277,57 @@ PetscErrorCode MatDDSetScatter(Mat A, Mat S, PetscInt col_dcount, PetscInt **col
 }/* MatDDSetScatter() */
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatDDSetScatterLocal"
-PetscErrorCode MatDDSetScatterLocal(Mat A, Mat S, PetscInt col_dcount, PetscInt **col_dn) { 
-  PetscErrorCode ierr;
-  Mat_DD *dd = (Mat_DD*) A->data;
-  PetscInt n,N;
+
+#undef  __FUNCT__
+#define __FUNCT__ "MatDD_BlockFinit"
+PetscErrorCode PETSCMAT_DLLEXPORT MatDD_BlockFinit(Mat A, MatDD_Block *block) {
+  PetscErrorCode        ierr;
+  MPI_Comm              comm = ((PetscObject)A)->comm, subcomm = ((PetscObject)(block->mat))->comm;
+  PetscMPIInt           flag;
+  
   PetscFunctionBegin;
-  if(dd->gather) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Cannot reset scatter");
+  
+  ierr = MatDestroy(block->mat); CHKERRQ(ierr);
+  /**/
+  ierr = MPI_Comm_compare(subcomm, comm, &flag); CHKERRQ(ierr);
+  if(flag != MPI_IDENT) {
+    ierr = MPI_Comm_compare(subcomm, PETSC_COMM_SELF, &flag); CHKERRQ(ierr);
+    if(flag != MPI_IDENT) {
+      ierr = MPI_Comm_free(&subcomm); CHKERRQ(ierr);
+    }
   }
-  if(S) {
-    n = S->rmap->n; N = S->rmap->N;
-  }
-  else {
-    n = A->cmap->n; N = A->cmap->N;
-  }
-  ierr = VecCreateDDLocal(((PetscObject)A)->comm, n, N, col_dcount, col_dn, &dd->invec); CHKERRQ(ierr);
-  ierr = VecDDGetDDLayout(dd->invec, &dd->cmapdd); CHKERRQ(ierr);
-  dd->scatter = S;
   PetscFunctionReturn(0);
-}/* MatDDSetScatterLocal() */
+}/* MatDD_BlockFinit() */
+
+
+
+#undef  __FUNCT__
+#define __FUNCT__ "MatDDSetDefaultBlockType"
+PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetDefaltBlockType(Mat A, const MatType type) {
+  Mat_DD  *dd = (Mat_DDMeta*)A->data;
+  PetscFunctionBegin;
+  if(!type){
+    SETERRQ(PETSC_ERR_USER, "Unknown default block type");
+  }
+  dd->default_block_type = type;
+  PetscFunctionReturn(0);
+}/* MatDDSetDefaultBlockType()*/
+
+#undef  __FUNCT__
+#define __FUNCT__ "MatDDGetDefaultBlockType"
+PetscErrorCode PETSCMAT_DLLEXPORT MatDDGetDefaltBlockType(Mat A, const MatType *type) {
+  Mat_DD  *dd = (Mat_DD*)A->data;
+  PetscFunctionBegin;
+  *type = dd->default_block_type;
+  PetscFunctionReturn(0);
+}/* MatDDSetDefaultBlockType()*/
+
+
+
+
+
+
+
 
 
 #undef  __FUNCT__
