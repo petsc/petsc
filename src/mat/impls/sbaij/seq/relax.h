@@ -25,7 +25,7 @@ PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat A,Vec xx,Vec zz)
   const PetscInt       *ib=a->j;
   PetscInt             ibt;
 #endif
-  PetscInt             nonzerorow;
+  PetscInt             nonzerorow = 0;
 
   PetscFunctionBegin;
   ierr = VecSet(zz,0.0);CHKERRQ(ierr);
