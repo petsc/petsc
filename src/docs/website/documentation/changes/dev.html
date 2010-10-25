@@ -123,6 +123,8 @@ should now be '--download-package=1'</li>
       <p><u><b>IS:<br>
       </b></u></p>
       <ul>
+        <li>ISBlock(),ISStride() are removed. Use PetscTypeCompare((PetscObject)is,ISBLOCK,&flag),
+          PetscTypeCompare((PetscObject)is,ISSTRIDE,&flag) instead.</li>
         <li>Added ISCreate(), ISSetType(), ISRegister() etc to match
 style of other PETSc objects. Also added ISGeneralSetIndices(),
 ISBlockSetIndices(), ISStrideSetStride()</li>

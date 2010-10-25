@@ -466,7 +466,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockRestoreIndices(IS is,const PetscInt *id
    Concepts: IS^block size
    Concepts: index sets^block size
 
-.seealso: ISBlockGetSize(), ISGetSize(), ISBlock(), ISCreateBlock()
+.seealso: ISBlockGetSize(), ISGetSize(), ISCreateBlock()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetBlockSize(IS is,PetscInt *size)
 {
@@ -489,37 +489,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetBlockSize_Block(IS is,PetscInt *size
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISBlock" 
-/*@
-   ISBlock - Checks whether an index set is blocked.
-
-   Not Collective
-
-   Input Parameter:
-.  is - the index set
-
-   Output Parameter:
-.  flag - PETSC_TRUE if a block index set, else PETSC_FALSE
-
-   Level: intermediate
-
-   Concepts: IS^block
-   Concepts: index sets^block
-
-.seealso: ISBlockGetSize(), ISGetSize(), ISBlockGetBlockSize(), ISCreateBlock()
-@*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISBlock(IS is,PetscBool  *flag)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidIntPointer(flag,2);
-  ierr = PetscTypeCompare((PetscObject)is,ISBLOCK,flag);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "ISBlockGetLocalSize" 
 /*@
    ISBlockGetLocalSize - Returns the local number of blocks in the index set.
@@ -537,7 +506,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlock(IS is,PetscBool  *flag)
    Concepts: IS^block sizes
    Concepts: index sets^block sizes
 
-.seealso: ISBlockGetBlockSize(), ISBlockGetSize(), ISGetSize(), ISBlock(), ISCreateBlock()
+.seealso: ISBlockGetBlockSize(), ISBlockGetSize(), ISGetSize(), ISCreateBlock()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetLocalSize(IS is,PetscInt *size)
 {
@@ -578,7 +547,7 @@ EXTERN_C_END
    Concepts: IS^block sizes
    Concepts: index sets^block sizes
 
-.seealso: ISBlockGetBlockSize(), ISBlockGetLocalSize(), ISGetSize(), ISBlock(), ISCreateBlock()
+.seealso: ISBlockGetBlockSize(), ISBlockGetLocalSize(), ISGetSize(), ISCreateBlock()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetSize(IS is,PetscInt *size)
 {
