@@ -270,6 +270,7 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscS
   PetscScalar    *array;
 
   PetscFunctionBegin;
+  if (x && b) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"No support");
   {
     /*
        Set up is->x as a "counting vector". This is in order to MatMult_IS
