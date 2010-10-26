@@ -1428,6 +1428,11 @@ runex140_2:
 	   ${DIFF} output/ex140_1.out ex140_2.tmp || echo "Possible problem with ex140_2, diffs above"; \
 	   ${RM} -f ex140_2.tmp
 
+runex140_3:
+	-@${MPIEXEC} -n 1 ./ex140  -f ${DATAFILESPATH}/matrices/small -matload_block_size 3 -sbaij
+	-@${MATLAB_COMMAND} -nodesktop -nojvm -nodisplay -r "ex140; exit"  > ex140_3.tmp 2>&1; \
+	   ${DIFF} output/ex140_1.out ex140_3.tmp || echo "Possible problem with ex140_3, diffs above"; \
+	   ${RM} -f ex140_3.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc \

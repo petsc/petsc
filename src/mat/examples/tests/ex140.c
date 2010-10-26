@@ -10,7 +10,7 @@ int main(int argc,char **args)
   Mat            A;
   PetscErrorCode ierr;
   char           file[PETSC_MAX_PATH_LEN];
-  PetscBool      flg;
+  PetscBool      aij,sbaij,flg;
   PetscViewer    fd;
   const MatType  type = MATBAIJ;
   PetscInt       n = 7, idx[] = {1,5,6,8,9,12,15};
@@ -18,8 +18,10 @@ int main(int argc,char **args)
   IS             is;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-aij",&flg);CHKERRQ(ierr);
-  if (flg) type = MATAIJ;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-aij",&aij);CHKERRQ(ierr);
+  if (aij) type = MATAIJ;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-sbaij",&sbaij);CHKERRQ(ierr);
+  if (sbaij) type = MATSBAIJ;
 
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
