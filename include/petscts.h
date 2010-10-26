@@ -36,6 +36,7 @@ E*/
 #define TSRK              "rk"
 #define TSPYTHON          "python"
 #define TSTHETA           "theta"
+#define TSALPHA           "alpha"
 #define TSGL              "gl"
 #define TSSSP             "ssp"
 
@@ -433,6 +434,11 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSRKSetTolerance(TS,PetscReal);
 
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSThetaSetTheta(TS,PetscReal);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSThetaGetTheta(TS,PetscReal*);
+
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAccept(TS,PetscErrorCode(*)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*),void*);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetRadius(TS,PetscReal);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetParams(TS,PetscReal,PetscReal,PetscReal);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSAlphaGetParams(TS,PetscReal*,PetscReal*,PetscReal*);
 
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSSetDM(TS,DM);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGetDM(TS,DM*);

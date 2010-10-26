@@ -2,7 +2,7 @@
 #define included_ALE_Numbering_hh
 
 #ifndef  included_ALE_SectionCompletion_hh
-#include <SectionCompletion.hh>
+#include <sieve/SectionCompletion.hh>
 #endif
 
 

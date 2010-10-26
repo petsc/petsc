@@ -12,7 +12,7 @@
 // ALE extensions
 
 #ifndef  included_ALE_hh
-#include <ALE.hh>
+#include <sieve/ALE.hh>
 #endif
 
 extern PetscErrorCode PetscObjectDestroy_PetscObject(PetscObject);

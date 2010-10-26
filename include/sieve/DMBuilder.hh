@@ -2,7 +2,7 @@
 #define included_ALE_DMBuilder_hh
 
 #ifndef  included_ALE_Mesh_hh
-#include <Mesh.hh>
+#include <sieve/Mesh.hh>
 #endif
 
 #include <petscmesh.hh>

@@ -115,38 +115,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideGetInfo(IS is,PetscInt *first,PetscInt
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISStride" 
-/*@
-   ISStride - Determines if an IS is based on a stride.
-
-   Not Collective
-
-   Input Parameter:
-.  is - the index set
-
-   Output Parameters:
-.  flag - either PETSC_TRUE or PETSC_FALSE
-
-   Level: intermediate
-
-   Concepts: index sets^is it stride
-   Concepts: IS^is it stride
-
-.seealso: ISCreateStride(), ISGetSize()
-@*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISStride(IS is,PetscBool  *flag)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidIntPointer(flag,2);
-
-  ierr = PetscTypeCompare((PetscObject)is,ISSTRIDE,flag);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "ISDestroy_Stride" 
 PetscErrorCode ISDestroy_Stride(IS is)
 {

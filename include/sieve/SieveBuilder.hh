@@ -2,7 +2,7 @@
 #define included_ALE_SieveBuilder_hh
 
 #ifndef  included_ALE_ALE_hh
-#include <ALE.hh>
+#include <sieve/ALE.hh>
 #endif
 
 namespace ALE {

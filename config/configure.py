@@ -340,7 +340,7 @@ def petsc_configure(configure_options):
       try:
         framework.log.write(msg+se)
         traceback.print_tb(sys.exc_info()[2], file = framework.log)
-        framework.log.close()
+        if hasattr(framework,'log'): framework.log.close()
         move_configure_log(framework)
       except:
         pass
@@ -349,6 +349,7 @@ def petsc_configure(configure_options):
     print se
     import traceback
     traceback.print_tb(sys.exc_info()[2])
+  if hasattr(framework,'log'): framework.log.close()
 
 if __name__ == '__main__':
   petsc_configure([])

@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   ierr = ISStrideGetInfo(is,&start,&stride);CHKERRQ(ierr);
   if (start != 0) SETERRQ(PETSC_COMM_SELF,1,"ISStrideGetInfo");
   if (stride != 2) SETERRQ(PETSC_COMM_SELF,1,"ISStrideGetInfo");
-  ierr = ISStride(is,&flg);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)is,ISSTRIDE,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,1,"ISStride");
   ierr = ISGetIndices(is,&ii);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&ii);CHKERRQ(ierr);

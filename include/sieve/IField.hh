@@ -2,15 +2,15 @@
 #define included_ALE_IField_hh
 
 #ifndef  included_ALE_BasicCommunication_hh
-#include <BasicCommunication.hh>
+#include <sieve/BasicCommunication.hh>
 #endif
 
 #ifndef  included_ALE_Field_hh
-#include <Field.hh>
+#include <sieve/Field.hh>
 #endif
 
 #ifndef  included_ALE_ISieve_hh
-#include <ISieve.hh>
+#include <sieve/ISieve.hh>
 #endif
 
 // An ISection (or IntervalSection) is a section over a simple interval domain

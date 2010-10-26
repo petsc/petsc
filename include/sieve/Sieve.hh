@@ -9,7 +9,7 @@
 #include <iostream>
 
 #ifndef  included_ALE_Sifter_hh
-#include <Sifter.hh>
+#include <sieve/Sifter.hh>
 #endif
 
 

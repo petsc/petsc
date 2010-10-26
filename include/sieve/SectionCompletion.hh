@@ -2,11 +2,11 @@
 #define included_ALE_SectionCompletion_hh
 
 #ifndef  included_ALE_Topology_hh
-#include <Topology.hh>
+#include <sieve/Topology.hh>
 #endif
 
 #ifndef  included_ALE_Field_hh
-#include <Field.hh>
+#include <sieve/Field.hh>
 #endif
 
 namespace ALE {

@@ -2159,7 +2159,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetConvergenceHistory(SNES snes,PetscReal
 #define __FUNCT__ "SNESSetUpdate"
 /*@C
   SNESSetUpdate - Sets the general-purpose update function called
-  at the beginning o every iteration of the nonlinear solve. Specifically
+  at the beginning of every iteration of the nonlinear solve. Specifically
   it is called just before the Jacobian is "evaluated".
 
   Logically Collective on SNES

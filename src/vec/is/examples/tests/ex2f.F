@@ -31,7 +31,7 @@
       if (stride .ne. 2) then
         SETERRQ(PETSC_COMM_SELF,1,0,ierr)
       endif
-      call ISStride(is,flag,ierr)
+      call PetscTypeCompare(is,ISSTRIDE,flag,ierr)
       if (.not. flag) then 
         SETERRQ(PETSC_COMM_SELF,1,0,ierr) 
       endif

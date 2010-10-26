@@ -2,7 +2,7 @@
 #define included_ALE_Sections_hh
 
 #ifndef  included_ALE_Numbering_hh
-#include <Numbering.hh>
+#include <sieve/Numbering.hh>
 #endif
 
 namespace ALE {

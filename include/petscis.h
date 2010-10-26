@@ -125,14 +125,12 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISDifference(IS,IS,IS*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSum(IS,IS,IS*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISExpand(IS,IS,IS*);
 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlock(IS,PetscBool *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockGetIndices(IS,const PetscInt *[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockRestoreIndices(IS,const PetscInt *[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockGetLocalSize(IS,PetscInt *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockGetSize(IS,PetscInt *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockGetBlockSize(IS,PetscInt *);
 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISStride(IS,PetscBool *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISStrideGetInfo(IS,PetscInt *,PetscInt*);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISToGeneral(IS);

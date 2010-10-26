@@ -1,7 +1,7 @@
 #ifndef included_ALE_Problem_Base_hh
 #define included_ALE_Problem_Base_hh
 
-#include <DMBuilder.hh>
+#include <sieve/DMBuilder.hh>
 
 #include <petscmesh_viewers.hh>
 #include <petscdmmg.h>

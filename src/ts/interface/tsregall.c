@@ -8,6 +8,7 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Pseudo(TS);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_CN(TS);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Theta(TS);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Alpha(TS);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_GL(TS);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_SSP(TS);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_RK(TS);
@@ -42,6 +43,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSRegisterAll(const char path[])
   ierr = TSRegisterDynamic(TSGL,              path, "TSCreate_GL",       TSCreate_GL);CHKERRQ(ierr);
   ierr = TSRegisterDynamic(TSSSP,             path, "TSCreate_SSP",      TSCreate_SSP);CHKERRQ(ierr);
   ierr = TSRegisterDynamic(TSTHETA,           path, "TSCreate_Theta",    TSCreate_Theta);CHKERRQ(ierr);
+  ierr = TSRegisterDynamic("alpha"/*TSALPHA*/,path, "TSCreate_Alpha",    TSCreate_Alpha);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SUNDIALS)
   ierr = TSRegisterDynamic(TSSUNDIALS,        path, "TSCreate_Sundials", TSCreate_Sundials);CHKERRQ(ierr);
 #endif

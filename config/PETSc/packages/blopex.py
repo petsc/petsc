@@ -17,6 +17,9 @@ class Configure(PETSc.package.NewPackage):
     # Hypre has blopex sources/includes for eg: interpreter.h which can conflict with one in petsc.
     # hence attepmt to build hypre before blopex - so blopex's interpreter.h is the one that gets used.
     if self.framework.argDB.has_key('download-hypre') and self.framework.argDB['download-hypre']:
+      if self.framework.argDB.has_key('download-openmpi') and self.framework.argDB['download-openmpi']:
+        raise RuntimeError('Cannot use BLOPEX with --download-hypre aswell as --download-openmpi.\n\
+Suggest using --download-mpich or install openmpi separately - and specify mpicc etc to petsc configure.\n')
       self.hypre      = framework.require('PETSc.packages.hypre',self)
       self.deps       = [self.blasLapack,self.hypre]
     else:

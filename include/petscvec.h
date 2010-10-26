@@ -104,11 +104,14 @@ E*/
 #define VECSEQCUDA     "seqcuda"
 #define VECMPICUDA     "mpicuda"
 #define VECCUDA        "cuda"       /* seqcuda on one process and mpicuda on several */
+#define VECDD          "vecdd"
+
 
 /* Logging support */
 #define    VEC_FILE_CLASSID 1211214
 extern PETSCVEC_DLLEXPORT PetscClassId VEC_CLASSID;
 extern PETSCVEC_DLLEXPORT PetscClassId VEC_SCATTER_CLASSID;
+
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecFinalizePackage(void);
@@ -547,6 +550,15 @@ extern PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices);
 extern PetscErrorCode VecCUDACopyToGPUSome_Public(Vec,PetscCUSPIndices);
 extern PetscErrorCode VecCUDACopyFromGPUSome_Public(Vec,PetscCUSPIndices);
 #endif
+
+#if defined PETSC_HAVE_VECDD
+extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDSetDomainsLocal(Vec v, PetscInt domain_count, PetscInt supported_domains[], PetscInt domain_limits[], PetscTruth covering);
+extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDSetDomainsLocalIS(Vec v, IS supported_domains, IS domain_limits[], PetscTruth covering);
+extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDGetDomainInfoLocal(Vec v, PetscInt i, PetscInt *d, PetscInt *size);
+extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDGetDomainArrayLocal(Vec v, PetscInt i, PetscScalar **array);
+extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDRestoreDomainArrayLocal(Vec v, PetscInt i, PetscScalar **array);
+#endif
+
 
 PETSC_EXTERN_CXX_END
 #endif

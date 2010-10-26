@@ -128,7 +128,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt n,PetscInt bs
     ierr = ISGetLocalSize(is_in[i],&len);CHKERRQ(ierr);
 
     /* special case where IS is already block IS of the correct size */
-    ierr = ISBlock(is_in[i],&isblock);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)is_in[i],ISBLOCK,&isblock);CHKERRQ(ierr);
     if (isblock) {
       ierr = ISBlockGetLocalSize(is_in[i],&bbs);CHKERRQ(ierr);
       if (bs == bbs) {

@@ -161,6 +161,7 @@ symmetric?</a></li>
         <li><a href="faq.html#matlab">How can I use PETSc with Matlab?
 How can I get PETSc Vecs and Mats
 to Matlab or vice versa?</a></li>
+        <li><a href="faq.html#usingCython">How do I get started with Cython so that I can extend petsc4py?</a></li>
       </ul>
       <h4><a href="faq.html#Execution">Execution</a></h4>
       <menu>
@@ -1094,7 +1095,7 @@ Mats
 to Matlab or vice versa?<br>
             </span><br>
             <span style="color: rgb(255, 0, 0);"><br>
-            </span>There are five was to work with PETSc and Matlab<br>
+            </span>There are five ways to work with PETSc and Matlab<br>
             <br>
             <ol>
               <li>Using the Matlab Engine, this allows PETSc to
@@ -1134,6 +1135,21 @@ be loaded into Matlab.</li>
               <li>We are just being to develop in <a
  href="../developers/index.html">petsc-dev</a> an API to call most of
 the PETSc function directly from Matlab; we could use help in
+developing this. See bin/matlab/classes/PetscInitialize.m<br>
+              </li>
+            </ol><br>
+            <span style="color: rgb(255, 0, 0);"><a name="usingCython"></a>How do I get started with Cython so that I can extend petsc4py?<br>
+            </span><br>
+Steps I used:
+<ol>
+  <li>Learn how to <a href="http://docs.cython.org/src/quickstart/build.html">build a Cython module</a></li>
+  <li>Go through the simple example provided by
+  Denis <a href="http://stackoverflow.com/questions/3046305/simple-wrapping-of-c-code-with-cython">here</a>. Note also
+  the next comment that shows how to create numpy arrays in the Cython and pass them back.</li>
+  <li>Check out <a href="http://docs.cython.org/src/tutorial/numpy.html">this page</a> which tells you how to get fast
+  indexing</li>
+  <li>Have a look at the petsc4py <a href="http://code.google.com/p/petsc4py/source/browse/src/PETSc/arraynpy.pxi">array source</a></li>
+</ol>
 developing this. See bin/matlab/classes/PetscInitialize.m for more
 details and bin/matlab/classes/examples/tutorials for examples. </li>
             </ol>

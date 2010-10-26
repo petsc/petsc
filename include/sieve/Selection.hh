@@ -2,11 +2,11 @@
 #define included_ALE_Selection_hh
 
 #ifndef  included_ALE_SieveAlgorithms_hh
-#include <SieveAlgorithms.hh>
+#include <sieve/SieveAlgorithms.hh>
 #endif
 
 #ifndef  included_ALE_SieveBuilder_hh
-#include <SieveBuilder.hh>
+#include <sieve/SieveBuilder.hh>
 #endif
 
 namespace ALE {

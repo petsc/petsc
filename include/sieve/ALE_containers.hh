@@ -13,13 +13,13 @@
 #include <vector>
 
 #ifndef  included_ALE_exception_hh
-#include <ALE_exception.hh>
+#include <sieve/ALE_exception.hh>
 #endif
 #ifndef  included_ALE_mem_hh
-#include <ALE_mem.hh>
+#include <sieve/ALE_mem.hh>
 #endif
 #ifndef  included_ALE_log_hh
-#include <ALE_log.hh>
+#include <sieve/ALE_log.hh>
 #endif
 
 namespace ALE {

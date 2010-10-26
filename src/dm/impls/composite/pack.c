@@ -743,7 +743,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_DMComposite(Vec gvec,PetscViewer viewer
   PetscErrorCode         ierr;
   struct DMCompositeLink *next;
   PetscBool              isdraw;
-  DM_Composite           *com = (DM_Composite*)dm->data;
+  DM_Composite           *com;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)gvec,"DMComposite",(PetscObject*)&dm);CHKERRQ(ierr);

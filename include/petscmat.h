@@ -328,16 +328,23 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm,PetscInt,co
 typedef enum {MAT_COMPOSITE_ADDITIVE,MAT_COMPOSITE_MULTIPLICATIVE} MatCompositeType;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeSetType(Mat,MatCompositeType);
 
+#if defined PETSC_HAVE_MATDD
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDCreate(Mat A);
+typedef enum {MATDD_DOMAINS_COLUMN, MATDD_DOMAINS_ROW} MatDDDomainType;
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetDomainsLocal(Mat A, MatDDDomainType type, PetscInt domain_count, const PetscInt *supported_domains, const PetscInt *domain_limits, PetscBool covering);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetDomainsLocalIS(Mat A, MatDDDomainType type, IS supported_domains, IS domain_limits, PetscBool covering);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetScatter(Mat A, Mat S);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetGather(Mat A,  Mat G);
+/**/
 typedef enum {MATDD_BLOCK_COMM_DEFAULT = 0, MATDD_BLOCK_COMM_SELF = -1, MATDD_BLOCK_COMM_DETERMINE = -2} MatDDBlockCommType;
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDAIJSetPreallocation(Mat A,PetscInt nz,PetscInt *nnz);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDGetDefaltBlockType(Mat A, const MatType *type);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetDefaltBlockType(Mat A, const MatType type);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetPreallocation_AIJ(Mat A,PetscInt nz,PetscInt *nnz);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDAddBlock(Mat A, PetscInt rowblock, PetscInt colblock, const MatType blockmattype,  MatDDBlockCommType blockcommtype, Mat *block);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetBlock(Mat A, PetscInt rowblock, PetscInt colblock, Mat block);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDGetBlock(Mat A, PetscInt rowblock, PetscInt colblock, Mat *block);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetScatters(Mat A, PetscInt blockcount, Mat scatters[]);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetGathers(Mat A, PetscInt blockcount,  Mat gathers[]);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDAddBlockLocal(Mat A, PetscInt rowblock, PetscInt colblock, const MatType blockmattype,  MatDDBlockCommType blockcommtype, Mat *block);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetBlockLocal(Mat A, PetscInt rowblock, PetscInt colblock, Mat block);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDGetBlockLocal(Mat A, PetscInt rowblock, PetscInt colblock, Mat *block);
+/**/
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDAIJSetPreallocation(Mat A,PetscInt nz,PetscInt *nnz);
+#endif
 
 #if defined PETSC_HAVE_MATIM
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIMSetIS(Mat A, IS in, IS out);
