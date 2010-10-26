@@ -7,6 +7,7 @@
 #include "petscsys.h"
 PETSC_EXTERN_CXX_BEGIN
 
+#define IS_FILE_CLASSID 1211218
 extern PETSCVEC_DLLEXPORT PetscClassId IS_CLASSID;
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISInitializePackage(const char[]);

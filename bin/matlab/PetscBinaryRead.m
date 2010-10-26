@@ -123,6 +123,15 @@ for l=1:narg
       varargout(l) = {v};
     end
 
+  elseif  header == 1211218 % Petsc IS Object
+    m = double(read(fd,1,'int32'));
+    v = read(fd,m,'int') + 1; % Indexing in Matlab starts at 1, 0 in PETSc
+    if strcmp(comp,'cell')
+      result{l} = v;
+    else 
+      varargout(l) = {v};
+    end
+
   elseif header == 1211219 % Petsc Bag Object
     b = PetscBagRead(fd);
     if strcmp(comp,'cell')

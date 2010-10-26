@@ -1405,12 +1405,25 @@ PetscErrorCode MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
 #define __FUNCT__ "MatZeroRows_SeqAIJ"
 PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscInt       i,m = A->rmap->n - 1,d = 0;
-  PetscErrorCode ierr;
-  PetscBool      missing;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  PetscInt          i,m = A->rmap->n - 1,d = 0;
+  PetscErrorCode    ierr;
+  const PetscScalar *xx;
+  PetscScalar       *bb;
+  PetscBool         missing;
 
   PetscFunctionBegin;
+  if (x && b) {
+    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
+    for (i=0; i<N; i++) {
+      if (rows[i] < 0 || rows[i] > m) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"row %D out of range", rows[i]);
+      bb[rows[i]] = diag*xx[rows[i]];
+    }
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+  }
+
   if (a->keepnonzeropattern) {
     for (i=0; i<N; i++) {
       if (rows[i] < 0 || rows[i] > m) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"row %D out of range", rows[i]);

@@ -152,10 +152,11 @@ unstructured grid finite element computations (FEM) with PETSc?</a></li>
         <li><a href="faq.html#da_mpi_cart">The PETSc DMDA object
 decomposes the domain differently than the MPI_Cart_create() command.
 How can one use them together?</a></li>
-        <li><a href="faq.html#redistribute">When solving a symmetric
-system with Dirichlet boundary conditions I can use MatZeroRows() to
+        <li><a href="faq.html#redistribute">When solving a system with
+Dirichlet boundary conditions I can use MatZeroRows() to
 eliminate the Dirichlet rows but this results in a non-symmetric
-system. How come there is no MatZeroColumns() to keep the matrix
+system. How can I apply Dirichlet boundary conditions and yet keep the
+matrix
 symmetric?</a></li>
         <li><a href="faq.html#matlab">How can I use PETSc with Matlab?
 How can I get PETSc Vecs and Mats
@@ -174,6 +175,7 @@ can I understand what is really happening within my program? </a></li>
 large sparse matrices takes a long time. What can I do make this
 process faster? or MatSetValues() is <span style="font-weight: bold;">so
 slow,
+
 
 
 
@@ -1008,7 +1010,8 @@ How
 can
 one
 use
-them together?<br>
+them
+together?<br>
             <br>
             </span>The MPI_Cart_create() first divides the mesh along
 the z direction, then the y, then the x. DMDA divides along the x, then
@@ -1047,7 +1050,6 @@ PETSC_COMM_WORLD = NewComm;<br>
 When
 solving
 a
-symmetric
 system
 with
 Dirichlet
@@ -1060,18 +1062,26 @@ MatZeroRows()
 to
 eliminate
 the
-Dirichlet rows but this results in a
-non-symmetric system. How come there is no MatZeroColumns() to keep the
+Dirichlet
+rows but this results in a
+non-symmetric system. How can I apply Dirichlet boundary conditions
+but&nbsp; keep the
 matrix symmetric?<br>
             <br>
-            </span>One can solve
-Dirichilet boundary condition problems using three
-ways. (1) Manually call MatGetSubMatrix() to extract your submatrix
-subproblem or (2) call MatZeroRows() or MatZeroRowsColumns(). (3) When assemblying
+            </span>For nonsymmetric systems put the appropriate
+boundary solutions in the x vector and use MatZeroRows() followed by
+KSPSetOperators(). For symmetric problems use MatZeroRowsColumns()
+instead. If you have many Dirichlet locations you can use MatZeroRows()
+(not MatZeroRowsColumns()) and -ksp_type preonly -pc_type redistribute,
+see the manual page for PCREDISTRIBUTE) and PETSc will repartition the
+parallel matrix for load balancing; in this case the new matrix solved
+remains symmetric even though MatZeroRows() is used.<br>
+            <br>
+An alternative approach is when assemblying
 the matrix, (generating values and passing them to the matrix), never
 include locations for the Dirichlet grid points in the vector and
 matrix, instead take them into account as you put the other values into
-the load. 
+the load. <br>
             <br>
             <span style="color: rgb(255, 0, 0);"><a name="matlab"></a>How
 can
@@ -1080,7 +1090,8 @@ get
 PETSc
 Vecs
 and
-Mats to Matlab or vice versa?<br>
+Mats
+to Matlab or vice versa?<br>
             </span><br>
             <span style="color: rgb(255, 0, 0);"><br>
             </span>There are five was to work with PETSc and Matlab<br>
@@ -1107,7 +1118,8 @@ from
 the
 PETSc
 side
-and PetscOpenSocket in bin/matlab for
+and
+PetscOpenSocket in bin/matlab for
 access from the Matlab side.</li>
               <li>You can save PETSc Vecs (not Mats) with the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
@@ -1117,12 +1129,13 @@ saves
 .mat
 files
 can
-then be loaded into Matlab.</li>
+then
+be loaded into Matlab.</li>
               <li>We are just being to develop in <a
  href="../developers/index.html">petsc-dev</a> an API to call most of
 the PETSc function directly from Matlab; we could use help in
-developing this. See bin/matlab/classes/PetscInitialize.m<br>
-              </li>
+developing this. See bin/matlab/classes/PetscInitialize.m for more
+details and bin/matlab/classes/examples/tutorials for examples. </li>
             </ol>
             <hr> </td>
           </tr>
@@ -1181,7 +1194,8 @@ so slow, what can I do to speed it up?</font></a><a
 chapter
 of
 the
-users manual</a> for
+users
+manual</a> for
 many
 tips on this.</p>
       <p>a) Preallocate enough space for the sparse matrix. For
@@ -1222,7 +1236,8 @@ with PETSc?</font> </a></p>
 chapter
 of
 the
-users manual</a>
+users
+manual</a>
 for information on interpreting
 the summary data. If using the PETSc (non)linear solvers, one can also
 specify -snes_view or -ksp_view for a printout of solver info. Only the
@@ -1291,6 +1306,7 @@ in
 
 
 
+
           <a href="faq.html#slow">generating the
 matrix</a> or some other operation.</li>
         <li>There must be enough work for each process to
@@ -1325,7 +1341,8 @@ also
 consider
 multigrid
 preconditioners
-like <a
+like
+          <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
 or BoomerAMG in <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCHYPRE.html">PCHYPRE</a>.</li>
@@ -1461,7 +1478,8 @@ file:
 No
 such
 file
-or directory.</span></p>
+or
+directory.</span></p>
       <p>The Intel compilers use shared libraries (like libimf)
 that
 cannot by default at run time. When using the Intel compilers (and
@@ -1519,7 +1537,8 @@ or
 MatCreateXXX()
 you
 passed
-in local and global sizes that do not make
+in
+local and global sizes that do not make
 sense for the correct number of processors. For example if you pass in
 a local size of 2 and a global size of 100 and run on two processors,
 this cannot work since the sum of the local sizes is 4, not 100.</span></font><br>
@@ -1548,6 +1567,7 @@ problem.<br>
 &nbsp; <br>
 If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
 machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
+
 
 
 
@@ -1602,6 +1622,7 @@ that the matrix is singular. You can use -pc_factor_shift_nonzero or
 -pc_factor_shift_positive_definite,
 -[level]_pc_factor_shift_nonzero,&nbsp; </span></font><font
  style="color: rgb(0, 0, 0);" color="#ff0000">-[level]_pc_factor_shift_postive_definite
+
 
 
 

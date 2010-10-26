@@ -422,7 +422,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 	ierr = MPI_Recv(values,mesgsize,MPIU_SCALAR,j,tag,((PetscObject)xin)->comm,&status);CHKERRQ(ierr);
 	ierr = MPI_Get_count(&status,MPIU_SCALAR,&mesglen);CHKERRQ(ierr);         
         n = (PetscInt)mesglen;
-	ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+	ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,PETSC_TRUE);CHKERRQ(ierr);
       }
       ierr = PetscViewerFlowControlEndMaster(viewer,message_count);CHKERRQ(ierr);
       ierr = PetscFree(values);CHKERRQ(ierr);

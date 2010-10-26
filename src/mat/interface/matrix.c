@@ -5189,7 +5189,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsColumns(Mat mat,PetscInt numRows,co
   if (numRows) PetscValidIntPointer(rows,3);
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->zerorows) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (!mat->ops->zerorowscolumns) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = (*mat->ops->zerorowscolumns)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);

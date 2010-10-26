@@ -73,9 +73,17 @@ aijcuda when MatSetOptions() is used.<br>
 you can use -da_vec_type cuda and -da_mat_type cuda</li>
           <li>It is useful to develop your code with the default
 vectors and then run production runs with the command line options to
-use the GPU since debugging on GPUs is difficult.<br>
-          </li>
+use the GPU since debugging on GPUs is difficult.</li>
+          <li>All of the Krylov methods except KSPIBCGS run on the GPU.
+PCBJACOBI, PCASM and PCJACOBI are the preconditioners that currently
+run on the GPU.</li>
         </ul>
+        <li>Some GPU systems (for example many laptops) only run with
+single precision, thus PETSc must be built with the ./configure option
+--with-precision=single<br>
+        </li>
+        <li>We could use your help in further developing PETSc for the
+GPU, <a href="../developers/index.html">petsc-dev</a>.</li>
       </ul>
       </td>
     </tr>

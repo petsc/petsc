@@ -1341,11 +1341,24 @@ PetscErrorCode MatZeroEntries_SeqDense(Mat A)
 #define __FUNCT__ "MatZeroRows_SeqDense"
 PetscErrorCode MatZeroRows_SeqDense(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
-  Mat_SeqDense   *l = (Mat_SeqDense*)A->data;
-  PetscInt       n = A->cmap->n,i,j;
-  PetscScalar    *slot;
+  PetscErrorCode    ierr;
+  Mat_SeqDense      *l = (Mat_SeqDense*)A->data;
+  PetscInt          n = A->cmap->n,i,j;
+  PetscScalar       *slot,*bb;
+  const PetscScalar *xx;
 
   PetscFunctionBegin;
+  /* fix right hand side if needed */
+  if (x && b) {
+    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
+    for (i=0; i<N; i++) {
+      bb[rows[i]] = diag*xx[rows[i]];
+    }
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+  }
+
   for (i=0; i<N; i++) {
     slot = l->v + rows[i];
     for (j=0; j<n; j++) { *slot = 0.0; slot += n;}

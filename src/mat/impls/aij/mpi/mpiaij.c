@@ -560,17 +560,19 @@ PetscErrorCode MatZeroEntries_MPIAIJ(Mat A)
 #define __FUNCT__ "MatZeroRows_MPIAIJ"
 PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
-  Mat_MPIAIJ     *l = (Mat_MPIAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscMPIInt    size = l->size,imdex,n,rank = l->rank,tag = ((PetscObject)A)->tag,lastidx = -1;
-  PetscInt       i,*owners = A->rmap->range;
-  PetscInt       *nprocs,j,idx,nsends,row;
-  PetscInt       nmax,*svalues,*starts,*owner,nrecvs;
-  PetscInt       *rvalues,count,base,slen,*source;
-  PetscInt       *lens,*lrows,*values,rstart=A->rmap->rstart;
-  MPI_Comm       comm = ((PetscObject)A)->comm;
-  MPI_Request    *send_waits,*recv_waits;
-  MPI_Status     recv_status,*send_status;
+  Mat_MPIAIJ        *l = (Mat_MPIAIJ*)A->data;
+  PetscErrorCode    ierr;
+  PetscMPIInt       size = l->size,imdex,n,rank = l->rank,tag = ((PetscObject)A)->tag,lastidx = -1;
+  PetscInt          i,*owners = A->rmap->range;
+  PetscInt          *nprocs,j,idx,nsends,row;
+  PetscInt          nmax,*svalues,*starts,*owner,nrecvs;
+  PetscInt          *rvalues,count,base,slen,*source;
+  PetscInt          *lens,*lrows,*values,rstart=A->rmap->rstart;
+  MPI_Comm          comm = ((PetscObject)A)->comm;
+  MPI_Request       *send_waits,*recv_waits;
+  MPI_Status        recv_status,*send_status;
+  const PetscScalar *xx;
+  PetscScalar       *bb;
 #if defined(PETSC_DEBUG)
   PetscBool      found = PETSC_FALSE;
 #endif
@@ -671,7 +673,16 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
   ierr = PetscFree(owner);CHKERRQ(ierr);
   ierr = PetscFree(nprocs);CHKERRQ(ierr);
     
-  /* actually zap the local rows */
+  /* fix right hand side if needed */
+  if (x && b) {
+    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
+    for (i=0; i<N; i++) {
+      bb[lrows[i]] = diag*xx[lrows[i]];
+    }
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+  }
   /*
         Zero the required rows. If the "diagonal block" of the matrix
      is square and the user wishes to set the diagonal we use separate

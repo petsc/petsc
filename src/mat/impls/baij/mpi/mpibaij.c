@@ -1732,19 +1732,21 @@ PetscErrorCode MatDiagonalScale_MPIBAIJ(Mat mat,Vec ll,Vec rr)
 #define __FUNCT__ "MatZeroRows_MPIBAIJ"
 PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
-  Mat_MPIBAIJ    *l = (Mat_MPIBAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscMPIInt    imdex,size = l->size,n,rank = l->rank;
-  PetscInt       i,*owners = A->rmap->range;
-  PetscInt       *nprocs,j,idx,nsends,row;
-  PetscInt       nmax,*svalues,*starts,*owner,nrecvs;
-  PetscInt       *rvalues,tag = ((PetscObject)A)->tag,count,base,slen,*source,lastidx = -1;
-  PetscInt       *lens,*lrows,*values,rstart_bs=A->rmap->rstart;
-  MPI_Comm       comm = ((PetscObject)A)->comm;
-  MPI_Request    *send_waits,*recv_waits;
-  MPI_Status     recv_status,*send_status;
+  Mat_MPIBAIJ       *l = (Mat_MPIBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  PetscMPIInt       imdex,size = l->size,n,rank = l->rank;
+  PetscInt          i,*owners = A->rmap->range;
+  PetscInt          *nprocs,j,idx,nsends,row;
+  PetscInt          nmax,*svalues,*starts,*owner,nrecvs;
+  PetscInt          *rvalues,tag = ((PetscObject)A)->tag,count,base,slen,*source,lastidx = -1;
+  PetscInt          *lens,*lrows,*values,rstart_bs=A->rmap->rstart;
+  MPI_Comm          comm = ((PetscObject)A)->comm;
+  MPI_Request       *send_waits,*recv_waits;
+  MPI_Status        recv_status,*send_status;
+  const PetscScalar *xx;
+  PetscScalar       *bb;
 #if defined(PETSC_DEBUG)
-  PetscBool      found = PETSC_FALSE;
+  PetscBool         found = PETSC_FALSE;
 #endif
   
   PetscFunctionBegin;
@@ -1844,6 +1846,17 @@ PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscS
   ierr = PetscFree(owner);CHKERRQ(ierr);
   ierr = PetscFree(nprocs);CHKERRQ(ierr);
     
+  /* fix right hand side if needed */
+  if (x && b) {
+    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
+    for (i=0; i<slen; i++) {
+      bb[lrows[i]] = diag*xx[lrows[i]];
+    }
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+  }
+
   /* actually zap the local rows */
   /*
         Zero the required rows. If the "diagonal block" of the matrix

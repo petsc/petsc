@@ -250,6 +250,7 @@ PetscErrorCode MatZeroRows_IS(Mat A,PetscInt n,const PetscInt rows[],PetscScalar
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (x && b) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"No support");
   if (n) {
     ierr = PetscMalloc(n*sizeof(PetscInt),&rows_l);CHKERRQ(ierr);
     ierr = ISGlobalToLocalMappingApply(is->mapping,IS_GTOLM_DROP,n,rows,&n_l,rows_l);CHKERRQ(ierr);
