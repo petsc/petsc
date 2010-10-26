@@ -801,6 +801,9 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
     ierr = ISView(IS_act,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = ISView(IS_inact,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
+    ierr = ISDestroy(IS_act);CHKERRQ(ierr);
+    ierr = ISDestroy(IS_inact);CHKERRQ(ierr);
+
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
     ierr = SNES_KSPSolve(snes,snes->ksp,vi->phi,Y);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
@@ -870,8 +873,6 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
     ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
     if(!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
-  ierr = ISDestroy(IS_act);CHKERRQ(ierr);
-  ierr = ISDestroy(IS_inact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
