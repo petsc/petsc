@@ -2,7 +2,7 @@
 #define included_ALE_Field_hh
 
 #ifndef  included_ALE_SieveAlgorithms_hh
-#include <SieveAlgorithms.hh>
+#include <sieve/SieveAlgorithms.hh>
 #endif
 
 extern "C" PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);

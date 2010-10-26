@@ -2,7 +2,7 @@
 #define included_ALE_BasicCommunication_hh
 
 #ifndef  included_ALE_hh
-#include <ALE.hh>
+#include <sieve/ALE.hh>
 #endif
 
 extern "C" PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);

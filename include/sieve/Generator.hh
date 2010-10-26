@@ -2,7 +2,7 @@
 #define included_ALE_Generator_hh
 
 #ifndef  included_ALE_Distribution_hh
-#include <Distribution.hh>
+#include <sieve/Distribution.hh>
 #endif
 
 #ifdef PETSC_HAVE_TRIANGLE

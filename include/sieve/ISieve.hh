@@ -2,7 +2,7 @@
 #define included_ALE_ISieve_hh
 
 #ifndef  included_ALE_hh
-#include <ALE.hh>
+#include <sieve/ALE.hh>
 #endif
 
 #include <fstream>
@@ -1234,6 +1234,12 @@ namespace ALE {
       return false;
     };
     bool orientedCones() const {return this->orientCones;};
+    // Raw array access
+    const offsets_type      getConeOffsets() {return this->coneOffsets;};
+    const offsets_type      getSupportOffsets() {return this->supportOffsets;};
+    const cones_type        getCones() {return this->cones;};
+    const supports_type     getSupports() {return this->supports;};
+    const orientations_type getConeOrientations() {return this->coneOrientations;};
   public: // Construction
     index_type getConeSize(const point_type& p) const {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}

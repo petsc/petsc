@@ -2,7 +2,7 @@
 #define included_ALE_Partitioner_hh
 
 #ifndef  included_ALE_Completion_hh
-#include <Completion.hh>
+#include <sieve/Completion.hh>
 #endif
 
 #ifdef PETSC_HAVE_ZOLTAN

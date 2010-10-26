@@ -2,11 +2,11 @@
 #define included_ALE_Distribution_hh
 
 #ifndef  included_ALE_Mesh_hh
-#include <Mesh.hh>
+#include <sieve/Mesh.hh>
 #endif
 
 #ifndef  included_ALE_Completion_hh
-#include <Completion.hh>
+#include <sieve/Completion.hh>
 #endif
 
 // Attempt to unify all of the distribution mechanisms:

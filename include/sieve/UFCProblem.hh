@@ -7,8 +7,8 @@
  */
 
 
-#include <Mesh.hh>
-#include <FEMProblem.hh>
+#include <sieve/Mesh.hh>
+#include <sieve/FEMProblem.hh>
 #include <ufc.h>
 
 namespace ALE {

@@ -5,35 +5,35 @@
 #include <valarray>
 
 #ifndef  included_ALE_Numbering_hh
-#include <Numbering.hh>
+#include <sieve/Numbering.hh>
 #endif
 
 #ifndef  included_ALE_INumbering_hh
-#include <INumbering.hh>
+#include <sieve/INumbering.hh>
 #endif
 
 #ifndef  included_ALE_Field_hh
-#include <Field.hh>
+#include <sieve/Field.hh>
 #endif
 
 #ifndef  included_ALE_IField_hh
-#include <IField.hh>
+#include <sieve/IField.hh>
 #endif
 
 #ifndef  included_ALE_SieveBuilder_hh
-#include <SieveBuilder.hh>
+#include <sieve/SieveBuilder.hh>
 #endif
 
 #ifndef  included_ALE_LabelSifter_hh
-#include <LabelSifter.hh>
+#include <sieve/LabelSifter.hh>
 #endif
 
 #ifndef  included_ALE_Partitioner_hh
-#include <Partitioner.hh>
+#include <sieve/Partitioner.hh>
 #endif
 
 #ifndef  included_ALE_Ordering_hh
-#include <Ordering.hh>
+#include <sieve/Ordering.hh>
 #endif
 
 namespace ALE {

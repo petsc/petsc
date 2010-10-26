@@ -11,7 +11,7 @@ This includes derived types doing what indicesExcluded does for all things marke
 
 */
 
-#include <Mesh.hh>
+#include <sieve/Mesh.hh>
 
 namespace ALE { 
   namespace Problem {

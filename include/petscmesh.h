@@ -7,10 +7,10 @@
 
 #if defined(PETSC_HAVE_SIEVE) && defined(__cplusplus)
 
-#include <Mesh.hh>
-#include <CartesianSieve.hh>
-#include <Distribution.hh>
-#include <Generator.hh>
+#include <sieve/Mesh.hh>
+#include <sieve/CartesianSieve.hh>
+#include <sieve/Distribution.hh>
+#include <sieve/Generator.hh>
 #include "petscdm.h"
 PETSC_EXTERN_CXX_BEGIN
 
