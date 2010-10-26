@@ -113,7 +113,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
     TODO
   ierr = TaoGetInitialTrustRegionRadius(tao, &radius); CHKERRQ(ierr);
   if (radius < 0.0) {
-    SETERRQ(1, "Initial radius negative");
+    SETERRQ(PETSC_COMM_SELF,1, "Initial radius negative");
     }*/
   radius = tr->trust0;
   /* Modify the radius if it is too large or small */
@@ -132,7 +132,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
   ierr = TaoSolverComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
   if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
-    SETERRQ(1, "User provided compute function generated Inf or NaN");
+    SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
   }
   needH = 1;
 
@@ -320,7 +320,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 	ierr = VecNorm(tao->gradient, NORM_2, &gnorm); CHKERRQ(ierr);
 
         if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
-          SETERRQ(1, "User provided compute function generated Inf or NaN");
+          SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
         }
         needH = 1;
 
@@ -431,7 +431,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 	  }
 
 	  if (norm_d == 0.0) {
-            SETERRQ(1, "Initial direction zero");
+            SETERRQ(PETSC_COMM_SELF,1, "Initial direction zero");
           }
         }
       }
@@ -629,7 +629,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
       ierr = TaoSolverComputeGradient(tao, tao->solution, tao->gradient);
       ierr = VecNorm(tao->gradient, NORM_2, &gnorm); CHKERRQ(ierr);
       if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
-	SETERRQ(1, "User provided compute function generated Inf or NaN");
+	SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
       }
       needH = 1;
       ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, radius, &reason); CHKERRQ(ierr);
@@ -665,7 +665,7 @@ static PetscErrorCode TaoSolverSetUp_NTR(TaoSolver tao)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoDestroy_NTR"
+#define __FUNCT__ "TaoSolverDestroy_NTR"
 static PetscErrorCode TaoSolverDestroy_NTR(TaoSolver tao)
 {
   TAO_NTR *tr = (TAO_NTR *)tao->data;
@@ -835,9 +835,9 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
     PetscErrorCode ierr;
     Mat M;
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-    PetscValidHeaderSpecific(b,VEC_COOKIE,2);
-    PetscValidHeaderSpecific(x,VEC_COOKIE,3);
+    PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+    PetscValidHeaderSpecific(b,VEC_CLASSID,2);
+    PetscValidHeaderSpecific(x,VEC_CLASSID,3);
     ierr = PCShellGetContext(pc,(void**)&M); CHKERRQ(ierr);
     ierr = MatLMVMSolve(M, b, x); CHKERRQ(ierr);
     PetscFunctionReturn(0);

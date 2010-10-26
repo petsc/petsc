@@ -139,14 +139,14 @@ EXTERN PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
 {
     PetscReal      sq, yq, dd;
     PetscInt       ll;
-    PetscTruth     scaled;
+    PetscBool     scaled;
     MatLMVMCtx     *shell;
     PetscErrorCode info;
 
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(A,MAT_COOKIE,1);
-    PetscValidHeaderSpecific(b,VEC_COOKIE,2);
-    PetscValidHeaderSpecific(x,VEC_COOKIE,3);
+    PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+    PetscValidHeaderSpecific(b,VEC_CLASSID,2);
+    PetscValidHeaderSpecific(x,VEC_CLASSID,3);
     info = MatShellGetContext(A,(void**)&shell); CHKERRQ(info);
     if (shell->lmnow < 1) {
 	shell->rho[0] = 1.0;
@@ -210,14 +210,14 @@ EXTERN PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
 #define __FUNCT__ "MatView_LMVM"
 EXTERN PetscErrorCode MatView_LMVM(Mat A, PetscViewer pv)
 {
-    PetscTruth isascii;
+    PetscBool isascii;
     PetscErrorCode info;
     MatLMVMCtx *lmP;
     PetscFunctionBegin;
 
     info = MatShellGetContext(A,(void**)&lmP); CHKERRQ(info);
 
-    info = PetscTypeCompare((PetscObject)pv,PETSC_VIEWER_ASCII,&isascii); CHKERRQ(info);
+    info = PetscTypeCompare((PetscObject)pv,PETSCVIEWERASCII,&isascii); CHKERRQ(info);
     if (isascii) {
 	info = PetscViewerASCIIPrintf(pv,"LMVM Matrix\n"); CHKERRQ(info);
 	info = PetscViewerASCIIPrintf(pv," Number of vectors: %d\n",lmP->lm); CHKERRQ(info);
@@ -229,7 +229,7 @@ EXTERN PetscErrorCode MatView_LMVM(Mat A, PetscViewer pv)
 	
     }
     else {
-	SETERRQ(1,"non-ascii viewers not implemented for MatLMVM\n");
+	SETERRQ(PETSC_COMM_SELF,1,"non-ascii viewers not implemented for MatLMVM\n");
     }
 
     PetscFunctionReturn(0);
@@ -313,15 +313,15 @@ EXTERN PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
   PetscReal sigmanew, denom;
   PetscErrorCode ierr;
   PetscInt i;
-  PetscTruth same;
+  PetscBool same;
   PetscReal yy_sum, ys_sum, ss_sum;
 
   PetscFunctionBegin;
 
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2); 
-  PetscValidHeaderSpecific(g,VEC_COOKIE,3);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,2); 
+  PetscValidHeaderSpecific(g,VEC_CLASSID,3);
   ierr = PetscTypeCompare((PetscObject)M,MATSHELL,&same); CHKERRQ(ierr);
-  if (!same) {SETERRQ(1,"Matrix M is not type MatLMVM");}
+  if (!same) {SETERRQ(PETSC_COMM_SELF,1,"Matrix M is not type MatLMVM");}
   ierr = MatShellGetContext(M,(void**)&ctx); CHKERRQ(ierr);
   if (!ctx->allocated) {
       ierr = MatLMVMAllocateVectors(M, x);  CHKERRQ(ierr);
@@ -748,12 +748,12 @@ EXTERN PetscErrorCode MatLMVMSetDelta(Mat m, PetscReal d)
 {
     MatLMVMCtx *ctx;
     PetscErrorCode ierr;
-    PetscTruth same;
+    PetscBool same;
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(m,MAT_COOKIE,1);
+    PetscValidHeaderSpecific(m,MAT_CLASSID,1);
     ierr = PetscTypeCompare((PetscObject)m,MATSHELL,&same); CHKERRQ(ierr);
     if (!same) {
-	SETERRQ(1,"Matrix m is not type MatLMVM");
+	SETERRQ(PETSC_COMM_SELF,1,"Matrix m is not type MatLMVM");
     }
     ierr = MatShellGetContext(m,(void**)&ctx); CHKERRQ(ierr);
     ctx->delta = PetscAbsReal(d);
@@ -769,13 +769,13 @@ EXTERN PetscErrorCode MatLMVMSetScale(Mat m, Vec s)
 {
     MatLMVMCtx *ctx;
     PetscErrorCode ierr;
-    PetscTruth same;
+    PetscBool same;
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(m,MAT_COOKIE,1);
-    PetscValidHeaderSpecific(s,VEC_COOKIE,2);
+    PetscValidHeaderSpecific(m,MAT_CLASSID,1);
+    PetscValidHeaderSpecific(s,VEC_CLASSID,2);
     ierr = PetscTypeCompare((PetscObject)m,MATSHELL,&same); CHKERRQ(ierr);
     if (!same) {
-	SETERRQ(1,"Matrix m is not type MatLMVM");
+	SETERRQ(PETSC_COMM_SELF,1,"Matrix m is not type MatLMVM");
     }
     ierr = MatShellGetContext(m,(void**)&ctx); CHKERRQ(ierr);
     if (ctx->scale) {
@@ -793,12 +793,12 @@ EXTERN PetscErrorCode MatLMVMGetRejects(Mat m, PetscInt *nrejects)
     PetscFunctionBegin;
     MatLMVMCtx *ctx;
     PetscErrorCode ierr;
-    PetscTruth same;
+    PetscBool same;
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(m,MAT_COOKIE,1);
+    PetscValidHeaderSpecific(m,MAT_CLASSID,1);
     ierr = PetscTypeCompare((PetscObject)m,MATSHELL,&same); CHKERRQ(ierr);
     if (!same) {
-	SETERRQ(1,"Matrix m is not type MatLMVM");
+	SETERRQ(PETSC_COMM_SELF,1,"Matrix m is not type MatLMVM");
     }
     ierr = MatShellGetContext(m,(void**)&ctx); CHKERRQ(ierr);
     *nrejects = ctx->nrejects;
@@ -826,19 +826,19 @@ EXTERN PetscErrorCode MatLMVMGetX0(Mat m, Vec x)
 EXTERN PetscErrorCode MatLMVMRefine(Mat coarse, Mat op, Vec fineX, Vec fineG)
 {
     PetscErrorCode ierr;
-    PetscTruth same;
+    PetscBool same;
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(coarse,MAT_COOKIE,1);
-    PetscValidHeaderSpecific(op,MAT_COOKIE,2);
-    PetscValidHeaderSpecific(fineX,VEC_COOKIE,3);
-    PetscValidHeaderSpecific(fineG,VEC_COOKIE,4);
+    PetscValidHeaderSpecific(coarse,MAT_CLASSID,1);
+    PetscValidHeaderSpecific(op,MAT_CLASSID,2);
+    PetscValidHeaderSpecific(fineX,VEC_CLASSID,3);
+    PetscValidHeaderSpecific(fineG,VEC_CLASSID,4);
     ierr = PetscTypeCompare((PetscObject)coarse,MATSHELL,&same); CHKERRQ(ierr);
     if (!same) {
-	SETERRQ(1,"Matrix m is not type MatLMVM");
+	SETERRQ(PETSC_COMM_SELF,1,"Matrix m is not type MatLMVM");
     }
     ierr = PetscTypeCompare((PetscObject)op,MATSHELL,&same); CHKERRQ(ierr);
     if (!same) {
-	SETERRQ(1,"Matrix m is not type MatLMVM");
+	SETERRQ(PETSC_COMM_SELF,1,"Matrix m is not type MatLMVM");
     }
 
     // TODO
@@ -852,14 +852,14 @@ EXTERN PetscErrorCode MatLMVMAllocateVectors(Mat m, Vec v)
 {
     PetscErrorCode ierr;
     MatLMVMCtx *ctx;
-    PetscTruth same;
+    PetscBool same;
 
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(m,MAT_COOKIE,1);
-    PetscValidHeaderSpecific(v,VEC_COOKIE,2);
+    PetscValidHeaderSpecific(m,MAT_CLASSID,1);
+    PetscValidHeaderSpecific(v,VEC_CLASSID,2);
     ierr = PetscTypeCompare((PetscObject)m,MATSHELL,&same); CHKERRQ(ierr);
     if (!same) {
-	SETERRQ(1,"Matrix m is not type MatLMVM");
+	SETERRQ(PETSC_COMM_SELF,1,"Matrix m is not type MatLMVM");
     }
     ierr = MatShellGetContext(m,(void**)&ctx); CHKERRQ(ierr);
     

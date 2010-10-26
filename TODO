@@ -9,6 +9,7 @@ TaoSolver
 Mesh Refinement
 
 TRON -- use current C++ version for now, but will have to eventually fix
+Levenberg-Marquardt
 POUNDer
 BCG?
 KT?
@@ -22,6 +23,8 @@ Check fortran stubs
 finish examples
 
 documentation
+
+manual
 
 build documentation
 

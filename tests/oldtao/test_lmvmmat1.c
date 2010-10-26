@@ -67,7 +67,7 @@ PetscErrorCode initializevecs(Vec **vv, PetscInt numvecs, PetscInt size)
     Vec tmp;
     PetscFunctionBegin;
     if (numvecs*size > length) {
-	SETERRQ(1,"data set not large enough.\n");
+	SETERRQ(PETSC_COMM_SELF,1,"data set not large enough.\n");
     }
     ierr = PetscMalloc(sizeof(Vec)*numvecs,&v); CHKERRQ(ierr);
 

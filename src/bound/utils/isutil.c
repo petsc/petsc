@@ -19,8 +19,8 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
   MPI_Comm comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(Vec1,VEC_COOKIE,1); 
-  PetscValidHeaderSpecific(Vec2,VEC_COOKIE,2); 
+  PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1); 
+  PetscValidHeaderSpecific(Vec2,VEC_CLASSID,2); 
   PetscCheckSameComm(Vec1,1,Vec2,2);
 
 
@@ -28,7 +28,7 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
   ierr = VecGetOwnershipRange(Vec2, &low2, &high2); CHKERRQ(ierr);
 
   if ( low != low2 || high != high2 )
-    SETERRQ(1,"Vectors must be identically loaded over processors");
+    SETERRQ(PETSC_COMM_SELF,1,"Vectors must be identically loaded over processors");
 
   ierr = VecGetLocalSize(Vec1,&n); CHKERRQ(ierr);
 
@@ -62,7 +62,7 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
   }
 
   ierr = PetscObjectGetComm((PetscObject)Vec1,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n_same,same,S);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,n_same,same,PETSC_COPY_VALUES,S);CHKERRQ(ierr);
 
   if (same) {
     ierr = PetscFree(same); CHKERRQ(ierr);
@@ -83,15 +83,15 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
   MPI_Comm comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(Vec1,VEC_COOKIE,1); 
-  PetscValidHeaderSpecific(Vec2,VEC_COOKIE,2); 
+  PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1); 
+  PetscValidHeaderSpecific(Vec2,VEC_CLASSID,2); 
   PetscCheckSameComm(Vec1,1,Vec2,2);
 
   ierr = VecGetOwnershipRange(Vec1, &low, &high); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(Vec2, &low2, &high2); CHKERRQ(ierr);
 
   if ( low != low2 || high != high2 )
-    SETERRQ(1,"Vectors must be identically loaded over processors");
+    SETERRQ(PETSC_COMM_SELF,1,"Vectors must be identically loaded over processors");
 
   ierr = VecGetLocalSize(Vec1,&n); CHKERRQ(ierr);
 
@@ -122,7 +122,7 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
   }
 
   ierr = PetscObjectGetComm((PetscObject)Vec1,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n_lt,lt,S);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,n_lt,lt,PETSC_COPY_VALUES,S);CHKERRQ(ierr);
 
   if (lt) {
     ierr = PetscFree(lt); CHKERRQ(ierr);
@@ -142,15 +142,15 @@ PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
   MPI_Comm comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(Vec1,VEC_COOKIE,1); 
-  PetscValidHeaderSpecific(Vec2,VEC_COOKIE,2); 
+  PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1); 
+  PetscValidHeaderSpecific(Vec2,VEC_CLASSID,2); 
   PetscCheckSameComm(Vec1,1,Vec2,2);
 
   ierr = VecGetOwnershipRange(Vec1, &low, &high); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(Vec2, &low2, &high2); CHKERRQ(ierr);
 
   if ( low != low2 || high != high2 )
-    SETERRQ(1,"Vectors must be identically loaded over processors");
+    SETERRQ(PETSC_COMM_SELF,1,"Vectors must be identically loaded over processors");
 
   ierr = VecGetLocalSize(Vec1,&n); CHKERRQ(ierr);
 
@@ -184,7 +184,7 @@ PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
   }
 
   ierr = PetscObjectGetComm((PetscObject)Vec1,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n_gt,gt,S);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,n_gt,gt,PETSC_COPY_VALUES,S);CHKERRQ(ierr);
 
   if (gt) {
     ierr = PetscFree(gt); CHKERRQ(ierr);
@@ -207,7 +207,7 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS * S)
   PetscScalar *v1,*v2,*vmiddle;
   MPI_Comm comm;
 
-  PetscValidHeaderSpecific(V,VEC_COOKIE,2); 
+  PetscValidHeaderSpecific(V,VEC_CLASSID,2); 
   PetscCheckSameComm(V,2,VecLow,1); PetscCheckSameComm(V,2,VecHigh,3);
 
   ierr = VecGetOwnershipRange(VecLow, &low, &high); CHKERRQ(ierr);
@@ -215,7 +215,7 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS * S)
   ierr = VecGetOwnershipRange(V, &low3, &high3); CHKERRQ(ierr);
 
   if ( low!=low2 || high!=high2 || low!=low3 || high!=high3 )
-    SETERRQ(1,"Vectors must be identically loaded over processors");
+    SETERRQ(PETSC_COMM_SELF,1,"Vectors must be identically loaded over processors");
 
   ierr = VecGetLocalSize(VecLow,&n); CHKERRQ(ierr);
 
@@ -256,7 +256,7 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS * S)
   }
 
   ierr = PetscObjectGetComm((PetscObject)V,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n_vm,vm,S);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,n_vm,vm,PETSC_COPY_VALUES,S);CHKERRQ(ierr);
 
   if (vm) {
     ierr = PetscFree(vm); CHKERRQ(ierr);
@@ -281,7 +281,7 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
   PetscScalar *v1,*v2,*vmiddle;
   MPI_Comm comm;
 
-  PetscValidHeaderSpecific(V,VEC_COOKIE,2); 
+  PetscValidHeaderSpecific(V,VEC_CLASSID,2); 
   PetscCheckSameComm(V,2,VecLow,1); PetscCheckSameComm(V,2,VecHigh,3);
 
   ierr = VecGetOwnershipRange(VecLow, &low, &high); CHKERRQ(ierr);
@@ -289,7 +289,7 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
   ierr = VecGetOwnershipRange(V, &low3, &high3); CHKERRQ(ierr);
 
   if ( low!=low2 || high!=high2 || low!=low3 || high!=high3 )
-    SETERRQ(1,"Vectors must be identically loaded over processors");
+    SETERRQ(PETSC_COMM_SELF,1,"Vectors must be identically loaded over processors");
 
   ierr = VecGetLocalSize(VecLow,&n); CHKERRQ(ierr);
 
@@ -330,7 +330,7 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
   }
 
   ierr = PetscObjectGetComm((PetscObject)V,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n_vm,vm,S);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,n_vm,vm,PETSC_COPY_VALUES,S);CHKERRQ(ierr);
 
   if (vm) {
     ierr = PetscFree(vm); CHKERRQ(ierr);
@@ -352,8 +352,8 @@ PetscErrorCode VecGetSubVec(Vec vfull, IS is, Vec *vreduced)
     MPI_Comm comm;
     
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(vfull,VEC_COOKIE,1);
-    PetscValidHeaderSpecific(is,IS_COOKIE,2);
+    PetscValidHeaderSpecific(vfull,VEC_CLASSID,1);
+    PetscValidHeaderSpecific(is,IS_CLASSID,2);
 	
     ierr = VecGetSize(vfull, &nfull); CHKERRQ(ierr);
     ierr = ISGetSize(is, &nreduced); CHKERRQ(ierr);
@@ -394,9 +394,9 @@ PetscErrorCode VecReducedXPY(Vec vfull, Vec vreduced, IS is)
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(vfull,VEC_COOKIE,1);
-    PetscValidHeaderSpecific(vreduced,VEC_COOKIE,2);
-    PetscValidHeaderSpecific(is,IS_COOKIE,3);
+    PetscValidHeaderSpecific(vfull,VEC_CLASSID,1);
+    PetscValidHeaderSpecific(vreduced,VEC_CLASSID,2);
+    PetscValidHeaderSpecific(is,IS_CLASSID,3);
     ierr = VecGetSize(vfull,&nfull); CHKERRQ(ierr);
     ierr = VecGetSize(vreduced,&nreduced); CHKERRQ(ierr);
     

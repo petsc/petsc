@@ -39,7 +39,7 @@ PetscErrorCode MatCreateADA(Mat mat,Vec d1, Vec d2, Mat *J)
   /*
   info=MatCheckVecs(mat,d1,d2,&flg);CHKERRQ(info);
   if (flg==PETSC_FALSE){
-    SETERRQ(PETSC_ERR_SUP,"InCompatible matrix and vector for ADA^T matrix");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"InCompatible matrix and vector for ADA^T matrix");
   }
   */
   info = PetscNew(_p_TaoMatADACtx,&ctx);CHKERRQ(info);
@@ -231,7 +231,7 @@ PetscErrorCode MatDuplicate_ADA(Mat mat,MatDuplicateOption op,Mat *M)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatEqual_ADA"
-PetscErrorCode MatEqual_ADA(Mat A,Mat B,PetscTruth *flg)
+PetscErrorCode MatEqual_ADA(Mat A,Mat B,PetscBool *flg)
 {
   PetscErrorCode    info;
   TaoMatADACtx  ctx1,ctx2;
@@ -481,7 +481,7 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
 {
   PetscErrorCode info;
   PetscInt size;
-  PetscTruth sametype, issame, ismpidense, isseqdense;
+  PetscBool sametype, issame, ismpidense, isseqdense;
   TaoMatADACtx  ctx;
 
   PetscFunctionBegin;
@@ -547,7 +547,7 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
     info=VecDestroy(X);CHKERRQ(info);
 
   } else {
-    SETERRQ(1,"No support to convert objects to that type");
+    SETERRQ(PETSC_COMM_SELF,1,"No support to convert objects to that type");
   }
   PetscFunctionReturn(0);
 }
@@ -567,7 +567,7 @@ PetscErrorCode MatNorm_ADA(Mat mat,NormType type,PetscReal *norm)
   } else if (type == NORM_1 || type == NORM_INFINITY) {
     *norm = 1.0;
   } else {
-    SETERRQ(PETSC_ERR_SUP,"No two norm");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No two norm");
   }
   PetscFunctionReturn(0);
 }

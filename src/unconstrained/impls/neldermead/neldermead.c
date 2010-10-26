@@ -32,7 +32,7 @@ static PetscErrorCode TaoSolverSetUp_NM(TaoSolver tao)
 
 /* ---------------------------------------------------------- */
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSetDown_NM"
+#define __FUNCT__ "TaoSolverDestroy_NM"
 PetscErrorCode TaoSolverDestroy_NM(TaoSolver tao)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
@@ -56,7 +56,7 @@ PetscErrorCode TaoSolverSetFromOptions_NM(TaoSolver tao)
 {
   
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
-  PetscTruth flg;
+  PetscBool flg;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;

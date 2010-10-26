@@ -64,8 +64,8 @@ int main( int argc, char **argv )
   PetscErrorCode    ierr;                /* used to check for functions returning nonzeros */
   PetscInt          Nx, Ny;              /* number of processors in x- and y- directions */
   Vec             x;                   /* solution, gradient vectors */
-  PetscTruth      flg, viewmat;        /* flags */
-  PetscTruth      fddefault, fdcoloring;   /* flags */
+  PetscBool      flg, viewmat;        /* flags */
+  PetscBool      fddefault, fdcoloring;   /* flags */
   KSP             ksp;                 /* Krylov subspace method */
   TaoSolverTerminationReason reason;           
   TaoSolver       tao;                 /* TAO solver context */
@@ -469,7 +469,7 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
   PetscScalar **x, v[7];
   MatStencil col[7],row;
   Vec    localX;
-  PetscTruth assembled;
+  PetscBool assembled;
 
   PetscFunctionBegin;
   /* Get local mesh boundaries */
@@ -665,7 +665,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
   PetscReal     u1,u2,nf1,nf2,njac11,njac12,njac21,njac22;
   PetscReal     b=-0.5, t=0.5, l=-0.5, r=0.5;
   PetscReal     *boundary;
-  PetscTruth   flg;
+  PetscBool   flg;
 
   PetscFunctionBegin;
   /* Get local mesh boundaries */
@@ -785,7 +785,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscErrorCode      ierr;
   PetscInt   start2=-1,i,j;
   PetscReal   start1=0;
-  PetscTruth flg1,flg2;
+  PetscBool flg1,flg2;
   PetscFunctionBegin;
 
   ierr = PetscOptionsGetReal(PETSC_NULL,"-start",&start1,&flg1); CHKERRQ(ierr);

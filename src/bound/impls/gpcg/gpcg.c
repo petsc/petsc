@@ -17,7 +17,7 @@ static const char *TAOSUBSET[64] = {
 };
 
 //static PetscErrorCode TaoGradProjections(TaoSolver);
-//static PetscErrorCode GPCGCheckOptimalFace(Vec, Vec, Vec, Vec, Vec, IS, IS, PetscTruth *);
+//static PetscErrorCode GPCGCheckOptimalFace(Vec, Vec, Vec, Vec, Vec, IS, IS, PetscBool *);
 static PetscErrorCode GPCGGradProjections(TaoSolver tao);
 static PetscErrorCode GPCGObjectiveAndGradient(TaoLineSearch,Vec,PetscReal*,Vec,void*);
 
@@ -61,7 +61,7 @@ static PetscErrorCode TaoSolverSetFromOptions_GPCG(TaoSolver tao)
 {
   TAO_GPCG *gpcg = (TAO_GPCG *)tao->data;
   PetscErrorCode      ierr;
-  PetscTruth flg;
+  PetscBool flg;
   MPI_Comm   comm;
   PetscMPIInt size;
   PetscFunctionBegin;

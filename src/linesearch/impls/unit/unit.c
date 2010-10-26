@@ -29,14 +29,14 @@ static PetscErrorCode TaoLineSearchView_Unit(TaoLineSearch ls,PetscViewer pv)
 {
   
   PetscErrorCode info;
-  PetscTruth isascii;
+  PetscBool isascii;
   PetscFunctionBegin;
   
-  info = PetscTypeCompare((PetscObject)pv, PETSC_VIEWER_ASCII, &isascii); CHKERRQ(info);
+  info = PetscTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &isascii); CHKERRQ(info);
   if (isascii) {
       info=PetscViewerASCIIPrintf(pv,"  Line Search: Unit Step.\n");CHKERRQ(info);
   } else {
-      SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for Unit TaoLineSearch.",((PetscObject)pv)->type_name);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for Unit TaoLineSearch.",((PetscObject)pv)->type_name);
   }
   PetscFunctionReturn(0);
 }

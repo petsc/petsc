@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   Vec        x;                     /* solution vector */
   Mat        H;
   TaoSolver  tao;                   /* TAO_SOLVER solver context */
-  PetscTruth  flg;
+  PetscBool  flg;
   int        size,rank;                  /* number of processes running */
   TaoSolverTerminationReason reason;
   AppCtx     user;                  /* user-defined application context */
@@ -60,7 +60,7 @@ int main(int argc,char **argv)
   if (size >1) {
       if (rank == 0) {
 	  PetscPrintf(PETSC_COMM_SELF,"This example is intended for single processor use!\n"); 
-	  SETERRQ(1,"Incorrect number of processors");
+	  SETERRQ(PETSC_COMM_SELF,1,"Incorrect number of processors");
       }
   }
 
@@ -188,7 +188,7 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *HH, Mat *Hpre, MatStructure 
   PetscReal  alpha=user->alpha;
   PetscReal  v[2][2],*x;
   Mat H=*HH;
-  PetscTruth assembled;
+  PetscBool assembled;
 
   /* Zero existing matrix entries */
   info = MatAssembled(H,&assembled); CHKERRQ(info);

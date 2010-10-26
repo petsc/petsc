@@ -19,9 +19,9 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetInitialVector(TaoSolver tao, Vec 
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     if (x0) {
-	PetscValidHeaderSpecific(x0,VEC_COOKIE,2);
+	PetscValidHeaderSpecific(x0,VEC_CLASSID,2);
 	PetscObjectReference((PetscObject)x0);
     }
     if (tao->solution) {
@@ -57,9 +57,9 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeGradient(TaoSolver tao, Vec X
     PetscErrorCode ierr;
     PetscReal dummy;
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
-    PetscValidHeaderSpecific(X,VEC_COOKIE,2);
-    PetscValidHeaderSpecific(G,VEC_COOKIE,2);
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    PetscValidHeaderSpecific(X,VEC_CLASSID,2);
+    PetscValidHeaderSpecific(G,VEC_CLASSID,2);
     PetscCheckSameComm(tao,1,X,2);
     PetscCheckSameComm(tao,1,G,3);
     if (tao->ops->computegradient) {
@@ -81,7 +81,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeGradient(TaoSolver tao, Vec X
 	ierr = PetscLogEventEnd(TaoSolver_ObjGradientEval,tao,X,G,PETSC_NULL); CHKERRQ(ierr);
 	tao->nfuncgrads++;
     }  else {
-	SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetGradientRoutine() has not been called");
+	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetGradientRoutine() has not been called");
     }
     PetscFunctionReturn(0);
 }
@@ -113,8 +113,8 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjective(TaoSolver tao, Vec 
     PetscErrorCode ierr;
     Vec temp;
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
-    PetscValidHeaderSpecific(X,VEC_COOKIE,2);
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    PetscValidHeaderSpecific(X,VEC_CLASSID,2);
     PetscCheckSameComm(tao,1,X,2);
     if (tao->ops->computeobjective) {
 	ierr = PetscLogEventBegin(TaoSolver_ObjectiveEval,tao,X,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
@@ -139,7 +139,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjective(TaoSolver tao, Vec 
 	tao->nfuncgrads++;
 
     }  else {
-	SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetObjectiveRoutine() has not been called");
+	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetObjectiveRoutine() has not been called");
     }
     ierr = PetscInfo1(tao,"TAO Function evaluation: %14.12e\n",*f);CHKERRQ(ierr);    
     PetscFunctionReturn(0);
@@ -171,9 +171,9 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjectiveAndGradient(TaoSolve
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
-  PetscValidHeaderSpecific(X,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(G,VEC_COOKIE,4);
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(G,VEC_CLASSID,4);
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,G,4);
   if (tao->ops->computeobjectiveandgradient) {
@@ -204,7 +204,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjectiveAndGradient(TaoSolve
       ierr = PetscLogEventEnd(TaoSolver_GradientEval,tao,X,G,PETSC_NULL); CHKERRQ(ierr);
       tao->ngrads++;
   } else {
-      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetObjectiveRoutine() or TaoSolverSetGradientRoutine() not set");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetObjectiveRoutine() or TaoSolverSetGradientRoutine() not set");
   }
   ierr = PetscInfo1(tao,"TAO Function evaluation: %14.12e\n",*f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -237,7 +237,7 @@ $      func (TaoSolver tao, Vec x, PetscReal *f, void *ctx);
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveRoutine(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, PetscReal*,void*),void *ctx) 
 {
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     tao->user_objP = ctx;
     tao->ops->computeobjective = func;
     PetscFunctionReturn(0);
@@ -270,8 +270,8 @@ $      func (TaoSolver tao, Vec x, Vec f, void *ctx);
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetSeparableObjectiveRoutine(TaoSolver tao, Vec sepobj, PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*),void *ctx)
 {
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
-    PetscValidHeaderSpecific(sepobj, VEC_COOKIE,2);
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    PetscValidHeaderSpecific(sepobj, VEC_CLASSID,2);
     tao->user_sepobjP = ctx;
     tao->sep_objective = sepobj;
     tao->ops->computeseparableobjective = func;
@@ -303,9 +303,9 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeSeparableObjective(TaoSolver 
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
-    PetscValidHeaderSpecific(X,VEC_COOKIE,2);
-    PetscValidHeaderSpecific(F,VEC_COOKIE,3);
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    PetscValidHeaderSpecific(X,VEC_CLASSID,2);
+    PetscValidHeaderSpecific(F,VEC_CLASSID,3);
     PetscCheckSameComm(tao,1,X,2);
     PetscCheckSameComm(tao,1,F,3);
     if (tao->ops->computeseparableobjective) {
@@ -318,7 +318,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeSeparableObjective(TaoSolver 
 	ierr = PetscLogEventEnd(TaoSolver_ObjectiveEval,tao,X,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
 	tao->nfuncs++;
     } else {
-	SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetSeparableObjectiveRoutine() has not been called");
+	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetSeparableObjectiveRoutine() has not been called");
     }
     ierr = PetscInfo(tao,"TAO separable function evaluation.\n"); CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -351,7 +351,7 @@ $      func (TaoSolver tao, Vec x, Vec g, void *ctx);
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetGradientRoutine(TaoSolver tao,  PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*),void *ctx) 
 {
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     tao->user_gradP = ctx;
     tao->ops->computegradient = func;
     PetscFunctionReturn(0);
@@ -385,7 +385,7 @@ $      func (TaoSolver tao, Vec x, Vec g, void *ctx);
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveAndGradientRoutine(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, PetscReal *, Vec, void*), void *ctx)
 {
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     tao->user_objgradP = ctx;
     tao->ops->computeobjectiveandgradient = func;
     PetscFunctionReturn(0);
@@ -412,13 +412,13 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetVariableBounds(TaoSolver tao, Vec
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     if (XL) {
-	PetscValidHeaderSpecific(XL,VEC_COOKIE,2);
+	PetscValidHeaderSpecific(XL,VEC_CLASSID,2);
 	PetscObjectReference((PetscObject)XL);
     }
     if (XU) {
-	PetscValidHeaderSpecific(XU,VEC_COOKIE,3);
+	PetscValidHeaderSpecific(XU,VEC_CLASSID,3);
 	PetscObjectReference((PetscObject)XU);
     }
     if (tao->XL) {
@@ -439,7 +439,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetVariableBounds(TaoSolver tao, Vec
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetVariableBounds(TaoSolver tao, Vec *XL, Vec *XU)
 {
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     if (XL) {
 	*XL=tao->XL;
     }

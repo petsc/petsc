@@ -2,7 +2,7 @@
 
 #include "include/private/taosolver_impl.h"
 
-static PetscTruth TaoSolverPackageInitialized = PETSC_FALSE;
+static PetscBool TaoSolverPackageInitialized = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverInitializePackage"
@@ -28,17 +28,17 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverInitializePackage(const char path[])
   if (TaoSolverPackageInitialized) PetscFunctionReturn(0);
   TaoSolverPackageInitialized = PETSC_TRUE;
 
-  ierr = PetscCookieRegister("TaoSolver",&TAOSOLVER_COOKIE); CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("TaoSolver",&TAOSOLVER_CLASSID); CHKERRQ(ierr);
   
   /* Tell PETSc what solvers are available */
   ierr = TaoSolverRegisterAll(path); CHKERRQ(ierr);
 
   /* Tell PETSc what events are associated with TaoSolver */
-  ierr = PetscLogEventRegister("TaoSolverSolve",TAOSOLVER_COOKIE,&TaoSolver_Solve); CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoSolverObjectiveEval",TAOSOLVER_COOKIE,&TaoSolver_ObjectiveEval); CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoSolverGradientEval",TAOSOLVER_COOKIE,&TaoSolver_GradientEval); CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoSolverHessianEval",TAOSOLVER_COOKIE,&TaoSolver_HessianEval); CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoSolverJacobianEval",TAOSOLVER_COOKIE,&TaoSolver_JacobianEval); CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoSolverSolve",TAOSOLVER_CLASSID,&TaoSolver_Solve); CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoSolverObjectiveEval",TAOSOLVER_CLASSID,&TaoSolver_ObjectiveEval); CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoSolverGradientEval",TAOSOLVER_CLASSID,&TaoSolver_GradientEval); CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoSolverHessianEval",TAOSOLVER_CLASSID,&TaoSolver_HessianEval); CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoSolverJacobianEval",TAOSOLVER_CLASSID,&TaoSolver_JacobianEval); CHKERRQ(ierr);
 
 
   PetscFunctionReturn(0);

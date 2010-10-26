@@ -3,7 +3,7 @@
 ALL: lib
 
 SOURCEH  = 
-DIRS     = pounders
+DIRS     = pounders #lm
 LOCDIR   = src/pounders/impls/
 
 include ${TAO_DIR}/conf/tao_base

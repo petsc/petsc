@@ -10,7 +10,7 @@ PetscErrorCode VecPow(Vec Vec1, PetscScalar p)
   PetscReal *v1;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(Vec1, VEC_COOKIE, 1); 
+  PetscValidHeaderSpecific(Vec1, VEC_CLASSID, 1); 
 
   ierr = VecGetArray(Vec1, &v1); CHKERRQ(ierr);
   ierr = VecGetLocalSize(Vec1, &n); CHKERRQ(ierr);
@@ -86,10 +86,10 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
   PetscReal *v1,*v2,*v3,*vmed;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(Vec1,VEC_COOKIE,1); 
-  PetscValidHeaderSpecific(Vec2,VEC_COOKIE,2); 
-  PetscValidHeaderSpecific(Vec3,VEC_COOKIE,3); 
-  PetscValidHeaderSpecific(VMedian,VEC_COOKIE,4); 
+  PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1); 
+  PetscValidHeaderSpecific(Vec2,VEC_CLASSID,2); 
+  PetscValidHeaderSpecific(Vec3,VEC_CLASSID,3); 
+  PetscValidHeaderSpecific(VMedian,VEC_CLASSID,4); 
 
   if (Vec1==Vec2 || Vec1==Vec3){
     ierr=VecCopy(Vec1,VMedian); CHKERRQ(ierr); 
@@ -112,7 +112,7 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
   ierr = VecGetOwnershipRange(VMedian, &low4, &high4); CHKERRQ(ierr);
   if ( low1!= low2 || low1!= low3 || low1!= low4 ||
        high1!= high2 || high1!= high3 || high1!= high4)
-    SETERRQ(1,"InCompatible vector local lengths");
+    SETERRQ(PETSC_COMM_SELF,1,"InCompatible vector local lengths");
 
   ierr = VecGetArray(Vec1,&v1); CHKERRQ(ierr);
   ierr = VecGetArray(Vec2,&v2); CHKERRQ(ierr);
@@ -148,13 +148,13 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecCompare"
-PetscErrorCode TAOSOLVER_DLLEXPORT VecCompare(Vec V1,Vec V2, PetscTruth *flg){
+PetscErrorCode TAOSOLVER_DLLEXPORT VecCompare(Vec V1,Vec V2, PetscBool *flg){
   PetscErrorCode ierr;
   PetscInt n1,n2,N1,N2;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(V1,VEC_COOKIE,1); 
-  PetscValidHeaderSpecific(V2,VEC_COOKIE,2); 
+  PetscValidHeaderSpecific(V1,VEC_CLASSID,1); 
+  PetscValidHeaderSpecific(V2,VEC_CLASSID,2); 
   ierr = VecGetSize(V1,&N1);CHKERRQ(ierr);
   ierr = VecGetSize(V2,&N2);CHKERRQ(ierr);
   ierr = VecGetLocalSize(V1,&n1);CHKERRQ(ierr);
@@ -188,11 +188,11 @@ PetscErrorCode TAOSOLVER_DLLEXPORT VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FF
   PetscInt low[5], high[5], n, i;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(X, VEC_COOKIE,1); 
-  PetscValidHeaderSpecific(F, VEC_COOKIE,2); 
-  PetscValidHeaderSpecific(L, VEC_COOKIE,3); 
-  PetscValidHeaderSpecific(U, VEC_COOKIE,4); 
-  PetscValidHeaderSpecific(FF, VEC_COOKIE,4); 
+  PetscValidHeaderSpecific(X, VEC_CLASSID,1); 
+  PetscValidHeaderSpecific(F, VEC_CLASSID,2); 
+  PetscValidHeaderSpecific(L, VEC_CLASSID,3); 
+  PetscValidHeaderSpecific(U, VEC_CLASSID,4); 
+  PetscValidHeaderSpecific(FF, VEC_CLASSID,4); 
 
   ierr = VecGetOwnershipRange(X, low, high); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(F, low + 1, high + 1); CHKERRQ(ierr);
@@ -202,7 +202,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FF
 
   for (i = 1; i < 4; ++i) {
     if (low[0] != low[i] || high[0] != high[i])
-      SETERRQ(1,"Vectors must be identically loaded over processors");
+      SETERRQ(PETSC_COMM_SELF,1,"Vectors must be identically loaded over processors");
   }
 
   ierr = VecGetArray(X, &x); CHKERRQ(ierr);
@@ -265,11 +265,11 @@ PetscErrorCode TAOSOLVER_DLLEXPORT VecSFischer(Vec X, Vec F, Vec L, Vec U, Petsc
   PetscInt low[5], high[5], n, i;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(X, VEC_COOKIE,1);
-  PetscValidHeaderSpecific(F, VEC_COOKIE,2);
-  PetscValidHeaderSpecific(L, VEC_COOKIE,3);
-  PetscValidHeaderSpecific(U, VEC_COOKIE,4);
-  PetscValidHeaderSpecific(FF, VEC_COOKIE,6);
+  PetscValidHeaderSpecific(X, VEC_CLASSID,1);
+  PetscValidHeaderSpecific(F, VEC_CLASSID,2);
+  PetscValidHeaderSpecific(L, VEC_CLASSID,3);
+  PetscValidHeaderSpecific(U, VEC_CLASSID,4);
+  PetscValidHeaderSpecific(FF, VEC_CLASSID,6);
 
   ierr = VecGetOwnershipRange(X, low, high); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(F, low + 1, high + 1); CHKERRQ(ierr);
@@ -279,7 +279,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT VecSFischer(Vec X, Vec F, Vec L, Vec U, Petsc
 
   for (i = 1; i < 4; ++i) {
     if (low[0] != low[i] || high[0] != high[i])
-      SETERRQ(1,"Vectors must be identically loaded over processors");
+      SETERRQ(PETSC_COMM_SELF,1,"Vectors must be identically loaded over processors");
   }
 
   ierr = VecGetArray(X, &x); CHKERRQ(ierr);

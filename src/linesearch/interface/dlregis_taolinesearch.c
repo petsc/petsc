@@ -9,7 +9,7 @@ EXTERN_C_END
 
 
 
-//PetscCookie TAOLINESEARCH_COOKIE=0;
+//PetscClassId TAOLINESEARCH_CLASSID=0;
 
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 #define TaoLineSearchRegisterDynamic(a,b,c,d) TaoLineSearchRegister(a,b,c,0)
@@ -35,7 +35,7 @@ EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_MT(TaoLineSear
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_GPCG(TaoLineSearch);
 EXTERN_C_END
     
-extern PetscTruth TaoLineSearchRegisterAllCalled;
+extern PetscBool TaoLineSearchRegisterAllCalled;
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchRegisterAll"
@@ -55,16 +55,16 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchRegisterAll(const char path[
 #define __FUNCT__ "TaoLineSearchInitializePackage"
 PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchInitializePackage(const char path[])
 {
-    static PetscTruth initialized = PETSC_FALSE;
+    static PetscBool initialized = PETSC_FALSE;
     PetscErrorCode info;
 
     PetscFunctionBegin;
     if (initialized) PetscFunctionReturn(0);
     initialized = PETSC_TRUE;
-    info = PetscCookieRegister("TaoLineSearch",&TAOLINESEARCH_COOKIE); CHKERRQ(info);
+    info = PetscClassIdRegister("TaoLineSearch",&TAOLINESEARCH_CLASSID); CHKERRQ(info);
     info = TaoLineSearchRegisterAll(path);
-    info = PetscLogEventRegister(  "TaoLineSearchApply",TAOLINESEARCH_COOKIE,&TaoLineSearch_ApplyEvent); CHKERRQ(info);
-    info = PetscLogEventRegister("TaoLineSearchComputeObjective[Gradient]",TAOLINESEARCH_COOKIE,&TaoLineSearch_EvalEvent); CHKERRQ(info);
+    info = PetscLogEventRegister(  "TaoLineSearchApply",TAOLINESEARCH_CLASSID,&TaoLineSearch_ApplyEvent); CHKERRQ(info);
+    info = PetscLogEventRegister("TaoLineSearchComputeObjective[Gradient]",TAOLINESEARCH_CLASSID,&TaoLineSearch_EvalEvent); CHKERRQ(info);
     PetscFunctionReturn(0);
 }
 

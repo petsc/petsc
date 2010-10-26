@@ -8,7 +8,7 @@ PETSC_EXTERN_CXX_BEGIN
 
 typedef struct _p_TaoSolver*   TaoSolver;
 #define TaoSolverType char*
-extern PetscCookie TAOSOLVER_DLLEXPORT TAOSOLVER_COOKIE;
+extern PetscClassId TAOSOLVER_DLLEXPORT TAOSOLVER_CLASSID;
 
 /*  Convergence flags.
     Be sure to check that these match the flags in

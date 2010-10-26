@@ -32,7 +32,7 @@ static PetscErrorCode TaoSolverSolve_CG(TaoSolver tao)
     ierr = TaoSolverComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
     ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
     if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
-	SETERRQ(1, "User provided compute function generated Inf or NaN");
+	SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
     }
     
     ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
@@ -138,7 +138,7 @@ static PetscErrorCode TaoSolverSolve_CG(TaoSolver tao)
 	// Check for bad value
 	ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
 	if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
-	    SETERRQ(1,"User-provided compute function generated Inf or NaN");
+	    SETERRQ(PETSC_COMM_SELF,1,"User-provided compute function generated Inf or NaN");
 	}
 	
 	// Check for termination
@@ -276,12 +276,12 @@ delta_max,&cgP->delta_max,0); CHKERRQ(ierr);
 #define __FUNCT__ "TaoSolverView_CG"
 static PetscErrorCode TaoSolverView_CG(TaoSolver tao, PetscViewer viewer)
 {
-    PetscTruth isascii;
+    PetscBool isascii;
     TAO_CG *cgP = (TAO_CG*)tao->data;
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    ierr = PetscTypeCompare((PetscObject)viewer, PETSC_VIEWER_ASCII, &isascii); CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
     if (isascii) {
 	ierr = PetscViewerASCIIPrintf(viewer, "  CG Type: %s\n", CG_Table[cgP->cg_type]); CHKERRQ(ierr);
 	ierr = PetscViewerASCIIPrintf(viewer, "  Gradient steps: %d\n", cgP->ngradsteps); CHKERRQ(ierr);
@@ -329,6 +329,8 @@ PetscErrorCode TaoSolverCreate_CG(TaoSolver tao)
 
     PetscFunctionReturn(0);
 }
+
+EXTERN_C_END
 
 	    
 

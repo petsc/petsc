@@ -37,7 +37,7 @@
       Vec              x       ! solution vector
       Mat              H       ! hessian matrix
       TaoSolver        tao     ! TAO_SOVER context
-      PetscTruth       flg     
+      PetscBool       flg     
       PetscInt         i2,i1
       integer          size,rank    ! number of processes running
       PetscReal      zero
@@ -65,7 +65,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRQ(1,' ',ierr)
+         SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
       endif
 
 !  Initialize problem parameters
@@ -248,7 +248,7 @@
       PetscInt         dummy
       
       PetscReal        v(0:1,0:1)
-      PetscTruth assembled
+      PetscBool assembled
 
 ! PETSc's VecGetArray acts differently in Fortran than it does in C.
 ! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)

@@ -28,7 +28,7 @@ typedef struct _p_TaoLineSearch* TaoLineSearch;
 #define TAOLINESEARCH_MT "more-thuente"
 #define TAOLINESEARCH_GPCG "gpcg"
 
-extern PetscCookie TAOLINESEARCH_DLLEXPORT TAOLINESEARCH_COOKIE;
+extern PetscClassId TAOLINESEARCH_DLLEXPORT TAOLINESEARCH_CLASSID;
 
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate(MPI_Comm,TaoLineSearch*);
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetFromOptions(TaoLineSearch);

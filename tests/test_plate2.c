@@ -66,7 +66,7 @@ int main( int argc, char **argv )
   PetscInt   Nx, Ny;               /* number of processors in x- and y- directions */
   PetscInt   m, N;                 /* number of local and global elements in vectors */
   Vec        x,xl,xu;               /* solution vector  and bounds*/
-  PetscTruth   flg;                /* A return variable when checking for user options */
+  PetscBool   flg;                /* A return variable when checking for user options */
   TaoSolver  tao;                  /* TAO_SOLVER solver context */
   PetscReal  ff,gnorm,cnorm;       /* iteration information */
   PetscInt   iter;
@@ -465,7 +465,7 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *Hptr, Mat *Hpc, MatStructure
   PetscReal *x,*left,*right,*bottom,*top;
   PetscReal v[7];
   Vec    localX = user->localX;
-  PetscTruth assembled;
+  PetscBool assembled;
 
 
   /* Set various matrix options */
@@ -651,7 +651,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
   PetscReal     u1,u2,nf1,nf2,njac11,njac12,njac21,njac22;
   PetscReal     b=-0.5, t=0.5, l=-0.5, r=0.5;
   PetscReal     *boundary;
-  PetscTruth   flg;
+  PetscBool   flg;
   Vec        Bottom,Top,Right,Left;
 
   /* Get local mesh boundaries */
@@ -788,7 +788,7 @@ static PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx){
   PetscInt mx=user->mx, my=user->my, bmy, bmx;
   PetscReal t1,t2,t3;
   PetscReal *xl, lb=TAO_NINFINITY, ub=TAO_INFINITY;
-  PetscTruth cylinder;
+  PetscBool cylinder;
 
   user->bmy = PetscMax(0,user->bmy);user->bmy = PetscMin(my,user->bmy);
   user->bmx = PetscMax(0,user->bmx);user->bmx = PetscMin(mx,user->bmx);
@@ -851,7 +851,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscErrorCode      info;
   PetscInt start=-1,i,j;
   PetscReal   zero=0.0;
-  PetscTruth flg;
+  PetscBool flg;
 
   info = PetscOptionsGetInt(PETSC_NULL,"-start",&start,&flg); CHKERRQ(info);
 

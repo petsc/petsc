@@ -25,7 +25,7 @@
 #define TAO_INF_SAFEGUARD	1e+8
 
 typedef struct{
-    PetscTruth allocated;
+    PetscBool allocated;
     PetscInt lm;
     PetscReal eps;
     PetscInt limitType;
@@ -74,10 +74,10 @@ typedef struct{
   PetscReal *rho;
   PetscReal *beta;
 
-  PetscTruth useDefaultH0;
+  PetscBool useDefaultH0;
   Mat H0;
 
-  PetscTruth useScale;
+  PetscBool useScale;
   Vec scale;
      
 
@@ -98,7 +98,7 @@ int MatDiagonalShift_LMVM(Vec,Mat);
 int MatDestroy_LMVM(Mat);
 int MatShift_LMVM(Mat,PetscReal);
 int MatDuplicate_LMVM(Mat,MatDuplicateOption,Mat*);
-int MatEqual_LMVM(Mat,Mat,PetscTruth*);
+int MatEqual_LMVM(Mat,Mat,PetscBool*);
 int MatScale_LMVM(Mat,PetscReal);
 int MatGetSubMatrix_LMVM(Mat,IS,IS,int,MatReuse,Mat *);
 int MatGetSubMatrices_LMVM(Mat,int,IS*,IS*,MatReuse,Mat**);

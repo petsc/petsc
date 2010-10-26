@@ -37,7 +37,7 @@
       Vec              x       ! solution vector
       Vec              f       ! vector of functions
       TaoSolver        tao     ! TAO_SOVER context
-      PetscTruth       flg     
+      PetscBool       flg     
       PetscInt         i
       integer          size,rank    ! number of processes running
       PetscReal      zero
@@ -63,7 +63,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRQ(1,' ',ierr)
+         SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
       endif
 
 !  Initialize problem parameters

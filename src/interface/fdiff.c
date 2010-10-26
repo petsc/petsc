@@ -13,16 +13,15 @@ static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx){
   PetscErrorCode ierr;
   TaoSolver tao = (TaoSolver)ctx;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ctx,TAOSOLVER_COOKIE,4);
+  PetscValidHeaderSpecific(ctx,TAOSOLVER_CLASSID,4);
   ierr=TaoSolverComputeGradient(tao,X,G); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TaoSolverDefaultComputeGradient"
 /*@C
-  TaoAppDefaultComputeGradient - computes the gradient using finite differences.
+  TaoSolverDefaultComputeGradient - computes the gradient using finite differences.
  
   Collective on TAO_APPLICATION
 
@@ -67,7 +66,7 @@ PetscErrorCode TaoSolverDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *d
   PetscReal f, f2;
   PetscErrorCode ierr;
   PetscInt low,high,N,i;
-  PetscTruth flg;
+  PetscBool flg;
   PetscReal h=1.0e-6;
   PetscFunctionBegin;
   ierr = TaoSolverComputeObjective(tao, X,&f); CHKERRQ(ierr);
@@ -143,7 +142,7 @@ PetscErrorCode TaoSolverDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
   SNES                 snes;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(V,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(V,VEC_CLASSID,2);
   ierr = VecDuplicate(V,&G);CHKERRQ(ierr);
 
   ierr = PetscInfo(tao,"TAO Using finite differences w/o coloring to compute Hessian matrix\n"); CHKERRQ(ierr);
@@ -163,11 +162,9 @@ PetscErrorCode TaoSolverDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_END
 
 
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TaoSolverDefaultComputeHessianColor"
 /*@C
@@ -205,9 +202,9 @@ PetscErrorCode TaoSolverDefaultComputeHessianColor(TaoSolver tao, Vec V, Mat *HH
   MatFDColoring       coloring = (MatFDColoring)ctx;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(H,MAT_COOKIE,3);  
-  PetscValidHeaderSpecific(B,MAT_COOKIE,4);  
-  PetscValidHeaderSpecific(ctx,MAT_FDCOLORING_COOKIE,6);
+  PetscValidHeaderSpecific(H,MAT_CLASSID,3);  
+  PetscValidHeaderSpecific(B,MAT_CLASSID,4);  
+  PetscValidHeaderSpecific(ctx,MAT_FDCOLORING_CLASSID,6);
   PetscCheckSameComm(V,2,H,3);
   PetscCheckSameComm(H,3,B,4);
 
@@ -224,7 +221,7 @@ PetscErrorCode TaoSolverDefaultComputeHessianColor(TaoSolver tao, Vec V, Mat *HH
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 /*
 #undef __FUNCT__  
 #define __FUNCT__ "TaoAppSetFiniteDifferencesOptions"
@@ -245,11 +242,11 @@ EXTERN_C_END
 @ */
 /*PetscErrorCode TaoSolverSetFiniteDifferencesOptions(TaoSolver tao){
   int info;
-  PetscTruth flg;
+  PetscBool flg;
 
   PetscFunctionBegin;
 
-  PetscValidHeaderSpecific(taoapp,TAO_APP_COOKIE,1);
+  PetscValidHeaderSpecific(taoapp,TAO_APP_CLASSID,1);
 
   flg=PETSC_FALSE;
   info = PetscOptionsName("-tao_fd","use finite differences for Hessian","TaoAppDefaultComputeHessian",&flg);CHKERRQ(info);

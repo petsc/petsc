@@ -42,7 +42,7 @@ PetscErrorCode viewme(Vec v)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   ierr = VecView(v,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -59,7 +59,7 @@ PetscErrorCode initializevecs(Vec **vv, PetscInt numvecs, PetscInt size)
     Vec tmp;
     PetscFunctionBegin;
     if (numvecs*size > length) {
-	SETERRQ(1,"data set not large enough.\n");
+	SETERRQ(PETSC_COMM_SELF,1,"data set not large enough.\n");
     }
     ierr = PetscMalloc(sizeof(Vec)*numvecs,&v); CHKERRQ(ierr);
 

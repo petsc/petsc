@@ -86,7 +86,7 @@ int main( int argc, char **argv )
   PetscInt      m, N;                /* number of local and global elements in vectors */
   Vec      x,f;                 /* solution, residual vectors */
   Mat      J;                   /* Jacobian matrix */
-  PetscTruth flg;               /* flag - 1 indicates matrix-free version */
+  PetscBool flg;               /* flag - 1 indicates matrix-free version */
   TaoSolver tao;               /* TAO_SOLVER solver context */
   ISLocalToGlobalMapping isltog;
   PetscInt      nloc, *ltog;         /* indexing variables */
@@ -105,7 +105,7 @@ int main( int argc, char **argv )
   info = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRQ(info);
   info = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,&flg); CHKERRQ(info);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRQ(1,"Lambda is out of range");
+    SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   }
 
   /* Calculate and derived values from parameters */

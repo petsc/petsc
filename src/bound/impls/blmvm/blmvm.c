@@ -36,7 +36,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
 
   ierr = VecNorm(blmP->GP,NORM_2,&gnorm); CHKERRQ(ierr);
   if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
-    SETERRQ(1, "User provided compute function generated Inf pr NaN");
+    SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf pr NaN");
   }
 
   ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, stepsize, &reason); CHKERRQ(ierr);
@@ -130,7 +130,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
 
 
     if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
-      SETERRQ(1, "User provided compute function generated Not-a-Number");
+      SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Not-a-Number");
     }
     iter++;
     ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, stepsize, &reason); CHKERRQ(ierr);
@@ -243,12 +243,12 @@ static PetscErrorCode TaoSolverComputeDual_BLMVM(TaoSolver tao, Vec DXL, Vec DXU
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
-  PetscValidHeaderSpecific(DXL,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(DXU,VEC_COOKIE,3);
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  PetscValidHeaderSpecific(DXL,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(DXU,VEC_CLASSID,3);
 
   if (!blm->GP || !tao->gradient) {
-      SETERRQ(PETSC_ERR_ORDER,"Dual variables don't exist yet or no longer exist.\n");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Dual variables don't exist yet or no longer exist.\n");
   }
   
   ierr = VecCopy(blm->GP,DXL); CHKERRQ(ierr);

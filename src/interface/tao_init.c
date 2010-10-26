@@ -1,6 +1,6 @@
 #include "taosolver.h"   /*I "tao_solver.h" */
 
-PetscTruth TaoInitializeCalled = PETSC_FALSE;
+PetscBool TaoInitializeCalled = PETSC_FALSE;
 
 //static int TaoGlobalArgc=0;
 //static char** TaoGlogalArgs = 0;

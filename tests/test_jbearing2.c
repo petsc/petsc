@@ -70,7 +70,7 @@ int main( int argc, char **argv )
   Vec        x;                  /* variables vector */
   Vec        xl,xu;                  /* bounds vectors */
   PetscReal d1000 = 1000;
-  PetscTruth   flg;              /* A return variable when checking for user options */
+  PetscBool   flg;              /* A return variable when checking for user options */
   TaoSolver tao;                /* TAO_SOLVER solver context */
 
   ISLocalToGlobalMapping isltog; /* local-to-global mapping object */
@@ -376,7 +376,7 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *H, Mat *Hpre, MatStructure *
   PetscReal ecc=user->ecc, trule1,trule2,trule3,trule4,trule5,trule6;
   PetscReal vmiddle, vup, vdown, vleft, vright;
   Mat hes=*H;
-  PetscTruth assembled;
+  PetscBool assembled;
 
   nx=user->nx;
   ny=user->ny;

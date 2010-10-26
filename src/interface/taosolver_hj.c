@@ -6,13 +6,13 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetHessianRoutine(TaoSolver tao, Mat
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     if (H) {
-	PetscValidHeaderSpecific(H,MAT_COOKIE,2);
+	PetscValidHeaderSpecific(H,MAT_CLASSID,2);
 	PetscCheckSameComm(tao,1,H,2);
     }
     if (Hpre) {
-	PetscValidHeaderSpecific(Hpre,MAT_COOKIE,3);
+	PetscValidHeaderSpecific(Hpre,MAT_CLASSID,3);
 	PetscCheckSameComm(tao,1,Hpre,3);
     }
     if (ctx) {
@@ -72,13 +72,13 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeHessian(TaoSolver tao, Vec X,
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
-    PetscValidHeaderSpecific(X, VEC_COOKIE,2);
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    PetscValidHeaderSpecific(X, VEC_CLASSID,2);
     PetscValidPointer(flg,5);
     PetscCheckSameComm(tao,1,X,2);
     
     if (!tao->ops->computehessian) {
-	SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSolverSetHessian() first");
+	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSolverSetHessian() first");
     }
     *flg = DIFFERENT_NONZERO_PATTERN;
     ++tao->nhess;
@@ -97,13 +97,13 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeJacobian(TaoSolver tao, Vec X
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
-    PetscValidHeaderSpecific(X, VEC_COOKIE,2);
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    PetscValidHeaderSpecific(X, VEC_CLASSID,2);
     PetscValidPointer(flg,5);
     PetscCheckSameComm(tao,1,X,2);
     
     if (!tao->ops->computejacobian) {
-	SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSolverSetJacobian() first");
+	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSolverSetJacobian() first");
     }
     *flg = DIFFERENT_NONZERO_PATTERN;
     ++tao->njac;
@@ -126,13 +126,13 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetJacobianRoutine(TaoSolver tao, Ma
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     if (J) {
-	PetscValidHeaderSpecific(J,MAT_COOKIE,2);
+	PetscValidHeaderSpecific(J,MAT_CLASSID,2);
 	PetscCheckSameComm(tao,1,J,2);
     }
     if (Jpre) {
-	PetscValidHeaderSpecific(Jpre,MAT_COOKIE,3);
+	PetscValidHeaderSpecific(Jpre,MAT_CLASSID,3);
 	PetscCheckSameComm(tao,1,Jpre,3);
     }
     if (ctx) {

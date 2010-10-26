@@ -40,7 +40,7 @@ static int TaoSolverSetFromOptions_TRON(TaoSolver tao);
   TAO_TRON  *tron = (TAO_TRON *)tao->data;
   PetscErrorCode        ierr;
   PetscInt     ival;
-  PetscTruth flg;
+  PetscBool flg;
 
   PetscFunctionBegin;
 
@@ -140,7 +140,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
   ierr = VecNorm(tron->PG,NORM_2,&tron->gnorm); CHKERRQ(ierr);
 
   if (TaoInfOrNaN(tron->f) || TaoInfOrNaN(tron->gnorm)) {
-    SETERRQ(1, "User provided compute function generated Inf pr NaN");
+    SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf pr NaN");
   }
 
   tron->stepsize=tron->delta;
@@ -258,7 +258,7 @@ static PetscErrorCode TronGradientProjections(TAO_SOLVER tao,TAO_TRON *tron)
 {
   PetscErrorCode ierr;
   PetscInt lsflag=0,i;
-  PetscTruth sameface=PETSC_FALSE;
+  PetscBool sameface=PETSC_FALSE;
   PetscScalar actred=-1.0,actred_max=0.0;
   PetscScalar f_new, stepsize;
   /*
@@ -335,12 +335,12 @@ static PetscErrorCode TaoSolverComputeDual_TRON(TaoSolver tao, Vec DXL, Vec DXU)
 
   PetscFunctionBegin;
 
-  PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
-  PetscValidHeaderSpecific(DXL,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(DXU,VEC_COOKIE,3);
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  PetscValidHeaderSpecific(DXL,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(DXU,VEC_CLASSID,3);
 
   if (!blm->Work || !tao->gradient) {
-      SETERRQ(PETSC_ERR_ORDER,"Dual variables don't exist yet or no longer exist.\n");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Dual variables don't exist yet or no longer exist.\n");
   }
 
   ierr = VecBoundGradientProjection(tao->gradient,tao->solution,tao->xl,tao->xu,tron->Work); CHKERRQ(ierr);

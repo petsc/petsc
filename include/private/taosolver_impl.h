@@ -44,7 +44,7 @@ struct _p_TaoSolver {
     void *cnvP; 
     TaoSolverTerminationReason reason;
 
-    PetscTruth setupcalled;
+    PetscBool setupcalled;
     void *data;
 
     Vec solution;
@@ -78,7 +78,7 @@ struct _p_TaoSolver {
 
     
     TaoLineSearch linesearch;
-    PetscTruth lsflag; /* goes up when line search fails */
+    PetscBool lsflag; /* goes up when line search fails */
     KSP ksp;
 
     PetscReal fatol;
@@ -92,13 +92,13 @@ struct _p_TaoSolver {
     PetscReal trtol;
     PetscReal fmin;
 
-    PetscTruth printreason;
-    PetscTruth viewtao;
-    PetscTruth viewsolution;
-    PetscTruth viewgradient;
-    PetscTruth viewconstraint;
-    PetscTruth viewhessian;
-    PetscTruth viewjacobian;
+    PetscBool printreason;
+    PetscBool viewtao;
+    PetscBool viewsolution;
+    PetscBool viewgradient;
+    PetscBool viewconstraint;
+    PetscBool viewhessian;
+    PetscBool viewjacobian;
 
     PetscInt conv_hist_max;/* Number of iteration histories to keep */
     PetscReal *conv_hist; 
@@ -107,7 +107,7 @@ struct _p_TaoSolver {
     PetscInt *conv_hist_geval; /* Number of grad evals at each iteration */
     PetscInt *conv_hist_heval; /* Number of hess evals at each iteration */
     PetscInt conv_hist_len;
-    PetscTruth conv_hist_reset;
+    PetscBool conv_hist_reset;
 
     
 };

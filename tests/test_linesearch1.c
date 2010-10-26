@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     TaoLineSearch ls;
     TaoLineSearchTerminationReason reason;
     Vec x,g,s,xl,xu;
-    PetscTruth usebounds,flg;
+    PetscBool usebounds,flg;
     PetscReal f,step;
     AppCtx user;
     PetscErrorCode ierr;
@@ -124,7 +124,7 @@ PetscErrorCode viewme(Vec v)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   ierr = VecView(v,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -12,11 +12,11 @@ PetscErrorCode TAOSOLVER_DLLEXPORT VecBoundGradientProjection(Vec G, Vec X, Vec 
   /* Project variables at the lower and upper bound */
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(G,VEC_COOKIE,1);
-  PetscValidHeaderSpecific(X,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(XL,VEC_COOKIE,3);
-  PetscValidHeaderSpecific(XU,VEC_COOKIE,4);
-  PetscValidHeaderSpecific(GP,VEC_COOKIE,5);
+  PetscValidHeaderSpecific(G,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(XL,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(XU,VEC_CLASSID,4);
+  PetscValidHeaderSpecific(GP,VEC_CLASSID,5);
 
   ierr = VecGetLocalSize(X,&n); CHKERRQ(ierr);
 
@@ -59,10 +59,10 @@ PetscErrorCode TAOSOLVER_DLLEXPORT VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec 
   PetscReal localmax=0;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(X,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(DX,VEC_COOKIE,5);
-  PetscValidHeaderSpecific(XL,VEC_COOKIE,3);
-  PetscValidHeaderSpecific(XU,VEC_COOKIE,4);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(DX,VEC_CLASSID,5);
+  PetscValidHeaderSpecific(XL,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(XU,VEC_CLASSID,4);
 
   ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(XL,&xl);CHKERRQ(ierr);
@@ -100,10 +100,10 @@ PetscErrorCode TAOSOLVER_DLLEXPORT VecStepBoundInfo(Vec X, Vec XL, Vec XU, Vec D
   MPI_Comm comm;
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(X,VEC_COOKIE,1);
-  PetscValidHeaderSpecific(XL,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(XU,VEC_COOKIE,3);
-  PetscValidHeaderSpecific(DX,VEC_COOKIE,4);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(XL,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(XU,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(DX,VEC_CLASSID,4);
 
   ierr=VecGetArray(X,&x);CHKERRQ(ierr);
   ierr=VecGetArray(XL,&xl);CHKERRQ(ierr);
@@ -151,15 +151,15 @@ PetscErrorCode TAOSOLVER_DLLEXPORT VecStepMax(Vec X, Vec DX, PetscReal *step){
   PetscReal *xx, *dx;
     
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(X,VEC_COOKIE,1);
-  PetscValidHeaderSpecific(DX,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(DX,VEC_CLASSID,2);
 
   ierr = VecGetLocalSize(X,&nn);CHKERRQ(ierr);
   ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(DX,&dx);CHKERRQ(ierr);
   for (i=0;i<nn;i++){
     if (xx[i] < 0){
-      SETERRQ(1,"Vector must be positive");
+      SETERRQ(PETSC_COMM_SELF,1,"Vector must be positive");
     } else if (dx[i]<0){ stepmax=PetscMin(stepmax,-xx[i]/dx[i]);
     }
   }

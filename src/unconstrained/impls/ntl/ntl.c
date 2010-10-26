@@ -60,9 +60,9 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
   Mat M;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  PetscValidHeaderSpecific(b,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(x,VEC_COOKIE,3);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(b,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
   ierr = PCShellGetContext(pc,(void**)&M); CHKERRQ(ierr);
   ierr = MatLMVMSolve(M, b, x); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -136,7 +136,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
   ierr = TaoSolverComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient, NORM_2, &gnorm); CHKERRQ(ierr);
   if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
-    SETERRQ(1, "User provided compute function generated Inf or NaN");
+    SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
   }
   needH = 1;
 
@@ -330,7 +330,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 
 	ierr = VecNorm(tao->gradient, NORM_2, &gnorm); CHKERRQ(ierr);
 	if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
-	  SETERRQ(1, "User provided compute function generated Inf or NaN");
+	  SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
 	}
 	needH = 1;
   
@@ -446,7 +446,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 
 
 	if (norm_d == 0.0) {
-	  SETERRQ(1, "Initial direction zero");
+	  SETERRQ(PETSC_COMM_SELF,1, "Initial direction zero");
 	}
       }
     }
@@ -866,7 +866,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
     /* Check for termination */
     ierr = VecNorm(tao->gradient, NORM_2, &gnorm); CHKERRQ(ierr);
     if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
-      SETERRQ(1,"User provided compute function generated Not-a-Number");
+      SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Not-a-Number");
     }
     needH = 1;
     

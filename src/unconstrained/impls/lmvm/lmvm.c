@@ -30,7 +30,7 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
   ierr = TaoSolverComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
   if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
-    SETERRQ(1, "User provided compute function generated Inf or NaN");
+    SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
   }
 
   ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
@@ -85,7 +85,7 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
       // scaled gradient step.  No need to check for this condition.
       // info = D->Norm2(&dnorm); CHKERRQ(info);
       // if (TaoInfOrNaN(dnorm)) {
-      //   SETERRQ(1, "Direction generated Not-a-Number");
+      //   SETERRQ(PETSC_COMM_SELF,1, "Direction generated Not-a-Number");
       // }
 
       lmP->bfgs = 1;
@@ -140,7 +140,7 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
         // scaled gradient step.  No need to check for this condition.
         // info = D->Norm2(&dnorm); CHKERRQ(info);
         // if (TaoInfOrNaN(dnorm)) {
-        //   SETERRQ(1, "Direction generated Not-a-Number");
+        //   SETERRQ(PETSC_COMM_SELF,1, "Direction generated Not-a-Number");
         // }
   
 	lmP->bfgs = 1;
@@ -279,12 +279,12 @@ static PetscErrorCode TaoSolverView_LMVM(TaoSolver tao, PetscViewer viewer)
 {
 
     TAO_LMVM *lm = (TAO_LMVM *)tao->data;
-    PetscTruth isascii;
+    PetscBool isascii;
     PetscErrorCode ierr;
 
 
     PetscFunctionBegin;
-    ierr = PetscTypeCompare((PetscObject)viewer, PETSC_VIEWER_ASCII, &isascii); CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
     if (isascii) {
 	ierr = PetscViewerASCIIPrintf(viewer, "  BFGS steps: %d\n", lm->bfgs); CHKERRQ(ierr);
 	ierr = PetscViewerASCIIPrintf(viewer, "  Scaled gradient steps: %d\n", lm->sgrad); CHKERRQ(ierr);

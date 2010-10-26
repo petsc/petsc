@@ -9,7 +9,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoCreateSubset(TaoSolver tao, PetscInt subse
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     
     
     PetscFunctionReturn(0);

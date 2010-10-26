@@ -15,7 +15,7 @@ static PetscErrorCode TaoLineSearchDestroy_MT(TaoLineSearch ls)
   PetscErrorCode ierr;
   TAOLINESEARCH_MT_CTX *mt;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
+  PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   mt = (TAOLINESEARCH_MT_CTX*)(ls->data);
   if (mt->x) {
     ierr = VecDestroy(mt->x); CHKERRQ(ierr); 
@@ -32,7 +32,7 @@ static PetscErrorCode TaoLineSearchSetFromOptions_MT(TaoLineSearch ls)
 {
   PetscFunctionBegin;
   
-  PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
+  PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   
   PetscFunctionReturn(0);
 }
@@ -43,10 +43,10 @@ static PetscErrorCode TaoLineSearchSetFromOptions_MT(TaoLineSearch ls)
 static PetscErrorCode TaoLineSearchView_MT(TaoLineSearch ls, PetscViewer pv)
 {
     //PetscErrorCode ierr;
-    //PetscTruth isascii;
+    //PetscBool isascii;
     PetscFunctionBegin;
     /*
-    ierr = PetscTypeCompare((PetscObject)pv, PETSC_VIEWER_ASCII, &isascii); CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
     if (isascii) {
 	ierr = PetscViewerASCIIPrintf(pv,"  maxf=%d, ftol=%g, gtol=%g\n",ls->maxfev, ls->rtol, ls->ftol); CHKERRQ(ierr);
     } else {
@@ -88,11 +88,11 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     PetscReal bstepmin1, bstepmin2, bstepmax;
 
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
-    PetscValidHeaderSpecific(x,VEC_COOKIE,2);
+    PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
+    PetscValidHeaderSpecific(x,VEC_CLASSID,2);
     PetscValidScalarPointer(f,3);
-    PetscValidHeaderSpecific(g,VEC_COOKIE,4);
-    PetscValidHeaderSpecific(s,VEC_COOKIE,5);
+    PetscValidHeaderSpecific(g,VEC_CLASSID,4);
+    PetscValidHeaderSpecific(s,VEC_CLASSID,5);
 
     /* comm,type,size checks are done in interface TaoLineSearchApply */
     mt = (TAOLINESEARCH_MT_CTX*)(ls->data);
@@ -124,7 +124,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 	ierr = VecGetSize(ls->upper,&nn1); CHKERRQ(ierr);
 	ierr = VecGetSize(mt->x,&nn2); CHKERRQ(ierr);
 	if (n1 != n2 || nn1 != nn2) {
-	    SETERRQ(PETSC_ERR_ARG_SIZ,"Variable vector not compatible with bounds vector");
+	    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Variable vector not compatible with bounds vector");
 	}
 	ierr = VecScale(s,-1.0); CHKERRQ(ierr);
 	ierr = VecBoundGradientProjection(s,x,ls->lower,ls->upper,s); CHKERRQ(ierr);
@@ -338,7 +338,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_MT(TaoLineSearch ls)
     PetscErrorCode ierr;
     TAOLINESEARCH_MT_CTX *ctx;
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
+    PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
     ierr = PetscNewLog(ls,TAOLINESEARCH_MT_CTX,&ctx); CHKERRQ(ierr);
     ctx->bracket=0;
     ctx->infoc=1;
@@ -433,9 +433,9 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,
 
   // Check the input parameters for errors
   mtP->infoc = 0;
-  if (mtP->bracket && (*stp <= PetscMin(*stx,*sty) || (*stp >= PetscMax(*stx,*sty)))) SETERRQ(1,"bad stp in bracket");
-  if (*dx * (*stp-*stx) >= 0.0) SETERRQ(1,"dx * (stp-stx) >= 0.0");
-  if (ls->stepmax < ls->stepmin) SETERRQ(1,"stepmax > stepmin");
+  if (mtP->bracket && (*stp <= PetscMin(*stx,*sty) || (*stp >= PetscMax(*stx,*sty)))) SETERRQ(PETSC_COMM_SELF,1,"bad stp in bracket");
+  if (*dx * (*stp-*stx) >= 0.0) SETERRQ(PETSC_COMM_SELF,1,"dx * (stp-stx) >= 0.0");
+  if (ls->stepmax < ls->stepmin) SETERRQ(PETSC_COMM_SELF,1,"stepmax > stepmin");
 
   // Determine if the derivatives have opposite sign */
   sgnd = *dp * (*dx / PetscAbsReal(*dx));

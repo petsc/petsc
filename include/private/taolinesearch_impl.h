@@ -23,7 +23,7 @@ struct _p_TaoLineSearch {
     void *userctx_grad;
     void *userctx_funcgrad;
     
-    PetscTruth setupcalled;
+    PetscBool setupcalled;
     void *data;
 
     /* bounds used for some line searches */
