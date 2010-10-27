@@ -715,17 +715,16 @@ PetscErrorCode SNESVICreateIndexSets_AS(SNES snes,Vec Db,PetscReal thresh,IS* IS
   ierr = VecGetArray(Db,&db);CHKERRQ(ierr);
   /* Compute the sizes of the active and inactive sets */
   for (i=0; i < nlocal;i++) {
-    if (db[i] <= thresh) nloc_isact++;
-    else nloc_isact++;
+    if (PetscAbsScalar(db[i]) <= thresh) nloc_isact++;
+    else nloc_isinact++;
   }
-
   ierr = PetscMalloc(nloc_isact*sizeof(PetscInt),&idx_act);CHKERRQ(ierr);
   ierr = PetscMalloc(nloc_isinact*sizeof(PetscInt),&idx_inact);CHKERRQ(ierr);
 
   /* Creating the indexing arrays */
-  for(i=ilow; i < ihigh; i++) {
-    if (db[i] <= thresh) idx_act[i1++] = i;
-    else idx_inact[i2++] = i;
+  for(i=0; i < nlocal; i++) {
+    if (PetscAbsScalar(db[i]) <= thresh) idx_act[i1++] = ilow+i;
+    else idx_inact[i2++] = ilow+i;
   }
 
   /* Create the index sets */
@@ -813,9 +812,10 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
     /* Create active and inactive index sets */
     ierr = SNESVICreateIndexSets_AS(snes,vi->Db,thresh,&IS_act,&IS_inact);CHKERRQ(ierr);
     ierr = VecView(vi->Db,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%f\n",thresh);CHKERRQ(ierr);
     ierr = ISView(IS_act,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = ISView(IS_inact,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Active set semismooth algorithm not implemented yet");
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Active set semismooth algorithm not implemented yet");
 
     ierr = ISDestroy(IS_act);CHKERRQ(ierr);
     ierr = ISDestroy(IS_inact);CHKERRQ(ierr);
