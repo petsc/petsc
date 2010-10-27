@@ -1296,18 +1296,14 @@ PetscErrorCode MatZeroRowsColumns_SeqSBAIJ(Mat A,PetscInt is_n,const PetscInt is
   MatScalar         *aa;
   const PetscScalar *xx;
   PetscScalar       *bb;
-  PetscBool         *zeroed;
+  PetscBool         *zeroed,vecs = PETSC_FALSE;
 
   PetscFunctionBegin;
   /* fix right hand side if needed */
   if (x && b) {
     ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
     ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
-    for (i=0; i<is_n; i++) {
-      bb[is_idx[i]] = diag*xx[is_idx[i]];
-    }
-    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
-    ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+    vecs = PETSC_TRUE;
   }
   A->same_nonzero = PETSC_TRUE;
 
@@ -1318,6 +1314,28 @@ PetscErrorCode MatZeroRowsColumns_SeqSBAIJ(Mat A,PetscInt is_n,const PetscInt is
     if (is_idx[i] < 0 || is_idx[i] >= A->rmap->N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"row %D out of range",is_idx[i]);
     zeroed[is_idx[i]] = PETSC_TRUE;
   }
+  if (vecs) {
+    for (i=0; i<A->rmap->N; i++) {
+      row = i/bs;
+      for (j=baij->i[row]; j<baij->i[row+1]; j++) {
+	for (k=0; k<bs; k++) {
+	  col = bs*baij->j[j] + k;
+          if (col <= i) continue;
+	  aa = ((MatScalar*)(baij->a)) + j*bs2 + (i%bs) + bs*k;
+	  if (!zeroed[i] && zeroed[col]) {
+	    bb[i] -= aa[0]*xx[col];
+	  }
+	  if (zeroed[i] && !zeroed[col]) {
+	    bb[col] -= aa[0]*xx[i];
+	  }
+	}
+      }
+    }
+    for (i=0; i<is_n; i++) {
+      bb[is_idx[i]] = diag*xx[is_idx[i]];
+    }
+  }
+
   for (i=0; i<A->rmap->N; i++) {
     if (!zeroed[i]) {
       row = i/bs;
@@ -1333,6 +1351,10 @@ PetscErrorCode MatZeroRowsColumns_SeqSBAIJ(Mat A,PetscInt is_n,const PetscInt is
     }
   }
   ierr = PetscFree(zeroed);CHKERRQ(ierr);
+  if (vecs) {
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+  }
 
   /* zero the rows */
   for (i=0; i<is_n; i++) {

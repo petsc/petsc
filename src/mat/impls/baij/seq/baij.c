@@ -2262,18 +2262,14 @@ PetscErrorCode MatZeroRowsColumns_SeqBAIJ(Mat A,PetscInt is_n,const PetscInt is_
   MatScalar         *aa;
   const PetscScalar *xx;
   PetscScalar       *bb;
-  PetscBool         *zeroed;
+  PetscBool         *zeroed,vecs = PETSC_FALSE;
 
   PetscFunctionBegin;
   /* fix right hand side if needed */
   if (x && b) {
     ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
     ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
-    for (i=0; i<is_n; i++) {
-      bb[is_idx[i]] = diag*xx[is_idx[i]];
-    }
-    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
-    ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+    vecs = PETSC_TRUE;
   }
   A->same_nonzero = PETSC_TRUE;
 
@@ -2292,13 +2288,18 @@ PetscErrorCode MatZeroRowsColumns_SeqBAIJ(Mat A,PetscInt is_n,const PetscInt is_
           col = bs*baij->j[j] + k;
 	  if (zeroed[col]) {
 	    aa = ((MatScalar*)(baij->a)) + j*bs2 + (i%bs) + bs*k;
+            if (vecs) bb[i] -= aa[0]*xx[col];
             aa[0] = 0.0;
           }
         }
       }
-    }
+    } else if (vecs) bb[i] = diag*xx[i];
   }
   ierr = PetscFree(zeroed);CHKERRQ(ierr);
+  if (vecs) {
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+  }
 
   /* zero the rows */
   for (i=0; i<is_n; i++) {

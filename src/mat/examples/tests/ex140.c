@@ -16,6 +16,7 @@ int main(int argc,char **args)
   PetscInt       n = 7, idx[] = {1,5,6,8,9,12,15};
   Vec            b,x;
   IS             is;
+  PetscInt       i;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsHasName(PETSC_NULL,"-aij",&aij);CHKERRQ(ierr);
@@ -48,7 +49,14 @@ int main(int argc,char **args)
 
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,idx,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
-  ierr = VecSet(x,1.0);CHKERRQ(ierr);
+  ierr = VecSet(x,0.0);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    ierr = VecSetValue(x,idx[i],1.0,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
+
   ierr = MatZeroRowsColumnsIS(A,is,2.0,x,b);CHKERRQ(ierr);
   /*
      Save the matrix and vector; then destroy the viewer.
