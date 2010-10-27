@@ -362,7 +362,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MatZeroRowsLocal_HYPREStruct_3d(Mat mat,PetscIn
   Mat_HYPREStruct   *ex = (Mat_HYPREStruct*) mat->data;
 
   PetscFunctionBegin;
-  if (x && b) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"No support");
+  if (x && b) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"No support");
   ierr = PetscMemzero(values,7*sizeof(PetscScalar));CHKERRQ(ierr);
   values[3] = d;
   for (i=0; i<nrow; i++) {
@@ -746,7 +746,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MatZeroRowsLocal_HYPRESStruct_3d(Mat mat,PetscI
   PetscInt          row,*entries;
 
   PetscFunctionBegin;
-  if (x && b) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"No support");
+  if (x && b) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"No support");
   ierr = PetscMalloc(7*nvars*sizeof(PetscInt),&entries);CHKERRQ(ierr);
 
   ierr = PetscMalloc(nvars*sizeof(PetscScalar *),&values);CHKERRQ(ierr);
