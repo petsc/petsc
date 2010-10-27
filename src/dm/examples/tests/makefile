@@ -245,11 +245,11 @@ runex25:
 
 runex30:
 	-@${MPIEXEC} -n 2 ./ex30 -bs 2 -block 0 -sliced_mat_type baij -alpha 10 -u0 0.1 > ex30_1.tmp; \
-	   ${DIFF} output/ex30_1and2.out ex30_1.tmp || echo "Possible problem with ex30_1, diffs above"; \
+	   ${DIFF} output/ex30_1.out ex30_1.tmp || echo "Possible problem with ex30_1, diffs above"; \
 	   ${RM} -f ex30_1.tmp
 runex30_2:
 	-@${MPIEXEC} -n 2 ./ex30 -bs 2 -block 1 -sliced_mat_type aij -alpha 10 -u0 0.1 > ex30_2.tmp; \
-	   ${DIFF} output/ex30_1and2.out ex30_2.tmp || echo "Possible problem with ex30_2, diffs above"; \
+	   ${DIFF} output/ex30_2.out ex30_2.tmp || echo "Possible problem with ex30_2, diffs above"; \
 	   ${RM} -f ex30_2.tmp
 runex30_3:
 	-@${MPIEXEC} -n 2 ./ex30 -bs 2 -block 0 -sliced_mat_type aij -alpha 10 -u0 0.1 > ex30_3.tmp; \
