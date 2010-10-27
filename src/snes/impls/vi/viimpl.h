@@ -48,8 +48,6 @@ typedef struct {
   PetscReal             const_tol;
   /* Copy of user supplied function evaluation and jacobian evaluation function pointers */
   PetscErrorCode (*computeuserfunction)(SNES,Vec,Vec,void*);
-  PetscErrorCode (*computeuserjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-
 } SNES_VI;
 
 #endif
