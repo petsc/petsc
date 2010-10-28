@@ -22,6 +22,72 @@
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
+#define __FUNCT__ "MatZeroRows"
+static PetscErrorCode MatZeroRows_Compat(Mat mat,PetscInt n,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  if (x != PETSC_NULL)
+    SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  if (b != PETSC_NULL)
+    SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  ierr = MatZeroRows(mat,n,rows,diag);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define MatZeroRows MatZeroRows_Compat
+#undef __FUNCT__
+#define __FUNCT__ "MatZeroRowsIS"
+static PetscErrorCode MatZeroRowsIS_Compat(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_COOKIE,2);
+  if (x != PETSC_NULL)
+    SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  if (b != PETSC_NULL)
+    SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  ierr = MatZeroRowsIS(mat,is,diag);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define MatZeroRowsIS MatZeroRowsIS_Compat
+#undef __FUNCT__
+#define __FUNCT__ "MatZeroRowsLocal"
+static PetscErrorCode MatZeroRowsLocal_Compat(Mat mat,PetscInt n,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  if (x != PETSC_NULL)
+    SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  if (b != PETSC_NULL)
+    SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  ierr = MatZeroRowsLocal(mat,n,rows,diag);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define MatZeroRowsLocal MatZeroRowsLocal_Compat
+#undef __FUNCT__
+#define __FUNCT__ "MatZeroRowsLocalIS"
+static PetscErrorCode MatZeroRowsLocalIS_Compat(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_COOKIE,2);
+  if (x != PETSC_NULL)
+    SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  if (b != PETSC_NULL)
+    SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  ierr = MatZeroRowsLocalIS(mat,is,diag);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define MatZeroRowsLocalIS MatZeroRowsLocalIS_Compat
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
 #define __FUNCT__ "MatLoad"
 static PetscErrorCode MatLoad_Compat(Mat mat,PetscViewer viewer)
 {

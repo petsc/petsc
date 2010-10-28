@@ -209,10 +209,10 @@ cdef extern from "petscmat.h" nogil:
     int MatRealPart(PetscMat)
     int MatImaginaryPart(PetscMat)
 
-    int MatZeroRows(PetscMat,PetscInt,PetscInt[],PetscScalar)
-    int MatZeroRowsLocal(PetscMat,PetscInt,PetscInt[],PetscScalar)
-    int MatZeroRowsIS(PetscMat,PetscIS,PetscScalar)
-    int MatZeroRowsLocalIS(PetscMat,PetscIS,PetscScalar)
+    int MatZeroRows(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)
+    int MatZeroRowsLocal(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)
+    int MatZeroRowsIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
+    int MatZeroRowsLocalIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
 
     int MatGetDiagonal(PetscMat,PetscVec)
     int MatGetRowMax(PetscMat,PetscVec,PetscInt[])
