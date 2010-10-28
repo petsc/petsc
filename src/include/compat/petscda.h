@@ -8,11 +8,18 @@
 static PetscErrorCode
 DASetUp_Compat(DA da)
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  ierr = DASetFromOptions(da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#define DASetUp_Compat DASetUp
+#define DASetUp DASetUp_Compat
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#define DASetOwnershipRanges DASetVertexDivision
 #endif
 
 #if (PETSC_VERSION_(3,0,0))
@@ -63,12 +70,6 @@ DARestoreElements_Compat(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 }
 #undef  DARestoreElements
 #define DARestoreElements DARestoreElements_Compat
-#endif
-
-
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
-#define DASetOwnershipRanges DASetVertexDivision
 #endif
 
 #if (PETSC_VERSION_(3,0,0))

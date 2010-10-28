@@ -1389,7 +1389,7 @@ DACreateND(MPI_Comm comm,
 #define DASetDof             DMDASetDof              
 #define DASetSizes           DMDASetSizes            
 #define DASetNumProcs        DMDASetNumProcs         
-#define DASetOwnershipRanges DMDASetOwnershipRanges  
+#define DASetOwnershipRanges DMDASetOwnershipRanges
 #define DASetPeriodicity     DMDASetPeriodicity      
 #define DASetStencilType     DMDASetStencilType      
 #define DASetStencilWidth    DMDASetStencilWidth          
@@ -1510,16 +1510,21 @@ DACreateND(MPI_Comm comm,
 static PetscErrorCode
 DASetElementType_Custom(DA dm, DAElementType etype)
 {
-  DM_DA          *da;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  da = (DM_DA*)dm->data;
+  {
+  #if !PETSC_VERSION_(3,1,0)
+  DM_DA *da = (DM_DA*)dm->data;
+  #else
+  DA da = dm;
+  #endif
   if (da->elementtype != etype) {
     ierr = PetscFree(da->e);CHKERRQ(ierr);
     da->elementtype = etype;
     da->ne          = 0; 
     da->e           = PETSC_NULL;
+  }
   }
   PetscFunctionReturn(0);
 }
@@ -1530,12 +1535,17 @@ DASetElementType_Custom(DA dm, DAElementType etype)
 static PetscErrorCode
 DAGetElementType_Custom(DA dm, DAElementType *etype)
 {
-  DM_DA          *da;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(etype,2);
-  da = (DM_DA*)dm->data;
+  {
+  #if !PETSC_VERSION_(3,1,0)
+  DM_DA *da = (DM_DA*)dm->data;
+  #else
+  DA da = dm;
+  #endif
   *etype = da->elementtype;
+  }
   PetscFunctionReturn(0);
 }
 #endif
@@ -1546,11 +1556,15 @@ static PetscErrorCode
 DAGetElements_1D(DA dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
-  DM_DA          *da;
   PetscInt       i,xs,xe,Xs,Xe;
   PetscInt       cnt=0;
   PetscFunctionBegin;
-  da = (DM_DA*)dm->data;
+  {
+  #if !PETSC_VERSION_(3,1,0)
+  DM_DA *da = (DM_DA*)dm->data;
+  #else
+  DA da = dm;
+  #endif
   if (!da->e) {
     ierr = DAGetCorners(dm,&xs,0,0,&xe,0,0);CHKERRQ(ierr);
     ierr = DAGetGhostCorners(dm,&Xs,0,0,&Xe,0,0);CHKERRQ(ierr);
@@ -1565,6 +1579,7 @@ DAGetElements_1D(DA dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
   *nel = da->ne;
   *nen = 2;
   *e   = da->e;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1574,14 +1589,18 @@ static PetscErrorCode
 DAGetElements_2D(DA dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
-  DM_DA          *da;
   PetscInt       i,xs,xe,Xs,Xe;
   PetscInt       j,ys,ye,Ys,Ye;
   PetscInt       cnt=0, cell[4], ns=2, nn=3;
   PetscInt       c, split[] = {0,1,3,
                                2,3,1};
   PetscFunctionBegin;
-  da = (DM_DA*)dm->data;
+  {
+  #if !PETSC_VERSION_(3,1,0)
+  DM_DA *da = (DM_DA*)dm->data;
+  #else
+  DA da = dm;
+  #endif
   if (!da->e) {
     if (da->elementtype == DA_ELEMENT_P1) {ns=2; nn=3;}
     if (da->elementtype == DA_ELEMENT_Q1) {ns=1; nn=4;}
@@ -1611,6 +1630,7 @@ DAGetElements_2D(DA dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
   *nel = da->ne;
   *nen = nn;
   *e   = da->e;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1620,7 +1640,6 @@ static PetscErrorCode
 DAGetElements_3D(DA dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
-  DM_DA          *da;
   PetscInt       i,xs,xe,Xs,Xe;
   PetscInt       j,ys,ye,Ys,Ye;
   PetscInt       k,zs,ze,Zs,Ze;
@@ -1632,7 +1651,12 @@ DAGetElements_3D(DA dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
                                1,4,5,7,
                                1,5,6,7};
   PetscFunctionBegin;
-  da = (DM_DA*)dm->data;
+  {
+  #if !PETSC_VERSION_(3,1,0)
+  DM_DA *da = (DM_DA*)dm->data;
+  #else
+  DA da = dm;
+  #endif
   if (!da->e) {
     if (da->elementtype == DA_ELEMENT_P1) {ns=6; nn=4;}
     if (da->elementtype == DA_ELEMENT_Q1) {ns=1; nn=8;}
@@ -1669,6 +1693,7 @@ DAGetElements_3D(DA dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
   *nel = da->ne;
   *nen = nn;
   *e   = da->e;
+  }
   PetscFunctionReturn(0);
 }
 
