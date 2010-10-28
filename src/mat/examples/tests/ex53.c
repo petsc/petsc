@@ -37,13 +37,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetType(A,MATBAIJ);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  /*
-  if (size == 1){
-    ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  } else {
-    ierr = MatConvert(A,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  }
-  */
+
   ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
  

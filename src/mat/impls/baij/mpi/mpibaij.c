@@ -1630,7 +1630,7 @@ PetscErrorCode MatSetOption_MPIBAIJ(Mat A,MatOption op,PetscBool  flg)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatTranspose_MPIBAIJ("
+#define __FUNCT__ "MatTranspose_MPIBAIJ"
 PetscErrorCode MatTranspose_MPIBAIJ(Mat A,MatReuse reuse,Mat *matout)
 { 
   Mat_MPIBAIJ    *baij = (Mat_MPIBAIJ*)A->data;
@@ -3143,10 +3143,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIBAIJ_MPIAIJ(Mat A,const MatType 
 
   ierr = MatDestroy(b->A);CHKERRQ(ierr);
   ierr = MatDestroy(b->B);CHKERRQ(ierr);
+  ierr = DisAssemble_MPIBAIJ(A);CHKERRQ(ierr);
   ierr = MatConvert_SeqBAIJ_SeqAIJ(a->A, MATSEQAIJ, MAT_INITIAL_MATRIX, &b->A);CHKERRQ(ierr);
   ierr = MatConvert_SeqBAIJ_SeqAIJ(a->B, MATSEQAIJ, MAT_INITIAL_MATRIX, &b->B);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (reuse == MAT_REUSE_MATRIX) {
     ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
   } else {
