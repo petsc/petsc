@@ -5,8 +5,6 @@ class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download  = ['http://petsc.cs.iit.edu/petsc/ams-dev/archive/tip.tar.gz']
-#                      ssh://petsc@petsc.cs.iit.edu//hg/petsc/ams-dev 
-#    Does not currently support automatic download and install
     self.functions = ['AMS_Memory_create']
     self.includes  = ['ams.h']
     self.liblist   = [['libamspub.a']]
@@ -14,6 +12,7 @@ class Configure(PETSc.package.NewPackage):
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
+    self.java       = framework.require('PETSc.packages.java',self)    
     self.deps       = [self.mpi]  
     return
 
@@ -33,13 +32,18 @@ class Configure(PETSc.package.NewPackage):
       g.write('LINKSHARED   = ${CC} -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup\n')
     else:
       g.write('LINKSHARED   = ${CC} -dynamiclib\n')
+    if hasattr(self.java,'javac'):
+      g.write('JAVA_INCLUDES   =  -I/System/Library/Frameworks/JavaVM.framework/Headers/../../CurrentJDK/Headers\n')
+      g.write('JAVAC           = '+getattr(self.java, 'javac'))
     g.close()
     self.setCompilers.popLanguage()
 
     if self.installNeeded('makeinc'):
       try:
         self.logPrintBox('Compiling ams; this may take several minutes')
-        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' &&  make all && cp lib/* '+os.path.join(self.installDir,'lib')+' &&  cp -f include/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)        
+        if not os.path.isdir(os.path.join(self.installDir,'java')):
+          os.mkdir(os.path.join(self.installDir,'java')) 
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' &&  make all && cp lib/* '+os.path.join(self.installDir,'lib')+' && cp -r java/gov '+os.path.join(self.installDir,'java')+' &&  cp -f include/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)        
       except RuntimeError, e:
         raise RuntimeError('Error running make on ams: '+str(e))
       self.postInstall(output+err,'makeinc')

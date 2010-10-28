@@ -3119,6 +3119,43 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIBAIJ_MPIAdj(Mat B, const MatType
 }
 EXTERN_C_END
 
+#include "../src/mat/impls/aij/mpi/mpiaij.h"
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqAIJ(Mat,const MatType,MatReuse,Mat*);
+
+EXTERN_C_BEGIN
+#undef __FUNCT__ 
+#define __FUNCT__ "MatConvert_MPIBAIJ_MPIAIJ"
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIBAIJ_MPIAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat)
+{ 
+  PetscErrorCode ierr;
+  Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*)A->data;
+  Mat            B;
+  Mat_MPIAIJ     *b = (Mat_MPIAIJ*) B->data; 
+
+  PetscFunctionBegin;
+  if (!A->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Matrix must be assembled");
+
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+  ierr = MatSetType(B,newtype);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+  b = (Mat_MPIAIJ*) B->data; 
+
+  ierr = MatDestroy(b->A);CHKERRQ(ierr);
+  ierr = MatDestroy(b->B);CHKERRQ(ierr);
+  ierr = MatConvert_SeqBAIJ_SeqAIJ(a->A, MATSEQAIJ, MAT_INITIAL_MATRIX, &b->A);CHKERRQ(ierr);
+  ierr = MatConvert_SeqBAIJ_SeqAIJ(a->B, MATSEQAIJ, MAT_INITIAL_MATRIX, &b->B);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
+  } else {
+   *newmat = B;
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+ 
 EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_MUMPS)
 extern PetscErrorCode MatGetFactor_baij_mumps(Mat,MatFactorType,Mat*);
@@ -3209,6 +3246,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpibaij_mpiadj_C",
                                      "MatConvert_MPIBAIJ_MPIAdj",
                                       MatConvert_MPIBAIJ_MPIAdj);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpibaij_mpiaij_C",
+                                     "MatConvert_MPIBAIJ_MPIAIJ",
+                                      MatConvert_MPIBAIJ_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_MPIBAIJ",
                                      MatStoreValues_MPIBAIJ);CHKERRQ(ierr);
