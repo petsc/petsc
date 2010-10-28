@@ -487,11 +487,12 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   hid_t          memspace;  /* memory dataspace identifier */
   hid_t          file_id;
   herr_t         status;
-  DM_DA          *dd = (DM_DA*)da->data;
+  DM_DA          *dd;
 
   PetscFunctionBegin;
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)xin,"DMDA",(PetscObject*)&da);CHKERRQ(ierr);
+  dd = (DM_DA*)da->data;
 
   /* Create the dataspace for the dataset */
   dim       = PetscHDF5IntCast(dd->dim + ((dd->w == 1) ? 0 : 1));
