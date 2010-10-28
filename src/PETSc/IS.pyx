@@ -135,10 +135,7 @@ cdef class IS(Object):
 
     def getBlockSize(self):
         cdef PetscInt bs = 1
-        cdef PetscBool block = PETSC_FALSE
-        CHKERR( ISBlock(self.iset, &block) )
-        if block != PETSC_FALSE:
-            CHKERR( ISBlockGetBlockSize(self.iset, &bs) )
+        CHKERR( ISBlockGetBlockSize(self.iset, &bs) )
         return toInt(bs)
 
     def sort(self):
@@ -236,22 +233,13 @@ cdef class IS(Object):
     def getBlockIndices(self):
         cdef PetscInt size = 0
         cdef const_PetscInt *indices = NULL
+        CHKERR( ISBlockGetLocalSize(self.iset, &size) )
+        CHKERR( ISBlockGetIndices(self.iset, &indices) )
         cdef object oindices = None
-        cdef PetscBool block = PETSC_FALSE
-        CHKERR( ISBlock(self.iset, &block) )
         try:
-            if block == PETSC_TRUE:
-                CHKERR( ISBlockGetLocalSize(self.iset, &size) )
-                CHKERR( ISBlockGetIndices(self.iset, &indices) )
-            else:
-                CHKERR( ISGetLocalSize(self.iset, &size) )
-                CHKERR( ISGetIndices(self.iset, &indices) )
             oindices = array_i(size, indices)
         finally:
-            if block == PETSC_TRUE:
-                CHKERR( ISBlockRestoreIndices(self.iset, &indices) )
-            else:
-                CHKERR( ISRestoreIndices(self.iset, &indices) )
+            CHKERR( ISBlockRestoreIndices(self.iset, &indices) )
         return oindices
 
     def setStride(self, size, first=0, step=1):
@@ -267,9 +255,6 @@ cdef class IS(Object):
         return (toInt(size), toInt(first), toInt(step))
 
     def getInfo(self):
-        cdef PetscBool stride = PETSC_FALSE
-        CHKERR( ISStride(self.iset, &stride) )
-        if stride == PETSC_FALSE: return None
         cdef PetscInt first = 0, step = 0
         CHKERR( ISStrideGetInfo(self.iset, &first, &step) )
         return (toInt(first), toInt(step))
