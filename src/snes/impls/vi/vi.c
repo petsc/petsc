@@ -819,7 +819,7 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
     PetscInt           nis_act,nis_inact;
     Vec                Da_act,Da_inact,Db_inact;
     Vec                Y_act,Y_inact,phi_act,phi_inact;
-    Mat                jac_inact_inact,jac_inact_act;
+    Mat                jac_inact_inact,jac_inact_act,prejac_inact_inact;
 
     /* Call general purpose update function */
     if (snes->ops->update) {
@@ -839,6 +839,8 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
     /* Get local sizes of active and inactive sets */
     ierr = ISGetLocalSize(IS_act,&nis_act);CHKERRQ(ierr);
     ierr = ISGetLocalSize(IS_inact,&nis_inact);CHKERRQ(ierr);
+
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Size of active set = %d, size of inactive set = %d\n",nis_act,nis_inact);CHKERRQ(ierr);
 
     /* Create active and inactive set vectors */
     ierr = SNESVICreateVectors_AS(snes,nis_act,&Da_act);CHKERRQ(ierr);
@@ -881,16 +883,20 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
     
     /* Active set direction */
     ierr = VecPointwiseDivide(Y_act,phi_act,Da_act);CHKERRQ(ierr);
-    /* inactive set jacobian */
+    /* inactive set jacobian and preconditioner */
     ierr = VecPointwiseDivide(Da_inact,Da_inact,Db_inact);CHKERRQ(ierr);
     ierr = MatDiagonalSet(jac_inact_inact,Da_inact,ADD_VALUES);CHKERRQ(ierr);
+    if (snes->jacobian != snes->jacobian_pre) {
+      ierr = MatGetSubMatrix(snes->jacobian_pre,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&prejac_inact_inact);CHKERRQ(ierr);
+      ierr = MatDiagonalSet(prejac_inact_inact,Da_inact,ADD_VALUES);CHKERRQ(ierr);
+    } else prejac_inact_inact = jac_inact_inact;
+
     /* right hand side */
     ierr = VecPointwiseDivide(phi_inact,phi_inact,Db_inact);CHKERRQ(ierr);
     ierr = MatMult(jac_inact_act,Y_act,Db_inact);CHKERRQ(ierr);
     ierr = VecAXPY(phi_inact,-1.0,Db_inact);CHKERRQ(ierr);
 
-    /* USING THE SAME MATRIX AS PRECONDITIONER....NEED TO CHANGE THIS */
-    ierr = KSPSetOperators(snes->ksp,jac_inact_inact,jac_inact_inact,flg);CHKERRQ(ierr);
+    ierr = KSPSetOperators(snes->ksp,jac_inact_inact,prejac_inact_inact,flg);CHKERRQ(ierr);
     ierr = SNES_KSPSolve(snes,snes->ksp,phi_inact,Y_inact);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
     /* Compute the jacobian of the semismooth function which is needed for calculating the merit function
@@ -916,7 +922,11 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
     ierr = ISDestroy(IS_inact);CHKERRQ(ierr);
     ierr = MatDestroy(jac_inact_act);CHKERRQ(ierr);
     ierr = MatDestroy(jac_inact_inact);CHKERRQ(ierr);
+    if (snes->jacobian != snes->jacobian_pre) {
+      ierr = MatDestroy(prejac_inact_inact);CHKERRQ(ierr);
+    }
 
+    /* Check if the direction produces a sufficient descent */
     ierr = SNESVICheckDescentDirection(snes,vi->dpsi,Y,&changedir);CHKERRQ(ierr);
     if (kspreason < 0 || changedir) {
       if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
