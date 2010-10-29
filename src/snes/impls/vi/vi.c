@@ -736,6 +736,24 @@ PetscErrorCode SNESVICreateIndexSets_AS(SNES snes,Vec Db,PetscReal thresh,IS* IS
   ierr = PetscFree(idx_inact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/* Create active and inactive set vectors. The local size of this vector is set and petsc computes the global size */
+#undef __FUNCT__
+#define __FUNCT__ "SNESVICreateVectors_AS"
+PetscErrorCode SNESVICreateVectors_AS(SNES snes,PetscInt n,Vec* newv)
+{
+  PetscErrorCode ierr;
+  Vec            v;
+
+  PetscFunctionBegin;
+  ierr = VecCreate(((PetscObject)snes)->comm,&v);CHKERRQ(ierr);
+  ierr = VecSetSizes(v,n,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(v);CHKERRQ(ierr);
+  *newv = v;
+
+  PetscFunctionReturn(0);
+}
+
   
 /* Variational Inequality solver using active set method */
 #undef __FUNCT__  
@@ -797,6 +815,11 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
 
     IS                 IS_act,IS_inact; /* _act -> active set _inact -> inactive set */
     PetscReal          thresh,J_norm1;
+    VecScatter         scat_act,scat_inact;
+    PetscInt           nis_act,nis_inact;
+    Vec                Da_act,Da_inact,Db_inact;
+    Vec                Y_act,Y_inact,phi_act,phi_inact;
+    Mat                jac_inact_inact,jac_inact_act;
 
     /* Call general purpose update function */
     if (snes->ops->update) {
@@ -809,21 +832,89 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
 
     /* Compute B-subdifferential vectors Da and Db */
     ierr = SNESVIComputeBsubdifferentialVectors(snes,X,F,snes->jacobian,vi->Da,vi->Db);CHKERRQ(ierr);
+
     /* Create active and inactive index sets */
     ierr = SNESVICreateIndexSets_AS(snes,vi->Db,thresh,&IS_act,&IS_inact);CHKERRQ(ierr);
-    ierr = VecView(vi->Db,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%f\n",thresh);CHKERRQ(ierr);
-    ierr = ISView(IS_act,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = ISView(IS_inact,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Active set semismooth algorithm not implemented yet");
 
+    /* Get local sizes of active and inactive sets */
+    ierr = ISGetLocalSize(IS_act,&nis_act);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(IS_inact,&nis_inact);CHKERRQ(ierr);
+
+    /* Create active and inactive set vectors */
+    ierr = SNESVICreateVectors_AS(snes,nis_act,&Da_act);CHKERRQ(ierr);
+    ierr = SNESVICreateVectors_AS(snes,nis_inact,&Da_inact);CHKERRQ(ierr);
+    ierr = SNESVICreateVectors_AS(snes,nis_inact,&Db_inact);CHKERRQ(ierr);
+    ierr = SNESVICreateVectors_AS(snes,nis_act,&phi_act);CHKERRQ(ierr);
+    ierr = SNESVICreateVectors_AS(snes,nis_inact,&phi_inact);CHKERRQ(ierr);
+    ierr = SNESVICreateVectors_AS(snes,nis_act,&Y_act);CHKERRQ(ierr);
+    ierr = SNESVICreateVectors_AS(snes,nis_inact,&Y_inact);CHKERRQ(ierr);
+
+    /* Create inactive set submatrices */
+    ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_act,MAT_INITIAL_MATRIX,&jac_inact_act);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
+
+    /* Create scatter contexts */
+    ierr = VecScatterCreate(vi->Da,IS_act,Da_act,PETSC_NULL,&scat_act);CHKERRQ(ierr);
+    ierr = VecScatterCreate(vi->Da,IS_inact,Da_inact,PETSC_NULL,&scat_inact);CHKERRQ(ierr);
+
+    /* Do a vec scatter to active and inactive set vectors */
+    ierr = VecScatterBegin(scat_act,vi->Da,Da_act,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scat_act,vi->Da,Da_act,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  
+    ierr = VecScatterBegin(scat_inact,vi->Da,Da_inact,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scat_inact,vi->Da,Da_inact,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  
+    ierr = VecScatterBegin(scat_inact,vi->Db,Db_inact,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scat_inact,vi->Db,Db_inact,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+    ierr = VecScatterBegin(scat_act,vi->phi,phi_act,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scat_act,vi->phi,phi_act,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+    ierr = VecScatterBegin(scat_inact,vi->phi,phi_inact,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scat_inact,vi->phi,phi_inact,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+    ierr = VecScatterBegin(scat_act,Y,Y_act,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scat_act,Y,Y_act,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+    ierr = VecScatterBegin(scat_inact,Y,Y_inact,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scat_inact,Y,Y_inact,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    
+    /* Active set direction */
+    ierr = VecPointwiseDivide(Y_act,phi_act,Da_act);CHKERRQ(ierr);
+    /* inactive set jacobian */
+    ierr = VecPointwiseDivide(Da_inact,Da_inact,Db_inact);CHKERRQ(ierr);
+    ierr = MatDiagonalSet(jac_inact_inact,Da_inact,ADD_VALUES);CHKERRQ(ierr);
+    /* right hand side */
+    ierr = VecPointwiseDivide(phi_inact,phi_inact,Db_inact);CHKERRQ(ierr);
+    ierr = MatMult(jac_inact_act,Y_act,Db_inact);CHKERRQ(ierr);
+    ierr = VecAXPY(phi_inact,-1.0,Db_inact);CHKERRQ(ierr);
+
+    /* USING THE SAME MATRIX AS PRECONDITIONER....NEED TO CHANGE THIS */
+    ierr = KSPSetOperators(snes->ksp,jac_inact_inact,jac_inact_inact,flg);CHKERRQ(ierr);
+    ierr = SNES_KSPSolve(snes,snes->ksp,phi_inact,Y_inact);CHKERRQ(ierr);
+    ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
+    /* Compute the jacobian of the semismooth function which is needed for calculating the merit function
+       gradient */
+    ierr = SNESVIComputeJacobian(snes->jacobian,snes->jacobian_pre,vi->Da,vi->Db);CHKERRQ(ierr);
+    ierr = SNESVIComputeMeritFunctionGradient(snes->jacobian,vi->phi,vi->dpsi);CHKERRQ(ierr);
+
+    ierr = VecScatterBegin(scat_act,Y_act,Y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scat_act,Y_act,Y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(scat_inact,Y_inact,Y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scat_inact,Y_inact,Y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+
+    ierr = VecDestroy(Da_act);CHKERRQ(ierr);
+    ierr = VecDestroy(Da_inact);CHKERRQ(ierr);
+    ierr = VecDestroy(Db_inact);CHKERRQ(ierr);
+    ierr = VecDestroy(phi_act);CHKERRQ(ierr);
+    ierr = VecDestroy(phi_inact);CHKERRQ(ierr);
+    ierr = VecDestroy(Y_act);CHKERRQ(ierr);
+    ierr = VecDestroy(Y_inact);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(scat_act);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(scat_inact);CHKERRQ(ierr);
     ierr = ISDestroy(IS_act);CHKERRQ(ierr);
     ierr = ISDestroy(IS_inact);CHKERRQ(ierr);
 
-    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
-    ierr = SNES_KSPSolve(snes,snes->ksp,vi->phi,Y);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
-    ierr = SNESVIComputeMeritFunctionGradient(snes->jacobian,vi->phi,vi->dpsi);CHKERRQ(ierr);
     ierr = SNESVICheckDescentDirection(snes,vi->dpsi,Y,&changedir);CHKERRQ(ierr);
     if (kspreason < 0 || changedir) {
       if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
