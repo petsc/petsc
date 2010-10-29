@@ -914,6 +914,8 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
     ierr = VecScatterDestroy(scat_inact);CHKERRQ(ierr);
     ierr = ISDestroy(IS_act);CHKERRQ(ierr);
     ierr = ISDestroy(IS_inact);CHKERRQ(ierr);
+    ierr = MatDestroy(jac_inact_act);CHKERRQ(ierr);
+    ierr = MatDestroy(jac_inact_inact);CHKERRQ(ierr);
 
     ierr = SNESVICheckDescentDirection(snes,vi->dpsi,Y,&changedir);CHKERRQ(ierr);
     if (kspreason < 0 || changedir) {
