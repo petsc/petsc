@@ -13,12 +13,15 @@ int main(int argc,char **args)
   PetscBool      aij,sbaij,flg;
   PetscViewer    fd;
   const MatType  type = MATBAIJ;
-  PetscInt       n = 7, idx[] = {1,5,6,8,9,12,15};
+  PetscInt       n1 = 7, idx1[] = {1,5,6,8,9,12,15};
+  PetscInt       n2 = 5, idx2[] = {7,22,30,13,19};
   Vec            b,x;
   IS             is;
   PetscInt       i;
+  PetscMPIInt    rank;
 
   PetscInitialize(&argc,&args,(char *)0,help);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-aij",&aij);CHKERRQ(ierr);
   if (aij) type = MATAIJ;
   ierr = PetscOptionsHasName(PETSC_NULL,"-sbaij",&sbaij);CHKERRQ(ierr);
@@ -47,11 +50,21 @@ int main(int argc,char **args)
   ierr = VecView(b,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
 
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,idx,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = ISCreateGeneral(PETSC_COMM_WORLD,n1,idx1,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
+  } else {
+    ierr = ISCreateGeneral(PETSC_COMM_WORLD,n2,idx2,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
+  }
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    ierr = VecSetValue(x,idx[i],1.0,INSERT_VALUES);CHKERRQ(ierr);
+  if (!rank) {
+    for (i=0; i<n1; i++) {
+      ierr = VecSetValue(x,idx1[i],1.0,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  } else {
+    for (i=0; i<n2; i++) {
+      ierr = VecSetValue(x,idx2[i],1.0,INSERT_VALUES);CHKERRQ(ierr);
+    }
   }
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);

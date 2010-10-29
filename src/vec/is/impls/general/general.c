@@ -277,6 +277,14 @@ PetscErrorCode ISSorted_General(IS is,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISToGeneral_General" 
+PetscErrorCode PETSCVEC_DLLEXPORT ISToGeneral_General(IS is)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
 static struct _ISOps myops = { ISGetSize_General,
                                ISGetLocalSize_General,
                                ISGetIndices_General,
@@ -288,7 +296,7 @@ static struct _ISOps myops = { ISGetSize_General,
                                ISDestroy_General,
                                ISView_General,
                                ISIdentity_General,
-                               ISCopy_General };
+                               ISCopy_General,ISToGeneral_General };
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISCreateGeneral_Private" 
@@ -426,13 +434,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGeneralSetIndices_General(IS is,PetscInt n,c
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISToGeneral_General" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISToGeneral_General(IS is)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
+
 
 
 EXTERN_C_BEGIN

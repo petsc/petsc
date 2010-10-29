@@ -403,7 +403,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefaultShort(KSP ksp,PetscInt its,Pe
 
    Notes: 
    This should be used as the convergence test with the option
-   KSPSetNormType(ksp,KSP_NORM_NO), since norms of the residual are
+   KSPSetNormType(ksp,KSP_NORM_NONE), since norms of the residual are
    not computed. Convergence is then declared after the maximum number
    of iterations have been reached. Useful when one is using CG or
    BiCGStab as a smoother.
@@ -587,7 +587,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscRe
   *reason = KSP_CONVERGED_ITERATING;
   
   ierr = KSPGetNormType(ksp,&normtype);CHKERRQ(ierr);
-  if (normtype == KSP_NORM_NO) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_WRONGSTATE,"Use KSPSkipConverged() with KSPNormType of KSP_NORM_NO");
+  if (normtype == KSP_NORM_NONE) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_WRONGSTATE,"Use KSPSkipConverged() with KSPNormType of KSP_NORM_NONE");
 
   if (!cctx) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_NULL,"Convergence context must have been created with KSPDefaultConvergedCreate()");
   if (!n) {
