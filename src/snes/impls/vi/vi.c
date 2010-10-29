@@ -457,7 +457,7 @@ PetscErrorCode SNESVICheckDescentDirection(SNES snes,Vec dpsi, Vec Y,PetscBool* 
 
   rhs = delta*PetscPowScalar(norm_Y,rho);
 
-  if (-dpsidotY > rhs) *flg = PETSC_TRUE;
+  if (dpsidotY <= rhs) *flg = PETSC_TRUE;
  
   PetscFunctionReturn(0);
 }
