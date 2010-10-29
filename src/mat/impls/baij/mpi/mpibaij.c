@@ -3120,7 +3120,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIBAIJ_MPIAdj(Mat B, const MatType
 EXTERN_C_END
 
 #include "../src/mat/impls/aij/mpi/mpiaij.h"
+EXTERN_C_BEGIN
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqAIJ(Mat,const MatType,MatReuse,Mat*);
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__ 
