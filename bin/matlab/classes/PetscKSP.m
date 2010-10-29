@@ -1,6 +1,6 @@
-classdef KSP < PetscObject
+classdef PetscKSP < PetscObject
   methods
-    function obj = KSP()
+    function obj = PetscKSP()
       [err,obj.pobj] = calllib('libpetsc', 'KSPCreate', 0,0);
     end
     function err = SetType(obj,name)
@@ -33,7 +33,7 @@ classdef KSP < PetscObject
     end
     function [x,err] = GetSolution(obj)
       [err,pid] = calllib('libpetsc', 'KSPGetSolution', obj.pobj,0);
-      x = Vec(pid,'pobj');
+      x = PetscVec(pid,'pobj');
     end
     function err = View(obj,viewer)
       err = calllib('libpetsc', 'KSPView', obj.pobj,viewer.pobj);

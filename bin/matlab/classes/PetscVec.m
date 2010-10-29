@@ -1,8 +1,8 @@
-classdef Vec < PetscObject
+classdef PetscVec < PetscObject
   methods
-function obj = Vec(array,flg)
+function obj = PetscVec(array,flg)
       if (nargin > 1) 
-        %  Vec(pid,'pobj') uses an already existing PETSc Vec object
+        %  PetscVec(pid,'pobj') uses an already existing PETSc Vec object
         obj.pobj = array;
         return
       end
@@ -58,7 +58,7 @@ function obj = Vec(array,flg)
     end
     function [vec,err] = Duplicate(obj)
       [err,pid] = calllib('libpetsc', 'VecDuplicate', obj.pobj,0);
-      vec = Vec(pid,'pobj');
+      vec = PetscVec(pid,'pobj');
     end
     function err = Copy(obj,v)
       err = calllib('libpetsc', 'VecCopy', obj.pobj,v.pobj);

@@ -1,4 +1,4 @@
-classdef DM < PetscObject
+classdef PetscDM < PetscObject
   properties (Constant)
     STENCIL_STAR = 0;
     STENCIL_BOX = 1;
@@ -17,9 +17,9 @@ classdef DM < PetscObject
     Q1 = 1;
   end
   methods
-    function obj = DM(pid,flg)
+    function obj = PetscDM(pid,flg)
       if (nargin > 1) 
-        %  DM(pid,'pobj') uses an already existing PETSc DM object
+        %  PetscDM(pid,'pobj') uses an already existing PETSc DM object
         obj.pobj = pid;
         return
       end

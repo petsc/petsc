@@ -1,8 +1,8 @@
-classdef TS < PetscObject
+classdef PetscTS < PetscObject
   methods
-    function obj = TS(pid,flg)
+    function obj = PetscTS(pid,flg)
       if (nargin > 1) 
-        %  TS(pid,'pobj') uses an already existing PETSc TS object
+        %  PetscTS(pid,'pobj') uses an already existing PETSc TS object
         obj.pobj = pid;
         return
       end

@@ -1,4 +1,4 @@
-classdef Mat < PetscObject
+classdef PetscMat < PetscObject
   properties (Constant)
     FLUSH_ASSEMBLY=1;
     FINAL_ASSEMBLY=0;
@@ -9,9 +9,9 @@ classdef Mat < PetscObject
     SUBSET_NONZERO_PATTERN=3;
   end
   methods
-    function obj = Mat(array,flg)
+    function obj = PetscMat(array,flg)
       if (nargin > 1) 
-        %  Mat(pid,'pobj') uses an already existing PETSc Mat object
+        %  PetscMat(pid,'pobj') uses an already existing PETSc Mat object
         obj.pobj = array;
         return
       end

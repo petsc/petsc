@@ -10,18 +10,18 @@ viewer = PetscViewer();
 viewer.SetType('ascii');
 %%
 %   Create work vector for nonlinear solver and location for solution
-b = Vec();
+b = PetscVec();
 b.SetType('seq');
 b.SetSizes(10,10);
 x = b.Duplicate();
 %%
 %  Create a matrix for the Jacobian for Newton method
-mat = Mat();
+mat = PetscMat();
 mat.SetType('seqaij');
 mat.SetSizes(10,10,10,10);
 %%
 %  Create the nonlinear solver 
-snes = SNES();
+snes = PetscSNES();
 snes.SetType('ls');
 %%
 %  Provide a function 

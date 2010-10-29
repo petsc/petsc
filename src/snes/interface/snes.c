@@ -3138,7 +3138,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction_Matlab(SNES snes,Vec x,Ve
   prhs[2] =  mxCreateDoubleScalar((double)ly);
   prhs[3] =  mxCreateString(sctx->funcname);
   prhs[4] =  sctx->ctx;
-  ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"SNESComputeFunctionInternal");CHKERRQ(ierr);
+  ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"PetscSNESComputeFunctionInternal");CHKERRQ(ierr);
   ierr    =  mxGetScalar(plhs[0]);CHKERRQ(ierr);
   mxDestroyArray(prhs[0]);
   mxDestroyArray(prhs[1]);
@@ -3244,7 +3244,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeJacobian_Matlab(SNES snes,Vec x,Ma
   prhs[3] =  mxCreateDoubleScalar((double)lB);
   prhs[4] =  mxCreateString(sctx->funcname);
   prhs[5] =  sctx->ctx;
-  ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"SNESComputeJacobianInternal");CHKERRQ(ierr);
+  ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"PetscSNESComputeJacobianInternal");CHKERRQ(ierr);
   ierr    =  mxGetScalar(plhs[0]);CHKERRQ(ierr);
   *flag   =  (MatStructure) mxGetScalar(plhs[1]);CHKERRQ(ierr);
   mxDestroyArray(prhs[0]);

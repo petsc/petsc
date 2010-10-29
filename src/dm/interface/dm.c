@@ -1175,7 +1175,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMComputeFunction_Matlab(DM dm,Vec x,Vec y)
   prhs[1] =  mxCreateDoubleScalar((double)lx);
   prhs[2] =  mxCreateDoubleScalar((double)ly);
   prhs[3] =  mxCreateString(sctx->funcname);
-  ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"DMComputeFunctionInternal");CHKERRQ(ierr);
+  ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"PetscDMComputeFunctionInternal");CHKERRQ(ierr);
   ierr    =  mxGetScalar(plhs[0]);CHKERRQ(ierr);
   mxDestroyArray(prhs[0]);
   mxDestroyArray(prhs[1]);
@@ -1242,7 +1242,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMComputeJacobian_Matlab(DM dm,Vec x,Mat A,Mat 
   prhs[2] =  mxCreateDoubleScalar((double)lA);
   prhs[3] =  mxCreateDoubleScalar((double)lB);
   prhs[4] =  mxCreateString(sctx->jacname);
-  ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"DMComputeJacobianInternal");CHKERRQ(ierr);
+  ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"PetscDMComputeJacobianInternal");CHKERRQ(ierr);
   *str    =  mxGetScalar(plhs[0]);CHKERRQ(ierr);
   ierr    =  mxGetScalar(plhs[1]);CHKERRQ(ierr);
   mxDestroyArray(prhs[0]);
