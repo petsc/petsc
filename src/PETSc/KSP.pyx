@@ -33,12 +33,12 @@ class KSPType(object):
 
 class KSPNormType(object):
     # native
-    NORM_NO               = KSP_NORM_NO
+    NORM_NONE             = KSP_NORM_NONE
     NORM_PRECONDITIONED   = KSP_NORM_PRECONDITIONED
     NORM_UNPRECONDITIONED = KSP_NORM_UNPRECONDITIONED
     NORM_NATURAL          = KSP_NORM_NATURAL
     # aliases
-    NONE = NO        = NORM_NO
+    NONE = NO        = NORM_NONE
     PRECONDITIONED   = NORM_PRECONDITIONED
     UNPRECONDITIONED = NORM_UNPRECONDITIONED
     NATURAL          = NORM_NATURAL
@@ -190,7 +190,7 @@ cdef class KSP(Object):
         return (toReal(crtol), toReal(catol), toReal(cdivtol), toInt(cmaxits))
 
     def setConvergenceTest(self, converged, args=None, kargs=None):
-        cdef PetscKSPNormType normtype = KSP_NORM_NO
+        cdef PetscKSPNormType normtype = KSP_NORM_NONE
         cdef void* cctx = NULL
         if converged is not None:
             CHKERR( KSPSetConvergenceTest(
@@ -200,7 +200,7 @@ cdef class KSP(Object):
             self.set_attr('__converged__', (converged, args, kargs))
         else:
             CHKERR( KSPGetNormType(self.ksp, &normtype) )
-            if normtype != KSP_NORM_NO:
+            if normtype != KSP_NORM_NONE:
                 CHKERR( KSPDefaultConvergedCreate(&cctx) )
                 CHKERR( KSPSetConvergenceTest(
                         self.ksp, KSPDefaultConverged,
@@ -283,7 +283,7 @@ cdef class KSP(Object):
         CHKERR( KSPSetNormType(self.ksp, normtype) )
 
     def getNormType(self):
-        cdef PetscKSPNormType normtype = KSP_NORM_NO
+        cdef PetscKSPNormType normtype = KSP_NORM_NONE
         CHKERR( KSPGetNormType(self.ksp, &normtype) )
         return normtype
 

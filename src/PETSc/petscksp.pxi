@@ -34,7 +34,7 @@ cdef extern from "petscksp.h" nogil:
 
 
     ctypedef enum PetscKSPNormType "KSPNormType":
-        KSP_NORM_NO
+        KSP_NORM_NONE
         KSP_NORM_PRECONDITIONED
         KSP_NORM_UNPRECONDITIONED
         KSP_NORM_NATURAL

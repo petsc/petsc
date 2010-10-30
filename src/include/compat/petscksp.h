@@ -9,6 +9,7 @@
 #define KSPSPECEST "specest"
 #define KSPSetPCSide KSPSetPreconditionerSide
 #define KSPGetPCSide KSPGetPreconditionerSide
+#define KSP_NORM_NONE KSP_NORM_NO
 #endif
 
 #if (PETSC_VERSION_(3,0,0))
