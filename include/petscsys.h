@@ -20,7 +20,13 @@
 */
 #if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX) && !defined(__cplusplus)
 #error "PETSc configured with --with-clanguage=c++ and NOT --with-c-support - it can be used only with a C++ compiler"
-#endif      
+#endif
+
+#if defined(__cplusplus)
+#  define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_CXX
+#else
+#  define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_C
+#endif
 
 #if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 #define PETSC_EXTERN_CXX_BEGIN extern "C" {
