@@ -692,7 +692,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   /* Open group */
   if (groupName) {
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-    group = H5Gopen(file_id, groupName, H5P_DEFAULT);
+    group = H5Gopen2(file_id, groupName, H5P_DEFAULT);
 #else
     group = H5Gopen(file_id, groupName);
 #endif
