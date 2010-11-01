@@ -677,7 +677,7 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
   if (x && b) {
     ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
     ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
-    for (i=0; i<N; i++) {
+    for (i=0; i<slen; i++) {
       bb[lrows[i]] = diag*xx[lrows[i]];
     }
     ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
@@ -731,17 +731,21 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   PetscErrorCode    ierr;
   PetscMPIInt       size = l->size,imdex,n,rank = l->rank,tag = ((PetscObject)A)->tag,lastidx = -1;
   PetscInt          i,*owners = A->rmap->range;
-  PetscInt          *nprocs,j,idx,nsends,row;
+  PetscInt          *nprocs,j,idx,nsends;
   PetscInt          nmax,*svalues,*starts,*owner,nrecvs;
   PetscInt          *rvalues,count,base,slen,*source;
-  PetscInt          *lens,*lrows,*values,rstart=A->rmap->rstart;
+  PetscInt          *lens,*lrows,*values,m;
   MPI_Comm          comm = ((PetscObject)A)->comm;
   MPI_Request       *send_waits,*recv_waits;
   MPI_Status        recv_status,*send_status;
   const PetscScalar *xx;
-  PetscScalar       *bb;
+  PetscScalar       *bb,*mask;
+  Vec               xmask,lmask;
+  Mat_SeqAIJ        *aij = (Mat_SeqAIJ*)l->B->data;
+  const PetscInt    *aj, *ii,*ridx;
+  PetscScalar       *aa;
 #if defined(PETSC_DEBUG)
-  PetscBool      found = PETSC_FALSE;
+  PetscBool         found = PETSC_FALSE;
 #endif
 
   PetscFunctionBegin;
@@ -771,14 +775,8 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   }
   nsends = 0;  for (i=0; i<size; i++) { nsends += nprocs[2*i+1];} 
 
-  if (A->nooffproczerorows) {
-    if (nsends > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"You called MatSetOption(,MAT_NO_OFF_PROC_ZERO_ROWS,PETSC_TRUE) but set an off process zero row");
-    nrecvs = nsends;
-    nmax   = N;
-  } else {
-    /* inform other processors of number of messages and max length*/
-    ierr = PetscMaxSum(comm,nprocs,&nmax,&nrecvs);CHKERRQ(ierr);
-  }
+  /* inform other processors of number of messages and max length*/
+  ierr = PetscMaxSum(comm,nprocs,&nmax,&nrecvs);CHKERRQ(ierr);
 
   /* post receives:   */
   ierr = PetscMalloc((nrecvs+1)*(nmax+1)*sizeof(PetscInt),&rvalues);CHKERRQ(ierr);
@@ -839,43 +837,75 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   ierr = PetscFree2(lens,source);CHKERRQ(ierr);
   ierr = PetscFree(owner);CHKERRQ(ierr);
   ierr = PetscFree(nprocs);CHKERRQ(ierr);
-    
-  /* fix right hand side if needed */
-  if (x && b) {
-    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
-    ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
-    for (i=0; i<N; i++) {
-      bb[lrows[i]] = diag*xx[lrows[i]];
-    }
-    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
-    ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
-  }
-  /*
-        Zero the required rows. If the "diagonal block" of the matrix
-     is square and the user wishes to set the diagonal we use separate
-     code so that MatSetValues() is not called for each diagonal allocating
-     new memory, thus calling lots of mallocs and slowing things down.
+  /* lrows are the local rows to be zeroed, slen is the number of local rows */ 
 
-  */
-  /* must zero l->B before l->A because the (diag) case below may put values into l->B*/
-  ierr = MatZeroRows(l->B,slen,lrows,0.0,0,0);CHKERRQ(ierr); 
-  if ((diag != 0.0) && (l->A->rmap->N == l->A->cmap->N)) {
-    ierr = MatZeroRows(l->A,slen,lrows,diag,0,0);CHKERRQ(ierr);
-  } else if (diag != 0.0) {
-    ierr = MatZeroRows(l->A,slen,lrows,0.0,0,0);CHKERRQ(ierr);
-    if (((Mat_SeqAIJ*)l->A->data)->nonew) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatZeroRows() on rectangular matrices cannot be used with the Mat options\n\
-MAT_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCATION_ERR");
-    }
-    for (i = 0; i < slen; i++) {
-      row  = lrows[i] + rstart;
-      ierr = MatSetValues(A,1,&row,1,&row,&diag,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  } else {
-    ierr = MatZeroRows(l->A,slen,lrows,0.0,0,0);CHKERRQ(ierr);
+  /* zero diagonal part of matrix */
+  ierr = MatZeroRowsColumns(l->A,slen,lrows,diag,x,b);CHKERRQ(ierr);
+  
+  /* handle off diagonal part of matrix */
+  ierr = MatGetVecs(A,&xmask,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecDuplicate(l->lvec,&lmask);CHKERRQ(ierr);
+  ierr = VecGetArray(xmask,&bb);CHKERRQ(ierr);
+  for (i=0; i<slen; i++) {
+    bb[lrows[i]] = 1;
   }
+  ierr = VecRestoreArray(xmask,&bb);CHKERRQ(ierr); 
+  ierr = VecScatterBegin(l->Mvctx,xmask,lmask,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(l->Mvctx,xmask,lmask,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecDestroy(xmask);CHKERRQ(ierr);
+  ierr = VecScatterBegin(l->Mvctx,x,l->lvec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(l->Mvctx,x,l->lvec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(l->lvec,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(lmask,&mask);CHKERRQ(ierr);
+  ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
+
+  /* remove zeroed rows of off diagonal matrix */
+  ii = aij->i;
+  for (i=0; i<slen; i++) {
+    ierr = PetscMemzero(aij->a + ii[lrows[i]],(ii[lrows[i]+1] - ii[lrows[i]])*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+
+  /* loop over all elements of off process part of matrix zeroing removed columns*/
+  if (aij->compressedrow.use){
+    m    = aij->compressedrow.nrows;
+    ii   = aij->compressedrow.i;
+    ridx = aij->compressedrow.rindex;
+    for (i=0; i<m; i++){
+      n   = ii[i+1] - ii[i]; 
+      aj  = aij->j + ii[i];
+      aa  = aij->a + ii[i];
+
+      for (j=0; j<n; j++) {
+        if (mask[*aj]) {
+          bb[*ridx] -= *aa*xx[*aj];
+          *aa        = 0.0;
+        }
+        aa++;
+        aj++;
+      }
+      ridx++;
+    }
+  } else { /* do not use compressed row format */
+    m = l->B->rmap->n;
+   for (i=0; i<m; i++) {
+     n   = ii[i+1] - ii[i]; 
+     aj  = aij->j + ii[i];
+     aa  = aij->a + ii[i];
+     for (j=0; j<n; j++) {
+        if (mask[*aj]) {
+          bb[i] -= *aa*xx[*aj];
+          *aa    = 0.0;
+        }
+        aa++;
+        aj++;
+      }
+    }
+  }
+
+  ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+  ierr = VecRestoreArray(lmask,&mask);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(l->lvec,&xx);CHKERRQ(ierr);
+  ierr = VecDestroy(lmask);CHKERRQ(ierr);
   ierr = PetscFree(lrows);CHKERRQ(ierr);
 
   /* wait on sends */
@@ -2857,7 +2887,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatScale_MPIAIJ,
        0,
        0,
-       0,
+       MatZeroRowsColumns_MPIAIJ,
 /*49*/ MatSetBlockSize_MPIAIJ,
        0,
        0,
