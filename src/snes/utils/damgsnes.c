@@ -1196,7 +1196,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
     ierr = DMCompositeGetGlobalISs(DMMGGetDM(dmmg),&fields);CHKERRQ(ierr);
     for (i=0; i<nDM; i++) {
       char splitname[8];
-      ierr = PetscSNPrintf(splitname,sizeof splitname,"%D",(int)i);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(splitname,sizeof splitname,"%D",i);CHKERRQ(ierr);
       ierr = PCFieldSplitSetIS(pc,splitname,fields[i]);CHKERRQ(ierr);
       ierr = ISDestroy(fields[i]);CHKERRQ(ierr);
     }
