@@ -667,29 +667,48 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
 PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 {
   /* TODO: It looks like we can remove the H5Sclose(filespace) and H5Dget_space(dset_id). Why do we do this? */
+  /* TODO: PUT IN ANOTHER DIMENSION FOR TIME (use an API call) */
+  /* TODO: PUT IN GROUP NAME */
   hid_t         filespace; /* file dataspace identifier */
   hid_t	        plist_id;  /* property list identifier */
   hid_t         dset_id;   /* dataset identifier */
   hid_t         memspace;  /* memory dataspace identifier */
   hid_t         file_id;
+  hid_t         group;
   herr_t        status;
-  /* PetscInt       bs        = xin->map->bs > 0 ? xin->map->bs : 1; */
+  PetscInt       bs       = xin->map->bs > 0 ? xin->map->bs : 1;
   hsize_t        dim      = 1; /* Could have dim 2 for blocked vectors */
-  hsize_t        dims[2],count[2],offset[2];
+  hsize_t        dims[3],count[3],offset[3];
   PetscInt       low;
   PetscScalar    *x;
   PetscErrorCode ierr;
   const char     *vecname;
+  const char     *groupName = PETSC_NULL;
 
   PetscFunctionBegin;
-
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
 
+  /* Open group */
+  if (groupName) {
+#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
+    group = H5Gopen(file_id, groupName, H5P_DEFAULT);
+#else
+    group = H5Gopen(file_id, groupName);
+#endif
+    if (group < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not open group %s", groupName);
+  } else {
+    group = file_id;
+  }
+
   /* Create the dataspace for the dataset */
-  dims[0]  = PetscHDF5IntCast(xin->map->N);
+  dims[0] = PetscHDF5IntCast(xin->map->N);
+  if (bs > 1) {
+    dims[dim] = 2;
+    dim++;
+  }
 #if defined(PETSC_USE_COMPLEX)
+  dims[dim] = 2;
   dim++;
-  dims[1] = 2;
 #endif
   filespace = H5Screate_simple(dim, dims, NULL); 
   if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
@@ -697,27 +716,33 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   /* Create the dataset with default properties and close filespace */
   ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-  dset_id = H5Dcreate2(file_id, vecname, H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+  dset_id = H5Dcreate2(group, vecname, H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 #else
-  dset_id = H5Dcreate(file_id, vecname, H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT);
+  dset_id = H5Dcreate(group, vecname, H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT);
 #endif
   if (dset_id == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Dcreate2()");
   status = H5Sclose(filespace);CHKERRQ(status);
 
   /* Each process defines a dataset and writes it to the hyperslab in the file */
-  count[0] = PetscHDF5IntCast(xin->map->n);
+  count[0] = PetscHDF5IntCast(xin->map->n)/bs;
+  if (bs > 1) {
+    count[1] = bs;
 #if defined(PETSC_USE_COMPLEX)
-  count[1] = 2;
+    count[2] = 2;
 #endif
+  } else {
+#if defined(PETSC_USE_COMPLEX)
+    count[1] = 2;
+#endif
+  }
   memspace = H5Screate_simple(dim, count, NULL);
   if (memspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
   /* Select hyperslab in the file */
   ierr = VecGetOwnershipRange(xin, &low, PETSC_NULL);CHKERRQ(ierr);
-  offset[0] = PetscHDF5IntCast(low);
-#if defined(PETSC_USE_COMPLEX)
+  offset[0] = PetscHDF5IntCast(low/bs);
   offset[1] = 0;
-#endif
+  offset[2] = 0;
   filespace = H5Dget_space(dset_id);
   if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Dget_space()");
   status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);CHKERRQ(status);
