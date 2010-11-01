@@ -19,9 +19,11 @@ struct _p_TSGLAdapt {
   void *data;
 };
 
+EXTERN_C_BEGIN
 PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptCreate_None(TSGLAdapt);
 PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptCreate_Size(TSGLAdapt);
 PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptCreate_Both(TSGLAdapt);
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLAdaptRegister"
