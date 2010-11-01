@@ -34,7 +34,6 @@ typedef struct {
 static PetscErrorCode TSStep_Alpha(TS ts,PetscInt *steps,PetscReal *ptime)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
-  PetscBool      stepok;
   PetscInt       i,its,lits;
   PetscErrorCode ierr;
 
@@ -45,6 +44,7 @@ static PetscErrorCode TSStep_Alpha(TS ts,PetscInt *steps,PetscReal *ptime)
   ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
 
   for (i=0; i<ts->max_steps; i++) {
+    PetscBool stepok = PETSC_TRUE;
     PetscReal nextdt = ts->time_step;
     if (ts->ptime + ts->time_step > ts->max_time) break;
     ierr = TSPreStep(ts);CHKERRQ(ierr);
@@ -64,12 +64,14 @@ static PetscErrorCode TSStep_Alpha(TS ts,PetscInt *steps,PetscReal *ptime)
       /* V1 = (1-1/Gamma)*V0 + 1/(Gamma*dT)*(X1-X0) */
       ierr = VecWAXPY(th->V1,-1,th->X0,th->X1);CHKERRQ(ierr);
       ierr = VecAXPBY(th->V1,1-1/th->Gamma,1/(th->Gamma*ts->time_step),th->V0);CHKERRQ(ierr);
-      /* accept */
-      stepok = PETSC_TRUE;
+      /* adapt time step */
       if (th->accept) {
-	ierr = th->accept(ts,ts->ptime+ts->time_step,th->X1,th->V1,&nextdt,&stepok,th->acceptctx);CHKERRQ(ierr);
-	ierr = PetscInfo4(ts,"Step %D (t=%G) %s, next dt=%G\n",ts->steps,th->stage_time,
-			  stepok?"accepted":"rejected",nextdt);CHKERRQ(ierr);
+        PetscReal t = ts->ptime+ts->time_step;
+        PetscReal dtmax = ts->max_time-t;
+        ierr = th->accept(ts,t,th->X1,th->V1,&nextdt,&stepok,th->acceptctx);CHKERRQ(ierr);
+        ierr = PetscInfo4(ts,"Step %D (t=%G) %s, next dt=%G\n",ts->steps,ts->ptime,
+                          stepok?"accepted":"rejected",nextdt);CHKERRQ(ierr);
+        if (dtmax > 0) nextdt = PetscMin(nextdt,dtmax);
       }
       if (stepok) break;
     }
@@ -105,6 +107,7 @@ static PetscErrorCode TSDestroy_Alpha(TS ts)
   if (th->V0) {ierr = VecDestroy(th->V0);CHKERRQ(ierr);}
   if (th->Va) {ierr = VecDestroy(th->Va);CHKERRQ(ierr);}
   if (th->V1) {ierr = VecDestroy(th->V1);CHKERRQ(ierr);}
+  if (th->R)  {ierr = VecDestroy(th->R);CHKERRQ(ierr);}
   ierr = PetscFree(th);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
