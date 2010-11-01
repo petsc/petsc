@@ -16,6 +16,8 @@
 */
 #include "private/tsimpl.h"                /*I   "petscts.h"   I*/
 
+typedef PetscErrorCode (*TSAlphaAcceptFunction)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*);
+
 typedef struct {
   Vec X0,Xa,X1;
   Vec V0,Va,V1;
@@ -25,7 +27,7 @@ typedef struct {
   PetscReal Gamma;
   PetscReal stage_time;
   PetscReal shift;
-  PetscErrorCode (*accept)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*);
+  TSAlphaAcceptFunction accept;
   void *acceptctx;
 } TS_Alpha;
 
@@ -271,7 +273,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSAlphaGetParams_Alpha(TS ts,PetscReal *alpha_m
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAlphaSetAccept_Alpha"
-PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAccept_Alpha(TS ts,PetscErrorCode(*accept)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*),void *ctx)
+PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAccept_Alpha(TS ts,TSAlphaAcceptFunction accept,void *ctx)
 {
   TS_Alpha *th = (TS_Alpha*)ts->data;
 
@@ -347,14 +349,13 @@ EXTERN_C_END
 
    Calling sequence of accept:
 $    accept (TS ts,PetscReal t,Vec X,Vec Xdot,
-$            PetscBool *accepted,PetscReal *next_dt,void *ctx);
+$            PetscReal *next_dt,PetscBool *accepted,void *ctx);
 
   Level: Intermediate
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAccept(TS ts,PetscErrorCode(*accept)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*),void *ctx)
+PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAccept(TS ts,TSAlphaAcceptFunction accept,void *ctx)
 {
-  typedef PetscErrorCode (*TSAlphaAcceptFunction)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*);
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
