@@ -393,10 +393,10 @@ static PetscErrorCode TSGLCompleteStep_RescaleAndModify(TSGLScheme sc,PetscReal 
   PetscFunctionReturn(0);
 }
 
-
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLCreate_IRKS"
-static PetscErrorCode TSGLCreate_IRKS(TS ts)
+PetscErrorCode PETSCTS_DLLEXPORT TSGLCreate_IRKS(TS ts)
 {
   TS_GL          *gl = (TS_GL*)ts->data;
   PetscErrorCode ierr;
@@ -530,8 +530,7 @@ static PetscErrorCode TSGLCreate_IRKS(TS ts)
   }
   PetscFunctionReturn(0);
 }
-
-
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLSetType"
@@ -641,14 +640,16 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLGetAdapt(TS ts,TSGLAdapt *adapt)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLAccept_Always"
-static PetscErrorCode TSGLAccept_Always(TS ts,PetscReal tleft,PetscReal h,const PetscReal enorms[],PetscBool  *accept)
+PetscErrorCode PETSCTS_DLLEXPORT TSGLAccept_Always(TS ts,PetscReal tleft,PetscReal h,const PetscReal enorms[],PetscBool  *accept)
 {
   PetscFunctionBegin;
   *accept = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLUpdateWRMS"
@@ -696,9 +697,10 @@ static PetscErrorCode TSGLVecNormWRMS(TS ts,Vec X,PetscReal *nrm)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLSetType_GL"
-static PetscErrorCode TSGLSetType_GL(TS ts,const TSGLType type)
+PetscErrorCode PETSCTS_DLLEXPORT TSGLSetType_GL(TS ts,const TSGLType type)
 {
   PetscErrorCode ierr,(*r)(TS);
   PetscBool  same;
@@ -720,7 +722,7 @@ static PetscErrorCode TSGLSetType_GL(TS ts,const TSGLType type)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLSetAcceptType_GL"
-static PetscErrorCode TSGLSetAcceptType_GL(TS ts,const TSGLAcceptType type)
+PetscErrorCode PETSCTS_DLLEXPORT TSGLSetAcceptType_GL(TS ts,const TSGLAcceptType type)
 {
   PetscErrorCode ierr;
   TSGLAcceptFunction r;
@@ -736,7 +738,7 @@ static PetscErrorCode TSGLSetAcceptType_GL(TS ts,const TSGLAcceptType type)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLGetAdapt_GL"
-static PetscErrorCode TSGLGetAdapt_GL(TS ts,TSGLAdapt *adapt)
+PetscErrorCode PETSCTS_DLLEXPORT TSGLGetAdapt_GL(TS ts,TSGLAdapt *adapt)
 {
   PetscErrorCode ierr;
   TS_GL *gl = (TS_GL*)ts->data;
@@ -750,6 +752,7 @@ static PetscErrorCode TSGLGetAdapt_GL(TS ts,TSGLAdapt *adapt)
   *adapt = gl->adapt;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLChooseNextScheme"
