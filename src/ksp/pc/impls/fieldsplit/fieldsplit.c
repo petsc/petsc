@@ -209,8 +209,25 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   PetscInt          i;
 
   PetscFunctionBegin;
-  if (!ilink) { 
-
+  if (!ilink) {
+    if (pc->dm) {
+      PetscBool dmcomposite;
+      ierr = PetscTypeCompare((PetscObject)pc->dm,DMCOMPOSITE,&dmcomposite);CHKERRQ(ierr);
+      if (dmcomposite) {
+        PetscInt nDM;
+        IS       *fields;
+        ierr = PetscInfo(pc,"Setting up physics based fieldsplit preconditioner using the embedded DM\n");CHKERRQ(ierr);
+        ierr = DMCompositeGetNumberDM(pc->dm,&nDM);CHKERRQ(ierr);
+        ierr = DMCompositeGetGlobalISs(pc->dm,&fields);CHKERRQ(ierr);
+        for (i=0; i<nDM; i++) {
+          char splitname[8];
+          ierr = PetscSNPrintf(splitname,sizeof splitname,"%D",i);CHKERRQ(ierr);
+          ierr = PCFieldSplitSetIS(pc,splitname,fields[i]);CHKERRQ(ierr);
+          ierr = ISDestroy(fields[i]);CHKERRQ(ierr);
+        }
+        ierr = PetscFree(fields);CHKERRQ(ierr);
+      }
+    }
     if (jac->bs <= 0) {
       if (pc->pmat) {
         ierr   = MatGetBlockSize(pc->pmat,&jac->bs);CHKERRQ(ierr);
