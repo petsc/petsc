@@ -1,10 +1,16 @@
 #include "private/viewerimpl.h"    /*I   "petscsys.h"   I*/
 #include <hdf5.h>
 
+typedef struct GroupList {
+  const char       *name;
+  struct GroupList *next;
+} GroupList;
+
 typedef struct {
   char         *filename;
   PetscFileMode btype;
   hid_t         file_id;
+  GroupList    *groups;
 } PetscViewer_HDF5;
 
 #undef __FUNCT__  
@@ -18,6 +24,15 @@ PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
  ierr = PetscFree(hdf5->filename);CHKERRQ(ierr);
  if (hdf5->file_id) {
    H5Fclose(hdf5->file_id);
+ }
+ if (hdf5->groups) {
+   while(hdf5->groups) {
+     GroupList *tmp = hdf5->groups->next;
+
+     ierr = PetscFree(hdf5->groups->name);CHKERRQ(ierr);
+     ierr = PetscFree(hdf5->groups);CHKERRQ(ierr);
+     hdf5->groups = tmp;
+   }
  }
  ierr = PetscFree(hdf5);CHKERRQ(ierr);
  PetscFunctionReturn(0);
@@ -90,6 +105,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerCreate_HDF5(PetscViewer v)
   v->iformat      = 0;
   hdf5->btype     = (PetscFileMode) -1; 
   hdf5->filename  = 0;
+  hdf5->groups    = PETSC_NULL;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetName_C","PetscViewerFileSetName_HDF5",
                                            PetscViewerFileSetName_HDF5);CHKERRQ(ierr);
@@ -168,6 +184,98 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5GetFileId(PetscViewer viewer, h
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5PushGroup"
+/*@C
+  PetscViewerHDF5PushGroup - Set the current HDF5 group for output
+
+  Not collective
+
+  Input Parameters:
++ viewer - the PetscViewer
+- name - The group name
+
+  Level: intermediate
+
+.seealso: PetscViewerHDF5Open(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup()
+@*/
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5PushGroup(PetscViewer viewer, const char *name)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *) viewer->data;
+  GroupList        *groupNode;
+  PetscErrorCode    ierr;
+ 
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidPointer(name,2);
+  ierr = PetscMalloc(sizeof(GroupList), &groupNode);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(name, (char **) &groupNode->name);CHKERRQ(ierr);
+  groupNode->next = hdf5->groups;
+  hdf5->groups    = groupNode;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5PopGroup"
+/*@C
+  PetscViewerHDF5PopGroup - Return the current HDF5 group for output to the previous value
+
+  Not collective
+
+  Input Parameter:
+. viewer - the PetscViewer
+
+  Level: intermediate
+
+.seealso: PetscViewerHDF5Open(),PetscViewerHDF5PushGroup(),PetscViewerHDF5GetGroup()
+@*/
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5PopGroup(PetscViewer viewer)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *) viewer->data;
+  GroupList        *groupNode;
+  PetscErrorCode    ierr;
+ 
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (!hdf5->groups) SETERRQ(((PetscObject) viewer)->comm, PETSC_ERR_ARG_WRONGSTATE, "HDF5 group stack is empty, cannot pop");
+  groupNode    = hdf5->groups;
+  hdf5->groups = hdf5->groups->next;
+  ierr = PetscFree(groupNode->name);CHKERRQ(ierr);
+  ierr = PetscFree(groupNode);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5GetGroup"
+/*@C
+  PetscViewerHDF5GetGroup - Get the current HDF5 group for output. If none has been assigned, returns PETSC_NULL.
+
+  Not collective
+
+  Input Parameter:
+. viewer - the PetscViewer
+
+  Output Parameter:
+. name - The group name
+
+  Level: intermediate
+
+.seealso: PetscViewerHDF5Open(),PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup()
+@*/
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5GetGroup(PetscViewer viewer, const char **name)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *) viewer->data;
+ 
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidPointer(name,2);
+  if (hdf5->groups) {
+    *name = hdf5->groups->name;
+  } else {
+    *name = PETSC_NULL;
+  }
+  PetscFunctionReturn(0);
+}
 
 #if defined(oldhdf4stuff)
 #undef __FUNCT__  

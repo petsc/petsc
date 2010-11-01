@@ -687,6 +687,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetGroup(viewer, &groupName);CHKERRQ(ierr);
 
   /* Open group */
   if (groupName) {
