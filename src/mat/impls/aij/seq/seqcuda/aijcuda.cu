@@ -29,20 +29,20 @@ PetscErrorCode MatCUDACopyToGPU(Mat A)
     try {
       cudastruct->mat = new CUSPMATRIX;
       if (a->compressedrow.use) {
-	m    = a->compressedrow.nrows;
-	ii   = a->compressedrow.i;
-	ridx = a->compressedrow.rindex;
-	cudastruct->mat->resize(m,A->cmap->n,a->nz);
-	cudastruct->mat->row_offsets.assign(ii,ii+m+1);
-	cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
-	cudastruct->mat->values.assign(a->a,a->a+a->nz);
-	cudastruct->indices = new CUSPINTARRAYGPU;
-	cudastruct->indices->assign(ridx,ridx+m);
-	} else {
-	cudastruct->mat->resize(m,A->cmap->n,a->nz);
-	cudastruct->mat->row_offsets.assign(a->i,a->i+m+1);
-	cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
-	cudastruct->mat->values.assign(a->a,a->a+a->nz);
+        m    = a->compressedrow.nrows;
+        ii   = a->compressedrow.i;
+        ridx = a->compressedrow.rindex;
+        cudastruct->mat->resize(m,A->cmap->n,a->nz);
+        cudastruct->mat->row_offsets.assign(ii,ii+m+1);
+        cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
+        cudastruct->mat->values.assign(a->a,a->a+a->nz);
+        cudastruct->indices = new CUSPINTARRAYGPU;
+        cudastruct->indices->assign(ridx,ridx+m);
+      } else {
+        cudastruct->mat->resize(m,A->cmap->n,a->nz);
+        cudastruct->mat->row_offsets.assign(a->i,a->i+m+1);
+        cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
+        cudastruct->mat->values.assign(a->a,a->a+a->nz);
       }
       cudastruct->tempvec = new CUSPARRAY;
       cudastruct->tempvec->resize(m);
@@ -57,34 +57,34 @@ PetscErrorCode MatCUDACopyToGPU(Mat A)
   */
     if (cudastruct->mat){
       try {
-	delete (cudastruct->mat);
-	if (cudastruct->tempvec) {
-	  delete (cudastruct->tempvec);
-	}
-	if (cudastruct->indices) {
-	  delete (cudastruct->indices);
-	}
+        delete (cudastruct->mat);
+        if (cudastruct->tempvec) {
+          delete (cudastruct->tempvec);
+        }
+        if (cudastruct->indices) {
+          delete (cudastruct->indices);
+        }
       } catch(char* ex) {
-	SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
       } 
     }
     try {
       cudastruct->mat = new CUSPMATRIX;
       if (a->compressedrow.use) {
-	m    = a->compressedrow.nrows;
-	ii   = a->compressedrow.i;
-	ridx = a->compressedrow.rindex;
-	cudastruct->mat->resize(m,A->cmap->n,a->nz);
-	cudastruct->mat->row_offsets.assign(ii,ii+m+1);
-	cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
-	cudastruct->mat->values.assign(a->a,a->a+a->nz);
-	cudastruct->indices = new CUSPINTARRAYGPU;
-	cudastruct->indices->assign(ridx,ridx+m);
-	} else {
-	cudastruct->mat->resize(m,A->cmap->n,a->nz);
-	cudastruct->mat->row_offsets.assign(a->i,a->i+m+1);
-	cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
-	cudastruct->mat->values.assign(a->a,a->a+a->nz);
+        m    = a->compressedrow.nrows;
+        ii   = a->compressedrow.i;
+        ridx = a->compressedrow.rindex;
+        cudastruct->mat->resize(m,A->cmap->n,a->nz);
+        cudastruct->mat->row_offsets.assign(ii,ii+m+1);
+        cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
+        cudastruct->mat->values.assign(a->a,a->a+a->nz);
+        cudastruct->indices = new CUSPINTARRAYGPU;
+        cudastruct->indices->assign(ridx,ridx+m);
+      } else {
+        cudastruct->mat->resize(m,A->cmap->n,a->nz);
+        cudastruct->mat->row_offsets.assign(a->i,a->i+m+1);
+        cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
+        cudastruct->mat->values.assign(a->a,a->a+a->nz);
       }
       cudastruct->tempvec = new CUSPARRAY;
       cudastruct->tempvec->resize(m);
@@ -160,15 +160,15 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
       if (a->compressedrow.nrows) {
         cusp::multiply(*cudastruct->mat,*((Vec_CUDA *)xx->spptr)->GPUarray, *cudastruct->tempvec);
         thrust::for_each(
-	   thrust::make_zip_iterator(
-		 thrust::make_tuple(
-				    cudastruct->tempvec->begin(),
-				    thrust::make_permutation_iterator(((Vec_CUDA *)zz->spptr)->GPUarray->begin(), cudastruct->indices->begin()))),
- 	   thrust::make_zip_iterator(
-		 thrust::make_tuple(
-				    cudastruct->tempvec->begin(),
-				    thrust::make_permutation_iterator(((Vec_CUDA *)zz->spptr)->GPUarray->begin(),cudastruct->indices->begin()))) + cudastruct->tempvec->size(),
-	   VecCUDAPlusEquals());
+           thrust::make_zip_iterator(
+                 thrust::make_tuple(
+                                    cudastruct->tempvec->begin(),
+                                    thrust::make_permutation_iterator(((Vec_CUDA *)zz->spptr)->GPUarray->begin(), cudastruct->indices->begin()))),
+           thrust::make_zip_iterator(
+                 thrust::make_tuple(
+                                    cudastruct->tempvec->begin(),
+                                    thrust::make_permutation_iterator(((Vec_CUDA *)zz->spptr)->GPUarray->begin(),cudastruct->indices->begin()))) + cudastruct->tempvec->size(),
+           VecCUDAPlusEquals());
       }
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
@@ -178,15 +178,15 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
       ierr = VecCopy_SeqCUDA(yy,zz);CHKERRQ(ierr);
       cusp::multiply(*cudastruct->mat,*((Vec_CUDA *)xx->spptr)->GPUarray,*cudastruct->tempvec);
       thrust::for_each(
-	 thrust::make_zip_iterator(
-		 thrust::make_tuple(
-				    cudastruct->tempvec->begin(),
-				    ((Vec_CUDA *)zz->spptr)->GPUarray->begin())),
-	 thrust::make_zip_iterator(
-		 thrust::make_tuple(
-				    cudastruct->tempvec->end(),
-				   ((Vec_CUDA *)zz->spptr)->GPUarray->end())),
-	 VecCUDAPlusEquals());
+         thrust::make_zip_iterator(
+                 thrust::make_tuple(
+                                    cudastruct->tempvec->begin(),
+                                    ((Vec_CUDA *)zz->spptr)->GPUarray->begin())),
+         thrust::make_zip_iterator(
+                 thrust::make_tuple(
+                                    cudastruct->tempvec->end(),
+                                   ((Vec_CUDA *)zz->spptr)->GPUarray->end())),
+         VecCUDAPlusEquals());
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
     } 
