@@ -195,7 +195,7 @@ class PetscConfig:
         PLD_FLAGS = get_flags(ld) + ' ' + self['PCC_LINKER_FLAGS']
         PLD = getenv('PLD', PLD) + ' ' + getenv('PLDFLAGS', PLD_FLAGS)
         ldshared = getenv('LDSHARED', ldshared)
-        ldflags  = getenv('LDFLAGS',  cflags+ldflags)
+        ldflags  = getenv('LDFLAGS',  cflags + ' ' + ldflags)
         PLD_SHARED = str.join(' ', (PLD, ldshared, ldflags))
         #
         compiler.set_executables(
