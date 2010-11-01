@@ -150,7 +150,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks_Factor(PC pc,PetscBoo
 }
 EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorGetMatrix_Factor"
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatrix_Factor(PC pc,Mat *mat)
@@ -162,7 +161,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatrix_Factor(PC pc,Mat *mat)
   *mat = ilu->fact;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
