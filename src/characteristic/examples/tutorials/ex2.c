@@ -80,7 +80,7 @@ int main(int argc,char **argv)
   DMMG           *dmmg;               /* multilevel grid structure */
   AppCtx         *user;               /* user-defined work context */
   Parameter      *param;
-  int            ierr,result;
+  int            ierr,result = 0;
   MPI_Comm       comm;
   DM             da;
 
