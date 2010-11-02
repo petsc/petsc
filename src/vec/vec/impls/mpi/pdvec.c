@@ -696,7 +696,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
     ierr = PetscStrcmp(groupName, "/", &root);CHKERRQ(ierr);
     if (!root && !H5Lexists(file_id, groupName, H5P_DEFAULT)) {
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-      group = H5Gcreate(file_id, groupName, 0, H5P_DEFAULT, H5P_DEFAULT);
+      group = H5Gcreate2(file_id, groupName, 0, H5P_DEFAULT, H5P_DEFAULT);
 #else // depracated HDF5 1.6 API
       group = H5Gcreate(file_id, groupName, 0);
 #endif
@@ -716,7 +716,8 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   /* Create the dataspace for the dataset */
   dims[0] = PetscHDF5IntCast(xin->map->N);
   if (bs > 1) {
-    dims[dim] = 2;
+    dims[0] /= bs;
+    dims[dim] = bs;
     dim++;
   }
 #if defined(PETSC_USE_COMPLEX)
