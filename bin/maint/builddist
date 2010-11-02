@@ -53,13 +53,9 @@ if [ ! -d $tmpdir ]; then
   exit
 fi
 
-# Update the hg repository
-cd $PETSC_DIR/config/BuildSystem
-hg pull
-hg -q update
-cd $PETSC_DIR
-hg pull
-hg -q update
+# Clean and Update the hg repository
+cd $PETSC_DIR/config/BuildSystem; hg revert -a; hg -q clean --all; hg -q pull -u
+cd $PETSC_DIR; hg revert -a; hg -q clean -X bin/win32fe --all; hg -q pull -u
 
 # check petscversion.h and set the version string
 version_release=`grep '^#define PETSC_VERSION_RELEASE ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
