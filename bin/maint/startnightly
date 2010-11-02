@@ -15,7 +15,7 @@ foreach CONF ($*)
   set MERCURIAL=yes
   source $dir/confignightly/${CONF}
 
-  echo "start build at `date`:$SSH $USR@$MACH $DASHN $LOC/bin/maint/buildtest $CONF" 
+  echo "Starting $CONF build at `date`"
   if ("${MERCURIAL}" == "yes") then
     $SSH $USR@$MACH $DASHN test "\( -d  $LOC \)"
     if ("$?" != "0") then
@@ -24,11 +24,12 @@ foreach CONF ($*)
       $SSH $USR@$MACH $DASHN "hg clone -q $PURL $LOC; hg clone -q $BURL $LOC/config/BuildSystem"
       endif
     endif
-    echo "cleaning and updating clone at $USR@$MACH $LOC"
+    echo "Cleaning and updating clone at $USR@$MACH $LOC"
     $SSH $USR@$MACH $DASHN "cd $LOC ; hg -q revert -a; hg -q pull -u"
   else
     rsync -e ssh -az --delete  $pdir/ ${USR}@${MACH}:${LOC}
-  endif
+  endi
+  echo "Starting: $SSH $USR@$MACH $DASHN $LOC/bin/maint/buildtest $CONF"
   $SSH $USR@$MACH $DASHN "cd $LOC; $LOC/bin/maint/buildtest $CONF" &
   sleep 120 # perhaps ease the nfs load
 end
