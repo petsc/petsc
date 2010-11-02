@@ -876,7 +876,7 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
       aa  = aij->a + ii[i];
 
       for (j=0; j<n; j++) {
-        if (mask[*aj]) {
+        if (PetscAbsScalar(mask[*aj])) {
           bb[*ridx] -= *aa*xx[*aj];
           *aa        = 0.0;
         }
@@ -892,7 +892,7 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
      aj  = aij->j + ii[i];
      aa  = aij->a + ii[i];
      for (j=0; j<n; j++) {
-        if (mask[*aj]) {
+        if (PetscAbsScalar(mask[*aj])) {
           bb[i] -= *aa*xx[*aj];
           *aa    = 0.0;
         }
