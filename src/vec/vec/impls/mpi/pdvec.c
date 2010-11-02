@@ -691,6 +691,18 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 
   /* Open group */
   if (groupName) {
+    PetscBool root;
+
+    ierr = PetscStrcmp(groupName, "/", &root);CHKERRQ(ierr);
+    if (!root && !H5Lexists(file_id, groupName, H5P_DEFAULT)) {
+#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
+      group = H5Gcreate(file_id, groupName, 0, H5P_DEFAULT, H5P_DEFAULT);
+#else // depracated HDF5 1.6 API
+      group = H5Gcreate(file_id, groupName, 0);
+#endif
+      if (group < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not create group %s", groupName);
+      ierr = H5Gclose(group);CHKERRQ(ierr);
+    }
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
     group = H5Gopen2(file_id, groupName, H5P_DEFAULT);
 #else
@@ -762,6 +774,9 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   ierr = VecRestoreArrayPrivate(xin, &x);CHKERRQ(ierr);
 
   /* Close/release resources */
+  if (groupName) {
+    status = H5Gclose(group);CHKERRQ(status);
+  }
   status = H5Pclose(plist_id);CHKERRQ(status);
   status = H5Sclose(filespace);CHKERRQ(status);
   status = H5Sclose(memspace);CHKERRQ(status);
