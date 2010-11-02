@@ -207,12 +207,12 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char pa
 
    Input Parameter:
 +  comm - communicator that will open the library
-.  outlist - list of already open libraries that may contain symbol (checks here before path)
-.  path     - optional complete library name
+.  outlist - list of already open libraries that may contain symbol 
+.  path     - optional complete library name (if provided checks here before checking outlist)
 -  insymbol - name of symbol
 
    Output Parameter:
-.  value 
+.  value - if symbol not found then this value is set to PETSC_NULL
 
    Level: developer
 
@@ -275,10 +275,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary
 
   done:;
     ierr = PetscDLSym(nlist->handle,symbol,value);CHKERRQ(ierr);
-    if (!*value) {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to locate function %s in dynamic library %s",insymbol,path);
+    if (*value) {
+      ierr = PetscInfo2(0,"Loading function %s from dynamic library %s\n",insymbol,path);CHKERRQ(ierr);
     }
-    ierr = PetscInfo2(0,"Loading function %s from dynamic library %s\n",insymbol,path);CHKERRQ(ierr);
 
   /*
        Function name does not include library so search path
