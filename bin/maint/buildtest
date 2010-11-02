@@ -41,35 +41,27 @@ else
 endif
 
 set MACH=`hostname`
-rm -f $nPETSC_DIR/build.log
-rm -f $nPETSC_DIR/buildout.tar
-echo "Build on $MACH $ARCH  `date` " > $nPETSC_DIR/build.log
+cd $nPETSC_DIR
+rm -f build.log
+echo "Build on $MACH $ARCH $nPETSC_DIR `date` " > build.log
 
 # Note use 'hg clean --all' intead of manually deleting seleted old files.
 # This also requires 'clean' extension enabled on all nightly build machines.
-cd $nPETSC_DIR
-hg revert -a
-hg -q pull -u    >>& $nPETSC_DIR/build.log
-hg -q clean -all >>& $nPETSC_DIR/build.log
-pushd config/BuildSystem
-hg revert -a
-hg -q pull -u    >>& $nPETSC_DIR/build.log
-hg -q clean -all >>& $nPETSC_DIR/build.log
-popd
+
+(hg -q revert -a; hg -q pull -u; hg -q clean --all -X build.log) >>& build.log
+(pushd config/BuildSystem; hg -q revert -a; hg -q pull -u; hg -q clean --all; popd) >>& build.log
 
 setenv PETSC_DIR $nPETSC_DIR
 set PETSC_ARCH=${ARCH}
 set CONFIGURE='yes'
 set CONFIGURE_FILE=$PETSC_ARCH
 endif
-echo "Performing buildtest on " $MACH "with arch " $PETSC_ARCH " at " $nPETSC_DIR
-
 
 # Run Configure
   ./config/examples/${CONFIGURE_FILE}.py --with-no-output -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$nPETSC_DIR ${CONFIGURE_ARGS} >>& build.log
-  echo '****************************************************' >>& $nPETSC_DIR/build.log
+  echo '****************************************************' >>& build.log
 
-make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR allfortranstubs >>& $nPETSC_DIR/build.log
+make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR allfortranstubs >>& build.log
 
 make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  all test >>& build.log
 echo '****************************************************' >>& build.log
