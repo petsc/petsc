@@ -227,30 +227,31 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         }
         ierr = PetscFree(fields);CHKERRQ(ierr);
       }
-    }
-    if (jac->bs <= 0) {
-      if (pc->pmat) {
-        ierr   = MatGetBlockSize(pc->pmat,&jac->bs);CHKERRQ(ierr);
-      } else {
-        jac->bs = 1;
+    } else {
+      if (jac->bs <= 0) {
+        if (pc->pmat) {
+          ierr   = MatGetBlockSize(pc->pmat,&jac->bs);CHKERRQ(ierr);
+        } else {
+          jac->bs = 1;
+        }
       }
-    }
 
-    ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_default",&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (!flg) {
-      /* Allow user to set fields from command line,  if bs was known at the time of PCSetFromOptions_FieldSplit()
+      ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_default",&flg,PETSC_NULL);CHKERRQ(ierr);
+      if (!flg) {
+        /* Allow user to set fields from command line,  if bs was known at the time of PCSetFromOptions_FieldSplit()
          then it is set there. This is not ideal because we should only have options set in XXSetFromOptions(). */
-      ierr = PCFieldSplitSetRuntimeSplits_Private(pc);CHKERRQ(ierr);
-      if (jac->splitdefined) {ierr = PetscInfo(pc,"Splits defined using the options database\n");CHKERRQ(ierr);}
-    }
-    if (flg || !jac->splitdefined) {
-      ierr = PetscInfo(pc,"Using default splitting of fields\n");CHKERRQ(ierr);
-      for (i=0; i<jac->bs; i++) {
-        char splitname[8];
-        ierr = PetscSNPrintf(splitname,sizeof splitname,"%D",i);CHKERRQ(ierr);
-        ierr = PCFieldSplitSetFields(pc,splitname,1,&i);CHKERRQ(ierr);
+        ierr = PCFieldSplitSetRuntimeSplits_Private(pc);CHKERRQ(ierr);
+        if (jac->splitdefined) {ierr = PetscInfo(pc,"Splits defined using the options database\n");CHKERRQ(ierr);}
       }
-      jac->defaultsplit = PETSC_TRUE;
+      if (flg || !jac->splitdefined) {
+        ierr = PetscInfo(pc,"Using default splitting of fields\n");CHKERRQ(ierr);
+        for (i=0; i<jac->bs; i++) {
+          char splitname[8];
+          ierr = PetscSNPrintf(splitname,sizeof splitname,"%D",i);CHKERRQ(ierr);
+          ierr = PCFieldSplitSetFields(pc,splitname,1,&i);CHKERRQ(ierr);
+        }
+        jac->defaultsplit = PETSC_TRUE;
+      }
     }
   } else if (jac->nsplits == 1) {
     if (ilink->is) {
