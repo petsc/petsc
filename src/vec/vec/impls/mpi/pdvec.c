@@ -714,9 +714,8 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   }
 
   /* Create the dataspace for the dataset */
-  dims[0] = PetscHDF5IntCast(xin->map->N);
+  dims[0] = PetscHDF5IntCast(xin->map->N)/bs;
   if (bs > 1) {
-    dims[0] /= bs;
     dims[dim] = bs;
     dim++;
   }
