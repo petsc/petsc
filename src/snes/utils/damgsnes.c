@@ -1162,8 +1162,7 @@ PetscErrorCode DMMGSetISColoringType(DMMG *dmmg,ISColoringType isctype)
     Input Parameter:
 .   dmmg - the context
 
-    Notes: Currently this must be called by the user (if they want to). It checks to see if fieldsplit preconditioner
-           is being used and manages it.
+    Notes: Currently this must be called by the user (if they want to).
 
     Level: advanced
 
