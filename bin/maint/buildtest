@@ -48,8 +48,9 @@ echo "Build on $MACH $ARCH $nPETSC_DIR `date` " > build.log
 # Note use 'hg clean --all' intead of manually deleting seleted old files.
 # This also requires 'clean' extension enabled on all nightly build machines.
 
-(hg -q revert -a; hg -q pull -u; hg -q clean --all -X build.log) >>& build.log
-(pushd config/BuildSystem; hg -q revert -a; hg -q pull -u; hg -q clean --all; popd) >>& build.log
+echo "Cleaning throughly and updating mercurial clone at $nPETSC_DIR" >>& build.log
+(hg -q revert -a; hg -q clean --all -X build.log; hg -q pull -u) >>& build.log
+(cd config/BuildSystem; hg -q revert -a; hg -q clean --all; hg -q pull -u; cd $nPETSC_DIR) >>& build.log
 
 setenv PETSC_DIR $nPETSC_DIR
 set PETSC_ARCH=${ARCH}
