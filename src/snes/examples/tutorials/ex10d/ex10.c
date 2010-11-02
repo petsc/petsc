@@ -178,7 +178,7 @@ int main(int argc,char **argv)
   ierr = PetscMalloc(user.Nvglobal*sizeof(PetscInt),&user.gloInd);
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Rank is %D\n",rank);CHKERRQ(ierr);
   for (inode = 0; inode < user.Nvglobal; inode++) {
-    fgets(str,256,fptr);
+    if (!fgets(str,256,fptr)) SETERRQ(PETSC_COMM_SELF,1,"fgets read failed");
     sscanf(str,"%d",&dtmp);user.v2p[inode] = dtmp;
     if (user.v2p[inode] == rank) {
        ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Node %D belongs to processor %D\n",inode,user.v2p[inode]);CHKERRQ(ierr);

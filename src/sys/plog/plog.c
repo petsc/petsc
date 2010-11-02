@@ -2134,6 +2134,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscClassIdRegister(const char name[],PetscCl
    Input Paramter:
 .   viewer - viewer to save Python data
 
+  Level: intermediate 
+
 @*/
 PetscErrorCode PETSCSYS_DLLEXPORT PetscLogPrintSummaryPython(PetscViewer viewer)
 {

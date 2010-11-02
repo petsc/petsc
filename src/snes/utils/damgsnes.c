@@ -1162,8 +1162,7 @@ PetscErrorCode DMMGSetISColoringType(DMMG *dmmg,ISColoringType isctype)
     Input Parameter:
 .   dmmg - the context
 
-    Notes: Currently this must be called by the user (if they want to). It checks to see if fieldsplit preconditioner
-           is being used and manages it.
+    Notes: Currently this must be called by the user (if they want to).
 
     Level: advanced
 
@@ -1173,12 +1172,9 @@ PetscErrorCode DMMGSetISColoringType(DMMG *dmmg,ISColoringType isctype)
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
 {
   PetscErrorCode ierr;
-  PetscInt       i,nDM;
-  PetscBool      fieldsplit,dmcomposite;
   KSP            ksp;
   SNES           snes;
   PC             pc;
-  IS             *fields;
 
   PetscFunctionBegin;
   snes = DMMGGetSNES(dmmg);
@@ -1188,21 +1184,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
     ksp = DMMGGetKSP(dmmg);
   }
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)pc,PCFIELDSPLIT,&fieldsplit);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)DMMGGetDM(dmmg),DMCOMPOSITE,&dmcomposite);CHKERRQ(ierr);
-  if (fieldsplit && dmcomposite) {
-    ierr = PetscInfo(ksp,"Setting up physics based fieldsplit preconditioner\n");CHKERRQ(ierr);
-    ierr = DMCompositeGetNumberDM(DMMGGetDM(dmmg),&nDM);CHKERRQ(ierr);
-    ierr = DMCompositeGetGlobalISs(DMMGGetDM(dmmg),&fields);CHKERRQ(ierr);
-    for (i=0; i<nDM; i++) {
-      char splitname[8];
-      ierr = PetscSNPrintf(splitname,sizeof splitname,"%D",(int)i);CHKERRQ(ierr);
-      ierr = PCFieldSplitSetIS(pc,splitname,fields[i]);CHKERRQ(ierr);
-      ierr = ISDestroy(fields[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(fields);CHKERRQ(ierr);
-  }
   ierr = PCSetDM(pc,DMMGGetDM(dmmg));CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }

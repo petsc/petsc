@@ -40,7 +40,6 @@ int main(int argc,char **argv)
   DMMG           *dmmg1,*dmmg2;
   PetscBool      SolveSubPhysics=PETSC_FALSE,GaussSeidel=PETSC_TRUE,Jacobi=PETSC_FALSE;
   Vec            X1,X1_local,X2,X2_local;
-  PetscViewer    viewer;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -64,7 +63,7 @@ int main(int argc,char **argv)
 
   /* Create the solver object and attach the grid/physics info */
   ierr = DMMGCreate(comm,1,&user,&dmmg1);CHKERRQ(ierr);
-  ierr = DMMGSetDM(dmmg1,(DM)da1);CHKERRQ(ierr);
+  ierr = DMMGSetDM(dmmg1,da1);CHKERRQ(ierr);
   ierr = DMMGSetISColoringType(dmmg1,IS_COLORING_GLOBAL);CHKERRQ(ierr);
 
   ierr = DMMGSetInitialGuess(dmmg1,FormInitialGuess1);CHKERRQ(ierr);
@@ -109,7 +108,7 @@ int main(int argc,char **argv)
 
   /* Create the solver object and attach the grid/physics info */
   ierr = DMMGCreate(comm,1,&user,&dmmg2);CHKERRQ(ierr);
-  ierr = DMMGSetDM(dmmg2,(DM)da2);CHKERRQ(ierr);
+  ierr = DMMGSetDM(dmmg2,da2);CHKERRQ(ierr);
   ierr = DMMGSetISColoringType(dmmg2,IS_COLORING_GLOBAL);CHKERRQ(ierr);
 
   ierr = DMMGSetInitialGuess(dmmg2,FormInitialGuess2);CHKERRQ(ierr);
@@ -191,12 +190,12 @@ int main(int argc,char **argv)
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscPrintf(comm,"  \n\n DMComposite iteration......\n");CHKERRQ(ierr);  
   ierr = DMCompositeCreate(comm,&pack);CHKERRQ(ierr);
-  ierr = DMCompositeAddDM(pack,(DM)da1);CHKERRQ(ierr);
-  ierr = DMCompositeAddDM(pack,(DM)da2);CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(pack,da1);CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(pack,da2);CHKERRQ(ierr);
 
   /* Create the solver object and attach the grid/physics info */
   ierr = DMMGCreate(comm,1,&user,&dmmg_comp);CHKERRQ(ierr);
-  ierr = DMMGSetDM(dmmg_comp,(DM)pack);CHKERRQ(ierr);
+  ierr = DMMGSetDM(dmmg_comp,pack);CHKERRQ(ierr);
   ierr = DMMGSetISColoringType(dmmg_comp,IS_COLORING_GLOBAL);CHKERRQ(ierr);
 
   ierr = DMMGSetInitialGuess(dmmg_comp,FormInitialGuessComp);CHKERRQ(ierr);
@@ -221,8 +220,6 @@ int main(int argc,char **argv)
   /* -snes_view */  
   //snes = DMMGGetSNES(dmmg1);CHKERRQ(ierr);
 
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-    
   ierr = DMMGDestroy(dmmg1);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg2);CHKERRQ(ierr);
 
@@ -243,11 +240,11 @@ PetscErrorCode FormInitialGuessComp(DMMG dmmg,Vec X)
 {
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*)dmmg->user;
-  DM             dm = (DMComposite)dmmg->dm;
+  DM             dm = dmmg->dm;
   Vec            X1,X2;
   Field1         **x1;
   Field2         **x2;
-  DMDALocalInfo    info1,info2;
+  DMDALocalInfo  info1,info2;
   DM             da1,da2;
 
   PetscFunctionBegin;
@@ -281,8 +278,8 @@ PetscErrorCode FormFunctionComp(SNES snes,Vec X,Vec F,void *ctx)
   PetscErrorCode ierr;
   DMMG           dmmg = (DMMG)ctx;
   AppCtx         *user = (AppCtx*)dmmg->user;
-  DM             dm = (DMComposite)dmmg->dm;
-  DMDALocalInfo    info1,info2;
+  DM             dm = dmmg->dm;
+  DMDALocalInfo  info1,info2;
   DM             da1,da2;
   Field1         **x1,**f1;
   Field2         **x2,**f2;
@@ -358,7 +355,7 @@ PetscErrorCode FormFunction1(SNES snes,Vec X,Vec F,void *ctx)
   DMMG           dmmg = (DMMG)ctx;
   AppCtx         *user = (AppCtx*)dmmg->user;
   DM             da1 = dmmg->dm;
-  DMDALocalInfo    info1;
+  DMDALocalInfo  info1;
   Field1         **x1,**f1;
   Vec            X1;
   Field2         **x2;

@@ -5,7 +5,7 @@ FFLAGS    =
 CPPFLAGS  =
 SOURCEC	  = tv_data_display.c
 SOURCEF	  =
-SOURCEH	  = tc_data_display.h
+SOURCEH	  = tv_data_display.h
 OBJSC	  = ${SOURCEC:.c=.o}
 OBJSF	  =
 MANSEC	  = Profiling

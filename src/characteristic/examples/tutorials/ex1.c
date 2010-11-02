@@ -79,7 +79,7 @@ int main(int argc,char **argv)
   AppCtx         *user;               /* user-defined work context */
   Parameter      *param;
   GridInfo       grid;
-  int            ierr,result;
+  int            ierr,result = 0;
   MPI_Comm       comm;
   DM             da;
 

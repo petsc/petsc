@@ -1,4 +1,4 @@
-#
+# -*- mode: makefile -*-
 #
 # The following variables specify PETSc related info, and can be picked up directly 
 # by external packages (like TAO) or PETSc applications that do not use PETSc targets.

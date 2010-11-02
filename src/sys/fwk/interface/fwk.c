@@ -236,7 +236,7 @@ PetscErrorCode PetscFwkGraphTopologicalSort(PetscFwkGraph graph, PetscInt *n, Pe
              with the jj in place of ii, but we use a simple-minded algorithm instead, since the graphs
              we anticipate encountering are tiny. 
           */
-        }/*for(k)*/
+        }/* for(k) */
       }/* if(!queued) */
     }/* for(ii) */
     /* If no progress was made during this iteration, the graph must have a cycle */
@@ -888,7 +888,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterDependence(PetscFwk fwk, const
   */
   ierr = PetscFwkGraphAddEdge(fwk->dep_graph, clientid, serverid); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/*PetscFwkRegisterDependence()*/
+}/* PetscFwkRegisterDependence() */
 
 
 

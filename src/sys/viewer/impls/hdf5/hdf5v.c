@@ -207,7 +207,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5PushGroup(PetscViewer viewer, c
  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidPointer(name,2);
+  PetscValidCharPointer(name,2);
   ierr = PetscMalloc(sizeof(GroupList), &groupNode);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name, (char **) &groupNode->name);CHKERRQ(ierr);
   groupNode->next = hdf5->groups;
@@ -268,7 +268,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5GetGroup(PetscViewer viewer, co
  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidPointer(name,2);
+  PetscValidCharPointer(name,2);
   if (hdf5->groups) {
     *name = hdf5->groups->name;
   } else {

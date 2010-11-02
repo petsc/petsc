@@ -547,8 +547,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFPrintf(MPI_Comm comm,FILE* fd,const char
     The call sequence is PetscPrintf(MPI_Comm, character(*), PetscErrorCode ierr) from Fortran. 
     That is, you can only pass a single character string from Fortran.
 
-   Notes: %A is replace with %g unless the value is < 1.e-12 when it is 
-          replaced with < 1.e-12
+   Notes: The %A format specifier is special.  It assumes an argument of type PetscReal
+          and is replaced with %G unless the absolute value is < 1.e-12 when it is replaced
+          with "< 1.e-12" (1.e-6 for single precision).
 
    Concepts: printing^in parallel
    Concepts: printf^in parallel
@@ -579,11 +580,16 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscPrintf(MPI_Comm comm,const char format[],
       ierr    = PetscStrcpy(nformat,format);CHKERRQ(ierr);
       ierr    = PetscStrstr(nformat,"%",&sub2);CHKERRQ(ierr);
       sub2[0] = 0;
-      value   = (double)va_arg(Argp,double);
+      value   = va_arg(Argp,PetscReal);
+#if defined(PETSC_USE_SCALAR_SINGLE)
+      if (PetscAbsReal(value) < 1.e-6) {
+        ierr    = PetscStrcat(nformat,"< 1.e-6");CHKERRQ(ierr);
+#else
       if (PetscAbsReal(value) < 1.e-12) {
         ierr    = PetscStrcat(nformat,"< 1.e-12");CHKERRQ(ierr);
+#endif
       } else {
-        ierr    = PetscStrcat(nformat,"%g");CHKERRQ(ierr);
+        ierr    = PetscStrcat(nformat,"%G");CHKERRQ(ierr);
         va_end(Argp);
         va_start(Argp,format);
       }

@@ -569,16 +569,16 @@ may be passed in.
 Two types of distributed array communication data structures 
 can be created, as specified by \trl{st}.
 Star-type stencils that radiate outward only in the coordinate
-directions are indicated by DMDA_STENCIL_STAR,
+directions are indicated by DMDA\_STENCIL\_STAR,
 while box-type stencils are specified by
-DA_STENCIL_BOX. For example, for the
+DA\_STENCIL\_BOX. For example, for the
 two-dimensional case,
-DA_STENCIL_STAR with width 1 corresponds to the standard 5-point
-stencil, while DMDA_STENCIL_BOX with width 1 denotes the
+DA\_STENCIL\_STAR with width 1 corresponds to the standard 5-point
+stencil, while DMDA\_STENCIL\_BOX with width 1 denotes the
 standard 9-point stencil.  In both instances the ghost points are
 identical, the only difference being that with star-type stencils
 certain ghost points are ignored, decreasing substantially
-the number of messages sent.  Note that the DMDA_STENCIL_STAR
+the number of messages sent.  Note that the DMDA\_STENCIL\_STAR
 stencils can save interprocess communication in two and three
 dimensions.
 
@@ -744,13 +744,13 @@ deals with the fact that subarrays along boundaries of the problem
 domain have ghost points only on their interior edges, but not on
 their boundary edges.
 
-When either type of stencil is used, DMDA_STENCIL_STAR or 
-DA_STENCIL_BOX, the local vectors (with the ghost points) 
+When either type of stencil is used, DMDA\_STENCIL\_STAR or 
+DA\_STENCIL\_BOX, the local vectors (with the ghost points) 
 represent rectangular arrays, including the extra corner elements in 
-the DMDA_STENCIL_STAR case. This configuration provides simple 
+the DMDA\_STENCIL\_STAR case. This configuration provides simple 
 access to the elements by employing two- (or three-) dimensional indexing. 
 The only difference between the 
-two cases is that when DMDA_STENCIL_STAR is used, the extra 
+two cases is that when DMDA\_STENCIL\_STAR is used, the extra 
 corner components are {\em not} scattered between the processes and thus
 contain undefined values that should {\em not} be used.
 
@@ -4352,13 +4352,13 @@ to guide your development. We give a short summary here.
   Vec         soln;\\
 
   /* Create the DMDA that stores information about the coarsest grid you wish to use */\\
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA\_NONPERIODIC,DMDA_STENCIL_STAR,\\
-         3,3,3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,\&da);CHKERRQ(ierr);\\
+  ierr = DMDACreate3d(PETSC\_COMM\_WORLD,DMDA\_NONPERIODIC,DMDA\_STENCIL\_STAR,\\
+         3,3,3,PETSC\_DECIDE,PETSC\_DECIDE,PETSC\_DECIDE,1,1,0,0,0,\&da);CHKERRQ(ierr);\\
 
   /* Create the DMMG data structure */\\
        - the second argument indicates the number of levels you wish to use and \\
          can be changed with the option -dmmg\_nlevels \\
-  ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,\&dmmg);CHKERRQ(ierr);\\
+  ierr = DMMGCreate(PETSC\_COMM\_WORLD,3,PETSC\_NULL,\&dmmg);CHKERRQ(ierr);\\
 
   /*  Tell the DMMG object to use the da to define the coarsest grid */\\
   ierr = DMMGSetDM(dmmg,(DM)da);\\

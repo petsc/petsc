@@ -11,7 +11,7 @@ OBJSC    = da2.o da1.o da3.o daghost.o dacorn.o dagtol.o daltol.o \
            daindex.o dascatter.o dacreate.o dadestroy.o dalocal.o \
            dadist.o daview.o dasub.o gr1.o gr2.o daload.o dagtona.o \
 	   dainterp.o dapf.o dagetarray.o da.o dareg.o  fdda.o mhyp.o
-SOURCEH  = private/daimpl.h petscdm.h ../src/dm/impls/da/mhyp.h
+SOURCEH  = ../../../../include/private/daimpl.h ../../../../include/petscdm.h mhyp.h
 DIRS     = usfft utils
 LOCDIR   = src/dm/impls/da/
 MANSEC   = DM

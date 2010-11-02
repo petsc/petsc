@@ -1,4 +1,4 @@
-#
+# -*- mode: makefile -*-
 #
 # Checks that PETSC_DIR variable is set and creates library directory
 # if it does not exist

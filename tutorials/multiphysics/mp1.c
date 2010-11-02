@@ -72,12 +72,12 @@ int main(int argc,char **argv)
     Create the DMComposite object to manage the two grids/physics. 
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCompositeCreate(comm,&pack);CHKERRQ(ierr);
-  ierr = DMCompositeAddDM(pack,(DM)da1);CHKERRQ(ierr);
-  ierr = DMCompositeAddDM(pack,(DM)da2);CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(pack,da1);CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(pack,da2);CHKERRQ(ierr);
 
   /* Create the solver object and attach the grid/physics info */
   ierr = DMMGCreate(comm,nlevels,&user,&dmmg_comp);CHKERRQ(ierr);
-  ierr = DMMGSetDM(dmmg_comp,(DM)pack);CHKERRQ(ierr);
+  ierr = DMMGSetDM(dmmg_comp,pack);CHKERRQ(ierr);
   ierr = DMMGSetISColoringType(dmmg_comp,IS_COLORING_GLOBAL);CHKERRQ(ierr);
 
   ierr = DMMGSetInitialGuess(dmmg_comp,FormInitialGuessComp);CHKERRQ(ierr);

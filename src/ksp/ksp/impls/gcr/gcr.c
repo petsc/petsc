@@ -198,10 +198,14 @@ PetscErrorCode KSPSetFromOptions_GCR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+/* Force these parameters to not be EXTERN_C */
+typedef PetscErrorCode (*KSPGCRModifyPCFunction)(KSP,PetscInt,PetscReal,void*);
+typedef PetscErrorCode (*KSPGCRDestroyFunction)(void*);
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGCRSetModifyPC_GCR" 
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRSetModifyPC_GCR(KSP ksp,PetscErrorCode (*function)(KSP,PetscInt,PetscReal,void*),void *data,PetscErrorCode (*destroy)(void*))
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRSetModifyPC_GCR(KSP ksp,KSPGCRModifyPCFunction function,void *data,KSPGCRDestroyFunction destroy)
 {
   KSP_GCR         *ctx = (KSP_GCR *)ksp->data;
 	
