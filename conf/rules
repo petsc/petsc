@@ -693,7 +693,7 @@ html: chk_c2html
             echo "<a href=\"makefile.html\">makefile</a><br>" >> $${loc}/index.html
 	-@loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
 	   cat makefile | ${C2HTML}  | ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml > $${loc}/makefile.html
-	-@${RM} /tmp/$$USER.htmlmap tmp
+	-@${RM} /tmp/$$USER.htmlmap
 
 cleanhtml:
 	-@${RM} makefile.html *.c.html *.F.html *.h.html *.h90.html index.html *.m.html *.c.gcov.html
