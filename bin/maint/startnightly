@@ -28,7 +28,7 @@ foreach CONF ($*)
     $SSH $USR@$MACH $DASHN "cd $LOC ; hg -q revert -a; hg -q pull -u"
   else
     rsync -e ssh -az --delete  $pdir/ ${USR}@${MACH}:${LOC}
-  endi
+  endif
   echo "Starting: $SSH $USR@$MACH $DASHN $LOC/bin/maint/buildtest $CONF"
   $SSH $USR@$MACH $DASHN "cd $LOC; $LOC/bin/maint/buildtest $CONF" &
   sleep 120 # perhaps ease the nfs load
