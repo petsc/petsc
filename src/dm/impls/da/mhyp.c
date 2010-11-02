@@ -303,7 +303,7 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
    Notes: Unlike the more general support for blocks in hypre this allows only one block per process and requires the block
           be defined by a DMDA.
 
-          The matrix needs a DMDA associated with it by either a call to MatSetDA() or if the matrix is obtained from DMGetMatrix()
+          The matrix needs a DMDA associated with it by either a call to MatSetDM() or if the matrix is obtained from DMGetMatrix()
 
 .seealso: MatCreate(), PCPFMG, MatSetDA(), DMGetMatrix()
 M*/

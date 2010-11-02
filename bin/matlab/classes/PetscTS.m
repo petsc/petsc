@@ -1,4 +1,8 @@
 classdef PetscTS < PetscObject
+  properties (Constant)
+    LINEAR=0;
+    NONLINEAR=1;
+  end
   methods
     function obj = PetscTS(pid,flg)
       if (nargin > 1) 
@@ -10,6 +14,9 @@ classdef PetscTS < PetscObject
     end
     function err = SetType(obj,name)
       err = calllib('libpetsc', 'TSSetType', obj.pobj,name);
+    end
+    function err = SetProblemType(obj,t)
+      err = calllib('libpetsc', 'TSSetProblemType', obj.pobj,t);
     end
     function err = SetDM(obj,da)
       err = calllib('libpetsc', 'TSSetDM', obj.pobj,da.pobj);
@@ -31,13 +38,13 @@ classdef PetscTS < PetscObject
       if (nargin < 3) 
         arg = 0;
       end
-      err = calllib('libpetsc', 'TSSetIFunctionMatlab', obj.pobj,func,arg);
+      err = calllib('libpetsc', 'TSSetFunctionMatlab', obj.pobj,func,arg);
     end
     function err = SetIJacobian(obj,A,B,func,arg)
       if (nargin < 5) 
         arg = 0;
       end
-      err = calllib('libpetsc', 'TSSetIJacobianMatlab', obj.pobj,A.pobj,B.pobj,func,arg);
+      err = calllib('libpetsc', 'TSSetJacobianMatlab', obj.pobj,A.pobj,B.pobj,func,arg);
     end
     function err = View(obj,viewer)
       err = calllib('libpetsc', 'TSView', obj.pobj,viewer.pobj);

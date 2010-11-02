@@ -1,5 +1,5 @@
 
-static char help[] = "Tests loading DMDA vector from file.\n\n";
+static char help[] = "Tests loading DM vector from file.\n\n";
 
 #include "petscdm.h"
 

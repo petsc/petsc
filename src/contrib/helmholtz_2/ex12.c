@@ -234,7 +234,7 @@ int main(int argc,char **args)
   }
 
   /* Note: Although the ghost width overlap is 0 for this problem, we need to
-     create a DMDA with width 1, so that each processor generates the local-to-global
+     create a DM with width 1, so that each processor generates the local-to-global
      mapping for its neighbors in the north/south/east/west (needed for
      matrix assembly for the 5-point, 2D finite difference stencil). This
      mapping is needed when we determine the global column numbers for

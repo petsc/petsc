@@ -1,6 +1,6 @@
 
 !
-!  Include file for Fortran use of the DMDA (distributed array) package in PETSc
+!  Include file for Fortran use of the DM (distributed array) package in PETSc
 !
 #if !defined (__PETSCDADEF_H)
 #define __PETSCDADEF_H

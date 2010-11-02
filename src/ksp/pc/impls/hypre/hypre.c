@@ -1258,6 +1258,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_PFMG(PC pc)
 }
 EXTERN_C_END
 
+/* ---------------------------------------------------------------------------------------------------------------------------------------------------*/
+
 /* we know we are working with a HYPRE_SStructMatrix */
 typedef struct {
   MPI_Comm            hcomm;       /* does not share comm with HYPRE_SStructMatrix because need to create solver before getting matrix */

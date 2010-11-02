@@ -1,5 +1,5 @@
 
-static char help[] = "Tests DMDA interpolation for coarse DMDA on a subset of processors.\n\n";
+static char help[] = "Tests DM interpolation for coarse DM on a subset of processors.\n\n";
 
 #include "petscdm.h"
 

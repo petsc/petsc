@@ -9,7 +9,7 @@ PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  /* Pull out field names from DMDA */
+  /* Pull out field names from DM */
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERSTRING, &isstring);CHKERRQ(ierr);
   if (iascii) {
@@ -105,7 +105,7 @@ EXTERN_C_END
 #undef __FUNCT__
 #define __FUNCT__ "DMDAMapCoordsToPeriodicDomain"
 /* -----------------------------------------------------------------------------
-   Checks for periodicity of a DMDA and Maps points outside of a domain back onto the domain
+   Checks for periodicity of a DM and Maps points outside of a domain back onto the domain
    using appropriate periodicity. At the moment assumes only a 2-D DMDA.
    ----------------------------------------------------------------------------------------*/
 PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM da, PetscScalar *x, PetscScalar *y)

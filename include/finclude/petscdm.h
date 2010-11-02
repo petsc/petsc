@@ -1,6 +1,6 @@
 
 !
-!  Include file for Fortran use of the DMDA (distributed array) package in PETSc
+!  Include file for Fortran use of the DM (distributed array) package in PETSc
 !
 #include "finclude/petscdmdef.h"
 
@@ -54,5 +54,5 @@
 
       parameter (DMDA_X = 0,DMDA_Y = 1,DMDA_Z = 2)
 !
-!  End of Fortran include file for the DMDA package in PETSc
+!  End of Fortran include file for the DM package in PETSc
 

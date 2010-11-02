@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    = dm.o dmregall.o
 OBJSF    =
 LIBBASE  = libpetscdm
-MANSEC   = DMDA
+MANSEC   = DM
 LOCDIR   = src/dm/da/interface/
 
 include ${PETSC_DIR}/conf/variables

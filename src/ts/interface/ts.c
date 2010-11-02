@@ -2261,3 +2261,228 @@ PetscErrorCode PETSCTS_DLLEXPORT SNESTSFormJacobian(SNES snes,Vec X,Mat *A,Mat *
   ierr = (ts->ops->snesjacobian)(snes,X,A,B,flag,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#include "mex.h"
+
+typedef struct {char *funcname; mxArray *ctx;} TSMatlabContext;
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSComputeFunction_Matlab"
+/*
+   TSComputeFunction_Matlab - Calls the function that has been set with
+                         TSSetFunctionMatlab().  
+
+   Collective on TS
+
+   Input Parameters:
++  snes - the TS context
+-  x - input vector
+
+   Output Parameter:
+.  y - function vector, as set by TSSetFunction()
+
+   Notes:
+   TSComputeFunction() is typically used within nonlinear solvers
+   implementations, so most users would not generally call this routine
+   themselves.
+
+   Level: developer
+
+.keywords: TS, nonlinear, compute, function
+
+.seealso: TSSetFunction(), TSGetFunction()
+*/
+PetscErrorCode PETSCTS_DLLEXPORT TSComputeFunction_Matlab(TS snes,PetscReal time,Vec x,Vec xdot,Vec y, void *ctx)
+{
+  PetscErrorCode   ierr;
+  TSMatlabContext *sctx = (TSMatlabContext *)ctx;
+  int              nlhs = 1,nrhs = 7;
+  mxArray	   *plhs[1],*prhs[7];
+  long long int    lx = 0,lxdot = 0,ly = 0,ls = 0;
+      
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,TS_CLASSID,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(xdot,VEC_CLASSID,4);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,5);
+  PetscCheckSameComm(snes,1,x,3);
+  PetscCheckSameComm(snes,1,y,5);
+
+  ierr = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&lxdot,&x,sizeof(xdot));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&ly,&y,sizeof(x));CHKERRQ(ierr); 
+  prhs[0] =  mxCreateDoubleScalar((double)ls);
+  prhs[1] =  mxCreateDoubleScalar(time);
+  prhs[2] =  mxCreateDoubleScalar((double)lx);
+  prhs[3] =  mxCreateDoubleScalar((double)lxdot);
+  prhs[4] =  mxCreateDoubleScalar((double)ly);
+  prhs[5] =  mxCreateString(sctx->funcname);
+  prhs[6] =  sctx->ctx;
+  ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"PetscTSComputeFunctionInternal");CHKERRQ(ierr);
+  ierr    =  mxGetScalar(plhs[0]);CHKERRQ(ierr);
+  mxDestroyArray(prhs[0]);
+  mxDestroyArray(prhs[1]);
+  mxDestroyArray(prhs[2]);
+  mxDestroyArray(prhs[3]);
+  mxDestroyArray(prhs[4]);
+  mxDestroyArray(prhs[5]);
+  mxDestroyArray(plhs[0]);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetFunctionMatlab"
+/*
+   TSSetFunctionMatlab - Sets the function evaluation routine and function 
+   vector for use by the TS routines in solving ODEs
+   equations from Matlab. Here the function is a string containing the name of a Matlab function
+
+   Logically Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+-  func - function evaluation routine
+
+   Calling sequence of func:
+$    func (TS ts,PetscReal time,Vec x,Vec xdot,Vec f,void *ctx);
+
+   Level: beginner
+
+.keywords: TS, nonlinear, set, function
+
+.seealso: TSGetFunction(), TSComputeFunction(), TSSetJacobian(), TSSetFunction()
+*/
+PetscErrorCode PETSCTS_DLLEXPORT TSSetFunctionMatlab(TS snes,const char *func,mxArray *ctx)
+{
+  PetscErrorCode  ierr;
+  TSMatlabContext *sctx;
+
+  PetscFunctionBegin;
+  /* currently sctx is memory bleed */
+  ierr = PetscMalloc(sizeof(TSMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
+  /* 
+     This should work, but it doesn't 
+  sctx->ctx = ctx; 
+  mexMakeArrayPersistent(sctx->ctx);
+  */
+  sctx->ctx = mxDuplicateArray(ctx);
+  ierr = TSSetIFunction(snes,TSComputeFunction_Matlab,sctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSComputeJacobian_Matlab"
+/*
+   TSComputeJacobian_Matlab - Calls the function that has been set with
+                         TSSetJacobianMatlab().  
+
+   Collective on TS
+
+   Input Parameters:
++  snes - the TS context
+.  x - input vector
+.  A, B - the matrices
+-  ctx - user context
+
+   Output Parameter:
+.  flag - structure of the matrix
+
+   Level: developer
+
+.keywords: TS, nonlinear, compute, function
+
+.seealso: TSSetFunction(), TSGetFunction()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSComputeJacobian_Matlab(TS snes,PetscReal time,Vec x,Vec xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *flag, void *ctx)
+{
+  PetscErrorCode  ierr;
+  TSMatlabContext *sctx = (TSMatlabContext *)ctx;
+  int             nlhs = 2,nrhs = 9;
+  mxArray	  *plhs[2],*prhs[9];
+  long long int   lx = 0,lxdot = 0,lA = 0,ls = 0, lB = 0;
+      
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,TS_CLASSID,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
+
+  /* call Matlab function in ctx with arguments x and y */
+
+  ierr = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&lxdot,&xdot,sizeof(x));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&lA,A,sizeof(x));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&lB,B,sizeof(x));CHKERRQ(ierr); 
+  prhs[0] =  mxCreateDoubleScalar((double)ls);
+  prhs[1] =  mxCreateDoubleScalar((double)time);
+  prhs[2] =  mxCreateDoubleScalar((double)lx);
+  prhs[3] =  mxCreateDoubleScalar((double)lxdot);
+  prhs[4] =  mxCreateDoubleScalar((double)shift);
+  prhs[5] =  mxCreateDoubleScalar((double)lA);
+  prhs[6] =  mxCreateDoubleScalar((double)lB);
+  prhs[7] =  mxCreateString(sctx->funcname);
+  prhs[8] =  sctx->ctx;
+  ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"PetscTSComputeJacobianInternal");CHKERRQ(ierr);
+  ierr    =  mxGetScalar(plhs[0]);CHKERRQ(ierr);
+  *flag   =  (MatStructure) mxGetScalar(plhs[1]);CHKERRQ(ierr);
+  mxDestroyArray(prhs[0]);
+  mxDestroyArray(prhs[1]);
+  mxDestroyArray(prhs[2]);
+  mxDestroyArray(prhs[3]);
+  mxDestroyArray(prhs[4]);
+  mxDestroyArray(prhs[5]);
+  mxDestroyArray(prhs[6]);
+  mxDestroyArray(prhs[7]);
+  mxDestroyArray(plhs[0]);
+  mxDestroyArray(plhs[1]);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetJacobianMatlab"
+/*
+   TSSetJacobianMatlab - Sets the Jacobian function evaluation routine and two empty Jacobian matrices
+   vector for use by the TS routines in solving ODEs from Matlab. Here the function is a string containing the name of a Matlab function
+
+   Logically Collective on TS
+
+   Input Parameters:
++  snes - the TS context
+.  A,B - Jacobian matrices
+.  func - function evaluation routine
+-  ctx - user context
+
+   Calling sequence of func:
+$    flag = func (TS snes,PetscReal time,Vec x,Vec xdot,Mat A,Mat B,void *ctx);
+
+
+   Level: developer
+
+.keywords: TS, nonlinear, set, function
+
+.seealso: TSGetFunction(), TSComputeFunction(), TSSetJacobian(), TSSetFunction()
+*/
+PetscErrorCode PETSCTS_DLLEXPORT TSSetJacobianMatlab(TS snes,Mat A,Mat B,const char *func,mxArray *ctx)
+{
+  PetscErrorCode    ierr;
+  TSMatlabContext *sctx;
+
+  PetscFunctionBegin;
+  /* currently sctx is memory bleed */
+  ierr = PetscMalloc(sizeof(TSMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
+  /* 
+     This should work, but it doesn't 
+  sctx->ctx = ctx; 
+  mexMakeArrayPersistent(sctx->ctx);
+  */
+  sctx->ctx = mxDuplicateArray(ctx);
+  ierr = TSSetIJacobian(snes,A,B,TSComputeJacobian_Matlab,sctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#endif

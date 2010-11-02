@@ -2,7 +2,7 @@ static char help[] = "\n";
 /* - - - - - - - - - - - - - - - - - - - - - - - - 
    ex2.c
    Explicit semi-Lagrangian advection of a set of 
-   passive tracers. DMDA has 7 dof: u,w,c1,c2,c3,c4
+   passive tracers. DM has 7 dof: u,w,c1,c2,c3,c4
    where u & w are time-independent & analytically prescribed. 
    This is identical to ex1 but with more advected
    fields.
@@ -232,7 +232,7 @@ int Initialize(DMMG *dmmg)
   ierr = PetscBagGetData(user->bag,(void**)&param);CHKERRQ(ierr);
   sigma=param->sigma; xc=param->xctr; zc=param->zctr;
 
-  /* Get the DMDA and grid */
+  /* Get the DM and grid */
   da = (dmmg[0]->dm); 
   ierr = DMDAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
