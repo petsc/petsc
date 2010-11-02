@@ -63,6 +63,9 @@ function obj = PetscVec(array,flg)
     function err = Copy(obj,v)
       err = calllib('libpetsc', 'VecCopy', obj.pobj,v.pobj);
     end
+    function err = Set(obj,v)
+      err = calllib('libpetsc', 'VecSet', obj.pobj,v);
+    end
     function err = View(obj,viewer)
       err = calllib('libpetsc', 'VecView', obj.pobj,viewer.pobj);
     end

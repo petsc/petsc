@@ -33,6 +33,7 @@ int VecCreate(MPI_Comm,Vec *);
 int VecSetType(Vec,const char*);
 int VecSetFromOptions(Vec);
 int VecSetSizes(Vec,int,int);
+int VecSet(Vec,double);
 int VecGetLocalSize(Vec,int*);
 int VecSetValues(Vec,int,int*,double*,InsertMode);
 int VecGetValues(Vec,int,int*,double*);

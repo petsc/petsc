@@ -28,19 +28,15 @@ classdef PetscTS < PetscObject
       err = calllib('libpetsc', 'TSSetUp', obj.pobj);
     end
     function err = Solve(obj,x)
-      if (nargin < 2) 
-        err = calllib('libpetsc', 'TSSolve', obj.pobj,0);
-      else
-        err = calllib('libpetsc', 'TSSolve', obj.pobj,x.pboj);
-      end
+      err = calllib('libpetsc', 'TSSolve', obj.pobj,x.pobj);
     end
-    function err = SetIFunction(obj,func,arg)
+    function err = SetFunction(obj,func,arg)
       if (nargin < 3) 
         arg = 0;
       end
       err = calllib('libpetsc', 'TSSetFunctionMatlab', obj.pobj,func,arg);
     end
-    function err = SetIJacobian(obj,A,B,func,arg)
+    function err = SetJacobian(obj,A,B,func,arg)
       if (nargin < 5) 
         arg = 0;
       end
