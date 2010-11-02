@@ -103,6 +103,10 @@
 #define MATPYTHON          'python'
 #define MATHYPRESTRUCT     'hyprestruct'
 #define MATHYPRESSTRUCT    'hypresstruct'
+#define MATSUBMATRIX       'submatrix'
+#ifdef PETSC_USE_MATFWK
+#define MATFWK           'matfwk'
+#endif
 !
 ! MatSolverPackages
 !
@@ -110,11 +114,14 @@
 #define MATSOLVERSUPERLU      'superlu'
 #define MATSOLVERSUPERLU_DIST 'superlu_dist'
 #define MATSOLVERUMFPACK      'umfpack'
+#define MATSOLVERCHOLMOD      'cholmod'
 #define MATSOLVERESSL         'essl'
 #define MATSOLVERLUSOL        'lusol'
 #define MATSOLVERMUMPS        'mumps'
+#define MATSOLVERPASTIX       'pastix'
 #define MATSOLVERDSCPACK      'dscpack'
 #define MATSOLVERMATLAB       'matlab'
 #define MATSOLVERPETSC        'petsc'
+#define MATSOLVERPLAPACK      'plapack'
 #define MATSOLVERBAS          'bas'
 #endif
