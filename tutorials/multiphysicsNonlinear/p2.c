@@ -46,7 +46,7 @@ int main(int argc,char **argv)
 
   /* Create the solver object and attach the grid/physics info */
   ierr = DMMGCreate(comm,1,&user,&dmmg);CHKERRQ(ierr);
-  ierr = DMMGSetDM(dmmg,(DM)da2);CHKERRQ(ierr);
+  ierr = DMMGSetDM(dmmg,da2);CHKERRQ(ierr);
   ierr = DMMGSetISColoringType(dmmg,IS_COLORING_GLOBAL);CHKERRQ(ierr);
 
   ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);

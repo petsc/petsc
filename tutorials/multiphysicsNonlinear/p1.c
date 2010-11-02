@@ -50,7 +50,7 @@ int main(int argc,char **argv)
 
   /* Create the solver object and attach the grid/physics info */
   ierr = DMMGCreate(comm,1,&user,&dmmg);CHKERRQ(ierr);
-  ierr = DMMGSetDM(dmmg,(DM)da1);CHKERRQ(ierr);
+  ierr = DMMGSetDM(dmmg,da1);CHKERRQ(ierr);
   ierr = DMMGSetISColoringType(dmmg,IS_COLORING_GLOBAL);CHKERRQ(ierr);
 
   ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
@@ -82,9 +82,7 @@ int main(int argc,char **argv)
 PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 {
   PetscErrorCode ierr;
-  AppCtx         *user = (AppCtx*)dmmg->user;
   DM             da1 = dmmg->dm;
-  Vec            X1;
   Field1         **x1;
   DMDALocalInfo    info1;
 
