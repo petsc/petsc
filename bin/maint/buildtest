@@ -45,14 +45,16 @@ rm -f $nPETSC_DIR/build.log
 rm -f $nPETSC_DIR/buildout.tar
 echo "Build on $MACH $ARCH  `date` " > $nPETSC_DIR/build.log
 
+# Note use 'hg clean --all' intead of manually deleting seleted old files.
+# This also requires 'clean' extension enabled on all nightly build machines.
 cd $nPETSC_DIR
 hg revert -a
-hg -q pull >>& $nPETSC_DIR/build.log
-hg update  >>& $nPETSC_DIR/build.log
+hg -q pull -u    >>& $nPETSC_DIR/build.log
+hg -q clean -all >>& $nPETSC_DIR/build.log
 pushd config/BuildSystem
 hg revert -a
-hg -q pull >>& $nPETSC_DIR/build.log
-hg update  >>& $nPETSC_DIR/build.log
+hg -q pull -u    >>& $nPETSC_DIR/build.log
+hg -q clean -all >>& $nPETSC_DIR/build.log
 popd
 
 setenv PETSC_DIR $nPETSC_DIR
@@ -64,13 +66,6 @@ echo "Performing buildtest on " $MACH "with arch " $PETSC_ARCH " at " $nPETSC_DI
 
 
 # Run Configure
-  #remove old logs
-  /bin/rm -f configure.log*
-  # remove old config and build files
-  /bin/rm -rf ${PETSC_ARCH}
-  #remove external packages - so they get rebuilt again
-  /bin/rm -rf externalpackages
-  # now configure
   ./config/examples/${CONFIGURE_FILE}.py --with-no-output -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$nPETSC_DIR ${CONFIGURE_ARGS} >>& build.log
   echo '****************************************************' >>& $nPETSC_DIR/build.log
 
