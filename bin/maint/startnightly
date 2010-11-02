@@ -24,7 +24,7 @@ foreach CONF ($*)
       $SSH $USR@$MACH $DASHN "hg clone -q $PURL $LOC; hg clone -q $BURL $LOC/config/BuildSystem"
       endif
     endif
-    echo "cleaning and updating clone at $USR@$MACH:$LOC"
+    echo "cleaning and updating clone at $USR@$MACH $LOC"
     $SSH $USR@$MACH $DASHN "cd $LOC ; hg -q revert -a; hg -q pull -u"
   else
     rsync -e ssh -az --delete  $pdir/ ${USR}@${MACH}:${LOC}
