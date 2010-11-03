@@ -2485,4 +2485,75 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetJacobianMatlab(TS snes,Mat A,Mat B,const c
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "TSMonitor_Matlab"
+/*
+   TSMonitor_Matlab - Calls the function that has been set with TSMonitorSetMatlab().  
+
+   Collective on TS
+
+.seealso: TSSetFunction(), TSGetFunction()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSMonitor_Matlab(TS snes,PetscInt it, PetscReal time,Vec x, void *ctx)
+{
+  PetscErrorCode  ierr;
+  TSMatlabContext *sctx = (TSMatlabContext *)ctx;
+  int             nlhs = 2,nrhs = 6;
+  mxArray	  *plhs[1],*prhs[6];
+  long long int   lx = 0,ls = 0;
+      
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,TS_CLASSID,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,4);
+
+  ierr = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 
+  prhs[0] =  mxCreateDoubleScalar((double)ls);
+  prhs[1] =  mxCreateDoubleScalar((double)it);
+  prhs[2] =  mxCreateDoubleScalar((double)time);
+  prhs[3] =  mxCreateDoubleScalar((double)lx);
+  prhs[4] =  mxCreateString(sctx->funcname);
+  prhs[5] =  sctx->ctx;
+  ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"PetscTSMonitorInternal");CHKERRQ(ierr);
+  ierr    =  mxGetScalar(plhs[0]);CHKERRQ(ierr);
+  mxDestroyArray(prhs[0]);
+  mxDestroyArray(prhs[1]);
+  mxDestroyArray(prhs[2]);
+  mxDestroyArray(prhs[3]);
+  mxDestroyArray(prhs[4]);
+  mxDestroyArray(plhs[0]);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSMonitorSetMatlab"
+/*
+   TSMonitorSetMatlab - Sets the monitor function from Matlab
+
+   Level: developer
+
+.keywords: TS, nonlinear, set, function
+
+.seealso: TSGetFunction(), TSComputeFunction(), TSSetJacobian(), TSSetFunction()
+*/
+PetscErrorCode PETSCTS_DLLEXPORT TSMonitorSetMatlab(TS snes,const char *func,mxArray *ctx)
+{
+  PetscErrorCode    ierr;
+  TSMatlabContext *sctx;
+
+  PetscFunctionBegin;
+  /* currently sctx is memory bleed */
+  ierr = PetscMalloc(sizeof(TSMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
+  /* 
+     This should work, but it doesn't 
+  sctx->ctx = ctx; 
+  mexMakeArrayPersistent(sctx->ctx);
+  */
+  sctx->ctx = mxDuplicateArray(ctx);
+  ierr = TSMonitorSet(snes,TSMonitor_Matlab,sctx,PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #endif

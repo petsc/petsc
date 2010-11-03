@@ -42,6 +42,12 @@ classdef PetscTS < PetscObject
       end
       err = calllib('libpetsc', 'TSSetJacobianMatlab', obj.pobj,A.pobj,B.pobj,func,arg);
     end
+    function err = MonitorSet(obj,func,arg)
+      if (nargin < 3) 
+        arg = 0;
+      end
+      err = calllib('libpetsc', 'TSMonitorSetMatlab', obj.pobj,func,arg);
+    end
     function err = View(obj,viewer)
       err = calllib('libpetsc', 'TSView', obj.pobj,viewer.pobj);
     end

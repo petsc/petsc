@@ -112,3 +112,4 @@ int TSView(TS,PetscViewer);
 int TSDestroy(TS);
 int TSSetFunctionMatlab(TS,const char*,mxArray*);
 int TSSetJacobianMatlab(TS,Mat,Mat,const char*,mxArray*);
+int TSMonitorSetMatlab(TS,const char*,mxArray*);
