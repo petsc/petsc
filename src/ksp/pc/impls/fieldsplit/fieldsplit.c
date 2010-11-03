@@ -623,7 +623,7 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
      VecScatterEnd(ilink->sctx,ilink->x,yy,ADD_VALUES,SCATTER_REVERSE))
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCApply_FieldSplit"
+#define __FUNCT__ "PCApplyTranspose_FieldSplit"
 static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc,Vec x,Vec y)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
@@ -1093,7 +1093,7 @@ EXTERN_C_END
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitGetSchurBlocks"
 /*@C
-   PCFieldSplitGetSchurBlocks - Gets the all matrix blocks for the Schur complement
+   PCFieldSplitGetSchurBlocks - Gets all matrix blocks for the Schur complement
    
    Collective on KSP
 

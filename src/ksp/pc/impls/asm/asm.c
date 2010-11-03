@@ -206,12 +206,12 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
 
     /* Create the local work vectors and scatter contexts */
     ierr = MatGetVecs(pc->pmat,&vec,0);CHKERRQ(ierr);
-    ierr = PetscMalloc(osm->n_local*sizeof(VecScatter *),&osm->restriction);CHKERRQ(ierr);
-    if (osm->is_local) {ierr = PetscMalloc(osm->n_local*sizeof(VecScatter *),&osm->localization);CHKERRQ(ierr);}
-    ierr = PetscMalloc(osm->n_local*sizeof(VecScatter *),&osm->prolongation);CHKERRQ(ierr);
-    ierr = PetscMalloc(osm->n_local*sizeof(Vec *),&osm->x);CHKERRQ(ierr);
-    ierr = PetscMalloc(osm->n_local*sizeof(Vec *),&osm->y);CHKERRQ(ierr);
-    ierr = PetscMalloc(osm->n_local*sizeof(Vec *),&osm->y_local);CHKERRQ(ierr);
+    ierr = PetscMalloc(osm->n_local*sizeof(VecScatter),&osm->restriction);CHKERRQ(ierr);
+    if (osm->is_local) {ierr = PetscMalloc(osm->n_local*sizeof(VecScatter),&osm->localization);CHKERRQ(ierr);}
+    ierr = PetscMalloc(osm->n_local*sizeof(VecScatter),&osm->prolongation);CHKERRQ(ierr);
+    ierr = PetscMalloc(osm->n_local*sizeof(Vec),&osm->x);CHKERRQ(ierr);
+    ierr = PetscMalloc(osm->n_local*sizeof(Vec),&osm->y);CHKERRQ(ierr);
+    ierr = PetscMalloc(osm->n_local*sizeof(Vec),&osm->y_local);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(vec, &firstRow, &lastRow);CHKERRQ(ierr);
     for (i=0; i<osm->n_local_true; ++i, firstRow += m_local) {
       ierr = ISGetLocalSize(osm->is[i],&m);CHKERRQ(ierr);
@@ -540,13 +540,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,I
     osm->is           = 0;
     osm->is_local     = 0;
     if (is) {
-      ierr = PetscMalloc(n*sizeof(IS *),&osm->is);CHKERRQ(ierr);
+      ierr = PetscMalloc(n*sizeof(IS),&osm->is);CHKERRQ(ierr);
       for (i=0; i<n; i++) { osm->is[i] = is[i]; }
       /* Flag indicating that the user has set overlapping subdomains so PCASM should not increase their size. */
       osm->overlap = -1;
     }
     if (is_local) {
-      ierr = PetscMalloc(n*sizeof(IS *),&osm->is_local);CHKERRQ(ierr);
+      ierr = PetscMalloc(n*sizeof(IS),&osm->is_local);CHKERRQ(ierr);
       for (i=0; i<n; i++) { osm->is_local[i] = is_local[i]; }
     }
   }
@@ -672,7 +672,7 @@ EXTERN_C_END
     Input Parameters:
 +   pc - the preconditioner context
 .   n - the number of subdomains for this processor (default value = 1)
-.   is - the index sets that define the subdomains for this processor
+.   is - the index set that defines the subdomains for this processor
          (or PETSC_NULL for PETSc to determine subdomains)
 -   is_local - the index sets that define the local part of the subdomains for this processor
          (or PETSC_NULL to use the default of 1 subdomain per process)
