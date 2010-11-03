@@ -533,7 +533,11 @@ class Configure(config.base.Configure):
               break
           currentVersion = compilerVersion[i].strip(',')
           if currentVersion != requiredVersion:
-            raise RuntimeError('CUDA Error: PETSc currently requires nvcc version ' + requiredVersion)
+            #raise RuntimeError('CUDA Error: PETSc currently requires nvcc version ' + requiredVersion)
+              print '==============================================================================='
+              print '** CUDA Error: PETSc requires nvcc version ' + requiredVersion + ' when compiling with --withcuda **'
+              print '==============================================================================='  
+              sys.exit(3)
           break
       except RuntimeError, e:
         self.logPrint('Error testing CUDA compiler: '+str(e))
