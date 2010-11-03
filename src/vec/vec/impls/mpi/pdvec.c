@@ -668,7 +668,6 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 {
   /* TODO: It looks like we can remove the H5Sclose(filespace) and H5Dget_space(dset_id). Why do we do this? */
   /* TODO: PUT IN ANOTHER DIMENSION FOR TIME (use an API call) */
-  /* TODO: PUT IN GROUP NAME */
   hid_t         filespace; /* file dataspace identifier */
   hid_t	        plist_id;  /* property list identifier */
   hid_t         dset_id;   /* dataset identifier */
