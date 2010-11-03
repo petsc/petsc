@@ -1450,9 +1450,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPlaceArray(Vec vec,const PetscScalar array[
   if (array) PetscValidScalarPointer(array,2);
   if (vec->ops->placearray) {
     ierr = (*vec->ops->placearray)(vec,array);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot place array in this type of vector");
-  }
+  } else SETERRQ(((PetscObject)vec)->comm,PETSC_ERR_SUP,"Cannot place array in this type of vector");
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1494,9 +1492,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecReplaceArray(Vec vec,const PetscScalar arra
   PetscValidType(vec,1);
   if (vec->ops->replacearray) {
     ierr = (*vec->ops->replacearray)(vec,array);CHKERRQ(ierr);
- } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot replace array in this type of vector");
-  }
+  } else  SETERRQ(((PetscObject)vec)->comm,PETSC_ERR_SUP,"Cannot replace array in this type of vector");
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

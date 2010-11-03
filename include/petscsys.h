@@ -20,7 +20,13 @@
 */
 #if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX) && !defined(__cplusplus)
 #error "PETSc configured with --with-clanguage=c++ and NOT --with-c-support - it can be used only with a C++ compiler"
-#endif      
+#endif
+
+#if defined(__cplusplus)
+#  define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_CXX
+#else
+#  define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_C
+#endif
 
 #if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 #define PETSC_EXTERN_CXX_BEGIN extern "C" {
@@ -910,12 +916,36 @@ M*/
 
    Level: beginner
 
-.seealso: PetscFree(), PetscMalloc()
+.seealso: PetscFree(), PetscMalloc(), PetscNewLog()
 
   Concepts: memory allocation
 
 M*/
 #define PetscNew(A,b)      (PetscMalloc(sizeof(A),(b)) || PetscMemzero(*(b),sizeof(A)))
+
+/*MC
+   PetscNewLog - Allocates memory of a particular type, zeros the memory! Aligned to PETSC_MEMALIGN. Associates the memory allocated 
+         with the given object using PetscLogObjectMemory().
+
+   Synopsis:
+   PetscErrorCode PetscNewLog(PetscObject obj,struct type,((type *))result)
+
+   Not Collective
+
+   Input Parameter:
++  obj - object memory is logged to
+-  type - structure name of space to be allocated. Memory of size sizeof(type) is allocated
+
+   Output Parameter:
+.  result - memory allocated
+
+   Level: developer
+
+.seealso: PetscFree(), PetscMalloc(), PetscNew(), PetscLogObjectMemory()
+
+  Concepts: memory allocation
+
+M*/
 #define PetscNewLog(o,A,b) (PetscNew(A,b) || ((o) ? PetscLogObjectMemory(o,sizeof(A)) : 0))
 
 /*MC

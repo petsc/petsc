@@ -146,7 +146,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
     }
   }
   if (!ksp->reason) {
-    if (ksp->normtype != KSP_NORM_NO) {
+    if (ksp->normtype != KSP_NORM_NONE) {
       if (ksp->normtype == KSP_NORM_UNPRECONDITIONED){
         ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);     /*   rnorm <- r'*r     */
       } else {
@@ -158,7 +158,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
       KSPMonitor(ksp,i,rnorm);
     }
     if (ksp->its >= ksp->max_it) {
-      if (ksp->normtype != KSP_NORM_NO) {
+      if (ksp->normtype != KSP_NORM_NONE) {
 	ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
 	if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
       } else { 
@@ -265,7 +265,7 @@ is described in
    Notes: For some preconditioners, currently SOR, the convergence test is skipped to improve speed,
     thus it always iterates the maximum number of iterations you've selected. When -ksp_monitor 
     (or any other monitor) is turned on, the norm is computed at each iteration and so the convergence test is run unless
-    you specifically call KSPSetNormType(ksp,KSP_NORM_NO);
+    you specifically call KSPSetNormType(ksp,KSP_NORM_NONE);
 
          For some preconditioners, currently PCMG and PCHYPRE with BoomerAMG if -ksp_monitor (and also
     any other monitor) is not turned on then the convergence test is done by the preconditioner itself and

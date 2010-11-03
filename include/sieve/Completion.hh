@@ -2,11 +2,11 @@
 #define included_ALE_Completion_hh
 
 #ifndef  included_ALE_Sections_hh
-#include <Sections.hh>
+#include <sieve/Sections.hh>
 #endif
 
 #ifndef  included_ALE_ParallelMapping_hh
-#include <ParallelMapping.hh>
+#include <sieve/ParallelMapping.hh>
 #endif
 
 #include <iostream>

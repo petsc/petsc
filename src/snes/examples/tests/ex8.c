@@ -52,9 +52,10 @@ int main(int argc, char **argv)
   SNES            snes;             /* nonlinear solver context */
   Mat             J;                /* Jacobian matrix */
   PetscInt        N;            /* Number of elements in vector */
-  PetscScalar     lb = -PETSC_VI_INF;;
+  PetscScalar     lb = -PETSC_VI_INF;
   PetscScalar     ub = PETSC_VI_INF;
   AppCtx          user;             /* user-defined work context */
+  PetscBool       flg;
 
   /* Initialize PETSc */
   PetscInitialize(&argc, &argv, (char *)0, help );
@@ -103,7 +104,8 @@ int main(int argc, char **argv)
   /* Solve the application */
   info = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(info);
 
-  info = VecView(x,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(info);
+  info = PetscOptionsHasName(PETSC_NULL,"-view_sol",&flg);CHKERRQ(info);
+  if (flg) { info = VecView(x,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(info); }
 
   /* Free memory */
   info = VecDestroy(x); CHKERRQ(info);

@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
 
   /* Create a DMDA and an associated vector */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,100,90,PETSC_DECIDE,PETSC_DECIDE,2,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,100,90,PETSC_DECIDE,PETSC_DECIDE,2,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
   ierr = VecSet(global,-1.0);CHKERRQ(ierr);
@@ -49,7 +49,8 @@ int main(int argc,char **argv)
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"hdf5output",FILE_MODE_WRITE,&viewer); CHKERRQ(ierr);
   ierr = VecView(global,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  
+  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+
   ierr = VecDuplicate(global,&global2);CHKERRQ(ierr);
   ierr = VecCopy(global,global2);CHKERRQ(ierr);
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"hdf5output",FILE_MODE_READ,&viewer); CHKERRQ(ierr);

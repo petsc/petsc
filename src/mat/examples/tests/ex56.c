@@ -76,7 +76,7 @@ int main(int argc,char **args)
     col[0] = rstart*bs+0;
     col[1] = rstart*bs+1;
     col[2] = rstart*bs+2;
-    ierr = MatZeroRows(A,3,col,one);CHKERRQ(ierr);
+    ierr = MatZeroRows(A,3,col,one,0,0);CHKERRQ(ierr);
   }
 
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

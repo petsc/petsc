@@ -11,7 +11,7 @@ viewer = PetscViewer();
 viewer.SetType('ascii');
 %%
 %   Create a vector and put values in it
-b = Vec();
+b = PetscVec();
 b.SetType('seq');
 b.SetSizes(10,10);
 b.SetValues(1:10);
@@ -22,20 +22,20 @@ b.View(viewer);
 x = b.Duplicate();
 %%
 %  Create a matrix and put some values in it
-mat = Mat();
+mat = PetscMat();
 mat.SetType('seqaij');
 mat.SetSizes(10,10,10,10);
 for i=0:9
   mat.SetValues(i,i,10.0);
 end
-mat.AssemblyBegin(Mat.FINAL_ASSEMBLY);
-mat.AssemblyEnd(Mat.FINAL_ASSEMBLY);
+mat.AssemblyBegin(PetscMat.FINAL_ASSEMBLY);
+mat.AssemblyEnd(PetscMat.FINAL_ASSEMBLY);
 mat.View(viewer);
 %%
 %   Create the linear solver, tell it the matrix to use and solve the system
-ksp = KSP();
+ksp = PetscKSP();
 ksp.SetType('gmres');
-ksp.SetOperators(mat,mat,Mat.SAME_NONZERO_PATTERN);
+ksp.SetOperators(mat,mat,PetscMat.SAME_NONZERO_PATTERN);
 ksp.SetFromOptions();
 ksp.Solve(b,x);
 x.View(viewer);

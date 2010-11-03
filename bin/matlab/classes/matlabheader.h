@@ -33,6 +33,7 @@ int VecCreate(MPI_Comm,Vec *);
 int VecSetType(Vec,const char*);
 int VecSetFromOptions(Vec);
 int VecSetSizes(Vec,int,int);
+int VecSet(Vec,double);
 int VecGetLocalSize(Vec,int*);
 int VecSetValues(Vec,int,int*,double*,InsertMode);
 int VecGetValues(Vec,int,int*,double*);
@@ -102,13 +103,13 @@ int SNESDestroy(SNES);
 typedef PetscPointer TS;
 int TSCreate(MPI_Comm,TS *);
 int TSSetType(TS,const char*);
+int TSSetProblemType(TS,int);
 int TSSetDM(TS,DM);
 int TSSetFromOptions(TS);
 int TSSolve(TS,Vec);
 int TSSetUp(TS);
 int TSView(TS,PetscViewer);
 int TSDestroy(TS);
-/*
-int TSSetIFunctionMatlab(TS,const char*,mxArray*);
-int TSSetIJacobianMatlab(TS,Mat,Mat,const char*,mxArray*);
-*/
+int TSSetFunctionMatlab(TS,const char*,mxArray*);
+int TSSetJacobianMatlab(TS,Mat,Mat,const char*,mxArray*);
+int TSMonitorSetMatlab(TS,const char*,mxArray*);

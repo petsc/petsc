@@ -2172,16 +2172,29 @@ static PetscErrorCode MatZeroRows_SeqBAIJ_Check_Blocks(PetscInt idx[],PetscInt n
   
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_SeqBAIJ"
-PetscErrorCode MatZeroRows_SeqBAIJ(Mat A,PetscInt is_n,const PetscInt is_idx[],PetscScalar diag)
+PetscErrorCode MatZeroRows_SeqBAIJ(Mat A,PetscInt is_n,const PetscInt is_idx[],PetscScalar diag,Vec x, Vec b)
 {
-  Mat_SeqBAIJ    *baij=(Mat_SeqBAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       i,j,k,count,*rows;
-  PetscInt       bs=A->rmap->bs,bs2=baij->bs2,*sizes,row,bs_max;
-  PetscScalar    zero = 0.0;
-  MatScalar      *aa;
+  Mat_SeqBAIJ       *baij=(Mat_SeqBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  PetscInt          i,j,k,count,*rows;
+  PetscInt          bs=A->rmap->bs,bs2=baij->bs2,*sizes,row,bs_max;
+  PetscScalar       zero = 0.0;
+  MatScalar         *aa;
+  const PetscScalar *xx;
+  PetscScalar       *bb;
 
   PetscFunctionBegin;
+  /* fix right hand side if needed */
+  if (x && b) {
+    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
+    for (i=0; i<is_n; i++) {
+      bb[is_idx[i]] = diag*xx[is_idx[i]];
+    }
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+  }
+
   /* Make a copy of the IS and  sort it */
   /* allocate memory for rows,sizes */
   ierr  = PetscMalloc2(is_n,PetscInt,&rows,2*is_n,PetscInt,&sizes);CHKERRQ(ierr);
@@ -2189,6 +2202,7 @@ PetscErrorCode MatZeroRows_SeqBAIJ(Mat A,PetscInt is_n,const PetscInt is_idx[],P
   /* copy IS values to rows, and sort them */
   for (i=0; i<is_n; i++) { rows[i] = is_idx[i]; }
   ierr = PetscSortInt(is_n,rows);CHKERRQ(ierr);
+
   if (baij->keepnonzeropattern) {
     for (i=0; i<is_n; i++) { sizes[i] = 1; }
     bs_max = is_n;
@@ -2232,6 +2246,74 @@ PetscErrorCode MatZeroRows_SeqBAIJ(Mat A,PetscInt is_n,const PetscInt is_idx[],P
   }
 
   ierr = PetscFree2(rows,sizes);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd_SeqBAIJ(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatZeroRowsColumns_SeqBAIJ"
+PetscErrorCode MatZeroRowsColumns_SeqBAIJ(Mat A,PetscInt is_n,const PetscInt is_idx[],PetscScalar diag,Vec x, Vec b)
+{
+  Mat_SeqBAIJ       *baij=(Mat_SeqBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  PetscInt          i,j,k,count;
+  PetscInt          bs=A->rmap->bs,bs2=baij->bs2,row,col;
+  PetscScalar       zero = 0.0;
+  MatScalar         *aa;
+  const PetscScalar *xx;
+  PetscScalar       *bb;
+  PetscBool         *zeroed,vecs = PETSC_FALSE;
+
+  PetscFunctionBegin;
+  /* fix right hand side if needed */
+  if (x && b) {
+    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
+    vecs = PETSC_TRUE;
+  }
+  A->same_nonzero = PETSC_TRUE;
+
+  /* zero the columns */
+  ierr = PetscMalloc(A->rmap->n*sizeof(PetscBool),&zeroed);CHKERRQ(ierr);
+  ierr = PetscMemzero(zeroed,A->rmap->n*sizeof(PetscBool));CHKERRQ(ierr);
+  for (i=0; i<is_n; i++) {
+    if (is_idx[i] < 0 || is_idx[i] >= A->rmap->N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"row %D out of range",is_idx[i]);
+    zeroed[is_idx[i]] = PETSC_TRUE;
+  }
+  for (i=0; i<A->rmap->N; i++) {
+    if (!zeroed[i]) {
+      row = i/bs;
+      for (j=baij->i[row]; j<baij->i[row+1]; j++) {
+        for (k=0; k<bs; k++) {
+          col = bs*baij->j[j] + k;
+	  if (zeroed[col]) {
+	    aa = ((MatScalar*)(baij->a)) + j*bs2 + (i%bs) + bs*k;
+            if (vecs) bb[i] -= aa[0]*xx[col];
+            aa[0] = 0.0;
+          }
+        }
+      }
+    } else if (vecs) bb[i] = diag*xx[i];
+  }
+  ierr = PetscFree(zeroed);CHKERRQ(ierr);
+  if (vecs) {
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+  }
+
+  /* zero the rows */
+  for (i=0; i<is_n; i++) {
+    row   = is_idx[i];
+    count = (baij->i[row/bs +1] - baij->i[row/bs])*bs;
+    aa    = ((MatScalar*)(baij->a)) + baij->i[row/bs]*bs2 + (row%bs);
+    for (k=0; k<count; k++) { 
+      aa[0] =  zero; 
+      aa    += bs;
+    }
+    if (diag != 0.0) {
+      ierr = (*A->ops->setvalues)(A,1,&row,1,&row,&diag,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
   ierr = MatAssemblyEnd_SeqBAIJ(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2887,7 +2969,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        MatScale_SeqBAIJ,
        0,
        0,
-       0,
+       MatZeroRowsColumns_SeqBAIJ,
 /*49*/ MatSetBlockSize_SeqBAIJ,
        MatGetRowIJ_SeqBAIJ,
        MatRestoreRowIJ_SeqBAIJ,

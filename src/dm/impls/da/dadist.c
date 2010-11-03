@@ -7,6 +7,20 @@
 #include "private/daimpl.h"    /*I   "petscdm.h"   I*/
 
 #undef __FUNCT__  
+#define __FUNCT__ "VecDuplicate_MPI_DA"
+PetscErrorCode PETSCDM_DLLEXPORT VecDuplicate_MPI_DA(Vec g,Vec* gg)
+{
+  PetscErrorCode ierr;
+  DM             da;
+
+  PetscFunctionBegin; 
+  ierr = PetscObjectQuery((PetscObject)g,"DMDA",(PetscObject*)&da);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,gg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMCreateGlobalVector_DA"
 PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_DA(DM da,Vec* g)
 {
@@ -25,6 +39,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_DA(DM da,Vec* g)
   ierr = VecSetBlockSize(*g,dd->w);CHKERRQ(ierr);
   ierr = VecSetOperation(*g,VECOP_VIEW,(void(*)(void))VecView_MPI_DA);CHKERRQ(ierr);
   ierr = VecSetOperation(*g,VECOP_LOAD,(void(*)(void))VecLoad_Default_DA);CHKERRQ(ierr);
+  ierr = VecSetOperation(*g,VECOP_DUPLICATE,(void(*)(void))VecDuplicate_MPI_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

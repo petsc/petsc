@@ -1,6 +1,6 @@
-classdef IS < PetscObject
+classdef PetscIS < PetscObject
   methods
-    function obj = IS()
+    function obj = PetscIS()
       [err,obj.pobj] = calllib('libpetsc', 'ISCreate', 0,0);
     end
     function err = SetType(obj,name)

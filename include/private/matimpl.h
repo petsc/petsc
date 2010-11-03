@@ -45,7 +45,7 @@ struct _MatOps {
   PetscErrorCode (*setoption)(Mat,MatOption,PetscBool );
   PetscErrorCode (*zeroentries)(Mat);
   /*24*/
-  PetscErrorCode (*zerorows)(Mat,PetscInt,const PetscInt[],PetscScalar);
+  PetscErrorCode (*zerorows)(Mat,PetscInt,const PetscInt[],PetscScalar,Vec,Vec);
   PetscErrorCode (*lufactorsymbolic)(Mat,Mat,IS,IS,const MatFactorInfo*);
   PetscErrorCode (*lufactornumeric)(Mat,Mat,const MatFactorInfo*);
   PetscErrorCode (*choleskyfactorsymbolic)(Mat,Mat,IS,const MatFactorInfo*);
@@ -97,7 +97,7 @@ struct _MatOps {
   PetscErrorCode (*unscalesystem)(Mat,Vec,Vec);
   PetscErrorCode (*setlocaltoglobalmapping)(Mat,ISLocalToGlobalMapping);
   PetscErrorCode (*setvalueslocal)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
-  PetscErrorCode (*zerorowslocal)(Mat,PetscInt,const PetscInt[],PetscScalar);
+  PetscErrorCode (*zerorowslocal)(Mat,PetscInt,const PetscInt[],PetscScalar,Vec,Vec);
   /*69*/
   PetscErrorCode (*getrowmaxabs)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*getrowminabs)(Mat,Vec,PetscInt[]);

@@ -2,11 +2,11 @@
 #define included_ALE_INumbering_hh
 
 #ifndef  included_ALE_IField_hh
-#include <IField.hh>
+#include <sieve/IField.hh>
 #endif
 
 #ifndef  included_ALE_Completion_hh
-#include <Completion.hh>
+#include <sieve/Completion.hh>
 #endif
 
 namespace ALE {

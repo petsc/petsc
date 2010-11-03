@@ -8,7 +8,7 @@ PetscInitialize({'-malloc_dump','-snes_monitor','-snes_mf_operator','-ksp_monito
 viewer = PetscViewer();
 viewer.SetType('ascii');
 
-vec = Vec();
+vec = PetscVec();
 vec.SetType('seq');
 vec.SetSizes(10,10);
 vec.SetValues(1:10);
@@ -29,25 +29,25 @@ vec.View(viewer);
 vec.Destroy();
 
 % You can directly create a PETSc Vec with a Matlab array
-vec = Vec([2 3.1 4.5]);
+vec = PetscVec([2 3.1 4.5]);
 vec.View(viewer);
 vec.Destroy();
 
-is = ISCreateGeneral([1 2 5]);
+is = PetscISCreateGeneral([1 2 5]);
 is.View(viewer);
 is.Destroy();
 
-mat = Mat();
+mat = PetscMat();
 mat.SetType('seqaij');
 mat.SetSizes(10,10,10,10);
 for i=0:9
   mat.SetValues(i,i,10.0);
 end
-mat.AssemblyBegin(Mat.FINAL_ASSEMBLY);
-mat.AssemblyEnd(Mat.FINAL_ASSEMBLY);
+mat.AssemblyBegin(PetscMat.FINAL_ASSEMBLY);
+mat.AssemblyEnd(PetscMat.FINAL_ASSEMBLY);
 mat.View(viewer);
 
-b = Vec();
+b = PetscVec();
 b.SetType('seq');
 b.SetSizes(10,10);
 b.SetValues(1:10);
@@ -58,16 +58,16 @@ x = b.Duplicate();
 
 b.Copy(x);
 
-ksp = KSP();
+ksp = PetscKSP();
 ksp.SetType('gmres');
-ksp.SetOperators(mat,mat,Mat.SAME_NONZERO_PATTERN);
+ksp.SetOperators(mat,mat,PetscMat.SAME_NONZERO_PATTERN);
 ksp.Solve(b,x);
 x.View(viewer);
 ksp.View(viewer);
 ksp.Destroy();
 
 arg = [1 2 4];
-snes = SNES();
+snes = PetscSNES();
 snes.SetType('ls');
 snes.SetFunction(b,'nlfunction',arg);
 snes.SetJacobian(mat,mat,'nljacobian',arg);
@@ -81,17 +81,17 @@ mat.Destroy();
 b.Destroy();
 x.Destroy();
 
-da = DMDACreate1d(DM.NONPERIODIC,10,1,1);
+da = PetscDMDACreate1d(PetscDM.NONPERIODIC,10,1,1);
 da.View(viewer);
 
-ksp = KSP();
+ksp = PetscKSP();
 ksp.SetDM(da);
 ksp.Destroy();
 da.Destroy();
 
 viewer.Destroy();
 
-ts = TS();
+ts = PetscTS();
 ts.SetFromOptions();
 ts.Destroy();
 

@@ -104,7 +104,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
     } else if (ksp->normtype == KSP_NORM_NATURAL) {
       ierr = VecDotEnd(RT,ART,&btop);CHKERRQ(ierr);
       dp = sqrt(PetscAbsScalar(btop));                  /* dp = sqrt(R,AR)       */
-    } else if (ksp->normtype == KSP_NORM_NO) {
+    } else if (ksp->normtype == KSP_NORM_NONE) {
       ierr = VecDotEnd(RT,ART,&btop);CHKERRQ(ierr);
       dp = 0.0; 
     } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {

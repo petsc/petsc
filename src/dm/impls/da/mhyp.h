@@ -61,6 +61,9 @@ EXTERN PetscErrorCode VecHYPRE_IJVectorCreate(Vec,HYPRE_IJVector*);
    Developer Note: this is so that when a hypre routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 
 */
-#define PetscStackCallHypre(name,routine) PetscStackPush(name);ierr = routine;if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in %s()",name);PetscStackPop;
+#define PetscStackCallHypre(name,func,args) do {                        \
+    const char *_fname = name ? name : #func;                           \
+    PetscStackPush(_fname);ierr = func args;if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in %s()",_fname);PetscStackPop; \
+  } while (0)
 
 #endif

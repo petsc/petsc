@@ -98,7 +98,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPView(KSP ksp,PetscViewer viewer)
    Input Parameter:
 +  ksp - Krylov solver context
 -  normtype - one of 
-$   KSP_NORM_NO - skips computing the norm, this should only be used if you are using
+$   KSP_NORM_NONE - skips computing the norm, this should only be used if you are using
 $                 the Krylov method as a smoother with a fixed small number of iterations.
 $                 Implicitly sets KSPSkipConverged as KSP convergence test.
 $                 Supported only by CG, Richardson, Bi-CG-stab, CR, and CGS methods.
@@ -130,7 +130,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP ksp,KSPNormType normtype)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveEnum(ksp,normtype,2);
   ksp->normtype = normtype;
-  if (normtype == KSP_NORM_NO) {
+  if (normtype == KSP_NORM_NONE) {
     ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,0,0);CHKERRQ(ierr);
     ierr = PetscInfo(ksp,"Warning: setting KSPNormType to skip computing the norm\n\
  KSP convergence test is implicitly set to KSPSkipConverged\n");CHKERRQ(ierr);
@@ -153,7 +153,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP ksp,KSPNormType normtype)
    Notes: 
    Currently only works with KSPCG, KSPBCGS and KSPIBCGS
 
-   Use KSPSetNormType(ksp,KSP_NORM_NO) to never check the norm
+   Use KSPSetNormType(ksp,KSP_NORM_NONE) to never check the norm
 
    On steps where the norm is not computed, the previous norm is still in the variable, so if you run with, for example,
     -ksp_monitor the residual norm will appear to be unchanged for several iterations (though it is not really unchanged).
@@ -192,7 +192,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetCheckNormIteration(KSP ksp,PetscInt it)
    Notes: 
    Currently only works with KSPIBCGS.
 
-   Use KSPSetNormType(ksp,KSP_NORM_NO) to never check the norm
+   Use KSPSetNormType(ksp,KSP_NORM_NONE) to never check the norm
 
    If you lag the norm and run with, for example, -ksp_monitor, the residual norm reported will be the lagged one.
    Level: advanced

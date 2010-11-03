@@ -79,7 +79,7 @@ int main(int argc,char **argv)
   AppCtx         *user;               /* user-defined work context */
   Parameter      *param;
   GridInfo       grid;
-  int            ierr,result;
+  int            ierr,result = 0;
   MPI_Comm       comm;
   DM             da;
 
@@ -252,7 +252,7 @@ int Initialize(DMMG *dmmg)
   ierr = PetscBagGetData(user->bag,(void**)&param);CHKERRQ(ierr);
   sigma=param->sigma; xc=param->xctr; zc=param->zctr;
 
-  /* Get the DMDA and grid */
+  /* Get the DM and grid */
   da = (dmmg[0]->dm); 
   ierr = DMDAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);

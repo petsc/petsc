@@ -1626,7 +1626,7 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
     ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
   }
   if (A != PETSC_NULL) {
-    ierr = MatZeroRows(A,nbcs,bc_global_ids,1.0);CHKERRQ(ierr);
+    ierr = MatZeroRows(A,nbcs,bc_global_ids,1.0,0,0);CHKERRQ(ierr);
   }
 
 
@@ -1698,7 +1698,7 @@ static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
     ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
   }
   if (A != PETSC_NULL) {
-    ierr = MatZeroRows(A,nbcs,bc_global_ids,1.0);CHKERRQ(ierr);
+    ierr = MatZeroRows(A,nbcs,bc_global_ids,1.0,0,0);CHKERRQ(ierr);
   }
 
 
@@ -1770,7 +1770,7 @@ static PetscErrorCode BCApply_NORTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
     ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
   }
   if (A != PETSC_NULL) {
-    ierr = MatZeroRows(A,nbcs,bc_global_ids,1.0);CHKERRQ(ierr);
+    ierr = MatZeroRows(A,nbcs,bc_global_ids,1.0,0,0);CHKERRQ(ierr);
   }
 
 
@@ -1843,7 +1843,7 @@ static PetscErrorCode BCApply_SOUTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
     ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
   }
   if (A != PETSC_NULL) {
-    ierr = MatZeroRows(A,nbcs,bc_global_ids,1.0);CHKERRQ(ierr);
+    ierr = MatZeroRows(A,nbcs,bc_global_ids,1.0,0,0);CHKERRQ(ierr);
   }
 
 

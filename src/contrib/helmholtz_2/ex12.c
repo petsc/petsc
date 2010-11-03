@@ -234,7 +234,7 @@ int main(int argc,char **args)
   }
 
   /* Note: Although the ghost width overlap is 0 for this problem, we need to
-     create a DMDA with width 1, so that each processor generates the local-to-global
+     create a DM with width 1, so that each processor generates the local-to-global
      mapping for its neighbors in the north/south/east/west (needed for
      matrix assembly for the 5-point, 2D finite difference stencil). This
      mapping is needed when we determine the global column numbers for
@@ -814,7 +814,7 @@ int ModifySubmatrices1(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
        the communicator PETSC_COMM_SELF.
     */
     ierr = ISCreateGeneral(PETSC_COMM_SELF,1,&m,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-    ierr = MatZeroRowsIS(submat[i],is,&one);CHKERRQ(ierr);
+    ierr = MatZeroRowsIS(submat[i],is,&one,0,0);CHKERRQ(ierr);
     ierr = ISDestroy(is);CHKERRQ(ierr);
 
     /*

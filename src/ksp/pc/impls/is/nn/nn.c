@@ -356,10 +356,10 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
     ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
     /* "Zero out" rows of not-purely-Neumann subdomains */
     if (pcis->pure_neumann) {  /* does NOT zero the row; create an empty index set. The reason is that MatZeroRows() is collective. */
-      ierr = MatZeroRows(pcnn->coarse_mat,0,PETSC_NULL,one);CHKERRQ(ierr);
+      ierr = MatZeroRows(pcnn->coarse_mat,0,PETSC_NULL,one,0,0);CHKERRQ(ierr);
     } else { /* here it DOES zero the row, since it's not a floating subdomain. */
       PetscInt row = (PetscInt) rank;
-      ierr = MatZeroRows(pcnn->coarse_mat,1,&row,one);CHKERRQ(ierr);
+      ierr = MatZeroRows(pcnn->coarse_mat,1,&row,one,0,0);CHKERRQ(ierr);
     }
   }
 

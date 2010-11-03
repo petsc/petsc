@@ -1,8 +1,8 @@
-classdef SNES < PetscObject
+classdef PetscSNES < PetscObject
   methods
-    function obj = SNES(pid,flg)
+    function obj = PetscSNES(pid,flg)
       if (nargin > 1) 
-        %  SNES(pid,'pobj') uses an already existing PETSc SNES object
+        %  PetscSNES(pid,'pobj') uses an already existing PETSc SNES object
         obj.pobj = pid;
         return
       end

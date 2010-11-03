@@ -17,5 +17,7 @@
 #define ISGlobalToLocalMappingType PetscEnum
 #define ISColoringType PetscEnum
 
-
+#define ISGENERAL 'general'
+#define ISSTRIDE 'stride'
+#define ISBLOCK 'block'
 #endif

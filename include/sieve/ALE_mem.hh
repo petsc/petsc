@@ -10,7 +10,7 @@
 #include <cstdlib>
 #include <typeinfo>
 #include <petscsys.h>
-#include <ALE_log.hh>
+#include <sieve/ALE_log.hh>
 
 #ifdef ALE_HAVE_CXX_ABI
 #include <cxxabi.h>

@@ -1,3 +1,4 @@
+# -*- mode: makefile -*-
 #
 #  testexamples_X - Runs various PETSc test suites
 

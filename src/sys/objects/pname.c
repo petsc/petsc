@@ -108,6 +108,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectName(PetscObject obj)
     ierr = MPI_Attr_get(obj->comm,Petsc_Counter_keyval,(void*)&counter,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
     ierr = PetscMemcpy(&commp,&obj->comm,PetscMin(sizeof(commp),sizeof(obj->comm)));CHKERRQ(ierr);
+    ierr = MPI_Bcast(&commp,1,MPIU_SIZE_T,0,obj->comm);CHKERRQ(ierr);
     ierr = PetscSNPrintf(name,64,"%s_%p_%D",obj->class_name,commp,counter->namecount++);CHKERRQ(ierr);
     ierr = PetscStrallocpy(name,&obj->name);CHKERRQ(ierr);
   }

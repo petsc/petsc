@@ -272,7 +272,7 @@ int Initialize(DMMG *dmmg)
   sigma = param->sigma;
   xc = param->xctr; zc = param->zctr;
 
-  /* Get the DMDA and grid */
+  /* Get the DM and grid */
   da = DMMGGetDM(dmmg); 
   ierr = DMDAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);

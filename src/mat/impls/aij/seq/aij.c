@@ -1403,14 +1403,27 @@ PetscErrorCode MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_SeqAIJ"
-PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag)
+PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscInt       i,m = A->rmap->n - 1,d = 0;
-  PetscErrorCode ierr;
-  PetscBool      missing;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  PetscInt          i,m = A->rmap->n - 1,d = 0;
+  PetscErrorCode    ierr;
+  const PetscScalar *xx;
+  PetscScalar       *bb;
+  PetscBool         missing;
 
   PetscFunctionBegin;
+  if (x && b) {
+    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
+    for (i=0; i<N; i++) {
+      if (rows[i] < 0 || rows[i] > m) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"row %D out of range", rows[i]);
+      bb[rows[i]] = diag*xx[rows[i]];
+    }
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+  }
+
   if (a->keepnonzeropattern) {
     for (i=0; i<N; i++) {
       if (rows[i] < 0 || rows[i] > m) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"row %D out of range", rows[i]);
@@ -1455,7 +1468,7 @@ PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   PetscInt          i,j,m = A->rmap->n - 1,d = 0;
   PetscErrorCode    ierr;
-  PetscBool         missing,*zeroed;
+  PetscBool         missing,*zeroed,vecs = PETSC_FALSE;
   const PetscScalar *xx;
   PetscScalar       *bb;
 
@@ -1463,6 +1476,7 @@ PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],
   if (x && b) {
     ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
     ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
+    vecs = PETSC_TRUE;
   }
   ierr = PetscMalloc(A->rmap->n*sizeof(PetscBool),&zeroed);CHKERRQ(ierr);
   ierr = PetscMemzero(zeroed,A->rmap->n*sizeof(PetscBool));CHKERRQ(ierr);
@@ -1475,13 +1489,13 @@ PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],
     if (!zeroed[i]) {
       for (j=a->i[i]; j<a->i[i+1]; j++) {
         if (zeroed[a->j[j]]) {
-          bb[i] -= a->a[j]*xx[a->j[j]];
+          if (vecs) bb[i] -= a->a[j]*xx[a->j[j]];
           a->a[j] = 0.0;
         }          
       }
-    }
+    } else if (vecs) bb[i] = diag*xx[i];
   }
- if (x && b) {
+  if (x && b) {
     ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
     ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
   }
@@ -1820,7 +1834,7 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
   ierr = ISGetLocalSize(iscol,&ncols);CHKERRQ(ierr);
 
   ierr = ISStrideGetInfo(iscol,&first,&step);CHKERRQ(ierr);
-  ierr = ISStride(iscol,&stride);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)iscol,ISSTRIDE,&stride);CHKERRQ(ierr);
   if (stride && step == 1) { 
     /* special case of contiguous rows */
     ierr = PetscMalloc2(nrows,PetscInt,&lens,nrows,PetscInt,&starts);CHKERRQ(ierr);

@@ -57,7 +57,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newt
   bi[0] = 0; rowstart[0] = 0;
   for (i=0; i<mbs; i++){
     for (j=0; j<bs; j++){
-      b->ilen[i*bs+j]  = rowlengths[i*bs];
+      b->ilen[i*bs+j]    = rowlengths[i*bs];
       rowstart[i*bs+j+1] = rowstart[i*bs+j] + rowlengths[i*bs];
     }
     bi[i+1]     = bi[i] + rowlengths[i*bs]/bs; 
@@ -88,7 +88,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newt
         itmp = (*aj)*bs+j;
         for (k=0; k<bs; k++){ /* col i*bs+k */
           *(bj + rowstart[itmp]) = i*bs+k;
-          *(bv + rowstart[itmp]) = *(av+k*bs+j); 
+          *(bv + rowstart[itmp]) = *(av+j*bs+k); 
           rowstart[itmp]++;
         }
       }

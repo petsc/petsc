@@ -16,6 +16,8 @@
 */
 #include "private/tsimpl.h"                /*I   "petscts.h"   I*/
 
+typedef PetscErrorCode (*TSAlphaAcceptFunction)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*);
+
 typedef struct {
   Vec X0,Xa,X1;
   Vec V0,Va,V1;
@@ -25,7 +27,7 @@ typedef struct {
   PetscReal Gamma;
   PetscReal stage_time;
   PetscReal shift;
-  PetscErrorCode (*accept)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*);
+  TSAlphaAcceptFunction accept;
   void *acceptctx;
 } TS_Alpha;
 
@@ -34,7 +36,6 @@ typedef struct {
 static PetscErrorCode TSStep_Alpha(TS ts,PetscInt *steps,PetscReal *ptime)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
-  PetscBool      stepok;
   PetscInt       i,its,lits;
   PetscErrorCode ierr;
 
@@ -45,6 +46,7 @@ static PetscErrorCode TSStep_Alpha(TS ts,PetscInt *steps,PetscReal *ptime)
   ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
 
   for (i=0; i<ts->max_steps; i++) {
+    PetscBool stepok = PETSC_TRUE;
     PetscReal nextdt = ts->time_step;
     if (ts->ptime + ts->time_step > ts->max_time) break;
     ierr = TSPreStep(ts);CHKERRQ(ierr);
@@ -64,12 +66,14 @@ static PetscErrorCode TSStep_Alpha(TS ts,PetscInt *steps,PetscReal *ptime)
       /* V1 = (1-1/Gamma)*V0 + 1/(Gamma*dT)*(X1-X0) */
       ierr = VecWAXPY(th->V1,-1,th->X0,th->X1);CHKERRQ(ierr);
       ierr = VecAXPBY(th->V1,1-1/th->Gamma,1/(th->Gamma*ts->time_step),th->V0);CHKERRQ(ierr);
-      /* accept */
-      stepok = PETSC_TRUE;
+      /* adapt time step */
       if (th->accept) {
-	ierr = th->accept(ts,ts->ptime+ts->time_step,th->X1,th->V1,&nextdt,&stepok,th->acceptctx);CHKERRQ(ierr);
-	ierr = PetscInfo4(ts,"Step %D (t=%G) %s, next dt=%G\n",ts->steps,th->stage_time,
-			  stepok?"accepted":"rejected",nextdt);CHKERRQ(ierr);
+        PetscReal t = ts->ptime+ts->time_step;
+        PetscReal dtmax = ts->max_time-t;
+        ierr = th->accept(ts,t,th->X1,th->V1,&nextdt,&stepok,th->acceptctx);CHKERRQ(ierr);
+        ierr = PetscInfo4(ts,"Step %D (t=%G) %s, next dt=%G\n",ts->steps,ts->ptime,
+                          stepok?"accepted":"rejected",nextdt);CHKERRQ(ierr);
+        if (dtmax > 0) nextdt = PetscMin(nextdt,dtmax);
       }
       if (stepok) break;
     }
@@ -105,6 +109,7 @@ static PetscErrorCode TSDestroy_Alpha(TS ts)
   if (th->V0) {ierr = VecDestroy(th->V0);CHKERRQ(ierr);}
   if (th->Va) {ierr = VecDestroy(th->Va);CHKERRQ(ierr);}
   if (th->V1) {ierr = VecDestroy(th->V1);CHKERRQ(ierr);}
+  if (th->R)  {ierr = VecDestroy(th->R);CHKERRQ(ierr);}
   ierr = PetscFree(th);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -268,7 +273,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSAlphaGetParams_Alpha(TS ts,PetscReal *alpha_m
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAlphaSetAccept_Alpha"
-PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAccept_Alpha(TS ts,PetscErrorCode(*accept)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*),void *ctx)
+PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAccept_Alpha(TS ts,TSAlphaAcceptFunction accept,void *ctx)
 {
   TS_Alpha *th = (TS_Alpha*)ts->data;
 
@@ -344,14 +349,13 @@ EXTERN_C_END
 
    Calling sequence of accept:
 $    accept (TS ts,PetscReal t,Vec X,Vec Xdot,
-$            PetscBool *accepted,PetscReal *next_dt,void *ctx);
+$            PetscReal *next_dt,PetscBool *accepted,void *ctx);
 
-  Level: Intermediate
+  Level: intermediate
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAccept(TS ts,PetscErrorCode(*accept)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*),void *ctx)
+PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAccept(TS ts,TSAlphaAcceptFunction accept,void *ctx)
 {
-  typedef PetscErrorCode (*TSAlphaAcceptFunction)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*);
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -381,7 +385,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAccept(TS ts,PetscErrorCode(*accept)(
   Options Database:
 .  -ts_alpha_radius <radius>
 
-  Level: Intermediate
+  Level: intermediate
 
 .seealso: TSAlphaSetParams(), TSAlphaGetParams()
 @*/
@@ -430,7 +434,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetRadius(TS ts,PetscReal radius)
   (i.e. high-frequency damping) in order so select optimal values for
   these parameters.
 
-  Level: Advance
+  Level: advanced
 
 .seealso: TSAlphaSetRadius(), TSAlphaGetParams()
 @*/
@@ -464,7 +468,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetParams(TS ts,PetscReal alpha_m,PetscR
   radius of the method) in order so select optimal values for these
   parameters.
 
-  Level: Advanced
+  Level: advanced
 
 .seealso: TSAlphaSetRadius(), TSAlphaSetParams()
 @*/

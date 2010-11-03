@@ -341,20 +341,22 @@ PetscErrorCode MatZeroEntries_MPIDense(Mat A)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIDense"
-PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag)
+PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
-  Mat_MPIDense   *l = (Mat_MPIDense*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       i,*owners = A->rmap->range;
-  PetscInt       *nprocs,j,idx,nsends;
-  PetscInt       nmax,*svalues,*starts,*owner,nrecvs;
-  PetscInt       *rvalues,tag = ((PetscObject)A)->tag,count,base,slen,*source;
-  PetscInt       *lens,*lrows,*values;
-  PetscMPIInt    n,imdex,rank = l->rank,size = l->size;
-  MPI_Comm       comm = ((PetscObject)A)->comm;
-  MPI_Request    *send_waits,*recv_waits;
-  MPI_Status     recv_status,*send_status;
-  PetscBool      found;
+  Mat_MPIDense      *l = (Mat_MPIDense*)A->data;
+  PetscErrorCode    ierr;
+  PetscInt          i,*owners = A->rmap->range;
+  PetscInt          *nprocs,j,idx,nsends;
+  PetscInt          nmax,*svalues,*starts,*owner,nrecvs;
+  PetscInt          *rvalues,tag = ((PetscObject)A)->tag,count,base,slen,*source;
+  PetscInt          *lens,*lrows,*values;
+  PetscMPIInt       n,imdex,rank = l->rank,size = l->size;
+  MPI_Comm          comm = ((PetscObject)A)->comm;
+  MPI_Request       *send_waits,*recv_waits;
+  MPI_Status        recv_status,*send_status;
+  PetscBool         found;
+  const PetscScalar *xx;
+  PetscScalar       *bb;
 
   PetscFunctionBegin;
   /*  first count number of contributors to each processor */
@@ -437,8 +439,19 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
   ierr = PetscFree(owner);CHKERRQ(ierr);
   ierr = PetscFree(nprocs);CHKERRQ(ierr);
     
+  /* fix right hand side if needed */
+  if (x && b) {
+    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
+    for (i=0; i<slen; i++) {
+      bb[lrows[i]] = diag*xx[lrows[i]];
+    }
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+  }
+
   /* actually zap the local rows */
-  ierr = MatZeroRows(l->A,slen,lrows,diag);CHKERRQ(ierr);
+  ierr = MatZeroRows(l->A,slen,lrows,diag,0,0);CHKERRQ(ierr);
   ierr = PetscFree(lrows);CHKERRQ(ierr);
 
   /* wait on sends */

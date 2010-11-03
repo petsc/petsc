@@ -178,7 +178,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
   PetscErrorCode ierr;
   PetscBool      ir = PETSC_FALSE,ig = PETSC_FALSE;
   Mat            A;
-  MatStructure   stflg;
+  MatStructure   stflg = SAME_NONZERO_PATTERN;
 
   /* PetscBool      im = PETSC_FALSE; */
 

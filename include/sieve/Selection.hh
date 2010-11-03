@@ -2,11 +2,11 @@
 #define included_ALE_Selection_hh
 
 #ifndef  included_ALE_SieveAlgorithms_hh
-#include <SieveAlgorithms.hh>
+#include <sieve/SieveAlgorithms.hh>
 #endif
 
 #ifndef  included_ALE_SieveBuilder_hh
-#include <SieveBuilder.hh>
+#include <sieve/SieveBuilder.hh>
 #endif
 
 namespace ALE {
@@ -150,6 +150,8 @@ namespace ALE {
       if (cellDim == numCorners-1) {
         // Simplices
         posOrient = !(oppositeVertex%2);
+      } else if (cellDim == 1 && numCorners == 3) {
+	posOrient = true;
       } else if (cellDim == 2 && numCorners == 4) {
         // Quads
         if ((indices[1] > indices[0]) && (indices[1] - indices[0] == 1)) {

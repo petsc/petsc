@@ -243,25 +243,26 @@ PetscErrorCode MatSetValuesLocal_IS(Mat A,PetscInt m,const PetscInt *rows, Petsc
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_IS" 
-PetscErrorCode MatZeroRows_IS(Mat A,PetscInt n,const PetscInt rows[],PetscScalar diag)
+PetscErrorCode MatZeroRows_IS(Mat A,PetscInt n,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   Mat_IS         *is = (Mat_IS*)A->data;
   PetscInt       n_l=0, *rows_l = PETSC_NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (x && b) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"No support");
   if (n) {
     ierr = PetscMalloc(n*sizeof(PetscInt),&rows_l);CHKERRQ(ierr);
     ierr = ISGlobalToLocalMappingApply(is->mapping,IS_GTOLM_DROP,n,rows,&n_l,rows_l);CHKERRQ(ierr);
   }
-  ierr = MatZeroRowsLocal(A,n_l,rows_l,diag);CHKERRQ(ierr);
+  ierr = MatZeroRowsLocal(A,n_l,rows_l,diag,x,b);CHKERRQ(ierr);
   if (rows_l) { ierr = PetscFree(rows_l);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRowsLocal_IS" 
-PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscScalar diag)
+PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   Mat_IS         *is = (Mat_IS*)A->data;
   PetscErrorCode ierr;
@@ -269,6 +270,7 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscS
   PetscScalar    *array;
 
   PetscFunctionBegin;
+  if (x && b) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"No support");
   {
     /*
        Set up is->x as a "counting vector". This is in order to MatMult_IS
@@ -290,7 +292,7 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscS
   } else {
     is->pure_neumann = PETSC_FALSE;
     ierr = VecGetArray(is->x,&array);CHKERRQ(ierr);
-    ierr = MatZeroRows(is->A,n,rows,diag);CHKERRQ(ierr);
+    ierr = MatZeroRows(is->A,n,rows,diag,0,0);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       ierr = MatSetValue(is->A,rows[i],rows[i],diag/(array[rows[i]]),INSERT_VALUES);CHKERRQ(ierr);
     }

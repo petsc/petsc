@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    = pack.o
 OBJSF    =
 LIBBASE  = libpetscdm
-MANSEC   = DA
+MANSEC   = DM
 DIRS     = ftn-custom f90-custom
 LOCDIR   = src/dm/impls/composite/
 

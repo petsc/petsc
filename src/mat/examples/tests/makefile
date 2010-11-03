@@ -16,7 +16,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                    ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex98.c ex99.c ex100.c \
                    ex101.c ex102.c ex103.c ex104.c ex106.c ex107.c ex108.c ex109.c ex110.c\
                    ex111.c ex112.c ex113.c ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c ex120.c ex121.c ex122.c ex123.c \
-                   ex124.c ex129.c ex130.c ex131.c ex132.c ex133.c ex134.c ex135.c ex136.c ex137.c  ex138.c
+                   ex124.c ex129.c ex130.c ex131.c ex132.c ex133.c ex134.c ex135.c ex136.c ex137.c  ex138.c ex140.c
 EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex126f.F ex120f.F
 
 include ${PETSC_DIR}/conf/variables
@@ -527,6 +527,10 @@ ex137: ex137.o chkopts
 ex138: ex138.o chkopts
 	-${CLINKER} -o ex138 ex138.o ${PETSC_MAT_LIB}
 	${RM} ex138.o
+
+ex140: ex140.o chkopts
+	-${CLINKER} -o ex140 ex140.o ${PETSC_MAT_LIB}
+	${RM} ex140.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -1412,6 +1416,29 @@ runex137:
 	-@${MPIEXEC} -n 2 ./ex137  > ex137_1.tmp 2>&1; \
 	   ${DIFF} output/ex137_1.out ex137_1.tmp || echo "Possible problem with ex137, diffs above"; \
 	   ${RM} -f ex137_1.tmp
+runex140:
+	-@${MPIEXEC} -n 1 ./ex140 -f ${DATAFILESPATH}/matrices/small -aij
+	-@${MATLAB_COMMAND} -nodesktop -nojvm -nodisplay -r "ex140; exit"  > ex140_1.tmp 2>&1; \
+	   ${DIFF} output/ex140_1.out ex140_1.tmp || echo "Possible problem with ex140, diffs above"; \
+	   ${RM} -f ex140_1.tmp binaryoutput binaryoutput.info
+
+runex140_2:
+	-@${MPIEXEC} -n 1 ./ex140  -f ${DATAFILESPATH}/matrices/small -matload_block_size 2
+	-@${MATLAB_COMMAND} -nodesktop -nojvm -nodisplay -r "ex140; exit"  > ex140_2.tmp 2>&1; \
+	   ${DIFF} output/ex140_1.out ex140_2.tmp || echo "Possible problem with ex140_2, diffs above"; \
+	   ${RM} -f ex140_2.tmp binaryoutput binaryoutput.info
+
+runex140_3:
+	-@${MPIEXEC} -n 1 ./ex140  -f ${DATAFILESPATH}/matrices/small -matload_block_size 4 -sbaij
+	-@${MATLAB_COMMAND} -nodesktop -nojvm -nodisplay -r "ex140; exit"  > ex140_3.tmp 2>&1; \
+	   ${DIFF} output/ex140_1.out ex140_3.tmp || echo "Possible problem with ex140_3, diffs above"; \
+	   ${RM} -f ex140_3.tmp binaryoutput binaryoutput.info
+
+runex140_4:
+	-@${MPIEXEC} -n 3 ./ex140  -f ${DATAFILESPATH}/matrices/small  -aij
+	-@${MATLAB_COMMAND} -nodesktop -nojvm -nodisplay -r "ex140; exit"  > ex140_4.tmp 2>&1; \
+	   ${DIFF} output/ex140_1.out ex140_4.tmp || echo "Possible problem with ex140_4, diffs above"; \
+	   ${RM} -f ex140_4.tmp binaryoutput binaryoutput.info
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc \
@@ -1451,7 +1478,7 @@ TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex32.PETSc ex32.rm ex41.PETSc runex41 ex41.rm  ex50.PETSc ex50.rm
 TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex42.PETSc runex42 \
                                  ex42.rm  ex41.PETSc ex41.rm ex47.PETSc ex47.rm ex53.PETSc runex53 ex53.rm ex94.PETSc runex94 runex94_2 ex94.rm ex136.PETSc runex136 runex136_2 runex136_3 \
-                                 runex136_4 runex136_5 runex136_6 ex136.rm \
+                                 runex136_4 runex136_5 runex136_6 ex136.rm  ex140.PETSc runex140 runex140_2 runex140_3 runex140_4 ex140.rm \
                                  ex100.PETSc runex100 ex100.rm ex125.PETSc runex125 ex125.rm 
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm ex79f.PETSc runex79f ex79f.rm 
 TESTEXAMPLES_F90	       = ex16f90.PETSc runex16f90 ex16f90.rm 

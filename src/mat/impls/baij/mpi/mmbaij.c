@@ -203,6 +203,7 @@ PetscErrorCode DisAssemble_MPIBAIJ(Mat A)
   ierr = PetscLogObjectParent(A,Bnew);CHKERRQ(ierr);
   baij->B = Bnew;
   A->was_assembled = PETSC_FALSE;
+  A->assembled     = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

@@ -1,8 +1,12 @@
-classdef TS < PetscObject
+classdef PetscTS < PetscObject
+  properties (Constant)
+    LINEAR=0;
+    NONLINEAR=1;
+  end
   methods
-    function obj = TS(pid,flg)
+    function obj = PetscTS(pid,flg)
       if (nargin > 1) 
-        %  TS(pid,'pobj') uses an already existing PETSc TS object
+        %  PetscTS(pid,'pobj') uses an already existing PETSc TS object
         obj.pobj = pid;
         return
       end
@@ -10,6 +14,9 @@ classdef TS < PetscObject
     end
     function err = SetType(obj,name)
       err = calllib('libpetsc', 'TSSetType', obj.pobj,name);
+    end
+    function err = SetProblemType(obj,t)
+      err = calllib('libpetsc', 'TSSetProblemType', obj.pobj,t);
     end
     function err = SetDM(obj,da)
       err = calllib('libpetsc', 'TSSetDM', obj.pobj,da.pobj);
@@ -21,23 +28,25 @@ classdef TS < PetscObject
       err = calllib('libpetsc', 'TSSetUp', obj.pobj);
     end
     function err = Solve(obj,x)
-      if (nargin < 2) 
-        err = calllib('libpetsc', 'TSSolve', obj.pobj,0);
-      else
-        err = calllib('libpetsc', 'TSSolve', obj.pobj,x.pboj);
-      end
+      err = calllib('libpetsc', 'TSSolve', obj.pobj,x.pobj);
     end
-    function err = SetIFunction(obj,func,arg)
+    function err = SetFunction(obj,func,arg)
       if (nargin < 3) 
         arg = 0;
       end
-      err = calllib('libpetsc', 'TSSetIFunctionMatlab', obj.pobj,func,arg);
+      err = calllib('libpetsc', 'TSSetFunctionMatlab', obj.pobj,func,arg);
     end
-    function err = SetIJacobian(obj,A,B,func,arg)
+    function err = SetJacobian(obj,A,B,func,arg)
       if (nargin < 5) 
         arg = 0;
       end
-      err = calllib('libpetsc', 'TSSetIJacobianMatlab', obj.pobj,A.pobj,B.pobj,func,arg);
+      err = calllib('libpetsc', 'TSSetJacobianMatlab', obj.pobj,A.pobj,B.pobj,func,arg);
+    end
+    function err = MonitorSet(obj,func,arg)
+      if (nargin < 3) 
+        arg = 0;
+      end
+      err = calllib('libpetsc', 'TSMonitorSetMatlab', obj.pobj,func,arg);
     end
     function err = View(obj,viewer)
       err = calllib('libpetsc', 'TSView', obj.pobj,viewer.pobj);

@@ -16,9 +16,9 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char[]);
 
   Concepts: grids, grid refinement
 
-   Notes: The DMDA object and the Composite object are examples of DMs
+   Notes: The DMDACreate() based object and the DMCompositeCreate() based object are examples of DMs
 
-          Though the DMDA objects require the petscsnes.h include files the DM library is
+          Though the DM objects require the petscsnes.h include files the DM library is
     NOT dependent on the SNES or KSP library. In fact, the KSP and SNES libraries depend on
     DM. (This is not great design, but not trivial to fix).
 

@@ -28,20 +28,20 @@ struct _p_Characteristic {
   PetscBool    structured;      /* Flag for mesh type */
   PetscInt     numIds;          /* Number of integers necessary to identify a mesh element */
   /* Velocity interpolation structures */
-  DM           velocityDA;      /* DMDA for the velocity field */
+  DM           velocityDA;      /* DM for the velocity field */
   Vec          velocity;        /* Velocity field at t_n */
   Vec          velocityOld;     /* Velocity field at t_n-1 */
   PetscInt     numVelocityComp; /* Number of velocity components (should be the mesh dimension) */
-  PetscInt    *velocityComp;    /* Components of the velocity in the DMDA */
+  PetscInt    *velocityComp;    /* Components of the velocity in the DM */
   PetscErrorCode (*velocityInterp)(Vec, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *);
   PetscErrorCode (*velocityInterpLocal)(void *, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *);
   void        *velocityCtx;     /* User context for velocity inteprolation */
   /* Field interpolation structures */
-  DM           fieldDA;         /* DMDA for the field field */
+  DM           fieldDA;         /* DM for the field field */
   Vec          field;           /* Field field at t_n */
   Vec          fieldOld;        /* Field field at t_n-1 */
   PetscInt     numFieldComp;    /* Number of field components (should be the mesh dimension) */
-  PetscInt    *fieldComp;       /* Components of the field in the DMDA */
+  PetscInt    *fieldComp;       /* Components of the field in the DM */
   PetscErrorCode (*fieldInterp)(Vec, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *);
   PetscErrorCode (*fieldInterpLocal)(void *, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *);
   void        *fieldCtx;        /* User context for field inteprolation */

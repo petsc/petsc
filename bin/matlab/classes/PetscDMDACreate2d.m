@@ -1,5 +1,5 @@
-function [da,err] = DMDACreate2d(wrap,stentype,M,N,mm,nn,dof,s,lx,ly)
-  da = DM();
+function [da,err] = PetscDMDACreate2d(wrap,stentype,M,N,mm,nn,dof,s,lx,ly)
+  da = PetscDM();
   err = da.SetType('da'); 
   da.SetPeriodicity(wrap);
   da.SetSizes([M N 1]);

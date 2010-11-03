@@ -512,14 +512,26 @@ class Configure(config.base.Configure):
     self.popLanguage()
 
   def configureFunctionName(self):
-    '''Sees if the compiler supports __FUNCTION__ or a variant'''
-    self.pushLanguage(self.languages.clanguage)
-    if self.checkLink('', "if (__func__[0] != 'm') return 1;"):
-      self.addDefine('FUNCTION_NAME', '__func__')
-    elif self.checkLink('', "if (__FUNCTION__[0] != 'm') return 1;"):
-      self.addDefine('FUNCTION_NAME', '__FUNCTION__')
-    else:
-      self.addDefine('FUNCTION_NAME', '__FUNCT__')
+    '''Sees if the compiler supports __func__ or a variant.  Falls back
+    on __FUNCT__ which PETSc source defines, but most users do not, thus
+    stack traces through user code are better when the compiler's
+    variant is used.'''
+    def getFunctionName(lang):
+      name = '__FUNCT__'
+      self.pushLanguage(lang)
+      if self.checkLink('', "if (__func__[0] != 'm') return 1;"):
+        name = '__func__'
+      elif self.checkLink('', "if (__FUNCTION__[0] != 'm') return 1;"):
+        name = '__FUNCTION__'
+      self.popLanguage()
+      return name
+    langs = []
+    if self.languages.clanguage == 'C' or self.languages.cSupport:
+      langs.append('C')
+    if self.languages.clanguage == 'Cxx' or self.framework.argDB['with-c++-support'] or self.languages.packagesHaveCxx():
+      langs.append('Cxx')
+    for lang in langs:
+      self.addDefine('FUNCTION_NAME_'+lang.upper(), getFunctionName(lang))
 
   def configureIntptrt(self):
     '''Determine what to use for uintptr_t'''

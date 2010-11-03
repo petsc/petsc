@@ -2,7 +2,7 @@
 #define included_ALE_Ordering_hh
 
 #ifndef  included_ALE_Partitioner_hh
-#include <Partitioner.hh>
+#include <sieve/Partitioner.hh>
 #endif
 
 PetscErrorCode SPARSEPACKgenrcm(PetscInt *neqns,PetscInt *xadj,PetscInt *adjncy,PetscInt *perm,PetscInt *mask,PetscInt *xls);

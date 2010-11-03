@@ -112,24 +112,13 @@ def chkbrokencygwin():
       sys.exit(3)
   return 0
 
-def chkusingwindowspython():
-  if os.path.exists('/usr/bin/cygcheck.exe') and sys.platform != 'cygwin':
-    print '==============================================================================='
-    print ' *** Non-cygwin python detected. Please rerun ./configure **'
-    print ' *** with cygwin-python. ***'
-    print '==============================================================================='
-    sys.exit(3)
-  return 0
-
-def chkcygwinpythonver():
-  if os.path.exists('/usr/bin/cygcheck.exe'):
-    buf = os.popen('/usr/bin/cygcheck.exe -c python').read()
-    if (buf.find('2.4') > -1) or (buf.find('2.5') > -1) or (buf.find('2.6') > -1):
-      sys.argv.append('--useThreads=0')
-      extraLogs.append('''\
+def chkcygwinpython():
+  if os.path.exists('/usr/bin/cygcheck.exe') and sys.platform == 'cygwin' :
+    sys.argv.append('--useThreads=0')
+    extraLogs.append('''\
 ===============================================================================
-** Cygwin-python-2.4/2.5/2.6 detected. Threads do not work correctly with this
-** version. Disabling thread usage for this run of ./configure *******
+** Cygwin-python detected. Threads do not work correctly. ***
+** Disabling thread usage for this run of ./configure *******
 ===============================================================================''')
   return 0
 
@@ -241,10 +230,8 @@ def petsc_configure(configure_options):
   chkbrokencygwin()
   # Disable threads on RHL9
   chkrhl9()
-  # Make sure cygwin-python is used on windows
-  chkusingwindowspython()
-  # Threads don't work for cygwin & python-2.4, 2.5 etc..
-  chkcygwinpythonver()
+  # Threads don't work for cygwin & python...
+  chkcygwinpython()
   chkcygwinlink()
 
   # Should be run from the toplevel
@@ -340,7 +327,7 @@ def petsc_configure(configure_options):
       try:
         framework.log.write(msg+se)
         traceback.print_tb(sys.exc_info()[2], file = framework.log)
-        framework.log.close()
+        if hasattr(framework,'log'): framework.log.close()
         move_configure_log(framework)
       except:
         pass
@@ -349,6 +336,7 @@ def petsc_configure(configure_options):
     print se
     import traceback
     traceback.print_tb(sys.exc_info()[2])
+  if hasattr(framework,'log'): framework.log.close()
 
 if __name__ == '__main__':
   petsc_configure([])

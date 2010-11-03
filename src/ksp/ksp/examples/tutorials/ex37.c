@@ -1015,7 +1015,7 @@ PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J, Mat jac)
       }
     }
     ierr = PetscSynchronizedFlush(comm);
-    ierr = MatZeroRows(jac, numBoundaryIndices, boundaryIndices, 1.0);CHKERRQ(ierr);
+    ierr = MatZeroRows(jac, numBoundaryIndices, boundaryIndices, 1.0,0,0);CHKERRQ(ierr);
     ierr = PetscFree(boundaryIndices);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

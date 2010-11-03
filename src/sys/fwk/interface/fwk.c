@@ -236,7 +236,7 @@ PetscErrorCode PetscFwkGraphTopologicalSort(PetscFwkGraph graph, PetscInt *n, Pe
              with the jj in place of ii, but we use a simple-minded algorithm instead, since the graphs
              we anticipate encountering are tiny. 
           */
-        }/*for(k)*/
+        }/* for(k) */
       }/* if(!queued) */
     }/* for(ii) */
     /* If no progress was made during this iteration, the graph must have a cycle */
@@ -309,92 +309,7 @@ typedef PetscErrorCode (*PetscFwkCallFunction)(PetscFwk, const char*);
 typedef PetscErrorCode (*PetscFwkMessageFunction)(PetscFwk);
 typedef void (*QueryFunction)(void);
 
-/* 
-   Had to essentially duplicate a bunch of code from dl.c to override PetscDLLibrarySym,
-   because it fails when it can't find a symbol.
-   Not so cool, because we want to try two different symbols.
-   Maybe PetscDLLibrarySym can be fixed instead.
-*/
-#include "../src/sys/dll/dlimpl.h"
-struct _n_PetscDLLibrary {
-  PetscDLLibrary next;
-  PetscDLHandle  handle;
-  char           libname[PETSC_MAX_PATH_LEN];
-};
 static PetscDLLibrary PetscFwkDLLibrariesLoaded = 0;
-
-#undef  __FUNCT__
-#define __FUNCT__ "PetscFwkDLLibrarySym"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const char path[],const char symbol[],void **value)
-{
-  char           libname[PETSC_MAX_PATH_LEN],suffix[16],*s;
-  PetscDLLibrary nlist,prev,list;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidPointer(outlist,2);
-  if (path) PetscValidCharPointer(path,3);
-  PetscValidCharPointer(symbol,4);
-  PetscValidPointer(value,5);
-
-  list   = *outlist;
-  *value = 0;
-
-  /*
-       Function name does include library 
-       -------------------------------------
-  */
-  if (path && path[0] != '\0') {
-    /* copy path and remove suffix from libname */
-    ierr = PetscStrncpy(libname,path,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-    ierr = PetscStrcpy(suffix,".");CHKERRQ(ierr);
-    ierr = PetscStrcat(suffix,PETSC_SLSUFFIX);CHKERRQ(ierr);
-    ierr = PetscStrrstr(libname,suffix,&s);CHKERRQ(ierr);
-    if (s) s[0] = 0;
-    /* Look if library is already opened and in path */
-    prev  = 0;
-    nlist = list;
-    while (nlist) {
-      PetscBool  match;
-      ierr = PetscStrcmp(nlist->libname,libname,&match);CHKERRQ(ierr);
-      if (match) goto done;
-      prev  = nlist;
-      nlist = nlist->next;
-    }
-    /* open the library and append it to path */
-    ierr = PetscDLLibraryOpen(comm,path,&nlist);CHKERRQ(ierr);
-    ierr = PetscInfo1(0,"Appending %s to dynamic library search path\n",path);CHKERRQ(ierr);
-    if (prev) { prev->next = nlist; }
-    else      { *outlist   = nlist; }
-
-  done:;
-    ierr = PetscDLSym(nlist->handle,symbol,value);CHKERRQ(ierr);
-    if (*value) {
-      ierr = PetscInfo2(0,"Loading function %s from dynamic library %s\n",symbol,path);CHKERRQ(ierr);
-    }
-
-  /*
-       Function name does not include library so search path
-       -----------------------------------------------------
-  */
-  } else {
-    while (list) {
-      ierr = PetscDLSym(list->handle,symbol,value);CHKERRQ(ierr);
-      if (*value) {
-        ierr = PetscInfo2(0,"Loading symbol %s from dynamic library %s\n",symbol,list->libname);CHKERRQ(ierr);
-        break;
-      }
-      list = list->next;
-    }
-    if (!*value) {
-      ierr = PetscDLSym(PETSC_NULL,symbol,value);CHKERRQ(ierr);
-      if (*value) {
-        ierr = PetscInfo1(0,"Loading symbol %s from object code\n",symbol);CHKERRQ(ierr);
-      }
-    }
-  }
-  PetscFunctionReturn(0);
-}/* PetscFwkDLLibrarySym() */
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkCall_SO"
@@ -418,7 +333,7 @@ PetscErrorCode PetscFwkCall_SO(PetscFwk fwk, const char* path, const char* name,
     /* HACK: is 'toupper' part of the C standard? Looks like starting with C89. */
     msgfunc[namelen] = toupper(msgfunc[namelen]);
   }
-  ierr = PetscFwkDLLibrarySym(((PetscObject)fwk)->comm, &PetscFwkDLLibrariesLoaded, path, msgfunc, (void **)(&msg)); CHKERRQ(ierr);
+  ierr = PetscDLLibrarySym(((PetscObject)fwk)->comm, &PetscFwkDLLibrariesLoaded, path, msgfunc, (void **)(&msg)); CHKERRQ(ierr);
   ierr = PetscFree(msgfunc); CHKERRQ(ierr);
   if(msg) {
     ierr = (*msg)(fwk); CHKERRQ(ierr);
@@ -435,7 +350,7 @@ PetscErrorCode PetscFwkCall_SO(PetscFwk fwk, const char* path, const char* name,
   else {
     ierr = PetscStrcat(callfunc, "call"); CHKERRQ(ierr);
   }
-  ierr = PetscFwkDLLibrarySym(((PetscObject)fwk)->comm, &PetscFwkDLLibrariesLoaded, path, callfunc, (void**)(&call)); CHKERRQ(ierr);
+  ierr = PetscDLLibrarySym(((PetscObject)fwk)->comm, &PetscFwkDLLibrariesLoaded, path, callfunc, (void**)(&call)); CHKERRQ(ierr);
   ierr = PetscFree(callfunc); CHKERRQ(ierr);
   if(call) {
     ierr = (*call)(fwk, message); CHKERRQ(ierr);
@@ -445,71 +360,6 @@ PetscErrorCode PetscFwkCall_SO(PetscFwk fwk, const char* path, const char* name,
   PetscFunctionReturn(0);
 }/* PetscFwkCall_SO() */
 
-/*
-  Again, here we have to duplicate most of PetscFListFind, since it ultimately calls
-  to PetscDLLibrarySym, which will raise an error when a symbol isn't found.
-  And I don't think handling it using an error handler is efficient.
-  Here we compress the code somewhat, since we know that path is NULL.
-*/
-EXTERN PetscDLLibrary DLLibrariesLoaded;
-struct _n_PetscFList {
-  void        (*routine)(void);   /* the routine */
-  char        *path;              /* path of link library containing routine */
-  char        *name;              /* string to identify routine */
-  char        *rname;             /* routine name in dynamic library */
-  PetscFList  next;               /* next pointer */
-  PetscFList  next_list;          /* used to maintain list of all lists for freeing */
-};
-
-#undef  __FUNCT__
-#define __FUNCT__ "PetscFwkFListFind"
-PetscErrorCode PetscFwkFListFind(PetscFList fl,MPI_Comm comm,const char function[],QueryFunction *r) {
-  PetscFList     entry = fl;
-  PetscErrorCode ierr;
-  PetscBool      flg,f1,f2;
- 
-  PetscFunctionBegin;
-  if (!function) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to find routine with null name");
-
-  *r = 0;
-
-  while (entry) {
-    flg = PETSC_FALSE;
-    ierr = PetscStrcmp(function,entry->name,&f1);CHKERRQ(ierr);
-    ierr = PetscStrcmp(function,entry->rname,&f2);CHKERRQ(ierr);
-    flg =  (PetscBool) (f1 || f2);
-
-    if (flg) {
-      if (entry->routine) {
-        *r   = entry->routine; 
-        PetscFunctionReturn(0);
-      }
-      /* it is not yet in memory so load from dynamic library */
-#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-      ierr = PetscFwkDLLibrarySym(comm,&DLLibrariesLoaded,entry->path,entry->rname,(void **)r);CHKERRQ(ierr);
-      if (*r) {
-        entry->routine = *r;
-        PetscFunctionReturn(0);
-      } else {
-        PetscErrorPrintf("Unable to find function. Search path:\n");
-        ierr = PetscDLLibraryPrintPath(DLLibrariesLoaded);CHKERRQ(ierr);
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to find function:%s: either it is mis-spelled or dynamic library is not in path",entry->rname);
-      }
-#endif
-    }
-    entry = entry->next;
-  }
-
-#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-  /* Function never registered; try for it anyway; use PETSC_NULL for path */
-  ierr = PetscFwkDLLibrarySym(comm,&DLLibrariesLoaded,PETSC_NULL,function,(void **)r);CHKERRQ(ierr);
-  if (*r) {
-    ierr = PetscFListAdd(&fl,function,function,*r);CHKERRQ(ierr);
-  }
-#endif
-  PetscFunctionReturn(0);
-}/* PetscFwkFListFind() */
-
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkCall_NONE"
@@ -518,12 +368,12 @@ PetscErrorCode PetscFwkCall_NONE(PetscFwk fwk, const char* message) {
   PetscFwkMessageFunction msg = PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscFwkFListFind(((PetscObject)fwk)->qlist, ((PetscObject)fwk)->comm, message, (QueryFunction*)(&msg)); CHKERRQ(ierr);
+  ierr = PetscFListFind(((PetscObject)fwk)->qlist, ((PetscObject)fwk)->comm, message, (QueryFunction*)(&msg)); CHKERRQ(ierr);
   if(msg) {
     ierr = (*msg)(fwk); CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscFwkFListFind(((PetscObject)fwk)->qlist, ((PetscObject)fwk)->comm, "call", (QueryFunction*)(&call)); CHKERRQ(ierr);
+  ierr = PetscFListFind(((PetscObject)fwk)->qlist, ((PetscObject)fwk)->comm, "call", (QueryFunction*)(&call)); CHKERRQ(ierr);
   if(call) {
     ierr = (*call)(fwk, message); CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -888,7 +738,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterDependence(PetscFwk fwk, const
   */
   ierr = PetscFwkGraphAddEdge(fwk->dep_graph, clientid, serverid); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/*PetscFwkRegisterDependence()*/
+}/* PetscFwkRegisterDependence() */
 
 
 

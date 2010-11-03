@@ -42,7 +42,7 @@ typedef struct _n_DDLayout *DDLayout;
   }                                                                     \
   else {                                                                \
     /* Determine the domain d with local index i. */                                        \
-    ierr = ISStride(ddlayout->locally_supported_domains, &stride);  CHKERRQ(ierr);          \
+    ierr = PetscTypeCompare((PetscObject)ddlayout->locally_supported_domains, ISSTRIDE, &stride);  CHKERRQ(ierr); \
     if(stride) {                                                                            \
       PetscInt first, step;                                                                 \
       ierr = ISStrideGetInfo(ddlayout->locally_supported_domains, &first, &step); CHKERRQ(ierr);  \
@@ -54,7 +54,7 @@ typedef struct _n_DDLayout *DDLayout;
       *_d = idx[i];                                                                         \
     }                                                                                       \
     /* Now get the domain limits */                                                  \
-    ierr = ISStride(ddlayout->local_domain_limits, &stride); CHKERRQ(ierr);          \
+    ierr = PetscTypeCompare((PetscObject)ddlayout->local_domain_limits, ISSTRIDE, &stride); CHKERRQ(ierr); \
     if(stride) {                                                                     \
       PetscInt first, step;                                                          \
       ierr = ISStrideGetInfo(ddlayout->local_domain_limits, &first, &step); CHKERRQ(ierr); \

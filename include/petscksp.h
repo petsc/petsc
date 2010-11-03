@@ -308,10 +308,10 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetStandardErrorVec(KSP,Vec*);
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetNormType(),
           KSPSetConvergenceTest(), KSPSetPCSide()
 E*/
-typedef enum {KSP_NORM_NO = 0,KSP_NORM_PRECONDITIONED = 1,KSP_NORM_UNPRECONDITIONED = 2,KSP_NORM_NATURAL = 3} KSPNormType;
+typedef enum {KSP_NORM_NONE = 0,KSP_NORM_PRECONDITIONED = 1,KSP_NORM_UNPRECONDITIONED = 2,KSP_NORM_NATURAL = 3} KSPNormType;
 extern const char *KSPNormTypes[];
 /*MC
-    KSP_NORM_NO - Do not compute a norm during the Krylov process. This will 
+    KSP_NORM_NONE - Do not compute a norm during the Krylov process. This will 
           possibly save some computation but means the convergence test cannot
           be based on a norm of a residual etc.
 
@@ -328,7 +328,7 @@ M*/
 
    Level: advanced
 
-.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_NO, KSP_NORM_UNPRECONDITIONED, KSP_NORM_NATURAL, KSPSetConvergenceTest()
+.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_NONE, KSP_NORM_UNPRECONDITIONED, KSP_NORM_NATURAL, KSPSetConvergenceTest()
 M*/
 
 /*MC
@@ -337,7 +337,7 @@ M*/
 
    Level: advanced
 
-.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_NO, KSP_NORM_PRECONDITIONED, KSP_NORM_NATURAL, KSPSetConvergenceTest()
+.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_NONE, KSP_NORM_PRECONDITIONED, KSP_NORM_NATURAL, KSPSetConvergenceTest()
 M*/
 
 /*MC
@@ -346,7 +346,7 @@ M*/
 
    Level: advanced
 
-.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_NO, KSP_NORM_PRECONDITIONED, KSP_NORM_UNPRECONDITIONED, KSPSetConvergenceTest()
+.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_NONE, KSP_NORM_PRECONDITIONED, KSP_NORM_UNPRECONDITIONED, KSPSetConvergenceTest()
 M*/
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP,KSPNormType);

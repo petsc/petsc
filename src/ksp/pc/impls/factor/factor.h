@@ -14,6 +14,8 @@ typedef struct {
   MatFactorType     factortype;
 } PC_Factor;
 
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatrix_Factor(PC,Mat*);
+
 EXTERN_C_BEGIN
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot_Factor(PC,PetscReal);
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftType_Factor(PC,MatFactorShiftType);
@@ -24,7 +26,6 @@ extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_Factor(PC,co
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetLevels_Factor(PC,PetscInt);
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetAllowDiagonalFill_Factor(PC);
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks_Factor(PC,PetscBool );
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatrix_Factor(PC,Mat*);
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_Factor(PC,const MatSolverPackage);
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatSolverPackage_Factor(PC,const MatSolverPackage*);
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetColumnPivot_Factor(PC,PetscReal);

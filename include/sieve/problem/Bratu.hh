@@ -33,7 +33,7 @@ namespace ALE {
       };
     public:
       #undef __FUNCT__
-      #define __FUNCT__ "BratuProcessOptions"
+      #define __FUNCT__ "processOptions"
       PetscErrorCode processOptions(MPI_Comm comm, BratuOptions *options) {
         const char    *runTypes[3] = {"full", "test", "mesh"};
         const char    *bcTypes[2]  = {"neumann", "dirichlet"};
@@ -105,7 +105,7 @@ namespace ALE {
       ALE::Problem::ExactSolType exactSolution() const {return this->_options.exactSol;};
     public: // Mesh
       #undef __FUNCT__
-      #define __FUNCT__ "CreateMesh"
+      #define __FUNCT__ "createMesh"
       PetscErrorCode createMesh() {
         PetscBool      view;
         PetscErrorCode ierr;
@@ -173,7 +173,7 @@ namespace ALE {
         PetscFunctionReturn(0);
       };
       #undef __FUNCT__
-      #define __FUNCT__ "RefineMesh"
+      #define __FUNCT__ "refineMesh"
       PetscErrorCode refineMesh() {
         PetscErrorCode ierr;
         PetscFunctionBegin;

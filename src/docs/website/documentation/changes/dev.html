@@ -123,6 +123,8 @@ should now be '--download-package=1'</li>
       <p><u><b>IS:<br>
       </b></u></p>
       <ul>
+        <li>ISBlock(),ISStride() are removed. Use PetscTypeCompare((PetscObject)is,ISBLOCK,&flag),
+          PetscTypeCompare((PetscObject)is,ISSTRIDE,&flag) instead.</li>
         <li>Added ISCreate(), ISSetType(), ISRegister() etc to match
 style of other PETSc objects. Also added ISGeneralSetIndices(),
 ISBlockSetIndices(), ISStrideSetStride()</li>
@@ -160,6 +162,9 @@ into the Vec.<br>
       <p><u><b>VecScatter:<br>
       </b></u></p>
       <ul>
+        <li>The ghost indices for VecCreateGhostBlock() and
+        VecCreateGhostBlockWithArray() are now by block instead of by
+        entry.</li>
       </ul>
       <p><u><b>Mat:</b></u></p>
       <ul>
@@ -181,7 +186,11 @@ MatCreateMPICRL() -&gt; MatCreateMPIAIJCRL()</li>
         <li>MATCSRPERM -&gt; MATAIJPERM, MATSEQCSRPERM -&gt;
 MATSEQAIJPERM, MATMPICSRPERM -&gt; MATMPIAIJPERM</li>
         <li>MatCreateSeqCSRPERM() -&gt; MatCreateSeqAIJPERM()
-MatCreateMPICSRPERM() -&gt; MatCreateMPIAIJPERM()<br>
+MatCreateMPICSRPERM() -&gt; MatCreateMPIAIJPERM()</li>
+        <li>Added MatZeroRowsColumns() and MatZeroRowsColumnsIS().</li>
+        <li>MatZeroRows() and MatZeroRowsIS() now take an x and b
+vector as optional arguments; if these are provided then the b[idx[i]]
+is set to diag*x[idx[i]]] for all rows listed in idx[].<br>
         </li>
       </ul>
       <u><b>PC:</b></u>

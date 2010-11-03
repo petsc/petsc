@@ -17,7 +17,7 @@ SOURCEH	   =
 OBJSC	   = 
 OBJSF	   = petscdmmod.o
 LIBBASE	   = libpetscdm
-MANSEC	   = DA
+MANSEC	   = DM
 LOCDIR	   = src/dm/f90-mod/
 CLEANFILES = *.mod
 

@@ -96,7 +96,7 @@ PetscErrorCode TestMatZeroRows_Basic(Mat A,IS is,PetscScalar diag)
     ierr = MatSetOption(B,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
   }
 
-  ierr = MatZeroRowsIS(B,is,diag);CHKERRQ(ierr);
+  ierr = MatZeroRowsIS(B,is,diag,0,0);CHKERRQ(ierr);
   ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
   ierr = MatDestroy(B);CHKERRQ(ierr);
   return 0;
@@ -114,7 +114,7 @@ PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A,IS is,PetscScalar diag)
   /* Set this flag after assembly. This way, it affects only MatZeroRows() */
   ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
 
-  ierr = MatZeroRowsIS(B,is,diag);CHKERRQ(ierr);
+  ierr = MatZeroRowsIS(B,is,diag,0,0);CHKERRQ(ierr);
   ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
   ierr = MatDestroy(B);CHKERRQ(ierr);
   return 0;

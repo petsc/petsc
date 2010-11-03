@@ -2,15 +2,15 @@
 #define included_ALE_ParallelMapping_hh
 
 #ifndef  included_ALE_BasicCommunication_hh
-#include <BasicCommunication.hh>
+#include <sieve/BasicCommunication.hh>
 #endif
 
 #ifndef  included_ALE_IField_hh
-#include <IField.hh>
+#include <sieve/IField.hh>
 #endif
 
 #ifndef  included_ALE_Sections_hh
-#include <Sections.hh>
+#include <sieve/Sections.hh>
 #endif
 
 #include <functional>

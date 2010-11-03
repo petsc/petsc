@@ -11,13 +11,13 @@ viewer = PetscViewer();
 viewer.SetType('ascii');
 %%
 %   Create a DM object
-da = DMDACreate2d(DM.NONPERIODIC,DM.STENCIL_BOX,4,4,1,1,1,1,0,0);
+da = PetscDMDACreate2d(PetscDM.NONPERIODIC,PetscDM.STENCIL_BOX,4,4,1,1,1,1,0,0);
 da.SetFunction('rhsfunction');
 da.SetJacobian('jacobian');
 %%
 %%
 %   Create the linear solver, tell it the DM
-ksp = KSP();
+ksp = PetscKSP();
 ksp.SetType('gmres');
 ksp.SetDM(da);
 ksp.SetFromOptions();

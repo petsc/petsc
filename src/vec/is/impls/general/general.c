@@ -159,16 +159,65 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "ISView_General_Binary"
+PetscErrorCode ISView_General_Binary(IS is,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  IS_General     *isa = (IS_General*) is->data;
+  PetscMPIInt    rank,size,mesgsize,tag = ((PetscObject)viewer)->tag, mesglen;
+  PetscInt       len,j,tr[2];
+  int            fdes;
+  MPI_Status     status;
+  PetscInt       message_count,flowcontrolcount,*values;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
+
+  /* determine maximum message to arrive */
+  ierr = MPI_Comm_rank(((PetscObject)is)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)is)->comm,&size);CHKERRQ(ierr);
+
+  tr[0] = IS_FILE_CLASSID;
+  tr[1] = isa->N;
+  ierr = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&isa->n,&len,1,MPIU_INT,MPI_SUM,0,((PetscObject)is)->comm);CHKERRQ(ierr);
+
+  ierr = PetscViewerFlowControlStart(viewer,&message_count,&flowcontrolcount);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscBinaryWrite(fdes,isa->idx,isa->n,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+
+    ierr = PetscMalloc(len*sizeof(PetscInt),&values);CHKERRQ(ierr);
+    mesgsize = PetscMPIIntCast(len);
+    /* receive and save messages */
+    for (j=1; j<size; j++) {
+      ierr = PetscViewerFlowControlStepMaster(viewer,j,message_count,flowcontrolcount);CHKERRQ(ierr);
+      ierr = MPI_Recv(values,mesgsize,MPIU_INT,j,tag,((PetscObject)is)->comm,&status);CHKERRQ(ierr);
+      ierr = MPI_Get_count(&status,MPIU_INT,&mesglen);CHKERRQ(ierr);         
+      ierr = PetscBinaryWrite(fdes,values,(PetscInt)mesglen,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerFlowControlEndMaster(viewer,message_count);CHKERRQ(ierr);
+    ierr = PetscFree(values);CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerFlowControlStepWorker(viewer,rank,message_count);CHKERRQ(ierr);
+    mesgsize = PetscMPIIntCast(isa->n);
+    ierr = MPI_Send(isa->idx,mesgsize,MPIU_INT,0,tag,((PetscObject)is)->comm);CHKERRQ(ierr);
+    ierr = PetscViewerFlowControlEndWorker(viewer,message_count);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "ISView_General" 
 PetscErrorCode ISView_General(IS is,PetscViewer viewer)
 {
   IS_General     *sub = (IS_General *)is->data;
   PetscErrorCode ierr;
   PetscInt       i,n = sub->n,*idx = sub->idx;
-  PetscBool      iascii;
+  PetscBool      iascii,isbinary;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (iascii) {
     MPI_Comm    comm;
     PetscMPIInt rank,size;
@@ -195,6 +244,8 @@ PetscErrorCode ISView_General(IS is,PetscViewer viewer)
       }
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  } else if (isbinary) {
+    ierr = ISView_General_Binary(is,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
@@ -226,6 +277,14 @@ PetscErrorCode ISSorted_General(IS is,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISToGeneral_General" 
+PetscErrorCode PETSCVEC_DLLEXPORT ISToGeneral_General(IS is)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
 static struct _ISOps myops = { ISGetSize_General,
                                ISGetLocalSize_General,
                                ISGetIndices_General,
@@ -237,7 +296,7 @@ static struct _ISOps myops = { ISGetSize_General,
                                ISDestroy_General,
                                ISView_General,
                                ISIdentity_General,
-                               ISCopy_General };
+                               ISCopy_General,ISToGeneral_General };
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISCreateGeneral_Private" 
@@ -375,13 +434,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGeneralSetIndices_General(IS is,PetscInt n,c
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISToGeneral_General" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISToGeneral_General(IS is)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
+
 
 
 EXTERN_C_BEGIN
