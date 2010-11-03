@@ -580,7 +580,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscPrintf(MPI_Comm comm,const char format[],
       ierr    = PetscStrcpy(nformat,format);CHKERRQ(ierr);
       ierr    = PetscStrstr(nformat,"%",&sub2);CHKERRQ(ierr);
       sub2[0] = 0;
-      value   = va_arg(Argp,PetscReal);
+      value   = va_arg(Argp,double);
 #if defined(PETSC_USE_SCALAR_SINGLE)
       if (PetscAbsReal(value) < 1.e-6) {
         ierr    = PetscStrcat(nformat,"< 1.e-6");CHKERRQ(ierr);
