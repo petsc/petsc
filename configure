@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-if sys.version_info.major > 2:
+if not type(sys.version_info) is tuple and sys.version_info.major > 2:
   print('Configure does not support Python 3 yet, please run as')
   print('  python2 ' + ' '.join(["'" + a + "'" for a in sys.argv]))
   sys.exit(1)
