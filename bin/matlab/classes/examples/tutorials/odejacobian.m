@@ -1,4 +1,4 @@
-function [flg,err] = odejacobian(snes,time,x,A,B,shift,ctx)
+function [flg,err] = odejacobian(ts,time,x,xdot,shift,A,B,ctx)
 %
 %  Example of a nonlinear Jacobian needed by TS
 %  Use identity as approximation for Jacobian
@@ -12,9 +12,3 @@ err = B.AssemblyBegin(PetscMat.FINAL_ASSEMBLY);
 err = B.AssemblyEnd(PetscMat.FINAL_ASSEMBLY);
 err = A.AssemblyBegin(PetscMat.FINAL_ASSEMBLY);
 err = A.AssemblyEnd(PetscMat.FINAL_ASSEMBLY);
-
-%   Open a viewer to display PETSc objects
-viewer = PetscViewer();
-viewer.SetType('ascii');
-A.View(viewer);
-B.View(viewer);
