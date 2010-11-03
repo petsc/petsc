@@ -530,6 +530,8 @@ class Configure(config.base.Configure):
       langs.append('C')
     if self.languages.clanguage == 'Cxx' or self.framework.argDB['with-c++-support'] or self.languages.packagesHaveCxx():
       langs.append('Cxx')
+    else:
+      self.addDefine('FUNCTION_NAME_CXX', '__FUNCT__')
     for lang in langs:
       self.addDefine('FUNCTION_NAME_'+lang.upper(), getFunctionName(lang))
 
