@@ -480,6 +480,10 @@ M*/
 #define CHKERRCONTINUE(n) ;
 #define CHKMEMQ        ;
 
+#ifdef PETSC_CLANGUAGE_CXX
+#define CHKERRXX(n) ;
+#endif
+
 #if !defined(PETSC_SKIP_UNDERSCORE_CHKERR)
 #define _   
 #define ___  
