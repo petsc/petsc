@@ -300,7 +300,7 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
     PetscStackPush("TS user right-hand-side function");
     ierr = (*ts->ops->rhsfunction)(ts,t,x,y,ts->funP);CHKERRQ(ierr);
     PetscStackPop;
-  } else {
+  } else if (ts->Arhs) {
     if (ts->ops->rhsmatrix) { /* assemble matrix for this timestep */
       MatStructure flg;
       PetscStackPush("TS user right-hand-side matrix function");
@@ -308,7 +308,7 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
       PetscStackPop;
     }
     ierr = MatMult(ts->Arhs,x,y);CHKERRQ(ierr);
-  }
+  } else SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"No RHS provided, must call TSSetRHSFunction() or TSSetMatrices()");
 
   ierr = PetscLogEventEnd(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
 
