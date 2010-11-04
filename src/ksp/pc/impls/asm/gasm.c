@@ -215,8 +215,8 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     ierr = VecGetOwnershipRange(vec, &firstRow, &lastRow);CHKERRQ(ierr);
     for (i=0; i<osm->n_local_true; ++i, firstRow += m_local) {
       ierr = ISGetLocalSize(osm->is[i],&m);CHKERRQ(ierr);
-      ierr = VecCreateSeq(PETSC_COMM_SELF,m,&osm->x[i]);CHKERRQ(ierr);
-      ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr);
+      ierr = VecCreateSeq(PETSC_COMM_SELF,m,&osm->x[i]);CHKERRQ(ierr); 
+      ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr); 
       ierr = VecScatterCreate(vec,osm->is[i],osm->x[i],isl,&osm->restriction[i]);CHKERRQ(ierr);
       ierr = ISDestroy(isl);CHKERRQ(ierr);
       ierr = VecDuplicate(osm->x[i],&osm->y[i]);CHKERRQ(ierr);

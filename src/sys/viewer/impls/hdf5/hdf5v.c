@@ -10,6 +10,7 @@ typedef struct {
   char         *filename;
   PetscFileMode btype;
   hid_t         file_id;
+  PetscInt      timestep;
   GroupList    *groups;
 } PetscViewer_HDF5;
 
@@ -105,6 +106,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerCreate_HDF5(PetscViewer v)
   v->iformat      = 0;
   hdf5->btype     = (PetscFileMode) -1; 
   hdf5->filename  = 0;
+  hdf5->timestep  = -1;
   hdf5->groups    = PETSC_NULL;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetName_C","PetscViewerFileSetName_HDF5",
@@ -274,6 +276,60 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5GetGroup(PetscViewer viewer, co
   } else {
     *name = PETSC_NULL;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5SetTimestep"
+/*@C
+  PetscViewerHDF5SetTimestep - Set the current timestep for the HDF5 output. Fields are stacked in time. A timestep
+  of -1 disables blocking with timesteps.
+
+  Not collective
+
+  Input Parameters:
++ viewer - the PetscViewer
+- timestep - The timestep number
+
+  Level: intermediate
+
+.seealso: PetscViewerHDF5Open()
+@*/
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5GetTimestep(PetscViewer viewer, PetscInt timestep)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *) viewer->data;
+ 
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  hdf5->timestep = timestep;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5GetTimestep"
+/*@C
+  PetscViewerHDF5GetTimestep - Get the current timestep for the HDF5 output. Fields are stacked in time.
+
+  Not collective
+
+  Input Parameter:
+. viewer - the PetscViewer
+
+  Output Parameter:
+. timestep - The timestep number
+
+  Level: intermediate
+
+.seealso: PetscViewerHDF5Open()
+@*/
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5GetTimestep(PetscViewer viewer, PetscInt *timestep)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *) viewer->data;
+ 
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidPointer(timestep,2);
+  *timestep = hdf5->timestep;
   PetscFunctionReturn(0);
 }
 

@@ -282,6 +282,8 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5Open(MPI_Comm,const char
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5PushGroup(PetscViewer,const char *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5PopGroup(PetscViewer);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5GetGroup(PetscViewer, const char **);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5SetTimestep(PetscViewer,PetscInt);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5GetTimestep(PetscViewer,PetscInt*);
 #ifdef PETSC_HAVE_HDF5
 #include <hdf5.h>
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5GetFileId(PetscViewer,hid_t*);

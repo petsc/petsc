@@ -6934,7 +6934,7 @@ M*/
 
    Example usage:
    Consider the following 8x8 matrix with 34 non-zero values, that is
-   assembled across 3 processors. Lets assume that proc0 owns 3 rows,
+   assembled across 3 processors. Let's assume that proc0 owns 3 rows,
    proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
    as follows:
 

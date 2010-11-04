@@ -154,12 +154,12 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscHeaderDestroy_Private(PetscObject)
 
 #if !defined(PETSC_USE_DEBUG)
 
-#define PetscValidHeaderSpecific(h,ck,arg)
-#define PetscValidHeader(h,arg)
-#define PetscValidPointer(h,arg)
-#define PetscValidCharPointer(h,arg)
-#define PetscValidIntPointer(h,arg)
-#define PetscValidScalarPointer(h,arg)
+#define PetscValidHeaderSpecific(h,ck,arg) do {} while (0)
+#define PetscValidHeader(h,arg) do {} while (0)
+#define PetscValidPointer(h,arg) do {} while (0)
+#define PetscValidCharPointer(h,arg) do {} while (0)
+#define PetscValidIntPointer(h,arg) do {} while (0)
+#define PetscValidScalarPointer(h,arg) do {} while (0)
 
 #elif !defined(PETSC_HAVE_UNALIGNED_POINTERS)
 /* 
@@ -281,15 +281,15 @@ valid
 
 #if !defined(PETSC_USE_DEBUG)
 
-#define PetscCheckSameType(a,arga,b,argb)
-#define PetscValidType(a,arg)
-#define PetscCheckSameComm(a,arga,b,argb)
-#define PetscCheckSameTypeAndComm(a,arga,b,argb)
-#define PetscValidLogicalCollectiveScalar(a,b,c)
-#define PetscValidLogicalCollectiveReal(a,b,c)
-#define PetscValidLogicalCollectiveInt(a,b,c)
-#define PetscValidLogicalCollectiveBool(a,b,c)
-#define PetscValidLogicalCollectiveEnum(a,b,c)
+#define PetscCheckSameType(a,arga,b,argb) do {} while (0)
+#define PetscValidType(a,arg) do {} while (0)
+#define PetscCheckSameComm(a,arga,b,argb) do {} while (0)
+#define PetscCheckSameTypeAndComm(a,arga,b,argb) do {} while (0)
+#define PetscValidLogicalCollectiveScalar(a,b,c) do {} while (0)
+#define PetscValidLogicalCollectiveReal(a,b,c) do {} while (0)
+#define PetscValidLogicalCollectiveInt(a,b,c) do {} while (0)
+#define PetscValidLogicalCollectiveBool(a,b,c) do {} while (0)
+#define PetscValidLogicalCollectiveEnum(a,b,c) do {} while (0)
 
 #else
 

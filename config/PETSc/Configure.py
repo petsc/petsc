@@ -526,12 +526,12 @@ class Configure(config.base.Configure):
       self.popLanguage()
       return name
     langs = []
-    if self.languages.clanguage == 'C' or self.languages.cSupport:
-      langs.append('C')
-    if self.languages.clanguage == 'Cxx' or self.framework.argDB['with-c++-support'] or self.languages.packagesHaveCxx():
-      langs.append('Cxx')
-    for lang in langs:
-      self.addDefine('FUNCTION_NAME_'+lang.upper(), getFunctionName(lang))
+
+    self.addDefine('FUNCTION_NAME_C', getFunctionName('C'))
+    if hasattr(self.compilers, 'CXX'):
+      self.addDefine('FUNCTION_NAME_CXX', getFunctionName('Cxx'))
+    else:
+      self.addDefine('FUNCTION_NAME_CXX', '__FUNCT__')
 
   def configureIntptrt(self):
     '''Determine what to use for uintptr_t'''

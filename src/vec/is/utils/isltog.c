@@ -87,7 +87,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingView(ISLocalToGlobalMapp
     Not collective
 
     Input Parameter:
-.   is - index set containing the global numbers for each local
+.   is - index set containing the global numbers for each local number
 
     Output Parameter:
 .   mapping - new mapping data structure
