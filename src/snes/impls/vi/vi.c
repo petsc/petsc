@@ -1,6 +1,7 @@
 #define PETSCSNES_DLL
 
 #include "../src/snes/impls/vi/viimpl.h"
+#include "../include/private/kspimpl.h"
 
 /*
      Checks if J^T F = 0 which implies we've found a local minimum of the norm of the function,
@@ -762,7 +763,7 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
 { 
   SNES_VI          *vi = (SNES_VI*)snes->data;
   PetscErrorCode     ierr;
-  PetscInt           maxits,i,lits;
+  PetscInt           maxits,i,lits,Nis_act=0;
   PetscBool         lssucceed,changedir;
   MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal          gnorm,xnorm=0,ynorm;
@@ -816,7 +817,7 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
     IS                 IS_act,IS_inact; /* _act -> active set _inact -> inactive set */
     PetscReal          thresh,J_norm1;
     VecScatter         scat_act,scat_inact;
-    PetscInt           nis_act,nis_inact;
+    PetscInt           nis_act,nis_inact,Nis_act_prev;
     Vec                Da_act,Da_inact,Db_inact;
     Vec                Y_act,Y_inact,phi_act,phi_inact;
     Mat                jac_inact_inact,jac_inact_act,prejac_inact_inact;
@@ -836,9 +837,11 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
     /* Create active and inactive index sets */
     ierr = SNESVICreateIndexSets_AS(snes,vi->Db,thresh,&IS_act,&IS_inact);CHKERRQ(ierr);
 
-    /* Get local sizes of active and inactive sets */
+    Nis_act_prev = Nis_act;
+    /* Get sizes of active and inactive sets */
     ierr = ISGetLocalSize(IS_act,&nis_act);CHKERRQ(ierr);
     ierr = ISGetLocalSize(IS_inact,&nis_inact);CHKERRQ(ierr);
+    ierr = ISGetSize(IS_act,&Nis_act);CHKERRQ(ierr);
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Size of active set = %d, size of inactive set = %d\n",nis_act,nis_inact);CHKERRQ(ierr);
 
@@ -896,6 +899,26 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
     ierr = MatMult(jac_inact_act,Y_act,Db_inact);CHKERRQ(ierr);
     ierr = VecAXPY(phi_inact,-1.0,Db_inact);CHKERRQ(ierr);
 
+    if ((i != 0) && (Nis_act != Nis_act_prev)) {
+      KSP kspnew,snesksp;
+      PC  pcnew;
+      /* The active and inactive set sizes have changed so need to create a new snes->ksp object */
+      ierr = SNESGetKSP(snes,&snesksp);CHKERRQ(ierr);
+      ierr = KSPCreate(((PetscObject)snes)->comm,&kspnew);CHKERRQ(ierr);
+      /* Copy over snes->ksp info */
+      kspnew->pc_side = snesksp->pc_side;
+      kspnew->rtol    = snesksp->rtol;
+      kspnew->abstol    = snesksp->abstol;
+      kspnew->max_it  = snesksp->max_it;
+      ierr = KSPSetType(kspnew,((PetscObject)snesksp)->type_name);CHKERRQ(ierr);
+      ierr = KSPGetPC(kspnew,&pcnew);CHKERRQ(ierr);
+      ierr = PCSetType(kspnew->pc,((PetscObject)snesksp->pc)->type_name);CHKERRQ(ierr);
+      ierr = KSPDestroy(snesksp);CHKERRQ(ierr);
+      snes->ksp = kspnew;
+      ierr = PetscLogObjectParent(snes,kspnew);CHKERRQ(ierr);
+      ierr = KSPSetFromOptions(kspnew);CHKERRQ(ierr);
+    }
+    
     ierr = KSPSetOperators(snes->ksp,jac_inact_inact,prejac_inact_inact,flg);CHKERRQ(ierr);
     ierr = SNES_KSPSolve(snes,snes->ksp,phi_inact,Y_inact);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
