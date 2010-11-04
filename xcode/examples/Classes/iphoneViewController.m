@@ -109,7 +109,7 @@ PetscErrorCode PetscVFPrintfiPhone(FILE *fd,const char *format,va_list Argp)
   const char *str = [textField.text UTF8String];
   char **args;
   int argc;
-  PetscTruth flg1,flg2;
+  PetscBool flg1,flg2;
   
   PetscErrorCode ierr = PetscStrToArray(str,&argc,&args);
   ierr = PetscStrncmp(str, "./ex19", 6, &flg1);

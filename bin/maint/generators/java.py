@@ -24,7 +24,7 @@ def replace(enums,senums,structs,aliases,classes,k):
   k = k.replace("char[]","String").replace("char*","String").replace("char","String");
   for l in senums: k = k.replace(l,"String")
   k = k.replace("void","int")
-  k = k.replace("PetscTruth","boolean")
+  k = k.replace("PetscBool","boolean")
   k = k.replace("*","")
   k = k.replace("unsigned","")
   k = k.replace("const","")
