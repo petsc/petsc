@@ -307,7 +307,7 @@ PetscErrorCode VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_ToAll *in_to = (VecScatter_MPI_ToAll*)in->todata,*sto;
   PetscErrorCode       ierr;
-  PetscMPIInt          size;
+  PetscMPIInt          size,*count,*displx;
   PetscInt             i;
 
   PetscFunctionBegin;
@@ -318,8 +318,10 @@ PetscErrorCode VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
   out->view           = in->view;
 
   ierr                = MPI_Comm_size(((PetscObject)out)->comm,&size);CHKERRQ(ierr);
-  ierr                = PetscMalloc3(1,VecScatter_MPI_ToAll,&sto,size,PetscMPIInt,&sto->count,size,PetscMPIInt,&sto->displx);CHKERRQ(ierr);
+  ierr                = PetscMalloc3(1,VecScatter_MPI_ToAll,&sto,size,PetscMPIInt,&count,size,PetscMPIInt,&displx);CHKERRQ(ierr);
   sto->type           = in_to->type;
+  sto->count          = count;
+  sto->displx         = displx;
   for (i=0; i<size; i++) {
     sto->count[i]  = in_to->count[i];
     sto->displx[i] = in_to->displx[i];
