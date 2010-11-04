@@ -93,12 +93,19 @@ static PetscErrorCode ourdiagonalset(Mat mat,Vec x,InsertMode ins)
   return ierr;
 }
 
+static PetscErrorCode ourview(Mat mat,PetscViewer v)
+{
+  PetscErrorCode ierr = 0;
+  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,PetscViewer*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[8]))(&mat,&v,&ierr);
+  return ierr;
+}
+
 void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCode (PETSC_STDCALL *f)(Mat*,Vec*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   MPI_Comm comm;
 
   *ierr = PetscObjectGetComm((PetscObject)*mat,&comm);if (*ierr) return;
-  PetscObjectAllocateFortranPointers(*mat,8);
+  PetscObjectAllocateFortranPointers(*mat,9);
   if (*op == MATOP_MULT) {
     *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourmult);
     ((PetscObject)*mat)->fortran_func_pointers[0] = (PetscVoidFunction)f;
@@ -123,6 +130,9 @@ void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCod
   } else if (*op == MATOP_GET_VECS) {
     *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourgetvecs);
     ((PetscObject)*mat)->fortran_func_pointers[7] = (PetscVoidFunction)f;
+  } else if (*op == MATOP_VIEW) {
+    *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourview);
+    ((PetscObject)*mat)->fortran_func_pointers[8] = (PetscVoidFunction)f;
   } else {
     PetscError(comm,__LINE__,"MatShellSetOperation_Fortran",__FILE__,__SDIR__,PETSC_ERR_ARG_WRONG,PETSC_ERROR_INITIAL,
                "Cannot set that matrix operation");
