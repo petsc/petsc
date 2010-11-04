@@ -884,7 +884,7 @@ PetscErrorCode DMGetInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
   PetscInt       i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
   PetscInt       m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c;
   PetscInt       row,i_start_ghost,j_start_ghost,mx,m_c,my,nc,ratioi,ratioj;
-  PetscInt       i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
+  PetscInt       i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
   PetscInt       *cols;
   DMDAPeriodicType pt;
   Vec            vecf,vecc;
@@ -922,22 +922,15 @@ PetscErrorCode DMGetInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
   /* loop over local fine grid nodes setting interpolation for those*/
   nc = 0;
   ierr = PetscMalloc(n_f*m_f*sizeof(PetscInt),&cols);CHKERRQ(ierr);
-  for (j=j_start; j<j_start+n_f; j++) {
-    for (i=i_start; i<i_start+m_f; i++) {
-
-      i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
-      j_c = (j/ratioj);    /* coarse grid node below fine grid node */
-
-      if (j_c < j_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
-    j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
-      if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
-    i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
-
-      if (i_c*ratioi == i && j_c*ratioj == j) { 
-	/* convert to local "natural" numbering and then to PETSc global numbering */
-	row    = idx_f[dof*(m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
-        cols[nc++] = row/dof; 
-      }
+  for (j=j_start_c; j<j_start_c+n_c; j++) {
+    for (i=i_start_c; i<i_start_c+m_c; i++) {
+      PetscInt i_f = i*ratioi,j_f = j*ratioj;
+      if (j_f < j_start_ghost || j_f >= j_start_ghost+n_ghost) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+    j_c %D j_f %D fine ghost range [%D,%D]",j,j_f,j_start_ghost,j_start_ghost+n_ghost);
+      if (i_f < i_start_ghost || i_f >= i_start_ghost+m_ghost) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+    i_c %D i_f %D fine ghost range [%D,%D]",i,i_f,i_start_ghost,i_start_ghost+m_ghost);
+      row = idx_f[dof*(m_ghost*(j_f-j_start_ghost) + (i_f-i_start_ghost))];
+      cols[nc++] = row/dof;
     }
   }
 

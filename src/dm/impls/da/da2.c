@@ -34,6 +34,8 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D N %D m %D n %D w %D s %D\n",rank,dd->M,dd->N,dd->m,dd->n,dd->w,dd->s);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D, Y range of indices: %D %D\n",info.xs,info.xs+info.xm,info.ys,info.ys+info.ym);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    } else {
+      ierr = DMView_DA_VTK(da,viewer);CHKERRQ(ierr);
     }
   } else if (isdraw) {
     PetscDraw       draw;
