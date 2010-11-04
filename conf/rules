@@ -863,7 +863,13 @@ pull:
 push:
 	-@cd ${PETSC_DIR}; hg push
 	-@cd ${PETSC_DIR}/config/BuildSystem; hg push
-
+hgver:
+	-@cd ${PETSC_DIR};\
+	   hg parent --template 'PETSc parent       : {node|short}\n'; \
+	   hg tip    --template 'PETSc tip          : {node|short}\n'
+	-@cd ${PETSC_DIR}/config/BuildSystem;\
+	   hg parent --template 'BuildSystem parent : {node|short}\n' ;\
+	   hg tip    --template 'BuildSystem tip    : {node|short}\n'	
 #
 sourcelist:
 	-@for i in ${SOURCEC}; do \
