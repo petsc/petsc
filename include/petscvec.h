@@ -552,8 +552,8 @@ extern PetscErrorCode VecCUDACopyFromGPUSome_Public(Vec,PetscCUSPIndices);
 #endif
 
 #if defined PETSC_HAVE_VECDD
-extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDSetDomainsLocal(Vec v, PetscInt domain_count, PetscInt supported_domains[], PetscInt domain_limits[], PetscTruth covering);
-extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDSetDomainsLocalIS(Vec v, IS supported_domains, IS domain_limits[], PetscTruth covering);
+extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDSetDomainsLocal(Vec v, PetscInt domain_count, PetscInt supported_domains[], PetscInt domain_limits[], PetscBool covering);
+extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDSetDomainsLocalIS(Vec v, IS supported_domains, IS domain_limits[], PetscBool covering);
 extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDGetDomainInfoLocal(Vec v, PetscInt i, PetscInt *d, PetscInt *size);
 extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDGetDomainArrayLocal(Vec v, PetscInt i, PetscScalar **array);
 extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDRestoreDomainArrayLocal(Vec v, PetscInt i, PetscScalar **array);

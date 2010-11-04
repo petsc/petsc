@@ -11,7 +11,7 @@ typedef struct {
 #define MatDD_BlockGetMat(A,i,j,_block,_blockmat) 0; *_blockmat = _block->mat
 #define MatDD_BlockSetMat(A,i,j,_block,blockmat) 0; _block->mat = blockmat
 struct _MatDDOps {
-  PetscErrorCode (*locateblock)(Mat M, PetscInt i, PetscInt j, PetscTruth insert, MatDD_Block **block);
+  PetscErrorCode (*locateblock)(Mat M, PetscInt i, PetscInt j, PetscBool insert, MatDD_Block **block);
 };
 
 typedef struct {
