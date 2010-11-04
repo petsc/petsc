@@ -295,7 +295,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5GetGroup(PetscViewer viewer, co
 
 .seealso: PetscViewerHDF5Open()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5GetTimestep(PetscViewer viewer, PetscInt timestep)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5SetTimestep(PetscViewer viewer, PetscInt timestep)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *) viewer->data;
  

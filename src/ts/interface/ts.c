@@ -2498,7 +2498,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSMonitor_Matlab(TS snes,PetscInt it, PetscReal
 {
   PetscErrorCode  ierr;
   TSMatlabContext *sctx = (TSMatlabContext *)ctx;
-  int             nlhs = 2,nrhs = 6;
+  int             nlhs = 1,nrhs = 6;
   mxArray	  *plhs[1],*prhs[6];
   long long int   lx = 0,ls = 0;
       
