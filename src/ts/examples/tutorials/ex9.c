@@ -1326,7 +1326,7 @@ int main(int argc,char *argv[])
   }
   /* Allow customization of the DMDA at runtime, mostly to change problem size with -da_grid_x M */
   ierr = DMSetFromOptions(ctx.da);CHKERRQ(ierr);
-  ierr = DMDASetUp(ctx.da);CHKERRQ(ierr);
+  ierr = DMSetUp(ctx.da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(ctx.da,0, &Mx,0,0, 0,0,0, &dof,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(ctx.da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
 
