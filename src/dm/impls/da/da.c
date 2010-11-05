@@ -753,37 +753,19 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   PetscValidPointer(daref,3);
 
   if (DMDAXPeriodic(dd->wrap) || dd->interptype == DMDA_Q0){
-    if(dd->refine_x)
-      M = dd->M / dd->refine_x;
-    else
-      M = dd->M;
+    M = dd->M / dd->refine_x;
   } else {
-    if(dd->refine_x)
-      M = 1 + (dd->M - 1) / dd->refine_x;
-    else
-      M = dd->M;
+    M = 1 + (dd->M - 1) / dd->refine_x;
   }
   if (DMDAYPeriodic(dd->wrap) || dd->interptype == DMDA_Q0){
-    if(dd->refine_y)
-      N = dd->N / dd->refine_y;
-    else
-      N = dd->N;
+    N = dd->N / dd->refine_y;
   } else {
-    if(dd->refine_y)
-      N = 1 + (dd->N - 1) / dd->refine_y;
-    else
-      N = dd->M;
+    N = 1 + (dd->N - 1) / dd->refine_y;
   }
   if (DMDAZPeriodic(dd->wrap) || dd->interptype == DMDA_Q0){
-    if(dd->refine_z)
-      P = dd->P / dd->refine_z;
-    else
-      P = dd->P;
+    P = dd->P / dd->refine_z;
   } else {
-    if(dd->refine_z)
-      P = 1 + (dd->P - 1) / dd->refine_z;
-    else
-      P = dd->P;
+    P = 1 + (dd->P - 1) / dd->refine_z;
   }
   if (dd->dim == 3) {
     ierr = DMDACreate3d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,P,dd->m,dd->n,dd->p,dd->w,dd->s,0,0,0,&da2);CHKERRQ(ierr);
