@@ -9,7 +9,6 @@ class Configure(PETSc.package.NewPackage):
     self.liblist   = [['libcufft.a', 'libcublas.a','libcudart.a']]
     self.double    = 0   # 1 means requires double precision 
     self.cxx       = 0
-    self.requiredVersion = '3.2'
     return
 
   def setupDependencies(self, framework):
@@ -66,14 +65,8 @@ class Configure(PETSc.package.NewPackage):
     self.checkSizeofVoidP()
     return
 
-  def checkVersion(self):
-    if self.setCompilers.compilerVersionCUDA != self.requiredVersion:
-      raise RuntimeError('CUDA Error: PETSc currently requires nvcc version '+self.requiredVersion+' (you have '+self.setCompilers.compilerVersionCUDA+')')
-    return
-
   def configureLibrary(self):
     PETSc.package.NewPackage.configureLibrary(self)
-    self.checkVersion()
     if not self.cusp.found or not self.thrust.found:
       raise RuntimeError('PETSc CUDA support requires the CUSP and THRUST packages\nRerun configure using --with-cusp-dir and --with-thrust-dir')
     if self.languages.clanguage == 'C':
