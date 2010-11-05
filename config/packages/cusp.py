@@ -43,8 +43,12 @@ class Configure(config.package.Package):
 
   def configurePC(self):
     self.pushLanguage('CUDA')
+    oldFlags = self.compilers.CUDAPPFLAGS
+    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
+    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.thrust.include)
     if self.checkCompile('#include <cusp/version.h>\n#include <cusp/precond/smoothed_aggregation.h>\n', ''):
       self.addDefine('HAVE_CUSP_SMOOTHED_AGGREGATION','1')
+    self.compilers.CUDAPPFLAGS = oldFlags
     self.popLanguage()
     return
 
