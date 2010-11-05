@@ -4,7 +4,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version         = '102' #Version 0.1.2
+    self.version         = '200' #Version 0.2.0
     self.versionStr       = str(int(self.version)/100000) + '.' + str(int(self.version)/100%1000) + '.' + str(int(self.version)%100)
     self.download        = ['http://cusp-library.googlecode.com/files/cusp-v'+self.versionStr+'.zip']
     self.includes        = ['cusp/version.h']
