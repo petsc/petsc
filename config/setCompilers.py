@@ -513,7 +513,6 @@ class Configure(config.base.Configure):
 
   def checkCUDACompiler(self):
     '''Locate a functional CUDA compiler'''
-    requiredVersion = '3.2'
     if 'with-cudac' in self.framework.argDB and self.framework.argDB['with-cudac'] == '0':
       if 'CUDAC' in self.framework.argDB:
         del self.framework.argDB['CUDAC']
@@ -531,13 +530,7 @@ class Configure(config.base.Configure):
             i = i+1
             if word == 'release':
               break
-          currentVersion = compilerVersion[i].strip(',')
-          if currentVersion != requiredVersion:
-            #raise RuntimeError('CUDA Error: PETSc currently requires nvcc version ' + requiredVersion)
-              print '==============================================================================='
-              print '** CUDA Error: PETSc requires nvcc version ' + requiredVersion + ' when compiling with --withcuda **'
-              print '==============================================================================='  
-              sys.exit(3)
+          self.compilerVersionCUDA = compilerVersion[i].strip(',')
           break
       except RuntimeError, e:
         self.logPrint('Error testing CUDA compiler: '+str(e))
