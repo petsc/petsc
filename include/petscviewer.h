@@ -287,6 +287,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5GetTimestep(PetscViewer,
 #ifdef PETSC_HAVE_HDF5
 #include <hdf5.h>
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5GetFileId(PetscViewer,hid_t*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerHDF5OpenGroup(PetscViewer, hid_t *, hid_t *);
 #endif
 
 /*
