@@ -645,11 +645,18 @@ static PetscErrorCode DMDARefineOwnershipRanges(DM da,PetscBool periodic,PetscIn
     PetscInt want = remaining/(m-i) + !!(remaining%(m-i));
     if (i == m-1) lf[i] = want;
     else {
-      PetscInt diffc = (startf+want)/ratio - (startc + lc[i]);
-      while (PetscAbs(diffc) > stencil_width) {
-        want += (diffc < 0);
-        diffc = (startf+want)/ratio - (startc + lc[i]);
-      }
+      const PetscInt nextc = startc + lc[i];
+      /* Move the first fine node of the next subdomain to the right until the coarse node on its left is within one
+       * coarse stencil width of the first coarse node in the next subdomain. */
+      while ((startf+want)/ratio < nextc - stencil_width) want++;
+      /* Move the last fine node in the current subdomain to the left until the coarse node on its right is within one
+       * coarse stencil width of the last coarse node in the current subdomain. */
+      while ((startf+want-1+ratio-1)/ratio > nextc-1+stencil_width) want--;
+      /* Make sure all constraints are satisfied */
+      if (want < 0 || want > remaining
+          || ((startf+want)/ratio < nextc - stencil_width)
+          || ((startf+want-1+ratio-1)/ratio > nextc-1+stencil_width))
+        SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_SIZ,"Could not find a compatible refined ownership range");
     }
     lf[i] = want;
     startc += lc[i];
