@@ -676,7 +676,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   hid_t         group;
   herr_t        status;
   PetscInt       bs = xin->map->bs > 0 ? xin->map->bs : 1;
-  hsize_t        dim;
+  hsize_t        i,dim;
   hsize_t        maxDims[4], dims[4], chunkDims[4], count[4],offset[4];
   PetscInt       timestep;
   PetscInt       low;
@@ -722,7 +722,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   chunkDims[dim] = dims[dim];
   ++dim;
 #endif
-  for (hsize_t i=0; i < dim; ++i)
+  for (i=0; i < dim; ++i)
   filespace = H5Screate_simple(dim, dims, maxDims); 
   if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
