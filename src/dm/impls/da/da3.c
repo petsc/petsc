@@ -49,6 +49,8 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
       }
 #endif
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    } else {
+      ierr = DMView_DA_VTK(da,viewer);CHKERRQ(ierr);
     }
   } else if (isdraw) {
     PetscDraw       draw;
