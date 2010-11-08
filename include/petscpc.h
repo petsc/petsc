@@ -49,6 +49,7 @@ E*/
 #define PCILU             "ilu"
 #define PCICC             "icc"
 #define PCASM             "asm"
+#define PCGASM            "gasm"
 #define PCKSP             "ksp"
 #define PCCOMPOSITE       "composite"
 #define PCREDUNDANT       "redundant"
@@ -310,7 +311,7 @@ typedef enum {PC_GASM_BASIC = 3,PC_GASM_RESTRICT = 1,PC_GASM_INTERPOLATE = 2,PC_
 extern const char *PCGASMTypes[];
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetLocalSubdomains(PC,PetscInt,IS[],IS[]);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetSubdomains(PC,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetTotalSubdomains(PC,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetOverlap(PC,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetSortIndices(PC,PetscBool );
 

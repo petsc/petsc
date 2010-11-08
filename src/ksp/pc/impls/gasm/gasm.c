@@ -260,6 +260,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
 	SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Specified local domains of total size %D do not cover the local vector range [%D,%D)", 
 		 ddn_local, firstRow, lastRow);
       }
+      ierr = PetscMalloc(sizeof(PetscInt)*ddn_local, &ddidx_llocal); CHKERRQ(ierr);
       ierr = ISCreateGeneral(((PetscObject)pc)->comm, ddn_local, ddidx_local, PETSC_OWN_POINTER, &(osm->gis_local)); CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingCreateIS(osm->gis,&ltog);CHKERRQ(ierr);
       ierr = ISGlobalToLocalMappingApply(ltog,IS_GTOLM_DROP,dn_local,ddidx_local,&ddn_llocal,ddidx_llocal);CHKERRQ(ierr);
@@ -433,15 +434,15 @@ static PetscErrorCode PCApplyTranspose_GASM(PC pc,Vec x,Vec y)
     reverse = SCATTER_REVERSE_LOCAL;
   }
 
-  ierr = VecScatterBegin(osm->restriction,x,osm->gx,INSERT_VALUES,forward);CHKERRQ(ierr);
+  ierr = VecScatterBegin(osm->grestriction,x,osm->gx,INSERT_VALUES,forward);CHKERRQ(ierr);
   ierr = VecZeroEntries(y);CHKERRQ(ierr);
-  ierr = VecScatterEnd(osm->restriction,x,osm->gx,INSERT_VALUES,forward);CHKERRQ(ierr);
+  ierr = VecScatterEnd(osm->grestriction,x,osm->gx,INSERT_VALUES,forward);CHKERRQ(ierr);
   /* do the local solves */
-  for (i=0; i<osm->n; ++i) {
+  for (i=0; i<osm->n; ++i) { /* Note that the solves are local, so we can go to osm->n, rather than osm->nmax. */
     ierr = KSPSolveTranspose(osm->ksp[i],osm->x[i],osm->y[i]);CHKERRQ(ierr); 
   }
-  ierr = VecScatterBegin(osm->prolongation,osm->gy,y,ADD_VALUES,reverse);CHKERRQ(ierr);
-  ierr = VecScatterEnd(osm->prolongation,osm->gy,y,ADD_VALUES,reverse);CHKERRQ(ierr);
+  ierr = VecScatterBegin(osm->gprolongation,osm->gy,y,ADD_VALUES,reverse);CHKERRQ(ierr);
+  ierr = VecScatterEnd(osm->gprolongation,osm->gy,y,ADD_VALUES,reverse);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -462,7 +463,7 @@ static PetscErrorCode PCDestroy_GASM(PC pc)
   }
   if (osm->pmat) {
     if (osm->n > 0) {
-      ierr = MatDestroyMatrices(osm->n_local_true,&osm->pmat);CHKERRQ(ierr);
+      ierr = MatDestroyMatrices(osm->n,&osm->pmat);CHKERRQ(ierr);
     }
   }
   for (i=0; i<osm->n; i++) {
@@ -472,9 +473,13 @@ static PetscErrorCode PCDestroy_GASM(PC pc)
   ierr = PetscFree(osm->x);CHKERRQ(ierr);
   ierr = PetscFree(osm->y);CHKERRQ(ierr);
   ierr = VecDestroy(osm->gx); CHKERRQ(ierr);
+  ierr = VecDestroy(osm->gy); CHKERRQ(ierr);
+  
+  ierr = VecScatterDestroy(osm->grestriction); CHKERRQ(ierr);
+  ierr = VecScatterDestroy(osm->gprolongation); CHKERRQ(ierr);
 
   if (osm->is) {
-    ierr = PCGASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
+    ierr = PCGASMDestroySubdomains(osm->n,osm->is,osm->is_local);CHKERRQ(ierr);
   }
   ierr = PetscFree(osm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -482,8 +487,7 @@ static PetscErrorCode PCDestroy_GASM(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_GASM"
-static PetscErrorCode PCSetFromOptions_GASM(PC pc)
-{
+static PetscErrorCode PCSetFromOptions_GASM(PC pc) {
   PC_GASM         *osm = (PC_GASM*)pc->data;
   PetscErrorCode ierr;
   PetscInt       blocks,ovl;
@@ -498,7 +502,7 @@ static PetscErrorCode PCSetFromOptions_GASM(PC pc)
   }
   ierr = PetscOptionsHead("Additive Schwarz options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_gasm_blocks","Number of subdomains","PCGASMSetTotalSubdomains",osm->n,&blocks,&flg);CHKERRQ(ierr);
-    if (flg) {ierr = PCGASMSetTotalSubdomains(pc,blocks,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); }
+    if (flg) {ierr = PCGASMSetTotalSubdomains(pc,blocks);CHKERRQ(ierr); }
     ierr = PetscOptionsInt("-pc_gasm_overlap","Number of grid points overlap","PCGASMSetOverlap",osm->overlap,&ovl,&flg);CHKERRQ(ierr);
     if (flg) {ierr = PCGASMSetOverlap(pc,ovl);CHKERRQ(ierr); }
     flg  = PETSC_FALSE;
@@ -531,7 +535,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetLocalSubdomains_GASM(PC pc,PetscInt n
       for (i=0; i<n; i++) {ierr = PetscObjectReference((PetscObject)is_local[i]);CHKERRQ(ierr);}
     }
     if (osm->is) {
-      ierr = PCGASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
+      ierr = PCGASMDestroySubdomains(osm->n,osm->is,osm->is_local);CHKERRQ(ierr);
     }
     osm->n            = n;
     osm->is           = 0;
@@ -554,8 +558,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCGASMSetTotalSubdomains_GASM"
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetTotalSubdomains_GASM(PC pc,PetscInt N)
-{
+PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetTotalSubdomains_GASM(PC pc,PetscInt N) {
   PC_GASM         *osm = (PC_GASM*)pc->data;
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -574,14 +577,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetTotalSubdomains_GASM(PC pc,PetscInt N
   if (pc->setupcalled && n != osm->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PCGASMSetTotalSubdomains() should be called before PCSetUp().");
   if (!pc->setupcalled) {
     if (osm->is) {
-      ierr = PCGASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
+      ierr = PCGASMDestroySubdomains(osm->n,osm->is,osm->is_local);CHKERRQ(ierr);
     }
     osm->n            = n;
     osm->is           = 0;
     osm->is_local     = 0;
   }
   PetscFunctionReturn(0);
-}
+}/* PCGASMSetTotalSubdomains_GASM() */
 EXTERN_C_END
 
 EXTERN_C_BEGIN
@@ -631,20 +634,20 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCGASMGetSubKSP_GASM"
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMGetSubKSP_GASM(PC pc,PetscInt *n_local,PetscInt *first_local,KSP **ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT PCGASMGetSubKSP_GASM(PC pc,PetscInt *n,PetscInt *first,KSP **ksp) 
 {
   PC_GASM         *osm = (PC_GASM*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (osm->n_local_true < 1) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ORDER,"Need to call PCSetUP() on PC (or KSPSetUp() on the outer KSP object) before calling here");
+  if (osm->n < 1) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ORDER,"Need to call PCSetUP() on PC (or KSPSetUp() on the outer KSP object) before calling here");
 
-  if (n_local) {
-    *n_local = osm->n_local_true;
+  if (n) {
+    *n = osm->n;
   }
-  if (first_local) {
-    ierr = MPI_Scan(&osm->n_local_true,first_local,1,MPIU_INT,MPI_SUM,((PetscObject)pc)->comm);CHKERRQ(ierr);
-    *first_local -= osm->n_local_true;
+  if (first) {
+    ierr = MPI_Scan(&osm->n,first,1,MPIU_INT,MPI_SUM,((PetscObject)pc)->comm);CHKERRQ(ierr);
+    *first -= osm->n;
   }
   if (ksp) {
     /* Assume that local solves are now different; not necessarily
@@ -653,7 +656,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGASMGetSubKSP_GASM(PC pc,PetscInt *n_local,P
     osm->same_local_solves = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
-}
+}/* PCGASMGetSubKSP_GASM() */
 EXTERN_C_END
 
 
@@ -961,20 +964,19 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_GASM(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(pc,PC_GASM,&osm);CHKERRQ(ierr);
-  osm->n                 = PETSC_DECIDE;
-  osm->n_local           = 0;
-  osm->n_local_true      = 0;
+  osm->N                 = PETSC_DECIDE;
+  osm->n                 = 0;
+  osm->nmax              = 0;
   osm->overlap           = 1;
   osm->ksp               = 0;
-  osm->restriction       = 0;
-  osm->localization      = 0;
-  osm->prolongation      = 0;
+  osm->grestriction      = 0;
+  osm->gprolongation     = 0;
+  osm->gx                = 0;
+  osm->gy                = 0;
   osm->x                 = 0;
   osm->y                 = 0;
-  osm->y_local           = 0;
   osm->is                = 0;
   osm->is_local          = 0;
-  osm->mat               = 0;
   osm->pmat              = 0;
   osm->type              = PC_GASM_RESTRICT;
   osm->same_local_solves = PETSC_TRUE;
@@ -1361,7 +1363,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGASMGetLocalSubdomains(PC pc,PetscInt *n,IS 
     if (is) *is = PETSC_NULL;
   } else {
     osm = (PC_GASM*)pc->data;
-    if (n)  *n  = osm->n_local_true;
+    if (n)  *n  = osm->n;
     if (is) *is = osm->is;
     if (is_local) *is_local = osm->is_local;
   }
@@ -1408,7 +1410,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGASMGetLocalSubmatrices(PC pc,PetscInt *n,Ma
     if (mat) *mat = PETSC_NULL;
   } else {
     osm = (PC_GASM*)pc->data;
-    if (n)   *n   = osm->n_local_true;
+    if (n)   *n   = osm->n;
     if (mat) *mat = osm->pmat;
   }
   PetscFunctionReturn(0);
