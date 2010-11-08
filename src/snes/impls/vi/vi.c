@@ -392,7 +392,6 @@ PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre,Vec Da, Vec Db)
     ierr = MatDiagonalScale(jac_pre,Db,PETSC_NULL);
     ierr = MatDiagonalSet(jac_pre,Da,ADD_VALUES);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
   

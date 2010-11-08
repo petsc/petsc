@@ -27,6 +27,9 @@ classdef PetscSNES < PetscObject
         err = calllib('libpetsc', 'SNESSolve', obj.pobj,b.pboj,x.pobj);
       end
     end
+    function err = VISetVariableBounds(obj,xl,xb)
+      err = calllib('libpetsc', 'SNESVISetVariableBounds', obj.pobj,xl.pobj,xb.pobj);
+    end
     function err = SetFunction(obj,f,func,arg)
       if (nargin < 4) 
         arg = 0;
