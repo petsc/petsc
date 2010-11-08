@@ -136,7 +136,7 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version')
       output = output +  error
-      if output.find('GNU Fortran (GCC) 4.5.') >=0:
+      if output.find('GNU Fortran (GCC) 4.5.') >=0 or output.find('GNU Fortran (GCC) 4.6.0 20100703') >=0:
         return 1
     except RuntimeError:
       pass
