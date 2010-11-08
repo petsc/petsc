@@ -49,6 +49,7 @@ E*/
 #define PCILU             "ilu"
 #define PCICC             "icc"
 #define PCASM             "asm"
+#define PCGASM            "gasm"
 #define PCKSP             "ksp"
 #define PCCOMPOSITE       "composite"
 #define PCREDUNDANT       "redundant"
@@ -261,6 +262,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetLocalSubdomains(PC,PetscInt,IS[
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetTotalSubdomains(PC,PetscInt,IS[],IS[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetOverlap(PC,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetSortIndices(PC,PetscBool );
+
 /*E
     PCASMType - Type of additive Schwarz method to use
 
@@ -287,6 +289,38 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMDestroySubdomains(PetscInt,IS[],IS
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMCreateSubdomains2D(PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,IS**,IS**);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMGetLocalSubdomains(PC,PetscInt*,IS*[],IS*[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMGetLocalSubmatrices(PC,PetscInt*,Mat*[]);
+
+/*E
+    PCGASMType - Type of generalized additive Schwarz method to use (differs from ASM in allowing multiple processors per domain)
+
+$  PC_GASM_BASIC - symmetric version where residuals from the ghost points are used
+$                 and computed values in ghost regions are added together. Classical
+$                 standard additive Schwarz
+$  PC_GASM_RESTRICT - residuals from ghost points are used but computed values in ghost
+$                    region are discarded. Default
+$  PC_GASM_INTERPOLATE - residuals from ghost points are not used, computed values in ghost
+$                       region are added back in
+$  PC_GASM_NONE - ghost point residuals are not used, computed ghost values are discarded
+$                not very good.                
+
+   Level: beginner
+
+.seealso: PCGASMSetType()
+E*/
+typedef enum {PC_GASM_BASIC = 3,PC_GASM_RESTRICT = 1,PC_GASM_INTERPOLATE = 2,PC_GASM_NONE = 0} PCGASMType;
+extern const char *PCGASMTypes[];
+
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetLocalSubdomains(PC,PetscInt,IS[],IS[]);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetTotalSubdomains(PC,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetOverlap(PC,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetSortIndices(PC,PetscBool );
+
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetType(PC,PCGASMType);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGASMCreateSubdomains(Mat,PetscInt,IS*[]);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGASMDestroySubdomains(PetscInt,IS[],IS[]);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGASMCreateSubdomains2D(PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,IS**,IS**);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGASMGetLocalSubdomains(PC,PetscInt*,IS*[],IS*[]);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGASMGetLocalSubmatrices(PC,PetscInt*,Mat*[]);
 
 /*E
     PCCompositeType - Determines how two or more preconditioner are composed
