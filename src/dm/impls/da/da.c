@@ -645,16 +645,68 @@ static PetscErrorCode DMDARefineOwnershipRanges(DM da,PetscBool periodic,PetscIn
     PetscInt want = remaining/(m-i) + !!(remaining%(m-i));
     if (i == m-1) lf[i] = want;
     else {
-      PetscInt diffc = (startf+want)/ratio - (startc + lc[i]);
-      while (PetscAbs(diffc) > stencil_width) {
-        want += (diffc < 0);
-        diffc = (startf+want)/ratio - (startc + lc[i]);
-      }
+      const PetscInt nextc = startc + lc[i];
+      /* Move the first fine node of the next subdomain to the right until the coarse node on its left is within one
+       * coarse stencil width of the first coarse node in the next subdomain. */
+      while ((startf+want)/ratio < nextc - stencil_width) want++;
+      /* Move the last fine node in the current subdomain to the left until the coarse node on its right is within one
+       * coarse stencil width of the last coarse node in the current subdomain. */
+      while ((startf+want-1+ratio-1)/ratio > nextc-1+stencil_width) want--;
+      /* Make sure all constraints are satisfied */
+      if (want < 0 || want > remaining
+          || ((startf+want)/ratio < nextc - stencil_width)
+          || ((startf+want-1+ratio-1)/ratio > nextc-1+stencil_width))
+        SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_SIZ,"Could not find a compatible refined ownership range");
     }
     lf[i] = want;
     startc += lc[i];
     startf += lf[i];
     remaining -= lf[i];
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDACoarsenOwnershipRanges"
+/*
+  Creates "balanced" ownership ranges after coarsening, constrained by the need for the
+  fine grid boundaries to fall within one stencil width of the coarse partition.
+
+  Uses a greedy algorithm to handle non-ideal layouts, could probably do something better.
+*/
+static PetscErrorCode DMDACoarsenOwnershipRanges(DM da,PetscBool periodic,PetscInt stencil_width,PetscInt ratio,PetscInt m,const PetscInt lf[],PetscInt lc[])
+{
+  PetscInt i,totalf,remaining,startc,startf;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (ratio < 1) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_USER,"Requested refinement ratio %D must be at least 1",ratio);
+  if (ratio == 1) {
+    ierr = PetscMemcpy(lc,lf,m*sizeof(lf[0]));CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  for (i=0,totalf=0; i<m; i++) totalf += lf[i];
+  remaining = (!periodic) + (totalf - (!periodic)) / ratio;
+  for (i=0,startc=0,startf=0; i<m; i++) {
+    PetscInt want = remaining/(m-i) + !!(remaining%(m-i));
+    if (i == m-1) lc[i] = want;
+    else {
+      const PetscInt nextf = startf+lf[i];
+      /* Slide first coarse node of next subdomain to the left until the coarse node to the left of the first fine
+       * node is within one stencil width. */
+      while (nextf/ratio < startc+want-stencil_width) want--;
+      /* Slide the last coarse node of the current subdomain to the right until the coarse node to the right of the last
+       * fine node is within one stencil width. */
+      while ((nextf-1+ratio-1)/ratio > startc+want-1+stencil_width) want++;
+      if (want < 0 || want > remaining
+          || (nextf/ratio < startc+want-stencil_width)
+          || ((nextf-1+ratio-1)/ratio > startc+want-1+stencil_width))
+        SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_SIZ,"Could not find a compatible coarsened ownership range");
+    }
+    lc[i] = want;
+    startc += lc[i];
+    startf += lf[i];
+    remaining -= lc[i];
   }
   PetscFunctionReturn(0);
 }
@@ -753,44 +805,42 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   PetscValidPointer(daref,3);
 
   if (DMDAXPeriodic(dd->wrap) || dd->interptype == DMDA_Q0){
-    if(dd->refine_x)
-      M = dd->M / dd->refine_x;
-    else
-      M = dd->M;
+    M = dd->M / dd->refine_x;
   } else {
-    if(dd->refine_x)
-      M = 1 + (dd->M - 1) / dd->refine_x;
-    else
-      M = dd->M;
+    M = 1 + (dd->M - 1) / dd->refine_x;
   }
   if (DMDAYPeriodic(dd->wrap) || dd->interptype == DMDA_Q0){
-    if(dd->refine_y)
-      N = dd->N / dd->refine_y;
-    else
-      N = dd->N;
+    N = dd->N / dd->refine_y;
   } else {
-    if(dd->refine_y)
-      N = 1 + (dd->N - 1) / dd->refine_y;
-    else
-      N = dd->M;
+    N = 1 + (dd->N - 1) / dd->refine_y;
   }
   if (DMDAZPeriodic(dd->wrap) || dd->interptype == DMDA_Q0){
-    if(dd->refine_z)
-      P = dd->P / dd->refine_z;
-    else
-      P = dd->P;
+    P = dd->P / dd->refine_z;
   } else {
-    if(dd->refine_z)
-      P = 1 + (dd->P - 1) / dd->refine_z;
-    else
-      P = dd->P;
+    P = 1 + (dd->P - 1) / dd->refine_z;
   }
+  ierr = DMDACreateOwnershipRanges(da);CHKERRQ(ierr);
   if (dd->dim == 3) {
-    ierr = DMDACreate3d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,P,dd->m,dd->n,dd->p,dd->w,dd->s,0,0,0,&da2);CHKERRQ(ierr);
+    PetscInt *lx,*ly,*lz;
+    ierr = PetscMalloc3(dd->m,PetscInt,&lx,dd->n,PetscInt,&ly,dd->p,PetscInt,&lz);CHKERRQ(ierr);
+    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(DMDAXPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
+    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(DMDAYPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
+    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(DMDAZPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_z,dd->p,dd->lz,lz);CHKERRQ(ierr);
+    ierr = DMDACreate3d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,P,dd->m,dd->n,dd->p,dd->w,dd->s,lx,ly,lz,&da2);CHKERRQ(ierr);
+    ierr = PetscFree3(lx,ly,lz);CHKERRQ(ierr);
   } else if (dd->dim == 2) {
-    ierr = DMDACreate2d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,dd->m,dd->n,dd->w,dd->s,0,0,&da2);CHKERRQ(ierr);
+    PetscInt *lx,*ly;
+    ierr = PetscMalloc2(dd->m,PetscInt,&lx,dd->n,PetscInt,&ly);CHKERRQ(ierr);
+    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(DMDAXPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
+    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(DMDAYPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
+    ierr = DMDACreate2d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,dd->m,dd->n,dd->w,dd->s,lx,ly,&da2);CHKERRQ(ierr);
+    ierr = PetscFree2(lx,ly);CHKERRQ(ierr);
   } else if (dd->dim == 1) {
-    ierr = DMDACreate1d(((PetscObject)da)->comm,dd->wrap,M,dd->w,dd->s,0,&da2);CHKERRQ(ierr);
+    PetscInt *lx;
+    ierr = PetscMalloc(dd->m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
+    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(DMDAXPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
+    ierr = DMDACreate1d(((PetscObject)da)->comm,dd->wrap,M,dd->w,dd->s,lx,&da2);CHKERRQ(ierr);
+    ierr = PetscFree(lx);CHKERRQ(ierr);
   }
   dd2 = (DM_DA*)da2->data;
 

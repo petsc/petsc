@@ -403,5 +403,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDACreate1d(MPI_Comm comm, DMDAPeriodicType wr
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
   ierr = DMSetFromOptions(*da);CHKERRQ(ierr);
   ierr = DMSetUp(*da);CHKERRQ(ierr);
+  ierr = DMView_DA_Private(*da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

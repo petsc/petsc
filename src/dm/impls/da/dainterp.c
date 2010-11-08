@@ -884,7 +884,7 @@ PetscErrorCode DMGetInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
   PetscInt       i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
   PetscInt       m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c;
   PetscInt       row,i_start_ghost,j_start_ghost,mx,m_c,my,nc,ratioi,ratioj;
-  PetscInt       i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
+  PetscInt       i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
   PetscInt       *cols;
   DMDAPeriodicType pt;
   Vec            vecf,vecc;
@@ -909,7 +909,6 @@ PetscErrorCode DMGetInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
     if (ratioj*(My-1) != my-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %D My %D",my,My);
   }
 
-
   ierr = DMDAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
   ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
@@ -922,21 +921,97 @@ PetscErrorCode DMGetInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
   /* loop over local fine grid nodes setting interpolation for those*/
   nc = 0;
   ierr = PetscMalloc(n_f*m_f*sizeof(PetscInt),&cols);CHKERRQ(ierr);
-  for (j=j_start; j<j_start+n_f; j++) {
-    for (i=i_start; i<i_start+m_f; i++) {
+  for (j=j_start_c; j<j_start_c+n_c; j++) {
+    for (i=i_start_c; i<i_start_c+m_c; i++) {
+      PetscInt i_f = i*ratioi,j_f = j*ratioj;
+      if (j_f < j_start_ghost || j_f >= j_start_ghost+n_ghost) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+    j_c %D j_f %D fine ghost range [%D,%D]",j,j_f,j_start_ghost,j_start_ghost+n_ghost);
+      if (i_f < i_start_ghost || i_f >= i_start_ghost+m_ghost) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+    i_c %D i_f %D fine ghost range [%D,%D]",i,i_f,i_start_ghost,i_start_ghost+m_ghost);
+      row = idx_f[dof*(m_ghost*(j_f-j_start_ghost) + (i_f-i_start_ghost))];
+      cols[nc++] = row/dof;
+    }
+  }
 
-      i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
-      j_c = (j/ratioj);    /* coarse grid node below fine grid node */
+  ierr = ISCreateBlock(((PetscObject)daf)->comm,dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(daf,&vecf);CHKERRQ(ierr);
+  ierr = VecScatterCreate(vecf,isf,vecc,PETSC_NULL,inject);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dac,&vecc);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(daf,&vecf);CHKERRQ(ierr);
+  ierr = ISDestroy(isf);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-      if (j_c < j_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
-    j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
-      if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
-    i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
+#undef __FUNCT__  
+#define __FUNCT__ "DMGetInjection_DA_3D"
+PetscErrorCode DMGetInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
+{
+  PetscErrorCode   ierr;
+  PetscInt         i,j,k,i_start,j_start,k_start,m_f,n_f,p_f,Mx,My,Mz;
+  PetscInt         m_ghost,n_ghost,p_ghost,m_ghost_c,n_ghost_c,p_ghost_c;
+  PetscInt         i_start_ghost,j_start_ghost,k_start_ghost;
+  PetscInt         mx,my,mz,ratioi,ratioj,ratiok;
+  PetscInt         i_start_c,j_start_c,k_start_c;
+  PetscInt         m_c,n_c,p_c;
+  PetscInt         i_start_ghost_c,j_start_ghost_c,k_start_ghost_c;
+  PetscInt         row,nc,dof;
+  PetscInt         *idx_c,*idx_f;
+  PetscInt         *cols;
+  DMDAPeriodicType pt;
+  Vec              vecf,vecc;
+  IS               isf;
 
-      if (i_c*ratioi == i && j_c*ratioj == j) { 
-	/* convert to local "natural" numbering and then to PETSc global numbering */
-	row    = idx_f[dof*(m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
-        cols[nc++] = row/dof; 
+  PetscFunctionBegin;
+  ierr = DMDAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+
+  if (DMDAXPeriodic(pt)){
+    ratioi = mx/Mx;
+    if (ratioi*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
+  } else {
+    ratioi = (mx-1)/(Mx-1);
+    if (ratioi*(Mx-1) != mx-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
+  }
+  if (DMDAYPeriodic(pt)){
+    ratioj = my/My;
+    if (ratioj*My != my) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
+  } else {
+    ratioj = (my-1)/(My-1);
+    if (ratioj*(My-1) != my-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %D My %D",my,My);
+  }
+  if (DMDAZPeriodic(pt)){
+    ratiok = mz/Mz;
+    if (ratiok*Mz != mz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mz/Mz  must be integer: mz %D My %D",mz,Mz);
+  } else {
+    ratiok = (mz-1)/(Mz-1);
+    if (ratiok*(Mz-1) != mz-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mz - 1)/(Mz - 1) must be integer: mz %D Mz %D",mz,Mz);
+  }
+
+  ierr = DMDAGetCorners(daf,&i_start,&j_start,&k_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&k_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+
+  ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,&k_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&k_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+
+
+  /* loop over local fine grid nodes setting interpolation for those*/
+  nc = 0;
+  ierr = PetscMalloc(n_f*m_f*p_f*sizeof(PetscInt),&cols);CHKERRQ(ierr);
+  for (k=k_start_c; k<k_start_c+p_c; k++) {
+    for (j=j_start_c; j<j_start_c+n_c; j++) {
+      for (i=i_start_c; i<i_start_c+m_c; i++) {
+        PetscInt i_f = i*ratioi,j_f = j*ratioj,k_f = k*ratiok;
+        if (k_f < k_start_ghost || k_f >= k_start_ghost+p_ghost) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA  "
+                                                                          "k_c %D k_f %D fine ghost range [%D,%D]",k,k_f,k_start_ghost,k_start_ghost+p_ghost);
+        if (j_f < j_start_ghost || j_f >= j_start_ghost+n_ghost) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA  "
+                                                                          "j_c %D j_f %D fine ghost range [%D,%D]",j,j_f,j_start_ghost,j_start_ghost+n_ghost);
+        if (i_f < i_start_ghost || i_f >= i_start_ghost+m_ghost) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA  "
+                                                                          "i_c %D i_f %D fine ghost range [%D,%D]",i,i_f,i_start_ghost,i_start_ghost+m_ghost);
+        row = idx_f[dof*(m_ghost*n_ghost*(k_f-k_start_ghost) + m_ghost*(j_f-j_start_ghost) + (i_f-i_start_ghost))];
+        cols[nc++] = row/dof;
       }
     }
   }
@@ -978,11 +1053,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInjection_DA(DM dac,DM daf,VecScatter *inj
 
   if (dimc == 2){
     ierr = DMGetInjection_DA_2D(dac,daf,inject);CHKERRQ(ierr);
+  } else if (dimc == 3) {
+    ierr = DMGetInjection_DA_3D(dac,daf,inject);CHKERRQ(ierr);
   } else {
     SETERRQ1(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DMDA dimension %D",dimc);
   }
   PetscFunctionReturn(0);
-} 
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetAggregates_DA"

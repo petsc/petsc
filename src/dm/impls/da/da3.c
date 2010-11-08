@@ -49,6 +49,8 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
       }
 #endif
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    } else {
+      ierr = DMView_DA_VTK(da,viewer);CHKERRQ(ierr);
     }
   } else if (isdraw) {
     PetscDraw       draw;
@@ -1743,5 +1745,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDACreate3d(MPI_Comm comm,DMDAPeriodicType wra
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
   ierr = DMSetFromOptions(*da);CHKERRQ(ierr);
   ierr = DMSetUp(*da);CHKERRQ(ierr);
+  ierr = DMView_DA_Private(*da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

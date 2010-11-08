@@ -23,7 +23,10 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def getSearchDirectories(self):
-    return [os.path.join('/usr','local','cuda')]
+    import os
+    yield ''
+    yield os.path.join('/usr','local','cuda')
+    return
   
   def checkSizeofVoidP(self):
     '''Checks if the CUDA compiler agrees with the C compiler on what size of void * should be'''

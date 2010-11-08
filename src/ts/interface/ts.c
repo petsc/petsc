@@ -2311,7 +2311,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSComputeFunction_Matlab(TS snes,PetscReal time
 
   ierr = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr); 
   ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 
-  ierr = PetscMemcpy(&lxdot,&x,sizeof(xdot));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&lxdot,&xdot,sizeof(xdot));CHKERRQ(ierr); 
   ierr = PetscMemcpy(&ly,&y,sizeof(x));CHKERRQ(ierr); 
   prhs[0] =  mxCreateDoubleScalar((double)ls);
   prhs[1] =  mxCreateDoubleScalar(time);
