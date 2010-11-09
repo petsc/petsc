@@ -2,7 +2,7 @@
 
 /*
   This file defines an "generalized" additive Schwarz preconditioner for any Mat implementation.
-  Note that each processor may have any number of subdomains and a subdomain may live on multiple
+  In this version each processor may have any number of subdomains and a subdomain may live on multiple
   processors. 
 
        N    - total number of true subdomains on all processors
@@ -47,7 +47,7 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
   if (iascii) {
     char overlaps[256] = "user-defined overlap",blocks[256] = "total subdomain blocks not yet set";
     if (osm->overlap >= 0) {ierr = PetscSNPrintf(overlaps,sizeof overlaps,"amount of overlap = %D",osm->overlap);CHKERRQ(ierr);}
-    if (osm->n > 0) {ierr = PetscSNPrintf(blocks,sizeof blocks,"max number of  subdomain blocks = %D",osm->nmax);CHKERRQ(ierr);}
+    if (osm->nmax > 0)     {ierr = PetscSNPrintf(blocks,sizeof blocks,"max number of  subdomain blocks = %D",osm->nmax);CHKERRQ(ierr);}
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] number of local blocks = %D\n",(int)rank,osm->n);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Generalized additive Schwarz: %s, %s\n",blocks,overlaps);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Generalized additive Schwarz: restriction/interpolation type - %s\n",PCGASMTypes[osm->type]);CHKERRQ(ierr);
@@ -162,9 +162,9 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       if (symset && flg) { osm->type = PC_GASM_BASIC; }
     }
 
-    if (osm->n == PETSC_DECIDE) { 
+    if (osm->N == PETSC_DECIDE && osm->n < 1) { 
       /* no subdomains given, use one per processor */
-      osm->n = 1;
+      osm->nmax = osm->n = 1;
       ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
       osm->N = size;
     } else if (osm->N == PETSC_DECIDE) {
@@ -234,7 +234,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       PetscInt       dn_local;       /* Number of indices in the local part of single domain assigned to this processor. */
       const PetscInt *didx_local;    /* Global indices from the local part of a single domain assigned to this processor. */
       PetscInt       ddn_local;      /* Number of indices in the local part of the disjoint union all domains assigned to this processor. */
-      PetscInt       *ddidx_local;  /* Global indices of the local part of the disjoint union of all domains assigned to this processor. */
+      PetscInt       *ddidx_local;   /* Global indices of the local part of the disjoint union of all domains assigned to this processor. */
       /**/
       ISLocalToGlobalMapping ltog;          /* Mapping from global to local indices on the disjoint union of subdomains: local run from 0 to ddn-1. */
       PetscInt              *ddidx_llocal;  /* Local (within disjoint union of subdomains) indices of the disjoint union of local parts of subdomains. */
@@ -293,7 +293,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     ierr = VecDestroy(y); CHKERRQ(ierr);
     /* Create the local solvers */
     ierr = PetscMalloc(osm->n*sizeof(KSP *),&osm->ksp);CHKERRQ(ierr);
-    for (i=0; i<osm->n; i++) {
+    for (i=0; i<osm->n; i++) { /* KSPs are local */
       ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
       ierr = PetscLogObjectParent(pc,ksp);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,1);CHKERRQ(ierr);
@@ -318,8 +318,6 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
 
   /* 
      Extract out the submatrices. 
-     Here we need to use the same number of submatrices per processor across the whole comm,
-     since we can't very well merge the submatrix extraction. 
   */
   ierr = PetscMalloc(sizeof(IS)*osm->nmax, &is); CHKERRQ(ierr);
   for(i=0; i<osm->n; ++i) {
@@ -328,7 +326,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   for (i=osm->n; i<osm->nmax; i++) {
     ierr = ISCreateStride(((PetscObject)pc)->comm,0,0,1,&is[i]);CHKERRQ(ierr);
   }
-  
+  ierr = MatGetSubMatrices(pc->pmat,osm->n,osm->is,is,scall,&osm->pmat);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix);CHKERRQ(ierr);
     for (i=0; i<osm->n; i++) {
@@ -339,7 +337,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   
   /* Return control to the user so that the submatrices can be modified (e.g., to apply
      different boundary conditions for the submatrices than for the global problem) */
-  ierr = PCModifySubMatrices(pc,osm->nmax,is,is,osm->pmat,pc->modifysubmatricesP);CHKERRQ(ierr);
+  ierr = PCModifySubMatrices(pc,osm->n,is,is,osm->pmat,pc->modifysubmatricesP);CHKERRQ(ierr);
   for (i=osm->n; i<osm->nmax; i++) {
     ierr = ISDestroy(is[i]);CHKERRQ(ierr);
   }
@@ -500,7 +498,7 @@ static PetscErrorCode PCSetFromOptions_GASM(PC pc) {
     ierr = MatIsSymmetricKnown(pc->pmat,&symset,&flg);CHKERRQ(ierr);
     if (symset && flg) { osm->type = PC_GASM_BASIC; }
   }
-  ierr = PetscOptionsHead("Additive Schwarz options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead("Generalized additive Schwarz options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_gasm_blocks","Number of subdomains","PCGASMSetTotalSubdomains",osm->n,&blocks,&flg);CHKERRQ(ierr);
     if (flg) {ierr = PCGASMSetTotalSubdomains(pc,blocks);CHKERRQ(ierr); }
     ierr = PetscOptionsInt("-pc_gasm_overlap","Number of grid points overlap","PCGASMSetOverlap",osm->overlap,&ovl,&flg);CHKERRQ(ierr);
@@ -634,6 +632,10 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCGASMGetSubKSP_GASM"
+/* 
+   FIX: This routine might need to be modified once multiple ranks per subdomain are allowed.
+        In particular, it would upset the global subdomain number calculation.
+*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCGASMGetSubKSP_GASM(PC pc,PetscInt *n,PetscInt *first,KSP **ksp) 
 {
   PC_GASM         *osm = (PC_GASM*)pc->data;
