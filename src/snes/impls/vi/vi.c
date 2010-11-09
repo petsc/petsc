@@ -1581,7 +1581,7 @@ EXTERN_C_END
 static PetscErrorCode SNESView_VI(SNES snes,PetscViewer viewer)
 {
   SNES_VI        *vi = (SNES_VI *)snes->data;
-  const char     *cstr;
+  const char     *cstr,*tstr;
   PetscErrorCode ierr;
   PetscBool     iascii;
 
@@ -1592,6 +1592,10 @@ static PetscErrorCode SNESView_VI(SNES snes,PetscViewer viewer)
     else if (vi->LineSearch == SNESLineSearchQuadratic_VI) cstr = "SNESLineSearchQuadratic";
     else if (vi->LineSearch == SNESLineSearchCubic_VI)     cstr = "SNESLineSearchCubic";
     else                                                cstr = "unknown";
+    if (snes->ops->solve == SNESSolveVI_SS)      tstr = "Semismooth";
+    else if (snes->ops->solve == SNESSolveVI_AS)  tstr = "Active Set";
+    else                                         tstr = "unknown";
+    ierr = PetscViewerASCIIPrintf(viewer,"  VI algorithm: %s\n",tstr);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  line search variant: %s\n",cstr);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  alpha=%G, maxstep=%G, minlambda=%G\n",vi->alpha,vi->maxstep,vi->minlambda);CHKERRQ(ierr);
   } else {
