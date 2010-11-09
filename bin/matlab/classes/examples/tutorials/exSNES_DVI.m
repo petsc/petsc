@@ -29,6 +29,9 @@ type snesfunction.m
 snes.SetJacobian(J,J,'snesjacobian',0);
 type snesjacobian.m
 %%
+%  Initialize guess
+x.Set(1.0);
+%%
 %   Set VI bounds
 xl = x.Duplicate();
 xb = x.Duplicate();
