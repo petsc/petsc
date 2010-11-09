@@ -360,10 +360,10 @@ class Configure(config.base.Configure):
       return unique
     def cmakeexpand(varname):
       return r'"${' + varname + r'}"'
-    def uniqextend(list,new):
+    def uniqextend(lst,new):
       for x in ensurelist(new):
-        if x not in list:
-          list.append(x)
+        if x not in lst:
+          lst.append(x)
     def notstandardinclude(path):
       return path not in '/usr/include /usr/local/include'.split()
     def writeMacroDefinitions(fd):
