@@ -38,6 +38,14 @@ namespace ALE {
       ALE::Pullback::AdditiveBinaryFusion::fuse(overlapSection, recvOverlap, recvSection);
       if (recvSection->debug()) {recvSection->view("Receieve Section");}
     };
+    template<typename SendOverlap, typename RecvOverlap, typename SendSection, typename RecvSection, typename OverlapSection>
+    static void completeSectionAdd(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection, const Obj<OverlapSection>& overlapSection) {
+      if (sendSection->debug()) {sendSection->view("Send Section");}
+      ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, sendSection, overlapSection);
+      if (overlapSection->debug()) {overlapSection->view("Overlap Section");}
+      ALE::Pullback::AdditiveBinaryFusion::fuse(overlapSection, recvOverlap, recvSection);
+      if (recvSection->debug()) {recvSection->view("Receieve Section");}
+    };
   };
   namespace New {
     template<typename Bundle_, typename Value_, typename Alloc_ = malloc_allocator<typename Bundle_::point_type> >
