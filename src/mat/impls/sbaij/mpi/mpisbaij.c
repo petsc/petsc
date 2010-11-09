@@ -1972,7 +1972,8 @@ EXTERN_C_END
 
    Now d_nz should indicate the number of block nonzeros per row in the upper triangular
    plus the diagonal part of the d matrix,
-   and o_nz should indicate the number of block nonzeros per row in the o matrix.
+   and o_nz should indicate the number of block nonzeros per row in the upper triangular
+   part of the o matrix.
    In general, for PDE problems in which most nonzeros are near the diagonal,
    one expects d_nz >> o_nz.   For large problems you MUST preallocate memory
    or you will get TERRIBLE performance; see the users' manual chapter on
