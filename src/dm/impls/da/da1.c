@@ -7,7 +7,7 @@
 #include "private/daimpl.h"     /*I  "petscdm.h"   I*/
 
 const char *DMDAPeriodicTypes[] = {"NONPERIODIC","XPERIODIC","YPERIODIC","XYPERIODIC",
-                                 "XYZPERIODIC","XZPERIODIC","YZPERIODIC","ZPERIODIC","XYZGHOSTED","DMDAPeriodicType","DMDA_",0};
+                                   "XYZPERIODIC","XZPERIODIC","YZPERIODIC","ZPERIODIC","XYZGHOSTED","DMDAPeriodicType","DMDA_",0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMView_DA_1d"
@@ -130,21 +130,21 @@ PetscErrorCode DMView_DA_Private(DM da)
 #define __FUNCT__ "DMSetUp_DA_1D"
 PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_1D(DM da)
 {
-  DM_DA                *dd = (DM_DA*)da->data;
-  const PetscInt       M     = dd->M;
-  const PetscInt       dof   = dd->w;
-  const PetscInt       s     = dd->s;
-  const PetscInt       sDist = s*dof;  /* absolute stencil distance */
-  const PetscInt      *lx    = dd->lx;
+  DM_DA                  *dd = (DM_DA*)da->data;
+  const PetscInt         M     = dd->M;
+  const PetscInt         dof   = dd->w;
+  const PetscInt         s     = dd->s;
+  const PetscInt         sDist = s*dof;  /* absolute stencil distance */
+  const PetscInt         *lx    = dd->lx;
   const DMDAPeriodicType wrap  = dd->wrap;
-  MPI_Comm             comm;
-  Vec                  local, global;
-  VecScatter           ltog, gtol;
-  IS                   to, from;
-  PetscBool            flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
-  PetscMPIInt          rank, size;
-  PetscInt             i,*idx,nn,left,xs,xe,x,Xs,Xe,start,end,m;
-  PetscErrorCode       ierr;
+  MPI_Comm               comm;
+  Vec                    local, global;
+  VecScatter             ltog, gtol;
+  IS                     to, from;
+  PetscBool              flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
+  PetscMPIInt            rank, size;
+  PetscInt               i,*idx,nn,left,xs,xe,x,Xs,Xe,start,end,m;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   if (dof < 1) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);

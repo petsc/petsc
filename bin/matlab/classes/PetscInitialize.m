@@ -32,6 +32,22 @@ end
 if (ischar(args)) 
   args = {args};
 end
+
+% append any options in the options variable
+global options
+if (ischar(options))
+  options = {options};
+end
+if (iscell(options))
+  l = length(args);
+  for i=1:length(options)
+    args{i+l} = options{i};
+  end
+  disp('Using additional options')
+  disp(options)
+end
+
+% first argument should be program name, use matlab for this
 arg = cell(1,length(args)+1);
 arg{1} = 'matlab';
 for i=1:length(args)

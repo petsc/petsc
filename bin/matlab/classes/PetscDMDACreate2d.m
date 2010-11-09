@@ -1,4 +1,4 @@
-function [da,err] = PetscDMDACreate2d(wrap,stentype,M,N,mm,nn,dof,s,lx,ly)
+function [da,err] = PetscDMDACreate2d(wrap,stentype,M,N,mm,nn,dof,s)
   da = PetscDM();
   err = da.SetType('da'); 
   da.SetPeriodicity(wrap);
@@ -7,5 +7,6 @@ function [da,err] = PetscDMDACreate2d(wrap,stentype,M,N,mm,nn,dof,s,lx,ly)
   da.SetStencilType(stentype);
   da.SetStencilWidth(s);
   da.SetDim(2);
+  da.SetFromOptions();
   err = da.SetUp(); 
 

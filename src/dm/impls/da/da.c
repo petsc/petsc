@@ -630,7 +630,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDASetGetMatrix(DM da,PetscErrorCode (*f)(DM, 
 */
 static PetscErrorCode DMDARefineOwnershipRanges(DM da,PetscBool periodic,PetscInt stencil_width,PetscInt ratio,PetscInt m,const PetscInt lc[],PetscInt lf[])
 {
-  PetscInt i,totalc = 0,remaining,startc = 0,startf = 0;
+  PetscInt       i,totalc = 0,remaining,startc = 0,startf = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -676,7 +676,7 @@ static PetscErrorCode DMDARefineOwnershipRanges(DM da,PetscBool periodic,PetscIn
 */
 static PetscErrorCode DMDACoarsenOwnershipRanges(DM da,PetscBool periodic,PetscInt stencil_width,PetscInt ratio,PetscInt m,const PetscInt lf[],PetscInt lc[])
 {
-  PetscInt i,totalf,remaining,startc,startf;
+  PetscInt       i,totalf,remaining,startc,startf;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -912,7 +912,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy_DA(DM da,PetscInt nlevels,DM 
 PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy_DA(DM da,PetscInt nlevels,DM dac[])
 {
   PetscErrorCode ierr;
-  PetscInt i;
+  PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
