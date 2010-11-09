@@ -1,5 +1,5 @@
 
-static char help[] = "Illustrates use of the preconditioner ASM.\n\
+static char help[] = "Illustrates use of the preconditioner GASM.\n\
 The Additive Schwarz Method for solving a linear system in parallel with KSP.  The\n\
 code indicates the procedure for setting user-defined subdomains.  Input\n\
 parameters include:\n\
@@ -7,23 +7,23 @@ parameters include:\n\
   -user_set_subdomains:  Activate user-defined subdomains\n\n";
 
 /*
-   Note:  This example focuses on setting the subdomains for the ASM 
+   Note:  This example focuses on setting the subdomains for the GASM 
    preconditioner for a problem on a 2D rectangular grid.  See ex1.c
    and ex2.c for more detailed comments on the basic usage of KSP
    (including working with matrices and vectors).
 
-   The ASM preconditioner is fully parallel, but currently the routine
-   PCASMCreateSubDomains2D(), which is used in this example to demonstrate
+   The GASM preconditioner is fully parallel, but currently the routine
+   PCGASMCreateSubDomains2D(), which is used in this example to demonstrate
    user-defined subdomains (activated via -user_set_subdomains), is
    uniprocessor only.
 
    This matrix in this linear system arises from the discretized Laplacian,
    and thus is not very interesting in terms of experimenting with variants
-   of the ASM preconditioner.  
+   of the GASM preconditioner.  
 */
 
 /*T
-   Concepts: KSP^Additive Schwarz Method (ASM) with user-defined subdomains
+   Concepts: KSP^Additive Schwarz Method (GASM) with user-defined subdomains
    Processors: n
 T*/
 
@@ -112,10 +112,10 @@ int main(int argc,char **args)
   ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* 
-     Set the default preconditioner for this program to be ASM
+     Set the default preconditioner for this program to be GASM
   */
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCASM);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCGASM);CHKERRQ(ierr);
 
   /* -------------------------------------------------------------------
                   Define the problem decomposition
@@ -126,11 +126,11 @@ int main(int argc,char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
      Set the overlap, using the default PETSc decomposition via
-         PCASMSetOverlap(pc,overlap);
+         PCGASMSetOverlap(pc,overlap);
      Could instead use the option -pc_asm_overlap <ovl> 
 
      Set the total number of blocks via -pc_asm_blocks <blks>
-     Note:  The ASM default is to use 1 block per processor.  To
+     Note:  The GASM default is to use 1 block per processor.  To
      experiment on a single processor with various overlaps, you
      must specify use of multiple blocks!
   */
@@ -140,20 +140,20 @@ int main(int argc,char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
      Firstly, create index sets that define the subdomains.  The utility
-     routine PCASMCreateSubdomains2D() is a simple example (that currently
+     routine PCGASMCreateSubdomains2D() is a simple example (that currently
      supports 1 processor only!).  More generally, the user should write
      a custom routine for a particular problem geometry.
 
-     Then call either PCASMSetLocalSubdomains() or PCASMSetTotalSubdomains()
-     to set the subdomains for the ASM preconditioner.
+     Then call either PCGASMSetLocalSubdomains() or PCGASMSetTotalSubdomains()
+     to set the subdomains for the GASM preconditioner.
   */
 
   if (!user_subdomains) { /* basic version */
-    ierr = PCASMSetOverlap(pc,overlap);CHKERRQ(ierr);
+    ierr = PCGASMSetOverlap(pc,overlap);CHKERRQ(ierr);
   } else { /* advanced version */
-    if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"PCASMCreateSubdomains() is currently a uniprocessor routine only!");
-    ierr = PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is,&is_local);CHKERRQ(ierr);
-    ierr = PCASMSetLocalSubdomains(pc,Nsub,is,is_local);CHKERRQ(ierr);
+    if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"PCGASMCreateSubdomains() is currently a uniprocessor routine only!");
+    ierr = PCGASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is,&is_local);CHKERRQ(ierr);
+    ierr = PCGASMSetLocalSubdomains(pc,Nsub,is,is_local);CHKERRQ(ierr);
     ierr = PetscOptionsGetBool(PETSC_NULL,"-subdomain_view",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg){
       printf("Nmesh points: %d x %d; subdomain partition: %d x %d; overlap: %d; Nsub: %d\n",m,n,M,N,overlap,Nsub);
@@ -178,7 +178,7 @@ int main(int argc,char **args)
        Basic method, should be sufficient for the needs of most users.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-     By default, the ASM preconditioner uses the same solver on each
+     By default, the GASM preconditioner uses the same solver on each
      block of the problem.  To set the same solver options on all blocks,
      use the prefix -sub before the usual PC and KSP options, e.g.,
           -sub_pc_type <pc> -sub_ksp_type <ksp> -sub_ksp_rtol 1.e-4
@@ -191,11 +191,11 @@ int main(int argc,char **args)
      the others, and the full range of uniprocessor KSP options is
      available for each block.
 
-     - Use PCASMGetSubKSP() to extract the array of KSP contexts for
+     - Use PCGASMGetSubKSP() to extract the array of KSP contexts for
        the local blocks.
      - See ex7.c for a simple example of setting different linear solvers
        for the individual blocks for the block Jacobi method (which is
-       equivalent to the ASM method with zero overlap).
+       equivalent to the GASM method with zero overlap).
   */
 
   flg  = PETSC_FALSE;
@@ -216,21 +216,21 @@ int main(int argc,char **args)
     /* 
        Flag an error if PCTYPE is changed from the runtime options
      */
-    ierr = PetscTypeCompare((PetscObject)pc,PCASM,&isasm);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)pc,PCGASM,&isasm);CHKERRQ(ierr);
     if (!isasm) SETERRQ(PETSC_COMM_WORLD,1,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
 
     /* 
        Call KSPSetUp() to set the block Jacobi data structures (including
        creation of an internal KSP context for each block).
 
-       Note: KSPSetUp() MUST be called before PCASMGetSubKSP().
+       Note: KSPSetUp() MUST be called before PCGASMGetSubKSP().
     */
     ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 
     /*
        Extract the array of KSP contexts for the local blocks
     */
-    ierr = PCASMGetSubKSP(pc,&nlocal,&first,&subksp);CHKERRQ(ierr);
+    ierr = PCGASMGetSubKSP(pc,&nlocal,&first,&subksp);CHKERRQ(ierr);
 
     /*
        Loop over the local blocks, setting various KSP options

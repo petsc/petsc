@@ -178,7 +178,17 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     if (!osm->is){ /* create the index sets */
       ierr = PCGASMCreateSubdomains(pc->pmat,osm->n,&osm->is);CHKERRQ(ierr);
     }
-    if (osm->n > 1 && !osm->is_local) {
+    if (!osm->is_local) { 
+      /* 
+	 This indicates that osm->is should define a nonoverlapping decomposition 
+	 (there is no way to really guarantee that if subdomains are set by the user through PCGASMSetLocalSubdomains, 
+	  but the assumption is that either the user does the right thing, or subdomains in ossm->is have been created
+	  via PCGASMCreateSubdomains, which guarantees a nonoverlapping decomposition).
+	 Therefore, osm->is will be used to define osm->is_local.  
+	 If a nonzero overlap has been requested by the user, then osm->is will be expanded and will overlap,
+	 so osm->is_local should obtain a copy of osm->is while they are still (presumably) nonoverlapping.
+	 Otherwise (no overlap has been requested), osm->is_local are simply aliases for osm->is.
+      */
       ierr = PetscMalloc(osm->n*sizeof(IS),&osm->is_local);CHKERRQ(ierr);
       for (i=0; i<osm->n; i++) {
         if (osm->overlap > 0) { /* With positive overlap, osm->is[i] will be modified */
@@ -190,25 +200,24 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
         }
       }
     }
+    /* Beyond this point osm->is_local is not null. */
+    if (osm->overlap > 0) {
+      /* Extend the "overlapping" regions by a number of steps */
+      ierr = MatIncreaseOverlap(pc->pmat,osm->n,osm->is,osm->overlap);CHKERRQ(ierr);
+    }
     ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
     flg  = PETSC_FALSE;
     ierr = PetscOptionsGetBool(prefix,"-pc_gasm_print_subdomains",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) { ierr = PCGASMPrintSubdomains(pc);CHKERRQ(ierr); }
 
-    if (osm->overlap > 0) {
-      /* Extend the "overlapping" regions by a number of steps */
-      ierr = MatIncreaseOverlap(pc->pmat,osm->n,osm->is,osm->overlap);CHKERRQ(ierr);
-    }
     if (osm->sort_indices) {
       for (i=0; i<osm->n; i++) {
         ierr = ISSort(osm->is[i]);CHKERRQ(ierr);
-        if (osm->is_local) {
-          ierr = ISSort(osm->is_local[i]);CHKERRQ(ierr);
-        }
+	ierr = ISSort(osm->is_local[i]);CHKERRQ(ierr);
       }
     }
     /* Merge the ISs, create merged vectors and scatter contexts. */
-    /* Domain IS. */
+    /* Restriction ISs. */
     ddn = 0;
     for (i=0; i<osm->n; i++) {
       ierr = ISGetLocalSize(osm->is[i],&dn);          CHKERRQ(ierr);
@@ -221,6 +230,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       ierr = ISGetIndices(osm->is[i],&didx); CHKERRQ(ierr);
       ierr = PetscMemcpy(ddidx+ddn, didx, sizeof(PetscInt)*dn); CHKERRQ(ierr);
       ierr = ISRestoreIndices(osm->is[i], &didx); CHKERRQ(ierr);
+      ddn += dn;
     }
     ierr = ISCreateGeneral(((PetscObject)(pc))->comm, ddn, ddidx, PETSC_OWN_POINTER, &osm->gis); CHKERRQ(ierr);
     ierr = MatGetVecs(pc->pmat,&x,&y);CHKERRQ(ierr);
@@ -229,15 +239,14 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     ierr = ISCreateStride(((PetscObject)pc)->comm,ddn,0,1, &gid);              CHKERRQ(ierr);
     ierr = VecScatterCreate(x,osm->gis,osm->gx,gid, &(osm->grestriction));   CHKERRQ(ierr);
     ierr = ISDestroy(gid);                                                     CHKERRQ(ierr);
-    /* Local domain IS */
-    if(osm->is_local) { /* All ranks either have this or not, so collective calls within this branch are okay. */
-      PetscInt       dn_local;       /* Number of indices in the local part of single domain assigned to this processor. */
+    /* Prolongation ISs */
+    { PetscInt       dn_local;       /* Number of indices in the local part of single domain assigned to this processor. */
       const PetscInt *didx_local;    /* Global indices from the local part of a single domain assigned to this processor. */
       PetscInt       ddn_local;      /* Number of indices in the local part of the disjoint union all domains assigned to this processor. */
       PetscInt       *ddidx_local;   /* Global indices of the local part of the disjoint union of all domains assigned to this processor. */
       /**/
-      ISLocalToGlobalMapping ltog;          /* Mapping from global to local indices on the disjoint union of subdomains: local run from 0 to ddn-1. */
-      PetscInt              *ddidx_llocal;  /* Local (within disjoint union of subdomains) indices of the disjoint union of local parts of subdomains. */
+      ISLocalToGlobalMapping ltog;          /* Map from global to local indices on the disjoint union of subdomains: "local" ind's run from 0 to ddn-1. */
+      PetscInt              *ddidx_llocal;  /* Mapped local indices of the disjoint union of local parts of subdomains. */
       PetscInt               ddn_llocal;    /* Number of indices in ddidx_llocal; must equal ddn_local, or else gis_local is not a sub-IS of gis. */
       IS                     gis_llocal;    /* IS with ddidx_llocal indices. */
       PetscInt               j;
@@ -255,17 +264,12 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
 	ierr = ISRestoreIndices(osm->is_local[i], &didx_local); CHKERRQ(ierr);
 	ddn_local += dn_local;
       }
-      ierr = VecGetOwnershipRange(y, &firstRow, &lastRow); CHKERRQ(ierr);
-      if(ddn_local != lastRow-firstRow) {
-	SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Specified local domains of total size %D do not cover the local vector range [%D,%D)", 
-		 ddn_local, firstRow, lastRow);
-      }
       ierr = PetscMalloc(sizeof(PetscInt)*ddn_local, &ddidx_llocal); CHKERRQ(ierr);
       ierr = ISCreateGeneral(((PetscObject)pc)->comm, ddn_local, ddidx_local, PETSC_OWN_POINTER, &(osm->gis_local)); CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingCreateIS(osm->gis,&ltog);CHKERRQ(ierr);
       ierr = ISGlobalToLocalMappingApply(ltog,IS_GTOLM_DROP,dn_local,ddidx_local,&ddn_llocal,ddidx_llocal);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRQ(ierr);
-      if (ddn_llocal != ddn_local) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"gis_local contains %D nonlocal indices", ddn_llocal - ddn_local);
+      if (ddn_llocal != ddn_local) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"gis_local contains %D indices outside of gis", ddn_llocal - ddn_local);
       /* Now convert these localized indices into the global indices into the merged output vector. */
       ierr = VecGetOwnershipRange(osm->gy, &firstRow, &lastRow); CHKERRQ(ierr);
       for(j=0; j < ddn_llocal; ++j) {
@@ -274,7 +278,6 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       ierr = ISCreateGeneral(PETSC_COMM_SELF,ddn_llocal,ddidx_llocal,PETSC_OWN_POINTER,&gis_llocal); CHKERRQ(ierr);
       ierr = VecScatterCreate(y,osm->gis_local,osm->gy,gis_llocal,&osm->gprolongation);              CHKERRQ(ierr);
       ierr = ISDestroy(gis_llocal);CHKERRQ(ierr);
-      
     }
     /* Create the subdomain work vectors. */
     ierr = PetscMalloc(osm->n*sizeof(Vec),&osm->x);CHKERRQ(ierr);
@@ -526,6 +529,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetLocalSubdomains_GASM(PC pc,PetscInt n
   if (pc->setupcalled && (n != osm->n || is)) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"PCGASMSetLocalSubdomains() should be called before calling PCSetUp().");
 
   if (!pc->setupcalled) {
+    osm->n            = n;
+    osm->is           = 0;
+    osm->is_local     = 0;
     if (is) {
       for (i=0; i<n; i++) {ierr = PetscObjectReference((PetscObject)is[i]);CHKERRQ(ierr);}
     }
@@ -535,9 +541,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetLocalSubdomains_GASM(PC pc,PetscInt n
     if (osm->is) {
       ierr = PCGASMDestroySubdomains(osm->n,osm->is,osm->is_local);CHKERRQ(ierr);
     }
-    osm->n            = n;
-    osm->is           = 0;
-    osm->is_local     = 0;
     if (is) {
       ierr = PetscMalloc(n*sizeof(IS),&osm->is);CHKERRQ(ierr);
       for (i=0; i<n; i++) { osm->is[i] = is[i]; }
@@ -577,6 +580,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetTotalSubdomains_GASM(PC pc,PetscInt N
     if (osm->is) {
       ierr = PCGASMDestroySubdomains(osm->n,osm->is,osm->is_local);CHKERRQ(ierr);
     }
+    osm->N            = N;
     osm->n            = n;
     osm->is           = 0;
     osm->is_local     = 0;

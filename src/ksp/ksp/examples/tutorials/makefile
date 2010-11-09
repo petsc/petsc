@@ -64,6 +64,10 @@ ex8: ex8.o  chkopts
 	-${CLINKER} -o ex8 ex8.o  ${PETSC_KSP_LIB}
 	${RM} ex8.o
 
+ex8g: ex8g.o  chkopts
+	-${CLINKER} -o ex8g ex8g.o  ${PETSC_KSP_LIB}
+	${RM} ex8g.o
+
 ex9: ex9.o  chkopts
 	-${CLINKER} -o ex9 ex9.o  ${PETSC_KSP_LIB}
 	${RM} ex9.o
@@ -393,6 +397,21 @@ runex9:
 	   if (${DIFF} output/ex9_1.out ex9_1.tmp) then true; \
 	   else echo "Possible problem with ex9_1, diffs above"; fi; \
 	   ${RM} -f ex9_1.tmp
+NP = 1
+runex8:
+	-@${MPIEXEC} -n ${NP} ./ex8 -print_error
+runex8_1:
+	-@${MPIEXEC} -n 1 ./ex8 -print_error > ex8_1.tmp 2>&1; \
+	   if (${DIFF} output/ex8_1.out ex8_1.tmp) then true; \
+	   else echo "Possible problem with ex8_1, diffs above"; fi; \
+	   ${RM} -f ex8_1.tmp
+runex8g:
+	-@${MPIEXEC} -n ${NP} ./ex8g -print_error
+runex8g_1:
+	-@${MPIEXEC} -n 1 ./ex8g -print_error > ex8g_1.tmp 2>&1; \
+	   if (${DIFF} output/ex8g_1.out ex8g_1.tmp) then true; \
+	   else echo "Possible problem with ex8g_1, diffs above"; fi; \
+	   ${RM} -f ex8g_1.tmp
 runex10:
 	-@${MPIEXEC} -n 2 ./ex10 -f0 ../../../../mat/examples/matbinary.cplx.ex -ksp_gmres_cgs_refinement_type refine_always -options_left off > ex10_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
