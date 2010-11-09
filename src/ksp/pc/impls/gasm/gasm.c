@@ -140,7 +140,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   PetscErrorCode ierr;
   PetscBool      symset,flg;
   PetscInt       i,firstRow,lastRow;
-  PetscMPIInt    size;
+  PetscMPIInt    rank, size;
   MatReuse       scall = MAT_REUSE_MATRIX;
   KSP            ksp;
   PC             subpc;
@@ -152,9 +152,10 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   IS             gid;      /* Identity IS of the size of all subdomains assigned to this processor. */
   Vec            x,y;
   PetscScalar    *gxarray, *gyarray;
-  IS             *is;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
   if (!pc->setupcalled) {
 
     if (!osm->type_set) {
@@ -322,14 +323,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   /* 
      Extract out the submatrices. 
   */
-  ierr = PetscMalloc(sizeof(IS)*osm->nmax, &is); CHKERRQ(ierr);
-  for(i=0; i<osm->n; ++i) {
-    is[i] = osm->is[i];
-  }
-  for (i=osm->n; i<osm->nmax; i++) {
-    ierr = ISCreateStride(((PetscObject)pc)->comm,0,0,1,&is[i]);CHKERRQ(ierr);
-  }
-  ierr = MatGetSubMatrices(pc->pmat,osm->n,osm->is,is,scall,&osm->pmat);CHKERRQ(ierr);
+  ierr = MatGetSubMatrices(pc->pmat,osm->n,osm->is, osm->is,scall,&osm->pmat);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix);CHKERRQ(ierr);
     for (i=0; i<osm->n; i++) {
@@ -340,11 +334,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   
   /* Return control to the user so that the submatrices can be modified (e.g., to apply
      different boundary conditions for the submatrices than for the global problem) */
-  ierr = PCModifySubMatrices(pc,osm->n,is,is,osm->pmat,pc->modifysubmatricesP);CHKERRQ(ierr);
-  for (i=osm->n; i<osm->nmax; i++) {
-    ierr = ISDestroy(is[i]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(is); CHKERRQ(ierr);
+  ierr = PCModifySubMatrices(pc,osm->n,osm->is,osm->is,osm->pmat,pc->modifysubmatricesP);CHKERRQ(ierr);
 
   /* 
      Loop over submatrices putting them into local ksp
