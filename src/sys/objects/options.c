@@ -64,11 +64,11 @@ extern PetscOptionsObjectType PetscOptionsObject;
 	}
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsAtoi"
+#define __FUNCT__ "PetscOptionsStringToInt"
 /*
-   PetscOptionsAtoi - Converts a string to an integer value. Handles special cases such as "default" and "decide"
+   PetscOptionsStringToInt - Converts a string to an integer value. Handles special cases such as "default" and "decide"
 */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsAtoi(const char name[],PetscInt *a)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsStringToInt(const char name[],PetscInt *a)
 {
   PetscErrorCode ierr;
   size_t         i,len;
@@ -113,11 +113,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsAtoi(const char name[],PetscInt *a
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsAtod"
+#define __FUNCT__ "PetscOptionsStringToReal"
 /*
    Converts a string to PetscReal value. Handles special cases like "default" and "decide"
 */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsAtod(const char name[],PetscReal *a)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsStringToReal(const char name[],PetscReal *a)
 {
   PetscErrorCode ierr;
   size_t         len;
@@ -150,11 +150,11 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsAtod(const char name[],PetscReal *
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsAtol"
+#define __FUNCT__ "PetscOptionsStringToBool"
 /*
-   PetscOptionsAtol - Converts string to PetscBool , handles cases like "yes", "no", "true", "false", "0", "1"
+   PetscOptionsStringToBool - Converts string to PetscBool , handles cases like "yes", "no", "true", "false", "0", "1"
 */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsAtol(const char value[], PetscBool  *a)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsStringToBool(const char value[], PetscBool  *a)
 {
   PetscBool      istrue, isfalse;
   size_t         len;
@@ -1265,7 +1265,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetInt(const char pre[],const char
     if (!value) {if (set) *set = PETSC_FALSE;}
     else {
       if (set) *set = PETSC_TRUE; 
-      ierr = PetscOptionsAtoi(value,ivalue);CHKERRQ(ierr);
+      ierr = PetscOptionsStringToInt(value,ivalue);CHKERRQ(ierr);
     }
   } else {
     if (set) *set = PETSC_FALSE;
@@ -1437,7 +1437,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetBool(const char pre[],const cha
     if (!value) {
       *ivalue = PETSC_TRUE;
     } else {
-      ierr = PetscOptionsAtol(value, ivalue);CHKERRQ(ierr);
+      ierr = PetscOptionsStringToBool(value, ivalue);CHKERRQ(ierr);
     }
   } else {
     if (set) *set = PETSC_FALSE;
@@ -1500,7 +1500,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetBoolArray(const char pre[],cons
   ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
   while (n < *nmax) {
     if (!value) break;
-    ierr = PetscOptionsAtol(value,dvalue);CHKERRQ(ierr);
+    ierr = PetscOptionsStringToBool(value,dvalue);CHKERRQ(ierr);
     ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
     dvalue++;
     n++;
@@ -1549,7 +1549,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetReal(const char pre[],const cha
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (!value) {if (set) *set = PETSC_FALSE;}
-    else        {if (set) *set = PETSC_TRUE; ierr = PetscOptionsAtod(value,dvalue);CHKERRQ(ierr);}
+    else        {if (set) *set = PETSC_TRUE; ierr = PetscOptionsStringToReal(value,dvalue);CHKERRQ(ierr);}
   } else {
     if (set) *set = PETSC_FALSE;
   }
@@ -1602,7 +1602,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetScalar(const char pre[],const c
       if (set) *set = PETSC_FALSE;
     } else { 
 #if !defined(PETSC_USE_COMPLEX)
-      ierr = PetscOptionsAtod(value,dvalue);CHKERRQ(ierr);
+      ierr = PetscOptionsStringToReal(value,dvalue);CHKERRQ(ierr);
 #else
       PetscReal  re=0.0,im=0.0;
       PetscToken token;
@@ -1611,12 +1611,12 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetScalar(const char pre[],const c
       ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
       ierr = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
       if (!tvalue) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"unknown string specified\n"); }
-      ierr    = PetscOptionsAtod(tvalue,&re);CHKERRQ(ierr);
+      ierr    = PetscOptionsStringToReal(tvalue,&re);CHKERRQ(ierr);
       ierr    = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
       if (!tvalue) { /* Unknown separator used. using only real value */
         *dvalue = re;
       } else {
-        ierr    = PetscOptionsAtod(tvalue,&im);CHKERRQ(ierr);
+        ierr    = PetscOptionsStringToReal(tvalue,&im);CHKERRQ(ierr);
         *dvalue = re + PETSC_i*im;
       } 
       ierr    = PetscTokenDestroy(token);CHKERRQ(ierr);
@@ -1680,7 +1680,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetRealArray(const char pre[],cons
   ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
   while (n < *nmax) {
     if (!value) break;
-    ierr = PetscOptionsAtod(value,dvalue++);CHKERRQ(ierr);
+    ierr = PetscOptionsStringToReal(value,dvalue++);CHKERRQ(ierr);
     ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
     n++;
   }
@@ -1751,8 +1751,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const
       if (value[i] == '-') {
         if (i == (int)len-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry %s\n",n,value);
         value[i] = 0;
-        ierr     = PetscOptionsAtoi(value,&start);CHKERRQ(ierr);        
-        ierr     = PetscOptionsAtoi(value+i+1,&end);CHKERRQ(ierr);        
+        ierr     = PetscOptionsStringToInt(value,&start);CHKERRQ(ierr);        
+        ierr     = PetscOptionsStringToInt(value+i+1,&end);CHKERRQ(ierr);        
         if (end <= start) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry, %s-%s cannot have decreasing list",n,value,value+i+1);
         if (n + end - start - 1 >= *nmax) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry, not enough space in left in array (%D) to contain entire range from %D to %D",n,*nmax-n,start,end);
         for (;start<end; start++) {
@@ -1763,7 +1763,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const
       }
     }
     if (!foundrange) {
-      ierr      = PetscOptionsAtoi(value,dvalue);CHKERRQ(ierr);
+      ierr      = PetscOptionsStringToInt(value,dvalue);CHKERRQ(ierr);
       dvalue++;
       n++;
     }
