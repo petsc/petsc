@@ -546,6 +546,8 @@ class Configure(config.base.Configure):
       self.addDefine('UINTPTR_T', 'unsigned long long')
     elif staticAssertSizeMatchesVoidStar('#include <stdlib.h>','size_t') or staticAssertSizeMatchesVoidStar('#include <string.h>', 'size_t'):
       self.addDefine('UINTPTR_T', 'size_t')
+    elif staticAssertSizeMatchesVoidStar('','unsigned long'):
+      self.addDefine('UINTPTR_T', 'unsigned long')
     elif staticAssertSizeMatchesVoidStar('','unsigned'):
       self.addDefine('UINTPTR_T', 'unsigned')
     self.popLanguage()

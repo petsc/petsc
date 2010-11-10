@@ -36,7 +36,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocAlign(size_t mem,int line,const cha
     */
     ptr = (int*)malloc(mem + 2*PETSC_MEMALIGN);
     if (ptr) {
-      shift        = (int)(((unsigned long long) ptr) % PETSC_MEMALIGN);
+      shift        = (int)(((PETSC_UINTPTR_T) ptr) % PETSC_MEMALIGN);
       shift        = (2*PETSC_MEMALIGN - shift)/sizeof(int);
       ptr[shift-1] = shift + SHIFT_CLASSID ;
       ptr         += shift;
