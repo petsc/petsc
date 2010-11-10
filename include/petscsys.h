@@ -652,11 +652,7 @@ M*/
 
   Concepts: memory allocation
 M*/
-#if defined PETSC_UINTPTR_T
-#  define PetscAddrAlign(a) (void*)((((PETSC_UINTPTR_T)(a))+(PETSC_MEMALIGN-1)) & ~(PETSC_MEMALIGN-1))
-#else
-#  define PetscAddrAlign(a) (void*)(a)
-#endif
+#define PetscAddrAlign(a) (void*)((((PETSC_UINTPTR_T)(a))+(PETSC_MEMALIGN-1)) & ~(PETSC_MEMALIGN-1))
 
 /*MC
    PetscMalloc2 - Allocates 2 chunks of  memory both aligned to PETSC_MEMALIGN

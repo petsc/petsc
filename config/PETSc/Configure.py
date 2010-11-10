@@ -538,6 +538,8 @@ class Configure(config.base.Configure):
     def staticAssertSizeMatchesVoidStar(inc,typename):
       # The declaration is an error if either array size is negative.
       # It should be okay to use an int that is too large, but it would be very unlikely for this to be the case
+      return self.checkCompile(inc, ('#define STATIC_ASSERT(cond) char negative_length_if_false[2*(!!(cond))-1]\n'
+                                     + 'STATIC_ASSERT(sizeof(void*) == sizeof(int));'))
       return self.checkCompile(inc, '#define SZ (sizeof(void*)-sizeof(%s))\nint type_is_too_large[SZ],type_is_too_small[-SZ];'%typename)
     self.pushLanguage(self.languages.clanguage)
     if self.checkCompile('#include <stdint.h>', 'int x; uintptr_t i = (uintptr_t)&x;'):
@@ -550,6 +552,8 @@ class Configure(config.base.Configure):
       self.addDefine('UINTPTR_T', 'unsigned long')
     elif staticAssertSizeMatchesVoidStar('','unsigned'):
       self.addDefine('UINTPTR_T', 'unsigned')
+    else:
+      raise RuntimeError('Could not find any unsigned integer type matching void*')
     self.popLanguage()
       
   def configureInline(self):
