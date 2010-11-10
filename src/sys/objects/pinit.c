@@ -883,9 +883,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     }
   }
 
-  flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-log_history",&flg1,PETSC_NULL);CHKERRQ(ierr);
-  if (flg1) {
+  if (petsc_history) {
     ierr = PetscLogCloseHistoryFile(&petsc_history);CHKERRQ(ierr);
     petsc_history = 0;
   }
