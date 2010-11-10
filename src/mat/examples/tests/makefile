@@ -13,7 +13,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		   ex53.c ex54.c ex55.c ex56.c ex57.c ex58.c ex59.c ex60.c ex61.c \
 		   ex62.c ex64.c ex65.c ex66.c ex68.c ex70.c ex71.c ex72.c ex73.c ex74.c \
                    ex75.c ex76.c ex80.c ex81.c ex77.c ex78.c ex86.c ex87.c \
-                   ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex98.c ex99.c ex100.c \
+                   ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex97.c ex98.c ex99.c ex100.c \
                    ex101.c ex102.c ex103.c ex104.c ex106.c ex107.c ex108.c ex109.c ex110.c\
                    ex111.c ex112.c ex113.c ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c ex120.c ex121.c ex122.c ex123.c \
                    ex124.c ex129.c ex130.c ex131.c ex132.c ex133.c ex134.c ex135.c ex136.c ex137.c  ex138.c ex140.c
@@ -359,6 +359,10 @@ ex95: ex95.o chkopts
 ex96: ex96.o chkopts
 	-${CLINKER} -o ex96 ex96.o ${PETSC_KSP_LIB}
 	${RM} ex96.o
+
+ex97: ex97.o chkopts
+	-${CLINKER} -o ex97 ex97.o ${PETSC_KSP_LIB}
+	${RM} ex97.o
 
 ex98: ex98.o chkopts
 	-${CLINKER} -o ex98 ex98.o ${PETSC_KSP_LIB}
@@ -1191,6 +1195,11 @@ runex96:
 	   else echo "Possible problem with ex96, diffs above"; fi; \
 	   ${RM} -f ex96.tmp
 
+runex97:
+	-@${MPIEXEC} -n 3 ./ex97 > ex97.tmp 2>&1; \
+	   ${DIFF} output/ex97_1.out ex97.tmp || echo "Possible problem with ex97, diffs above"; \
+	   ${RM} -f ex97.tmp
+
 runex98:
 	-@${MPIEXEC} -n 4 ./ex98  > ex98.tmp 2>&1; \
 	   if (${DIFF} output/ex98.out ex98.tmp) then true; \
@@ -1449,6 +1458,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PET
                                  ex59.rm ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm ex65.PETSc \
                                  ex65.rm ex66.PETSc ex66.rm ex98.PETSc runex98 ex98.rm ex102.PETSc runex102 ex102.rm\
                                  ex52.PETSc runex52_1 runex52_2 runex52_3 runex52_4 ex52.rm \
+                                 ex97.PETSc runex97 ex97.rm \
                                  ex109.PETSc runex109 runex109_2 ex109.rm ex110.PETSc runex110 ex110.rm ex122.PETSc runex122 ex122.rm \
                                  ex114.PETSc runex114 runex114_2 runex114_3 ex114.rm ex117.PETSc ex117.rm ex118.PETSc ex118.rm ex119.PETSc ex119.rm \
                                  ex128.PETSc runex128 runex128_2 ex128.rm ex129.PETSc runex129 runex129_2 ex129.rm ex131.PETSc ex131.rm ex132.PETSc ex132.rm \

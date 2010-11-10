@@ -26,7 +26,7 @@ static PetscErrorCode PreScaleLeft(Mat N,Vec x,Vec *xx)
     if (!Na->olwork) {
       ierr = VecDuplicate(Na->left,&Na->olwork);CHKERRQ(ierr);
     }
-    ierr = VecPointwiseMult(Na->left,x,Na->olwork);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(Na->olwork,x,Na->left);CHKERRQ(ierr);
     *xx = Na->olwork;
   }
   PetscFunctionReturn(0);
@@ -46,7 +46,7 @@ static PetscErrorCode PreScaleRight(Mat N,Vec x,Vec *xx)
     if (!Na->orwork) {
       ierr = VecDuplicate(Na->right,&Na->orwork);CHKERRQ(ierr);
     }
-    ierr = VecPointwiseMult(Na->right,x,Na->orwork);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(Na->orwork,x,Na->right);CHKERRQ(ierr);
     *xx = Na->orwork;
   }
   PetscFunctionReturn(0);
@@ -153,10 +153,23 @@ static PetscErrorCode MatMultAdd_SubMatrix(Mat N,Vec v1,Vec v2,Vec v3)
   ierr = VecScatterBegin(Na->rprolong,xx,Na->rwork,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd  (Na->rprolong,xx,Na->rwork,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = MatMult(Na->A,Na->rwork,Na->lwork);CHKERRQ(ierr);
-  ierr = VecScatterBegin(Na->lrestrict,Na->lwork,v3,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (Na->lrestrict,Na->lwork,v3,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = PostScaleLeft(N,v3);CHKERRQ(ierr);
-  ierr = VecAYPX(v3,Na->scale,v2);CHKERRQ(ierr);
+  if (v2 == v3) {
+    if (Na->scale == 1.0 && !Na->left) {
+      ierr = VecScatterBegin(Na->lrestrict,Na->lwork,v3,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd  (Na->lrestrict,Na->lwork,v3,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    } else {
+      if (!Na->olwork) {ierr = VecDuplicate(v3,&Na->olwork);CHKERRQ(ierr);}
+      ierr = VecScatterBegin(Na->lrestrict,Na->lwork,Na->olwork,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd  (Na->lrestrict,Na->lwork,Na->olwork,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = PostScaleLeft(N,Na->olwork);CHKERRQ(ierr);
+      ierr = VecAXPY(v3,Na->scale,Na->olwork);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = VecScatterBegin(Na->lrestrict,Na->lwork,v3,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (Na->lrestrict,Na->lwork,v3,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = PostScaleLeft(N,v3);CHKERRQ(ierr);
+    ierr = VecAYPX(v3,Na->scale,v2);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -174,8 +187,8 @@ static PetscErrorCode MatMultTranspose_SubMatrix(Mat N,Vec x,Vec y)
   ierr = VecScatterBegin(Na->lrestrict,xx,Na->lwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd  (Na->lrestrict,xx,Na->lwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = MatMultTranspose(Na->A,Na->lwork,Na->rwork);CHKERRQ(ierr);
-  ierr = VecScatterBegin(Na->rprolong,Na->rwork,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (Na->rprolong,Na->rwork,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterBegin(Na->rprolong,Na->rwork,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (Na->rprolong,Na->rwork,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = PostScaleRight(N,y);CHKERRQ(ierr);
   ierr = VecScale(y,Na->scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -195,10 +208,23 @@ static PetscErrorCode MatMultTransposeAdd_SubMatrix(Mat N,Vec v1,Vec v2,Vec v3)
   ierr = VecScatterBegin(Na->lrestrict,xx,Na->lwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd  (Na->lrestrict,xx,Na->lwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = MatMultTranspose(Na->A,Na->lwork,Na->rwork);CHKERRQ(ierr);
-  ierr = VecScatterBegin(Na->rprolong,Na->rwork,v3,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (Na->rprolong,Na->rwork,v3,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = PostScaleRight(N,v3);CHKERRQ(ierr);
-  ierr = VecAYPX(v3,Na->scale,v2);CHKERRQ(ierr);
+  if (v2 == v3) {
+    if (Na->scale == 1.0 && !Na->right) {
+      ierr = VecScatterBegin(Na->rprolong,Na->rwork,v3,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd  (Na->rprolong,Na->rwork,v3,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    } else {
+      if (!Na->orwork) {ierr = VecDuplicate(v3,&Na->orwork);CHKERRQ(ierr);}
+      ierr = VecScatterBegin(Na->rprolong,Na->rwork,Na->orwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd  (Na->rprolong,Na->rwork,Na->orwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = PostScaleRight(N,Na->orwork);CHKERRQ(ierr);
+      ierr = VecAXPY(v3,Na->scale,Na->orwork);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = VecScatterBegin(Na->rprolong,Na->rwork,v3,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (Na->rprolong,Na->rwork,v3,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = PostScaleRight(N,v3);CHKERRQ(ierr);
+    ierr = VecAYPX(v3,Na->scale,v2);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
