@@ -1,4 +1,8 @@
 #define PETSC_DLL
+
+/* Feature test macros to make sure atoll is available (SVr4, POSIX.1-2001, 4.3BSD, C99), not in (C89 and POSIX.1-1996) */
+#define _XOPEN_SOURCE 600
+#define _BSD_SOURCE
 /*
    These routines simplify the use of command line, file options, etc., and are used to manipulate the options database.
    This provides the low-level interface, the high level interface is in aoptions.c
@@ -95,7 +99,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsAtoi(const char name[],PetscInt *a)
         SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no integer value (do not include . in it)",name);
       }
     }
-    *a  = atoi(name);
+#if defined(PETSC_USE_64BIT_INDICES)
+    *a = atoll(name);
+#else
+    *a = atoi(name);
+#endif
   }
   PetscFunctionReturn(0);
 }
