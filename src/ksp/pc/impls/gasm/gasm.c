@@ -152,6 +152,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   IS             gid;      /* Identity IS of the size of all subdomains assigned to this processor. */
   Vec            x,y;
   PetscScalar    *gxarray, *gyarray;
+  PetscInt       gfirst, glast;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
@@ -237,8 +238,9 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     ierr = MatGetVecs(pc->pmat,&x,&y);CHKERRQ(ierr);
     ierr = VecCreateMPI(((PetscObject)pc)->comm, ddn, PETSC_DECIDE, &osm->gx); CHKERRQ(ierr);
     ierr = VecDuplicate(osm->gx,&osm->gy);                                     CHKERRQ(ierr);
-    ierr = ISCreateStride(((PetscObject)pc)->comm,ddn,0,1, &gid);              CHKERRQ(ierr);
-    ierr = VecScatterCreate(x,osm->gis,osm->gx,gid, &(osm->grestriction));   CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(osm->gx, &gfirst, &glast);                     CHKERRQ(ierr);
+    ierr = ISCreateStride(((PetscObject)pc)->comm,ddn,gfirst,1, &gid);              CHKERRQ(ierr);
+    ierr = VecScatterCreate(x,osm->gis,osm->gx,gid, &(osm->grestriction));     CHKERRQ(ierr);
     ierr = ISDestroy(gid);                                                     CHKERRQ(ierr);
     /* Prolongation ISs */
     { PetscInt       dn_local;       /* Number of indices in the local part of single domain assigned to this processor. */
@@ -272,9 +274,9 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRQ(ierr);
       if (ddn_llocal != ddn_local) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"gis_local contains %D indices outside of gis", ddn_llocal - ddn_local);
       /* Now convert these localized indices into the global indices into the merged output vector. */
-      ierr = VecGetOwnershipRange(osm->gy, &firstRow, &lastRow); CHKERRQ(ierr);
+      ierr = VecGetOwnershipRange(osm->gy, &gfirst, &glast); CHKERRQ(ierr);
       for(j=0; j < ddn_llocal; ++j) {
-	ddidx_llocal[j] += firstRow;
+	ddidx_llocal[j] += gfirst;
       }
       ierr = ISCreateGeneral(PETSC_COMM_SELF,ddn_llocal,ddidx_llocal,PETSC_OWN_POINTER,&gis_llocal); CHKERRQ(ierr);
       ierr = VecScatterCreate(y,osm->gis_local,osm->gy,gis_llocal,&osm->gprolongation);              CHKERRQ(ierr);
@@ -283,7 +285,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     /* Create the subdomain work vectors. */
     ierr = PetscMalloc(osm->n*sizeof(Vec),&osm->x);CHKERRQ(ierr);
     ierr = PetscMalloc(osm->n*sizeof(Vec),&osm->y);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(osm->gx, &firstRow, &lastRow);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(osm->gx, &gfirst, &glast);CHKERRQ(ierr);
     ierr = VecGetArray(osm->gx, &gxarray);                                     CHKERRQ(ierr);
     ierr = VecGetArray(osm->gy, &gyarray);                                     CHKERRQ(ierr);
     for (i=0, ddn=0; i<osm->n; ++i, ddn += dn) {
