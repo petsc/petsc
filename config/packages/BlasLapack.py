@@ -262,7 +262,7 @@ class Configure(config.package.Package):
       dir = os.path.join(os.environ['PGI'],'linux86','lib')
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'), os.path.join(dir, 'liblapack.a'), 1)
     # Try compiler defaults
-    yield ('Defalut compiler libraries', '', '', 1)
+    yield ('Default compiler libraries', '', '', 1)
     yield ('Default compiler locations', 'libblas.a', 'liblapack.a', 1)
     yield ('HPUX', 'libveclib.a', 'liblapack.a', 1)
     # /usr/local/lib
