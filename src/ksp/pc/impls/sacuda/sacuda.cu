@@ -61,9 +61,6 @@ static PetscErrorCode PCSetUp_SACUDA(PC pc)
   try {
     ierr = MatCUDACopyToGPU(pc->pmat);CHKERRCUDA(ierr);
     gpustruct  = (Mat_SeqAIJCUDA *)(pc->pmat->spptr);
-    /*cusp::coo_matrix<PetscInt,PetscScalar,cusp::device_memory> tempmat(*(CUSPMATRIX*)gpustruct->mat);
-    tempmat.sort_by_row();
-    sa->SACUDA = new cudasaprecond(tempmat);*/
     sa->SACUDA = new cudasaprecond(*(CUSPMATRIX*)gpustruct->mat);
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
@@ -106,7 +103,6 @@ static PetscErrorCode PCApply_SACUDA(PC pc,Vec x,Vec y)
     if (y->valid_GPU_array != PETSC_CUDA_UNALLOCATED) {
     y->valid_GPU_array = PETSC_CUDA_GPU;
     }
-    ierr = VecCUDACopyFromGPU(y);CHKERRCUDA(ierr);
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
   } 
