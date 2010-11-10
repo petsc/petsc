@@ -398,15 +398,20 @@ runex9:
 	   else echo "Possible problem with ex9_1, diffs above"; fi; \
 	   ${RM} -f ex9_1.tmp
 NP = 1
+m  = 4
+n  = 5
 runex8:
-	-@${MPIEXEC} -n ${NP} ./ex8 -print_error
+	-@${MPIEXEC} -n ${NP} ./ex8 -m $m -n $n -print_error ${ARGS}
 runex8_1:
 	-@${MPIEXEC} -n 1 ./ex8 -print_error > ex8_1.tmp 2>&1; \
 	   if (${DIFF} output/ex8_1.out ex8_1.tmp) then true; \
 	   else echo "Possible problem with ex8_1, diffs above"; fi; \
 	   ${RM} -f ex8_1.tmp
+###
 runex8g:
-	-@${MPIEXEC} -n ${NP} ./ex8g -print_error
+	-@${MPIEXEC} -n ${NP} ./ex8g -m $m -n $n -print_error ${ARGS}
+runex8g_debug:
+	-@${MPIEXEC} -n ${NP} xterm -e gdb -ex 'set breakpoint pending on' -ex 'b ${BREAKPOINT}' -ex r -ex bt --args ./ex8g -m $m -n $n -print_error
 runex8g_1:
 	-@${MPIEXEC} -n 1 ./ex8g -print_error > ex8g_1.tmp 2>&1; \
 	   if (${DIFF} output/ex8g_1.out ex8g_1.tmp) then true; \

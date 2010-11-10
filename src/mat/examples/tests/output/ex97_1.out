@@ -1,0 +1,6 @@
+                       MatMult: norm difference < 1e-12
+              MatMultTranspose: norm difference < 1e-12
+             MatMultAdd v2==v3: norm difference < 1e-12
+             MatMultAdd v2!=v3: norm difference < 1e-12
+    MatMultTransposeAdd v2==v3: norm difference < 1e-12
+    MatMultTransposeAdd v2!=v3: norm difference < 1e-12
