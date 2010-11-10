@@ -1498,7 +1498,7 @@ namespace ALE {
           this->updatePointBCFull(*p_iter, section->restrictPoint(*p_iter));
         }
       }
-      this->copyFibration(section);
+      this->copySpaces(section);
     }
     void defaultConstraintDof() {
       const chart_type& chart = this->getChart();
@@ -2256,7 +2256,7 @@ namespace ALE {
       return size;
     };
     template<typename OtherSection>
-    void copyFibration(const Obj<OtherSection>& section) {
+    void copySpaces(const Obj<OtherSection>& section) {
       const std::vector<Obj<atlas_type> >& spaces = section->getSpaces();
       const std::vector<Obj<bc_type> >&    bcs    = section->getBCs();
 
