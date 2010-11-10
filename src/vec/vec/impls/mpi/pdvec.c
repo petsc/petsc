@@ -726,19 +726,25 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   filespace = H5Screate_simple(dim, dims, maxDims); 
   if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
-  /* Create chunk */
-  chunkspace = H5Pcreate(H5P_DATASET_CREATE);
- if (chunkspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Pcreate()");
- status = H5Pset_chunk(chunkspace, dim, chunkDims); CHKERRQ(status);
-
   /* Create the dataset with default properties and close filespace */
-  ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject) xin, &vecname);CHKERRQ(ierr);
+  if (!H5Lexists(group, vecname, H5P_DEFAULT)) {
+    /* Create chunk */
+    chunkspace = H5Pcreate(H5P_DATASET_CREATE);
+    if (chunkspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Pcreate()");
+    status = H5Pset_chunk(chunkspace, dim, chunkDims); CHKERRQ(status);
+
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-  dset_id = H5Dcreate2(group, vecname, H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT);
+    dset_id = H5Dcreate2(group, vecname, H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT);
 #else
-  dset_id = H5Dcreate(group, vecname, H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT);
+    dset_id = H5Dcreate(group, vecname, H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT);
 #endif
-  if (dset_id == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Dcreate2()");
+    if (dset_id == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Dcreate2()");
+    status = H5Pclose(chunkspace);CHKERRQ(status);
+  } else {
+    dset_id = H5Dopen2(group, vecname, H5P_DEFAULT);
+    status = H5Dset_extent(dset_id, dims);CHKERRQ(status);
+  }
   status = H5Sclose(filespace);CHKERRQ(status);
 
   /* Each process defines a dataset and writes it to the hyperslab in the file */
