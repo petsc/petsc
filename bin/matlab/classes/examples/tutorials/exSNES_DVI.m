@@ -1,7 +1,7 @@
 %%
 % Solves a nonlinear variational inequality where the user manages the mesh--solver interactions
 %
-% This is a translation of snes/examples/tutorials/ex8.c
+% This is a translation of snes/examples/tests/ex8.c
 %
 %   Set the Matlab path and initialize PETSc
 path(path,'../../')
@@ -19,7 +19,7 @@ J  = dm.GetMatrix('aij');
 %%
 %  Create the nonlinear solver 
 snes = PetscSNES();
-snes.SetType('ls');
+snes.SetType('vi');
 %%
 %  Provide a function 
 snes.SetFunction(r,'snesfunction',0);
