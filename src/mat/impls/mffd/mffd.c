@@ -364,7 +364,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   ierr = VecAXPY(y,-1.0,F);CHKERRQ(ierr);
   ierr = VecScale(y,1.0/h);CHKERRQ(ierr);
 
-  if (ctx->vshift || (ctx->vscale != 1.0)) {
+  if ((ctx->vshift != 0.0) || (ctx->vscale != 1.0)) {
     ierr = VecAXPBY(y,ctx->vshift,ctx->vscale,a);CHKERRQ(ierr);
   }
   if (ctx->dlscale) {
@@ -430,7 +430,7 @@ PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
     aa[i-rstart]  = (v - aa[i-rstart])/h;
 
     /* possibly shift and scale result */
-    if (ctx->vshift || (ctx->vscale != 1.0)) {
+    if ((ctx->vshift != 0.0) || (ctx->vscale != 1.0)) {
       aa[i - rstart] = ctx->vshift + ctx->vscale*aa[i-rstart];
     }
 
