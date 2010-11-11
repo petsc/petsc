@@ -4,6 +4,7 @@ function[user] = MSA_BoundaryConditions(user)
 maxits = 5;
 tol = 1e-10;
 b = -0.5;t = 0.5; l = -0.5; r = 0.5;
+user.bedge = b; user.tedge = t; user.ledge = l; user.redge = r;
 mx = user.mx; my = user.my;
 bsize = user.mx+2; lsize = user.my+2;
 tsize = user.mx+2; rsize = user.my+2;
@@ -16,6 +17,7 @@ user.right = user.bottom.Duplicate();
 user.left  = user.bottom.Duplicate();
 
 hx = (r-l)/(mx+1); hy = (t-b)/(my+1);
+user.hx = hx; user.hy = hy;
 
 for(j=0:3)
     switch j
