@@ -58,6 +58,14 @@ classdef PetscDM < PetscObject
     function err = SetFromOptions(obj)
       err = calllib('libpetsc', 'DMSetFromOptions', obj.pobj);
     end
+    function [v,err] = CreateGlobalVector(obj)
+      [err,pidv] = calllib('libpetsc', 'DMCreateGlobalVector', obj.pobj,0);
+      v = PetscVec(pidv,'pobj');
+    end
+    function [v,err] = GetMatrix(obj,name)
+      [err,name,pidv] = calllib('libpetsc', 'DMGetMatrix', obj.pobj,name,0);
+      v = PetscMat(pidv,'pobj');
+    end
     function err = SetUp(obj)
       err = calllib('libpetsc', 'DMSetUp', obj.pobj);
     end

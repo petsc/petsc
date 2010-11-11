@@ -8384,7 +8384,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultTranspose(Mat A,Mat B,MatReuse scall
 
    Input Parameters:
 +  mat - the matrix
-.  nsubcomm - the number of subcommunicators (= number of redundant pareallel or sequential matrices)
+.  nsubcomm - the number of subcommunicators (= number of redundant parallel or sequential matrices)
 .  subcomm - MPI communicator split from the communicator where mat resides in
 .  mlocal_red - number of local rows of the redundant matrix
 -  reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX

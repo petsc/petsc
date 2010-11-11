@@ -13,13 +13,13 @@
 #define __FUNCT__ "DMView_DA_Matlab"
 PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-  PetscMPIInt    rank;
-  PetscInt       dim,m,n,p,dof,swidth;
+  PetscErrorCode   ierr;
+  PetscMPIInt      rank;
+  PetscInt         dim,m,n,p,dof,swidth;
   DMDAStencilType  stencil;
   DMDAPeriodicType periodic;
-  mxArray        *mx;
-  const char     *fnames[] = {"dimension","m","n","p","dof","stencil_width","periodicity","stencil_type"};
+  mxArray          *mx;
+  const char       *fnames[] = {"dimension","m","n","p","dof","stencil_width","periodicity","stencil_type"};
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
@@ -46,14 +46,14 @@ PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
 #define __FUNCT__ "DMView_DA_Binary"
 PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-  PetscMPIInt    rank;
-  PetscInt       i,dim,m,n,p,dof,swidth,M,N,P;
-  size_t         j,len;
+  PetscErrorCode   ierr;
+  PetscMPIInt      rank;
+  PetscInt         i,dim,m,n,p,dof,swidth,M,N,P;
+  size_t           j,len;
   DMDAStencilType  stencil;
   DMDAPeriodicType periodic;
-  MPI_Comm       comm;
-  DM_DA          *dd = (DM_DA*)da->data;
+  MPI_Comm         comm;
+  DM_DA            *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);

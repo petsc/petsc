@@ -14,7 +14,8 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Shell(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_MG(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Eisenstat(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASM(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASM(PC); 
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_GASM(PC); 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_KSP(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Composite(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC);
@@ -93,6 +94,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterAll(const char path[])
   ierr = PCRegisterDynamic(PCICC          ,path,"PCCreate_ICC",PCCreate_ICC);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCCHOLESKY     ,path,"PCCreate_Cholesky",PCCreate_Cholesky);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCASM          ,path,"PCCreate_ASM",PCCreate_ASM);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCGASM         ,path,"PCCreate_GASM",PCCreate_GASM);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCKSP          ,path,"PCCreate_KSP",PCCreate_KSP);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCCOMPOSITE    ,path,"PCCreate_Composite",PCCreate_Composite);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCREDUNDANT    ,path,"PCCreate_Redundant",PCCreate_Redundant);CHKERRQ(ierr);

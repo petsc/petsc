@@ -26,14 +26,14 @@
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
 {
-  MPI_Comm       comm;
-  DM             cda;
+  MPI_Comm         comm;
+  DM               cda;
   DMDAPeriodicType periodic;
-  Vec            xcoor;
-  PetscScalar   *coors;
-  PetscReal      hx,hy,hz_;
-  PetscInt       i,j,k,M,N,P,istart,isize,jstart,jsize,kstart,ksize,dim,cnt;
-  PetscErrorCode ierr;
+  Vec              xcoor;
+  PetscScalar      *coors;
+  PetscReal        hx,hy,hz_;
+  PetscInt         i,j,k,M,N,P,istart,isize,jstart,jsize,kstart,ksize,dim,cnt;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   if (xmax <= xmin) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"xmax must be larger than xmin %G %G",xmin,xmax);
@@ -112,7 +112,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   MPI_Comm          comm;
   PetscDrawAxis     axis;
   Vec               xcoor;
-  DMDAPeriodicType    periodic;
+  DMDAPeriodicType  periodic;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);

@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/dm/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c\
                   ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex19.c \
-	          ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex30.c \
+	          ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex30.c \
 	          ex31.c ex32.c
 EXAMPLESF       = 
 MANSEC          = DA
@@ -94,9 +94,9 @@ ex20: ex20.o   chkopts
 	-${CLINKER} -o ex20 ex20.o  ${PETSC_DM_LIB}
 	${RM} -f ex20.o
 
-ex21f: ex21f.o  chkopts
-	-${FLINKER} -o ex21f ex21f.o  ${PETSC_LIB}
-	${RM} -f ex21f.o
+ex21: ex21.o   chkopts
+	-${CLINKER} -o ex21 ex21.o  ${PETSC_DM_LIB}
+	${RM} -f ex21.o
 
 ex22: ex22.o   chkopts
 	-${CLINKER} -o ex22 ex22.o  ${PETSC_DM_LIB}
@@ -192,6 +192,14 @@ runex13:
 runex14:
 	-@${MPIEXEC} -n 4 ./ex14 ; sleep 1
 
+runex21:
+	-@for procs in '-da_processors_x 10' '-da_processors_y 10' '-da_processors_z 10' ''; do \
+            ${MPIEXEC} -n 10 ./ex21 -mx 30 -my 30 -mz 30 -periodic 0 $procs ;\
+            ${MPIEXEC} -n 10 ./ex21 -mx 29 -my 30 -mz 30 -periodic 1 $procs ;\
+            ${MPIEXEC} -n 10 ./ex21 -mx 30 -my 29 -mz 30 -periodic 2 $procs ;\
+            ${MPIEXEC} -n 10 ./ex21 -mx 30 -my 30 -mz 29 -periodic 3 $procs ;\
+          done;
+
 runex23:
 	-@for d in -1d -2d -3d; do \
             for np in 1 2 3 4; do \
@@ -262,7 +270,7 @@ runex32:
 	  ${DIFF} output/ex32_1.out ex32_1.tmp || echo "Possible problem with ex32, diffs above"; \
 	  ${RM} -f ex32_1.tmp
 
-TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm ex24.PETSc runex24 ex24.rm ex25.PETSc \
+TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm ex21.PETSc runex21 ex21.rm ex24.PETSc runex24 ex24.rm ex25.PETSc \
                             runex25 ex25.rm ex31.PETSc runex31 ex31.rm ex32.PETSc runex32 ex32.rm ex30.PETSc runex30 runex30_2 runex30_3 ex30.rm
 TESTEXAMPLES_C_X11	  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 \
                             ex6.rm ex7.PETSc ex7.rm  ex14.PETSc runex14 ex14.rm \

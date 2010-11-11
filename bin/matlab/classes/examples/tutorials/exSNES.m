@@ -1,5 +1,5 @@
 %%
-% Solves a linear system where the user manages the mesh--solver interactions
+% Solves a nonlinear system where the user manages the mesh--solver interactions
 %
 %   Set the Matlab path and initialize PETSc
 path(path,'../../')

@@ -187,8 +187,8 @@ PetscErrorCode PetscOptionsGetFromTextInput()
 	      if (value[i] == '-') {
 		if (i == len-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry %s\n",n,value);
 		value[i] = 0;
-		ierr     = PetscOptionsAtoi(value,&start);CHKERRQ(ierr);        
-		ierr     = PetscOptionsAtoi(value+i+1,&end);CHKERRQ(ierr);        
+		ierr     = PetscOptionsStringToInt(value,&start);CHKERRQ(ierr);        
+		ierr     = PetscOptionsStringToInt(value+i+1,&end);CHKERRQ(ierr);        
 		if (end <= start) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry, %s-%s cannot have decreasing list",n,value,value+i+1);
 		if (n + end - start - 1 >= nmax) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry, not enough space in left in array (%D) to contain entire range from %D to %D",n,nmax-n,start,end);
 		for (;start<end; start++) {
@@ -199,7 +199,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
 	      }
 	    }
 	    if (!foundrange) {
-	      ierr      = PetscOptionsAtoi(value,dvalue);CHKERRQ(ierr);
+	      ierr      = PetscOptionsStringToInt(value,dvalue);CHKERRQ(ierr);
 	      dvalue++;
 	      n++;
 	    }
@@ -231,7 +231,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
 	  ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
 	  while (n < nmax) {
 	    if (!value) break;
-            ierr      = PetscOptionsAtod(value,dvalue);CHKERRQ(ierr);
+            ierr      = PetscOptionsStringToReal(value,dvalue);CHKERRQ(ierr);
 	    dvalue++;
 	    n++;
 	    ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
@@ -667,6 +667,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsInt(const char opt[],const char te
    Concepts: options database^has int
 
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+   Even if the user provided no string (for example -optionname -someotheroption) the flag is set to PETSC_TRUE (and the string is fulled with nulls).
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()

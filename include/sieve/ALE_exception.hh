@@ -1,6 +1,7 @@
 #ifndef included_ALE_exception_hh
 #define included_ALE_exception_hh
 
+#include <stdexcept>
 #include <string>
 #include <sstream>
 
@@ -10,15 +11,14 @@ typedef std::string                    string;
 
 
 namespace ALE {
-  class Exception {
-    string _msg;
+  class Exception : public std::runtime_error {
   public:
-    //    explicit Exception(const char         * msg) : _msg(msg){};
-    explicit Exception(const string&        msg) : _msg(msg){};
-    explicit Exception(const ostringstream& txt) : _msg(txt.str()){};
-    Exception(const Exception& e)      : _msg(e._msg) {};
-    const string& msg()     const  {return this->_msg;};
-    const char   *message() const  {return this->_msg.c_str();};
+    explicit Exception(const char         * msg) : std::runtime_error(msg){};
+    explicit Exception(const string&        msg) : std::runtime_error(msg){};
+    explicit Exception(const ostringstream& txt) : std::runtime_error(txt.str()){};
+    Exception(const Exception& e)      : std::runtime_error(e.what()) {};
+    string msg()     const  {return std::string(this->what());};
+    const char   *message() const  {return this->what();};
     // Printing
     template <typename Stream_>
     friend Stream_& operator<<(Stream_& os, const Exception& e) {

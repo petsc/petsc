@@ -197,7 +197,7 @@ acfindx:
       else:
         self.include = ''
       if libraryDir:
-        self.lib     = '-L'+libraryDir+' -lX11'
+        self.lib     = ['-L'+libraryDir,'-lX11']
       else:
         self.lib     = '-lX11'
 

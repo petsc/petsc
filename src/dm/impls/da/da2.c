@@ -38,7 +38,7 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
       ierr = DMView_DA_VTK(da,viewer);CHKERRQ(ierr);
     }
   } else if (isdraw) {
-    PetscDraw       draw;
+    PetscDraw  draw;
     double     ymin = -1*dd->s-1,ymax = dd->N+dd->s;
     double     xmin = -1*dd->s-1,xmax = dd->M+dd->s;
     double     x,y;
@@ -496,10 +496,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDASetLocalJacobian(DM da,DMDALocalFunction1 l
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMDAGetLocalFunction(DM da,DMDALocalFunction1 *lf)
 {
-  DM_DA          *dd = (DM_DA*)da->data;
+  DM_DA *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (lf)       *lf = dd->lf;
+  if (lf) *lf = dd->lf;
   PetscFunctionReturn(0);
 }
 
@@ -524,7 +524,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAGetLocalFunction(DM da,DMDALocalFunction1 *
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMDAGetLocalJacobian(DM da,DMDALocalFunction1 *lj)
 {
-  DM_DA          *dd = (DM_DA*)da->data;
+  DM_DA *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (lj) *lj = dd->lj;
@@ -556,7 +556,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAFormFunction(DM da,PetscErrorCode (*lf)(voi
 {
   PetscErrorCode ierr;
   void           *u,*fu;
-  DMDALocalInfo    info;
+  DMDALocalInfo  info;
   PetscErrorCode (*f)(DMDALocalInfo*,void*,void*,void*) = (PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))lf;
   
   PetscFunctionBegin;
@@ -600,9 +600,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAFormFunction(DM da,PetscErrorCode (*lf)(voi
 PetscErrorCode PETSCDM_DLLEXPORT DMDAFormFunctionLocal(DM da, DMDALocalFunction1 func, Vec X, Vec F, void *ctx)
 {
   Vec            localX;
-  DMDALocalInfo    info;
-  void          *u;
-  void          *fu;
+  DMDALocalInfo  info;
+  void           *u;
+  void           *fu;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -621,13 +621,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAFormFunctionLocal(DM da, DMDALocalFunction1
     PetscErrorCode pierr = DMDAVecRestoreArray(da,localX,&u);CHKERRQ(pierr);
     pierr = DMDAVecRestoreArray(da,F,&fu);CHKERRQ(pierr);
   }
- CHKERRQ(ierr);
+  CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,localX,&u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&fu);CHKERRQ(ierr);
   if (PetscExceptionValue(ierr)) {
     PetscErrorCode pierr = DMRestoreLocalVector(da,&localX);CHKERRQ(pierr);
   }
- CHKERRQ(ierr);
+  CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
@@ -656,9 +656,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAFormFunctionLocal(DM da, DMDALocalFunction1
 PetscErrorCode PETSCDM_DLLEXPORT DMDAFormFunctionLocalGhost(DM da, DMDALocalFunction1 func, Vec X, Vec F, void *ctx)
 {
   Vec            localX, localF;
-  DMDALocalInfo    info;
-  void          *u;
-  void          *fu;
+  DMDALocalInfo  info;
+  void           *u;
+  void           *fu;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -718,7 +718,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAFormFunction1(DM da,Vec vu,Vec vfu,void *w)
 {
   PetscErrorCode ierr;
   void           *u,*fu;
-  DMDALocalInfo    info;
+  DMDALocalInfo  info;
   DM_DA          *dd = (DM_DA*)da->data;
   
   PetscFunctionBegin;
@@ -806,7 +806,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAFormFunctioni1(DM da,PetscInt i,Vec vu,Pets
 {
   PetscErrorCode ierr;
   void           *u;
-  DMDALocalInfo    info;
+  DMDALocalInfo  info;
   MatStencil     stencil;
   DM_DA          *dd = (DM_DA*)da->data;
   
@@ -850,7 +850,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAFormFunctionib1(DM da,PetscInt i,Vec vu,Pet
 {
   PetscErrorCode ierr;
   void           *u;
-  DMDALocalInfo    info;
+  DMDALocalInfo  info;
   MatStencil     stencil;
   DM_DA          *dd = (DM_DA*)da->data;
   
@@ -890,7 +890,7 @@ PetscErrorCode DMDAGetDiagonal_MFFD(DM da,Vec U,Vec a)
   PetscErrorCode ierr;
   PetscInt       gI,nI;
   MatStencil     stencil;
-  DMDALocalInfo    info;
+  DMDALocalInfo  info;
  
   PetscFunctionBegin;
   ierr = (*ctx->func)(0,U,a,ctx->funcctx);CHKERRQ(ierr);
@@ -952,7 +952,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAComputeJacobian1WithAdic(DM da,Vec vu,Mat J
   PetscErrorCode ierr;
   PetscInt       gtdof,tdof;
   PetscScalar    *ustart;
-  DMDALocalInfo    info;
+  DMDALocalInfo  info;
   void           *ad_u,*ad_f,*ad_ustart,*ad_fstart;
   ISColoring     iscoloring;
 
@@ -1013,7 +1013,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAMultiplyByJacobian1WithAdic(DM da,Vec vu,Ve
   PetscErrorCode ierr;
   PetscInt       i,gtdof,tdof;
   PetscScalar    *avu,*av,*af,*ad_vustart,*ad_fstart;
-  DMDALocalInfo    info;
+  DMDALocalInfo  info;
   void           *ad_vu,*ad_f;
 
   PetscFunctionBegin;
@@ -1076,7 +1076,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAComputeJacobian1(DM da,Vec vu,Mat J,void *w
 {
   PetscErrorCode ierr;
   void           *u;
-  DMDALocalInfo    info;
+  DMDALocalInfo  info;
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
@@ -1110,7 +1110,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAComputeJacobian1WithAdifor(DM da,Vec vu,Mat
   PetscErrorCode  ierr;
   PetscInt        i,Nc,N;
   ISColoringValue *color;
-  DMDALocalInfo     info;
+  DMDALocalInfo   info;
   PetscScalar     *u,*g_u,*g_f,*f = 0,*p_u;
   ISColoring      iscoloring;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -1175,8 +1175,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAComputeJacobian1WithAdifor(DM da,Vec vu,Mat
 PetscErrorCode PETSCDM_DLLEXPORT DMDAFormJacobianLocal(DM da, DMDALocalFunction1 func, Vec X, Mat J, void *ctx)
 {
   Vec            localX;
-  DMDALocalInfo    info;
-  void          *u;
+  DMDALocalInfo  info;
+  void           *u;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1273,7 +1273,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAMultiplyByJacobian1WithAdifor(DM da,Vec u,V
   PetscErrorCode ierr;
   PetscScalar    *au,*av,*af,*awork;
   Vec            work;
-  DMDALocalInfo    info;
+  DMDALocalInfo  info;
   DM_DA          *dd = (DM_DA*)da->data;
   void           (*lf)(DMDALocalInfo*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*) = 
                  (void (*)(DMDALocalInfo*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*))*dd->adiformf_lf;
@@ -1300,28 +1300,28 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAMultiplyByJacobian1WithAdifor(DM da,Vec u,V
 #define __FUNCT__ "DMSetUp_DA_2D"
 PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_2D(DM da)
 {
-  DM_DA               *dd = (DM_DA*)da->data;
-  const PetscInt       M            = dd->M;
-  const PetscInt       N            = dd->N;
-  PetscInt             m            = dd->m;
-  PetscInt             n            = dd->n;
-  const PetscInt       dof          = dd->w;
-  const PetscInt       s            = dd->s;
+  DM_DA                  *dd = (DM_DA*)da->data;
+  const PetscInt         M            = dd->M;
+  const PetscInt         N            = dd->N;
+  PetscInt               m            = dd->m;
+  PetscInt               n            = dd->n;
+  const PetscInt         dof          = dd->w;
+  const PetscInt         s            = dd->s;
   const DMDAPeriodicType wrap         = dd->wrap;
   const DMDAStencilType  stencil_type = dd->stencil_type;
-  PetscInt            *lx           = dd->lx;
-  PetscInt            *ly           = dd->ly;
-  MPI_Comm             comm;
-  PetscMPIInt          rank,size;
-  PetscInt             xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,start,end;
-  PetscInt             up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
-  PetscInt             xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count;
-  PetscInt             s_x,s_y; /* s proportionalized to w */
-  PetscInt             sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0;
-  Vec                  local,global;
-  VecScatter           ltog,gtol;
-  IS                   to,from;
-  PetscErrorCode       ierr;
+  PetscInt               *lx           = dd->lx;
+  PetscInt               *ly           = dd->ly;
+  MPI_Comm               comm;
+  PetscMPIInt            rank,size;
+  PetscInt               xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,start,end;
+  PetscInt               up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
+  PetscInt               xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count;
+  PetscInt               s_x,s_y; /* s proportionalized to w */
+  PetscInt               sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0;
+  Vec                    local,global;
+  VecScatter             ltog,gtol;
+  IS                     to,from;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
@@ -1867,5 +1867,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDACreate2d(MPI_Comm comm,DMDAPeriodicType wra
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
   ierr = DMSetFromOptions(*da);CHKERRQ(ierr);
   ierr = DMSetUp(*da);CHKERRQ(ierr);
+  ierr = DMView_DA_Private(*da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

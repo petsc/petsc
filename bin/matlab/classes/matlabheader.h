@@ -75,6 +75,8 @@ int DMDASetDof(DM, int);
 int DMSetUp(DM);
 int DMDASetStencilWidth(DM, int);
 int DMDASetStencilType(DM, DMDAStencilType);
+int DMCreateGlobalVector(DM,Vec*);
+int DMGetMatrix(DM,const char*,Mat*);
 
 typedef PetscPointer KSP;
 int KSPCreate(MPI_Comm,KSP *);
@@ -97,6 +99,7 @@ int SNESSetFunctionMatlab(SNES,Vec,const char*,mxArray*);
 int SNESSetJacobianMatlab(SNES,Mat,Mat,const char*,mxArray*);
 int SNESSolve(SNES,Vec,Vec);
 int SNESSetUp(SNES);
+int SNESVISetVariableBounds(SNES,Vec,Vec);
 int SNESView(SNES,PetscViewer);
 int SNESDestroy(SNES);
 

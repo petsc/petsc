@@ -129,13 +129,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDASetBlockFills(DM da,PetscInt *dfill,PetscIn
 #define __FUNCT__ "DMGetColoring_DA" 
 PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring_DA(DM da,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
 {
-  PetscErrorCode ierr;
-  PetscInt       dim,m,n,p,nc;
+  PetscErrorCode   ierr;
+  PetscInt         dim,m,n,p,nc;
   DMDAPeriodicType wrap;
-  MPI_Comm       comm;
-  PetscMPIInt    size;
-  PetscBool      isBAIJ;
-  DM_DA          *dd = (DM_DA*)da->data;
+  MPI_Comm         comm;
+  PetscMPIInt      size;
+  PetscBool        isBAIJ;
+  DM_DA            *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*
@@ -221,8 +221,8 @@ PetscErrorCode DMGetColoring_DA_2d_MPIAIJ(DM da,ISColoringType ctype,ISColoring 
   PetscInt               xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny,m,n,M,N,dim,s,k,nc,col;
   PetscInt               ncolors;
   MPI_Comm               comm;
-  DMDAPeriodicType         wrap;
-  DMDAStencilType          st;
+  DMDAPeriodicType       wrap;
+  DMDAStencilType        st;
   ISColoringValue        *colors;
   DM_DA                  *dd = (DM_DA*)da->data;
 
@@ -297,14 +297,14 @@ PetscErrorCode DMGetColoring_DA_2d_MPIAIJ(DM da,ISColoringType ctype,ISColoring 
 #define __FUNCT__ "DMGetColoring_DA_3d_MPIAIJ" 
 PetscErrorCode DMGetColoring_DA_3d_MPIAIJ(DM da,ISColoringType ctype,ISColoring *coloring)
 {
-  PetscErrorCode  ierr;
-  PetscInt        xs,ys,nx,ny,i,j,gxs,gys,gnx,gny,m,n,p,dim,s,k,nc,col,zs,gzs,ii,l,nz,gnz,M,N,P;
-  PetscInt        ncolors;
-  MPI_Comm        comm;
+  PetscErrorCode    ierr;
+  PetscInt          xs,ys,nx,ny,i,j,gxs,gys,gnx,gny,m,n,p,dim,s,k,nc,col,zs,gzs,ii,l,nz,gnz,M,N,P;
+  PetscInt          ncolors;
+  MPI_Comm          comm;
   DMDAPeriodicType  wrap;
   DMDAStencilType   st;
-  ISColoringValue *colors;
-  DM_DA           *dd = (DM_DA*)da->data;
+  ISColoringValue   *colors;
+  DM_DA             *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -379,13 +379,13 @@ PetscErrorCode DMGetColoring_DA_3d_MPIAIJ(DM da,ISColoringType ctype,ISColoring 
 #define __FUNCT__ "DMGetColoring_DA_1d_MPIAIJ" 
 PetscErrorCode DMGetColoring_DA_1d_MPIAIJ(DM da,ISColoringType ctype,ISColoring *coloring)
 {
-  PetscErrorCode  ierr;
-  PetscInt        xs,nx,i,i1,gxs,gnx,l,m,M,dim,s,nc,col;
-  PetscInt        ncolors;
-  MPI_Comm        comm;
+  PetscErrorCode    ierr;
+  PetscInt          xs,nx,i,i1,gxs,gnx,l,m,M,dim,s,nc,col;
+  PetscInt          ncolors;
+  MPI_Comm          comm;
   DMDAPeriodicType  wrap;
-  ISColoringValue *colors;
-  DM_DA           *dd = (DM_DA*)da->data;
+  ISColoringValue   *colors;
+  DM_DA             *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -443,13 +443,13 @@ PetscErrorCode DMGetColoring_DA_1d_MPIAIJ(DM da,ISColoringType ctype,ISColoring 
 #define __FUNCT__ "DMGetColoring_DA_2d_5pt_MPIAIJ" 
 PetscErrorCode DMGetColoring_DA_2d_5pt_MPIAIJ(DM da,ISColoringType ctype,ISColoring *coloring)
 {
-  PetscErrorCode  ierr;
-  PetscInt        xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny,m,n,dim,s,k,nc;
-  PetscInt        ncolors;
-  MPI_Comm        comm;
+  PetscErrorCode    ierr;
+  PetscInt          xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny,m,n,dim,s,k,nc;
+  PetscInt          ncolors;
+  MPI_Comm          comm;
   DMDAPeriodicType  wrap;
-  ISColoringValue *colors;
-  DM_DA           *dd = (DM_DA*)da->data;
+  ISColoringValue   *colors;
+  DM_DA             *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -761,9 +761,9 @@ PetscErrorCode DMGetMatrix_DA_2d_MPIAIJ(DM da,Mat J)
   PetscInt               lstart,lend,pstart,pend,*dnz,*onz;
   MPI_Comm               comm;
   PetscScalar            *values;
-  DMDAPeriodicType         wrap;
+  DMDAPeriodicType       wrap;
   ISLocalToGlobalMapping ltog,ltogb;
-  DMDAStencilType          st;
+  DMDAStencilType        st;
   DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
@@ -870,9 +870,9 @@ PetscErrorCode DMGetMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
   PetscInt               ifill_col,*ofill = dd->ofill, *dfill = dd->dfill;
   MPI_Comm               comm;
   PetscScalar            *values;
-  DMDAPeriodicType         wrap;
+  DMDAPeriodicType       wrap;
   ISLocalToGlobalMapping ltog,ltogb;
-  DMDAStencilType          st;
+  DMDAStencilType        st;
 
   PetscFunctionBegin;
   /*     
@@ -998,9 +998,9 @@ PetscErrorCode DMGetMatrix_DA_3d_MPIAIJ(DM da,Mat J)
   PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   MPI_Comm               comm;
   PetscScalar            *values;
-  DMDAPeriodicType         wrap;
+  DMDAPeriodicType       wrap;
   ISLocalToGlobalMapping ltog,ltogb;
-  DMDAStencilType          st;
+  DMDAStencilType        st;
   DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
@@ -1114,7 +1114,7 @@ PetscErrorCode DMGetMatrix_DA_1d_MPIAIJ(DM da,Mat J)
   PetscInt               m,dim,s,*cols = PETSC_NULL,nc,*rows = PETSC_NULL,col,cnt,l;
   PetscInt               istart,iend;
   PetscScalar            *values;
-  DMDAPeriodicType         wrap;
+  DMDAPeriodicType       wrap;
   ISLocalToGlobalMapping ltog,ltogb;
   DM_DA                  *dd = (DM_DA*)da->data;
 
@@ -1180,8 +1180,8 @@ PetscErrorCode DMGetMatrix_DA_2d_MPIBAIJ(DM da,Mat J)
   PetscInt               istart,iend,jstart,jend,ii,jj;
   MPI_Comm               comm;
   PetscScalar            *values;
-  DMDAPeriodicType         wrap;
-  DMDAStencilType          st;
+  DMDAPeriodicType       wrap;
+  DMDAStencilType        st;
   ISLocalToGlobalMapping ltog,ltogb;
   DM_DA                  *dd = (DM_DA*)da->data;
 
@@ -1275,8 +1275,8 @@ PetscErrorCode DMGetMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
   PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   MPI_Comm               comm;
   PetscScalar            *values;
-  DMDAPeriodicType         wrap;
-  DMDAStencilType          st;
+  DMDAPeriodicType       wrap;
+  DMDAStencilType        st;
   ISLocalToGlobalMapping ltog,ltogb;
   DM_DA                  *dd = (DM_DA*)da->data;
 
@@ -1385,7 +1385,7 @@ PetscErrorCode DMGetMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
 static PetscErrorCode L2GFilterUpperTriangular(ISLocalToGlobalMapping ltog,PetscInt *row,PetscInt *cnt,PetscInt col[])
 {
   PetscErrorCode ierr;
-  PetscInt i,n;
+  PetscInt       i,n;
 
   PetscFunctionBegin;
   ierr = ISLocalToGlobalMappingApply(ltog,1,row,row);CHKERRQ(ierr);
@@ -1407,8 +1407,8 @@ PetscErrorCode DMGetMatrix_DA_2d_MPISBAIJ(DM da,Mat J)
   PetscInt               istart,iend,jstart,jend,ii,jj;
   MPI_Comm               comm;
   PetscScalar            *values;
-  DMDAPeriodicType         wrap;
-  DMDAStencilType          st;
+  DMDAPeriodicType       wrap;
+  DMDAStencilType        st;
   ISLocalToGlobalMapping ltog,ltogb;
   DM_DA                  *dd = (DM_DA*)da->data;
 
@@ -1506,8 +1506,8 @@ PetscErrorCode DMGetMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
   PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   MPI_Comm               comm;
   PetscScalar            *values;
-  DMDAPeriodicType         wrap;
-  DMDAStencilType          st;
+  DMDAPeriodicType       wrap;
+  DMDAStencilType        st;
   ISLocalToGlobalMapping ltog,ltogb;
   DM_DA                  *dd = (DM_DA*)da->data;
 
@@ -1623,9 +1623,9 @@ PetscErrorCode DMGetMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
   PetscInt               ifill_col,*dfill = dd->dfill,*ofill = dd->ofill;
   MPI_Comm               comm;
   PetscScalar            *values;
-  DMDAPeriodicType         wrap;
+  DMDAPeriodicType       wrap;
   ISLocalToGlobalMapping ltog,ltogb;
-  DMDAStencilType          st;
+  DMDAStencilType        st;
 
   PetscFunctionBegin;
   /*     

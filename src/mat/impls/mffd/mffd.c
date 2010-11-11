@@ -213,6 +213,15 @@ PetscErrorCode MatDestroy_MFFD(Mat mat)
   if (ctx->w) {
     ierr = VecDestroy(ctx->w);CHKERRQ(ierr);
   }
+  if (ctx->drscale) {
+    ierr = VecDestroy(ctx->drscale);CHKERRQ(ierr);
+  }
+  if (ctx->dlscale) {
+    ierr = VecDestroy(ctx->dlscale);CHKERRQ(ierr);
+  }
+  if (ctx->dshift) {
+    ierr = VecDestroy(ctx->dshift);CHKERRQ(ierr);
+  }
   if (ctx->current_f_allocated) {
     ierr = VecDestroy(ctx->current_f);
   }
@@ -339,7 +348,12 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   ctx->ncurrenth++;
 
   /* w = u + ha */
-  ierr = VecWAXPY(w,h,a,U);CHKERRQ(ierr);
+  if (ctx->drscale) {
+    ierr = VecPointwiseMult(ctx->drscale,a,U);CHKERRQ(ierr);
+    ierr = VecAYPX(U,h,w);CHKERRQ(ierr);
+  } else {
+    ierr = VecWAXPY(w,h,a,U);CHKERRQ(ierr);
+  }
 
   /* compute func(U) as base for differencing; only needed first time in and not when provided by user */
   if (ctx->ncurrenth == 1 && ctx->current_f_allocated) {
@@ -350,7 +364,16 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   ierr = VecAXPY(y,-1.0,F);CHKERRQ(ierr);
   ierr = VecScale(y,1.0/h);CHKERRQ(ierr);
 
-  ierr = VecAXPBY(y,ctx->vshift,ctx->vscale,a);CHKERRQ(ierr);
+  if (ctx->vshift || (ctx->vscale != 1.0)) {
+    ierr = VecAXPBY(y,ctx->vshift,ctx->vscale,a);CHKERRQ(ierr);
+  }
+  if (ctx->dlscale) {
+    ierr = VecPointwiseMult(y,ctx->dlscale,y);CHKERRQ(ierr);
+  }
+  if (ctx->dshift) {
+    ierr = VecPointwiseMult(ctx->dshift,a,U);CHKERRQ(ierr);
+    ierr = VecAXPY(y,1.0,U);CHKERRQ(ierr);
+  }
 
   if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 
@@ -407,13 +430,54 @@ PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
     aa[i-rstart]  = (v - aa[i-rstart])/h;
 
     /* possibly shift and scale result */
-    aa[i - rstart] = ctx->vshift + ctx->vscale*aa[i-rstart];
+    if (ctx->vshift || (ctx->vscale != 1.0)) {
+      aa[i - rstart] = ctx->vshift + ctx->vscale*aa[i-rstart];
+    }
 
     ierr = VecGetArray(w,&ww);CHKERRQ(ierr);
     ww[i-rstart] -= h;
     ierr = VecRestoreArray(w,&ww);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(a,&aa);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatDiagonalScale_MFFD"
+PetscErrorCode MatDiagonalScale_MFFD(Mat mat,Vec ll,Vec rr)
+{
+  MatMFFD        aij = (MatMFFD)mat->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (ll && !aij->dlscale) {
+    ierr = VecDuplicate(ll,&aij->dlscale);CHKERRQ(ierr);
+  }
+  if (rr && !aij->drscale) {
+    ierr = VecDuplicate(rr,&aij->drscale);CHKERRQ(ierr);
+  }
+  if (ll) {
+    ierr = VecCopy(ll,aij->dlscale);CHKERRQ(ierr);
+  }
+  if (rr) {
+    ierr = VecCopy(rr,aij->drscale);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatDiagonalSet_MFFD"
+PetscErrorCode MatDiagonalSet_MFFD(Mat mat,Vec ll,InsertMode mode)
+{
+  MatMFFD        aij = (MatMFFD)mat->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (mode == INSERT_VALUES) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"No diagonal set with INSERT_VALUES");
+  if (!aij->dshift) {
+    ierr = VecDuplicate(ll,&aij->dshift);CHKERRQ(ierr);
+  }
+  ierr = VecAXPY(aij->dshift,1.0,ll);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -624,6 +688,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MFFD(Mat A)
   A->ops->getdiagonal    = MatGetDiagonal_MFFD;
   A->ops->scale          = MatScale_MFFD;
   A->ops->shift          = MatShift_MFFD;
+  A->ops->diagonalscale  = MatDiagonalScale_MFFD;
+  A->ops->diagonalset    = MatDiagonalSet_MFFD;
   A->ops->setfromoptions = MatMFFDSetFromOptions;
   A->assembled = PETSC_TRUE;
 
