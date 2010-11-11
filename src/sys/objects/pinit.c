@@ -23,7 +23,7 @@ EXTERN PetscErrorCode PetscFinalize_DynamicLibraries(void);
 EXTERN PetscErrorCode PetscFListDestroyAll(void);
 EXTERN PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 EXTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
-EXTERN PetscErrorCode PetscLogCloseHistoryFile(FILE **);
+EXTERN PetscErrorCode PetscCloseHistoryFile(FILE **);
 
 /* this is used by the _, __, and ___ macros (see include/petscerror.h) */
 PetscErrorCode __gierr = 0;
@@ -938,7 +938,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFinalize(void)
   }
 
   if (petsc_history) {
-    ierr = PetscLogCloseHistoryFile(&petsc_history);CHKERRQ(ierr);
+    ierr = PetscCloseHistoryFile(&petsc_history);CHKERRQ(ierr);
     petsc_history = 0;
   }
 

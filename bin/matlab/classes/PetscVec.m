@@ -1,6 +1,6 @@
 classdef PetscVec < PetscObject
   methods
-function obj = PetscVec(array,flg)
+    function obj = PetscVec(array,flg)
       if (nargin > 1) 
         %  PetscVec(pid,'pobj') uses an already existing PETSc Vec object
         obj.pobj = array;

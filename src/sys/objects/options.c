@@ -1804,6 +1804,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const
 
    Concepts: options database^string
 
+    Note:
+      Even if the user provided no string (for example -optionname -someotheroption) the flag is set to PETSC_TRUE (and the string is fulled with nulls).
+
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),

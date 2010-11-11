@@ -132,7 +132,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscInfoActivateClass(int objclass)
 }
 
 /*
-   If the option -log_history was used, then all printed PetscInfo() 
+   If the option -history was used, then all printed PetscInfo() 
   messages are also printed to the history file, called by default
   .petschistory in ones home directory.
 */
