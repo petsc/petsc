@@ -22,7 +22,7 @@ mat.SetSizes(10,10,10,10);
 %%
 %  Create the nonlinear solver 
 snes = PetscSNES();
-snes.SetType('ls');
+snes.SetType('vi');
 %%
 %  Provide a function 
 snes.SetFunction(b,'nlfunction',0);
