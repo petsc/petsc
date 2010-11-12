@@ -168,39 +168,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDASplitComm2d(MPI_Comm comm,PetscInt M,PetscI
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetElements_DA_2d_P1"
-PetscErrorCode DMGetElements_DA_2d_P1(DM da,PetscInt *n,const PetscInt *e[])
-{
-  PetscErrorCode ierr;
-  DM_DA          *dd = (DM_DA*)da->data;
-  PetscInt       i,j,cnt,xs,xe = dd->xe,ys,ye = dd->ye,Xs = dd->Xs, Xe = dd->Xe, Ys = dd->Ys;
-
-  PetscFunctionBegin;
-  if (!dd->e) {
-    if (dd->xs == Xs) xs = dd->xs; else xs = dd->xs - 1;
-    if (dd->ys == Ys) ys = dd->ys; else ys = dd->ys - 1;
-    dd->ne = 2*(xe - xs - 1)*(ye - ys - 1);
-    ierr   = PetscMalloc((1 + 3*dd->ne)*sizeof(PetscInt),&dd->e);CHKERRQ(ierr);
-    cnt    = 0;
-    for (j=ys; j<ye-1; j++) {
-      for (i=xs; i<xe-1; i++) {
-        dd->e[cnt]   = i - Xs + (j - Ys)*(Xe - Xs);
-        dd->e[cnt+1] = i - Xs + 1 + (j - Ys)*(Xe - Xs);
-        dd->e[cnt+2] = i - Xs + (j - Ys + 1)*(Xe - Xs);
-
-        dd->e[cnt+3] = i - Xs + 1 + (j - Ys + 1)*(Xe - Xs);
-        dd->e[cnt+4] = i - Xs + (j - Ys + 1)*(Xe - Xs);
-        dd->e[cnt+5] = i - Xs + 1 + (j - Ys)*(Xe - Xs);
-        cnt += 6;
-      }
-    }
-  }
-  *n = dd->ne;
-  *e = dd->e;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "DMDASetLocalFunction"
 /*@C
        DMDASetLocalFunction - Caches in a DM a local function. 
@@ -1332,10 +1299,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_2D(DM da)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
 
-  da->ops->getelements = DMGetElements_DA_2d_P1;
-
   dd->dim         = 2;
-  dd->elementtype = DMDA_ELEMENT_P1;
   ierr = PetscMalloc(dof*sizeof(char*),&dd->fieldname);CHKERRQ(ierr);
   ierr = PetscMemzero(dd->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
 
