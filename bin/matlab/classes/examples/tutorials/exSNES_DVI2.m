@@ -12,7 +12,7 @@ viewer = PetscViewer();
 viewer.SetType('ascii');
 %%
 %   Create work vectors to manage the grid
-user.mx = 20;user.my = 20;
+user.mx = 4;user.my = 4;
 N = user.mx*user.my;
 x  = PetscVec();
 x.SetType('seq');
@@ -36,12 +36,11 @@ snes.SetType('vi');
 %%
 %  Set minimum surface area problem function routine
 snes.SetFunction(r,'snesdvi2_function',user);
-type snesdvi2_function.m
+
 
 %%
 %  Set minimum surface area problem jacobian routine
 snes.SetJacobian(J,J,'snesdvi2_jacobian',user);
-type snesdvi2_jacobian.m
 
 %%
 %  Set solution monitoring routine
@@ -51,7 +50,7 @@ snes.MonitorSet('snesdvi2_monitor',user);
 xl = x.Duplicate();
 xu = x.Duplicate();
 xl.Set(0);
-xu.Set(1000000000);
+xu.Set(0.01);
 
 snes.VISetVariableBounds(xl,xu);    
 

@@ -27,6 +27,8 @@ classdef PetscMat < PetscObject
       err = calllib('libpetsc', 'MatSetSizes', obj.pobj,m,n,M,N);
     end
     function err = SetValues(obj,idx,idy,values,insertmode)
+      idx = idx - 1;
+      idy = idy - 1;
       if (nargin < 5) 
         insertmode = PetscObject.INSERT_VALUES;
       end

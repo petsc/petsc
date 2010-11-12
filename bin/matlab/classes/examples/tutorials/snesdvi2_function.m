@@ -13,48 +13,48 @@ hydhx = hy/hx; hxdhy = hx/hy;
 f.Set(0.0);
 
 % Compute function over the mesh
-for (j = 0:my-1)
-    for(i = 0:mx-1)
-        row = j*mx + i;
+for (j = 1:my)
+    for(i = 1:mx)
+        row = (j-1)*mx + i;
         
         xc = x(row);
         xlt = xc; xr = xc;
         xrb = xc; xb = xc;
         xl = xc; xt  = xc;
         
-        if (i == 0) % left side
+        if (i == 1) % left side
             xl = user.left(j+1);
             xlt = user.left(j+2);
         else
             xl = x(row-1);
         end
         
-        if (j == 0) % bottom side
+        if (j == 1) % bottom side
             xb = user.bottom(i+1);
             xrb = user.bottom(i+2);
         else
             xb = x(row-mx);
         end
       
-        if (i+1 == mx) %right side
+        if (i == mx) %right side
             xr  = user.right(j+1);
             xrb = user.right(j);
         else
             xr = x(row+1);
         end
         
-        if (j+1 == my) % top side
+        if (j == my) % top side
             xt  = user.top(i+1);
             xlt = user.top(i);
         else
             xt = x(row+mx);
         end
         
-        if (i > 0 & j+1<my)
+        if (i > 1 & j<my)
             xlt = x(row-1+mx);
         end
         
-        if (j > 0 & i+1<mx)
+        if (j > 1 & i<mx)
             xrb = x(row+1-mx);
         end
         
@@ -95,7 +95,6 @@ for (j = 0:my-1)
         f(row) = (df1dxc+df2dxc+df3dxc+df4dxc+df5dxc+df6dxc )/2.0;
     end
 end
-f(:);
         
         
         
