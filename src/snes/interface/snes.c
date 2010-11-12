@@ -3314,7 +3314,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetJacobianMatlab(SNES snes,Mat A,Mat B,c
 PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitor_Matlab(SNES snes,PetscInt it, PetscReal fnorm, void *ctx)
 {
   PetscErrorCode  ierr;
-  TSMatlabContext *sctx = (SNESMatlabContext *)ctx;
+  SNESMatlabContext *sctx = (SNESMatlabContext *)ctx;
   int             nlhs = 1,nrhs = 6;
   mxArray	  *plhs[1],*prhs[6];
   long long int   lx = 0,ls = 0;

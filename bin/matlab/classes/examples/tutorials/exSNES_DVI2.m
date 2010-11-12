@@ -40,7 +40,9 @@ type snesdvi2_function.m
 %  Provide a function that evaluates the Jacobian
 snes.SetJacobian(J,J,'snesdvi2_jacobian',user);
 type snesdvi2_jacobian.m
-
+%%
+%  Set solution monitoring routine
+snes.MonitorSet('snesdvi2_monitor',user);
 %%
 %   Set VI bounds
 xl = x.Duplicate();
