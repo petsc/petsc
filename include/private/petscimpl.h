@@ -756,14 +756,7 @@ typedef struct {
   PetscInt    refcount;         /* number of references, communicator can be freed when this reaches 0 */
   PetscInt    namecount;        /* used to generate the next name, as in Vec_0, Mat_1, ... */
 } PetscCommCounter;
-/*
-#if defined(PETSC_HAVE_CUDA)
-#include <cublas.h>
-#include <cusp/csr_matrix.h>
-#include <cusp/multiply.h>
-#include <cusp/blas.h>
-#endif
-*/
+
 PETSC_EXTERN_CXX_END
 
 #endif /* _PETSCHEAD_H */

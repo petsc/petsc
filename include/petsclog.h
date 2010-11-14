@@ -7,6 +7,25 @@
 #include "petscsys.h"  
 PETSC_EXTERN_CXX_BEGIN
 
+/*MC
+    PetscLogEvent - id used to identify PETSc or user events which timed portions (blocks of executable)
+     code.
+
+    Level: intermediate
+
+.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PetscLogStage
+M*/
+typedef int PetscLogEvent;
+
+/*MC
+    PetscLogStage - id used to identify user stages (phases, sections) of runs - for logging
+
+    Level: intermediate
+
+.seealso: PetscLogStageRegister(), PetscLogStageBegin(), PetscLogStageEnd(), PetscLogEvent
+M*/
+typedef int PetscLogStage;
+
 #define PETSC_EVENT  1311311
 extern PetscLogEvent PETSC_LARGEST_EVENT;
 

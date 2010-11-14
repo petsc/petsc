@@ -176,24 +176,6 @@ typedef int PetscErrorCode;
 M*/
 typedef int PetscClassId;
 
-/*MC
-    PetscLogEvent - id used to identify PETSc or user events which timed portions (blocks of executable)
-     code.
-
-    Level: intermediate
-
-.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PetscLogStage
-M*/
-typedef int PetscLogEvent;
-
-/*MC
-    PetscLogStage - id used to identify user stages (phases, sections) of runs - for logging
-
-    Level: intermediate
-
-.seealso: PetscLogStageRegister(), PetscLogStageBegin(), PetscLogStageEnd(), PetscLogEvent
-M*/
-typedef int PetscLogStage;
 
 /*MC
     PetscBLASInt - datatype used to represent 'int' parameters to BLAS/LAPACK functions.
