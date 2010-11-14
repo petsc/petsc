@@ -19,25 +19,25 @@ user.left  = user.bottom.Duplicate();
 hx = (r-l)/(mx+1); hy = (t-b)/(my+1);
 user.hx = hx; user.hy = hy;
 
-for(j=0:3)
+for(j=1:4)
     switch j
-        case 0
+        case 1
             xt = l;yt = b;
             limit = bsize;
-        case 1
+        case 2
             xt = l; yt = t;
             limit = tsize;
-        case 2
+        case 3
             xt = l; yt = b;
             limit = lsize;
-        case 3
+        case 4
             xt = r; yt = b;
             limit = rsize;
     end
     
-    for(i = 0:limit-1)
+    for(i = 1:limit)
         u1 = xt; u2 = -yt;
-        for (k = 0:maxits-1)
+        for (k = 1:maxits)
             nf1 = u1 + u1*u2^2 - u1^3/3 - xt;
             nf2 = -u2 - u1^2*u2 + u2^3/3 - yt;
             fnorm = sqrt(nf1^2 + nf2^2);
@@ -52,16 +52,16 @@ for(j=0:3)
         end
         
         switch j
-            case 0
-                xt = xt + hx;
-                user.bottom(i) = u1^2-u2^2;
             case 1
                 xt = xt + hx;
-                user.top(i) = u1^2 - u2^2;
+                user.bottom(i) = u1^2-u2^2;
             case 2
+                xt = xt + hx;
+                user.top(i) = u1^2 - u2^2;
+            case 3
                 yt = yt + hy;
                 user.left(i) = u1^2 - u2^2;
-            case 3
+            case 4
                 yt = yt + hy;
                 user.right(i) = u1^2 - u2^2;
         end

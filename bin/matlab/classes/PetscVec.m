@@ -26,27 +26,30 @@ classdef PetscVec < PetscObject
     function err = SetSizes(obj,m,n)
       err = calllib('libpetsc', 'VecSetSizes', obj.pobj,m,n);
     end
+    function [n,err] = GetSize(obj)
+      n = 0;
+      [err,n] = calllib('libpetsc', 'VecGetLocalSize', obj.pobj,n);
+    end
     function err = SetValues(obj,idx,values,insertmode)
       if (ischar(idx)) % assume it is ':' 
-        n = 0;
-        [err,n] = calllib('libpetsc', 'VecGetLocalSize', obj.pobj,n);
-        idx = 0:n-1;
+        [n,err] = GetSize(obj);
+        idx = 1:n;
       end
       if (nargin < 3) 
         values = idx;
-        idx = 0:length(values)-1;
       end
       if (nargin  < 4) 
         insertmode = PetscObject.INSERT_VALUES;
       end
+      idx = idx - 1;
       err = calllib('libpetsc', 'VecSetValues', obj.pobj,length(idx),idx,values,insertmode);
     end
     function [values,err] = GetValues(obj,idx)
       if (ischar(idx)) % assume it is ':' 
-        n = 0;
-        [err,n] = calllib('libpetsc', 'VecGetLocalSize', obj.pobj,n);
-        idx = 0:n-1;
+        [n,err] = GetSize(obj);
+        idx = 1:n;
       end
+      idx = idx - 1;
       values = zeros(1,length(idx));
       [err,idx,values] = calllib('libpetsc', 'VecGetValues', obj.pobj,length(idx),idx,values);
     end
@@ -81,7 +84,7 @@ classdef PetscVec < PetscObject
       %  for method calls so we need to force the method calls to use
       %  the 'regular' subsref
       if (S(1).type == '.')
-	[varargout{1:nargout}] = builtin('subsref', obj, S);
+        [varargout{1:nargout}] = builtin('subsref', obj, S);
       else 
         varargout = {obj.GetValues(S.subs{1})};
       end

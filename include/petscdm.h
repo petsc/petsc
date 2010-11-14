@@ -465,8 +465,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGlobalToLocalBegin(DM,Vec,InsertMode,
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGlobalToLocalEnd(DM,Vec,InsertMode,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMLocalToGlobalBegin(DM,Vec,InsertMode,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMLocalToGlobalEnd(DM,Vec,InsertMode,Vec);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetElements(DM,PetscInt *,const PetscInt*[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRestoreElements(DM,PetscInt *,const PetscInt*[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetElements(DM,PetscInt *,PetscInt *,const PetscInt*[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRestoreElements(DM,PetscInt *,PetscInt *,const PetscInt*[]);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSetContext(DM,void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetContext(DM,void**);

@@ -11,8 +11,8 @@ PetscInitialize({'-snes_monitor','-ksp_monitor'});
 viewer = PetscViewer();
 viewer.SetType('ascii');
 %%
-%  Create DM to manage the grid and get work vectors
-user.mx = 16;user.my = 16;
+%   Create work vectors to manage the grid
+user.mx = 4;user.my = 4;
 N = user.mx*user.my;
 x  = PetscVec();
 x.SetType('seq');
@@ -26,27 +26,31 @@ J.SetSizes(N,N,N,N);
 %  Set Boundary conditions
 [user] = MSA_BoundaryConditions(user);
 %%
-%  Initialize guess
+%  Set initial guess
 [x] = MSA_InitialGuess(user,x);
 %%
 %  Create the nonlinear solver 
 snes = PetscSNES();
 snes.SetType('vi');
-%%
-%  Provide a function 
-snes.SetFunction(r,'snesdvi2_function',user);
-type snesdvi2_function.m
-%%
-%  Provide a function that evaluates the Jacobian
-snes.SetJacobian(J,J,'snesdvi2_jacobian',user);
-type snesdvi2_jacobian.m
 
+%%
+%  Set minimum surface area problem function routine
+snes.SetFunction(r,'snesdvi2_function',user);
+
+
+%%
+%  Set minimum surface area problem jacobian routine
+snes.SetJacobian(J,J,'snesdvi2_jacobian',user);
+
+%%
+%  Set solution monitoring routine
+snes.MonitorSet('snesdvi2_monitor',user);
 %%
 %   Set VI bounds
 xl = x.Duplicate();
 xu = x.Duplicate();
-xl.Set(-100000000);
-xu.Set(1000000000);
+xl.Set(0);
+xu.Set(0.01);
 
 snes.VISetVariableBounds(xl,xu);    
 
@@ -56,21 +60,6 @@ snes.SetFromOptions();
 snes.Solve(x);
 x.View(viewer);
 snes.View(viewer);
-%%
-% Create surface and boundary plot
-bdry = [user.left(:)',user.right(:)',user.bottom(:)',user.top(:)'];
-xbdrypts = [user.ledge*ones(user.my+2,1),user.redge*ones(user.my+2,1),(user.ledge:user.hx:user.redge)',(user.ledge:user.hx:user.redge)'];
-ybdrypts = [(user.bedge:user.hy:user.tedge)',(user.bedge:user.hy:user.tedge)',user.bedge*ones(user.mx+2,1),user.tedge*ones(user.mx+2,1)];
-mesh(xbdrypts,ybdrypts,bdry);
-hold on
-x_sol = reshape(x(:),user.mx,user.my);
-for(i = 1:user.mx)
-    xpts(:,i) = user.ledge*ones(user.mx,1) + i*user.hx;
-end
-for(i = 1:user.my)
-    ypts(i,:) = user.bedge*ones(1,user.my) + i*user.hy;
-end
-surf(xpts,ypts,x_sol);
 
 %%
 %   Free PETSc objects and Shutdown PETSc

@@ -42,6 +42,12 @@ classdef PetscSNES < PetscObject
       end
       err = calllib('libpetsc', 'SNESSetJacobianMatlab', obj.pobj,A.pobj,B.pobj,func,arg);
     end
+    function err = MonitorSet(obj,func,arg)
+      if (nargin < 3) 
+        arg = 0;
+      end
+      err = calllib('libpetsc', 'SNESMonitorSetMatlab', obj.pobj,func,arg);
+    end
     function err = View(obj,viewer)
       err = calllib('libpetsc', 'SNESView', obj.pobj,viewer.pobj);
     end
