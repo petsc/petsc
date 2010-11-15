@@ -221,17 +221,19 @@ PetscErrorCode MatDestroy_SuperLU(Mat A)
     Destroy_SuperMatrix_Store(&lu->B);
     Destroy_SuperMatrix_Store(&lu->X); 
     StatFree(&lu->stat);
-
-    ierr = PetscFree(lu->etree);CHKERRQ(ierr);
-    ierr = PetscFree(lu->perm_r);CHKERRQ(ierr);
-    ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
-    ierr = PetscFree(lu->R);CHKERRQ(ierr);
-    ierr = PetscFree(lu->C);CHKERRQ(ierr);
     if ( lu->lwork >= 0 ) {
       Destroy_SuperNode_Matrix(&lu->L);
       Destroy_CompCol_Matrix(&lu->U);
     }
+    
   }
+
+  ierr = PetscFree(lu->etree);CHKERRQ(ierr);
+  ierr = PetscFree(lu->perm_r);CHKERRQ(ierr);
+  ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
+  ierr = PetscFree(lu->R);CHKERRQ(ierr);
+  ierr = PetscFree(lu->C);CHKERRQ(ierr);
+  
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   if (lu->A_dup){ierr = MatDestroy(lu->A_dup);CHKERRQ(ierr);}
   if (lu->rhs_dup){ierr = PetscFree(lu->rhs_dup);CHKERRQ(ierr);}
