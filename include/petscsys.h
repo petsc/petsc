@@ -248,6 +248,18 @@ typedef int PetscInt;
 #define MPIU_INT MPI_INT
 #endif
 
+/*EC
+
+    PetscPrecision - indicates what precision the object is using
+
+    Level: advanced
+
+.seealso: PetscObjectSetPrecision()
+E*/
+typedef enum { PETSC_PRECISION_SINGLE=4,PETSC_PRECISION_DOUBLE=8 } PetscPrecision;
+extern const char *PetscPrecisions[];
+
+
 /* 
     For the rare cases when one needs to send a size_t object with MPI
 */

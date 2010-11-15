@@ -12,7 +12,7 @@ OBJSF    =
 LIBBASE  = libpetscdm
 DIRS     = 
 LOCDIR   = include/sieve/
-MANSEC   = DA
+MANSEC   = DM
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

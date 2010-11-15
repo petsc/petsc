@@ -88,6 +88,7 @@ typedef struct _p_PetscObject {
   PetscErrorCode (*optionhandler[PETSC_MAX_OPTIONS_HANDLER])(PetscObject,void*);
   PetscErrorCode (*optiondestroy[PETSC_MAX_OPTIONS_HANDLER])(PetscObject,void*);
   void           *optionctx[PETSC_MAX_OPTIONS_HANDLER];
+  PetscPrecision precision;
 } _p_PetscObject;
 
 #define PETSCHEADER(ObjectOps) \
