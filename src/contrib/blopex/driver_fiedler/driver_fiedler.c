@@ -125,7 +125,7 @@ int main(int argc,char **args)
    char                       filename[PETSC_MAX_PATH_LEN];
    char                       mass_filename[PETSC_MAX_PATH_LEN];
    PetscTruth                 mass_matrix_present;
-   PetscReal                  shift;
+   PetscReal                  shift=0;
    PetscTruth                 shift_present;
    char                       output_filename[PETSC_MAX_PATH_LEN];
    PetscTruth                 output_filename_present;
@@ -340,8 +340,11 @@ int main(int argc,char **args)
    PetscPrintf(PETSC_COMM_WORLD,"Solution process, seconds: %e\n",elapsed_time);
 
    /* shift eigenvalues back */
+   if (shift_present)
+   {
    for (i=0; i<n_eigs; i++)
       eigs[i]-=shift;
+   }
 
    PetscPrintf(PETSC_COMM_WORLD,"Final eigenvalues:\n");
    for (i=0;i<n_eigs;i++)

@@ -148,6 +148,9 @@ int main(int argc,char **args)
    PetscViewer                viewer;
 */
    PetscInt                   tmp_int;
+   mv_TempMultiVector * xe;
+   PetscInt  N;
+   PetscScalar * xx;
 
    PetscInitialize(&argc,&args,(char *)0,help);
    ierr = PetscOptionsGetInt(PETSC_NULL,"-n_eigs",&tmp_int,&option_present);CHKERRQ(ierr);
@@ -281,7 +284,6 @@ int main(int argc,char **args)
    eigenvectors = mv_MultiVectorCreateFromSampleVector(&ii, n_eigs,u);
 
 
-   mv_TempMultiVector * xe;
    xe = (mv_TempMultiVector *) mv_MultiVectorGetData( eigenvectors );
    /*
    VecView( (Vec)xe->vector[0],PETSC_VIEWER_STDOUT_WORLD);
@@ -293,10 +295,8 @@ int main(int argc,char **args)
    VecView( (Vec)xe->vector[0],PETSC_VIEWER_STDOUT_WORLD);
    */
 
-   PetscInt  N;
    VecGetSize( (Vec)xe->vector[0], &N );
    N=mv_TempMultiVectorHeight( xe );
-   PetscScalar * xx;
    VecGetArray( (Vec)xe->vector[0],&xx);
 
    lobpcg_tol.absolute = tol;
