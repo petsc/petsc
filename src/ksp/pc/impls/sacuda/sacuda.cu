@@ -102,6 +102,7 @@ static PetscErrorCode PCApplyRichardson_SACUDA(PC pc, Vec b, Vec y, Vec w,PetscR
   } else{
     *reason = PCRICHARDSON_CONVERGED_ITS;
   }
+  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -144,6 +145,7 @@ static PetscErrorCode PCApply_SACUDA(PC pc,Vec x,Vec y)
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
   } 
+  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
