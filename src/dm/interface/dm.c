@@ -483,10 +483,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,
 
     Input Parameters:
 +   dm - the DM object
-.   g - the global vector
+.   l - the local vector
 .   mode - if INSERT_VALUES then no parallel communication is used, if ADD_VALUES then all ghost points from the same base point accumulate into that
            base point. 
--   l - the local vector
+- - the global vector
 
     Notes: In the ADD_VALUES case you normally would zero the receiving vector before beginning this operation. If you would like to simply add the non-ghosted values in the local
            array into the global array you need to either (1) zero the ghosted locations and use ADD_VALUES or (2) use INSERT_VALUES into a work global array and then add the work 
@@ -497,12 +497,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,
 .seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGlobalToLocalEnd(), DMGlobalToLocalBegin()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalBegin(DM dm,Vec g,InsertMode mode,Vec l)
+PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = (*dm->ops->localtoglobalbegin)(dm,g,mode,l);CHKERRQ(ierr);
+  ierr = (*dm->ops->localtoglobalbegin)(dm,l,mode,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -515,9 +515,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalBegin(DM dm,Vec g,InsertMode mod
 
     Input Parameters:
 +   dm - the DM object
-.   g - the global vector
+.   l - the local vector
 .   mode - INSERT_VALUES or ADD_VALUES
--   l - the local vector
+-   g - the global vector
 
 
     Level: beginner
@@ -525,12 +525,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalBegin(DM dm,Vec g,InsertMode mod
 .seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGlobalToLocalEnd(), DMGlobalToLocalEnd()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalEnd(DM dm,Vec g,InsertMode mode,Vec l)
+PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = (*dm->ops->localtoglobalend)(dm,g,mode,l);CHKERRQ(ierr);
+  ierr = (*dm->ops->localtoglobalend)(dm,l,mode,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
