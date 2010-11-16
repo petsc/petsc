@@ -519,97 +519,20 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
 
 #undef __FUNCT__  
 #define __FUNCT__ "THIInitializePrm"
-static PetscErrorCode THIInitializePrm(THI thi,DM da2prm,Vec prm)
+static PetscErrorCode THIInitializePrm(THI thi,DM da2prm,PrmNode **p)
 {
-  PrmNode **p;
   PetscInt i,j,xs,xm,ys,ym,mx,my;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMDAGetGhostCorners(da2prm,&ys,&xs,0,&ym,&xm,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da2prm,0, &my,&mx,0, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da2prm,prm,&p);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
       PetscReal xx = thi->Lx*i/mx,yy = thi->Ly*j/my;
       thi->initialize(thi,xx,yy,&p[i][j]);
     }
   }
-  ierr = DMDAVecRestoreArray(da2prm,prm,&p);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "THISetDMMG"
-static PetscErrorCode THISetDMMG(THI thi,DMMG *dmmg)
-{
-  PetscErrorCode ierr;
-  PetscInt i;
-
-  PetscFunctionBegin;
-  if (DMMGGetLevels(dmmg) != thi->nlevels) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMMG nlevels does not agree with THI");
-  for (i=0; i<thi->nlevels; i++) {
-    PetscInt Mx,My,Mz,mx,my,s,dim;
-    DMDAStencilType  st;
-    DM pack,da3,da2prm;
-    Vec X;
-
-    pack = dmmg[i]->dm;
-    ierr = DMCompositeGetEntries(pack,&da3);CHKERRQ(ierr);
-    ierr = DMDAGetInfo(da3,&dim, &Mz,&My,&Mx, 0,&my,&mx, 0,&s,0,&st);CHKERRQ(ierr);
-    if (dim == 2) {
-      ierr = DMDAGetInfo(da3,&dim, &My,&Mx,0, &my,&mx,0, 0,&s,0,&st);CHKERRQ(ierr);
-    }
-    ierr = DMDACreate2d(((PetscObject)thi)->comm,DMDA_XYPERIODIC,st,My,Mx,my,mx,sizeof(PrmNode)/sizeof(PetscScalar),s,0,0,&da2prm);CHKERRQ(ierr);
-    ierr = DMCreateLocalVector(da2prm,&X);CHKERRQ(ierr);
-    {
-      PetscReal Lx = thi->Lx / thi->units->meter,Ly = thi->Ly / thi->units->meter,Lz = thi->Lz / thi->units->meter;
-      if (dim == 2) {
-        ierr = PetscPrintf(((PetscObject)thi)->comm,"Level %d domain size (m) %8.2g x %8.2g, num elements %3d x %3d (%8d), size (m) %g x %g\n",i,Lx,Ly,Mx,My,Mx*My,Lx/Mx,Ly/My);CHKERRQ(ierr);
-      } else {
-        ierr = PetscPrintf(((PetscObject)thi)->comm,"Level %d domain size (m) %8.2g x %8.2g x %8.2g, num elements %3d x %3d x %3d (%8d), size (m) %g x %g x %g\n",i,Lx,Ly,Lz,Mx,My,Mz,Mx*My*Mz,Lx/Mx,Ly/My,1000./(Mz-1));CHKERRQ(ierr);
-      }
-    }
-    ierr = THIInitializePrm(thi,da2prm,X);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)da3,"DMDA2Prm",(PetscObject)da2prm);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)da3,"DMDA2Prm_Vec",(PetscObject)X);CHKERRQ(ierr);
-    ierr = DMDestroy(da2prm);CHKERRQ(ierr);
-    ierr = VecDestroy(X);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "THIDAGetPrm"
-static PetscErrorCode THIDAGetPrm(DM da,PrmNode ***prm)
-{
-  PetscErrorCode ierr;
-  DM             da2prm;
-  Vec            X;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)da,"DMDA2Prm",(PetscObject*)&da2prm);CHKERRQ(ierr);
-  if (!da2prm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm composed with given DMDA");
-  ierr = PetscObjectQuery((PetscObject)da,"DMDA2Prm_Vec",(PetscObject*)&X);CHKERRQ(ierr);
-  if (!X) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm_Vec composed with given DMDA");
-  ierr = DMDAVecGetArray(da2prm,X,prm);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "THIDARestorePrm"
-static PetscErrorCode THIDARestorePrm(DM da,PrmNode ***prm)
-{
-  PetscErrorCode ierr;
-  DM             da2prm;
-  Vec            X;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)da,"DMDA2Prm",(PetscObject*)&da2prm);CHKERRQ(ierr);
-  if (!da2prm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm composed with given DMDA");
-  ierr = PetscObjectQuery((PetscObject)da,"DMDA2Prm_Vec",(PetscObject*)&X);CHKERRQ(ierr);
-  if (!X) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm_Vec composed with given DMDA");
-  ierr = DMDAVecRestoreArray(da2prm,X,prm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -618,19 +541,26 @@ static PetscErrorCode THIDARestorePrm(DM da,PrmNode ***prm)
 static PetscErrorCode THIInitial(DMMG dmmg,Vec X)
 {
   THI         thi = (THI)dmmg->user;
-  DM          pack = dmmg->dm,da3;
+  DM          pack = dmmg->dm,da3,da2;
   PetscInt    i,j,k,xs,xm,ys,ym,zs,zm,mx,my;
   PetscReal   hx,hy;
   PrmNode     **prm;
   Node        ***x;
+  Vec         X3g,X2g,X2;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMCompositeGetEntries(pack,&da3);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(pack,X,&X3g,&X2g);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da2,&X2);CHKERRQ(ierr);
+
   ierr = DMDAGetInfo(da3,0, 0,&my,&mx, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da3,&zs,&ys,&xs,&zm,&ym,&xm);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da3,X,&x);CHKERRQ(ierr);
-  ierr = THIDAGetPrm(da3,&prm);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da3,X3g,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2,X2,&prm);CHKERRQ(ierr);
+
+  ierr = THIInitializePrm(thi,da2,prm);CHKERRQ(ierr);
+
   hx = thi->Lx / mx;
   hy = thi->Ly / my;
   for (i=xs; i<xs+xm; i++) {
@@ -644,8 +574,15 @@ static PetscErrorCode THIInitial(DMMG dmmg,Vec X)
       }
     }
   }
-  ierr = DMDAVecRestoreArray(da3,X,&x);CHKERRQ(ierr);
-  ierr = THIDARestorePrm(da3,&prm);CHKERRQ(ierr);
+
+  ierr = DMDAVecRestoreArray(da3,X3g,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da2,X2,&prm);CHKERRQ(ierr);
+
+  ierr = DMLocalToGlobalBegin(da2,X2,INSERT_VALUES,X2g);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd  (da2,X2,INSERT_VALUES,X2g);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da2,&X2);CHKERRQ(ierr);
+
+  ierr = DMCompositeRestoreAccess(pack,X,&X3g,&X2g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -672,11 +609,10 @@ static void PointwiseNonlinearity(THI thi,const Node n[restrict 8],const PetscRe
 
 #undef __FUNCT__  
 #define __FUNCT__ "THIFunctionLocal"
-static PetscErrorCode THIFunctionLocal(DMDALocalInfo *info,Node ***x,Node ***f,THI thi)
+static PetscErrorCode THIFunctionLocal(DMDALocalInfo *info,Node ***x,const PrmNode **prm,Node ***f,THI thi)
 {
   PetscInt       xs,ys,xm,ym,zm,i,j,k,q,l;
   PetscReal      hx,hy,etamin,etamax,beta2min,beta2max;
-  PrmNode        **prm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -692,8 +628,6 @@ static PetscErrorCode THIFunctionLocal(DMDALocalInfo *info,Node ***x,Node ***f,T
   etamax   = 0;
   beta2min = 1e100;
   beta2max = 0;
-
-  ierr = THIDAGetPrm(info->da,&prm);CHKERRQ(ierr);
 
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
@@ -770,8 +704,6 @@ static PetscErrorCode THIFunctionLocal(DMDALocalInfo *info,Node ***x,Node ***f,T
     }
   }
 
-  ierr = THIDARestorePrm(info->da,&prm);CHKERRQ(ierr);
-
   ierr = PRangeMinMax(&thi->eta,etamin,etamax);CHKERRQ(ierr);
   ierr = PRangeMinMax(&thi->beta2,beta2min,beta2max);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -784,38 +716,48 @@ static PetscErrorCode THIFunction(SNES snes,Vec X,Vec F,void *ctx)
   PetscErrorCode ierr;
   DMMG           dmmg = (DMMG)ctx;
   THI            thi  = (THI)dmmg->user;
-  DM             pack = dmmg->dm,da3;
-  Vec            X3,F3,F3g;
+  DM             pack = dmmg->dm,da3,da2;
+  Vec            X3,X2,F3,F2,F3g,F2g;
   Node           ***x3,***f3;
+  const PrmNode  **x2;
   DMDALocalInfo  info3;
 
   PetscFunctionBegin;
-  ierr = DMCompositeGetEntries(pack,&da3);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da3,&info3);CHKERRQ(ierr);
-  ierr = DMCompositeGetLocalVectors(pack,&X3);CHKERRQ(ierr);
-  ierr = DMCompositeScatter(pack,X,X3);CHKERRQ(ierr);
+  ierr = DMCompositeGetLocalVectors(pack,&X3,&X2);CHKERRQ(ierr);
+  ierr = DMCompositeScatter(pack,X,X3,X2);CHKERRQ(ierr);
 
   ierr = DMGetLocalVector(da3,&F3);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da2,&F2);CHKERRQ(ierr);
   ierr = VecZeroEntries(F3);CHKERRQ(ierr);
+
   ierr = DMDAVecGetArray(da3,X3,&x3);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2,X2,&x2);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da3,F3,&f3);CHKERRQ(ierr);
 
-  ierr = THIFunctionLocal(&info3,x3,f3,thi);CHKERRQ(ierr);
+  ierr = THIFunctionLocal(&info3,x3,x2,f3,thi);CHKERRQ(ierr);
 
   ierr = DMDAVecRestoreArray(da3,X3,&x3);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da2,X2,&x2);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da3,F3,&f3);CHKERRQ(ierr);
 
+  ierr = VecCopy(X2,F2);CHKERRQ(ierr);
+  ierr = VecScale(F2,1e-8);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreLocalVectors(pack,&X3,&X2);CHKERRQ(ierr);
+
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
-  ierr = DMCompositeGetAccess(pack,F,&F3g);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(pack,F,&F3g,&F2g);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(da3,F3,ADD_VALUES,F3g);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(da3,F3,ADD_VALUES,F3g);CHKERRQ(ierr);
-  ierr = DMCompositeRestoreAccess(pack,F,&F3g);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd  (da3,F3,ADD_VALUES,F3g);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da2,F2,INSERT_VALUES,F2g);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd  (da2,F2,INSERT_VALUES,F2g);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(pack,F,&F3g,&F2g);CHKERRQ(ierr);
 
   ierr = DMRestoreLocalVector(da3,&F3);CHKERRQ(ierr);
-  ierr = DMCompositeRestoreLocalVectors(pack,&X3);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da2,&F2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "THIMatrixStatistics"
@@ -844,16 +786,16 @@ static PetscErrorCode THIMatrixStatistics(THI thi,Mat B,PetscViewer viewer)
 static PetscErrorCode THISurfaceStatistics(DM pack,Vec X,PetscReal *min,PetscReal *max,PetscReal *mean)
 {
   PetscErrorCode ierr;
-  DM             da3;
-  Vec            X3;
+  DM             da3,da2;
+  Vec            X3,X2;
   Node           ***x;
   PetscInt       i,j,xs,ys,zs,xm,ym,zm,mx,my,mz;
   PetscReal      umin = 1e100,umax=-1e100;
   PetscScalar    usum=0.0,gusum;
 
   PetscFunctionBegin;
-  ierr = DMCompositeGetEntries(pack,&da3);CHKERRQ(ierr);
-  ierr = DMCompositeGetAccess(pack,X,&X3);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(pack,X,&X3,&X2);CHKERRQ(ierr);
   *min = *max = *mean = 0;
   ierr = DMDAGetInfo(da3,0, &mz,&my,&mx, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da3,&zs,&ys,&xs,&zm,&ym,&xm);CHKERRQ(ierr);
@@ -866,8 +808,8 @@ static PetscErrorCode THISurfaceStatistics(DM pack,Vec X,PetscReal *min,PetscRea
       usum += u;
     }
   }
-  ierr = DMDAVecRestoreArray(da3,X,&x);CHKERRQ(ierr);
-  ierr = DMCompositeRestoreAccess(pack,X,&X3);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da3,X3,&x);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(pack,X,&X3,&X2);CHKERRQ(ierr);
 
   ierr = MPI_Allreduce(&umin,min,1,MPIU_REAL,MPI_MIN,((PetscObject)da3)->comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&umax,max,1,MPIU_REAL,MPI_MAX,((PetscObject)da3)->comm);CHKERRQ(ierr);
@@ -883,10 +825,12 @@ static PetscErrorCode THISolveStatistics(THI thi,DMMG *dmmg,PetscInt coarsened,c
   MPI_Comm       comm    = ((PetscObject)thi)->comm;
   PetscInt       nlevels = DMMGGetLevels(dmmg),level = nlevels-1-coarsened;
   SNES           snes    = dmmg[level]->snes;
-  Vec            X       = dmmg[level]->x;
+  DM             pack    = dmmg[level]->dm;
+  Vec            X       = dmmg[level]->x,X3,X2;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMCompositeGetAccess(pack,X,&X3,&X2);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"Solution statistics after solve: %s\n",name);CHKERRQ(ierr);
   {
     PetscInt its,lits;
@@ -900,9 +844,9 @@ static PetscErrorCode THISolveStatistics(THI thi,DMMG *dmmg,PetscInt coarsened,c
     PetscReal nrm2,tmin[3]={1e100,1e100,1e100},tmax[3]={-1e100,-1e100,-1e100},min[3],max[3];
     PetscInt i,j,m;
     PetscScalar *x;
-    ierr = VecNorm(X,NORM_2,&nrm2);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(X,&m);CHKERRQ(ierr);
-    ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+    ierr = VecNorm(X3,NORM_2,&nrm2);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(X3,&m);CHKERRQ(ierr);
+    ierr = VecGetArray(X3,&x);CHKERRQ(ierr);
     for (i=0; i<m; i+=2) {
       PetscReal u = PetscRealPart(x[i]),v = PetscRealPart(x[i+1]),c = sqrt(u*u+v*v);
       tmin[0] = PetscMin(u,tmin[0]);
@@ -935,16 +879,17 @@ static PetscErrorCode THISolveStatistics(THI thi,DMMG *dmmg,PetscInt coarsened,c
     ierr = PetscPrintf(comm,"Global beta2 range [%g, %g], converged range [%g, %g]\n",thi->beta2.min,thi->beta2.max,thi->beta2.cmin,thi->beta2.cmax);CHKERRQ(ierr);
   }
   ierr = PetscPrintf(comm,"\n");CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(pack,X,&X3,&X2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "THIJacobianLocal_Momentum"
-static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,Node ***x,Mat B,THI thi)
+__attribute((unused))
+static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node ***x,const PrmNode **prm,Mat B,THI thi)
 {
   PetscInt       xs,ys,xm,ym,zm,i,j,k,q,l,ll;
   PetscReal      hx,hy;
-  PrmNode        **prm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -957,7 +902,6 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,Node ***x,Ma
   hy = thi->Ly / info->my;
 
   ierr = MatZeroEntries(B);CHKERRQ(ierr);
-  ierr = THIDAGetPrm(info->da,&prm);CHKERRQ(ierr);
 
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
@@ -1107,7 +1051,6 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,Node ***x,Ma
       }
     }
   }
-  ierr = THIDARestorePrm(info->da,&prm);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -1237,27 +1180,41 @@ static PetscErrorCode THICreateDM3d(THI thi,DM *dm3d)
 int main(int argc,char *argv[])
 {
   MPI_Comm       comm;
-  DM             pack,da3d;
+  DM             pack,da3,da2;
   DMMG           *dmmg;
   THI            thi;
+  PetscInt       i;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
 
   ierr = THICreate(comm,&thi);CHKERRQ(ierr);
-  ierr = THICreateDM3d(thi,&da3d);CHKERRQ(ierr);
+  ierr = THICreateDM3d(thi,&da3);CHKERRQ(ierr);
+  {
+    PetscInt Mx,My,mx,my,s;
+    DMDAStencilType st;
+    ierr = DMDAGetInfo(da3,0, 0,&My,&Mx, 0,&my,&mx, 0,&s,0,&st);CHKERRQ(ierr);
+    ierr = DMDACreate2d(((PetscObject)thi)->comm,DMDA_XYPERIODIC,st,My,Mx,my,mx,sizeof(PrmNode)/sizeof(PetscScalar),s,0,0,&da2);CHKERRQ(ierr);
+  }
 
   ierr = DMCompositeCreate(comm,&pack);CHKERRQ(ierr);
-  ierr = DMCompositeAddDM(pack,da3d);CHKERRQ(ierr);
-  ierr = DMDestroy(da3d);CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(pack,da3);CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(pack,da2);CHKERRQ(ierr);
+  ierr = DMDestroy(da3);CHKERRQ(ierr);
 
   ierr = DMMGCreate(comm,thi->nlevels,thi,&dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,pack);CHKERRQ(ierr);
   ierr = DMDestroy(pack);CHKERRQ(ierr);
 
+  for (i=0; i<thi->nlevels; i++) {
+    PetscReal Lx = thi->Lx / thi->units->meter,Ly = thi->Ly / thi->units->meter,Lz = thi->Lz / thi->units->meter;
+    PetscInt Mx,My,Mz;
+    ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(da3,0, &Mz,&My,&Mx, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)thi)->comm,"Level %d domain size (m) %8.2g x %8.2g x %8.2g, num elements %3d x %3d x %3d (%8d), size (m) %g x %g x %g\n",i,Lx,Ly,Lz,Mx,My,Mz,Mx*My*Mz,Lx/Mx,Ly/My,1000./(Mz-1));CHKERRQ(ierr);
+  }
   ierr = DMMGSetInitialGuess(dmmg,THIInitial);CHKERRQ(ierr);
-  ierr = THISetDMMG(thi,dmmg);CHKERRQ(ierr);
 
   {
     /* Use the user-defined matrix type on all but the coarse level */
