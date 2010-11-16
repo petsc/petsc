@@ -83,6 +83,27 @@ static PetscErrorCode PCSetUp_SACUDA(PC pc)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCApplyRichardson_SACUDA"
+static PetscErrorCode PCApplyRichardson_SACUDA(PC pc, Vec b, Vec y, Vec w,PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
+{
+  PC_SACUDA      *sac = (PC_SACUDA*)pc->data;
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  /* how to incorporate dtol, guesszero, w?*/
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  cusp::default_monitor<PetscScalar> monitor(*((Vec_CUDA *)b->spptr)->GPUarray,its,rtol,abstol);
+  sac->SACUDA->solve(*((Vec_CUDA *)b->spptr)->GPUarray,*((Vec_CUDA *)y->spptr)->GPUarray,monitor);
+  *outits = monitor.iteration_count();
+  if (monitor.converged()){
+    /* how to discern between converging from RTOL or ATOL?*/
+    *reason = PCRICHARDSON_CONVERGED_RTOL;
+  } else{
+    *reason = PCRICHARDSON_CONVERGED_ITS;
+  }
+  PetscFunctionReturn(0);
+}
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -211,7 +232,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SACUDA(PC pc)
   pc->ops->destroy             = PCDestroy_SACUDA;
   pc->ops->setfromoptions      = PCSetFromOptions_SACUDA;
   pc->ops->view                = 0;
-  pc->ops->applyrichardson     = 0;
+  pc->ops->applyrichardson     = PCApplyRichardson_SACUDA;
   pc->ops->applysymmetricleft  = 0;
   pc->ops->applysymmetricright = 0;
   PetscFunctionReturn(0);
