@@ -109,6 +109,7 @@ def run_setup():
 
 def run_cython(source):
     import sys, os
+    CYTHON_VERSION_REQUIRED = .13  
     source_c = os.path.splitext(source)[0] + '.c'
     if (os.path.exists(source_c)):
         return False
@@ -123,6 +124,15 @@ def run_cython(source):
         warn()
         warn("*"*80)
         raise SystemExit
+    import Cython.Compiler.Version
+    if float(Cython.Compiler.Version.version) < CYTHON_VERSION_REQUIRED:
+        warn = lambda msg='': sys.stderr.write(msg+'\n')
+        warn("*"*80)
+        warn()
+        warn(" You need to install Cython version "+str(CYTHON_VERSION_REQUIRED)+" <http://www.cython.org>")
+        warn()
+        warn("*"*80)
+        raise SystemExit       
     from distutils import log
     from conf.cythonize import run as cythonize
     log.info("cythonizing '%s' source" % source)
