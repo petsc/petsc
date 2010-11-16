@@ -8,7 +8,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_Richardson"
-PetscErrorCode KSPSetUp_Richardson(KSP ksp)
+0PetscErrorCode KSPSetUp_Richardson(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
