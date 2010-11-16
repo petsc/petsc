@@ -24,11 +24,9 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   PetscScalar    alpha, beta, omega, sigma;
   PetscScalar    rho0, rho1;
   PetscReal      kappa0, kappaA, kappa1;
-  PetscReal      ghat, epsilon, abstol;
+  PetscReal      ghat;
   PetscReal      zeta, zeta0, rnmax_computed, rnmax_true, nrm0;
   PetscBool      bUpdateX;
-  PetscBool      bBombed = PETSC_FALSE;
-
   PetscInt       maxit;
   PetscInt       h, i, j, k, vi, ell;
   PetscBLASInt   ldMZ,bierr;
@@ -82,7 +80,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   ierr = VecCopy(VVR[0], VRT);CHKERRQ(ierr);
   zeta = zeta0;
 
-  ierr = KSPGetTolerances(ksp, &epsilon, &abstol, PETSC_NULL, &maxit);CHKERRQ(ierr);
+  ierr = KSPGetTolerances(ksp, PETSC_NULL, PETSC_NULL, PETSC_NULL, &maxit);CHKERRQ(ierr);
 
   for (k=0; k<maxit; k += bcgsl->ell) {
     ksp->its   = k;
@@ -92,7 +90,8 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
     KSPMonitor(ksp, ksp->its, zeta);
 
     ierr = (*ksp->converged)(ksp, k, zeta, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
-    if (ksp->reason) break;
+    if (ksp->reason < 0) PetscFunctionReturn(0);
+    else if (ksp->reason) break;
 
     /* BiCG part */
     rho0 = -omega*rho0;
@@ -102,8 +101,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       ierr = VecDot(VVR[j], VRT, &rho1);CHKERRQ(ierr);
       if (rho1 == 0.0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
-        bBombed = PETSC_TRUE;
-        break;
+        PetscFunctionReturn(0);
       }
       beta = alpha*(rho1/rho0);
       rho0 = rho1;
@@ -117,8 +115,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       ierr = VecDot(VVU[j+1], VRT, &sigma);CHKERRQ(ierr);
       if (sigma == 0.0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
-        bBombed = PETSC_TRUE;
-        break;
+        PetscFunctionReturn(0);
       }
       alpha = rho1/sigma;
 
@@ -146,11 +143,9 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
         ksp->its   = k+j;
         ksp->rnorm = nrm0;
         ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-        break;
+        if (ksp->reason < 0) PetscFunctionReturn(0);
       }
     }
-
-    if (bBombed==PETSC_TRUE) break;
 
     /* Polynomial part */
     for(i = 0; i <= bcgsl->ell; ++i) {
@@ -172,8 +167,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       LAPACKpotrf_("Lower", &bell, &MZa[1+ldMZ], &ldMZ, &bierr);
       if (ierr!=0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
-        bBombed = PETSC_TRUE;
-        break;
+        PetscFunctionReturn(0);
       }
       ierr = PetscMemcpy(&AY0c[1],&MZb[1],bcgsl->ell*sizeof(PetscScalar));CHKERRQ(ierr);
       LAPACKpotrs_("Lower", &bell, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr);
@@ -185,8 +179,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       LAPACKpotrf_("Lower", &neqs, &MZa[1+ldMZ], &ldMZ, &bierr);
       if (ierr!=0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
-        bBombed = PETSC_TRUE;
-        break;
+        PetscFunctionReturn(0);
       }
       ierr = PetscMemcpy(&AY0c[1],&MZb[1],(bcgsl->ell-1)*sizeof(PetscScalar));CHKERRQ(ierr);
       LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr);
@@ -234,7 +227,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
     }
     if (omega==0.0) {
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      break;
+      PetscFunctionReturn(0);
     }
 
 
