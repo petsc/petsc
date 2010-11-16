@@ -1463,11 +1463,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
         ierr = VecGetArray(vec1,&v1);CHKERRQ(ierr); 
         ierr = VecGetArray(vec2,&v2);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-        PetscInt k;
-        for (k=0; k<n1; k++){
-          if (PetscRealPart(v1[k]) != PetscRealPart(v2[k]) || PetscImaginaryPart(v1[k]) != PetscImaginaryPart(v2[k])){
-            flg1 = PETSC_FALSE;
-            break;
+        {
+          PetscInt k;
+          flg1 = PETSC_TRUE;
+          for (k=0; k<n1; k++){
+            if (PetscRealPart(v1[k]) != PetscRealPart(v2[k]) || PetscImaginaryPart(v1[k]) != PetscImaginaryPart(v2[k])){
+              flg1 = PETSC_FALSE;
+              break;
+            }
           }
         }
 #else 
