@@ -109,10 +109,7 @@ def run_setup():
 
 def run_cython(source):
     import sys, os
-    CYTHON_VERSION_REQUIRED = .13  
-    source_c = os.path.splitext(source)[0] + '.c'
-    if (os.path.exists(source_c)):
-        return False
+    CYTHON_VERSION_REQUIRED = .13
     try:
         import Cython
     except ImportError:
@@ -135,20 +132,15 @@ def run_cython(source):
         raise SystemExit       
     from distutils import log
     from conf.cythonize import run as cythonize
-    log.info("cythonizing '%s' source" % source)
+    log.info("************************* cythonizing '%s' source" % source)
     cythonize(source)
-    return True
+    return
 
 def main():
     import os
-    try:
-        run_setup()
-    except:
-        done = run_cython(os.path.join('src', 'petsc4py.PETSc.pyx'))
-        if done:
-            run_setup()
-        else:
-            raise
+    if os.path.isdir('.hg'):
+        run_cython(os.path.join('src', 'petsc4py.PETSc.pyx'))
+    run_setup()
 
 if __name__ == '__main__':
     main()
