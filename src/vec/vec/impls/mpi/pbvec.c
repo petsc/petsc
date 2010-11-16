@@ -111,6 +111,185 @@ static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
 extern PetscErrorCode VecSetOption_MPI(Vec,VecOption,PetscBool);
 extern PetscErrorCode VecResetArray_MPI(Vec);
 
+#undef __FUNCT__  
+#define __FUNCT__ "VecPointwiseMax_Seq"
+static PetscErrorCode VecPointwiseMax_Seq(Vec win,Vec xin,Vec yin)
+{
+  PetscErrorCode ierr;
+  PetscInt       n = win->map->n,i;
+  PetscScalar    *ww,*xx,*yy;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayPrivate3(win,&ww,xin,&xx,yin,&yy);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    ww[i] = PetscMax(PetscRealPart(xx[i]),PetscRealPart(yy[i]));
+  }
+  ierr = PetscLogFlops(n);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPrivate3(win,&ww,xin,&xx,yin,&yy);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecPointwiseMin_Seq"
+static PetscErrorCode VecPointwiseMin_Seq(Vec win,Vec xin,Vec yin)
+{
+  PetscErrorCode ierr;
+  PetscInt       n = win->map->n,i;
+  PetscScalar    *ww,*xx,*yy;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayPrivate3(win,&ww,xin,&xx,yin,&yy);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    ww[i] = PetscMin(PetscRealPart(xx[i]),PetscRealPart(yy[i]));
+  }
+  ierr = PetscLogFlops(n);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPrivate3(win,&ww,xin,&xx,yin,&yy);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecPointwiseMaxAbs_Seq"
+static PetscErrorCode VecPointwiseMaxAbs_Seq(Vec win,Vec xin,Vec yin)
+{
+  PetscErrorCode ierr;
+  PetscInt       n = win->map->n,i;
+  PetscScalar    *ww,*xx,*yy;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayPrivate3(win,&ww,xin,&xx,yin,&yy);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    ww[i] = PetscMax(PetscAbsScalar(xx[i]),PetscAbsScalar(yy[i]));
+  }
+  ierr = PetscLogFlops(n);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPrivate3(win,&ww,xin,&xx,yin,&yy);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#include "../src/vec/vec/impls/seq/ftn-kernels/fxtimesy.h"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPointwiseMult_Seq"
+static PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)
+{
+  PetscErrorCode ierr;
+  PetscInt       n = win->map->n,i;
+  PetscScalar    *ww,*xx,*yy;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayPrivate3(win,&ww,xin,&xx,yin,&yy);CHKERRQ(ierr);
+  if (ww == xx) {
+    for (i=0; i<n; i++) ww[i] *= yy[i];
+  } else if (ww == yy) {
+    for (i=0; i<n; i++) ww[i] *= xx[i];
+  } else {
+    /*  This was suppose to help on SGI but didn't really seem to
+          PetscReal * PETSC_RESTRICT www = ww;
+          PetscReal * PETSC_RESTRICT yyy = yy;
+          PetscReal * PETSC_RESTRICT xxx = xx;
+          for (i=0; i<n; i++) www[i] = xxx[i] * yyy[i];
+    */
+#if defined(PETSC_USE_FORTRAN_KERNEL_XTIMESY)
+    fortranxtimesy_(xx,yy,ww,&n);
+#else
+    for (i=0; i<n; i++) ww[i] = xx[i] * yy[i];
+#endif
+  }
+  ierr = VecRestoreArrayPrivate3(win,&ww,xin,&xx,yin,&yy);CHKERRQ(ierr);
+  ierr = PetscLogFlops(n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecSetRandom_Seq"
+static PetscErrorCode VecSetRandom_Seq(Vec xin,PetscRandom r)
+{
+  PetscErrorCode ierr;
+  PetscInt       n = xin->map->n,i;
+  PetscScalar    *xx = *(PetscScalar**)xin->data;
+
+  PetscFunctionBegin;
+  for (i=0; i<n; i++) {ierr = PetscRandomGetValue(r,&xx[i]);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecPointwiseDivide_Seq"
+static PetscErrorCode VecPointwiseDivide_Seq(Vec win,Vec xin,Vec yin)
+{
+  PetscErrorCode ierr;
+  PetscInt       n = win->map->n,i;
+  PetscScalar    *ww,*xx,*yy;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayPrivate3(win,&ww,xin,&xx,yin,&yy);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    ww[i] = xx[i] / yy[i];
+  }
+  ierr = PetscLogFlops(n);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPrivate3(win,&ww,xin,&xx,yin,&yy);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecGetSize_Seq"
+static PetscErrorCode VecGetSize_Seq(Vec vin,PetscInt *size)
+{
+  PetscFunctionBegin;
+  *size = vin->map->n;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecConjugate_Seq"
+static PetscErrorCode VecConjugate_Seq(Vec xin)
+{
+  PetscScalar    *x;
+  PetscInt       n = xin->map->n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayPrivate(xin,&x);CHKERRQ(ierr);
+  while (n-->0) {
+    *x = PetscConj(*x);
+    x++;
+  }
+  ierr = VecRestoreArrayPrivate(xin,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecCopy_Seq"
+static PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
+{
+  PetscScalar    *ya, *xa;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (xin != yin) {
+    ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+    ierr = PetscMemcpy(ya,xa,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#include "petscblaslapack.h"
+#undef __FUNCT__  
+#define __FUNCT__ "VecSwap_Seq"
+static PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
+{
+  PetscScalar    *ya, *xa;
+  PetscErrorCode ierr;
+  PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map->n);
+
+  PetscFunctionBegin;
+  if (xin != yin) {
+    ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+    BLASswap_(&bn,xa,&one,ya,&one);
+    ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
             VecDuplicateVecs_Default,
             VecDestroyVecs_Default,
