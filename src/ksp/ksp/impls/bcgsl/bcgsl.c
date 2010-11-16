@@ -24,7 +24,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   PetscScalar    alpha, beta, omega, sigma;
   PetscScalar    rho0, rho1;
   PetscReal      kappa0, kappaA, kappa1;
-  PetscReal      ghat, epsilon, abstol;
+  PetscReal      ghat;
   PetscReal      zeta, zeta0, rnmax_computed, rnmax_true, nrm0;
   PetscBool      bUpdateX;
   PetscInt       maxit;
@@ -80,7 +80,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   ierr = VecCopy(VVR[0], VRT);CHKERRQ(ierr);
   zeta = zeta0;
 
-  ierr = KSPGetTolerances(ksp, &epsilon, &abstol, PETSC_NULL, &maxit);CHKERRQ(ierr);
+  ierr = KSPGetTolerances(ksp, PETSC_NULL, PETSC_NULL, PETSC_NULL, &maxit);CHKERRQ(ierr);
 
   for (k=0; k<maxit; k += bcgsl->ell) {
     ksp->its   = k;
