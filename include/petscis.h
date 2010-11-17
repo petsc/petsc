@@ -113,6 +113,10 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSetIdentity(IS);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISIdentity(IS,PetscBool *);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetIndices(IS,const PetscInt *[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetTotalIndices(IS,const PetscInt *[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISRestoreTotalIndices(IS,const PetscInt *[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetNonlocalIndices(IS,const PetscInt *[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISRestoreNonlocalIndices(IS,const PetscInt *[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISRestoreIndices(IS,const PetscInt *[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetSize(IS,PetscInt *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetLocalSize(IS,PetscInt *);
