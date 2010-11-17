@@ -267,6 +267,25 @@ static void PrmHexGetZ(const PrmNode pn[],PetscInt k,PetscInt zm,PetscReal zn[])
   for (i=0; i<8; i++) zn[i] = PetscRealPart(znl[i]);
 }
 
+static inline PetscReal StaggeredMidpoint2D(PetscScalar a,PetscScalar b,PetscScalar c,PetscScalar d)
+{return 0.5*(PetscReal)(0.75*a + 0.75*b + 0.25*c + 0.25*d);}
+
+static void PrmNodeGetFaceMeasure(const PrmNode **p,PetscInt i,PetscInt j,PetscReal h[])
+{
+  /* West */
+  h[0] = StaggeredMidpoint2D(p[i][j].h,p[i-1][j].h,p[i-1][j-1].h,p[i][j-1].h);
+  h[1] = StaggeredMidpoint2D(p[i][j].h,p[i-1][j].h,p[i-1][j+1].h,p[i][j+1].h);
+  /* East */
+  h[2] = StaggeredMidpoint2D(p[i][j].h,p[i+1][j].h,p[i+1][j+1].h,p[i][j+1].h);
+  h[3] = StaggeredMidpoint2D(p[i][j].h,p[i+1][j].h,p[i+1][j-1].h,p[i][j-1].h);
+  /* South */
+  h[4] = StaggeredMidpoint2D(p[i][j].h,p[i][j-1].h,p[i+1][j-1].h,p[i+1][j].h);
+  h[5] = StaggeredMidpoint2D(p[i][j].h,p[i][j-1].h,p[i-1][j-1].h,p[i-1][j].h);
+  /* North */
+  h[6] = StaggeredMidpoint2D(p[i][j].h,p[i][j+1].h,p[i-1][j+1].h,p[i-1][j].h);
+  h[7] = StaggeredMidpoint2D(p[i][j].h,p[i][j+1].h,p[i+1][j+1].h,p[i+1][j].h);
+}
+
 /* Tests A and C are from the ISMIP-HOM paper (Pattyn et al. 2008) */
 static void THIInitialize_HOM_A(THI thi,PetscReal x,PetscReal y,PrmNode *p)
 {
@@ -608,8 +627,8 @@ static void PointwiseNonlinearity(THI thi,const Node n[restrict 8],const PetscRe
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "THIFunctionLocal"
-static PetscErrorCode THIFunctionLocal(DMDALocalInfo *info,Node ***x,const PrmNode **prm,Node ***f,THI thi)
+#define __FUNCT__ "THIFunctionLocal_3D"
+static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,const PrmNode **prm,Node ***f,THI thi)
 {
   PetscInt       xs,ys,xm,ym,zm,i,j,k,q,l;
   PetscReal      hx,hy,etamin,etamax,beta2min,beta2max;
@@ -710,6 +729,45 @@ static PetscErrorCode THIFunctionLocal(DMDALocalInfo *info,Node ***x,const PrmNo
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "THIFunctionLocal_2D"
+static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info,const Node ***x,const PrmNode **prm,PrmNode **f,THI thi)
+{
+  PetscInt       xs,ys,xm,ym,zm,i,j,k;
+  PetscReal      hx,hy;
+
+  PetscFunctionBegin;
+  xs = info->zs;
+  ys = info->ys;
+  xm = info->zm;
+  ym = info->ym;
+  zm = info->xm;
+  hx = thi->Lx / info->mz;
+  hy = thi->Ly / info->my;
+
+  for (i=xs; i<xs+xm; i++) {
+    for (j=ys; j<ys+ym; j++) {
+      PetscScalar div = 0,h[8];
+      PrmNodeGetFaceMeasure(prm,i,j,h);
+      for (k=0; k<zm; k++) {
+        PetscScalar weight = (k==0 || k == zm-1) ? 0.5/zm : 1.0/zm;
+        div += (- weight*h[0] * StaggeredMidpoint2D(x[i][j][k].u,x[i-1][j][k].u, x[i-1][j-1][k].u,x[i][j-1][k].u)
+                - weight*h[1] * StaggeredMidpoint2D(x[i][j][k].u,x[i-1][j][k].u, x[i-1][j+1][k].u,x[i][j+1][k].u)
+                + weight*h[2] * StaggeredMidpoint2D(x[i][j][k].u,x[i+1][j][k].u, x[i+1][j+1][k].u,x[i][j+1][k].u)
+                + weight*h[3] * StaggeredMidpoint2D(x[i][j][k].u,x[i+1][j][k].u, x[i+1][j-1][k].u,x[i][j-1][k].u)
+                - weight*h[4] * StaggeredMidpoint2D(x[i][j][k].v,x[i][j-1][k].v, x[i+1][j-1][k].v,x[i+1][j][k].v)
+                - weight*h[5] * StaggeredMidpoint2D(x[i][j][k].v,x[i][j-1][k].v, x[i-1][j-1][k].v,x[i-1][j][k].v)
+                + weight*h[6] * StaggeredMidpoint2D(x[i][j][k].v,x[i][j+1][k].v, x[i-1][j+1][k].v,x[i-1][j][k].v)
+                + weight*h[7] * StaggeredMidpoint2D(x[i][j][k].v,x[i][j+1][k].v, x[i+1][j+1][k].v,x[i+1][j][k].v));
+      }
+      f[i][j].b     = 0;
+      f[i][j].h     = div;
+      f[i][j].beta2 = 0;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "THIFunction"
 static PetscErrorCode THIFunction(SNES snes,Vec X,Vec F,void *ctx)
 {
@@ -718,8 +776,10 @@ static PetscErrorCode THIFunction(SNES snes,Vec X,Vec F,void *ctx)
   THI            thi  = (THI)dmmg->user;
   DM             pack = dmmg->dm,da3,da2;
   Vec            X3,X2,F3,F2,F3g,F2g;
-  Node           ***x3,***f3;
+  const Node     ***x3;
   const PrmNode  **x2;
+  Node           ***f3;
+  PrmNode        **f2;
   DMDALocalInfo  info3;
 
   PetscFunctionBegin;
@@ -735,16 +795,16 @@ static PetscErrorCode THIFunction(SNES snes,Vec X,Vec F,void *ctx)
   ierr = DMDAVecGetArray(da3,X3,&x3);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da2,X2,&x2);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da3,F3,&f3);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2,F2,&f2);CHKERRQ(ierr);
 
-  ierr = THIFunctionLocal(&info3,x3,x2,f3,thi);CHKERRQ(ierr);
-  //ierr = THIFunctionLocal_2D(&info3,x3,x2,f3,thi);CHKERRQ(ierr);
+  ierr = THIFunctionLocal_3D(&info3,x3,x2,f3,thi);CHKERRQ(ierr);
+  ierr = THIFunctionLocal_2D(&info3,x3,x2,f2,thi);CHKERRQ(ierr);
 
   ierr = DMDAVecRestoreArray(da3,X3,&x3);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da2,X2,&x2);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da3,F3,&f3);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da2,F2,&f2);CHKERRQ(ierr);
 
-  ierr = VecCopy(X2,F2);CHKERRQ(ierr);
-  ierr = VecScale(F2,1e-8);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(pack,&X3,&X2);CHKERRQ(ierr);
 
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
