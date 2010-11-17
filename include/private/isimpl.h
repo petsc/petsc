@@ -31,6 +31,8 @@ struct _p_IS {
   PetscInt     max,min;         /* range of possible values */
   void         *data;
   PetscBool    isidentity;
+  PetscInt     *total, *complement; /* local representation of ALL indices across the comm as well as the complement (nonlocal part). */
+  PetscInt     local_offset;        /* offset to the local part within the total index set */
 };
 
 
