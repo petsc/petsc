@@ -513,7 +513,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeSetContext(DM,void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetContext(DM,void**);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddVecScatter(DM,VecScatter);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeScatter(DM,Vec,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGather(DM,Vec,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGather(DM,Vec,InsertMode,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetAccess(DM,Vec,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetNumberDM(DM,PetscInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeRestoreAccess(DM,Vec,...);

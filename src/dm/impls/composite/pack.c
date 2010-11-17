@@ -326,7 +326,7 @@ PetscErrorCode DMCompositeScatter_DM(DM dm,struct DMCompositeLink *mine,Vec vec,
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeGather_Array"
-PetscErrorCode DMCompositeGather_Array(DM dm,struct DMCompositeLink *mine,Vec vec,PetscScalar *array)
+PetscErrorCode DMCompositeGather_Array(DM dm,struct DMCompositeLink *mine,Vec vec,InsertMode imode,PetscScalar *array)
 {
   PetscErrorCode ierr;
   PetscScalar    *varray;
@@ -337,7 +337,16 @@ PetscErrorCode DMCompositeGather_Array(DM dm,struct DMCompositeLink *mine,Vec ve
   if (rank == mine->rank) {
     ierr    = VecGetArray(vec,&varray);CHKERRQ(ierr);
     if (varray+mine->rstart == array) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"You need not DMCompositeGather() into objects obtained via DMCompositeGetAccess()");
-    ierr    = PetscMemcpy(varray+mine->rstart,array,mine->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    switch (imode) {
+    case INSERT_VALUES:
+      ierr = PetscMemcpy(varray+mine->rstart,array,mine->n*sizeof(PetscScalar));CHKERRQ(ierr);
+      break;
+    case ADD_VALUES: {
+      PetscInt i;
+      for (i=0; i<mine->n; i++) varray[mine->rstart+i] += array[i];
+    } break;
+    default: SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"imode");
+    }
     ierr    = VecRestoreArray(vec,&varray);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -345,7 +354,7 @@ PetscErrorCode DMCompositeGather_Array(DM dm,struct DMCompositeLink *mine,Vec ve
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeGather_DM"
-PetscErrorCode DMCompositeGather_DM(DM dm,struct DMCompositeLink *mine,Vec vec,Vec local)
+PetscErrorCode DMCompositeGather_DM(DM dm,struct DMCompositeLink *mine,Vec vec,InsertMode imode,Vec local)
 {
   PetscErrorCode ierr;
   PetscScalar    *array;
@@ -355,8 +364,8 @@ PetscErrorCode DMCompositeGather_DM(DM dm,struct DMCompositeLink *mine,Vec vec,V
   ierr = DMGetGlobalVector(mine->dm,&global);CHKERRQ(ierr);
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
   ierr = VecPlaceArray(global,array+mine->rstart);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(mine->dm,local,INSERT_VALUES,global);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(mine->dm,local,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(mine->dm,local,imode,global);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(mine->dm,local,imode,global);CHKERRQ(ierr);
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   ierr = VecResetArray(global);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(mine->dm,&global);CHKERRQ(ierr);
@@ -578,7 +587,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeScatter(DM dm,Vec gvec,...)
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGather(DM dm,Vec gvec,...)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGather(DM dm,Vec gvec,InsertMode imode,...)
 {
   va_list                Argp;
   PetscErrorCode         ierr;
@@ -594,17 +603,17 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGather(DM dm,Vec gvec,...)
   }
 
   /* loop over packed objects, handling one at at time */
-  va_start(Argp,gvec);
+  va_start(Argp,imode);
   while (next) {
     if (next->type == DMCOMPOSITE_ARRAY) {
       PetscScalar *array;
       array = va_arg(Argp, PetscScalar*);
-      ierr  = DMCompositeGather_Array(dm,next,gvec,array);CHKERRQ(ierr);
+      ierr  = DMCompositeGather_Array(dm,next,gvec,imode,array);CHKERRQ(ierr);
     } else if (next->type == DMCOMPOSITE_DM) {
       Vec vec;
       vec = va_arg(Argp, Vec);
       PetscValidHeaderSpecific(vec,VEC_CLASSID,3);
-      ierr = DMCompositeGather_DM(dm,next,gvec,vec);CHKERRQ(ierr);
+      ierr = DMCompositeGather_DM(dm,next,gvec,imode,vec);CHKERRQ(ierr);
     } else {
       SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }

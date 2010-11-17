@@ -152,7 +152,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = DMDAVecRestoreArray(user->da1,vlambda,&lambda);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(user->da1,vflambda,&flambda);CHKERRQ(ierr);
 
-  ierr = DMCompositeGather(user->packer,FU,fw,vfu,vflambda);CHKERRQ(ierr);
+  ierr = DMCompositeGather(user->packer,FU,INSERT_VALUES,fw,vfu,vflambda);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->packer,&w,&vu,&vlambda);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->packer,&fw,&vfu,&vflambda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
