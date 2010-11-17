@@ -1453,6 +1453,7 @@ namespace ALE {
       }
       return this->sizeWithBC();
     };
+    bool sharedStorage() const {return this->_sharedStorage;};
   public: // Verifiers
     bool hasPoint(const point_type& point) {
       return this->_atlas->hasPoint(point);

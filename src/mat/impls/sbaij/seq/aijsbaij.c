@@ -185,7 +185,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType new
   Mat_SeqBAIJ    *b;
   PetscErrorCode ierr;
   PetscInt       *ai=a->i,*aj=a->j,m=A->rmap->N,n=A->cmap->n,i,k,*bi,*bj,*browlengths,nz,*browstart,itmp;
-  PetscInt       bs=A->rmap->bs,bs2=bs*bs,mbs=m/bs;
+  PetscInt       bs=A->rmap->bs,bs2=bs*bs,mbs=m/bs,col,row;
   MatScalar      *av,*bv;
 
   PetscFunctionBegin;
@@ -216,9 +216,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType new
   /* set b->i */
   bi[0] = 0;
   for (i=0; i<mbs; i++){
-    b->ilen[i]    = browlengths[i];
-    bi[i+1]       = bi[i] + browlengths[i]; 
-    browstart[i]  = bi[i];
+    b->ilen[i]   = browlengths[i];
+    bi[i+1]      = bi[i] + browlengths[i]; 
+    browstart[i] = bi[i];
   }
   if (bi[mbs] != 2*a->nz - mbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bi[mbs]: %D != 2*a->nz - mbs: %D\n",bi[mbs],2*a->nz - mbs);
   
@@ -235,20 +235,24 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType new
     
     nz = ai[i+1] - ai[i] -1;
     while (nz--){
-      /* lower triangular blocks */   
-      *(bj + browstart[*aj]) = i;
-      itmp = bs2*browstart[*aj];
-      for (k=0; k<bs2; k++){
-        *(bv + itmp + k) = *(av + k);
+      /* lower triangular blocks - transpose blocks of A */   
+      *(bj + browstart[*aj]) = i; /* block col index */
+      itmp = bs2*browstart[*aj];  /* row index */
+      for (col=0; col<bs; col++){
+        k = col;
+        for (row=0; row<bs; row++){
+          bv[itmp + col*bs+row] = av[k]; k+=bs;
+        }
       }
       browstart[*aj]++;
 
       /* upper triangular blocks */
       *(bj + browstart[i]) = *aj; aj++;
-      itmp = bs2*browstart[i];
+      itmp = bs2*browstart[i]; 
       for (k=0; k<bs2; k++){
-        *(bv + itmp + k) = *av; av++;
+        bv[itmp + k] = av[k]; 
       }
+      av += bs2;
       browstart[i]++;
     }
   }
