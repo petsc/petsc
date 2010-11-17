@@ -1432,6 +1432,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectDestroy(PetscObject);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetComm(PetscObject,MPI_Comm *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetClassId(PetscObject,PetscClassId *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetType(PetscObject,const char []);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetPrecision(PetscObject,PetscPrecision);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetType(PetscObject,const char *[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetName(PetscObject,const char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetName(PetscObject,const char*[]);

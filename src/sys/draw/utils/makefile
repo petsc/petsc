@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = axis.c lg.c dscatter.c hists.c zoom.c hue.c
+SOURCEC  = axis.c lg.c dscatter.c hists.c zoom.c hue.c lgc.c axisc.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = axis.o lg.o dscatter.o hists.o zoom.o hue.o
+SOURCEH  = lgimpl.h
+OBJSC    = axis.o lg.o dscatter.o hists.o zoom.o hue.o lgc.o axisc.o
 OBJSF    =
 LIBBASE  = libpetscsys
 MANSEC   = Draw
