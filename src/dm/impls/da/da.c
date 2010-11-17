@@ -438,19 +438,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAGetElementType(DM da, DMDAElementType *etyp
 .     dm - the DM object
 
    Output Parameters:
-+     n - number of local elements
++     nel - number of local elements
+.     nen - number of element nodes
 -     e - the indices of the elements vertices
 
    Level: intermediate
 
 .seealso: DMElementType, DMSetElementType(), DMRestoreElements()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetElements(DM dm,PetscInt *n,const PetscInt *e[])
+PetscErrorCode PETSCDM_DLLEXPORT DMGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = (dm->ops->getelements)(dm,n,e);CHKERRQ(ierr);
+  PetscValidIntPointer(nel,2);
+  PetscValidIntPointer(nen,3);
+  PetscValidPointer(e,4);
+  ierr = (dm->ops->getelements)(dm,nel,nen,e);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -464,20 +468,24 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetElements(DM dm,PetscInt *n,const PetscInt 
 
    Input Parameter:
 +     dm - the DM object
-.     n - number of local elements
+.     nel - number of local elements
+.     nen - number of element nodes
 -     e - the indices of the elements vertices
 
    Level: intermediate
 
 .seealso: DMElementType, DMSetElementType(), DMGetElements()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMRestoreElements(DM dm,PetscInt *n,const PetscInt *e[])
+PetscErrorCode PETSCDM_DLLEXPORT DMRestoreElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidIntPointer(nel,2);
+  PetscValidIntPointer(nen,3);
+  PetscValidPointer(e,4);
   if (dm->ops->restoreelements) {
-    ierr = (dm->ops->restoreelements)(dm,n,e);CHKERRQ(ierr);
+    ierr = (dm->ops->restoreelements)(dm,nel,nen,e);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

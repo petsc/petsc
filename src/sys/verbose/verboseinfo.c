@@ -132,7 +132,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscInfoActivateClass(int objclass)
 }
 
 /*
-   If the option -log_history was used, then all printed PetscInfo() 
+   If the option -history was used, then all printed PetscInfo() 
   messages are also printed to the history file, called by default
   .petschistory in ones home directory.
 */
@@ -209,6 +209,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscInfo_Private(const char func[],void *vobj
   err = fflush(PetscInfoFile);
   if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");        
   if (petsc_history) {
+    va_start(Argp, message);
     (*PetscVFPrintf)(petsc_history, message, Argp);CHKERRQ(ierr);
   }
   va_end(Argp);

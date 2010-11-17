@@ -176,24 +176,6 @@ typedef int PetscErrorCode;
 M*/
 typedef int PetscClassId;
 
-/*MC
-    PetscLogEvent - id used to identify PETSc or user events which timed portions (blocks of executable)
-     code.
-
-    Level: intermediate
-
-.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PetscLogStage
-M*/
-typedef int PetscLogEvent;
-
-/*MC
-    PetscLogStage - id used to identify user stages (phases, sections) of runs - for logging
-
-    Level: intermediate
-
-.seealso: PetscLogStageRegister(), PetscLogStageBegin(), PetscLogStageEnd(), PetscLogEvent
-M*/
-typedef int PetscLogStage;
 
 /*MC
     PetscBLASInt - datatype used to represent 'int' parameters to BLAS/LAPACK functions.
@@ -265,6 +247,18 @@ typedef long long PetscInt;
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
 #endif
+
+/*EC
+
+    PetscPrecision - indicates what precision the object is using
+
+    Level: advanced
+
+.seealso: PetscObjectSetPrecision()
+E*/
+typedef enum { PETSC_PRECISION_SINGLE=4,PETSC_PRECISION_DOUBLE=8 } PetscPrecision;
+extern const char *PetscPrecisions[];
+
 
 /* 
     For the rare cases when one needs to send a size_t object with MPI
@@ -652,11 +646,7 @@ M*/
 
   Concepts: memory allocation
 M*/
-#if defined PETSC_UINTPTR_T
-#  define PetscAddrAlign(a) (void*)((((PETSC_UINTPTR_T)(a))+(PETSC_MEMALIGN-1)) & ~(PETSC_MEMALIGN-1))
-#else
-#  define PetscAddrAlign(a) (void*)(a)
-#endif
+#define PetscAddrAlign(a) (void*)((((PETSC_UINTPTR_T)(a))+(PETSC_MEMALIGN-1)) & ~(PETSC_MEMALIGN-1))
 
 /*MC
    PetscMalloc2 - Allocates 2 chunks of  memory both aligned to PETSC_MEMALIGN
@@ -1442,6 +1432,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectDestroy(PetscObject);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetComm(PetscObject,MPI_Comm *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetClassId(PetscObject,PetscClassId *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetType(PetscObject,const char []);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetPrecision(PetscObject,PetscPrecision);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetType(PetscObject,const char *[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetName(PetscObject,const char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetName(PetscObject,const char*[]);

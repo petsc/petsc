@@ -7,6 +7,7 @@ classdef PetscIS < PetscObject
       err = calllib('libpetsc', 'ISSetType', obj.pobj,name);
     end
     function err = GeneralSetIndices(obj,indices)
+      indices = indices - 1;  
       err = calllib('libpetsc', 'ISGeneralSetIndices', obj.pobj,length(indices),indices);
     end
     function err = View(obj,viewer)

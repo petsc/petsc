@@ -49,7 +49,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
   ierr = MPI_Comm_size(((PetscObject)xin)->comm,&size);CHKERRQ(ierr);
 
   if (!rank) {
-    ierr = PetscMalloc((len+1)*sizeof(PetscScalar),&values);CHKERRQ(ierr);
+    ierr = PetscMalloc(len*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     /*
         Matlab format and ASCII format are very similar except 
@@ -414,7 +414,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
       
       len = 0;
       for (j=1; j<size; j++) len = PetscMax(len,xin->map->range[j+1]-xin->map->range[j]);
-      ierr = PetscMalloc((len+1)*sizeof(PetscScalar),&values);CHKERRQ(ierr);
+      ierr = PetscMalloc(len*sizeof(PetscScalar),&values);CHKERRQ(ierr);
       mesgsize = PetscMPIIntCast(len);
       /* receive and save messages */
       for (j=1; j<size; j++) {
@@ -641,7 +641,7 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
   ierr = MPI_Comm_rank(((PetscObject)xin)->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)xin)->comm,&size);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscMalloc((N+1)*sizeof(PetscScalar),&xx);CHKERRQ(ierr);
+    ierr = PetscMalloc(N*sizeof(PetscScalar),&xx);CHKERRQ(ierr);
     ierr = PetscMalloc(size*sizeof(PetscMPIInt),&lens);CHKERRQ(ierr);
     for (i=0; i<size; i++) {
       lens[i] = xin->map->range[i+1] - xin->map->range[i];
@@ -866,9 +866,7 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
   } else if (ismatlab) {
     ierr = VecView_MPI_Matlab(xin,viewer);CHKERRQ(ierr);
 #endif
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
-  }
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 
@@ -1078,9 +1076,7 @@ PetscErrorCode VecAssemblyEnd_MPI(Vec vec)
         for (i=0; i<n; i++) { xarray[row[i] - base] += val[i]; }
       } else if (vec->stash.insertmode == INSERT_VALUES) {
         for (i=0; i<n; i++) { xarray[row[i] - base] = val[i]; }
-      } else {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Insert mode is not set correctly; corrupted vector");
-      }
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Insert mode is not set correctly; corrupted vector");
     }
     ierr = VecStashScatterEnd_Private(&vec->stash);CHKERRQ(ierr);
 
@@ -1095,9 +1091,7 @@ PetscErrorCode VecAssemblyEnd_MPI(Vec vec)
           for (j=0; j<bs; j++) { array[j] += vv[j];}
         } else if (vec->stash.insertmode == INSERT_VALUES) {
           for (j=0; j<bs; j++) { array[j] = vv[j]; }
-        } else {
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Insert mode is not set correctly; corrupted vector");
-        }
+        } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Insert mode is not set correctly; corrupted vector");
       }
     }
     ierr = VecStashScatterEnd_Private(&vec->bstash);CHKERRQ(ierr);

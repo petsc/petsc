@@ -9,6 +9,7 @@
 
 #include "private/pcimpl.h"   /*I "petscpc.h" I*/
 #include "../src/mat/impls/aij/seq/aij.h"
+#include <cusp/monitor.h>
 #undef VecType
 #include <cusp/precond/smoothed_aggregation.h>
 #define VecType char*
@@ -22,8 +23,20 @@
 */
 typedef struct {
  cudasaprecond* SACUDA;
+  int cycles;
 } PC_SACUDA;
 
+#undef __FUNCT__
+#define __FUNCT__ "PCSACUDASetCycles"
+static PetscErrorCode PCSACUDASetCycles(PC pc, int n)
+{
+  PC_SACUDA      *sac = (PC_SACUDA*)pc->data;
+
+  PetscFunctionBegin;
+  sac->cycles = n;	 
+  PetscFunctionReturn(0);
+
+}
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -61,13 +74,35 @@ static PetscErrorCode PCSetUp_SACUDA(PC pc)
   try {
     ierr = MatCUDACopyToGPU(pc->pmat);CHKERRCUDA(ierr);
     gpustruct  = (Mat_SeqAIJCUDA *)(pc->pmat->spptr);
-    /*cusp::coo_matrix<PetscInt,PetscScalar,cusp::device_memory> tempmat(*(CUSPMATRIX*)gpustruct->mat);
-    tempmat.sort_by_row();
-    sa->SACUDA = new cudasaprecond(tempmat);*/
     sa->SACUDA = new cudasaprecond(*(CUSPMATRIX*)gpustruct->mat);
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
   } 
+  ierr = PetscOptionsInt("-pc_sacuda_cycles","Number of v-cycles to perform","PCSACUDASetCycles",sa->cycles,
+			 &sa->cycles,PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCApplyRichardson_SACUDA"
+static PetscErrorCode PCApplyRichardson_SACUDA(PC pc, Vec b, Vec y, Vec w,PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
+{
+  PC_SACUDA      *sac = (PC_SACUDA*)pc->data;
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  /* how to incorporate dtol, guesszero, w?*/
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  cusp::default_monitor<PetscScalar> monitor(*((Vec_CUDA *)b->spptr)->GPUarray,its,rtol,abstol);
+  sac->SACUDA->solve(*((Vec_CUDA *)b->spptr)->GPUarray,*((Vec_CUDA *)y->spptr)->GPUarray,monitor);
+  *outits = monitor.iteration_count();
+  if (monitor.converged()){
+    /* how to discern between converging from RTOL or ATOL?*/
+    *reason = PCRICHARDSON_CONVERGED_RTOL;
+  } else{
+    *reason = PCRICHARDSON_CONVERGED_ITS;
+  }
+  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -102,14 +137,15 @@ static PetscErrorCode PCApply_SACUDA(PC pc,Vec x,Vec y)
   ierr = VecCUDACopyToGPU(x);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(y);CHKERRQ(ierr);
   try {
-    sac->SACUDA->solve(*((Vec_CUDA *)x->spptr)->GPUarray,*((Vec_CUDA *)y->spptr)->GPUarray);
+    cusp::default_monitor<PetscScalar> monitor(*((Vec_CUDA *)x->spptr)->GPUarray,sac->cycles,0,0);
+    sac->SACUDA->solve(*((Vec_CUDA *)x->spptr)->GPUarray,*((Vec_CUDA *)y->spptr)->GPUarray,monitor);
     if (y->valid_GPU_array != PETSC_CUDA_UNALLOCATED) {
     y->valid_GPU_array = PETSC_CUDA_GPU;
     }
-    ierr = VecCUDACopyFromGPU(y);CHKERRCUDA(ierr);
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
   } 
+  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -149,10 +185,10 @@ static PetscErrorCode PCDestroy_SACUDA(PC pc)
 #define __FUNCT__ "PCSetFromOptions_SACUDA"
 static PetscErrorCode PCSetFromOptions_SACUDA(PC pc)
 {
-    PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SACUDA options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead("SACUDA options");CHKERRQ(ierr);			 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -179,8 +215,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SACUDA(PC pc)
 
   /*
      Initialize the pointer to zero
+     Initialize number of v-cycles to default (1)
   */
   sac->SACUDA          = 0;
+  sac->cycles=1;
 
 
   /*
@@ -196,7 +234,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SACUDA(PC pc)
   pc->ops->destroy             = PCDestroy_SACUDA;
   pc->ops->setfromoptions      = PCSetFromOptions_SACUDA;
   pc->ops->view                = 0;
-  pc->ops->applyrichardson     = 0;
+  pc->ops->applyrichardson     = PCApplyRichardson_SACUDA;
   pc->ops->applysymmetricleft  = 0;
   pc->ops->applysymmetricright = 0;
   PetscFunctionReturn(0);

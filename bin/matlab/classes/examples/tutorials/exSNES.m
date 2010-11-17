@@ -3,7 +3,7 @@
 %
 %   Set the Matlab path and initialize PETSc
 path(path,'../../')
-PetscInitialize({'-snes_monitor','-snes_mf_operator','-ksp_monitor'});
+PetscInitialize({'-snes_monitor','-ksp_monitor'});
 %%
 %   Open a viewer to display PETSc objects
 viewer = PetscViewer();
@@ -22,7 +22,7 @@ mat.SetSizes(10,10,10,10);
 %%
 %  Create the nonlinear solver 
 snes = PetscSNES();
-snes.SetType('ls');
+snes.SetType('vi');
 %%
 %  Provide a function 
 snes.SetFunction(b,'nlfunction',0);

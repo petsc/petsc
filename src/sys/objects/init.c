@@ -74,8 +74,8 @@ PetscBool  PETSC_DLL_EXPORT synchronizeCUDA = PETSC_FALSE;
 FILE *petsc_history = PETSC_NULL;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscLogOpenHistoryFile"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogOpenHistoryFile(const char filename[],FILE **fd)
+#define __FUNCT__ "PetscOpenHistoryFile"
+PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenHistoryFile(const char filename[],FILE **fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -114,8 +114,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogOpenHistoryFile(const char filename[],
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscLogCloseHistoryFile"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogCloseHistoryFile(FILE **fd)
+#define __FUNCT__ "PetscCloseHistoryFile"
+PetscErrorCode PETSCSYS_DLLEXPORT PetscCloseHistoryFile(FILE **fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -247,7 +247,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   /*
       Setup the memory management; support for tracing malloc() usage 
   */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_log",&flg3,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_log",&flg3);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc",&flg1,&flg2);CHKERRQ(ierr);
   if ((!flg2 || flg1) && !petscsetmallocvisited) {
@@ -459,26 +459,24 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Private(void)
         Setup profiling and logging
   */
 #if defined (PETSC_USE_INFO)
-  flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-info",&flg1,PETSC_NULL);CHKERRQ(ierr);
-  if (flg1) { 
+  { 
     char logname[PETSC_MAX_PATH_LEN]; logname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-info",logname,250,&flg1);CHKERRQ(ierr);
-    if (logname[0]) {
+    if (flg1 && logname[0]) {
       ierr = PetscInfoAllow(PETSC_TRUE,logname);CHKERRQ(ierr);
-    } else {
+    } else if (flg1) {
       ierr = PetscInfoAllow(PETSC_TRUE,PETSC_NULL);CHKERRQ(ierr); 
     }
   }
 #endif
 #if defined(PETSC_USE_LOG)
   mname[0] = 0;
-  ierr = PetscOptionsGetString(PETSC_NULL,"-log_history",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-history",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   if (flg1) {
     if (mname[0]) {
-      ierr = PetscLogOpenHistoryFile(mname,&petsc_history);CHKERRQ(ierr);
+      ierr = PetscOpenHistoryFile(mname,&petsc_history);CHKERRQ(ierr);
     } else {
-      ierr = PetscLogOpenHistoryFile(0,&petsc_history);CHKERRQ(ierr);
+      ierr = PetscOpenHistoryFile(0,&petsc_history);CHKERRQ(ierr);
     }
   }
 #if defined(PETSC_HAVE_MPE)
@@ -504,9 +502,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Private(void)
       sprintf(name,"%s.%d",mname,rank);
       ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
       file = fopen(fname,"w"); 
-      if (!file) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open trace file: %s",fname);
-      }
+      if (!file) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open trace file: %s",fname);
     } else {
       file = PETSC_STDOUT;
     }

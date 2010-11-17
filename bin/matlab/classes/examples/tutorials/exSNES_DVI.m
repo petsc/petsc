@@ -1,7 +1,7 @@
 %%
 % Solves a nonlinear variational inequality where the user manages the mesh--solver interactions
 %
-% This is a translation of snes/examples/tutorials/ex8.c
+% This is a translation of snes/examples/tests/ex8.c
 %
 %   Set the Matlab path and initialize PETSc
 path(path,'../../')
@@ -12,14 +12,21 @@ viewer = PetscViewer();
 viewer.SetType('ascii');
 %%
 %  Create DM to manage the grid and get work vectors
-dm = PetscDMDACreate2d(PetscDM.NONPERIODIC,PetscDM.STENCIL_BOX,-4,-4,PetscObject.DECIDE,PetscObject.DECIDE,1,1);
-x  = dm.CreateGlobalVector();
+user.mx = 4;user.my = 4;
+user.dm = PetscDMDACreate2d(PetscDM.NONPERIODIC,PetscDM.STENCIL_BOX,user.mx,user.my,PetscObject.DECIDE,PetscObject.DECIDE,1,1);
+x  = user.dm.CreateGlobalVector();
 r  = x.Duplicate();
-J  = dm.GetMatrix('aij');
+J  = user.dm.GetMatrix('aij');
+for(i = 1:length(x(:))/2)
+    x(2*i-1:2*i) = ones(2,1);
+end
+%%
+%  Set Boundary conditions
+[user] = MSA_BoundaryConditions(user);
 %%
 %  Create the nonlinear solver 
 snes = PetscSNES();
-snes.SetType('ls');
+snes.SetType('vi');
 %%
 %  Provide a function 
 snes.SetFunction(r,'snesfunction',0);
@@ -34,12 +41,11 @@ x.Set(1.0);
 %%
 %   Set VI bounds
 xl = x.Duplicate();
-xb = x.Duplicate();
-for i=1:length(xl)
-  xl(i) = -100000000;
-  xb(i) = +100000000;
-end
-snes.VISetVariableBounds(xl,xb);
+xu = x.Duplicate();
+xl.Set(-100000000);
+xu.Set(100000000);
+
+snes.VISetVariableBounds(xl,xu);
 
 %  Solve the nonlinear system
 snes.SetFromOptions();
@@ -53,6 +59,6 @@ r.Destroy();
 x.Destroy();
 J.Destroy();
 snes.Destroy();
-dm.Destroy();
+user.dm.Destroy();
 viewer.Destroy();
 PetscFinalize();

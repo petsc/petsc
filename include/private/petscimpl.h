@@ -88,6 +88,7 @@ typedef struct _p_PetscObject {
   PetscErrorCode (*optionhandler[PETSC_MAX_OPTIONS_HANDLER])(PetscObject,void*);
   PetscErrorCode (*optiondestroy[PETSC_MAX_OPTIONS_HANDLER])(PetscObject,void*);
   void           *optionctx[PETSC_MAX_OPTIONS_HANDLER];
+  PetscPrecision precision;
 } _p_PetscObject;
 
 #define PETSCHEADER(ObjectOps) \
@@ -756,14 +757,7 @@ typedef struct {
   PetscInt    refcount;         /* number of references, communicator can be freed when this reaches 0 */
   PetscInt    namecount;        /* used to generate the next name, as in Vec_0, Mat_1, ... */
 } PetscCommCounter;
-/*
-#if defined(PETSC_HAVE_CUDA)
-#include <cublas.h>
-#include <cusp/csr_matrix.h>
-#include <cusp/multiply.h>
-#include <cusp/blas.h>
-#endif
-*/
+
 PETSC_EXTERN_CXX_END
 
 #endif /* _PETSCHEAD_H */

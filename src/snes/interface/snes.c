@@ -3302,4 +3302,75 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetJacobianMatlab(SNES snes,Mat A,Mat B,c
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "SNESMonitor_Matlab"
+/*
+   SNESMonitor_Matlab - Calls the function that has been set with SNESMonitorSetMatlab().  
+
+   Collective on SNES
+
+.seealso: SNESSetFunction(), SNESGetFunction()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitor_Matlab(SNES snes,PetscInt it, PetscReal fnorm, void *ctx)
+{
+  PetscErrorCode  ierr;
+  SNESMatlabContext *sctx = (SNESMatlabContext *)ctx;
+  int             nlhs = 1,nrhs = 6;
+  mxArray	  *plhs[1],*prhs[6];
+  long long int   lx = 0,ls = 0;
+  Vec             x=snes->vec_sol;
+      
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+
+  ierr = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 
+  prhs[0] =  mxCreateDoubleScalar((double)ls);
+  prhs[1] =  mxCreateDoubleScalar((double)it);
+  prhs[2] =  mxCreateDoubleScalar((double)fnorm);
+  prhs[3] =  mxCreateDoubleScalar((double)lx);
+  prhs[4] =  mxCreateString(sctx->funcname);
+  prhs[5] =  sctx->ctx;
+  ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"PetscSNESMonitorInternal");CHKERRQ(ierr);
+  ierr    =  mxGetScalar(plhs[0]);CHKERRQ(ierr);
+  mxDestroyArray(prhs[0]);
+  mxDestroyArray(prhs[1]);
+  mxDestroyArray(prhs[2]);
+  mxDestroyArray(prhs[3]);
+  mxDestroyArray(prhs[4]);
+  mxDestroyArray(plhs[0]);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESMonitorSetMatlab"
+/*
+   SNESMonitorSetMatlab - Sets the monitor function from Matlab
+
+   Level: developer
+
+.keywords: SNES, nonlinear, set, function
+
+.seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetFunction()
+*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetMatlab(SNES snes,const char *func,mxArray *ctx)
+{
+  PetscErrorCode    ierr;
+  SNESMatlabContext *sctx;
+
+  PetscFunctionBegin;
+  /* currently sctx is memory bleed */
+  ierr = PetscMalloc(sizeof(SNESMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
+  /* 
+     This should work, but it doesn't 
+  sctx->ctx = ctx; 
+  mexMakeArrayPersistent(sctx->ctx);
+  */
+  sctx->ctx = mxDuplicateArray(ctx);
+  ierr = SNESMonitorSet(snes,SNESMonitor_Matlab,sctx,PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #endif

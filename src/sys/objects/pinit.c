@@ -23,7 +23,7 @@ EXTERN PetscErrorCode PetscFinalize_DynamicLibraries(void);
 EXTERN PetscErrorCode PetscFListDestroyAll(void);
 EXTERN PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 EXTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
-EXTERN PetscErrorCode PetscLogCloseHistoryFile(FILE **);
+EXTERN PetscErrorCode PetscCloseHistoryFile(FILE **);
 
 /* this is used by the _, __, and ___ macros (see include/petscerror.h) */
 PetscErrorCode __gierr = 0;
@@ -896,8 +896,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFinalize(void)
   }
   flg1 = PETSC_FALSE;
   flg2 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  /* preemptive call to avoid listing this option in options table as unused */
+  ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_dump",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-options_table",&flg2,PETSC_NULL);CHKERRQ(ierr);
+
   if (flg2) {
     if (!rank) {ierr = PetscOptionsPrint(stdout);CHKERRQ(ierr);}
   }
@@ -935,20 +937,14 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFinalize(void)
     }
   }
 
-  flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-log_history",&flg1,PETSC_NULL);CHKERRQ(ierr);
-  if (flg1) {
-    ierr = PetscLogCloseHistoryFile(&petsc_history);CHKERRQ(ierr);
+  if (petsc_history) {
+    ierr = PetscCloseHistoryFile(&petsc_history);CHKERRQ(ierr);
     petsc_history = 0;
   }
 
   ierr = PetscInfoAllow(PETSC_FALSE,PETSC_NULL);CHKERRQ(ierr);
 
-  flg1 = PETSC_FALSE;
-  flg3 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_log",&flg3,PETSC_NULL);CHKERRQ(ierr);
-  if (flg1) {
+  {
     char fname[PETSC_MAX_PATH_LEN];
     FILE *fd;
     int  err;
@@ -963,7 +959,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFinalize(void)
       ierr = PetscMallocDump(fd);CHKERRQ(ierr);
       err = fclose(fd);
       if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
-    } else {
+    } else if (flg1) {
       MPI_Comm local_comm;
 
       ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
@@ -973,7 +969,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFinalize(void)
       ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
     }
   }
-  if (flg3) {
+  {
     char fname[PETSC_MAX_PATH_LEN];
     FILE *fd;
     
@@ -988,7 +984,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFinalize(void)
       ierr = PetscMallocDumpLog(fd);CHKERRQ(ierr); 
       err = fclose(fd);
       if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
-    } else {
+    } else if (flg1) {
       ierr = PetscMallocDumpLog(stdout);CHKERRQ(ierr); 
     }
   }

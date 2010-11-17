@@ -191,6 +191,9 @@ ex50: ex50.o  chkopts
 ex51: ex51.o  chkopts
 	-${CLINKER} -o ex51 ex51.o ${PETSC_SNES_LIB}
 	${RM} ex51.o
+ex52: ex52.o  chkopts
+	-${CLINKER} -o ex52 ex52.o ${PETSC_SNES_SINGLE_LIB}
+	${RM} ex52.o
 
 #--------------------------------------------------------------------------
 runex1:
@@ -607,11 +610,11 @@ runex19_16a:
 	   else echo "Possible problem with ex19_16a, diffs above"; fi; \
 	   ${RM} -f ex19_16a.tmp
 runex19_superlu:
-	-@${MPIEXEC} -n 1 ./ex19 -nlevels 1 -da_grid_x 20 -da_grid_y 20 -{snes,ksp}_monitor_short -pc_type lu -pc_factor_mat_solver_package superlu > ex19.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -nlevels 1 -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu > ex19.tmp 2>&1; \
 	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
 	   else echo "Possible problem with ex19_superlu, diffs above"; fi; \
 	   ${RM} -f ex19.tmp
-runex19_superlu_equil:
+runex19_superlu_equil: #This test fails - I'll check it. Hong
 	-@${MPIEXEC} -n 1 ./ex19 -nlevels 1 -da_grid_x 20 -da_grid_y 20 -{snes,ksp}_monitor_short -pc_type lu -pc_factor_mat_solver_package superlu -mat_superlu_equil > ex19.tmp 2>&1; \
 	   if (${DIFF} output/ex19_superlu_equil.out ex19.tmp) then true; \
 	   else echo "Possible problem with ex19_superlu_equil, diffs above"; fi; \

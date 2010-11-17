@@ -95,8 +95,10 @@ XXXSetFromOptions() is called.<br>
         </li>
         <li>Changed PetscTruth to PetscBool, PETSC_TRUTH to
 PETSC_BOOL, PetscOptionsTruth to PetscOptionsBool, etc.</li>
-        <li>Introduced PetscCopyMode<br>
-        </li>
+        <li>Introduced PetscCopyMode</li>
+        <li>Changed -log_history to -history and PetscLogOpenHistory()
+PetscLogCloseHistory() to PetscOpenHistory(), PetscCloseHistory()
+because "log" is reserved for related to the performance logging</li>
       </ul>
       <u><b>Logging:<br>
       </b></u>
@@ -123,8 +125,9 @@ should now be '--download-package=1'</li>
       <p><u><b>IS:<br>
       </b></u></p>
       <ul>
-        <li>ISBlock(),ISStride() are removed. Use PetscTypeCompare((PetscObject)is,ISBLOCK,&flag),
-          PetscTypeCompare((PetscObject)is,ISSTRIDE,&flag) instead.</li>
+        <li>ISBlock(),ISStride() are removed. Use
+PetscTypeCompare((PetscObject)is,ISBLOCK,&amp;flag),
+PetscTypeCompare((PetscObject)is,ISSTRIDE,&amp;flag) instead.</li>
         <li>Added ISCreate(), ISSetType(), ISRegister() etc to match
 style of other PETSc objects. Also added ISGeneralSetIndices(),
 ISBlockSetIndices(), ISStrideSetStride()</li>
@@ -163,8 +166,7 @@ into the Vec.<br>
       </b></u></p>
       <ul>
         <li>The ghost indices for VecCreateGhostBlock() and
-        VecCreateGhostBlockWithArray() are now by block instead of by
-        entry.</li>
+VecCreateGhostBlockWithArray() are now by block instead of by entry.</li>
       </ul>
       <p><u><b>Mat:</b></u></p>
       <ul>
@@ -284,6 +286,9 @@ petscdmdef.h, and petscdm.h90<br>
       </ul>
       <p><u><b>SYS:</b></u></p>
       <ul>
+        <li> PetscOptionsAtoi(),PetscOptionsAtod(),PetscOptionsAtol()
+-&gt; PetscOptionsStringToInt(), PetscOptionsStringToReal(),
+PetscOptionsStringToBool()</li>
       </ul>
       <p><u><b>AO:<br>
       </b></u></p>

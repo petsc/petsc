@@ -697,7 +697,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageGetId(const char name[], PetscLog
   Input Parameter:
 + name   - The name associated with the event
 - classid - The classid associated to the class for this event, obtain either with
-           PetscClassIdRegister() or use a predefined one such as KSP_CLASSID, SNES_CLASSID
+           PetscClassIdRegister() or use a predefined one such as KSP_CLASSID, SNES_CLASSID, the predefined ones 
+           are only available in C code
             
   Output Parameter:
 . event - The event id for use with PetscLogEventBegin() and PetscLogEventEnd().

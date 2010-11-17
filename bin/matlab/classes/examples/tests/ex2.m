@@ -40,9 +40,10 @@ is.Destroy();
 mat = PetscMat();
 mat.SetType('seqaij');
 mat.SetSizes(10,10,10,10);
-for i=0:9
-  mat.SetValues(i,i,10.0);
+for i=1:10
+  mat.SetValues(i,i,2*i);
 end
+
 mat.AssemblyBegin(PetscMat.FINAL_ASSEMBLY);
 mat.AssemblyEnd(PetscMat.FINAL_ASSEMBLY);
 mat.View(viewer);

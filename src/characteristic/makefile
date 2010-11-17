@@ -1,5 +1,4 @@
 #requiresscalar    real
-#requiresprecision  double
 
 ALL: lib
 

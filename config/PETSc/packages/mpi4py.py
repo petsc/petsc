@@ -7,6 +7,7 @@ class Configure(PETSc.package.NewPackage):
     self.functions         = []
     self.includes          = []
     self.liblist           = []
+    self.complex           = 1
     return
 
   def setupDependencies(self, framework):

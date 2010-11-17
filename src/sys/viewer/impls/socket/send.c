@@ -313,7 +313,7 @@ PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
   ierr = PetscOptionsHead("Socket PetscViewer Options");CHKERRQ(ierr);
     ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_PORT",sdef,16,&tflg);CHKERRQ(ierr);
     if (tflg) {
-      ierr = PetscOptionsAtoi(sdef,&def);CHKERRQ(ierr);
+      ierr = PetscOptionsStringToInt(sdef,&def);CHKERRQ(ierr);
     } else {
       def = PETSCSOCKETDEFAULTPORT;
     }
@@ -383,7 +383,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,c
     ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg);CHKERRQ(ierr);
     if (tflg) {
       PetscInt pport;
-      ierr = PetscOptionsAtoi(portn,&pport);CHKERRQ(ierr);
+      ierr = PetscOptionsStringToInt(portn,&pport);CHKERRQ(ierr);
       port = (int)pport;
     } else {
       port = PETSCSOCKETDEFAULTPORT;

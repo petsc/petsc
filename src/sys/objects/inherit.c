@@ -33,6 +33,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscHeaderCreate_Private(PetscObject h,PetscC
   h->parentid               = 0;
   h->qlist                  = 0;
   h->olist                  = 0;
+  h->precision              = (PetscPrecision) sizeof(PetscScalar);
   h->bops->destroy          = des;
   h->bops->view             = vie;
   h->bops->getcomm          = PetscObjectGetComm_Petsc;
@@ -329,9 +330,6 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
   PetscFunctionReturn(0);
 }
 
-/*
-        These are the versions that are usable to any CCA compliant objects
-*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectCompose"
 /*@C
@@ -379,7 +377,29 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectCompose(PetscObject obj,const char 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectSetPrecision"
+/*@C
+   PetscObjectSetPrecision - sets the precision used within a given object.
+                       
+   Collective on the PetscObject
 
+   Input Parameters:
++  obj - the PETSc object; this must be cast with (PetscObject), for example, 
+         PetscObjectCompose((PetscObject)mat,...);
+-  precision - the precision
+
+   Level: advanced
+
+.seealso: PetscObjectQuery(), PetscContainerCreate()
+@*/
+PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetPrecision(PetscObject obj,PetscPrecision precision)
+{
+  PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  obj->precision = precision;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectQuery"

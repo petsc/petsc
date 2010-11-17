@@ -5,7 +5,7 @@ function [flg,err] = nljacobian(snes,x,A,B,ctx)
 %
 err = 0;
 flg = PetscMat.SAME_NONZERO_PATTERN;
-for i=0:9
+for i=1:10
   B.SetValues(i,i,1.0);
 end
 err = B.AssemblyBegin(PetscMat.FINAL_ASSEMBLY);
