@@ -1433,27 +1433,7 @@ PetscErrorCode MatGetSubMatricesParallel_MPIXAIJ(Mat C,PetscInt ismax,const IS i
     /* Now construct the complements of the iscol ISs. */
     ierr = PetscMalloc(ismax*sizeof(IS), &iscol_c); CHKERRQ(ierr);
     for(i = 0; i < ismax; ++i) {
-      const PetscInt *indices;
-      PetscInt *indices_c, n, noff, N;
-      /* iscol[i] defines the diag part of the i-th submat beging extracted;
-	 the off-diag part is defined by the "complement" of the local part of iscol[i] in the global IS. */
-      ierr = ISAllGather(iscol[i], iscol_c+i); CHKERRQ(ierr);
-      /* Now remove the local part, which is embedded somewhere in the middle of iscol_c[i], so find out its offset. */
-      ierr = ISGetLocalSize(iscol[i], &n); CHKERRQ(ierr);
-      nn = PetscMPIIntCast(n);
-      ierr   = MPI_Scan(&nn,&noff,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
-      noff -= n;
-      ierr = ISGetLocalSize(iscol_c[i], &N);     CHKERRQ(ierr);
-      ierr = ISGetIndices(iscol_c[i], &indices); CHKERRQ(ierr);
-      /* Allocate room for just the remote indices. */
-      ierr = PetscMalloc(sizeof(PetscInt)*(N-n), &indices);                 CHKERRQ(ierr);
-      /* Now copy the remote indices into indices_c, omitting the local part. */
-      ierr = PetscMemcpy(indices_c, sizeof(PetscInt)*noff, indices);        CHKERRQ(ierr);
-      ierr = PetscMemcpy(indices_c, sizeof(PetscInt)*(N-noff-n), indices);  CHKERRQ(ierr);
-      ierr = ISRestoreIndices(iscomp_c[i], &indices);                          CHKERRQ(ierr);
-      ierr = ISDestroy(iscol_c[i]);                                            CHKERRQ(ierr);
-      /* Construct the complement IS without the local part this time. */
-      ierr = ISCreateGeneral(((PetscObject)iscol)->comm, N-n, indices_c, PETSC_OWN_POINTER, &iscol_c[i]); CHKERRQ(ierr);
+      ierr = ISGetNonlocalIS(((PetscObject)iscol)->comm, &iscol_c[i]); CHKERRQ(ierr);
     }
     /* Now extract the A and B submatrices separately. */
     ierr = MatGetSubMatrices(C,ismax,isrow, iscol,scall, &A); CHKERRQ(ierr);
