@@ -55,9 +55,9 @@ There are two compile-time options:
 
 */
 
+#include <petscts.h>
 #include <petscdmmg.h>
 #include <ctype.h>              /* toupper() */
-#include <private/daimpl.h>     /* There is not yet a public interface to manipulate dm->ops */
 
 #if !defined __STDC_VERSION__ || __STDC_VERSION__ < 199901L
 #  if defined __cplusplus       /* C++ restrict is nonstandard and compilers have inconsistent rules about where it can be used */
@@ -228,6 +228,7 @@ struct _p_THI {
   Units     units;
   PetscReal dirichlet_scale;
   PetscReal ssa_friction_scale;
+  PetscReal inertia;
   PRange    eta;
   PRange    beta2;
   struct {
@@ -499,6 +500,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
     thi->friction.exponent = (m-1)/2;
     ierr = PetscOptionsReal("-thi_dirichlet_scale","Scale Dirichlet boundary conditions by this factor","",thi->dirichlet_scale,&thi->dirichlet_scale,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-thi_ssa_friction_scale","Scale slip boundary conditions by this factor in SSA (2D) assembly","",thi->ssa_friction_scale,&thi->ssa_friction_scale,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-thi_inertia","Coefficient of accelaration term in velocity system, physical is almost zero",NULL,thi->inertia,&thi->inertia,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-thi_nlevels","Number of levels of refinement","",thi->nlevels,&thi->nlevels,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsList("-thi_mat_type","Matrix type","MatSetType",MatList,mtype,(char*)mtype,sizeof(mtype),NULL);CHKERRQ(ierr);
     ierr = PetscStrallocpy(mtype,&thi->mattype);CHKERRQ(ierr);
@@ -557,10 +559,9 @@ static PetscErrorCode THIInitializePrm(THI thi,DM da2prm,PrmNode **p)
 
 #undef __FUNCT__  
 #define __FUNCT__ "THIInitial"
-static PetscErrorCode THIInitial(DMMG dmmg,Vec X)
+static PetscErrorCode THIInitial(THI thi,DM pack,Vec X)
 {
-  THI         thi = (THI)dmmg->user;
-  DM          pack = dmmg->dm,da3,da2;
+  DM          da3,da2;
   PetscInt    i,j,k,xs,xm,ys,ym,zs,zm,mx,my;
   PetscReal   hx,hy;
   PrmNode     **prm;
@@ -602,6 +603,17 @@ static PetscErrorCode THIInitial(DMMG dmmg,Vec X)
   ierr = DMRestoreLocalVector(da2,&X2);CHKERRQ(ierr);
 
   ierr = DMCompositeRestoreAccess(pack,X,&X3g,&X2g);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "THIInitialDMMG"
+static PetscErrorCode THIInitialDMMG(DMMG dmmg,Vec X)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = THIInitial((THI)dmmg->user,dmmg->dm,X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -730,7 +742,7 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
 
 #undef __FUNCT__  
 #define __FUNCT__ "THIFunctionLocal_2D"
-static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info,const Node ***x,const PrmNode **prm,PrmNode **f,THI thi)
+static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info,const Node ***x,const PrmNode **prm,const PrmNode **prmdot,PrmNode **f,THI thi)
 {
   PetscInt       xs,ys,xm,ym,zm,i,j,k;
   PetscReal      hx,hy;
@@ -759,9 +771,10 @@ static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info,const Node ***x,co
                 + weight*h[6] * StaggeredMidpoint2D(x[i][j][k].v,x[i][j+1][k].v, x[i-1][j+1][k].v,x[i-1][j][k].v)
                 + weight*h[7] * StaggeredMidpoint2D(x[i][j][k].v,x[i][j+1][k].v, x[i+1][j+1][k].v,x[i+1][j][k].v));
       }
-      f[i][j].b     = 0;
-      f[i][j].h     = div;
-      f[i][j].beta2 = 0;
+      //printf("div[%d][%d] %g\n",i,j,div);
+      f[i][j].b     = prmdot[i][j].b;
+      f[i][j].h     = prmdot[i][j].h + div;
+      f[i][j].beta2 = prmdot[i][j].beta2;
     }
   }
   PetscFunctionReturn(0);
@@ -769,24 +782,26 @@ static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info,const Node ***x,co
 
 #undef __FUNCT__  
 #define __FUNCT__ "THIFunction"
-static PetscErrorCode THIFunction(SNES snes,Vec X,Vec F,void *ctx)
+static PetscErrorCode THIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
-  DMMG           dmmg = (DMMG)ctx;
-  THI            thi  = (THI)dmmg->user;
-  DM             pack = dmmg->dm,da3,da2;
-  Vec            X3,X2,F3,F2,F3g,F2g;
+  THI            thi  = (THI)ctx;
+  DM             pack,da3,da2;
+  Vec            X3,X2,Xdot3,Xdot2,F3,F2,F3g,F2g;
   const Node     ***x3;
-  const PrmNode  **x2;
+  const PrmNode  **x2,**xdot2;
   Node           ***f3;
   PrmNode        **f2;
   DMDALocalInfo  info3;
 
   PetscFunctionBegin;
+  ierr = TSGetDM(ts,&pack);CHKERRQ(ierr);
   ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da3,&info3);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(pack,&X3,&X2);CHKERRQ(ierr);
+  ierr = DMCompositeGetLocalVectors(pack,&Xdot3,&Xdot2);CHKERRQ(ierr);
   ierr = DMCompositeScatter(pack,X,X3,X2);CHKERRQ(ierr);
+  ierr = DMCompositeScatter(pack,Xdot,Xdot3,Xdot2);CHKERRQ(ierr);
 
   ierr = DMGetLocalVector(da3,&F3);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da2,&F2);CHKERRQ(ierr);
@@ -794,14 +809,16 @@ static PetscErrorCode THIFunction(SNES snes,Vec X,Vec F,void *ctx)
 
   ierr = DMDAVecGetArray(da3,X3,&x3);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da2,X2,&x2);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2,Xdot2,&xdot2);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da3,F3,&f3);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da2,F2,&f2);CHKERRQ(ierr);
 
   ierr = THIFunctionLocal_3D(&info3,x3,x2,f3,thi);CHKERRQ(ierr);
-  ierr = THIFunctionLocal_2D(&info3,x3,x2,f2,thi);CHKERRQ(ierr);
+  ierr = THIFunctionLocal_2D(&info3,x3,x2,xdot2,f2,thi);CHKERRQ(ierr);
 
   ierr = DMDAVecRestoreArray(da3,X3,&x3);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da2,X2,&x2);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da2,Xdot2,&xdot2);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da3,F3,&f3);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da2,F2,&f2);CHKERRQ(ierr);
 
@@ -813,10 +830,32 @@ static PetscErrorCode THIFunction(SNES snes,Vec X,Vec F,void *ctx)
   ierr = DMLocalToGlobalEnd  (da3,F3,ADD_VALUES,F3g);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(da2,F2,INSERT_VALUES,F2g);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd  (da2,F2,INSERT_VALUES,F2g);CHKERRQ(ierr);
+
+  if (thi->inertia > 0) {       /* This is mostly non-physical, but turns the DAE into an ODE */
+    Vec Xdot3g;
+    ierr = DMCompositeGetAccess(pack,Xdot,&Xdot3g,NULL);CHKERRQ(ierr);
+    ierr = VecAXPY(F3g,thi->inertia,Xdot3g);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(pack,Xdot,&Xdot3g,NULL);CHKERRQ(ierr);
+  }
+
+  if (thi->verbose) {
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)thi)->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"3D_Velocity residual (bs=2):\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = VecView(F3,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"2D_Fields residual (bs=3):\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = VecView(F2,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  }
+
   ierr = DMCompositeRestoreAccess(pack,F,&F3g,&F2g);CHKERRQ(ierr);
 
   ierr = DMRestoreLocalVector(da3,&F3);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da2,&F2);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -943,6 +982,9 @@ static PetscErrorCode THISolveStatistics(THI thi,DMMG *dmmg,PetscInt coarsened,c
   ierr = DMCompositeRestoreAccess(pack,X,&X3,&X2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+static inline PetscInt DMDALocalIndex3D(DMDALocalInfo *info,PetscInt i,PetscInt j,PetscInt k)
+{return ((i-info->gzs)*info->gym + (j-info->gys))*info->gxm + (k-info->gxs);}
 
 #undef __FUNCT__  
 #define __FUNCT__ "THIJacobianLocal_Momentum"
@@ -1096,7 +1138,16 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
           }
         }
         {
-          const MatStencil rc[8] = {{i,j,k,0},{i+1,j,k,0},{i+1,j+1,k,0},{i,j+1,k,0},{i,j,k+1,0},{i+1,j,k+1,0},{i+1,j+1,k+1,0},{i,j+1,k+1,0}};
+          const PetscInt rc[8] = {
+            DMDALocalIndex3D(info,i+0,j+0,k+0),
+            DMDALocalIndex3D(info,i+1,j+0,k+0),
+            DMDALocalIndex3D(info,i+1,j+1,k+0),
+            DMDALocalIndex3D(info,i+0,j+1,k+0),
+            DMDALocalIndex3D(info,i+0,j+0,k+1),
+            DMDALocalIndex3D(info,i+1,j+0,k+1),
+            DMDALocalIndex3D(info,i+1,j+1,k+1),
+            DMDALocalIndex3D(info,i+0,j+1,k+1)
+          };
 #if !defined COMPUTE_LOWER_TRIANGULAR /* fill in lower-triangular part, this is really cheap compared to computing the entries */
           for (l=0; l<8; l++) {
             for (ll=l+1; ll<8; ll++) {
@@ -1107,7 +1158,7 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
             }
           }
 #endif
-          ierr = MatSetValuesBlockedStencil(B,8,rc,8,rc,&Ke[0][0],ADD_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValuesBlockedLocal(B,8,rc,8,rc,&Ke[0][0],ADD_VALUES);CHKERRQ(ierr);
         }
       }
     }
@@ -1117,6 +1168,19 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   if (thi->verbose) {ierr = THIMatrixStatistics(thi,B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "THIJacobian"
+static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  *mstr = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -1253,6 +1317,31 @@ static PetscErrorCode THICreateDM3d(THI thi,DM *dm3d)
   PetscFunctionReturn(0);
 }
 
+#if 0
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSolve_THI_DMMG"
+static PetscErrorCode SNESSolve_THI_DMMG(SNES snes)
+{
+  PetscErrorCode ierr,(*realsolve)(SNES);
+  DMMG *dmmg;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)snes,"DMMG",(PetscObject*)&dmmg);CHKERRQ(ierr);
+  if (!dmmg) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONG,"No DMMG attached to this SNES");
+  if (snes != DMMGGetSNES(dmmg)) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_INCOMP,"DMMG does not have attached SNES");
+  if (!DMMGGetx(dmmg)) {ierr = VecDuplicate(X,&dmmg->x);CHKERRQ(ierr);}
+  ierr = VecCopy(X,DMMGGetx(dmmg));CHKERRQ(ierr);
+
+  ierr = PetscObjectQueryFunction((PetscObject)dmmg,"SNESSolve_Real",(void(**)(void))&realsolve);CHKERRQ(ierr);
+  if (!realsolve) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_INCOMP,"No cache solve function pointer");
+  snes->ops->solve = realsolve;
+
+  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
+  snes->ops->solve = &SNESSolve_THI_DMMG;
+  PetscFunctionReturn(0);
+}
+#endif
+
 #undef __FUNCT__  
 #define __FUNCT__ "main"
 int main(int argc,char *argv[])
@@ -1260,8 +1349,12 @@ int main(int argc,char *argv[])
   MPI_Comm       comm;
   DM             pack,da3,da2;
   DMMG           *dmmg;
+  TS             ts;
   THI            thi;
-  PetscInt       i;
+  Vec            X;
+  Mat            B;
+  PetscInt       i,steps;
+  PetscReal      ftime;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
@@ -1276,15 +1369,23 @@ int main(int argc,char *argv[])
     ierr = DMDACreate2d(((PetscObject)thi)->comm,DMDA_XYPERIODIC,st,My,Mx,my,mx,sizeof(PrmNode)/sizeof(PetscScalar),s,0,0,&da2);CHKERRQ(ierr);
   }
 
+  ierr = PetscObjectSetName((PetscObject)da3,"3D_Velocity");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da3,0,"u");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da3,1,"v");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)da2,"2D_Fields");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da2,0,"b");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da2,1,"h");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da2,2,"beta2");CHKERRQ(ierr);
   ierr = DMCompositeCreate(comm,&pack);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(pack,da3);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(pack,da2);CHKERRQ(ierr);
   ierr = DMDestroy(da3);CHKERRQ(ierr);
   ierr = DMDestroy(da2);CHKERRQ(ierr);
+  ierr = DMSetUp(pack);CHKERRQ(ierr);
+  ierr = DMGetMatrix(pack,MATAIJ,&B);CHKERRQ(ierr);
 
   ierr = DMMGCreate(comm,thi->nlevels,thi,&dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,pack);CHKERRQ(ierr);
-  ierr = DMDestroy(pack);CHKERRQ(ierr);
 
   for (i=0; i<thi->nlevels; i++) {
     PetscReal Lx = thi->Lx / thi->units->meter,Ly = thi->Ly / thi->units->meter,Lz = thi->Lz / thi->units->meter;
@@ -1293,7 +1394,7 @@ int main(int argc,char *argv[])
     ierr = DMDAGetInfo(da3,0, &Mz,&My,&Mx, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
     ierr = PetscPrintf(((PetscObject)thi)->comm,"Level %d domain size (m) %8.2g x %8.2g x %8.2g, num elements %3d x %3d x %3d (%8d), size (m) %g x %g x %g\n",i,Lx,Ly,Lz,Mx,My,Mz,Mx*My*Mz,Lx/Mx,Ly/My,1000./(Mz-1));CHKERRQ(ierr);
   }
-  ierr = DMMGSetInitialGuess(dmmg,THIInitial);CHKERRQ(ierr);
+  ierr = DMMGSetInitialGuess(dmmg,THIInitialDMMG);CHKERRQ(ierr);
 
   {
     /* Use the user-defined matrix type on all but the coarse level */
@@ -1303,13 +1404,28 @@ int main(int argc,char *argv[])
     ierr = PetscFree(dmmg[0]->mtype);CHKERRQ(ierr);
     ierr = PetscStrallocpy(MATAIJ,&dmmg[0]->mtype);CHKERRQ(ierr);
   }
-  ierr = DMMGSetSNES(dmmg,THIFunction,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(DMMGGetB(dmmg),"thi_");CHKERRQ(ierr);
-  ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
+  //ierr = DMMGSetSNES(dmmg,THIFunction,PETSC_NULL);CHKERRQ(ierr);
+  //ierr = MatSetOptionsPrefix(DMMGGetB(dmmg),"thi_");CHKERRQ(ierr);
+  //ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
 
-  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(pack,&X);CHKERRQ(ierr);
+  ierr = THIInitial(thi,pack,X);CHKERRQ(ierr);
 
-  ierr = THISolveStatistics(thi,dmmg,0,"Full");CHKERRQ(ierr);
+  ierr = TSCreate(comm,&ts);CHKERRQ(ierr);
+  ierr = TSSetDM(ts,pack);CHKERRQ(ierr);
+  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,THIFunction,thi);CHKERRQ(ierr);
+  ierr = TSSetIJacobian(ts,B,B,THIJacobian,thi);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,100,10.0);CHKERRQ(ierr);
+  ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.,1e-3);CHKERRQ(ierr);
+  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+
+  ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Steps %D  final time %G\n",steps,ftime);CHKERRQ(ierr);
+
+  if (0) {ierr = THISolveStatistics(thi,dmmg,0,"Full");CHKERRQ(ierr);}
 
   {
     PetscBool  flg;
@@ -1321,6 +1437,8 @@ int main(int argc,char *argv[])
   }
 
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+  ierr = DMDestroy(pack);CHKERRQ(ierr);
+  ierr = TSDestroy(ts);CHKERRQ(ierr);
   ierr = THIDestroy(thi);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
