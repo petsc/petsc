@@ -37,6 +37,9 @@ Suggest using --download-mpich or install openmpi separately - and specify mpicc
     g.write('AR          = '+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+'\n')
     g.write('AR_LIB_SUFFIX = '+self.setCompilers.AR_LIB_SUFFIX+'\n')
     g.write('RANLIB      = '+self.setCompilers.RANLIB+'\n')
+    # blopex uses defaut 'make' targets, and this uses TARGET_ARCH var. If this var
+    # is set incorrectly in user env - build breaks.
+    g.write('TARGET_ARCH = \n')
     g.close()
 
     if self.installNeeded('Makefile.inc'):
