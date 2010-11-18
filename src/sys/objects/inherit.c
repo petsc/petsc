@@ -33,7 +33,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscHeaderCreate_Private(PetscObject h,PetscC
   h->parentid               = 0;
   h->qlist                  = 0;
   h->olist                  = 0;
-  h->precision              = (PetscPrecision)sizeof(PetscScalar);
+  h->precision              = (PetscPrecision) sizeof(PetscScalar);
   h->bops->destroy          = des;
   h->bops->view             = vie;
   h->bops->getcomm          = PetscObjectGetComm_Petsc;

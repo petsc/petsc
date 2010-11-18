@@ -291,11 +291,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Ob
                   or we will need to play with pointer arithmetic
           */
           /* 
-<<<<<<< local
-            the numberic scheme for vertices, faces and edges in EXO has been designed by a maniac
-=======
             the numbering scheme for vertices, faces and edges in EXO has been designed by a maniac
->>>>>>> other
             cf. Figure 5 in exodus documentation or 
             https://redmine.schur.math.lsu.edu/attachments/36/Exodus_Sides_Ordering.png
           */

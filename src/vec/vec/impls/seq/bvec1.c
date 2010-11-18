@@ -96,38 +96,6 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "VecCopy_Seq"
-PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
-{
-  PetscScalar    *ya, *xa;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (xin != yin) {
-    ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
-    ierr = PetscMemcpy(ya,xa,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "VecSwap_Seq"
-PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
-{
-  PetscScalar    *ya, *xa;
-  PetscErrorCode ierr;
-  PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map->n);
-
-  PetscFunctionBegin;
-  if (xin != yin) {
-    ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
-    BLASswap_(&bn,xa,&one,ya,&one);
-    ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecAXPY_Seq"

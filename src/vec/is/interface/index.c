@@ -169,8 +169,23 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISDestroy(IS is)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   if (--((PetscObject)is)->refct > 0) PetscFunctionReturn(0);
+  if(is->complement) {
+    PetscInt refcnt;
+    ierr = PetscObjectGetReference((PetscObject)(is->complement), &refcnt); CHKERRQ(ierr);
+    if(refcnt > 1) {
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Nonlocal IS has not been restored");
+    }
+    ierr = ISDestroy(is->complement); CHKERRQ(ierr);
+  }
   if (is->ops->destroy) {
     ierr = (*is->ops->destroy)(is);CHKERRQ(ierr);
+  }
+  /* Destroy local representations of offproc data. */
+  if(is->total) {
+    ierr = PetscFree(is->total); CHKERRQ(ierr);
+  }
+  if(is->nonlocal) {
+    ierr = PetscFree(is->nonlocal); CHKERRQ(ierr);
   }
   ierr = PetscHeaderDestroy(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -368,6 +383,302 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISRestoreIndices(IS is,const PetscInt *ptr[])
   if (is->ops->restoreindices) {
     ierr = (*is->ops->restoreindices)(is,ptr);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISGatherNonlocal_Private" 
+PetscErrorCode PETSCVEC_DLLEXPORT ISGatherNonlocal_Private(IS is)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,n,N;
+  const PetscInt *lindices;
+  MPI_Comm       comm;
+  PetscMPIInt    rank,size,*sizes = PETSC_NULL,*offsets = PETSC_NULL,nn;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+
+  ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
+  
+  nn   = PetscMPIIntCast(n);
+  ierr = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
+  offsets[0] = 0;
+  for (i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
+  N = offsets[size-1] + sizes[size-1];
+  
+  ierr = PetscMalloc(N*sizeof(PetscInt),&is->total);CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
+  ierr = MPI_Allgatherv((void*)lindices,nn,MPIU_INT,is->total,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
+  ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
+  is->local_offset = offsets[rank];
+  ierr = PetscFree2(sizes,offsets);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISGetTotalIndices" 
+/*@C
+   ISGetTotalIndices - Retrieve an array containing all indices across the communicator.
+
+   Collective on IS
+
+   Input Parameter:
+.  is - the index set
+
+   Output Parameter:
+.  indices - total indices with rank 0 indices first, and so on; total array size is 
+             the same as returned with ISGetSize().
+
+   Level: intermediate
+
+   Notes: this is potentially nonscalable, but depends on the size of the total index set
+     and the size of the communicator. This may be feasible for index sets defined on
+     subcommunicators, such that the set size does not grow with PETSC_WORLD_COMM.
+     Note also that there is no way to tell where the local part of the indices starts
+     (use ISGetIndices() and ISGetNonlocalIndices() to retrieve just the local and just
+      the nonlocal part (complement), respectively).
+
+   Concepts: index sets^getting nonlocal indices
+.seealso: ISRestoreTotalIndices(), ISGetNonlocalIndices(), ISGetSize()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISGetTotalIndices(IS is, const PetscInt *indices[])
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidPointer(indices,2);
+  ierr = MPI_Comm_size(((PetscObject)is)->comm, &size); CHKERRQ(ierr);
+  if(size == 1) {
+    ierr = (*is->ops->getindices)(is,indices);CHKERRQ(ierr);
+  }
+  else {
+    if(!is->total) {
+      ierr = ISGatherNonlocal_Private(is); CHKERRQ(ierr);
+    }
+    if(!indices) {
+      *indices = is->total;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISRestoreTotalIndices" 
+/*@C
+   ISRestoreTotalIndices - Restore the index array obtained with ISGetTotalIndices().
+
+   Not Collective.
+
+   Input Parameter:
++  is - the index set
+-  indices - index array; must be the array obtained with ISGetTotalIndices()
+
+   Level: intermediate
+
+   Concepts: index sets^getting nonlocal indices
+   Concepts: index sets^restoring nonlocal indices
+.seealso: ISRestoreTotalIndices(), ISGetNonlocalIndices()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISRestoreTotalIndices(IS is, const PetscInt *indices[])
+{
+  PetscErrorCode ierr;
+  PetscMPIInt size;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidPointer(indices,2);
+  ierr = MPI_Comm_size(((PetscObject)is)->comm, &size); CHKERRQ(ierr);
+  if(size == 1) {
+    ierr = (*is->ops->restoreindices)(is,indices);CHKERRQ(ierr);
+  }
+  else {
+    if(!indices || (is->total != *indices)) {
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored is either NULL or does not point to the array obtained from the IS.");
+    }
+  }
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__  
+#define __FUNCT__ "ISGetNonlocalIndices" 
+/*@C
+   ISGetNonlocalIndices - Retrieve an array of indices from remote processors
+                       in this communicator.
+
+   Collective on IS
+
+   Input Parameter:
+.  is - the index set
+
+   Output Parameter:
+.  indices - indices with rank 0 indices first, and so on,  omitting 
+             the current rank.  Total number of indices is the difference
+             total and local, obtained with ISGetSize() and ISGetLocalSize(),
+	     respectively.
+
+   Level: intermediate
+
+   Notes: restore the indices using ISRestoreNonlocalIndices().   
+          The same scalability considerations as those for ISGetTotalIndices
+          apply here.
+
+   Concepts: index sets^getting nonlocal indices
+.seealso: ISGetTotalIndices(), ISRestoreNonlocalIndices(), ISGetSize(), ISGetLocalSize().
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISGetNonlocalIndices(IS is, const PetscInt *indices[])
+{
+  PetscErrorCode ierr;
+  PetscMPIInt size;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidPointer(indices,2);
+  ierr = MPI_Comm_size(((PetscObject)is)->comm, &size); CHKERRQ(ierr);
+  if(size == 1) {
+    if(!indices) {
+      *indices = PETSC_NULL;
+    }
+  }
+  else {
+    if(!is->total) {
+      ierr = ISGatherNonlocal_Private(is); CHKERRQ(ierr);
+    }
+    if(!is->complement) {
+      PetscInt n, N;
+      ierr = ISGetLocalSize(is,&n); CHKERRQ(ierr);
+      ierr = ISGetSize(is,&N);      CHKERRQ(ierr);
+      ierr = PetscMalloc(sizeof(PetscInt)*(N-n), &(is->nonlocal));                                               CHKERRQ(ierr);
+      ierr = PetscMemcpy(is->nonlocal, is->total, is->local_offset);                                             CHKERRQ(ierr);
+      ierr = PetscMemcpy(is->nonlocal+is->local_offset, is->total+is->local_offset+n, N - is->local_offset - n); CHKERRQ(ierr);
+    }
+    if(!indices) {
+      *indices = is->nonlocal;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISRestoreNonlocalIndices" 
+/*@C
+   ISRestoreTotalIndices - Restore the index array obtained with ISGetNonlocalIndices().
+
+   Not Collective.
+
+   Input Parameter:
++  is - the index set
+-  indices - index array; must be the array obtained with ISGetNonlocalIndices()
+
+   Level: intermediate
+
+   Concepts: index sets^getting nonlocal indices
+   Concepts: index sets^restoring nonlocal indices
+.seealso: ISGetTotalIndices(), ISGetNonlocalIndices(), ISRestoreTotalIndices()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidPointer(indices,2);
+  if(!indices || (is->nonlocal != *indices)) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored is either NULL or does not point to the array obtained from the IS.");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISGetNonlocalIS" 
+/*@
+   ISGetNonlocalIS - Gather all nonlocal indices for this IS and present 
+                     them as another sequential index set.  
+
+
+   Collective on IS
+
+   Input Parameter:
+.  is - the index set
+
+   Output Parameter:
+.  complement - sequential IS with indices identical to the result of
+                ISGetNonlocalIndices()
+
+   Level: intermediate
+
+   Notes: complement represents the result of ISGetNonlocalIndices as an IS.
+          Therefore scalability issues similar to ISGetNonlocalIndices apply.
+	  The resulting IS must be restored using ISRestoreNonlocalIS().
+
+   Concepts: index sets^getting nonlocal indices
+.seealso: ISGetNonlocalIndices(), ISRestoreNonlocalIndices(),  ISAllGather(), ISGetSize()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISGetNonlocalIS(IS is, IS *complement)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidPointer(complement,2);
+  if(complement) {
+    /* Check if the complement exists already. */
+    if(is->complement) {
+      *complement = is->complement;
+      ierr = PetscObjectReference((PetscObject)(is->complement)); CHKERRQ(ierr);
+    }
+    else {
+      PetscInt       N, n;
+      const PetscInt *idx;
+      ierr = ISGetSize(is, &N);              CHKERRQ(ierr);
+      ierr = ISGetLocalSize(is,&n);          CHKERRQ(ierr);
+      ierr = ISGetNonlocalIndices(is, &idx); CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF, N-n,idx, PETSC_USE_POINTER, &(is->complement)); CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)is->complement); CHKERRQ(ierr);
+      *complement = is->complement;
+    }  
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISRestoreNonlocalIS" 
+/*@
+   ISRestoreNonlocalIS - Restore the IS obtained with ISGetNonlocalIS().
+
+   Not collective.
+
+   Input Parameter:
++  is         - the index set
+-  complement - index set of is's nonlocal indices
+
+   Level: intermediate
+
+
+   Concepts: index sets^getting nonlocal indices
+   Concepts: index sets^restoring nonlocal indices
+.seealso: ISGetNonlocalIS(), ISGetNonlocalIndices(), ISRestoreNonlocalIndices()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISRestoreNonlocalIS(IS is, IS *complement)
+{
+  PetscErrorCode ierr;
+  PetscInt       refcnt;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidPointer(complement,2);
+  if(*complement != is->complement) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Complement IS being restored was not obtained with ISGetNonlocalIS()");
+  }
+  ierr = PetscObjectGetReference((PetscObject)(is->complement), &refcnt); CHKERRQ(ierr);
+  if(refcnt <= 1) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Duplicate call to ISRestoreNonlocalIS() detected");
+  }
+  ierr = PetscObjectDereference((PetscObject)(is->complement));  CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

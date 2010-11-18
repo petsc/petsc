@@ -535,6 +535,10 @@ ex138: ex138.o chkopts
 ex140: ex140.o chkopts
 	-${CLINKER} -o ex140 ex140.o ${PETSC_MAT_LIB}
 	${RM} ex140.o
+
+ex141: ex141.o chkopts
+	-${CLINKER} -o ex141 ex141.o ${PETSC_MAT_LIB}
+	${RM} ex141.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -1449,6 +1453,11 @@ runex140_4:
 	   ${DIFF} output/ex140_1.out ex140_4.tmp || echo "Possible problem with ex140_4, diffs above"; \
 	   ${RM} -f ex140_4.tmp binaryoutput binaryoutput.info
 
+runex141:
+	-@${MPIEXEC} -n 1 ./ex141  > ex141.tmp 2>&1; \
+	   ${DIFF} output/ex141.out ex141.tmp || echo "Possible problem with ex141, diffs above"; \
+	   ${RM} -f ex141.tmp
+
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc \
                                  runex10 ex10.rm ex11.PETSc runex11 runex11_2 runex11_3 runex11_4 ex11.rm ex14.PETSc \
@@ -1463,7 +1472,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PET
                                  ex114.PETSc runex114 runex114_2 runex114_3 ex114.rm ex117.PETSc ex117.rm ex118.PETSc ex118.rm ex119.PETSc ex119.rm \
                                  ex128.PETSc runex128 runex128_2 ex128.rm ex129.PETSc runex129 runex129_2 ex129.rm ex131.PETSc ex131.rm ex132.PETSc ex132.rm \
                                  ex133.PETSc ex133.rm ex134.PETSc runex134 ex134.rm ex135.PETSc runex135 ex135.rm ex136.PETSc ex136.rm ex137.PETSc runex137 ex137.rm \
-                                 ex138.PETSc ex138.rm
+                                 ex138.PETSc ex138.rm ex141.PETSc runex141 ex141.rm
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex17.PETSc runex17 ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc ex24.rm ex25.PETSc \

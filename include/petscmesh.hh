@@ -65,26 +65,51 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const O
 template<typename Mesh, typename Section>
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Obj<Section>& s, VecScatter *scatter)
 {
+  const ALE::Obj<typename Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, s->getName(), s);
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshCreateGlobalScatter(m, s, globalOrder, scatter);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshCreateGlobalScatter"
+template<typename Mesh, typename Section>
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const std::string& name, const typename Section::chart_type& points, const ALE::Obj<Section>& s, VecScatter *scatter)
+{
+  const ALE::Obj<typename Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, name, points, s);
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshCreateGlobalScatter(m, s, globalOrder, scatter);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshCreateGlobalScatter"
+template<typename Mesh, typename Section>
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Obj<Section>& s, const ALE::Obj<typename Mesh::order_type>& globalOrder, VecScatter *scatter)
+{
   typedef typename Mesh::real_section_type::index_type index_type;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(Mesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
-  const typename Mesh::real_section_type::chart_type& chart       = s->getChart();
-  const ALE::Obj<typename Mesh::order_type>&          globalOrder = m->getFactory()->getGlobalOrder(m, s->getName(), s);
+  const typename Mesh::order_type::chart_type& chart = globalOrder->getChart();
   int *localIndices, *globalIndices;
-  int  localSize = s->size();
+  int  localSize = globalOrder->getLocalSize();
   int  localIndx = 0, globalIndx = 0;
   Vec  globalVec, localVec;
   IS   localIS, globalIS;
 
   ierr = VecCreate(m->comm(), &globalVec);CHKERRQ(ierr);
-  ierr = VecSetSizes(globalVec, globalOrder->getLocalSize(), PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetSizes(globalVec, localSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(globalVec);CHKERRQ(ierr);
   // Loop over all local points
   ierr = PetscMalloc(localSize*sizeof(int), &localIndices);CHKERRQ(ierr);
   ierr = PetscMalloc(localSize*sizeof(int), &globalIndices);CHKERRQ(ierr);
-  for(typename Mesh::real_section_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+  for(typename Mesh::order_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
     // Map local indices to global indices
     s->getIndices(*p_iter, localIndices, &localIndx, 0, true, true);
     s->getIndices(*p_iter, globalOrder, globalIndices, &globalIndx, 0, true, false);

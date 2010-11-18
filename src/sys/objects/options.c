@@ -1526,6 +1526,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetBoolArray(const char pre[],cons
 +  dvalue - the double value to return
 -  set - PETSC_TRUE if found, PETSC_FALSE if not found
 
+   Note: if the option is given but no value is provided then set is given the value PETSC_FALSE
+
    Level: beginner
 
    Concepts: options database^has double
@@ -1577,6 +1579,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetReal(const char pre[],const cha
    Usage:
    A complex number 2+3i can be specified as 2,3 at the command line.
    or a number 2.0e-10 - 3.3e-20 i  can be specified as 2.0e-10,3.3e-20
+
+   Note: if the option is given but no value is provided then set is given the value PETSC_FALSE
 
    Concepts: options database^has scalar
 
@@ -1801,6 +1805,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const
       integer   flg, ierr
       call PetscOptionsGetString(PETSC_NULL_CHARACTER,'-s',string,flg,ierr)
 .ve
+
+   Notes: if the option is given but no string is provided then an empty string is returned and set is given the value of PETSC_TRUE
 
    Concepts: options database^string
 

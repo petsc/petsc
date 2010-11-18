@@ -732,6 +732,8 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatGetSubMatrixOption flag,MatRe
   PetscFunctionReturn(0);
 }
 
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIAIJ" 
 PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
@@ -766,6 +768,11 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
   }
   /* Determine the number of stages through which submatrices are done */
   nmax          = 20*1000000 / (C->cmap->N * sizeof(PetscInt));
+  /* 
+     Each stage will extract nmax submatrices.  
+     nmax is determined by the matrix column dimension.
+     If the original matrix has 20M columns, only one submatrix per stage is allowed, etc.
+  */
   if (!nmax) nmax = 1;
   nstages_local = ismax/nmax + ((ismax % nmax)?1:0);
 
@@ -781,6 +788,9 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
   }
   PetscFunctionReturn(0);
 }
+
+
+
 
 /* -------------------------------------------------------------------------*/
 #undef __FUNCT__  
@@ -1384,4 +1394,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   }
   PetscFunctionReturn(0);
 }
+
+
+
 
