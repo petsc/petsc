@@ -169,6 +169,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISDestroy(IS is)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   if (--((PetscObject)is)->refct > 0) PetscFunctionReturn(0);
+  if(is->complement) {
+    PetscInt refcnt;
+    ierr = PetscObjectGetReference((PetscObject)(is->complement), &refcnt); CHKERRQ(ierr);
+    if(refcnt > 1) {
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Nonlocal IS has not been restored");
+    }
+    ierr = ISDestroy(is->complement); CHKERRQ(ierr);
+  }
   if (is->ops->destroy) {
     ierr = (*is->ops->destroy)(is);CHKERRQ(ierr);
   }
@@ -176,8 +184,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISDestroy(IS is)
   if(is->total) {
     ierr = PetscFree(is->total); CHKERRQ(ierr);
   }
-  if(is->complement) {
-    ierr = PetscFree(is->complement); CHKERRQ(ierr);
+  if(is->nonlocal) {
+    ierr = PetscFree(is->nonlocal); CHKERRQ(ierr);
   }
   ierr = PetscHeaderDestroy(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -544,12 +552,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGetNonlocalIndices(IS is, const PetscInt *in
       PetscInt n, N;
       ierr = ISGetLocalSize(is,&n); CHKERRQ(ierr);
       ierr = ISGetSize(is,&N);      CHKERRQ(ierr);
-      ierr = PetscMalloc(sizeof(PetscInt)*(N-n), &(is->complement));                                               CHKERRQ(ierr);
-      ierr = PetscMemcpy(is->complement, is->total, is->local_offset);                                             CHKERRQ(ierr);
-      ierr = PetscMemcpy(is->complement+is->local_offset, is->total+is->local_offset+n, N - is->local_offset - n); CHKERRQ(ierr);
+      ierr = PetscMalloc(sizeof(PetscInt)*(N-n), &(is->nonlocal));                                               CHKERRQ(ierr);
+      ierr = PetscMemcpy(is->nonlocal, is->total, is->local_offset);                                             CHKERRQ(ierr);
+      ierr = PetscMemcpy(is->nonlocal+is->local_offset, is->total+is->local_offset+n, N - is->local_offset - n); CHKERRQ(ierr);
     }
     if(!indices) {
-      *indices = is->complement;
+      *indices = is->nonlocal;
     }
   }
   PetscFunctionReturn(0);
@@ -578,9 +586,99 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISRestoreNonlocalIndices(IS is, const PetscInt
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
-  if(!indices || (is->complement != *indices)) {
+  if(!indices || (is->nonlocal != *indices)) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored is either NULL or does not point to the array obtained from the IS.");
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISGetNonlocalIS" 
+/*@
+   ISGetNonlocalIS - Gather all nonlocal indices for this IS and present 
+                     them as another sequential index set.  
+
+
+   Collective on IS
+
+   Input Parameter:
+.  is - the index set
+
+   Output Parameter:
+.  complement - sequential IS with indices identical to the result of
+                ISGetNonlocalIndices()
+
+   Level: intermediate
+
+   Notes: complement represents the result of ISGetNonlocalIndices as an IS.
+          Therefore scalability issues similar to ISGetNonlocalIndices apply.
+	  The resulting IS must be restored using ISRestoreNonlocalIS().
+
+   Concepts: index sets^getting nonlocal indices
+.seealso: ISGetNonlocalIndices(), ISRestoreNonlocalIndices(),  ISAllGather(), ISGetSize()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISGetNonlocalIS(IS is, IS *complement)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidPointer(complement,2);
+  if(complement) {
+    /* Check if the complement exists already. */
+    if(is->complement) {
+      *complement = is->complement;
+      ierr = PetscObjectReference((PetscObject)(is->complement)); CHKERRQ(ierr);
+    }
+    else {
+      PetscInt       N, n;
+      const PetscInt *idx;
+      ierr = ISGetSize(is, &N);              CHKERRQ(ierr);
+      ierr = ISGetLocalSize(is,&n);          CHKERRQ(ierr);
+      ierr = ISGetNonlocalIndices(is, &idx); CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF, N-n,idx, PETSC_USE_POINTER, &(is->complement)); CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)is->complement); CHKERRQ(ierr);
+      *complement = is->complement;
+    }  
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISRestoreNonlocalIS" 
+/*@
+   ISRestoreNonlocalIS - Restore the IS obtained with ISGetNonlocalIS().
+
+   Not collective.
+
+   Input Parameter:
++  is         - the index set
+-  complement - index set of is's nonlocal indices
+
+   Level: intermediate
+
+
+   Concepts: index sets^getting nonlocal indices
+   Concepts: index sets^restoring nonlocal indices
+.seealso: ISGetNonlocalIS(), ISGetNonlocalIndices(), ISRestoreNonlocalIndices()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISRestoreNonlocalIS(IS is, IS *complement)
+{
+  PetscErrorCode ierr;
+  PetscInt       refcnt;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidPointer(complement,2);
+  if(*complement != is->complement) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Complement IS being restored was not obtained with ISGetNonlocalIS()");
+  }
+  ierr = PetscObjectGetReference((PetscObject)(is->complement), &refcnt); CHKERRQ(ierr);
+  if(refcnt <= 1) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Duplicate call to ISRestoreNonlocalIS() detected");
+  }
+  ierr = PetscObjectDereference((PetscObject)(is->complement));  CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
