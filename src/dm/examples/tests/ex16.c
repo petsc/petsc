@@ -61,7 +61,7 @@ int main(int argc,char **argv)
   for (i=0; i<nredundant1; i++) redundant1[i] = (rank+2)*i;
   for (i=0; i<nredundant2; i++) redundant2[i] = (rank+10)*i;
 
-  ierr = DMCompositeGather(packer,global,redundant1,local1,redundant2,local2);CHKERRQ(ierr);
+  ierr = DMCompositeGather(packer,global,INSERT_MODE,redundant1,local1,redundant2,local2);CHKERRQ(ierr);
   ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* get the global numbering for each subvector/array element */
