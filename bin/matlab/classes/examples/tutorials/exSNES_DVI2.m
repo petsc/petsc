@@ -12,7 +12,7 @@ viewer = PetscViewer();
 viewer.SetType('ascii');
 %%
 %   Create work vectors to manage the grid
-user.mx = 4;user.my = 4;
+user.mx = 10;user.my = 10;
 N = user.mx*user.my;
 x  = PetscVec();
 x.SetType('seq');
@@ -45,12 +45,13 @@ snes.SetJacobian(J,J,'snesdvi2_jacobian',user);
 %%
 %  Set solution monitoring routine
 snes.MonitorSet('snesdvi2_monitor',user);
+figure(1),clf;figure(2),clf;
 %%
 %   Set VI bounds
 xl = x.Duplicate();
 xu = x.Duplicate();
-xl.Set(0);
-xu.Set(0.01);
+xl.Set(-10000000);
+xu.Set(100000000);
 
 snes.VISetVariableBounds(xl,xu);    
 

@@ -30,7 +30,6 @@ typedef struct {
   PetscReal                phinorm;                 /* 2-norm of the semismooth function */
   PetscErrorCode           (*computessfunction)(PetscScalar,PetscScalar,PetscScalar*); /* Semismooth function evaluation routine */
   PetscReal                merit;           /* Merit function */
-  Vec                      dpsi;          /* Gradient of merit function */
   Vec                      Da;            /* B sub-differential work vector (diag perturbation) */
   Vec                      Db;            /* B sub-differential work vector (row scaling) */
   Vec                      z;    /* B subdifferential work vector */
@@ -40,9 +39,6 @@ typedef struct {
   PetscBool                usersetxbounds; /* flag to indicate whether the user has set bounds on variables */
 
   PetscScalar             norm_d;         /* two norm of the descent direction */
-  /* Parameters for checking sufficient descent conditions satisfied */
-  PetscReal             rho;
-  PetscReal             delta;
 
   /* Tolerance to check whether the constraint is satisfied */
   PetscReal             const_tol;
