@@ -5447,10 +5447,11 @@ namespace ALE {
         const point_type right = e_iter->first.second;
 
         if (sendOverlap->capContains(left) && sendOverlap->capContains(right)) {
-          const Obj<typename MeshType::send_overlap_type::traits::supportSequence>& leftRanksSeq = sendOverlap->support(left);
-          std::list<int> leftRanks(leftRanksSeq->begin(), leftRanksSeq->end());
-          const Obj<typename MeshType::send_overlap_type::traits::supportSequence>& rightRanks   = sendOverlap->support(right);
-          std::list<int> ranks;
+          const Obj<typename MeshType::send_overlap_type::traits::supportSequence>& leftRanksSeq  = sendOverlap->support(left);
+          std::set<int> leftRanks(leftRanksSeq->begin(), leftRanksSeq->end());
+          const Obj<typename MeshType::send_overlap_type::traits::supportSequence>& rightRanksSeq = sendOverlap->support(right);
+          std::set<int> rightRanks(rightRanksSeq->begin(), rightRanksSeq->end());
+          std::set<int> ranks;
           std::set_intersection(leftRanks.begin(), leftRanks.end(), rightRanks->begin(), rightRanks->end(),
                                 std::insert_iterator<std::list<int> >(ranks, ranks.begin()));
 
