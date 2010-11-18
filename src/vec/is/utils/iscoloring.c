@@ -475,7 +475,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningCount(IS part,PetscInt len,Petsc
     Concepts: index sets^gathering to all processors
     Concepts: IS^gathering to all processors
 
-.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGatherIndices()
+.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISAllGather(IS is,IS *isout)
 {
@@ -518,62 +518,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGather(IS is,IS *isout)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISAllGatherIndices"
-/*@C
-    ISAllGatherIndices - Given a a set of integers on each processor, generates a large 
-    set (same on each processor) by concatenating together each processors integers
-
-    Collective on MPI_Comm
-
-    Input Parameter:
-+   comm - communicator to share the indices
-.   n - local size of set
--   lindices - local indices
-
-    Output Parameter:
-+   outN - total number of indices
--   outindices - all of the integers
-
-    Notes: 
-    ISAllGatherIndices() is clearly not scalable for large index sets.
-
-
-    Level: intermediate
-
-    Concepts: gather^index sets
-    Concepts: index sets^gathering to all processors
-    Concepts: IS^gathering to all processors
-
-.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
-@*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISAllGatherIndices(MPI_Comm comm,PetscInt n,const PetscInt lindices[],PetscInt *outN,PetscInt *outindices[])
-{
-  PetscErrorCode ierr;
-  PetscInt       *indices,i,N;
-  PetscMPIInt    size,*sizes = PETSC_NULL,*offsets = PETSC_NULL,nn;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
-  
-  nn   = PetscMPIIntCast(n);
-  ierr = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
-  offsets[0] = 0;
-  for (i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
-  N    = offsets[size-1] + sizes[size-1];
-
-  ierr = PetscMalloc(N*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv((void*)lindices,nn,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
-  ierr = PetscFree2(sizes,offsets);CHKERRQ(ierr);
-
-  *outindices = indices;
-  if (outN) *outN = N;
-  PetscFunctionReturn(0);
-}
-
-
-
-#undef __FUNCT__  
 #define __FUNCT__ "ISAllGatherColors"
 /*@C
     ISAllGatherColors - Given a a set of colors on each processor, generates a large 
@@ -600,7 +544,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGatherIndices(MPI_Comm comm,PetscInt n,co
     Concepts: index sets^gathering to all processors
     Concepts: IS^gathering to all processors
 
-.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather(), ISAllGatherIndices()
+.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lindices,PetscInt *outN,ISColoringValue *outindices[])
 {
@@ -656,7 +600,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGatherColors(MPI_Comm comm,PetscInt n,ISC
     Concepts: index sets^gathering to all processors
     Concepts: IS^gathering to all processors
 
-.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGatherIndices(), ISAllGather()
+.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISComplement(IS is,PetscInt nmin,PetscInt nmax,IS *isout)
 {

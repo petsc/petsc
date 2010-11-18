@@ -145,7 +145,6 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISDuplicate(IS,IS*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCopy(IS,IS);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISAllGather(IS,IS*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISComplement(IS,PetscInt,PetscInt,IS*);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISAllGatherIndices(MPI_Comm,PetscInt,const PetscInt[],PetscInt*,PetscInt*[]);
 
 /* --------------------------------------------------------------------------*/
 extern PETSCVEC_DLLEXPORT PetscClassId IS_LTOGM_CLASSID;
