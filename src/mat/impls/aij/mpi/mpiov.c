@@ -1395,10 +1395,9 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   PetscFunctionReturn(0);
 }
 
-#if 0
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetSubMatrices_MPIXAIJ" 
-PetscErrorCode MatGetSubMatrices_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
+#define __FUNCT__ "MatGetSubMatricesParallel_MPIXAIJ" 
+PetscErrorCode MatGetSubMatricesParallel_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 { 
   PetscErrorCode ierr;
   PetscMPIInt size, flag;
@@ -1408,7 +1407,7 @@ PetscErrorCode MatGetSubMatrices_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[],c
   for(i = 0; i < ismax; ++i) {
     ierr = MPI_Comm_compare(((PetscObject)isrow[i])->comm,((PetscObject)iscol[i])->comm, &flag); CHKERRQ(ierr);
     if(flag != MPI_IDENT) {
-      SETERRQ(PETSC_ERROR_SELF, PETSC_ERR_ARG_WRONG, "Row and column index sets must have the same communicator")
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Row and column index sets must have the same communicator");
     }
     ierr = MPI_Comm_size(((PetscObject)isrow[i])->comm, &size); CHKERRQ(ierr);
     if(size > 1) {
@@ -1417,11 +1416,17 @@ PetscErrorCode MatGetSubMatrices_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[],c
     }
   }
   if(allone) { /* Sequential ISs, so can call the sequential matrix extraction subroutine. */
-    ierr = (*f)(C,ismax,isrow,iscol,scall,submat); CHKERRQ(ierr);
+    /* 
+       How are we going to handle this in the future, when this code is dispatched to upon MatGetSubMatrices? 
+       With a func pointer, perhaps, to the type-specific impl:
+       Make this routine private, then write "stubs" for each impl that call to this with the appropriate func
+       pointer. The stubs go into the vtable.
+    */
+    ierr = MatGetSubMatrices(C,ismax,isrow,iscol,scall,submat); CHKERRQ(ierr); 
   }
   else {
     Mat *A,*B;
-    IS  *&iscol_c;
+    IS  *iscol_c;
     PetscMPIInt nn;
     /* Allocate diag and off-diag seq matrices underlying the submats we are extracting. */
     ierr = PetscMalloc2(ismax, Mat, &A, ismax, Mat, &B); CHKERRQ(ierr); 
@@ -1467,6 +1472,6 @@ PetscErrorCode MatGetSubMatrices_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[],c
   }
   PetscFunctionReturn(0);
 }/* MatGetSubMatricesParallel_MPIXAIJ() */
-#endif
+
 
 
