@@ -76,9 +76,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m
 #undef __FUNCT__
 #define __FUNCT__ "MeshCreateGlobalScatter"
 template<typename Mesh, typename Section>
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const typename Section::chart_type& points, const ALE::Obj<Section>& s, VecScatter *scatter)
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const std::string& name, const typename Section::chart_type& points, const ALE::Obj<Section>& s, VecScatter *scatter)
 {
-  const ALE::Obj<typename Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, s->getName(), points, s);
+  const ALE::Obj<typename Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, name, points, s);
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

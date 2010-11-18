@@ -1711,7 +1711,41 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
   if (x->map->n != y->map->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PetscLogEventBegin(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
+#if defined(PETSC_USE_MIXED_PRECISION)
+  extern PetscErrorCode VecGetArray_Private(Vec,double **);
+  extern PetscErrorCode VecRestoreArray_Private(Vec,double **);
+  extern PetscErrorCode VecGetArray_Private(Vec,float **);
+  extern PetscErrorCode VecRestoreArray_Private(Vec,float **);
+  if ((((PetscObject)x)->precision == PETSC_PRECISION_SINGLE) && (((PetscObject)y)->precision == PETSC_PRECISION_DOUBLE)) {
+    PetscInt    i,n;
+    float       *xx;
+    double      *yy;
+    ierr = VecGetArray_Private(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray_Private(y,&yy);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      yy[i] = xx[i];
+    }
+    ierr = VecRestoreArray_Private(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray_Private(y,&yy);CHKERRQ(ierr);
+  } else if ((((PetscObject)x)->precision == PETSC_PRECISION_DOUBLE) && (((PetscObject)y)->precision == PETSC_PRECISION_SINGLE)) {
+    PetscInt    i,n;
+    float       *yy;
+    double      *xx;
+    ierr = VecGetArray_Private(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray_Private(y,&yy);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      yy[i] = (float) xx[i];
+    }
+    ierr = VecRestoreArray_Private(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray_Private(y,&yy);CHKERRQ(ierr);
+  } else {
+    ierr = (*x->ops->copy)(x,y);CHKERRQ(ierr);
+  }
+#else
   ierr = (*x->ops->copy)(x,y);CHKERRQ(ierr);
+#endif
 
 
   /*
@@ -1720,6 +1754,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
   /* in general we consider this object touched */
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
 
+#if !defined(PETSC_USE_MIXED_PRECISION)
   for (i=0; i<4; i++) {
     ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],norms[i],flgs[i]);CHKERRQ(ierr);
   }
@@ -1728,6 +1763,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
       ierr = PetscObjectComposedDataSetReal((PetscObject)y,NormIds[i],norms[i]);CHKERRQ(ierr);
     }
   }
+#endif
 
   ierr = PetscLogEventEnd(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

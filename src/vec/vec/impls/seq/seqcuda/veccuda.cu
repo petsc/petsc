@@ -10,6 +10,65 @@ PETSC_CUDA_EXTERN_C_BEGIN
 PETSC_CUDA_EXTERN_C_END
 #include "../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h"
 
+#undef __FUNCT__  
+#define __FUNCT__ "VecCopy_Seq"
+static PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
+{
+  PetscScalar    *ya, *xa;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (xin != yin) {
+    ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+    ierr = PetscMemcpy(ya,xa,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecSetRandom_Seq"
+static PetscErrorCode VecSetRandom_Seq(Vec xin,PetscRandom r)
+{
+  PetscErrorCode ierr;
+  PetscInt       n = xin->map->n,i;
+  PetscScalar    *xx = *(PetscScalar**)xin->data;
+
+  PetscFunctionBegin;
+  for (i=0; i<n; i++) {ierr = PetscRandomGetValue(r,&xx[i]);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecDestroy_Seq"
+static PetscErrorCode VecDestroy_Seq(Vec v)
+{
+  Vec_Seq        *vs = (Vec_Seq*)v->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectDepublish(v);CHKERRQ(ierr);
+
+#if defined(PETSC_USE_LOG)
+  PetscLogObjectState((PetscObject)v,"Length=%D",v->map->n);
+#endif
+  ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);
+  ierr = PetscFree(vs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecResetArray_Seq"
+static PetscErrorCode VecResetArray_Seq(Vec vin)
+{
+  Vec_Seq *v = (Vec_Seq *)vin->data;
+
+  PetscFunctionBegin;
+  v->array         = v->unplacedarray;
+  v->unplacedarray = 0;
+  PetscFunctionReturn(0);
+}
+
 /* these following 3 public versions are necessary because we use CUSP in the regular PETSc code and these need to be called from plain C code. */
 #undef __FUNCT__
 #define __FUNCT__ "VecCUDAAllocateCheck_Public"

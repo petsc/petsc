@@ -151,6 +151,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNorm(Vec x,NormType type,PetscReal *val)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidDoublePointer(val,3);
   PetscValidType(x,1);
+  if (((PetscObject)x)->precision != sizeof(PetscScalar)) SETERRQ(((PetscObject)x)->comm,PETSC_ERR_SUP,"Wrong precision of input argument");
 
   /*
    * Cached data?
