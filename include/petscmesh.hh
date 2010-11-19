@@ -98,8 +98,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m
   ierr = PetscLogEventBegin(Mesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
   const typename Mesh::order_type::chart_type& chart = globalOrder->getChart();
   int *localIndices, *globalIndices;
-  int  localSize = globalOrder->getLocalSize();
-  int  localIndx = 0, globalIndx = 0;
+  int  localSize   = globalOrder->getLocalSize();
+  int  overlapSize = s->size();
+  int  localIndx   = 0, globalIndx = 0;
   Vec  globalVec, localVec;
   IS   localIS, globalIS;
 
@@ -107,8 +108,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m
   ierr = VecSetSizes(globalVec, localSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(globalVec);CHKERRQ(ierr);
   // Loop over all local points
-  ierr = PetscMalloc(localSize*sizeof(int), &localIndices);CHKERRQ(ierr);
-  ierr = PetscMalloc(localSize*sizeof(int), &globalIndices);CHKERRQ(ierr);
+  ierr = PetscMalloc(overlapSize*sizeof(int), &localIndices);CHKERRQ(ierr);
+  ierr = PetscMalloc(overlapSize*sizeof(int), &globalIndices);CHKERRQ(ierr);
   for(typename Mesh::order_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
     // Map local indices to global indices
     s->getIndices(*p_iter, localIndices, &localIndx, 0, true, true);
@@ -116,16 +117,16 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m
     //numConstraints += s->getConstraintDimension(*p_iter);
   }
   // Local arrays also have constraints, which are not mapped
-  if (localIndx  != localSize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid number of local indices %d, should be %d", localIndx, localSize);
-  if (globalIndx != localSize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid number of global indices %d, should be %d", globalIndx, localSize);
+  if (localIndx  != overlapSize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid number of local indices %d, should be %d", localIndx, overlapSize);
+  if (globalIndx != overlapSize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid number of global indices %d, should be %d", globalIndx, overlapSize);
   if (m->debug()) {
     globalOrder->view("Global Order");
-    for(int i = 0; i < localSize; ++i) {
+    for(int i = 0; i < overlapSize; ++i) {
       printf("[%d] localIndex[%d]: %d globalIndex[%d]: %d\n", m->commRank(), i, localIndices[i], i, globalIndices[i]);
     }
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, localSize, localIndices,PETSC_OWN_POINTER,  &localIS);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, localSize, globalIndices,PETSC_OWN_POINTER, &globalIS);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, overlapSize, localIndices,PETSC_OWN_POINTER,  &localIS);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, overlapSize, globalIndices,PETSC_OWN_POINTER, &globalIS);CHKERRQ(ierr);
   // Can remove this when I test it with NULL
 #ifdef PETSC_USE_COMPLEX
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->getStorageSize(), PETSC_NULL, &localVec);CHKERRQ(ierr);
