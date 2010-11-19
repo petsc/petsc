@@ -1950,7 +1950,7 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
 #if defined(BLOCKING)
    /*ierr = MatSetLocalToGlobalMappingBlocked(grid->A,nvertices,loc2pet);CHKERRQ(ierr);*/
    ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,nvertices,loc2pet,PETSC_COPY_VALUES,&isl2g);CHKERRQ(ierr);
-   ierr = MatSetLocalToGlobalMappingBlock(grid->A,isl2g);CHKERRQ(ierr);
+   ierr = MatSetLocalToGlobalMappingBlock(grid->A,isl2g,isl2g);CHKERRQ(ierr);
    ISLocalToGlobalMappingDestroy(isl2g);
 #endif
    ierr = PetscFree(svertices);CHKERRQ(ierr);
