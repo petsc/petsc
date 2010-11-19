@@ -203,7 +203,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingBlock(ISLocalToGlobalMap
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(inmap,IS_LTOGM_CLASSID,1);
-  PetscValidPointer(outmap,1);
+  PetscValidPointer(outmap,3);
   if (bs > 1) {
     n    = inmap->n/bs;
     if (n*bs != inmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Pointwise mapping length is not divisible by block size");
@@ -218,7 +218,50 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingBlock(ISLocalToGlobalMap
   }
   PetscFunctionReturn(0);
 }
-  
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISLocalToGlobalMappingBlock"
+/*@
+    ISLocalToGlobalMappingUnBlock - Creates a scalar index version of a blocked
+       ISLocalToGlobalMapping
+
+    Not Collective, but communicator may have more than one process
+
+    Input Parameter:
++inmap - block based mapping; the indices are relative to BLOCKS, not individual vector or matrix entries.
+-bs - block size
+
+    Output Parameter:
+.   outmap - pointwise mapping
+
+    Level: advanced
+
+    Concepts: mapping^local to global
+
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingBlock()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingUnBlock(ISLocalToGlobalMapping inmap,PetscInt bs,ISLocalToGlobalMapping *outmap)
+{
+  PetscErrorCode ierr;
+  PetscInt       *ii,i,n;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(inmap,IS_LTOGM_CLASSID,1);
+  PetscValidPointer(outmap,2);
+  if (bs > 1) {
+    n    = inmap->n*bs;
+    ierr = PetscMalloc(n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      ii[i] = inmap->indices[i%bs]*bs;
+    }
+    ierr = ISLocalToGlobalMappingCreate(((PetscObject)inmap)->comm,n,ii,PETSC_OWN_POINTER,outmap);CHKERRQ(ierr);
+  } else {
+    ierr    = PetscObjectReference((PetscObject)inmap);CHKERRQ(ierr);
+    *outmap = inmap;
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "ISLocalToGlobalMappingDestroy"
 /*@
