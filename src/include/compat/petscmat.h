@@ -22,6 +22,47 @@
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
+#define __FUNCT__ "MatSetLocalToGlobalMapping"
+static PetscErrorCode MatSetLocalToGlobalMapping_Compat(Mat mat, 
+                                                        ISLocalToGlobalMapping rmap,
+                                                        ISLocalToGlobalMapping cmap)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(rmap,IS_LTOGM_COOKIE,2);
+  PetscValidHeaderSpecific(cmap,IS_LTOGM_COOKIE,3);
+  if (rmap != cmap) 
+    SETERRQ(PETSC_ERR_SUP,__FUNCT__"() "
+            "with different rmap and cmap not supported in this PETSc version");
+  ierr = MatSetLocalToGlobalMapping(mat,rmap);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define MatSetLocalToGlobalMapping MatSetLocalToGlobalMapping_Compat
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetLocalToGlobalMappingBlock"
+static PetscErrorCode MatSetLocalToGlobalMappingBlock_Compat(Mat mat, 
+                                                             ISLocalToGlobalMapping rmap,
+                                                             ISLocalToGlobalMapping cmap)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(rmap,IS_LTOGM_COOKIE,2);
+  PetscValidHeaderSpecific(cmap,IS_LTOGM_COOKIE,3);
+  if (rmap != cmap) 
+    SETERRQ(PETSC_ERR_SUP,__FUNCT__"() "
+            "with different rmap and cmap not supported in this PETSc version");
+  ierr = MatSetLocalToGlobalMappingBlock(mat,rmap);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define MatSetLocalToGlobalMappingBlock MatSetLocalToGlobalMappingBlock_Compat
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
 #define __FUNCT__ "MatZeroRows"
 static PetscErrorCode MatZeroRows_Compat(Mat mat,PetscInt n,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {

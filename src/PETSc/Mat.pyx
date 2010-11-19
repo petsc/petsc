@@ -645,8 +645,9 @@ cdef class Mat(Object):
     def setValuesBlockedCSR(self, I, J, V, addv=None):
         matsetvalues_csr(self.mat, I, J, V, addv, 1, 0)
 
-    def setLGMap(self, LGMap lgmap not None):
-        CHKERR( MatSetLocalToGlobalMapping(self.mat, lgmap.lgm) )
+    def setLGMap(self, LGMap rmap not None, LGMap cmap=None):
+        if cmap is None: cmap = rmap
+        CHKERR( MatSetLocalToGlobalMapping(self.mat, rmap.lgm, cmap.lgm) )
 
     def setValueLocal(self, row, col, value, addv=None):
         cdef PetscInt    ival1 = asInt(row)
@@ -668,8 +669,9 @@ cdef class Mat(Object):
     def setValuesLocalCSR(self, I, J, V, addv=None):
         matsetvalues_csr(self.mat, I, J, V, addv, 0, 1)
 
-    def setLGMapBlock(self, LGMap lgmap not None):
-        CHKERR( MatSetLocalToGlobalMappingBlock(self.mat, lgmap.lgm) )
+    def setLGMapBlock(self, LGMap rmap not None, LGMap cmap=None):
+        if cmap is None: cmap = rmap
+        CHKERR( MatSetLocalToGlobalMappingBlock(self.mat, rmap.lgm, cmap.lgm) )
 
     def setValuesBlockedLocal(self, rows, cols, values, addv=None):
         matsetvalues(self.mat, rows, cols, values, addv, 1, 1)

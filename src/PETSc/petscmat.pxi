@@ -159,8 +159,8 @@ cdef extern from "petscmat.h" nogil:
     int MatSetValues(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
     int MatSetValuesBlocked(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
 
-    int MatSetLocalToGlobalMapping(PetscMat,PetscLGMap)
-    int MatSetLocalToGlobalMappingBlock(PetscMat,PetscLGMap)
+    int MatSetLocalToGlobalMapping(PetscMat,PetscLGMap,PetscLGMap)
+    int MatSetLocalToGlobalMappingBlock(PetscMat,PetscLGMap,PetscLGMap)
 
     int MatSetValueLocal(PetscMat,PetscInt,PetscInt,PetscScalar,PetscInsertMode)
     int MatSetValuesLocal(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
