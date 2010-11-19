@@ -1910,31 +1910,35 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
     mat->assembled     = PETSC_FALSE;
   }
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(mat->rbmapping,nrow,irow,irowm);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(mat->cbmapping,ncol,icol,icolm);CHKERRQ(ierr);
-  if (mat->ops->setvaluesblocked) {
-    ierr = (*mat->ops->setvaluesblocked)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
+  if (mat->ops->setvaluesblockedlocal) {
+    ierr = (*mat->ops->setvaluesblockedlocal)(mat,nrow,irow,ncol,icol,y,addv);CHKERRQ(ierr);
   } else {
-    PetscInt buf[4096],*ibufm=0,*ibufn=0;
-    PetscInt i,j,*iirowm,*iicolm,bs=mat->rmap->bs;
-    if ((nrow+ncol)*bs <= 4096) {
-      iirowm = buf; iicolm = buf + nrow*bs;
+    ierr = ISLocalToGlobalMappingApply(mat->rbmapping,nrow,irow,irowm);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingApply(mat->cbmapping,ncol,icol,icolm);CHKERRQ(ierr);
+    if (mat->ops->setvaluesblocked) {
+      ierr = (*mat->ops->setvaluesblocked)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
     } else {
-      ierr = PetscMalloc2(nrow*bs,PetscInt,&ibufm,ncol*bs,PetscInt,&ibufn);CHKERRQ(ierr);
-      iirowm = ibufm; iicolm = ibufn;
-    }
-    for (i=0; i<nrow; i++) {
-      for (j=0; j<bs; j++) {
-	iirowm[i*bs+j] = bs*irowm[i] + j;
+      PetscInt buf[4096],*ibufm=0,*ibufn=0;
+      PetscInt i,j,*iirowm,*iicolm,bs=mat->rmap->bs;
+      if ((nrow+ncol)*bs <= 4096) {
+        iirowm = buf; iicolm = buf + nrow*bs;
+      } else {
+        ierr = PetscMalloc2(nrow*bs,PetscInt,&ibufm,ncol*bs,PetscInt,&ibufn);CHKERRQ(ierr);
+        iirowm = ibufm; iicolm = ibufn;
       }
-    }
-    for (i=0; i<ncol; i++) {
-      for (j=0; j<bs; j++) {
-	iicolm[i*bs+j] = bs*icolm[i] + j;
+      for (i=0; i<nrow; i++) {
+        for (j=0; j<bs; j++) {
+          iirowm[i*bs+j] = bs*irowm[i] + j;
+        }
       }
+      for (i=0; i<ncol; i++) {
+        for (j=0; j<bs; j++) {
+          iicolm[i*bs+j] = bs*icolm[i] + j;
+        }
+      }
+      ierr = MatSetValues(mat,bs*nrow,iirowm,bs*ncol,iicolm,y,addv);CHKERRQ(ierr);
+      ierr = PetscFree2(ibufm,ibufn);CHKERRQ(ierr);
     }
-    ierr = MatSetValues(mat,bs*nrow,iirowm,bs*ncol,iicolm,y,addv);CHKERRQ(ierr);
-    ierr = PetscFree2(ibufm,ibufn);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA)
