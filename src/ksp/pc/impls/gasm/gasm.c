@@ -139,7 +139,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   PC_GASM         *osm  = (PC_GASM*)pc->data;
   PetscErrorCode ierr;
   PetscBool      symset,flg;
-  PetscInt       i,firstRow,lastRow;
+  PetscInt       i;
   PetscMPIInt    rank, size;
   MatReuse       scall = MAT_REUSE_MATRIX;
   KSP            ksp;

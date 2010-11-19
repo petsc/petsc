@@ -113,11 +113,13 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSetIdentity(IS);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISIdentity(IS,PetscBool *);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetIndices(IS,const PetscInt *[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISRestoreIndices(IS,const PetscInt *[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetTotalIndices(IS,const PetscInt *[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISRestoreTotalIndices(IS,const PetscInt *[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetNonlocalIndices(IS,const PetscInt *[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISRestoreNonlocalIndices(IS,const PetscInt *[]);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISRestoreIndices(IS,const PetscInt *[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetNonlocalIS(IS, IS *is);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISRestoreNonlocalIS(IS, IS *is);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetSize(IS,PetscInt *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetLocalSize(IS,PetscInt *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISInvertPermutation(IS,PetscInt,IS*);
@@ -143,7 +145,6 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISDuplicate(IS,IS*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCopy(IS,IS);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISAllGather(IS,IS*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISComplement(IS,PetscInt,PetscInt,IS*);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISAllGatherIndices(MPI_Comm,PetscInt,const PetscInt[],PetscInt*,PetscInt*[]);
 
 /* --------------------------------------------------------------------------*/
 extern PETSCVEC_DLLEXPORT PetscClassId IS_LTOGM_CLASSID;
