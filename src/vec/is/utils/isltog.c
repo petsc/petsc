@@ -220,7 +220,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingBlock(ISLocalToGlobalMap
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISLocalToGlobalMappingBlock"
+#define __FUNCT__ "ISLocalToGlobalMappingUnBlock"
 /*@
     ISLocalToGlobalMappingUnBlock - Creates a scalar index version of a blocked
        ISLocalToGlobalMapping
