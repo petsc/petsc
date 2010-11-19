@@ -439,7 +439,6 @@ PetscErrorCode VecMTDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
     ierr = VecGetArrayRead(yy[3],&yy3);CHKERRQ(ierr);
 
     j = n;
-    //x = xv->array;
     switch (j_rem=j&0x3) {
     case 3: 
       x2 = x[2]; 

@@ -243,37 +243,38 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 #define __FUNCT__ "VecView_Seq_File"
 static PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
 {
-  Vec_Seq           *x = (Vec_Seq *)xin->data;
   PetscErrorCode    ierr;
   PetscInt          i,n = xin->map->n;
   const char        *name;
   PetscViewerFormat format;
+  const PetscScalar *xv;
 
   PetscFunctionBegin;
+  ierr = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_MATLAB) {
     ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%s = [\n",name);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
 #if defined(PETSC_USE_COMPLEX)
-      if (PetscImaginaryPart(x->array[i]) > 0.0) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e + %18.16ei\n",PetscRealPart(x->array[i]),PetscImaginaryPart(x->array[i]));CHKERRQ(ierr);
-      } else if (PetscImaginaryPart(x->array[i]) < 0.0) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e - %18.16ei\n",PetscRealPart(x->array[i]),-PetscImaginaryPart(x->array[i]));CHKERRQ(ierr);
+      if (PetscImaginaryPart(xv[i]) > 0.0) {
+        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e + %18.16ei\n",PetscRealPart(xv[i]),PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+      } else if (PetscImaginaryPart(xv[i]) < 0.0) {
+        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e - %18.16ei\n",PetscRealPart(xv[i]),-PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",PetscRealPart(x->array[i]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",PetscRealPart(xv[i]));CHKERRQ(ierr);
       }
 #else
-      ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",x->array[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",xv[i]);CHKERRQ(ierr);
 #endif
     }
     ierr = PetscViewerASCIIPrintf(viewer,"];\n");CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_SYMMODU) {
     for (i=0; i<n; i++) {
 #if defined(PETSC_USE_COMPLEX)
-      ierr = PetscViewerASCIIPrintf(viewer,"%18.16e %18.16e\n",PetscRealPart(x->array[i]),PetscImaginaryPart(x->array[i]));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%18.16e %18.16e\n",PetscRealPart(xv[i]),PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
 #else
-      ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",x->array[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",xv[i]);CHKERRQ(ierr);
 #endif
     }
   } else if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL) {
@@ -356,7 +357,7 @@ static PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
         }
 #if !defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIIPrintf(viewer,"%G",x->array[i*bs+b]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%G",xv[i*bs+b]);CHKERRQ(ierr);
 #endif
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
@@ -374,7 +375,7 @@ static PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
         }
 #if !defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIIPrintf(viewer,"%G",x->array[i*bs+b]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%G",xv[i*bs+b]);CHKERRQ(ierr);
 #endif
       }
       for (b=bs; b<3; b++) {
@@ -397,7 +398,7 @@ static PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
         }
 #if !defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIIPrintf(viewer,"% 12.5E",x->array[i*bs+b]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"% 12.5E",xv[i*bs+b]);CHKERRQ(ierr);
 #endif
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
@@ -419,7 +420,7 @@ static PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
         }
 #if !defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIIPrintf(viewer,"% 16.8E",x->array[i*bs+b]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"% 16.8E",xv[i*bs+b]);CHKERRQ(ierr);
 #endif
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
@@ -431,19 +432,20 @@ static PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"%D: ",i);CHKERRQ(ierr);
       }
 #if defined(PETSC_USE_COMPLEX)
-      if (PetscImaginaryPart(x->array[i]) > 0.0) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%G + %G i\n",PetscRealPart(x->array[i]),PetscImaginaryPart(x->array[i]));CHKERRQ(ierr);
-      } else if (PetscImaginaryPart(x->array[i]) < 0.0) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%G - %G i\n",PetscRealPart(x->array[i]),-PetscImaginaryPart(x->array[i]));CHKERRQ(ierr);
+      if (PetscImaginaryPart(xv[i]) > 0.0) {
+        ierr = PetscViewerASCIIPrintf(viewer,"%G + %G i\n",PetscRealPart(xv[i]),PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+      } else if (PetscImaginaryPart(xv[i]) < 0.0) {
+        ierr = PetscViewerASCIIPrintf(viewer,"%G - %G i\n",PetscRealPart(xv[i]),-PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"%G\n",PetscRealPart(x->array[i]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%G\n",PetscRealPart(xv[i]));CHKERRQ(ierr);
       }
 #else
-      ierr = PetscViewerASCIIPrintf(viewer,"%G\n",x->array[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%G\n",xv[i]);CHKERRQ(ierr);
 #endif
     }
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xin,&xv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -451,12 +453,12 @@ static PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecView_Seq_Draw_LG"
 static PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
 {
-  Vec_Seq        *x = (Vec_Seq *)xin->data;
-  PetscErrorCode ierr;
-  PetscInt       i,n = xin->map->n;
-  PetscDraw      win;
-  PetscReal      *xx;
-  PetscDrawLG    lg;
+  PetscErrorCode    ierr;
+  PetscInt          i,n = xin->map->n;
+  PetscDraw         win;
+  PetscReal         *xx;
+  PetscDrawLG       lg;
+  const PetscScalar *xv;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDrawLG(v,0,&lg);CHKERRQ(ierr);
@@ -467,19 +469,21 @@ static PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
   for (i=0; i<n; i++) {
     xx[i] = (PetscReal) i;
   }
+  ierr = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = PetscDrawLGAddPoints(lg,n,&xx,&x->array);CHKERRQ(ierr);
+  ierr = PetscDrawLGAddPoints(lg,n,&xx,(PetscReal**)&xv);CHKERRQ(ierr);
 #else 
   {
     PetscReal *yy;
     ierr = PetscMalloc((n+1)*sizeof(PetscReal),&yy);CHKERRQ(ierr);    
     for (i=0; i<n; i++) {
-      yy[i] = PetscRealPart(x->array[i]);
+      yy[i] = PetscRealPart(xv[i]);
     }
     ierr = PetscDrawLGAddPoints(lg,n,&xx,&yy);CHKERRQ(ierr);
     ierr = PetscFree(yy);CHKERRQ(ierr);
   }
 #endif
+  ierr = VecRestoreArrayRead(xin,&xv);CHKERRQ(ierr);
   ierr = PetscFree(xx);CHKERRQ(ierr);
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
   ierr = PetscDrawSynchronizedFlush(win);CHKERRQ(ierr);
@@ -517,13 +521,13 @@ static PetscErrorCode VecView_Seq_Draw(Vec xin,PetscViewer v)
 #define __FUNCT__ "VecView_Seq_Binary"
 static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
 {
-  Vec_Seq        *x = (Vec_Seq *)xin->data;
-  PetscErrorCode ierr;
-  int            fdes;
-  PetscInt       n = xin->map->n,classid=VEC_FILE_CLASSID;
-  FILE           *file;
+  PetscErrorCode    ierr;
+  int               fdes;
+  PetscInt          n = xin->map->n,classid=VEC_FILE_CLASSID;
+  FILE              *file;
+  const PetscScalar *xv;
 #if defined(PETSC_HAVE_MPIIO)
-  PetscBool      isMPIIO;
+  PetscBool         isMPIIO;
 #endif
 
   PetscFunctionBegin;
@@ -538,7 +542,9 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   if (!isMPIIO) {
 #endif
     ierr = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fdes,x->array,n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fdes,(void*)xv,n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(xin,&xv);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
   } else {
     MPI_Offset   off;
@@ -554,7 +560,9 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
 
     ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
     ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
-    ierr = MPIU_File_write_all(mfdes,x->array,lsizes[0],MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
+    ierr = MPIU_File_write_all(mfdes,(void*)xv,lsizes[0],MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(xin,&xv);CHKERRQ(ierr);
     ierr = PetscViewerBinaryAddMPIIOOffset(viewer,n*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = MPI_Type_free(&view);CHKERRQ(ierr);    
   }
