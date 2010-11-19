@@ -75,8 +75,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_Sliced(DM dm, const MatType mtype,M
   }
   ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,(slice->n+slice->Nghosts)*bs,globals,PETSC_OWN_POINTER,&lmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(lmap,bs,&blmap);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(*J,lmap);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMappingBlock(*J,blmap);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(*J,lmap,lmap);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMappingBlock(*J,blmap,blmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(lmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(blmap);CHKERRQ(ierr);
   PetscFunctionReturn(0);

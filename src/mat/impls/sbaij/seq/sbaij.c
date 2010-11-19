@@ -1857,7 +1857,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->ops->destroy     = MatDestroy_SeqSBAIJ;
   B->ops->view        = MatView_SeqSBAIJ;
-  B->mapping          = 0;
   b->row              = 0;
   b->icol             = 0;
   b->reallocs         = 0;

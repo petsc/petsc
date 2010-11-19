@@ -155,7 +155,7 @@ PetscErrorCode MatView_IS(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetLocalToGlobalMapping_IS" 
-PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mapping)
+PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmapping,ISLocalToGlobalMapping cmapping)
 {
   PetscErrorCode ierr;
   PetscInt       n;
@@ -165,13 +165,14 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mappin
 
   PetscFunctionBegin;
   if (is->mapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for matrix");
-  PetscCheckSameComm(A,1,mapping,2);
-  ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
+  PetscCheckSameComm(A,1,rmapping,2);
+  if (rmapping != cmapping) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MATIS requires the row and column mappings to be identical");
+  ierr = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
   if (is->mapping) { ierr = ISLocalToGlobalMappingDestroy(is->mapping);CHKERRQ(ierr); }
-  is->mapping = mapping;
+  is->mapping = rmapping;
 
   /* Create the local matrix A */
-  ierr = ISLocalToGlobalMappingGetSize(mapping,&n);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(rmapping,&n);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,&is->A);CHKERRQ(ierr);
   ierr = MatSetSizes(is->A,n,n,n,n);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(is->A,"is");CHKERRQ(ierr);
@@ -183,7 +184,7 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mappin
 
   /* setup the global to local scatter */
   ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&to);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApplyIS(mapping,to,&from);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApplyIS(rmapping,to,&from);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(((PetscObject)A)->comm,A->cmap->n,A->cmap->N,PETSC_NULL,&global);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,is->x,to,&is->ctx);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
@@ -457,7 +458,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateIS(MPI_Comm comm,PetscInt m,PetscInt 
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
   ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATIS);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(*A,map);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(*A,map,map);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -510,7 +511,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_IS(Mat A)
   ierr                = PetscNewLog(A,Mat_IS,&b);CHKERRQ(ierr);
   A->data             = (void*)b;
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
-  A->mapping          = 0;
 
   A->ops->mult                    = MatMult_IS;
   A->ops->multadd                 = MatMultAdd_IS;

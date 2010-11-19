@@ -195,6 +195,10 @@ MatCreateMPICSRPERM() -&gt; MatCreateMPIAIJPERM()</li>
 vector as optional arguments; if these are provided then the b[idx[i]]
 is set to diag*x[idx[i]]] for all rows listed in idx[].<br>
         </li>
+        <li>MatSetLocalToGlobalMapping() and
+MatSetLocalToGlobalMappingBlock() now take separate row and column maps.
+MatPreallocateSetLocal() has an extra argument for the column mapping.
+        </li>
       </ul>
       <u><b>PC:</b></u>
       <ul>

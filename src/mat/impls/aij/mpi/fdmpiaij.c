@@ -18,7 +18,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   PetscInt              *columnsforrow,l;
   IS                    *isa;
   PetscBool              done,flg;
-  ISLocalToGlobalMapping map = mat->mapping;
+  ISLocalToGlobalMapping map = mat->cmapping;
   PetscInt               *ltog = (map ? map->indices : (PetscInt*) PETSC_NULL) ,ctype=c->ctype;
 
   PetscFunctionBegin;

@@ -580,7 +580,6 @@ PetscErrorCode PETSCDM_DLLEXPORT MatCreate_HYPREStruct(Mat B)
   B->data         = (void*)ex;
   B->rmap->bs     = 1;
   B->assembled    = PETSC_FALSE;
-  B->mapping      = 0;
 
   B->insertmode   = NOT_SET_VALUES;
 
@@ -1119,7 +1118,6 @@ PetscErrorCode PETSCDM_DLLEXPORT MatCreate_HYPRESStruct(Mat B)
   B->data         = (void*)ex;
   B->rmap->bs     = 1;
   B->assembled    = PETSC_FALSE;
-  B->mapping      = 0;
 
   B->insertmode   = NOT_SET_VALUES;
 

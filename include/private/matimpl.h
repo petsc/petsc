@@ -95,7 +95,7 @@ struct _MatOps {
   /*64*/
   PetscErrorCode (*scalesystem)(Mat,Vec,Vec);
   PetscErrorCode (*unscalesystem)(Mat,Vec,Vec);
-  PetscErrorCode (*setlocaltoglobalmapping)(Mat,ISLocalToGlobalMapping);
+  PetscErrorCode (*setlocaltoglobalmapping)(Mat,ISLocalToGlobalMapping,ISLocalToGlobalMapping);
   PetscErrorCode (*setvalueslocal)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
   PetscErrorCode (*zerorowslocal)(Mat,PetscInt,const PetscInt[],PetscScalar,Vec,Vec);
   /*69*/
@@ -270,8 +270,8 @@ struct _p_Mat {
   PetscInt               num_ass;          /* number of times matrix has been assembled */
   PetscBool              same_nonzero;     /* matrix has same nonzero pattern as previous */
   MatInfo                info;             /* matrix information */
-  ISLocalToGlobalMapping mapping;          /* mapping used in MatSetValuesLocal() */
-  ISLocalToGlobalMapping bmapping;         /* mapping used in MatSetValuesBlockedLocal() */
+  ISLocalToGlobalMapping rmapping,cmapping; /* row and column mappings used in MatSetValuesLocal() */
+  ISLocalToGlobalMapping rbmapping,cbmapping; /* row and mappings used in MatSetValuesBlockedLocal() */
   InsertMode             insertmode;       /* have values been inserted in matrix or added? */
   MatStash               stash,bstash;     /* used for assembling off-proc mat emements */
   MatNullSpace           nullsp;

@@ -637,8 +637,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatAYPX(Mat,PetscScalar,Mat,MatStructur
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatScale(Mat,PetscScalar);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShift(Mat,PetscScalar);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMapping(Mat,ISLocalToGlobalMapping);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMappingBlock(Mat,ISLocalToGlobalMapping);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMapping(Mat,ISLocalToGlobalMapping,ISLocalToGlobalMapping);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMappingBlock(Mat,ISLocalToGlobalMapping,ISLocalToGlobalMapping);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocalIS(Mat,IS,PetscScalar,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsColumnsLocal(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
@@ -779,9 +779,10 @@ M*/
    Not Collective
 
    Input Parameters:
-+  map - the mapping between local numbering and global numbering
++  map - the row mapping from local numbering to global numbering
 .  nrows - the number of rows indicated
-.  rows - the indices of the rows 
+.  rows - the indices of the rows
+.  cmap - the column mapping from local to global numbering
 .  ncols - the number of columns in the matrix
 .  cols - the columns indicated
 .  dnz - the array that will be passed to the matrix preallocation routines
@@ -800,11 +801,11 @@ M*/
 .seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateInitialize(),
           MatPreallocateInitialize(), MatPreallocateSymmetricSetLocal()
 M*/
-#define MatPreallocateSetLocal(map,nrows,rows,ncols,cols,dnz,onz) 0;\
+#define MatPreallocateSetLocal(rmap,nrows,rows,cmap,ncols,cols,dnz,onz) 0; \
 {\
   PetscInt __l;\
-  _4_ierr = ISLocalToGlobalMappingApply(map,nrows,rows,rows);CHKERRQ(_4_ierr);\
-  _4_ierr = ISLocalToGlobalMappingApply(map,ncols,cols,cols);CHKERRQ(_4_ierr);\
+  _4_ierr = ISLocalToGlobalMappingApply(rmap,nrows,rows,rows);CHKERRQ(_4_ierr);\
+  _4_ierr = ISLocalToGlobalMappingApply(cmap,ncols,cols,cols);CHKERRQ(_4_ierr);\
   for (__l=0;__l<nrows;__l++) {\
     _4_ierr = MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz);CHKERRQ(_4_ierr);\
   }\

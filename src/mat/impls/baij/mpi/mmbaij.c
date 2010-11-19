@@ -227,18 +227,18 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
   PetscFunctionBegin;
   ierr = MatGetOwnershipRange(inA,&cstart,&cend);CHKERRQ(ierr);
   ierr = MatGetSize(ina->A,PETSC_NULL,&n);CHKERRQ(ierr);
-  ierr = PetscMalloc((inA->bmapping->n+1)*sizeof(PetscInt),&r_rmapd);CHKERRQ(ierr);
-  ierr = PetscMemzero(r_rmapd,inA->bmapping->n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc((inA->rbmapping->n+1)*sizeof(PetscInt),&r_rmapd);CHKERRQ(ierr);
+  ierr = PetscMemzero(r_rmapd,inA->rbmapping->n*sizeof(PetscInt));CHKERRQ(ierr);
   nt   = 0;
-  for (i=0; i<inA->bmapping->n; i++) {
-    if (inA->bmapping->indices[i]*bs >= cstart && inA->bmapping->indices[i]*bs < cend) {
+  for (i=0; i<inA->rbmapping->n; i++) {
+    if (inA->rbmapping->indices[i]*bs >= cstart && inA->rbmapping->indices[i]*bs < cend) {
       nt++;
-      r_rmapd[i] = inA->bmapping->indices[i] + 1;
+      r_rmapd[i] = inA->rbmapping->indices[i] + 1;
     }
   }
   if (nt*bs != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt*bs %D n %D",nt*bs,n);
   ierr = PetscMalloc((n+1)*sizeof(PetscInt),&uglyrmapd);CHKERRQ(ierr);
-  for (i=0; i<inA->bmapping->n; i++) {
+  for (i=0; i<inA->rbmapping->n; i++) {
     if (r_rmapd[i]){
       for (j=0; j<bs; j++) {
         uglyrmapd[(r_rmapd[i]-1)*bs+j-cstart] = i*bs + j;
@@ -253,20 +253,20 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
   for (i=0; i<B->nbs; i++) {
     lindices[garray[i]] = i+1;
   }
-  no   = inA->bmapping->n - nt;
-  ierr = PetscMalloc((inA->bmapping->n+1)*sizeof(PetscInt),&r_rmapo);CHKERRQ(ierr);
-  ierr = PetscMemzero(r_rmapo,inA->bmapping->n*sizeof(PetscInt));CHKERRQ(ierr);
+  no   = inA->rbmapping->n - nt;
+  ierr = PetscMalloc((inA->rbmapping->n+1)*sizeof(PetscInt),&r_rmapo);CHKERRQ(ierr);
+  ierr = PetscMemzero(r_rmapo,inA->rbmapping->n*sizeof(PetscInt));CHKERRQ(ierr);
   nt   = 0;
-  for (i=0; i<inA->bmapping->n; i++) {
-    if (lindices[inA->bmapping->indices[i]]) {
+  for (i=0; i<inA->rbmapping->n; i++) {
+    if (lindices[inA->rbmapping->indices[i]]) {
       nt++;
-      r_rmapo[i] = lindices[inA->bmapping->indices[i]];
+      r_rmapo[i] = lindices[inA->rbmapping->indices[i]];
     }
   }
   if (nt > no) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt %D no %D",nt,n);
   ierr = PetscFree(lindices);CHKERRQ(ierr);
   ierr = PetscMalloc((nt*bs+1)*sizeof(PetscInt),&uglyrmapo);CHKERRQ(ierr);
-  for (i=0; i<inA->bmapping->n; i++) {
+  for (i=0; i<inA->rbmapping->n; i++) {
     if (r_rmapo[i]){
       for (j=0; j<bs; j++) {
         uglyrmapo[(r_rmapo[i]-1)*bs+j] = i*bs + j;

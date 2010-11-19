@@ -1767,7 +1767,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJ(Mat B)
 
   B->ops->destroy    = MatDestroy_MPISBAIJ;
   B->ops->view       = MatView_MPISBAIJ;
-  B->mapping         = 0;
   B->assembled       = PETSC_FALSE;
 
   B->insertmode = NOT_SET_VALUES;

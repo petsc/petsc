@@ -4092,7 +4092,7 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
     for (i=0; i<a->A->cmap->n; i++) {
       larray[i] = i + A->cmap->rstart;
     }
-    ierr = ISGlobalToLocalMappingApply(A->mapping,IS_GTOLM_MASK,a->A->cmap->n,larray,PETSC_NULL,larray);CHKERRQ(ierr);
+    ierr = ISGlobalToLocalMappingApply(A->cmapping,IS_GTOLM_MASK,a->A->cmap->n,larray,PETSC_NULL,larray);CHKERRQ(ierr);
     ierr = PetscMalloc((a->A->cmap->n+1)*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
     for (i=0; i<a->A->cmap->n; i++) {
       colors[i] = coloring->colors[larray[i]];
@@ -4104,7 +4104,7 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
 
     /* set coloring for off-diagonal portion */
     ierr = PetscMalloc((a->B->cmap->n+1)*sizeof(PetscInt),&larray);CHKERRQ(ierr);
-    ierr = ISGlobalToLocalMappingApply(A->mapping,IS_GTOLM_MASK,a->B->cmap->n,a->garray,PETSC_NULL,larray);CHKERRQ(ierr);
+    ierr = ISGlobalToLocalMappingApply(A->cmapping,IS_GTOLM_MASK,a->B->cmap->n,a->garray,PETSC_NULL,larray);CHKERRQ(ierr);
     ierr = PetscMalloc((a->B->cmap->n+1)*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
     for (i=0; i<a->B->cmap->n; i++) {
       colors[i] = coloring->colors[larray[i]];
@@ -5321,7 +5321,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->rmap->bs     = 1;
   B->assembled    = PETSC_FALSE;
-  B->mapping      = 0;
 
   B->insertmode   = NOT_SET_VALUES;
   b->size         = size;

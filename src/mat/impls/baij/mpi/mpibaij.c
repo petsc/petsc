@@ -2281,7 +2281,7 @@ PetscErrorCode MatFDColoringCreate_MPIBAIJ(Mat mat,ISColoring iscoloring,MatFDCo
   PetscInt              *columnsforrow,l;
   IS                    *isa;
   PetscBool              done,flg;
-  ISLocalToGlobalMapping map = mat->bmapping;
+  ISLocalToGlobalMapping map = mat->cbmapping;
   PetscInt               *ltog = (map ? map->indices : (PetscInt*) PETSC_NULL) ,ctype=c->ctype;
 
   PetscFunctionBegin;
@@ -3195,7 +3195,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBAIJ(Mat B)
 
 
   ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->mapping    = 0;
   B->assembled  = PETSC_FALSE;
 
   B->insertmode = NOT_SET_VALUES;

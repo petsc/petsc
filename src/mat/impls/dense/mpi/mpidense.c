@@ -1678,7 +1678,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat mat)
   ierr              = PetscNewLog(mat,Mat_MPIDense,&a);CHKERRQ(ierr);
   mat->data         = (void*)a;
   ierr              = PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  mat->mapping      = 0;
 
   mat->insertmode = NOT_SET_VALUES;
   ierr = MPI_Comm_rank(((PetscObject)mat)->comm,&a->rank);CHKERRQ(ierr);

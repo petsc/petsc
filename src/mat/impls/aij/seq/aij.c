@@ -3392,7 +3392,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   ierr = PetscNewLog(B,Mat_SeqAIJ,&b);CHKERRQ(ierr);
   B->data             = (void*)b;
   ierr = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->mapping          = 0;
   b->row              = 0;
   b->col              = 0;
   b->icol             = 0;
@@ -3857,7 +3856,7 @@ PetscErrorCode MatSetColoring_SeqAIJ(Mat A,ISColoring coloring)
     for (i=0; i<A->cmap->n; i++) {
       larray[i] = i;
     }
-    ierr = ISGlobalToLocalMappingApply(A->mapping,IS_GTOLM_MASK,A->cmap->n,larray,PETSC_NULL,larray);CHKERRQ(ierr);
+    ierr = ISGlobalToLocalMappingApply(A->cmapping,IS_GTOLM_MASK,A->cmap->n,larray,PETSC_NULL,larray);CHKERRQ(ierr);
     ierr = PetscMalloc(A->cmap->n*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
     for (i=0; i<A->cmap->n; i++) {
       colors[i] = coloring->colors[larray[i]];

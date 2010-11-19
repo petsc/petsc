@@ -457,7 +457,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAdj(Mat B)
   ierr                = PetscNewLog(B,Mat_MPIAdj,&b);CHKERRQ(ierr);
   B->data             = (void*)b;
   ierr                = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->mapping          = 0;
   B->assembled        = PETSC_FALSE;
   
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAdjSetPreallocation_C",

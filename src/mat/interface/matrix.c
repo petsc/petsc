@@ -1017,12 +1017,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy(Mat A)
   if (A->ops->destroy) {
     ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   }
-  if (A->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(A->mapping);CHKERRQ(ierr);
-  }
-  if (A->bmapping) {
-    ierr = ISLocalToGlobalMappingDestroy(A->bmapping);CHKERRQ(ierr);
-  }
+  if (A->rmapping) {ierr = ISLocalToGlobalMappingDestroy(A->rmapping);CHKERRQ(ierr);}
+  if (A->cmapping) {ierr = ISLocalToGlobalMappingDestroy(A->cmapping);CHKERRQ(ierr);}
+  if (A->rbmapping) {ierr = ISLocalToGlobalMappingDestroy(A->rbmapping);CHKERRQ(ierr);}
+  if (A->cbmapping) {ierr = ISLocalToGlobalMappingDestroy(A->cbmapping);CHKERRQ(ierr);}
 
   if (A->spptr){ierr = PetscFree(A->spptr);CHKERRQ(ierr);}
   ierr = PetscLayoutDestroy(A->rmap);CHKERRQ(ierr);
@@ -1149,7 +1147,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesRowLocal(Mat mat,PetscInt row,cons
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
   PetscValidScalarPointer(v,2);
-  ierr = MatSetValuesRow(mat, mat->mapping->indices[row],v);CHKERRQ(ierr);
+  ierr = MatSetValuesRow(mat, mat->rmapping->indices[row],v);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA)
   if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
     mat->valid_GPU_matrix = PETSC_CUDA_CPU;
@@ -1692,8 +1690,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetValues(Mat mat,PetscInt m,const PetscInt
 
    Input Parameters:
 +  x - the matrix
--  mapping - mapping created with ISLocalToGlobalMappingCreate() 
+.  rmapping - row mapping created with ISLocalToGlobalMappingCreate()
              or ISLocalToGlobalMappingCreateIS()
+- cmapping - column mapping
 
    Level: intermediate
 
@@ -1702,22 +1701,26 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetValues(Mat mat,PetscInt m,const PetscInt
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesLocal()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping mapping)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping rmapping,ISLocalToGlobalMapping cmapping)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,MAT_CLASSID,1);
   PetscValidType(x,1);
-  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,2);
-  if (x->mapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for matrix");
+  PetscValidHeaderSpecific(rmapping,IS_LTOGM_CLASSID,2);
+  PetscValidHeaderSpecific(cmapping,IS_LTOGM_CLASSID,3);
+  if (x->rmapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for matrix");
   ierr = MatPreallocated(x);CHKERRQ(ierr);
 
   if (x->ops->setlocaltoglobalmapping) {
-    ierr = (*x->ops->setlocaltoglobalmapping)(x,mapping);CHKERRQ(ierr);
+    ierr = (*x->ops->setlocaltoglobalmapping)(x,rmapping,cmapping);CHKERRQ(ierr);
   } else {
-    ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
-    if (x->mapping) { ierr = ISLocalToGlobalMappingDestroy(x->mapping);CHKERRQ(ierr); }
-    x->mapping = mapping;
+    ierr = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
+    if (x->rmapping) { ierr = ISLocalToGlobalMappingDestroy(x->rmapping);CHKERRQ(ierr); }
+    x->rmapping = rmapping;
+    ierr = PetscObjectReference((PetscObject)cmapping);CHKERRQ(ierr);
+    if (x->cmapping) { ierr = ISLocalToGlobalMappingDestroy(x->cmapping);CHKERRQ(ierr); }
+    x->cmapping = cmapping;
   }
   PetscFunctionReturn(0);
 }
@@ -1733,8 +1736,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMapping(Mat x,ISLocalToGlob
 
    Input Parameters:
 +  x - the matrix
--  mapping - mapping created with ISLocalToGlobalMappingCreate() or
+. rmapping - row mapping created with ISLocalToGlobalMappingCreate() or
              ISLocalToGlobalMappingCreateIS()
+- cmapping - column mapping
 
    Level: intermediate
 
@@ -1744,17 +1748,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMapping(Mat x,ISLocalToGlob
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesBlockedLocal(),
            MatSetValuesBlocked(), MatSetValuesLocal()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping mapping)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping rmapping,ISLocalToGlobalMapping cmapping)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,MAT_CLASSID,1);
   PetscValidType(x,1);
-  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,2);
-  if (x->bmapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for matrix");
-  ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
-  if (x->bmapping) { ierr = ISLocalToGlobalMappingDestroy(x->bmapping);CHKERRQ(ierr); }
-  x->bmapping = mapping;
+  PetscValidHeaderSpecific(rmapping,IS_LTOGM_CLASSID,2);
+  PetscValidHeaderSpecific(cmapping,IS_LTOGM_CLASSID,3);
+  if (x->rbmapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for matrix");
+  ierr = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
+  if (x->rbmapping) { ierr = ISLocalToGlobalMappingDestroy(x->rbmapping);CHKERRQ(ierr); }
+  x->rbmapping = rmapping;
+  ierr = PetscObjectReference((PetscObject)cmapping);CHKERRQ(ierr);
+  if (x->cbmapping) { ierr = ISLocalToGlobalMappingDestroy(x->cbmapping);CHKERRQ(ierr); }
+  x->cbmapping = cmapping;
   PetscFunctionReturn(0);
 }
 
@@ -1821,8 +1829,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal(Mat mat,PetscInt nrow,const 
   }
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   if (!mat->ops->setvalueslocal) {
-    ierr = ISLocalToGlobalMappingApply(mat->mapping,nrow,irow,irowm);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingApply(mat->mapping,ncol,icol,icolm);CHKERRQ(ierr); 
+    ierr = ISLocalToGlobalMappingApply(mat->rmapping,nrow,irow,irowm);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingApply(mat->cmapping,ncol,icol,icolm);CHKERRQ(ierr);
     ierr = (*mat->ops->setvalues)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
   } else {
     ierr = (*mat->ops->setvalueslocal)(mat,nrow,irow,ncol,icol,y,addv);CHKERRQ(ierr);
@@ -1892,7 +1900,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
   }
 #if defined(PETSC_USE_DEBUG) 
   else if (mat->insertmode != addv) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
-  if (!mat->bmapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Local to global never set with MatSetLocalToGlobalMappingBlock()");
+  if (!mat->rbmapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Local to global never set with MatSetLocalToGlobalMappingBlock()");
   if (nrow > 2048 || ncol > 2048) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number column/row indices must be <= 2048: are %D %D",nrow,ncol);
   if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 #endif
@@ -1902,8 +1910,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
     mat->assembled     = PETSC_FALSE;
   }
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(mat->bmapping,nrow,irow,irowm);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(mat->bmapping,ncol,icol,icolm);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(mat->rbmapping,nrow,irow,irowm);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(mat->cbmapping,ncol,icol,icolm);CHKERRQ(ierr);
   if (mat->ops->setvaluesblocked) {
     ierr = (*mat->ops->setvaluesblocked)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
   } else {
@@ -3543,13 +3551,19 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCopy(Mat A,Mat B,MatStructure str)
   } else { /* generic conversion */
     ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
   }
-  if (A->mapping) {
-    if (B->mapping) {ierr = ISLocalToGlobalMappingDestroy(B->mapping);CHKERRQ(ierr);B->mapping = 0;}
-    ierr = MatSetLocalToGlobalMapping(B,A->mapping);CHKERRQ(ierr);
+  if (A->rmapping) {
+    if (B->rmapping) {
+      ierr = ISLocalToGlobalMappingDestroy(B->rmapping);CHKERRQ(ierr);B->rmapping = 0;
+      ierr = ISLocalToGlobalMappingDestroy(B->cmapping);CHKERRQ(ierr);B->cmapping = 0;
+    }
+    ierr = MatSetLocalToGlobalMapping(B,A->rmapping,A->cmapping);CHKERRQ(ierr);
   }
-  if (A->bmapping) {
-    if (B->bmapping) {ierr = ISLocalToGlobalMappingDestroy(B->bmapping);CHKERRQ(ierr);B->bmapping = 0;}
-    ierr = MatSetLocalToGlobalMappingBlock(B,A->mapping);CHKERRQ(ierr);
+  if (A->rbmapping) {
+    if (B->rbmapping) {
+      ierr = ISLocalToGlobalMappingDestroy(B->rbmapping);CHKERRQ(ierr);B->rbmapping = 0;
+      ierr = ISLocalToGlobalMappingDestroy(B->cbmapping);CHKERRQ(ierr);B->cbmapping = 0;
+    }
+    ierr = MatSetLocalToGlobalMappingBlock(B,A->rbmapping,A->cbmapping);CHKERRQ(ierr);
   }
 
   B->stencil.dim = A->stencil.dim;
@@ -3883,11 +3897,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat mat,MatDuplicateOption op,Mat
   ierr = PetscLogEventBegin(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->duplicate)(mat,op,M);CHKERRQ(ierr);
   B = *M;
-  if (mat->mapping) {
-    ierr = MatSetLocalToGlobalMapping(B,mat->mapping);CHKERRQ(ierr);
+  if (mat->rmapping) {
+    ierr = MatSetLocalToGlobalMapping(B,mat->rmapping,mat->cmapping);CHKERRQ(ierr);
   }
-  if (mat->bmapping) {
-    ierr = MatSetLocalToGlobalMappingBlock(B,mat->bmapping);CHKERRQ(ierr);
+  if (mat->rbmapping) {
+    ierr = MatSetLocalToGlobalMappingBlock(B,mat->rbmapping,mat->cbmapping);CHKERRQ(ierr);
   }
   ierr = PetscLayoutCopy(mat->rmap,&B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutCopy(mat->cmap,&B->cmap);CHKERRQ(ierr);
@@ -5556,9 +5570,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,PetscInt numRows,cons
     IS             is, newis;
     const PetscInt *newRows;
 
-    if (!mat->mapping) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to provide local to global mapping to matrix first");
+    if (!mat->rmapping) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to provide local to global mapping to matrix first");
     ierr = ISCreateGeneral(PETSC_COMM_SELF,numRows,rows,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingApplyIS(mat->mapping,is,&newis);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingApplyIS(mat->rmapping,is,&newis);CHKERRQ(ierr);
     ierr = ISGetIndices(newis,&newRows);CHKERRQ(ierr);
     ierr = (*mat->ops->zerorows)(mat,numRows,newRows,diag,x,b);CHKERRQ(ierr);
     ierr = ISRestoreIndices(newis,&newRows);CHKERRQ(ierr);
@@ -5685,9 +5699,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsColumnsLocal(Mat mat,PetscInt numRo
     IS             is, newis;
     const PetscInt *newRows;
 
-    if (!mat->mapping) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to provide local to global mapping to matrix first");
+    if (!mat->cmapping) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to provide local to global mapping to matrix first");
     ierr = ISCreateGeneral(PETSC_COMM_SELF,numRows,rows,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingApplyIS(mat->mapping,is,&newis);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingApplyIS(mat->cmapping,is,&newis);CHKERRQ(ierr);
     ierr = ISGetIndices(newis,&newRows);CHKERRQ(ierr);
     ierr = (*mat->ops->zerorowscolumns)(mat,numRows,newRows,diag,x,b);CHKERRQ(ierr);
     ierr = ISRestoreIndices(newis,&newRows);CHKERRQ(ierr);
@@ -7856,13 +7870,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetVecs(Mat mat,Vec *right,Vec *left)
       } else {ierr = VecSetType(*left,VECSEQ);CHKERRQ(ierr);}
     }
   }
-  if (mat->mapping) {
-    if (right) {ierr = VecSetLocalToGlobalMapping(*right,mat->mapping);CHKERRQ(ierr);}
-    if (left) {ierr = VecSetLocalToGlobalMapping(*left,mat->mapping);CHKERRQ(ierr);}
+  if (mat->rmapping) {
+    if (right) {ierr = VecSetLocalToGlobalMapping(*right,mat->cmapping);CHKERRQ(ierr);}
+    if (left) {ierr = VecSetLocalToGlobalMapping(*left,mat->rmapping);CHKERRQ(ierr);}
   }
-  if (mat->bmapping) {
-    if (right) {ierr = VecSetLocalToGlobalMappingBlock(*right,mat->bmapping);CHKERRQ(ierr);}
-    if (left) {ierr = VecSetLocalToGlobalMappingBlock(*left,mat->bmapping);CHKERRQ(ierr);}
+  if (mat->rbmapping) {
+    if (right) {ierr = VecSetLocalToGlobalMappingBlock(*right,mat->cbmapping);CHKERRQ(ierr);}
+    if (left) {ierr = VecSetLocalToGlobalMappingBlock(*left,mat->rbmapping);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
