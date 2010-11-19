@@ -60,7 +60,9 @@ typedef struct {
   SectionInt     odd;                // Section with cell number in each odd cell
 } Options;
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(const Obj<ALE::Mesh>&, PetscViewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(const Obj<PETSC_MESH_TYPE>&, PetscViewer);
+
+#if 0
 
 #undef __FUNCT__
 #define __FUNCT__ "OutputVTK"
@@ -161,8 +163,8 @@ PetscErrorCode OutputMesh(Mesh mesh, Options *options)
 // Creates a field whose value is the processor rank on each element
 PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
 {
-  Obj<ALE::Mesh> m;
-  Obj<ALE::Mesh::int_section_type> section;
+  Obj<PETSC_MESH_TYPE> m;
+  Obj<PETSC_MESH_TYPE::int_section_type> section;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -171,11 +173,11 @@ PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
   ierr = MeshGetCellSectionInt(mesh, 1, partition);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *partition, "partition");CHKERRQ(ierr);
   ierr = SectionIntGetSection(*partition, section);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::label_sequence>&         cells = m->heightStratum(0);
-  const ALE::Mesh::label_sequence::iterator     end   = cells->end();
-  const ALE::Mesh::int_section_type::value_type rank  = section->commRank();
+  const Obj<PETSC_MESH_TYPE::label_sequence>&         cells = m->heightStratum(0);
+  const PETSC_MESH_TYPE::label_sequence::iterator     end   = cells->end();
+  const PETSC_MESH_TYPE::int_section_type::value_type rank  = section->commRank();
 
-  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
+  for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
     section->updatePoint(*c_iter, &rank);
   }
   ALE_LOG_EVENT_END;
@@ -186,7 +188,7 @@ PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
 #define __FUNCT__ "DistributeMesh"
 PetscErrorCode DistributeMesh(Mesh mesh, Options *options)
 {
-  Obj<ALE::Mesh> m;
+  Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -195,7 +197,7 @@ PetscErrorCode DistributeMesh(Mesh mesh, Options *options)
     ALE::LogStage stage = ALE::LogStageRegister("MeshDistribution");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(m->comm(), "Distributing mesh\n");CHKERRQ(ierr);
-    m    = ALE::Distribution<ALE::Mesh>::distributeMesh(m, 0, std::string(options->partitioner));
+    m    = ALE::Distribution<PETSC_MESH_TYPE>::distributeMesh(m, 0, std::string(options->partitioner));
     ALE::LogStagePop(stage);
     ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
   }
@@ -210,19 +212,19 @@ PetscErrorCode DistributeMesh(Mesh mesh, Options *options)
 // Creates a field whose value is the element number on each element with an odd number
 PetscErrorCode CreateOdd(Mesh mesh, SectionInt *odd)
 {
-  Obj<ALE::Mesh> m;
+  Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ALE_LOG_EVENT_BEGIN;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionIntCreate(m->comm(), odd);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::int_section_type>& section = new ALE::Mesh::int_section_type(m->comm(), m->debug());
-  const Obj<ALE::Mesh::label_sequence>&   cells   = m->heightStratum(0);
-  ALE::Mesh::label_sequence::iterator     begin   = cells->begin();
-  ALE::Mesh::label_sequence::iterator     end     = cells->end();
+  const Obj<PETSC_MESH_TYPE::int_section_type>& section = new PETSC_MESH_TYPE::int_section_type(m->comm(), m->debug());
+  const Obj<PETSC_MESH_TYPE::label_sequence>&   cells   = m->heightStratum(0);
+  PETSC_MESH_TYPE::label_sequence::iterator     begin   = cells->begin();
+  PETSC_MESH_TYPE::label_sequence::iterator     end     = cells->end();
 
-  for(ALE::Mesh::label_sequence::iterator c_iter = begin; c_iter != end; ++c_iter) {
+  for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = begin; c_iter != end; ++c_iter) {
     const int num = *c_iter;
 
     if (num%2) {
@@ -230,7 +232,7 @@ PetscErrorCode CreateOdd(Mesh mesh, SectionInt *odd)
     }
   }
   m->allocate(section);
-  for(ALE::Mesh::label_sequence::iterator c_iter = begin; c_iter != end; ++c_iter) {
+  for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = begin; c_iter != end; ++c_iter) {
     const int num = *c_iter;
     int       val[3];
 
@@ -244,11 +246,13 @@ PetscErrorCode CreateOdd(Mesh mesh, SectionInt *odd)
   PetscFunctionReturn(0);
 }
 
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, Options *options, Mesh *mesh)
 {
-  Obj<ALE::Mesh> m;
+  Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -270,9 +274,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Options *options, Mesh *mesh)
   if (options->debug) {
     m->view("Serial mesh");
   }
+#if 0
   if (options->doOdd) {
     ierr = CreateOdd(*mesh, &options->odd);CHKERRQ(ierr);
   }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -349,12 +355,14 @@ int main(int argc, char *argv[])
 
     ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
     ierr = CreateMesh(comm, &options, &mesh);CHKERRQ(ierr);
+#if 0
     ierr = DistributeMesh(mesh, &options);CHKERRQ(ierr);
     ierr = OutputVTK(mesh, &options);CHKERRQ(ierr);
     ierr = OutputMesh(mesh, &options);CHKERRQ(ierr);
     if (options.doPartition) {
       ierr = SectionIntDestroy(options.partition);CHKERRQ(ierr);
     }
+#endif
     ierr = MeshDestroy(mesh);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
