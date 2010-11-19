@@ -107,39 +107,59 @@ def run_setup():
                           'build_ext'  : build_ext},
           **metadata)
 
-def run_cython(source):
+def chk_cython(CYTHON_VERSION_REQUIRED):
     import sys, os
-    CYTHON_VERSION_REQUIRED = .13
+    from distutils.version import StrictVersion as Version
+    warn = lambda msg='': sys.stderr.write(msg+'\n')
+    #
     try:
         import Cython
     except ImportError:
-        warn = lambda msg='': sys.stderr.write(msg+'\n')
         warn("*"*80)
         warn()
         warn(" You need to generate C source files with Cython!!")
         warn(" Download and install Cython <http://www.cython.org>")
         warn()
         warn("*"*80)
-        raise SystemExit
-    import Cython.Compiler.Version
-    if float(Cython.Compiler.Version.version) < CYTHON_VERSION_REQUIRED:
-        warn = lambda msg='': sys.stderr.write(msg+'\n')
+        return False
+    #
+    try:
+        CYTHON_VERSION = Cython.__version__
+    except AttributeError:
+        from Cython.Compiler.Version import version as CYTHON_VERSION
+    if Version(CYTHON_VERSION) < Version(CYTHON_VERSION_REQUIRED):
         warn("*"*80)
         warn()
-        warn(" You need to install Cython version "+str(CYTHON_VERSION_REQUIRED)+" <http://www.cython.org>")
+        warn(" You need to install Cython %s (you have version %s)"
+             % (CYTHON_VERSION_REQUIRED, CYTHON_VERSION))
+        warn(" Download and install Cython <http://www.cython.org>")
         warn()
         warn("*"*80)
-        raise SystemExit       
-    from distutils import log
+        return False
+    #
+    return True
+
+def run_cython(source):
     from conf.cythonize import run as cythonize
-    log.info("************************* cythonizing '%s' source" % source)
+    from distutils import log
+    log.set_verbosity(1)
+    log.info("cythonizing '%s' source" % source)
     cythonize(source)
-    return
 
 def main():
-    import os
-    if os.path.isdir('.hg'):
-        run_cython(os.path.join('src', 'petsc4py.PETSc.pyx'))
+    CYTHON_VERSION_REQUIRED = '0.13'
+    import sys, os, glob
+    from distutils import dep_util
+    source = os.path.join('src', 'petsc4py.PETSc.pyx')
+    target = os.path.splitext(source)[0]+".c"
+    depends = (glob.glob("src/include/*/*.pxd") +
+               glob.glob("src/*/*.pyx") +
+               glob.glob("src/*/*.pxi"))
+    if ((os.path.isdir('.hg') or os.path.isdir('.git')) and
+        dep_util.newer_group([source]+depends, target)):
+        if not chk_cython(CYTHON_VERSION_REQUIRED):
+            sys.exit(1)
+        run_cython(source)
     run_setup()
 
 if __name__ == '__main__':
