@@ -101,16 +101,19 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
 #define __FUNCT__ "VecAXPY_Seq"
 PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *xarray,*yarray;
-  PetscBLASInt   one = 1,bn = PetscBLASIntCast(yin->map->n);
+  PetscErrorCode    ierr;
+  const PetscScalar *xarray;
+  PetscScalar       *yarray;
+  PetscBLASInt      one = 1,bn = PetscBLASIntCast(yin->map->n);
 
   PetscFunctionBegin;
   /* assume that the BLAS handles alpha == 1.0 efficiently since we have no fast code for it */
   if (alpha != 0.0) {
-    ierr = VecGetArrayPrivate2(yin,&yarray,xin,&xarray);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(xin,&xarray);CHKERRQ(ierr);
+    ierr = VecGetArray(yin,&yarray);CHKERRQ(ierr);
     BLASaxpy_(&bn,&alpha,xarray,&one,yarray,&one);
-    ierr = VecRestoreArrayPrivate2(xin,&xarray,yin,&yarray);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yin,&yarray);CHKERRQ(ierr);
     ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

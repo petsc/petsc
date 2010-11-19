@@ -890,6 +890,9 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEngineGet_C","VecMatlabEngineGet_Default",VecMatlabEngineGet_Default);CHKERRQ(ierr);
 #endif
+#if defined(PETSC_USE_MIXED_PRECISION)
+  ((PetscObject)v)->precision = (PetscPrecision)sizeof(PetscScalar);
+#endif
   PetscFunctionReturn(0);
 }
 
