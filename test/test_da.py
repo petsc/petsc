@@ -94,9 +94,41 @@ class BaseTestDA(object):
     def testGetLGMap(self):
         lgmap = self.da.getLGMap()
 
+    def testGetLGMapBlock(self):
+        lgmap = self.da.getLGMapBlock()
+
     def testGetAO(self):
         ao = self.da.getAO()
 
+    def testRefineCoarsen(self):
+        da = self.da
+        rda = da.refine()
+        self.assertEqual(da.getDim(), rda.getDim())
+        self.assertEqual(da.getDof(), rda.getDof())
+        if da.dim != 1:
+            self.assertEqual(da.getStencilType(),  rda.getStencilType())
+        self.assertEqual(da.getStencilWidth(), rda.getStencilWidth())
+        cda = rda.coarsen()
+        for n1, n2 in zip(self.da.getSizes(), cda.getSizes()):
+            self.assertTrue(abs(n1-n2)<=1)
+
+    def testCoarsenRefine(self):
+        da = self.da
+        cda = self.da.coarsen()
+        self.assertEqual(da.getDim(), cda.getDim())
+        self.assertEqual(da.getDof(), cda.getDof())
+        if da.dim != 1:
+            self.assertEqual(da.getStencilType(),  cda.getStencilType())
+        self.assertEqual(da.getStencilWidth(), cda.getStencilWidth())
+        rda = cda.refine()
+        for n1, n2 in zip(self.da.getSizes(), rda.getSizes()):
+            self.assertTrue(abs(n1-n2)<=1)
+
+    def testGetInterpolation(self):
+        da = self.da
+        if da.dim == 1: return
+        rda = da.refine()
+        mat, vec = da.getInterpolation(rda)
 
 class BaseTestDA_1D(BaseTestDA):
     SIZES = [100]
