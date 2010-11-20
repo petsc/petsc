@@ -16,7 +16,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                    ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex97.c ex98.c ex99.c ex100.c \
                    ex101.c ex102.c ex103.c ex104.c ex106.c ex107.c ex108.c ex109.c ex110.c\
                    ex111.c ex112.c ex113.c ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c ex120.c ex121.c ex122.c ex123.c \
-                   ex124.c ex129.c ex130.c ex131.c ex132.c ex133.c ex134.c ex135.c ex136.c ex137.c  ex138.c ex140.c
+                   ex124.c ex129.c ex130.c ex131.c ex132.c ex133.c ex134.c ex135.c ex136.c ex137.c  ex138.c ex139.c ex140.c
 EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex126f.F ex120f.F
 
 include ${PETSC_DIR}/conf/variables
@@ -531,6 +531,10 @@ ex137: ex137.o chkopts
 ex138: ex138.o chkopts
 	-${CLINKER} -o ex138 ex138.o ${PETSC_MAT_LIB}
 	${RM} ex138.o
+
+ex139: ex139.o chkopts
+	-${CLINKER} -o ex139 ex139.o ${PETSC_MAT_LIB}
+	${RM} ex139.o
 
 ex140: ex140.o chkopts
 	-${CLINKER} -o ex140 ex140.o ${PETSC_MAT_LIB}
@@ -1429,6 +1433,16 @@ runex137:
 	-@${MPIEXEC} -n 2 ./ex137  > ex137_1.tmp 2>&1; \
 	   ${DIFF} output/ex137_1.out ex137_1.tmp || echo "Possible problem with ex137, diffs above"; \
 	   ${RM} -f ex137_1.tmp
+
+runex139:
+	-@for blocked in 0 1; do \
+	    for mtype in aij baij; do \
+	      ${MPIEXEC} -n 2 ./ex139 -blocked $$blocked -mat_type $$mtype | ${SED} 's,baij,aij,' > ex139_1.tmp 2>&1; \
+	      ${DIFF} output/ex139_1.out ex139_1.tmp || echo "Possible problem with ex139 blocked=$${blocked} $${mtype}, diffs above"; \
+	      ${RM} -f ex139_1.tmp; \
+	    done; \
+	  done
+
 runex140:
 	-@${MPIEXEC} -n 1 ./ex140 -f ${DATAFILESPATH}/matrices/small -aij
 	-@${MATLAB_COMMAND} -nodesktop -nojvm -nodisplay -r "ex140; exit"  > ex140_1.tmp 2>&1; \
@@ -1472,7 +1486,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PET
                                  ex114.PETSc runex114 runex114_2 runex114_3 ex114.rm ex117.PETSc ex117.rm ex118.PETSc ex118.rm ex119.PETSc ex119.rm \
                                  ex128.PETSc runex128 runex128_2 ex128.rm ex129.PETSc runex129 runex129_2 ex129.rm ex131.PETSc ex131.rm ex132.PETSc ex132.rm \
                                  ex133.PETSc ex133.rm ex134.PETSc runex134 ex134.rm ex135.PETSc runex135 ex135.rm ex136.PETSc ex136.rm ex137.PETSc runex137 ex137.rm \
-                                 ex138.PETSc ex138.rm ex141.PETSc runex141 ex141.rm
+                                 ex138.PETSc ex138.rm ex139.PETSc runex139 ex139.rm ex141.PETSc runex141 ex141.rm
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex17.PETSc runex17 ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc ex24.rm ex25.PETSc \

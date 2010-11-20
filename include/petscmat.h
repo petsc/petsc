@@ -72,7 +72,7 @@ E*/
 #define MATSUBMATRIX       "submatrix"
 #define MATDD              "matdd"
 #define MATIM              "matim"
-
+#define MATLOCALREF        "localref"
 
 /*E
     MatSolverPackage - String with the name of a PETSc matrix solver type. 
@@ -358,6 +358,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqCUFFT(MPI_Comm,PetscInt,con
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateTranspose(Mat,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSubMatrix(Mat,IS,IS,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSubMatrixUpdate(Mat,Mat,IS,IS);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateLocalRef(Mat,IS,IS,Mat*);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreatePython(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const char[],Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType(Mat,const char[]);
