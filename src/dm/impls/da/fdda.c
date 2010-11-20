@@ -725,8 +725,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_DA(DM da, const MatType mtype,Mat *
     } else if (dim == 3) {
       ierr = DMGetMatrix_DA_3d_MPIBAIJ(da,A);CHKERRQ(ierr);
     } else {
-      SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension!\n" \
-	       "Send mail to petsc-maint@mcs.anl.gov for code",Atype,dim);
+      SETERRQ3(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension!\n" \
+	       "Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
     }
   } else if (sbaij) {
     if (dim == 2) {
@@ -734,8 +734,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_DA(DM da, const MatType mtype,Mat *
     } else if (dim == 3) {
       ierr = DMGetMatrix_DA_3d_MPISBAIJ(da,A);CHKERRQ(ierr);
     } else {
-      SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension!\n" \
-	       "Send mail to petsc-maint@mcs.anl.gov for code",Atype,dim);
+      SETERRQ3(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension!\n" \
+	       "Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
     }
   } 
   ierr = DMDAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);
