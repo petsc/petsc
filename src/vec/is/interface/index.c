@@ -872,6 +872,51 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCopy(IS is,IS isy)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISOnComm"
+/*@
+   ISOnComm - Split a parallel IS on subcomms (usually self) or concatenate index sets on subcomms into a parallel index set
+
+   Collective on IS and comm
+
+   Input Arguments:
++ is - index set
+. comm - communicator for new index set
+- mode - copy semantics, PETSC_USE_POINTER for no-copy if possible, otherwise PETSC_COPY_VALUES
+
+   Output Arguments:
+. newis - new IS on comm
+
+   Level: advanced
+
+   Notes:
+   It is usually desirable to create a parallel IS and look at the local part when necessary.
+
+   This function is useful if serial ISs must be created independently, or to view many
+   logically independent serial ISs.
+
+   The input IS must have the same type on every process.
+
+.seealso: ISSplit()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt match;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidPointer(newis,3);
+  ierr = MPI_Comm_compare(((PetscObject)is)->comm,comm,&match);CHKERRQ(ierr);
+  if (mode != PETSC_COPY_VALUES && (match == MPI_IDENT || match == MPI_CONGRUENT)) {
+    ierr = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
+    *newis = is;
+  } else {
+    ierr = (*is->ops->oncomm)(is,comm,mode,newis);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*MC
     ISGetIndicesF90 - Accesses the elements of an index set from Fortran90.
     The users should call ISRestoreIndicesF90() after having looked at the

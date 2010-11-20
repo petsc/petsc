@@ -261,6 +261,18 @@ PetscErrorCode ISSorted_Stride(IS is,PetscBool * flg)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISOnComm_Stride"
+static PetscErrorCode ISOnComm_Stride(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
+{
+  PetscErrorCode ierr;
+  IS_Stride      *sub = (IS_Stride*)is->data;
+
+  PetscFunctionBegin;
+  ierr = ISCreateStride(comm,sub->n,sub->first,sub->step,newis);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static struct _ISOps myops = { ISGetSize_Stride,
                                ISGetLocalSize_Stride,
                                ISGetIndices_Stride,
@@ -273,7 +285,8 @@ static struct _ISOps myops = { ISGetSize_Stride,
                                ISView_Stride,
                                ISIdentity_Stride,
                                ISCopy_Stride,
-                               ISToGeneral_Stride};
+                               ISToGeneral_Stride,
+                               ISOnComm_Stride};
 
 
 #undef __FUNCT__  

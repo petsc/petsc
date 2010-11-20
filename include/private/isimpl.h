@@ -23,6 +23,7 @@ struct _ISOps {
   PetscErrorCode (*identity)(IS,PetscBool*);
   PetscErrorCode (*copy)(IS,IS);
   PetscErrorCode (*togeneral)(IS);
+  PetscErrorCode (*oncomm)(IS,MPI_Comm,PetscCopyMode,IS*);
 };
 
 struct _p_IS {

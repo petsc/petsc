@@ -68,6 +68,19 @@ static PetscErrorCode ISCopy_General(IS is,IS isy)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "ISOnComm_General"
+PetscErrorCode ISOnComm_General(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
+{
+  PetscErrorCode ierr;
+  IS_General     *sub = (IS_General*)is->data;
+
+  PetscFunctionBegin;
+  if (mode == PETSC_OWN_POINTER) SETERRQ(comm,PETSC_ERR_ARG_WRONG,"Cannot use PETSC_OWN_POINTER");
+  ierr = ISCreateGeneral(comm,sub->n,sub->idx,mode,newis);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "ISGetIndices_General" 
 PetscErrorCode ISGetIndices_General(IS in,const PetscInt *idx[])
 {
@@ -296,7 +309,10 @@ static struct _ISOps myops = { ISGetSize_General,
                                ISDestroy_General,
                                ISView_General,
                                ISIdentity_General,
-                               ISCopy_General,ISToGeneral_General };
+                               ISCopy_General,
+                               ISToGeneral_General,
+                               ISOnComm_General
+};
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISCreateGeneral_Private" 

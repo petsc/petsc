@@ -218,6 +218,19 @@ static PetscErrorCode ISCopy_Block(IS is,IS isy)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISOnComm_Block"
+static PetscErrorCode ISOnComm_Block(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
+{
+  PetscErrorCode ierr;
+  IS_Block       *sub = (IS_Block*)is->data;
+
+  PetscFunctionBegin;
+  if (mode == PETSC_OWN_POINTER) SETERRQ(comm,PETSC_ERR_ARG_WRONG,"Cannot use PETSC_OWN_POINTER");
+  ierr = ISCreateBlock(comm,sub->bs,sub->n,sub->idx,mode,newis);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static struct _ISOps myops = { ISGetSize_Block,
                                ISGetLocalSize_Block,
                                ISGetIndices_Block,
@@ -229,7 +242,9 @@ static struct _ISOps myops = { ISGetSize_Block,
                                ISDestroy_Block,
                                ISView_Block,
                                ISIdentity_Block,
-                               ISCopy_Block };
+                               ISCopy_Block,
+                               0,
+                               ISOnComm_Block };
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISBlockSetIndices" 
