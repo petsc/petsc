@@ -32,8 +32,8 @@
 !
 !     IO from the fortran routines may cause all kinds of
 !
- 100   format ('[',i1,']',' Calling VecView from Fortran')
-       write(6,100) rank
+C 100   format ('[',i1,']',' Calling VecView from Fortran')
+C       write(6,100) rank
 !
 !  Now Call a Petsc Routine from Fortran
 !

@@ -262,12 +262,12 @@ runex9_2:
 	   else echo "Possible problem with ex9_2, diffs above"; fi;\
 	   ${RM} -f ex9_2.tmp
 runex9f:
-	-@${MPIEXEC} -n 2 ./ex9f | sort > ex9f_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex9f > ex9f_1.tmp 2>&1;\
 	   if (${DIFF} output/ex9f_1.out ex9f_1.tmp) then true; \
 	   else echo "Possible problem with ex9f_1, diffs above"; fi;\
 	   ${RM} -f ex9f_1.tmp
 runex9f_2:
-	-@${MPIEXEC} -n 2 ./ex9f -allocate | sort > ex9f_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex9f -allocate > ex9f_1.tmp 2>&1;\
 	   if (${DIFF} output/ex9f_1.out ex9f_1.tmp) then true; \
 	   else echo "Possible problem with ex9f_2, diffs above"; fi;\
 	   ${RM} -f ex9f_1.tmp

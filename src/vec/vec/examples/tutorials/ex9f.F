@@ -116,7 +116,13 @@
 
 !     Print out each vector, including the ghost padding region. 
 
-       call VecView(lx,PETSC_VIEWER_STDOUT_SELF,ierr)
+       if (rank .eq. 0) then
+          call VecView(lx,PETSC_VIEWER_STDOUT_SELF,ierr)
+       endif
+       call MPI_Barrier(PETSC_COMM_WORLD,ierr)
+       if (rank .eq. 1) then
+          call VecView(lx,PETSC_VIEWER_STDOUT_SELF,ierr)
+       endif
 
        call VecGhostRestoreLocalForm(gx,lx,ierr) 
        call VecDestroy(gx,ierr)

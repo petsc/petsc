@@ -1071,7 +1071,7 @@ runex61_2:
 runex63f:
 	-@${MPIEXEC} -n 2  ./ex63f  > ex63_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex63_1.out ex63_1.tmp) then true; \
-	   else echo "Possible problem with ex63_1, diffs above"; fi; \
+	   else echo "Possible problem with ex63f_1, diffs above"; fi; \
 	   ${RM} -f ex63_1.tmp dense.mat
 runex67f:
 	-@${MPIEXEC} -n 1  ./ex67f -options_left no  > ex67f_1.tmp 2>&1;   \
