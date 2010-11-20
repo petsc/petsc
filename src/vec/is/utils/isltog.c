@@ -252,7 +252,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingUnBlock(ISLocalToGlobalM
     n    = inmap->n*bs;
     ierr = PetscMalloc(n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      ii[i] = inmap->indices[i%bs]*bs;
+      ii[i] = inmap->indices[i/bs]*bs + (i%bs);
     }
     ierr = ISLocalToGlobalMappingCreate(((PetscObject)inmap)->comm,n,ii,PETSC_OWN_POINTER,outmap);CHKERRQ(ierr);
   } else {
