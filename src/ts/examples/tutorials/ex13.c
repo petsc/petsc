@@ -3,12 +3,15 @@ static char help[] = "Time-dependent PDE in 2d. Simplified from ex7.c for illust
 /* 
    u_t = uxx + uyy
    0 < x < 1, 0 < y < 1; 
-   At t=0: u(x,y) = exp(-30*r*r*r), if r=sqrt((x-.5)*(x-.5) + (y-.5)*(y-.5)) < .125
-           u(x,y) = 0.0             if r >= .125
+   At t=0: u(x,y) = exp(c*r*r*r), if r=sqrt((x-.5)*(x-.5) + (y-.5)*(y-.5)) < .125
+           u(x,y) = 0.0           if r >= .125
 
 Program usage:  
-   mpiexec -n <procs> ex13 [-help] [all PETSc options] 
-   e.g., mpiexec -n 2 ./ex13 -ts_max_steps 2 -use_coloring -ts_monitor -snes_monitor -ksp_monitor 
+   mpiexec -n <procs> ./ex13 [-help] [all PETSc options] 
+   e.g., mpiexec -n 2 ./ex13 -ts_max_steps 2 -use_coloring -snes_monitor -ksp_monitor 
+         ./ex13 -use_coloring -drawcontours 
+         ./ex13 -use_coloring -drawcontours -draw_pause -1
+         mpiexec -n 2 ./ex13 -drawcontours -ts_type sundials -ts_sundials_monitor_steps
 */
 
 
@@ -26,36 +29,53 @@ Program usage:
 #include "petscts.h"
 
 /* 
-   User-defined routines
+   User-defined data structures and routines
 */
-extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec);
+typedef struct {
+   PetscBool drawcontours;   /* flag - 1 indicates drawing contours */
+} MonitorCtx;
+typedef struct {
+   DM        da;
+   PetscReal c;   
+} AppCtx;
+
+extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*);
+extern PetscErrorCode FormInitialSolution(Vec,void*);
 extern PetscErrorCode MyTSMonitor(TS,PetscInt,PetscReal,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS                     ts;                 /* nonlinear solver */
-  Vec                    u,r;                  /* solution, residual vectors */
-  Mat                    J;                    /* Jacobian matrix */
-  PetscInt               steps,maxsteps = 100;     /* iterations for convergence */
-  PetscErrorCode         ierr;
-  DM                     da;
-  MatFDColoring          matfdcoloring;
-  ISColoring             iscoloring;
-  PetscReal              ftime;
-  PetscBool              use_coloring;
+  TS             ts;                   /* nonlinear solver */
+  Vec            u,r;                  /* solution, residual vectors */
+  Mat            J;                    /* Jacobian matrix */
+  PetscInt       steps,maxsteps = 1000;     /* iterations for convergence */
+  PetscErrorCode ierr;
+  DM             da;
+  MatFDColoring  matfdcoloring;
+  ISColoring     iscoloring;
+  PetscReal      ftime,dt;
+  PetscBool      use_coloring;
+  MonitorCtx     usermonitor;       /* user-defined monitor context */
+  AppCtx         user;              /* user-defined work context */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,(char *)0,help);
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,8,8,PETSC_DECIDE,PETSC_DECIDE,
                     1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+
+  /* Initialize user application context */
+  user.da = da;
+  user.c = -30.0;
+
+  usermonitor.drawcontours = PETSC_FALSE;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-drawcontours",&usermonitor.drawcontours);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; then duplicate for remaining
@@ -69,10 +89,9 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,FormFunction,da);CHKERRQ(ierr);
-
+  ierr = TSSetRHSFunction(ts,FormFunction,&user);CHKERRQ(ierr);
   ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobian,da);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
@@ -86,18 +105,20 @@ int main(int argc,char **argv)
                          products within Newton-Krylov method
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  use_coloring = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_coloring",&use_coloring,PETSC_NULL);CHKERRQ(ierr);
   if (use_coloring){
     ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,da);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
   }
 
-  ierr = TSSetDuration(ts,maxsteps,1.0);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MyTSMonitor,0,0);CHKERRQ(ierr);
+  ftime = 1.0;
+  ierr = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,MyTSMonitor,&usermonitor,PETSC_NULL);CHKERRQ(ierr);
   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver
@@ -107,8 +128,9 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = FormInitialSolution(da,u);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,.0001);CHKERRQ(ierr);
+  ierr = FormInitialSolution(u,&user);CHKERRQ(ierr);
+  dt   = .01;
+  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -122,8 +144,7 @@ int main(int argc,char **argv)
   ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Free work space.  All PETSc objects should be destroyed when they
-     are no longer needed.
+     Free work space.  
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatDestroy(J);CHKERRQ(ierr);
   if (use_coloring){
@@ -146,14 +167,15 @@ int main(int argc,char **argv)
    Input Parameters:
 .  ts - the TS context
 .  U - input vector
-.  ptr - optional user-defined context, as set by SNESSetFunction()
+.  ptr - optional user-defined context, as set by TSSetFunction()
 
    Output Parameter:
 .  F - function vector
  */
 PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
 {
-  DM             da = (DM)ptr;
+  AppCtx         *user=(AppCtx*)ptr;
+  DM             da = (DM)user->da;
   PetscErrorCode ierr;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscReal      two = 2.0,hx,hy,hxdhy,hydhx,sx,sy;
@@ -179,20 +201,14 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
   ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
 
-  /*
-     Get pointers to vector data
-  */
+  /* Get pointers to vector data */
   ierr = DMDAVecGetArray(da,localU,&uarray);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
-  /*
-     Get local grid boundaries
-  */
+  /* Get local grid boundaries */
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
-  /*
-     Compute function over the locally owned part of the grid
-  */
+  /* Compute function over the locally owned part of the grid */
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
@@ -206,9 +222,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
     }
   }
 
-  /*
-     Restore vectors
-  */
+  /* Restore vectors */
   ierr = DMDAVecRestoreArray(da,localU,&uarray);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
@@ -219,8 +233,11 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialSolution"
-PetscErrorCode FormInitialSolution(DM da,Vec U)
+PetscErrorCode FormInitialSolution(Vec U,void* ptr)
 {
+  AppCtx         *user=(AppCtx*)ptr;
+  DM             da=user->da;
+  PetscReal      c=user->c;
   PetscErrorCode ierr;
   PetscInt       i,j,xs,ys,xm,ym,Mx,My;
   PetscScalar    **u;
@@ -233,51 +250,47 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   hx     = 1.0/(PetscReal)(Mx-1);
   hy     = 1.0/(PetscReal)(My-1);
 
-  /*
-     Get pointers to vector data
-  */
+  /* Get pointers to vector data */
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
 
-  /*
-     Get local grid boundaries
-  */
+  /* Get local grid boundaries */
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
-  /*
-     Compute function over the locally owned part of the grid
-  */
+  /* Compute function over the locally owned part of the grid */
   for (j=ys; j<ys+ym; j++) {
     y = j*hy;
     for (i=xs; i<xs+xm; i++) {
       x = i*hx;
       r = PetscSqrtScalar((x-.5)*(x-.5) + (y-.5)*(y-.5));
       if (r < .125) {
-        u[j][i] = PetscExpScalar(-30.0*r*r*r);
+        u[j][i] = PetscExpScalar(c*r*r*r);
       } else {
         u[j][i] = 0.0;
       }
     }
   }
 
-  /*
-     Restore vectors
-  */
+  /* Restore vectors */
   ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 
 #undef __FUNCT__  
 #define __FUNCT__ "MyTSMonitor"
-PetscErrorCode MyTSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ctx)
+PetscErrorCode MyTSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ptr)
 {
   PetscErrorCode ierr;
   PetscReal      norm;
   MPI_Comm       comm;
+  MonitorCtx     *user = (MonitorCtx*)ptr;
 
   PetscFunctionBegin;
   ierr = VecNorm(v,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"timestep %D: time %G, solution norm %G\n",step,ptime,norm);CHKERRQ(ierr);
+  if (user->drawcontours){
+    ierr = VecView(v,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
