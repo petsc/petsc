@@ -1,8 +1,14 @@
 #ifndef _COMPAT_PETSC_DA_H
 #define _COMPAT_PETSC_DA_H
 
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
+#if !PETSC_VERSION_(3,1,0) && \
+    !PETSC_VERSION_(3,0,0)
+#include <petscdm.h>
+#else
+#include <petscda.h>
+#endif
+
+#if PETSC_VERSION_(3,1,0)
 #undef __FUNCT__
 #define __FUNCT__ "DASetUp"
 static PetscErrorCode
@@ -242,7 +248,7 @@ DASetElementType_Compat(DA da, DAElementType etype)
 }
 #define DASetElementType DASetElementType_Compat
 #undef __FUNCT__
-#define __FUNCT__ "DAGetElementType"
+/*#define __FUNCT__ "DAGetElementType"
 static PetscErrorCode
 DAGetElementType_Compat(DA da, DAElementType *etype)
 {
@@ -252,7 +258,7 @@ DAGetElementType_Compat(DA da, DAElementType *etype)
   SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
   PetscFunctionReturn(PETSC_ERR_SUP);
 }
-#define DAGetElementType DAGetElementType_Compat
+#define DAGetElementType DAGetElementType_Compat*/
 #undef __FUNCT__
 #define __FUNCT__ "DAGetElements"
 static PetscErrorCode
@@ -354,9 +360,6 @@ static PetscErrorCode DASetOptionsPrefix(DA da,const char prefix[])
   ierr = PetscObjectSetOptionsPrefix((PetscObject)da,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#endif
-
-#if (PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "DASetFromOptions"
 static PetscErrorCode DASetFromOptions(DA da) {

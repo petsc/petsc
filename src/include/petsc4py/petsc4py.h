@@ -14,10 +14,12 @@
 #include <petscsnes.h>
 #include <petscts.h>
 
-#if !PETSC_VERSION_(3,1,0)
-#if !PETSC_VERSION_(3,0,0)
+#if !PETSC_VERSION_(3,1,0) && \
+    !PETSC_VERSION_(3,0,0)
+#include <petscdm.h>
 #define DA DM
-#endif
+#else
+#include <petscda.h>
 #endif
 
 #include "petsc4py.PETSc_api.h"
