@@ -24,12 +24,14 @@ struct _ISOps {
   PetscErrorCode (*copy)(IS,IS);
   PetscErrorCode (*togeneral)(IS);
   PetscErrorCode (*oncomm)(IS,MPI_Comm,PetscCopyMode,IS*);
+  PetscErrorCode (*setblocksize)(IS,PetscInt);
 };
 
 struct _p_IS {
   PETSCHEADER(struct _ISOps);
   PetscBool    isperm;          /* if is a permutation */
   PetscInt     max,min;         /* range of possible values */
+  PetscInt     bs;              /* block size */
   void         *data;
   PetscBool    isidentity;
   PetscInt     *total, *nonlocal;   /* local representation of ALL indices across the comm as well as the nonlocal part. */

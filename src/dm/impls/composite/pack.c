@@ -980,6 +980,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetLocalISs(DM dm,IS **is)
   ierr = PetscMalloc(com->nmine*sizeof(IS),is);CHKERRQ(ierr);
   for (cnt=0,start=0,link=com->next; link; start+=link->n,cnt++,link=link->next) {
     ierr = ISCreateStride(PETSC_COMM_SELF,link->n,start,1,&(*is)[cnt]);CHKERRQ(ierr);
+    if (link->type == DMCOMPOSITE_DM) {
+      Vec lvec;
+      PetscInt bs;
+      ierr = DMGetLocalVector(link->dm,&lvec);CHKERRQ(ierr);
+      ierr = VecGetBlockSize(lvec,&bs);CHKERRQ(ierr);
+      ierr = DMRestoreLocalVector(link->dm,&lvec);CHKERRQ(ierr);
+      ierr = ISSetBlockSize((*is)[cnt],bs);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }

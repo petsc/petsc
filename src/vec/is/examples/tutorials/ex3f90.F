@@ -75,7 +75,7 @@
 !
 !    Determine the block size of the index set
 !
-      call ISBlockGetBlockSize(set,bs,ierr) 
+      call ISGetBlockSize(set,bs,ierr) 
       if (bs .ne. 3) then
         write(6,*) 'Blocksize != 3'
       endif

@@ -81,6 +81,30 @@ PetscErrorCode ISOnComm_General(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "ISSetBlockSize_General"
+static PetscErrorCode ISSetBlockSize_General(IS is,PetscInt bs)
+{
+  IS_General *sub = (IS_General*)is->data;
+
+  PetscFunctionBegin;
+  if (sub->N % bs) SETERRQ2(((PetscObject)is)->comm,PETSC_ERR_ARG_SIZ,"Block size %D does not divide global size %D",bs,sub->N);
+  if (sub->n % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Block size %D does not divide local size %D",bs,sub->n);
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscInt i,j;
+    for (i=0; i<sub->n; i+=bs) {
+      for (j=0; j<bs; j++) {
+        if (sub->idx[i+j] != sub->idx[i]+j) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Index set does not have block structure, cannot set block size to %D",bs);
+      }
+    }
+  }
+#endif
+  is->bs = bs;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
 #define __FUNCT__ "ISGetIndices_General" 
 PetscErrorCode ISGetIndices_General(IS in,const PetscInt *idx[])
 {
@@ -311,7 +335,8 @@ static struct _ISOps myops = { ISGetSize_General,
                                ISIdentity_General,
                                ISCopy_General,
                                ISToGeneral_General,
-                               ISOnComm_General
+                               ISOnComm_General,
+                               ISSetBlockSize_General
 };
 
 #undef __FUNCT__  
@@ -463,8 +488,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_General(IS is)
 
   PetscFunctionBegin;
   ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
-  ierr       = PetscNewLog(is,IS_General,&sub);CHKERRQ(ierr);
-  is->data   = (void*)sub;
+  ierr = PetscNewLog(is,IS_General,&sub);CHKERRQ(ierr);
+  is->data = (void*)sub;
+  is->bs   = 1;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISGeneralSetIndices_C","ISGeneralSetIndices_General",
 					   ISGeneralSetIndices_General);CHKERRQ(ierr);
   PetscFunctionReturn(0);

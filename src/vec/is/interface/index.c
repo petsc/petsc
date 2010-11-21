@@ -917,6 +917,60 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mod
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISSetBlockSize"
+/*@
+   ISSetBlockSize - informs an index set that it has a given block size
+
+   Logicall Collective on IS
+
+   Input Arguments:
++ is - index set
+- bs - block size
+
+   Level: intermediate
+
+.seealso: ISGetBlockSize(), ISCreateBlock()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISSetBlockSize(IS is,PetscInt bs)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidLogicalCollectiveInt(is,bs,2);
+  if (bs < 1) SETERRQ1(((PetscObject)is)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Block size %D, must be positive",bs);
+  ierr = (*is->ops->setblocksize)(is,bs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISGetBlockSize"
+/*@
+   ISGetBlockSize - Returns the number of elements in a block.
+
+   Not Collective
+
+   Input Parameter:
+.  is - the index set
+
+   Output Parameter:
+.  size - the number of elements in a block
+
+   Level: intermediate
+
+   Concepts: IS^block size
+   Concepts: index sets^block size
+
+.seealso: ISBlockGetSize(), ISGetSize(), ISCreateBlock(), ISSetBlockSize()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISGetBlockSize(IS is,PetscInt *size)
+{
+  PetscFunctionBegin;
+  *size = is->bs;
+  PetscFunctionReturn(0);
+}
+
 /*MC
     ISGetIndicesF90 - Accesses the elements of an index set from Fortran90.
     The users should call ISRestoreIndicesF90() after having looked at the

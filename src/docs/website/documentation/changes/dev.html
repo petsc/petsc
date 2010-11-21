@@ -145,6 +145,9 @@ works for all basic IS types.</li>
 longer relative to element. This is to match the paradigm of
 Vec/MatSetValuesBlocked()<br>
         </li>
+        <li>ISBlockGetBlockSize() is now ISGetBlockSize(). Block sizes
+can be set for conforming ISGENERAL and ISSTRIDE using ISSetBlockSize().
+        </li>
         <li>ISAllGatherIndices() is removed, use ISCreateGeneral() then ISAllGather().</li>
       </ul>
       <p><u><b>PF:</b></u></p>

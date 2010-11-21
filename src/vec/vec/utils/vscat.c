@@ -1281,8 +1281,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       if (iyblock) {
         PetscInt       nx,ny,bsx,bsy;
         const PetscInt *idx,*idy;
-        ierr = ISBlockGetBlockSize(iy,&bsy);CHKERRQ(ierr);
-        ierr = ISBlockGetBlockSize(ix,&bsx);CHKERRQ(ierr);
+        ierr = ISGetBlockSize(iy,&bsy);CHKERRQ(ierr);
+        ierr = ISGetBlockSize(ix,&bsx);CHKERRQ(ierr);
         if (bsx == bsy && VecScatterOptimizedBS(bsx)) {
           ierr = ISBlockGetLocalSize(ix,&nx);CHKERRQ(ierr);
           ierr = ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
@@ -1300,7 +1300,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
         PetscInt ystart,ystride,ysize,bsx;
         ierr = ISStrideGetInfo(iy,&ystart,&ystride);CHKERRQ(ierr);
         ierr = ISGetLocalSize(iy,&ysize);CHKERRQ(ierr);
-        ierr = ISBlockGetBlockSize(ix,&bsx);CHKERRQ(ierr);
+        ierr = ISGetBlockSize(ix,&bsx);CHKERRQ(ierr);
         /* see if stride index set is equivalent to block index set */
         if (VecScatterOptimizedBS(bsx) && ((ystart % bsx) == 0) && (ystride == 1) && ((ysize % bsx) == 0)) {
           PetscInt       nx,il,*idy;
@@ -1383,7 +1383,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       PetscInt ystart,ystride,ysize,bsx;
       ierr = ISStrideGetInfo(iy,&ystart,&ystride);CHKERRQ(ierr);
       ierr = ISGetLocalSize(iy,&ysize);CHKERRQ(ierr);
-      ierr = ISBlockGetBlockSize(ix,&bsx);CHKERRQ(ierr);
+      ierr = ISGetBlockSize(ix,&bsx);CHKERRQ(ierr);
       /* see if stride index set is equivalent to block index set */
       if (VecScatterOptimizedBS(bsx) && ((ystart % bsx) == 0) && (ystride == 1) && ((ysize % bsx) == 0)) {
         PetscInt       nx,il,*idy;

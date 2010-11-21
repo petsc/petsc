@@ -238,8 +238,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat 
     ierr = ISLocalToGlobalMappingDestroy(cltog);CHKERRQ(ierr);
 
     ierr = MatGetBlockSize(A,&abs);CHKERRQ(ierr);
-    ierr = ISBlockGetBlockSize(isrow,&rbs);CHKERRQ(ierr);
-    ierr = ISBlockGetBlockSize(iscol,&cbs);CHKERRQ(ierr);
+    ierr = ISGetBlockSize(isrow,&rbs);CHKERRQ(ierr);
+    ierr = ISGetBlockSize(iscol,&cbs);CHKERRQ(ierr);
     if (rbs == cbs) {           /* submatrix has block structure, so user can insert values with blocked interface */
       ierr = PetscLayoutSetBlockSize(A->rmap,abs);CHKERRQ(ierr);
       ierr = PetscLayoutSetBlockSize(A->rmap,abs);CHKERRQ(ierr);

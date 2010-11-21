@@ -273,6 +273,18 @@ static PetscErrorCode ISOnComm_Stride(IS is,MPI_Comm comm,PetscCopyMode mode,IS 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISSetBlockSize_Stride"
+static PetscErrorCode ISSetBlockSize_Stride(IS is,PetscInt bs)
+{
+  IS_Stride      *sub = (IS_Stride*)is->data;
+
+  PetscFunctionBegin;
+  if (sub->step != 1 && bs != 1) SETERRQ2(((PetscObject)is)->comm,PETSC_ERR_ARG_SIZ,"ISSTRIDE has stride %D, cannot be blocked of size %D",sub->step,bs);
+  PetscFunctionReturn(0);
+}
+
+
 static struct _ISOps myops = { ISGetSize_Stride,
                                ISGetLocalSize_Stride,
                                ISGetIndices_Stride,
@@ -286,7 +298,9 @@ static struct _ISOps myops = { ISGetSize_Stride,
                                ISIdentity_Stride,
                                ISCopy_Stride,
                                ISToGeneral_Stride,
-                               ISOnComm_Stride};
+                               ISOnComm_Stride,
+                               ISSetBlockSize_Stride
+};
 
 
 #undef __FUNCT__  
@@ -400,6 +414,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_Stride(IS is)
   PetscFunctionBegin;
   ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ierr = PetscNewLog(is,IS_Stride,&sub);CHKERRQ(ierr);
+  is->bs   = 1;
   is->data = sub;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISStrideSetStride_C","ISStrideSetStride_Stride",ISStrideSetStride_Stride);CHKERRQ(ierr);
   PetscFunctionReturn(0);

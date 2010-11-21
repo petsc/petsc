@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   /*
     Determine the block size of the index set
   */
-  ierr = ISBlockGetBlockSize(set,&bs);CHKERRQ(ierr);
+  ierr = ISGetBlockSize(set,&bs);CHKERRQ(ierr);
   if (bs != 3) SETERRQ(PETSC_COMM_SELF,1,"Block size is not 3!");
 
   /*
