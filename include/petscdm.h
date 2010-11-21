@@ -520,8 +520,9 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeRestoreAccess(DM,Vec,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetLocalVectors(DM,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetEntries(DM,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeRestoreLocalVectors(DM,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetLocalISs(DM,IS*[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetGlobalISs(DM,IS*[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetLocalISs(DM,IS*[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetISLocalToGlobalMappings(DM,ISLocalToGlobalMapping**);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSlicedCreate(MPI_Comm,DM*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSlicedGetGlobalIndices(DM,PetscInt*[]);
