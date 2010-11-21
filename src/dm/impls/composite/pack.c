@@ -326,7 +326,7 @@ PetscErrorCode DMCompositeScatter_DM(DM dm,struct DMCompositeLink *mine,Vec vec,
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeGather_Array"
-PetscErrorCode DMCompositeGather_Array(DM dm,struct DMCompositeLink *mine,Vec vec,InsertMode imode,PetscScalar *array)
+PetscErrorCode DMCompositeGather_Array(DM dm,struct DMCompositeLink *mine,Vec vec,InsertMode imode,const PetscScalar *array)
 {
   PetscErrorCode ierr;
   PetscScalar    *varray;
@@ -335,20 +335,41 @@ PetscErrorCode DMCompositeGather_Array(DM dm,struct DMCompositeLink *mine,Vec ve
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)dm)->comm,&rank);CHKERRQ(ierr);
   if (rank == mine->rank) {
-    ierr    = VecGetArray(vec,&varray);CHKERRQ(ierr);
+    ierr = VecGetArray(vec,&varray);CHKERRQ(ierr);
     if (varray+mine->rstart == array) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"You need not DMCompositeGather() into objects obtained via DMCompositeGetAccess()");
-    switch (imode) {
-    case INSERT_VALUES:
-      ierr = PetscMemcpy(varray+mine->rstart,array,mine->n*sizeof(PetscScalar));CHKERRQ(ierr);
-      break;
-    case ADD_VALUES: {
-      PetscInt i;
-      for (i=0; i<mine->n; i++) varray[mine->rstart+i] += array[i];
-    } break;
-    default: SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"imode");
-    }
-    ierr    = VecRestoreArray(vec,&varray);CHKERRQ(ierr);
   }
+  switch (imode) {
+  case INSERT_VALUES:
+    if (rank == mine->rank) {
+      ierr = PetscMemcpy(varray+mine->rstart,array,mine->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    }
+    break;
+  case ADD_VALUES: {
+    PetscInt          i;
+    const PetscScalar *source;
+    PetscScalar       *buffer,*dest;
+    if (rank == mine->rank) {
+      dest = &varray[mine->rstart];
+#if defined(PETSC_HAVE_MPI_IN_PLACE)
+      buffer = dest;
+      source = MPI_IN_PLACE;
+#else
+      ierr = PetscMalloc(mine->n*sizeof(PetscScalar),&buffer);CHKERRQ(ierr);
+      source = buffer;
+#endif
+      for (i=0; i<mine->n; i++) buffer[i] = varray[mine->rstart+i] + array[i];
+    } else {
+      source = array;
+      dest   = PETSC_NULL;
+    }
+    ierr = MPI_Reduce((void*)source,dest,mine->n,MPIU_SCALAR,MPI_SUM,mine->rank,((PetscObject)dm)->comm);CHKERRQ(ierr);
+#if !defined(PETSC_HAVE_MPI_IN_PLACE)
+    if (rank == mine->rank) {ierr = PetscFree(source);CHKERRQ(ierr);}
+#endif
+  } break;
+  default: SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"imode");
+  }
+  if (rank == mine->rank) {ierr = VecRestoreArray(vec,&varray);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -866,7 +887,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetISLocalToGlobalMappings(DM dm,ISL
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscMalloc(com->nmine*sizeof(ISLocalToGlobalMapping),ltogs);CHKERRQ(ierr);
+  ierr = PetscMalloc((com->nDM+com->nredundant)*sizeof(ISLocalToGlobalMapping),ltogs);CHKERRQ(ierr);
   next = com->next;
   ierr = MPI_Comm_rank(((PetscObject)dm)->comm,&rank);CHKERRQ(ierr);
 
