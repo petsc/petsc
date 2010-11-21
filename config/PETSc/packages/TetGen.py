@@ -213,6 +213,7 @@ tetgen_shared:
       g.write('BUILDSHAREDLIB = no\n')
       g.write('shared_arch:\n')
       g.write('shared:\n')
+      g.write('tetgen_shared:\n')
     g.close()
 
     # Now compile & install
