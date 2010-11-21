@@ -46,6 +46,43 @@ classdef PetscMat < PetscObject
     function err = Destroy(obj)
       err = calllib('libpetsc', 'MatDestroy', obj.pobj);
     end
+    function err = SetValuesStencil(obj,row,col,values,insertmode)
+      if (nargin < 5) 
+        insertmode = PetscObject.INSERT_VALUES;
+      end
+      ndim = isfield(row,'i') + isfield(row,'j') + isfield(row,'k'); 
+      nrow = length(row);
+      ncol = length(col);
+      if (ndim == 1)  %% 1D DM
+	for (m=1:nrow)
+            row(m).i = row(m).i - 1;
+        end
+        for (m = 1:ncol)
+             col(m).i = col(m).i - 1;
+        end
+      elseif (ndim == 2)  %% 2D DM
+        for (m = 1:nrow)
+          row(m).i = row(m).i - 1;
+          row(m).j = row(m).j - 1;
+        end
+        for (m = 1:ncol)
+          col(m).i = col(m).i - 1;
+          col(m).j = col(m).j - 1;
+        end 
+      elseif (ndim == 3)  %% 3D DM
+        for (m = 1:nrow)
+          row(m).i = row(m).i - 1;
+          row(m).j = row(m).j - 1;
+          row(m).k = row(m).k - 1;
+        end
+        for (m = 1:ncol)
+          col(m).i = col(m).i - 1;
+          col(m).j = col(m).j - 1;
+          col(m).k = col(m).k - 1;
+        end 
+      end
+      err = calllib('libpetsc','MatSetValuesStencil',obj.pobj,nrow,row,ncol,col,values,insertmode);  
+    end
   end
 end
 

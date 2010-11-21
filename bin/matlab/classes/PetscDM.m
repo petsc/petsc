@@ -1,5 +1,5 @@
 classdef PetscDM < PetscObject
-  properties (Constant)
+  properties(Constant)
     STENCIL_STAR = 0;
     STENCIL_BOX = 1;
 
@@ -15,6 +15,14 @@ classdef PetscDM < PetscObject
 
     Q0 = 0;
     Q1 = 1;
+  end
+  properties
+      ndim = [];
+      M    = 0;
+      N    = 0;
+      P    = 0;
+      dof  = 0;
+      s    = 0;
   end
   methods
     function obj = PetscDM(pid,flg)
@@ -74,6 +82,22 @@ classdef PetscDM < PetscObject
     end
     function err = Destroy(obj)
       err = calllib('libpetsc', 'DMDestroy', obj.pobj);
+    end
+    function [ndim,M,N,P,dof,s,err] = GetInfo(obj)
+        [err,ndim,M,N,P,m,n,p,dof,s] = calllib('libpetsc','DMDAGetInfo',obj.pobj,0,0,0,0,0,0,0,0,0,0,0);
+    end
+    function [obj] = SetInfo(obj)
+        [obj.ndim,obj.M,obj.N,obj.P,obj.dof,obj.s,err] = obj.GetInfo();
+    end
+    function [dmvec,err] = VecGetArray(obj,vec)
+      dmvec = PetscVec(vec.pobj,'pobj');
+      dmvec.SetVecfromDM(1);
+      if (isempty(obj.ndim))
+         %% Temporary hack to fill info in the original DM,this should go to
+         %% some DM function and not VecGetArray
+         obj = obj.SetInfo();
+      end
+      dmvec = dmvec.SetDM(obj);
     end
   end
 end

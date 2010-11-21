@@ -12,53 +12,62 @@ viewer = PetscViewer();
 viewer.SetType('ascii');
 %%
 %  Create DM to manage the grid and get work vectors
-user.mx = 4;user.my = 4;
+user.mx = 10;user.my = 10;
 user.dm = PetscDMDACreate2d(PetscDM.NONPERIODIC,PetscDM.STENCIL_BOX,user.mx,user.my,PetscObject.DECIDE,PetscObject.DECIDE,1,1);
 x  = user.dm.CreateGlobalVector();
 r  = x.Duplicate();
 J  = user.dm.GetMatrix('aij');
-for(i = 1:length(x(:))/2)
-    x(2*i-1:2*i) = ones(2,1);
-end
+
 %%
 %  Set Boundary conditions
 [user] = MSA_BoundaryConditions(user);
 %%
+%  Set initial guess
+[x] = MSA_InitialGuess(user,x);
+%%
 %  Create the nonlinear solver 
 snes = PetscSNES();
 snes.SetType('vi');
+
 %%
-%  Provide a function 
-snes.SetFunction(r,'snesfunction',0);
-type snesfunction.m
+%  Set minimum surface area problem function routine
+snes.SetFunction(r,'snesdvi_function',user);
+
+
 %%
-%  Provide a function that evaluates the Jacobian
-snes.SetJacobian(J,J,'snesjacobian',0);
-type snesjacobian.m
+%  Set minimum surface area problem jacobian routine
+snes.SetJacobian(J,J,'snesdvi_jacobian',user);
+
 %%
-%  Initialize guess
-x.Set(1.0);
+%  Set solution monitoring routine
+snes.MonitorSet('snesdvi_monitor',user);
+figure(1),clf;figure(2),clf;
 %%
 %   Set VI bounds
 xl = x.Duplicate();
 xu = x.Duplicate();
-xl.Set(-100000000);
+xl.Set(-10000000);
 xu.Set(100000000);
 
-snes.VISetVariableBounds(xl,xu);
+snes.VISetVariableBounds(xl,xu);    
 
+%%
 %  Solve the nonlinear system
 snes.SetFromOptions();
 snes.Solve(x);
 x.View(viewer);
 snes.View(viewer);
+
 %%
 %   Free PETSc objects and Shutdown PETSc
 %
+user.bottom.Destroy();
+user.top.Destroy();
+user.right.Destroy();
+user.left.Destroy();
 r.Destroy();
 x.Destroy();
 J.Destroy();
 snes.Destroy();
-user.dm.Destroy();
 viewer.Destroy();
 PetscFinalize();

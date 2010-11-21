@@ -47,15 +47,20 @@ int VecDestroy(Vec);
 typedef PetscPointer Mat;
 typedef int MatAssemblyType;
 typedef int MatStructure;
+typedef struct {
+    int k,j,i,c;
+} MatStencil;
+
 int MatCreate(MPI_Comm,Mat *);
 int MatSetType(Mat,const char*);
 int MatSetFromOptions(Mat);
 int MatSetSizes(Mat,int,int,int,int);
-int MatSetValues(Vec,int,int*,int,int*,double*,InsertMode);
+int MatSetValues(Mat,int,int*,int,int*,double*,InsertMode);
 int MatAssemblyBegin(Mat,MatAssemblyType);
 int MatAssemblyEnd(Mat,MatAssemblyType);
 int MatView(Mat,PetscViewer);
 int MatDestroy(Mat);
+int MatSetValuesStencil(Mat,int,MatStencil*,int,MatStencil*,double*,InsertMode);
 
 typedef PetscPointer DM;
 typedef int DMDAPeriodicType;
@@ -77,6 +82,7 @@ int DMDASetStencilWidth(DM, int);
 int DMDASetStencilType(DM, DMDAStencilType);
 int DMCreateGlobalVector(DM,Vec*);
 int DMGetMatrix(DM,const char*,Mat*);
+int DMDAGetInfo(DM,int*,int*,int*,int*,int*,int*,int*,int*,int*,DMDAPeriodicType,DMDAStencilType);
 
 typedef PetscPointer KSP;
 int KSPCreate(MPI_Comm,KSP *);

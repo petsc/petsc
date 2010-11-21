@@ -1,5 +1,15 @@
 classdef PetscVec < PetscObject
+  properties
+    VecFromDM=0;
+    DM = [];
+  end
   methods
+    function [obj] = SetVecfromDM(obj,value)
+      obj.VecFromDM = value;
+    end
+    function [obj] = SetDM(obj,DM)
+        obj.DM = DM;
+    end
     function obj = PetscVec(array,flg)
       if (nargin > 1) 
         %  PetscVec(pid,'pobj') uses an already existing PETSc Vec object
@@ -85,14 +95,46 @@ classdef PetscVec < PetscObject
       %  the 'regular' subsref
       if (S(1).type == '.')
         [varargout{1:nargout}] = builtin('subsref', obj, S);
-      else 
-        varargout = {obj.GetValues(S.subs{1})};
+      else
+        if (obj.VecFromDM)
+          varargout = {obj.GetValues_DM(S)};
+        else
+          varargout = {obj.GetValues(S.subs{1})};
+        end
       end
+    end
+    function varargout = GetValues_DM(obj,S)
+      M = obj.DM.M; N = obj.DM.N; P = obj.DM.P;
+      ndim = obj.DM.ndim;
+      if (ndim == 1)  %% 1D DM
+        idx = S.subs{1};
+      elseif (ndim == 2)  %% 2D DM
+        idx = M*(S.subs{2}-1) + S.subs{1};  
+      elseif (ndim == 3)  %% 3D DM
+        idx = N*(S.subs{3}-1) + M*(S.subs{2}-1) + S.subs{1};
+      end
+      varargout = {obj.GetValues(idx)};      
     end
     function obj = subsasgn(obj,S,value)
       if (S(1).type ~= '.')
-        obj.SetValues(S.subs{1},value);
+        if (obj.VecFromDM)
+          [obj] = obj.SetValues_DM(S,value);
+        else
+          obj.SetValues(S.subs{1},value);
+        end
       end
+    end
+    function [obj] = SetValues_DM(obj,S,value)
+      M = obj.DM.M; N = obj.DM.N; P = obj.DM.P;
+      ndim = obj.DM.ndim;
+      if (ndim == 1)  %% 1D DM
+        idx = S.subs{1};
+      elseif (ndim == 2)  %% 2D DM
+        idx = M*(S.subs{2}-1) + S.subs{1};  
+      elseif (ndim == 3)  %% 3D DM
+        idx = N*(S.subs{3}-1) + M*(S.subs{2}-1) + S.subs{1};
+      end
+      obj.SetValues(idx,value);      
     end
   end
 end
