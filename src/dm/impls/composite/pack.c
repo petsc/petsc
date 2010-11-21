@@ -346,7 +346,7 @@ PetscErrorCode DMCompositeGather_Array(DM dm,struct DMCompositeLink *mine,Vec ve
     break;
   case ADD_VALUES: {
     PetscInt          i;
-    const PetscScalar *source;
+    void             *source;
     PetscScalar       *buffer,*dest;
     if (rank == mine->rank) {
       dest = &varray[mine->rstart];
@@ -355,14 +355,14 @@ PetscErrorCode DMCompositeGather_Array(DM dm,struct DMCompositeLink *mine,Vec ve
       source = MPI_IN_PLACE;
 #else
       ierr = PetscMalloc(mine->n*sizeof(PetscScalar),&buffer);CHKERRQ(ierr);
-      source = buffer;
+      source = (void *) buffer;
 #endif
       for (i=0; i<mine->n; i++) buffer[i] = varray[mine->rstart+i] + array[i];
     } else {
-      source = array;
+      source = (void *) array;
       dest   = PETSC_NULL;
     }
-    ierr = MPI_Reduce((void*)source,dest,mine->n,MPIU_SCALAR,MPI_SUM,mine->rank,((PetscObject)dm)->comm);CHKERRQ(ierr);
+    ierr = MPI_Reduce(source,dest,mine->n,MPIU_SCALAR,MPI_SUM,mine->rank,((PetscObject)dm)->comm);CHKERRQ(ierr);
 #if !defined(PETSC_HAVE_MPI_IN_PLACE)
     if (rank == mine->rank) {ierr = PetscFree(source);CHKERRQ(ierr);}
 #endif
