@@ -136,7 +136,7 @@ static PetscErrorCode PCApply_SACUDA(PC pc,Vec x,Vec y)
     ierr = PCSetUp_SACUDA(pc);CHKERRQ(ierr);
   }
   ierr = VecCUDACopyToGPU(x);CHKERRQ(ierr);
-  ierr = VecCUDAAllocateCheck(y);CHKERRQ(ierr);
+  ierr = VecSet(y,0.0);CHKERRQ(ierr);
   try {
     cusp::multiply(*sac->SACUDA,*((Vec_CUDA *)x->spptr)->GPUarray,*((Vec_CUDA *)y->spptr)->GPUarray);
     if (y->valid_GPU_array != PETSC_CUDA_UNALLOCATED) {
