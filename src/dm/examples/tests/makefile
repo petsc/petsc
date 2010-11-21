@@ -192,6 +192,15 @@ runex13:
 runex14:
 	-@${MPIEXEC} -n 4 ./ex14 ; sleep 1
 
+runex16:
+	-@${MPIEXEC} -n 3 ./ex16 > ex16_1.tmp 2>&1; \
+	  ${DIFF} output/ex16_1.out ex16_1.tmp || echo "Possible problem with ex16, diffs above"; \
+	  ${RM} -f ex16_1.tmp
+runex16_2:
+	-@${MPIEXEC} -n 3 ./ex16 -gather_add > ex16_2.tmp 2>&1; \
+	  ${DIFF} output/ex16_2.out ex16_2.tmp || echo "Possible problem with ex16_2, diffs above"; \
+	  ${RM} -f ex16_2.tmp
+
 runex21:
 	-@for procs in '-da_processors_x 10' '-da_processors_y 10' '-da_processors_z 10' ''; do \
             ${MPIEXEC} -n 10 ./ex21 -mx 30 -my 30 -mz 30 -periodic 0 $procs ;\
@@ -270,7 +279,8 @@ runex32:
 	  ${DIFF} output/ex32_1.out ex32_1.tmp || echo "Possible problem with ex32, diffs above"; \
 	  ${RM} -f ex32_1.tmp
 
-TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm ex21.PETSc runex21 ex21.rm ex24.PETSc runex24 ex24.rm ex25.PETSc \
+TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm ex16.PETSc runex16 runex16_2 ex16.rm \
+                            ex21.PETSc runex21 ex21.rm ex24.PETSc runex24 ex24.rm ex25.PETSc \
                             runex25 ex25.rm ex31.PETSc runex31 ex31.rm ex32.PETSc runex32 ex32.rm ex30.PETSc runex30 runex30_2 runex30_3 ex30.rm
 TESTEXAMPLES_C_X11	  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 \
                             ex6.rm ex7.PETSc ex7.rm  ex14.PETSc runex14 ex14.rm \
