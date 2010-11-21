@@ -9,17 +9,22 @@ static char help[] = "Tests DMComposite routines.\n\n";
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt       nredundant1 = 5,nredundant2 = 2,i,*ridx1,*ridx2,*lidx1,*lidx2,nlocal;
-  PetscMPIInt    rank;
+  PetscInt       nredundant1 = 5,nredundant2 = 2,i;
+  ISLocalToGlobalMapping *ltog;
+  PetscMPIInt    rank,size;
   PetscScalar    *redundant1,*redundant2;
   DM             packer;
   Vec            global,local1,local2;
   PF             pf;
   DM             da1,da2;
   PetscViewer    sviewer;
+  PetscBool      gather_add = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-gather_add",&gather_add,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
 
@@ -31,7 +36,7 @@ int main(int argc,char **argv)
   ierr = DMCompositeAddDM(packer,(DM)da1);CHKERRQ(ierr);
 
   ierr = PetscMalloc(nredundant2*sizeof(PetscScalar),&redundant2);CHKERRQ(ierr);
-  ierr = DMCompositeAddArray(packer,0,nredundant2);CHKERRQ(ierr);
+  ierr = DMCompositeAddArray(packer,1%size,nredundant2);CHKERRQ(ierr);
 
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,6,1,1,PETSC_NULL,&da2);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da2,&local2);CHKERRQ(ierr);
@@ -61,27 +66,23 @@ int main(int argc,char **argv)
   for (i=0; i<nredundant1; i++) redundant1[i] = (rank+2)*i;
   for (i=0; i<nredundant2; i++) redundant2[i] = (rank+10)*i;
 
-  ierr = DMCompositeGather(packer,global,INSERT_MODE,redundant1,local1,redundant2,local2);CHKERRQ(ierr);
+  ierr = DMCompositeGather(packer,global,gather_add?ADD_VALUES:INSERT_VALUES,redundant1,local1,redundant2,local2);CHKERRQ(ierr);
   ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* get the global numbering for each subvector/array element */
-  ierr = DMCompositeGetGlobalIndices(packer,&ridx1,&lidx1,&ridx2,&lidx2);CHKERRQ(ierr);
-  
-  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] Global numbering of redundant1 array\n",rank);CHKERRQ(ierr);
-  ierr = PetscIntView(nredundant1,ridx1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] Global numbering of local1 vector\n",rank);CHKERRQ(ierr);
-  ierr = VecGetSize(local1,&nlocal);CHKERRQ(ierr);
-  ierr = PetscIntView(nlocal,lidx1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] Global numbering of redundant2 array\n",rank);CHKERRQ(ierr);
-  ierr = PetscIntView(nredundant2,ridx2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] Global numbering of local2 vector\n",rank);CHKERRQ(ierr);
-  ierr = VecGetSize(local2,&nlocal);CHKERRQ(ierr);
-  ierr = PetscIntView(nlocal,lidx2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  
-  ierr = PetscFree(ridx1);CHKERRQ(ierr);
-  ierr = PetscFree(lidx1);CHKERRQ(ierr);
-  ierr = PetscFree(ridx2);CHKERRQ(ierr);
-  ierr = PetscFree(lidx2);CHKERRQ(ierr);
+  ierr = DMCompositeGetISLocalToGlobalMappings(packer,&ltog);CHKERRQ(ierr);
+
+  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of redundant1 array\n");CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingView(ltog[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of local1 vector\n");CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingView(ltog[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of redundant2 array\n");CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingView(ltog[2],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of local2 vector\n");CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingView(ltog[3],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  for (i=0; i<4; i++) {ierr = ISLocalToGlobalMappingDestroy(ltog[i]);CHKERRQ(ierr);}
+  ierr = PetscFree(ltog);CHKERRQ(ierr);
 
   ierr = DMDestroy(da1);CHKERRQ(ierr);
   ierr = DMDestroy(da2);CHKERRQ(ierr);
