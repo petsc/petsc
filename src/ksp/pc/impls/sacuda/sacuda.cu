@@ -23,10 +23,10 @@
 */
 typedef struct {
  cudasaprecond* SACUDA;
-  int cycles;
+  /*int cycles; */
 } PC_SACUDA;
 
-#undef __FUNCT__
+/*#undef __FUNCT__
 #define __FUNCT__ "PCSACUDASetCycles"
 static PetscErrorCode PCSACUDASetCycles(PC pc, int n)
 {
@@ -36,7 +36,7 @@ static PetscErrorCode PCSACUDASetCycles(PC pc, int n)
   sac->cycles = n;	 
   PetscFunctionReturn(0);
 
-}
+  }*/
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -78,8 +78,8 @@ static PetscErrorCode PCSetUp_SACUDA(PC pc)
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
   } 
-  ierr = PetscOptionsInt("-pc_sacuda_cycles","Number of v-cycles to perform","PCSACUDASetCycles",sa->cycles,
-			 &sa->cycles,PETSC_NULL);CHKERRQ(ierr);
+  /*ierr = PetscOptionsInt("-pc_sacuda_cycles","Number of v-cycles to perform","PCSACUDASetCycles",sa->cycles,
+    &sa->cycles,PETSC_NULL);CHKERRQ(ierr);*/
   PetscFunctionReturn(0);
 }
 
@@ -218,7 +218,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SACUDA(PC pc)
      Initialize number of v-cycles to default (1)
   */
   sac->SACUDA          = 0;
-  sac->cycles=1;
+  /*sac->cycles=1;*/
 
 
   /*
