@@ -1,7 +1,7 @@
-function err = snesdvi2_function(snes,xsol,func,user)
+function err = snesdvi_function(snes,xsol,func,user)
 %
 %  Minimal surface area problem nonlinear function as in
-%  snes/examples/tests/ex10.c
+%  snes/examples/tests/ex8.c
 %
 err = 0;
 

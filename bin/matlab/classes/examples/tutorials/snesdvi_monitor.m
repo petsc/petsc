@@ -1,5 +1,5 @@
-function err = snesdvi2_monitor(snes,it,fnorm,x,user)
-%% Monitor function for exSNES_DVI2
+function err = snesdvi_monitor(snes,it,fnorm,x,user)
+%% Monitor function for exSNES_DVI
 %
 err = 0;
 % Plot function norm

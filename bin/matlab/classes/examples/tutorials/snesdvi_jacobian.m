@@ -1,7 +1,7 @@
-function [flg,err] = snesdvi2_jacobian(snes,xsol,A,B,user)
+function [flg,err] = snesdvi_jacobian(snes,xsol,A,B,user)
 %
 %  Jacobain for minimal surface are problem as written in
-%  snes/src/examples/tests/ex10.c
+%  snes/src/examples/tests/ex8.c
 %
 err = 0;
 flg = PetscMat.SAME_NONZERO_PATTERN;
