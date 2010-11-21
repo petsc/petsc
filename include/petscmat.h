@@ -598,6 +598,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangesColumn(Mat,const P
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrices(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroyMatrices(PetscInt,Mat *[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat,IS,IS,MatReuse,Mat *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalSubMatrix(Mat,IS,IS,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreLocalSubMatrix(Mat,IS,IS,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSeqNonzeroStructure(Mat,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroySeqNonzeroStructure(Mat*); 
 

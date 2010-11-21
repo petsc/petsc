@@ -8496,3 +8496,88 @@ PetscErrorCode  PETSCMAT_DLLEXPORT MatGetMultiProcBlock(Mat mat, MPI_Comm subCom
   ierr = PetscLogEventEnd(MAT_GetMultiProcBlock,mat,0,0,0);CHKERRQ(ierr);   
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetLocalSubMatrix"
+/*@
+   MatGetLocalSubMatrix - Gets a reference to a submatrix specified in local numbering
+
+   Not Collective
+
+   Input Arguments:
+   mat - matrix to extract local submatrix from
+   isrow - local row indices for submatrix
+   iscol - local column indices for submatrix
+
+   Output Arguments:
+   submat - the submatrix
+
+   Level: intermediate
+
+   Notes:
+   The submat should be returned with MatRestoreLocalSubMatrix().
+
+   Depending on the format of mat, the returned submat may not implement MatMult().  Its communicator may be
+   the same as mat, it may be PETSC_COMM_SELF, or some other subcomm of mat's.
+
+   The submat always implements MatSetValuesLocal().  If isrow and iscol have the same block size, then
+   MatSetValuesBlockedLocal() will also be implemented.
+
+.seealso: MatRestoreLocalSubMatrix(), MatCreateLocalRef()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalSubMatrix(Mat mat,IS isrow,IS iscol,Mat *submat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(isrow,IS_CLASSID,2);
+  PetscValidHeaderSpecific(iscol,IS_CLASSID,3);
+  PetscCheckSameComm(isrow,2,iscol,3);
+  PetscValidPointer(submat,4);
+
+  if (mat->ops->getlocalsubmatrix) {
+    ierr = (*mat->ops->getlocalsubmatrix)(mat,isrow,iscol,submat);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreateLocalRef(mat,isrow,iscol,submat);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatRestoreLocalSubMatrix"
+/*@
+   MatRestoreLocalSubMatrix - Restores a reference to a submatrix specified in local numbering
+
+   Not Collective
+
+   Input Arguments:
+   mat - matrix to extract local submatrix from
+   isrow - local row indices for submatrix
+   iscol - local column indices for submatrix
+   submat - the submatrix
+
+   Level: intermediate
+
+.seealso: MatGetLocalSubMatrix()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreLocalSubMatrix(Mat mat,IS isrow,IS iscol,Mat *submat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(isrow,IS_CLASSID,2);
+  PetscValidHeaderSpecific(iscol,IS_CLASSID,3);
+  PetscCheckSameComm(isrow,2,iscol,3);
+  PetscValidPointer(submat,4);
+  PetscValidHeaderSpecific(*submat,MAT_CLASSID,4);
+
+  if (mat->ops->restorelocalsubmatrix) {
+    ierr = (*mat->ops->restorelocalsubmatrix)(mat,isrow,iscol,submat);CHKERRQ(ierr);
+  } else {
+    ierr = MatDestroy(*submat);CHKERRQ(ierr);
+  }
+  *submat = PETSC_NULL;
+  PetscFunctionReturn(0);
+}

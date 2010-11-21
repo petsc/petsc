@@ -156,8 +156,8 @@ struct _MatOps {
   PetscErrorCode (*getseqnonzerostructure)(Mat,Mat *);
   PetscErrorCode (*create)(Mat);  
   PetscErrorCode (*getghosts)(Mat,PetscInt*,const PetscInt *[]);
-  PetscErrorCode (*dummy2)(void);
-  PetscErrorCode (*dummy3)(void);
+  PetscErrorCode (*getlocalsubmatrix)(Mat,IS,IS,Mat*);
+  PetscErrorCode (*restorelocalsubmatrix)(Mat,IS,IS,Mat*);
   /*119*/
   PetscErrorCode (*multdiagonalblock)(Mat,Vec,Vec);
   PetscErrorCode (*hermitiantranspose)(Mat,MatReuse,Mat*);
