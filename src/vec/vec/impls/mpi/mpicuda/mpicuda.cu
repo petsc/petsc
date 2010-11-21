@@ -61,17 +61,6 @@ PetscErrorCode VecNorm_MPICUDA(Vec xin,NormType type,PetscReal *z)
   }
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "VecView_MPICUDA"
-PetscErrorCode VecView_MPICUDA(Vec xin,PetscViewer viewer)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
-  ierr = VecView_MPI(xin,viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDot_MPICUDA"
@@ -216,7 +205,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPICUDA(Vec vv)
   vv->ops->dot             = VecDot_MPICUDA;
   vv->ops->mdot            = VecMDot_MPICUDA;
   vv->ops->tdot            = VecTDot_MPICUDA;
-  vv->ops->view            = VecView_MPICUDA;
   vv->ops->norm            = VecNorm_MPICUDA;
   vv->ops->scale           = VecScale_SeqCUDA;
   vv->ops->copy            = VecCopy_SeqCUDA;

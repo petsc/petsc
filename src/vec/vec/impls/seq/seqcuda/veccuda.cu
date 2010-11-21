@@ -1236,17 +1236,6 @@ PetscErrorCode VecPointwiseMult_SeqCUDA(Vec win,Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "VecView_SeqCUDA"
-PetscErrorCode VecView_SeqCUDA(Vec xin,PetscViewer viewer)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
-  ierr = VecView_Seq(xin,viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 /* should do infinity norm in cuda */
 
@@ -1515,7 +1504,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec V)
   V->ops->pointwisemult   = VecPointwiseMult_SeqCUDA;
   V->ops->pointwisedivide = VecPointwiseDivide_SeqCUDA;
   V->ops->setrandom       = VecSetRandom_SeqCUDA;
-  V->ops->view            = VecView_SeqCUDA;
   V->ops->dot_local       = VecDot_SeqCUDA;
   V->ops->tdot_local      = VecTDot_SeqCUDA;
   V->ops->norm_local      = VecNorm_SeqCUDA;

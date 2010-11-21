@@ -128,6 +128,7 @@ static PetscErrorCode PCApply_SACUDA(PC pc,Vec x,Vec y)
   PetscBool      flg1,flg2;
 
   PetscFunctionBegin;
+  /*how to apply a certain fixed number of iterations?*/
   ierr = PetscTypeCompare((PetscObject)x,VECSEQCUDA,&flg1);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)y,VECSEQCUDA,&flg2);CHKERRQ(ierr);
   if (!(flg1 && flg2)) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP, "Currently only handles CUDA vectors");
@@ -136,13 +137,8 @@ static PetscErrorCode PCApply_SACUDA(PC pc,Vec x,Vec y)
   }
   ierr = VecCUDACopyToGPU(x);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(y);CHKERRQ(ierr);
-  try {/*
-    cusp::default_monitor<PetscScalar> monitor(*((Vec_CUDA *)x->spptr)->GPUarray,sac->cycles,0,0);
-    sac->SACUDA->solve(*((Vec_CUDA *)x->spptr)->GPUarray,*((Vec_CUDA *)y->spptr)->GPUarray,monitor);*/
+  try {
     cusp::multiply(*sac->SACUDA,*((Vec_CUDA *)x->spptr)->GPUarray,*((Vec_CUDA *)y->spptr)->GPUarray);
-    for (int i = 1; i < sac->cycles; i++){
-      cusp::multiply(*sac->SACUDA,*((Vec_CUDA *)y->spptr)->GPUarray,*((Vec_CUDA *)y->spptr)->GPUarray);
-    }
     if (y->valid_GPU_array != PETSC_CUDA_UNALLOCATED) {
     y->valid_GPU_array = PETSC_CUDA_GPU;
     }
