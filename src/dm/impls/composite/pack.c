@@ -919,6 +919,51 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetISLocalToGlobalMappings(DM dm,ISL
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMCompositeGetLocalISs"
+/*@C
+   DMCompositeGetLocalISs - Gets index sets for each DM/array component of a composite local vector
+
+   Not Collective
+
+   Input Arguments:
+. dm - composite DM
+
+   Output Arguments:
+. is - array of serial index sets for each each component of the DMComposite
+
+   Level: intermediate
+
+   Notes:
+   At present, a composite local vector does not normally exist.  This function is used to provide index sets for
+   MatGetLocalSubMatrix().  In the future, the scatters for each entry in the DMComposite may be be merged into a single
+   scatter to a composite local vector.
+
+   To get the composite global indices at all local points (including ghosts), use DMCompositeGetISLocalToGlobalMappings().
+
+   To get index sets for pieces of the composite global vector, use DMCompositeGetGlobalISs().
+
+   Each returned IS should be destroyed with ISDestroy(), the array should be freed with PetscFree().
+
+.seealso: DMCompositeGetGlobalISs(), DMCompositeGetISLocalToGlobalMappings(), MatGetLocalSubMatrix(), MatCreateLocalRef()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetLocalISs(DM dm,IS **is)
+{
+  PetscErrorCode         ierr;
+  DM_Composite           *com = (DM_Composite*)dm->data;
+  struct DMCompositeLink *link;
+  PetscInt cnt,start;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(is,2);
+  ierr = PetscMalloc(com->nmine*sizeof(IS),is);CHKERRQ(ierr);
+  for (cnt=0,start=0,link=com->next; link; start+=link->n,cnt++,link=link->next) {
+    ierr = ISCreateStride(PETSC_COMM_SELF,link->n,start,1,&(*is)[cnt]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMCompositeGetGlobalISs"
 /*@C
     DMCompositeGetGlobalISs - Gets the index sets for each composed object
