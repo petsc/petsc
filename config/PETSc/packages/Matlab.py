@@ -25,10 +25,11 @@ class Configure(PETSc.package.NewPackage):
       # follow any symbolic link of this path
       self.matlab = os.path.realpath(self.matlab)
       yield os.path.dirname(os.path.dirname(self.matlab))
-    for dir in os.listdir('/Applications'):
-      if dir.startswith('MATLAB'):
-        if os.path.isfile(os.path.join('/Applications',dir,'bin','matlab')):
-          yield os.path.join('/Applications',dir)
+    if os.path.isdir('/Applications'):
+      for dir in os.listdir('/Applications'):
+        if dir.startswith('MATLAB'):
+          if os.path.isfile(os.path.join('/Applications',dir,'bin','matlab')):
+            yield os.path.join('/Applications',dir)
     return
 
   def alternateConfigureLibrary(self):
@@ -92,7 +93,7 @@ class Configure(PETSc.package.NewPackage):
               matlab_sys += ':'+os.path.join(matlab,'bin',matlab_arch)+':'+os.path.join(matlab,'extern','lib',matlab_arch)
             else:
               matlab_sys = ''
-            self.lib = [matlab_sys,'-L'+os.path.join(matlab,'bin',matlab_arch),'-L'+os.path.join(matlab,'extern','lib',matlab_arch),'-leng','-lmex','-lmx','-lmat','-lut','-licudata','-licui18n','-licuuc','-lustdio'] + matlab_dl
+            self.lib = [matlab_sys,'-L'+os.path.join(matlab,'bin',matlab_arch),'-L'+os.path.join(matlab,'extern','lib',matlab_arch),'-leng','-lmex','-lmx','-lmat','-lut','-licudata','-licui18n','-licuuc'] + matlab_dl
 
             self.addDefine('HAVE_MATLAB_ENGINE', 1)
             if self.setCompilers.isDarwin():
