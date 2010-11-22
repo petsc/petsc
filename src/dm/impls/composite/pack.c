@@ -906,15 +906,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetISLocalToGlobalMappings(DM dm,ISL
     } else if (next->type == DMCOMPOSITE_DM) {
       ISLocalToGlobalMapping ltog;
       PetscMPIInt            size;
-      const PetscInt         *suboff;
+      const PetscInt         *suboff,*indices;
       Vec                    global;
 
       /* Get sub-DM global indices for each local dof */
       ierr = DMDAGetISLocalToGlobalMapping(next->dm,&ltog);CHKERRQ(ierr); /* This function should become generic to DM */
       ierr = ISLocalToGlobalMappingGetSize(ltog,&n);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingGetIndices(ltog,&indices);CHKERRQ(ierr);
       ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-      for (i=0; i<n; i++) idx[i] = i;
-      ierr = ISLocalToGlobalMappingApply(ltog,n,idx,idx);CHKERRQ(ierr); /* This would be nicer with an ISLocalToGlobalMappingGetIndices() */
 
       /* Get the offsets for the sub-DM global vector */
       ierr = DMGetGlobalVector(next->dm,&global);CHKERRQ(ierr);
@@ -923,7 +922,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetISLocalToGlobalMappings(DM dm,ISL
 
       /* Shift the sub-DM definition of the global space to the composite global space */
       for (i=0; i<n; i++) {
-        PetscInt subi = idx[i],lo = 0,hi = size,t;
+        PetscInt subi = indices[i],lo = 0,hi = size,t;
         /* Binary search to find which rank owns subi */
         while (hi-lo > 1) {
           t = lo + (hi-lo)/2;
@@ -932,6 +931,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetISLocalToGlobalMappings(DM dm,ISL
         }
         idx[i] = subi - suboff[lo] + next->grstarts[lo];
       }
+      ierr = ISLocalToGlobalMappingRestoreIndices(ltog,&indices);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,n,idx,PETSC_OWN_POINTER,&(*ltogs)[cnt]);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(next->dm,&global);CHKERRQ(ierr);
     } else SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
