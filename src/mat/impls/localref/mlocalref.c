@@ -97,6 +97,9 @@ static PetscErrorCode ISL2GCompose(IS is,ISLocalToGlobalMapping ltog,ISLocalToGl
   PetscInt m,*idxm;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,2);
+  PetscValidPointer(cltog,3);
   ierr = ISGetLocalSize(is,&m);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&idx);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
@@ -127,6 +130,9 @@ static PetscErrorCode ISL2GComposeBlock(IS is,ISLocalToGlobalMapping ltog,ISLoca
   PetscInt m,*idxm;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,2);
+  PetscValidPointer(cltog,3);
   ierr = ISBlockGetLocalSize(is,&m);CHKERRQ(ierr);
   ierr = ISBlockGetIndices(is,&idx);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
