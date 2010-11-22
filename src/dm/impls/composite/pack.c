@@ -542,8 +542,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeRestoreAccess(DM dm,Vec gvec,...)
     Input Parameter:
 +    dm - the packer object
 .    gvec - the global vector
--    ... - the individual sequential objects (arrays or vectors)
- 
+-    ... - the individual sequential objects (arrays or vectors), PETSC_NULL for those that are not needed
+
     Level: advanced
 
 .seealso DMDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCreateGlobalVector(),
@@ -556,34 +556,34 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeScatter(DM dm,Vec gvec,...)
   va_list                Argp;
   PetscErrorCode         ierr;
   struct DMCompositeLink *next;
-  PetscInt               cnt = 3;
+  PetscInt               cnt;
   DM_Composite           *com = (DM_Composite*)dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(gvec,VEC_CLASSID,2);
-  next = com->next;
   if (!com->setup) {
     ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
 
   /* loop over packed objects, handling one at at time */
   va_start(Argp,gvec);
-  while (next) {
+  for (cnt=3,next=com->next; next; cnt++,next=next->next) {
     if (next->type == DMCOMPOSITE_ARRAY) {
       PetscScalar *array;
       array = va_arg(Argp, PetscScalar*);
+      if (!array) continue;
+      PetscValidScalarPointer(array,cnt);
       ierr = DMCompositeScatter_Array(dm,next,gvec,array);CHKERRQ(ierr);
     } else if (next->type == DMCOMPOSITE_DM) {
       Vec vec;
       vec = va_arg(Argp, Vec);
+      if (!vec) continue;
       PetscValidHeaderSpecific(vec,VEC_CLASSID,cnt);
       ierr = DMCompositeScatter_DM(dm,next,gvec,vec);CHKERRQ(ierr);
     } else {
       SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
-    cnt++;
-    next = next->next;
   }
   va_end(Argp);
   PetscFunctionReturn(0);
@@ -599,8 +599,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeScatter(DM dm,Vec gvec,...)
     Input Parameter:
 +    dm - the packer object
 .    gvec - the global vector
--    ... - the individual sequential objects (arrays or vectors)
- 
+-    ... - the individual sequential objects (arrays or vectors), PETSC_NULL for any that are not needed
+
     Level: advanced
 
 .seealso DMDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCreateGlobalVector(),
@@ -614,31 +614,33 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGather(DM dm,Vec gvec,InsertMode imo
   PetscErrorCode         ierr;
   struct DMCompositeLink *next;
   DM_Composite           *com = (DM_Composite*)dm->data;
+  PetscInt               cnt;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(gvec,VEC_CLASSID,2);
-  next = com->next;
   if (!com->setup) {
     ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
 
   /* loop over packed objects, handling one at at time */
   va_start(Argp,imode);
-  while (next) {
+  for (cnt=3,next=com->next; next; cnt++,next=next->next) {
     if (next->type == DMCOMPOSITE_ARRAY) {
       PetscScalar *array;
       array = va_arg(Argp, PetscScalar*);
+      if (!array) continue;
+      PetscValidScalarPointer(array,cnt);
       ierr  = DMCompositeGather_Array(dm,next,gvec,imode,array);CHKERRQ(ierr);
     } else if (next->type == DMCOMPOSITE_DM) {
       Vec vec;
       vec = va_arg(Argp, Vec);
-      PetscValidHeaderSpecific(vec,VEC_CLASSID,3);
+      if (!vec) continue;
+      PetscValidHeaderSpecific(vec,VEC_CLASSID,cnt);
       ierr = DMCompositeGather_DM(dm,next,gvec,imode,vec);CHKERRQ(ierr);
     } else {
       SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
-    next = next->next;
   }
   va_end(Argp);
   PetscFunctionReturn(0);
