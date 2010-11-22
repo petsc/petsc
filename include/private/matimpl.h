@@ -157,7 +157,7 @@ struct _MatOps {
   PetscErrorCode (*create)(Mat);  
   PetscErrorCode (*getghosts)(Mat,PetscInt*,const PetscInt *[]);
   PetscErrorCode (*dummy2)(void);
-  PetscErrorCode (*dummy3)(void);
+  PetscErrorCode (*getsubmatricesparallel)(Mat, PetscInt, const IS[], const IS[], MatReuse, Mat**);
   /*119*/
   PetscErrorCode (*multdiagonalblock)(Mat,Vec,Vec);
   PetscErrorCode (*hermitiantranspose)(Mat,MatReuse,Mat*);

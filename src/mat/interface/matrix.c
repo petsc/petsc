@@ -6302,6 +6302,51 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrices(Mat mat,PetscInt n,const IS 
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatricesParalell(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
+{
+  PetscErrorCode ierr;
+  PetscInt        i;
+  PetscBool       eq;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  if (n) {
+    PetscValidPointer(irow,3);
+    PetscValidHeaderSpecific(*irow,IS_CLASSID,3);
+    PetscValidPointer(icol,4);
+    PetscValidHeaderSpecific(*icol,IS_CLASSID,4);
+  }
+  PetscValidPointer(submat,6);
+  if (n && scall == MAT_REUSE_MATRIX) {
+    PetscValidPointer(*submat,6);
+    PetscValidHeaderSpecific(**submat,MAT_CLASSID,6);
+  }
+  if (!mat->ops->getsubmatricesparallel) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+
+  ierr = PetscLogEventBegin(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
+  ierr = (*mat->ops->getsubmatricesparallel)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    if (mat->symmetric || mat->structurally_symmetric || mat->hermitian) {
+      ierr = ISEqual(irow[i],icol[i],&eq);CHKERRQ(ierr);
+      if (eq) {
+	if (mat->symmetric){
+	  ierr = MatSetOption((*submat)[i],MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+	} else if (mat->hermitian) {
+	  ierr = MatSetOption((*submat)[i],MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
+	} else if (mat->structurally_symmetric) {
+	  ierr = MatSetOption((*submat)[i],MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+	}
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroyMatrices"
 /*@C
