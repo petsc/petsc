@@ -95,16 +95,19 @@ static PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetRandom_Seq"
 static PetscErrorCode VecSetRandom_Seq(Vec xin,PetscRandom r)
 {
   PetscErrorCode ierr;
   PetscInt       n = xin->map->n,i;
-  PetscScalar    *xx = *(PetscScalar**)xin->data;
+  PetscScalar    *xx;
 
   PetscFunctionBegin;
+  ierr = VecGetArrayPrivate(xin,&xx);CHKERRQ(ierr);
   for (i=0; i<n; i++) {ierr = PetscRandomGetValue(r,&xx[i]);CHKERRQ(ierr);}
+  ierr = VecRestoreArrayPrivate(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -169,14 +172,17 @@ static PetscErrorCode VecResetArray_Seq(Vec vin)
 #define __FUNCT__ "VecCopy_Seq"
 static PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
 {
-  PetscScalar    *ya, *xa;
-  PetscErrorCode ierr;
+  PetscScalar       *ya;
+  const PetscScalar *xa;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (xin != yin) {
-    ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
+    ierr = VecGetArrayPrivate(yin,&ya);CHKERRQ(ierr);
     ierr = PetscMemcpy(ya,xa,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate(yin,&ya);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -191,9 +197,11 @@ static PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
 
   PetscFunctionBegin;
   if (xin != yin) {
-    ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+    ierr = VecGetArrayPrivate(xin,&xa);CHKERRQ(ierr);
+    ierr = VecGetArrayPrivate(yin,&ya);CHKERRQ(ierr);
     BLASswap_(&bn,xa,&one,ya,&one);
-    ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate(xin,&xa);CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate(yin,&ya);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

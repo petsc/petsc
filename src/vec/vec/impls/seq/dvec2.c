@@ -668,14 +668,17 @@ PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
     ierr = VecAXPY_Seq(yin,alpha,xin);CHKERRQ(ierr);
   } else if (alpha == -1.0) {
     PetscInt i;
-    ierr = VecGetArrayPrivate2(yin,&yy,xin,(PetscScalar**)&xx);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
+    ierr = VecGetArrayPrivate(yin,&yy);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       yy[i] = xx[i] - yy[i];
     }
-    ierr = VecRestoreArrayPrivate2(yin,&yy,xin,(PetscScalar**)&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate(yin,&yy);CHKERRQ(ierr);
     ierr = PetscLogFlops(1.0*n);CHKERRQ(ierr);
   } else {
-    ierr = VecGetArrayPrivate2(yin,&yy,xin,(PetscScalar**)&xx);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
+    ierr = VecGetArrayPrivate(yin,&yy);CHKERRQ(ierr);
 #if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
     {
       PetscScalar oalpha = alpha;
@@ -689,7 +692,8 @@ PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
       }
     }
 #endif
-    ierr = VecRestoreArrayPrivate2(yin,&yy,xin,(PetscScalar**)&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate(yin,&yy);CHKERRQ(ierr);
     ierr = PetscLogFlops(2.0*n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -712,7 +716,9 @@ PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha,Vec xin,Vec yin)
   const PetscScalar  *yy,*xx;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayPrivate3(win,&ww,yin,(PetscScalar**)&yy,xin,(PetscScalar**)&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(yin,&yy);CHKERRQ(ierr);
+  ierr = VecGetArrayPrivate(win,&ww);CHKERRQ(ierr);
   if (alpha == 1.0) {
     ierr = PetscLogFlops(n);CHKERRQ(ierr);
     /* could call BLAS axpy after call to memcopy, but may be slower */
@@ -731,7 +737,9 @@ PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha,Vec xin,Vec yin)
 #endif
     ierr = PetscLogFlops(2.0*n);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArrayPrivate3(win,&ww,yin,(PetscScalar**)&yy,xin,(PetscScalar**)&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(yin,&yy);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPrivate(win,&ww);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -740,13 +748,14 @@ PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha,Vec xin,Vec yin)
 #define __FUNCT__ "VecMaxPointwiseDivide_Seq"
 PetscErrorCode VecMaxPointwiseDivide_Seq(Vec xin,Vec yin,PetscReal *max)
 {
-  PetscErrorCode ierr;
-  PetscInt       n = xin->map->n,i;
-  PetscScalar    *xx,*yy;
-  PetscReal      m = 0.0;
+  PetscErrorCode    ierr;
+  PetscInt          n = xin->map->n,i;
+  const PetscScalar *xx,*yy;
+  PetscReal         m = 0.0;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayPrivate2(yin,&yy,xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(yin,&yy);CHKERRQ(ierr);
   for(i = 0; i < n; i++) {
     if (yy[i] != 0.0) {
       m = PetscMax(PetscAbsScalar(xx[i]/yy[i]), m);
@@ -754,7 +763,8 @@ PetscErrorCode VecMaxPointwiseDivide_Seq(Vec xin,Vec yin,PetscReal *max)
       m = PetscMax(PetscAbsScalar(xx[i]), m);
     }
   }
-  ierr = VecRestoreArrayPrivate2(yin,&yy,xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(yin,&yy);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&m,max,1,MPIU_REAL,MPI_MAX,((PetscObject)xin)->comm);CHKERRQ(ierr);
   ierr = PetscLogFlops(n);CHKERRQ(ierr);
   PetscFunctionReturn(0);

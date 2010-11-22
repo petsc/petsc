@@ -723,7 +723,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAYPX(Vec y,PetscScalar alpha,Vec x)
 
    Level: intermediate
 
-   Notes: w cannot be either x or y
+   Notes: w cannot be either x or y, but x and y can be the same
 
    Concepts: vector^BLAS
    Concepts: BLAS
