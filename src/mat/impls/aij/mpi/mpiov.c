@@ -1439,7 +1439,7 @@ PetscErrorCode MatGetSubMatricesParallel_MPIXAIJ(Mat C,PetscInt ismax,const IS i
   PetscMPIInt size, flag;
   PetscInt    i,ii;
   PetscInt    ismax_c;
-  PetscFunctionBegin;
+  PetscFunctionBegin; 
   if(!ismax) {
     PetscFunctionReturn(0);
   }
@@ -1470,7 +1470,7 @@ PetscErrorCode MatGetSubMatricesParallel_MPIXAIJ(Mat C,PetscInt ismax,const IS i
     for(i = 0, ii = 0; i < ismax; ++i) {
       ierr = MPI_Comm_size(((PetscObject)iscol)->comm, &size); CHKERRQ(ierr);
       if(size > 1) {
-	ierr = ISGetNonlocalIS(((PetscObject)iscol)->comm, &iscol_c[ii]); CHKERRQ(ierr);
+	ierr = ISGetNonlocalIS(iscol[i], &(iscol_c[ii])); CHKERRQ(ierr);
 	isrow_c[ii] = isrow_c[i];
 	++ii;
       }
