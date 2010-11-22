@@ -165,6 +165,12 @@ struct _MatOps {
   PetscErrorCode (*multhermitiantransposeadd)(Mat,Vec,Vec,Vec);
   PetscErrorCode (*getmultiprocblock)(Mat,MPI_Comm,Mat*);
   /*124*/
+  PetscErrorCode (*dummy1)(void);
+  PetscErrorCode (*dummy2)(Mat,MatReuse,Mat*);
+  PetscErrorCode (*dummy3)(Mat,Vec,Vec);
+  PetscErrorCode (*dummy4)(Mat,Vec,Vec,Vec);
+  PetscErrorCode (*getsubmatricesparallel)(Mat,PetscInt,const IS[], const IS[], MatReuse, Mat**);
+  /*129*/
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

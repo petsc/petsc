@@ -596,6 +596,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangeColumn(Mat,PetscInt
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangesColumn(Mat,const PetscInt**);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrices(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatricesParallel(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroyMatrices(PetscInt,Mat *[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat,IS,IS,MatReuse,Mat *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalSubMatrix(Mat,IS,IS,Mat*);
@@ -1574,7 +1575,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_HERMITIANTRANSPOSE=120,
                MATOP_MULTHERMITIANTRANSPOSE=121,
                MATOP_MULTHERMITIANTRANSPOSEADD=122,
-               MATOP_GETMULTIPROCBLOCK=123
+               MATOP_GETMULTIPROCBLOCK=123,
+	       MATOP_GET_SUBMATRICES_PARALLEL=128
              } MatOperation;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat,MatOperation,PetscBool *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat,MatOperation,void(*)(void));
