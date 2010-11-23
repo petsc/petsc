@@ -107,8 +107,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreate_DA(DM da)
   dd->gtol         = PETSC_NULL;
   dd->ltog         = PETSC_NULL;
   dd->ltol         = PETSC_NULL;
-  dd->ltogmap      = PETSC_NULL;
-  dd->ltogmapb     = PETSC_NULL;
   dd->ao           = PETSC_NULL;
   dd->base         = -1;
   dd->wrap         = DMDA_NONPERIODIC;

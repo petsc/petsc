@@ -1,5 +1,5 @@
 
-static char help[] = "Tests DMDAGetISLocalToGlobalMappingBlck().\n\n";
+static char help[] = "Tests DMGetLocalToGlobalMappingBlock().\n\n";
 
 #include "petscdm.h"
 

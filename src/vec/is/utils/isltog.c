@@ -965,3 +965,56 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingRestoreInfo(ISLocalToGlo
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISLocalToGlobalMappingGetIndices"
+/*@C
+   ISLocalToGlobalMappingGetIndices - Get global indices for every local point
+
+   Not Collective
+
+   Input Arguments:
+. ltog - local to global mapping
+
+   Output Arguments:
+. array - array of indices
+
+   Level: advanced
+
+.seealso: ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingRestoreIndices()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog,const PetscInt **array)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,1);
+  PetscValidPointer(array,2);
+  *array = ltog->indices;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISLocalToGlobalMappingRestoreIndices"
+/*@C
+   ISLocalToGlobalMappingRestoreIndices - Restore indices obtained with ISLocalToGlobalMappingRestoreIndices()
+
+   Not Collective
+
+   Input Arguments:
++ ltog - local to global mapping
+- array - array of indices
+
+   Level: advanced
+
+.seealso: ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingGetIndices()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog,const PetscInt **array)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,1);
+  PetscValidPointer(array,2);
+  if (*array != ltog->indices) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Trying to return mismatched pointer");
+  *array = PETSC_NULL;
+  PetscFunctionReturn(0);
+}

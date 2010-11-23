@@ -11,7 +11,7 @@ viewer = PetscViewer();
 viewer.SetType('ascii');
 %%
 %   Create a DM object
-da = PetscDMDACreate2d(PetscDM.NONPERIODIC,PetscDM.STENCIL_BOX,4,4,1,1,1,1,0,0);
+da = PetscDMDACreate2d(PetscDM.NONPERIODIC,PetscDM.STENCIL_BOX,4,4,1,1,1,1);
 da.SetFunction('rhsfunction');
 da.SetJacobian('jacobian');
 %%

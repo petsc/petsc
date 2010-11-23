@@ -779,8 +779,8 @@ PetscErrorCode DMGetMatrix_DA_2d_MPIAIJ(DM da,Mat J)
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   ierr = PetscMalloc2(nc,PetscInt,&rows,col*col*nc*nc,PetscInt,&cols);CHKERRQ(ierr);
-  ierr = DMDAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-  ierr = DMDAGetISLocalToGlobalMappingBlck(da,&ltogb);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMappingBlock(da,&ltogb);CHKERRQ(ierr);
   
   /* determine the matrix preallocation information */
   ierr = MatPreallocateInitialize(comm,nc*nx*ny,nc*nx*ny,dnz,onz);CHKERRQ(ierr);
@@ -887,8 +887,8 @@ PetscErrorCode DMGetMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscInt),&cols);CHKERRQ(ierr);
-  ierr = DMDAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-  ierr = DMDAGetISLocalToGlobalMappingBlck(da,&ltogb);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMappingBlock(da,&ltogb);CHKERRQ(ierr);
   
   /* determine the matrix preallocation information */
   ierr = MatPreallocateInitialize(comm,nc*nx*ny,nc*nx*ny,dnz,onz);CHKERRQ(ierr);
@@ -1017,8 +1017,8 @@ PetscErrorCode DMGetMatrix_DA_3d_MPIAIJ(DM da,Mat J)
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   ierr = PetscMalloc2(nc,PetscInt,&rows,col*col*col*nc*nc,PetscInt,&cols);CHKERRQ(ierr);
-  ierr = DMDAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-  ierr = DMDAGetISLocalToGlobalMappingBlck(da,&ltogb);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMappingBlock(da,&ltogb);CHKERRQ(ierr);
 
   /* determine the matrix preallocation information */
   ierr = MatPreallocateInitialize(comm,nc*nx*ny*nz,nc*nx*ny*nz,dnz,onz);CHKERRQ(ierr);
@@ -1135,8 +1135,8 @@ PetscErrorCode DMGetMatrix_DA_1d_MPIAIJ(DM da,Mat J)
   ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
   ierr = PetscMalloc2(nc,PetscInt,&rows,col*nc*nc,PetscInt,&cols);CHKERRQ(ierr);
   
-  ierr = DMDAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-  ierr = DMDAGetISLocalToGlobalMappingBlck(da,&ltogb);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMappingBlock(da,&ltogb);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(J,ltog,ltog);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMappingBlock(J,ltogb,ltogb);CHKERRQ(ierr);
   
@@ -1199,8 +1199,8 @@ PetscErrorCode DMGetMatrix_DA_2d_MPIBAIJ(DM da,Mat J)
 
   ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscInt),&cols);CHKERRQ(ierr);
 
-  ierr = DMDAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-  ierr = DMDAGetISLocalToGlobalMappingBlck(da,&ltogb);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMappingBlock(da,&ltogb);CHKERRQ(ierr);
 
   /* determine the matrix preallocation information */
   ierr = MatPreallocateInitialize(comm,nx*ny,nx*ny,dnz,onz);CHKERRQ(ierr);
@@ -1295,8 +1295,8 @@ PetscErrorCode DMGetMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
 
   ierr  = PetscMalloc(col*col*col*sizeof(PetscInt),&cols);CHKERRQ(ierr);
 
-  ierr = DMDAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-  ierr = DMDAGetISLocalToGlobalMappingBlck(da,&ltogb);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMappingBlock(da,&ltogb);CHKERRQ(ierr);
 
   /* determine the matrix preallocation information */
   ierr = MatPreallocateInitialize(comm,nx*ny*nz,nx*ny*nz,dnz,onz);CHKERRQ(ierr);
@@ -1426,8 +1426,8 @@ PetscErrorCode DMGetMatrix_DA_2d_MPISBAIJ(DM da,Mat J)
 
   ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscInt),&cols);CHKERRQ(ierr);
 
-  ierr = DMDAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-  ierr = DMDAGetISLocalToGlobalMappingBlck(da,&ltogb);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMappingBlock(da,&ltogb);CHKERRQ(ierr);
 
   /* determine the matrix preallocation information */
   ierr = MatPreallocateSymmetricInitialize(comm,nx*ny,nx*ny,dnz,onz);CHKERRQ(ierr);
@@ -1526,8 +1526,8 @@ PetscErrorCode DMGetMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
   /* create the matrix */
   ierr = PetscMalloc(col*col*col*sizeof(PetscInt),&cols);CHKERRQ(ierr);
 
-  ierr = DMDAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-  ierr = DMDAGetISLocalToGlobalMappingBlck(da,&ltogb);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMappingBlock(da,&ltogb);CHKERRQ(ierr);
 
   /* determine the matrix preallocation information */
   ierr = MatPreallocateSymmetricInitialize(comm,nx*ny*nz,nx*ny*nz,dnz,onz);CHKERRQ(ierr);
@@ -1653,8 +1653,8 @@ PetscErrorCode DMGetMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   ierr = PetscMalloc(col*col*col*nc*sizeof(PetscInt),&cols);CHKERRQ(ierr);
-  ierr = DMDAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-  ierr = DMDAGetISLocalToGlobalMappingBlck(da,&ltogb);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMappingBlock(da,&ltogb);CHKERRQ(ierr);
 
   /* determine the matrix preallocation information */
   ierr = MatPreallocateInitialize(comm,nc*nx*ny*nz,nc*nx*ny*nz,dnz,onz);CHKERRQ(ierr); 
