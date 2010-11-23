@@ -4,7 +4,7 @@
 # by external packages (like TAO) or PETSc applications that do not use PETSc targets.
 #
 # PETSC_LIB_DIR          - (defined from $PETSC_DIR) determines where the PETSc libraries are built.
-# PETSC_INCLUDE          - locations of include files
+# PETSC_CC_INCLUDES          - locations of include files
 # PETSC_[C,F]CPPFLAGS    -  preprocessor flags for *.c, *.F preprocessing
 # PETSC_[C,F]SH_LIB_PATH - linker_add_sh_lib_path:sh_lib_path pairs for all the shared library locations
 #

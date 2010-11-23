@@ -236,7 +236,7 @@ getlinklibs:
 	-@echo  ${C_SH_LIB_PATH} ${PETSC_TS_LIB}
 
 getincludedirs:
-	-@echo  ${PETSC_INCLUDE}
+	-@echo  ${PETSC_CC_INCLUDES}
 
 getpetscflags:
 	-@echo  ${PETSCFLAGS}
