@@ -1423,8 +1423,8 @@ PetscErrorCode MatMPIAIJReplaceMatrices_Private(Mat C, Mat A, Mat B)
   aij->B = B;
   ierr = PetscLogObjectParent(C,A); CHKERRQ(ierr);
   ierr = PetscLogObjectParent(C,B); CHKERRQ(ierr);
-  C->preallocated = A->preallocated && B->preallocated;
-  C->assembled    = A->assembled && B->assembled;
+  C->preallocated = (PetscBool)(A->preallocated && B->preallocated);
+  C->assembled    = (PetscBool)(A->assembled && B->assembled);
   PetscFunctionReturn(0);
 }
 
