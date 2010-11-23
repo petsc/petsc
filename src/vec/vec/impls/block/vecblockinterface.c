@@ -31,7 +31,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecBlockSetSubVecs_Block(Vec V,PetscInt m,cons
       b->v[row] = vec[i];
     }
   }
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -56,6 +55,8 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCVEC_DLLEXPORT VecBlockSetSubVec_Block(Vec V,const PetscInt idxm,const Vec vec)
 {
   PetscErrorCode ierr;
+
+  PetscFunctionBegin;
   ierr = VecBlockSetSubVecs_Block(V,1,&idxm,&vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -76,8 +77,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecBlockSetSubVec(Vec V,const PetscInt idxm,co
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "_VecBlockGetValues"
-PetscErrorCode PETSCVEC_DLLEXPORT _VecBlockGetValues(Vec x,PetscInt m,const PetscInt idxm[],Vec vec[])
+#define __FUNCT__ "VecBlockGetSubVecs_Private"
+PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVecs_Private(Vec x,PetscInt m,const PetscInt idxm[],Vec vec[])
 {
   Vec_Block *b = (Vec_Block*)x->data;
   PetscInt  i;
@@ -98,7 +99,10 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "VecBlockGetSubVec_Block"
 PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVec_Block(Vec X,PetscInt idxm,Vec *sx)
 {
-  _VecBlockGetValues( X, 1,&idxm, sx );
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecBlockGetSubVecs_Private(X,1,&idxm,sx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -123,10 +127,11 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVecs_Block(Vec X,PetscInt *N,Vec **sx)
 {
   Vec_Block *b;
+
+  PetscFunctionBegin;
   b = (Vec_Block*)X->data;
   *N  = b->nb;
   *sx = b->v;
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

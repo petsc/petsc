@@ -60,8 +60,8 @@ EXTERN_C_END
 
 /* constructor */
 #undef __FUNCT__
-#define __FUNCT__ "PETSc_VecBlock_SetOps"
-PetscErrorCode PETSc_VecBlock_SetOps( struct _VecOps *ops )
+#define __FUNCT__ "VecBlockSetOps_Private"
+PetscErrorCode VecBlockSetOps_Private( struct _VecOps *ops )
 {
   PetscFunctionBegin;
 
@@ -173,7 +173,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Block( Vec V )
   s->nb            = -1;
   s->v             = PETSC_NULL;
 
-  ierr = PETSc_VecBlock_SetOps(V->ops);
+  ierr = VecBlockSetOps_Private(V->ops);CHKERRQ(ierr);
   V->petscnative     = PETSC_TRUE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECBLOCK);CHKERRQ(ierr);
