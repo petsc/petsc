@@ -10,7 +10,7 @@ typedef struct {
 
 /* These need to be macros because they use sizeof */
 #define IndexSpaceGet(buf,nrow,ncol,irowm,icolm) do {                   \
-    if (nrow + ncol > sizeof(buf)/sizeof(buf[0])) {                     \
+    if (nrow + ncol > (PetscInt)sizeof(buf)/sizeof(buf[0])) {           \
       ierr = PetscMalloc2(nrow,PetscInt,&irowm,ncol,PetscInt,&icolm);CHKERRQ(ierr); \
     } else {                                                            \
       irowm = &buf[0];                                                  \
@@ -19,7 +19,7 @@ typedef struct {
   } while (0)
 
 #define IndexSpaceRestore(buf,nrow,ncol,irowm,icolm) do {       \
-    if (nrow + ncol > sizeof(buf)/sizeof(buf[0])) {             \
+    if (nrow + ncol > (PetscInt)sizeof(buf)/sizeof(buf[0])) {             \
       ierr = PetscFree2(irowm,icolm);CHKERRQ(ierr);             \
     }                                                           \
   } while (0)

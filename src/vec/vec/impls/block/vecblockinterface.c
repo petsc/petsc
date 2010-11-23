@@ -78,7 +78,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecBlockSetSubVec(Vec V,const PetscInt idxm,co
 
 #undef __FUNCT__
 #define __FUNCT__ "VecBlockGetSubVecs_Private"
-PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVecs_Private(Vec x,PetscInt m,const PetscInt idxm[],Vec vec[])
+static PetscErrorCode VecBlockGetSubVecs_Private(Vec x,PetscInt m,const PetscInt idxm[],Vec vec[])
 {
   Vec_Block *b = (Vec_Block*)x->data;
   PetscInt  i;

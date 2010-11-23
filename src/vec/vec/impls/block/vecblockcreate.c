@@ -58,10 +58,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVec_Block(Vec,PetscInt,Vec*);
 PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVecs_Block(Vec,PetscInt*,Vec**);
 EXTERN_C_END
 
-/* constructor */
 #undef __FUNCT__
 #define __FUNCT__ "VecBlockSetOps_Private"
-PetscErrorCode VecBlockSetOps_Private(struct _VecOps *ops)
+static PetscErrorCode VecBlockSetOps_Private(struct _VecOps *ops)
 {
   PetscFunctionBegin;
 
