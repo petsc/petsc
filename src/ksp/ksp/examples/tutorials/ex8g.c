@@ -127,9 +127,9 @@ int main(int argc,char **args)
 
      Set the overlap, using the default PETSc decomposition via
          PCGASMSetOverlap(pc,overlap);
-     Could instead use the option -pc_asm_overlap <ovl> 
+     Could instead use the option -pc_gasm_overlap <ovl> 
 
-     Set the total number of blocks via -pc_asm_blocks <blks>
+     Set the total number of blocks via -pc_gasm_blocks <blks>
      Note:  The GASM default is to use 1 block per processor.  To
      experiment on a single processor with various overlaps, you
      must specify use of multiple blocks!

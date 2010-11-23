@@ -243,7 +243,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     ierr = VecScatterCreate(x,osm->gis,osm->gx,gid, &(osm->grestriction));     CHKERRQ(ierr);
     ierr = ISDestroy(gid);                                                     CHKERRQ(ierr);
     /* Prolongation ISs */
-    { PetscInt       dn_local;       /* Number of indices in the local part of single domain assigned to this processor. */
+    { PetscInt       dn_local;       /* Number of indices in the local part of a single domain assigned to this processor. */
       const PetscInt *didx_local;    /* Global indices from the local part of a single domain assigned to this processor. */
       PetscInt       ddn_local;      /* Number of indices in the local part of the disjoint union all domains assigned to this processor. */
       PetscInt       *ddidx_local;   /* Global indices of the local part of the disjoint union of all domains assigned to this processor. */
@@ -270,7 +270,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       ierr = PetscMalloc(sizeof(PetscInt)*ddn_local, &ddidx_llocal); CHKERRQ(ierr);
       ierr = ISCreateGeneral(((PetscObject)pc)->comm, ddn_local, ddidx_local, PETSC_OWN_POINTER, &(osm->gis_local)); CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingCreateIS(osm->gis,&ltog);CHKERRQ(ierr);
-      ierr = ISGlobalToLocalMappingApply(ltog,IS_GTOLM_DROP,dn_local,ddidx_local,&ddn_llocal,ddidx_llocal);CHKERRQ(ierr);
+      ierr = ISGlobalToLocalMappingApply(ltog,IS_GTOLM_DROP,ddn_local,ddidx_local,&ddn_llocal,ddidx_llocal);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRQ(ierr);
       if (ddn_llocal != ddn_local) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"gis_local contains %D indices outside of gis", ddn_llocal - ddn_local);
       /* Now convert these localized indices into the global indices into the merged output vector. */
@@ -325,7 +325,12 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   /* 
      Extract out the submatrices. 
   */
-  ierr = MatGetSubMatricesParallel(pc->pmat,osm->n,osm->is, osm->is,scall,&osm->pmat);CHKERRQ(ierr);
+  if(size > 1) {
+    ierr = MatGetSubMatricesParallel(pc->pmat,osm->n,osm->is, osm->is,scall,&osm->pmat);CHKERRQ(ierr);
+  }
+  else {
+    ierr = MatGetSubMatrices(pc->pmat,osm->n,osm->is, osm->is,scall,&osm->pmat);CHKERRQ(ierr);
+  }
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix);CHKERRQ(ierr);
     for (i=0; i<osm->n; i++) {
