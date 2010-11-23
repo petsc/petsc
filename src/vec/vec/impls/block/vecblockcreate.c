@@ -10,7 +10,7 @@
  Implements a basic block vector implementation.
 
  Allows the definition of a block vector of the form
- {X}^T = { {x1}, {x2}, ..., {xn} }^T
+ {X}^T = { {x1},{x2},...,{xn} }^T
  where {x1} is a vector of any type.
 
  It is possible some methods implemented will not support
@@ -20,34 +20,34 @@
 
 
 /* operation prototypes */
-EXTERN PetscErrorCode VecAssemblyBegin_Block( Vec v );
-EXTERN PetscErrorCode VecAssemblyEnd_Block( Vec v );
-EXTERN PetscErrorCode VecDestroy_Block( Vec v );
-EXTERN PetscErrorCode VecSetUp_Block( Vec V );
+EXTERN PetscErrorCode VecAssemblyBegin_Block(Vec v);
+EXTERN PetscErrorCode VecAssemblyEnd_Block(Vec v);
+EXTERN PetscErrorCode VecDestroy_Block(Vec v);
+EXTERN PetscErrorCode VecSetUp_Block(Vec V);
 EXTERN PetscErrorCode VecCopy_Block(Vec x,Vec y);
-EXTERN PetscErrorCode VecDuplicate_Block( Vec x, Vec *y );
-EXTERN PetscErrorCode VecDot_Block( Vec x, Vec y, PetscScalar *val );
-EXTERN PetscErrorCode VecTDot_Block( Vec x, Vec y, PetscScalar *val );
-EXTERN PetscErrorCode VecDot_Block( Vec x, Vec y, PetscScalar *val );
-EXTERN PetscErrorCode VecTDot_Block( Vec x, Vec y, PetscScalar *val );
-EXTERN PetscErrorCode VecAXPY_Block( Vec y, PetscScalar alpha, Vec x );
-EXTERN PetscErrorCode VecAYPX_Block( Vec y, PetscScalar alpha, Vec x );
-EXTERN PetscErrorCode VecAXPBY_Block( Vec y, PetscScalar alpha, PetscScalar beta, Vec x );
-EXTERN PetscErrorCode VecScale_Block( Vec x, PetscScalar alpha );
-EXTERN PetscErrorCode VecPointwiseMult_Block( Vec w, Vec x, Vec y );
-EXTERN PetscErrorCode VecPointwiseDivide_Block( Vec w, Vec x, Vec y );
-EXTERN PetscErrorCode VecReciprocal_Block( Vec x );
-EXTERN PetscErrorCode VecNorm_Block( Vec xin, NormType type, PetscReal* z );
-EXTERN PetscErrorCode VecMAXPY_Block( Vec y, PetscInt nv, const PetscScalar alpha[], Vec *x );
-EXTERN PetscErrorCode VecMDot_Block( Vec x, PetscInt nv, const Vec y[], PetscScalar *val );
-EXTERN PetscErrorCode VecMTDot_Block( Vec x, PetscInt nv, const Vec y[], PetscScalar *val );
-EXTERN PetscErrorCode VecSet_Block( Vec x, PetscScalar alpha );
-EXTERN PetscErrorCode VecConjugate_Block( Vec x );
-EXTERN PetscErrorCode VecSwap_Block( Vec x, Vec y );
-EXTERN PetscErrorCode VecWAXPY_Block( Vec w, PetscScalar alpha, Vec x, Vec y );
-EXTERN PetscErrorCode VecMax_Block( Vec x, PetscInt *p, PetscReal *max );
-EXTERN PetscErrorCode VecMin_Block( Vec x, PetscInt *p, PetscReal *min );
-EXTERN PetscErrorCode VecView_Block( Vec x, PetscViewer viewer );
+EXTERN PetscErrorCode VecDuplicate_Block(Vec x,Vec *y);
+EXTERN PetscErrorCode VecDot_Block(Vec x,Vec y,PetscScalar *val);
+EXTERN PetscErrorCode VecTDot_Block(Vec x,Vec y,PetscScalar *val);
+EXTERN PetscErrorCode VecDot_Block(Vec x,Vec y,PetscScalar *val);
+EXTERN PetscErrorCode VecTDot_Block(Vec x,Vec y,PetscScalar *val);
+EXTERN PetscErrorCode VecAXPY_Block(Vec y,PetscScalar alpha,Vec x);
+EXTERN PetscErrorCode VecAYPX_Block(Vec y,PetscScalar alpha,Vec x);
+EXTERN PetscErrorCode VecAXPBY_Block(Vec y,PetscScalar alpha,PetscScalar beta,Vec x);
+EXTERN PetscErrorCode VecScale_Block(Vec x,PetscScalar alpha);
+EXTERN PetscErrorCode VecPointwiseMult_Block(Vec w,Vec x,Vec y);
+EXTERN PetscErrorCode VecPointwiseDivide_Block(Vec w,Vec x,Vec y);
+EXTERN PetscErrorCode VecReciprocal_Block(Vec x);
+EXTERN PetscErrorCode VecNorm_Block(Vec xin,NormType type,PetscReal* z);
+EXTERN PetscErrorCode VecMAXPY_Block(Vec y,PetscInt nv,const PetscScalar alpha[],Vec *x);
+EXTERN PetscErrorCode VecMDot_Block(Vec x,PetscInt nv,const Vec y[],PetscScalar *val);
+EXTERN PetscErrorCode VecMTDot_Block(Vec x,PetscInt nv,const Vec y[],PetscScalar *val);
+EXTERN PetscErrorCode VecSet_Block(Vec x,PetscScalar alpha);
+EXTERN PetscErrorCode VecConjugate_Block(Vec x);
+EXTERN PetscErrorCode VecSwap_Block(Vec x,Vec y);
+EXTERN PetscErrorCode VecWAXPY_Block(Vec w,PetscScalar alpha,Vec x,Vec y);
+EXTERN PetscErrorCode VecMax_Block(Vec x,PetscInt *p,PetscReal *max);
+EXTERN PetscErrorCode VecMin_Block(Vec x,PetscInt *p,PetscReal *min);
+EXTERN PetscErrorCode VecView_Block(Vec x,PetscViewer viewer);
 EXTERN PetscErrorCode VecGetSize_Block(Vec x,PetscInt *size);
 EXTERN PetscErrorCode VecMaxPointwiseDivide_Block(Vec x,Vec y,PetscReal *max);
 
@@ -61,7 +61,7 @@ EXTERN_C_END
 /* constructor */
 #undef __FUNCT__
 #define __FUNCT__ "VecBlockSetOps_Private"
-PetscErrorCode VecBlockSetOps_Private( struct _VecOps *ops )
+PetscErrorCode VecBlockSetOps_Private(struct _VecOps *ops)
 {
   PetscFunctionBegin;
 
@@ -159,15 +159,15 @@ PetscErrorCode VecBlockSetOps_Private( struct _VecOps *ops )
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_Block"
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Block( Vec V )
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Block(Vec V)
 {
   Vec_Block      *s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* allocate and set pointer for implememtation data */
-  ierr = PetscMalloc( sizeof(Vec_Block), &s );CHKERRQ(ierr);
-  ierr = PetscMemzero( s, sizeof(Vec_Block) );CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(Vec_Block),&s);CHKERRQ(ierr);
+  ierr = PetscMemzero(s,sizeof(Vec_Block));CHKERRQ(ierr);
   V->data          = (void*)s;
   s->setup_called  = PETSC_FALSE;
   s->nb            = -1;

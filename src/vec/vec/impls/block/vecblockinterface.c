@@ -18,15 +18,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecBlockSetSubVecs_Block(Vec V,PetscInt m,cons
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for (i=0; i<m; i++ ) {
+  for (i=0; i<m; i++) {
     row = idxm[i];
-    if (row >= b->nb ) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,b->nb-1);
-    if (b->v[row] == PETSC_NULL ) {
-      ierr = PetscObjectReference( (PetscObject)vec[i] );CHKERRQ(ierr);
+    if (row >= b->nb) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,b->nb-1);
+    if (b->v[row] == PETSC_NULL) {
+      ierr = PetscObjectReference((PetscObject)vec[i]);CHKERRQ(ierr);
       b->v[row] = vec[i];
     }
     else {
-      ierr = PetscObjectReference( (PetscObject)vec[i] );CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)vec[i]);CHKERRQ(ierr);
       ierr = VecDestroy(b->v[row]);CHKERRQ(ierr);
       b->v[row] = vec[i];
     }
@@ -86,7 +86,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVecs_Private(Vec x,PetscInt m,co
 
   PetscFunctionBegin;
   if (!m) PetscFunctionReturn(0);
-  for (i=0; i<m; i++ ) {
+  for (i=0; i<m; i++) {
     row = idxm[i];
     if (row >= b->nb) SETERRQ2(((PetscObject)x)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,b->nb-1);
     vec[i] = b->v[row];
@@ -109,7 +109,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecBlockGetSubVec"
-PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVec( Vec X, PetscInt idxm, Vec *sx )
+PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVec(Vec X,PetscInt idxm,Vec *sx)
 {
   PetscErrorCode ierr,(*f)(Vec,PetscInt,Vec*);
 
@@ -138,7 +138,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecBlockGetSubVecs"
-PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVecs( Vec X, PetscInt *N, Vec **sx )
+PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVecs(Vec X,PetscInt *N,Vec **sx)
 {
   PetscErrorCode ierr,(*f)(Vec,PetscInt*,Vec**);
 
