@@ -170,7 +170,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Block( Vec V )
 	ierr = PETSc_VecBlock_SetOps( V->ops );
 	V->petscnative     = PETSC_TRUE;
 
-	ierr = PetscObjectChangeTypeName((PetscObject)V,"block");CHKERRQ(ierr);
+	ierr = PetscObjectChangeTypeName((PetscObject)V,VECBLOCK);CHKERRQ(ierr);
 	
 	ierr = VecSetUp_Block( V );CHKERRQ(ierr);
 	

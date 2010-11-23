@@ -138,7 +138,7 @@ PetscErrorCode VecDuplicate_Block( Vec x, Vec *y )
 	PetscFunctionBegin;
 	ierr = VecCreate( ((PetscObject)x)->comm, &_y );CHKERRQ(ierr);
 	ierr = VecSetSizes( _y, bx->nb, bx->nb );CHKERRQ(ierr);
-	ierr = VecSetType( _y, "block" );CHKERRQ(ierr);
+	ierr = VecSetType( _y, VECBLOCK );CHKERRQ(ierr);
 	
 	by = (Vec_Block*)_y->data;
 	for( i=0; i<bx->nb; i++ ) {
@@ -502,7 +502,7 @@ PetscErrorCode __vec_max_block( Vec x, PetscInt *cnt, PetscInt *p, PetscReal *ma
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	ierr = PetscTypeCompare( (PetscObject)x, "block", &isblock );CHKERRQ(ierr);
+	ierr = PetscTypeCompare( (PetscObject)x, VECBLOCK, &isblock );CHKERRQ(ierr);
 	if( isblock == PETSC_FALSE ) {
 		/* Not block */
 		ierr = VecMax( x, &_entry_loc, &_entry_val );CHKERRQ(ierr);
@@ -558,7 +558,7 @@ PetscErrorCode __vec_min_block( Vec x, PetscInt *cnt, PetscInt *p, PetscReal *mi
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	ierr = PetscTypeCompare( (PetscObject)x, "block", &isblock );CHKERRQ(ierr);
+	ierr = PetscTypeCompare( (PetscObject)x, VECBLOCK, &isblock );CHKERRQ(ierr);
 	if( isblock == PETSC_FALSE ) {
 		/* Not block */
 		ierr = VecMin( x, &_entry_loc, &_entry_val );CHKERRQ(ierr);

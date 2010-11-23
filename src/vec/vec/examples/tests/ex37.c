@@ -32,15 +32,15 @@ PetscErrorCode test_view( void )
 	
 	ierr = VecCreate( PETSC_COMM_WORLD, &X );CHKERRQ(ierr);
 	ierr = VecSetSizes( X, PETSC_DECIDE, 2 );CHKERRQ(ierr);
-	ierr = VecSetType( X, "block" );CHKERRQ(ierr);
+	ierr = VecSetType( X, VECBLOCK );CHKERRQ(ierr);
 	
 	ierr = VecCreate( PETSC_COMM_WORLD, &a );CHKERRQ(ierr);
 	ierr = VecSetSizes( a, PETSC_DECIDE, 2 );CHKERRQ(ierr);
-	ierr = VecSetType( a, "block" );CHKERRQ(ierr);
+	ierr = VecSetType( a, VECBLOCK );CHKERRQ(ierr);
 	
 	ierr = VecCreate( PETSC_COMM_WORLD, &b );CHKERRQ(ierr);
 	ierr = VecSetSizes( b, PETSC_DECIDE, 2 );CHKERRQ(ierr);
-	ierr = VecSetType( b, "block" );CHKERRQ(ierr);
+	ierr = VecSetType( b, VECBLOCK );CHKERRQ(ierr);
 	
 	/* assemble X */
 	ierr = VecBlockSetSubVec( X, 0, a );CHKERRQ(ierr); ierr = VecDestroy(a);CHKERRQ(ierr);
@@ -110,15 +110,15 @@ PetscErrorCode test_vec_ops( void )
 	
 	ierr = VecCreate( PETSC_COMM_WORLD, &X );CHKERRQ(ierr);
 	ierr = VecSetSizes( X, 2, 2 );CHKERRQ(ierr);
-	ierr = VecSetType( X, "block" );CHKERRQ(ierr);
+	ierr = VecSetType( X, VECBLOCK );CHKERRQ(ierr);
 	
 	ierr = VecCreate( PETSC_COMM_WORLD, &a );CHKERRQ(ierr);
 	ierr = VecSetSizes( a, 2, 2 );CHKERRQ(ierr);
-	ierr = VecSetType( a, "block" );CHKERRQ(ierr);
+	ierr = VecSetType( a, VECBLOCK );CHKERRQ(ierr);
 	
 	ierr = VecCreate( PETSC_COMM_WORLD, &b );CHKERRQ(ierr);
 	ierr = VecSetSizes( b, 2, 2 );CHKERRQ(ierr);
-	ierr = VecSetType( b, "block" );CHKERRQ(ierr);
+	ierr = VecSetType( b, VECBLOCK );CHKERRQ(ierr);
 	
 	/* assemble X */
 	ierr = VecBlockSetSubVec( X, 0, a );CHKERRQ(ierr);
@@ -219,7 +219,7 @@ PetscErrorCode test_axpy_dot_max( void )
 	
 	ierr = VecCreate( PETSC_COMM_WORLD, &X );CHKERRQ(ierr);
 	ierr = VecSetSizes( X, 2,2 );CHKERRQ(ierr);
-	ierr = VecSetType( X, "block" );CHKERRQ(ierr);
+	ierr = VecSetType( X, VECBLOCK );CHKERRQ(ierr);
 	ierr = VecBlockSetSubVec( X, 0, x1 );CHKERRQ(ierr);
 	ierr = VecBlockSetSubVec( X, 1, x2 );CHKERRQ(ierr);
 	ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
@@ -229,7 +229,7 @@ PetscErrorCode test_axpy_dot_max( void )
 	
 	ierr = VecCreate( PETSC_COMM_WORLD, &Y );CHKERRQ(ierr);
 	ierr = VecSetSizes( Y, 2,2 );CHKERRQ(ierr);
-	ierr = VecSetType( Y, "block" );CHKERRQ(ierr);
+	ierr = VecSetType( Y, VECBLOCK );CHKERRQ(ierr);
 	ierr = VecBlockSetSubVec( Y, 0, y1 );CHKERRQ(ierr);
 	ierr = VecBlockSetSubVec( Y, 1, y2 );CHKERRQ(ierr);
 	ierr = VecAssemblyBegin(Y);CHKERRQ(ierr);
