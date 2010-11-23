@@ -84,10 +84,10 @@ classdef PetscDM < PetscObject
       err = calllib('libpetsc', 'DMDestroy', obj.pobj);
     end
     function [ndim,M,N,P,dof,s,err] = GetInfo(obj)
-        [err,ndim,M,N,P,m,n,p,dof,s] = calllib('libpetsc','DMDAGetInfo',obj.pobj,0,0,0,0,0,0,0,0,0,0,0);
+      [err,ndim,M,N,P,m,n,p,dof,s,w,st] = calllib('libpetsc','DMDAGetInfo',obj.pobj,0,0,0,0,0,0,0,0,0,0,0);
     end
     function [obj] = SetInfo(obj)
-        [obj.ndim,obj.M,obj.N,obj.P,obj.dof,obj.s,err] = obj.GetInfo();
+      [obj.ndim,obj.M,obj.N,obj.P,obj.dof,obj.s,err] = obj.GetInfo();
     end
     function [dmvec,err] = VecGetArray(obj,vec)
       dmvec = PetscVec(vec.pobj,'pobj');

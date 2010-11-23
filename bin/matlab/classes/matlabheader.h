@@ -7,14 +7,14 @@
 */
 typedef struct mxArray_tag mxArray;
 
-/* Matlab cannot handle char ***, so lie to it about the argument */
 int PetscInitializeNonPointers(int,char **,const char*,const char*);
 int PetscFinalize(void);
 
 typedef int MPI_Comm;
 typedef int InsertMode;
 
-typedef int PetscPointer;
+typedef long long int PetscPointer;
+/* typedef int PetscPointer; */
 
 typedef PetscPointer PetscViewer;
 int PetscViewerCreate(MPI_Comm,PetscViewer*);
@@ -83,7 +83,7 @@ int DMDASetStencilWidth(DM, int);
 int DMDASetStencilType(DM, DMDAStencilType);
 int DMCreateGlobalVector(DM,Vec*);
 int DMGetMatrix(DM,const char*,Mat*);
-int DMDAGetInfo(DM,int*,int*,int*,int*,int*,int*,int*,int*,int*,DMDAPeriodicType,DMDAStencilType);
+int DMDAGetInfo(DM,int*,int*,int*,int*,int*,int*,int*,int*,int*,DMDAPeriodicType*,DMDAStencilType*);
 
 typedef PetscPointer KSP;
 int KSPCreate(MPI_Comm,KSP *);
