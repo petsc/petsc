@@ -2,24 +2,20 @@
 #include "../src/snes/impls/vi/viimpl.h"
 #include "petscdm.h"
 
-static char  help[] = "Parallel version of the minimum surface area problem using DMs.\n\
-See ex10.c for the serial version. It solves a system of nonlinear equations in mixed\n\
-complementarity form using semismooth newton algorithm.This example is based on a\n\
-problem from the MINPACK-2 test suite.  Given a rectangular 2-D domain and\n\
-boundary values along the edges of the domain, the objective is to find the\n\
-surface with the minimal area that satisfies the boundary conditions.\n\
-This application solves this problem using complimentarity -- We are actually\n\
-solving the system  (grad f)_i >= 0, if x_i == l_i \n\
-                    (grad f)_i = 0, if l_i < x_i < u_i \n\
-                    (grad f)_i <= 0, if x_i == u_i  \n\
-where f is the function to be minimized. \n\
-\n\
+static  char help[]= 
+"This example is an implementation of minimal surface area with \n\
+a plate problem from the TAO package (examples/plate2.c) \n\
+This example is based on a problem from the MINPACK-2 test suite.\n\
+Given a rectangular 2-D domain, boundary values along the edges of \n\
+the domain, and a plate represented by lower boundary conditions, \n\
+the objective is to find the surface with the minimal area that \n\
+satisfies the boundary conditions.\n\
 The command line options are:\n\
-  -da_grid_x <nx>, where <nx> = number of grid points in the 1st coordinate direction\n\
-  -da_grid_y <ny>, where <ny> = number of grid points in the 2nd coordinate direction\n\
-  -start <st>, where <st> =0 for zero vector, and an average of the boundary conditions otherwise\n\
-  -lb <value>, lower bound on the variables\n\
-  -ub <value>, upper bound on the variables\n\n";
+  -bmx <bxg>, where <bxg> = number of grid points under plate in 1st direction\n\
+  -bmy <byg>, where <byg> = number of grid points under plate in 2nd direction\n\
+  -bheight <ht>, where <ht> = height of the plate\n\
+  -start <st>, where <st> =0 for zero vector, <st> != 0 \n\
+               for an average of the boundary conditions\n\n";
 
 /*                                                                              
    User-defined application context - contains data needed by the               
@@ -29,17 +25,19 @@ The command line options are:\n\
 
 typedef struct {
   DM           da;
-  PetscScalar  *bottom, *top, *left, *right;
-  PetscInt     mx,my;
+  Vec          Bottom, Top, Left, Right;
+  PetscScalar  bheight;
+  PetscInt     mx,my,bmx,bmy;
 } AppCtx;
 
 
 /* -------- User-defined Routines --------- */
 
-extern PetscErrorCode MSA_BoundaryConditions(AppCtx *);
-extern PetscErrorCode MSA_InitialPoint(AppCtx *, Vec);
-extern PetscErrorCode FormGradient(SNES, Vec, Vec, void *);
-extern PetscErrorCode FormJacobian(SNES, Vec, Mat *, Mat*, MatStructure*,void *);
+PetscErrorCode MSA_BoundaryConditions(AppCtx *);
+PetscErrorCode MSA_InitialPoint(AppCtx *, Vec);
+PetscErrorCode MSA_Plate(Vec,Vec,void*);
+PetscErrorCode FormGradient(SNES, Vec, Vec, void *);
+PetscErrorCode FormJacobian(SNES, Vec, Mat *, Mat*, MatStructure*,void *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -48,12 +46,9 @@ int main(int argc, char **argv)
   PetscErrorCode  info;             /* used to check for functions returning nonzeros */
   Vec             x,r;              /* solution and residual vectors */
   Vec             xl,xu;            /* Bounds on the variables */
-  PetscBool       flg_l,flg_u;     /* flags to check if the bounds are set */
   SNES            snes;             /* nonlinear solver context */
   Mat             J;                /* Jacobian matrix */
   PetscInt        N;            /* Number of elements in vector */
-  PetscScalar     lb = -PETSC_VI_INF;
-  PetscScalar     ub = PETSC_VI_INF;
   AppCtx          user;             /* user-defined work context */
   PetscBool       flg;
 
@@ -64,13 +59,21 @@ int main(int argc, char **argv)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example does not work for scalar type complex\n");
 #endif
 
-  /* Check if lower and upper bounds are set */
-  info = PetscOptionsGetScalar(PETSC_NULL, "-lb", &lb, &flg_l);CHKERRQ(info);
-  info = PetscOptionsGetScalar(PETSC_NULL, "-ub", &ub, &flg_u);CHKERRQ(info);
-
   /* Create distributed array to manage the 2d grid */
-  info = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(info);
+  info = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,-10,-10,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(info);
   info = DMDAGetInfo(user.da,PETSC_IGNORE,&user.mx,&user.my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(info);
+
+  user.bheight=0.1;
+  info = PetscOptionsGetScalar(PETSC_NULL,"-bheight",&user.bheight,&flg); CHKERRQ(info);
+
+  user.bmx = user.mx/2; user.bmy = user.my/2;
+  info = PetscOptionsGetInt(PETSC_NULL,"-bmx",&user.bmx,&flg); CHKERRQ(info);
+  info = PetscOptionsGetInt(PETSC_NULL,"-bmy",&user.bmy,&flg); CHKERRQ(info);
+
+  PetscPrintf(PETSC_COMM_WORLD,"\n---- Minimum Surface Area With Plate Problem -----\n");
+  PetscPrintf(PETSC_COMM_WORLD,"mx:%d, my:%d, bmx:%d, bmy:%d, height:%4.2f\n",
+	      user.mx,user.my,user.bmx,user.bmy,user.bheight);
+
   /* Extract global vectors from DMDA; */
   info = DMCreateGlobalVector(user.da,&x);CHKERRQ(info);
   info = VecDuplicate(x, &r); CHKERRQ(info);
@@ -96,8 +99,7 @@ int main(int argc, char **argv)
   /* Set Bounds on variables */
   info = VecDuplicate(x, &xl); CHKERRQ(info);
   info = VecDuplicate(x, &xu); CHKERRQ(info);
-  info = VecSet(xl, lb); CHKERRQ(info);
-  info = VecSet(xu, ub); CHKERRQ(info);
+  info = MSA_Plate(xl,xu,&user);CHKERRQ(info);
 
   info = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(info);
 
@@ -117,10 +119,10 @@ int main(int argc, char **argv)
 
   /* Free user-created data structures */
   info = DMDestroy(user.da);CHKERRQ(info);
-  info = PetscFree(user.bottom); CHKERRQ(info);
-  info = PetscFree(user.top); CHKERRQ(info);
-  info = PetscFree(user.left); CHKERRQ(info);
-  info = PetscFree(user.right); CHKERRQ(info);
+  info = VecDestroy(user.Bottom); CHKERRQ(info);
+  info = VecDestroy(user.Top); CHKERRQ(info);
+  info = VecDestroy(user.Left); CHKERRQ(info);
+  info = VecDestroy(user.Right); CHKERRQ(info);
 
   info = PetscFinalize();
 
@@ -152,6 +154,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
   PetscScalar  **g, **x;
   PetscInt     xs,xm,ys,ym;
   Vec          localX;
+  PetscScalar  *top,*bottom,*left,*right;
 
   PetscFunctionBegin;
   /* Initialize vector to zero */
@@ -159,10 +162,15 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
 
   /* Get local vector */
   info = DMGetLocalVector(user->da,&localX);CHKERRQ(info);
+  info = VecGetArray(user->Top,&top); CHKERRQ(info);
+  info = VecGetArray(user->Bottom,&bottom); CHKERRQ(info);
+  info = VecGetArray(user->Left,&left); CHKERRQ(info);
+  info = VecGetArray(user->Right,&right); CHKERRQ(info);
+
   /* Get ghost points */
   info = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
   info = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
-  /* Get pointer to local vector data */
+  /* Get pointers to local vector data */
   info = DMDAVecGetArray(user->da,localX, &x); CHKERRQ(info);
   info = DMDAVecGetArray(user->da,G, &g); CHKERRQ(info);
 
@@ -175,29 +183,29 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
       xlt=xrb=xl=xr=xb=xt=xc;
       
       if (i==0){ /* left side */
-        xl= user->left[j+1];
-        xlt = user->left[j+2];
+        xl= left[j-ys+1];
+        xlt = left[j-ys+2];
       } else {
         xl = x[j][i-1];
       }
 
       if (j==0){ /* bottom side */
-        xb=user->bottom[i+1];
-        xrb = user->bottom[i+2];
+        xb=bottom[i-xs+1];
+        xrb = bottom[i-xs+2];
       } else {
         xb = x[j-1][i];
       }
       
       if (i+1 == mx){ /* right side */
-        xr=user->right[j+1];
-        xrb = user->right[j];
+        xr=right[j-ys+1];
+        xrb = right[j-ys];
       } else {
         xr = x[j][i+1];
       }
 
       if (j+1==0+my){ /* top side */
-        xt=user->top[i+1];
-        xlt = user->top[i];
+        xt=top[i-xs+1];
+        xlt = top[i-xs];
       }else {
         xt = x[j+1][i];
       }
@@ -257,6 +265,12 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
   info = DMDAVecRestoreArray(user->da,localX, &x); CHKERRQ(info);
   info = DMDAVecRestoreArray(user->da,G, &g); CHKERRQ(info);
   info = DMRestoreLocalVector(user->da,&localX);CHKERRQ(info);
+
+  info = VecRestoreArray(user->Left,&left); CHKERRQ(info);
+  info = VecRestoreArray(user->Top,&top); CHKERRQ(info);
+  info = VecRestoreArray(user->Bottom,&bottom); CHKERRQ(info);
+  info = VecRestoreArray(user->Right,&right); CHKERRQ(info);
+
   info = PetscLogFlops(67*mx*my); CHKERRQ(info);
   PetscFunctionReturn(0);
 }
@@ -291,6 +305,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   PetscBool       assembled;
   PetscInt        xs,xm,ys,ym;
   Vec             localX;
+  PetscScalar     *top,*bottom,*left,*right;
 
   PetscFunctionBegin;
   /* Set various matrix options */
@@ -298,8 +313,13 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   if (assembled){info = MatZeroEntries(H);  CHKERRQ(info);}
   *flag=SAME_NONZERO_PATTERN;
 
-  /* Get local vector */
+  /* Get local vectors */
   info = DMGetLocalVector(user->da,&localX);CHKERRQ(info);
+  info = VecGetArray(user->Top,&top); CHKERRQ(info);
+  info = VecGetArray(user->Bottom,&bottom); CHKERRQ(info);
+  info = VecGetArray(user->Left,&left); CHKERRQ(info);
+  info = VecGetArray(user->Right,&right); CHKERRQ(info);
+
   /* Get ghost points */
   info = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
   info = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
@@ -316,32 +336,32 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 
       /* Left */
       if (i==0){
-        xl= user->left[j+1];
-        xlt = user->left[j+2];
+        xl= left[j+1];
+        xlt = left[j+2];
       } else {
         xl = x[j][i-1];
       }
       
       /* Bottom */
       if (j==0){
-        xb=user->bottom[i+1];
-        xrb = user->bottom[i+2];
+        xb=bottom[i+1];
+        xrb = bottom[i+2];
       } else {
         xb = x[j-1][i];
       }
       
       /* Right */
       if (i+1 == mx){
-        xr=user->right[j+1];
-        xrb = user->right[j];
+        xr=right[j+1];
+        xrb = right[j];
       } else {
         xr = x[j][i+1];
       }
 
       /* Top */
       if (j+1==my){
-        xt=user->top[i+1];
-        xlt = user->top[i];
+        xt=top[i+1];
+        xlt = top[i];
       }else {
         xt = x[j+1][i];
       }
@@ -438,6 +458,11 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
     }
   }
 
+  info = VecRestoreArray(user->Left,&left); CHKERRQ(info);
+  info = VecRestoreArray(user->Top,&top); CHKERRQ(info);
+  info = VecRestoreArray(user->Bottom,&bottom); CHKERRQ(info);
+  info = VecRestoreArray(user->Right,&right); CHKERRQ(info);
+
   /* Assemble the matrix */
   info = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
   info = DMDAVecRestoreArray(user->da,localX,&x);CHKERRQ(info);
@@ -466,44 +491,56 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
   PetscErrorCode  info;
   PetscInt        i,j,k,limit=0,maxits=5;
   PetscInt        mx=user->mx,my=user->my;
+  PetscInt        xs,ys,xm,ym;
   PetscInt        bsize=0, lsize=0, tsize=0, rsize=0;
   PetscScalar     one=1.0, two=2.0, three=3.0, tol=1e-10;
   PetscScalar     fnorm,det,hx,hy,xt=0,yt=0;
   PetscScalar     u1,u2,nf1,nf2,njac11,njac12,njac21,njac22;
   PetscScalar     b=-0.5, t=0.5, l=-0.5, r=0.5;
   PetscScalar     *boundary;
+  Vec             Bottom,Top,Right,Left;
+  PetscScalar     scl=1.0;
+  PetscBool       flg;
 
   PetscFunctionBegin;
-  bsize=mx+2; lsize=my+2; rsize=my+2; tsize=mx+2;
 
-  info = PetscMalloc(bsize*sizeof(PetscScalar), &user->bottom);CHKERRQ(info);
-  info = PetscMalloc(tsize*sizeof(PetscScalar), &user->top);CHKERRQ(info);
-  info = PetscMalloc(lsize*sizeof(PetscScalar), &user->left);CHKERRQ(info);
-  info = PetscMalloc(rsize*sizeof(PetscScalar), &user->right);CHKERRQ(info);
+  info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(info);
+
+  bsize=xm+2; lsize=ym+2; rsize=ym+2; tsize=xm+2;
+
+  info = VecCreateMPI(PETSC_COMM_WORLD,bsize,PETSC_DECIDE,&Bottom); CHKERRQ(info);
+  info = VecCreateMPI(PETSC_COMM_WORLD,tsize,PETSC_DECIDE,&Top); CHKERRQ(info);
+  info = VecCreateMPI(PETSC_COMM_WORLD,lsize,PETSC_DECIDE,&Left); CHKERRQ(info);
+  info = VecCreateMPI(PETSC_COMM_WORLD,rsize,PETSC_DECIDE,&Right); CHKERRQ(info);
+
+  user->Top=Top;
+  user->Left=Left;
+  user->Bottom=Bottom;
+  user->Right=Right;
 
   hx= (r-l)/(mx+1); hy=(t-b)/(my+1);
 
   for (j=0; j<4; j++){
     if (j==0){
       yt=b;
-      xt=l;
+      xt=l+hx*xs;
       limit=bsize;
-      boundary=user->bottom;
+      info = VecGetArray(Bottom,&boundary);CHKERRQ(info);
     } else if (j==1){
       yt=t;
-      xt=l;
+      xt=l+hx*xs;
       limit=tsize;
-      boundary=user->top;
+      info = VecGetArray(Top,&boundary);CHKERRQ(info);
     } else if (j==2){
-      yt=b;
+      yt=b+hy*ys;
       xt=l;
       limit=lsize;
-      boundary=user->left;
+      info = VecGetArray(Left,&boundary); CHKERRQ(info);
     } else { // if  (j==3)
-      yt=b;
+      yt=b+hy*ys;
       xt=r;
       limit=rsize;
-      boundary=user->right;
+      info = VecGetArray(Right,&boundary);CHKERRQ(info);
     }
 
     for (i=0; i<limit; i++){
@@ -530,6 +567,43 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 	yt=yt+hy;
       }
     }
+
+    if (j==0){
+      info = VecRestoreArray(Bottom,&boundary); CHKERRQ(info);
+    } else if (j==1){
+      info = VecRestoreArray(Top,&boundary); CHKERRQ(info);
+    } else if (j==2){
+      info = VecRestoreArray(Left,&boundary); CHKERRQ(info);
+    } else if (j==3){
+      info = VecRestoreArray(Right,&boundary); CHKERRQ(info);
+    }
+
+  }
+
+  /* Scale the boundary if desired */
+
+  info = PetscOptionsGetReal(PETSC_NULL,"-bottom",&scl,&flg); 
+  CHKERRQ(info);
+  if (flg){
+    info = VecScale(Bottom, scl); CHKERRQ(info);
+  }
+  
+  info = PetscOptionsGetReal(PETSC_NULL,"-top",&scl,&flg); 
+  CHKERRQ(info);
+  if (flg){
+    info = VecScale(Top, scl); CHKERRQ(info);
+  }
+  
+  info = PetscOptionsGetReal(PETSC_NULL,"-right",&scl,&flg); 
+  CHKERRQ(info);
+  if (flg){
+    info = VecScale(Right, scl); CHKERRQ(info);
+  }
+  
+  info = PetscOptionsGetReal(PETSC_NULL,"-left",&scl,&flg); 
+  CHKERRQ(info);
+  if (flg){
+    info = VecScale(Left, scl); CHKERRQ(info);
   }
 
   PetscFunctionReturn(0);
@@ -554,6 +628,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscInt        start=-1,i,j;
   PetscScalar     zero=0.0;
   PetscBool       flg;
+  PetscScalar     *left,*right,*bottom,*top;
 
   PetscFunctionBegin;
   info = PetscOptionsGetInt(PETSC_NULL,"-start",&start,&flg); CHKERRQ(info);
@@ -569,6 +644,11 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     PetscScalar  **x;
     PetscInt    xs,xm,ys,ym;
     
+    info = VecGetArray(user->Top,&top); CHKERRQ(info);
+    info = VecGetArray(user->Bottom,&bottom); CHKERRQ(info);
+    info = VecGetArray(user->Left,&left); CHKERRQ(info);
+    info = VecGetArray(user->Right,&right); CHKERRQ(info);
+
     /* Get pointers to vector data */
     info = DMDAVecGetArray(user->da,X,&x); CHKERRQ(info);
     info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
@@ -576,14 +656,74 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     /* Perform local computations */    
     for (j=ys; j<ys+ym; j++){
       for (i=xs; i< xs+xm; i++){
-	x[j][i] = ( ((j+1)*user->bottom[i+1]+(my-j+1)*user->top[i+1])/(my+2)+
-		   ((i+1)*user->left[j+1]+(mx-i+1)*user->right[j+1])/(mx+2))/2.0;
+	x[j][i] = ( (j+1)*bottom[i-xs+1]/my+(my-j+1)*top[i-xs+1]/(my+2)+
+		   (i+1)*left[j-ys+1]/mx+(mx-i+1)*right[j-ys+1]/(mx+2))/2.0;
       }
     }
     
     /* Restore vectors */
     info = DMDAVecRestoreArray(user->da,X,&x); CHKERRQ(info);
-    
+    info = VecRestoreArray(user->Left,&left); CHKERRQ(info);
+    info = VecRestoreArray(user->Top,&top); CHKERRQ(info);
+    info = VecRestoreArray(user->Bottom,&bottom); CHKERRQ(info);
+    info = VecRestoreArray(user->Right,&right); CHKERRQ(info);
+
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MSA_Plate"
+/* 
+   MSA_Plate -  Calculates an obstacle for surface to stretch over.
+*/
+PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx)
+{
+  AppCtx         *user=(AppCtx *)ctx;
+  PetscErrorCode info;
+  PetscInt       i,j;
+  PetscInt       xs,ys,xm,ym;
+  PetscInt       mx=user->mx, my=user->my, bmy, bmx;
+  PetscScalar    t1,t2,t3;
+  PetscScalar    **xl;
+  PetscScalar    lb=-PETSC_VI_INF, ub=PETSC_VI_INF;
+  PetscBool      cylinder;
+
+  user->bmy = PetscMax(0,user->bmy);user->bmy = PetscMin(my,user->bmy);
+  user->bmx = PetscMax(0,user->bmx);user->bmx = PetscMin(mx,user->bmx);
+  bmy=user->bmy, bmx=user->bmx;
+
+  info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(info);
+  info = VecSet(XL, lb); CHKERRQ(info);
+  info = DMDAVecGetArray(user->da,XL,&xl);CHKERRQ(info);
+  info = VecSet(XU, ub); CHKERRQ(info);
+
+  info = PetscOptionsHasName(PETSC_NULL,"-cylinder",&cylinder); CHKERRQ(info);
+  /* Compute the optional lower box */
+  if (cylinder){
+    for (i=xs; i< xs+xm; i++){    
+      for (j=ys; j<ys+ym; j++){
+	t1=(2.0*i-mx)*bmy;
+	t2=(2.0*j-my)*bmx;
+	t3=bmx*bmx*bmy*bmy;
+	if ( t1*t1 + t2*t2 <= t3 ){
+	  xl[j][i] = user->bheight;
+	}
+      }
+    }
+  } else {
+    /* Compute the optional lower box */
+    for (i=xs; i< xs+xm; i++){    
+      for (j=ys; j<ys+ym; j++){
+	if (i>=(mx-bmx)/2 && i<mx-(mx-bmx)/2 && 
+	    j>=(my-bmy)/2 && j<my-(my-bmy)/2 ){
+	  xl[j][i] = user->bheight;
+	}
+      }
+    }
+  }
+    
+  info = DMDAVecRestoreArray(user->da,XL,&xl); CHKERRQ(info);
+
   PetscFunctionReturn(0);
 }

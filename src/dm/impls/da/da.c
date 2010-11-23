@@ -142,6 +142,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDASetDof(DM da, int dof)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   dd->w = dof;
+  da->bs = dof;
   PetscFunctionReturn(0);
 }
 

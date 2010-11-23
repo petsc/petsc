@@ -823,6 +823,7 @@ static PetscErrorCode THIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *c
   ierr = DMDAVecRestoreArray(da2,F2,&f2);CHKERRQ(ierr);
 
   ierr = DMCompositeRestoreLocalVectors(pack,&X3,&X2);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreLocalVectors(pack,&Xdot3,&Xdot2);CHKERRQ(ierr);
 
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(pack,F,&F3g,&F2g);CHKERRQ(ierr);
@@ -985,6 +986,8 @@ static PetscErrorCode THISolveStatistics(THI thi,DMMG *dmmg,PetscInt coarsened,c
 
 static inline PetscInt DMDALocalIndex3D(DMDALocalInfo *info,PetscInt i,PetscInt j,PetscInt k)
 {return ((i-info->gzs)*info->gym + (j-info->gys))*info->gxm + (k-info->gxs);}
+static inline PetscInt DMDALocalIndex2D(DMDALocalInfo *info,PetscInt i,PetscInt j)
+{return (i-info->gzs)*info->gym + (j-info->gys);}
 
 #undef __FUNCT__  
 #define __FUNCT__ "THIJacobianLocal_Momentum"
@@ -1003,8 +1006,6 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
   zm = info->xm;
   hx = thi->Lx / info->mz;
   hy = thi->Ly / info->my;
-
-  ierr = MatZeroEntries(B);CHKERRQ(ierr);
 
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
@@ -1172,12 +1173,94 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "THIJacobianLocal_2D"
+static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,const Node ***x3,const PrmNode **x2,const PrmNode **xdot2,PetscReal a,Mat B22,THI thi)
+{
+  PetscErrorCode ierr;
+  PetscInt       xs,ys,xm,ym,zm,i,j;
+  PetscReal      hx,hy;
+
+  PetscFunctionBegin;
+  xs = info->zs;
+  ys = info->ys;
+  xm = info->zm;
+  ym = info->ym;
+  zm = info->xm;
+  hx = thi->Lx / info->mz;
+  hy = thi->Ly / info->my;
+
+  for (i=xs; i<xs+xm; i++) {
+    for (j=ys; j<ys+ym; j++) {
+      const PetscInt row[] = {
+        DMDALocalIndex2D(info,i,j)
+      }, col[] = {
+        DMDALocalIndex2D(info,i,j)
+      };
+      const PetscScalar vals[] = {
+        a,0,0,
+        0,a,0,
+        0,0,a
+      };
+      ierr = MatSetValuesBlockedLocal(B22,1,row,1,col,vals,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "THIJacobian"
 static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
 {
   PetscErrorCode ierr;
+  THI            thi = (THI)ctx;
+  DM             pack,da3,da2;
+  Vec            X3,X2,Xdot2;
+  Mat            B11,B22;
+  DMDALocalInfo  info3;
+  IS             *isloc;
+  const Node     ***x3;
+  const PrmNode  **x2,**xdot2;
 
   PetscFunctionBegin;
+  ierr = TSGetDM(ts,&pack);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da3,&info3);CHKERRQ(ierr);
+  ierr = DMCompositeGetLocalVectors(pack,&X3,&X2);CHKERRQ(ierr);
+  ierr = DMCompositeGetLocalVectors(pack,0,&Xdot2);CHKERRQ(ierr);
+  ierr = DMCompositeScatter(pack,X,X3,X2);CHKERRQ(ierr);
+  ierr = DMCompositeScatter(pack,Xdot,0,Xdot2);CHKERRQ(ierr);
+
+  ierr = MatZeroEntries(*B);CHKERRQ(ierr);
+
+  ierr = DMCompositeGetLocalISs(pack,&isloc);CHKERRQ(ierr);
+  ierr = MatGetLocalSubMatrix(*B,isloc[0],isloc[0],&B11);CHKERRQ(ierr);
+  ierr = MatGetLocalSubMatrix(*B,isloc[1],isloc[1],&B22);CHKERRQ(ierr);
+
+  ierr = DMDAVecGetArray(da3,X3,&x3);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2,X2,&x2);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2,Xdot2,&xdot2);CHKERRQ(ierr);
+
+  ierr = THIJacobianLocal_Momentum(&info3,x3,x2,B11,thi);CHKERRQ(ierr);
+
+  /* Need to switch from ADD_VALUES to INSERT_VALUES */
+  ierr = MatAssemblyBegin(*B,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
+
+  ierr = THIJacobianLocal_2D(&info3,x3,x2,xdot2,a,B22,thi);CHKERRQ(ierr);
+
+  ierr = DMDAVecRestoreArray(da3,X3,&x3);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da2,X2,&x2);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da2,Xdot2,&xdot2);CHKERRQ(ierr);
+
+  ierr = MatRestoreLocalSubMatrix(*B,isloc[0],isloc[0],&B11);CHKERRQ(ierr);
+  ierr = MatRestoreLocalSubMatrix(*B,isloc[1],isloc[1],&B22);CHKERRQ(ierr);
+  ierr = ISDestroy(isloc[0]);CHKERRQ(ierr);
+  ierr = ISDestroy(isloc[1]);CHKERRQ(ierr);
+  ierr = PetscFree(isloc);CHKERRQ(ierr);
+
+  ierr = DMCompositeRestoreLocalVectors(pack,&X3,&X2);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreLocalVectors(pack,0,&Xdot2);CHKERRQ(ierr);
+
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *mstr = SAME_NONZERO_PATTERN;

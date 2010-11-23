@@ -351,7 +351,6 @@ PetscErrorCode FormInitialGuessLocal(DMMG dmmg,Vec X)
 /* Form initial guess for Physic 1 */
 PetscErrorCode FormInitialGuessLocal1(DMMG dmmg,Vec X)
 {
-  AppCtx         *user = (AppCtx*)dmmg->user;
   DM             da = dmmg->dm;
   PetscInt       i,j,mx,xs,ys,xm,ym;
   PetscErrorCode ierr;
@@ -412,7 +411,7 @@ PetscErrorCode FormInitialGuessComp(DMMG dmmg,Vec X)
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*)dmmg->user;
   DMMG           *dmmg1 = user->dmmg1,*dmmg2=user->dmmg2;
-  DM             dm = (DMComposite)dmmg->dm;
+  DM             dm = dmmg->dm;
   Vec            X1,X2;
 
   PetscFunctionBegin;
@@ -585,7 +584,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
 PetscErrorCode FormFunctionLocal1(DMDALocalInfo *info,Field1 **x,Field1 **f,void *ptr)
  {
   AppCtx         *user = (AppCtx*)ptr;
-  PetscErrorCode ierr;
   PetscInt       xints,xinte,yints,yinte,i,j;
   PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx;
   PetscReal      grashof,prandtl,lid;
@@ -700,7 +698,6 @@ PetscErrorCode FormFunctionLocal1(DMDALocalInfo *info,Field1 **x,Field1 **f,void
 PetscErrorCode FormFunctionLocal2(DMDALocalInfo *info,Field2 **x,Field2 **f,void *ptr)
  {
   AppCtx         *user = (AppCtx*)ptr;
-  PetscErrorCode ierr;
   PetscInt       xints,xinte,yints,yinte,i,j;
   PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx;
   PetscReal      grashof,prandtl,lid;
@@ -796,7 +793,7 @@ PetscErrorCode FormFunctionComp(SNES snes,Vec X,Vec F,void *ctx)
   PetscErrorCode ierr;
   DMMG           dmmg = (DMMG)ctx;
   AppCtx         *user = (AppCtx*)dmmg->user;
-  DM             dm = (DMComposite)dmmg->dm;
+  DM             dm = dmmg->dm;
   DMDALocalInfo    info1,info2;
   DM             da1,da2;
   Field1         **x1,**f1;
@@ -851,8 +848,7 @@ PetscErrorCode MySolutionView(MPI_Comm comm,PetscInt phy_num,void *ctx)
   DMMG           *dmmg = user->dmmg;
   DM             da=DMMGGetDM(dmmg);
   Field          **x = user->x;
-  Field1         **x1 = user->x1;
-  PetscInt       i,j,mx,xs,ys,xm,ym;
+  PetscInt       i,j,xs,ys,xm,ym;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
@@ -913,7 +909,7 @@ PetscErrorCode MySolutionView(MPI_Comm comm,PetscInt phy_num,void *ctx)
       Field       **x;
       Field1      **x1;
       Field2      **x2;
-      DM          dm = (DMComposite)(*dmmg_comp)->dm;
+      DM          dm = (*dmmg_comp)->dm;
       PetscReal   err,err_tmp;
       if (phy_num == 3){
         ierr = PetscPrintf(PETSC_COMM_SELF,"Composite physics %d, U,V,Omega,Temp: \n",phy_num);

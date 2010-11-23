@@ -134,7 +134,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   if (c != N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"c != N");
   if (cint != Nint) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"cint != Nint");
   if (csurf != Nsurf) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"csurf != Nsurf");
-  ierr = DMDAGetISLocalToGlobalMapping(da,&ltg);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(da,&ltg);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltg,N,II,II);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltg,Nint,IIint,IIint);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltg,Nsurf,IIsurf,IIsurf);CHKERRQ(ierr);
@@ -407,7 +407,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   if (c != N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"c != N");
   if (cint != Nint) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"cint != Nint");
   if (csurf != Nsurf) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"csurf != Nsurf");
-  ierr = DMDAGetISLocalToGlobalMapping(da,&ltg);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(da,&ltg);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltg,N,II,II);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltg,Nint,IIint,IIint);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltg,Nsurf,IIsurf,IIsurf);CHKERRQ(ierr);
