@@ -211,7 +211,7 @@ alletags:
 	-@find config -type f -name "*.py" |grep -v SCCS | xargs etags -o TAGS_PYTHON
 
 allfortranstubs:
-	-@$bin/maint/generatefortranstubs.py ${BFORT}
+	-@bin/maint/generatefortranstubs.py ${BFORT}
 deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf 
 #
