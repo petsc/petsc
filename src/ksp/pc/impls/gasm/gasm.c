@@ -325,7 +325,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   /* 
      Extract out the submatrices. 
   */
-  ierr = MatGetSubMatrices(pc->pmat,osm->n,osm->is, osm->is,scall,&osm->pmat);CHKERRQ(ierr);
+  ierr = MatGetSubMatricesParallel(pc->pmat,osm->n,osm->is, osm->is,scall,&osm->pmat);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix);CHKERRQ(ierr);
     for (i=0; i<osm->n; i++) {
