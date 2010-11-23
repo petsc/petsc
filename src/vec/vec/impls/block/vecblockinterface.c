@@ -8,23 +8,21 @@
 #include "vecblockimpl.h"
 #include "vecblockprivate.h"
 
-
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecBlockSetSubVecs_Block"
 PetscErrorCode PETSCVEC_DLLEXPORT VecBlockSetSubVecs_Block(Vec V,PetscInt m,const PetscInt idxm[],const Vec vec[])
 {
-  Vec_Block *b = (Vec_Block*)V->data;;
-  PetscInt i;
-  PetscInt row;
+  Vec_Block      *b = (Vec_Block*)V->data;;
+  PetscInt       i;
+  PetscInt       row;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
-  for( i=0; i<m; i++ ) {
+  for (i=0; i<m; i++ ) {
     row = idxm[i];
-    if( row >= b->nb ) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,b->nb-1);
-    if( b->v[row] == PETSC_NULL ) {
+    if (row >= b->nb ) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,b->nb-1);
+    if (b->v[row] == PETSC_NULL ) {
       ierr = PetscObjectReference( (PetscObject)vec[i] );CHKERRQ(ierr);
       b->v[row] = vec[i];
     }
@@ -83,17 +81,16 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecBlockSetSubVec(Vec V,const PetscInt idxm,co
 PetscErrorCode PETSCVEC_DLLEXPORT _VecBlockGetValues(Vec x,PetscInt m,const PetscInt idxm[],Vec vec[])
 {
   Vec_Block *b = (Vec_Block*)x->data;
-  PetscInt i;
-  PetscInt row;
+  PetscInt  i;
+  PetscInt  row;
+
   PetscFunctionBegin;
-
-  if (!m ) PetscFunctionReturn(0);
-  for( i=0; i<m; i++ ) {
+  if (!m) PetscFunctionReturn(0);
+  for (i=0; i<m; i++ ) {
     row = idxm[i];
-    if( row >= b->nb ) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,b->nb-1);
-    vec[ i ] = b->v[row];
+    if (row >= b->nb) SETERRQ2(((PetscObject)x)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,b->nb-1);
+    vec[i] = b->v[row];
   }
-
   PetscFunctionReturn(0);
 }
 

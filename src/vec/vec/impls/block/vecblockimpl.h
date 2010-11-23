@@ -6,9 +6,9 @@
 #include <petscvec.h>
 
 typedef struct {
-	PetscInt   nb; /* n blocks */
-	Vec        *v;
-	PetscBool  setup_called;
+  PetscInt  nb;           /* n blocks */
+  Vec       *v;
+  PetscBool setup_called;
 } Vec_Block;
 
 #endif

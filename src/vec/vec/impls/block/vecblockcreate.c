@@ -66,91 +66,91 @@ PetscErrorCode PETSc_VecBlock_SetOps( struct _VecOps *ops )
   PetscFunctionBegin;
 
   /* 0 */
-  ops->duplicate    =  VecDuplicate_Block;
-  ops->duplicatevecs = VecDuplicateVecs_Default;
-  ops->destroyvecs   = VecDestroyVecs_Default;
-  ops->dot           = VecDot_Block;
-  ops->mdot          = VecMDot_Block;
+  ops->duplicate               = VecDuplicate_Block;
+  ops->duplicatevecs           = VecDuplicateVecs_Default;
+  ops->destroyvecs             = VecDestroyVecs_Default;
+  ops->dot                     = VecDot_Block;
+  ops->mdot                    = VecMDot_Block;
 
   /* 5 */
-  ops->norm  = VecNorm_Block;
-  ops->tdot  = VecTDot_Block;
-  ops->mtdot = VecMTDot_Block;
-  ops->scale = VecScale_Block;
-  ops->copy  = VecCopy_Block;
+  ops->norm                    = VecNorm_Block;
+  ops->tdot                    = VecTDot_Block;
+  ops->mtdot                   = VecMTDot_Block;
+  ops->scale                   = VecScale_Block;
+  ops->copy                    = VecCopy_Block;
 
   /* 10 */
-  ops->set   = VecSet_Block;
-  ops->swap  = VecSwap_Block;
-  ops->axpy  = VecAXPY_Block;
-  ops->axpby = VecAXPBY_Block;
-  ops->maxpy = VecMAXPY_Block;
+  ops->set                     = VecSet_Block;
+  ops->swap                    = VecSwap_Block;
+  ops->axpy                    = VecAXPY_Block;
+  ops->axpby                   = VecAXPBY_Block;
+  ops->maxpy                   = VecMAXPY_Block;
 
   /* 15 */
-  ops->aypx            = VecAYPX_Block;
-  ops->waxpy           = VecWAXPY_Block;
-  ops->axpbypcz        = 0;
-  ops->pointwisemult   = VecPointwiseMult_Block;
-  ops->pointwisedivide = VecPointwiseDivide_Block;
+  ops->aypx                    = VecAYPX_Block;
+  ops->waxpy                   = VecWAXPY_Block;
+  ops->axpbypcz                = 0;
+  ops->pointwisemult           = VecPointwiseMult_Block;
+  ops->pointwisedivide         = VecPointwiseDivide_Block;
   /* 20 */
-  ops->setvalues     = 0;
-  ops->assemblybegin = VecAssemblyBegin_Block; //VecAssemblyBegin_Empty;
-  ops->assemblyend   = VecAssemblyEnd_Block; //VecAssemblyEnd_Empty;
-  ops->getarray      = 0;
-  ops->getsize       = VecGetSize_Block; //VecGetSize_Empty;
+  ops->setvalues               = 0;
+  ops->assemblybegin           = VecAssemblyBegin_Block; //VecAssemblyBegin_Empty;
+  ops->assemblyend             = VecAssemblyEnd_Block; //VecAssemblyEnd_Empty;
+  ops->getarray                = 0;
+  ops->getsize                 = VecGetSize_Block; //VecGetSize_Empty;
 
   /* 25 */
-  ops->getlocalsize = VecGetSize_Block; //VecGetLocalSize_Empty;
-  ops->restorearray = 0;
-  ops->max          = VecMax_Block;
-  ops->min          = VecMin_Block;
-  ops->setrandom    = 0;
+  ops->getlocalsize            = VecGetSize_Block; //VecGetLocalSize_Empty;
+  ops->restorearray            = 0;
+  ops->max                     = VecMax_Block;
+  ops->min                     = VecMin_Block;
+  ops->setrandom               = 0;
 
   /* 30 */
-  ops->setoption        = 0; //VecSetOption_Empty;
-  ops->setvaluesblocked = 0;
-  ops->destroy          = VecDestroy_Block;
-  ops->view             = VecView_Block;
-  ops->placearray       = 0;
+  ops->setoption               = 0;    //VecSetOption_Empty;
+  ops->setvaluesblocked        = 0;
+  ops->destroy                 = VecDestroy_Block;
+  ops->view                    = VecView_Block;
+  ops->placearray              = 0;
 
   /* 35 */
-  ops->replacearray = 0;
-  ops->dot_local    = VecDot_Block; //VecDotLocal_Empty;
-  ops->tdot_local   = VecTDot_Block; //VecTDotLocal_Empty;
-  ops->norm_local   = VecNorm_Block; //VecNormLocal_Empty;
-  ops->mdot_local   = VecMDot_Block; //VecMDotLocal_Empty;
+  ops->replacearray            = 0;
+  ops->dot_local               = VecDot_Block; //VecDotLocal_Empty;
+  ops->tdot_local              = VecTDot_Block; //VecTDotLocal_Empty;
+  ops->norm_local              = VecNorm_Block; //VecNormLocal_Empty;
+  ops->mdot_local              = VecMDot_Block; //VecMDotLocal_Empty;
 
   /* 40 */
-  ops->mtdot_local    = VecMTDot_Block; //VecMTDotLocal_Empty;
-  ops->load           = 0;
-  ops->reciprocal     = VecReciprocal_Block;
-  ops->conjugate      = VecConjugate_Block;
+  ops->mtdot_local             = VecMTDot_Block; //VecMTDotLocal_Empty;
+  ops->load                    = 0;
+  ops->reciprocal              = VecReciprocal_Block;
+  ops->conjugate               = VecConjugate_Block;
   ops->setlocaltoglobalmapping = 0; //VecSetLocalToGlobalMapping_Empty;
 
   /* 45 */
-  ops->setvalueslocal          = 0; //VecSetValuesLocal_Empty;
+  ops->setvalueslocal          = 0;      //VecSetValuesLocal_Empty;
   ops->resetarray              = 0;
-  ops->setfromoptions          = 0; //VecSetFromOptions_Empty;
+  ops->setfromoptions          = 0;  //VecSetFromOptions_Empty;
   ops->maxpointwisedivide      = VecMaxPointwiseDivide_Block;
-  ops->load            = 0; //VecLoad_Empty;
+  ops->load                    = 0;  //VecLoad_Empty;
 
   /* 50 */
-  ops->pointwisemax    = 0;
-  ops->pointwisemaxabs = 0;
-  ops->pointwisemin    = 0;
-  ops->getvalues       = 0;
-  ops->sqrt            = 0;
+  ops->pointwisemax            = 0;
+  ops->pointwisemaxabs         = 0;
+  ops->pointwisemin            = 0;
+  ops->getvalues               = 0;
+  ops->sqrt                    = 0;
 
   /* 55 */
-  ops->abs          = 0;
-  ops->exp          = 0;
-  ops->shift        = 0;
-  ops->create       = 0;
-  ops->stridegather = 0;
+  ops->abs                     = 0;
+  ops->exp                     = 0;
+  ops->shift                   = 0;
+  ops->create                  = 0;
+  ops->stridegather            = 0;
 
   /* 60 */
-  ops->stridescatter = 0;
-  ops->dotnorm2      = 0;
+  ops->stridescatter           = 0;
+  ops->dotnorm2                = 0;
 
   PetscFunctionReturn(0);
 }
