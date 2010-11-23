@@ -47,6 +47,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_Private(DM dm,PetscBool  *done)
     if (dm->globalout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a global vector obtained with DMGetGlobalVector()");
     if (dm->globalin[i]) {ierr = VecDestroy(dm->globalin[i]);CHKERRQ(ierr);}
   }
+  if (dm->ltogmap)  {ierr = ISLocalToGlobalMappingDestroy(dm->ltogmap);CHKERRQ(ierr);}
+  if (dm->ltogmapb) {ierr = ISLocalToGlobalMappingDestroy(dm->ltogmapb);CHKERRQ(ierr);}
+
   *done = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -102,12 +105,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_DA(DM da)
   if (dd->ao) {
     ierr = AODestroy(dd->ao);CHKERRQ(ierr);
   }
-  if (dd->ltogmap) {
-    ierr = ISLocalToGlobalMappingDestroy(dd->ltogmap);CHKERRQ(ierr);
-  }
-  if (dd->ltogmapb) {
-    ierr = ISLocalToGlobalMappingDestroy(dd->ltogmapb);CHKERRQ(ierr);
-  }
 
   ierr = PetscFree(dd->lx);CHKERRQ(ierr);
   ierr = PetscFree(dd->ly);CHKERRQ(ierr);
@@ -141,81 +138,3 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_DA(DM da)
   ierr = PetscHeaderDestroy(da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__  
-#define __FUNCT__ "DMDAGetISLocalToGlobalMapping"
-/*@
-   DMDAGetISLocalToGlobalMapping - Accesses the local-to-global mapping in a DMDA.
-
-   Not Collective
-
-   Input Parameter:
-.  da - the distributed array that provides the mapping 
-
-   Output Parameter:
-.  ltog - the mapping
-
-   Level: intermediate
-
-   Notes:
-   This mapping can them be used by VecSetLocalToGlobalMapping() or 
-   MatSetLocalToGlobalMapping().
-
-   Essentially the same data is returned in the form of an integer array
-   with the routine DMDAGetGlobalIndices().
-
-.keywords: distributed array, destroy
-
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), VecSetLocalToGlobalMapping(),
-          MatSetLocalToGlobalMapping(), DMDAGetGlobalIndices(), DMDAGetISLocalToGlobalMappingBlck()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAGetISLocalToGlobalMapping(DM da,ISLocalToGlobalMapping *map)
-{
-  DM_DA *dd = (DM_DA*)da->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscValidPointer(map,2);
-  *map = dd->ltogmap;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "DMDAGetISLocalToGlobalMappingBlck"
-/*@
-   DMDAGetISLocalToGlobalMappingBlck - Accesses the local-to-global mapping in a DMDA.
-
-   Not Collective
-
-   Input Parameter:
-.  da - the distributed array that provides the mapping 
-
-   Output Parameter:
-.  ltog - the mapping
-
-   Level: intermediate
-
-   Notes:
-   This mapping can them be used by VecSetLocalToGlobalMappingBlock() or 
-   MatSetLocalToGlobalMappingBlock().
-
-   Essentially the same data is returned in the form of an integer array
-   with the routine DMDAGetGlobalIndices().
-
-.keywords: distributed array, destroy
-
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), VecSetLocalToGlobalMapping(),
-          MatSetLocalToGlobalMapping(), DMDAGetGlobalIndices(), DMDAGetISLocalToGlobalMapping()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAGetISLocalToGlobalMappingBlck(DM da,ISLocalToGlobalMapping *map)
-{
-  DM_DA *dd = (DM_DA*)da->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscValidPointer(map,2);
-  *map = dd->ltogmapb;
-  PetscFunctionReturn(0);
-}
-
-

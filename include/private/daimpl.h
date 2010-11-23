@@ -27,7 +27,6 @@ typedef struct {
 
   AO                  ao;                    /* application ordering context */
 
-  ISLocalToGlobalMapping ltogmap,ltogmapb;   /* local to global mapping for associated vectors */
   Vec                    coordinates;        /* coordinates (x,y,z) of local nodes, not including ghosts*/
   DM                     da_coordinates;     /* da for getting ghost values of coordinates */
   Vec                    ghosted_coordinates;/* coordinates with ghost nodes */

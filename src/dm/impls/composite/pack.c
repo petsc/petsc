@@ -910,7 +910,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetISLocalToGlobalMappings(DM dm,ISL
       Vec                    global;
 
       /* Get sub-DM global indices for each local dof */
-      ierr = DMDAGetISLocalToGlobalMapping(next->dm,&ltog);CHKERRQ(ierr); /* This function should become generic to DM */
+      ierr = DMGetLocalToGlobalMapping(next->dm,&ltog);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingGetSize(ltog,&n);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingGetIndices(ltog,&indices);CHKERRQ(ierr);
       ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
@@ -983,11 +983,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetLocalISs(DM dm,IS **is)
   for (cnt=0,start=0,link=com->next; link; start+=link->n,cnt++,link=link->next) {
     ierr = ISCreateStride(PETSC_COMM_SELF,link->n,start,1,&(*is)[cnt]);CHKERRQ(ierr);
     if (link->type == DMCOMPOSITE_DM) {
-      Vec lvec;
       PetscInt bs;
-      ierr = DMGetLocalVector(link->dm,&lvec);CHKERRQ(ierr);
-      ierr = VecGetBlockSize(lvec,&bs);CHKERRQ(ierr);
-      ierr = DMRestoreLocalVector(link->dm,&lvec);CHKERRQ(ierr);
+      ierr = DMGetBlockSize(link->dm,&bs);CHKERRQ(ierr);
       ierr = ISSetBlockSize((*is)[cnt],bs);CHKERRQ(ierr);
     }
   }
@@ -1573,6 +1570,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_Composite(DM dm, const MatType mtyp
   PetscMPIInt            rank;
   PetscScalar            zero = 0.0;
   PetscBool              dense = PETSC_FALSE;
+  ISLocalToGlobalMapping ltogmap,ltogmapb;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -1713,10 +1711,45 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_Composite(DM dm, const MatType mtyp
     ierr = MatGetOwnershipRange(*J,&__rstart,PETSC_NULL);CHKERRQ(ierr);
     ierr = (*com->FormCoupleLocations)(dm,*J,PETSC_NULL,PETSC_NULL,__rstart,0,0,0);CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  ierr = DMGetLocalToGlobalMapping(dm,&ltogmap);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMappingBlock(dm,&ltogmapb);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(*J,ltogmap,ltogmap);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMappingBlock(*J,ltogmapb,ltogmapb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMCreateLocalToGlobalMapping_Composite"
+static PetscErrorCode DMCreateLocalToGlobalMapping_Composite(DM dm)
+{
+  DM_Composite           *com = (DM_Composite*)dm->data;
+  ISLocalToGlobalMapping *ltogs;
+  PetscInt               i,cnt,*idx;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  /* Set the ISLocalToGlobalMapping on the new matrix */
+  ierr = DMCompositeGetISLocalToGlobalMappings(dm,&ltogs);CHKERRQ(ierr);
+  ierr = PetscMalloc(com->nghost*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  for (cnt=0,i=0; i<(com->nDM+com->nredundant); i++) {
+    PetscInt m;
+    const PetscInt *subidx;
+    ierr = ISLocalToGlobalMappingGetSize(ltogs[i],&m);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(ltogs[i],&subidx);CHKERRQ(ierr);
+    ierr = PetscMemcpy(&idx[cnt],subidx,m*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(ltogs[i],&subidx);CHKERRQ(ierr);
+    cnt += m;
+  }
+  if (cnt != com->nghost) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Sub-DM dof counts not consistent");
+  ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,cnt,idx,PETSC_OWN_POINTER,&dm->ltogmap);CHKERRQ(ierr);
+  for (i=0; i<com->nDM+com->nredundant; i++) {ierr = ISLocalToGlobalMappingDestroy(ltogs[i]);CHKERRQ(ierr);}
+  ierr = PetscFree(ltogs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetColoring_Composite" 
@@ -1862,17 +1895,19 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreate_Composite(DM p)
   com->nredundant   = 0;
   com->nDM          = 0;
 
-  p->ops->createglobalvector = DMCreateGlobalVector_Composite;
-  p->ops->createlocalvector  = DMCreateLocalVector_Composite;
-  p->ops->refine             = DMRefine_Composite;
-  p->ops->getinterpolation   = DMGetInterpolation_Composite;
-  p->ops->getmatrix          = DMGetMatrix_Composite;
-  p->ops->getcoloring        = DMGetColoring_Composite;
-  p->ops->globaltolocalbegin = DMGlobalToLocalBegin_Composite;
-  p->ops->globaltolocalend   = DMGlobalToLocalEnd_Composite;
-  p->ops->destroy            = DMDestroy_Composite;
-  p->ops->view               = DMView_Composite;
-  p->ops->setup              = DMSetUp_Composite;
+  p->ops->createglobalvector              = DMCreateGlobalVector_Composite;
+  p->ops->createlocalvector               = DMCreateLocalVector_Composite;
+  p->ops->createlocaltoglobalmapping      = DMCreateLocalToGlobalMapping_Composite;
+  p->ops->createlocaltoglobalmappingblock = 0;
+  p->ops->refine                          = DMRefine_Composite;
+  p->ops->getinterpolation                = DMGetInterpolation_Composite;
+  p->ops->getmatrix                       = DMGetMatrix_Composite;
+  p->ops->getcoloring                     = DMGetColoring_Composite;
+  p->ops->globaltolocalbegin              = DMGlobalToLocalBegin_Composite;
+  p->ops->globaltolocalend                = DMGlobalToLocalEnd_Composite;
+  p->ops->destroy                         = DMDestroy_Composite;
+  p->ops->view                            = DMView_Composite;
+  p->ops->setup                           = DMSetUp_Composite;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

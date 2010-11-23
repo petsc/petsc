@@ -279,6 +279,11 @@ petscdm.h for details</li>
         <li>petscda.h, petscdadef.h and petscda.h90 are now petscdm.h,
 petscdmdef.h, and petscdm.h90<br>
         </li>
+        <li>DAGetISLocalToGlobalMapping() and
+DAGetISLocalToGlobalMappingBlck() are now DMGetLocalToGlobalMapping()
+and DMGetLocalToGlobalMappingBlock() and are collective since they may
+be constructed lazily.</li>
+        <li>DMGetBlockSize() is added.</li>
       </ul>
       <p><u><b>DMMG:</b></u></p>
       <ul>

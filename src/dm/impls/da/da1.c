@@ -332,9 +332,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_1D(DM da)
       nn  += sDist;
     }
   }
-  ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,PETSC_OWN_POINTER,&dd->ltogmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingBlock(dd->ltogmap,dd->w,&dd->ltogmapb);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,dd->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,PETSC_OWN_POINTER,&da->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
 
   dd->idx = idx;
   dd->Nl  = nn;
