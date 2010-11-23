@@ -6320,7 +6320,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrices(Mat mat,PetscInt n,const IS 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatricesParalell(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetSubMatricesParallel"
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatricesParallel(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode ierr;
   PetscInt        i;
