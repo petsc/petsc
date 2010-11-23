@@ -12,32 +12,31 @@
 #define __FUNCT__ "VecDot_Seq"
 PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
-  PetscScalar    *ya,*xa;
-  PetscErrorCode ierr;
+  const PetscScalar *ya,*xa;
+  PetscErrorCode    ierr;
 #if !defined(PETSC_USE_COMPLEX)
-  PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map->n);
+  PetscBLASInt      one = 1,bn = PetscBLASIntCast(xin->map->n);
 #endif
 
   PetscFunctionBegin;
+  ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(yin,&ya);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   /* cannot use BLAS dot for complex because compiler/linker is 
      not happy about returning a double complex */
   {
-    ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
-
     PetscInt    i;
     PetscScalar sum = 0.0;
     for (i=0; i<xin->map->n; i++) {
       sum += xa[i]*PetscConj(ya[i]);
     }
     *z = sum;
-    ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
   }
 #else
-  ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
   *z = BLASdot_(&bn,xa,&one,ya,&one);
-  ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
 #endif
+  ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(yin,&ya);CHKERRQ(ierr);
   if (xin->map->n > 0) {
     ierr = PetscLogFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
   }
@@ -48,17 +47,18 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 #define __FUNCT__ "VecTDot_Seq"
 PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
-  PetscScalar    *ya,*xa;
-  PetscErrorCode ierr;
+  const PetscScalar *ya,*xa;
+  PetscErrorCode    ierr;
 #if !defined(PETSC_USE_COMPLEX)
-  PetscBLASInt    one = 1, bn = PetscBLASIntCast(xin->map->n);
+  PetscBLASInt      one = 1, bn = PetscBLASIntCast(xin->map->n);
 #endif
 
   PetscFunctionBegin;
+  ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(yin,&ya);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   /* cannot use BLAS dot for complex because compiler/linker is 
      not happy about returning a double complex */
- ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
  {
    PetscInt    i;
    PetscScalar sum = 0.0;
@@ -66,13 +66,12 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
      sum += xa[i]*ya[i];
    }
    *z = sum;
-   ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
  }
 #else
-  ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
   *z = BLASdot_(&bn,xa,&one,ya,&one);
-  ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
 #endif
+  ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(yin,&ya);CHKERRQ(ierr);
   if (xin->map->n > 0) {
     ierr = PetscLogFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
   }
@@ -85,6 +84,7 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
 {
   PetscErrorCode ierr;
   PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map->n);
+
   PetscFunctionBegin;
   if (alpha == 0.0) {
     ierr = VecSet_Seq(xin,alpha);CHKERRQ(ierr);

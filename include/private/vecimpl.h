@@ -271,37 +271,6 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x, PetscScalar *a[])
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "VecGetArrayPrivate2"
-PETSC_STATIC_INLINE PetscErrorCode VecGetArrayPrivate2(Vec x, PetscScalar *xx[], Vec y, PetscScalar *yy[])
-{
-  PetscErrorCode ierr;
-  
-  PetscFunctionBegin;
-  ierr = VecGetArrayPrivate(x,xx);CHKERRQ(ierr);
-  if (x == y) {
-    *yy = *xx;
-  } else {
-    ierr = VecGetArrayPrivate(y,yy);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArrayPrivate2"
-PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayPrivate2(Vec x, PetscScalar *xx[], Vec y, PetscScalar *yy[])
-{
-  PetscErrorCode ierr;
-  
-  PetscFunctionBegin;
-  ierr = VecRestoreArrayPrivate(x,xx);CHKERRQ(ierr);
-  if (x != y) {
-    ierr = VecRestoreArrayPrivate(y,yy);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "VecGetArrayPrivate3"
 PETSC_STATIC_INLINE PetscErrorCode VecGetArrayPrivate3(Vec x, PetscScalar *xx[], Vec y, PetscScalar *yy[], Vec w, PetscScalar *ww[])

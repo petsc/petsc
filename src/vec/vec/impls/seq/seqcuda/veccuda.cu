@@ -685,18 +685,7 @@ PetscErrorCode VecDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
   PetscErrorCode ierr;
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  /* cannot use BLAS dot for complex because compiler/linker is 
-     not happy about returning a double complex */
-  {
-    ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
-    PetscInt    i;
-    PetscScalar sum = 0.0;
-    for (i=0; i<xin->map->n; i++) {
-      sum += xa[i]*PetscConj(ya[i]);
-    }
-    *z = sum;
-    ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
-  }
+  Not working for complex
 #else
   {
     ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
@@ -960,18 +949,7 @@ PetscErrorCode VecTDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  /* cannot use BLAS dot for complex because compiler/linker is 
-     not happy about returning a double complex */
- ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
- {
-   PetscInt    i;
-   PetscScalar sum = 0.0;
-   for (i=0; i<xin->map->n; i++) {
-     sum += xa[i]*ya[i];
-   }
-   *z = sum;
-   ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
- }
+  Not working for complex
 #else
  ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
  ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
