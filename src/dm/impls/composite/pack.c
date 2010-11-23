@@ -1727,15 +1727,18 @@ static PetscErrorCode DMCreateLocalToGlobalMapping_Composite(DM dm)
 {
   DM_Composite           *com = (DM_Composite*)dm->data;
   ISLocalToGlobalMapping *ltogs;
-  PetscInt               i,cnt,*idx;
+  PetscInt               i,cnt,m,*idx;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   /* Set the ISLocalToGlobalMapping on the new matrix */
   ierr = DMCompositeGetISLocalToGlobalMappings(dm,&ltogs);CHKERRQ(ierr);
-  ierr = PetscMalloc(com->nghost*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   for (cnt=0,i=0; i<(com->nDM+com->nredundant); i++) {
-    PetscInt m;
+    ierr = ISLocalToGlobalMappingGetSize(ltogs[i],&m);CHKERRQ(ierr);
+    cnt += m;
+  }
+  ierr = PetscMalloc(cnt*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  for (cnt=0,i=0; i<(com->nDM+com->nredundant); i++) {
     const PetscInt *subidx;
     ierr = ISLocalToGlobalMappingGetSize(ltogs[i],&m);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetIndices(ltogs[i],&subidx);CHKERRQ(ierr);
@@ -1743,7 +1746,6 @@ static PetscErrorCode DMCreateLocalToGlobalMapping_Composite(DM dm)
     ierr = ISLocalToGlobalMappingRestoreIndices(ltogs[i],&subidx);CHKERRQ(ierr);
     cnt += m;
   }
-  if (cnt != com->nghost) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Sub-DM dof counts not consistent");
   ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,cnt,idx,PETSC_OWN_POINTER,&dm->ltogmap);CHKERRQ(ierr);
   for (i=0; i<com->nDM+com->nredundant; i++) {ierr = ISLocalToGlobalMappingDestroy(ltogs[i]);CHKERRQ(ierr);}
   ierr = PetscFree(ltogs);CHKERRQ(ierr);
