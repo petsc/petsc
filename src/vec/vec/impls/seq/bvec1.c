@@ -89,8 +89,10 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
   if (alpha == 0.0) {
     ierr = VecSet_Seq(xin,alpha);CHKERRQ(ierr);
   } else if (alpha != 1.0) {
-    PetscScalar a = alpha;
-    BLASscal_(&bn,&a,*(PetscScalar**)xin->data,&one);
+    PetscScalar a = alpha,*xarray;
+    ierr = VecGetArrayPrivate(xin,&xarray);CHKERRQ(ierr);
+    BLASscal_(&bn,&a,xarray,&one);
+    ierr = VecRestoreArrayPrivate(xin,&xarray);CHKERRQ(ierr);
   }
   ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -18,7 +18,9 @@ PETSC_EXTERN_CXX_BEGIN
                 down smoother, in the preconditioner the upper smoother is ignored
 .  PC_MG_FULL - same as multiplicative except one also performs grid sequencing, 
             that is starts on the coarsest grid, performs a cycle, interpolates
-            to the next, performs a cycle etc
+            to the next, performs a cycle etc. This is much like the F-cycle presented in "Multigrid" by Trottenberg, Oosterlee, Schuller page 49, but that
+            algorithm supports smoothing on before the restriction on each level in the initial restriction to the coarsest stage. In addition that algorithm
+            calls the V-cycle only on the coarser level and has a post-smoother instead.
 -  PC_MG_KASKADE - like full multigrid except one never goes back to a coarser level
                from a finer
 

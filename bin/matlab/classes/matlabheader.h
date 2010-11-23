@@ -5,6 +5,7 @@
    Matlab to parse.
 
 */
+typedef struct mxArray_tag mxArray;
 
 /* Matlab cannot handle char ***, so lie to it about the argument */
 int PetscInitializeNonPointers(int,char **,const char*,const char*);
