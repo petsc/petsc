@@ -9,7 +9,7 @@ SOURCEH  = dvecimpl.h
 OBJSC    =  
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = seq mpi shared hypre
+DIRS     = seq mpi shared hypre block
 LOCDIR   = src/vec/vec/impls/
 
 include ${PETSC_DIR}/conf/variables
