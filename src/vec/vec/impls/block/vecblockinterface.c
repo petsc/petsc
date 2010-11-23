@@ -6,7 +6,6 @@
 #include <private/vecimpl.h>
 
 #include "vecblockimpl.h"
-#include "vecblockprivate.h"
 
 EXTERN_C_BEGIN
 #undef __FUNCT__

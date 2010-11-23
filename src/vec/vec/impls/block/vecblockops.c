@@ -1,12 +1,6 @@
-
-#include <stdlib.h>
-
-#include <petsc.h>
-#include <petscvec.h>
 #include <private/vecimpl.h>
 
 #include "vecblockimpl.h"
-#include "vecblockprivate.h"
 
 /* check all blocks are filled */
 #undef __FUNCT__  
@@ -104,7 +98,7 @@ PetscErrorCode VecCopy_Block(Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PETSc_VecBlock_Check2(x,y);CHKERRQ(ierr);
+  VecBlockCheckCompatible2(x,1,y,2);
   for (i=0; i<bx->nb; i++) {
     ierr = VecCopy(bx->v[i],by->v[i]);CHKERRQ(ierr);
   }
@@ -260,7 +254,7 @@ PetscErrorCode VecPointwiseMult_Block(Vec w,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PETSc_VecBlock_Check3(w,x,y);CHKERRQ(ierr);
+  VecBlockCheckCompatible3(w,1,x,3,y,4);
   nr = bx->nb;
   for (i=0; i<nr; i++) {
     ierr = VecPointwiseMult(bw->v[i],bx->v[i],by->v[i]);CHKERRQ(ierr);
@@ -279,7 +273,7 @@ PetscErrorCode VecPointwiseDivide_Block(Vec w,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PETSc_VecBlock_Check3(w,x,y);CHKERRQ(ierr);
+  VecBlockCheckCompatible3(w,1,x,2,y,3);
 
   nr = bx->nb;
   for (i=0; i<nr; i++) {
@@ -435,7 +429,7 @@ PetscErrorCode VecSwap_Block(Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PETSc_VecBlock_Check2(x,y);CHKERRQ(ierr);
+  VecBlockCheckCompatible2(x,1,y,2);
   nr = bx->nb;
   for (i=0; i<nr; i++) {
     ierr = VecSwap(bx->v[i],by->v[i]);CHKERRQ(ierr);
@@ -454,7 +448,7 @@ PetscErrorCode VecWAXPY_Block(Vec w,PetscScalar alpha,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PETSc_VecBlock_Check3(w,x,y);CHKERRQ(ierr);
+  VecBlockCheckCompatible3(w,1,x,3,y,4);
 
   nr = bx->nb;
   for (i=0; i<nr; i++) {
@@ -628,7 +622,7 @@ PetscErrorCode VecMaxPointwiseDivide_Block(Vec x,Vec y,PetscReal *max)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PETSc_VecBlock_Check2(x,y);CHKERRQ(ierr);
+  VecBlockCheckCompatible2(x,1,y,2);
   nr = bx->nb;
   m = 0.0;
   for (i=0; i<nr; i++) {

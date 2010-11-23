@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = vecblockprivate.c vecblockops.c vecblockinterface.c vecblockcreate.c
+SOURCEC  = vecblockops.c vecblockinterface.c vecblockcreate.c
 SOURCEF  =
-SOURCEH  =
-OBJSC    = vecblockprivate.o vecblockops.o vecblockinterface.o vecblockcreate.o
+SOURCEH  = vecblockprivate.h
+OBJSC    = $(SOURCEC:.c=.o)
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
