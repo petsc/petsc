@@ -1898,11 +1898,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
   if (mat->insertmode == NOT_SET_VALUES) {
     mat->insertmode = addv;
   }
-#if defined(PETSC_USE_DEBUG) 
+#if defined(PETSC_USE_DEBUG)
   else if (mat->insertmode != addv) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
-  if (!mat->rbmapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Local to global never set with MatSetLocalToGlobalMappingBlock()");
   if (nrow > 2048 || ncol > 2048) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number column/row indices must be <= 2048: are %D %D",nrow,ncol);
-  if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 #endif
 
   if (mat->assembled) {
@@ -1912,7 +1911,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   if (mat->ops->setvaluesblockedlocal) {
     ierr = (*mat->ops->setvaluesblockedlocal)(mat,nrow,irow,ncol,icol,y,addv);CHKERRQ(ierr);
-  } else {
+  } else if (mat->rbmapping && mat->cbmapping) {
     ierr = ISLocalToGlobalMappingApply(mat->rbmapping,nrow,irow,irowm);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingApply(mat->cbmapping,ncol,icol,icolm);CHKERRQ(ierr);
     if (mat->ops->setvaluesblocked) {
@@ -1939,6 +1938,23 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
       ierr = MatSetValues(mat,bs*nrow,iirowm,bs*ncol,iicolm,y,addv);CHKERRQ(ierr);
       ierr = PetscFree2(ibufm,ibufn);CHKERRQ(ierr);
     }
+  } else {
+    PetscInt buf[4096],*ibufm=0,*ibufn=0;
+    PetscInt i,j,*iirowm,*iicolm,bs=mat->rmap->bs;
+    if ((nrow+ncol)*bs <= 4096) {
+      iirowm = buf; iicolm = buf + nrow*bs;
+    } else {
+      ierr = PetscMalloc2(nrow*bs,PetscInt,&ibufm,ncol*bs,PetscInt,&ibufn);CHKERRQ(ierr);
+      iirowm = ibufm; iicolm = ibufn;
+    }
+    for (i=0; i<nrow; i++) {
+      for (j=0; j<bs; j++) iirowm[i*bs+j] = irow[i]*bs+j;
+    }
+    for (i=0; i<ncol; i++) {
+      for (j=0; j<bs; j++) iicolm[i*bs+j] = icol[i]*bs+j;
+    }
+    ierr = MatSetValuesLocal(mat,nrow*bs,iirowm,ncol*bs,iicolm,y,addv);CHKERRQ(ierr);
+    ierr = PetscFree2(ibufm,ibufn);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA)
