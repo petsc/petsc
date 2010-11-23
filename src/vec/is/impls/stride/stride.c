@@ -281,6 +281,7 @@ static PetscErrorCode ISSetBlockSize_Stride(IS is,PetscInt bs)
 
   PetscFunctionBegin;
   if (sub->step != 1 && bs != 1) SETERRQ2(((PetscObject)is)->comm,PETSC_ERR_ARG_SIZ,"ISSTRIDE has stride %D, cannot be blocked of size %D",sub->step,bs);
+  is->bs = bs;
   PetscFunctionReturn(0);
 }
 
