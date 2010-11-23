@@ -512,8 +512,8 @@ PetscErrorCode VecMax_Block(Vec x,PetscInt *p,PetscReal *max)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "__vec_min_block"
-PetscErrorCode __vec_min_block(Vec x,PetscInt *cnt,PetscInt *p,PetscReal *min)
+#define __FUNCT__ "VecMin_Block_Recursive"
+PetscErrorCode VecMin_Block_Recursive(Vec x,PetscInt *cnt,PetscInt *p,PetscReal *min)
 {
   Vec_Block      *bx = (Vec_Block*)x->data;
   PetscInt       i,nr,L,_entry_loc;
@@ -541,7 +541,7 @@ PetscErrorCode __vec_min_block(Vec x,PetscInt *cnt,PetscInt *p,PetscReal *min)
 
   /* now descend recursively */
   for (i=0; i<nr; i++) {
-    ierr = __vec_min_block(bx->v[i],cnt,p,min);CHKERRQ(ierr);
+    ierr = VecMin_Block_Recursive(bx->v[i],cnt,p,min);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -557,7 +557,7 @@ PetscErrorCode VecMin_Block(Vec x,PetscInt *p,PetscReal *min)
   cnt = 0;
   *p = 0;
   *min = 1.0e308;
-  ierr = __vec_min_block(x,&cnt,p,min);CHKERRQ(ierr);
+  ierr = VecMin_Block_Recursive(x,&cnt,p,min);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,6 +1,6 @@
 
-#ifndef __PETSc_VecBlock_implementation__
-#define __PETSc_VecBlock_implementation__
+#ifndef VecBlock_impl_h
+#define VecBlock_impl_h
 
 #include <petsc.h>
 #include <petscvec.h>
@@ -10,7 +10,6 @@ typedef struct {
   Vec       *v;
   PetscBool setup_called;
 } Vec_Block;
-
 
 #define VecBlockCheckCompatible2(x,xarg,y,yarg) do {                    \
     PetscValidHeaderSpecific(x,VEC_CLASSID,xarg);                       \
@@ -36,6 +35,5 @@ typedef struct {
     if (((Vec_Block*)x->data)->nb != ((Vec_Block*)z->data)->nb)         \
       SETERRQ2(((PetscObject)w)->comm,PETSC_ERR_ARG_WRONG,"Block vectors arguments %D and %D have different numbers of blocks.",xarg,zarg); \
   } while (0)
-
 
 #endif
