@@ -1641,11 +1641,17 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscFPrintf(MPI_Comm,FILE*,const char
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscPrintf(MPI_Comm,const char[],...)  PETSC_PRINTF_FORMAT_CHECK(2,3);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscSNPrintf(char*,size_t,const char [],...);
 
+
+
 /* These are used internally by PETSc ASCII IO routines*/
 #include <stdarg.h>
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscVSNPrintf(char*,size_t,const char[],size_t*,va_list);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  (*PetscVFPrintf)(FILE*,const char[],va_list);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscVFPrintfDefault(FILE*,const char[],va_list);
+
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscVFPrintf_Matlab(FILE*,const char[],va_list);
+#endif
 
 /*MC
     PetscErrorPrintf - Prints error messages.

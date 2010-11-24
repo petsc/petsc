@@ -61,8 +61,11 @@ PetscInt PETSCSYS_DLLEXPORT _BT_idx  = 0;
 */
 PetscErrorCode PETSCSYS_DLLEXPORT (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
 PetscErrorCode PETSCSYS_DLLEXPORT (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+PetscErrorCode PETSCSYS_DLLEXPORT (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintf_Matlab;
+#else
 PetscErrorCode PETSCSYS_DLLEXPORT (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDefault;
-
+#endif
 /*
   This is needed to turn on/off cuda synchronization */
 PetscBool  PETSC_DLL_EXPORT synchronizeCUDA = PETSC_FALSE;
