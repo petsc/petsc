@@ -271,49 +271,6 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x, PetscScalar *a[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetArrayPrivate3"
-PETSC_STATIC_INLINE PetscErrorCode VecGetArrayPrivate3(Vec x, PetscScalar *xx[], Vec y, PetscScalar *yy[], Vec w, PetscScalar *ww[])
-{
-  PetscErrorCode ierr;
-  
-  PetscFunctionBegin;
-  ierr = VecGetArrayPrivate(x,xx);CHKERRQ(ierr);
-  if (x == y) {
-    *yy = *xx;
-  } else {
-    ierr = VecGetArrayPrivate(y,yy);CHKERRQ(ierr);
-  }
-  if (w == x) {
-    *ww = *xx;
-  } else if(w == y) {
-    *ww = *yy;
-  } else {
-    ierr = VecGetArrayPrivate(w,ww);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArrayPrivate3"
-/*
-    Does not increase the state of the vectors
-*/
-PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayPrivate3(Vec x, PetscScalar *xx[], Vec y, PetscScalar *yy[], Vec w, PetscScalar *ww[])
-{
-  PetscErrorCode ierr;
-  
-  PetscFunctionBegin;
-  ierr = VecRestoreArrayPrivate(x,xx);CHKERRQ(ierr);
-  if (x != y){
-    ierr = VecRestoreArrayPrivate(y,yy);CHKERRQ(ierr);
-  }
-  if (w != x && w != y){
-    ierr = VecRestoreArrayPrivate(w,ww);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 /*
      Common header shared by array based vectors, 
    currently Vec_Seq and Vec_MPI

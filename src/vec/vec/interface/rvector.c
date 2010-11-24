@@ -629,7 +629,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBY(Vec y,PetscScalar alpha,PetscScalar b
 
    Notes: x, y and z must be different vectors 
 
-          alpha = 1 or gamma = 1 are handled as special cases
+   Developer Note:   alpha = 1 or gamma = 1 are handled as special cases
 
    Concepts: BLAS
    Concepts: vector^BLAS
