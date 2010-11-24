@@ -25,7 +25,11 @@ struct _ISOps {
   PetscErrorCode (*togeneral)(IS);
   PetscErrorCode (*oncomm)(IS,MPI_Comm,PetscCopyMode,IS*);
   PetscErrorCode (*setblocksize)(IS,PetscInt);
+  PetscErrorCode (*contiguous)(IS);
 };
+
+/* Currently only used in this implementation, but more general in principle */
+typedef enum {PETSC_TERNARY_FALSE = -1,PETSC_TERNARY_UNKNOWN = 0,PETSC_TERNARY_TRUE = 1} PetscTernary;
 
 struct _p_IS {
   PETSCHEADER(struct _ISOps);
@@ -34,6 +38,7 @@ struct _p_IS {
   PetscInt     bs;              /* block size */
   void         *data;
   PetscBool    isidentity;
+  PetscTernary contiguous;
   PetscInt     *total, *nonlocal;   /* local representation of ALL indices across the comm as well as the nonlocal part. */
   PetscInt     local_offset;        /* offset to the local part within the total index set */
   IS           complement;          /* IS wrapping nonlocal indices. */

@@ -359,6 +359,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideSetStride_Stride(IS is,PetscInt n,Pets
   } else {
     is->isperm  = PETSC_FALSE;
   }
+  if (step == 1) is->contiguous = PETSC_TERNARY_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

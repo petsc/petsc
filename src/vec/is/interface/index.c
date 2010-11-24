@@ -65,6 +65,64 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSetIdentity(IS is)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   is->isidentity = PETSC_TRUE;
+  is->contiguous = PETSC_TERNARY_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISContiguous"
+/*@
+   ISContiguous - Determines whether index set is contiguous
+
+   Collective on IS
+
+   Input Parmeters:
+.  is - the index set
+
+   Output Parameters:
+.  contig - PETSC_TRUE if the index set refers to contiguous entries on each process, else PETSC_FALSE
+
+   Level: intermediate
+
+   Concepts: index sets^is contiguous
+
+.seealso: ISSetContiguous()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISContiguous(IS is,PetscBool *contig)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidIntPointer(contig,2);
+  if (is->contiguous == PETSC_TERNARY_UNKNOWN && is->ops->contiguous) {
+    ierr = (*is->ops->contiguous)(is);CHKERRQ(ierr);
+  }
+  *contig = (PetscBool)(is->contiguous == PETSC_TERNARY_TRUE);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISSetContiguous"
+/*@
+   ISSetContiguous - Informs the index set that it refers to contiguous entries on each process
+
+   Logically Collective on IS
+
+   Input Parmeters:
+.  is - the index set
+
+   Level: intermediate
+
+   Concepts: index sets^is contiguous
+
+.seealso: ISContiguous()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISSetContiguous(IS is)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  is->contiguous = PETSC_TERNARY_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -869,6 +927,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCopy(IS is,IS isy)
   isy->max        = is->max;
   isy->min        = is->min;
   isy->isidentity = is->isidentity;
+  isy->contiguous = is->contiguous;
   PetscFunctionReturn(0);
 }
 
