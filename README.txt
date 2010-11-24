@@ -20,11 +20,11 @@ subject to change at any time.
 - To build and install this package, you must meet the following
   requirements.
 
-  + PETSc_ 2.3.2, 2.3.3, 3.0.0, or 3.1, built with *shared libraries*
-  (i.e., by passing ``--with-shared`` option to PETSc ``configure``
-  script; this is not strictly required, but **highly** recommended).
+  + PETSc_ 3.0.0 or 3.1, built with *shared libraries* (i.e., by
+    passing ``--with-shared-libraries`` option to PETSc ``configure``
+    script; this is not strictly required, but **highly** recommended).
 
-  + Python_ 2.4, 2.5, 2.6, or 2.7.
+  + Python_ 2.4 to 2.7 and 3.1 to 3.2.
 
   + NumPy_ 1.0.1 and above.
 

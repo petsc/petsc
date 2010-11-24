@@ -10,10 +10,9 @@ build *PETSc for Python*:
 * Any MPI_ implementation [#]_ (e.g., MPICH_ or `Open MPI`_), 
   built with **shared libraries**.
 
-* PETSc_ 2.3.2/2.3.3/3.0.0/3.1 release, built with **shared
-  libraries** [#]_.
+* PETSc_ 3.0.0 or 3.1 release, built with **shared libraries** [#]_.
 
-* Python_ 2.4/2.5/2.6/2.7 [#]_.
+* Python_ 2.4 to 2.7 and 3.1 to 3.2 [#]_.
 
 * NumPy_ package.
 
@@ -21,8 +20,8 @@ build *PETSc for Python*:
        PETSc without MPI (configure option :option:`--with-mpi=0`).
 
 .. [#] In order to build PETSc with shared libraries, you have to pass
-       :option:`--with-shared` option to PETSc's :program:`configure`
-       script.
+       :option:`--with-shared-libraries` option to PETSc's
+       :program:`configure` script.
 
 .. [#] You may need to use a parallelized version of the Python
        interpreter with some MPI-1 implementations (e.g. MPICH1).
