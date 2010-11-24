@@ -13,9 +13,7 @@ static PetscErrorCode VecAssemblyBegin_Nest(Vec v)
 
   PetscFunctionBegin;
   for (i=0;i<vs->nb;i++) {
-    if (!vs->v[i]) {
-      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Nest  vector cannot contain NULL blocks");
-    }
+    if (!vs->v[i]) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Nest  vector cannot contain NULL blocks");
     ierr = VecAssemblyBegin(vs->v[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -816,10 +814,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVec(Vec X,PetscInt idxm,Vec *sx)
   PetscErrorCode ierr,(*f)(Vec,PetscInt,Vec*);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)X,"VecNestGetSubVec_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(X,idxm,sx);CHKERRQ(ierr);
-  }
+  ierr = PetscUseFunction(X,"VecNestGetSubVec_C",(Vec,PetscInt,Vec*)(X,idxm,sx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -865,10 +860,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVecs(Vec X,PetscInt *N,Vec **sx)
   PetscErrorCode ierr,(*f)(Vec,PetscInt*,Vec**);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)X,"VecNestGetSubVecs_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(X,N,sx);CHKERRQ(ierr);
-  }
+  ierr = PetscUseFunction(X,"VecNestGetSubVecs_C",(Vec,PetscInt*,Vec**)(X,N,sx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -909,10 +901,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSize(Vec X,PetscInt *N)
   PetscErrorCode ierr,(*f)(Vec,PetscInt*);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)X,"VecNestGetSize_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(X,N);CHKERRQ(ierr);
-  }
+  ierr = PetscUseFunction(X,"VecNestGetSize_C",(Vec,PetscInt*)(X,N));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -928,9 +917,7 @@ static PetscErrorCode VecSetUp_Nest_Private(Vec V,PetscInt nb,Vec x[])
   if (ctx->setup_called) PetscFunctionReturn(0);
 
   ctx->nb = nb;
-  if (ctx->nb < 0) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Cannot create VECNEST with < 0 blocks.");
-  }
+  if (ctx->nb < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Cannot create VECNEST with < 0 blocks.");
 
   /* Create space */
   ierr = PetscMalloc(ctx->nb*sizeof(Vec),&ctx->v);CHKERRQ(ierr);

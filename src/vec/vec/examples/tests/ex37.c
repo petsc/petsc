@@ -45,7 +45,7 @@ PetscErrorCode test_view( void )
   PetscInt list[]={0,1,2};
   PetscScalar vals[]={0.720032,0.061794,0.0100223};
   PetscErrorCode ierr;
-  PetscBool      explicit = PETSC_FALSE;
+  PetscBool      explcit = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscPrintf( PETSC_COMM_WORLD, "\n\n============== %s ==============\n", PETSC_FUNCTION_NAME );
@@ -67,9 +67,9 @@ PetscErrorCode test_view( void )
 
   tmp_buf[0] = e;
   tmp_buf[1] = f;
-  ierr = PetscOptionsGetBool(0,"-explicit_is",&explicit,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(0,"-explicit_is",&explcit,0);CHKERRQ(ierr);
   ierr = GetISs(tmp_buf,tmp_is);CHKERRQ(ierr);
-  ierr = VecCreateNest(PETSC_COMM_WORLD,2,explicit?tmp_is:PETSC_NULL,tmp_buf,&b);CHKERRQ(ierr);
+  ierr = VecCreateNest(PETSC_COMM_WORLD,2,explcit?tmp_is:PETSC_NULL,tmp_buf,&b);CHKERRQ(ierr);
   ierr = VecDestroy(e);CHKERRQ(ierr);
   ierr = VecDestroy(f);CHKERRQ(ierr);
   ierr = ISDestroy(tmp_is[0]);CHKERRQ(ierr);
