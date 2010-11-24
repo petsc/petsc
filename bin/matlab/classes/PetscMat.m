@@ -15,16 +15,16 @@ classdef PetscMat < PetscObject
         obj.pobj = array;
         return
       end
-      [err,obj.pobj] = calllib('libpetsc', 'MatCreate', 0,0);
+      [err,obj.pobj] = calllib('libpetsc', 'MatCreate', 0,0);PetscCHKERRQ(err);
     end
     function err = SetType(obj,name)
-      err = calllib('libpetsc', 'MatSetType', obj.pobj,name);
+      err = calllib('libpetsc', 'MatSetType', obj.pobj,name);PetscCHKERRQ(err);
     end
     function err = SetFromOptions(obj)
-      err = calllib('libpetsc', 'MatSetSetFromOptions', obj.pobj);
+      err = calllib('libpetsc', 'MatSetSetFromOptions', obj.pobj);PetscCHKERRQ(err);
     end
     function err = SetSizes(obj,m,n,M,N)
-      err = calllib('libpetsc', 'MatSetSizes', obj.pobj,m,n,M,N);
+      err = calllib('libpetsc', 'MatSetSizes', obj.pobj,m,n,M,N);PetscCHKERRQ(err);
     end
     function err = SetValues(obj,idx,idy,values,insertmode)
       idx = idx - 1;
@@ -32,19 +32,19 @@ classdef PetscMat < PetscObject
       if (nargin < 5) 
         insertmode = PetscObject.INSERT_VALUES;
       end
-      err = calllib('libpetsc', 'MatSetValues', obj.pobj,length(idx),idx,length(idy),idy,values,insertmode);
+      err = calllib('libpetsc', 'MatSetValues', obj.pobj,length(idx),idx,length(idy),idy,values,insertmode);PetscCHKERRQ(err);
     end
     function err = AssemblyBegin(obj,mode)
-      err = calllib('libpetsc', 'MatAssemblyBegin', obj.pobj,mode);
+      err = calllib('libpetsc', 'MatAssemblyBegin', obj.pobj,mode);PetscCHKERRQ(err);
     end
     function err = AssemblyEnd(obj,mode)
-      err = calllib('libpetsc', 'MatAssemblyEnd', obj.pobj,mode);
+      err = calllib('libpetsc', 'MatAssemblyEnd', obj.pobj,mode);PetscCHKERRQ(err);
     end
     function err = View(obj,viewer)
-      err = calllib('libpetsc', 'MatView', obj.pobj,viewer.pobj);
+      err = calllib('libpetsc', 'MatView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
     end
     function err = Destroy(obj)
-      err = calllib('libpetsc', 'MatDestroy', obj.pobj);
+      err = calllib('libpetsc', 'MatDestroy', obj.pobj);PetscCHKERRQ(err);
     end
     function err = SetValuesStencil(obj,row,col,values,insertmode)
       if (nargin < 5) 
@@ -81,7 +81,7 @@ classdef PetscMat < PetscObject
           col(m).k = col(m).k - 1;
         end 
       end
-      err = calllib('libpetsc','MatSetValuesStencil',obj.pobj,nrow,row,ncol,col,values,insertmode);  
+      err = calllib('libpetsc','MatSetValuesStencil',obj.pobj,nrow,row,ncol,col,values,insertmode);PetscCHKERRQ(err);  
     end
   end
 end
