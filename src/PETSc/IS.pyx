@@ -135,7 +135,7 @@ cdef class IS(Object):
 
     def getBlockSize(self):
         cdef PetscInt bs = 1
-        CHKERR( ISBlockGetBlockSize(self.iset, &bs) )
+        CHKERR( ISGetBlockSize(self.iset, &bs) )
         return toInt(bs)
 
     def sort(self):
@@ -231,13 +231,14 @@ cdef class IS(Object):
         CHKERR( ISBlockSetIndices(self.iset, bs, nidx, idx, cm) )
 
     def getBlockIndices(self):
-        cdef PetscInt size = 0
+        cdef PetscInt size = 0, bs = 1
         cdef const_PetscInt *indices = NULL
-        CHKERR( ISBlockGetLocalSize(self.iset, &size) )
+        CHKERR( ISGetLocalSize(self.iset, &size) )
+        CHKERR( ISGetBlockSize(self.iset, &bs) )
         CHKERR( ISBlockGetIndices(self.iset, &indices) )
         cdef object oindices = None
         try:
-            oindices = array_i(size, indices)
+            oindices = array_i(size//bs, indices)
         finally:
             CHKERR( ISBlockRestoreIndices(self.iset, &indices) )
         return oindices

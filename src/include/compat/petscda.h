@@ -26,6 +26,8 @@ DASetUp_Compat(DA da)
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 #define DASetOwnershipRanges DASetVertexDivision
+#define DAGetLocalToGlobalMapping      DAGetISLocalToGlobalMapping
+#define DAGetLocalToGlobalMappingBlock DAGetISLocalToGlobalMappingBlck
 #endif
 
 #if PETSC_VERSION_(3,1,0)

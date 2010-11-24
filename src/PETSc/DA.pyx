@@ -356,13 +356,13 @@ cdef class DA(Object):
 
     def getLGMap(self):
         cdef LGMap lgm = LGMap()
-        CHKERR( DAGetISLocalToGlobalMapping(self.da, &lgm.lgm) )
+        CHKERR( DAGetLocalToGlobalMapping(self.da, &lgm.lgm) )
         PetscIncref(<PetscObject>lgm.lgm)
         return lgm
 
     def getLGMapBlock(self):
         cdef LGMap lgm = LGMap()
-        CHKERR( DAGetISLocalToGlobalMappingBlck(self.da, &lgm.lgm) )
+        CHKERR( DAGetLocalToGlobalMappingBlock(self.da, &lgm.lgm) )
         PetscIncref(<PetscObject>lgm.lgm)
         return lgm
 

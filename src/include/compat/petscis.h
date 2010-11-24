@@ -54,6 +54,23 @@ ISGetType_Compat(IS is, const char **istype)
 #define ISGetType ISGetType_Compat
 
 #undef __FUNCT__
+#define __FUNCT__ "ISGetBlockSize"
+static PetscErrorCode
+ISGetBlockSize_Compat(IS is, PetscInt *bs)
+{
+  PetscTruth     match;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidIntPointer(bs,2);
+  ierr = ISBlock(is,&match);CHKERRQ(ierr);
+  if (match) { ierr = ISBlockGetBlockSize(is,bs);CHKERRQ(ierr); }
+  else *bs = 1;
+  PetscFunctionReturn(0);
+}
+#define ISGetBlockSize ISGetBlockSize_Compat
+
+#undef __FUNCT__
 #define __FUNCT__ "ISGeneralSetIndices"
 static PetscErrorCode
 ISGeneralSetIndices_Compat(IS is,PetscInt n,const PetscInt idx[],

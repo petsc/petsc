@@ -84,8 +84,8 @@ cdef extern from * nogil:
     int DAGetMatrix(PetscDA,PetscMatType,PetscMat*)
 
     int DAGetAO(PetscDA,PetscAO*)
-    int DAGetISLocalToGlobalMapping(PetscDA,PetscLGMap*)
-    int DAGetISLocalToGlobalMappingBlck(PetscDA,PetscLGMap*)
+    int DAGetLocalToGlobalMapping(PetscDA,PetscLGMap*)
+    int DAGetLocalToGlobalMappingBlock(PetscDA,PetscLGMap*)
     int DAGetScatter(PetscDA,PetscScatter*,PetscScatter*,PetscScatter*)
 
     int DASetRefinementFactor(PetscDA,PetscInt,PetscInt,PetscInt)

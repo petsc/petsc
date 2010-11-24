@@ -22,6 +22,7 @@ cdef extern from "petscis.h" nogil:
 
     int ISGetSize(PetscIS,PetscInt*)
     int ISGetLocalSize(PetscIS,PetscInt*)
+    int ISGetBlockSize(PetscIS,PetscInt*)
     int ISGetIndices(PetscIS,const_PetscInt*[])
     int ISRestoreIndices(PetscIS,const_PetscInt*[])
 
@@ -45,9 +46,6 @@ cdef extern from "petscis.h" nogil:
     int ISBlockSetIndices(PetscIS,PetscInt,PetscInt,PetscInt[],PetscCopyMode)
     int ISBlockGetIndices(PetscIS,const_PetscInt*[])
     int ISBlockRestoreIndices(PetscIS,const_PetscInt*[])
-    int ISBlockGetSize(PetscIS,PetscInt*)
-    int ISBlockGetLocalSize(PetscIS,PetscInt*)
-    int ISBlockGetBlockSize(PetscIS,PetscInt*)
 
     int ISStrideSetStride(PetscIS,PetscInt,PetscInt,PetscInt)
     int ISStrideGetInfo(PetscIS,PetscInt*,PetscInt*)

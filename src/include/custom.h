@@ -1456,8 +1456,8 @@ DACreateND(MPI_Comm comm,
 
 #define DAGetAO                         DMDAGetAO                        
 #define DAGetScatter                    DMDAGetScatter                   
-#define DAGetISLocalToGlobalMapping     DMDAGetISLocalToGlobalMapping    
-#define DAGetISLocalToGlobalMappingBlck DMDAGetISLocalToGlobalMappingBlck
+#define DAGetLocalToGlobalMapping       DMGetLocalToGlobalMapping    
+#define DAGetLocalToGlobalMappingBlock  DMGetLocalToGlobalMappingBlock
 
 #define DASetRefinementFactor   DMDASetRefinementFactor  
 #define DAGetRefinementFactor   DMDAGetRefinementFactor  
