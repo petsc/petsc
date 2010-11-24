@@ -1233,6 +1233,13 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
   ierr = MatZeroEntries(*B);CHKERRQ(ierr);
 
   ierr = DMCompositeGetLocalISs(pack,&isloc);CHKERRQ(ierr);
+  if (1) {
+    ISLocalToGlobalMapping ltog;
+    ierr = ISView(isloc[0],0);CHKERRQ(ierr);
+    ierr = ISView(isloc[1],0);CHKERRQ(ierr);
+    ierr = DMGetLocalToGlobalMapping(pack,&ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingView(ltog,0);CHKERRQ(ierr);
+  }
   ierr = MatGetLocalSubMatrix(*B,isloc[0],isloc[0],&B11);CHKERRQ(ierr);
   ierr = MatGetLocalSubMatrix(*B,isloc[1],isloc[1],&B22);CHKERRQ(ierr);
 

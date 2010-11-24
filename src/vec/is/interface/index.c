@@ -69,6 +69,45 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSetIdentity(IS is)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "ISContiguousLocal"
+/*@
+   ISContiguousLocal - Locates an index set with contiguous range within a global range, if possible
+
+   Not Collective
+
+   Input Parmeters:
++  is - the index set
+.  gstart - global start
+.  gend - global end
+
+   Output Parameters:
++  start - start of contiguous block, as an offset from gstart
+-  contig - PETSC_TRUE if the index set refers to contiguous entries on this process, else PETSC_FALSE
+
+   Level: developer
+
+   Concepts: index sets^is contiguous
+
+.seealso: ISGetLocalSize(), VecGetOwnershipRange()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *start,PetscBool *contig)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidIntPointer(start,5);
+  PetscValidIntPointer(contig,5);
+  if (is->ops->contiguous) {
+    ierr = (*is->ops->contiguous)(is,gstart,gend,start,contig);CHKERRQ(ierr);
+  } else {
+    *start = -1;
+    *contig = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "ISPermutation" 
 /*@
    ISPermutation - PETSC_TRUE or PETSC_FALSE depending on whether the 

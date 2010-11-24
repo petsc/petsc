@@ -110,6 +110,8 @@ struct _VecOps {
   PetscErrorCode (*stridegather)(Vec,PetscInt,Vec,InsertMode);
   PetscErrorCode (*stridescatter)(Vec,PetscInt,Vec,InsertMode);
   PetscErrorCode (*dotnorm2)(Vec,Vec,PetscScalar*,PetscScalar*);
+  PetscErrorCode (*getsubvector)(Vec,IS,Vec*);
+  PetscErrorCode (*restoresubvector)(Vec,IS,Vec*);
 };
 
 /* 

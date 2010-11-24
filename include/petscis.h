@@ -111,6 +111,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSetPermutation(IS);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISPermutation(IS,PetscBool *); 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSetIdentity(IS);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISIdentity(IS,PetscBool *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISContiguousLocal(IS,PetscInt,PetscInt,PetscInt*,PetscBool*);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetIndices(IS,const PetscInt *[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISRestoreIndices(IS,const PetscInt *[]);
