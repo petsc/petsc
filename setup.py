@@ -22,7 +22,9 @@ from conf.metadata import metadata
 
 def version():
     import os, re
-    data = open(os.path.join('src', '__init__.py')).read()
+    fh = open(os.path.join('src', '__init__.py'))
+    try: data = fh.read()
+    finally: fh.close()
     m = re.search(r"__version__\s*=\s*'(.*)'", data)
     return m.groups()[0]
 
