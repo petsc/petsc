@@ -1208,7 +1208,92 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMAXPY(Vec y,PetscInt nv,const PetscScalar a
   ierr = PetscLogEventEnd(VEC_MAXPY,*x,y,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecGetSubVector"
+/*@
+   VecGetSubVector - Gets a vector representing part of another vector
+
+   Collective on Vec
+
+   Input Arguments:
++ X - vector from which to extract a subvector
+- is - index set representing portion of X to extract
+
+   Output Arguments:
+. Y - subvector corresponding to is
+
+   Level: advanced
+
+   Notes:
+   The subvector Y should be returned with VecRestoreSubVector().
+
+   This function may return a subvector without making a copy, therefore it is not safe to use the original vector while
+   modifying the subvector.  Other non-overlapping subvectors can still be obtained from X using this function.
+
+.seealso: MatGetSubMatrix()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT VecGetSubVector(Vec X,IS is,Vec *Y)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(X,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscValidPointer(Y,3);
+  if (X->ops->getsubvector) {
+    ierr = (*X->ops->getsubvector)(X,is,Y);CHKERRQ(ierr);
+  } else { /* Default implementation currently does no caching, it could be optimized to be no-copy for contiguous IS */
+    Vec        Z;
+    VecScatter scatter;
+    PetscInt   n,N;
+    ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
+    ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+    ierr = VecCreate(((PetscObject)is)->comm,&Z);CHKERRQ(ierr);
+    ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
+    ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
+    ierr = VecScatterCreate(X,is,Z,PETSC_NULL,&scatter);CHKERRQ(ierr);
+    ierr = VecScatterBegin(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+    *Y = Z;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecRestoreSubVector"
+/*@
+   VecRestoreSubVector - Restores a subvector extracted using VecGetSubVector()
+
+   Collective on Vec
+
+   Input Arguments:
++ X - vector from which subvector was obtained
+. is - index set representing the subset of X
+- Y - subvector being restored
+
+   Level: advanced
+
+.seealso: VecGetSubVector()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreSubVector(Vec X,IS is,Vec *Y)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(X,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscValidPointer(Y,3);
+  PetscValidHeaderSpecific(*Y,VEC_CLASSID,3);
+  if (X->ops->restoresubvector) {
+    ierr = (*X->ops->restoresubvector)(X,is,Y);CHKERRQ(ierr);
+  } else {
+    ierr = VecDestroy(*Y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 /*MC
    VecGetArray - Returns a pointer to a contiguous array that contains this 
