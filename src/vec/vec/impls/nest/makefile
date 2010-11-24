@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = vecnestops.c vecnest.c vecnestcreate.c
+SOURCEC  = vecnest.c
 SOURCEF  =
 SOURCEH  = vecnestimpl.h
 OBJSC    = $(SOURCEC:.c=.o)
