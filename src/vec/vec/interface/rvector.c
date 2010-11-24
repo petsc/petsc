@@ -1244,20 +1244,41 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetSubVector(Vec X,IS is,Vec *Y)
   PetscValidPointer(Y,3);
   if (X->ops->getsubvector) {
     ierr = (*X->ops->getsubvector)(X,is,Y);CHKERRQ(ierr);
-  } else { /* Default implementation currently does no caching, it could be optimized to be no-copy for contiguous IS */
-    Vec        Z;
-    VecScatter scatter;
-    PetscInt   n,N;
-    ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-    ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-    ierr = VecCreate(((PetscObject)is)->comm,&Z);CHKERRQ(ierr);
-    ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
-    ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
-    ierr = VecScatterCreate(X,is,Z,PETSC_NULL,&scatter);CHKERRQ(ierr);
-    ierr = VecScatterBegin(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
-    *Y = Z;
+  } else {                      /* Default implementation currently does no caching */
+    PetscInt gstart,gend,start;
+    PetscBool contiguous,gcontiguous;
+    ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
+    ierr = ISContiguousLocal(is,gstart,gend,&start,&contiguous);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPI_INT,MPI_LAND,((PetscObject)X)->comm);CHKERRQ(ierr);
+    if (gcontiguous) {          /* We can do a no-copy implementation */
+      PetscInt n,N;
+      PetscScalar *x;
+      PetscMPIInt size;
+      ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
+      ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(((PetscObject)X)->comm,&size);CHKERRQ(ierr);
+      if (size == 1) {
+        ierr = VecCreateSeqWithArray(((PetscObject)X)->comm,n,x+start,Y);CHKERRQ(ierr);
+      } else {
+        ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+        ierr = VecCreateMPIWithArray(((PetscObject)X)->comm,n,N,x+start,Y);CHKERRQ(ierr);
+      }
+      ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+    } else {                    /* Have to create a scatter and do a copy */
+      Vec        Z;
+      VecScatter scatter;
+      PetscInt   n,N;
+      ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
+      ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+      ierr = VecCreate(((PetscObject)is)->comm,&Z);CHKERRQ(ierr);
+      ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
+      ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
+      ierr = VecScatterCreate(X,is,Z,PETSC_NULL,&scatter);CHKERRQ(ierr);
+      ierr = VecScatterBegin(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd  (scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+      *Y = Z;
+    }
   }
   PetscFunctionReturn(0);
 }

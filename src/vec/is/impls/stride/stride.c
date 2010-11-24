@@ -285,6 +285,23 @@ static PetscErrorCode ISSetBlockSize_Stride(IS is,PetscInt bs)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISContiguousLocal_Stride"
+static PetscErrorCode ISContiguousLocal_Stride(IS is,PetscInt gstart,PetscInt gend,PetscInt *start,PetscBool *contig)
+{
+  IS_Stride *sub = (IS_Stride*)is->data;
+
+  PetscFunctionBegin;
+  if (sub->step == 1 && sub->first >= gstart && sub->first+sub->n <= gend) {
+    *start  = sub->first - gstart;
+    *contig = PETSC_TRUE;
+  } else {
+    *start  = -1;
+    *contig = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
+
 
 static struct _ISOps myops = { ISGetSize_Stride,
                                ISGetLocalSize_Stride,
@@ -300,7 +317,8 @@ static struct _ISOps myops = { ISGetSize_Stride,
                                ISCopy_Stride,
                                ISToGeneral_Stride,
                                ISOnComm_Stride,
-                               ISSetBlockSize_Stride
+                               ISSetBlockSize_Stride,
+                               ISContiguousLocal_Stride
 };
 
 
@@ -359,7 +377,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideSetStride_Stride(IS is,PetscInt n,Pets
   } else {
     is->isperm  = PETSC_FALSE;
   }
-  if (step == 1) is->contiguous = PETSC_TERNARY_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
