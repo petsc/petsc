@@ -811,10 +811,10 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVec(Vec X,PetscInt idxm,Vec *sx)
 {
-  PetscErrorCode ierr,(*f)(Vec,PetscInt,Vec*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscUseFunction(X,"VecNestGetSubVec_C",(Vec,PetscInt,Vec*)(X,idxm,sx));CHKERRQ(ierr);
+  ierr = PetscUseMethod(X,"VecNestGetSubVec_C",(Vec,PetscInt,Vec*),(X,idxm,sx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -857,10 +857,10 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVecs(Vec X,PetscInt *N,Vec **sx)
 {
-  PetscErrorCode ierr,(*f)(Vec,PetscInt*,Vec**);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscUseFunction(X,"VecNestGetSubVecs_C",(Vec,PetscInt*,Vec**)(X,N,sx));CHKERRQ(ierr);
+  ierr = PetscUseMethod(X,"VecNestGetSubVecs_C",(Vec,PetscInt*,Vec**),(X,N,sx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -898,10 +898,10 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSize(Vec X,PetscInt *N)
 {
-  PetscErrorCode ierr,(*f)(Vec,PetscInt*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscUseFunction(X,"VecNestGetSize_C",(Vec,PetscInt*)(X,N));CHKERRQ(ierr);
+  ierr = PetscUseMethod(X,"VecNestGetSize_C",(Vec,PetscInt*),(X,N));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
