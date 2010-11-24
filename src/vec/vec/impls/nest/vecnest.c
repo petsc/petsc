@@ -5,14 +5,14 @@
 #include <petscvec.h>
 #include <private/vecimpl.h>
 
-#include "vecblockimpl.h"
+#include "vecnestimpl.h"
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "VecBlockSetSubVecs_Block"
-PetscErrorCode PETSCVEC_DLLEXPORT VecBlockSetSubVecs_Block(Vec V,PetscInt m,const PetscInt idxm[],const Vec vec[])
+#define __FUNCT__ "VecNestSetSubVecs_Nest"
+PetscErrorCode PETSCVEC_DLLEXPORT VecNestSetSubVecs_Nest(Vec V,PetscInt m,const PetscInt idxm[],const Vec vec[])
 {
-  Vec_Block      *b = (Vec_Block*)V->data;;
+  Vec_Nest       *b = (Vec_Nest*)V->data;;
   PetscInt       i;
   PetscInt       row;
   PetscErrorCode ierr;
@@ -36,13 +36,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecBlockSetSubVecs_Block(Vec V,PetscInt m,cons
 EXTERN_C_END
 
 #undef __FUNCT__
-#define __FUNCT__ "VecBlockSetSubVecs"
-PetscErrorCode PETSCVEC_DLLEXPORT VecBlockSetSubVecs(Vec V,PetscInt m,const PetscInt idxm[],const Vec vec[])
+#define __FUNCT__ "VecNestSetSubVecs"
+PetscErrorCode PETSCVEC_DLLEXPORT VecNestSetSubVecs(Vec V,PetscInt m,const PetscInt idxm[],const Vec vec[])
 {
   PetscErrorCode ierr,(*f)(Vec,PetscInt,const PetscInt*,const Vec*);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)V,"VecBlockSetSubVecs_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)V,"VecNestSetSubVecs_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(V,m,idxm,vec);CHKERRQ(ierr);
   }
@@ -51,25 +51,25 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecBlockSetSubVecs(Vec V,PetscInt m,const Pets
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "VecBlockSetSubVec_Block"
-PetscErrorCode PETSCVEC_DLLEXPORT VecBlockSetSubVec_Block(Vec V,const PetscInt idxm,const Vec vec)
+#define __FUNCT__ "VecNestSetSubVec_Nest"
+PetscErrorCode PETSCVEC_DLLEXPORT VecNestSetSubVec_Nest(Vec V,const PetscInt idxm,const Vec vec)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecBlockSetSubVecs_Block(V,1,&idxm,&vec);CHKERRQ(ierr);
+  ierr = VecNestSetSubVecs_Nest(V,1,&idxm,&vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 #undef __FUNCT__
-#define __FUNCT__ "VecBlockSetSubVec"
-PetscErrorCode PETSCVEC_DLLEXPORT VecBlockSetSubVec(Vec V,const PetscInt idxm,const Vec vec)
+#define __FUNCT__ "VecNestSetSubVec"
+PetscErrorCode PETSCVEC_DLLEXPORT VecNestSetSubVec(Vec V,const PetscInt idxm,const Vec vec)
 {
   PetscErrorCode ierr,(*f)(Vec,const PetscInt,const Vec);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)V,"VecBlockSetSubVec_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)V,"VecNestSetSubVec_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(V,idxm,vec);CHKERRQ(ierr);
   }
@@ -77,10 +77,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecBlockSetSubVec(Vec V,const PetscInt idxm,co
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecBlockGetSubVecs_Private"
-static PetscErrorCode VecBlockGetSubVecs_Private(Vec x,PetscInt m,const PetscInt idxm[],Vec vec[])
+#define __FUNCT__ "VecNestGetSubVecs_Private"
+static PetscErrorCode VecNestGetSubVecs_Private(Vec x,PetscInt m,const PetscInt idxm[],Vec vec[])
 {
-  Vec_Block *b = (Vec_Block*)x->data;
+  Vec_Nest  *b = (Vec_Nest*)x->data;
   PetscInt  i;
   PetscInt  row;
 
@@ -96,25 +96,25 @@ static PetscErrorCode VecBlockGetSubVecs_Private(Vec x,PetscInt m,const PetscInt
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "VecBlockGetSubVec_Block"
-PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVec_Block(Vec X,PetscInt idxm,Vec *sx)
+#define __FUNCT__ "VecNestGetSubVec_Nest"
+PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVec_Nest(Vec X,PetscInt idxm,Vec *sx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecBlockGetSubVecs_Private(X,1,&idxm,sx);CHKERRQ(ierr);
+  ierr = VecNestGetSubVecs_Private(X,1,&idxm,sx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 #undef __FUNCT__
-#define __FUNCT__ "VecBlockGetSubVec"
-PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVec(Vec X,PetscInt idxm,Vec *sx)
+#define __FUNCT__ "VecNestGetSubVec"
+PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVec(Vec X,PetscInt idxm,Vec *sx)
 {
   PetscErrorCode ierr,(*f)(Vec,PetscInt,Vec*);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)X,"VecBlockGetSubVec_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)X,"VecNestGetSubVec_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(X,idxm,sx);CHKERRQ(ierr);
   }
@@ -123,13 +123,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVec(Vec X,PetscInt idxm,Vec *sx)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "VecBlockGetSubVecs_Block"
-PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVecs_Block(Vec X,PetscInt *N,Vec **sx)
+#define __FUNCT__ "VecNestGetSubVecs_Nest"
+PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVecs_Nest(Vec X,PetscInt *N,Vec **sx)
 {
-  Vec_Block *b;
+  Vec_Nest  *b;
 
   PetscFunctionBegin;
-  b = (Vec_Block*)X->data;
+  b = (Vec_Nest*)X->data;
   *N  = b->nb;
   *sx = b->v;
   PetscFunctionReturn(0);
@@ -137,13 +137,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVecs_Block(Vec X,PetscInt *N,Vec
 EXTERN_C_END
 
 #undef __FUNCT__
-#define __FUNCT__ "VecBlockGetSubVecs"
-PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVecs(Vec X,PetscInt *N,Vec **sx)
+#define __FUNCT__ "VecNestGetSubVecs"
+PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVecs(Vec X,PetscInt *N,Vec **sx)
 {
   PetscErrorCode ierr,(*f)(Vec,PetscInt*,Vec**);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)X,"VecBlockGetSubVecs_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)X,"VecNestGetSubVecs_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(X,N,sx);CHKERRQ(ierr);
   }

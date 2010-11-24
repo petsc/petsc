@@ -105,7 +105,7 @@ E*/
 #define VECMPICUDA     "mpicuda"
 #define VECCUDA        "cuda"       /* seqcuda on one process and mpicuda on several */
 #define VECDD          "vecdd"
-#define VECBLOCK       "block"
+#define VECNEST        "nest"
 
 
 /* Logging support */
@@ -560,12 +560,10 @@ extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDGetDomainArrayLocal(Vec v, PetscIn
 extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDRestoreDomainArrayLocal(Vec v, PetscInt i, PetscScalar **array);
 #endif
 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVecs(Vec,PetscInt*,Vec**);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecBlockGetSubVec(Vec,PetscInt,Vec*);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecBlockSetSubVec(Vec,const PetscInt,const Vec);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecBlockSetSubVecs(Vec,PetscInt,const PetscInt*,const Vec*);
-
-
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVecs(Vec,PetscInt*,Vec**);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVec(Vec,PetscInt,Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNestSetSubVec(Vec,const PetscInt,const Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNestSetSubVecs(Vec,PetscInt,const PetscInt*,const Vec*);
 
 PETSC_EXTERN_CXX_END
 #endif

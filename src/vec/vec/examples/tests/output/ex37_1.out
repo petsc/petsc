@@ -6,12 +6,12 @@
 (max-X) = 7.200320 : index = 9 
 (min-X) = 0.100223 : index = 11 
 Vector Object:
-  type=block, rows=2 
-  VecBlock structure: 
-  (0) : name="(null)", type=block, rows=2 
+  type=nest, rows=2 
+  VecNest structure: 
+  (0) : name="(null)", type=nest, rows=2 
     Vector Object:
-      type=block, rows=2 
-      VecBlock structure: 
+      type=nest, rows=2 
+      VecNest structure: 
       (0) : name="(null)", type=seq, rows=3 
         Vector Object:        
           type: seq
@@ -24,10 +24,10 @@ Vector Object:
         2
         2
         2
-  (1) : name="(null)", type=block, rows=2 
+  (1) : name="(null)", type=nest, rows=2 
     Vector Object:
-      type=block, rows=2 
-      VecBlock structure: 
+      type=nest, rows=2 
+      VecNest structure: 
       (0) : name="(null)", type=seq, rows=3 
         Vector Object:        
           type: seq
