@@ -13,8 +13,8 @@ int PetscFinalize(void);
 typedef int MPI_Comm;
 typedef int InsertMode;
 
-typedef long long int PetscPointer;
-/* typedef int PetscPointer; */
+/* typedef long long int PetscPointer; */
+typedef int PetscPointer;
 
 typedef PetscPointer PetscViewer;
 int PetscViewerCreate(MPI_Comm,PetscViewer*);
