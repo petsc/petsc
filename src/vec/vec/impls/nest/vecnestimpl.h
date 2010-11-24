@@ -7,6 +7,7 @@
 typedef struct {
   PetscInt  nb;           /* n blocks */
   Vec       *v;
+  IS        *is;
   PetscBool setup_called;
 } Vec_Nest;
 

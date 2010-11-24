@@ -2,16 +2,16 @@
 
 ============== test_view ==============
 (max-b) = 7.200320 : index = 3 
-(min-b) = 0.617940 : index = 4 
+(min-b) = 0.100223 : index = 5 
 (max-X) = 7.200320 : index = 9 
-(min-X) = 0.617940 : index = 10 
+(min-X) = 0.100223 : index = 11 
 Vector Object:
   type=nest, rows=2 
-  VecNest structure: 
-  (0) : name="(null)", type=nest, rows=2 
+  VecNest  structure: 
+  (0) : name="(null)", type=nest, rows=6 
     Vector Object:
       type=nest, rows=2 
-      VecNest structure: 
+      VecNest  structure: 
       (0) : name="(null)", type=mpi, rows=3 
         Vector Object:        
           type: mpi
@@ -28,10 +28,10 @@ Vector Object:
         2
         Process [1]
         2
-  (1) : name="(null)", type=nest, rows=2 
+  (1) : name="(null)", type=nest, rows=6 
     Vector Object:
       type=nest, rows=2 
-      VecNest structure: 
+      VecNest  structure: 
       (0) : name="(null)", type=mpi, rows=3 
         Vector Object:        
           type: mpi
@@ -47,7 +47,7 @@ Vector Object:
         7.20032
         0.61794
         Process [1]
-        5.41144
+        0.100223
 
 
 ============== test_axpy_dot_max ==============
@@ -71,7 +71,7 @@ Process [0]
 Process [1]
 24
 27
-X.Y = 1610.000000 
+X.Y = 1610.000000 + 0.000000i 
 (2) y1 = 
 Vector Object:
   type: mpi
@@ -91,6 +91,6 @@ Process [0]
 Process [1]
 40
 45
-X.Y = 2644.000000 
+X.Y = 2644.000000 + 0.000000i 
 (max-X) = 18.000000 : index = 8 
 (min-X) = 0.000000 : index = 0 

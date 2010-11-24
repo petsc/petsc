@@ -7,11 +7,11 @@
 (min-X) = 0.100223 : index = 11 
 Vector Object:
   type=nest, rows=2 
-  VecNest structure: 
-  (0) : name="(null)", type=nest, rows=2 
+  VecNest  structure: 
+  (0) : name="(null)", type=nest, rows=6 
     Vector Object:
       type=nest, rows=2 
-      VecNest structure: 
+      VecNest  structure: 
       (0) : name="(null)", type=seq, rows=3 
         Vector Object:        
           type: seq
@@ -24,10 +24,10 @@ Vector Object:
         2
         2
         2
-  (1) : name="(null)", type=nest, rows=2 
+  (1) : name="(null)", type=nest, rows=6 
     Vector Object:
       type=nest, rows=2 
-      VecNest structure: 
+      VecNest  structure: 
       (0) : name="(null)", type=seq, rows=3 
         Vector Object:        
           type: seq
@@ -59,7 +59,7 @@ Vector Object:
 21
 24
 27
-X.Y = 1610.000000 
+X.Y = 1610.000000 + 0.000000i 
 (2) y1 = 
 Vector Object:
   type: seq
@@ -75,6 +75,6 @@ Vector Object:
 35
 40
 45
-X.Y = 2644.000000 
+X.Y = 2644.000000 + 0.000000i 
 (max-X) = 18.000000 : index = 8 
 (min-X) = 0.000000 : index = 0 

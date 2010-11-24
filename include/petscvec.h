@@ -564,8 +564,8 @@ extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDRestoreDomainArrayLocal(Vec v, Pet
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVecs(Vec,PetscInt*,Vec**);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVec(Vec,PetscInt,Vec*);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNestSetSubVec(Vec,const PetscInt,const Vec);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNestSetSubVecs(Vec,PetscInt,const PetscInt*,const Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreateNest(MPI_Comm,PetscInt,IS*,Vec*,Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSize(Vec,PetscInt*);
 
 PETSC_EXTERN_CXX_END
 #endif
