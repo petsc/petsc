@@ -4,7 +4,6 @@
  */
 #include "../src/vec/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "VecPointwiseMax_Seq"
 static PetscErrorCode VecPointwiseMax_Seq(Vec win,Vec xin,Vec yin)

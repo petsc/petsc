@@ -565,15 +565,17 @@ PetscErrorCode VecMin_Seq(Vec xin,PetscInt* idx,PetscReal * z)
 PetscErrorCode VecSet_Seq(Vec xin,PetscScalar alpha)
 {
   PetscInt       i,n = xin->map->n;
-  PetscScalar    *xx = *(PetscScalar**)xin->data;
+  PetscScalar    *xx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
   if (alpha == 0.0) {
     ierr = PetscMemzero(xx,n*sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
     for (i=0; i<n; i++) xx[i] = alpha;
-    }
+  }
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
