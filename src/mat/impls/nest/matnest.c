@@ -521,39 +521,30 @@ PetscErrorCode MatZeroEntries_Nest(Mat A)
 PetscErrorCode MatDuplicate_Nest(Mat A,MatDuplicateOption op,Mat *B)
 {
   Mat_Nest       *bA = (Mat_Nest*)A->data;
-  Mat            **b;
-  PetscInt       i,j;
+  Mat            *b;
+  PetscInt       i,j,nr = bA->nr,nc = bA->nc;
   PetscErrorCode ierr;
 
-  // TODO
   PetscFunctionBegin;
-
-  ierr = PetscMalloc(sizeof(Mat*)*bA->nr,&b);CHKERRQ(ierr);
-  for (i=0; i<bA->nr; i++) {
-    ierr = PetscMalloc(sizeof(Mat)*bA->nc,&b[i]);CHKERRQ(ierr);
-  }
-  for (i=0; i<bA->nr; i++) {
-    for (j=0; j<bA->nc; j++) {
-      if (!bA->m[i][j]) continue;
-      ierr = MatDuplicate(bA->m[i][j],op,&b[i][j]);CHKERRQ(ierr);
+  ierr = PetscMalloc(nr*nc*sizeof(Mat),&b);CHKERRQ(ierr);
+  for (i=0; i<nr; i++) {
+    for (j=0; j<nc; j++) {
+      if (bA->m[i][j]) {
+        ierr = MatDuplicate(bA->m[i][j],op,&b[i*nc+j]);CHKERRQ(ierr);
+      } else {
+        b[i*nc+j] = PETSC_NULL;
+      }
     }
   }
-  ierr = MatCreateNest(((PetscObject)A)->comm,bA->nr,bA->nc,bA->is_row,bA->is_col,bA->m,B);CHKERRQ(ierr);
-  /* hand back control to the nest */
-  for (i=0; i<bA->nr; i++) {
-    for (j=0; j<bA->nc; j++) {
-      if (!bA->m[i][j]) continue;
-      ierr = MatDestroy(b[i][j]);CHKERRQ(ierr);
-    }
-  }
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  for (i=0; i<bA->nr; i++) {
-    ierr = PetscFree(b[i]);CHKERRQ(ierr);
+  ierr = MatCreateNest(((PetscObject)A)->comm,nr,bA->is_row,nc,bA->is_col,b,B);CHKERRQ(ierr);
+  /* Give the new MatNest exclusive ownership */
+  for (i=0; i<nr*nc; i++) {
+    if (b[i]) {ierr = MatDestroy(b[i]);CHKERRQ(ierr);}
   }
   ierr = PetscFree(b);CHKERRQ(ierr);
 
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -867,7 +858,7 @@ static PetscErrorCode MatNestSetOps_Private(struct _MatOps* ops)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUp_Nest_Private"
-static PetscErrorCode MatSetUp_Nest_Private(Mat A,PetscInt nr,PetscInt nc,Mat **sub)
+static PetscErrorCode MatSetUp_Nest_Private(Mat A,PetscInt nr,PetscInt nc,const Mat *sub)
 {
   Mat_Nest       *ctx = (Mat_Nest*)A->data;
   PetscInt       i,j;
@@ -892,9 +883,9 @@ static PetscErrorCode MatSetUp_Nest_Private(Mat A,PetscInt nr,PetscInt nc,Mat **
   }
   for (i=0; i<ctx->nr; i++) {
     for (j=0; j<ctx->nc; j++) {
-      ctx->m[i][j] = sub[i][j];
-      if (sub[i][j]) {
-        ierr = PetscObjectReference((PetscObject)sub[i][j]);CHKERRQ(ierr);
+      ctx->m[i][j] = sub[i*nc+j];
+      if (sub[i*nc+j]) {
+        ierr = PetscObjectReference((PetscObject)sub[i*nc+j]);CHKERRQ(ierr);
       }
     }
   }
@@ -935,7 +926,7 @@ static PetscErrorCode MatSetUp_Nest_Private(Mat A,PetscInt nr,PetscInt nc,Mat **
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUp_NestIS_Private"
-static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,PetscInt nc,IS is_row[],IS is_col[])
+static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[],PetscInt nc,const IS is_col[])
 {
   Mat_Nest       *ctx = (Mat_Nest*)A->data;
   PetscInt       i,j,offset,n,start,index;
@@ -988,7 +979,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,PetscInt nc,IS i
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateNest"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNest(MPI_Comm comm,PetscInt nr,PetscInt nc,IS is_row[],IS is_col[],Mat **a,Mat *B)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscInt nc,const IS is_col[],const Mat a[],Mat *B)
 {
   Mat            A;
   Mat_Nest       *s;
@@ -996,6 +987,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNest(MPI_Comm comm,PetscInt nr,PetscI
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (nr < 0) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Number of rows cannot be negative");
+  if (nr) PetscValidPointer(is_row,3);CHKERRQ(ierr);
+  if (nc < 0) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Number of columns cannot be negative");
+  if (nc) PetscValidPointer(is_col,5);CHKERRQ(ierr);
+  if (nr*nc) PetscValidPointer(a,6);
+  PetscValidPointer(B,7);
+
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
 
   ierr = PetscMalloc( sizeof(Mat_Nest), &s );CHKERRQ(ierr);
@@ -1029,7 +1027,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNest(MPI_Comm comm,PetscInt nr,PetscI
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
-  ierr = MatSetUp_NestIS_Private(A,nr,nc,is_row,is_col);CHKERRQ(ierr);
+  ierr = MatSetUp_NestIS_Private(A,nr,is_row,nc,is_col);CHKERRQ(ierr);
 
   /* expose Nest api's */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSubMat_C","MatNestGetSubMat_Nest",MatNestGetSubMat_Nest);CHKERRQ(ierr);
