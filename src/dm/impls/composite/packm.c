@@ -6,9 +6,52 @@
 #define __FUNCT__ "DMGetMatrix_Composite_Nest"
 static PetscErrorCode DMGetMatrix_Composite_Nest(DM dm,const MatType mtype,Mat *J)
 {
+  const DM_Composite           *com = (DM_Composite*)dm->data;
+  const struct DMCompositeLink *rlink,*clink;
+  PetscErrorCode               ierr;
+  IS                           *isg;
+  Mat                          *submats;
+  PetscInt                     i,j,n;
 
   PetscFunctionBegin;
-  SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"not implemented");
+  n = com->nDM + com->nredundant; /* Total number of entries */
+
+  /* Explicit index sets are not required for MatCreateNest, but getting them here allows MatNest to do consistency
+   * checking and allows ISEqual to compare by identity instead of by contents. */
+  ierr = DMCompositeGetGlobalISs(dm,&isg);CHKERRQ(ierr);
+
+  /* Get submatrices */
+  ierr = PetscMalloc(n*n*sizeof(Mat),&submats);CHKERRQ(ierr);
+  for (i=0,rlink=com->next; rlink; i++,rlink=rlink->next) {
+    for (j=0,clink=com->next; clink; j++,clink=clink->next) {
+      Mat sub = PETSC_NULL;
+      if (i == j) {
+        switch (rlink->type) {
+        case DMCOMPOSITE_ARRAY:
+          ierr = MatCreateMPIDense(((PetscObject)dm)->comm,rlink->n,clink->n,PETSC_DETERMINE,PETSC_DETERMINE,PETSC_NULL,&sub);CHKERRQ(ierr);
+          break;
+        case DMCOMPOSITE_DM:
+          ierr = DMGetMatrix(rlink->dm,PETSC_NULL,&sub);CHKERRQ(ierr);
+          break;
+        default: SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"unknown type");
+        }
+      } else if (com->FormCoupleLocations) {
+        SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot manage off-diagonal parts yet");
+      }
+      submats[i*n+j] = sub;
+    }
+  }
+
+  ierr = MatCreateNest(((PetscObject)dm)->comm,n,isg,n,isg,submats,J);CHKERRQ(ierr);
+
+  /* Disown references */
+  for (i=0; i<n; i++) {ierr = ISDestroy(isg[i]);CHKERRQ(ierr);}
+  ierr = PetscFree(isg);CHKERRQ(ierr);
+
+  for (i=0; i<n*n; i++) {
+    if (submats[i]) {ierr = MatDestroy(submats[i]);CHKERRQ(ierr);}
+  }
+  ierr = PetscFree(submats);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
