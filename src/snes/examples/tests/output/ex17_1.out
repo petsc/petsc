@@ -1,24 +1,26 @@
-test_solve 
-x1 
-Vector Object:
-  type: seq
-0.655738
--0.983607
-0.491803
-x2 
-Vector Object:
-  type: seq
--0.147541
-0.311475
-test_solve_matgetvecs 
-x1 
-Vector Object:
-  type: seq
-0.655738
--0.983607
-0.491803
-x2 
-Vector Object:
-  type: seq
--0.147541
-0.311475
+
+
+========================= Assembled system =========================
+
+  0 SNES Function norm 6.04152 
+  1 SNES Function norm 4.78676 
+  2 SNES Function norm 2.98646 
+  3 SNES Function norm 0.230624 
+  4 SNES Function norm 0.00193631 
+  5 SNES Function norm 1.43559e-07 
+  6 SNES Function norm < 1.e-11
+number of Newton iterations = 6
+
+
+
+========================= Block system =========================
+
+  0 SNES Function norm 6.04152 
+  1 SNES Function norm 4.78676 
+  2 SNES Function norm 2.98646 
+  3 SNES Function norm 0.230624 
+  4 SNES Function norm 0.00193631 
+  5 SNES Function norm 1.43559e-07 
+  6 SNES Function norm < 1.e-11
+number of Newton iterations = 6
+

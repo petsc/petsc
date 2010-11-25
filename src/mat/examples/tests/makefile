@@ -16,8 +16,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                    ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex97.c ex98.c ex99.c ex100.c \
                    ex101.c ex102.c ex103.c ex104.c ex106.c ex107.c ex108.c ex109.c ex110.c\
                    ex111.c ex112.c ex113.c ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c ex120.c ex121.c ex122.c ex123.c \
-                   ex124.c ex129.c ex130.c ex131.c ex132.c ex133.c ex134.c ex135.c ex136.c ex137.c  ex138.c ex139.c ex140.c \
-                   ex143.c
+                   ex124.c ex129.c ex130.c ex131.c ex132.c ex133.c ex134.c ex135.c ex136.c ex137.c  ex138.c ex139.c ex140.c
 EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex126f.F ex120f.F
 
 include ${PETSC_DIR}/conf/variables
@@ -544,10 +543,6 @@ ex140: ex140.o chkopts
 ex141: ex141.o chkopts
 	-${CLINKER} -o ex141 ex141.o ${PETSC_MAT_LIB}
 	${RM} ex141.o
-
-ex143: ex143.o chkopts
-	-${CLINKER} -o ex143 ex143.o ${PETSC_MAT_LIB}
-	${RM} ex143.o
 
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
@@ -1477,11 +1472,6 @@ runex141:
 	-@${MPIEXEC} -n 1 ./ex141  > ex141.tmp 2>&1; \
 	   ${DIFF} output/ex141.out ex141.tmp || echo "Possible problem with ex141, diffs above"; \
 	   ${RM} -f ex141.tmp
-
-runex143:
-	-@${MPIEXEC} -n 1 ./ex143  > ex143.tmp 2>&1; \
-	   ${DIFF} output/ex143.out ex143.tmp || echo "Possible problem with ex143_1, diffs above"; \
-	   ${RM} -f ex143.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc \
