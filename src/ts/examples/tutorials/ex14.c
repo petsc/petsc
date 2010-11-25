@@ -771,7 +771,7 @@ static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info,const Node ***x,co
                 + weight*h[6] * StaggeredMidpoint2D(x[i][j][k].v,x[i][j+1][k].v, x[i-1][j+1][k].v,x[i-1][j][k].v)
                 + weight*h[7] * StaggeredMidpoint2D(x[i][j][k].v,x[i][j+1][k].v, x[i+1][j+1][k].v,x[i+1][j][k].v));
       }
-      //printf("div[%d][%d] %g\n",i,j,div);
+      /* printf("div[%d][%d] %g\n",i,j,div); */
       f[i][j].b     = prmdot[i][j].b;
       f[i][j].h     = prmdot[i][j].h + div;
       f[i][j].beta2 = prmdot[i][j].beta2;
@@ -833,10 +833,11 @@ static PetscErrorCode THIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *c
   ierr = DMLocalToGlobalEnd  (da2,F2,INSERT_VALUES,F2g);CHKERRQ(ierr);
 
   if (thi->inertia > 0) {       /* This is mostly non-physical, but turns the DAE into an ODE */
-    Vec Xdot3g;
-    ierr = DMCompositeGetAccess(pack,Xdot,&Xdot3g,NULL);CHKERRQ(ierr);
+    Vec Xdot3g,Xdot2g;
+    ierr = DMCompositeGetAccess(pack,Xdot,&Xdot3g,&Xdot2g);CHKERRQ(ierr);
     ierr = VecAXPY(F3g,thi->inertia,Xdot3g);CHKERRQ(ierr);
-    ierr = DMCompositeRestoreAccess(pack,Xdot,&Xdot3g,NULL);CHKERRQ(ierr);
+    ierr = VecCopy(Xdot2g,F2g);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(pack,Xdot,&Xdot3g,&Xdot2g);CHKERRQ(ierr);
   }
 
   if (thi->verbose) {
@@ -1164,11 +1165,6 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
       }
     }
   }
-
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-  if (thi->verbose) {ierr = THIMatrixStatistics(thi,B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1233,13 +1229,6 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
   ierr = MatZeroEntries(*B);CHKERRQ(ierr);
 
   ierr = DMCompositeGetLocalISs(pack,&isloc);CHKERRQ(ierr);
-  if (1) {
-    ISLocalToGlobalMapping ltog;
-    ierr = ISView(isloc[0],0);CHKERRQ(ierr);
-    ierr = ISView(isloc[1],0);CHKERRQ(ierr);
-    ierr = DMGetLocalToGlobalMapping(pack,&ltog);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingView(ltog,0);CHKERRQ(ierr);
-  }
   ierr = MatGetLocalSubMatrix(*B,isloc[0],isloc[0],&B11);CHKERRQ(ierr);
   ierr = MatGetLocalSubMatrix(*B,isloc[1],isloc[1],&B22);CHKERRQ(ierr);
 
@@ -1270,7 +1259,12 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
 
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (*A != *B) {
+    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
   *mstr = SAME_NONZERO_PATTERN;
+  if (thi->verbose) {ierr = THIMatrixStatistics(thi,*B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1293,6 +1287,11 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
   comm = ((PetscObject)thi)->comm;
   ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(pack,X,&X3,&X2);CHKERRQ(ierr);
+  if (0) {
+    VecScale(X3,units->year/units->meter);CHKERRQ(ierr);
+    VecView(X3,0);
+    VecScale(X3,units->meter/units->year);CHKERRQ(ierr);
+  }
   ierr = DMDAGetInfo(da3,0, &mz,&my,&mx, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -1354,7 +1353,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
       ierr = PetscViewerASCIIPrintf(viewer,"      <PointData>\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"        <DataArray type=\"Float32\" Name=\"velocity\" NumberOfComponents=\"3\" format=\"ascii\">\n");CHKERRQ(ierr);
       for (i=0; i<nn/dof; i++) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%f %f %f\n",PetscRealPart(y3[i].u)*units->year/units->meter,PetscRealPart(y3[i+1].v)*units->year/units->meter,0.0);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%f %f %f\n",PetscRealPart(y3[i].u)*units->year/units->meter,PetscRealPart(y3[i].v)*units->year/units->meter,0.0);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer,"        </DataArray>\n");CHKERRQ(ierr);
 
@@ -1522,7 +1521,7 @@ int main(int argc,char *argv[])
     char filename[PETSC_MAX_PATH_LEN] = "";
     ierr = PetscOptionsGetString(PETSC_NULL,"-o",filename,sizeof(filename),&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = THIDAVecView_VTK_XML(thi,DMMGGetDM(dmmg),DMMGGetx(dmmg),filename);CHKERRQ(ierr);
+      ierr = THIDAVecView_VTK_XML(thi,pack,X,filename);CHKERRQ(ierr);
     }
   }
 
