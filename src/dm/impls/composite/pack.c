@@ -574,8 +574,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeScatter(DM dm,Vec gvec,...)
     if (next->type == DMCOMPOSITE_ARRAY) {
       PetscScalar *array;
       array = va_arg(Argp, PetscScalar*);
+      if (array) PetscValidScalarPointer(array,cnt);
+      PetscValidLogicalCollectiveBool(dm,!!array,cnt);
       if (!array) continue;
-      PetscValidScalarPointer(array,cnt);
       ierr = DMCompositeScatter_Array(dm,next,gvec,array);CHKERRQ(ierr);
     } else if (next->type == DMCOMPOSITE_DM) {
       Vec vec;
@@ -1061,7 +1062,7 @@ PetscErrorCode DMCompositeGetLocalVectors_Array(DM dm,struct DMCompositeLink *mi
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (array) {
-    ierr = PetscMalloc(mine->n*sizeof(PetscScalar),array);CHKERRQ(ierr);
+    ierr = PetscMalloc(mine->nlocal*sizeof(PetscScalar),array);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
