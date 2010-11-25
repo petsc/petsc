@@ -1498,9 +1498,11 @@ int main(int argc,char *argv[])
   }
 
   ierr = PetscObjectSetName((PetscObject)da3,"3D_Velocity");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)da3,"f3d_");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da3,0,"u");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da3,1,"v");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)da2,"2D_Fields");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)da3,"f2d_");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da2,0,"b");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da2,1,"h");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da2,2,"beta2");CHKERRQ(ierr);
@@ -1510,7 +1512,7 @@ int main(int argc,char *argv[])
   ierr = DMDestroy(da3);CHKERRQ(ierr);
   ierr = DMDestroy(da2);CHKERRQ(ierr);
   ierr = DMSetUp(pack);CHKERRQ(ierr);
-  ierr = DMGetMatrix(pack,MATAIJ,&B);CHKERRQ(ierr);
+  ierr = DMGetMatrix(pack,PETSC_NULL,&B);CHKERRQ(ierr);
 
   ierr = DMMGCreate(comm,thi->nlevels,thi,&dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,pack);CHKERRQ(ierr);
