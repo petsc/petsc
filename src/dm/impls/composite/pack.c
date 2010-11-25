@@ -1551,8 +1551,18 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation_Composite(DM coarse,DM fine,
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetMatrix_Composite" 
-PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_Composite(DM dm, const MatType mtype,Mat *J)
+#define __FUNCT__ "DMGetMatrix_Composite_Nest"
+static PetscErrorCode DMGetMatrix_Composite_Nest(DM dm,const MatType mtype,Mat *J)
+{
+
+  PetscFunctionBegin;
+  SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"not implemented");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMGetMatrix_Composite_AIJ"
+static PetscErrorCode DMGetMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J)
 {
   PetscErrorCode         ierr;
   DM_Composite           *com = (DM_Composite*)dm->data;
@@ -1560,19 +1570,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_Composite(DM dm, const MatType mtyp
   PetscInt               m,*dnz,*onz,i,j,mA;
   Mat                    Atmp;
   PetscMPIInt            rank;
-  PetscScalar            zero = 0.0;
   PetscBool              dense = PETSC_FALSE;
-  ISLocalToGlobalMapping ltogmap,ltogmapb;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-
   /* use global vector to determine layout needed for matrix */
   m = com->n;
-  ierr = MPI_Comm_rank(((PetscObject)dm)->comm,&rank);CHKERRQ(ierr);
+
   ierr = MatCreate(((PetscObject)dm)->comm,J);CHKERRQ(ierr);
   ierr = MatSetSizes(*J,m,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(*J,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(*J,mtype);CHKERRQ(ierr);
 
   /*
      Extremely inefficient but will compute entire Jacobian for testing
@@ -1594,11 +1600,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_Composite(DM dm, const MatType mtyp
       ierr = MatSetValues(*J,1,&i,mA,indices,values,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = PetscFree2(values,indices);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
-    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
+  ierr = MPI_Comm_rank(((PetscObject)dm)->comm,&rank);CHKERRQ(ierr);
   ierr = MatPreallocateInitialize(((PetscObject)dm)->comm,m,m,dnz,onz);CHKERRQ(ierr);
   /* loop over packed objects, handling one at at time */
   next = com->next;
@@ -1635,7 +1642,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_Composite(DM dm, const MatType mtyp
           proc = 0;
           while (cols[j] >= rstarts[proc+1]) proc++;
           ccols[j] = cols[j] + next->grstarts[proc] - rstarts[proc];
-        } 
+        }
         ierr = MatPreallocateSet(com->rstart+next->rstart+i,nc,ccols,dnz,onz);CHKERRQ(ierr);
         ierr = MatRestoreRow(Atmp,rstart+i,&nc,&cols,PETSC_NULL);CHKERRQ(ierr);
       }
@@ -1659,7 +1666,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_Composite(DM dm, const MatType mtyp
       if (rank == next->rank) {
         for (j=com->rstart+next->rstart; j<com->rstart+next->rstart+next->n; j++) {
           for (i=com->rstart+next->rstart; i<com->rstart+next->rstart+next->n; i++) {
-            ierr = MatSetValues(*J,1,&j,1,&i,&zero,INSERT_VALUES);CHKERRQ(ierr);
+            ierr = MatSetValue(*J,j,i,0.0,INSERT_VALUES);CHKERRQ(ierr);
           }
         }
       }
@@ -1686,7 +1693,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_Composite(DM dm, const MatType mtyp
           proc = 0;
           while (cols[j] >= rstarts[proc+1]) proc++;
           ccols[j] = cols[j] + next->grstarts[proc] - rstarts[proc];
-        } 
+        }
         row  = com->rstart+next->rstart+i;
         ierr = MatSetValues(*J,1,&row,nc,ccols,values,INSERT_VALUES);CHKERRQ(ierr);
         ierr = MatRestoreRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,&values);CHKERRQ(ierr);
@@ -1705,6 +1712,24 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_Composite(DM dm, const MatType mtyp
   }
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMGetMatrix_Composite"
+PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_Composite(DM dm,const MatType mtype,Mat *J)
+{
+  PetscErrorCode         ierr;
+  PetscBool              usenest;
+  ISLocalToGlobalMapping ltogmap,ltogmapb;
+
+  PetscFunctionBegin;
+  ierr = PetscStrcmp(mtype,MATNEST,&usenest);CHKERRQ(ierr);
+  if (usenest) {
+    ierr = DMGetMatrix_Composite_Nest(dm,mtype,J);CHKERRQ(ierr);
+  } else {
+    ierr = DMGetMatrix_Composite_AIJ(dm,mtype?mtype:MATAIJ,J);CHKERRQ(ierr);
+  }
 
   ierr = DMGetLocalToGlobalMapping(dm,&ltogmap);CHKERRQ(ierr);
   ierr = DMGetLocalToGlobalMappingBlock(dm,&ltogmapb);CHKERRQ(ierr);
