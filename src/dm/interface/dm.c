@@ -492,12 +492,25 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring(DM dm,ISColoringType ctype,const 
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix(DM dm, const MatType mtype,Mat *mat)
+PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
 {
   PetscErrorCode ierr;
+  char           ttype[256];
+  PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = (*dm->ops->getmatrix)(dm,mtype,mat);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(mat,3);
+  ierr = PetscStrncpy(ttype,mtype,sizeof ttype);CHKERRQ(ierr);
+  ttype[sizeof ttype-1] = 0;
+  ierr = PetscOptionsBegin(((PetscObject)dm)->comm,((PetscObject)dm)->prefix,"DM options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsList("-dm_mat_type","Matrix type","MatSetType",MatList,ttype,ttype,sizeof ttype,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
+  if (flg || mtype) {
+    ierr = (*dm->ops->getmatrix)(dm,ttype,mat);CHKERRQ(ierr);
+  } else {                      /* Let the implementation decide */
+    ierr = (*dm->ops->getmatrix)(dm,PETSC_NULL,mat);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
