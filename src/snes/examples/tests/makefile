@@ -253,7 +253,7 @@ runex17_2:
 #  runex9_2 and runex9_3 are not included in RUNEXAMPLES_2 because 
 # they require too many processors
 #
-TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex11.PETSc ex11.rm
+TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex11.PETSc ex11.rm ex17.PETSc runex17 runex17_2 ex17.rm
 TESTEXAMPLES_C_X11	       = ex7.PETSc runex7 runex7_2 ex7.rm ex9.PETSc runex9 ex9.rm ex13.PETSc ex13.rm
 TESTEXAMPLES_FORTRAN	       = ex12f.PETSc runex12f ex12f.rm  ex1f.PETSc runex1f_2 runex1f_3 ex1f.rm
 TESTEXAMPLES_C_X11_MPIUNI      = ex7.PETSc ex7.rm ex9.PETSc ex9.rm ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm 

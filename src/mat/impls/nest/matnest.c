@@ -869,12 +869,6 @@ static PetscErrorCode MatSetUp_Nest_Private(Mat A,PetscInt nr,PetscInt nc,const 
 
   ctx->nr = nr;
   ctx->nc = nc;
-  if (ctx->nr < 0) {
-    SETERRQ( ((PetscObject)A)->comm, PETSC_ERR_ARG_WRONG, "Cannot create MAT_NEST with < 0 row Nests." );
-  }
-  if (ctx->nc < 0) {
-    SETERRQ( ((PetscObject)A)->comm, PETSC_ERR_ARG_WRONG, "Cannot create MAT_NEST with < 0 col Nests." );
-  }
 
   /* Create space */
   ierr = PetscMalloc(sizeof(Mat*)*ctx->nr,&ctx->m);CHKERRQ(ierr);
@@ -929,8 +923,9 @@ static PetscErrorCode MatSetUp_Nest_Private(Mat A,PetscInt nr,PetscInt nc,const 
 static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[],PetscInt nc,const IS is_col[])
 {
   Mat_Nest       *ctx = (Mat_Nest*)A->data;
-  PetscInt       i,j,offset,n,start,index;
+  PetscInt       i,j,offset,n,bs;
   PetscErrorCode ierr;
+  Mat            sub;
 
   PetscFunctionBegin;
   if (is_row) { /* valid IS is passed in */
@@ -939,17 +934,16 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
       ierr = PetscObjectReference((PetscObject)is_row[i]);CHKERRQ(ierr);
       ctx->is_row[i] = is_row[i];
     }
-  } else {
-    for (j=0; j<ctx->nc; j++) {
-      if (ctx->m[0][j]) { index = j; break; }
-    }
-    ierr = MatGetOwnershipRange(ctx->m[0][index],&start,PETSC_NULL);CHKERRQ(ierr);
-    offset = start;
+  } else {                      /* Create the ISs by inspecting sizes of a submatrix in each row */
+    offset = A->rmap->rstart;
     for (i=0; i<ctx->nr; i++) {
-
-     ierr = MatGetLocalSize(ctx->m[i][index],&n,PETSC_NULL);CHKERRQ(ierr);
-     ierr = ISCreateStride(((PetscObject)ctx->m[i][index])->comm,n,offset,1,&ctx->is_row[i]);CHKERRQ(ierr);
-     offset = offset + n;
+      for (j=0,sub=PETSC_NULL; !sub && j<ctx->nc; j++) sub = ctx->m[i][j]; /* Find a nonzero submatrix in this nested row */
+      if (!sub) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Must have at least one non-empty submatrix per nested row, or set IS explicitly");
+      ierr = MatGetLocalSize(sub,&n,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetBlockSize(sub,&bs);CHKERRQ(ierr);
+      ierr = ISCreateStride(((PetscObject)sub)->comm,n,offset,1,&ctx->is_row[i]);CHKERRQ(ierr);
+      ierr = ISSetBlockSize(ctx->is_row[i],bs);CHKERRQ(ierr);
+      offset += n;
     }
   }
 
@@ -959,19 +953,16 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
       ierr = PetscObjectReference((PetscObject)is_col[j]);CHKERRQ(ierr);
       ctx->is_col[j] = is_col[j];
     }
-  } else {
-    for (i=0; i<ctx->nr; i++) {
-      if (ctx->m[i][0]) { index = i; break; }
-    }
-    ierr = MatGetOwnershipRange(ctx->m[index][0],&start,PETSC_NULL);CHKERRQ(ierr);
-    offset = start;
+  } else {                      /* Create the ISs by inspecting sizes of a submatrix in each column */
+    offset = A->cmap->rstart;
     for (j=0; j<ctx->nc; j++) {
-      for (i=0; i<ctx->nr; i++) {
-        if (ctx->m[i][j]) { index = i; break; }
-      }
-     ierr = MatGetLocalSize(ctx->m[index][j],PETSC_NULL,&n);CHKERRQ(ierr);
-     ierr = ISCreateStride(((PetscObject)ctx->m[index][j])->comm,n,offset,1,&ctx->is_col[j]);CHKERRQ(ierr);
-     offset = offset + n;
+      for (i=0,sub=PETSC_NULL; !sub && i<ctx->nr; i++) sub = ctx->m[i][j]; /* Find a nonzero submatrix in this nested column */
+      if (!sub) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Must have at least one non-empty submatrix per nested column, or set IS explicitly");
+      ierr = MatGetLocalSize(sub,PETSC_NULL,&n);CHKERRQ(ierr);
+      ierr = MatGetBlockSize(sub,&bs);CHKERRQ(ierr);
+      ierr = ISCreateStride(((PetscObject)sub)->comm,n,offset,1,&ctx->is_col[j]);CHKERRQ(ierr);
+      ierr = ISSetBlockSize(ctx->is_col[j],bs);CHKERRQ(ierr);
+      offset += n;
     }
   }
   PetscFunctionReturn(0);
@@ -983,14 +974,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNest(MPI_Comm comm,PetscInt nr,const 
 {
   Mat            A;
   Mat_Nest       *s;
-  PetscInt       m,n,M,N;
+  PetscInt       i,m,n,M,N;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (nr < 0) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Number of rows cannot be negative");
-  if (nr) PetscValidPointer(is_row,3);CHKERRQ(ierr);
+  if (nr && is_row) {
+    PetscValidPointer(is_row,3);
+    for (i=0; i<nr; i++) PetscValidHeaderSpecific(is_row[i],IS_CLASSID,3);
+  }
   if (nc < 0) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Number of columns cannot be negative");
-  if (nc) PetscValidPointer(is_col,5);CHKERRQ(ierr);
+  if (nc && is_row) {
+    PetscValidPointer(is_col,5);
+    for (i=0; i<nr; i++) PetscValidHeaderSpecific(is_col[i],IS_CLASSID,5);
+  }
   if (nr*nc) PetscValidPointer(a,6);
   PetscValidPointer(B,7);
 
