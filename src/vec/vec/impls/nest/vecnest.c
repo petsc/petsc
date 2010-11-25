@@ -88,11 +88,21 @@ static PetscErrorCode VecDuplicate_Nest(Vec x,Vec *y)
 {
   Vec_Nest       *bx = (Vec_Nest*)x->data;
   Vec            Y;
+  Vec            *sub;
+  PetscInt       i;
   PetscErrorCode ierr;
 
 
   PetscFunctionBegin;
-  ierr = VecCreateNest(((PetscObject)x)->comm,bx->nb,bx->is,bx->v,&Y);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(Vec)*bx->nb,&sub);CHKERRQ(ierr);
+  for (i=0; i<bx->nb; i++ ) {
+    ierr = VecDuplicate(bx->v[i],&sub[i]);CHKERRQ(ierr);
+  }
+  ierr = VecCreateNest(((PetscObject)x)->comm,bx->nb,bx->is,sub,&Y);CHKERRQ(ierr);
+  for (i=0; i<bx->nb; i++ ) {
+    ierr = VecDestroy(sub[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(sub);CHKERRQ(ierr);
   *y = Y;
   PetscFunctionReturn(0);
 }
@@ -600,7 +610,7 @@ static PetscErrorCode VecSize_Nest_Recursive(Vec x,PetscBool globalsize,PetscInt
 PetscErrorCode VecGetSize_Nest(Vec x,PetscInt *N)
 {
   PetscFunctionBegin;
-  *N = x->map->N;
+  if (N) { *N = x->map->N; }
   PetscFunctionReturn(0);
 }
 
@@ -610,7 +620,7 @@ PetscErrorCode VecGetSize_Nest(Vec x,PetscInt *N)
 PetscErrorCode VecGetLocalSize_Nest(Vec x,PetscInt *n)
 {
   PetscFunctionBegin;
-  *n = x->map->n;
+  if (n) { *n = x->map->n; }
   PetscFunctionReturn(0);
 }
 
@@ -837,12 +847,10 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "VecNestGetSubVecs_Nest"
 PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVecs_Nest(Vec X,PetscInt *N,Vec **sx)
 {
-  Vec_Nest  *b;
-
+  Vec_Nest  *b = (Vec_Nest*)X->data;
   PetscFunctionBegin;
-  b = (Vec_Nest*)X->data;
-  *N  = b->nb;
-  *sx = b->v;
+  if (N) {  *N  = b->nb; }
+  if (sx) { *sx = b->v;  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -889,7 +897,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSize_Nest(Vec X,PetscInt *N)
   Vec_Nest  *b = (Vec_Nest*)X->data;
 
   PetscFunctionBegin;
-  *N  = b->nb;
+  if (N) { *N  = b->nb; }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
