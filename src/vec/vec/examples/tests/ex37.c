@@ -16,6 +16,21 @@ T*/
 #include <petscmat.h>
 #include <petscksp.h>
 
+#undef __FUNCT__  
+#define __FUNCT__ "GetISs"
+static PetscErrorCode GetISs(Vec vecs[],IS is[])
+{
+  PetscErrorCode ierr;
+  PetscInt rstart[2],rend[2];
+
+  PetscFunctionBegin;
+  ierr = VecGetOwnershipRange(vecs[0],&rstart[0],&rend[0]);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(vecs[1],&rstart[1],&rend[1]);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_WORLD,rend[0]-rstart[0],rstart[0]+rstart[1],1,&is[0]);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_WORLD,rend[1]-rstart[1],rend[0]+rstart[1],1,&is[1]);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "test_view"
@@ -24,11 +39,13 @@ PetscErrorCode test_view( void )
   Vec X, a,b;
   Vec c,d,e,f;
   Vec tmp_buf[2];
+  IS  tmp_is[2];
   PetscInt index;
   PetscReal val;
   PetscInt list[]={0,1,2};
   PetscScalar vals[]={0.720032,0.061794,0.0100223};
   PetscErrorCode ierr;
+  PetscBool      explcit = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscPrintf( PETSC_COMM_WORLD, "\n\n============== %s ==============\n", PETSC_FUNCTION_NAME );
@@ -50,8 +67,13 @@ PetscErrorCode test_view( void )
 
   tmp_buf[0] = e;
   tmp_buf[1] = f;
-  ierr = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&b);CHKERRQ(ierr);
-  ierr = VecDestroy(e);CHKERRQ(ierr);   ierr = VecDestroy(f);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(0,"-explicit_is",&explcit,0);CHKERRQ(ierr);
+  ierr = GetISs(tmp_buf,tmp_is);CHKERRQ(ierr);
+  ierr = VecCreateNest(PETSC_COMM_WORLD,2,explcit?tmp_is:PETSC_NULL,tmp_buf,&b);CHKERRQ(ierr);
+  ierr = VecDestroy(e);CHKERRQ(ierr);
+  ierr = VecDestroy(f);CHKERRQ(ierr);
+  ierr = ISDestroy(tmp_is[0]);CHKERRQ(ierr);
+  ierr = ISDestroy(tmp_is[1]);CHKERRQ(ierr);
 
   tmp_buf[0] = c;
   tmp_buf[1] = d;
@@ -81,7 +103,6 @@ PetscErrorCode test_view( void )
   ierr = VecView( X, PETSC_VIEWER_STDOUT_WORLD );CHKERRQ(ierr);
 
   ierr = VecDestroy(X);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

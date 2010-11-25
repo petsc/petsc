@@ -13,9 +13,7 @@ static PetscErrorCode VecAssemblyBegin_Nest(Vec v)
 
   PetscFunctionBegin;
   for (i=0;i<vs->nb;i++) {
-    if (!vs->v[i]) {
-      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Nest  vector cannot contain NULL blocks");
-    }
+    if (!vs->v[i]) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Nest  vector cannot contain NULL blocks");
     ierr = VecAssemblyBegin(vs->v[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -290,17 +288,8 @@ static PetscErrorCode VecNorm_Nest(Vec xin,NormType type,PetscReal* z)
 
   if (type == NORM_2) {
     PetscScalar dot;
-#ifdef PETSC_USE_COMPLEX
-    PetscReal im,re;
-#endif
     ierr = VecDot(xin,xin,&dot);CHKERRQ(ierr);
-#ifdef PETSC_USE_COMPLEX
-    re = PetscRealPart(dot);
-    im = PetscImaginaryPart(dot);
-    _z = sqrt(re - im);
-#else
-    _z = sqrt(dot);
-#endif
+    _z = PetscAbsScalar(PetscSqrtScalar(dot));
   } else if (type == NORM_1) {
     for (i=0; i<nr; i++) {
       ierr = VecNorm(bx->v[i],type,&z_i);CHKERRQ(ierr);
@@ -832,13 +821,10 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVec(Vec X,PetscInt idxm,Vec *sx)
 {
-  PetscErrorCode ierr,(*f)(Vec,PetscInt,Vec*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)X,"VecNestGetSubVec_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(X,idxm,sx);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(X,"VecNestGetSubVec_C",(Vec,PetscInt,Vec*),(X,idxm,sx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -879,13 +865,10 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVecs(Vec X,PetscInt *N,Vec **sx)
 {
-  PetscErrorCode ierr,(*f)(Vec,PetscInt*,Vec**);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)X,"VecNestGetSubVecs_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(X,N,sx);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(X,"VecNestGetSubVecs_C",(Vec,PetscInt*,Vec**),(X,N,sx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -923,13 +906,10 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSize(Vec X,PetscInt *N)
 {
-  PetscErrorCode ierr,(*f)(Vec,PetscInt*);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)X,"VecNestGetSize_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(X,N);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(X,"VecNestGetSize_C",(Vec,PetscInt*),(X,N));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -945,9 +925,7 @@ static PetscErrorCode VecSetUp_Nest_Private(Vec V,PetscInt nb,Vec x[])
   if (ctx->setup_called) PetscFunctionReturn(0);
 
   ctx->nb = nb;
-  if (ctx->nb < 0) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Cannot create VECNEST with < 0 blocks.");
-  }
+  if (ctx->nb < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Cannot create VECNEST with < 0 blocks.");
 
   /* Create space */
   ierr = PetscMalloc(ctx->nb*sizeof(Vec),&ctx->v);CHKERRQ(ierr);
@@ -968,46 +946,42 @@ static PetscErrorCode VecSetUp_Nest_Private(Vec V,PetscInt nb,Vec x[])
 static PetscErrorCode VecSetUp_NestIS_Private(Vec V,PetscInt nb,IS is[])
 {
   Vec_Nest       *ctx = (Vec_Nest*)V->data;
-  PetscInt       i,offset,n;
+  PetscInt       i,offset,m,n,M,N;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
-  /* If an IS was provided, there is nothing Nest needs to do, otherwise Nest will build a strided IS */
-  /*
-    nprocessors = NP
-    Nest x^T = ( (g_0,g_1,...g_nprocs-1), (h_0,h_1,...h_NP-1) )
-         proc 0: => (g_0,h_0,)
-         proc 1: => (g_1,h_1,)
-         ...
-         proc nprocs-1: => (g_NP-1,h_NP-1,)
-
-              proc 0:                      proc 1:                    proc nprocs-1:
-      is[0] = ( 0,1,2,...,nlocal(g_0)-1 )  ( 0,1,...,nlocal(g_1)-1 )  ( 0,1,...,nlocal(g_NP-1) )
-
-              proc 0:
-      is[1] = ( nlocal(g_0),nlocal(g_0)+1,...,nlocal(g_0)+nlocal(h_0)-1 )
-              proc 1:
-      is[1] = ( nlocal(g_1),nlocal(g_1)+1,...,nlocal(g_1)+nlocal(h_1)-1 )
-
-              proc NP-1:
-      is[1] = ( nlocal(g_NP-1),nlocal(g_NP-1)+1,...,nlocal(g_NP-1)+nlocal(h_NP-1)-1 )
-  */
-  if (is) { /* valid IS is passed in */
-    /* refs on is[] are incremeneted */
+  if (is) {                     /* Do some consistency checks and reference the is */
+    offset = V->map->rstart;
     for (i=0; i<ctx->nb; i++) {
+      ierr = ISGetSize(is[i],&M);CHKERRQ(ierr);
+      ierr = VecGetSize(ctx->v[i],&N);CHKERRQ(ierr);
+      if (M != N) SETERRQ3(((PetscObject)V)->comm,PETSC_ERR_ARG_INCOMP,"In slot %D, IS of size %D is not compatible with Vec of size %D",i,M,N);
+      ierr = ISGetLocalSize(is[i],&m);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(ctx->v[i],&n);CHKERRQ(ierr);
+      if (m != n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"In slot %D, IS of local size %D is not compatible with Vec of local size %D",i,m,n);
+#if defined(PETSC_USE_DEBUG)
+      {                         /* This test can be expensive */
+        PetscInt  start;
+        PetscBool contiguous;
+        ierr = ISContiguousLocal(is[i],offset,offset+n,&start,&contiguous);CHKERRQ(ierr);
+        if (!contiguous || start != 0) SETERRQ1(((PetscObject)V)->comm,PETSC_ERR_SUP,"Index set %D is not contiguous with layout of matching vector",i);
+      }
+#endif
       ierr = PetscObjectReference((PetscObject)is[i]);CHKERRQ(ierr);
       ctx->is[i] = is[i];
+      offset += n;
     }
-  } else {
-    offset = 0;
+  } else {                      /* Create a contiguous ISStride for each entry */
+    offset = V->map->rstart;
     for (i=0; i<ctx->nb; i++) {
-     ierr = VecGetLocalSize(ctx->v[i],&n);CHKERRQ(ierr);
-     ierr = ISCreateStride(((PetscObject)ctx->v[i])->comm,n,offset,1,&ctx->is[i]);CHKERRQ(ierr);
-     offset = offset + n;
+      PetscInt bs;
+      ierr = VecGetLocalSize(ctx->v[i],&n);CHKERRQ(ierr);
+      ierr = VecGetBlockSize(ctx->v[i],&bs);CHKERRQ(ierr);
+      ierr = ISCreateStride(((PetscObject)ctx->v[i])->comm,n,offset,1,&ctx->is[i]);CHKERRQ(ierr);
+      ierr = ISSetBlockSize(ctx->is[i],bs);CHKERRQ(ierr);
+      offset += n;
     }
   }
-
   PetscFunctionReturn(0);
 }
 
