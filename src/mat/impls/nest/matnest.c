@@ -236,6 +236,23 @@ PetscErrorCode MatGetLocalSize_Nest(Mat A,PetscInt *m,PetscInt *n)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatNestDestroyISList"
+static PetscErrorCode MatNestDestroyISList(PetscInt n,IS **list)
+{
+  PetscErrorCode ierr;
+  IS             *lst = *list;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  if (!lst) PetscFunctionReturn(0);
+  for (i=0; i<n; i++) if (lst[i]) {ierr = ISDestroy(lst[i]);CHKERRQ(ierr);}
+  ierr = PetscFree(lst);CHKERRQ(ierr);
+  *list = PETSC_NULL;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_Nest"
 PetscErrorCode MatDestroy_Nest(Mat A)
 {
@@ -245,18 +262,10 @@ PetscErrorCode MatDestroy_Nest(Mat A)
 
   PetscFunctionBegin;
   /* release the matrices and the place holders */
-  if (vs->isglobal.row) {
-    for (i=0; i<vs->nr; i++) {
-      if(vs->isglobal.row[i]) ierr = ISDestroy(vs->isglobal.row[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(vs->isglobal.row);CHKERRQ(ierr);
-  }
-  if (vs->isglobal.col) {
-    for (j=0; j<vs->nc; j++) {
-      if(vs->isglobal.col[j]) ierr = ISDestroy(vs->isglobal.col[j]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(vs->isglobal.col);CHKERRQ(ierr);
-  }
+  ierr = MatNestDestroyISList(vs->nr,&vs->isglobal.row);CHKERRQ(ierr);
+  ierr = MatNestDestroyISList(vs->nc,&vs->isglobal.col);CHKERRQ(ierr);
+  ierr = MatNestDestroyISList(vs->nr,&vs->islocal.row);CHKERRQ(ierr);
+  ierr = MatNestDestroyISList(vs->nc,&vs->islocal.col);CHKERRQ(ierr);
 
   ierr = PetscFree(vs->row_len);CHKERRQ(ierr);
   ierr = PetscFree(vs->col_len);CHKERRQ(ierr);
@@ -972,7 +981,7 @@ static PetscErrorCode MatSetUp_Nest_Private(Mat A,PetscInt nr,PetscInt nc,const 
 #define __FUNCT__ "MatSetUp_NestIS_Private"
 static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[],PetscInt nc,const IS is_col[])
 {
-  Mat_Nest       *ctx = (Mat_Nest*)A->data;
+  Mat_Nest       *vs = (Mat_Nest*)A->data;
   PetscInt       i,j,offset,n,bs;
   PetscErrorCode ierr;
   Mat            sub;
@@ -980,38 +989,68 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
   PetscFunctionBegin;
   if (is_row) { /* valid IS is passed in */
     /* refs on is[] are incremeneted */
-    for (i=0; i<ctx->nr; i++) {
+    for (i=0; i<vs->nr; i++) {
       ierr = PetscObjectReference((PetscObject)is_row[i]);CHKERRQ(ierr);
-      ctx->isglobal.row[i] = is_row[i];
+      vs->isglobal.row[i] = is_row[i];
     }
   } else {                      /* Create the ISs by inspecting sizes of a submatrix in each row */
     offset = A->rmap->rstart;
-    for (i=0; i<ctx->nr; i++) {
+    for (i=0; i<vs->nr; i++) {
       ierr = MatNestFindNonzeroSubMatRow(A,i,&sub);CHKERRQ(ierr);
       ierr = MatGetLocalSize(sub,&n,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatGetBlockSize(sub,&bs);CHKERRQ(ierr);
-      ierr = ISCreateStride(((PetscObject)sub)->comm,n,offset,1,&ctx->isglobal.row[i]);CHKERRQ(ierr);
-      ierr = ISSetBlockSize(ctx->isglobal.row[i],bs);CHKERRQ(ierr);
+      ierr = ISCreateStride(((PetscObject)sub)->comm,n,offset,1,&vs->isglobal.row[i]);CHKERRQ(ierr);
+      ierr = ISSetBlockSize(vs->isglobal.row[i],bs);CHKERRQ(ierr);
       offset += n;
     }
   }
 
   if (is_col) { /* valid IS is passed in */
     /* refs on is[] are incremeneted */
-    for (j=0; j<ctx->nc; j++) {
+    for (j=0; j<vs->nc; j++) {
       ierr = PetscObjectReference((PetscObject)is_col[j]);CHKERRQ(ierr);
-      ctx->isglobal.col[j] = is_col[j];
+      vs->isglobal.col[j] = is_col[j];
     }
   } else {                      /* Create the ISs by inspecting sizes of a submatrix in each column */
     offset = A->cmap->rstart;
-    for (j=0; j<ctx->nc; j++) {
+    for (j=0; j<vs->nc; j++) {
       ierr = MatNestFindNonzeroSubMatCol(A,j,&sub);CHKERRQ(ierr);
       ierr = MatGetLocalSize(sub,PETSC_NULL,&n);CHKERRQ(ierr);
       ierr = MatGetBlockSize(sub,&bs);CHKERRQ(ierr);
-      ierr = ISCreateStride(((PetscObject)sub)->comm,n,offset,1,&ctx->isglobal.col[j]);CHKERRQ(ierr);
-      ierr = ISSetBlockSize(ctx->isglobal.col[j],bs);CHKERRQ(ierr);
+      ierr = ISCreateStride(((PetscObject)sub)->comm,n,offset,1,&vs->isglobal.col[j]);CHKERRQ(ierr);
+      ierr = ISSetBlockSize(vs->isglobal.col[j],bs);CHKERRQ(ierr);
       offset += n;
     }
+  }
+
+  /* Set up the local ISs */
+  ierr = PetscMalloc(vs->nr*sizeof(IS),&vs->islocal.row);CHKERRQ(ierr);
+  ierr = PetscMalloc(vs->nc*sizeof(IS),&vs->islocal.col);CHKERRQ(ierr);
+  for (i=0,offset=0; i<vs->nr; i++) {
+    IS                     isloc;
+    ISLocalToGlobalMapping rmap;
+    PetscInt               nlocal,bs;
+    ierr = MatNestFindNonzeroSubMatRow(A,i,&sub);CHKERRQ(ierr);
+    ierr = MatGetLocalToGlobalMapping(sub,&rmap,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetBlockSize(sub,&bs);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(rmap,&nlocal);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,nlocal,offset,1,&isloc);CHKERRQ(ierr);
+    ierr = ISSetBlockSize(isloc,bs);CHKERRQ(ierr);
+    vs->islocal.row[i] = isloc;
+    offset += nlocal;
+  }
+  for (i=0,offset=0; i<vs->nr; i++) {
+    IS                     isloc;
+    ISLocalToGlobalMapping cmap;
+    PetscInt               nlocal,bs;
+    ierr = MatNestFindNonzeroSubMatCol(A,i,&sub);CHKERRQ(ierr);
+    ierr = MatGetLocalToGlobalMapping(sub,PETSC_NULL,&cmap);CHKERRQ(ierr);
+    ierr = MatGetBlockSize(sub,&bs);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(cmap,&nlocal);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,nlocal,offset,1,&isloc);CHKERRQ(ierr);
+    ierr = ISSetBlockSize(isloc,bs);CHKERRQ(ierr);
+    vs->islocal.col[i] = isloc;
+    offset += nlocal;
   }
   PetscFunctionReturn(0);
 }
