@@ -69,6 +69,7 @@ static PetscErrorCode PETSc_MatNest_CheckMatVecCompatibility2(Mat A,Vec x,Vec y)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PETSc_MatNest_CheckConsistency"
+PETSC_UNUSED
 static PetscErrorCode PETSc_MatNest_CheckConsistency(Mat A,Mat submat,PetscInt r,PetscInt c)
 {
   Mat_Nest       *b = (Mat_Nest*)A->data;
@@ -113,6 +114,7 @@ static PetscErrorCode PETSc_MatNest_CheckConsistency(Mat A,Mat submat,PetscInt r
  */
 #undef __FUNCT__  
 #define __FUNCT__ "PETSc_MatNest_UpdateStructure"
+PETSC_UNUSED
 static PetscErrorCode PETSc_MatNest_UpdateStructure(Mat A,PetscInt ridx,PetscInt cidx)
 {
   Mat_Nest       *b = (Mat_Nest*)A->data;
