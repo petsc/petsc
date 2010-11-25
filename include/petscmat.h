@@ -73,6 +73,7 @@ E*/
 #define MATDD              "matdd"
 #define MATIM              "matim"
 #define MATLOCALREF        "localref"
+#define MATNEST            "nest"
 
 /*E
     MatSolverPackage - String with the name of a PETSc matrix solver type. 
@@ -1735,6 +1736,12 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscViewerMathematicaPutCSRMatrix(Pets
 #ifdef PETSC_HAVE_MUMPS
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetMumpsIcntl(Mat,PetscInt,PetscInt);
 #endif
+
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNest(MPI_Comm comm,PetscInt nr,PetscInt nc,IS is_row[],IS is_col[],Mat **a,Mat *B);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNestGetSize(Mat A,PetscInt *M,PetscInt *N);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNestGetSubMats(Mat A,PetscInt *M,PetscInt *N,Mat ***mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNestGetSubMat(Mat A,PetscInt idxm,PetscInt jdxm,Mat *sub);
+
 
 PETSC_EXTERN_CXX_END
 #endif
