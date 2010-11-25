@@ -17,7 +17,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                    ex101.c ex102.c ex103.c ex104.c ex106.c ex107.c ex108.c ex109.c ex110.c\
                    ex111.c ex112.c ex113.c ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c ex120.c ex121.c ex122.c ex123.c \
                    ex124.c ex129.c ex130.c ex131.c ex132.c ex133.c ex134.c ex135.c ex136.c ex137.c  ex138.c ex139.c ex140.c \
-                   ex142.c ex143.c
+                   ex143.c
 EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex126f.F ex120f.F
 
 include ${PETSC_DIR}/conf/variables
@@ -544,10 +544,6 @@ ex140: ex140.o chkopts
 ex141: ex141.o chkopts
 	-${CLINKER} -o ex141 ex141.o ${PETSC_MAT_LIB}
 	${RM} ex141.o
-
-ex142: ex142.o chkopts
-	-${CLINKER} -o ex142 ex142.o ${PETSC_MAT_LIB}
-	${RM} ex142.o
 
 ex143: ex143.o chkopts
 	-${CLINKER} -o ex143 ex143.o ${PETSC_MAT_LIB}
@@ -1481,16 +1477,6 @@ runex141:
 	-@${MPIEXEC} -n 1 ./ex141  > ex141.tmp 2>&1; \
 	   ${DIFF} output/ex141.out ex141.tmp || echo "Possible problem with ex141, diffs above"; \
 	   ${RM} -f ex141.tmp
-
-runex142:
-	-@${MPIEXEC} -n 1 ./ex142  > ex142_1.tmp 2>&1; \
-	   ${DIFF} output/ex142_1.out ex142_1.tmp || echo "Possible problem with ex142_1, diffs above"; \
-	   ${RM} -f ex142_1.tmp
-
-runex142_2:
-	-@${MPIEXEC} -n 2 ./ex142  > ex142_2.tmp 2>&1; \
-	   ${DIFF} output/ex142_2.out ex142_2.tmp || echo "Possible problem with ex142_2, diffs above"; \
-	   ${RM} -f ex142_2.tmp
 
 runex143:
 	-@${MPIEXEC} -n 1 ./ex143  > ex143.tmp 2>&1; \

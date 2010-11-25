@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =	 
 LOCDIR          = src/snes/examples/tests/
-EXAMPLESC       = ex1.c ex4.c ex5.c ex7.c ex9.c ex11.c ex13.c
+EXAMPLESC       = ex1.c ex4.c ex5.c ex7.c ex9.c ex11.c ex13.c ex17.c
 EXAMPLESF       = ex1f.F ex12f.F
 DIRS	        = 
 MANSEC          = SNES
@@ -79,6 +79,10 @@ ex15: ex15.o  chkopts
 ex16: ex16.o  chkopts
 	-${CLINKER} -o ex16 ex16.o ${PETSC_SNES_LIB}
 	${RM} ex16.o
+
+ex17: ex17.o chkopts
+	-${CLINKER} -o ex17 ex17.o ${PETSC_SNES_LIB}
+	${RM} ex17.o
 
 #--------------------------------------------------------------------------
 runex1:
@@ -234,6 +238,16 @@ runex14f:
 	   if (${DIFF} output/ex14_1.out ex14_1.tmp) then true; \
 	   else echo "Possible problem with ex14f_1, diffs above"; fi; \
 	   ${RM} -f ex14_1.tmp
+
+runex17:
+	-@${MPIEXEC} -n 1 ./ex17  > ex17_1.tmp 2>&1; \
+	   ${DIFF} output/ex17_1.out ex17_1.tmp || echo "Possible problem with ex17, diffs above"; \
+	   ${RM} -f ex17_1.tmp
+runex17_2:
+	-@${MPIEXEC} -n 2 ./ex17  > ex17_2.tmp 2>&1; \
+	   ${DIFF} output/ex17_2.out ex17_2.tmp || echo "Possible problem with ex17_2, diffs above"; \
+	   ${RM} -f ex17_2.tmp
+
 
 #
 #  runex9_2 and runex9_3 are not included in RUNEXAMPLES_2 because 
