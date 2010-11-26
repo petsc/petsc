@@ -1,6 +1,6 @@
 #define PETSCVEC_DLL
 
-#include "vecnestimpl.h"
+#include "vecnestimpl.h"   /*I  "petscvec.h"   I*/
 
 /* check all blocks are filled */
 #undef __FUNCT__  

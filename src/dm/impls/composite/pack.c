@@ -1,6 +1,6 @@
 #define PETSCDM_DLL
 
-#include "packimpl.h"
+#include "packimpl.h" /*I   "petscdm.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeSetCoupling"
