@@ -8700,7 +8700,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreLocalSubMatrix(Mat mat,IS isrow,IS i
   PetscValidHeaderSpecific(iscol,IS_CLASSID,3);
   PetscCheckSameComm(isrow,2,iscol,3);
   PetscValidPointer(submat,4);
-  PetscValidHeaderSpecific(*submat,MAT_CLASSID,4);
+  if (*submat) {PetscValidHeaderSpecific(*submat,MAT_CLASSID,4);}
 
   if (mat->ops->restorelocalsubmatrix) {
     ierr = (*mat->ops->restorelocalsubmatrix)(mat,isrow,iscol,submat);CHKERRQ(ierr);
