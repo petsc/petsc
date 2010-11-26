@@ -180,13 +180,46 @@ extern PetscLogEvent VEC_CUDACopyToGPUSome, VEC_CUDACopyFromGPUSome;
 EXTERN PetscErrorCode VecCUDACopyFromGPU(Vec v);
 #endif
 
-/*
-    These are for use only in the Vec implementations. They DO NOT increase any vectors state. The increase of the vector state
-   is always handled by the outter vector operation, for example VecAXPY()
-*/
 #undef __FUNCT__
-#define __FUNCT__ "VecGetArrayPrivate"
-PETSC_STATIC_INLINE PetscErrorCode VecGetArrayPrivate(Vec x, PetscScalar *a[])
+#define __FUNCT__ "VecGetArrayRead"
+PETSC_STATIC_INLINE PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar *a[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (x->petscnative){
+#if defined(PETSC_HAVE_CUDA)
+    ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
+#endif
+    *a = *((PetscScalar **)x->data);
+  } else {
+    ierr = VecGetArray_Private(x,(PetscScalar**)a);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArrayRead"
+PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar *a[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (x->petscnative){
+#if defined(PETSC_HAVE_CUDA)
+    if (x->valid_GPU_array != PETSC_CUDA_UNALLOCATED) {
+      x->valid_GPU_array = PETSC_CUDA_CPU;
+    }
+#endif
+  } else {
+    ierr = VecRestoreArray_Private(x,(PetscScalar**)a);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecGetArray"
+PETSC_STATIC_INLINE PetscErrorCode VecGetArray(Vec x,PetscScalar *a[])
 {
   PetscErrorCode ierr;
 
@@ -203,8 +236,8 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArrayPrivate(Vec x, PetscScalar *a[])
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecRestoreArrayPrivate"
-PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayPrivate(Vec x, PetscScalar *a[])
+#define __FUNCT__ "VecRestoreArray"
+PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
 {
   PetscErrorCode ierr;
 
@@ -218,60 +251,10 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayPrivate(Vec x, PetscScalar *a[
   } else {
     ierr = VecRestoreArray_Private(x,a);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-}
-
-/*
-   These do not increase the vector state because we know the vector cannot be changed
-*/
-#undef __FUNCT__
-#define __FUNCT__ "VecGetArrayRead"
-PETSC_STATIC_INLINE PetscErrorCode VecGetArrayRead(Vec x, const PetscScalar **a)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecGetArrayPrivate(x,(PetscScalar**)a);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArrayRead"
-PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  /* do not mark the vector as owned by the CPU since it may be shared between the CPU and GPU */
-  if (!x->petscnative){
-    ierr = VecRestoreArray_Private(x,(PetscScalar**)a);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "VecGetArray"
-PETSC_STATIC_INLINE PetscErrorCode VecGetArray(Vec x, PetscScalar *a[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecGetArrayPrivate(x,a);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArray"
-PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x, PetscScalar *a[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecRestoreArrayPrivate(x,a);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 
 /*
      Common header shared by array based vectors, 
