@@ -11,8 +11,11 @@ static const char help[] = "Uses analytic Jacobians to solve individual problems
  *
  * This example is a prototype for coupling in multi-physics problems, therefore residual evaluation and assembly for
  * each problem (referred to as U and K) are written separately.  This permits the same "physics" code to be used for
- * solving each uncoupled problem as well as the coupled system.  In all cases, a fully-assembled analytic Jacobian is
- * available, so the systems can be solved with a direct solve.  Additionally, by running with
+ * solving each uncoupled problem as well as the coupled system.  In particular, run with -problem_type 0 to solve only
+ * problem U (with K fixed), -problem_type 1 to solve only K (with U fixed), and -problem_type 2 to solve both at once.
+ *
+ * In all cases, a fully-assembled analytic Jacobian is available, so the systems can be solved with a direct solve or
+ * any other standard method.  Additionally, by running with
  *
  *   -pack_dm_mat_type nest
  *
@@ -60,7 +63,7 @@ static PetscErrorCode FormFunctionLocal_K(User user,DMDALocalInfo *info,const Pe
       gradu = (u[i+1]-u[i])/hx,
       g = 1. + gradu*gradu,
       w = 1./g;
-    f[i] = PetscExpScalar(k[i]) + k[i] - (ubar + w);
+    f[i] = hx*(PetscExpScalar(k[i]) + k[i] - (ubar + w));
   }
   PetscFunctionReturn(0);
 }
@@ -150,13 +153,14 @@ static PetscErrorCode FormJacobianLocal_U(User user,DMDALocalInfo *info,const Pe
 #define __FUNCT__ "FormJacobianLocal_K"
 static PetscErrorCode FormJacobianLocal_K(User user,DMDALocalInfo *info,const PetscScalar u[],const PetscScalar k[],Mat Bkk)
 {
+  PetscReal      hx = 1./info->mx;
   PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin;
   for (i=info->xs; i<info->xs+info->xm; i++) {
     PetscInt row = i-info->gxs;
-    PetscScalar vals[] = {PetscExpScalar(k[i])+1.};
+    PetscScalar vals[] = {hx*(PetscExpScalar(k[i])+1.)};
     ierr = MatSetValuesLocal(Bkk,1,&row,1,&row,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -202,7 +206,7 @@ static PetscErrorCode FormJacobianLocal_KU(User user,DMDALocalInfo *info,DMDALoc
       g_gradu = 2.*gradu,
       w       = 1./g,
       w_gradu = -g_gradu*w*w,
-      vals[]  = {-ubar_L - w_gradu*gradu_L, -ubar_R - w_gradu*gradu_R};
+      vals[]  = {hx*(-ubar_L - w_gradu*gradu_L), hx*(-ubar_R - w_gradu*gradu_R)};
     ierr = MatSetValuesLocal(Bku,1,&row,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -277,7 +281,7 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat *J,Mat *B,MatStructur
     ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd  (*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *mstr = SAME_NONZERO_PATTERN;
+  *mstr = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -394,6 +398,31 @@ int main(int argc, char *argv[])
     break;
   }
   if (view_draw) {ierr = VecView(X,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
+  if (1) {
+    PetscInt col = 0;
+    PetscBool mult_dup = PETSC_FALSE,view_dup = PETSC_FALSE;
+    Mat D;
+    Vec Y;
+
+    ierr = PetscOptionsGetInt(0,"-col",&col,0);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(0,"-mult_dup",&mult_dup,0);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(0,"-view_dup",&view_dup,0);CHKERRQ(ierr);
+
+    ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
+    /* ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); */
+    /* ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); */
+    ierr = MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);
+    ierr = VecZeroEntries(X);CHKERRQ(ierr);
+    ierr = VecSetValue(X,col,1.0,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
+    ierr = MatMult(mult_dup?D:B,X,Y);CHKERRQ(ierr);
+    ierr = MatView(view_dup?D:B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+    ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = MatDestroy(D);CHKERRQ(ierr);
+    ierr = VecDestroy(Y);CHKERRQ(ierr);
+  }
 
   ierr = DMCompositeRestoreLocalVectors(pack,&user->Uloc,&user->Kloc);CHKERRQ(ierr);
   ierr = PetscFree(user);CHKERRQ(ierr);
