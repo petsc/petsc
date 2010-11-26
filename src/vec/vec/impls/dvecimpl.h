@@ -24,8 +24,6 @@ EXTERN PetscErrorCode VecAYPX_Seq(Vec,PetscScalar,Vec);
 EXTERN PetscErrorCode VecWAXPY_Seq(Vec,PetscScalar,Vec,Vec);
 EXTERN PetscErrorCode VecAXPBYPCZ_Seq(Vec,PetscScalar,PetscScalar,PetscScalar,Vec,Vec);
 EXTERN PetscErrorCode VecMaxPointwiseDivide_Seq(Vec,Vec,PetscReal*);
-EXTERN PetscErrorCode VecGetArray_Seq(Vec,PetscScalar *[]);
-EXTERN PetscErrorCode VecRestoreArray_Seq(Vec,PetscScalar *[]);
 EXTERN PetscErrorCode VecPlaceArray_Seq(Vec,const PetscScalar *);
 EXTERN PetscErrorCode VecReplaceArray_Seq(Vec,const PetscScalar *);
 EXTERN PetscErrorCode VecDot_Seq(Vec,Vec,PetscScalar *);
