@@ -14,8 +14,8 @@ typedef struct {
   PetscBool          setup_called;
   struct MatNestISPair isglobal;
   struct MatNestISPair islocal;
+  Vec                *left,*right;
   PetscInt           *row_len,*col_len;
 } Mat_Nest;
 
 #endif
-

@@ -64,6 +64,7 @@ PetscErrorCode test_solve( void )
   tmp[1][0] = A21;
   tmp[1][1] = A22;
   ierr = MatCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,2,PETSC_NULL,&tmp[0][0],&A);CHKERRQ(ierr);
+  ierr = MatNestSetVecType(A,VECNEST);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -177,6 +178,7 @@ PetscErrorCode test_solve_matgetvecs( void )
   tmp[1][0] = A21;
   tmp[1][1] = PETSC_NULL;
   ierr = MatCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,2,PETSC_NULL,&tmp[0][0],&A);CHKERRQ(ierr);
+  ierr = MatNestSetVecType(A,VECNEST);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 

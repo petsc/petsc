@@ -421,6 +421,7 @@ static int block_system(void)
   bA[1][0] = j21;
   bA[1][1] = j22;
   ierr = MatCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,2,PETSC_NULL,&bA[0][0],&J);CHKERRQ(ierr);
+  ierr = MatNestSetVecType(J,VECNEST);CHKERRQ(ierr);
   ierr = MatDestroy(j11);CHKERRQ(ierr);
   ierr = MatDestroy(j12);CHKERRQ(ierr);
   ierr = MatDestroy(j21);CHKERRQ(ierr);
