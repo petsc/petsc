@@ -1420,7 +1420,7 @@ typedef PetscErrorCode (*PetscErrorCodeFunction)(void);
   0;{ PetscErrorCode (*f)B, __ierr; \
     __ierr = PetscObjectQueryFunction((PetscObject)obj,A,(PetscVoidStarFunction)&f);CHKERRQ(__ierr); \
     if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
-    else SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"Cannot locate function %s in object",A); \
+    else SETERRQ1(((PetscObject)obj)->comm,PETSC_ERR_SUP,"Cannot locate function %s in object",A); \
   }
 
 /*
