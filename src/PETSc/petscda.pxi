@@ -42,6 +42,7 @@ cdef extern from * nogil:
     int DASetFromOptions(PetscDA)
     int DASetInterpolationType(PetscDA,PetscDAInterpolationType)
     int DAGetInterpolation(PetscDA,PetscDA,PetscMat*,PetscVec*)
+    int DAGetInjection(PetscDA,PetscDA,PetscScatter*)
     int DAGetInfo(PetscDA,
                   PetscInt*,
                   PetscInt*,PetscInt*,PetscInt*,

@@ -1465,6 +1465,7 @@ DACreateND(MPI_Comm comm,
 #define DACoarsen               DMCoarsen              
 #define DASetInterpolationType  DMDASetInterpolationType 
 #define DAGetInterpolation      DMGetInterpolation     
+#define DAGetInjection          DMGetInjection     
 
 #define DASetElementType  DMDASetElementType
 #define DAGetElementType  DMDAGetElementType

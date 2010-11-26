@@ -130,6 +130,12 @@ class BaseTestDA(object):
         rda = da.refine()
         mat, vec = da.getInterpolation(rda)
 
+    def testGetInjection(self):
+        da = self.da
+        if da.dim == 1: return
+        rda = da.refine()
+        scatter = da.getInjection(rda)
+
 class BaseTestDA_1D(BaseTestDA):
     SIZES = [100]
 

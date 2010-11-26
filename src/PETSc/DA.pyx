@@ -427,6 +427,11 @@ cdef class DA(Object):
                                    &A.mat, &scale.vec))
         return(A, scale)
 
+    def getInjection(self, DA da not None):
+        cdef Scatter sct = Scatter()
+        CHKERR( DAGetInjection(self.da, da.da, &sct.sct) )
+        return sct
+
     #
 
     def setElementType(self, elem_type):
