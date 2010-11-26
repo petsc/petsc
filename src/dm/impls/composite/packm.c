@@ -65,7 +65,7 @@ static PetscErrorCode DMGetMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J
   PetscInt               m,*dnz,*onz,i,j,mA;
   Mat                    Atmp;
   PetscMPIInt            rank;
-  PetscBool              dense = PETSC_FALSE;
+  PetscBool              dense = PETSC_FALSE,prealloc_only = PETSC_FALSE;;
 
   PetscFunctionBegin;
   /* use global vector to determine layout needed for matrix */
@@ -78,7 +78,7 @@ static PetscErrorCode DMGetMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J
   /*
      Extremely inefficient but will compute entire Jacobian for testing
   */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-dmcomposite_dense_jacobian",&dense,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)dm)->prefix,"-dmcomposite_dense_jacobian",&dense,PETSC_NULL);CHKERRQ(ierr);
   if (dense) {
     PetscInt    rstart,rend,*indices;
     PetscScalar *values;
@@ -154,6 +154,9 @@ static PetscErrorCode DMGetMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J
   ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetBool(((PetscObject)dm)->prefix,"-dmcomposite_preallocate_only",&prealloc_only,PETSC_NULL);CHKERRQ(ierr);
+  if (prealloc_only) PetscFunctionReturn(0);
 
   next = com->next;
   while (next) {
