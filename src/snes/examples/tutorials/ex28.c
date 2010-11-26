@@ -323,8 +323,11 @@ int main(int argc, char *argv[])
   PetscInt       *lxk,m,nprocs;
   User           user;
   SNES           snes;
+  KSP            ksp;
+  PC             pc;
   Vec            X,F,Xu,Xk,Fu,Fk;
   Mat            B;
+  IS             *isg;
   PetscBool      view_draw;
 
   PetscInitialize(&argc,&argv,0,help);
@@ -352,6 +355,7 @@ int main(int argc, char *argv[])
 
   ierr = PetscNew(struct _UserCtx,&user);CHKERRQ(ierr);
   user->pack = pack;
+  ierr = DMCompositeGetGlobalISs(pack,&isg);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(pack,&user->Uloc,&user->Kloc);CHKERRQ(ierr);
   ierr = DMCompositeScatter(pack,X,user->Uloc,user->Kloc);CHKERRQ(ierr);
 
@@ -394,11 +398,15 @@ int main(int argc, char *argv[])
     ierr = SNESSetFunction(snes,F,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetIS(pc,"u",isg[0]);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetIS(pc,"k",isg[1]);CHKERRQ(ierr);
     ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
     break;
   }
   if (view_draw) {ierr = VecView(X,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-  if (1) {
+  if (0) {
     PetscInt col = 0;
     PetscBool mult_dup = PETSC_FALSE,view_dup = PETSC_FALSE;
     Mat D;
@@ -427,6 +435,9 @@ int main(int argc, char *argv[])
   ierr = DMCompositeRestoreLocalVectors(pack,&user->Uloc,&user->Kloc);CHKERRQ(ierr);
   ierr = PetscFree(user);CHKERRQ(ierr);
 
+  ierr = ISDestroy(isg[0]);CHKERRQ(ierr);
+  ierr = ISDestroy(isg[1]);CHKERRQ(ierr);
+  ierr = PetscFree(isg);CHKERRQ(ierr);
   ierr = VecDestroy(X);CHKERRQ(ierr);
   ierr = VecDestroy(F);CHKERRQ(ierr);
   ierr = MatDestroy(B);CHKERRQ(ierr);
