@@ -193,7 +193,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar *a[])
 #endif
     *a = *((PetscScalar **)x->data);
   } else {
-    ierr = VecGetArray_Private(x,(PetscScalar**)a);CHKERRQ(ierr);
+    ierr = (*x->ops->getarray)(x,(PetscScalar**)a);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -212,7 +212,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar *
     }
 #endif
   } else {
-    ierr = VecRestoreArray_Private(x,(PetscScalar**)a);CHKERRQ(ierr);
+    ierr = (*x->ops->restorearray)(x,(PetscScalar**)a);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -230,7 +230,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArray(Vec x,PetscScalar *a[])
 #endif
     *a = *((PetscScalar **)x->data);
   } else {
-    ierr = VecGetArray_Private(x,a);CHKERRQ(ierr);
+    ierr = (*x->ops->getarray)(x,a);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -249,7 +249,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
     }
 #endif
   } else {
-    ierr = VecRestoreArray_Private(x,a);CHKERRQ(ierr);
+    ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
   }
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
