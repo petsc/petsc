@@ -133,6 +133,8 @@ class BaseTestDA(object):
     def testGetInjection(self):
         da = self.da
         if da.dim == 1: return
+        if (da.dim == 3 and 
+            PETSc.Sys.getVersion() < (3, 2)): return
         rda = da.refine()
         scatter = da.getInjection(rda)
 
