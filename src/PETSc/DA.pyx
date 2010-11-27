@@ -432,6 +432,11 @@ cdef class DA(Object):
         CHKERR( DAGetInjection(self.da, da.da, &sct.sct) )
         return sct
 
+    def getAggregates(self, DA da not None):
+        cdef Mat mat = Mat()
+        CHKERR( DAGetAggregates(self.da, da.da, &mat.mat) )
+        return mat
+
     #
 
     def setElementType(self, elem_type):

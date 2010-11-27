@@ -136,6 +136,12 @@ class BaseTestDA(object):
         rda = da.refine()
         scatter = da.getInjection(rda)
 
+    def testGetAggregates(self):
+        da = self.da
+        if da.dim == 1: return
+        rda = da.refine()
+        mat = da.getAggregates(rda)
+
 class BaseTestDA_1D(BaseTestDA):
     SIZES = [100]
 

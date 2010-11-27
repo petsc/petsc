@@ -1380,36 +1380,36 @@ DACreateND(MPI_Comm comm,
 #define DACreate           DMDACreate
 #define DADestroy          DMDestroy
 #define DASetUp            DMSetUp
-#define DAView             DMView              
-#define DASetOptionsPrefix DMSetOptionsPrefix 
-#define DASetFromOptions   DMSetFromOptions   
+#define DAView             DMView
+#define DASetOptionsPrefix DMSetOptionsPrefix
+#define DASetFromOptions   DMSetFromOptions
 
-#define DASetDim             DMDASetDim              
-#define DASetDof             DMDASetDof              
-#define DASetSizes           DMDASetSizes            
-#define DASetNumProcs        DMDASetNumProcs         
+#define DASetDim             DMDASetDim
+#define DASetDof             DMDASetDof
+#define DASetSizes           DMDASetSizes
+#define DASetNumProcs        DMDASetNumProcs
 #define DASetOwnershipRanges DMDASetOwnershipRanges
-#define DASetPeriodicity     DMDASetPeriodicity      
-#define DASetStencilType     DMDASetStencilType      
-#define DASetStencilWidth    DMDASetStencilWidth          
+#define DASetPeriodicity     DMDASetPeriodicity
+#define DASetStencilType     DMDASetStencilType
+#define DASetStencilWidth    DMDASetStencilWidth
 
 #define DAPeriodicType DMDAPeriodicType
-#define DA_NONPERIODIC DMDA_NONPERIODIC 
-#define DA_XPERIODIC   DMDA_XPERIODIC   
-#define DA_YPERIODIC   DMDA_YPERIODIC   
-#define DA_ZPERIODIC   DMDA_ZPERIODIC   
-#define DA_XYPERIODIC  DMDA_XYPERIODIC  
-#define DA_XZPERIODIC  DMDA_XZPERIODIC  
-#define DA_YZPERIODIC  DMDA_YZPERIODIC  
-#define DA_XYZPERIODIC DMDA_XYZPERIODIC 
-#define DA_XYZGHOSTED  DMDA_XYZGHOSTED  
+#define DA_NONPERIODIC DMDA_NONPERIODIC
+#define DA_XPERIODIC   DMDA_XPERIODIC
+#define DA_YPERIODIC   DMDA_YPERIODIC
+#define DA_ZPERIODIC   DMDA_ZPERIODIC
+#define DA_XYPERIODIC  DMDA_XYPERIODIC
+#define DA_XZPERIODIC  DMDA_XZPERIODIC
+#define DA_YZPERIODIC  DMDA_YZPERIODIC
+#define DA_XYZPERIODIC DMDA_XYZPERIODIC
+#define DA_XYZGHOSTED  DMDA_XYZGHOSTED
 
-#define DADirection DMDADirection 
+#define DADirection DMDADirection
 #define DA_X        DMDA_X
 #define DA_Y        DMDA_Y
 #define DA_Z        DMDA_Z
 
-#define DAStencilType   DMDAStencilType  
+#define DAStencilType   DMDAStencilType
 #define DA_STENCIL_STAR DMDA_STENCIL_STAR
 #define DA_STENCIL_BOX  DMDA_STENCIL_BOX
 
@@ -1420,31 +1420,31 @@ DACreateND(MPI_Comm comm,
 #define DA_ELEMENT_P1 DMDA_ELEMENT_P1
 #define DA_ELEMENT_Q1 DMDA_ELEMENT_Q1
 
-#define DAGetOwnershipRanges DMDAGetOwnershipRanges  
+#define DAGetOwnershipRanges DMDAGetOwnershipRanges
 #define DAGetCorners         DMDAGetCorners
 #define DAGetGhostCorners    DMDAGetGhostCorners
 #define DAGetInfo            DMDAGetInfo
 
 #define DASetUniformCoordinates DMDASetUniformCoordinates
-#define DASetCoordinates        DMDASetCoordinates       
-#define DAGetCoordinates        DMDAGetCoordinates       
-#define DAGetCoordinateDA       DMDAGetCoordinateDA      
+#define DASetCoordinates        DMDASetCoordinates
+#define DAGetCoordinates        DMDAGetCoordinates
+#define DAGetCoordinateDA       DMDAGetCoordinateDA
 #define DAGetGhostedCoordinates DMDAGetGhostedCoordinates
 
-#define DACreateNaturalVector DMDACreateNaturalVector 
-#define DACreateGlobalVector  DMCreateGlobalVector  
-#define DACreateLocalVector   DMCreateLocalVector   
-#define DAGetMatrix           DMGetMatrix           
+#define DACreateNaturalVector DMDACreateNaturalVector
+#define DACreateGlobalVector  DMCreateGlobalVector
+#define DACreateLocalVector   DMCreateLocalVector
+#define DAGetMatrix           DMGetMatrix
 
-#define DAGlobalToNaturalBegin DMDAGlobalToNaturalBegin  
-#define DAGlobalToNaturalEnd   DMDAGlobalToNaturalEnd    
-#define DANaturalToGlobalBegin DMDANaturalToGlobalBegin  
-#define DANaturalToGlobalEnd   DMDANaturalToGlobalEnd    
-#define DALocalToLocalBegin    DMDALocalToLocalBegin     
-#define DALocalToLocalEnd      DMDALocalToLocalEnd        
+#define DAGlobalToNaturalBegin DMDAGlobalToNaturalBegin
+#define DAGlobalToNaturalEnd   DMDAGlobalToNaturalEnd
+#define DANaturalToGlobalBegin DMDANaturalToGlobalBegin
+#define DANaturalToGlobalEnd   DMDANaturalToGlobalEnd
+#define DALocalToLocalBegin    DMDALocalToLocalBegin
+#define DALocalToLocalEnd      DMDALocalToLocalEnd
 
-#define DAGlobalToLocalBegin   DMGlobalToLocalBegin    
-#define DAGlobalToLocalEnd     DMGlobalToLocalEnd      
+#define DAGlobalToLocalBegin   DMGlobalToLocalBegin
+#define DAGlobalToLocalEnd     DMGlobalToLocalEnd
 
 #define DALocalToGlobalBegin(da,l,g) \
         DMLocalToGlobalBegin(da,l,ADD_VALUES,g)
@@ -1454,18 +1454,19 @@ DACreateND(MPI_Comm comm,
         (DMLocalToGlobalBegin(da,l,INSERT_VALUES,g) || \
          DMLocalToGlobalEnd(da,l,INSERT_VALUES,g))
 
-#define DAGetAO                         DMDAGetAO                        
-#define DAGetScatter                    DMDAGetScatter                   
-#define DAGetLocalToGlobalMapping       DMGetLocalToGlobalMapping    
+#define DAGetAO                         DMDAGetAO
+#define DAGetScatter                    DMDAGetScatter
+#define DAGetLocalToGlobalMapping       DMGetLocalToGlobalMapping
 #define DAGetLocalToGlobalMappingBlock  DMGetLocalToGlobalMappingBlock
 
-#define DASetRefinementFactor   DMDASetRefinementFactor  
-#define DAGetRefinementFactor   DMDAGetRefinementFactor  
-#define DARefine                DMRefine               
-#define DACoarsen               DMCoarsen              
-#define DASetInterpolationType  DMDASetInterpolationType 
-#define DAGetInterpolation      DMGetInterpolation     
-#define DAGetInjection          DMGetInjection     
+#define DASetRefinementFactor   DMDASetRefinementFactor
+#define DAGetRefinementFactor   DMDAGetRefinementFactor
+#define DARefine                DMRefine
+#define DACoarsen               DMCoarsen
+#define DASetInterpolationType  DMDASetInterpolationType
+#define DAGetInterpolation      DMGetInterpolation
+#define DAGetInjection          DMGetInjection
+#define DAGetAggregates         DMGetAggregates
 
 #define DASetElementType  DMDASetElementType
 #define DAGetElementType  DMDAGetElementType
