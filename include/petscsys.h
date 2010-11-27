@@ -1172,20 +1172,6 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocValidate(int,const char[],
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocSetDumpLog(void);
 
 
-/*
-    Variable type where we stash PETSc object pointers in Fortran.
-    On most machines size(pointer) == sizeof(long) - except Microsoft Windows where its sizeof(long long).
-    Note we could just use size_t here, but then PETSC_VIEWER_*_*_FORTRAN would need to be given as positive numbers.
-*/
-
-#if (PETSC_SIZEOF_VOID_P) == (PETSC_SIZEOF_LONG)
-#define PetscFortranAddr   long
-#elif  (PETSC_SIZEOF_VOID_P) == (PETSC_SIZEOF_LONG_LONG)
-#define PetscFortranAddr   long long
-#else
-#error "Unknown size for PetscFortranAddr! Send us a bugreport at petsc-maint@mcs.anl.gov"
-#endif
-
 /*E
     PetscDataType - Used for handling different basic data types.
 

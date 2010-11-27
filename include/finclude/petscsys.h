@@ -61,18 +61,18 @@
 !     The numbers used below should match those in 
 !     private/fortranimpl.h
 !
-      parameter (PETSC_VIEWER_DRAW_WORLD   = -4) 
-      parameter (PETSC_VIEWER_DRAW_SELF    = -5)
-      parameter (PETSC_VIEWER_SOCKET_WORLD = -6)
-      parameter (PETSC_VIEWER_SOCKET_SELF  = -7)
-      parameter (PETSC_VIEWER_STDOUT_WORLD = -8)
-      parameter (PETSC_VIEWER_STDOUT_SELF  = -9)
-      parameter (PETSC_VIEWER_STDERR_WORLD = -10)
-      parameter (PETSC_VIEWER_STDERR_SELF  = -11)
-      parameter (PETSC_VIEWER_BINARY_WORLD = -12)
-      parameter (PETSC_VIEWER_BINARY_SELF  = -13)
-      parameter (PETSC_VIEWER_MATLAB_WORLD = -14)
-      parameter (PETSC_VIEWER_MATLAB_SELF  = -15)
+      parameter (PETSC_VIEWER_DRAW_WORLD   = 4) 
+      parameter (PETSC_VIEWER_DRAW_SELF    = 5)
+      parameter (PETSC_VIEWER_SOCKET_WORLD = 6)
+      parameter (PETSC_VIEWER_SOCKET_SELF  = 7)
+      parameter (PETSC_VIEWER_STDOUT_WORLD = 8)
+      parameter (PETSC_VIEWER_STDOUT_SELF  = 9)
+      parameter (PETSC_VIEWER_STDERR_WORLD = 10)
+      parameter (PETSC_VIEWER_STDERR_SELF  = 11)
+      parameter (PETSC_VIEWER_BINARY_WORLD = 12)
+      parameter (PETSC_VIEWER_BINARY_SELF  = 13)
+      parameter (PETSC_VIEWER_MATLAB_WORLD = 14)
+      parameter (PETSC_VIEWER_MATLAB_SELF  = 15)
 !
 !     PETSc DataTypes
 !
