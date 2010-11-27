@@ -34,7 +34,7 @@ extern PetscLogDouble PETSCSYS_DLLEXPORT _TotalFlops;
 extern PetscLogDouble petsc_tmp_flops;
 
 /* General logging of information; different from event logging */
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscInfo_Private(const char[],void*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(3,4);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscInfo_Private(const char[],void*,const char[],...);
 #if defined(PETSC_USE_INFO)
 #define PetscInfo(A,S)                       PetscInfo_Private(PETSC_FUNCTION_NAME,A,S)
 #define PetscInfo1(A,S,a1)                   PetscInfo_Private(PETSC_FUNCTION_NAME,A,S,a1)
@@ -240,7 +240,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogGetRGBColor(const char*[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogDestroy(void);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogSet(PetscErrorCode (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject),
                    PetscErrorCode (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject));
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjectState(PetscObject, const char[], ...)  PETSC_PRINTF_FORMAT_CHECK(2,3);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjectState(PetscObject, const char[], ...);
 /* Output functions */
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogPrintSummary(MPI_Comm, const char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogPrintSummaryPython(PetscViewer);
@@ -437,7 +437,7 @@ PETSC_STATIC_INLINE PetscErrorCode TypeSize(PetscLogDouble *buff,PetscMPIInt cou
 #define PetscLogEventRegister(a,b,c)        0
 #define PetscLogObjects(a)                  0
 #define PetscLogActions(a)                  0
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjectState(PetscObject,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjectState(PetscObject,const char[],...);
 
 /* If PETSC_USE_LOG is NOT defined, these still need to be! */
 #define MPI_Startall_irecv(count,number,requests) MPI_Startall(number,requests)
