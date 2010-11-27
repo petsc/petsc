@@ -61,7 +61,7 @@ def pkgsources(pkg):
       conditions.update(set(tuple(stripsplit(line)) for line in lines if line.startswith('#requires')))
     def relpath(filename):
       return os.path.join(root,filename)
-    sources[repr(sorted(conditions))].extend(relpath(f) for f in files if os.path.splitext(f)[1] in ['.c', '.cxx', '.F'])
+    sources[repr(sorted(conditions))].extend(relpath(f) for f in files if os.path.splitext(f)[1] in ['.c', '.cxx', '.cc', '.cpp', '.F'])
     allconditions[root] = conditions
   return sources
 
