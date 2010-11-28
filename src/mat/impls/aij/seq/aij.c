@@ -332,7 +332,7 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
     if ((a->i[m] == a->i[m-1]) || (a->j[a->nz-1] != A->cmap->n-!shift)) {
       nofinalvalue = 1;
     }
-    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%% Size = %D %D \n",m,A->cmap->n);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%% Nonzeros = %D \n",a->nz);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"zzz = zeros(%D,3);\n",a->nz+nofinalvalue);CHKERRQ(ierr);
@@ -352,11 +352,11 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
     } 
     ierr = PetscObjectGetName((PetscObject)A,&name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"];\n %s = spconvert(zzz);\n",name);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO || format == PETSC_VIEWER_ASCII_INFO) {
      PetscFunctionReturn(0);
   } else if (format == PETSC_VIEWER_ASCII_COMMON) {
-    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer,"Matrix Object");CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i);CHKERRQ(ierr);
@@ -375,10 +375,10 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_SYMMODU) {
     PetscInt nzd=0,fshift=1,*sptr;
-    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer,"Matrix Object");CHKERRQ(ierr);
     ierr = PetscMalloc((m+1)*sizeof(PetscInt),&sptr);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
@@ -426,12 +426,12 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_DENSE) {
     PetscInt         cnt = 0,jcnt;
     PetscScalar value;
 
-    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer,"Matrix Object");CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       jcnt = 0;
@@ -450,9 +450,9 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_MATRIXMARKET) {
-    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer,"Matrix Object");CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
     ierr = PetscViewerASCIIPrintf(viewer,"%%matrix complex general\n");CHKERRQ(ierr);
@@ -475,9 +475,9 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
 #endif
       }
     }
-    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   } else {
-    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer,"Matrix Object");CHKERRQ(ierr);
     if (A->factortype){
       for (i=0; i<m; i++) {
@@ -545,7 +545,7 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
       }
     }
-    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

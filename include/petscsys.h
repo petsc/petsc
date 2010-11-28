@@ -467,28 +467,6 @@ M*/
 M*/
 
 /*MC
-    PETSC_YES - Alias for PETSC_TRUE
-
-    Level: beginner
-
-    Note: Zero integer
-
-.seealso: PetscBool , PETSC_TRUE, PETSC_FALSE, PETSC_NO
-M*/
-#define PETSC_YES            PETSC_TRUE
-
-/*MC
-    PETSC_NO - Alias for PETSC_FALSE
-
-    Level: beginner
-
-    Note: Nonzero integer
-
-.seealso: PetscBool , PETSC_TRUE, PETSC_FALSE, PETSC_YES
-M*/
-#define PETSC_NO             PETSC_FALSE
-
-/*MC
     PETSC_NULL - standard way of passing in a null or array or pointer
 
    Level: beginner

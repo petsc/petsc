@@ -17,14 +17,10 @@
 !
       PetscBool  PETSC_TRUE
       PetscBool  PETSC_FALSE
-      PetscBool  PETSC_YES
-      PetscBool  PETSC_NO
 #if defined(PETSC_FORTRAN_PETSCTRUTH_INT)
       parameter (PETSC_TRUE = 1,PETSC_FALSE = 0)
-      parameter (PETSC_YES= 1, PETSC_NO = 0)
 #else
       parameter (PETSC_TRUE = .true.,PETSC_FALSE = .false.)
-      parameter (PETSC_YES=.true., PETSC_NO=.false.)
 #endif
       PetscInt   PETSC_DECIDE,PETSC_DETERMINE
       parameter (PETSC_DECIDE=-1,PETSC_DETERMINE=-1)
