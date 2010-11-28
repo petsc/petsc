@@ -1,5 +1,7 @@
 
 /* This file contains info for the use of PETSc Fortran interface stubs */
+#if !defined(_FORTRANIMPL_H)
+#define _FORTRANIMPL_H
 
 #include "petscsys.h"
 
@@ -190,3 +192,4 @@ typedef size_t PetscFortranAddr;
   if (!((PetscObject)(obj))->fortran_func_pointers) { \
     *ierr = PetscMalloc(N*sizeof(void*),&((PetscObject)(obj))->fortran_func_pointers);if (*ierr) return; \
   }
+#endif
