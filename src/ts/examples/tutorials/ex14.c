@@ -43,11 +43,6 @@ use compatible domain decomposition relative to the 3D DMDAs.
 
 There are two compile-time options:
 
-  NO_SSE2:
-    If the host supports SSE2, we use integration code that has been vectorized with SSE2
-    intrinsics, unless this macro is defined.  The intrinsics speed up integration by about
-    30% on my architecture (P8700, gcc-4.5 snapshot).
-
   COMPUTE_LOWER_TRIANGULAR:
     The element matrices we assemble are lower-triangular so it is not necessary to compute
     all entries explicitly.  If this macro is defined, the lower-triangular entries are
@@ -59,13 +54,6 @@ There are two compile-time options:
 #include <petscdmmg.h>
 #include <ctype.h>              /* toupper() */
 
-#if !defined __STDC_VERSION__ || __STDC_VERSION__ < 199901L
-#  if defined __cplusplus       /* C++ restrict is nonstandard and compilers have inconsistent rules about where it can be used */
-#    define restrict
-#  else
-#    define restrict PETSC_RESTRICT
-#  endif
-#endif
 #if defined __SSE2__
 #  include <emmintrin.h>
 #endif
@@ -76,6 +64,8 @@ There are two compile-time options:
                           && !defined PETSC_USE_SCALAR_SINGLE           \
                           && !defined PETSC_USE_SCALAR_LONG_DOUBLE      \
                           && defined __SSE2__)
+
+#define restrict PETSC_RESTRICT
 
 static PetscClassId THI_CLASSID;
 
@@ -214,6 +204,11 @@ typedef struct {
   PetscScalar beta2;            /* friction */
 } PrmNode;
 
+#define FieldSize(ntype) (sizeof(ntype)/sizeof(PetscScalar))
+#define FieldIndex(ntype,i,member) ((i)*FieldSize(ntype) + (offsetof(ntype,member)/sizeof(PetscScalar)))
+#define NODE_SIZE FieldSize(Node)
+#define PRMNODE_SIZE FieldSize(PrmNode)
+
 typedef struct {
   PetscReal min,max,cmin,cmax;
 } PRange;
@@ -266,6 +261,29 @@ static void PrmHexGetZ(const PrmNode pn[],PetscInt k,PetscInt zm,PetscReal zn[])
               pn[3].b + pn[3].h*(PetscScalar)(k+1)/zm1};
   PetscInt i;
   for (i=0; i<8; i++) zn[i] = PetscRealPart(znl[i]);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "QuadComputeGrad4"
+/* Compute a gradient of all the 2D fields at four quadrature points.  Output for [quadrature_point][direction].field_name */
+static PetscErrorCode QuadComputeGrad4(const PetscReal dphi[][4][2],PetscReal hx,PetscReal hy,const PrmNode pn[4],PrmNode dp[4][2])
+{
+  PetscErrorCode ierr;
+  PetscInt       q,i,f;
+  const PetscScalar (*restrict pg)[PRMNODE_SIZE] = (const PetscScalar(*)[PRMNODE_SIZE])pn; /* Get generic array pointers to the node */
+  PetscScalar (*restrict dpg)[2][PRMNODE_SIZE]   = (PetscScalar(*)[2][PRMNODE_SIZE])dp;
+
+  PetscFunctionBegin;
+  ierr = PetscMemzero(dpg,4*sizeof(dpg[0]));CHKERRQ(ierr);
+  for (q=0; q<4; q++) {
+    for (i=0; i<4; i++) {
+      for (f=0; f<PRMNODE_SIZE; f++) {
+        dpg[q][0][f] += dphi[q][i][0]/hx * pg[i][f];
+        dpg[q][1][f] += dphi[q][i][1]/hy * pg[i][f];
+      }
+    }
+  }
+  PetscFunctionReturn(0);
 }
 
 static inline PetscReal StaggeredMidpoint2D(PetscScalar a,PetscScalar b,PetscScalar c,PetscScalar d)
@@ -578,6 +596,31 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "THIFixGhosts"
+/* Our problem is periodic, but the domain has a mean slope of alpha so the bed does not line up between the upstream
+ * and downstream ends of the domain.  This function fixes the ghost values so that the domain appears truly periodic in
+ * the horizontal. */
+static PetscErrorCode THIFixGhosts(THI thi,DM da3,DM da2,Vec X3,Vec X2)
+{
+  PetscErrorCode ierr;
+  DMDALocalInfo  info;
+  PrmNode        **x2;
+  PetscInt       i,j;
+
+  PetscFunctionBegin;
+  ierr = DMDAGetLocalInfo(da3,&info);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2,X2,&x2);CHKERRQ(ierr);
+  for (i=info.gxs; i<info.gxs+info.gxm; i++) {
+    if (i > -1 || i < info.mx-1) continue;
+    for (j=info.gys; j<info.gys+info.gym; j++) {
+      x2[i][j].b += sin(thi->alpha) * thi->Lx * (i<0 ? 1.0 : -1.0);
+    }
+  }
+  ierr = DMDAVecRestoreArray(da2,X2,&x2);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "THIInitializePrm"
 static PetscErrorCode THIInitializePrm(THI thi,DM da2prm,PrmNode **p)
 {
@@ -701,8 +744,9 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
 
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
-      PrmNode pn[4];
+      PrmNode pn[4],dpn[4][2];
       QuadExtract(prm,i,j,pn);
+      ierr = QuadComputeGrad4(QuadQDeriv,hx,hy,pn,dpn);CHKERRQ(ierr);
       for (k=0; k<zm-1; k++) {
         PetscInt ls = 0;
         Node n[8],*fn[8];
@@ -725,7 +769,7 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
           if (q == 0) etabase = eta;
           RangeUpdate(&etamin,&etamax,eta);
           for (l=ls; l<8; l++) { /* test functions */
-            const PetscReal ds[2] = {-tan(thi->alpha),0};
+            const PetscReal ds[2] = {dpn[q%4][0].h+dpn[q%4][0].b, dpn[q%4][0].h+dpn[q%4][0].b};
             const PetscReal pp=phi[l],*dp = dphi[l];
             fn[l]->u += dp[0]*jw*eta*(4.*du[0]+2.*dv[1]) + dp[1]*jw*eta*(du[1]+dv[0]) + dp[2]*jw*eta*du[2] + pp*jw*thi->rhog*ds[0];
             fn[l]->v += dp[1]*jw*eta*(2.*du[0]+4.*dv[1]) + dp[0]*jw*eta*(du[1]+dv[0]) + dp[2]*jw*eta*dv[2] + pp*jw*thi->rhog*ds[1];
@@ -840,6 +884,7 @@ static PetscErrorCode THIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *c
   ierr = DMCompositeGetLocalVectors(pack,&X3,&X2);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(pack,&Xdot3,&Xdot2);CHKERRQ(ierr);
   ierr = DMCompositeScatter(pack,X,X3,X2);CHKERRQ(ierr);
+  ierr = THIFixGhosts(thi,da3,da2,X3,X2);CHKERRQ(ierr);
   ierr = DMCompositeScatter(pack,Xdot,Xdot3,Xdot2);CHKERRQ(ierr);
 
   ierr = DMGetLocalVector(da3,&F3);CHKERRQ(ierr);
@@ -1032,7 +1077,7 @@ static inline PetscInt DMDALocalIndex2D(DMDALocalInfo *info,PetscInt i,PetscInt 
 #undef __FUNCT__  
 #define __FUNCT__ "THIJacobianLocal_Momentum"
 __attribute((unused))
-static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node ***x,const PrmNode **prm,Mat B,THI thi)
+static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node ***x,const PrmNode **prm,Mat B,Mat Bcpl,THI thi)
 {
   PetscInt       xs,ys,xm,ym,zm,i,j,k,q,l,ll;
   PetscReal      hx,hy;
@@ -1049,17 +1094,19 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
 
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
-      PrmNode pn[4];
+      PrmNode pn[4],dpn[4][2];
       QuadExtract(prm,i,j,pn);
+      ierr = QuadComputeGrad4(QuadQDeriv,hx,hy,pn,dpn);CHKERRQ(ierr);
       for (k=0; k<zm-1; k++) {
         Node n[8];
         PetscReal zn[8],etabase = 0;
-        PetscScalar Ke[8*2][8*2];
+        PetscScalar Ke[8*NODE_SIZE][8*NODE_SIZE],Kcpl[8*NODE_SIZE][4*PRMNODE_SIZE];
         PetscInt ls = 0;
 
         PrmHexGetZ(pn,k,zm,zn);
         HexExtract(x,i,j,k,n);
-        PetscMemzero(Ke,sizeof(Ke));
+        ierr = PetscMemzero(Ke,sizeof(Ke));CHKERRQ(ierr);
+        ierr = PetscMemzero(Kcpl,sizeof(Kcpl));CHKERRQ(ierr);
         if (thi->no_slip && k == 0) {
           for (l=0; l<4; l++) n[l].u = n[l].v = 0;
           ls = 4;
@@ -1073,78 +1120,33 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
           jw /= thi->rhog;      /* residuals are scaled by this factor */
           if (q == 0) etabase = eta;
           for (l=ls; l<8; l++) { /* test functions */
-            const PetscReal *restrict dp = dphi[l];
-#if USE_SSE2_KERNELS
-            /* gcc (up to my 4.5 snapshot) is really bad at hoisting intrinsics so we do it manually */
-            __m128d
-              p4 = _mm_set1_pd(4),p2 = _mm_set1_pd(2),p05 = _mm_set1_pd(0.5),
-              p42 = _mm_setr_pd(4,2),p24 = _mm_shuffle_pd(p42,p42,_MM_SHUFFLE2(0,1)),
-              du0 = _mm_set1_pd(du[0]),du1 = _mm_set1_pd(du[1]),du2 = _mm_set1_pd(du[2]),
-              dv0 = _mm_set1_pd(dv[0]),dv1 = _mm_set1_pd(dv[1]),dv2 = _mm_set1_pd(dv[2]),
-              jweta = _mm_set1_pd(jw*eta),jwdeta = _mm_set1_pd(jw*deta),
-              dp0 = _mm_set1_pd(dp[0]),dp1 = _mm_set1_pd(dp[1]),dp2 = _mm_set1_pd(dp[2]),
-              dp0jweta = _mm_mul_pd(dp0,jweta),dp1jweta = _mm_mul_pd(dp1,jweta),dp2jweta = _mm_mul_pd(dp2,jweta),
-              p4du0p2dv1 = _mm_add_pd(_mm_mul_pd(p4,du0),_mm_mul_pd(p2,dv1)), /* 4 du0 + 2 dv1 */
-              p4dv1p2du0 = _mm_add_pd(_mm_mul_pd(p4,dv1),_mm_mul_pd(p2,du0)), /* 4 dv1 + 2 du0 */
-              pdu2dv2 = _mm_unpacklo_pd(du2,dv2),                             /* [du2, dv2] */
-              du1pdv0 = _mm_add_pd(du1,dv0),                                  /* du1 + dv0 */
-              t1 = _mm_mul_pd(dp0,p4du0p2dv1),                                /* dp0 (4 du0 + 2 dv1) */
-              t2 = _mm_mul_pd(dp1,p4dv1p2du0);                                /* dp1 (4 dv1 + 2 du0) */
-
-#endif
+            const PetscReal pp=phi[l],*restrict dp = dphi[l];
 #if defined COMPUTE_LOWER_TRIANGULAR  /* The element matrices are always symmetric so computing the lower-triangular part is not necessary */
             for (ll=ls; ll<8; ll++) { /* trial functions */
 #else
             for (ll=l; ll<8; ll++) {
 #endif
               const PetscReal *restrict dpl = dphi[ll];
-#if !USE_SSE2_KERNELS
-              /* The analytic Jacobian in nice, easy-to-read form */
-              {
-                PetscScalar dgdu,dgdv;
-                dgdu = 2.*du[0]*dpl[0] + dv[1]*dpl[0] + 0.5*(du[1]+dv[0])*dpl[1] + 0.5*du[2]*dpl[2];
-                dgdv = 2.*dv[1]*dpl[1] + du[0]*dpl[1] + 0.5*(du[1]+dv[0])*dpl[0] + 0.5*dv[2]*dpl[2];
-                /* Picard part */
-                Ke[l*2+0][ll*2+0] += dp[0]*jw*eta*4.*dpl[0] + dp[1]*jw*eta*dpl[1] + dp[2]*jw*eta*dpl[2];
-                Ke[l*2+0][ll*2+1] += dp[0]*jw*eta*2.*dpl[1] + dp[1]*jw*eta*dpl[0];
-                Ke[l*2+1][ll*2+0] += dp[1]*jw*eta*2.*dpl[0] + dp[0]*jw*eta*dpl[1];
-                Ke[l*2+1][ll*2+1] += dp[1]*jw*eta*4.*dpl[1] + dp[0]*jw*eta*dpl[0] + dp[2]*jw*eta*dpl[2];
-                /* extra Newton terms */
-                Ke[l*2+0][ll*2+0] += dp[0]*jw*deta*dgdu*(4.*du[0]+2.*dv[1]) + dp[1]*jw*deta*dgdu*(du[1]+dv[0]) + dp[2]*jw*deta*dgdu*du[2];
-                Ke[l*2+0][ll*2+1] += dp[0]*jw*deta*dgdv*(4.*du[0]+2.*dv[1]) + dp[1]*jw*deta*dgdv*(du[1]+dv[0]) + dp[2]*jw*deta*dgdv*du[2];
-                Ke[l*2+1][ll*2+0] += dp[1]*jw*deta*dgdu*(4.*dv[1]+2.*du[0]) + dp[0]*jw*deta*dgdu*(du[1]+dv[0]) + dp[2]*jw*deta*dgdu*dv[2];
-                Ke[l*2+1][ll*2+1] += dp[1]*jw*deta*dgdv*(4.*dv[1]+2.*du[0]) + dp[0]*jw*deta*dgdv*(du[1]+dv[0]) + dp[2]*jw*deta*dgdv*dv[2];
-              }
-#else
-              /* This SSE2 code is an exact replica of above, but uses explicit packed instructions for some speed
-              * benefit.  On my hardware, these intrinsics are almost twice as fast as above, reducing total assembly cost
-              * by 25 to 30 percent. */
-              {
-                __m128d
-                  keu = _mm_loadu_pd(&Ke[l*2+0][ll*2+0]),
-                  kev = _mm_loadu_pd(&Ke[l*2+1][ll*2+0]),
-                  dpl01 = _mm_loadu_pd(&dpl[0]),dpl10 = _mm_shuffle_pd(dpl01,dpl01,_MM_SHUFFLE2(0,1)),dpl2 = _mm_set_sd(dpl[2]),
-                  t0,t3,pdgduv;
-                keu = _mm_add_pd(keu,_mm_add_pd(_mm_mul_pd(_mm_mul_pd(dp0jweta,p42),dpl01),
-                                                _mm_add_pd(_mm_mul_pd(dp1jweta,dpl10),
-                                                           _mm_mul_pd(dp2jweta,dpl2))));
-                kev = _mm_add_pd(kev,_mm_add_pd(_mm_mul_pd(_mm_mul_pd(dp1jweta,p24),dpl01),
-                                                _mm_add_pd(_mm_mul_pd(dp0jweta,dpl10),
-                                                           _mm_mul_pd(dp2jweta,_mm_shuffle_pd(dpl2,dpl2,_MM_SHUFFLE2(0,1))))));
-                pdgduv = _mm_mul_pd(p05,_mm_add_pd(_mm_add_pd(_mm_mul_pd(p42,_mm_mul_pd(du0,dpl01)),
-                                                              _mm_mul_pd(p24,_mm_mul_pd(dv1,dpl01))),
-                                                   _mm_add_pd(_mm_mul_pd(du1pdv0,dpl10),
-                                                              _mm_mul_pd(pdu2dv2,_mm_set1_pd(dpl[2]))))); /* [dgdu, dgdv] */
-                t0 = _mm_mul_pd(jwdeta,pdgduv);  /* jw deta [dgdu, dgdv] */
-                t3 = _mm_mul_pd(t0,du1pdv0);     /* t0 (du1 + dv0) */
-                _mm_storeu_pd(&Ke[l*2+0][ll*2+0],_mm_add_pd(keu,_mm_add_pd(_mm_mul_pd(t1,t0),
-                                                                          _mm_add_pd(_mm_mul_pd(dp1,t3),
-                                                                                     _mm_mul_pd(t0,_mm_mul_pd(dp2,du2))))));
-                _mm_storeu_pd(&Ke[l*2+1][ll*2+0],_mm_add_pd(kev,_mm_add_pd(_mm_mul_pd(t2,t0),
-                                                                          _mm_add_pd(_mm_mul_pd(dp0,t3),
-                                                                                     _mm_mul_pd(t0,_mm_mul_pd(dp2,dv2))))));
-              }
-#endif
+              PetscScalar dgdu,dgdv;
+              dgdu = 2.*du[0]*dpl[0] + dv[1]*dpl[0] + 0.5*(du[1]+dv[0])*dpl[1] + 0.5*du[2]*dpl[2];
+              dgdv = 2.*dv[1]*dpl[1] + du[0]*dpl[1] + 0.5*(du[1]+dv[0])*dpl[0] + 0.5*dv[2]*dpl[2];
+              /* Picard part */
+              Ke[l*2+0][ll*2+0] += dp[0]*jw*eta*4.*dpl[0] + dp[1]*jw*eta*dpl[1] + dp[2]*jw*eta*dpl[2];
+              Ke[l*2+0][ll*2+1] += dp[0]*jw*eta*2.*dpl[1] + dp[1]*jw*eta*dpl[0];
+              Ke[l*2+1][ll*2+0] += dp[1]*jw*eta*2.*dpl[0] + dp[0]*jw*eta*dpl[1];
+              Ke[l*2+1][ll*2+1] += dp[1]*jw*eta*4.*dpl[1] + dp[0]*jw*eta*dpl[0] + dp[2]*jw*eta*dpl[2];
+              /* extra Newton terms */
+              Ke[l*2+0][ll*2+0] += dp[0]*jw*deta*dgdu*(4.*du[0]+2.*dv[1]) + dp[1]*jw*deta*dgdu*(du[1]+dv[0]) + dp[2]*jw*deta*dgdu*du[2];
+              Ke[l*2+0][ll*2+1] += dp[0]*jw*deta*dgdv*(4.*du[0]+2.*dv[1]) + dp[1]*jw*deta*dgdv*(du[1]+dv[0]) + dp[2]*jw*deta*dgdv*du[2];
+              Ke[l*2+1][ll*2+0] += dp[1]*jw*deta*dgdu*(4.*dv[1]+2.*du[0]) + dp[0]*jw*deta*dgdu*(du[1]+dv[0]) + dp[2]*jw*deta*dgdu*dv[2];
+              Ke[l*2+1][ll*2+1] += dp[1]*jw*deta*dgdv*(4.*dv[1]+2.*du[0]) + dp[0]*jw*deta*dgdv*(du[1]+dv[0]) + dp[2]*jw*deta*dgdv*dv[2];
+            }
+            for (ll=0; ll<4; ll++) { /* Trial functions for surface/bed */
+              const PetscReal dpl[] = {QuadQDeriv[q%4][ll][0]/hx, QuadQDeriv[q%4][ll][1]/hy}; /* surface = h + b */
+              Kcpl[FieldIndex(Node,l,u)][FieldIndex(PrmNode,ll,h)] += pp*jw*thi->rhog*dpl[0];
+              Kcpl[FieldIndex(Node,l,u)][FieldIndex(PrmNode,ll,b)] += pp*jw*thi->rhog*dpl[0];
+              Kcpl[FieldIndex(Node,l,v)][FieldIndex(PrmNode,ll,h)] += pp*jw*thi->rhog*dpl[1];
+              Kcpl[FieldIndex(Node,l,v)][FieldIndex(PrmNode,ll,b)] += pp*jw*thi->rhog*dpl[1];
             }
           }
         }
@@ -1179,7 +1181,7 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
           }
         }
         {
-          const PetscInt rc[8] = {
+          const PetscInt rc3blocked[8] = {
             DMDALocalIndex3D(info,i+0,j+0,k+0),
             DMDALocalIndex3D(info,i+1,j+0,k+0),
             DMDALocalIndex3D(info,i+1,j+1,k+0),
@@ -1188,6 +1190,11 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
             DMDALocalIndex3D(info,i+1,j+0,k+1),
             DMDALocalIndex3D(info,i+1,j+1,k+1),
             DMDALocalIndex3D(info,i+0,j+1,k+1)
+          },col2blocked[PRMNODE_SIZE*4] = {
+            DMDALocalIndex2D(info,i+0,j+0),
+            DMDALocalIndex2D(info,i+1,j+0),
+            DMDALocalIndex2D(info,i+1,j+1),
+            DMDALocalIndex2D(info,i+0,j+1)
           };
 #if !defined COMPUTE_LOWER_TRIANGULAR /* fill in lower-triangular part, this is really cheap compared to computing the entries */
           for (l=0; l<8; l++) {
@@ -1199,7 +1206,15 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
             }
           }
 #endif
-          ierr = MatSetValuesBlockedLocal(B,8,rc,8,rc,&Ke[0][0],ADD_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValuesBlockedLocal(B,8,rc3blocked,8,rc3blocked,&Ke[0][0],ADD_VALUES);CHKERRQ(ierr); /* velocity-velocity coupling can use blocked insertion */
+          {                     /* The off-diagonal part cannot (yet) */
+            PetscInt row3scalar[NODE_SIZE*8],col2scalar[PRMNODE_SIZE*4];
+            for (l=0; l<8; l++) for (ll=0; ll<NODE_SIZE; ll++)
+                                  row3scalar[l*NODE_SIZE+ll] = rc3blocked[l]*NODE_SIZE+ll;
+            for (l=0; l<4; l++) for (ll=0; ll<PRMNODE_SIZE; ll++)
+                                  col2scalar[l*PRMNODE_SIZE+ll] = col2blocked[l]*PRMNODE_SIZE+ll;
+            ierr = MatSetValuesLocal(Bcpl,8*NODE_SIZE,row3scalar,4*PRMNODE_SIZE,col2scalar,&Kcpl[0][0],ADD_VALUES);CHKERRQ(ierr);
+          }
         }
       }
     }
@@ -1250,7 +1265,7 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
   THI            thi = (THI)ctx;
   DM             pack,da3,da2;
   Vec            X3,X2,Xdot2;
-  Mat            B11,B22;
+  Mat            B11,B12,B22;
   DMDALocalInfo  info3;
   IS             *isloc;
   const Node     ***x3;
@@ -1269,13 +1284,14 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
 
   ierr = DMCompositeGetLocalISs(pack,&isloc);CHKERRQ(ierr);
   ierr = MatGetLocalSubMatrix(*B,isloc[0],isloc[0],&B11);CHKERRQ(ierr);
+  ierr = MatGetLocalSubMatrix(*B,isloc[0],isloc[1],&B12);CHKERRQ(ierr);
   ierr = MatGetLocalSubMatrix(*B,isloc[1],isloc[1],&B22);CHKERRQ(ierr);
 
   ierr = DMDAVecGetArray(da3,X3,&x3);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da2,X2,&x2);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da2,Xdot2,&xdot2);CHKERRQ(ierr);
 
-  ierr = THIJacobianLocal_Momentum(&info3,x3,x2,B11,thi);CHKERRQ(ierr);
+  ierr = THIJacobianLocal_Momentum(&info3,x3,x2,B11,B12,thi);CHKERRQ(ierr);
 
   /* Need to switch from ADD_VALUES to INSERT_VALUES */
   ierr = MatAssemblyBegin(*B,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
@@ -1288,6 +1304,7 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
   ierr = DMDAVecRestoreArray(da2,Xdot2,&xdot2);CHKERRQ(ierr);
 
   ierr = MatRestoreLocalSubMatrix(*B,isloc[0],isloc[0],&B11);CHKERRQ(ierr);
+  ierr = MatRestoreLocalSubMatrix(*B,isloc[0],isloc[1],&B12);CHKERRQ(ierr);
   ierr = MatRestoreLocalSubMatrix(*B,isloc[1],isloc[1],&B22);CHKERRQ(ierr);
   ierr = ISDestroy(isloc[0]);CHKERRQ(ierr);
   ierr = ISDestroy(isloc[1]);CHKERRQ(ierr);
