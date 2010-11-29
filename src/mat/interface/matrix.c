@@ -1767,6 +1767,72 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMappingBlock(Mat x,ISLocalT
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatGetLocalToGlobalMapping"
+/*@
+   MatGetLocalToGlobalMapping - Gets the local-to-global numbering set by MatSetLocalToGlobalMapping()
+
+   Not Collective
+
+   Input Parameters:
+.  A - the matrix
+
+   Output Parameters:
++ rmapping - row mapping
+- cmapping - column mapping
+
+   Level: advanced
+
+   Concepts: matrices^local to global mapping
+   Concepts: local to global mapping^for matrices
+
+.seealso:  MatSetValuesLocal(), MatGetLocalToGlobalMappingBlock()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping *rmapping,ISLocalToGlobalMapping *cmapping)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  if (rmapping) PetscValidPointer(rmapping,2);
+  if (cmapping) PetscValidPointer(cmapping,3);
+  if (rmapping) *rmapping = A->rmapping;
+  if (cmapping) *cmapping = A->cmapping;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetLocalToGlobalMappingBlock"
+/*@
+   MatGetLocalToGlobalMappingBlock - Gets the local-to-global numbering set by MatSetLocalToGlobalMappingBlock()
+
+   Not Collective
+
+   Input Parameters:
+.  A - the matrix
+
+   Output Parameters:
++ rmapping - row mapping
+- cmapping - column mapping
+
+   Level: advanced
+
+   Concepts: matrices^local to global mapping blocked
+   Concepts: local to global mapping^for matrices, blocked
+
+.seealso:  MatSetValuesBlockedLocal(), MatGetLocalToGlobalMapping()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalToGlobalMappingBlock(Mat A,ISLocalToGlobalMapping *rmapping,ISLocalToGlobalMapping *cmapping)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  if (rmapping) PetscValidPointer(rmapping,2);
+  if (cmapping) PetscValidPointer(cmapping,3);
+  if (rmapping) *rmapping = A->rbmapping;
+  if (cmapping) *cmapping = A->cbmapping;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesLocal"
 /*@
    MatSetValuesLocal - Inserts or adds values into certain locations of a matrix,
@@ -8634,7 +8700,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreLocalSubMatrix(Mat mat,IS isrow,IS i
   PetscValidHeaderSpecific(iscol,IS_CLASSID,3);
   PetscCheckSameComm(isrow,2,iscol,3);
   PetscValidPointer(submat,4);
-  PetscValidHeaderSpecific(*submat,MAT_CLASSID,4);
+  if (*submat) {PetscValidHeaderSpecific(*submat,MAT_CLASSID,4);}
 
   if (mat->ops->restorelocalsubmatrix) {
     ierr = (*mat->ops->restorelocalsubmatrix)(mat,isrow,iscol,submat);CHKERRQ(ierr);

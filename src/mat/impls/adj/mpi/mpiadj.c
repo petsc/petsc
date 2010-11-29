@@ -23,7 +23,7 @@ PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
   } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
     SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Matlab format not supported");
   } else {
-    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"row %D:",i+A->rmap->rstart);CHKERRQ(ierr);
       for (j=a->i[i]; j<a->i[i+1]; j++) {
@@ -31,7 +31,7 @@ PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   } 
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -26,8 +26,10 @@ typedef struct {
 #define __FUNCT__ "MatApply_USFFT_Private"
 PetscErrorCode MatApply_USFFT_Private(Mat_USFFT *usfft, fftw_plan *plan, int direction, Vec x,Vec y)
 {
+#if 0
   PetscErrorCode ierr;
   PetscScalar    *r_array, *y_array;
+#endif
 
   PetscFunctionBegin;
 #if 0

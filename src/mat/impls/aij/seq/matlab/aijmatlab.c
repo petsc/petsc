@@ -38,19 +38,25 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatlabEngineGet_SeqAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
+#define __FUNCT__ "MatSeqAIJFromMatlab"
+/*@
+    MatSeqAIJFromMatlab - Given a Matlab sparse matrix, fills a SeqAIJ matrix with its transpose.
+
+   Not Collective
+
+   Input Parameters:
++     mmat - a Matlab sparse matris
+-     mat - a already created MATSEQAIJ
+
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
 {
   PetscErrorCode ierr;
   int            ii;
-  Mat            mat = (Mat)obj;
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)mat->data;
-  mxArray        *mmat; 
 
   PetscFunctionBegin;
   ierr = MatSeqXAIJFreeAIJ(mat,&aij->a,&aij->j,&aij->i);CHKERRQ(ierr);
-
-  mmat = engGetVariable((Engine *)mengine,obj->name);
 
   aij->nz           = (mxGetJc(mmat))[mat->rmap->n];
   ierr  = PetscMalloc3(aij->nz,PetscScalar,&aij->a,aij->nz,PetscInt,&aij->j,mat->rmap->n+1,PetscInt,&aij->i);CHKERRQ(ierr);
@@ -67,7 +73,23 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatlabEngineGet_SeqAIJ(PetscObject obj,void *m
 
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatlabEngineGet_SeqAIJ"
+PetscErrorCode PETSCMAT_DLLEXPORT MatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
+{
+  PetscErrorCode ierr;
+  Mat            mat = (Mat)obj;
+  mxArray        *mmat; 
+
+  PetscFunctionBegin;
+  mmat = engGetVariable((Engine *)mengine,obj->name);
+  ierr = MatSeqAIJFromMatlab(mmat,mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -21,10 +21,10 @@ static PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
   PetscFunctionBegin;
   if (xin != yin) {
     ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
-    ierr = VecGetArrayPrivate(yin,&ya);CHKERRQ(ierr);
+    ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
     ierr = PetscMemcpy(ya,xa,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
-    ierr = VecRestoreArrayPrivate(yin,&ya);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -38,9 +38,9 @@ static PetscErrorCode VecSetRandom_Seq(Vec xin,PetscRandom r)
   PetscScalar    *xx;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayPrivate(xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
   for (i=0; i<n; i++) {ierr = PetscRandomGetValue(r,&xx[i]);CHKERRQ(ierr);}
-  ierr = VecRestoreArrayPrivate(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1223,10 +1223,10 @@ PetscErrorCode VecPointwiseMult_SeqCUDA(Vec win,Vec xin,Vec yin)
 #define __FUNCT__ "VecNorm_SeqCUDA"
 PetscErrorCode VecNorm_SeqCUDA(Vec xin,NormType type,PetscReal* z)
 {
-  PetscScalar    *xx;
-  PetscErrorCode ierr;
-  PetscInt       n = xin->map->n;
-  PetscBLASInt   one = 1, bn = PetscBLASIntCast(n);
+  const PetscScalar *xx;
+  PetscErrorCode    ierr;
+  PetscInt          n = xin->map->n;
+  PetscBLASInt      one = 1, bn = PetscBLASIntCast(n);
 
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {
@@ -1242,14 +1242,14 @@ PetscErrorCode VecNorm_SeqCUDA(Vec xin,NormType type,PetscReal* z)
     PetscInt     i;
     PetscReal    max = 0.0,tmp;
 
-    ierr = VecGetArrayPrivate(xin,&xx);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       if ((tmp = PetscAbsScalar(*xx)) > max) max = tmp;
       /* check special case of tmp == NaN */
       if (tmp != tmp) {max = tmp; break;}
       xx++;
     }
-    ierr = VecRestoreArrayPrivate(xin,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
     *z   = max;
   } else if (type == NORM_1) {
     ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);

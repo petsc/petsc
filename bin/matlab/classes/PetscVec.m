@@ -16,29 +16,29 @@ classdef PetscVec < PetscObject
         obj.pobj = array;
         return
       end
-      [err,obj.pobj] = calllib('libpetsc', 'VecCreate', 0,0);
+      [err,obj.pobj] = calllib('libpetsc', 'VecCreate', 0,0);PetscCHKERRQ(err);
       if (nargin > 0) 
         % Vec(array) creates a Vec initialized with the given array
-        err = calllib('libpetsc', 'VecSetType', obj.pobj,'seq');
-        err = calllib('libpetsc', 'VecSetSizes', obj.pobj,length(array),length(array));
+        err = calllib('libpetsc', 'VecSetType', obj.pobj,'seq');PetscCHKERRQ(err);
+        err = calllib('libpetsc', 'VecSetSizes', obj.pobj,length(array),length(array));PetscCHKERRQ(err);
         idx = 0:length(array)-1;
-        err = calllib('libpetsc', 'VecSetValues', obj.pobj,length(idx),idx,array,PetscObject.INSERT_VALUES);
-        err = calllib('libpetsc', 'VecAssemblyBegin', obj.pobj);
-        err = calllib('libpetsc', 'VecAssemblyEnd', obj.pobj);
+        err = calllib('libpetsc', 'VecSetValues', obj.pobj,length(idx),idx,array,PetscObject.INSERT_VALUES);PetscCHKERRQ(err);
+        err = calllib('libpetsc', 'VecAssemblyBegin', obj.pobj);PetscCHKERRQ(err);
+        err = calllib('libpetsc', 'VecAssemblyEnd', obj.pobj);PetscCHKERRQ(err);
       end
     end
     function err = SetFromOptions(obj)
-      err = calllib('libpetsc', 'VecSetFromOptions', obj.pobj);
+      err = calllib('libpetsc', 'VecSetFromOptions', obj.pobj);PetscCHKERRQ(err);
     end
     function err = SetType(obj,name)
-      err = calllib('libpetsc', 'VecSetType', obj.pobj,name);
+      err = calllib('libpetsc', 'VecSetType', obj.pobj,name);PetscCHKERRQ(err);
     end
     function err = SetSizes(obj,m,n)
-      err = calllib('libpetsc', 'VecSetSizes', obj.pobj,m,n);
+      err = calllib('libpetsc', 'VecSetSizes', obj.pobj,m,n);PetscCHKERRQ(err);
     end
     function [n,err] = GetSize(obj)
       n = 0;
-      [err,n] = calllib('libpetsc', 'VecGetLocalSize', obj.pobj,n);
+      [err,n] = calllib('libpetsc', 'VecGetLocalSize', obj.pobj,n);PetscCHKERRQ(err);
     end
     function err = SetValues(obj,idx,values,insertmode)
       if (ischar(idx)) % assume it is ':' 
@@ -52,7 +52,7 @@ classdef PetscVec < PetscObject
         insertmode = PetscObject.INSERT_VALUES;
       end
       idx = idx - 1;
-      err = calllib('libpetsc', 'VecSetValues', obj.pobj,length(idx),idx,values,insertmode);
+      err = calllib('libpetsc', 'VecSetValues', obj.pobj,length(idx),idx,values,insertmode);PetscCHKERRQ(err);
     end
     function [values,err] = GetValues(obj,idx)
       if (ischar(idx)) % assume it is ':' 
@@ -61,29 +61,29 @@ classdef PetscVec < PetscObject
       end
       idx = idx - 1;
       values = zeros(1,length(idx));
-      [err,idx,values] = calllib('libpetsc', 'VecGetValues', obj.pobj,length(idx),idx,values);
+      [err,idx,values] = calllib('libpetsc', 'VecGetValues', obj.pobj,length(idx),idx,values);PetscCHKERRQ(err);
     end
     function err = AssemblyBegin(obj)
-      err = calllib('libpetsc', 'VecAssemblyBegin', obj.pobj);
+      err = calllib('libpetsc', 'VecAssemblyBegin', obj.pobj);PetscCHKERRQ(err);
     end
     function err = AssemblyEnd(obj)
-      err = calllib('libpetsc', 'VecAssemblyEnd', obj.pobj);
+      err = calllib('libpetsc', 'VecAssemblyEnd', obj.pobj);PetscCHKERRQ(err);
     end
     function [vec,err] = Duplicate(obj)
-      [err,pid] = calllib('libpetsc', 'VecDuplicate', obj.pobj,0);
+      [err,pid] = calllib('libpetsc', 'VecDuplicate', obj.pobj,0);PetscCHKERRQ(err);
       vec = PetscVec(pid,'pobj');
     end
     function err = Copy(obj,v)
-      err = calllib('libpetsc', 'VecCopy', obj.pobj,v.pobj);
+      err = calllib('libpetsc', 'VecCopy', obj.pobj,v.pobj);PetscCHKERRQ(err);
     end
     function err = Set(obj,v)
-      err = calllib('libpetsc', 'VecSet', obj.pobj,v);
+      err = calllib('libpetsc', 'VecSet', obj.pobj,v);PetscCHKERRQ(err);
     end
     function err = View(obj,viewer)
-      err = calllib('libpetsc', 'VecView', obj.pobj,viewer.pobj);
+      err = calllib('libpetsc', 'VecView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
     end
     function err = Destroy(obj)
-      err = calllib('libpetsc', 'VecDestroy', obj.pobj);
+      err = calllib('libpetsc', 'VecDestroy', obj.pobj);PetscCHKERRQ(err);
     end
 %
 %   The following overload a = x(idx) and x(idx) = a
@@ -111,7 +111,7 @@ classdef PetscVec < PetscObject
       elseif (ndim == 2)  %% 2D DM
         idx = M*(S.subs{2}-1) + S.subs{1};  
       elseif (ndim == 3)  %% 3D DM
-        idx = N*(S.subs{3}-1) + M*(S.subs{2}-1) + S.subs{1};
+        idx = N*M(S.subs{3}-1) + M*(S.subs{2}-1) + S.subs{1};
       end
       varargout = {obj.GetValues(idx)};      
     end
@@ -132,11 +132,9 @@ classdef PetscVec < PetscObject
       elseif (ndim == 2)  %% 2D DM
         idx = M*(S.subs{2}-1) + S.subs{1};  
       elseif (ndim == 3)  %% 3D DM
-        idx = N*(S.subs{3}-1) + M*(S.subs{2}-1) + S.subs{1};
+        idx = N*M(S.subs{3}-1) + M*(S.subs{2}-1) + S.subs{1};
       end
       obj.SetValues(idx,value);      
     end
   end
 end
-
- 

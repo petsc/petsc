@@ -73,6 +73,7 @@ E*/
 #define MATDD              "matdd"
 #define MATIM              "matim"
 #define MATLOCALREF        "localref"
+#define MATNEST            "nest"
 
 /*E
     MatSolverPackage - String with the name of a PETSc matrix solver type. 
@@ -643,6 +644,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShift(Mat,PetscScalar);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMapping(Mat,ISLocalToGlobalMapping,ISLocalToGlobalMapping);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMappingBlock(Mat,ISLocalToGlobalMapping,ISLocalToGlobalMapping);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalToGlobalMapping(Mat,ISLocalToGlobalMapping*,ISLocalToGlobalMapping*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalToGlobalMappingBlock(Mat,ISLocalToGlobalMapping*,ISLocalToGlobalMapping*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocalIS(Mat,IS,PetscScalar,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsColumnsLocal(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
@@ -1735,6 +1738,12 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscViewerMathematicaPutCSRMatrix(Pets
 #ifdef PETSC_HAVE_MUMPS
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetMumpsIcntl(Mat,PetscInt,PetscInt);
 #endif
+
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNest(MPI_Comm comm,PetscInt,const IS[],PetscInt,const IS[],const Mat[],Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNestGetSize(Mat A,PetscInt *M,PetscInt *N);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNestGetSubMats(Mat A,PetscInt *M,PetscInt *N,Mat ***mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNestGetSubMat(Mat A,PetscInt idxm,PetscInt jdxm,Mat *sub);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNestSetVecType(Mat,const VecType);
 
 PETSC_EXTERN_CXX_END
 #endif

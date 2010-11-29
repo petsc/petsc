@@ -358,15 +358,16 @@ runex36:
 	   ${RM} -f ex36_1.tmp
 
 runex37:
-	-@${MPIEXEC} -n 1 ./ex37 > ex37_1.tmp 2>&1;\
-	   if (${DIFF} output/ex37_1.out ex37_1.tmp) then true; \
-	   else echo "Possible problem with ex37_1, diffs above"; fi;\
-	   ${RM} -f ex37_1.tmp
+	-@for expl in 0 1; do \
+            ${MPIEXEC} -n 1 ./ex37 -explicit_is $$expl > ex37_1.tmp 2>&1;\
+	    ${DIFF} output/ex37_1.out ex37_1.tmp || echo "Possible problem with ex37_1, diffs above"; \
+          done; ${RM} -f ex37_1.tmp
+
 runex37_2:
-	-@${MPIEXEC} -n 2 ./ex37 > ex37_2.tmp 2>&1;\
-	   if (${DIFF} output/ex37_2.out ex37_2.tmp) then true; \
-	   else echo "Possible problem with ex37_2, diffs above"; fi;\
-	   ${RM} -f ex37_2.tmp
+	-@for expl in 0 1; do \
+            ${MPIEXEC} -n 2 ./ex37 -explicit_is $$expl > ex37_2.tmp 2>&1;\
+	    ${DIFF} output/ex37_2.out ex37_2.tmp || echo "Possible problem with ex37_2, diffs above"; \
+          done; ${RM} -f ex37_2.tmp
 
 runex38:
 	-@${MPIEXEC} -n 3 ./ex38 > ex38_1.tmp 2>&1;\
@@ -380,7 +381,7 @@ TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc 
                               ex14.rm ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm ex17.PETSc runex17 \
                               ex17.rm ex21.PETSc runex21 runex21_2 ex21.rm ex25.PETSc runex25 ex25.rm ex29.PETSc \
                               runex29 ex29.rm ex34.PETSc runex34 ex34.rm ex36.PETSc runex36 ex36.rm \
-                              ex37.PETSc runex37 ex37.rm runex37_2 ex37_2.rm ex38.PETSc runex38 ex38.rm
+                              ex37.PETSc runex37 runex37_2 ex37.rm ex38.PETSc runex38 ex38.rm
 TESTEXAMPLES_C_X11	    = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm ex23.PETSc runex23 ex23.rm \
                               ex24.PETSc runex24 ex24.rm ex28.PETSc runex28 ex28.rm ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_FORTRAN	    = ex17f.PETSc runex17f ex17f.rm ex19f.PETSc ex19f.rm ex20f.PETSc ex20f.rm ex30f.PETSc \

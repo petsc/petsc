@@ -396,8 +396,6 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterView(VecScatter,PetscViewer);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterRemap(VecScatter,PetscInt *,PetscInt*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterGetMerged(VecScatter,PetscBool *);
 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray_Private(Vec,PetscScalar*[]);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray_Private(Vec,PetscScalar*[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray4d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray4d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray3d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar***[]);

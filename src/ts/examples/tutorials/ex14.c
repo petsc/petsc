@@ -269,9 +269,9 @@ static void PrmHexGetZ(const PrmNode pn[],PetscInt k,PetscInt zm,PetscReal zn[])
 }
 
 static inline PetscReal StaggeredMidpoint2D(PetscScalar a,PetscScalar b,PetscScalar c,PetscScalar d)
-{return 0.5*(PetscReal)(0.75*a + 0.75*b + 0.25*c + 0.25*d);}
+{return 0.5*PetscRealPart(0.75*a + 0.75*b + 0.25*c + 0.25*d);}
 
-static void PrmNodeGetFaceMeasure(const PrmNode **p,PetscInt i,PetscInt j,PetscReal h[])
+static void PrmNodeGetFaceMeasure(const PrmNode **p,PetscInt i,PetscInt j,PetscScalar h[])
 {
   /* West */
   h[0] = StaggeredMidpoint2D(p[i][j].h,p[i-1][j].h,p[i-1][j-1].h,p[i][j-1].h);
@@ -309,6 +309,22 @@ static void THIInitialize_HOM_C(THI thi,PetscReal x,PetscReal y,PrmNode *p)
 
 /* These are just toys */
 
+/* From Fred Herman */
+static void THIInitialize_HOM_F(THI thi,PetscReal x,PetscReal y,PrmNode *p)
+{
+  Units units = thi->units;
+  PetscReal s = -x*tan(thi->alpha);
+  p->b = -x*tan(thi->alpha) - 1000*units->meter+ 100*units->meter * sin(x*2*PETSC_PI/thi->Lx);// * sin(y*2*PETSC_PI/thi->Ly);
+  //  p->b = s - fabs(1000)*units->meter*sin(y*PETSC_PI/thi->Ly);
+  //  p->b = s - 1000*units->meter+fabs(1/2.5*y-10);
+  //printf("%f %f \n",y,1000*units->meter);
+  p->h = s - p->b;
+  p->h = (1-(atan((x-thi->Lx/2)/1.)+PETSC_PI/2.)/PETSC_PI)*500*units->meter+1*units->meter;
+  s = PetscRealPart(p->b + p->h);
+  p->beta2 = 1e30;
+  //  p->beta2 = 1000 * units->Pascal * units->year / units->meter;
+}
+
 /* Same bed as test A, free slip everywhere except for a discontinuous jump to a circular sticky region in the middle. */
 static void THIInitialize_HOM_X(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
 {
@@ -318,6 +334,18 @@ static void THIInitialize_HOM_X(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
   p->b = s - 1000*units->meter + 500*units->meter * sin(x + PETSC_PI) * sin(y + PETSC_PI);
   p->h = s - p->b;
   p->beta2 = 1000 * (r < 1 ? 2 : 0) * units->Pascal * units->year / units->meter;
+}
+
+/* Like Z, but with 200 meter cliffs */
+static void THIInitialize_HOM_Y(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
+{
+  Units units = thi->units;
+  PetscReal x = xx*2*PETSC_PI/thi->Lx - PETSC_PI,y = yy*2*PETSC_PI/thi->Ly - PETSC_PI; /* [-pi,pi] */
+  PetscReal r = sqrt(x*x + y*y),s = -x*tan(thi->alpha);
+  p->b = s - 1000*units->meter + 500*units->meter * sin(x + PETSC_PI) * sin(y + PETSC_PI);
+  if (PetscRealPart(p->b) > -700*units->meter) p->b += 200*units->meter;
+  p->h = s - p->b;
+  p->beta2 = 1000 * (1. + sin(sqrt(16*r))/sqrt(1e-2 + 16*r)*cos(x*3/2)*cos(y*3/2)) * units->Pascal * units->year / units->meter;
 }
 
 /* Same bed as A, smoothly varying slipperiness, similar to Matlab's "sombrero" (uncorrelated with bathymetry) */
@@ -461,39 +489,50 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
     ierr = PetscOptionsReal("-thi_Lz","Z Domain size (m)","",thi->Lz,&thi->Lz,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-thi_hom","ISMIP-HOM experiment (A or C)","",homexp,homexp,sizeof(homexp),NULL);CHKERRQ(ierr);
     switch (homexp[0] = toupper(homexp[0])) {
-      case 'A':
-        thi->initialize = THIInitialize_HOM_A;
-        thi->no_slip = PETSC_TRUE;
-        thi->alpha = 0.5;
-        break;
-      case 'C':
-        thi->initialize = THIInitialize_HOM_C;
-        thi->no_slip = PETSC_FALSE;
-        thi->alpha = 0.1;
-        break;
-      case 'X':
-        thi->initialize = THIInitialize_HOM_X;
-        thi->no_slip = PETSC_FALSE;
-        thi->alpha = 0.3;
-        break;
-      case 'Z':
-        thi->initialize = THIInitialize_HOM_Z;
-        thi->no_slip = PETSC_FALSE;
-        thi->alpha = 0.5;
-        break;
-      default:
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"HOM experiment '%c' not implemented",homexp[0]);
+    case 'A':
+      thi->initialize = THIInitialize_HOM_A;
+      thi->no_slip = PETSC_TRUE;
+      thi->alpha = 0.5;
+      break;
+    case 'C':
+      thi->initialize = THIInitialize_HOM_C;
+      thi->no_slip = PETSC_FALSE;
+      thi->alpha = 0.1;
+      break;
+    case 'F':
+      thi->initialize = THIInitialize_HOM_F;
+      thi->no_slip = PETSC_FALSE;
+      thi->alpha = 0.5;
+      break;
+
+    case 'X':
+      thi->initialize = THIInitialize_HOM_X;
+      thi->no_slip = PETSC_FALSE;
+      thi->alpha = 0.3;
+      break;
+    case 'Y':
+      thi->initialize = THIInitialize_HOM_Y;
+      thi->no_slip = PETSC_FALSE;
+      thi->alpha = 0.5;
+      break;
+    case 'Z':
+      thi->initialize = THIInitialize_HOM_Z;
+      thi->no_slip = PETSC_FALSE;
+      thi->alpha = 0.5;
+      break;
+    default:
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"HOM experiment '%c' not implemented",homexp[0]);
     }
     ierr = PetscOptionsEnum("-thi_quadrature","Quadrature to use for 3D elements","",QuadratureTypes,(PetscEnum)quad,(PetscEnum*)&quad,NULL);CHKERRQ(ierr);
     switch (quad) {
-      case QUAD_GAUSS:
-        HexQInterp = HexQInterp_Gauss;
-        HexQDeriv  = HexQDeriv_Gauss;
-        break;
-      case QUAD_LOBATTO:
-        HexQInterp = HexQInterp_Lobatto;
-        HexQDeriv  = HexQDeriv_Lobatto;
-        break;
+    case QUAD_GAUSS:
+      HexQInterp = HexQInterp_Gauss;
+      HexQDeriv  = HexQDeriv_Gauss;
+      break;
+    case QUAD_LOBATTO:
+      HexQInterp = HexQInterp_Lobatto;
+      HexQDeriv  = HexQDeriv_Lobatto;
+      break;
     }
     ierr = PetscOptionsReal("-thi_alpha","Bed angle (degrees)","",thi->alpha,&thi->alpha,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-thi_friction_m","Friction exponent, 0=Coulomb, 1=Navier","",m,&m,NULL);CHKERRQ(ierr);
@@ -771,7 +810,7 @@ static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info,const Node ***x,co
                 + weight*h[6] * StaggeredMidpoint2D(x[i][j][k].v,x[i][j+1][k].v, x[i-1][j+1][k].v,x[i-1][j][k].v)
                 + weight*h[7] * StaggeredMidpoint2D(x[i][j][k].v,x[i][j+1][k].v, x[i+1][j+1][k].v,x[i+1][j][k].v));
       }
-      //printf("div[%d][%d] %g\n",i,j,div);
+      /* printf("div[%d][%d] %g\n",i,j,div); */
       f[i][j].b     = prmdot[i][j].b;
       f[i][j].h     = prmdot[i][j].h + div;
       f[i][j].beta2 = prmdot[i][j].beta2;
@@ -833,10 +872,11 @@ static PetscErrorCode THIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *c
   ierr = DMLocalToGlobalEnd  (da2,F2,INSERT_VALUES,F2g);CHKERRQ(ierr);
 
   if (thi->inertia > 0) {       /* This is mostly non-physical, but turns the DAE into an ODE */
-    Vec Xdot3g;
-    ierr = DMCompositeGetAccess(pack,Xdot,&Xdot3g,NULL);CHKERRQ(ierr);
+    Vec Xdot3g,Xdot2g;
+    ierr = DMCompositeGetAccess(pack,Xdot,&Xdot3g,&Xdot2g);CHKERRQ(ierr);
     ierr = VecAXPY(F3g,thi->inertia,Xdot3g);CHKERRQ(ierr);
-    ierr = DMCompositeRestoreAccess(pack,Xdot,&Xdot3g,NULL);CHKERRQ(ierr);
+    ierr = VecCopy(Xdot2g,F2g);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(pack,Xdot,&Xdot3g,&Xdot2g);CHKERRQ(ierr);
   }
 
   if (thi->verbose) {
@@ -1164,11 +1204,6 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
       }
     }
   }
-
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-  if (thi->verbose) {ierr = THIMatrixStatistics(thi,B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1233,13 +1268,6 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
   ierr = MatZeroEntries(*B);CHKERRQ(ierr);
 
   ierr = DMCompositeGetLocalISs(pack,&isloc);CHKERRQ(ierr);
-  if (1) {
-    ISLocalToGlobalMapping ltog;
-    ierr = ISView(isloc[0],0);CHKERRQ(ierr);
-    ierr = ISView(isloc[1],0);CHKERRQ(ierr);
-    ierr = DMGetLocalToGlobalMapping(pack,&ltog);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingView(ltog,0);CHKERRQ(ierr);
-  }
   ierr = MatGetLocalSubMatrix(*B,isloc[0],isloc[0],&B11);CHKERRQ(ierr);
   ierr = MatGetLocalSubMatrix(*B,isloc[1],isloc[1],&B22);CHKERRQ(ierr);
 
@@ -1270,7 +1298,12 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
 
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (*A != *B) {
+    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
   *mstr = SAME_NONZERO_PATTERN;
+  if (thi->verbose) {ierr = THIMatrixStatistics(thi,*B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1293,6 +1326,11 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
   comm = ((PetscObject)thi)->comm;
   ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(pack,X,&X3,&X2);CHKERRQ(ierr);
+  if (0) {
+    VecScale(X3,units->year/units->meter);CHKERRQ(ierr);
+    VecView(X3,0);
+    VecScale(X3,units->meter/units->year);CHKERRQ(ierr);
+  }
   ierr = DMDAGetInfo(da3,0, &mz,&my,&mx, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -1354,7 +1392,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
       ierr = PetscViewerASCIIPrintf(viewer,"      <PointData>\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"        <DataArray type=\"Float32\" Name=\"velocity\" NumberOfComponents=\"3\" format=\"ascii\">\n");CHKERRQ(ierr);
       for (i=0; i<nn/dof; i++) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%f %f %f\n",PetscRealPart(y3[i].u)*units->year/units->meter,PetscRealPart(y3[i+1].v)*units->year/units->meter,0.0);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%f %f %f\n",PetscRealPart(y3[i].u)*units->year/units->meter,PetscRealPart(y3[i].v)*units->year/units->meter,0.0);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer,"        </DataArray>\n");CHKERRQ(ierr);
 
@@ -1460,9 +1498,11 @@ int main(int argc,char *argv[])
   }
 
   ierr = PetscObjectSetName((PetscObject)da3,"3D_Velocity");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)da3,"f3d_");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da3,0,"u");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da3,1,"v");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)da2,"2D_Fields");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)da2,"f2d_");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da2,0,"b");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da2,1,"h");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da2,2,"beta2");CHKERRQ(ierr);
@@ -1472,7 +1512,7 @@ int main(int argc,char *argv[])
   ierr = DMDestroy(da3);CHKERRQ(ierr);
   ierr = DMDestroy(da2);CHKERRQ(ierr);
   ierr = DMSetUp(pack);CHKERRQ(ierr);
-  ierr = DMGetMatrix(pack,MATAIJ,&B);CHKERRQ(ierr);
+  ierr = DMGetMatrix(pack,PETSC_NULL,&B);CHKERRQ(ierr);
 
   ierr = DMMGCreate(comm,thi->nlevels,thi,&dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,pack);CHKERRQ(ierr);
@@ -1522,7 +1562,7 @@ int main(int argc,char *argv[])
     char filename[PETSC_MAX_PATH_LEN] = "";
     ierr = PetscOptionsGetString(PETSC_NULL,"-o",filename,sizeof(filename),&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = THIDAVecView_VTK_XML(thi,DMMGGetDM(dmmg),DMMGGetx(dmmg),filename);CHKERRQ(ierr);
+      ierr = THIDAVecView_VTK_XML(thi,pack,X,filename);CHKERRQ(ierr);
     }
   }
 

@@ -436,18 +436,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScale (Vec x, PetscScalar alpha)
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   ierr = PetscLogEventBegin(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
   if (alpha != 1.0) {
-    ierr = (*x->ops->scale)(x,alpha);CHKERRQ(ierr);
-
-    /*
-     * Update cached data
-     */
+    /* get current stashed norms */
     for (i=0; i<4; i++) {
       ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],norms[i],flgs[i]);CHKERRQ(ierr);
     }
-
-    /* in general we consider this object touched */
+    ierr = (*x->ops->scale)(x,alpha);CHKERRQ(ierr);
     ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
-
+    /* put the scaled stashed norms back into the Vec */
     for (i=0; i<4; i++) {
       if (flgs[i]) {
         ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[i],PetscAbsScalar(alpha)*norms[i]);CHKERRQ(ierr);
@@ -457,7 +452,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScale (Vec x, PetscScalar alpha)
   ierr = PetscLogEventEnd(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSet"
@@ -504,14 +498,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec x,PetscScalar alpha)
   ierr = PetscLogEventBegin(VEC_Set,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->set)(x,alpha);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_Set,x,0,0,0);CHKERRQ(ierr);
-
-  /*
-   * Update cached data
-   */
-  /* in general we consider this object touched */
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
 
-  /* however, norms can be simply set */
+  /*  norms can be simply set */
   val = PetscAbsScalar(alpha);
   ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_1],x->map->N * val);CHKERRQ(ierr);
   ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_INFINITY],val);CHKERRQ(ierr);
@@ -1051,8 +1040,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesBlockedLocal(Vec x,PetscInt ni,con
   PetscFunctionReturn(0);
 }
 
-
-
 #undef __FUNCT__  
 #define __FUNCT__ "VecMTDot"
 /*@
@@ -1360,19 +1347,6 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 
 .seealso: VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(), VecGetArray2d()
 M*/
-#undef __FUNCT__  
-#define __FUNCT__ "VecGetArray_Private"
-PetscErrorCode VecGetArray_Private(Vec x,PetscScalar *a[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  PetscValidPointer(a,2);
-  PetscValidType(x,1);
-  ierr = (*x->ops->getarray)(x,a);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 
 #undef __FUNCT__  
@@ -1505,26 +1479,6 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 
 .seealso: VecGetArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(), VecRestoreArray2d()
 M*/
-#undef __FUNCT__  
-#define __FUNCT__ "VecRestoreArray_Private"
-PetscErrorCode VecRestoreArray_Private(Vec x,PetscScalar *a[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  if (a) PetscValidPointer(a,2);
-  PetscValidType(x,1);
-#if defined(PETSC_USE_DEBUG)
-  CHKMEMQ;
-#endif
-  if (x->ops->restorearray) {
-    ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
-  }
-  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPlaceArray"
