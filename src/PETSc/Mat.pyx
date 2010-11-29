@@ -685,6 +685,33 @@ cdef class Mat(Object):
     def setValuesBlockedLocalCSR(self, I, J, V, addv=None):
         matsetvalues_csr(self.mat, I, J, V, addv, 1, 1)
 
+    #
+
+    Stencil = _Mat_Stencil
+
+    def setStencil(self, dims, starts=None, dof=1):
+        cdef PetscInt ndim, ndof
+        cdef PetscInt cdims[3], cstarts[3]
+        cdims[0] = cdims[1] = cdims[2] = 1
+        cstarts[0] = cstarts[1] = cstarts[2] = 0
+        ndim = asDims(dims, &cdims[0], &cdims[1], &cdims[2])
+        ndof = asInt(dof)
+        if starts is not None:
+            asDims(dims, &cstarts[0], &cstarts[1], &cstarts[2])
+        CHKERR( MatSetStencil(self.mat, ndim, cdims, cstarts, ndof) )
+
+    def setValueStencil(self, row, col, value, addv=None):
+        cdef _Mat_Stencil r = row, c = col
+        cdef PetscInsertMode im = insertmode(addv)
+        matsetvaluestencil(self.mat, r, c, value, im, 0)
+
+    def setValueBlockedStencil(self, row, col, value, addv=None):
+        cdef _Mat_Stencil r = row, c = col
+        cdef PetscInsertMode im = insertmode(addv)
+        matsetvaluestencil(self.mat, r, c, value, im, 1)
+
+    #
+
     def zeroRows(self, rows, diag=1, Vec x=None, Vec b=None):
         cdef PetscInt ni=0, *i=NULL
         cdef PetscScalar sval = asScalar(diag)

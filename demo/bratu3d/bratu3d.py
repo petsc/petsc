@@ -95,8 +95,48 @@ class Bratu3D(object):
                                      - lambda_*exp(u)*hxhyhz
 
     def formJacobian(self, snes, X, J, P):
-        raise NotImplementedError
+        #
+        self.da.globalToLocal(X, self.localX)
+        x = self.da.getVecArray(self.localX)
+        #
+        mx, my, mz = self.da.getSizes()
+        hx, hy, hz = [1.0/m for m in [mx, my, mz]]
+        hxhyhz  = hx*hy*hz
+        hxhzdhy = hx*hz/hy;
+        hyhzdhx = hy*hz/hx;
+        hxhydhz = hx*hy/hz;
+        lambda_ = self.lambda_
+        #
         P.zeroEntries()
+        row = PETSc.Mat.Stencil()
+        col = PETSc.Mat.Stencil()
+        #
+        (xs, xe), (ys, ye), (zs, ze) = self.da.getRanges()
+        for k in range(zs, ze):
+            for j in range(ys, ye):
+                for i in range(xs, xe):
+                    row.index = (i,j,k)
+                    row.field = 0
+                    if (i==0    or j==0    or k==0 or
+                        i==mx-1 or j==my-1 or k==mz-1):
+                        P.setValueStencil(row, row, 1.0)
+                    else:
+                        u = x[i,j,k]
+                        diag = (2*(hyhzdhx+hxhzdhy+hxhydhz)
+                                - lambda_*exp(u)*hxhyhz)
+                        for index, value in [
+                            ((i,j,k-1), -hxhydhz),
+                            ((i,j-1,k), -hxhzdhy),
+                            ((i-1,j,k), -hyhzdhx),
+                            ((i, j, k), diag),
+                            ((i+1,j,k), -hyhzdhx),
+                            ((i,j+1,k), -hxhzdhy),
+                            ((i,j,k+1), -hxhydhz),
+                            ]:
+                            col.index = index
+                            col.field = 0
+                            P.setValueStencil(row, col, value)
+        P.assemble()
         if J != P: J.assemble() # matrix-free operator
         return PETSc.Mat.Structure.SAME_NONZERO_PATTERN
 
@@ -115,7 +155,7 @@ snes = PETSc.SNES().create()
 F = da.createGlobalVec()
 snes.setFunction(pde.formFunction, F)
 
-fd = OptDB.getBool('fd', True)
+fd = OptDB.getBool('fd', False)
 mf = OptDB.getBool('mf', False)
 if mf:
     J = None

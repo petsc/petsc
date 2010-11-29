@@ -166,6 +166,12 @@ cdef extern from "petscmat.h" nogil:
     int MatSetValuesLocal(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
     int MatSetValuesBlockedLocal(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
 
+    int MatSetStencil(PetscMat,PetscInt,PetscInt[],PetscInt[],PetscInt)
+    ctypedef struct PetscMatStencil "MatStencil":
+        PetscInt k,j,i,c
+    int MatSetValuesStencil(PetscMat,PetscInt,PetscMatStencil[],PetscInt,PetscMatStencil[],PetscScalar[],PetscInsertMode)
+    int MatSetValuesBlockedStencil(PetscMat,PetscInt,PetscMatStencil[],PetscInt,PetscMatStencil[],PetscScalar[],PetscInsertMode)
+
     int MatGetValues(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[],PetscScalar[])
     int MatGetRow(PetscMat,PetscInt,PetscInt*,const_PetscInt*[],const_PetscScalar*[])
     int MatRestoreRow(PetscMat,PetscInt,PetscInt*,const_PetscInt*[],const_PetscScalar*[])
@@ -626,7 +632,7 @@ cdef inline int matsetvalues(PetscMat A,
     cdef object aj = iarray_i(oj, &nj, &j)
     cdef object av = iarray_s(ov, &nv, &v)
     if ni*nj*bs*bs != nv: raise ValueError(
-        "incompatible array sizes: ni=%d, nj=%d, nv=%d" % 
+        "incompatible array sizes: ni=%d, nj=%d, nv=%d" %
         (toInt(ni), toInt(nj), toInt(nv)) )
     # MatSetValuesXXX function and insert mode
     cdef MatSetValuesFcn *setvalues = \
@@ -638,7 +644,7 @@ cdef inline int matsetvalues(PetscMat A,
 
 cdef inline int matsetvalues_rcv(PetscMat A,
                                  object oi, object oj, object ov,
-                                 object oaddv, 
+                                 object oaddv,
                                  int blocked, int local) except -1:
     # block size
     cdef PetscInt bs=1
@@ -746,7 +752,7 @@ cdef inline int matsetvalues_ijv(PetscMat A,
         if blocked:
             sval = v + i[k]*bs2
             for l from 0 <= l < ncol:
-                CHKERR( setvalues(A, 1, &irow, 1, &icol[l], 
+                CHKERR( setvalues(A, 1, &irow, 1, &icol[l],
                                   &sval[l*bs2], addv) )
         else:
             sval = v + i[k]
@@ -760,7 +766,7 @@ cdef inline int matsetvalues_csr(PetscMat A,
     matsetvalues_ijv(A, oi, oj, ov, oaddv, None, blocked, local)
     return 0
 
-cdef inline matgetvalues(PetscMat mat, 
+cdef inline matgetvalues(PetscMat mat,
                          object orows, object ocols, object values):
     cdef PetscInt ni=0, nj=0, nv=0
     cdef PetscInt *i=NULL, *j=NULL
@@ -772,7 +778,7 @@ cdef inline matgetvalues(PetscMat mat,
         values.shape = rows.shape + cols.shape
     values = oarray_s(values, &nv, &v)
     if (ni*nj != nv): raise ValueError(
-        "incompatible array sizes: ni=%d, nj=%d, nv=%d" % 
+        "incompatible array sizes: ni=%d, nj=%d, nv=%d" %
         (toInt(ni), toInt(nj), toInt(nv)))
     CHKERR( MatGetValues(mat, ni, i, nj, j, v) )
     return values
@@ -817,6 +823,58 @@ cdef int mat_setitem(Mat self, object ij, object v) except -1:
         start, stop, stride = cols.indices(toInt(N))
         cols = arange(start, stop, stride)
     matsetvalues(self.mat, rows, cols, v, None, 0, 0)
+    return 0
+
+# -----------------------------------------------------------------------------
+
+#@cython.internal
+cdef class _Mat_Stencil:
+   cdef PetscMatStencil stencil
+   property i:
+       def __set__(self, value):
+           self.stencil.i = asInt(value)
+   property j:
+       def __set__(self, value):
+           self.stencil.j = asInt(value)
+   property k:
+       def __set__(self, value):
+           self.stencil.k = asInt(value)
+   property c:
+       def __set__(self, value):
+           self.stencil.c = asInt(value)
+   property index:
+       def __set__(self, value):
+           cdef PetscMatStencil *s = &self.stencil
+           s.k = s.j = s.i = 0
+           asDims(value, &s.i, &s.j, &s.k)
+   property field:
+       def __set__(self, value):
+           cdef PetscMatStencil *s = &self.stencil
+           s.c = asInt(value)
+
+cdef matsetvaluestencil(PetscMat A,
+                        _Mat_Stencil r, _Mat_Stencil c, object value,
+                        PetscInsertMode im, int blocked):
+    # block size
+    cdef PetscInt bs=1
+    if blocked: CHKERR( MatGetBlockSize(A, &bs) )
+    if bs < 1: bs = 1
+    # values
+    cdef PetscInt    nv = 1
+    cdef PetscScalar *v = NULL
+    cdef object av = iarray_s(value, &nv, &v)
+    if bs*bs != nv: raise ValueError(
+        "incompatible array sizes: nv=%d" % toInt(nv) )
+    if blocked:
+        CHKERR( MatSetValuesBlockedStencil(A,
+                                           1, &r.stencil,
+                                           1, &c.stencil,
+                                           v, im) )
+    else:
+        CHKERR( MatSetValuesStencil(A,
+                                    1, &r.stencil,
+                                    1, &c.stencil,
+                                    v, im) )
     return 0
 
 # -----------------------------------------------------------------------------
