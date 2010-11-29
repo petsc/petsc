@@ -636,7 +636,8 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscMPIInt       rank,size,*lens;
   PetscInt          i,N = xin->map->N;
-  const PetscScalar *xx,*xarray;
+  const PetscScalar *xarray;
+  PetscScalar       *xx;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xin,&xarray);CHKERRQ(ierr);
@@ -648,7 +649,7 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
     for (i=0; i<size; i++) {
       lens[i] = xin->map->range[i+1] - xin->map->range[i];
     }
-    ierr = MPI_Gatherv(xarray,xin->map->n,MPIU_SCALAR,xx,lens,xin->map->range,MPIU_SCALAR,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv((void*)xarray,xin->map->n,MPIU_SCALAR,xx,lens,xin->map->range,MPIU_SCALAR,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
     ierr = PetscFree(lens);CHKERRQ(ierr);
 
     ierr = PetscObjectName((PetscObject)xin);CHKERRQ(ierr);

@@ -62,7 +62,7 @@ typedef struct {
      Notes: Only writes array values on processor 0.
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,PetscScalar *array,char *name)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,const PetscScalar *array,const char *name)
 {
   PetscErrorCode     ierr;
   PetscViewer_Matlab *ml = (PetscViewer_Matlab*)mfile->data; 
@@ -113,7 +113,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMatlabPutVariable(PetscViewer viewe
      Notes: Only reads in array values on processor 0.
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMatlabGetArray(PetscViewer mfile,int m,int n,PetscScalar *array,char *name)
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMatlabGetArray(PetscViewer mfile,int m,int n,PetscScalar *array,const char *name)
 {
   PetscErrorCode     ierr;
   PetscViewer_Matlab *ml = (PetscViewer_Matlab*)mfile->data; 

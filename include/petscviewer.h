@@ -394,8 +394,8 @@ M*/
 /*
    petscViewer writes to Matlab .mat file
 */
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMatlabPutArray(PetscViewer,int,int,PetscScalar*,char*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMatlabGetArray(PetscViewer,int,int,PetscScalar*,char*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMatlabPutArray(PetscViewer,int,int,const PetscScalar*,const char*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMatlabGetArray(PetscViewer,int,int,PetscScalar*,const char*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMatlabPutVariable(PetscViewer,const char*,void*);
 
 /*S
