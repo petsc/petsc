@@ -62,8 +62,6 @@ typedef struct {
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(const Obj<PETSC_MESH_TYPE>&, PetscViewer);
 
-#if 0
-
 #undef __FUNCT__
 #define __FUNCT__ "OutputVTK"
 PetscErrorCode OutputVTK(Mesh mesh, Options *options)
@@ -109,6 +107,7 @@ PetscErrorCode OutputVTK(Mesh mesh, Options *options)
   PetscFunctionReturn(0);
 }
 
+#if 0
 #undef __FUNCT__
 #define __FUNCT__ "OutputMesh"
 PetscErrorCode OutputMesh(Mesh mesh, Options *options)
@@ -157,6 +156,7 @@ PetscErrorCode OutputMesh(Mesh mesh, Options *options)
   }
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "CreatePartition"
@@ -170,8 +170,7 @@ PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
   PetscFunctionBegin;
   ALE_LOG_EVENT_BEGIN;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = MeshGetCellSectionInt(mesh, 1, partition);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *partition, "partition");CHKERRQ(ierr);
+  ierr = MeshGetCellSectionInt(mesh, "partition", 1, partition);CHKERRQ(ierr);
   ierr = SectionIntGetSection(*partition, section);CHKERRQ(ierr);
   const Obj<PETSC_MESH_TYPE::label_sequence>&         cells = m->heightStratum(0);
   const PETSC_MESH_TYPE::label_sequence::iterator     end   = cells->end();
@@ -188,18 +187,21 @@ PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
 #define __FUNCT__ "DistributeMesh"
 PetscErrorCode DistributeMesh(Mesh mesh, Options *options)
 {
-  Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   if (options->distribute) {
     ALE::LogStage stage = ALE::LogStageRegister("MeshDistribution");
+    Mesh          parallelMesh;
+
     ALE::LogStagePush(stage);
-    ierr = PetscPrintf(m->comm(), "Distributing mesh\n");CHKERRQ(ierr);
-    m    = ALE::Distribution<PETSC_MESH_TYPE>::distributeMesh(m, 0, std::string(options->partitioner));
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Distributing mesh\n");CHKERRQ(ierr);
+    ierr = MeshDistribute(mesh, options->partitioner, &parallelMesh);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
+    Obj<PETSC_MESH_TYPE> m;
+    ierr = MeshGetMesh(parallelMesh, m);CHKERRQ(ierr);
     ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
+    ierr = MeshDestroy(parallelMesh);CHKERRQ(ierr);
   }
   if (options->doPartition) {
     ierr = CreatePartition(mesh, &options->partition);CHKERRQ(ierr);
@@ -245,8 +247,6 @@ PetscErrorCode CreateOdd(Mesh mesh, SectionInt *odd)
   ALE_LOG_EVENT_END;
   PetscFunctionReturn(0);
 }
-
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
@@ -355,14 +355,12 @@ int main(int argc, char *argv[])
 
     ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
     ierr = CreateMesh(comm, &options, &mesh);CHKERRQ(ierr);
-#if 0
     ierr = DistributeMesh(mesh, &options);CHKERRQ(ierr);
     ierr = OutputVTK(mesh, &options);CHKERRQ(ierr);
-    ierr = OutputMesh(mesh, &options);CHKERRQ(ierr);
+    //ierr = OutputMesh(mesh, &options);CHKERRQ(ierr);
     if (options.doPartition) {
       ierr = SectionIntDestroy(options.partition);CHKERRQ(ierr);
     }
-#endif
     ierr = MeshDestroy(mesh);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
