@@ -4,13 +4,18 @@
 
 #include <private/matimpl.h>
 
+struct MatNestISPair {
+  IS *row,*col;
+};
+
 typedef struct {
   PetscInt           nr,nc;        /* nr x nc blocks */
   Mat                **m;
   PetscBool          setup_called;
-  IS                 *is_row,*is_col;
+  struct MatNestISPair isglobal;
+  struct MatNestISPair islocal;
+  Vec                *left,*right;
   PetscInt           *row_len,*col_len;
 } Mat_Nest;
 
 #endif
-

@@ -644,6 +644,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShift(Mat,PetscScalar);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMapping(Mat,ISLocalToGlobalMapping,ISLocalToGlobalMapping);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMappingBlock(Mat,ISLocalToGlobalMapping,ISLocalToGlobalMapping);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalToGlobalMapping(Mat,ISLocalToGlobalMapping*,ISLocalToGlobalMapping*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalToGlobalMappingBlock(Mat,ISLocalToGlobalMapping*,ISLocalToGlobalMapping*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocalIS(Mat,IS,PetscScalar,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsColumnsLocal(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
@@ -1741,7 +1743,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNest(MPI_Comm comm,PetscInt,co
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNestGetSize(Mat A,PetscInt *M,PetscInt *N);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNestGetSubMats(Mat A,PetscInt *M,PetscInt *N,Mat ***mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNestGetSubMat(Mat A,PetscInt idxm,PetscInt jdxm,Mat *sub);
-
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNestSetVecType(Mat,const VecType);
 
 PETSC_EXTERN_CXX_END
 #endif

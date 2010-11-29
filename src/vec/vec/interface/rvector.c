@@ -1347,19 +1347,7 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 
 .seealso: VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(), VecGetArray2d()
 M*/
-#undef __FUNCT__  
-#define __FUNCT__ "VecGetArray_Private"
-PetscErrorCode VecGetArray_Private(Vec x,PetscScalar *a[])
-{
-  PetscErrorCode ierr;
 
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  PetscValidPointer(a,2);
-  PetscValidType(x,1);
-  ierr = (*x->ops->getarray)(x,a);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecGetArrays" 
@@ -1491,25 +1479,6 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 
 .seealso: VecGetArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(), VecRestoreArray2d()
 M*/
-#undef __FUNCT__  
-#define __FUNCT__ "VecRestoreArray_Private"
-PetscErrorCode VecRestoreArray_Private(Vec x,PetscScalar *a[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  if (a) PetscValidPointer(a,2);
-  PetscValidType(x,1);
-#if defined(PETSC_USE_DEBUG)
-  CHKMEMQ;
-#endif
-  if (x->ops->restorearray) {
-    ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
-  }
-  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPlaceArray"

@@ -1,5 +1,7 @@
 
 /* This file contains info for the use of PETSc Fortran interface stubs */
+#if !defined(_FORTRANIMPL_H)
+#define _FORTRANIMPL_H
 
 #include "petscsys.h"
 
@@ -118,24 +120,31 @@ extern void *PETSCNULLPOINTERADDRESS;
     "Use PETSC_NULL_FUNCTION"); *ierr = 1; return; } \
   else if (FORTRANNULLFUNCTION(a)) { a = PETSC_NULL; }
   
+
+
+/*
+    Variable type where we stash PETSc object pointers in Fortran.
+*/
+typedef size_t PetscFortranAddr;
+
 /*
     These are used to support the default viewers that are 
   created at run time, in C using the , trick.
 
     The numbers here must match the numbers in include/finclude/petscsys.h
 */
-#define PETSC_VIEWER_DRAW_WORLD_FORTRAN     -4
-#define PETSC_VIEWER_DRAW_SELF_FORTRAN      -5
-#define PETSC_VIEWER_SOCKET_WORLD_FORTRAN   -6 
-#define PETSC_VIEWER_SOCKET_SELF_FORTRAN    -7
-#define PETSC_VIEWER_STDOUT_WORLD_FORTRAN   -8 
-#define PETSC_VIEWER_STDOUT_SELF_FORTRAN    -9
-#define PETSC_VIEWER_STDERR_WORLD_FORTRAN   -10 
-#define PETSC_VIEWER_STDERR_SELF_FORTRAN    -11
-#define PETSC_VIEWER_BINARY_WORLD_FORTRAN   -12
-#define PETSC_VIEWER_BINARY_SELF_FORTRAN    -13
-#define PETSC_VIEWER_MATLAB_WORLD_FORTRAN   -14
-#define PETSC_VIEWER_MATLAB_SELF_FORTRAN    -15
+#define PETSC_VIEWER_DRAW_WORLD_FORTRAN     4
+#define PETSC_VIEWER_DRAW_SELF_FORTRAN      5
+#define PETSC_VIEWER_SOCKET_WORLD_FORTRAN   6 
+#define PETSC_VIEWER_SOCKET_SELF_FORTRAN    7
+#define PETSC_VIEWER_STDOUT_WORLD_FORTRAN   8 
+#define PETSC_VIEWER_STDOUT_SELF_FORTRAN    9
+#define PETSC_VIEWER_STDERR_WORLD_FORTRAN   10 
+#define PETSC_VIEWER_STDERR_SELF_FORTRAN    11
+#define PETSC_VIEWER_BINARY_WORLD_FORTRAN   12
+#define PETSC_VIEWER_BINARY_SELF_FORTRAN    13
+#define PETSC_VIEWER_MATLAB_WORLD_FORTRAN   14
+#define PETSC_VIEWER_MATLAB_SELF_FORTRAN    15
 
 #if defined (PETSC_USE_SOCKET_VIEWER)
 #define PetscPatchDefaultViewers_Fortran_Socket(vin,v) \
@@ -183,3 +192,4 @@ extern void *PETSCNULLPOINTERADDRESS;
   if (!((PetscObject)(obj))->fortran_func_pointers) { \
     *ierr = PetscMalloc(N*sizeof(void*),&((PetscObject)(obj))->fortran_func_pointers);if (*ierr) return; \
   }
+#endif

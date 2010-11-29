@@ -226,8 +226,8 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIMonitorPrintf(PetscView
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIGetPointer(PetscViewer,FILE**);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileGetMode(PetscViewer,PetscFileMode*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileSetMode(PetscViewer,PetscFileMode);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIPrintf(PetscViewer,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIISynchronizedPrintf(PetscViewer,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIPrintf(PetscViewer,const char[],...);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIISynchronizedPrintf(PetscViewer,const char[],...);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIPushTab(PetscViewer);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIPopTab(PetscViewer);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIUseTabs(PetscViewer,PetscBool );
@@ -236,7 +236,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetDescriptor(PetscVie
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetInfoPointer(PetscViewer,FILE **);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryRead(PetscViewer,void*,PetscInt,PetscDataType);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryWrite(PetscViewer,void*,PetscInt,PetscDataType,PetscBool );
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerStringSPrintf(PetscViewer,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerStringSPrintf(PetscViewer,const char[],...);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerStringSetString(PetscViewer,char[],PetscInt);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawClear(PetscViewer);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawSetInfo(PetscViewer,const char[],const char[],int,int,int,int);
@@ -256,7 +256,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscPLAPACKFinalizePackage(void);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUGetPointer(PetscViewer, FILE**);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUSetVecSeen(PetscViewer, PetscBool );
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUGetVecSeen(PetscViewer, PetscBool  *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUPrintDeferred(PetscViewer, const char [], ...) PETSC_PRINTF_FORMAT_CHECK(2,3);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUPrintDeferred(PetscViewer, const char [], ...);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerVUFlushDeferred(PetscViewer);
 
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMathematicaInitializePackage(const char[]);
@@ -394,8 +394,8 @@ M*/
 /*
    petscViewer writes to Matlab .mat file
 */
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMatlabPutArray(PetscViewer,int,int,PetscScalar*,char*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMatlabGetArray(PetscViewer,int,int,PetscScalar*,char*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMatlabPutArray(PetscViewer,int,int,const PetscScalar*,const char*);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMatlabGetArray(PetscViewer,int,int,PetscScalar*,const char*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerMatlabPutVariable(PetscViewer,const char*,void*);
 
 /*S

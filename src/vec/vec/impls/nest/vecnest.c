@@ -1,6 +1,6 @@
 #define PETSCVEC_DLL
 
-#include "vecnestimpl.h"
+#include "vecnestimpl.h"   /*I  "petscvec.h"   I*/
 
 /* check all blocks are filled */
 #undef __FUNCT__  
@@ -966,7 +966,8 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V,PetscInt nb,IS is[])
         PetscInt  start;
         PetscBool contiguous;
         ierr = ISContiguousLocal(is[i],offset,offset+n,&start,&contiguous);CHKERRQ(ierr);
-        if (!contiguous || start != 0) SETERRQ1(((PetscObject)V)->comm,PETSC_ERR_SUP,"Index set %D is not contiguous with layout of matching vector",i);
+        if (!contiguous) SETERRQ1(((PetscObject)V)->comm,PETSC_ERR_SUP,"Index set %D is not contiguous with layout of matching vector",i);
+        if (start != 0) SETERRQ1(((PetscObject)V)->comm,PETSC_ERR_SUP,"Index set %D introduces overlap or a hole",i);
       }
 #endif
       ierr = PetscObjectReference((PetscObject)is[i]);CHKERRQ(ierr);

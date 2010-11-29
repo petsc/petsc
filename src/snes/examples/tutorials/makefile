@@ -11,7 +11,7 @@ LOCDIR		 = src/snes/examples/tutorials/
 MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex5s.c ex6.c \
                    ex14.c ex18.c ex19.c ex20.c ex21.c ex22.c \
-                   ex23.c ex24.c ex25.c ex26.c ex27.c ex29.c ex30.c ex31.c ex38.c ex42.c ex43.c \
+                   ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex38.c ex42.c ex43.c \
                    ex44.c ex45.c ex47.c ex48.c ex49.c ex50.c ex47cu.cu
 EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F ex33f.F 
 EXAMPLESCH	 = ex43-44.h
@@ -658,6 +658,16 @@ runex27_p:
 runex27_li:              # This algorithm, using a linearly implicit step, is the one described in the paper
 	-@${MPIEXEC} -n 1 ./ex27 -lidvelocity 100 -da_grid_x 16 -da_grid_y 16 -print -snes_type ksponly -grashof 1.e5 -cfl_ini 1.0e-1 -snes_rtol 1.0e-3
 
+runex28_0:
+	-@${MPIEXEC} -n 3 ./ex28 -da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 0 > ex28_0.tmp 2>&1; \
+	  ${DIFF} output/ex28_0.out ex28_0.tmp || echo "Possible problem with ex28_0, diffs above"; ${RM} -f ex28_0.tmp
+runex28_1:
+	-@${MPIEXEC} -n 3 ./ex28 -da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 1 > ex28_1.tmp 2>&1; \
+	  ${DIFF} output/ex28_1.out ex28_1.tmp || echo "Possible problem with ex28_1, diffs above"; ${RM} -f ex28_1.tmp
+runex28_2:
+	-@${MPIEXEC} -n 3 ./ex28 -da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 2 > ex28_2.tmp 2>&1; \
+	  ${DIFF} output/ex28_2.out ex28_2.tmp || echo "Possible problem with ex28_2, diffs above"; ${RM} -f ex28_2.tmp
+
 runex32:
 	-@${MPIEXEC} -n 1 ./ex32 -snes_monitor -dmmg_jacobian_mf_fd_operator -da_grid_x 10 -da_grid_y 10
 runex32_2:
@@ -729,7 +739,8 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  runex19_10 runex19_14 runex19_15 runex19_15a runex19_16 runex19_16a ex19.rm \
                                  ex22.PETSc runex22 ex22.rm ex18.PETSc ex18.rm ex19.PETSc ex19.rm ex21.PETSc runex21 ex21.rm \
                                  ex23.PETSc runex23 ex23.rm ex24.PETSc ex24.rm   ex25.PETSc runex25 runex25_2 \
-                                 ex25.rm ex29.PETSc ex29.rm ex31.PETSc ex31.rm ex32.PETSc ex32.rm ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm \
+                                 ex25.rm ex28.PETSc runex28_0 runex28_1 runex28_2 ex28.rm ex29.PETSc ex29.rm \
+                                 ex31.PETSc ex31.rm ex32.PETSc ex32.rm ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm \
                                  ex44.PETSc runex44 runex44_2 ex44.rm ex45.PETSc runex45 runex45_2 runex45_3 ex45.rm ex47.PETSc ex47.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 ex48.rm
 TESTEXAMPLES_C_X11	       = ex5.PETSc runex5_8 runex5_10 ex5.rm 

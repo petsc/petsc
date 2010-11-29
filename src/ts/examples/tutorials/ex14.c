@@ -269,9 +269,9 @@ static void PrmHexGetZ(const PrmNode pn[],PetscInt k,PetscInt zm,PetscReal zn[])
 }
 
 static inline PetscReal StaggeredMidpoint2D(PetscScalar a,PetscScalar b,PetscScalar c,PetscScalar d)
-{return 0.5*(PetscReal)(0.75*a + 0.75*b + 0.25*c + 0.25*d);}
+{return 0.5*PetscRealPart(0.75*a + 0.75*b + 0.25*c + 0.25*d);}
 
-static void PrmNodeGetFaceMeasure(const PrmNode **p,PetscInt i,PetscInt j,PetscReal h[])
+static void PrmNodeGetFaceMeasure(const PrmNode **p,PetscInt i,PetscInt j,PetscScalar h[])
 {
   /* West */
   h[0] = StaggeredMidpoint2D(p[i][j].h,p[i-1][j].h,p[i-1][j-1].h,p[i][j-1].h);
@@ -320,7 +320,7 @@ static void THIInitialize_HOM_F(THI thi,PetscReal x,PetscReal y,PrmNode *p)
   //printf("%f %f \n",y,1000*units->meter);
   p->h = s - p->b;
   p->h = (1-(atan((x-thi->Lx/2)/1.)+PETSC_PI/2.)/PETSC_PI)*500*units->meter+1*units->meter;
-  s = p->b + p->h;
+  s = PetscRealPart(p->b + p->h);
   p->beta2 = 1e30;
   //  p->beta2 = 1000 * units->Pascal * units->year / units->meter;
 }
@@ -343,7 +343,7 @@ static void THIInitialize_HOM_Y(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
   PetscReal x = xx*2*PETSC_PI/thi->Lx - PETSC_PI,y = yy*2*PETSC_PI/thi->Ly - PETSC_PI; /* [-pi,pi] */
   PetscReal r = sqrt(x*x + y*y),s = -x*tan(thi->alpha);
   p->b = s - 1000*units->meter + 500*units->meter * sin(x + PETSC_PI) * sin(y + PETSC_PI);
-  if (p->b > -700*units->meter) p->b += 200*units->meter;
+  if (PetscRealPart(p->b) > -700*units->meter) p->b += 200*units->meter;
   p->h = s - p->b;
   p->beta2 = 1000 * (1. + sin(sqrt(16*r))/sqrt(1e-2 + 16*r)*cos(x*3/2)*cos(y*3/2)) * units->Pascal * units->year / units->meter;
 }
@@ -1498,9 +1498,11 @@ int main(int argc,char *argv[])
   }
 
   ierr = PetscObjectSetName((PetscObject)da3,"3D_Velocity");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)da3,"f3d_");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da3,0,"u");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da3,1,"v");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)da2,"2D_Fields");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)da2,"f2d_");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da2,0,"b");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da2,1,"h");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da2,2,"beta2");CHKERRQ(ierr);
@@ -1510,7 +1512,7 @@ int main(int argc,char *argv[])
   ierr = DMDestroy(da3);CHKERRQ(ierr);
   ierr = DMDestroy(da2);CHKERRQ(ierr);
   ierr = DMSetUp(pack);CHKERRQ(ierr);
-  ierr = DMGetMatrix(pack,MATAIJ,&B);CHKERRQ(ierr);
+  ierr = DMGetMatrix(pack,PETSC_NULL,&B);CHKERRQ(ierr);
 
   ierr = DMMGCreate(comm,thi->nlevels,thi,&dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,pack);CHKERRQ(ierr);

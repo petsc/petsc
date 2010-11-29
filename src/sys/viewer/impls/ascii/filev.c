@@ -331,7 +331,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIPopTab(PetscViewer viewer)
 
     Input Parameters:
 +    viewer - optained with PetscViewerASCIIOpen()
--    flg - PETSC_YES or PETSC_NO
+-    flg - PETSC_TRUE or PETSC_FALSE
 
     Level: developer
 
