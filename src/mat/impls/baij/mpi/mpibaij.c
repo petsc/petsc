@@ -3132,7 +3132,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIBAIJ_MPIAIJ(Mat A,const MatType 
   PetscErrorCode ierr;
   Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*)A->data;
   Mat            B;
-  Mat_MPIAIJ     *b = (Mat_MPIAIJ*) B->data; 
+  Mat_MPIAIJ     *b;
 
   PetscFunctionBegin;
   if (!A->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Matrix must be assembled");

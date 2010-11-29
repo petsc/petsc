@@ -111,7 +111,7 @@ classdef PetscVec < PetscObject
       elseif (ndim == 2)  %% 2D DM
         idx = M*(S.subs{2}-1) + S.subs{1};  
       elseif (ndim == 3)  %% 3D DM
-        idx = N*(S.subs{3}-1) + M*(S.subs{2}-1) + S.subs{1};
+        idx = N*M(S.subs{3}-1) + M*(S.subs{2}-1) + S.subs{1};
       end
       varargout = {obj.GetValues(idx)};      
     end
@@ -132,11 +132,9 @@ classdef PetscVec < PetscObject
       elseif (ndim == 2)  %% 2D DM
         idx = M*(S.subs{2}-1) + S.subs{1};  
       elseif (ndim == 3)  %% 3D DM
-        idx = N*(S.subs{3}-1) + M*(S.subs{2}-1) + S.subs{1};
+        idx = N*M(S.subs{3}-1) + M*(S.subs{2}-1) + S.subs{1};
       end
       obj.SetValues(idx,value);      
     end
   end
 end
-
- 
