@@ -12,9 +12,7 @@ int PetscFinalize(void);
 
 typedef int MPI_Comm;
 typedef int InsertMode;
-
-/* typedef long long int PetscPointer; */
-typedef int PetscPointer;
+typedef long int PetscPointer;
 
 typedef PetscPointer PetscViewer;
 int PetscViewerCreate(MPI_Comm,PetscViewer*);
@@ -62,6 +60,7 @@ int MatAssemblyEnd(Mat,MatAssemblyType);
 int MatView(Mat,PetscViewer);
 int MatDestroy(Mat);
 int MatSetValuesStencil(Mat,int,MatStencil*,int,MatStencil*,double*,InsertMode);
+int MatCreateSeqAIJFromMatlab(mxArray*,Mat*);
 
 typedef PetscPointer DM;
 typedef int DMDAPeriodicType;

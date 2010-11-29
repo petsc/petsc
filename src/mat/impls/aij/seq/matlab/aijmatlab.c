@@ -38,6 +38,54 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "MatCreateSeqAIJFromMatlab"
+/*@
+    MatCreateSeqAIJFromMatlab - Given a Matlab sparse matrix, fills a SeqAIJ matrix with its transpose.
+
+   Not Collective
+
+   Input Parameters:
++     mmat - a Matlab sparse matris
+-     mat - a already created MATSEQAIJ
+
+   Developer Notes: on 64 bit systems Matlab uses 64 bit integers hence mWIndex is size_t.
+
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJFromMatlab(mxArray *mmat,Mat *mat)
+{
+  PetscErrorCode ierr;
+  int            nz,n,m,*i,*j,k;
+  mwIndex        nnz,nn,nm,*ii,*jj;
+  PetscScalar    *a;
+  Mat_SeqAIJ     *aij;
+
+  PetscFunctionBegin;
+  nn  = mxGetN(mmat);
+  nm  = mxGetM(mmat);
+  nnz = (mxGetJc(mmat))[nn];
+  ii  = mxGetJc(mmat);
+  jj  = mxGetIr(mmat);
+  n   = (PetscInt) nn;
+  m   = (PetscInt) nm;
+  nz  = (PetscInt) nnz;
+  ierr = PetscMalloc3(nz,PetscScalar,&a,nz,PetscInt,&j,n+1,PetscInt,&i);CHKERRQ(ierr);
+
+  for (k=0; k<n+1; k++) {
+    i[k] = (PetscInt) ii[k];
+  }
+  for (k=0; k<nz; k++) {
+    j[k] = (PetscInt) jj[k];
+  }
+  ierr = PetscMemcpy(a,mxGetPr(mmat),nz*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,m,n,i,j,a,mat);CHKERRQ(ierr);
+  aij               = (Mat_SeqAIJ*)(*mat)->data;
+  aij->singlemalloc = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "MatSeqAIJFromMatlab"
 /*@
     MatSeqAIJFromMatlab - Given a Matlab sparse matrix, fills a SeqAIJ matrix with its transpose.
