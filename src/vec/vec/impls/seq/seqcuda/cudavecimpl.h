@@ -185,7 +185,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDAGetArrayWrite(Vec v, CUSPARRAY** a)
 }
 #undef __FUNCT__
 #define __FUNCT__ "VecCUDARestoreArrayWrite"
-PETSC_STATIC_INLINE PetscErrorCode VecCUDARestoreArrayWrite(Vec v, CUSPARRAY* a)
+PETSC_STATIC_INLINE PetscErrorCode VecCUDARestoreArrayWrite(Vec v, CUSPARRAY** a)
 {
   PetscFunctionBegin;
   if (v->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
