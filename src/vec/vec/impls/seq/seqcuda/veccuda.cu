@@ -1,6 +1,6 @@
 #define PETSCVEC_DLL
 /*
-   Implements the sequential vectors.
+   Implements the sequential cuda vectors.
 */
 
 #include "petscconf.h"
@@ -897,18 +897,22 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
 #define __FUNCT__ "VecSet_SeqCUDA"
 PetscErrorCode VecSet_SeqCUDA(Vec xin,PetscScalar alpha)
 {
+  CUSPARRAY      *xarray;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* if there's a faster way to do the case alpha=0.0 on the GPU we should do that*/
-  ierr = VecCUDAAllocateCheck(xin);CHKERRQ(ierr);
+  /*ierr = VecCUDAAllocateCheck(xin);CHKERRQ(ierr);*/
+  ierr = VecCUDAGetArrayWrite(xin,&xarray);CHKERRQ(ierr);
   try {
-    cusp::blas::fill(*((Vec_CUDA*)xin->spptr)->GPUarray,alpha);
+    /*cusp::blas::fill(*((Vec_CUDA*)xin->spptr)->GPUarray,alpha);*/
+    cusp::blas::fill(*xarray,alpha);
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
   }
   ierr = WaitForGPU();CHKERRCUDA(ierr);
-  xin->valid_GPU_array = PETSC_CUDA_GPU;
+  /*xin->valid_GPU_array = PETSC_CUDA_GPU;*/
+  ierr = VecCUDARestoreArrayWrite(xin,&xarray);
   PetscFunctionReturn(0);
 }
 
