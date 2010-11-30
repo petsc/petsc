@@ -194,6 +194,9 @@ ex51: ex51.o  chkopts
 ex52: ex52.o  chkopts
 	-${CLINKER} -o ex52 ex52.o ${PETSC_SNES_SINGLE_LIB}
 	${RM} ex52.o
+ex53: ex53.o  chkopts
+	-${CLINKER} -o ex53 ex53.o ${PETSC_SNES_LIB}
+	${RM} ex53.o
 
 #--------------------------------------------------------------------------
 runex1:
