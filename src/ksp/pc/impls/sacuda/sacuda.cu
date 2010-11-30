@@ -89,12 +89,15 @@ static PetscErrorCode PCApplyRichardson_SACUDA(PC pc, Vec b, Vec y, Vec w,PetscR
 {
   PC_SACUDA      *sac = (PC_SACUDA*)pc->data;
   PetscErrorCode ierr;
+  CUSPARRAY      *barray,*yarray;
   
   PetscFunctionBegin;
   /* how to incorporate dtol, guesszero, w?*/
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  cusp::default_monitor<PetscScalar> monitor(*((Vec_CUDA *)b->spptr)->GPUarray,its,rtol,abstol);
-  sac->SACUDA->solve(*((Vec_CUDA *)b->spptr)->GPUarray,*((Vec_CUDA *)y->spptr)->GPUarray,monitor);
+  ierr = VecCUDAGetArrayRead(b,&barray);CHKERRQ(ierr);
+  ierr = VecCUDAGetArrayReadWrite(y,&yarray);CHKERRQ(ierr);
+  cusp::default_monitor<PetscScalar> monitor(*barray,its,rtol,abstol);
+  sac->SACUDA->solve(*barray,*yarray,monitor);
   *outits = monitor.iteration_count();
   if (monitor.converged()){
     /* how to discern between converging from RTOL or ATOL?*/
@@ -103,6 +106,8 @@ static PetscErrorCode PCApplyRichardson_SACUDA(PC pc, Vec b, Vec y, Vec w,PetscR
     *reason = PCRICHARDSON_CONVERGED_ITS;
   }
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  ierr = VecCUDARestoreArrayRead(b,&barray);CHKERRQ(ierr);
+  ierr = VecCUDARestoreArrayReadWrite(y,&yarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -126,6 +131,7 @@ static PetscErrorCode PCApply_SACUDA(PC pc,Vec x,Vec y)
   PC_SACUDA      *sac = (PC_SACUDA*)pc->data;
   PetscErrorCode ierr;
   PetscBool      flg1,flg2;
+  CUSPARRAY      *xarray,*yarray;
 
   PetscFunctionBegin;
   /*how to apply a certain fixed number of iterations?*/
@@ -135,16 +141,20 @@ static PetscErrorCode PCApply_SACUDA(PC pc,Vec x,Vec y)
   if (!sac->SACUDA) {
     ierr = PCSetUp_SACUDA(pc);CHKERRQ(ierr);
   }
-  ierr = VecCUDACopyToGPU(x);CHKERRQ(ierr);
+  /*ierr = VecCUDACopyToGPU(x);CHKERRQ(ierr);*/
   ierr = VecSet(y,0.0);CHKERRQ(ierr);
+  ierr = VecCUDAGetArrayRead(x,&xarray);CHKERRQ(ierr);
+  ierr = VecCUDAGetArrayWrite(y,&yarray);CHKERRQ(ierr);
   try {
-    cusp::multiply(*sac->SACUDA,*((Vec_CUDA *)x->spptr)->GPUarray,*((Vec_CUDA *)y->spptr)->GPUarray);
-    if (y->valid_GPU_array != PETSC_CUDA_UNALLOCATED) {
+    cusp::multiply(*sac->SACUDA,*xarray,*yarray);
+    /*if (y->valid_GPU_array != PETSC_CUDA_UNALLOCATED) {
     y->valid_GPU_array = PETSC_CUDA_GPU;
-    }
+     }*/
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
   } 
+  ierr = VecCUDARestoreArrayRead(x,&xarray);CHKERRQ(ierr);
+  ierr = VecCUDARestoreArrayWrite(y,&yarray);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
