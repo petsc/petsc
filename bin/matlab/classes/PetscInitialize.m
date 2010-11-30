@@ -53,6 +53,6 @@ arg{1} = 'matlab';
 for i=1:length(args)
   arg{i+1} = args{i};
 end
-loadlibrary([PETSC_DIR '/' PETSC_ARCH '/lib/' 'libpetsc'], [PETSC_DIR '/bin/matlab/classes/matlabheader.h'],'addheader','matrix');
+loadlibrary([PETSC_DIR '/' PETSC_ARCH '/lib/' 'libpetsc'], [PETSC_DIR '/bin/matlab/classes/matlabheader.h']);
 err = calllib('libpetsc', 'PetscInitializeNonPointers', length(arg), arg,argfile,arghelp);PetscCHKERRQ(err);
 

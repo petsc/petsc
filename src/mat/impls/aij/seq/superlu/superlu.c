@@ -249,8 +249,6 @@ PetscErrorCode MatView_SuperLU(Mat A,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = MatView_SeqAIJ(A,viewer);CHKERRQ(ierr);
-
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);

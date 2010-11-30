@@ -1537,7 +1537,8 @@ static PetscErrorCode SNESView_VI(SNES snes,PetscViewer viewer)
 
    Notes:
    If this routine is not called then the lower and upper bounds are set to 
-   -Infinity and Infinity respectively during SNESSetUp.
+   PETSC_VI_INF and PETSC_VI_NINF respectively during SNESSetUp().
+
 */
 
 #undef __FUNCT__

@@ -28,6 +28,11 @@ classdef PetscSNES < PetscObject
       end
     end
     function err = VISetVariableBounds(obj,xl,xb)
+        for i=1:length(xl(:))
+        if isinf(xl(i)) xl(i) = -1.0e20; end
+        if isinf(xb(i)) xb(i) = 1.0e20;end
+      end
+        xl(:),xb(:)
       err = calllib('libpetsc', 'SNESVISetVariableBounds', obj.pobj,xl.pobj,xb.pobj);PetscCHKERRQ(err);
     end
     function err = SetFunction(obj,f,func,arg)

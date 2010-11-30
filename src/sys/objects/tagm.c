@@ -193,7 +193,6 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *
 
   if (first_tag) {
     *first_tag = counter->tag--;
-    ierr = PetscInfo1(0,"  returning tag %ld\n",(long)*first_tag);CHKERRQ(ierr);
   }
   counter->refcount++; /* number of references to this comm */
   PetscFunctionReturn(0);

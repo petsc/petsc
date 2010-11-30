@@ -39,7 +39,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSeqAIJFromMatlab"
-/*@
+/*@C
     MatCreateSeqAIJFromMatlab - Given a Matlab sparse matrix, fills a SeqAIJ matrix with its transpose.
 
    Not Collective
@@ -80,6 +80,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJFromMatlab(mxArray *mmat,Mat *m
   ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,m,n,i,j,a,mat);CHKERRQ(ierr);
   aij               = (Mat_SeqAIJ*)(*mat)->data;
   aij->singlemalloc = PETSC_TRUE;
+  aij->nonew        = 0;
+  aij->free_a       = PETSC_TRUE;
+  aij->free_ij      = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -87,7 +90,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqAIJFromMatlab"
-/*@
+/*@C
     MatSeqAIJFromMatlab - Given a Matlab sparse matrix, fills a SeqAIJ matrix with its transpose.
 
    Not Collective
