@@ -221,7 +221,7 @@ struct _p_THI {
   PRange    eta;
   PRange    beta2;
   struct {
-    PetscReal Bd2,eps,exponent;
+    PetscReal Bd2,eps,exponent,glen_n;
   } viscosity;
   struct {
     PetscReal irefgam,eps2,exponent;
@@ -328,8 +328,9 @@ static void THIInitialize_HOM_C(THI thi,PetscReal x,PetscReal y,PrmNode *p)
   PetscReal s = -x*sin(thi->alpha);
   p->b = s - 1000*units->meter;
   p->h = s - p->b;
-  /* tau_b = beta2 v   is a stress (Pa) */
-  p->beta2 = 1000 * (1 + sin(x*2*PETSC_PI/thi->Lx)*sin(y*2*PETSC_PI/thi->Ly)) * units->Pascal * units->year / units->meter;
+  /* tau_b = beta2 v   is a stress (Pa).
+   * This is a big number in our units (it needs to balance the driving force from the surface), so we scale it by 1/rhog, just like the residual. */
+  p->beta2 = 1000 * (1 + sin(x*2*PETSC_PI/thi->Lx)*sin(y*2*PETSC_PI/thi->Ly)) * units->Pascal * units->year / units->meter / thi->rhog;
 }
 
 /* These are just toys */
@@ -355,7 +356,7 @@ static void THIInitialize_HOM_X(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
   PetscReal r = sqrt(x*x + y*y),s = -x*sin(thi->alpha);
   p->b = s - 1000*units->meter + 500*units->meter * sin(x + PETSC_PI) * sin(y + PETSC_PI);
   p->h = s - p->b;
-  p->beta2 = 1000 * (r < 1 ? 2 : 0) * units->Pascal * units->year / units->meter;
+  p->beta2 = 1000 * (r < 1 ? 2 : 0) * units->Pascal * units->year / units->meter / thi->rhog;
 }
 
 /* Like Z, but with 200 meter cliffs */
@@ -367,7 +368,7 @@ static void THIInitialize_HOM_Y(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
   p->b = s - 1000*units->meter + 500*units->meter * sin(x + PETSC_PI) * sin(y + PETSC_PI);
   if (PetscRealPart(p->b) > -700*units->meter) p->b += 200*units->meter;
   p->h = s - p->b;
-  p->beta2 = 1000 * (1. + sin(sqrt(16*r))/sqrt(1e-2 + 16*r)*cos(x*3/2)*cos(y*3/2)) * units->Pascal * units->year / units->meter;
+  p->beta2 = 1000 * (1. + sin(sqrt(16*r))/sqrt(1e-2 + 16*r)*cos(x*3/2)*cos(y*3/2)) * units->Pascal * units->year / units->meter / thi->rhog;
 }
 
 /* Same bed as A, smoothly varying slipperiness, similar to Matlab's "sombrero" (uncorrelated with bathymetry) */
@@ -378,7 +379,7 @@ static void THIInitialize_HOM_Z(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
   PetscReal r = sqrt(x*x + y*y),s = -x*sin(thi->alpha);
   p->b = s - 1000*units->meter + 500*units->meter * sin(x + PETSC_PI) * sin(y + PETSC_PI);
   p->h = s - p->b;
-  p->beta2 = 1000 * (1. + sin(sqrt(16*r))/sqrt(1e-2 + 16*r)*cos(x*3/2)*cos(y*3/2)) * units->Pascal * units->year / units->meter;
+  p->beta2 = 1000 * (1. + sin(sqrt(16*r))/sqrt(1e-2 + 16*r)*cos(x*3/2)*cos(y*3/2)) * units->Pascal * units->year / units->meter / thi->rhog;
 }
 
 static void THIFriction(THI thi,PetscReal rbeta2,PetscReal gam,PetscReal *beta2,PetscReal *dbeta2)
@@ -403,7 +404,7 @@ static void THIViscosity(THI thi,PetscReal gam,PetscReal *eta,PetscReal *deta)
   if (thi->viscosity.Bd2 == 0) {
     Units units = thi->units;
     const PetscReal
-      n = 3.,                                           /* Glen exponent */
+      n = thi->viscosity.glen_n,                        /* Glen exponent */
       p = 1. + 1./n,                                    /* for Stokes */
       A = 1.e-16 * pow(units->Pascal,-n) / units->year, /* softness parameter (Pa^{-n}/s) */
       B = pow(A,-1./n);                                 /* hardness parameter */
@@ -498,6 +499,8 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   thi->dirichlet_scale = 1;
   thi->verbose         = PETSC_FALSE;
 
+  thi->viscosity.glen_n = 3.;
+
   ierr = PetscOptionsBegin(comm,NULL,"Toy Hydrostatic Ice options","");CHKERRQ(ierr);
   {
     QuadratureType quad = QUAD_GAUSS;
@@ -528,7 +531,6 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
       thi->no_slip = PETSC_FALSE;
       thi->alpha = 0.5;
       break;
-
     case 'X':
       thi->initialize = THIInitialize_HOM_X;
       thi->no_slip = PETSC_FALSE;
@@ -559,6 +561,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
       break;
     }
     ierr = PetscOptionsReal("-thi_alpha","Bed angle (degrees)","",thi->alpha,&thi->alpha,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-thi_viscosity_glen_n","Exponent in Glen flow law, 1=linear, infty=ideal plastic",NULL,thi->viscosity.glen_n,&thi->viscosity.glen_n,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-thi_friction_m","Friction exponent, 0=Coulomb, 1=Navier","",m,&m,NULL);CHKERRQ(ierr);
     thi->friction.exponent = (m-1)/2;
     ierr = PetscOptionsReal("-thi_dirichlet_scale","Scale Dirichlet boundary conditions by this factor","",thi->dirichlet_scale,&thi->dirichlet_scale,NULL);CHKERRQ(ierr);
@@ -783,7 +786,7 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
           if (q == 0) etabase = eta;
           RangeUpdate(&etamin,&etamax,eta);
           for (l=ls; l<8; l++) { /* test functions */
-            const PetscReal ds[2] = {dpn[q%4][0].h+dpn[q%4][0].b, dpn[q%4][0].h+dpn[q%4][0].b};
+            const PetscReal ds[2] = {dpn[q%4][0].h+dpn[q%4][0].b, dpn[q%4][1].h+dpn[q%4][1].b};
             const PetscReal pp=phi[l],*dp = dphi[l];
             fn[l]->u += dp[0]*jw*eta*(4.*du[0]+2.*dv[1]) + dp[1]*jw*eta*(du[1]+dv[0]) + dp[2]*jw*eta*du[2] + pp*jw*thi->rhog*ds[0];
             fn[l]->v += dp[1]*jw*eta*(2.*du[0]+4.*dv[1]) + dp[0]*jw*eta*(du[1]+dv[0]) + dp[2]*jw*eta*dv[2] + pp*jw*thi->rhog*ds[1];
@@ -809,8 +812,8 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
             fn[0]->u = thi->dirichlet_scale*diagu*x[i][j][k].u;
             fn[0]->v = thi->dirichlet_scale*diagv*x[i][j][k].v;
           } else {              /* Integrate over bottom face to apply boundary condition */
-            for (q=0; q<4; q++) {
-              const PetscReal jw = 0.25*hx*hy/thi->rhog,*phi = QuadQInterp[q];
+            for (q=0; q<4; q++) { /* We remove the explicit scaling of the residual by 1/rhog because beta2 already has that scaling to be O(1) */
+              const PetscReal jw = 0.25*hx*hy,*phi = QuadQInterp[q];
               PetscScalar u=0,v=0,rbeta2=0;
               PetscReal beta2,dbeta2;
               for (l=0; l<4; l++) {
@@ -1178,8 +1181,8 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
             Ke[0][0] = thi->dirichlet_scale*diagu;
             Ke[1][1] = thi->dirichlet_scale*diagv;
           } else {
-            for (q=0; q<4; q++) {
-              const PetscReal jw = 0.25*hx*hy/thi->rhog,*phi = QuadQInterp[q];
+            for (q=0; q<4; q++) { /* We remove the explicit scaling by 1/rhog because beta2 already has that scaling to be O(1) */
+              const PetscReal jw = 0.25*hx*hy,*phi = QuadQInterp[q];
               PetscScalar u=0,v=0,rbeta2=0;
               PetscReal beta2,dbeta2;
               for (l=0; l<4; l++) {
