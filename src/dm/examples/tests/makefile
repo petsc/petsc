@@ -289,9 +289,9 @@ runex36_1d:
 
 runex36_2d:
 	-@${MPIEXEC} -n 1 ./ex36 -mx 10 -my 10 -nl 6 -dim 2 -cmap 0 > ex36_2d.tmp; \
-    ${MPIEXEC} -n 1 ./ex36 -mx 10 -my 10 -nl 6 -dim 2 -cmap 1 >> ex36_2d.tmp; \
-    ${MPIEXEC} -n 1 ./ex36 -mx 10 -my 10 -nl 6 -dim 2 -cmap 2 >> ex36_2d.tmp; \
-    ${MPIEXEC} -n 1 ./ex36 -mx 10 -my 10 -nl 6 -dim 2 -cmap 3 >> ex36_2d.tmp; \
+	  ${MPIEXEC} -n 1 ./ex36 -mx 10 -my 10 -nl 6 -dim 2 -cmap 1 >> ex36_2d.tmp; \
+	  ${MPIEXEC} -n 1 ./ex36 -mx 10 -my 10 -nl 6 -dim 2 -cmap 2 >> ex36_2d.tmp; \
+	  ${MPIEXEC} -n 1 ./ex36 -mx 10 -my 10 -nl 6 -dim 2 -cmap 3 >> ex36_2d.tmp; \
 	  ${DIFF} output/ex36_2d.out ex36_2d.tmp || echo "Possible problem with ex36_2d, diffs above"; \
 	  ${RM} -f ex36_2d.tmp
 runex36_2dp1:
