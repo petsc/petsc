@@ -117,9 +117,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m
     //numConstraints += s->getConstraintDimension(*p_iter);
   }
   // Local arrays also have constraints, which are not mapped
-  if (localIndx  <= overlapSize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid number of local indices %d, should not be greater than %d", localIndx, overlapSize);
-  if (globalIndx <= overlapSize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid number of global indices %d, should not be greater than %d", globalIndx, overlapSize);
-  if (globalIndx != localIndx)   SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Mismatched number of global indices %d, and local indices %d", globalIndx, localIndx);
+  if (localIndx  > overlapSize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid number of local indices %d, should not be greater than %d", localIndx, overlapSize);
+  if (globalIndx > overlapSize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid number of global indices %d, should not be greater than %d", globalIndx, overlapSize);
+  if (globalIndx != localIndx)  SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Mismatched number of global indices %d, and local indices %d", globalIndx, localIndx);
   if (m->debug()) {
     globalOrder->view("Global Order");
     for(int i = 0; i < globalIndx; ++i) {
