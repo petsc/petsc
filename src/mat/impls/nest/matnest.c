@@ -3,12 +3,12 @@
 #include "matnestimpl.h" /*I   "petscmat.h"   I*/
 
 /* private functions */
-#undef __FUNCT__  
+#undef __FUNCT__ 
 #define __FUNCT__ "MatNestGetSize_Recursive"
 static PetscErrorCode MatNestGetSize_Recursive(Mat A,PetscBool globalsize,PetscInt *M,PetscInt *N)
 {
   Mat_Nest       *bA = (Mat_Nest*)A->data;
-  PetscInt       sizeM,sizeN,i,j,index=-1;
+  PetscInt       sizeM,sizeN,i,j,index = -1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
