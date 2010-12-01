@@ -45,7 +45,7 @@ static PetscErrorCode TaoSolverDestroy_GPCG(TaoSolver tao)
   }
   ierr = ISDestroy(gpcg->Free_Local);CHKERRQ(ierr);
 
-
+  ierr = PetscFree(tao->data); CHKERRQ(ierr);
   tao->gradient = PETSC_NULL;
   tao->stepdirection=PETSC_NULL;
   tao->linesearch = PETSC_NULL;

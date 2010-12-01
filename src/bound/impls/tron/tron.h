@@ -1,7 +1,8 @@
 #ifndef __TAO_TRON_H
 #define __TAO_TRON_H
 
-#include "taosolver.h"
+#include "private/taosolver_impl.h"
+#include "petscis.h"
 
 typedef struct {
 
@@ -39,19 +40,15 @@ typedef struct {
   Vec G;
   Vec PG;
 
-  Vec DX;
   Vec X_New;
   Vec G_New;
-  Vec XU;
-  Vec XL;
   Vec Work;
   
-  Mat Hsub;
-  Mat H;
+  Mat H_sub;
+  Mat Hpre_sub;
 
   
-  IndexSet TT;
-  VecScatter Free_Local;  /* Indices of local variables equal to lower bound */
+  IS Free_Local;  /* Indices of local variables equal to lower bound */
   VecScatter Lower_Local;  /* Indices of local variables equal to lower bound */
   VecScatter Upper_Local;  /* Indices of local variables equal to lower bound */
 

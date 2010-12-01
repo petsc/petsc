@@ -8,19 +8,31 @@ TaoSolver
 
 Mesh Refinement
 
-TRON -- use current C++ version for now, but will have to eventually fix
+TRON -- if no free variables
+     -- submatfree
 Levenberg-Marquardt
 POUNDer
-BCG?
 KT?
 BNLS?
-QPIP?
 
-Check memory on MT line search!
 
-Check fortran stubs 
+
 
 finish examples
+  minsurf1
+  eptorsion2f
+  plate2f
+  combustion3
+  ginzland3
+  jbearing3
+  jbearing3f
+  minsurf3
+
+Check memory (esp. on MT line search!)
+Check fortran stubs 
+test examples script/make target
+test output against tao-1.10.1
+automatic testing, coverage
 
 documentation
 
@@ -28,9 +40,7 @@ manual
 
 build documentation
 
-automatic testing, coverage
 
-test against tao-1.10.1
 
 Check against PetscScalar=single, complex (give good error message)
 

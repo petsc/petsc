@@ -1,14 +1,11 @@
-/*$Id$*/
+#ifndef __TAO_BLMVM_H
+#define __TAO_BLMVM_H
+#include "include/private/taosolver_impl.h"
 
 /*
  Context for limited memory variable metric method for bound constrained 
  optimization.
 */
-
-#ifndef __TAO_BLMVM_H
-#define __TAO_BLMVM_H
-#include "include/private/taosolver_impl.h"
-
 typedef struct {
 
   Mat M;

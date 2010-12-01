@@ -148,7 +148,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 	ierr = VecDuplicate(tao->solution, &tr->Diag); CHKERRQ(ierr);
     }
   }
-  
+ 
   switch(tr->ksp_type) {
   case NTR_KSP_NASH:
     ierr = KSPSetType(tao->ksp, KSPNASH); CHKERRQ(ierr);

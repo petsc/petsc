@@ -89,7 +89,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
     fold = f;
     ierr = VecCopy(tao->solution, Xold); CHKERRQ(ierr);
     ierr = VecCopy(tao->gradient, Gold); CHKERRQ(ierr);
-    ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);
+    ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0); CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &stepsize, &ls_status); CHKERRQ(ierr);
 
     if (ls_status<0) {

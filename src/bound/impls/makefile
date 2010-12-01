@@ -2,7 +2,7 @@
 
 ALL: lib
 
-DIRS     = blmvm  gpcg bqpip
+DIRS     = blmvm  gpcg bqpip tron
 
 LOCDIR   = src/bound/impls/
 

@@ -2,11 +2,11 @@
 
 /*
   Include "tao.h" so we can use TAO solvers with PETSc support.  
-  Include "petscda.h" so that we can use distributed arrays (DAs) for managing
+  Include "petscdm.h" so that we can use distributed arrays (DMs) for managing
   the parallel mesh.
 */
 
-#include "petscda.h"
+#include "petscdm.h"
 #include "petscksp.h"
 #include "taosolver.h"
 #include <math.h>  /* for cos() sin(0), and atan() */
@@ -48,7 +48,7 @@ typedef struct {
   int         nx,ny;        /* discretization in x, y directions */
 
   /* Working space */
-  DA          da;           /* distributed array data structure */
+  DM          dm;           /* distributed array data structure */
   Mat         A;            /* Quadratic Objective term */
   Vec         B;            /* Linear Objective term */
 } AppCtx;
@@ -111,16 +111,17 @@ int main( int argc, char **argv )
      which derives from an elliptic PDE on two dimensional domain.  From
      the distributed array, Create the vectors.
   */
-  info = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.nx,
-                    user.ny,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da); CHKERRQ(info);
+  info = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,
+		      user.nx,user.ny,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,
+		      &user.dm); CHKERRQ(info);
 
   /*
-     Extract global and local vectors from DA; the vector user.B is
+     Extract global and local vectors from DM; the vector user.B is
      used solely as work space for the evaluation of the function, 
      gradient, and Hessian.  Duplicate for remaining vectors that are 
      the same types.
   */
-  info = DACreateGlobalVector(user.da,&x); CHKERRQ(info); /* Solution */
+  info = DMCreateGlobalVector(user.dm,&x); CHKERRQ(info); /* Solution */
   info = VecDuplicate(x,&user.B); CHKERRQ(info); /* Linear objective */
 
 
@@ -130,10 +131,10 @@ int main( int argc, char **argv )
 
 
 
-  info = DAGetGlobalIndices(user.da,&nloc,&ltog); CHKERRQ(info);
-  info = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,ltog,&isltog); 
+  info = DMDAGetGlobalIndices(user.dm,&nloc,&ltog); CHKERRQ(info);
+  info = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,ltog,PETSC_COPY_VALUES,&isltog); 
   CHKERRQ(info);
-  info = MatSetLocalToGlobalMapping(user.A,isltog); CHKERRQ(info);
+  info = MatSetLocalToGlobalMapping(user.A,isltog,isltog); CHKERRQ(info);
   info = ISLocalToGlobalMappingDestroy(isltog); CHKERRQ(info);
 
 
@@ -196,7 +197,7 @@ int main( int argc, char **argv )
   info = VecDestroy(xu); CHKERRQ(info); 
   info = MatDestroy(user.A); CHKERRQ(info);
   info = VecDestroy(user.B); CHKERRQ(info); 
-  info = DADestroy(user.da); CHKERRQ(info);
+  info = DMDestroy(user.dm); CHKERRQ(info);
 
   TaoFinalize();
   PetscFinalize();
@@ -233,8 +234,8 @@ PetscErrorCode ComputeB(AppCtx* user)
   /*
      Get local grid boundaries
   */
-  info = DAGetCorners(user->da,&xs,&ys,TAO_NULL,&xm,&ym,TAO_NULL); CHKERRQ(info);
-  info = DAGetGhostCorners(user->da,&gxs,&gys,TAO_NULL,&gxm,&gym,TAO_NULL); CHKERRQ(info);
+  info = DMDAGetCorners(user->dm,&xs,&ys,TAO_NULL,&xm,&ym,TAO_NULL); CHKERRQ(info);
+  info = DMDAGetGhostCorners(user->dm,&gxs,&gys,TAO_NULL,&gxm,&gym,TAO_NULL); CHKERRQ(info);
   
 
   /* Compute the linear term in the objective function */  
@@ -277,17 +278,17 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
   hxhx=one/(hx*hx);
   hyhy=one/(hy*hy);
 
-  info = DAGetLocalVector(user->da,&localX);CHKERRQ(info);
+  info = DMGetLocalVector(user->dm,&localX);CHKERRQ(info);
 
-  info = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(info);
-  info = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(info);
+  info = DMGlobalToLocalBegin(user->dm,X,INSERT_VALUES,localX); CHKERRQ(info);
+  info = DMGlobalToLocalEnd(user->dm,X,INSERT_VALUES,localX); CHKERRQ(info);
 
   info = VecSet(G, zero); CHKERRQ(info);
   /*
     Get local grid boundaries
   */
-  info = DAGetCorners(user->da,&xs,&ys,TAO_NULL,&xm,&ym,TAO_NULL); CHKERRQ(info);
-  info = DAGetGhostCorners(user->da,&gxs,&gys,TAO_NULL,&gxm,&gym,TAO_NULL); CHKERRQ(info);
+  info = DMDAGetCorners(user->dm,&xs,&ys,TAO_NULL,&xm,&ym,TAO_NULL); CHKERRQ(info);
+  info = DMDAGetGhostCorners(user->dm,&gxs,&gys,TAO_NULL,&gxm,&gym,TAO_NULL); CHKERRQ(info);
   
   info = VecGetArray(localX,&x); CHKERRQ(info);
   info = VecGetArray(G,&g); CHKERRQ(info);
@@ -344,7 +345,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
   info = VecRestoreArray(localX,&x); CHKERRQ(info);
   info = VecRestoreArray(G,&g); CHKERRQ(info);
 
-  info = DARestoreLocalVector(user->da,&localX); CHKERRQ(info);
+  info = DMRestoreLocalVector(user->dm,&localX); CHKERRQ(info);
 
   info = VecDot(X,G,&f1); CHKERRQ(info);
   info = VecDot(user->B,X,&f2); CHKERRQ(info);
@@ -390,8 +391,8 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *H, Mat *Hpre, MatStructure *
   /*
     Get local grid boundaries
   */
-  info = DAGetCorners(user->da,&xs,&ys,TAO_NULL,&xm,&ym,TAO_NULL); CHKERRQ(info);
-  info = DAGetGhostCorners(user->da,&gxs,&gys,TAO_NULL,&gxm,&gym,TAO_NULL); CHKERRQ(info);
+  info = DMDAGetCorners(user->dm,&xs,&ys,TAO_NULL,&xm,&ym,TAO_NULL); CHKERRQ(info);
+  info = DMDAGetGhostCorners(user->dm,&gxs,&gys,TAO_NULL,&gxm,&gym,TAO_NULL); CHKERRQ(info);
   
   info = MatAssembled(hes,&assembled); CHKERRQ(info);
   if (assembled){info = MatZeroEntries(hes);  CHKERRQ(info);}
