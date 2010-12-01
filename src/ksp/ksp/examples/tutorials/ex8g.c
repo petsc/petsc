@@ -4,7 +4,7 @@ The Additive Schwarz Method for solving a linear system in parallel with KSP.  T
 code indicates the procedure for setting user-defined subdomains.  Input\n\
 parameters include:\n\
   -user_set_subdomain_solvers:  User explicitly sets subdomain solvers\n\
-  -user_set_subdomains:  Activate user-defined subdomains\n\n";
+  -user_set_subdomains:         Use the user-provided subdomain partitioning routine\n\n";
 
 /*
    Note:  This example focuses on setting the subdomains for the GASM 
@@ -12,10 +12,11 @@ parameters include:\n\
    and ex2.c for more detailed comments on the basic usage of KSP
    (including working with matrices and vectors).
 
-   The GASM preconditioner is fully parallel, but currently the routine
-   PCGASMCreateSubDomains2D(), which is used in this example to demonstrate
-   user-defined subdomains (activated via -user_set_subdomains), is
-   uniprocessor only.
+   The GASM preconditioner is fully parallel.  The user-space routine
+   CreateSubdomains2D that computes the domain decomposition is also parallel 
+   and attempts to generate both subdomains straddling processors and multiple 
+   domains per processor.
+
 
    This matrix in this linear system arises from the discretized Laplacian,
    and thus is not very interesting in terms of experimenting with variants
@@ -37,6 +38,8 @@ T*/
 */
 #include "petscksp.h"
 
+
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
@@ -47,7 +50,7 @@ int main(int argc,char **args)
   PC             pc;                      /* PC context */
   IS             *is,*is_local;           /* array of index sets that define the subdomains */
   PetscInt       overlap = 1;             /* width of subdomain overlap */
-  PetscInt       Nsub;                    /* number of subdomains */
+  PetscInt       nd;                      /* number of subdomains */
   PetscInt       m = 15,n = 17;          /* mesh dimensions in x- and y- directions */
   PetscInt       M = 2,N = 1;            /* number of subdomains in x- and y- directions */
   PetscInt       i,j,Ii,J,Istart,Iend;
@@ -152,18 +155,18 @@ int main(int argc,char **args)
     ierr = PCGASMSetOverlap(pc,overlap);CHKERRQ(ierr);
   } else { /* advanced version */
     if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"PCGASMCreateSubdomains() is currently a uniprocessor routine only!");
-    ierr = PCGASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is,&is_local);CHKERRQ(ierr);
-    ierr = PCGASMSetLocalSubdomains(pc,Nsub,is,is_local);CHKERRQ(ierr);
+    ierr = PCGASMCreateSubdomains2D(pc, m,n,M,N,1,overlap,&nd,&is,&is_local);CHKERRQ(ierr);
+    ierr = PCGASMSetLocalSubdomains(pc,nd,is,is_local);CHKERRQ(ierr);
     ierr = PetscOptionsGetBool(PETSC_NULL,"-subdomain_view",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg){
-      printf("Nmesh points: %d x %d; subdomain partition: %d x %d; overlap: %d; Nsub: %d\n",m,n,M,N,overlap,Nsub);
+      printf("Nmesh points: %d x %d; subdomain partition: %d x %d; overlap: %d; nd: %d\n",m,n,M,N,overlap,nd);
       printf("IS:\n");
-      for (i=0; i<Nsub; i++){
+      for (i=0; i<nd; i++){
         printf("  IS[%d]\n",i);
         ierr = ISView(is[i],PETSC_VIEWER_STDOUT_SELF);
       }
       printf("IS_local:\n");
-      for (i=0; i<Nsub; i++){
+      for (i=0; i<nd; i++){
         printf("  IS_local[%d]\n",i);
         ierr = ISView(is_local[i],PETSC_VIEWER_STDOUT_SELF);
       }  
@@ -273,7 +276,7 @@ int main(int argc,char **args)
   */
 
   if (user_subdomains) {
-    for (i=0; i<Nsub; i++) {
+    for (i=0; i<nd; i++) {
       ierr = ISDestroy(is[i]);CHKERRQ(ierr);
       ierr = ISDestroy(is_local[i]);CHKERRQ(ierr);
     }

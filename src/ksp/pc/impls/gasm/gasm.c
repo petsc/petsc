@@ -1267,59 +1267,129 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGASMDestroySubdomains(PetscInt n, IS is[], I
 .seealso: PCGASMSetTotalSubdomains(), PCGASMSetLocalSubdomains(), PCGASMGetSubKSP(),
           PCGASMSetOverlap()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMCreateSubdomains2D(PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt dof,PetscInt overlap,PetscInt *Nsub,IS **is,IS **is_local)
+PetscErrorCode PETSCKSP_DLLEXPORT PCGASMCreateSubdomains2D(PC pc, PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt dof,PetscInt overlap,PetscInt *Nsub,IS **is,IS **is_local)
 {
-  PetscInt       i,j,height,width,ystart,xstart,yleft,yright,xleft,xright,loc_outer;
   PetscErrorCode ierr;
-  PetscInt       nidx,*idx,loc,ii,jj,count;
-
+  PetscMPIInt size, rank;
+  PetscInt i, j;
+  PetscInt maxheight, maxwidth;
+  PetscInt xstart, xleft, xright, xleft_loc, xright_loc;
+  PetscInt ystart, ylow,  yhigh,  ylow_loc,  yhigh_loc;
+  PetscInt x[2][2], y[2][2];
+  PetscInt first, last;
+  PetscInt nidx, *idx;
+  PetscInt ii,jj,s,q,d;
+  PetscMPIInt color;
+  MPI_Comm comm, subcomm;
+  IS **iis;
   PetscFunctionBegin;
-  if (dof != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP," ");
-
-  *Nsub = N*M;
-  ierr = PetscMalloc((*Nsub)*sizeof(IS*),is);CHKERRQ(ierr);
-  ierr = PetscMalloc((*Nsub)*sizeof(IS*),is_local);CHKERRQ(ierr);
-  ystart = 0;
-  loc_outer = 0;
-  for (i=0; i<N; i++) {
-    height = n/N + ((n % N) > i); /* height of subdomain */
-    if (height < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many N subdomains for mesh dimension n");
-    yleft  = ystart - overlap; if (yleft < 0) yleft = 0;
-    yright = ystart + height + overlap; if (yright > n) yright = n;
-    xstart = 0;
-    for (j=0; j<M; j++) {
-      width = m/M + ((m % M) > j); /* width of subdomain */
-      if (width < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many M subdomains for mesh dimension m");
-      xleft  = xstart - overlap; if (xleft < 0) xleft = 0;
-      xright = xstart + width + overlap; if (xright > m) xright = m;
-      nidx   = (xright - xleft)*(yright - yleft);
-      ierr = PetscMalloc(nidx*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-      loc    = 0;
-      for (ii=yleft; ii<yright; ii++) {
-        count = m*ii + xleft;
-        for (jj=xleft; jj<xright; jj++) {
-          idx[loc++] = count++;
-        }
-      }
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,nidx,idx,PETSC_COPY_VALUES,(*is)+loc_outer);CHKERRQ(ierr);
-      if (overlap == 0) {
-        ierr = PetscObjectReference((PetscObject)(*is)[loc_outer]);CHKERRQ(ierr);
-        (*is_local)[loc_outer] = (*is)[loc_outer];
-      } else {
-        for (loc=0,ii=ystart; ii<ystart+height; ii++) {
-          for (jj=xstart; jj<xstart+width; jj++) {
-            idx[loc++] = m*ii + jj;
-          }
-        }
-        ierr = ISCreateGeneral(PETSC_COMM_SELF,loc,idx,PETSC_COPY_VALUES,*is_local+loc_outer);CHKERRQ(ierr);
-      }
-      ierr = PetscFree(idx);CHKERRQ(ierr);
-      xstart += width;
-      loc_outer++;
-    }
-    ystart += height;
+  ierr = PetscObjectGetComm((PetscObject)pc, &comm);     CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);                     CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);                     CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(pc->pmat, &first, &last);  CHKERRQ(ierr);
+  if(first%dof || last%dof) {
+    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Matrix row partitioning unsuitable for domain decomposition: local row range (%D,%D) "
+	     "does not respect the number of degrees of freedom per grid point %D", first, last, dof);
   }
-  for (i=0; i<*Nsub; i++) { ierr = ISSort((*is)[i]);CHKERRQ(ierr); }
+  *Nsub = M*N;
+  ierr = PetscMalloc((*Nsub)*sizeof(IS*),is);         CHKERRQ(ierr);
+  ierr = PetscMalloc((*Nsub)*sizeof(IS*),is_local);   CHKERRQ(ierr);
+  ystart = 0;
+  s = 0;
+  for (j=0; j<N; j++) {
+    maxheight = n/N + ((n % N) > j); /* Maximal height of subdomain */
+    if (maxheight < 2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many %D subdomains for mesh height %D", N, n);
+    /* Vertical domain limits with an overlap. */
+    y[0][1] = PetscMin(ystart + maxheight + overlap,n);
+    y[0][0] = PetscMax(ystart - overlap,0);
+    /* Vertical domain limits without an overlap. */
+    y[1][0] = ystart;                      
+    y[1][1] = PetscMin(ystart + maxheight,n); 
+    xstart = 0;
+    for (i=0; i<M; i++) {
+      maxwidth = m/M + ((m % M) > i); /* Maximal width of subdomain */
+      if (maxwidth < 2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many %D subdomains for mesh width %D", M, m);
+      /* Horizontal domain limits with an overlap. */
+      x[0][0]  = PetscMax(xstart - overlap,0);
+      x[0][1]  = PetscMin(xstart + maxwidth + overlap,m);
+      /* Horizontal domain limits without an overlap. */
+      x[1][0] = xstart;                   
+      x[1][1] = PetscMin(xstart+maxwidth,m); 
+      /* 
+	 Determine whether this domain intersects this processor's ownership range of pc->pmat.
+	 Do this twice: first for the domains with overlaps, and once without.
+	 During the first pass create the subcommunicators, and use them on the second pass as well.
+      */
+      /* ylow_loc is the grid row containing first */
+      ylow_loc = first/m;
+      /* xleft_loc is the offset of first within the yylow-th row */
+      xleft_loc = first%m;
+      /* yhigh_loc is the grid row above the one containing last */
+      yhigh_loc = last/m + 1;
+      /* xright is one above the offset of last within the yhigh_loc-th row */
+      xright_loc = last%m + 1;
+      for(q = 0; q < 2; ++q) {
+	/*
+	  domain limits, (xleft, xright) and (ylow, yheigh) are adjusted 
+	  according to whether the domain with an overlap or without is considered. 
+	*/
+	xleft = x[q][0]; xright = x[q][1];
+	ylow  = y[q][0]; yhigh  = y[q][1];
+	/*
+	  (ylow_loc,xleft) and (yhigh_loc,xright) are the corners of the bounding box of
+	  the intersection of the domain with the local ownership range;
+	  xleft_loc and xright_loc are the lower and upper bounds in the first and last rows 
+	  of the intersection;
+	  nidx is the size of the intersection. 
+	*/
+	nidx = 0;
+	if(ylow < yhigh_loc && yhigh > ylow_loc) {
+	  PetscInt width = xright-xleft;
+	  nidx += width*PetscMax(yhigh_loc-ylow_loc-1,0);
+	  nidx += PetscMin(xright_loc-xright,width);
+	  nidx -= PetscMax(xleft_loc-xleft, width);
+	}
+	if(q == 0) {
+	  iis = is;
+	  if(nidx) {
+	    color = 1;
+	  }
+	  else {
+	    color = MPI_UNDEFINED;
+	  }
+	  ierr = MPI_Comm_split(comm, color, rank, &subcomm); CHKERRQ(ierr);
+	}
+	else {
+	  if(overlap == 0) {
+	    ierr = PetscObjectReference((PetscObject)(*is)[s]);CHKERRQ(ierr);
+	    (*is_local)[s] = (*is)[s];
+	    continue;
+	  }
+	  iis = is_local;
+	  subcomm = ((PetscObject)(*is)[s])->comm;
+	}
+	if(nidx) {
+	  PetscInt k,kk;
+	  ierr = PetscMalloc(nidx*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+	  k    = 0;
+	  for (jj=ylow_loc; jj<yhigh_loc; ++jj) {
+	    PetscInt x0 = (jj==ylow_loc)?PetscMax(xleft_loc,xleft):xleft;
+	    PetscInt x1 = (jj==yhigh_loc)?PetscMin(xright_loc,xright):xright;
+	    kk = dof*(m*jj + x0);
+	    for (ii=x0; ii<x1; ++ii) {
+	      for(d = 0; d < dof; ++d) {
+		idx[k++] = kk++;
+	      }
+	    }
+	  }
+	  ierr = ISCreateGeneral(subcomm,nidx,idx,PETSC_OWN_POINTER,(*iis)+s);CHKERRQ(ierr);
+	}
+      }/* for(q = 0; q < 2; ++q) */
+      xstart += maxwidth;
+      ++s;
+    }
+    ystart += maxheight;
+  }
   PetscFunctionReturn(0);
 }
 
