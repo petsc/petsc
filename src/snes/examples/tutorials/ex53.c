@@ -1,9 +1,10 @@
 
 #include "petscsnes.h"
+#include "../src/snes/impls/vi/viimpl.h"
 
 typedef struct {
   Vec         q,zz,lb,ub;
-  Mat         M;
+  Mat         M,Jac;
 } AppCtx;
 
 /* 
@@ -25,10 +26,12 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,0);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"videfinition",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,&user.M);CHKERRQ(ierr); ierr = MatLoad(user.M,viewer);CHKERRQ(ierr);
+  ierr = MatDuplicate(user.M,MAT_COPY_VALUES,&user.Jac);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF,&user.q);CHKERRQ(ierr); ierr = VecLoad(user.q,viewer);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF,&user.lb);CHKERRQ(ierr); ierr = VecLoad(user.lb,viewer);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF,&user.ub);CHKERRQ(ierr);ierr = VecLoad(user.ub,viewer);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF,&user.zz);CHKERRQ(ierr);ierr = VecLoad(user.zz,viewer);CHKERRQ(ierr);
+  /*  ierr = VecSet(user.zz,0.01);CHKERRQ(ierr); */
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = VecDuplicate(user.q,&r);CHKERRQ(ierr);
 
@@ -39,11 +42,16 @@ int main(int argc,char **argv)
 
   ierr = SNESSetFunction(snes,r,FormFunction1,&user);CHKERRQ(ierr);
 
-  ierr = SNESSetJacobian(snes,user.M,user.M,FormJacobian1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,user.Jac,user.Jac,FormJacobian1,&user);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,user.lb,user.ub);CHKERRQ(ierr);
   ierr = SNESSolve(snes,PETSC_NULL,user.zz);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)user.zz,"x*");CHKERRQ(ierr);
+  ierr = VecView(user.zz,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)r,"f(x*)");CHKERRQ(ierr);
+  ierr = FormFunction1(snes,user.zz,r,&user);CHKERRQ(ierr);
+  ierr = VecView(r,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
@@ -69,7 +77,6 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
 
   ierr = MatMult(user->M,x,f);CHKERRQ(ierr);
   ierr = VecAXPY(f,1.0,user->q);CHKERRQ(ierr);
- 
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -81,16 +88,20 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
    Input Parameters:
 .  snes - the SNES context
 .  x - input vector
-.  dummy - optional user-defined context (not used here)
+.  ctx - optional user-defined context
 
    Output Parameters:
 .  jac - Jacobian matrix
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
+PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *ctx)
 {
   PetscErrorCode ierr;
+  AppCtx         *user = (AppCtx*)ctx;
+  ierr = MatCopy(user->M,*jac,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);
+  ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);
 
   return 0;
 }
