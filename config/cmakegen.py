@@ -47,14 +47,22 @@ def pkgsources(pkg):
     sdirs  = set(dirs).difference(autodirs)
     if smdirs != sdirs:
       from sys import stderr
-      print >>stderr, 'Directory mismatch at %s:\n\tmdirs=%r\n\t dirs=%r\n\t  sym=%r' % (root,sorted(smdirs),sorted(sdirs),smdirs.symmetric_difference(sdirs))
+      print >>stderr, ('Directory mismatch at %s:\n\t%s: %r\n\t%s: %r\n\t%s: %r'
+                       % (root,
+                          'in makefile   ',sorted(smdirs),
+                          'on filesystem ',sorted(sdirs),
+                          'symmetric diff',sorted(smdirs.symmetric_difference(sdirs))))
   def compareSourceLists(msources, files):
     if not VERBOSE: return
     smsources = set(msources)
     ssources  = set(f for f in files if os.path.splitext(f)[1] in ['.c', '.cxx', '.cc', '.cpp', '.F'])
     if smsources != ssources:
       from sys import stderr
-      print >>stderr, 'Source mismatch at %s:\n\tmsources=%r\n\t sources=%r\n\t  sym=%r' % (root,sorted(smsources),sorted(ssources),smsources.symmetric_difference(ssources))
+      print >>stderr, ('Source mismatch at %s:\n\t%s: %r\n\t%s: %r\n\t%s: %r'
+                       % (root,
+                          'in makefile   ',sorted(smsources),
+                          'on filesystem ',sorted(ssources),
+                          'symmetric diff',sorted(smsources.symmetric_difference(ssources))))
   allconditions = defaultdict(set)
   sources = defaultdict(deque)
   for root,dirs,files in os.walk(os.path.join('src',pkg)):
