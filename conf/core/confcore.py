@@ -93,27 +93,19 @@ class PetscConfig:
             self.configure_compiler(compiler)
 
     def _get_petsc_conf(self, petsc_dir, petsc_arch):
-        PETSC_DIR = petsc_dir
-        if (not petsc_arch or
-            not os.path.isdir(os.path.join(petsc_dir, petsc_arch))):
-            PETSC_ARCH    = ''
-            PETSC_INCLUDE = ['-I${PETSC_DIR}/include']
-            PETSC_LIB_DIR = ['${PETSC_DIR}/lib']
-        else:
-            PETSC_ARCH    = petsc_arch
-            PETSC_INCLUDE = ['-I${PETSC_DIR}/include',
-                             '-I${PETSC_DIR}/${PETSC_ARCH}/include']
-            PETSC_LIB_DIR = ['${PETSC_DIR}/${PETSC_ARCH}/lib']
-        PETSC_INCLUDE += ['${PETSC_CC_INCLUDES}',
-                          '${PACKAGES_INCLUDES}',]
+        PETSC_DIR  = petsc_dir
+        PETSC_ARCH = petsc_arch
         #
-        variables = os.path.join(PETSC_DIR,
-                                 'conf', 'variables')
+        if (not PETSC_ARCH or
+            not os.path.isdir(os.path.join(PETSC_DIR, PETSC_ARCH))):
+            PETSC_ARCH    = ''
+        #
+        variables = os.path.join(PETSC_DIR, 'conf', 'variables')
         if not os.path.exists(variables):
-            variables = os.path.join(PETSC_DIR, PETSC_ARCH,
-                                     'conf', 'variables')
-        petscvars = os.path.join(PETSC_DIR, PETSC_ARCH,
-                                 'conf', 'petscvariables')
+            variables = os.path.join(
+                PETSC_DIR, PETSC_ARCH, 'conf', 'variables')
+        petscvars = os.path.join(
+            PETSC_DIR, PETSC_ARCH, 'conf', 'petscvariables')
         #
         variables = open(variables)
         try: contents = variables.read()
@@ -125,8 +117,6 @@ class PetscConfig:
         confstr  = 'PETSC_DIR  = %s\n' % PETSC_DIR
         confstr += 'PETSC_ARCH = %s\n' % PETSC_ARCH
         confstr += contents
-        confstr += 'PETSC_INCLUDE = %s\n' % ' '.join(PETSC_INCLUDE)
-        confstr += 'PETSC_LIB_DIR = %s\n' % ' '.join(PETSC_LIB_DIR)
         confdict = cfgutils.makefile(StringIO(confstr))
         return confdict
 
@@ -146,7 +136,7 @@ class PetscConfig:
         macros = [('PETSC_DIR',  self['PETSC_DIR'])]
         extension.define_macros.extend(macros)
         # includes and libraries
-        petsc_inc = cfgutils.flaglist(self['PETSC_INCLUDE'])
+        petsc_inc = cfgutils.flaglist(self['PETSC_CC_INCLUDES'])
         petsc_lib = cfgutils.flaglist(
             '-L%s %s' % (self['PETSC_LIB_DIR'], self['PETSC_LIB_BASIC']))
         petsc_lib['runtime_library_dirs'].append(self['PETSC_LIB_DIR'])
