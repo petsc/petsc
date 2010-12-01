@@ -13,7 +13,7 @@ parameters include:\n\
    (including working with matrices and vectors).
 
    The ASM preconditioner is fully parallel, but currently the routine
-   PCASMCreateSubDomains2D(), which is used in this example to demonstrate
+   PCASMCreateSubdomains2D(), which is used in this example to demonstrate
    user-defined subdomains (activated via -user_set_subdomains), is
    uniprocessor only.
 
