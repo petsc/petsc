@@ -104,8 +104,8 @@ class PetscConfig:
             PETSC_INCLUDE = ['-I${PETSC_DIR}/include',
                              '-I${PETSC_DIR}/${PETSC_ARCH}/include']
             PETSC_LIB_DIR = ['${PETSC_DIR}/${PETSC_ARCH}/lib']
-        PETSC_INCLUDE += ['${PACKAGES_INCLUDES}',
-                          '${PETSC_BLASLAPACK_FLAGS}']
+        PETSC_INCLUDE += ['${PETSC_CC_INCLUDES}',
+                          '${PACKAGES_INCLUDES}',]
         #
         variables = os.path.join(PETSC_DIR,
                                  'conf', 'variables')
