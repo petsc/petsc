@@ -128,7 +128,7 @@ PetscErrorCode DMGetInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
     nxi   = ratio + 1;
     ierr = PetscMalloc(sizeof(PetscScalar)*nxi,&xi);CHKERRQ(ierr);
     for (li=0; li<nxi; li++) {
-      xi[li] = -1.0 + li*(2.0/(PetscScalar)(nxi-1));
+      xi[li] = -1.0 + (PetscScalar)li*(2.0/(PetscScalar)(nxi-1));
     }
 
     for (i=i_start; i<i_start+m_f; i++) {
@@ -418,10 +418,10 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
     ierr = PetscMalloc(sizeof(PetscScalar)*nxi,&xi);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscScalar)*neta,&eta);CHKERRQ(ierr);
     for (li=0; li<nxi; li++) {
-      xi[li] = -1.0 + li*(2.0/(PetscScalar)(nxi-1));
+      xi[li] = -1.0 + (PetscScalar)li*(2.0/(PetscScalar)(nxi-1));
     }
     for (lj=0; lj<neta; lj++) {
-      eta[lj] = -1.0 + lj*(2.0/(PetscScalar)(neta-1));
+      eta[lj] = -1.0 + (PetscScalar)lj*(2.0/(PetscScalar)(neta-1));
     }
 
     /* loop over local fine grid nodes setting interpolation for those*/
@@ -925,13 +925,13 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
     ierr = PetscMalloc(sizeof(PetscScalar)*neta,&eta);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscScalar)*nzeta,&zeta);CHKERRQ(ierr);
     for (li=0; li<nxi; li++) {
-      xi[li] = -1.0 + li*(2.0/(PetscScalar)(nxi-1));
+      xi[li] = -1.0 + (PetscScalar)li*(2.0/(PetscScalar)(nxi-1));
     }
     for (lj=0; lj<neta; lj++) {
-      eta[lj] = -1.0 + lj*(2.0/(PetscScalar)(neta-1));
+      eta[lj] = -1.0 + (PetscScalar)lj*(2.0/(PetscScalar)(neta-1));
     }
     for (lk=0; lk<nzeta; lk++) {
-      zeta[lk] = -1.0 + lk*(2.0/(PetscScalar)(nzeta-1));
+      zeta[lk] = -1.0 + (PetscScalar)lk*(2.0/(PetscScalar)(nzeta-1));
     }
     
     for (l=l_start; l<l_start+p_f; l++) {

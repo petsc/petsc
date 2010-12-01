@@ -6,8 +6,8 @@ static char help[] = "Checks the functionality of DMDAGetInterpolation on deform
 #include <petscmat.h>
 #include <petscdm.h>
 
-typedef struct _p_CCmplx CCmplx;
-struct _p_CCmplx {
+typedef struct _n_CCmplx CCmplx;
+struct _n_CCmplx {
   double real;
   double imag;
 };
@@ -46,13 +46,13 @@ CCmplx CCmplxAdd(CCmplx a,CCmplx c)
   b.imag = a.imag +c.imag;  
   return b;
 }
-double CCmplxRe(CCmplx a)
+PetscScalar CCmplxRe(CCmplx a)
 {
-  return a.real;
+  return (PetscScalar)a.real;
 }
-double CCmplxIm(CCmplx a)
+PetscScalar CCmplxIm(CCmplx a)
 {
-  return a.imag;
+  return (PetscScalar)a.imag;
 }
 
 #undef __FUNCT__  
@@ -125,8 +125,8 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
       
       xx = XX[dim*i  ] - 0.8;
       yy = XX[dim*i+1] + 1.5;
-      zeta.real = xx;
-      zeta.imag = yy;
+      zeta.real = PetscRealPart(xx);
+      zeta.imag = PetscRealPart(yy);
       
       t1 = CCmplxPow(zeta,-1.0);
       t2 = CCmplxAdd(zeta,t1);
@@ -137,8 +137,8 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
       
       xx = XX[dim*i  ];
       yy = XX[dim*i+1];
-      zeta.real = xx;
-      zeta.imag = yy;
+      zeta.real = PetscRealPart(xx);
+      zeta.imag = PetscRealPart(yy);
       
       t1 = CCmplxSqrt(zeta);
       XX[dim*i  ] = CCmplxRe(t1);
@@ -149,8 +149,8 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
       xx = XX[dim*i  ] - 0.8;
       yy = XX[dim*i+1] + 1.5;
       
-      zeta.real = xx;
-      zeta.imag = yy;
+      zeta.real = PetscRealPart(xx);
+      zeta.imag = PetscRealPart(yy);
       t1 = CCmplxPow(zeta,-1.0);
       t2 = CCmplxAdd(zeta,t1);
       XX[dim*i  ] = CCmplxRe(t2);
@@ -158,16 +158,16 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
       
       xx = XX[dim*i  ];
       yy = XX[dim*i+1];
-      zeta.real = xx;
-      zeta.imag = yy;
+      zeta.real = PetscRealPart(xx);
+      zeta.imag = PetscRealPart(yy);
       t1 = CCmplxExp(zeta);
       XX[dim*i  ] = CCmplxRe(t1);
       XX[dim*i+1] = CCmplxIm(t1);
       
       xx = XX[dim*i  ] + 0.4;
       yy = XX[dim*i+1];
-      zeta.real = xx;
-      zeta.imag = yy;
+      zeta.real = PetscRealPart(xx);
+      zeta.imag = PetscRealPart(yy);
       t1 = CCmplxPow(zeta,2.0);
       XX[dim*i  ] = CCmplxRe(t1);
       XX[dim*i+1] = CCmplxIm(t1);
