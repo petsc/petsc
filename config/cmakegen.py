@@ -5,8 +5,8 @@ from __future__ import with_statement  # For python-2.5
 import os
 from collections import defaultdict, deque
 
-# Run with PETSC_VERBOSE=1 to see files and directories that do not conform to the standard structure
-VERBOSE = int(os.environ.get('PETSC_VERBOSE',0))
+# Run with --verbose
+VERBOSE = False
 
 def cmakeconditional(key,val):
   def unexpected():
@@ -173,4 +173,10 @@ endif()''' % ('\n  '.join([r'PETSC' + pkg.upper() + r'_SRCS' for (pkg,_) in pkgl
       os.remove(tmplists)
 
 if __name__ == "__main__":
+  import optparse
+  parser = optparse.OptionParser()
+  parser.add_option('--verbose', help='Show mismatches between makefiles and the filesystem', dest='verbose', action='store_true', default=False)
+  (opts, extra_args) = parser.parse_args()
+  if opts.verbose:
+    VERBOSE = True
   main(petscdir=os.environ['PETSC_DIR'])
