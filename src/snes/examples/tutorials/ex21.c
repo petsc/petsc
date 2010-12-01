@@ -170,14 +170,14 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   PetscFunctionBegin;
   ierr = SNESGetSolution(snes,&U);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(user->packer,U,&w,&u,&lambda);CHKERRQ(ierr);
-  ierr = VecView(u,user->u_viewer);
-  ierr = VecView(lambda,user->lambda_viewer);
+  ierr = VecView(u,user->u_viewer);CHKERRQ(ierr);
+  ierr = VecView(lambda,user->lambda_viewer);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(user->packer,U,&w,&u,&lambda);CHKERRQ(ierr);
 
   ierr = SNESGetFunction(snes,&F,0,0);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(user->packer,F,&w,&u,&lambda);CHKERRQ(ierr);
-  ierr = VecView(u,user->fu_viewer);
-  ierr = VecView(lambda,user->flambda_viewer);
+  ierr = VecView(u,user->fu_viewer);CHKERRQ(ierr);
+  ierr = VecView(lambda,user->flambda_viewer);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(user->packer,F,&w,&u,&lambda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

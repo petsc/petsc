@@ -281,6 +281,24 @@ static PetscErrorCode ISSetBlockSize_Stride(IS is,PetscInt bs)
 
   PetscFunctionBegin;
   if (sub->step != 1 && bs != 1) SETERRQ2(((PetscObject)is)->comm,PETSC_ERR_ARG_SIZ,"ISSTRIDE has stride %D, cannot be blocked of size %D",sub->step,bs);
+  is->bs = bs;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISContiguousLocal_Stride"
+static PetscErrorCode ISContiguousLocal_Stride(IS is,PetscInt gstart,PetscInt gend,PetscInt *start,PetscBool *contig)
+{
+  IS_Stride *sub = (IS_Stride*)is->data;
+
+  PetscFunctionBegin;
+  if (sub->step == 1 && sub->first >= gstart && sub->first+sub->n <= gend) {
+    *start  = sub->first - gstart;
+    *contig = PETSC_TRUE;
+  } else {
+    *start  = -1;
+    *contig = PETSC_FALSE;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -299,7 +317,8 @@ static struct _ISOps myops = { ISGetSize_Stride,
                                ISCopy_Stride,
                                ISToGeneral_Stride,
                                ISOnComm_Stride,
-                               ISSetBlockSize_Stride
+                               ISSetBlockSize_Stride,
+                               ISContiguousLocal_Stride
 };
 
 

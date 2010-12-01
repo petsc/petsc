@@ -111,6 +111,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSetPermutation(IS);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISPermutation(IS,PetscBool *); 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSetIdentity(IS);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISIdentity(IS,PetscBool *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISContiguousLocal(IS,PetscInt,PetscInt,PetscInt*,PetscBool*);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetIndices(IS,const PetscInt *[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISRestoreIndices(IS,const PetscInt *[]);
@@ -200,6 +201,8 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISGlobalToLocalMappingApply(ISLocalToGl
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping,PetscInt*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping,const PetscInt**);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping,const PetscInt**);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping,PetscInt,ISLocalToGlobalMapping*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingUnBlock(ISLocalToGlobalMapping,PetscInt,ISLocalToGlobalMapping*);
 

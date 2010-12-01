@@ -1,39 +1,6 @@
 #define PETSCDM_DLL
- 
-#include "petscdm.h"             /*I      "petscdm.h"     I*/
-#include "private/dmimpl.h"    
-#include "petscmat.h"    
 
-/*
-   rstart is where an array/subvector starts in the global parallel vector, so arrays
-   rstarts are meaningless (and set to the previous one) except on the processor where the array lives
-*/
-
-typedef enum {DMCOMPOSITE_ARRAY, DMCOMPOSITE_DM} DMCompositeLinkType;
-
-struct DMCompositeLink {
-  DMCompositeLinkType    type;
-  struct DMCompositeLink *next;
-  PetscInt               n,rstart;      /* rstart is relative to this process */
-  PetscInt               grstart;       /* grstart is relative to all processes */
-
-  /* only used for DMCOMPOSITE_DM */
-  PetscInt               *grstarts;     /* global row for first unknown of this DM on each process */
-  DM                     dm;
-
-  /* only used for DMCOMPOSITE_ARRAY */
-  PetscMPIInt            rank;          /* process where array unknowns live */
-};
-
-typedef struct {
-  PetscInt               n,N,rstart;           /* rstart is relative to all processors, n unknowns owned by this process, N is total unknowns */
-  PetscInt               nghost;               /* number of all local entries include DMDA ghost points and any shared redundant arrays */
-  PetscInt               nDM,nredundant,nmine; /* how many DM's and seperate redundant arrays used to build DM(nmine is ones on this process) */
-  PetscBool              setup;                /* after this is set, cannot add new links to the DM*/
-  struct DMCompositeLink *next;
-
-  PetscErrorCode (*FormCoupleLocations)(DM,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt);
-} DM_Composite;
+#include "packimpl.h" /*I   "petscdm.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeSetCoupling"
@@ -173,7 +140,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMView_Composite(DM dm,PetscViewer v)
         ierr = DMView(lnk->dm,v);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(v,"Link %d: Redundant array of size %d owned by rank %d\n",i,lnk->n,lnk->rank);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(v,"Link %d: Redundant array of size %d owned by rank %d\n",i,lnk->nlocal,lnk->rank);CHKERRQ(ierr);
       }
     }
     ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
@@ -209,7 +176,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_Composite(DM dm)
   ierr = MPI_Comm_size(((PetscObject)dm)->comm,&size);CHKERRQ(ierr);
   while (next) {
     next->rstart = nprev; 
-    if ((rank == next->rank) || next->type != DMCOMPOSITE_ARRAY) nprev += next->n;
+    nprev += next->n;
     next->grstart = com->rstart + next->rstart;
     if (next->type == DMCOMPOSITE_ARRAY) {
       ierr = MPI_Bcast(&next->grstart,1,MPIU_INT,next->rank,((PetscObject)dm)->comm);CHKERRQ(ierr);
@@ -300,7 +267,7 @@ PetscErrorCode DMCompositeScatter_Array(DM dm,struct DMCompositeLink *mine,Vec v
     ierr    = PetscMemcpy(array,varray+mine->rstart,mine->n*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr    = VecRestoreArray(vec,&varray);CHKERRQ(ierr);
   }
-  ierr    = MPI_Bcast(array,mine->n,MPIU_SCALAR,mine->rank,((PetscObject)dm)->comm);CHKERRQ(ierr);
+  ierr    = MPI_Bcast(array,mine->nlocal,MPIU_SCALAR,mine->rank,((PetscObject)dm)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -354,15 +321,15 @@ PetscErrorCode DMCompositeGather_Array(DM dm,struct DMCompositeLink *mine,Vec ve
       buffer = dest;
       source = MPI_IN_PLACE;
 #else
-      ierr = PetscMalloc(mine->n*sizeof(PetscScalar),&buffer);CHKERRQ(ierr);
+      ierr = PetscMalloc(mine->nlocal*sizeof(PetscScalar),&buffer);CHKERRQ(ierr);
       source = (void *) buffer;
 #endif
-      for (i=0; i<mine->n; i++) buffer[i] = varray[mine->rstart+i] + array[i];
+      for (i=0; i<mine->nlocal; i++) buffer[i] = varray[mine->rstart+i] + array[i];
     } else {
       source = (void *) array;
       dest   = PETSC_NULL;
     }
-    ierr = MPI_Reduce(source,dest,mine->n,MPIU_SCALAR,MPI_SUM,mine->rank,((PetscObject)dm)->comm);CHKERRQ(ierr);
+    ierr = MPI_Reduce(source,dest,mine->nlocal,MPIU_SCALAR,MPI_SUM,mine->rank,((PetscObject)dm)->comm);CHKERRQ(ierr);
 #if !defined(PETSC_HAVE_MPI_IN_PLACE)
     if (rank == mine->rank) {ierr = PetscFree(source);CHKERRQ(ierr);}
 #endif
@@ -542,8 +509,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeRestoreAccess(DM dm,Vec gvec,...)
     Input Parameter:
 +    dm - the packer object
 .    gvec - the global vector
--    ... - the individual sequential objects (arrays or vectors)
- 
+-    ... - the individual sequential objects (arrays or vectors), PETSC_NULL for those that are not needed
+
     Level: advanced
 
 .seealso DMDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCreateGlobalVector(),
@@ -556,34 +523,35 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeScatter(DM dm,Vec gvec,...)
   va_list                Argp;
   PetscErrorCode         ierr;
   struct DMCompositeLink *next;
-  PetscInt               cnt = 3;
+  PetscInt               cnt;
   DM_Composite           *com = (DM_Composite*)dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(gvec,VEC_CLASSID,2);
-  next = com->next;
   if (!com->setup) {
     ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
 
   /* loop over packed objects, handling one at at time */
   va_start(Argp,gvec);
-  while (next) {
+  for (cnt=3,next=com->next; next; cnt++,next=next->next) {
     if (next->type == DMCOMPOSITE_ARRAY) {
       PetscScalar *array;
       array = va_arg(Argp, PetscScalar*);
+      if (array) PetscValidScalarPointer(array,cnt);
+      PetscValidLogicalCollectiveBool(dm,!!array,cnt);
+      if (!array) continue;
       ierr = DMCompositeScatter_Array(dm,next,gvec,array);CHKERRQ(ierr);
     } else if (next->type == DMCOMPOSITE_DM) {
       Vec vec;
       vec = va_arg(Argp, Vec);
+      if (!vec) continue;
       PetscValidHeaderSpecific(vec,VEC_CLASSID,cnt);
       ierr = DMCompositeScatter_DM(dm,next,gvec,vec);CHKERRQ(ierr);
     } else {
       SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
-    cnt++;
-    next = next->next;
   }
   va_end(Argp);
   PetscFunctionReturn(0);
@@ -599,8 +567,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeScatter(DM dm,Vec gvec,...)
     Input Parameter:
 +    dm - the packer object
 .    gvec - the global vector
--    ... - the individual sequential objects (arrays or vectors)
- 
+-    ... - the individual sequential objects (arrays or vectors), PETSC_NULL for any that are not needed
+
     Level: advanced
 
 .seealso DMDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCreateGlobalVector(),
@@ -614,31 +582,33 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGather(DM dm,Vec gvec,InsertMode imo
   PetscErrorCode         ierr;
   struct DMCompositeLink *next;
   DM_Composite           *com = (DM_Composite*)dm->data;
+  PetscInt               cnt;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(gvec,VEC_CLASSID,2);
-  next = com->next;
   if (!com->setup) {
     ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
 
   /* loop over packed objects, handling one at at time */
   va_start(Argp,imode);
-  while (next) {
+  for (cnt=3,next=com->next; next; cnt++,next=next->next) {
     if (next->type == DMCOMPOSITE_ARRAY) {
       PetscScalar *array;
       array = va_arg(Argp, PetscScalar*);
+      if (!array) continue;
+      PetscValidScalarPointer(array,cnt);
       ierr  = DMCompositeGather_Array(dm,next,gvec,imode,array);CHKERRQ(ierr);
     } else if (next->type == DMCOMPOSITE_DM) {
       Vec vec;
       vec = va_arg(Argp, Vec);
-      PetscValidHeaderSpecific(vec,VEC_CLASSID,3);
+      if (!vec) continue;
+      PetscValidHeaderSpecific(vec,VEC_CLASSID,cnt);
       ierr = DMCompositeGather_DM(dm,next,gvec,imode,vec);CHKERRQ(ierr);
     } else {
       SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
-    next = next->next;
   }
   va_end(Argp);
   PetscFunctionReturn(0);
@@ -689,7 +659,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeAddArray(DM dm,PetscMPIInt orank,Pet
   ierr = MPI_Comm_rank(((PetscObject)dm)->comm,&rank);CHKERRQ(ierr);
   /* create new link */
   ierr                = PetscNew(struct DMCompositeLink,&mine);CHKERRQ(ierr);
-  mine->n             = n;
+  mine->nlocal        = n;
+  mine->n             = (rank == orank) ? n : 0;
   mine->rank          = orank;
   mine->dm            = PETSC_NULL;
   mine->type          = DMCOMPOSITE_ARRAY;
@@ -728,9 +699,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeAddArray(DM dm,PetscMPIInt orank,Pet
 PetscErrorCode PETSCDM_DLLEXPORT DMCompositeAddDM(DM dmc,DM dm)
 {
   PetscErrorCode         ierr;
-  PetscInt               n;
+  PetscInt               n,nlocal;
   struct DMCompositeLink *mine,*next;
-  Vec                    global;
+  Vec                    global,local;
   DM_Composite           *com = (DM_Composite*)dmc->data;
 
   PetscFunctionBegin;
@@ -745,7 +716,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeAddDM(DM dmc,DM dm)
   ierr = DMGetGlobalVector(dm,&global);CHKERRQ(ierr);
   ierr = VecGetLocalSize(global,&n);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm,&global);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm,&local);CHKERRQ(ierr);
+  ierr = VecGetSize(local,&nlocal);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm,&local);CHKERRQ(ierr);
   mine->n      = n;
+  mine->nlocal = nlocal;
   mine->dm     = dm;  
   mine->type   = DMCOMPOSITE_DM;
   mine->next   = PETSC_NULL;
@@ -857,7 +832,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateLocalVector_Composite(DM dm,Vec *lvec)
 /*@C
     DMCompositeGetISLocalToGlobalMappings - gets an ISLocalToGlobalMapping for each DM/array in the DMComposite, maps to the composite global space
 
-    Collective on DMComposite
+    Collective on DM
 
     Input Parameter:
 .    dm - the packer object
@@ -895,24 +870,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetISLocalToGlobalMappings(DM dm,ISL
   cnt = 0;
   while (next) {
     if (next->type == DMCOMPOSITE_ARRAY) {
-      ierr = PetscMalloc(next->n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+      ierr = PetscMalloc(next->nlocal*sizeof(PetscInt),&idx);CHKERRQ(ierr);
       if (rank == next->rank) {
-        for (i=0; i<next->n; i++) idx[i] = next->grstart + i;
+        for (i=0; i<next->nlocal; i++) idx[i] = next->grstart + i;
       }
-      ierr = MPI_Bcast(idx,next->n,MPIU_INT,next->rank,((PetscObject)dm)->comm);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,next->n,idx,PETSC_OWN_POINTER,&(*ltogs)[cnt]);CHKERRQ(ierr);
+      ierr = MPI_Bcast(idx,next->nlocal,MPIU_INT,next->rank,((PetscObject)dm)->comm);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,next->nlocal,idx,PETSC_OWN_POINTER,&(*ltogs)[cnt]);CHKERRQ(ierr);
     } else if (next->type == DMCOMPOSITE_DM) {
       ISLocalToGlobalMapping ltog;
       PetscMPIInt            size;
-      const PetscInt         *suboff;
+      const PetscInt         *suboff,*indices;
       Vec                    global;
 
       /* Get sub-DM global indices for each local dof */
-      ierr = DMDAGetISLocalToGlobalMapping(next->dm,&ltog);CHKERRQ(ierr); /* This function should become generic to DM */
+      ierr = DMGetLocalToGlobalMapping(next->dm,&ltog);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingGetSize(ltog,&n);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingGetIndices(ltog,&indices);CHKERRQ(ierr);
       ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-      for (i=0; i<n; i++) idx[i] = i;
-      ierr = ISLocalToGlobalMappingApply(ltog,n,idx,idx);CHKERRQ(ierr); /* This would be nicer with an ISLocalToGlobalMappingGetIndices() */
 
       /* Get the offsets for the sub-DM global vector */
       ierr = DMGetGlobalVector(next->dm,&global);CHKERRQ(ierr);
@@ -921,7 +895,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetISLocalToGlobalMappings(DM dm,ISL
 
       /* Shift the sub-DM definition of the global space to the composite global space */
       for (i=0; i<n; i++) {
-        PetscInt subi = idx[i],lo = 0,hi = size,t;
+        PetscInt subi = indices[i],lo = 0,hi = size,t;
         /* Binary search to find which rank owns subi */
         while (hi-lo > 1) {
           t = lo + (hi-lo)/2;
@@ -930,6 +904,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetISLocalToGlobalMappings(DM dm,ISL
         }
         idx[i] = subi - suboff[lo] + next->grstarts[lo];
       }
+      ierr = ISLocalToGlobalMappingRestoreIndices(ltog,&indices);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,n,idx,PETSC_OWN_POINTER,&(*ltogs)[cnt]);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(next->dm,&global);CHKERRQ(ierr);
     } else SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
@@ -978,14 +953,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetLocalISs(DM dm,IS **is)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(is,2);
   ierr = PetscMalloc(com->nmine*sizeof(IS),is);CHKERRQ(ierr);
-  for (cnt=0,start=0,link=com->next; link; start+=link->n,cnt++,link=link->next) {
-    ierr = ISCreateStride(PETSC_COMM_SELF,link->n,start,1,&(*is)[cnt]);CHKERRQ(ierr);
+  for (cnt=0,start=0,link=com->next; link; start+=link->nlocal,cnt++,link=link->next) {
+    ierr = ISCreateStride(PETSC_COMM_SELF,link->nlocal,start,1,&(*is)[cnt]);CHKERRQ(ierr);
     if (link->type == DMCOMPOSITE_DM) {
-      Vec lvec;
       PetscInt bs;
-      ierr = DMGetLocalVector(link->dm,&lvec);CHKERRQ(ierr);
-      ierr = VecGetBlockSize(lvec,&bs);CHKERRQ(ierr);
-      ierr = DMRestoreLocalVector(link->dm,&lvec);CHKERRQ(ierr);
+      ierr = DMGetBlockSize(link->dm,&bs);CHKERRQ(ierr);
       ierr = ISSetBlockSize((*is)[cnt],bs);CHKERRQ(ierr);
     }
   }
@@ -1004,13 +976,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetLocalISs(DM dm,IS **is)
 
     Output Parameters:
 .    is - the array of index sets
- 
+
     Level: advanced
 
     Notes:
        The is entries should be destroyed with ISDestroy(), the is array should be freed with PetscFree()
-
-       The number of IS on each process will/may be different when redundant arrays are used
 
        These could be used to extract a subset of vector entries for a "multi-physics" preconditioner
 
@@ -1034,30 +1004,16 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetGlobalISs(DM dm,IS *is[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscMalloc(com->nmine*sizeof(IS),is);CHKERRQ(ierr);
+  ierr = PetscMalloc((com->nDM+com->nredundant)*sizeof(IS),is);CHKERRQ(ierr);
   next = com->next;
   ierr = MPI_Comm_rank(((PetscObject)dm)->comm,&rank);CHKERRQ(ierr);
 
   /* loop over packed objects, handling one at at time */
   while (next) {
-
-    if (next->type == DMCOMPOSITE_ARRAY) {
-      
-      if (rank == next->rank) {
-        ierr = PetscMalloc(next->n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-        for (i=0; i<next->n; i++) idx[i] = next->grstart + i;
-        ierr = ISCreateGeneral(((PetscObject)dm)->comm,next->n,idx,PETSC_OWN_POINTER,&(*is)[cnt]);CHKERRQ(ierr);
-        cnt++;
-      }
-
-    } else if (next->type == DMCOMPOSITE_DM) {
-      ierr = PetscMalloc(next->n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-      for (i=0; i<next->n; i++) idx[i] = next->grstart + i;
-      ierr = ISCreateGeneral(((PetscObject)dm)->comm,next->n,idx,PETSC_OWN_POINTER,&(*is)[cnt]);CHKERRQ(ierr);
-      cnt++;
-    } else {
-      SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
-    }
+    ierr = PetscMalloc(next->n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    for (i=0; i<next->n; i++) idx[i] = next->grstart + i;
+    ierr = ISCreateGeneral(((PetscObject)dm)->comm,next->n,idx,PETSC_OWN_POINTER,&(*is)[cnt]);CHKERRQ(ierr);
+    cnt++;
     next = next->next;
   }
   PetscFunctionReturn(0);
@@ -1071,7 +1027,7 @@ PetscErrorCode DMCompositeGetLocalVectors_Array(DM dm,struct DMCompositeLink *mi
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (array) {
-    ierr = PetscMalloc(mine->n*sizeof(PetscScalar),array);CHKERRQ(ierr);
+    ierr = PetscMalloc(mine->nlocal*sizeof(PetscScalar),array);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1219,7 +1175,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeRestoreLocalVectors(DM dm,...)
 PetscErrorCode DMCompositeGetEntries_Array(DM dm,struct DMCompositeLink *mine,PetscInt *n)
 {
   PetscFunctionBegin;
-  if (n) *n = mine->n;
+  if (n) *n = mine->nlocal;
   PetscFunctionReturn(0);
 }
 
@@ -1300,7 +1256,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefine_Composite(DM dmi,MPI_Comm comm,DM *fin
   /* loop over packed objects, handling one at at time */
   while (next) {
     if (next->type == DMCOMPOSITE_ARRAY) {
-      ierr = DMCompositeAddArray(*fine,next->rank,next->n);CHKERRQ(ierr);
+      ierr = DMCompositeAddArray(*fine,next->rank,next->nlocal);CHKERRQ(ierr);
     } else if (next->type == DMCOMPOSITE_DM) {
       ierr = DMRefine(next->dm,comm,&dm);CHKERRQ(ierr);
       ierr = DMCompositeAddDM(*fine,dm);CHKERRQ(ierr);
@@ -1560,161 +1516,36 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation_Composite(DM coarse,DM fine,
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetMatrix_Composite" 
-PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_Composite(DM dm, const MatType mtype,Mat *J)
+#define __FUNCT__ "DMCreateLocalToGlobalMapping_Composite"
+static PetscErrorCode DMCreateLocalToGlobalMapping_Composite(DM dm)
 {
-  PetscErrorCode         ierr;
   DM_Composite           *com = (DM_Composite*)dm->data;
-  struct DMCompositeLink *next = com->next;
-  PetscInt               m,*dnz,*onz,i,j,mA;
-  Mat                    Atmp;
-  PetscMPIInt            rank;
-  PetscScalar            zero = 0.0;
-  PetscBool              dense = PETSC_FALSE;
+  ISLocalToGlobalMapping *ltogs;
+  PetscInt               i,cnt,m,*idx;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-
-  /* use global vector to determine layout needed for matrix */
-  m = com->n;
-  ierr = MPI_Comm_rank(((PetscObject)dm)->comm,&rank);CHKERRQ(ierr);
-  ierr = MatCreate(((PetscObject)dm)->comm,J);CHKERRQ(ierr);
-  ierr = MatSetSizes(*J,m,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(*J,MATAIJ);CHKERRQ(ierr);
-
-  /*
-     Extremely inefficient but will compute entire Jacobian for testing
-  */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-dmcomposite_dense_jacobian",&dense,PETSC_NULL);CHKERRQ(ierr);
-  if (dense) {
-    PetscInt    rstart,rend,*indices;
-    PetscScalar *values;
-
-    mA    = com->N;
-    ierr = MatMPIAIJSetPreallocation(*J,mA,PETSC_NULL,mA-m,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(*J,mA,PETSC_NULL);CHKERRQ(ierr);
-
-    ierr = MatGetOwnershipRange(*J,&rstart,&rend);CHKERRQ(ierr);
-    ierr = PetscMalloc2(mA,PetscScalar,&values,mA,PetscInt,&indices);CHKERRQ(ierr);
-    ierr = PetscMemzero(values,mA*sizeof(PetscScalar));CHKERRQ(ierr);
-    for (i=0; i<mA; i++) indices[i] = i;
-    for (i=rstart; i<rend; i++) {
-      ierr = MatSetValues(*J,1,&i,mA,indices,values,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    ierr = PetscFree2(values,indices);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
-    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
-    PetscFunctionReturn(0);
+  /* Set the ISLocalToGlobalMapping on the new matrix */
+  ierr = DMCompositeGetISLocalToGlobalMappings(dm,&ltogs);CHKERRQ(ierr);
+  for (cnt=0,i=0; i<(com->nDM+com->nredundant); i++) {
+    ierr = ISLocalToGlobalMappingGetSize(ltogs[i],&m);CHKERRQ(ierr);
+    cnt += m;
   }
-
-  ierr = MatPreallocateInitialize(((PetscObject)dm)->comm,m,m,dnz,onz);CHKERRQ(ierr);
-  /* loop over packed objects, handling one at at time */
-  next = com->next;
-  while (next) {
-    if (next->type == DMCOMPOSITE_ARRAY) {
-      if (rank == next->rank) {  /* zero the "little" block */
-        for (j=com->rstart+next->rstart; j<com->rstart+next->rstart+next->n; j++) {
-          for (i=com->rstart+next->rstart; i<com->rstart+next->rstart+next->n; i++) {
-            ierr = MatPreallocateSet(j,1,&i,dnz,onz);CHKERRQ(ierr);
-          }
-        }
-      }
-    } else if (next->type == DMCOMPOSITE_DM) {
-      PetscInt       nc,rstart,*ccols,maxnc;
-      const PetscInt *cols,*rstarts;
-      PetscMPIInt    proc;
-
-      ierr = DMGetMatrix(next->dm,mtype,&Atmp);CHKERRQ(ierr);
-      ierr = MatGetOwnershipRange(Atmp,&rstart,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatGetOwnershipRanges(Atmp,&rstarts);CHKERRQ(ierr);
-      ierr = MatGetLocalSize(Atmp,&mA,PETSC_NULL);CHKERRQ(ierr);
-
-      maxnc = 0;
-      for (i=0; i<mA; i++) {
-        ierr  = MatGetRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-        ierr  = MatRestoreRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-        maxnc = PetscMax(nc,maxnc);
-      }
-      ierr = PetscMalloc(maxnc*sizeof(PetscInt),&ccols);CHKERRQ(ierr);
-      for (i=0; i<mA; i++) {
-        ierr = MatGetRow(Atmp,rstart+i,&nc,&cols,PETSC_NULL);CHKERRQ(ierr);
-        /* remap the columns taking into how much they are shifted on each process */
-        for (j=0; j<nc; j++) {
-          proc = 0;
-          while (cols[j] >= rstarts[proc+1]) proc++;
-          ccols[j] = cols[j] + next->grstarts[proc] - rstarts[proc];
-        } 
-        ierr = MatPreallocateSet(com->rstart+next->rstart+i,nc,ccols,dnz,onz);CHKERRQ(ierr);
-        ierr = MatRestoreRow(Atmp,rstart+i,&nc,&cols,PETSC_NULL);CHKERRQ(ierr);
-      }
-      ierr = PetscFree(ccols);CHKERRQ(ierr);
-      ierr = MatDestroy(Atmp);CHKERRQ(ierr);
-    } else {
-      SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
-    }
-    next = next->next;
+  ierr = PetscMalloc(cnt*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  for (cnt=0,i=0; i<(com->nDM+com->nredundant); i++) {
+    const PetscInt *subidx;
+    ierr = ISLocalToGlobalMappingGetSize(ltogs[i],&m);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(ltogs[i],&subidx);CHKERRQ(ierr);
+    ierr = PetscMemcpy(&idx[cnt],subidx,m*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(ltogs[i],&subidx);CHKERRQ(ierr);
+    cnt += m;
   }
-  if (com->FormCoupleLocations) {
-    ierr = (*com->FormCoupleLocations)(dm,PETSC_NULL,dnz,onz,__rstart,__nrows,__start,__end);CHKERRQ(ierr);
-  }
-  ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);
-  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-
-  next = com->next;
-  while (next) {
-    if (next->type == DMCOMPOSITE_ARRAY) {
-      if (rank == next->rank) {
-        for (j=com->rstart+next->rstart; j<com->rstart+next->rstart+next->n; j++) {
-          for (i=com->rstart+next->rstart; i<com->rstart+next->rstart+next->n; i++) {
-            ierr = MatSetValues(*J,1,&j,1,&i,&zero,INSERT_VALUES);CHKERRQ(ierr);
-          }
-        }
-      }
-    } else if (next->type == DMCOMPOSITE_DM) {
-      PetscInt          nc,rstart,row,maxnc,*ccols;
-      const PetscInt    *cols,*rstarts;
-      const PetscScalar *values;
-      PetscMPIInt       proc;
-
-      ierr = DMGetMatrix(next->dm,mtype,&Atmp);CHKERRQ(ierr);
-      ierr = MatGetOwnershipRange(Atmp,&rstart,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatGetOwnershipRanges(Atmp,&rstarts);CHKERRQ(ierr);
-      ierr = MatGetLocalSize(Atmp,&mA,PETSC_NULL);CHKERRQ(ierr);
-      maxnc = 0;
-      for (i=0; i<mA; i++) {
-        ierr  = MatGetRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-        ierr  = MatRestoreRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-        maxnc = PetscMax(nc,maxnc);
-      }
-      ierr = PetscMalloc(maxnc*sizeof(PetscInt),&ccols);CHKERRQ(ierr);
-      for (i=0; i<mA; i++) {
-        ierr = MatGetRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,&values);CHKERRQ(ierr);
-        for (j=0; j<nc; j++) {
-          proc = 0;
-          while (cols[j] >= rstarts[proc+1]) proc++;
-          ccols[j] = cols[j] + next->grstarts[proc] - rstarts[proc];
-        } 
-        row  = com->rstart+next->rstart+i;
-        ierr = MatSetValues(*J,1,&row,nc,ccols,values,INSERT_VALUES);CHKERRQ(ierr);
-        ierr = MatRestoreRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,&values);CHKERRQ(ierr);
-      }
-      ierr = PetscFree(ccols);CHKERRQ(ierr);
-      ierr = MatDestroy(Atmp);CHKERRQ(ierr);
-    } else {
-      SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
-    }
-    next = next->next;
-  }
-  if (com->FormCoupleLocations) {
-    PetscInt __rstart;
-    ierr = MatGetOwnershipRange(*J,&__rstart,PETSC_NULL);CHKERRQ(ierr);
-    ierr = (*com->FormCoupleLocations)(dm,*J,PETSC_NULL,PETSC_NULL,__rstart,0,0,0);CHKERRQ(ierr);
-  }
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,cnt,idx,PETSC_OWN_POINTER,&dm->ltogmap);CHKERRQ(ierr);
+  for (i=0; i<com->nDM+com->nredundant; i++) {ierr = ISLocalToGlobalMappingDestroy(ltogs[i]);CHKERRQ(ierr);}
+  ierr = PetscFree(ltogs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetColoring_Composite" 
@@ -1805,8 +1636,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalBegin_Composite(DM dm,Vec gvec,I
         garray += next->n;
       }
       /* does not handle ADD_VALUES */
-      ierr = MPI_Bcast(larray,next->n,MPIU_SCALAR,next->rank,((PetscObject)dm)->comm);CHKERRQ(ierr);
-      larray += next->n;
+      ierr = MPI_Bcast(larray,next->nlocal,MPIU_SCALAR,next->rank,((PetscObject)dm)->comm);CHKERRQ(ierr);
     } else if (next->type == DMCOMPOSITE_DM) {
       Vec      local,global;
       PetscInt N;
@@ -1822,12 +1652,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalBegin_Composite(DM dm,Vec gvec,I
       ierr = VecResetArray(local);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(next->dm,&global);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(next->dm,&local);CHKERRQ(ierr);
-      larray += next->n;
     } else {
       SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     cnt++;
-    next = next->next;
+    larray += next->nlocal;
+    next    = next->next;
   }
 
   ierr = VecRestoreArray(gvec,PETSC_NULL);CHKERRQ(ierr);
@@ -1860,17 +1690,19 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreate_Composite(DM p)
   com->nredundant   = 0;
   com->nDM          = 0;
 
-  p->ops->createglobalvector = DMCreateGlobalVector_Composite;
-  p->ops->createlocalvector  = DMCreateLocalVector_Composite;
-  p->ops->refine             = DMRefine_Composite;
-  p->ops->getinterpolation   = DMGetInterpolation_Composite;
-  p->ops->getmatrix          = DMGetMatrix_Composite;
-  p->ops->getcoloring        = DMGetColoring_Composite;
-  p->ops->globaltolocalbegin = DMGlobalToLocalBegin_Composite;
-  p->ops->globaltolocalend   = DMGlobalToLocalEnd_Composite;
-  p->ops->destroy            = DMDestroy_Composite;
-  p->ops->view               = DMView_Composite;
-  p->ops->setup              = DMSetUp_Composite;
+  p->ops->createglobalvector              = DMCreateGlobalVector_Composite;
+  p->ops->createlocalvector               = DMCreateLocalVector_Composite;
+  p->ops->createlocaltoglobalmapping      = DMCreateLocalToGlobalMapping_Composite;
+  p->ops->createlocaltoglobalmappingblock = 0;
+  p->ops->refine                          = DMRefine_Composite;
+  p->ops->getinterpolation                = DMGetInterpolation_Composite;
+  p->ops->getmatrix                       = DMGetMatrix_Composite;
+  p->ops->getcoloring                     = DMGetColoring_Composite;
+  p->ops->globaltolocalbegin              = DMGlobalToLocalBegin_Composite;
+  p->ops->globaltolocalend                = DMGlobalToLocalEnd_Composite;
+  p->ops->destroy                         = DMDestroy_Composite;
+  p->ops->view                            = DMView_Composite;
+  p->ops->setup                           = DMSetUp_Composite;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

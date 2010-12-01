@@ -528,7 +528,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMPIAbortErrorHandler(MPI_Comm,int,
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscAbortErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscAttachDebuggerErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscReturnErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscError(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,...) PETSC_PRINTF_FORMAT_CHECK(7,8);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscError(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,...);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void*);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscPopErrorHandler(void);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscDefaultSignalHandler(int,void*);

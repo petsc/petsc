@@ -436,18 +436,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScale (Vec x, PetscScalar alpha)
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   ierr = PetscLogEventBegin(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
   if (alpha != 1.0) {
-    ierr = (*x->ops->scale)(x,alpha);CHKERRQ(ierr);
-
-    /*
-     * Update cached data
-     */
+    /* get current stashed norms */
     for (i=0; i<4; i++) {
       ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],norms[i],flgs[i]);CHKERRQ(ierr);
     }
-
-    /* in general we consider this object touched */
+    ierr = (*x->ops->scale)(x,alpha);CHKERRQ(ierr);
     ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
-
+    /* put the scaled stashed norms back into the Vec */
     for (i=0; i<4; i++) {
       if (flgs[i]) {
         ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[i],PetscAbsScalar(alpha)*norms[i]);CHKERRQ(ierr);
@@ -457,7 +452,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScale (Vec x, PetscScalar alpha)
   ierr = PetscLogEventEnd(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSet"
@@ -504,14 +498,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec x,PetscScalar alpha)
   ierr = PetscLogEventBegin(VEC_Set,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->set)(x,alpha);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_Set,x,0,0,0);CHKERRQ(ierr);
-
-  /*
-   * Update cached data
-   */
-  /* in general we consider this object touched */
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
 
-  /* however, norms can be simply set */
+  /*  norms can be simply set */
   val = PetscAbsScalar(alpha);
   ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_1],x->map->N * val);CHKERRQ(ierr);
   ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_INFINITY],val);CHKERRQ(ierr);
@@ -629,7 +618,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBY(Vec y,PetscScalar alpha,PetscScalar b
 
    Notes: x, y and z must be different vectors 
 
-          alpha = 1 or gamma = 1 are handled as special cases
+   Developer Note:   alpha = 1 or gamma = 1 are handled as special cases
 
    Concepts: BLAS
    Concepts: vector^BLAS
@@ -1051,8 +1040,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesBlockedLocal(Vec x,PetscInt ni,con
   PetscFunctionReturn(0);
 }
 
-
-
 #undef __FUNCT__  
 #define __FUNCT__ "VecMTDot"
 /*@
@@ -1208,7 +1195,113 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMAXPY(Vec y,PetscInt nv,const PetscScalar a
   ierr = PetscLogEventEnd(VEC_MAXPY,*x,y,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecGetSubVector"
+/*@
+   VecGetSubVector - Gets a vector representing part of another vector
+
+   Collective on Vec
+
+   Input Arguments:
++ X - vector from which to extract a subvector
+- is - index set representing portion of X to extract
+
+   Output Arguments:
+. Y - subvector corresponding to is
+
+   Level: advanced
+
+   Notes:
+   The subvector Y should be returned with VecRestoreSubVector().
+
+   This function may return a subvector without making a copy, therefore it is not safe to use the original vector while
+   modifying the subvector.  Other non-overlapping subvectors can still be obtained from X using this function.
+
+.seealso: MatGetSubMatrix()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT VecGetSubVector(Vec X,IS is,Vec *Y)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(X,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscValidPointer(Y,3);
+  if (X->ops->getsubvector) {
+    ierr = (*X->ops->getsubvector)(X,is,Y);CHKERRQ(ierr);
+  } else {                      /* Default implementation currently does no caching */
+    PetscInt gstart,gend,start;
+    PetscBool contiguous,gcontiguous;
+    ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
+    ierr = ISContiguousLocal(is,gstart,gend,&start,&contiguous);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPI_INT,MPI_LAND,((PetscObject)X)->comm);CHKERRQ(ierr);
+    if (gcontiguous) {          /* We can do a no-copy implementation */
+      PetscInt n,N;
+      PetscScalar *x;
+      PetscMPIInt size;
+      ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
+      ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(((PetscObject)X)->comm,&size);CHKERRQ(ierr);
+      if (size == 1) {
+        ierr = VecCreateSeqWithArray(((PetscObject)X)->comm,n,x+start,Y);CHKERRQ(ierr);
+      } else {
+        ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+        ierr = VecCreateMPIWithArray(((PetscObject)X)->comm,n,N,x+start,Y);CHKERRQ(ierr);
+      }
+      ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+    } else {                    /* Have to create a scatter and do a copy */
+      Vec        Z;
+      VecScatter scatter;
+      PetscInt   n,N;
+      ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
+      ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+      ierr = VecCreate(((PetscObject)is)->comm,&Z);CHKERRQ(ierr);
+      ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
+      ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
+      ierr = VecScatterCreate(X,is,Z,PETSC_NULL,&scatter);CHKERRQ(ierr);
+      ierr = VecScatterBegin(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd  (scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+      *Y = Z;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecRestoreSubVector"
+/*@
+   VecRestoreSubVector - Restores a subvector extracted using VecGetSubVector()
+
+   Collective on Vec
+
+   Input Arguments:
++ X - vector from which subvector was obtained
+. is - index set representing the subset of X
+- Y - subvector being restored
+
+   Level: advanced
+
+.seealso: VecGetSubVector()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreSubVector(Vec X,IS is,Vec *Y)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(X,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscValidPointer(Y,3);
+  PetscValidHeaderSpecific(*Y,VEC_CLASSID,3);
+  if (X->ops->restoresubvector) {
+    ierr = (*X->ops->restoresubvector)(X,is,Y);CHKERRQ(ierr);
+  } else {
+    ierr = VecDestroy(*Y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 /*MC
    VecGetArray - Returns a pointer to a contiguous array that contains this 
@@ -1254,19 +1347,6 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 
 .seealso: VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(), VecGetArray2d()
 M*/
-#undef __FUNCT__  
-#define __FUNCT__ "VecGetArray_Private"
-PetscErrorCode VecGetArray_Private(Vec x,PetscScalar *a[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  PetscValidPointer(a,2);
-  PetscValidType(x,1);
-  ierr = (*x->ops->getarray)(x,a);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 
 #undef __FUNCT__  
@@ -1399,26 +1479,6 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 
 .seealso: VecGetArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(), VecRestoreArray2d()
 M*/
-#undef __FUNCT__  
-#define __FUNCT__ "VecRestoreArray_Private"
-PetscErrorCode VecRestoreArray_Private(Vec x,PetscScalar *a[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  if (a) PetscValidPointer(a,2);
-  PetscValidType(x,1);
-#if defined(PETSC_USE_DEBUG)
-  CHKMEMQ;
-#endif
-  if (x->ops->restorearray) {
-    ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
-  }
-  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPlaceArray"

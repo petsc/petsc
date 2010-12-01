@@ -4,6 +4,7 @@
 % This is a translation of snes/examples/tests/ex8.c
 %
 %   Set the Matlab path and initialize PETSc
+figure(1),clf;figure(2),clf;
 path(path,'../../')
 PetscInitialize({'-snes_monitor','-ksp_monitor'});
 %%
@@ -41,7 +42,6 @@ snes.SetJacobian(J,J,'snesdvi_jacobian',user);
 %%
 %  Set solution monitoring routine
 snes.MonitorSet('snesdvi_monitor',user);
-figure(1),clf;figure(2),clf;
 %%
 %   Set VI bounds
 xl = x.Duplicate();
@@ -67,6 +67,9 @@ user.right.Destroy();
 user.left.Destroy();
 r.Destroy();
 x.Destroy();
+xl.Destroy();
+xu.Destroy();
+user.dm.Destroy();
 J.Destroy();
 snes.Destroy();
 viewer.Destroy();

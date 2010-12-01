@@ -99,7 +99,7 @@ extern PetscErrorCode CreateNullSpace(DMMG, Vec*);
 extern PetscErrorCode FormInitialGuess(DMMG,Vec);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,Field**,Field**,AppCtx*);
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,Field**,Mat,AppCtx*);
-extern PetscErrorCode L_2Error(DMDA, Vec, double *, AppCtx *);
+extern PetscErrorCode L_2Error(DM, Vec, double *, AppCtx *);
 extern PetscErrorCode PrintVector(DMMG, Vec);
 
 #undef __FUNCT__

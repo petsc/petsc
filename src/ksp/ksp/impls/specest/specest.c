@@ -159,6 +159,7 @@ static PetscErrorCode KSPDestroy_SpecEst(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPDestroy(spec->kspest);CHKERRQ(ierr);
   ierr = KSPDestroy(spec->kspcheap);CHKERRQ(ierr);
+  ierr = PCDestroy(spec->pcnone);CHKERRQ(ierr);
   ierr = PetscFree(spec);CHKERRQ(ierr);
   ksp->data = PETSC_NULL;
   PetscFunctionReturn(0);
@@ -216,6 +217,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_SpecEst(KSP ksp)
 
   /* Hold an empty PC */
   ierr = KSPGetPC(spec->kspest,&spec->pcnone);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)spec->pcnone);CHKERRQ(ierr);
   ierr = PCSetType(spec->pcnone,PCNONE);CHKERRQ(ierr);
   ierr = KSPSetPC(spec->kspcheap,spec->pcnone);CHKERRQ(ierr);
 

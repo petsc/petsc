@@ -22,21 +22,26 @@
 
 .seealso: DMSetType(), DMDA, DMSLICED, DMCOMPOSITE
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT DMCreate(MPI_Comm comm, DM *vec)
+PetscErrorCode PETSCVEC_DLLEXPORT DMCreate(MPI_Comm comm,DM *dm)
 {
   DM             v;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(vec,2);
-  *vec = PETSC_NULL;
+  PetscValidPointer(dm,2);
+  *dm = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(v, _p_DM, struct _DMOps, DM_CLASSID, -1, "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
   ierr = PetscMemzero(v->ops, sizeof(struct _DMOps));CHKERRQ(ierr);
-  *vec = v; 
+
+  v->ltogmap      = PETSC_NULL;
+  v->ltogmapb     = PETSC_NULL;
+  v->bs           = 1;
+
+  *dm = v;
   PetscFunctionReturn(0);
 }
 
@@ -263,6 +268,112 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateLocalVector(DM dm,Vec *vec)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMGetLocalToGlobalMapping"
+/*@
+   DMGetLocalToGlobalMapping - Accesses the local-to-global mapping in a DM.
+
+   Collective on DM
+
+   Input Parameter:
+.  dm - the DM that provides the mapping
+
+   Output Parameter:
+.  ltog - the mapping
+
+   Level: intermediate
+
+   Notes:
+   This mapping can then be used by VecSetLocalToGlobalMapping() or
+   MatSetLocalToGlobalMapping().
+
+.seealso: DMCreateLocalVector(), DMGetLocalToGlobalMappingBlock()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(ltog,2);
+  if (!dm->ltogmap) {
+    if (!dm->ops->createlocaltoglobalmapping) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"DM can not create LocalToGlobalMapping");
+    ierr = (*dm->ops->createlocaltoglobalmapping)(dm);CHKERRQ(ierr);
+  }
+  *ltog = dm->ltogmap;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMGetLocalToGlobalMappingBlock"
+/*@
+   DMGetLocalToGlobalMappingBlock - Accesses the blocked local-to-global mapping in a DM.
+
+   Collective on DM
+
+   Input Parameter:
+.  da - the distributed array that provides the mapping
+
+   Output Parameter:
+.  ltog - the block mapping
+
+   Level: intermediate
+
+   Notes:
+   This mapping can then be used by VecSetLocalToGlobalMappingBlock() or
+   MatSetLocalToGlobalMappingBlock().
+
+.seealso: DMCreateLocalVector(), DMGetLocalToGlobalMapping(), DMGetBlockSize(), VecSetBlockSize(), MatSetBlockSize()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMGetLocalToGlobalMappingBlock(DM dm,ISLocalToGlobalMapping *ltog)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(ltog,2);
+  if (!dm->ltogmapb) {
+    PetscInt bs;
+    ierr = DMGetBlockSize(dm,&bs);CHKERRQ(ierr);
+    if (bs > 1) {
+      if (!dm->ops->createlocaltoglobalmappingblock) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"DM can not create LocalToGlobalMappingBlock");
+      ierr = (*dm->ops->createlocaltoglobalmappingblock)(dm);CHKERRQ(ierr);
+    } else {
+      ierr = DMGetLocalToGlobalMapping(dm,&dm->ltogmapb);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)dm->ltogmapb);CHKERRQ(ierr);
+    }
+  }
+  *ltog = dm->ltogmapb;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMGetBlockSize"
+/*@
+   DMGetBlockSize - Gets the inherent block size associated with a DM
+
+   Not Collective
+
+   Input Parameter:
+.  dm - the DM with block structure
+
+   Output Parameter:
+.  bs - the block size, 1 implies no exploitable block structure
+
+   Level: intermediate
+
+.seealso: ISCreateBlock(), VecSetBlockSize(), MatSetBlockSize(), DMGetLocalToGlobalMappingBlock()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMGetBlockSize(DM dm,PetscInt *bs)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(bs,2);
+  if (dm->bs < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"DM does not have enough information to provide a block size yet");
+  *bs = dm->bs;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMGetInterpolation"
 /*@
     DMGetInterpolation - Gets interpolation matrix between two DMDA or DMComposite objects
@@ -381,12 +492,25 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring(DM dm,ISColoringType ctype,const 
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix(DM dm, const MatType mtype,Mat *mat)
+PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
 {
   PetscErrorCode ierr;
+  char           ttype[256];
+  PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = (*dm->ops->getmatrix)(dm,mtype,mat);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(mat,3);
+  ierr = PetscStrncpy(ttype,mtype,sizeof ttype);CHKERRQ(ierr);
+  ttype[sizeof ttype-1] = 0;
+  ierr = PetscOptionsBegin(((PetscObject)dm)->comm,((PetscObject)dm)->prefix,"DM options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsList("-dm_mat_type","Matrix type","MatSetType",MatList,ttype,ttype,sizeof ttype,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
+  if (flg || mtype) {
+    ierr = (*dm->ops->getmatrix)(dm,ttype,mat);CHKERRQ(ierr);
+  } else {                      /* Let the implementation decide */
+    ierr = (*dm->ops->getmatrix)(dm,PETSC_NULL,mat);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

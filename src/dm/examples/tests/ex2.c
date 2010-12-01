@@ -72,7 +72,7 @@ int main(int argc,char **argv)
 
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nLocal to global mapping: processor %d\n",rank);CHKERRQ(ierr);
     ierr = PetscViewerGetSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
-    ierr = DMDAGetISLocalToGlobalMapping(da,&is);CHKERRQ(ierr);
+    ierr = DMGetLocalToGlobalMapping(da,&is);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingView(is,sviewer);CHKERRQ(ierr); 
     ierr = PetscViewerRestoreSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);

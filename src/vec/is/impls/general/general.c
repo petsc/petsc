@@ -103,6 +103,30 @@ static PetscErrorCode ISSetBlockSize_General(IS is,PetscInt bs)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISContiguousLocal_General"
+static PetscErrorCode ISContiguousLocal_General(IS is,PetscInt gstart,PetscInt gend,PetscInt *start,PetscBool *contig)
+{
+  IS_General *sub = (IS_General*)is->data;
+  PetscInt   i,p;
+
+  PetscFunctionBegin;
+  *start  = 0;
+  *contig = PETSC_TRUE;
+  if (!sub->n) PetscFunctionReturn(0);
+  p = sub->idx[0];
+  if (p < gstart) goto nomatch;
+  *start = p - gstart;
+  if (sub->n > gend-p) goto nomatch;
+  for (i=1; i<sub->n; i++,p++) {
+    if (sub->idx[i] != p+1) goto nomatch;
+  }
+  PetscFunctionReturn(0);
+nomatch:
+  *start = -1;
+  *contig = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetIndices_General" 
@@ -336,7 +360,8 @@ static struct _ISOps myops = { ISGetSize_General,
                                ISCopy_General,
                                ISToGeneral_General,
                                ISOnComm_General,
-                               ISSetBlockSize_General
+                               ISSetBlockSize_General,
+                               ISContiguousLocal_General
 };
 
 #undef __FUNCT__  

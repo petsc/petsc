@@ -1710,36 +1710,46 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   if (x->map->n != y->map->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
+#if !defined(PETSC_USE_MIXED_PRECISION)
+  for (i=0; i<4; i++) {
+    ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],norms[i],flgs[i]);CHKERRQ(ierr);
+  }
+#endif
+
   ierr = PetscLogEventBegin(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
 #if defined(PETSC_USE_MIXED_PRECISION)
-  extern PetscErrorCode VecGetArray_Private(Vec,double **);
-  extern PetscErrorCode VecRestoreArray_Private(Vec,double **);
-  extern PetscErrorCode VecGetArray_Private(Vec,float **);
-  extern PetscErrorCode VecRestoreArray_Private(Vec,float **);
+  extern PetscErrorCode VecGetArray(Vec,double **);
+  extern PetscErrorCode VecRestoreArray(Vec,double **);
+  extern PetscErrorCode VecGetArray(Vec,float **);
+  extern PetscErrorCode VecRestoreArray(Vec,float **);
+  extern PetscErrorCode VecGetArrayRead(Vec,const double **);
+  extern PetscErrorCode VecRestoreArrayRead(Vec,const double **);
+  extern PetscErrorCode VecGetArrayRead(Vec,const float **);
+  extern PetscErrorCode VecRestoreArrayRead(Vec,const float **);
   if ((((PetscObject)x)->precision == PETSC_PRECISION_SINGLE) && (((PetscObject)y)->precision == PETSC_PRECISION_DOUBLE)) {
     PetscInt    i,n;
-    float       *xx;
+    const float *xx;
     double      *yy;
-    ierr = VecGetArray_Private(x,&xx);CHKERRQ(ierr);
-    ierr = VecGetArray_Private(y,&yy);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
     ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       yy[i] = xx[i];
     }
-    ierr = VecRestoreArray_Private(x,&xx);CHKERRQ(ierr);
-    ierr = VecRestoreArray_Private(y,&yy);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
   } else if ((((PetscObject)x)->precision == PETSC_PRECISION_DOUBLE) && (((PetscObject)y)->precision == PETSC_PRECISION_SINGLE)) {
-    PetscInt    i,n;
-    float       *yy;
-    double      *xx;
-    ierr = VecGetArray_Private(x,&xx);CHKERRQ(ierr);
-    ierr = VecGetArray_Private(y,&yy);CHKERRQ(ierr);
+    PetscInt     i,n;
+    float        *yy;
+    const double *xx;
+    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
     ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       yy[i] = (float) xx[i];
     }
-    ierr = VecRestoreArray_Private(x,&xx);CHKERRQ(ierr);
-    ierr = VecRestoreArray_Private(y,&yy);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
   } else {
     ierr = (*x->ops->copy)(x,y);CHKERRQ(ierr);
   }
@@ -1747,17 +1757,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
   ierr = (*x->ops->copy)(x,y);CHKERRQ(ierr);
 #endif
 
-
-  /*
-   * Update cached data
-  */
-  /* in general we consider this object touched */
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
-
 #if !defined(PETSC_USE_MIXED_PRECISION)
-  for (i=0; i<4; i++) {
-    ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],norms[i],flgs[i]);CHKERRQ(ierr);
-  }
   for (i=0; i<4; i++) {
     if (flgs[i]) {
       ierr = PetscObjectComposedDataSetReal((PetscObject)y,NormIds[i],norms[i]);CHKERRQ(ierr);
@@ -1803,13 +1804,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec x,Vec y)
   if (x->map->n != y->map->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PetscLogEventBegin(VEC_Swap,x,y,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->swap)(x,y);CHKERRQ(ierr);
-
-  /* See if we have cached norms;  increase state to remove previous cached values and reserve valid cached values */
   for (i=0; i<4; i++) {
     ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],normxs[i],flgxs[i]);CHKERRQ(ierr);
     ierr = PetscObjectComposedDataGetReal((PetscObject)y,NormIds[i],normys[i],flgys[i]);CHKERRQ(ierr);
-  }
+  } 
+  ierr = (*x->ops->swap)(x,y);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   for (i=0; i<4; i++) {

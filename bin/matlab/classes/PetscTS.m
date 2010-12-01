@@ -10,51 +10,49 @@ classdef PetscTS < PetscObject
         obj.pobj = pid;
         return
       end
-      [err,obj.pobj] = calllib('libpetsc', 'TSCreate', 0,0);
+      [err,obj.pobj] = calllib('libpetsc', 'TSCreate', 0,0);PetscCHKERRQ(err);
     end
     function err = SetType(obj,name)
-      err = calllib('libpetsc', 'TSSetType', obj.pobj,name);
+      err = calllib('libpetsc', 'TSSetType', obj.pobj,name);PetscCHKERRQ(err);
     end
     function err = SetProblemType(obj,t)
-      err = calllib('libpetsc', 'TSSetProblemType', obj.pobj,t);
+      err = calllib('libpetsc', 'TSSetProblemType', obj.pobj,t);PetscCHKERRQ(err);
     end
     function err = SetDM(obj,da)
-      err = calllib('libpetsc', 'TSSetDM', obj.pobj,da.pobj);
+      err = calllib('libpetsc', 'TSSetDM', obj.pobj,da.pobj);PetscCHKERRQ(err);
     end
     function err = SetFromOptions(obj)
-      err = calllib('libpetsc', 'TSSetFromOptions', obj.pobj);
+      err = calllib('libpetsc', 'TSSetFromOptions', obj.pobj);PetscCHKERRQ(err);
     end
     function err = SetUp(obj)
-      err = calllib('libpetsc', 'TSSetUp', obj.pobj);
+      err = calllib('libpetsc', 'TSSetUp', obj.pobj);PetscCHKERRQ(err);
     end
     function err = Solve(obj,x)
-      err = calllib('libpetsc', 'TSSolve', obj.pobj,x.pobj);
+      err = calllib('libpetsc', 'TSSolve', obj.pobj,x.pobj);PetscCHKERRQ(err);
     end
     function err = SetFunction(obj,func,arg)
       if (nargin < 3) 
         arg = 0;
       end
-      err = calllib('libpetsc', 'TSSetFunctionMatlab', obj.pobj,func,arg);
+      err = calllib('libpetsc', 'TSSetFunctionMatlab', obj.pobj,func,arg);PetscCHKERRQ(err);
     end
     function err = SetJacobian(obj,A,B,func,arg)
       if (nargin < 5) 
         arg = 0;
       end
-      err = calllib('libpetsc', 'TSSetJacobianMatlab', obj.pobj,A.pobj,B.pobj,func,arg);
+      err = calllib('libpetsc', 'TSSetJacobianMatlab', obj.pobj,A.pobj,B.pobj,func,arg);PetscCHKERRQ(err);
     end
     function err = MonitorSet(obj,func,arg)
       if (nargin < 3) 
         arg = 0;
       end
-      err = calllib('libpetsc', 'TSMonitorSetMatlab', obj.pobj,func,arg);
+      err = calllib('libpetsc', 'TSMonitorSetMatlab', obj.pobj,func,arg);PetscCHKERRQ(err);
     end
     function err = View(obj,viewer)
-      err = calllib('libpetsc', 'TSView', obj.pobj,viewer.pobj);
+      err = calllib('libpetsc', 'TSView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
     end
     function err = Destroy(obj)
-      err = calllib('libpetsc', 'TSDestroy', obj.pobj);
+      err = calllib('libpetsc', 'TSDestroy', obj.pobj);PetscCHKERRQ(err);
     end
   end
 end
-
- 

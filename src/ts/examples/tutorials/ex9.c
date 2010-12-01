@@ -30,7 +30,6 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
 /* To get isfinite in math.h */
 #define _XOPEN_SOURCE 600
 
-#include <unistd.h>             /* usleep */
 #include "petscts.h"
 #include "petscdm.h"
 

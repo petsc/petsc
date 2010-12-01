@@ -1,0 +1,80 @@
+
+
+============== test_view ==============
+(max-b) = 7.200320 : index = 3 
+(min-b) = 0.100223 : index = 5 
+(max-X) = 7.200320 : index = 9 
+(min-X) = 0.100223 : index = 11 
+Vector Object:
+  type=nest, rows=2 
+  VecNest  structure: 
+  (0) : name="(null)", type=nest, rows=6 
+    Vector Object:
+      type=nest, rows=2 
+      VecNest  structure: 
+      (0) : name="(null)", type=seq, rows=3 
+        Vector Object:        
+          type: seq
+        1
+        1
+        1
+      (1) : name="(null)", type=seq, rows=3 
+        Vector Object:        
+          type: seq
+        2
+        2
+        2
+  (1) : name="(null)", type=nest, rows=6 
+    Vector Object:
+      type=nest, rows=2 
+      VecNest  structure: 
+      (0) : name="(null)", type=seq, rows=3 
+        Vector Object:        
+          type: seq
+        3
+        3
+        3
+      (1) : name="(null)", type=seq, rows=3 
+        Vector Object:        
+          type: seq
+        7.20032
+        0.61794
+        0.100223
+
+
+============== test_axpy_dot_max ==============
+VecAXPY 
+(1) y1 = 
+Vector Object:
+  type: seq
+4
+8
+12
+16
+(1) y2 = 
+Vector Object:
+  type: seq
+15
+18
+21
+24
+27
+X.Y = 1610.000000 + 0.000000i 
+(2) y1 = 
+Vector Object:
+  type: seq
+4
+9
+14
+19
+(2) y2 = 
+Vector Object:
+  type: seq
+25
+30
+35
+40
+45
+X.Y = 2644.000000 + 0.000000i 
+(max-X) = 18.000000 : index = 8 
+(min-X) = 0.000000 : index = 0 

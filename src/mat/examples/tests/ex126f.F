@@ -24,21 +24,21 @@
       call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
       m    = 10   
       one  = 1.0
-      ione = 1.0
+      ione = 1
 
       wmumps = PETSC_FALSE
 
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg, ierr)
-      call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-use_mumps',
-     > wmumps,flg,ierr)
+      call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-use_mumps',                       &
+     &                         wmumps,flg,ierr)
 
       call MatCreate(PETSC_COMM_WORLD, A, ierr)
       call MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, m*m, m*m, ierr)
       call MatSetType(A, MATAIJ, ierr)
       call MatSetFromOptions(A, ierr)
       call MatSeqAIJSetPreallocation(A, 1, PETSC_NULL_INTEGER, ierr)
-      call MatMPIAIJSetPreallocation(A,5,PETSC_NULL_INTEGER,5,
-     >     PETSC_NULL_INTEGER,ierr)
+      call MatMPIAIJSetPreallocation(A,5,PETSC_NULL_INTEGER,5,                          &
+     &     PETSC_NULL_INTEGER,ierr)
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
 
@@ -79,18 +79,18 @@
 
       if (wmumps) then
           write(*,*) 'use MUMPS LU...'
-          call MatGetFactor(A, MATSOLVERMUMPS, MAT_FACTOR_LU,
-     >         fact, ierr)
-          call MatLUFactorSymbolic(fact, A, PETSC_NULL, PETSC_NULL,
-     >         PETSC_NULL, ierr)
+          call MatGetFactor(A, MATSOLVERMUMPS, MAT_FACTOR_LU,                             &
+     &                      fact, ierr)
+          call MatLUFactorSymbolic(fact, A, PETSC_NULL, PETSC_NULL,                       &
+     &         PETSC_NULL, ierr)
       else
          write(*,*) 'use PETSc LU...'
          call MatGetOrdering(A,MATORDERINGNATURAL,perm,iperm,ierr)
-         call MatGetFactor(A, MATSOLVERPETSC, MAT_FACTOR_LU,
-     >         fact, ierr)
+         call MatGetFactor(A, MATSOLVERPETSC, MAT_FACTOR_LU,                              &
+     &         fact, ierr)
      
-         call MatLUFactorSymbolic(fact, A, perm, iperm,
-     >         PETSC_NULL, ierr)
+         call MatLUFactorSymbolic(fact, A, perm, iperm,                                   &
+     &         PETSC_NULL, ierr)
          call ISDestroy(perm,ierr)
          call ISDestroy(iperm,ierr)
       endif

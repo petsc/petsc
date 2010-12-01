@@ -132,8 +132,6 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGlobalToNaturalAllCreate(DM,VecSc
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDANaturalAllToGlobalCreate(DM,VecScatter*);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetGlobalIndices(DM,PetscInt*,PetscInt**);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetISLocalToGlobalMapping(DM,ISLocalToGlobalMapping*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetISLocalToGlobalMappingBlck(DM,ISLocalToGlobalMapping*);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetScatter(DM,VecScatter*,VecScatter*,VecScatter*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DMDAGetNeighbors(DM,const PetscMPIInt**);
@@ -449,6 +447,9 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetLocalVector(DM,Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRestoreLocalVector(DM,Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetGlobalVector(DM,Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRestoreGlobalVector(DM,Vec *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetLocalToGlobalMapping(DM,ISLocalToGlobalMapping*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetLocalToGlobalMappingBlock(DM,ISLocalToGlobalMapping*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetBlockSize(DM,PetscInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetColoring(DM,ISColoringType,const MatType,ISColoring*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetMatrix(DM, const MatType,Mat*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetInterpolation(DM,DM,Mat*,Vec*);

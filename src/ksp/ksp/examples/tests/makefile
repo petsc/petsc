@@ -6,7 +6,7 @@ FPPFLAGS  =
 LOCDIR    = src/ksp/ksp/examples/tests/
 NOADIC    = true
 EXAMPLESC       = ex1.c ex3.c ex4.c ex6.c ex7.c ex10.c \
-		  ex14.c ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex24.c ex25.c ex26.c ex27.c ex32.c ex34.c
+		  ex14.c ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c ex26.c ex27.c ex32.c ex34.c
 EXAMPLESCH      = 
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
 
@@ -326,17 +326,14 @@ runex21_3:
 	   ${RM} -f ex21_3.tmp
 
 runex22:
-	-@${MPIEXEC} -n 1 ./ex22 -ksp_gmres_cgs_refinement_type refine_always -mat_type seqaij -mat_view_info_detailed -ksp_monitor_short > ex22_1.tmp 2>&1; \
-	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
-	   else echo "Possible problem with ex22_1, diffs above"; fi; \
+	-@${MPIEXEC} -n 1 ./ex22  > ex22_1.tmp 2>&1; \
+	   ${DIFF} output/ex22_1.out ex22_1.tmp || echo "Possible problem with ex22, diffs above"; \
 	   ${RM} -f ex22_1.tmp
-
 runex22_2:
-	-@${MPIEXEC} -n 4 ./ex22 -ksp_gmres_cgs_refinement_type refine_always -m_eta 10 -m_xi 11 -mat_type seqaij -mat_view_info \
-	   -ksp_monitor_short -pc_type bjacobi > ex22_2.tmp 2>&1;	  \
-	   if (${DIFF} output/ex22_2.out ex22_2.tmp) then true; \
-	   else echo "Possible problem with ex22_2, diffs above"; fi; \
+	-@${MPIEXEC} -n 2 ./ex22  > ex22_2.tmp 2>&1; \
+	   ${DIFF} output/ex22_2.out ex22_2.tmp || echo "Possible problem with ex22_2, diffs above"; \
 	   ${RM} -f ex22_2.tmp
+
 runex24:
 	-@${MPIEXEC} -n 1 ./ex24 -pc_type icc -mat_type seqsbaij -mat_ignore_lower_triangular > ex24_1.tmp 2>&1; \
            if (${DIFF} output/ex24_1.out ex24_1.tmp) then true; \
@@ -729,6 +726,7 @@ runex37_3:
 
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
+                                 ex22.PETSc runex22 runex22_2 ex22.rm \
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm \
                                  ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm \
                                  ex32.PETSc runex32_testset1 runex32_testset2 runex32_testset3 runex32_testset4 runex32_testset5 \

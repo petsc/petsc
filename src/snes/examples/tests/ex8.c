@@ -162,7 +162,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
   /* Get ghost points */
   info = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
   info = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
-  /* Get pointers to local vector data */
+  /* Get pointer to local vector data */
   info = DMDAVecGetArray(user->da,localX, &x); CHKERRQ(info);
   info = DMDAVecGetArray(user->da,G, &g); CHKERRQ(info);
 

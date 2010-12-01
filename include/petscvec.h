@@ -105,6 +105,7 @@ E*/
 #define VECMPICUDA     "mpicuda"
 #define VECCUDA        "cuda"       /* seqcuda on one process and mpicuda on several */
 #define VECDD          "vecdd"
+#define VECNEST        "nest"
 
 
 /* Logging support */
@@ -143,7 +144,9 @@ PetscPolymorphicFunction(VecDot,(Vec x,Vec y),(x,y,&s),PetscScalar,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecTDot(Vec,Vec,PetscScalar*);  
 PetscPolymorphicFunction(VecTDot,(Vec x,Vec y),(x,y,&s),PetscScalar,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(Vec,PetscInt,const Vec[],PetscScalar[]);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMTDot(Vec,PetscInt,const Vec[],PetscScalar[]); 
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMTDot(Vec,PetscInt,const Vec[],PetscScalar[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetSubVector(Vec,IS,Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreSubVector(Vec,IS,Vec*);
 
 /*E
     NormType - determines what type of norm to compute
@@ -393,8 +396,6 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterView(VecScatter,PetscViewer);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterRemap(VecScatter,PetscInt *,PetscInt*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterGetMerged(VecScatter,PetscBool *);
 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray_Private(Vec,PetscScalar*[]);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray_Private(Vec,PetscScalar*[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray4d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray4d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray3d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar***[]);
@@ -559,6 +560,10 @@ extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDGetDomainArrayLocal(Vec v, PetscIn
 extern PetscErrorCode PETSCVEC_DLLEXPORT VecDDRestoreDomainArrayLocal(Vec v, PetscInt i, PetscScalar **array);
 #endif
 
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVecs(Vec,PetscInt*,Vec**);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVec(Vec,PetscInt,Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreateNest(MPI_Comm,PetscInt,IS*,Vec*,Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSize(Vec,PetscInt*);
 
 PETSC_EXTERN_CXX_END
 #endif

@@ -12,6 +12,8 @@ struct _DMOps {
   PetscErrorCode (*setup)(DM); 
   PetscErrorCode (*createglobalvector)(DM,Vec*);
   PetscErrorCode (*createlocalvector)(DM,Vec*);
+  PetscErrorCode (*createlocaltoglobalmapping)(DM);
+  PetscErrorCode (*createlocaltoglobalmappingblock)(DM);
 
   PetscErrorCode (*getcoloring)(DM,ISColoringType,const MatType,ISColoring*);	
   PetscErrorCode (*getmatrix)(DM, const MatType,Mat*);
@@ -53,6 +55,8 @@ struct _p_DM {
   Vec           x;       /* location at which the functions/Jacobian are computed */  
   MatFDColoring fd;      /* used by DMComputeJacobianDefault() */   
   VecType       vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
+  PetscInt      bs;
+  ISLocalToGlobalMapping ltogmap,ltogmapb;
   void          *data;
 };
 

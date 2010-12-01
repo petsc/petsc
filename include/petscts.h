@@ -435,7 +435,8 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSRKSetTolerance(TS,PetscReal);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSThetaSetTheta(TS,PetscReal);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSThetaGetTheta(TS,PetscReal*);
 
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAccept(TS,PetscErrorCode(*)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*),void*);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAdapt(TS,PetscErrorCode(*)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*),void*);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSAlphaAdaptDefault(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetRadius(TS,PetscReal);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetParams(TS,PetscReal,PetscReal,PetscReal);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSAlphaGetParams(TS,PetscReal*,PetscReal*,PetscReal*);

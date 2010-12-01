@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =	 
 LOCDIR          = src/snes/examples/tests/
-EXAMPLESC       = ex1.c ex4.c ex5.c ex7.c ex9.c ex11.c ex13.c
+EXAMPLESC       = ex1.c ex4.c ex5.c ex7.c ex9.c ex11.c ex13.c ex17.c
 EXAMPLESF       = ex1f.F ex12f.F
 DIRS	        = 
 MANSEC          = SNES
@@ -71,6 +71,19 @@ ex13: ex13.o  chkopts
 ex14f: ex14f.o  chkopts
 	-${FLINKER} -o ex14f ex14f.o ${PETSC_SNES_LIB}
 	${RM} ex14f.o
+
+ex15: ex15.o  chkopts
+	-${CLINKER} -o ex15 ex15.o ${PETSC_SNES_LIB}
+	${RM} ex15.o
+
+ex16: ex16.o  chkopts
+	-${CLINKER} -o ex16 ex16.o ${PETSC_SNES_LIB}
+	${RM} ex16.o
+
+ex17: ex17.o chkopts
+	-${CLINKER} -o ex17 ex17.o ${PETSC_SNES_LIB}
+	${RM} ex17.o
+
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	 \
@@ -226,11 +239,16 @@ runex14f:
 	   else echo "Possible problem with ex14f_1, diffs above"; fi; \
 	   ${RM} -f ex14_1.tmp
 
+runex17:
+	-@${MPIEXEC} -n 1 ./ex17 -snes_monitor_short > ex17_1.tmp 2>&1; \
+	   ${DIFF} output/ex17_1.out ex17_1.tmp || echo "Possible problem with ex17, diffs above"; \
+	   ${RM} -f ex17_1.tmp
+
 #
 #  runex9_2 and runex9_3 are not included in RUNEXAMPLES_2 because 
 # they require too many processors
 #
-TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex11.PETSc ex11.rm
+TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex11.PETSc ex11.rm ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_C_X11	       = ex7.PETSc runex7 runex7_2 ex7.rm ex9.PETSc runex9 ex9.rm ex13.PETSc ex13.rm
 TESTEXAMPLES_FORTRAN	       = ex12f.PETSc runex12f ex12f.rm  ex1f.PETSc runex1f_2 runex1f_3 ex1f.rm
 TESTEXAMPLES_C_X11_MPIUNI      = ex7.PETSc ex7.rm ex9.PETSc ex9.rm ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm 

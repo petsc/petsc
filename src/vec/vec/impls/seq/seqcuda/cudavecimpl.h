@@ -1,4 +1,4 @@
-#ifndef __CUDAVECIMPL 
+#ifndef __CUDAVECIMPL
 #define __CUDAVECIMPL
 
 #include "private/vecimpl.h"
@@ -73,8 +73,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDAAllocateCheck(Vec v)
 	ierr = WaitForGPU();CHKERRQ(ierr);
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
-    } 
-	
+    }
     s = (Vec_Seq*)v->data;
     if (s->array == 0){
       v->valid_GPU_array = PETSC_CUDA_GPU;
@@ -103,7 +102,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
       ierr = WaitForGPU();CHKERRQ(ierr);
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
-    } 
+    }
     ierr = PetscLogEventEnd(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
     v->valid_GPU_array = PETSC_CUDA_BOTH;
   }
@@ -186,7 +185,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDAGetArrayWrite(Vec v, CUSPARRAY** a)
 }
 #undef __FUNCT__
 #define __FUNCT__ "VecCUDARestoreArrayWrite"
-PETSC_STATIC_INLINE PetscErrorCode VecCUDARestoreArrayWrite(Vec v, CUSPARRAY* a)
+PETSC_STATIC_INLINE PetscErrorCode VecCUDARestoreArrayWrite(Vec v, CUSPARRAY** a)
 {
   PetscFunctionBegin;
   if (v->valid_GPU_array != PETSC_CUDA_UNALLOCATED){

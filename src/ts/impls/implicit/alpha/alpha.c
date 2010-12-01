@@ -16,19 +16,25 @@
 */
 #include "private/tsimpl.h"                /*I   "petscts.h"   I*/
 
-typedef PetscErrorCode (*TSAlphaAcceptFunction)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*);
+typedef PetscErrorCode (*TSAlphaAdaptFunction)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*);
 
 typedef struct {
   Vec X0,Xa,X1;
   Vec V0,Va,V1;
-  Vec R;
+  Vec R,E;
   PetscReal Alpha_m;
   PetscReal Alpha_f;
   PetscReal Gamma;
   PetscReal stage_time;
   PetscReal shift;
-  TSAlphaAcceptFunction accept;
-  void *acceptctx;
+
+  TSAlphaAdaptFunction adapt;
+  void *adaptctx;
+  PetscReal rtol;
+  PetscReal atol;
+  PetscReal rho;
+  PetscReal scale_min;
+  PetscReal scale_max;
 } TS_Alpha;
 
 #undef __FUNCT__
@@ -67,10 +73,10 @@ static PetscErrorCode TSStep_Alpha(TS ts,PetscInt *steps,PetscReal *ptime)
       ierr = VecWAXPY(th->V1,-1,th->X0,th->X1);CHKERRQ(ierr);
       ierr = VecAXPBY(th->V1,1-1/th->Gamma,1/(th->Gamma*ts->time_step),th->V0);CHKERRQ(ierr);
       /* adapt time step */
-      if (th->accept) {
+      if (th->adapt) {
         PetscReal t = ts->ptime+ts->time_step;
         PetscReal dtmax = ts->max_time-t;
-        ierr = th->accept(ts,t,th->X1,th->V1,&nextdt,&stepok,th->acceptctx);CHKERRQ(ierr);
+        ierr = th->adapt(ts,t,th->X1,th->V1,&nextdt,&stepok,th->adaptctx);CHKERRQ(ierr);
         ierr = PetscInfo4(ts,"Step %D (t=%G) %s, next dt=%G\n",ts->steps,ts->ptime,
                           stepok?"accepted":"rejected",nextdt);CHKERRQ(ierr);
         if (dtmax > 0) nextdt = PetscMin(nextdt,dtmax);
@@ -110,12 +116,13 @@ static PetscErrorCode TSDestroy_Alpha(TS ts)
   if (th->Va) {ierr = VecDestroy(th->Va);CHKERRQ(ierr);}
   if (th->V1) {ierr = VecDestroy(th->V1);CHKERRQ(ierr);}
   if (th->R)  {ierr = VecDestroy(th->R);CHKERRQ(ierr);}
+  if (th->E)  {ierr = VecDestroy(th->E);CHKERRQ(ierr);}
   ierr = PetscFree(th);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetParams_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaGetParams_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetAccept_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetAdapt_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -196,7 +203,7 @@ static PetscErrorCode TSSetFromOptions_Alpha(TS ts)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Alpha ODE solver options");CHKERRQ(ierr);
   {
-    PetscBool flag;
+    PetscBool flag, adapt = PETSC_FALSE;
     PetscReal radius = 1.0;
     ierr = PetscOptionsReal("-ts_alpha_radius","spectral radius","TSAlphaSetRadius",radius,&radius,&flag);CHKERRQ(ierr);
     if (flag) { ierr = TSAlphaSetRadius(ts,radius);CHKERRQ(ierr); }
@@ -204,6 +211,13 @@ static PetscErrorCode TSSetFromOptions_Alpha(TS ts)
     ierr = PetscOptionsReal("-ts_alpha_alpha_f","algoritmic parameter alpha_f","TSAlphaSetParams",th->Alpha_f,&th->Alpha_f,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_alpha_gamma","algoritmic parameter gamma","TSAlphaSetParams",th->Gamma,&th->Gamma,PETSC_NULL);CHKERRQ(ierr);
     ierr = TSAlphaSetParams(ts,th->Alpha_m,th->Alpha_f,th->Gamma);CHKERRQ(ierr);
+
+    ierr = PetscOptionsBool("-ts_alpha_adapt","default time step adaptativity","TSAlphaSetAdapt",adapt,&adapt,PETSC_NULL);CHKERRQ(ierr);
+    if (adapt) { ierr = TSAlphaSetAdapt(ts,TSAlphaAdaptDefault,PETSC_NULL); CHKERRQ(ierr); }
+    ierr = PetscOptionsReal("-ts_alpha_adapt_rtol","relative tolerance for dt adaptativity","",th->rtol,&th->rtol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_alpha_adapt_atol","absulute tolerance for dt adaptativity","",th->atol,&th->atol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_alpha_adapt_min","minimum dt scale","",th->scale_min,&th->scale_min,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_alpha_adapt_max","maximum dt scale","",th->scale_max,&th->scale_max,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -272,14 +286,14 @@ PetscErrorCode PETSCTS_DLLEXPORT TSAlphaGetParams_Alpha(TS ts,PetscReal *alpha_m
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAlphaSetAccept_Alpha"
-PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAccept_Alpha(TS ts,TSAlphaAcceptFunction accept,void *ctx)
+#define __FUNCT__ "TSAlphaSetAdapt_Alpha"
+PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAdapt_Alpha(TS ts,TSAlphaAdaptFunction adapt,void *ctx)
 {
   TS_Alpha *th = (TS_Alpha*)ts->data;
 
   PetscFunctionBegin;
-  th->accept    = accept;
-  th->acceptctx = ctx;
+  th->adapt    = adapt;
+  th->adaptctx = ctx;
   PetscFunctionReturn(0);
 }
 
@@ -322,7 +336,13 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Alpha(TS ts)
   th->Alpha_f = 0.5;
   th->Gamma   = 0.5;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetAccept_C","TSAlphaSetAccept_Alpha",TSAlphaSetAccept_Alpha);CHKERRQ(ierr);
+  th->rtol      = 1e-3;
+  th->atol      = 0;
+  th->rho       = 0.9;
+  th->scale_min = 0.1;
+  th->scale_max = 5.0;
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetAdapt_C","TSAlphaSetAdapt_Alpha",TSAlphaSetAdapt_Alpha);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetRadius_C","TSAlphaSetRadius_Alpha",TSAlphaSetRadius_Alpha);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetParams_C","TSAlphaSetParams_Alpha",TSAlphaSetParams_Alpha);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaGetParams_C","TSAlphaGetParams_Alpha",TSAlphaGetParams_Alpha);CHKERRQ(ierr);
@@ -332,9 +352,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Alpha(TS ts)
 EXTERN_C_END
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAlphaSetAccept"
+#define __FUNCT__ "TSAlphaSetAdapt"
 /*@C
-  TSAlphaSetAccept - sets the acceptance test
+  TSAlphaSetAdapt - sets the time step adaptativity and acceptance test routine
 
   This function allows to accept/reject a step and select the
   next time step to use.
@@ -343,23 +363,69 @@ EXTERN_C_END
 
   Input Parameter:
 +  ts - timestepping context
-.  accept - user-defined accept routine
+.  adapt - user-defined adapt routine
 -  ctx  - [optional] user-defined context for private data for the
-	 acceptroutine (may be PETSC_NULL)
+	 adapt routine (may be PETSC_NULL)
 
-   Calling sequence of accept:
-$    accept (TS ts,PetscReal t,Vec X,Vec Xdot,
+   Calling sequence of adapt:
+$    adapt (TS ts,PetscReal t,Vec X,Vec Xdot,
 $            PetscReal *next_dt,PetscBool *accepted,void *ctx);
 
   Level: intermediate
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAccept(TS ts,TSAlphaAcceptFunction accept,void *ctx)
+PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAdapt(TS ts,TSAlphaAdaptFunction adapt,void *ctx)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscTryMethod(ts,"TSAlphaSetAccept_C",(TS,TSAlphaAcceptFunction,void*),(ts,accept,ctx));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ts,"TSAlphaSetAdapt_C",(TS,TSAlphaAdaptFunction,void*),(ts,adapt,ctx));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAlphaAdaptDefault"
+PetscErrorCode PETSCTS_DLLEXPORT TSAlphaAdaptDefault(TS ts,PetscReal t,Vec X,Vec Xdot, PetscReal *nextdt,PetscBool *ok,void *ctx)
+{
+  TS_Alpha       *th;
+  PetscReal      dt,normX,normE,Emax,scale;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+#if PETSC_USE_DEBUG
+  { PetscBool match;
+    ierr = PetscTypeCompare((PetscObject)ts,TSALPHA,&match);CHKERRQ(ierr);
+    if (!match) SETERRQ(((PetscObject)ts)->comm,1,"Only for TSALPHA"); }
+#endif
+  th = (TS_Alpha*)ts->data;
+
+  /* first-order aproximation to the local error */
+  /* E = (X0 + dt*Xdot) - X */
+  ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
+  if (!th->E) {ierr = VecDuplicate(th->X0,&th->E);CHKERRQ(ierr);}
+  ierr = VecWAXPY(th->E,dt,Xdot,th->X0);CHKERRQ(ierr);
+  ierr = VecAXPY(th->E,-1,X);CHKERRQ(ierr);
+  ierr = VecNorm(th->E,NORM_2,&normE);CHKERRQ(ierr);
+  /* compute maximum allowable error */
+  ierr = VecNorm(X,NORM_2,&normX);CHKERRQ(ierr);
+  if (normX == 0) {ierr = VecNorm(th->X0,NORM_2,&normX);CHKERRQ(ierr);}
+  Emax =  th->rtol * normX + th->atol;
+  /* compute next time step */
+  if (normE > 0) {
+    scale = th->rho * (PetscReal)PetscSqrtScalar((PetscScalar)(Emax/normE));
+    scale = PetscMax(scale,th->scale_min);
+    scale = PetscMin(scale,th->scale_max);
+    if (!(*ok))
+      scale = PetscMin(1.0,scale);
+    *nextdt *= scale;
+  }
+  /* accept or reject step */
+  if (normE <= Emax)
+    *ok = PETSC_TRUE;
+  else
+    *ok = PETSC_FALSE;
+
   PetscFunctionReturn(0);
 }
 
@@ -479,7 +545,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSAlphaGetParams(TS ts,PetscReal *alpha_m,Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (alpha_m) PetscValidPointer(alpha_m,2);
-  if (alpha_m) PetscValidPointer(alpha_f,3);
+  if (alpha_f) PetscValidPointer(alpha_f,3);
   if (gamma)   PetscValidPointer(gamma,4);
   ierr = PetscUseMethod(ts,"TSAlphaGetParams_C",(TS,PetscReal*,PetscReal*,PetscReal*),(ts,alpha_m,alpha_f,gamma));CHKERRQ(ierr);
   PetscFunctionReturn(0);

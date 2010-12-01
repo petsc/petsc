@@ -1767,6 +1767,72 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMappingBlock(Mat x,ISLocalT
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatGetLocalToGlobalMapping"
+/*@
+   MatGetLocalToGlobalMapping - Gets the local-to-global numbering set by MatSetLocalToGlobalMapping()
+
+   Not Collective
+
+   Input Parameters:
+.  A - the matrix
+
+   Output Parameters:
++ rmapping - row mapping
+- cmapping - column mapping
+
+   Level: advanced
+
+   Concepts: matrices^local to global mapping
+   Concepts: local to global mapping^for matrices
+
+.seealso:  MatSetValuesLocal(), MatGetLocalToGlobalMappingBlock()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping *rmapping,ISLocalToGlobalMapping *cmapping)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  if (rmapping) PetscValidPointer(rmapping,2);
+  if (cmapping) PetscValidPointer(cmapping,3);
+  if (rmapping) *rmapping = A->rmapping;
+  if (cmapping) *cmapping = A->cmapping;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetLocalToGlobalMappingBlock"
+/*@
+   MatGetLocalToGlobalMappingBlock - Gets the local-to-global numbering set by MatSetLocalToGlobalMappingBlock()
+
+   Not Collective
+
+   Input Parameters:
+.  A - the matrix
+
+   Output Parameters:
++ rmapping - row mapping
+- cmapping - column mapping
+
+   Level: advanced
+
+   Concepts: matrices^local to global mapping blocked
+   Concepts: local to global mapping^for matrices, blocked
+
+.seealso:  MatSetValuesBlockedLocal(), MatGetLocalToGlobalMapping()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalToGlobalMappingBlock(Mat A,ISLocalToGlobalMapping *rmapping,ISLocalToGlobalMapping *cmapping)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  if (rmapping) PetscValidPointer(rmapping,2);
+  if (cmapping) PetscValidPointer(cmapping,3);
+  if (rmapping) *rmapping = A->rbmapping;
+  if (cmapping) *cmapping = A->cbmapping;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesLocal"
 /*@
    MatSetValuesLocal - Inserts or adds values into certain locations of a matrix,
@@ -1898,11 +1964,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
   if (mat->insertmode == NOT_SET_VALUES) {
     mat->insertmode = addv;
   }
-#if defined(PETSC_USE_DEBUG) 
+#if defined(PETSC_USE_DEBUG)
   else if (mat->insertmode != addv) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
-  if (!mat->rbmapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Local to global never set with MatSetLocalToGlobalMappingBlock()");
   if (nrow > 2048 || ncol > 2048) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number column/row indices must be <= 2048: are %D %D",nrow,ncol);
-  if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 #endif
 
   if (mat->assembled) {
@@ -1912,7 +1977,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   if (mat->ops->setvaluesblockedlocal) {
     ierr = (*mat->ops->setvaluesblockedlocal)(mat,nrow,irow,ncol,icol,y,addv);CHKERRQ(ierr);
-  } else {
+  } else if (mat->rbmapping && mat->cbmapping) {
     ierr = ISLocalToGlobalMappingApply(mat->rbmapping,nrow,irow,irowm);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingApply(mat->cbmapping,ncol,icol,icolm);CHKERRQ(ierr);
     if (mat->ops->setvaluesblocked) {
@@ -1939,6 +2004,23 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
       ierr = MatSetValues(mat,bs*nrow,iirowm,bs*ncol,iicolm,y,addv);CHKERRQ(ierr);
       ierr = PetscFree2(ibufm,ibufn);CHKERRQ(ierr);
     }
+  } else {
+    PetscInt buf[4096],*ibufm=0,*ibufn=0;
+    PetscInt i,j,*iirowm,*iicolm,bs=mat->rmap->bs;
+    if ((nrow+ncol)*bs <= 4096) {
+      iirowm = buf; iicolm = buf + nrow*bs;
+    } else {
+      ierr = PetscMalloc2(nrow*bs,PetscInt,&ibufm,ncol*bs,PetscInt,&ibufn);CHKERRQ(ierr);
+      iirowm = ibufm; iicolm = ibufn;
+    }
+    for (i=0; i<nrow; i++) {
+      for (j=0; j<bs; j++) iirowm[i*bs+j] = irow[i]*bs+j;
+    }
+    for (i=0; i<ncol; i++) {
+      for (j=0; j<bs; j++) iicolm[i*bs+j] = icol[i]*bs+j;
+    }
+    ierr = MatSetValuesLocal(mat,nrow*bs,iirowm,ncol*bs,iicolm,y,addv);CHKERRQ(ierr);
+    ierr = PetscFree2(ibufm,ibufn);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA)
@@ -8618,7 +8700,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreLocalSubMatrix(Mat mat,IS isrow,IS i
   PetscValidHeaderSpecific(iscol,IS_CLASSID,3);
   PetscCheckSameComm(isrow,2,iscol,3);
   PetscValidPointer(submat,4);
-  PetscValidHeaderSpecific(*submat,MAT_CLASSID,4);
+  if (*submat) {PetscValidHeaderSpecific(*submat,MAT_CLASSID,4);}
 
   if (mat->ops->restorelocalsubmatrix) {
     ierr = (*mat->ops->restorelocalsubmatrix)(mat,isrow,iscol,submat);CHKERRQ(ierr);

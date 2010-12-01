@@ -1327,8 +1327,8 @@ static PetscErrorCode DMGetMatrix_THI_Tridiagonal(DM da,const MatType mtype,Mat 
   ierr = DMDAGetInfo(da,&dim, 0,0,0, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
   if (dim != 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected DMDA to be 3D");
   ierr = DMDAGetCorners(da,0,0,0,&zm,&ym,&xm);CHKERRQ(ierr);
-  ierr = DMDAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-  ierr = DMDAGetISLocalToGlobalMappingBlck(da,&ltogb);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMappingBlock(da,&ltogb);CHKERRQ(ierr);
   ierr = MatCreate(((PetscObject)da)->comm,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,dof*xm*ym*zm,dof*xm*ym*zm,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(A,mtype);CHKERRQ(ierr);

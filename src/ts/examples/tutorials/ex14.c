@@ -41,31 +41,12 @@ This amounts to reversing the meaning of X,Y,Z compared to the DMDA's internal i
 and then indexing as vec[i][j][k].  The exotic coarse spaces require 2D DMDAs which are made to
 use compatible domain decomposition relative to the 3D DMDAs.
 
-There are two compile-time options:
-
-  NO_SSE2:
-    If the host supports SSE2, we use integration code that has been vectorized with SSE2
-    intrinsics, unless this macro is defined.  The intrinsics speed up integration by about
-    30% on my architecture (P8700, gcc-4.5 snapshot).
-
-  COMPUTE_LOWER_TRIANGULAR:
-    The element matrices we assemble are lower-triangular so it is not necessary to compute
-    all entries explicitly.  If this macro is defined, the lower-triangular entries are
-    computed explicitly.
-
 */
 
 #include <petscts.h>
 #include <petscdmmg.h>
 #include <ctype.h>              /* toupper() */
 
-#if !defined __STDC_VERSION__ || __STDC_VERSION__ < 199901L
-#  if defined __cplusplus       /* C++ restrict is nonstandard and compilers have inconsistent rules about where it can be used */
-#    define restrict
-#  else
-#    define restrict PETSC_RESTRICT
-#  endif
-#endif
 #if defined __SSE2__
 #  include <emmintrin.h>
 #endif
@@ -76,6 +57,8 @@ There are two compile-time options:
                           && !defined PETSC_USE_SCALAR_SINGLE           \
                           && !defined PETSC_USE_SCALAR_LONG_DOUBLE      \
                           && defined __SSE2__)
+
+#define restrict PETSC_RESTRICT
 
 static PetscClassId THI_CLASSID;
 
@@ -214,6 +197,12 @@ typedef struct {
   PetscScalar beta2;            /* friction */
 } PrmNode;
 
+#define FieldSize(ntype) (sizeof(ntype)/sizeof(PetscScalar))
+#define FieldOffset(ntype,member) (offsetof(ntype,member)/sizeof(PetscScalar))
+#define FieldIndex(ntype,i,member) ((i)*FieldSize(ntype) + FieldOffset(ntype,member))
+#define NODE_SIZE FieldSize(Node)
+#define PRMNODE_SIZE FieldSize(PrmNode)
+
 typedef struct {
   PetscReal min,max,cmin,cmax;
 } PRange;
@@ -232,7 +221,7 @@ struct _p_THI {
   PRange    eta;
   PRange    beta2;
   struct {
-    PetscReal Bd2,eps,exponent;
+    PetscReal Bd2,eps,exponent,glen_n;
   } viscosity;
   struct {
     PetscReal irefgam,eps2,exponent;
@@ -241,6 +230,8 @@ struct _p_THI {
   PetscBool no_slip;
   PetscBool verbose;
   MatType   mattype;
+  char      *monitor_basename;
+  PetscInt  monitor_interval;
 };
 
 struct _n_Units {
@@ -268,10 +259,44 @@ static void PrmHexGetZ(const PrmNode pn[],PetscInt k,PetscInt zm,PetscReal zn[])
   for (i=0; i<8; i++) zn[i] = PetscRealPart(znl[i]);
 }
 
-static inline PetscReal StaggeredMidpoint2D(PetscScalar a,PetscScalar b,PetscScalar c,PetscScalar d)
-{return 0.5*(PetscReal)(0.75*a + 0.75*b + 0.25*c + 0.25*d);}
+#undef __FUNCT__  
+#define __FUNCT__ "QuadComputeGrad4"
+/* Compute a gradient of all the 2D fields at four quadrature points.  Output for [quadrature_point][direction].field_name */
+static PetscErrorCode QuadComputeGrad4(const PetscReal dphi[][4][2],PetscReal hx,PetscReal hy,const PrmNode pn[4],PrmNode dp[4][2])
+{
+  PetscErrorCode ierr;
+  PetscInt       q,i,f;
+  const PetscScalar (*restrict pg)[PRMNODE_SIZE] = (const PetscScalar(*)[PRMNODE_SIZE])pn; /* Get generic array pointers to the node */
+  PetscScalar (*restrict dpg)[2][PRMNODE_SIZE]   = (PetscScalar(*)[2][PRMNODE_SIZE])dp;
 
-static void PrmNodeGetFaceMeasure(const PrmNode **p,PetscInt i,PetscInt j,PetscReal h[])
+  PetscFunctionBegin;
+  ierr = PetscMemzero(dpg,4*sizeof(dpg[0]));CHKERRQ(ierr);
+  for (q=0; q<4; q++) {
+    for (i=0; i<4; i++) {
+      for (f=0; f<PRMNODE_SIZE; f++) {
+        dpg[q][0][f] += dphi[q][i][0]/hx * pg[i][f];
+        dpg[q][1][f] += dphi[q][i][1]/hy * pg[i][f];
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+static inline PetscReal StaggeredMidpoint2D(PetscScalar a,PetscScalar b,PetscScalar c,PetscScalar d)
+{return 0.5*PetscRealPart(0.75*a + 0.75*b + 0.25*c + 0.25*d);}
+static inline PetscReal UpwindFlux1D(PetscReal u,PetscReal hL,PetscReal hR)
+{return (u > 0) ? hL*u : hR*u;}
+
+#define UpwindFluxXW(x3,x2,h,i,j,k,dj) UpwindFlux1D(StaggeredMidpoint2D(x3[i][j][k].u,x3[i-1][j][k].u, x3[i-1][j+dj][k].u,x3[i][k+dj][k].u), \
+                                                    PetscRealPart(0.75*x2[i-1][j  ].h+0.25*x2[i-1][j+dj].h), PetscRealPart(0.75*x2[i  ][j  ].h+0.25*x2[i  ][j+dj].h))
+#define UpwindFluxXE(x3,x2,h,i,j,k,dj) UpwindFlux1D(StaggeredMidpoint2D(x3[i][j][k].u,x3[i+1][j][k].u, x3[i+1][j+dj][k].u,x3[i][k+dj][k].u), \
+                                                    PetscRealPart(0.75*x2[i  ][j  ].h+0.25*x2[i  ][j+dj].h), PetscRealPart(0.75*x2[i+1][j  ].h+0.25*x2[i+1][j+dj].h))
+#define UpwindFluxYS(x3,x2,h,i,j,k,di) UpwindFlux1D(StaggeredMidpoint2D(x3[i][j][k].v,x3[i][j-1][k].v, x3[i+di][j-1][k].v,x3[i+di][j][k].v), \
+                                                    PetscRealPart(0.75*x2[i  ][j-1].h+0.25*x2[i+di][j-1].h), PetscRealPart(0.75*x2[i  ][j  ].h+0.25*x2[i+di][j  ].h))
+#define UpwindFluxYN(x3,x2,h,i,j,k,di) UpwindFlux1D(StaggeredMidpoint2D(x3[i][j][k].v,x3[i][j+1][k].v, x3[i+di][j+1][k].v,x3[i+di][j][k].v), \
+                                                    PetscRealPart(0.75*x2[i  ][j  ].h+0.25*x2[i+di][j  ].h), PetscRealPart(0.75*x2[i  ][j+1].h+0.25*x2[i+di][j+1].h))
+
+static void PrmNodeGetFaceMeasure(const PrmNode **p,PetscInt i,PetscInt j,PetscScalar h[])
 {
   /* West */
   h[0] = StaggeredMidpoint2D(p[i][j].h,p[i-1][j].h,p[i-1][j-1].h,p[i][j-1].h);
@@ -291,7 +316,7 @@ static void PrmNodeGetFaceMeasure(const PrmNode **p,PetscInt i,PetscInt j,PetscR
 static void THIInitialize_HOM_A(THI thi,PetscReal x,PetscReal y,PrmNode *p)
 {
   Units units = thi->units;
-  PetscReal s = -x*tan(thi->alpha);
+  PetscReal s = -x*sin(thi->alpha);
   p->b = s - 1000*units->meter + 500*units->meter * sin(x*2*PETSC_PI/thi->Lx) * sin(y*2*PETSC_PI/thi->Ly);
   p->h = s - p->b;
   p->beta2 = 1e30;
@@ -300,24 +325,50 @@ static void THIInitialize_HOM_A(THI thi,PetscReal x,PetscReal y,PrmNode *p)
 static void THIInitialize_HOM_C(THI thi,PetscReal x,PetscReal y,PrmNode *p)
 {
   Units units = thi->units;
-  PetscReal s = -x*tan(thi->alpha);
+  PetscReal s = -x*sin(thi->alpha);
   p->b = s - 1000*units->meter;
   p->h = s - p->b;
-  /* tau_b = beta2 v   is a stress (Pa) */
-  p->beta2 = 1000 * (1 + sin(x*2*PETSC_PI/thi->Lx)*sin(y*2*PETSC_PI/thi->Ly)) * units->Pascal * units->year / units->meter;
+  /* tau_b = beta2 v   is a stress (Pa).
+   * This is a big number in our units (it needs to balance the driving force from the surface), so we scale it by 1/rhog, just like the residual. */
+  p->beta2 = 1000 * (1 + sin(x*2*PETSC_PI/thi->Lx)*sin(y*2*PETSC_PI/thi->Ly)) * units->Pascal * units->year / units->meter / thi->rhog;
 }
 
 /* These are just toys */
+
+/* From Fred Herman */
+static void THIInitialize_HOM_F(THI thi,PetscReal x,PetscReal y,PrmNode *p)
+{
+  Units units = thi->units;
+  PetscReal s = -x*sin(thi->alpha);
+  p->b = s - 1000*units->meter + 100*units->meter * sin(x*2*PETSC_PI/thi->Lx);// * sin(y*2*PETSC_PI/thi->Ly);
+  p->h = s - p->b;
+  p->h = (1-(atan((x-thi->Lx/2)/1.)+PETSC_PI/2.)/PETSC_PI)*500*units->meter+1*units->meter;
+  s = PetscRealPart(p->b + p->h);
+  p->beta2 = 1e30;
+  //  p->beta2 = 1000 * units->Pascal * units->year / units->meter;
+}
 
 /* Same bed as test A, free slip everywhere except for a discontinuous jump to a circular sticky region in the middle. */
 static void THIInitialize_HOM_X(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
 {
   Units units = thi->units;
   PetscReal x = xx*2*PETSC_PI/thi->Lx - PETSC_PI,y = yy*2*PETSC_PI/thi->Ly - PETSC_PI; /* [-pi,pi] */
-  PetscReal r = sqrt(x*x + y*y),s = -x*tan(thi->alpha);
+  PetscReal r = sqrt(x*x + y*y),s = -x*sin(thi->alpha);
   p->b = s - 1000*units->meter + 500*units->meter * sin(x + PETSC_PI) * sin(y + PETSC_PI);
   p->h = s - p->b;
-  p->beta2 = 1000 * (r < 1 ? 2 : 0) * units->Pascal * units->year / units->meter;
+  p->beta2 = 1000 * (r < 1 ? 2 : 0) * units->Pascal * units->year / units->meter / thi->rhog;
+}
+
+/* Like Z, but with 200 meter cliffs */
+static void THIInitialize_HOM_Y(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
+{
+  Units units = thi->units;
+  PetscReal x = xx*2*PETSC_PI/thi->Lx - PETSC_PI,y = yy*2*PETSC_PI/thi->Ly - PETSC_PI; /* [-pi,pi] */
+  PetscReal r = sqrt(x*x + y*y),s = -x*sin(thi->alpha);
+  p->b = s - 1000*units->meter + 500*units->meter * sin(x + PETSC_PI) * sin(y + PETSC_PI);
+  if (PetscRealPart(p->b) > -700*units->meter) p->b += 200*units->meter;
+  p->h = s - p->b;
+  p->beta2 = 1000 * (1. + sin(sqrt(16*r))/sqrt(1e-2 + 16*r)*cos(x*3/2)*cos(y*3/2)) * units->Pascal * units->year / units->meter / thi->rhog;
 }
 
 /* Same bed as A, smoothly varying slipperiness, similar to Matlab's "sombrero" (uncorrelated with bathymetry) */
@@ -325,10 +376,10 @@ static void THIInitialize_HOM_Z(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
 {
   Units units = thi->units;
   PetscReal x = xx*2*PETSC_PI/thi->Lx - PETSC_PI,y = yy*2*PETSC_PI/thi->Ly - PETSC_PI; /* [-pi,pi] */
-  PetscReal r = sqrt(x*x + y*y),s = -x*tan(thi->alpha);
+  PetscReal r = sqrt(x*x + y*y),s = -x*sin(thi->alpha);
   p->b = s - 1000*units->meter + 500*units->meter * sin(x + PETSC_PI) * sin(y + PETSC_PI);
   p->h = s - p->b;
-  p->beta2 = 1000 * (1. + sin(sqrt(16*r))/sqrt(1e-2 + 16*r)*cos(x*3/2)*cos(y*3/2)) * units->Pascal * units->year / units->meter;
+  p->beta2 = 1000 * (1. + sin(sqrt(16*r))/sqrt(1e-2 + 16*r)*cos(x*3/2)*cos(y*3/2)) * units->Pascal * units->year / units->meter / thi->rhog;
 }
 
 static void THIFriction(THI thi,PetscReal rbeta2,PetscReal gam,PetscReal *beta2,PetscReal *dbeta2)
@@ -353,7 +404,7 @@ static void THIViscosity(THI thi,PetscReal gam,PetscReal *eta,PetscReal *deta)
   if (thi->viscosity.Bd2 == 0) {
     Units units = thi->units;
     const PetscReal
-      n = 3.,                                           /* Glen exponent */
+      n = thi->viscosity.glen_n,                        /* Glen exponent */
       p = 1. + 1./n,                                    /* for Stokes */
       A = 1.e-16 * pow(units->Pascal,-n) / units->year, /* softness parameter (Pa^{-n}/s) */
       B = pow(A,-1./n);                                 /* hardness parameter */
@@ -403,6 +454,7 @@ static PetscErrorCode THIDestroy(THI thi)
   if (--((PetscObject)thi)->refct > 0) PetscFunctionReturn(0);
   ierr = PetscFree(thi->units);CHKERRQ(ierr);
   ierr = PetscFree(thi->mattype);CHKERRQ(ierr);
+  ierr = PetscFree(thi->monitor_basename);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(thi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -411,10 +463,11 @@ static PetscErrorCode THIDestroy(THI thi)
 #define __FUNCT__ "THICreate"
 static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
 {
-  static PetscBool  registered = PETSC_FALSE;
-  THI thi;
-  Units units;
-  PetscErrorCode ierr;
+  static PetscBool registered = PETSC_FALSE;
+  THI              thi;
+  Units            units;
+  char             monitor_basename[PETSC_MAX_PATH_LEN] = "thi-";
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   *inthi = 0;
@@ -446,6 +499,8 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   thi->dirichlet_scale = 1;
   thi->verbose         = PETSC_FALSE;
 
+  thi->viscosity.glen_n = 3.;
+
   ierr = PetscOptionsBegin(comm,NULL,"Toy Hydrostatic Ice options","");CHKERRQ(ierr);
   {
     QuadratureType quad = QUAD_GAUSS;
@@ -461,41 +516,52 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
     ierr = PetscOptionsReal("-thi_Lz","Z Domain size (m)","",thi->Lz,&thi->Lz,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-thi_hom","ISMIP-HOM experiment (A or C)","",homexp,homexp,sizeof(homexp),NULL);CHKERRQ(ierr);
     switch (homexp[0] = toupper(homexp[0])) {
-      case 'A':
-        thi->initialize = THIInitialize_HOM_A;
-        thi->no_slip = PETSC_TRUE;
-        thi->alpha = 0.5;
-        break;
-      case 'C':
-        thi->initialize = THIInitialize_HOM_C;
-        thi->no_slip = PETSC_FALSE;
-        thi->alpha = 0.1;
-        break;
-      case 'X':
-        thi->initialize = THIInitialize_HOM_X;
-        thi->no_slip = PETSC_FALSE;
-        thi->alpha = 0.3;
-        break;
-      case 'Z':
-        thi->initialize = THIInitialize_HOM_Z;
-        thi->no_slip = PETSC_FALSE;
-        thi->alpha = 0.5;
-        break;
-      default:
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"HOM experiment '%c' not implemented",homexp[0]);
+    case 'A':
+      thi->initialize = THIInitialize_HOM_A;
+      thi->no_slip = PETSC_TRUE;
+      thi->alpha = 0.5;
+      break;
+    case 'C':
+      thi->initialize = THIInitialize_HOM_C;
+      thi->no_slip = PETSC_FALSE;
+      thi->alpha = 0.1;
+      break;
+    case 'F':
+      thi->initialize = THIInitialize_HOM_F;
+      thi->no_slip = PETSC_FALSE;
+      thi->alpha = 0.5;
+      break;
+    case 'X':
+      thi->initialize = THIInitialize_HOM_X;
+      thi->no_slip = PETSC_FALSE;
+      thi->alpha = 0.3;
+      break;
+    case 'Y':
+      thi->initialize = THIInitialize_HOM_Y;
+      thi->no_slip = PETSC_FALSE;
+      thi->alpha = 0.5;
+      break;
+    case 'Z':
+      thi->initialize = THIInitialize_HOM_Z;
+      thi->no_slip = PETSC_FALSE;
+      thi->alpha = 0.5;
+      break;
+    default:
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"HOM experiment '%c' not implemented",homexp[0]);
     }
     ierr = PetscOptionsEnum("-thi_quadrature","Quadrature to use for 3D elements","",QuadratureTypes,(PetscEnum)quad,(PetscEnum*)&quad,NULL);CHKERRQ(ierr);
     switch (quad) {
-      case QUAD_GAUSS:
-        HexQInterp = HexQInterp_Gauss;
-        HexQDeriv  = HexQDeriv_Gauss;
-        break;
-      case QUAD_LOBATTO:
-        HexQInterp = HexQInterp_Lobatto;
-        HexQDeriv  = HexQDeriv_Lobatto;
-        break;
+    case QUAD_GAUSS:
+      HexQInterp = HexQInterp_Gauss;
+      HexQDeriv  = HexQDeriv_Gauss;
+      break;
+    case QUAD_LOBATTO:
+      HexQInterp = HexQInterp_Lobatto;
+      HexQDeriv  = HexQDeriv_Lobatto;
+      break;
     }
     ierr = PetscOptionsReal("-thi_alpha","Bed angle (degrees)","",thi->alpha,&thi->alpha,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-thi_viscosity_glen_n","Exponent in Glen flow law, 1=linear, infty=ideal plastic",NULL,thi->viscosity.glen_n,&thi->viscosity.glen_n,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-thi_friction_m","Friction exponent, 0=Coulomb, 1=Navier","",m,&m,NULL);CHKERRQ(ierr);
     thi->friction.exponent = (m-1)/2;
     ierr = PetscOptionsReal("-thi_dirichlet_scale","Scale Dirichlet boundary conditions by this factor","",thi->dirichlet_scale,&thi->dirichlet_scale,NULL);CHKERRQ(ierr);
@@ -505,6 +571,12 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
     ierr = PetscOptionsList("-thi_mat_type","Matrix type","MatSetType",MatList,mtype,(char*)mtype,sizeof(mtype),NULL);CHKERRQ(ierr);
     ierr = PetscStrallocpy(mtype,&thi->mattype);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-thi_verbose","Enable verbose output (like matrix sizes and statistics)","",thi->verbose,&thi->verbose,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-thi_monitor","Basename to write state files to",NULL,monitor_basename,monitor_basename,sizeof monitor_basename,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscStrallocpy(monitor_basename,&thi->monitor_basename);CHKERRQ(ierr);
+      thi->monitor_interval = 1;
+      ierr = PetscOptionsInt("-thi_monitor_interval","Frequency at which to write state files",NULL,thi->monitor_interval,&thi->monitor_interval,NULL);CHKERRQ(ierr);
+    }
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -522,7 +594,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
       gradu = u / (100*units->meter),eta,deta,
       rho = 910 * units->kilogram/pow(units->meter,3),
       grav = 9.81 * units->meter/PetscSqr(units->second),
-      driving = rho * grav * tan(thi->alpha) * 1000*units->meter;
+      driving = rho * grav * sin(thi->alpha) * 1000*units->meter;
     THIViscosity(thi,0.5*gradu*gradu,&eta,&deta);
     thi->rhog = rho * grav;
     if (thi->verbose) {
@@ -535,6 +607,33 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   }
 
   *inthi = thi;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "THIFixGhosts"
+/* Our problem is periodic, but the domain has a mean slope of alpha so the bed does not line up between the upstream
+ * and downstream ends of the domain.  This function fixes the ghost values so that the domain appears truly periodic in
+ * the horizontal. */
+static PetscErrorCode THIFixGhosts(THI thi,DM da3,DM da2,Vec X3,Vec X2)
+{
+  PetscErrorCode ierr;
+  DMDALocalInfo  info;
+  PrmNode        **x2;
+  PetscInt       i,j;
+
+  PetscFunctionBegin;
+  ierr = DMDAGetLocalInfo(da3,&info);CHKERRQ(ierr);
+  //ierr = VecView(X2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2,X2,&x2);CHKERRQ(ierr);
+  for (i=info.gzs; i<info.gzs+info.gzm; i++) {
+    if (i > -1 && i < info.mz) continue;
+    for (j=info.gys; j<info.gys+info.gym; j++) {
+      x2[i][j].b += sin(thi->alpha) * thi->Lx * (i<0 ? 1.0 : -1.0);
+    }
+  }
+  ierr = DMDAVecRestoreArray(da2,X2,&x2);CHKERRQ(ierr);
+  //ierr = VecView(X2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -662,8 +761,9 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
 
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
-      PrmNode pn[4];
+      PrmNode pn[4],dpn[4][2];
       QuadExtract(prm,i,j,pn);
+      ierr = QuadComputeGrad4(QuadQDeriv,hx,hy,pn,dpn);CHKERRQ(ierr);
       for (k=0; k<zm-1; k++) {
         PetscInt ls = 0;
         Node n[8],*fn[8];
@@ -686,7 +786,7 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
           if (q == 0) etabase = eta;
           RangeUpdate(&etamin,&etamax,eta);
           for (l=ls; l<8; l++) { /* test functions */
-            const PetscReal ds[2] = {-tan(thi->alpha),0};
+            const PetscReal ds[2] = {dpn[q%4][0].h+dpn[q%4][0].b, dpn[q%4][1].h+dpn[q%4][1].b};
             const PetscReal pp=phi[l],*dp = dphi[l];
             fn[l]->u += dp[0]*jw*eta*(4.*du[0]+2.*dv[1]) + dp[1]*jw*eta*(du[1]+dv[0]) + dp[2]*jw*eta*du[2] + pp*jw*thi->rhog*ds[0];
             fn[l]->v += dp[1]*jw*eta*(2.*du[0]+4.*dv[1]) + dp[0]*jw*eta*(du[1]+dv[0]) + dp[2]*jw*eta*dv[2] + pp*jw*thi->rhog*ds[1];
@@ -712,8 +812,8 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
             fn[0]->u = thi->dirichlet_scale*diagu*x[i][j][k].u;
             fn[0]->v = thi->dirichlet_scale*diagv*x[i][j][k].v;
           } else {              /* Integrate over bottom face to apply boundary condition */
-            for (q=0; q<4; q++) {
-              const PetscReal jw = 0.25*hx*hy/thi->rhog,*phi = QuadQInterp[q];
+            for (q=0; q<4; q++) { /* We remove the explicit scaling of the residual by 1/rhog because beta2 already has that scaling to be O(1) */
+              const PetscReal jw = 0.25*hx*hy,*phi = QuadQInterp[q];
               PetscScalar u=0,v=0,rbeta2=0;
               PetscReal beta2,dbeta2;
               for (l=0; l<4; l++) {
@@ -761,17 +861,28 @@ static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info,const Node ***x,co
       PetscScalar div = 0,h[8];
       PrmNodeGetFaceMeasure(prm,i,j,h);
       for (k=0; k<zm; k++) {
-        PetscScalar weight = (k==0 || k == zm-1) ? 0.5/zm : 1.0/zm;
-        div += (- weight*h[0] * StaggeredMidpoint2D(x[i][j][k].u,x[i-1][j][k].u, x[i-1][j-1][k].u,x[i][j-1][k].u)
-                - weight*h[1] * StaggeredMidpoint2D(x[i][j][k].u,x[i-1][j][k].u, x[i-1][j+1][k].u,x[i][j+1][k].u)
-                + weight*h[2] * StaggeredMidpoint2D(x[i][j][k].u,x[i+1][j][k].u, x[i+1][j+1][k].u,x[i][j+1][k].u)
-                + weight*h[3] * StaggeredMidpoint2D(x[i][j][k].u,x[i+1][j][k].u, x[i+1][j-1][k].u,x[i][j-1][k].u)
-                - weight*h[4] * StaggeredMidpoint2D(x[i][j][k].v,x[i][j-1][k].v, x[i+1][j-1][k].v,x[i+1][j][k].v)
-                - weight*h[5] * StaggeredMidpoint2D(x[i][j][k].v,x[i][j-1][k].v, x[i-1][j-1][k].v,x[i-1][j][k].v)
-                + weight*h[6] * StaggeredMidpoint2D(x[i][j][k].v,x[i][j+1][k].v, x[i-1][j+1][k].v,x[i-1][j][k].v)
-                + weight*h[7] * StaggeredMidpoint2D(x[i][j][k].v,x[i][j+1][k].v, x[i+1][j+1][k].v,x[i+1][j][k].v));
+        PetscScalar weight = (k==0 || k == zm-1) ? 0.5/(zm-1) : 1.0/(zm-1);
+        if (0) {                /* centered flux */
+          div += (- weight*h[0] * StaggeredMidpoint2D(x[i][j][k].u,x[i-1][j][k].u, x[i-1][j-1][k].u,x[i][j-1][k].u)
+                  - weight*h[1] * StaggeredMidpoint2D(x[i][j][k].u,x[i-1][j][k].u, x[i-1][j+1][k].u,x[i][j+1][k].u)
+                  + weight*h[2] * StaggeredMidpoint2D(x[i][j][k].u,x[i+1][j][k].u, x[i+1][j+1][k].u,x[i][j+1][k].u)
+                  + weight*h[3] * StaggeredMidpoint2D(x[i][j][k].u,x[i+1][j][k].u, x[i+1][j-1][k].u,x[i][j-1][k].u)
+                  - weight*h[4] * StaggeredMidpoint2D(x[i][j][k].v,x[i][j-1][k].v, x[i+1][j-1][k].v,x[i+1][j][k].v)
+                  - weight*h[5] * StaggeredMidpoint2D(x[i][j][k].v,x[i][j-1][k].v, x[i-1][j-1][k].v,x[i-1][j][k].v)
+                  + weight*h[6] * StaggeredMidpoint2D(x[i][j][k].v,x[i][j+1][k].v, x[i-1][j+1][k].v,x[i-1][j][k].v)
+                  + weight*h[7] * StaggeredMidpoint2D(x[i][j][k].v,x[i][j+1][k].v, x[i+1][j+1][k].v,x[i+1][j][k].v));
+        } else {                /* Upwind flux */
+          div += weight*(-UpwindFluxXW(x,prm,h,i,j,k, 1)
+                         -UpwindFluxXW(x,prm,h,i,j,k,-1)
+                         +UpwindFluxXE(x,prm,h,i,j,k, 1)
+                         +UpwindFluxXE(x,prm,h,i,j,k,-1)
+                         -UpwindFluxYS(x,prm,h,i,j,k, 1)
+                         -UpwindFluxYS(x,prm,h,i,j,k,-1)
+                         +UpwindFluxYN(x,prm,h,i,j,k, 1)
+                         +UpwindFluxYN(x,prm,h,i,j,k,-1));
+        }
       }
-      //printf("div[%d][%d] %g\n",i,j,div);
+      /* printf("div[%d][%d] %g\n",i,j,div); */
       f[i][j].b     = prmdot[i][j].b;
       f[i][j].h     = prmdot[i][j].h + div;
       f[i][j].beta2 = prmdot[i][j].beta2;
@@ -801,6 +912,7 @@ static PetscErrorCode THIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *c
   ierr = DMCompositeGetLocalVectors(pack,&X3,&X2);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(pack,&Xdot3,&Xdot2);CHKERRQ(ierr);
   ierr = DMCompositeScatter(pack,X,X3,X2);CHKERRQ(ierr);
+  ierr = THIFixGhosts(thi,da3,da2,X3,X2);CHKERRQ(ierr);
   ierr = DMCompositeScatter(pack,Xdot,Xdot3,Xdot2);CHKERRQ(ierr);
 
   ierr = DMGetLocalVector(da3,&F3);CHKERRQ(ierr);
@@ -823,6 +935,7 @@ static PetscErrorCode THIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *c
   ierr = DMDAVecRestoreArray(da2,F2,&f2);CHKERRQ(ierr);
 
   ierr = DMCompositeRestoreLocalVectors(pack,&X3,&X2);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreLocalVectors(pack,&Xdot3,&Xdot2);CHKERRQ(ierr);
 
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(pack,F,&F3g,&F2g);CHKERRQ(ierr);
@@ -832,10 +945,11 @@ static PetscErrorCode THIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *c
   ierr = DMLocalToGlobalEnd  (da2,F2,INSERT_VALUES,F2g);CHKERRQ(ierr);
 
   if (thi->inertia > 0) {       /* This is mostly non-physical, but turns the DAE into an ODE */
-    Vec Xdot3g;
-    ierr = DMCompositeGetAccess(pack,Xdot,&Xdot3g,NULL);CHKERRQ(ierr);
+    Vec Xdot3g,Xdot2g;
+    ierr = DMCompositeGetAccess(pack,Xdot,&Xdot3g,&Xdot2g);CHKERRQ(ierr);
     ierr = VecAXPY(F3g,thi->inertia,Xdot3g);CHKERRQ(ierr);
-    ierr = DMCompositeRestoreAccess(pack,Xdot,&Xdot3g,NULL);CHKERRQ(ierr);
+    ierr = VecCopy(Xdot2g,F2g);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(pack,Xdot,&Xdot3g,&Xdot2g);CHKERRQ(ierr);
   }
 
   if (thi->verbose) {
@@ -985,11 +1099,13 @@ static PetscErrorCode THISolveStatistics(THI thi,DMMG *dmmg,PetscInt coarsened,c
 
 static inline PetscInt DMDALocalIndex3D(DMDALocalInfo *info,PetscInt i,PetscInt j,PetscInt k)
 {return ((i-info->gzs)*info->gym + (j-info->gys))*info->gxm + (k-info->gxs);}
+static inline PetscInt DMDALocalIndex2D(DMDALocalInfo *info,PetscInt i,PetscInt j)
+{return (i-info->gzs)*info->gym + (j-info->gys);}
 
 #undef __FUNCT__  
 #define __FUNCT__ "THIJacobianLocal_Momentum"
 __attribute((unused))
-static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node ***x,const PrmNode **prm,Mat B,THI thi)
+static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node ***x,const PrmNode **prm,Mat B,Mat Bcpl,THI thi)
 {
   PetscInt       xs,ys,xm,ym,zm,i,j,k,q,l,ll;
   PetscReal      hx,hy;
@@ -1004,21 +1120,21 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
   hx = thi->Lx / info->mz;
   hy = thi->Ly / info->my;
 
-  ierr = MatZeroEntries(B);CHKERRQ(ierr);
-
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
-      PrmNode pn[4];
+      PrmNode pn[4],dpn[4][2];
       QuadExtract(prm,i,j,pn);
+      ierr = QuadComputeGrad4(QuadQDeriv,hx,hy,pn,dpn);CHKERRQ(ierr);
       for (k=0; k<zm-1; k++) {
         Node n[8];
         PetscReal zn[8],etabase = 0;
-        PetscScalar Ke[8*2][8*2];
+        PetscScalar Ke[8*NODE_SIZE][8*NODE_SIZE],Kcpl[8*NODE_SIZE][4*PRMNODE_SIZE];
         PetscInt ls = 0;
 
         PrmHexGetZ(pn,k,zm,zn);
         HexExtract(x,i,j,k,n);
-        PetscMemzero(Ke,sizeof(Ke));
+        ierr = PetscMemzero(Ke,sizeof(Ke));CHKERRQ(ierr);
+        ierr = PetscMemzero(Kcpl,sizeof(Kcpl));CHKERRQ(ierr);
         if (thi->no_slip && k == 0) {
           for (l=0; l<4; l++) n[l].u = n[l].v = 0;
           ls = 4;
@@ -1032,78 +1148,29 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
           jw /= thi->rhog;      /* residuals are scaled by this factor */
           if (q == 0) etabase = eta;
           for (l=ls; l<8; l++) { /* test functions */
-            const PetscReal *restrict dp = dphi[l];
-#if USE_SSE2_KERNELS
-            /* gcc (up to my 4.5 snapshot) is really bad at hoisting intrinsics so we do it manually */
-            __m128d
-              p4 = _mm_set1_pd(4),p2 = _mm_set1_pd(2),p05 = _mm_set1_pd(0.5),
-              p42 = _mm_setr_pd(4,2),p24 = _mm_shuffle_pd(p42,p42,_MM_SHUFFLE2(0,1)),
-              du0 = _mm_set1_pd(du[0]),du1 = _mm_set1_pd(du[1]),du2 = _mm_set1_pd(du[2]),
-              dv0 = _mm_set1_pd(dv[0]),dv1 = _mm_set1_pd(dv[1]),dv2 = _mm_set1_pd(dv[2]),
-              jweta = _mm_set1_pd(jw*eta),jwdeta = _mm_set1_pd(jw*deta),
-              dp0 = _mm_set1_pd(dp[0]),dp1 = _mm_set1_pd(dp[1]),dp2 = _mm_set1_pd(dp[2]),
-              dp0jweta = _mm_mul_pd(dp0,jweta),dp1jweta = _mm_mul_pd(dp1,jweta),dp2jweta = _mm_mul_pd(dp2,jweta),
-              p4du0p2dv1 = _mm_add_pd(_mm_mul_pd(p4,du0),_mm_mul_pd(p2,dv1)), /* 4 du0 + 2 dv1 */
-              p4dv1p2du0 = _mm_add_pd(_mm_mul_pd(p4,dv1),_mm_mul_pd(p2,du0)), /* 4 dv1 + 2 du0 */
-              pdu2dv2 = _mm_unpacklo_pd(du2,dv2),                             /* [du2, dv2] */
-              du1pdv0 = _mm_add_pd(du1,dv0),                                  /* du1 + dv0 */
-              t1 = _mm_mul_pd(dp0,p4du0p2dv1),                                /* dp0 (4 du0 + 2 dv1) */
-              t2 = _mm_mul_pd(dp1,p4dv1p2du0);                                /* dp1 (4 dv1 + 2 du0) */
-
-#endif
-#if defined COMPUTE_LOWER_TRIANGULAR  /* The element matrices are always symmetric so computing the lower-triangular part is not necessary */
+            const PetscReal pp=phi[l],*restrict dp = dphi[l];
             for (ll=ls; ll<8; ll++) { /* trial functions */
-#else
-            for (ll=l; ll<8; ll++) {
-#endif
               const PetscReal *restrict dpl = dphi[ll];
-#if !USE_SSE2_KERNELS
-              /* The analytic Jacobian in nice, easy-to-read form */
-              {
-                PetscScalar dgdu,dgdv;
-                dgdu = 2.*du[0]*dpl[0] + dv[1]*dpl[0] + 0.5*(du[1]+dv[0])*dpl[1] + 0.5*du[2]*dpl[2];
-                dgdv = 2.*dv[1]*dpl[1] + du[0]*dpl[1] + 0.5*(du[1]+dv[0])*dpl[0] + 0.5*dv[2]*dpl[2];
-                /* Picard part */
-                Ke[l*2+0][ll*2+0] += dp[0]*jw*eta*4.*dpl[0] + dp[1]*jw*eta*dpl[1] + dp[2]*jw*eta*dpl[2];
-                Ke[l*2+0][ll*2+1] += dp[0]*jw*eta*2.*dpl[1] + dp[1]*jw*eta*dpl[0];
-                Ke[l*2+1][ll*2+0] += dp[1]*jw*eta*2.*dpl[0] + dp[0]*jw*eta*dpl[1];
-                Ke[l*2+1][ll*2+1] += dp[1]*jw*eta*4.*dpl[1] + dp[0]*jw*eta*dpl[0] + dp[2]*jw*eta*dpl[2];
-                /* extra Newton terms */
-                Ke[l*2+0][ll*2+0] += dp[0]*jw*deta*dgdu*(4.*du[0]+2.*dv[1]) + dp[1]*jw*deta*dgdu*(du[1]+dv[0]) + dp[2]*jw*deta*dgdu*du[2];
-                Ke[l*2+0][ll*2+1] += dp[0]*jw*deta*dgdv*(4.*du[0]+2.*dv[1]) + dp[1]*jw*deta*dgdv*(du[1]+dv[0]) + dp[2]*jw*deta*dgdv*du[2];
-                Ke[l*2+1][ll*2+0] += dp[1]*jw*deta*dgdu*(4.*dv[1]+2.*du[0]) + dp[0]*jw*deta*dgdu*(du[1]+dv[0]) + dp[2]*jw*deta*dgdu*dv[2];
-                Ke[l*2+1][ll*2+1] += dp[1]*jw*deta*dgdv*(4.*dv[1]+2.*du[0]) + dp[0]*jw*deta*dgdv*(du[1]+dv[0]) + dp[2]*jw*deta*dgdv*dv[2];
-              }
-#else
-              /* This SSE2 code is an exact replica of above, but uses explicit packed instructions for some speed
-              * benefit.  On my hardware, these intrinsics are almost twice as fast as above, reducing total assembly cost
-              * by 25 to 30 percent. */
-              {
-                __m128d
-                  keu = _mm_loadu_pd(&Ke[l*2+0][ll*2+0]),
-                  kev = _mm_loadu_pd(&Ke[l*2+1][ll*2+0]),
-                  dpl01 = _mm_loadu_pd(&dpl[0]),dpl10 = _mm_shuffle_pd(dpl01,dpl01,_MM_SHUFFLE2(0,1)),dpl2 = _mm_set_sd(dpl[2]),
-                  t0,t3,pdgduv;
-                keu = _mm_add_pd(keu,_mm_add_pd(_mm_mul_pd(_mm_mul_pd(dp0jweta,p42),dpl01),
-                                                _mm_add_pd(_mm_mul_pd(dp1jweta,dpl10),
-                                                           _mm_mul_pd(dp2jweta,dpl2))));
-                kev = _mm_add_pd(kev,_mm_add_pd(_mm_mul_pd(_mm_mul_pd(dp1jweta,p24),dpl01),
-                                                _mm_add_pd(_mm_mul_pd(dp0jweta,dpl10),
-                                                           _mm_mul_pd(dp2jweta,_mm_shuffle_pd(dpl2,dpl2,_MM_SHUFFLE2(0,1))))));
-                pdgduv = _mm_mul_pd(p05,_mm_add_pd(_mm_add_pd(_mm_mul_pd(p42,_mm_mul_pd(du0,dpl01)),
-                                                              _mm_mul_pd(p24,_mm_mul_pd(dv1,dpl01))),
-                                                   _mm_add_pd(_mm_mul_pd(du1pdv0,dpl10),
-                                                              _mm_mul_pd(pdu2dv2,_mm_set1_pd(dpl[2]))))); /* [dgdu, dgdv] */
-                t0 = _mm_mul_pd(jwdeta,pdgduv);  /* jw deta [dgdu, dgdv] */
-                t3 = _mm_mul_pd(t0,du1pdv0);     /* t0 (du1 + dv0) */
-                _mm_storeu_pd(&Ke[l*2+0][ll*2+0],_mm_add_pd(keu,_mm_add_pd(_mm_mul_pd(t1,t0),
-                                                                          _mm_add_pd(_mm_mul_pd(dp1,t3),
-                                                                                     _mm_mul_pd(t0,_mm_mul_pd(dp2,du2))))));
-                _mm_storeu_pd(&Ke[l*2+1][ll*2+0],_mm_add_pd(kev,_mm_add_pd(_mm_mul_pd(t2,t0),
-                                                                          _mm_add_pd(_mm_mul_pd(dp0,t3),
-                                                                                     _mm_mul_pd(t0,_mm_mul_pd(dp2,dv2))))));
-              }
-#endif
+              PetscScalar dgdu,dgdv;
+              dgdu = 2.*du[0]*dpl[0] + dv[1]*dpl[0] + 0.5*(du[1]+dv[0])*dpl[1] + 0.5*du[2]*dpl[2];
+              dgdv = 2.*dv[1]*dpl[1] + du[0]*dpl[1] + 0.5*(du[1]+dv[0])*dpl[0] + 0.5*dv[2]*dpl[2];
+              /* Picard part */
+              Ke[l*2+0][ll*2+0] += dp[0]*jw*eta*4.*dpl[0] + dp[1]*jw*eta*dpl[1] + dp[2]*jw*eta*dpl[2];
+              Ke[l*2+0][ll*2+1] += dp[0]*jw*eta*2.*dpl[1] + dp[1]*jw*eta*dpl[0];
+              Ke[l*2+1][ll*2+0] += dp[1]*jw*eta*2.*dpl[0] + dp[0]*jw*eta*dpl[1];
+              Ke[l*2+1][ll*2+1] += dp[1]*jw*eta*4.*dpl[1] + dp[0]*jw*eta*dpl[0] + dp[2]*jw*eta*dpl[2];
+              /* extra Newton terms */
+              Ke[l*2+0][ll*2+0] += dp[0]*jw*deta*dgdu*(4.*du[0]+2.*dv[1]) + dp[1]*jw*deta*dgdu*(du[1]+dv[0]) + dp[2]*jw*deta*dgdu*du[2];
+              Ke[l*2+0][ll*2+1] += dp[0]*jw*deta*dgdv*(4.*du[0]+2.*dv[1]) + dp[1]*jw*deta*dgdv*(du[1]+dv[0]) + dp[2]*jw*deta*dgdv*du[2];
+              Ke[l*2+1][ll*2+0] += dp[1]*jw*deta*dgdu*(4.*dv[1]+2.*du[0]) + dp[0]*jw*deta*dgdu*(du[1]+dv[0]) + dp[2]*jw*deta*dgdu*dv[2];
+              Ke[l*2+1][ll*2+1] += dp[1]*jw*deta*dgdv*(4.*dv[1]+2.*du[0]) + dp[0]*jw*deta*dgdv*(du[1]+dv[0]) + dp[2]*jw*deta*dgdv*dv[2];
+            }
+            for (ll=0; ll<4; ll++) { /* Trial functions for surface/bed */
+              const PetscReal dpl[] = {QuadQDeriv[q%4][ll][0]/hx, QuadQDeriv[q%4][ll][1]/hy}; /* surface = h + b */
+              Kcpl[FieldIndex(Node,l,u)][FieldIndex(PrmNode,ll,h)] += pp*jw*thi->rhog*dpl[0];
+              Kcpl[FieldIndex(Node,l,u)][FieldIndex(PrmNode,ll,b)] += pp*jw*thi->rhog*dpl[0];
+              Kcpl[FieldIndex(Node,l,v)][FieldIndex(PrmNode,ll,h)] += pp*jw*thi->rhog*dpl[1];
+              Kcpl[FieldIndex(Node,l,v)][FieldIndex(PrmNode,ll,b)] += pp*jw*thi->rhog*dpl[1];
             }
           }
         }
@@ -1114,8 +1181,8 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
             Ke[0][0] = thi->dirichlet_scale*diagu;
             Ke[1][1] = thi->dirichlet_scale*diagv;
           } else {
-            for (q=0; q<4; q++) {
-              const PetscReal jw = 0.25*hx*hy/thi->rhog,*phi = QuadQInterp[q];
+            for (q=0; q<4; q++) { /* We remove the explicit scaling by 1/rhog because beta2 already has that scaling to be O(1) */
+              const PetscReal jw = 0.25*hx*hy,*phi = QuadQInterp[q];
               PetscScalar u=0,v=0,rbeta2=0;
               PetscReal beta2,dbeta2;
               for (l=0; l<4; l++) {
@@ -1138,7 +1205,7 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
           }
         }
         {
-          const PetscInt rc[8] = {
+          const PetscInt rc3blocked[8] = {
             DMDALocalIndex3D(info,i+0,j+0,k+0),
             DMDALocalIndex3D(info,i+1,j+0,k+0),
             DMDALocalIndex3D(info,i+1,j+1,k+0),
@@ -1147,6 +1214,11 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
             DMDALocalIndex3D(info,i+1,j+0,k+1),
             DMDALocalIndex3D(info,i+1,j+1,k+1),
             DMDALocalIndex3D(info,i+0,j+1,k+1)
+          },col2blocked[PRMNODE_SIZE*4] = {
+            DMDALocalIndex2D(info,i+0,j+0),
+            DMDALocalIndex2D(info,i+1,j+0),
+            DMDALocalIndex2D(info,i+1,j+1),
+            DMDALocalIndex2D(info,i+0,j+1)
           };
 #if !defined COMPUTE_LOWER_TRIANGULAR /* fill in lower-triangular part, this is really cheap compared to computing the entries */
           for (l=0; l<8; l++) {
@@ -1158,16 +1230,81 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
             }
           }
 #endif
-          ierr = MatSetValuesBlockedLocal(B,8,rc,8,rc,&Ke[0][0],ADD_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValuesBlockedLocal(B,8,rc3blocked,8,rc3blocked,&Ke[0][0],ADD_VALUES);CHKERRQ(ierr); /* velocity-velocity coupling can use blocked insertion */
+          {                     /* The off-diagonal part cannot (yet) */
+            PetscInt row3scalar[NODE_SIZE*8],col2scalar[PRMNODE_SIZE*4];
+            for (l=0; l<8; l++) for (ll=0; ll<NODE_SIZE; ll++)
+                                  row3scalar[l*NODE_SIZE+ll] = rc3blocked[l]*NODE_SIZE+ll;
+            for (l=0; l<4; l++) for (ll=0; ll<PRMNODE_SIZE; ll++)
+                                  col2scalar[l*PRMNODE_SIZE+ll] = col2blocked[l]*PRMNODE_SIZE+ll;
+            ierr = MatSetValuesLocal(Bcpl,8*NODE_SIZE,row3scalar,4*PRMNODE_SIZE,col2scalar,&Kcpl[0][0],ADD_VALUES);CHKERRQ(ierr);
+          }
         }
       }
     }
   }
+  PetscFunctionReturn(0);
+}
 
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-  if (thi->verbose) {ierr = THIMatrixStatistics(thi,B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+#undef __FUNCT__  
+#define __FUNCT__ "THIJacobianLocal_2D"
+static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,const Node ***x3,const PrmNode **x2,const PrmNode **xdot2,PetscReal a,Mat B22,Mat B21,THI thi)
+{
+  PetscErrorCode ierr;
+  PetscInt       xs,ys,xm,ym,zm,i,j,k;
+  PetscReal      hx,hy;
+
+  PetscFunctionBegin;
+  xs = info->zs;
+  ys = info->ys;
+  xm = info->zm;
+  ym = info->ym;
+  zm = info->xm;
+  hx = thi->Lx / info->mz;
+  hy = thi->Ly / info->my;
+
+  if (zm > 1024) SETERRQ(((PetscObject)info->da)->comm,PETSC_ERR_SUP,"Need to allocate more space");
+  for (i=xs; i<xs+xm; i++) {
+    for (j=ys; j<ys+ym; j++) {
+      {                         /* Self-coupling */
+        const PetscInt row[] = {DMDALocalIndex2D(info,i,j)};
+        const PetscInt col[] = {DMDALocalIndex2D(info,i,j)};
+        const PetscScalar vals[] = {
+          a,0,0,
+          0,a,0,
+          0,0,a
+        };
+        ierr = MatSetValuesBlockedLocal(B22,1,row,1,col,vals,INSERT_VALUES);CHKERRQ(ierr);
+      }
+      for (k=0; k<zm; k++) {    /* Coupling to velocity problem */
+        /* Use a cheaper quadrature than for residual evaluation, because it is much sparser */
+        const PetscInt row[] = {FieldIndex(PrmNode,DMDALocalIndex2D(info,i,j),h)};
+        const PetscInt cols[] = {
+          FieldIndex(Node,DMDALocalIndex3D(info,i-1,j,k),u),
+          FieldIndex(Node,DMDALocalIndex3D(info,i  ,j,k),u),
+          FieldIndex(Node,DMDALocalIndex3D(info,i+1,j,k),u),
+          FieldIndex(Node,DMDALocalIndex3D(info,i,j-1,k),v),
+          FieldIndex(Node,DMDALocalIndex3D(info,i,j  ,k),v),
+          FieldIndex(Node,DMDALocalIndex3D(info,i,j+1,k),v)
+        };
+        const PetscScalar
+          w  = (k && k<zm-1) ? 0.5 : 0.25,
+          hW = w*(x2[i-1][j  ].h+x2[i  ][j  ].h)/(zm-1),
+          hE = w*(x2[i  ][j  ].h+x2[i+1][j  ].h)/(zm-1),
+          hS = w*(x2[i  ][j-1].h+x2[i  ][j  ].h)/(zm-1),
+          hN = w*(x2[i  ][j  ].h+x2[i  ][j+1].h)/(zm-1),
+          vals_upwind[] = {((x3[i][j][k].u > 0) ? -hW : 0),
+                           ((x3[i][j][k].u > 0) ? +hE : -hW),
+                           ((x3[i][j][k].u > 0) ?  0  : +hE),
+                           ((x3[i][j][k].v > 0) ? -hS : 0),
+                           ((x3[i][j][k].v > 0) ? +hN : -hS),
+                           ((x3[i][j][k].v > 0) ?  0  : +hN)},
+          vals_centered[] = {-0.5*hW, 0.5*(-hW+hE), 0.5*hE,
+                             -0.5*hS, 0.5*(-hS+hN), 0.5*hN};
+        ierr = MatSetValuesLocal(B21,1,row,6,cols,1?vals_upwind:vals_centered,INSERT_VALUES);CHKERRQ(ierr);
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1176,23 +1313,84 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
 static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
 {
   PetscErrorCode ierr;
+  THI            thi = (THI)ctx;
+  DM             pack,da3,da2;
+  Vec            X3,X2,Xdot2;
+  Mat            B11,B12,B21,B22;
+  DMDALocalInfo  info3;
+  IS             *isloc;
+  const Node     ***x3;
+  const PrmNode  **x2,**xdot2;
 
   PetscFunctionBegin;
+  ierr = TSGetDM(ts,&pack);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da3,&info3);CHKERRQ(ierr);
+  ierr = DMCompositeGetLocalVectors(pack,&X3,&X2);CHKERRQ(ierr);
+  ierr = DMCompositeGetLocalVectors(pack,0,&Xdot2);CHKERRQ(ierr);
+  ierr = DMCompositeScatter(pack,X,X3,X2);CHKERRQ(ierr);
+  ierr = THIFixGhosts(thi,da3,da2,X3,X2);CHKERRQ(ierr);
+  ierr = DMCompositeScatter(pack,Xdot,0,Xdot2);CHKERRQ(ierr);
+
+  ierr = MatZeroEntries(*B);CHKERRQ(ierr);
+
+  ierr = DMCompositeGetLocalISs(pack,&isloc);CHKERRQ(ierr);
+  ierr = MatGetLocalSubMatrix(*B,isloc[0],isloc[0],&B11);CHKERRQ(ierr);
+  ierr = MatGetLocalSubMatrix(*B,isloc[0],isloc[1],&B12);CHKERRQ(ierr);
+  ierr = MatGetLocalSubMatrix(*B,isloc[1],isloc[0],&B21);CHKERRQ(ierr);
+  ierr = MatGetLocalSubMatrix(*B,isloc[1],isloc[1],&B22);CHKERRQ(ierr);
+
+  ierr = DMDAVecGetArray(da3,X3,&x3);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2,X2,&x2);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da2,Xdot2,&xdot2);CHKERRQ(ierr);
+
+  ierr = THIJacobianLocal_Momentum(&info3,x3,x2,B11,B12,thi);CHKERRQ(ierr);
+
+  /* Need to switch from ADD_VALUES to INSERT_VALUES */
+  ierr = MatAssemblyBegin(*B,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
+
+  ierr = THIJacobianLocal_2D(&info3,x3,x2,xdot2,a,B22,B21,thi);CHKERRQ(ierr);
+
+  ierr = DMDAVecRestoreArray(da3,X3,&x3);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da2,X2,&x2);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da2,Xdot2,&xdot2);CHKERRQ(ierr);
+
+  ierr = MatRestoreLocalSubMatrix(*B,isloc[0],isloc[0],&B11);CHKERRQ(ierr);
+  ierr = MatRestoreLocalSubMatrix(*B,isloc[0],isloc[1],&B12);CHKERRQ(ierr);
+  ierr = MatRestoreLocalSubMatrix(*B,isloc[1],isloc[0],&B21);CHKERRQ(ierr);
+  ierr = MatRestoreLocalSubMatrix(*B,isloc[1],isloc[1],&B22);CHKERRQ(ierr);
+  ierr = ISDestroy(isloc[0]);CHKERRQ(ierr);
+  ierr = ISDestroy(isloc[1]);CHKERRQ(ierr);
+  ierr = PetscFree(isloc);CHKERRQ(ierr);
+
+  ierr = DMCompositeRestoreLocalVectors(pack,&X3,&X2);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreLocalVectors(pack,0,&Xdot2);CHKERRQ(ierr);
+
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (*A != *B) {
+    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
   *mstr = SAME_NONZERO_PATTERN;
+  if (thi->verbose) {ierr = THIMatrixStatistics(thi,*B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "THIDAVecView_VTK_XML"
-static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char filename[])
+/* VTK's XML formats are so brain-dead that they can't handle multiple grids in the same file.  Since the communication
+ * can be shared between the two grids, we write two files at once, one for velocity (living on a 3D grid defined by
+ * h=thickness and b=bed) and another for all properties living on the 2D grid.
+ */
+static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char filename[],const char filename2[])
 {
-  const PetscInt dof = sizeof(Node)/sizeof(PetscScalar),dof2 = sizeof(PrmNode)/sizeof(PetscScalar);
+  const PetscInt dof = NODE_SIZE,dof2 = PRMNODE_SIZE;
   Units          units = thi->units;
   MPI_Comm       comm;
   PetscErrorCode ierr;
-  PetscViewer    viewer;
+  PetscViewer    viewer3,viewer2;
   PetscMPIInt    rank,size,tag,nn,nmax,nn2,nmax2;
   PetscInt       mx,my,mz,r,range[6];
   PetscScalar    *x,*x2;
@@ -1206,25 +1404,28 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
   ierr = DMDAGetInfo(da3,0, &mz,&my,&mx, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIOpen(comm,filename,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n",0,mz-1,0,my-1,0,mx-1);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIOpen(comm,filename,&viewer3);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIOpen(comm,filename2,&viewer2);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer3,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer2,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer3,"  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n",0,mz-1,0,my-1,0,mx-1);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer2,"  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n",0,0,0,my-1,0,mx-1);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(da3,range,range+1,range+2,range+3,range+4,range+5);CHKERRQ(ierr);
   nn = PetscMPIIntCast(range[3]*range[4]*range[5]*dof);
   ierr = MPI_Reduce(&nn,&nmax,1,MPI_INT,MPI_MAX,0,comm);CHKERRQ(ierr);
   nn2 = PetscMPIIntCast(range[4]*range[5]*dof2);CHKERRQ(ierr);
   ierr = MPI_Reduce(&nn2,&nmax2,1,MPI_INT,MPI_MAX,0,comm);CHKERRQ(ierr);
-  tag  = ((PetscObject)viewer)->tag;
+  tag  = ((PetscObject)viewer3)->tag;
   ierr = VecGetArray(X3,&x);CHKERRQ(ierr);
   ierr = VecGetArray(X2,&x2);CHKERRQ(ierr);
   if (!rank) {
     PetscScalar *array,*array2;
     ierr = PetscMalloc2(nmax,PetscScalar,&array,nmax2,PetscScalar,&array2);CHKERRQ(ierr);
     for (r=0; r<size; r++) {
-      PetscInt i,j,k,xs,xm,ys,ym,zs,zm;
+      PetscInt i,j,k,f,xs,xm,ys,ym,zs,zm;
       Node *y3;
-      PrmNode *y2;
+      PetscScalar (*y2)[PRMNODE_SIZE];
       MPI_Status status;
       if (r) {
         ierr = MPI_Recv(range,6,MPIU_INT,r,tag,comm,MPI_STATUS_IGNORE);CHKERRQ(ierr);
@@ -1238,44 +1439,70 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
         y3 = (Node*)array;
         ierr = MPI_Recv(array2,nmax2,MPIU_SCALAR,r,tag,comm,&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn2);CHKERRQ(ierr);
-        if (nn2 != ym*zm*dof2) SETERRQ(PETSC_COMM_SELF,1,"corrupt da2 send");
-        y2 = (PrmNode*)array2;
+        if (nn2 != xm*ym*dof2) SETERRQ(PETSC_COMM_SELF,1,"corrupt da2 send");
+        y2 = (PetscScalar(*)[PRMNODE_SIZE])array2;
       } else {
         y3 = (Node*)x;
-        y2 = (PrmNode*)x2;
+        y2 = (PetscScalar(*)[PRMNODE_SIZE])x2;
       }
-      ierr = PetscViewerASCIIPrintf(viewer,"    <Piece Extent=\"%d %d %d %d %d %d\">\n",zs,zs+zm-1,ys,ys+ym-1,xs,xs+xm-1);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer3,"    <Piece Extent=\"%d %d %d %d %d %d\">\n",zs,zs+zm-1,ys,ys+ym-1,xs,xs+xm-1);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer2,"    <Piece Extent=\"%d %d %d %d %d %d\">\n",0,0,ys,ys+ym-1,xs,xs+xm-1);CHKERRQ(ierr);
 
-      ierr = PetscViewerASCIIPrintf(viewer,"      <Points>\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"        <DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer3,"      <Points>\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer2,"      <Points>\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer3,"        <DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer2,"        <DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">\n");CHKERRQ(ierr);
       for (i=xs; i<xs+xm; i++) {
         for (j=ys; j<ys+ym; j++) {
+          PetscReal
+            xx = thi->Lx*i/mx,
+            yy = thi->Ly*j/my,
+            b  = PetscRealPart(y2[i*ym+j][FieldOffset(PrmNode,b)]),
+            h  = PetscRealPart(y2[i*ym+j][FieldOffset(PrmNode,h)]);
           for (k=zs; k<zs+zm; k++) {
-            PetscReal xx = thi->Lx*i/mx,yy = thi->Ly*j/my,zz;
-            zz = PetscRealPart(y2->b) + PetscRealPart(y2->h)*k/(mz-1);
-            ierr = PetscViewerASCIIPrintf(viewer,"%f %f %f\n",xx,yy,zz);CHKERRQ(ierr);
+            PetscReal zz = b + h*k/(mz-1.);
+            ierr = PetscViewerASCIIPrintf(viewer3,"%f %f %f\n",xx,yy,zz);CHKERRQ(ierr);
           }
-          y2++;
+          ierr = PetscViewerASCIIPrintf(viewer2,"%f %f %f\n",xx,yy,(double)0.0);CHKERRQ(ierr);
         }
       }
-      ierr = PetscViewerASCIIPrintf(viewer,"        </DataArray>\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"      </Points>\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer3,"        </DataArray>\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer2,"        </DataArray>\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer3,"      </Points>\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer2,"      </Points>\n");CHKERRQ(ierr);
 
-      ierr = PetscViewerASCIIPrintf(viewer,"      <PointData>\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"        <DataArray type=\"Float32\" Name=\"velocity\" NumberOfComponents=\"3\" format=\"ascii\">\n");CHKERRQ(ierr);
-      for (i=0; i<nn/dof; i++) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%f %f %f\n",PetscRealPart(y3[i].u)*units->year/units->meter,PetscRealPart(y3[i+1].v)*units->year/units->meter,0.0);CHKERRQ(ierr);
+      {                         /* Velocity and rank (3D) */
+        ierr = PetscViewerASCIIPrintf(viewer3,"      <PointData>\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer3,"        <DataArray type=\"Float32\" Name=\"velocity\" NumberOfComponents=\"3\" format=\"ascii\">\n");CHKERRQ(ierr);
+        for (i=0; i<nn/dof; i++) {
+          ierr = PetscViewerASCIIPrintf(viewer3,"%f %f %f\n",PetscRealPart(y3[i].u)*units->year/units->meter,PetscRealPart(y3[i].v)*units->year/units->meter,0.0);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer3,"        </DataArray>\n");CHKERRQ(ierr);
+
+        ierr = PetscViewerASCIIPrintf(viewer3,"        <DataArray type=\"Int32\" Name=\"rank\" NumberOfComponents=\"1\" format=\"ascii\">\n");CHKERRQ(ierr);
+        for (i=0; i<nn; i+=dof) {
+          ierr = PetscViewerASCIIPrintf(viewer3,"%d\n",r);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer3,"        </DataArray>\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer3,"      </PointData>\n");CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIIPrintf(viewer,"        </DataArray>\n");CHKERRQ(ierr);
 
-      ierr = PetscViewerASCIIPrintf(viewer,"        <DataArray type=\"Int32\" Name=\"rank\" NumberOfComponents=\"1\" format=\"ascii\">\n");CHKERRQ(ierr);
-      for (i=0; i<nn; i+=dof) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%d\n",r);CHKERRQ(ierr);
+      {                         /* 2D */
+        ierr = PetscViewerASCIIPrintf(viewer2,"      <PointData>\n");CHKERRQ(ierr);
+        for (f=0; f<PRMNODE_SIZE; f++) {
+          const char *fieldname;
+          ierr = DMDAGetFieldName(da2,f,&fieldname);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer2,"        <DataArray type=\"Float32\" Name=\"%s\" format=\"ascii\">\n",fieldname);CHKERRQ(ierr);
+          for (i=0; i<nn2/PRMNODE_SIZE; i++) {
+            ierr = PetscViewerASCIIPrintf(viewer2,"%g\n",y2[i][f]);CHKERRQ(ierr);
+          }
+          ierr = PetscViewerASCIIPrintf(viewer2,"        </DataArray>\n");CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer2,"      </PointData>\n");CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIIPrintf(viewer,"        </DataArray>\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"      </PointData>\n");CHKERRQ(ierr);
 
-      ierr = PetscViewerASCIIPrintf(viewer,"    </Piece>\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer3,"    </Piece>\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer2,"    </Piece>\n");CHKERRQ(ierr);
     }
     ierr = PetscFree2(array,array2);CHKERRQ(ierr);
   } else {
@@ -1285,12 +1512,36 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
   }
   ierr = VecRestoreArray(X3,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(X2,&x2);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer3,"  </StructuredGrid>\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer2,"  </StructuredGrid>\n");CHKERRQ(ierr);
+
   ierr = DMCompositeRestoreAccess(pack,X,&X3,&X2);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  </StructuredGrid>\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"</VTKFile>\n");CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer3,"</VTKFile>\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer2,"</VTKFile>\n");CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(viewer3);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(viewer2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "THITSMonitor"
+static PetscErrorCode THITSMonitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
+{
+  PetscErrorCode ierr;
+  THI            thi = (THI)ctx;
+  DM             pack;
+  char           filename3[PETSC_MAX_PATH_LEN],filename2[PETSC_MAX_PATH_LEN];
+
+  PetscFunctionBegin;
+  ierr = PetscPrintf(((PetscObject)ts)->comm,"%3D: t=%G\n",step,t);CHKERRQ(ierr);
+  if (thi->monitor_interval && step % thi->monitor_interval) PetscFunctionReturn(0);
+  ierr = TSGetDM(ts,&pack);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename3,sizeof filename3,"%s-3d-%03d.vts",thi->monitor_basename,step);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename2,sizeof filename2,"%s-2d-%03d.vts",thi->monitor_basename,step);CHKERRQ(ierr);
+  ierr = THIDAVecView_VTK_XML(thi,pack,X,filename3,filename2);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "THICreateDM3d"
@@ -1370,9 +1621,11 @@ int main(int argc,char *argv[])
   }
 
   ierr = PetscObjectSetName((PetscObject)da3,"3D_Velocity");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)da3,"f3d_");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da3,0,"u");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da3,1,"v");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)da2,"2D_Fields");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)da2,"f2d_");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da2,0,"b");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da2,1,"h");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da2,2,"beta2");CHKERRQ(ierr);
@@ -1382,7 +1635,8 @@ int main(int argc,char *argv[])
   ierr = DMDestroy(da3);CHKERRQ(ierr);
   ierr = DMDestroy(da2);CHKERRQ(ierr);
   ierr = DMSetUp(pack);CHKERRQ(ierr);
-  ierr = DMGetMatrix(pack,MATAIJ,&B);CHKERRQ(ierr);
+  ierr = DMGetMatrix(pack,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(B,"thi_");CHKERRQ(ierr);
 
   ierr = DMMGCreate(comm,thi->nlevels,thi,&dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,pack);CHKERRQ(ierr);
@@ -1414,6 +1668,7 @@ int main(int argc,char *argv[])
   ierr = TSCreate(comm,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts,pack);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,THITSMonitor,thi,NULL);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,THIFunction,thi);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,B,B,THIJacobian,thi);CHKERRQ(ierr);
@@ -1432,7 +1687,7 @@ int main(int argc,char *argv[])
     char filename[PETSC_MAX_PATH_LEN] = "";
     ierr = PetscOptionsGetString(PETSC_NULL,"-o",filename,sizeof(filename),&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = THIDAVecView_VTK_XML(thi,DMMGGetDM(dmmg),DMMGGetx(dmmg),filename);CHKERRQ(ierr);
+      ierr = THIDAVecView_VTK_XML(thi,pack,X,filename,NULL);CHKERRQ(ierr);
     }
   }
 

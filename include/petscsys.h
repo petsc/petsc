@@ -79,15 +79,6 @@ M*/
 /* ========================================================================== */
 
 /*
-   Currently cannot check formatting for PETSc print statements because we have our
-   own format %D and %G
-*/
-#undef  PETSC_PRINTF_FORMAT_CHECK
-#define PETSC_PRINTF_FORMAT_CHECK(a,b)
-#undef  PETSC_FPRINTF_FORMAT_CHECK
-#define PETSC_FPRINTF_FORMAT_CHECK(a,b)
-
-/*
    Fixes for ./configure time choices which impact our interface. Currently only
    calling conventions and extra compiler checking falls under this category.
 */
@@ -474,28 +465,6 @@ M*/
 
 .seealso: PetscBool , PETSC_FALSE
 M*/
-
-/*MC
-    PETSC_YES - Alias for PETSC_TRUE
-
-    Level: beginner
-
-    Note: Zero integer
-
-.seealso: PetscBool , PETSC_TRUE, PETSC_FALSE, PETSC_NO
-M*/
-#define PETSC_YES            PETSC_TRUE
-
-/*MC
-    PETSC_NO - Alias for PETSC_FALSE
-
-    Level: beginner
-
-    Note: Nonzero integer
-
-.seealso: PetscBool , PETSC_TRUE, PETSC_FALSE, PETSC_YES
-M*/
-#define PETSC_NO             PETSC_FALSE
 
 /*MC
     PETSC_NULL - standard way of passing in a null or array or pointer
@@ -1170,8 +1139,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscMallocSet(PetscErrorCode (*)(size
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscMallocClear(void);
 
 /*
-   Routines for tracing memory corruption/bleeding with default PETSc 
-   memory allocation
+   Routines for tracing memory corruption/bleeding with default PETSc  memory allocation
 */
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocDump(FILE *);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocDumpLog(FILE *);
@@ -1181,20 +1149,6 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocDebug(PetscBool);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocValidate(int,const char[],const char[],const char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT   PetscMallocSetDumpLog(void);
 
-
-/*
-    Variable type where we stash PETSc object pointers in Fortran.
-    On most machines size(pointer) == sizeof(long) - except windows
-    where its sizeof(long long)
-*/     
-
-#if (PETSC_SIZEOF_VOID_P) == (PETSC_SIZEOF_LONG)
-#define PetscFortranAddr   long
-#elif  (PETSC_SIZEOF_VOID_P) == (PETSC_SIZEOF_LONG_LONG)
-#define PetscFortranAddr   long long
-#else
-#error "Unknown size for PetscFortranAddr! Send us a bugreport at petsc-maint@mcs.anl.gov"
-#endif
 
 /*E
     PetscDataType - Used for handling different basic data types.
@@ -1420,7 +1374,7 @@ typedef PetscErrorCode (*PetscErrorCodeFunction)(void);
   0;{ PetscErrorCode (*f)B, __ierr; \
     __ierr = PetscObjectQueryFunction((PetscObject)obj,A,(PetscVoidStarFunction)&f);CHKERRQ(__ierr); \
     if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
-    else SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"Cannot locate function %s in object",A); \
+    else SETERRQ1(((PetscObject)obj)->comm,PETSC_ERR_SUP,"Cannot locate function %s in object",A); \
   }
 
 /*
@@ -1637,15 +1591,21 @@ extern PetscBool  PetscAMSPublishAll;
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscFixFilename(const char[],char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscFOpen(MPI_Comm,const char[],const char[],FILE**);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscFClose(MPI_Comm,FILE*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscFPrintf(MPI_Comm,FILE*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(3,4);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscPrintf(MPI_Comm,const char[],...)  PETSC_PRINTF_FORMAT_CHECK(2,3);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscFPrintf(MPI_Comm,FILE*,const char[],...);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscPrintf(MPI_Comm,const char[],...);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscSNPrintf(char*,size_t,const char [],...);
+
+
 
 /* These are used internally by PETSc ASCII IO routines*/
 #include <stdarg.h>
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscVSNPrintf(char*,size_t,const char[],size_t*,va_list);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  (*PetscVFPrintf)(FILE*,const char[],va_list);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscVFPrintfDefault(FILE*,const char[],va_list);
+
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscVFPrintf_Matlab(FILE*,const char[],va_list);
+#endif
 
 /*MC
     PetscErrorPrintf - Prints error messages.
@@ -1721,8 +1681,8 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscPOpen(MPI_Comm,const char[],const
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscPClose(MPI_Comm,FILE*);
 #endif
 
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscSynchronizedPrintf(MPI_Comm,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscSynchronizedFPrintf(MPI_Comm,FILE*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(3,4);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscSynchronizedPrintf(MPI_Comm,const char[],...);
+EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscSynchronizedFPrintf(MPI_Comm,FILE*,const char[],...);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscSynchronizedFlush(MPI_Comm);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscSynchronizedFGets(MPI_Comm,FILE*,size_t,char[]);
 EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscStartMatlab(MPI_Comm,const char[],const char[],FILE**);
