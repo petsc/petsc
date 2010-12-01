@@ -65,10 +65,10 @@ namespace ALE {
 
 // A helper macro that passes __FUNCT__ and __LINE__ with the error msg to the ERROR routine
 #define CHKERROR(ierr, msg) \
-  ALE::ERROR(ierr, __FUNCT__,  __LINE__, msg);
+  ::ALE::ERROR(ierr, __FUNCT__,  __LINE__, msg);
 
 // A helper macro that passes __FUNCT__ and __LINE__ with the error msg to the MPIERROR routine
 #define CHKMPIERROR(ierr, msg) \
-  ALE::MPIERROR(ierr, __FUNCT__,  __LINE__, msg);
+  ::ALE::MPIERROR(ierr, __FUNCT__,  __LINE__, msg);
 
 #endif

@@ -10,7 +10,7 @@ extern "C" PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_v
 namespace ALE {
   // TODO: Check status of Waits
   template<typename Value_>
-  class MPIMover : public ALE::ParallelObject {
+  class MPIMover : public ParallelObject {
   public:
     typedef Value_                                 value_type;
     typedef size_t                                 num_type;
