@@ -129,6 +129,7 @@ def chk_cython(CYTHON_VERSION_REQUIRED):
         CYTHON_VERSION = Cython.__version__
     except AttributeError:
         from Cython.Compiler.Version import version as CYTHON_VERSION
+    CYTHON_VERSION = CYTHON_VERSION.split('+', 1)[0]
     if Version(CYTHON_VERSION) < Version(CYTHON_VERSION_REQUIRED):
         warn("*"*80)
         warn()
