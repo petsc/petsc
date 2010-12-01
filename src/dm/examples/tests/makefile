@@ -7,7 +7,7 @@ LOCDIR          = src/dm/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c\
                   ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex19.c \
 	          ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex30.c \
-	          ex31.c ex32.c
+	          ex31.c ex32.c ex36.c
 EXAMPLESF       = 
 MANSEC          = DA
 
@@ -147,6 +147,9 @@ ex33: ex33.o   chkopts
 ex35: ex35.o   chkopts
 	-${CLINKER} -o ex35 ex35.o  ${PETSC_DM_LIB}
 	${RM} -f ex35.o
+ex36: ex36.o   chkopts
+	-${CLINKER} -o ex36 ex36.o  ${PETSC_DM_LIB}
+	${RM} -f ex36.o
 
 #-------------------------------------------------------------------------------
 runex1:
@@ -279,9 +282,42 @@ runex32:
 	  ${DIFF} output/ex32_1.out ex32_1.tmp || echo "Possible problem with ex32, diffs above"; \
 	  ${RM} -f ex32_1.tmp
 
+runex36_1d:
+	-@${MPIEXEC} -n 1 ./ex36 -mx 10 -nl 6 -dim 1 > ex36_1d.tmp; \
+	  ${DIFF} output/ex36_1d.out ex36_1d.tmp || echo "Possible problem with ex36_1d, diffs above"; \
+	  ${RM} -f ex36_1d.tmp
+
+runex36_2d:
+	-@${MPIEXEC} -n 1 ./ex36 -mx 10 -my 10 -nl 6 -dim 2 -cmap 0 > ex36_2d.tmp; \
+    ${MPIEXEC} -n 1 ./ex36 -mx 10 -my 10 -nl 6 -dim 2 -cmap 1 >> ex36_2d.tmp; \
+    ${MPIEXEC} -n 1 ./ex36 -mx 10 -my 10 -nl 6 -dim 2 -cmap 2 >> ex36_2d.tmp; \
+    ${MPIEXEC} -n 1 ./ex36 -mx 10 -my 10 -nl 6 -dim 2 -cmap 3 >> ex36_2d.tmp; \
+	  ${DIFF} output/ex36_2d.out ex36_2d.tmp || echo "Possible problem with ex36_2d, diffs above"; \
+	  ${RM} -f ex36_2d.tmp
+runex36_2dp1:
+	-@${MPIEXEC} -n 32 ./ex36 -mx 10 -my 10 -nl 4 -dim 2 -cmap 3 -da_refine_x 3 -da_refine_y 4 > ex36_2dp1.tmp; \
+	  ${DIFF} output/ex36_2dp1.out ex36_2dp1.tmp || echo "Possible problem with ex36_2dp1, diffs above"; \
+	  ${RM} -f ex36_2dp1.tmp
+runex36_2dp2:
+	-@${MPIEXEC} -n 32 ./ex36 -mx 10 -my 10 -nl 4 -dim 2 -cmap 3 -da_refine_x 3 -da_refine_y 1 > ex36_2dp2.tmp; \
+	  ${DIFF} output/ex36_2dp2.out ex36_2dp2.tmp || echo "Possible problem with ex36_2dp1, diffs above"; \
+	  ${RM} -f ex36_2dp2.tmp
+
+runex36_3d:
+	-@${MPIEXEC} -n 1 ./ex36 -mx 5 -my 5 -mz 5 -nl 4 -dim 3 -cmap 3 > ex36_3d.tmp; \
+	  ${DIFF} output/ex36_3d.out ex36_3d.tmp || echo "Possible problem with ex36_3d, diffs above"; \
+	  ${RM} -f ex36_3d.tmp
+
+runex36_3dp1:
+	-@${MPIEXEC} -n 32 ./ex36 -mx 5 -my 5 -mz 5 -nl 3 -dim 3 -cmap 1 -da_refine_x 1 -da_refine_y 3 -da_refine_z 4 > ex36_3dp1.tmp; \
+	  ${DIFF} output/ex36_3dp1.out ex36_3dp1.tmp || echo "Possible problem with ex36_3dp1, diffs above"; \
+	  ${RM} -f ex36_3dp1.tmp
+
+
 TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm ex16.PETSc runex16 runex16_2 ex16.rm \
                             ex21.PETSc runex21 ex21.rm ex24.PETSc runex24 ex24.rm ex25.PETSc \
-                            runex25 ex25.rm ex31.PETSc runex31 ex31.rm ex32.PETSc runex32 ex32.rm ex30.PETSc runex30 runex30_2 runex30_3 ex30.rm
+                            runex25 ex25.rm ex31.PETSc runex31 ex31.rm ex32.PETSc runex32 ex32.rm ex30.PETSc runex30 runex30_2 runex30_3 ex30.rm \
+                            ex36.PETSc runex36_1d runex36_2d runex36_2dp1 runex36_2dp2 runex36_3d runex36_3dp1 ex36.rm
 TESTEXAMPLES_C_X11	  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 \
                             ex6.rm ex7.PETSc ex7.rm  ex14.PETSc runex14 ex14.rm \
                             ex13.PETSc runex13 ex13.rm ex23.PETSc runex23 ex23.rm
