@@ -5,6 +5,9 @@ from __future__ import with_statement  # For python-2.5
 import os
 from collections import defaultdict, deque
 
+# Run with PETSC_VERBOSE=1 to see files and directories that do not conform to the standard structure
+VERBOSE = int(os.environ.get('PETSC_VERBOSE',0))
+
 def cmakeconditional(key,val):
   def unexpected():
     raise RuntimeError('Unexpected')
@@ -39,11 +42,19 @@ def pkgsources(pkg):
   autodirs = set('ftn-auto ftn-custom f90-custom'.split()) # Automatically recurse into these, if they exist
   skipdirs = set('examples benchmarks'.split())            # Skip these during the build
   def compareDirLists(mdirs,dirs):
+    if not VERBOSE: return
     smdirs = set(mdirs)
     sdirs  = set(dirs).difference(autodirs)
     if smdirs != sdirs:
       from sys import stderr
       print >>stderr, 'Directory mismatch at %s:\n\tmdirs=%r\n\t dirs=%r\n\t  sym=%r' % (root,sorted(smdirs),sorted(sdirs),smdirs.symmetric_difference(sdirs))
+  def compareSourceLists(msources, files):
+    if not VERBOSE: return
+    smsources = set(msources)
+    ssources  = set(f for f in files if os.path.splitext(f)[1] in ['.c', '.cxx', '.cc', '.cpp', '.F'])
+    if smsources != ssources:
+      from sys import stderr
+      print >>stderr, 'Source mismatch at %s:\n\tmsources=%r\n\t sources=%r\n\t  sym=%r' % (root,sorted(smsources),sorted(ssources),smsources.symmetric_difference(ssources))
   allconditions = defaultdict(set)
   sources = defaultdict(deque)
   for root,dirs,files in os.walk(os.path.join('src',pkg)):
@@ -51,8 +62,9 @@ def pkgsources(pkg):
     makefile = os.path.join(root,'makefile')
     if not os.path.exists(makefile):
       continue
-    mdirs = parse_makefile(makefile).get('DIRS','').split() # Directories specified in the makefile
-    #compareDirLists(mdirs,dirs)                            # diagnostic output to find unused directories
+    makevars = parse_makefile(makefile)
+    mdirs = makevars.get('DIRS','').split() # Directories specified in the makefile
+    compareDirLists(mdirs,dirs) # diagnostic output to find unused directories
     candidates = set(mdirs).union(autodirs).difference(skipdirs)
     dirs[:] = list(candidates.intersection(dirs))
     with open(makefile) as lines:
@@ -61,7 +73,10 @@ def pkgsources(pkg):
       conditions.update(set(tuple(stripsplit(line)) for line in lines if line.startswith('#requires')))
     def relpath(filename):
       return os.path.join(root,filename)
-    sources[repr(sorted(conditions))].extend(relpath(f) for f in files if os.path.splitext(f)[1] in ['.c', '.cxx', '.cc', '.cpp', '.F'])
+    sourcec = makevars.get('SOURCEC','').split()
+    sourcef = makevars.get('SOURCEF','').split()
+    compareSourceLists(sourcec+sourcef, files) # Diagnostic output about unused source files
+    sources[repr(sorted(conditions))].extend(relpath(f) for f in sourcec + sourcef)
     allconditions[root] = conditions
   return sources
 
