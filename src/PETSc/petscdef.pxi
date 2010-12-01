@@ -1,4 +1,4 @@
-cdef extern from "petsc.h" nogil:
+cdef extern from * nogil:
 
     enum: PETSC_DECIDE
     enum: PETSC_IGNORE
@@ -33,7 +33,7 @@ cdef extern from "petsc.h" nogil:
         PETSC_USE_POINTER
     
 
-cdef extern from "petsc.h" nogil:
+cdef extern from * nogil:
 
     enum: PETSC_ERR_MEM
     enum: PETSC_ERR_SUP

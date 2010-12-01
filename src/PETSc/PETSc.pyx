@@ -63,7 +63,7 @@ cdef inline int CHKERR(int ierr) except -1:
 # PETSc support
 # -------------
 
-cdef extern from "petsc.h":
+cdef extern from *:
     ctypedef long   PetscInt
     ctypedef double PetscReal
     ctypedef double PetscScalar

@@ -1,4 +1,4 @@
-cdef extern from "petscsys.h":
+cdef extern from * nogil:
 
     ctypedef char* PetscViewerType "const char*"
     PetscViewerType PETSCVIEWERSOCKET

@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-cdef extern from "mpi.h" nogil:
+cdef extern from * nogil:
 
     MPI_Comm MPI_COMM_NULL
     MPI_Comm MPI_COMM_SELF
@@ -18,7 +18,7 @@ cdef extern from "mpi.h" nogil:
     int MPI_Finalized(int*)
 
 
-cdef extern from "petsc.h" nogil:
+cdef extern from * nogil:
 
     MPI_Comm PETSC_COMM_SELF
     MPI_Comm PETSC_COMM_WORLD

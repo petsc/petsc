@@ -1,4 +1,4 @@
-cdef extern from "petsc.h" nogil:
+cdef extern from * nogil:
     int PetscMalloc(size_t,void*)
     int PetscFree(void*)
     int PetscMemcpy(void*,void*,size_t)

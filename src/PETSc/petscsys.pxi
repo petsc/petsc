@@ -1,4 +1,4 @@
-cdef extern from "petscsys.h" nogil:
+cdef extern from * nogil:
 
     enum: PETSC_VERSION_MAJOR
     enum: PETSC_VERSION_MINOR

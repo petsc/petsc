@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-cdef extern from "petscvec.h" nogil:
+cdef extern from * nogil:
 
     ctypedef char* PetscVecType "const char*"
     PetscVecType VECSEQ
@@ -137,7 +137,7 @@ cdef extern from "petscvec.h" nogil:
 
 # --------------------------------------------------------------------
 
-cdef extern from "petscvec.h" nogil:
+cdef extern from * nogil:
 
     int VecScatterView(PetscScatter, PetscViewer)
     int VecScatterDestroy(PetscScatter)

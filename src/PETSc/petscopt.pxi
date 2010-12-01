@@ -1,4 +1,4 @@
-cdef extern from "petsc.h" nogil:
+cdef extern from * nogil:
 
     int PetscOptionsCreate()
     int PetscOptionsDestroy()

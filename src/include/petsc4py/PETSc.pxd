@@ -3,61 +3,53 @@
 
 # --------------------------------------------------------------------
 
-cdef extern from "mpi.h":
+cdef extern from "petsc.h":
+
     ctypedef struct _p_MPI_Comm
     ctypedef _p_MPI_Comm* MPI_Comm
 
-cdef extern from "petsc.h":
     ctypedef struct _p_PetscObject
     ctypedef _p_PetscObject* PetscObject
 
-cdef extern from "petscsys.h":
     struct _p_PetscViewer
     ctypedef _p_PetscViewer* PetscViewer
 
-cdef extern from "petscsys.h":
     struct _p_PetscRandom
     ctypedef _p_PetscRandom* PetscRandom
 
-cdef extern from "petscis.h":
     struct _p_IS
     ctypedef _p_IS* PetscIS "IS"
+
     struct _p_ISLocalToGlobalMapping
     ctypedef _p_ISLocalToGlobalMapping* PetscLGMap "ISLocalToGlobalMapping"
 
-cdef extern from "petscvec.h":
     struct _p_Vec
     ctypedef _p_Vec* PetscVec "Vec"
+
     struct _p_VecScatter
     ctypedef _p_VecScatter* PetscScatter "VecScatter"
 
-cdef extern from "petscmat.h":
     struct _p_Mat
     ctypedef _p_Mat* PetscMat "Mat"
+
     struct _p_MatNullSpace
     ctypedef _p_MatNullSpace* PetscNullSpace "MatNullSpace"
 
-cdef extern from "petscpc.h":
     struct _p_PC
     ctypedef _p_PC* PetscPC "PC"
 
-cdef extern from "petscksp.h":
     struct _p_KSP
     ctypedef _p_KSP* PetscKSP "KSP"
 
-cdef extern from "petscsnes.h":
     struct _p_SNES
     ctypedef _p_SNES* PetscSNES "SNES"
 
-cdef extern from "petscts.h":
     struct _p_TS
     ctypedef _p_TS* PetscTS "TS"
 
-cdef extern from *:
     struct _p_AO
     ctypedef _p_AO* PetscAO "AO"
 
-cdef extern from *:
     struct _p_DA
     ctypedef _p_DA* PetscDA "DA"
 

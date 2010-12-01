@@ -1,4 +1,4 @@
-cdef extern from "petscmat.h" nogil:
+cdef extern from * nogil:
 
     ctypedef char* PetscMatType "const char*"
     PetscMatType MATSAME
@@ -301,7 +301,7 @@ cdef extern from "libpetsc4py.h":
 
 # -----------------------------------------------------------------------------
 
-cdef extern from "petscmat.h" nogil:
+cdef extern from * nogil:
     int MatNullSpaceDestroy(PetscNullSpace)
     int MatNullSpaceCreate(MPI_Comm,PetscBool,PetscInt,PetscVec[],
                            PetscNullSpace*)

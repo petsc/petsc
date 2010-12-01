@@ -1,4 +1,4 @@
-cdef extern from "petsc.h" nogil:
+cdef extern from * nogil:
 
     ctypedef double PetscLogDouble
     int PetscLogFlops(PetscLogDouble)

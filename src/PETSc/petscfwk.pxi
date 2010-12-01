@@ -1,6 +1,6 @@
 # -----------------------------------------------------------------------------
 
-cdef extern from "petscsys.h" nogil:
+cdef extern from * nogil:
 
     struct _p_PetscFwk
     ctypedef _p_PetscFwk *PetscFwk

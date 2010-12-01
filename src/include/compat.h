@@ -1,6 +1,11 @@
 #if !defined(PETSC4PY_COMPAT_H)
 #define PETSC4PY_COMPAT_H
 
+#if PETSC_VERSION_(3,0,0)
+#include <petscts.h>
+#include <petscda.h>
+#endif
+
 #include "compat/mpi.h"
 #include "compat/petsc.h"
 #include "compat/petscsys.h"

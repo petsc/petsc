@@ -1,4 +1,4 @@
-cdef extern from "petscsnes.h" nogil:
+cdef extern from * nogil:
 
     ctypedef char* PetscSNESType "const char*"
     PetscSNESType SNESLS

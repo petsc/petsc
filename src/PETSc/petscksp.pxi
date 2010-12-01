@@ -1,4 +1,4 @@
-cdef extern from "petscksp.h" nogil:
+cdef extern from * nogil:
 
     ctypedef char* PetscKSPType "const char*"
     PetscKSPType KSPRICHARDSON
