@@ -804,8 +804,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
     Mat II;
     
     ierr = DMDAGetCoordinateDA(da,&cdac);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinateDA(da2,&cdaf);CHKERRQ(ierr);
     ierr = DMDAGetCoordinates(da,&coordsc);CHKERRQ(ierr);
+    ierr = DMDAGetCoordinateDA(da2,&cdaf);CHKERRQ(ierr);
+    /* force creation of the coordinate vector */
+    ierr = DMDASetUniformCoordinates(da2,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
     ierr = DMDAGetCoordinates(da2,&coordsf);CHKERRQ(ierr);
     ierr = DMGetInterpolation(cdac,cdaf,&II,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
@@ -899,8 +901,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
     VecScatter inject;
     
     ierr = DMDAGetCoordinateDA(da,&cdaf);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinateDA(da2,&cdac);CHKERRQ(ierr);
     ierr = DMDAGetCoordinates(da,&coordsf);CHKERRQ(ierr);
+    ierr = DMDAGetCoordinateDA(da2,&cdac);CHKERRQ(ierr);
+    /* force creation of the coordinate vector */
+    ierr = DMDASetUniformCoordinates(da2,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
     ierr = DMDAGetCoordinates(da2,&coordsc);CHKERRQ(ierr);
     
     ierr = DMGetInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
