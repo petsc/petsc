@@ -2284,6 +2284,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   if (v1 == v3) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_IDN,"v1 and v3 must be different vectors");
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
+  if (!mat->ops->multadd) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"No MatMultAdd() for this matrix type");
   ierr = PetscLogEventBegin(MAT_MultAdd,mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = (*mat->ops->multadd)(mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultAdd,mat,v1,v2,v3);CHKERRQ(ierr);

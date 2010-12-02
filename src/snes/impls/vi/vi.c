@@ -3,6 +3,48 @@
 #include "../src/snes/impls/vi/viimpl.h"
 #include "../include/private/kspimpl.h"
 
+#undef __FUNCT__  
+#define __FUNCT__ "SNESMonitorVI"
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+{
+  PetscErrorCode          ierr;
+  SNES_VI                 *vi = (SNES_VI*)snes->data;
+  PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
+  const PetscScalar       *x,*xl,*xu,*f;
+  Vec                     ff;
+  PetscInt                i,n;
+  PetscReal               rnorm,fnorm;
+
+  PetscFunctionBegin;
+  if (!dummy) {
+    ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,"stdout",0,&viewer);CHKERRQ(ierr);
+  }
+  ierr = VecGetLocalSize(snes->vec_sol,&n);CHKERRQ(ierr);
+  ierr = VecDuplicate(snes->vec_sol,&ff);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(snes,snes->vec_sol,ff);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(vi->xl,&xl);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(vi->xu,&xu);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(snes->vec_sol,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(ff,&f);CHKERRQ(ierr);
+  
+  rnorm = 0.0;
+  for (i=0; i<n; i++) {
+    if ((x[i] > xl[i] + 1.e-8) && (x[i] < xu[i] - 1.e-8)) rnorm += f[i]*f[i];
+  }
+  ierr = VecRestoreArrayRead(ff,&f);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(vi->xl,&xl);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(vi->xu,&xu);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(snes->vec_sol,&x);CHKERRQ(ierr);
+  ierr = VecDestroy(ff);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&rnorm,&fnorm,1,MPIU_REAL,MPI_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
+  fnorm = sqrt(fnorm);
+  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES VI Function norm %14.12e \n",its,fnorm);CHKERRQ(ierr);
+  if (!dummy) {
+    ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*
      Checks if J^T F = 0 which implies we've found a local minimum of the norm of the function,
     || F(u) ||_2 but not a zero, F(u) = 0. In the case when one cannot compute J^T F we use the fact that
@@ -1582,10 +1624,14 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
   const char     *vies[] = {"ss","as"};
   PetscErrorCode ierr;
   PetscInt       indx;
-  PetscBool     flg,set,flg2;
+  PetscBool      flg,set,flg2;
 
   PetscFunctionBegin;
     ierr = PetscOptionsHead("SNES semismooth method options");CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-snes_vi_monitor","Monitor all non-active variables","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+    if (flg) {
+      ierr = SNESMonitorSet(snes,SNESMonitorVI,0,0);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsReal("-snes_vi_alpha","Function norm must decrease by","None",vi->alpha,&vi->alpha,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-snes_vi_maxstep","Step must be less than","None",vi->maxstep,&vi->maxstep,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-snes_vi_minlambda","Minimum lambda allowed","None",vi->minlambda,&vi->minlambda,0);CHKERRQ(ierr);

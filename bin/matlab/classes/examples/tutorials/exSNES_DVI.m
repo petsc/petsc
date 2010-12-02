@@ -64,7 +64,7 @@ snes.View(viewer);
 user.bottom.Destroy();
 user.top.Destroy();
 user.right.Destroy();
-user.left.Destroy();
+user.left.Destroy()
 r.Destroy();
 x.Destroy();
 xl.Destroy();
