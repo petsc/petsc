@@ -394,6 +394,31 @@ PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre,Vec Da, Vec Db)
   }
   PetscFunctionReturn(0);
 }
+
+/*
+   SNESVIComputeMeritFunctionGradient - Computes the gradient of the merit function psi.
+
+   Input Parameters:
+   phi - semismooth function.
+   H   - semismooth jacobian
+   
+   Output Parameters:
+   dpsi - merit function gradient
+
+   Notes:
+  The merit function gradient is computed as follows
+        dpsi = H^T*phi
+*/
+#undef __FUNCT__
+#define __FUNCT__ "SNESVIComputeMeritFunctionGradient"
+PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
+{
+  PetscErrorCode ierr;
+    
+  PetscFunctionBegin;
+  ierr = MatMultTranspose(H,phi,dpsi);
+  PetscFunctionReturn(0);
+}
   
 /*
    SNESVIAdjustInitialGuess - Readjusts the initial guess to the SNES solver supplied by the user so that the initial guess lies inside the feasible region .
@@ -559,7 +584,8 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
     ierr = SNESVIComputeBsubdifferentialVectors(snes,X,F,snes->jacobian,vi->Da,vi->Db);CHKERRQ(ierr);
     /* Compute the semismooth jacobian */
     ierr = SNESVIComputeJacobian(snes->jacobian,snes->jacobian_pre,vi->Da,vi->Db);CHKERRQ(ierr);
-
+    /* Compute the merit function gradient */
+    ierr = SNESVIComputeMeritFunctionGradient(snes->jacobian,vi->phi,vi->dpsi);CHKERRQ(ierr);
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
     ierr = SNES_KSPSolve(snes,snes->ksp,vi->phi,Y);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
@@ -964,6 +990,7 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
     ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     ynorm = 1; gnorm = vi->phinorm;
     ierr = SNESVIComputeJacobian(snes->jacobian,snes->jacobian_pre,vi->Da,vi->Db);CHKERRQ(ierr);
+    ierr = SNESVIComputeMeritFunctionGradient(snes->jacobian,vi->phi,vi->dpsi);CHKERRQ(ierr);
     ierr = (*vi->LineSearch)(snes,vi->lsP,X,vi->phi,G,Y,W,vi->phinorm,xnorm,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",vi->phinorm,gnorm,ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
@@ -1075,6 +1102,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
     ierr = SNESVIComputeBsubdifferentialVectors(snes,X,F,snes->jacobian,vi->Da,vi->Db);CHKERRQ(ierr);
     ierr = SNESVIComputeJacobian(snes->jacobian,snes->jacobian_pre,vi->Da,vi->Db);CHKERRQ(ierr);
+    ierr = SNESVIComputeMeritFunctionGradient(snes->jacobian,vi->phi,vi->dpsi);CHKERRQ(ierr);
     /* Create active and inactive index sets */
     ierr = SNESVICreateIndexSets_RS(snes,X,vi->xl,vi->xu,&IS_act,&IS_inact);CHKERRQ(ierr);
 
@@ -1239,7 +1267,7 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
     ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work);CHKERRQ(ierr);
     ierr = PetscLogObjectParents(snes,snes->nwork,snes->work);CHKERRQ(ierr);
   }
-
+  ierr = VecDuplicate(snes->vec_sol, &vi->dpsi);CHKERRQ(ierr);
   ierr = VecDuplicate(snes->vec_sol, &vi->phi); CHKERRQ(ierr);
   ierr = VecDuplicate(snes->vec_sol, &vi->Da); CHKERRQ(ierr);
   ierr = VecDuplicate(snes->vec_sol, &vi->Db); CHKERRQ(ierr);
@@ -1297,6 +1325,7 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
   }
 
   /* clear vectors */
+  ierr = VecDestroy(vi->dpsi);CHKERRQ(ierr);
   ierr = VecDestroy(vi->phi); CHKERRQ(ierr);
   ierr = VecDestroy(vi->Da); CHKERRQ(ierr);
   ierr = VecDestroy(vi->Db); CHKERRQ(ierr);
