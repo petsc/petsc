@@ -79,7 +79,6 @@ class Configure(PETSc.package.NewPackage):
           if 'with-matlab-arch' in self.framework.argDB:
             self.mex = self.mex+' -'+self.framework.argDB['with-matlab-arch']
 
-          self.cc = '${CC}'
           self.command = os.path.join(matlab,'bin','matlab -'+matlab_arch)
           self.include = [os.path.join(matlab,'extern','include')]
           if self.framework.argDB['with-matlab-engine']:          
