@@ -1780,6 +1780,7 @@ static PetscErrorCode SNESView_VI(SNES snes,PetscViewer viewer)
     else                                                cstr = "unknown";
     if (snes->ops->solve == SNESSolveVI_SS)      tstr = "Semismooth";
     else if (snes->ops->solve == SNESSolveVI_AS)  tstr = "Active Set";
+    else if (snes->ops->solve == SNESSolveVI_RS) tstr = "Reduced Space";
     else                                         tstr = "unknown";
     ierr = PetscViewerASCIIPrintf(viewer,"  VI algorithm: %s\n",tstr);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  line search variant: %s\n",cstr);CHKERRQ(ierr);
