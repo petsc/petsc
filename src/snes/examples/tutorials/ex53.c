@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   ierr = VecCreate(PETSC_COMM_SELF,&user.lb);CHKERRQ(ierr); ierr = VecLoad(user.lb,viewer);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF,&user.ub);CHKERRQ(ierr);ierr = VecLoad(user.ub,viewer);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF,&user.zz);CHKERRQ(ierr);ierr = VecLoad(user.zz,viewer);CHKERRQ(ierr);
-  /* ierr = VecSet(user.zz,0.01);CHKERRQ(ierr);  */
+  /*  ierr = VecSet(user.zz,0.01);CHKERRQ(ierr); */
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = VecDuplicate(user.q,&r);CHKERRQ(ierr);
 

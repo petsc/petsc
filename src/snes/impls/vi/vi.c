@@ -733,7 +733,37 @@ PetscErrorCode SNESVICreateVectors_AS(SNES snes,PetscInt n,Vec* newv)
   PetscFunctionReturn(0);
 }
 
+/* Resets the snes PC and KSP when the active set sizes change */
+#undef __FUNCT__
+#define __FUNCT__ "SNESVIResetPCandKSP"
+PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
+{
+  PetscErrorCode ierr;
+  KSP kspnew,snesksp;
+  PC  pcnew;
+  const MatSolverPackage stype;
   
+  PetscFunctionBegin;
+  /* The active and inactive set sizes have changed so need to create a new snes->ksp object */
+  ierr = SNESGetKSP(snes,&snesksp);CHKERRQ(ierr);
+  ierr = KSPCreate(((PetscObject)snes)->comm,&kspnew);CHKERRQ(ierr);
+  /* Copy over snes->ksp info */
+  kspnew->pc_side = snesksp->pc_side;
+  kspnew->rtol    = snesksp->rtol;
+  kspnew->abstol    = snesksp->abstol;
+  kspnew->max_it  = snesksp->max_it;
+  ierr = KSPSetType(kspnew,((PetscObject)snesksp)->type_name);CHKERRQ(ierr);
+  ierr = KSPGetPC(kspnew,&pcnew);CHKERRQ(ierr);
+  ierr = PCSetType(kspnew->pc,((PetscObject)snesksp->pc)->type_name);CHKERRQ(ierr);
+  ierr = PCSetOperators(kspnew->pc,Amat,Pmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = PCFactorGetMatSolverPackage(snesksp->pc,&stype);CHKERRQ(ierr);
+  ierr = PCFactorSetMatSolverPackage(kspnew->pc,stype);CHKERRQ(ierr);
+  ierr = KSPDestroy(snesksp);CHKERRQ(ierr);
+  snes->ksp = kspnew;
+  ierr = PetscLogObjectParent(snes,kspnew);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(kspnew);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 /* Variational Inequality solver using active set method */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSolveVI_AS"
@@ -878,23 +908,7 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
     ierr = VecAXPY(phi_inact,-1.0,Db_inact);CHKERRQ(ierr);
 
     if ((i != 0) && (Nis_act != Nis_act_prev)) {
-      KSP kspnew,snesksp;
-      PC  pcnew;
-      /* The active and inactive set sizes have changed so need to create a new snes->ksp object */
-      ierr = SNESGetKSP(snes,&snesksp);CHKERRQ(ierr);
-      ierr = KSPCreate(((PetscObject)snes)->comm,&kspnew);CHKERRQ(ierr);
-      /* Copy over snes->ksp info */
-      kspnew->pc_side = snesksp->pc_side;
-      kspnew->rtol    = snesksp->rtol;
-      kspnew->abstol    = snesksp->abstol;
-      kspnew->max_it  = snesksp->max_it;
-      ierr = KSPSetType(kspnew,((PetscObject)snesksp)->type_name);CHKERRQ(ierr);
-      ierr = KSPGetPC(kspnew,&pcnew);CHKERRQ(ierr);
-      ierr = PCSetType(kspnew->pc,((PetscObject)snesksp->pc)->type_name);CHKERRQ(ierr);
-      ierr = KSPDestroy(snesksp);CHKERRQ(ierr);
-      snes->ksp = kspnew;
-      ierr = PetscLogObjectParent(snes,kspnew);CHKERRQ(ierr);
-      ierr = KSPSetFromOptions(kspnew);CHKERRQ(ierr);
+      ierr = SNESVIResetPCandKSP(snes,jac_inact_inact,prejac_inact_inact);CHKERRQ(ierr);
     }
     
     ierr = KSPSetOperators(snes->ksp,jac_inact_inact,prejac_inact_inact,flg);CHKERRQ(ierr);
@@ -1101,23 +1115,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     } else prejac_inact_inact = jac_inact_inact;
 
     if ((i != 0) && (Nis_act != Nis_act_prev)) {
-      KSP kspnew,snesksp;
-      PC  pcnew;
-      /* The active and inactive set sizes have changed so need to create a new snes->ksp object */
-      ierr = SNESGetKSP(snes,&snesksp);CHKERRQ(ierr);
-      ierr = KSPCreate(((PetscObject)snes)->comm,&kspnew);CHKERRQ(ierr);
-      /* Copy over snes->ksp info */
-      kspnew->pc_side = snesksp->pc_side;
-      kspnew->rtol    = snesksp->rtol;
-      kspnew->abstol    = snesksp->abstol;
-      kspnew->max_it  = snesksp->max_it;
-      ierr = KSPSetType(kspnew,((PetscObject)snesksp)->type_name);CHKERRQ(ierr);
-      ierr = KSPGetPC(kspnew,&pcnew);CHKERRQ(ierr);
-      ierr = PCSetType(kspnew->pc,((PetscObject)snesksp->pc)->type_name);CHKERRQ(ierr);
-      ierr = KSPDestroy(snesksp);CHKERRQ(ierr);
-      snes->ksp = kspnew;
-      ierr = PetscLogObjectParent(snes,kspnew);CHKERRQ(ierr);
-      ierr = KSPSetFromOptions(kspnew);CHKERRQ(ierr);
+      ierr = SNESVIResetPCandKSP(snes,jac_inact_inact,prejac_inact_inact);CHKERRQ(ierr);
     }
     
     ierr = KSPSetOperators(snes->ksp,jac_inact_inact,prejac_inact_inact,flg);CHKERRQ(ierr);
