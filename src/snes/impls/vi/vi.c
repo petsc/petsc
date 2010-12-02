@@ -1465,12 +1465,11 @@ PetscErrorCode SNESLineSearchCubic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Ve
   }
   ierr      = VecMaxPointwiseDivide(y,x,&rellength);CHKERRQ(ierr);
   minlambda = vi->minlambda/rellength;
-  ierr      = MatMult(snes->jacobian,y,w);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-  ierr      = VecDot(f,w,&cinitslope);CHKERRQ(ierr);
+  ierr = VecDot(vi->dpsi,y,&cinitslope);CHKERRQ(ierr);
   initslope = PetscRealPart(cinitslope);
 #else
-  ierr      = VecDot(f,w,&initslope);CHKERRQ(ierr);
+  ierr = VecDot(vi->dpsi,y,&initslope);CHKERRQ(ierr);
 #endif
   if (initslope > 0.0)  initslope = -initslope;
   if (initslope == 0.0) initslope = -1.0;
@@ -1652,12 +1651,11 @@ PetscErrorCode SNESLineSearchQuadratic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec 
   }
   ierr      = VecMaxPointwiseDivide(y,x,&rellength);CHKERRQ(ierr);
   minlambda = vi->minlambda/rellength;
-  ierr = MatMult(snes->jacobian,y,w);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-  ierr      = VecDot(f,w,&cinitslope);CHKERRQ(ierr);
+  ierr      = VecDot(vi->dpsi,y,&cinitslope);CHKERRQ(ierr);
   initslope = PetscRealPart(cinitslope);
 #else
-  ierr = VecDot(f,w,&initslope);CHKERRQ(ierr);
+  ierr = VecDot(vi->dpsi,y,&initslope);CHKERRQ(ierr);
 #endif
   if (initslope > 0.0)  initslope = -initslope;
   if (initslope == 0.0) initslope = -1.0;
