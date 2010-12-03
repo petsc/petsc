@@ -30,14 +30,14 @@ def FixFile(filename):
   ff.write('#include "petscsys.h"\n#include "petscfix.h"\n'+data)
   ff.close()
 
-  def FindSource(filename):
-    import os.path
-    gendir, fname = os.path.split(filename)
-    base, ext = os.path.splitext(fname)
-    sdir, ftn_auto = os.path.split(gendir)
-    if ftn_auto != 'ftn-auto': return None # Something is wrong, skip
-    sfname = os.path.join(sdir, base[:-1] + ext)
-    return sfname
+def FindSource(filename):
+  import os.path
+  gendir, fname = os.path.split(filename)
+  base, ext = os.path.splitext(fname)
+  sdir, ftn_auto = os.path.split(gendir)
+  if ftn_auto != 'ftn-auto': return None # Something is wrong, skip
+  sfname = os.path.join(sdir, base[:-1] + ext)
+  return sfname
   sourcefile = FindSource(filename)
   if sourcefile and os.path.isfile(sourcefile):
     import shutil
