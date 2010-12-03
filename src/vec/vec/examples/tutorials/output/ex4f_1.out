@@ -1,27 +1,27 @@
-  type: seq
-  type: seq
+Vector Object:
   type: seq
 10
-100
-1000
 20
-200
-2000
 30
-300
-3000
 40
-400
-4000
 50
-500
-5000
 60
+Vector Object:
+  type: seq
+100
+200
+300
+400
+500
 600
+Vector Object:
+  type: seq
+1000
+2000
+3000
+4000
+5000
 6000
-Vector Object:
-Vector Object:
-Vector Object:
 initial vector:
 new vector 1:
 new vector 2:

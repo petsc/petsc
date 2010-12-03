@@ -198,7 +198,7 @@ runex3f:
 	   else echo "Possible problem with ex3f_1, diffs above"; fi;\
 	   ${RM} -f ex3f_1.tmp
 runex4f:
-	-@${MPIEXEC} -n 1 ./ex4f | sort > ex4f_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex4f > ex4f_1.tmp 2>&1;\
 	   if (${DIFF} output/ex4f_1.out ex4f_1.tmp) then true; \
 	   else echo "Possible problem with ex4f_1, diffs above"; fi;\
 	   ${RM} -f ex4f_1.tmp
