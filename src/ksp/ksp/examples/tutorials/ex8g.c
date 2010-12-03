@@ -3,8 +3,17 @@ static char help[] = "Illustrates use of the preconditioner GASM.\n\
 The Additive Schwarz Method for solving a linear system in parallel with KSP.  The\n\
 code indicates the procedure for setting user-defined subdomains.  Input\n\
 parameters include:\n\
+  -M:                           Number of mesh points in the x direction\n\
+  -N:                           Number of mesh points in the y direction\n\
   -user_set_subdomain_solvers:  User explicitly sets subdomain solvers\n\
-  -user_set_subdomains:         Use the user-provided subdomain partitioning routine\n\n";
+  -user_set_subdomains:         Use the user-provided subdomain partitioning routine\n\
+With -user_set_subdomains on, the following options are meaningful:\n\
+  -Mdomains:                    Number of subdomains in the x direction \n\
+  -Ndomains:                    Number of subdomains in the y direction \n\
+  -overlap:                     Size of domain overlap in terms of the number of mesh lines in x and y\n\
+General useful options:\n\
+  -pc_gasm_print_subdomains:    Print the index sets defining the subdomains\n\
+\n";
 
 /*
    Note:  This example focuses on setting the subdomains for the GASM 
@@ -44,30 +53,30 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec            x,b,u;                 /* approx solution, RHS, exact solution */
-  Mat            A;                       /* linear system matrix */
+  Vec            x,b,u;                  /* approx solution, RHS, exact solution */
+  Mat            A;                      /* linear system matrix */
   KSP            ksp;                    /* linear solver context */
-  PC             pc;                      /* PC context */
-  IS             *is,*is_local;           /* array of index sets that define the subdomains */
-  PetscInt       overlap = 1;             /* width of subdomain overlap */
-  PetscInt       nd;                      /* number of subdomains */
+  PC             pc;                     /* PC context */
+  IS             *is,*is_local;          /* array of index sets that define the subdomains */
+  PetscInt       overlap = 1;            /* width of subdomain overlap */
+  PetscInt       Nsub;                   /* number of subdomains */
   PetscInt       m = 15,n = 17;          /* mesh dimensions in x- and y- directions */
   PetscInt       M = 2,N = 1;            /* number of subdomains in x- and y- directions */
   PetscInt       i,j,Ii,J,Istart,Iend;
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscBool      flg;
-  PetscBool      user_subdomains = PETSC_FALSE;     
+  PetscBool      user_set_subdomains = PETSC_FALSE;     
   PetscScalar    v, one = 1.0, e;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-user_set_subdomains",&user_set_subdomains,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Mdomains",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Ndomains",&N,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-overlap",&overlap,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-user_set_subdomains",&user_subdomains,PETSC_NULL);CHKERRQ(ierr);
 
   /* -------------------------------------------------------------------
          Compute the matrix and right-hand-side vector that define
@@ -143,34 +152,21 @@ int main(int argc,char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
      Firstly, create index sets that define the subdomains.  The utility
-     routine PCGASMCreateSubdomains2D() is a simple example (that currently
-     supports 1 processor only!).  More generally, the user should write
-     a custom routine for a particular problem geometry.
+     routine PCGASMCreateSubdomains2D() is a simple example, which partitions
+     the 2D grid into MxN subdomains with an optional overlap.  
+     More generally, the user should write a custom routine for a particular 
+     problem geometry.
 
-     Then call either PCGASMSetLocalSubdomains() or PCGASMSetTotalSubdomains()
+     Then call PCGASMSetLocalSubdomains() with resulting index sets
      to set the subdomains for the GASM preconditioner.
   */
 
-  if (!user_subdomains) { /* basic version */
+  if (!user_set_subdomains) { /* basic version */
     ierr = PCGASMSetOverlap(pc,overlap);CHKERRQ(ierr);
   } else { /* advanced version */
-    if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"PCGASMCreateSubdomains() is currently a uniprocessor routine only!");
-    ierr = PCGASMCreateSubdomains2D(pc, m,n,M,N,1,overlap,&nd,&is,&is_local);CHKERRQ(ierr);
-    ierr = PCGASMSetLocalSubdomains(pc,nd,is,is_local);CHKERRQ(ierr);
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-subdomain_view",&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg){
-      printf("Nmesh points: %d x %d; subdomain partition: %d x %d; overlap: %d; nd: %d\n",m,n,M,N,overlap,nd);
-      printf("IS:\n");
-      for (i=0; i<nd; i++){
-        printf("  IS[%d]\n",i);
-        ierr = ISView(is[i],PETSC_VIEWER_STDOUT_SELF);
-      }
-      printf("IS_local:\n");
-      for (i=0; i<nd; i++){
-        printf("  IS_local[%d]\n",i);
-        ierr = ISView(is_local[i],PETSC_VIEWER_STDOUT_SELF);
-      }  
-    }
+    ierr = PCGASMCreateSubdomains2D(pc, m,n,M,N,1,overlap,&Nsub,&is,&is_local);CHKERRQ(ierr);
+    ierr = PCGASMSetLocalSubdomains(pc,Nsub,is,is_local);CHKERRQ(ierr);
+    ierr = PCView(pc, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
 
   /* -------------------------------------------------------------------
@@ -275,8 +271,8 @@ int main(int argc,char **args)
      are no longer needed.
   */
 
-  if (user_subdomains) {
-    for (i=0; i<nd; i++) {
+  if (user_set_subdomains) {
+    for (i=0; i<Nsub; i++) {
       ierr = ISDestroy(is[i]);CHKERRQ(ierr);
       ierr = ISDestroy(is_local[i]);CHKERRQ(ierr);
     }

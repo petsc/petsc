@@ -262,6 +262,8 @@ PetscErrorCode MatMult_SeqSBAIJ_2(Mat A,Vec xx,Vec zz)
       z[2*i+1] += v[2]*x1 + v[3]*x2;
       v += 4; jmin++;
     }
+    PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+4*n,4*n,0,PETSC_PREFETCH_HINT_NTA);   /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*2;
@@ -312,6 +314,8 @@ PetscErrorCode MatMult_SeqSBAIJ_3(Mat A,Vec xx,Vec zz)
       z[3*i+2] += v[6]*x1 + v[7]*x2 + v[8]*x3;
       v += 9; jmin++;
     }
+    PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+9*n,9*n,0,PETSC_PREFETCH_HINT_NTA);   /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*3;
@@ -365,6 +369,8 @@ PetscErrorCode MatMult_SeqSBAIJ_4(Mat A,Vec xx,Vec zz)
       z[4*i+3] += v[12]*x1+ v[13]*x2+ v[14]*x3 + v[15]*x4;
       v += 16; jmin++;
     }
+    PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+16*n,16*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*4;
@@ -421,6 +427,8 @@ PetscErrorCode MatMult_SeqSBAIJ_5(Mat A,Vec xx,Vec zz)
       z[5*i+4] += v[20]*x1 +v[21]*x2 + v[22]*x3 + v[23]*x4+ v[24]*x5; 
       v += 25; jmin++;
     }
+    PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+25*n,25*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*5;
@@ -481,6 +489,8 @@ PetscErrorCode MatMult_SeqSBAIJ_6(Mat A,Vec xx,Vec zz)
       z[6*i+5] += v[30]*x1 +v[31]*x2 + v[32]*x3 + v[33]*x4+ v[34]*x5 + v[35]*x6;
       v += 36; jmin++;
     }
+    PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+36*n,36*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*6;
@@ -542,6 +552,8 @@ PetscErrorCode MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
       z[7*i+6] += v[42]*x1+ v[43]*x2 +v[44]*x3 + v[45]*x4+ v[46]*x5 + v[47]*x6+ v[48]*x7;
       v += 49; jmin++;
     }
+    PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+49*n,49*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*7;
@@ -709,6 +721,8 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
       z[2*i+1] += v[2]*x1 + v[3]*x2;
       v += 4; jmin++;
     }
+    PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+4*n,4*n,0,PETSC_PREFETCH_HINT_NTA);   /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*2;
@@ -759,6 +773,8 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
      z[3*i+2] += v[6]*x1 + v[7]*x2 + v[8]*x3;
      v += 9; jmin++;
     }
+    PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+9*n,9*n,0,PETSC_PREFETCH_HINT_NTA);   /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*3;
@@ -813,6 +829,8 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
       z[4*i+3] += v[12]*x1+ v[13]*x2+ v[14]*x3 + v[15]*x4;
       v += 16; jmin++;
     }
+    PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+16*n,16*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*4;
@@ -870,6 +888,8 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
       z[5*i+4] += v[20]*x1 +v[21]*x2 + v[22]*x3 + v[23]*x4+ v[24]*x5; 
       v += 25; jmin++;
     }
+    PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+25*n,25*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*5;
@@ -929,6 +949,8 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
       z[6*i+5] += v[30]*x1 +v[31]*x2 + v[32]*x3 + v[33]*x4+ v[34]*x5 + v[35]*x6;
       v += 36; jmin++;
     }
+    PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+36*n,36*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*6;
@@ -992,6 +1014,8 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
       z[7*i+6] += v[42]*x1+ v[43]*x2 +v[44]*x3 + v[45]*x4+ v[46]*x5 + v[47]*x6+ v[48]*x7;
       v += 49; jmin++;
     }
+    PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+49*n,49*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*7;

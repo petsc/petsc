@@ -347,6 +347,8 @@ PetscErrorCode ForwardSolve_SeqSBAIJ_7_NaturalOrdering_private(PetscInt *ai,Pets
     nz = ai[k+1] - ai[k];  
     vj = aj + ai[k];
     xp = x + (*vj)*7;
+    PetscPrefetchBlock(vj+nz,nz,0,PETSC_PREFETCH_HINT_NTA);      /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+49*nz,49*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
       /* x(:) += U(k,:)^T*(Dk*xk) */      
       xp[0]+=  v[0]*x0 +  v[1]*x1 +  v[2]*x2 + v[3]*x3 + v[4]*x4 + v[5]*x5 + v[6]*x6;
@@ -389,6 +391,8 @@ PetscErrorCode BackwardSolve_SeqSBAIJ_7_NaturalOrdering_private(PetscInt *ai,Pet
     nz = ai[k+1] - ai[k];  
     vj = aj + ai[k];
     xp = x + (*vj)*7;
+    PetscPrefetchBlock(vj-nz,nz,0,PETSC_PREFETCH_HINT_NTA);      /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v-49*nz,49*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
       /* xk += U(k,:)*x(:) */   
       x0 += v[0]*xp[0] + v[7]*xp[1] + v[14]*xp[2] + v[21]*xp[3] + v[28]*xp[4] + v[35]*xp[5] + v[42]*xp[6];
@@ -591,6 +595,8 @@ PetscErrorCode ForwardSolve_SeqSBAIJ_6_NaturalOrdering_private(PetscInt *ai,Pets
     nz = ai[k+1] - ai[k];  
     vj = aj + ai[k];
     xp = x + (*vj)*6;
+    PetscPrefetchBlock(vj+nz,nz,0,PETSC_PREFETCH_HINT_NTA);      /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+36*nz,36*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
       /* x(:) += U(k,:)^T*(Dk*xk) */      
       xp[0] +=  v[0]*x0 +  v[1]*x1 +  v[2]*x2 + v[3]*x3 + v[4]*x4 + v[5]*x5;
@@ -630,6 +636,8 @@ PetscErrorCode BackwardSolve_SeqSBAIJ_6_NaturalOrdering_private(PetscInt *ai,Pet
     nz = ai[k+1] - ai[k];  
     vj = aj + ai[k];
     xp = x + (*vj)*6;
+    PetscPrefetchBlock(vj-nz,nz,0,PETSC_PREFETCH_HINT_NTA);      /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v-36*nz,36*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
       /* xk += U(k,:)*x(:) */    
       x0 += v[0]*xp[0] + v[6]*xp[1] + v[12]*xp[2] + v[18]*xp[3] + v[24]*xp[4] + v[30]*xp[5];
@@ -828,6 +836,8 @@ PetscErrorCode ForwardSolve_SeqSBAIJ_5_NaturalOrdering_private(PetscInt *ai,Pets
     nz = ai[k+1] - ai[k];  
     vj = aj + ai[k];
     xp = x + (*vj)*5;
+    PetscPrefetchBlock(vj+nz,nz,0,PETSC_PREFETCH_HINT_NTA);      /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+25*nz,25*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
       /* x(:) += U(k,:)^T*(Dk*xk) */      
       xp[0] +=  v[0]*x0 +  v[1]*x1 +  v[2]*x2 + v[3]*x3 + v[4]*x4;
@@ -866,6 +876,8 @@ PetscErrorCode BackwardSolve_SeqSBAIJ_5_NaturalOrdering_private(PetscInt *ai,Pet
     nz = ai[k+1] - ai[k];  
     vj = aj + ai[k];
     xp = x + (*vj)*5;
+    PetscPrefetchBlock(vj-nz,nz,0,PETSC_PREFETCH_HINT_NTA);      /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v-25*nz,25*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
       /* xk += U(k,:)*x(:) */
       x0 += v[0]*xp[0] + v[5]*xp[1] + v[10]*xp[2] + v[15]*xp[3] + v[20]*xp[4];
@@ -1057,6 +1069,8 @@ PetscErrorCode ForwardSolve_SeqSBAIJ_4_NaturalOrdering_private(PetscInt *ai,Pets
     nz = ai[k+1] - ai[k];  
     vj = aj + ai[k];
     xp = x + (*vj)*4;
+    PetscPrefetchBlock(vj+nz,nz,0,PETSC_PREFETCH_HINT_NTA);      /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+16*nz,16*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
       /* x(:) += U(k,:)^T*(Dk*xk) */      
       xp[0] += v[0]*x0 + v[1]*x1 + v[2]*x2 + v[3]*x3;
@@ -1093,6 +1107,8 @@ PetscErrorCode BackwardSolve_SeqSBAIJ_4_NaturalOrdering_private(PetscInt *ai,Pet
     nz = ai[k+1] - ai[k];  
     vj = aj + ai[k];
     xp = x + (*vj)*4;
+    PetscPrefetchBlock(vj-nz,nz,0,PETSC_PREFETCH_HINT_NTA);      /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v-16*nz,16*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
       /* xk += U(k,:)*x(:) */
       x0 += v[0]*xp[0] + v[4]*xp[1] + v[8]*xp[2] + v[12]*xp[3];
@@ -1277,6 +1293,8 @@ PetscErrorCode ForwardSolve_SeqSBAIJ_3_NaturalOrdering_private(PetscInt *ai,Pets
     nz = ai[k+1] - ai[k];  
     vj = aj + ai[k];
     xp = x + (*vj)*3;
+    PetscPrefetchBlock(vj+nz,nz,0,PETSC_PREFETCH_HINT_NTA);    /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+9*nz,9*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
       /* x(:) += U(k,:)^T*(Dk*xk) */      
       xp[0] += v[0]*x0 + v[1]*x1 + v[2]*x2;
@@ -1311,6 +1329,8 @@ PetscErrorCode BackwardSolve_SeqSBAIJ_3_NaturalOrdering_private(PetscInt *ai,Pet
     nz = ai[k+1] - ai[k];  
     vj = aj + ai[k];
     xp = x + (*vj)*3;
+    PetscPrefetchBlock(vj-nz,nz,0,PETSC_PREFETCH_HINT_NTA);    /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v-9*nz,9*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
       /* xk += U(k,:)*x(:) */
       x0 += v[0]*xp[0] + v[3]*xp[1] + v[6]*xp[2];
@@ -1476,7 +1496,8 @@ PetscErrorCode ForwardSolve_SeqSBAIJ_2_NaturalOrdering_private(PetscInt *ai,Pets
     k2 = k*2;
     x0 = x[k2]; x1 = x[k2+1];  /* Dk*xk = k-th block of x */
     nz = ai[k+1] - ai[k];  
-    
+    PetscPrefetchBlock(vj+nz,nz,0,PETSC_PREFETCH_HINT_NTA);    /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+4*nz,4*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
       /* x(:) += U(k,:)^T*(Dk*xk) */      
       x[(*vj)*2]   += v[0]*x0 + v[1]*x1;
@@ -1506,6 +1527,8 @@ PetscErrorCode BackwardSolve_SeqSBAIJ_2_NaturalOrdering_private(PetscInt *ai,Pet
     k2 = k*2;
     x0 = x[k2]; x1 = x[k2+1];  /* xk */ 
     nz = ai[k+1] - ai[k];    
+    PetscPrefetchBlock(vj-nz,nz,0,PETSC_PREFETCH_HINT_NTA);    /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v-4*nz,4*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
       /* xk += U(k,:)*x(:) */
       x0 += v[0]*x[(*vj)*2] + v[2]*x[(*vj)*2+1];

@@ -397,27 +397,35 @@ runex9:
 	   if (${DIFF} output/ex9_1.out ex9_1.tmp) then true; \
 	   else echo "Possible problem with ex9_1, diffs above"; fi; \
 	   ${RM} -f ex9_1.tmp
-NP = 1
-m  = 4
-n  = 5
-BLOCKS = 2
-runex8:
-	-@${MPIEXEC} -n ${NP} ./ex8 -m $m -n $n -pc_asm_blocks ${BLOCKS} -print_error ${ARGS} 
 runex8_1:
 	-@${MPIEXEC} -n 1 ./ex8 -print_error > ex8_1.tmp 2>&1; \
 	   if (${DIFF} output/ex8_1.out ex8_1.tmp) then true; \
 	   else echo "Possible problem with ex8_1, diffs above"; fi; \
 	   ${RM} -f ex8_1.tmp
-runex8g:
-	-@${MPIEXEC} -n ${NP} ./ex8g -m $m -n $n -pc_gasm_blocks ${BLOCKS} -print_error ${ARGS}
 
-runex8g_debug:
-	-@${MPIEXEC} -n ${NP} xterm -e gdb -ex 'set breakpoint pending on' -ex 'b ${BREAKPOINT}' -ex r -ex bt --args ./ex8g -m $m -n $n -pc_gasm_blocks ${BLOCKS} -print_error ${ARGS}
 runex8g_1:
-	-@${MPIEXEC} -n 1 ./ex8g -m $m -n $n -pc_gasm_blocks ${BLOCKS} -print_error > ex8g_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex8g -M $M -N $N -pc_gasm_blocks ${BLOCKS} -print_error > ex8g_1.tmp 2>&1; \
 	   if (${DIFF} output/ex8g_1.out ex8g_1.tmp) then true; \
 	   else echo "Possible problem with ex8g_1, diffs above"; fi; \
 	   ${RM} -f ex8g_1.tmp
+
+NP = 1
+M  = 4
+N  = 5
+BLOCKS = 2
+runex8:
+	-@${MPIEXEC} -n ${NP} ./ex8 -m $M -n $N -pc_asm_blocks ${BLOCKS} -print_error ${ARGS} 
+
+VALGRIND=
+runex8g:
+	-@${MPIEXEC} -n ${NP} ${VALGRIND} ./ex8g -print_error ${ARGS}
+
+
+BREAKPOINT=
+runex8g_debug:
+	-@${MPIEXEC} -n ${NP} xterm -e gdb -ex 'set breakpoint pending on' -ex 'b ${BREAKPOINT}' -ex r -ex bt --args ./ex8g -print_error ${ARGS}
+
+
 runex10:
 	-@${MPIEXEC} -n 2 ./ex10 -f0 ../../../../mat/examples/matbinary.cplx.ex -ksp_gmres_cgs_refinement_type refine_always -options_left off > ex10_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
