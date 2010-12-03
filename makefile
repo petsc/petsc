@@ -211,7 +211,10 @@ alletags:
 	-@find config -type f -name "*.py" |grep -v SCCS | xargs etags -o TAGS_PYTHON
 
 allfortranstubs:
-	-@bin/maint/generatefortranstubs.py ${BFORT}
+	-@${RM} -rf include/finclude/ftn-auto/*-tmpdir
+	-@bin/maint/generatefortranstubs.py ${BFORT} 
+	-@bin/maint/generatefortranstubs.py -merge
+	-@${RM} -rf include/finclude/ftn-auto/*-tmpdir
 deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf 
 #

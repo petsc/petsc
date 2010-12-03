@@ -115,8 +115,8 @@ def FixDir(petscdir,dir):
     fd.close()
     if txt:
       if not os.path.isdir(os.path.join(petscdir,'include','finclude','ftn-auto')): os.mkdir(os.path.join(petscdir,'include','finclude','ftn-auto'))
-      if not os.path.isdir(os.path.join(petscdir,'include','finclude','ftn-auto',mansec)): os.mkdir(os.path.join(petscdir,'include','finclude','ftn-auto',mansec))
-      fname =  os.path.join(petscdir,'include','finclude','ftn-auto',mansec,parentdir.replace('/','_')+'.h90')
+      if not os.path.isdir(os.path.join(petscdir,'include','finclude','ftn-auto',mansec+'-tmpdir')): os.mkdir(os.path.join(petscdir,'include','finclude','ftn-auto',mansec+'-tmpdir'))
+      fname =  os.path.join(petscdir,'include','finclude','ftn-auto',mansec+'-tmpdir',parentdir.replace('/','_')+'.h90')
       fd =open(fname,'w')
       fd.write(txt)
       fd.close()
@@ -180,10 +180,11 @@ def processf90interfaces(petscdir):
   ''' Takes all the individually generated fortran interface files and merges them into one for each mansec'''
   for mansec in os.listdir(os.path.join(petscdir,'include','finclude','ftn-auto')):
     if os.path.isdir(os.path.join(petscdir,'include','finclude','ftn-auto',mansec)):
+      mansec = mansec[:-7]
       f90inc = os.path.join(petscdir,'include','finclude','ftn-auto','petsc'+mansec+'.h90')
       fd = open(f90inc,'w')
-      for sfile in os.listdir(os.path.join(petscdir,'include','finclude','ftn-auto',mansec)):
-        fdr = open(os.path.join(petscdir,'include','finclude','ftn-auto',mansec,sfile))
+      for sfile in os.listdir(os.path.join(petscdir,'include','finclude','ftn-auto',mansec+'-tmpdir')):
+        fdr = open(os.path.join(petscdir,'include','finclude','ftn-auto',mansec+'-tmpdir',sfile))
         txt = fdr.read()
         fd.write(txt)
         fdr.close()
@@ -191,16 +192,19 @@ def processf90interfaces(petscdir):
   FixDir(petscdir,os.path.join(petscdir,'include','finclude','ftn-auto'))
   return
 
-def main(bfort,dir):
-  petscdir = os.environ['PETSC_DIR']
+def main(petscdir,bfort,dir):
   os.path.walk(dir, processDir, [petscdir, bfort])
-  processf90interfaces(petscdir)
   return
 #
-# The classes in this file can also be used in other python-programs by using 'import'
+# generatefortranstubs bfortexectuable            -----  generates fortran stubs for a directory and all its children
+# generatefortranstubs -merge                     -----  merges fortran 90 interfaces definitions that have been generated
 #
 if __name__ ==  '__main__': 
   import sys
-  if len(sys.argv) < 2:
-    sys.exit('Must give the BFORT program as the first argument')
-  main(sys.argv[1],os.getcwd())
+  if len(sys.argv) < 2: sys.exit('Must give the BFORT program or -merge as the first argument')
+  petscdir = os.environ['PETSC_DIR']
+  if not sys.argv[1].startswith('-'):
+    main(petscdir,sys.argv[1],os.getcwd())
+  else:
+    processf90interfaces(petscdir)
+
