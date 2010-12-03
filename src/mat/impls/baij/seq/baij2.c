@@ -259,6 +259,8 @@ PetscErrorCode MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
     v    = a->a + ii[0];
     idx  = a->j + ii[0]; 
     ii++;
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);   /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+1*n,1*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     sum  = 0.0;
     PetscSparseDensePlusDot(sum,x,v,idx,n);
     if (usecprow){
@@ -307,6 +309,8 @@ PetscErrorCode MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
     n  = ii[1] - ii[0]; ii++; 
     sum1 = 0.0; sum2 = 0.0;
     nonzerorow += (n>0);
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);   /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+4*n,4*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=0; j<n; j++) {
       xb = x + 2*(*idx++); x1 = xb[0]; x2 = xb[1];
       sum1 += v[0]*x1 + v[2]*x2;
@@ -360,6 +364,8 @@ PetscErrorCode MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
     n  = ii[1] - ii[0]; ii++; 
     sum1 = 0.0; sum2 = 0.0; sum3 = 0.0;
     nonzerorow += (n>0);
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);   /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+9*n,9*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=0; j<n; j++) {
       xb = x + 3*(*idx++); x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
       sum1 += v[0]*x1 + v[3]*x2 + v[6]*x3;
@@ -409,6 +415,8 @@ PetscErrorCode MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
     n  = ii[1] - ii[0]; ii++; 
     sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0;
     nonzerorow += (n>0);
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);     /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+16*n,16*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=0; j<n; j++) {
       xb = x + 4*(*idx++);
       x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
@@ -461,6 +469,8 @@ PetscErrorCode MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
     n  = ii[1] - ii[0]; ii++; 
     sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0;
     nonzerorow += (n>0);
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);     /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+25*n,25*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=0; j<n; j++) {
       xb = x + 5*(*idx++);
       x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4];
@@ -515,6 +525,8 @@ PetscErrorCode MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
     n  = ii[1] - ii[0]; ii++; 
     sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0; sum6 = 0.0;
     nonzerorow += (n>0);
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);     /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+36*n,36*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=0; j<n; j++) {
       xb = x + 6*(*idx++);
       x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4]; x6 = xb[5];
@@ -570,6 +582,8 @@ PetscErrorCode MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
     n  = ii[1] - ii[0]; ii++; 
     sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0; sum6 = 0.0; sum7 = 0.0;
     nonzerorow += (n>0);
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);     /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+49*n,49*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=0; j<n; j++) {
       xb = x + 7*(*idx++);
       x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4]; x6 = xb[5]; x7 = xb[6];
@@ -1062,6 +1076,8 @@ PetscErrorCode MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
     } else {
       sum = y[ridx[i]];
     } 
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+n,n,0,PETSC_PREFETCH_HINT_NTA);   /* Entries for the next row */
     PetscSparseDensePlusDot(sum,x,v,idx,n);
     v += n;
     idx += n;
@@ -1126,6 +1142,8 @@ PetscErrorCode MatMultAdd_SeqBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
       y = yarray + 2*ridx[i];
     }
     sum1 = y[0]; sum2 = y[1];
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);   /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+4*n,4*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=0; j<n; j++) {
       xb = x + 2*(*idx++); x1 = xb[0]; x2 = xb[1];
       sum1 += v[0]*x1 + v[2]*x2;
@@ -1188,6 +1206,8 @@ PetscErrorCode MatMultAdd_SeqBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
       y = yarray + 3*ridx[i];
     }
     sum1 = y[0]; sum2 = y[1]; sum3 = y[2];
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);   /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+9*n,9*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=0; j<n; j++) {
       xb = x + 3*(*idx++); x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
       sum1 += v[0]*x1 + v[3]*x2 + v[6]*x3;
@@ -1251,6 +1271,8 @@ PetscErrorCode MatMultAdd_SeqBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
       y = yarray + 4*ridx[i];
     }
     sum1 = y[0]; sum2 = y[1]; sum3 = y[2]; sum4 = y[3];
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);     /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+16*n,16*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=0; j<n; j++) {
       xb = x + 4*(*idx++);
       x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
@@ -1317,6 +1339,8 @@ PetscErrorCode MatMultAdd_SeqBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
       y = yarray + 5*ridx[i];
     }
     sum1 = y[0]; sum2 = y[1]; sum3 = y[2]; sum4 = y[3]; sum5 = y[4];
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);     /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+25*n,25*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=0; j<n; j++) {
       xb = x + 5*(*idx++);
       x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4];
@@ -1383,6 +1407,8 @@ PetscErrorCode MatMultAdd_SeqBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
       y = yarray + 6*ridx[i];
     }
     sum1 = y[0]; sum2 = y[1]; sum3 = y[2]; sum4 = y[3]; sum5 = y[4]; sum6 = y[5];
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);     /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+36*n,36*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=0; j<n; j++) {
       xb = x + 6*(*idx++);
       x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4]; x6 = xb[5];
@@ -1451,6 +1477,8 @@ PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
       y = yarray + 7*ridx[i];
     }
     sum1 = y[0]; sum2 = y[1]; sum3 = y[2]; sum4 = y[3]; sum5 = y[4]; sum6 = y[5]; sum7 = y[6];
+    PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);     /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v+49*n,49*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=0; j<n; j++) {
       xb = x + 7*(*idx++);
       x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4]; x6 = xb[5]; x7 = xb[6];
