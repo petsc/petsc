@@ -129,7 +129,8 @@ extern PetscClassId PETSCMAT_DLLEXPORT MATMFFD_CLASSID;
 
 /*E
     MatReuse - Indicates if matrices obtained from a previous call to MatGetSubMatrices()
-     or MatGetSubMatrix() are to be reused to store the new matrix values.
+     or MatGetSubMatrix() are to be reused to store the new matrix values. For MatConvert() is used to indicate
+     that the input matrix is to be replaced with the converted matrix.
 
     Level: beginner
 

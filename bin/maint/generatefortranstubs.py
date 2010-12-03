@@ -158,14 +158,18 @@ def processDir(arg,dirname,names):
     if status:
       raise RuntimeError('Error running bfort\n'+cmd+'\n'+output)
     FixDir(petscdir,outdir)
-  for name in ['.hg','SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','fortran','bin','maint','ftn-custom','config','f90-custom']:
-    if name in names:
-      names.remove(name)
-  # check for configure generated PETSC_ARCHes
+
+  # remove from list of subdirectories all directories without source code
   rmnames=[]
   for name in names:
+    if name in ['.hg','SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','fortran','bin','maint','ftn-custom','config','f90-custom']:
+      rmnames.append(name)
+    # skip for ./configure generated $PETSC_ARCH directories
     if os.path.isdir(os.path.join(name,'conf')):
       rmnames.append(name)
+    # skip include/finclude directory 
+    if name == 'finclude':
+      rmnames.append(name)     
   for rmname in rmnames:
     names.remove(rmname)
   return
