@@ -27,35 +27,28 @@ typedef struct {
   PetscReal gnorm;
   PetscReal f;
 
-  PetscInt total_cgits;
-  PetscInt cg_iterates;
   PetscInt total_gp_its;
   PetscInt gp_iterates;
-  PetscInt cgits;
 
-  Vec DXFree;
-  Vec R;
-
-  Vec X;
-  Vec G;
-  Vec PG;
 
   Vec X_New;
   Vec G_New;
   Vec Work;
   
+  /* Subvectors and submatrices */
+  Vec DXFree;
+  Vec R;
+  Vec rmask;
+  Vec diag;
   Mat H_sub;
   Mat Hpre_sub;
-
+  MatStructure matflag;
   
   IS Free_Local;  /* Indices of local variables equal to lower bound */
-  VecScatter Lower_Local;  /* Indices of local variables equal to lower bound */
-  VecScatter Upper_Local;  /* Indices of local variables equal to lower bound */
+  VecScatter scatter;
 
   PetscInt n_free;       /* Number of free variables */
-  PetscInt n_upper;
-  PetscInt n_lower;
-  PetscInt n_bind;       /* Number of binding varibles */
+  PetscInt n_free_last;
   PetscInt subset_type;
 
 } TAO_TRON;

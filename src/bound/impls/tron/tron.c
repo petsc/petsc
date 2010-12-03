@@ -2,18 +2,20 @@
 #include "private/kspimpl.h"
 
 static const char *TRON_SUBSET[64] = {
-  "mask","submat"
+  "submat","mask","matrixfree"
 //    "singleprocessor", "noredistribute", "redistribute", "mask", "matrixfree"
 };
 
 #define TRON_SUBSET_SUBMAT 0
 #define TRON_SUBSET_MASK 1
-#define TRON_SUBSET_TYPES 2
+#define TRON_SUBSET_MATRIXFREE 2
+#define TRON_SUBSET_TYPES 3
 
 
 
 /* TRON Routines */
 static PetscErrorCode TronGradientProjections(TaoSolver,TAO_TRON*);
+static PetscErrorCode TronSetupKSP(TaoSolver, TAO_TRON*);
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
@@ -30,7 +32,6 @@ static PetscErrorCode TaoSolverDestroy_TRON(TaoSolver tao)
   ierr = VecDestroy(tron->Work);CHKERRQ(ierr);
   ierr = VecDestroy(tron->DXFree);CHKERRQ(ierr);
   ierr = VecDestroy(tron->R);CHKERRQ(ierr);
-  ierr = VecDestroy(tron->PG);CHKERRQ(ierr);
   
 
 
@@ -52,7 +53,7 @@ static PetscErrorCode TaoSolverSetFromOptions_TRON(TaoSolver tao)
   
   ierr = PetscOptionsInt("-tron_maxgpits","maximum number of gradient projections per TRON iterate","TaoSetMaxGPIts",tron->maxgpits,&tron->maxgpits,&flg);
   CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_subset_type","subset type", "", TRON_SUBSET, TRON_SUBSET_TYPES,TRON_SUBSET[tron->subset_type], &tron->subset_type, 0); CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tron_subset_type","subset type", "", TRON_SUBSET, TRON_SUBSET_TYPES,TRON_SUBSET[tron->subset_type], &tron->subset_type, 0); CHKERRQ(ierr);
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
@@ -96,7 +97,6 @@ static PetscErrorCode TaoSolverSetup_TRON(TaoSolver tao)
   ierr = VecDuplicate(tao->solution, &tron->Work); CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution, &tron->DXFree); CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution, &tron->R); CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution, &tron->PG); CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution, &tao->gradient); CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution, &tao->stepdirection); CHKERRQ(ierr);
   if (!tao->XL) {
@@ -120,15 +120,11 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
 
   TAO_TRON *tron = (TAO_TRON *)tao->data;;
   PetscErrorCode ierr;
-  PetscInt iter=0,n_free_last;
-  MatStructure matflag;
+  PetscInt iter=0;
 
   TaoSolverTerminationReason reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchTerminationReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscScalar prered,actred,delta,f,f_new,rhok,gnorm,gdx,xdiff,stepsize;
-  VecScatter scatter;
-  KSP newksp;
-  PC pc;
   PetscFunctionBegin;
 
   tron->pgstepsize=1.0;
@@ -141,11 +137,15 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
   ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&tron->Free_Local); CHKERRQ(ierr);
   
   /* Project the gradient and calculate the norm */
-  ierr = VecBoundGradientProjection(tao->gradient,tao->solution, tao->XL, tao->XU, tron->PG); CHKERRQ(ierr);
-  ierr = VecNorm(tron->PG,NORM_2,&tron->gnorm); CHKERRQ(ierr);
+  ierr = VecBoundGradientProjection(tao->gradient,tao->solution, tao->XL, tao->XU, tao->gradient); CHKERRQ(ierr);
+  ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm); CHKERRQ(ierr);
 
   if (TaoInfOrNaN(tron->f) || TaoInfOrNaN(tron->gnorm)) {
     SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf pr NaN");
+  }
+
+  if (tron->delta <= 0) {
+    tron->delta=PetscMax(tron->gnorm*tron->gnorm,1.0);
   }
 
   tron->stepsize=tron->delta;
@@ -156,11 +156,11 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
     ierr = TronGradientProjections(tao,tron); CHKERRQ(ierr);
     f=tron->f; delta=tron->delta; gnorm=tron->gnorm; 
     
+    tron->n_free_last = tron->n_free;
     ierr = ISGetSize(tron->Free_Local, &tron->n_free);  CHKERRQ(ierr);
-    ierr = TaoSolverComputeHessian(tao,tao->solution,&tao->hessian, &tao->hessian_pre, &matflag);CHKERRQ(ierr);
+    ierr = TaoSolverComputeHessian(tao,tao->solution,&tao->hessian, &tao->hessian_pre, &tron->matflag);CHKERRQ(ierr);
 
     /* Create a reduced linear system using free variables */
-    n_free_last = tron->n_free;
     ierr = ISGetSize(tron->Free_Local, &tron->n_free);  CHKERRQ(ierr);
 
     /* If no free variables */
@@ -170,66 +170,33 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
       break;
 
     }
-
-    if (tron->subset_type == TRON_SUBSET_SUBMAT) {
-      ierr = VecCreate(((PetscObject)tao)->comm,&tron->R); CHKERRQ(ierr);
-      ierr = VecCreate(((PetscObject)tao)->comm,&tron->DXFree); CHKERRQ(ierr);
-      ierr = VecSetSizes(tron->R, tron->n_free, PETSC_DECIDE); CHKERRQ(ierr);
-      ierr = VecSetSizes(tron->DXFree, tron->n_free, PETSC_DECIDE); CHKERRQ(ierr);
-      ierr = VecSetFromOptions(tron->R); CHKERRQ(ierr);
-      ierr = VecSetFromOptions(tron->DXFree); CHKERRQ(ierr);
-      ierr = VecSet(tron->DXFree,0.0);CHKERRQ(ierr);
-      ierr = VecScatterCreate(tao->gradient,tron->Free_Local,tron->R,PETSC_NULL,&scatter); CHKERRQ(ierr);
-      ierr = VecScatterBegin(scatter, tao->gradient, tron->R, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
-      ierr = VecScatterEnd(scatter, tao->gradient, tron->R, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
-      ierr = VecScale(tron->R, -1.0); CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(tao->hessian, tron->Free_Local, tron->Free_Local, MAT_INITIAL_MATRIX, &tron->H_sub); CHKERRQ(ierr);
-      if (tao->hessian != tao->hessian_pre) {
-	ierr = MatGetSubMatrix(tao->hessian_pre, tron->Free_Local, tron->Free_Local, MAT_INITIAL_MATRIX, &tron->Hpre_sub); CHKERRQ(ierr);
-      } else {
-	tron->Hpre_sub = tron->H_sub;
-      }
-
-      /* Create New KSP if size changed */
-      if (iter==0) {
-	ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
-	ierr = KSPSetOptionsPrefix(tao->ksp, "tao_"); CHKERRQ(ierr);
-	ierr = KSPSetType(tao->ksp, KSPSTCG); CHKERRQ(ierr);
-	ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
-      } else if (n_free_last != tron->n_free) {
-	ierr = KSPCreate(((PetscObject)tao)->comm, &newksp); CHKERRQ(ierr);
-	ierr = KSPSetOptionsPrefix(newksp, "tao_"); CHKERRQ(ierr);
-	newksp->pc_side = tao->ksp->pc_side;
-	newksp->rtol = tao->ksp->rtol;
-	newksp->max_it = tao->ksp->max_it;
-	ierr = KSPSetType(newksp,((PetscObject)tao)->type_name); CHKERRQ(ierr);
-	ierr = KSPGetPC(tao->ksp, &pc); CHKERRQ(ierr); 
-	ierr = PCSetType(newksp->pc, ((PetscObject)(tao->ksp))->type_name); CHKERRQ(ierr);
-	ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
-	tao->ksp = newksp;
-	ierr = PetscLogObjectParent(tao,tao->ksp); CHKERRQ(ierr);
-	ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
-      }
-
-      ierr = KSPSetOperators(tao->ksp, tron->H_sub, tron->Hpre_sub, DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
-    }
+    /* use free_local to mask/submat gradient, hessian, stepdirection */
+    ierr = TronSetupKSP(tao,tron); CHKERRQ(ierr);
     while (1) {
 
       /* Approximately solve the reduced linear system */
-      KSPSTCGSetRadius(tao->ksp, delta); CHKERRQ(ierr);
+      //KSPSTCGSetRadius(tao->ksp, delta); CHKERRQ(ierr);
       ierr = KSPSolve(tao->ksp, tron->R, tron->DXFree); CHKERRQ(ierr);
       ierr = VecSet(tao->stepdirection,0.0); CHKERRQ(ierr);
-      ierr = VecScatterBegin(scatter,tron->DXFree,tao->stepdirection,ADD_VALUES,SCATTER_REVERSE); CHKERRQ(ierr);
-      ierr = VecScatterEnd(scatter,tron->DXFree,tao->stepdirection,ADD_VALUES,SCATTER_REVERSE); CHKERRQ(ierr);
+      
+      /* Add dxfree matrix to complte step direction vector */
+      if (tron->subset_type == TRON_SUBSET_SUBMAT) {
+	ierr = VecScatterBegin(tron->scatter,tron->DXFree,tao->stepdirection,ADD_VALUES,SCATTER_REVERSE); CHKERRQ(ierr);
+	ierr = VecScatterEnd(tron->scatter,tron->DXFree,tao->stepdirection,ADD_VALUES,SCATTER_REVERSE); CHKERRQ(ierr);
+      } else if (tron->subset_type == TRON_SUBSET_MASK || tron->subset_type==TRON_SUBSET_MATRIXFREE) {
+	ierr = VecAXPY(tao->stepdirection, 1.0, tron->DXFree); CHKERRQ(ierr);
+      }
+      
       
       ierr = VecDot(tao->gradient, tao->stepdirection, &gdx); CHKERRQ(ierr);
       
       ierr = PetscInfo1(tao,"Expected decrease in function value: %14.12e\n",gdx); CHKERRQ(ierr);
       
       ierr = VecCopy(tao->solution, tron->X_New); CHKERRQ(ierr);
-      ierr = VecCopy(tao->solution, tron->G_New); CHKERRQ(ierr);
+      ierr = VecCopy(tao->gradient, tron->G_New); CHKERRQ(ierr);
       
       stepsize=1.0;f_new=f;
+      ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0); CHKERRQ(ierr);
       ierr = TaoLineSearchApply(tao->linesearch, tron->X_New, &f_new, tron->G_New, tao->stepdirection,
 				&stepsize,&ls_reason); CHKERRQ(ierr); CHKERRQ(ierr);
       
@@ -260,10 +227,10 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
 	} else if (rhok > tron->eta3 ){
 	  delta=PetscMin(xdiff,delta)*tron->sigma2;
 	}
-	ierr = VecBoundGradientProjection(tron->G_New,tron->X_New, tao->XL, tao->XU, tron->PG); CHKERRQ(ierr);
-	ierr = VecNorm(tron->PG,NORM_2,&tron->gnorm); CHKERRQ(ierr);
+	ierr = VecBoundGradientProjection(tron->G_New,tron->X_New, tao->XL, tao->XU, tao->gradient); CHKERRQ(ierr);
 	ierr = VecWhichBetween(tao->XL, tron->X_New, tao->XU, &tron->Free_Local); CHKERRQ(ierr);
 	f=f_new;
+	ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm); CHKERRQ(ierr);
 	ierr = VecCopy(tron->X_New, tao->solution); CHKERRQ(ierr);
 	ierr = VecCopy(tron->G_New, tao->gradient); CHKERRQ(ierr);
 	break;
@@ -277,7 +244,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
     } /* end linear solve loop */
 
 
-    tron->f=f;tron->gnorm=gnorm; tron->actred=actred; tron->delta=delta;
+    tron->f=f; tron->actred=actred; tron->delta=delta;
     iter++;
     ierr = TaoSolverMonitor(tao, iter, tron->f, tron->gnorm, 0.0, delta, &reason); CHKERRQ(ierr);
   }  /* END MAIN LOOP  */
@@ -294,7 +261,7 @@ static PetscErrorCode TronGradientProjections(TaoSolver tao,TAO_TRON *tron)
   PetscInt i;
   TaoLineSearchTerminationReason ls_reason;
   PetscScalar actred=-1.0,actred_max=0.0;
-  PetscScalar f_new, stepsize;
+  PetscScalar f_new;
   /*
      The gradient and function value passed into and out of this
      routine should be current and correct.
@@ -314,9 +281,9 @@ static PetscErrorCode TronGradientProjections(TaoSolver tao,TAO_TRON *tron)
 
     ierr = VecCopy(tao->gradient, tao->stepdirection); CHKERRQ(ierr);
     ierr = VecScale(tao->stepdirection, -1.0); CHKERRQ(ierr);
-
+    ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,tron->pgstepsize); CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f_new, tao->gradient, tao->stepdirection,
-			      &stepsize, &ls_reason); CHKERRQ(ierr);
+			      &tron->pgstepsize, &ls_reason); CHKERRQ(ierr);
 
 
     /* Update the iterate */
@@ -328,8 +295,133 @@ static PetscErrorCode TronGradientProjections(TaoSolver tao,TAO_TRON *tron)
   
   PetscFunctionReturn(0);
 }
+#undef __FUNCT__
+#define __FUNCT__ "TronSetupKSP"
+PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
+{
+  PetscErrorCode ierr;
+  const PetscInt *s;
+  PetscInt nlocal, low, high, i;
+  PetscScalar *v;
+  PetscBool flg;
+  KSP newksp;
+  PC pc;
+
+  PetscFunctionBegin;
+  if (tron->subset_type == TRON_SUBSET_SUBMAT) {
+    ierr = VecCreate(((PetscObject)tao)->comm,&tron->R); CHKERRQ(ierr);
+    ierr = VecCreate(((PetscObject)tao)->comm,&tron->DXFree); CHKERRQ(ierr);
+    ierr = VecSetSizes(tron->R, tron->n_free, PETSC_DECIDE); CHKERRQ(ierr);
+    ierr = VecSetSizes(tron->DXFree, tron->n_free, PETSC_DECIDE); CHKERRQ(ierr);
+    ierr = VecSetFromOptions(tron->R); CHKERRQ(ierr);
+    ierr = VecSetFromOptions(tron->DXFree); CHKERRQ(ierr);
+    ierr = VecSet(tron->DXFree,0.0);CHKERRQ(ierr);
+    ierr = VecScatterCreate(tao->gradient,tron->Free_Local,tron->R,PETSC_NULL,&tron->scatter); CHKERRQ(ierr);
+    ierr = VecScatterBegin(tron->scatter, tao->gradient, tron->R, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
+    ierr = VecScatterEnd(tron->scatter, tao->gradient, tron->R, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
+    ierr = VecScale(tron->R, -1.0); CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(tao->hessian, tron->Free_Local, tron->Free_Local, MAT_INITIAL_MATRIX, &tron->H_sub); CHKERRQ(ierr);
+    if (tao->hessian != tao->hessian_pre) {
+      ierr = MatGetSubMatrix(tao->hessian_pre, tron->Free_Local, tron->Free_Local, MAT_INITIAL_MATRIX, &tron->Hpre_sub); CHKERRQ(ierr);
+    } else {
+      tron->Hpre_sub = tron->H_sub;
+    }
+
+    /* Create New KSP if size changed */
+    if (tao->ksp == PETSC_NULL) {
+      ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(tao->ksp, "tao_"); CHKERRQ(ierr);
+      ierr = KSPSetType(tao->ksp, KSPCG); CHKERRQ(ierr);
+      ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
+    } else if (tron->n_free_last != tron->n_free) {
+      ierr = KSPCreate(((PetscObject)tao)->comm, &newksp); CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(newksp, "tao_"); CHKERRQ(ierr);
+      newksp->pc_side = tao->ksp->pc_side;
+      newksp->rtol = tao->ksp->rtol;
+      newksp->max_it = tao->ksp->max_it;
+      ierr = KSPSetType(newksp,((PetscObject)(tao->ksp))->type_name); CHKERRQ(ierr);
+      ierr = KSPGetPC(tao->ksp, &pc); CHKERRQ(ierr); 
+      ierr = PCSetType(newksp->pc, ((PetscObject)pc)->type_name); CHKERRQ(ierr);
+      ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
+      tao->ksp = newksp;
+      ierr = PetscLogObjectParent(tao,tao->ksp); CHKERRQ(ierr);
+      ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
+    }
+
+    ierr = KSPSetOperators(tao->ksp, tron->H_sub, tron->Hpre_sub, DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
+  } else if (tron->subset_type==TRON_SUBSET_MASK) {
+    /* Create mask */
+    if (tron->rmask == PETSC_NULL) {
+      ierr = VecDuplicate(tao->solution, &tron->rmask); CHKERRQ(ierr);
+    }
+    if (tron->diag == PETSC_NULL) {
+      ierr = VecDuplicate(tao->solution, &tron->diag); CHKERRQ(ierr);
+    }
+    if (tron->R == PETSC_NULL) {
+      ierr = VecDuplicate(tao->solution, &tron->R); CHKERRQ(ierr);
+    }
+    if (tron->DXFree == PETSC_NULL) {
+      ierr = VecDuplicate(tao->solution, &tron->DXFree); CHKERRQ(ierr);
+    }
+    if (tao->ksp == PETSC_NULL) {
+      ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(tao->ksp, "tao_"); CHKERRQ(ierr);
+      ierr = KSPSetType(tao->ksp, KSPCG); CHKERRQ(ierr);
+      ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
+    }
+    ierr = VecSet(tron->rmask, 0.0); CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(tron->rmask, &low, &high); CHKERRQ(ierr);
+    ierr = ISGetLocalSize(tron->Free_Local, &nlocal); CHKERRQ(ierr);
+    ierr = ISGetIndices(tron->Free_Local, &s); CHKERRQ(ierr);
+    ierr = VecGetArray(tron->rmask, &v); CHKERRQ(ierr);
+    for (i=0;i<nlocal; i++) {
+      v[s[i]-low] = 1;
+    }
+    ierr = ISRestoreIndices(tron->Free_Local, &s); CHKERRQ(ierr);
+    ierr = VecRestoreArray(tron->rmask, &v); CHKERRQ(ierr);
+    
+    /* Reduce vectors (r[i]=g[i], if i in Free_Local, 
+                       r[i]=0     if i not in Free_Local) */
+
+    ierr = VecCopy(tao->gradient, tron->R); CHKERRQ(ierr);
+    ierr = VecCopy(tao->stepdirection, tron->DXFree); CHKERRQ(ierr);
+    ierr = VecPointwiseMult(tron->R, tron->rmask); CHKERRQ(ierr);
+    ierr = VecPointwiseMult(tron->DXFree, tron->rmask); CHKERRQ(ierr);
+    ierr = VecScale(tron->R, -1.0); CHKERRQ(ierr);
+
+    /* Get Reduced Hessian 
+       Hsub[i,j] = H[i,j] if i,j in Free_Local or i==j
+       Hsub[i,j] = 0      if i!=j and i or j not in Free_Local
+     */
+    ierr = PetscOptionsHasName(0,"-different_submatrix",&flg);
+    if (flg == PETSC_TRUE) {
+      ierr = MatDuplicate(tao->hessian, MAT_COPY_VALUES, &tron->H_sub); CHKERRQ(ierr);
+      if (tao->hessian != tao->hessian_pre) {
+	ierr = MatDuplicate(tao->hessian_pre, MAT_COPY_VALUES, &tron->Hpre_sub); CHKERRQ(ierr);
+      }
+    } else {
+      /* Act on hessian directly (default) */
+      tron->H_sub = tao->hessian;
+      tron->Hpre_sub = tao->hessian_pre;
+    }
 
 
+
+    ierr = MatGetDiagonal(tron->H_sub, tron->diag); CHKERRQ(ierr);
+    ierr = MatDiagonalScale(tron->H_sub, tron->rmask, tron->rmask); CHKERRQ(ierr);
+    ierr = MatDiagonalSet(tron->H_sub, tron->diag, INSERT_VALUES); CHKERRQ(ierr);
+    if (tron->H_sub != tron->Hpre_sub) {
+      ierr = MatGetDiagonal(tron->Hpre_sub, tron->diag); CHKERRQ(ierr);
+      ierr = MatDiagonalScale(tron->Hpre_sub, tron->rmask, tron->rmask); CHKERRQ(ierr);
+      ierr = MatDiagonalSet(tron->Hpre_sub, tron->diag, INSERT_VALUES); CHKERRQ(ierr);
+    }
+    ierr = KSPSetOperators(tao->ksp, tron->H_sub, tron->Hpre_sub, tron->matflag); CHKERRQ(ierr);
+  } else if (tron->subset_type == TRON_SUBSET_MATRIXFREE) {
+    /* TODO */
+
+  }
+  PetscFunctionReturn(0);
+}
 /*
 #undef __FUNCT__  
 #define __FUNCT__ "TaoDefaultMonitor_TRON" 
@@ -418,7 +510,7 @@ PetscErrorCode TaoSolverCreate_TRON(TaoSolver tao)
 
   /* Initialize pointers and variables */
   tron->n            = 0;
-  tron->delta        = -1.0;
+  tron->delta        = 1.0;
   tron->maxgpits     = 3;
   tron->pg_ftol      = 0.001;
 
@@ -432,24 +524,18 @@ PetscErrorCode TaoSolverCreate_TRON(TaoSolver tao)
   tron->sigma3       = 4.0;
 
   tron->gp_iterates  = 0; /* Cumulative number */
-  tron->cgits        = 0; /* Current iteration */
   tron->total_gp_its = 0;
-  tron->cg_iterates  = 0;
-  tron->total_cgits  = 0;
  
-  tron->n_bind       = 0;
   tron->n_free       = 0;
-  tron->n_upper      = 0;
-  tron->n_lower      = 0;
 
-  tron->DXFree=0;
-  tron->R=0;
-  tron->X_New=0;
-  tron->G_New=0;
-  tron->Work=0;
-  tron->Free_Local=0;
-  tron->H_sub=0;
-  tron->Hpre_sub=0;
+  tron->DXFree=PETSC_NULL;
+  tron->R=PETSC_NULL;
+  tron->X_New=PETSC_NULL;
+  tron->G_New=PETSC_NULL;
+  tron->Work=PETSC_NULL;
+  tron->Free_Local=PETSC_NULL;
+  tron->H_sub=PETSC_NULL;
+  tron->Hpre_sub=PETSC_NULL;
   tron->subset_type = TRON_SUBSET_SUBMAT;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch); CHKERRQ(ierr);

@@ -458,6 +458,5 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *H, Mat *Hpre, MatStructure *
 
   info = PetscLogFlops(9*xm*ym+49*xm); CHKERRQ(info);
   info = MatNorm(hes,NORM_1,&hx); CHKERRQ(info);
-  printf("hes norm = %g\n",hx); 
   return 0;
 }
