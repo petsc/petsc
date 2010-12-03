@@ -8,7 +8,7 @@
 static PetscErrorCode MatNestGetSize_Recursive(Mat A,PetscBool globalsize,PetscInt *M,PetscInt *N)
 {
   Mat_Nest       *bA = (Mat_Nest*)A->data;
-  PetscInt       sizeM,sizeN,i,j,index;
+  PetscInt       sizeM,sizeN,i,j,index=-1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
