@@ -107,27 +107,25 @@ def FixDir(petscdir,dir):
   if os.path.exists(dir) and os.path.isdir(dir) and os.listdir(dir) == []:
     os.rmdir(dir)
 
-  # Now process f90module.f90 file - and update include/finclude/ftn-auto
+  # save Fortran interface file generated (it is merged with others in a post-processing step)
   modfile = os.path.join(parentdir,'f90module.f90')
   if os.path.exists(modfile):
     fd = open(modfile)
     txt = fd.read()
     fd.close()
-
-    if txt and mansec == 'unknown':
-      print 'makefile has missing MANSEC',parentdir
-    elif txt:
-      ftype = 'w'
-      f90inc = os.path.join(petscdir,'include','finclude','ftn-auto','petsc'+mansec+'.h90')
-      if os.path.exists(f90inc): ftype = 'a'
-      fd = open(f90inc,ftype)
+    if txt:
+      if not os.path.isdir(os.path.join(petscdir,'include','finclude','ftn-auto')): os.mkdir(os.path.join(petscdir,'include','finclude','ftn-auto'))
+      if not os.path.isdir(os.path.join(petscdir,'include','finclude','ftn-auto',mansec)): os.mkdir(os.path.join(petscdir,'include','finclude','ftn-auto',mansec))
+      fname =  os.path.join(petscdir,'include','finclude','ftn-auto',mansec,parentdir.replace('/','_')+'.h90')
+      fd =open(fname,'w')
       fd.write(txt)
       fd.close()
     os.remove(modfile)
-  return
+
 
 def PrepFtnDir(dir):
   ''' Generate a fnt-auto directory if needed'''
+  import shutil
   if os.path.exists(dir) and not os.path.isdir(dir):
     raise RuntimeError('Error - specified path is not a dir: ' + dir)
   elif not os.path.exists(dir):
@@ -135,7 +133,8 @@ def PrepFtnDir(dir):
   else:
     files = os.listdir(dir)
     for file in files:
-      os.remove(os.path.join(dir,file))
+      if os.path.isdir(os.path.join(dir,file)): shutil.rmtree(os.path.join(dir,file))
+      else: os.remove(os.path.join(dir,file))
   return
 
 def processDir(arg,dirname,names):
@@ -164,7 +163,7 @@ def processDir(arg,dirname,names):
   # remove from list of subdirectories all directories without source code
   rmnames=[]
   for name in names:
-    if name in ['.hg','SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','fortran','bin','maint','ftn-custom','config','f90-custom']:
+    if name in ['.hg','SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','fortran','bin','maint','ftn-custom','config','f90-custom','ftn-kernels']:
       rmnames.append(name)
     # skip for ./configure generated $PETSC_ARCH directories
     if os.path.isdir(os.path.join(name,'conf')):
@@ -176,12 +175,26 @@ def processDir(arg,dirname,names):
     names.remove(rmname)
   return
 
+
+def processf90interfaces(petscdir):
+  ''' Takes all the individually generated fortran interface files and merges them into one for each mansec'''
+  for mansec in os.listdir(os.path.join(petscdir,'include','finclude','ftn-auto')):
+    if os.path.isdir(os.path.join(petscdir,'include','finclude','ftn-auto',mansec)):
+      f90inc = os.path.join(petscdir,'include','finclude','ftn-auto','petsc'+mansec+'.h90')
+      fd = open(f90inc,'w')
+      for sfile in os.listdir(os.path.join(petscdir,'include','finclude','ftn-auto',mansec)):
+        fdr = open(os.path.join(petscdir,'include','finclude','ftn-auto',mansec,sfile))
+        txt = fdr.read()
+        fd.write(txt)
+        fdr.close()
+      fd.close()
+  FixDir(petscdir,os.path.join(petscdir,'include','finclude','ftn-auto'))
+  return
+
 def main(bfort,dir):
   petscdir = os.environ['PETSC_DIR']
-  ftnautoinc = os.path.join(petscdir,'include','finclude','ftn-auto')
-  PrepFtnDir(ftnautoinc)
   os.path.walk(dir, processDir, [petscdir, bfort])
-  FixDir(petscdir,ftnautoinc)
+  processf90interfaces(petscdir)
   return
 #
 # The classes in this file can also be used in other python-programs by using 'import'
