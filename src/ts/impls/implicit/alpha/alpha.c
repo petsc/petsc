@@ -413,7 +413,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSAlphaAdaptDefault(TS ts,PetscReal t,Vec X,Vec
   Emax =  th->rtol * normX + th->atol;
   /* compute next time step */
   if (normE > 0) {
-    scale = th->rho * (PetscReal)PetscSqrtScalar((PetscScalar)(Emax/normE));
+    scale = th->rho * PetscRealPart(PetscSqrtScalar((PetscScalar)(Emax/normE)));
     scale = PetscMax(scale,th->scale_min);
     scale = PetscMin(scale,th->scale_max);
     if (!(*ok))

@@ -796,6 +796,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   /* copy vector type information */
   ierr = PetscFree(da2->vectype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(da->vectype,&da2->vectype);CHKERRQ(ierr);
+
+  /* interpolate coordinates if they are set on the coarse grid */
+  if (dd->coordinates) {
+    DM  cdaf,cdac;
+    Vec coordsc,coordsf;
+    Mat II;
+    
+    ierr = DMDAGetCoordinateDA(da,&cdac);CHKERRQ(ierr);
+    ierr = DMDAGetCoordinates(da,&coordsc);CHKERRQ(ierr);
+    ierr = DMDAGetCoordinateDA(da2,&cdaf);CHKERRQ(ierr);
+    /* force creation of the coordinate vector */
+    ierr = DMDASetUniformCoordinates(da2,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
+    ierr = DMDAGetCoordinates(da2,&coordsf);CHKERRQ(ierr);
+    ierr = DMGetInterpolation(cdac,cdaf,&II,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
+    ierr = MatDestroy(II);CHKERRQ(ierr);
+  }
   *daref = da2;
   PetscFunctionReturn(0);
 }
@@ -877,6 +894,24 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   ierr = PetscFree(da2->vectype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(da->vectype,&da2->vectype);CHKERRQ(ierr);
 
+  /* inject coordinates if they are set on the fine grid */
+  if (dd->coordinates) {
+    DM  cdaf,cdac;
+    Vec coordsc,coordsf;
+    VecScatter inject;
+    
+    ierr = DMDAGetCoordinateDA(da,&cdaf);CHKERRQ(ierr);
+    ierr = DMDAGetCoordinates(da,&coordsf);CHKERRQ(ierr);
+    ierr = DMDAGetCoordinateDA(da2,&cdac);CHKERRQ(ierr);
+    /* force creation of the coordinate vector */
+    ierr = DMDASetUniformCoordinates(da2,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
+    ierr = DMDAGetCoordinates(da2,&coordsc);CHKERRQ(ierr);
+    
+    ierr = DMGetInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
+    ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(inject);CHKERRQ(ierr);
+  }
   *daref = da2;
   PetscFunctionReturn(0);
 }

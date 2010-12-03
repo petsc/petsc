@@ -10,7 +10,7 @@ OBJSC    = $(SOURCEC:.c=.o)
 OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = DM
-DIRS     = ftn-custom f90-custom
+DIRS     =
 LOCDIR   = src/dm/impls/composite/
 
 include ${PETSC_DIR}/conf/variables

@@ -404,7 +404,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetSkipOptions(PetscViewer vi
 
     Notes:
       For writable binary PetscViewers, the descriptor will only be valid for the 
-    first processor in the communicator that shares the PetscViewer.
+    first processor in the communicator that shares the PetscViewer. It cannot be used for readable binary viewers.
  
     Fortran Note:
     This routine is not supported in Fortran.
