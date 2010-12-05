@@ -273,7 +273,7 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N)
 
 .seealso: MatGetSubMatrix(), MatSubMatrixUpdate()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
+PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
 {
   Vec            left,right;
   PetscInt       m,n;
@@ -356,7 +356,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat
 
 .seealso: MatGetSubMatrix(), MatCreateSubMatrix()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatSubMatrixUpdate(Mat N,Mat A,IS isrow,IS iscol)
+PetscErrorCode  MatSubMatrixUpdate(Mat N,Mat A,IS isrow,IS iscol)
 {
   PetscErrorCode  ierr;
   PetscBool       flg;

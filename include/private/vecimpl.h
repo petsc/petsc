@@ -33,16 +33,16 @@ extern PetscErrorCode PetscLayoutCreate(MPI_Comm,PetscLayout*);
 extern PetscErrorCode PetscLayoutSetUp(PetscLayout);
 extern PetscErrorCode PetscLayoutDestroy(PetscLayout);
 extern PetscErrorCode PetscLayoutCopy(PetscLayout,PetscLayout*);
-extern PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetLocalSize(PetscLayout,PetscInt);
-extern PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
+extern PetscErrorCode  PetscLayoutSetLocalSize(PetscLayout,PetscInt);
+extern PetscErrorCode  PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
 PetscPolymorphicFunction(PetscLayoutGetLocalSize,(PetscLayout m),(m,&s),PetscInt,s)
-extern PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetSize(PetscLayout,PetscInt);
-extern PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetSize(PetscLayout,PetscInt *);
+extern PetscErrorCode  PetscLayoutSetSize(PetscLayout,PetscInt);
+extern PetscErrorCode  PetscLayoutGetSize(PetscLayout,PetscInt *);
 PetscPolymorphicFunction(PetscLayoutGetSize,(PetscLayout m),(m,&s),PetscInt,s)
-extern PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetBlockSize(PetscLayout,PetscInt);
-extern PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetBlockSize(PetscLayout,PetscInt*);
-extern PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetRange(PetscLayout,PetscInt *,PetscInt *);
-extern PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetRanges(PetscLayout,const PetscInt *[]);
+extern PetscErrorCode  PetscLayoutSetBlockSize(PetscLayout,PetscInt);
+extern PetscErrorCode  PetscLayoutGetBlockSize(PetscLayout,PetscInt*);
+extern PetscErrorCode  PetscLayoutGetRange(PetscLayout,PetscInt *,PetscInt *);
+extern PetscErrorCode  PetscLayoutGetRanges(PetscLayout,const PetscInt *[]);
 
 /* ----------------------------------------------------------------------------*/
 

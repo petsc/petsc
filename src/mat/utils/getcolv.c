@@ -31,7 +31,7 @@
 .seealso: MatGetRow(), MatGetDiagonal()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumnVector(Mat A,Vec yy,PetscInt col)
+PetscErrorCode  MatGetColumnVector(Mat A,Vec yy,PetscInt col)
 {
   PetscScalar        *y;
   const PetscScalar  *v;

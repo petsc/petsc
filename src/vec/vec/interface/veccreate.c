@@ -24,7 +24,7 @@
 .seealso: VecSetType(), VecSetSizes(), VecCreateMPIWithArray(), VecCreateMPI(), VecDuplicate(),
           VecDuplicateVecs(), VecCreateGhost(), VecCreateSeq(), VecPlaceArray()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreate(MPI_Comm comm, Vec *vec)
+PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
 {
   Vec            v;
   PetscErrorCode ierr;

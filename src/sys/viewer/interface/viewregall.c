@@ -27,7 +27,7 @@ EXTERN_C_END
 
 .seealso:  PetscViewerRegisterDestroy()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerRegisterAll(const char *path)
+PetscErrorCode  PetscViewerRegisterAll(const char *path)
 {
   PetscErrorCode ierr;
 

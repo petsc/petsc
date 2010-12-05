@@ -22,7 +22,7 @@
 
 .seealso: SNESMonitorSet(), SNESMonitorDefault(), VecView()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSolution(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode  SNESMonitorSolution(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
   Vec            x;
@@ -60,7 +60,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSolution(SNES snes,PetscInt its,Pe
 
 .seealso: SNESMonitorSet(), SNESMonitorDefault(), VecView()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode  SNESMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
   Vec            x;
@@ -98,7 +98,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorResidual(SNES snes,PetscInt its,Pe
 
 .seealso: SNESMonitorSet(), SNESMonitorDefault(), VecView()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSolutionUpdate(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode  SNESMonitorSolutionUpdate(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
   Vec            x;
@@ -138,7 +138,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSolutionUpdate(SNES snes,PetscInt 
 
 .seealso: SNESMonitorSet(), SNESMonitorSolution()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode  SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode          ierr;
   PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
@@ -156,7 +156,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefault(SNES snes,PetscInt its,Pet
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESMonitorRange_Private"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRange_Private(SNES snes,PetscInt it,PetscReal *per)
+PetscErrorCode  SNESMonitorRange_Private(SNES snes,PetscInt it,PetscReal *per)
 {
   PetscErrorCode          ierr;
   Vec                     resid;
@@ -202,7 +202,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRange_Private(SNES snes,PetscInt i
 
 .seealso: SNESMonitorSet(), SNESMonitorDefault(), SNESMonitorLGCreate()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,void *dummy)
+PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,void *dummy)
 {
   PetscErrorCode          ierr;
   PetscReal               perc,rel;
@@ -247,7 +247,7 @@ typedef struct {
 
 .seealso: SNESMonitorSet(), SNESMonitorSolution()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode  SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode          ierr;
   PetscInt                len;
@@ -300,7 +300,7 @@ PetscErrorCode SNESMonitorRatioDestroy(void *ct)
 
 .seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorDefault()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetRatio(SNES snes,PetscViewerASCIIMonitor viewer)
+PetscErrorCode  SNESMonitorSetRatio(SNES snes,PetscViewerASCIIMonitor viewer)
 {
   PetscErrorCode          ierr;
   SNESMonitorRatioContext *ctx;
@@ -332,7 +332,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetRatio(SNES snes,PetscViewerASCI
   different on different machines; by using this routine different 
   machines will usually generate the same output.
 */
-PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode          ierr;
   PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
@@ -393,7 +393,7 @@ $  SNES_CONVERGED_ITERATING       - (otherwise),
 
 .seealso: SNESSetConvergenceTest()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+PetscErrorCode  SNESDefaultConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   PetscErrorCode ierr;
 
@@ -458,7 +458,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultConverged(SNES snes,PetscInt it,Pe
 
 .seealso: SNESSetConvergenceTest()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESSkipConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+PetscErrorCode  SNESSkipConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   PetscErrorCode ierr;
 

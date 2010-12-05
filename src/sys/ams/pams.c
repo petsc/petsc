@@ -27,7 +27,7 @@ PetscBool  PetscAMSPublishAll;
 .seealso: PetscObjectSetName(), PetscObjectUnPublish()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectAMSPublish(PetscObject obj)
+PetscErrorCode  PetscObjectAMSPublish(PetscObject obj)
 {
   PetscErrorCode ierr;
   AMS_Memory     amem;

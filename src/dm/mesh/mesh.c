@@ -3,7 +3,7 @@
 #include <petscmesh_formats.hh>
 
 /* Logging support */
-PetscClassId PETSCDM_DLLEXPORT MESH_CLASSID;
+PetscClassId  MESH_CLASSID;
 PetscLogEvent  Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
             Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
 
@@ -32,7 +32,7 @@ EXTERN_C_BEGIN
 
          we do not use PetscFree() since it is unsafe after PetscFinalize()
 */
-PetscMPIInt PETSCDM_DLLEXPORT Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
+PetscMPIInt  Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
 {
   free(attr_val);
   return(MPI_SUCCESS);
@@ -196,7 +196,7 @@ PetscErrorCode MeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshView_Mesh"
-PetscErrorCode PETSCDM_DLLEXPORT MeshView_Mesh(Mesh mesh, PetscViewer viewer)
+PetscErrorCode  MeshView_Mesh(Mesh mesh, PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -247,7 +247,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView_Mesh(Mesh mesh, PetscViewer viewer)
 .seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerBinaryOpen(),
           MeshLoad(), PetscViewerCreate()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh mesh, PetscViewer viewer)
+PetscErrorCode  MeshView(Mesh mesh, PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -284,7 +284,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh mesh, PetscViewer viewer)
 .seealso MeshView()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshLoad(PetscViewer viewer, Mesh mesh)
+PetscErrorCode  MeshLoad(PetscViewer viewer, Mesh mesh)
 {
   char           *filename;
   PetscErrorCode  ierr;
@@ -321,7 +321,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshLoad(PetscViewer viewer, Mesh mesh)
 .seealso MeshCreate(), MeshSetMesh()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<PETSC_MESH_TYPE>& m)
+PetscErrorCode  MeshGetMesh(Mesh mesh, ALE::Obj<PETSC_MESH_TYPE>& m)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
@@ -345,7 +345,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<PETSC_MESH_TYPE
 .seealso MeshCreate(), MeshGetMesh()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<PETSC_MESH_TYPE>& m)
+PetscErrorCode  MeshSetMesh(Mesh mesh, const ALE::Obj<PETSC_MESH_TYPE>& m)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
@@ -384,7 +384,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<PETSC_MES
 
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DMDASetBlockFills()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, SectionReal section, MatType mtype, Mat *J)
+PetscErrorCode  MeshCreateMatrix(Mesh mesh, SectionReal section, MatType mtype, Mat *J)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -404,7 +404,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, SectionReal section
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshGetVertexMatrix" 
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexMatrix(Mesh mesh, MatType mtype, Mat *J)
+PetscErrorCode  MeshGetVertexMatrix(Mesh mesh, MatType mtype, Mat *J)
 {
   SectionReal    section;
   PetscErrorCode ierr;
@@ -441,7 +441,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexMatrix(Mesh mesh, MatType mtype, M
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DMDASetBlockFills()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, const MatType mtype, Mat *J)
+PetscErrorCode  MeshGetMatrix(Mesh mesh, const MatType mtype, Mat *J)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscBool           flag;
@@ -475,7 +475,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, const MatType mtype, M
 .seealso MeshDestroy(), MeshCreateGlobalVector(), MeshGetGlobalIndices()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
+PetscErrorCode  MeshCreate(MPI_Comm comm,Mesh *mesh)
 {
   PetscErrorCode ierr;
   Mesh         p;
@@ -526,7 +526,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
 
 .seealso MeshCreate(), MeshCreateGlobalVector(), MeshGetGlobalIndices()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
+PetscErrorCode  MeshDestroy(Mesh mesh)
 {
   PetscErrorCode     ierr;
 
@@ -564,7 +564,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
 .keywords: Mesh, set, typr
 .seealso: MeshGetType(), MeshType
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetType(Mesh mesh, const MeshType type)
+PetscErrorCode  MeshSetType(Mesh mesh, const MeshType type)
 {
   PetscErrorCode ierr,(*r)(Mesh);
   PetscBool      match;
@@ -606,7 +606,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetType(Mesh mesh, const MeshType type)
 .keywords: Mesh, get, type
 .seealso: MeshSetType()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetType(Mesh mesh,const MeshType *type)
+PetscErrorCode  MeshGetType(Mesh mesh,const MeshType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh,MESH_CLASSID,1);
@@ -622,7 +622,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetType(Mesh mesh,const MeshType *type)
 
   Level: advanced
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mesh))
+PetscErrorCode  MeshRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mesh))
 {
   PetscErrorCode ierr;
   char           fullname[PETSC_MAX_PATH_LEN];
@@ -634,7 +634,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRegister(const char sname[],const char path
 }
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCDM_DLLEXPORT MeshCreate_Cartesian(Mesh);
+extern PetscErrorCode  MeshCreate_Cartesian(Mesh);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -649,7 +649,7 @@ EXTERN_C_END
 .keywords: Mesh, register, all
 .seealso:  MeshRegisterDestroy()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshRegisterAll(const char path[])
+PetscErrorCode  MeshRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 
@@ -673,7 +673,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRegisterAll(const char path[])
 .keywords: Mesh, register, destroy
 .seealso: MeshRegister(), MeshRegisterAll()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshRegisterDestroy(void)
+PetscErrorCode  MeshRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -704,7 +704,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRegisterDestroy(void)
 .seealso MeshDestroy(), MeshCreate(), MeshGetGlobalIndices()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
+PetscErrorCode  MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscBool      flag;
@@ -741,7 +741,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
   Notes: The vector can safely be destroyed using VecDestroy().
 .seealso MeshDestroy(), MeshCreate(), MeshGetGlobalIndices()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateVector(Mesh mesh, SectionReal section, Vec *vec)
+PetscErrorCode  MeshCreateVector(Mesh mesh, SectionReal section, Vec *vec)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -778,7 +778,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateVector(Mesh mesh, SectionReal section
 .seealso MeshDestroy(), MeshCreate(), MeshCreateGlobalVector()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateLocalVector(Mesh mesh, Vec *lvec)
+PetscErrorCode  MeshCreateLocalVector(Mesh mesh, Vec *lvec)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscBool      flag;
@@ -817,7 +817,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateLocalVector(Mesh mesh, Vec *lvec)
 .seealso MeshDestroy(), MeshCreateGlobalVector(), MeshCreate()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
+PetscErrorCode  MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
 {
   SETERRQ(((PetscObject)mesh)->comm,PETSC_ERR_SUP, "");
 }
@@ -841,7 +841,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
 
 .seealso MeshDestroy(), MeshCreateGlobalVector(), MeshCreate()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(Mesh mesh, SectionReal section, VecScatter *scatter)
+PetscErrorCode  MeshCreateGlobalScatter(Mesh mesh, SectionReal section, VecScatter *scatter)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -856,7 +856,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(Mesh mesh, SectionReal 
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshGetGlobalScatter"
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(Mesh mesh, VecScatter *scatter)
+PetscErrorCode  MeshGetGlobalScatter(Mesh mesh, VecScatter *scatter)
 {
   PetscErrorCode ierr;
 
@@ -876,7 +876,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(Mesh mesh, VecScatter *sca
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshGetLocalFunction"
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetLocalFunction(Mesh mesh, PetscErrorCode (**lf)(Mesh, SectionReal, SectionReal, void *))
+PetscErrorCode  MeshGetLocalFunction(Mesh mesh, PetscErrorCode (**lf)(Mesh, SectionReal, SectionReal, void *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
@@ -886,7 +886,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetLocalFunction(Mesh mesh, PetscErrorCode 
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshSetLocalFunction"
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetLocalFunction(Mesh mesh, PetscErrorCode (*lf)(Mesh, SectionReal, SectionReal, void *))
+PetscErrorCode  MeshSetLocalFunction(Mesh mesh, PetscErrorCode (*lf)(Mesh, SectionReal, SectionReal, void *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
@@ -896,7 +896,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetLocalFunction(Mesh mesh, PetscErrorCode 
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshSetLocalJacobian"
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetLocalJacobian(Mesh mesh, PetscErrorCode (**lj)(Mesh, SectionReal, Mat, void *))
+PetscErrorCode  MeshGetLocalJacobian(Mesh mesh, PetscErrorCode (**lj)(Mesh, SectionReal, Mat, void *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
@@ -906,7 +906,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetLocalJacobian(Mesh mesh, PetscErrorCode 
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshSetLocalJacobian"
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetLocalJacobian(Mesh mesh, PetscErrorCode (*lj)(Mesh, SectionReal, Mat, void *))
+PetscErrorCode  MeshSetLocalJacobian(Mesh mesh, PetscErrorCode (*lj)(Mesh, SectionReal, Mat, void *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
@@ -916,7 +916,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetLocalJacobian(Mesh mesh, PetscErrorCode 
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshFormFunction"
-PetscErrorCode PETSCDM_DLLEXPORT MeshFormFunction(Mesh mesh, SectionReal X, SectionReal F, void *ctx)
+PetscErrorCode  MeshFormFunction(Mesh mesh, SectionReal X, SectionReal F, void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -932,7 +932,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshFormFunction(Mesh mesh, SectionReal X, Sect
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshFormJacobian"
-PetscErrorCode PETSCDM_DLLEXPORT MeshFormJacobian(Mesh mesh, SectionReal X, Mat J, void *ctx)
+PetscErrorCode  MeshFormJacobian(Mesh mesh, SectionReal X, Mat J, void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -953,7 +953,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshFormJacobian(Mesh mesh, SectionReal X, Mat 
 //  - The section takes values on vertices and is P1
 //  - Points have the same dimension as the mesh
 //  - All values have the same dimension
-PetscErrorCode PETSCDM_DLLEXPORT MeshInterpolatePoints(Mesh mesh, SectionReal section, int numPoints, double *points, double **values)
+PetscErrorCode  MeshInterpolatePoints(Mesh mesh, SectionReal section, int numPoints, double *points, double **values)
 {
   Obj<PETSC_MESH_TYPE> m;
   Obj<PETSC_MESH_TYPE::real_section_type> s;

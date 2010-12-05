@@ -26,7 +26,7 @@ PetscFList PetscViewerList              = 0;
 .seealso: PetscViewerDestroy(), PetscViewerSetType()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
+PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
 {
   PetscViewer    viewer;
   PetscErrorCode ierr;
@@ -65,7 +65,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerCreate(MPI_Comm comm,PetscViewer *i
 
 .seealso: PetscViewerCreate(), PetscViewerGetType()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSetType(PetscViewer viewer,const PetscViewerType type)
+PetscErrorCode  PetscViewerSetType(PetscViewer viewer,const PetscViewerType type)
 {
   PetscErrorCode ierr,(*r)(PetscViewer);
   PetscBool      match;
@@ -104,7 +104,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSetType(PetscViewer viewer,const Pe
 
 .seealso: PetscViewerRegisterDynamic(), PetscViewerRegisterAll()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerRegisterDestroy(void)
+PetscErrorCode  PetscViewerRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -115,7 +115,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerRegisterDestroy(void)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerRegister" 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerRegister(const char *sname,const char *path,const char *name,PetscErrorCode (*function)(PetscViewer))
+PetscErrorCode  PetscViewerRegister(const char *sname,const char *path,const char *name,PetscErrorCode (*function)(PetscViewer))
 {
   PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];
@@ -147,7 +147,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerRegister(const char *sname,const ch
 .seealso: PetscViewerCreate(), PetscViewerSetType()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSetFromOptions(PetscViewer viewer)
+PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
 {
   PetscErrorCode ierr;
   char       vtype[256];

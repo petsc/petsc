@@ -21,7 +21,7 @@
         this routine
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetCoupling(DM dm,PetscErrorCode (*FormCoupleLocations)(DM,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt))
+PetscErrorCode  DMCompositeSetCoupling(DM dm,PetscErrorCode (*FormCoupleLocations)(DM,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt))
 {
   DM_Composite *com = (DM_Composite*)dm->data;
 
@@ -48,7 +48,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetCoupling(DM dm,PetscErrorCode (*F
     Notes: Use DMCompositeGetContext() to retrieve the context when needed.
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetContext(DM dm,void *ctx)
+PetscErrorCode  DMCompositeSetContext(DM dm,void *ctx)
 {
   PetscFunctionBegin;
   dm->ctx = ctx;
@@ -74,7 +74,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetContext(DM dm,void *ctx)
     Notes: Use DMCompositeGetContext() to retrieve the context when needed.
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetContext(DM dm,void **ctx)
+PetscErrorCode  DMCompositeGetContext(DM dm,void **ctx)
 {
   PetscFunctionBegin;
   *ctx = dm->ctx;
@@ -87,7 +87,7 @@ extern PetscErrorCode DMDestroy_Private(DM,PetscBool *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDestroy_Composite"
-PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_Composite(DM dm)
+PetscErrorCode  DMDestroy_Composite(DM dm)
 {
   PetscErrorCode         ierr;
   struct DMCompositeLink *next, *prev;
@@ -118,7 +118,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_Composite(DM dm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMView_Composite"
-PetscErrorCode PETSCDM_DLLEXPORT DMView_Composite(DM dm,PetscViewer v)
+PetscErrorCode  DMView_Composite(DM dm,PetscViewer v)
 {
   PetscErrorCode ierr;
   PetscBool      iascii;
@@ -151,7 +151,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMView_Composite(DM dm,PetscViewer v)
 /* --------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "DMSetUp_Composite"
-PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_Composite(DM dm)
+PetscErrorCode  DMSetUp_Composite(DM dm)
 {
   PetscErrorCode         ierr;
   PetscInt               nprev = 0;
@@ -381,7 +381,7 @@ PetscErrorCode DMCompositeGather_DM(DM dm,struct DMCompositeLink *mine,Vec vec,I
     Level: beginner
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetNumberDM(DM dm,PetscInt *nDM)
+PetscErrorCode  DMCompositeGetNumberDM(DM dm,PetscInt *nDM)
 {
   DM_Composite *com = (DM_Composite*)dm->data;
   PetscFunctionBegin;
@@ -409,7 +409,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetNumberDM(DM dm,PetscInt *nDM)
     Level: advanced
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetAccess(DM dm,Vec gvec,...)
+PetscErrorCode  DMCompositeGetAccess(DM dm,Vec gvec,...)
 {
   va_list                Argp;
   PetscErrorCode         ierr;
@@ -464,7 +464,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetAccess(DM dm,Vec gvec,...)
          DMCompositeRestoreAccess(), DMCompositeGetAccess()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeRestoreAccess(DM dm,Vec gvec,...)
+PetscErrorCode  DMCompositeRestoreAccess(DM dm,Vec gvec,...)
 {
   va_list                Argp;
   PetscErrorCode         ierr;
@@ -518,7 +518,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeRestoreAccess(DM dm,Vec gvec,...)
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeScatter(DM dm,Vec gvec,...)
+PetscErrorCode  DMCompositeScatter(DM dm,Vec gvec,...)
 {
   va_list                Argp;
   PetscErrorCode         ierr;
@@ -576,7 +576,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeScatter(DM dm,Vec gvec,...)
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGather(DM dm,Vec gvec,InsertMode imode,...)
+PetscErrorCode  DMCompositeGather(DM dm,Vec gvec,InsertMode imode,...)
 {
   va_list                Argp;
   PetscErrorCode         ierr;
@@ -635,7 +635,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGather(DM dm,Vec gvec,InsertMode imo
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeAddArray(DM dm,PetscMPIInt orank,PetscInt n)
+PetscErrorCode  DMCompositeAddArray(DM dm,PetscMPIInt orank,PetscInt n)
 {
   struct DMCompositeLink *mine,*next;
   PetscErrorCode         ierr;
@@ -696,7 +696,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeAddArray(DM dm,PetscMPIInt orank,Pet
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeAddDM(DM dmc,DM dm)
+PetscErrorCode  DMCompositeAddDM(DM dmc,DM dm)
 {
   PetscErrorCode         ierr;
   PetscInt               n,nlocal;
@@ -738,11 +738,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeAddDM(DM dmc,DM dm)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI(Vec,PetscViewer);
+extern PetscErrorCode  VecView_MPI(Vec,PetscViewer);
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_DMComposite"
-PetscErrorCode PETSCDM_DLLEXPORT VecView_DMComposite(Vec gvec,PetscViewer viewer)
+PetscErrorCode  VecView_DMComposite(Vec gvec,PetscViewer viewer)
 {
   DM                     dm;
   PetscErrorCode         ierr;
@@ -794,7 +794,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreateGlobalVector_Composite"
-PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_Composite(DM dm,Vec *gvec)
+PetscErrorCode  DMCreateGlobalVector_Composite(DM dm,Vec *gvec)
 {
   PetscErrorCode         ierr;
   DM_Composite           *com = (DM_Composite*)dm->data;
@@ -812,7 +812,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_Composite(DM dm,Vec *gvec)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreateLocalVector_Composite"
-PetscErrorCode PETSCDM_DLLEXPORT DMCreateLocalVector_Composite(DM dm,Vec *lvec)
+PetscErrorCode  DMCreateLocalVector_Composite(DM dm,Vec *lvec)
 {
   PetscErrorCode         ierr;
   DM_Composite           *com = (DM_Composite*)dm->data;
@@ -852,7 +852,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateLocalVector_Composite(DM dm,Vec *lvec)
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(),DMCompositeGetEntries()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMapping **ltogs)
+PetscErrorCode  DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMapping **ltogs)
 {
   PetscErrorCode         ierr;
   PetscInt               i,*idx,n,cnt;
@@ -942,7 +942,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetISLocalToGlobalMappings(DM dm,ISL
 
 .seealso: DMCompositeGetGlobalISs(), DMCompositeGetISLocalToGlobalMappings(), MatGetLocalSubMatrix(), MatCreateLocalRef()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetLocalISs(DM dm,IS **is)
+PetscErrorCode  DMCompositeGetLocalISs(DM dm,IS **is)
 {
   PetscErrorCode         ierr;
   DM_Composite           *com = (DM_Composite*)dm->data;
@@ -994,7 +994,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetLocalISs(DM dm,IS **is)
 
 @*/
 
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetGlobalISs(DM dm,IS *is[])
+PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
 {
   PetscErrorCode         ierr;
   PetscInt               cnt = 0,*idx,i;
@@ -1089,7 +1089,7 @@ PetscErrorCode DMCompositeRestoreLocalVectors_DM(DM dm,struct DMCompositeLink *m
          DMCompositeRestoreLocalVectors(), DMCompositeScatter(), DMCompositeGetEntries()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetLocalVectors(DM dm,...)
+PetscErrorCode  DMCompositeGetLocalVectors(DM dm,...)
 {
   va_list                Argp;
   PetscErrorCode         ierr;
@@ -1139,7 +1139,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetLocalVectors(DM dm,...)
          DMCompositeGetLocalVectors(), DMCompositeScatter(), DMCompositeGetEntries()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeRestoreLocalVectors(DM dm,...)
+PetscErrorCode  DMCompositeRestoreLocalVectors(DM dm,...)
 {
   va_list                Argp;
   PetscErrorCode         ierr;
@@ -1209,7 +1209,7 @@ PetscErrorCode DMCompositeGetEntries_DM(DM dmi,struct DMCompositeLink *mine,DM *
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetEntries(DM dm,...)
+PetscErrorCode  DMCompositeGetEntries(DM dm,...)
 {
   va_list                Argp;
   PetscErrorCode         ierr;
@@ -1241,7 +1241,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetEntries(DM dm,...)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMRefine_Composite"
-PetscErrorCode PETSCDM_DLLEXPORT DMRefine_Composite(DM dmi,MPI_Comm comm,DM *fine)
+PetscErrorCode  DMRefine_Composite(DM dmi,MPI_Comm comm,DM *fine)
 {
   PetscErrorCode         ierr;
   struct DMCompositeLink *next;
@@ -1450,7 +1450,7 @@ PetscErrorCode MatDestroy_Shell_Pack(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetInterpolation_Composite"
-PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation_Composite(DM coarse,DM fine,Mat *A,Vec *v)
+PetscErrorCode  DMGetInterpolation_Composite(DM coarse,DM fine,Mat *A,Vec *v)
 {
   PetscErrorCode         ierr;
   PetscInt               m,n,M,N;
@@ -1549,7 +1549,7 @@ static PetscErrorCode DMCreateLocalToGlobalMapping_Composite(DM dm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetColoring_Composite" 
-PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring_Composite(DM dm,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
+PetscErrorCode  DMGetColoring_Composite(DM dm,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
 {
   PetscErrorCode         ierr;
   PetscInt               n,i,cnt;
@@ -1608,7 +1608,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring_Composite(DM dm,ISColoringType ct
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGlobalToLocalBegin_Composite"
-PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalBegin_Composite(DM dm,Vec gvec,InsertMode mode,Vec lvec)
+PetscErrorCode  DMGlobalToLocalBegin_Composite(DM dm,Vec gvec,InsertMode mode,Vec lvec)
 {
   PetscErrorCode         ierr;
   struct DMCompositeLink *next;
@@ -1667,7 +1667,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalBegin_Composite(DM dm,Vec gvec,I
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGlobalToLocalEnd_Composite"
-PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd_Composite(DM dm,Vec gvec,InsertMode mode,Vec lvec)
+PetscErrorCode  DMGlobalToLocalEnd_Composite(DM dm,Vec gvec,InsertMode mode,Vec lvec)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -1676,7 +1676,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd_Composite(DM dm,Vec gvec,Ins
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreate_Composite"
-PetscErrorCode PETSCDM_DLLEXPORT DMCreate_Composite(DM p)
+PetscErrorCode  DMCreate_Composite(DM p)
 {
   PetscErrorCode ierr;
   DM_Composite   *com;
@@ -1728,7 +1728,7 @@ EXTERN_C_END
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeCreate(MPI_Comm comm,DM *packer)
+PetscErrorCode  DMCompositeCreate(MPI_Comm comm,DM *packer)
 {
   PetscErrorCode ierr;
 

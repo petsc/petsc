@@ -72,7 +72,7 @@ EXTERN_C_END
    Concepts: signal handler^default
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDefaultSignalHandler(int sig,void *ptr)
+PetscErrorCode  PetscDefaultSignalHandler(int sig,void *ptr)
 {
   PetscErrorCode ierr;
   const char     *SIGNAME[64];
@@ -193,7 +193,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDefaultSignalHandler(int sig,void *ptr)
 .seealso: PetscPopSignalHandler(), PetscDefaultSignalHandler()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void* ctx)
+PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void* ctx)
 {
   struct  SH     *newsh;
   PetscErrorCode ierr;
@@ -341,7 +341,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscPushSignalHandler(PetscErrorCode (*routin
 .seealso: PetscPushSignalHandler()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscPopSignalHandler(void)
+PetscErrorCode  PetscPopSignalHandler(void)
 {
   struct SH *tmp;
 

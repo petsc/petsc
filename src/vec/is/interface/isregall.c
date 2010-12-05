@@ -2,9 +2,9 @@
 
 #include "private/isimpl.h"     /*I  "petscis.h"  I*/
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_General(IS);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_Stride(IS);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_Block(IS);
+extern PetscErrorCode  ISCreate_General(IS);
+extern PetscErrorCode  ISCreate_Stride(IS);
+extern PetscErrorCode  ISCreate_Block(IS);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -22,7 +22,7 @@ EXTERN_C_END
 .keywords: IS, register, all
 .seealso:  ISRegister(), ISRegisterDestroy(), ISRegisterDynamic()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISRegisterAll(const char path[])
+PetscErrorCode  ISRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 

@@ -7,10 +7,10 @@
 #include "../src/snes/impls/ls/lsimpl.h"
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAAD(NLF,MatSORType,PetscInt,Vec);
-extern PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAAD4(NLF,MatSORType,PetscInt,Vec);
-extern PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAAD9(NLF,MatSORType,PetscInt,Vec);
-extern PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAADb(NLF,MatSORType,PetscInt,Vec);
+extern PetscErrorCode  NLFRelax_DAAD(NLF,MatSORType,PetscInt,Vec);
+extern PetscErrorCode  NLFRelax_DAAD4(NLF,MatSORType,PetscInt,Vec);
+extern PetscErrorCode  NLFRelax_DAAD9(NLF,MatSORType,PetscInt,Vec);
+extern PetscErrorCode  NLFRelax_DAADb(NLF,MatSORType,PetscInt,Vec);
 EXTERN_C_END
 extern PetscErrorCode DMMGFormFunction(SNES,Vec,Vec,void *);
 extern PetscErrorCode SNESLSCheckLocalMin_Private(Mat,Vec,Vec,PetscReal,PetscBool *);
@@ -66,7 +66,7 @@ PetscErrorCode DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStru
 .seealso: DMDASetLocalFunction(), DMDASetLocalAdicFunction(), SNESSetFunction(), SNESSetJacobian()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode  SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DM             da = *(DM*) ptr;
   PetscErrorCode ierr;

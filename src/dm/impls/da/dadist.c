@@ -8,7 +8,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDuplicate_MPI_DA"
-PetscErrorCode PETSCDM_DLLEXPORT VecDuplicate_MPI_DA(Vec g,Vec* gg)
+PetscErrorCode  VecDuplicate_MPI_DA(Vec g,Vec* gg)
 {
   PetscErrorCode ierr;
   DM             da;
@@ -22,7 +22,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecDuplicate_MPI_DA(Vec g,Vec* gg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreateGlobalVector_DA"
-PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_DA(DM da,Vec* g)
+PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec* g)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -73,7 +73,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_DA(DM da,Vec* g)
           DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGlobalToLocalBegin(),
           DMGlobalToLocalEnd(), DMDALocalToGlobalBegin()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDACreateNaturalVector(DM da,Vec* g)
+PetscErrorCode  DMDACreateNaturalVector(DM da,Vec* g)
 {
   PetscErrorCode ierr;
   PetscInt       cnt;

@@ -24,51 +24,51 @@
      Indicates if PETSc started up MPI, or it was 
    already started before PETSc was initialized.
 */
-PetscBool   PETSCSYS_DLLEXPORT PetscBeganMPI         = PETSC_FALSE;
-PetscBool   PETSCSYS_DLLEXPORT PetscInitializeCalled = PETSC_FALSE;
-PetscBool   PETSCSYS_DLLEXPORT PetscFinalizeCalled   = PETSC_FALSE;
-PetscMPIInt PETSCSYS_DLLEXPORT PetscGlobalRank = -1;
-PetscMPIInt PETSCSYS_DLLEXPORT PetscGlobalSize = -1;
+PetscBool    PetscBeganMPI         = PETSC_FALSE;
+PetscBool    PetscInitializeCalled = PETSC_FALSE;
+PetscBool    PetscFinalizeCalled   = PETSC_FALSE;
+PetscMPIInt  PetscGlobalRank = -1;
+PetscMPIInt  PetscGlobalSize = -1;
 
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)
 template <> class std::complex<double>; /* instantiate complex template class */
 #endif
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-MPI_Datatype  PETSCSYS_DLLEXPORT MPI_C_DOUBLE_COMPLEX;
-MPI_Datatype  PETSCSYS_DLLEXPORT MPI_C_COMPLEX;
+MPI_Datatype   MPI_C_DOUBLE_COMPLEX;
+MPI_Datatype   MPI_C_COMPLEX;
 #endif
-PetscScalar   PETSCSYS_DLLEXPORT PETSC_i;
+PetscScalar    PETSC_i;
 #else
-PetscScalar   PETSCSYS_DLLEXPORT PETSC_i = 0.0;
+PetscScalar    PETSC_i = 0.0;
 #endif
-MPI_Datatype  PETSCSYS_DLLEXPORT MPIU_2SCALAR = 0;
-MPI_Datatype  PETSCSYS_DLLEXPORT MPIU_2INT = 0;
+MPI_Datatype   MPIU_2SCALAR = 0;
+MPI_Datatype   MPIU_2INT = 0;
 
 #if defined(PETSC_USE_SCALAR_QD_DD)
-MPI_Datatype  PETSCSYS_DLLEXPORT MPIU_QD_DD;
+MPI_Datatype   MPIU_QD_DD;
 #endif
 /*
      These are needed by petscbt.h
 */
 #include "petscbt.h"
-char     PETSCSYS_DLLEXPORT _BT_mask = ' ';
-char     PETSCSYS_DLLEXPORT _BT_c = ' ';
-PetscInt PETSCSYS_DLLEXPORT _BT_idx  = 0;
+char      _BT_mask = ' ';
+char      _BT_c = ' ';
+PetscInt  _BT_idx  = 0;
 
 /*
        Function that is called to display all error messages
 */
-PetscErrorCode PETSCSYS_DLLEXPORT (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
-PetscErrorCode PETSCSYS_DLLEXPORT (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
+PetscErrorCode  (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
+PetscErrorCode  (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-PetscErrorCode PETSCSYS_DLLEXPORT (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintf_Matlab;
+PetscErrorCode  (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintf_Matlab;
 #else
-PetscErrorCode PETSCSYS_DLLEXPORT (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDefault;
+PetscErrorCode  (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDefault;
 #endif
 /*
   This is needed to turn on/off cuda synchronization */
-PetscBool  PETSC_DLL_EXPORT synchronizeCUDA = PETSC_FALSE;
+PetscBool   synchronizeCUDA = PETSC_FALSE;
 
 /* ------------------------------------------------------------------------------*/
 /* 
@@ -78,7 +78,7 @@ FILE *petsc_history = PETSC_NULL;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOpenHistoryFile"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenHistoryFile(const char filename[],FILE **fd)
+PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -118,7 +118,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenHistoryFile(const char filename[],FIL
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscCloseHistoryFile"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscCloseHistoryFile(FILE **fd)
+PetscErrorCode  PetscCloseHistoryFile(FILE **fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -191,7 +191,7 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag)
 
 .seealso: PetscInitialize(), PetscOptionsPrint(), PetscMallocDump(), PetscMPIDump(), PetscFinalize()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscEnd(void)
+PetscErrorCode  PetscEnd(void)
 {
   PetscFunctionBegin;
   PetscFinalize();
@@ -223,7 +223,7 @@ PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
    Concepts: package help message
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),PetscErrorCode (*version)(MPI_Comm))
+PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),PetscErrorCode (*version)(MPI_Comm))
 {
   PetscFunctionBegin;
   PetscExternalHelpFunction    = help;
@@ -233,7 +233,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSetHelpVersionFunctions(PetscErrorCode (*
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsCheckInitial_Private"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsCheckInitial_Private(void)
+PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 {
   char           string[64],mname[PETSC_MAX_PATH_LEN],*f;
   MPI_Comm       comm = PETSC_COMM_WORLD;

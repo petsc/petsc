@@ -40,7 +40,7 @@ FILE *PETSC_ZOPEFD = 0;
  Level: developer
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFormatConvert(const char *format,char *newformat,size_t size)
+PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t size)
 {
   PetscInt i = 0,j = 0;
 
@@ -102,7 +102,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFormatConvert(const char *format,char *ne
  Level: developer
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *format,size_t *fullLength,va_list Argp)
+PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *fullLength,va_list Argp)
 {
   /* no malloc since may be called by error handler */
   char          *newformat;
@@ -140,7 +140,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscZopeLog"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscZopeLog(const char *format,va_list Argp)
+PetscErrorCode  PetscZopeLog(const char *format,va_list Argp)
 {
   /* no malloc since may be called by error handler */
   char        newformat[8*1024];
@@ -199,7 +199,7 @@ $    PetscVFPrintf = mypetscvfprintf;
 .seealso: PetscVSNPrintf(), PetscErrorPrintf()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
+PetscErrorCode  PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
 {
   /* no malloc since may be called by error handler (assume no long messages in errors) */
   char        *newformat;
@@ -263,7 +263,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *form
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), PetscVSNPrintf(),
           PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSNPrintf(char *str,size_t len,const char format[],...)
+PetscErrorCode  PetscSNPrintf(char *str,size_t len,const char format[],...)
 {
   PetscErrorCode ierr;
   size_t         fullLength;
@@ -306,7 +306,7 @@ FILE        *queuefile  = PETSC_NULL;
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), 
           PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
+PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -371,7 +371,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedPrintf(MPI_Comm comm,const ch
           PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
+PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -431,7 +431,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedFPrintf(MPI_Comm comm,FILE* f
 .seealso: PetscSynchronizedPrintf(), PetscFPrintf(), PetscPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedFlush(MPI_Comm comm)
+PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag,i,j,n,dummy = 0;
@@ -512,7 +512,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedFlush(MPI_Comm comm)
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf(), PetscSynchronizedFlush()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
+PetscErrorCode  PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -559,7 +559,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFPrintf(MPI_Comm comm,FILE* fd,const char
 
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscPrintf(MPI_Comm comm,const char format[],...)
+PetscErrorCode  PetscPrintf(MPI_Comm comm,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -632,7 +632,7 @@ $    PetscHelpPrintf = mypetschelpprintf;
 
 .seealso: PetscVSNPrintf(), PetscVFPrintf(), PetscErrorPrintf()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
+PetscErrorCode  PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -677,7 +677,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscHelpPrintfDefault(MPI_Comm comm,const cha
           PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,size_t len,char string[])
+PetscErrorCode  PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,size_t len,char string[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -697,7 +697,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,
 #include "mex.h"
 #undef __FUNCT__
 #define __FUNCT__ "PetscVFPrintf_Matlab" 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscVFPrintf_Matlab(FILE *fd,const char format[],va_list Argp)
+PetscErrorCode  PetscVFPrintf_Matlab(FILE *fd,const char format[],va_list Argp)
 {
   PetscErrorCode ierr;
 

@@ -835,7 +835,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_ML"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ML(PC pc)
+PetscErrorCode  PCCreate_ML(PC pc)
 {
   PetscErrorCode  ierr;
   PC_ML           *pc_ml;

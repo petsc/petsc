@@ -20,7 +20,7 @@
 
 .seealso: MATPYTHON, MatCreatePython(), PetscPythonInitialize()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType(Mat mat,const char pyname[])
+PetscErrorCode  MatPythonSetType(Mat mat,const char pyname[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -56,7 +56,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType(Mat mat,const char pyname[])
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "MatPythonCreate"
-PetscErrorCode PETSCMAT_DLLEXPORT MatPythonCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const char pyname[],Mat *A)
+PetscErrorCode  MatPythonCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const char pyname[],Mat *A)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

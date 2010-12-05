@@ -20,7 +20,7 @@
 
 .seealso: TSCreate(), TSSetType(), TSPYTHON, PetscPythonInitialize()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetType(TS ts,const char pyname[])
+PetscErrorCode  TSPythonSetType(TS ts,const char pyname[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

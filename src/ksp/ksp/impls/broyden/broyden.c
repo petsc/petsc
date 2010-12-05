@@ -219,7 +219,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_Broyden"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Broyden(KSP ksp)
+PetscErrorCode  KSPCreate_Broyden(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_Broyden    *cg;

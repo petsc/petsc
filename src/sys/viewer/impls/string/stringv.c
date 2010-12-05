@@ -43,7 +43,7 @@ static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
 
 .seealso: PetscViewerStringOpen()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerStringSPrintf(PetscViewer viewer,const char format[],...)
+PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],...)
 {
   va_list            Argp;
   size_t             fullLength;
@@ -98,7 +98,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerStringSPrintf(PetscViewer viewer,co
 
 .seealso: PetscViewerDestroy(), PetscViewerStringSPrintf()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerStringOpen(MPI_Comm comm,char string[],PetscInt len,PetscViewer *lab)
+PetscErrorCode  PetscViewerStringOpen(MPI_Comm comm,char string[],PetscInt len,PetscViewer *lab)
 {
   PetscErrorCode ierr;
   
@@ -139,7 +139,7 @@ PetscErrorCode PetscViewerRestoreSingleton_String(PetscViewer viewer,PetscViewer
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_String" 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerCreate_String(PetscViewer v)
+PetscErrorCode  PetscViewerCreate_String(PetscViewer v)
 {
   PetscViewer_String *vstr;
   PetscErrorCode     ierr;
@@ -174,7 +174,7 @@ EXTERN_C_END
 
 .seealso: PetscViewerStringOpen()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerStringSetString(PetscViewer viewer,char string[],PetscInt len)
+PetscErrorCode  PetscViewerStringSetString(PetscViewer viewer,char string[],PetscInt len)
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
   PetscErrorCode     ierr;

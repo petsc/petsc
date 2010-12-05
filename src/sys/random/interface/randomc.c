@@ -18,7 +18,7 @@
 #endif
 
 /* Logging support */
-PetscClassId PETSCSYS_DLLEXPORT PETSC_RANDOM_CLASSID;
+PetscClassId  PETSC_RANDOM_CLASSID;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomDestroy" 
@@ -35,7 +35,7 @@ PetscClassId PETSCSYS_DLLEXPORT PETSC_RANDOM_CLASSID;
 
 .seealso: PetscRandomGetValue(), PetscRandomCreate(), VecSetRandom()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomDestroy(PetscRandom r)
+PetscErrorCode  PetscRandomDestroy(PetscRandom r)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -65,7 +65,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomDestroy(PetscRandom r)
 
 .seealso: PetscRandomCreate(), PetscRandomSetSeed(), PetscRandomSeed()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomGetSeed(PetscRandom r,unsigned long *seed)
+PetscErrorCode  PetscRandomGetSeed(PetscRandom r,unsigned long *seed)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
@@ -100,7 +100,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomGetSeed(PetscRandom r,unsigned long
 
 .seealso: PetscRandomCreate(), PetscRandomGetSeed(), PetscRandomSeed()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomSetSeed(PetscRandom r,unsigned long seed)
+PetscErrorCode  PetscRandomSetSeed(PetscRandom r,unsigned long seed)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
@@ -170,7 +170,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd)
 .keywords: PetscRandom, set, options, database
 .seealso: PetscRandomCreate(), PetscRandomSetType()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomSetFromOptions(PetscRandom rnd)
+PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
 {
   PetscErrorCode ierr;
 
@@ -217,7 +217,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomSetFromOptions(PetscRandom rnd)
 
 .seealso:  PetscRealView(), PetscScalarView(), PetscIntView()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomView(PetscRandom rnd,PetscViewer viewer)
+PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscBool         iascii;
@@ -260,7 +260,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomView(PetscRandom rnd,PetscViewer vi
 .keywords: PetscRandom, view, options, database
 .seealso: PetscRandomSetFromOptions()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomViewFromOptions(PetscRandom rnd, char *title)
+PetscErrorCode  PetscRandomViewFromOptions(PetscRandom rnd, char *title)
 {
   PetscBool      opt = PETSC_FALSE;
   PetscViewer    viewer;
@@ -342,7 +342,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomViewFromOptions(PetscRandom rnd, ch
           PetscRandomDestroy(), VecSetRandom(), PetscRandomType
 @*/
 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
+PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
 {
   PetscRandom    rr;
   PetscErrorCode ierr;
@@ -390,7 +390,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandom *r
 
 .seealso: PetscRandomCreate(), PetscRandomGetSeed(), PetscRandomSetSeed()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomSeed(PetscRandom r)
+PetscErrorCode  PetscRandomSeed(PetscRandom r)
 {
   PetscErrorCode ierr;
 

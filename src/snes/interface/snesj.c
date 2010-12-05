@@ -40,7 +40,7 @@
 
 .seealso: SNESSetJacobian(), SNESDefaultComputeJacobianColor(), MatCreateSNESMF()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode  SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   Vec            j1a,j2a,x2;
   PetscErrorCode ierr;

@@ -3,34 +3,34 @@
 #include "private/kspimpl.h"  /*I "petscksp.h" I*/
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Richardson(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Chebychev(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CG(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CGNE(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_NASH(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_STCG(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GLTR(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_TCQMR(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GMRES(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BCGS(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_IBCGS(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BCGSL(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CGS(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_TFQMR(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LSQR(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_PREONLY(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CR(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_QCG(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BiCG(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_FGMRES(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_MINRES(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_SYMMLQ(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LGMRES(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LCD(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Broyden(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GCR(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_NGMRES(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_SpecEst(KSP);
+extern PetscErrorCode  KSPCreate_Richardson(KSP);
+extern PetscErrorCode  KSPCreate_Chebychev(KSP);
+extern PetscErrorCode  KSPCreate_CG(KSP);
+extern PetscErrorCode  KSPCreate_CGNE(KSP);
+extern PetscErrorCode  KSPCreate_NASH(KSP);
+extern PetscErrorCode  KSPCreate_STCG(KSP);
+extern PetscErrorCode  KSPCreate_GLTR(KSP);
+extern PetscErrorCode  KSPCreate_TCQMR(KSP);
+extern PetscErrorCode  KSPCreate_GMRES(KSP);
+extern PetscErrorCode  KSPCreate_BCGS(KSP);
+extern PetscErrorCode  KSPCreate_IBCGS(KSP);
+extern PetscErrorCode  KSPCreate_BCGSL(KSP);
+extern PetscErrorCode  KSPCreate_CGS(KSP);
+extern PetscErrorCode  KSPCreate_TFQMR(KSP);
+extern PetscErrorCode  KSPCreate_LSQR(KSP);
+extern PetscErrorCode  KSPCreate_PREONLY(KSP);
+extern PetscErrorCode  KSPCreate_CR(KSP);
+extern PetscErrorCode  KSPCreate_QCG(KSP);
+extern PetscErrorCode  KSPCreate_BiCG(KSP);
+extern PetscErrorCode  KSPCreate_FGMRES(KSP);
+extern PetscErrorCode  KSPCreate_MINRES(KSP);
+extern PetscErrorCode  KSPCreate_SYMMLQ(KSP);
+extern PetscErrorCode  KSPCreate_LGMRES(KSP);
+extern PetscErrorCode  KSPCreate_LCD(KSP);
+extern PetscErrorCode  KSPCreate_Broyden(KSP);
+extern PetscErrorCode  KSPCreate_GCR(KSP);
+extern PetscErrorCode  KSPCreate_NGMRES(KSP);
+extern PetscErrorCode  KSPCreate_SpecEst(KSP);
 EXTERN_C_END
   
 /*
@@ -53,7 +53,7 @@ extern PetscBool  KSPRegisterAllCalled;
 
 .seealso:  KSPRegisterDestroy()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterAll(const char path[])
+PetscErrorCode  KSPRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 

@@ -29,7 +29,7 @@ PetscBool  PetscRandomRegisterAllCalled = PETSC_FALSE;
 .seealso: PetscRandomGetType(), PetscRandomCreate()
 @*/
 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomSetType(PetscRandom rnd, const PetscRandomType type)
+PetscErrorCode  PetscRandomSetType(PetscRandom rnd, const PetscRandomType type)
 {
   PetscErrorCode (*r)(PetscRandom);
   PetscBool      match;
@@ -71,7 +71,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomSetType(PetscRandom rnd, const Pets
 .keywords: random, get, type, name
 .seealso: PetscRandomSetType(), PetscRandomCreate()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomGetType(PetscRandom rnd, const PetscRandomType *type)
+PetscErrorCode  PetscRandomGetType(PetscRandom rnd, const PetscRandomType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(rnd, PETSC_RANDOM_CLASSID,1);
@@ -87,7 +87,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomGetType(PetscRandom rnd, const Pets
 
   Level: advanced
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(PetscRandom))
+PetscErrorCode  PetscRandomRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(PetscRandom))
 {
   char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -112,7 +112,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomRegister(const char sname[], const 
 .keywords: PetscRandom, register, destroy
 .seealso: PetscRandomRegister(), PetscRandomRegisterAll(), PetscRandomRegisterDynamic()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomRegisterDestroy(void)
+PetscErrorCode  PetscRandomRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -124,13 +124,13 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomRegisterDestroy(void)
 
 EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_RAND)
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomCreate_Rand(PetscRandom);
+extern PetscErrorCode  PetscRandomCreate_Rand(PetscRandom);
 #endif
 #if defined(PETSC_HAVE_DRAND48)
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomCreate_Rand48(PetscRandom);
+extern PetscErrorCode  PetscRandomCreate_Rand48(PetscRandom);
 #endif
 #if defined(PETSC_HAVE_SPRNG)
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomCreate_Sprng(PetscRandom);
+extern PetscErrorCode  PetscRandomCreate_Sprng(PetscRandom);
 #endif
 EXTERN_C_END
 
@@ -149,7 +149,7 @@ EXTERN_C_END
 .keywords: PetscRandom, register, all
 .seealso:  PetscRandomRegister(), PetscRandomRegisterDestroy(), PetscRandomRegisterDynamic()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomRegisterAll(const char path[])
+PetscErrorCode  PetscRandomRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 

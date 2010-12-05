@@ -3,13 +3,13 @@
 #include "private/snesimpl.h"     /*I  "petscsnes.h"  I*/
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LS(SNES);
-extern PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_TR(SNES);
-extern PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Test(SNES);
-extern PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Picard(SNES);
-extern PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_KSPONLY(SNES);
+extern PetscErrorCode  SNESCreate_LS(SNES);
+extern PetscErrorCode  SNESCreate_TR(SNES);
+extern PetscErrorCode  SNESCreate_Test(SNES);
+extern PetscErrorCode  SNESCreate_Picard(SNES);
+extern PetscErrorCode  SNESCreate_KSPONLY(SNES);
 #if !defined(PETSC_USE_COMPLEX)
-extern PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_VI(SNES);
+extern PetscErrorCode  SNESCreate_VI(SNES);
 #endif
 EXTERN_C_END
 
@@ -39,7 +39,7 @@ extern PetscBool  SNESRegisterAllCalled;
 
 .seealso:  SNESRegisterDestroy()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESRegisterAll(const char path[])
+PetscErrorCode  SNESRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 

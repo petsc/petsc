@@ -26,7 +26,7 @@
    Concepts: MPI communicator^getting from object
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
+PetscErrorCode  PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
 {
   PetscErrorCode ierr;
 
@@ -65,7 +65,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetComm(PetscObject obj,MPI_Comm *c
 .seealso:  PetscObjectIncrementTabLevel()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetTabLevel(PetscObject obj,PetscInt *tab)
+PetscErrorCode  PetscObjectGetTabLevel(PetscObject obj,PetscInt *tab)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -96,7 +96,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetTabLevel(PetscObject obj,PetscIn
 .seealso:   PetscObjectSetLabLevel(),  PetscObjectGetTabLevel()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectIncrementTabLevel(PetscObject obj,PetscObject oldobj,PetscInt tab)
+PetscErrorCode  PetscObjectIncrementTabLevel(PetscObject obj,PetscObject oldobj,PetscInt tab)
 {
 
   PetscFunctionBegin;

@@ -68,7 +68,7 @@ static PetscErrorCode DMDASetBlockFills_Private(PetscInt *dfill,PetscInt w,Petsc
 .seealso DMGetMatrix(), DMDASetGetMatrix(), DMDASetBlockSize(), DMDASetBlockFills()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDASetMatPreallocateOnly(DM da,PetscBool  only)
+PetscErrorCode  DMDASetMatPreallocateOnly(DM da,PetscBool  only)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -113,7 +113,7 @@ $                         0, 1, 1}
 .seealso DMGetMatrix(), DMDASetGetMatrix(), DMDASetMatPreallocateOnly()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDASetBlockFills(DM da,PetscInt *dfill,PetscInt *ofill)
+PetscErrorCode  DMDASetBlockFills(DM da,PetscInt *dfill,PetscInt *ofill)
 {
   DM_DA          *dd = (DM_DA*)da->data;
   PetscErrorCode ierr;
@@ -127,7 +127,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDASetBlockFills(DM da,PetscInt *dfill,PetscIn
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetColoring_DA" 
-PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring_DA(DM da,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
+PetscErrorCode  DMGetColoring_DA(DM da,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
 {
   PetscErrorCode   ierr;
   PetscInt         dim,m,n,p,nc;
@@ -532,7 +532,7 @@ extern PetscErrorCode DMGetMatrix_DA_3d_MPISBAIJ(DM,Mat);
    Level: intermediate
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MatSetDA(Mat mat,DM da)
+PetscErrorCode  MatSetDA(Mat mat,DM da)
 {
   PetscErrorCode ierr;
 
@@ -546,7 +546,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MatSetDA(Mat mat,DM da)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_MPI_DA"
-PetscErrorCode PETSCDM_DLLEXPORT MatView_MPI_DA(Mat A,PetscViewer viewer)
+PetscErrorCode  MatView_MPI_DA(Mat A,PetscViewer viewer)
 {
   DM             da;
   PetscErrorCode ierr;
@@ -584,7 +584,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPI_DA"
-PetscErrorCode PETSCDM_DLLEXPORT MatLoad_MPI_DA(Mat A,PetscViewer viewer)
+PetscErrorCode  MatLoad_MPI_DA(Mat A,PetscViewer viewer)
 {
   DM             da;
   PetscErrorCode ierr;
@@ -624,7 +624,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetMatrix_DA" 
-PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_DA(DM da, const MatType mtype,Mat *J)
+PetscErrorCode  DMGetMatrix_DA(DM da, const MatType mtype,Mat *J)
 {
   PetscErrorCode ierr;
   PetscInt       dim,dof,nx,ny,nz,dims[3],starts[3],M,N,P;

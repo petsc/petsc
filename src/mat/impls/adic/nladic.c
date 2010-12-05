@@ -247,7 +247,7 @@ PetscErrorCode NLFNewton_DAAD9(NLF A,DMDALocalInfo *info,MatStencil *stencil,voi
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "NLFMatSOR_DAAD"
-PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD(NLF A,MatSORType flag,int its,Vec xx)
+PetscErrorCode  NLFRelax_DAAD(NLF A,MatSORType flag,int its,Vec xx)
 {
   PetscErrorCode ierr;
   PetscInt       j,gtdof,nI,gI;
@@ -338,7 +338,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSOR_DAAD4"
-PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD4(NLF A,MatSORType flag,int its,Vec xx)
+PetscErrorCode  NLFRelax_DAAD4(NLF A,MatSORType flag,int its,Vec xx)
 {
   PetscErrorCode ierr;
   PetscInt       j,gtdof,nI,gI;
@@ -431,7 +431,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSOR_DAAD9"
-PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD9(NLF A,MatSORType flag,int its,Vec xx)
+PetscErrorCode  NLFRelax_DAAD9(NLF A,MatSORType flag,int its,Vec xx)
 {
   PetscErrorCode ierr;
   PetscInt       j,gtdof,nI,gI;
@@ -531,7 +531,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD9(NLF A,MatSORType flag,int its,V
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "NLFMatSOR_DAADb"
-PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAADb(NLF A,MatSORType flag,int its,Vec xx)
+PetscErrorCode  NLFRelax_DAADb(NLF A,MatSORType flag,int its,Vec xx)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,gtdof,nI,gI, bs = A->da->w, bs1 = bs + 1;
@@ -637,7 +637,7 @@ PetscErrorCode NLFDestroy_DAAD(NLF A)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "NLFDAADSetDA_DAAD"
-PetscErrorCode PETSCMAT_DLLEXPORT NLFDAADSetDA_DAAD(NLF A,DM da)
+PetscErrorCode  NLFDAADSetDA_DAAD(NLF A,DM da)
 {
   PetscErrorCode ierr;
 
@@ -652,7 +652,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "NLFDAADSetNewtonIterations_DAAD"
-PetscErrorCode PETSCMAT_DLLEXPORT NLFDAADSetNewtonIterations_DAAD(NLF A,int its)
+PetscErrorCode  NLFDAADSetNewtonIterations_DAAD(NLF A,int its)
 {
   PetscFunctionBegin;
   A->newton_its = its;
@@ -663,7 +663,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "NLFDAADSetResidual_DAAD"
-PetscErrorCode PETSCMAT_DLLEXPORT NLFDAADSetResidual_DAAD(NLF A,Vec residual)
+PetscErrorCode  NLFDAADSetResidual_DAAD(NLF A,Vec residual)
 {
   PetscFunctionBegin;
   A->residual = residual;
@@ -675,7 +675,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "NLFDAADSetCtx_DAAD"
-PetscErrorCode PETSCMAT_DLLEXPORT NLFDAADSetCtx_DAAD(NLF A,void *ctx)
+PetscErrorCode  NLFDAADSetCtx_DAAD(NLF A,void *ctx)
 {
   PetscFunctionBegin;
   A->ctx = ctx;
@@ -686,7 +686,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "NLFCreate_DAAD"
-PetscErrorCode PETSCMAT_DLLEXPORT NLFCreate_DAAD(NLF *A)
+PetscErrorCode  NLFCreate_DAAD(NLF *A)
 {
   PetscErrorCode ierr;
 

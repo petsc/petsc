@@ -7,7 +7,7 @@ MPI_Comm PETSC_COMM_LOCAL_WORLD        = 0;           /* comm for a single node 
 PetscBool  PetscOpenMPWorker           = PETSC_FALSE;  /* this is a regular process, nonworker process */
 void* PetscOpenMPCtx                   = 0;
 
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenMPHandle(MPI_Comm);
+extern PetscErrorCode  PetscOpenMPHandle(MPI_Comm);
 
 #if defined(PETSC_HAVE_MPI_COMM_SPAWN)
 #undef __FUNCT__  
@@ -62,7 +62,7 @@ $
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscOpenMPFinalize(), PetscInitialize(), PetscOpenMPMerge(), PetscOpenMPRun()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenMPSpawn(PetscMPIInt nodesize)
+PetscErrorCode  PetscOpenMPSpawn(PetscMPIInt nodesize)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -145,7 +145,7 @@ $
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscOpenMPFinalize(), PetscInitialize(), PetscOpenMPSpawn(), PetscOpenMPRun()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenMPMerge(PetscMPIInt nodesize,PetscErrorCode (*func)(void*),void *ctx)
+PetscErrorCode  PetscOpenMPMerge(PetscMPIInt nodesize,PetscErrorCode (*func)(void*),void *ctx)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,*ranks,i;
@@ -208,7 +208,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenMPMerge(PetscMPIInt nodesize,PetscErr
 .seealso: PetscFinalize(), PetscGetArgs(), PetscOpenMPMerge(), PCOpenMPRun()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenMPFinalize(void)
+PetscErrorCode  PetscOpenMPFinalize(void)
 {
   PetscErrorCode ierr = 0;
   PetscInt       command = 3;
@@ -244,7 +244,7 @@ static void     *objects[100];
 .seealso: PetscOpenMPMerge(), PCOpenMPRun(), PCOpenMPNew()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
+PetscErrorCode  PetscOpenMPHandle(MPI_Comm comm)
 {
   PetscErrorCode ierr;
   PetscInt       command;
@@ -316,7 +316,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
 .seealso: PetscOpenMPMerge(), PCOpenMPRun(), PCOpenMPFree()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenMPMalloc(MPI_Comm comm,size_t n,void **ptr)
+PetscErrorCode  PetscOpenMPMalloc(MPI_Comm comm,size_t n,void **ptr)
 {
   PetscErrorCode ierr;
   PetscInt       command = 0;
@@ -351,7 +351,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenMPMalloc(MPI_Comm comm,size_t n,void 
 .seealso: PetscOpenMPMerge(), PetscOpenMPMalloc()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenMPFree(MPI_Comm comm,void *ptr)
+PetscErrorCode  PetscOpenMPFree(MPI_Comm comm,void *ptr)
 {
   PetscErrorCode ierr;
   PetscInt       command = 1,i;
@@ -391,7 +391,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenMPFree(MPI_Comm comm,void *ptr)
 .seealso: PetscOpenMPMerge(), PetscOpenMPMalloc(), PetscOpenMPFree(), PetscOpenMPRunCtx()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenMPRun(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void *),void *ptr)
+PetscErrorCode  PetscOpenMPRun(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void *),void *ptr)
 {
   PetscErrorCode ierr;
   PetscInt       command = 2,i;
@@ -432,7 +432,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenMPRun(MPI_Comm comm,PetscErrorCode (*
 .seealso: PetscOpenMPMerge(), PetscOpenMPMalloc(), PetscOpenMPFree(), PetscOpenMPRun()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOpenMPRunCtx(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void*,void *),void *ptr)
+PetscErrorCode  PetscOpenMPRunCtx(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void*,void *),void *ptr)
 {
   PetscErrorCode ierr;
   PetscInt       command = 4,i;

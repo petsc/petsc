@@ -22,7 +22,7 @@
    Level: developer
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetClassId(PetscObject obj,PetscClassId *classid)
+PetscErrorCode  PetscObjectGetClassId(PetscObject obj,PetscClassId *classid)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);

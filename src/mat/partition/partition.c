@@ -3,7 +3,7 @@
 #include "private/matimpl.h"               /*I "petscmat.h" I*/
 
 /* Logging support */
-PetscClassId PETSCMAT_DLLEXPORT MAT_PARTITIONING_CLASSID;
+PetscClassId  MAT_PARTITIONING_CLASSID;
 
 /*
    Simplest partitioning, keeps the current partitioning.
@@ -59,7 +59,7 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *parti
 EXTERN_C_BEGIN  
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningCreate_Current" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Current(MatPartitioning part)
+PetscErrorCode  MatPartitioningCreate_Current(MatPartitioning part)
 {
   PetscFunctionBegin;
   part->ops->apply   = MatPartitioningApply_Current;
@@ -72,7 +72,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN  
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningCreate_Square" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Square(MatPartitioning part)
+PetscErrorCode  MatPartitioningCreate_Square(MatPartitioning part)
 {
   PetscFunctionBegin;
   part->ops->apply   = MatPartitioningApply_Square;
@@ -90,7 +90,7 @@ PetscBool  MatPartitioningRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningRegister" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(MatPartitioning))
+PetscErrorCode  MatPartitioningRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(MatPartitioning))
 {
   PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];
@@ -114,7 +114,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegister(const char sname[],con
 
 .seealso: MatPartitioningRegisterDynamic(), MatPartitioningRegisterAll()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegisterDestroy(void)
+PetscErrorCode  MatPartitioningRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -144,7 +144,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegisterDestroy(void)
 
 .keywords: Partitioning, get, method, name, type
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningGetType(MatPartitioning partitioning,const MatPartitioningType *type)
+PetscErrorCode  MatPartitioningGetType(MatPartitioning partitioning,const MatPartitioningType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(partitioning,MAT_PARTITIONING_CLASSID,1);
@@ -174,7 +174,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningGetType(MatPartitioning partiti
 
 .seealso: MatPartitioningCreate(), MatPartitioningApply()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetNParts(MatPartitioning part,PetscInt n)
+PetscErrorCode  MatPartitioningSetNParts(MatPartitioning part,PetscInt n)
 {
   PetscFunctionBegin;
   part->n = n;
@@ -212,7 +212,7 @@ $    -mat_partitioning_view
            MatPartitioningDestroy(), MatPartitioningSetAdjacency(), ISPartitioningToNumbering(),
            ISPartitioningCount()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningApply(MatPartitioning matp,IS *partitioning)
+PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
 {
   PetscErrorCode ierr;
   PetscBool      flag = PETSC_FALSE;
@@ -255,7 +255,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningApply(MatPartitioning matp,IS *
 
 .seealso: MatPartitioningCreate()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetAdjacency(MatPartitioning part,Mat adj)
+PetscErrorCode  MatPartitioningSetAdjacency(MatPartitioning part,Mat adj)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
@@ -280,7 +280,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetAdjacency(MatPartitioning pa
 
 .seealso: MatPartitioningCreate()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningDestroy(MatPartitioning part)
+PetscErrorCode  MatPartitioningDestroy(MatPartitioning part)
 {
   PetscErrorCode ierr;
 
@@ -318,7 +318,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningDestroy(MatPartitioning part)
 
 .seealso: MatPartitioningCreate(), MatPartitioningSetType(), MatPartitioningSetPartitionWeights()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetVertexWeights(MatPartitioning part,const PetscInt weights[])
+PetscErrorCode  MatPartitioningSetVertexWeights(MatPartitioning part,const PetscInt weights[])
 {
   PetscErrorCode ierr;
 
@@ -356,7 +356,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetVertexWeights(MatPartitionin
 
 .seealso: MatPartitioningCreate(), MatPartitioningSetType(), MatPartitioningSetVertexWeights()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetPartitionWeights(MatPartitioning part,const PetscReal weights[])
+PetscErrorCode  MatPartitioningSetPartitionWeights(MatPartitioning part,const PetscReal weights[])
 {
   PetscErrorCode ierr;
 
@@ -389,7 +389,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetPartitionWeights(MatPartitio
           MatPartitioningSetAdjacency()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
+PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 {
   MatPartitioning part;
   PetscErrorCode  ierr;
@@ -440,7 +440,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate(MPI_Comm comm,MatPartiti
 
 .seealso: PetscViewerASCIIOpen()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningView(MatPartitioning part,PetscViewer viewer)
+PetscErrorCode  MatPartitioningView(MatPartitioning part,PetscViewer viewer)
 {
   PetscErrorCode            ierr;
   PetscBool                 iascii;
@@ -495,7 +495,7 @@ $      (for instance, parmetis)
 .seealso: MatPartitioningCreate(), MatPartitioningApply(), MatPartitioningType
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning part,const MatPartitioningType type)
+PetscErrorCode  MatPartitioningSetType(MatPartitioning part,const MatPartitioningType type)
 {
   PetscErrorCode ierr,(*r)(MatPartitioning);
   PetscBool  match;
@@ -546,7 +546,7 @@ $      (for instance, parmetis)
 
 .keywords: partitioning, set, method, type
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetFromOptions(MatPartitioning part)
+PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
 {
   PetscErrorCode ierr;
   PetscBool  flag;

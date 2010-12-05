@@ -36,7 +36,7 @@ PetscFList MatList = 0;
 
 .seealso: PCSetType(), VecSetType(), MatCreate(), MatType, Mat
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat mat, const MatType matype)
+PetscErrorCode  MatSetType(Mat mat, const MatType matype)
 {
   PetscErrorCode ierr,(*r)(Mat);
   PetscBool      sametype;
@@ -81,7 +81,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat mat, const MatType matype)
 
 .seealso: MatRegister(), MatRegisterAll(), MatRegisterDynamic()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterDestroy(void)
+PetscErrorCode  MatRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -110,7 +110,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterDestroy(void)
 
 .seealso: MatSetType()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetType(Mat mat,const MatType *type)
+PetscErrorCode  MatGetType(Mat mat,const MatType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -127,7 +127,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetType(Mat mat,const MatType *type)
 
   Level: advanced
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat))
+PetscErrorCode  MatRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat))
 {
   PetscErrorCode ierr;
   char           fullname[PETSC_MAX_PATH_LEN];

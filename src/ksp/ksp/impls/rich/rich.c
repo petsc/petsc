@@ -221,7 +221,7 @@ PetscErrorCode KSPDestroy_Richardson(KSP ksp)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPRichardsonSetScale_Richardson"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
+PetscErrorCode  KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
 {
   KSP_Richardson *richardsonP;
 
@@ -235,7 +235,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPRichardsonSetSelfScale_Richardson"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool  selfscale)
+PetscErrorCode  KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool  selfscale)
 {
   KSP_Richardson *richardsonP;
 
@@ -287,7 +287,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_Richardson"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Richardson(KSP ksp)
+PetscErrorCode  KSPCreate_Richardson(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_Richardson *richardsonP;

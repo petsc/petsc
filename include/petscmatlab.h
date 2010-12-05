@@ -20,17 +20,17 @@ extern PetscClassId MATLABENGINE_CLASSID;
 S*/
 typedef struct _p_PetscMatlabEngine* PetscMatlabEngine;
 
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEngineCreate(MPI_Comm,const char[],PetscMatlabEngine*);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEngineDestroy(PetscMatlabEngine);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEngineEvaluate(PetscMatlabEngine,const char[],...);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEnginePrintOutput(PetscMatlabEngine,FILE*);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEnginePut(PetscMatlabEngine,PetscObject);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEngineGet(PetscMatlabEngine,PetscObject);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEnginePutArray(PetscMatlabEngine,int,int,const PetscScalar*,const char[]);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscMatlabEngineGetArray(PetscMatlabEngine,int,int,PetscScalar*,const char[]);
+extern PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm,const char[],PetscMatlabEngine*);
+extern PetscErrorCode  PetscMatlabEngineDestroy(PetscMatlabEngine);
+extern PetscErrorCode  PetscMatlabEngineEvaluate(PetscMatlabEngine,const char[],...);
+extern PetscErrorCode  PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);
+extern PetscErrorCode  PetscMatlabEnginePrintOutput(PetscMatlabEngine,FILE*);
+extern PetscErrorCode  PetscMatlabEnginePut(PetscMatlabEngine,PetscObject);
+extern PetscErrorCode  PetscMatlabEngineGet(PetscMatlabEngine,PetscObject);
+extern PetscErrorCode  PetscMatlabEnginePutArray(PetscMatlabEngine,int,int,const PetscScalar*,const char[]);
+extern PetscErrorCode  PetscMatlabEngineGetArray(PetscMatlabEngine,int,int,PetscScalar*,const char[]);
 
-extern PetscMatlabEngine PETSCSYS_DLLEXPORT PETSC_MATLAB_ENGINE_(MPI_Comm);
+extern PetscMatlabEngine  PETSC_MATLAB_ENGINE_(MPI_Comm);
 
 /*MC
   PETSC_MATLAB_ENGINE_WORLD - same as PETSC_MATLAB_ENGINE_(PETSC_COMM_WORLD)

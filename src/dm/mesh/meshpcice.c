@@ -14,7 +14,7 @@
 
   .seealso: MeshCreate()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT PCICERenumberBoundary(Mesh mesh)
+PetscErrorCode  PCICERenumberBoundary(Mesh mesh)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;

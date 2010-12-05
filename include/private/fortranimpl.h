@@ -5,6 +5,11 @@
 
 #include "petscsys.h"
 
+/* PETSC_STDCALL is defined on some Microsoft Windows systems and is used for functions compiled by the Fortran compiler */
+#if !defined(PETSC_STDCALL)
+#define PETSC_STDCALL
+#endif
+
 extern PetscErrorCode PetscScalarAddressToFortran(PetscObject,PetscInt,PetscScalar*,PetscScalar*,PetscInt,size_t*);
 extern PetscErrorCode PetscScalarAddressFromFortran(PetscObject,PetscScalar*,size_t,PetscInt,PetscScalar **);
 extern size_t         PetscIntAddressToFortran(PetscInt*,PetscInt*);

@@ -30,7 +30,7 @@ PetscBool  VecRegisterAllCalled          = PETSC_FALSE;
 .keywords: vector, set, type
 .seealso: VecGetType(), VecCreate()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec vec, const VecType method)
+PetscErrorCode  VecSetType(Vec vec, const VecType method)
 {
   PetscErrorCode (*r)(Vec);
   PetscBool      match;
@@ -74,7 +74,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec vec, const VecType method)
 .keywords: vector, get, type, name
 .seealso: VecSetType(), VecCreate()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecGetType(Vec vec, const VecType *type)
+PetscErrorCode  VecGetType(Vec vec, const VecType *type)
 {
   PetscErrorCode ierr;
 
@@ -98,7 +98,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetType(Vec vec, const VecType *type)
 
   Level: advanced
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(Vec))
+PetscErrorCode  VecRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(Vec))
 {
   char fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -125,7 +125,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRegister(const char sname[], const char pat
 .keywords: Vec, register, destroy
 .seealso: VecRegister(), VecRegisterAll(), VecRegisterDynamic()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterDestroy(void)
+PetscErrorCode  VecRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 

@@ -59,7 +59,7 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
           MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
           MatConvert()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm comm,Mat *A)
+PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
 {
   Mat            B;
   PetscErrorCode ierr;
@@ -110,7 +110,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm comm,Mat *A)
 
 .seealso: MatGetSize(), PetscSplitOwnership()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N)
+PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N)
 {
   PetscErrorCode ierr;
 
@@ -170,7 +170,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat A, PetscInt m, PetscInt n, Pet
           MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
           MatConvert()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat B)
+PetscErrorCode  MatSetFromOptions(Mat B)
 {
   PetscErrorCode ierr;
   const char     *deft = MATAIJ;
@@ -219,7 +219,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat B)
           MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
           MatConvert()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatSetUpPreallocation(Mat B)
+PetscErrorCode  MatSetUpPreallocation(Mat B)
 {
   PetscErrorCode ierr;
 

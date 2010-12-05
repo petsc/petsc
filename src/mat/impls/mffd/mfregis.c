@@ -3,8 +3,8 @@
 #include "../src/mat/impls/mffd/mffdimpl.h"   /*I  "petscmat.h"   I*/
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD_DS(MatMFFD);
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD_WP(MatMFFD);
+extern PetscErrorCode  MatCreateMFFD_DS(MatMFFD);
+extern PetscErrorCode  MatCreateMFFD_WP(MatMFFD);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -21,7 +21,7 @@ EXTERN_C_END
 .seealso:  MatMFFDRegisterDestroy(), MatMFFDRegisterDynamic), MatCreateMFFD(), 
            MatMFFDSetType()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegisterAll(const char *path)
+PetscErrorCode  MatMFFDRegisterAll(const char *path)
 {
   PetscErrorCode ierr;
 

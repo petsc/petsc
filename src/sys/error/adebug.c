@@ -49,7 +49,7 @@ static PetscBool  Xterm = PETSC_TRUE;
 
 .seealso: PetscSetDebugger()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDebugTerminal(const char terminal[])
+PetscErrorCode  PetscSetDebugTerminal(const char terminal[])
 {
   PetscErrorCode ierr;
 
@@ -84,7 +84,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDebugTerminal(const char terminal[])
 
 .seealso: PetscAttachDebugger(), PetscAttachDebuggerErrorHandler()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDebugger(const char debugger[],PetscBool  xterm)
+PetscErrorCode  PetscSetDebugger(const char debugger[],PetscBool  xterm)
 {
   PetscErrorCode ierr;
 
@@ -107,7 +107,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDebugger(const char debugger[],PetscBo
 
 .seealso: PetscSetDebugger(), PetscSetDebuggerFromString()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDefaultDebugger(void)
+PetscErrorCode  PetscSetDefaultDebugger(void)
 {
   PetscErrorCode ierr;
 
@@ -158,7 +158,7 @@ static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const 
 
 .seealso: PetscSetDebugger(), PetscSetDefaultDebugger()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDebuggerFromString(char *string)
+PetscErrorCode  PetscSetDebuggerFromString(char *string)
 {
   const char     *debugger = PETSC_NULL;
   PetscBool      xterm    = PETSC_TRUE;
@@ -203,7 +203,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSetDebuggerFromString(char *string)
 
 .seealso: PetscSetDebugger()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscAttachDebugger(void)
+PetscErrorCode  PetscAttachDebugger(void)
 {
 #if !defined(PETSC_CANNOT_START_DEBUGGER) 
   int            child=0;
@@ -462,7 +462,7 @@ $    PetscAbortErrorHandler()
 .seealso:  PetscPushErrorHandler(), PetscTraceBackErrorHandler(), 
            PetscAbortErrorHandler()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const char* fun,const char *file,const char* dir,PetscErrorCode num,PetscErrorType p,const char* mess,void *ctx)
+PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const char* fun,const char *file,const char* dir,PetscErrorCode num,PetscErrorType p,const char* mess,void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -497,7 +497,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscAttachDebuggerErrorHandler(MPI_Comm comm,
 
 .seealso: PetscSetDebugger(), PetscAttachDebugger()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscStopForDebugger(void)
+PetscErrorCode  PetscStopForDebugger(void)
 {
   PetscErrorCode ierr;
   PetscInt       sleeptime=0;

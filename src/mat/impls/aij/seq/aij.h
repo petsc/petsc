@@ -221,15 +221,15 @@ extern PetscErrorCode Mat_CheckInode_FactorLU(Mat,PetscBool );
 extern PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat,Mat,PetscInt*);
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqSBAIJ(Mat,const MatType,MatReuse,Mat*);
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqBAIJ(Mat,const MatType,MatReuse,Mat*);
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqAIJPERM(Mat,const MatType,MatReuse,Mat*);
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatReorderForNonzeroDiagonal_SeqAIJ(Mat,PetscReal,IS,IS);
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatMatMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat);
+extern PetscErrorCode  MatConvert_SeqAIJ_SeqSBAIJ(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode  MatConvert_SeqAIJ_SeqBAIJ(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode  MatConvert_SeqAIJ_SeqAIJPERM(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat,PetscReal,IS,IS);
+extern PetscErrorCode  MatMatMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode  MatCreate_SeqAIJ(Mat);
 EXTERN_C_END
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_SeqAIJ(Mat);
+extern PetscErrorCode  MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
+extern PetscErrorCode  MatDestroy_SeqAIJ(Mat);
 
 
 /*

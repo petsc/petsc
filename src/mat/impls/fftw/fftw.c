@@ -130,7 +130,7 @@ PetscErrorCode MatDestroy_SeqFFTW(Mat A)
    Level: intermediate
    
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],Mat* A)
+PetscErrorCode  MatCreateSeqFFTW(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],Mat* A)
 {
   PetscErrorCode ierr;
   Mat_FFTW       *fftw;

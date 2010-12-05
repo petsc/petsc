@@ -30,7 +30,7 @@ typedef struct {
 
 .seealso: MatCreateScatter(), MatScatterSetVecScatter(), MATSCATTER
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatScatterGetVecScatter(Mat mat,VecScatter *scatter)
+PetscErrorCode  MatScatterGetVecScatter(Mat mat,VecScatter *scatter)
 {
   Mat_Scatter    *mscatter;
 
@@ -226,7 +226,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_Scatter"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Scatter(Mat A)
+PetscErrorCode  MatCreate_Scatter(Mat A)
 {
   Mat_Scatter    *b;
   PetscErrorCode ierr;
@@ -280,7 +280,7 @@ EXTERN_C_END
 
 .seealso: MatScatterSetVecScatter(), MatScatterGetVecScatter(), MATSCATTER
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateScatter(MPI_Comm comm,VecScatter scatter,Mat *A)
+PetscErrorCode  MatCreateScatter(MPI_Comm comm,VecScatter scatter,Mat *A)
 {
   PetscErrorCode ierr;
 
@@ -308,7 +308,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateScatter(MPI_Comm comm,VecScatter scat
 
 .seealso: MatCreateScatter(), MATSCATTER
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatScatterSetVecScatter(Mat mat,VecScatter scatter)
+PetscErrorCode  MatScatterSetVecScatter(Mat mat,VecScatter scatter)
 {
   Mat_Scatter    *mscatter = (Mat_Scatter*)mat->data;
   PetscErrorCode ierr;

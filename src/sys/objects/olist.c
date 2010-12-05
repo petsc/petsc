@@ -30,7 +30,7 @@ struct _n_PetscOList {
 .seealso: PetscOListDestroy(), PetscOListFind(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
+PetscErrorCode  PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
 {
   PetscOList     olist,nlist,prev;
   PetscErrorCode ierr;
@@ -104,7 +104,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOListAdd(PetscOList *fl,const char name[]
 .seealso: PetscOListAdd(), PetscOListFind(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOListDestroy(PetscOList fl)
+PetscErrorCode  PetscOListDestroy(PetscOList fl)
 {
   PetscOList     tmp;
   PetscErrorCode ierr;
@@ -141,7 +141,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOListDestroy(PetscOList fl)
 .seealso: PetscOListDestroy(), PetscOListAdd(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
+PetscErrorCode  PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
 {
   PetscErrorCode ierr;
   PetscBool      match;
@@ -181,7 +181,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOListFind(PetscOList fl,const char name[]
 .seealso: PetscOListDestroy(), PetscOListAdd(), PetscOListDuplicate(), PetscOListFind(), PetscOListDuplicate()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name)
+PetscErrorCode  PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name)
 {
   PetscFunctionBegin;
 
@@ -212,7 +212,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscOListReverseFind(PetscOList fl,PetscObjec
 .seealso: PetscOListDestroy(), PetscOListAdd(), PetscOListReverseFind(), PetscOListFind(), PetscOListDuplicate()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscOListDuplicate(PetscOList fl,PetscOList *nl)
+PetscErrorCode  PetscOListDuplicate(PetscOList fl,PetscOList *nl)
 {
   PetscErrorCode ierr;
 

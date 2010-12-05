@@ -4,7 +4,7 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonalBlock_MPIAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock_MPIAIJ(Mat A,PetscBool  *iscopy,MatReuse reuse,Mat *a)
+PetscErrorCode  MatGetDiagonalBlock_MPIAIJ(Mat A,PetscBool  *iscopy,MatReuse reuse,Mat *a)
 {
   PetscFunctionBegin;
   *a      = ((Mat_MPIAIJ *)A->data)->A;

@@ -191,7 +191,7 @@ EXTERN_C_BEGIN
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGMRES, KSPCG, KSPCHEBYCHEV, KSPRICHARDSON
 M*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_SpecEst(KSP ksp)
+PetscErrorCode  KSPCreate_SpecEst(KSP ksp)
 {
   KSP_SpecEst    *spec;
   PetscErrorCode ierr;

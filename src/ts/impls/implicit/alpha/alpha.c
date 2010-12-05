@@ -247,7 +247,7 @@ EXTERN_C_BEGIN
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAlphaSetRadius_Alpha"
-PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetRadius_Alpha(TS ts,PetscReal radius)
+PetscErrorCode  TSAlphaSetRadius_Alpha(TS ts,PetscReal radius)
 {
   TS_Alpha *th = (TS_Alpha*)ts->data;
 
@@ -261,7 +261,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetRadius_Alpha(TS ts,PetscReal radius)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAlphaSetParams_Alpha"
-PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetParams_Alpha(TS ts,PetscReal alpha_m,PetscReal alpha_f,PetscReal gamma)
+PetscErrorCode  TSAlphaSetParams_Alpha(TS ts,PetscReal alpha_m,PetscReal alpha_f,PetscReal gamma)
 {
   TS_Alpha *th = (TS_Alpha*)ts->data;
 
@@ -274,7 +274,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetParams_Alpha(TS ts,PetscReal alpha_m,
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAlphaGetParams_Alpha"
-PetscErrorCode PETSCTS_DLLEXPORT TSAlphaGetParams_Alpha(TS ts,PetscReal *alpha_m,PetscReal *alpha_f,PetscReal *gamma)
+PetscErrorCode  TSAlphaGetParams_Alpha(TS ts,PetscReal *alpha_m,PetscReal *alpha_f,PetscReal *gamma)
 {
   TS_Alpha *th = (TS_Alpha*)ts->data;
 
@@ -287,7 +287,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSAlphaGetParams_Alpha(TS ts,PetscReal *alpha_m
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAlphaSetAdapt_Alpha"
-PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAdapt_Alpha(TS ts,TSAlphaAdaptFunction adapt,void *ctx)
+PetscErrorCode  TSAlphaSetAdapt_Alpha(TS ts,TSAlphaAdaptFunction adapt,void *ctx)
 {
   TS_Alpha *th = (TS_Alpha*)ts->data;
 
@@ -311,7 +311,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_Alpha"
-PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Alpha(TS ts)
+PetscErrorCode  TSCreate_Alpha(TS ts)
 {
   TS_Alpha       *th;
   PetscErrorCode ierr;
@@ -374,7 +374,7 @@ $            PetscReal *next_dt,PetscBool *accepted,void *ctx);
   Level: intermediate
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAdapt(TS ts,TSAlphaAdaptFunction adapt,void *ctx)
+PetscErrorCode  TSAlphaSetAdapt(TS ts,TSAlphaAdaptFunction adapt,void *ctx)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -385,7 +385,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetAdapt(TS ts,TSAlphaAdaptFunction adap
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAlphaAdaptDefault"
-PetscErrorCode PETSCTS_DLLEXPORT TSAlphaAdaptDefault(TS ts,PetscReal t,Vec X,Vec Xdot, PetscReal *nextdt,PetscBool *ok,void *ctx)
+PetscErrorCode  TSAlphaAdaptDefault(TS ts,PetscReal t,Vec X,Vec Xdot, PetscReal *nextdt,PetscBool *ok,void *ctx)
 {
   TS_Alpha       *th;
   PetscReal      dt,normX,normE,Emax,scale;
@@ -455,7 +455,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSAlphaAdaptDefault(TS ts,PetscReal t,Vec X,Vec
 
 .seealso: TSAlphaSetParams(), TSAlphaGetParams()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetRadius(TS ts,PetscReal radius)
+PetscErrorCode  TSAlphaSetRadius(TS ts,PetscReal radius)
 {
   PetscErrorCode ierr;
 
@@ -504,7 +504,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetRadius(TS ts,PetscReal radius)
 
 .seealso: TSAlphaSetRadius(), TSAlphaGetParams()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetParams(TS ts,PetscReal alpha_m,PetscReal alpha_f,PetscReal gamma)
+PetscErrorCode  TSAlphaSetParams(TS ts,PetscReal alpha_m,PetscReal alpha_f,PetscReal gamma)
 {
   PetscErrorCode ierr;
 
@@ -538,7 +538,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSAlphaSetParams(TS ts,PetscReal alpha_m,PetscR
 
 .seealso: TSAlphaSetRadius(), TSAlphaSetParams()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSAlphaGetParams(TS ts,PetscReal *alpha_m,PetscReal *alpha_f,PetscReal *gamma)
+PetscErrorCode  TSAlphaGetParams(TS ts,PetscReal *alpha_m,PetscReal *alpha_f,PetscReal *gamma)
 {
   PetscErrorCode ierr;
 

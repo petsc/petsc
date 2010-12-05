@@ -12,7 +12,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCKSPCreateKSP_KSP"
-static PetscErrorCode PETSCKSP_DLLEXPORT PCKSPCreateKSP_KSP(PC pc)
+static PetscErrorCode  PCKSPCreateKSP_KSP(PC pc)
 {
   PetscErrorCode ierr;
   const char     *prefix;
@@ -146,7 +146,7 @@ static PetscErrorCode PCSetFromOptions_KSP(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCKSPSetUseTrue_KSP"
-PetscErrorCode PETSCKSP_DLLEXPORT PCKSPSetUseTrue_KSP(PC pc)
+PetscErrorCode  PCKSPSetUseTrue_KSP(PC pc)
 {
   PC_KSP   *jac;
 
@@ -160,7 +160,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCKSPGetKSP_KSP"
-PetscErrorCode PETSCKSP_DLLEXPORT PCKSPGetKSP_KSP(PC pc,KSP *ksp)
+PetscErrorCode  PCKSPGetKSP_KSP(PC pc,KSP *ksp)
 {
   PC_KSP         *jac = (PC_KSP*)pc->data;
   PetscErrorCode ierr;
@@ -197,7 +197,7 @@ EXTERN_C_END
 
 .seealso: PCSetOperators(), PCBJacobiSetUseTrueLocal()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCKSPSetUseTrue(PC pc)
+PetscErrorCode  PCKSPSetUseTrue(PC pc)
 {
   PetscErrorCode ierr;
 
@@ -227,7 +227,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCKSPSetUseTrue(PC pc)
 
 .keywords:  PC, KSP, get, context
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCKSPGetKSP(PC pc,KSP *ksp)
+PetscErrorCode  PCKSPGetKSP(PC pc,KSP *ksp)
 {
   PetscErrorCode ierr;
 
@@ -265,7 +265,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_KSP"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_KSP(PC pc)
+PetscErrorCode  PCCreate_KSP(PC pc)
 {
   PetscErrorCode ierr;
   PC_KSP         *jac;

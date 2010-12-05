@@ -34,7 +34,7 @@ extern PetscErrorCode VecAXPBY_SeqCUDA(Vec,PetscScalar,PetscScalar,Vec);
 extern PetscErrorCode VecDuplicate_SeqCUDA(Vec,Vec *);
 extern PetscErrorCode VecNorm_SeqCUDA(Vec,NormType,PetscReal*);
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec);
+extern PetscErrorCode  VecCreate_SeqCUDA(Vec);
 EXTERN_C_END
 extern PetscErrorCode VecView_Seq(Vec,PetscViewer);
 extern PetscErrorCode VecDestroy_SeqCUDA(Vec);

@@ -6,7 +6,7 @@
 #include "private/kspimpl.h"      /*I "petscksp.h" I*/
 
 /* Logging support */
-PetscClassId PETSCKSP_DLLEXPORT KSP_CLASSID;
+PetscClassId  KSP_CLASSID;
 PetscLogEvent  KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
 /*
@@ -46,7 +46,7 @@ PetscBool  KSPRegisterAllCalled = PETSC_FALSE;
 
 .seealso: PCView(), PetscViewerASCIIOpen()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPView(KSP ksp,PetscViewer viewer)
+PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      iascii;
@@ -122,7 +122,7 @@ $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged()                               
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP ksp,KSPNormType normtype)
+PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
 {
   PetscErrorCode ierr;
 
@@ -163,7 +163,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP ksp,KSPNormType normtype)
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged(), KSPSetNormType()                               
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetCheckNormIteration(KSP ksp,PetscInt it)
+PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -201,7 +201,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetCheckNormIteration(KSP ksp,PetscInt it)
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged(), KSPSetNormType()                               
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetLagNorm(KSP ksp,PetscBool  flg)
+PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool  flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -229,7 +229,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetLagNorm(KSP ksp,PetscBool  flg)
 
 .seealso: KSPNormType, KSPSetNormType(), KSPSkipConverged()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetNormType(KSP ksp, KSPNormType *normtype) {
+PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(normtype, 2);
@@ -347,7 +347,7 @@ $           set size, type, etc of mat and pmat
 
 .seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators(), KSPGetOperators()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
+PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
 {
   PetscErrorCode ierr;
 
@@ -393,7 +393,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatS
 
 .seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators(), KSPSetOperators(), KSPGetOperatorsSet()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat,MatStructure *flag)
+PetscErrorCode  KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat,MatStructure *flag)
 {
   PetscErrorCode ierr;
 
@@ -425,7 +425,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat,Ma
 
 .seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperators(), PCGetOperatorsSet()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperatorsSet(KSP ksp,PetscBool  *mat,PetscBool  *pmat)
+PetscErrorCode  KSPGetOperatorsSet(KSP ksp,PetscBool  *mat,PetscBool  *pmat)
 {
   PetscErrorCode ierr;
 
@@ -459,7 +459,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperatorsSet(KSP ksp,PetscBool  *mat,Pet
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSP
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
+PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
 {
   KSP            ksp;
   PetscErrorCode ierr;
@@ -552,7 +552,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
 .seealso: PCSetType(), KSPType
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP ksp, const KSPType type)
+PetscErrorCode  KSPSetType(KSP ksp, const KSPType type)
 {
   PetscErrorCode ierr,(*r)(KSP);
   PetscBool      match;
@@ -598,7 +598,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP ksp, const KSPType type)
 
 .seealso: KSPRegisterDynamic(), KSPRegisterAll()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterDestroy(void)
+PetscErrorCode  KSPRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -627,7 +627,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterDestroy(void)
 
 .seealso: KSPSetType()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetType(KSP ksp,const KSPType *type)
+PetscErrorCode  KSPGetType(KSP ksp,const KSPType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -643,7 +643,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetType(KSP ksp,const KSPType *type)
 
   Level: advanced
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(KSP))
+PetscErrorCode  KSPRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(KSP))
 {
   PetscErrorCode ierr;
   char           fullname[PETSC_MAX_PATH_LEN];
@@ -669,7 +669,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRegister(const char sname[],const char path
 
 .seealso: KSPSetOperators(), MatNullSpaceCreate(), KSPGetNullSpace()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
+PetscErrorCode  KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
 {
   PetscErrorCode ierr;
 
@@ -697,7 +697,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
 
 .seealso: KSPSetOperators(), MatNullSpaceCreate(), KSPSetNullSpace()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetNullSpace(KSP ksp,MatNullSpace *nullsp)
+PetscErrorCode  KSPGetNullSpace(KSP ksp,MatNullSpace *nullsp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);

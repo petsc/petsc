@@ -34,7 +34,7 @@ extern PetscErrorCode DMDALocalToLocalCreate(DM);
 
 .seealso: DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAGetScatter(DM da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol)
+PetscErrorCode  DMDAGetScatter(DM da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;

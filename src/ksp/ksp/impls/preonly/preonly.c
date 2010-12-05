@@ -48,7 +48,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_PREONLY"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_PREONLY(KSP ksp)
+PetscErrorCode  KSPCreate_PREONLY(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                      = (void*)0;

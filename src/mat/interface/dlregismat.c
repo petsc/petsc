@@ -16,7 +16,7 @@ const char *MatOptions[] = {"ROW_ORIENTED","NEW_NONZERO_LOCATIONS",
               "IGNORE_LOWER_TRIANGULAR","ERROR_LOWER_TRIANGULAR","GETROW_UPPERTRIANGULAR","SPD","NO_OFF_PROC_ENTRIES","NO_OFF_PROC_ZERO_ROWS","MatOption","MAT_",0};
 const char *MatFactorShiftTypes[] = {"NONE","NONZERO","POSITIVE_DEFINITE","INBLOCKS","MatFactorShiftType","PC_FACTOR_",0};
 
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDInitializePackage(const char[]);
+extern PetscErrorCode  MatMFFDInitializePackage(const char[]);
 static PetscBool  MatPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "MatFinalizePackage"
@@ -29,7 +29,7 @@ static PetscBool  MatPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatFinalizePackage(void)
+PetscErrorCode  MatFinalizePackage(void)
 {
   PetscFunctionBegin;
   MatPackageInitialized            = PETSC_FALSE;
@@ -59,7 +59,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFinalizePackage(void)
 .keywords: Mat, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[]) 
+PetscErrorCode  MatInitializePackage(const char path[]) 
 {
   char              logList[256];
   char              *className;
@@ -193,7 +193,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PETSCMAT_DLLEXPORT PetscDLLibraryRegister_petscmat(const char path[])
+PetscErrorCode  PetscDLLibraryRegister_petscmat(const char path[])
 {
   PetscErrorCode ierr;
 

@@ -290,7 +290,7 @@ static struct _ISOps myops = { ISGetSize_Block,
 
 .seealso: ISCreateStride(), ISCreateGeneral(), ISAllGather()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISBlockSetIndices(IS is,PetscInt bs,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
+PetscErrorCode  ISBlockSetIndices(IS is,PetscInt bs,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -301,7 +301,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockSetIndices(IS is,PetscInt bs,PetscInt n
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISBlockSetIndices_Block" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
+PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
 {
   PetscErrorCode ierr;
   PetscInt       i,min,max;
@@ -374,7 +374,7 @@ EXTERN_C_END
 
 .seealso: ISCreateStride(), ISCreateGeneral(), ISAllGather()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscInt idx[],PetscCopyMode mode,IS *is)
+PetscErrorCode  ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscInt idx[],PetscCopyMode mode,IS *is)
 {
   PetscErrorCode ierr;
 
@@ -392,7 +392,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscI
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISBlockGetIndices_Block" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetIndices_Block(IS is,const PetscInt *idx[])
+PetscErrorCode  ISBlockGetIndices_Block(IS is,const PetscInt *idx[])
 {
   IS_Block       *sub = (IS_Block*)is->data;
 
@@ -405,7 +405,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISBlockRestoreIndices_Block" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISBlockRestoreIndices_Block(IS is,const PetscInt *idx[])
+PetscErrorCode  ISBlockRestoreIndices_Block(IS is,const PetscInt *idx[])
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -433,7 +433,7 @@ EXTERN_C_END
 
 .seealso: ISGetIndices(), ISBlockRestoreIndices()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetIndices(IS is,const PetscInt *idx[])
+PetscErrorCode  ISBlockGetIndices(IS is,const PetscInt *idx[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -462,7 +462,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetIndices(IS is,const PetscInt *idx[])
 
 .seealso: ISRestoreIndices(), ISBlockGetIndices()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISBlockRestoreIndices(IS is,const PetscInt *idx[])
+PetscErrorCode  ISBlockRestoreIndices(IS is,const PetscInt *idx[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -490,7 +490,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockRestoreIndices(IS is,const PetscInt *id
 
 .seealso: ISGetBlockSize(), ISBlockGetSize(), ISGetSize(), ISCreateBlock()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetLocalSize(IS is,PetscInt *size)
+PetscErrorCode  ISBlockGetLocalSize(IS is,PetscInt *size)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -501,7 +501,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetLocalSize(IS is,PetscInt *size)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISBlockGetLocalSize_Block" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetLocalSize_Block(IS is,PetscInt *size)
+PetscErrorCode  ISBlockGetLocalSize_Block(IS is,PetscInt *size)
 {
   IS_Block *sub = (IS_Block *)is->data;
 
@@ -531,7 +531,7 @@ EXTERN_C_END
 
 .seealso: ISGetBlockSize(), ISBlockGetLocalSize(), ISGetSize(), ISCreateBlock()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetSize(IS is,PetscInt *size)
+PetscErrorCode  ISBlockGetSize(IS is,PetscInt *size)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -542,7 +542,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetSize(IS is,PetscInt *size)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISBlockGetSize_Block" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetSize_Block(IS is,PetscInt *size)
+PetscErrorCode  ISBlockGetSize_Block(IS is,PetscInt *size)
 {
   IS_Block *sub = (IS_Block *)is->data;
 
@@ -554,7 +554,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISToGeneral_Block" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISToGeneral_Block(IS inis)
+PetscErrorCode  ISToGeneral_Block(IS inis)
 {
   PetscErrorCode ierr;
   const PetscInt *idx;
@@ -571,7 +571,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISToGeneral_Block(IS inis)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISCreate_Block" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_Block(IS is)
+PetscErrorCode  ISCreate_Block(IS is)
 {
   PetscErrorCode ierr;
   IS_Block       *sub;

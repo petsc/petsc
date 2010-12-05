@@ -20,7 +20,7 @@
 
 .seealso: PCCreate(), PCSetType(), PCPYTHON, PetscPythonInitialize()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetType(PC pc,const char pyname[])
+PetscErrorCode  PCPythonSetType(PC pc,const char pyname[])
 {
   PetscErrorCode ierr;
 

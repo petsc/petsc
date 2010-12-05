@@ -6,7 +6,7 @@
 #include "private/isimpl.h"      /*I "petscis.h" I*/
 
 /* Logging support */
-PetscClassId PETSCVEC_DLLEXPORT IS_CLASSID;
+PetscClassId  IS_CLASSID;
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISIdentity" 
@@ -28,7 +28,7 @@ PetscClassId PETSCVEC_DLLEXPORT IS_CLASSID;
 
 .seealso: ISSetIdentity()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISIdentity(IS is,PetscBool  *ident)
+PetscErrorCode  ISIdentity(IS is,PetscBool  *ident)
 {
   PetscErrorCode ierr;
 
@@ -60,7 +60,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISIdentity(IS is,PetscBool  *ident)
 
 .seealso: ISIdentity()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISSetIdentity(IS is)
+PetscErrorCode  ISSetIdentity(IS is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
@@ -90,7 +90,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSetIdentity(IS is)
 
 .seealso: ISGetLocalSize(), VecGetOwnershipRange()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *start,PetscBool *contig)
+PetscErrorCode  ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *start,PetscBool *contig)
 {
   PetscErrorCode ierr;
 
@@ -128,7 +128,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISContiguousLocal(IS is,PetscInt gstart,PetscI
 
 .seealso: ISSetPermutation()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISPermutation(IS is,PetscBool  *perm)
+PetscErrorCode  ISPermutation(IS is,PetscBool  *perm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
@@ -157,7 +157,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPermutation(IS is,PetscBool  *perm)
 
 .seealso: ISPermutation()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISSetPermutation(IS is)
+PetscErrorCode  ISSetPermutation(IS is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
@@ -201,7 +201,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSetPermutation(IS is)
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlocked()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISDestroy(IS is)
+PetscErrorCode  ISDestroy(IS is)
 {
   PetscErrorCode ierr;
 
@@ -255,7 +255,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISDestroy(IS is)
    Concepts: permutation^inverse
    Concepts: index sets^inverting
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
+PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
 {
   PetscErrorCode ierr;
 
@@ -287,7 +287,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISInvertPermutation(IS is,PetscInt nlocal,IS *
    Concepts: index sets^size
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISGetSize(IS is,PetscInt *size)
+PetscErrorCode  ISGetSize(IS is,PetscInt *size)
 {
   PetscErrorCode ierr;
 
@@ -318,7 +318,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGetSize(IS is,PetscInt *size)
    Concepts: index sets^local size
   
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISGetLocalSize(IS is,PetscInt *size)
+PetscErrorCode  ISGetLocalSize(IS is,PetscInt *size)
 {
   PetscErrorCode ierr;
 
@@ -368,7 +368,7 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
 .seealso: ISRestoreIndices(), ISGetIndicesF90()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISGetIndices(IS is,const PetscInt *ptr[])
+PetscErrorCode  ISGetIndices(IS is,const PetscInt *ptr[])
 {
   PetscErrorCode ierr;
 
@@ -412,7 +412,7 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
 .seealso: ISGetIndices(), ISRestoreIndicesF90()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISRestoreIndices(IS is,const PetscInt *ptr[])
+PetscErrorCode  ISRestoreIndices(IS is,const PetscInt *ptr[])
 {
   PetscErrorCode ierr;
 
@@ -427,7 +427,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISRestoreIndices(IS is,const PetscInt *ptr[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISGatherNonlocal_Private" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISGatherNonlocal_Private(IS is)
+PetscErrorCode  ISGatherNonlocal_Private(IS is)
 {
   PetscErrorCode ierr;
   PetscInt       i,n,N;
@@ -486,7 +486,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGatherNonlocal_Private(IS is)
    Concepts: index sets^getting nonlocal indices
 .seealso: ISRestoreTotalIndices(), ISGetNonlocalIndices(), ISGetSize()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISGetTotalIndices(IS is, const PetscInt *indices[])
+PetscErrorCode  ISGetTotalIndices(IS is, const PetscInt *indices[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -526,7 +526,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGetTotalIndices(IS is, const PetscInt *indic
    Concepts: index sets^restoring nonlocal indices
 .seealso: ISRestoreTotalIndices(), ISGetNonlocalIndices()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISRestoreTotalIndices(IS is, const PetscInt *indices[])
+PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
 {
   PetscErrorCode ierr;
   PetscMPIInt size;
@@ -570,7 +570,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISRestoreTotalIndices(IS is, const PetscInt *i
    Concepts: index sets^getting nonlocal indices
 .seealso: ISGetTotalIndices(), ISRestoreNonlocalIndices(), ISGetSize(), ISGetLocalSize().
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISGetNonlocalIndices(IS is, const PetscInt *indices[])
+PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
 {
   PetscErrorCode ierr;
   PetscMPIInt size;
@@ -619,7 +619,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGetNonlocalIndices(IS is, const PetscInt *in
    Concepts: index sets^restoring nonlocal indices
 .seealso: ISGetTotalIndices(), ISGetNonlocalIndices(), ISRestoreTotalIndices()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
+PetscErrorCode  ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
 {
 
   PetscFunctionBegin;
@@ -656,7 +656,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISRestoreNonlocalIndices(IS is, const PetscInt
    Concepts: index sets^getting nonlocal indices
 .seealso: ISGetNonlocalIndices(), ISRestoreNonlocalIndices(),  ISAllGather(), ISGetSize()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISGetNonlocalIS(IS is, IS *complement)
+PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
 {
   PetscErrorCode ierr;
 
@@ -702,7 +702,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGetNonlocalIS(IS is, IS *complement)
    Concepts: index sets^restoring nonlocal indices
 .seealso: ISGetNonlocalIS(), ISGetNonlocalIndices(), ISRestoreNonlocalIndices()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISRestoreNonlocalIS(IS is, IS *complement)
+PetscErrorCode  ISRestoreNonlocalIS(IS is, IS *complement)
 {
   PetscErrorCode ierr;
   PetscInt       refcnt;
@@ -736,7 +736,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISRestoreNonlocalIS(IS is, IS *complement)
 
 .seealso: PetscViewerASCIIOpen()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISView(IS is,PetscViewer viewer)
+PetscErrorCode  ISView(IS is,PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -769,7 +769,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISView(IS is,PetscViewer viewer)
 
 .seealso: ISSorted()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISSort(IS is)
+PetscErrorCode  ISSort(IS is)
 {
   PetscErrorCode ierr;
 
@@ -796,7 +796,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSort(IS is)
 
 .seealso: ISSorted()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISToGeneral(IS is)
+PetscErrorCode  ISToGeneral(IS is)
 {
   PetscErrorCode ierr;
 
@@ -830,7 +830,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISToGeneral(IS is)
 
 .seealso: ISSort()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISSorted(IS is,PetscBool  *flg)
+PetscErrorCode  ISSorted(IS is,PetscBool  *flg)
 {
   PetscErrorCode ierr;
 
@@ -864,7 +864,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSorted(IS is,PetscBool  *flg)
 
 .seealso: ISCreateGeneral(), ISCopy()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISDuplicate(IS is,IS *newIS)
+PetscErrorCode  ISDuplicate(IS is,IS *newIS)
 {
   PetscErrorCode ierr;
 
@@ -894,7 +894,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISDuplicate(IS is,IS *newIS)
 
 .seealso: ISDuplicate()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISCopy(IS is,IS isy)
+PetscErrorCode  ISCopy(IS is,IS isy)
 {
   PetscErrorCode ierr;
 
@@ -938,7 +938,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCopy(IS is,IS isy)
 
 .seealso: ISSplit()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
+PetscErrorCode  ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
 {
   PetscErrorCode ierr;
   PetscMPIInt match;
@@ -971,7 +971,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mod
 
 .seealso: ISGetBlockSize(), ISCreateBlock()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISSetBlockSize(IS is,PetscInt bs)
+PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
 {
   PetscErrorCode ierr;
 
@@ -1003,7 +1003,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSetBlockSize(IS is,PetscInt bs)
 
 .seealso: ISBlockGetSize(), ISGetSize(), ISCreateBlock(), ISSetBlockSize()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISGetBlockSize(IS is,PetscInt *size)
+PetscErrorCode  ISGetBlockSize(IS is,PetscInt *size)
 {
   PetscFunctionBegin;
   *size = is->bs;

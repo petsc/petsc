@@ -61,7 +61,7 @@ static PetscErrorCode VecGhostStateSync_Private(Vec g,Vec l)
 .seealso: VecCreateGhost(), VecGhostRestoreLocalForm(), VecCreateGhostWithArray()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecGhostGetLocalForm(Vec g,Vec *l)
+PetscErrorCode  VecGhostGetLocalForm(Vec g,Vec *l)
 {
   PetscErrorCode ierr;
   PetscBool      isseq,ismpi;
@@ -107,7 +107,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGhostGetLocalForm(Vec g,Vec *l)
 
 .seealso: VecCreateGhost(), VecGhostGetLocalForm(), VecCreateGhostWithArray()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecGhostRestoreLocalForm(Vec g,Vec *l)
+PetscErrorCode  VecGhostRestoreLocalForm(Vec g,Vec *l)
 {
   PetscErrorCode ierr;
 
@@ -158,7 +158,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGhostRestoreLocalForm(Vec g,Vec *l)
           VecGhostRestoreLocalForm(),VecCreateGhostWithArray()
 
 @*/ 
-PetscErrorCode PETSCVEC_DLLEXPORT VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scattermode)
+PetscErrorCode  VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scattermode)
 {
   Vec_MPI        *v;
   PetscErrorCode ierr;
@@ -220,7 +220,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGhostUpdateBegin(Vec g,InsertMode insertmod
           VecGhostRestoreLocalForm(),VecCreateGhostWithArray()
 
 @*/ 
-PetscErrorCode PETSCVEC_DLLEXPORT VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)
+PetscErrorCode  VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)
 {
   Vec_MPI        *v;
   PetscErrorCode ierr;

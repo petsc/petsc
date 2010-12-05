@@ -140,7 +140,7 @@ PetscErrorCode MatDestroy_SeqCUFFT(Mat A)
 
   Level: intermediate
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], Mat* A)
+PetscErrorCode  MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], Mat* A)
 {
   Mat_CUFFT     *cufft;
   PetscInt       m, d;

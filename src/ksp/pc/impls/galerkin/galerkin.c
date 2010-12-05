@@ -95,7 +95,7 @@ static PetscErrorCode PCView_Galerkin(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCGalerkinGetKSP_Galerkin"
-PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinGetKSP_Galerkin(PC pc,KSP *ksp)
+PetscErrorCode  PCGalerkinGetKSP_Galerkin(PC pc,KSP *ksp)
 {
   PC_Galerkin     *jac = (PC_Galerkin*)pc->data;
 
@@ -108,7 +108,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCGalerkinSetRestriction_Galerkin"
-PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetRestriction_Galerkin(PC pc,Mat R)
+PetscErrorCode  PCGalerkinSetRestriction_Galerkin(PC pc,Mat R)
 {
   PC_Galerkin     *jac = (PC_Galerkin*)pc->data;
   PetscErrorCode   ierr;
@@ -124,7 +124,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCGalerkinSetInterpolation_Galerkin"
-PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetInterpolation_Galerkin(PC pc,Mat P)
+PetscErrorCode  PCGalerkinSetInterpolation_Galerkin(PC pc,Mat P)
 {
   PC_Galerkin     *jac = (PC_Galerkin*)pc->data;
   PetscErrorCode   ierr;
@@ -159,7 +159,7 @@ EXTERN_C_END
            PCGalerkinSetInterpolation(), PCGalerkinGetKSP()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetRestriction(PC pc,Mat R)
+PetscErrorCode  PCGalerkinSetRestriction(PC pc,Mat R)
 {
   PetscErrorCode ierr;
 
@@ -190,7 +190,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetRestriction(PC pc,Mat R)
            PCGalerkinSetRestriction(), PCGalerkinGetKSP()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetInterpolation(PC pc,Mat P)
+PetscErrorCode  PCGalerkinSetInterpolation(PC pc,Mat P)
 {
   PetscErrorCode ierr;
 
@@ -221,7 +221,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetInterpolation(PC pc,Mat P)
            PCGalerkinSetRestriction(), PCGalerkinSetInterpolation()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinGetKSP(PC pc,KSP *ksp)
+PetscErrorCode  PCGalerkinGetKSP(PC pc,KSP *ksp)
 {
   PetscErrorCode ierr;
 
@@ -251,7 +251,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Galerkin"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Galerkin(PC pc)
+PetscErrorCode  PCCreate_Galerkin(PC pc)
 {
   PetscErrorCode ierr;
   PC_Galerkin    *jac;

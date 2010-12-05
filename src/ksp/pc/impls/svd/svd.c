@@ -190,7 +190,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_SVD"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SVD(PC pc)
+PetscErrorCode PCCreate_SVD(PC pc)
 {
   PC_SVD         *jac;
   PetscErrorCode ierr;

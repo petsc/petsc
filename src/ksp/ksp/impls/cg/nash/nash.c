@@ -27,7 +27,7 @@ static const char *DType_Table[64] = {  "preconditioned", "unpreconditioned"};
 
 .keywords: KSP, NASH, set, trust region radius
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHSetRadius(KSP ksp, PetscReal radius)
+PetscErrorCode  KSPNASHSetRadius(KSP ksp, PetscReal radius)
 {
   PetscErrorCode ierr;
 
@@ -54,7 +54,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHSetRadius(KSP ksp, PetscReal radius)
 
 .keywords: KSP, NASH, get, norm direction
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHGetNormD(KSP ksp, PetscReal *norm_d)
+PetscErrorCode  KSPNASHGetNormD(KSP ksp, PetscReal *norm_d)
 {
   PetscErrorCode ierr;
 
@@ -79,7 +79,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHGetNormD(KSP ksp, PetscReal *norm_d)
 
 .keywords: KSP, NASH, get, objective function
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHGetObjFcn(KSP ksp, PetscReal *o_fcn)
+PetscErrorCode  KSPNASHGetObjFcn(KSP ksp, PetscReal *o_fcn)
 {
   PetscErrorCode ierr;
 
@@ -651,7 +651,7 @@ PetscErrorCode KSPDestroy_NASH(KSP ksp)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPNASHSetRadius_NASH"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHSetRadius_NASH(KSP ksp, PetscReal radius)
+PetscErrorCode  KSPNASHSetRadius_NASH(KSP ksp, PetscReal radius)
 {
   KSP_NASH *cg = (KSP_NASH *)ksp->data;
 
@@ -662,7 +662,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHSetRadius_NASH(KSP ksp, PetscReal radiu
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPNASHGetNormD_NASH"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHGetNormD_NASH(KSP ksp, PetscReal *norm_d)
+PetscErrorCode  KSPNASHGetNormD_NASH(KSP ksp, PetscReal *norm_d)
 {
   KSP_NASH *cg = (KSP_NASH *)ksp->data;
 
@@ -673,7 +673,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHGetNormD_NASH(KSP ksp, PetscReal *norm_
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPNASHGetObjFcn_NASH"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHGetObjFcn_NASH(KSP ksp, PetscReal *o_fcn){
+PetscErrorCode  KSPNASHGetObjFcn_NASH(KSP ksp, PetscReal *o_fcn){
   KSP_NASH *cg = (KSP_NASH *)ksp->data;
 
   PetscFunctionBegin;
@@ -742,7 +742,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_NASH"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_NASH(KSP ksp)
+PetscErrorCode  KSPCreate_NASH(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_NASH       *cg;

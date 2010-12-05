@@ -16,7 +16,7 @@
  * hash table for non-zero data and keys 
  *
  */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTableCreate(const PetscInt n,PetscTable *rta)
+PetscErrorCode  PetscTableCreate(const PetscInt n,PetscTable *rta)
 {
   PetscTable     ta;
   PetscErrorCode ierr;
@@ -42,7 +42,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTableCreate(const PetscInt n,PetscTable *
  * hash table for non-zero data and keys 
  *
  */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
+PetscErrorCode  PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -72,7 +72,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTableCreateCopy(const PetscTable intable,
  * 
  *
  */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTableDestroy(PetscTable ta)
+PetscErrorCode  PetscTableDestroy(PetscTable ta)
 {
   PetscErrorCode ierr;
 
@@ -86,7 +86,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTableDestroy(PetscTable ta)
 #define __FUNCT__ "PetscTableGetCount"
 /* PetscTableGetCount() ********************************************
  */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTableGetCount(const PetscTable ta,PetscInt *count)
+PetscErrorCode  PetscTableGetCount(const PetscTable ta,PetscInt *count)
 { 
   PetscFunctionBegin;
   *count = ta->count;
@@ -97,7 +97,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTableGetCount(const PetscTable ta,PetscIn
 #define __FUNCT__ "PetscTableIsEmpty"
 /* PetscTableIsEmpty() ********************************************
  */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTableIsEmpty(const PetscTable ta,PetscInt *flag)
+PetscErrorCode  PetscTableIsEmpty(const PetscTable ta,PetscInt *flag)
 { 
   PetscFunctionBegin;
   *flag = !(ta->count); 
@@ -109,7 +109,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTableIsEmpty(const PetscTable ta,PetscInt
 /* PetscTableAdd() ********************************************
  *
  */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTableAdd(PetscTable ta,const PetscInt key,const PetscInt data)
+PetscErrorCode  PetscTableAdd(PetscTable ta,const PetscInt key,const PetscInt data)
 {  
   PetscErrorCode ierr;
   PetscInt       ii = 0,hash = HASHT(ta,key);
@@ -170,7 +170,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTableAdd(PetscTable ta,const PetscInt key
  *
  *
  */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTableRemoveAll(PetscTable ta)
+PetscErrorCode  PetscTableRemoveAll(PetscTable ta)
 { 
   PetscErrorCode ierr;
 
@@ -190,7 +190,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTableRemoveAll(PetscTable ta)
  * returns data. If data==0, then no table entry exists.
  *
  */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTableFind(PetscTable ta,const PetscInt key,PetscInt *data)
+PetscErrorCode  PetscTableFind(PetscTable ta,const PetscInt key,PetscInt *data)
 {  
   PetscInt hash,ii = 0;
 
@@ -214,7 +214,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTableFind(PetscTable ta,const PetscInt ke
 /* PetscTableGetHeadPosition() ********************************************
  *
  */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTableGetHeadPosition(PetscTable ta,PetscTablePosition *ppos)
+PetscErrorCode  PetscTableGetHeadPosition(PetscTable ta,PetscTablePosition *ppos)
 {
   PetscInt i = 0;
 
@@ -240,7 +240,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTableGetHeadPosition(PetscTable ta,PetscT
  *  - iteration - PetscTablePosition is always valid (points to a data)
  *  
  */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTableGetNext(PetscTable ta,PetscTablePosition *rPosition,PetscInt *pkey,PetscInt *data)
+PetscErrorCode  PetscTableGetNext(PetscTable ta,PetscTablePosition *rPosition,PetscInt *pkey,PetscInt *data)
 {
   PetscInt           idex; 
   PetscTablePosition pos;
@@ -277,7 +277,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTableGetNext(PetscTable ta,PetscTablePosi
           if the entry already exists then just return
  *
  */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTableAddCount(PetscTable ta,const PetscInt key)
+PetscErrorCode  PetscTableAddCount(PetscTable ta,const PetscInt key)
 {  
   PetscErrorCode ierr;
   PetscInt       ii = 0,hash = HASHT(ta,key);

@@ -80,7 +80,7 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
     Concepts: deleting object
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj)
+PetscErrorCode  PetscObjectCreate(MPI_Comm comm, PetscObject *obj)
 {
   GenericObject  o;
   PetscErrorCode ierr;
@@ -124,7 +124,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *
     Concepts: deleting object
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectCreateGeneric(MPI_Comm comm, PetscClassId classid, const char name[], PetscObject *obj)
+PetscErrorCode  PetscObjectCreateGeneric(MPI_Comm comm, PetscClassId classid, const char name[], PetscObject *obj)
 {
   GenericObject  o;
   PetscErrorCode ierr;
@@ -162,7 +162,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectCreateGeneric(MPI_Comm comm, PetscC
     Concepts: deleting object
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectDestroy(PetscObject obj)
+PetscErrorCode  PetscObjectDestroy(PetscObject obj)
 {
   PetscErrorCode ierr;
 
@@ -192,7 +192,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectDestroy(PetscObject obj)
    Level: intermediate
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectView(PetscObject obj,PetscViewer viewer)
+PetscErrorCode  PetscObjectView(PetscObject obj,PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -236,7 +236,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectView(PetscObject obj,PetscViewer vi
    Concepts: object type^comparing
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTypeCompare(PetscObject obj,const char type_name[],PetscBool  *same)
+PetscErrorCode  PetscTypeCompare(PetscObject obj,const char type_name[],PetscBool  *same)
 {
   PetscErrorCode ierr;
 
@@ -281,7 +281,7 @@ static PetscObject PetscObjectRegisterDestroy_Objects[MAXREGDESOBJS];
 
 .seealso: PetscObjectRegisterDestroyAll()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectRegisterDestroy(PetscObject obj)
+PetscErrorCode  PetscObjectRegisterDestroy(PetscObject obj)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -306,7 +306,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectRegisterDestroy(PetscObject obj)
 
 .seealso: PetscObjectRegisterDestroy()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectRegisterDestroyAll(void)
+PetscErrorCode  PetscObjectRegisterDestroyAll(void)
 {
   PetscErrorCode ierr;
   int i;
@@ -341,7 +341,7 @@ static PetscErrorCode ((*PetscRegisterFinalize_Functions[MAXREGFIN])(void));
 
 .seealso: PetscRegisterFinalizeAll()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRegisterFinalize(PetscErrorCode (*f)(void))
+PetscErrorCode  PetscRegisterFinalize(PetscErrorCode (*f)(void))
 {
   PetscFunctionBegin;
 
@@ -365,7 +365,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRegisterFinalize(PetscErrorCode (*f)(void
 
 .seealso: PetscRegisterFinalize()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRegisterFinalizeAll(void)
+PetscErrorCode  PetscRegisterFinalizeAll(void)
 {
   PetscErrorCode ierr;
   int i;

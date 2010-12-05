@@ -9,7 +9,7 @@
   code, rather then through the PETSc interface.
 
 */
-PetscErrorCode PETSCKSP_DLLEXPORT MatDumpSPAI(Mat A,FILE *file)
+PetscErrorCode  MatDumpSPAI(Mat A,FILE *file)
 {
   const PetscScalar *vals;
   PetscErrorCode ierr;
@@ -37,7 +37,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatDumpSPAI(Mat A,FILE *file)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PETSCKSP_DLLEXPORT VecDumpSPAI(Vec b,FILE *file)
+PetscErrorCode  VecDumpSPAI(Vec b,FILE *file)
 {
   PetscErrorCode ierr;
   int    n,i;

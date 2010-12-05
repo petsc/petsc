@@ -639,7 +639,7 @@ static PetscErrorCode VecMaxPointwiseDivide_Nest(Vec x,Vec y,PetscReal *max)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecGetSubVector_Nest"
-static PetscErrorCode PETSCVEC_DLLEXPORT VecGetSubVector_Nest(Vec X,IS is,Vec *x)
+static PetscErrorCode  VecGetSubVector_Nest(Vec X,IS is,Vec *x)
 {
   Vec_Nest       *bx = (Vec_Nest*)X->data;
   PetscInt       i;
@@ -661,7 +661,7 @@ static PetscErrorCode PETSCVEC_DLLEXPORT VecGetSubVector_Nest(Vec X,IS is,Vec *x
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecRestoreSubVector_Nest"
-static PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreSubVector_Nest(Vec X,IS is,Vec *x)
+static PetscErrorCode  VecRestoreSubVector_Nest(Vec X,IS is,Vec *x)
 {
   PetscErrorCode ierr;
 
@@ -789,7 +789,7 @@ static PetscErrorCode VecNestGetSubVecs_Private(Vec x,PetscInt m,const PetscInt 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecNestGetSubVec_Nest"
-PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVec_Nest(Vec X,PetscInt idxm,Vec *sx)
+PetscErrorCode  VecNestGetSubVec_Nest(Vec X,PetscInt idxm,Vec *sx)
 {
   PetscErrorCode ierr;
 
@@ -819,7 +819,7 @@ EXTERN_C_END
 
  .seealso: VecNestGetSize(), VecNestGetSubVecs()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVec(Vec X,PetscInt idxm,Vec *sx)
+PetscErrorCode  VecNestGetSubVec(Vec X,PetscInt idxm,Vec *sx)
 {
   PetscErrorCode ierr;
 
@@ -831,7 +831,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVec(Vec X,PetscInt idxm,Vec *sx)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecNestGetSubVecs_Nest"
-PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVecs_Nest(Vec X,PetscInt *N,Vec **sx)
+PetscErrorCode  VecNestGetSubVecs_Nest(Vec X,PetscInt *N,Vec **sx)
 {
   Vec_Nest  *b = (Vec_Nest*)X->data;
   PetscFunctionBegin;
@@ -863,7 +863,7 @@ EXTERN_C_END
 
  .seealso: VecNestGetSize(), VecNestGetSubVec()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVecs(Vec X,PetscInt *N,Vec **sx)
+PetscErrorCode  VecNestGetSubVecs(Vec X,PetscInt *N,Vec **sx)
 {
   PetscErrorCode ierr;
 
@@ -875,7 +875,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSubVecs(Vec X,PetscInt *N,Vec **sx)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecNestGetSize_Nest"
-PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSize_Nest(Vec X,PetscInt *N)
+PetscErrorCode  VecNestGetSize_Nest(Vec X,PetscInt *N)
 {
   Vec_Nest  *b = (Vec_Nest*)X->data;
 
@@ -904,7 +904,7 @@ EXTERN_C_END
 
  .seealso: VecNestGetSubVec(), VecNestGetSubVecs()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecNestGetSize(Vec X,PetscInt *N)
+PetscErrorCode  VecNestGetSize(Vec X,PetscInt *N)
 {
   PetscErrorCode ierr;
 
@@ -990,7 +990,7 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V,PetscInt nb,IS is[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreateNest"
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreateNest(MPI_Comm comm,PetscInt nb,IS is[],Vec x[],Vec *X)
+PetscErrorCode  VecCreateNest(MPI_Comm comm,PetscInt nb,IS is[],Vec x[],Vec *X)
 {
   Vec            V;
   Vec_Nest       *s;

@@ -110,7 +110,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatDDMetaAIJ_FreeAIJ(Mat M, MetaMatDD_Block *
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDDMetaAIJSetPreallocation"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDDMetaAIJSetPreallocation(Mat A, PetscInt nz, PetscInt *nnz)
+PetscErrorCode  MatDDMetaAIJSetPreallocation(Mat A, PetscInt nz, PetscInt *nnz)
 {
   /* Assume gather and scatter have been set */
 
@@ -177,7 +177,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDMetaAIJSetPreallocation(Mat A, PetscInt n
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpPreallocation_DDMetaAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatSetUpPreallocation_DDMetaAIJ(Mat A) 
+PetscErrorCode  MatSetUpPreallocation_DDMetaAIJ(Mat A) 
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -188,7 +188,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetUpPreallocation_DDMetaAIJ(Mat A)
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatDDMetaLocateBlock_AIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDDMetaLocateBlock_AIJ(Mat A, PetscInt row, PetscInt col, PetscBool insert, MatDDMeta_Block **block_pp) {
+PetscErrorCode  MatDDMetaLocateBlock_AIJ(Mat A, PetscInt row, PetscInt col, PetscBool insert, MatDDMeta_Block **block_pp) {
   PetscErrorCode        ierr;
   Mat_DD         *dd = (Mat_DD*)A->data;
   Mat_DDMetaAIJ  *a = (Mat_DDMetaAIJ*)A->data;
@@ -253,7 +253,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDMetaLocateBlock_AIJ(Mat A, PetscInt row, 
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatAssemblyBegin_DDMetaAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyBegin_DDMetaAIJ(Mat A, MatAssemblyType type) {
+PetscErrorCode  MatAssemblyBegin_DDMetaAIJ(Mat A, MatAssemblyType type) {
   Mat_DD         *dd = (Mat_DD*)A->data;
   Mat_DDMetaAIJ  *aij = (Mat_DDMetaAIJ*)A->data;
   PetscInt i,j,k;
@@ -274,7 +274,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyBegin_DDMetaAIJ(Mat A, MatAssemblyT
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_DDMetaAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd_DDMetaAIJ(Mat A, MatAssemblyType type) {
+PetscErrorCode  MatAssemblyEnd_DDMetaAIJ(Mat A, MatAssemblyType type) {
   Mat_DD     *dd = (Mat_DD*)A->data;
   Mat_DDAIJ  *aij = (Mat_DDMetaAIJ*)A->data;
   PetscInt i,j,k;
@@ -296,7 +296,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd_DDMetaAIJ(Mat A, MatAssemblyTyp
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatMult_DDMetaAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMult_DDAIJ(Mat A, Vec x, Vec y) {
+PetscErrorCode  MatMult_DDAIJ(Mat A, Vec x, Vec y) {
   Mat_DD  *dd = (Mat_DD*)A->data;
   Mat_DDMetaAIJ *aij = (Mat_DDMetaAIJ*)A->data;
   const PetscInt *aj;
@@ -335,7 +335,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMult_DDAIJ(Mat A, Vec x, Vec y) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatMultTranspose_DDAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose_DDAIJ(Mat A, Vec x, Vec y) {
+PetscErrorCode  MatMultTranspose_DDAIJ(Mat A, Vec x, Vec y) {
   Mat_DD  *dd = (Mat_DD*)A->data;
   Mat_DDAIJ *aij = (Mat_DDAIJ*)dd->data;
   const PetscInt *aj;
@@ -372,7 +372,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose_DDAIJ(Mat A, Vec x, Vec y) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatCreate_DDAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DDAIJ(Mat A) {
+PetscErrorCode  MatCreate_DDAIJ(Mat A) {
   Mat_DD     *dd = (Mat_DD *)A->data;
   Mat_DDAIJ  *aij;
   PetscErrorCode ierr;
@@ -392,7 +392,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DDAIJ(Mat A) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatDestroy_DDAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_DDAIJ(Mat M) {
+PetscErrorCode  MatDestroy_DDAIJ(Mat M) {
   Mat_DD     *dd = (Mat_DD *)M->data;
   Mat_DDAIJ  *aij = (Mat_DDAIJ *)dd->data;
   PetscInt    *ai = aij->i, *ailen = aij->ilen;

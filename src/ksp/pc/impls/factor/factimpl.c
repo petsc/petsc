@@ -7,7 +7,7 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetZeroPivot_Factor"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot_Factor(PC pc,PetscReal z)
+PetscErrorCode  PCFactorSetZeroPivot_Factor(PC pc,PetscReal z)
 {
   PC_Factor *ilu = (PC_Factor*)pc->data;
 
@@ -20,7 +20,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetShiftType_Factor"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftType_Factor(PC pc,MatFactorShiftType shifttype)
+PetscErrorCode  PCFactorSetShiftType_Factor(PC pc,MatFactorShiftType shifttype)
 {
   PC_Factor *dir = (PC_Factor*)pc->data;
 
@@ -38,7 +38,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftType_Factor(PC pc,MatFactorShi
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetShiftAmount_Factor"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftAmount_Factor(PC pc,PetscReal shiftamount)
+PetscErrorCode  PCFactorSetShiftAmount_Factor(PC pc,PetscReal shiftamount)
 {
   PC_Factor *dir = (PC_Factor*)pc->data;
 
@@ -55,7 +55,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetDropTolerance_Factor"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetDropTolerance_Factor(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
+PetscErrorCode  PCFactorSetDropTolerance_Factor(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
 {
   PC_Factor         *ilu = (PC_Factor*)pc->data;
 
@@ -75,7 +75,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetFill_Factor"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetFill_Factor(PC pc,PetscReal fill)
+PetscErrorCode  PCFactorSetFill_Factor(PC pc,PetscReal fill)
 {
   PC_Factor *dir = (PC_Factor*)pc->data;
 
@@ -88,7 +88,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetMatOrderingType_Factor"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_Factor(PC pc,const MatOrderingType ordering)
+PetscErrorCode  PCFactorSetMatOrderingType_Factor(PC pc,const MatOrderingType ordering)
 {
   PC_Factor      *dir = (PC_Factor*)pc->data;
   PetscErrorCode ierr;
@@ -109,7 +109,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetLevels_Factor"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetLevels_Factor(PC pc,PetscInt levels)
+PetscErrorCode  PCFactorSetLevels_Factor(PC pc,PetscInt levels)
 {
   PC_Factor      *ilu = (PC_Factor*)pc->data;
 
@@ -124,7 +124,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetAllowDiagonalFill_Factor"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetAllowDiagonalFill_Factor(PC pc)
+PetscErrorCode  PCFactorSetAllowDiagonalFill_Factor(PC pc)
 {
   PC_Factor *dir = (PC_Factor*)pc->data;
 
@@ -140,7 +140,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetPivotInBlocks_Factor"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks_Factor(PC pc,PetscBool  pivot)
+PetscErrorCode  PCFactorSetPivotInBlocks_Factor(PC pc,PetscBool  pivot)
 {
   PC_Factor *dir = (PC_Factor*)pc->data;
 
@@ -152,7 +152,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorGetMatrix_Factor"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatrix_Factor(PC pc,Mat *mat)
+PetscErrorCode  PCFactorGetMatrix_Factor(PC pc,Mat *mat)
 {
   PC_Factor *ilu = (PC_Factor*)pc->data;
 
@@ -165,7 +165,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatrix_Factor(PC pc,Mat *mat)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetMatSolverPackage_Factor"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_Factor(PC pc,const MatSolverPackage stype)
+PetscErrorCode  PCFactorSetMatSolverPackage_Factor(PC pc,const MatSolverPackage stype)
 {
   PetscErrorCode ierr;
   PC_Factor      *lu = (PC_Factor*)pc->data;
@@ -189,7 +189,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorGetMatSolverPackage_Factor"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatSolverPackage_Factor(PC pc,const MatSolverPackage *stype)
+PetscErrorCode  PCFactorGetMatSolverPackage_Factor(PC pc,const MatSolverPackage *stype)
 {
   PC_Factor      *lu = (PC_Factor*)pc->data;
 
@@ -202,7 +202,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetColumnPivot_Factor"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetColumnPivot_Factor(PC pc,PetscReal dtcol)
+PetscErrorCode  PCFactorSetColumnPivot_Factor(PC pc,PetscReal dtcol)
 {
   PC_Factor       *dir = (PC_Factor*)pc->data;
 
@@ -216,7 +216,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_Factor"
-PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC pc)
+PetscErrorCode  PCSetFromOptions_Factor(PC pc)
 {
   PC_Factor       *factor = (PC_Factor*)pc->data;
   PetscErrorCode  ierr;

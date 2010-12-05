@@ -41,7 +41,7 @@ unsigned char GreenMap[] = {255,0,0,255,255,0,0,255,139,165,130,42,182,127,190,2
 unsigned char BlueMap[]  = {255,0,0,0,255,255,225,212,34,0,238,42,193,80,190,0,0,173,205,143,105,50,235,0,128,96,255,230,120,216,50,245};
 
 /* Foward declarations of functions included in this code module: */
-LRESULT PETSCSYS_DLLEXPORT CALLBACK PetscWndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT  CALLBACK PetscWndProc(HWND, UINT, WPARAM, LPARAM);
 static PetscErrorCode TranslateColor_Win32(PetscDraw,int);
 static PetscErrorCode AverageColorRectangle_Win32(PetscDraw,int,int,int,int);
 static PetscErrorCode AverageColorTriangle_Win32(PetscDraw,int,int,int);
@@ -864,7 +864,7 @@ static PetscErrorCode PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popdraw)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawCreate_Win32" 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawCreate_Win32(PetscDraw draw)
+PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
 {       
   PetscDraw_Win32 *windraw;
   HANDLE          hThread = NULL;
@@ -936,7 +936,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscWndProc"
-LRESULT PETSCSYS_DLLEXPORT CALLBACK PetscWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT  CALLBACK PetscWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
   int         wmId, wmEvent;
   

@@ -373,7 +373,7 @@ PetscErrorCode PetscBagRegisterBool(PetscBag bag,void *addr,PetscBool  mdefault,
            PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscBagDestroy(PetscBag bag)
+PetscErrorCode  PetscBagDestroy(PetscBag bag)
 {
   PetscErrorCode ierr;
   PetscBagItem   nitem = bag->bagitems,item;
@@ -409,7 +409,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscBagDestroy(PetscBag bag)
            PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagView(), PetscBagRegisterEnum()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscBagSetFromOptions(PetscBag bag)
+PetscErrorCode  PetscBagSetFromOptions(PetscBag bag)
 {
   PetscErrorCode ierr;
   PetscBagItem   nitem = bag->bagitems;
@@ -476,7 +476,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscBagSetFromOptions(PetscBag bag)
            PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
+PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
 {
   PetscBool      isascii,isbinary;
   PetscErrorCode ierr;
@@ -571,7 +571,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
            PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag *bag)
+PetscErrorCode  PetscBagLoad(PetscViewer view,PetscBag *bag)
 {
   PetscErrorCode ierr;
   PetscBool      isbinary,skipoptions;

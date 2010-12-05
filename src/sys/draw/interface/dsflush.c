@@ -23,7 +23,7 @@
 .seealso: PetscDrawFlush()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSynchronizedFlush(PetscDraw draw)
+PetscErrorCode  PetscDrawSynchronizedFlush(PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

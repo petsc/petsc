@@ -172,7 +172,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_NN"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_NN(PC pc)
+PetscErrorCode  PCCreate_NN(PC pc)
 {
   PetscErrorCode ierr;
   PC_NN          *pcnn;

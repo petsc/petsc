@@ -30,7 +30,7 @@
 .seealso: ISDestroy(), ISView(), ISSum(), ISExpand()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISDifference(IS is1,IS is2,IS *isout)
+PetscErrorCode  ISDifference(IS is1,IS is2,IS *isout)
 {
   PetscErrorCode ierr;
   PetscInt       i,n1,n2,imin,imax,nout,*iout;
@@ -120,7 +120,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISDifference(IS is1,IS is2,IS *isout)
    Concepts: IS^union
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISSum(IS is1,IS is2,IS *is3)
+PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
 {
   MPI_Comm       comm;
   PetscBool      f;

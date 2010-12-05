@@ -340,7 +340,7 @@ PetscErrorCode ISSorted_General(IS is,PetscBool  *flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISToGeneral_General" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISToGeneral_General(IS is)
+PetscErrorCode  ISToGeneral_General(IS is)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -430,7 +430,7 @@ PetscErrorCode ISCreateGeneral_Private(IS is)
 
 .seealso: ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],PetscCopyMode mode,IS *is)
+PetscErrorCode  ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],PetscCopyMode mode,IS *is)
 {
   PetscErrorCode ierr;
 
@@ -461,7 +461,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneral(MPI_Comm comm,PetscInt n,const
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISGeneralSetIndices(IS is,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
+PetscErrorCode  ISGeneralSetIndices(IS is,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -472,7 +472,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGeneralSetIndices(IS is,PetscInt n,const Pet
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISGeneralSetIndices_General" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
+PetscErrorCode  ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
 {
   PetscErrorCode ierr;
   IS_General     *sub = (IS_General*)is->data;
@@ -506,7 +506,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISCreate_General" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_General(IS is)
+PetscErrorCode  ISCreate_General(IS is)
 {
   PetscErrorCode ierr;
   IS_General     *sub;

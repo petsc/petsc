@@ -632,7 +632,7 @@ EXTERN_C_END
 
  .seealso: MatNestGetSize(), MatNestGetSubMats()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatNestGetSubMat(Mat A,PetscInt idxm,PetscInt jdxm,Mat *sub)
+PetscErrorCode  MatNestGetSubMat(Mat A,PetscInt idxm,PetscInt jdxm,Mat *sub)
 {
   PetscErrorCode ierr;
 
@@ -678,7 +678,7 @@ EXTERN_C_END
 
  .seealso: MatNestGetSize(), MatNestGetSubMat()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatNestGetSubMats(Mat A,PetscInt *M,PetscInt *N,Mat ***mat)
+PetscErrorCode  MatNestGetSubMats(Mat A,PetscInt *M,PetscInt *N,Mat ***mat)
 {
   PetscErrorCode ierr;
 
@@ -690,7 +690,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNestGetSubMats(Mat A,PetscInt *M,PetscInt *
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatNestGetSize_Nest"
-PetscErrorCode PETSCMAT_DLLEXPORT MatNestGetSize_Nest(Mat A,PetscInt *M,PetscInt *N)
+PetscErrorCode  MatNestGetSize_Nest(Mat A,PetscInt *M,PetscInt *N)
 {
   Mat_Nest  *bA = (Mat_Nest*)A->data;
 
@@ -721,7 +721,7 @@ EXTERN_C_END
 
  .seealso: MatNestGetSubMat(), MatNestGetSubMats()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatNestGetSize(Mat A,PetscInt *M,PetscInt *N)
+PetscErrorCode  MatNestGetSize(Mat A,PetscInt *M,PetscInt *N)
 {
   PetscErrorCode ierr;
 
@@ -733,7 +733,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNestGetSize(Mat A,PetscInt *M,PetscInt *N)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatNestSetVecType_Nest"
-PetscErrorCode PETSCMAT_DLLEXPORT MatNestSetVecType_Nest(Mat A,const VecType vtype)
+PetscErrorCode  MatNestSetVecType_Nest(Mat A,const VecType vtype)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -763,7 +763,7 @@ EXTERN_C_END
 
  .seealso: MatGetVecs()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatNestSetVecType(Mat A,const VecType vtype)
+PetscErrorCode  MatNestSetVecType(Mat A,const VecType vtype)
 {
   PetscErrorCode ierr;
 
@@ -1091,7 +1091,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateNest"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscInt nc,const IS is_col[],const Mat a[],Mat *B)
+PetscErrorCode  MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscInt nc,const IS is_col[],const Mat a[],Mat *B)
 {
   Mat            A;
   Mat_Nest       *s;

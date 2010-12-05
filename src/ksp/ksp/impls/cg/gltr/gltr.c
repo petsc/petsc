@@ -28,7 +28,7 @@ static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 
 .keywords: KSP, GLTR, set, trust region radius
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius(KSP ksp, PetscReal radius)
+PetscErrorCode  KSPGLTRSetRadius(KSP ksp, PetscReal radius)
 {
   PetscErrorCode ierr;
 
@@ -55,7 +55,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius(KSP ksp, PetscReal radius)
 
 .keywords: KSP, GLTR, get, norm direction
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD(KSP ksp, PetscReal *norm_d)
+PetscErrorCode  KSPGLTRGetNormD(KSP ksp, PetscReal *norm_d)
 {
   PetscErrorCode ierr;
 
@@ -80,7 +80,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD(KSP ksp, PetscReal *norm_d)
 
 .keywords: KSP, GLTR, get, objective function
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn(KSP ksp, PetscReal *o_fcn)
+PetscErrorCode  KSPGLTRGetObjFcn(KSP ksp, PetscReal *o_fcn)
 {
   PetscErrorCode ierr;
 
@@ -105,7 +105,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn(KSP ksp, PetscReal *o_fcn)
 
 .keywords: KSP, GLTR, get, minimum eigenvalue
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
+PetscErrorCode  KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 {
   PetscErrorCode ierr;
 
@@ -130,7 +130,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 
 .keywords: KSP, GLTR, get, multiplier
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
+PetscErrorCode  KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
 {
   PetscErrorCode ierr;
 
@@ -1433,7 +1433,7 @@ PetscErrorCode KSPDestroy_GLTR(KSP ksp)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPGLTRSetRadius_GLTR"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius_GLTR(KSP ksp, PetscReal radius)
+PetscErrorCode  KSPGLTRSetRadius_GLTR(KSP ksp, PetscReal radius)
 {
   KSP_GLTR *cg = (KSP_GLTR *)ksp->data;
 
@@ -1444,7 +1444,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius_GLTR(KSP ksp, PetscReal radiu
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPGLTRGetNormD_GLTR"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD_GLTR(KSP ksp, PetscReal *norm_d)
+PetscErrorCode  KSPGLTRGetNormD_GLTR(KSP ksp, PetscReal *norm_d)
 {
   KSP_GLTR *cg = (KSP_GLTR *)ksp->data;
 
@@ -1455,7 +1455,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD_GLTR(KSP ksp, PetscReal *norm_
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPGLTRGetObjFcn_GLTR"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn_GLTR(KSP ksp, PetscReal *o_fcn)
+PetscErrorCode  KSPGLTRGetObjFcn_GLTR(KSP ksp, PetscReal *o_fcn)
 {
   KSP_GLTR *cg = (KSP_GLTR *)ksp->data;
 
@@ -1466,7 +1466,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn_GLTR(KSP ksp, PetscReal *o_fc
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPGLTRGetMinEig_GLTR"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig_GLTR(KSP ksp, PetscReal *e_min)
+PetscErrorCode  KSPGLTRGetMinEig_GLTR(KSP ksp, PetscReal *e_min)
 {
   KSP_GLTR *cg = (KSP_GLTR *)ksp->data;
 
@@ -1477,7 +1477,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig_GLTR(KSP ksp, PetscReal *e_mi
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPGLTRGetLambda_GLTR"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda)
+PetscErrorCode  KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda)
 {
   KSP_GLTR *cg = (KSP_GLTR *)ksp->data;
 
@@ -1554,7 +1554,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_GLTR"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GLTR(KSP ksp)
+PetscErrorCode  KSPCreate_GLTR(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_GLTR       *cg;

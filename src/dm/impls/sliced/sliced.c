@@ -18,7 +18,7 @@ typedef struct  {
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetMatrix_Sliced" 
-PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_Sliced(DM dm, const MatType mtype,Mat *J)
+PetscErrorCode  DMGetMatrix_Sliced(DM dm, const MatType mtype,Mat *J)
 {
   PetscErrorCode         ierr;
   PetscInt               *globals,*sd_nnz,*so_nnz,rstart,bs,i;
@@ -102,7 +102,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_Sliced(DM dm, const MatType mtype,M
 .seealso DMDestroy(), DMCreateGlobalVector(), DMSlicedGetGlobalIndices()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMSlicedSetGhosts(DM dm,PetscInt bs,PetscInt nlocal,PetscInt Nghosts,const PetscInt ghosts[])
+PetscErrorCode  DMSlicedSetGhosts(DM dm,PetscInt bs,PetscInt nlocal,PetscInt Nghosts,const PetscInt ghosts[])
 {
   PetscErrorCode ierr;
   DM_Sliced      *slice = (DM_Sliced*)dm->data;
@@ -148,7 +148,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSlicedSetGhosts(DM dm,PetscInt bs,PetscInt nl
          MatMPIBAIJSetPreallocation(), DMSlicedGetMatrix(), DMSlicedSetBlockFills()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMSlicedSetPreallocation(DM dm,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
+PetscErrorCode  DMSlicedSetPreallocation(DM dm,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   DM_Sliced *slice = (DM_Sliced*)dm->data;
 
@@ -209,7 +209,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs,const PetscInt *
 
 .seealso DMSlicedGetMatrix(), DMDASetBlockFills()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMSlicedSetBlockFills(DM dm,const PetscInt *dfill,const PetscInt *ofill)
+PetscErrorCode  DMSlicedSetBlockFills(DM dm,const PetscInt *dfill,const PetscInt *ofill)
 {
   DM_Sliced      *slice = (DM_Sliced*)dm->data;
   PetscErrorCode ierr;
@@ -225,7 +225,7 @@ extern PetscErrorCode DMDestroy_Private(DM,PetscBool *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDestroy_Sliced"
-PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_Sliced(DM dm)
+PetscErrorCode  DMDestroy_Sliced(DM dm)
 {
   PetscErrorCode ierr;
   PetscBool      done;
@@ -246,7 +246,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_Sliced(DM dm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreateGlobalVector_Sliced"
-PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_Sliced(DM dm,Vec *gvec)
+PetscErrorCode  DMCreateGlobalVector_Sliced(DM dm,Vec *gvec)
 {
   PetscErrorCode     ierr;
   PetscInt           bs,cnt;
@@ -277,7 +277,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_Sliced(DM dm,Vec *gvec)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreate_Sliced"
-PetscErrorCode PETSCDM_DLLEXPORT DMCreate_Sliced(DM p)
+PetscErrorCode  DMCreate_Sliced(DM p)
 {
   PetscErrorCode ierr;
   DM_Sliced      *slice;
@@ -312,7 +312,7 @@ EXTERN_C_END
 .seealso DMDestroy(), DMCreateGlobalVector(), DMSlicedGetGlobalIndices()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMSlicedCreate(MPI_Comm comm,DM *dm)
+PetscErrorCode  DMSlicedCreate(MPI_Comm comm,DM *dm)
 {
   PetscErrorCode ierr;
 
@@ -345,7 +345,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSlicedCreate(MPI_Comm comm,DM *dm)
 .seealso DMSlicedDestroy(), DMSlicedCreateGlobalVector(), DMSlicedCreate()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMSlicedGetGlobalIndices(DM dm,PetscInt *idx[])
+PetscErrorCode  DMSlicedGetGlobalIndices(DM dm,PetscInt *idx[])
 {
   PetscFunctionReturn(0);
 }

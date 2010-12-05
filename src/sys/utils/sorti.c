@@ -67,7 +67,7 @@ static void PetscSortInt_Private(PetscInt *v,PetscInt right)
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSortInt(PetscInt n,PetscInt i[])
+PetscErrorCode  PetscSortInt(PetscInt n,PetscInt i[])
 {
   PetscInt       j,k,tmp,ik;
 
@@ -108,7 +108,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortInt(PetscInt n,PetscInt i[])
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSortRemoveDupsInt(PetscInt *n,PetscInt ii[])
+PetscErrorCode  PetscSortRemoveDupsInt(PetscInt *n,PetscInt ii[])
 {
   PetscErrorCode ierr;
   PetscInt       i,s = 0,N = *n, b = 0;
@@ -177,7 +177,7 @@ static PetscErrorCode PetscSortIntWithArray_Private(PetscInt *v,PetscInt *V,Pets
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSortIntWithArray(PetscInt n,PetscInt i[],PetscInt Ii[])
+PetscErrorCode  PetscSortIntWithArray(PetscInt n,PetscInt i[],PetscInt Ii[])
 {
   PetscErrorCode ierr;
   PetscInt       j,k,tmp,ik;
@@ -249,7 +249,7 @@ static PetscErrorCode PetscSortMPIIntWithArray_Private(PetscMPIInt *v,PetscMPIIn
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSortMPIIntWithArray(PetscMPIInt n,PetscMPIInt i[],PetscMPIInt Ii[])
+PetscErrorCode  PetscSortMPIIntWithArray(PetscMPIInt n,PetscMPIInt i[],PetscMPIInt Ii[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    j,k,tmp,ik;
@@ -323,7 +323,7 @@ static PetscErrorCode PetscSortIntWithScalarArray_Private(PetscInt *v,PetscScala
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar Ii[])
+PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar Ii[])
 {
   PetscErrorCode ierr;
   PetscInt       j,k,tmp,ik;
@@ -371,7 +371,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortIntWithScalarArray(PetscInt n,PetscIn
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscProcessTree(PetscInt n,const PetscBool  mask[],const PetscInt parentid[],PetscInt *Nlevels,PetscInt **Level,PetscInt **Levelcnt,PetscInt **Idbylevel,PetscInt **Column)
+PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool  mask[],const PetscInt parentid[],PetscInt *Nlevels,PetscInt **Level,PetscInt **Levelcnt,PetscInt **Idbylevel,PetscInt **Column)
 {
   PetscInt       i,j,cnt,nmask = 0,nlevels = 0,*level,*levelcnt,levelmax = 0,*workid,*workparentid,tcnt = 0,*idbylevel,*column;
   PetscErrorCode ierr;

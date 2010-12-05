@@ -32,7 +32,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_None"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_None(PC pc)
+PetscErrorCode  PCCreate_None(PC pc)
 {
   PetscFunctionBegin;
   pc->ops->apply               = PCApply_None;

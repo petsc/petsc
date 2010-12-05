@@ -155,7 +155,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_CGS"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CGS(KSP ksp)
+PetscErrorCode  KSPCreate_CGS(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                      = (void*)0;

@@ -13,7 +13,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomSeed_Sprng"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomSeed_Sprng(PetscRandom r)
+PetscErrorCode  PetscRandomSeed_Sprng(PetscRandom r)
 {
   PetscFunctionBegin;
   init_sprng(r->seed,SPRNG_DEFAULT);
@@ -22,7 +22,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomSeed_Sprng(PetscRandom r)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValue_Sprng"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomGetValue_Sprng(PetscRandom r,PetscScalar *val)
+PetscErrorCode  PetscRandomGetValue_Sprng(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)  
@@ -41,7 +41,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomGetValue_Sprng(PetscRandom r,PetscS
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValue_Sprng"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomGetValueReal_Sprng(PetscRandom r,PetscScalar *val)
+PetscErrorCode  PetscRandomGetValueReal_Sprng(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
@@ -84,7 +84,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate_Sprng" 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomCreate_Sprng(PetscRandom r)
+PetscErrorCode  PetscRandomCreate_Sprng(PetscRandom r)
 {
   PetscErrorCode ierr;
 

@@ -7,11 +7,11 @@
 typedef struct _PetscRandomOps *PetscRandomOps;
 struct _PetscRandomOps {
   /* 0 */
-  PetscErrorCode PETSCSYS_DLLEXPORT (*seed)(PetscRandom);
-  PetscErrorCode PETSCSYS_DLLEXPORT (*getvalue)(PetscRandom,PetscScalar*);
-  PetscErrorCode PETSCSYS_DLLEXPORT (*getvaluereal)(PetscRandom,PetscReal*);
-  PetscErrorCode PETSCSYS_DLLEXPORT (*destroy)(PetscRandom);
-  PetscErrorCode PETSCSYS_DLLEXPORT (*setfromoptions)(PetscRandom);
+  PetscErrorCode  (*seed)(PetscRandom);
+  PetscErrorCode  (*getvalue)(PetscRandom,PetscScalar*);
+  PetscErrorCode  (*getvaluereal)(PetscRandom,PetscReal*);
+  PetscErrorCode  (*destroy)(PetscRandom);
+  PetscErrorCode  (*setfromoptions)(PetscRandom);
 };
 
 struct _p_PetscRandom {

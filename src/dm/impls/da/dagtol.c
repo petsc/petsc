@@ -8,7 +8,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGlobalToLocalBegin_DA"
-PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalBegin_DA(DM da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode  DMGlobalToLocalBegin_DA(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -24,7 +24,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalBegin_DA(DM da,Vec g,InsertMode 
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGlobalToLocalEnd_DA"
-PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd_DA(DM da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode  DMGlobalToLocalEnd_DA(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -39,7 +39,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd_DA(DM da,Vec g,InsertMode mo
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMLocalToGlobalBegin_DA"
-PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalBegin_DA(DM da,Vec l,InsertMode mode,Vec g)
+PetscErrorCode  DMLocalToGlobalBegin_DA(DM da,Vec l,InsertMode mode,Vec g)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -58,7 +58,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalBegin_DA(DM da,Vec l,InsertMode 
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMLocalToGlobalEnd_DA"
-PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalEnd_DA(DM da,Vec l,InsertMode mode,Vec g)
+PetscErrorCode  DMLocalToGlobalEnd_DA(DM da,Vec l,InsertMode mode,Vec g)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -159,7 +159,7 @@ PetscErrorCode DMDAGlobalToNatural_Create(DM da)
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAGlobalToNaturalBegin(DM da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode  DMDAGlobalToNaturalBegin(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -206,7 +206,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAGlobalToNaturalBegin(DM da,Vec g,InsertMode
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAGlobalToNaturalEnd(DM da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode  DMDAGlobalToNaturalEnd(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -250,7 +250,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAGlobalToNaturalEnd(DM da,Vec g,InsertMode m
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDANaturalToGlobalBegin(DM da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode  DMDANaturalToGlobalBegin(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -297,7 +297,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDANaturalToGlobalBegin(DM da,Vec g,InsertMode
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDANaturalToGlobalEnd(DM da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode  DMDANaturalToGlobalEnd(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;

@@ -551,7 +551,7 @@ EXTERN_C_BEGIN
 /* I am assuming this is Extern 'C' because it is dynamically loaded.  If not, we can remove the DLLEXPORT tag */
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_Draw"
-PetscErrorCode PETSCVEC_DLLEXPORT VecView_MPI_Draw(Vec xin,PetscViewer viewer)
+PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscMPIInt       rank,size,tag = ((PetscObject)viewer)->tag;

@@ -17,7 +17,7 @@ static PetscBool  PetscRandomPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomFinalizePackage(void)
+PetscErrorCode  PetscRandomFinalizePackage(void)
 {
   PetscFunctionBegin;
   PetscRandomPackageInitialized = PETSC_FALSE;
@@ -41,7 +41,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomFinalizePackage(void)
 .keywords: PetscRandom, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomInitializePackage(const char path[])
+PetscErrorCode  PetscRandomInitializePackage(const char path[])
 {
   PetscErrorCode    ierr;
 

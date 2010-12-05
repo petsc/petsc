@@ -21,7 +21,7 @@ PetscClassId DRAWLG_CLASSID = 0;
    Level: advanced
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGGetAxis(PetscDrawLG lg,PetscDrawAxis *axis)
+PetscErrorCode  PetscDrawLGGetAxis(PetscDrawLG lg,PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) {
@@ -50,7 +50,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGGetAxis(PetscDrawLG lg,PetscDrawAxi
    Level: intermediate
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGGetDraw(PetscDrawLG lg,PetscDraw *draw)
+PetscErrorCode  PetscDrawLGGetDraw(PetscDrawLG lg,PetscDraw *draw)
 {
   PetscFunctionBegin;
   PetscValidHeader(lg,1);
@@ -82,7 +82,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGGetDraw(PetscDrawLG lg,PetscDraw *d
    Developer Notes: This code cheats and uses the fact that the LG and SP structs are the same
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
+PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
 {
   PetscDrawLG    sp = (PetscDrawLG)spin;
   PetscReal      xmin,xmax,ymin,ymax;
@@ -152,7 +152,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP s
 
 .seealso:  PetscDrawLGDestroy()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGCreate(PetscDraw draw,int dim,PetscDrawLG *outctx)
+PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,int dim,PetscDrawLG *outctx)
 {
   PetscErrorCode ierr;
   PetscBool      isnull;
@@ -204,7 +204,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGCreate(PetscDraw draw,int dim,Petsc
    Concepts: line graph^setting number of lines
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
+PetscErrorCode  PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
 {
   PetscErrorCode ierr;
 
@@ -237,7 +237,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGSetDimension(PetscDrawLG lg,PetscIn
    Concepts: line graph^restarting
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGReset(PetscDrawLG lg)
+PetscErrorCode  PetscDrawLGReset(PetscDrawLG lg)
 {
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
@@ -265,7 +265,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGReset(PetscDrawLG lg)
 
 .seealso:  PetscDrawLGCreate()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGDestroy(PetscDrawLG lg)
+PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG lg)
 {
   PetscErrorCode ierr;
 
@@ -299,7 +299,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGDestroy(PetscDrawLG lg)
    Concepts: line graph^showing points
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGIndicateDataPoints(PetscDrawLG lg)
+PetscErrorCode  PetscDrawLGIndicateDataPoints(PetscDrawLG lg)
 {
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
@@ -323,7 +323,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGIndicateDataPoints(PetscDrawLG lg)
 .seealso: PetscDrawSPDraw(), PetscDrawLGSPDraw()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGDraw(PetscDrawLG lg)
+PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
 {
   PetscReal      xmin=lg->xmin,xmax=lg->xmax,ymin=lg->ymin,ymax=lg->ymax;
   PetscErrorCode ierr;
@@ -371,7 +371,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGDraw(PetscDrawLG lg)
 
 .keywords:  draw, line, graph
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawLGPrint(PetscDrawLG lg)
+PetscErrorCode  PetscDrawLGPrint(PetscDrawLG lg)
 {
   PetscReal xmin=lg->xmin, xmax=lg->xmax, ymin=lg->ymin, ymax=lg->ymax;
   int       i, j, dim = lg->dim, nopts = lg->nopts;

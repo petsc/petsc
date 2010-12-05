@@ -24,7 +24,7 @@
 .seealso: DMDASetCoordinates(), DMDAGetCoordinates(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
+PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
 {
   MPI_Comm         comm;
   DM               cda;

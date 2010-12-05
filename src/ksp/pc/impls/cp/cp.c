@@ -181,7 +181,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_CP"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_CP(PC pc)
+PetscErrorCode  PCCreate_CP(PC pc)
 {
   PC_CP          *cp;
   PetscErrorCode ierr;

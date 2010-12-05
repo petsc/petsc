@@ -2,12 +2,12 @@
 #include "petscpf.h"          /*I   "petscpf.h"   I*/
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Constant(PF,void*);
-extern PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_String(PF,void*);
-extern PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Quick(PF,void*);
-extern PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Identity(PF,void*);
+extern PetscErrorCode  PFCreate_Constant(PF,void*);
+extern PetscErrorCode  PFCreate_String(PF,void*);
+extern PetscErrorCode  PFCreate_Quick(PF,void*);
+extern PetscErrorCode  PFCreate_Identity(PF,void*);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-extern PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Matlab(PF,void*);
+extern PetscErrorCode  PFCreate_Matlab(PF,void*);
 #endif
 EXTERN_C_END
 
@@ -27,7 +27,7 @@ EXTERN_C_END
 
 .seealso: PFRegisterDynamic(), PFRegisterDestroy()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFRegisterAll(const char path[])
+PetscErrorCode  PFRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 

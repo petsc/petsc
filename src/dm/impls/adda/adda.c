@@ -10,7 +10,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDestroy_ADDA"
-PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_ADDA(DM dm)
+PetscErrorCode  DMDestroy_ADDA(DM dm)
 {
   PetscErrorCode ierr;
   DM_ADDA        *dd = (DM_ADDA*)dm->data;
@@ -39,7 +39,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_ADDA(DM dm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMView_ADDA"
-PetscErrorCode PETSCDM_DLLEXPORT DMView_ADDA(DM dm, PetscViewer v) 
+PetscErrorCode  DMView_ADDA(DM dm, PetscViewer v) 
 {
   PetscFunctionBegin;
   SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP, "Not implemented yet");
@@ -48,7 +48,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMView_ADDA(DM dm, PetscViewer v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreateGlobalVector_ADDA"
-PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_ADDA(DM dm, Vec *vec) 
+PetscErrorCode  DMCreateGlobalVector_ADDA(DM dm, Vec *vec) 
 {
   PetscErrorCode ierr;
   DM_ADDA        *dd = (DM_ADDA*)dm->data;
@@ -62,7 +62,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_ADDA(DM dm, Vec *vec)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetColoring_ADDA"
-PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring_ADDA(DM dm, ISColoringType ctype,const MatType mtype,ISColoring *coloring) 
+PetscErrorCode  DMGetColoring_ADDA(DM dm, ISColoringType ctype,const MatType mtype,ISColoring *coloring) 
 {
   PetscFunctionBegin;
   SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP, "Not implemented yet");
@@ -71,7 +71,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring_ADDA(DM dm, ISColoringType ctype,
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetMatrix_ADDA"
-PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_ADDA(DM dm, const MatType mtype, Mat *mat) 
+PetscErrorCode  DMGetMatrix_ADDA(DM dm, const MatType mtype, Mat *mat) 
 {
   PetscErrorCode ierr;
   DM_ADDA        *dd = (DM_ADDA*)dm->data;
@@ -106,7 +106,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_ADDA(DM dm, const MatType mtype, Ma
 
 .seealso: DMGetMatrix()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMADDAGetMatrixNS(DM dm, DM dmc, const MatType mtype, Mat *mat) 
+PetscErrorCode  DMADDAGetMatrixNS(DM dm, DM dmc, const MatType mtype, Mat *mat) 
 {
   PetscErrorCode ierr;
   DM_ADDA        *dd = (DM_ADDA*)dm->data;
@@ -124,7 +124,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMADDAGetMatrixNS(DM dm, DM dmc, const MatType 
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetInterpolation_ADDA"
-PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation_ADDA(DM dm1,DM dm2,Mat *mat,Vec *vec) 
+PetscErrorCode  DMGetInterpolation_ADDA(DM dm1,DM dm2,Mat *mat,Vec *vec) 
 {
   PetscFunctionBegin;
   SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_SUP, "Not implemented yet");
@@ -133,7 +133,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation_ADDA(DM dm1,DM dm2,Mat *mat,
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMRefine_ADDA"
-PetscErrorCode PETSCDM_DLLEXPORT DMRefine_ADDA(DM dm, MPI_Comm comm, DM *dmf) 
+PetscErrorCode  DMRefine_ADDA(DM dm, MPI_Comm comm, DM *dmf) 
 {
   PetscFunctionBegin;
   SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP, "Not implemented yet");
@@ -142,7 +142,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefine_ADDA(DM dm, MPI_Comm comm, DM *dmf)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCoarsen_ADDA"
-PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen_ADDA(DM dm, MPI_Comm comm,DM *dmc)
+PetscErrorCode  DMCoarsen_ADDA(DM dm, MPI_Comm comm,DM *dmc)
 {
   PetscErrorCode ierr;
   PetscInt       *nodesc;
@@ -167,7 +167,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen_ADDA(DM dm, MPI_Comm comm,DM *dmc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetInjection_ADDA"
-PetscErrorCode PETSCDM_DLLEXPORT DMGetInjection_ADDA(DM dm1,DM dm2, VecScatter *ctx)
+PetscErrorCode  DMGetInjection_ADDA(DM dm1,DM dm2, VecScatter *ctx)
 {
   PetscFunctionBegin;
   SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_SUP, "Not implemented yet");
@@ -249,7 +249,7 @@ PetscBool  ADDAHCiter(const PetscInt dim, const PetscInt *const lc, const PetscI
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetAggregates_ADDA"
-PetscErrorCode PETSCDM_DLLEXPORT DMGetAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
+PetscErrorCode  DMGetAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
 {
   PetscErrorCode ierr=0;
   PetscInt       i;
@@ -386,7 +386,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
 
 .keywords: distributed array, refinement
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMADDASetRefinement(DM dm, PetscInt *refine, PetscInt dofrefine) 
+PetscErrorCode  DMADDASetRefinement(DM dm, PetscInt *refine, PetscInt dofrefine) 
 {
   DM_ADDA        *dd = (DM_ADDA*)dm->data;
   PetscErrorCode ierr;
@@ -420,7 +420,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMADDASetRefinement(DM dm, PetscInt *refine, Pe
 
 .keywords: distributed array, refinement
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMADDAGetCorners(DM dm, PetscInt **lcorner, PetscInt **ucorner) 
+PetscErrorCode  DMADDAGetCorners(DM dm, PetscInt **lcorner, PetscInt **ucorner) 
 {
   DM_ADDA        *dd = (DM_ADDA*)dm->data;
   PetscErrorCode ierr;
@@ -457,7 +457,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMADDAGetCorners(DM dm, PetscInt **lcorner, Pet
 
 .keywords: distributed array, refinement
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMADDAGetGhostCorners(DM dm, PetscInt **lcorner, PetscInt **ucorner) 
+PetscErrorCode  DMADDAGetGhostCorners(DM dm, PetscInt **lcorner, PetscInt **ucorner) 
 {
   DM_ADDA        *dd = (DM_ADDA*)dm->data;
   PetscErrorCode ierr;
@@ -517,7 +517,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMADDAGetGhostCorners(DM dm, PetscInt **lcorner
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), ADDAMatSetValuesBlocked(),
           InsertMode, INSERT_VALUES, ADD_VALUES
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx idxm[],DM dmn, PetscInt n, const ADDAIdx idxn[],
+PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx idxm[],DM dmn, PetscInt n, const ADDAIdx idxn[],
 						  const PetscScalar v[], InsertMode addv) 
 {
   DM_ADDA        *ddm = (DM_ADDA*)dmm->data;
@@ -611,7 +611,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m,
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMADDASetParameters"
-PetscErrorCode PETSCDM_DLLEXPORT DMADDASetParameters(DM dm,PetscInt dim, PetscInt *nodes,PetscInt *procs,PetscInt dof,PetscBool *periodic)
+PetscErrorCode  DMADDASetParameters(DM dm,PetscInt dim, PetscInt *nodes,PetscInt *procs,PetscInt dof,PetscBool *periodic)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -671,7 +671,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMADDASetParameters(DM dm,PetscInt dim, PetscIn
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMSetUp_ADDA"
-PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_ADDA(DM dm)
+PetscErrorCode  DMSetUp_ADDA(DM dm)
 {
   PetscErrorCode ierr;
   PetscInt       s=1; /* stencil width, fixed to 1 at the moment */
@@ -772,7 +772,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_ADDA(DM dm)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreate_ADDA"
-PetscErrorCode PETSCDM_DLLEXPORT DMCreate_ADDA(DM dm)
+PetscErrorCode  DMCreate_ADDA(DM dm)
 {
   PetscErrorCode ierr;
   DM_ADDA        *dd;
@@ -821,7 +821,7 @@ EXTERN_C_END
   Level: intermediate
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMADDACreate(MPI_Comm comm, PetscInt dim, PetscInt *nodes,PetscInt *procs,PetscInt dof, PetscBool  *periodic,DM *dm_p)
+PetscErrorCode  DMADDACreate(MPI_Comm comm, PetscInt dim, PetscInt *nodes,PetscInt *procs,PetscInt dof, PetscBool  *periodic,DM *dm_p)
 {
   PetscErrorCode ierr;
   

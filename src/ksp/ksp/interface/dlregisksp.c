@@ -21,7 +21,7 @@ static PetscBool  PCPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFinalizePackage(void)
+PetscErrorCode  PCFinalizePackage(void)
 {
   PetscFunctionBegin;
   PCPackageInitialized = PETSC_FALSE;
@@ -45,7 +45,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFinalizePackage(void)
 .keywords: PC, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCInitializePackage(const char path[]) 
+PetscErrorCode  PCInitializePackage(const char path[]) 
 {
   char              logList[256];
   char             *className;
@@ -112,7 +112,7 @@ static PetscBool  KSPPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPFinalizePackage(void)
+PetscErrorCode  KSPFinalizePackage(void)
 {
   PetscFunctionBegin;
   KSPPackageInitialized = PETSC_FALSE;
@@ -136,7 +136,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFinalizePackage(void)
 .keywords: KSP, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPInitializePackage(const char path[]) 
+PetscErrorCode  KSPInitializePackage(const char path[]) 
 {
   char              logList[256];
   char              *className;
@@ -187,7 +187,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PETSCKSP_DLLEXPORT PetscDLLibraryRegister_petscksp(const char path[])
+PetscErrorCode  PetscDLLibraryRegister_petscksp(const char path[])
 {
   PetscErrorCode ierr;
 

@@ -102,8 +102,8 @@ typedef struct {
 */
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec,PetscViewer);
-extern PetscErrorCode PETSCDM_DLLEXPORT VecLoad_Default_DA(Vec, PetscViewer);
+extern PetscErrorCode  VecView_MPI_DA(Vec,PetscViewer);
+extern PetscErrorCode  VecLoad_Default_DA(Vec, PetscViewer);
 EXTERN_C_END
 extern PetscErrorCode DMView_DA_Private(DM);
 extern PetscErrorCode DMView_DA_Matlab(DM,PetscViewer);

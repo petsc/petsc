@@ -621,7 +621,7 @@ typedef PetscErrorCode (*FCN2)(void*);
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFGMRESSetModifyPC_FGMRES" 
-PetscErrorCode PETSCKSP_DLLEXPORT KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,void *ctx,FCN2 d)
+PetscErrorCode  KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,void *ctx,FCN2 d)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -633,11 +633,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,v
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetPreAllocateVectors_GMRES(KSP);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart_GMRES(KSP,PetscInt);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetRestart_GMRES(KSP,PetscInt*);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,PetscInt));
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetOrthogonalization_GMRES(KSP,PetscErrorCode (**)(KSP,PetscInt));
+extern PetscErrorCode  KSPGMRESSetPreAllocateVectors_GMRES(KSP);
+extern PetscErrorCode  KSPGMRESSetRestart_GMRES(KSP,PetscInt);
+extern PetscErrorCode  KSPGMRESGetRestart_GMRES(KSP,PetscInt*);
+extern PetscErrorCode  KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,PetscInt));
+extern PetscErrorCode  KSPGMRESGetOrthogonalization_GMRES(KSP,PetscErrorCode (**)(KSP,PetscInt));
 EXTERN_C_END
 
 extern PetscErrorCode KSPDestroy_GMRES_Internal(KSP);
@@ -662,7 +662,7 @@ PetscErrorCode KSPDestroy_FGMRES_Internal(KSP ksp)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESSetRestart_FGMRES" 
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart_FGMRES(KSP ksp,PetscInt max_k)
+PetscErrorCode  KSPGMRESSetRestart_FGMRES(KSP ksp,PetscInt max_k)
 {
   KSP_FGMRES     *gmres = (KSP_FGMRES *)ksp->data;
   PetscErrorCode ierr;
@@ -684,7 +684,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESGetRestart_FGMRES" 
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetRestart_FGMRES(KSP ksp,PetscInt *max_k)
+PetscErrorCode  KSPGMRESGetRestart_FGMRES(KSP ksp,PetscInt *max_k)
 {
   KSP_FGMRES     *gmres = (KSP_FGMRES *)ksp->data;
 
@@ -695,8 +695,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetRestart_FGMRES(KSP ksp,PetscInt *ma
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType*);
+extern PetscErrorCode  KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
+extern PetscErrorCode  KSPGMRESGetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType*);
 EXTERN_C_END
 
 /*MC
@@ -738,7 +738,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_FGMRES"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_FGMRES(KSP ksp)
+PetscErrorCode  KSPCreate_FGMRES(KSP ksp)
 {
   KSP_FGMRES     *fgmres;
   PetscErrorCode ierr;

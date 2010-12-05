@@ -39,8 +39,8 @@ typedef struct {
   PetscReal  refinementLimit;    // The maximum volume of a cell after refinement
 } Options;
 
-extern PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(const Obj<ALE::Mesh>&, PetscViewer);
-extern PetscErrorCode PETSCDM_DLLEXPORT FieldView_Sieve(const Obj<ALE::Mesh>&, const std::string&, PetscViewer);
+extern PetscErrorCode  MeshView_Sieve(const Obj<ALE::Mesh>&, PetscViewer);
+extern PetscErrorCode  FieldView_Sieve(const Obj<ALE::Mesh>&, const std::string&, PetscViewer);
 PetscErrorCode ProcessOptions(MPI_Comm, Options *);
 PetscErrorCode CreateMeshBoundary(MPI_Comm, Mesh*, Options *);
 PetscErrorCode CreateMesh(Mesh, Mesh*, Options *);

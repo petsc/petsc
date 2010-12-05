@@ -38,7 +38,7 @@ EXTERN_C_END
     from an error handler. 
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscGetDate(char date[],size_t len)
+PetscErrorCode  PetscGetDate(char date[],size_t len)
 {
   char           *str=PETSC_NULL;
 #if defined(PETSC_HAVE_TIME)

@@ -69,7 +69,7 @@
    Concepts: memory usage
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
+PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 {
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
   FILE                   *file;
@@ -179,7 +179,7 @@ PetscLogDouble PetscMemoryMaximumUsage = 0;
    Concepts: memory usage
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
+PetscErrorCode  PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
 {
   PetscFunctionBegin;
   if (!PetscMemoryCollectMaximumUsage) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"To use this function you must first call PetscMemorySetGetMaximumUsage()");
@@ -208,7 +208,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscMemoryGetMaximumUsage(PetscLogDouble *mem
    Concepts: memory usage
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscMemorySetGetMaximumUsage(void)
+PetscErrorCode  PetscMemorySetGetMaximumUsage(void)
 {
   PetscFunctionBegin;
   PetscMemoryCollectMaximumUsage = PETSC_TRUE;

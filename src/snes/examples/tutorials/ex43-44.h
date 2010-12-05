@@ -137,12 +137,12 @@ PetscErrorCode SolveSubproblem(SNES snes)
 }
 
 
-extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRange_Private(SNES,PetscInt,PetscReal*);
+extern PetscErrorCode  SNESMonitorRange_Private(SNES,PetscInt,PetscReal*);
 static PetscInt CountGood = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MonitorRange"
-PetscErrorCode PETSCSNES_DLLEXPORT MonitorRange(SNES snes,PetscInt it,PetscReal rnorm,void *dummy)
+PetscErrorCode  MonitorRange(SNES snes,PetscInt it,PetscReal rnorm,void *dummy)
 {
   PetscErrorCode          ierr;
   PetscReal               perc;

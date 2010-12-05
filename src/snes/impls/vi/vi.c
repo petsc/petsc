@@ -5,7 +5,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESMonitorVI"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode          ierr;
   SNES_VI                 *vi = (SNES_VI*)snes->data;
@@ -1791,7 +1791,7 @@ typedef PetscErrorCode (*FCN2)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscRea
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESLineSearchSet_VI"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSet_VI(SNES snes,FCN2 func,void *lsctx)
+PetscErrorCode  SNESLineSearchSet_VI(SNES snes,FCN2 func,void *lsctx)
 {
   PetscFunctionBegin;
   ((SNES_VI *)(snes->data))->LineSearch = func;
@@ -1804,7 +1804,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESLineSearchSetMonitor_VI"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetMonitor_VI(SNES snes,PetscBool flg)
+PetscErrorCode  SNESLineSearchSetMonitor_VI(SNES snes,PetscBool flg)
 {
   SNES_VI        *vi = (SNES_VI*)snes->data;
   PetscErrorCode ierr;
@@ -1982,7 +1982,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESCreate_VI"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_VI(SNES snes)
+PetscErrorCode  SNESCreate_VI(SNES snes)
 {
   PetscErrorCode ierr;
   SNES_VI      *vi;

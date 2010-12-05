@@ -11,7 +11,7 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorReorderForNonzeroDiagonal_LU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorReorderForNonzeroDiagonal_LU(PC pc,PetscReal z)
+PetscErrorCode  PCFactorReorderForNonzeroDiagonal_LU(PC pc,PetscReal z)
 {
   PC_LU *lu = (PC_LU*)pc->data;
 
@@ -29,7 +29,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetReuseOrdering_LU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering_LU(PC pc,PetscBool  flag)
+PetscErrorCode  PCFactorSetReuseOrdering_LU(PC pc,PetscBool  flag)
 {
   PC_LU *lu = (PC_LU*)pc->data;
 
@@ -42,7 +42,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetReuseFill_LU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill_LU(PC pc,PetscBool  flag)
+PetscErrorCode  PCFactorSetReuseFill_LU(PC pc,PetscBool  flag)
 {
   PC_LU *lu = (PC_LU*)pc->data;
 
@@ -210,7 +210,7 @@ static PetscErrorCode PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetUseInPlace_LU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseInPlace_LU(PC pc)
+PetscErrorCode  PCFactorSetUseInPlace_LU(PC pc)
 {
   PC_LU *dir = (PC_LU*)pc->data;
 
@@ -261,7 +261,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_LU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
+PetscErrorCode  PCCreate_LU(PC pc)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

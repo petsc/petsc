@@ -26,7 +26,7 @@
 
 .seealso:  PetscMallocDump()
  @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscMPIDump(FILE *fd)
+PetscErrorCode  PetscMPIDump(FILE *fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -63,7 +63,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscMPIDump(FILE *fd)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMPIDump"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscMPIDump(FILE *fd)
+PetscErrorCode  PetscMPIDump(FILE *fd)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

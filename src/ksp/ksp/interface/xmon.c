@@ -32,7 +32,7 @@
 
 .seealso: KSPMonitorLGDestroy(), KSPMonitorSet(), KSPMonitorLGTrueResidualCreate()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
+PetscErrorCode  KSPMonitorLGCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
 {
   PetscDraw      win;
   PetscErrorCode ierr;
@@ -47,7 +47,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGCreate(const char host[],const cha
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPMonitorLG"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLG(KSP ksp,PetscInt n,PetscReal rnorm,void *monctx)
+PetscErrorCode  KSPMonitorLG(KSP ksp,PetscInt n,PetscReal rnorm,void *monctx)
 {
   PetscDrawLG    lg = (PetscDrawLG)monctx;
   PetscErrorCode ierr;
@@ -90,7 +90,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLG(KSP ksp,PetscInt n,PetscReal rnor
 
 .seealso: KSPMonitorLGCreate(), KSPMonitorLGTrueResidualDestroy(), KSPMonitorSet()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGDestroy(PetscDrawLG drawlg)
+PetscErrorCode  KSPMonitorLGDestroy(PetscDrawLG drawlg)
 {
   PetscDraw      draw;
   PetscErrorCode ierr;
@@ -132,7 +132,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGDestroy(PetscDrawLG drawlg)
 
 .seealso: KSPMonitorLGDestroy(), KSPMonitorSet(), KSPMonitorLGTrueResidualCreate()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGRangeCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
+PetscErrorCode  KSPMonitorLGRangeCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
 {
   PetscDraw      win;
   PetscErrorCode ierr;
@@ -145,10 +145,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGRangeCreate(const char host[],cons
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorRange_Private(KSP,PetscInt,PetscReal*);
+extern PetscErrorCode  KSPMonitorRange_Private(KSP,PetscInt,PetscReal*);
 #undef __FUNCT__  
 #define __FUNCT__ "KSPMonitorLGRange"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGRange(KSP ksp,PetscInt n,PetscReal rnorm,void *monctx)
+PetscErrorCode  KSPMonitorLGRange(KSP ksp,PetscInt n,PetscReal rnorm,void *monctx)
 {
   PetscDrawLG      lg;
   PetscErrorCode   ierr;
@@ -233,7 +233,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGRange(KSP ksp,PetscInt n,PetscReal
 
 .seealso: KSPMonitorLGCreate(), KSPMonitorLGTrueResidualDestroy(), KSPMonitorSet()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGRangeDestroy(PetscDrawLG drawlg)
+PetscErrorCode  KSPMonitorLGRangeDestroy(PetscDrawLG drawlg)
 {
   PetscDraw      draw;
   PetscErrorCode ierr;
@@ -277,7 +277,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGRangeDestroy(PetscDrawLG drawlg)
 
 .seealso: KSPMonitorLGDestroy(), KSPMonitorSet(), KSPMonitorDefault()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGTrueResidualNormCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
+PetscErrorCode  KSPMonitorLGTrueResidualNormCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
 {
   PetscDraw      win;
   PetscErrorCode ierr;
@@ -296,7 +296,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGTrueResidualNormCreate(MPI_Comm co
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPMonitorLGTrueResidualNorm"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,void *monctx)
+PetscErrorCode  KSPMonitorLGTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,void *monctx)
 {
   PetscDrawLG    lg = (PetscDrawLG) monctx;
   PetscReal      x[2],y[2],scnorm;
@@ -353,7 +353,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGTrueResidualNorm(KSP ksp,PetscInt 
 
 .seealso: KSPMonitorLGTrueResidualNormCreate(), KSPMonitorSet()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGTrueResidualNormDestroy(PetscDrawLG drawlg)
+PetscErrorCode  KSPMonitorLGTrueResidualNormDestroy(PetscDrawLG drawlg)
 {
   PetscErrorCode ierr;
   PetscDraw      draw;

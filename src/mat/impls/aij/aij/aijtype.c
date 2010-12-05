@@ -25,7 +25,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_AIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJ(Mat A) 
+PetscErrorCode  MatCreate_AIJ(Mat A) 
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -61,7 +61,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_AIJCRL"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJCRL(Mat A) 
+PetscErrorCode  MatCreate_AIJCRL(Mat A) 
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

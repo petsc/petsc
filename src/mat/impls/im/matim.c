@@ -5,7 +5,7 @@
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatIMSetIS"
-PetscErrorCode PETSCMAT_DLLEXPORT MatIMSetIS(Mat A, IS in, IS out) {
+PetscErrorCode  MatIMSetIS(Mat A, IS in, IS out) {
   PetscErrorCode        ierr;
   Mat_IM*               im = (Mat_IM*)A->data;
   PetscMPIInt           flag;
@@ -72,7 +72,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIMSetIS(Mat A, IS in, IS out) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatIMGetIS"
-PetscErrorCode PETSCMAT_DLLEXPORT MatIMGetIS(Mat A, IS *_in, IS *_out) {
+PetscErrorCode  MatIMGetIS(Mat A, IS *_in, IS *_out) {
   PetscErrorCode ierr;
   Mat_IM*               im = (Mat_IM*)A->data;
   PetscFunctionBegin;
@@ -92,7 +92,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIMGetIS(Mat A, IS *_in, IS *_out) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIMSetUpPreallocation"
-PetscErrorCode PETSCMAT_DLLEXPORT MatIMSetUpPreallocation(Mat A) 
+PetscErrorCode  MatIMSetUpPreallocation(Mat A) 
 {
   PetscErrorCode ierr;
   Mat_IM   *im = (Mat_IM*)A->data;
@@ -125,7 +125,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIMSetUpPreallocation(Mat A)
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatMult_IM"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMult_IM(Mat A, Vec x, Vec y) {
+PetscErrorCode  MatMult_IM(Mat A, Vec x, Vec y) {
   Mat_IM  *im = (Mat_IM*)A->data;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -137,7 +137,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMult_IM(Mat A, Vec x, Vec y) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatMultAdd_IM"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMultAdd_IM(Mat A, Vec x, Vec y, Vec z) {
+PetscErrorCode  MatMultAdd_IM(Mat A, Vec x, Vec y, Vec z) {
   Mat_IM  *im = (Mat_IM*)A->data;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -150,7 +150,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultAdd_IM(Mat A, Vec x, Vec y, Vec z) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatMultTranspose_IM"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose_IM(Mat A, Vec x, Vec y) {
+PetscErrorCode  MatMultTranspose_IM(Mat A, Vec x, Vec y) {
   Mat_IM  *im = (Mat_IM*)A->data;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -162,7 +162,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose_IM(Mat A, Vec x, Vec y) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatMultTransposeAdd_IM"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAdd_IM(Mat A, Vec x, Vec y, Vec z) {
+PetscErrorCode  MatMultTransposeAdd_IM(Mat A, Vec x, Vec y, Vec z) {
   Mat_IM  *im = (Mat_IM*)A->data;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -175,7 +175,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAdd_IM(Mat A, Vec x, Vec y, Ve
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatDestroy_IM"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_IM(Mat M) {
+PetscErrorCode  MatDestroy_IM(Mat M) {
   Mat_IM     *im = (Mat_IM *)M->data;
   PetscErrorCode ierr;
 
@@ -199,7 +199,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_IM(Mat M) {
 EXTERN_C_BEGIN
 #undef  __FUNCT__
 #define __FUNCT__ "MatCreate_IM"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_IM(Mat A) {
+PetscErrorCode  MatCreate_IM(Mat A) {
   /* Assume that this is called after MatSetSizes() */
   Mat_IM  *im;
   PetscErrorCode ierr;

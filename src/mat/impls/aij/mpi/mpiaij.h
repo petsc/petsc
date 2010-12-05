@@ -110,8 +110,8 @@ extern PetscErrorCode MatSolve_MPIAIJ(Mat,Vec,Vec);
 extern PetscErrorCode MatILUFactor_MPIAIJ(Mat,IS,IS,const MatFactorInfo *);
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock_MPIAIJ(Mat,PetscBool  *,MatReuse,Mat *);
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
+extern PetscErrorCode  MatGetDiagonalBlock_MPIAIJ(Mat,PetscBool  *,MatReuse,Mat *);
+extern PetscErrorCode  MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
 EXTERN_C_END
 
 #endif

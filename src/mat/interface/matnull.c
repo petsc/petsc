@@ -6,7 +6,7 @@
 
 #include "private/matimpl.h"      /*I "petscmat.h" I*/
 
-PetscClassId PETSCMAT_DLLEXPORT MAT_NULLSPACE_CLASSID;
+PetscClassId  MAT_NULLSPACE_CLASSID;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNullSpaceSetFunction"
@@ -27,7 +27,7 @@ PetscClassId PETSCMAT_DLLEXPORT MAT_NULLSPACE_CLASSID;
 
 .seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), KSPSetNullSpace(), MatNullSpace, MatNullSpaceCreate()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(MatNullSpace,Vec,void*),void *ctx)
+PetscErrorCode  MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(MatNullSpace,Vec,void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1);
@@ -70,7 +70,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceSetFunction(MatNullSpace sp, Petsc
 
 .seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), KSPSetNullSpace(), MatNullSpace, MatNullSpaceSetFunction()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceCreate(MPI_Comm comm,PetscBool  has_cnst,PetscInt n,const Vec vecs[],MatNullSpace *SP)
+PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool  has_cnst,PetscInt n,const Vec vecs[],MatNullSpace *SP)
 {
   MatNullSpace   sp;
   PetscErrorCode ierr;
@@ -128,7 +128,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceCreate(MPI_Comm comm,PetscBool  ha
 
 .seealso: MatNullSpaceCreate(), MatNullSpaceRemove(), MatNullSpaceSetFunction()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceDestroy(MatNullSpace sp)
+PetscErrorCode  MatNullSpaceDestroy(MatNullSpace sp)
 {
   PetscErrorCode ierr;
 
@@ -164,7 +164,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceDestroy(MatNullSpace sp)
 
 .seealso: MatNullSpaceCreate(), MatNullSpaceDestroy(), MatNullSpaceSetFunction()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
+PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
 {
   PetscScalar    sum;
   PetscInt       i,N;
@@ -226,7 +226,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec
 
 .seealso: MatNullSpaceCreate(), MatNullSpaceDestroy(), MatNullSpaceSetFunction()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
+PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
 {
   PetscScalar    sum;
   PetscReal      nrm;

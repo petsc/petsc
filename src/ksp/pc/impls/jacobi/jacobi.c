@@ -68,7 +68,7 @@ typedef struct {
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCJacobiSetUseRowMax_Jacobi"
-PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowMax_Jacobi(PC pc)
+PetscErrorCode  PCJacobiSetUseRowMax_Jacobi(PC pc)
 {
   PC_Jacobi *j;
 
@@ -82,7 +82,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCJacobiSetUseRowSum_Jacobi"
-PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowSum_Jacobi(PC pc)
+PetscErrorCode  PCJacobiSetUseRowSum_Jacobi(PC pc)
 {
   PC_Jacobi *j;
 
@@ -96,7 +96,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCJacobiSetUseAbs_Jacobi"
-PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseAbs_Jacobi(PC pc)
+PetscErrorCode  PCJacobiSetUseAbs_Jacobi(PC pc)
 {
   PC_Jacobi *j;
 
@@ -389,7 +389,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Jacobi"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Jacobi(PC pc)
+PetscErrorCode  PCCreate_Jacobi(PC pc)
 {
   PC_Jacobi      *jac;
   PetscErrorCode ierr;
@@ -458,7 +458,7 @@ EXTERN_C_END
 .seealso: PCJacobiaUseRowMax(), PCJacobiaUseRowSum()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseAbs(PC pc)
+PetscErrorCode  PCJacobiSetUseAbs(PC pc)
 {
   PetscErrorCode ierr;
 
@@ -490,7 +490,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseAbs(PC pc)
 
 .seealso: PCJacobiaUseAbs()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowMax(PC pc)
+PetscErrorCode  PCJacobiSetUseRowMax(PC pc)
 {
   PetscErrorCode ierr;
 
@@ -522,7 +522,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowMax(PC pc)
 
 .seealso: PCJacobiaUseAbs(), PCJacobiaUseRowSum()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowSum(PC pc)
+PetscErrorCode  PCJacobiSetUseRowSum(PC pc)
 {
   PetscErrorCode ierr;
 

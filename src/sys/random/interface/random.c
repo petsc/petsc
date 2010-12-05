@@ -56,7 +56,7 @@
 
 .seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValueReal()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *val)
+PetscErrorCode  PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
   PetscErrorCode ierr;
 
@@ -102,7 +102,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar 
 
 .seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValue()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
+PetscErrorCode  PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
 {
   PetscErrorCode ierr;
 
@@ -137,7 +137,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomGetValueReal(PetscRandom r,PetscRea
 
 .seealso: PetscRandomCreate(), PetscRandomSetInterval()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomGetInterval(PetscRandom r,PetscScalar *low,PetscScalar *high)
+PetscErrorCode  PetscRandomGetInterval(PetscRandom r,PetscScalar *low,PetscScalar *high)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
@@ -174,7 +174,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomGetInterval(PetscRandom r,PetscScal
 
 .seealso: PetscRandomCreate(), PetscRandomGetInterval()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomSetInterval(PetscRandom r,PetscScalar low,PetscScalar high)
+PetscErrorCode  PetscRandomSetInterval(PetscRandom r,PetscScalar low,PetscScalar high)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);

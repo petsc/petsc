@@ -25,7 +25,7 @@
 
 .seealso: MatAYPX()
  @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
+PetscErrorCode  MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
   PetscInt       m1,m2,n1,n2;
@@ -145,7 +145,7 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
 
 .seealso: MatDiagonalSet()
  @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatShift(Mat Y,PetscScalar a)
+PetscErrorCode  MatShift(Mat Y,PetscScalar a)
 {
   PetscErrorCode ierr;
   PetscInt       i,start,end;
@@ -172,7 +172,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatShift(Mat Y,PetscScalar a)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDiagonalSet_Default"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
+PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
 {
   PetscErrorCode ierr;
   PetscInt       i,start,end,vstart,vend;
@@ -214,7 +214,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet_Default(Mat Y,Vec D,InsertMode 
 
 .seealso: MatShift()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet(Mat Y,Vec D,InsertMode is)
+PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 {
   PetscErrorCode ierr;
 
@@ -251,7 +251,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 
 .seealso: MatAXPY()
  @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
+PetscErrorCode  MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscScalar    one = 1.0;
   PetscErrorCode ierr;
@@ -296,7 +296,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure
 .keywords: Mat, compute, explicit, operator
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatComputeExplicitOperator(Mat inmat,Mat *mat)
+PetscErrorCode  MatComputeExplicitOperator(Mat inmat,Mat *mat)
 {
   Vec            in,out;
   PetscErrorCode ierr;

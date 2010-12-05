@@ -1,5 +1,6 @@
 
 #include "petscsys.h" 
+#include "private/fortranimpl.h"
                   
 #define max_colors  200
 #define max_nbtran 20

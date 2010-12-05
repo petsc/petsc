@@ -8,9 +8,9 @@
 PETSC_EXTERN_CXX_BEGIN
 
 #define IS_FILE_CLASSID 1211218
-extern PETSCVEC_DLLEXPORT PetscClassId IS_CLASSID;
+extern  PetscClassId IS_CLASSID;
 
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISInitializePackage(const char[]);
+extern PetscErrorCode  ISInitializePackage(const char[]);
 
 /*S
      IS - Abstract PETSc object that allows indexing.
@@ -40,12 +40,12 @@ E*/
 /* Dynamic creation and loading functions */
 extern PetscFList ISList;
 extern PetscBool  ISRegisterAllCalled;
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISSetType(IS, const ISType);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISGetType(IS, const ISType *);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISRegister(const char[],const char[],const char[],PetscErrorCode (*)(IS));
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISRegisterAll(const char []);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISRegisterDestroy(void);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISCreate(MPI_Comm,IS*);
+extern PetscErrorCode  ISSetType(IS, const ISType);
+extern PetscErrorCode  ISGetType(IS, const ISType *);
+extern PetscErrorCode  ISRegister(const char[],const char[],const char[],PetscErrorCode (*)(IS));
+extern PetscErrorCode  ISRegisterAll(const char []);
+extern PetscErrorCode  ISRegisterDestroy(void);
+extern PetscErrorCode  ISCreate(MPI_Comm,IS*);
 
 /*MC
   ISRegisterDynamic - Adds a new vector component implementation
@@ -98,59 +98,59 @@ M*/
 /*
     Default index set data structures that PETSc provides.
 */
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateGeneral(MPI_Comm,PetscInt,const PetscInt[],PetscCopyMode,IS *);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISGeneralSetIndices(IS,PetscInt,const PetscInt[],PetscCopyMode);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateBlock(MPI_Comm,PetscInt,PetscInt,const PetscInt[],PetscCopyMode,IS *);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockSetIndices(IS,PetscInt,PetscInt,const PetscInt[],PetscCopyMode);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateStride(MPI_Comm,PetscInt,PetscInt,PetscInt,IS *);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISStrideSetStride(IS,PetscInt,PetscInt,PetscInt);
+extern PetscErrorCode    ISCreateGeneral(MPI_Comm,PetscInt,const PetscInt[],PetscCopyMode,IS *);
+extern PetscErrorCode    ISGeneralSetIndices(IS,PetscInt,const PetscInt[],PetscCopyMode);
+extern PetscErrorCode    ISCreateBlock(MPI_Comm,PetscInt,PetscInt,const PetscInt[],PetscCopyMode,IS *);
+extern PetscErrorCode    ISBlockSetIndices(IS,PetscInt,PetscInt,const PetscInt[],PetscCopyMode);
+extern PetscErrorCode    ISCreateStride(MPI_Comm,PetscInt,PetscInt,PetscInt,IS *);
+extern PetscErrorCode    ISStrideSetStride(IS,PetscInt,PetscInt,PetscInt);
 
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISDestroy(IS);
+extern PetscErrorCode    ISDestroy(IS);
 
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISSetPermutation(IS);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISPermutation(IS,PetscBool *); 
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISSetIdentity(IS);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISIdentity(IS,PetscBool *);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISContiguousLocal(IS,PetscInt,PetscInt,PetscInt*,PetscBool*);
+extern PetscErrorCode    ISSetPermutation(IS);
+extern PetscErrorCode    ISPermutation(IS,PetscBool *); 
+extern PetscErrorCode    ISSetIdentity(IS);
+extern PetscErrorCode    ISIdentity(IS,PetscBool *);
+extern PetscErrorCode    ISContiguousLocal(IS,PetscInt,PetscInt,PetscInt*,PetscBool*);
 
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISGetIndices(IS,const PetscInt *[]);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISRestoreIndices(IS,const PetscInt *[]);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISGetTotalIndices(IS,const PetscInt *[]);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISRestoreTotalIndices(IS,const PetscInt *[]);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISGetNonlocalIndices(IS,const PetscInt *[]);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISRestoreNonlocalIndices(IS,const PetscInt *[]);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISGetNonlocalIS(IS, IS *is);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISRestoreNonlocalIS(IS, IS *is);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISGetSize(IS,PetscInt *);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISGetLocalSize(IS,PetscInt *);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISInvertPermutation(IS,PetscInt,IS*);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISView(IS,PetscViewer);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISEqual(IS,IS,PetscBool  *);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISSort(IS);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISSorted(IS,PetscBool  *);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISDifference(IS,IS,IS*);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISSum(IS,IS,IS*);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISExpand(IS,IS,IS*);
+extern PetscErrorCode    ISGetIndices(IS,const PetscInt *[]);
+extern PetscErrorCode    ISRestoreIndices(IS,const PetscInt *[]);
+extern PetscErrorCode    ISGetTotalIndices(IS,const PetscInt *[]);
+extern PetscErrorCode    ISRestoreTotalIndices(IS,const PetscInt *[]);
+extern PetscErrorCode    ISGetNonlocalIndices(IS,const PetscInt *[]);
+extern PetscErrorCode    ISRestoreNonlocalIndices(IS,const PetscInt *[]);
+extern PetscErrorCode    ISGetNonlocalIS(IS, IS *is);
+extern PetscErrorCode    ISRestoreNonlocalIS(IS, IS *is);
+extern PetscErrorCode    ISGetSize(IS,PetscInt *);
+extern PetscErrorCode    ISGetLocalSize(IS,PetscInt *);
+extern PetscErrorCode    ISInvertPermutation(IS,PetscInt,IS*);
+extern PetscErrorCode    ISView(IS,PetscViewer);
+extern PetscErrorCode    ISEqual(IS,IS,PetscBool  *);
+extern PetscErrorCode    ISSort(IS);
+extern PetscErrorCode    ISSorted(IS,PetscBool  *);
+extern PetscErrorCode    ISDifference(IS,IS,IS*);
+extern PetscErrorCode    ISSum(IS,IS,IS*);
+extern PetscErrorCode    ISExpand(IS,IS,IS*);
 
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockGetIndices(IS,const PetscInt *[]);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockRestoreIndices(IS,const PetscInt *[]);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockGetLocalSize(IS,PetscInt *);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockGetSize(IS,PetscInt *);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISGetBlockSize(IS,PetscInt*);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISSetBlockSize(IS,PetscInt);
+extern PetscErrorCode    ISBlockGetIndices(IS,const PetscInt *[]);
+extern PetscErrorCode    ISBlockRestoreIndices(IS,const PetscInt *[]);
+extern PetscErrorCode    ISBlockGetLocalSize(IS,PetscInt *);
+extern PetscErrorCode    ISBlockGetSize(IS,PetscInt *);
+extern PetscErrorCode    ISGetBlockSize(IS,PetscInt*);
+extern PetscErrorCode    ISSetBlockSize(IS,PetscInt);
 
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISStrideGetInfo(IS,PetscInt *,PetscInt*);
+extern PetscErrorCode    ISStrideGetInfo(IS,PetscInt *,PetscInt*);
 
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISToGeneral(IS);
+extern PetscErrorCode    ISToGeneral(IS);
 
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISDuplicate(IS,IS*);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISCopy(IS,IS);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISAllGather(IS,IS*);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISComplement(IS,PetscInt,PetscInt,IS*);
-extern PetscErrorCode PETSCVEC_DLLEXPORT   ISOnComm(IS,MPI_Comm,PetscCopyMode,IS*);
+extern PetscErrorCode    ISDuplicate(IS,IS*);
+extern PetscErrorCode    ISCopy(IS,IS);
+extern PetscErrorCode    ISAllGather(IS,IS*);
+extern PetscErrorCode    ISComplement(IS,PetscInt,PetscInt,IS*);
+extern PetscErrorCode    ISOnComm(IS,MPI_Comm,PetscCopyMode,IS*);
 
 /* --------------------------------------------------------------------------*/
-extern PETSCVEC_DLLEXPORT PetscClassId IS_LTOGM_CLASSID;
+extern  PetscClassId IS_LTOGM_CLASSID;
 
 /*S
    ISLocalToGlobalMapping - mappings from an arbitrary
@@ -192,19 +192,19 @@ typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
 E*/
 typedef enum {IS_GTOLM_MASK,IS_GTOLM_DROP} ISGlobalToLocalMappingType;
 
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,const PetscInt[],PetscCopyMode,ISLocalToGlobalMapping*);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingCreateIS(IS,ISLocalToGlobalMapping *);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingView(ISLocalToGlobalMapping,PetscViewer);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping,IS,IS*);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISGlobalToLocalMappingApply(ISLocalToGlobalMapping,ISGlobalToLocalMappingType,PetscInt,const PetscInt[],PetscInt*,PetscInt[]);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping,PetscInt*);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[]);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[]);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping,const PetscInt**);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping,const PetscInt**);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping,PetscInt,ISLocalToGlobalMapping*);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingUnBlock(ISLocalToGlobalMapping,PetscInt,ISLocalToGlobalMapping*);
+extern PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,const PetscInt[],PetscCopyMode,ISLocalToGlobalMapping*);
+extern PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS,ISLocalToGlobalMapping *);
+extern PetscErrorCode  ISLocalToGlobalMappingView(ISLocalToGlobalMapping,PetscViewer);
+extern PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping);
+extern PetscErrorCode  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping,IS,IS*);
+extern PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping,ISGlobalToLocalMappingType,PetscInt,const PetscInt[],PetscInt*,PetscInt[]);
+extern PetscErrorCode  ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping,PetscInt*);
+extern PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[]);
+extern PetscErrorCode  ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[]);
+extern PetscErrorCode  ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping,const PetscInt**);
+extern PetscErrorCode  ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping,const PetscInt**);
+extern PetscErrorCode  ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping,PetscInt,ISLocalToGlobalMapping*);
+extern PetscErrorCode  ISLocalToGlobalMappingUnBlock(ISLocalToGlobalMapping,PetscInt,ISLocalToGlobalMapping*);
 
 PETSC_STATIC_INLINE PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscInt N,const PetscInt in[],PetscInt out[])
 {
@@ -239,7 +239,7 @@ E*/
 typedef enum {IS_COLORING_GLOBAL,IS_COLORING_GHOSTED} ISColoringType;
 extern const char *ISColoringTypes[];
 typedef unsigned PETSC_IS_COLOR_VALUE_TYPE ISColoringValue;
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISAllGatherColors(MPI_Comm,PetscInt,ISColoringValue*,PetscInt*,ISColoringValue*[]);
+extern PetscErrorCode  ISAllGatherColors(MPI_Comm,PetscInt,ISColoringValue*,PetscInt*,ISColoringValue*[]);
 
 /*S
      ISColoring - sets of IS's that define a coloring
@@ -265,22 +265,22 @@ struct _n_ISColoring {
 };
 typedef struct _n_ISColoring* ISColoring;
 
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm,PetscInt,PetscInt,const ISColoringValue[],ISColoring*);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISColoringDestroy(ISColoring);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISColoringView(ISColoring,PetscViewer);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISColoringGetIS(ISColoring,PetscInt*,IS*[]);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISColoringRestoreIS(ISColoring,IS*[]);
+extern PetscErrorCode  ISColoringCreate(MPI_Comm,PetscInt,PetscInt,const ISColoringValue[],ISColoring*);
+extern PetscErrorCode  ISColoringDestroy(ISColoring);
+extern PetscErrorCode  ISColoringView(ISColoring,PetscViewer);
+extern PetscErrorCode  ISColoringGetIS(ISColoring,PetscInt*,IS*[]);
+extern PetscErrorCode  ISColoringRestoreIS(ISColoring,IS*[]);
 #define ISColoringReference(coloring) ((coloring)->refct++,0)
 #define ISColoringSetType(coloring,type) ((coloring)->ctype = type,0)
 
 /* --------------------------------------------------------------------------*/
 
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningToNumbering(IS,IS*);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningCount(IS,PetscInt,PetscInt[]);
+extern PetscErrorCode  ISPartitioningToNumbering(IS,IS*);
+extern PetscErrorCode  ISPartitioningCount(IS,PetscInt,PetscInt[]);
 
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesGeneral(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
-extern PetscErrorCode PETSCVEC_DLLEXPORT ISExpandIndicesGeneral(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
+extern PetscErrorCode  ISCompressIndicesGeneral(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
+extern PetscErrorCode  ISCompressIndicesSorted(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
+extern PetscErrorCode  ISExpandIndicesGeneral(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
 
 
 PETSC_EXTERN_CXX_END

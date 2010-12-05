@@ -14,7 +14,7 @@ static PetscBool  TSPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSFinalizePackage(void)
+PetscErrorCode  TSFinalizePackage(void)
 {
   PetscFunctionBegin;
   TSPackageInitialized = PETSC_FALSE;
@@ -38,7 +38,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSFinalizePackage(void)
 .keywords: TS, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSInitializePackage(const char path[])
+PetscErrorCode  TSInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
@@ -92,7 +92,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PETSCTS_DLLEXPORT PetscDLLibraryRegister_petscts(const char path[])
+PetscErrorCode  PetscDLLibraryRegister_petscts(const char path[])
 {
   PetscErrorCode ierr;
 

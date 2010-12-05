@@ -33,7 +33,7 @@
    Concepts: menu
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscPopUpSelect(MPI_Comm comm,const char *machine,const char *title,int n,const char **choices,int *choice)
+PetscErrorCode  PetscPopUpSelect(MPI_Comm comm,const char *machine,const char *title,int n,const char **choices,int *choice)
 {
   PetscMPIInt    rank;
   int            i,rows = n + 2;

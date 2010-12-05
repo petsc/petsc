@@ -9,8 +9,8 @@ typedef void* PetscDLHandle;
 #define PETSC_DL_NOW      1
 #define PETSC_DL_LOCAL    2
 
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscDLOpen(const char[],int,PetscDLHandle *);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscDLClose(PetscDLHandle *);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscDLSym(PetscDLHandle,const char[],void **);
+extern PetscErrorCode  PetscDLOpen(const char[],int,PetscDLHandle *);
+extern PetscErrorCode  PetscDLClose(PetscDLHandle *);
+extern PetscErrorCode  PetscDLSym(PetscDLHandle,const char[],void **);
 
 #endif

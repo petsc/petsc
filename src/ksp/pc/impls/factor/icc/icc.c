@@ -123,7 +123,7 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 }
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetDropTolerance_ILU(PC,PetscReal,PetscReal,PetscInt);
+extern PetscErrorCode  PCFactorSetDropTolerance_ILU(PC,PetscReal,PetscReal,PetscInt);
 EXTERN_C_END
 
 /*MC
@@ -166,7 +166,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_ICC"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
+PetscErrorCode  PCCreate_ICC(PC pc)
 {
   PetscErrorCode ierr;
   PC_ICC         *icc;

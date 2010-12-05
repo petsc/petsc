@@ -21,7 +21,7 @@ static char help[] = "Generates, partitions, and outputs an unstructured mesh.\n
 #include "petscviewer.h"
 #include <values.h>
 
-extern PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_Newer(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer);
+extern PetscErrorCode  MeshView_Sieve_Newer(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer);
 PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Mesh>);
 PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Mesh>, Vec *);
 PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Mesh>, const char[], int depth, Vec *);

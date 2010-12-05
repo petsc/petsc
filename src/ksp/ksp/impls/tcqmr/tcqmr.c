@@ -180,7 +180,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_TCQMR"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_TCQMR(KSP ksp)
+PetscErrorCode  KSPCreate_TCQMR(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                = (void*)0;

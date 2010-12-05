@@ -21,7 +21,7 @@
 
 .seealso: PetscObjectSetName()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetName(PetscObject obj,const char *name[])
+PetscErrorCode  PetscObjectGetName(PetscObject obj,const char *name[])
 {
   PetscErrorCode ierr;
 

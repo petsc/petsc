@@ -3,7 +3,7 @@
 
 #include "petscsys.h"
 
-extern PETSCSYS_DLLEXPORT PetscClassId PETSC_FWK_CLASSID;
+extern  PetscClassId PETSC_FWK_CLASSID;
 
 /* 
    There is only one type implementing PetscFwk, 
@@ -16,29 +16,29 @@ extern PETSCSYS_DLLEXPORT PetscClassId PETSC_FWK_CLASSID;
 struct _p_PetscFwk;
 typedef struct _p_PetscFwk *PetscFwk;
 
-extern PetscFwk PETSCSYS_DLLEXPORT PETSC_FWK_DEFAULT_(MPI_Comm);
+extern PetscFwk  PETSC_FWK_DEFAULT_(MPI_Comm);
 #define PETSC_FWK_DEFAULT_SELF  PETSC_FWK_DEFAULT_(PETSC_COMM_SELF)
 #define PETSC_FWK_DEFAULT_WORLD PETSC_FWK_DEFAULT_(PETSC_COMM_WORLD)
 
 
 
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkInitializePackage(const char path[]);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkFinalizePackage(void);
+extern PetscErrorCode  PetscFwkInitializePackage(const char path[]);
+extern PetscErrorCode  PetscFwkFinalizePackage(void);
 
 /**/
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkCall(PetscFwk component,       const char *message);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetURL(PetscFwk component,     const char **outurl);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkSetURL(PetscFwk component,     const char *inurl);
+extern PetscErrorCode  PetscFwkCall(PetscFwk component,       const char *message);
+extern PetscErrorCode  PetscFwkGetURL(PetscFwk component,     const char **outurl);
+extern PetscErrorCode  PetscFwkSetURL(PetscFwk component,     const char *inurl);
 /**/
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkCreate(MPI_Comm comm, PetscFwk *fwk);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkView(PetscFwk fwk, PetscViewer viewerASCII);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterComponent(PetscFwk fwk, const char key[]);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterDependence(PetscFwk fwk, const char server_key[], const char client_key[]);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterComponentURL(PetscFwk fwk, const char key[], const char url[]);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetComponent(PetscFwk fwk, const char key[], PetscFwk *component, PetscBool  *found);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetParent(PetscFwk fwk, PetscFwk *parent);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkVisit(PetscFwk fwk, const char *message);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkDestroy(PetscFwk fwk);
+extern PetscErrorCode  PetscFwkCreate(MPI_Comm comm, PetscFwk *fwk);
+extern PetscErrorCode  PetscFwkView(PetscFwk fwk, PetscViewer viewerASCII);
+extern PetscErrorCode  PetscFwkRegisterComponent(PetscFwk fwk, const char key[]);
+extern PetscErrorCode  PetscFwkRegisterDependence(PetscFwk fwk, const char server_key[], const char client_key[]);
+extern PetscErrorCode  PetscFwkRegisterComponentURL(PetscFwk fwk, const char key[], const char url[]);
+extern PetscErrorCode  PetscFwkGetComponent(PetscFwk fwk, const char key[], PetscFwk *component, PetscBool  *found);
+extern PetscErrorCode  PetscFwkGetParent(PetscFwk fwk, PetscFwk *parent);
+extern PetscErrorCode  PetscFwkVisit(PetscFwk fwk, const char *message);
+extern PetscErrorCode  PetscFwkDestroy(PetscFwk fwk);
 
 
 

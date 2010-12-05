@@ -203,7 +203,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_NGMRES"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_NGMRES(KSP ksp)
+PetscErrorCode  KSPCreate_NGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_NGMRES     *cg;

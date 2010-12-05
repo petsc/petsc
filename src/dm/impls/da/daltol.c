@@ -17,7 +17,7 @@
 .  da - the distributed array
 
 */
-PetscErrorCode PETSCDM_DLLEXPORT DMDALocalToLocalCreate(DM da)
+PetscErrorCode  DMDALocalToLocalCreate(DM da)
 {
   PetscErrorCode ierr;
   PetscInt       *idx,left,j,count,up,down,i,bottom,top,k;
@@ -99,7 +99,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDALocalToLocalCreate(DM da)
 
 .seealso: DMDALocalToLocalEnd(), DMLocalToGlobalBegin()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDALocalToLocalBegin(DM da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode  DMDALocalToLocalBegin(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -143,7 +143,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDALocalToLocalBegin(DM da,Vec g,InsertMode mo
 
 .seealso: DMDALocalToLocalBegin(), DMLocalToGlobalBegin()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDALocalToLocalEnd(DM da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode  DMDALocalToLocalEnd(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;

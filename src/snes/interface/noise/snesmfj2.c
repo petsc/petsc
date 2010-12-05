@@ -216,7 +216,7 @@ $  -snes_mf_jorge
 
 .seealso: MatDestroy(), MatMFFDSetFunctionError()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
+PetscErrorCode  SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
 {
   MPI_Comm       comm;
   MFCtx_Private  *mfctx;
@@ -313,7 +313,7 @@ $
 
 .seealso: MatCreateSNESMF()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeSetParameters2(Mat mat,PetscReal error,PetscReal umin,PetscReal h)
+PetscErrorCode  SNESDefaultMatrixFreeSetParameters2(Mat mat,PetscReal error,PetscReal umin,PetscReal h)
 {
   MFCtx_Private  *ctx;
   PetscErrorCode ierr;
@@ -331,7 +331,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeSetParameters2(Mat mat,P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PETSCSNES_DLLEXPORT SNESUnSetMatrixFreeParameter(SNES snes)
+PetscErrorCode  SNESUnSetMatrixFreeParameter(SNES snes)
 {
   MFCtx_Private  *ctx;
   PetscErrorCode ierr;

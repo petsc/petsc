@@ -91,7 +91,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESCreate_KSPONLY"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_KSPONLY(SNES snes)
+PetscErrorCode  SNESCreate_KSPONLY(SNES snes)
 {
 
   PetscFunctionBegin;

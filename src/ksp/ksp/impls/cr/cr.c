@@ -166,7 +166,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_CR"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CR(KSP ksp)
+PetscErrorCode  KSPCreate_CR(KSP ksp)
 {
   PetscErrorCode ierr;
 

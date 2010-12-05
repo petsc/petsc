@@ -34,7 +34,7 @@
 
 .keywords: distributed array, get, processor subset
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_Comm *comm)
+PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_Comm *comm)
 {
   MPI_Group      group,subgroup;
   PetscErrorCode ierr;
@@ -103,7 +103,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAGetProcessorSubset(DM da,DMDADirection dir,
 
 .keywords: distributed array, get, processor subset
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAGetProcessorSubsets(DM da, DMDADirection dir, MPI_Comm *subcomm)
+PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDADirection dir, MPI_Comm *subcomm)
 {
   MPI_Comm       comm;
   MPI_Group      group, subgroup;

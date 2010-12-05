@@ -21,7 +21,7 @@
 .seealso: PetscDrawTensorContour(),PetscDrawTensorContourPatch()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecContourScale(Vec v,PetscReal vmin,PetscReal vmax)
+PetscErrorCode  VecContourScale(Vec v,PetscReal vmin,PetscReal vmax)
 {
   PetscScalar    *values;
   PetscErrorCode ierr;

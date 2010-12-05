@@ -29,7 +29,7 @@
 
 .seealso: SNESLineSearchGetParams(), SNESLineSearchSet()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetParams(SNES snes,PetscReal alpha,PetscReal maxstep,PetscReal minlambda)
+PetscErrorCode  SNESLineSearchSetParams(SNES snes,PetscReal alpha,PetscReal maxstep,PetscReal minlambda)
 {
   SNES_LS *ls = (SNES_LS*)snes->data;
 
@@ -73,7 +73,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetParams(SNES snes,PetscReal a
 
 .seealso: SNESLineSearchSetParams(), SNESLineSearchSet()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchGetParams(SNES snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *minlambda)
+PetscErrorCode  SNESLineSearchGetParams(SNES snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *minlambda)
 {
   SNES_LS *ls = (SNES_LS*)snes->data;
 

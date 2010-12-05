@@ -35,7 +35,7 @@
           PetscLayoutGetRange(), PetscLayoutGetRanges(), PetscLayoutSetBlockSize(), PetscLayoutGetBlockSize(), PetscLayoutSetUp()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
+PetscErrorCode  PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
 {
   PetscErrorCode ierr;
 
@@ -73,7 +73,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutCreate(MPI_Comm comm,PetscLayout *m
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLayoutDestroy"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutDestroy(PetscLayout map)
+PetscErrorCode  PetscLayoutDestroy(PetscLayout map)
 {
   PetscErrorCode ierr;
 
@@ -115,7 +115,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutDestroy(PetscLayout map)
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLayoutSetUp"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetUp(PetscLayout map)
+PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
 {
   PetscMPIInt    rank,size;
   PetscInt       p;
@@ -171,7 +171,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetUp(PetscLayout map)
 .seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutCopy(PetscLayout in,PetscLayout *out)
+PetscErrorCode  PetscLayoutCopy(PetscLayout in,PetscLayout *out)
 {
   PetscMPIInt    size;
   PetscErrorCode ierr;
@@ -211,7 +211,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutCopy(PetscLayout in,PetscLayout *ou
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLayoutSetLocalSize"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetLocalSize(PetscLayout map,PetscInt n)
+PetscErrorCode  PetscLayoutSetLocalSize(PetscLayout map,PetscInt n)
 {
   PetscFunctionBegin;
   map->n = n;
@@ -243,7 +243,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetLocalSize(PetscLayout map,PetscI
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLayoutGetLocalSize"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetLocalSize(PetscLayout map,PetscInt *n)
+PetscErrorCode  PetscLayoutGetLocalSize(PetscLayout map,PetscInt *n)
 {
   PetscFunctionBegin;
   *n = map->n;
@@ -273,7 +273,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetLocalSize(PetscLayout map,PetscI
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLayoutSetSize"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetSize(PetscLayout map,PetscInt n)
+PetscErrorCode  PetscLayoutSetSize(PetscLayout map,PetscInt n)
 {
   PetscFunctionBegin;
   map->N = n;
@@ -305,7 +305,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetSize(PetscLayout map,PetscInt n)
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLayoutGetSize"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetSize(PetscLayout map,PetscInt *n)
+PetscErrorCode  PetscLayoutGetSize(PetscLayout map,PetscInt *n)
 {
   PetscFunctionBegin;
   *n = map->N;
@@ -335,7 +335,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetSize(PetscLayout map,PetscInt *n
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLayoutSetBlockSize"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetBlockSize(PetscLayout map,PetscInt bs)
+PetscErrorCode  PetscLayoutSetBlockSize(PetscLayout map,PetscInt bs)
 {
   PetscFunctionBegin;
   map->bs = bs;
@@ -367,7 +367,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetBlockSize(PetscLayout map,PetscI
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLayoutGetBlockSize"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetBlockSize(PetscLayout map,PetscInt *bs)
+PetscErrorCode  PetscLayoutGetBlockSize(PetscLayout map,PetscInt *bs)
 {
   PetscFunctionBegin;
   *bs = map->bs;
@@ -401,7 +401,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetBlockSize(PetscLayout map,PetscI
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLayoutGetRange"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetRange(PetscLayout map,PetscInt *rstart,PetscInt *rend)
+PetscErrorCode  PetscLayoutGetRange(PetscLayout map,PetscInt *rstart,PetscInt *rend)
 {
   PetscFunctionBegin;
   if (rstart) *rstart = map->rstart;
@@ -435,7 +435,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetRange(PetscLayout map,PetscInt *
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLayoutGetRanges"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetRanges(PetscLayout map,const PetscInt *range[])
+PetscErrorCode  PetscLayoutGetRanges(PetscLayout map,const PetscInt *range[])
 {
   PetscFunctionBegin;
   *range = map->range;

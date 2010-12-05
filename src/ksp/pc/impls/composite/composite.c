@@ -218,7 +218,7 @@ static PetscErrorCode PCView_Composite(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCompositeSpecialSetAlpha_Composite"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSpecialSetAlpha_Composite(PC pc,PetscScalar alpha)
+PetscErrorCode  PCCompositeSpecialSetAlpha_Composite(PC pc,PetscScalar alpha)
 {
   PC_Composite *jac = (PC_Composite*)pc->data;
   PetscFunctionBegin;
@@ -230,7 +230,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCompositeSetType_Composite"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSetType_Composite(PC pc,PCCompositeType type)
+PetscErrorCode  PCCompositeSetType_Composite(PC pc,PCCompositeType type)
 {
   PetscFunctionBegin;
   if (type == PC_COMPOSITE_ADDITIVE) {
@@ -247,7 +247,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCompositeAddPC_Composite"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeAddPC_Composite(PC pc,PCType type)
+PetscErrorCode  PCCompositeAddPC_Composite(PC pc,PCType type)
 {
   PC_Composite     *jac;
   PC_CompositeLink next,ilink;
@@ -289,7 +289,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCompositeGetPC_Composite"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeGetPC_Composite(PC pc,PetscInt n,PC *subpc)
+PetscErrorCode  PCCompositeGetPC_Composite(PC pc,PetscInt n,PC *subpc)
 {
   PC_Composite     *jac;
   PC_CompositeLink next;
@@ -310,7 +310,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCompositeSetUseTrue_Composite"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSetUseTrue_Composite(PC pc)
+PetscErrorCode  PCCompositeSetUseTrue_Composite(PC pc)
 {
   PC_Composite   *jac;
 
@@ -340,7 +340,7 @@ EXTERN_C_END
 
 .keywords: PC, set, type, composite preconditioner, additive, multiplicative
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSetType(PC pc,PCCompositeType type)
+PetscErrorCode  PCCompositeSetType(PC pc,PCCompositeType type)
 {
   PetscErrorCode ierr;
 
@@ -367,7 +367,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSetType(PC pc,PCCompositeType type)
 
 .keywords: PC, set, type, composite preconditioner, additive, multiplicative
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSpecialSetAlpha(PC pc,PetscScalar alpha)
+PetscErrorCode  PCCompositeSpecialSetAlpha(PC pc,PetscScalar alpha)
 {
   PetscErrorCode ierr;
 
@@ -393,7 +393,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSpecialSetAlpha(PC pc,PetscScalar a
 
 .keywords: PC, composite preconditioner, add
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeAddPC(PC pc,PCType type)
+PetscErrorCode  PCCompositeAddPC(PC pc,PCType type)
 {
   PetscErrorCode ierr;
 
@@ -423,7 +423,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeAddPC(PC pc,PCType type)
 
 .seealso: PCCompositeAddPC()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
+PetscErrorCode  PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 {
   PetscErrorCode ierr;
 
@@ -459,7 +459,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 
 .seealso: PCSetOperators(), PCBJacobiSetUseTrueLocal(), PCKSPSetUseTrue()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSetUseTrue(PC pc)
+PetscErrorCode  PCCompositeSetUseTrue(PC pc)
 {
   PetscErrorCode ierr;
 
@@ -498,7 +498,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Composite"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Composite(PC pc)
+PetscErrorCode  PCCreate_Composite(PC pc)
 {
   PetscErrorCode ierr;
   PC_Composite   *jac;

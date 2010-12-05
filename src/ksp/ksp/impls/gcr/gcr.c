@@ -205,7 +205,7 @@ typedef PetscErrorCode (*KSPGCRDestroyFunction)(void*);
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGCRSetModifyPC_GCR" 
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRSetModifyPC_GCR(KSP ksp,KSPGCRModifyPCFunction function,void *data,KSPGCRDestroyFunction destroy)
+PetscErrorCode  KSPGCRSetModifyPC_GCR(KSP ksp,KSPGCRModifyPCFunction function,void *data,KSPGCRDestroyFunction destroy)
 {
   KSP_GCR         *ctx = (KSP_GCR *)ksp->data;
 	
@@ -247,7 +247,7 @@ EXTERN_C_END
  .seealso: KSPGCRModifyPCNoChange()
  
  @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,PetscInt,PetscReal,void*),void *data,PetscErrorCode (*destroy)(void*))
+PetscErrorCode  KSPGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,PetscInt,PetscReal,void*),void *data,PetscErrorCode (*destroy)(void*))
 {
   PetscErrorCode ierr;
   

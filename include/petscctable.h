@@ -7,16 +7,16 @@ PETSC_EXTERN_CXX_BEGIN
 typedef struct _n_PetscTable* PetscTable;
 typedef PetscInt* PetscTablePosition;  
 
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscTableCreate(const PetscInt,PetscTable*);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscTableCreateCopy(const PetscTable,PetscTable*);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscTableDestroy(PetscTable);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscTableGetCount(const PetscTable,PetscInt*);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscTableIsEmpty(const PetscTable,PetscInt*);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscTableAdd(PetscTable,const PetscInt,const PetscInt);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscTableAddCount(PetscTable,const PetscInt);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscTableFind(PetscTable,const PetscInt,PetscInt*);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscTableGetHeadPosition(PetscTable,PetscTablePosition*);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscTableGetNext(PetscTable,PetscTablePosition*,PetscInt*,PetscInt*);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscTableRemoveAll(PetscTable);
+extern PetscErrorCode  PetscTableCreate(const PetscInt,PetscTable*);
+extern PetscErrorCode  PetscTableCreateCopy(const PetscTable,PetscTable*);
+extern PetscErrorCode  PetscTableDestroy(PetscTable);
+extern PetscErrorCode  PetscTableGetCount(const PetscTable,PetscInt*);
+extern PetscErrorCode  PetscTableIsEmpty(const PetscTable,PetscInt*);
+extern PetscErrorCode  PetscTableAdd(PetscTable,const PetscInt,const PetscInt);
+extern PetscErrorCode  PetscTableAddCount(PetscTable,const PetscInt);
+extern PetscErrorCode  PetscTableFind(PetscTable,const PetscInt,PetscInt*);
+extern PetscErrorCode  PetscTableGetHeadPosition(PetscTable,PetscTablePosition*);
+extern PetscErrorCode  PetscTableGetNext(PetscTable,PetscTablePosition*,PetscInt*,PetscInt*);
+extern PetscErrorCode  PetscTableRemoveAll(PetscTable);
 PETSC_EXTERN_CXX_END
 #endif

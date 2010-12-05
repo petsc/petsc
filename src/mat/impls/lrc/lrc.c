@@ -79,7 +79,7 @@ PetscErrorCode MatDestroy_LRC(Mat N)
           object performs the matrix-vector product by first multiplying by
           A and then adding the other term
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateLRC(Mat A,Mat U, Mat V,Mat *N)
+PetscErrorCode  MatCreateLRC(Mat A,Mat U, Mat V,Mat *N)
 {
   PetscErrorCode ierr;
   PetscInt       m,n;

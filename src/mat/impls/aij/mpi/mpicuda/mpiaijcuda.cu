@@ -5,7 +5,7 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJCUDA"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation_MPIAIJCUDA(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
+PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUDA(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   Mat_MPIAIJ     *b;
   PetscErrorCode ierr;
@@ -53,7 +53,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation_MPIAIJCUDA(Mat B,Pet
 EXTERN_C_END
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetVecs_MPIAIJCUDA"
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetVecs_MPIAIJCUDA(Mat mat,Vec *right,Vec *left)
+PetscErrorCode  MatGetVecs_MPIAIJCUDA(Mat mat,Vec *right,Vec *left)
 {
   PetscErrorCode ierr;
   PetscMPIInt size;
@@ -89,13 +89,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetVecs_MPIAIJCUDA(Mat mat,Vec *right,Vec *
 }
 
 EXTERN_C_BEGIN
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat);
+PetscErrorCode  MatCreate_MPIAIJ(Mat);
 EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIAIJCUDA"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJCUDA(Mat B)
+PetscErrorCode  MatCreate_MPIAIJCUDA(Mat B)
 {
   PetscErrorCode ierr;
 
@@ -113,7 +113,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateMPIAIJCUDA"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJCUDA(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
+PetscErrorCode  MatCreateMPIAIJCUDA(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -152,7 +152,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_AIJCUDA"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJCUDA(Mat A) 
+PetscErrorCode  MatCreate_AIJCUDA(Mat A) 
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

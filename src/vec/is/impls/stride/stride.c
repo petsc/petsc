@@ -99,7 +99,7 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
 
 .seealso: ISCreateStride(), ISGetSize()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISStrideGetInfo(IS is,PetscInt *first,PetscInt *step)
+PetscErrorCode  ISStrideGetInfo(IS is,PetscInt *first,PetscInt *step)
 {
   IS_Stride *sub;
 
@@ -128,7 +128,7 @@ PetscErrorCode ISDestroy_Stride(IS is)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISToGeneral_Stride" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISToGeneral_Stride(IS inis)
+PetscErrorCode  ISToGeneral_Stride(IS inis)
 {
   PetscErrorCode ierr;
   const PetscInt *idx;
@@ -343,7 +343,7 @@ static struct _ISOps myops = { ISGetSize_Stride,
 
 .seealso: ISCreateGeneral(), ISCreateBlock(), ISAllGather()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISStrideSetStride(IS is,PetscInt n,PetscInt first,PetscInt step)
+PetscErrorCode  ISStrideSetStride(IS is,PetscInt n,PetscInt first,PetscInt step)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -354,7 +354,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideSetStride(IS is,PetscInt n,PetscInt fi
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISStrideSetStride_Stride" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscInt step)
+PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscInt step)
 {
   PetscErrorCode ierr;
   PetscInt       min,max;
@@ -411,7 +411,7 @@ EXTERN_C_END
 
 .seealso: ISCreateGeneral(), ISCreateBlock(), ISAllGather()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISCreateStride(MPI_Comm comm,PetscInt n,PetscInt first,PetscInt step,IS *is)
+PetscErrorCode  ISCreateStride(MPI_Comm comm,PetscInt n,PetscInt first,PetscInt step,IS *is)
 {
   PetscErrorCode ierr;
 
@@ -425,7 +425,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateStride(MPI_Comm comm,PetscInt n,PetscI
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISCreate_Stride" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_Stride(IS is)
+PetscErrorCode  ISCreate_Stride(IS is)
 {
   PetscErrorCode ierr;
   IS_Stride      *sub;

@@ -50,7 +50,7 @@ PetscErrorCode PFDestroy_String(void *value)
 .seealso: PFSetFromOptions()
 
 */
-PetscErrorCode PETSCVEC_DLLEXPORT PFStringCreateFunction(PF pf,char *string,void **f)
+PetscErrorCode  PFStringCreateFunction(PF pf,char *string,void **f)
 {
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
   PetscErrorCode ierr;
@@ -126,7 +126,7 @@ typedef PetscErrorCode (*FCN)(void*,PetscInt,const PetscScalar*,PetscScalar*); /
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PFCreate_String"
-PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_String(PF pf,void *value)
+PetscErrorCode  PFCreate_String(PF pf,void *value)
 {
   PetscErrorCode ierr;
   FCN        f = 0;

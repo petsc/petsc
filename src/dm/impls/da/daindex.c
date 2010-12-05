@@ -52,7 +52,7 @@
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDALocalToLocalBegin(), DMDAGetAO(), DMDAGetGlobalIndicesF90()
           DMDAGetISLocalToGlobalMapping(), DMDACreate3d(), DMDACreate1d(), DMDALocalToLocalEnd(), DMDAGetOwnershipRanges()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAGetGlobalIndices(DM da,PetscInt *n,PetscInt **idx)
+PetscErrorCode  DMDAGetGlobalIndices(DM da,PetscInt *n,PetscInt **idx)
 {
   DM_DA          *dd = (DM_DA*)da->data;
 
@@ -141,7 +141,7 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDALocalToLocalBegin(), DMDALocalToLocalEnd(), DMDAGetGlobalIndices(), DMDAGetOwnershipRanges(),
           AO, AOPetscToApplication(), AOApplicationToPetsc()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAGetAO(DM da,AO *ao)
+PetscErrorCode  DMDAGetAO(DM da,AO *ao)
 {
   DM_DA *dd = (DM_DA*)da->data;
 

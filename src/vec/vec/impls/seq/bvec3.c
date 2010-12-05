@@ -25,7 +25,7 @@ extern PetscErrorCode VecCreate_Seq_Private(Vec,const double*);
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_Seq"
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec V)
+PetscErrorCode  VecCreate_Seq(Vec V)
 {
   Vec_Seq        *s;
   PetscScalar    *array;

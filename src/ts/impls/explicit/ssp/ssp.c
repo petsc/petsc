@@ -306,7 +306,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_SSP"
-PetscErrorCode PETSCTS_DLLEXPORT TSCreate_SSP(TS ts)
+PetscErrorCode  TSCreate_SSP(TS ts)
 {
   TS_SSP       *ssp;
   PetscErrorCode ierr;

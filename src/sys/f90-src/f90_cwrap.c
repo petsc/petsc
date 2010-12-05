@@ -66,7 +66,7 @@ PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,PetscInt start,Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array1dAccess"
-PetscErrorCode PETSCSYS_DLLEXPORT F90Array1dAccess(F90Array1d *ptr,PetscDataType type,void **array PETSC_F90_2PTR_PROTO(ptrd))
+PetscErrorCode  F90Array1dAccess(F90Array1d *ptr,PetscDataType type,void **array PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
   if (type == PETSC_SCALAR) {
@@ -85,7 +85,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT F90Array1dAccess(F90Array1d *ptr,PetscDataType
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array1dDestroy"
-PetscErrorCode PETSCSYS_DLLEXPORT F90Array1dDestroy(F90Array1d *ptr,PetscDataType type PETSC_F90_2PTR_PROTO(ptrd))
+PetscErrorCode  F90Array1dDestroy(F90Array1d *ptr,PetscDataType type PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
   if (type == PETSC_SCALAR) {
@@ -168,7 +168,7 @@ PetscErrorCode F90Array2dCreate(void *array,PetscDataType type,PetscInt start1,P
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array2dAccess"
-PetscErrorCode PETSCSYS_DLLEXPORT F90Array2dAccess(F90Array2d *ptr,PetscDataType type,void **array PETSC_F90_2PTR_PROTO(ptrd))
+PetscErrorCode  F90Array2dAccess(F90Array2d *ptr,PetscDataType type,void **array PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
   if (type == PETSC_SCALAR) {
@@ -187,7 +187,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT F90Array2dAccess(F90Array2d *ptr,PetscDataType
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array2dDestroy"
-PetscErrorCode PETSCSYS_DLLEXPORT F90Array2dDestroy(F90Array2d *ptr,PetscDataType type PETSC_F90_2PTR_PROTO(ptrd))
+PetscErrorCode  F90Array2dDestroy(F90Array2d *ptr,PetscDataType type PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
   if (type == PETSC_SCALAR) {
@@ -270,7 +270,7 @@ PetscErrorCode F90Array3dCreate(void *array,PetscDataType type,PetscInt start1,P
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array3dAccess"
-PetscErrorCode PETSCSYS_DLLEXPORT F90Array3dAccess(F90Array3d *ptr,PetscDataType type,void **array PETSC_F90_2PTR_PROTO(ptrd))
+PetscErrorCode  F90Array3dAccess(F90Array3d *ptr,PetscDataType type,void **array PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
   if (type == PETSC_SCALAR) {
@@ -289,7 +289,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT F90Array3dAccess(F90Array3d *ptr,PetscDataType
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array3dDestroy"
-PetscErrorCode PETSCSYS_DLLEXPORT F90Array3dDestroy(F90Array3d *ptr,PetscDataType type PETSC_F90_2PTR_PROTO(ptrd))
+PetscErrorCode  F90Array3dDestroy(F90Array3d *ptr,PetscDataType type PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
   if (type == PETSC_SCALAR) {
@@ -336,7 +336,7 @@ PetscErrorCode F90Array4dCreate(void *array,PetscDataType type,PetscInt start1,P
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array4dDestroy"
-PetscErrorCode PETSCSYS_DLLEXPORT F90Array4dDestroy(F90Array4d *ptr,PetscDataType type PETSC_F90_2PTR_PROTO(ptrd))
+PetscErrorCode  F90Array4dDestroy(F90Array4d *ptr,PetscDataType type PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
   if (type == PETSC_SCALAR) {

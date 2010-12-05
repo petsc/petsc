@@ -89,7 +89,7 @@ PetscErrorCode MatDestroy_Transpose(Mat N)
 .seealso: MatCreateNormal(), MatMult(), MatMultTranspose(), MatCreate()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateTranspose(Mat A,Mat *N)
+PetscErrorCode  MatCreateTranspose(Mat A,Mat *N)
 {
   PetscErrorCode ierr;
   PetscInt       m,n;

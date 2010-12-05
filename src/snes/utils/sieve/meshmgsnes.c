@@ -53,7 +53,7 @@ PetscErrorCode CreateNullSpace(DMMG dmmg, Vec *nulls) {
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "Relax_Mesh"
-PetscErrorCode PETSCSNES_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType flag, int its, Vec X, Vec B)
+PetscErrorCode  Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType flag, int its, Vec X, Vec B)
 {
   SectionReal      sectionX, sectionB, cellX;
   Mesh             smallMesh;

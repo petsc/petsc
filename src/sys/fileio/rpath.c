@@ -40,7 +40,7 @@
 
 .seealso: PetscGetFullPath()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscGetRelativePath(const char fullpath[],char path[],size_t flen)
+PetscErrorCode  PetscGetRelativePath(const char fullpath[],char path[],size_t flen)
 {
   char           *p;
   PetscErrorCode ierr;

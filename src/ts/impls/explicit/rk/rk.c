@@ -28,7 +28,7 @@ typedef struct {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSRKSetTolerance_RK"
-PetscErrorCode PETSCTS_DLLEXPORT TSRKSetTolerance_RK(TS ts,PetscReal aabs)
+PetscErrorCode  TSRKSetTolerance_RK(TS ts,PetscReal aabs)
 {
   TS_RK *rk = (TS_RK*)ts->data;
   
@@ -57,7 +57,7 @@ EXTERN_C_END
 .seealso: TSSundialsSetTolerance()
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSRKSetTolerance(TS ts,PetscReal aabs)
+PetscErrorCode  TSRKSetTolerance(TS ts,PetscReal aabs)
 {
   PetscErrorCode ierr;
   
@@ -471,7 +471,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_RK"
-PetscErrorCode PETSCTS_DLLEXPORT TSCreate_RK(TS ts)
+PetscErrorCode  TSCreate_RK(TS ts)
 {
   TS_RK          *rk;
   PetscErrorCode ierr;

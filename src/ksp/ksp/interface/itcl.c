@@ -45,7 +45,7 @@ extern PetscBool  KSPRegisterAllCalled;
 
 .seealso: KSPAppendOptionsPrefix(), KSPGetOptionsPrefix()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOptionsPrefix(KSP ksp,const char prefix[])
+PetscErrorCode  KSPSetOptionsPrefix(KSP ksp,const char prefix[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -78,7 +78,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOptionsPrefix(KSP ksp,const char prefix[
 
 .seealso: KSPSetOptionsPrefix(), KSPGetOptionsPrefix()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
+PetscErrorCode  KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -110,7 +110,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPAppendOptionsPrefix(KSP ksp,const char pref
 
 .seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix(), KSPSetUseFischerGuess(), KSPSetFischerGuess(), KSPGetFischerInitialGuess()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUseFischerGuess(KSP ksp,PetscInt model,PetscInt size)
+PetscErrorCode  KSPSetUseFischerGuess(KSP ksp,PetscInt model,PetscInt size)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -151,7 +151,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUseFischerGuess(KSP ksp,PetscInt model,P
 
 .seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix(), KSPSetUseFischerGuess(), KSPSetFischerGuess(), KSPGetFischerGuess()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFischerGuess(KSP ksp,KSPFischerGuess guess)
+PetscErrorCode  KSPSetFischerGuess(KSP ksp,KSPFischerGuess guess)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -183,7 +183,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFischerGuess(KSP ksp,KSPFischerGuess gue
 
 .seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix(), KSPSetUseFischerGuess(), KSPSetFischerGuess()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetFischerGuess(KSP ksp,KSPFischerGuess *guess)
+PetscErrorCode  KSPGetFischerGuess(KSP ksp,KSPFischerGuess *guess)
 {
   PetscFunctionBegin;
   *guess = ksp->guess;
@@ -213,7 +213,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetFischerGuess(KSP ksp,KSPFischerGuess *gu
 
 .seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOptionsPrefix(KSP ksp,const char *prefix[])
+PetscErrorCode  KSPGetOptionsPrefix(KSP ksp,const char *prefix[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -275,7 +275,7 @@ $       This will require 1 more iteration of the solver than usual.
 .seealso: KSPSetUseFischerInitialGuess()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
+PetscErrorCode  KSPSetFromOptions(KSP ksp)
 {
   PetscErrorCode          ierr;
   PetscInt                indx;

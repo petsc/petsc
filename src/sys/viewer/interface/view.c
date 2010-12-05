@@ -16,7 +16,7 @@ static PetscBool  PetscViewerPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFinalizePackage(void)
+PetscErrorCode  PetscViewerFinalizePackage(void)
 {
   PetscFunctionBegin;
   PetscViewerPackageInitialized = PETSC_FALSE;
@@ -37,7 +37,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFinalizePackage(void)
 .keywords: Petsc, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerInitializePackage(const char path[])
+PetscErrorCode  PetscViewerInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
@@ -91,7 +91,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerInitializePackage(const char path[]
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDestroy(PetscViewer viewer)
+PetscErrorCode  PetscViewerDestroy(PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -139,7 +139,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDestroy(PetscViewer viewer)
 .seealso: PetscViewerCreate(), PetscViewerSetType()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerGetType(PetscViewer viewer,const PetscViewerType *type)
+PetscErrorCode  PetscViewerGetType(PetscViewer viewer,const PetscViewerType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -170,7 +170,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerGetType(PetscViewer viewer,const Pe
 
 .seealso: PetscViewerSetFromOptions()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSetOptionsPrefix(PetscViewer viewer,const char prefix[])
+PetscErrorCode  PetscViewerSetOptionsPrefix(PetscViewer viewer,const char prefix[])
 {
   PetscErrorCode ierr;
 
@@ -202,7 +202,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSetOptionsPrefix(PetscViewer viewer
 
 .seealso: PetscViewerGetOptionsPrefix()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerAppendOptionsPrefix(PetscViewer viewer,const char prefix[])
+PetscErrorCode  PetscViewerAppendOptionsPrefix(PetscViewer viewer,const char prefix[])
 {
   PetscErrorCode ierr;
   
@@ -235,7 +235,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerAppendOptionsPrefix(PetscViewer vie
 
 .seealso: PetscViewerAppendOptionsPrefix()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerGetOptionsPrefix(PetscViewer viewer,const char *prefix[])
+PetscErrorCode  PetscViewerGetOptionsPrefix(PetscViewer viewer,const char *prefix[])
 {
   PetscErrorCode ierr;
 
@@ -265,7 +265,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerGetOptionsPrefix(PetscViewer viewer
 
 .seealso: PetscViewerCreate(), PetscViewerDestroy()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSetUp(PetscViewer viewer)
+PetscErrorCode  PetscViewerSetUp(PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -297,7 +297,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerSetUp(PetscViewer viewer)
 .seealso: PetscViewerSetFormat(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), 
           PetscViewerSocketOpen(), PetscViewerBinaryOpen(), PetscViewerLoad()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PetscViewerView(PetscViewer v,PetscViewer viewer)
+PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
 {
   PetscErrorCode        ierr;
   PetscBool             iascii;

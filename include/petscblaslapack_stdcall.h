@@ -8,6 +8,7 @@
 */
 #if !defined(_BLASLAPACK_STDCALL_H)
 #define _BLASLAPACK_STDCALL_H
+#include "private/fortranimpl.h"
 PETSC_EXTERN_CXX_BEGIN
 EXTERN_C_BEGIN
 

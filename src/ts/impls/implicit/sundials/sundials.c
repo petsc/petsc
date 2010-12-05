@@ -481,7 +481,7 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetType_Sundials"
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetType_Sundials(TS ts,TSSundialsLmmType type)
+PetscErrorCode  TSSundialsSetType_Sundials(TS ts,TSSundialsLmmType type)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
   
@@ -494,7 +494,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetGMRESRestart_Sundials"
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetGMRESRestart_Sundials(TS ts,int restart)
+PetscErrorCode  TSSundialsSetGMRESRestart_Sundials(TS ts,int restart)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
   
@@ -507,7 +507,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetLinearTolerance_Sundials"
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetLinearTolerance_Sundials(TS ts,double tol)
+PetscErrorCode  TSSundialsSetLinearTolerance_Sundials(TS ts,double tol)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
   
@@ -520,7 +520,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetGramSchmidtType_Sundials"
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetGramSchmidtType_Sundials(TS ts,TSSundialsGramSchmidtType type)
+PetscErrorCode  TSSundialsSetGramSchmidtType_Sundials(TS ts,TSSundialsGramSchmidtType type)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
   
@@ -533,7 +533,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetTolerance_Sundials"
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetTolerance_Sundials(TS ts,double aabs,double rel)
+PetscErrorCode  TSSundialsSetTolerance_Sundials(TS ts,double aabs,double rel)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
   
@@ -547,7 +547,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetMinTimeStep_Sundials"
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetMinTimeStep_Sundials(TS ts,PetscReal mindt)
+PetscErrorCode  TSSundialsSetMinTimeStep_Sundials(TS ts,PetscReal mindt)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
 
@@ -560,7 +560,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetMaxTimeStep_Sundials"
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetMaxTimeStep_Sundials(TS ts,PetscReal maxdt)
+PetscErrorCode  TSSundialsSetMaxTimeStep_Sundials(TS ts,PetscReal maxdt)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
 
@@ -573,7 +573,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSSundialsGetPC_Sundials"
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsGetPC_Sundials(TS ts,PC *pc)
+PetscErrorCode  TSSundialsGetPC_Sundials(TS ts,PC *pc)
 { 
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
 
@@ -586,7 +586,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSSundialsGetIterations_Sundials"
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsGetIterations_Sundials(TS ts,int *nonlin,int *lin)
+PetscErrorCode  TSSundialsGetIterations_Sundials(TS ts,int *nonlin,int *lin)
 { 
   PetscFunctionBegin;
   if (nonlin) *nonlin = ts->nonlinear_its;
@@ -598,7 +598,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSSundialsSetExactFinalTime_Sundials"
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetExactFinalTime_Sundials(TS ts,PetscBool  s)
+PetscErrorCode  TSSundialsSetExactFinalTime_Sundials(TS ts,PetscBool  s)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
   
@@ -611,7 +611,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSSundialsMonitorInternalSteps_Sundials"
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsMonitorInternalSteps_Sundials(TS ts,PetscBool  s)
+PetscErrorCode  TSSundialsMonitorInternalSteps_Sundials(TS ts,PetscBool  s)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
   
@@ -649,7 +649,7 @@ EXTERN_C_END
           TSSundialsSetLinearTolerance(), TSSundialsGetPC(), TSSundialsSetExactFinalTime()
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsGetIterations(TS ts,int *nonlin,int *lin)
+PetscErrorCode  TSSundialsGetIterations(TS ts,int *nonlin,int *lin)
 {
   PetscErrorCode ierr;
   
@@ -679,7 +679,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsGetIterations(TS ts,int *nonlin,int *
           TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
           TSSundialsSetExactFinalTime()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetType(TS ts,TSSundialsLmmType type)
+PetscErrorCode  TSSundialsSetType(TS ts,TSSundialsLmmType type)
 {
   PetscErrorCode ierr;
   
@@ -712,7 +712,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetType(TS ts,TSSundialsLmmType type)
           TSSundialsSetExactFinalTime()
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetGMRESRestart(TS ts,int restart)
+PetscErrorCode  TSSundialsSetGMRESRestart(TS ts,int restart)
 {
   PetscErrorCode ierr;
 
@@ -746,7 +746,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetGMRESRestart(TS ts,int restart)
           TSSundialsSetExactFinalTime()
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetLinearTolerance(TS ts,double tol)
+PetscErrorCode  TSSundialsSetLinearTolerance(TS ts,double tol)
 {
   PetscErrorCode ierr;
   
@@ -779,7 +779,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetLinearTolerance(TS ts,double tol)
           TSSundialsSetExactFinalTime()
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType type)
+PetscErrorCode  TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType type)
 {
   PetscErrorCode ierr;
   
@@ -815,7 +815,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetGramSchmidtType(TS ts,TSSundialsGr
           TSSundialsSetExactFinalTime()
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetTolerance(TS ts,double aabs,double rel)
+PetscErrorCode  TSSundialsSetTolerance(TS ts,double aabs,double rel)
 {
   PetscErrorCode ierr;
   
@@ -842,7 +842,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetTolerance(TS ts,double aabs,double
           TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
           TSSundialsSetLinearTolerance(), TSSundialsSetTolerance()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsGetPC(TS ts,PC *pc)
+PetscErrorCode  TSSundialsGetPC(TS ts,PC *pc)
 { 
   PetscErrorCode ierr;
 
@@ -869,7 +869,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsGetPC(TS ts,PC *pc)
           TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
           TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC() 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetExactFinalTime(TS ts,PetscBool  ft)
+PetscErrorCode  TSSundialsSetExactFinalTime(TS ts,PetscBool  ft)
 { 
   PetscErrorCode ierr;
 
@@ -895,7 +895,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetExactFinalTime(TS ts,PetscBool  ft
 
 .seealso: TSSundialsSetType(), TSSundialsSetTolerance(),
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetMinTimeStep(TS ts,PetscReal mindt)
+PetscErrorCode  TSSundialsSetMinTimeStep(TS ts,PetscReal mindt)
 {
   PetscErrorCode ierr;
 
@@ -917,7 +917,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetMinTimeStep(TS ts,PetscReal mindt)
 
 .seealso: TSSundialsSetType(), TSSundialsSetTolerance(),
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetMaxTimeStep(TS ts,PetscReal maxdt)
+PetscErrorCode  TSSundialsSetMaxTimeStep(TS ts,PetscReal maxdt)
 {
   PetscErrorCode ierr;
 
@@ -942,7 +942,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetMaxTimeStep(TS ts,PetscReal maxdt)
           TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
           TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC() 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsMonitorInternalSteps(TS ts,PetscBool  ft)
+PetscErrorCode  TSSundialsMonitorInternalSteps(TS ts,PetscBool  ft)
 { 
   PetscErrorCode ierr;
 
@@ -977,7 +977,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_Sundials"
-PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS ts)
+PetscErrorCode  TSCreate_Sundials(TS ts)
 {
   TS_Sundials *cvode;
   PetscErrorCode ierr;

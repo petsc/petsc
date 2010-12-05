@@ -34,7 +34,7 @@ extern PetscErrorCode VecAXPBY_Seq(Vec,PetscScalar,PetscScalar,Vec);
 extern PetscErrorCode VecMax_Seq(Vec,PetscInt*,PetscReal *);
 extern PetscErrorCode VecNorm_Seq(Vec,NormType,PetscReal*);
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec);
+extern PetscErrorCode  VecCreate_Seq(Vec);
 EXTERN_C_END
 extern PetscErrorCode VecCreate_Seq_Private(Vec,const PetscScalar[]);
 

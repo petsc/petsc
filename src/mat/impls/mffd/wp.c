@@ -162,7 +162,7 @@ static PetscErrorCode MatMFFDDestroy_WP(MatMFFD ctx)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDWPSetComputeNormU_P"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDWPSetComputeNormU_P(Mat mat,PetscBool  flag)
+PetscErrorCode  MatMFFDWPSetComputeNormU_P(Mat mat,PetscBool  flag)
 {
   MatMFFD     ctx = (MatMFFD)mat->data;
   MatMFFD_WP  *hctx = (MatMFFD_WP*)ctx->hctx;
@@ -197,7 +197,7 @@ EXTERN_C_END
 .seealso: MatMFFDSetFunctionError(), MatCreateSNESMF()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDWPSetComputeNormU(Mat A,PetscBool  flag)
+PetscErrorCode  MatMFFDWPSetComputeNormU(Mat A,PetscBool  flag)
 {
   PetscErrorCode ierr;
 
@@ -218,7 +218,7 @@ EXTERN_C_BEGIN
 .  ctx - the matrix free context created by MatCreateMFFD()
 
 */
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD_WP(MatMFFD ctx)
+PetscErrorCode  MatCreateMFFD_WP(MatMFFD ctx)
 {
   PetscErrorCode ierr;
   MatMFFD_WP     *hctx;

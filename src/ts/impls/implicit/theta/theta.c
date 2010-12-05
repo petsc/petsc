@@ -189,7 +189,7 @@ static PetscErrorCode TSView_Theta(TS ts,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSThetaGetTheta_Theta"
-PetscErrorCode PETSCTS_DLLEXPORT TSThetaGetTheta_Theta(TS ts,PetscReal *theta)
+PetscErrorCode  TSThetaGetTheta_Theta(TS ts,PetscReal *theta)
 {
   TS_Theta *th = (TS_Theta*)ts->data;
 
@@ -200,7 +200,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSThetaGetTheta_Theta(TS ts,PetscReal *theta)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSThetaSetTheta_Theta"
-PetscErrorCode PETSCTS_DLLEXPORT TSThetaSetTheta_Theta(TS ts,PetscReal theta)
+PetscErrorCode  TSThetaSetTheta_Theta(TS ts,PetscReal theta)
 {
   TS_Theta *th = (TS_Theta*)ts->data;
 
@@ -223,7 +223,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_Theta"
-PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Theta(TS ts)
+PetscErrorCode  TSCreate_Theta(TS ts)
 {
   TS_Theta       *th;
   PetscErrorCode ierr;
@@ -273,7 +273,7 @@ EXTERN_C_END
 
 .seealso: TSThetaSetTheta()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSThetaGetTheta(TS ts,PetscReal *theta)
+PetscErrorCode  TSThetaGetTheta(TS ts,PetscReal *theta)
 {
   PetscErrorCode ierr;
 
@@ -302,7 +302,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSThetaGetTheta(TS ts,PetscReal *theta)
 
 .seealso: TSThetaGetTheta()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSThetaSetTheta(TS ts,PetscReal theta)
+PetscErrorCode  TSThetaSetTheta(TS ts,PetscReal theta)
 {
   PetscErrorCode ierr;
 

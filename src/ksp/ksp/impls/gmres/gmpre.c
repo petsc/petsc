@@ -23,7 +23,7 @@
 
 .seealso: KSPGMRESSetRestart(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetPreAllocateVectors(KSP ksp)
+PetscErrorCode  KSPGMRESSetPreAllocateVectors(KSP ksp)
 {
   PetscErrorCode ierr;
 

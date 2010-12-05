@@ -69,7 +69,7 @@ PetscBool  asa_events_registered = PETSC_FALSE;
     Level: advanced
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCASASetDM(PC pc,DM dm)
+PetscErrorCode  PCASASetDM(PC pc,DM dm)
 {
   PetscErrorCode ierr;
 
@@ -82,7 +82,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASASetDM(PC pc,DM dm)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCASASetDM_ASA"
-PetscErrorCode PETSCKSP_DLLEXPORT PCASASetDM_ASA(PC pc, DM dm)
+PetscErrorCode  PCASASetDM_ASA(PC pc, DM dm)
 {
   PetscErrorCode ierr;
   PC_ASA         *asa = (PC_ASA *) pc->data;
@@ -117,7 +117,7 @@ EXTERN_C_END
 
     Level: advanced
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCASASetTolerances(PC pc, PetscReal rtol, PetscReal abstol,PetscReal dtol, PetscInt maxits)
+PetscErrorCode  PCASASetTolerances(PC pc, PetscReal rtol, PetscReal abstol,PetscReal dtol, PetscInt maxits)
 {
   PetscErrorCode ierr;
 
@@ -130,7 +130,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASASetTolerances(PC pc, PetscReal rtol, Pets
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCASASetTolerances_ASA"
-PetscErrorCode PETSCKSP_DLLEXPORT PCASASetTolerances_ASA(PC pc, PetscReal rtol, PetscReal abstol,PetscReal dtol, PetscInt maxits)
+PetscErrorCode  PCASASetTolerances_ASA(PC pc, PetscReal rtol, PetscReal abstol,PetscReal dtol, PetscInt maxits)
 {
   PC_ASA         *asa = (PC_ASA *) pc->data;
 
@@ -162,7 +162,7 @@ EXTERN_C_END
 
 .keywords: ASA, create, levels, multigrid
 */
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreateLevel_ASA(PC_ASA_level **new_asa_lev, int level,MPI_Comm comm, PC_ASA_level *prev,
+PetscErrorCode  PCCreateLevel_ASA(PC_ASA_level **new_asa_lev, int level,MPI_Comm comm, PC_ASA_level *prev,
                                                     PC_ASA_level *next,KSPType ksptype, PCType pctype)
 {
   PetscErrorCode ierr;
@@ -2047,7 +2047,7 @@ static PetscErrorCode PCView_ASA(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_ASA"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC pc)
+PetscErrorCode  PCCreate_ASA(PC pc)
 {
   PetscErrorCode ierr;
   PC_ASA         *asa;

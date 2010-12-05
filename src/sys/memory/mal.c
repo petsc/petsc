@@ -22,7 +22,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMallocAlign"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocAlign(size_t mem,int line,const char func[],const char file[],const char dir[],void** result)
+PetscErrorCode  PetscMallocAlign(size_t mem,int line,const char func[],const char file[],const char dir[],void** result)
 {
 #if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)
   *result = malloc(mem);
@@ -52,7 +52,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocAlign(size_t mem,int line,const cha
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFreeAlign"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFreeAlign(void *ptr,int line,const char func[],const char file[],const char dir[])
+PetscErrorCode  PetscFreeAlign(void *ptr,int line,const char func[],const char file[],const char dir[])
 {
 #if (!(defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !defined(PETSC_HAVE_MEMALIGN))
   int shift;
@@ -83,7 +83,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFreeAlign(void *ptr,int line,const char f
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFreeDefault"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFreeDefault(void *ptr,int line,char *func,char *file,char *dir)
+PetscErrorCode  PetscFreeDefault(void *ptr,int line,char *func,char *file,char *dir)
 {
 #if defined(PETSC_HAVE_FREE_RETURN_INT)
   int err = free(ptr); 
@@ -96,8 +96,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFreeDefault(void *ptr,int line,char *func
   return 0;
 }
 
-PetscErrorCode  PETSCSYS_DLLEXPORT (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**) = PetscMallocAlign;
-PetscErrorCode  PETSCSYS_DLLEXPORT (*PetscTrFree)(void*,int,const char[],const char[],const char[])          = PetscFreeAlign;
+PetscErrorCode   (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**) = PetscMallocAlign;
+PetscErrorCode   (*PetscTrFree)(void*,int,const char[],const char[],const char[])          = PetscFreeAlign;
 
 PetscBool  petscsetmallocvisited = PETSC_FALSE;
 
@@ -120,7 +120,7 @@ PetscBool  petscsetmallocvisited = PETSC_FALSE;
    Concepts: memory^allocation 
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocSet(PetscErrorCode (*imalloc)(size_t,int,const char[],const char[],const char[],void**),
+PetscErrorCode  PetscMallocSet(PetscErrorCode (*imalloc)(size_t,int,const char[],const char[],const char[],void**),
                                               PetscErrorCode (*ifree)(void*,int,const char[],const char[],const char[]))
 {
   PetscFunctionBegin;
@@ -147,7 +147,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocSet(PetscErrorCode (*imalloc)(size_
     free() an address that was malloced by a different memory management system
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocClear(void)
+PetscErrorCode  PetscMallocClear(void)
 {
   PetscFunctionBegin;
   PetscTrMalloc         = PetscMallocAlign;

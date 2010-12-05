@@ -166,7 +166,7 @@ static struct _AOOps AOps = {AOView_Mapping,
 .keywords: AO, index
 .seealso: AOMappingHasPetscIndex(), AOCreateMapping()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool  *hasIndex)
+PetscErrorCode  AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool  *hasIndex)
 {
   AO_Mapping *aomap;
   PetscInt   *app;
@@ -215,7 +215,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasApplicationIndex(AO ao, PetscInt id
 .keywords: AO, index
 .seealso: AOMappingHasApplicationIndex(), AOCreateMapping()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool  *hasIndex)
+PetscErrorCode  AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool  *hasIndex)
 {
   AO_Mapping *aomap;
   PetscInt   *petsc;
@@ -272,7 +272,7 @@ $ -ao_view : call AOView() at the conclusion of AOCreateMapping()
 .keywords: AO, create
 .seealso: AOCreateBasic(), AOCreateBasic(), AOCreateMappingIS(), AODestroy()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
+PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
 {
   AO             ao;
   AO_Mapping     *aomap;
@@ -405,7 +405,7 @@ $ -ao_view : call AOView() at the conclusion of AOCreateMappingIS()
 .keywords: AO, create
 .seealso: AOCreateBasic(), AOCreateMapping(), AODestroy()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
+PetscErrorCode  AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
 {
   MPI_Comm       comm;
   const PetscInt *mypetsc, *myapp;

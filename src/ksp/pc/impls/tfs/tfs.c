@@ -181,7 +181,7 @@ EXTERN_C_BEGIN
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_TFS(PC pc)
+PetscErrorCode  PCCreate_TFS(PC pc)
 {
   PetscErrorCode ierr;
   PC_TFS         *tfs;

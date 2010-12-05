@@ -281,7 +281,7 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIBAIJDiagonalScaleLocal"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJDiagonalScaleLocal(Mat A,Vec scale)
+PetscErrorCode  MatMPIBAIJDiagonalScaleLocal(Mat A,Vec scale)
 {
   /* This routine should really be abandoned as it duplicates MatDiagonalScaleLocal */
   PetscErrorCode ierr;
@@ -294,7 +294,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJDiagonalScaleLocal(Mat A,Vec scale)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatDiagonalScaleLocal_MPIBAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalScaleLocal_MPIBAIJ(Mat A,Vec scale)
+PetscErrorCode  MatDiagonalScaleLocal_MPIBAIJ(Mat A,Vec scale)
 {
   Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*) A->data; /*access private part of matrix */
   PetscErrorCode ierr;

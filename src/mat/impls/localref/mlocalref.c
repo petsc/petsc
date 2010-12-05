@@ -192,7 +192,7 @@ static PetscErrorCode MatDestroy_LocalRef(Mat B)
 
 .seealso: MatSetValuesLocal(), MatSetValuesBlockedLocal(), MatGetLocalSubMatrix(), MatCreateSubMatrix()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
+PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat_LocalRef   *lr;

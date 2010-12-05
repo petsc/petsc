@@ -20,7 +20,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFischerGuessCreate_Method1" 
-PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessCreate_Method1(KSP ksp,int  maxl,KSPFischerGuess_Method1 **ITG)
+PetscErrorCode  KSPFischerGuessCreate_Method1(KSP ksp,int  maxl,KSPFischerGuess_Method1 **ITG)
 {
   KSPFischerGuess_Method1 *itg;
   PetscErrorCode          ierr;
@@ -43,7 +43,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessCreate_Method1(KSP ksp,int  max
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFischerGuessDestroy_Method1" 
-PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessDestroy_Method1(KSPFischerGuess_Method1 *itg)
+PetscErrorCode  KSPFischerGuessDestroy_Method1(KSPFischerGuess_Method1 *itg)
 {
   PetscErrorCode ierr;
 
@@ -63,7 +63,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessDestroy_Method1(KSPFischerGuess
 */
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFischerGuessFormGuess_Method1"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessFormGuess_Method1(KSPFischerGuess_Method1 *itg,Vec b,Vec x)
+PetscErrorCode  KSPFischerGuessFormGuess_Method1(KSPFischerGuess_Method1 *itg,Vec b,Vec x)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -88,7 +88,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessFormGuess_Method1(KSPFischerGue
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFischerGuessUpdate_Method1"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessUpdate_Method1(KSPFischerGuess_Method1 *itg,Vec x)
+PetscErrorCode  KSPFischerGuessUpdate_Method1(KSPFischerGuess_Method1 *itg,Vec x)
 {
   PetscReal      norm;
   PetscErrorCode ierr;
@@ -143,7 +143,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFischerGuessCreate_Method2" 
-PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessCreate_Method2(KSP ksp,int  maxl,KSPFischerGuess_Method2 **ITG)
+PetscErrorCode  KSPFischerGuessCreate_Method2(KSP ksp,int  maxl,KSPFischerGuess_Method2 **ITG)
 {
   KSPFischerGuess_Method2 *itg;
   PetscErrorCode          ierr;
@@ -166,7 +166,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessCreate_Method2(KSP ksp,int  max
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFischerGuessDestroy_Method2" 
-PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessDestroy_Method2(KSPFischerGuess_Method2 *itg)
+PetscErrorCode  KSPFischerGuessDestroy_Method2(KSPFischerGuess_Method2 *itg)
 {
   PetscErrorCode ierr;
 
@@ -186,7 +186,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessDestroy_Method2(KSPFischerGuess
 */
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFischerGuessFormGuess_Method2"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessFormGuess_Method2(KSPFischerGuess_Method2 *itg,Vec b,Vec x)
+PetscErrorCode  KSPFischerGuessFormGuess_Method2(KSPFischerGuess_Method2 *itg,Vec b,Vec x)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -211,7 +211,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessFormGuess_Method2(KSPFischerGue
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFischerGuessUpdate_Method2"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessUpdate_Method2(KSPFischerGuess_Method2 *itg,Vec x)
+PetscErrorCode  KSPFischerGuessUpdate_Method2(KSPFischerGuess_Method2 *itg,Vec x)
 {
   PetscScalar    norm;
   PetscErrorCode ierr;
@@ -276,7 +276,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessUpdate_Method2(KSPFischerGuess_
     Level: advanced
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessCreate(KSP ksp,PetscInt method,PetscInt maxl,KSPFischerGuess *itg)
+PetscErrorCode  KSPFischerGuessCreate(KSP ksp,PetscInt method,PetscInt maxl,KSPFischerGuess *itg)
 {
   PetscErrorCode  ierr;
 
@@ -297,7 +297,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessCreate(KSP ksp,PetscInt method,
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFischerGuessSetFromOptions"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessSetFromOptions(KSPFischerGuess ITG)
+PetscErrorCode  KSPFischerGuessSetFromOptions(KSPFischerGuess ITG)
 {
   PetscErrorCode  ierr;
 
@@ -308,7 +308,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessSetFromOptions(KSPFischerGuess 
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFischerGuessDestroy" 
-PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessDestroy(KSPFischerGuess ITG)
+PetscErrorCode  KSPFischerGuessDestroy(KSPFischerGuess ITG)
 {
   PetscErrorCode  ierr;
 
@@ -325,7 +325,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessDestroy(KSPFischerGuess ITG)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFischerGuessUpdate"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessUpdate(KSPFischerGuess itg,Vec x)
+PetscErrorCode  KSPFischerGuessUpdate(KSPFischerGuess itg,Vec x)
 {
   PetscErrorCode  ierr;
 
@@ -340,7 +340,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessUpdate(KSPFischerGuess itg,Vec 
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFischerGuessFormGuess"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessFormGuess(KSPFischerGuess itg,Vec b,Vec x)
+PetscErrorCode  KSPFischerGuessFormGuess(KSPFischerGuess itg,Vec b,Vec x)
 {
   PetscErrorCode  ierr;
 
@@ -360,7 +360,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessFormGuess(KSPFischerGuess itg,V
       initial guess object that the matrix is changed and so the initial guess object
       must restart from scratch building the subspace where the guess is computed from.
 */
-PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessReset(KSPFischerGuess itg)
+PetscErrorCode  KSPFischerGuessReset(KSPFischerGuess itg)
 {
   PetscErrorCode ierr;
 

@@ -130,7 +130,7 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
    PetscLogObjectMemory(h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
 
 extern PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscHeaderCreate_Private(PetscObject,PetscClassId,PetscInt,const char[],MPI_Comm,PetscErrorCode (*)(PetscObject),PetscErrorCode (*)(PetscObject,PetscViewer));
+extern PetscErrorCode  PetscHeaderCreate_Private(PetscObject,PetscClassId,PetscInt,const char[],MPI_Comm,PetscErrorCode (*)(PetscObject),PetscErrorCode (*)(PetscObject,PetscViewer));
 
 /*@C
     PetscHeaderDestroy - Final step in destroying a PetscObject
@@ -149,7 +149,7 @@ extern PetscErrorCode PETSCSYS_DLLEXPORT PetscHeaderCreate_Private(PetscObject,P
    PetscFree((h)->ops) ||			   \
    PetscFree(h))
 
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscHeaderDestroy_Private(PetscObject);
+extern PetscErrorCode  PetscHeaderDestroy_Private(PetscObject);
 
 /* ---------------------------------------------------------------------------------------*/
 
@@ -426,17 +426,17 @@ M*/
 M*/
 #define PetscObjectStateDecrease(obj) ((obj)->state--,0)
 
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectStateQuery(PetscObject,PetscInt*);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetState(PetscObject,PetscInt);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataRegister(PetscInt*);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataIncreaseInt(PetscObject);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataIncreaseIntstar(PetscObject);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataIncreaseReal(PetscObject);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataIncreaseRealstar(PetscObject);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataIncreaseScalar(PetscObject);
-extern PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataIncreaseScalarstar(PetscObject);
-extern PetscInt       PETSCSYS_DLLEXPORT globalcurrentstate;
-extern PetscInt       PETSCSYS_DLLEXPORT globalmaxstate;
+extern PetscErrorCode  PetscObjectStateQuery(PetscObject,PetscInt*);
+extern PetscErrorCode  PetscObjectSetState(PetscObject,PetscInt);
+extern PetscErrorCode  PetscObjectComposedDataRegister(PetscInt*);
+extern PetscErrorCode  PetscObjectComposedDataIncreaseInt(PetscObject);
+extern PetscErrorCode  PetscObjectComposedDataIncreaseIntstar(PetscObject);
+extern PetscErrorCode  PetscObjectComposedDataIncreaseReal(PetscObject);
+extern PetscErrorCode  PetscObjectComposedDataIncreaseRealstar(PetscObject);
+extern PetscErrorCode  PetscObjectComposedDataIncreaseScalar(PetscObject);
+extern PetscErrorCode  PetscObjectComposedDataIncreaseScalarstar(PetscObject);
+extern PetscInt        globalcurrentstate;
+extern PetscInt        globalmaxstate;
 /*MC
    PetscObjectComposedDataSetInt - attach integer data to a PetscObject
 
@@ -741,12 +741,12 @@ M*/
 #endif
 
 /* some vars for logging */
-extern PETSCSYS_DLLEXPORT PetscBool  PetscPreLoadingUsed;       /* true if we are or have done preloading */
-extern PETSCSYS_DLLEXPORT PetscBool  PetscPreLoadingOn;         /* true if we are currently in a preloading calculation */
+extern  PetscBool  PetscPreLoadingUsed;       /* true if we are or have done preloading */
+extern  PetscBool  PetscPreLoadingOn;         /* true if we are currently in a preloading calculation */
 
-extern PETSCSYS_DLLEXPORT PetscMPIInt Petsc_Counter_keyval;
-extern PETSCSYS_DLLEXPORT PetscMPIInt Petsc_InnerComm_keyval;
-extern PETSCSYS_DLLEXPORT PetscMPIInt Petsc_OuterComm_keyval;
+extern  PetscMPIInt Petsc_Counter_keyval;
+extern  PetscMPIInt Petsc_InnerComm_keyval;
+extern  PetscMPIInt Petsc_OuterComm_keyval;
 
 /*
   PETSc communicators have this attribute, see

@@ -30,7 +30,7 @@
 
 .keywords: CG, conjugate gradient, Hermitian, symmetric, set, type
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType(KSP ksp,KSPCGType type)
+PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
 {
   PetscErrorCode ierr;
 
@@ -64,7 +64,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType(KSP ksp,KSPCGType type)
     
 .keywords: CG, conjugate gradient, Hermitian, symmetric, set, type
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCGUseSingleReduction(KSP ksp,PetscBool  flg)
+PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool  flg)
 {
   PetscErrorCode ierr;
 

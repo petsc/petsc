@@ -157,6 +157,7 @@ def getclasses(filename):
 
 def getfunctions(filename):
   import re
+  regfun      = re.compile('EXTERN PetscErrorCode PETSC[A-Z]*_DLLEXPORT ')
   regcomment  = re.compile('/\* [A-Za-z _(),<>|^\*]* \*/')
   regblank    = re.compile(' [ ]*')
   regarg      = re.compile('\([A-Za-z*_\[\]]*[,\)]')

@@ -17,7 +17,7 @@
 
 .seealso: DaGetDim(), DMDASetSizes()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDASetDim(DM da, PetscInt dim)
+PetscErrorCode  DMDASetDim(DM da, PetscInt dim)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -45,7 +45,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDASetDim(DM da, PetscInt dim)
 
 .seealso: DMDAGetSize(), PetscSplitOwnership()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
+PetscErrorCode  DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -78,7 +78,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDASetSizes(DM da, PetscInt M, PetscInt N, Pet
 
 .seealso: DMDASetSizes(), DMDAGetSize(), PetscSplitOwnership()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
+PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -109,7 +109,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDASetNumProcs(DM da, PetscInt m, PetscInt n, 
 .keywords:  distributed array, periodicity
 .seealso: DMDACreate(), DMDestroy(), DMDA, DMDAPeriodicType
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDASetPeriodicity(DM da, DMDAPeriodicType ptype)
+PetscErrorCode  DMDASetPeriodicity(DM da, DMDAPeriodicType ptype)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -135,7 +135,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDASetPeriodicity(DM da, DMDAPeriodicType ptyp
 .keywords:  distributed array, degrees of freedom
 .seealso: DMDACreate(), DMDestroy(), DMDA
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDASetDof(DM da, int dof)
+PetscErrorCode  DMDASetDof(DM da, int dof)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -162,7 +162,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDASetDof(DM da, int dof)
 .keywords:  distributed array, stencil
 .seealso: DMDACreate(), DMDestroy(), DMDA
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDASetStencilType(DM da, DMDAStencilType stype)
+PetscErrorCode  DMDASetStencilType(DM da, DMDAStencilType stype)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -189,7 +189,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDASetStencilType(DM da, DMDAStencilType stype
 .keywords:  distributed array, stencil
 .seealso: DMDACreate(), DMDestroy(), DMDA
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDASetStencilWidth(DM da, PetscInt width)
+PetscErrorCode  DMDASetStencilWidth(DM da, PetscInt width)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -231,7 +231,7 @@ static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da,PetscInt M,PetscInt
 .keywords:  distributed array
 .seealso: DMDACreate(), DMDestroy(), DMDA
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[])
+PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[])
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -270,7 +270,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDASetOwnershipRanges(DM da, const PetscInt lx
 /*
  Ensure that da->lx, ly, and lz exist.  Collective on DMDA.
 */
-PetscErrorCode PETSCDM_DLLEXPORT DMDACreateOwnershipRanges(DM da)
+PetscErrorCode  DMDACreateOwnershipRanges(DM da)
 {
   DM_DA          *dd = (DM_DA*)da->data;
   PetscErrorCode ierr;
@@ -321,7 +321,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDACreateOwnershipRanges(DM da)
 
 .seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMDA, DMDAInterpolationType
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDASetInterpolationType(DM da,DMDAInterpolationType ctype)
+PetscErrorCode  DMDASetInterpolationType(DM da,DMDAInterpolationType ctype)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -357,7 +357,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDASetInterpolationType(DM da,DMDAInterpolatio
    Level: intermediate
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAGetNeighbors(DM da,const PetscMPIInt *ranks[])
+PetscErrorCode  DMDAGetNeighbors(DM da,const PetscMPIInt *ranks[])
 {
   DM_DA *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
@@ -383,7 +383,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAGetNeighbors(DM da,const PetscMPIInt *ranks
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "DMDASetElementType"
-PetscErrorCode PETSCDM_DLLEXPORT DMDASetElementType(DM da, DMDAElementType etype)
+PetscErrorCode  DMDASetElementType(DM da, DMDAElementType etype)
 {
   DM_DA          *dd = (DM_DA*)da->data;
   PetscErrorCode ierr;
@@ -417,7 +417,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDASetElementType(DM da, DMDAElementType etype
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "DMDAGetElementType"
-PetscErrorCode PETSCDM_DLLEXPORT DMDAGetElementType(DM da, DMDAElementType *etype)
+PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
 {
   DM_DA *dd = (DM_DA*)da->data;
   PetscFunctionBegin;
@@ -447,7 +447,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAGetElementType(DM da, DMDAElementType *etyp
 
 .seealso: DMElementType, DMSetElementType(), DMRestoreElements()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
+PetscErrorCode  DMGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -477,7 +477,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetElements(DM dm,PetscInt *nel,PetscInt *nen
 
 .seealso: DMElementType, DMSetElementType(), DMGetElements()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMRestoreElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
+PetscErrorCode  DMRestoreElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -518,7 +518,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRestoreElements(DM dm,PetscInt *nel,PetscInt 
 
 .seealso: DMDAGetCorners(), DMDAGetGhostCorners(), DMDACreate(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), VecGetOwnershipRanges()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAGetOwnershipRanges(DM da,const PetscInt *lx[],const PetscInt *ly[],const PetscInt *lz[])
+PetscErrorCode  DMDAGetOwnershipRanges(DM da,const PetscInt *lx[],const PetscInt *ly[],const PetscInt *lz[])
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -554,7 +554,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAGetOwnershipRanges(DM da,const PetscInt *lx
 
 .seealso: DMRefine(), DMDAGetRefinementFactor()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refine_y,PetscInt refine_z)
+PetscErrorCode  DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refine_y,PetscInt refine_z)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -591,7 +591,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDASetRefinementFactor(DM da, PetscInt refine_
 
 .seealso: DMRefine(), DMDASetRefinementFactor()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *refine_y,PetscInt *refine_z)
+PetscErrorCode  DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *refine_y,PetscInt *refine_z)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -621,7 +621,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAGetRefinementFactor(DM da, PetscInt *refine
 
 .seealso: DMGetMatrix(), DMDASetBlockFills()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDASetGetMatrix(DM da,PetscErrorCode (*f)(DM, const MatType,Mat*))
+PetscErrorCode  DMDASetGetMatrix(DM da,PetscErrorCode (*f)(DM, const MatType,Mat*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -722,7 +722,7 @@ static PetscErrorCode DMDACoarsenOwnershipRanges(DM da,PetscBool periodic,PetscI
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMRefine_DA"
-PetscErrorCode PETSCDM_DLLEXPORT DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
+PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
 {
   PetscErrorCode ierr;
   PetscInt       M,N,P;
@@ -819,7 +819,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCoarsen_DA"
-PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
+PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
 {
   PetscErrorCode ierr;
   PetscInt       M,N,P;
@@ -918,7 +918,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMRefineHierarchy_DA"
-PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy_DA(DM da,PetscInt nlevels,DM daf[])
+PetscErrorCode  DMRefineHierarchy_DA(DM da,PetscInt nlevels,DM daf[])
 {
   PetscErrorCode ierr;
   PetscInt       i,n,*refx,*refy,*refz;
@@ -953,7 +953,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy_DA(DM da,PetscInt nlevels,DM 
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCoarsenHierarchy_DA"
-PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy_DA(DM da,PetscInt nlevels,DM dac[])
+PetscErrorCode  DMCoarsenHierarchy_DA(DM da,PetscInt nlevels,DM dac[])
 {
   PetscErrorCode ierr;
   PetscInt       i;
