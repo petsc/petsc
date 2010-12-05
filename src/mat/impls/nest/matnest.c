@@ -874,7 +874,7 @@ static PetscErrorCode MatNestSetOps_Private(struct _MatOps* ops)
   ops->multconstrained              = 0;
   ops->multtransposeconstrained     = 0;
   /*79*/
-  ops->permutesparsify = 0;
+  ops->dummy           = 0;
   ops->mults           = 0;
   ops->solves          = 0;
   ops->getinertia      = 0;
