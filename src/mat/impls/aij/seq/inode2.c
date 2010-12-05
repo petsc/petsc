@@ -1,10 +1,10 @@
 #define PETSCMAT_DLL
 #include "../src/mat/impls/aij/seq/aij.h"
 
-EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscBool );
+extern PetscErrorCode Mat_CheckInode(Mat,PetscBool );
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes_SeqAIJ_Inode(Mat,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInodeGetInodeSizes_SeqAIJ_Inode(Mat,PetscInt*,PetscInt*[],PetscInt*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes_SeqAIJ_Inode(Mat,IS*,IS*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatInodeGetInodeSizes_SeqAIJ_Inode(Mat,PetscInt*,PetscInt*[],PetscInt*);
 EXTERN_C_END
 
 #undef __FUNCT__

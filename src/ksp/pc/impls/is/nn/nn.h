@@ -19,11 +19,11 @@ typedef struct {
   PetscScalar   factor_coarse_rhs;
 } PC_NN;
 
-EXTERN PetscErrorCode PCNNCreateCoarseMatrix (PC);
-EXTERN PetscErrorCode PCNNApplySchurToChunk(PC pc,PetscInt n,PetscInt* idx,PetscScalar *chunk,PetscScalar* array_N,Vec vec1_B,Vec vec2_B,Vec vec1_D,Vec vec2_D);
-EXTERN PetscErrorCode PCNNApplyInterfacePreconditioner (PC pc,Vec r,Vec z,PetscScalar* work_N,Vec vec1_B,Vec vec2_B,
+extern PetscErrorCode PCNNCreateCoarseMatrix (PC);
+extern PetscErrorCode PCNNApplySchurToChunk(PC pc,PetscInt n,PetscInt* idx,PetscScalar *chunk,PetscScalar* array_N,Vec vec1_B,Vec vec2_B,Vec vec1_D,Vec vec2_D);
+extern PetscErrorCode PCNNApplyInterfacePreconditioner (PC pc,Vec r,Vec z,PetscScalar* work_N,Vec vec1_B,Vec vec2_B,
                                              Vec vec3_B,Vec vec1_D,Vec vec2_D,Vec vec1_N,Vec vec2_N);
-EXTERN PetscErrorCode PCNNBalancing(PC pc,Vec r,Vec u,Vec z,Vec vec1_B,Vec vec2_B,Vec vec3_B,Vec vec1_D,Vec vec2_D,PetscScalar *work_N); 
+extern PetscErrorCode PCNNBalancing(PC pc,Vec r,Vec u,Vec z,Vec vec1_B,Vec vec2_B,Vec vec3_B,Vec vec1_D,Vec vec2_D,PetscScalar *work_N); 
 
 #endif /* __pcnn_h */
 

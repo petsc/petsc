@@ -296,7 +296,7 @@ Input : pointer to ADT.
 Description: This function frees the storage associated with an xxt handle
 Usage: XXT_free(xxt_handle);
 **************************************xxt.h***********************************/
-EXTERN PetscInt XXT_free(xxt_ADT xxt_handle);
+extern PetscInt XXT_free(xxt_ADT xxt_handle);
 
 
 /*************************************xxt.h************************************
@@ -410,7 +410,7 @@ Input : pointer to ADT.
 Description: This function frees the storage associated with an xyt handle
 Usage: XYT_free(xyt_handle);
 **************************************xyt.h***********************************/
-EXTERN PetscInt XYT_free(xyt_ADT xyt_handle);
+extern PetscInt XYT_free(xyt_ADT xyt_handle);
 
 
 /*************************************xyt.h************************************

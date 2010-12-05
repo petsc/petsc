@@ -51,7 +51,7 @@ PetscErrorCode PetscContainerDestroy_Mat_MatMatMultMPI(void *ptr)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode MatDestroy_AIJ(Mat);
+extern PetscErrorCode MatDestroy_AIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJ_MatMatMult"
 PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat A)

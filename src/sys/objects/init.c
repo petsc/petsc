@@ -200,7 +200,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscEnd(void)
 }
 
 PetscBool    PetscOptionsPublish = PETSC_FALSE;
-EXTERN PetscErrorCode        PetscSetUseTrMalloc_Private(void);
+extern PetscErrorCode        PetscSetUseTrMalloc_Private(void);
 extern PetscBool  petscsetmallocvisited;
 static char       emacsmachinename[256];
 

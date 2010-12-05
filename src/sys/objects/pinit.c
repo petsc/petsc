@@ -10,7 +10,7 @@
 #endif
 
 #if defined(PETSC_USE_LOG)
-EXTERN PetscErrorCode PetscLogBegin_Private(void);
+extern PetscErrorCode PetscLogBegin_Private(void);
 #endif
 extern PetscBool  PetscOpenMPWorker;
 
@@ -18,12 +18,12 @@ extern PetscBool  PetscOpenMPWorker;
 
 extern FILE *petsc_history;
 
-EXTERN PetscErrorCode PetscInitialize_DynamicLibraries(void);
-EXTERN PetscErrorCode PetscFinalize_DynamicLibraries(void);
-EXTERN PetscErrorCode PetscFListDestroyAll(void);
-EXTERN PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
-EXTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
-EXTERN PetscErrorCode PetscCloseHistoryFile(FILE **);
+extern PetscErrorCode PetscInitialize_DynamicLibraries(void);
+extern PetscErrorCode PetscFinalize_DynamicLibraries(void);
+extern PetscErrorCode PetscFListDestroyAll(void);
+extern PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
+extern PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
+extern PetscErrorCode PetscCloseHistoryFile(FILE **);
 
 /* this is used by the _, __, and ___ macros (see include/petscerror.h) */
 PetscErrorCode __gierr = 0;
@@ -150,7 +150,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFinalized(PetscBool  *isFinalized)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode        PetscOptionsCheckInitial_Private(void);
+extern PetscErrorCode        PetscOptionsCheckInitial_Private(void);
 extern PetscBool  PetscBeganMPI;
 
 /*

@@ -18,8 +18,8 @@ char baseFile[2048]; //stores the base file name.
 double c_factor, r_factor;
 int debug;
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(const Obj<ALE::Mesh>&, PetscViewer);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT FieldView_Sieve(const Obj<ALE::Mesh>&, const std::string&, PetscViewer);
+extern PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(const Obj<ALE::Mesh>&, PetscViewer);
+extern PetscErrorCode PETSCDM_DLLEXPORT FieldView_Sieve(const Obj<ALE::Mesh>&, const std::string&, PetscViewer);
 PetscErrorCode CreateMesh(MPI_Comm, Obj<ALE::Mesh>&);
 PetscErrorCode OutputVTK(const Obj<ALE::Mesh>&, std::string, std::string, bool cell);
 PetscErrorCode OutputMesh(const Obj<ALE::Mesh>&);

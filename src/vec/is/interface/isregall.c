@@ -2,9 +2,9 @@
 
 #include "private/isimpl.h"     /*I  "petscis.h"  I*/
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_General(IS);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_Stride(IS);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_Block(IS);
+extern PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_General(IS);
+extern PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_Stride(IS);
+extern PetscErrorCode PETSCVEC_DLLEXPORT ISCreate_Block(IS);
 EXTERN_C_END
 
 #undef __FUNCT__  

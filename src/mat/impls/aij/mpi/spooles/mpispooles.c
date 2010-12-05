@@ -11,8 +11,8 @@
 #include "../src/mat/impls/sbaij/mpi/mpisbaij.h"
 #include "../src/mat/impls/aij/seq/spooles/spooles.h"
 
-EXTERN int SetSpoolesOptions(Mat, Spooles_options *);
-EXTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
+extern int SetSpoolesOptions(Mat, Spooles_options *);
+extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJSpooles"

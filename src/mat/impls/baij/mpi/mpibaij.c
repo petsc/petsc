@@ -3,16 +3,16 @@
 #include "../src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "petscblaslapack.h"
 
-EXTERN PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat); 
-EXTERN PetscErrorCode DisAssemble_MPIBAIJ(Mat);
-EXTERN PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat,PetscInt,IS[],PetscInt);
-EXTERN PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
-EXTERN PetscErrorCode MatGetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt [],PetscScalar []);
-EXTERN PetscErrorCode MatSetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt [],const PetscScalar [],InsertMode);
-EXTERN PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
-EXTERN PetscErrorCode MatGetRow_SeqBAIJ(Mat,PetscInt,PetscInt*,PetscInt*[],PetscScalar*[]);
-EXTERN PetscErrorCode MatRestoreRow_SeqBAIJ(Mat,PetscInt,PetscInt*,PetscInt*[],PetscScalar*[]);
-EXTERN PetscErrorCode MatZeroRows_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscScalar,Vec,Vec);
+extern PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat); 
+extern PetscErrorCode DisAssemble_MPIBAIJ(Mat);
+extern PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat,PetscInt,IS[],PetscInt);
+extern PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+extern PetscErrorCode MatGetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt [],PetscScalar []);
+extern PetscErrorCode MatSetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt [],const PetscScalar [],InsertMode);
+extern PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+extern PetscErrorCode MatGetRow_SeqBAIJ(Mat,PetscInt,PetscInt*,PetscInt*[],PetscScalar*[]);
+extern PetscErrorCode MatRestoreRow_SeqBAIJ(Mat,PetscInt,PetscInt*,PetscInt*[],PetscScalar*[]);
+extern PetscErrorCode MatZeroRows_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscScalar,Vec,Vec);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowMaxAbs_MPIBAIJ"
@@ -2262,7 +2262,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetGhosts_MPIBAIJ(Mat mat,PetscInt *nghosts
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode CreateColmap_MPIBAIJ_Private(Mat);
+extern PetscErrorCode CreateColmap_MPIBAIJ_Private(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringCreate_MPIBAIJ"
@@ -3065,8 +3065,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,Petsc
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalScaleLocal_MPIBAIJ(Mat,Vec);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetHashTableFactor_MPIBAIJ(Mat,PetscReal);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalScaleLocal_MPIBAIJ(Mat,Vec);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatSetHashTableFactor_MPIBAIJ(Mat,PetscReal);
 EXTERN_C_END
 
 

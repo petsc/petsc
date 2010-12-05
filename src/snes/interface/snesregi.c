@@ -3,13 +3,13 @@
 #include "private/snesimpl.h"     /*I  "petscsnes.h"  I*/
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LS(SNES);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_TR(SNES);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Test(SNES);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Picard(SNES);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_KSPONLY(SNES);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LS(SNES);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_TR(SNES);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Test(SNES);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Picard(SNES);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_KSPONLY(SNES);
 #if !defined(PETSC_USE_COMPLEX)
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_VI(SNES);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_VI(SNES);
 #endif
 EXTERN_C_END
 

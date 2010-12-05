@@ -16,7 +16,7 @@ typedef struct {
   Vec               left,right,middle,workb;   /* dummy vectors to perform local parts of product */
 } Mat_BlockMat;      
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatBlockMatSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatBlockMatSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSOR_BlockMat_Symmetric"

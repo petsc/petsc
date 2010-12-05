@@ -348,7 +348,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
 }
 #endif
 
-EXTERN PetscErrorCode VecView_MPI_Draw_DA1d(Vec,PetscViewer);
+extern PetscErrorCode VecView_MPI_Draw_DA1d(Vec,PetscViewer);
 
 #if defined(PETSC_HAVE_MPIIO)
 #undef __FUNCT__  

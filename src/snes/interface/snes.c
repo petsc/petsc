@@ -217,7 +217,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESAddOptionsChecker(PetscErrorCode (*snesch
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES,Vec,Mat*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES,Vec,Mat*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetUpMatrixFree_Private"

@@ -476,9 +476,9 @@ M*/
 
 #if defined PETSC_HAVE_ADIC
 /* Use MPI_Allreduce when ADIC is not available. */
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGlobalMax(MPI_Comm, const PetscReal*,PetscReal*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGlobalMin(MPI_Comm, const PetscReal*,PetscReal*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGlobalSum(MPI_Comm, const PetscScalar*,PetscScalar*);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscGlobalMax(MPI_Comm, const PetscReal*,PetscReal*);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscGlobalMin(MPI_Comm, const PetscReal*,PetscReal*);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscGlobalSum(MPI_Comm, const PetscScalar*,PetscScalar*);
 #endif
 
 /*MC

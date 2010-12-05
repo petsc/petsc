@@ -105,7 +105,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage(void)
 
 #if defined(PETSC_HAVE_HYPRE)
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MatCreate_HYPREStruct(Mat);
+extern PetscErrorCode PETSCDM_DLLEXPORT MatCreate_HYPREStruct(Mat);
 EXTERN_C_END
 #endif
 

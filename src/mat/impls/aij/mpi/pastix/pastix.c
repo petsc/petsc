@@ -43,7 +43,7 @@ typedef struct Mat_Pastix_ {
   PetscErrorCode (*MatDestroy)(Mat);
 } Mat_Pastix;
 
-EXTERN PetscErrorCode MatDuplicate_Pastix(Mat,MatDuplicateOption,Mat*);
+extern PetscErrorCode MatDuplicate_Pastix(Mat,MatDuplicateOption,Mat*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvertToCSC"

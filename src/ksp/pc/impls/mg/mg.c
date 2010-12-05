@@ -260,9 +260,9 @@ PetscErrorCode PCDestroy_MG(PC pc)
 
 
 
-EXTERN PetscErrorCode PCMGACycle_Private(PC,PC_MG_Levels**);
-EXTERN PetscErrorCode PCMGFCycle_Private(PC,PC_MG_Levels**);
-EXTERN PetscErrorCode PCMGKCycle_Private(PC,PC_MG_Levels**);
+extern PetscErrorCode PCMGACycle_Private(PC,PC_MG_Levels**);
+extern PetscErrorCode PCMGFCycle_Private(PC,PC_MG_Levels**);
+extern PetscErrorCode PCMGKCycle_Private(PC,PC_MG_Levels**);
 
 /*
    PCApply_MG - Runs either an additive, multiplicative, Kaskadic

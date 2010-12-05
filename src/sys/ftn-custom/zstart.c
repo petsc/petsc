@@ -123,14 +123,14 @@ extern PetscMPIInt PETSCSYS_DLLEXPORT MPIAPI Petsc_DelCounter(MPI_Comm,PetscMPII
 extern PetscMPIInt PETSCSYS_DLLEXPORT MPIAPI Petsc_DelComm(MPI_Comm,PetscMPIInt,void*,void*);
 EXTERN_C_END
 
-EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscOptionsCheckInitial_Private(void);
-EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscOptionsCheckInitial_Components(void);
-EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscInitialize_DynamicLibraries(void);
+extern PetscErrorCode PETSC_DLL_IMPORT PetscOptionsCheckInitial_Private(void);
+extern PetscErrorCode PETSC_DLL_IMPORT PetscOptionsCheckInitial_Components(void);
+extern PetscErrorCode PETSC_DLL_IMPORT PetscInitialize_DynamicLibraries(void);
 #if defined(PETSC_USE_LOG)
-EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscLogBegin_Private(void);
+extern PetscErrorCode PETSC_DLL_IMPORT PetscLogBegin_Private(void);
 #endif
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscFreeAlign(void*,int,const char[],const char[],const char[]);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscFreeAlign(void*,int,const char[],const char[],const char[]);
 extern int PetscGlobalArgc;
 extern char **PetscGlobalArgs;
 

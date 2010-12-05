@@ -3,51 +3,51 @@
 #include "petscmat.h"  /*I "petscmat.h" I*/
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MFFD(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MAIJ(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_IS(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MFFD(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MAIJ(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_IS(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJ(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJ(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BAIJ(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBAIJ(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBAIJ(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BAIJ(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBAIJ(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBAIJ(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJ(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJ(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJ(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJ(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Dense(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Dense(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAdj(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Shell(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Composite(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAdj(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Shell(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Composite(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJPERM(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJPERM(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJPERM(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJPERM(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJPERM(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJPERM(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJCRL(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCRL(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJCRL(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJCRL(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCRL(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJCRL(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Scatter(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BlockMat(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Scatter(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BlockMat(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DD(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DD(Mat);
 
 #if defined PETSC_HAVE_CUDA
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCUDA(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJCUDA(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJCUDA(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCUDA(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJCUDA(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJCUDA(Mat);
 #endif
 
 #if defined PETSC_HAVE_MATIM
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_IM(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_IM(Mat);
 #endif
 EXTERN_C_END
   
@@ -56,7 +56,7 @@ EXTERN_C_END
     MatRegisterAll() is called. In general, if there is more than one
     DLL, then MatRegisterAll() may be called several times.
 */
-EXTERN PetscBool  MatRegisterAllCalled;
+extern PetscBool  MatRegisterAllCalled;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRegisterAll"

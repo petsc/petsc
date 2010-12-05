@@ -75,7 +75,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalEnd_DA(DM da,Vec l,InsertMode mo
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode DMDAGetNatural_Private(DM,PetscInt*,IS*);
+extern PetscErrorCode DMDAGetNatural_Private(DM,PetscInt*,IS*);
 #undef __FUNCT__  
 #define __FUNCT__ "DMDAGlobalToNatural_Create"
 /*

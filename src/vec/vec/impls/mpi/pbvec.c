@@ -152,7 +152,7 @@ PetscErrorCode VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 }
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode VecView_MPI_Draw(Vec,PetscViewer);
+extern PetscErrorCode VecView_MPI_Draw(Vec,PetscViewer);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -172,7 +172,7 @@ PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode VecGetValues_MPI(Vec,PetscInt,const PetscInt [],PetscScalar []);
+extern PetscErrorCode VecGetValues_MPI(Vec,PetscInt,const PetscInt [],PetscScalar []);
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDuplicate_MPI"

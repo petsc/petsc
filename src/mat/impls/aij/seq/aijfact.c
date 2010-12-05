@@ -1601,7 +1601,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
 
 /* ----------------------------------------------------------------*/
 
-EXTERN PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,PetscBool );
+extern PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,PetscBool );
 
 /* 
    ilu() under revised new data structure.

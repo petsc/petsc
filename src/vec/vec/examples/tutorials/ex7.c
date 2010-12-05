@@ -17,7 +17,7 @@ and from Fortran to C\n\n";
 #define ex7c_ ex7c
 #endif
 EXTERN_C_BEGIN
-EXTERN void PETSC_STDCALL ex7f_(Vec *,int*);
+extern void PETSC_STDCALL ex7f_(Vec *,int*);
 EXTERN_C_END
 
 #undef __FUNCT__

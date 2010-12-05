@@ -38,31 +38,31 @@ E*/
 /* Logging support */
 extern PetscClassId PETSCSNES_DLLEXPORT SNES_CLASSID;
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char[]);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char[]);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm,SNES*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDestroy(SNES);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES,const SNESType);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSet(SNES,PetscErrorCode(*)(SNES,PetscInt,PetscReal,void*),void *,PetscErrorCode (*)(void*));
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorCancel(SNES);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceHistory(SNES,PetscReal[],PetscInt[],PetscInt,PetscBool );
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetConvergenceHistory(SNES,PetscReal*[],PetscInt *[],PetscInt *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES,Vec,Vec);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetErrorIfNotConverged(SNES,PetscBool );
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetErrorIfNotConverged(SNES,PetscBool  *);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm,SNES*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESDestroy(SNES);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES,const SNESType);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSet(SNES,PetscErrorCode(*)(SNES,PetscInt,PetscReal,void*),void *,PetscErrorCode (*)(void*));
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorCancel(SNES);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceHistory(SNES,PetscReal[],PetscInt[],PetscInt,PetscBool );
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetConvergenceHistory(SNES,PetscReal*[],PetscInt *[],PetscInt *);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES,Vec,Vec);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetErrorIfNotConverged(SNES,PetscBool );
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetErrorIfNotConverged(SNES,PetscBool  *);
 
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESAddOptionsChecker(PetscErrorCode (*)(SNES));
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESAddOptionsChecker(PetscErrorCode (*)(SNES));
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUpdate(SNES, PetscErrorCode (*)(SNES, PetscInt));
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultUpdate(SNES, PetscInt);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUpdate(SNES, PetscErrorCode (*)(SNES, PetscInt));
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultUpdate(SNES, PetscInt);
 
 extern PetscFList SNESList;
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESRegisterDestroy(void);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESRegisterAll(const char[]);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESRegisterDestroy(void);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESRegisterAll(const char[]);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESRegister(const char[],const char[],const char[],PetscErrorCode (*)(SNES));
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESRegister(const char[],const char[],const char[],PetscErrorCode (*)(SNES));
 
 /*MC
    SNESRegisterDynamic - Adds a method to the nonlinear solver package.
@@ -113,71 +113,71 @@ M*/
 #define SNESRegisterDynamic(a,b,c,d) SNESRegister(a,b,c,d)
 #endif
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetKSP(SNES,KSP*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetKSP(SNES,KSP);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetSolution(SNES,Vec*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetSolutionUpdate(SNES,Vec*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunction(SNES,Vec*,PetscErrorCode(**)(SNES,Vec,Vec,void*),void**);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESView(SNES,PetscViewer);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetKSP(SNES,KSP*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetKSP(SNES,KSP);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetSolution(SNES,Vec*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetSolutionUpdate(SNES,Vec*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunction(SNES,Vec*,PetscErrorCode(**)(SNES,Vec,Vec,void*),void**);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESView(SNES,PetscViewer);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetOptionsPrefix(SNES,const char[]);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESAppendOptionsPrefix(SNES,const char[]);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetOptionsPrefix(SNES,const char*[]);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetOptionsPrefix(SNES,const char[]);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESAppendOptionsPrefix(SNES,const char[]);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetOptionsPrefix(SNES,const char*[]);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatCreateSNESMF(SNES,Mat*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatMFFDComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT MatCreateSNESMF(SNES,Mat*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT MatMFFDComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatDAADSetSNES(Mat,SNES);
+extern PetscErrorCode PETSCSNES_DLLEXPORT MatDAADSetSNES(Mat,SNES);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetType(SNES,const SNESType*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefault(SNES,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRange(SNES,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRatio(SNES,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetRatio(SNES,PetscViewerASCIIMonitor);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSolution(SNES,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorResidual(SNES,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSolutionUpdate(SNES,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefaultShort(SNES,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetTolerances(SNES,PetscReal,PetscReal,PetscReal,PetscInt,PetscInt);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetTolerances(SNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetTrustRegionTolerance(SNES,PetscReal);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunctionNorm(SNES,PetscReal*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetIterationNumber(SNES,PetscInt*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetType(SNES,const SNESType*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefault(SNES,PetscInt,PetscReal,void *);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRange(SNES,PetscInt,PetscReal,void *);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRatio(SNES,PetscInt,PetscReal,void *);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetRatio(SNES,PetscViewerASCIIMonitor);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSolution(SNES,PetscInt,PetscReal,void *);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorResidual(SNES,PetscInt,PetscReal,void *);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSolutionUpdate(SNES,PetscInt,PetscReal,void *);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefaultShort(SNES,PetscInt,PetscReal,void *);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetTolerances(SNES,PetscReal,PetscReal,PetscReal,PetscInt,PetscInt);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetTolerances(SNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetTrustRegionTolerance(SNES,PetscReal);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunctionNorm(SNES,PetscReal*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetIterationNumber(SNES,PetscInt*);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNonlinearStepFailures(SNES,PetscInt*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaxNonlinearStepFailures(SNES,PetscInt);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxNonlinearStepFailures(SNES,PetscInt*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberFunctionEvals(SNES,PetscInt*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNonlinearStepFailures(SNES,PetscInt*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaxNonlinearStepFailures(SNES,PetscInt);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxNonlinearStepFailures(SNES,PetscInt*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberFunctionEvals(SNES,PetscInt*);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLagPreconditioner(SNES,PetscInt);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLagPreconditioner(SNES,PetscInt*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLagJacobian(SNES,PetscInt);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLagJacobian(SNES,PetscInt*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLagPreconditioner(SNES,PetscInt);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLagPreconditioner(SNES,PetscInt*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLagJacobian(SNES,PetscInt);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLagJacobian(SNES,PetscInt*);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveIterations(SNES,PetscInt*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveFailures(SNES,PetscInt*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaxLinearSolveFailures(SNES,PetscInt);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxLinearSolveFailures(SNES,PetscInt*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveIterations(SNES,PetscInt*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveFailures(SNES,PetscInt*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaxLinearSolveFailures(SNES,PetscInt);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxLinearSolveFailures(SNES,PetscInt*);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPSetUseEW(SNES,PetscBool );
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPGetUseEW(SNES,PetscBool *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPSetParametersEW(SNES,PetscInt,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPGetParametersEW(SNES,PetscInt*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPSetUseEW(SNES,PetscBool );
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPGetUseEW(SNES,PetscBool *);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPSetParametersEW(SNES,PetscInt,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPGetParametersEW(SNES,PetscInt*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLG(SNES,PetscInt,PetscReal,void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGDestroy(PetscDrawLG);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGRangeCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGRange(SNES,PetscInt,PetscReal,void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGRangeDestroy(PetscDrawLG);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLG(SNES,PetscInt,PetscReal,void*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGDestroy(PetscDrawLG);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGRangeCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGRange(SNES,PetscInt,PetscReal,void*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGRangeDestroy(PetscDrawLG);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetApplicationContext(SNES,void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetApplicationContext(SNES,void **);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetApplicationContext(SNES,void *);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetApplicationContext(SNES,void **);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetType(SNES,const char[]);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetType(SNES,const char[]);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFunctionDomainError(SNES);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFunctionDomainError(SNES);
 /*E
     SNESConvergedReason - reason a SNES method was said to 
          have converged or diverged
@@ -329,48 +329,48 @@ M*/
 
 M*/
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceTest(SNES,PetscErrorCode (*)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void*,PetscErrorCode (*)(void*));
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultConverged(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSkipConverged(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetConvergedReason(SNES,SNESConvergedReason*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceTest(SNES,PetscErrorCode (*)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void*,PetscErrorCode (*)(void*));
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultConverged(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSkipConverged(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetConvergedReason(SNES,SNESConvergedReason*);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDAFormFunction(SNES,Vec,Vec,void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobianWithAdifor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESDAFormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobianWithAdifor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 /* --------- Solving systems of nonlinear equations --------------- */
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFunction(SNES,Vec,PetscErrorCode(*)(SNES,Vec,Vec,void*),void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction(SNES,Vec,Vec);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetJacobian(SNES,Mat,Mat,PetscErrorCode(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetJacobian(SNES,Mat*,Mat*,PetscErrorCode(**)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetRhs(SNES,Vec*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFunction(SNES,Vec,PetscErrorCode(*)(SNES,Vec,Vec,void*),void *);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction(SNES,Vec,Vec);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetJacobian(SNES,Mat,Mat,PetscErrorCode(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetJacobian(SNES,Mat*,Mat*,PetscErrorCode(**)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetRhs(SNES,Vec*);
 
 /* --------- Routines specifically for line search methods --------------- */
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSet(SNES,PetscErrorCode(*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *),void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchNo(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchNoNorms(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSet(SNES,PetscErrorCode(*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *),void*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchNo(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchNoNorms(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPostCheck(SNES,PetscErrorCode(*)(SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *),void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPreCheck(SNES,PetscErrorCode(*)(SNES,Vec,Vec,void*,PetscBool *),void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetParams(SNES,PetscReal,PetscReal,PetscReal);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchGetParams(SNES,PetscReal*,PetscReal*,PetscReal*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetMonitor(SNES,PetscBool );
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPostCheck(SNES,PetscErrorCode(*)(SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *),void*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPreCheck(SNES,PetscErrorCode(*)(SNES,Vec,Vec,void*,PetscBool *),void*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetParams(SNES,PetscReal,PetscReal,PetscReal);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchGetParams(SNES,PetscReal*,PetscReal*,PetscReal*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetMonitor(SNES,PetscBool );
 
 /* Routine for semismooth algorithm */
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESVISetVariableBounds(SNES,Vec,Vec);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESVISetVariableBounds(SNES,Vec,Vec);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESTestLocalMin(SNES);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESTestLocalMin(SNES);
 
 /* Should this routine be private? */
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetDM(SNES,DM);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetDM(SNES,DM*);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESSetDM(SNES,DM);
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESGetDM(SNES,DM*);
 
 PETSC_EXTERN_CXX_END
 #endif

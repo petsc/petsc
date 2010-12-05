@@ -3,8 +3,8 @@
 #include "../src/mat/impls/mffd/mffdimpl.h"   /*I  "petscmat.h"   I*/
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD_DS(MatMFFD);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD_WP(MatMFFD);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD_DS(MatMFFD);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD_WP(MatMFFD);
 EXTERN_C_END
 
 #undef __FUNCT__  

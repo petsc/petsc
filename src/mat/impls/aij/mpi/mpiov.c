@@ -11,8 +11,8 @@
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat,PetscInt,IS *);
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local(Mat,PetscInt,char **,PetscInt*,PetscInt**);
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive(Mat,PetscInt,PetscInt **,PetscInt**,PetscInt*);
-EXTERN PetscErrorCode MatGetRow_MPIAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
-EXTERN PetscErrorCode MatRestoreRow_MPIAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
+extern PetscErrorCode MatGetRow_MPIAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
+extern PetscErrorCode MatRestoreRow_MPIAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_MPIAIJ"
@@ -543,8 +543,8 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive(Mat C,PetscInt nrqr,Pets
   PetscFunctionReturn(0);
 }  
 /* -------------------------------------------------------------------------*/
-EXTERN PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*);
-EXTERN PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
+extern PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*);
+extern PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
 /*
     Every processor gets the entire matrix
 */

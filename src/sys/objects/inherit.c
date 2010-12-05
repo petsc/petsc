@@ -4,11 +4,11 @@
 */
 #include "petscsys.h"  /*I   "petscsys.h"    I*/
 
-EXTERN PetscErrorCode PetscObjectGetComm_Petsc(PetscObject,MPI_Comm *);
-EXTERN PetscErrorCode PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
-EXTERN PetscErrorCode PetscObjectQuery_Petsc(PetscObject,const char[],PetscObject *);
-EXTERN PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject,const char[],const char[],void (*)(void));
-EXTERN PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject,const char[],void (**)(void));
+extern PetscErrorCode PetscObjectGetComm_Petsc(PetscObject,MPI_Comm *);
+extern PetscErrorCode PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
+extern PetscErrorCode PetscObjectQuery_Petsc(PetscObject,const char[],PetscObject *);
+extern PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject,const char[],const char[],void (*)(void));
+extern PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject,const char[],void (**)(void));
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscHeaderCreate_Private"

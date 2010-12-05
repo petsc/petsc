@@ -3,58 +3,58 @@
 #include "private/pcimpl.h"          /*I   "petscpc.h"   I*/
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Jacobi(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_BJacobi(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_PBJacobi(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_None(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SOR(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Shell(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_MG(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Eisenstat(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASM(PC); 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_GASM(PC); 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_KSP(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Composite(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_NN(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_FieldSplit(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Galerkin(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_OpenMP(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Exotic(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_CP(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_BFBt(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LSC(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redistribute(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SVD(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Jacobi(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_BJacobi(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_PBJacobi(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_None(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SOR(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Shell(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_MG(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Eisenstat(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASM(PC); 
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_GASM(PC); 
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_KSP(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Composite(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_NN(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_FieldSplit(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Galerkin(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_OpenMP(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Exotic(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_CP(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_BFBt(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LSC(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redistribute(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SVD(PC);
 
 #if defined(PETSC_HAVE_BOOST) && defined(PETSC_CLANGUAGE_CXX)
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SupportGraph(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SupportGraph(PC);
 #endif
 #if defined(PETSC_HAVE_ML)
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ML(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ML(PC);
 #endif
 #if defined(PETSC_HAVE_SPAI)
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SPAI(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SPAI(PC);
 #endif
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Mat(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Mat(PC);
 #if defined(PETSC_HAVE_HYPRE)
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_HYPRE(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_PFMG(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SysPFMG(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_HYPRE(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_PFMG(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SysPFMG(PC);
 #endif
 #if !defined(PETSC_USE_COMPLEX)
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_TFS(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_TFS(PC);
 #endif
 #if defined(PETSC_HAVE_PROMETHEUS)
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Prometheus(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Prometheus(PC);
 #endif
 #if defined(PETSC_HAVE_CUSP_SMOOTHED_AGGREGATION)
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SACUDA(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SACUDA(PC);
 #endif
 
 EXTERN_C_END

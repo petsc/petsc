@@ -1321,7 +1321,7 @@ PetscErrorCode MatMarkDiagonal_SeqBAIJ(Mat A)
 }
 
 
-EXTERN PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt**,PetscInt**);
+extern PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt**,PetscInt**);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_SeqBAIJ"

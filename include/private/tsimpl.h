@@ -81,8 +81,8 @@ struct _p_TS {
   Vec      *work;
 };
 
-EXTERN PetscErrorCode TSMonitor(TS,PetscInt,PetscReal,Vec);
-EXTERN PetscErrorCode TSScaleShiftMatrices(TS,Mat,Mat,MatStructure);
+extern PetscErrorCode TSMonitor(TS,PetscInt,PetscReal,Vec);
+extern PetscErrorCode TSScaleShiftMatrices(TS,Mat,Mat,MatStructure);
 
 extern PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 

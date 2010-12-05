@@ -5567,7 +5567,7 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 /* ----------------------------------------------------------------*/
-EXTERN PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat,Mat,MatDuplicateOption,PetscBool );
+extern PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat,Mat,MatDuplicateOption,PetscBool );
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering"

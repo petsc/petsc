@@ -4,10 +4,10 @@
 #include "../src/mat/color/color.h"
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_Natural(Mat,MatColoringType,ISColoring*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_SL_Minpack(Mat,MatColoringType,ISColoring*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_LF_Minpack(Mat,MatColoringType,ISColoring*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_ID_Minpack(Mat,MatColoringType,ISColoring*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_Natural(Mat,MatColoringType,ISColoring*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_SL_Minpack(Mat,MatColoringType,ISColoring*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_LF_Minpack(Mat,MatColoringType,ISColoring*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_ID_Minpack(Mat,MatColoringType,ISColoring*);
 EXTERN_C_END
 
 #undef __FUNCT__  

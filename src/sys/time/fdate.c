@@ -8,7 +8,7 @@
 #include <time.h>
 #if defined(PETSC_NEEDS_GETTIMEOFDAY_PROTO)
 EXTERN_C_BEGIN
-EXTERN int gettimeofday(struct timeval *,struct timezone *);
+extern int gettimeofday(struct timeval *,struct timezone *);
 EXTERN_C_END
 #endif
    

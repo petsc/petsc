@@ -140,7 +140,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGetType(PC pc,const PCType *type)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode PCGetDefaultType_Private(PC,const char*[]);
+extern PetscErrorCode PCGetDefaultType_Private(PC,const char*[]);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions"

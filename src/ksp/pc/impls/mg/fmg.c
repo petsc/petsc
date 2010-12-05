@@ -3,7 +3,7 @@
 */
 #include "../src/ksp/pc/impls/mg/mgimpl.h"
 
-EXTERN PetscErrorCode PCMGMCycle_Private(PC,PC_MG_Levels **,PCRichardsonConvergedReason*);
+extern PetscErrorCode PCMGMCycle_Private(PC,PC_MG_Levels **,PCRichardsonConvergedReason*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCMGFCycle_Private"

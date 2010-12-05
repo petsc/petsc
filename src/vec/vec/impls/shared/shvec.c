@@ -6,7 +6,7 @@
 
 #if defined(PETSC_USE_SHARED_MEMORY) 
 
-EXTERN PetscErrorCode PetscSharedMalloc(MPI_Comm,PetscInt,PetscInt,void**);
+extern PetscErrorCode PetscSharedMalloc(MPI_Comm,PetscInt,PetscInt,void**);
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDuplicate_Shared"

@@ -751,8 +751,8 @@ PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp)
 }
 
 
-EXTERN PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
-EXTERN PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
+extern PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
+extern PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
 
 /*functions for extra lgmres options here*/
 EXTERN_C_BEGIN
@@ -788,14 +788,14 @@ EXTERN_C_END
 
 /* use these options from gmres */
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetHapTol_GMRES(KSP,double);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetPreAllocateVectors_GMRES(KSP);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart_GMRES(KSP,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetRestart_GMRES(KSP,PetscInt*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,PetscInt));
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetOrthogonalization_GMRES(KSP,PetscErrorCode (**)(KSP,PetscInt));
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType*);
+extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetHapTol_GMRES(KSP,double);
+extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetPreAllocateVectors_GMRES(KSP);
+extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart_GMRES(KSP,PetscInt);
+extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetRestart_GMRES(KSP,PetscInt*);
+extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,PetscInt));
+extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetOrthogonalization_GMRES(KSP,PetscErrorCode (**)(KSP,PetscInt));
+extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
+extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType*);
 EXTERN_C_END
 
 /*MC

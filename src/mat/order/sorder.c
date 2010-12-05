@@ -10,7 +10,7 @@
 PetscFList      MatOrderingList = 0;
 PetscBool  MatOrderingRegisterAllCalled = PETSC_FALSE;
 
-EXTERN PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat,const MatOrderingType,IS *,IS *);
+extern PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat,const MatOrderingType,IS *,IS *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetOrdering_Flow"

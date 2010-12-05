@@ -89,7 +89,7 @@ static PetscErrorCode PCView_SupportGraph(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscBool  augment,PetscReal tol,PetscReal& maxCong);
+extern PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscBool  augment,PetscReal tol,PetscReal& maxCong);
 
 /* -------------------------------------------------------------------------- */
 /*

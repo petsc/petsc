@@ -129,8 +129,8 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
    PetscLogObjectCreate(h) ||						\
    PetscLogObjectMemory(h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
 
-EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscHeaderCreate_Private(PetscObject,PetscClassId,PetscInt,const char[],MPI_Comm,PetscErrorCode (*)(PetscObject),PetscErrorCode (*)(PetscObject,PetscViewer));
+extern PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscHeaderCreate_Private(PetscObject,PetscClassId,PetscInt,const char[],MPI_Comm,PetscErrorCode (*)(PetscObject),PetscErrorCode (*)(PetscObject,PetscViewer));
 
 /*@C
     PetscHeaderDestroy - Final step in destroying a PetscObject
@@ -149,7 +149,7 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscHeaderCreate_Private(PetscObject,P
    PetscFree((h)->ops) ||			   \
    PetscFree(h))
 
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscHeaderDestroy_Private(PetscObject);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscHeaderDestroy_Private(PetscObject);
 
 /* ---------------------------------------------------------------------------------------*/
 
@@ -426,17 +426,17 @@ M*/
 M*/
 #define PetscObjectStateDecrease(obj) ((obj)->state--,0)
 
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectStateQuery(PetscObject,PetscInt*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetState(PetscObject,PetscInt);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataRegister(PetscInt*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataIncreaseInt(PetscObject);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataIncreaseIntstar(PetscObject);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataIncreaseReal(PetscObject);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataIncreaseRealstar(PetscObject);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataIncreaseScalar(PetscObject);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataIncreaseScalarstar(PetscObject);
-EXTERN PetscInt       PETSCSYS_DLLEXPORT globalcurrentstate;
-EXTERN PetscInt       PETSCSYS_DLLEXPORT globalmaxstate;
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectStateQuery(PetscObject,PetscInt*);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetState(PetscObject,PetscInt);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataRegister(PetscInt*);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataIncreaseInt(PetscObject);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataIncreaseIntstar(PetscObject);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataIncreaseReal(PetscObject);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataIncreaseRealstar(PetscObject);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataIncreaseScalar(PetscObject);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectComposedDataIncreaseScalarstar(PetscObject);
+extern PetscInt       PETSCSYS_DLLEXPORT globalcurrentstate;
+extern PetscInt       PETSCSYS_DLLEXPORT globalmaxstate;
 /*MC
    PetscObjectComposedDataSetInt - attach integer data to a PetscObject
 

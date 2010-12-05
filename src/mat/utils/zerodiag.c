@@ -60,8 +60,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatReorderForNonzeroDiagonal(Mat mat,PetscReal
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode MatGetRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
-EXTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
+extern PetscErrorCode MatGetRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
+extern PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 
 #include "../src/vec/is/impls/general/general.h"
 

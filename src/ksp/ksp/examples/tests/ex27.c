@@ -9,7 +9,7 @@ Test MatMatSolve().  Input parameters include\n\
 */
 
 #include "petscksp.h"
-EXTERN PetscErrorCode PCShellApply_Matinv(PC,Vec,Vec);
+extern PetscErrorCode PCShellApply_Matinv(PC,Vec,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

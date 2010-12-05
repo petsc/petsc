@@ -1769,8 +1769,8 @@ PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat B,PetscBool  natur
 }
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat, MatType,MatReuse,Mat*); 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat, MatType,MatReuse,Mat*); 
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat, MatType,MatReuse,Mat*); 
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat, MatType,MatReuse,Mat*); 
 EXTERN_C_END
 
   

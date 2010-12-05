@@ -5,7 +5,7 @@
 */
 
 #include "private/daimpl.h"    /*I   "petscdm.h"   I*/
-EXTERN PetscErrorCode DMDALocalToLocalCreate(DM);
+extern PetscErrorCode DMDALocalToLocalCreate(DM);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDAGetScatter"

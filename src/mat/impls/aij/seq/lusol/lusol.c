@@ -48,7 +48,7 @@ extern void PETSC_STDCALL LU6SOL (int *mode, int *m, int *n, double *rhs, double
                         int *inform);
 EXTERN_C_END
 
-EXTERN PetscErrorCode MatDuplicate_LUSOL(Mat,MatDuplicateOption,Mat*);
+extern PetscErrorCode MatDuplicate_LUSOL(Mat,MatDuplicateOption,Mat*);
 
 typedef struct  {
   double *data;

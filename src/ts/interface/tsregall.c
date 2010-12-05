@@ -2,16 +2,16 @@
 
 #include "private/tsimpl.h"     /*I  "petscts.h"  I*/
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Euler(TS);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_BEuler(TS);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Pseudo(TS);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_CN(TS);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Theta(TS);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Alpha(TS);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_GL(TS);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_SSP(TS);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_RK(TS);
+extern PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Euler(TS);
+extern PetscErrorCode PETSCTS_DLLEXPORT TSCreate_BEuler(TS);
+extern PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Pseudo(TS);
+extern PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS);
+extern PetscErrorCode PETSCTS_DLLEXPORT TSCreate_CN(TS);
+extern PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Theta(TS);
+extern PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Alpha(TS);
+extern PetscErrorCode PETSCTS_DLLEXPORT TSCreate_GL(TS);
+extern PetscErrorCode PETSCTS_DLLEXPORT TSCreate_SSP(TS);
+extern PetscErrorCode PETSCTS_DLLEXPORT TSCreate_RK(TS);
 EXTERN_C_END
 
 #undef __FUNCT__  

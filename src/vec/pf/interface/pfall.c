@@ -2,12 +2,12 @@
 #include "petscpf.h"          /*I   "petscpf.h"   I*/
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Constant(PF,void*);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_String(PF,void*);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Quick(PF,void*);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Identity(PF,void*);
+extern PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Constant(PF,void*);
+extern PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_String(PF,void*);
+extern PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Quick(PF,void*);
+extern PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Identity(PF,void*);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Matlab(PF,void*);
+extern PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Matlab(PF,void*);
 #endif
 EXTERN_C_END
 

@@ -1,7 +1,7 @@
 #include "../src/characteristic/characteristicimpl.h"  /*I "characteristic.h" I*/
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic);
+extern PetscErrorCode CharacteristicCreate_DA(Characteristic);
 EXTERN_C_END
   
 /*
@@ -9,7 +9,7 @@ EXTERN_C_END
     CharacteristicRegisterAll() is called. In general, if there is more than one
     DLL, then CharacteristicRegisterAll() may be called several times.
 */
-EXTERN PetscBool  CharacteristicRegisterAllCalled;
+extern PetscBool  CharacteristicRegisterAllCalled;
 
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicRegisterAll"

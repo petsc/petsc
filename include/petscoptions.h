@@ -6,58 +6,58 @@
 #include "petscsys.h"
 PETSC_EXTERN_CXX_BEGIN
 
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsHasName(const char[],const char[],PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsHasName(const char[],const char[],PetscBool *);
 PetscPolymorphicSubroutine(PetscOptionsHasName,(const char b[],PetscBool  *f),(PETSC_NULL,b,f))
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetInt(const char[],const char [],PetscInt *,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetInt(const char[],const char [],PetscInt *,PetscBool *);
 PetscPolymorphicSubroutine(PetscOptionsGetInt,(const char b[],PetscInt *i,PetscBool  *f),(PETSC_NULL,b,i,f))
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetBool(const char[],const char [],PetscBool  *,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetBool(const char[],const char [],PetscBool  *,PetscBool *);
 PetscPolymorphicSubroutine(PetscOptionsGetBool,(const char b[],PetscBool  *i,PetscBool  *f),(PETSC_NULL,b,i,f))
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetReal(const char[],const char[],PetscReal *,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetReal(const char[],const char[],PetscReal *,PetscBool *);
 PetscPolymorphicSubroutine(PetscOptionsGetReal,(const char b[],PetscReal *i,PetscBool  *f),(PETSC_NULL,b,i,f))
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetScalar(const char[],const char[],PetscScalar *,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetScalar(const char[],const char[],PetscScalar *,PetscBool *);
 PetscPolymorphicSubroutine(PetscOptionsGetScalar,(const char b[],PetscScalar i[],PetscBool  *f),(PETSC_NULL,b,i,f))
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetIntArray(const char[],const char[],PetscInt[],PetscInt *,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetIntArray(const char[],const char[],PetscInt[],PetscInt *,PetscBool *);
 PetscPolymorphicSubroutine(PetscOptionsGetIntArray,(const char b[],PetscInt i[],PetscInt *ii,PetscBool  *f),(PETSC_NULL,b,i,ii,f))
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetRealArray(const char[],const char[],PetscReal[],PetscInt *,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetRealArray(const char[],const char[],PetscReal[],PetscInt *,PetscBool *);
 PetscPolymorphicSubroutine(PetscOptionsGetRealArray,(const char b[],PetscReal i[],PetscInt *ii,PetscBool  *f),(PETSC_NULL,b,i,ii,f))
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetBoolArray(const char[],const char[],PetscBool [],PetscInt *,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetBoolArray(const char[],const char[],PetscBool [],PetscInt *,PetscBool *);
 PetscPolymorphicSubroutine(PetscOptionsGetBoolArray,(const char b[],PetscBool  i[],PetscInt *ii,PetscBool  *f),(PETSC_NULL,b,i,ii,f))
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetString(const char[],const char[],char[],size_t,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetString(const char[],const char[],char[],size_t,PetscBool *);
 PetscPolymorphicSubroutine(PetscOptionsGetString,(const char b[],char i[],size_t s,PetscBool  *f),(PETSC_NULL,b,i,s,f))
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetStringArray(const char[],const char[],char*[],PetscInt*,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetStringArray(const char[],const char[],char*[],PetscInt*,PetscBool *);
 PetscPolymorphicSubroutine(PetscOptionsGetStringArray,(const char b[],char *i[],PetscInt *ii,PetscBool  *f),(PETSC_NULL,b,i,ii,f))
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetEList(const char[],const char[],const char*const*,PetscInt,PetscInt*,PetscBool *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetEnum(const char[],const char[],const char*const*,PetscEnum*,PetscBool *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsValidKey(const char[],PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetEList(const char[],const char[],const char*const*,PetscInt,PetscInt*,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsGetEnum(const char[],const char[],const char*const*,PetscEnum*,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsValidKey(const char[],PetscBool *);
 
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsSetAlias(const char[],const char[]);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsSetValue(const char[],const char[]);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsClearValue(const char[]);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsSetAlias(const char[],const char[]);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsSetValue(const char[],const char[]);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsClearValue(const char[]);
 
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsAllUsed(int*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsLeft(void);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsPrint(FILE *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsAllUsed(int*);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsLeft(void);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsPrint(FILE *);
 
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsCreate(void);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsInsert(int*,char ***,const char[]);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsInsertFile(MPI_Comm,const char[],PetscBool );
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsInsertString(const char[]);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsDestroy(void);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsClear(void);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsPrefixPush(const char[]);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsPrefixPop(void);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsCreate(void);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsInsert(int*,char ***,const char[]);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsInsertFile(MPI_Comm,const char[],PetscBool );
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsInsertString(const char[]);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsDestroy(void);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsClear(void);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsPrefixPush(const char[]);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsPrefixPop(void);
 
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsReject(const char[],const char[]);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetAll(char*[]);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsReject(const char[],const char[]);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetAll(char*[]);
 
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetenv(MPI_Comm,const char[],char[],size_t,PetscBool  *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsStringToInt(const char[],PetscInt*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsStringToReal(const char[],PetscReal*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsStringToBool(const char[],PetscBool*);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsGetenv(MPI_Comm,const char[],char[],size_t,PetscBool  *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsStringToInt(const char[],PetscInt*);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsStringToReal(const char[],PetscReal*);
+extern PetscErrorCode PETSCSYS_DLLEXPORT  PetscOptionsStringToBool(const char[],PetscBool*);
 
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsMonitorSet(PetscErrorCode (*)(const char[], const char[], void*), void *, PetscErrorCode (*)(void*));
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsMonitorCancel(void);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsMonitorDefault(const char[], const char[], void *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsMonitorSet(PetscErrorCode (*)(const char[], const char[], void*), void *, PetscErrorCode (*)(void*));
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsMonitorCancel(void);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsMonitorDefault(const char[], const char[], void *);
 
 extern PETSCSYS_DLLEXPORT PetscBool  PetscOptionsPublish;
 extern PETSCSYS_DLLEXPORT PetscInt   PetscOptionsPublishCount;
@@ -131,9 +131,9 @@ M*/
 M*/
 #define    PetscOptionsEnd() _5_ierr = PetscOptionsEnd_Private();CHKERRQ(_5_ierr);}}
 
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBegin_Private(MPI_Comm,const char[],const char[],const char[]);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsEnd_Private(void);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsHead(const char[]);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBegin_Private(MPI_Comm,const char[],const char[],const char[]);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsEnd_Private(void);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsHead(const char[]);
 
 /*MC
      PetscOptionsTail - Ends a section of options begun with PetscOptionsHead()
@@ -166,25 +166,25 @@ EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsHead(const char[]);
 M*/
 #define    PetscOptionsTail() 0; {if (PetscOptionsPublishCount != 1) PetscFunctionReturn(0);}
 
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsEnum(const char[],const char[],const char[],const char *const*,PetscEnum,PetscEnum*,PetscBool *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsInt(const char[],const char[],const char[],PetscInt,PetscInt*,PetscBool *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsReal(const char[],const char[],const char[],PetscReal,PetscReal*,PetscBool *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsScalar(const char[],const char[],const char[],PetscScalar,PetscScalar*,PetscBool *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsName(const char[],const char[],const char[],PetscBool *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsString(const char[],const char[],const char[],const char[],char*,size_t,PetscBool *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBool(const char[],const char[],const char[],PetscBool ,PetscBool *,PetscBool *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBoolGroupBegin(const char[],const char[],const char[],PetscBool *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBoolGroup(const char[],const char[],const char[],PetscBool *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBoolGroupEnd(const char[],const char[],const char[],PetscBool *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsList(const char[],const char[],const char[],PetscFList,const char[],char[],size_t,PetscBool *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsEList(const char[],const char[],const char[],const char*const*,PetscInt,const char[],PetscInt*,PetscBool *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsRealArray(const char[],const char[],const char[],PetscReal[],PetscInt*,PetscBool *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsIntArray(const char[],const char[],const char[],PetscInt[],PetscInt*,PetscBool *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsStringArray(const char[],const char[],const char[],char*[],PetscInt*,PetscBool *);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBoolArray(const char[],const char[],const char[],PetscBool [],PetscInt*,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsEnum(const char[],const char[],const char[],const char *const*,PetscEnum,PetscEnum*,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsInt(const char[],const char[],const char[],PetscInt,PetscInt*,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsReal(const char[],const char[],const char[],PetscReal,PetscReal*,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsScalar(const char[],const char[],const char[],PetscScalar,PetscScalar*,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsName(const char[],const char[],const char[],PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsString(const char[],const char[],const char[],const char[],char*,size_t,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBool(const char[],const char[],const char[],PetscBool ,PetscBool *,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBoolGroupBegin(const char[],const char[],const char[],PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBoolGroup(const char[],const char[],const char[],PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBoolGroupEnd(const char[],const char[],const char[],PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsList(const char[],const char[],const char[],PetscFList,const char[],char[],size_t,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsEList(const char[],const char[],const char[],const char*const*,PetscInt,const char[],PetscInt*,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsRealArray(const char[],const char[],const char[],PetscReal[],PetscInt*,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsIntArray(const char[],const char[],const char[],PetscInt[],PetscInt*,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsStringArray(const char[],const char[],const char[],char*[],PetscInt*,PetscBool *);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsBoolArray(const char[],const char[],const char[],PetscBool [],PetscInt*,PetscBool *);
 
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsSetFromOptions(void);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsAMSDestroy(void);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsSetFromOptions(void);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscOptionsAMSDestroy(void);
 PETSC_EXTERN_CXX_END
 
 /* 

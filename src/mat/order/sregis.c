@@ -3,15 +3,15 @@
 #include "private/matimpl.h"     /*I       "petscmat.h"   I*/
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_Natural(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_ND(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_1WD(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_QMD(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_RCM(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_RowLength(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_DSC(Mat,const MatOrderingType,IS*,IS*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_Natural(Mat,const MatOrderingType,IS*,IS*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_ND(Mat,const MatOrderingType,IS*,IS*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_1WD(Mat,const MatOrderingType,IS*,IS*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_QMD(Mat,const MatOrderingType,IS*,IS*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_RCM(Mat,const MatOrderingType,IS*,IS*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_RowLength(Mat,const MatOrderingType,IS*,IS*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_DSC(Mat,const MatOrderingType,IS*,IS*);
 #if defined(PETSC_HAVE_UMFPACK)
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_AMD(Mat,const MatOrderingType,IS*,IS*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_AMD(Mat,const MatOrderingType,IS*,IS*);
 #endif
 
 EXTERN_C_END

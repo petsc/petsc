@@ -4,8 +4,8 @@ This example also tests the use of MatDuplicate() for both MPIAIJ and MPIBAIJ ma
 
 #include "petscmat.h"
 
-EXTERN PetscErrorCode TestMatZeroRows_Basic(Mat,IS,PetscScalar);
-EXTERN PetscErrorCode TestMatZeroRows_with_no_allocation(Mat,IS,PetscScalar);
+extern PetscErrorCode TestMatZeroRows_Basic(Mat,IS,PetscScalar);
+extern PetscErrorCode TestMatZeroRows_with_no_allocation(Mat,IS,PetscScalar);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

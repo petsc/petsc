@@ -124,13 +124,13 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomRegisterDestroy(void)
 
 EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_RAND)
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomCreate_Rand(PetscRandom);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomCreate_Rand(PetscRandom);
 #endif
 #if defined(PETSC_HAVE_DRAND48)
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomCreate_Rand48(PetscRandom);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomCreate_Rand48(PetscRandom);
 #endif
 #if defined(PETSC_HAVE_SPRNG)
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomCreate_Sprng(PetscRandom);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscRandomCreate_Sprng(PetscRandom);
 #endif
 EXTERN_C_END
 

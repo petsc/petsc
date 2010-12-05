@@ -313,7 +313,7 @@ PetscErrorCode MatView_SeqAIJ_Binary(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode MatSeqAIJFactorInfo_Matlab(Mat,PetscViewer);
+extern PetscErrorCode MatSeqAIJFactorInfo_Matlab(Mat,PetscViewer);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_SeqAIJ_ASCII"

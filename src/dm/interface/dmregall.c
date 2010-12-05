@@ -2,10 +2,10 @@
 
 #include "private/daimpl.h"     /*I  "petscdm.h"  I*/
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT DMCreate_DA(DM);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT DMCreate_Composite(DM);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT DMCreate_Sliced(DM);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT DMCreate_ADDA(DM);
+extern PetscErrorCode PETSCVEC_DLLEXPORT DMCreate_DA(DM);
+extern PetscErrorCode PETSCVEC_DLLEXPORT DMCreate_Composite(DM);
+extern PetscErrorCode PETSCVEC_DLLEXPORT DMCreate_Sliced(DM);
+extern PetscErrorCode PETSCVEC_DLLEXPORT DMCreate_ADDA(DM);
 EXTERN_C_END
 
 #undef __FUNCT__  

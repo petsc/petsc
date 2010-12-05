@@ -5,7 +5,7 @@
 */
 #include "../src/mat/impls/sbaij/mpi/mpisbaij.h"
 
-EXTERN PetscErrorCode MatSetValues_SeqSBAIJ(Mat,PetscInt,const PetscInt [],PetscInt,const PetscInt [],const PetscScalar [],InsertMode);
+extern PetscErrorCode MatSetValues_SeqSBAIJ(Mat,PetscInt,const PetscInt [],PetscInt,const PetscInt [],const PetscScalar [],InsertMode);
 
 
 #undef __FUNCT__  

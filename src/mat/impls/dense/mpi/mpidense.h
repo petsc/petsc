@@ -24,14 +24,14 @@ typedef struct {
   PetscBool     roworiented;            /* if true, row oriented input (default) */
 } Mat_MPIDense;
 
-EXTERN PetscErrorCode MatLoad_MPIDense(Mat,PetscViewer);
-EXTERN PetscErrorCode MatSetUpMultiply_MPIDense(Mat);
-EXTERN PetscErrorCode MatGetSubMatrices_MPIDense(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
-EXTERN PetscErrorCode MatEqual_MPIDense(Mat,Mat,PetscBool *);
-EXTERN PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat,Mat,PetscReal,Mat*);
-EXTERN PetscErrorCode MatMatMult_MPIAIJ_MPIDense(Mat,Mat,MatReuse,PetscReal,Mat*);
-EXTERN PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat,Mat,PetscReal,Mat*); 
-EXTERN PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat,Mat,Mat);
-EXTERN PetscErrorCode MatGetFactor_mpidense_petsc(Mat,MatFactorType,Mat *);
+extern PetscErrorCode MatLoad_MPIDense(Mat,PetscViewer);
+extern PetscErrorCode MatSetUpMultiply_MPIDense(Mat);
+extern PetscErrorCode MatGetSubMatrices_MPIDense(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+extern PetscErrorCode MatEqual_MPIDense(Mat,Mat,PetscBool *);
+extern PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode MatMatMult_MPIAIJ_MPIDense(Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat,Mat,PetscReal,Mat*); 
+extern PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat,Mat,Mat);
+extern PetscErrorCode MatGetFactor_mpidense_petsc(Mat,MatFactorType,Mat *);
 
 

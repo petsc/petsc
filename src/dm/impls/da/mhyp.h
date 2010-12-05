@@ -46,10 +46,10 @@ typedef struct {
 } Mat_HYPRESStruct;
 
 
-EXTERN PetscErrorCode MatHYPRE_IJMatrixCreate(Mat,HYPRE_IJMatrix*);
-EXTERN PetscErrorCode MatHYPRE_IJMatrixCopy(Mat,HYPRE_IJMatrix);
-EXTERN PetscErrorCode MatHYPRE_IJMatrixFastCopy(Mat,HYPRE_IJMatrix);
-EXTERN PetscErrorCode VecHYPRE_IJVectorCreate(Vec,HYPRE_IJVector*);
+extern PetscErrorCode MatHYPRE_IJMatrixCreate(Mat,HYPRE_IJMatrix*);
+extern PetscErrorCode MatHYPRE_IJMatrixCopy(Mat,HYPRE_IJMatrix);
+extern PetscErrorCode MatHYPRE_IJMatrixFastCopy(Mat,HYPRE_IJMatrix);
+extern PetscErrorCode VecHYPRE_IJVectorCreate(Vec,HYPRE_IJVector*);
 
 /*
     PetscStackCallHypre - Calls a hypre library routine after pushing the name of the routine on the stack.

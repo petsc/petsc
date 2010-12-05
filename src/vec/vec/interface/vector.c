@@ -16,7 +16,7 @@ PetscLogEvent  VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_Reduc
 PetscLogEvent  VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ, VEC_CUDACopyFromGPU, VEC_CUDACopyToGPU;
 PetscLogEvent  VEC_CUDACopyFromGPUSome, VEC_CUDACopyToGPUSome;
 
-EXTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
+extern PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
 #undef __FUNCT__
 #define __FUNCT__ "VecStashGetInfo"
 /*@

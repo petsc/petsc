@@ -102,13 +102,13 @@ typedef struct {
 */
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec,PetscViewer);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT VecLoad_Default_DA(Vec, PetscViewer);
+extern PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec,PetscViewer);
+extern PetscErrorCode PETSCDM_DLLEXPORT VecLoad_Default_DA(Vec, PetscViewer);
 EXTERN_C_END
-EXTERN PetscErrorCode DMView_DA_Private(DM);
-EXTERN PetscErrorCode DMView_DA_Matlab(DM,PetscViewer);
-EXTERN PetscErrorCode DMView_DA_Binary(DM,PetscViewer);
-EXTERN PetscErrorCode DMView_DA_VTK(DM,PetscViewer);
+extern PetscErrorCode DMView_DA_Private(DM);
+extern PetscErrorCode DMView_DA_Matlab(DM,PetscViewer);
+extern PetscErrorCode DMView_DA_Binary(DM,PetscViewer);
+extern PetscErrorCode DMView_DA_VTK(DM,PetscViewer);
 
 extern PetscLogEvent  DMDA_GlobalToLocal, DMDA_LocalToGlobal, DMDA_LocalADFunction;
 

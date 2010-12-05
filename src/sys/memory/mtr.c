@@ -15,10 +15,10 @@
 /*
      These are defined in mal.c and ensure that malloced space is PetscScalar aligned
 */
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscFreeAlign(void*,int,const char[],const char[],const char[]);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTrMallocDefault(size_t,int,const char[],const char[],const char[],void**);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscTrFreeDefault(void*,int,const char[],const char[],const char[]);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscFreeAlign(void*,int,const char[],const char[],const char[]);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscTrMallocDefault(size_t,int,const char[],const char[],const char[],void**);
+extern PetscErrorCode PETSCSYS_DLLEXPORT PetscTrFreeDefault(void*,int,const char[],const char[],const char[]);
 
 
 #define CLASSID_VALUE   ((PetscClassId) 0xf0e0d0c9)

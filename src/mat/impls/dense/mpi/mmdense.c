@@ -42,7 +42,7 @@ PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*);
+extern PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*);
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIDense" 
 PetscErrorCode MatGetSubMatrices_MPIDense(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])

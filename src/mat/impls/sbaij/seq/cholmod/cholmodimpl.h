@@ -53,9 +53,9 @@ typedef struct {
   PetscBool      pack;
 } Mat_CHOLMOD;
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT CholmodStart(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatView_CHOLMOD(Mat,PetscViewer);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorSymbolic_CHOLMOD(Mat,Mat,IS,const MatFactorInfo*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_CHOLMOD(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT CholmodStart(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatView_CHOLMOD(Mat,PetscViewer);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorSymbolic_CHOLMOD(Mat,Mat,IS,const MatFactorInfo*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_CHOLMOD(Mat);
 
 #endif /* CHOLMODIMPL_H_ */

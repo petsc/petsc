@@ -602,8 +602,8 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
-EXTERN PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
+extern PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
+extern PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
 
 
 EXTERN_C_BEGIN

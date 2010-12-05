@@ -14,5 +14,5 @@ struct Mat_SeqAIJCUDA {
   CUSPARRAY*        tempvec; /*pointer to a workvector to which we can copy the relevant indices of a vector we want to multiply */
 };
 
-EXTERN PetscErrorCode MatCUDACopyToGPU(Mat);
+extern PetscErrorCode MatCUDACopyToGPU(Mat);
 #endif

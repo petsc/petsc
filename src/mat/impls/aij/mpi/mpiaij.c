@@ -2111,7 +2111,7 @@ PetscErrorCode MatAXPY_MPIAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate_SeqAIJ(Mat);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate_SeqAIJ(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatConjugate_MPIAIJ"
@@ -4267,7 +4267,7 @@ PetscErrorCode MatFileSplit(Mat A,char *outfile)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
+extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJ_SeqsToMPI"
 PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_SeqsToMPI(Mat A)

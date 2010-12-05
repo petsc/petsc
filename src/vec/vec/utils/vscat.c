@@ -723,9 +723,9 @@ PetscErrorCode VecScatterCopy_SStoSS(VecScatter in,VecScatter out)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode VecScatterCreate_PtoS(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,PetscInt,VecScatter);
-EXTERN PetscErrorCode VecScatterCreate_PtoP(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,PetscInt,VecScatter);
-EXTERN PetscErrorCode VecScatterCreate_StoP(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,PetscInt,VecScatter);
+extern PetscErrorCode VecScatterCreate_PtoS(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,PetscInt,VecScatter);
+extern PetscErrorCode VecScatterCreate_PtoP(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,PetscInt,VecScatter);
+extern PetscErrorCode VecScatterCreate_StoP(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,PetscInt,VecScatter);
 
 /* =======================================================================*/
 #define VEC_SEQ_ID 0

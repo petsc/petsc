@@ -14,11 +14,11 @@ PetscFList MeshList;
 ALE::MemoryLogger Petsc_MemoryLogger;
 #endif
 
-EXTERN PetscErrorCode MeshView_Mesh(Mesh, PetscViewer);
-EXTERN PetscErrorCode MeshRefine_Mesh(Mesh, MPI_Comm, Mesh *);
-EXTERN PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh, int, Mesh *);
-EXTERN PetscErrorCode MeshGetInterpolation_Mesh(Mesh, Mesh, Mat *, Vec *);
-EXTERN PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh, Mesh, Mat *, Vec *);
+extern PetscErrorCode MeshView_Mesh(Mesh, PetscViewer);
+extern PetscErrorCode MeshRefine_Mesh(Mesh, MPI_Comm, Mesh *);
+extern PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh, int, Mesh *);
+extern PetscErrorCode MeshGetInterpolation_Mesh(Mesh, Mesh, Mat *, Vec *);
+extern PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh, Mesh, Mat *, Vec *);
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -634,7 +634,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRegister(const char sname[],const char path
 }
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreate_Cartesian(Mesh);
+extern PetscErrorCode PETSCDM_DLLEXPORT MeshCreate_Cartesian(Mesh);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -1023,7 +1023,7 @@ PetscErrorCode MeshGetMaximumDegree(Mesh mesh, PetscInt *maxDegree)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode assembleFullField(VecScatter, Vec, Vec, InsertMode);
+extern PetscErrorCode assembleFullField(VecScatter, Vec, Vec, InsertMode);
 
 #undef __FUNCT__
 #define __FUNCT__ "restrictVector"

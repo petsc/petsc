@@ -31,10 +31,10 @@ EXTERN_C_BEGIN
 #include "matrix.h"
 EXTERN_C_END
 
-EXTERN PetscErrorCode ConvertMatToMatrix(MPI_Comm,Mat,Mat,matrix**);
-EXTERN PetscErrorCode ConvertMatrixToMat(MPI_Comm,matrix *,Mat *);
-EXTERN PetscErrorCode ConvertVectorToVec(MPI_Comm,vector *v,Vec *Pv);
-EXTERN PetscErrorCode MM_to_PETSC(char *,char *,char *);
+extern PetscErrorCode ConvertMatToMatrix(MPI_Comm,Mat,Mat,matrix**);
+extern PetscErrorCode ConvertMatrixToMat(MPI_Comm,matrix *,Mat *);
+extern PetscErrorCode ConvertVectorToVec(MPI_Comm,vector *v,Vec *Pv);
+extern PetscErrorCode MM_to_PETSC(char *,char *,char *);
 
 typedef struct {
 

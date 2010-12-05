@@ -22,8 +22,8 @@ static PetscErrorCode FGMRESGetNewVectors(KSP,PetscInt);
 static PetscErrorCode FGMRESUpdateHessenberg(KSP,PetscInt,PetscBool ,PetscReal *);
 static PetscErrorCode BuildFgmresSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
 
-EXTERN PetscErrorCode KSPView_GMRES(KSP,PetscViewer);
-EXTERN PetscErrorCode KSPSetUp_GMRES(KSP);
+extern PetscErrorCode KSPView_GMRES(KSP,PetscViewer);
+extern PetscErrorCode KSPSetUp_GMRES(KSP);
 /*
 
     KSPSetUp_FGMRES - Sets up the workspace needed by fgmres.
@@ -613,8 +613,8 @@ PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
-EXTERN PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
+extern PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
+extern PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
 
 typedef PetscErrorCode (*FCN1)(KSP,PetscInt,PetscInt,PetscReal,void*); /* force argument to next function to not be extern C*/
 typedef PetscErrorCode (*FCN2)(void*);
@@ -633,14 +633,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,v
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetPreAllocateVectors_GMRES(KSP);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart_GMRES(KSP,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetRestart_GMRES(KSP,PetscInt*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,PetscInt));
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetOrthogonalization_GMRES(KSP,PetscErrorCode (**)(KSP,PetscInt));
+extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetPreAllocateVectors_GMRES(KSP);
+extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart_GMRES(KSP,PetscInt);
+extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetRestart_GMRES(KSP,PetscInt*);
+extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,PetscInt));
+extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetOrthogonalization_GMRES(KSP,PetscErrorCode (**)(KSP,PetscInt));
 EXTERN_C_END
 
-EXTERN PetscErrorCode KSPDestroy_GMRES_Internal(KSP);
+extern PetscErrorCode KSPDestroy_GMRES_Internal(KSP);
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_FGMRES_Internal" 
@@ -695,8 +695,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetRestart_FGMRES(KSP ksp,PetscInt *ma
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType*);
+extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
+extern PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType*);
 EXTERN_C_END
 
 /*MC

@@ -18,27 +18,27 @@ typedef struct {
   VecScatter  localupdate;              /* scatter to update ghost values */
 } Vec_MPI;
 
-EXTERN PetscErrorCode VecMDot_MPI(Vec,PetscInt,const Vec[],PetscScalar *);
-EXTERN PetscErrorCode VecMTDot_MPI(Vec,PetscInt,const Vec[],PetscScalar *);
-EXTERN PetscErrorCode VecNorm_MPI(Vec,NormType,PetscReal *);
-EXTERN PetscErrorCode VecMax_MPI(Vec,PetscInt *,PetscReal *);
-EXTERN PetscErrorCode VecMin_MPI(Vec,PetscInt *,PetscReal *);
-EXTERN PetscErrorCode VecDestroy_MPI(Vec);
-EXTERN PetscErrorCode VecView_MPI_File(Vec,PetscViewer);
-EXTERN PetscErrorCode VecView_MPI_Files(Vec,PetscViewer);
-EXTERN PetscErrorCode VecView_MPI_Binary(Vec,PetscViewer);
-EXTERN PetscErrorCode VecView_MPI_Netcdf(Vec,PetscViewer);
-EXTERN PetscErrorCode VecView_MPI_Draw_LG(Vec,PetscViewer);
-EXTERN PetscErrorCode VecView_MPI_Socket(Vec,PetscViewer);
-EXTERN PetscErrorCode VecView_MPI_HDF5(Vec,PetscViewer);
-EXTERN PetscErrorCode VecView_MPI(Vec,PetscViewer);
-EXTERN PetscErrorCode VecGetSize_MPI(Vec,PetscInt *);
-EXTERN PetscErrorCode VecSetValues_MPI(Vec,PetscInt,const PetscInt [],const PetscScalar[],InsertMode);
-EXTERN PetscErrorCode VecSetValuesBlocked_MPI(Vec,PetscInt,const PetscInt [],const PetscScalar[],InsertMode);
-EXTERN PetscErrorCode VecAssemblyBegin_MPI(Vec);
-EXTERN PetscErrorCode VecAssemblyEnd_MPI(Vec);
+extern PetscErrorCode VecMDot_MPI(Vec,PetscInt,const Vec[],PetscScalar *);
+extern PetscErrorCode VecMTDot_MPI(Vec,PetscInt,const Vec[],PetscScalar *);
+extern PetscErrorCode VecNorm_MPI(Vec,NormType,PetscReal *);
+extern PetscErrorCode VecMax_MPI(Vec,PetscInt *,PetscReal *);
+extern PetscErrorCode VecMin_MPI(Vec,PetscInt *,PetscReal *);
+extern PetscErrorCode VecDestroy_MPI(Vec);
+extern PetscErrorCode VecView_MPI_File(Vec,PetscViewer);
+extern PetscErrorCode VecView_MPI_Files(Vec,PetscViewer);
+extern PetscErrorCode VecView_MPI_Binary(Vec,PetscViewer);
+extern PetscErrorCode VecView_MPI_Netcdf(Vec,PetscViewer);
+extern PetscErrorCode VecView_MPI_Draw_LG(Vec,PetscViewer);
+extern PetscErrorCode VecView_MPI_Socket(Vec,PetscViewer);
+extern PetscErrorCode VecView_MPI_HDF5(Vec,PetscViewer);
+extern PetscErrorCode VecView_MPI(Vec,PetscViewer);
+extern PetscErrorCode VecGetSize_MPI(Vec,PetscInt *);
+extern PetscErrorCode VecSetValues_MPI(Vec,PetscInt,const PetscInt [],const PetscScalar[],InsertMode);
+extern PetscErrorCode VecSetValuesBlocked_MPI(Vec,PetscInt,const PetscInt [],const PetscScalar[],InsertMode);
+extern PetscErrorCode VecAssemblyBegin_MPI(Vec);
+extern PetscErrorCode VecAssemblyEnd_MPI(Vec);
 
-EXTERN PetscErrorCode VecCreate_MPI_Private(Vec,PetscBool ,PetscInt,const PetscScalar[]);
+extern PetscErrorCode VecCreate_MPI_Private(Vec,PetscBool ,PetscInt,const PetscScalar[]);
 
 #endif
 

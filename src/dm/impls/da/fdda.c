@@ -4,10 +4,10 @@
 #include "petscmat.h"         /*I      "petscmat.h"    I*/
 #include "private/matimpl.h"
 
-EXTERN PetscErrorCode DMGetColoring_DA_1d_MPIAIJ(DM,ISColoringType,ISColoring *);
-EXTERN PetscErrorCode DMGetColoring_DA_2d_MPIAIJ(DM,ISColoringType,ISColoring *);
-EXTERN PetscErrorCode DMGetColoring_DA_2d_5pt_MPIAIJ(DM,ISColoringType,ISColoring *);
-EXTERN PetscErrorCode DMGetColoring_DA_3d_MPIAIJ(DM,ISColoringType,ISColoring *);
+extern PetscErrorCode DMGetColoring_DA_1d_MPIAIJ(DM,ISColoringType,ISColoring *);
+extern PetscErrorCode DMGetColoring_DA_2d_MPIAIJ(DM,ISColoringType,ISColoring *);
+extern PetscErrorCode DMGetColoring_DA_2d_5pt_MPIAIJ(DM,ISColoringType,ISColoring *);
+extern PetscErrorCode DMGetColoring_DA_3d_MPIAIJ(DM,ISColoringType,ISColoring *);
 
 /*
    For ghost i that may be negative or greater than the upper bound this
@@ -508,15 +508,15 @@ PetscErrorCode DMGetColoring_DA_2d_5pt_MPIAIJ(DM da,ISColoringType ctype,ISColor
 }
 
 /* =========================================================================== */
-EXTERN PetscErrorCode DMGetMatrix_DA_1d_MPIAIJ(DM,Mat);
-EXTERN PetscErrorCode DMGetMatrix_DA_2d_MPIAIJ(DM,Mat);
-EXTERN PetscErrorCode DMGetMatrix_DA_2d_MPIAIJ_Fill(DM,Mat);
-EXTERN PetscErrorCode DMGetMatrix_DA_3d_MPIAIJ(DM,Mat);
-EXTERN PetscErrorCode DMGetMatrix_DA_3d_MPIAIJ_Fill(DM,Mat);
-EXTERN PetscErrorCode DMGetMatrix_DA_2d_MPIBAIJ(DM,Mat);
-EXTERN PetscErrorCode DMGetMatrix_DA_3d_MPIBAIJ(DM,Mat);
-EXTERN PetscErrorCode DMGetMatrix_DA_2d_MPISBAIJ(DM,Mat);
-EXTERN PetscErrorCode DMGetMatrix_DA_3d_MPISBAIJ(DM,Mat);
+extern PetscErrorCode DMGetMatrix_DA_1d_MPIAIJ(DM,Mat);
+extern PetscErrorCode DMGetMatrix_DA_2d_MPIAIJ(DM,Mat);
+extern PetscErrorCode DMGetMatrix_DA_2d_MPIAIJ_Fill(DM,Mat);
+extern PetscErrorCode DMGetMatrix_DA_3d_MPIAIJ(DM,Mat);
+extern PetscErrorCode DMGetMatrix_DA_3d_MPIAIJ_Fill(DM,Mat);
+extern PetscErrorCode DMGetMatrix_DA_2d_MPIBAIJ(DM,Mat);
+extern PetscErrorCode DMGetMatrix_DA_3d_MPIBAIJ(DM,Mat);
+extern PetscErrorCode DMGetMatrix_DA_2d_MPISBAIJ(DM,Mat);
+extern PetscErrorCode DMGetMatrix_DA_3d_MPISBAIJ(DM,Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetDA"

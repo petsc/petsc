@@ -3,13 +3,13 @@
 #include "petscmat.h"
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Current(MatPartitioning);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Square(MatPartitioning);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Parmetis(MatPartitioning);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Chaco(MatPartitioning);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Jostle(MatPartitioning);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Party(MatPartitioning);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Scotch(MatPartitioning);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Current(MatPartitioning);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Square(MatPartitioning);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Parmetis(MatPartitioning);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Chaco(MatPartitioning);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Jostle(MatPartitioning);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Party(MatPartitioning);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Scotch(MatPartitioning);
 EXTERN_C_END
 
 #undef __FUNCT__  

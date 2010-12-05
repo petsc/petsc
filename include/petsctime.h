@@ -13,7 +13,7 @@
 #endif
 #if defined(PETSC_NEEDS_GETTIMEOFDAY_PROTO)
 EXTERN_C_BEGIN
-EXTERN int gettimeofday(struct timeval *,struct timezone *);
+extern int gettimeofday(struct timeval *,struct timezone *);
 EXTERN_C_END
 #endif
 
@@ -115,7 +115,7 @@ extern PetscLogDouble PETSCSYS_DLLEXPORT BaseTime;
    Power1,2,3,PC machines have a fast clock read_real_time()
 */ 
 #elif defined(PETSC_USE_READ_REAL_TIME)
-EXTERN PetscLogDouble rs6000_time(void);
+extern PetscLogDouble rs6000_time(void);
 #define PetscTime(v)         (v)=rs6000_time();
 
 #define PetscTimeSubtract(v) (v)-=rs6000_time();
@@ -128,7 +128,7 @@ EXTERN PetscLogDouble rs6000_time(void);
 */
 #elif defined(PETSC_USE_GETCLOCK)
 EXTERN_C_BEGIN
-EXTERN int getclock(int clock_type,struct timespec *tp);
+extern int getclock(int clock_type,struct timespec *tp);
 EXTERN_C_END
 
 
@@ -149,7 +149,7 @@ EXTERN_C_END
 */
 #elif defined (PETSC_USE_DCLOCK)
 EXTERN_C_BEGIN
-EXTERN PetscLogDouble dclock();
+extern PetscLogDouble dclock();
 EXTERN_C_END
 
 #define PetscTime(v)         (v)=dclock();
@@ -165,7 +165,7 @@ EXTERN_C_END
 #elif defined (PETSC_USE_NT_TIME)
 #include <time.h>
 EXTERN_C_BEGIN
-EXTERN PetscLogDouble nt_time(void);
+extern PetscLogDouble nt_time(void);
 EXTERN_C_END
 #define PetscTime(v)         (v)=nt_time();
 

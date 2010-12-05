@@ -7,13 +7,13 @@
 #include "../src/snes/impls/ls/lsimpl.h"
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAAD(NLF,MatSORType,PetscInt,Vec);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAAD4(NLF,MatSORType,PetscInt,Vec);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAAD9(NLF,MatSORType,PetscInt,Vec);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAADb(NLF,MatSORType,PetscInt,Vec);
+extern PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAAD(NLF,MatSORType,PetscInt,Vec);
+extern PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAAD4(NLF,MatSORType,PetscInt,Vec);
+extern PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAAD9(NLF,MatSORType,PetscInt,Vec);
+extern PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAADb(NLF,MatSORType,PetscInt,Vec);
 EXTERN_C_END
-EXTERN PetscErrorCode DMMGFormFunction(SNES,Vec,Vec,void *);
-EXTERN PetscErrorCode SNESLSCheckLocalMin_Private(Mat,Vec,Vec,PetscReal,PetscBool *);
+extern PetscErrorCode DMMGFormFunction(SNES,Vec,Vec,void *);
+extern PetscErrorCode SNESLSCheckLocalMin_Private(Mat,Vec,Vec,PetscReal,PetscBool *);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMGComputeJacobianWithAdic"

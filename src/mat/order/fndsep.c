@@ -4,7 +4,7 @@
 */
 
 #include "../src/mat/order/order.h"
-EXTERN PetscErrorCode SPARSEPACKfnroot(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
+extern PetscErrorCode SPARSEPACKfnroot(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 
 /*****************************************************************/
 /*************     FNDSEP ..... FIND SEPARATOR       *************/

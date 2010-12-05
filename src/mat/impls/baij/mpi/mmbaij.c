@@ -5,7 +5,7 @@
 */
 #include "../src/mat/impls/baij/mpi/mpibaij.h"
 
-EXTERN PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+extern PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpMultiply_MPIBAIJ"

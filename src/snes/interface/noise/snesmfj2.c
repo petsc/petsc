@@ -4,9 +4,9 @@
 /* matimpl.h is needed only for logging of matrix operation */
 #include "private/matimpl.h"
 
-EXTERN PetscErrorCode DiffParameterCreate_More(SNES,Vec,void**);
-EXTERN PetscErrorCode DiffParameterCompute_More(SNES,void*,Vec,Vec,PetscReal*,PetscReal*);
-EXTERN PetscErrorCode DiffParameterDestroy_More(void*);
+extern PetscErrorCode DiffParameterCreate_More(SNES,Vec,void**);
+extern PetscErrorCode DiffParameterCompute_More(SNES,void*,Vec,Vec,PetscReal*,PetscReal*);
+extern PetscErrorCode DiffParameterDestroy_More(void*);
 
 typedef struct {  /* default context for matrix-free SNES */
   SNES         snes;             /* SNES context */

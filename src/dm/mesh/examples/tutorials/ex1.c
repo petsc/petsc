@@ -60,7 +60,7 @@ typedef struct {
   SectionInt     odd;                // Section with cell number in each odd cell
 } Options;
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(const Obj<PETSC_MESH_TYPE>&, PetscViewer);
+extern PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(const Obj<PETSC_MESH_TYPE>&, PetscViewer);
 
 #undef __FUNCT__
 #define __FUNCT__ "OutputVTK"

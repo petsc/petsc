@@ -13,12 +13,12 @@
 
 #include "../src/sys/draw/impls/x/ximpl.h"
 
-EXTERN PetscErrorCode XiUniformHues(PetscDraw_X *,int);
-EXTERN PetscErrorCode Xi_wait_map(PetscDraw_X*);
-EXTERN PetscErrorCode XiInitColors(PetscDraw_X*,Colormap);
-EXTERN PetscErrorCode XiFontFixed(PetscDraw_X*,int,int,XiFont**);
-EXTERN PetscErrorCode XiInitCmap(PetscDraw_X*);
-EXTERN PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X*,char *,Colormap);
+extern PetscErrorCode XiUniformHues(PetscDraw_X *,int);
+extern PetscErrorCode Xi_wait_map(PetscDraw_X*);
+extern PetscErrorCode XiInitColors(PetscDraw_X*,Colormap);
+extern PetscErrorCode XiFontFixed(PetscDraw_X*,int,int,XiFont**);
+extern PetscErrorCode XiInitCmap(PetscDraw_X*);
+extern PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X*,char *,Colormap);
 
 /*
   XiOpenDisplay - Open a display
