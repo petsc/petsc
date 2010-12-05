@@ -11,7 +11,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorVI(SNES snes,PetscInt its,PetscRea
   SNES_VI                 *vi = (SNES_VI*)snes->data;
   PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
   const PetscScalar       *x,*xl,*xu,*f;
-  Vec                     ff;
   PetscInt                i,n;
   PetscReal               rnorm,fnorm;
 
@@ -20,22 +19,19 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorVI(SNES snes,PetscInt its,PetscRea
     ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,"stdout",0,&viewer);CHKERRQ(ierr);
   }
   ierr = VecGetLocalSize(snes->vec_sol,&n);CHKERRQ(ierr);
-  ierr = VecDuplicate(snes->vec_sol,&ff);CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes,snes->vec_sol,ff);CHKERRQ(ierr);
   ierr = VecGetArrayRead(vi->xl,&xl);CHKERRQ(ierr);
   ierr = VecGetArrayRead(vi->xu,&xu);CHKERRQ(ierr);
   ierr = VecGetArrayRead(snes->vec_sol,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(ff,&f);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(snes->vec_func,&f);CHKERRQ(ierr);
   
   rnorm = 0.0;
   for (i=0; i<n; i++) {
     if (((x[i] > xl[i] + 1.e-8) || (f[i] > 0.0)) && ((x[i] < xu[i] - 1.e-8) || (f[i] < 0.0))) rnorm += f[i]*f[i];
   }
-  ierr = VecRestoreArrayRead(ff,&f);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(snes->vec_func,&f);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(vi->xl,&xl);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(vi->xu,&xu);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(snes->vec_sol,&x);CHKERRQ(ierr);
-  ierr = VecDestroy(ff);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&rnorm,&fnorm,1,MPIU_REAL,MPI_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
   fnorm = sqrt(fnorm);
   ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES VI Function norm %14.12e \n",its,fnorm);CHKERRQ(ierr);
