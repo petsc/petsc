@@ -358,13 +358,6 @@ M*/
 #endif
 
 /*
-    Extern indicates a PETSc function defined elsewhere
-*/
-#if !defined(EXTERN)
-#define extern extern
-#endif
-
-/*
     Defines some elementary mathematics functions and constants.
 */
 #include "petscmath.h"
@@ -446,31 +439,6 @@ M*/
 #define PETSC_NULL           0
 
 /*MC
-    PETSC_DECIDE - standard way of passing in integer or floating point parameter
-       where you wish PETSc to use the default.
-
-   Level: beginner
-
-.seealso: PETSC_NULL, PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE
-
-M*/
-#define PETSC_DECIDE         -1
-
-/*MC
-    PETSC_DEFAULT - standard way of passing in integer or floating point parameter
-       where you wish PETSc to use the default.
-
-   Level: beginner
-
-   Fortran Notes: You need to use PETSC_DEFAULT_INTEGER or PETSC_DEFAULT_DOUBLE_PRECISION.
-
-.seealso: PETSC_DECIDE, PETSC_NULL, PETSC_IGNORE, PETSC_DETERMINE
-
-M*/
-#define PETSC_DEFAULT        -2
-
-
-/*MC
     PETSC_IGNORE - same as PETSC_NULL, means PETSc will ignore this argument
 
    Level: beginner
@@ -487,15 +455,43 @@ M*/
 #define PETSC_IGNORE         PETSC_NULL
 
 /*MC
+    PETSC_DECIDE - standard way of passing in integer or floating point parameter
+       where you wish PETSc to use the default.
+
+   Level: beginner
+
+.seealso: PETSC_NULL, PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE
+
+M*/
+#define PETSC_DECIDE  -1
+
+/*MC
     PETSC_DETERMINE - standard way of passing in integer or floating point parameter
        where you wish PETSc to compute the required value.
 
    Level: beginner
 
+
+   Developer Note: I would like to use const PetscInt PETSC_DETERMINE = PETSC_DECIDE; but for
+     some reason this is not allowed by the standard even though PETSC_DECIDE is a constant value.
+
 .seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_IGNORE, PETSC_NULL, VecSetSizes()
 
 M*/
-#define PETSC_DETERMINE      PETSC_DECIDE
+#define PETSC_DETERMINE PETSC_DECIDE
+
+/*MC
+    PETSC_DEFAULT - standard way of passing in integer or floating point parameter
+       where you wish PETSc to use the default.
+
+   Level: beginner
+
+   Fortran Notes: You need to use PETSC_DEFAULT_INTEGER or PETSC_DEFAULT_DOUBLE_PRECISION.
+
+.seealso: PETSC_DECIDE, PETSC_NULL, PETSC_IGNORE, PETSC_DETERMINE
+
+M*/
+#define PETSC_DEFAULT  -2
 
 /*MC
     PETSC_COMM_WORLD - the equivalent of the MPI_COMM_WORLD communicator which represents
@@ -1122,36 +1118,32 @@ extern PetscErrorCode    PetscMallocSetDumpLog(void);
 
 E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2, PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
-              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC_LONG_DOUBLE = 10, PETSC_QD_DD = 11} PetscDataType;
+              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC_LONG_DOUBLE = 10} PetscDataType;
 extern const char *PetscDataTypes[];
 
 #if defined(PETSC_USE_COMPLEX)
-#define PETSC_SCALAR PETSC_COMPLEX
+#define  PETSC_SCALAR  PETSC_COMPLEX
 #else
 #if defined(PETSC_USE_SCALAR_SINGLE)
-#define PETSC_SCALAR PETSC_FLOAT
+#define  PETSC_SCALAR  PETSC_FLOAT
 #elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
-#define PETSC_SCALAR PETSC_LONG_DOUBLE
+#define  PETSC_SCALAR  PETSC_LONG_DOUBLE
 #elif defined(PETSC_USE_SCALAR_INT)
-#define PETSC_SCALAR PETSC_INT
-#elif defined(PETSC_USE_SCALAR_QD_DD)
-#define PETSC_SCALAR PETSC_QD_DD
+#define  PETSC_SCALAR  PETSC_INT
 #else
-#define PETSC_SCALAR PETSC_DOUBLE
+#define  PETSC_SCALAR  PETSC_DOUBLE
 #endif
 #endif
 #if defined(PETSC_USE_SCALAR_SINGLE)
-#define PETSC_REAL PETSC_FLOAT
+#define  PETSC_REAL  PETSC_FLOAT
 #elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
-#define PETSC_REAL PETSC_LONG_DOUBLE
+#define  PETSC_REAL  PETSC_LONG_DOUBLE
 #elif defined(PETSC_USE_SCALAR_INT)
-#define PETSC_REAL PETSC_INT
-#elif defined(PETSC_USE_SCALAR_QD_DD)
-#define PETSC_REAL PETSC_QD_DD
+#define  PETSC_REAL  PETSC_INT
 #else
-#define PETSC_REAL PETSC_DOUBLE
+#define  PETSC_REAL  PETSC_DOUBLE
 #endif
-#define PETSC_FORTRANADDR PETSC_LONG
+#define  PETSC_FORTRANADDR  PETSC_LONG
 
 extern PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
 extern PetscErrorCode  PetscMPIDataTypeToPetscDataType(MPI_Datatype,PetscDataType*);
@@ -1251,10 +1243,10 @@ typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDAT
 #include "petscviewer.h"
 #include "petscoptions.h"
 
-#define PETSC_SMALLEST_CLASSID 1211211
-extern  PetscClassId PETSC_LARGEST_CLASSID;
-extern  PetscClassId PETSC_OBJECT_CLASSID;
-extern PetscErrorCode  PetscClassIdRegister(const char[],PetscClassId *);
+#define PETSC_SMALLEST_CLASSID  1211211
+extern PetscClassId   PETSC_LARGEST_CLASSID;
+extern PetscClassId   PETSC_OBJECT_CLASSID;
+extern PetscErrorCode PetscClassIdRegister(const char[],PetscClassId *);
 
 /*
    Routines that get memory usage information from the OS
@@ -2330,12 +2322,12 @@ extern PetscErrorCode  PetscWebServe(MPI_Comm,int);
   machine. Use these rather then sizeof() in computing sizes for 
   PetscBinarySeek().
 */
-#define PETSC_BINARY_INT_SIZE    (32/8)
+#define PETSC_BINARY_INT_SIZE   (32/8)
 #define PETSC_BINARY_FLOAT_SIZE  (32/8)
-#define PETSC_BINARY_CHAR_SIZE    (8/8)
+#define PETSC_BINARY_CHAR_SIZE  (8/8)
 #define PETSC_BINARY_SHORT_SIZE  (16/8)
-#define PETSC_BINARY_DOUBLE_SIZE (64/8)
-#define PETSC_BINARY_SCALAR_SIZE sizeof(PetscScalar)
+#define PETSC_BINARY_DOUBLE_SIZE  (64/8)
+#define PETSC_BINARY_SCALAR_SIZE  sizeof(PetscScalar)
 
 /*E
   PetscBinarySeekType - argument to PetscBinarySeek()
