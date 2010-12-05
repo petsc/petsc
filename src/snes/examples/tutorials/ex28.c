@@ -25,7 +25,7 @@ static const char help[] = "Uses analytic Jacobians to solve individual problems
 
 #include <petscsnes.h>
 
-PetscErrorCode PETSCDM_DLLEXPORT DMDACreateOwnershipRanges(DM); /* Import an internal function */
+PetscErrorCode DMDACreateOwnershipRanges(DM); /* Import an internal function */
 
 typedef struct _UserCtx *User;
 struct _UserCtx {

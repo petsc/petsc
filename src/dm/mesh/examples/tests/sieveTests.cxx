@@ -301,10 +301,7 @@ PetscErrorCode CheckPreallocation(Obj<MeshT>& mesh, Mat A, const Options *option
   }
   delete [] elemMatrix;
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscExceptionTry1(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY), PETSC_ERR_PLIB);
-  if (PetscExceptionCaught(ierr, PETSC_ERR_PLIB)) {
-    ierr = PetscPrintf(mesh->comm(), "SieveTests: Preallocated too much memory on %d processes\n", options->size);CHKERRQ(ierr);
-  }
+  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

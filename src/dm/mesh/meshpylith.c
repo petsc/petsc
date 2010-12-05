@@ -168,13 +168,7 @@ namespace ALE {
       ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
       ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);
       ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
-      ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, filename.c_str()), PETSC_ERR_FILE_OPEN);
-      if (PetscExceptionValue(ierr)) {
-        // this means that a caller above me has also tryed this exception so I don't handle it here, pass it up
-      } else if (PetscExceptionCaught(ierr,PETSC_ERR_FILE_OPEN)) {
-        // File does not exist
-        return;
-      } 
+      ierr = PetscViewerFileSetName(viewer, filename.c_str());
       ierr = PetscViewerASCIIGetPointer(viewer, &f);
       /* Ignore comments */
       ignoreComments(buf, 2048, f);
@@ -319,13 +313,7 @@ namespace ALE {
       ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
       ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);
       ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
-      ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, filename.c_str()), PETSC_ERR_FILE_OPEN);
-      if (PetscExceptionValue(ierr)) {
-        // this means that a caller above me has also tryed this exception so I don't handle it here, pass it up
-      } else if (PetscExceptionCaught(ierr,PETSC_ERR_FILE_OPEN)) {
-        // File does not exist
-        return;
-      } 
+      ierr = PetscViewerFileSetName(viewer, filename.c_str());
       /* Logic right now is only good for linear tets and hexes, and should be fixed in the future. */
       if (corners == 4) {
         vertsPerFace = 3;

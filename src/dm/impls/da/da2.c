@@ -531,12 +531,7 @@ PetscErrorCode  DMDAFormFunction(DM da,PetscErrorCode (*lf)(void),Vec vu,Vec vfu
   ierr = DMDAVecGetArray(da,vu,&u);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,vfu,&fu);CHKERRQ(ierr);
 
-  ierr = (*f)(&info,u,fu,w);
-  if (PetscExceptionValue(ierr)) {
-    PetscErrorCode pierr = DMDAVecRestoreArray(da,vu,&u);CHKERRQ(pierr);
-    pierr = DMDAVecRestoreArray(da,vfu,&fu);CHKERRQ(pierr);
-  }
- CHKERRQ(ierr);
+  ierr = (*f)(&info,u,fu,w);CHKERRQ(ierr);
 
   ierr = DMDAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,vfu,&fu);CHKERRQ(ierr);
@@ -583,18 +578,9 @@ PetscErrorCode  DMDAFormFunctionLocal(DM da, DMDALocalFunction1 func, Vec X, Vec
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,localX,&u);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&fu);CHKERRQ(ierr);
-  ierr = (*func)(&info,u,fu,ctx);
-  if (PetscExceptionValue(ierr)) {
-    PetscErrorCode pierr = DMDAVecRestoreArray(da,localX,&u);CHKERRQ(pierr);
-    pierr = DMDAVecRestoreArray(da,F,&fu);CHKERRQ(pierr);
-  }
-  CHKERRQ(ierr);
+  ierr = (*func)(&info,u,fu,ctx);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,localX,&u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&fu);CHKERRQ(ierr);
-  if (PetscExceptionValue(ierr)) {
-    PetscErrorCode pierr = DMRestoreLocalVector(da,&localX);CHKERRQ(pierr);
-  }
-  CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
@@ -642,21 +628,11 @@ PetscErrorCode  DMDAFormFunctionLocalGhost(DM da, DMDALocalFunction1 func, Vec X
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,localX,&u);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,localF,&fu);CHKERRQ(ierr);
-  ierr = (*func)(&info,u,fu,ctx);
-  if (PetscExceptionValue(ierr)) {
-    PetscErrorCode pierr = DMDAVecRestoreArray(da,localX,&u);CHKERRQ(pierr);
-    pierr = DMDAVecRestoreArray(da,localF,&fu);CHKERRQ(pierr);
-  }
-  CHKERRQ(ierr);
+  ierr = (*func)(&info,u,fu,ctx);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(da,localF,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(da,localF,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,localX,&u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,localF,&fu);CHKERRQ(ierr);
-  if (PetscExceptionValue(ierr)) {
-    PetscErrorCode pierr = DMRestoreLocalVector(da,&localX);CHKERRQ(pierr);
-  ierr = DMRestoreLocalVector(da,&localF);CHKERRQ(ierr);
-  }
-  CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localF);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
@@ -689,18 +665,12 @@ PetscErrorCode  DMDAFormFunction1(DM da,Vec vu,Vec vfu,void *w)
   DM_DA          *dd = (DM_DA*)da->data;
   
   PetscFunctionBegin;
-
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,vu,&u);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,vfu,&fu);CHKERRQ(ierr);
 
   CHKMEMQ;
-  ierr = (*dd->lf)(&info,u,fu,w);
-  if (PetscExceptionValue(ierr)) {
-    PetscErrorCode pierr = DMDAVecRestoreArray(da,vu,&u);CHKERRQ(pierr);
-    pierr = DMDAVecRestoreArray(da,vfu,&fu);CHKERRQ(pierr);
-  }
-  CHKERRQ(ierr);
+  ierr = (*dd->lf)(&info,u,fu,w);CHKERRQ(ierr);
   CHKMEMQ;
 
   ierr = DMDAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
@@ -1156,16 +1126,8 @@ PetscErrorCode  DMDAFormJacobianLocal(DM da, DMDALocalFunction1 func, Vec X, Mat
   ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,localX,&u);CHKERRQ(ierr);
-  ierr = (*func)(&info,u,J,ctx);
-  if (PetscExceptionValue(ierr)) {
-    PetscErrorCode pierr = DMDAVecRestoreArray(da,localX,&u);CHKERRQ(pierr);
-  }
-  CHKERRQ(ierr);
+  ierr = (*func)(&info,u,J,ctx);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,localX,&u);CHKERRQ(ierr);
-  if (PetscExceptionValue(ierr)) {
-    PetscErrorCode pierr = DMRestoreLocalVector(da,&localX);CHKERRQ(pierr);
-  }
-  CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }

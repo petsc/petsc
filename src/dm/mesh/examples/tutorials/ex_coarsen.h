@@ -113,13 +113,7 @@ PetscErrorCode OutputMesh(const Obj<ALE::Mesh>& mesh)
     ierr = PetscViewerFileSetName(viewer, "testMesh.lcon");CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
     ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-    ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, "testMesh"), PETSC_ERR_FILE_OPEN);
-        if (PetscExceptionValue(ierr)) {
-          /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
-        } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
-          ierr = 0;
-        } 
-       CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, "testMesh");CHKERRQ(ierr);
     ierr = MeshView_Sieve(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);

@@ -164,23 +164,11 @@ int main(int argc, char *argv[])
       if (outputLocal) {
         ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH_LOCAL);CHKERRQ(ierr);
         ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-        ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, "testMesh"), PETSC_ERR_FILE_OPEN);
-        if (PetscExceptionValue(ierr)) {
-          /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
-        } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
-          ierr = 0;
-        } 
-       CHKERRQ(ierr);
+        ierr = PetscViewerFileSetName(viewer, "testMesh");CHKERRQ(ierr);
       } else {
         ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
         ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-        ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, "testMesh"), PETSC_ERR_FILE_OPEN);
-        if (PetscExceptionValue(ierr)) {
-          /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
-        } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
-          ierr = 0;
-        } 
-       CHKERRQ(ierr);
+        ierr = PetscViewerFileSetName(viewer, "testMesh"));CHKERRQ(ierr);
       }
     }
     ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);

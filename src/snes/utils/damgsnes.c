@@ -334,12 +334,8 @@ PetscErrorCode  SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
     ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
     localX = X;
   }
-  ierr = DMDAFormFunction1(da,localX,F,ptr);
+  ierr = DMDAFormFunction1(da,localX,F,ptr);CHKERRQ(ierr);
   if (n != N){
-    if (PetscExceptionValue(ierr)) {
-      PetscErrorCode pierr = DMRestoreLocalVector(da,&localX);CHKERRQ(pierr);
-    }
-    CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0); 

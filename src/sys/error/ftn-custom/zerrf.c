@@ -11,9 +11,6 @@
 #define petscerror_                PETSCERROR
 #define petscrealview_             PETSCREALVIEW
 #define petscintview_              PETSCINTVIEW
-#define petscerroriscatchable_  PETSCERRORISCATCHABLE
-#define petscexceptionvalue_        PETSCEXCEPTIONVALUE
-#define petscexceptioncaught        PETSCEXCEPTIONCAUGHT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscpusherrorhandler_   petscpusherrorhandler
 #define petsctracebackerrorhandler_   petsctracebackerrorhandler
@@ -24,9 +21,6 @@
 #define petscerror_                petscerror
 #define petscrealview_             petscrealview
 #define petscintview_              petscintview
-#define petscerroriscatchable_ petscerroriscatchable
-#define petscexceptionvalue_       petscexceptionvalue
-#define petscexceptioncaught_      petscexceptioncaught
 #endif
 
 EXTERN_C_BEGIN
@@ -116,21 +110,6 @@ void PETSC_STDCALL petscintview_(PetscInt *n,PetscInt *d,PetscViewer *viwer,Pets
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viwer,v);
   *ierr = PetscIntView(*n,d,v);
-}
-
-void PETSC_STDCALL petscerroriscatchable_(PetscErrorCode *ierr,PetscBool  *is)
-{
-  *is = PetscErrorIsCatchable(*ierr);
-}
-
-void PETSC_STDCALL petscexceptionvalue_(PetscErrorCode *ierr,PetscBool  *is)
-{
-  *is = PetscExceptionValue(*ierr);
-}
-
-void PETSC_STDCALL petscexceptioncaught_(PetscErrorCode *ierr,PetscErrorCode *zierr,PetscBool  *is)
-{
-  *is = PetscExceptionCaught(*ierr,*zierr);
 }
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

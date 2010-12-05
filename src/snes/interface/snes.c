@@ -1158,12 +1158,8 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
   ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
   if (snes->ops->computefunction) {
     PetscStackPush("SNES user function");
-    ierr = (*snes->ops->computefunction)(snes,x,y,snes->funP);
+    ierr = (*snes->ops->computefunction)(snes,x,y,snes->funP);CHKERRQ(ierr);
     PetscStackPop;
-    if (PetscExceptionValue(ierr)) {
-      PetscErrorCode pierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(pierr);
-    }
-    CHKERRQ(ierr);
   } else if (snes->vec_rhs) {
     ierr = MatMult(snes->jacobian, x, y);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetFunction() before SNESComputeFunction(), likely called from SNESSolve().");

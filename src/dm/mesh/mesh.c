@@ -93,13 +93,7 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Petsc
     ierr = PetscViewerFileSetName(viewer, coordFilename);CHKERRQ(ierr);
     ierr = ALE::PyLith::Viewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-    ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, filename), PETSC_ERR_FILE_OPEN);
-    if (PetscExceptionValue(ierr)) {
-      /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
-    } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
-      ierr = 0;
-    } 
-    CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_PYLITH_LOCAL) {
     PetscViewer connectViewer, coordViewer;
     char       *filename;
