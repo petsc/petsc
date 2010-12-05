@@ -26,7 +26,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorVI(SNES snes,PetscInt its,PetscRea
   
   rnorm = 0.0;
   for (i=0; i<n; i++) {
-    if ((x[i] > xl[i] + 1.e-8) && (x[i] < xu[i] - 1.e-8)) rnorm += f[i]*f[i];
+    if (((x[i] > xl[i] + 1.e-8 || (f[i] < 0.0)) && ((x[i] < xu[i] - 1.e-8) || f[i] > 0.0))) rnorm += f[i]*f[i];
   }
   ierr = VecRestoreArrayRead(snes->vec_func,&f);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(vi->xl,&xl);CHKERRQ(ierr);
