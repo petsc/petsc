@@ -4,7 +4,7 @@ FFLAGS	         =
 CPPFLAGS         = 
 FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/examples/tutorials/
-EXAMPLESC        = ex1.c ex2.c ex3.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
+EXAMPLESC        = ex1.c ex2.c ex3.c ex5.c ex7.c ex8.c ex8g.c ex9.c ex10.c ex11.c \
                    ex12.c ex13.c ex15.c ex16.c ex22.c ex23.c ex25.c ex27.c ex28.c ex29.c ex32.c ex34.c ex35.c ex37.c ex38.c \
                    ex39.c ex40.c ex41.c ex45.c ex47.c ex49.c ex51.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90
@@ -404,10 +404,22 @@ runex8_1:
 	   ${RM} -f ex8_1.tmp
 
 runex8g_1:
-	-@${MPIEXEC} -n 1 ./ex8g -M $M -N $N -pc_gasm_blocks ${BLOCKS} -print_error > ex8g_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -print_error > ex8g_1.tmp 2>&1; \
 	   if (${DIFF} output/ex8g_1.out ex8g_1.tmp) then true; \
 	   else echo "Possible problem with ex8g_1, diffs above"; fi; \
 	   ${RM} -f ex8g_1.tmp
+
+runex8g_2:
+	-@${MPIEXEC} -n 2 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -print_error > ex8g_2.tmp 2>&1; \
+	   if (${DIFF} output/ex8g_2.out ex8g_2.tmp) then true; \
+	   else echo "Possible problem with ex8g_2, diffs above"; fi; \
+	   ${RM} -f ex8g_2.tmp
+
+runex8g_3:
+	-@${MPIEXEC} -n 3 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -print_error > ex8g_3.tmp 2>&1; \
+	   if (${DIFF} output/ex8g_3.out ex8g_3.tmp) then true; \
+	   else echo "Possible problem with ex8g_3, diffs above"; fi; \
+	   ${RM} -f ex8g_3.tmp
 
 NP = 1
 M  = 4
@@ -954,6 +966,7 @@ runex49_3:
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 ex2.rm \
                                  ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 ex5.rm \
+                                 ex8g.PETSc runex8g_1 runex8g_2 runex8g_3 ex8g.rm \
                                  ex9.PETSc runex9 ex9.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm ex22.PETSc runex22 ex22.rm \
                                  ex23.PETSc runex23 runex23_2 ex23.rm  ex25.PETSc runex25 runex25_2 ex25.rm \

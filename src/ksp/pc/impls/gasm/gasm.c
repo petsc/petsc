@@ -1307,7 +1307,7 @@ PetscErrorCode  PCGASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
   /* xright is the offset of the end of the  local subdomain within its grid row (might actually be outside the local subdomain) */         \
   *xright_loc = *yhigh_loc==last_row?PetscMin(xright,last%M):xright;                                                                          \
   /* Now compute the size of the local subdomain n. */ \
-  n = 0;                                               \
+  *n = 0;                                               \
   if(*ylow_loc < *yhigh_loc) {                           \
     PetscInt width = xright-xleft;                     \
     *n += width*(*yhigh_loc-*ylow_loc-1);                 \
@@ -1316,43 +1316,7 @@ PetscErrorCode  PCGASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
   }\
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PCGASMLocalSubdomainBounds2D_Private"
-static PetscErrorCode  PCGASMLocalSubdomainBounds2D_Private(PetscInt M,PetscInt N, 
-                                                            PetscInt xleft,PetscInt ylow,
-                                                            PetscInt xright,PetscInt yhigh,
-                                                            PetscInt first, PetscInt last,
-                                                            PetscInt *xleft_loc, PetscInt *ylow_loc, 
-                                                            PetscInt *xright_loc,PetscInt *yhigh_loc,
-                                                            PetscInt *n) 
-{
-  PetscInt first_row = first/M, last_row = last/M+1;                                                     
-  PetscFunctionBegin;
-  /*                                                                                                    
-   Compute ylow_loc and yhigh_loc so that (ylow_loc,xleft) and (yhigh_loc,xright) are the corners       
-   of the bounding box of the intersection of the subdomain with the local ownership range (local       
-   subdomain).                                                                                          
-   Also compute xleft_loc and xright_loc as the lower and upper bounds on the first and last rows       
-   of the intersection.                                                                                 
-  */                                                                                                    
-  /* ylow_loc is the grid row containing the first element of the local sumbdomain */                   
-  *ylow_loc = PetscMax(first_row,ylow);                                                                    
-  /* xleft_loc is the offset of first element of the local subdomain within its grid row (might actually be outside the local subdomain) */ 
-  *xleft_loc = *ylow_loc==first_row?PetscMax(first%M,xleft):xleft;                                                                       
-  /* yhigh_loc is the grid row above the last local subdomain element */                                                            
-  *yhigh_loc = PetscMin(last_row,yhigh);                                                                                             
-  /* xright is the offset of the end of the  local subdomain within its grid row (might actually be outside the local subdomain) */ 
-  *xright_loc = *yhigh_loc==last_row?PetscMin(xright,last%M):xright;                                                                     
-  /* Now compute the size of the local subdomain n. */ 
-  *n = 0;                                               
-  if(*ylow_loc < *yhigh_loc) {                           
-    PetscInt width = xright-xleft;                     
-    *n += width*(*yhigh_loc-*ylow_loc-1);                 
-    *n += PetscMin(PetscMax(*xright_loc-xleft,0),width); 
-    *n -= PetscMin(PetscMax(*xleft_loc-xleft,0), width); 
-  }
-  PetscFunctionReturn(0);
-}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCGASMCreateSubdomains2D"
@@ -1430,7 +1394,7 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
       /* 
 	 Determine whether this subdomain intersects this processor's ownership range of pc->pmat.
       */
-      PCGASMLocalSubdomainBounds2D_Private(M,N,xleft,ylow,xright,yhigh,first,last,&xleft_loc,&ylow_loc,&xright_loc,&yhigh_loc,&nidx);
+      PCGASMLocalSubdomainBounds2D(M,N,xleft,ylow,xright,yhigh,first,last,(&xleft_loc),(&ylow_loc),(&xright_loc),(&yhigh_loc),(&nidx));
       if(nidx) {
         ++s;
       }
@@ -1475,7 +1439,7 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
 	*/
 	xleft = x[q][0]; xright = x[q][1];
 	ylow  = y[q][0]; yhigh  = y[q][1];
-        PCGASMLocalSubdomainBounds2D_Private(M,N,xleft,ylow,xright,yhigh,first,last,&xleft_loc,&ylow_loc,&xright_loc,&yhigh_loc,&nidx);
+        PCGASMLocalSubdomainBounds2D(M,N,xleft,ylow,xright,yhigh,first,last,(&xleft_loc),(&ylow_loc),(&xright_loc),(&yhigh_loc),(&nidx));
 	nidx *= dof;
         n[q] = nidx;
         /*
