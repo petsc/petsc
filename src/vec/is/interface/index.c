@@ -486,7 +486,7 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
    Concepts: index sets^getting nonlocal indices
 .seealso: ISRestoreTotalIndices(), ISGetNonlocalIndices(), ISGetSize()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISGetTotalIndices(IS is, const PetscInt *indices[])
+PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
