@@ -32,6 +32,33 @@
 
 /* -------------------------------------------------------------------------- */
 
+#if !defined(EXTERN)
+#define EXTERN extern
+#endif
+#if !defined(PETSC_DLLEXPORT)
+#define PETSC_DLLEXPORT
+#endif
+#if !defined(PETSCSYS_DLLEXPORT)
+#define PETSCSYS_DLLEXPORT
+#endif
+#if !defined(PETSCVEC_DLLEXPORT)
+#define PETSCVEC_DLLEXPORT
+#endif
+#if !defined(PETSCMAT_DLLEXPORT)
+#define PETSCMAT_DLLEXPORT
+#endif
+#if !defined(PETSCKSP_DLLEXPORT)
+#define PETSCKSP_DLLEXPORT
+#endif
+#if !defined(PETSCSNES_DLLEXPORT)
+#define PETSCSNES_DLLEXPORT
+#endif
+#if !defined(PETSCTS_DLLEXPORT)
+#define PETSCTS_DLLEXPORT
+#endif
+
+/* -------------------------------------------------------------------------- */
+
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 typedef PetscTruth PetscBool;

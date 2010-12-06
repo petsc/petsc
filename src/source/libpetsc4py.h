@@ -1,16 +1,22 @@
 /* ---------------------------------------------------------------- */
 
+#if !defined(EXTERN)
+#define EXTERN extern
+#endif
+
+/* ---------------------------------------------------------------- */
+
 #ifndef MATPYTHON
 #define MATPYTHON "python"
 #endif
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Python(Mat);
+EXTERN PetscErrorCode MatCreate_Python(Mat);
 EXTERN_C_END
 
 PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat,void*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonGetContext(Mat,void**);
+EXTERN PetscErrorCode MatPythonSetContext(Mat,void*);
+EXTERN PetscErrorCode MatPythonGetContext(Mat,void**);
 PETSC_EXTERN_CXX_END
 
 /* ---------------------------------------------------------------- */
@@ -20,12 +26,12 @@ PETSC_EXTERN_CXX_END
 #endif
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Python(KSP);
+EXTERN PetscErrorCode KSPCreate_Python(KSP);
 EXTERN_C_END
 
 PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetContext(KSP,void*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonGetContext(KSP,void**);
+EXTERN PetscErrorCode KSPPythonSetContext(KSP,void*);
+EXTERN PetscErrorCode KSPPythonGetContext(KSP,void**);
 PETSC_EXTERN_CXX_END
 
 /* ---------------------------------------------------------------- */
@@ -35,12 +41,12 @@ PETSC_EXTERN_CXX_END
 #endif
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Python(PC);
+EXTERN PetscErrorCode PCCreate_Python(PC);
 EXTERN_C_END
 
 PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC,void*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonGetContext(PC,void**);
+EXTERN PetscErrorCode PCPythonSetContext(PC,void*);
+EXTERN PetscErrorCode PCPythonGetContext(PC,void**);
 PETSC_EXTERN_CXX_END
 
 /* ---------------------------------------------------------------- */
@@ -50,12 +56,12 @@ PETSC_EXTERN_CXX_END
 #endif
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Python(SNES);
+EXTERN PetscErrorCode SNESCreate_Python(SNES);
 EXTERN_C_END
 
 PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES,void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonGetContext(SNES,void**);
+EXTERN PetscErrorCode SNESPythonSetContext(SNES,void*);
+EXTERN PetscErrorCode SNESPythonGetContext(SNES,void**);
 PETSC_EXTERN_CXX_END
 
 /* ---------------------------------------------------------------- */
@@ -65,12 +71,12 @@ PETSC_EXTERN_CXX_END
 #endif
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Python(TS);
+EXTERN PetscErrorCode TSCreate_Python(TS);
 EXTERN_C_END
 
 PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetContext(TS,void*);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSPythonGetContext(TS,void**);
+EXTERN PetscErrorCode TSPythonSetContext(TS,void*);
+EXTERN PetscErrorCode TSPythonGetContext(TS,void**);
 PETSC_EXTERN_CXX_END
 
 /* ---------------------------------------------------------------- */
