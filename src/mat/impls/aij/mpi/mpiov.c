@@ -1511,7 +1511,7 @@ PetscErrorCode MatGetSubMatricesParallel_MPIXAIJ(Mat C,PetscInt ismax,const IS i
         ierr = MPI_Comm_size(((PetscObject)isrow[i])->comm, &size); CHKERRQ(ierr);
         if(size > 1) {
           ierr = (*extractseq)((*submat)[i],A+i,B+ii); CHKERRQ(ierr);
-
+          ++ii;
         }
         else {
           A[i] = (*submat)[i];
@@ -1519,10 +1519,10 @@ PetscErrorCode MatGetSubMatricesParallel_MPIXAIJ(Mat C,PetscInt ismax,const IS i
       }
     }
     /* 
-       Construct the complements of the iscol ISs for parallel ISs only.
-       These are used to extract the off-diag portion of the resulting parallel matrix.
-       The row IS for the off-diag portion is the same as for the diag portion,
-       so we merely alias the row IS, while skipping those that are sequential.
+     Construct the complements of the iscol ISs for parallel ISs only.
+     These are used to extract the off-diag portion of the resulting parallel matrix.
+     The row IS for the off-diag portion is the same as for the diag portion,
+     so we merely alias the row IS, while skipping those that are sequential.
     */
     ierr = PetscMalloc2(ismax_c,IS,&isrow_c, ismax_c, IS, &iscol_c); CHKERRQ(ierr);
     for(i = 0, ii = 0; i < ismax; ++i) {
@@ -1540,10 +1540,17 @@ PetscErrorCode MatGetSubMatricesParallel_MPIXAIJ(Mat C,PetscInt ismax,const IS i
       ierr = ISDestroy(iscol_c[ii]); CHKERRQ(ierr);
     }
     ierr = PetscFree2(isrow_c, iscol_c); CHKERRQ(ierr);
-    for(i = 0, ii = 0; i < ismax; ++i) {
-      ierr = MPI_Comm_size(((PetscObject)isrow[i])->comm, &size); CHKERRQ(ierr);
-      if(size > 1) {
-        if(scall != MAT_REUSE_MATRIX) {
+    /* 
+     If scall == MAT_REUSE_MATRIX, we are done, since the sequential matrices A & B
+     have been extracted directly into the parallel matrices containing them, or
+     simply into the sequential matrix identical with the corresponding A (if size == 1).
+     Otherwise, make sure that parallel matrices are constructed from A & B, or the
+     A is put into the correct submat slot (if size == 1).
+     */
+    if(scall != MAT_REUSE_MATRIX) {
+      for(i = 0, ii = 0; i < ismax; ++i) {
+        ierr = MPI_Comm_size(((PetscObject)isrow[i])->comm, &size); CHKERRQ(ierr);
+        if(size > 1) {
           /* 
            For each parallel isrow[i], create parallel matrices from the extracted sequential matrices. 
            */
@@ -1552,10 +1559,9 @@ PetscErrorCode MatGetSubMatricesParallel_MPIXAIJ(Mat C,PetscInt ismax,const IS i
           
           ++ii;
         }
-        /* 
-         Observe that if scall == MAT_REUSE_MATRIX, then the underlying seq matrices are directly
-         reset by the getsubmats_seq call.
-         */
+        else {
+          (*submat)[i] = A[i];
+        }
       }
     }
     ierr = PetscFree2(A,B); CHKERRQ(ierr);
