@@ -1395,14 +1395,18 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   PetscFunctionReturn(0);
 }
 
+/* 
+ Observe that the Seq matrices used to construct this MPI matrix are not increfed.
+ Be careful not to destroy them elsewhere.  
+ */
 #undef __FUNCT__  
-#define __FUNCT__ "MatMPIAIJReplaceMatrices_Private" 
-PetscErrorCode MatMPIAIJReplaceMatrices_Private(Mat C, Mat A, Mat B)
+#define __FUNCT__ "MatCreateMPIAIJFromSeqMatrices_Private" 
+PetscErrorCode MatCreateMPIAIJFromSeqMatrices_Private(MPI_Comm comm, Mat A, Mat B, Mat *C)
 { 
   /* If making this function public, change the error returned in this function away from _PLIB. */
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  Mat_MPIAIJ *aij = (Mat_MPIAIJ*) (C->data);
+  Mat_MPIAIJ *aij;
   PetscBool seqaij;
   /* Check to make sure the component matrices are compatible with C. */
   ierr = PetscTypeCompare((PetscObject)A, MATSEQAIJ, &seqaij); CHKERRQ(ierr);
@@ -1413,18 +1417,40 @@ PetscErrorCode MatMPIAIJReplaceMatrices_Private(Mat C, Mat A, Mat B)
   if(!seqaij) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Off-diagonal matrix is of wrong type");
   }
-  if(C->rmap->n != A->rmap->n || C->rmap->bs != A->rmap->bs || C->cmap->n != A->cmap->n || 
-     C->rmap->n != B->rmap->n || C->rmap->bs != B->rmap->bs || (C->cmap->N-C->cmap->n)  != B->cmap->n) {
+  if(A->rmap->n != B->rmap->n || A->rmap->bs != B->rmap->bs || A->cmap->bs != B->cmap->bs) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incompatible component matrices of an MPIAIJ matrix");
   }
-  ierr = MatDestroy(aij->A); CHKERRQ(ierr);
-  ierr = MatDestroy(aij->B); CHKERRQ(ierr);
+  ierr = MatCreate(comm, C); CHKERRQ(ierr);
+  ierr = MatSetSizes(*C,A->rmap->n, A->cmap->n, PETSC_DECIDE, PETSC_DECIDE); CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize((*C)->rmap,A->rmap->bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize((*C)->cmap,A->cmap->bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp((*C)->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp((*C)->cmap);CHKERRQ(ierr);
+  if((*C)->cmap->N != A->cmap->n + B->cmap->n) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incompatible component matrices of an MPIAIJ matrix");
+  }
+  ierr = MatSetType(*C, MATMPIAIJ); CHKERRQ(ierr);
+  aij = (Mat_MPIAIJ*)((*C)->data);
   aij->A = A;
   aij->B = B;
-  ierr = PetscLogObjectParent(C,A); CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(C,B); CHKERRQ(ierr);
-  C->preallocated = (PetscBool)(A->preallocated && B->preallocated);
-  C->assembled    = (PetscBool)(A->assembled && B->assembled);
+  ierr = PetscLogObjectParent(*C,A); CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(*C,B); CHKERRQ(ierr);
+  (*C)->preallocated = (PetscBool)(A->preallocated && B->preallocated);
+  (*C)->assembled    = (PetscBool)(A->assembled && B->assembled);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMPIAIJExtractSeqMatrices_Private" 
+PetscErrorCode MatMPIAIJExtractSeqMatrices_Private(Mat C, Mat *A, Mat *B)
+{ 
+  PetscFunctionBegin;
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ*) (C->data);
+  PetscValidPointer(A,2);
+  PetscValidPointer(B,3);
+  *A = aij->A;
+  *B = aij->B;
+  /* Note that we don't incref *A and *B, so be careful! */
   PetscFunctionReturn(0);
 }
 
@@ -1432,8 +1458,9 @@ PetscErrorCode MatMPIAIJReplaceMatrices_Private(Mat C, Mat A, Mat B)
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatricesParallel_MPIXAIJ" 
 PetscErrorCode MatGetSubMatricesParallel_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[],
-						 PetscErrorCode(*extractseq)(Mat, PetscInt, const IS[], const IS[], MatReuse, Mat**),
-						 PetscErrorCode(*replace)(Mat, Mat, Mat))
+						 PetscErrorCode(*getsubmats_seq)(Mat, PetscInt, const IS[], const IS[], MatReuse, Mat**),
+						 PetscErrorCode(*makefromseq)(MPI_Comm, Mat, Mat,Mat*),
+						 PetscErrorCode(*extractseq)(Mat, Mat*, Mat*))
 { 
   PetscErrorCode ierr;
   PetscMPIInt size, flag;
@@ -1454,54 +1481,81 @@ PetscErrorCode MatGetSubMatricesParallel_MPIXAIJ(Mat C,PetscInt ismax,const IS i
     }
   }
   if(!ismax_c) { /* Sequential ISs only, so can call the sequential matrix extraction subroutine. */
-    ierr = (*extractseq)(C,ismax,isrow,iscol,scall,submat); CHKERRQ(ierr); 
+    ierr = (*getsubmats_seq)(C,ismax,isrow,iscol,scall,submat); CHKERRQ(ierr); 
   }
   else {
     Mat *A,*B;
     IS  *isrow_c, *iscol_c;
     PetscMPIInt size;
-    /* Allocate diag and off-diag seq matrices underlying the submats we are extracting. */
-    ierr = PetscMalloc2(ismax, Mat, &A, ismax_c, Mat, &B); CHKERRQ(ierr); 
     /* 
-       Now construct the complements of the iscol ISs.
-       Alias row ISs for parallel ISs only: sequential ISs result in no off-diag matrices.  
+     Allocate the necessary arrays to hold the resulting parallel matrices as well as the intermediate 
+     array of sequential matrices underlying the resulting parallel matrices.  
+     Which arrays to allocate is based on the value of MatReuse scall.
+     There are as many diag matrices as there are original index sets.
+     There are only as many parallel and off-diag matrices, as there are parallel (comm size > 1) index sets.
+    */
+
+    /* 
+     Sequential matrix arrays are allocated in any event. 
+     Even if the array of parallel matrices already exists, we have to consolidate the underlying seq matrices.
+    */
+    ierr = PetscMalloc2(ismax, Mat, &A, ismax_c, Mat, &B); CHKERRQ(ierr); 
+    
+    /* Parallel matrix array is only allocated if no reuse is taking place. */
+    if (scall != MAT_REUSE_MATRIX) {
+      ierr = PetscMalloc((ismax)*sizeof(Mat),submat);CHKERRQ(ierr);
+    }
+    else {
+      /* If parallel matrices are being reused, then simply reuse the underlying seq matrices as well. */
+      for(i = 0, ii = 0; i < ismax; ++i) {
+        ierr = MPI_Comm_size(((PetscObject)isrow[i])->comm, &size); CHKERRQ(ierr);
+        if(size > 1) {
+          ierr = (*extractseq)((*submat)[i],A+i,B+ii); CHKERRQ(ierr);
+
+        }
+        else {
+          A[i] = (*submat)[i];
+        }
+      }
+    }
+    /* 
+       Construct the complements of the iscol ISs for parallel ISs only.
+       These are used to extract the off-diag portion of the resulting parallel matrix.
+       The row IS for the off-diag portion is the same as for the diag portion,
+       so we merely alias the row IS, while skipping those that are sequential.
     */
     ierr = PetscMalloc2(ismax_c,IS,&isrow_c, ismax_c, IS, &iscol_c); CHKERRQ(ierr);
     for(i = 0, ii = 0; i < ismax; ++i) {
-      ierr = MPI_Comm_size(((PetscObject)iscol)->comm, &size); CHKERRQ(ierr);
+      ierr = MPI_Comm_size(((PetscObject)isrow[i])->comm, &size); CHKERRQ(ierr);
       if(size > 1) {
+	isrow_c[ii] = isrow[i];
 	ierr = ISGetNonlocalIS(iscol[i], &(iscol_c[ii])); CHKERRQ(ierr);
-	isrow_c[ii] = isrow_c[i];
 	++ii;
       }
     }
-    /* Now extract the A and B submatrices separately. */
-    ierr = (*extractseq)(C,ismax,isrow, iscol,scall, &A); CHKERRQ(ierr);
-    ierr = (*extractseq)(C,ismax_c,isrow_c, iscol_c,scall, &B); CHKERRQ(ierr);
+    /* Now obtain the sequential A and B submatrices separately. */
+    ierr = (*getsubmats_seq)(C,ismax,isrow, iscol,scall, &A); CHKERRQ(ierr);
+    ierr = (*getsubmats_seq)(C,ismax_c,isrow_c, iscol_c,scall, &B); CHKERRQ(ierr);
     for(ii = 0; ii < ismax_c; ++ii) {
       ierr = ISDestroy(iscol_c[ii]); CHKERRQ(ierr);
     }
     ierr = PetscFree2(isrow_c, iscol_c); CHKERRQ(ierr);
-    /* 
-       Now for each parallel isrow[i], create parallel matrices of correct sizes but no values 
-       or preallocation. For all such matrices, replace the underlying component matrices.
-       For each serial isrow[i] == isrow[ii], use the extracted seq diag part as the matrix itself.
-    */
     for(i = 0, ii = 0; i < ismax; ++i) {
       ierr = MPI_Comm_size(((PetscObject)isrow[i])->comm, &size); CHKERRQ(ierr);
       if(size > 1) {
-	PetscInt m,n;
-	ierr = ISGetLocalSize(isrow[i], &m); CHKERRQ(ierr);
-	ierr = ISGetLocalSize(iscol[i], &n); CHKERRQ(ierr);
-	ierr = MatCreate(((PetscObject)iscol[i])->comm, (*submat)+i); CHKERRQ(ierr);
-	ierr = MatSetSizes((*submat)[i],m,PETSC_DETERMINE, n, PETSC_DETERMINE); CHKERRQ(ierr);
-	ierr = MatSetType((*submat)[i],((PetscObject)C)->type_name); CHKERRQ(ierr);
-	/* Replace the SEQ pieces A and B under the hood of submat[i]. */ 
-	ierr = (*replace)((*submat)[i], A[i], B[ii]); CHKERRQ(ierr);
-	++ii;
-      }
-      else {
-	(*submat)[i] = A[i];
+        if(scall != MAT_REUSE_MATRIX) {
+          /* 
+           For each parallel isrow[i], create parallel matrices from the extracted sequential matrices. 
+           */
+          /* Construct submat[i] from the Seq pieces A and B. */ 
+          ierr = (*makefromseq)(((PetscObject)isrow[i])->comm, A[i], B[ii], (*submat)+i); CHKERRQ(ierr);
+          
+          ++ii;
+        }
+        /* 
+         Observe that if scall == MAT_REUSE_MATRIX, then the underlying seq matrices are directly
+         reset by the getsubmats_seq call.
+         */
       }
     }
     ierr = PetscFree2(A,B); CHKERRQ(ierr);
@@ -1517,6 +1571,9 @@ PetscErrorCode MatGetSubMatricesParallel_MPIAIJ(Mat C,PetscInt ismax,const IS is
 { 
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = MatGetSubMatricesParallel_MPIXAIJ(C,ismax,isrow,iscol,scall,submat,MatGetSubMatrices_MPIAIJ,MatMPIAIJReplaceMatrices_Private); CHKERRQ(ierr);
+  ierr = MatGetSubMatricesParallel_MPIXAIJ(C,ismax,isrow,iscol,scall,submat,MatGetSubMatrices_MPIAIJ,
+                                           MatCreateMPIAIJFromSeqMatrices_Private, 
+                                           MatMPIAIJExtractSeqMatrices_Private); 
+  CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

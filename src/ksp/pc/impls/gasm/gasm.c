@@ -321,9 +321,11 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     ierr = VecGetArray(osm->gx, &gxarray);                                     CHKERRQ(ierr);
     ierr = VecGetArray(osm->gy, &gyarray);                                     CHKERRQ(ierr);
     for (i=0, ddn=0; i<osm->n; ++i, ddn += dn) {
+      PetscInt dN;
       ierr = ISGetLocalSize(osm->is[i],&dn);CHKERRQ(ierr);
-      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dn,gxarray+ddn,&osm->x[i]);CHKERRQ(ierr); 
-      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dn,gyarray+ddn,&osm->y[i]);CHKERRQ(ierr);
+      ierr = ISGetSize(osm->is[i],&dN);CHKERRQ(ierr);
+      ierr = VecCreateMPIWithArray(((PetscObject)(osm->is[i]))->comm,dn,dN,gxarray+ddn,&osm->x[i]);CHKERRQ(ierr); 
+      ierr = VecCreateMPIWithArray(((PetscObject)(osm->is[i]))->comm,dn,dN,gyarray+ddn,&osm->y[i]);CHKERRQ(ierr);
     }
     ierr = VecRestoreArray(osm->gx, &gxarray); CHKERRQ(ierr);
     ierr = VecRestoreArray(osm->gy, &gyarray); CHKERRQ(ierr);
@@ -332,7 +334,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     /* Create the local solvers */
     ierr = PetscMalloc(osm->n*sizeof(KSP *),&osm->ksp);CHKERRQ(ierr);
     for (i=0; i<osm->n; i++) { /* KSPs are local */
-      ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
+      ierr = KSPCreate(((PetscObject)(osm->is[i]))->comm,&ksp);CHKERRQ(ierr);
       ierr = PetscLogObjectParent(pc,ksp);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,1);CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
@@ -429,8 +431,8 @@ static PetscErrorCode PCApply_GASM(PC pc,Vec x,Vec y)
   ierr = VecScatterBegin(osm->grestriction,x,osm->gx,INSERT_VALUES,forward);CHKERRQ(ierr);
   ierr = VecZeroEntries(y);CHKERRQ(ierr);
   ierr = VecScatterEnd(osm->grestriction,x,osm->gx,INSERT_VALUES,forward);CHKERRQ(ierr);
-  /* do the local solves */
-  for (i=0; i<osm->n; ++i) { /* Note that the solves are local, so we can go to osm->n, rather than osm->nmax. */
+  /* do the subdomain solves */
+  for (i=0; i<osm->n; ++i) { 
     ierr = KSPSolve(osm->ksp[i],osm->x[i],osm->y[i]);CHKERRQ(ierr);
   }
   ierr = VecScatterBegin(osm->gprolongation,osm->gy,y,ADD_VALUES,reverse);CHKERRQ(ierr);
