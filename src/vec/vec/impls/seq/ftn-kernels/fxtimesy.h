@@ -8,7 +8,7 @@
 #define fortranxtimesy_ fortranxtimesy
 #endif
 EXTERN_C_BEGIN
-EXTERN void fortranxtimesy_(const void*,const void*,void*,const PetscInt *);
+extern void fortranxtimesy_(const void*,const void*,void*,const PetscInt *);
 EXTERN_C_END
 #endif
 #endif

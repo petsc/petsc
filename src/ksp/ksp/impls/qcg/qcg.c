@@ -23,7 +23,7 @@ static PetscErrorCode QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,Petsc
 
 .keywords: KSP, QCG, set, trust region radius
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
+PetscErrorCode  KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
 {
   PetscErrorCode ierr;
 
@@ -50,7 +50,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal d
 
     Level: advanced
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetTrialStepNorm(KSP ksp,PetscReal *tsnorm)
+PetscErrorCode  KSPQCGGetTrialStepNorm(KSP ksp,PetscReal *tsnorm)
 {
   PetscErrorCode ierr;
 
@@ -88,7 +88,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetTrialStepNorm(KSP ksp,PetscReal *tsno
 
     Level: advanced
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetQuadratic(KSP ksp,PetscReal *quadratic)
+PetscErrorCode  KSPQCGGetQuadratic(KSP ksp,PetscReal *quadratic)
 {
   PetscErrorCode ierr;
 
@@ -358,7 +358,7 @@ PetscErrorCode KSPDestroy_QCG(KSP ksp)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPQCGSetTrustRegionRadius_QCG"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGSetTrustRegionRadius_QCG(KSP ksp,PetscReal delta)
+PetscErrorCode  KSPQCGSetTrustRegionRadius_QCG(KSP ksp,PetscReal delta)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
 
@@ -371,7 +371,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPQCGGetTrialStepNorm_QCG"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetTrialStepNorm_QCG(KSP ksp,PetscReal *ltsnrm)
+PetscErrorCode  KSPQCGGetTrialStepNorm_QCG(KSP ksp,PetscReal *ltsnrm)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
 
@@ -384,7 +384,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPQCGGetQuadratic_QCG"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetQuadratic_QCG(KSP ksp,PetscReal *quadratic)
+PetscErrorCode  KSPQCGGetQuadratic_QCG(KSP ksp,PetscReal *quadratic)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
 
@@ -462,7 +462,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_QCG"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_QCG(KSP ksp)
+PetscErrorCode  KSPCreate_QCG(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_QCG        *cgP;

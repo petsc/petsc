@@ -549,7 +549,7 @@ static PetscErrorCode PCSetFromOptions_GASM(PC pc) {
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCGASMSetLocalSubdomains_GASM"
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetLocalSubdomains_GASM(PC pc,PetscInt n,IS is[],IS is_local[])
+PetscErrorCode  PCGASMSetLocalSubdomains_GASM(PC pc,PetscInt n,IS is[],IS is_local[])
 {
   PC_GASM         *osm = (PC_GASM*)pc->data;
   PetscErrorCode ierr;
@@ -590,7 +590,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCGASMSetTotalSubdomains_GASM"
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetTotalSubdomains_GASM(PC pc,PetscInt N) {
+PetscErrorCode  PCGASMSetTotalSubdomains_GASM(PC pc,PetscInt N) {
   PC_GASM         *osm = (PC_GASM*)pc->data;
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -623,7 +623,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCGASMSetOverlap_GASM"
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetOverlap_GASM(PC pc,PetscInt ovl)
+PetscErrorCode  PCGASMSetOverlap_GASM(PC pc,PetscInt ovl)
 {
   PC_GASM *osm = (PC_GASM*)pc->data;
 
@@ -640,7 +640,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCGASMSetType_GASM"
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetType_GASM(PC pc,PCGASMType type)
+PetscErrorCode  PCGASMSetType_GASM(PC pc,PCGASMType type)
 {
   PC_GASM *osm = (PC_GASM*)pc->data;
 
@@ -654,7 +654,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCGASMSetSortIndices_GASM"
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetSortIndices_GASM(PC pc,PetscBool  doSort)
+PetscErrorCode  PCGASMSetSortIndices_GASM(PC pc,PetscBool  doSort)
 {
   PC_GASM *osm = (PC_GASM*)pc->data;
 
@@ -671,7 +671,7 @@ EXTERN_C_BEGIN
    FIX: This routine might need to be modified once multiple ranks per subdomain are allowed.
         In particular, it would upset the global subdomain number calculation.
 */
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMGetSubKSP_GASM(PC pc,PetscInt *n,PetscInt *first,KSP **ksp) 
+PetscErrorCode  PCGASMGetSubKSP_GASM(PC pc,PetscInt *n,PetscInt *first,KSP **ksp) 
 {
   PC_GASM         *osm = (PC_GASM*)pc->data;
   PetscErrorCode ierr;
@@ -727,7 +727,7 @@ EXTERN_C_END
 .seealso: PCGASMSetTotalSubdomains(), PCGASMSetOverlap(), PCGASMGetSubKSP(),
           PCGASMCreateSubdomains2D(), PCGASMGetLocalSubdomains()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetLocalSubdomains(PC pc,PetscInt n,IS is[],IS is_local[])
+PetscErrorCode  PCGASMSetLocalSubdomains(PC pc,PetscInt n,IS is[],IS is_local[])
 {
   PetscErrorCode ierr;
 
@@ -776,7 +776,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetLocalSubdomains(PC pc,PetscInt n,IS i
 .seealso: PCGASMSetLocalSubdomains(), PCGASMSetOverlap(), PCGASMGetSubKSP(),
           PCGASMCreateSubdomains2D()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetTotalSubdomains(PC pc,PetscInt N)
+PetscErrorCode  PCGASMSetTotalSubdomains(PC pc,PetscInt N)
 {
   PetscErrorCode ierr;
 
@@ -827,7 +827,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetTotalSubdomains(PC pc,PetscInt N)
 .seealso: PCGASMSetTotalSubdomains(), PCGASMSetLocalSubdomains(), PCGASMGetSubKSP(),
           PCGASMCreateSubdomains2D(), PCGASMGetLocalSubdomains()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetOverlap(PC pc,PetscInt ovl)
+PetscErrorCode  PCGASMSetOverlap(PC pc,PetscInt ovl)
 {
   PetscErrorCode ierr;
 
@@ -866,7 +866,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetOverlap(PC pc,PetscInt ovl)
 .seealso: PCGASMSetTotalSubdomains(), PCGASMSetTotalSubdomains(), PCGASMGetSubKSP(),
           PCGASMCreateSubdomains2D()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetType(PC pc,PCGASMType type)
+PetscErrorCode  PCGASMSetType(PC pc,PCGASMType type)
 {
   PetscErrorCode ierr;
 
@@ -895,7 +895,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetType(PC pc,PCGASMType type)
 .seealso: PCGASMSetLocalSubdomains(), PCGASMSetTotalSubdomains(), PCGASMGetSubKSP(),
           PCGASMCreateSubdomains2D()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetSortIndices(PC pc,PetscBool  doSort)
+PetscErrorCode  PCGASMSetSortIndices(PC pc,PetscBool  doSort)
 {
   PetscErrorCode ierr;
 
@@ -938,7 +938,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGASMSetSortIndices(PC pc,PetscBool  doSort)
 .seealso: PCGASMSetTotalSubdomains(), PCGASMSetTotalSubdomains(), PCGASMSetOverlap(),
           PCGASMCreateSubdomains2D(),
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp[])
+PetscErrorCode  PCGASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp[])
 {
   PetscErrorCode ierr;
 
@@ -994,7 +994,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_GASM"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_GASM(PC pc)
+PetscErrorCode  PCCreate_GASM(PC pc)
 {
   PetscErrorCode ierr;
   PC_GASM         *osm;
@@ -1072,7 +1072,7 @@ EXTERN_C_END
 
 .seealso: PCGASMSetLocalSubdomains(), PCGASMDestroySubdomains()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
+PetscErrorCode  PCGASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
 {
   MatPartitioning           mpart;
   const char                *prefix;
@@ -1253,7 +1253,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGASMCreateSubdomains(Mat A, PetscInt n, IS* 
 
 .seealso: PCGASMCreateSubdomains(), PCGASMSetLocalSubdomains()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
+PetscErrorCode  PCGASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
 {
   PetscInt       i;
   PetscErrorCode ierr;
@@ -1330,7 +1330,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGASMDestroySubdomains(PetscInt n, IS is[], I
 .seealso: PCGASMSetTotalSubdomains(), PCGASMSetLocalSubdomains(), PCGASMGetSubKSP(),
           PCGASMSetOverlap()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt Mdomains,PetscInt Ndomains,PetscInt dof,PetscInt overlap, PetscInt *nsub,IS **is,IS **is_local)
+PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt Mdomains,PetscInt Ndomains,PetscInt dof,PetscInt overlap, PetscInt *nsub,IS **is,IS **is_local)
 {
   PetscErrorCode ierr;
   PetscMPIInt size, rank;
@@ -1508,7 +1508,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGASMCreateSubdomains2D(PC pc, PetscInt M,Pet
 .seealso: PCGASMSetTotalSubdomains(), PCGASMSetOverlap(), PCGASMGetSubKSP(),
           PCGASMCreateSubdomains2D(), PCGASMSetLocalSubdomains(), PCGASMGetLocalSubmatrices()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMGetLocalSubdomains(PC pc,PetscInt *n,IS *is[],IS *is_local[])
+PetscErrorCode  PCGASMGetLocalSubdomains(PC pc,PetscInt *n,IS *is[],IS *is_local[])
 {
   PC_GASM         *osm;
   PetscErrorCode ierr;
@@ -1554,7 +1554,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGASMGetLocalSubdomains(PC pc,PetscInt *n,IS 
 .seealso: PCGASMSetTotalSubdomains(), PCGASMSetOverlap(), PCGASMGetSubKSP(),
           PCGASMCreateSubdomains2D(), PCGASMSetLocalSubdomains(), PCGASMGetLocalSubdomains()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGASMGetLocalSubmatrices(PC pc,PetscInt *n,Mat *mat[])
+PetscErrorCode  PCGASMGetLocalSubmatrices(PC pc,PetscInt *n,Mat *mat[])
 {
   PC_GASM         *osm;
   PetscErrorCode ierr;

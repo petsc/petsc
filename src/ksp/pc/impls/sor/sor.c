@@ -125,7 +125,7 @@ PetscErrorCode PCView_SOR(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSORSetSymmetric_SOR"
-PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetSymmetric_SOR(PC pc,MatSORType flag)
+PetscErrorCode  PCSORSetSymmetric_SOR(PC pc,MatSORType flag)
 {
   PC_SOR *jac;
 
@@ -139,7 +139,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSORSetOmega_SOR"
-PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetOmega_SOR(PC pc,PetscReal omega)
+PetscErrorCode  PCSORSetOmega_SOR(PC pc,PetscReal omega)
 {
   PC_SOR *jac;
 
@@ -154,7 +154,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSORSetIterations_SOR"
-PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetIterations_SOR(PC pc,PetscInt its,PetscInt lits)
+PetscErrorCode  PCSORSetIterations_SOR(PC pc,PetscInt its,PetscInt lits)
 {
   PC_SOR *jac;
 
@@ -206,7 +206,7 @@ EXTERN_C_END
 
 .seealso: PCEisenstatSetOmega(), PCSORSetIterations(), PCSORSetOmega()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetSymmetric(PC pc,MatSORType flag)
+PetscErrorCode  PCSORSetSymmetric(PC pc,MatSORType flag)
 {
   PetscErrorCode ierr;
 
@@ -238,7 +238,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetSymmetric(PC pc,MatSORType flag)
 
 .seealso: PCSORSetSymmetric(), PCSORSetIterations(), PCEisenstatSetOmega()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetOmega(PC pc,PetscReal omega)
+PetscErrorCode  PCSORSetOmega(PC pc,PetscReal omega)
 {
   PetscErrorCode ierr;
 
@@ -274,7 +274,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetOmega(PC pc,PetscReal omega)
 
 .seealso: PCSORSetOmega(), PCSORSetSymmetric()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetIterations(PC pc,PetscInt its,PetscInt lits)
+PetscErrorCode  PCSORSetIterations(PC pc,PetscInt its,PetscInt lits)
 {
   PetscErrorCode ierr;
 
@@ -316,7 +316,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_SOR"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SOR(PC pc)
+PetscErrorCode  PCCreate_SOR(PC pc)
 {
   PetscErrorCode ierr;
   PC_SOR         *jac;

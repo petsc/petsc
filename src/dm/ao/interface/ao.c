@@ -6,7 +6,7 @@
 #include "../src/dm/ao/aoimpl.h"      /*I "petscao.h" I*/
 
 /* Logging support */
-PetscClassId PETSCDM_DLLEXPORT AO_CLASSID;
+PetscClassId  AO_CLASSID;
 PetscLogEvent  AO_PetscToApplication, AO_ApplicationToPetsc;
 
 #undef __FUNCT__  
@@ -37,7 +37,7 @@ PetscLogEvent  AO_PetscToApplication, AO_ApplicationToPetsc;
 
 .seealso: PetscViewerASCIIOpen()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOView(AO ao,PetscViewer viewer)
+PetscErrorCode  AOView(AO ao,PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -65,7 +65,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOView(AO ao,PetscViewer viewer)
 
 .seealso: AOCreateBasic()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AODestroy(AO ao)
+PetscErrorCode  AODestroy(AO ao)
 {
   PetscErrorCode ierr;
 
@@ -112,7 +112,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODestroy(AO ao)
 .seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(),
           AOApplicationToPetscIS(),AOPetscToApplication()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationIS(AO ao,IS is)
+PetscErrorCode  AOPetscToApplicationIS(AO ao,IS is)
 {
   PetscErrorCode ierr;
   PetscInt       n;
@@ -156,7 +156,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationIS(AO ao,IS is)
 .seealso: AOCreateBasic(), AOView(), AOPetscToApplication(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscIS(AO ao,IS is)
+PetscErrorCode  AOApplicationToPetscIS(AO ao,IS is)
 {
   PetscErrorCode ierr;
   PetscInt       n,*ia;
@@ -198,7 +198,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscIS(AO ao,IS is)
 .seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
+PetscErrorCode  AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
 {
   PetscErrorCode ierr;
 
@@ -234,7 +234,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplication(AO ao,PetscInt n,PetscInt 
 .seealso: AOCreateBasic(), AOView(), AOPetscToApplication(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetsc(AO ao,PetscInt n,PetscInt ia[])
+PetscErrorCode  AOApplicationToPetsc(AO ao,PetscInt n,PetscInt ia[])
 {
   PetscErrorCode ierr;
 
@@ -270,7 +270,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetsc(AO ao,PetscInt n,PetscInt 
 .keywords: application ordering, mapping
 .seealso: AOCreateBasic(), AOView(), AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt array[])
+PetscErrorCode  AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt array[])
 {
   PetscErrorCode ierr;
 
@@ -307,7 +307,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationPermuteInt(AO ao, PetscInt 
 
 .seealso: AOCreateBasic(), AOView(), AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt array[])
+PetscErrorCode  AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt array[])
 {
   PetscErrorCode ierr;
 
@@ -344,7 +344,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscPermuteInt(AO ao, PetscInt 
 
 .seealso: AOCreateBasic(), AOView(), AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal array[])
+PetscErrorCode  AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal array[])
 {
   PetscErrorCode ierr;
 
@@ -381,7 +381,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationPermuteReal(AO ao, PetscInt
 
 .seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal array[])
+PetscErrorCode  AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal array[])
 {
   PetscErrorCode ierr;
 

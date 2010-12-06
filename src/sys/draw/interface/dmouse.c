@@ -27,7 +27,7 @@
 
 .seealso: PetscDrawSynchronizedGetMouseButton()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
+PetscErrorCode  PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
   PetscErrorCode ierr;
   PetscBool  isnull;
@@ -62,7 +62,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawGetMouseButton(PetscDraw draw,PetscDr
 
 .seealso: PetscDrawGetMouseButton()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSynchronizedGetMouseButton(PetscDraw draw,PetscDrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
+PetscErrorCode  PetscDrawSynchronizedGetMouseButton(PetscDraw draw,PetscDrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
   PetscReal      bcast[4];
   PetscErrorCode ierr;

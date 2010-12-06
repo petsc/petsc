@@ -18,13 +18,13 @@ struct _p_DrawAxis {
 
 #define MAXSEGS 20
 
-EXTERN PetscErrorCode PetscADefTicks(PetscReal,PetscReal,int,int*,PetscReal*,int);
-EXTERN PetscErrorCode PetscADefLabel(PetscReal,PetscReal,char**);
-EXTERN PetscErrorCode PetscAGetNice(PetscReal,PetscReal,int,PetscReal*);
-EXTERN PetscErrorCode PetscAGetBase(PetscReal,PetscReal,int,PetscReal*,int*);
+extern PetscErrorCode PetscADefTicks(PetscReal,PetscReal,int,int*,PetscReal*,int);
+extern PetscErrorCode PetscADefLabel(PetscReal,PetscReal,char**);
+extern PetscErrorCode PetscAGetNice(PetscReal,PetscReal,int,PetscReal*);
+extern PetscErrorCode PetscAGetBase(PetscReal,PetscReal,int,PetscReal*,int*);
 
-EXTERN PetscErrorCode PetscStripAllZeros(char*);
-EXTERN PetscErrorCode PetscStripTrailingZeros(char*);
-EXTERN PetscErrorCode PetscStripInitialZero(char*);
-EXTERN PetscErrorCode PetscStripZeros(char*);
-EXTERN PetscErrorCode PetscStripZerosPlus(char*);
+extern PetscErrorCode PetscStripAllZeros(char*);
+extern PetscErrorCode PetscStripTrailingZeros(char*);
+extern PetscErrorCode PetscStripInitialZero(char*);
+extern PetscErrorCode PetscStripZeros(char*);
+extern PetscErrorCode PetscStripZerosPlus(char*);

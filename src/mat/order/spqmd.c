@@ -9,7 +9,7 @@ EXTERN_C_BEGIN
 */    
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetOrdering_QMD"
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_QMD(Mat mat,const MatOrderingType type,IS *row,IS *col) 
+PetscErrorCode  MatGetOrdering_QMD(Mat mat,const MatOrderingType type,IS *row,IS *col) 
 {
   PetscInt       i,  *deg,*marker,*rchset,*nbrhd,*qsize,*qlink,nofsub,*iperm,nrow;
   PetscErrorCode ierr;

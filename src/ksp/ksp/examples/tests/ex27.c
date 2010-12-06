@@ -9,7 +9,7 @@ Test MatMatSolve().  Input parameters include\n\
 */
 
 #include "petscksp.h"
-EXTERN PetscErrorCode PCShellApply_Matinv(PC,Vec,Vec);
+extern PetscErrorCode PCShellApply_Matinv(PC,Vec,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -43,18 +43,7 @@ int main(int argc,char **args)
   ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr = PetscExceptionTry1(VecLoad(b,fd),PETSC_ERR_FILE_READ);     
-  if (PetscExceptionCaught(ierr,PETSC_ERR_FILE_UNEXPECTED) || PetscExceptionCaught(ierr,PETSC_ERR_FILE_READ)) { 
-    /* if file contains no RHS, then use a vector of all ones */
-    PetscInt    m;
-    PetscScalar one = 1.0;
-    ierr = PetscInfo(0,"Using vector of ones for RHS\n");CHKERRQ(ierr);
-    ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
-    ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-    ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-    ierr = VecSet(b,one);CHKERRQ(ierr);
-  } else CHKERRQ(ierr); 
+  ierr = VecLoad(b,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
 
   /* 

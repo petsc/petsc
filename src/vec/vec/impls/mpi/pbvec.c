@@ -152,7 +152,7 @@ PetscErrorCode VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 }
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode VecView_MPI_Draw(Vec,PetscViewer);
+extern PetscErrorCode VecView_MPI_Draw(Vec,PetscViewer);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -172,7 +172,7 @@ PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode VecGetValues_MPI(Vec,PetscInt,const PetscInt [],PetscScalar []);
+extern PetscErrorCode VecGetValues_MPI(Vec,PetscInt,const PetscInt [],PetscScalar []);
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDuplicate_MPI"
@@ -445,7 +445,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_MPI"
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPI(Vec vv)
+PetscErrorCode  VecCreate_MPI(Vec vv)
 {
   PetscErrorCode ierr;
 
@@ -469,7 +469,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_Standard"
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Standard(Vec v)
+PetscErrorCode  VecCreate_Standard(Vec v)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -521,7 +521,7 @@ EXTERN_C_END
           VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
 
 @*/ 
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreateMPIWithArray(MPI_Comm comm,PetscInt n,PetscInt N,const PetscScalar array[],Vec *vv)
+PetscErrorCode  VecCreateMPIWithArray(MPI_Comm comm,PetscInt n,PetscInt N,const PetscScalar array[],Vec *vv)
 {
   PetscErrorCode ierr;
 
@@ -569,7 +569,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateMPIWithArray(MPI_Comm comm,PetscInt n
           VecCreateGhostBlock(), VecCreateGhostBlockWithArray()
 
 @*/ 
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],const PetscScalar array[],Vec *vv)
+PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],const PetscScalar array[],Vec *vv)
 {
   PetscErrorCode         ierr;
   Vec_MPI                *w;
@@ -654,7 +654,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostWithArray(MPI_Comm comm,PetscInt
           VecCreateGhostBlock(), VecCreateGhostBlockWithArray()
 
 @*/ 
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],Vec *vv)
+PetscErrorCode  VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],Vec *vv)
 {
   PetscErrorCode ierr;
 
@@ -703,7 +703,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhost(MPI_Comm comm,PetscInt n,PetscI
           VecCreateGhostWithArray(), VecCreateGhostBlocked()
 
 @*/ 
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],const PetscScalar array[],Vec *vv)
+PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],const PetscScalar array[],Vec *vv)
 {
   PetscErrorCode ierr;
   Vec_MPI        *w;
@@ -795,7 +795,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostBlockWithArray(MPI_Comm comm,Pet
           VecCreateGhostWithArray(), VecCreateMPIWithArray(), VecCreateGhostBlockWithArray()
 
 @*/ 
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostBlock(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],Vec *vv)
+PetscErrorCode  VecCreateGhostBlock(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],Vec *vv)
 {
   PetscErrorCode ierr;
 

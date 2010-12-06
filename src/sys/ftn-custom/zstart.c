@@ -13,7 +13,7 @@
 
 #include "private/fortranimpl.h" 
 
-extern PETSC_DLL_IMPORT PetscBool  PetscBeganMPI;
+extern  PetscBool  PetscBeganMPI;
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscinitialize_              PETSCINITIALIZE
@@ -112,25 +112,25 @@ EXTERN_C_END
 #if defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
 extern MPI_Op MPIU_SUM;
 EXTERN_C_BEGIN
-extern void PETSCSYS_DLLEXPORT MPIAPI PetscSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
+extern void  MPIAPI PetscSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
 EXTERN_C_END
 #endif
-extern PETSC_DLL_IMPORT MPI_Op PetscMaxSum_Op;
+extern  MPI_Op PetscMaxSum_Op;
 
 EXTERN_C_BEGIN
-extern void PETSCSYS_DLLEXPORT MPIAPI PetscMaxSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
-extern PetscMPIInt PETSCSYS_DLLEXPORT MPIAPI Petsc_DelCounter(MPI_Comm,PetscMPIInt,void*,void*);
-extern PetscMPIInt PETSCSYS_DLLEXPORT MPIAPI Petsc_DelComm(MPI_Comm,PetscMPIInt,void*,void*);
+extern void  MPIAPI PetscMaxSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
+extern PetscMPIInt  MPIAPI Petsc_DelCounter(MPI_Comm,PetscMPIInt,void*,void*);
+extern PetscMPIInt  MPIAPI Petsc_DelComm(MPI_Comm,PetscMPIInt,void*,void*);
 EXTERN_C_END
 
-EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscOptionsCheckInitial_Private(void);
-EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscOptionsCheckInitial_Components(void);
-EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscInitialize_DynamicLibraries(void);
+extern PetscErrorCode  PetscOptionsCheckInitial_Private(void);
+extern PetscErrorCode  PetscOptionsCheckInitial_Components(void);
+extern PetscErrorCode  PetscInitialize_DynamicLibraries(void);
 #if defined(PETSC_USE_LOG)
-EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscLogBegin_Private(void);
+extern PetscErrorCode  PetscLogBegin_Private(void);
 #endif
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscFreeAlign(void*,int,const char[],const char[],const char[]);
+extern PetscErrorCode  PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
+extern PetscErrorCode  PetscFreeAlign(void*,int,const char[],const char[],const char[]);
 extern int PetscGlobalArgc;
 extern char **PetscGlobalArgs;
 
@@ -207,11 +207,11 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 
 /* -----------------------------------------------------------------------------------------------*/
 
-extern PETSC_DLL_IMPORT MPI_Op PetscADMax_Op;
-extern PETSC_DLL_IMPORT MPI_Op PetscADMin_Op;
+extern  MPI_Op PetscADMax_Op;
+extern  MPI_Op PetscADMin_Op;
 EXTERN_C_BEGIN
-extern void PETSC_DLL_IMPORT MPIAPI PetscADMax_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
-extern void PETSC_DLL_IMPORT MPIAPI PetscADMin_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
+extern void  MPIAPI PetscADMax_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
+extern void  MPIAPI PetscADMin_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
 EXTERN_C_END
 
 

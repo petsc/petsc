@@ -162,7 +162,7 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMSetUp_DA_3D"
-PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_3D(DM da)
+PetscErrorCode  DMSetUp_DA_3D(DM da)
 {
   DM_DA                  *dd           = (DM_DA*)da->data;
   const PetscInt         M            = dd->M;
@@ -1727,7 +1727,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_3D(DM da)
           DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMDALoad(), DMDAGetOwnershipRanges()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDACreate3d(MPI_Comm comm,DMDAPeriodicType wrap,DMDAStencilType stencil_type,PetscInt M,
+PetscErrorCode  DMDACreate3d(MPI_Comm comm,DMDAPeriodicType wrap,DMDAStencilType stencil_type,PetscInt M,
                PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof,PetscInt s,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],DM *da)
 {
   PetscErrorCode ierr;

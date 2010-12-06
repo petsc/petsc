@@ -215,7 +215,7 @@ static PetscErrorCode DMGetMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetMatrix_Composite"
-PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_Composite(DM dm,const MatType mtype,Mat *J)
+PetscErrorCode  DMGetMatrix_Composite(DM dm,const MatType mtype,Mat *J)
 {
   PetscErrorCode         ierr;
   PetscBool              usenest;

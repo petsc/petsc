@@ -20,7 +20,7 @@
 
 .seealso: SNESCreate(), SNESSetType(), SNESPYTHON, PetscPythonInitialize()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetType(SNES snes,const char pyname[])
+PetscErrorCode  SNESPythonSetType(SNES snes,const char pyname[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

@@ -14,7 +14,7 @@ static PetscBool  SNESPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESFinalizePackage(void)
+PetscErrorCode  SNESFinalizePackage(void)
 {
   PetscFunctionBegin;
   SNESPackageInitialized = PETSC_FALSE;
@@ -38,7 +38,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESFinalizePackage(void)
 .keywords: SNES, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char path[]) 
+PetscErrorCode  SNESInitializePackage(const char path[]) 
 {
   char              logList[256];
   char              *className;
@@ -90,7 +90,7 @@ EXTERN_C_BEGIN
   path - library path
 
  */
-PetscErrorCode PETSCSNES_DLLEXPORT PetscDLLibraryRegister_petscsnes(const char path[])
+PetscErrorCode  PetscDLLibraryRegister_petscsnes(const char path[])
 {
   PetscErrorCode ierr;
 

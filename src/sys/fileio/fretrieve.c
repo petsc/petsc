@@ -35,7 +35,7 @@ EXTERN_C_BEGIN
    Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 
 */
-PetscMPIInt PETSCSYS_DLLEXPORT MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt keyval,void *count_val,void *extra_state)
+PetscMPIInt  MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt keyval,void *count_val,void *extra_state)
 {
   PetscErrorCode ierr;
 
@@ -77,7 +77,7 @@ EXTERN_C_END
   as the "/tmp" directory.
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscGetTmp(MPI_Comm comm,char dir[],size_t len)
+PetscErrorCode  PetscGetTmp(MPI_Comm comm,char dir[],size_t len)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -133,7 +133,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscGetTmp(MPI_Comm comm,char dir[],size_t le
   as the "/tmp" directory.
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
+PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
 {
   PetscErrorCode     ierr;
   PetscMPIInt        size,rank,*tagvalp,sum,cnt,i;
@@ -264,7 +264,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSharedTmp(MPI_Comm comm,PetscBool  *share
    it requires O(p*p) file opens.
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
+PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
 {
   PetscErrorCode     ierr;
   PetscMPIInt        size,rank,*tagvalp,sum,cnt,i;
@@ -370,7 +370,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSharedWorkingDirectory(MPI_Comm comm,Pets
     Level: developer
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibname[],size_t llen,PetscBool  *found)
+PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibname[],size_t llen,PetscBool  *found)
 {
   char              buf[1024],tmpdir[PETSC_MAX_PATH_LEN],urlget[PETSC_MAX_PATH_LEN],*par;
   const char        *pdir;

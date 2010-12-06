@@ -134,7 +134,7 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
 
 .seealso: PCMGSetType(), PCMGGetLevels()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
+PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
 {
   PetscErrorCode ierr;
   PC_MG          *mg = (PC_MG*)pc->data;
@@ -260,9 +260,9 @@ PetscErrorCode PCDestroy_MG(PC pc)
 
 
 
-EXTERN PetscErrorCode PCMGACycle_Private(PC,PC_MG_Levels**);
-EXTERN PetscErrorCode PCMGFCycle_Private(PC,PC_MG_Levels**);
-EXTERN PetscErrorCode PCMGKCycle_Private(PC,PC_MG_Levels**);
+extern PetscErrorCode PCMGACycle_Private(PC,PC_MG_Levels**);
+extern PetscErrorCode PCMGFCycle_Private(PC,PC_MG_Levels**);
+extern PetscErrorCode PCMGKCycle_Private(PC,PC_MG_Levels**);
 
 /*
    PCApply_MG - Runs either an additive, multiplicative, Kaskadic
@@ -693,7 +693,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
 .seealso: PCMGSetLevels()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetLevels(PC pc,PetscInt *levels)
+PetscErrorCode  PCMGGetLevels(PC pc,PetscInt *levels)
 {
   PC_MG *mg = (PC_MG*)pc->data;
 
@@ -727,7 +727,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetLevels(PC pc,PetscInt *levels)
 
 .seealso: PCMGSetLevels()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetType(PC pc,PCMGType form)
+PetscErrorCode  PCMGSetType(PC pc,PCMGType form)
 {
   PC_MG                   *mg = (PC_MG*)pc->data;
 
@@ -761,7 +761,7 @@ $  -pc_mg_cycle_type v or w
 
 .seealso: PCMGSetCycleTypeOnLevel()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCycleType(PC pc,PCMGCycleType n)
+PetscErrorCode  PCMGSetCycleType(PC pc,PCMGCycleType n)
 { 
   PC_MG        *mg = (PC_MG*)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
@@ -802,7 +802,7 @@ $  -pc_mg_multiplicative_cycles n
 
 .seealso: PCMGSetCycleTypeOnLevel(), PCMGSetCycleType()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
+PetscErrorCode  PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
 { 
   PC_MG        *mg = (PC_MG*)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
@@ -841,7 +841,7 @@ $  -pc_mg_galerkin
 .seealso: PCMGGetGalerkin()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetGalerkin(PC pc)
+PetscErrorCode  PCMGSetGalerkin(PC pc)
 { 
   PC_MG        *mg = (PC_MG*)pc->data;
 
@@ -875,7 +875,7 @@ $  -pc_mg_galerkin
 .seealso: PCMGSetGalerkin()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetGalerkin(PC pc,PetscBool  *galerkin)
+PetscErrorCode  PCMGGetGalerkin(PC pc,PetscBool  *galerkin)
 { 
   PC_MG        *mg = (PC_MG*)pc->data;
 
@@ -907,7 +907,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetGalerkin(PC pc,PetscBool  *galerkin)
 
 .seealso: PCMGSetNumberSmoothUp()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothDown(PC pc,PetscInt n)
+PetscErrorCode  PCMGSetNumberSmoothDown(PC pc,PetscInt n)
 { 
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
@@ -954,7 +954,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothDown(PC pc,PetscInt n)
 
 .seealso: PCMGSetNumberSmoothDown()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothUp(PC pc,PetscInt n)
+PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 { 
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
@@ -1010,7 +1010,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_MG"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_MG(PC pc)
+PetscErrorCode  PCCreate_MG(PC pc)
 {
   PC_MG          *mg;
   PetscErrorCode ierr;

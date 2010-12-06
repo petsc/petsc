@@ -23,7 +23,7 @@
 
    Concepts: object type
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetType(PetscObject obj, const char *type[])
+PetscErrorCode  PetscObjectGetType(PetscObject obj, const char *type[])
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -51,7 +51,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetType(PetscObject obj, const char
 
    Concepts: object type
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetType(PetscObject obj, const char type[])
+PetscErrorCode  PetscObjectSetType(PetscObject obj, const char type[])
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);

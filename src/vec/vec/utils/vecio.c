@@ -332,7 +332,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "VecLoad_Default"
 
-PetscErrorCode PETSCVEC_DLLEXPORT VecLoad_Default(Vec newvec, PetscViewer viewer)
+PetscErrorCode  VecLoad_Default(Vec newvec, PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      isbinary;

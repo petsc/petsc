@@ -6,8 +6,8 @@
     data used during the optional Lanczo process used to compute eigenvalues
 */
 #include "../src/ksp/ksp/impls/cg/cgimpl.h"       /*I "petscksp.h" I*/
-EXTERN PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal *,PetscReal *);
-EXTERN PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
+extern PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal *,PetscReal *);
+extern PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
 
 
 /*
@@ -241,13 +241,13 @@ extern PetscErrorCode KSPDestroy_CG(KSP);
 extern PetscErrorCode KSPView_CG(KSP,PetscViewer);
 extern PetscErrorCode KSPSetFromOptions_CG(KSP);
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType_CG(KSP,KSPCGType);
+extern PetscErrorCode  KSPCGSetType_CG(KSP,KSPCGType);
 EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_CGNE"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CGNE(KSP ksp)
+PetscErrorCode  KSPCreate_CGNE(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_CG         *cg;

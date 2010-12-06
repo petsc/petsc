@@ -122,7 +122,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESCreate_Test"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Test(SNES  snes)
+PetscErrorCode  SNESCreate_Test(SNES  snes)
 {
   SNES_Test      *neP;
   PetscErrorCode ierr;

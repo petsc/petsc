@@ -467,7 +467,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_CN"
-PetscErrorCode PETSCTS_DLLEXPORT TSCreate_CN(TS ts)
+PetscErrorCode  TSCreate_CN(TS ts)
 {
   TS_CN          *cn;
   PetscErrorCode ierr;

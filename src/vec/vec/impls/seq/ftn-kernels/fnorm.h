@@ -8,7 +8,7 @@
 #define fortrannormsqr_    fortrannormsqr
 #endif
 EXTERN_C_BEGIN
-EXTERN void fortrannormsqr_(void*,PetscInt*,void*);
+extern void fortrannormsqr_(void*,PetscInt*,void*);
 EXTERN_C_END
 #endif
 #endif

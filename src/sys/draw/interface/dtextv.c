@@ -24,7 +24,7 @@
 .seealso: PetscDrawString()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawStringVertical(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
+PetscErrorCode  PetscDrawStringVertical(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
 {
   PetscErrorCode ierr;
   PetscBool  isnull;

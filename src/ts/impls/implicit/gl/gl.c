@@ -396,7 +396,7 @@ static PetscErrorCode TSGLCompleteStep_RescaleAndModify(TSGLScheme sc,PetscReal 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLCreate_IRKS"
-PetscErrorCode PETSCTS_DLLEXPORT TSGLCreate_IRKS(TS ts)
+PetscErrorCode  TSGLCreate_IRKS(TS ts)
 {
   TS_GL          *gl = (TS_GL*)ts->data;
   PetscErrorCode ierr;
@@ -565,7 +565,7 @@ EXTERN_C_END
 
 .keywords: TS, TSGL, set, type
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGLSetType(TS ts,const TSGLType type)
+PetscErrorCode  TSGLSetType(TS ts,const TSGLType type)
 {
   PetscErrorCode ierr;
 
@@ -597,7 +597,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLSetType(TS ts,const TSGLType type)
 
 .seealso: TS, TSGL, TSGLAcceptRegisterDynamic(), TSGLAdapt, set type
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGLSetAcceptType(TS ts,const TSGLAcceptType type)
+PetscErrorCode  TSGLSetAcceptType(TS ts,const TSGLAcceptType type)
 {
   PetscErrorCode ierr;
 
@@ -629,7 +629,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLSetAcceptType(TS ts,const TSGLAcceptType ty
 
 .seealso: TSGLAdapt, TSGLAdaptRegisterDynamic()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGLGetAdapt(TS ts,TSGLAdapt *adapt)
+PetscErrorCode  TSGLGetAdapt(TS ts,TSGLAdapt *adapt)
 {
   PetscErrorCode ierr;
 
@@ -643,7 +643,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLGetAdapt(TS ts,TSGLAdapt *adapt)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLAccept_Always"
-PetscErrorCode PETSCTS_DLLEXPORT TSGLAccept_Always(TS ts,PetscReal tleft,PetscReal h,const PetscReal enorms[],PetscBool  *accept)
+PetscErrorCode  TSGLAccept_Always(TS ts,PetscReal tleft,PetscReal h,const PetscReal enorms[],PetscBool  *accept)
 {
   PetscFunctionBegin;
   *accept = PETSC_TRUE;
@@ -700,7 +700,7 @@ static PetscErrorCode TSGLVecNormWRMS(TS ts,Vec X,PetscReal *nrm)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLSetType_GL"
-PetscErrorCode PETSCTS_DLLEXPORT TSGLSetType_GL(TS ts,const TSGLType type)
+PetscErrorCode  TSGLSetType_GL(TS ts,const TSGLType type)
 {
   PetscErrorCode ierr,(*r)(TS);
   PetscBool  same;
@@ -722,7 +722,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLSetType_GL(TS ts,const TSGLType type)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLSetAcceptType_GL"
-PetscErrorCode PETSCTS_DLLEXPORT TSGLSetAcceptType_GL(TS ts,const TSGLAcceptType type)
+PetscErrorCode  TSGLSetAcceptType_GL(TS ts,const TSGLAcceptType type)
 {
   PetscErrorCode ierr;
   TSGLAcceptFunction r;
@@ -738,7 +738,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLSetAcceptType_GL(TS ts,const TSGLAcceptType
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLGetAdapt_GL"
-PetscErrorCode PETSCTS_DLLEXPORT TSGLGetAdapt_GL(TS ts,TSGLAdapt *adapt)
+PetscErrorCode  TSGLGetAdapt_GL(TS ts,TSGLAdapt *adapt)
 {
   PetscErrorCode ierr;
   TS_GL *gl = (TS_GL*)ts->data;
@@ -1175,7 +1175,7 @@ static PetscErrorCode TSView_GL(TS ts,PetscViewer viewer)
 
    Level: advanced
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGLRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(TS))
+PetscErrorCode  TSGLRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(TS))
 {
   PetscErrorCode ierr;
   char           fullname[PETSC_MAX_PATH_LEN];
@@ -1193,7 +1193,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLRegister(const char sname[],const char path
 
    Level: advanced
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGLAcceptRegister(const char sname[],const char path[],const char name[],TSGLAcceptFunction function)
+PetscErrorCode  TSGLAcceptRegister(const char sname[],const char path[],const char name[],TSGLAcceptFunction function)
 {
   PetscErrorCode ierr;
   char           fullname[PETSC_MAX_PATH_LEN];
@@ -1217,7 +1217,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLAcceptRegister(const char sname[],const cha
 
 .seealso:  TSGLRegisterDestroy()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGLRegisterAll(const char path[])
+PetscErrorCode  TSGLRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 
@@ -1242,7 +1242,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLRegisterAll(const char path[])
 .keywords: TSGL, register, destroy
 .seealso: TSGLRegister(), TSGLRegisterAll(), TSGLRegisterDynamic()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGLRegisterDestroy(void)
+PetscErrorCode  TSGLRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -1268,7 +1268,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLRegisterDestroy(void)
 .keywords: TS, TSGL, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGLInitializePackage(const char path[])
+PetscErrorCode  TSGLInitializePackage(const char path[])
 {
   PetscErrorCode ierr;
 
@@ -1291,7 +1291,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLInitializePackage(const char path[])
 .keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGLFinalizePackage(void) 
+PetscErrorCode  TSGLFinalizePackage(void) 
 {
   PetscFunctionBegin;
   TSGLPackageInitialized = PETSC_FALSE;
@@ -1398,7 +1398,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_GL"
-PetscErrorCode PETSCTS_DLLEXPORT TSCreate_GL(TS ts)
+PetscErrorCode  TSCreate_GL(TS ts)
 {
   TS_GL       *gl;
   PetscErrorCode ierr;

@@ -5,10 +5,10 @@
 #include "../src/sys/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw);
-EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw);
+extern PetscErrorCode PetscDrawCreate_X(PetscDraw);
+extern PetscErrorCode PetscDrawCreate_Null(PetscDraw);
 #if defined(PETSC_USE_WINDOWS_GRAPHICS)
-EXTERN PetscErrorCode PetscDrawCreate_Win32(PetscDraw);
+extern PetscErrorCode PetscDrawCreate_Win32(PetscDraw);
 #endif
 EXTERN_C_END
   
@@ -23,7 +23,7 @@ EXTERN_C_END
 
 .seealso:  PetscDrawRegisterDestroy()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawRegisterAll(const char *path)
+PetscErrorCode  PetscDrawRegisterAll(const char *path)
 {
   PetscErrorCode ierr;
 

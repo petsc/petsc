@@ -195,7 +195,7 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCEisenstatSetOmega_Eisenstat"
-PetscErrorCode PETSCKSP_DLLEXPORT PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
+PetscErrorCode  PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
 {
   PC_Eisenstat  *eis;
 
@@ -210,7 +210,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCEisenstatNoDiagonalScaling_Eisenstat"
-PetscErrorCode PETSCKSP_DLLEXPORT PCEisenstatNoDiagonalScaling_Eisenstat(PC pc)
+PetscErrorCode  PCEisenstatNoDiagonalScaling_Eisenstat(PC pc)
 {
   PC_Eisenstat *eis;
 
@@ -252,7 +252,7 @@ $    -pc_type  sor  -pc_sor_symmetric
 
 .seealso: PCSORSetOmega()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCEisenstatSetOmega(PC pc,PetscReal omega)
+PetscErrorCode  PCEisenstatSetOmega(PC pc,PetscReal omega)
 {
   PetscErrorCode ierr;
 
@@ -288,7 +288,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCEisenstatSetOmega(PC pc,PetscReal omega)
 
 .seealso: PCEisenstatSetOmega()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCEisenstatNoDiagonalScaling(PC pc)
+PetscErrorCode  PCEisenstatNoDiagonalScaling(PC pc)
 {
   PetscErrorCode ierr;
 
@@ -323,7 +323,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Eisenstat"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Eisenstat(PC pc)
+PetscErrorCode  PCCreate_Eisenstat(PC pc)
 {
   PetscErrorCode ierr;
   PC_Eisenstat   *eis;

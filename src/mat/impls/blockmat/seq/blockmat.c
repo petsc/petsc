@@ -16,7 +16,7 @@ typedef struct {
   Vec               left,right,middle,workb;   /* dummy vectors to perform local parts of product */
 } Mat_BlockMat;      
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatBlockMatSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt*);
+extern PetscErrorCode  MatBlockMatSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSOR_BlockMat_Symmetric"
@@ -923,7 +923,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
 .seealso: MatCreate(), MatCreateBlockMat(), MatSetValues()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatBlockMatSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const PetscInt nnz[])
+PetscErrorCode  MatBlockMatSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const PetscInt nnz[])
 {
   PetscErrorCode ierr;
 
@@ -935,7 +935,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatBlockMatSetPreallocation(Mat B,PetscInt bs,
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatBlockMatSetPreallocation_BlockMat"
-PetscErrorCode PETSCMAT_DLLEXPORT MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,PetscInt nz,PetscInt *nnz)
+PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,PetscInt nz,PetscInt *nnz)
 {
   Mat_BlockMat   *bmat = (Mat_BlockMat*)A->data;
   PetscErrorCode ierr;
@@ -1015,7 +1015,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_BlockMat"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BlockMat(Mat A)
+PetscErrorCode  MatCreate_BlockMat(Mat A)
 {
   Mat_BlockMat   *b;
   PetscErrorCode ierr;
@@ -1072,7 +1072,7 @@ EXTERN_C_END
 
 .seealso: MATBLOCKMAT
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateBlockMat(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt bs,PetscInt nz,PetscInt *nnz, Mat *A)
+PetscErrorCode  MatCreateBlockMat(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt bs,PetscInt nz,PetscInt *nnz, Mat *A)
 {
   PetscErrorCode ierr;
 

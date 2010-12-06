@@ -958,7 +958,7 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
 .seealso: VecCreateMPIWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), 
           VecCreateGhost(), VecCreateSeq(), VecPlaceArray()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreateSeqWithArray(MPI_Comm comm,PetscInt n,const PetscScalar array[],Vec *V)
+PetscErrorCode  VecCreateSeqWithArray(MPI_Comm comm,PetscInt n,const PetscScalar array[],Vec *V)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

@@ -179,7 +179,7 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 
 .seealso: DMView(), DMDAGetCorners(), DMDAGetLocalInfo()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *dof,PetscInt *s,DMDAPeriodicType *wrap,DMDAStencilType *st)
+PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *dof,PetscInt *s,DMDAPeriodicType *wrap,DMDAStencilType *st)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -218,7 +218,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,Pet
 
 .seealso: DMDAGetInfo(), DMDAGetCorners()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAGetLocalInfo(DM da,DMDALocalInfo *info)
+PetscErrorCode  DMDAGetLocalInfo(DM da,DMDALocalInfo *info)
 {
   PetscInt w;
   DM_DA    *dd = (DM_DA*)da->data;

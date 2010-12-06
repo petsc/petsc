@@ -348,7 +348,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
 }
 #endif
 
-EXTERN PetscErrorCode VecView_MPI_Draw_DA1d(Vec,PetscViewer);
+extern PetscErrorCode VecView_MPI_Draw_DA1d(Vec,PetscViewer);
 
 #if defined(PETSC_HAVE_MPIIO)
 #undef __FUNCT__  
@@ -408,7 +408,7 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_DA"
-PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
+PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
 {
   DM             da;
   PetscErrorCode ierr;
@@ -603,7 +603,7 @@ PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecLoad_Default_DA"
-PetscErrorCode PETSCDM_DLLEXPORT VecLoad_Default_DA(Vec xin, PetscViewer viewer)
+PetscErrorCode  VecLoad_Default_DA(Vec xin, PetscViewer viewer)
 {
   PetscErrorCode ierr;
   DM             da;

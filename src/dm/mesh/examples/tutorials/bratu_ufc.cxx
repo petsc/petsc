@@ -249,7 +249,7 @@ PetscErrorCode ViewMesh(Mesh mesh, const char filename[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshRefineSingularity"
-PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm, double * singularity, double factor, Mesh *refinedMesh)
+PetscErrorCode  MeshRefineSingularity(Mesh mesh, MPI_Comm comm, double * singularity, double factor, Mesh *refinedMesh)
 {
   ALE::Obj<PETSC_MESH_TYPE> oldMesh;
   double              oldLimit;
@@ -311,7 +311,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshRefineSingularity_Fichera"
-PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity_Fichera(Mesh mesh, MPI_Comm comm, double * singularity, double factor, Mesh *refinedMesh)
+PetscErrorCode  MeshRefineSingularity_Fichera(Mesh mesh, MPI_Comm comm, double * singularity, double factor, Mesh *refinedMesh)
 {
   ALE::Obj<PETSC_MESH_TYPE> oldMesh;
   double              oldLimit;

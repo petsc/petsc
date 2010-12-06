@@ -36,7 +36,6 @@ def setupfunctionC(filename,g = None):
         regdefine   = re.compile('#define')
         regdefine__ = re.compile('#define [ ]*__FUNCT__')
         regextern   = re.compile('extern')
-        regEXTERN   = re.compile('EXTERN')
         regif       = re.compile('#if')
         regendif    = re.compile('#endif')
 	f = open(filename)

@@ -167,7 +167,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_BiCG"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BiCG(KSP ksp)
+PetscErrorCode  KSPCreate_BiCG(KSP ksp)
 {
   PetscErrorCode ierr;
 

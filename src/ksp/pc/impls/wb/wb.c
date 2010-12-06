@@ -595,7 +595,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
 
 .seealso: PCEXOTIC, PCExoticType()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCExoticSetType(PC pc,PCExoticType type)
+PetscErrorCode  PCExoticSetType(PC pc,PCExoticType type)
 {
   PetscErrorCode ierr;
 
@@ -608,7 +608,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCExoticSetType(PC pc,PCExoticType type)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCExoticSetType_Exotic"
-PetscErrorCode PETSCKSP_DLLEXPORT PCExoticSetType_Exotic(PC pc,PCExoticType type)
+PetscErrorCode  PCExoticSetType_Exotic(PC pc,PCExoticType type)
 {
   PC_MG     *mg = (PC_MG*)pc->data;
   PC_Exotic *ctx = (PC_Exotic*) mg->innerctx;
@@ -774,7 +774,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Exotic"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Exotic(PC pc)
+PetscErrorCode  PCCreate_Exotic(PC pc)
 {
   PetscErrorCode ierr;
   PC_Exotic      *ex;

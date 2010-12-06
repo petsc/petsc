@@ -9,7 +9,7 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetReuseFill_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill_ILU(PC pc,PetscBool  flag)
+PetscErrorCode  PCFactorSetReuseFill_ILU(PC pc,PetscBool  flag)
 {
   PC_ILU *lu = (PC_ILU*)pc->data;
   
@@ -22,7 +22,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorReorderForNonzeroDiagonal_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorReorderForNonzeroDiagonal_ILU(PC pc,PetscReal z)
+PetscErrorCode  PCFactorReorderForNonzeroDiagonal_ILU(PC pc,PetscReal z)
 {
   PC_ILU *ilu = (PC_ILU*)pc->data;
 
@@ -54,7 +54,7 @@ PetscErrorCode PCDestroy_ILU_Internal(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetDropTolerance_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
+PetscErrorCode  PCFactorSetDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
 {
   PC_ILU         *ilu = (PC_ILU*)pc->data;
 
@@ -73,7 +73,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetReuseOrdering_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering_ILU(PC pc,PetscBool  flag)
+PetscErrorCode  PCFactorSetReuseOrdering_ILU(PC pc,PetscBool  flag)
 {
   PC_ILU *ilu = (PC_ILU*)pc->data;
 
@@ -86,7 +86,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetUseInPlace_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseInPlace_ILU(PC pc)
+PetscErrorCode  PCFactorSetUseInPlace_ILU(PC pc)
 {
   PC_ILU *dir = (PC_ILU*)pc->data;
 
@@ -359,7 +359,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
+PetscErrorCode  PCCreate_ILU(PC pc)
 {
   PetscErrorCode ierr;
   PC_ILU         *ilu;

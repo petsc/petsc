@@ -22,7 +22,7 @@
 
 .seealso:  
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,void *),void *ctx)
+PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,void *),void *ctx)
 {
   PetscErrorCode  ierr;
   PetscDrawButton button;

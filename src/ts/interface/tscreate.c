@@ -31,7 +31,7 @@ static PetscErrorCode TSPublish_Petsc(PetscObject obj)
 .keywords: TS, create
 .seealso: TSSetType(), TSSetUp(), TSDestroy(), MeshCreate(), TSSetProblemType()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSCreate(MPI_Comm comm, TS *ts) {
+PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts) {
   TS             t;
   PetscErrorCode ierr;
 

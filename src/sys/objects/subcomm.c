@@ -24,7 +24,7 @@ extern PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm);
 
 .seealso: PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetType(),PetscSubcommSetTypeGeneral()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommSetNumber(PetscSubcomm psubcomm,PetscInt nsubcomm)
+PetscErrorCode  PetscSubcommSetNumber(PetscSubcomm psubcomm,PetscInt nsubcomm)
 {
   PetscErrorCode ierr;
   MPI_Comm       comm=psubcomm->parent;
@@ -57,7 +57,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommSetNumber(PetscSubcomm psubcomm,Pe
 
 .seealso: PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetNumber(),PetscSubcommSetTypeGeneral()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommSetType(PetscSubcomm psubcomm,const PetscSubcommType subcommtype)
+PetscErrorCode  PetscSubcommSetType(PetscSubcomm psubcomm,const PetscSubcommType subcommtype)
 {
   PetscErrorCode ierr;
 
@@ -94,7 +94,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommSetType(PetscSubcomm psubcomm,cons
 
 .seealso: PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetNumber(),PetscSubcommSetType()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt color,PetscMPIInt subrank,PetscMPIInt duprank)
+PetscErrorCode  PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt color,PetscMPIInt subrank,PetscMPIInt duprank)
 {
   PetscErrorCode ierr;
   MPI_Comm       subcomm=0,dupcomm=0,comm=psubcomm->parent;
@@ -123,7 +123,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommSetTypeGeneral(PetscSubcomm psubco
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSubcommDestroy"
-PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommDestroy(PetscSubcomm psubcomm)
+PetscErrorCode  PetscSubcommDestroy(PetscSubcomm psubcomm)
 {
   PetscErrorCode ierr;
 
@@ -155,7 +155,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommDestroy(PetscSubcomm psubcomm)
 
 .seealso: PetscSubcommDestroy()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommCreate(MPI_Comm comm,PetscSubcomm *psubcomm)
+PetscErrorCode  PetscSubcommCreate(MPI_Comm comm,PetscSubcomm *psubcomm)
 {
   PetscErrorCode ierr;
 

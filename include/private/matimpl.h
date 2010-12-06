@@ -111,7 +111,7 @@ struct _MatOps {
   PetscErrorCode (*multconstrained)(Mat,Vec,Vec);
   PetscErrorCode (*multtransposeconstrained)(Mat,Vec,Vec);
   /*79*/
-  PetscErrorCode (*permutesparsify)(Mat, PetscInt, double, double, IS, IS, Mat *);
+  PetscErrorCode (*dummy)(Mat);
   PetscErrorCode (*mults)(Mat, Vecs, Vecs);
   PetscErrorCode (*solves)(Mat, Vecs, Vecs);
   PetscErrorCode (*getinertia)(Mat,PetscInt*,PetscInt*,PetscInt*);
@@ -180,15 +180,15 @@ struct _MatOps {
 /*
    Utility private matrix routines
 */
-EXTERN PetscErrorCode MatConvert_Basic(Mat, const MatType,MatReuse,Mat*);
-EXTERN PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
-EXTERN PetscErrorCode MatView_Private(Mat);
+extern PetscErrorCode MatConvert_Basic(Mat, const MatType,MatReuse,Mat*);
+extern PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
+extern PetscErrorCode MatView_Private(Mat);
 
-EXTERN PetscErrorCode MatHeaderMerge(Mat,Mat);
-EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat);
-EXTERN PetscErrorCode MatAXPYGetxtoy_Private(PetscInt,PetscInt*,PetscInt*,PetscInt*, PetscInt*,PetscInt*,PetscInt*, PetscInt**);
-EXTERN PetscErrorCode MatPtAP_Basic(Mat,Mat,MatReuse,PetscReal,Mat*);
-EXTERN PetscErrorCode MatDiagonalSet_Default(Mat,Vec,InsertMode);
+extern PetscErrorCode MatHeaderMerge(Mat,Mat);
+extern PetscErrorCode MatHeaderReplace(Mat,Mat);
+extern PetscErrorCode MatAXPYGetxtoy_Private(PetscInt,PetscInt*,PetscInt*,PetscInt*, PetscInt*,PetscInt*,PetscInt*, PetscInt**);
+extern PetscErrorCode MatPtAP_Basic(Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode MatDiagonalSet_Default(Mat,Vec,InsertMode);
 
 /* 
   The stash is used to temporarily store inserted matrix values that 
@@ -207,9 +207,9 @@ struct _MatStashSpace {
   PetscInt           local_remaining;
 };
 
-EXTERN PetscErrorCode PetscMatStashSpaceGet(PetscInt,PetscInt,PetscMatStashSpace *);
-EXTERN PetscErrorCode PetscMatStashSpaceContiguous(PetscInt,PetscMatStashSpace *,PetscScalar *,PetscInt *,PetscInt *);
-EXTERN PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace);
+extern PetscErrorCode PetscMatStashSpaceGet(PetscInt,PetscInt,PetscMatStashSpace *);
+extern PetscErrorCode PetscMatStashSpaceContiguous(PetscInt,PetscMatStashSpace *,PetscScalar *,PetscInt *,PetscInt *);
+extern PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace);
 
 typedef struct {
   PetscInt      nmax;                   /* maximum stash size */
@@ -237,17 +237,17 @@ typedef struct {
   PetscInt      reproduce_count;
 } MatStash;
 
-EXTERN PetscErrorCode MatStashCreate_Private(MPI_Comm,PetscInt,MatStash*);
-EXTERN PetscErrorCode MatStashDestroy_Private(MatStash*);
-EXTERN PetscErrorCode MatStashScatterEnd_Private(MatStash*);
-EXTERN PetscErrorCode MatStashSetInitialSize_Private(MatStash*,PetscInt);
-EXTERN PetscErrorCode MatStashGetInfo_Private(MatStash*,PetscInt*,PetscInt*);
-EXTERN PetscErrorCode MatStashValuesRow_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscBool );
-EXTERN PetscErrorCode MatStashValuesCol_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscBool );
-EXTERN PetscErrorCode MatStashValuesRowBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscInt,PetscInt);
-EXTERN PetscErrorCode MatStashValuesColBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscInt,PetscInt);
-EXTERN PetscErrorCode MatStashScatterBegin_Private(Mat,MatStash*,PetscInt*);
-EXTERN PetscErrorCode MatStashScatterGetMesg_Private(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
+extern PetscErrorCode MatStashCreate_Private(MPI_Comm,PetscInt,MatStash*);
+extern PetscErrorCode MatStashDestroy_Private(MatStash*);
+extern PetscErrorCode MatStashScatterEnd_Private(MatStash*);
+extern PetscErrorCode MatStashSetInitialSize_Private(MatStash*,PetscInt);
+extern PetscErrorCode MatStashGetInfo_Private(MatStash*,PetscInt*,PetscInt*);
+extern PetscErrorCode MatStashValuesRow_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscBool );
+extern PetscErrorCode MatStashValuesCol_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscBool );
+extern PetscErrorCode MatStashValuesRowBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscInt,PetscInt);
+extern PetscErrorCode MatStashValuesColBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscInt,PetscInt);
+extern PetscErrorCode MatStashScatterBegin_Private(Mat,MatStash*,PetscInt*);
+extern PetscErrorCode MatStashScatterGetMesg_Private(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
 
 typedef struct {
   PetscInt   dim;
@@ -264,7 +264,7 @@ typedef struct {
   PetscInt   *rindex;                       /* compressed row index               */
   PetscBool  checked;                       /* if compressed row format have been checked for */
 } Mat_CompressedRow;
-EXTERN PetscErrorCode Mat_CheckCompressedRow(Mat,Mat_CompressedRow*,PetscInt*,PetscInt,PetscReal);
+extern PetscErrorCode Mat_CheckCompressedRow(Mat,Mat_CompressedRow*,PetscInt*,PetscInt,PetscReal);
 
 struct _p_Mat {
   PETSCHEADER(struct _MatOps);
@@ -410,7 +410,7 @@ typedef struct {
   PetscScalar    pv;  /* pivot of the active row */
 } FactorShiftCtx;
 
-EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
+extern PetscErrorCode MatFactorDumpMatrix(Mat);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPivotCheck_nz"

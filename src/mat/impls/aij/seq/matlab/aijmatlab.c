@@ -13,7 +13,7 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatlabEnginePut_SeqAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine)
+PetscErrorCode  MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
   Mat            B = (Mat)obj;
@@ -51,7 +51,7 @@ EXTERN_C_BEGIN
    Developer Notes: on 64 bit systems Matlab uses 64 bit integers hence mWIndex is size_t.
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJFromMatlab(mxArray *mmat,Mat *mat)
+PetscErrorCode  MatCreateSeqAIJFromMatlab(mxArray *mmat,Mat *mat)
 {
   PetscErrorCode ierr;
   int            nz,n,m,*i,*j,k;
@@ -100,7 +100,7 @@ EXTERN_C_BEGIN
 -     mat - a already created MATSEQAIJ
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
+PetscErrorCode  MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
 {
   PetscErrorCode ierr;
   int            ii;
@@ -132,7 +132,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatlabEngineGet_SeqAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
+PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
   Mat            mat = (Mat)obj;

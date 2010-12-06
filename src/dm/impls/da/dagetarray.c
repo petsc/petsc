@@ -43,7 +43,7 @@
 .seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecRestoreArrayDOF()
           DMDAVecGetarrayDOF()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAVecGetArray(DM da,Vec vec,void *array)
+PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
@@ -100,7 +100,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAVecGetArray(DM da,Vec vec,void *array)
 
 .seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAVecRestoreArray(DM da,Vec vec,void *array)
+PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
@@ -162,7 +162,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAVecRestoreArray(DM da,Vec vec,void *array)
 
 .seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecGetArray(), DMDAVecRestoreArrayDOF()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAVecGetArrayDOF(DM da,Vec vec,void *array)
+PetscErrorCode  DMDAVecGetArrayDOF(DM da,Vec vec,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
@@ -216,7 +216,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAVecGetArrayDOF(DM da,Vec vec,void *array)
 
 .seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray(), DMDAVecGetArrayDOF(), DMDAVecRestoreArrayDOF()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAVecRestoreArrayDOF(DM da,Vec vec,void *array)
+PetscErrorCode  DMDAVecRestoreArrayDOF(DM da,Vec vec,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;

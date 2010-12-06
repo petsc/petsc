@@ -5,10 +5,15 @@
 
 #include "petscsys.h"
 
-EXTERN PetscErrorCode PetscScalarAddressToFortran(PetscObject,PetscInt,PetscScalar*,PetscScalar*,PetscInt,size_t*);
-EXTERN PetscErrorCode PetscScalarAddressFromFortran(PetscObject,PetscScalar*,size_t,PetscInt,PetscScalar **);
-EXTERN size_t         PetscIntAddressToFortran(PetscInt*,PetscInt*);
-EXTERN PetscInt       *PetscIntAddressFromFortran(PetscInt*,size_t); 
+/* PETSC_STDCALL is defined on some Microsoft Windows systems and is used for functions compiled by the Fortran compiler */
+#if !defined(PETSC_STDCALL)
+#define PETSC_STDCALL
+#endif
+
+extern PetscErrorCode PetscScalarAddressToFortran(PetscObject,PetscInt,PetscScalar*,PetscScalar*,PetscInt,size_t*);
+extern PetscErrorCode PetscScalarAddressFromFortran(PetscObject,PetscScalar*,size_t,PetscInt,PetscScalar **);
+extern size_t         PetscIntAddressToFortran(PetscInt*,PetscInt*);
+extern PetscInt       *PetscIntAddressFromFortran(PetscInt*,size_t); 
 extern void   *PETSC_NULL_Fortran;
 extern char   *PETSC_NULL_CHARACTER_Fortran;
 extern void   *PETSC_NULL_INTEGER_Fortran;

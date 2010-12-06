@@ -18,7 +18,7 @@ PetscClassId DRAWAXIS_CLASSID = 0;
    Level: advanced
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
+PetscErrorCode  PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
 {
   PetscDrawAxis  ad;
   PetscObject    obj = (PetscObject)draw;
@@ -65,7 +65,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisCreate(PetscDraw draw,PetscDrawAx
     Level: advanced
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisDestroy(PetscDrawAxis axis)
+PetscErrorCode  PetscDrawAxisDestroy(PetscDrawAxis axis)
 {
   PetscErrorCode ierr;
 
@@ -97,7 +97,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisDestroy(PetscDrawAxis axis)
     Level: advanced
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
+PetscErrorCode  PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
 {
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
@@ -120,7 +120,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisSetColors(PetscDrawAxis axis,int 
     Level: advanced
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const char xlabel[],const char ylabel[])
+PetscErrorCode  PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const char xlabel[],const char ylabel[])
 {
   PetscErrorCode ierr;
 
@@ -153,7 +153,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisSetLabels(PetscDrawAxis axis,cons
 .seealso:  PetscDrawAxisSetLimits()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscBool  hold)
+PetscErrorCode  PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscBool  hold)
 {
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
@@ -179,7 +179,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,
     effects may be generated.  These routines are part of the Axis
     structure (axis).
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawAxisDraw(PetscDrawAxis axis)
+PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
 {
   int            i,ntick,numx,numy,ac = axis->ac,tc = axis->tc,cc = axis->cc,rank;
   size_t         len;

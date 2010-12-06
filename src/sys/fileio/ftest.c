@@ -134,7 +134,7 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTestFile"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTestFile(const char fname[], char mode, PetscBool  *flg)
+PetscErrorCode  PetscTestFile(const char fname[], char mode, PetscBool  *flg)
 {
   uid_t          fuid;
   gid_t          fgid;
@@ -158,7 +158,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTestFile(const char fname[], char mode, P
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTestDirectory"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTestDirectory(const char fname[],char mode,PetscBool  *flg)
+PetscErrorCode  PetscTestDirectory(const char fname[],char mode,PetscBool  *flg)
 {
   uid_t          fuid;
   gid_t          fgid;
@@ -182,7 +182,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTestDirectory(const char fname[],char mod
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLs"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLs(MPI_Comm comm,const char libname[],char found[],size_t tlen,PetscBool  *flg)
+PetscErrorCode  PetscLs(MPI_Comm comm,const char libname[],char found[],size_t tlen,PetscBool  *flg)
 {
   PetscErrorCode ierr;
   size_t         len;

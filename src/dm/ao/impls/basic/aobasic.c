@@ -211,7 +211,7 @@ static struct _AOOps AOops = {AOView_Basic,
 
 .seealso: AOCreateBasicIS(), AODestroy(), AOPetscToApplication(), AOApplicationToPetsc()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
+PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
 {
   AO_Basic       *aobasic;
   AO             ao;
@@ -347,7 +347,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm comm,PetscInt napp,const
 
 .seealso: AOCreateBasic(),  AODestroy()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasicIS(IS isapp,IS ispetsc,AO *aoout)
+PetscErrorCode  AOCreateBasicIS(IS isapp,IS ispetsc,AO *aoout)
 {
   PetscErrorCode ierr;
   const PetscInt *mypetsc = 0,*myapp;

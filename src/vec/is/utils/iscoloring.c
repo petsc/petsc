@@ -18,7 +18,7 @@ const char *ISColoringTypes[] = {"global","ghosted","ISColoringType","IS_COLORIN
 
 .seealso: ISColoringView(), MatGetColoring()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISColoringDestroy(ISColoring iscoloring)
+PetscErrorCode  ISColoringDestroy(ISColoring iscoloring)
 {
   PetscInt i;
   PetscErrorCode ierr;
@@ -54,7 +54,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringDestroy(ISColoring iscoloring)
 
 .seealso: ISColoringDestroy(), ISColoringGetIS(), MatGetColoring()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISColoringView(ISColoring iscoloring,PetscViewer viewer)
+PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
 {
   PetscInt       i;
   PetscErrorCode ierr;
@@ -106,7 +106,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringView(ISColoring iscoloring,PetscView
 
 .seealso: ISColoringRestoreIS(), ISColoringView()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
+PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
 {
   PetscErrorCode ierr;
 
@@ -186,7 +186,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringGetIS(ISColoring iscoloring,PetscInt
 
 .seealso: ISColoringGetIS(), ISColoringView()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
+PetscErrorCode  ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
 {
   PetscFunctionBegin;
   PetscValidPointer(iscoloring,1);
@@ -226,7 +226,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringRestoreIS(ISColoring iscoloring,IS *
 .seealso: MatColoringCreate(), ISColoringView(), ISColoringDestroy(), ISColoringSetType()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const ISColoringValue colors[],ISColoring *iscoloring)
+PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const ISColoringValue colors[],ISColoring *iscoloring)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag;
@@ -310,7 +310,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm comm,PetscInt ncolor
 .seealso: MatPartitioningCreate(), AOCreateBasic(), ISPartitioningCount()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningToNumbering(IS part,IS *is)
+PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
 {
   MPI_Comm       comm;
   PetscInt       i,np,npt,n,*starts = PETSC_NULL,*sums = PETSC_NULL,*lsizes = PETSC_NULL,*newi = PETSC_NULL;
@@ -395,7 +395,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningToNumbering(IS part,IS *is)
         MatPartitioningSetNParts()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
+PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
 {
   MPI_Comm       comm;
   PetscInt       i,n,*lsizes;
@@ -477,7 +477,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningCount(IS part,PetscInt len,Petsc
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISAllGather(IS is,IS *isout)
+PetscErrorCode  ISAllGather(IS is,IS *isout)
 {
   PetscErrorCode ierr;
   PetscInt       *indices,n,i,N,step,first;
@@ -546,7 +546,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGather(IS is,IS *isout)
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lindices,PetscInt *outN,ISColoringValue *outindices[])
+PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lindices,PetscInt *outN,ISColoringValue *outindices[])
 {
   ISColoringValue *indices;
   PetscErrorCode  ierr;
@@ -602,7 +602,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGatherColors(MPI_Comm comm,PetscInt n,ISC
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISComplement(IS is,PetscInt nmin,PetscInt nmax,IS *isout)
+PetscErrorCode  ISComplement(IS is,PetscInt nmin,PetscInt nmax,IS *isout)
 {
   PetscErrorCode ierr;
   const PetscInt *indices;

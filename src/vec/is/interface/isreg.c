@@ -31,7 +31,7 @@ PetscBool  ISRegisterAllCalled          = PETSC_FALSE;
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISCreate(MPI_Comm comm,IS *is)
+PetscErrorCode  ISCreate(MPI_Comm comm,IS *is)
 {
   PetscErrorCode ierr;
 
@@ -69,7 +69,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreate(MPI_Comm comm,IS *is)
 
 .seealso: ISGetType(), ISCreate()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISSetType(IS is, const ISType method)
+PetscErrorCode  ISSetType(IS is, const ISType method)
 {
   PetscErrorCode (*r)(IS);
   PetscBool      match;
@@ -108,7 +108,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSetType(IS is, const ISType method)
 
 .seealso: ISSetType(), ISCreate()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISGetType(IS is, const ISType *type)
+PetscErrorCode  ISGetType(IS is, const ISType *type)
 {
   PetscErrorCode ierr;
 
@@ -132,7 +132,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGetType(IS is, const ISType *type)
 
   Level: advanced
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(IS))
+PetscErrorCode  ISRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(IS))
 {
   char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -159,7 +159,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISRegister(const char sname[], const char path
 .keywords: IS, register, destroy
 .seealso: ISRegister(), ISRegisterAll(), ISRegisterDynamic()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISRegisterDestroy(void)
+PetscErrorCode  ISRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 

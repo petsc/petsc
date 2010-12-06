@@ -7,7 +7,7 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecMatlabEnginePut_Default"
-PetscErrorCode PETSCVEC_DLLEXPORT VecMatlabEnginePut_Default(PetscObject obj,void *mengine)
+PetscErrorCode  VecMatlabEnginePut_Default(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
   PetscInt       n;
@@ -35,7 +35,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecMatlabEngineGet_Default"
-PetscErrorCode PETSCVEC_DLLEXPORT VecMatlabEngineGet_Default(PetscObject obj,void *mengine)
+PetscErrorCode  VecMatlabEngineGet_Default(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
   PetscInt       n;

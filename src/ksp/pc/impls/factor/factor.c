@@ -22,7 +22,7 @@
 
 .seealso: PCFactorSetShiftType(), PCFactorSetShiftAmount()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot(PC pc,PetscReal zero)
+PetscErrorCode  PCFactorSetZeroPivot(PC pc,PetscReal zero)
 {
   PetscErrorCode ierr;
 
@@ -54,7 +54,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot(PC pc,PetscReal zero)
 
 .seealso: PCFactorSetZeroPivot(), PCFactorSetShiftAmount()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftType(PC pc,MatFactorShiftType shifttype)
+PetscErrorCode  PCFactorSetShiftType(PC pc,MatFactorShiftType shifttype)
 {
   PetscErrorCode ierr;
 
@@ -86,7 +86,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftType(PC pc,MatFactorShiftType 
 
 .seealso: PCFactorSetZeroPivot(), PCFactorSetShiftType()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftAmount(PC pc,PetscReal shiftamount)
+PetscErrorCode  PCFactorSetShiftAmount(PC pc,PetscReal shiftamount)
 {
   PetscErrorCode ierr;
 
@@ -122,7 +122,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftAmount(PC pc,PetscReal shiftam
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 */
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,PetscInt maxrowcount)
+PetscErrorCode  PCFactorSetDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,PetscInt maxrowcount)
 {
   PetscErrorCode ierr;
 
@@ -152,7 +152,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetDropTolerance(PC pc,PetscReal dt,Pe
 
 .keywords: PC, levels, fill, factorization, incomplete, ILU
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetLevels(PC pc,PetscInt levels)
+PetscErrorCode  PCFactorSetLevels(PC pc,PetscInt levels)
 {
   PetscErrorCode ierr;
 
@@ -185,7 +185,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetLevels(PC pc,PetscInt levels)
 
 .keywords: PC, levels, fill, factorization, incomplete, ILU
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetAllowDiagonalFill(PC pc)
+PetscErrorCode  PCFactorSetAllowDiagonalFill(PC pc)
 {
   PetscErrorCode ierr;
 
@@ -215,7 +215,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetAllowDiagonalFill(PC pc)
 
 .seealso: PCFactorSetFill(), PCFactorSetShiftNonzero(), PCFactorSetZeroPivot(), MatReorderForNonzeroDiagonal()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
+PetscErrorCode  PCFactorReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
 {
   PetscErrorCode ierr;
 
@@ -251,7 +251,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorReorderForNonzeroDiagonal(PC pc,PetscR
 .seealso: MatGetFactor(), MatSolverPackage, PCFactorGetMatSolverPackage()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage(PC pc,const MatSolverPackage stype)
+PetscErrorCode  PCFactorSetMatSolverPackage(PC pc,const MatSolverPackage stype)
 {
   PetscErrorCode ierr;
 
@@ -282,7 +282,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage(PC pc,const MatSol
 .seealso: MatGetFactor(), MatSolverPackage, PCFactorGetMatSolverPackage()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatSolverPackage(PC pc,const MatSolverPackage *stype)
+PetscErrorCode  PCFactorGetMatSolverPackage(PC pc,const MatSolverPackage *stype)
 {
   PetscErrorCode ierr;
 
@@ -318,7 +318,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatSolverPackage(PC pc,const MatSol
 .keywords: PC, set, factorization, direct, fill
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetFill(PC pc,PetscReal fill)
+PetscErrorCode  PCFactorSetFill(PC pc,PetscReal fill)
 {
   PetscErrorCode ierr;
 
@@ -361,7 +361,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetFill(PC pc,PetscReal fill)
 
 .seealso: PCILUSetUseInPlace()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseInPlace(PC pc)
+PetscErrorCode  PCFactorSetUseInPlace(PC pc)
 {
   PetscErrorCode ierr;
 
@@ -395,7 +395,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseInPlace(PC pc)
     SeqAIJ format in this case to get reorderings.
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType(PC pc,const MatOrderingType ordering)
+PetscErrorCode  PCFactorSetMatOrderingType(PC pc,const MatOrderingType ordering)
 {
   PetscErrorCode ierr;
 
@@ -425,7 +425,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType(PC pc,const MatOrde
 
 .seealso: PCILUSetMatOrdering(), PCFactorSetPivotInBlocks()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetColumnPivot(PC pc,PetscReal dtcol)
+PetscErrorCode  PCFactorSetColumnPivot(PC pc,PetscReal dtcol)
 {
   PetscErrorCode ierr;
 
@@ -455,7 +455,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetColumnPivot(PC pc,PetscReal dtcol)
 
 .seealso: PCILUSetMatOrdering(), PCFactorSetColumnPivot()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks(PC pc,PetscBool  pivot)
+PetscErrorCode  PCFactorSetPivotInBlocks(PC pc,PetscBool  pivot)
 {
   PetscErrorCode ierr;
 
@@ -487,7 +487,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks(PC pc,PetscBool  pivo
 
 .seealso: PCFactorSetReuseOrdering()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill(PC pc,PetscBool  flag)
+PetscErrorCode  PCFactorSetReuseFill(PC pc,PetscBool  flag)
 {
   PetscErrorCode ierr;
 

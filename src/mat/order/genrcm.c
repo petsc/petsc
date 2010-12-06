@@ -43,7 +43,7 @@ PetscErrorCode SPARSEPACKgenrcm(PetscInt *neqns,PetscInt *xadj,PetscInt *adjncy,
 
     /* Local variables */
     PetscInt nlvl,root,i,ccsize;
-    EXTERN PetscErrorCode SPARSEPACKfnroot(PetscInt*,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *),
+    extern PetscErrorCode SPARSEPACKfnroot(PetscInt*,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *),
                SPARSEPACKrcm(PetscInt*,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
     PetscInt num;
 

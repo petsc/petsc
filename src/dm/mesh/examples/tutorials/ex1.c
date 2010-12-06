@@ -60,7 +60,7 @@ typedef struct {
   SectionInt     odd;                // Section with cell number in each odd cell
 } Options;
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(const Obj<PETSC_MESH_TYPE>&, PetscViewer);
+extern PetscErrorCode  MeshView_Sieve(const Obj<PETSC_MESH_TYPE>&, PetscViewer);
 
 #undef __FUNCT__
 #define __FUNCT__ "OutputVTK"
@@ -131,23 +131,11 @@ PetscErrorCode OutputMesh(Mesh mesh, Options *options)
       if (options->outputLocal) {
         ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH_LOCAL);CHKERRQ(ierr);
         ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-        ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, "testMesh"), PETSC_ERR_FILE_OPEN);
-        if (PetscExceptionValue(ierr)) {
-          /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
-        } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
-          ierr = 0;
-        } 
-       CHKERRQ(ierr);
+        ierr = PetscViewerFileSetName(viewer, "testMesh");CHKERRQ(ierr);
       } else {
         ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
         ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-        ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, "testMesh"), PETSC_ERR_FILE_OPEN);
-        if (PetscExceptionValue(ierr)) {
-          /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
-        } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
-          ierr = 0;
-        } 
-       CHKERRQ(ierr);
+        ierr = PetscViewerFileSetName(viewer, "testMesh");CHKERRQ(ierr);
       }
     }
     ierr = MeshView(mesh, viewer);CHKERRQ(ierr);

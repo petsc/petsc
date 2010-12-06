@@ -73,11 +73,11 @@ double *PetscADGetGradArray(DERIV_TYPE *deriv)
   return deriv->grad;
 }
 
-void PETSCSYS_DLLEXPORT ad_AD_Init(int  arg0) {
+void  ad_AD_Init(int  arg0) {
     ad_AD_GradInit(arg0);
 
 }
-void PETSCSYS_DLLEXPORT ad_AD_Final() {
+void  ad_AD_Final() {
     ad_AD_GradFinal();
 
 }

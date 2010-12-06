@@ -784,7 +784,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitSetFields_FieldSplit"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields_FieldSplit(PC pc,const char splitname[],PetscInt n,const PetscInt *fields)
+PetscErrorCode  PCFieldSplitSetFields_FieldSplit(PC pc,const char splitname[],PetscInt n,const PetscInt *fields)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
@@ -833,7 +833,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitGetSubKSP_FieldSplit_Schur"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSubKSP_FieldSplit_Schur(PC pc,PetscInt *n,KSP **subksp)
+PetscErrorCode  PCFieldSplitGetSubKSP_FieldSplit_Schur(PC pc,PetscInt *n,KSP **subksp)
 {
   PC_FieldSplit *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode ierr;
@@ -850,7 +850,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitGetSubKSP_FieldSplit"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSubKSP_FieldSplit(PC pc,PetscInt *n,KSP **subksp)
+PetscErrorCode  PCFieldSplitGetSubKSP_FieldSplit(PC pc,PetscInt *n,KSP **subksp)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
@@ -872,7 +872,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitSetIS_FieldSplit"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[],IS is)
+PetscErrorCode  PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[],IS is)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
@@ -941,7 +941,7 @@ EXTERN_C_END
 .seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetBlockSize(), PCFieldSplitSetIS()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC pc,const char splitname[],PetscInt n,const PetscInt *fields)
+PetscErrorCode  PCFieldSplitSetFields(PC pc,const char splitname[],PetscInt n,const PetscInt *fields)
 {
   PetscErrorCode ierr;
 
@@ -978,7 +978,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC pc,const char splitna
 .seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetBlockSize()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS(PC pc,const char splitname[],IS is)
+PetscErrorCode  PCFieldSplitSetIS(PC pc,const char splitname[],IS is)
 {
   PetscErrorCode ierr;
 
@@ -1007,7 +1007,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS(PC pc,const char splitname[]
 .seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetFields()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetBlockSize(PC pc,PetscInt bs)
+PetscErrorCode  PCFieldSplitSetBlockSize(PC pc,PetscInt bs)
 {
   PetscErrorCode ierr;
 
@@ -1042,7 +1042,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetBlockSize(PC pc,PetscInt bs)
 
 .seealso: PCFIELDSPLIT
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
+PetscErrorCode  PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
 {
   PetscErrorCode ierr;
 
@@ -1079,7 +1079,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *s
 .seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetFields(), PCFieldSplitSchurPreType
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSchurPrecondition(PC pc,PCFieldSplitSchurPreType ptype,Mat pre)
+PetscErrorCode  PCFieldSplitSchurPrecondition(PC pc,PCFieldSplitSchurPreType ptype,Mat pre)
 {
   PetscErrorCode ierr;
 
@@ -1092,7 +1092,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSchurPrecondition(PC pc,PCFieldSpl
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitSchurPrecondition_FieldSplit"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSchurPrecondition_FieldSplit(PC pc,PCFieldSplitSchurPreType ptype,Mat pre)
+PetscErrorCode  PCFieldSplitSchurPrecondition_FieldSplit(PC pc,PCFieldSplitSchurPreType ptype,Mat pre)
 {
   PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode  ierr;
@@ -1128,7 +1128,7 @@ EXTERN_C_END
 
 .seealso: PCFIELDSPLIT
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSchurBlocks(PC pc,Mat *A,Mat *B,Mat *C, Mat *D)
+PetscErrorCode  PCFieldSplitGetSchurBlocks(PC pc,Mat *A,Mat *B,Mat *C, Mat *D)
 {
   PC_FieldSplit *jac = (PC_FieldSplit *) pc->data;
 
@@ -1145,7 +1145,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSchurBlocks(PC pc,Mat *A,Mat *B
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitSetType_FieldSplit"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type)
+PetscErrorCode  PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type)
 {
   PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode ierr;
@@ -1171,7 +1171,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitSetBlockSize_FieldSplit"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetBlockSize_FieldSplit(PC pc,PetscInt bs)
+PetscErrorCode  PCFieldSplitSetBlockSize_FieldSplit(PC pc,PetscInt bs)
 {
   PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
 
@@ -1204,7 +1204,7 @@ EXTERN_C_END
 .seealso: PCCompositeSetType()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType(PC pc,PCCompositeType type)
+PetscErrorCode  PCFieldSplitSetType(PC pc,PCCompositeType type)
 {
   PetscErrorCode ierr;
 
@@ -1277,7 +1277,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_FieldSplit"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_FieldSplit(PC pc)
+PetscErrorCode  PCCreate_FieldSplit(PC pc)
 {
   PetscErrorCode ierr;
   PC_FieldSplit  *jac;

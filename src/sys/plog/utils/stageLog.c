@@ -7,7 +7,7 @@
 */
 #include "../src/sys/plog/logimpl.h" /*I    "petscsys.h"   I*/
 
-StageLog PETSCSYS_DLLEXPORT _stageLog = 0;
+StageLog  _stageLog = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageInfoDestroy"
@@ -24,7 +24,7 @@ StageLog PETSCSYS_DLLEXPORT _stageLog = 0;
 .keywords: log, stage, destroy
 .seealso: StageLogCreate()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT StageInfoDestroy(StageInfo *stageInfo)
+PetscErrorCode  StageInfoDestroy(StageInfo *stageInfo)
 {
   PetscErrorCode ierr;
 
@@ -50,7 +50,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT StageInfoDestroy(StageInfo *stageInfo)
 .keywords: log, stage, destroy
 .seealso: StageLogCreate()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT StageLogDestroy(StageLog stageLog)
+PetscErrorCode  StageLogDestroy(StageLog stageLog)
 {
   int            stage;
   PetscErrorCode ierr;
@@ -87,7 +87,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT StageLogDestroy(StageLog stageLog)
 .keywords: log, stage, register
 .seealso: StageLogPush(), StageLogPop(), StageLogCreate()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT StageLogRegister(StageLog stageLog, const char sname[], int *stage)
+PetscErrorCode  StageLogRegister(StageLog stageLog, const char sname[], int *stage)
 {
   StageInfo      *stageInfo;
   char           *str;
@@ -167,7 +167,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT StageLogRegister(StageLog stageLog, const char
 .keywords: log, push, stage
 .seealso: StageLogPop(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT StageLogPush(StageLog stageLog, int stage)
+PetscErrorCode  StageLogPush(StageLog stageLog, int stage)
 {
   int            curStage = 0;
   PetscBool      empty;
@@ -239,7 +239,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT StageLogPush(StageLog stageLog, int stage)
 .keywords: log, pop, stage
 .seealso: StageLogPush(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT StageLogPop(StageLog stageLog)
+PetscErrorCode  StageLogPop(StageLog stageLog)
 {
   int             curStage;
   PetscBool       empty;
@@ -292,7 +292,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT StageLogPop(StageLog stageLog)
 .keywords: log, stage
 .seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT StageLogGetClassRegLog(StageLog stageLog, ClassRegLog *classLog)
+PetscErrorCode  StageLogGetClassRegLog(StageLog stageLog, ClassRegLog *classLog)
 {
   PetscFunctionBegin;
   PetscValidPointer(classLog,2);
@@ -318,7 +318,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT StageLogGetClassRegLog(StageLog stageLog, Clas
 .keywords: log, stage
 .seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT StageLogGetEventRegLog(StageLog stageLog, EventRegLog *eventLog)
+PetscErrorCode  StageLogGetEventRegLog(StageLog stageLog, EventRegLog *eventLog)
 {
   PetscFunctionBegin;
   PetscValidPointer(eventLog,2);
@@ -345,7 +345,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT StageLogGetEventRegLog(StageLog stageLog, Even
 .keywords: log, stage
 .seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT StageLogGetClassPerfLog(StageLog stageLog, int stage, ClassPerfLog *classLog)
+PetscErrorCode  StageLogGetClassPerfLog(StageLog stageLog, int stage, ClassPerfLog *classLog)
 {
   PetscFunctionBegin;
   PetscValidPointer(classLog,2);
@@ -374,7 +374,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT StageLogGetClassPerfLog(StageLog stageLog, int
 .keywords: log, active, stage
 .seealso: StageLogGetActive(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT StageLogSetActive(StageLog stageLog, int stage, PetscBool  isActive)
+PetscErrorCode  StageLogSetActive(StageLog stageLog, int stage, PetscBool  isActive)
 {
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) {
@@ -403,7 +403,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT StageLogSetActive(StageLog stageLog, int stage
 .keywords: log, visible, stage
 .seealso: StageLogSetActive(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT StageLogGetActive(StageLog stageLog, int stage, PetscBool  *isActive)
+PetscErrorCode  StageLogGetActive(StageLog stageLog, int stage, PetscBool  *isActive)
 {
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) {
@@ -434,7 +434,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT StageLogGetActive(StageLog stageLog, int stage
 .keywords: log, visible, stage
 .seealso: StageLogGetVisible(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT StageLogSetVisible(StageLog stageLog, int stage, PetscBool  isVisible)
+PetscErrorCode  StageLogSetVisible(StageLog stageLog, int stage, PetscBool  isVisible)
 {
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) {
@@ -466,7 +466,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT StageLogSetVisible(StageLog stageLog, int stag
 .keywords: log, visible, stage
 .seealso: StageLogSetVisible(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT StageLogGetVisible(StageLog stageLog, int stage, PetscBool  *isVisible)
+PetscErrorCode  StageLogGetVisible(StageLog stageLog, int stage, PetscBool  *isVisible)
 {
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) {
@@ -496,7 +496,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT StageLogGetVisible(StageLog stageLog, int stag
 .keywords: log, stage
 .seealso: StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT StageLogGetStage(StageLog stageLog, const char name[], int *stage)
+PetscErrorCode  StageLogGetStage(StageLog stageLog, const char name[], int *stage)
 {
   PetscBool      match;
   int            s;
@@ -530,7 +530,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT StageLogGetStage(StageLog stageLog, const char
 .keywords: log, stage, create
 .seealso: StageLogCreate()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT StageLogCreate(StageLog *stageLog)
+PetscErrorCode  StageLogCreate(StageLog *stageLog)
 {
   StageLog       l;
   PetscErrorCode ierr;

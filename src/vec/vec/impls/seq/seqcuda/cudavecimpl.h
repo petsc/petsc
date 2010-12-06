@@ -13,39 +13,39 @@
 #define CUSPINTARRAYGPU cusp::array1d<PetscInt,cusp::device_memory>
 #define CUSPINTARRAYCPU cusp::array1d<PetscInt,cusp::host_memory>
 
-EXTERN PetscErrorCode VecDotNorm2_SeqCUDA(Vec,Vec,PetscScalar *, PetscScalar *);
-EXTERN PetscErrorCode VecPointwiseDivide_SeqCUDA(Vec,Vec,Vec);
-EXTERN PetscErrorCode VecWAXPY_SeqCUDA(Vec,PetscScalar,Vec,Vec);
-EXTERN PetscErrorCode VecMDot_SeqCUDA(Vec,PetscInt,const Vec[],PetscScalar *);
-EXTERN PetscErrorCode VecSet_SeqCUDA(Vec,PetscScalar);
-EXTERN PetscErrorCode VecMAXPY_SeqCUDA(Vec,PetscInt,const PetscScalar *,Vec *);
-EXTERN PetscErrorCode VecAXPBYPCZ_SeqCUDA(Vec,PetscScalar,PetscScalar,PetscScalar,Vec,Vec);
-EXTERN PetscErrorCode VecPointwiseMult_SeqCUDA(Vec,Vec,Vec);
-EXTERN PetscErrorCode VecPlaceArray_SeqCUDA(Vec,const PetscScalar *);
-EXTERN PetscErrorCode VecResetArray_SeqCUDA(Vec);
-EXTERN PetscErrorCode VecReplaceArray_SeqCUDA(Vec,const PetscScalar *);
-EXTERN PetscErrorCode VecDot_SeqCUDA(Vec,Vec,PetscScalar *);
-EXTERN PetscErrorCode VecTDot_SeqCUDA(Vec,Vec,PetscScalar *);
-EXTERN PetscErrorCode VecScale_SeqCUDA(Vec,PetscScalar);
-EXTERN PetscErrorCode VecCopy_SeqCUDA(Vec,Vec);
-EXTERN PetscErrorCode VecSwap_SeqCUDA(Vec,Vec);
-EXTERN PetscErrorCode VecAXPY_SeqCUDA(Vec,PetscScalar,Vec);
-EXTERN PetscErrorCode VecAXPBY_SeqCUDA(Vec,PetscScalar,PetscScalar,Vec);
-EXTERN PetscErrorCode VecDuplicate_SeqCUDA(Vec,Vec *);
-EXTERN PetscErrorCode VecNorm_SeqCUDA(Vec,NormType,PetscReal*);
+extern PetscErrorCode VecDotNorm2_SeqCUDA(Vec,Vec,PetscScalar *, PetscScalar *);
+extern PetscErrorCode VecPointwiseDivide_SeqCUDA(Vec,Vec,Vec);
+extern PetscErrorCode VecWAXPY_SeqCUDA(Vec,PetscScalar,Vec,Vec);
+extern PetscErrorCode VecMDot_SeqCUDA(Vec,PetscInt,const Vec[],PetscScalar *);
+extern PetscErrorCode VecSet_SeqCUDA(Vec,PetscScalar);
+extern PetscErrorCode VecMAXPY_SeqCUDA(Vec,PetscInt,const PetscScalar *,Vec *);
+extern PetscErrorCode VecAXPBYPCZ_SeqCUDA(Vec,PetscScalar,PetscScalar,PetscScalar,Vec,Vec);
+extern PetscErrorCode VecPointwiseMult_SeqCUDA(Vec,Vec,Vec);
+extern PetscErrorCode VecPlaceArray_SeqCUDA(Vec,const PetscScalar *);
+extern PetscErrorCode VecResetArray_SeqCUDA(Vec);
+extern PetscErrorCode VecReplaceArray_SeqCUDA(Vec,const PetscScalar *);
+extern PetscErrorCode VecDot_SeqCUDA(Vec,Vec,PetscScalar *);
+extern PetscErrorCode VecTDot_SeqCUDA(Vec,Vec,PetscScalar *);
+extern PetscErrorCode VecScale_SeqCUDA(Vec,PetscScalar);
+extern PetscErrorCode VecCopy_SeqCUDA(Vec,Vec);
+extern PetscErrorCode VecSwap_SeqCUDA(Vec,Vec);
+extern PetscErrorCode VecAXPY_SeqCUDA(Vec,PetscScalar,Vec);
+extern PetscErrorCode VecAXPBY_SeqCUDA(Vec,PetscScalar,PetscScalar,Vec);
+extern PetscErrorCode VecDuplicate_SeqCUDA(Vec,Vec *);
+extern PetscErrorCode VecNorm_SeqCUDA(Vec,NormType,PetscReal*);
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec);
+extern PetscErrorCode  VecCreate_SeqCUDA(Vec);
 EXTERN_C_END
-EXTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
-EXTERN PetscErrorCode VecDestroy_SeqCUDA(Vec);
-EXTERN PetscErrorCode VecAYPX_SeqCUDA(Vec,PetscScalar,Vec);
-EXTERN PetscErrorCode VecSetRandom_SeqCUDA(Vec,PetscRandom);
+extern PetscErrorCode VecView_Seq(Vec,PetscViewer);
+extern PetscErrorCode VecDestroy_SeqCUDA(Vec);
+extern PetscErrorCode VecAYPX_SeqCUDA(Vec,PetscScalar,Vec);
+extern PetscErrorCode VecSetRandom_SeqCUDA(Vec,PetscRandom);
 
-EXTERN PetscErrorCode VecCUDACopyToGPU_Public(Vec);
-EXTERN PetscErrorCode VecCUDAAllocateCheck_Public(Vec);
-EXTERN PetscErrorCode VecCUDACopyToGPUSome_Public(Vec,CUSPINTARRAYCPU*,CUSPINTARRAYGPU*);
+extern PetscErrorCode VecCUDACopyToGPU_Public(Vec);
+extern PetscErrorCode VecCUDAAllocateCheck_Public(Vec);
+extern PetscErrorCode VecCUDACopyToGPUSome_Public(Vec,CUSPINTARRAYCPU*,CUSPINTARRAYGPU*);
 
-EXTERN PetscBool  synchronizeCUDA;
+extern PetscBool  synchronizeCUDA;
 #define CHKERRCUDA(err) if (err != CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err)
 
 #define VecCUDACastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])

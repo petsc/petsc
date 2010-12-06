@@ -29,7 +29,7 @@
 
 .seealso: MatCreateShell()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat mat,MatOperation op,PetscBool  *has)
+PetscErrorCode  MatHasOperation(Mat mat,MatOperation op,PetscBool  *has)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);

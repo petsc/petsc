@@ -89,7 +89,7 @@ static PetscErrorCode PCView_SupportGraph(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscBool  augment,PetscReal tol,PetscReal& maxCong);
+extern PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscBool  augment,PetscReal tol,PetscReal& maxCong);
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -225,7 +225,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_SupportGraph"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SupportGraph(PC pc)
+PetscErrorCode  PCCreate_SupportGraph(PC pc)
 {
   PC_SupportGraph      *sg;
   PetscErrorCode ierr;

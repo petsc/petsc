@@ -10,10 +10,10 @@
 #include "../src/mat/impls/aij/mpi/mpiaij.h"
 #include "petscbt.h"
 
-EXTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
+extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJ_MatPtAP"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_MatPtAP(Mat A)
+PetscErrorCode  MatDestroy_MPIAIJ_MatPtAP(Mat A)
 {
   PetscErrorCode       ierr;
   Mat_Merge_SeqsToMPI  *merge; 

@@ -1480,7 +1480,7 @@ PetscErrorCode VecReplaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
 
 .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreateSeqCUDA(MPI_Comm comm,PetscInt n,Vec *v)
+PetscErrorCode  VecCreateSeqCUDA(MPI_Comm comm,PetscInt n,Vec *v)
 {
   PetscErrorCode ierr;
 
@@ -1597,7 +1597,7 @@ PetscErrorCode VecDestroy_SeqCUDA(Vec v)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_SeqCUDA"
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec V)
+PetscErrorCode  VecCreate_SeqCUDA(Vec V)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

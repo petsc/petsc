@@ -67,12 +67,12 @@ struct _p_Characteristic {
   void        *data;            /* Holder for implementation class */
 };
 
-EXTERN PetscErrorCode CharacteristicSetNeighbors(Characteristic, PetscInt, PetscMPIInt []);
-EXTERN PetscErrorCode CharacteristicAddPoint(Characteristic, CharacteristicPointDA2D *);
-EXTERN PetscErrorCode CharacteristicSendCoordinatesBegin(Characteristic);
-EXTERN PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic);
-EXTERN PetscErrorCode CharacteristicGetValuesBegin(Characteristic);
-EXTERN PetscErrorCode CharacteristicGetValuesEnd(Characteristic);
+extern PetscErrorCode CharacteristicSetNeighbors(Characteristic, PetscInt, PetscMPIInt []);
+extern PetscErrorCode CharacteristicAddPoint(Characteristic, CharacteristicPointDA2D *);
+extern PetscErrorCode CharacteristicSendCoordinatesBegin(Characteristic);
+extern PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic);
+extern PetscErrorCode CharacteristicGetValuesBegin(Characteristic);
+extern PetscErrorCode CharacteristicGetValuesEnd(Characteristic);
 
 extern PetscBool   CharacteristicRegisterAllCalled;
 extern PetscFList  CharacteristicList;

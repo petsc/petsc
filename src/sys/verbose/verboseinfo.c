@@ -21,8 +21,8 @@
   If PetscInfoFlags[OBJECT_CLASSID - PETSC_SMALLEST_CLASSID] is zero, no messages related
   to that object are printed. OBJECT_CLASSID is, for example, MAT_CLASSID.
 */
-PetscBool  PETSCSYS_DLLEXPORT PetscLogPrintInfo     = PETSC_FALSE;
-PetscBool  PETSCSYS_DLLEXPORT PetscLogPrintInfoNull = PETSC_FALSE;
+PetscBool   PetscLogPrintInfo     = PETSC_FALSE;
+PetscBool   PetscLogPrintInfoNull = PETSC_FALSE;
 int        PetscInfoFlags[]   = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                                     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                                     1,1,1,1,1,1,1,1,1,1,1,1};
@@ -51,7 +51,7 @@ FILE      *PetscInfoFile      = PETSC_NULL;
 
 .seealso: PetscInfo()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscInfoAllow(PetscBool  flag, const char filename[])
+PetscErrorCode  PetscInfoAllow(PetscBool  flag, const char filename[])
 {
   char           fname[PETSC_MAX_PATH_LEN], tname[5];
   PetscMPIInt    rank;
@@ -91,7 +91,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscInfoAllow(PetscBool  flag, const char fil
 .keywords: allow, information, printing, monitoring
 .seealso: PetscInfoActivateClass(), PetscInfo(), PetscInfoAllow()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscInfoDeactivateClass(int objclass)
+PetscErrorCode  PetscInfoDeactivateClass(int objclass)
 {
   PetscFunctionBegin;
   if (!objclass) {
@@ -120,7 +120,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscInfoDeactivateClass(int objclass)
 .keywords: allow, information, printing, monitoring
 .seealso: PetscInfoDeactivateClass(), PetscInfo(), PetscInfoAllow()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscInfoActivateClass(int objclass)
+PetscErrorCode  PetscInfoActivateClass(int objclass)
 {
   PetscFunctionBegin;
   if (!objclass) {
@@ -176,7 +176,7 @@ $
 
 .seealso: PetscInfoAllow()
 M*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscInfo_Private(const char func[],void *vobj, const char message[], ...)
+PetscErrorCode  PetscInfo_Private(const char func[],void *vobj, const char message[], ...)
 {
   va_list        Argp;
   PetscMPIInt    rank,urank;

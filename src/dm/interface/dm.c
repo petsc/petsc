@@ -22,7 +22,7 @@
 
 .seealso: DMSetType(), DMDA, DMSLICED, DMCOMPOSITE
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT DMCreate(MPI_Comm comm,DM *dm)
+PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
 {
   DM             v;
   PetscErrorCode ierr;
@@ -64,7 +64,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT DMCreate(MPI_Comm comm,DM *dm)
 
 .seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMDA, DMDAInterpolationType, VecType
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMSetVecType(DM da,const VecType ctype)
+PetscErrorCode  DMSetVecType(DM da,const VecType ctype)
 {
   PetscErrorCode ierr;
 
@@ -97,7 +97,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetVecType(DM da,const VecType ctype)
 
 .seealso: DMSetFromOptions()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMSetOptionsPrefix(DM dm,const char prefix[])
+PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
 {
   PetscErrorCode ierr;
 
@@ -122,7 +122,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetOptionsPrefix(DM dm,const char prefix[])
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDestroy(DM dm)
+PetscErrorCode  DMDestroy(DM dm)
 {
   PetscErrorCode ierr;
 
@@ -146,7 +146,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy(DM dm)
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMSetUp(DM dm)
+PetscErrorCode  DMSetUp(DM dm)
 {
   PetscErrorCode ierr;
 
@@ -172,7 +172,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp(DM dm)
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMSetFromOptions(DM dm)
+PetscErrorCode  DMSetFromOptions(DM dm)
 {
   PetscErrorCode ierr;
 
@@ -199,7 +199,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetFromOptions(DM dm)
 .seealso DMDestroy(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMView(DM dm,PetscViewer v)
+PetscErrorCode  DMView(DM dm,PetscViewer v)
 {
   PetscErrorCode ierr;
 
@@ -231,7 +231,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMView(DM dm,PetscViewer v)
 .seealso DMDestroy(), DMView(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector(DM dm,Vec *vec)
+PetscErrorCode  DMCreateGlobalVector(DM dm,Vec *vec)
 {
   PetscErrorCode ierr;
 
@@ -258,7 +258,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector(DM dm,Vec *vec)
 .seealso DMDestroy(), DMView(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCreateLocalVector(DM dm,Vec *vec)
+PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
 {
   PetscErrorCode ierr;
 
@@ -288,7 +288,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateLocalVector(DM dm,Vec *vec)
 
 .seealso: DMCreateLocalVector(), DMGetLocalToGlobalMappingBlock()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
+PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
 {
   PetscErrorCode ierr;
 
@@ -324,7 +324,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobal
 
 .seealso: DMCreateLocalVector(), DMGetLocalToGlobalMapping(), DMGetBlockSize(), VecSetBlockSize(), MatSetBlockSize()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetLocalToGlobalMappingBlock(DM dm,ISLocalToGlobalMapping *ltog)
+PetscErrorCode  DMGetLocalToGlobalMappingBlock(DM dm,ISLocalToGlobalMapping *ltog)
 {
   PetscErrorCode ierr;
 
@@ -363,7 +363,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetLocalToGlobalMappingBlock(DM dm,ISLocalToG
 
 .seealso: ISCreateBlock(), VecSetBlockSize(), MatSetBlockSize(), DMGetLocalToGlobalMappingBlock()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetBlockSize(DM dm,PetscInt *bs)
+PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -393,7 +393,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetBlockSize(DM dm,PetscInt *bs)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetColoring(), DMGetMatrix()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
+PetscErrorCode  DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 {
   PetscErrorCode ierr;
 
@@ -421,7 +421,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetColoring(), DMGetMatrix(), DMGetInterpolation()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
+PetscErrorCode  DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 {
   PetscErrorCode ierr;
 
@@ -450,7 +450,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring(DM dm,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
+PetscErrorCode  DMGetColoring(DM dm,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
 {
   PetscErrorCode ierr;
 
@@ -492,7 +492,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring(DM dm,ISColoringType ctype,const 
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
+PetscErrorCode  DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
 {
   PetscErrorCode ierr;
   char           ttype[256];
@@ -533,7 +533,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
 .seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMRefine(DM dm,MPI_Comm comm,DM *dmf)
+PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 {
   PetscErrorCode ierr;
 
@@ -561,7 +561,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 .seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
+PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
 
@@ -589,7 +589,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mod
 .seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
+PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
 
@@ -621,7 +621,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,
 .seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGlobalToLocalEnd(), DMGlobalToLocalBegin()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
+PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
 {
   PetscErrorCode ierr;
 
@@ -649,7 +649,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mod
 .seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGlobalToLocalEnd(), DMGlobalToLocalEnd()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
+PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
 {
   PetscErrorCode ierr;
 
@@ -677,7 +677,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,
          DMSetFunction()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMComputeJacobianDefault(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
+PetscErrorCode  DMComputeJacobianDefault(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -709,7 +709,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMComputeJacobianDefault(DM dm,Vec x,Mat A,Mat 
 .seealso DMRefine(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
+PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 {
   PetscErrorCode ierr;
 
@@ -743,7 +743,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 .seealso DMCoarsenHierarchy(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy(DM dm,PetscInt nlevels,DM dmf[])
+PetscErrorCode  DMRefineHierarchy(DM dm,PetscInt nlevels,DM dmf[])
 {
   PetscErrorCode ierr;
 
@@ -784,7 +784,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy(DM dm,PetscInt nlevels,DM dmf
 .seealso DMRefineHierarchy(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM dmc[])
+PetscErrorCode  DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM dmc[])
 {
   PetscErrorCode ierr;
 
@@ -828,7 +828,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM 
 
 .seealso: DMRefine(), DMGetInjection(), DMGetInterpolation()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetAggregates(DM dmc, DM dmf, Mat *rest) 
+PetscErrorCode  DMGetAggregates(DM dmc, DM dmf, Mat *rest) 
 {
   PetscErrorCode ierr;
 
@@ -853,7 +853,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetAggregates(DM dmc, DM dmf, Mat *rest)
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMSetContext(DM dm,void *ctx)
+PetscErrorCode  DMSetContext(DM dm,void *ctx)
 {
   PetscFunctionBegin;
   dm->ctx = ctx;
@@ -878,7 +878,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetContext(DM dm,void *ctx)
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetContext(DM dm,void **ctx)
+PetscErrorCode  DMGetContext(DM dm,void **ctx)
 {
   PetscFunctionBegin;
   *ctx = dm->ctx;
@@ -901,7 +901,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetContext(DM dm,void **ctx)
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
+PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
 {
   PetscFunctionBegin;
   dm->ops->initialguess = f;
@@ -928,7 +928,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,
          DMSetJacobian()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
+PetscErrorCode  DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
 {
   PetscFunctionBegin;
   dm->ops->function = f;
@@ -955,7 +955,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,
          DMSetFunction()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMSetJacobian(DM dm,PetscErrorCode (*f)(DM,Vec,Mat,Mat,MatStructure*))
+PetscErrorCode  DMSetJacobian(DM dm,PetscErrorCode (*f)(DM,Vec,Mat,Mat,MatStructure*))
 {
   PetscFunctionBegin;
   dm->ops->jacobian = f;
@@ -978,7 +978,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetJacobian(DM dm,PetscErrorCode (*f)(DM,Vec,
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetRhs(), DMSetMat()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMComputeInitialGuess(DM dm,Vec x)
+PetscErrorCode  DMComputeInitialGuess(DM dm,Vec x)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -1005,7 +1005,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMComputeInitialGuess(DM dm,Vec x)
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMHasInitialGuess(DM dm,PetscBool  *flg)
+PetscErrorCode  DMHasInitialGuess(DM dm,PetscBool  *flg)
 {
   PetscFunctionBegin;
   *flg =  (dm->ops->initialguess) ? PETSC_TRUE : PETSC_FALSE;
@@ -1030,7 +1030,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMHasInitialGuess(DM dm,PetscBool  *flg)
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMHasFunction(DM dm,PetscBool  *flg)
+PetscErrorCode  DMHasFunction(DM dm,PetscBool  *flg)
 {
   PetscFunctionBegin;
   *flg =  (dm->ops->function) ? PETSC_TRUE : PETSC_FALSE;
@@ -1055,7 +1055,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMHasFunction(DM dm,PetscBool  *flg)
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMHasJacobian(DM dm,PetscBool  *flg)
+PetscErrorCode  DMHasJacobian(DM dm,PetscBool  *flg)
 {
   PetscFunctionBegin;
   *flg =  (dm->ops->jacobian) ? PETSC_TRUE : PETSC_FALSE;
@@ -1080,7 +1080,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMHasJacobian(DM dm,PetscBool  *flg)
          DMSetJacobian()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMComputeFunction(DM dm,Vec x,Vec b)
+PetscErrorCode  DMComputeFunction(DM dm,Vec x,Vec b)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -1110,7 +1110,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMComputeFunction(DM dm,Vec x,Vec b)
          DMSetFunction()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMComputeJacobian(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
+PetscErrorCode  DMComputeJacobian(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
 {
   PetscErrorCode ierr;
 
@@ -1160,7 +1160,7 @@ PetscBool  DMRegisterAllCalled          = PETSC_FALSE;
 .keywords: DM, set, type
 .seealso: DMGetType(), DMCreate()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMSetType(DM dm, const DMType method)
+PetscErrorCode  DMSetType(DM dm, const DMType method)
 {
   PetscErrorCode (*r)(DM);
   PetscBool      match;
@@ -1201,7 +1201,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetType(DM dm, const DMType method)
 .keywords: DM, get, type, name
 .seealso: DMSetType(), DMCreate()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetType(DM dm, const DMType *type)
+PetscErrorCode  DMGetType(DM dm, const DMType *type)
 {
   PetscErrorCode ierr;
 
@@ -1225,7 +1225,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetType(DM dm, const DMType *type)
 
   Level: advanced
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(DM))
+PetscErrorCode  DMRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(DM))
 {
   char fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -1252,7 +1252,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRegister(const char sname[], const char path[
 .keywords: DM, register, destroy
 .seealso: DMRegister(), DMRegisterAll(), DMRegisterDynamic()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMRegisterDestroy(void)
+PetscErrorCode  DMRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -1277,7 +1277,7 @@ typedef struct {char *funcname; char *jacname; mxArray *ctx;} DMMatlabContext;
    
 .seealso: DMSetFunction(), DMGetFunction()
 */
-PetscErrorCode PETSCDM_DLLEXPORT DMComputeFunction_Matlab(DM dm,Vec x,Vec y)
+PetscErrorCode  DMComputeFunction_Matlab(DM dm,Vec x,Vec y)
 {
   PetscErrorCode    ierr;
   DMMatlabContext   *sctx;
@@ -1316,7 +1316,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMComputeFunction_Matlab(DM dm,Vec x,Vec y)
    DMSetFunctionMatlab - Sets the function evaluation routine 
 
 */
-PetscErrorCode PETSCDM_DLLEXPORT DMSetFunctionMatlab(DM dm,const char *func)
+PetscErrorCode  DMSetFunctionMatlab(DM dm,const char *func)
 {
   PetscErrorCode    ierr;
   DMMatlabContext   *sctx;
@@ -1343,7 +1343,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetFunctionMatlab(DM dm,const char *func)
    
 .seealso: DMSetFunction(), DMGetFunction()
 */
-PetscErrorCode PETSCDM_DLLEXPORT DMComputeJacobian_Matlab(DM dm,Vec x,Mat A,Mat B,MatStructure *str)
+PetscErrorCode  DMComputeJacobian_Matlab(DM dm,Vec x,Mat A,Mat B,MatStructure *str)
 {
   PetscErrorCode    ierr;
   DMMatlabContext   *sctx;
@@ -1386,7 +1386,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMComputeJacobian_Matlab(DM dm,Vec x,Mat A,Mat 
    DMSetJacobianMatlab - Sets the Jacobian function evaluation routine 
 
 */
-PetscErrorCode PETSCDM_DLLEXPORT DMSetJacobianMatlab(DM dm,const char *func)
+PetscErrorCode  DMSetJacobianMatlab(DM dm,const char *func)
 {
   PetscErrorCode    ierr;
   DMMatlabContext   *sctx;

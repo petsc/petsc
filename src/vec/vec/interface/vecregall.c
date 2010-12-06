@@ -2,18 +2,18 @@
 
 #include "private/vecimpl.h"     /*I  "vec.h"  I*/
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPI(Vec);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Standard(Vec);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Shared(Vec);
+extern PetscErrorCode  VecCreate_Seq(Vec);
+extern PetscErrorCode  VecCreate_MPI(Vec);
+extern PetscErrorCode  VecCreate_Standard(Vec);
+extern PetscErrorCode  VecCreate_Shared(Vec);
 #if defined(PETSC_HAVE_CUDA)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPICUDA(Vec);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_CUDA(Vec);
+extern PetscErrorCode  VecCreate_SeqCUDA(Vec);
+extern PetscErrorCode  VecCreate_MPICUDA(Vec);
+extern PetscErrorCode  VecCreate_CUDA(Vec);
 #endif
 #if 0
 #if defined(PETSC_HAVE_SIEVE)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Sieve(Vec);
+extern PetscErrorCode  VecCreate_Sieve(Vec);
 #endif
 #endif
 EXTERN_C_END
@@ -33,7 +33,7 @@ EXTERN_C_END
 .keywords: Vec, register, all
 .seealso:  VecRegister(), VecRegisterDestroy(), VecRegisterDynamic()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterAll(const char path[])
+PetscErrorCode  VecRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 

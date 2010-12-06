@@ -45,8 +45,8 @@ static const char *(colornames[PETSC_DRAW_BASIC_COLORS]) = { "white",
                                                  "lavenderblush",
                                                  "plum"};
 
-EXTERN PetscErrorCode XiInitCmap(PetscDraw_X*);
-EXTERN PetscErrorCode XiGetVisualClass(PetscDraw_X *);
+extern PetscErrorCode XiInitCmap(PetscDraw_X*);
+extern PetscErrorCode XiGetVisualClass(PetscDraw_X *);
 
 /*
    Sets up a color map for a display. This is shared by all the windows

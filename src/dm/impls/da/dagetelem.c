@@ -130,7 +130,7 @@ static PetscErrorCode DMGetElements_DA_3D(DM dm,PetscInt *nel,PetscInt *nen,cons
 
 #undef __FUNCT__
 #define __FUNCT__ "DMGetElements_DA"
-PetscErrorCode PETSCDM_DLLEXPORT DMGetElements_DA(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
+PetscErrorCode  DMGetElements_DA(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   DM_DA          *da = (DM_DA*)dm->data;
   PetscErrorCode ierr;

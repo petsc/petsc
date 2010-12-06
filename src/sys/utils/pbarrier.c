@@ -25,7 +25,7 @@ PetscLogEvent PETSC_Barrier;
    Concepts: barrier
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscBarrier(PetscObject obj)
+PetscErrorCode  PetscBarrier(PetscObject obj)
 {
   PetscErrorCode ierr;
   MPI_Comm       comm;

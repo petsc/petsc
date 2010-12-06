@@ -44,7 +44,7 @@
 
    Concepts: home directory
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscGetHomeDirectory(char dir[],size_t maxlen)
+PetscErrorCode  PetscGetHomeDirectory(char dir[],size_t maxlen)
 {
   PetscErrorCode ierr;
   char           *d1 = 0;
@@ -88,7 +88,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscGetHomeDirectory(char dir[],size_t maxlen
    Notes:
    Call PetscFixFilename() just before calling fopen().
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFixFilename(const char filein[],char fileout[])
+PetscErrorCode  PetscFixFilename(const char filein[],char fileout[])
 {
   PetscErrorCode ierr;
   size_t         i,n;

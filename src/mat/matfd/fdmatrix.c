@@ -9,7 +9,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringSetF"
-PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetF(MatFDColoring fd,Vec F)
+PetscErrorCode  MatFDColoringSetF(MatFDColoring fd,Vec F)
 {
   PetscFunctionBegin;
   fd->F = F;
@@ -92,7 +92,7 @@ static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer
 
 .keywords: Mat, finite differences, coloring, view
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringView(MatFDColoring c,PetscViewer viewer)
+PetscErrorCode  MatFDColoringView(MatFDColoring c,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscInt          i,j;
@@ -166,7 +166,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringView(MatFDColoring c,PetscViewer 
 .seealso: MatFDColoringCreate(), MatFDColoringSetFromOptions()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,PetscReal umin)
+PetscErrorCode  MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,PetscReal umin)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_CLASSID,1);
@@ -200,7 +200,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetParameters(MatFDColoring matfd
 .seealso: MatFDColoringCreate(), MatFDColoringSetFunction(), MatFDColoringSetFromOptions()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetFunction(MatFDColoring matfd,PetscErrorCode (**f)(void),void **fctx)
+PetscErrorCode  MatFDColoringGetFunction(MatFDColoring matfd,PetscErrorCode (**f)(void),void **fctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_CLASSID,1);
@@ -242,7 +242,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetFunction(MatFDColoring matfd,P
 .seealso: MatFDColoringCreate(), MatFDColoringGetFunction(), MatFDColoringSetFromOptions()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFunction(MatFDColoring matfd,PetscErrorCode (*f)(void),void *fctx)
+PetscErrorCode  MatFDColoringSetFunction(MatFDColoring matfd,PetscErrorCode (*f)(void),void *fctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_CLASSID,1);
@@ -286,7 +286,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFunction(MatFDColoring matfd,P
 .seealso: MatFDColoringCreate(), MatFDColoringView(), MatFDColoringSetParameters()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFromOptions(MatFDColoring matfd)
+PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -366,7 +366,7 @@ PetscErrorCode MatFDColoringView_Private(MatFDColoring fd)
           MatFDColoringSetFunction(), MatFDColoringSetFromOptions(), MatFDColoringApply(),
           MatFDColoringView(), MatFDColoringSetParameters(), MatGetColoring(), DMGetColoring()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
+PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
 {
   MatFDColoring  c;
   MPI_Comm       comm;
@@ -417,7 +417,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringCreate(Mat mat,ISColoring iscolor
 
 .seealso: MatFDColoringCreate()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringDestroy(MatFDColoring c)
+PetscErrorCode  MatFDColoringDestroy(MatFDColoring c)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -470,7 +470,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringDestroy(MatFDColoring c)
 
 .keywords: coloring, Jacobian, finite differences
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetPerturbedColumns(MatFDColoring coloring,PetscInt *n,PetscInt *cols[])
+PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring coloring,PetscInt *n,PetscInt *cols[])
 {
   PetscFunctionBegin;
   if (coloring->currentcolor >= 0) {
@@ -508,7 +508,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetPerturbedColumns(MatFDColoring
 
 .keywords: coloring, Jacobian, finite differences
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
+PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
   PetscErrorCode ierr;
 
@@ -524,7 +524,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringApply_AIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
+PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
   PetscErrorCode (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void *))coloring->f;
   PetscErrorCode ierr;
@@ -730,7 +730,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply_AIJ(Mat J,MatFDColoring col
 
 .keywords: coloring, Jacobian, finite differences
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStructure *flag,void *sctx)
+PetscErrorCode  MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStructure *flag,void *sctx)
 {
   PetscErrorCode (*f)(void*,PetscReal,Vec,Vec,void*)=(PetscErrorCode (*)(void*,PetscReal,Vec,Vec,void *))coloring->f;
   PetscErrorCode ierr;

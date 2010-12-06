@@ -15,7 +15,7 @@ static PetscBool  ISPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISFinalizePackage(void)
+PetscErrorCode  ISFinalizePackage(void)
 {
   PetscFunctionBegin;
   ISPackageInitialized = PETSC_FALSE;
@@ -37,7 +37,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISFinalizePackage(void)
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISInitializePackage(const char path[]) 
+PetscErrorCode  ISInitializePackage(const char path[]) 
 {
   char              logList[256];
   char              *className;
@@ -80,9 +80,9 @@ extern MPI_Op VecMax_Local_Op;
 extern MPI_Op VecMin_Local_Op;
 
 EXTERN_C_BEGIN
-extern void PETSCVEC_DLLEXPORT MPIAPI VecMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-extern void PETSCVEC_DLLEXPORT MPIAPI VecMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-extern void PETSCVEC_DLLEXPORT MPIAPI PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+extern void  MPIAPI VecMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+extern void  MPIAPI VecMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+extern void  MPIAPI PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 EXTERN_C_END
 
 const char *NormTypes[] = {"1","2","FROBENIUS","INFINITY","1_AND_2","NormType","NORM_",0};
@@ -105,7 +105,7 @@ static PetscBool  VecPackageInitialized = PETSC_FALSE;
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[]) 
+PetscErrorCode  VecInitializePackage(const char path[]) 
 {
   char              logList[256];
   char              *className;
@@ -228,7 +228,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecFinalizePackage(void) {
+PetscErrorCode  VecFinalizePackage(void) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = MPI_Op_free(&PetscSplitReduction_Op);CHKERRQ(ierr);
@@ -252,7 +252,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PETSCVEC_DLLEXPORT PetscDLLibraryRegister_petscvec(const char path[])
+PetscErrorCode  PetscDLLibraryRegister_petscvec(const char path[])
 {
   PetscErrorCode ierr;
 

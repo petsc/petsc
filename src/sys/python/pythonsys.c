@@ -177,7 +177,7 @@ static PetscBool  PetscBeganPython = PETSC_FALSE;
 
 .keywords: Python
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscPythonFinalize(void)
+PetscErrorCode  PetscPythonFinalize(void)
 {
   PetscFunctionBegin;
   if (PetscBeganPython) { if (Py_IsInitialized()) Py_Finalize(); }
@@ -199,7 +199,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscPythonFinalize(void)
 .keywords: Python
   
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscPythonInitialize(const char pyexe[],const char pylib[])
+PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
 {
   int               argc       = 0;
   char              **argv     = 0;
@@ -259,7 +259,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscPythonInitialize(const char pyexe[],const
 .keywords: Python
   
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscPythonPrintError(void)
+PetscErrorCode  PetscPythonPrintError(void)
 {
   PyObject *exc=0, *val=0, *tb=0;
   PetscFunctionBegin;

@@ -273,7 +273,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_OpenMP"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_OpenMP(PC pc)
+PetscErrorCode  PCCreate_OpenMP(PC pc)
 {
   PetscErrorCode ierr;
   PC_OpenMP      *red;

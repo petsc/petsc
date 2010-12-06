@@ -57,7 +57,7 @@
 
 .seealso: PetscDrawSynchronizedFlush(), PetscDrawDestroy()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawOpenX(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw* draw)
+PetscErrorCode  PetscDrawOpenX(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw* draw)
 {
   PetscErrorCode ierr;
 

@@ -87,7 +87,7 @@ PetscErrorCode PetscViewerRestoreSingleton_Binary(PetscViewer viewer,PetscViewer
 
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetMPIIOOffset(PetscViewer viewer,MPI_Offset *off)
+PetscErrorCode  PetscViewerBinaryGetMPIIOOffset(PetscViewer viewer,MPI_Offset *off)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -119,7 +119,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetMPIIOOffset(PetscViewer vi
 
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryAddMPIIOOffset(PetscViewer viewer,MPI_Offset off)
+PetscErrorCode  PetscViewerBinaryAddMPIIOOffset(PetscViewer viewer,MPI_Offset off)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -151,7 +151,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryAddMPIIOOffset(PetscViewer vi
 
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetMPIIODescriptor(PetscViewer viewer,MPI_File *fdes)
+PetscErrorCode  PetscViewerBinaryGetMPIIODescriptor(PetscViewer viewer,MPI_File *fdes)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -186,7 +186,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetMPIIODescriptor(PetscViewe
 
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetInfoPointer()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetMPIIO(PetscViewer viewer,PetscBool  *flg)
+PetscErrorCode  PetscViewerBinaryGetMPIIO(PetscViewer viewer,PetscBool  *flg)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -214,7 +214,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetMPIIO(PetscViewer viewer,P
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer(), PetscViewerBinarySetFlowControl()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetFlowControl(PetscViewer viewer,PetscInt *fc)
+PetscErrorCode  PetscViewerBinaryGetFlowControl(PetscViewer viewer,PetscInt *fc)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -239,7 +239,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetFlowControl(PetscViewer vi
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer(), PetscViewerBinaryGetFlowControl()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySetFlowControl(PetscViewer viewer,PetscInt fc)
+PetscErrorCode  PetscViewerBinarySetFlowControl(PetscViewer viewer,PetscInt fc)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -278,7 +278,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySetFlowControl(PetscViewer vi
 
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
+PetscErrorCode  PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -314,7 +314,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetDescriptor(PetscViewer vie
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySetSkipOptions(),
           PetscViewerBinaryGetSkipOptions()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySkipInfo(PetscViewer viewer)
+PetscErrorCode  PetscViewerBinarySkipInfo(PetscViewer viewer)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -346,7 +346,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySkipInfo(PetscViewer viewer)
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySkipInfo(),
           PetscViewerBinaryGetSkipOptions()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySetSkipOptions(PetscViewer viewer,PetscBool  skip)
+PetscErrorCode  PetscViewerBinarySetSkipOptions(PetscViewer viewer,PetscBool  skip)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -377,7 +377,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySetSkipOptions(PetscViewer vi
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySkipInfo(),
           PetscViewerBinarySetSkipOptions()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetSkipOptions(PetscViewer viewer,PetscBool  *skip)
+PetscErrorCode  PetscViewerBinaryGetSkipOptions(PetscViewer viewer,PetscBool  *skip)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -413,7 +413,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetSkipOptions(PetscViewer vi
 
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetDescriptor()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetInfoPointer(PetscViewer viewer,FILE **file)
+PetscErrorCode  PetscViewerBinaryGetInfoPointer(PetscViewer viewer,FILE **file)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -499,7 +499,7 @@ PetscErrorCode PetscViewerDestroy_MPIIO(PetscViewer v)
 
    Level: beginner
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryCreate(MPI_Comm comm,PetscViewer *binv)
+PetscErrorCode  PetscViewerBinaryCreate(MPI_Comm comm,PetscViewer *binv)
 {
   PetscErrorCode ierr;
   
@@ -557,7 +557,7 @@ $    FILE_MODE_APPEND - open existing file for binary output
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
           PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscViewerBinaryRead()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryOpen(MPI_Comm comm,const char name[],PetscFileMode type,PetscViewer *binv)
+PetscErrorCode  PetscViewerBinaryOpen(MPI_Comm comm,const char name[],PetscFileMode type,PetscViewer *binv)
 {
   PetscErrorCode ierr;
   
@@ -572,7 +572,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryOpen(MPI_Comm comm,const char
 #if defined(PETSC_HAVE_MPIIO)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryMPIIO" 
-static PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryMPIIO(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype,PetscBool  write)
+static PetscErrorCode  PetscViewerBinaryMPIIO(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype,PetscBool  write)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   PetscErrorCode     ierr;
@@ -616,7 +616,7 @@ static PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryMPIIO(PetscViewer view
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
           PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscBinaryViewerRead()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype)
+PetscErrorCode  PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype)
 {
   PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
@@ -658,7 +658,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryRead(PetscViewer viewer,void 
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(), PetscDataType
           PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscBinaryViewerRead()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryWrite(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype,PetscBool  istemp)
+PetscErrorCode  PetscViewerBinaryWrite(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype,PetscBool  istemp)
 {
   PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
@@ -698,7 +698,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryWrite(PetscViewer viewer,void
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
           PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscBinaryViewerRead()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryWriteStringArray(PetscViewer viewer,char **data)
+PetscErrorCode  PetscViewerBinaryWriteStringArray(PetscViewer viewer,char **data)
 {
   PetscErrorCode     ierr;
   PetscInt           i,n = 0,*sizes;
@@ -742,7 +742,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryWriteStringArray(PetscViewer 
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
           PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscBinaryViewerRead()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryReadStringArray(PetscViewer viewer,char ***data)
+PetscErrorCode  PetscViewerBinaryReadStringArray(PetscViewer viewer,char ***data)
 {
   PetscErrorCode     ierr;
   PetscInt           i,n,*sizes,N = 0;
@@ -768,7 +768,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryReadStringArray(PetscViewer v
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFileGetName_Binary" 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileGetName_Binary(PetscViewer viewer,char **name)
+PetscErrorCode  PetscViewerFileGetName_Binary(PetscViewer viewer,char **name)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -799,7 +799,7 @@ $    FILE_MODE_APPEND - open existing file for binary output
 .seealso: PetscViewerFileSetMode(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileGetMode(PetscViewer viewer,PetscFileMode *type)
+PetscErrorCode  PetscViewerFileGetMode(PetscViewer viewer,PetscFileMode *type)
 {
   PetscErrorCode ierr;
 
@@ -831,7 +831,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileGetMode(PetscViewer viewer,Pets
 .seealso: PetscViewerFileSetMode(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySetMPIIO(PetscViewer viewer)
+PetscErrorCode  PetscViewerBinarySetMPIIO(PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -861,7 +861,7 @@ $    FILE_MODE_APPEND - open existing file for binary output
 .seealso: PetscViewerFileSetMode(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileSetMode(PetscViewer viewer,PetscFileMode type)
+PetscErrorCode  PetscViewerFileSetMode(PetscViewer viewer,PetscFileMode type)
 {
   PetscErrorCode ierr;
 
@@ -875,7 +875,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileSetMode(PetscViewer viewer,Pets
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFileGetMode_Binary" 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileGetMode_Binary(PetscViewer viewer,PetscFileMode *type)
+PetscErrorCode  PetscViewerFileGetMode_Binary(PetscViewer viewer,PetscFileMode *type)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -888,7 +888,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFileSetMode_Binary" 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileSetMode_Binary(PetscViewer viewer,PetscFileMode type)
+PetscErrorCode  PetscViewerFileSetMode_Binary(PetscViewer viewer,PetscFileMode type)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -904,7 +904,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFileSetName_Binary" 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileSetName_Binary(PetscViewer viewer,const char name[])
+PetscErrorCode  PetscViewerFileSetName_Binary(PetscViewer viewer,const char name[])
 {
   PetscMPIInt         rank;
   PetscErrorCode      ierr;
@@ -1032,7 +1032,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFileSetName_MPIIO" 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerFileSetName_MPIIO(PetscViewer viewer,const char name[])
+PetscErrorCode  PetscViewerFileSetName_MPIIO(PetscViewer viewer,const char name[])
 {
   PetscMPIInt         rank;
   PetscErrorCode      ierr;
@@ -1101,7 +1101,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinarySetMPIIO_Binary" 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySetMPIIO_Binary(PetscViewer viewer)
+PetscErrorCode  PetscViewerBinarySetMPIIO_Binary(PetscViewer viewer)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   PetscErrorCode     ierr;
@@ -1120,7 +1120,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_Binary" 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerCreate_Binary(PetscViewer v)
+PetscErrorCode  PetscViewerCreate_Binary(PetscViewer v)
 {  
   PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary;
@@ -1208,7 +1208,7 @@ $       XXXView(XXX object,PETSC_VIEWER_BINARY_(comm));
 .seealso: PETSC_VIEWER_BINARY_WORLD, PETSC_VIEWER_BINARY_SELF, PetscViewerBinaryOpen(), PetscViewerCreate(),
           PetscViewerDestroy()
 @*/
-PetscViewer PETSCSYS_DLLEXPORT PETSC_VIEWER_BINARY_(MPI_Comm comm)
+PetscViewer  PETSC_VIEWER_BINARY_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
   PetscBool      flg;

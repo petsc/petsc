@@ -27,7 +27,7 @@ static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 
 .keywords: KSP, STCG, set, trust region radius
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP ksp, PetscReal radius)
+PetscErrorCode  KSPSTCGSetRadius(KSP ksp, PetscReal radius)
 {
   PetscErrorCode ierr;
 
@@ -54,7 +54,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP ksp, PetscReal radius)
 
 .keywords: KSP, STCG, get, norm direction
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetNormD(KSP ksp, PetscReal *norm_d)
+PetscErrorCode  KSPSTCGGetNormD(KSP ksp, PetscReal *norm_d)
 {
   PetscErrorCode ierr;
 
@@ -79,7 +79,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetNormD(KSP ksp, PetscReal *norm_d)
 
 .keywords: KSP, STCG, get, objective function
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
+PetscErrorCode  KSPSTCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
 {
   PetscErrorCode ierr;
 
@@ -675,7 +675,7 @@ PetscErrorCode KSPDestroy_STCG(KSP ksp)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPSTCGSetRadius_STCG"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius_STCG(KSP ksp, PetscReal radius)
+PetscErrorCode  KSPSTCGSetRadius_STCG(KSP ksp, PetscReal radius)
 {
   KSP_STCG *cg = (KSP_STCG *)ksp->data;
 
@@ -686,7 +686,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius_STCG(KSP ksp, PetscReal radiu
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSTCGGetNormD_STCG"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetNormD_STCG(KSP ksp, PetscReal *norm_d)
+PetscErrorCode  KSPSTCGGetNormD_STCG(KSP ksp, PetscReal *norm_d)
 {
   KSP_STCG *cg = (KSP_STCG *)ksp->data;
 
@@ -697,7 +697,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetNormD_STCG(KSP ksp, PetscReal *norm_
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSTCGGetObjFcn_STCG"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetObjFcn_STCG(KSP ksp, PetscReal *o_fcn){
+PetscErrorCode  KSPSTCGGetObjFcn_STCG(KSP ksp, PetscReal *o_fcn){
   KSP_STCG *cg = (KSP_STCG *)ksp->data;
 
   PetscFunctionBegin;
@@ -763,7 +763,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_STCG"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_STCG(KSP ksp)
+PetscErrorCode  KSPCreate_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_STCG       *cg;

@@ -6,7 +6,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "rs6000_time"
-PetscLogDouble PETSCSYS_DLLEXPORT rs6000_time(void)
+PetscLogDouble  rs6000_time(void)
 {
    timebasestruct_t t;
    PetscLogDouble   time;

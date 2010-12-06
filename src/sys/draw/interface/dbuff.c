@@ -20,7 +20,7 @@
    Level: advanced
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawIsNull(PetscDraw draw,PetscBool  *yes)
+PetscErrorCode  PetscDrawIsNull(PetscDraw draw,PetscBool  *yes)
 {
   PetscErrorCode ierr;
   PetscBool  isdrawnull;
@@ -51,7 +51,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawIsNull(PetscDraw draw,PetscBool  *yes
    Concepts: double buffer
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawSetDoubleBuffer(PetscDraw draw)
+PetscErrorCode  PetscDrawSetDoubleBuffer(PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

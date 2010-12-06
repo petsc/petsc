@@ -63,7 +63,7 @@ PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
 
 .seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt  windownumber,PetscDraw *draw)
+PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt  windownumber,PetscDraw *draw)
 {
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
   PetscErrorCode   ierr;
@@ -130,7 +130,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawGetDraw(PetscViewer viewer,Pets
 
 .seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen(), PetscViewerDrawGetDraw(), PetscViewerDrawBaseSet()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawBaseAdd(PetscViewer viewer,PetscInt  windownumber)
+PetscErrorCode  PetscViewerDrawBaseAdd(PetscViewer viewer,PetscInt  windownumber)
 {
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
   PetscErrorCode   ierr;
@@ -163,7 +163,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawBaseAdd(PetscViewer viewer,Pets
 
 .seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen(), PetscViewerDrawGetDraw(), PetscViewerDrawBaseAdd()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawBaseSet(PetscViewer viewer,PetscInt  windownumber)
+PetscErrorCode  PetscViewerDrawBaseSet(PetscViewer viewer,PetscInt  windownumber)
 {
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
   PetscErrorCode   ierr;
@@ -200,7 +200,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawBaseSet(PetscViewer viewer,Pets
 
 .seealso: PetscViewerDrawGetDraw(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawGetDrawLG(PetscViewer viewer,PetscInt  windownumber,PetscDrawLG *drawlg)
+PetscErrorCode  PetscViewerDrawGetDrawLG(PetscViewer viewer,PetscInt  windownumber,PetscDrawLG *drawlg)
 {
   PetscErrorCode   ierr;
   PetscBool        isdraw;
@@ -246,7 +246,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawGetDrawLG(PetscViewer viewer,Pe
 
 .seealso: PetscViewerDrawGetDraw(), PetscViewerDrawGetLG(), PetscViewerDrawOpen()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawGetDrawAxis(PetscViewer viewer,PetscInt  windownumber,PetscDrawAxis *drawaxis)
+PetscErrorCode  PetscViewerDrawGetDrawAxis(PetscViewer viewer,PetscInt  windownumber,PetscDrawAxis *drawaxis)
 {
   PetscErrorCode   ierr;
   PetscBool        isdraw;
@@ -272,7 +272,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawGetDrawAxis(PetscViewer viewer,
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDrawSetInfo" 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawSetInfo(PetscViewer v,const char display[],const char title[],int x,int y,int w,int h)
+PetscErrorCode  PetscViewerDrawSetInfo(PetscViewer v,const char display[],const char title[],int x,int y,int w,int h)
 {
   PetscErrorCode   ierr;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)v->data;
@@ -335,7 +335,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawSetInfo(PetscViewer v,const cha
 .seealso: PetscDrawCreate(), PetscViewerDestroy(), PetscViewerDrawGetDraw(), PetscViewerCreate(), PETSC_VIEWER_DRAW_,
           PETSC_VIEWER_DRAW_WORLD, PETSC_VIEWER_DRAW_SELF
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscViewer *viewer)
+PetscErrorCode  PetscViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscViewer *viewer)
 {
   PetscErrorCode ierr;
 
@@ -404,7 +404,7 @@ PetscErrorCode PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_Draw" 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerCreate_Draw(PetscViewer viewer)
+PetscErrorCode  PetscViewerCreate_Draw(PetscViewer viewer)
 {
   PetscInt         i;
   PetscErrorCode   ierr;
@@ -452,7 +452,7 @@ EXTERN_C_END
 .seealso: PetscViewerDrawOpen(), PetscViewerDrawGetDraw(), 
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerDrawClear(PetscViewer viewer)
+PetscErrorCode  PetscViewerDrawClear(PetscViewer viewer)
 {
   PetscErrorCode   ierr;
   PetscInt         i;
@@ -497,7 +497,7 @@ $       XXXView(XXX object,PETSC_VIEWER_DRAW_(comm));
 
 .seealso: PETSC_VIEWER_DRAW_WORLD, PETSC_VIEWER_DRAW_SELF, PetscViewerDrawOpen(), 
 @*/
-PetscViewer PETSCSYS_DLLEXPORT PETSC_VIEWER_DRAW_(MPI_Comm comm)
+PetscViewer  PETSC_VIEWER_DRAW_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
   PetscMPIInt    flag;

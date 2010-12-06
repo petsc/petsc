@@ -3,7 +3,7 @@
 #include "private/tsimpl.h"        /*I "petscts.h"  I*/
 
 /* Logging support */
-PetscClassId PETSCTS_DLLEXPORT TS_CLASSID;
+PetscClassId  TS_CLASSID;
 PetscLogEvent  TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
 #undef __FUNCT__  
@@ -69,7 +69,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 
 .seealso: TSGetType()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetFromOptions(TS ts)
+PetscErrorCode  TSSetFromOptions(TS ts)
 {
   PetscReal               dt;
   PetscBool               opt,flg;
@@ -161,7 +161,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetFromOptions(TS ts)
 .keywords: TS, view, options, database
 .seealso: TSSetFromOptions(), TSView()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSViewFromOptions(TS ts,const char title[])
+PetscErrorCode  TSViewFromOptions(TS ts,const char title[])
 {
   PetscViewer    viewer;
   PetscDraw      draw;
@@ -228,7 +228,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSViewFromOptions(TS ts,const char title[])
 
 .seealso:  TSSetRHSJacobian(), KSPSetOperators()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatStructure *flg)
+PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatStructure *flg)
 {
   PetscErrorCode ierr;
 
@@ -431,7 +431,7 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y)
 
 .seealso:  TSSetIJacobian()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *flg)
+PetscErrorCode  TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *flg)
 {
   PetscErrorCode ierr;
 
@@ -513,7 +513,7 @@ $     func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 
 .seealso: TSSetMatrices()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetRHSFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*),void *ctx)
+PetscErrorCode  TSSetRHSFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*),void *ctx)
 {
   PetscFunctionBegin;
 
@@ -573,7 +573,7 @@ $     func(TS ts,PetscReal t,Mat *A,Mat *B,PetscInt *flag,void *ctx);
 
 .seealso: TSSetRHSFunction()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetMatrices(TS ts,Mat Arhs,PetscErrorCode (*frhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),Mat Alhs,PetscErrorCode (*flhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),MatStructure flag,void *ctx)
+PetscErrorCode  TSSetMatrices(TS ts,Mat Arhs,PetscErrorCode (*frhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),Mat Alhs,PetscErrorCode (*flhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),MatStructure flag,void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -620,7 +620,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetMatrices(TS ts,Mat Arhs,PetscErrorCode (*f
 .keywords: TS, timestep, get, matrix
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGetMatrices(TS ts,Mat *Arhs,Mat *Alhs,void **ctx)
+PetscErrorCode  TSGetMatrices(TS ts,Mat *Arhs,Mat *Alhs,void **ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -676,7 +676,7 @@ $     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
           SNESDefaultComputeJacobianColor(), TSSetRHSFunction(), TSSetMatrices()
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetRHSJacobian(TS ts,Mat A,Mat B,PetscErrorCode (*f)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
+PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,PetscErrorCode (*f)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -724,7 +724,7 @@ $  f(TS ts,PetscReal t,Vec u,Vec u_t,Vec F,ctx);
 
 .seealso: TSSetMatrices(), TSSetRHSFunction(), TSSetIJacobian()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetIFunction(TS ts,TSIFunction f,void *ctx)
+PetscErrorCode  TSSetIFunction(TS ts,TSIFunction f,void *ctx)
 {
 
   PetscFunctionBegin;
@@ -772,7 +772,7 @@ $  f(TS ts,PetscReal t,Vec u,Vec u_t,PetscReal a,Mat *A,Mat *B,MatStructure *fla
 .seealso: TSSetIFunction(), TSSetRHSJacobian()
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian f,void *ctx)
+PetscErrorCode  TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian f,void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -834,7 +834,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian f,
 
 .seealso: PetscViewerASCIIOpen()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSView(TS ts,PetscViewer viewer)
+PetscErrorCode  TSView(TS ts,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   const TSType   type;
@@ -893,7 +893,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSView(TS ts,PetscViewer viewer)
 
 .seealso: TSGetApplicationContext()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetApplicationContext(TS ts,void *usrP)
+PetscErrorCode  TSSetApplicationContext(TS ts,void *usrP)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -921,7 +921,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetApplicationContext(TS ts,void *usrP)
 
 .seealso: TSSetApplicationContext()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGetApplicationContext(TS ts,void **usrP)
+PetscErrorCode  TSGetApplicationContext(TS ts,void **usrP)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -946,7 +946,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetApplicationContext(TS ts,void **usrP)
 
 .keywords: TS, timestep, get, iteration, number
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGetTimeStepNumber(TS ts,PetscInt* iter)
+PetscErrorCode  TSGetTimeStepNumber(TS ts,PetscInt* iter)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -974,7 +974,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetTimeStepNumber(TS ts,PetscInt* iter)
 
 .keywords: TS, set, initial, timestep
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time_step)
+PetscErrorCode  TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time_step)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1002,7 +1002,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetInitialTimeStep(TS ts,PetscReal initial_ti
 
 .keywords: TS, set, timestep
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetTimeStep(TS ts,PetscReal time_step)
+PetscErrorCode  TSSetTimeStep(TS ts,PetscReal time_step)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1030,7 +1030,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetTimeStep(TS ts,PetscReal time_step)
 
 .keywords: TS, get, timestep
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGetTimeStep(TS ts,PetscReal* dt)
+PetscErrorCode  TSGetTimeStep(TS ts,PetscReal* dt)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1061,7 +1061,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetTimeStep(TS ts,PetscReal* dt)
 
 .keywords: TS, timestep, get, solution
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGetSolution(TS ts,Vec *v)
+PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1092,7 +1092,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetSolution(TS ts,Vec *v)
 .keywords: TS, problem type
 .seealso: TSSetUp(), TSProblemType, TS
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetProblemType(TS ts, TSProblemType type) 
+PetscErrorCode  TSSetProblemType(TS ts, TSProblemType type) 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
@@ -1123,7 +1123,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetProblemType(TS ts, TSProblemType type)
 .keywords: TS, problem type
 .seealso: TSSetUp(), TSProblemType, TS
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGetProblemType(TS ts, TSProblemType *type) 
+PetscErrorCode  TSGetProblemType(TS ts, TSProblemType *type) 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
@@ -1156,7 +1156,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetProblemType(TS ts, TSProblemType *type)
 
 .seealso: TSCreate(), TSStep(), TSDestroy()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetUp(TS ts)
+PetscErrorCode  TSSetUp(TS ts)
 {
   PetscErrorCode ierr;
 
@@ -1188,7 +1188,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetUp(TS ts)
 
 .seealso: TSCreate(), TSSetUp(), TSSolve()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSDestroy(TS ts)
+PetscErrorCode  TSDestroy(TS ts)
 {
   PetscErrorCode ierr;
 
@@ -1235,7 +1235,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDestroy(TS ts)
 
 .keywords: timestep, get, SNES
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGetSNES(TS ts,SNES *snes)
+PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1272,7 +1272,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetSNES(TS ts,SNES *snes)
 
 .keywords: timestep, get, KSP
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGetKSP(TS ts,KSP *ksp)
+PetscErrorCode  TSGetKSP(TS ts,KSP *ksp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1302,7 +1302,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetKSP(TS ts,KSP *ksp)
 
 .keywords: TS, timestep, get, maximum, iterations, time
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
+PetscErrorCode  TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
@@ -1341,7 +1341,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetDuration(TS ts, PetscInt *maxsteps, PetscR
 
 .keywords: TS, timestep, set, maximum, iterations
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
+PetscErrorCode  TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1368,7 +1368,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetDuration(TS ts,PetscInt maxsteps,PetscReal
 
 .keywords: TS, timestep, set, solution, initial conditions
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetSolution(TS ts,Vec x)
+PetscErrorCode  TSSetSolution(TS ts,Vec x)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1396,7 +1396,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetSolution(TS ts,Vec x)
 
 .keywords: TS, timestep
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
+PetscErrorCode  TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
@@ -1422,7 +1422,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
 
 .keywords: TS, timestep
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSPreStep(TS ts)
+PetscErrorCode  TSPreStep(TS ts)
 {
   PetscErrorCode ierr;
 
@@ -1450,7 +1450,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPreStep(TS ts)
 
 .keywords: TS, timestep
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSDefaultPreStep(TS ts)
+PetscErrorCode  TSDefaultPreStep(TS ts)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -1475,7 +1475,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDefaultPreStep(TS ts)
 
 .keywords: TS, timestep
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetPostStep(TS ts, PetscErrorCode (*func)(TS))
+PetscErrorCode  TSSetPostStep(TS ts, PetscErrorCode (*func)(TS))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
@@ -1501,7 +1501,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetPostStep(TS ts, PetscErrorCode (*func)(TS)
 
 .keywords: TS, timestep
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSPostStep(TS ts)
+PetscErrorCode  TSPostStep(TS ts)
 {
   PetscErrorCode ierr;
 
@@ -1529,7 +1529,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPostStep(TS ts)
 
 .keywords: TS, timestep
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSDefaultPostStep(TS ts)
+PetscErrorCode  TSDefaultPostStep(TS ts)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -1574,7 +1574,7 @@ $    int func(TS ts,PetscInt steps,PetscReal time,Vec x,void *mctx)
 
 .seealso: TSMonitorDefault(), TSMonitorCancel()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,void*),void *mctx,PetscErrorCode (*mdestroy)(void*))
+PetscErrorCode  TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,void*),void *mctx,PetscErrorCode (*mdestroy)(void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1604,7 +1604,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS
 
 .seealso: TSMonitorDefault(), TSMonitorSet()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSMonitorCancel(TS ts)
+PetscErrorCode  TSMonitorCancel(TS ts)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -1667,7 +1667,7 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *
 
 .seealso: TSCreate(), TSSetUp(), TSDestroy()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSStep(TS ts,PetscInt *steps,PetscReal *ptime)
+PetscErrorCode  TSStep(TS ts,PetscInt *steps,PetscReal *ptime)
 {
   PetscErrorCode ierr;
 
@@ -1704,7 +1704,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSStep(TS ts,PetscInt *steps,PetscReal *ptime)
 
 .seealso: TSCreate(), TSSetSolution(), TSStep()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSolve(TS ts, Vec x)
+PetscErrorCode  TSSolve(TS ts, Vec x)
 {
   PetscInt       steps;
   PetscReal      ptime;
@@ -1770,7 +1770,7 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec x)
 .seealso: TSMonitorLGDestroy(), TSMonitorSet()
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSMonitorLGCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
+PetscErrorCode  TSMonitorLGCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
 {
   PetscDraw      win;
   PetscErrorCode ierr;
@@ -1829,7 +1829,7 @@ PetscErrorCode TSMonitorLG(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
 
 .seealso: TSMonitorLGCreate(),  TSMonitorSet(), TSMonitorLG();
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSMonitorLGDestroy(PetscDrawLG drawlg)
+PetscErrorCode  TSMonitorLGDestroy(PetscDrawLG drawlg)
 {
   PetscDraw      draw;
   PetscErrorCode ierr;
@@ -1860,7 +1860,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSMonitorLGDestroy(PetscDrawLG drawlg)
 
 .keywords: TS, get, time
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGetTime(TS ts,PetscReal* t)
+PetscErrorCode  TSGetTime(TS ts,PetscReal* t)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1886,7 +1886,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetTime(TS ts,PetscReal* t)
 
 .keywords: TS, set, time
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetTime(TS ts, PetscReal t) 
+PetscErrorCode  TSSetTime(TS ts, PetscReal t) 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1919,7 +1919,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetTime(TS ts, PetscReal t)
 .seealso: TSSetFromOptions()
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetOptionsPrefix(TS ts,const char prefix[])
+PetscErrorCode  TSSetOptionsPrefix(TS ts,const char prefix[])
 {
   PetscErrorCode ierr;
 
@@ -1966,7 +1966,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetOptionsPrefix(TS ts,const char prefix[])
 .seealso: TSGetOptionsPrefix()
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSAppendOptionsPrefix(TS ts,const char prefix[])
+PetscErrorCode  TSAppendOptionsPrefix(TS ts,const char prefix[])
 {
   PetscErrorCode ierr;
 
@@ -2011,7 +2011,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSAppendOptionsPrefix(TS ts,const char prefix[]
 
 .seealso: TSAppendOptionsPrefix()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGetOptionsPrefix(TS ts,const char *prefix[])
+PetscErrorCode  TSGetOptionsPrefix(TS ts,const char *prefix[])
 {
   PetscErrorCode ierr;
 
@@ -2045,7 +2045,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetOptionsPrefix(TS ts,const char *prefix[])
 
 .keywords: TS, timestep, get, matrix, Jacobian
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGetRHSJacobian(TS ts,Mat *J,Mat *M,void **ctx)
+PetscErrorCode  TSGetRHSJacobian(TS ts,Mat *J,Mat *M,void **ctx)
 {
   PetscFunctionBegin;
   if (J) *J = ts->Arhs;
@@ -2078,7 +2078,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetRHSJacobian(TS ts,Mat *J,Mat *M,void **ctx
 
 .keywords: TS, timestep, get, matrix, Jacobian
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGetIJacobian(TS ts,Mat *A,Mat *B,TSIJacobian *f,void **ctx)
+PetscErrorCode  TSGetIJacobian(TS ts,Mat *A,Mat *B,TSIJacobian *f,void **ctx)
 {
   PetscFunctionBegin;
   if (A) *A = ts->A;
@@ -2108,7 +2108,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetIJacobian(TS ts,Mat *A,Mat *B,TSIJacobian 
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSMonitorSolution(TS ts,PetscInt step,PetscReal ptime,Vec x,void *dummy)
+PetscErrorCode  TSMonitorSolution(TS ts,PetscInt step,PetscReal ptime,Vec x,void *dummy)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer = (PetscViewer) dummy;
@@ -2138,7 +2138,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSMonitorSolution(TS ts,PetscInt step,PetscReal
 
 .seealso: TSGetDM(), SNESSetDM(), SNESGetDM()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetDM(TS ts,DM dm)
+PetscErrorCode  TSSetDM(TS ts,DM dm)
 {
   PetscErrorCode ierr;
 
@@ -2175,7 +2175,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetDM(TS ts,DM dm)
 
 .seealso: TSSetDM(), SNESSetDM(), SNESGetDM()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGetDM(TS ts,DM *dm)
+PetscErrorCode  TSGetDM(TS ts,DM *dm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -2206,7 +2206,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetDM(TS ts,DM *dm)
 
 .seealso: SNESSetFunction(), MatFDColoringSetFunction()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT SNESTSFormFunction(SNES snes,Vec X,Vec F,void *ctx)
+PetscErrorCode  SNESTSFormFunction(SNES snes,Vec X,Vec F,void *ctx)
 {
   TS ts = (TS)ctx;
   PetscErrorCode ierr;
@@ -2244,7 +2244,7 @@ PetscErrorCode PETSCTS_DLLEXPORT SNESTSFormFunction(SNES snes,Vec X,Vec F,void *
 
 .seealso: SNESSetJacobian()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT SNESTSFormJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode  SNESTSFormJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flag,void *ctx)
 {
   TS ts = (TS)ctx;
   PetscErrorCode ierr;
@@ -2293,7 +2293,7 @@ typedef struct {char *funcname; mxArray *ctx;} TSMatlabContext;
 
 .seealso: TSSetFunction(), TSGetFunction()
 */
-PetscErrorCode PETSCTS_DLLEXPORT TSComputeFunction_Matlab(TS snes,PetscReal time,Vec x,Vec xdot,Vec y, void *ctx)
+PetscErrorCode  TSComputeFunction_Matlab(TS snes,PetscReal time,Vec x,Vec xdot,Vec y, void *ctx)
 {
   PetscErrorCode   ierr;
   TSMatlabContext *sctx = (TSMatlabContext *)ctx;
@@ -2355,7 +2355,7 @@ $    func (TS ts,PetscReal time,Vec x,Vec xdot,Vec f,void *ctx);
 
 .seealso: TSGetFunction(), TSComputeFunction(), TSSetJacobian(), TSSetFunction()
 */
-PetscErrorCode PETSCTS_DLLEXPORT TSSetFunctionMatlab(TS snes,const char *func,mxArray *ctx)
+PetscErrorCode  TSSetFunctionMatlab(TS snes,const char *func,mxArray *ctx)
 {
   PetscErrorCode  ierr;
   TSMatlabContext *sctx;
@@ -2397,7 +2397,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetFunctionMatlab(TS snes,const char *func,mx
 
 .seealso: TSSetFunction(), TSGetFunction()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSComputeJacobian_Matlab(TS snes,PetscReal time,Vec x,Vec xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *flag, void *ctx)
+PetscErrorCode  TSComputeJacobian_Matlab(TS snes,PetscReal time,Vec x,Vec xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *flag, void *ctx)
 {
   PetscErrorCode  ierr;
   TSMatlabContext *sctx = (TSMatlabContext *)ctx;
@@ -2466,7 +2466,7 @@ $    flag = func (TS snes,PetscReal time,Vec x,Vec xdot,Mat A,Mat B,void *ctx);
 
 .seealso: TSGetFunction(), TSComputeFunction(), TSSetJacobian(), TSSetFunction()
 */
-PetscErrorCode PETSCTS_DLLEXPORT TSSetJacobianMatlab(TS snes,Mat A,Mat B,const char *func,mxArray *ctx)
+PetscErrorCode  TSSetJacobianMatlab(TS snes,Mat A,Mat B,const char *func,mxArray *ctx)
 {
   PetscErrorCode    ierr;
   TSMatlabContext *sctx;
@@ -2494,7 +2494,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetJacobianMatlab(TS snes,Mat A,Mat B,const c
 
 .seealso: TSSetFunction(), TSGetFunction()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSMonitor_Matlab(TS snes,PetscInt it, PetscReal time,Vec x, void *ctx)
+PetscErrorCode  TSMonitor_Matlab(TS snes,PetscInt it, PetscReal time,Vec x, void *ctx)
 {
   PetscErrorCode  ierr;
   TSMatlabContext *sctx = (TSMatlabContext *)ctx;
@@ -2537,7 +2537,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSMonitor_Matlab(TS snes,PetscInt it, PetscReal
 
 .seealso: TSGetFunction(), TSComputeFunction(), TSSetJacobian(), TSSetFunction()
 */
-PetscErrorCode PETSCTS_DLLEXPORT TSMonitorSetMatlab(TS snes,const char *func,mxArray *ctx)
+PetscErrorCode  TSMonitorSetMatlab(TS snes,const char *func,mxArray *ctx)
 {
   PetscErrorCode    ierr;
   TSMatlabContext *sctx;

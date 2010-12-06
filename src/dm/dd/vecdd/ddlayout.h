@@ -69,9 +69,9 @@ typedef struct _n_DDLayout *DDLayout;
   }                                                                                  \
 } 
 
-EXTERN PetscErrorCode DDLayoutSetDomainsLocal(DDLayout dd, PetscInt supported_domain_count, PetscInt *supported_domains, PetscInt *domain_limits, PetscBool covering);
-EXTERN PetscErrorCode DDLayoutSetDomainsLocalIS(DDLayout dd, IS supported_domains, IS domain_limits, PetscBool covering);
-EXTERN PetscErrorCode DDLayoutDestroy(DDLayout dd);
-EXTERN PetscErrorCode DDLayoutCreate(PetscLayout map, DDLayout *dd);
-EXTERN PetscErrorCode DDLayoutDuplicate(DDLayout ddin, DDLayout *dd);
+extern PetscErrorCode DDLayoutSetDomainsLocal(DDLayout dd, PetscInt supported_domain_count, PetscInt *supported_domains, PetscInt *domain_limits, PetscBool covering);
+extern PetscErrorCode DDLayoutSetDomainsLocalIS(DDLayout dd, IS supported_domains, IS domain_limits, PetscBool covering);
+extern PetscErrorCode DDLayoutDestroy(DDLayout dd);
+extern PetscErrorCode DDLayoutCreate(PetscLayout map, DDLayout *dd);
+extern PetscErrorCode DDLayoutDuplicate(DDLayout ddin, DDLayout *dd);
 #endif

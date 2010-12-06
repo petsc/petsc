@@ -294,7 +294,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 
 .seealso: KSPBCGSLSetEll(), KSPBCGSLSetPol()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
+PetscErrorCode  KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 {
   KSP_BCGSL      *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscErrorCode ierr;
@@ -335,7 +335,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 
 .seealso: @()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP ksp, PetscBool  uMROR)
+PetscErrorCode  KSPBCGSLSetPol(KSP ksp, PetscBool  uMROR)
 {
   KSP_BCGSL      *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscErrorCode ierr;
@@ -378,7 +378,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP ksp, PetscBool  uMROR)
 
 .seealso: @()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetEll(KSP ksp, PetscInt ell)
+PetscErrorCode  KSPBCGSLSetEll(KSP ksp, PetscInt ell)
 {
   KSP_BCGSL      *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscErrorCode ierr;
@@ -526,7 +526,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_BCGSL"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BCGSL(KSP ksp)
+PetscErrorCode  KSPCreate_BCGSL(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_BCGSL      *bcgsl;

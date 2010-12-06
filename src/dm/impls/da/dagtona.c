@@ -31,7 +31,7 @@
 .seealso: DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(), 
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
+PetscErrorCode  DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
 {
   PetscErrorCode ierr;
   PetscInt       N;
@@ -83,7 +83,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDAGlobalToNaturalAllCreate(DM da,VecScatter *
 .seealso: DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(), 
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDANaturalAllToGlobalCreate(DM da,VecScatter *scatter)
+PetscErrorCode  DMDANaturalAllToGlobalCreate(DM da,VecScatter *scatter)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;

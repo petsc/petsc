@@ -298,7 +298,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_IBCGS"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_IBCGS(KSP ksp)
+PetscErrorCode  KSPCreate_IBCGS(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                 = (void*)0;

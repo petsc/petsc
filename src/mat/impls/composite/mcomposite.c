@@ -367,7 +367,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_Composite"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Composite(Mat A)
+PetscErrorCode  MatCreate_Composite(Mat A)
 {
   Mat_Composite  *b;
   PetscErrorCode ierr;
@@ -424,7 +424,7 @@ $       MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);
 .seealso: MatDestroy(), MatMult(), MatCompositeAddMat(), MatCompositeMerge(), MatCompositeSetType(), MatCompositeType
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm comm,PetscInt nmat,const Mat *mats,Mat *mat)
+PetscErrorCode  MatCreateComposite(MPI_Comm comm,PetscInt nmat,const Mat *mats,Mat *mat)
 {
   PetscErrorCode ierr;
   PetscInt       m,n,M,N,i;
@@ -461,7 +461,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm comm,PetscInt nmat
 
 .seealso: MatCreateComposite()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeAddMat(Mat mat,Mat smat)
+PetscErrorCode  MatCompositeAddMat(Mat mat,Mat smat)
 {
   Mat_Composite     *shell;
   PetscErrorCode    ierr;
@@ -510,7 +510,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeAddMat(Mat mat,Mat smat)
 .seealso: MatDestroy(), MatMult(), MatCompositeAddMat(), MatCreateComposite(), MATCOMPOSITE
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeSetType(Mat mat,MatCompositeType type)
+PetscErrorCode  MatCompositeSetType(Mat mat,MatCompositeType type)
 {
   Mat_Composite  *b = (Mat_Composite*)mat->data;  
   PetscBool      flg;
@@ -558,7 +558,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeSetType(Mat mat,MatCompositeType t
 .seealso: MatDestroy(), MatMult(), MatCompositeAddMat(), MatCreateComposite(), MATCOMPOSITE
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeMerge(Mat mat)
+PetscErrorCode  MatCompositeMerge(Mat mat)
 {
   Mat_Composite     *shell = (Mat_Composite*)mat->data;  
   Mat_CompositeLink next = shell->head, prev = shell->tail;

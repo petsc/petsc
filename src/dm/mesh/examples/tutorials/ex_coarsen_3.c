@@ -78,7 +78,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 
 #undef __FUNCT__  
 #define __FUNCT__ "Coarsen_RefineSingularity_Fichera"
-PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity_Fichera(ALE::Obj<ALE::Mesh> mesh, MPI_Comm comm, double * singularity, double factor, ALE::Obj<ALE::Mesh> * refinedMesh, PetscBool  interpolate = PETSC_FALSE)
+PetscErrorCode  MeshRefineSingularity_Fichera(ALE::Obj<ALE::Mesh> mesh, MPI_Comm comm, double * singularity, double factor, ALE::Obj<ALE::Mesh> * refinedMesh, PetscBool  interpolate = PETSC_FALSE)
 {
   ALE::Obj<ALE::Mesh> oldMesh = mesh;
   double              oldLimit;

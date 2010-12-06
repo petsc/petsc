@@ -19,7 +19,7 @@ typedef struct {
   PetscReal  rhs_norm; /* Norm of the right hand side */
 } KSP_LSQR;
 
-extern PetscErrorCode PETSCKSP_DLLEXPORT VecSquare(Vec);
+extern PetscErrorCode  VecSquare(Vec);
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_LSQR"
@@ -271,7 +271,7 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPLSQRSetStandardErrorVec"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRSetStandardErrorVec( KSP ksp, Vec se )
+PetscErrorCode  KSPLSQRSetStandardErrorVec( KSP ksp, Vec se )
 {
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscErrorCode ierr;
@@ -286,7 +286,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRSetStandardErrorVec( KSP ksp, Vec se )
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPLSQRGetStandardErrorVec"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetStandardErrorVec( KSP ksp,Vec *se )
+PetscErrorCode  KSPLSQRGetStandardErrorVec( KSP ksp,Vec *se )
 {
   KSP_LSQR *lsqr = (KSP_LSQR*)ksp->data;
 
@@ -297,7 +297,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetStandardErrorVec( KSP ksp,Vec *se )
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPLSQRGetArnorm"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetArnorm( KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm , PetscReal *anorm)
+PetscErrorCode  KSPLSQRGetArnorm( KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm , PetscReal *anorm)
 {
   KSP_LSQR *lsqr = (KSP_LSQR*)ksp->data;
 
@@ -327,7 +327,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetArnorm( KSP ksp,PetscReal *arnorm, P
 
 .seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorLGCreate(), KSPMonitorDefault()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+PetscErrorCode  KSPLSQRMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   PetscErrorCode          ierr;
   PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
@@ -415,7 +415,7 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(),
           KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm(), KSPDefaultConvergedCreate(), KSPDefaultConvergedDestroy(), KSPDefaultConverged()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
+PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
   PetscErrorCode         ierr;
   KSP_LSQR               *lsqr = (KSP_LSQR*)ksp->data;
@@ -466,7 +466,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__ 
 #define __FUNCT__ "KSPCreate_LSQR"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LSQR(KSP ksp)
+PetscErrorCode  KSPCreate_LSQR(KSP ksp)
 {
   KSP_LSQR       *lsqr;
   PetscErrorCode ierr;
@@ -495,7 +495,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSquare"
-PetscErrorCode PETSCKSP_DLLEXPORT VecSquare(Vec v)
+PetscErrorCode  VecSquare(Vec v)
 {
   PetscErrorCode ierr;
   PetscScalar    *x;

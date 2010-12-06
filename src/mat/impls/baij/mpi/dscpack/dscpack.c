@@ -583,8 +583,8 @@ PetscErrorCode MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode MatView_SeqBAIJ(Mat,PetscViewer);
-EXTERN PetscErrorCode MatView_MPIBAIJ(Mat,PetscViewer);
+extern PetscErrorCode MatView_SeqBAIJ(Mat,PetscViewer);
+extern PetscErrorCode MatView_MPIBAIJ(Mat,PetscViewer);
 
 
 #undef __FUNCT__

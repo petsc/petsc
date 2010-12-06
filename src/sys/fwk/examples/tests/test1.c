@@ -2,7 +2,7 @@
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "TestACall"
-PetscErrorCode PETSCSYS_DLLEXPORT TestACall(PetscFwk component, const char* message) {
+PetscErrorCode  TestACall(PetscFwk component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -12,7 +12,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT TestACall(PetscFwk component, const char* mess
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "TestBInitialize"
-PetscErrorCode PETSCSYS_DLLEXPORT TestBInitialize(PetscFwk component, const char* message) {
+PetscErrorCode  TestBInitialize(PetscFwk component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -22,7 +22,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT TestBInitialize(PetscFwk component, const char
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "TestBCall"
-PetscErrorCode PETSCSYS_DLLEXPORT TestBCall(PetscFwk component, const char* message) {
+PetscErrorCode  TestBCall(PetscFwk component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -32,7 +32,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT TestBCall(PetscFwk component, const char* mess
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "TestCInitialize"
-PetscErrorCode PETSCSYS_DLLEXPORT TestCInitialize(PetscFwk component, const char* message) {
+PetscErrorCode  TestCInitialize(PetscFwk component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -42,7 +42,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT TestCInitialize(PetscFwk component, const char
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "TestCCall"
-PetscErrorCode PETSCSYS_DLLEXPORT TestCCall(PetscFwk component, const char* message) {
+PetscErrorCode  TestCCall(PetscFwk component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;

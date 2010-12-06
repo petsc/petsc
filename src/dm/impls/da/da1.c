@@ -128,7 +128,7 @@ PetscErrorCode DMView_DA_Private(DM da)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMSetUp_DA_1D"
-PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_1D(DM da)
+PetscErrorCode  DMSetUp_DA_1D(DM da)
 {
   DM_DA                  *dd = (DM_DA*)da->data;
   const PetscInt         M     = dd->M;
@@ -385,7 +385,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA_1D(DM da)
           DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMDALoad(), DMDAGetOwnershipRanges()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDACreate1d(MPI_Comm comm, DMDAPeriodicType wrap, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da)
+PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMDAPeriodicType wrap, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

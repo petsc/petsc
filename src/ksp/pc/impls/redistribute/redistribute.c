@@ -312,7 +312,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Redistribute"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redistribute(PC pc)
+PetscErrorCode  PCCreate_Redistribute(PC pc)
 {
   PetscErrorCode  ierr;
   PC_Redistribute *red;

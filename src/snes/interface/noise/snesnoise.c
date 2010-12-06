@@ -16,9 +16,9 @@ typedef struct {
 
 
 extern PetscErrorCode dnest_(PetscInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*);
-EXTERN PetscErrorCode JacMatMultCompare(SNES,Vec,Vec,double);
-EXTERN PetscErrorCode SNESDefaultMatrixFreeSetParameters2(Mat,double,double,double);
-EXTERN PetscErrorCode SNESUnSetMatrixFreeParameter(SNES snes);
+extern PetscErrorCode JacMatMultCompare(SNES,Vec,Vec,double);
+extern PetscErrorCode SNESDefaultMatrixFreeSetParameters2(Mat,double,double,double);
+extern PetscErrorCode SNESUnSetMatrixFreeParameter(SNES snes);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DiffParameterCreate_More"

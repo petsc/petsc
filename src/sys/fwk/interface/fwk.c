@@ -6,7 +6,7 @@
 /* FIX: is it okay to include this directly? */
 #include <ctype.h>
 
-PETSCSYS_DLLEXPORT PetscClassId PETSC_FWK_CLASSID;
+ PetscClassId PETSC_FWK_CLASSID;
 static char PETSC_FWK_CLASS_NAME[] = "PetscFwk";
 static PetscBool  PetscFwkPackageInitialized = PETSC_FALSE;
 
@@ -421,7 +421,7 @@ PetscErrorCode PetscFwkCall(PetscFwk fwk, const char* message) {
 */
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkParseURL_Private"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkParseURL_Private(const char inurl[], char **outpath, char **outname, PetscFwkVTableType *outtype){
+PetscErrorCode  PetscFwkParseURL_Private(const char inurl[], char **outpath, char **outname, PetscFwkVTableType *outtype){
   char *n, *s;
   static PetscInt nlen = PETSC_FWK_MAX_URL_LENGTH;
   static char path[PETSC_FWK_MAX_URL_LENGTH+1], name[PETSC_FWK_MAX_URL_LENGTH+1];
@@ -486,7 +486,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkParseURL_Private(const char inurl[], c
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkClearURL_Private"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkClearURL_Private(PetscFwk fwk) {
+PetscErrorCode  PetscFwkClearURL_Private(PetscFwk fwk) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   switch(fwk->vtable_type) {
@@ -516,7 +516,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkClearURL_Private(PetscFwk fwk) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkSetURL"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkSetURL(PetscFwk fwk, const char url[]) {
+PetscErrorCode  PetscFwkSetURL(PetscFwk fwk, const char url[]) {
   PetscErrorCode ierr;
   char *path, *name;
   PetscFunctionBegin;
@@ -549,7 +549,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkSetURL(PetscFwk fwk, const char url[])
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkGetURL"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetURL(PetscFwk fwk, const char **url) {
+PetscErrorCode  PetscFwkGetURL(PetscFwk fwk, const char **url) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fwk,PETSC_FWK_CLASSID,1);
   PetscValidPointer(url,2);
@@ -631,7 +631,7 @@ PetscErrorCode PetscFwkVisit(PetscFwk fwk, const char* message){
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkGetKeyID_Private"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetKeyID_Private(PetscFwk fwk, const char key[], PetscInt *_id, PetscBool  *_found){
+PetscErrorCode  PetscFwkGetKeyID_Private(PetscFwk fwk, const char key[], PetscInt *_id, PetscBool  *_found){
   PetscInt i;
   PetscBool  eq;
   PetscErrorCode ierr;
@@ -650,7 +650,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetKeyID_Private(PetscFwk fwk, const c
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkRegisterKey_Private"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterKey_Private(PetscFwk fwk, const char key[], PetscInt *_id) {
+PetscErrorCode  PetscFwkRegisterKey_Private(PetscFwk fwk, const char key[], PetscInt *_id) {
   PetscInt v, id;
   PetscBool  found;
   PetscErrorCode ierr;
@@ -695,7 +695,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterKey_Private(PetscFwk fwk, cons
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkRegisterComponent"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterComponent(PetscFwk fwk, const char key[]){
+PetscErrorCode  PetscFwkRegisterComponent(PetscFwk fwk, const char key[]){
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fwk,PETSC_FWK_CLASSID,1);
@@ -706,7 +706,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterComponent(PetscFwk fwk, const 
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkRegisterComponentURL"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterComponentURL(PetscFwk fwk, const char key[], const char url[]){
+PetscErrorCode  PetscFwkRegisterComponentURL(PetscFwk fwk, const char key[], const char url[]){
   PetscErrorCode ierr;
   PetscInt id;
   PetscFunctionBegin;
@@ -721,7 +721,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterComponentURL(PetscFwk fwk, con
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkRegisterDependence"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterDependence(PetscFwk fwk, const char clientkey[], const char serverkey[])
+PetscErrorCode  PetscFwkRegisterDependence(PetscFwk fwk, const char clientkey[], const char serverkey[])
 {
   PetscInt clientid, serverid;
   PetscErrorCode ierr; 
@@ -744,7 +744,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkRegisterDependence(PetscFwk fwk, const
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkDestroy"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkDestroy(PetscFwk fwk)
+PetscErrorCode  PetscFwkDestroy(PetscFwk fwk)
 {
   PetscInt i;
   PetscErrorCode ierr;
@@ -761,7 +761,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkDestroy(PetscFwk fwk)
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkCreate"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkCreate(MPI_Comm comm, PetscFwk *framework){
+PetscErrorCode  PetscFwkCreate(MPI_Comm comm, PetscFwk *framework){
   PetscFwk fwk;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -785,7 +785,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkCreate(MPI_Comm comm, PetscFwk *framew
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkGetComponent"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFwkGetComponent(PetscFwk fwk, const char key[], PetscFwk *_component, PetscBool  *_found) {
+PetscErrorCode  PetscFwkGetComponent(PetscFwk fwk, const char key[], PetscFwk *_component, PetscBool  *_found) {
   PetscInt id;
   PetscBool  found;
   PetscErrorCode ierr;
@@ -840,7 +840,7 @@ static PetscMPIInt Petsc_Fwk_default_keyval = MPI_KEYVAL_INVALID;
 
 #undef  __FUNCT__
 #define __FUNCT__ "PETSC_FWK_DEFAULT_"
-PetscFwk PETSCSYS_DLLEXPORT PETSC_FWK_DEFAULT_(MPI_Comm comm) {
+PetscFwk  PETSC_FWK_DEFAULT_(MPI_Comm comm) {
   PetscErrorCode ierr;
   PetscBool      flg;
   PetscFwk       fwk;

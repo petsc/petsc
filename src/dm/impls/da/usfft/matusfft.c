@@ -170,7 +170,7 @@ PetscErrorCode MatDestroy_SeqUSFFT(Mat A)
    Level: intermediate
    
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat* A)
+PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat* A)
 {
   PetscErrorCode ierr;
   Mat_USFFT      *usfft;

@@ -18,8 +18,8 @@ char baseFile[2048]; //stores the base file name.
 double c_factor, r_factor;
 int debug;
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(const Obj<ALE::Mesh>&, PetscViewer);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT FieldView_Sieve(const Obj<ALE::Mesh>&, const std::string&, PetscViewer);
+extern PetscErrorCode  MeshView_Sieve(const Obj<ALE::Mesh>&, PetscViewer);
+extern PetscErrorCode  FieldView_Sieve(const Obj<ALE::Mesh>&, const std::string&, PetscViewer);
 PetscErrorCode CreateMesh(MPI_Comm, Obj<ALE::Mesh>&);
 PetscErrorCode OutputVTK(const Obj<ALE::Mesh>&, std::string, std::string, bool cell);
 PetscErrorCode OutputMesh(const Obj<ALE::Mesh>&);
@@ -113,13 +113,7 @@ PetscErrorCode OutputMesh(const Obj<ALE::Mesh>& mesh)
     ierr = PetscViewerFileSetName(viewer, "testMesh.lcon");CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
     ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-    ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, "testMesh"), PETSC_ERR_FILE_OPEN);
-        if (PetscExceptionValue(ierr)) {
-          /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
-        } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
-          ierr = 0;
-        } 
-       CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, "testMesh");CHKERRQ(ierr);
     ierr = MeshView_Sieve(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);

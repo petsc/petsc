@@ -41,7 +41,7 @@ PetscErrorCode SPARSEPACKqmdupd(PetscInt *xadj, PetscInt *adjncy, PetscInt *nlis
 
     /* Local variables */
     PetscInt inhd, irch, node, mark, j, inode, nabor, jstop, jstrt, il;
-    EXTERN PetscErrorCode SPARSEPACKqmdrch(PetscInt*, PetscInt *, PetscInt *, 
+    extern PetscErrorCode SPARSEPACKqmdrch(PetscInt*, PetscInt *, PetscInt *, 
 	    PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *),
 	     SPARSEPACKqmdmrg(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, 
 	    PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);

@@ -32,7 +32,7 @@
           VecCreateMPIWithArray(), VecCreateGhostWithArray()
 
 @*/ 
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreateMPI(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
+PetscErrorCode  VecCreateMPI(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
 {
   PetscErrorCode ierr;
 

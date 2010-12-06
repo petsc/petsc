@@ -11,7 +11,7 @@ PetscErrorCode MeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreateMatrix" 
 template<typename Mesh, typename Section>
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& section, const MatType mtype, Mat *J, int bs = -1)
+PetscErrorCode  MeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& section, const MatType mtype, Mat *J, int bs = -1)
 {
   const ALE::Obj<typename Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh, section->getName(), section);
   int            localSize  = order->getLocalSize();
@@ -63,7 +63,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const O
 #undef __FUNCT__
 #define __FUNCT__ "MeshCreateGlobalScatter"
 template<typename Mesh, typename Section>
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Obj<Section>& s, VecScatter *scatter)
+PetscErrorCode  MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Obj<Section>& s, VecScatter *scatter)
 {
   const ALE::Obj<typename Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, s->getName(), s);
   PetscErrorCode ierr;
@@ -76,7 +76,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m
 #undef __FUNCT__
 #define __FUNCT__ "MeshCreateGlobalScatter"
 template<typename Mesh, typename Section>
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const std::string& name, const typename Section::chart_type& points, const ALE::Obj<Section>& s, VecScatter *scatter)
+PetscErrorCode  MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const std::string& name, const typename Section::chart_type& points, const ALE::Obj<Section>& s, VecScatter *scatter)
 {
   const ALE::Obj<typename Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, name, points, s);
   PetscErrorCode ierr;
@@ -89,7 +89,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m
 #undef __FUNCT__
 #define __FUNCT__ "MeshCreateGlobalScatter"
 template<typename Mesh, typename Section>
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Obj<Section>& s, const ALE::Obj<typename Mesh::order_type>& globalOrder, VecScatter *scatter)
+PetscErrorCode  MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Obj<Section>& s, const ALE::Obj<typename Mesh::order_type>& globalOrder, VecScatter *scatter)
 {
   typedef typename Mesh::real_section_type::index_type index_type;
   PetscErrorCode ierr;

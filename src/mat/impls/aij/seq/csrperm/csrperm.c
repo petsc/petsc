@@ -53,7 +53,7 @@ extern PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJPERM_SeqAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJPERM_SeqAIJ(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+PetscErrorCode  MatConvert_SeqAIJPERM_SeqAIJ(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   /* This routine is only called to convert a MATAIJPERM to its base PETSc type, */
   /* so we will ignore 'MatType type'. */
@@ -588,7 +588,7 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqAIJPERM"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqAIJPERM(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
+PetscErrorCode  MatConvert_SeqAIJ_SeqAIJPERM(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;
@@ -659,7 +659,7 @@ EXTERN_C_END
 
 .seealso: MatCreate(), MatCreateMPIAIJPERM(), MatSetValues()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJPERM(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
+PetscErrorCode  MatCreateSeqAIJPERM(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
 {
   PetscErrorCode ierr;
 
@@ -674,7 +674,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJPERM(MPI_Comm comm,PetscInt m,P
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJPERM"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJPERM(Mat A)
+PetscErrorCode  MatCreate_SeqAIJPERM(Mat A)
 {
   PetscErrorCode ierr;
 

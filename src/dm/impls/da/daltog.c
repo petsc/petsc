@@ -6,7 +6,7 @@
 
 #include "private/daimpl.h"    /*I   "petscdm.h"   I*/
 
-PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobal_DA(DM da,Vec l,InsertMode mode,Vec g)
+PetscErrorCode  DMLocalToGlobal_DA(DM da,Vec l,InsertMode mode,Vec g)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;

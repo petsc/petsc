@@ -19,7 +19,7 @@ typedef struct {
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetReuseOrdering_Cholesky"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering_Cholesky(PC pc,PetscBool  flag)
+PetscErrorCode  PCFactorSetReuseOrdering_Cholesky(PC pc,PetscBool  flag)
 {
   PC_Cholesky *lu;
   
@@ -33,7 +33,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetReuseFill_Cholesky"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill_Cholesky(PC pc,PetscBool  flag)
+PetscErrorCode  PCFactorSetReuseFill_Cholesky(PC pc,PetscBool  flag)
 {
   PC_Cholesky *lu;
   
@@ -219,7 +219,7 @@ static PetscErrorCode PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetUseInPlace_Cholesky"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseInPlace_Cholesky(PC pc)
+PetscErrorCode  PCFactorSetUseInPlace_Cholesky(PC pc)
 {
   PC_Cholesky *dir;
 
@@ -254,7 +254,7 @@ EXTERN_C_END
 
 .seealso: PCFactorSetReuseFill()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering(PC pc,PetscBool  flag)
+PetscErrorCode  PCFactorSetReuseOrdering(PC pc,PetscBool  flag)
 {
   PetscErrorCode ierr;
 
@@ -297,7 +297,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Cholesky"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC pc)
+PetscErrorCode  PCCreate_Cholesky(PC pc)
 {
   PetscErrorCode ierr;
   PC_Cholesky    *dir;

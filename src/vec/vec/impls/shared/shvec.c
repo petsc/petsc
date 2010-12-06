@@ -6,7 +6,7 @@
 
 #if defined(PETSC_USE_SHARED_MEMORY) 
 
-EXTERN PetscErrorCode PetscSharedMalloc(MPI_Comm,PetscInt,PetscInt,void**);
+extern PetscErrorCode PetscSharedMalloc(MPI_Comm,PetscInt,PetscInt,void**);
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDuplicate_Shared"
@@ -50,7 +50,7 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_Shared"
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Shared(Vec vv)
+PetscErrorCode  VecCreate_Shared(Vec vv)
 {
   PetscErrorCode ierr;
   PetscScalar    *array;
@@ -177,13 +177,13 @@ PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void *
 #else
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec);
+extern PetscErrorCode  VecCreate_Seq(Vec);
 EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_Shared"
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Shared(Vec vv)
+PetscErrorCode  VecCreate_Shared(Vec vv)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -228,7 +228,7 @@ EXTERN_C_END
           VecCreateGhost(), VecCreateMPIWithArray(), VecCreateGhostWithArray()
 
 @*/ 
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreateShared(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
+PetscErrorCode  VecCreateShared(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
 {
   PetscErrorCode ierr;
 

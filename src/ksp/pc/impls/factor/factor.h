@@ -14,22 +14,22 @@ typedef struct {
   MatFactorType     factortype;
 } PC_Factor;
 
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatrix_Factor(PC,Mat*);
+extern PetscErrorCode  PCFactorGetMatrix_Factor(PC,Mat*);
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot_Factor(PC,PetscReal);
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftType_Factor(PC,MatFactorShiftType);
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftAmount_Factor(PC,PetscReal);
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetDropTolerance_Factor(PC,PetscReal,PetscReal,PetscInt);
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetFill_Factor(PC,PetscReal);
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_Factor(PC,const MatOrderingType);
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetLevels_Factor(PC,PetscInt);
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetAllowDiagonalFill_Factor(PC);
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks_Factor(PC,PetscBool );
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_Factor(PC,const MatSolverPackage);
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatSolverPackage_Factor(PC,const MatSolverPackage*);
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetColumnPivot_Factor(PC,PetscReal);
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC);
+extern PetscErrorCode  PCFactorSetZeroPivot_Factor(PC,PetscReal);
+extern PetscErrorCode  PCFactorSetShiftType_Factor(PC,MatFactorShiftType);
+extern PetscErrorCode  PCFactorSetShiftAmount_Factor(PC,PetscReal);
+extern PetscErrorCode  PCFactorSetDropTolerance_Factor(PC,PetscReal,PetscReal,PetscInt);
+extern PetscErrorCode  PCFactorSetFill_Factor(PC,PetscReal);
+extern PetscErrorCode  PCFactorSetMatOrderingType_Factor(PC,const MatOrderingType);
+extern PetscErrorCode  PCFactorSetLevels_Factor(PC,PetscInt);
+extern PetscErrorCode  PCFactorSetAllowDiagonalFill_Factor(PC);
+extern PetscErrorCode  PCFactorSetPivotInBlocks_Factor(PC,PetscBool );
+extern PetscErrorCode  PCFactorSetMatSolverPackage_Factor(PC,const MatSolverPackage);
+extern PetscErrorCode  PCFactorGetMatSolverPackage_Factor(PC,const MatSolverPackage*);
+extern PetscErrorCode  PCFactorSetColumnPivot_Factor(PC,PetscReal);
+extern PetscErrorCode  PCSetFromOptions_Factor(PC);
 extern PetscErrorCode PCView_Factor(PC,PetscViewer);
 EXTERN_C_END
 

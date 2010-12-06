@@ -160,7 +160,7 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer vie
    Level: advanced
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
+PetscErrorCode  MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
 {
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *)part->data;
 
@@ -183,7 +183,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningParmetisSetCoarseSequential(Mat
    Level: advanced
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningParmetisGetEdgeCut(MatPartitioning part, PetscInt *cut)
+PetscErrorCode  MatPartitioningParmetisGetEdgeCut(MatPartitioning part, PetscInt *cut)
 {
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *) part->data;
 
@@ -248,7 +248,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningCreate_Parmetis" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Parmetis(MatPartitioning part)
+PetscErrorCode  MatPartitioningCreate_Parmetis(MatPartitioning part)
 {
   PetscErrorCode ierr;
   MatPartitioning_Parmetis *parmetis;

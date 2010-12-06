@@ -3,7 +3,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMSetFromOptions_DA"
-PetscErrorCode PETSCDM_DLLEXPORT DMSetFromOptions_DA(DM da)
+PetscErrorCode  DMSetFromOptions_DA(DM da)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -52,30 +52,30 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetFromOptions_DA(DM da)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector_DA(DM,Vec*);
-extern PetscErrorCode PETSCDM_DLLEXPORT DMCreateLocalVector_DA(DM,Vec*);
-extern PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalBegin_DA(DM,Vec,InsertMode,Vec);
-extern PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd_DA(DM,Vec,InsertMode,Vec);
-extern PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalBegin_DA(DM,Vec,InsertMode,Vec);
-extern PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobalEnd_DA(DM,Vec,InsertMode,Vec);
-extern PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation_DA(DM,DM,Mat*,Vec*);
-extern PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring_DA(DM,ISColoringType,const MatType,ISColoring*);
-extern PetscErrorCode PETSCDM_DLLEXPORT DMGetElements_DA(DM,PetscInt*,PetscInt*,const PetscInt *[]);
-extern PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix_DA(DM,const MatType,Mat*);
-extern PetscErrorCode PETSCDM_DLLEXPORT DMRefine_DA(DM,MPI_Comm,DM*);
-extern PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen_DA(DM,MPI_Comm,DM*);
-extern PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy_DA(DM,PetscInt,DM[]);
-extern PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy_DA(DM,PetscInt,DM[]);
-extern PetscErrorCode PETSCDM_DLLEXPORT DMGetInjection_DA(DM,DM,VecScatter*);
-extern PetscErrorCode PETSCDM_DLLEXPORT DMGetAggregates_DA(DM,DM,Mat*);
-extern PetscErrorCode PETSCDM_DLLEXPORT DMView_DA(DM,PetscViewer);
-extern PetscErrorCode PETSCDM_DLLEXPORT DMSetUp_DA(DM);
-extern PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_DA(DM);
+extern PetscErrorCode  DMCreateGlobalVector_DA(DM,Vec*);
+extern PetscErrorCode  DMCreateLocalVector_DA(DM,Vec*);
+extern PetscErrorCode  DMGlobalToLocalBegin_DA(DM,Vec,InsertMode,Vec);
+extern PetscErrorCode  DMGlobalToLocalEnd_DA(DM,Vec,InsertMode,Vec);
+extern PetscErrorCode  DMLocalToGlobalBegin_DA(DM,Vec,InsertMode,Vec);
+extern PetscErrorCode  DMLocalToGlobalEnd_DA(DM,Vec,InsertMode,Vec);
+extern PetscErrorCode  DMGetInterpolation_DA(DM,DM,Mat*,Vec*);
+extern PetscErrorCode  DMGetColoring_DA(DM,ISColoringType,const MatType,ISColoring*);
+extern PetscErrorCode  DMGetElements_DA(DM,PetscInt*,PetscInt*,const PetscInt *[]);
+extern PetscErrorCode  DMGetMatrix_DA(DM,const MatType,Mat*);
+extern PetscErrorCode  DMRefine_DA(DM,MPI_Comm,DM*);
+extern PetscErrorCode  DMCoarsen_DA(DM,MPI_Comm,DM*);
+extern PetscErrorCode  DMRefineHierarchy_DA(DM,PetscInt,DM[]);
+extern PetscErrorCode  DMCoarsenHierarchy_DA(DM,PetscInt,DM[]);
+extern PetscErrorCode  DMGetInjection_DA(DM,DM,VecScatter*);
+extern PetscErrorCode  DMGetAggregates_DA(DM,DM,Mat*);
+extern PetscErrorCode  DMView_DA(DM,PetscViewer);
+extern PetscErrorCode  DMSetUp_DA(DM);
+extern PetscErrorCode  DMDestroy_DA(DM);
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreate_DA"
-PetscErrorCode PETSCDM_DLLEXPORT DMCreate_DA(DM da)
+PetscErrorCode  DMCreate_DA(DM da)
 {
   PetscErrorCode ierr;
   DM_DA          *dd;
@@ -163,7 +163,7 @@ EXTERN_C_END
 .keywords: DMDA, create
 .seealso:  DMDASetSizes(), DMDADuplicate()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDACreate(MPI_Comm comm, DM *da)
+PetscErrorCode  DMDACreate(MPI_Comm comm, DM *da)
 {
   PetscErrorCode ierr;
 

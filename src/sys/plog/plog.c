@@ -47,30 +47,30 @@ int        numObjects = 0, maxObjects = 100;
 int        numObjectsDestroyed = 0;
 
 /* Global counters */
-PetscLogDouble PETSCSYS_DLLEXPORT BaseTime        = 0.0;
-PetscLogDouble PETSCSYS_DLLEXPORT _TotalFlops     = 0.0; /* The number of flops */
-PetscLogDouble PETSCSYS_DLLEXPORT petsc_tmp_flops = 0.0; /* The incremental number of flops */
-PetscLogDouble PETSCSYS_DLLEXPORT send_ct         = 0.0; /* The number of sends */
-PetscLogDouble PETSCSYS_DLLEXPORT recv_ct         = 0.0; /* The number of receives */
-PetscLogDouble PETSCSYS_DLLEXPORT send_len        = 0.0; /* The total length of all sent messages */
-PetscLogDouble PETSCSYS_DLLEXPORT recv_len        = 0.0; /* The total length of all received messages */
-PetscLogDouble PETSCSYS_DLLEXPORT isend_ct        = 0.0; /* The number of immediate sends */
-PetscLogDouble PETSCSYS_DLLEXPORT irecv_ct        = 0.0; /* The number of immediate receives */
-PetscLogDouble PETSCSYS_DLLEXPORT isend_len       = 0.0; /* The total length of all immediate send messages */
-PetscLogDouble PETSCSYS_DLLEXPORT irecv_len       = 0.0; /* The total length of all immediate receive messages */
-PetscLogDouble PETSCSYS_DLLEXPORT wait_ct         = 0.0; /* The number of waits */
-PetscLogDouble PETSCSYS_DLLEXPORT wait_any_ct     = 0.0; /* The number of anywaits */
-PetscLogDouble PETSCSYS_DLLEXPORT wait_all_ct     = 0.0; /* The number of waitalls */
-PetscLogDouble PETSCSYS_DLLEXPORT sum_of_waits_ct = 0.0; /* The total number of waits */
-PetscLogDouble PETSCSYS_DLLEXPORT allreduce_ct    = 0.0; /* The number of reductions */
-PetscLogDouble PETSCSYS_DLLEXPORT gather_ct       = 0.0; /* The number of gathers and gathervs */
-PetscLogDouble PETSCSYS_DLLEXPORT scatter_ct      = 0.0; /* The number of scatters and scattervs */
+PetscLogDouble  BaseTime        = 0.0;
+PetscLogDouble  _TotalFlops     = 0.0; /* The number of flops */
+PetscLogDouble  petsc_tmp_flops = 0.0; /* The incremental number of flops */
+PetscLogDouble  send_ct         = 0.0; /* The number of sends */
+PetscLogDouble  recv_ct         = 0.0; /* The number of receives */
+PetscLogDouble  send_len        = 0.0; /* The total length of all sent messages */
+PetscLogDouble  recv_len        = 0.0; /* The total length of all received messages */
+PetscLogDouble  isend_ct        = 0.0; /* The number of immediate sends */
+PetscLogDouble  irecv_ct        = 0.0; /* The number of immediate receives */
+PetscLogDouble  isend_len       = 0.0; /* The total length of all immediate send messages */
+PetscLogDouble  irecv_len       = 0.0; /* The total length of all immediate receive messages */
+PetscLogDouble  wait_ct         = 0.0; /* The number of waits */
+PetscLogDouble  wait_any_ct     = 0.0; /* The number of anywaits */
+PetscLogDouble  wait_all_ct     = 0.0; /* The number of waitalls */
+PetscLogDouble  sum_of_waits_ct = 0.0; /* The total number of waits */
+PetscLogDouble  allreduce_ct    = 0.0; /* The number of reductions */
+PetscLogDouble  gather_ct       = 0.0; /* The number of gathers and gathervs */
+PetscLogDouble  scatter_ct      = 0.0; /* The number of scatters and scattervs */
 
 /* Logging functions */
-PetscErrorCode PETSCSYS_DLLEXPORT (*_PetscLogPHC)(PetscObject) = PETSC_NULL;
-PetscErrorCode PETSCSYS_DLLEXPORT (*_PetscLogPHD)(PetscObject) = PETSC_NULL;
-PetscErrorCode PETSCSYS_DLLEXPORT (*_PetscLogPLB)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
-PetscErrorCode PETSCSYS_DLLEXPORT (*_PetscLogPLE)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
+PetscErrorCode  (*_PetscLogPHC)(PetscObject) = PETSC_NULL;
+PetscErrorCode  (*_PetscLogPHD)(PetscObject) = PETSC_NULL;
+PetscErrorCode  (*_PetscLogPLB)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
+PetscErrorCode  (*_PetscLogPLE)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
 
 /* Tracing event logging variables */
 FILE          *tracefile       = PETSC_NULL;
@@ -97,7 +97,7 @@ PetscBool  PetscLogBegin_PrivateCalled = PETSC_FALSE;
 .keywords: log, destroy
 .seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogPrintSummary(), PetscLogStagePush(), PlogStagePop()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogDestroy(void)
+PetscErrorCode  PetscLogDestroy(void)
 {
   StageLog       stageLog;
   PetscErrorCode ierr;
@@ -170,7 +170,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogDestroy(void)
 
 .seealso: PetscLogDump(), PetscLogBegin(), PetscLogAllBegin(), PetscLogTraceBegin()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject),
+PetscErrorCode  PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject),
             PetscErrorCode (*e)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject))
 {
   PetscFunctionBegin;
@@ -190,7 +190,7 @@ int PAPIEventSet = PAPI_NULL;
 /*------------------------------------------- Initialization Functions ----------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogBegin_Private"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogBegin_Private(void)
+PetscErrorCode  PetscLogBegin_Private(void)
 {
   int               stage;
   PetscBool         opt;
@@ -285,7 +285,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogBegin_Private(void)
 .keywords: log, begin
 .seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogPrintSummary(), PetscLogTraceBegin()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogBegin(void)
+PetscErrorCode  PetscLogBegin(void)
 {
   PetscErrorCode ierr;
 
@@ -325,7 +325,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogBegin(void)
 .keywords: log, all, begin
 .seealso: PetscLogDump(), PetscLogBegin(), PetscLogTraceBegin()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogAllBegin(void)
+PetscErrorCode  PetscLogAllBegin(void)
 {
   PetscErrorCode ierr;
 
@@ -361,7 +361,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogAllBegin(void)
 
 .seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogPrintSummary(), PetscLogBegin()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogTraceBegin(FILE *file)
+PetscErrorCode  PetscLogTraceBegin(FILE *file)
 {
   PetscErrorCode ierr;
 
@@ -393,7 +393,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogTraceBegin(FILE *file)
 .keywords: log, stage, register
 .seealso: PetscLogStagePush(), PetscLogStagePop()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogActions(PetscBool  flag)
+PetscErrorCode  PetscLogActions(PetscBool  flag)
 {
   PetscFunctionBegin;
   logActions = flag;
@@ -421,7 +421,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogActions(PetscBool  flag)
 .keywords: log, stage, register
 .seealso: PetscLogStagePush(), PetscLogStagePop()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjects(PetscBool  flag)
+PetscErrorCode  PetscLogObjects(PetscBool  flag)
 {
   PetscFunctionBegin;
   logObjects = flag;
@@ -447,7 +447,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjects(PetscBool  flag)
 .keywords: log, stage, register
 .seealso: PetscLogStagePush(), PetscLogStagePop()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageRegister(const char sname[],PetscLogStage *stage)
+PetscErrorCode  PetscLogStageRegister(const char sname[],PetscLogStage *stage)
 {
   StageLog       stageLog;
   PetscLogEvent  event;
@@ -498,7 +498,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageRegister(const char sname[],Petsc
 .keywords: log, push, stage
 .seealso: PetscLogStagePop(), PetscLogStageRegister(), PetscBarrier()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStagePush(PetscLogStage stage)
+PetscErrorCode  PetscLogStagePush(PetscLogStage stage)
 {
   StageLog       stageLog;
   PetscErrorCode ierr;
@@ -539,7 +539,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStagePush(PetscLogStage stage)
 .keywords: log, pop, stage
 .seealso: PetscLogStagePush(), PetscLogStageRegister(), PetscBarrier()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStagePop(void)
+PetscErrorCode  PetscLogStagePop(void)
 {
   StageLog       stageLog;
   PetscErrorCode ierr;
@@ -565,7 +565,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStagePop(void)
 
 .seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogEventBegin(), PetscLogEventEnd(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageSetActive(PetscLogStage stage, PetscBool  isActive)
+PetscErrorCode  PetscLogStageSetActive(PetscLogStage stage, PetscBool  isActive)
 {
   StageLog       stageLog;
   PetscErrorCode ierr;
@@ -593,7 +593,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageSetActive(PetscLogStage stage, Pe
 
 .seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogEventBegin(), PetscLogEventEnd(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageGetActive(PetscLogStage stage, PetscBool  *isActive)
+PetscErrorCode  PetscLogStageGetActive(PetscLogStage stage, PetscBool  *isActive)
 {
   StageLog       stageLog;
   PetscErrorCode ierr;
@@ -619,7 +619,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageGetActive(PetscLogStage stage, Pe
 
 .seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogPrintSummary()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageSetVisible(PetscLogStage stage, PetscBool  isVisible)
+PetscErrorCode  PetscLogStageSetVisible(PetscLogStage stage, PetscBool  isVisible)
 {
   StageLog       stageLog;
   PetscErrorCode ierr;
@@ -647,7 +647,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageSetVisible(PetscLogStage stage, P
 
 .seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogPrintSummary()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageGetVisible(PetscLogStage stage, PetscBool  *isVisible)
+PetscErrorCode  PetscLogStageGetVisible(PetscLogStage stage, PetscBool  *isVisible)
 {
   StageLog       stageLog;
   PetscErrorCode ierr;
@@ -675,7 +675,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageGetVisible(PetscLogStage stage, P
 
 .seealso: PetscLogStagePush(), PetscLogStagePop(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageGetId(const char name[], PetscLogStage *stage)
+PetscErrorCode  PetscLogStageGetId(const char name[], PetscLogStage *stage)
 {
   StageLog       stageLog;
   PetscErrorCode ierr;
@@ -742,7 +742,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogStageGetId(const char name[], PetscLog
           PetscLogEventMPEActivate(), PetscLogEventMPEDeactivate(),
           PetscLogEventActivate(), PetscLogEventDeactivate(), PetscClassIdRegister()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventRegister(const char name[],PetscClassId classid,PetscLogEvent *event)
+PetscErrorCode  PetscLogEventRegister(const char name[],PetscClassId classid,PetscLogEvent *event)
 {
   StageLog       stageLog;
   int            stage;
@@ -786,7 +786,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventRegister(const char name[],PetscC
 .keywords: log, event, activate
 .seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventDeactivate()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventActivate(PetscLogEvent event)
+PetscErrorCode  PetscLogEventActivate(PetscLogEvent event)
 {
   StageLog       stageLog;
   int            stage;
@@ -826,7 +826,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventActivate(PetscLogEvent event)
 .keywords: log, event, deactivate
 .seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventActivate()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventDeactivate(PetscLogEvent event)
+PetscErrorCode  PetscLogEventDeactivate(PetscLogEvent event)
 {
   StageLog       stageLog;
   int            stage;
@@ -855,7 +855,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventDeactivate(PetscLogEvent event)
 .keywords: log, event, activate
 .seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventActivate(),PlogEventDeactivate()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool  isActive)
+PetscErrorCode  PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool  isActive)
 {
   StageLog       stageLog;
   int            stage;
@@ -888,7 +888,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventSetActiveAll(PetscLogEvent event,
 .keywords: log, event, activate, class
 .seealso: PetscInfoActivate(),PetscInfo(),PetscInfoAllow(),PetscLogEventDeactivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventActivateClass(PetscClassId classid)
+PetscErrorCode  PetscLogEventActivateClass(PetscClassId classid)
 {
   StageLog       stageLog;
   int            stage;
@@ -916,7 +916,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventActivateClass(PetscClassId classi
 .keywords: log, event, deactivate, class
 .seealso: PetscInfoActivate(),PetscInfo(),PetscInfoAllow(),PetscLogEventActivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventDeactivateClass(PetscClassId classid)
+PetscErrorCode  PetscLogEventDeactivateClass(PetscClassId classid)
 {
   StageLog       stageLog;
   int            stage;
@@ -1112,7 +1112,7 @@ M*/
 
 .seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogStageGetId()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogEventGetId(const char name[], PetscLogEvent *event)
+PetscErrorCode  PetscLogEventGetId(const char name[], PetscLogEvent *event)
 {
   StageLog       stageLog;
   PetscErrorCode ierr;
@@ -1160,7 +1160,7 @@ $    Log.<rank>
 .keywords: log, dump
 .seealso: PetscLogBegin(), PetscLogAllBegin(), PetscLogPrintSummary()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogDump(const char sname[])
+PetscErrorCode  PetscLogDump(const char sname[])
 {
   StageLog       stageLog;
   EventPerfInfo *eventInfo;
@@ -1264,7 +1264,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogDump(const char sname[])
 .keywords: log, dump, print
 .seealso: PetscLogBegin(), PetscLogDump()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char filename[])
+PetscErrorCode  PetscLogPrintSummary(MPI_Comm comm, const char filename[])
 {
   FILE           *fd = PETSC_STDOUT;
   PetscLogDouble zero = 0.0;
@@ -1767,7 +1767,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char
 .keywords: log, dump, print
 .seealso: PetscLogBegin(), PetscLogDump(), PetscLogPrintSummary()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogPrintDetailed(MPI_Comm comm, const char filename[])
+PetscErrorCode  PetscLogPrintDetailed(MPI_Comm comm, const char filename[])
 {
   FILE          *fd = PETSC_STDOUT;
   StageLog       stageLog;
@@ -1909,7 +1909,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogPrintDetailed(MPI_Comm comm, const cha
 
 .seealso: PetscGetTime(), PetscLogFlops()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscGetFlops(PetscLogDouble *flops)
+PetscErrorCode  PetscGetFlops(PetscLogDouble *flops)
 {
   PetscFunctionBegin;
   *flops = _TotalFlops;
@@ -1918,7 +1918,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscGetFlops(PetscLogDouble *flops)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogObjectState"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjectState(PetscObject obj, const char format[], ...)
+PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
 {
   PetscErrorCode ierr;
   size_t         fullLength;
@@ -2074,7 +2074,7 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogObjectState"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogObjectState(PetscObject obj, const char format[], ...)
+PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -2104,7 +2104,7 @@ PetscClassId PETSC_OBJECT_CLASSID  = 0;
 .keywords: log, class, register
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscClassIdRegister(const char name[],PetscClassId *oclass )
+PetscErrorCode  PetscClassIdRegister(const char name[],PetscClassId *oclass )
 {
 #if defined(PETSC_USE_LOG)
   StageLog       stageLog;
@@ -2138,7 +2138,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscClassIdRegister(const char name[],PetscCl
   Level: intermediate 
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscLogPrintSummaryPython(PetscViewer viewer)
+PetscErrorCode  PetscLogPrintSummaryPython(PetscViewer viewer)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
   FILE              *fd = ascii->fd; 
@@ -2166,7 +2166,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscLogPrintSummaryPython(PetscViewer viewer)
   MPI_Comm          comm;
 
   /* remove these two lines! */
-  PetscLogDouble    PETSCSYS_DLLEXPORT BaseTime = 0.0;
+  PetscLogDouble     BaseTime = 0.0;
   int               numObjects = 0;
 
   PetscFunctionBegin;

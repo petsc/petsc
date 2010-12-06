@@ -20,7 +20,7 @@
 
 .keywords: KSP, Richardson, set, scale
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetScale(KSP ksp,PetscReal scale)
+PetscErrorCode  KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 {
   PetscErrorCode ierr;
 
@@ -52,7 +52,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 
 .keywords: KSP, Richardson, set, scale
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetSelfScale(KSP ksp,PetscBool  scale)
+PetscErrorCode  KSPRichardsonSetSelfScale(KSP ksp,PetscBool  scale)
 {
   PetscErrorCode ierr;
 

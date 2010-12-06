@@ -39,7 +39,7 @@ $        VecDestroy(vout);
 .seealso VecScatterCreate(), VecScatterCreateToZero(), VecScatterBegin(), VecScatterEnd()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
+PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
 {
 
   PetscErrorCode ierr;
@@ -111,7 +111,7 @@ $        VecDestroy(vout);
   automatically (unless you pass PETSC_NULL in for that argument if you do not need it).
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
+PetscErrorCode  VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
 {
 
   PetscErrorCode ierr;

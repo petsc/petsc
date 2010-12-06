@@ -90,7 +90,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
 .seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatSchurComplementUpdate(), MatCreateTranspose()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT MatCreateSchurComplement(Mat A,Mat Ap,Mat B,Mat C,Mat D,Mat *N)
+PetscErrorCode  MatCreateSchurComplement(Mat A,Mat Ap,Mat B,Mat C,Mat D,Mat *N)
 {
   PetscErrorCode       ierr;
   PetscInt             m,n;
@@ -177,7 +177,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatCreateSchurComplement(Mat A,Mat Ap,Mat B,Ma
 .seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatCreateSchurComplement()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT MatSchurComplementGetKSP(Mat A,KSP *ksp)
+PetscErrorCode  MatSchurComplementGetKSP(Mat A,KSP *ksp)
 {
   Mat_SchurComplement  *Na;
 
@@ -214,7 +214,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSchurComplementGetKSP(Mat A,KSP *ksp)
 .seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatCreateSchurComplement()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT MatSchurComplementUpdate(Mat N,Mat A,Mat Ap,Mat B,Mat C,Mat D,MatStructure str)
+PetscErrorCode  MatSchurComplementUpdate(Mat N,Mat A,Mat Ap,Mat B,Mat C,Mat D,MatStructure str)
 {
   PetscErrorCode       ierr;
   Mat_SchurComplement  *Na = (Mat_SchurComplement*)N->data;  
@@ -281,7 +281,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSchurComplementUpdate(Mat N,Mat A,Mat Ap,Ma
 
 .seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatCreateSchurComplement(), MatSchurComplementUpdate()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT MatSchurComplementGetSubmatrices(Mat N,Mat *A,Mat *Ap,Mat *B,Mat *C,Mat *D)
+PetscErrorCode  MatSchurComplementGetSubmatrices(Mat N,Mat *A,Mat *Ap,Mat *B,Mat *C,Mat *D)
 {
   Mat_SchurComplement *Na = (Mat_SchurComplement *) N->data;  
   PetscErrorCode       ierr;
@@ -338,7 +338,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSchurComplementGetSubmatrices(Mat N,Mat *A,
 
 .seealso: MatGetSubMatrix(), PCFIELDSPLIT
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT MatGetSchurComplement(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *newmat,MatReuse preuse,Mat *newpmat)
+PetscErrorCode  MatGetSchurComplement(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *newmat,MatReuse preuse,Mat *newpmat)
 {
   PetscErrorCode ierr,(*f)(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatReuse,Mat*);
 

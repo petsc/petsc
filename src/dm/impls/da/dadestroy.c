@@ -7,8 +7,8 @@
 #include "private/daimpl.h"    /*I   "petscdm.h"   I*/
 
 /* Logging support */
-PetscClassId PETSCDM_DLLEXPORT DM_CLASSID;
-PetscClassId PETSCDM_DLLEXPORT ADDA_CLASSID;
+PetscClassId  DM_CLASSID;
+PetscClassId  ADDA_CLASSID;
 PetscLogEvent  DMDA_GlobalToLocal, DMDA_LocalToGlobal, DMDA_LocalADFunction;
 
 #undef __FUNCT__  
@@ -17,7 +17,7 @@ PetscLogEvent  DMDA_GlobalToLocal, DMDA_LocalToGlobal, DMDA_LocalADFunction;
    DMDestroy_Private - handles the work vectors created by DMGetGlobalVector() and DMGetLocalVector()
 
 */
-PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_Private(DM dm,PetscBool  *done)
+PetscErrorCode  DMDestroy_Private(DM dm,PetscBool  *done)
 {
   PetscErrorCode ierr;
   PetscErrorCode i,cnt = 0;
@@ -56,7 +56,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_Private(DM dm,PetscBool  *done)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDestroy_DA"
-PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_DA(DM da)
+PetscErrorCode  DMDestroy_DA(DM da)
 {
   PetscErrorCode ierr;
   PetscErrorCode i;

@@ -139,7 +139,7 @@ EXTERN_C_END
 
 .seealso: PCPROMETHEUS
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSetCoordinates(PC pc,PetscInt dim,PetscReal *coords)
+PetscErrorCode  PCSetCoordinates(PC pc,PetscInt dim,PetscReal *coords)
 {
   PetscErrorCode ierr;
 
@@ -167,7 +167,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetCoordinates(PC pc,PetscInt dim,PetscReal 
 
 .seealso: PCPROMETHEUS
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSASetVectors(PC pc,PetscInt nvects,PetscReal *vects)
+PetscErrorCode  PCSASetVectors(PC pc,PetscInt nvects,PetscReal *vects)
 {
   PetscErrorCode ierr;
 

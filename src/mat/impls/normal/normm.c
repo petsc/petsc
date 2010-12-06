@@ -230,7 +230,7 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
           object performs the matrix-vector product by first multiplying by
           A and then A'
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNormal(Mat A,Mat *N)
+PetscErrorCode  MatCreateNormal(Mat A,Mat *N)
 {
   PetscErrorCode ierr;
   PetscInt       m,n;

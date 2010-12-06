@@ -13,8 +13,8 @@
 #include <math.h>
 PETSC_EXTERN_CXX_BEGIN
 
-extern  MPI_Datatype PETSCSYS_DLLEXPORT MPIU_2SCALAR;
-extern  MPI_Datatype PETSCSYS_DLLEXPORT MPIU_2INT;
+extern  MPI_Datatype  MPIU_2SCALAR;
+extern  MPI_Datatype  MPIU_2INT;
 /*
 
      Defines operations that are different for complex and real numbers;
@@ -208,8 +208,8 @@ typedef double complex PetscScalar;
 #endif
 
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-extern  MPI_Datatype PETSCSYS_DLLEXPORT MPI_C_DOUBLE_COMPLEX;
-extern  MPI_Datatype PETSCSYS_DLLEXPORT MPI_C_COMPLEX;
+extern  MPI_Datatype  MPI_C_DOUBLE_COMPLEX;
+extern  MPI_Datatype  MPI_C_COMPLEX;
 #endif
 
 #if defined(PETSC_USE_SCALAR_SINGLE)
@@ -232,8 +232,6 @@ extern  MPI_Datatype PETSCSYS_DLLEXPORT MPI_C_COMPLEX;
 #    define MPIU_SCALAR           MPI_LONG_DOUBLE
 #  elif defined(PETSC_USE_SCALAR_INT)
 #    define MPIU_SCALAR           MPI_INT
-#  elif defined(PETSC_USE_SCALAR_QD_DD)
-#    define MPIU_SCALAR           MPIU_QD_DD
 #  else
 #    define MPIU_SCALAR           MPI_DOUBLE
 #  endif
@@ -243,8 +241,6 @@ extern  MPI_Datatype PETSCSYS_DLLEXPORT MPI_C_COMPLEX;
 #    define MPIU_MATSCALAR        MPI_LONG_DOUBLE
 #  elif defined(PETSC_USE_SCALAR_INT)
 #    define MPIU_MATSCALAR        MPI_INT
-#  elif defined(PETSC_USE_SCALAR_QD_DD)
-#    define MPIU_MATSCALAR        MPIU_QD_DD
 #  else
 #    define MPIU_MATSCALAR        MPI_DOUBLE
 #  endif
@@ -265,9 +261,6 @@ extern  MPI_Datatype PETSCSYS_DLLEXPORT MPI_C_COMPLEX;
   typedef long double PetscScalar;
 #  elif defined(PETSC_USE_SCALAR_INT)
   typedef int PetscScalar;
-#  elif defined(PETSC_USE_SCALAR_QD_DD)
-#  include "qd/dd_real.h"
-  typedef dd_real PetscScalar;
 #  else
   typedef double PetscScalar;
 #  endif
@@ -279,14 +272,8 @@ extern  MPI_Datatype PETSCSYS_DLLEXPORT MPI_C_COMPLEX;
 #  define MPIU_REAL   MPI_LONG_DOUBLE
 #elif defined(PETSC_USE_SCALAR_INT)
 #  define MPIU_REAL   MPI_INT
-#elif defined(PETSC_USE_SCALAR_QD_DD)
-#  define MPIU_REAL   MPIU_QD_DD
 #else
 #  define MPIU_REAL   MPI_DOUBLE
-#endif
-
-#if defined(PETSC_USE_SCALAR_QD_DD)
-extern  MPI_Datatype PETSCSYS_DLLEXPORT MPIU_QD_DD;
 #endif
 
 #define PetscSign(a) (((a) >= 0) ? ((a) == 0 ? 0 : 1) : -1)
@@ -312,8 +299,6 @@ typedef PetscScalar MatScalar;
   typedef long double PetscReal;
 #elif defined(PETSC_USE_SCALAR_INT)
   typedef int PetscReal;
-#elif defined(PETSC_USE_SCALAR_QD_DD)
-  typedef dd_real PetscReal;
 #else 
   typedef double PetscReal;
 #endif
@@ -333,10 +318,10 @@ typedef PetscReal MatReal;
    Certain objects may be created using either single or double precision.
    This is currently not used.
 */
-typedef enum { PETSC_SCALAR_DOUBLE,PETSC_SCALAR_SINGLE, PETSC_SCALAR_LONG_DOUBLE, PETSC_SCALAR_QD_DD } PetscScalarPrecision;
+typedef enum { PETSC_SCALAR_DOUBLE,PETSC_SCALAR_SINGLE, PETSC_SCALAR_LONG_DOUBLE } PetscScalarPrecision;
 
 /* PETSC_i is the imaginary number, i */
-extern  PetscScalar PETSCSYS_DLLEXPORT PETSC_i;
+extern  PetscScalar  PETSC_i;
 
 /*MC
    PetscMin - Returns minimum of two numbers
@@ -460,12 +445,6 @@ M*/
 #  define PETSC_MACHINE_EPSILON         1
 #  define PETSC_SQRT_MACHINE_EPSILON    1
 #  define PETSC_SMALL                   0
-#elif defined(PETSC_USE_SCALAR_QD_DD)
-#  define PETSC_MAX                     1.e300
-#  define PETSC_MIN                    -1.e300 
-#  define PETSC_MACHINE_EPSILON         1.e-30
-#  define PETSC_SQRT_MACHINE_EPSILON    1.e-15
-#  define PETSC_SMALL                   1.e-25
 #else
 #  define PETSC_MAX                     1.e300
 #  define PETSC_MIN                    -1.e300
@@ -476,9 +455,9 @@ M*/
 
 #if defined PETSC_HAVE_ADIC
 /* Use MPI_Allreduce when ADIC is not available. */
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGlobalMax(MPI_Comm, const PetscReal*,PetscReal*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGlobalMin(MPI_Comm, const PetscReal*,PetscReal*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGlobalSum(MPI_Comm, const PetscScalar*,PetscScalar*);
+extern PetscErrorCode  PetscGlobalMax(MPI_Comm, const PetscReal*,PetscReal*);
+extern PetscErrorCode  PetscGlobalMin(MPI_Comm, const PetscReal*,PetscReal*);
+extern PetscErrorCode  PetscGlobalSum(MPI_Comm, const PetscScalar*,PetscScalar*);
 #endif
 
 /*MC

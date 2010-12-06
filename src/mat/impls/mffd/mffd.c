@@ -6,7 +6,7 @@
 PetscFList MatMFFDList        = 0;
 PetscBool  MatMFFDRegisterAllCalled = PETSC_FALSE;
 
-PetscClassId PETSCMAT_DLLEXPORT MATMFFD_CLASSID;
+PetscClassId  MATMFFD_CLASSID;
 PetscLogEvent  MATMFFD_Mult;
 
 static PetscBool  MatMFFDPackageInitialized = PETSC_FALSE;
@@ -21,7 +21,7 @@ static PetscBool  MatMFFDPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDFinalizePackage(void)
+PetscErrorCode  MatMFFDFinalizePackage(void)
 {
   PetscFunctionBegin;
   MatMFFDPackageInitialized = PETSC_FALSE;
@@ -45,7 +45,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDFinalizePackage(void)
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDInitializePackage(const char path[])
+PetscErrorCode  MatMFFDInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
@@ -105,7 +105,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDInitializePackage(const char path[])
 
 .seealso: MatCreateSNESMF(), MatMFFDRegisterDynamic(), MatMFFDSetFunction()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat mat,const MatMFFDType ftype)
+PetscErrorCode  MatMFFDSetType(Mat mat,const MatMFFDType ftype)
 {
   PetscErrorCode ierr,(*r)(MatMFFD);
   MatMFFD        ctx = (MatMFFD)mat->data;
@@ -138,7 +138,7 @@ typedef PetscErrorCode (*FCN1)(void*,Vec); /* force argument to next function to
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDSetFunctioniBase_MFFD"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioniBase_MFFD(Mat mat,FCN1 func)
+PetscErrorCode  MatMFFDSetFunctioniBase_MFFD(Mat mat,FCN1 func)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
 
@@ -152,7 +152,7 @@ typedef PetscErrorCode (*FCN2)(void*,PetscInt,Vec,PetscScalar*); /* force argume
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDSetFunctioni_MFFD"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioni_MFFD(Mat mat,FCN2 funci)
+PetscErrorCode  MatMFFDSetFunctioni_MFFD(Mat mat,FCN2 funci)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
 
@@ -165,7 +165,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDRegister"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(MatMFFD))
+PetscErrorCode  MatMFFDRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(MatMFFD))
 {
   PetscErrorCode ierr;
   char           fullname[PETSC_MAX_PATH_LEN];
@@ -191,7 +191,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegister(const char sname[],const char 
 
 .seealso: MatMFFDRegisterDynamic), MatMFFDRegisterAll()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegisterDestroy(void)
+PetscErrorCode  MatMFFDRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -505,7 +505,7 @@ PetscErrorCode MatScale_MFFD(Mat Y,PetscScalar a)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDSetBase_MFFD"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
+PetscErrorCode  MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
 {
   PetscErrorCode ierr;
   MatMFFD        ctx = (MatMFFD)J->data;
@@ -532,7 +532,7 @@ typedef PetscErrorCode (*FCN3)(void*,Vec,Vec,PetscScalar*); /* force argument to
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDSetCheckh_MFFD"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetCheckh_MFFD(Mat J,FCN3 fun,void*ectx)
+PetscErrorCode  MatMFFDSetCheckh_MFFD(Mat J,FCN3 fun,void*ectx)
 {
   MatMFFD ctx = (MatMFFD)J->data;
 
@@ -565,7 +565,7 @@ EXTERN_C_END
 
 .seealso: MatMFFDSetFromOptions(), MatCreateSNESMF()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
+PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
 
 {
   MatMFFD        mfctx = mat ? (MatMFFD)mat->data : PETSC_NULL;
@@ -599,7 +599,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetOptionsPrefix(Mat mat,const char pre
 
 .seealso: MatCreateSNESMF(),MatMFFDSetHHistory(), MatMFFDResetHHistory()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFromOptions(Mat mat)
+PetscErrorCode  MatMFFDSetFromOptions(Mat mat)
 {
   MatMFFD        mfctx = (MatMFFD)mat->data;
   PetscErrorCode ierr;
@@ -640,7 +640,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MFFD"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MFFD(Mat A)
+PetscErrorCode  MatCreate_MFFD(Mat A)
 {
   MatMFFD         mfctx;
   PetscErrorCode  ierr;
@@ -767,7 +767,7 @@ EXTERN_C_END
           MatMFFDGetH(), MatMFFDRegisterDynamic), MatMFFDComputeJacobian()
  
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *J)
+PetscErrorCode  MatCreateMFFD(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *J)
 {
   PetscErrorCode ierr;
 
@@ -799,7 +799,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD(MPI_Comm comm,PetscInt m,PetscIn
 
 .seealso: MatCreateSNESMF(),MatMFFDSetHHistory(), MatCreateMFFD(), MATMFFD, MatMFFDResetHHistory()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDGetH(Mat mat,PetscScalar *h)
+PetscErrorCode  MatMFFDGetH(Mat mat,PetscScalar *h)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
 
@@ -834,7 +834,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDGetH(Mat mat,PetscScalar *h)
 .seealso: MatCreateSNESMF(),MatMFFDGetH(), MatCreateMFFD(), MATMFFD,
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), SNESetFunction()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunction(Mat mat,PetscErrorCode (*func)(void*,Vec,Vec),void *funcctx)
+PetscErrorCode  MatMFFDSetFunction(Mat mat,PetscErrorCode (*func)(void*,Vec,Vec),void *funcctx)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
 
@@ -867,7 +867,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunction(Mat mat,PetscErrorCode (*fu
 .seealso: MatCreateSNESMF(),MatMFFDGetH(), MatMFFDSetHHistory(), MatMFFDResetHHistory(), SNESetFunction()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioni(Mat mat,PetscErrorCode (*funci)(void*,PetscInt,Vec,PetscScalar*))
+PetscErrorCode  MatMFFDSetFunctioni(Mat mat,PetscErrorCode (*funci)(void*,PetscInt,Vec,PetscScalar*))
 {
   PetscErrorCode ierr;
 
@@ -901,7 +901,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioni(Mat mat,PetscErrorCode (*f
 .seealso: MatCreateSNESMF(),MatMFFDGetH(), MatCreateMFFD(), MATMFFD
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), SNESetFunction()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioniBase(Mat mat,PetscErrorCode (*func)(void*,Vec))
+PetscErrorCode  MatMFFDSetFunctioniBase(Mat mat,PetscErrorCode (*func)(void*,Vec))
 {
   PetscErrorCode ierr;
 
@@ -934,7 +934,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioniBase(Mat mat,PetscErrorCode
 .seealso: MatCreateSNESMF(),MatMFFDGetH(),
           MatMFFDSetHHistory(), MatMFFDResetHHistory()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetPeriod(Mat mat,PetscInt period)
+PetscErrorCode  MatMFFDSetPeriod(Mat mat,PetscInt period)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
 
@@ -975,7 +975,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetPeriod(Mat mat,PetscInt period)
 .seealso: MatCreateSNESMF(),MatMFFDGetH(), MatCreateMFFD(), MATMFFD
           MatMFFDSetHHistory(), MatMFFDResetHHistory()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctionError(Mat mat,PetscReal error)
+PetscErrorCode  MatMFFDSetFunctionError(Mat mat,PetscReal error)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
 
@@ -1006,7 +1006,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctionError(Mat mat,PetscReal erro
 .seealso: MatNullSpaceCreate(), MatMFFDGetH(), MatCreateSNESMF(), MatCreateMFFD(), MATMFFD
           MatMFFDSetHHistory(), MatMFFDResetHHistory()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDAddNullSpace(Mat J,MatNullSpace nullsp)
+PetscErrorCode  MatMFFDAddNullSpace(Mat J,MatNullSpace nullsp)
 {
   PetscErrorCode ierr;
   MatMFFD      ctx = (MatMFFD)J->data;
@@ -1044,7 +1044,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDAddNullSpace(Mat J,MatNullSpace nullsp)
           MatMFFDResetHHistory(), MatMFFDSetFunctionError()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetHHistory(Mat J,PetscScalar history[],PetscInt nhistory)
+PetscErrorCode  MatMFFDSetHHistory(Mat J,PetscScalar history[],PetscInt nhistory)
 {
   MatMFFD ctx = (MatMFFD)J->data;
 
@@ -1077,7 +1077,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetHHistory(Mat J,PetscScalar history[]
           MatMFFDSetHHistory(), MatMFFDSetFunctionError()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDResetHHistory(Mat J)
+PetscErrorCode  MatMFFDResetHHistory(Mat J)
 {
   MatMFFD ctx = (MatMFFD)J->data;
 
@@ -1108,7 +1108,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDResetHHistory(Mat J)
     Level: advanced
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase(Mat J,Vec U,Vec F)
+PetscErrorCode  MatMFFDSetBase(Mat J,Vec U,Vec F)
 {
   PetscErrorCode ierr;
 
@@ -1143,7 +1143,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase(Mat J,Vec U,Vec F)
 
 .seealso:  MatMFFDSetCheckPositivity()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetCheckh(Mat J,PetscErrorCode (*fun)(void*,Vec,Vec,PetscScalar*),void* ctx)
+PetscErrorCode  MatMFFDSetCheckh(Mat J,PetscErrorCode (*fun)(void*,Vec,Vec,PetscScalar*),void* ctx)
 {
   PetscErrorCode ierr;
 
@@ -1177,7 +1177,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetCheckh(Mat J,PetscErrorCode (*fun)(v
 
 .seealso:  MatMFFDSetCheckh()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDCheckPositivity(void* dummy,Vec U,Vec a,PetscScalar *h)
+PetscErrorCode  MatMFFDCheckPositivity(void* dummy,Vec U,Vec a,PetscScalar *h)
 {
   PetscReal      val, minval;
   PetscScalar    *u_vec, *a_vec;

@@ -43,7 +43,7 @@ PetscBool  TSRegisterAllCalled          = PETSC_FALSE;
 .keywords: TS, set, type
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetType(TS ts,const TSType type)
+PetscErrorCode  TSSetType(TS ts,const TSType type)
 {
   PetscErrorCode (*r)(TS);
   PetscBool      match;
@@ -95,7 +95,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetType(TS ts,const TSType type)
 .keywords: TS, timestepper, get, type, name
 .seealso TSSetType()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGetType(TS ts, const TSType *type)
+PetscErrorCode  TSGetType(TS ts, const TSType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -113,7 +113,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetType(TS ts, const TSType *type)
 
   Level: advanced
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(TS))
+PetscErrorCode  TSRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(TS))
 {
   char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -139,7 +139,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSRegister(const char sname[], const char path[
 .keywords: TS, timestepper, register, destroy
 .seealso: TSRegister(), TSRegisterAll(), TSRegisterDynamic()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSRegisterDestroy(void)
+PetscErrorCode  TSRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 

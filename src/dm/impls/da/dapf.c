@@ -24,7 +24,7 @@
 
 .seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMCreateGlobalVector()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDACreatePF(DM da,PF *pf)
+PetscErrorCode  DMDACreatePF(DM da,PF *pf)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;

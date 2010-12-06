@@ -46,33 +46,33 @@ E*/
 typedef enum { PC_MG_CYCLE_V = 1,PC_MG_CYCLE_W = 2 } PCMGCycleType;
 extern const char *PCMGCycleTypes[];
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetType(PC,PCMGType);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetLevels(PC,PetscInt,MPI_Comm*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetLevels(PC,PetscInt*);
+extern PetscErrorCode  PCMGSetType(PC,PCMGType);
+extern PetscErrorCode  PCMGSetLevels(PC,PetscInt,MPI_Comm*);
+extern PetscErrorCode  PCMGGetLevels(PC,PetscInt*);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothUp(PC,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothDown(PC,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCycleType(PC,PCMGCycleType);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCycleTypeOnLevel(PC,PetscInt,PCMGCycleType);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCyclesOnLevel(PC,PetscInt,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGMultiplicativeSetCycles(PC,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetGalerkin(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetGalerkin(PC,PetscBool *);
+extern PetscErrorCode  PCMGSetNumberSmoothUp(PC,PetscInt);
+extern PetscErrorCode  PCMGSetNumberSmoothDown(PC,PetscInt);
+extern PetscErrorCode  PCMGSetCycleType(PC,PCMGCycleType);
+extern PetscErrorCode  PCMGSetCycleTypeOnLevel(PC,PetscInt,PCMGCycleType);
+extern PetscErrorCode  PCMGSetCyclesOnLevel(PC,PetscInt,PetscInt);
+extern PetscErrorCode  PCMGMultiplicativeSetCycles(PC,PetscInt);
+extern PetscErrorCode  PCMGSetGalerkin(PC);
+extern PetscErrorCode  PCMGGetGalerkin(PC,PetscBool *);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmoother(PC,PetscInt,KSP*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmootherDown(PC,PetscInt,KSP*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmootherUp(PC,PetscInt,KSP*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetCoarseSolve(PC,KSP*);
+extern PetscErrorCode  PCMGGetSmoother(PC,PetscInt,KSP*);
+extern PetscErrorCode  PCMGGetSmootherDown(PC,PetscInt,KSP*);
+extern PetscErrorCode  PCMGGetSmootherUp(PC,PetscInt,KSP*);
+extern PetscErrorCode  PCMGGetCoarseSolve(PC,KSP*);
 
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetRhs(PC,PetscInt,Vec);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetX(PC,PetscInt,Vec);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetR(PC,PetscInt,Vec);
+extern PetscErrorCode  PCMGSetRhs(PC,PetscInt,Vec);
+extern PetscErrorCode  PCMGSetX(PC,PetscInt,Vec);
+extern PetscErrorCode  PCMGSetR(PC,PetscInt,Vec);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetRestriction(PC,PetscInt,Mat);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetInterpolation(PC,PetscInt,Mat);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGDefaultResidual(Mat,Vec,Vec,Vec);
+extern PetscErrorCode  PCMGSetRestriction(PC,PetscInt,Mat);
+extern PetscErrorCode  PCMGSetInterpolation(PC,PetscInt,Mat);
+extern PetscErrorCode  PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
+extern PetscErrorCode  PCMGDefaultResidual(Mat,Vec,Vec,Vec);
 
 /*E
     PCExoticType - Face based or wirebasket based coarse grid space
@@ -83,7 +83,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGDefaultResidual(Mat,Vec,Vec,Vec);
 E*/ 
 typedef enum { PC_EXOTIC_FACE,PC_EXOTIC_WIREBASKET } PCExoticType;
 extern const char *PCExoticTypes[];
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCExoticSetType(PC,PCExoticType);
+extern PetscErrorCode  PCExoticSetType(PC,PCExoticType);
 
 
 PETSC_EXTERN_CXX_END

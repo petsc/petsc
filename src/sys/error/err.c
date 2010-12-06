@@ -59,7 +59,7 @@ $     SETERRQ(PETSC_COMM_SELF,number,p,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler()
  @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
+PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscErrorCode ierr;
   char        command[PETSC_MAX_PATH_LEN];
@@ -122,7 +122,7 @@ $    int handler(MPI_Comm comm,int line,char *func,char *file,char *dir,PetscErr
 .seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm,int,const char *,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void *ctx)
+PetscErrorCode  PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm,int,const char *,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void *ctx)
 {
   EH             neweh;
   PetscErrorCode ierr;
@@ -151,7 +151,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler
 
 .seealso: PetscPushErrorHandler()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscPopErrorHandler(void)
+PetscErrorCode  PetscPopErrorHandler(void)
 {
   EH             tmp;
   PetscErrorCode ierr;
@@ -206,7 +206,7 @@ $     SETERRQ(comm,number,mess)
 .seealso:  PetscPushErrorHandler(), PetscPopErrorHandler().
  @*/
 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscReturnErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
+PetscErrorCode  PetscReturnErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(n);
@@ -275,7 +275,7 @@ static const char *PetscErrorStrings[] = {
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorMessage(int errnum,const char *text[],char **specific)
+PetscErrorCode  PetscErrorMessage(int errnum,const char *text[],char **specific)
 {
   PetscFunctionBegin;
   if (text && errnum > PETSC_ERR_MIN_VALUE && errnum < PETSC_ERR_MAX_VALUE) {
@@ -287,131 +287,6 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorMessage(int errnum,const char *text[
   }
   PetscFunctionReturn(0);
 }
-
-#if defined(PETSC_USE_ERRORCHECKING)
-PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorUncatchable[PETSC_EXCEPTIONS_MAX] = {0};
-PetscInt       PETSCSYS_DLLEXPORT PetscErrorUncatchableCount                  = 0;
-PetscErrorCode PETSCSYS_DLLEXPORT PetscExceptions[PETSC_EXCEPTIONS_MAX]       = {0};
-PetscInt       PETSCSYS_DLLEXPORT PetscExceptionsCount                        = 0;
-PetscErrorCode PETSCSYS_DLLEXPORT PetscExceptionTmp                           = 0;
-PetscErrorCode PETSCSYS_DLLEXPORT PetscExceptionTmp1                          = 0;
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscErrorIsCatchable" 
-/*@C
-      PetscErrorIsCatchable - Returns if a PetscErrorCode can be caught with a PetscExceptionTry1() or
-           PetscExceptionPush()
-
-  Input Parameters:
-.   err - error code 
-
-  Level: advanced
-
-   Notes:
-    PETSc must not be configured using the option --with-errorchecking=0 for this to work
-
-.seealso: PetscExceptionTry1(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop(), PetscErrorSetCatchable()
-@*/
-PetscBool  PETSCSYS_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode err)
-{
-  PetscInt i;
-  for (i=0; i<PetscErrorUncatchableCount; i++) {
-    if (err == PetscErrorUncatchable[i]) return PETSC_FALSE;
-  }
-  return PETSC_TRUE;
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscErrorSetCatchable" 
-/*@
-      PetscErrorSetCatchable - Sets if a PetscErrorCode can be caught with a PetscExceptionTry1()
-    PetscExceptionCaught() pair, or PetscExceptionPush(). By default all errors are catchable.
-
-  Input Parameters:
-+   err - error code 
--   flg - PETSC_TRUE means allow to be caught, PETSC_FALSE means do not allow to be caught
-
-  Level: advanced
-
-   Notes:
-    PETSc must not be configured using the option --with-errorchecking=0 for this to work
-
-.seealso: PetscExceptionTry1(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop(), PetscErrorIsCatchable()
-@*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode err,PetscBool  flg)
-{
-  PetscFunctionBegin;
-  if (!flg && PetscErrorIsCatchable(err)) {
-    /* add to list of uncatchable */
-    if (PetscErrorUncatchableCount >= PETSC_EXCEPTIONS_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stack for PetscErrorUncatchable is overflowed, recompile \nsrc/sysd/error/err.c with a larger value for PETSC_EXCEPTIONS_MAX");
-    PetscErrorUncatchable[PetscErrorUncatchableCount++] = err;
-  } else if (flg && !PetscErrorIsCatchable(err)) {
-    /* remove from list of uncatchable */
-    PetscInt i;
-    for (i=0; i<PetscErrorUncatchableCount; i++) {
-      if (PetscErrorUncatchable[i] == err) break;
-    }
-    for (;i<PetscErrorUncatchableCount; i++) {
-      PetscErrorUncatchable[i] = PetscErrorUncatchable[i+1];
-    }
-    PetscErrorUncatchableCount--;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscExceptionPush" 
-/*@
-      PetscExceptionPush - Adds the exception as one to be caught and passed up. If passed up
-        can be checked with PetscExceptionCaught() or PetscExceptionValue()
-
-  Input Parameters:
-.   err - the exception to catch
-
-  Level: advanced
-
-   Notes:
-    PETSc must not be configured using the option --with-errorchecking=0 for this to work
-
-    Use PetscExceptionPop() to remove this as a value to be caught
-
-    This is not usually needed in C/C++ rather use PetscExceptionTry1()
-
-.seealso: PetscExceptionTry1(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop()
-@*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscExceptionPush(PetscErrorCode err)
-{
-  PetscFunctionBegin;
-  if (PetscExceptionsCount >= PETSC_EXCEPTIONS_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stack for PetscExceptions is overflowed, recompile \nsrc/sysd/error/err.c with a larger value for PETSC_EXCEPTIONS_MAX");
-  if (PetscErrorIsCatchable(err)) PetscExceptions[PetscExceptionsCount++] = err;
-  PetscFunctionReturn(0);   
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscExceptionPop" 
-/*@
-      PetscExceptionPop - Removes  the most recent exception asked to be caught with PetscExceptionPush()
-
-  Input Parameters:
-.   err - the exception that was pushed
-
-  Level: advanced
-
-   Notes:
-    PETSc must not be configured using the option --with-errorchecking=0 for this to work
-
-    This is not usually needed in C/C++ rather use PetscExceptionTry1()
-
-.seealso: PetscExceptionTry1(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop()
-@*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscExceptionPop(PetscErrorCode err)
-{
-  PetscFunctionBegin;
-  if (PetscExceptionsCount <= 0)SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stack for PetscExceptions is empty");
-  if (PetscErrorIsCatchable(err)) PetscExceptionsCount--;
-  PetscFunctionReturn(0);
-}
-#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscError" 
@@ -446,7 +321,7 @@ $     SETERRQ(comm,n,mess)
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), SETERRQ(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscError(MPI_Comm comm,int line,const char *func,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,...)
+PetscErrorCode  PetscError(MPI_Comm comm,int line,const char *func,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,...)
 {
   va_list        Argp;
   size_t         fullLength;
@@ -472,13 +347,6 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscError(MPI_Comm comm,int line,const char *
       PetscStrncpy(PetscErrorBaseMessage,lbuf,1023);
     }
   }
-
-#if defined(PETSC_USE_ERRORCHECKING)
-  /* check if user is catching this exception */
-  for (i=0; i<PetscExceptionsCount; i++) {
-    if (n == PetscExceptions[i])  PetscFunctionReturn(n);
-  }
-#endif
 
   if (!eh)     ierr = PetscTraceBackErrorHandler(comm,line,func,file,dir,n,p,lbuf,0);
   else         ierr = (*eh->handler)(comm,line,func,file,dir,n,p,lbuf,eh->ctx);
@@ -531,7 +399,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscError(MPI_Comm comm,int line,const char *
 
 .seealso: PetscRealView() 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
+PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,n = N/20,p = N % 20;
@@ -616,7 +484,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscIntView(PetscInt N,const PetscInt idx[],P
 
 .seealso: PetscIntView() 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewer)
+PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,n = N/5,p = N % 5;
@@ -702,7 +570,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscRealView(PetscInt N,const PetscReal idx[]
 
 .seealso: PetscIntView(), PetscRealView()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer viewer)
+PetscErrorCode  PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,n = N/3,p = N % 3;

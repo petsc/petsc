@@ -3864,7 +3864,7 @@ PetscErrorCode Mat_CheckInode_FactorLU(Mat A,PetscBool  samestructure)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatInodeAdjustForInodes"
-PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes(Mat A,IS *rperm,IS *cperm)
+PetscErrorCode  MatInodeAdjustForInodes(Mat A,IS *rperm,IS *cperm)
 {
   PetscErrorCode ierr;
 
@@ -3876,7 +3876,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes(Mat A,IS *rperm,IS *cp
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatInodeAdjustForInodes_SeqAIJ_Inode"
-PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A,IS *rperm,IS *cperm)
+PetscErrorCode  MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A,IS *rperm,IS *cperm)
 {
   Mat_SeqAIJ      *a=(Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
@@ -3963,7 +3963,7 @@ EXTERN_C_END
 
 .seealso: MatGetInfo()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatInodeGetInodeSizes(Mat A,PetscInt *node_count,PetscInt *sizes[],PetscInt *limit)
+PetscErrorCode  MatInodeGetInodeSizes(Mat A,PetscInt *node_count,PetscInt *sizes[],PetscInt *limit)
 {
   PetscErrorCode ierr,(*f)(Mat,PetscInt*,PetscInt*[],PetscInt*);
 
@@ -3979,7 +3979,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInodeGetInodeSizes(Mat A,PetscInt *node_cou
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatInodeGetInodeSizes_SeqAIJ_Inode"
-PetscErrorCode PETSCMAT_DLLEXPORT MatInodeGetInodeSizes_SeqAIJ_Inode(Mat A,PetscInt *node_count,PetscInt *sizes[],PetscInt *limit)
+PetscErrorCode  MatInodeGetInodeSizes_SeqAIJ_Inode(Mat A,PetscInt *node_count,PetscInt *sizes[],PetscInt *limit)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
 

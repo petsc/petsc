@@ -53,9 +53,9 @@ PetscErrorCode SPARSEPACKgenqmd(PetscInt *neqns, PetscInt *xadj, PetscInt *adjnc
 
     /* Local variables */
     PetscInt ndeg, irch, node, nump1, j, inode;
-    EXTERN PetscErrorCode SPARSEPACKqmdqt(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
+    extern PetscErrorCode SPARSEPACKqmdqt(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
     PetscInt ip, np, mindeg, search;
-    EXTERN PetscErrorCode SPARSEPACKqmdrch(PetscInt*, PetscInt *, PetscInt *, 
+    extern PetscErrorCode SPARSEPACKqmdrch(PetscInt*, PetscInt *, PetscInt *, 
 	      PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *),
 	   SPARSEPACKqmdupd(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, 
 	      PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);

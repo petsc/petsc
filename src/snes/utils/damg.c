@@ -41,7 +41,7 @@
          DMMGSetISColoringType()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,void *user,DMMG **dmmg)
+PetscErrorCode  DMMGCreate(MPI_Comm comm,PetscInt nlevels,void *user,DMMG **dmmg)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -93,7 +93,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
 .seealso DMMGDestroy(), DMMGSetUser(), DMMGGetUser(), DMMGCreate(), DMMGSetNullSpace()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG *dmmg,const MatType mtype)
+PetscErrorCode  DMMGSetMatType(DMMG *dmmg,const MatType mtype)
 {
   PetscInt       i;
   PetscErrorCode ierr;
@@ -122,7 +122,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG *dmmg,const MatType mtype
 .seealso DMMGDestroy(), DMMGSetUser(), DMMGGetUser(), DMMGCreate(), DMMGSetNullSpace()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetOptionsPrefix(DMMG *dmmg,const char prefix[])
+PetscErrorCode  DMMGSetOptionsPrefix(DMMG *dmmg,const char prefix[])
 {
   PetscInt       i;
   PetscErrorCode ierr;
@@ -149,7 +149,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetOptionsPrefix(DMMG *dmmg,const char pr
 .seealso DMMGCreate()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG *dmmg)
+PetscErrorCode  DMMGDestroy(DMMG *dmmg)
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels;
@@ -203,7 +203,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG *dmmg)
 .seealso DMMGCreate(), DMMGDestroy(), DMMGSetMatType()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG *dmmg, DM dm)
+PetscErrorCode  DMMGSetDM(DMMG *dmmg, DM dm)
 {
   PetscInt       nlevels     = dmmg[0]->nlevels;
   PetscBool      doRefine    = PETSC_TRUE;
@@ -276,7 +276,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG *dmmg, DM dm)
 .seealso DMMGCreate(), DMMGDestroy(), DMMG, DMMGSetSNES(), DMMGSetKSP(), DMMGSetUp(), DMMGSetMatType()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
+PetscErrorCode  DMMGSolve(DMMG *dmmg)
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels;
@@ -332,7 +332,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSolveKSP"
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolveKSP(DMMG *dmmg,PetscInt level)
+PetscErrorCode  DMMGSolveKSP(DMMG *dmmg,PetscInt level)
 {
   PetscErrorCode ierr;
 
@@ -356,7 +356,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolveKSP(DMMG *dmmg,PetscInt level)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetUpLevel"
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nlevels)
+PetscErrorCode  DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nlevels)
 {
   PetscErrorCode          ierr;
   PetscInt                i;
@@ -436,7 +436,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetDM(), DMMGSolve(), DMMGSetMatType()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscErrorCode (*func)(DMMG,Mat,Mat))
+PetscErrorCode  DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscErrorCode (*func)(DMMG,Mat,Mat))
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels,level;
@@ -524,7 +524,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
 .seealso DMMGCreate(), DMMGDestroy(), DMMGSetMatType()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGView(DMMG *dmmg,PetscViewer viewer)
+PetscErrorCode  DMMGView(DMMG *dmmg,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels;
@@ -594,7 +594,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGView(DMMG *dmmg,PetscViewer viewer)
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetDM(), DMMGSolve(), MatNullSpaceCreate(), KSPSetNullSpace(), DMMGSetMatType()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG *dmmg,PetscBool  has_cnst,PetscInt n,PetscErrorCode (*func)(DMMG,Vec[]))
+PetscErrorCode  DMMGSetNullSpace(DMMG *dmmg,PetscBool  has_cnst,PetscInt n,PetscErrorCode (*func)(DMMG,Vec[]))
 {
   PetscErrorCode ierr;
   PetscInt       i,j,nlevels = dmmg[0]->nlevels;
@@ -666,7 +666,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG *dmmg,PetscBool  has_cn
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGInitialGuessCurrent(DMMG dmmg,Vec vec)
+PetscErrorCode  DMMGInitialGuessCurrent(DMMG dmmg,Vec vec)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -699,7 +699,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGInitialGuessCurrent(DMMG dmmg,Vec vec)
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNES(), DMMGInitialGuessCurrent(), DMMGSetGalekin(), DMMGSetMatType(), DMMGSetNullSpace()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetInitialGuess(DMMG *dmmg,PetscErrorCode (*guess)(DMMG,Vec))
+PetscErrorCode  DMMGSetInitialGuess(DMMG *dmmg,PetscErrorCode (*guess)(DMMG,Vec))
 {
   PetscInt       i,nlevels = dmmg[0]->nlevels;
   PetscErrorCode ierr;

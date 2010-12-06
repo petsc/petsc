@@ -78,7 +78,7 @@ static PetscErrorCode PetscDrawEllipse_X(PetscDraw Win, PetscReal x, PetscReal y
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X*,int,int,int,int,int,int,int,int,int);
+extern PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X*,int,int,int,int,int,int,int,int,int);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawTriangle_X" 
@@ -143,7 +143,7 @@ static PetscErrorCode PetscDrawString_X(PetscDraw draw,PetscReal x,PetscReal  y,
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode XiFontFixed(PetscDraw_X*,int,int,XiFont **);
+extern PetscErrorCode XiFontFixed(PetscDraw_X*,int,int,XiFont **);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawStringSetSize_X" 
@@ -539,8 +539,8 @@ static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_X,
                                  PetscDrawRestoreSingleton_X };
 
 
-EXTERN PetscErrorCode XiQuickWindow(PetscDraw_X*,char*,char*,int,int,int,int);
-EXTERN PetscErrorCode XiQuickWindowFromWindow(PetscDraw_X*,char*,Window);
+extern PetscErrorCode XiQuickWindow(PetscDraw_X*,char*,char*,int,int,int,int);
+extern PetscErrorCode XiQuickWindowFromWindow(PetscDraw_X*,char*,Window);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawGetSingleton_X" 
@@ -622,7 +622,7 @@ PetscErrorCode PetscDrawXGetDisplaySize_Private(const char name[],int *width,int
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawCreate_X" 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawCreate_X(PetscDraw draw)
+PetscErrorCode  PetscDrawCreate_X(PetscDraw draw)
 {
   PetscDraw_X    *Xwin;
   PetscErrorCode ierr;

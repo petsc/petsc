@@ -21,7 +21,7 @@
 
    Level: intermediate
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
+PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
 {
   PetscErrorCode     ierr;
   PetscInt           isz,len,i,j,ival,Nbs;
@@ -93,7 +93,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesGeneral(PetscInt n,PetscInt b
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISCompressIndicesSorted"
-PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
+PetscErrorCode  ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k,val,len,*nidx,bbs;
@@ -163,7 +163,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt n,PetscInt bs
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISExpandIndicesGeneral"
-PetscErrorCode PETSCVEC_DLLEXPORT ISExpandIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
+PetscErrorCode  ISExpandIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
 {
   PetscErrorCode ierr;
   PetscInt       len,i,j,k,*nidx;

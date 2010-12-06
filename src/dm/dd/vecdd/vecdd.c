@@ -5,7 +5,7 @@
 #include "../src/dm/dd/vecdd/ddlayout.h"         
 #include "../src/vec/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
 
-EXTERN PetscErrorCode VecDuplicate_MPI(Vec in, Vec *out);
+extern PetscErrorCode VecDuplicate_MPI(Vec in, Vec *out);
 
 typedef struct {
   Vec_MPI    mpi; /* This has to come first for casting down to Vec_MPI */

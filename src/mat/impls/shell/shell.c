@@ -42,7 +42,7 @@ typedef struct {
 
 .seealso: MatCreateShell(), MatShellSetOperation(), MatShellSetContext()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatShellGetContext(Mat mat,void **ctx)
+PetscErrorCode  MatShellGetContext(Mat mat,void **ctx)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -197,7 +197,7 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode MatConvert_Shell(Mat, const MatType,MatReuse,Mat*);
+extern PetscErrorCode MatConvert_Shell(Mat, const MatType,MatReuse,Mat*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetBlockSize_Shell"
@@ -321,7 +321,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_Shell"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Shell(Mat A)
+PetscErrorCode  MatCreate_Shell(Mat A)
 {
   Mat_Shell      *b;
   PetscErrorCode ierr;
@@ -418,7 +418,7 @@ $
 
 .seealso: MatShellSetOperation(), MatHasOperation(), MatShellGetContext(), MatShellSetContext()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,void *ctx,Mat *A)
+PetscErrorCode  MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,void *ctx,Mat *A)
 {
   PetscErrorCode ierr;
 
@@ -449,7 +449,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateShell(MPI_Comm comm,PetscInt m,PetscI
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetContext(Mat mat,void *ctx)
+PetscErrorCode  MatShellSetContext(Mat mat,void *ctx)
 {
   Mat_Shell      *shell = (Mat_Shell*)mat->data;
   PetscErrorCode ierr;
@@ -510,7 +510,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellSetContext()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
+PetscErrorCode  MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
 {
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -566,7 +566,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellSetOperation(), MatShellSetContext()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatShellGetOperation(Mat mat,MatOperation op,void(**f)(void))
+PetscErrorCode  MatShellGetOperation(Mat mat,MatOperation op,void(**f)(void))
 {
   PetscErrorCode ierr;
   PetscBool      flg;

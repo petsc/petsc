@@ -94,7 +94,7 @@ static int Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
    Concepts: sequential stage
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
+PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -139,7 +139,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSequentialPhaseBegin(MPI_Comm comm,int ng
    Concepts: sequential stage
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
+PetscErrorCode  PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,flag;

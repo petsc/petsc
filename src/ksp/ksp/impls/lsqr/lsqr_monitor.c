@@ -1,6 +1,6 @@
 #include "petscksp.h"
 #include "../src/ksp/ksp/impls/lsqr/lsqr.h"
-extern PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetArnorm(KSP,PetscReal*,PetscReal*,PetscReal*);
+extern PetscErrorCode  KSPLSQRGetArnorm(KSP,PetscReal*,PetscReal*,PetscReal*);
 
 PetscErrorCode KSPMonitorLSQR(KSP solksp, PetscInt iter, PetscReal rnorm, void *ctx)
 {

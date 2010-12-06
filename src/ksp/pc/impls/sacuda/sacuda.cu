@@ -210,7 +210,7 @@ static PetscErrorCode PCSetFromOptions_SACUDA(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_SACUDA"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SACUDA(PC pc)
+PetscErrorCode  PCCreate_SACUDA(PC pc)
 {
   PC_SACUDA      *sac;
   PetscErrorCode ierr;

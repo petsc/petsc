@@ -192,7 +192,7 @@ PetscErrorCode VecDotNorm2_MPICUDA(Vec s,Vec t,PetscScalar *dp,PetscScalar *nm)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_MPICUDA"
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPICUDA(Vec vv)
+PetscErrorCode  VecCreate_MPICUDA(Vec vv)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -235,7 +235,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_CUDA"
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_CUDA(Vec v)
+PetscErrorCode  VecCreate_CUDA(Vec v)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

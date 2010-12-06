@@ -4,7 +4,7 @@
 
 #include "petscsys.h"
 
-EXTERN PetscErrorCode SPARSEPACKrootls(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
+extern PetscErrorCode SPARSEPACKrootls(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 
 /*****************************************************************/
 /********     FNROOT ..... FIND PSEUDO-PERIPHERAL NODE    ********/

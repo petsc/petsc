@@ -23,7 +23,7 @@
      Concepts: architecture
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscGetArchType(char str[],size_t slen)
+PetscErrorCode  PetscGetArchType(char str[],size_t slen)
 {
   PetscErrorCode ierr;
 

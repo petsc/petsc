@@ -8,7 +8,7 @@
 #define fortransolveaij_   fortransolveaij
 #endif
 EXTERN_C_BEGIN
-EXTERN void fortransolveaij_(const PetscInt*,void*,const PetscInt*,const PetscInt*,const PetscInt*,const void*,const void*);
+extern void fortransolveaij_(const PetscInt*,void*,const PetscInt*,const PetscInt*,const PetscInt*,const void*,const void*);
 EXTERN_C_END
 #endif
 #endif

@@ -43,8 +43,8 @@
     data used during the optional Lanczo process used to compute eigenvalues
 */
 #include "../src/ksp/ksp/impls/cg/cgimpl.h"       /*I "petscksp.h" I*/
-EXTERN PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal *,PetscReal *);
-EXTERN PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
+extern PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal *,PetscReal *);
+extern PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
 
 /*
      KSPSetUp_CG - Sets up the workspace needed by the CG method. 
@@ -370,7 +370,7 @@ PetscErrorCode KSPSetFromOptions_CG(KSP ksp)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCGSetType_CG" 
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType_CG(KSP ksp,KSPCGType type)
+PetscErrorCode  KSPCGSetType_CG(KSP ksp,KSPCGType type)
 {
   KSP_CG *cg = (KSP_CG *)ksp->data;
 
@@ -383,7 +383,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCGUseSingleReduction_CG" 
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCGUseSingleReduction_CG(KSP ksp,PetscBool  flg)
+PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool  flg)
 {
   KSP_CG *cg  = (KSP_CG *)ksp->data;
 
@@ -424,7 +424,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_CG"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CG(KSP ksp)
+PetscErrorCode  KSPCreate_CG(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_CG         *cg;

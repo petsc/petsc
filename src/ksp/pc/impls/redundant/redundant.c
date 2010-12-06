@@ -254,7 +254,7 @@ static PetscErrorCode PCSetFromOptions_Redundant(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCRedundantSetNumber_Redundant"
-PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetNumber_Redundant(PC pc,PetscInt nreds)
+PetscErrorCode  PCRedundantSetNumber_Redundant(PC pc,PetscInt nreds)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
 
@@ -280,7 +280,7 @@ EXTERN_C_END
 
 .keywords: PC, redundant solve
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetNumber(PC pc,PetscInt nredundant)
+PetscErrorCode  PCRedundantSetNumber(PC pc,PetscInt nredundant)
 {
   PetscErrorCode ierr;
 
@@ -294,7 +294,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetNumber(PC pc,PetscInt nredundant
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCRedundantSetScatter_Redundant"
-PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
+PetscErrorCode  PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
@@ -328,7 +328,7 @@ EXTERN_C_END
 
 .keywords: PC, redundant solve
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
+PetscErrorCode  PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
 {
   PetscErrorCode ierr;
 
@@ -343,7 +343,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetScatter(PC pc,VecScatter in,VecS
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCRedundantGetPC_Redundant"
-PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantGetPC_Redundant(PC pc,PC *innerpc)
+PetscErrorCode  PCRedundantGetPC_Redundant(PC pc,PC *innerpc)
 {
   PetscErrorCode ierr;
   PC_Redundant   *red = (PC_Redundant*)pc->data;
@@ -394,7 +394,7 @@ EXTERN_C_END
 
 .keywords: PC, redundant solve
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantGetPC(PC pc,PC *innerpc)
+PetscErrorCode  PCRedundantGetPC(PC pc,PC *innerpc)
 {
   PetscErrorCode ierr;
 
@@ -408,7 +408,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantGetPC(PC pc,PC *innerpc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCRedundantGetOperators_Redundant"
-PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
+PetscErrorCode  PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
 
@@ -437,7 +437,7 @@ EXTERN_C_END
 
 .keywords: PC, redundant solve
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
+PetscErrorCode  PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
 {
   PetscErrorCode ierr;
 
@@ -468,7 +468,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Redundant"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC pc)
+PetscErrorCode  PCCreate_Redundant(PC pc)
 {
   PetscErrorCode ierr;
   PC_Redundant   *red;

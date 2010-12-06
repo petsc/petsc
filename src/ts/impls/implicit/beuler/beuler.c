@@ -342,7 +342,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_BEuler"
-PetscErrorCode PETSCTS_DLLEXPORT TSCreate_BEuler(TS ts)
+PetscErrorCode  TSCreate_BEuler(TS ts)
 {
   TS_BEuler      *beuler;
   PetscErrorCode ierr;

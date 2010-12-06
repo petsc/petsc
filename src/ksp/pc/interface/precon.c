@@ -69,7 +69,7 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char* type[])
 
 .seealso: PCCreate(), PCSetUp()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCDestroy(PC pc)
+PetscErrorCode  PCDestroy(PC pc)
 {
   PetscErrorCode ierr;
 
@@ -116,7 +116,7 @@ $           D A M D^{-1} z = D b for right preconditioning
 
 .seealso: PCCreate(), PCSetUp(), PCDiagonalScaleLeft(), PCDiagonalScaleRight(), PCSetDiagonalScale()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGetDiagonalScale(PC pc,PetscBool  *flag)
+PetscErrorCode  PCGetDiagonalScale(PC pc,PetscBool  *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -149,7 +149,7 @@ $           D A M D^{-1} z = D b for right preconditioning
 
 .seealso: PCCreate(), PCSetUp(), PCDiagonalScaleLeft(), PCDiagonalScaleRight(), PCGetDiagonalScale()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSetDiagonalScale(PC pc,Vec s)
+PetscErrorCode  PCSetDiagonalScale(PC pc,Vec s)
 {
   PetscErrorCode ierr;
 
@@ -196,7 +196,7 @@ $           D A M D^{-1} z = D b for right preconditioning
 
 .seealso: PCCreate(), PCSetUp(), PCDiagonalScaleSet(), PCDiagonalScaleRight(), PCDiagonalScale()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCDiagonalScaleLeft(PC pc,Vec in,Vec out)
+PetscErrorCode  PCDiagonalScaleLeft(PC pc,Vec in,Vec out)
 {
   PetscErrorCode ierr;
 
@@ -238,7 +238,7 @@ $           D A M D^{-1} z = D b for right preconditioning
 
 .seealso: PCCreate(), PCSetUp(), PCDiagonalScaleLeft(), PCDiagonalScaleSet(), PCDiagonalScale()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCDiagonalScaleRight(PC pc,Vec in,Vec out)
+PetscErrorCode  PCDiagonalScaleRight(PC pc,Vec in,Vec out)
 {
   PetscErrorCode ierr;
 
@@ -287,7 +287,7 @@ static PetscErrorCode PCPublish_Petsc(PetscObject obj)
 
 .seealso: PCSetUp(), PCApply(), PCDestroy()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate(MPI_Comm comm,PC *newpc)
+PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
 {
   PC             pc;
   PetscErrorCode ierr;
@@ -339,7 +339,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate(MPI_Comm comm,PC *newpc)
 
 .seealso: PCApplyTranspose(), PCApplyBAorAB()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCApply(PC pc,Vec x,Vec y)
+PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -381,7 +381,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApply(PC pc,Vec x,Vec y)
 
 .seealso: PCApply(), PCApplySymmetricRight()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCApplySymmetricLeft(PC pc,Vec x,Vec y)
+PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -423,7 +423,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplySymmetricLeft(PC pc,Vec x,Vec y)
 
 .seealso: PCApply(), PCApplySymmetricLeft()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCApplySymmetricRight(PC pc,Vec x,Vec y)
+PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -462,7 +462,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplySymmetricRight(PC pc,Vec x,Vec y)
 
 .seealso: PCApply(), PCApplyBAorAB(), PCApplyBAorABTranspose(), PCApplyTransposeExists()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCApplyTranspose(PC pc,Vec x,Vec y)
+PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -500,7 +500,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyTranspose(PC pc,Vec x,Vec y)
 
 .seealso: PCApplyTranspose()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCApplyTransposeExists(PC pc,PetscBool  *flg)
+PetscErrorCode  PCApplyTransposeExists(PC pc,PetscBool  *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -532,7 +532,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyTransposeExists(PC pc,PetscBool  *flg)
 
 .seealso: PCApply(), PCApplyTranspose(), PCApplyBAorABTranspose()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
+PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
 {
   PetscErrorCode ierr;
 
@@ -616,7 +616,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Ve
 
 .seealso: PCApply(), PCApplyTranspose(), PCApplyBAorAB()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
+PetscErrorCode  PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
 {
   PetscErrorCode ierr;
 
@@ -669,7 +669,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyBAorABTranspose(PC pc,PCSide side,Vec x
 
 .seealso: PCApplyRichardson()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardsonExists(PC pc,PetscBool  *exists)
+PetscErrorCode  PCApplyRichardsonExists(PC pc,PetscBool  *exists)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -716,7 +716,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardsonExists(PC pc,PetscBool  *exis
 
 .seealso: PCApplyRichardsonExists()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool  guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
+PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool  guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PetscErrorCode ierr;
 
@@ -755,7 +755,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,Pets
 
 .seealso: PCCreate(), PCApply(), PCDestroy()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSetUp(PC pc)
+PetscErrorCode  PCSetUp(PC pc)
 {
   PetscErrorCode ierr;
   const char     *def;
@@ -807,7 +807,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetUp(PC pc)
 
 .seealso: PCCreate(), PCApply(), PCDestroy(), PCSetUp()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSetUpOnBlocks(PC pc)
+PetscErrorCode  PCSetUpOnBlocks(PC pc)
 {
   PetscErrorCode ierr;
 
@@ -861,7 +861,7 @@ $     func (PC pc,PetscInt nsub,IS *row,IS *col,Mat *submat,void *ctx);
 
 .seealso: PCModifySubMatrices()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSetModifySubMatrices(PC pc,PetscErrorCode (*func)(PC,PetscInt,const IS[],const IS[],Mat[],void*),void *ctx)
+PetscErrorCode  PCSetModifySubMatrices(PC pc,PetscErrorCode (*func)(PC,PetscInt,const IS[],const IS[],Mat[],void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -909,7 +909,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetModifySubMatrices(PC pc,PetscErrorCode (*
 
 .seealso: PCSetModifySubMatrices()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS col[],Mat submat[],void *ctx)
+PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS col[],Mat submat[],void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -985,7 +985,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCModifySubMatrices(PC pc,PetscInt nsub,const 
 
 .seealso: PCGetOperators(), MatZeroEntries()
  @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
+PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 {
   PetscErrorCode ierr;
   PetscInt       m1,n1,m2,n2;
@@ -1086,7 +1086,7 @@ $           set size, type, etc of mat and pmat
 
 .seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperatorsSet()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
+PetscErrorCode  PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 {
   PetscErrorCode ierr;
 
@@ -1137,7 +1137,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStr
 
 .seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperators()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGetOperatorsSet(PC pc,PetscBool  *mat,PetscBool  *pmat)
+PetscErrorCode  PCGetOperatorsSet(PC pc,PetscBool  *mat,PetscBool  *pmat)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -1167,7 +1167,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGetOperatorsSet(PC pc,PetscBool  *mat,PetscB
 
 .keywords: PC, get, factored, matrix
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatrix(PC pc,Mat *mat)
+PetscErrorCode  PCFactorGetMatrix(PC pc,Mat *mat)
 {
   PetscErrorCode ierr;
 
@@ -1203,7 +1203,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatrix(PC pc,Mat *mat)
 
 .seealso: PCAppendOptionsPrefix(), PCGetOptionsPrefix()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSetOptionsPrefix(PC pc,const char prefix[])
+PetscErrorCode  PCSetOptionsPrefix(PC pc,const char prefix[])
 {
   PetscErrorCode ierr;
 
@@ -1236,7 +1236,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetOptionsPrefix(PC pc,const char prefix[])
 
 .seealso: PCSetOptionsPrefix(), PCGetOptionsPrefix()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCAppendOptionsPrefix(PC pc,const char prefix[])
+PetscErrorCode  PCAppendOptionsPrefix(PC pc,const char prefix[])
 {
   PetscErrorCode ierr;
 
@@ -1269,7 +1269,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCAppendOptionsPrefix(PC pc,const char prefix[
 
 .seealso: PCSetOptionsPrefix(), PCAppendOptionsPrefix()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGetOptionsPrefix(PC pc,const char *prefix[])
+PetscErrorCode  PCGetOptionsPrefix(PC pc,const char *prefix[])
 {
   PetscErrorCode ierr;
 
@@ -1311,7 +1311,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGetOptionsPrefix(PC pc,const char *prefix[])
 
 .seealso: PCPostSolve()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCPreSolve(PC pc,KSP ksp)
+PetscErrorCode  PCPreSolve(PC pc,KSP ksp)
 {
   PetscErrorCode ierr;
   Vec            x,rhs;
@@ -1368,7 +1368,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPreSolve(PC pc,KSP ksp)
 
 .seealso: PCPreSolve(), KSPSolve()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCPostSolve(PC pc,KSP ksp)
+PetscErrorCode  PCPostSolve(PC pc,KSP ksp)
 {
   PetscErrorCode ierr;
   Vec            x,rhs;
@@ -1423,7 +1423,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPostSolve(PC pc,KSP ksp)
 
 .seealso: KSPView(), PetscViewerASCIIOpen()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCView(PC pc,PetscViewer viewer)
+PetscErrorCode  PCView(PC pc,PetscViewer viewer)
 {
   const PCType      cstr;
   PetscErrorCode    ierr;
@@ -1505,7 +1505,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCView(PC pc,PetscViewer viewer)
 
 .seealso: PCGetInitialGuessNonzero(), PCSetInitialGuessKnoll(), PCGetInitialGuessKnoll()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSetInitialGuessNonzero(PC pc,PetscBool  flg)
+PetscErrorCode  PCSetInitialGuessNonzero(PC pc,PetscBool  flg)
 {
   PetscFunctionBegin;
   PetscValidLogicalCollectiveBool(pc,flg,2);
@@ -1520,7 +1520,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetInitialGuessNonzero(PC pc,PetscBool  flg)
 
   Level: advanced
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PC))
+PetscErrorCode  PCRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PC))
 {
   PetscErrorCode ierr;
   char           fullname[PETSC_MAX_PATH_LEN];
@@ -1560,7 +1560,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegister(const char sname[],const char path[
 .seealso: KSPComputeExplicitOperator()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCComputeExplicitOperator(PC pc,Mat *mat)
+PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
 {
   Vec            in,out;
   PetscErrorCode ierr;

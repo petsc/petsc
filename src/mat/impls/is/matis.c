@@ -332,7 +332,7 @@ PetscErrorCode MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatISGetLocalMat_IS"
-PetscErrorCode PETSCMAT_DLLEXPORT MatISGetLocalMat_IS(Mat mat,Mat *local)
+PetscErrorCode  MatISGetLocalMat_IS(Mat mat,Mat *local)
 {
   Mat_IS *is = (Mat_IS *)mat->data;
   
@@ -362,7 +362,7 @@ EXTERN_C_END
 
 .seealso: MATIS
 @*/ 
-PetscErrorCode PETSCMAT_DLLEXPORT MatISGetLocalMat(Mat mat,Mat *local)
+PetscErrorCode  MatISGetLocalMat(Mat mat,Mat *local)
 {
   PetscErrorCode ierr;
 
@@ -450,7 +450,7 @@ PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscBool  flg)
 
 .seealso: MATIS, MatSetLocalToGlobalMapping()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateIS(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,ISLocalToGlobalMapping map,Mat *A)
+PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,ISLocalToGlobalMapping map,Mat *A)
 {
   PetscErrorCode ierr;
 
@@ -502,7 +502,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_IS" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_IS(Mat A)
+PetscErrorCode  MatCreate_IS(Mat A)
 {
   PetscErrorCode ierr;
   Mat_IS         *b;

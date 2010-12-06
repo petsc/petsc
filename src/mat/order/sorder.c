@@ -10,7 +10,7 @@
 PetscFList      MatOrderingList = 0;
 PetscBool  MatOrderingRegisterAllCalled = PETSC_FALSE;
 
-EXTERN PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat,const MatOrderingType,IS *,IS *);
+extern PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat,const MatOrderingType,IS *,IS *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetOrdering_Flow"
@@ -26,7 +26,7 @@ PetscErrorCode MatGetOrdering_Flow(Mat mat,const MatOrderingType type,IS *irow,I
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetOrdering_Natural"
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_Natural(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
+PetscErrorCode  MatGetOrdering_Natural(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
   PetscInt       n,i,*ii;
@@ -69,7 +69,7 @@ EXTERN_C_BEGIN
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetOrdering_RowLength"
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_RowLength(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
+PetscErrorCode  MatGetOrdering_RowLength(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
   PetscInt       n,*ia,*ja,*permr,*lens,i;
@@ -97,7 +97,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrderingRegister" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,const MatOrderingType,IS*,IS*))
+PetscErrorCode  MatOrderingRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,const MatOrderingType,IS*,IS*))
 {
   PetscErrorCode ierr;
   char           fullname[PETSC_MAX_PATH_LEN];
@@ -121,7 +121,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegister(const char sname[],const c
 
 .seealso: MatOrderingRegisterDynamic(), MatOrderingRegisterAll()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegisterDestroy(void)
+PetscErrorCode  MatOrderingRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -173,7 +173,7 @@ $      MATORDERINGQMD - Quotient Minimum Degree
 
 .seealso:   MatOrderingRegisterDynamic(), PCFactorSetMatOrderingType()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *cperm)
+PetscErrorCode  MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *cperm)
 {
   PetscErrorCode ierr;
   PetscInt       mmat,nmat,mis,m;

@@ -47,7 +47,7 @@
    Concepts: path^searching for file
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscGetFileFromPath(char *path,char *defname,char *name,char *fname,char mode)
+PetscErrorCode  PetscGetFileFromPath(char *path,char *defname,char *name,char *fname,char mode)
 {
   char       *p,*cdir,trial[PETSC_MAX_PATH_LEN],*senv,*env;
   size_t     ln;

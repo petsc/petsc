@@ -9,7 +9,7 @@
 
 #include "../src/sys/draw/impls/x/ximpl.h"
 
-EXTERN PixVal XiGetColor(PetscDraw_X *,char *,int);
+extern PixVal XiGetColor(PetscDraw_X *,char *,int);
 
 /* 50% grey stipple pattern */
 static Pixmap grey50 = (Pixmap)0;         

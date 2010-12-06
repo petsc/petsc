@@ -49,7 +49,7 @@ PetscErrorCode KSPDefaultFreeWork(KSP ksp)
 
 .seealso: KSPBuildResidual()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
+PetscErrorCode  KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -81,7 +81,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
 
 .seealso: KSPBuildResidual(), KSPGetResidualNorm()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetIterationNumber(KSP ksp,PetscInt *its)
+PetscErrorCode  KSPGetIterationNumber(KSP ksp,PetscInt *its)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -118,7 +118,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetIterationNumber(KSP ksp,PetscInt *its)
 
 .seealso: KSPComputeExtremeSingularValues()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSingularValue(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+PetscErrorCode  KSPMonitorSingularValue(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   PetscReal               emin,emax,c;
   PetscErrorCode          ierr;
@@ -162,7 +162,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSingularValue(KSP ksp,PetscInt n,Pet
 
 .seealso: KSPMonitorSet(), KSPMonitorDefault(), VecView()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSolution(KSP ksp,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode  KSPMonitorSolution(KSP ksp,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
   Vec            x;
@@ -200,7 +200,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSolution(KSP ksp,PetscInt its,PetscR
 
 .seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorLGCreate()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+PetscErrorCode  KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   PetscErrorCode          ierr;
   PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
@@ -241,7 +241,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal
 
 .seealso: KSPMonitorSet(), KSPMonitorDefault(), KSPMonitorLGCreate()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   PetscErrorCode          ierr;
   Vec                     resid,work;
@@ -275,7 +275,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPMonitorRange_Private"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorRange_Private(KSP ksp,PetscInt it,PetscReal *per)
+PetscErrorCode  KSPMonitorRange_Private(KSP ksp,PetscInt it,PetscReal *per)
 {
   PetscErrorCode          ierr;
   Vec                     resid,work;
@@ -336,7 +336,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorRange_Private(KSP ksp,PetscInt it,Pe
 
 .seealso: KSPMonitorSet(), KSPMonitorDefault(), KSPMonitorLGCreate()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,void *dummy)
+PetscErrorCode  KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,void *dummy)
 {
   PetscErrorCode          ierr;
   PetscReal               perc,rel;
@@ -365,7 +365,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorRange(KSP ksp,PetscInt it,PetscReal 
   different on different machines; by using this routine different 
   machines will usually generate the same output.
 */
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefaultShort(KSP ksp,PetscInt its,PetscReal fnorm,void *dummy)
+PetscErrorCode  KSPMonitorDefaultShort(KSP ksp,PetscInt its,PetscReal fnorm,void *dummy)
 {
   PetscErrorCode          ierr;
   PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
@@ -414,7 +414,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefaultShort(KSP ksp,PetscInt its,Pe
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSetNormType()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
+PetscErrorCode  KSPSkipConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -442,7 +442,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP ksp,PetscInt n,PetscReal 
 .seealso: KSPDefaultConverged(), KSPDefaultConvergedDestroy(), KSPSetConvergenceTest(), KSPSetTolerances(),
           KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(), KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedCreate(void **ctx)
+PetscErrorCode  KSPDefaultConvergedCreate(void **ctx)
 {
   PetscErrorCode         ierr;
   KSPDefaultConvergedCtx *cctx;
@@ -480,7 +480,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedCreate(void **ctx)
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(), KSPDefaultConvergedSetUMIRNorm()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUIRNorm(KSP ksp)
+PetscErrorCode  KSPDefaultConvergedSetUIRNorm(KSP ksp)
 {
   KSPDefaultConvergedCtx *ctx = (KSPDefaultConvergedCtx*) ksp->cnvP;
 
@@ -518,7 +518,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUIRNorm(KSP ksp)
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(), KSPDefaultConvergedSetUIRNorm()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUMIRNorm(KSP ksp)
+PetscErrorCode  KSPDefaultConvergedSetUMIRNorm(KSP ksp)
 {
   KSPDefaultConvergedCtx *ctx = (KSPDefaultConvergedCtx*) ksp->cnvP;
 
@@ -575,7 +575,7 @@ $      rnorm > dtol * rnorm_0,
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(),
           KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm(), KSPDefaultConvergedCreate(), KSPDefaultConvergedDestroy()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
+PetscErrorCode  KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
   PetscErrorCode         ierr;
   KSPDefaultConvergedCtx *cctx = (KSPDefaultConvergedCtx*) ctx;
@@ -671,7 +671,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscRe
 .seealso: KSPDefaultConverged(), KSPDefaultConvergedCreate(), KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(),
           KSPConvergedReason, KSPGetConvergedReason(), KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedDestroy(void *ctx)
+PetscErrorCode  KSPDefaultConvergedDestroy(void *ctx)
 {
   PetscErrorCode         ierr;
   KSPDefaultConvergedCtx *cctx = (KSPDefaultConvergedCtx*) ctx;
@@ -924,7 +924,7 @@ PetscErrorCode KSPDefaultDestroy(KSP ksp)
 
 .seealso: KSPSetConvergenceTest(), KSPDefaultConverged(), KSPSetTolerances(), KSPConvergedReason
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
+PetscErrorCode  KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -949,7 +949,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergedReason(KSP ksp,KSPConvergedReas
 
 .seealso: KSPGetDM(), KSPSetDM(), KSPGetDM()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDM(KSP ksp,DM dm)
+PetscErrorCode  KSPSetDM(KSP ksp,DM dm)
 {
   PetscErrorCode ierr;
   PC             pc;
@@ -981,7 +981,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDM(KSP ksp,DM dm)
 
 .seealso: KSPGetDM(), KSPSetDM(), KSPGetDM()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDMActive(KSP ksp,PetscBool  flg)
+PetscErrorCode  KSPSetDMActive(KSP ksp,PetscBool  flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -1008,7 +1008,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDMActive(KSP ksp,PetscBool  flg)
 
 .seealso: KSPSetDM(), KSPSetDM(), KSPGetDM()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDM(KSP ksp,DM *dm)
+PetscErrorCode  KSPGetDM(KSP ksp,DM *dm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);

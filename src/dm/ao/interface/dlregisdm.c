@@ -19,7 +19,7 @@ static PetscBool  AOPackageInitialized = PETSC_FALSE;
 .keywords: AO, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOFinalizePackage(void)
+PetscErrorCode  AOFinalizePackage(void)
 {
   PetscFunctionBegin;
   AOPackageInitialized = PETSC_FALSE;
@@ -40,7 +40,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOFinalizePackage(void)
 .keywords: AO, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT AOInitializePackage(const char path[]) 
+PetscErrorCode  AOInitializePackage(const char path[]) 
 {
   char              logList[256];
   char              *className;
@@ -87,7 +87,7 @@ static PetscBool  DMPackageInitialized = PETSC_FALSE;
 .keywords: AO, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage(void)
+PetscErrorCode  DMFinalizePackage(void)
 {
 #ifdef PETSC_HAVE_SIEVE
   PetscErrorCode ierr;
@@ -105,7 +105,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage(void)
 
 #if defined(PETSC_HAVE_HYPRE)
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MatCreate_HYPREStruct(Mat);
+extern PetscErrorCode  MatCreate_HYPREStruct(Mat);
 EXTERN_C_END
 #endif
 
@@ -124,7 +124,7 @@ EXTERN_C_END
 .keywords: AO, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) 
+PetscErrorCode  DMInitializePackage(const char path[]) 
 {
   char              logList[256];
   char              *className;
@@ -229,7 +229,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
 */
-PetscErrorCode PETSCDM_DLLEXPORT PetscDLLibraryRegister_petscdm(const char path[])
+PetscErrorCode  PetscDLLibraryRegister_petscdm(const char path[])
 {
   PetscErrorCode ierr;
 

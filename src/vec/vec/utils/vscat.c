@@ -9,7 +9,7 @@
 #include "private/vecimpl.h"             /*I "petscvec.h" I*/
 
 /* Logging support */
-PetscClassId PETSCVEC_DLLEXPORT VEC_SCATTER_CLASSID;
+PetscClassId  VEC_SCATTER_CLASSID;
 
 #if defined(PETSC_USE_DEBUG)
 /*
@@ -723,9 +723,9 @@ PetscErrorCode VecScatterCopy_SStoSS(VecScatter in,VecScatter out)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode VecScatterCreate_PtoS(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,PetscInt,VecScatter);
-EXTERN PetscErrorCode VecScatterCreate_PtoP(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,PetscInt,VecScatter);
-EXTERN PetscErrorCode VecScatterCreate_StoP(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,PetscInt,VecScatter);
+extern PetscErrorCode VecScatterCreate_PtoS(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,PetscInt,VecScatter);
+extern PetscErrorCode VecScatterCreate_PtoP(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,PetscInt,VecScatter);
+extern PetscErrorCode VecScatterCreate_StoP(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,PetscInt,VecScatter);
 
 /* =======================================================================*/
 #define VEC_SEQ_ID 0
@@ -740,7 +740,7 @@ EXTERN PetscErrorCode VecScatterCreate_StoP(PetscInt,const PetscInt *,PetscInt,c
 
 #define VecScatterOptimizedBS(mbs) ((2 <= mbs && mbs <= 8) || mbs == 12)
 
-PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateEmpty(MPI_Comm comm,VecScatter *newctx)
+PetscErrorCode  VecScatterCreateEmpty(MPI_Comm comm,VecScatter *newctx)
 {
   VecScatter     ctx;
   PetscErrorCode ierr;
@@ -831,7 +831,7 @@ $
 
 .seealso: VecScatterDestroy(), VecScatterCreateToAll(), VecScatterCreateToZero()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
+PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
   VecScatter     ctx;
   PetscErrorCode ierr;
@@ -1479,7 +1479,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
 
 .seealso: VecScatterCreate(), VecScatterEnd(), VecScatterBegin()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecScatterGetMerged(VecScatter ctx,PetscBool  *flg)
+PetscErrorCode  VecScatterGetMerged(VecScatter ctx,PetscBool  *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_CLASSID,1);
@@ -1535,7 +1535,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterGetMerged(VecScatter ctx,PetscBool  
 
 .seealso: VecScatterCreate(), VecScatterEnd()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecScatterBegin(VecScatter inctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
+PetscErrorCode  VecScatterBegin(VecScatter inctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
 {
   PetscErrorCode ierr;
 #if defined(PETSC_USE_DEBUG)
@@ -1607,7 +1607,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterBegin(VecScatter inctx,Vec x,Vec y,I
 
 .seealso: VecScatterBegin(), VecScatterCreate()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecScatterEnd(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
+PetscErrorCode  VecScatterEnd(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
 {
   PetscErrorCode ierr;
 
@@ -1642,7 +1642,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterEnd(VecScatter ctx,Vec x,Vec y,Inser
 
 .seealso: VecScatterCreate(), VecScatterCopy()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecScatterDestroy(VecScatter ctx)
+PetscErrorCode  VecScatterDestroy(VecScatter ctx)
 {
   PetscErrorCode ierr;
 
@@ -1675,7 +1675,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterDestroy(VecScatter ctx)
 
 .seealso: VecScatterCreate(), VecScatterDestroy()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCopy(VecScatter sctx,VecScatter *ctx)
+PetscErrorCode  VecScatterCopy(VecScatter sctx,VecScatter *ctx)
 {
   PetscErrorCode ierr;
 
@@ -1706,7 +1706,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCopy(VecScatter sctx,VecScatter *ctx
    Level: intermediate
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecScatterView(VecScatter ctx,PetscViewer viewer)
+PetscErrorCode  VecScatterView(VecScatter ctx,PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -1746,7 +1746,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterView(VecScatter ctx,PetscViewer view
           This is backwards from the paralllel case! CRY! CRY! CRY!
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecScatterRemap(VecScatter scat,PetscInt *rto,PetscInt *rfrom)
+PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt *rto,PetscInt *rfrom)
 {
   VecScatter_Seq_General *to,*from;
   VecScatter_MPI_General *mto;

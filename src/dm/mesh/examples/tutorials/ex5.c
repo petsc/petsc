@@ -39,7 +39,7 @@ static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 #include <string.h>
 #include <values.h>
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_Newer(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer);
+extern PetscErrorCode  MeshView_Sieve_Newer(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer);
 PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Mesh>, Vec *);
 PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Mesh>, const char[], int depth, Vec *);
 PetscErrorCode CreateSpacingFunction(ALE::Obj<ALE::Mesh>);
@@ -164,23 +164,11 @@ int main(int argc, char *argv[])
       if (outputLocal) {
         ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH_LOCAL);CHKERRQ(ierr);
         ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-        ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, "testMesh"), PETSC_ERR_FILE_OPEN);
-        if (PetscExceptionValue(ierr)) {
-          /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
-        } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
-          ierr = 0;
-        } 
-       CHKERRQ(ierr);
+        ierr = PetscViewerFileSetName(viewer, "testMesh");CHKERRQ(ierr);
       } else {
         ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
         ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-        ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, "testMesh"), PETSC_ERR_FILE_OPEN);
-        if (PetscExceptionValue(ierr)) {
-          /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
-        } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
-          ierr = 0;
-        } 
-       CHKERRQ(ierr);
+        ierr = PetscViewerFileSetName(viewer, "testMesh"));CHKERRQ(ierr);
       }
     }
     ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);

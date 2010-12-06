@@ -64,7 +64,7 @@ PetscErrorCode SPARSEPACKgennd(PetscInt *neqns,PetscInt *xadj,PetscInt *adjncy,P
 
     /* Local variables */
     PetscInt nsep,root,i;
-    EXTERN PetscErrorCode SPARSEPACKfndsep(PetscInt*,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
+    extern PetscErrorCode SPARSEPACKfndsep(PetscInt*,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
     PetscInt num;
 
     PetscFunctionBegin;

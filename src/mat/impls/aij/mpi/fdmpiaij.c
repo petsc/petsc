@@ -2,7 +2,7 @@
 
 #include "../src/mat/impls/aij/mpi/mpiaij.h"
 
-EXTERN PetscErrorCode CreateColmap_MPIAIJ_Private(Mat);
+extern PetscErrorCode CreateColmap_MPIAIJ_Private(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringCreate_MPIAIJ"

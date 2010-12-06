@@ -20,7 +20,7 @@
 
 .seealso: KSPCreate(), KSPSetType(), KSPPYTHON, PetscPythonInitialize()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetType(KSP ksp,const char pyname[])
+PetscErrorCode  KSPPythonSetType(KSP ksp,const char pyname[])
 {
   PetscErrorCode ierr;
 

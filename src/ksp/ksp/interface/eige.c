@@ -30,7 +30,7 @@
 
 .seealso: KSPComputeEigenvaluesExplicitly(), PCComputeExplicitOperator()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExplicitOperator(KSP ksp,Mat *mat)
+PetscErrorCode  KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 {
   Vec            in,out;
   PetscErrorCode ierr;
@@ -127,7 +127,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 
 .seealso: KSPComputeEigenvalues(), KSPMonitorSingularValue(), KSPComputeExtremeSingularValues(), KSPSetOperators(), KSPSolve()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c) 
+PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c) 
 {
   Mat                BA;
   PetscErrorCode     ierr;

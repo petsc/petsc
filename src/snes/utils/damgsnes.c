@@ -22,11 +22,11 @@ extern PetscErrorCode DMMGSolveFAS_Mesh(DMMG *, PetscInt);
 #endif
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFCreate_DAAD(NLF*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFDAADSetDA_DAAD(NLF,DM);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFDAADSetCtx_DAAD(NLF,void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFDAADSetResidual_DAAD(NLF,Vec);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFDAADSetNewtonIterations_DAAD(NLF,PetscInt);
+extern PetscErrorCode  NLFCreate_DAAD(NLF*);
+extern PetscErrorCode  NLFDAADSetDA_DAAD(NLF,DM);
+extern PetscErrorCode  NLFDAADSetCtx_DAAD(NLF,void*);
+extern PetscErrorCode  NLFDAADSetResidual_DAAD(NLF,Vec);
+extern PetscErrorCode  NLFDAADSetNewtonIterations_DAAD(NLF,PetscInt);
 EXTERN_C_END
 
 /*
@@ -308,7 +308,7 @@ PetscErrorCode DMMGFormFunctionFD(SNES snes,Vec X,Vec F,void *ptr)
           SNESSetFunction(), SNESSetJacobian()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
+PetscErrorCode  SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
   PetscErrorCode ierr;
   Vec            localX;
@@ -334,12 +334,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAFormFunction(SNES snes,Vec X,Vec F,void
     ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
     localX = X;
   }
-  ierr = DMDAFormFunction1(da,localX,F,ptr);
+  ierr = DMDAFormFunction1(da,localX,F,ptr);CHKERRQ(ierr);
   if (n != N){
-    if (PetscExceptionValue(ierr)) {
-      PetscErrorCode pierr = DMRestoreLocalVector(da,&localX);CHKERRQ(pierr);
-    }
-    CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0); 
@@ -433,7 +429,7 @@ PetscErrorCode DMMGComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *f
 .seealso: DMDASetLocalFunction(), DMDASetLocalAdicFunction(), SNESSetFunction(), SNESSetJacobian()
 
 */
-PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode  SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DM             da = *(DM*) ptr;
   PetscErrorCode ierr;
@@ -476,7 +472,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobianWithAdifor(SNES snes,Vec
 .seealso: DMDASetLocalFunction(), DMDASetLocalJacobian(), SNESSetFunction(), SNESSetJacobian()
 
 */
-PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode  SNESDAComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DM             da = *(DM*) ptr;
   PetscErrorCode ierr;
@@ -549,7 +545,7 @@ PetscErrorCode DMMGSolveSNES(DMMG *dmmg,PetscInt level)
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNESLocal(), DMMGSetFromOptions()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,void*),PetscErrorCode (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
+PetscErrorCode  DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,void*),PetscErrorCode (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
   PetscErrorCode          ierr;
   PetscInt                i,nlevels = dmmg[0]->nlevels;
@@ -806,7 +802,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNESLocal(), DMMGSetSNES()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetFromOptions(DMMG *dmmg)
+PetscErrorCode  DMMGSetFromOptions(DMMG *dmmg)
 {
   PetscErrorCode          ierr;
   PetscInt                i,nlevels = dmmg[0]->nlevels;
@@ -1087,7 +1083,7 @@ static PetscErrorCode (*localfunc)(void) = 0;
     Uses the DM object to call the user provided function with the correct calling
   sequence.
 */
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGInitialGuess_Local(DMMG dmmg,Vec x)
+PetscErrorCode  DMMGInitialGuess_Local(DMMG dmmg,Vec x)
 {
   PetscErrorCode ierr;
 
@@ -1169,7 +1165,7 @@ PetscErrorCode DMMGSetISColoringType(DMMG *dmmg,ISColoringType isctype)
 .seealso DMMGCreate(), DMMGDestroy(), DMMG, DMMGSetSNES(), DMMGSetKSP(), DMMGSolve(), DMMGSetMatType()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
+PetscErrorCode  DMMGSetUp(DMMG *dmmg)
 {
   PetscErrorCode ierr;
   KSP            ksp;

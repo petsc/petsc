@@ -66,7 +66,7 @@ Scatter construction should be simplified with helper routines for the following
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatDD_BlockInit"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDD_BlockInit(Mat A, PetscInt i, PetscInt j, const MatType blockmattype, MatDDBlockCommType subcommtype, MatDD_Block *block) {
+PetscErrorCode  MatDD_BlockInit(Mat A, PetscInt i, PetscInt j, const MatType blockmattype, MatDDBlockCommType subcommtype, MatDD_Block *block) {
   PetscErrorCode        ierr;
   Mat_DD*               dd = (Mat_DD*)A->data;
   PetscInt              m,n;
@@ -124,7 +124,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDD_BlockInit(Mat A, PetscInt i, PetscInt j,
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatDDAddBlockLocal"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDDAddBlockLocal(Mat A, PetscInt i, PetscInt j, const MatType blockmattype, MatDDBlockCommType blockcommtype, Mat *_B) {
+PetscErrorCode  MatDDAddBlockLocal(Mat A, PetscInt i, PetscInt j, const MatType blockmattype, MatDDBlockCommType blockcommtype, Mat *_B) {
   PetscErrorCode   ierr;
   Mat_DD*          dd = (Mat_DD*)A->data;
   MatDD_Block     *_block;
@@ -149,7 +149,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDAddBlockLocal(Mat A, PetscInt i, PetscInt
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatDDMetaSetBlock"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDDMetaSetBlock(Mat A, PetscInt i, PetscInt j, Mat B) {
+PetscErrorCode  MatDDMetaSetBlock(Mat A, PetscInt i, PetscInt j, Mat B) {
   PetscErrorCode        ierr;
   Mat_DD*              dd = (Mat_DD*)A->data;
   Mat_DDMeta*          meta = (Mat_DDMeta*)A->data;
@@ -172,7 +172,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDMetaSetBlock(Mat A, PetscInt i, PetscInt 
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatDDMetaGetBlock"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDDMetaGetBlock(Mat A, PetscInt i, PetscInt j, Mat *_B) {
+PetscErrorCode  MatDDMetaGetBlock(Mat A, PetscInt i, PetscInt j, Mat *_B) {
   PetscErrorCode     ierr;
   Mat_DD*            dd = (Mat_DD*)A->data;
   Mat_DDmeta*         meta = (Mat_DDMeta*)A->data;
@@ -196,7 +196,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDMetaGetBlock(Mat A, PetscInt i, PetscInt 
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatDDMetaRestoreBlock"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDDMetaRestoreBlock(Mat A, PetscInt i, PetscInt j, Mat *_B) {
+PetscErrorCode  MatDDMetaRestoreBlock(Mat A, PetscInt i, PetscInt j, Mat *_B) {
   PetscErrorCode     ierr;
   Mat_DD*            dd = (Mat_DD*)A->data;
   Mat_DDmeta*        meta = (Mat_DDMeta*)A->data;
@@ -280,7 +280,7 @@ PetscErrorCode MatDDSetScatter(Mat A, Mat S) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatDD_BlockFinit"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDD_BlockFinit(Mat A, MatDD_Block *block) {
+PetscErrorCode  MatDD_BlockFinit(Mat A, MatDD_Block *block) {
   PetscErrorCode        ierr;
   MPI_Comm              comm = ((PetscObject)A)->comm, subcomm = ((PetscObject)(block->mat))->comm;
   PetscMPIInt           flag;
@@ -303,7 +303,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDD_BlockFinit(Mat A, MatDD_Block *block) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatDDSetDefaultBlockType"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetDefaltBlockType(Mat A, const MatType type) {
+PetscErrorCode  MatDDSetDefaltBlockType(Mat A, const MatType type) {
   Mat_DD  *dd = (Mat_DDMeta*)A->data;
   PetscFunctionBegin;
   if(!type){
@@ -315,7 +315,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetDefaltBlockType(Mat A, const MatType t
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatDDGetDefaultBlockType"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDDGetDefaltBlockType(Mat A, const MatType *type) {
+PetscErrorCode  MatDDGetDefaltBlockType(Mat A, const MatType *type) {
   Mat_DD  *dd = (Mat_DD*)A->data;
   PetscFunctionBegin;
   *type = dd->default_block_type;
@@ -332,7 +332,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDGetDefaltBlockType(Mat A, const MatType *
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatCreate_DD_Private"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DD_Private(Mat A, Mat_DD *dd) {
+PetscErrorCode  MatCreate_DD_Private(Mat A, Mat_DD *dd) {
   /* This is a constructor that may be called by a derived constructor,
      so it does allocate data or reset the classname. */
   /* Assume that this is called after MatSetSizes() */

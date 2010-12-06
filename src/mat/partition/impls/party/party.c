@@ -197,7 +197,7 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewe
    Level: advanced
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetGlobal(MatPartitioning part, const char *global)
+PetscErrorCode  MatPartitioningPartySetGlobal(MatPartitioning part, const char *global)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
@@ -219,7 +219,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetGlobal(MatPartitioning 
    Level: advanced
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetLocal(MatPartitioning part, const char *local)
+PetscErrorCode  MatPartitioningPartySetLocal(MatPartitioning part, const char *local)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
@@ -240,7 +240,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetLocal(MatPartitioning p
    Level: advanced
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetCoarseLevel(MatPartitioning part, PetscReal level)
+PetscErrorCode  MatPartitioningPartySetCoarseLevel(MatPartitioning part, PetscReal level)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
@@ -263,7 +263,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetCoarseLevel(MatPartitio
    Level: advanced
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetMatchOptimization(MatPartitioning part,
+PetscErrorCode  MatPartitioningPartySetMatchOptimization(MatPartitioning part,
     PetscBool  opt)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
@@ -288,7 +288,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetMatchOptimization(MatPa
    Level: advanced
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetBipart(MatPartitioning part, PetscBool  bp)
+PetscErrorCode  MatPartitioningPartySetBipart(MatPartitioning part, PetscBool  bp)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
@@ -388,7 +388,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_Party"
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Party(MatPartitioning part)
+PetscErrorCode  MatPartitioningCreate_Party(MatPartitioning part)
 {
     PetscErrorCode ierr;
     MatPartitioning_Party *party;

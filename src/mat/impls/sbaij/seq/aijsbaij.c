@@ -7,7 +7,7 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqSBAIJ_SeqAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat) 
+PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat) 
 {
   Mat            B;
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data; 
@@ -120,7 +120,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqSBAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat) {
+PetscErrorCode  MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat) {
   Mat            B;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data; 
   Mat_SeqSBAIJ   *b;
@@ -178,7 +178,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqSBAIJ_SeqBAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat) 
+PetscErrorCode  MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat) 
 {
   Mat            B;
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data; 
@@ -272,7 +272,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqBAIJ_SeqSBAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat) 
+PetscErrorCode  MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat) 
 {
   Mat            B;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data; 

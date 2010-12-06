@@ -187,7 +187,7 @@ PetscErrorCode MatPartitioningView_Jostle(MatPartitioning part, PetscViewer view
    Level: advanced
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningJostleSetCoarseLevel(MatPartitioning part, PetscReal level)
+PetscErrorCode  MatPartitioningJostleSetCoarseLevel(MatPartitioning part, PetscReal level)
 {
     MatPartitioning_Jostle *jostle_struct = (MatPartitioning_Jostle *) part->data;
 
@@ -210,7 +210,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningJostleSetCoarseLevel(MatPartiti
    Level: advanced
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningJostleSetCoarseSequential(MatPartitioning part)
+PetscErrorCode  MatPartitioningJostleSetCoarseSequential(MatPartitioning part)
 {
     MatPartitioning_Jostle *jostle_struct =
         (MatPartitioning_Jostle *) part->data;
@@ -284,7 +284,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_Jostle"
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Jostle(MatPartitioning part)
+PetscErrorCode  MatPartitioningCreate_Jostle(MatPartitioning part)
 {
     PetscErrorCode ierr;
     MatPartitioning_Jostle *jostle_struct;

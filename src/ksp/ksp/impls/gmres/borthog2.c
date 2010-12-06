@@ -34,7 +34,7 @@
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESClassicalGramSchmidtOrthogonalization"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,PetscInt it)
+PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,PetscInt it)
 {
   KSP_GMRES      *gmres = (KSP_GMRES *)(ksp->data);
   PetscErrorCode ierr;

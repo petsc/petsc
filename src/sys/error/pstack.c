@@ -4,11 +4,11 @@
 
 #if defined(PETSC_USE_DEBUG)  && !defined(PETSC_USE_PTHREAD)
 
-PetscStack PETSCSYS_DLLEXPORT *petscstack = 0;
+PetscStack  *petscstack = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStackPublish"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscStackPublish(void)
+PetscErrorCode  PetscStackPublish(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -16,7 +16,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscStackPublish(void)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStackDepublish"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscStackDepublish(void)
+PetscErrorCode  PetscStackDepublish(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -24,7 +24,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscStackDepublish(void)
   
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStackCreate"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscStackCreate(void)
+PetscErrorCode  PetscStackCreate(void)
 {
   PetscErrorCode ierr;
 
@@ -40,7 +40,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscStackCreate(void)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStackView"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscStackView(PetscViewer viewer)
+PetscErrorCode  PetscStackView(PetscViewer viewer)
 {
   PetscErrorCode ierr;
   int  i;
@@ -78,7 +78,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscStackView(PetscViewer viewer)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStackDestroy"
 /*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscStackDestroy(void)
+PetscErrorCode  PetscStackDestroy(void)
 {
   PetscErrorCode ierr;
   if (petscstack){
@@ -92,7 +92,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscStackDestroy(void)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStackCopy"
 /*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscStackCopy(PetscStack* sint,PetscStack* sout)
+PetscErrorCode  PetscStackCopy(PetscStack* sint,PetscStack* sout)
 {
   int i;
 
@@ -113,7 +113,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscStackCopy(PetscStack* sint,PetscStack* so
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStackPrint"
 /*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscStackPrint(PetscStack* sint,FILE *fp)
+PetscErrorCode  PetscStackPrint(PetscStack* sint,FILE *fp)
 {
   int i;
 
@@ -127,35 +127,35 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscStackPrint(PetscStack* sint,FILE *fp)
 #else
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStackPublish"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscStackPublish(void)
+PetscErrorCode  PetscStackPublish(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStackDepublish"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscStackDepublish(void)
+PetscErrorCode  PetscStackDepublish(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStackCreate"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscStackCreate(void)
+PetscErrorCode  PetscStackCreate(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStackView"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscStackView(PetscViewer viewer)
+PetscErrorCode  PetscStackView(PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStackDestroy"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscStackDestroy(void)
+PetscErrorCode  PetscStackDestroy(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

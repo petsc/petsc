@@ -19,7 +19,7 @@ struct _n_PetscDLLibrary {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDLLibraryPrintPath"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryPrintPath(PetscDLLibrary libs)
+PetscErrorCode  PetscDLLibraryPrintPath(PetscDLLibrary libs)
 {
   PetscFunctionBegin;
   while (libs) {
@@ -52,7 +52,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryPrintPath(PetscDLLibrary libs)
    ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, or ${any environmental variable}
    occuring in directoryname and filename will be replaced with appropriate values.
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,size_t llen,PetscBool  *found)
+PetscErrorCode  PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,size_t llen,PetscBool  *found)
 {
   char           *buf,*par2,suffix[16],*gz,*so;
   size_t         len;
@@ -126,7 +126,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const cha
 
 .seealso: PetscLoadDynamicLibrary(), PetscDLLibraryAppend()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrary *entry)
+PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrary *entry)
 {
   PetscErrorCode ierr;
   PetscBool      foundlibrary,match;
@@ -222,7 +222,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char pa
         Will attempt to (retrieve and) open the library if it is not yet been opened.
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *outlist,const char path[],const char insymbol[],void **value)
+PetscErrorCode  PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *outlist,const char path[],const char insymbol[],void **value)
 {
   char           libname[PETSC_MAX_PATH_LEN],suffix[16],*symbol,*s;
   size_t         len;
@@ -328,7 +328,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary
 
 .seealso: PetscDLLibraryOpen()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary *outlist,const char path[])
+PetscErrorCode  PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary *outlist,const char path[])
 {
   PetscDLLibrary list,prev;
   PetscErrorCode ierr;
@@ -415,7 +415,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibr
      Notes: If library is already in path will remove old reference.
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibrary *outlist,const char path[])
+PetscErrorCode  PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibrary *outlist,const char path[])
 {
   PetscDLLibrary list,prev;
   PetscErrorCode ierr;
@@ -500,7 +500,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLib
      Level: developer
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryClose(PetscDLLibrary list)
+PetscErrorCode  PetscDLLibraryClose(PetscDLLibrary list)
 {
   PetscBool      done = PETSC_FALSE;
   PetscDLLibrary prev,tail;
@@ -551,7 +551,7 @@ PetscFList CCAList = 0;
 
      Notes: if library is already in path will not add it.
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLLibrary *outlist,const char dirname[])
+PetscErrorCode  PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLLibrary *outlist,const char dirname[])
 {
   PetscErrorCode ierr;
   size_t         l;

@@ -368,7 +368,7 @@ typedef PetscErrorCode (*FCN1)(SNES,Vec,Vec,void*,PetscBool *);                 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESLineSearchSetPreCheck_Picard"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPreCheck_Picard(SNES snes, FCN1 func, void *checkctx)
+PetscErrorCode  SNESLineSearchSetPreCheck_Picard(SNES snes, FCN1 func, void *checkctx)
 {
   PetscFunctionBegin;
   ((SNES_Picard *)(snes->data))->precheckstep = func;
@@ -381,7 +381,7 @@ typedef PetscErrorCode (*FCN2)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscRea
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESLineSearchSet_Picard"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSet_Picard(SNES snes, FCN2 func, void *lsctx)
+PetscErrorCode  SNESLineSearchSet_Picard(SNES snes, FCN2 func, void *lsctx)
 {
   PetscFunctionBegin;
   ((SNES_Picard *)(snes->data))->LineSearch = func;
@@ -394,7 +394,7 @@ typedef PetscErrorCode (*FCN3)(SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *); 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESLineSearchSetPostCheck_Picard"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPostCheck_Picard(SNES snes, FCN3 func, void *checkctx)
+PetscErrorCode  SNESLineSearchSetPostCheck_Picard(SNES snes, FCN3 func, void *checkctx)
 {
   PetscFunctionBegin;
   ((SNES_Picard *)(snes->data))->postcheckstep = func;
@@ -413,7 +413,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESCreate_Picard"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Picard(SNES snes)
+PetscErrorCode  SNESCreate_Picard(SNES snes)
 {
   SNES_Picard   *neP;
   PetscErrorCode ierr;

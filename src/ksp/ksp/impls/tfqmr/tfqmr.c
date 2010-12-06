@@ -147,7 +147,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_TFQMR"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_TFQMR(KSP ksp)
+PetscErrorCode  KSPCreate_TFQMR(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                      = (void*)0;

@@ -201,7 +201,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_PBJacobi"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_PBJacobi(PC pc)
+PetscErrorCode  PCCreate_PBJacobi(PC pc)
 {
   PC_PBJacobi    *jac;
   PetscErrorCode ierr;

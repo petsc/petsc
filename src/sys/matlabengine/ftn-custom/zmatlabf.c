@@ -57,8 +57,8 @@ void PETSC_STDCALL petscmatlabenginegetarray_(PetscMatlabEngine *e,PetscInt *m,P
 }
 
 /*
-EXTERN int PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);
-EXTERN int PetscMatlabEnginePrintOutput(PetscMatlabEngine,FILE*);
+extern int PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);
+extern int PetscMatlabEnginePrintOutput(PetscMatlabEngine,FILE*);
 */
 
 EXTERN_C_END

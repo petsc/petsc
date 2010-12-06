@@ -31,7 +31,7 @@ PetscBool  PFRegisterAllCalled = PETSC_FALSE;
 
 .seealso: PFCreate(), PFDestroy(), PFSetType(), PFApply(), PFApplyVec()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,const PetscScalar*,PetscScalar*),PetscErrorCode (*applyvec)(void*,Vec,Vec),PetscErrorCode (*view)(void*,PetscViewer),PetscErrorCode (*destroy)(void*),void*ctx)
+PetscErrorCode  PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,const PetscScalar*,PetscScalar*),PetscErrorCode (*applyvec)(void*,Vec,Vec),PetscErrorCode (*view)(void*,PetscViewer),PetscErrorCode (*destroy)(void*),void*ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
@@ -61,7 +61,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSet(PF pf,PetscErrorCode (*apply)(void*,Pets
 
 .seealso: PFCreate(), PFSet(), PFSetType()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFDestroy(PF pf)
+PetscErrorCode  PFDestroy(PF pf)
 {
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
@@ -106,7 +106,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFDestroy(PF pf)
 
 .seealso: PFSetUp(), PFApply(), PFDestroy(), PFApplyVec()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
+PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
 {
   PF             newpf;
   PetscErrorCode ierr;
@@ -155,7 +155,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt
 
 .seealso: PFApply(), PFCreate(), PFDestroy(), PFSetType(), PFSet()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFApplyVec(PF pf,Vec x,Vec y)
+PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PetscInt       i,rstart,rend,n,p;
@@ -231,7 +231,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFApplyVec(PF pf,Vec x,Vec y)
 
 .seealso: PFApplyVec(), PFCreate(), PFDestroy(), PFSetType(), PFSet()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFApply(PF pf,PetscInt n,const PetscScalar* x,PetscScalar* y)
+PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar* x,PetscScalar* y)
 {
   PetscErrorCode ierr;
 
@@ -274,7 +274,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFApply(PF pf,PetscInt n,const PetscScalar* x,
 
 .seealso: PetscViewerCreate(), PetscViewerASCIIOpen()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFView(PF pf,PetscViewer viewer)
+PetscErrorCode  PFView(PF pf,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscBool         iascii;
@@ -346,7 +346,7 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFRegister"
-PetscErrorCode PETSCVEC_DLLEXPORT PFRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PF,void*))
+PetscErrorCode  PFRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PF,void*))
 {
   PetscErrorCode ierr;
   char           fullname[PETSC_MAX_PATH_LEN];
@@ -378,7 +378,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFRegister(const char sname[],const char path[
 .seealso: PFSetType()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFGetType(PF pf,const PFType *type)
+PetscErrorCode  PFGetType(PF pf,const PFType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
@@ -415,7 +415,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFGetType(PF pf,const PFType *type)
 .seealso: PFSet(), PFRegisterDynamic(), PFCreate(), DMDACreatePF()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF pf,const PFType type,void *ctx)
+PetscErrorCode  PFSetType(PF pf,const PFType type,void *ctx)
 {
   PetscErrorCode ierr,(*r)(PF,void*);
   PetscBool      match;
@@ -467,7 +467,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF pf,const PFType type,void *ctx)
 
 .seealso:
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFSetFromOptions(PF pf)
+PetscErrorCode  PFSetFromOptions(PF pf)
 {
   PetscErrorCode ierr;
   char           type[256];
@@ -504,7 +504,7 @@ static PetscBool  PFPackageInitialized = PETSC_FALSE;
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFFinalizePackage(void)
+PetscErrorCode  PFFinalizePackage(void)
 {
   PetscFunctionBegin;
   PFPackageInitialized = PETSC_FALSE;
@@ -528,7 +528,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFFinalizePackage(void)
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFInitializePackage(const char path[]) 
+PetscErrorCode  PFInitializePackage(const char path[]) 
 {
   char              logList[256];
   char              *className;

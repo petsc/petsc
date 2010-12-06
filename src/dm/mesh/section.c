@@ -2,11 +2,11 @@
 #include <petscmesh_viewers.hh>
 
 /* Logging support */
-PetscClassId PETSCDM_DLLEXPORT SECTIONREAL_CLASSID;
+PetscClassId  SECTIONREAL_CLASSID;
 PetscLogEvent  SectionReal_View;
-PetscClassId PETSCDM_DLLEXPORT SECTIONINT_CLASSID;
+PetscClassId  SECTIONINT_CLASSID;
 PetscLogEvent  SectionInt_View;
-PetscClassId PETSCDM_DLLEXPORT SECTIONPAIR_CLASSID;
+PetscClassId  SECTIONPAIR_CLASSID;
 PetscLogEvent  SectionPair_View;
 
 #undef __FUNCT__  
@@ -117,7 +117,7 @@ PetscErrorCode SectionRealView(SectionReal section, PetscViewer viewer)
 
 .seealso SectionRealCreate(), SectionRealSetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealDuplicate(SectionReal section, SectionReal *newSection)
+PetscErrorCode  SectionRealDuplicate(SectionReal section, SectionReal *newSection)
 {
   PetscErrorCode ierr;
 
@@ -153,7 +153,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealDuplicate(SectionReal section, Secti
 
 .seealso SectionRealCreate(), SectionRealSetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetSection(SectionReal section, ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s)
+PetscErrorCode  SectionRealGetSection(SectionReal section, ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
@@ -176,7 +176,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetSection(SectionReal section, ALE:
 
 .seealso SectionRealCreate(), SectionRealGetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetSection(SectionReal section, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s)
+PetscErrorCode  SectionRealSetSection(SectionReal section, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s)
 {
   PetscErrorCode ierr;
 
@@ -204,7 +204,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetSection(SectionReal section, cons
 
 .seealso SectionRealCreate(), SectionRealGetSection(), SectionRealSetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetBundle(SectionReal section, ALE::Obj<PETSC_MESH_TYPE>& b)
+PetscErrorCode  SectionRealGetBundle(SectionReal section, ALE::Obj<PETSC_MESH_TYPE>& b)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
@@ -227,7 +227,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetBundle(SectionReal section, ALE::
 
 .seealso SectionRealCreate(), SectionRealGetSection(), SectionRealSetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetBundle(SectionReal section, const ALE::Obj<PETSC_MESH_TYPE>& b)
+PetscErrorCode  SectionRealSetBundle(SectionReal section, const ALE::Obj<PETSC_MESH_TYPE>& b)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
@@ -253,7 +253,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetBundle(SectionReal section, const
 
 .seealso SectionRealDestroy(), SectionRealView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreate(MPI_Comm comm, SectionReal *section)
+PetscErrorCode  SectionRealCreate(MPI_Comm comm, SectionReal *section)
 {
   PetscErrorCode ierr;
   SectionReal    s;
@@ -289,7 +289,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreate(MPI_Comm comm, SectionReal *s
 
 .seealso SectionRealCreate(), SectionRealView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealDestroy(SectionReal section)
+PetscErrorCode  SectionRealDestroy(SectionReal section)
 {
   PetscErrorCode ierr;
 
@@ -364,7 +364,7 @@ PetscErrorCode SectionRealDistribute(SectionReal serialSection, Mesh parallelMes
 
 .seealso SectionUpdate(), SectionCreate(), SectionView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealRestrict(SectionReal section, PetscInt point, PetscScalar *values[])
+PetscErrorCode  SectionRealRestrict(SectionReal section, PetscInt point, PetscScalar *values[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
@@ -390,7 +390,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealRestrict(SectionReal section, PetscI
 
 .seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdate(SectionReal section, PetscInt point, const PetscScalar values[], InsertMode mode)
+PetscErrorCode  SectionRealUpdate(SectionReal section, PetscInt point, const PetscScalar values[], InsertMode mode)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
@@ -604,7 +604,7 @@ PetscErrorCode SectionRealZero(SectionReal section)
 
 .seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetFiberDimension(SectionReal section, PetscInt point, PetscInt *size)
+PetscErrorCode  SectionRealGetFiberDimension(SectionReal section, PetscInt point, PetscInt *size)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
@@ -628,7 +628,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetFiberDimension(SectionReal sectio
 
 .seealso SectionRealSetFiberDimensionField(), SectionRealRestrict(), SectionRealCreate(), SectionRealView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetFiberDimension(SectionReal section, PetscInt point, const PetscInt size)
+PetscErrorCode  SectionRealSetFiberDimension(SectionReal section, PetscInt point, const PetscInt size)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
@@ -653,7 +653,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetFiberDimension(SectionReal sectio
 
 .seealso SectionRealSetFiberDimension(), SectionRealRestrict(), SectionRealCreate(), SectionRealView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetFiberDimensionField(SectionReal section, PetscInt point, const PetscInt size, const PetscInt field)
+PetscErrorCode  SectionRealSetFiberDimensionField(SectionReal section, PetscInt point, const PetscInt size, const PetscInt field)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
@@ -704,7 +704,7 @@ PetscErrorCode SectionRealGetSize(SectionReal section, PetscInt *size)
 
 .seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealAllocate(SectionReal section)
+PetscErrorCode  SectionRealAllocate(SectionReal section)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
@@ -730,7 +730,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealAllocate(SectionReal section)
   Notes: The vector can safely be destroyed using VecDestroy().
 .seealso MeshDestroy(), MeshCreate()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreateLocalVector(SectionReal section, Vec *localVec)
+PetscErrorCode  SectionRealCreateLocalVector(SectionReal section, Vec *localVec)
 {
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
   PetscErrorCode ierr;
@@ -759,7 +759,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreateLocalVector(SectionReal sectio
 
 .seealso SectionRealCreate(), SectionRealGetFibration()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealAddSpace(SectionReal section)
+PetscErrorCode  SectionRealAddSpace(SectionReal section)
 {
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
   PetscErrorCode ierr;
@@ -788,7 +788,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealAddSpace(SectionReal section)
 
 .seealso SectionRealCreate()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetFibration(SectionReal section, const PetscInt field, SectionReal *subsection)
+PetscErrorCode  SectionRealGetFibration(SectionReal section, const PetscInt field, SectionReal *subsection)
 {
   ALE::Obj<PETSC_MESH_TYPE>                    b;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -825,7 +825,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetFibration(SectionReal section, co
 
 .seealso VecCreate(), SectionRealCreate()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal section, Mesh mesh, ScatterMode mode, Vec vec)
+PetscErrorCode  SectionRealToVec(SectionReal section, Mesh mesh, ScatterMode mode, Vec vec)
 {
   Vec            localVec;
   VecScatter     scatter;
@@ -863,7 +863,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal section, Mesh mesh
 
 .seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal section, VecScatter scatter, ScatterMode mode, Vec vec)
+PetscErrorCode  SectionRealToVec(SectionReal section, VecScatter scatter, ScatterMode mode, Vec vec)
 {
   Vec            localVec;
   PetscErrorCode ierr;
@@ -896,7 +896,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal section, VecScatte
 
 .seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealClear(SectionReal section)
+PetscErrorCode  SectionRealClear(SectionReal section)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
@@ -919,7 +919,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealClear(SectionReal section)
 
 .seealso VecNorm(), SectionRealCreate()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealSet(SectionReal section, PetscReal val)
+PetscErrorCode  SectionRealSet(SectionReal section, PetscReal val)
 {
   Obj<PETSC_MESH_TYPE::real_section_type> s;
   PetscErrorCode ierr;
@@ -955,7 +955,7 @@ $     NORM_INFINITY denotes max_i |x_i|
 
 .seealso VecNorm(), SectionRealCreate()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealNorm(SectionReal section, Mesh mesh, NormType type, PetscReal *val)
+PetscErrorCode  SectionRealNorm(SectionReal section, Mesh mesh, NormType type, PetscReal *val)
 {
   Obj<PETSC_MESH_TYPE> m;
   Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -995,7 +995,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealNorm(SectionReal section, Mesh mesh,
 
 .seealso VecNorm(), SectionRealCreate()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealAXPY(SectionReal section, Mesh mesh, PetscScalar alpha, SectionReal X)
+PetscErrorCode  SectionRealAXPY(SectionReal section, Mesh mesh, PetscScalar alpha, SectionReal X)
 {
   Obj<PETSC_MESH_TYPE> m;
   Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -1122,7 +1122,7 @@ PetscErrorCode MeshGetCellSectionReal(Mesh mesh, const char name[], PetscInt fib
 .seealso MeshDestroy(), MeshCreate(), MeshCreateGlobalVector()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalRealVector(Mesh mesh, SectionReal section, Vec *gvec)
+PetscErrorCode  MeshCreateGlobalRealVector(Mesh mesh, SectionReal section, Vec *gvec)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -1249,7 +1249,7 @@ PetscErrorCode SectionIntView(SectionInt section, PetscViewer viewer)
 
 .seealso SectionIntCreate(), SectionIntSetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetSection(SectionInt section, ALE::Obj<PETSC_MESH_TYPE::int_section_type>& s)
+PetscErrorCode  SectionIntGetSection(SectionInt section, ALE::Obj<PETSC_MESH_TYPE::int_section_type>& s)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
@@ -1272,7 +1272,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetSection(SectionInt section, ALE::O
 
 .seealso SectionIntCreate(), SectionIntGetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetSection(SectionInt section, const ALE::Obj<PETSC_MESH_TYPE::int_section_type>& s)
+PetscErrorCode  SectionIntSetSection(SectionInt section, const ALE::Obj<PETSC_MESH_TYPE::int_section_type>& s)
 {
   PetscErrorCode ierr;
 
@@ -1300,7 +1300,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetSection(SectionInt section, const 
 
 .seealso SectionIntCreate(), SectionIntGetSection(), SectionIntSetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetBundle(SectionInt section, ALE::Obj<PETSC_MESH_TYPE>& b)
+PetscErrorCode  SectionIntGetBundle(SectionInt section, ALE::Obj<PETSC_MESH_TYPE>& b)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
@@ -1323,7 +1323,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetBundle(SectionInt section, ALE::Ob
 
 .seealso SectionIntCreate(), SectionIntGetSection(), SectionIntSetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetBundle(SectionInt section, const ALE::Obj<PETSC_MESH_TYPE>& b)
+PetscErrorCode  SectionIntSetBundle(SectionInt section, const ALE::Obj<PETSC_MESH_TYPE>& b)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
@@ -1349,7 +1349,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetBundle(SectionInt section, const A
 
 .seealso SectionIntDestroy(), SectionIntView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntCreate(MPI_Comm comm, SectionInt *section)
+PetscErrorCode  SectionIntCreate(MPI_Comm comm, SectionInt *section)
 {
   PetscErrorCode ierr;
   SectionInt    s;
@@ -1385,7 +1385,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntCreate(MPI_Comm comm, SectionInt *sec
 
 .seealso SectionIntCreate(), SectionIntView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntDestroy(SectionInt section)
+PetscErrorCode  SectionIntDestroy(SectionInt section)
 {
   PetscErrorCode ierr;
 
@@ -1460,7 +1460,7 @@ PetscErrorCode SectionIntDistribute(SectionInt serialSection, Mesh parallelMesh,
 
 .seealso SectionIntUpdate(), SectionIntCreate(), SectionIntView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntRestrict(SectionInt section, PetscInt point, PetscInt *values[])
+PetscErrorCode  SectionIntRestrict(SectionInt section, PetscInt point, PetscInt *values[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
@@ -1486,7 +1486,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntRestrict(SectionInt section, PetscInt
 
 .seealso SectionIntRestrict(), SectionIntCreate(), SectionIntView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdate(SectionInt section, PetscInt point, const PetscInt values[], InsertMode mode)
+PetscErrorCode  SectionIntUpdate(SectionInt section, PetscInt point, const PetscInt values[], InsertMode mode)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
@@ -1651,7 +1651,7 @@ PetscErrorCode SectionIntZero(SectionInt section)
 
 .seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetFiberDimension(SectionInt section, PetscInt point, PetscInt *size)
+PetscErrorCode  SectionIntGetFiberDimension(SectionInt section, PetscInt point, PetscInt *size)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
@@ -1675,7 +1675,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetFiberDimension(SectionInt section,
 
 .seealso SectionIntRestrict(), SectionIntCreate(), SectionIntView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetFiberDimension(SectionInt section, PetscInt point, const PetscInt size)
+PetscErrorCode  SectionIntSetFiberDimension(SectionInt section, PetscInt point, const PetscInt size)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
@@ -1700,7 +1700,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetFiberDimension(SectionInt section,
 
 .seealso SectionIntSetFiberDimension(), SectionIntRestrict(), SectionIntCreate(), SectionIntView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetFiberDimensionField(SectionInt section, PetscInt point, const PetscInt size, const PetscInt field)
+PetscErrorCode  SectionIntSetFiberDimensionField(SectionInt section, PetscInt point, const PetscInt size, const PetscInt field)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
@@ -1751,7 +1751,7 @@ PetscErrorCode SectionIntGetSize(SectionInt section, PetscInt *size)
 
 .seealso SectionIntRestrict(), SectionIntCreate(), SectionIntView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntAllocate(SectionInt section)
+PetscErrorCode  SectionIntAllocate(SectionInt section)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
@@ -1773,7 +1773,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntAllocate(SectionInt section)
 
 .seealso SectionIntRestrict(), SectionIntCreate(), SectionIntView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntClear(SectionInt section)
+PetscErrorCode  SectionIntClear(SectionInt section)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
@@ -1796,7 +1796,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntClear(SectionInt section)
 
 .seealso VecNorm(), SectionIntCreate()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntSet(SectionInt section, PetscInt val)
+PetscErrorCode  SectionIntSet(SectionInt section, PetscInt val)
 {
   Obj<PETSC_MESH_TYPE::int_section_type> s;
   PetscErrorCode ierr;
@@ -1821,7 +1821,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntSet(SectionInt section, PetscInt val)
 
 .seealso SectionIntCreate(), SectionIntGetFibration()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntAddSpace(SectionInt section)
+PetscErrorCode  SectionIntAddSpace(SectionInt section)
 {
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
   PetscErrorCode ierr;
@@ -1850,7 +1850,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntAddSpace(SectionInt section)
 
 .seealso SectionIntCreate(), SectionIntAddSpace()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetFibration(SectionInt section, const PetscInt field, SectionInt *subsection)
+PetscErrorCode  SectionIntGetFibration(SectionInt section, const PetscInt field, SectionInt *subsection)
 {
   ALE::Obj<PETSC_MESH_TYPE>                   b;
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;

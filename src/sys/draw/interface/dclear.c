@@ -20,7 +20,7 @@
 
 .seealso: PetscDrawBOP(), PetscDrawEOP(), PetscDrawSynchronizedClear()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawClear(PetscDraw draw)
+PetscErrorCode  PetscDrawClear(PetscDraw draw)
 {
   PetscErrorCode ierr;
 
@@ -46,7 +46,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawClear(PetscDraw draw)
 
 .seealso: PetscDrawEOP(), PetscDrawClear()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawBOP(PetscDraw draw)
+PetscErrorCode  PetscDrawBOP(PetscDraw draw)
 {
   PetscErrorCode ierr;
 
@@ -71,7 +71,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawBOP(PetscDraw draw)
 
 .seealso: PetscDrawBOP(), PetscDrawClear()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscDrawEOP(PetscDraw draw)
+PetscErrorCode  PetscDrawEOP(PetscDraw draw)
 {
   PetscErrorCode ierr;
 

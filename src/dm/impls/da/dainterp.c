@@ -26,7 +26,7 @@
 .seealso: DMGetInterpolation()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
+PetscErrorCode  DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 {
   PetscErrorCode ierr;
   Vec            fine;
@@ -1019,7 +1019,7 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetInterpolation_DA"
-PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
+PetscErrorCode  DMGetInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
 {
   PetscErrorCode   ierr;
   PetscInt         dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
@@ -1222,7 +1222,7 @@ PetscErrorCode DMGetInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetInjection_DA"
-PetscErrorCode PETSCDM_DLLEXPORT DMGetInjection_DA(DM dac,DM daf,VecScatter *inject)
+PetscErrorCode  DMGetInjection_DA(DM dac,DM daf,VecScatter *inject)
 {
   PetscErrorCode   ierr;
   PetscInt         dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
@@ -1257,7 +1257,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInjection_DA(DM dac,DM daf,VecScatter *inj
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetAggregates_DA"
-PetscErrorCode PETSCDM_DLLEXPORT DMGetAggregates_DA(DM dac,DM daf,Mat *rest)
+PetscErrorCode  DMGetAggregates_DA(DM dac,DM daf,Mat *rest)
 {
   PetscErrorCode   ierr;
   PetscInt         dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc;

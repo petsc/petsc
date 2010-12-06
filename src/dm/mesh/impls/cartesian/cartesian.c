@@ -19,7 +19,7 @@
 .seealso MeshCreate(), MeshCartesianSetMesh()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshCartesianGetMesh(Mesh mesh, ALE::Obj<ALE::CartesianMesh>& m)
+PetscErrorCode  MeshCartesianGetMesh(Mesh mesh, ALE::Obj<ALE::CartesianMesh>& m)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
@@ -43,7 +43,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCartesianGetMesh(Mesh mesh, ALE::Obj<ALE::C
 .seealso MeshCreate(), MeshCartesianGetMesh()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshCartesianSetMesh(Mesh mesh, const ALE::Obj<ALE::CartesianMesh>& m)
+PetscErrorCode  MeshCartesianSetMesh(Mesh mesh, const ALE::Obj<ALE::CartesianMesh>& m)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
@@ -53,7 +53,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCartesianSetMesh(Mesh mesh, const ALE::Obj<
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshDestroy_Cartesian"
-PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy_Cartesian(Mesh mesh)
+PetscErrorCode  MeshDestroy_Cartesian(Mesh mesh)
 {
   PetscErrorCode ierr;
 
@@ -93,7 +93,7 @@ PetscErrorCode MeshView_Cartesian_Ascii(const ALE::Obj<ALE::CartesianMesh>& mesh
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PETSCDM_DLLEXPORT MeshView_Cartesian(Mesh mesh, PetscViewer viewer)
+PetscErrorCode  MeshView_Cartesian(Mesh mesh, PetscViewer viewer)
 {
   PetscBool      iascii, isbinary, isdraw;
   PetscErrorCode ierr;
@@ -238,7 +238,7 @@ PetscErrorCode MeshGetSectionReal_Cartesian(Mesh mesh, const char name[], Sectio
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreate_Cartesian"
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreate_Cartesian(Mesh mesh)
+PetscErrorCode  MeshCreate_Cartesian(Mesh mesh)
 {
   ALE::Obj<ALE::CartesianMesh> *cm;
   PetscErrorCode ierr;

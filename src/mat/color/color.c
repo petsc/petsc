@@ -54,7 +54,7 @@ EXTERN_C_BEGIN
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColoring_SL_Minpack" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_SL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
+PetscErrorCode  MatGetColoring_SL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        *list,*work,clique,*ria,*rja,*cia,*cja,*seq,*coloring,n;
@@ -141,7 +141,7 @@ EXTERN_C_BEGIN
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColoring_LF_Minpack" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_LF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
+PetscErrorCode  MatGetColoring_LF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        *list,*work,*ria,*rja,*cia,*cja,*seq,*coloring,n;
@@ -230,7 +230,7 @@ EXTERN_C_BEGIN
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColoring_ID_Minpack" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_ID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
+PetscErrorCode  MatGetColoring_ID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        *list,*work,clique,*ria,*rja,*cia,*cja,*seq,*coloring,n;
@@ -317,7 +317,7 @@ EXTERN_C_BEGIN
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColoring_Natural" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
+PetscErrorCode  MatGetColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        start,end,i,bs = 1,n;
@@ -388,7 +388,7 @@ PetscBool  MatColoringRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatColoringRegister" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatColoringRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,MatColoringType,ISColoring*))
+PetscErrorCode  MatColoringRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,MatColoringType,ISColoring*))
 {
   PetscErrorCode ierr;
   char           fullname[PETSC_MAX_PATH_LEN];
@@ -412,7 +412,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatColoringRegister(const char sname[],const c
 
 .seealso: MatColoringRegisterDynamic(), MatColoringRegisterAll()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatColoringRegisterDestroy(void)
+PetscErrorCode  MatColoringRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -478,7 +478,7 @@ $         Sources and Development of Mathematical Software, Wayne R. Cowell edit
 .seealso:  MatGetColoringTypeFromOptions(), MatColoringRegisterDynamic(), MatFDColoringCreate(),
            SNESDefaultComputeJacobianColor()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,const MatColoringType type,ISColoring *iscoloring)
+PetscErrorCode  MatGetColoring(Mat mat,const MatColoringType type,ISColoring *iscoloring)
 {
   PetscBool      flag;
   PetscErrorCode ierr,(*r)(Mat,const MatColoringType,ISColoring *);

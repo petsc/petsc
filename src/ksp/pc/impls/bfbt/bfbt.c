@@ -16,7 +16,7 @@ EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCBFBtSetOperators_BFBt"
 /* K and G must not be PETSC_NULL, M can be PETSC_NULL */
-PetscErrorCode PETSCKSP_DLLEXPORT PCBFBtSetOperators_BFBt(PC pc, Mat K, Mat G, Mat M)
+PetscErrorCode  PCBFBtSetOperators_BFBt(PC pc, Mat K, Mat G, Mat M)
 {
   PC_BFBt *ctx = (PC_BFBt *) pc->data;
 
@@ -43,7 +43,7 @@ EXTERN_C_END
 
   Note: K and G must not be PETSC_NULL, M can be PETSC_NULL
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCBFBtSetOperators(PC pc, Mat K, Mat G, Mat M)
+PetscErrorCode  PCBFBtSetOperators(PC pc, Mat K, Mat G, Mat M)
 {
   PetscErrorCode ierr;
 

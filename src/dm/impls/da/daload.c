@@ -20,7 +20,7 @@
    Level: intermediate
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMDALoad(PetscViewer viewer,PetscInt M,PetscInt N,PetscInt P,DM *da)
+PetscErrorCode  DMDALoad(PetscViewer viewer,PetscInt M,PetscInt N,PetscInt P,DM *da)
 {
   PetscErrorCode ierr;
   PetscInt       info[8],nmax = 8,i;

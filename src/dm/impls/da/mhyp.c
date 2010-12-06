@@ -311,7 +311,7 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesLocal_HYPREStruct_3d"
-PetscErrorCode PETSCDM_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv)
+PetscErrorCode  MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv)
 {
   PetscErrorCode    ierr;
   PetscInt          i,j,stencil,index[3],row,entries[7];
@@ -354,7 +354,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscI
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRowsLocal_HYPREStruct_3d"
-PetscErrorCode PETSCDM_DLLEXPORT MatZeroRowsLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscScalar d,Vec x,Vec b)
+PetscErrorCode  MatZeroRowsLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscScalar d,Vec x,Vec b)
 {
   PetscErrorCode    ierr;
   PetscInt          i,index[3],row,entries[7] = {0,1,2,3,4,5,6};
@@ -393,7 +393,7 @@ PetscErrorCode MatZeroEntries_HYPREStruct_3d(Mat mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetDA_HYPREStruct"
-PetscErrorCode PETSCDM_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DM da)
+PetscErrorCode  MatSetDA_HYPREStruct(Mat mat,DM da)
 {
   PetscErrorCode  ierr;
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
@@ -570,7 +570,7 @@ PetscErrorCode MatDestroy_HYPREStruct(Mat mat)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_HYPREStruct"
-PetscErrorCode PETSCDM_DLLEXPORT MatCreate_HYPREStruct(Mat B)
+PetscErrorCode  MatCreate_HYPREStruct(Mat B)
 {
   Mat_HYPREStruct *ex;
   PetscErrorCode  ierr;
@@ -617,7 +617,7 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesLocal_HYPRESStruct_3d"
-PetscErrorCode PETSCDM_DLLEXPORT MatSetValuesLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv)
+PetscErrorCode  MatSetValuesLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv)
 {
   PetscErrorCode    ierr;
   PetscInt          i,j,stencil,index[3];
@@ -730,7 +730,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MatSetValuesLocal_HYPRESStruct_3d(Mat mat,Petsc
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRowsLocal_HYPRESStruct_3d"
-PetscErrorCode PETSCDM_DLLEXPORT MatZeroRowsLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscScalar d,Vec x,Vec b)
+PetscErrorCode  MatZeroRowsLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscScalar d,Vec x,Vec b)
 {
   PetscErrorCode    ierr;
   PetscInt          i,index[3];
@@ -833,7 +833,7 @@ PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetDA_HYPRESStruct"
-PetscErrorCode PETSCDM_DLLEXPORT MatSetDA_HYPRESStruct(Mat mat,DM da)
+PetscErrorCode  MatSetDA_HYPRESStruct(Mat mat,DM da)
 {
   PetscErrorCode    ierr;
   Mat_HYPRESStruct *ex = (Mat_HYPRESStruct*) mat->data;
@@ -1108,7 +1108,7 @@ PetscErrorCode MatDestroy_HYPRESStruct(Mat mat)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_HYPRESStruct"
-PetscErrorCode PETSCDM_DLLEXPORT MatCreate_HYPRESStruct(Mat B)
+PetscErrorCode  MatCreate_HYPRESStruct(Mat B)
 {
   Mat_HYPRESStruct *ex;
   PetscErrorCode   ierr;

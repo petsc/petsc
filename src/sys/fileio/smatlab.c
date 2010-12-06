@@ -28,7 +28,7 @@
 
 .seealso: PetscPOpen(), PetscPClose()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscStartMatlab(MPI_Comm comm,const char machine[],const char script[],FILE **fp)
+PetscErrorCode  PetscStartMatlab(MPI_Comm comm,const char machine[],const char script[],FILE **fp)
 {
   PetscErrorCode ierr;
   FILE           *fd;

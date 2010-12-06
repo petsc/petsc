@@ -28,7 +28,7 @@
 
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerRestoreSingleton()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerGetSingleton(PetscViewer viewer,PetscViewer *outviewer)
+PetscErrorCode  PetscViewerGetSingleton(PetscViewer viewer,PetscViewer *outviewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -65,7 +65,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerGetSingleton(PetscViewer viewer,Pet
 
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerGetSingleton()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerRestoreSingleton(PetscViewer viewer,PetscViewer *outviewer)
+PetscErrorCode  PetscViewerRestoreSingleton(PetscViewer viewer,PetscViewer *outviewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -110,7 +110,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerRestoreSingleton(PetscViewer viewer
 
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerRestoreSubcomm()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerGetSubcomm(PetscViewer viewer,MPI_Comm subcomm,PetscViewer *outviewer)
+PetscErrorCode  PetscViewerGetSubcomm(PetscViewer viewer,MPI_Comm subcomm,PetscViewer *outviewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -148,7 +148,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerGetSubcomm(PetscViewer viewer,MPI_C
 
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerGetSubcomm()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerRestoreSubcomm(PetscViewer viewer,MPI_Comm subcomm,PetscViewer *outviewer)
+PetscErrorCode  PetscViewerRestoreSubcomm(PetscViewer viewer,MPI_Comm subcomm,PetscViewer *outviewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

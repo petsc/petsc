@@ -29,7 +29,7 @@ static PetscMPIInt Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
           PETSC_VIEWER_STDOUT_SELF
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIGetStdout(MPI_Comm comm,PetscViewer *viewer)
+PetscErrorCode  PetscViewerASCIIGetStdout(MPI_Comm comm,PetscViewer *viewer)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -72,7 +72,7 @@ $      XXXView(XXX object,PETSC_VIEWER_STDOUT_(comm));
           PETSC_VIEWER_STDOUT_SELF
 
 @*/
-PetscViewer PETSCSYS_DLLEXPORT PETSC_VIEWER_STDOUT_(MPI_Comm comm)
+PetscViewer  PETSC_VIEWER_STDOUT_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer;
@@ -110,7 +110,7 @@ static PetscMPIInt Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
           PETSC_VIEWER_STDERR_SELF
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIGetStderr(MPI_Comm comm,PetscViewer *viewer)
+PetscErrorCode  PetscViewerASCIIGetStderr(MPI_Comm comm,PetscViewer *viewer)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -152,7 +152,7 @@ $      XXXView(XXX object,PETSC_VIEWER_STDERR_(comm));
 .seealso: PETSC_VIEWER_DRAW_, PetscViewerASCIIOpen(), PETSC_VIEWER_STDOUT_, PETSC_VIEWER_STDOUT_WORLD,
           PETSC_VIEWER_STDOUT_SELF, PETSC_VIEWER_STDERR_WORLD, PETSC_VIEWER_STDERR_SELF
 @*/
-PetscViewer PETSCSYS_DLLEXPORT PETSC_VIEWER_STDERR_(MPI_Comm comm)
+PetscViewer  PETSC_VIEWER_STDERR_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer;
@@ -173,7 +173,7 @@ EXTERN_C_BEGIN
   This is called by MPI, not by users.
 
 */
-PetscMPIInt PETSCSYS_DLLEXPORT MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
+PetscMPIInt  MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
 {
   PetscErrorCode ierr;
 
@@ -226,7 +226,7 @@ EXTERN_C_END
           PetscViewerASCIIGetPointer(), PetscViewerSetFormat(), PETSC_VIEWER_STDOUT_, PETSC_VIEWER_STDERR_,
           PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_STDOUT_SELF, 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer *lab)
+PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer *lab)
 {
   PetscErrorCode    ierr;
   PetscViewerLink   *vlink,*nv;

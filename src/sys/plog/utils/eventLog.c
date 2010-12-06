@@ -460,7 +460,7 @@ PetscErrorCode EventPerfLogDeactivateClass(EventPerfLog eventLog, EventRegLog ev
 .keywords: log, stage
 .seealso: EventRegLogRegister()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT EventRegLogGetEvent(EventRegLog eventLog, const char name[], PetscLogEvent *event)
+PetscErrorCode  EventRegLogGetEvent(EventRegLog eventLog, const char name[], PetscLogEvent *event)
 {
   PetscBool      match;
   int            e;

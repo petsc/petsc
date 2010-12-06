@@ -53,7 +53,7 @@ static PetscErrorCode PetscSortReal_Private(PetscReal *v,PetscInt right)
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSortReal(PetscInt n,PetscReal v[])
+PetscErrorCode  PetscSortReal(PetscInt n,PetscReal v[])
 {
   PetscInt  j,k;
   PetscReal tmp,vk;
@@ -100,7 +100,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortReal(PetscInt n,PetscReal v[])
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt idx[])
+PetscErrorCode  PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt idx[])
 {
   PetscInt    i,mid,last,itmp,j,first;
   PetscScalar d,tmp;
@@ -167,7 +167,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortSplit(PetscInt ncut,PetscInt n,PetscS
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSortSplitReal(PetscInt ncut,PetscInt n,PetscReal a[],PetscInt idx[])
+PetscErrorCode  PetscSortSplitReal(PetscInt ncut,PetscInt n,PetscReal a[],PetscInt idx[])
 {
   PetscInt    i,mid,last,itmp,j,first;
   PetscReal   d,tmp;

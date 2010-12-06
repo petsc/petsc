@@ -51,7 +51,7 @@ PetscFList PCList = 0;
 .seealso: KSPSetType(), PCType
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC pc,const PCType type)
+PetscErrorCode  PCSetType(PC pc,const PCType type)
 {
   PetscErrorCode ierr,(*r)(PC);
   PetscBool      match;
@@ -100,7 +100,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC pc,const PCType type)
 .seealso: PCRegisterAll(), PCRegisterAll()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterDestroy(void)
+PetscErrorCode  PCRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -131,7 +131,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterDestroy(void)
 .seealso: PCSetType()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGetType(PC pc,const PCType *type)
+PetscErrorCode  PCGetType(PC pc,const PCType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -140,7 +140,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGetType(PC pc,const PCType *type)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode PCGetDefaultType_Private(PC,const char*[]);
+extern PetscErrorCode PCGetDefaultType_Private(PC,const char*[]);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions"
@@ -161,7 +161,7 @@ EXTERN PetscErrorCode PCGetDefaultType_Private(PC,const char*[]);
 .seealso: 
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions(PC pc)
+PetscErrorCode  PCSetFromOptions(PC pc)
 {
   PetscErrorCode ierr;
   char           type[256];
@@ -213,7 +213,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions(PC pc)
 
 .seealso: PCGetDM(), KSPSetDM(), KSPGetDM()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSetDM(PC pc,DM dm)
+PetscErrorCode  PCSetDM(PC pc,DM dm)
 {
   PetscErrorCode ierr;
 
@@ -243,7 +243,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetDM(PC pc,DM dm)
 
 .seealso: PCSetDM(), KSPSetDM(), KSPGetDM()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGetDM(PC pc,DM *dm)
+PetscErrorCode  PCGetDM(PC pc,DM *dm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);

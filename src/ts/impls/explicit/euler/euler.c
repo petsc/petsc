@@ -95,7 +95,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_Euler"
-PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Euler(TS ts)
+PetscErrorCode  TSCreate_Euler(TS ts)
 {
   TS_Euler       *euler;
   PetscErrorCode ierr;

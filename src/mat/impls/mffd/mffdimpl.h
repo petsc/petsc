@@ -53,7 +53,7 @@ struct _p_MatMFFD {    /* context for default matrix-free SNES */
   Vec              dlscale,drscale,dshift;              /* diagonal scale and shift by vectors */
 };
 
-EXTERN PetscFList MatMFFDList;
-EXTERN PetscBool  MatMFFDRegisterAllCalled;
+extern PetscFList MatMFFDList;
+extern PetscBool  MatMFFDRegisterAllCalled;
 
 #endif

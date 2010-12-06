@@ -225,7 +225,7 @@ EXTERN_C_END
 .seealso: MatMFFDSetFunctionError(), MatCreateSNESMF()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDDSSetUmin(Mat A,PetscReal umin)
+PetscErrorCode  MatMFFDDSSetUmin(Mat A,PetscReal umin)
 {
   PetscErrorCode ierr;
 
@@ -264,7 +264,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateMFFD_DS"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD_DS(MatMFFD ctx)
+PetscErrorCode  MatCreateMFFD_DS(MatMFFD ctx)
 {
   MatMFFD_DS       *hctx;
   PetscErrorCode   ierr;

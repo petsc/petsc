@@ -87,7 +87,7 @@ PetscErrorCode MatRestoreRow_MPIDense(Mat mat,PetscInt row,PetscInt *nz,PetscInt
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonalBlock_MPIDense"
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock_MPIDense(Mat A,PetscBool  *iscopy,MatReuse reuse,Mat *B)
+PetscErrorCode  MatGetDiagonalBlock_MPIDense(Mat A,PetscBool  *iscopy,MatReuse reuse,Mat *B)
 {
   Mat_MPIDense   *mdn = (Mat_MPIDense*)A->data;
   PetscErrorCode ierr;
@@ -1451,7 +1451,7 @@ PetscErrorCode MatAXPY_MPIDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatConjugate_MPIDense"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate_MPIDense(Mat mat)
+PetscErrorCode  MatConjugate_MPIDense(Mat mat)
 {
   Mat_MPIDense   *a = (Mat_MPIDense *)mat->data;
   PetscErrorCode ierr;
@@ -1621,7 +1621,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIDenseSetPreallocation_MPIDense"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
+PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
 {
   Mat_MPIDense   *a;
   PetscErrorCode ierr;
@@ -1669,7 +1669,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIDense"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat mat)
+PetscErrorCode  MatCreate_MPIDense(Mat mat)
 {
   Mat_MPIDense   *a;
   PetscErrorCode ierr;
@@ -1740,7 +1740,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Dense"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Dense(Mat A) 
+PetscErrorCode  MatCreate_Dense(Mat A) 
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -1782,7 +1782,7 @@ EXTERN_C_END
 
 .seealso: MatCreate(), MatCreateSeqDense(), MatSetValues()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMPIDenseSetPreallocation(Mat mat,PetscScalar *data)
+PetscErrorCode  MatMPIDenseSetPreallocation(Mat mat,PetscScalar *data)
 {
   PetscErrorCode ierr;
 
@@ -1827,7 +1827,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIDenseSetPreallocation(Mat mat,PetscScala
 
 .seealso: MatCreate(), MatCreateSeqDense(), MatSetValues()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscScalar *data,Mat *A)
+PetscErrorCode  MatCreateMPIDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscScalar *data,Mat *A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -2176,7 +2176,7 @@ PetscErrorCode MatEqual_MPIDense(Mat A,Mat B,PetscBool  *flag)
 .keywords: Petsc, destroy, package, PLAPACK
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT PetscPLAPACKFinalizePackage(void)
+PetscErrorCode  PetscPLAPACKFinalizePackage(void)
 {
   PetscErrorCode ierr;
 
@@ -2204,7 +2204,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscPLAPACKFinalizePackage(void)
 .keywords: Petsc, initialize, package, PLAPACK
 .seealso: PetscSysInitializePackage(), PetscInitialize()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT PetscPLAPACKInitializePackage(MPI_Comm comm)
+PetscErrorCode  PetscPLAPACKInitializePackage(MPI_Comm comm)
 {
   PetscMPIInt    size;
   PetscErrorCode ierr;
