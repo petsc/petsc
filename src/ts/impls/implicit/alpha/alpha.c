@@ -212,8 +212,8 @@ static PetscErrorCode TSSetFromOptions_Alpha(TS ts)
     ierr = PetscOptionsReal("-ts_alpha_gamma","algoritmic parameter gamma","TSAlphaSetParams",th->Gamma,&th->Gamma,PETSC_NULL);CHKERRQ(ierr);
     ierr = TSAlphaSetParams(ts,th->Alpha_m,th->Alpha_f,th->Gamma);CHKERRQ(ierr);
 
-    ierr = PetscOptionsBool("-ts_alpha_adapt","default time step adaptativity","TSAlphaSetAdapt",adapt,&adapt,PETSC_NULL);CHKERRQ(ierr);
-    if (adapt) { ierr = TSAlphaSetAdapt(ts,TSAlphaAdaptDefault,PETSC_NULL); CHKERRQ(ierr); }
+    ierr = PetscOptionsBool("-ts_alpha_adapt","default time step adaptativity","TSAlphaSetAdapt",adapt,&adapt,&flag);CHKERRQ(ierr);
+    if (flag) { ierr = TSAlphaSetAdapt(ts,adapt?TSAlphaAdaptDefault:PETSC_NULL,PETSC_NULL); CHKERRQ(ierr); }
     ierr = PetscOptionsReal("-ts_alpha_adapt_rtol","relative tolerance for dt adaptativity","",th->rtol,&th->rtol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_alpha_adapt_atol","absulute tolerance for dt adaptativity","",th->atol,&th->atol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_alpha_adapt_min","minimum dt scale","",th->scale_min,&th->scale_min,PETSC_NULL);CHKERRQ(ierr);
@@ -337,7 +337,7 @@ PetscErrorCode  TSCreate_Alpha(TS ts)
   th->Gamma   = 0.5;
 
   th->rtol      = 1e-3;
-  th->atol      = 0;
+  th->atol      = 1e-3;
   th->rho       = 0.9;
   th->scale_min = 0.1;
   th->scale_max = 5.0;
