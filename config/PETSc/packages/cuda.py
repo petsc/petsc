@@ -9,7 +9,13 @@ class Configure(PETSc.package.NewPackage):
     self.liblist   = [['libcufft.a', 'libcublas.a','libcudart.a']]
     self.double    = 0   # 1 means requires double precision 
     self.cxx       = 0
-    self.requiredVersion = '3.2'
+
+    self.CUDAVersion   = '3.2'
+    self.CUSPVersion   = '200' #Version 0.2.0
+    self.ThrustVersion = '100400' #Version 1.4.0
+
+    self.ThrustVersionStr = str(int(self.ThrustVersion)/100000) + '.' + str(int(self.ThrustVersion)/100%1000) + '.' + str(int(self.ThrustVersion)%100)
+    self.CUSPVersionStr   = str(int(self.CUSPVersion)/100000) + '.' + str(int(self.CUSPVersion)/100%1000) + '.' + str(int(self.CUSPVersion)%100)
     return
 
   def setupDependencies(self, framework):
@@ -66,16 +72,39 @@ class Configure(PETSc.package.NewPackage):
     self.checkSizeofVoidP()
     return
 
-  def checkVersion(self):
+  def checkCUDAVersion(self):
     if self.setCompilers.compilerVersionCUDA != self.requiredVersion:
       raise RuntimeError('CUDA Error: PETSc currently requires nvcc version '+self.requiredVersion+' (you have '+self.setCompilers.compilerVersionCUDA+')')
     return
 
+  def checkThrustVersion(self):
+    self.pushLanguage('CUDA')
+    oldFlags = self.compilers.CUDAPPFLAGS
+    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
+    if not self.checkRun('#include <thrust/version.h>\n#include <stdio.h>', 'if (THRUST_VERSION < ' + self.ThrustVersion +') {printf("Invalid version %d\\n", THRUST_VERSION); return 1;}'):
+      raise RuntimeError('Thrust version error: PETSC currently requires Thrust version '+self.ThrustVersionStr+' when compiling with CUDA')
+    self.compilers.CUDAPPFLAGS = oldFlags
+    self.popLanguage()
+    return
+
+  def checkCUSPVersion(self):
+    self.pushLanguage('CUDA')
+    oldFlags = self.compilers.CUDAPPFLAGS
+    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
+    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.thrust.include)
+    if not self.checkRun('#include <cusp/version.h>\n#include <stdio.h>', 'if (CUSP_VERSION < ' + self.CUSPVersion +') {printf("Invalid version %d\\n", CUSP_VERSION); return 1;}'):
+      raise RuntimeError('Cusp version error: PETSC currently requires CUSP version '+self.CUSPVersionStr+' when compiling with CUDA')
+    self.compilers.CUDAPPFLAGS = oldFlags
+    self.popLanguage()
+    return
+
   def configureLibrary(self):
     PETSc.package.NewPackage.configureLibrary(self)
-    self.checkVersion()
+    self.checkCUDAVersion()
+    self.checkThrustVersion()
+    self.checkCUSPVersion()
     if not self.cusp.found or not self.thrust.found:
-      raise RuntimeError('PETSc CUDA support requires the CUSP and THRUST packages\nRerun configure using --with-cusp-dir and --with-thrust-dir')
+      raise RuntimeError('PETSc CUDA support requires the CUSP and Thrust packages\nRerun configure using --with-cusp-dir and --with-thrust-dir')
     if self.languages.clanguage == 'C':
       self.addDefine('CUDA_EXTERN_C_BEGIN','extern "C" {')
       self.addDefine('CUDA_EXTERN_C_END','}')

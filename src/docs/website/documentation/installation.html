@@ -11,21 +11,21 @@
   <tbody>
     <tr>
       <td valign="top" width="25%">
-      <h1><font color="#ff0000" size="7">PETSc</font></h1>
+      <h1><font size="7" color="#ff0000">PETSc</font></h1>
       <ul>
         <li><a href="../index.html"><strong>Home</strong></a></li>
       </ul>
       </td>
       <td width="75%"><!--##begin-->
-      <table border="0" width="100%">
+      <table width="100%" border="0">
         <tbody>
           <tr>
             <td width="50%">
             <h1><b><a name="Docs: Installation">Docs:&nbsp;
 Installation</a></b></h1>
             </td>
-            <td width="50%"><img src="../images/headbang.gif" border="0"
- height="113" width="113"></td>
+            <td width="50%"><img src="../images/headbang.gif"
+ height="113" width="113" border="0"></td>
           </tr>
         </tbody>
       </table>
@@ -33,7 +33,7 @@ Installation</a></b></h1>
     </tr>
     <tr>
       <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
+      <hr size="4" color="#ff5b5b"> </td>
     </tr>
     <tr>
       <td valign="top" width="25%">
@@ -111,7 +111,8 @@ PETSC_DIR $PWD</font></li>
 for
 options
 or
-the <a href="#ExampleUsage">example usages</a>
+the
+          <a href="#ExampleUsage">example usages</a>
 below)</li>
         <li> <font color="#ff0000">make all</font><br>
         </li>
@@ -152,7 +153,8 @@ use
 some
 of
 these
-scripts locally for testing - <span style="font-weight: bold;"></span>for
+scripts
+locally for testing - <span style="font-weight: bold;"></span>for
 example
 one
 can update these
@@ -223,6 +225,7 @@ make
 
 
 
+
           </font><font color="#ff0000">PETSC_ARCH=linux-gnu test</font><font
  color="#ff0000"><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -234,6 +237,7 @@ make
 make </font><font color="#ff0000">PETSC_ARCH=linux-gnu-intel</font><br>
           <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make
+
 
 
 
@@ -268,7 +272,8 @@ variable
 should
 point
 to
-the location of the
+the
+location of the
 PETSc installation that is used. Multiple PETSc versions can coexist
 on the same file-system. By changing PETSC_DIR value, one can switch
 between these installed versions of PETSc.</p>
@@ -635,8 +640,8 @@ overwride them with user specified <span style="color: rgb(255, 0, 0);">--with-c
       </ul>
       <br>
       <table style="border-collapse: collapse;" id="AutoNumber5"
- border="1" bordercolor="#111111" cellpadding="0" cellspacing="0"
- width="72%">
+ width="72%" border="1" bordercolor="#111111" cellpadding="0"
+ cellspacing="0">
         <tbody>
           <tr>
             <td width="26%">&nbsp;MPI&nbsp;&nbsp;&nbsp; </td>
@@ -685,7 +690,8 @@ link.exe
 can
 conflict
 with
-Intel ifort and Comapq F90 compilers. If you
+Intel
+ifort and Comapq F90 compilers. If you
 are using these compilers - please do [from cygwin/bash shell]:<br>
       </p>
       <ul>
@@ -799,7 +805,8 @@ can
 install
 and
 use
-PETSc with gcc/gfortran compilers from cygwin. In
+PETSc
+with gcc/gfortran compilers from cygwin. In
 this case follow the regular instructions.<br>
       </p>
       <p><b><font color="#551a8b"><a name="Win32fe"></a>PETSc Win32
@@ -862,7 +869,8 @@ you've
 installed
 PETSc
 with
-the --prefix option then you DO
+the
+--prefix option then you DO
 NOT use a PETSC_ARCH variable. You should install different
 configurations using different --prefix names.<br>
       <hr>
@@ -872,7 +880,8 @@ machine
 requiring
 cross
 compiler
-or a job scheduler, such as IBM SP or IBM Blue Gene:</font></a></h3>
+or
+a job scheduler, such as IBM SP or IBM Blue Gene:</font></a></h3>
       <p>If one has to use a cross compiler - or go through the job
 scheduler to use MPI on a
 given machine - use the configure option <span
@@ -944,27 +953,14 @@ Check config/config/asterix-tops.py for an example.<br>
       <h3><a name="CUDA"><font color="#551a8b">Installing PETSc to use
 NVidia GPUs (aka CUDA)</font></a></h3>
       <ul>
-        <li>Install <a
- href="http://developer.nvidia.com/object/cuda_3_1_downloads.html">CUDA-3.1</a>,
-
-          <a href="http://code.google.com/p/thrust/">Thrust</a>, <a
- href="http://code.google.com/p/cusp-library/">Cusp</a> in default
+        <li>Install CUDA, Thrust, Cusp in default
 locations. The versions you should use are listed in
-config/BuildSystem/config/packages/thrust.py and cusp.py. To install
-Thrust and Cusp us<br>
+$PETSC_DIR/config/PETSc/packages/cuda.py. The required versions may not
+be publically available, you may need to register as an NVIDIA
+Developer (free) to access them. PUT HERE HOW TO FIND THEM!<br>
         </li>
       </ul>
-      <div style="margin-left: 40px;">cd /usr/local/cuda/include/<br>
-sudo unzip /YOURPATH/cusp-v*.zip <br>
-sudo unzip /YOURPATH/thrust-v*.zip <br>
-      </div>
-      <br>
       <ul>
-        <ul>
-          <li>It is highly recommended you install in the default
-location given above. If not in the default location, you can indicate
-them using --with-thrust-dir and --with-cusp-dir</li>
-        </ul>
         <li>Make sure nvcc is in PATH</li>
         <li>On Linux</li>
         <ul>
@@ -1016,7 +1012,7 @@ to Installation Instructions</a>&nbsp;&nbsp;&nbsp; <br>
 <!--##end--> </tr>
     <tr>
       <td width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
+      <hr size="4" color="#ff5b5b"> </td>
     </tr>
   </tbody>
 </table>
