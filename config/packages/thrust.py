@@ -4,9 +4,6 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version         = '100400' #Version 1.4.0
-    self.versionStr       = str(int(self.version)/100000) + '.' + str(int(self.version)/100%1000) + '.' + str(int(self.version)%100)
-    self.download        = ['http://thrust.googlecode.com/files/thrust-v'+self.versionStr+'.zip']
     self.includes        = ['thrust/version.h']
     self.includedir      = ''
     self.forceLanguage   = 'CUDA'
@@ -33,20 +30,11 @@ class Configure(config.package.Package):
     import os
     yield ''
     yield os.path.join('/usr','local','cuda')
+    yield os.path.join('/usr','local','cuda','thrust')
     return
 
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional tests needed by Thrust'''
     config.package.Package.configureLibrary(self)
-    self.executeTest(self.checkVersion)
     return
 
-  def checkVersion(self):
-    self.pushLanguage('CUDA')
-    oldFlags = self.compilers.CUDAPPFLAGS
-    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
-    if not self.checkRun('#include <thrust/version.h>\n#include <stdio.h>', 'if (THRUST_VERSION < ' + self.version +') {printf("Invalid version %d\\n", THRUST_VERSION); return 1;}'):
-      raise RuntimeError('Thrust version error: PETSC currently requires Thrust version '+self.versionStr+' when compiling with CUDA')
-    self.compilers.CUDAPPFLAGS = oldFlags
-    self.popLanguage()
-    return

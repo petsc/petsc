@@ -285,7 +285,8 @@ class Configure(config.base.Configure):
 
   def checkCFormatting(self):
     '''Activate format string checking if using the GNU compilers'''
-    if self.isGCC:
+    '''No checking because we use additional formating conventions'''
+    if self.isGCC and 0:
       self.gccFormatChecking = ('PRINTF_FORMAT_CHECK(A,B)', '__attribute__((format (printf, A, B)))')
       self.logPrint('Added gcc printf format checking', 4, 'compilers')
       self.addDefine(self.gccFormatChecking[0], self.gccFormatChecking[1])
