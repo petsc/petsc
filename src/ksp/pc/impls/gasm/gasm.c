@@ -41,23 +41,33 @@ static PetscErrorCode  PCGASMPrintSubdomains(PC pc)
   const PetscInt *idx;
   char           *cidx;
   PetscBool      found;
+  PetscMPIInt    size, rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(((PetscObject)pc)->comm, &size); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)pc)->comm, &rank); CHKERRQ(ierr);
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(prefix,"-pc_gasm_print_subdomains",fname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
   if (!found) { ierr = PetscStrcpy(fname,"stdout");CHKERRQ(ierr); };
   for (i=0;i<osm->n;++i) {
     ierr = PetscViewerASCIIOpen(((PetscObject)((osm->is)[i]))->comm,fname,&viewer);CHKERRQ(ierr);
     ierr = ISGetLocalSize(osm->is[i], &nidx); CHKERRQ(ierr);
+    /* 
+     No more than 15 characters per index plus a space.
+     PetscViewerStringSPrintf requires a string of size at least 2, so use (nidx+1) instead of nidx, 
+     in case nidx == 0. That will take care of the space for the trailing '\0' as well. 
+     For nidx == 0, the whole string 16 '\0'.
+     */
+    ierr = PetscMalloc(sizeof(char)*(16*(nidx+1)+1), &cidx); CHKERRQ(ierr);  
     ierr = ISGetIndices(osm->is[i], &idx);    CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(char)*(16*nidx+1), &cidx); CHKERRQ(ierr);  /* no more than 15 characters per index plus a space*/
-    ierr = PetscViewerStringOpen(((PetscObject)(osm->is[i]))->comm, cidx, 16*nidx, &sviewer); CHKERRQ(ierr);
+    ierr = PetscViewerStringOpen(((PetscObject)(osm->is[i]))->comm, cidx, 16*(nidx+1), &sviewer); CHKERRQ(ierr);
     for(j = 0; j < nidx; ++j) {
       ierr = PetscViewerStringSPrintf(sviewer, "%D ", idx[j]); CHKERRQ(ierr);
     }
     ierr = PetscViewerDestroy(sviewer); CHKERRQ(ierr);
     ierr = ISRestoreIndices(osm->is[i],&idx); CHKERRQ(ierr);
+
     ierr = PetscViewerASCIIPrintf(viewer, "Subdomain with overlap\n"); CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%s", cidx); CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer); CHKERRQ(ierr);
@@ -67,14 +77,21 @@ static PetscErrorCode  PCGASMPrintSubdomains(PC pc)
     if (osm->is_local) {
       ierr = PetscViewerASCIIOpen(((PetscObject)((osm->is)[i]))->comm,fname,&viewer);CHKERRQ(ierr);
       ierr = ISGetLocalSize(osm->is_local[i], &nidx); CHKERRQ(ierr);
+      /* 
+       No more than 15 characters per index plus a space.
+       PetscViewerStringSPrintf requires a string of size at least 2, so use (nidx+1) instead of nidx, 
+       in case nidx == 0. That will take care of the space for the trailing '\0' as well. 
+       For nidx == 0, the whole string 16 '\0'.
+       */
+      ierr = PetscMalloc(sizeof(char)*(16*(nidx+1)+1), &cidx); CHKERRQ(ierr);  
       ierr = ISGetIndices(osm->is_local[i], &idx);    CHKERRQ(ierr);
-      ierr = PetscMalloc(sizeof(char)*(16*nidx+1), &cidx); CHKERRQ(ierr);  /* no more than 15 characters per index plus a space*/
-      ierr = PetscViewerStringOpen(((PetscObject)(osm->is[i]))->comm, cidx, 16*nidx, &sviewer); CHKERRQ(ierr);
+      ierr = PetscViewerStringOpen(((PetscObject)(osm->is_local[i]))->comm, cidx, 16*(nidx+1), &sviewer); CHKERRQ(ierr);
       for(j = 0; j < nidx; ++j) {
-	ierr = PetscViewerStringSPrintf(sviewer, "%D ", idx[j]); CHKERRQ(ierr);
+        ierr = PetscViewerStringSPrintf(sviewer, "%D ", idx[j]); CHKERRQ(ierr);
       }
       ierr = PetscViewerDestroy(sviewer); CHKERRQ(ierr);
       ierr = ISRestoreIndices(osm->is_local[i],&idx); CHKERRQ(ierr);
+
       ierr = PetscViewerASCIIPrintf(viewer, "Subdomain without overlap\n"); CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%s", cidx); CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer); CHKERRQ(ierr);
@@ -111,7 +128,7 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
     char overlaps[256] = "user-defined overlap",subdomains[256] = "total subdomains set";
     if (osm->overlap >= 0) {ierr = PetscSNPrintf(overlaps,sizeof overlaps,"amount of overlap = %D",osm->overlap);CHKERRQ(ierr);}
     if (osm->nmax > 0)     {ierr = PetscSNPrintf(subdomains,sizeof subdomains,"max number of local subdomains = %D",osm->nmax);CHKERRQ(ierr);}
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d:%d] number of locally subdomains = %D\n",(int)rank,(int)size,osm->n);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d:%d] number of locally-supported subdomains = %D\n",(int)rank,(int)size,osm->n);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer); CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Generalized additive Schwarz: %s, %s\n",subdomains,overlaps);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Generalized additive Schwarz: restriction/interpolation type - %s\n",PCGASMTypes[osm->type]);CHKERRQ(ierr);
@@ -321,9 +338,11 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     ierr = VecGetArray(osm->gx, &gxarray);                                     CHKERRQ(ierr);
     ierr = VecGetArray(osm->gy, &gyarray);                                     CHKERRQ(ierr);
     for (i=0, ddn=0; i<osm->n; ++i, ddn += dn) {
+      PetscInt dN;
       ierr = ISGetLocalSize(osm->is[i],&dn);CHKERRQ(ierr);
-      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dn,gxarray+ddn,&osm->x[i]);CHKERRQ(ierr); 
-      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dn,gyarray+ddn,&osm->y[i]);CHKERRQ(ierr);
+      ierr = ISGetSize(osm->is[i],&dN);CHKERRQ(ierr);
+      ierr = VecCreateMPIWithArray(((PetscObject)(osm->is[i]))->comm,dn,dN,gxarray+ddn,&osm->x[i]);CHKERRQ(ierr); 
+      ierr = VecCreateMPIWithArray(((PetscObject)(osm->is[i]))->comm,dn,dN,gyarray+ddn,&osm->y[i]);CHKERRQ(ierr);
     }
     ierr = VecRestoreArray(osm->gx, &gxarray); CHKERRQ(ierr);
     ierr = VecRestoreArray(osm->gy, &gyarray); CHKERRQ(ierr);
@@ -332,7 +351,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     /* Create the local solvers */
     ierr = PetscMalloc(osm->n*sizeof(KSP *),&osm->ksp);CHKERRQ(ierr);
     for (i=0; i<osm->n; i++) { /* KSPs are local */
-      ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
+      ierr = KSPCreate(((PetscObject)(osm->is[i]))->comm,&ksp);CHKERRQ(ierr);
       ierr = PetscLogObjectParent(pc,ksp);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,1);CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
@@ -429,8 +448,8 @@ static PetscErrorCode PCApply_GASM(PC pc,Vec x,Vec y)
   ierr = VecScatterBegin(osm->grestriction,x,osm->gx,INSERT_VALUES,forward);CHKERRQ(ierr);
   ierr = VecZeroEntries(y);CHKERRQ(ierr);
   ierr = VecScatterEnd(osm->grestriction,x,osm->gx,INSERT_VALUES,forward);CHKERRQ(ierr);
-  /* do the local solves */
-  for (i=0; i<osm->n; ++i) { /* Note that the solves are local, so we can go to osm->n, rather than osm->nmax. */
+  /* do the subdomain solves */
+  for (i=0; i<osm->n; ++i) { 
     ierr = KSPSolve(osm->ksp[i],osm->x[i],osm->y[i]);CHKERRQ(ierr);
   }
   ierr = VecScatterBegin(osm->gprolongation,osm->gy,y,ADD_VALUES,reverse);CHKERRQ(ierr);
@@ -1280,22 +1299,24 @@ PetscErrorCode  PCGASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
    of the intersection.                                                                                 \
   */                                                                                                    \
   /* ylow_loc is the grid row containing the first element of the local sumbdomain */                   \
-  ylow_loc = PetscMax(first_row,ylow);                                                                    \
+  *ylow_loc = PetscMax(first_row,ylow);                                                                    \
   /* xleft_loc is the offset of first element of the local subdomain within its grid row (might actually be outside the local subdomain) */ \
-  xleft_loc = ylow_loc==first_row?PetscMax(first%M,xleft):xleft;                                                                            \
+  *xleft_loc = *ylow_loc==first_row?PetscMax(first%M,xleft):xleft;                                                                            \
   /* yhigh_loc is the grid row above the last local subdomain element */                                                                    \
-  yhigh_loc = PetscMin(last_row,yhigh);                                                                                                     \
+  *yhigh_loc = PetscMin(last_row,yhigh);                                                                                                     \
   /* xright is the offset of the end of the  local subdomain within its grid row (might actually be outside the local subdomain) */         \
-  xright_loc = yhigh_loc==last_row?PetscMin(xright,last%M):xright;                                                                          \
+  *xright_loc = *yhigh_loc==last_row?PetscMin(xright,last%M):xright;                                                                          \
   /* Now compute the size of the local subdomain n. */ \
-  n = 0;                                               \
-  if(ylow_loc < yhigh_loc) {                           \
+  *n = 0;                                               \
+  if(*ylow_loc < *yhigh_loc) {                           \
     PetscInt width = xright-xleft;                     \
-    n += width*(yhigh_loc-ylow_loc-1);                 \
-    n += PetscMin(PetscMax(xright_loc-xleft,0),width); \
-    n -= PetscMin(PetscMax(xleft_loc-xleft,0), width); \
+    *n += width*(*yhigh_loc-*ylow_loc-1);                 \
+    *n += PetscMin(PetscMax(*xright_loc-xleft,0),width); \
+    *n -= PetscMin(PetscMax(*xleft_loc-xleft,0), width); \
   }\
 }
+
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCGASMCreateSubdomains2D"
@@ -1336,7 +1357,7 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
   PetscInt maxheight, maxwidth;
   PetscInt xstart, xleft, xright, xleft_loc, xright_loc;
   PetscInt ystart, ylow,  yhigh,  ylow_loc,  yhigh_loc;
-  PetscInt x[2][2], y[2][2];
+  PetscInt x[2][2], y[2][2], n[2];
   PetscInt first, last;
   PetscInt nidx, *idx;
   PetscInt ii,jj,s,q,d;
@@ -1360,20 +1381,20 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
   for (j=0; j<Ndomains; ++j) {
     maxheight = N/Ndomains + ((N % Ndomains) > j); /* Maximal height of subdomain */
     if (maxheight < 2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many %D subdomains in the vertical directon for mesh height %D", Ndomains, N);
-    /* Vertical domain limits without an overlap. */
-    ylow = ystart;
-    yhigh = PetscMin(ystart + maxheight,N); 
+    /* Vertical domain limits with an overlap. */
+    ylow = PetscMax(ystart - overlap,0);    
+    yhigh = PetscMin(ystart + maxheight + overlap,N);
     xstart = 0;
     for (i=0; i<Mdomains; ++i) {
       maxwidth = M/Mdomains + ((M % Mdomains) > i); /* Maximal width of subdomain */
       if (maxwidth < 2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many %D subdomains in the horizontal direction for mesh width %D", Mdomains, M);
-      /* Horizontal domain limits without an overlap. */
-      xleft  = xstart;
-      xright = PetscMin(xstart+maxwidth,M); 
+      /* Horizontal domain limits with an overlap. */
+      xleft   = PetscMax(xstart - overlap,0);
+      xright  = PetscMin(xstart + maxwidth + overlap,M);
       /* 
 	 Determine whether this subdomain intersects this processor's ownership range of pc->pmat.
       */
-      PCGASMLocalSubdomainBounds2D(M,N,xleft,ylow,xright,yhigh,first,last,xleft_loc,ylow_loc,xright_loc,yhigh_loc,nidx);
+      PCGASMLocalSubdomainBounds2D(M,N,xleft,ylow,xright,yhigh,first,last,(&xleft_loc),(&ylow_loc),(&xright_loc),(&yhigh_loc),(&nidx));
       if(nidx) {
         ++s;
       }
@@ -1390,21 +1411,22 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
   for (j=0; j<Ndomains; ++j) {
     maxheight = N/Ndomains + ((N % Ndomains) > j); /* Maximal height of subdomain */
     if (maxheight < 2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many %D subdomains in the vertical directon for mesh height %D", Ndomains, N);
-    /* Vertical domain limits without an overlap. */
-    y[0][0] = ystart;                      
-    y[0][1] = PetscMin(ystart + maxheight,N); 
     /* Vertical domain limits with an overlap. */
-    y[1][1] = PetscMin(ystart + maxheight + overlap,N);
-    y[1][0] = PetscMax(ystart - overlap,0);    xstart = 0;
+    y[0][0] = PetscMax(ystart - overlap,0);    
+    y[0][1] = PetscMin(ystart + maxheight + overlap,N);
+    /* Vertical domain limits without an overlap. */
+    y[1][0] = ystart;                      
+    y[1][1] = PetscMin(ystart + maxheight,N); 
+    xstart = 0;
     for (i=0; i<Mdomains; ++i) {
       maxwidth = M/Mdomains + ((M % Mdomains) > i); /* Maximal width of subdomain */
       if (maxwidth < 2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many %D subdomains in the horizontal direction for mesh width %D", Mdomains, M);
-      /* Horizontal domain limits without an overlap. */
-      x[0][0] = xstart;                   
-      x[0][1] = PetscMin(xstart+maxwidth,M); 
       /* Horizontal domain limits with an overlap. */
-      x[1][0]  = PetscMax(xstart - overlap,0);
-      x[1][1]  = PetscMin(xstart + maxwidth + overlap,M);
+      x[0][0]  = PetscMax(xstart - overlap,0);
+      x[0][1]  = PetscMin(xstart + maxwidth + overlap,M);
+      /* Horizontal domain limits without an overlap. */
+      x[1][0] = xstart;                   
+      x[1][1] = PetscMin(xstart+maxwidth,M); 
       /* 
 	 Determine whether this domain intersects this processor's ownership range of pc->pmat.
 	 Do this twice: first for the domains with overlaps, and once without.
@@ -1417,11 +1439,15 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
 	*/
 	xleft = x[q][0]; xright = x[q][1];
 	ylow  = y[q][0]; yhigh  = y[q][1];
-        PCGASMLocalSubdomainBounds2D(M,N,xleft,ylow,xright,yhigh,first,last,xleft_loc,ylow_loc,xright_loc,yhigh_loc,nidx);
+        PCGASMLocalSubdomainBounds2D(M,N,xleft,ylow,xright,yhigh,first,last,(&xleft_loc),(&ylow_loc),(&xright_loc),(&yhigh_loc),(&nidx));
 	nidx *= dof;
+        n[q] = nidx;
         /*
-         Based on the counted number of indices in the local domain (without an overlap),
+         Based on the counted number of indices in the local domain *with an overlap*,
          construct a subcommunicator of all the processors supporting this domain. 
+         Observe that a domain with an overlap might have nontrivial local support,
+         while the domain without an overlap might not.  Hence, the decision to participate
+         in the subcommunicator must be based on the domain with an overlap.
          */
 	if(q == 0) {
 	  if(nidx) {
@@ -1433,43 +1459,46 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
 	  ierr = MPI_Comm_split(comm, color, rank, &subcomm); CHKERRQ(ierr);
 	}
         /*
-         Proceed only if the number of local indices is nonzero. 
+         Proceed only if the number of local indices *with an overlap* is nonzero.
          */
-        if(nidx) {
+        if(n[0]) {
           if(q == 0) {
-            iis = is_local;
+            iis = is;
           }
           if(q == 1) {
             /* 
-             The IS for the no-overlap subdomain shares a communicator with the nonoverlapping domain.
+             The IS for the no-overlap subdomain shares a communicator with the overlapping domain.
              Moreover, if the overlap is zero, the two ISs are identical.
              */
             if(overlap == 0) {
-              (*is)[s] = (*is_local)[s];
+              (*is_local)[s] = (*is)[s];
               ierr = PetscObjectReference((PetscObject)(*is)[s]);CHKERRQ(ierr);
               continue;
             }
             else {
-              iis = is;
-              subcomm = ((PetscObject)(*is_local)[s])->comm;
+              iis = is_local;
+              subcomm = ((PetscObject)(*is)[s])->comm;
             }
           }/* if(q == 1) */
+          idx = PETSC_NULL;
 	  ierr = PetscMalloc(nidx*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-	  k    = 0;
-	  for (jj=ylow_loc; jj<yhigh_loc; ++jj) {
-	    PetscInt x0 = (jj==ylow_loc)?xleft_loc:xleft;
-	    PetscInt x1 = (jj==yhigh_loc-1)?xright_loc:xright;
-	    kk = dof*(M*jj + x0);
-	    for (ii=x0; ii<x1; ++ii) {
-	      for(d = 0; d < dof; ++d) {
-		idx[k++] = kk++;
-	      }
-	    }
-	  }
+          if(nidx) {
+            k    = 0;
+            for (jj=ylow_loc; jj<yhigh_loc; ++jj) {
+              PetscInt x0 = (jj==ylow_loc)?xleft_loc:xleft;
+              PetscInt x1 = (jj==yhigh_loc-1)?xright_loc:xright;
+              kk = dof*(M*jj + x0);
+              for (ii=x0; ii<x1; ++ii) {
+                for(d = 0; d < dof; ++d) {
+                  idx[k++] = kk++;
+                }
+              }
+            }
+          }
 	  ierr = ISCreateGeneral(subcomm,nidx,idx,PETSC_OWN_POINTER,(*iis)+s);CHKERRQ(ierr);
-	}/* if(nidx) */
+	}/* if(n[0]) */
       }/* for(q = 0; q < 2; ++q) */
-      if(nidx) {
+      if(n[0]) {
         ++s;
       }
       xstart += maxwidth;

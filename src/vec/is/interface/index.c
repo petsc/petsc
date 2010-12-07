@@ -426,8 +426,8 @@ PetscErrorCode  ISRestoreIndices(IS is,const PetscInt *ptr[])
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISGatherNonlocal_Private" 
-PetscErrorCode  ISGatherNonlocal_Private(IS is)
+#define __FUNCT__ "ISGatherTotal_Private" 
+static PetscErrorCode ISGatherTotal_Private(IS is)
 {
   PetscErrorCode ierr;
   PetscInt       i,n,N;
@@ -445,12 +445,12 @@ PetscErrorCode  ISGatherNonlocal_Private(IS is)
   ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
   
   nn   = PetscMPIIntCast(n);
-  ierr = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&nn,1,MPIU_INT,sizes,1,MPIU_INT,comm);CHKERRQ(ierr);
   offsets[0] = 0;
-  for (i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
+  for (i=1;i<size; ++i) offsets[i] = offsets[i-1] + sizes[i-1];
   N = offsets[size-1] + sizes[size-1];
   
-  ierr = PetscMalloc(N*sizeof(PetscInt),&is->total);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(PetscInt),&(is->total));CHKERRQ(ierr);
   ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
   ierr = MPI_Allgatherv((void*)lindices,nn,MPIU_INT,is->total,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
   ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
@@ -486,7 +486,7 @@ PetscErrorCode  ISGatherNonlocal_Private(IS is)
    Concepts: index sets^getting nonlocal indices
 .seealso: ISRestoreTotalIndices(), ISGetNonlocalIndices(), ISGetSize()
 @*/
-PetscErrorCode  ISGetTotalIndices(IS is, const PetscInt *indices[])
+PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -500,11 +500,9 @@ PetscErrorCode  ISGetTotalIndices(IS is, const PetscInt *indices[])
   }
   else {
     if(!is->total) {
-      ierr = ISGatherNonlocal_Private(is); CHKERRQ(ierr);
+      ierr = ISGatherTotal_Private(is); CHKERRQ(ierr);
     }
-    if(!indices) {
-      *indices = is->total;
-    }
+    *indices = is->total;
   }
   PetscFunctionReturn(0);
 }
@@ -538,8 +536,8 @@ PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
     ierr = (*is->ops->restoreindices)(is,indices);CHKERRQ(ierr);
   }
   else {
-    if(!indices || (is->total != *indices)) {
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored is either NULL or does not point to the array obtained from the IS.");
+    if(is->total != *indices) {
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored does not point to the array obtained from the IS.");
     }
   }
   PetscFunctionReturn(0);
@@ -579,25 +577,19 @@ PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
   PetscValidPointer(indices,2);
   ierr = MPI_Comm_size(((PetscObject)is)->comm, &size); CHKERRQ(ierr);
   if(size == 1) {
-    if(!indices) {
       *indices = PETSC_NULL;
-    }
   }
   else {
     if(!is->total) {
-      ierr = ISGatherNonlocal_Private(is); CHKERRQ(ierr);
+      ierr = ISGatherTotal_Private(is); CHKERRQ(ierr);
     }
-    if(!is->complement) {
-      PetscInt n, N;
-      ierr = ISGetLocalSize(is,&n); CHKERRQ(ierr);
-      ierr = ISGetSize(is,&N);      CHKERRQ(ierr);
-      ierr = PetscMalloc(sizeof(PetscInt)*(N-n), &(is->nonlocal));                                               CHKERRQ(ierr);
-      ierr = PetscMemcpy(is->nonlocal, is->total, is->local_offset);                                             CHKERRQ(ierr);
-      ierr = PetscMemcpy(is->nonlocal+is->local_offset, is->total+is->local_offset+n, N - is->local_offset - n); CHKERRQ(ierr);
-    }
-    if(!indices) {
-      *indices = is->nonlocal;
-    }
+    PetscInt n, N;
+    ierr = ISGetLocalSize(is,&n); CHKERRQ(ierr);
+    ierr = ISGetSize(is,&N);      CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscInt)*(N-n), &(is->nonlocal));   CHKERRQ(ierr);
+    ierr = PetscMemcpy(is->nonlocal, is->total, sizeof(PetscInt)*is->local_offset); CHKERRQ(ierr);
+    ierr = PetscMemcpy(is->nonlocal+is->local_offset, is->total+is->local_offset+n, sizeof(PetscInt)*(N - is->local_offset - n)); CHKERRQ(ierr);
+    *indices = is->nonlocal;
   }
   PetscFunctionReturn(0);
 }
@@ -625,8 +617,8 @@ PetscErrorCode  ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
-  if(!indices || (is->nonlocal != *indices)) {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored is either NULL or does not point to the array obtained from the IS.");
+  if(is->nonlocal != *indices) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored does not point to the array obtained from the IS.");
   }
   PetscFunctionReturn(0);
 }
@@ -663,23 +655,21 @@ PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(complement,2);
-  if(complement) {
-    /* Check if the complement exists already. */
-    if(is->complement) {
-      *complement = is->complement;
-      ierr = PetscObjectReference((PetscObject)(is->complement)); CHKERRQ(ierr);
-    }
-    else {
-      PetscInt       N, n;
-      const PetscInt *idx;
-      ierr = ISGetSize(is, &N);              CHKERRQ(ierr);
-      ierr = ISGetLocalSize(is,&n);          CHKERRQ(ierr);
-      ierr = ISGetNonlocalIndices(is, &idx); CHKERRQ(ierr);
-      ierr = ISCreateGeneral(PETSC_COMM_SELF, N-n,idx, PETSC_USE_POINTER, &(is->complement)); CHKERRQ(ierr);
-      ierr = PetscObjectReference((PetscObject)is->complement); CHKERRQ(ierr);
-      *complement = is->complement;
-    }  
+  /* Check if the complement exists already. */
+  if(is->complement) {
+    *complement = is->complement;
+    ierr = PetscObjectReference((PetscObject)(is->complement)); CHKERRQ(ierr);
   }
+  else {
+    PetscInt       N, n;
+    const PetscInt *idx;
+    ierr = ISGetSize(is, &N);              CHKERRQ(ierr);
+    ierr = ISGetLocalSize(is,&n);          CHKERRQ(ierr);
+    ierr = ISGetNonlocalIndices(is, &idx); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, N-n,idx, PETSC_USE_POINTER, &(is->complement)); CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)is->complement); CHKERRQ(ierr);
+    *complement = is->complement;
+  }  
   PetscFunctionReturn(0);
 }
 
