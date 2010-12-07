@@ -4,7 +4,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreateSubset"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoCreateSubset(TaoSolver tao, PetscInt subsettype, IndexSet *is) 
+PetscErrorCode TaoCreateSubset(TaoSolver tao, PetscInt subsettype, IndexSet *is) 
 {
     PetscErrorCode ierr;
 

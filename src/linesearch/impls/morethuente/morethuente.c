@@ -333,7 +333,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchCreate_MT"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_MT(TaoLineSearch ls)
+PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
 {
     PetscErrorCode ierr;
     TAOLINESEARCH_MT_CTX *ctx;

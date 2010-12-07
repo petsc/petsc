@@ -5,7 +5,7 @@
 PetscBool TaoSolverRegisterAllCalled = PETSC_FALSE;
 PetscFList TaoSolverList = PETSC_NULL;
 
-PetscClassId TAOSOLVER_DLLEXPORT TAOSOLVER_CLASSID;
+PetscClassId TAOSOLVER_CLASSID;
 PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_GradientEval, TaoSolver_ObjGradientEval, TaoSolver_HessianEval, TaoSolver_JacobianEval;
 
 
@@ -24,7 +24,7 @@ PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_GradientEval, 
 
 .seealso: TaoSolverSolve(), TaoSolverDestroy()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate(MPI_Comm comm, TaoSolver *newtao)
+PetscErrorCode TaoSolverCreate(MPI_Comm comm, TaoSolver *newtao)
 {
     PetscErrorCode ierr;
     TaoSolver tao;
@@ -112,7 +112,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate(MPI_Comm comm, TaoSolver *new
 
   .seealso: TaoSolverCreate(), TaoSolverSetObjectiveRoutine(), TaoSolverSetGradientRoutine(), TaoSolverSetHessianRoutine()
   @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSolve(TaoSolver tao)
+PetscErrorCode TaoSolverSolve(TaoSolver tao)
 {
   PetscErrorCode ierr;
 //  PetscViewer viewer;
@@ -168,7 +168,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSolve(TaoSolver tao)
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetUp"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetUp(TaoSolver tao)
+PetscErrorCode TaoSolverSetUp(TaoSolver tao)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -206,7 +206,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetUp(TaoSolver tao)
 
 .seealse: TaoSolverCreate(), TaoSolverSolve()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDestroy(TaoSolver tao)
+PetscErrorCode TaoSolverDestroy(TaoSolver tao)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -284,7 +284,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDestroy(TaoSolver tao)
 
   Level: beginner
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetFromOptions(TaoSolver tao)
+PetscErrorCode TaoSolverSetFromOptions(TaoSolver tao)
 {
     PetscErrorCode ierr;
     const TaoSolverType default_type = "tao_lmvm";
@@ -397,7 +397,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetFromOptions(TaoSolver tao)
 
 .seealso: PetscViewerASCIIOpen()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverView(TaoSolver tao, PetscViewer viewer)
+PetscErrorCode TaoSolverView(TaoSolver tao, PetscViewer viewer)
 {
     PetscErrorCode ierr;
     PetscBool isascii,isstring;
@@ -564,7 +564,7 @@ $ f_{k+1} <= f_k + frtol*|f_k|
           TaoSetConstraintTolerances()
 
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetTolerances(TaoSolver tao, PetscReal fatol, PetscReal frtol, PetscReal gatol, PetscReal grtol, PetscReal gttol)
+PetscErrorCode TaoSolverSetTolerances(TaoSolver tao, PetscReal fatol, PetscReal frtol, PetscReal gatol, PetscReal grtol, PetscReal gttol)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -636,7 +636,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetTolerances(TaoSolver tao, PetscRe
   Notes: Use PETSC_NULL as an argument to ignore one or more tolerances.
 .seealse TaoSolverSetTolerances()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetTolerances(TaoSolver tao, PetscReal *fatol, PetscReal *frtol, PetscReal *gatol, PetscReal *grtol, PetscReal *gttol)
+PetscErrorCode TaoSolverGetTolerances(TaoSolver tao, PetscReal *fatol, PetscReal *frtol, PetscReal *gatol, PetscReal *grtol, PetscReal *gttol)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
@@ -650,7 +650,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetTolerances(TaoSolver tao, PetscRe
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverGetKSP"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetKSP(TaoSolver tao, KSP *ksp) {
+PetscErrorCode TaoSolverGetKSP(TaoSolver tao, KSP *ksp) {
   PetscFunctionBegin;
   *ksp = tao->ksp;
   PetscFunctionReturn(0);
@@ -658,7 +658,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetKSP(TaoSolver tao, KSP *ksp) {
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverGetSolutionVector"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetSolutionVector(TaoSolver tao, Vec *X)
+PetscErrorCode TaoSolverGetSolutionVector(TaoSolver tao, Vec *X)
 {
     PetscFunctionBegin;
     *X = tao->solution;
@@ -668,7 +668,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetSolutionVector(TaoSolver tao, Vec
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverResetStatistics"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverResetStatistics(TaoSolver tao)
+PetscErrorCode TaoSolverResetStatistics(TaoSolver tao)
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
@@ -691,7 +691,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverResetStatistics(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetDefaultMonitors"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetDefaultMonitors(TaoSolver tao)
+PetscErrorCode TaoSolverSetDefaultMonitors(TaoSolver tao)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
@@ -701,7 +701,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetDefaultMonitors(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetMonitor"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetMonitor(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, void*), void *ctx)
+PetscErrorCode TaoSolverSetMonitor(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, void*), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
@@ -736,7 +736,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetMonitor(TaoSolver tao, PetscError
 
 .seealso: TaoSolverSetMonitor(), TaoSolverVecViewMonitor()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultMonitor(TaoSolver tao, void *dummy)
+PetscErrorCode TaoSolverDefaultMonitor(TaoSolver tao, void *dummy)
 {
   PetscErrorCode ierr;
   PetscInt its;
@@ -781,7 +781,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultMonitor(TaoSolver tao, void *
 
 .seealso: TaoSolverDefaultMonitor
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultSMonitor(TaoSolver tao, void *dummy)
+PetscErrorCode TaoSolverDefaultSMonitor(TaoSolver tao, void *dummy)
 {
   PetscErrorCode ierr;
   PetscInt its;
@@ -807,7 +807,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultSMonitor(TaoSolver tao, void 
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverDefaultConvergenceTest"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultConvergenceTest(TaoSolver tao,void *dummy)
+PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver tao,void *dummy)
 {
   PetscInt niter=tao->niter, nfuncs=tao->nfuncs, max_funcs=tao->max_funcs;
   PetscReal gnorm=tao->residual, gnorm0=tao->gnorm0;
@@ -872,7 +872,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultConvergenceTest(TaoSolver tao
    TaoSolverSetType - sets the algorithm for TAO to use
 
    @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetType(TaoSolver tao, const TaoSolverType type)
+PetscErrorCode TaoSolverSetType(TaoSolver tao, const TaoSolverType type)
 {
     PetscErrorCode ierr;
     PetscErrorCode (*create_xxx)(TaoSolver);
@@ -916,7 +916,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetType(TaoSolver tao, const TaoSolv
 
   Level: advanced
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*func)(TaoSolver))
+PetscErrorCode TaoSolverRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*func)(TaoSolver))
 {
     char fullname[PETSC_MAX_PATH_LEN];
     PetscErrorCode ierr;
@@ -929,7 +929,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegister(const char sname[], const c
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverRegisterDestroy"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegisterDestroy(void)
+PetscErrorCode TaoSolverRegisterDestroy(void)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -943,7 +943,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegisterDestroy(void)
 /*@ 
   TaoSolverGetConvergedReason - get the reason why TAO stopped
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetConvergedReason(TaoSolver tao, TaoSolverTerminationReason *reason) 
+PetscErrorCode TaoSolverGetConvergedReason(TaoSolver tao, TaoSolverTerminationReason *reason) 
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
@@ -954,7 +954,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetConvergedReason(TaoSolver tao, Ta
 
 #undef __FUNCT__ 
 #define __FUNCT__ "TaoSolverGetType"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetType(TaoSolver tao, TaoSolverType *type)
+PetscErrorCode TaoSolverGetType(TaoSolver tao, TaoSolverType *type)
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
@@ -965,7 +965,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetType(TaoSolver tao, TaoSolverType
 
 #undef __FUNCT__ 
 #define __FUNCT__ "TaoSolverMonitor"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverMonitor(TaoSolver tao, PetscInt its, PetscReal f, PetscReal res, PetscReal cnorm, PetscReal steplength, TaoSolverTerminationReason *reason) 
+PetscErrorCode TaoSolverMonitor(TaoSolver tao, PetscInt its, PetscReal f, PetscReal res, PetscReal cnorm, PetscReal steplength, TaoSolverTerminationReason *reason) 
 {
     PetscErrorCode ierr;
     int i;

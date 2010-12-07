@@ -2,7 +2,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecBoundGradientProjection"
-PetscErrorCode TAOSOLVER_DLLEXPORT VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP){
+PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP){
 
   PetscErrorCode ierr;
   PetscInt n,i;
@@ -51,7 +51,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT VecBoundGradientProjection(Vec G, Vec X, Vec 
 
 #undef __FUNCT__
 #define __FUNCT__ "VecStepMaxBounded"
-PetscErrorCode TAOSOLVER_DLLEXPORT VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepmax){
+PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepmax){
 
   PetscErrorCode ierr;
   PetscInt i,nn;
@@ -90,7 +90,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec 
 }
 #undef __FUNCT__
 #define __FUNCT__ "VecStepBoundInfo"
-PetscErrorCode TAOSOLVER_DLLEXPORT VecStepBoundInfo(Vec X, Vec XL, Vec XU, Vec DX, PetscReal *boundmin, PetscReal *wolfemin, PetscReal *boundmax){
+PetscErrorCode VecStepBoundInfo(Vec X, Vec XL, Vec XU, Vec DX, PetscReal *boundmin, PetscReal *wolfemin, PetscReal *boundmax){
 
   PetscErrorCode ierr;
   PetscInt n,i;
@@ -144,7 +144,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT VecStepBoundInfo(Vec X, Vec XL, Vec XU, Vec D
 
 #undef __FUNCT__
 #define __FUNCT__ "VecStepMax"
-PetscErrorCode TAOSOLVER_DLLEXPORT VecStepMax(Vec X, Vec DX, PetscReal *step){
+PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step){
   PetscErrorCode ierr;
   PetscInt i, nn;
   PetscReal stepmax=TAO_INFINITY;

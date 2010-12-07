@@ -2,9 +2,9 @@
 #include "private/taolinesearch_impl.h"
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_Unit(TaoLineSearch);
-EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_MT(TaoLineSearch);
-EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_GPCG(TaoLineSearch);
+extern PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch);
+extern PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch);
+extern PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch);
 EXTERN_C_END
 
 
@@ -16,7 +16,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_taolinesearch"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT PetscDLLibraryRegister_taolinesearch(const char path[]) 
+PetscErrorCode PetscDLLibraryRegister_taolinesearch(const char path[]) 
 {
     PetscErrorCode info;
     info = PetscInitializeNoArguments(); if (info) return 1;
@@ -30,16 +30,16 @@ EXTERN_C_END
 #endif
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_Unit(TaoLineSearch);
-EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_MT(TaoLineSearch);
-EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_GPCG(TaoLineSearch);
+extern PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch);
+extern PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch);
+extern PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch);
 EXTERN_C_END
     
 extern PetscBool TaoLineSearchRegisterAllCalled;
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchRegisterAll"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchRegisterAll(const char path[])
+PetscErrorCode TaoLineSearchRegisterAll(const char path[])
 {
     PetscErrorCode info;
     PetscFunctionBegin;
@@ -53,7 +53,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchRegisterAll(const char path[
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchInitializePackage"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchInitializePackage(const char path[])
+PetscErrorCode TaoLineSearchInitializePackage(const char path[])
 {
     static PetscBool initialized = PETSC_FALSE;
     PetscErrorCode info;

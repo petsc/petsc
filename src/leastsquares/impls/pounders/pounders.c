@@ -965,7 +965,7 @@ static PetscErrorCode TaoSolverView_POUNDERS(TaoSolver tao, PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_POUNDERS"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate_POUNDERS(TaoSolver tao)
+PetscErrorCode TaoSolverCreate_POUNDERS(TaoSolver tao)
 {
   TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
   PetscErrorCode ierr;

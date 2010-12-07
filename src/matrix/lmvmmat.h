@@ -85,12 +85,12 @@ typedef struct{
 
 //typedef  struct _p_MatLMVMCtx* MatLMVMCtx;
 
-EXTERN PetscErrorCode MatCreateLMVM(MPI_Comm,PetscInt,PetscInt,Mat*);
+extern PetscErrorCode MatCreateLMVM(MPI_Comm,PetscInt,PetscInt,Mat*);
 
 
 /* PETSc Mat overrides */
-EXTERN PetscErrorCode MatView_LMVM(Mat,PetscViewer);
-EXTERN PetscErrorCode MatDestroy_LMVM(Mat);
+extern PetscErrorCode MatView_LMVM(Mat,PetscViewer);
+extern PetscErrorCode MatDestroy_LMVM(Mat);
 
 /*
 int MatMultTranspose_LMVM(Mat,Vec,Vec);

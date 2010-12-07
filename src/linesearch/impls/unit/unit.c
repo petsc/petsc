@@ -98,7 +98,7 @@ EXTERN_C_BEGIN
 
 .keywords: TaoSolver, linesearch
 @*/
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_Unit(TaoLineSearch ls)
+PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch ls)
 {
 
   PetscFunctionBegin;

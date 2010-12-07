@@ -15,7 +15,7 @@
 .seealso: TaoSolverCreate(), TaoSolverSolve()
 @*/
 
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetInitialVector(TaoSolver tao, Vec x0) {
+PetscErrorCode TaoSolverSetInitialVector(TaoSolver tao, Vec x0) {
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
@@ -52,7 +52,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetInitialVector(TaoSolver tao, Vec 
 
 .seealso: TaoSolverComputeObjective(), TaoSolverComputeObjectiveAndGradient(), TaoSolverSetGradientRoutine()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeGradient(TaoSolver tao, Vec X, Vec G) 
+PetscErrorCode TaoSolverComputeGradient(TaoSolver tao, Vec X, Vec G) 
 {
     PetscErrorCode ierr;
     PetscReal dummy;
@@ -108,7 +108,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeGradient(TaoSolver tao, Vec X
 
 .seealso: TaoSolverComputeGradient(), TaoSolverComputeObjectiveAndGradient(), TaoSolverSetObjective()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjective(TaoSolver tao, Vec X, PetscReal *f) 
+PetscErrorCode TaoSolverComputeObjective(TaoSolver tao, Vec X, PetscReal *f) 
 {
     PetscErrorCode ierr;
     Vec temp;
@@ -167,7 +167,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjective(TaoSolver tao, Vec 
 
 .seealso: TaoSolverComputeGradient(), TaoSolverComputeObjectiveAndGradient(), TaoSolverSetObjectiveRoutine()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjectiveAndGradient(TaoSolver tao, Vec X, PetscReal *f, Vec G)
+PetscErrorCode TaoSolverComputeObjectiveAndGradient(TaoSolver tao, Vec X, PetscReal *f, Vec G)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -234,7 +234,7 @@ $      func (TaoSolver tao, Vec x, PetscReal *f, void *ctx);
 
 .seealso: TaoSolverSetGradientRoutine(), TaoSolverSetHessianRoutine() TaoSolverSetObjectiveAndGradientRoutine()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveRoutine(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, PetscReal*,void*),void *ctx) 
+PetscErrorCode TaoSolverSetObjectiveRoutine(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, PetscReal*,void*),void *ctx) 
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
@@ -267,7 +267,7 @@ $      func (TaoSolver tao, Vec x, Vec f, void *ctx);
 
 .seealso: TaoSolverSetObjectiveRoutine(), TaoSolverSetJacobianRoutine()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetSeparableObjectiveRoutine(TaoSolver tao, Vec sepobj, PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*),void *ctx)
+PetscErrorCode TaoSolverSetSeparableObjectiveRoutine(TaoSolver tao, Vec sepobj, PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*),void *ctx)
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
@@ -299,7 +299,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetSeparableObjectiveRoutine(TaoSolv
 
 .seealso: TaoSolverSetSeparableObjective()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeSeparableObjective(TaoSolver tao, Vec X, Vec F) 
+PetscErrorCode TaoSolverComputeSeparableObjective(TaoSolver tao, Vec X, Vec F) 
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -348,7 +348,7 @@ $      func (TaoSolver tao, Vec x, Vec g, void *ctx);
 
 .seealso: TaoSolverSetObjectiveRoutine(), TaoSolverSetHessianRoutine() TaoSolverSetObjectiveAndGradientRoutine()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetGradientRoutine(TaoSolver tao,  PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*),void *ctx) 
+PetscErrorCode TaoSolverSetGradientRoutine(TaoSolver tao,  PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*),void *ctx) 
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
@@ -382,7 +382,7 @@ $      func (TaoSolver tao, Vec x, Vec g, void *ctx);
 
 .seealso: TaoSolverSetObjectiveRoutine(), TaoSolverSetHessianRoutine() TaoSolverSetObjectiveAndGradientRoutine()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveAndGradientRoutine(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, PetscReal *, Vec, void*), void *ctx)
+PetscErrorCode TaoSolverSetObjectiveAndGradientRoutine(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, PetscReal *, Vec, void*), void *ctx)
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
@@ -408,7 +408,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveAndGradientRoutine(TaoSo
 .seealso: TaoSolverSetObjectiveRoutine(), TaoSolverSetHessianRoutine() TaoSolverSetObjectiveAndGradientRoutine()
 @*/
 
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetVariableBounds(TaoSolver tao, Vec XL, Vec XU)
+PetscErrorCode TaoSolverSetVariableBounds(TaoSolver tao, Vec XL, Vec XU)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -436,7 +436,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetVariableBounds(TaoSolver tao, Vec
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverGetVariableBounds"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetVariableBounds(TaoSolver tao, Vec *XL, Vec *XU)
+PetscErrorCode TaoSolverGetVariableBounds(TaoSolver tao, Vec *XL, Vec *XU)
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);

@@ -2,7 +2,7 @@
 
 #undef __FUNCT__ 
 #define __FUNCT__ "TaoSolverSetHessianRoutine"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, MatStructure *, void*), void *ctx)
+PetscErrorCode TaoSolverSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, MatStructure *, void*), void *ctx)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -68,7 +68,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetHessianRoutine(TaoSolver tao, Mat
 .seealso:  TaoSolverComputeObjective(), TaoSolverComputeObjectiveAndGradient(), TaoSolverSetHessian()
 
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStructure *flg)
+PetscErrorCode TaoSolverComputeHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStructure *flg)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -93,7 +93,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeHessian(TaoSolver tao, Vec X,
     PetscFunctionReturn(0);
 }
 
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, MatStructure *flg)
+PetscErrorCode TaoSolverComputeJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, MatStructure *flg)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -122,7 +122,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeJacobian(TaoSolver tao, Vec X
 
 #undef __FUNCT__ 
 #define __FUNCT__ "TaoSolverSetJacobianRoutine"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetJacobianRoutine(TaoSolver tao, Mat J, Mat Jpre, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, MatStructure *, void*), void *ctx)
+PetscErrorCode TaoSolverSetJacobianRoutine(TaoSolver tao, Mat J, Mat Jpre, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, MatStructure *, void*), void *ctx)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;

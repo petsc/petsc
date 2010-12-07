@@ -411,7 +411,7 @@ static PetscErrorCode TaoSolverComputeDual_GPCG(TaoSolver tao, Vec DXL, Vec DXU)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TaoSolverCreate_GPCG"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate_GPCG(TaoSolver tao)
+PetscErrorCode TaoSolverCreate_GPCG(TaoSolver tao)
 {
   TAO_GPCG *gpcg;
   PetscErrorCode      ierr;

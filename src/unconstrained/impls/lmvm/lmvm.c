@@ -298,7 +298,7 @@ static PetscErrorCode TaoSolverView_LMVM(TaoSolver tao, PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TaoSolverCreate_LMVM"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate_LMVM(TaoSolver tao)
+PetscErrorCode TaoSolverCreate_LMVM(TaoSolver tao)
 {
     
   TAO_LMVM *lmP;

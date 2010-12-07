@@ -77,7 +77,7 @@ extern PetscBool TaoSolverRegisterAllCalled;
 
 .seealso TaoSolverRegisterDynamic(), TaoSolverRegisterDestroy()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegisterAll(const char path[])
+PetscErrorCode TaoSolverRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
   

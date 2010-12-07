@@ -148,7 +148,7 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecCompare"
-PetscErrorCode TAOSOLVER_DLLEXPORT VecCompare(Vec V1,Vec V2, PetscBool *flg){
+PetscErrorCode VecCompare(Vec V1,Vec V2, PetscBool *flg){
   PetscErrorCode ierr;
   PetscInt n1,n2,N1,N2;
 
@@ -180,7 +180,7 @@ inline static PetscScalar Fischer(PetscScalar a, PetscScalar b)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecFischer"
-PetscErrorCode TAOSOLVER_DLLEXPORT VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FF)
+PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FF)
 {
   PetscScalar *x, *f, *l, *u, *ff;
   PetscScalar xval, fval, lval, uval;
@@ -257,7 +257,7 @@ inline static PetscScalar SFischer(PetscScalar a, PetscScalar b, PetscScalar c)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSFischer"
-PetscErrorCode TAOSOLVER_DLLEXPORT VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscScalar mu, Vec FF)
+PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscScalar mu, Vec FF)
 {
   PetscScalar *x, *f, *l, *u, *ff;
   PetscScalar xval, fval, lval, uval;

@@ -19,7 +19,7 @@ static PetscBool TaoSolverPackageInitialized = PETSC_FALSE;
 
 .seealso: TaoSolverCreate()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverInitializePackage(const char path[])
+PetscErrorCode TaoSolverInitializePackage(const char path[])
 {
   PetscErrorCode ierr;
 
@@ -59,7 +59,7 @@ EXTERN_C_BEGIN
 . path - library path
 */
 
-PetscErrorCode TAOSOLVER_DLLEXPORT PetscDLLibraryRegister_taosolver(const char path[])
+PetscErrorCode PetscDLLibraryRegister_taosolver(const char path[])
 {
     PetscErrorCode ierr;
 

@@ -267,7 +267,7 @@ static PetscErrorCode TaoSolverComputeDual_BLMVM(TaoSolver tao, Vec DXL, Vec DXU
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TaoSolverCreate_BLMVM"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate_BLMVM(TaoSolver tao)
+PetscErrorCode TaoSolverCreate_BLMVM(TaoSolver tao)
 {
   TAO_BLMVM *blmP;
   const char *morethuente_type = TAOLINESEARCH_MT;
