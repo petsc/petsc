@@ -112,6 +112,7 @@ for
 options
 or
 the
+
           <a href="#ExampleUsage">example usages</a>
 below)</li>
         <li> <font color="#ff0000">make all</font><br>
@@ -154,7 +155,8 @@ some
 of
 these
 scripts
-locally for testing - <span style="font-weight: bold;"></span>for
+locally
+for testing - <span style="font-weight: bold;"></span>for
 example
 one
 can update these
@@ -226,6 +228,7 @@ make
 
 
 
+
           </font><font color="#ff0000">PETSC_ARCH=linux-gnu test</font><font
  color="#ff0000"><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -237,6 +240,7 @@ make
 make </font><font color="#ff0000">PETSC_ARCH=linux-gnu-intel</font><br>
           <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make
+
 
 
 
@@ -273,7 +277,8 @@ should
 point
 to
 the
-location of the
+location
+of the
 PETSc installation that is used. Multiple PETSc versions can coexist
 on the same file-system. By changing PETSC_DIR value, one can switch
 between these installed versions of PETSc.</p>
@@ -691,7 +696,8 @@ can
 conflict
 with
 Intel
-ifort and Comapq F90 compilers. If you
+ifort
+and Comapq F90 compilers. If you
 are using these compilers - please do [from cygwin/bash shell]:<br>
       </p>
       <ul>
@@ -806,7 +812,8 @@ install
 and
 use
 PETSc
-with gcc/gfortran compilers from cygwin. In
+with
+gcc/gfortran compilers from cygwin. In
 this case follow the regular instructions.<br>
       </p>
       <p><b><font color="#551a8b"><a name="Win32fe"></a>PETSc Win32
@@ -870,7 +877,8 @@ installed
 PETSc
 with
 the
---prefix option then you DO
+--prefix
+option then you DO
 NOT use a PETSC_ARCH variable. You should install different
 configurations using different --prefix names.<br>
       <hr>
@@ -881,7 +889,8 @@ requiring
 cross
 compiler
 or
-a job scheduler, such as IBM SP or IBM Blue Gene:</font></a></h3>
+a
+job scheduler, such as IBM SP or IBM Blue Gene:</font></a></h3>
       <p>If one has to use a cross compiler - or go through the job
 scheduler to use MPI on a
 given machine - use the configure option <span
@@ -954,10 +963,12 @@ Check config/config/asterix-tops.py for an example.<br>
 NVidia GPUs (aka CUDA)</font></a></h3>
       <ul>
         <li>Install CUDA, Thrust, Cusp in default
-locations. The versions you should use are listed in
-$PETSC_DIR/config/PETSc/packages/cuda.py. The required versions may not
+locations; /usr/local/cuda. The versions and locations of Thrust and
+Cusp you should use are listed in
+$PETSC_DIR/config/PETSc/packages/cuda.py. The required version of CUDA
+may not
 be publically available, you may need to register as an NVIDIA
-Developer (free) to access them. PUT HERE HOW TO FIND THEM!<br>
+Developer (free) to access them. <br>
         </li>
       </ul>
       <ul>

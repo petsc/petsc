@@ -14,6 +14,9 @@ class Configure(PETSc.package.NewPackage):
     self.CUSPVersion   = '200' #Version 0.2.0
     self.ThrustVersion = '100400' #Version 1.4.0
 
+    # Get Thrust from hg clone https://thrust.googlecode.com/hg/ thrust
+    # Get CUSP from hg clone https://cusp-library.googlecode.com/hg/
+
     self.ThrustVersionStr = str(int(self.ThrustVersion)/100000) + '.' + str(int(self.ThrustVersion)/100%1000) + '.' + str(int(self.ThrustVersion)%100)
     self.CUSPVersionStr   = str(int(self.CUSPVersion)/100000) + '.' + str(int(self.CUSPVersion)/100%1000) + '.' + str(int(self.CUSPVersion)%100)
     return
