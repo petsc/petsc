@@ -649,6 +649,14 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetTolerances(TaoSolver tao, PetscRe
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TaoSolverGetKSP"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetKSP(TaoSolver tao, KSP *ksp) {
+  PetscFunctionBegin;
+  *ksp = tao->ksp;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TaoSolverGetSolutionVector"
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetSolutionVector(TaoSolver tao, Vec *X)
 {

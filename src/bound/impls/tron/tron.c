@@ -341,7 +341,9 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
       newksp->max_it = tao->ksp->max_it;
       ierr = KSPSetType(newksp,((PetscObject)(tao->ksp))->type_name); CHKERRQ(ierr);
       ierr = KSPGetPC(tao->ksp, &pc); CHKERRQ(ierr); 
-      ierr = PCSetType(newksp->pc, ((PetscObject)pc)->type_name); CHKERRQ(ierr);
+      if (pc != PETSC_NULL && ((PetscObject)pc)->type_name) {
+	  ierr = PCSetType(newksp->pc, ((PetscObject)pc)->type_name); CHKERRQ(ierr);
+      }
       ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
       tao->ksp = newksp;
       ierr = PetscLogObjectParent(tao,tao->ksp); CHKERRQ(ierr);
@@ -541,6 +543,7 @@ PetscErrorCode TaoSolverCreate_TRON(TaoSolver tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch); CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type); CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch,tao); CHKERRQ(ierr);
+
 
   PetscFunctionReturn(0);
 }
