@@ -392,19 +392,23 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_MPIIO)
   PetscBool         isMPIIO;
 #endif
+  PetscBool         skipHeader;
   PetscInt          message_count,flowcontrolcount;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
 
   /* determine maximum message to arrive */
   ierr = MPI_Comm_rank(((PetscObject)xin)->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)xin)->comm,&size);CHKERRQ(ierr);
 
-  tr[0] = VEC_FILE_CLASSID;
-  tr[1] = xin->map->N;
-  ierr = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  if (skipHeader) {
+    tr[0] = VEC_FILE_CLASSID;
+    tr[1] = xin->map->N;
+    ierr = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  }
 
 #if defined(PETSC_HAVE_MPIIO)
   ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);

@@ -22,6 +22,7 @@ typedef struct  {
   PetscBool     skipinfo;        /* Don't create info file for writing; don't use for reading */
   PetscBool     skipoptions;     /* don't use PETSc options database when loading */
   PetscInt      flowcontrol;     /* allow only <flowcontrol> messages outstanding at a time while doing IO */
+  PetscBool     skipheader;      /* don't write header, only raw data */
 } PetscViewer_Binary;
 
 #undef __FUNCT__  
@@ -387,6 +388,65 @@ PetscErrorCode  PetscViewerBinaryGetSkipOptions(PetscViewer viewer,PetscBool  *s
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinarySetSkipHeader"
+/*@
+    PetscViewerBinarySetSkipHeader - do not write a header with size information on output, just raw data
+
+    Not Collective
+
+    Input Parameters:
++   viewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
+-   skip - PETSC_TRUE means do not write header
+
+    Options Database Key:
+.   -viewer_binary_skip_header
+
+    Level: advanced
+
+    Notes: This must be called after PetscViewerSetType()
+
+.seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySkipInfo(),
+          PetscViewerBinaryGetSkipHeader()
+@*/
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySetSkipHeader(PetscViewer viewer,PetscBool  skip)
+{
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+
+  PetscFunctionBegin;
+  vbinary->skipheader = skip;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinaryGetSkipHeader"
+/*@
+    PetscViewerBinaryGetSkipHeader - checks whether to write a header with size information on output, or just raw data
+
+    Not Collective
+
+    Input Parameter:
+.   viewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
+
+    Output Parameter:
+.   skip - PETSC_TRUE means do not write header
+
+    Level: advanced
+
+    Notes: This must be called after PetscViewerSetType()
+
+.seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySkipInfo(),
+          PetscViewerBinarySetSkipHeader()
+@*/
+PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetSkipHeader(PetscViewer viewer,PetscBool  *skip)
+{
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+
+  PetscFunctionBegin;
+  *skip = vbinary->skipheader;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryGetInfoPointer"
 /*@C
     PetscViewerBinaryGetInfoPointer - Extracts the file pointer for the ASCII
@@ -529,7 +589,8 @@ $    FILE_MODE_APPEND - open existing file for binary output
 
     Options Database Keys:
 +    -viewer_binary_skip_info
--    -viewer_binary_skip_options
+.    -viewer_binary_skip_options
+-    -viewer_binary_skip_header
 
    Level: beginner
 
@@ -919,6 +980,7 @@ PetscErrorCode PetscViewerFileSetName_Binary(PetscViewer viewer,const char name[
   if (type == (PetscFileMode) -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerBinarySetFileType() before PetscViewerFileSetName()");
   ierr = PetscOptionsGetBool(((PetscObject)viewer)->prefix,"-viewer_binary_skip_info",&vbinary->skipinfo,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(((PetscObject)viewer)->prefix,"-viewer_binary_skip_options",&vbinary->skipoptions,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)viewer)->prefix,"-viewer_binary_skip_header",&vbinary->skipheader,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(((PetscObject)viewer)->comm,&rank);CHKERRQ(ierr);
 
@@ -1138,6 +1200,7 @@ PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
   vbinary->fdes      = 0;
   vbinary->skipinfo        = PETSC_FALSE;
   vbinary->skipoptions     = PETSC_TRUE;
+  vbinary->skipheader      = PETSC_FALSE;
   v->ops->getsingleton     = PetscViewerGetSingleton_Binary;
   v->ops->restoresingleton = PetscViewerRestoreSingleton_Binary;
   vbinary->btype           = (PetscFileMode) -1;
