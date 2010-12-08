@@ -551,8 +551,6 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
-/* I am assuming this is Extern 'C' because it is dynamically loaded.  If not, we can remove the DLLEXPORT tag */
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_Draw"
 PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
@@ -630,7 +628,6 @@ PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
   ierr = VecRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #undef __FUNCT__  
