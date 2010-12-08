@@ -76,14 +76,14 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def checkCUDAVersion(self):
-    if self.setCompilers.compilerVersionCUDA != self.requiredVersion:
-      raise RuntimeError('CUDA Error: PETSc currently requires nvcc version '+self.requiredVersion+' (you have '+self.setCompilers.compilerVersionCUDA+')')
+    if self.setCompilers.compilerVersionCUDA != self.CUDAVersion:
+      raise RuntimeError('CUDA Error: PETSc currently requires nvcc version '+self.CUDAVersion+' (you have '+self.setCompilers.compilerVersionCUDA+')')
     return
 
   def checkThrustVersion(self):
     self.pushLanguage('CUDA')
     oldFlags = self.compilers.CUDAPPFLAGS
-    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
+    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.thrust.include)
     if not self.checkRun('#include <thrust/version.h>\n#include <stdio.h>', 'if (THRUST_VERSION < ' + self.ThrustVersion +') {printf("Invalid version %d\\n", THRUST_VERSION); return 1;}'):
       raise RuntimeError('Thrust version error: PETSC currently requires Thrust version '+self.ThrustVersionStr+' when compiling with CUDA')
     self.compilers.CUDAPPFLAGS = oldFlags
@@ -93,7 +93,7 @@ class Configure(PETSc.package.NewPackage):
   def checkCUSPVersion(self):
     self.pushLanguage('CUDA')
     oldFlags = self.compilers.CUDAPPFLAGS
-    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
+    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.cusp.include)
     self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.thrust.include)
     if not self.checkRun('#include <cusp/version.h>\n#include <stdio.h>', 'if (CUSP_VERSION < ' + self.CUSPVersion +') {printf("Invalid version %d\\n", CUSP_VERSION); return 1;}'):
       raise RuntimeError('Cusp version error: PETSC currently requires CUSP version '+self.CUSPVersionStr+' when compiling with CUDA')

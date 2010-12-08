@@ -328,9 +328,6 @@ PetscErrorCode  PetscError(MPI_Comm comm,int line,const char *func,const char* f
   PetscErrorCode ierr;
   char           buf[2048],*lbuf = 0;
   PetscBool      ismain,isunknown;
-#if defined(PETSC_USE_ERRORCHECKING)
-  PetscInt       i;
-#endif
 
   if (!func)  func = "User provided function";
   if (!file)  file = "User file";

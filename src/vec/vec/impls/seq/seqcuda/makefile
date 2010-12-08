@@ -10,7 +10,7 @@ OBJSC    = veccuda.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/vec/impls/seq/seqcuda
+LOCDIR   = src/vec/vec/impls/seq/seqcuda/
 DIRS     = 
 
 include ${PETSC_DIR}/conf/variables
