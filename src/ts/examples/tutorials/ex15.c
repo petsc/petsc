@@ -7,11 +7,10 @@ static char help[] = "Time-dependent PDE in 2d. Modified from ex13.c for illustr
            u(x,y) = 0.0           if r >= .125
 
 Program usage:  
-   mpiexec -n <procs> ./ex13 [-help] [all PETSc options] 
-   e.g., mpiexec -n 2 ./ex13 -da_grid_x 40 -da_grid_y 40 -ts_max_steps 2 -use_coloring -snes_monitor -ksp_monitor 
-         ./ex13 -da_grid_x 40 -da_grid_y 40 -use_coloring -drawcontours 
-         ./ex13 -use_coloring -drawcontours -draw_pause -1
-         mpiexec -n 2 ./ex13 -drawcontours -ts_type sundials -ts_sundials_monitor_steps
+   mpiexec -n <procs> ./ex15 [-help] [all PETSc options] 
+   e.g., mpiexec -n 2 ./ex15 -da_grid_x 40 -da_grid_y 40 -ts_max_steps 2 -use_coloring -snes_monitor -ksp_monitor 
+         ./ex15 -da_grid_x 40 -da_grid_y 40 -use_coloring -drawcontours 
+         ./ex15 -use_coloring -drawcontours -draw_pause .1
 */
 
 #include "petscdm.h"
@@ -96,7 +95,7 @@ int main(int argc,char **argv)
     ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
     
     ierr = MatFDColoringSetFunction(user.matfdcoloring,(PetscErrorCode (*)(void))RHSFunction,&user);CHKERRQ(ierr);
-    ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,user.matfdcoloring);CHKERRQ(ierr);
+    ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,&user);CHKERRQ(ierr);
   }
 
   ftime = 1.0;
@@ -245,6 +244,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat *J,Mat *Jpre,MatStructure
   MatFDColoring  matfdcoloring=user->matfdcoloring;
 
   PetscFunctionBegin;
+  
   if (user->coloring){
     ierr = TSDefaultComputeJacobianColor(ts,t,U,J,Jpre,str,matfdcoloring);CHKERRQ(ierr);
   } else {
