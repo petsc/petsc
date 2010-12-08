@@ -12,7 +12,7 @@ typedef struct  {
   int           fdes;            /* file descriptor, ignored if using MPI IO */
 #if defined(PETSC_HAVE_MPIIO)
   PetscBool     MPIIO;
-  MPI_File      mfdes;           /* ignored unless using MPI IO */    
+  MPI_File      mfdes;           /* ignored unless using MPI IO */
   MPI_Offset    moff;
 #endif
   PetscFileMode btype;           /* read or write? */
@@ -25,7 +25,7 @@ typedef struct  {
 } PetscViewer_Binary;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerGetSingleton_Binary" 
+#define __FUNCT__ "PetscViewerGetSingleton_Binary"
 PetscErrorCode PetscViewerGetSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer)
 {
   int                rank;
@@ -46,7 +46,7 @@ PetscErrorCode PetscViewerGetSingleton_Binary(PetscViewer viewer,PetscViewer *ou
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerRestoreSingleton_Binary" 
+#define __FUNCT__ "PetscViewerRestoreSingleton_Binary"
 PetscErrorCode PetscViewerRestoreSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer)
 {
   PetscErrorCode ierr;
@@ -63,7 +63,7 @@ PetscErrorCode PetscViewerRestoreSingleton_Binary(PetscViewer viewer,PetscViewer
 
 #if defined(PETSC_HAVE_MPIIO)
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinaryGetMPIIOOffset" 
+#define __FUNCT__ "PetscViewerBinaryGetMPIIOOffset"
 /*@C
     PetscViewerBinaryGetMPIIOOffset - Gets the current offset that should be passed to MPI_File_set_view()
 
@@ -97,7 +97,7 @@ PetscErrorCode  PetscViewerBinaryGetMPIIOOffset(PetscViewer viewer,MPI_Offset *o
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinaryAddMPIIOOffset" 
+#define __FUNCT__ "PetscViewerBinaryAddMPIIOOffset"
 /*@C
     PetscViewerBinaryAddMPIIOOffset - Adds to the current offset that should be passed to MPI_File_set_view()
 
@@ -129,7 +129,7 @@ PetscErrorCode  PetscViewerBinaryAddMPIIOOffset(PetscViewer viewer,MPI_Offset of
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinaryGetMPIIODescriptor" 
+#define __FUNCT__ "PetscViewerBinaryGetMPIIODescriptor"
 /*@C
     PetscViewerBinaryGetMPIIODescriptor - Extracts the MPI IO file descriptor from a PetscViewer.
 
@@ -161,7 +161,7 @@ PetscErrorCode  PetscViewerBinaryGetMPIIODescriptor(PetscViewer viewer,MPI_File 
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinaryGetMPIIO" 
+#define __FUNCT__ "PetscViewerBinaryGetMPIIO"
 /*@C
     PetscViewerBinaryGetMPIIO - Returns PETSC_TRUE if the binary viewer is an MPI viewer.
 
@@ -174,7 +174,7 @@ PetscErrorCode  PetscViewerBinaryGetMPIIODescriptor(PetscViewer viewer,MPI_File 
 -   flg - PETSC_TRUE if MPI IO is being used
 
     Options Database:
-    -viewer_binary_mpiio : Flag for using MPI-IO 
+    -viewer_binary_mpiio : Flag for using MPI-IO
 
     Level: advanced
 
@@ -197,7 +197,7 @@ PetscErrorCode  PetscViewerBinaryGetMPIIO(PetscViewer viewer,PetscBool  *flg)
 #endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinaryGetFlowControl" 
+#define __FUNCT__ "PetscViewerBinaryGetFlowControl"
 /*@C
     PetscViewerBinaryGetFlowControl - Returns how many messages are allowed to outstanding at the same time during parallel IO reads/writes
 
@@ -224,7 +224,7 @@ PetscErrorCode  PetscViewerBinaryGetFlowControl(PetscViewer viewer,PetscInt *fc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinarySetFlowControl" 
+#define __FUNCT__ "PetscViewerBinarySetFlowControl"
 /*@C
     PetscViewerBinarySetFlowControl - Returns how many messages are allowed to outstanding at the same time during parallel IO reads/writes
 
@@ -250,7 +250,7 @@ PetscErrorCode  PetscViewerBinarySetFlowControl(PetscViewer viewer,PetscInt fc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinaryGetDescriptor" 
+#define __FUNCT__ "PetscViewerBinaryGetDescriptor"
 /*@C
     PetscViewerBinaryGetDescriptor - Extracts the file descriptor from a PetscViewer.
 
@@ -265,11 +265,11 @@ PetscErrorCode  PetscViewerBinarySetFlowControl(PetscViewer viewer,PetscInt fc)
     Level: advanced
 
     Notes:
-      For writable binary PetscViewers, the descriptor will only be valid for the 
-    first processor in the communicator that shares the PetscViewer. For readable 
+      For writable binary PetscViewers, the descriptor will only be valid for the
+    first processor in the communicator that shares the PetscViewer. For readable
     files it will only be valid on nodes that have the file. If node 0 does not
     have the file it generates an error even if another node does have the file.
- 
+
     Fortran Note:
     This routine is not supported in Fortran.
 
@@ -288,7 +288,7 @@ PetscErrorCode  PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinarySkipInfo" 
+#define __FUNCT__ "PetscViewerBinarySkipInfo"
 /*@
     PetscViewerBinarySkipInfo - Binary file will not have .info file created with it
 
@@ -302,7 +302,7 @@ PetscErrorCode  PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
 
     Level: advanced
 
-    Notes: This must be called after PetscViewerSetType() but before PetscViewerFileSetName(). If you use PetscViewerBinaryOpen() then 
+    Notes: This must be called after PetscViewerSetType() but before PetscViewerFileSetName(). If you use PetscViewerBinaryOpen() then
     you can only skip the info file with the -viewer_binary_skip_info flag. To use the function you must open the
     viewer with PetscViewerCreate(), PetscViewerSetType(), PetscViewerFileSetName().
 
@@ -324,7 +324,7 @@ PetscErrorCode  PetscViewerBinarySkipInfo(PetscViewer viewer)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinarySetSkipOptions" 
+#define __FUNCT__ "PetscViewerBinarySetSkipOptions"
 /*@
     PetscViewerBinarySetSkipOptions - do not use the PETSc options database when loading objects
 
@@ -356,7 +356,7 @@ PetscErrorCode  PetscViewerBinarySetSkipOptions(PetscViewer viewer,PetscBool  sk
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinaryGetSkipOptions" 
+#define __FUNCT__ "PetscViewerBinaryGetSkipOptions"
 /*@
     PetscViewerBinaryGetSkipOptions - checks if viewer uses the PETSc options database when loading objects
 
@@ -387,7 +387,7 @@ PetscErrorCode  PetscViewerBinaryGetSkipOptions(PetscViewer viewer,PetscBool  *s
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinaryGetInfoPointer" 
+#define __FUNCT__ "PetscViewerBinaryGetInfoPointer"
 /*@C
     PetscViewerBinaryGetInfoPointer - Extracts the file pointer for the ASCII
           info file associated with a binary file.
@@ -403,9 +403,9 @@ PetscErrorCode  PetscViewerBinaryGetSkipOptions(PetscViewer viewer,PetscBool  *s
     Level: advanced
 
     Notes:
-      For writable binary PetscViewers, the descriptor will only be valid for the 
-    first processor in the communicator that shares the PetscViewer. It cannot be used for readable binary viewers.
- 
+      For writable binary PetscViewers, the descriptor will only be valid for the
+    first processor in the communicator that shares the PetscViewer.
+
     Fortran Note:
     This routine is not supported in Fortran.
 
@@ -423,7 +423,7 @@ PetscErrorCode  PetscViewerBinaryGetInfoPointer(PetscViewer viewer,FILE **file)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerDestroy_Binary" 
+#define __FUNCT__ "PetscViewerDestroy_Binary"
 PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)v->data;
@@ -454,7 +454,7 @@ PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
   }
   if (vbinary->fdes_info) {
     err = fclose(vbinary->fdes_info);
-    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
+    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
   }
   ierr = PetscFree(vbinary->filename);CHKERRQ(ierr);
   ierr = PetscFree(vbinary);CHKERRQ(ierr);
@@ -463,7 +463,7 @@ PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
 
 #if defined(PETSC_HAVE_MPIIO)
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerDestroy_MPIIO" 
+#define __FUNCT__ "PetscViewerDestroy_MPIIO"
 PetscErrorCode PetscViewerDestroy_MPIIO(PetscViewer v)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)v->data;
@@ -476,7 +476,7 @@ PetscErrorCode PetscViewerDestroy_MPIIO(PetscViewer v)
   }
   if (vbinary->fdes_info) {
     err = fclose(vbinary->fdes_info);
-    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
+    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
   }
   ierr = PetscFree(vbinary->filename);CHKERRQ(ierr);
   ierr = PetscFree(vbinary);CHKERRQ(ierr);
@@ -502,7 +502,7 @@ PetscErrorCode PetscViewerDestroy_MPIIO(PetscViewer v)
 PetscErrorCode  PetscViewerBinaryCreate(MPI_Comm comm,PetscViewer *binv)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,binv);CHKERRQ(ierr);
   ierr = PetscViewerSetType(*binv,PETSCVIEWERBINARY);CHKERRQ(ierr);
@@ -510,7 +510,7 @@ PetscErrorCode  PetscViewerBinaryCreate(MPI_Comm comm,PetscViewer *binv)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinaryOpen" 
+#define __FUNCT__ "PetscViewerBinaryOpen"
 /*@C
    PetscViewerBinaryOpen - Opens a file for binary input/output.
 
@@ -518,7 +518,7 @@ PetscErrorCode  PetscViewerBinaryCreate(MPI_Comm comm,PetscViewer *binv)
 
    Input Parameters:
 +  comm - MPI communicator
-.  name - name of file 
+.  name - name of file
 -  type - type of file
 $    FILE_MODE_WRITE - create new file for binary output
 $    FILE_MODE_READ - open existing file for binary input
@@ -539,11 +539,11 @@ $    FILE_MODE_APPEND - open existing file for binary output
     For reading files, the filename may begin with ftp:// or http:// and/or
     end with .gz; in this case file is brought over and uncompressed.
 
-    For creating files, if the file name ends with .gz it is automatically 
+    For creating files, if the file name ends with .gz it is automatically
     compressed when closed.
 
     For writing files it only opens the file on processor 0 in the communicator.
-    For readable files it opens the file on all nodes that have the file. If 
+    For readable files it opens the file on all nodes that have the file. If
     node 0 does not have the file it generates an error even if other nodes
     do have the file.
 
@@ -560,7 +560,7 @@ $    FILE_MODE_APPEND - open existing file for binary output
 PetscErrorCode  PetscViewerBinaryOpen(MPI_Comm comm,const char name[],PetscFileMode type,PetscViewer *binv)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,binv);CHKERRQ(ierr);
   ierr = PetscViewerSetType(*binv,PETSCVIEWERBINARY);CHKERRQ(ierr);
@@ -571,8 +571,8 @@ PetscErrorCode  PetscViewerBinaryOpen(MPI_Comm comm,const char name[],PetscFileM
 
 #if defined(PETSC_HAVE_MPIIO)
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinaryMPIIO" 
-static PetscErrorCode  PetscViewerBinaryMPIIO(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype,PetscBool  write)
+#define __FUNCT__ "PetscViewerBinaryMPIIO"
+static PetscErrorCode PetscViewerBinaryMPIIO(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype,PetscBool  write)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   PetscErrorCode     ierr;
@@ -596,7 +596,7 @@ static PetscErrorCode  PetscViewerBinaryMPIIO(PetscViewer viewer,void *data,Pets
 #endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinaryRead" 
+#define __FUNCT__ "PetscViewerBinaryRead"
 /*@C
    PetscViewerBinaryRead - Reads from a binary file, all processors get the same result
 
@@ -635,7 +635,7 @@ PetscErrorCode  PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt cou
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinaryWrite" 
+#define __FUNCT__ "PetscViewerBinaryWrite"
 /*@C
    PetscViewerBinaryWrite - writes to a binary file, only from the first process
 
@@ -677,7 +677,7 @@ PetscErrorCode  PetscViewerBinaryWrite(PetscViewer viewer,void *data,PetscInt co
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinaryWriteStringArray" 
+#define __FUNCT__ "PetscViewerBinaryWriteStringArray"
 /*@C
    PetscViewerBinaryWriteStringArray - writes to a binary file, only from the first process an array of strings
 
@@ -767,8 +767,8 @@ PetscErrorCode  PetscViewerBinaryReadStringArray(PetscViewer viewer,char ***data
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerFileGetName_Binary" 
-PetscErrorCode  PetscViewerFileGetName_Binary(PetscViewer viewer,char **name)
+#define __FUNCT__ "PetscViewerFileGetName_Binary"
+PetscErrorCode PetscViewerFileGetName_Binary(PetscViewer viewer,char **name)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -779,7 +779,7 @@ PetscErrorCode  PetscViewerFileGetName_Binary(PetscViewer viewer,char **name)
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerFileGetMode" 
+#define __FUNCT__ "PetscViewerFileGetMode"
 /*@C
      PetscViewerFileGetMode - Gets the type of file to be open
 
@@ -822,7 +822,7 @@ PetscErrorCode  PetscViewerFileGetMode(PetscViewer viewer,PetscFileMode *type)
 .  viewer - the PetscViewer; must be a binary
 
     Options Database:
-    -viewer_binary_mpiio : Flag for using MPI-IO 
+    -viewer_binary_mpiio : Flag for using MPI-IO
 
    Notes: turns off the default usage of the .info file since that is not scalable
 
@@ -874,8 +874,8 @@ PetscErrorCode  PetscViewerFileSetMode(PetscViewer viewer,PetscFileMode type)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerFileGetMode_Binary" 
-PetscErrorCode  PetscViewerFileGetMode_Binary(PetscViewer viewer,PetscFileMode *type)
+#define __FUNCT__ "PetscViewerFileGetMode_Binary"
+PetscErrorCode PetscViewerFileGetMode_Binary(PetscViewer viewer,PetscFileMode *type)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -887,8 +887,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerFileSetMode_Binary" 
-PetscErrorCode  PetscViewerFileSetMode_Binary(PetscViewer viewer,PetscFileMode type)
+#define __FUNCT__ "PetscViewerFileSetMode_Binary"
+PetscErrorCode PetscViewerFileSetMode_Binary(PetscViewer viewer,PetscFileMode type)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -899,12 +899,12 @@ PetscErrorCode  PetscViewerFileSetMode_Binary(PetscViewer viewer,PetscFileMode t
 EXTERN_C_END
 
 /*
-        Actually opens the file 
+        Actually opens the file
 */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerFileSetName_Binary" 
-PetscErrorCode  PetscViewerFileSetName_Binary(PetscViewer viewer,const char name[])
+#define __FUNCT__ "PetscViewerFileSetName_Binary"
+PetscErrorCode PetscViewerFileSetName_Binary(PetscViewer viewer,const char name[])
 {
   PetscMPIInt         rank;
   PetscErrorCode      ierr;
@@ -935,7 +935,7 @@ PetscErrorCode  PetscViewerFileSetName_Binary(PetscViewer viewer,const char name
       if (len == 3) {
         *gz = 0;
         vbinary->storecompressed = PETSC_TRUE;
-      } 
+      }
     }
   }
 
@@ -992,12 +992,12 @@ PetscErrorCode  PetscViewerFileSetName_Binary(PetscViewer viewer,const char name
   } else vbinary->fdes = -1;
   viewer->format = PETSC_VIEWER_NOFORMAT;
 
-  /* 
+  /*
       try to open info file: all processors open this file if read only
   */
   if (!vbinary->skipinfo && (!rank || type == FILE_MODE_READ)) {
     char infoname[PETSC_MAX_PATH_LEN],iname[PETSC_MAX_PATH_LEN];
-  
+
     ierr = PetscStrcpy(infoname,name);CHKERRQ(ierr);
     /* remove .gz if it ends library name */
     ierr = PetscStrstr(infoname,".gz",&gz);CHKERRQ(ierr);
@@ -1005,9 +1005,9 @@ PetscErrorCode  PetscViewerFileSetName_Binary(PetscViewer viewer,const char name
       ierr = PetscStrlen(gz,&len);CHKERRQ(ierr);
       if (len == 3) {
         *gz = 0;
-      } 
+      }
     }
-    
+
     ierr = PetscStrcat(infoname,".info");CHKERRQ(ierr);
     ierr = PetscFixFilename(infoname,iname);CHKERRQ(ierr);
     if (type == FILE_MODE_READ) {
@@ -1031,8 +1031,8 @@ EXTERN_C_END
 #if defined(PETSC_HAVE_MPIIO)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerFileSetName_MPIIO" 
-PetscErrorCode  PetscViewerFileSetName_MPIIO(PetscViewer viewer,const char name[])
+#define __FUNCT__ "PetscViewerFileSetName_MPIIO"
+PetscErrorCode PetscViewerFileSetName_MPIIO(PetscViewer viewer,const char name[])
 {
   PetscMPIInt         rank;
   PetscErrorCode      ierr;
@@ -1060,14 +1060,14 @@ PetscErrorCode  PetscViewerFileSetName_MPIIO(PetscViewer viewer,const char name[
   }
   viewer->format = PETSC_VIEWER_NOFORMAT;
 
-  /* 
+  /*
       try to open info file: all processors open this file if read only
 
       Below is identical code to the code for Binary above, should be put in seperate routine
   */
   if (!vbinary->skipinfo && (!rank || type == FILE_MODE_READ)) {
     char infoname[PETSC_MAX_PATH_LEN],iname[PETSC_MAX_PATH_LEN];
-  
+
     ierr = PetscStrcpy(infoname,name);CHKERRQ(ierr);
     /* remove .gz if it ends library name */
     ierr = PetscStrstr(infoname,".gz",&gz);CHKERRQ(ierr);
@@ -1075,9 +1075,9 @@ PetscErrorCode  PetscViewerFileSetName_MPIIO(PetscViewer viewer,const char name[
       ierr = PetscStrlen(gz,&len);CHKERRQ(ierr);
       if (len == 3) {
         *gz = 0;
-      } 
+      }
     }
-    
+
     ierr = PetscStrcat(infoname,".info");CHKERRQ(ierr);
     ierr = PetscFixFilename(infoname,iname);CHKERRQ(ierr);
     if (type == FILE_MODE_READ) {
@@ -1100,8 +1100,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinarySetMPIIO_Binary" 
-PetscErrorCode  PetscViewerBinarySetMPIIO_Binary(PetscViewer viewer)
+#define __FUNCT__ "PetscViewerBinarySetMPIIO_Binary"
+PetscErrorCode PetscViewerBinarySetMPIIO_Binary(PetscViewer viewer)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   PetscErrorCode     ierr;
@@ -1119,9 +1119,9 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerCreate_Binary" 
-PetscErrorCode  PetscViewerCreate_Binary(PetscViewer v)
-{  
+#define __FUNCT__ "PetscViewerCreate_Binary"
+PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
+{
   PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary;
 #if defined(PETSC_HAVE_MPIIO)
@@ -1140,7 +1140,7 @@ PetscErrorCode  PetscViewerCreate_Binary(PetscViewer v)
   vbinary->skipoptions     = PETSC_TRUE;
   v->ops->getsingleton     = PetscViewerGetSingleton_Binary;
   v->ops->restoresingleton = PetscViewerRestoreSingleton_Binary;
-  vbinary->btype           = (PetscFileMode) -1; 
+  vbinary->btype           = (PetscFileMode) -1;
   vbinary->storecompressed = PETSC_FALSE;
   vbinary->filename        = 0;
   vbinary->flowcontrol     = 256; /* seems a good number for Cray XT-5 */
@@ -1156,12 +1156,12 @@ PetscErrorCode  PetscViewerCreate_Binary(PetscViewer v)
                                      PetscViewerFileGetMode_Binary);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileGetName_C",
 				    "PetscViewerFileGetName_Binary",
-				     PetscViewerFileGetName_Binary);CHKERRQ(ierr);	   
+				     PetscViewerFileGetName_Binary);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerBinarySetMPIIO_C",
                                     "PetscViewerBinarySetMPIIO_Binary",
                                      PetscViewerBinarySetMPIIO_Binary);CHKERRQ(ierr);
- 
+
   ierr = PetscOptionsGetBool(PETSC_NULL,"-viewer_binary_mpiio",&useMPIIO,PETSC_NULL);CHKERRQ(ierr);
   if (useMPIIO) {
     ierr = PetscViewerBinarySetMPIIO(v);CHKERRQ(ierr);
@@ -1180,16 +1180,16 @@ EXTERN_C_END
 static int Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PETSC_VIEWER_BINARY_"  
+#define __FUNCT__ "PETSC_VIEWER_BINARY_"
 /*@C
-     PETSC_VIEWER_BINARY_ - Creates a binary PetscViewer shared by all processors 
+     PETSC_VIEWER_BINARY_ - Creates a binary PetscViewer shared by all processors
                      in a communicator.
 
      Collective on MPI_Comm
 
      Input Parameter:
 .    comm - the MPI communicator to share the binary PetscViewer
-    
+
      Level: intermediate
 
    Options Database Keys:
@@ -1201,7 +1201,7 @@ static int Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
 -   PETSC_VIEWER_BINARY_FILENAME
 
      Notes:
-     Unlike almost all other PETSc routines, PETSC_VIEWER_BINARY_ does not return 
+     Unlike almost all other PETSc routines, PETSC_VIEWER_BINARY_ does not return
      an error code.  The binary PetscViewer is usually used in the form
 $       XXXView(XXX object,PETSC_VIEWER_BINARY_(comm));
 
@@ -1231,21 +1231,14 @@ PetscViewer  PETSC_VIEWER_BINARY_(MPI_Comm comm)
       ierr = PetscStrcpy(fname,"binaryoutput");
       if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
     }
-    ierr = PetscViewerBinaryOpen(ncomm,fname,FILE_MODE_WRITE,&viewer); 
+    ierr = PetscViewerBinaryOpen(ncomm,fname,FILE_MODE_WRITE,&viewer);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
     ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Binary_keyval,(void*)viewer);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
-  } 
+  }
   ierr = PetscCommDestroy(&ncomm);
   if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   PetscFunctionReturn(viewer);
 }
-
-
-
-
-
-
-
