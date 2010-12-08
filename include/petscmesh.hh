@@ -8,8 +8,8 @@ using ALE::Obj;
 
 PetscErrorCode MeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer viewer);
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshCreateMatrix" 
+#undef __FUNCT__
+#define __FUNCT__ "MeshCreateMatrix"
 template<typename Mesh, typename Section>
 PetscErrorCode  MeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& section, const MatType mtype, Mat *J, int bs = -1)
 {
@@ -58,7 +58,7 @@ PetscErrorCode  MeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& sect
     ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
-} 
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshCreateGlobalScatter"
@@ -891,7 +891,7 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
   const ALE::Obj<ALE::Mesh::sieve_type> adjGraph     = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
   PetscInt                              numLocalRows = globalOrder->getLocalSize();
   PetscInt                              firstRow     = globalOrder->getGlobalOffsets()[mesh->commRank()];
-  const PetscInt                        debug        = 0;
+  const PetscInt                        debug        = mesh->debug()/3;
   PetscErrorCode                        ierr;
 
   PetscFunctionBegin;
@@ -921,7 +921,7 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
     for(typename send_overlap_type::traits::capSequence::iterator p_iter = sPoints->begin(); p_iter != sEnd; ++p_iter) {
       const Obj<typename send_overlap_type::supportSequence>      support = sendOverlap->support(*p_iter);
       const typename send_overlap_type::supportSequence::iterator supEnd  = support->end();
-      
+
       for(typename send_overlap_type::supportSequence::iterator s_iter = support->begin(); s_iter != supEnd; ++s_iter) {
         nbrSendOverlap->addArrow(*p_iter, *s_iter, s_iter.color());
       }
@@ -932,7 +932,7 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
     for(typename recv_overlap_type::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
       const Obj<typename recv_overlap_type::coneSequence>      cone = recvOverlap->cone(*p_iter);
       const typename recv_overlap_type::coneSequence::iterator cEnd = cone->end();
-      
+
       for(typename recv_overlap_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cEnd; ++c_iter) {
         nbrRecvOverlap->addArrow(*c_iter, *p_iter, c_iter.color());
       }
