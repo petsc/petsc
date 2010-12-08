@@ -21,6 +21,8 @@ protected:
 public :
   virtual std::string getName() {return "General";};
 
+  #undef __FUNCT__
+  #define __FUNCT__ "processOptions"
   PetscErrorCode processOptions() {
     PetscErrorCode ierr;
 

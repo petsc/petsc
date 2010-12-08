@@ -33,6 +33,8 @@ protected:
   PetscInt              _iters; // The number of test repetitions
 
 public :
+  #undef __FUNCT__
+  #define __FUNCT__ "processOptions"
   PetscErrorCode processOptions() {
     PetscErrorCode ierr;
 
@@ -108,7 +110,6 @@ public :
     const long   numStarPoints  = (long) ((capSize - 1)*3)/2 + capSize;
     long         count          = 0;
 
-    PetscFunctionBegin;
     ALE::LogStage  stage = ALE::LogStageRegister("Hat Star Test");
     PetscLogEvent  starEvent;
     PetscErrorCode ierr;
@@ -254,6 +255,8 @@ class StressTestSquareSieve : public StressTestGeneralSieve
 public:
   virtual std::string getName() {return "Square";};
 
+  #undef __FUNCT__
+  #define __FUNCT__ "processOptions"
   PetscErrorCode processOptions() {
     PetscErrorCode ierr;
 
@@ -291,6 +294,8 @@ class StressTestCubeSieve : public StressTestGeneralSieve
 public:
   virtual std::string getName() {return "Cube";};
 
+  #undef __FUNCT__
+  #define __FUNCT__ "processOptions"
   PetscErrorCode processOptions() {
     PetscErrorCode ierr;
 
@@ -341,6 +346,8 @@ protected:
   PetscInt              _iters; // The number of test repetitions
 
 public :
+  #undef __FUNCT__
+  #define __FUNCT__ "processOptions"
   PetscErrorCode processOptions() {
     PetscErrorCode ierr;
 

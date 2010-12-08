@@ -36,6 +36,8 @@ protected:
   PetscInt            _size;  // The interval size
   std::map<point_type,point_type> _renumbering;
 public:
+  #undef __FUNCT__
+  #define __FUNCT__ "processOptions"
   PetscErrorCode processOptions() {
     PetscErrorCode ierr;
 

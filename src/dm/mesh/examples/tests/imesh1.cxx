@@ -51,6 +51,8 @@ protected:
   ALE::Obj<ALE::Mesh>             _m;
   std::map<point_type,point_type> _renumbering;
 public:
+  #undef __FUNCT__
+  #define __FUNCT__ "processOptions"
   PetscErrorCode processOptions() {
     PetscErrorCode ierr;
 
@@ -606,6 +608,8 @@ protected:
   PetscBool           _interpolate;  // Flag for mesh interpolation
   ALE::Obj<ALE::Mesh> _m;
 public:
+  #undef __FUNCT__
+  #define __FUNCT__ "processOptions"
   PetscErrorCode processOptions() {
     PetscErrorCode ierr;
 
@@ -789,6 +793,8 @@ protected:
   int                 _debug; // The debugging level
   PetscInt            _iters; // The number of test repetitions
 public:
+  #undef __FUNCT__
+  #define __FUNCT__ "processOptions"
   PetscErrorCode processOptions() {
     PetscErrorCode ierr;
 

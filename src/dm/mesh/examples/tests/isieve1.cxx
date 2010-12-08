@@ -39,6 +39,8 @@ protected:
   PetscInt             _size;  // The interval size
   PetscBool            _onlyParallel; // Shut off serial tests
 public:
+  #undef __FUNCT__
+  #define __FUNCT__ "processOptions"
   PetscErrorCode processOptions() {
     PetscErrorCode ierr;
 
@@ -495,6 +497,8 @@ protected:
   int                  _debug; // The debugging level
   PetscInt             _iters; // The number of test repetitions
 public:
+  #undef __FUNCT__
+  #define __FUNCT__ "processOptions"
   PetscErrorCode processOptions() {
     PetscErrorCode ierr;
 
