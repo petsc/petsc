@@ -270,15 +270,15 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
   ierr = RHSJacobian(ts,t,U,J,Jpre,str,(AppCtx*)ctx);CHKERRQ(ierr);
 
   /* Compute *J = -dFrhs/dU + aI */
-  ierr = MatScale(*J,-1.0);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(*J,&rstart,&rend);CHKERRQ(ierr);
+  ierr = MatScale(*Jpre,-1.0);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(*Jpre,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++){
-    ierr = MatSetValues(*J,1,&i,1,&i,&aa,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(*Jpre,1,&i,1,&i,&aa,ADD_VALUES);CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (*J != *Jpre) {
-    ierr = MatAssemblyBegin(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
