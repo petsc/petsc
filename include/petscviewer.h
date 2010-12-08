@@ -244,6 +244,9 @@ extern PetscErrorCode  PetscViewerSocketSetConnection(PetscViewer,const char[],i
 extern PetscErrorCode  PetscViewerBinarySkipInfo(PetscViewer);
 extern PetscErrorCode  PetscViewerBinarySetSkipOptions(PetscViewer,PetscBool );
 extern PetscErrorCode  PetscViewerBinaryGetSkipOptions(PetscViewer,PetscBool *);
+extern PetscErrorCode  PetscViewerBinarySetSkipHeader(PetscViewer,PetscBool);
+extern PetscErrorCode  PetscViewerBinaryGetSkipHeader(PetscViewer,PetscBool*);
+
 extern PetscErrorCode  PetscViewerBinaryReadStringArray(PetscViewer,char***);
 extern PetscErrorCode  PetscViewerBinaryWriteStringArray(PetscViewer,char**);
 

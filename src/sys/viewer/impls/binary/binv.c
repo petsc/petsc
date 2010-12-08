@@ -408,7 +408,7 @@ PetscErrorCode  PetscViewerBinaryGetSkipOptions(PetscViewer viewer,PetscBool  *s
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySkipInfo(),
           PetscViewerBinaryGetSkipHeader()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySetSkipHeader(PetscViewer viewer,PetscBool  skip)
+PetscErrorCode PetscViewerBinarySetSkipHeader(PetscViewer viewer,PetscBool  skip)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -437,7 +437,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinarySetSkipHeader(PetscViewer vie
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySkipInfo(),
           PetscViewerBinarySetSkipHeader()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscViewerBinaryGetSkipHeader(PetscViewer viewer,PetscBool  *skip)
+PetscErrorCode PetscViewerBinaryGetSkipHeader(PetscViewer viewer,PetscBool  *skip)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
