@@ -189,7 +189,7 @@ chk_petsc_dir:
 #
 #
 install:
-	-@./config/install.py -destDir=${DESTDIR}
+	@./config/install.py -destDir=${DESTDIR}
 
 newall:
 	-@cd src/sys; ${PETSC_DIR}/config/builder.py

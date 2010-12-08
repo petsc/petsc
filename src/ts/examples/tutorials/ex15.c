@@ -1,5 +1,5 @@
 
-static char help[] = "Time-dependent PDE in 2d. Simplified from ex7.c for illustrating how to use TS on a structured domain. \n";
+static char help[] = "Time-dependent PDE in 2d. Modified from ex13.c for illustrating how to solve DAEs. \n";
 /* 
    u_t = uxx + uyy
    0 < x < 1, 0 < y < 1; 
@@ -9,7 +9,7 @@ static char help[] = "Time-dependent PDE in 2d. Simplified from ex7.c for illust
 Program usage:  
    mpiexec -n <procs> ./ex13 [-help] [all PETSc options] 
    e.g., mpiexec -n 2 ./ex13 -da_grid_x 40 -da_grid_y 40 -ts_max_steps 2 -use_coloring -snes_monitor -ksp_monitor 
-         ./ex13 -use_coloring -drawcontours 
+         ./ex13 -da_grid_x 40 -da_grid_y 40 -use_coloring -drawcontours 
          ./ex13 -use_coloring -drawcontours -draw_pause -1
          mpiexec -n 2 ./ex13 -drawcontours -ts_type sundials -ts_sundials_monitor_steps
 */
@@ -21,8 +21,9 @@ Program usage:
    User-defined data structures and routines
 */
 typedef struct {
-   PetscBool drawcontours;   /* flag - 1 indicates drawing contours */
+   PetscBool drawcontours;   
 } MonitorCtx;
+
 typedef struct {
    DM             da;
    PetscReal      c;   
@@ -31,7 +32,9 @@ typedef struct {
 } AppCtx;
 
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
+extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*); 
 extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode FormInitialSolution(Vec,void*);
 extern PetscErrorCode MyTSMonitor(TS,PetscInt,PetscReal,Vec,void*);
 
@@ -51,6 +54,7 @@ int main(int argc,char **argv)
   AppCtx         user;              /* user-defined work context */
 
   PetscInitialize(&argc,&argv,(char *)0,help);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -67,7 +71,7 @@ int main(int argc,char **argv)
   user.c             = -30.0;
   user.coloring      = PETSC_FALSE;
   user.matfdcoloring = PETSC_NULL;
-  
+
   usermonitor.drawcontours = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-drawcontours",&usermonitor.drawcontours);CHKERRQ(ierr);
 
@@ -76,10 +80,12 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr); 
-  ierr = TSSetRHSFunction(ts,RHSFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSGL);CHKERRQ(ierr); /* General Linear method, TSTHETA can also solve DAE */
+  ierr = TSSetRHSFunction(ts,RHSFunction,&user);CHKERRQ(ierr); /* needed by RHSJacobian()! */
+  ierr = TSSetIFunction(ts,IFunction,&user);CHKERRQ(ierr);
+
   ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,&user);CHKERRQ(ierr);
+  ierr = TSSetIJacobian(ts,J,J,IJacobian,&user);CHKERRQ(ierr);
 
   /* Use coloring to compute rhs Jacobian efficiently */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_coloring",&user.coloring,PETSC_NULL);CHKERRQ(ierr);
@@ -88,7 +94,7 @@ int main(int argc,char **argv)
     ierr = MatFDColoringCreate(J,iscoloring,&user.matfdcoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(user.matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-
+    
     ierr = MatFDColoringSetFunction(user.matfdcoloring,(PetscErrorCode (*)(void))RHSFunction,&user);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,user.matfdcoloring);CHKERRQ(ierr);
   }
@@ -122,7 +128,7 @@ int main(int argc,char **argv)
   if (user.coloring){
     ierr = MatFDColoringDestroy(user.matfdcoloring);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(u);CHKERRQ(ierr);    
+  ierr = VecDestroy(u);CHKERRQ(ierr);     
   ierr = TSDestroy(ts);CHKERRQ(ierr);
   ierr = DMDestroy(da);CHKERRQ(ierr);
 
@@ -203,6 +209,19 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
 
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
+#define __FUNCT__ "IFunction"
+PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = RHSFunction(ts,t,U,F,ctx);CHKERRQ(ierr);
+  ierr = VecAYPX(F,-1.0,Udot);CHKERRQ(ierr);      /* F = Udot - F */
+  PetscFunctionReturn(0);
+}
+
+/* --------------------------------------------------------------------- */
+#undef __FUNCT__
 #define __FUNCT__ "RHSJacobian"
 /*
    RHSJacobian - User-provided routine to compute the Jacobian of
@@ -230,6 +249,37 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat *J,Mat *Jpre,MatStructure
     ierr = TSDefaultComputeJacobianColor(ts,t,U,J,Jpre,str,matfdcoloring);CHKERRQ(ierr);
   } else {
     ierr = TSDefaultComputeJacobian(ts,t,U,J,Jpre,str,ctx);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/* --------------------------------------------------------------------- */
+/*
+  IJacobian - Compute IJacobian = dF/dU + a dF/dUdot = -dFrhs/dU + a dF/dUdot
+*/
+#undef __FUNCT__
+#define __FUNCT__ "IJacobian"
+PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat *Jpre,MatStructure *str,void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,rstart,rend;
+  PetscScalar    aa=(PetscScalar)a;
+
+  PetscFunctionBegin;
+  /* Compute *J = dFrhs/dU */
+  ierr = RHSJacobian(ts,t,U,J,Jpre,str,(AppCtx*)ctx);CHKERRQ(ierr);
+
+  /* Compute *J = -dFrhs/dU + aI */
+  ierr = MatScale(*J,-1.0);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(*J,&rstart,&rend);CHKERRQ(ierr);
+  for (i=rstart; i<rend; i++){
+    ierr = MatSetValues(*J,1,&i,1,&i,&aa,ADD_VALUES);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (*J != *Jpre) {
+    ierr = MatAssemblyBegin(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
