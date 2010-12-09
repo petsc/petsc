@@ -31,6 +31,9 @@ typedef struct {
 #define __FUNCT__ "PCSetUp_SVD"
 static PetscErrorCode PCSetUp_SVD(PC pc)
 {
+#if defined(PETSC_MISSING_LAPACK_GESVD)
+  SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"GESVD - Lapack routine is unavailable\nNot able to provide singular value estimates.");
+#else
   PC_SVD         *jac = (PC_SVD*)pc->data;
   PetscErrorCode ierr;
   PetscScalar    *a,*u,*v,*d,*work;
@@ -87,6 +90,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
 #endif
   ierr = PetscFree(work);
   PetscFunctionReturn(0);
+#endif
 }
 
 /* -------------------------------------------------------------------------- */
