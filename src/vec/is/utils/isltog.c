@@ -228,8 +228,8 @@ PetscErrorCode  ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping inmap,PetscIn
     Not Collective, but communicator may have more than one process
 
     Input Parameter:
-+inmap - block based mapping; the indices are relative to BLOCKS, not individual vector or matrix entries.
--bs - block size
++ inmap - block based mapping; the indices are relative to BLOCKS, not individual vector or matrix entries.
+- bs - block size
 
     Output Parameter:
 .   outmap - pointwise mapping

@@ -864,7 +864,7 @@ static PetscErrorCode MatNestSetOps_Private(struct _MatOps* ops)
   /*69*/
   ops->getrowmaxabs    = 0;
   ops->getrowminabs    = 0;
-  ops->convert         = 0;/*MatConvert_Nest;*/
+  ops->convert         = 0;
   ops->setcoloring     = 0;
   ops->setvaluesadic   = 0;
   /* 74 */
@@ -886,7 +886,7 @@ static PetscErrorCode MatNestSetOps_Private(struct _MatOps* ops)
   ops->dummy4                  = 0;
   ops->getvecs                 = 0; /* Use VECNEST by calling MatNestSetVecType(A,VECNEST) */
   /*89*/
-  ops->matmult         = 0;/*MatMatMult_Nest;*/
+  ops->matmult         = 0;
   ops->matmultsymbolic = 0;
   ops->matmultnumeric  = 0;
   ops->ptap            = 0;
