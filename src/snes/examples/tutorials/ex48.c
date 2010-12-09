@@ -500,7 +500,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
     thi->friction.refvel = 100.;
     thi->friction.epsvel = 1.;
     ierr = PetscOptionsReal("-thi_friction_refvel","Reference velocity for sliding","",thi->friction.refvel,&thi->friction.refvel,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-thi_friction_epsvel","Regularization velocity for sliding","",thi->friction.refvel,&thi->friction.refvel,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-thi_friction_epsvel","Regularization velocity for sliding","",thi->friction.epsvel,&thi->friction.epsvel,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-thi_friction_m","Friction exponent, 0=Coulomb, 1=Navier","",m,&m,NULL);CHKERRQ(ierr);
     thi->friction.exponent = (m-1)/2;
     ierr = PetscOptionsReal("-thi_dirichlet_scale","Scale Dirichlet boundary conditions by this factor","",thi->dirichlet_scale,&thi->dirichlet_scale,NULL);CHKERRQ(ierr);
