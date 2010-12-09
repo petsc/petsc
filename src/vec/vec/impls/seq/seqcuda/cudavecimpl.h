@@ -62,19 +62,18 @@ struct Vec_CUDA {
 PETSC_STATIC_INLINE PetscErrorCode VecCUDAAllocateCheck(Vec v)
 {
   PetscErrorCode ierr;
-  Vec_Seq   *s;
+  Vec_Seq        *s = (Vec_Seq*)v->data;;
 
   PetscFunctionBegin;
   if (v->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
     try {
-        v->spptr = new Vec_CUDA;
-	((Vec_CUDA*)v->spptr)->GPUarray = new CUSPARRAY;
-	((Vec_CUDA*)v->spptr)->GPUarray->resize((PetscBLASInt)v->map->n);
-	ierr = WaitForGPU();CHKERRQ(ierr);
+      v->spptr = new Vec_CUDA;
+      ((Vec_CUDA*)v->spptr)->GPUarray = new CUSPARRAY;
+      ((Vec_CUDA*)v->spptr)->GPUarray->resize((PetscBLASInt)v->map->n);
+      ierr = WaitForGPU();CHKERRQ(ierr);
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
     }
-    s = (Vec_Seq*)v->data;
     if (s->array == 0){
       v->valid_GPU_array = PETSC_CUDA_GPU;
     } else{
@@ -113,16 +112,14 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
 #define __FUNCT__ "VecCUDACopyToGPUSome"
 PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPUSome(Vec v,CUSPINTARRAYCPU *indicesCPU,CUSPINTARRAYGPU *indicesGPU)
 {
-  Vec_Seq        *s;
+  Vec_Seq        *s = (Vec_Seq *)v->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
-  s = (Vec_Seq *)v->data;
   if (v->valid_GPU_array == PETSC_CUDA_CPU) {
     ierr = PetscLogEventBegin(VEC_CUDACopyToGPUSome,v,0,0,0);CHKERRQ(ierr);
-    thrust::copy(
-		 thrust::make_permutation_iterator(s->array,indicesCPU->begin()),
+    thrust::copy(thrust::make_permutation_iterator(s->array,indicesCPU->begin()),
 		 thrust::make_permutation_iterator(s->array,indicesCPU->end()),
 		 thrust::make_permutation_iterator(((Vec_CUDA *)v->spptr)->GPUarray->begin(),indicesGPU->begin()));
     ierr = PetscLogEventEnd(VEC_CUDACopyToGPUSome,v,0,0,0);CHKERRQ(ierr);
@@ -165,6 +162,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDAGetArrayRead(Vec v, CUSPARRAY** a)
   *a = ((Vec_CUDA *)v->spptr)->GPUarray;
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "VecCUDARestoreArrayRead"
 PETSC_STATIC_INLINE PetscErrorCode VecCUDARestoreArrayRead(Vec v, CUSPARRAY** a)
@@ -172,6 +170,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDARestoreArrayRead(Vec v, CUSPARRAY** a)
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "VecCUDAGetArrayWrite"
 PETSC_STATIC_INLINE PetscErrorCode VecCUDAGetArrayWrite(Vec v, CUSPARRAY** a)
@@ -183,6 +182,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDAGetArrayWrite(Vec v, CUSPARRAY** a)
   *a = ((Vec_CUDA *)v->spptr)->GPUarray;
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "VecCUDARestoreArrayWrite"
 PETSC_STATIC_INLINE PetscErrorCode VecCUDARestoreArrayWrite(Vec v, CUSPARRAY** a)
