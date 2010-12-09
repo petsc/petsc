@@ -236,7 +236,7 @@ struct _p_THI {
     PetscReal Bd2,eps,exponent;
   } viscosity;
   struct {
-    PetscReal irefgam,eps2,exponent;
+    PetscReal irefgam,eps2,exponent,refvel,epsvel;
   } friction;
   PetscReal rhog;
   PetscBool  no_slip;
@@ -331,8 +331,8 @@ static void THIFriction(THI thi,PetscReal rbeta2,PetscReal gam,PetscReal *beta2,
 {
   if (thi->friction.irefgam == 0) {
     Units units = thi->units;
-    thi->friction.irefgam = 1./(0.5*PetscSqr(100 * units->meter / units->year));
-    thi->friction.eps2 = 0.5*PetscSqr(1.e-4 / thi->friction.irefgam);
+    thi->friction.irefgam = 1./(0.5*PetscSqr(thi->friction.refvel * units->meter / units->year));
+    thi->friction.eps2 = 0.5*PetscSqr(thi->friction.epsvel * units->meter / units->year) * thi->friction.irefgam;
   }
   if (thi->friction.exponent == 0) {
     *beta2 = rbeta2;
@@ -497,6 +497,10 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
         break;
     }
     ierr = PetscOptionsReal("-thi_alpha","Bed angle (degrees)","",thi->alpha,&thi->alpha,NULL);CHKERRQ(ierr);
+    thi->friction.refvel = 100.;
+    thi->friction.epsvel = 1.;
+    ierr = PetscOptionsReal("-thi_friction_refvel","Reference velocity for sliding","",thi->friction.refvel,&thi->friction.refvel,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-thi_friction_epsvel","Regularization velocity for sliding","",thi->friction.refvel,&thi->friction.refvel,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-thi_friction_m","Friction exponent, 0=Coulomb, 1=Navier","",m,&m,NULL);CHKERRQ(ierr);
     thi->friction.exponent = (m-1)/2;
     ierr = PetscOptionsReal("-thi_dirichlet_scale","Scale Dirichlet boundary conditions by this factor","",thi->dirichlet_scale,&thi->dirichlet_scale,NULL);CHKERRQ(ierr);
