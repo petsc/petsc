@@ -56,3 +56,4 @@ end
 loadlibrary([PETSC_DIR '/' PETSC_ARCH '/lib/' 'libpetsc'], [PETSC_DIR '/bin/matlab/classes/matlabheader.h']);
 err = calllib('libpetsc', 'PetscInitializeNonPointers', length(arg), arg,argfile,arghelp);PetscCHKERRQ(err);
 
+

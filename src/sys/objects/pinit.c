@@ -94,6 +94,18 @@ PetscErrorCode  PetscInitializeNonPointers(int argc,char **args,const char *file
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscGetPETSC_COMM_SELF"
+/*
+      Used by Matlab interface to get communicator
+*/
+PetscErrorCode  PetscGetPETSC_COMM_SELF(MPI_Comm *comm)
+{
+  PetscFunctionBegin;
+  *comm = PETSC_COMM_SELF;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscInitializeNoArguments"
 /*@C
       PetscInitializeNoArguments - Calls PetscInitialize() from C/C++ without

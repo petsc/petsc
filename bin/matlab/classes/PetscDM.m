@@ -31,7 +31,7 @@ classdef PetscDM < PetscObject
         obj.pobj = pid;
         return
       end
-      [err,obj.pobj] = calllib('libpetsc', 'DMCreate', 0,0);PetscCHKERRQ(err);
+      [err,obj.pobj] = calllib('libpetsc', 'DMCreate', PETSC_COMM_SELF,0);PetscCHKERRQ(err);
     end
     function err = SetType(obj,name)
       err = calllib('libpetsc', 'DMSetType', obj.pobj,name);PetscCHKERRQ(err);
