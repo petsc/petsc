@@ -785,7 +785,7 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSetUp_POUNDERS"
+#define __FUNCT__ "TaoSolverSetUp_POUNDERS"
 static PetscErrorCode TaoSolverSetUp_POUNDERS(TaoSolver tao)
 {
     TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
@@ -964,7 +964,7 @@ static PetscErrorCode TaoSolverView_POUNDERS(TaoSolver tao, PetscViewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "TaoCreate_POUNDERS"
+#define __FUNCT__ "TaoSolverCreate_POUNDERS"
 PetscErrorCode TaoSolverCreate_POUNDERS(TaoSolver tao)
 {
   TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
