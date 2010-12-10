@@ -108,8 +108,6 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
   ierr = MatCUDACopyToGPU(A);CHKERRQ(ierr);
-  /*ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
-   ierr = VecCUDAAllocateCheck(yy);CHKERRQ(ierr);*/
   ierr = VecCUDAGetArrayRead(xx,&xarray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayWrite(yy,&yarray);CHKERRQ(ierr);
   if (usecprow){ /* use compressed row format */
@@ -127,7 +125,6 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
     } 
   }
-  /*yy->valid_GPU_array = PETSC_CUDA_GPU;*/
   ierr = VecCUDARestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayWrite(yy,&yarray);CHKERRQ(ierr);
   ierr = WaitForGPU();CHKERRCUDA(ierr);
@@ -157,10 +154,7 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   ierr = MatCUDACopyToGPU(A);CHKERRQ(ierr);
-  /*ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
-  ierr = VecCUDACopyToGPU(yy);CHKERRQ(ierr);
-   ierr = VecCUDAAllocateCheck(zz);CHKERRQ(ierr);*/
-    if (usecprow) {
+  if (usecprow) {
     try {
       ierr = VecCopy_SeqCUDA(yy,zz);CHKERRQ(ierr);
       ierr = VecCUDAGetArrayRead(xx,&xarray);CHKERRQ(ierr);
@@ -211,7 +205,6 @@ PetscErrorCode MatMultAdd_SeqAIJCUDA(Mat A,Vec xx,Vec yy,Vec zz)
   }
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   ierr = WaitForGPU();CHKERRCUDA(ierr);
-  /*zz->valid_GPU_array = PETSC_CUDA_GPU;*/
   PetscFunctionReturn(0);
 }
 
