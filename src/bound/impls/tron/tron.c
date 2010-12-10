@@ -1,6 +1,7 @@
 #include "tron.h"
 #include "private/kspimpl.h"
-
+#include "private/matimpl.h"
+#include "src/matrix/submatfree.h"
 static const char *TRON_SUBSET[64] = {
   "submat","mask","matrixfree"
 //    "singleprocessor", "noredistribute", "redistribute", "mask", "matrixfree"
@@ -129,6 +130,14 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
 
   tron->pgstepsize=1.0;
 
+  /* Check the matrix type, may need to use tao_mf_wrap for matrix-free */
+  /* Matrix needs operations: getdiagonal, diagonalscale, diagonalset */
+  if (!tao->hessian->ops->getdiagonal || !tao->hessian->ops->diagonalscale || !tao->hessian->ops->diagonalset) {
+      ierr=PetscInfo(tao,"Matrix-free submatrices not available from user matrix (getdiagonal, diagonalscale, and/or diagonalset not set) --  using matrix free wrapper");
+      tron->subset_type=TRON_SUBSET_MATRIXFREE;
+  }
+      
+
   /*   Project the current point onto the feasible set */
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution); CHKERRQ(ierr);
 
@@ -166,7 +175,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
     /* If no free variables */
     if (tron->n_free == 0) {
       actred=0;
-      /* TODO */
+      PetscInfo(tao,"No free variables in tron iteration.");
       break;
 
     }
@@ -175,11 +184,10 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
     while (1) {
 
       /* Approximately solve the reduced linear system */
-      //KSPSTCGSetRadius(tao->ksp, delta); CHKERRQ(ierr);
       ierr = KSPSolve(tao->ksp, tron->R, tron->DXFree); CHKERRQ(ierr);
       ierr = VecSet(tao->stepdirection,0.0); CHKERRQ(ierr);
       
-      /* Add dxfree matrix to complte step direction vector */
+      /* Add dxfree matrix to compute step direction vector */
       if (tron->subset_type == TRON_SUBSET_SUBMAT) {
 	ierr = VecScatterBegin(tron->scatter,tron->DXFree,tao->stepdirection,ADD_VALUES,SCATTER_REVERSE); CHKERRQ(ierr);
 	ierr = VecScatterEnd(tron->scatter,tron->DXFree,tao->stepdirection,ADD_VALUES,SCATTER_REVERSE); CHKERRQ(ierr);
@@ -308,6 +316,12 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
   PC pc;
 
   PetscFunctionBegin;
+  if (tao->ksp == PETSC_NULL) {
+    ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(tao->ksp, "tao_"); CHKERRQ(ierr);
+    ierr = KSPSetType(tao->ksp, KSPCG); CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
+  }
   if (tron->subset_type == TRON_SUBSET_SUBMAT) {
     ierr = VecCreate(((PetscObject)tao)->comm,&tron->R); CHKERRQ(ierr);
     ierr = VecCreate(((PetscObject)tao)->comm,&tron->DXFree); CHKERRQ(ierr);
@@ -326,14 +340,8 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
     } else {
       tron->Hpre_sub = tron->H_sub;
     }
-
     /* Create New KSP if size changed */
-    if (tao->ksp == PETSC_NULL) {
-      ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
-      ierr = KSPSetOptionsPrefix(tao->ksp, "tao_"); CHKERRQ(ierr);
-      ierr = KSPSetType(tao->ksp, KSPCG); CHKERRQ(ierr);
-      ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
-    } else if (tron->n_free_last != tron->n_free) {
+    if (tron->n_free_last != tron->n_free) {
       ierr = KSPCreate(((PetscObject)tao)->comm, &newksp); CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(newksp, "tao_"); CHKERRQ(ierr);
       newksp->pc_side = tao->ksp->pc_side;
@@ -364,12 +372,6 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
     }
     if (tron->DXFree == PETSC_NULL) {
       ierr = VecDuplicate(tao->solution, &tron->DXFree); CHKERRQ(ierr);
-    }
-    if (tao->ksp == PETSC_NULL) {
-      ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
-      ierr = KSPSetOptionsPrefix(tao->ksp, "tao_"); CHKERRQ(ierr);
-      ierr = KSPSetType(tao->ksp, KSPCG); CHKERRQ(ierr);
-      ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
     }
     ierr = VecSet(tron->rmask, 0.0); CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(tron->rmask, &low, &high); CHKERRQ(ierr);
@@ -419,7 +421,52 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
     }
     ierr = KSPSetOperators(tao->ksp, tron->H_sub, tron->Hpre_sub, tron->matflag); CHKERRQ(ierr);
   } else if (tron->subset_type == TRON_SUBSET_MATRIXFREE) {
-    /* TODO */
+
+    if (tron->rmask == PETSC_NULL) {
+      ierr = VecDuplicate(tao->solution, &tron->rmask); CHKERRQ(ierr);
+    }
+    if (tron->R == PETSC_NULL) {
+      ierr = VecDuplicate(tao->solution, &tron->R); CHKERRQ(ierr);
+    }
+    if (tron->DXFree == PETSC_NULL) {
+      ierr = VecDuplicate(tao->solution, &tron->DXFree); CHKERRQ(ierr);
+    }
+    ierr = VecSet(tron->rmask, 0.0); CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(tron->rmask, &low, &high); CHKERRQ(ierr);
+    ierr = ISGetLocalSize(tron->Free_Local, &nlocal); CHKERRQ(ierr);
+    ierr = ISGetIndices(tron->Free_Local, &s); CHKERRQ(ierr);
+    ierr = VecGetArray(tron->rmask, &v); CHKERRQ(ierr);
+    for (i=0;i<nlocal; i++) {
+      v[s[i]-low] = 1;
+    }
+    ierr = ISRestoreIndices(tron->Free_Local, &s); CHKERRQ(ierr);
+    ierr = VecRestoreArray(tron->rmask, &v); CHKERRQ(ierr);
+    
+    /* Reduce vectors (r[i]=g[i], if i in Free_Local, 
+                       r[i]=0     if i not in Free_Local) */
+
+    ierr = VecCopy(tao->gradient, tron->R); CHKERRQ(ierr);
+    ierr = VecCopy(tao->stepdirection, tron->DXFree); CHKERRQ(ierr);
+    ierr = VecPointwiseMult(tron->R, tron->rmask); CHKERRQ(ierr);
+    ierr = VecPointwiseMult(tron->DXFree, tron->rmask); CHKERRQ(ierr);
+    ierr = VecScale(tron->R, -1.0); CHKERRQ(ierr);
+
+
+    /* create submat wrapper */
+
+
+    if (tron->H_sub == PETSC_NULL) {
+      ierr = MatCreateSubMatrixFree(tao->hessian,tron->Free_Local,tron->Free_Local,&tron->H_sub);
+      if (tao->hessian == tao->hessian_pre) {
+	tron->Hpre_sub = tron->H_sub;
+      } else {
+	ierr = MatCreateSubMatrixFree(tao->hessian_pre,tron->Free_Local,tron->Free_Local,&tron->Hpre_sub);
+      }
+      
+    }
+
+    ierr = KSPSetOperators(tao->ksp, tron->H_sub, tron->Hpre_sub, tron->matflag); CHKERRQ(ierr);
+       
 
   }
   PetscFunctionReturn(0);
