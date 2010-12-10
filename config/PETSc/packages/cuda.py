@@ -90,6 +90,31 @@ class Configure(PETSc.package.NewPackage):
     self.popLanguage()
     return
 
+  def checkNVCCDoubleAlign(self):
+    self.pushLanguage('CUDA')
+    (outputCUDA,statusCUDA) = self.outputRun('#include <stdio.h>\n','''
+        struct {
+          double a;
+          int    b;
+          } teststruct;
+        printf("%d",sizeof(teststruct));
+        return 0;''')
+    self.popLanguage()
+    self.pushLanguage('C')
+    (outputC,statusC) = self.outputRun('#include <stdio.h>\n','''
+        struct {
+          double a;
+          int    b;
+          } teststruct;
+        printf("%d",sizeof(teststruct));
+        return 0;''')
+    self.popLanguage()
+    if (statusC or statusCUDA):
+      raise RuntimeError('Error compiling check for memory alignment in CUDA')
+    if outputC !=  outputCUDA:
+      raise RuntimeError('CUDA compiler error: memory alignment doesn\'t match C compiler (try adding -malign-double to compiler options)')
+    return
+
   def checkCUSPVersion(self):
     self.pushLanguage('CUDA')
     oldFlags = self.compilers.CUDAPPFLAGS
@@ -106,6 +131,7 @@ class Configure(PETSc.package.NewPackage):
     self.checkCUDAVersion()
     self.checkThrustVersion()
     self.checkCUSPVersion()
+    self.checkNVCCDoubleAlign()
     if not self.cusp.found or not self.thrust.found:
       raise RuntimeError('PETSc CUDA support requires the CUSP and Thrust packages\nRerun configure using --with-cusp-dir and --with-thrust-dir')
     if self.languages.clanguage == 'C':
