@@ -208,7 +208,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar *
   if (x->petscnative){
 #if defined(PETSC_HAVE_CUDA)
     if (x->valid_GPU_array != PETSC_CUDA_UNALLOCATED) {
-      x->valid_GPU_array = PETSC_CUDA_CPU;
+      x->valid_GPU_array = PETSC_CUDA_BOTH;
     }
 #endif
   } else {
