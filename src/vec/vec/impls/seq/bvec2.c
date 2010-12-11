@@ -550,12 +550,16 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_MPIIO)
   PetscBool         isMPIIO;
 #endif
+  PetscBool         skipHeader;
 
   PetscFunctionBegin;
 
   /* Write vector header */
-  ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
+  if (!skipHeader) {
+    ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  }
 
   /* Write vector contents */
 #if defined(PETSC_HAVE_MPIIO)
