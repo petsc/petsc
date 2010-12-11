@@ -58,7 +58,13 @@ use compatible domain decomposition relative to the 3D DMDAs.
                           && !defined PETSC_USE_SCALAR_LONG_DOUBLE      \
                           && defined __SSE2__)
 
-#define restrict PETSC_RESTRICT
+#if !defined __STDC_VERSION__ || __STDC_VERSION__ < 199901L
+#  if defined __cplusplus       /* C++ restrict is nonstandard and compilers have inconsistent rules about where it can be used */
+#    define restrict
+#  else
+#    define restrict PETSC_RESTRICT
+#  endif
+#endif
 
 static PetscClassId THI_CLASSID;
 
@@ -197,9 +203,9 @@ typedef struct {
   PetscScalar beta2;            /* friction */
 } PrmNode;
 
-#define FieldSize(ntype) (sizeof(ntype)/sizeof(PetscScalar))
-#define FieldOffset(ntype,member) (offsetof(ntype,member)/sizeof(PetscScalar))
-#define FieldIndex(ntype,i,member) ((i)*FieldSize(ntype) + FieldOffset(ntype,member))
+#define FieldSize(ntype) ((PetscInt)(sizeof(ntype)/sizeof(PetscScalar)))
+#define FieldOffset(ntype,member) ((PetscInt)(offsetof(ntype,member)/sizeof(PetscScalar)))
+#define FieldIndex(ntype,i,member) ((PetscInt)((i)*FieldSize(ntype) + FieldOffset(ntype,member)))
 #define NODE_SIZE FieldSize(Node)
 #define PRMNODE_SIZE FieldSize(PrmNode)
 
@@ -422,9 +428,9 @@ static void THIViscosity(THI thi,PetscReal gam,PetscReal *eta,PetscReal *deta)
   *deta = exponent * (*eta) / (eps + gam);
 }
 
-static void THIErosion(THI thi,const Node *vel,PetscReal *erate,Node *derate)
+static void THIErosion(THI thi,const Node *vel,PetscScalar *erate,Node *derate)
 {
-  const PetscScalar magref2 = (PetscSqr(vel->u) + PetscSqr(vel->v)) / PetscSqr(thi->erosion.refvel),
+  const PetscScalar magref2 = 1.e-10 + (PetscSqr(vel->u) + PetscSqr(vel->v)) / PetscSqr(thi->erosion.refvel),
     rate = - thi->erosion.rate * PetscPowScalar(magref2, 0.5*thi->erosion.exponent);
   if (erate) *erate = rate;
   if (derate) {
@@ -432,8 +438,8 @@ static void THIErosion(THI thi,const Node *vel,PetscReal *erate,Node *derate)
       derate->u = 0;
       derate->v = 0;
     } else {
-      derate->u = 0.5*thi->erosion.exponent * rate / (1e-10 + magref2) * 2 * vel->u / PetscSqr(thi->erosion.refvel);
-      derate->v = 0.5*thi->erosion.exponent * rate / (1e-10 + magref2) * 2 * vel->v / PetscSqr(thi->erosion.refvel);
+      derate->u = 0.5*thi->erosion.exponent * rate / magref2 * 2. * vel->u / PetscSqr(thi->erosion.refvel);
+      derate->v = 0.5*thi->erosion.exponent * rate / magref2 * 2. * vel->v / PetscSqr(thi->erosion.refvel);
     }
   }
 }
@@ -813,7 +819,7 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
           if (q == 0) etabase = eta;
           RangeUpdate(&etamin,&etamax,eta);
           for (l=ls; l<8; l++) { /* test functions */
-            const PetscReal ds[2] = {dpn[q%4][0].h+dpn[q%4][0].b, dpn[q%4][1].h+dpn[q%4][1].b};
+            const PetscScalar ds[2] = {dpn[q%4][0].h+dpn[q%4][0].b, dpn[q%4][1].h+dpn[q%4][1].b};
             const PetscReal pp=phi[l],*dp = dphi[l];
             fn[l]->u += dp[0]*jw*eta*(4.*du[0]+2.*dv[1]) + dp[1]*jw*eta*(du[1]+dv[0]) + dp[2]*jw*eta*du[2] + pp*jw*thi->rhog*ds[0];
             fn[l]->v += dp[1]*jw*eta*(2.*du[0]+4.*dv[1]) + dp[0]*jw*eta*(du[1]+dv[0]) + dp[2]*jw*eta*dv[2] + pp*jw*thi->rhog*ds[1];
@@ -1317,17 +1323,17 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,const Node ***x3,c
         };
         const PetscScalar
           w  = (k && k<zm-1) ? 0.5 : 0.25,
-          hW = w*(x2[i-1][j  ].h+x2[i  ][j  ].h)/(zm-1),
-          hE = w*(x2[i  ][j  ].h+x2[i+1][j  ].h)/(zm-1),
-          hS = w*(x2[i  ][j-1].h+x2[i  ][j  ].h)/(zm-1),
-          hN = w*(x2[i  ][j  ].h+x2[i  ][j+1].h)/(zm-1);
+          hW = w*(x2[i-1][j  ].h+x2[i  ][j  ].h)/(zm-1.),
+          hE = w*(x2[i  ][j  ].h+x2[i+1][j  ].h)/(zm-1.),
+          hS = w*(x2[i  ][j-1].h+x2[i  ][j  ].h)/(zm-1.),
+          hN = w*(x2[i  ][j  ].h+x2[i  ][j+1].h)/(zm-1.);
         PetscScalar *vals,
-          vals_upwind[] = {((x3[i][j][k].u > 0) ? -hW : 0),
-                           ((x3[i][j][k].u > 0) ? +hE : -hW),
-                           ((x3[i][j][k].u > 0) ?  0  : +hE),
-                           ((x3[i][j][k].v > 0) ? -hS : 0),
-                           ((x3[i][j][k].v > 0) ? +hN : -hS),
-                           ((x3[i][j][k].v > 0) ?  0  : +hN)},
+          vals_upwind[] = {((PetscRealPart(x3[i][j][k].u) > 0) ? -hW : 0),
+                           ((PetscRealPart(x3[i][j][k].u) > 0) ? +hE : -hW),
+                           ((PetscRealPart(x3[i][j][k].u) > 0) ?  0  : +hE),
+                           ((PetscRealPart(x3[i][j][k].v) > 0) ? -hS : 0),
+                           ((PetscRealPart(x3[i][j][k].v) > 0) ? +hN : -hS),
+                           ((PetscRealPart(x3[i][j][k].v) > 0) ?  0  : +hN)},
           vals_centered[] = {-0.5*hW, 0.5*(-hW+hE), 0.5*hE,
                              -0.5*hS, 0.5*(-hS+hN), 0.5*hN};
         vals = 1 ? vals_upwind : vals_centered;
