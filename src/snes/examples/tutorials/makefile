@@ -668,7 +668,7 @@ runex28_1:
 	-@${MPIEXEC} -n 3 ./ex28 -da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 1 > ex28_1.tmp 2>&1; \
 	  ${DIFF} output/ex28_1.out ex28_1.tmp || echo "Possible problem with ex28_1, diffs above"; ${RM} -f ex28_1.tmp
 runex28_2:
-	-@${MPIEXEC} -n 3 ./ex28 -da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 2 > ex28_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex28 -da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 2 -pack_dmcomposite_preallocate_only > ex28_2.tmp 2>&1; \
 	  ${DIFF} output/ex28_2.out ex28_2.tmp || echo "Possible problem with ex28_2, diffs above"; ${RM} -f ex28_2.tmp
 
 runex32:

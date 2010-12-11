@@ -5,7 +5,7 @@ static const char help[] = "Uses analytic Jacobians to solve individual problems
  * PDE (U):
  *     -(k u_x)_x = 1 on (0,1), subject to u(0) = 0, u(1) = 1
  * Algebraic (K):
- *     exp(k) + k = u + 1/(1 + u_x^2)
+ *     exp(k-1) + k = u + 1/(1/(1+u) + 1/(1+u_x^2))
  *
  * The discretization places k at staggered points, and a separate DMDA is used for each "physics".
  *
@@ -38,13 +38,14 @@ struct _UserCtx {
 #define __FUNCT__ "FormFunctionLocal_U"
 static PetscErrorCode FormFunctionLocal_U(User user,DMDALocalInfo *info,const PetscScalar u[],const PetscScalar k[],PetscScalar f[])
 {
+  PetscReal hx = 1./info->mx;
   PetscInt i;
 
   PetscFunctionBegin;
   for (i=info->xs; i<info->xs+info->xm; i++) {
-    if (i == 0) f[i] = u[i];
-    else if (i == info->mx-1) f[i] = u[i] - 1.0;
-    else f[i] = k[i-1]*(u[i]-u[i-1]) - k[i]*(u[i+1]-u[i]) - 1.0;
+    if (i == 0) f[i] = hx*u[i];
+    else if (i == info->mx-1) f[i] = hx*(u[i] - 1.0);
+    else f[i] = hx*((k[i-1]*(u[i]-u[i-1]) - k[i]*(u[i+1]-u[i]))/(hx*hx) - 1.0);
   }
   PetscFunctionReturn(0);
 }
@@ -62,8 +63,8 @@ static PetscErrorCode FormFunctionLocal_K(User user,DMDALocalInfo *info,const Pe
       ubar = 0.5*(u[i+1]+u[i]),
       gradu = (u[i+1]-u[i])/hx,
       g = 1. + gradu*gradu,
-      w = 1./g;
-    f[i] = hx*(PetscExpScalar(k[i]) + k[i] - (ubar + w));
+      w = 1./(1.+ubar) + 1./g;
+    f[i] = hx*(PetscExpScalar(k[i]-1.0) + k[i] - 1./w);
   }
   PetscFunctionReturn(0);
 }
@@ -132,17 +133,18 @@ static PetscErrorCode FormFunction_All(SNES snes,Vec X,Vec F,void *ctx)
 #define __FUNCT__ "FormJacobianLocal_U"
 static PetscErrorCode FormJacobianLocal_U(User user,DMDALocalInfo *info,const PetscScalar u[],const PetscScalar k[],Mat Buu)
 {
+  PetscReal      hx = 1./info->mx;
   PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin;
   for (i=info->xs; i<info->xs+info->xm; i++) {
     PetscInt row = i-info->gxs,cols[] = {row-1,row,row+1};
-    PetscScalar one = 1.0;
-    if (i == 0) {ierr = MatSetValuesLocal(Buu,1,&row,1,&row,&one,INSERT_VALUES);CHKERRQ(ierr);}
-    else if (i == info->mx-1) {ierr = MatSetValuesLocal(Buu,1,&row,1,&row,&one,INSERT_VALUES);CHKERRQ(ierr);}
+    PetscScalar val = hx;
+    if (i == 0) {ierr = MatSetValuesLocal(Buu,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);}
+    else if (i == info->mx-1) {ierr = MatSetValuesLocal(Buu,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);}
     else {
-      PetscScalar vals[] = {-k[i-1],k[i-1]+k[i],-k[i]};
+      PetscScalar vals[] = {-k[i-1]/hx,(k[i-1]+k[i])/hx,-k[i]/hx};
       ierr = MatSetValuesLocal(Buu,1,&row,3,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
@@ -160,7 +162,7 @@ static PetscErrorCode FormJacobianLocal_K(User user,DMDALocalInfo *info,const Pe
   PetscFunctionBegin;
   for (i=info->xs; i<info->xs+info->xm; i++) {
     PetscInt row = i-info->gxs;
-    PetscScalar vals[] = {hx*(PetscExpScalar(k[i])+1.)};
+    PetscScalar vals[] = {hx*(PetscExpScalar(k[i]-1.)+1.)};
     ierr = MatSetValuesLocal(Bkk,1,&row,1,&row,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -170,6 +172,7 @@ static PetscErrorCode FormJacobianLocal_K(User user,DMDALocalInfo *info,const Pe
 #define __FUNCT__ "FormJacobianLocal_UK"
 static PetscErrorCode FormJacobianLocal_UK(User user,DMDALocalInfo *info,DMDALocalInfo *infok,const PetscScalar u[],const PetscScalar k[],Mat Buk)
 {
+  PetscReal hx = 1./info->mx;
   PetscErrorCode ierr;
   PetscInt       i;
 
@@ -178,7 +181,7 @@ static PetscErrorCode FormJacobianLocal_UK(User user,DMDALocalInfo *info,DMDALoc
   for (i=info->xs; i<info->xs+info->xm; i++) {
     if (i == 0 || i == info->mx-1) continue;
     PetscInt row = i-info->gxs,cols[] = {i-1-infok->gxs,i-infok->gxs};
-    PetscScalar vals[] = {u[i]-u[i-1],u[i]-u[i+1]};
+    PetscScalar vals[] = {(u[i]-u[i-1])/hx,(u[i]-u[i+1])/hx};
     ierr = MatSetValuesLocal(Buk,1,&row,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -197,16 +200,22 @@ static PetscErrorCode FormJacobianLocal_KU(User user,DMDALocalInfo *info,DMDALoc
   for (i=infok->xs; i<infok->xs+infok->xm; i++) {
     PetscInt row = i-infok->gxs,cols[] = {i-info->gxs,i+1-info->gxs};
     const PetscScalar
-      ubar_L  = 0.5,
-      ubar_R  = 0.5,
-      gradu   = (u[i+1]-u[i])/hx,
-      gradu_L = -1./hx,
-      gradu_R = 1./hx,
-      g       = 1. + gradu*gradu,
-      g_gradu = 2.*gradu,
-      w       = 1./g,
-      w_gradu = -g_gradu*w*w,
-      vals[]  = {hx*(-ubar_L - w_gradu*gradu_L), hx*(-ubar_R - w_gradu*gradu_R)};
+      ubar     = 0.5*(u[i]+u[i+1]),
+      ubar_L   = 0.5,
+      ubar_R   = 0.5,
+      gradu    = (u[i+1]-u[i])/hx,
+      gradu_L  = -1./hx,
+      gradu_R  = 1./hx,
+      g        = 1. + PetscSqr(gradu),
+      g_gradu  = 2.*gradu,
+      w        = 1./(1.+ubar) + 1./g,
+      w_ubar   = -1./PetscSqr(1.+ubar),
+      w_gradu  = -g_gradu/PetscSqr(g),
+      iw       = 1./w,
+      iw_ubar  = -w_ubar * PetscSqr(iw),
+      iw_gradu = -w_gradu * PetscSqr(iw),
+      vals[]   = {-hx*(iw_ubar*ubar_L + iw_gradu*gradu_L),
+                  -hx*(iw_ubar*ubar_R + iw_gradu*gradu_R)};
     ierr = MatSetValuesLocal(Bku,1,&row,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -305,7 +314,7 @@ static PetscErrorCode FormInitial_Coupled(User user,Vec X)
   ierr = DMDAGetLocalInfo(dak,&infok);CHKERRQ(ierr);
   hx = 1./(infok.mx);
   for (i=infou.xs; i<infou.xs+infou.xm; i++) u[i] = (PetscScalar)i*hx * (1.-(PetscScalar)i*hx);
-  for (i=infok.xs; i<infok.xs+infok.xm; i++) k[i] = 5.0;
+  for (i=infok.xs; i<infok.xs+infok.xm; i++) k[i] = 1.0 + 0.5*(PetscScalar)sin((double)2*PETSC_PI*i*hx);
   ierr = DMDAVecRestoreArray(dau,Xu,&u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(dak,Xk,&k);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(user->pack,X,&Xu,&Xk);CHKERRQ(ierr);

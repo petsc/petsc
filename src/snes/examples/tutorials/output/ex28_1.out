@@ -1,10 +1,6 @@
-  0 SNES Function norm 664.564 
-  1 SNES Function norm 246.381 
-  2 SNES Function norm 91.3284 
-  3 SNES Function norm 33.0394 
-  4 SNES Function norm 10.5117 
-  5 SNES Function norm 2.0964 
-  6 SNES Function norm 0.117095 
-  7 SNES Function norm 0.000404397 
-  8 SNES Function norm 5.31825e-09 
+  0 SNES Function norm 0.372904 
+  1 SNES Function norm 0.0717451 
+  2 SNES Function norm 0.00363009 
+  3 SNES Function norm 1.10244e-05 
+  4 SNES Function norm 1.207e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
