@@ -226,6 +226,9 @@ struct _p_THI {
   struct {
     PetscReal irefgam,eps2,exponent;
   } friction;
+  struct {
+    PetscReal rate,exponent,refvel;
+  } erosion;
   PetscReal rhog;
   PetscBool no_slip;
   PetscBool verbose;
@@ -419,6 +422,22 @@ static void THIViscosity(THI thi,PetscReal gam,PetscReal *eta,PetscReal *deta)
   *deta = exponent * (*eta) / (eps + gam);
 }
 
+static void THIErosion(THI thi,const Node *vel,PetscReal *erate,Node *derate)
+{
+  const PetscScalar magref2 = (PetscSqr(vel->u) + PetscSqr(vel->v)) / PetscSqr(thi->erosion.refvel),
+    rate = - thi->erosion.rate * PetscPowScalar(magref2, 0.5*thi->erosion.exponent);
+  if (erate) *erate = rate;
+  if (derate) {
+    if (thi->erosion.exponent == 1) {
+      derate->u = 0;
+      derate->v = 0;
+    } else {
+      derate->u = 0.5*thi->erosion.exponent * rate / (1e-10 + magref2) * 2 * vel->u / PetscSqr(thi->erosion.refvel);
+      derate->v = 0.5*thi->erosion.exponent * rate / (1e-10 + magref2) * 2 * vel->v / PetscSqr(thi->erosion.refvel);
+    }
+  }
+}
+
 static void RangeUpdate(PetscReal *min,PetscReal *max,PetscReal x)
 {
   if (x < *min) *min = x;
@@ -500,6 +519,9 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   thi->verbose         = PETSC_FALSE;
 
   thi->viscosity.glen_n = 3.;
+  thi->erosion.rate     = 1e-3; /* m/a */
+  thi->erosion.exponent = 1.;
+  thi->erosion.refvel   = 1.;   /* m/a */
 
   ierr = PetscOptionsBegin(comm,NULL,"Toy Hydrostatic Ice options","");CHKERRQ(ierr);
   {
@@ -564,6 +586,11 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
     ierr = PetscOptionsReal("-thi_viscosity_glen_n","Exponent in Glen flow law, 1=linear, infty=ideal plastic",NULL,thi->viscosity.glen_n,&thi->viscosity.glen_n,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-thi_friction_m","Friction exponent, 0=Coulomb, 1=Navier","",m,&m,NULL);CHKERRQ(ierr);
     thi->friction.exponent = (m-1)/2;
+    ierr = PetscOptionsReal("-thi_erosion_rate","Rate of erosion relative to sliding velocity at reference velocity (m/a)",NULL,thi->erosion.rate,&thi->erosion.rate,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-thi_erosion_exponent","Power of sliding velocity appearing in erosion relation",NULL,thi->erosion.exponent,&thi->erosion.exponent,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-thi_erosion_refvel","Reference sliding velocity for erosion (m/a)",NULL,thi->erosion.refvel,&thi->erosion.refvel,NULL);CHKERRQ(ierr);
+    thi->erosion.rate   *= units->meter / units->year;
+    thi->erosion.refvel *= units->meter / units->year;
     ierr = PetscOptionsReal("-thi_dirichlet_scale","Scale Dirichlet boundary conditions by this factor","",thi->dirichlet_scale,&thi->dirichlet_scale,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-thi_ssa_friction_scale","Scale slip boundary conditions by this factor in SSA (2D) assembly","",thi->ssa_friction_scale,&thi->ssa_friction_scale,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-thi_inertia","Coefficient of accelaration term in velocity system, physical is almost zero",NULL,thi->inertia,&thi->inertia,NULL);CHKERRQ(ierr);
@@ -858,7 +885,7 @@ static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info,const Node ***x,co
 
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
-      PetscScalar div = 0,h[8];
+      PetscScalar div = 0,erate,h[8];
       PrmNodeGetFaceMeasure(prm,i,j,h);
       for (k=0; k<zm; k++) {
         PetscScalar weight = (k==0 || k == zm-1) ? 0.5/(zm-1) : 1.0/(zm-1);
@@ -883,7 +910,8 @@ static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info,const Node ***x,co
         }
       }
       /* printf("div[%d][%d] %g\n",i,j,div); */
-      f[i][j].b     = prmdot[i][j].b;
+      THIErosion(thi,&x[i][j][0],&erate,NULL);
+      f[i][j].b     = prmdot[i][j].b - erate;
       f[i][j].h     = prmdot[i][j].h + div;
       f[i][j].beta2 = prmdot[i][j].beta2;
     }
@@ -1292,7 +1320,8 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,const Node ***x3,c
           hW = w*(x2[i-1][j  ].h+x2[i  ][j  ].h)/(zm-1),
           hE = w*(x2[i  ][j  ].h+x2[i+1][j  ].h)/(zm-1),
           hS = w*(x2[i  ][j-1].h+x2[i  ][j  ].h)/(zm-1),
-          hN = w*(x2[i  ][j  ].h+x2[i  ][j+1].h)/(zm-1),
+          hN = w*(x2[i  ][j  ].h+x2[i  ][j+1].h)/(zm-1);
+        PetscScalar *vals,
           vals_upwind[] = {((x3[i][j][k].u > 0) ? -hW : 0),
                            ((x3[i][j][k].u > 0) ? +hE : -hW),
                            ((x3[i][j][k].u > 0) ?  0  : +hE),
@@ -1301,7 +1330,14 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,const Node ***x3,c
                            ((x3[i][j][k].v > 0) ?  0  : +hN)},
           vals_centered[] = {-0.5*hW, 0.5*(-hW+hE), 0.5*hE,
                              -0.5*hS, 0.5*(-hS+hN), 0.5*hN};
-        ierr = MatSetValuesLocal(B21,1,row,6,cols,1?vals_upwind:vals_centered,INSERT_VALUES);CHKERRQ(ierr);
+        vals = 1 ? vals_upwind : vals_centered;
+        if (k == 0) {
+          Node derate;
+          THIErosion(thi,&x3[i][j][0],NULL,&derate);
+          vals[1] -= derate.u;
+          vals[4] -= derate.v;
+        }
+        ierr = MatSetValuesLocal(B21,1,row,6,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }
