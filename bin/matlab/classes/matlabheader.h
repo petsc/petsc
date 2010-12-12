@@ -11,6 +11,7 @@ int PetscInitializeNonPointers(int,char **,const char*,const char*);
 typedef int MPI_Comm;
 int PetscGetPETSC_COMM_SELF(MPI_Comm*);
 int PetscFinalize(void);
+int PetscOptionsSetValue(const char*,const char*);
 
 typedef int InsertMode;
 typedef long int PetscPointer;
