@@ -78,7 +78,11 @@ classdef PetscDM < PetscObject
       err = calllib('libpetsc', 'DMSetUp', obj.pobj);PetscCHKERRQ(err);PetscCHKERRQ(err);
     end
     function err = View(obj,viewer)
-      err = calllib('libpetsc', 'DMView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
+      if (nargin == 1)
+        err = calllib('libpetsc', 'DMView', obj.pobj,0);PetscCHKERRQ(err);
+      else
+        err = calllib('libpetsc', 'DMView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
+      end
     end
     function err = Destroy(obj)
       err = calllib('libpetsc', 'DMDestroy', obj.pobj);PetscCHKERRQ(err);

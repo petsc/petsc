@@ -24,7 +24,11 @@ classdef PetscPC < PetscObject
       err = calllib('libpetsc', 'PCSetOperators', obj.pobj,A.pobj,B.pobj,pattern);PetscCHKERRQ(err);
     end
     function err = View(obj,viewer)
-      err = calllib('libpetsc', 'PCView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
+      if (nargin == 1)
+        err = calllib('libpetsc', 'PCView', obj.pobj,0);PetscCHKERRQ(err);
+      else
+        err = calllib('libpetsc', 'PCView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
+      end
     end
     function err = Destroy(obj)
       err = calllib('libpetsc', 'PCDestroy', obj.pobj);PetscCHKERRQ(err);

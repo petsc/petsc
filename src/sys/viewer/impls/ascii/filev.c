@@ -21,7 +21,7 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
   if (vascii->sviewer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"ASCII PetscViewer destroyed before restoring singleton PetscViewer");
   ierr = MPI_Comm_rank(((PetscObject)viewer)->comm,&rank);CHKERRQ(ierr);
   if (!rank && vascii->fd != stderr && vascii->fd != PETSC_STDOUT) {
-    if (vascii->fd) {
+    if (vascii->fd && vascii->closefile) {
       err = fclose(vascii->fd);
       if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
     }
@@ -750,6 +750,7 @@ PetscErrorCode  PetscViewerCreate_ASCII(PetscViewer viewer)
   vascii->tab            = 0;
   vascii->tab_store      = 0;
   vascii->filename       = 0;
+  vascii->closefile      = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetName_C","PetscViewerFileSetName_ASCII",
                                      PetscViewerFileSetName_ASCII);CHKERRQ(ierr);

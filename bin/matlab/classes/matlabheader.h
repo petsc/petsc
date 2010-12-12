@@ -11,7 +11,6 @@ int PetscInitializeNonPointers(int,char **,const char*,const char*);
 typedef int MPI_Comm;
 int PetscGetPETSC_COMM_SELF(MPI_Comm*);
 int PetscFinalize(void);
-int PetscOptionsSetValue(const char*,const char*);
 
 typedef int InsertMode;
 typedef long int PetscPointer;
@@ -21,6 +20,10 @@ int PetscViewerCreate(MPI_Comm,PetscViewer*);
 int PetscViewerSetType(PetscViewer,const char*);
 int PetscViewerView(PetscViewer,PetscViewer);
 int PetscViewerDestroy(PetscViewer);
+
+int PetscOptionsView(PetscViewer);
+int PetscOptionsSetValue(const char*,const char*);
+int PetscOptionsClearValue(const char*);
 
 typedef PetscPointer IS;
 int ISCreate(MPI_Comm,IS *);

@@ -99,6 +99,8 @@ PETSC_BOOL, PetscOptionsTruth to PetscOptionsBool, etc.</li>
         <li>Changed -log_history to -history and PetscLogOpenHistory()
 PetscLogCloseHistory() to PetscOpenHistory(), PetscCloseHistory()
 because "log" is reserved for related to the performance logging</li>
+        <li>Changed PetscOptionsPrint() to PetscOptionsView()<br>
+        </li>
       </ul>
       <u><b>Logging:<br>
       </b></u>
@@ -146,9 +148,10 @@ longer relative to element. This is to match the paradigm of
 Vec/MatSetValuesBlocked()<br>
         </li>
         <li>ISBlockGetBlockSize() is now ISGetBlockSize(). Block sizes
-can be set for conforming ISGENERAL and ISSTRIDE using ISSetBlockSize().
-        </li>
-        <li>ISAllGatherIndices() is removed, use ISCreateGeneral() then ISAllGather().</li>
+can be set for conforming ISGENERAL and ISSTRIDE using
+ISSetBlockSize(). </li>
+        <li>ISAllGatherIndices() is removed, use ISCreateGeneral() then
+ISAllGather().</li>
       </ul>
       <p><u><b>PF:</b></u></p>
       <ul>
@@ -199,9 +202,9 @@ vector as optional arguments; if these are provided then the b[idx[i]]
 is set to diag*x[idx[i]]] for all rows listed in idx[].<br>
         </li>
         <li>MatSetLocalToGlobalMapping() and
-MatSetLocalToGlobalMappingBlock() now take separate row and column maps.
-MatPreallocateSetLocal() has an extra argument for the column mapping.
-        </li>
+MatSetLocalToGlobalMappingBlock() now take separate row and column
+maps.
+MatPreallocateSetLocal() has an extra argument for the column mapping. </li>
       </ul>
       <u><b>PC:</b></u>
       <ul>
@@ -289,10 +292,13 @@ be constructed lazily.</li>
       <ul>
       </ul>
       <u><b>PetscViewer:<br>
-      <ul>
-        <li>PETSC_VIEWER_XXXX is now PETSCVIEWERXXX</li>
-      </ul>
+      <br>
       </b></u>
+      <ul>
+        <li>PETSC_VIEWER_XXX is now PETSCVIEWERXXX</li>
+        <li>Added PetscViewerASCIIOpenWithFILE() and
+PetscViewerASCIISetFILE(</li>
+      </ul>
       <ul>
       </ul>
       <ul>

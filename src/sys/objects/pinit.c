@@ -748,7 +748,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
    Collective on PETSC_COMM_WORLD
 
    Options Database Keys:
-+  -options_table - Calls PetscOptionsPrint()
++  -options_table - Calls PetscOptionsView()
 .  -options_left - Prints unused options that remain in the database
 .  -options_left no - Does not print unused options that remain in the database
 .  -mpidump - Calls PetscMPIDump()
@@ -776,7 +776,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
    Note:
    See PetscInitialize() for more general runtime options.
 
-.seealso: PetscInitialize(), PetscOptionsPrint(), PetscMallocDump(), PetscMPIDump(), PetscEnd()
+.seealso: PetscInitialize(), PetscOptionsView(), PetscMallocDump(), PetscMPIDump(), PetscEnd()
 @*/
 PetscErrorCode  PetscFinalize(void)
 {
@@ -916,7 +916,7 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-options_table",&flg2,PETSC_NULL);CHKERRQ(ierr);
 
   if (flg2) {
-    if (!rank) {ierr = PetscOptionsPrint(stdout);CHKERRQ(ierr);}
+    if (!rank) {ierr = PetscOptionsView(PETSC_NULL);CHKERRQ(ierr);}
   }
 
   /* to prevent PETSc -options_left from warning */
@@ -929,7 +929,7 @@ PetscErrorCode  PetscFinalize(void)
     ierr = PetscOptionsAllUsed(&nopt);CHKERRQ(ierr);
     if (flg3) {
       if (!flg2) { /* have not yet printed the options */
-	ierr = PetscOptionsPrint(stdout);CHKERRQ(ierr);
+	ierr = PetscOptionsView(PETSC_NULL);CHKERRQ(ierr);
       }
       if (!nopt) { 
 	ierr = PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");CHKERRQ(ierr);

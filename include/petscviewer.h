@@ -116,8 +116,10 @@ M*/
 extern PetscErrorCode  PetscViewerCreate(MPI_Comm,PetscViewer*);
 PetscPolymorphicSubroutine(PetscViewerCreate,(PetscViewer *v),(PETSC_COMM_SELF,v))
 extern PetscErrorCode  PetscViewerSetFromOptions(PetscViewer);
+extern PetscErrorCode  PetscViewerASCIIOpenWithFILE(MPI_Comm,FILE*,PetscViewer*);
 
 extern PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm,const char[],PetscViewer*);
+extern PetscErrorCode  PetscViewerASCIISetFILE(PetscViewer,FILE*);
 extern PetscErrorCode  PetscViewerBinaryCreate(MPI_Comm,PetscViewer*);
 extern PetscErrorCode  PetscViewerBinaryOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 extern PetscErrorCode  PetscViewerBinaryGetFlowControl(PetscViewer,PetscInt*);

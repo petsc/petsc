@@ -49,7 +49,11 @@ classdef PetscTS < PetscObject
       err = calllib('libpetsc', 'TSMonitorSetMatlab', obj.pobj,func,arg);PetscCHKERRQ(err);
     end
     function err = View(obj,viewer)
-      err = calllib('libpetsc', 'TSView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
+      if (nargin == 1)
+        err = calllib('libpetsc', 'TSView', obj.pobj,0);PetscCHKERRQ(err);
+      else
+        err = calllib('libpetsc', 'TSView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
+      end
     end
     function err = Destroy(obj)
       err = calllib('libpetsc', 'TSDestroy', obj.pobj);PetscCHKERRQ(err);

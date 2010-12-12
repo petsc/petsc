@@ -863,7 +863,7 @@ PetscErrorCode  PetscOptionsName(const char opt[],const char text[],const char m
    See PetscOptionsEList() for when the choices are given in a string array
 
    To get a listing of all currently specified options,
-    see PetscOptionsPrint() or PetscOptionsGetAll()
+    see PetscOptionsView() or PetscOptionsGetAll()
 
    Concepts: options database^list
 

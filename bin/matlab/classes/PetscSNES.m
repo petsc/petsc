@@ -53,7 +53,11 @@ classdef PetscSNES < PetscObject
       err = calllib('libpetsc', 'SNESMonitorSetMatlab', obj.pobj,func,arg);PetscCHKERRQ(err);
     end
     function err = View(obj,viewer)
-      err = calllib('libpetsc', 'SNESView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
+      if (nargin == 1)
+        err = calllib('libpetsc', 'SNESView', obj.pobj,0);PetscCHKERRQ(err);
+      else
+        err = calllib('libpetsc', 'SNESView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
+      end
     end
     function err = Destroy(obj)
       err = calllib('libpetsc', 'SNESDestroy', obj.pobj);PetscCHKERRQ(err);

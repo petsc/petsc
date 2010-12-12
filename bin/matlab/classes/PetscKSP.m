@@ -36,7 +36,11 @@ classdef PetscKSP < PetscObject
       x = PetscVec(pid,'pobj');
     end
     function err = View(obj,viewer)
-      err = calllib('libpetsc', 'KSPView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
+      if (nargin == 1)
+        err = calllib('libpetsc', 'KSPView', obj.pobj,0);PetscCHKERRQ(err);
+      else
+        err = calllib('libpetsc', 'KSPView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
+      end
     end
     function [pc,err] = GetPC(obj)
       [err,pid] = calllib('libpetsc', 'KSPGetPC', obj.pobj,0);PetscCHKERRQ(err);

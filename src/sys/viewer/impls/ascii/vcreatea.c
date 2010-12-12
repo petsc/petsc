@@ -282,4 +282,61 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerASCIIOpenWithFILE" 
+/*@C
+   PetscViewerASCIIOpenWithFILE - Given an open file creates an ASCII viewer that prints to it.
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - the communicator
+-  fd - the FILE pointer
+
+   Output Parameter:
+.  lab - the PetscViewer to use with the specified file
+
+   Level: beginner
+
+   Notes:
+   This PetscViewer can be destroyed with PetscViewerDestroy(), but the fd will NOT be closed.
+
+   If a multiprocessor communicator is used (such as PETSC_COMM_WORLD), 
+   then only the first processor in the group uses the file.  All other 
+   processors send their data to the first processor to print. 
+
+  Concepts: PetscViewerASCII^creating
+  Concepts: printf
+  Concepts: printing
+  Concepts: accessing remote file
+  Concepts: remote file
+
+.seealso: MatView(), VecView(), PetscViewerDestroy(), PetscViewerBinaryOpen(),
+          PetscViewerASCIIGetPointer(), PetscViewerSetFormat(), PETSC_VIEWER_STDOUT_, PETSC_VIEWER_STDERR_,
+          PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_STDOUT_SELF, PetscViewerASCIIOpen()
+@*/
+PetscErrorCode  PetscViewerASCIIOpenWithFILE(MPI_Comm comm,FILE *fd,PetscViewer *lab)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*lab,PETSCVIEWERASCII);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISetFILE(*lab,fd);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerASCIISetFILE" 
+PetscErrorCode  PetscViewerASCIISetFILE(PetscViewer viewer,FILE *fd)
+{
+  PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
+
+  PetscFunctionBegin;
+  vascii->fd        = fd;
+  vascii->closefile = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+
 

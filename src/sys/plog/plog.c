@@ -1698,7 +1698,11 @@ PetscErrorCode  PetscLogPrintSummary(MPI_Comm comm, const char filename[])
     ierr = PetscCommDestroy(&newcomm);CHKERRQ(ierr);
   }
   if (!rank) {
-    ierr = PetscOptionsPrint(fd);CHKERRQ(ierr);
+    PetscViewer viewer;
+
+    ierr = PetscViewerASCIIOpenWithFILE(PETSC_COMM_SELF,fd,&viewer);CHKERRQ(ierr);
+    ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   }
   /* Machine and compile information */
 #if defined(PETSC_USE_FORTRAN_KERNELS)
@@ -2494,10 +2498,6 @@ for(stage = 0; stage < numStages; stage++) {
       ierr = PetscFPrintf(comm,fd,"AveragetimforzerosizeMPI_Send = %g\n", (y-x)/size);CHKERRQ(ierr);
     }
     ierr = PetscCommDestroy(&newcomm);CHKERRQ(ierr);
-  }
-  if (!rank) { /* print Optiontable */
-    ierr = PetscFPrintf(comm,fd,"# ");CHKERRQ(ierr);
-    //ierr = PetscOptionsPrint(fd);CHKERRQ(ierr);
   }
 
   /* Cleanup */

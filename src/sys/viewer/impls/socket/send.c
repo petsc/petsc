@@ -805,6 +805,7 @@ PetscErrorCode  PetscWebServeRequest(int port)
     if (flg) {      
       char        program[128];
       PetscMPIInt size;
+      PetscViewer viewer;
 
       ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
       ierr = PetscGetProgramName(program,128);CHKERRQ(ierr);
@@ -813,7 +814,9 @@ PetscErrorCode  PetscWebServeRequest(int port)
       fprintf(fd, "<H4>Serving PETSc application code %s </H4>\r\n\n",program);
       fprintf(fd, "Number of processes %d\r\n\n",size);
       fprintf(fd, "<HR>\r\n");
-      ierr = PetscOptionsPrint(fd);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIOpenWithFILE(fd,&viewer);CHKERRQ(ierr);
+      ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
       fprintf(fd, "<HR>\r\n");
 #if defined(PETSC_HAVE_AMS)
       if (PetscAMSPublishAll) {
