@@ -694,7 +694,7 @@ PetscErrorCode  PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,size_t len,char st
 }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include "mex.h"
+#include "mex.h" 
 #undef __FUNCT__
 #define __FUNCT__ "PetscVFPrintf_Matlab" 
 PetscErrorCode  PetscVFPrintf_Matlab(FILE *fd,const char format[],va_list Argp)
@@ -703,15 +703,13 @@ PetscErrorCode  PetscVFPrintf_Matlab(FILE *fd,const char format[],va_list Argp)
 
   PetscFunctionBegin;
   if (fd != stdout && fd != stderr) { /* handle regular files */ 
-      ierr = PetscVFPrintfDefault(fd,format,Argp); CHKERRQ(ierr);
+    ierr = PetscVFPrintfDefault(fd,format,Argp); CHKERRQ(ierr);
   } else {
     size_t len=8*1024,length;
     char   buf[len];
 
-     ierr = PetscVSNPrintf(buf,len,format,&length,Argp);CHKERRQ(ierr);
-     /* printf is defined to mexPrintf in mex.h. So by calling printf, the output
-        will be directed to the matlab console i/o  */
-     printf("%s",buf);
+    ierr = PetscVSNPrintf(buf,len,format,&length,Argp);CHKERRQ(ierr);
+    mexPrintf("%s",buf);
  }
  PetscFunctionReturn(0);
 }

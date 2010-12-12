@@ -85,10 +85,21 @@ int DMCreateGlobalVector(DM,Vec*);
 int DMGetMatrix(DM,const char*,Mat*);
 int DMDAGetInfo(DM,int*,int*,int*,int*,int*,int*,int*,int*,int*,DMDAPeriodicType*,DMDAStencilType*);
 
+typedef PetscPointer PC;
+int PCCreate(MPI_Comm,PC *);
+int PCSetType(PC,const char*);
+int PCSetDM(PC,DM);
+int PCSetFromOptions(PC);
+int PCSetOperators(PC,Mat,Mat,MatStructure);
+int PCSetUp(PC);
+int PCView(PC,PetscViewer);
+int PCDestroy(PC);
+
 typedef PetscPointer KSP;
 int KSPCreate(MPI_Comm,KSP *);
 int KSPSetType(KSP,const char*);
 int KSPSetDM(KSP,DM);
+int KSPGetPC(KSP,PC*);
 int KSPSetFromOptions(KSP);
 int KSPSetOperators(KSP,Mat,Mat,MatStructure);
 int KSPSolve(KSP,Vec,Vec);

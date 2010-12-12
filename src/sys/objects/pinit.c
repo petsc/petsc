@@ -71,6 +71,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Components(void)
   PetscFunctionReturn(0);
 }
 
+extern PetscBool PetscBeganMPI;
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscInitializeNonPointers"
 /*@C
@@ -90,6 +92,7 @@ PetscErrorCode  PetscInitializeNonPointers(int argc,char **args,const char *file
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&myargc,&myargs,filename,help);
+  PetscBeganMPI = PETSC_FALSE;
   PetscFunctionReturn(ierr);
 }
 

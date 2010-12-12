@@ -8,16 +8,17 @@ function err = PetscInitialize(args,argfile,arghelp)
 %  argument lists but otherwise the argument lists try to mimic the C binding
 %
 %
-if libisloaded('libpetsc')
-  unloadlibrary('libpetsc');
-end
-PETSC_DIR = getenv('PETSC_DIR');
-PETSC_ARCH = getenv('PETSC_ARCH');
-if (length(PETSC_DIR) == 0) 
-  disp('Must have environmental variable PETSC_DIR set')
-end
-if (length(PETSC_ARCH) == 0) 
-  disp('Must have environmental variable PETSC_ARCH set')
+
+if ~libisloaded('libpetsc')
+  PETSC_DIR = getenv('PETSC_DIR');
+  PETSC_ARCH = getenv('PETSC_ARCH');
+  if (length(PETSC_DIR) == 0) 
+    disp('Must have environmental variable PETSC_DIR set')
+  end
+  if (length(PETSC_ARCH) == 0) 
+    disp('Must have environmental variable PETSC_ARCH set')
+  end
+  loadlibrary([PETSC_DIR '/' PETSC_ARCH '/lib/' 'libpetsc'], [PETSC_DIR '/bin/matlab/classes/matlabheader.h']);
 end
 
 if (nargin == 0)
@@ -53,7 +54,6 @@ arg{1} = 'matlab';
 for i=1:length(args)
   arg{i+1} = args{i};
 end
-loadlibrary([PETSC_DIR '/' PETSC_ARCH '/lib/' 'libpetsc'], [PETSC_DIR '/bin/matlab/classes/matlabheader.h']);
 err = calllib('libpetsc', 'PetscInitializeNonPointers', length(arg), arg,argfile,arghelp);PetscCHKERRQ(err);
 
 
