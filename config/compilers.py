@@ -200,7 +200,6 @@ class Configure(config.base.Configure):
         # Intel 11 has a bogus -long_double option
         if arg == '-long_double':
           continue
-                   
         # if options of type -L foobar
         if arg == '-L':
           lib = argIter.next()
@@ -214,10 +213,14 @@ class Configure(config.base.Configure):
             lflags.append(arg)
             self.logPrint('Found full library spec: '+arg, 4, 'compilers')
             clibs.append(arg)
+          else:
+            self.logPrint('Skipping, already in lflags: '+arg, 4, 'compilers')
           continue
         # Check for system libraries
         m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
-        if m: continue
+        if m: 
+          self.logPrint('Skipping system library: '+arg, 4, 'compilers')
+          continue
         # Check for special library arguments
         m = re.match(r'^-l.*$', arg)
         if m:
@@ -249,6 +252,8 @@ class Configure(config.base.Configure):
             rpathflags.append(lib)
             self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
             clibs.append(self.setCompilers.CSharedLinkerFlag+lib)
+          else:
+            self.logPrint('Already in rpathflags, skipping'+arg, 4, 'compilers')
           continue
         # Check for '-R/sharedlibpath/'
         m = re.match(r'^-R.*$', arg)
@@ -258,6 +263,8 @@ class Configure(config.base.Configure):
             rpathflags.append(lib)
             self.logPrint('Found -R library: '+lib, 4, 'compilers')
             clibs.append(self.setCompilers.CSharedLinkerFlag+lib)
+          else:
+            self.logPrint('Already in rpathflags, skipping'+arg, 4, 'compilers')
           continue
         self.logPrint('Unknown arg '+arg, 4, 'compilers')
     except StopIteration:
@@ -404,10 +411,14 @@ class Configure(config.base.Configure):
             lflags.append(arg)
             self.logPrint('Found full library spec: '+arg, 4, 'compilers')
             cxxlibs.append(arg)
+          else:
+            self.logPrint('Already in lflags: '+arg, 4, 'compilers')
           continue
         # Check for system libraries
         m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
-        if m: continue
+        if m: 
+          self.logPrint('Skipping system library: '+arg, 4, 'compilers')
+          continue
         # Check for special library arguments
         m = re.match(r'^-l.*$', arg)
         if m:
@@ -446,6 +457,8 @@ class Configure(config.base.Configure):
             rpathflags.append(lib)
             self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
             cxxlibs.append(self.setCompilers.CSharedLinkerFlag+lib)
+          else:
+            self.logPrint('Already in rpathflags, skipping:'+arg, 4, 'compilers')
           continue
         # Check for '-R/sharedlibpath/'
         m = re.match(r'^-R.*$', arg)
@@ -455,6 +468,8 @@ class Configure(config.base.Configure):
             rpathflags.append(lib)
             self.logPrint('Found -R library: '+lib, 4, 'compilers')
             cxxlibs.append(self.setCompilers.CSharedLinkerFlag+lib)
+          else:
+            self.logPrint('Already in rpathflags, skipping:'+arg, 4, 'compilers')
           continue
         self.logPrint('Unknown arg '+arg, 4, 'compilers')
     except StopIteration:
@@ -739,6 +754,8 @@ class Configure(config.base.Configure):
             lflags.append(arg)
             self.logPrint('Found full library spec: '+arg, 4, 'compilers')
             flibs.append(arg)
+          else:
+            self.logPrint('already in lflags: '+arg, 4, 'compilers')
           continue
         # prevent false positives for include with pathscalr
         if re.match(r'^-INTERNAL.*$', arg): continue
@@ -759,10 +776,14 @@ class Configure(config.base.Configure):
             lflags.append(arg)
             self.logPrint('Found binary include: '+arg, 4, 'compilers')
             flibs.append(arg)
+          else:
+            self.logPrint('Already in lflags so skipping: '+arg, 4, 'compilers')
           continue
         # Check for system libraries
         m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
-        if m: continue
+        if m: 
+          self.logPrint('Found system library therefor skipping: '+arg, 4, 'compilers')
+          continue
         # Check for canonical library argument
         m = re.match(r'^-[lL]$', arg)
         if m:
@@ -778,7 +799,6 @@ class Configure(config.base.Configure):
           if arg == '-l:libF90.a':  arg = '-lF90'
           if arg == '-l:libIO77.a': arg = '-lIO77'                      
           if not arg in lflags:
-            
             #TODO: if arg == '-lkernel32' and host_os.startswith('cygwin'):
             if arg == '-lkernel32':
               continue
@@ -794,17 +814,20 @@ class Configure(config.base.Configure):
               lflags.append(arg)
             self.logPrint('Found library: '+arg, 4, 'compilers')
             flibs.append(arg)
+          else:
+            self.logPrint('Already in lflags: '+arg, 4, 'compilers')
           continue
         m = re.match(r'^-L.*$', arg)
         if m:
           arg = '-L'+os.path.abspath(arg[2:])
           if arg in ['-L/usr/lib','-L/lib','-L/usr/lib64','-L/lib64']: continue          
           if not arg in lflags:
-            
             #TODO: if arg == '-lkernel32' and host_os.startswith('cygwin'):
             lflags.append(arg)
             self.logPrint('Found library directory: '+arg, 4, 'compilers')
             flibs.append(arg)
+          else:
+            self.logPrint('Already in lflags so skipping: '+arg, 4, 'compilers')
           continue
         # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
         if arg == '-rpath' or arg == '-R':
@@ -817,6 +840,8 @@ class Configure(config.base.Configure):
             rpathflags.append(lib)
             self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
             flibs.append(self.setCompilers.CSharedLinkerFlag+lib)
+          else:
+            self.logPrint('Already in rpathflags so skipping: '+arg, 4, 'compilers')
           continue
         # Check for '-R/sharedlibpath/'
         m = re.match(r'^-R.*$', arg)
@@ -826,6 +851,8 @@ class Configure(config.base.Configure):
             rpathflags.append(lib)
             self.logPrint('Found -R library: '+lib, 4, 'compilers')
             flibs.append(self.setCompilers.CSharedLinkerFlag+lib)
+          else:
+            self.logPrint('Already in rpathflags so skipping: '+arg, 4, 'compilers')
           continue
         if arg.startswith('-zallextract') or arg.startswith('-zdefaultextract') or arg.startswith('-zweakextract'):
           self.framework.log.write( 'Found Solaris -z option: '+arg+'\n')
