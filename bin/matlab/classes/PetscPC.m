@@ -5,6 +5,7 @@ classdef PetscPC < PetscObject
         %  PetscPC(pid,'pobj') uses an already existing PETSc PC object
         obj.pobj = pid;
         return
+      end
       [err,obj.pobj] = calllib('libpetsc', 'PCCreate', PETSC_COMM_SELF,0);PetscCHKERRQ(err);
     end
     function err = SetType(obj,name)

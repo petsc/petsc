@@ -38,9 +38,9 @@ classdef PetscKSP < PetscObject
     function err = View(obj,viewer)
       err = calllib('libpetsc', 'KSPView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
     end
-    function [pc,err] = KSPGetPC(obj)
+    function [pc,err] = GetPC(obj)
       [err,pid] = calllib('libpetsc', 'KSPGetPC', obj.pobj,0);PetscCHKERRQ(err);
-      pc = PetscPCCreate(pid,'pobj');
+      pc = PetscPC(pid,'pobj');
     end
     function err = Destroy(obj)
       err = calllib('libpetsc', 'KSPDestroy', obj.pobj);PetscCHKERRQ(err);
