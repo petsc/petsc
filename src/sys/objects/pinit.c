@@ -760,9 +760,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
    See the <a href="../../docs/manual.pdf#nameddest=ch_profiling">profiling chapter of the users manual</a> for details.
 +  -log_summary [filename] - Prints summary of flop and timing
         information to screen. If the filename is specified the
-        summary is written to the file.  See PetscLogPrintSummary().
+        summary is written to the file.  See PetscLogView().
 .  -log_summary_python [filename] - Prints data on of flop and timing usage to a file or screen.
-        See PetscLogPrintSummaryPy().
+        See PetscLogPrintSViewPython().
 .  -log_all [filename] - Logs extensive profiling information
         See PetscLogDump(). 
 .  -log [filename] - Logs basic profiline information  See PetscLogDump().
@@ -868,8 +868,14 @@ PetscErrorCode  PetscFinalize(void)
     mname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-log_summary",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
     if (flg1) { 
-      if (mname[0])  {ierr = PetscLogPrintSummary(PETSC_COMM_WORLD,mname);CHKERRQ(ierr);}
-      else           {ierr = PetscLogPrintSummary(PETSC_COMM_WORLD,0);CHKERRQ(ierr);}
+      PetscViewer viewer;
+      if (mname[0])  {
+        ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
+      } else {
+        viewer = PETSC_VIEWER_STDOUT_WORLD;
+      }
+      ierr = PetscLogView(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     }
 
     mname[0] = 0;
@@ -881,7 +887,7 @@ PetscErrorCode  PetscFinalize(void)
       } else {
         viewer = PETSC_VIEWER_STDOUT_WORLD;
       }
-      ierr = PetscLogPrintSummaryPython(viewer);CHKERRQ(ierr);
+      ierr = PetscLogViewPython(viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     }
 

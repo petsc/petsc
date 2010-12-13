@@ -482,7 +482,7 @@ PetscErrorCode  EventRegLogGetEvent(EventRegLog eventLog, const char name[], Pet
 #undef __FUNCT__  
 #define __FUNCT__ "EventPerfLogSetVisible"
 /*@C
-  EventPerfLogSetVisible - This function determines whether an event is printed during PetscLogPrintSummary()
+  EventPerfLogSetVisible - This function determines whether an event is printed during PetscLogView()
 
   Not Collective
 
@@ -509,7 +509,7 @@ PetscErrorCode EventPerfLogSetVisible(EventPerfLog eventLog, PetscLogEvent event
 #undef __FUNCT__  
 #define __FUNCT__ "EventPerfLogGetVisible"
 /*@C
-  EventPerfLogGetVisible - This function returns whether an event is printed during PetscLogPrintSummary()
+  EventPerfLogGetVisible - This function returns whether an event is printed during PetscLogView()
 
   Not Collective
 
