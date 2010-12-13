@@ -328,7 +328,7 @@ static void THIInitialize_HOM_A(THI thi,PetscReal x,PetscReal y,PrmNode *p)
   PetscReal s = -x*sin(thi->alpha);
   p->b = s - 1000*units->meter + 500*units->meter * sin(x*2*PETSC_PI/thi->Lx) * sin(y*2*PETSC_PI/thi->Ly);
   p->h = s - p->b;
-  p->beta2 = 1e30;
+  p->beta2 = -1e-10;             /* This value is not used, but it should not be huge because that would change the finite difference step size  */
 }
 
 static void THIInitialize_HOM_C(THI thi,PetscReal x,PetscReal y,PrmNode *p)
@@ -353,7 +353,7 @@ static void THIInitialize_HOM_F(THI thi,PetscReal x,PetscReal y,PrmNode *p)
   p->h = s - p->b;
   p->h = (1-(atan((x-thi->Lx/2)/1.)+PETSC_PI/2.)/PETSC_PI)*500*units->meter+1*units->meter;
   s = PetscRealPart(p->b + p->h);
-  p->beta2 = 1e30;
+  p->beta2 = -1e-10;
   //  p->beta2 = 1000 * units->Pascal * units->year / units->meter;
 }
 
@@ -772,7 +772,7 @@ static void PointwiseNonlinearity(THI thi,const Node n[restrict 8],const PetscRe
 
 #undef __FUNCT__  
 #define __FUNCT__ "THIFunctionLocal_3D"
-static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,const PrmNode **prm,Node ***f,THI thi)
+static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,const PrmNode **prm,const Node ***xdot,Node ***f,THI thi)
 {
   PetscInt       xs,ys,xm,ym,zm,i,j,k,q,l;
   PetscReal      hx,hy,etamin,etamax,beta2min,beta2max;
@@ -799,10 +799,11 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
       ierr = QuadComputeGrad4(QuadQDeriv,hx,hy,pn,dpn);CHKERRQ(ierr);
       for (k=0; k<zm-1; k++) {
         PetscInt ls = 0;
-        Node n[8],*fn[8];
+        Node n[8],ndot[8],*fn[8];
         PetscReal zn[8],etabase = 0;
         PrmHexGetZ(pn,k,zm,zn);
         HexExtract(x,i,j,k,n);
+        HexExtract(xdot,i,j,k,ndot);CHKERRQ(ierr);
         HexExtractRef(f,i,j,k,fn);
         if (thi->no_slip && k == 0) {
           for (l=0; l<4; l++) n[l].u = n[l].v = 0;
@@ -811,7 +812,11 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
         }
         for (q=0; q<8; q++) {
           PetscReal dz[3],phi[8],dphi[8][3],jw,eta,deta;
-          PetscScalar du[3],dv[3],u,v;
+          PetscScalar du[3],dv[3],u,v,udot=0,vdot=0;
+          for (l=ls; l<8; l++) {
+            udot += HexQInterp[q][l]*ndot[l].u;
+            vdot += HexQInterp[q][l]*ndot[l].v;
+          }
           HexGrad(HexQDeriv[q],zn,dz);
           HexComputeGeometry(q,hx,hy,dz,phi,dphi,&jw);
           PointwiseNonlinearity(thi,n,phi,dphi,&u,&v,du,dv,&eta,&deta);
@@ -823,6 +828,8 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
             const PetscReal pp=phi[l],*dp = dphi[l];
             fn[l]->u += dp[0]*jw*eta*(4.*du[0]+2.*dv[1]) + dp[1]*jw*eta*(du[1]+dv[0]) + dp[2]*jw*eta*du[2] + pp*jw*thi->rhog*ds[0];
             fn[l]->v += dp[1]*jw*eta*(2.*du[0]+4.*dv[1]) + dp[0]*jw*eta*(du[1]+dv[0]) + dp[2]*jw*eta*dv[2] + pp*jw*thi->rhog*ds[1];
+            fn[l]->u += pp*jw*udot*thi->inertia*pp;
+            fn[l]->v += pp*jw*vdot*thi->inertia*pp;
           }
         }
         if (k == 0) { /* we are on a bottom face */
@@ -933,7 +940,7 @@ static PetscErrorCode THIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *c
   THI            thi  = (THI)ctx;
   DM             pack,da3,da2;
   Vec            X3,X2,Xdot3,Xdot2,F3,F2,F3g,F2g;
-  const Node     ***x3;
+  const Node     ***x3,***xdot3;
   const PrmNode  **x2,**xdot2;
   Node           ***f3;
   PrmNode        **f2;
@@ -955,15 +962,17 @@ static PetscErrorCode THIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *c
 
   ierr = DMDAVecGetArray(da3,X3,&x3);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da2,X2,&x2);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da3,Xdot3,&xdot3);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da2,Xdot2,&xdot2);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da3,F3,&f3);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da2,F2,&f2);CHKERRQ(ierr);
 
-  ierr = THIFunctionLocal_3D(&info3,x3,x2,f3,thi);CHKERRQ(ierr);
+  ierr = THIFunctionLocal_3D(&info3,x3,x2,xdot3,f3,thi);CHKERRQ(ierr);
   ierr = THIFunctionLocal_2D(&info3,x3,x2,xdot2,f2,thi);CHKERRQ(ierr);
 
   ierr = DMDAVecRestoreArray(da3,X3,&x3);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da2,X2,&x2);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da3,Xdot3,&xdot3);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da2,Xdot2,&xdot2);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da3,F3,&f3);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da2,F2,&f2);CHKERRQ(ierr);
@@ -977,14 +986,6 @@ static PetscErrorCode THIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *c
   ierr = DMLocalToGlobalEnd  (da3,F3,ADD_VALUES,F3g);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(da2,F2,INSERT_VALUES,F2g);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd  (da2,F2,INSERT_VALUES,F2g);CHKERRQ(ierr);
-
-  if (thi->inertia > 0) {       /* This is mostly non-physical, but turns the DAE into an ODE */
-    Vec Xdot3g,Xdot2g;
-    ierr = DMCompositeGetAccess(pack,Xdot,&Xdot3g,&Xdot2g);CHKERRQ(ierr);
-    ierr = VecAXPY(F3g,thi->inertia,Xdot3g);CHKERRQ(ierr);
-    ierr = VecCopy(Xdot2g,F2g);CHKERRQ(ierr);
-    ierr = DMCompositeRestoreAccess(pack,Xdot,&Xdot3g,&Xdot2g);CHKERRQ(ierr);
-  }
 
   if (thi->verbose) {
     PetscViewer viewer;
@@ -1138,7 +1139,6 @@ static inline PetscInt DMDALocalIndex2D(DMDALocalInfo *info,PetscInt i,PetscInt 
 
 #undef __FUNCT__  
 #define __FUNCT__ "THIJacobianLocal_Momentum"
-__attribute((unused))
 static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node ***x,const PrmNode **prm,Mat B,Mat Bcpl,THI thi)
 {
   PetscInt       xs,ys,xm,ym,zm,i,j,k,q,l,ll;
@@ -1198,6 +1198,9 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
               Ke[l*2+0][ll*2+1] += dp[0]*jw*deta*dgdv*(4.*du[0]+2.*dv[1]) + dp[1]*jw*deta*dgdv*(du[1]+dv[0]) + dp[2]*jw*deta*dgdv*du[2];
               Ke[l*2+1][ll*2+0] += dp[1]*jw*deta*dgdu*(4.*dv[1]+2.*du[0]) + dp[0]*jw*deta*dgdu*(du[1]+dv[0]) + dp[2]*jw*deta*dgdu*dv[2];
               Ke[l*2+1][ll*2+1] += dp[1]*jw*deta*dgdv*(4.*dv[1]+2.*du[0]) + dp[0]*jw*deta*dgdv*(du[1]+dv[0]) + dp[2]*jw*deta*dgdv*dv[2];
+              /* inertial part */
+              Ke[l*2+0][ll*2+0] += pp*jw*thi->inertia*pp;
+              Ke[l*2+1][ll*2+1] += pp*jw*thi->inertia*pp;
             }
             for (ll=0; ll<4; ll++) { /* Trial functions for surface/bed */
               const PetscReal dpl[] = {QuadQDeriv[q%4][ll][0]/hx, QuadQDeriv[q%4][ll][1]/hy}; /* surface = h + b */
@@ -1213,6 +1216,8 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
             const PetscReal hz = PetscRealPart(pn[0].h)/(zm-1);
             const PetscScalar diagu = 2*etabase/thi->rhog*(hx*hy/hz + hx*hz/hy + 4*hy*hz/hx),diagv = 2*etabase/thi->rhog*(hx*hy/hz + 4*hx*hz/hy + hy*hz/hx);
             Ke[0][0] = thi->dirichlet_scale*diagu;
+            Ke[0][1] = 0;
+            Ke[1][0] = 0;
             Ke[1][1] = thi->dirichlet_scale*diagv;
           } else {
             for (q=0; q<4; q++) { /* We remove the explicit scaling by 1/rhog because beta2 already has that scaling to be O(1) */
