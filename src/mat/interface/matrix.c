@@ -769,20 +769,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
             or some related function before a call to MatLoad()
 -  viewer - binary file viewer, created with PetscViewerBinaryOpen()
 
-   Basic Options Database Keys:
-+    -mat_type seqaij   - AIJ type
-.    -mat_type mpiaij   - parallel AIJ type
-.    -mat_type seqbaij  - block AIJ type
-.    -mat_type mpibaij  - parallel block AIJ type
-.    -mat_type seqsbaij - block symmetric AIJ type
-.    -mat_type mpisbaij - parallel block symmetric AIJ type
-.    -mat_type seqdense - dense type
-.    -mat_type mpidense - parallel dense type
-.    -mat_type blockmat - sequential blockmat type
-.    -matload_symmetric - matrix in file is symmetric
--    -matload_spd       - matrix in file is symmetric positive definite
-
-   More Options Database Keys:
+   Options Database Keys:
    Used with block matrix formats (MATSEQBAIJ,  ...) to specify
    block size
 .    -matload_block_size <bs>
@@ -790,6 +777,9 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
    Level: beginner
 
    Notes:
+   If the Mat type has not yet been given then MATAIJ is used, call MatSetFromOptions() on the 
+   Mat before calling this routine if you wish to set it from the options database.
+
    MatLoad() automatically loads into the options database any options
    given in the file filename.info where filename is the name of the file
    that was passed to the PetscViewerBinaryOpen(). The options in the info
@@ -836,7 +826,6 @@ PetscErrorCode  MatLoad(Mat newmat,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      isbinary,flg;
-  const MatType  outtype=0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(newmat,MAT_CLASSID,1);
@@ -844,14 +833,11 @@ PetscErrorCode  MatLoad(Mat newmat,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
-
-  if (((PetscObject)newmat)->type_name) outtype = ((PetscObject)newmat)->type_name;
-  if (!outtype) {
-    ierr = MatSetFromOptions(newmat);CHKERRQ(ierr);
+  if (!((PetscObject)newmat)->type_name) {
+    ierr = MatSetType(newmat,MATAIJ);CHKERRQ(ierr);
   }
 
-  if (!newmat->ops->load) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatLoad is not supported for type: %s",outtype);
-
+  if (!newmat->ops->load) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatLoad is not supported for type");
   ierr = PetscLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
   ierr = (*newmat->ops->load)(newmat,viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);

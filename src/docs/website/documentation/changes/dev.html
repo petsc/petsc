@@ -166,8 +166,9 @@ callback.</li>
         <li>VecLoad() and VecLoadIntoVector() have been merged into a
 single NEW VecLoad() that takes a partially constructed vector as input
 and loads according to any type or sizes that have previously been set
-into the Vec.<br>
-        </li>
+into the Vec.</li>
+        <li>VecLoad() does NOT access the options database to check for
+the VecType, call VecSetFromOptions() first if you wish to check it.</li>
       </ul>
       <p><u><b> </b></u></p>
       <p><u><b>VecScatter:<br>
@@ -206,6 +207,9 @@ is set to diag*x[idx[i]]] for all rows listed in idx[].<br>
 MatSetLocalToGlobalMappingBlock() now take separate row and column
 maps.
 MatPreallocateSetLocal() has an extra argument for the column mapping. </li>
+        <li>MatLoad() does NOT access the options database to check for
+the MatType, call MatSetFromOptions() first if you wish to check it.<br>
+        </li>
       </ul>
       <u><b>PC:</b></u>
       <ul>
