@@ -1453,7 +1453,7 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
   ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
   ierr = PetscFree(a->xtoy);CHKERRQ(ierr);
-  if (a->compressedrow.use){ierr = PetscFree2(a->compressedrow.i,a->compressedrow.rindex);} 
+  ierr = PetscFree2(a->compressedrow.i,a->compressedrow.rindex);CHKERRQ(ierr);
 
   if (a->sbaijMat) {ierr = MatDestroy(a->sbaijMat);CHKERRQ(ierr);}
   if (a->parent) {ierr = MatDestroy(a->parent);CHKERRQ(ierr);}
@@ -1497,6 +1497,9 @@ PetscErrorCode MatSetOption_SeqBAIJ(Mat A,MatOption op,PetscBool  flg)
     break;
   case MAT_UNUSED_NONZERO_LOCATION_ERR:
     a->nounused       = (flg ? -1 : 0);
+    break;
+  case MAT_CHECK_COMPRESSED_ROW:
+    a->compressedrow.check = flg;
     break;
   case MAT_NEW_DIAGONALS:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
@@ -2118,11 +2121,7 @@ PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   a->reallocs          = 0;
   A->info.nz_unneeded  = (PetscReal)fshift*bs2;
 
-  /* check for zero rows. If found a large number of zero rows, use CompressedRow functions */
-  if (a->compressedrow.use){ 
-    ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,mbs,ratio);CHKERRQ(ierr);
-  } 
-
+  ierr = MatCheckCompressedRow(A,&a->compressedrow,a->i,mbs,ratio);CHKERRQ(ierr);
   A->same_nonzero = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -3347,11 +3346,6 @@ PetscErrorCode  MatCreate_SeqBAIJ(Mat B)
   b->keepnonzeropattern    = PETSC_FALSE;
   b->xtoy                  = 0;
   b->XtoY                  = 0;
-  b->compressedrow.use     = PETSC_FALSE;
-  b->compressedrow.nrows   = 0;
-  b->compressedrow.i       = PETSC_NULL;
-  b->compressedrow.rindex  = PETSC_NULL;
-  b->compressedrow.checked = PETSC_FALSE;
   B->same_nonzero          = PETSC_FALSE;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactorAvailable_petsc_C",
@@ -3479,8 +3473,8 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
 
   c->compressedrow.use     = a->compressedrow.use;
   c->compressedrow.nrows   = a->compressedrow.nrows;
-  c->compressedrow.checked = a->compressedrow.checked;
-  if (a->compressedrow.checked && a->compressedrow.use){
+  c->compressedrow.check   = a->compressedrow.check;
+  if (a->compressedrow.use){
     i = a->compressedrow.nrows;
     ierr = PetscMalloc2(i+1,PetscInt,&c->compressedrow.i,i+1,PetscInt,&c->compressedrow.rindex);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(C,(2*i+1)*sizeof(PetscInt));CHKERRQ(ierr);

@@ -507,7 +507,6 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
     }
     ierr = MatStashScatterEnd_Private(&mat->stash);CHKERRQ(ierr);
   }
-  a->compressedrow.use     = PETSC_FALSE;
   ierr = MatAssemblyBegin(aij->A,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(aij->A,mode);CHKERRQ(ierr);
 
@@ -527,7 +526,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
     ierr = MatSetUpMultiply_MPIAIJ(mat);CHKERRQ(ierr);
   }
   ierr = MatSetOption(aij->B,MAT_USE_INODES,PETSC_FALSE);CHKERRQ(ierr);
-  ((Mat_SeqAIJ *)aij->B->data)->compressedrow.use = PETSC_TRUE; /* b->compressedrow.use */
+  ierr = MatSetOption(aij->B,MAT_CHECK_COMPRESSED_ROW,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(aij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(aij->B,mode);CHKERRQ(ierr);
 
