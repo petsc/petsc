@@ -11,7 +11,6 @@ EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.
 MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
 NP               = 1
-DISPLAY          = :0.0
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
@@ -282,7 +281,7 @@ runex2_2:
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   ${RM} -f ex2_2.tmp
 runex2_3:
-	-@${MPIEXEC} -n 1 ./ex2 -pc_type sor -pc_sor_symmetric -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > \
+	-@${MPIEXEC} -n 1 ./ex2 -pc_type sor -pc_sor_symmetric -ksp_monitor_shortt -ksp_gmres_cgs_refinement_type refine_always > \
 	    ex2_3.tmp 2>&1;   \
 	   if (${DIFF} output/ex2_3.out ex2_3.tmp) then true; \
 	   else echo "Possible problem with ex2_3, diffs above"; fi; \
@@ -294,16 +293,10 @@ runex2_4:
 	   else echo "Possible problem with ex2_4, diffs above"; fi; \
 	   ${RM} -f ex2_4.tmp
 runex2_5:
-	-@${MPIEXEC} -n 2 ./ex2 -ksp_monitor_short -m 5 -n 5 -mat_view_draw -ksp_gmres_cgs_refinement_type refine_always    > ex2_5.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex2 -ksp_monitor_short -m 5 -n 5 -mat_view_draw -ksp_gmres_cgs_refinement_type refine_always   > ex2_5.tmp 2>&1; \
 	   if (${DIFF} output/ex2_2.out ex2_5.tmp) then true; \
 	   else echo "Possible problem with ex2_5, diffs above"; fi; \
 	   ${RM} -f ex2_5.tmp
-runex2_6:
-	-@${MPIEXEC} -n 2 ./ex2 -pc_type none -vec_type esi -vec_esi_type esi::petsc::Vector \
-               -mat_type esi -mat_esi_type esi::petsc::Matrix -is_esi_type esi::petsc::IndexSpace   > ex2_6.tmp 2>&1; \
-	   if (${DIFF} output/ex2_6.out ex2_6.tmp) then true; \
-	   else echo "Possible problem with ex2_6, diffs above"; fi; \
-	   ${RM} -f ex2_6.tmp
 runex2_7:
 	-@${MPIEXEC} -n 1 ./ex2 -pc_type ilu -pc_factor_drop_tolerance 0.01,0.0,2 > ex2_7.tmp 2>&1; \
 	   if (${DIFF} output/ex2_7.out ex2_7.tmp) then true; \
@@ -898,20 +891,11 @@ runex33:
 runex33_quiet:
 	-${MPIEXEC} -n ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 ${EXTRA_ARGS}
 
-debugex33:
-	-${MPIEXEC} -n ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -bc_file data/ex33bc.data ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
-
 runex35:
 	-${MPIEXEC} -n ${NP} ./ex35 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 ${EXTRA_ARGS}
 
-debugex35:
-	-${MPIEXEC} -n ${NP} ./ex35 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
-
 runex36:
 	-${MPIEXEC} -n ${NP} ./ex36 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -bc_file data/ex36bc.data ${EXTRA_ARGS}
-
-debugex37:
-	-${MPIEXEC} -n ${NP} ./ex37 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -bc_file data/ex37bc.data -start_in_debugger ${EXTRA_ARGS}
 
 runex38:
 	-@${MPIEXEC} -n 1 ./ex38 -ksp_monitor_short  > ex38_1.tmp 2>&1;	  \

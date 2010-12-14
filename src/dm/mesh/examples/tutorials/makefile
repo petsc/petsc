@@ -14,7 +14,7 @@ EXAMPLESC       = ex1.c ex10.cxx ex12.cxx
 EXAMPLESF       = ex12f90.F90 mex12f90.F90
 MANSEC          = DM
 NP              = 1
-DISPLAY         = :0.0
+MATTSDISPLAY         = :0.0
 ORDER           = 2
 EXTRA_ARGS      = -mesh_view_vtk -vec_view_vtk -mat_type umfpack -pc_type lu
 
@@ -204,24 +204,24 @@ rungrade2:
 	${MPIEXEC} -n ${NP} ./grade2 ${EXTRA_ARGS}
 
 debuggrade2:
-	-@${MPIEXEC} -n ${NP} ./grade2 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-@${MPIEXEC} -n ${NP} ./grade2 ${EXTRA_ARGS} -start_in_debugger -display ${MATTSDISPLAY}
 
 runex1:
 	-@${MPIEXEC} -n ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
 
 debugex1:
-	-@${MPIEXEC} -n ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-@${MPIEXEC} -n ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS} -start_in_debugger -display ${MATTSDISPLAY}
 
 runex1_pylith:
 	-@${MPIEXEC} -n ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS}
 
 debugex1_pylith:
-	-${MPIEXEC} -n ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-${MPIEXEC} -n ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS} -start_in_debugger -display ${MATTSDISPLAY}
 runex1_pylith2:
 	-@${MPIEXEC} -n ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1m/bm1m ${EXTRA_ARGS}
 
 debugex1_pylith2:
-	-@${MPIEXEC} -n ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1m/bm1m ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-@${MPIEXEC} -n ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1m/bm1m ${EXTRA_ARGS} -start_in_debugger -display ${MATTSDISPLAY}
 
 runex1_pylith_split:
 	-@${MPIEXEC} -n ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/splitFaultTest/splittest ${EXTRA_ARGS}
@@ -242,7 +242,7 @@ runex2:
 	-@${MPIEXEC} -n ${NP} ./ex2 -dim 2 ${EXTRA_ARGS}
 
 debugex2:
-	-@${MPIEXEC} -n ${NP} ./ex2 -dim 2 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-@${MPIEXEC} -n ${NP} ./ex2 -dim 2 ${EXTRA_ARGS} -start_in_debugger -display ${MATTSDISPLAY}
 
 runex2_3:
 	-@${MPIEXEC} -n ${NP} ./ex2 -dim 3 ${EXTRA_ARGS}
@@ -251,7 +251,7 @@ runex3:
 	-@${MPIEXEC} -n ${NP} ./ex3 -dim 2 ${EXTRA_ARGS}
 
 debugex3:
-	-@${MPIEXEC} -n ${NP} ./ex3 -dim 2 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-@${MPIEXEC} -n ${NP} ./ex3 -dim 2 ${EXTRA_ARGS} -start_in_debugger -display ${MATTSDISPLAY}
 
 runex4:
 	-@${MPIEXEC} -n ${NP} ./ex4 -dim 2 ${EXTRA_ARGS}
@@ -328,7 +328,7 @@ testex2_3:
 	else echo "Possible problem with ex2_1, diffs above"; fi
 
 debugex4:
-	-@${MPIEXEC} -n ${NP} ./ex4 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-@${MPIEXEC} -n ${NP} ./ex4 ${EXTRA_ARGS} -start_in_debugger -display ${MATTSDISPLAY}
 
 runex10:
 	-@${MPIEXEC} -n 2 ./ex10 -partitioner zoltan -test 1 > ex10_1.tmp 2>&1; \

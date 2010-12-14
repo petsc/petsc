@@ -7,7 +7,7 @@ EXAMPLESC       = ex00.c ex01.c ex02.c ex03.c ex1.c
 EXAMPLESF       = 
 MANSEC          = DM
 NP              = 1
-DISPLAY         = :0.0
+MATTSDISPLAY    = :0.0
 EXTRA_ARGS      = 
 
 include ${PETSC_DIR}/conf/variables
@@ -143,7 +143,7 @@ runargs0:
 	-@${MPIEXEC} -n ${NP} ./args0 ${EXTRA_ARGS}
 
 debugargs0:
-	-@${MPIEXEC} -n ${NP} ./args0 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./args0 -log_summary -start_in_debugger -display ${MATTSDISPLAY} ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 xsifter0: xsifter0.o chkopts
@@ -153,7 +153,7 @@ NP = 1
 runxsifter0:
 	-@${MPIEXEC} -n ${NP} ./xsifter0 ${EXTRA_ARGS}
 debugxsifter0:
-	-@${MPIEXEC} -n ${NP} ./xsifter0 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./xsifter0 -log_summary -start_in_debugger -display ${MATTSDISPLAY} ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 xsifter1: xsifter1.o chkopts
@@ -163,7 +163,7 @@ NP = 1
 runxsifter1:
 	-@${MPIEXEC} -n ${NP} ./xsifter1 ${EXTRA_ARGS}
 debugxsifter1:
-	-@${MPIEXEC} -n ${NP} ./xsifter1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./xsifter1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${MATTSDISPLAY} 
 
 #-----------------------------------------------------------------
 xsifter2: xsifter2.o chkopts
@@ -173,7 +173,7 @@ NP = 1
 runxsifter2:
 	-@${MPIEXEC} -n ${NP} ./xsifter2 ${EXTRA_ARGS}
 debugxsifter2:
-	-@${MPIEXEC} -n ${NP} ./xsifter2 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./xsifter2 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${MATTSDISPLAY} 
 
 #-----------------------------------------------------------------
 xsifter3: xsifter3.o chkopts
@@ -183,7 +183,7 @@ NP = 1
 runxsifter3:
 	-@${MPIEXEC} -n ${NP} ./xsifter3 ${EXTRA_ARGS}
 debugxsifter3:
-	-@${MPIEXEC} -n ${NP} ./xsifter3 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./xsifter3 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${MATTSDISPLAY} 
 
 #-----------------------------------------------------------------
 xsieve0: xsieve0.o chkopts
@@ -193,7 +193,7 @@ NP = 1
 runxsieve0:
 	-@${MPIEXEC} -n ${NP} ./xsieve0 ${EXTRA_ARGS}
 debugxsieve0:
-	-@${MPIEXEC} -n ${NP} ./xsieve0 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./xsieve0 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${MATTSDISPLAY} 
 
 #-----------------------------------------------------------------
 xsieve1: xsieve1.o chkopts
@@ -203,7 +203,7 @@ NP = 1
 runxsieve1:
 	-@${MPIEXEC} -n ${NP} ./xsieve1 ${EXTRA_ARGS}
 debugxsieve1:
-	-@${MPIEXEC} -n ${NP} ./xsieve1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./xsieve1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${MATTSDISPLAY} 
 
 #-----------------------------------------------------------------
 xsieve2: xsieve2.o chkopts
@@ -213,7 +213,7 @@ NP = 1
 runxsieve2:
 	-@${MPIEXEC} -n ${NP} ./xsieve2 ${EXTRA_ARGS}
 debugxsieve2:
-	-@${MPIEXEC} -n ${NP} ./xsieve2 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./xsieve2 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${MATTSDISPLAY} 
 
 #-----------------------------------------------------------------
 xsieve3: xsieve3.o chkopts
@@ -223,7 +223,7 @@ NP = 1
 runxsieve3:
 	-@${MPIEXEC} -n ${NP} ./xsieve3 ${EXTRA_ARGS}
 debugxsieve3:
-	-@${MPIEXEC} -n ${NP} ./xsieve3 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./xsieve3 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${MATTSDISPLAY} 
 
 #-----------------------------------------------------------------
 xsieve4: xsieve4.o chkopts
@@ -233,77 +233,77 @@ NP = 1
 runxsieve4:
 	-@${MPIEXEC} -n ${NP} ./xsieve4 ${EXTRA_ARGS}
 debugxsieve4:
-	-@${MPIEXEC} -n ${NP} ./xsieve4 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./xsieve4 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${MATTSDISPLAY} 
 
 #-----------------------------------------------------------------
 runex00:
 	-@${MPIEXEC} -n ${NP} ./ex00 -log_summary ${EXTRA_ARGS}
 
 debugex00:
-	-@${MPIEXEC} -n ${NP} ./ex00 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex00 -log_summary -start_in_debugger -display ${MATTSDISPLAY} ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex01:
 	-@${MPIEXEC} -n ${NP} ./ex01 -log_summary ${EXTRA_ARGS}
 
 debugex01:
-	-@${MPIEXEC} -n ${NP} ./ex01 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex01 -log_summary -start_in_debugger -display ${MATTSDISPLAY} ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex02:
 	-@${MPIEXEC} -n ${NP} ./ex02 -log_summary ${EXTRA_ARGS}
 
 debugex02:
-	-@${MPIEXEC} -n ${NP} ./ex02 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex02 -log_summary -start_in_debugger -display ${MATTSDISPLAY} ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex03:
 	-@${MPIEXEC} -n ${NP} ./ex03 ${EXTRA_ARGS}
 
 debugex03:
-	-@${MPIEXEC} -n ${NP} ./ex03 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex03 -log_summary -start_in_debugger -display ${MATTSDISPLAY} ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex04:
 	-@${MPIEXEC} -n ${NP} ./ex04 ${EXTRA_ARGS}
 
 debugex04:
-	-@${MPIEXEC} -n ${NP} ./ex04 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./ex04 ${EXTRA_ARGS} -start_in_debugger -display ${MATTSDISPLAY} 
 
 #-----------------------------------------------------------------
 runex05:
 	-@${MPIEXEC} -n ${NP} ./ex05 ${EXTRA_ARGS}
 
 debugex05:
-	-@${MPIEXEC} -n ${NP} ./ex05 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./ex05 ${EXTRA_ARGS} -start_in_debugger -display ${MATTSDISPLAY} 
 
 #-----------------------------------------------------------------
 runex06:
 	-@${MPIEXEC} -n ${NP} ./ex06 ${EXTRA_ARGS}
 
 debugex06:
-	-@${MPIEXEC} -n ${NP} ./ex06 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./ex06 ${EXTRA_ARGS} -start_in_debugger -display ${MATTSDISPLAY} 
 
 #-----------------------------------------------------------------
 runex07:
 	-@${MPIEXEC} -n ${NP} ./ex07 ${EXTRA_ARGS}
 
 debugex07:
-	-@${MPIEXEC} -n ${NP} ./ex07 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./ex07 ${EXTRA_ARGS} -start_in_debugger -display ${MATTSDISPLAY} 
 
 #-----------------------------------------------------------------
 runex08:
 	-@${MPIEXEC} -n ${NP} ./ex08 ${EXTRA_ARGS}
 
 debugex08:
-	-@${MPIEXEC} -n ${NP} ./ex08 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./ex08 ${EXTRA_ARGS} -start_in_debugger -display ${MATTSDISPLAY} 
 
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n ${NP} ./ex1 -log_summary ${EXTRA_ARGS}
 
 debugex1:
-	-@${MPIEXEC} -n ${NP} ./ex1 -log_summary ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-@${MPIEXEC} -n ${NP} ./ex1 -log_summary ${EXTRA_ARGS} -start_in_debugger -display ${MATTSDISPLAY}
 
 TESTEXAMPLES_C            = 
 TESTEXAMPLES_C_X11        = 
