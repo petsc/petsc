@@ -36,7 +36,7 @@ extern PetscErrorCode   PetscOptionsClearValue(const char[]);
 
 extern PetscErrorCode   PetscOptionsAllUsed(int*);
 extern PetscErrorCode   PetscOptionsLeft(void);
-extern PetscErrorCode   PetscOptionsPrint(FILE *);
+extern PetscErrorCode   PetscOptionsView(PetscViewer);
 
 extern PetscErrorCode   PetscOptionsCreate(void);
 extern PetscErrorCode   PetscOptionsInsert(int*,char ***,const char[]);

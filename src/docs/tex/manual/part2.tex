@@ -5050,7 +5050,7 @@ additional profilng can be done with MPE.
 As shown in Figure~\ref{fig_exprof} (in Part I), the option \trl{
 -log_summary} \findex{-log_summary} activates printing of profile
 data to standard output at the conclusion of a program.  Profiling
-data can also be printed at any time within a program by calling PetscLogPrintSummary().
+data can also be printed at any time within a program by calling PetscLogView().
 
 We print performance data for each routine, organized by PETSc
 libraries, followed by any user-defined events (discussed in
@@ -5429,7 +5429,7 @@ The command
    PetscLogStageRegister(const char *name,PetscLogStage *stage)
 \end{tabbing}
 allows one to associate a name with a stage; these names are printed whenever
-summaries are generated with \trl{-log_summary} or PetscLogPrintSummary().
+summaries are generated with \trl{-log_summary} or PetscLogView().
 The following code fragment uses three profiling stages within an program.
 
 \begin{tabbing}

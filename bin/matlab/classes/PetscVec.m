@@ -80,7 +80,11 @@ classdef PetscVec < PetscObject
       err = calllib('libpetsc', 'VecSet', obj.pobj,v);PetscCHKERRQ(err);
     end
     function err = View(obj,viewer)
-      err = calllib('libpetsc', 'VecView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
+      if (nargin == 1)
+        err = calllib('libpetsc', 'VecView', obj.pobj,0);PetscCHKERRQ(err);
+      else
+        err = calllib('libpetsc', 'VecView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
+      end
     end
     function err = Destroy(obj)
       err = calllib('libpetsc', 'VecDestroy', obj.pobj);PetscCHKERRQ(err);

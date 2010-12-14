@@ -71,6 +71,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Components(void)
   PetscFunctionReturn(0);
 }
 
+extern PetscBool PetscBeganMPI;
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscInitializeNonPointers"
 /*@C
@@ -90,6 +92,7 @@ PetscErrorCode  PetscInitializeNonPointers(int argc,char **args,const char *file
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&myargc,&myargs,filename,help);
+  PetscBeganMPI = PETSC_FALSE;
   PetscFunctionReturn(ierr);
 }
 
@@ -745,7 +748,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
    Collective on PETSC_COMM_WORLD
 
    Options Database Keys:
-+  -options_table - Calls PetscOptionsPrint()
++  -options_table - Calls PetscOptionsView()
 .  -options_left - Prints unused options that remain in the database
 .  -options_left no - Does not print unused options that remain in the database
 .  -mpidump - Calls PetscMPIDump()
@@ -757,9 +760,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
    See the <a href="../../docs/manual.pdf#nameddest=ch_profiling">profiling chapter of the users manual</a> for details.
 +  -log_summary [filename] - Prints summary of flop and timing
         information to screen. If the filename is specified the
-        summary is written to the file.  See PetscLogPrintSummary().
+        summary is written to the file.  See PetscLogView().
 .  -log_summary_python [filename] - Prints data on of flop and timing usage to a file or screen.
-        See PetscLogPrintSummaryPy().
+        See PetscLogPrintSViewPython().
 .  -log_all [filename] - Logs extensive profiling information
         See PetscLogDump(). 
 .  -log [filename] - Logs basic profiline information  See PetscLogDump().
@@ -773,7 +776,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
    Note:
    See PetscInitialize() for more general runtime options.
 
-.seealso: PetscInitialize(), PetscOptionsPrint(), PetscMallocDump(), PetscMPIDump(), PetscEnd()
+.seealso: PetscInitialize(), PetscOptionsView(), PetscMallocDump(), PetscMPIDump(), PetscEnd()
 @*/
 PetscErrorCode  PetscFinalize(void)
 {
@@ -865,8 +868,14 @@ PetscErrorCode  PetscFinalize(void)
     mname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-log_summary",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
     if (flg1) { 
-      if (mname[0])  {ierr = PetscLogPrintSummary(PETSC_COMM_WORLD,mname);CHKERRQ(ierr);}
-      else           {ierr = PetscLogPrintSummary(PETSC_COMM_WORLD,0);CHKERRQ(ierr);}
+      PetscViewer viewer;
+      if (mname[0])  {
+        ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
+      } else {
+        viewer = PETSC_VIEWER_STDOUT_WORLD;
+      }
+      ierr = PetscLogView(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     }
 
     mname[0] = 0;
@@ -878,7 +887,7 @@ PetscErrorCode  PetscFinalize(void)
       } else {
         viewer = PETSC_VIEWER_STDOUT_WORLD;
       }
-      ierr = PetscLogPrintSummaryPython(viewer);CHKERRQ(ierr);
+      ierr = PetscLogViewPython(viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     }
 
@@ -913,7 +922,7 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-options_table",&flg2,PETSC_NULL);CHKERRQ(ierr);
 
   if (flg2) {
-    if (!rank) {ierr = PetscOptionsPrint(stdout);CHKERRQ(ierr);}
+    if (!rank) {ierr = PetscOptionsView(PETSC_NULL);CHKERRQ(ierr);}
   }
 
   /* to prevent PETSc -options_left from warning */
@@ -926,7 +935,7 @@ PetscErrorCode  PetscFinalize(void)
     ierr = PetscOptionsAllUsed(&nopt);CHKERRQ(ierr);
     if (flg3) {
       if (!flg2) { /* have not yet printed the options */
-	ierr = PetscOptionsPrint(stdout);CHKERRQ(ierr);
+	ierr = PetscOptionsView(PETSC_NULL);CHKERRQ(ierr);
       }
       if (!nopt) { 
 	ierr = PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");CHKERRQ(ierr);

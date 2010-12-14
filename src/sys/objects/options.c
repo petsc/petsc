@@ -268,7 +268,7 @@ PetscErrorCode  PetscOptionsValidKey(const char in_str[],PetscBool  *key)
 
   Contributed by Boyana Norris
 
-.seealso: PetscOptionsSetValue(), PetscOptionsPrint(), PetscOptionsHasName(), PetscOptionsGetInt(),
+.seealso: PetscOptionsSetValue(), PetscOptionsView(), PetscOptionsHasName(), PetscOptionsGetInt(),
           PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
@@ -356,7 +356,7 @@ static char *Petscgetline(FILE * f)
 
   Level: intermediate
 
-.seealso: PetscOptionsSetValue(), PetscOptionsPrint(), PetscOptionsHasName(), PetscOptionsGetInt(),
+.seealso: PetscOptionsSetValue(), PetscOptionsView(), PetscOptionsHasName(), PetscOptionsGetInt(),
           PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
@@ -573,7 +573,7 @@ static PetscErrorCode PetscOptionsInsertArgs_Private(int argc,char *args[])
 
    Concepts: options database^adding
 
-.seealso: PetscOptionsDestroy_Private(), PetscOptionsPrint(), PetscOptionsInsertString(), PetscOptionsInsertFile(),
+.seealso: PetscOptionsDestroy_Private(), PetscOptionsView(), PetscOptionsInsertString(), PetscOptionsInsertFile(),
           PetscInitialize()
 @*/
 PetscErrorCode  PetscOptionsInsert(int *argc,char ***args,const char file[])
@@ -641,18 +641,18 @@ PetscErrorCode  PetscOptionsInsert(int *argc,char ***args,const char file[])
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsPrint"
+#define __FUNCT__ "PetscOptionsView"
 /*@C
-   PetscOptionsPrint - Prints the options that have been loaded. This is
+   PetscOptionsView- Prints the options that have been loaded. This is
    useful for debugging purposes.
 
    Logically Collective on PETSC_COMM_WORLD
 
    Input Parameter:
-.  FILE fd - location to print options (usually stdout or stderr)
+.  viewer - must be an PETSCVIEWERASCII viewer
 
    Options Database Key:
-.  -optionstable - Activates PetscOptionsPrint() within PetscFinalize()
+.  -optionstable - Activates PetscOptionsView() within PetscFinalize()
 
    Level: advanced
 
@@ -660,28 +660,32 @@ PetscErrorCode  PetscOptionsInsert(int *argc,char ***args,const char file[])
 
 .seealso: PetscOptionsAllUsed()
 @*/
-PetscErrorCode  PetscOptionsPrint(FILE *fd)
+PetscErrorCode  PetscOptionsView(PetscViewer viewer) 
 {
   PetscErrorCode ierr;
   PetscInt       i;
+  PetscBool      isascii;
 
   PetscFunctionBegin;
-  if (!fd) fd = PETSC_STDOUT;
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_WORLD;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  if (!isascii) SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Only supports ASCII viewer");
+
   if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
   if (options->N) {
-    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"#PETSc Option Table entries:\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"#PETSc Option Table entries:\n");CHKERRQ(ierr);
   } else {
-    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"#No PETSc Option Table entries\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"#No PETSc Option Table entries\n");CHKERRQ(ierr);
   }
   for (i=0; i<options->N; i++) {
     if (options->values[i]) {
-      ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"-%s %s\n",options->names[i],options->values[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"-%s %s\n",options->names[i],options->values[i]);CHKERRQ(ierr);
     } else {
-      ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"-%s\n",options->names[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"-%s\n",options->names[i]);CHKERRQ(ierr);
     }
   }
   if (options->N) {
-    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"#End of PETSc Option Table entries\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"#End of PETSc Option Table entries\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -702,7 +706,7 @@ PetscErrorCode  PetscOptionsPrint(FILE *fd)
 
    Concepts: options database^listing
 
-.seealso: PetscOptionsAllUsed(), PetscOptionsPrint()
+.seealso: PetscOptionsAllUsed(), PetscOptionsView()
 @*/
 PetscErrorCode  PetscOptionsGetAll(char *copts[])
 {
@@ -1927,7 +1931,7 @@ PetscErrorCode  PetscOptionsGetStringArray(const char pre[],const char name[],ch
 
    Level: advanced
 
-.seealso: PetscOptionsPrint()
+.seealso: PetscOptionsView()
 @*/
 PetscErrorCode  PetscOptionsAllUsed(int *N)
 {

@@ -338,13 +338,13 @@ interface file for the operations, for example, \trl{src/mat/src/matrix.c}.
 \subsection{Controling Profiling}
 
 Several routines that control the default profiling available in PETSc are
-\findex{PetscLogPrintSummary()}
+\findex{PetscLogView()}
 are \findex{PetscLogBegin()} \findex{PetscLogDump()} \findex{PetscLogAllBegin()} 
 \begin{tabbing}
    PetscLogBegin();\\
    PetscLogAllBegin();\\
    PetscLogDump(char *filename);\\
-   PetscLogPrintSummary(FILE *fd);
+   PetscLogView(FILE *fd);
 \end{tabbing}
 These routines are normally called by the PetscInitialize()
 and PetscFinalize() routines when the option \trl{-log}, 

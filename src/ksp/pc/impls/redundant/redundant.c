@@ -461,6 +461,10 @@ PetscErrorCode  PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
 
    Level: intermediate
 
+   Developer Notes: Should this be a KSP? Or maybe it should be an ability of the base KSP class to 
+     do redundant solves with the actual KSP and PC living on subcommunicators? Note that PCSetInitialGuessNonzero() 
+     is not used by this class but likely should be.
+
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCRedundantSetScatter(),
            PCRedundantGetPC(), PCRedundantGetOperators(), PCRedundantSetNumber()
 M*/

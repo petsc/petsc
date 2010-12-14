@@ -256,6 +256,9 @@ PetscErrorCode  PCKSPGetKSP(PC pc,KSP *ksp)
    Notes: Using a Krylov method inside another Krylov method can be dangerous (you get divergence or
           the incorrect answer) unless you use KSPFGMRES as the other Krylov method
 
+   Developer Notes: PCApply_KSP() uses the flag set by PCSetInitialGuessNonzero(), I think this is totally wrong, because it is then not
+     using this inner KSP as a preconditioner (that is a linear operator applied to some vector), it is actually just using 
+     the inner KSP just like the outter KSP.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCSHELL, PCCOMPOSITE, PCKSPUseTrue(), PCKSPGetKSP()

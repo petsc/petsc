@@ -12,6 +12,7 @@ typedef struct {
   PetscViewer   sviewer;        /* if PetscViewer has a singleton, this points to singleton */
   char          *filename;
   PetscBool     storecompressed; 
+  PetscBool     closefile;       
 } PetscViewer_ASCII;
 
 typedef struct PetscViewerLink_t PetscViewerLink;

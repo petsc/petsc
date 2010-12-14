@@ -95,7 +95,7 @@ PetscBool  PetscLogBegin_PrivateCalled = PETSC_FALSE;
   Level: developer
 
 .keywords: log, destroy
-.seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogPrintSummary(), PetscLogStagePush(), PlogStagePop()
+.seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogView(), PetscLogStagePush(), PlogStagePop()
 @*/
 PetscErrorCode  PetscLogDestroy(void)
 {
@@ -272,18 +272,18 @@ PetscErrorCode  PetscLogBegin_Private(void)
       PetscInitialize(...);
       PetscLogBegin();
        ... code ...
-      PetscLogPrintSummary(MPI_Comm,filename); or PetscLogDump(); 
+      PetscLogView(viewer); or PetscLogDump(); 
       PetscFinalize();
 .ve
 
   Notes:
-  PetscLogPrintSummary(MPI_Comm,filename) or PetscLogDump() actually cause the printing of 
+  PetscLogView(viewer) or PetscLogDump() actually cause the printing of 
   the logging information.
 
   Level: advanced
 
 .keywords: log, begin
-.seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogPrintSummary(), PetscLogTraceBegin()
+.seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogView(), PetscLogTraceBegin()
 @*/
 PetscErrorCode  PetscLogBegin(void)
 {
@@ -359,7 +359,7 @@ PetscErrorCode  PetscLogAllBegin(void)
 
   Level: intermediate
 
-.seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogPrintSummary(), PetscLogBegin()
+.seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogView(), PetscLogBegin()
 @*/
 PetscErrorCode  PetscLogTraceBegin(FILE *file)
 {
@@ -607,7 +607,7 @@ PetscErrorCode  PetscLogStageGetActive(PetscLogStage stage, PetscBool  *isActive
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogStageSetVisible"
 /*@
-  PetscLogStageSetVisible - Determines stage visibility in PetscLogPrintSummary()
+  PetscLogStageSetVisible - Determines stage visibility in PetscLogView()
 
   Not Collective 
 
@@ -617,7 +617,7 @@ PetscErrorCode  PetscLogStageGetActive(PetscLogStage stage, PetscBool  *isActive
 
   Level: intermediate
 
-.seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogPrintSummary()
+.seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogView()
 @*/
 PetscErrorCode  PetscLogStageSetVisible(PetscLogStage stage, PetscBool  isVisible)
 {
@@ -633,7 +633,7 @@ PetscErrorCode  PetscLogStageSetVisible(PetscLogStage stage, PetscBool  isVisibl
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogStageGetVisible"
 /*@
-  PetscLogStageGetVisible - Returns stage visibility in PetscLogPrintSummary()
+  PetscLogStageGetVisible - Returns stage visibility in PetscLogView()
 
   Not Collective 
 
@@ -645,7 +645,7 @@ PetscErrorCode  PetscLogStageSetVisible(PetscLogStage stage, PetscBool  isVisibl
 
   Level: intermediate
 
-.seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogPrintSummary()
+.seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogView()
 @*/
 PetscErrorCode  PetscLogStageGetVisible(PetscLogStage stage, PetscBool  *isVisible)
 {
@@ -1158,7 +1158,7 @@ $    Log.<rank>
   Level: advanced
 
 .keywords: log, dump
-.seealso: PetscLogBegin(), PetscLogAllBegin(), PetscLogPrintSummary()
+.seealso: PetscLogBegin(), PetscLogAllBegin(), PetscLogView()
 @*/
 PetscErrorCode  PetscLogDump(const char sname[])
 {
@@ -1234,15 +1234,14 @@ PetscErrorCode  PetscLogDump(const char sname[])
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscLogPrintSummary"
+#define __FUNCT__ "PetscLogView"
 /*@C
-  PetscLogPrintSummary - Prints a summary of the logging.
+  PetscLogViewer - Prints a summary of the logging.
 
   Collective over MPI_Comm
 
   Input Parameter:
-+ comm - The MPI communicator (only one processor prints output)
-- file - [Optional] The output file name
+.  viewer - an ASCII viewer
 
   Options Database Keys:
 . -log_summary - Prints summary of log information (for code compiled with PETSC_USE_LOG)
@@ -1252,7 +1251,7 @@ PetscErrorCode  PetscLogDump(const char sname[])
      PetscInitialize(...);
      PetscLogBegin();
      ... code ...
-     PetscLogPrintSummary(MPI_Comm,filename);
+     PetscLogView(PetscViewer);
      PetscFinalize(...);
 .ve
 
@@ -1264,9 +1263,9 @@ PetscErrorCode  PetscLogDump(const char sname[])
 .keywords: log, dump, print
 .seealso: PetscLogBegin(), PetscLogDump()
 @*/
-PetscErrorCode  PetscLogPrintSummary(MPI_Comm comm, const char filename[])
+PetscErrorCode  PetscLogView(PetscViewer viewer)
 {
-  FILE           *fd = PETSC_STDOUT;
+  FILE           *fd;
   PetscLogDouble zero = 0.0;
   StageLog       stageLog;
   StageInfo     *stageInfo = PETSC_NULL;
@@ -1290,8 +1289,11 @@ PetscErrorCode  PetscLogPrintSummary(MPI_Comm comm, const char filename[])
   PetscLogEvent  event;
   PetscErrorCode ierr;
   char           version[256];
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   /* Pop off any stages the user forgot to remove */
@@ -1305,10 +1307,6 @@ PetscErrorCode  PetscLogPrintSummary(MPI_Comm comm, const char filename[])
   }
   /* Get the total elapsed time */
   PetscTime(locTotalTime);  locTotalTime -= BaseTime;
-  /* Open the summary file */
-  if (filename) {
-    ierr = PetscFOpen(comm, filename, "w", &fd);CHKERRQ(ierr);
-  }
 
   ierr = PetscFPrintf(comm, fd, "************************************************************************************************************************\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "***             WIDEN YOUR WINDOW TO 120 CHARACTERS.  Use 'enscript -r -fCourier9' to print this document            ***\n");CHKERRQ(ierr);
@@ -1697,9 +1695,8 @@ PetscErrorCode  PetscLogPrintSummary(MPI_Comm comm, const char filename[])
     }
     ierr = PetscCommDestroy(&newcomm);CHKERRQ(ierr);
   }
-  if (!rank) {
-    ierr = PetscOptionsPrint(fd);CHKERRQ(ierr);
-  }
+  ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
+
   /* Machine and compile information */
 #if defined(PETSC_USE_FORTRAN_KERNELS)
   ierr = PetscFPrintf(comm, fd, "Compiled with FORTRAN kernels\n");CHKERRQ(ierr);
@@ -1731,7 +1728,6 @@ PetscErrorCode  PetscLogPrintSummary(MPI_Comm comm, const char filename[])
 
   /* Cleanup */
   ierr = PetscFPrintf(comm, fd, "\n");CHKERRQ(ierr);
-  ierr = PetscFClose(comm, fd);CHKERRQ(ierr);
   ierr = StageLogPush(stageLog, lastStage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1765,7 +1761,7 @@ PetscErrorCode  PetscLogPrintSummary(MPI_Comm comm, const char filename[])
   Level: beginner
    
 .keywords: log, dump, print
-.seealso: PetscLogBegin(), PetscLogDump(), PetscLogPrintSummary()
+.seealso: PetscLogBegin(), PetscLogDump(), PetscLogView()
 @*/
 PetscErrorCode  PetscLogPrintDetailed(MPI_Comm comm, const char filename[])
 {
@@ -2126,9 +2122,9 @@ PetscErrorCode  PetscClassIdRegister(const char name[],PetscClassId *oclass )
 
 #include "../src/sys/viewer/impls/ascii/asciiimpl.h"  /*I     "petscsys.h"   I*/
 #undef __FUNCT__  
-#define __FUNCT__ "PetscLogPrintSummaryPython"
+#define __FUNCT__ "PetscLogViewPython"
 /*@ 
-   PetscLogPrintSummaryPython - Saves logging information in a Python format.
+   PetscLogViewPython - Saves logging information in a Python format.
 
    Collective on PetscViewer
 
@@ -2138,7 +2134,7 @@ PetscErrorCode  PetscClassIdRegister(const char name[],PetscClassId *oclass )
   Level: intermediate 
 
 @*/
-PetscErrorCode  PetscLogPrintSummaryPython(PetscViewer viewer)
+PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
   FILE              *fd = ascii->fd; 
@@ -2494,10 +2490,6 @@ for(stage = 0; stage < numStages; stage++) {
       ierr = PetscFPrintf(comm,fd,"AveragetimforzerosizeMPI_Send = %g\n", (y-x)/size);CHKERRQ(ierr);
     }
     ierr = PetscCommDestroy(&newcomm);CHKERRQ(ierr);
-  }
-  if (!rank) { /* print Optiontable */
-    ierr = PetscFPrintf(comm,fd,"# ");CHKERRQ(ierr);
-    //ierr = PetscOptionsPrint(fd);CHKERRQ(ierr);
   }
 
   /* Cleanup */

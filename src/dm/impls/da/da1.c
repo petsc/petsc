@@ -360,7 +360,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 .  dof - number of degrees of freedom per node
 .  s - stencil width
 -  lx - array containing number of nodes in the X direction on each processor, 
-        or PETSC_NULL. If non-null, must be of length as m.
+        or PETSC_NULL. If non-null, must be of length as the number of processes in the MPI_Comm.
 
    Output Parameter:
 .  da - the resulting distributed array object

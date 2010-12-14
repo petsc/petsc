@@ -11,7 +11,11 @@ classdef PetscIS < PetscObject
       err = calllib('libpetsc', 'ISGeneralSetIndices', obj.pobj,length(indices),indices);PetscCHKERRQ(err);
     end
     function err = View(obj,viewer)
-      err = calllib('libpetsc', 'ISView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
+      if (nargin == 1)
+        err = calllib('libpetsc', 'ISView', obj.pobj,0);PetscCHKERRQ(err);
+      else
+        err = calllib('libpetsc', 'ISView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
+      end
     end
     function err = Destroy(obj)
       err = calllib('libpetsc', 'ISDestroy', obj.pobj);PetscCHKERRQ(err);

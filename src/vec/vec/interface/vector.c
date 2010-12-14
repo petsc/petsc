@@ -980,13 +980,12 @@ PetscErrorCode  VecResetArray(Vec vec)
 - viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
            HDF5 file viewer, obtained from PetscViewerHDF5Open()
 
-  Basic Options Database Keys:
-+   -vec_type seq      - sequential type
-.   -vec_type mpi      - parallel type
-
    Level: intermediate
 
   Notes:
+  Defaults to the standard Seq or MPI Vec, if you want some other type of Vec call VecSetFromOptions()
+  before calling this.
+
   The input file must contain the full global vector, as
   written by the routine VecView().
 
@@ -1022,12 +1021,6 @@ and PetscBinaryWrite() to see how this may be done.
 PetscErrorCode  VecLoad(Vec newvec, PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  MPI_Comm       comm;
-  PetscMPIInt    size;
-  const char     *prefix;
-  PetscBool      flg;
-  char           vtype[256];
-  const VecType  outtype=0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -1035,21 +1028,8 @@ PetscErrorCode  VecLoad(Vec newvec, PetscViewer viewer)
   PetscValidPointer(newvec,1);
 
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-
-  if (((PetscObject)newvec)->type_name) outtype = ((PetscObject)newvec)->type_name;
-  /* Check if type if set  by checking the vec create function pointer*/
-  if (!outtype && !newvec->ops->create) {
-    ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char**)&prefix);CHKERRQ(ierr);
-    ierr = PetscOptionsGetString(prefix,"-vec_type",vtype,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      outtype = vtype;
-    }
-    ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-    if (!outtype) {
-      ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-      outtype = (size > 1) ? VECMPI : VECSEQ;
-    }
-    ierr = VecSetType(newvec, outtype);CHKERRQ(ierr);
+  if (!((PetscObject)newvec)->type_name && !newvec->ops->create) {
+    ierr = VecSetType(newvec, VECSTANDARD);CHKERRQ(ierr);
   }
   ierr = (*newvec->ops->load)(newvec,viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);

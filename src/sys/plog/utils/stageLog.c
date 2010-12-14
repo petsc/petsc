@@ -417,7 +417,7 @@ PetscErrorCode  StageLogGetActive(StageLog stageLog, int stage, PetscBool  *isAc
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogSetVisible"
 /*@C
-  StageLogSetVisible - This function determines whether a stage is printed during PetscLogPrintSummary()
+  StageLogSetVisible - This function determines whether a stage is printed during PetscLogView()
 
   Not Collective
 
@@ -447,7 +447,7 @@ PetscErrorCode  StageLogSetVisible(StageLog stageLog, int stage, PetscBool  isVi
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogGetVisible"
 /*@C
-  StageLogGetVisible - This function returns whether a stage is printed during PetscLogPrintSummary()
+  StageLogGetVisible - This function returns whether a stage is printed during PetscLogView()
 
   Not Collective
 

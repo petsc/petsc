@@ -731,8 +731,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   A->info.nz_unneeded  = (double)fshift;
   a->rmax              = rmax;
 
-  /* check for zero rows. If found a large number of zero rows, use CompressedRow functions */
-  ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,m,ratio);CHKERRQ(ierr); 
+  ierr = MatCheckCompressedRow(A,&a->compressedrow,a->i,m,ratio);CHKERRQ(ierr); 
   A->same_nonzero = PETSC_TRUE;
 
   ierr = MatAssemblyEnd_SeqAIJ_Inode(A,mode);CHKERRQ(ierr);
@@ -806,7 +805,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   if (a->coloring) {ierr = ISColoringDestroy(a->coloring);CHKERRQ(ierr);}
   ierr = PetscFree(a->xtoy);CHKERRQ(ierr);
   if (a->XtoY) {ierr = MatDestroy(a->XtoY);CHKERRQ(ierr);}
-  if (a->compressedrow.checked && a->compressedrow.use){ierr = PetscFree2(a->compressedrow.i,a->compressedrow.rindex);} 
+  ierr = PetscFree2(a->compressedrow.i,a->compressedrow.rindex);CHKERRQ(ierr);
 
   ierr = MatDestroy_SeqAIJ_Inode(A);CHKERRQ(ierr);
 
@@ -856,8 +855,8 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscBool  flg)
     case MAT_IGNORE_ZERO_ENTRIES:
       a->ignorezeroentries = flg;
       break;
-    case MAT_USE_COMPRESSEDROW:
-      a->compressedrow.use = flg;
+    case MAT_CHECK_COMPRESSED_ROW:
+      a->compressedrow.check = flg;
       break;
     case MAT_SPD:
       A->spd_set                         = PETSC_TRUE;
@@ -3410,11 +3409,6 @@ PetscErrorCode  MatCreate_SeqAIJ(Mat B)
   b->keepnonzeropattern    = PETSC_FALSE;
   b->xtoy              = 0;
   b->XtoY              = 0;
-  b->compressedrow.use     = PETSC_FALSE;
-  b->compressedrow.nrows   = B->rmap->n;
-  b->compressedrow.i       = PETSC_NULL;
-  b->compressedrow.rindex  = PETSC_NULL;
-  b->compressedrow.checked = PETSC_FALSE;
   B->same_nonzero          = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
@@ -3550,8 +3544,8 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalu
 
   c->compressedrow.use     = a->compressedrow.use;
   c->compressedrow.nrows   = a->compressedrow.nrows;
-  c->compressedrow.checked = a->compressedrow.checked;
-  if (a->compressedrow.checked && a->compressedrow.use){
+  c->compressedrow.check   = a->compressedrow.check;
+  if (a->compressedrow.use){
     i = a->compressedrow.nrows;
     ierr = PetscMalloc2(i+1,PetscInt,&c->compressedrow.i,i,PetscInt,&c->compressedrow.rindex);CHKERRQ(ierr);
     ierr = PetscMemcpy(c->compressedrow.i,a->compressedrow.i,(i+1)*sizeof(PetscInt));CHKERRQ(ierr);

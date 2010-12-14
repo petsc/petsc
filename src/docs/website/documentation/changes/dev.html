@@ -11,7 +11,7 @@
   <tbody>
     <tr>
       <td valign="top" width="25%">
-      <h1><font color="#ff0000" size="7">PETSc</font></h1>
+      <h1><font size="7" color="#ff0000">PETSc</font></h1>
       <ul>
         <li><a href="../../index.html"><strong>Home</strong></a></li>
       </ul>
@@ -22,7 +22,7 @@
     </tr>
     <tr>
       <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
+      <hr size="4" color="#ff5b5b"> </td>
     </tr>
     <tr>
       <td valign="top" width="25%">
@@ -82,7 +82,7 @@ Software</strong></a></li>
       </ul>
       </td>
       <td valign="top" width="75%"><!--##begin-->
-      <p align="center"><font color="#ff0000" size="5"><a name="CHANGES">CHANGES</a>
+      <p align="center"><font size="5" color="#ff0000"><a name="CHANGES">CHANGES</a>
 in the PETSc Development Version</font></p>
       <p><u><b>General:</b></u></p>
       <ul>
@@ -99,6 +99,9 @@ PETSC_BOOL, PetscOptionsTruth to PetscOptionsBool, etc.</li>
         <li>Changed -log_history to -history and PetscLogOpenHistory()
 PetscLogCloseHistory() to PetscOpenHistory(), PetscCloseHistory()
 because "log" is reserved for related to the performance logging</li>
+        <li>Changed PetscOptionsPrint() to PetscOptionsView()</li>
+        <li>Changed PetscLogPrintSummary() to PetscLogView()<br>
+        </li>
       </ul>
       <u><b>Logging:<br>
       </b></u>
@@ -146,9 +149,10 @@ longer relative to element. This is to match the paradigm of
 Vec/MatSetValuesBlocked()<br>
         </li>
         <li>ISBlockGetBlockSize() is now ISGetBlockSize(). Block sizes
-can be set for conforming ISGENERAL and ISSTRIDE using ISSetBlockSize().
-        </li>
-        <li>ISAllGatherIndices() is removed, use ISCreateGeneral() then ISAllGather().</li>
+can be set for conforming ISGENERAL and ISSTRIDE using
+ISSetBlockSize(). </li>
+        <li>ISAllGatherIndices() is removed, use ISCreateGeneral() then
+ISAllGather().</li>
       </ul>
       <p><u><b>PF:</b></u></p>
       <ul>
@@ -162,8 +166,9 @@ callback.</li>
         <li>VecLoad() and VecLoadIntoVector() have been merged into a
 single NEW VecLoad() that takes a partially constructed vector as input
 and loads according to any type or sizes that have previously been set
-into the Vec.<br>
-        </li>
+into the Vec.</li>
+        <li>VecLoad() does NOT access the options database to check for
+the VecType, call VecSetFromOptions() first if you wish to check it.</li>
       </ul>
       <p><u><b> </b></u></p>
       <p><u><b>VecScatter:<br>
@@ -199,8 +204,11 @@ vector as optional arguments; if these are provided then the b[idx[i]]
 is set to diag*x[idx[i]]] for all rows listed in idx[].<br>
         </li>
         <li>MatSetLocalToGlobalMapping() and
-MatSetLocalToGlobalMappingBlock() now take separate row and column maps.
-MatPreallocateSetLocal() has an extra argument for the column mapping.
+MatSetLocalToGlobalMappingBlock() now take separate row and column
+maps.
+MatPreallocateSetLocal() has an extra argument for the column mapping. </li>
+        <li>MatLoad() does NOT access the options database to check for
+the MatType, call MatSetFromOptions() first if you wish to check it.<br>
         </li>
       </ul>
       <u><b>PC:</b></u>
@@ -289,10 +297,13 @@ be constructed lazily.</li>
       <ul>
       </ul>
       <u><b>PetscViewer:<br>
-      <ul>
-        <li>PETSC_VIEWER_XXXX is now PETSCVIEWERXXX</li>
-      </ul>
+      <br>
       </b></u>
+      <ul>
+        <li>PETSC_VIEWER_XXX is now PETSCVIEWERXXX</li>
+        <li>Added PetscViewerASCIIOpenWithFILE() and
+PetscViewerASCIISetFILE(</li>
+      </ul>
       <ul>
       </ul>
       <ul>
@@ -321,7 +332,7 @@ PetscOptionsStringToBool()</li>
     </tr>
     <tr>
       <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
+      <hr size="4" color="#ff5b5b"> </td>
     </tr>
   </tbody>
 </table>
