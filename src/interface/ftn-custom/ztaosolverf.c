@@ -8,6 +8,7 @@
 #define taosolversethessianroutine_              TAOSOLVERSETHESSIANROUTINE
 #define taosolversetseparableobjectiveroutine_   TAOSOLVERSETSEPARABLEOBJECTIVEROUTINE
 #define taosolversetjacobianroutine_             TAOSOLVERSETJACOBIANROUTINE
+#define taosolversetvariableboundsroutine_       TAOSOLVERSETVARIABLEBOUNDSROUTINE
 #define taosolversetmonitor_                     TAOSOLVERSETMONITOR
 #define taosolversettype_                        TAOSOLVERSETTYPE
 #define taosolverview_                           TAOSOLVERVIEW
@@ -19,6 +20,7 @@
 #define taosolversethessianroutine_              taosolversethessianroutine
 #define taosolversetseparableobjectiveroutine_   taosolversetseparableobjectiveroutine
 #define taosolversetjacobianroutine_             taosolversetjacobianroutine
+#define taosolversetvariableboundsroutine_       taosolversetvariableboundsroutine
 #define taosolversetmonitor_                     taosolversetmonitor
 #define taosolversettype_                        taosolversettype
 #define taosolverview_                           taosolverview
@@ -30,8 +32,9 @@ static int OBJGRAD=2;   // objective and gradient routine
 static int HESS=3;      // hessian routine index
 static int SEPOBJ=4;    // separable objective routine index
 static int JAC=5;       // jacobian routine index
-static int MON=6;       // monitor routine index
-static int NFUNCS=7;
+static int BOUNDS=6;
+static int MON=7;       // monitor routine index
+static int NFUNCS=8;
 
 static PetscErrorCode ourtaosolverobjectiveroutine(TaoSolver tao, Vec x, PetscReal *f, void *ctx)
 {
@@ -77,6 +80,13 @@ static PetscErrorCode ourtaosolverjacobianroutine(TaoSolver tao, Vec x, Mat *H, 
     return 0;
 }
 
+static PetscErrorCode ourtaosolverboundsroutine(TaoSolver tao, Vec xl, Vec xu, void *ctx)
+{
+    PetscErrorCode ierr = 0;
+    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Vec*,void*,PetscErrorCode*))
+     (((PetscObject)tao)->fortran_func_pointers[BOUNDS]))(&tao,&xl,&xu,ctx,&ierr); CHKERRQ(ierr);
+    return 0;
+}
 static PetscErrorCode ourtaosolverseparableobjectiveroutine(TaoSolver tao, Vec x, Vec f, void *ctx) 
 {
     PetscErrorCode ierr = 0;
@@ -181,6 +191,19 @@ void PETSC_STDCALL taosolversethessianroutine_(TaoSolver *tao, Mat *J, Mat *Jp, 
     }
 }
 
+void PETSC_STDCALL taosolversetvariableboundsroutine_(TaoSolver *tao, void (PETSC_STDCALL *func)(TaoSolver*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx, PetscErrorCode *ierr)
+{
+    CHKFORTRANNULLOBJECT(ctx);
+    CHKFORTRANNULLFUNCTION(func);
+    PetscObjectAllocateFortranPointers(*tao,NFUNCS);
+    if (func) {
+	((PetscObject)*tao)->fortran_func_pointers[BOUNDS] = (PetscVoidFunction)func;
+	*ierr = TaoSolverSetVariableBoundsRoutine(*tao,ourtaosolverboundsroutine,ctx);
+    } else {
+	*ierr = TaoSolverSetVariableBoundsRoutine(*tao,0,ctx); 
+    }
+    
+}    
 void PETSC_STDCALL taosolversetmonitor_(TaoSolver *tao, void (PETSC_STDCALL *func)(TaoSolver*,void*,PetscErrorCode*),void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
