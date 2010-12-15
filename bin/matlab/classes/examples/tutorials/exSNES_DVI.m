@@ -6,7 +6,7 @@
 %   Set the Matlab path and initialize PETSc
 figure(1),clf;figure(2),clf;
 path(path,'../../')
-PetscInitialize({'-snes_monitor','-ksp_monitor'});
+PetscInitialize({'-snes_vi_monitor','-ksp_monitor','-snes_vi_type','rs'});
 %%
 %   Open a viewer to display PETSc objects
 viewer = PetscViewer();
