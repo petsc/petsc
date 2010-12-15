@@ -85,6 +85,8 @@ extern PetscErrorCode TaoSolverDefaultComputeHessianColor(TaoSolver, Vec, Mat*, 
 extern PetscErrorCode TaoSolverComputeDualVariables(TaoSolver, Vec, Vec);
 extern PetscErrorCode TaoSolverSetVariableBounds(TaoSolver, Vec, Vec);
 extern PetscErrorCode TaoSolverGetVariableBounds(TaoSolver, Vec*, Vec*);
+extern PetscErrorCode TaoSolverSetVariableBoundsRoutine(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
+extern PetscErrorCode TaoSolverComputeVariableBounds(TaoSolver);
 
 extern PetscErrorCode TaoSolverGetTolerances(TaoSolver, PetscReal*, PetscReal*, PetscReal*, PetscReal*, PetscReal*);
 extern PetscErrorCode TaoSolverSetTolerances(TaoSolver, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);

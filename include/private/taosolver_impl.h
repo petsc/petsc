@@ -14,6 +14,7 @@ struct _TaoSolverOps {
     PetscErrorCode (*computehessian)(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
     PetscErrorCode (*computeseparableobjective)(TaoSolver, Vec, Vec, void*);
     PetscErrorCode (*computejacobian)(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
+    PetscErrorCode (*computebounds)(TaoSolver, Vec, Vec, void*);
 
     PetscErrorCode (*convergencetest)(TaoSolver,void*);
     PetscErrorCode (*convergencedestroy)(void*);
@@ -36,6 +37,7 @@ struct _p_TaoSolver {
     void *user_hessP;
     void *user_sepobjP;
     void *user_jacP;
+    void *user_boundsP;
 
     PetscErrorCode (*monitor[MAXTAOMONITORS])(TaoSolver,void*);
     PetscErrorCode (*monitordestroy[MAXTAOMONITORS])(void*);

@@ -182,11 +182,11 @@ PetscErrorCode TaoSolverSetUp(TaoSolver tao)
       !tao->ops->computeseparableobjective) {
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSolverSetObjective or TaoSolverSetObjectiveAndGradient");
   }
-  
+  ierr = TaoSolverComputeVariableBounds(tao); CHKERRQ(ierr);
   if (tao->ops->setup) {
     ierr = (*tao->ops->setup)(tao); CHKERRQ(ierr);
   }
-
+  
   tao->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -221,6 +221,9 @@ PetscErrorCode TaoSolverDestroy(TaoSolver tao)
   if (tao->ops->convergencedestroy) {
       ierr = (*tao->ops->convergencedestroy)(tao->cnvP); CHKERRQ(ierr);
   }
+  if (tao->solution) {
+    ierr = VecDestroy(tao->solution); CHKERRQ(ierr);
+  }
   if (tao->gradient) {
     ierr = VecDestroy(tao->gradient); CHKERRQ(ierr);
   }
@@ -239,6 +242,13 @@ PetscErrorCode TaoSolverDestroy(TaoSolver tao)
   if (tao->linesearch) {
       ierr = TaoLineSearchDestroy(tao->linesearch); CHKERRQ(ierr);
   }
+  if (tao->hessian_pre) {
+      ierr = MatDestroy(tao->hessian_pre); CHKERRQ(ierr);
+  }
+  if (tao->hessian) {
+      ierr = MatDestroy(tao->hessian); CHKERRQ(ierr);
+  }
+
   tao->gradient = PETSC_NULL;
   tao->XL = PETSC_NULL;
   tao->XU = PETSC_NULL;
