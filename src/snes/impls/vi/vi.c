@@ -1107,7 +1107,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
 { 
   SNES_VI          *vi = (SNES_VI*)snes->data;
   PetscErrorCode    ierr;
-  PetscInt          maxits,i,lits,Nis_act=0;
+  PetscInt          maxits,i,lits,Nis_inact;
   PetscBool         lssucceed;
   MatStructure      flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal         fnorm,gnorm,xnorm=0,ynorm;
@@ -1126,6 +1126,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
   G		= snes->work[1];
   W		= snes->work[2];
 
+  Nis_inact = F->map->N;
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.0;
@@ -1158,7 +1159,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
 
     IS                 IS_act,IS_inact; /* _act -> active set _inact -> inactive set */
     VecScatter         scat_act,scat_inact;
-    PetscInt           nis_act,nis_inact,Nis_act_prev;
+    PetscInt           nis_act,nis_inact,Nis_inact_prev;
     Vec                Y_act,Y_inact,F_inact;
     Mat                jac_inact_inact,prejac_inact_inact;
 
@@ -1170,11 +1171,11 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     /* Create active and inactive index sets */
     ierr = SNESVICreateIndexSets_RS(snes,X,vi->xl,vi->xu,&IS_act,&IS_inact);CHKERRQ(ierr);
 
-    Nis_act_prev = Nis_act;
+    Nis_inact_prev = Nis_inact;
     /* Get sizes of active and inactive sets */
     ierr = ISGetLocalSize(IS_act,&nis_act);CHKERRQ(ierr);
     ierr = ISGetLocalSize(IS_inact,&nis_inact);CHKERRQ(ierr);
-    ierr = ISGetSize(IS_act,&Nis_act);CHKERRQ(ierr);
+    ierr = ISGetSize(IS_inact,&Nis_inact);CHKERRQ(ierr);
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Size of active set = %d, size of inactive set = %d\n",nis_act,nis_inact);CHKERRQ(ierr);
 
@@ -1206,7 +1207,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
       ierr = MatGetSubMatrix(snes->jacobian_pre,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&prejac_inact_inact);CHKERRQ(ierr);
     } else prejac_inact_inact = jac_inact_inact;
 
-    if ((i != 0) && (Nis_act != Nis_act_prev)) {
+    if (Nis_inact != Nis_inact_prev) {
       ierr = SNESVIResetPCandKSP(snes,jac_inact_inact,prejac_inact_inact);CHKERRQ(ierr);
     }
     
