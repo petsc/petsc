@@ -1,4 +1,4 @@
-#include "tao.h"
+#include "taosolver.h"
 #include "petscmat.h"
 #include "src/matrix/lmvmmat.h"
 #include "numbers.h"
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     ierr = MatDestroy(lmvm_mat); CHKERRQ(ierr);
 
     ierr = VecDestroyVecs(v,50); CHKERRQ(ierr);
-//    ierr = PetcscFree(&v);  CHKERRQ(ierr);
+    ierr = VecDestroy(y); CHKERRQ(ierr);
     TaoFinalize();
     PetscFinalize();
     return 0;
@@ -79,6 +79,7 @@ PetscErrorCode initializevecs(Vec **vv, PetscInt numvecs, PetscInt size)
     }
 
     *vv = v;
+    ierr = VecDestroy(tmp); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
 
