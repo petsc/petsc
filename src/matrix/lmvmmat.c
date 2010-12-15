@@ -125,7 +125,8 @@ extern PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
     info = MatShellSetOperation(*A,MATOP_DESTROY,(void(*)(void))MatDestroy_LMVM);
     CHKERRQ(info);
     info = MatShellSetOperation(*A,MATOP_VIEW,(void(*)(void))MatView_LMVM);
-    
+    CHKERRQ(info);
+
     PetscFunctionReturn(0);
 }
 
