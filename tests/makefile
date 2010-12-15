@@ -7,9 +7,14 @@ TESTEXAMPLES_C = test_link1.tao runtest_link1 test_link1.rm clean \
          test_jbearing2.tao runtest_jbearing2 test_jbearing2.rm \
 	 test_eptorsion1.tao runtest_eptorsion1 test_eptorsion2.rm \
 	 test_eptorsion2.tao runtest_eptorsion2 test_eptorsion2.rm \
+	 test_minsurf1.tao runtest_minsurf1 test_minsurf1.rm \
 	 test_minsurf2.tao runtest_minsurf2 test_minsurf2.rm \
+	 test_plate2.tao runtest_plate2 test_plate2.rm \
 	 clean 
-
+TESTEXAMPLES_F=	 test_eptorsion2f.tao runtest_eptorsion2f test_eptorsion2f.rm \
+	 test_plate2f.tao runtest_plate2f test_plate2f.rm \
+         test_rosenbrock1f.tao runtest_rosenbrock1f test_rosenbrock1f.rm  \
+	 clean 
 
 include ${TAO_DIR}/conf/tao_base
 
@@ -53,6 +58,10 @@ test_plate2: test_plate2.o tao_chkopts
 	-${CLINKER} -o test_plate2 test_plate2.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_plate2.o
 
+test_plate2f: test_plate2f.o tao_chkopts
+	-${FLINKER} -o test_plate2f test_plate2f.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_plate2f.o
+
 test_eptorsion1: test_eptorsion1.o tao_chkopts
 	-${CLINKER} -o test_eptorsion1 test_eptorsion1.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_eptorsion1.o
@@ -60,6 +69,14 @@ test_eptorsion1: test_eptorsion1.o tao_chkopts
 test_eptorsion2: test_eptorsion2.o tao_chkopts
 	-${CLINKER} -o test_eptorsion2 test_eptorsion2.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_eptorsion2.o
+
+test_eptorsion2f: test_eptorsion2f.o tao_chkopts
+	-${FLINKER} -o test_eptorsion2f test_eptorsion2f.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_eptorsion2f.o
+
+test_minsurf1: test_minsurf1.o tao_chkopts
+	-${CLINKER} -o test_minsurf1 test_minsurf1.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_minsurf1.o
 
 test_minsurf2: test_minsurf2.o tao_chkopts
 	-${CLINKER} -o test_minsurf2 test_minsurf2.o ${TAO_LIB} ${PETSC_LIB}
@@ -116,6 +133,13 @@ runtest_plate2:
         else echo "Possible problem with test_plate2_1, diffs above"; fi; \
 	${RM} -f test_plate2_1.tmp
 
+
+runtest_plate2f: 
+	-@${MPIEXEC} -np 2 ./test_plate2f > test_plate2f_1.tmp 2>&1; \
+	if (${DIFF} output/test_plate2f_1.out test_plate2f_1.tmp) then true;\
+        else echo "Possible problem with test_plate2f_1, diffs above"; fi; \
+	${RM} -f test_plate2f_1.tmp
+
 runtest_eptorsion1: 
 	-@${MPIEXEC} -np 2 ./test_eptorsion1 > test_eptorsion1_1.tmp 2>&1; \
 	if (${DIFF} output/test_eptorsion1_1.out test_eptorsion1_1.tmp) then true;\
@@ -128,12 +152,24 @@ runtest_eptorsion2:
         else echo "Possible problem with test_eptorsion2_1, diffs above"; fi; \
 	${RM} -f test_eptorsion2_1.tmp
 
+runtest_eptorsion2f: 
+	-@${MPIEXEC} -np 2 ./test_eptorsion2f > test_eptorsion2f_1.tmp 2>&1; \
+	if (${DIFF} output/test_eptorsion2f_1.out test_eptorsion2f_1.tmp) then true;\
+        else echo "Possible problem with test_eptorsion2f_1, diffs above"; fi; \
+	${RM} -f test_eptorsion2f_1.tmp
+
+runtest_minsurf1: 
+	-@${MPIEXEC} -np 1 ./test_minsurf1 > test_minsurf1_1.tmp 2>&1; \
+	if (${DIFF} output/test_minsurf1_1.out test_minsurf1_1.tmp) then true;\
+        else echo "Possible problem with test_minsurf1_1, diffs above"; fi; \
+	${RM} -f test_minsurf1_1.tmp
+
+
 runtest_minsurf2: 
 	-@${MPIEXEC} -np 2 ./test_minsurf2 > test_minsurf2_1.tmp 2>&1; \
 	if (${DIFF} output/test_minsurf2_1.out test_minsurf2_1.tmp) then true;\
         else echo "Possible problem with test_minsurf2_1, diffs above"; fi; \
 	${RM} -f test_minsurf2_1.tmp
-
 
 
 runtest_bratu2: 
