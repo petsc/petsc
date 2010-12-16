@@ -13,9 +13,14 @@ classdef PetscMat < PetscObject
       if (nargin > 1) 
         %  PetscMat(pid,'pobj') uses an already existing PETSc Mat object
         obj.pobj = array;
-        return
+      elseif (nargin == 1)
+        if (~issparse(array)) 
+          error('When creating PetscMat from Matlab matrix the Matlab matrix must be sparse');
+        end
+        [err,mx,obj.pobj] = calllib('libpetsc', 'MatCreateSeqAIJFromMatlab',array',0);PetscCHKERRQ(err);
+      else 
+        [err,obj.pobj] = calllib('libpetsc', 'MatCreate', PETSC_COMM_SELF,0);PetscCHKERRQ(err);
       end
-      [err,obj.pobj] = calllib('libpetsc', 'MatCreate', PETSC_COMM_SELF,0);PetscCHKERRQ(err);
     end
     function err = SetType(obj,name)
       err = calllib('libpetsc', 'MatSetType', obj.pobj,name);PetscCHKERRQ(err);

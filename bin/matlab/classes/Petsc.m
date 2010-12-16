@@ -24,4 +24,6 @@
 %
 %  Notes: You can call PetscInitialize() multiple times so long as you call PetscFinalize() between each call
 %         The interface currently works only for sequential (one processor) runs, for 
-%         a good hacker it should be relatively easy to make it parallel.
+%            a good hacker it should be relatively easy to make it parallel.
+%         All PETSc Matlab functions that end with Internal.m are used by PETSc and should not be called 
+%            directly by users.
