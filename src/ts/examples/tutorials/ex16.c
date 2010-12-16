@@ -1,4 +1,4 @@
-
+ 
 static char help[] = "Time-dependent PDE in 1d. Simplified from ex15.c for illustrating how to solve DAEs. \n";
 /* 
    u_t = uxx 
@@ -8,7 +8,7 @@ static char help[] = "Time-dependent PDE in 1d. Simplified from ex15.c for illus
 
 
    Boundary conditions:   
-   Drichlet BC:
+   Dirichlet BC:
    At x=0, x=1, u = 0.0
 
    Neumann BC:
@@ -19,8 +19,8 @@ Program usage:
    e.g., mpiexec -n 2 ./ex16 -da_grid_x 40 -ts_max_steps 2 -use_coloring -snes_monitor -ksp_monitor 
          ./ex16 -da_grid_x 40 -use_coloring -drawcontours 
          ./ex16 -use_coloring -drawcontours -draw_pause .1
-         ./ex16 -use_coloring -ts_type theta -ts_theta_theta 0.5 
-         ./ex16 -use_coloring -boundary 1 
+         ./ex16 -use_coloring -ts_type theta -ts_theta_theta 0.5  
+         ./ex16 -use_coloring -drawcontours -draw_pause .1 -da_grid_x 500 -boundary 1 -pc_type lu -ts_max_time 2.0
 */
 
 #include "petscdm.h"
@@ -30,7 +30,7 @@ Program usage:
    User-defined data structures and routines
 */
 typedef struct {
-   PetscBool drawcontours;   
+  PetscBool drawcontours;   
 } MonitorCtx;
 
 typedef struct {
@@ -39,6 +39,7 @@ typedef struct {
   PetscBool      coloring;
   MatFDColoring  matfdcoloring;
   PetscInt       boundary;       /* Type of boundary condition */
+  PetscBool      viewJacobian;
 } AppCtx;
 
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
@@ -68,7 +69,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,-8,
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,-11,
                     1,1,PETSC_NULL,&da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -81,8 +82,10 @@ int main(int argc,char **argv)
   user.c             = -30.0;
   user.coloring      = PETSC_FALSE;
   user.matfdcoloring = PETSC_NULL;
-  user.boundary      = 0; /* 0: Drichlet BC; 1: Neumann BC */
+  user.boundary      = 0; /* 0: Dirichlet BC; 1: Neumann BC */
+  user.viewJacobian  = PETSC_FALSE;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-boundary",&user.boundary,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-viewJacobian",&user.viewJacobian);CHKERRQ(ierr);
 
   usermonitor.drawcontours = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-drawcontours",&usermonitor.drawcontours);CHKERRQ(ierr);
@@ -169,7 +172,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
   PetscErrorCode ierr;
   PetscInt       i,Mx,xs,xm;
   PetscReal      two = 2.0,hx,sx;
-  PetscScalar    u,uxx,*uarray,*f;
+  PetscScalar    u,*uarray,*f;
   Vec            localU;
 
   PetscFunctionBegin;
@@ -197,21 +200,26 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
 
   /* Compute function over the locally owned part of the grid */
   for (i=xs; i<xs+xm; i++) {
-    /* Boundary conditions */
-    if (i == 0 || i == Mx-1) {
-      if (user->boundary == 0){ /* Drichlet BC */
+    if (user->boundary == 0){ /* Dirichlet BC */
+      if (i == 0 || i == Mx-1) {
         f[i] = uarray[i]; /* F = U */
-      } else {                  /* Neumann BC */
-        if (i == 0){
-          f[i] = uarray[1] - uarray[0];
-        } else if (i == Mx-1){
-          f[i] = uarray[Mx-2] - uarray[Mx-1];
-        } 
+      } else {
+        u    = uarray[i];
+        f[i] = (-two*u + uarray[i-1] + uarray[i+1])*sx; 
       }
-    } else {
-      u    = uarray[i];
-      uxx  = (-two*u + uarray[i-1] + uarray[i+1])*sx;
-      f[i] = uxx;                        
+    } else { /* Neumann BC */
+      if (i == 0){
+        f[i] = uarray[1] - uarray[0];
+      } else if (i == Mx-1){
+        f[i] = uarray[Mx-2] - uarray[Mx-1];
+      } else if (i==1){
+        f[i] = (uarray[2] - uarray[1])*sx;
+      } else if (i==Mx-2){
+        f[i] = (uarray[i-1] - uarray[i])*sx;
+      } else {
+        u    = uarray[i];
+        f[i] = (-two*u + uarray[i-1] + uarray[i+1])*sx; 
+      }
     }
   }
 
@@ -235,7 +243,7 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
   DM             da = (DM)user->da;
   PetscInt       i,Mx,xs,xm;
   PetscReal      two = 2.0,hx,sx;
-  PetscScalar    u,uxx,*uarray,*f,*udot;
+  PetscScalar    *uarray,*f,*udot;
   Vec            localU;
 
   PetscFunctionBegin;
@@ -264,22 +272,30 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
 
   /* Compute function over the locally owned part of the grid */
   for (i=xs; i<xs+xm; i++) {
-    /* Boundary conditions */
-    if (i == 0 || i == Mx-1) {
-      if (user->boundary == 0){ /* Drichlet BC */
+    if (user->boundary == 0){ /* Dirichlet BC */
+      if (i == 0 || i == Mx-1) {
         f[i] = uarray[i]; /* F = U */
-      } else {                  /* Neumann BC */
-        if (i == 0){
-          f[i] = uarray[1] - uarray[0];
-        } else if (i == Mx-1){
-          f[i] = uarray[Mx-2] - uarray[Mx-1];
-        } 
+      } else {
+        f[i] = (-two*uarray[i] + uarray[i-1] + uarray[i+1])*sx; 
+        f[i] = udot[i] - f[i]; /* F = Udot - Frhs */
       }
-    } else {
-      u    = uarray[i];
-      uxx  = (-two*u + uarray[i-1] + uarray[i+1])*sx;
-      f[i] = uxx ;  
-      f[i] = udot[i] - f[i]; /* F = Udot - Frhs */
+    } else { /* Neumann BC */
+      if (i == 0){
+        f[i] = uarray[1] - uarray[0];
+      } else if (i == Mx-1){
+        f[i] = uarray[Mx-2] - uarray[Mx-1];
+      } else if (i==1){
+        f[i] = (-two*uarray[i] + uarray[i-1] + uarray[i+1])*sx; 
+        //f[i] = (-u + uarray[i+1])*sx; 
+        f[i] = udot[i] - f[i];
+      } else if (i==Mx-2){
+        f[i] = (-two*uarray[i] + uarray[i-1] + uarray[i+1])*sx; 
+        //f[i] = (-u + uarray[i-1])*sx; 
+        f[i] = udot[i] - f[i];
+      } else {
+        f[i] = (-two*uarray[i] + uarray[i-1] + uarray[i+1])*sx; 
+        f[i] = udot[i] - f[i]; /* F = Udot - Frhs */
+      }
     }
   }
 
@@ -336,12 +352,11 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
   PetscErrorCode ierr;
   PetscInt       i,rstart,rend,M;
   PetscScalar    aa=(PetscScalar)a;
+  AppCtx         *user = (AppCtx*)ctx;
 
   PetscFunctionBegin;
   /* Compute *J = dFrhs/dU */
   ierr = RHSJacobian(ts,t,U,J,Jpre,str,(AppCtx*)ctx);CHKERRQ(ierr);
-  //printf("RHS Jpre:\n");
-  //ierr = MatView(*Jpre,PETSC_VIEWER_STDOUT_WORLD);
 
   /* Compute *J = -dFrhs/dU + aI */
   ierr = MatScale(*Jpre,-1.0);CHKERRQ(ierr);
@@ -361,8 +376,10 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
     ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  //printf("Jpre:\n");
-  //ierr = MatView(*Jpre,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  if (user->viewJacobian){
+    printf("Jpre:\n");
+    ierr = MatView(*Jpre,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -417,11 +434,12 @@ PetscErrorCode MyTSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ptr)
   MonitorCtx     *user = (MonitorCtx*)ptr;
 
   PetscFunctionBegin;
-  ierr = VecNorm(v,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = VecNorm(v,NORM_1,&norm);CHKERRQ(ierr);
   ierr = VecMax(v,PETSC_NULL,&vmax);CHKERRQ(ierr);
   ierr = VecMin(v,PETSC_NULL,&vmin);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"timestep %D: time %G, solution norm %G, max %G, min %G\n",step,ptime,norm,vmax,vmin);CHKERRQ(ierr);
+  
   if (user->drawcontours){
     ierr = VecView(v,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   }
