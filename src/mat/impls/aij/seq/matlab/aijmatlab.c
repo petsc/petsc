@@ -19,14 +19,16 @@ PetscErrorCode  MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine)
   Mat            B = (Mat)obj;
   mxArray        *mat; 
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)B->data;
+  mwIndex        i,*ii,*jj;
 
   PetscFunctionBegin;
   mat  = mxCreateSparse(B->cmap->n,B->rmap->n,aij->nz,mxREAL);
-  //mat  = mxCreateSparse(((PetscObject)B)->cmap.n,((PetscObject)B)->rmap.n,((Mat_SeqAIJ*)aij)->nz,mxREAL); 
   ierr = PetscMemcpy(mxGetPr(mat),aij->a,aij->nz*sizeof(PetscScalar));CHKERRQ(ierr);
   /* Matlab stores by column, not row so we pass in the transpose of the matrix */
-  ierr = PetscMemcpy(mxGetIr(mat),aij->j,aij->nz*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscMemcpy(mxGetJc(mat),aij->i,(B->rmap->n+1)*sizeof(int));CHKERRQ(ierr);
+  jj = mxGetIr(mat);
+  for (i=0; i<aij->nz; i++) jj[i] = aij->j[i];
+  ii = mxGetJc(mat);
+  for (i=0; i<B->rmap->n+1; i++) ii[i] = aij->i[i];
 
   /* Matlab indices start at 0 for sparse (what a surprise) */
   

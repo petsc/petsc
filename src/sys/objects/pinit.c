@@ -788,7 +788,7 @@ PetscErrorCode  PetscFinalize(void)
   PetscBool      flg = PETSC_FALSE;
 #endif
 #if defined(PETSC_USE_LOG)
-    char mname[PETSC_MAX_PATH_LEN];
+  char           mname[PETSC_MAX_PATH_LEN];
 #endif
   
   PetscFunctionBegin;
@@ -821,22 +821,6 @@ PetscErrorCode  PetscFinalize(void)
     ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Summary of Memory Usage in PETSc\n");CHKERRQ(ierr);
   }
 
-  /*
-     Free all objects registered with PetscObjectRegisterDestroy() such as PETSC_VIEWER_XXX_().
-  */
-  ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);  
-
-  /*
-       Free all the registered create functions, such as KSPList, VecList, SNESList, etc
-  */
-  ierr = PetscFListDestroyAll();CHKERRQ(ierr); 
-
-  /* 
-     Destroy any packages that registered a finalize 
-  */
-  ierr = PetscRegisterFinalizeAll();CHKERRQ(ierr);
-
-
 #if defined(PETSC_USE_LOG)
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-get_total_flops",&flg1,PETSC_NULL);CHKERRQ(ierr);
@@ -847,11 +831,6 @@ PetscErrorCode  PetscFinalize(void)
   }
 #endif
 
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
-  if (PetscStackActive) {
-    ierr = PetscStackDestroy();CHKERRQ(ierr);
-  }
-#endif
 
 #if defined(PETSC_USE_LOG)
 #if defined(PETSC_HAVE_MPE)
@@ -868,11 +847,12 @@ PetscErrorCode  PetscFinalize(void)
     PetscViewer viewer;
     if (mname[0])  {
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
+      ierr = PetscLogView(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     } else {
       viewer = PETSC_VIEWER_STDOUT_WORLD;
+      ierr = PetscLogView(viewer);CHKERRQ(ierr);
     }
-    ierr = PetscLogView(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   }
   
   mname[0] = 0;
@@ -881,11 +861,12 @@ PetscErrorCode  PetscFinalize(void)
     PetscViewer viewer;
     if (mname[0])  {
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
+      ierr = PetscLogViewPython(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     } else {
       viewer = PETSC_VIEWER_STDOUT_WORLD;
+      ierr = PetscLogViewPython(viewer);CHKERRQ(ierr);
     }
-    ierr = PetscLogViewPython(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   }
   
   ierr = PetscOptionsGetString(PETSC_NULL,"-log_detailed",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
@@ -901,9 +882,13 @@ PetscErrorCode  PetscFinalize(void)
     if (mname[0]) PetscLogDump(mname); 
     else          PetscLogDump(0);
   }
-  ierr = PetscLogDestroy();CHKERRQ(ierr);
 #endif
 
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_USE_PTHREAD)
+  if (PetscStackActive) {
+    ierr = PetscStackDestroy();CHKERRQ(ierr);
+  }
+#endif
 
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-no_signal_handler",&flg1,PETSC_NULL);CHKERRQ(ierr);
@@ -933,7 +918,7 @@ PetscErrorCode  PetscFinalize(void)
     ierr = PetscOptionsAllUsed(&nopt);CHKERRQ(ierr);
     if (flg3) {
       if (!flg2) { /* have not yet printed the options */
-	ierr = PetscOptionsView(PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsView(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       }
       if (!nopt) { 
 	ierr = PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");CHKERRQ(ierr);
@@ -955,6 +940,25 @@ PetscErrorCode  PetscFinalize(void)
       ierr = PetscOptionsLeft();CHKERRQ(ierr);
     }
   }
+
+  /*
+     Free all objects registered with PetscObjectRegisterDestroy() such as PETSC_VIEWER_XXX_().
+  */
+  ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);  
+
+#if defined(PETSC_USE_LOG)
+  ierr = PetscLogDestroy();CHKERRQ(ierr);
+#endif
+
+  /*
+       Free all the registered create functions, such as KSPList, VecList, SNESList, etc
+  */
+  ierr = PetscFListDestroyAll();CHKERRQ(ierr); 
+
+  /* 
+     Destroy any packages that registered a finalize 
+  */
+  ierr = PetscRegisterFinalizeAll();CHKERRQ(ierr);
 
   /*
      Destroy all the function registration lists created
