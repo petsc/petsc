@@ -104,7 +104,6 @@ E*/
 #define VECSEQCUDA     "seqcuda"
 #define VECMPICUDA     "mpicuda"
 #define VECCUDA        "cuda"       /* seqcuda on one process and mpicuda on several */
-#define VECDD          "vecdd"
 #define VECNEST        "nest"
 
 
@@ -550,14 +549,6 @@ extern PetscErrorCode PetscCUSPIndicesCreate(PetscInt,const PetscInt*,PetscCUSPI
 extern PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices);
 extern PetscErrorCode VecCUDACopyToGPUSome_Public(Vec,PetscCUSPIndices);
 extern PetscErrorCode VecCUDACopyFromGPUSome_Public(Vec,PetscCUSPIndices);
-#endif
-
-#if defined PETSC_HAVE_VECDD
-extern PetscErrorCode  VecDDSetDomainsLocal(Vec v, PetscInt domain_count, PetscInt supported_domains[], PetscInt domain_limits[], PetscBool covering);
-extern PetscErrorCode  VecDDSetDomainsLocalIS(Vec v, IS supported_domains, IS domain_limits[], PetscBool covering);
-extern PetscErrorCode  VecDDGetDomainInfoLocal(Vec v, PetscInt i, PetscInt *d, PetscInt *size);
-extern PetscErrorCode  VecDDGetDomainArrayLocal(Vec v, PetscInt i, PetscScalar **array);
-extern PetscErrorCode  VecDDRestoreDomainArrayLocal(Vec v, PetscInt i, PetscScalar **array);
 #endif
 
 extern PetscErrorCode  VecNestGetSubVecs(Vec,PetscInt*,Vec**);
