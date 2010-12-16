@@ -787,6 +787,9 @@ PetscErrorCode  PetscFinalize(void)
 #if defined(PETSC_HAVE_AMS)
   PetscBool      flg = PETSC_FALSE;
 #endif
+#if defined(PETSC_USE_LOG)
+    char mname[PETSC_MAX_PATH_LEN];
+#endif
   
   PetscFunctionBegin;
 
@@ -833,10 +836,6 @@ PetscErrorCode  PetscFinalize(void)
   */
   ierr = PetscRegisterFinalizeAll();CHKERRQ(ierr);
 
-  /*
-     Destroy all the function registration lists created
-  */
-  ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG)
   flg1 = PETSC_FALSE;
@@ -855,58 +854,57 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
 #if defined(PETSC_USE_LOG)
-  {
-    char mname[PETSC_MAX_PATH_LEN];
 #if defined(PETSC_HAVE_MPE)
-    mname[0] = 0;
-    ierr = PetscOptionsGetString(PETSC_NULL,"-log_mpe",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-    if (flg1){
-      if (mname[0]) {ierr = PetscLogMPEDump(mname);CHKERRQ(ierr);}
-      else          {ierr = PetscLogMPEDump(0);CHKERRQ(ierr);}
-    }
-#endif
-    mname[0] = 0;
-    ierr = PetscOptionsGetString(PETSC_NULL,"-log_summary",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-    if (flg1) { 
-      PetscViewer viewer;
-      if (mname[0])  {
-        ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
-      } else {
-        viewer = PETSC_VIEWER_STDOUT_WORLD;
-      }
-      ierr = PetscLogView(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-    }
-
-    mname[0] = 0;
-    ierr = PetscOptionsGetString(PETSC_NULL,"-log_summary_python",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-    if (flg1) { 
-      PetscViewer viewer;
-      if (mname[0])  {
-        ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
-      } else {
-        viewer = PETSC_VIEWER_STDOUT_WORLD;
-      }
-      ierr = PetscLogViewPython(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-    }
-
-    ierr = PetscOptionsGetString(PETSC_NULL,"-log_detailed",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-    if (flg1) { 
-      if (mname[0])  {ierr = PetscLogPrintDetailed(PETSC_COMM_WORLD,mname);CHKERRQ(ierr);}
-      else           {ierr = PetscLogPrintDetailed(PETSC_COMM_WORLD,0);CHKERRQ(ierr);}
-    }
-
-    mname[0] = 0;
-    ierr = PetscOptionsGetString(PETSC_NULL,"-log_all",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-    ierr = PetscOptionsGetString(PETSC_NULL,"-log",mname,PETSC_MAX_PATH_LEN,&flg2);CHKERRQ(ierr);
-    if (flg1 || flg2){
-      if (mname[0]) PetscLogDump(mname); 
-      else          PetscLogDump(0);
-    }
-    ierr = PetscLogDestroy();CHKERRQ(ierr);
+  mname[0] = 0;
+  ierr = PetscOptionsGetString(PETSC_NULL,"-log_mpe",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+  if (flg1){
+    if (mname[0]) {ierr = PetscLogMPEDump(mname);CHKERRQ(ierr);}
+    else          {ierr = PetscLogMPEDump(0);CHKERRQ(ierr);}
   }
 #endif
+  mname[0] = 0;
+  ierr = PetscOptionsGetString(PETSC_NULL,"-log_summary",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+  if (flg1) { 
+    PetscViewer viewer;
+    if (mname[0])  {
+      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
+    } else {
+      viewer = PETSC_VIEWER_STDOUT_WORLD;
+    }
+    ierr = PetscLogView(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  }
+  
+  mname[0] = 0;
+  ierr = PetscOptionsGetString(PETSC_NULL,"-log_summary_python",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+  if (flg1) { 
+    PetscViewer viewer;
+    if (mname[0])  {
+      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
+    } else {
+      viewer = PETSC_VIEWER_STDOUT_WORLD;
+    }
+    ierr = PetscLogViewPython(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  }
+  
+  ierr = PetscOptionsGetString(PETSC_NULL,"-log_detailed",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+  if (flg1) { 
+    if (mname[0])  {ierr = PetscLogPrintDetailed(PETSC_COMM_WORLD,mname);CHKERRQ(ierr);}
+    else           {ierr = PetscLogPrintDetailed(PETSC_COMM_WORLD,0);CHKERRQ(ierr);}
+  }
+  
+  mname[0] = 0;
+  ierr = PetscOptionsGetString(PETSC_NULL,"-log_all",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-log",mname,PETSC_MAX_PATH_LEN,&flg2);CHKERRQ(ierr);
+  if (flg1 || flg2){
+    if (mname[0]) PetscLogDump(mname); 
+    else          PetscLogDump(0);
+  }
+  ierr = PetscLogDestroy();CHKERRQ(ierr);
+#endif
+
+
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-no_signal_handler",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (!flg1) { ierr = PetscPopSignalHandler();CHKERRQ(ierr);}
@@ -957,6 +955,11 @@ PetscErrorCode  PetscFinalize(void)
       ierr = PetscOptionsLeft();CHKERRQ(ierr);
     }
   }
+
+  /*
+     Destroy all the function registration lists created
+  */
+  ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
 
   if (petsc_history) {
     ierr = PetscCloseHistoryFile(&petsc_history);CHKERRQ(ierr);
