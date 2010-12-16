@@ -7129,7 +7129,7 @@ PetscErrorCode  MatStashSetInitialSize(Mat mat,PetscInt size, PetscInt bsize)
 PetscErrorCode  MatInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
 {
   PetscErrorCode ierr;
-  PetscInt       M,N;
+  PetscInt       M,N,Ny;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -7139,10 +7139,11 @@ PetscErrorCode  MatInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
   PetscValidType(A,1);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-  if (N > M) {
-    ierr = MatMultTransposeAdd(A,x,y,w);CHKERRQ(ierr);
-  } else {
+  ierr = VecGetSize(y,&Ny);CHKERRQ(ierr);
+  if (M == Ny) {
     ierr = MatMultAdd(A,x,y,w);CHKERRQ(ierr);
+  } else {
+    ierr = MatMultTransposeAdd(A,x,y,w);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -7173,7 +7174,7 @@ PetscErrorCode  MatInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
 PetscErrorCode  MatInterpolate(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  PetscInt       M,N;
+  PetscInt       M,N,Ny;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -7182,10 +7183,11 @@ PetscErrorCode  MatInterpolate(Mat A,Vec x,Vec y)
   PetscValidType(A,1);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-  if (N > M) {
-    ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);
-  } else {
+  ierr = VecGetSize(y,&Ny);CHKERRQ(ierr);
+  if (M == Ny) {
     ierr = MatMult(A,x,y);CHKERRQ(ierr);
+  } else {
+    ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -7215,7 +7217,7 @@ PetscErrorCode  MatInterpolate(Mat A,Vec x,Vec y)
 PetscErrorCode  MatRestrict(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  PetscInt       M,N;
+  PetscInt       M,N,Ny;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -7225,7 +7227,8 @@ PetscErrorCode  MatRestrict(Mat A,Vec x,Vec y)
   ierr = MatPreallocated(A);CHKERRQ(ierr);
 
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-  if (N > M) {
+  ierr = VecGetSize(y,&Ny);CHKERRQ(ierr);
+  if (M == Ny) {
     ierr = MatMult(A,x,y);CHKERRQ(ierr);
   } else {
     ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);
