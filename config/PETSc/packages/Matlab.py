@@ -84,6 +84,7 @@ class Configure(PETSc.package.NewPackage):
           self.framework.packages.append(self)
           self.addMakeMacro('MATLAB_MEX',self.mex)
           self.addMakeMacro('MATLAB_COMMAND',self.command)        
+          self.addDefine('MATLAB_COMMAND','"'+self.command+'"')        
           self.found = 1
           return
         else:

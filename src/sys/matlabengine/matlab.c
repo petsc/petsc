@@ -46,8 +46,10 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],Petsc
   ierr = PetscHeaderCreate(e,_p_PetscMatlabEngine,int,MATLABENGINE_CLASSID,0,"MatlabEngine",comm,PetscMatlabEngineDestroy,0);CHKERRQ(ierr);
 
   if (!machine) machine = "\0";
-  ierr = PetscInfo1(0,"Starting Matlab engine on %s\n",machine);CHKERRQ(ierr);
-  e->ep = engOpen("matlab -nodisplay -nojvm");
+  ierr = PetscStrcpy(buffer,PETSC_MATLAB_COMMAND);CHKERRQ(ierr);
+  ierr = PetscStrcat(buffer," -nodisplay -nojvm");CHKERRQ(ierr);
+  ierr = PetscInfo2(0,"Starting Matlab engine on %s with command %s\n",machine,buffer);CHKERRQ(ierr);
+  e->ep = engOpen(buffer);
   if (!e->ep) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to start Matlab engine on %s\n",machine);
   engOutputBuffer(e->ep,e->buffer,1024);
 
