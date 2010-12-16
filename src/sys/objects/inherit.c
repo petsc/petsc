@@ -4,6 +4,9 @@
 */
 #include "petscsys.h"  /*I   "petscsys.h"    I*/
 
+static PetscObject *PetscObjects = 0;
+static PetscInt    PetscObjectsCounts = 0, PetscObjectsMaxCounts = 0;
+
 extern PetscErrorCode PetscObjectGetComm_Petsc(PetscObject,MPI_Comm *);
 extern PetscErrorCode PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
 extern PetscErrorCode PetscObjectQuery_Petsc(PetscObject,const char[],PetscObject *);
@@ -21,6 +24,8 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,Pet
 {
   static PetscInt idcnt = 1;
   PetscErrorCode  ierr;
+  PetscObject     *newPetscObjects;
+  PetscInt         newPetscObjectsMaxCounts,i;
 
   PetscFunctionBegin;
   h->classid                = classid;
@@ -42,6 +47,26 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,Pet
   h->bops->composefunction  = PetscObjectComposeFunction_Petsc;
   h->bops->queryfunction    = PetscObjectQueryFunction_Petsc;
   ierr = PetscCommDuplicate(comm,&h->comm,&h->tag);CHKERRQ(ierr);
+
+  /* Keep a record of object created */
+  PetscObjectsCounts++;
+  for (i=0; i<PetscObjectsMaxCounts; i++) {
+    if (!PetscObjects[i]) {
+      PetscObjects[i] = h;
+      PetscFunctionReturn(0);
+    }
+  }
+  /* Need to increase the space for storing PETSc objects */
+  if (!PetscObjectsMaxCounts) newPetscObjectsMaxCounts = 100;
+  else                        newPetscObjectsMaxCounts = 2*PetscObjectsMaxCounts;
+  ierr = PetscMalloc(newPetscObjectsMaxCounts*sizeof(PetscObject),&newPetscObjects);CHKERRQ(ierr);
+  ierr = PetscMemcpy(newPetscObjects,PetscObjects,PetscObjectsMaxCounts);CHKERRQ(ierr);
+  ierr = PetscMemzero(newPetscObjects+PetscObjectsMaxCounts,(newPetscObjectsMaxCounts - PetscObjectsMaxCounts)*sizeof(PetscObject));CHKERRQ(ierr);
+  ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
+  PetscObjects                        = newPetscObjects;
+  PetscObjects[PetscObjectsMaxCounts] = h;
+  PetscObjectsMaxCounts               = newPetscObjectsMaxCounts;
+
   PetscFunctionReturn(0);
 }
 
@@ -57,6 +82,7 @@ extern PetscLogDouble PetscMemoryMaximumUsage;
 PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
 {
   PetscErrorCode ierr;
+  PetscInt       i;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)
@@ -93,6 +119,19 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
   ierr = PetscFree(h->realcomposedstate);CHKERRQ(ierr);
   ierr = PetscFree(h->scalarcomposeddata);CHKERRQ(ierr);
   ierr = PetscFree(h->scalarcomposedstate);CHKERRQ(ierr);
+
+  /* Record object removal from list of all objects */
+  for (i=0; i<PetscObjectsMaxCounts; i++) {
+    if (PetscObjects[i] == h) {
+      PetscObjects[i] = 0;
+      PetscObjectsCounts--;
+      break;
+    }
+  }
+  if (!PetscObjectsCounts) {
+    ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
+    PetscObjectsMaxCounts = 0;
+  }
   PetscFunctionReturn(0);
 }
 
