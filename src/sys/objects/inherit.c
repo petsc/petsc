@@ -128,7 +128,7 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
       break;
     }
   }
-  if (!PetscObjectsCounts) {
+  if (PetscObjectsCounts) {
     ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
     PetscObjectsMaxCounts = 0;
   }
