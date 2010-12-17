@@ -1,3 +1,4 @@
+static
 void *
 Cython_ImportFunction(PyObject   *module,
                       const char *funcname,

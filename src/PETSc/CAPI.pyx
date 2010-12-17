@@ -61,6 +61,19 @@ cdef api PetscViewer PyPetscViewer_Get(object arg) except ? NULL:
     retv = ob.vwr
     return retv
 
+# -- Random --
+
+cdef api object PyPetscRandom_New(PetscRandom arg):
+    cdef Random retv = Random()
+    addref(arg); retv.rnd = arg
+    return retv
+
+cdef api PetscRandom PyPetscRandom_Get(object arg) except ? NULL:
+    cdef PetscRandom retv = NULL
+    cdef Random ob = <Random?> arg
+    retv = ob.rnd
+    return retv
+
 # -- IS --
 
 cdef api object PyPetscIS_New(PetscIS arg):
@@ -98,6 +111,19 @@ cdef api PetscVec PyPetscVec_Get(object arg) except ? NULL:
     cdef PetscVec retv = NULL
     cdef Vec ob = <Vec?> arg
     retv = ob.vec
+    return retv
+
+# -- Scatter --
+
+cdef api object PyPetscScatter_New(PetscScatter arg):
+    cdef Scatter retv = Scatter()
+    addref(arg); retv.sct = arg
+    return retv
+
+cdef api PetscScatter PyPetscScatter_Get(object arg) except ? NULL:
+    cdef PetscScatter retv = NULL
+    cdef Scatter ob = <Scatter?> arg
+    retv = ob.sct
     return retv
 
 # -- Mat --
