@@ -148,7 +148,7 @@ contains
     PetscReal      lambda
     PetscErrorCode ierr
     !
-    PetscInt      i,j,row,col(5)
+    PetscInt      i,j,row(1),col(5)
     PetscInt      ione,ifive
     PetscReal     hx,hy,hxdhy,hydhx,sc,v(5),one,two
 
@@ -168,7 +168,7 @@ contains
           row = row + 1
           if (i==1 .or. j==1 .or. i==grd%mx .or. j==grd%my) then
              ! boundary points
-             col(1) = row
+             col(1) = row(1)
              v(1)   = one
              call MatSetValuesLocal(Jac,ione,row,ione,col,v,INSERT_VALUES,ierr); CHKERRQ(ierr)
           else
@@ -178,11 +178,11 @@ contains
              v(3) = two*(hydhx + hxdhy) - lambda*exp(x(i,j))*sc
              v(4) = -hydhx
              v(5) = -hxdhy
-             col(1) = row - grd%gxm
-             col(2) = row - 1
-             col(3) = row
-             col(4) = row + 1
-             col(5) = row + grd%gxm
+             col(1) = row(1) - grd%gxm
+             col(2) = row(1) - 1
+             col(3) = row(1)
+             col(4) = row(1) + 1
+             col(5) = row(1) + grd%gxm
              call MatSetValuesLocal(Jac,ione,row,ifive,col,v,INSERT_VALUES,ierr); CHKERRQ(ierr)
           end if
        end do
