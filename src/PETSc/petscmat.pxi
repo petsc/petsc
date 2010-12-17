@@ -44,8 +44,8 @@ cdef extern from * nogil:
     PetscMatType MATHYPRESTRUCT
     PetscMatType MATHYPRESSTRUCT
     PetscMatType MATSUBMATRIX
-    PetscMatType MATDD
-    PetscMatType MATIM
+    PetscMatType MATLOCALREF
+    PetscMatType MATNEST
 
     ctypedef char* PetscMatOrderingType "const char*"
     PetscMatOrderingType MATORDERINGNATURAL

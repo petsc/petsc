@@ -44,8 +44,7 @@ class MatType(object):
     HYPRESTRUCT     = S_(MATHYPRESTRUCT)
     HYPRESSTRUCT    = S_(MATHYPRESSTRUCT)
     SUBMATRIX       = S_(MATSUBMATRIX)
-    DD              = S_(MATDD)
-    IM              = S_(MATIM)
+    NEST            = S_(MATNEST)
 
 class MatOption(object):
     ROW_ORIENTED               = MAT_ROW_ORIENTED

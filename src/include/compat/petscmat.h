@@ -15,8 +15,8 @@
 #define MATSEQAIJCUDA  "seqaijcuda"
 #define MATMPIAIJCUDA  "mpiaijcuda"
 #define MATSEQCUFFT    "seqcufft"
-#define MATDD          "dd"
-#define MATIM          "im"
+#define MATSUBMATRIX   "submatrix"
+#define MATNEST        "nest"
 #endif
 
 #if (PETSC_VERSION_(3,1,0) || \
