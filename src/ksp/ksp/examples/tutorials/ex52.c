@@ -1,37 +1,23 @@
 
-/* Program usage:  mpiexec -n <procs> ex2 [-help] [all PETSc options] */ 
+/* Program usage:  mpiexec -n <procs> ex52 [-help] [all PETSc options] */ 
 
-static char help[] = "Solves a linear system in parallel with KSP.\n\
+static char help[] = "Solves a linear system in parallel with KSP. Modified from ex2.c \n\
+                      Illustrate how to use external packages MUMPS and SUPERLU \n\
 Input parameters include:\n\
   -random_exact_sol : use a random exact solution vector\n\
   -view_exact_sol   : write exact solution vector to stdout\n\
   -m <mesh_x>       : number of mesh points in x-direction\n\
   -n <mesh_n>       : number of mesh points in y-direction\n\n";
 
-/*T
-   Concepts: KSP^basic parallel example;
-   Concepts: KSP^Laplacian, 2d
-   Concepts: Laplacian, 2d
-   Processors: n
-T*/
-
-/* 
-  Include "petscksp.h" so that we can use KSP solvers.  Note that this file
-  automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-*/
 #include "petscksp.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec            x,b,u;  /* approx solution, RHS, exact solution */
+  Vec            x,b,u;    /* approx solution, RHS, exact solution */
   Mat            A;        /* linear system matrix */
-  KSP            ksp;     /* linear solver context */
+  KSP            ksp;      /* linear solver context */
   PetscRandom    rctx;     /* random number generator context */
   PetscReal      norm;     /* norm of solution error */
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
@@ -49,16 +35,6 @@ int main(int argc,char **args)
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /* 
-     Create parallel matrix, specifying only its global dimensions.
-     When using MatCreate(), the matrix format can be specified at
-     runtime. Also, the parallel partitioning of the matrix is
-     determined by PETSc at runtime.
-
-     Performance tuning note:  For problems of substantial size,
-     preallocation of matrix memory is crucial for attaining good 
-     performance. See the matrix chapter of the users manual for details.
-  */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
@@ -163,33 +139,58 @@ int main(int argc,char **args)
      Create linear solver context
   */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-
-  /* 
-     Set operators. Here the matrix that defines the linear system
-     also serves as the preconditioning matrix.
-  */
   ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  /* 
-     Set linear solver defaults for this problem (optional).
-     - By extracting the KSP and PC contexts from the KSP context,
-       we can then directly call any KSP and PC routines to set
-       various options.
-     - The following two statements are optional; all of these
-       parameters could alternatively be specified at runtime via
-       KSPSetFromOptions().  All of these defaults can be
-       overridden at runtime, as indicated below.
+  /*
+    Example of how to use external package MUMPS 
+    Note: runtime options 
+          '-ksp_type preonly -pc_type lu -pc_factor_mat_solver_package mumps -mat_mumps_icntl_7 2' 
+          are equivalent to these procedual calls 
   */
-  ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),1.e-50,PETSC_DEFAULT,
-                          PETSC_DEFAULT);CHKERRQ(ierr);
+#ifdef PETSC_HAVE_MUMPS 
+  PetscBool  flg_lu=PETSC_FALSE,flg_ch=PETSC_FALSE;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mumps_lu",&flg_lu,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mumps_ch",&flg_ch,PETSC_NULL);CHKERRQ(ierr);
+  if (flg_lu || flg_ch){
+    ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
+    PC       pc;
+    Mat      F;
+    PetscInt ival,icntl;
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    if (flg_lu){
+      ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+    } else if (flg_ch) {
+      ierr = MatSetOption(A,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr); /* set MUMPS id%SYM=1 */
+      ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
+    }
+    ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
+    ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
+    icntl=7; ival = 2;
+    ierr = MatSetMumpsIcntl(F,icntl,ival);CHKERRQ(ierr);
+  }
+#endif
 
-  /* 
-    Set runtime options, e.g.,
-        -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
-    These options will override those specified above as long as
-    KSPSetFromOptions() is called _after_ any other customization
-    routines.
+  /*
+    Example of how to use external package SuperLU
+    Note: runtime options 
+          '-ksp_type preonly -pc_type ilu -pc_factor_mat_solver_package superlu -mat_superlu_ilu_droptol 0.0002' 
+          are equivalent to these procedual calls 
   */
+#ifdef PETSC_HAVE_SUPERLU
+  PetscBool  flg_ilu=PETSC_FALSE;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_superlu_ilu",&flg_ilu,PETSC_NULL);CHKERRQ(ierr);
+  if (flg_ilu){
+    ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
+    PC       pc;
+    Mat      F;
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    ierr = PCSetType(pc,PCILU);CHKERRQ(ierr); 
+    ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
+    ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
+    ierr = MatSetSuperluILUDropTol(F,0.0002);CHKERRQ(ierr);
+  }
+#endif
+
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

@@ -232,6 +232,10 @@ PetscErrorCode MatDestroy_SuperLU(Mat A)
   ierr = PetscFree(lu->R);CHKERRQ(ierr);
   ierr = PetscFree(lu->C);CHKERRQ(ierr);
   
+  /* clear composed functions */
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSetSuperluILUDropTol_C","",PETSC_NULL);CHKERRQ(ierr);
+
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   if (lu->A_dup){ierr = MatDestroy(lu->A_dup);CHKERRQ(ierr);}
   if (lu->rhs_dup){ierr = PetscFree(lu->rhs_dup);CHKERRQ(ierr);}
@@ -574,8 +578,39 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatCreateNull","MatCreateNull_SuperLU",(void(*)(void))MatCreateNull_SuperLU);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_superlu",MatFactorGetSolverPackage_seqaij_superlu);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetSuperluILUDropTol_C","MatSetSuperluILUDropTol",MatSetSuperluILUDropTol);CHKERRQ(ierr);
   B->spptr = lu;
   *F = B;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+/* -------------------------------------------------------------------------------------------*/
+#undef __FUNCT__   
+#define __FUNCT__ "MatSetSuperluILUDropTol"
+/*@
+  MatSetSuperluILUDropTol - Set SuperLU ILU drop tolerance
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-SuperLU interface
+-  dtol - drop tolerance
+
+  Options Database:
+.   -mat_superlu_ilu_droptol <dtol>
+
+   Level: beginner
+
+   References: SuperLU Users' Guide 
+
+.seealso: MatGetFactor()
+@*/
+PetscErrorCode  MatSetSuperluILUDropTol(Mat F,PetscReal dtol)
+{
+  Mat_SuperLU *lu= (Mat_SuperLU*)F->spptr;
+
+  PetscFunctionBegin; 
+  PetscValidLogicalCollectiveInt(F,dtol,2);
+  lu->options.ILU_DropTol = dtol;
+  PetscFunctionReturn(0);
+}
