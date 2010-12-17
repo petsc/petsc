@@ -136,6 +136,107 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscObjectsView"
+/*@C
+   PetscObjectsView- Prints the currently existing objects.
+
+   Logically Collective on PetscViewer
+
+   Input Parameter:
+.  viewer - must be an PETSCVIEWERASCII viewer
+
+   Level: advanced
+
+   Concepts: options database^printing
+
+@*/
+PetscErrorCode  PetscObjectsView(PetscViewer viewer) 
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscBool      isascii;
+  PetscObject    h;
+
+  PetscFunctionBegin;
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_WORLD;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  if (!isascii) SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Only supports ASCII viewer");
+
+  for (i=0; i<PetscObjectsMaxCounts; i++) {
+    if ((h = PetscObjects[i])) {
+      ierr = PetscObjectName(h);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%s %s %s\n",h->class_name,h->type_name,h->name);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectsGetObject"
+/*@C
+   PetscObjectsGetObject - Get a pointer to a named object
+
+   Not collective
+
+   Input Parameter:
+.  name - the name of an object
+
+   Output Parameter:
+.   obj - the object or null if there is no object
+
+   Level: advanced
+
+   Concepts: options database^printing
+
+@*/
+PetscErrorCode  PetscObjectsGetObject(const char* name,PetscObject *obj,char **classname) 
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscObject    h;
+  PetscBool      flg;
+
+  PetscFunctionBegin;
+  *obj = PETSC_NULL;
+  for (i=0; i<PetscObjectsMaxCounts; i++) {
+    if ((h = PetscObjects[i])) {
+      ierr = PetscObjectName(h);CHKERRQ(ierr);
+      ierr = PetscStrcmp(h->name,name,&flg);CHKERRQ(ierr);
+      if (flg) {
+        *obj = h;
+        if (classname) *classname = h->class_name;
+        PetscFunctionReturn(0);
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectsGetObjectMatlab"
+char* PetscObjectsGetObjectMatlab(const char* name,PetscObject *obj) 
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscObject    h;
+  PetscBool      flg;
+
+  PetscFunctionBegin;
+  *obj = PETSC_NULL;
+  for (i=0; i<PetscObjectsMaxCounts; i++) {
+    if ((h = PetscObjects[i])) {
+      ierr = PetscObjectName(h);if (ierr) PetscFunctionReturn(0);
+      ierr = PetscStrcmp(h->name,name,&flg);if (ierr) PetscFunctionReturn(0);
+      if (flg) {
+        *obj = h;
+        PetscFunctionReturn(h->class_name);
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscObjectAddOptionsHandler"
 /*@C
     PetscObjectAddOptionsHandler - Adds an additional function to check for options when XXXSetFromOptions() is called.

@@ -25,6 +25,10 @@ int PetscOptionsView(PetscViewer);
 int PetscOptionsSetValue(const char*,const char*);
 int PetscOptionsClearValue(const char*);
 
+typedef PetscPointer PetscObject;
+int PetscObjectsView(PetscViewer);
+char* PetscObjectsGetObjectMatlab(const char*,PetscObject*);
+
 typedef PetscPointer IS;
 int ISCreate(MPI_Comm,IS *);
 int ISSetType(IS,const char*);

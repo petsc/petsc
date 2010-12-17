@@ -646,7 +646,7 @@ PetscErrorCode  PetscOptionsInsert(int *argc,char ***args,const char file[])
    PetscOptionsView- Prints the options that have been loaded. This is
    useful for debugging purposes.
 
-   Logically Collective on PETSC_COMM_WORLD
+   Logically Collective on PetscViewer
 
    Input Parameter:
 .  viewer - must be an PETSCVIEWERASCII viewer

@@ -1,4 +1,4 @@
-function err = PetscOptionsSetValue(viewer)
+function err = PetscObjectsView(viewer)
 %
 if (nargin == 0)
   err = calllib('libpetsc', 'PetscOptionsView',0);PetscCHKERRQ(err);
