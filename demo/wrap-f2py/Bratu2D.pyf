@@ -36,4 +36,4 @@ interface
    
 end interface
     
-end python module Bratu3D
+end python module Bratu2D
