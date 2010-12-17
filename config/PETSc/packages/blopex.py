@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/blopex-1.1.tar.gz']
+    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/blopex-1.1.1.tar.gz']
     self.functions  = ['lobpcg_solve']
     self.includes   = ['interpreter.h']
     self.liblist    = [['libBLOPEX.a']]
@@ -35,7 +35,11 @@ Suggest using --download-mpich or install openmpi separately - and specify mpicc
     g.write('CFLAGS      = ' + self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','') +'\n')
     self.setCompilers.popLanguage()
     g.write('AR          = '+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+'\n')
+    g.write('AR_LIB_SUFFIX = '+self.setCompilers.AR_LIB_SUFFIX+'\n')
     g.write('RANLIB      = '+self.setCompilers.RANLIB+'\n')
+    # blopex uses defaut 'make' targets, and this uses TARGET_ARCH var. If this var
+    # is set incorrectly in user env - build breaks.
+    g.write('TARGET_ARCH = \n')
     g.close()
 
     if self.installNeeded('Makefile.inc'):

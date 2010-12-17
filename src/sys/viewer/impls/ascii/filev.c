@@ -428,6 +428,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPrintf(PetscViewer viewer,const c
     err = fflush(fd);
     if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
     if (petsc_history) {
+      va_start(Argp,format);
       tab = ascii->tab;
       while (tab--) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"  ");CHKERRQ(ierr);}
       ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
@@ -841,6 +842,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISynchronizedPrintf(PetscViewer vi
     if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
     queuefile = fp;
     if (petsc_history) {
+      va_start(Argp,format);
       ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
       err = fflush(petsc_history);
       if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
@@ -988,6 +990,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIMonitorPrintf(PetscViewerASCIIMon
     err = fflush(fd);
     if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
     if (petsc_history) {
+      va_start(Argp,format);
       tab = ascii->tab + ctx->tabs;
       while (tab--) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"  ");CHKERRQ(ierr);}
       ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);

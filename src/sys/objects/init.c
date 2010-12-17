@@ -239,7 +239,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   /*
       Setup the memory management; support for tracing malloc() usage 
   */
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-malloc_log",&flg3,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_log",&flg3);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-malloc",&flg1,&flg2);CHKERRQ(ierr);
   if ((!flg2 || flg1) && !petscsetmallocvisited) {
@@ -435,14 +435,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
         Setup profiling and logging
   */
 #if defined (PETSC_USE_INFO)
-  flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-info",&flg1,PETSC_NULL);CHKERRQ(ierr);
-  if (flg1) { 
+  { 
     char logname[PETSC_MAX_PATH_LEN]; logname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-info",logname,250,&flg1);CHKERRQ(ierr);
-    if (logname[0]) {
+    if (flg1 && logname[0]) {
       PetscInfoAllow(PETSC_TRUE,logname); 
-    } else {
+    } else if (flg1) {
       PetscInfoAllow(PETSC_TRUE,PETSC_NULL); 
     }
   }
