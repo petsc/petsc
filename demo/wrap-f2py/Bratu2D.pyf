@@ -9,7 +9,7 @@ usercode '''
 interface
        
    subroutine FormInitGuess(da, x, param, ierr)
-     integer, parameter :: HANDLE_KIND=4
+     !integer, parameter :: HANDLE_KIND=4
      integer(kind=HANDLE_KIND) da ! DA
      integer(kind=HANDLE_KIND) x  ! Vec
      real(kind=8)              param
@@ -17,7 +17,7 @@ interface
    end subroutine FormInitGuess
 
    subroutine FormFunction(da, x, f, param, ierr)
-     integer, parameter :: HANDLE_KIND=4
+     !integer, parameter :: HANDLE_KIND=4
      integer(kind=HANDLE_KIND) da ! DA
      integer(kind=HANDLE_KIND) x  ! Vec
      integer(kind=HANDLE_KIND) f  ! Vec
@@ -26,7 +26,7 @@ interface
    end subroutine FormFunction
    
    subroutine FormJacobian(da, x, J, param, ierr)
-     integer, parameter :: HANDLE_KIND=4
+     !integer, parameter :: HANDLE_KIND=4
      integer(kind=HANDLE_KIND) da ! DA
      integer(kind=HANDLE_KIND) x  ! Vec
      integer(kind=HANDLE_KIND) J  ! Vec
