@@ -110,6 +110,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES snes,Vec x1,M
     } else {
       wscale = 0.0;
     }
+    ierr = VecAssemblyBegin(x2);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(x2);CHKERRQ(ierr);
     ierr = (*eval_fct)(snes,x2,j2a);CHKERRQ(ierr);
     ierr = VecAXPY(j2a,-1.0,j1a);CHKERRQ(ierr);
     /* Communicate scale=1/dx_i to all processors */
