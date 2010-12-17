@@ -70,8 +70,6 @@ E*/
 #define MATHYPRESTRUCT     "hyprestruct"
 #define MATHYPRESSTRUCT    "hypresstruct"
 #define MATSUBMATRIX       "submatrix"
-#define MATDD              "matdd"
-#define MATIM              "matim"
 #define MATLOCALREF        "localref"
 #define MATNEST            "nest"
 
@@ -329,31 +327,6 @@ extern PetscErrorCode  MatCompositeMerge(Mat);
 extern PetscErrorCode  MatCreateComposite(MPI_Comm,PetscInt,const Mat*,Mat*);
 typedef enum {MAT_COMPOSITE_ADDITIVE,MAT_COMPOSITE_MULTIPLICATIVE} MatCompositeType;
 extern PetscErrorCode  MatCompositeSetType(Mat,MatCompositeType);
-
-#if defined PETSC_HAVE_MATDD
-extern PetscErrorCode  MatDDCreate(Mat A);
-typedef enum {MATDD_DOMAINS_COLUMN, MATDD_DOMAINS_ROW} MatDDDomainType;
-extern PetscErrorCode  MatDDSetDomainsLocal(Mat A, MatDDDomainType type, PetscInt domain_count, const PetscInt *supported_domains, const PetscInt *domain_limits, PetscBool covering);
-extern PetscErrorCode  MatDDSetDomainsLocalIS(Mat A, MatDDDomainType type, IS supported_domains, IS domain_limits, PetscBool covering);
-extern PetscErrorCode  MatDDSetScatter(Mat A, Mat S);
-extern PetscErrorCode  MatDDSetGather(Mat A,  Mat G);
-/**/
-typedef enum {MATDD_BLOCK_COMM_DEFAULT = 0, MATDD_BLOCK_COMM_SELF = -1, MATDD_BLOCK_COMM_DETERMINE = -2} MatDDBlockCommType;
-extern PetscErrorCode  MatDDGetDefaltBlockType(Mat A, const MatType *type);
-extern PetscErrorCode  MatDDSetDefaltBlockType(Mat A, const MatType type);
-extern PetscErrorCode  MatDDAddBlockLocal(Mat A, PetscInt rowblock, PetscInt colblock, const MatType blockmattype,  MatDDBlockCommType blockcommtype, Mat *block);
-extern PetscErrorCode  MatDDSetBlockLocal(Mat A, PetscInt rowblock, PetscInt colblock, Mat block);
-extern PetscErrorCode  MatDDGetBlockLocal(Mat A, PetscInt rowblock, PetscInt colblock, Mat *block);
-/**/
-extern PetscErrorCode  MatDDAIJSetPreallocation(Mat A,PetscInt nz,PetscInt *nnz);
-#endif
-
-#if defined PETSC_HAVE_MATIM
-extern PetscErrorCode  MatIMSetIS(Mat A, IS in, IS out);
-extern PetscErrorCode  MatIMGetIS(Mat A, IS *in, IS *out);
-#endif
-
-
 
 extern PetscErrorCode  MatCreateSeqFFTW(MPI_Comm,PetscInt,const PetscInt[],Mat*);
 extern PetscErrorCode  MatCreateSeqCUFFT(MPI_Comm,PetscInt,const PetscInt[],Mat*);
