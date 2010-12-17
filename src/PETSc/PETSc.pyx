@@ -42,20 +42,19 @@ cdef extern from *:
 
 cdef object PetscError = <object>PyExc_RuntimeError
 
-cdef inline int SETERR(int ierr):
+cdef inline int SETERR(int ierr) with gil:
     if (<void*>PetscError):
         pyx_raise(PetscError, ierr, NULL)
     else:
         pyx_raise(<object>PyExc_RuntimeError, ierr, NULL)
     return ierr
 
-cdef inline int CHKERR(int ierr) except -1:
-    if ierr == 0: return 0                 # no error
-    if ierr == PETSC_ERR_PYTHON: return -1 # error in Python call
-    if (<void*>PetscError):
-        pyx_raise(PetscError, ierr, NULL)
-    else:
-        pyx_raise(<object>PyExc_RuntimeError, ierr, NULL)
+cdef inline int CHKERR(int ierr) nogil except -1:
+    if ierr == 0:
+        return 0 # no error
+    if ierr == PETSC_ERR_PYTHON:
+        return -1 # error in Python call
+    SETERR(ierr)
     return -1
 
 # --------------------------------------------------------------------
