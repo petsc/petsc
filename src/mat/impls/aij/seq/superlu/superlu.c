@@ -587,7 +587,7 @@ EXTERN_C_END
 
 /* -------------------------------------------------------------------------------------------*/
 #undef __FUNCT__   
-#define __FUNCT__ "MatSetSuperluILUDropTol"
+#define __FUNCT__ "MatSuperluSetILUDropTol"
 /*@
   MatSetSuperluILUDropTol - Set SuperLU ILU drop tolerance
    Logically Collective on Mat
@@ -605,7 +605,7 @@ EXTERN_C_END
 
 .seealso: MatGetFactor()
 @*/
-PetscErrorCode  MatSetSuperluILUDropTol(Mat F,PetscReal dtol)
+PetscErrorCode  MatSuperluSetILUDropTol(Mat F,PetscReal dtol)
 {
   Mat_SuperLU *lu= (Mat_SuperLU*)F->spptr;
 

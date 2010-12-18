@@ -1709,14 +1709,14 @@ extern PetscErrorCode  PetscViewerMathematicaPutCSRMatrix(PetscViewer, PetscInt,
    PETSc interface to MUMPS 
 */
 #ifdef PETSC_HAVE_MUMPS
-extern PetscErrorCode  MatSetMumpsIcntl(Mat,PetscInt,PetscInt);
+extern PetscErrorCode  MatMumpsSetIcntl(Mat,PetscInt,PetscInt);
 #endif
 
 /* 
    PETSc interface to SUPERLU
 */
 #ifdef PETSC_HAVE_SUPERLU
-extern PetscErrorCode  MatSetSuperluILUDropTol(Mat,PetscReal);
+extern PetscErrorCode  MatSuperluSetILUDropTol(Mat,PetscReal);
 #endif
 
 extern PetscErrorCode  MatCreateNest(MPI_Comm comm,PetscInt,const IS[],PetscInt,const IS[],const Mat[],Mat*);

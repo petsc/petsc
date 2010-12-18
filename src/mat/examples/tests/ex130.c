@@ -61,7 +61,7 @@ int main(int argc,char **args)
     {
     /* test mumps options */
     PetscInt icntl_7 = 5;
-    ierr = MatSetMumpsIcntl(F,7,icntl_7);CHKERRQ(ierr);
+    ierr = MatMumpsSetIcntl(F,7,icntl_7);CHKERRQ(ierr);
     }
     break;
 #endif

@@ -194,7 +194,7 @@ c      call flush(6)
 #ifdef PETSC_HAVE_MUMPS
 ! Get PCFactor to set MUMPS matrix ordering option
       call PCFactorGetMatrix(pc,F,ierr)
-      call MatSetMumpsIcntl(F,7,2,ierr) ! must be called before next SNESSetUp? -- not being used!!!
+      call MatMumpsSetIcntl(F,7,2,ierr) ! must be called before next SNESSetUp? -- not being used!!!
 #endif
 
 ! Solve nonlinear system

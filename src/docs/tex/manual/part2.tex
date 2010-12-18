@@ -3125,7 +3125,7 @@ PCSetType(pc,PCLU);\\
 PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);\\
 PCFactorGetMatrix(pc,\&F);\\
 icntl=7; ival = 2;\\
-MatSetMumpsIcntl(F,icntl,ival);
+MatMumpsSetIcntl(F,icntl,ival);
 \end{tabbing}
 
 One can also create matrices with the appropriate

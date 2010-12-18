@@ -504,7 +504,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   }
   /* clear composed functions */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSetMumpsIcntl_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMumpsSetIcntl_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = (lu->MatDestroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1230,7 +1230,7 @@ PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   B->ops->view             = MatView_MUMPS;
   B->ops->getinfo          = MatGetInfo_MUMPS;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetMumpsIcntl_C","MatSetMumpsIcntl",MatSetMumpsIcntl);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMumpsSetIcntl_C","MatMumpsSetIcntl",MatMumpsSetIcntl);CHKERRQ(ierr);
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
     B->factortype = MAT_FACTOR_LU;
@@ -1289,7 +1289,7 @@ PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MUMPS;
   B->ops->view                   = MatView_MUMPS;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetMumpsIcntl_C","MatSetMumpsIcntl",MatSetMumpsIcntl);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMumpsSetIcntl_C","MatMumpsSetIcntl",MatMumpsSetIcntl);CHKERRQ(ierr);
   B->factortype                  = MAT_FACTOR_CHOLESKY;
   if (A->spd_set && A->spd) mumps->sym = 1;
   else                      mumps->sym = 2;
@@ -1340,7 +1340,7 @@ PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->view             = MatView_MUMPS;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetMumpsIcntl_C","MatSetMumpsIcntl",MatSetMumpsIcntl);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMumpsSetIcntl_C","MatMumpsSetIcntl",MatMumpsSetIcntl);CHKERRQ(ierr);
 
   mumps->isAIJ        = PETSC_TRUE;
   mumps->MatDestroy   = B->ops->destroy;
@@ -1355,9 +1355,9 @@ EXTERN_C_END
 
 /* -------------------------------------------------------------------------------------------*/
 #undef __FUNCT__   
-#define __FUNCT__ "MatSetMumpsIcntl"
+#define __FUNCT__ "MatMumpsSetIcntl"
 /*@
-  MatSetMumpsIcntl - Set MUMPS parameter ICNTL()
+  MatMumpsSetIcntl - Set MUMPS parameter ICNTL()
 
    Logically Collective on Mat
 
@@ -1375,7 +1375,7 @@ EXTERN_C_END
 
 .seealso: MatGetFactor()
 @*/
-PetscErrorCode MatSetMumpsIcntl(Mat F,PetscInt icntl,PetscInt ival)
+PetscErrorCode MatMumpsSetIcntl(Mat F,PetscInt icntl,PetscInt ival)
 {
   Mat_MUMPS      *lu =(Mat_MUMPS*)(F)->spptr; 
 
