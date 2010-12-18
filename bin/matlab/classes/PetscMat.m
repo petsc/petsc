@@ -92,6 +92,22 @@ classdef PetscMat < PetscObject
       end
       err = calllib('libpetsc','MatSetValuesStencil',obj.pobj,nrow,row,ncol,col,values,insertmode);PetscCHKERRQ(err);  
     end
+%
+%   The following overload a = x(:)
+%
+    function varargout = subsref(obj,S)
+      %  Matlab design of subsref is MORONIC
+      %  To overload () it automatically overloads . which is used
+      %  for method calls so we need to force the method calls to use
+      %  the 'regular' subsref
+      if (S(1).type == '.')
+        [varargout{1:nargout}] = builtin('subsref', obj, S);
+      else
+        [A] = calllib('libpetsc', 'MatSeqAIJToMatlab', obj.pobj);
+        varargout = {A}';
+      end
+    end
+
   end
 end
 

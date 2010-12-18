@@ -9,6 +9,29 @@
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatSeqAIJToMatlab"
+mxArray *MatSeqAIJToMatlab(Mat B)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)B->data;
+  mwIndex        i,*ii,*jj;
+  mxArray        *mat;
+
+  PetscFunctionBegin;
+  mat  = mxCreateSparse(B->cmap->n,B->rmap->n,aij->nz,mxREAL);
+  ierr = PetscMemcpy(mxGetPr(mat),aij->a,aij->nz*sizeof(PetscScalar));
+  /* Matlab stores by column, not row so we pass in the transpose of the matrix */
+  jj = mxGetIr(mat);
+  for (i=0; i<aij->nz; i++) jj[i] = aij->j[i];
+  ii = mxGetJc(mat);
+  for (i=0; i<B->rmap->n+1; i++) ii[i] = aij->i[i];
+  
+  PetscFunctionReturn(mat);
+}
+EXTERN_C_END
+
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -16,22 +39,10 @@ EXTERN_C_BEGIN
 PetscErrorCode  MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
-  Mat            B = (Mat)obj;
   mxArray        *mat; 
-  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)B->data;
-  mwIndex        i,*ii,*jj;
 
   PetscFunctionBegin;
-  mat  = mxCreateSparse(B->cmap->n,B->rmap->n,aij->nz,mxREAL);
-  ierr = PetscMemcpy(mxGetPr(mat),aij->a,aij->nz*sizeof(PetscScalar));CHKERRQ(ierr);
-  /* Matlab stores by column, not row so we pass in the transpose of the matrix */
-  jj = mxGetIr(mat);
-  for (i=0; i<aij->nz; i++) jj[i] = aij->j[i];
-  ii = mxGetJc(mat);
-  for (i=0; i<B->rmap->n+1; i++) ii[i] = aij->i[i];
-
-  /* Matlab indices start at 0 for sparse (what a surprise) */
-  
+  mat = MatSeqAIJToMatlab((Mat)obj);CHKERRQ(ierr);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
   engPutVariable((Engine *)mengine,obj->name,mat);
   PetscFunctionReturn(0);
