@@ -83,6 +83,9 @@ ex15: ex15.o  chkopts
 ex16: ex16.o  chkopts
 	-${CLINKER} -o ex16 ex16.o  ${PETSC_TS_LIB}
 	${RM} ex16.o
+ex17: ex17.o  chkopts
+	-${CLINKER} -o ex17 ex17.o  ${PETSC_TS_LIB}
+	${RM} ex17.o
 #---------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always  > ex1_1.tmp 2>&1;	  \
