@@ -189,7 +189,9 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar *a[])
   PetscFunctionBegin;
   if (x->petscnative){
 #if defined(PETSC_HAVE_CUDA)
-    ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
+    if (x->valid_GPU_array == PETSC_CUDA_GPU || !*((PetscScalar**)x->data)){
+      ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
+    }
 #endif
     *a = *((PetscScalar **)x->data);
   } else {
@@ -226,7 +228,9 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArray(Vec x,PetscScalar *a[])
   PetscFunctionBegin;
   if (x->petscnative){
 #if defined(PETSC_HAVE_CUDA)
-    ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
+    if (x->valid_GPU_array == PETSC_CUDA_GPU || !*((PetscScalar**)x->data)){
+      ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
+    }
 #endif
     *a = *((PetscScalar **)x->data);
   } else {
