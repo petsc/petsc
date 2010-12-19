@@ -23,77 +23,82 @@ PetscErrorCode MatCUDACopyToGPU(Mat A)
   Mat_SeqAIJCUDA *cudastruct  = (Mat_SeqAIJCUDA*)A->spptr;
   Mat_SeqAIJ      *a          = (Mat_SeqAIJ*)A->data;
   PetscInt        m           = A->rmap->n,*ii,*ridx;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (A->valid_GPU_matrix == PETSC_CUDA_UNALLOCATED){
-    try {
-      cudastruct->mat = new CUSPMATRIX;
-      if (a->compressedrow.use) {
-        m    = a->compressedrow.nrows;
-        ii   = a->compressedrow.i;
-        ridx = a->compressedrow.rindex;
-        cudastruct->mat->resize(m,A->cmap->n,a->nz);
-        cudastruct->mat->row_offsets.assign(ii,ii+m+1);
-        cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
-        cudastruct->mat->values.assign(a->a,a->a+a->nz);
-        cudastruct->indices = new CUSPINTARRAYGPU;
-        cudastruct->indices->assign(ridx,ridx+m);
-      } else {
-        cudastruct->mat->resize(m,A->cmap->n,a->nz);
-        cudastruct->mat->row_offsets.assign(a->i,a->i+m+1);
-        cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
-        cudastruct->mat->values.assign(a->a,a->a+a->nz);
-      }
-      cudastruct->tempvec = new CUSPARRAY;
-      cudastruct->tempvec->resize(m);
-    } catch(char* ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
-    }
-  } else if (A->valid_GPU_matrix == PETSC_CUDA_CPU) {
-  /*
-       It may be possible to reuse nonzero structure with new matrix values but 
-     for simplicity and insured correctness we delete and build a new matrix on
-     the GPU. Likely a very small performance hit.
-  */
-    if (cudastruct->mat){
+  if (A->valid_GPU_matrix == PETSC_CUDA_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUDA_CPU){
+    ierr = PetscLogEventBegin(MAT_CUDACopyToGPU,A,0,0,0);CHKERRQ(ierr);
+    if (A->valid_GPU_matrix == PETSC_CUDA_UNALLOCATED){
       try {
-        delete (cudastruct->mat);
-        if (cudastruct->tempvec) {
-          delete (cudastruct->tempvec);
+        cudastruct->mat = new CUSPMATRIX;
+        if (a->compressedrow.use) {
+          m    = a->compressedrow.nrows;
+          ii   = a->compressedrow.i;
+          ridx = a->compressedrow.rindex;
+          cudastruct->mat->resize(m,A->cmap->n,a->nz);
+          cudastruct->mat->row_offsets.assign(ii,ii+m+1);
+          cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
+          cudastruct->mat->values.assign(a->a,a->a+a->nz);
+          cudastruct->indices = new CUSPINTARRAYGPU;
+          cudastruct->indices->assign(ridx,ridx+m);
+        } else {
+          cudastruct->mat->resize(m,A->cmap->n,a->nz);
+          cudastruct->mat->row_offsets.assign(a->i,a->i+m+1);
+          cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
+          cudastruct->mat->values.assign(a->a,a->a+a->nz);
         }
-        if (cudastruct->indices) {
-          delete (cudastruct->indices);
+        cudastruct->tempvec = new CUSPARRAY;
+        cudastruct->tempvec->resize(m);
+      } catch(char* ex) {
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+      }
+    } else if (A->valid_GPU_matrix == PETSC_CUDA_CPU) {
+      /*
+       It may be possible to reuse nonzero structure with new matrix values but 
+       for simplicity and insured correctness we delete and build a new matrix on
+       the GPU. Likely a very small performance hit.
+       */
+      if (cudastruct->mat){
+        try {
+          delete (cudastruct->mat);
+          if (cudastruct->tempvec) {
+            delete (cudastruct->tempvec);
+          }
+          if (cudastruct->indices) {
+            delete (cudastruct->indices);
+          }
+        } catch(char* ex) {
+          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+        } 
+      }
+      try {
+        cudastruct->mat = new CUSPMATRIX;
+        if (a->compressedrow.use) {
+          m    = a->compressedrow.nrows;
+          ii   = a->compressedrow.i;
+          ridx = a->compressedrow.rindex;
+          cudastruct->mat->resize(m,A->cmap->n,a->nz);
+          cudastruct->mat->row_offsets.assign(ii,ii+m+1);
+          cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
+          cudastruct->mat->values.assign(a->a,a->a+a->nz);
+          cudastruct->indices = new CUSPINTARRAYGPU;
+          cudastruct->indices->assign(ridx,ridx+m);
+        } else {
+          cudastruct->mat->resize(m,A->cmap->n,a->nz);
+          cudastruct->mat->row_offsets.assign(a->i,a->i+m+1);
+          cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
+          cudastruct->mat->values.assign(a->a,a->a+a->nz);
         }
+        cudastruct->tempvec = new CUSPARRAY;
+        cudastruct->tempvec->resize(m);
       } catch(char* ex) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
       } 
     }
-    try {
-      cudastruct->mat = new CUSPMATRIX;
-      if (a->compressedrow.use) {
-        m    = a->compressedrow.nrows;
-        ii   = a->compressedrow.i;
-        ridx = a->compressedrow.rindex;
-        cudastruct->mat->resize(m,A->cmap->n,a->nz);
-        cudastruct->mat->row_offsets.assign(ii,ii+m+1);
-        cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
-        cudastruct->mat->values.assign(a->a,a->a+a->nz);
-        cudastruct->indices = new CUSPINTARRAYGPU;
-        cudastruct->indices->assign(ridx,ridx+m);
-      } else {
-        cudastruct->mat->resize(m,A->cmap->n,a->nz);
-        cudastruct->mat->row_offsets.assign(a->i,a->i+m+1);
-        cudastruct->mat->column_indices.assign(a->j,a->j+a->nz);
-        cudastruct->mat->values.assign(a->a,a->a+a->nz);
-      }
-      cudastruct->tempvec = new CUSPARRAY;
-      cudastruct->tempvec->resize(m);
-    } catch(char* ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
-    } 
+    A->valid_GPU_matrix = PETSC_CUDA_BOTH;
+    ierr = PetscLogEventEnd(MAT_CUDACopyToGPU,A,0,0,0);CHKERRQ(ierr);
   }
-  A->valid_GPU_matrix = PETSC_CUDA_BOTH;
-  PetscFunctionReturn(0);
+    PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqAIJCUDA"

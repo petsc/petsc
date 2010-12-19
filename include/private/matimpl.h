@@ -990,5 +990,6 @@ extern PetscLogEvent  MAT_Getsymtranspose, MAT_Transpose_SeqAIJ, MAT_Getsymtrans
 
 extern PetscLogEvent  MATMFFD_Mult;
 extern PetscLogEvent  MAT_GetMultiProcBlock;
+extern PetscLogEvent  MAT_CUDACopyToGPU;
 
 #endif
