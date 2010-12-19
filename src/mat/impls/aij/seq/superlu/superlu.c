@@ -234,7 +234,7 @@ PetscErrorCode MatDestroy_SuperLU(Mat A)
   
   /* clear composed functions */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSetSuperluILUDropTol_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSuperluSetILUDropTol_C","",PETSC_NULL);CHKERRQ(ierr);
 
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   if (lu->A_dup){ierr = MatDestroy(lu->A_dup);CHKERRQ(ierr);}
@@ -578,7 +578,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatCreateNull","MatCreateNull_SuperLU",(void(*)(void))MatCreateNull_SuperLU);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_superlu",MatFactorGetSolverPackage_seqaij_superlu);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetSuperluILUDropTol_C","MatSetSuperluILUDropTol",MatSetSuperluILUDropTol);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSuperluSetILUDropTol_C","MatSuperluSetILUDropTol",MatSuperluSetILUDropTol);CHKERRQ(ierr);
   B->spptr = lu;
   *F = B;
   PetscFunctionReturn(0);
@@ -586,10 +586,23 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
 EXTERN_C_END
 
 /* -------------------------------------------------------------------------------------------*/
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatSuperluSetILUDropTol_Superlu"
+PetscErrorCode MatSuperluSetILUDropTol_Superlu(Mat F,PetscReal dtol)
+{
+  Mat_SuperLU *lu= (Mat_SuperLU*)F->spptr;
+
+  PetscFunctionBegin;
+  lu->options.ILU_DropTol = dtol;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__   
 #define __FUNCT__ "MatSuperluSetILUDropTol"
 /*@
-  MatSetSuperluILUDropTol - Set SuperLU ILU drop tolerance
+  MatSuperluSetILUDropTol - Set SuperLU ILU drop tolerance
    Logically Collective on Mat
 
    Input Parameters:
@@ -605,12 +618,13 @@ EXTERN_C_END
 
 .seealso: MatGetFactor()
 @*/
-PetscErrorCode  MatSuperluSetILUDropTol(Mat F,PetscReal dtol)
+PetscErrorCode MatSuperluSetILUDropTol(Mat F,PetscReal dtol)
 {
-  Mat_SuperLU *lu= (Mat_SuperLU*)F->spptr;
+  PetscErrorCode ierr;
 
-  PetscFunctionBegin; 
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(F,dtol,2);
-  lu->options.ILU_DropTol = dtol;
+  ierr = PetscTryMethod(F,"MatSuperluSetILUDropTol_C",(Mat,PetscReal),(F,dtol));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
