@@ -18,7 +18,7 @@ Program usage:
    e.g., mpiexec -n 2 ./ex17 -da_grid_x 40 -ts_max_steps 2 -use_coloring -snes_monitor -ksp_monitor
          ./ex17 -da_grid_x 40 -use_coloring -drawcontours
          ./ex17 -use_coloring -drawcontours -draw_pause .1
-         ./ex17 -drawcontours -draw_pause .1 -ts_type theta -ts_theta_theta 0.5          # Midpoint is not L-stable
+         ./ex17 -da_grid_x 100 -drawcontours -draw_pause .1 -ts_type theta -ts_theta_theta 0.5     # Midpoint is not L-stable
          ./ex17 -use_coloring -drawcontours -draw_pause .1 -da_grid_x 500 -boundary 1 -pc_type lu -ts_max_time 2.0
 */
 
