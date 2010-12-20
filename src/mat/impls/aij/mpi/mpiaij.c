@@ -526,7 +526,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
     ierr = MatSetUpMultiply_MPIAIJ(mat);CHKERRQ(ierr);
   }
   ierr = MatSetOption(aij->B,MAT_USE_INODES,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatSetOption(aij->B,MAT_CHECK_COMPRESSED_ROW,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(aij->B,MAT_CHECK_COMPRESSED_ROW,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(aij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(aij->B,mode);CHKERRQ(ierr);
 
