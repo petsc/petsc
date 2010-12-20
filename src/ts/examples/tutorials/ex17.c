@@ -65,8 +65,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,-11,
-                    1,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,-11,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; 
@@ -117,8 +116,8 @@ int main(int argc,char **argv)
   /* Use coloring to compute rhs Jacobian efficiently */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_coloring",&user.coloring,PETSC_NULL);CHKERRQ(ierr);
   if (user.coloring) {
-    SNES snes;
-    ISColoring     iscoloring;
+    SNES       snes;
+    ISColoring iscoloring;
     ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
@@ -222,6 +221,9 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J
   PetscReal      hx,sx;
   AppCtx         *user = (AppCtx*)ctx;
   DM             da = (DM)user->da;
+  MatStencil     col[3],row;
+  PetscInt       nc;
+  PetscScalar    vals[3];
 
   PetscFunctionBegin;
   ierr = MatGetOwnershipRange(*Jpre,&rstart,&rend);CHKERRQ(ierr);
@@ -229,22 +231,22 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
   hx = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
   for (i=rstart; i<rend; i++) {
-    PetscInt nc = 0,cols[3];
-    PetscScalar vals[3];
+    nc    = 0;
+    row.i = i;
     if (user->boundary == 0 && (i == 0 || i == Mx-1)) {
-      cols[nc] = i;   vals[nc++] = 1.0;
+      col[nc].i = i; vals[nc++] = 1.0;
     } else if (user->boundary > 0 && i == 0) { /* Left Neumann */
-      cols[nc] = i;   vals[nc++] = 1.0;
-      cols[nc] = i+1; vals[nc++] = -1.0;
+      col[nc].i = i;   vals[nc++] = 1.0;
+      col[nc].i = i+1; vals[nc++] = -1.0;
     } else if (user->boundary > 0 && i == Mx-1) { /* Right Neumann */
-      cols[nc] = i-1; vals[nc++] = -1.0;
-      cols[nc] = i;   vals[nc++] = 1.0;
+      col[nc].i = i-1; vals[nc++] = -1.0;
+      col[nc].i = i;   vals[nc++] = 1.0;
     } else {                    /* Interior */
-      cols[nc] = i-1; vals[nc++] = -1.0*sx;
-      cols[nc] = i;   vals[nc++] = 2.0*sx + a;
-      cols[nc] = i+1; vals[nc++] = -1.0*sx;
+      col[nc].i = i-1; vals[nc++] = -1.0*sx;
+      col[nc].i = i;   vals[nc++] = 2.0*sx + a;
+      col[nc].i = i+1; vals[nc++] = -1.0*sx;
     }
-    ierr = MatSetValues(*Jpre,1,&i,nc,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   ierr = MatAssemblyBegin(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -277,7 +279,7 @@ PetscErrorCode FormInitialSolution(Vec U,void* ptr)
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  hx     = 1.0/(PetscReal)(Mx-1);
+  hx = 1.0/(PetscReal)(Mx-1);
 
   /* Get pointers to vector data */
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
