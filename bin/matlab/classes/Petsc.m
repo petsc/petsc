@@ -8,6 +8,11 @@
 %   PetscOptionsSetValue('-optionname','value');
 %   PetscOptionsClearValue('-optionname');         % remove from the database
 %
+%   PetscObjectsView; % show all current PETSc objects, like Matlab who
+%   A = PetscObjectsGetObject('name'); % return Matlab pointer to PETSc object of given name
+%       Note if A is a PetscVec then A(:) returns the Matlab version of the vector
+%                      PetscMat then A(:,:) returns the Matlab version of the sparse matrix
+%
 %   PetscCHKERRQ(ierr); % check if an error code is non-zero and set Matlab error
 %   PETSC_COMM_SELF;    % returns current MPI_COMM_SELF communicator, not needed by users
 %

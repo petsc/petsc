@@ -4273,7 +4273,7 @@ PetscErrorCode  MatGetRowSum(Mat mat, Vec v)
 .  B - the transpose 
 
    Notes:
-     If you  pass in &mat for B the transpose will be done in place
+     If you  pass in &mat for B the transpose will be done in place, for example MatTranspose(mat,MAT_REUSE_MATRIX,&mat);
 
    Level: intermediate
 
