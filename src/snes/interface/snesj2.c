@@ -39,6 +39,7 @@ PetscErrorCode  SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,M
   PetscErrorCode (*ff)(void),(*fd)(void);
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(color,MAT_FDCOLORING_CLASSID,6);
   *flag = SAME_NONZERO_PATTERN;
   ierr  = SNESGetFunction(snes,&f,(PetscErrorCode (**)(SNES,Vec,Vec,void*))&ff,0);CHKERRQ(ierr);
   ierr  = MatFDColoringGetFunction(color,&fd,PETSC_NULL);CHKERRQ(ierr);
