@@ -396,6 +396,49 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat F,Mat A,IS r,IS c,const MatFactor
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatSuperluSetILUDropTol_SuperLU"
+PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F,PetscReal dtol)
+{
+  Mat_SuperLU *lu= (Mat_SuperLU*)F->spptr;
+
+  PetscFunctionBegin;
+  lu->options.ILU_DropTol = dtol;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__   
+#define __FUNCT__ "MatSuperluSetILUDropTol"
+/*@
+  MatSuperluSetILUDropTol - Set SuperLU ILU drop tolerance
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-SuperLU interface
+-  dtol - drop tolerance
+
+  Options Database:
+.   -mat_superlu_ilu_droptol <dtol>
+
+   Level: beginner
+
+   References: SuperLU Users' Guide 
+
+.seealso: MatGetFactor()
+@*/
+PetscErrorCode MatSuperluSetILUDropTol(Mat F,PetscReal dtol)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveInt(F,dtol,2);
+  ierr = PetscTryMethod(F,"MatSuperluSetILUDropTol_C",(Mat,PetscReal),(F,dtol));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFactorGetSolverPackage_seqaij_superlu"
@@ -484,7 +527,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
        (if options->Trans=NOTRANS) or diag(C)*B (if options->Trans = TRANS or CONJ)."
      We set 'options.Equil = NO' as default because additional space is needed for it.
     */
-    lu->options.Equil     = NO;
+    lu->options.Equil = NO;
   } else if (ftype == MAT_FACTOR_ILU){
     /* Set the default input options of ilu:
 	options.Fact = DOFACT;
@@ -578,53 +621,10 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatCreateNull","MatCreateNull_SuperLU",(void(*)(void))MatCreateNull_SuperLU);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_superlu",MatFactorGetSolverPackage_seqaij_superlu);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSuperluSetILUDropTol_C","MatSuperluSetILUDropTol",MatSuperluSetILUDropTol);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSuperluSetILUDropTol_C","MatSuperluSetILUDropTol_SuperLU",MatSuperluSetILUDropTol_SuperLU);CHKERRQ(ierr);
   B->spptr = lu;
   *F = B;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
-/* -------------------------------------------------------------------------------------------*/
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "MatSuperluSetILUDropTol_Superlu"
-PetscErrorCode MatSuperluSetILUDropTol_Superlu(Mat F,PetscReal dtol)
-{
-  Mat_SuperLU *lu= (Mat_SuperLU*)F->spptr;
-
-  PetscFunctionBegin;
-  lu->options.ILU_DropTol = dtol;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-#undef __FUNCT__   
-#define __FUNCT__ "MatSuperluSetILUDropTol"
-/*@
-  MatSuperluSetILUDropTol - Set SuperLU ILU drop tolerance
-   Logically Collective on Mat
-
-   Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-SuperLU interface
--  dtol - drop tolerance
-
-  Options Database:
-.   -mat_superlu_ilu_droptol <dtol>
-
-   Level: beginner
-
-   References: SuperLU Users' Guide 
-
-.seealso: MatGetFactor()
-@*/
-PetscErrorCode MatSuperluSetILUDropTol(Mat F,PetscReal dtol)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  PetscValidLogicalCollectiveInt(F,dtol,2);
-  ierr = PetscTryMethod(F,"MatSuperluSetILUDropTol_C",(Mat,PetscReal),(F,dtol));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}

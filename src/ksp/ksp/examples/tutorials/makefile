@@ -950,6 +950,20 @@ runex49_3:
 	   ${DIFF} output/ex49_3.out ex49_3.tmp || echo "Possible problem with ex49_3, diffs above"; \
 	   ${RM} -f ex49_3.tmp
 
+runex52_mumps:
+	-@${MPIEXEC} -n 1 ./ex52 -use_mumps_lu > ex52.tmp 2>&1;	  \
+	   ${DIFF} output/ex52_1.out ex52.tmp || echo "Possible problem with ex52_mumps, diffs above"; \
+	   ${RM} -f ex52.tmp
+runex52_mumps_2:
+	-@${MPIEXEC} -n 1 ./ex52 -use_mumps_ch > ex52.tmp 2>&1;	  \
+	   ${DIFF} output/ex52_1.out ex52.tmp || echo "Possible problem with ex52_mumps_2, diffs above"; \
+	   ${RM} -f ex52.tmp
+
+runex52_superlu:
+	-@${MPIEXEC} -n 1 ./ex52 -use_superlu_ilu > ex52.tmp 2>&1;	  \
+	   ${DIFF} output/ex52_1.out ex52.tmp || echo "Possible problem with ex52, diffs above"; \
+	   ${RM} -f ex52.tmp
+
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 ex2.rm \
@@ -989,8 +1003,9 @@ TESTEXAMPLES_HYPRE	       = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_
 TESTEXAMPLES_LUSOL	       = ex10.PETSc runex10_13 ex10.rm
 TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_lu_3 runex10_mumps_lu_4 \
 				 runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 runex10_mumps_redundant \
-                                 runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 ex10.rm 
-TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm 
+                                 runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 ex10.rm \
+                                 ex52.PETSc runex52_mumps runex52_mumps_2 ex52.rm
+TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm ex52.PETSc runex52_superlu ex52.rm
 TESTEXAMPLES_FFTW              = ex47.PETSc ex47.rm 
 TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm 
 TESTEXAMPLES_SPOOLES           = ex10.PETSc runex10_spooles_lu_1  runex10_spooles_lu_2 runex10_spooles_cholesky_1 runex10_spooles_cholesky_1sbaij  runex10_spooles_cholesky_2 ex10.rm 

@@ -166,14 +166,14 @@ int main(int argc,char **args)
     ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
     icntl=7; ival = 2;
-    ierr = MatSetMumpsIcntl(F,icntl,ival);CHKERRQ(ierr);
+    ierr = MatMumpsSetIcntl(F,icntl,ival);CHKERRQ(ierr);
   }
 #endif
 
   /*
     Example of how to use external package SuperLU
     Note: runtime options 
-          '-ksp_type preonly -pc_type ilu -pc_factor_mat_solver_package superlu -mat_superlu_ilu_droptol 0.0002' 
+          '-ksp_type preonly -pc_type ilu -pc_factor_mat_solver_package superlu -mat_superlu_ilu_droptol 1.e-8' 
           are equivalent to these procedual calls 
   */
 #ifdef PETSC_HAVE_SUPERLU
@@ -187,7 +187,7 @@ int main(int argc,char **args)
     ierr = PCSetType(pc,PCILU);CHKERRQ(ierr); 
     ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
-    ierr = MatSetSuperluILUDropTol(F,0.0002);CHKERRQ(ierr);
+    ierr = MatSuperluSetILUDropTol(F,1.e-8);CHKERRQ(ierr);
   }
 #endif
 
