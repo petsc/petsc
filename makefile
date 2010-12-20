@@ -226,7 +226,7 @@ chk_petsc_dir:
 #
 #
 install:
-	-@./config/install.py
+	@./config/install.py
 
 newall:
 	-@cd src/sys; ${PETSC_DIR}/config/builder.py
