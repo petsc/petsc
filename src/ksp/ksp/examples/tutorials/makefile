@@ -931,9 +931,12 @@ runex43_2:
 
 runex45:
 	-@${MPIEXEC} -n 4 ./ex45 -pc_type exotic -ksp_type fgmres -ksp_monitor_short  > ex45_1.tmp 2>&1;	  \
-	   if (${DIFF} output/ex45_1.out ex45_1.tmp) then true; \
-	   else echo "Possible problem with ex45_1, diffs above"; fi; \
+	   ${DIFF} output/ex45_1.out ex45_1.tmp || echo "Possible problem with ex45_1, diffs above"; \
 	   ${RM} -f ex45_1.tmp
+runex45_2:
+	-@${MPIEXEC} -n 4 ./ex45 -ksp_monitor_short -da_grid_x 21 -da_grid_y 21 -da_grid_z 21 -pc_type mg -pc_mg_levels 3 -mg_levels_ksp_type richardson > ex45_2.tmp 2>&1; \
+	   ${DIFF} output/ex45_2.out ex45_2.tmp || echo "Possible problem with ex45_2, diffs above"; \
+	   ${RM} -f ex45_2.tmp
 
 runex49:
 	-@${MPIEXEC} -n 1 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 > ex49_1.tmp 2>&1;	  \
@@ -975,7 +978,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex27.PETSc ex27.rm ex28.PETSc ex28.rm ex29.PETSc  ex29.rm \
                                  ex31.PETSc ex31.rm ex32.PETSc runex32 ex32.rm ex38.PETSc runex38 ex38.rm \
                                  ex43.PETSc runex43 runex43_2 ex43.rm \
-                                 ex45.PETSc runex45 ex45.rm \
+                                 ex45.PETSc runex45 runex45_2 ex45.rm \
                                  ex49.PETSc runex49 runex49_2 runex49_3 ex49.rm
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm  
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc ex6f.rm \
