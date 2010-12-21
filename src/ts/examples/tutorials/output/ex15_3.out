@@ -1,0 +1,11 @@
+timestep 0: time 0, solution norm 7.8391, max 0.999453, min 0
+timestep 1: time 0.01, solution norm 8.18978, max 0.453236, min 0.00227441
+timestep 2: time 0.02, solution norm 8.69155, max 0.236086, min 0.00742943
+timestep 3: time 0.03, solution norm 9.17902, max 0.147798, min 0.0143123
+timestep 4: time 0.04, solution norm 9.58259, max 0.106342, min 0.0214639
+timestep 5: time 0.05, solution norm 9.89085, max 0.0842398, min 0.0279083
+timestep 6: time 0.06, solution norm 10.1162, max 0.0713786, min 0.0332289
+timestep 7: time 0.07, solution norm 10.277, max 0.0634649, min 0.0373823
+timestep 8: time 0.08, solution norm 10.3901, max 0.0584201, min 0.0405066
+timestep 9: time 0.09, solution norm 10.4689, max 0.0551297, min 0.0427991
+timestep 10: time 0.1, solution norm 10.5236, max 0.0529501, min 0.0444525

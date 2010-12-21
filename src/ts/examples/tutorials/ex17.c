@@ -35,7 +35,6 @@ typedef struct {
 typedef struct {
   DM             da;
   PetscReal      c;
-  PetscBool      coloring;
   PetscInt       boundary;       /* Type of boundary condition */
   PetscBool      viewJacobian;
 } AppCtx;
@@ -59,6 +58,7 @@ int main(int argc,char **argv)
   PetscReal      ftime,dt;
   MonitorCtx     usermonitor;       /* user-defined monitor context */
   AppCtx         user;              /* user-defined work context */
+  PetscBool      use_coloring;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -75,7 +75,6 @@ int main(int argc,char **argv)
   /* Initialize user application context */
   user.da            = da;
   user.c             = -30.0;
-  user.coloring      = PETSC_FALSE;
   user.boundary      = 0; /* 0: Dirichlet BC; 1: Neumann BC */
   user.viewJacobian  = PETSC_FALSE;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-boundary",&user.boundary,PETSC_NULL);CHKERRQ(ierr);
@@ -90,7 +89,7 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr); /* General Linear method, TSTHETA can also solve DAE */
-  ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr); /* incorrect solution when theta=0.5? */
+  ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr); 
   ierr = TSSetIFunction(ts,FormIFunction,&user);CHKERRQ(ierr);
 
   ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
@@ -114,8 +113,8 @@ int main(int argc,char **argv)
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* Use coloring to compute rhs Jacobian efficiently */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_coloring",&user.coloring,PETSC_NULL);CHKERRQ(ierr);
-  if (user.coloring) {
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_coloring",&use_coloring,PETSC_NULL);CHKERRQ(ierr);
+  if (use_coloring) {
     SNES       snes;
     ISColoring iscoloring;
     ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
