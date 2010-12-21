@@ -6,27 +6,44 @@ TaoSolver
 * Check lower bound <= than upper bound
 * Check bounds for bounded methods, give warning for unbounded methods
 
+SetOptionsPrefix for all objects
+
 Mesh Refinement
+ TaoDMSetUpLevel
+ - fd
+ - adic?
+ - mf
+
+
+initialize/finalize, esp. for Fortran
 
 TRON -- if no free variables
-     -- submatfree
+     -- set pc?
 Levenberg-Marquardt
 POUNDer
 KT?
 BNLS?
 
+rosenbrock1 fails for ntr
 
+tabs for view()
 
+Decisions to make:
+ - what to #include in applications
+ - PetscReal or PetscScalar
+ - How to set ksp options in application
+ - #define __FUNCT__/PetscFunctionBegin/End in applications
+ - get solution status
+ - CHKERRQ in fortran examples
+ - Tao or TaoSolver?
 
 finish examples
-  minsurf1
-  eptorsion2f
-  plate2f
   combustion3
   ginzland3
   jbearing3
   jbearing3f
   minsurf3
+Check documentation on examples
 
 Check memory (esp. on MT line search!)
 Check fortran stubs 
@@ -34,16 +51,16 @@ test examples script/make target
 test output against tao-1.10.1
 automatic testing, coverage
 
+
 documentation
+ -- check header includes for /*I I*/
 
 manual
 
 build documentation
 
-
+make install
 
 Check against PetscScalar=single, complex (give good error message)
-
-redistribute, mask, matrixfree subtypes 
 
 Yuchen's code
