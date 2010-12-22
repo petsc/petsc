@@ -1529,7 +1529,7 @@ PetscErrorCode  KSPGetMonitorContext(KSP ksp,void **ctx)
    Notes: The array is NOT freed by PETSc so the user needs to keep track of 
            it and destroy once the KSP object is destroyed.
 
-   If 'na' is PETSC_DECIDE or PETSC_DEFAULT, or 'a' is PETSC_NULL, then a 
+   If 'a' is PETSC_NULL then space is allocated for the history. If 'na' PETSC_DECIDE or PETSC_DEFAULT then a
    default array of length 10000 is allocated.
 
 .keywords: KSP, set, residual, history, norm
