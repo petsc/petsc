@@ -109,6 +109,14 @@ classdef PetscMat < PetscObject
         varargout = {A}';
       end
     end
+%
+%   The following overload x(:,:) = a
+%
+    function obj = subsasgn(obj,S,value)
+      if (S(1).type ~= '.')
+        err  = calllib('libpetsc', 'MatSeqAIJFromMatlab',value',obj.pobj);PetscCHKERRQ(err);
+      end
+    end
 
   end
 end
