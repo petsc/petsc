@@ -210,17 +210,6 @@
  220  format ("VecMAXPY ",3(1pe8.2))
 
 
-!  Test whether vector has been corrupted (just to demonstrate this
-!  routine) not needed in most application codes.
-
-      call VecValid(x,flg,ierr)
-      if (.not. flg) then
-         if (rank .eq. 0) then
-            write(6,*) 'Corrupted vector!'
-         endif
-         stop
-      endif
-
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 

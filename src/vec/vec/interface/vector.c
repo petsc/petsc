@@ -959,9 +959,7 @@ PetscErrorCode  VecResetArray(Vec vec)
   PetscValidType(vec,1);
   if (vec->ops->resetarray) {
     ierr = (*vec->ops->resetarray)(vec);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot reset array in this type of vector");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot reset array in this type of vector");
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1482,33 +1480,6 @@ PetscErrorCode  VecGetBlockSize(Vec v,PetscInt *bs)
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidIntPointer(bs,2);
   *bs = v->map->bs;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecValid"
-/*@
-   VecValid - Checks whether a vector object is valid.
-
-   Not Collective
-
-   Input Parameter:
-.  v - the object to check
-
-   Output Parameter:
-.  flg - flag indicating vector status, either
-   PETSC_TRUE if vector is valid, or PETSC_FALSE otherwise.
-
-   Level: developer
-
-@*/
-PetscErrorCode  VecValid(Vec v,PetscBool  *flg)
-{
-  PetscFunctionBegin;
-  PetscValidIntPointer(flg,2);
-  if (!v)                                          *flg = PETSC_FALSE;
-  else if (((PetscObject)v)->classid != VEC_CLASSID) *flg = PETSC_FALSE;
-  else                                             *flg = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

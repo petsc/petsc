@@ -70,7 +70,7 @@ int MatAssemblyEnd(Mat,MatAssemblyType);
 int MatView(Mat,PetscViewer);
 int MatDestroy(Mat);
 int MatSetValuesStencil(Mat,int,MatStencil*,int,MatStencil*,double*,InsertMode);
-int MatCreateSeqAIJFromMatlab(mxArray*,Mat*);
+int MatSeqAIJFromMatlab(mxArray*,Mat);
 mxArray* MatSeqAIJToMatlab(Mat);
 
 typedef PetscPointer DM;

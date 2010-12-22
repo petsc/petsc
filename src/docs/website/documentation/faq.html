@@ -161,7 +161,8 @@ symmetric?</a></li>
         <li><a href="faq.html#matlab">How can I use PETSc with Matlab?
 How can I get PETSc Vecs and Mats
 to Matlab or vice versa?</a></li>
-        <li><a href="faq.html#usingCython">How do I get started with Cython so that I can extend petsc4py?</a></li>
+        <li><a href="faq.html#usingCython">How do I get started with
+Cython so that I can extend petsc4py?</a></li>
       </ul>
       <h4><a href="faq.html#Execution">Execution</a></h4>
       <menu>
@@ -176,6 +177,7 @@ can I understand what is really happening within my program? </a></li>
 large sparse matrices takes a long time. What can I do make this
 process faster? or MatSetValues() is <span style="font-weight: bold;">so
 slow,
+
 
 
 
@@ -592,7 +594,8 @@ I install petsc4py with the development PETSc</a>?</font></p>
       <p><font color="#ff0000"><a name="gfortran">What Fortran compiler
 do you recommend for the Apple Mac OS X?</a></font></p>
 (as of 11/6/2010) We recommend installing gfortran from <a
- href="http://hpc.sourceforge.net/">http://hpc.sourceforge.net</a>. They
+ href="http://hpc.sourceforge.net/">http://hpc.sourceforge.net</a>.
+They
 have gfortran-4.6.0 (experimental) for Snow Leopard (10.6)
 and gfortran 4.4.1 (prerelease) for Leopard (10.5).<br>
       <br>
@@ -842,12 +845,15 @@ process 0.
  style="color: rgb(255, 0, 0);">How can I read in or write out a sparse
 matrix in Matrix Market, Harwell-Boeing, SLAPC or other ASCII format?</span></p>
 See the examples in
-src/mat/examples/tests, specifically ex72.c and ex32.c. You will
+src/mat/examples/tests, specifically ex72.c, ex78.c, and ex32.c. You
+will
 likely need to modify the code slightly to match your required ASCII
 format. Note: Never read or write in parallel an ASCII matrix file,
-instead for reading: read in sequentially then save the matrix with the
+instead for reading: read in sequentially with a standalone code based
+on ex72.c, ex78.c, or ex32.c then save the matrix with the
 binary viewer PetscBinaryViewerOpen() and load the matrix in parallel
-with MatLoad(); for writing save with the binary viewer and then load
+in your "real" PETSc program with MatLoad(); for writing save with the
+binary viewer and then load
 with the sequential code to store it as ASCII.<br>
             <br>
             <br>
@@ -1063,7 +1069,8 @@ to
 eliminate
 the
 Dirichlet
-rows but this results in a
+rows
+but this results in a
 non-symmetric system. How can I apply Dirichlet boundary conditions
 but&nbsp; keep the
 matrix symmetric?<br>
@@ -1091,7 +1098,8 @@ PETSc
 Vecs
 and
 Mats
-to Matlab or vice versa?<br>
+to
+Matlab or vice versa?<br>
             </span><br>
             <span style="color: rgb(255, 0, 0);"><br>
             </span>There are five ways to work with PETSc and Matlab<br>
@@ -1119,7 +1127,8 @@ the
 PETSc
 side
 and
-PetscOpenSocket in bin/matlab for
+PetscOpenSocket
+in bin/matlab for
 access from the Matlab side.</li>
               <li>You can save PETSc Vecs (not Mats) with the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
@@ -1130,28 +1139,36 @@ saves
 files
 can
 then
-be loaded into Matlab.</li>
+be
+loaded into Matlab.</li>
               <li>We are just being to develop in <a
  href="../developers/index.html">petsc-dev</a> an API to call most of
 the PETSc function directly from Matlab; we could use help in
 developing this. See bin/matlab/classes/PetscInitialize.m<br>
               </li>
-            </ol><br>
-            <span style="color: rgb(255, 0, 0);"><a name="usingCython"></a>How do I get started with Cython so that I can extend petsc4py?<br>
+            </ol>
+            <br>
+            <span style="color: rgb(255, 0, 0);"><a name="usingCython"></a>How
+do I get started with Cython so that I can extend petsc4py?<br>
             </span><br>
 Steps I used:
-<ol>
-  <li>Learn how to <a href="http://docs.cython.org/src/quickstart/build.html">build a Cython module</a></li>
-  <li>Go through the simple example provided by
-  Denis <a href="http://stackoverflow.com/questions/3046305/simple-wrapping-of-c-code-with-cython">here</a>. Note also
-  the next comment that shows how to create numpy arrays in the Cython and pass them back.</li>
-  <li>Check out <a href="http://docs.cython.org/src/tutorial/numpy.html">this page</a> which tells you how to get fast
-  indexing</li>
-  <li>Have a look at the petsc4py <a href="http://code.google.com/p/petsc4py/source/browse/src/PETSc/arraynpy.pxi">array source</a></li>
-</ol>
-developing this. See bin/matlab/classes/PetscInitialize.m for more
-details and bin/matlab/classes/examples/tutorials for examples. </li>
+            <ol>
+              <li>Learn how to <a
+ href="http://docs.cython.org/src/quickstart/build.html">build a Cython
+module</a></li>
+              <li>Go through the simple example provided by Denis <a
+ href="http://stackoverflow.com/questions/3046305/simple-wrapping-of-c-code-with-cython">here</a>.
+Note also the next comment that shows how to create numpy arrays in the
+Cython and pass them back.</li>
+              <li>Check out <a
+ href="http://docs.cython.org/src/tutorial/numpy.html">this page</a>
+which tells you how to get fast indexing</li>
+              <li>Have a look at the petsc4py <a
+ href="http://code.google.com/p/petsc4py/source/browse/src/PETSc/arraynpy.pxi">array
+source</a></li>
             </ol>
+developing this. See bin/matlab/classes/PetscInitialize.m for more
+details and bin/matlab/classes/examples/tutorials for examples.
             <hr> </td>
           </tr>
         </tbody>
@@ -1322,6 +1339,7 @@ in
 
 
 
+
           <a href="faq.html#slow">generating the
 matrix</a> or some other operation.</li>
         <li>There must be enough work for each process to
@@ -1357,6 +1375,7 @@ consider
 multigrid
 preconditioners
 like
+
           <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
 or BoomerAMG in <a
@@ -1553,7 +1572,8 @@ MatCreateXXX()
 you
 passed
 in
-local and global sizes that do not make
+local
+and global sizes that do not make
 sense for the correct number of processors. For example if you pass in
 a local size of 2 and a global size of 100 and run on two processors,
 this cannot work since the sum of the local sizes is 4, not 100.</span></font><br>
@@ -1582,6 +1602,7 @@ problem.<br>
 &nbsp; <br>
 If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
 machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
+
 
 
 
@@ -1637,6 +1658,7 @@ that the matrix is singular. You can use -pc_factor_shift_nonzero or
 -pc_factor_shift_positive_definite,
 -[level]_pc_factor_shift_nonzero,&nbsp; </span></font><font
  style="color: rgb(0, 0, 0);" color="#ff0000">-[level]_pc_factor_shift_postive_definite
+
 
 
 

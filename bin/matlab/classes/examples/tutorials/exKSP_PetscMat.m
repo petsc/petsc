@@ -24,7 +24,7 @@ x = b.Duplicate();
 %  Create a matrix and put some values in it
 spmat = speye(10,10);
 spmat
-mat = PetscMatCreateSeqAIJ(spmat);
+mat = PetscMat(spmat);
 mat.View(viewer);
 %%
 %   Create the linear solver, tell it the matrix to use and solve the system

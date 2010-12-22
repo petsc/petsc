@@ -410,7 +410,6 @@ extern PetscErrorCode  VecReplaceArray(Vec,const PetscScalar[]);
 extern PetscErrorCode  VecGetArrays(const Vec[],PetscInt,PetscScalar**[]);
 extern PetscErrorCode  VecRestoreArrays(const Vec[],PetscInt,PetscScalar**[]);
 
-extern PetscErrorCode  VecValid(Vec,PetscBool *);
 extern PetscErrorCode  VecView(Vec,PetscViewer);
 extern PetscErrorCode  VecViewFromOptions(Vec, const char *);
 extern PetscErrorCode  VecEqual(Vec,Vec,PetscBool *);

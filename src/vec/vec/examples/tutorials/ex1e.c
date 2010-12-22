@@ -169,12 +169,6 @@ _ VecNorm(z[2],NORM_2,&norm);___
   v2 = norm-3.0*sqrt((PetscReal) n); if (v2 > -PETSC_EPS && v2 < PETSC_EPS) v2 = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecMAXPY %G %G %G \n",v,v1,v2);___
 
-  /* 
-     Test whether vector has been corrupted (just to demonstrate this
-     routine) not needed in most application codes.
-  */
-_ VecValid(x,&flg);___
-  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Corrupted vector.");
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they
