@@ -1305,6 +1305,9 @@ $     func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
    If the A matrix and B matrix are different you must call MatAssemblyBegin/End() on
    each matrix.
 
+   If using SNESDefaultComputeJacobianColor() to assemble a Jacobian, the ctx argument
+   must be a MatFDColoring.
+
    Level: beginner
 
 .keywords: SNES, nonlinear, set, Jacobian, matrix

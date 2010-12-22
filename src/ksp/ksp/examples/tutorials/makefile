@@ -931,9 +931,12 @@ runex43_2:
 
 runex45:
 	-@${MPIEXEC} -n 4 ./ex45 -pc_type exotic -ksp_type fgmres -ksp_monitor_short  > ex45_1.tmp 2>&1;	  \
-	   if (${DIFF} output/ex45_1.out ex45_1.tmp) then true; \
-	   else echo "Possible problem with ex45_1, diffs above"; fi; \
+	   ${DIFF} output/ex45_1.out ex45_1.tmp || echo "Possible problem with ex45_1, diffs above"; \
 	   ${RM} -f ex45_1.tmp
+runex45_2:
+	-@${MPIEXEC} -n 4 ./ex45 -ksp_monitor_short -da_grid_x 21 -da_grid_y 21 -da_grid_z 21 -pc_type mg -pc_mg_levels 3 -mg_levels_ksp_type richardson > ex45_2.tmp 2>&1; \
+	   ${DIFF} output/ex45_2.out ex45_2.tmp || echo "Possible problem with ex45_2, diffs above"; \
+	   ${RM} -f ex45_2.tmp
 
 runex49:
 	-@${MPIEXEC} -n 1 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 > ex49_1.tmp 2>&1;	  \
@@ -950,6 +953,20 @@ runex49_3:
 	   ${DIFF} output/ex49_3.out ex49_3.tmp || echo "Possible problem with ex49_3, diffs above"; \
 	   ${RM} -f ex49_3.tmp
 
+runex52_mumps:
+	-@${MPIEXEC} -n 1 ./ex52 -use_mumps_lu > ex52.tmp 2>&1;	  \
+	   ${DIFF} output/ex52_1.out ex52.tmp || echo "Possible problem with ex52_mumps, diffs above"; \
+	   ${RM} -f ex52.tmp
+runex52_mumps_2:
+	-@${MPIEXEC} -n 1 ./ex52 -use_mumps_ch > ex52.tmp 2>&1;	  \
+	   ${DIFF} output/ex52_1.out ex52.tmp || echo "Possible problem with ex52_mumps_2, diffs above"; \
+	   ${RM} -f ex52.tmp
+
+runex52_superlu:
+	-@${MPIEXEC} -n 1 ./ex52 -use_superlu_ilu > ex52.tmp 2>&1;	  \
+	   ${DIFF} output/ex52_1.out ex52.tmp || echo "Possible problem with ex52, diffs above"; \
+	   ${RM} -f ex52.tmp
+
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 ex2.rm \
@@ -961,7 +978,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex27.PETSc ex27.rm ex28.PETSc ex28.rm ex29.PETSc  ex29.rm \
                                  ex31.PETSc ex31.rm ex32.PETSc runex32 ex32.rm ex38.PETSc runex38 ex38.rm \
                                  ex43.PETSc runex43 runex43_2 ex43.rm \
-                                 ex45.PETSc runex45 ex45.rm \
+                                 ex45.PETSc runex45 runex45_2 ex45.rm \
                                  ex49.PETSc runex49 runex49_2 runex49_3 ex49.rm
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm  
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc ex6f.rm \
@@ -989,8 +1006,9 @@ TESTEXAMPLES_HYPRE	       = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_
 TESTEXAMPLES_LUSOL	       = ex10.PETSc runex10_13 ex10.rm
 TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_lu_3 runex10_mumps_lu_4 \
 				 runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 runex10_mumps_redundant \
-                                 runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 ex10.rm 
-TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm 
+                                 runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 ex10.rm \
+                                 ex52.PETSc runex52_mumps runex52_mumps_2 ex52.rm
+TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm ex52.PETSc runex52_superlu ex52.rm
 TESTEXAMPLES_FFTW              = ex47.PETSc ex47.rm 
 TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm 
 TESTEXAMPLES_SPOOLES           = ex10.PETSc runex10_spooles_lu_1  runex10_spooles_lu_2 runex10_spooles_cholesky_1 runex10_spooles_cholesky_1sbaij  runex10_spooles_cholesky_2 ex10.rm 

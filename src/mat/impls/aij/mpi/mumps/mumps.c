@@ -1165,6 +1165,50 @@ PetscErrorCode MatGetInfo_MUMPS(Mat A,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
+/* -------------------------------------------------------------------------------------------*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatMumpsSetIcntl_MUMPS"
+PetscErrorCode MatMumpsSetIcntl_MUMPS(Mat F,PetscInt icntl,PetscInt ival)
+{
+  Mat_MUMPS *lu =(Mat_MUMPS*)F->spptr;
+
+  PetscFunctionBegin;
+  lu->id.ICNTL(icntl) = ival;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__   
+#define __FUNCT__ "MatMumpsSetIcntl"
+/*@
+  MatMumpsSetIcntl - Set MUMPS parameter ICNTL()
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
+.  icntl - index of MUMPS parameter array ICNTL()
+-  ival - value of MUMPS ICNTL(icntl)
+
+  Options Database:
+.   -mat_mumps_icntl_<icntl> <ival>
+
+   Level: beginner
+
+   References: MUMPS Users' Guide 
+
+.seealso: MatGetFactor()
+@*/
+PetscErrorCode MatMumpsSetIcntl(Mat F,PetscInt icntl,PetscInt ival)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin; 
+  PetscValidLogicalCollectiveInt(F,icntl,2);
+  PetscValidLogicalCollectiveInt(F,ival,3);
+  ierr = PetscTryMethod(F,"MatMumpsSetIcntl_C",(Mat,PetscInt,PetscInt),(F,icntl,ival));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*MC
   MATSOLVERMUMPS -  A matrix type providing direct solvers (LU and Cholesky) for
   distributed and sequential matrices via the external package MUMPS. 
@@ -1230,7 +1274,7 @@ PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   B->ops->view             = MatView_MUMPS;
   B->ops->getinfo          = MatGetInfo_MUMPS;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMumpsSetIcntl_C","MatMumpsSetIcntl",MatMumpsSetIcntl);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMumpsSetIcntl_C","MatMumpsSetIcntl_MUMPS",MatMumpsSetIcntl_MUMPS);CHKERRQ(ierr);
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
     B->factortype = MAT_FACTOR_LU;
@@ -1340,7 +1384,7 @@ PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->view             = MatView_MUMPS;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMumpsSetIcntl_C","MatMumpsSetIcntl",MatMumpsSetIcntl);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMumpsSetIcntl_C","MatMumpsSetIcntl_MUMPS",MatMumpsSetIcntl_MUMPS);CHKERRQ(ierr);
 
   mumps->isAIJ        = PETSC_TRUE;
   mumps->MatDestroy   = B->ops->destroy;
@@ -1352,37 +1396,4 @@ PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
   PetscFunctionReturn(0); 
 }
 EXTERN_C_END
-
-/* -------------------------------------------------------------------------------------------*/
-#undef __FUNCT__   
-#define __FUNCT__ "MatMumpsSetIcntl"
-/*@
-  MatMumpsSetIcntl - Set MUMPS parameter ICNTL()
-
-   Logically Collective on Mat
-
-   Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
-.  icntl - index of MUMPS parameter array ICNTL()
--  ival - value of MUMPS ICNTL(icntl)
-
-  Options Database:
-.   -mat_mumps_icntl_<icntl> <ival>
-
-   Level: beginner
-
-   References: MUMPS Users' Guide 
-
-.seealso: MatGetFactor()
-@*/
-PetscErrorCode MatMumpsSetIcntl(Mat F,PetscInt icntl,PetscInt ival)
-{
-  Mat_MUMPS      *lu =(Mat_MUMPS*)(F)->spptr; 
-
-  PetscFunctionBegin; 
-  PetscValidLogicalCollectiveInt(F,icntl,2);
-  PetscValidLogicalCollectiveInt(F,ival,3);
-  lu->id.ICNTL(icntl) = ival;
-  PetscFunctionReturn(0);
-}
 

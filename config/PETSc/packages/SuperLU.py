@@ -3,10 +3,10 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_4.0-March_7_2010.tar.gz']
+    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuperLU_4.1-December_20_2010.tar.gz']
     self.functions    = ['set_default_options']
     self.includes     = ['slu_ddefs.h']
-    self.liblist      = [['libsuperlu_4.0.a']]
+    self.liblist      = [['libsuperlu_4.1.a']]
     self.complex      = 1
     # SuperLU has NO support for 64 bit integers, use SuperLU_Dist if you need that
     self.excludedDirs = ['SuperLU_DIST']
@@ -25,7 +25,7 @@ class Configure(PETSc.package.NewPackage):
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('SuperLUroot  = '+self.packageDir+'\n')
     g.write('TMGLIB       = tmglib.a\n')
-    g.write('SUPERLULIB   = $(SuperLUroot)/lib/libsuperlu_4.0.a\n')
+    g.write('SUPERLULIB   = $(SuperLUroot)/lib/libsuperlu_4.1.a\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('LIBS	  = $(SUPERLULIB) $(BLASLIB)\n')
