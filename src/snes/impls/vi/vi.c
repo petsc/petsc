@@ -458,6 +458,47 @@ PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
   ierr = MatMultTranspose(H,phi,dpsi);
   PetscFunctionReturn(0);
 }
+
+/* -------------------------------------------------------------------------- */
+/*
+   SNESVIProjectOntoBounds - Projects X onto the feasible region so that Xl[i] <= X[i] <= Xu[i] for i = 1...n.
+
+   Input Parameters:
+.  SNES - nonlinear solver context
+
+   Output Parameters:
+.  X - Bound projected X
+
+*/
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESVIProjectOntoBounds"
+PetscErrorCode SNESVIProjectOntoBounds(SNES snes,Vec X)
+{
+  PetscErrorCode    ierr;
+  SNES_VI           *vi = (SNES_VI*)snes->data;
+  const PetscScalar *xl,*xu;
+  PetscScalar       *x;
+  PetscInt          i,n;
+
+  PetscFunctionBegin;
+
+  ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(vi->xl,&xl);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(vi->xu,&xu);CHKERRQ(ierr);
+
+  for(i = 0;i<n;i++) {
+    if (x[i] < xl[i]) x[i] = xl[i];
+    else if (x[i] > xu[i]) x[i] = xu[i];
+  }
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(vi->xl,&xl);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(vi->xu,&xu);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
   
 /*
    SNESVIAdjustInitialGuess - Readjusts the initial guess to the SNES solver supplied by the user so that the initial guess lies inside the feasible region .
@@ -1420,7 +1461,7 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
 
 /*
   This routine is a copy of SNESLineSearchNo routine in snes/impls/ls/ls.c
-
+  
 */
 PetscErrorCode SNESLineSearchNo_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal xnorm,PetscReal *ynorm,PetscReal *gnorm,PetscBool *flag)
 {
@@ -1439,6 +1480,46 @@ PetscErrorCode SNESLineSearchNo_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y
   if (changed_y) {
     ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
   }
+  ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
+  if (!snes->domainerror) {
+    ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);  /* gnorm = || g || */
+    if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  }
+  if (vi->lsmonitor) {
+    ierr = PetscViewerASCIIMonitorPrintf(vi->lsmonitor,"    Line search: Using full step: fnorm %G gnorm %G\n",fnorm,*gnorm);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* -------------------------------------------------------------------------- */
+#undef __FUNCT__  
+#define __FUNCT__ "SNESLineSearchBoundProjectedNo_VI"
+
+/*
+  This routine does not actually do a line search but it takes a full newton
+  step while ensuring that the new iterates remain within the constraints.
+  
+*/
+PetscErrorCode SNESLineSearchBoundProjectedNo_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal xnorm,PetscReal *ynorm,PetscReal *gnorm,PetscBool *flag)
+{
+  PetscErrorCode ierr;
+  SNES_VI        *vi = (SNES_VI*)snes->data;
+  PetscBool     changed_w = PETSC_FALSE,changed_y = PETSC_FALSE;
+
+  PetscFunctionBegin;
+  *flag = PETSC_TRUE; 
+  ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+  ierr = VecNorm(y,NORM_2,ynorm);CHKERRQ(ierr);         /* ynorm = || y || */
+  ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
+  ierr = SNESVIProjectOntoBounds(snes,w);CHKERRQ(ierr);
+  if (vi->postcheckstep) {
+   ierr = (*vi->postcheckstep)(snes,x,y,w,vi->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
+  }
+  if (changed_y) {
+    ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
+  }
+  ierr = SNESVIProjectOntoBounds(snes,w);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
   if (!snes->domainerror) {
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);  /* gnorm = || g || */
@@ -1675,45 +1756,12 @@ PetscErrorCode SNESLineSearchCubic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Ve
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
-/*
- Projects vector X onto the variable bounds such that
-   Xl[i] <= X[i] <= Xu[i]  for i = 1..n
-*/
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESVIProjectOntoBounds"
-PetscErrorCode SNESVIProjectOntoBounds(SNES snes,Vec X)
-{
-  PetscErrorCode    ierr;
-  SNES_VI           *vi = (SNES_VI*)snes->data;
-  const PetscScalar *xl,*xu;
-  PetscScalar       *x;
-  PetscInt          i,n;
-
-  PetscFunctionBegin;
-
-  ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(vi->xl,&xl);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(vi->xu,&xu);CHKERRQ(ierr);
-
-  for(i = 0;i<n;i++) {
-    if (x[i] < xl[i]) x[i] = xl[i];
-    else if (x[i] > xu[i]) x[i] = xu[i];
-  }
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(vi->xl,&xl);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(vi->xu,&xu);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
 
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESLineSearchBoundProjectedCubic_VI"
 /*
-  This routine implements a bound projected cubic line search
+  This routine implements a cubic line search while keeping the iterates within bounds
 */
 PetscErrorCode SNESLineSearchBoundProjectedCubic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal xnorm,PetscReal *ynorm,PetscReal *gnorm,PetscBool *flag)
 {
@@ -2097,6 +2145,7 @@ static PetscErrorCode SNESView_VI(SNES snes,PetscViewer viewer)
     else if (vi->LineSearch == SNESLineSearchQuadratic_VI) cstr = "SNESLineSearchQuadratic";
     else if (vi->LineSearch == SNESLineSearchCubic_VI)     cstr = "SNESLineSearchCubic";
     else if (vi->LineSearch == SNESLineSearchBoundProjectedCubic_VI) cstr = "SNESLineSearchBoundProjectedCubic";
+    else if(vi->LineSearch == SNESLineSearchBoundProjectedNo_VI) cstr = "SNESLineSearchBoundProjectedBasic";
     else                                                cstr = "unknown";
     if (snes->ops->solve == SNESSolveVI_SS)      tstr = "Semismooth";
     else if (snes->ops->solve == SNESSolveVI_AS)  tstr = "Active Set";
@@ -2162,7 +2211,7 @@ PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
 static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
 {
   SNES_VI        *vi = (SNES_VI *)snes->data;
-  const char     *lses[] = {"basic","basicnonorms","quadratic","cubic"};
+  const char     *lses[] = {"basic","basicnonorms","quadratic","cubic","boundproj_basic"};
   const char     *vies[] = {"ss","as","rs"};
   PetscErrorCode ierr;
   PetscInt       indx;
@@ -2198,7 +2247,7 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
     ierr = SNESLineSearchSet(snes,SNESLineSearchBoundProjectedCubic_VI,PETSC_NULL);CHKERRQ(ierr);
   }
   else {
-    ierr = PetscOptionsEList("-snes_vi_ls","Line search used","SNESLineSearchSet",lses,4,"cubic",&indx,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-snes_vi_ls","Line search used","SNESLineSearchSet",lses,5,"boundproj_basic",&indx,&flg);CHKERRQ(ierr);
     if (flg) {
       switch (indx) {
       case 0:
@@ -2212,6 +2261,9 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
         break;
       case 3:
         ierr = SNESLineSearchSet(snes,SNESLineSearchCubic_VI,PETSC_NULL);CHKERRQ(ierr);
+        break;
+      case 4:
+        ierr = SNESLineSearchSet(snes,SNESLineSearchBoundProjectedNo_VI,PETSC_NULL);CHKERRQ(ierr);
         break;
       }
     }
@@ -2259,7 +2311,7 @@ PetscErrorCode  SNESCreate_VI(SNES snes)
   vi->alpha		 = 1.e-4;
   vi->maxstep		 = 1.e8;
   vi->minlambda         = 1.e-12;
-  vi->LineSearch        = SNESLineSearchCubic_VI;
+  vi->LineSearch        = SNESLineSearchBoundProjectedNo_VI;
   vi->lsP               = PETSC_NULL;
   vi->postcheckstep     = PETSC_NULL;
   vi->postcheck         = PETSC_NULL;
