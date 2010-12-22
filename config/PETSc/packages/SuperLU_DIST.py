@@ -3,10 +3,10 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuperLU_DIST_2.4-hg-v2.tar.gz']
+    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuperLU_DIST_2.5-December_21_2010.tar.gz']
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
-    self.liblist    = [['libsuperlu_dist_2.4.a']]
+    self.liblist    = [['libsuperlu_dist_2.5.a']]
     #
     #  SuperLU_dist supports 64 bit integers but uses ParMetis which does not, see the comment in ParMetis.py
     #  in the method configureLibrary()
@@ -26,7 +26,7 @@ class Configure(PETSc.package.NewPackage):
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('DSuperLUroot = '+self.packageDir+'\n')
-    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_2.4.a\n')
+    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_2.5.a\n')
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('IMPI         = '+self.headers.toString(self.mpi.include)+'\n')
@@ -52,11 +52,6 @@ class Configure(PETSc.package.NewPackage):
     if self.framework.argDB['with-64-bit-indices']:
       g.write(' -D_LONGINT')
     g.write('\n')
-#    if hasattr(self.compilers, 'FC'):
-#      self.setCompilers.pushLanguage('FC')
-#      g.write('FORTRAN      = '+self.setCompilers.getCompiler()+'\n')
-#      g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n')
-#      self.setCompilers.popLanguage()
     # not sure what this is for
     g.write('NOOPTS       = '+self.blasLapack.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n')
     g.close()

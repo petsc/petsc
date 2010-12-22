@@ -46,17 +46,8 @@ class Configure(PETSc.package.NewPackage):
       g.write('CDEFS   = -DUpCase')
     else:
       g.write('CDEFS   = -DNoChange')
-    if self.framework.argDB['with-64-bit-indices']:
-      g.write(' -D_LONGINT')
     g.write('\n')
 
-    if hasattr(self.compilers, 'FC'):
-      self.setCompilers.pushLanguage('FC')
-      g.write('FORTRAN      = '+self.setCompilers.getCompiler()+'\n')
-      g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n')
-      self.setCompilers.popLanguage()
-    else:
-      raise RuntimeError('SuperLU requires a Fortran compiler to build')
     g.write('MATLAB       =\n')
     g.write('NOOPTS       = '+self.blasLapack.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n')
     g.close()
