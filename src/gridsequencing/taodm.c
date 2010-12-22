@@ -32,7 +32,7 @@ PetscClassId TAODM_CLASSID;
 
     Level: advanced
 
-.seealso TaoDMDestroy(), TaoDMSetUser(), TaoDMGetUser(), TaoDMSetMatType(),  TaoDMSetNullSpace(), TaoDMSetInitialGuess(),
+.seealso TaoDMDestroy(), TaoDMSetUser(), TaoDMGetUser(), TaoDMSetMatType(),  TaoDMSetNullSpace(), TaoDMSetInitialGuessRoutine(),
          TaoDMSetISColoringType()
 
 @*/
@@ -270,7 +270,7 @@ PetscErrorCode  TaoDMSolve(TaoDM *taodm)
   ierr = PetscOptionsGetBool(0,"-taodm_grid_sequence",&gridseq,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(0,"-taodm_monitor_solution",&vecmonitor,PETSC_NULL);CHKERRQ(ierr);
   if (taodm[0]->ops->computeinitialguess) {
-    ierr = (*taodm[0]->ops->computeinitialguess)(taodm,taodm[0]->x);CHKERRQ(ierr);
+    ierr = (*taodm[0]->ops->computeinitialguess)(taodm[0],taodm[0]->x);CHKERRQ(ierr);
     ierr = TaoSolverSetInitialVector(taodm[0]->tao,taodm[0]->x); CHKERRQ(ierr);
   }
   for (i=0; i<nlevels-1; i++) {
@@ -527,10 +527,22 @@ PetscErrorCode  TaoDMView(TaoDM *taodm,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TaoDMSetVariableBoundsRoutine"
+PetscErrorCode TaoDMSetVariableBoundsRoutine(TaoDM *taodm, PetscErrorCode (*bounds)(TaoDM,Vec,Vec))
+{
+  PetscInt i, nlevels=taodm[0]->nlevels;
+  PetscFunctionBegin;
+  for (i=0;i<nlevels;i++) {
+    taodm[i]->ops->computebounds = bounds;
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
-#define __FUNCT__ "TaoDMSetInitialGuess"
+#define __FUNCT__ "TaoDMSetInitialGuessRoutine"
 /*@C
-    TaoDMSetInitialGuess - Sets the function that computes an initial guess (coarsest grid only)
+    TaoDMSetInitialGuessRoutine - Sets the function that computes an initial guess (coarsest grid only)
 
     Collective on TaoDM
 
@@ -544,7 +556,7 @@ PetscErrorCode  TaoDMView(TaoDM *taodm,PetscViewer viewer)
 .seealso TaoDMCreate(), TaoDMDestroy, TaoDMSetKSP(), TaoDMSetSNES(), TaoDMInitialGuessCurrent(), TaoDMSetMatType(), TaoDMSetNullSpace()
 
 @*/
-PetscErrorCode  TaoDMSetInitialGuess(TaoDM *taodm,PetscErrorCode (*guess)(TaoDM*,Vec))
+PetscErrorCode  TaoDMSetInitialGuessRoutine(TaoDM *taodm,PetscErrorCode (*guess)(TaoDM,Vec))
 {
   PetscInt       i,nlevels = taodm[0]->nlevels;
 
@@ -628,7 +640,7 @@ PetscErrorCode TaoDMSetUp(TaoDM* taodm)
 {
   PetscErrorCode ierr;
   PetscInt i,nlevels = taodm[0]->nlevels;
-  PetscBool monitor,monitorAll;
+  //  PetscBool monitor,monitorAll;
 
   PetscFunctionBegin;
   /* Create Solver for each level */
@@ -663,3 +675,209 @@ PetscErrorCode TaoDMSetUp(TaoDM* taodm)
   
 }
 
+#undef __FUNCT__ 
+#define __FUNCT__ "TaoDMGetContext"
+PetscErrorCode TaoDMGetContext(TaoDM taodm, void **ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(taodm,TAODM_CLASSID,1); 
+  if (ctx) *ctx = taodm->user;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoDMGetDM"
+PetscErrorCode TaoDMGetDM(TaoDM taodm, DM *dm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(taodm,TAODM_CLASSID,1);
+  if (dm) *dm = taodm->dm;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoDMFormHessian"
+PetscErrorCode TaoDMFormHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStructure *flg, void* ptr)
+{
+  TaoDM          taodm = (TaoDM) ptr;
+  PetscErrorCode ierr;
+  Vec            localX;
+  void           *x;
+  DM             dm;
+  DMDALocalInfo  info;
+
+  PetscFunctionBegin;
+  ierr = TaoDMGetDM(taodm,&dm); CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm,&localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(dm,&info); CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(dm,X,&x); CHKERRQ(ierr);
+  ierr = (*taodm->ops->computehessianlocal)(&info, (PetscScalar**)x, *H, taodm->user); CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(dm,X,&x); CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm,&localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoDMFormGradient"
+PetscErrorCode TaoDMFormGradient(TaoSolver tao, Vec X, Vec G, void *ptr)
+{
+  PetscErrorCode ierr;
+  Vec            localX;
+  void           *x, *g;
+  TaoDM          taodm = (TaoDM)ptr;
+  PetscInt       N,n;
+  DMDALocalInfo  info;
+  DM             dm;
+  
+  PetscFunctionBegin;
+  
+  ierr = TaoDMGetDM(taodm,&dm); CHKERRQ(ierr);
+  /* determine whether X=localX */
+  ierr = DMGetLocalVector(dm,&localX);CHKERRQ(ierr);
+  ierr = VecGetSize(X,&N);CHKERRQ(ierr);
+  ierr = VecGetSize(localX,&n);CHKERRQ(ierr);
+ 
+  
+  if (n != N){ /* X != localX */
+    /* Scatter ghost points to local vector, using the 2-step process
+        DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
+    */
+    ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  } else {
+    ierr = DMRestoreLocalVector(dm,&localX);CHKERRQ(ierr);
+    localX = X;
+  }
+
+  ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(dm,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(dm,G,&g);CHKERRQ(ierr);
+
+  CHKMEMQ;
+  ierr = (*taodm->ops->computegradientlocal)(&info,(PetscScalar**)x,(PetscScalar**)g,taodm->user); CHKERRQ(ierr);
+  CHKMEMQ;
+
+  ierr = DMDAVecRestoreArray(dm,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(dm,G,&g);CHKERRQ(ierr);
+
+  if (n != N){
+    ierr = DMRestoreLocalVector(dm,&localX);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0); 
+
+}
+
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoDMFormFunctionGradient"
+PetscErrorCode TaoDMFormFunctionGradient(TaoSolver tao, Vec X, PetscScalar *f, Vec G, void *ptr)
+{
+  PetscErrorCode ierr;
+  Vec            localX;
+  void           *x, *g;
+  TaoDM          taodm = (TaoDM)ptr;
+  PetscInt       N,n;
+  PetscScalar    floc;
+  MPI_Comm       comm;
+  DMDALocalInfo  info;
+  DM             dm;
+  PetscFunctionBegin;
+  
+  ierr = TaoDMGetDM(taodm,&dm); CHKERRQ(ierr);
+  /* determine whether X=localX */
+  ierr = DMGetLocalVector(dm,&localX);CHKERRQ(ierr);
+  ierr = VecGetSize(X,&N);CHKERRQ(ierr);
+  ierr = VecGetSize(localX,&n);CHKERRQ(ierr);
+  
+  if (n != N){ /* X != localX */
+    /* Scatter ghost points to local vector, using the 2-step process
+        DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
+    */
+    ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  } else {
+    ierr = DMRestoreLocalVector(dm,&localX);CHKERRQ(ierr);
+    localX = X;
+  }
+
+  ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(dm,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(dm,G,&g);CHKERRQ(ierr);
+
+  CHKMEMQ;
+  ierr = (*taodm->ops->computeobjectiveandgradientlocal)(&info,(PetscScalar**)x,&floc,(PetscScalar**)g,taodm->user); CHKERRQ(ierr);
+  CHKMEMQ;
+  ierr = PetscObjectGetComm((PetscObject)X,&comm); CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&floc,f,1,MPIU_SCALAR, MPI_SUM, comm); CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(dm,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(dm,G,&g);CHKERRQ(ierr);
+
+  if (n != N){
+    ierr = DMRestoreLocalVector(dm,&localX);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0); 
+
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoDMFormFunction"
+PetscErrorCode TaoDMFormFunction(TaoSolver tao, Vec X, PetscScalar *f, void *ptr)
+{
+  PetscErrorCode ierr;
+  Vec            localX;
+  PetscScalar    *x;
+  TaoDM          taodm = (TaoDM)ptr;
+  PetscInt       N,n;
+  PetscScalar    floc;
+  MPI_Comm       comm;
+  DMDALocalInfo  info;
+  DM             dm;
+  
+  PetscFunctionBegin;
+  
+  ierr = TaoDMGetDM(taodm,&dm); CHKERRQ(ierr);
+  /* determine whether X=localX */
+  ierr = DMGetLocalVector(dm,&localX);CHKERRQ(ierr);
+  ierr = VecGetSize(X,&N);CHKERRQ(ierr);
+  ierr = VecGetSize(localX,&n);CHKERRQ(ierr);
+  
+  if (n != N){ /* X != localX */
+    /* Scatter ghost points to local vector, using the 2-step process
+        DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
+    */
+    ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  } else {
+    ierr = DMRestoreLocalVector(dm,&localX);CHKERRQ(ierr);
+    localX = X;
+  }
+
+  ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(dm,X,&x);CHKERRQ(ierr);
+
+  CHKMEMQ;
+  ierr = (*taodm->ops->computeobjectivelocal)(&info,(PetscScalar**)x,&floc,taodm->user); CHKERRQ(ierr);
+  CHKMEMQ;
+  ierr = PetscObjectGetComm((PetscObject)X,&comm); CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&floc,f,1,MPIU_SCALAR, MPI_SUM, comm); CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(dm,X,&x);CHKERRQ(ierr);
+
+  if (n != N){
+    ierr = DMRestoreLocalVector(dm,&localX);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0); 
+
+}
+
+PetscErrorCode TaoDMFormBounds(TaoSolver tao, Vec XL, Vec XU, void *ptr)
+{
+
+  TaoDM          taodm = (TaoDM)ptr;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = (*taodm->ops->computebounds)(taodm,XL,XU); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

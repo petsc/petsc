@@ -18,13 +18,16 @@ extern PetscErrorCode TaoDMSetFromOptions(TaoDM*);
 extern PetscErrorCode TaoDMSetUp(TaoDM*);
 extern PetscErrorCode TaoDMSolve(TaoDM*);
 extern PetscErrorCode TaoDMView(TaoDM*, PetscViewer);
+extern PetscErrorCode TaoDMSetDM(TaoDM *, DM);
+extern PetscErrorCode TaoDMGetDM(TaoDM , DM*);
+extern PetscErrorCode TaoDMGetContext(TaoDM , void**);
 
-extern PetscErrorCode TaoDMSetInitialGuessRoutine(TaoDM*,PetscErrorCode(*)(TaoDM*,Vec));
+extern PetscErrorCode TaoDMSetInitialGuessRoutine(TaoDM*,PetscErrorCode(*)(TaoDM,Vec));
+extern PetscErrorCode TaoDMSetVariableBoundsRoutine(TaoDM*,PetscErrorCode(*)(TaoDM,Vec, Vec));
 extern PetscErrorCode TaoDMSetLocalObjectiveRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscScalar**,PetscScalar*,void*));
 extern PetscErrorCode TaoDMSetLocalGradientRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscScalar**,PetscScalar**,void*));
 extern PetscErrorCode TaoDMSetLocalObjectiveAndGradientRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscScalar**,PetscScalar*,PetscScalar**,void*));
 extern PetscErrorCode TaoDMSetLocalHessianRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscScalar**,Mat,void*));
-extern PetscErrorCode TaoDMSetVariableBoundsRoutine(TaoDM*,PetscErrorCode(*)(TaoDM*,Vec, Vec));
 
 
 extern PetscErrorCode TaoDMFormFunction(TaoSolver, Vec, PetscScalar *, void*);

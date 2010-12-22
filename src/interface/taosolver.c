@@ -999,3 +999,26 @@ PetscErrorCode TaoSolverMonitor(TaoSolver tao, PetscInt its, PetscReal f, PetscR
     PetscFunctionReturn(0);
 
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "TaoSolverSetOptionsPrefix"
+/*@C
+    TaoSolverSetOptionsPrefix - Sets the prefix used for the solvers inside a TaoSolver
+
+    Collective on MPI_Comm 
+
+    Input Parameters:
++    tao - the TaoSolver object created with TaoSolverCreate()
+-    prefix - the prefix string
+
+    Level: intermediate
+
+@*/
+PetscErrorCode  TaoSolverSetOptionsPrefix(TaoSolver tao,const char prefix[])
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = PetscStrallocpy(prefix,&(((PetscObject)(tao))->prefix));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

@@ -8,12 +8,8 @@ struct _TaoDMOps {
   PetscErrorCode (*computeobjectivelocal)(DMDALocalInfo*,PetscScalar**, PetscScalar*, void*);
   PetscErrorCode (*computegradientlocal)(DMDALocalInfo*,PetscScalar**, PetscScalar**, void*);
   PetscErrorCode (*computehessianlocal)(DMDALocalInfo*,PetscScalar**,Mat,void*);
-  PetscErrorCode (*computebounds)(TaoDM*, Vec, Vec);
-  PetscErrorCode (*computeinitialguess)(TaoDM*, Vec);
-  void *userfctx;
-  void *usergctx;
-  void *userhctx;
-  void *userfgctx;
+  PetscErrorCode (*computebounds)(TaoDM, Vec, Vec);
+  PetscErrorCode (*computeinitialguess)(TaoDM, Vec);
 };
 
 struct _p_TaoDM {
@@ -29,6 +25,10 @@ struct _p_TaoDM {
   MatType        mtype;
   ISColoringType isctype;
   TaoSolver      tao; /* TaoSolver at this level */
+  void *userfctx;
+  void *usergctx;
+  void *userhctx;
+  void *userfgctx;
 };
 
 #endif

@@ -1,6 +1,7 @@
 #define TAOSOLVER_DLL
 
 #include "include/private/taosolver_impl.h"
+#include "include/private/taodm_impl.h"
 
 static PetscBool TaoSolverPackageInitialized = PETSC_FALSE;
 
@@ -29,6 +30,7 @@ PetscErrorCode TaoSolverInitializePackage(const char path[])
   TaoSolverPackageInitialized = PETSC_TRUE;
 
   ierr = PetscClassIdRegister("TaoSolver",&TAOSOLVER_CLASSID); CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("TaoDM",&TAODM_CLASSID); CHKERRQ(ierr);
   
   /* Tell PETSc what solvers are available */
   ierr = TaoSolverRegisterAll(path); CHKERRQ(ierr);

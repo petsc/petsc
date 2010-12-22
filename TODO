@@ -43,6 +43,7 @@ finish examples
   jbearing3
   jbearing3f
   minsurf3
+  - generate output
 Check documentation on examples
 
 Check memory (esp. on MT line search!)
