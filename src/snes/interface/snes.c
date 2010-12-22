@@ -1461,6 +1461,10 @@ PetscErrorCode  SNESDestroy(SNES snes)
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(snes);CHKERRQ(ierr);
 
+  if (snes->conv_malloc) {
+    ierr = PetscFree(snes->conv_hist);CHKERRQ(ierr);
+    ierr = PetscFree(snes->conv_hist_its);CHKERRQ(ierr);
+  }
   if (snes->dm) {ierr = DMDestroy(snes->dm);CHKERRQ(ierr);}
   if (snes->ops->destroy) {ierr = (*(snes)->ops->destroy)(snes);CHKERRQ(ierr);}
   
@@ -2088,6 +2092,10 @@ PetscErrorCode  SNESGetConvergedReason(SNES snes,SNESConvergedReason *reason)
 -  reset - PETSC_TRUE indicates each new nonlinear solve resets the history counter to zero,
            else it continues storing new values for new nonlinear solves after the old ones
 
+   Notes:
+   If 'a' and 'its' are PETSC_NULL then space is allocated for the history. If 'na' PETSC_DECIDE or PETSC_DEFAULT then a
+   default array of length 10000 is allocated.
+
    This routine is useful, e.g., when running a code for purposes
    of accurate performance monitoring, when no I/O should be done
    during the section of code that is being timed.
@@ -2101,10 +2109,18 @@ PetscErrorCode  SNESGetConvergedReason(SNES snes,SNESConvergedReason *reason)
 @*/
 PetscErrorCode  SNESSetConvergenceHistory(SNES snes,PetscReal a[],PetscInt its[],PetscInt na,PetscBool  reset)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   if (na)  PetscValidScalarPointer(a,2);
   if (its) PetscValidIntPointer(its,3);
+  if (na == PETSC_DECIDE || na == PETSC_DEFAULT || !a) {
+    if (na == PETSC_DECIDE || na == PETSC_DEFAULT) na = 1000;
+    ierr = PetscMalloc(na*sizeof(PetscReal),&a);CHKERRQ(ierr);
+    ierr = PetscMalloc(na*sizeof(PetscInt),&its);CHKERRQ(ierr);
+    snes->conv_malloc   = PETSC_TRUE;
+  }
   snes->conv_hist       = a;
   snes->conv_hist_its   = its;
   snes->conv_hist_max   = na;
@@ -2112,6 +2128,30 @@ PetscErrorCode  SNESSetConvergenceHistory(SNES snes,PetscReal a[],PetscInt its[]
   snes->conv_hist_reset = reset;
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#include "engine.h"   /* Matlab include file */
+#include "mex.h"      /* Matlab include file */
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "SNESGetConvergenceHistoryMatlab"
+mxArray *SNESGetConvergenceHistoryMatlab(SNES snes)
+{
+  mxArray        *mat;
+  PetscInt       i;
+  PetscReal      *ar;
+
+  PetscFunctionBegin;
+  mat  = mxCreateDoubleMatrix(snes->conv_hist_len,1,mxREAL);
+  ar   = (PetscReal*) mxGetData(mat);
+  for (i=0; i<snes->conv_hist_len; i++) {
+    ar[i] = snes->conv_hist[i];
+  }
+  PetscFunctionReturn(mat);
+}
+EXTERN_C_END
+#endif
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESGetConvergenceHistory"

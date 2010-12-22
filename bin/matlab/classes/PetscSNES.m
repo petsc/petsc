@@ -52,6 +52,12 @@ classdef PetscSNES < PetscObject
       end
       err = calllib('libpetsc', 'SNESMonitorSetMatlab', obj.pobj,func,arg);PetscCHKERRQ(err);
     end
+    function err = SetConvergenceHistory(obj,flg)
+      err = calllib('libpetsc', 'SNESSetConvergenceHistory', obj.pobj,0,0,-1,flg);PetscCHKERRQ(err);
+    end
+    function history = GetConvergenceHistory(obj)
+      history = calllib('libpetsc', 'SNESGetConvergenceHistoryMatlab', obj.pobj);
+    end
     function err = View(obj,viewer)
       if (nargin == 1)
         err = calllib('libpetsc', 'SNESView', obj.pobj,0);PetscCHKERRQ(err);

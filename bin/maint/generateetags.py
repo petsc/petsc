@@ -117,7 +117,7 @@ def processFiles(dirname,etagfile,ctagfile):
   # list files that can't be done with global match [as above] with complete paths
   import glob
   files= []
-  lists=['conf/*','bin/*','bin/maint/*','bin/maint/confignightly/*']
+  lists=['conf/*','bin/*','bin/maint/*','bin/matlab/classes/*','bin/maint/confignightly/*']
 
   for glist in lists:
     gfiles = glob.glob(glist)

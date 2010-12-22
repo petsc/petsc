@@ -12,6 +12,7 @@ typedef int MPI_Comm;
 int PetscGetPETSC_COMM_SELF(MPI_Comm*);
 int PetscFinalize(void);
 
+typedef int PetscBool;
 typedef int InsertMode;
 typedef long int PetscPointer;
 
@@ -130,6 +131,8 @@ int SNESVISetVariableBounds(SNES,Vec,Vec);
 int SNESView(SNES,PetscViewer);
 int SNESDestroy(SNES);
 int SNESMonitorSetMatlab(SNES,const char*,mxArray*);
+int SNESSetConvergenceHistory(SNES,double[],int[],int,PetscBool);
+mxArray* SNESGetConvergenceHistoryMatlab(SNES);
 
 typedef PetscPointer TS;
 int TSCreate(MPI_Comm,TS *);
