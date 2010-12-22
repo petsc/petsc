@@ -62,6 +62,7 @@ classdef PetscVec < PetscObject
       idx = idx - 1;
       values = zeros(1,length(idx));
       [err,idx,values] = calllib('libpetsc', 'VecGetValues', obj.pobj,length(idx),idx,values);PetscCHKERRQ(err);
+      values = values'; % Want to return a column vector since that is more natural in Matlab
     end
     function err = AssemblyBegin(obj)
       err = calllib('libpetsc', 'VecAssemblyBegin', obj.pobj);PetscCHKERRQ(err);
