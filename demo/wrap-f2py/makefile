@@ -13,8 +13,12 @@ test: run clean
 
 SCRIPT=run_demo
 MODULE=Bratu2D
+
+.PHONY:build
+build: ${MODULE}.so
+
 .PHONY:run
-run: ${MODULE}.so
+run: build
 	${PYTHON} ${SCRIPT}.py
 
 ${MODULE}.so: ${MODULE}.pyf ${MODULE}.F90
