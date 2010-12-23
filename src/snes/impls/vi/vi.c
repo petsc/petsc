@@ -568,6 +568,9 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
   KSPConvergedReason kspreason;
 
   PetscFunctionBegin;
+  vi->computeuserfunction    = snes->ops->computefunction;
+  snes->ops->computefunction = SNESVIComputeFunction;
+
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;
   snes->reason                 = SNES_CONVERGED_ITERATING;
@@ -588,6 +591,7 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
   ierr = SNESComputeFunction(snes,X,vi->phi);CHKERRQ(ierr);
   if (snes->domainerror) {
     snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+    snes->ops->computefunction = vi->computeuserfunction;
     PetscFunctionReturn(0);
   }
    /* Compute Merit function */
@@ -607,7 +611,10 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
   snes->ttol = vi->phinorm*snes->rtol;
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,vi->phinorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
-  if (snes->reason) PetscFunctionReturn(0);
+  if (snes->reason) {
+    snes->ops->computefunction = vi->computeuserfunction;
+    PetscFunctionReturn(0);
+  }
 
   for (i=0; i<maxits; i++) {
 
@@ -660,6 +667,7 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+      snes->ops->computefunction = vi->computeuserfunction;
       PetscFunctionReturn(0);
     }
     if (!lssucceed) {
@@ -692,6 +700,7 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
     ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
     if(!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
+  snes->ops->computefunction = vi->computeuserfunction;
   PetscFunctionReturn(0);
 }
 
@@ -841,6 +850,8 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
   KSPConvergedReason kspreason;
 
   PetscFunctionBegin;
+  vi->computeuserfunction    = snes->ops->computefunction;
+  snes->ops->computefunction = SNESVIComputeFunction;
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;
   snes->reason                 = SNES_CONVERGED_ITERATING;
@@ -861,6 +872,7 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
   ierr = SNESComputeFunction(snes,X,vi->phi);CHKERRQ(ierr);
   if (snes->domainerror) {
     snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+    snes->ops->computefunction = vi->computeuserfunction;
     PetscFunctionReturn(0);
   }
    /* Compute Merit function */
@@ -880,7 +892,10 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
   snes->ttol = vi->phinorm*snes->rtol;
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,vi->phinorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
-  if (snes->reason) PetscFunctionReturn(0);
+  if (snes->reason) {
+    snes->ops->computefunction = vi->computeuserfunction;
+    PetscFunctionReturn(0);
+  }
 
   for (i=0; i<maxits; i++) {
 
@@ -1032,6 +1047,7 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+      snes->ops->computefunction = vi->computeuserfunction;
       PetscFunctionReturn(0);
     }
     if (!lssucceed) {
@@ -1064,6 +1080,7 @@ PetscErrorCode SNESSolveVI_AS(SNES snes)
     ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
     if(!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
+  snes->ops->computefunction = vi->computeuserfunction;
   PetscFunctionReturn(0);
 }
 
@@ -1357,9 +1374,6 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
     ierr = VecDuplicate(snes->vec_sol, &vi->z);CHKERRQ(ierr);
     ierr = VecDuplicate(snes->vec_sol, &vi->t); CHKERRQ(ierr);
 
-
-    vi->computeuserfunction = snes->ops->computefunction;
-    snes->ops->computefunction = SNESVIComputeFunction;
   }
   PetscFunctionReturn(0);
 }

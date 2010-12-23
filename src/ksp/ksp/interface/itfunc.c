@@ -1425,7 +1425,7 @@ PetscErrorCode  KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,Pet
     if (monitor == ksp->monitor[i] && monitordestroy == ksp->monitordestroy[i] && mctx == ksp->monitorcontext[i]) PetscFunctionReturn(0);
 
     /* check if both default monitors that share common ASCII viewer */
-    if (monitor == ksp->monitor[i] && monitor == KSPMonitorDefault) {
+    if (monitor == ksp->monitor[i] && (monitor == KSPMonitorDefault  || monitor == KSPMonitorTrueResidualNorm)) {
       if (mctx && ksp->monitorcontext[i]) {
         PetscErrorCode          ierr;
         PetscViewerASCIIMonitor viewer1 = (PetscViewerASCIIMonitor) mctx;

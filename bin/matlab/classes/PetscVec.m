@@ -91,7 +91,7 @@ classdef PetscVec < PetscObject
       err = calllib('libpetsc', 'VecDestroy', obj.pobj);PetscCHKERRQ(err);
     end
 %
-%   The following overload a = x(idx) and x(idx) = a
+%   The following overload a = x(idx)
 %
     function varargout = subsref(obj,S)
       %  Matlab design of subsref is MORONIC
@@ -120,6 +120,9 @@ classdef PetscVec < PetscObject
       end
       varargout = {obj.GetValues(idx)};      
     end
+%
+%   The following overload x(idx) = a
+%
     function obj = subsasgn(obj,S,value)
       if (S(1).type ~= '.')
         if (obj.VecFromDM)
