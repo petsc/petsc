@@ -578,6 +578,8 @@ PetscErrorCode TaoDMSetLocalObjectiveRoutine(TaoDM* taodm, PetscErrorCode (*func
   PetscFunctionBegin;
   for (i=0;i<nlevels;i++) {
     taodm[i]->ops->computeobjectivelocal = func;
+    taodm[i]->ops->computeobjective=0;
+    taodm[i]->ops->computeobjectiveandgradient=0;
   }
   PetscFunctionReturn(0);
 }
@@ -591,7 +593,10 @@ PetscErrorCode TaoDMSetLocalGradientRoutine(TaoDM* taodm, PetscErrorCode (*func)
   PetscFunctionBegin;
   for (i=0;i<nlevels;i++) {
     taodm[i]->ops->computegradientlocal = func;
+    taodm[i]->ops->computegradient=0;
+    taodm[i]->ops->computeobjectiveandgradient=0;
   }
+
   PetscFunctionReturn(0);
 }
 
@@ -605,7 +610,10 @@ PetscErrorCode TaoDMSetLocalObjectiveAndGradientRoutine(TaoDM* taodm, PetscError
   PetscFunctionBegin;
   for (i=0;i<nlevels;i++) {
     taodm[i]->ops->computeobjectiveandgradientlocal = func;
+    taodm[i]->ops->computeobjective=0;
+    taodm[i]->ops->computegradient=0;
   }
+
   PetscFunctionReturn(0);
 }
 
@@ -647,17 +655,30 @@ PetscErrorCode TaoDMSetUp(TaoDM* taodm)
   for (i=0; i<nlevels; i++) {
     ierr = TaoSolverCreate(((PetscObject)(taodm[i]))->comm,&taodm[i]->tao);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)taodm[i]->tao,PETSC_NULL,nlevels - i - 1);CHKERRQ(ierr);
-    if (taodm[i]->ops->computeobjectivelocal) {
-      ierr = TaoSolverSetObjectiveRoutine(taodm[i]->tao,TaoDMFormFunction,taodm[i]); CHKERRQ(ierr);
-    }
-    if (taodm[i]->ops->computegradientlocal) {
-      ierr = TaoSolverSetGradientRoutine(taodm[i]->tao,TaoDMFormGradient,taodm[i]); CHKERRQ(ierr);
-    }
-    if (taodm[i]->ops->computeobjectiveandgradientlocal) {
-      ierr = TaoSolverSetObjectiveAndGradientRoutine(taodm[i]->tao,TaoDMFormFunctionGradient,taodm[i]); CHKERRQ(ierr);
-    }
-    ierr = TaoSolverSetHessianRoutine(taodm[i]->tao,taodm[i]->hessian,taodm[i]->hessian_pre,TaoDMFormHessian,taodm[i]); CHKERRQ(ierr);
 
+    if (taodm[i]->ops->computeobjectivelocal) {
+      ierr = TaoSolverSetObjectiveRoutine(taodm[i]->tao,TaoDMFormFunctionLocal,taodm[i]); CHKERRQ(ierr);
+    } else if (taodm[i]->ops->computeobjective) {
+      ierr = TaoSolverSetObjectiveRoutine(taodm[i]->tao,taodm[i]->ops->computeobjective,taodm[i]); CHKERRQ(ierr);
+    }
+
+    if (taodm[i]->ops->computegradientlocal) {
+      ierr = TaoSolverSetGradientRoutine(taodm[i]->tao,TaoDMFormGradientLocal,taodm[i]); CHKERRQ(ierr);
+    } else if (taodm[i]->ops->computegradient) {
+      ierr = TaoSolverSetGradientRoutine(taodm[i]->tao,taodm[i]->ops->computegradient,taodm[i]); CHKERRQ(ierr);
+    }
+
+    if (taodm[i]->ops->computeobjectiveandgradientlocal) {
+      ierr = TaoSolverSetObjectiveAndGradientRoutine(taodm[i]->tao,TaoDMFormFunctionGradientLocal,taodm[i]); CHKERRQ(ierr);
+    } else if (taodm[i]->ops->computeobjectiveandgradient) {
+      ierr = TaoSolverSetObjectiveAndGradientRoutine(taodm[i]->tao,taodm[i]->ops->computeobjectiveandgradient,taodm[i]); CHKERRQ(ierr);
+    }
+
+    if (taodm[i]->ops->computehessianlocal) {
+      ierr = TaoSolverSetHessianRoutine(taodm[i]->tao,taodm[i]->hessian,taodm[i]->hessian_pre,TaoDMFormHessianLocal,taodm[i]); CHKERRQ(ierr);
+    } else if (taodm[i]->ops->computehessian) {
+      ierr = TaoSolverSetHessianRoutine(taodm[i]->tao,taodm[i]->hessian,taodm[i]->hessian_pre,taodm[i]->ops->computehessian,taodm[i]); CHKERRQ(ierr);
+    }
     ierr = TaoSolverSetVariableBoundsRoutine(taodm[i]->tao,TaoDMFormBounds,taodm[i]); CHKERRQ(ierr);
 
 
@@ -696,8 +717,8 @@ PetscErrorCode TaoDMGetDM(TaoDM taodm, DM *dm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoDMFormHessian"
-PetscErrorCode TaoDMFormHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStructure *flg, void* ptr)
+#define __FUNCT__ "TaoDMFormHessianLocal"
+PetscErrorCode TaoDMFormHessianLocal(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStructure *flg, void* ptr)
 {
   TaoDM          taodm = (TaoDM) ptr;
   PetscErrorCode ierr;
@@ -720,8 +741,8 @@ PetscErrorCode TaoDMFormHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStru
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoDMFormGradient"
-PetscErrorCode TaoDMFormGradient(TaoSolver tao, Vec X, Vec G, void *ptr)
+#define __FUNCT__ "TaoDMFormGradientLocal"
+PetscErrorCode TaoDMFormGradientLocal(TaoSolver tao, Vec X, Vec G, void *ptr)
 {
   PetscErrorCode ierr;
   Vec            localX;
@@ -772,8 +793,8 @@ PetscErrorCode TaoDMFormGradient(TaoSolver tao, Vec X, Vec G, void *ptr)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoDMFormFunctionGradient"
-PetscErrorCode TaoDMFormFunctionGradient(TaoSolver tao, Vec X, PetscScalar *f, Vec G, void *ptr)
+#define __FUNCT__ "TaoDMFormFunctionGradientLocal"
+PetscErrorCode TaoDMFormFunctionGradientLocal(TaoSolver tao, Vec X, PetscScalar *f, Vec G, void *ptr)
 {
   PetscErrorCode ierr;
   Vec            localX;
@@ -823,8 +844,8 @@ PetscErrorCode TaoDMFormFunctionGradient(TaoSolver tao, Vec X, PetscScalar *f, V
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoDMFormFunction"
-PetscErrorCode TaoDMFormFunction(TaoSolver tao, Vec X, PetscScalar *f, void *ptr)
+#define __FUNCT__ "TaoDMFormFunctionLocal"
+PetscErrorCode TaoDMFormFunctionLocal(TaoSolver tao, Vec X, PetscScalar *f, void *ptr)
 {
   PetscErrorCode ierr;
   Vec            localX;

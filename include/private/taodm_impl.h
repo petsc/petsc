@@ -8,6 +8,10 @@ struct _TaoDMOps {
   PetscErrorCode (*computeobjectivelocal)(DMDALocalInfo*,PetscScalar**, PetscScalar*, void*);
   PetscErrorCode (*computegradientlocal)(DMDALocalInfo*,PetscScalar**, PetscScalar**, void*);
   PetscErrorCode (*computehessianlocal)(DMDALocalInfo*,PetscScalar**,Mat,void*);
+  PetscErrorCode (*computeobjectiveandgradient)(TaoSolver,Vec,PetscScalar*,Vec,void*);
+  PetscErrorCode (*computeobjective)(TaoSolver,Vec,PetscScalar*,void*);
+  PetscErrorCode (*computegradient)(TaoSolver,Vec,Vec,void*);
+  PetscErrorCode (*computehessian)(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*);
   PetscErrorCode (*computebounds)(TaoDM, Vec, Vec);
   PetscErrorCode (*computeinitialguess)(TaoDM, Vec);
 };
