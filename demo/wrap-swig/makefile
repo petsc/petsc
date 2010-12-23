@@ -8,8 +8,12 @@ test: run clean
 
 SCRIPT=run_demo
 MODULE=Bratu3D
+
+.PHONY:build
+build: ${MODULE}.py _${MODULE}.so
+
 .PHONY:run
-run: ${MODULE}.py _${MODULE}.so
+run: build
 	${MPIEXEC} ${PYTHON} ${SCRIPT}.py
 
 ${MODULE}.py _${MODULE}.so: ${MODULE}.i ${MODULE}.c ${MODULE}.h
