@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuperLU_4.1-December_20_2010.tar.gz']
+    self.download     = ['http://crd.lbl.gov/~xiaoye/SuperLU/superlu_4.1.tar.gz']
     self.functions    = ['set_default_options']
     self.includes     = ['slu_ddefs.h']
     self.liblist      = [['libsuperlu_4.1.a']]
@@ -46,23 +46,16 @@ class Configure(PETSc.package.NewPackage):
       g.write('CDEFS   = -DUpCase')
     else:
       g.write('CDEFS   = -DNoChange')
-    if self.framework.argDB['with-64-bit-indices']:
-      g.write(' -D_LONGINT')
     g.write('\n')
 
-    if hasattr(self.compilers, 'FC'):
-      self.setCompilers.pushLanguage('FC')
-      g.write('FORTRAN      = '+self.setCompilers.getCompiler()+'\n')
-      g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n')
-      self.setCompilers.popLanguage()
-    else:
-      raise RuntimeError('SuperLU requires a Fortran compiler to build')
     g.write('MATLAB       =\n')
     g.write('NOOPTS       = '+self.blasLapack.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n')
     g.close()
     if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling superlu; this may take several minutes')
+        if not os.path.exists(os.path.join(self.packageDir,'lib')):
+          os.makedirs(os.path.join(self.packageDir,'lib'))
         output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && SUPERLU_INSTALL_DIR='+self.installDir+'/lib && export SUPERLU_INSTALL_DIR && make clean && make lib LAAUX="" SLASRC="" DLASRC="" CLASRC="" ZLASRC="" SCLAUX="" DZLAUX="" && cp -f lib/*.a '+os.path.join(self.installDir,'lib')+' &&  cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU: '+str(e))
