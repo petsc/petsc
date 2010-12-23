@@ -144,14 +144,16 @@ class BaseTestDA(object):
         rda = da.refine()
         mat = da.getAggregates(rda)
 
+SCALE = 4
+
 class BaseTestDA_1D(BaseTestDA):
-    SIZES = [100]
+    SIZES = [100*SCALE]
 
 class BaseTestDA_2D(BaseTestDA):
-    SIZES = [9,11]
+    SIZES = [9*SCALE,11*SCALE]
 
 class BaseTestDA_3D(BaseTestDA):
-    SIZES = [4,5,6]
+    SIZES = [6*SCALE,7*SCALE,8*SCALE]
 
 # --------------------------------------------------------------------
 
@@ -183,12 +185,11 @@ class TestDA_3D_W0_N2(TestDA_3D):
     DOF = 2
     SWIDTH = 0
 
-# The two below fails in 5 procs ...
-## class TestDA_3D_W2(TestDA_3D):
-##     SWIDTH = 2
-## class TestDA_3D_W2_N2(TestDA_3D):
-##     DOF = 2
-##     SWIDTH = 2
+class TestDA_3D_W2(TestDA_3D):
+    SWIDTH = 2
+class TestDA_3D_W2_N2(TestDA_3D):
+    DOF = 2
+    SWIDTH = 2
 
 # --------------------------------------------------------------------
 
@@ -197,15 +198,22 @@ class TestDACreate(unittest.TestCase):
     def testCreate(self):
         da = PETSc.DA()
         for dim in (3,2,1):
-            for periodic in (None, False, True,
-                            "periodic", "ghosted",
-                            (False,)*dim, (True,)*dim,):
-                for stencil_type in (None, "box", "star"):
-                    da.create([8]*dim, dof=1,
-                              periodic=periodic,
-                              stencil_type=stencil_type)
-                    da.destroy()
+            for dof in (1,2,3,4,5):
+                for periodic in (None, False, True,
+                                "periodic", "ghosted",
+                                (False,)*dim, (True,)*dim,):
+                    for stencil_type in (None, "box", "star"):
+                        da.create([8*SCALE]*dim, dof=dof,
+                                  periodic=periodic,
+                                  stencil_type=stencil_type)
+                        da.destroy()
 
+# --------------------------------------------------------------------
+
+if PETSc.COMM_WORLD.getSize() > 1:
+    del TestDA_2D_W0, TestDA_2D_W0_N2
+    del TestDA_3D_W0, TestDA_3D_W0_N2
+                        
 # --------------------------------------------------------------------
 
 if __name__ == '__main__':
