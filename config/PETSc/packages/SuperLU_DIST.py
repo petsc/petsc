@@ -59,6 +59,8 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling superlu_dist; this may take several minutes')
+        if not os.path.exists(os.path.join(self.packageDir,'lib')):
+          os.makedirs(os.path.join(self.packageDir,'lib'))
         output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && SUPERLU_DIST_INSTALL_DIR='+self.installDir+'/lib && export SUPERLU_DIST_INSTALL_DIR && make clean && make lib LAAUX="" && mv -f *.a '+os.path.join(self.installDir,'lib')+' && cp -f SRC/*.h '+os.path.join(self.installDir,'include')+'/.', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU_DIST: '+str(e))
