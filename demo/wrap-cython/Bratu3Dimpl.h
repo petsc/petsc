@@ -2,9 +2,14 @@
 #define BRATU3D_H
 
 #include <petsc.h>
-#include <petscvec.h>
-#include <petscmat.h>
-#include <petscda.h>
+
+#if PETSC_VERSION_(3,1,0)
+  #include <petscvec.h>
+  #include <petscmat.h>
+  #include <petscda.h>
+#else
+  #define DA DM
+#endif
 
 typedef struct Params {
   double lambda_;

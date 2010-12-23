@@ -19,6 +19,17 @@
 
 #include "Bratu3Dimpl.h"
 
+#if !PETSC_VERSION_(3,1,0)
+#define DAGetInfo            DMDAGetInfo
+#define DAGetCorners         DMDAGetCorners
+#define DAVecGetArray        DMDAVecGetArray
+#define DAVecRestoreArray    DMDAVecRestoreArray
+#define DAGetLocalVector     DMGetLocalVector
+#define DARestoreLocalVector DMRestoreLocalVector
+#define DAGlobalToLocalBegin DMGlobalToLocalBegin
+#define DAGlobalToLocalEnd   DMGlobalToLocalEnd   
+#endif
+
 #undef  __FUNCT__
 #define __FUNCT__ "FormInitGuess"
 PetscErrorCode FormInitGuess(DA da, Vec X, Params *p)

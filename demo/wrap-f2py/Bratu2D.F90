@@ -18,21 +18,39 @@
 ! --------------------------------------------------------------------
 
 #include "finclude/petscdef.h"
-#include "finclude/petscvecdef.h"
-#include "finclude/petscmatdef.h"
-#include "finclude/petscdadef.h"
 
 #undef  CHKERRQ
 #define CHKERRQ(n) if ((n) .ne. 0) return;
+
+
+#include "petscversion.h"
+#if PETSC_VERSION_(3,1,0)
+#include "finclude/petscvecdef.h"
+#include "finclude/petscmatdef.h"
+#include "finclude/petscdadef.h"
+#else
+#define DA                   DM
+#define DAGetInfo            DMDAGetInfo
+#define DAGetCorners         DMDAGetCorners
+#define DAGetGhostCorners    DMDAGetGhostCorners
+#define DAVecGetArray        DMDAVecGetArray
+#define DAVecRestoreArray    DMDAVecRestoreArray
+#define DAGetLocalVector     DMGetLocalVector
+#define DARestoreLocalVector DMRestoreLocalVector
+#define DAGlobalToLocalBegin DMGlobalToLocalBegin
+#define DAGlobalToLocalEnd   DMGlobalToLocalEnd   
+#endif
 
 ! --------------------------------------------------------------------
 
 module Bratu2D
 
   use petsc
+#if PETSC_VERSION_(3,1,0)
   use petscvec
   use petscmat
   use petscda
+#endif
 
   type gridinfo
      PetscInt mx,xs,xe,xm,gxs,gxe,gxm
@@ -74,7 +92,7 @@ contains
   subroutine InitGuessLocal(grd, x, lambda, ierr)
     implicit none
     type(gridinfo) grd
-    PetscScalar    x(grd%gxs:grd%gxe,grd%gys:grd%gye)
+    PetscScalar    x(grd%xs:grd%xe,grd%ys:grd%ye)
     PetscReal      lambda
     PetscErrorCode ierr
     !
@@ -203,22 +221,15 @@ subroutine FormInitGuess(da, X, lambda, ierr)
   PetscErrorCode ierr
   !
   type(gridinfo)      :: grd
-  Vec                 :: localX
   PetscScalar,pointer :: xx(:)
   
-  call DAGetLocalVector(da,localX,ierr); CHKERRQ(ierr)
-
-  call VecGetArrayF90(localX,xx,ierr); CHKERRQ(ierr)
+  call VecGetArrayF90(X,xx,ierr); CHKERRQ(ierr)
 
   call GetGridInfo(da,grd,ierr); CHKERRQ(ierr)
   call InitGuessLocal(grd,xx,lambda,ierr); CHKERRQ(ierr)
 
-  call VecRestoreArrayF90(localX,xx,ierr); CHKERRQ(ierr)
+  call VecRestoreArrayF90(X,xx,ierr); CHKERRQ(ierr)
 
-  call DALocalToGlobal(da,localX,INSERT_VALUES,X,ierr); CHKERRQ(ierr)
-
-  call DARestoreLocalVector(da,localX,ierr); CHKERRQ(ierr)
-  
 end subroutine FormInitGuess
 
 
