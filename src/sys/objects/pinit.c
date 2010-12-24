@@ -737,6 +737,8 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   PetscFunctionReturn(0);
 }
 
+extern PetscObject *PetscObjects;
+extern PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFinalize"
@@ -782,7 +784,7 @@ PetscErrorCode  PetscFinalize(void)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  int            nopt;
+  PetscInt       i,nopt;
   PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE;
 #if defined(PETSC_HAVE_AMS)
   PetscBool      flg = PETSC_FALSE;
@@ -945,6 +947,16 @@ PetscErrorCode  PetscFinalize(void)
      Free all objects registered with PetscObjectRegisterDestroy() such as PETSC_VIEWER_XXX_().
   */
   ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);  
+
+  /* 
+       Free all objects the user forgot to free 
+   */
+  for (i=0; i<PetscObjectsMaxCounts; i++) {
+    if (PetscObjects[i]) {
+      ierr = PetscObjectDestroy(PetscObjects[i]);CHKERRQ(ierr);
+    }
+  }
+
 
 #if defined(PETSC_USE_LOG)
   ierr = PetscLogDestroy();CHKERRQ(ierr);

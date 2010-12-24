@@ -87,11 +87,13 @@ PetscErrorCode  MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
     if (mat->rmap->n != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change size of PETSc matrix %D to %D",mat->rmap->n,n);
     if (mat->cmap->n != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change size of PETSc matrix %D to %D",mat->cmap->n,m);
   }
-  ierr = MatSeqXAIJFreeAIJ(mat,&aij->a,&aij->j,&aij->i);CHKERRQ(ierr);
-
-  aij->nz           = nz;
-  ierr  = PetscMalloc3(aij->nz,PetscScalar,&aij->a,aij->nz,PetscInt,&aij->j,mat->rmap->n+1,PetscInt,&aij->i);CHKERRQ(ierr);
-  aij->singlemalloc = PETSC_TRUE;
+  if (nz != aij->nz) {
+    /* number of nonzeros in matrix has changed, so need new data structure */
+    ierr = MatSeqXAIJFreeAIJ(mat,&aij->a,&aij->j,&aij->i);CHKERRQ(ierr);
+    aij->nz           = nz;
+    ierr  = PetscMalloc3(aij->nz,PetscScalar,&aij->a,aij->nz,PetscInt,&aij->j,mat->rmap->n+1,PetscInt,&aij->i);CHKERRQ(ierr);
+    aij->singlemalloc = PETSC_TRUE;
+  }
 
   ierr = PetscMemcpy(aij->a,mxGetPr(mmat),aij->nz*sizeof(PetscScalar));CHKERRQ(ierr);
   /* Matlab stores by column, not row so we pass in the transpose of the matrix */

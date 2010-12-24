@@ -4,8 +4,8 @@
 */
 #include "petscsys.h"  /*I   "petscsys.h"    I*/
 
-static PetscObject *PetscObjects = 0;
-static PetscInt    PetscObjectsCounts = 0, PetscObjectsMaxCounts = 0;
+PetscObject *PetscObjects = 0;
+PetscInt    PetscObjectsCounts = 0, PetscObjectsMaxCounts = 0;
 
 extern PetscErrorCode PetscObjectGetComm_Petsc(PetscObject,MPI_Comm *);
 extern PetscErrorCode PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
@@ -60,7 +60,7 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,Pet
   if (!PetscObjectsMaxCounts) newPetscObjectsMaxCounts = 100;
   else                        newPetscObjectsMaxCounts = 2*PetscObjectsMaxCounts;
   ierr = PetscMalloc(newPetscObjectsMaxCounts*sizeof(PetscObject),&newPetscObjects);CHKERRQ(ierr);
-  ierr = PetscMemcpy(newPetscObjects,PetscObjects,PetscObjectsMaxCounts);CHKERRQ(ierr);
+  ierr = PetscMemcpy(newPetscObjects,PetscObjects,PetscObjectsMaxCounts*sizeof(PetscObject));CHKERRQ(ierr);
   ierr = PetscMemzero(newPetscObjects+PetscObjectsMaxCounts,(newPetscObjectsMaxCounts - PetscObjectsMaxCounts)*sizeof(PetscObject));CHKERRQ(ierr);
   ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
   PetscObjects                        = newPetscObjects;
@@ -128,7 +128,7 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
       break;
     }
   }
-  if (PetscObjectsCounts) {
+  if (!PetscObjectsCounts) {
     ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
     PetscObjectsMaxCounts = 0;
   }
