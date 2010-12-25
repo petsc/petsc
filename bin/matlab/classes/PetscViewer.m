@@ -1,4 +1,11 @@
 classdef PetscViewer < PetscObject
+%
+%  PetscViewer - Abstract PETSc object for printing/displaying information about PETSc objects
+%
+%  Creation:
+%    v = PetscViewer; 
+%      v.SetType("ascii");
+%
   methods
     function obj = PetscViewer()
       comm = PETSC_COMM_SELF();

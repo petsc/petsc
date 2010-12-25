@@ -15,7 +15,7 @@ viewer.SetType('ascii');
 %%
 %  Create DM to manage the grid and get work vectors
 user.mx = 24;user.my = 24;
-user.dm = PetscDMDACreate2d(PetscDM.NONPERIODIC,PetscDM.STENCIL_BOX,user.mx,user.my,PetscObject.DECIDE,PetscObject.DECIDE,1,1);
+user.dm = PetscDMDACreate2d(PetscDM.NONPERIODIC,PetscDM.STENCIL_BOX,user.mx,user.my,Petsc.DECIDE,Petsc.DECIDE,1,1);
 x  = user.dm.CreateGlobalVector();
 r  = x.Duplicate();
 J  = user.dm.GetMatrix('aij');

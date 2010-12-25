@@ -16,7 +16,7 @@ b = PetscVec();
 b.SetType('seq');
 b.SetSizes(10,10);
 b.SetValues(1:10);
-b.SetValues([1,2],[11.5,12.5],PetscObject.ADD_VALUES);
+b.SetValues([1,2],[11.5,12.5],Petsc.ADD_VALUES);
 b.AssemblyBegin();
 b.AssemblyEnd();
 b.View(viewer);

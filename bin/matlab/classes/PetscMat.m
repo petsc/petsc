@@ -1,4 +1,14 @@
 classdef PetscMat < PetscObject
+%
+%    PetscMat - Holds a PETSc sparse matrix or linear operator
+%
+%   If A is a PetscMat then a = A(:,:) returns the MATLAB version of the sparse matrix
+%       and A(:,:) = a; assigns the sparse matrix values into the PETScMat
+%       you CANNOT yet use syntax like A(1,2) = 1.0
+%
+%   Indexing into PETSc Vecs and Mats from Matlab starts with index of 1, NOT 0 like 
+%     everywhere else in PETSc, but Shri felt MATLAB users could not handle the 0 index
+%
   properties (Constant)
     FLUSH_ASSEMBLY=1;
     FINAL_ASSEMBLY=0;
@@ -39,7 +49,7 @@ classdef PetscMat < PetscObject
       idx = idx - 1;
       idy = idy - 1;
       if (nargin < 5) 
-        insertmode = PetscObject.INSERT_VALUES;
+        insertmode = Petsc.INSERT_VALUES;
       end
       err = calllib('libpetsc', 'MatSetValues', obj.pobj,length(idx),idx,length(idy),idy,values,insertmode);PetscCHKERRQ(err);
     end
@@ -61,7 +71,7 @@ classdef PetscMat < PetscObject
     end
     function err = SetValuesStencil(obj,row,col,values,insertmode)
       if (nargin < 5) 
-        insertmode = PetscObject.INSERT_VALUES;
+        insertmode = Petsc.INSERT_VALUES;
       end
       ndim = isfield(row,'i') + isfield(row,'j') + isfield(row,'k'); 
       nrow = length(row);

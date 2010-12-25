@@ -1,8 +1,12 @@
+classdef Petsc < handle
 %
 %     PETSc MATLAB Interface Help
 %
 %   PetscInitialize({'-option1','value1','-option2'});
 %   PetscFinalize; 
+%
+%   Petsc.INSERT_VALUES, Petsc.ADD_VALUES  --- Options for setting values into Vecs and Mats
+%   Petsc.DECIDE,Petsc.DEFAULT,Petsc.DETERMINE --- Use instead of some integer arguments
 %
 %   PetscOptionsView;  % show current options
 %   PetscOptionsSetValue('-optionname','value');
@@ -10,17 +14,6 @@
 %
 %   PetscObjectsView; % show all current PETSc objects, like MATLAB who
 %   A = PetscObjectsGetObject('name'); % return MATLAB pointer to PETSc object of given name
-%
-%   If v is a PetscVec then a = v(:) returns a MATLAB array of the vector
-%       and v(:) = a; assigns the array values in a into the vector. 
-%       v(1:3) = [2.0 2. 3.0]; also work
-%
-%   If A is a PetscMat then a = A(:,:) returns the MATLAB version of the sparse matrix
-%       and A(:,:) = a; assigns the sparse matrix values into the PETScMat
-%       you CANNOT yet use syntax like A(1,2) = 1.0
-%
-%   Indexing into PETSc Vecs and Mats from Matlab starts with index of 1, NOT 0 like 
-%     everywhere else in PETSc, but Shri felt MATLAB users could not handle 0.
 %
 %   PetscCHKERRQ(ierr); % check if an error code is non-zero and set MATLAB error
 %   PETSC_COMM_SELF;    % returns current MPI_COMM_SELF communicator, not needed by users
@@ -44,3 +37,14 @@
 %            a good hacker it should be relatively easy to make it parallel.
 %         All PETSc MATLAB functions that end with Internal.m are used by PETSc and should not be called 
 %            directly by users.
+%
+  properties (Constant)
+    INSERT_VALUES=1;
+    ADD_VALUES=2;
+    DECIDE=-1;
+    DETERMINE=-1;
+    DEFAULT=-2;
+  end
+end
+
+ 

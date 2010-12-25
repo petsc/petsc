@@ -1,9 +1,9 @@
 classdef PetscObject < handle
-  properties (Constant)
-    INSERT_VALUES=1;
-    ADD_VALUES=2;
-    DECIDE=-1;
-  end
+%
+%   Base class of all PETSc classes
+%
+% Developer Notes: Contains a single propertie which is a pointer to the C PETSc object
+%
   properties
     pobj;
   end

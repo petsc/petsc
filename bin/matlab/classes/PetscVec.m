@@ -1,4 +1,14 @@
 classdef PetscVec < PetscObject
+%
+%   PetscVec - Holds field variables, right hand sides to linear systems etc.
+%
+%   If v is a PetscVec then a = v(:) returns a MATLAB array of the vector
+%       and v(:) = a; assigns the array values in a into the vector. 
+%       v(1:3) = [2.0 2. 3.0]; also work
+%
+%   Indexing into PETSc Vecs and Mats from MATLAB starts with index of 1, NOT 0 like 
+%     everywhere else in PETSc, but Shri felt MATLAB users could not handle 0.
+%
   properties
     VecFromDM=0;
     DM = [];
@@ -23,7 +33,7 @@ classdef PetscVec < PetscObject
         err = calllib('libpetsc', 'VecSetType', obj.pobj,'seq');PetscCHKERRQ(err);
         err = calllib('libpetsc', 'VecSetSizes', obj.pobj,length(array),length(array));PetscCHKERRQ(err);
         idx = 0:length(array)-1;
-        err = calllib('libpetsc', 'VecSetValues', obj.pobj,length(idx),idx,array,PetscObject.INSERT_VALUES);PetscCHKERRQ(err);
+        err = calllib('libpetsc', 'VecSetValues', obj.pobj,length(idx),idx,array,Petsc.INSERT_VALUES);PetscCHKERRQ(err);
         err = calllib('libpetsc', 'VecAssemblyBegin', obj.pobj);PetscCHKERRQ(err);
         err = calllib('libpetsc', 'VecAssemblyEnd', obj.pobj);PetscCHKERRQ(err);
       end
@@ -50,7 +60,7 @@ classdef PetscVec < PetscObject
         values = idx;
       end
       if (nargin  < 4) 
-        insertmode = PetscObject.INSERT_VALUES;
+        insertmode = Petsc.INSERT_VALUES;
       end
       idx = idx - 1;
       err = calllib('libpetsc', 'VecSetValues', obj.pobj,length(idx),idx,values,insertmode);PetscCHKERRQ(err);
@@ -63,7 +73,7 @@ classdef PetscVec < PetscObject
       idx = idx - 1;
       values = zeros(1,length(idx));
       [err,idx,values] = calllib('libpetsc', 'VecGetValues', obj.pobj,length(idx),idx,values);PetscCHKERRQ(err);
-      values = values'; % Want to return a column vector since that is more natural in Matlab
+      values = values'; % Want to return a column vector since that is more natural in MATLAB
     end
     function err = AssemblyBegin(obj)
       err = calllib('libpetsc', 'VecAssemblyBegin', obj.pobj);PetscCHKERRQ(err);
@@ -95,7 +105,7 @@ classdef PetscVec < PetscObject
 %   The following overload a = x(idx)
 %
     function varargout = subsref(obj,S)
-      %  Matlab design of subsref is MORONIC
+      %  MATLAB design of subsref is MORONIC
       %  To overload () it automatically overloads . which is used
       %  for method calls so we need to force the method calls to use
       %  the 'regular' subsref
