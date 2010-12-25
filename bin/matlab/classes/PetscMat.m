@@ -17,11 +17,13 @@ classdef PetscMat < PetscObject
         if (~issparse(array)) 
           error('When creating PetscMat from Matlab matrix the Matlab matrix must be sparse');
         end
-        [err,obj.pobj] = calllib('libpetsc', 'MatCreate', PETSC_COMM_SELF,0);PetscCHKERRQ(err);
+        comm = PETSC_COMM_SELF();
+        [err,obj.pobj] = calllib('libpetsc', 'MatCreate',comm ,0);PetscCHKERRQ(err);
         err = calllib('libpetsc', 'MatSetType', obj.pobj,'seqaij');PetscCHKERRQ(err);
         err  = calllib('libpetsc', 'MatSeqAIJFromMatlab',array',obj.pobj);PetscCHKERRQ(err);
       else 
-        [err,obj.pobj] = calllib('libpetsc', 'MatCreate', PETSC_COMM_SELF,0);PetscCHKERRQ(err);
+        comm = PETSC_COMM_SELF();
+        [err,obj.pobj] = calllib('libpetsc', 'MatCreate', comm,0);PetscCHKERRQ(err);
       end
     end
     function err = SetType(obj,name)

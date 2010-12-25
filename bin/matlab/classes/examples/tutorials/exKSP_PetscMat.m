@@ -1,6 +1,7 @@
 %%
 %
 %  Solves a linear system where the user manages the mesh--solver interactions
+%     User creates a MATLAB matrix and converts it to PETSc
 %
 %   Set the Matlab path and initialize PETSc
 path(path,'../../')
@@ -21,7 +22,7 @@ b.AssemblyEnd();
 b.View(viewer);
 x = b.Duplicate();
 %%
-%  Create a matrix and put some values in it
+%  Create a MATLAB matrix and put some values in it
 spmat = 10*speye(10,10);
 spmat
 mat = PetscMat(spmat);

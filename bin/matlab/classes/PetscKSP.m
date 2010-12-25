@@ -1,7 +1,8 @@
 classdef PetscKSP < PetscObject
   methods
     function obj = PetscKSP()
-      [err,obj.pobj] = calllib('libpetsc', 'KSPCreate', PETSC_COMM_SELF,0);PetscCHKERRQ(err);
+      comm =  PETSC_COMM_SELF();
+      [err,obj.pobj] = calllib('libpetsc', 'KSPCreate', comm,0);PetscCHKERRQ(err);
     end
     function err = SetType(obj,name)
       err = calllib('libpetsc', 'KSPSetType', obj.pobj,name);PetscCHKERRQ(err);

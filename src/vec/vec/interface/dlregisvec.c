@@ -19,6 +19,8 @@ PetscErrorCode  ISFinalizePackage(void)
 {
   PetscFunctionBegin;
   ISPackageInitialized = PETSC_FALSE;
+  ISList               = PETSC_NULL;
+  ISRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

@@ -16,7 +16,8 @@ classdef PetscVec < PetscObject
         obj.pobj = array;
         return
       end
-      [err,obj.pobj] = calllib('libpetsc', 'VecCreate', PETSC_COMM_SELF,0);PetscCHKERRQ(err);
+      comm = PETSC_COMM_SELF();
+      [err,obj.pobj] = calllib('libpetsc', 'VecCreate',comm ,0);PetscCHKERRQ(err);
       if (nargin > 0) 
         % Vec(array) creates a Vec initialized with the given array
         err = calllib('libpetsc', 'VecSetType', obj.pobj,'seq');PetscCHKERRQ(err);

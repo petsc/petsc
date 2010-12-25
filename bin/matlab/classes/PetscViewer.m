@@ -1,7 +1,8 @@
 classdef PetscViewer < PetscObject
   methods
     function obj = PetscViewer()
-      [err,obj.pobj] = calllib('libpetsc', 'PetscViewerCreate', PETSC_COMM_SELF,0);PetscCHKERRQ(err);
+      comm = PETSC_COMM_SELF();
+      [err,obj.pobj] = calllib('libpetsc', 'PetscViewerCreate', comm,0);PetscCHKERRQ(err);
     end
     function SetType(obj,name)
       err = calllib('libpetsc', 'PetscViewerSetType', obj.pobj,name);PetscCHKERRQ(err);

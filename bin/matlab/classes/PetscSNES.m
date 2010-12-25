@@ -6,7 +6,8 @@ classdef PetscSNES < PetscObject
         obj.pobj = pid;
         return
       end
-      [err,obj.pobj] = calllib('libpetsc', 'SNESCreate', PETSC_COMM_SELF,0);PetscCHKERRQ(err);
+      comm = PETSC_COMM_SELF();
+      [err,obj.pobj] = calllib('libpetsc', 'SNESCreate', comm,0);PetscCHKERRQ(err);
     end
     function err = SetType(obj,name)
       err = calllib('libpetsc', 'SNESSetType', obj.pobj,name);PetscCHKERRQ(err);

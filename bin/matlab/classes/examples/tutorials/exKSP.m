@@ -1,10 +1,11 @@
 %%
 %
 %  Solves a linear system where the user manages the mesh--solver interactions
+%     User creates directly a PETSc Mat
 %
 %   Set the Matlab path and initialize PETSc
 path(path,'../../')
-PetscInitialize({'-ksp_monitor'});
+PetscInitialize({'-ksp_monitor','-malloc','-malloc_debug','-malloc_dump','-info','-options_table'});
 %%
 %   Open a viewer to display PETSc objects
 viewer = PetscViewer();

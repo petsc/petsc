@@ -1,7 +1,8 @@
 classdef PetscIS < PetscObject
   methods
     function obj = PetscIS()
-      [err,obj.pobj] = calllib('libpetsc', 'ISCreate', PETSC_COMM_SELF,0);PetscCHKERRQ(err);
+      comm = PETSC_COMM_SELF();
+      [err,obj.pobj] = calllib('libpetsc', 'ISCreate',comm ,0);PetscCHKERRQ(err);
     end
     function err = SetType(obj,name)
       err = calllib('libpetsc', 'ISSetType', obj.pobj,name);PetscCHKERRQ(err);
