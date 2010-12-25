@@ -19,6 +19,9 @@
 %       and A(:,:) = a; assigns the sparse matrix values into the PETScMat
 %       you CANNOT yet use syntax like A(1,2) = 1.0
 %
+%   Indexing into PETSc Vecs and Mats from Matlab starts with index of 1, NOT 0 like 
+%     everywhere else in PETSc, but Shri felt MATLAB users could not handle 0.
+%
 %   PetscCHKERRQ(ierr); % check if an error code is non-zero and set MATLAB error
 %   PETSC_COMM_SELF;    % returns current MPI_COMM_SELF communicator, not needed by users
 %
