@@ -10,8 +10,14 @@
 %
 %   PetscObjectsView; % show all current PETSc objects, like Matlab who
 %   A = PetscObjectsGetObject('name'); % return Matlab pointer to PETSc object of given name
-%       Note if A is a PetscVec then A(:) returns the Matlab version of the vector
-%                      PetscMat then A(:,:) returns the Matlab version of the sparse matrix
+%
+%   If v is a PetscVec then a = v(:) returns a Matlab array of the vector
+%       and v(:) = a; assigns the array values in a into the vector. 
+%       v(1:3) = [2.0 2. 3.0]; also work
+%
+%   If A is a PetscMat then a = A(:,:) returns the Matlab version of the sparse matrix
+%       and A(:,:) = a; assigns the sparse matrix values into the PETScMat
+%       you CANNOT yet use syntax like A(1,2) = 1.0
 %
 %   PetscCHKERRQ(ierr); % check if an error code is non-zero and set Matlab error
 %   PETSC_COMM_SELF;    % returns current MPI_COMM_SELF communicator, not needed by users
