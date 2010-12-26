@@ -1,8 +1,8 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-
-<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
   <title>PETSc: The Portable, Extensible Toolkit for Scientific
 Computation</title>
 </head>
@@ -41,7 +41,8 @@ Site</a></font></strong>
             <li><strong><font color="#ff0000"><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/index.html">Development
 copy
-of documentation</a></font></strong></li>
+of
+documentation</a></font></strong></li>
             <li><strong></strong><strong><font color="#ff0000"><a
  href="developers.pdf">Developers Instructions</a></font></strong></li>
             <li><strong><font color="#ff0000">Proposed projects</font></strong></li>
@@ -52,25 +53,41 @@ of documentation</a></font></strong></li>
       </td>
       <td style="width: 549px; vertical-align: top;"> &nbsp; &nbsp;
 This is the PETSc to-do list; any help on these would be greatly
-appreciated<br>
+appreciated. Each of the first few projects could be done by a graduate
+student or advanced undergraduate in a couple of months.<br>
       <br>
-      <h3>&nbsp; Developing the parallel PETSc interface for the new
-FFTW parallel codes being developed, based on the sequential interfaces</h3>
-      <h3><br>
---&nbsp;&nbsp;&nbsp; Developing fast (FFT based) solvers for "the model
-problems", sort of like a modern FISHPACK in PETSc</h3>
-      <h3><br>
---&nbsp;&nbsp; Converting PetscLogViewPython() to generate JSON
+      <ul>
+        <li>
+          <h3>Develop the parallel PETSc interface for the new
+FFTW parallel codes being developed, based on the sequential interfaces
+in src/mat/impls/fftw<br>
+          </h3>
+        </li>
+        <li>
+          <h3>Developing fast (FFT based) solvers (underneath
+src/ksp/pc/impls for "the model
+problems", sort of like a modern FISHPACK in PETSc. For parallel this
+requires the FFTW parallel interface.<br>
+          </h3>
+        </li>
+        <li>
+          <h3>&nbsp;Converting PetscLogViewPython() to generate JSON
 instead and developing Python parsers for quickly generating nice
 tables of performance details from runs or groups of runs.</h3>
-      <h3><br>
---&nbsp;&nbsp; Extending PetscWebServe() that allows accessing running
+        </li>
+        <li>
+          <h3>Extend PetscWebServe() that allows accessing running
 PETSc jobs via a browser and looking at what is going on (this uses the
-AMS inside)</h3>
-      <h3><br>
---&nbsp;&nbsp; GPU based preconditioners<br>
-      </h3>
-&nbsp;&nbsp;<br>
+AMS inside). See src/sys/viewer/impls/socket/send.c<br>
+          </h3>
+        </li>
+        <li>
+          <h3>&nbsp;GPU based preconditioners<br>
+          </h3>
+        </li>
+      </ul>
+&nbsp; Below is a bunch of random ideas of things that need to be done.<br>
+      <br>
 Make a new matrix type MPIMSBAIJ that works like MPISBAIJ but stores
 the off -diagonal portions twice (like AIJ). This would have better
 load balance for work and storage.<br>
@@ -96,7 +113,8 @@ Add support for CHOMOD<br>
 parallel&nbsp;Algebraic Recursive Multilevel Solvers of Yousef Saad? <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Add
-PetscConsistent(MPI_Comm,...) error check macros checks that<br>
+PetscConsistent(MPI_Comm,...)
+error check macros checks that<br>
 all processors in comm set the same value; for example the alpha in
 VecAXPY() etc etc.<br>
       <br>
@@ -146,9 +164,6 @@ licensed software. <br>
 &nbsp; &nbsp;* this could be used to log -log_summary, -snes_view etc
 results.<br>
       <br>
-Option to display all the objects that have not been destroyed, to help
-find<br>
-memory leaks (best if it also displays where the object was created)<br>
       <br>
 &nbsp; Fix GMRES and SYMMLQ so that if they detect happy breakdown the
 proper cleanup is done and the converged reason is set to

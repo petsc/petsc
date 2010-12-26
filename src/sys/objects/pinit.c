@@ -752,7 +752,7 @@ extern PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
    Options Database Keys:
 +  -options_table - Calls PetscOptionsView()
 .  -options_left - Prints unused options that remain in the database
-.  -options_left no - Does not print unused options that remain in the database
+.  -objects_left  - Prints list of all objects that have not been freed
 .  -mpidump - Calls PetscMPIDump()
 .  -malloc_dump - Calls PetscMallocDump()
 .  -malloc_info - Prints total memory usage
@@ -785,7 +785,7 @@ PetscErrorCode  PetscFinalize(void)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       i,nopt;
-  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE;
+  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,objects_left = PETSC_FALSE;
 #if defined(PETSC_HAVE_AMS)
   PetscBool      flg = PETSC_FALSE;
 #endif
@@ -913,6 +913,7 @@ PetscErrorCode  PetscFinalize(void)
   /* to prevent PETSc -options_left from warning */
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-objects_left",&objects_left,PETSC_NULL);CHKERRQ(ierr);
 
   if (!PetscOpenMPWorker) { /* worker processes skip this because they do not usually process options */
     flg3 = PETSC_FALSE; /* default value is required */
@@ -950,9 +951,15 @@ PetscErrorCode  PetscFinalize(void)
 
   /* 
        Free all objects the user forgot to free 
-   */
+  */
+  if (objects_left && PetscObjectsCounts) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"The following objects were never freed\n");
+  }
   for (i=0; i<PetscObjectsMaxCounts; i++) {
     if (PetscObjects[i]) {
+      if (objects_left) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"  %s %s %s\n",PetscObjects[i]->class_name,PetscObjects[i]->type_name,PetscObjects[i]->name);CHKERRQ(ierr);
+      }
       ierr = PetscObjectDestroy(PetscObjects[i]);CHKERRQ(ierr);
     }
   }
