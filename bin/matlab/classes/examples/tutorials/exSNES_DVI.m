@@ -4,13 +4,10 @@
 % This is a translation of snes/examples/tests/ex8.c
 %
 %   Set the Matlab path and initialize PETSc
+more on
 figure(1),clf;figure(2),clf;
 path(path,'../../')
 PetscInitialize({'-snes_vi_monitor','-ksp_monitor','-snes_vi_type','rs'});
-%%
-%   Open a viewer to display PETSc objects
-viewer = PetscViewer();
-viewer.SetType('ascii');
 %%
 %  Create DM to manage the grid and get work vectors
 user.mx = 10;user.my = 10;
@@ -33,33 +30,35 @@ snes.SetType('vi');
 %%
 %  Set minimum surface area problem function routine
 snes.SetFunction(r,'snesdvi_function',user);
-
+type snesdvi_function
 
 %%
 %  Set minimum surface area problem jacobian routine
 snes.SetJacobian(J,J,'snesdvi_jacobian',user);
+type snesdvi_jacobian
 
 %%
 %  Set solution monitoring routine
 snes.MonitorSet('snesdvi_monitor',user);
+type snesdvi_monitor
+
 %%
 %   Set VI bounds
 xl = x.Duplicate();
 xu = x.Duplicate();
 xl.Set(-10000000);
 xu.Set(100000000);
-
 snes.VISetVariableBounds(xl,xu);    
 
 %%
 %  Solve the nonlinear system
 snes.SetFromOptions();
 snes.Solve(x);
-x.View(viewer);
-snes.View(viewer);
+x.View;
+snes.View;
 
 %%
-%   Free PETSc objects and Shutdown PETSc
+%   Free PETSc objects and shutdown PETSc
 %
 user.bottom.Destroy();
 user.top.Destroy();
@@ -72,5 +71,5 @@ xu.Destroy();
 user.dm.Destroy();
 J.Destroy();
 snes.Destroy();
-viewer.Destroy();
 PetscFinalize();
+more off

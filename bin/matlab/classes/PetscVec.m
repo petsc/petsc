@@ -2,6 +2,13 @@ classdef PetscVec < PetscObject
 %
 %   PetscVec - Holds field variables, right hand sides to linear systems etc.
 %
+%   Creation:
+%     v = PetscVec;
+%       v.SetType('seq');
+%       v.SetSizes(3);
+%     
+%     v = PetscVec([1 2 3]);
+%
 %   If v is a PetscVec then a = v(:) returns a MATLAB array of the vector
 %       and v(:) = a; assigns the array values in a into the vector. 
 %       v(1:3) = [2.0 2. 3.0]; also work
@@ -45,6 +52,9 @@ classdef PetscVec < PetscObject
       err = calllib('libpetsc', 'VecSetType', obj.pobj,name);PetscCHKERRQ(err);
     end
     function err = SetSizes(obj,m,n)
+      if (nargin == 2) 
+        n = Petsc.DECIDE;
+      end
       err = calllib('libpetsc', 'VecSetSizes', obj.pobj,m,n);PetscCHKERRQ(err);
     end
     function [n,err] = GetSize(obj)

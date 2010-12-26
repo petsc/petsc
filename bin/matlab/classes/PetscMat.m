@@ -2,6 +2,13 @@ classdef PetscMat < PetscObject
 %
 %    PetscMat - Holds a PETSc sparse matrix or linear operator
 %
+%   Creation:
+%     A = PetscMat;
+%       A.SetType('seqaij');
+%       A.SetSizes(3,3);
+%     
+%     A = PetscMat(speye(3,3));
+%
 %   If A is a PetscMat then a = A(:,:) returns the MATLAB version of the sparse matrix
 %       and A(:,:) = a; assigns the sparse matrix values into the PETScMat
 %       you CANNOT yet use syntax like A(1,2) = 1.0
@@ -43,6 +50,10 @@ classdef PetscMat < PetscObject
       err = calllib('libpetsc', 'MatSetSetFromOptions', obj.pobj);PetscCHKERRQ(err);
     end
     function err = SetSizes(obj,m,n,M,N)
+      if (nargin == 3) 
+        M = Petsc.DECIDE;
+        N = Petsc.DECIDE;
+      end
       err = calllib('libpetsc', 'MatSetSizes', obj.pobj,m,n,M,N);PetscCHKERRQ(err);
     end
     function err = SetValues(obj,idx,idy,values,insertmode)

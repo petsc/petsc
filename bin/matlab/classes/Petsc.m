@@ -44,6 +44,12 @@ classdef Petsc < handle
     DECIDE=-1;
     DETERMINE=-1;
     DEFAULT=-2;
+  
+    FILE_MODE_READ=0;
+    FILE_MODE_WRITE=1;
+    FILE_MODE_APPEND=2;
+    FILE_MODE_UPDATE=3;
+    FILE_MODE_APPEND_UPDATE=4;
   end
 end
 

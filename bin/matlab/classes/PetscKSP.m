@@ -1,4 +1,13 @@
 classdef PetscKSP < PetscObject
+%
+%   PetscKSP - a PETSc linear solver object
+%
+%   Creation:
+%     ksp = PetscKSP;
+%       ksp.SetType('gmres');
+%       ksp.SetOperators(A,A,PetscMat.SAME_NONZERO_PATTERN);
+%       ksp.SetFromOptions;
+%
   methods
     function obj = PetscKSP()
       comm =  PETSC_COMM_SELF();
@@ -30,6 +39,10 @@ classdef PetscKSP < PetscObject
       err = calllib('libpetsc', 'KSPSolve', obj.pobj,b,x);PetscCHKERRQ(err);
     end
     function err = SetOperators(obj,A,B,pattern)
+      if (nargin == 2) 
+        B = A;
+        pattern = PetscMat.SAME_NONZERO_PATTERN;
+      end
       err = calllib('libpetsc', 'KSPSetOperators', obj.pobj,A.pobj,B.pobj,pattern);PetscCHKERRQ(err);
     end
     function [x,err] = GetSolution(obj)

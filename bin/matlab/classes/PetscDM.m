@@ -1,4 +1,19 @@
 classdef PetscDM < PetscObject
+%
+%    PetscDM - Manages the communication of information from a grid data structure to solvers
+%
+%   Creation:
+%     da = PetscDM();
+%       da.SetType('da'); 
+%       da.SetPeriodicity(PetscDM.NONPERIODIC);
+%       da.SetSizes([M 1 1]);
+%       da.SetDof(dof);
+%       da.SetStencilWidth(s);
+%       da.SetDim(1);
+%       da.SetUp(); 
+%
+%     da = PetscDMDACreate1d(wrap,M,dof,x);
+%
   properties(Constant)
     STENCIL_STAR = 0;
     STENCIL_BOX = 1;

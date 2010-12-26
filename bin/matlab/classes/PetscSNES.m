@@ -1,4 +1,14 @@
 classdef PetscSNES < PetscObject
+%
+%  PetscSNES - Manages nonlinear solvers 
+%
+%  Creation:
+%    snes = PetscSNES;
+%      snes.SetType('ls');
+%      snes.SetFunction(snes,f,funcname);
+%      snes.SetJacobian(snes,A,B,funcname);
+%      snes.SetFromOptions;
+%
   methods
     function obj = PetscSNES(pid,flg)
       if (nargin > 1) 

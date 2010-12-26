@@ -1,4 +1,14 @@
 classdef PetscTS < PetscObject
+%
+%  PetscTS - Manages time-integration
+%
+%  Creation:
+%    ts = PetscTS;
+%      ts.SetType('gl');
+%      ts.SetFunction(ts,funcname);
+%      ts.SetJacobian(ts,A,B,funcname);
+%      ts.SetFromOptions;
+%
   properties (Constant)
     LINEAR=0;
     NONLINEAR=1;

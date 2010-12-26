@@ -17,8 +17,12 @@ typedef int InsertMode;
 typedef long int PetscPointer;
 
 typedef PetscPointer PetscViewer;
+typedef int PetscFileMode;
 int PetscViewerCreate(MPI_Comm,PetscViewer*);
 int PetscViewerSetType(PetscViewer,const char*);
+int PetscViewerASCIIOpen(PetscViewer,const char*,PetscViewer*);
+int PetscViewerFileSetMode(PetscViewer,PetscFileMode);
+int PetscViewerFileSetName(PetscViewer,const char*);
 int PetscViewerView(PetscViewer,PetscViewer);
 int PetscViewerDestroy(PetscViewer);
 

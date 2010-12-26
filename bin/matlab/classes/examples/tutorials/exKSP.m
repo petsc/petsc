@@ -7,10 +7,6 @@
 path(path,'../../')
 PetscInitialize({'-ksp_monitor','-malloc','-malloc_debug','-malloc_dump'});
 %%
-%   Open a viewer to display PETSc objects
-viewer = PetscViewer();
-viewer.SetType('ascii');
-%%
 %   Create a vector and put values in it
 b = PetscVec();
 b.SetType('seq');
@@ -19,7 +15,7 @@ b.SetValues(1:10);
 b.SetValues([1,2],[11.5,12.5],Petsc.ADD_VALUES);
 b.AssemblyBegin();
 b.AssemblyEnd();
-b.View(viewer);
+b.View;
 x = b.Duplicate();
 %%
 %  Create a matrix and put some values in it
@@ -31,7 +27,7 @@ for i=1:10
 end
 mat.AssemblyBegin(PetscMat.FINAL_ASSEMBLY);
 mat.AssemblyEnd(PetscMat.FINAL_ASSEMBLY);
-mat.View(viewer);
+mat.View;
 %%
 %   Create the linear solver, tell it the matrix to use and solve the system
 ksp = PetscKSP();
@@ -39,14 +35,13 @@ ksp.SetType('gmres');
 ksp.SetOperators(mat,mat,PetscMat.SAME_NONZERO_PATTERN);
 ksp.SetFromOptions();
 ksp.Solve(b,x);
-x.View(viewer);
-ksp.View(viewer);
+x.View;
+ksp.View;
 %%
-%   Free PETSc objects and Shutdown PETSc
+%   Free PETSc objects and shutdown PETSc
 %
 x.Destroy();
 b.Destroy();
 mat.Destroy();
 ksp.Destroy();
-viewer.Destroy();
 PetscFinalize();

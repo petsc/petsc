@@ -5,20 +5,16 @@
 path(path,'../../')
 PetscInitialize({'-snes_monitor','-ksp_monitor'});
 %%
-%   Open a viewer to display PETSc objects
-viewer = PetscViewer();
-viewer.SetType('ascii');
-%%
 %   Create work vector for nonlinear solver and location for solution
 b = PetscVec();
 b.SetType('seq');
-b.SetSizes(10,10);
+b.SetSizes(10);
 x = b.Duplicate();
 %%
 %  Create a matrix for the Jacobian for Newton method
 mat = PetscMat();
 mat.SetType('seqaij');
-mat.SetSizes(10,10,10,10);
+mat.SetSizes(10,10);
 %%
 %  Create the nonlinear solver 
 snes = PetscSNES();
@@ -35,14 +31,13 @@ type nljacobian.m
 %  Solve the nonlinear system
 snes.SetFromOptions();
 snes.Solve(x);
-x.View(viewer);
-snes.View(viewer);
+x.View;
+snes.View;
 %%
-%   Free PETSc objects and Shutdown PETSc
+%   Free PETSc objects and shutdown PETSc
 %
 b.Destroy();
 x.Destroy();
 mat.Destroy();
 snes.Destroy();
-viewer.Destroy();
 PetscFinalize();

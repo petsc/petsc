@@ -15,4 +15,4 @@ figure(2),
 x_sol = reshape(x(:),user.mx,user.my);
 surf(user.ledge+user.hx:user.hx:user.redge-user.hx,user.bedge+user.hy:user.hy:user.tedge-user.hy,x_sol');
 
-pause(2.5);
+pause(.1);
