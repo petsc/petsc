@@ -605,7 +605,7 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
 }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include "mat.h"   /* Matlab include file */
+#include "mat.h"   /* MATLAB include file */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_Seq_Matlab"

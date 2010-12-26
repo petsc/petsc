@@ -643,7 +643,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
   /*
      Dump the interpolation/restriction matrices plus the 
-   Jacobian/stiffness on each level. This allows Matlab users to 
+   Jacobian/stiffness on each level. This allows MATLAB users to 
    easily check if the Galerkin condition A_c = R A_f R^T is satisfied.
 
    Only support one or the other at the same time.
@@ -992,7 +992,7 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 .  -pc_mg_monitor - print information on the multigrid convergence
 .  -pc_mg_galerkin - use Galerkin process to compute coarser operators
 -  -pc_mg_dump_matlab - dumps the matrices for each level and the restriction/interpolation matrices
-                        to the Socket viewer for reading from Matlab.
+                        to the Socket viewer for reading from MATLAB.
 
    Notes: By default this uses GMRES on the fine grid smoother so this should be used with KSPFGMRES or the smoother changed to not use GMRES
 

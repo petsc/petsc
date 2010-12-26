@@ -847,7 +847,7 @@ EXTERN_C_END
     Not Collective
 
   Input Parameter:
-.  viewer - the PetscViewer; must be a binary, Matlab, hdf, or netcdf PetscViewer
+.  viewer - the PetscViewer; must be a binary, MATLAB, hdf, or netcdf PetscViewer
 
   Output Parameter:
 .  type - type of file

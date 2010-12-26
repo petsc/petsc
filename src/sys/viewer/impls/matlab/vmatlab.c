@@ -4,7 +4,7 @@
 #include "mat.h"
 
 /*MC
-   PETSCVIEWERMATLAB - A viewer that saves the variables into a Matlab .mat file that may be read into Matlab
+   PETSCVIEWERMATLAB - A viewer that saves the variables into a MATLAB .mat file that may be read into MATLAB
        with load('filename').
 
    Level: intermediate
@@ -14,7 +14,7 @@
 
              For parallel vectors obtained with DMCreateGlobalVector() or DMGetGlobalVector() the vectors are saved to
              the .mat file in natural ordering. You can use DMView() to save the DMDA information to the .mat file
-             the fields in the Matlab loaded da variable give the array dimensions so you can reshape the Matlab
+             the fields in the MATLAB loaded da variable give the array dimensions so you can reshape the MATLAB
              vector to the same multidimensional shape as it had in PETSc for plotting etc. For example,
 
 $             In your PETSc C/C++ code (assuming a two dimensional DMDA with one degree of freedom per node)
@@ -22,7 +22,7 @@ $                PetscObjectSetName((PetscObject)x,"x");
 $                VecView(x,PETSC_VIEWER_MATLAB_WORLD);
 $                PetscObjectSetName((PetscObject)da,"da");
 $                DMView(x,PETSC_VIEWER_MATLAB_WORLD);
-$             Then from Matlab
+$             Then from MATLAB
 $                load('matlaboutput.mat')   % matlaboutput.mat is the default filename
 $                xnew = zeros(da.n,da.m);
 $                xnew(:) = x;    % reshape one dimensional vector back to two dimensions
@@ -47,7 +47,7 @@ typedef struct {
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerMatlabPutArray"
 /*@C
-    PetscViewerMatlabPutArray - Puts an array into the Matlab viewer.
+    PetscViewerMatlabPutArray - Puts an array into the MATLAB viewer.
 
       Not collective: only processor zero saves the array
 
@@ -70,7 +70,7 @@ PetscErrorCode  PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,const Pe
   
   PetscFunctionBegin;  
   if (!ml->rank) {
-    ierr = PetscInfo1(mfile,"Putting Matlab array %s\n",name);CHKERRQ(ierr);
+    ierr = PetscInfo1(mfile,"Putting MATLAB array %s\n",name);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
     mat  = mxCreateDoubleMatrix(m,n,mxREAL);
 #else
@@ -79,7 +79,7 @@ PetscErrorCode  PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,const Pe
     ierr = PetscMemcpy(mxGetPr(mat),array,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
     matPutVariable(ml->ep,name,mat);
 
-    ierr = PetscInfo1(mfile,"Put Matlab array %s\n",name);CHKERRQ(ierr);
+    ierr = PetscInfo1(mfile,"Put MATLAB array %s\n",name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -98,12 +98,12 @@ PetscErrorCode  PetscViewerMatlabPutVariable(PetscViewer viewer,const char* name
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerMatlabGetArray"
 /*@C
-    PetscViewerMatlabGetArray - Gets a variable from a Matlab viewer into an array
+    PetscViewerMatlabGetArray - Gets a variable from a MATLAB viewer into an array
 
     Not Collective; only processor zero reads in the array
 
     Input Parameters:
-+    mfile - the Matlab file viewer
++    mfile - the MATLAB file viewer
 .    m,n - the dimensions of the array
 .    array - the array (represented in one dimension)
 -    name - the name of the array
@@ -121,11 +121,11 @@ PetscErrorCode  PetscViewerMatlabGetArray(PetscViewer mfile,int m,int n,PetscSca
   
   PetscFunctionBegin;  
   if (!ml->rank) {
-    ierr = PetscInfo1(mfile,"Getting Matlab array %s\n",name);CHKERRQ(ierr);
+    ierr = PetscInfo1(mfile,"Getting MATLAB array %s\n",name);CHKERRQ(ierr);
     mat  = matGetVariable(ml->ep,name);
     if (!mat) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
     ierr = PetscMemcpy(array,mxGetPr(mat),m*n*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = PetscInfo1(mfile,"Got Matlab array %s\n",name);CHKERRQ(ierr);
+    ierr = PetscInfo1(mfile,"Got MATLAB array %s\n",name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -217,12 +217,12 @@ EXTERN_C_END
 +  comm - MPI communicator
 .  name - name of file 
 -  type - type of file
-$    FILE_MODE_WRITE - create new file for Matlab output
-$    FILE_MODE_READ - open existing file for Matlab input
-$    FILE_MODE_WRITE - open existing file for Matlab output
+$    FILE_MODE_WRITE - create new file for MATLAB output
+$    FILE_MODE_READ - open existing file for MATLAB input
+$    FILE_MODE_WRITE - open existing file for MATLAB output
 
    Output Parameter:
-.  binv - PetscViewer for Matlab output to use with the specified file
+.  binv - PetscViewer for MATLAB output to use with the specified file
 
    Level: beginner
 
@@ -230,10 +230,10 @@ $    FILE_MODE_WRITE - open existing file for Matlab output
 
     For writing files it only opens the file on processor 0 in the communicator.
 
-     This only saves Vecs it cannot be used to save Mats. We recommend using the PETSCVIEWERBINARY to save objects to be loaded into Matlab 
+     This only saves Vecs it cannot be used to save Mats. We recommend using the PETSCVIEWERBINARY to save objects to be loaded into MATLAB 
      instead of this routine.
 
-   Concepts: Matlab .mat files
+   Concepts: MATLAB .mat files
    Concepts: PetscViewerMatlab^creating
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(), PETSCVIEWERBINARY, PetscViewerBinaryOpen()
@@ -277,7 +277,7 @@ $    -viewer_matlab_filename <name>
      an error code.  The matlab PetscViewer is usually used in the form
 $       XXXView(XXX object,PETSC_VIEWER_MATLAB_(comm));
 
-     Use PETSC_VIEWER_SOCKET_() or PetscViewerSocketOpen() to communicator with an interactive Matlab session.
+     Use PETSC_VIEWER_SOCKET_() or PetscViewerSocketOpen() to communicator with an interactive MATLAB session.
 
 .seealso: PETSC_VIEWER_MATLAB_WORLD, PETSC_VIEWER_MATLAB_SELF, PetscViewerMatlabOpen(), PetscViewerCreate(),
           PetscViewerDestroy()

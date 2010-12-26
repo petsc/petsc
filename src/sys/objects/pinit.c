@@ -99,7 +99,7 @@ PetscErrorCode  PetscInitializeNonPointers(int argc,char **args,const char *file
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetPETSC_COMM_SELF"
 /*
-      Used by Matlab interface to get communicator
+      Used by MATLAB interface to get communicator
 */
 PetscErrorCode  PetscGetPETSC_COMM_SELF(MPI_Comm *comm)
 {

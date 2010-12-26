@@ -6,7 +6,7 @@
 
 /*
    TAKEN from src/sys/fileio/sysio.c The swap byte routines are 
-  included here because the Matlab programs that use this do NOT
+  included here because the MATLAB programs that use this do NOT
   link to the PETSc libraries.
 */
 #include <errno.h>
@@ -79,7 +79,7 @@ void SYByteSwapScalar(PetscScalar *buff,int n)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscBinaryRead"
 /*
-    PetscBinaryRead - Reads from a socket, called from Matlab
+    PetscBinaryRead - Reads from a socket, called from MATLAB
 
   Input Parameters:
 .   fd - the file
@@ -133,7 +133,7 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscBinaryWrite"
 /*
-    PetscBinaryWrite - Writes to a socket, called from Matlab
+    PetscBinaryWrite - Writes to a socket, called from MATLAB
 
   Input Parameters:
 .   fd - the file

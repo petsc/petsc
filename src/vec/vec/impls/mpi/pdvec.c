@@ -53,8 +53,8 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
     ierr = PetscMalloc(len*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     /*
-        Matlab format and ASCII format are very similar except
-        Matlab uses %18.16e format while ASCII uses %g
+        MATLAB format and ASCII format are very similar except
+        MATLAB uses %18.16e format while ASCII uses %g
     */
     if (format == PETSC_VIEWER_ASCII_MATLAB) {
       ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);

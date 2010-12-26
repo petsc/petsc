@@ -1172,7 +1172,7 @@ allow the insertion of values in column major order, one can call the command
 support the column-oriented option.
 
 This notation should not be a mystery to anyone. For example, 
-to insert one matrix into another when using Matlab, one uses the command 
+to insert one matrix into another when using MATLAB, one uses the command 
 \trl{A(im,in) = B;} where \trl{im} and \trl{in} contain the indices for the
 rows and columns. This action is identical to the calls above to 
 MatSetValues().
@@ -4510,19 +4510,19 @@ second approach will require some hand massaging. For example,
 
 %------------------------------------------------------------------
 \cleardoublepage
-\chapter{Using Matlab with PETSc}
-\label{ch_matlab}\sindex{Matlab}
+\chapter{Using MATLAB with PETSc}
+\label{ch_matlab}\sindex{MATLAB}
 
-There are three basic ways to use Matlab with PETSc: (1) dumping files to 
-be read into Matlab, (2) automatically sending data from a running PETSc program
-to a Matlab process where you may interactively type Matlab commands (or run
+There are three basic ways to use MATLAB with PETSc: (1) dumping files to 
+be read into MATLAB, (2) automatically sending data from a running PETSc program
+to a MATLAB process where you may interactively type MATLAB commands (or run
 scripts) and (3) automatically sending data back and forth between PETSc and 
-Matlab where Matlab commands are issued not interactively but from a script or
+MATLAB where MATLAB commands are issued not interactively but from a script or
 the PETSc program.
 
-\section{Dumping Data for Matlab}
+\section{Dumping Data for MATLAB}
 One can dump PETSc matrices and vectors to the screen (and thus save in a file via
-\trl{> filename.m}) in a format that Matlab can read in directly. This is done with the
+\trl{> filename.m}) in a format that MATLAB can read in directly. This is done with the
 command line options \trl{-vec_view_matlab} or \trl{-mat_view_matlab}. This causes the PETSc program
 to print the vectors and matrices every time a VecAssemblyXXX() and MatAssemblyXXX()
 is called. \findex{-vec_view_matlab} \findex{-mat_view_matlab} To provide finer control
@@ -4539,44 +4539,44 @@ or
   PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC\_VIEWER\_ASCII\_MATLAB);\\
   MatView(B,PETSC_VIEWER_STDOUT_WORLD);
 \end{tabbing}
-The name of each PETSc variable printed for Matlab may be set with
+The name of each PETSc variable printed for MATLAB may be set with
 \begin{tabbing}\sindex{PetscObjectSetName()}
 PetscObjectSetName((PetscObject)A,''name'');
 \end{tabbing}
 If no name is specified, the object is given a default name using PetscObjectName.
 
-\section{Sending Data to Interactive Running Matlab Session}
+\section{Sending Data to Interactive Running MATLAB Session}
 
-One creates a viewer to Matlab via 
+One creates a viewer to MATLAB via 
 \begin{tabbing}
 PetscViewerSocketOpen(MPI\_Comm,char *machine,int port,PetscViewer *v);
 \end{tabbing}
 (port is usally set to \trl{PETSC_DEFAULT}, use PETSC_NULL for the machine if the 
-Matlab interactive session is running on the same machine as the PETSc program) 
+MATLAB interactive session is running on the same machine as the PETSc program) 
 and then sends matrices or vectors via
 \begin{tabbing}
   VecView(Vec A,v);\\
   MatView(Mat B,v);
 \end{tabbing}
 One can also send arrays or integer arrays via PetscIntView(), PetscRealView() and PetscScalarView().
-One may start the Matlab program manually or use the PETSc command
-PetscStartMatlab\trl{(MPI_Comm,char *machine,char *script,FILE **fp)}; where machine and script may be PETSC_NULL.
+One may start the MATLAB program manually or use the PETSc command
+PetscStartMATLAB\trl{(MPI_Comm,char *machine,char *script,FILE **fp)}; where machine and script may be PETSC_NULL.
 
-To receive the objects in Matlab you must first make sure that \trl{${PETSC_DIR}/bin/matlab}
-is in your Matlab path. Use \trl{p = sopen;} (or \trl{p = sopen(portnum)} if you provided a port number in
+To receive the objects in MATLAB you must first make sure that \trl{${PETSC_DIR}/bin/matlab}
+is in your MATLAB path. Use \trl{p = sopen;} (or \trl{p = sopen(portnum)} if you provided a port number in
 your call to PetscViewerSocketOpen()), then \trl{a = PetscBinaryRead(p);} returns the object you have passed from PETSc.
 PetscBinaryRead() may be called any number of times. Each call should correspond on the PETSc side with
-viewing a single vector or matrix. You many call \trl{sclose()} to close the connection from Matlab.
-It is also possible to start your PETSc program from Matlab via \trl{launch()}.
+viewing a single vector or matrix. You many call \trl{sclose()} to close the connection from MATLAB.
+It is also possible to start your PETSc program from MATLAB via \trl{launch()}.
 
-\section{Using the Matlab Compute Engine}
+\section{Using the MATLAB Compute Engine}
 
-One creates access to the Matlab engine via 
+One creates access to the MATLAB engine via 
 \begin{tabbing}
   PetscMatlabEngineCreate(MPI\_Comm comm,char *machine,PetscMatlabEngine *e);
 \end{tabbing}
-where \trl{machine} is the name of the machine hosting Matlab (PETSC_NULL may be used for localhost).
-One can send objects to Matlab via 
+where \trl{machine} is the name of the machine hosting MATLAB (PETSC_NULL may be used for localhost).
+One can send objects to MATLAB via 
 \begin{tabbing}
   PetscMatlabEnginePut(PetscMatlabEngine e,PetscObject obj);
 \end{tabbing}
@@ -4593,8 +4593,8 @@ and get them back via
 \begin{tabbing}
   PetscMatlabEngineGetArray(PetscMatlabEngine e,int m,int n,PetscScalar *array,char *name);
 \end{tabbing}
-One cannot use Matlab
-interactively in this mode but you can send Matlab commands via
+One cannot use MATLAB
+interactively in this mode but you can send MATLAB commands via
 \begin{tabbing}
   PetscMatlabEngineEvaluate(PetscMatlabEngine,''format'',...);
 \end{tabbing}
@@ -4608,7 +4608,7 @@ The name of each PETSc variable passed to Matlab may be set with
 PetscObjectSetName((PetscObject)A,''name'');
 \end{tabbing}
 
-Text responses can be returned from Matlab via 
+Text responses can be returned from MATLAB via 
 \begin{tabbing}
   PetscMatlabEngineGetOutput(PetscMatlabEngine,char **); 
 \end{tabbing}
@@ -4616,7 +4616,7 @@ or
 \begin{tabbing}
 PetscMatlabEnginedPrintOutput(PetscMatlabEngine,FILE*).
 \end{tabbing}
-There is a short-cut to starting the Matlab engine
+There is a short-cut to starting the MATLAB engine
 with \trl{PETSC_MATLAB_ENGINE_(MPI_Comm)}.
 
 
@@ -6071,17 +6071,17 @@ predefined viewers:
       PetscViewerBinaryOpen\trl{(MPI_Comm} comm,char* file,PetscViewerBinaryType type,
       PetscViewer *viewer). Details of binary
       I/O are discussed below.
-\item Vector and matrix objects can be passed to a running Matlab process
+\item Vector and matrix objects can be passed to a running MATLAB process
       with a viewer created by 
 \begin{tabbing}
      PetscViewerSocketOpen(MPI\_Comm comm,char *machine,int port,PetscViewer *viewer). 
 \end{tabbing} 
-      On the Matlab side, one must first run \trl{v = sreader(int port)}
+      On the MATLAB side, one must first run \trl{v = sreader(int port)}
       and then \trl{A = PetscBinaryRead(v)} to obtain the matrix or vector. Once all
-      objects have been received, the port can be closed from the Matlab end
+      objects have been received, the port can be closed from the MATLAB end
       with \trl{close(v)}. On the PETSc side, one should destroy
       the viewer object with  \trl{
-      PetscViewerDestroy()}. The corresponding Matlab \trl{mex}
+      PetscViewerDestroy()}. The corresponding MATLAB \trl{mex}
       files are located in \trl{${PETSC_DIR}/src/sys/viewer/impls/socket/matlab}.
 \end{itemize}
 

@@ -21,7 +21,7 @@ PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
   if (format == PETSC_VIEWER_ASCII_INFO) {
     PetscFunctionReturn(0);
   } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
-    SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Matlab format not supported");
+    SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"MATLAB format not supported");
   } else {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     for (i=0; i<m; i++) {

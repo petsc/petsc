@@ -4,7 +4,7 @@
  *	This is a library of functions to write .info files with matlab code
  *      for interpreting PETSc binary files.
  *
- *	Note all "name" and "DMDAFieldName" variables must be Matlab-Kosher
+ *	Note all "name" and "DMDAFieldName" variables must be MATLAB-Kosher
  *	i.e. no whitespace or illegal characters such as grouping 
  *	operators, quotations, math/boolean operators, etc. 
  * ----------------------------------------------------------------------*/

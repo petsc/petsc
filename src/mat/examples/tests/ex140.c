@@ -46,7 +46,7 @@ int main(int argc,char **args)
   ierr = VecLoad(b,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
-  /* save original matrix and vector for testing with Matlab */
+  /* save original matrix and vector for testing with MATLAB */
   ierr = VecView(b,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
 

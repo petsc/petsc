@@ -5,7 +5,7 @@
 	 Updated by Ridhard Katz, katz@ldeo.columbia.edu 9/28/03
 	 Updated by Barry Smith, bsmith@mcs.anl.gov 8/11/06
 
- Similar to Matlab's sopen() only does not take file name, instead optional
+ Similar to MATLAB's sopen() only does not take file name, instead optional
  port to listen at.
 
  Only compiles as C code.

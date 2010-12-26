@@ -4,7 +4,7 @@
  - write the global vector in a hdf5 file 
 
    The resulting file gauss.h5 can be viewed with Visit (an open source visualization package)
-   Or with some versions of Matlab with data=hdfread('gauss.h5','pressure'); mesh(data);   
+   Or with some versions of MATLAB with data=hdfread('gauss.h5','pressure'); mesh(data);   
 
    The file storage of the vector is independent of the number of processes used.
  */

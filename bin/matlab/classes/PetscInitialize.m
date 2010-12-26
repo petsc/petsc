@@ -7,6 +7,10 @@ function err = PetscInitialize(args,argfile,arghelp)
 %  There is currently no MPI in the API, the MPI_Comm is not in any of the 
 %  argument lists but otherwise the argument lists try to mimic the C binding
 %
+%  Add ${PETSC_DIR}/bin/matlab/classes to your MATLAB path
+%
+%  In MATLAB use help Petsc to get started using PETSc from MATLAB
+%
 %
 
 if ~libisloaded('libpetsc')

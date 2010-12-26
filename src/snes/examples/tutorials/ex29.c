@@ -711,7 +711,7 @@ PetscErrorCode Update(DMMG *dmmg)
                          "number of linear steps = %D, norm of the function = %G\n",
 			 tsCtx->itstep + 1, tsCtx->t, its, lits, PetscAbsScalar(tsCtx->fnorm));CHKERRQ(ierr);
 
-      /* send solution over to Matlab, to be visualized (using ex29.m) */
+      /* send solution over to MATLAB, to be visualized (using ex29.m) */
       if (!param->PreLoading && tsCtx->socketviewer)
       {
         Vec v;

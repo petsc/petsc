@@ -7,7 +7,7 @@
 #include "private/daimpl.h"    /*I   "petscdm.h"   I*/
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include "mat.h"   /* Matlab include file */
+#include "mat.h"   /* MATLAB include file */
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMView_DA_Matlab"
@@ -26,7 +26,7 @@ PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
   if (!rank) {
     ierr = DMDAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
     mx = mxCreateStructMatrix(1,1,8,(const char **)fnames);
-    if (!mx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to generate Matlab struct array to hold DMDA informations");
+    if (!mx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to generate MATLAB struct array to hold DMDA informations");
     mxSetFieldByNumber(mx,0,0,mxCreateDoubleScalar((double)dim));
     mxSetFieldByNumber(mx,0,1,mxCreateDoubleScalar((double)m));
     mxSetFieldByNumber(mx,0,2,mxCreateDoubleScalar((double)n));

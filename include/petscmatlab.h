@@ -1,5 +1,5 @@
 /*
-    Defines an interface to the Matlab Engine from PETSc
+    Defines an interface to the MATLAB Engine from PETSc
 */
 
 #if !defined(__PETSCMATLAB_H)
@@ -9,7 +9,7 @@ PETSC_EXTERN_CXX_BEGIN
 extern PetscClassId MATLABENGINE_CLASSID;
 
 /*S
-     PetscMatlabEngine - Object used to communicate with Matlab
+     PetscMatlabEngine - Object used to communicate with MATLAB
 
    Level: intermediate
 

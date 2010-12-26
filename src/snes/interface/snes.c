@@ -2130,8 +2130,8 @@ PetscErrorCode  SNESSetConvergenceHistory(SNES snes,PetscReal a[],PetscInt its[]
 }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include "engine.h"   /* Matlab include file */
-#include "mex.h"      /* Matlab include file */
+#include "engine.h"   /* MATLAB include file */
+#include "mex.h"      /* MATLAB include file */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESGetConvergenceHistoryMatlab"
@@ -3193,7 +3193,7 @@ PetscErrorCode  SNESComputeFunction_Matlab(SNES snes,Vec x,Vec y, void *ctx)
 /*
    SNESSetFunctionMatlab - Sets the function evaluation routine and function 
    vector for use by the SNES routines in solving systems of nonlinear
-   equations from Matlab. Here the function is a string containing the name of a Matlab function
+   equations from MATLAB. Here the function is a string containing the name of a MATLAB function
 
    Logically Collective on SNES
 
@@ -3302,7 +3302,7 @@ PetscErrorCode  SNESComputeJacobian_Matlab(SNES snes,Vec x,Mat *A,Mat *B,MatStru
 /*
    SNESSetJacobianMatlab - Sets the Jacobian function evaluation routine and two empty Jacobian matrices
    vector for use by the SNES routines in solving systems of nonlinear
-   equations from Matlab. Here the function is a string containing the name of a Matlab function
+   equations from MATLAB. Here the function is a string containing the name of a MATLAB function
 
    Logically Collective on SNES
 
@@ -3385,7 +3385,7 @@ PetscErrorCode  SNESMonitor_Matlab(SNES snes,PetscInt it, PetscReal fnorm, void 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESMonitorSetMatlab"
 /*
-   SNESMonitorSetMatlab - Sets the monitor function from Matlab
+   SNESMonitorSetMatlab - Sets the monitor function from MATLAB
 
    Level: developer
 

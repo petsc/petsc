@@ -435,7 +435,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
 }
 
 /*
-      Variant of FormFunction() that computes the function in Matlab
+      Variant of FormFunction() that computes the function in MATLAB
 */
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #undef __FUNCT__

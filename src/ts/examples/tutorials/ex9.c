@@ -1295,7 +1295,7 @@ int main(int argc,char *argv[])
     ierr = PetscOptionsList("-limit","Name of flux limiter to use","",limiters,lname,lname,sizeof(lname),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsList("-physics","Name of physics (Riemann solver and characteristics) to use","",physics,physname,physname,sizeof(physname),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-draw","Draw solution vector, bitwise OR of (1=initial,2=final,4=final error)","",draw,&draw,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-view_final","Write final solution in ASCII Matlab format to given file name","",final_fname,final_fname,sizeof final_fname,&view_final);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-view_final","Write final solution in ASCII MATLAB format to given file name","",final_fname,final_fname,sizeof final_fname,&view_final);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-initial","Initial condition (depends on the physics)","",ctx.initial,&ctx.initial,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-exact","Compare errors with exact solution","",ctx.exact,&ctx.exact,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-cfl","CFL number to time step at","",ctx.cfl,&ctx.cfl,PETSC_NULL);CHKERRQ(ierr);

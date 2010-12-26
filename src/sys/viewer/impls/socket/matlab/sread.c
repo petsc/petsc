@@ -1,6 +1,6 @@
 /*
  
-    This is the equivalent of Matlab's fread() only on sockets instead of
+    This is the equivalent of MATLAB's fread() only on sockets instead of
    binary files.
 */
 

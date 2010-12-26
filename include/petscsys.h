@@ -1856,7 +1856,7 @@ M*/
   } while (0)
 
 /*
-    Allows accessing Matlab Engine
+    Allows accessing MATLAB Engine
 */
 #include "petscmatlab.h"
 

@@ -1355,7 +1355,7 @@ PetscErrorCode  DMComputeJacobian_Matlab(DM dm,Vec x,Mat A,Mat B,MatStructure *s
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(A,MAT_CLASSID,3);
 
-  /* call Matlab function in ctx with arguments x, A, and B */
+  /* call MATLAB function in ctx with arguments x, A, and B */
   ierr = DMGetContext(dm,(void**)&sctx);CHKERRQ(ierr);
   ierr = PetscMemcpy(&ls,&dm,sizeof(dm));CHKERRQ(ierr); 
   ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 

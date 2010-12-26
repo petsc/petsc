@@ -1,5 +1,5 @@
 
-static char help[] = "Reads in a matrix in ASCII Matlab format (I,J,A), read in vectors rhs and exact_solu in ASCII format.\n\
+static char help[] = "Reads in a matrix in ASCII MATLAB format (I,J,A), read in vectors rhs and exact_solu in ASCII format.\n\
 Writes them using the PETSc sparse format.\n\
 Note: I and J start at 1, not 0, use -noshift if indices in file start with zero!\n\
 Input parameters are:\n\

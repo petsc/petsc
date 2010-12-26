@@ -1,6 +1,6 @@
 /*
  
-    This is the equivalent of Matlab's fwrite() only on sockets instead of
+    This is the equivalent of MATLAB's fwrite() only on sockets instead of
    binary files.
 */
 

@@ -3,9 +3,9 @@ static char help[] = "Tests VecView() contour plotting for 2d DMDAs.\n\n";
 
 /* 
   MATLAB must be installed to configure PETSc to have MATLAB engine.
-Unless you have specific important reasons for using the Matlab engine, we do not
-recommend it. If you want to use Matlab for visualization and maybe a little post processing
-then you can use the socket viewer and send the data to Matlab via that.
+Unless you have specific important reasons for using the MATLAB engine, we do not
+recommend it. If you want to use MATLAB for visualization and maybe a little post processing
+then you can use the socket viewer and send the data to MATLAB via that.
 
   VecView() on DMDA vectors first puts the Vec elements into global natural ordering before printing (or plotting)
 them. In 2d 5 by 2 DMDA this means the numbering is

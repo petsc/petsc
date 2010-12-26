@@ -396,7 +396,7 @@ M*/
   }
 
 /*
-   petscViewer writes to Matlab .mat file
+   petscViewer writes to MATLAB .mat file
 */
 extern PetscErrorCode  PetscViewerMatlabPutArray(PetscViewer,int,int,const PetscScalar*,const char*);
 extern PetscErrorCode  PetscViewerMatlabGetArray(PetscViewer,int,int,PetscScalar*,const char*);

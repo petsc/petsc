@@ -1,13 +1,13 @@
 #define PETSCMAT_DLL
 
 /* 
-        Provides an interface for the Matlab engine sparse solver
+        Provides an interface for the MATLAB engine sparse solver
 
 */
 #include "../src/mat/impls/aij/seq/aij.h"
 
-#include "engine.h"   /* Matlab include file */
-#include "mex.h"      /* Matlab include file */
+#include "engine.h"   /* MATLAB include file */
+#include "mex.h"      /* MATLAB include file */
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -22,7 +22,7 @@ mxArray *MatSeqAIJToMatlab(Mat B)
   PetscFunctionBegin;
   mat  = mxCreateSparse(B->cmap->n,B->rmap->n,aij->nz,mxREAL);
   ierr = PetscMemcpy(mxGetPr(mat),aij->a,aij->nz*sizeof(PetscScalar));
-  /* Matlab stores by column, not row so we pass in the transpose of the matrix */
+  /* MATLAB stores by column, not row so we pass in the transpose of the matrix */
   jj = mxGetIr(mat);
   for (i=0; i<aij->nz; i++) jj[i] = aij->j[i];
   ii = mxGetJc(mat);
@@ -53,12 +53,12 @@ EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqAIJFromMatlab"
 /*@C
-    MatSeqAIJFromMatlab - Given a Matlab sparse matrix, fills a SeqAIJ matrix with its transpose.
+    MatSeqAIJFromMatlab - Given a MATLAB sparse matrix, fills a SeqAIJ matrix with its transpose.
 
    Not Collective
 
    Input Parameters:
-+     mmat - a Matlab sparse matris
++     mmat - a MATLAB sparse matris
 -     mat - a already created MATSEQAIJ
 
 @*/
@@ -96,7 +96,7 @@ PetscErrorCode  MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
   }
 
   ierr = PetscMemcpy(aij->a,mxGetPr(mmat),aij->nz*sizeof(PetscScalar));CHKERRQ(ierr);
-  /* Matlab stores by column, not row so we pass in the transpose of the matrix */
+  /* MATLAB stores by column, not row so we pass in the transpose of the matrix */
   i = aij->i;
   for (k=0; k<n+1; k++) {
     i[k] = (PetscInt) ii[k];
@@ -248,7 +248,7 @@ PetscErrorCode MatFactorInfo_Matlab(Mat A,PetscViewer viewer)
   PetscErrorCode ierr;
   
   PetscFunctionBegin; 
-  ierr = PetscViewerASCIIPrintf(viewer,"Matlab run parameters:  -- not written yet!\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"MATLAB run parameters:  -- not written yet!\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -275,13 +275,13 @@ PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer)
 
 /*MC
   MATSOLVERMATLAB - "matlab" - Providing direct solvers (LU and QR) and drop tolerance
-  based ILU factorization (ILUDT) for sequential matrices via the external package Matlab.
+  based ILU factorization (ILUDT) for sequential matrices via the external package MATLAB.
 
 
   Works with MATSEQAIJ matrices.
 
   Options Database Keys:
-. -pc_factor_mat_solver_type matlab - selects Matlab to do the sparse factorization
+. -pc_factor_mat_solver_type matlab - selects MATLAB to do the sparse factorization
 
 
   Level: beginner

@@ -4,8 +4,8 @@
 #requiresscalar real 
 #requiresprecision  double
 #
-#   matlabcodes makes the Matlab mex files for receiving PETSc objects
-# in Matlab. You cannot use a complex numbers.
+#   matlabcodes makes the MATLAB mex files for receiving PETSc objects
+# in MATLAB. You cannot use a complex numbers.
 #
 SPECIALLIB     = yes
 SPECIALFASTLIB = yes

@@ -19,7 +19,7 @@ EXTERN_C_BEGIN
 /*
     MatGetOrdering_AMD - Find the Approximate Minimum Degree ordering
 
-    This provides an interface to Tim Davis' AMD package (used by UMFPACK, CHOLMOD, Matlab, etc).
+    This provides an interface to Tim Davis' AMD package (used by UMFPACK, CHOLMOD, MATLAB, etc).
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetOrdering_AMD"

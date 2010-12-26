@@ -1,5 +1,5 @@
 
-static char help[] = "Passes a sparse matrix to Matlab.\n\n";
+static char help[] = "Passes a sparse matrix to MATLAB.\n\n";
 
 #include "petscmat.h"
 

@@ -232,7 +232,7 @@ PetscErrorCode PetscSocketListen(int listenport,int *t)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSocketOpen" 
 /*@C
-   PetscViewerSocketOpen - Opens a connection to a Matlab or other socket
+   PetscViewerSocketOpen - Opens a connection to a MATLAB or other socket
         based server.
 
    Collective on MPI_Comm
@@ -250,7 +250,7 @@ PetscErrorCode PetscSocketListen(int listenport,int *t)
 
    Notes:
    Most users should employ the following commands to access the 
-   Matlab PetscViewers
+   MATLAB PetscViewers
 $
 $    PetscViewerSocketOpen(MPI_Comm comm, char *machine,int port,PetscViewer &viewer)
 $    MatView(Mat matrix,PetscViewer viewer)
@@ -271,13 +271,13 @@ $    -viewer_socket_port <port>
 +   PETSC_VIEWER_SOCKET_PORT portnumber
 -   PETSC_VIEWER_SOCKET_MACHINE machine name
 
-     Currently the only socket client available is Matlab. See 
+     Currently the only socket client available is MATLAB. See 
      src/dm/da/examples/tests/ex12.c and ex12.m for an example of usage.
 
    Notes: The socket viewer is in some sense a subclass of the binary viewer, to read and write to the socket
           use PetscViewerBinaryRead/Write/GetDescriptor().
 
-   Concepts: Matlab^sending data
+   Concepts: MATLAB^sending data
    Concepts: sockets^sending data
 
 .seealso: MatView(), VecView(), PetscViewerDestroy(), PetscViewerCreate(), PetscViewerSetType(),
@@ -450,12 +450,12 @@ $    -viewer_socket_port <port>
      an error code.  The socket PetscViewer is usually used in the form
 $       XXXView(XXX object,PETSC_VIEWER_SOCKET_(comm));
 
-     Currently the only socket client available is Matlab. See 
+     Currently the only socket client available is MATLAB. See 
      src/dm/da/examples/tests/ex12.c and ex12.m for an example of usage.
 
      Connects to a waiting socket and stays connected until PetscViewerDestroy() is called.
 
-     Use this for communicating with an interactive Matlab session, see PETSC_VIEWER_MATLAB_() for communicating with the Matlab engine. 
+     Use this for communicating with an interactive MATLAB session, see PETSC_VIEWER_MATLAB_() for communicating with the MATLAB engine. 
 
 .seealso: PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF, PetscViewerSocketOpen(), PetscViewerCreate(),
           PetscViewerSocketSetConnection(), PetscViewerDestroy(), PETSC_VIEWER_SOCKET_(), PetscViewerBinaryWrite(), PetscViewerBinaryRead(),

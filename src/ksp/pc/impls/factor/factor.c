@@ -410,7 +410,7 @@ PetscErrorCode  PCFactorSetMatOrderingType(PC pc,const MatOrderingType ordering)
 /*@
     PCFactorSetColumnPivot - Determines when column pivoting is done during matrix factorization. 
       For PETSc dense matrices column pivoting is always done, for PETSc sparse matrices
-      it is never done. For the Matlab and SuperLU factorization this is used.
+      it is never done. For the MATLAB and SuperLU factorization this is used.
 
     Logically Collective on PC
 

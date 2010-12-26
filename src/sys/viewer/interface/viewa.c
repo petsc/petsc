@@ -18,7 +18,7 @@
    Notes:
    Available formats include
 +    PETSC_VIEWER_DEFAULT - default format
-.    PETSC_VIEWER_ASCII_MATLAB - Matlab format
+.    PETSC_VIEWER_ASCII_MATLAB - MATLAB format
 .    PETSC_VIEWER_ASCII_DENSE - print matrix as dense
 .    PETSC_VIEWER_ASCII_IMPL - implementation-specific format
       (which is in many cases the same as the default)
@@ -77,7 +77,7 @@ PetscErrorCode  PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format
    Notes:
    Available formats include
 +    PETSC_VIEWER_DEFAULT - default format
-.    PETSC_VIEWER_ASCII_MATLAB - Matlab format
+.    PETSC_VIEWER_ASCII_MATLAB - MATLAB format
 .    PETSC_VIEWER_ASCII_IMPL - implementation-specific format
       (which is in many cases the same as the default)
 .    PETSC_VIEWER_ASCII_INFO - basic information about object
@@ -95,7 +95,7 @@ PetscErrorCode  PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format
 -    PETSC_VIEWER_DRAW_CONTOUR - views the vector with a contour plot
 
    These formats are most often used for viewing matrices and vectors.
-   Currently, the object name is used only in the Matlab format.
+   Currently, the object name is used only in the MATLAB format.
 
    Concepts: PetscViewer^setting format
 

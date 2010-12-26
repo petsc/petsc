@@ -193,7 +193,7 @@ PetscErrorCode  VecView_Private(Vec vec)
       ierr = VecView(vec,viewer);CHKERRQ(ierr);
     }
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-vec_view_matlab","Print vector to stdout in a format Matlab can read","VecView",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-vec_view_matlab","Print vector to stdout in a format MATLAB can read","VecView",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       PetscViewer viewer;
       ierr = PetscViewerASCIIGetStdout(((PetscObject)vec)->comm,&viewer);CHKERRQ(ierr);
@@ -203,7 +203,7 @@ PetscErrorCode  VecView_Private(Vec vec)
     }
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-vec_view_matlab_file","Print vector to matlaboutput.mat format Matlab can read","VecView",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-vec_view_matlab_file","Print vector to matlaboutput.mat format MATLAB can read","VecView",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = VecView(vec,PETSC_VIEWER_MATLAB_(((PetscObject)vec)->comm));CHKERRQ(ierr);
     }
@@ -254,8 +254,8 @@ PetscErrorCode  VecView_Private(Vec vec)
 
    Options Database Keys:
 +  -vec_view - Prints vector in ASCII format
-.  -vec_view_matlab - Prints vector in ASCII Matlab format to stdout
-.  -vec_view_matlab_file - Prints vector in Matlab format to matlaboutput.mat
+.  -vec_view_matlab - Prints vector in ASCII MATLAB format to stdout
+.  -vec_view_matlab_file - Prints vector in MATLAB format to matlaboutput.mat
 .  -vec_view_draw - Activates vector viewing using drawing tools
 .  -display <name> - Sets display name (default is host)
 .  -draw_pause <sec> - Sets number of seconds to pause after display
@@ -656,7 +656,7 @@ PetscErrorCode  VecViewFromOptions(Vec vec, const char *title)
    format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
    PETSC_VIEWER_STDOUT_WORLD and PetscViewerASCIIOpen).  Available formats include
 +    PETSC_VIEWER_DEFAULT - default, prints vector contents
-.    PETSC_VIEWER_ASCII_MATLAB - prints vector contents in Matlab format
+.    PETSC_VIEWER_ASCII_MATLAB - prints vector contents in MATLAB format
 .    PETSC_VIEWER_ASCII_INDEX - prints vector contents, including indices of vector elements
 -    PETSC_VIEWER_ASCII_COMMON - prints vector contents, using a
          format common among all vector types

@@ -7,11 +7,11 @@
 #include "private/daimpl.h"    /*I   "petscdm.h"   I*/
 
 /*
-   This allows the DMDA vectors to properly tell Matlab their dimensions
+   This allows the DMDA vectors to properly tell MATLAB their dimensions
 */
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include "engine.h"   /* Matlab include file */
-#include "mex.h"      /* Matlab include file */
+#include "engine.h"   /* MATLAB include file */
+#include "mex.h"      /* MATLAB include file */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecMatlabEnginePut_DA2d"

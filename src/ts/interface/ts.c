@@ -2338,7 +2338,7 @@ PetscErrorCode  TSComputeFunction_Matlab(TS snes,PetscReal time,Vec x,Vec xdot,V
 /*
    TSSetFunctionMatlab - Sets the function evaluation routine and function 
    vector for use by the TS routines in solving ODEs
-   equations from Matlab. Here the function is a string containing the name of a Matlab function
+   equations from MATLAB. Here the function is a string containing the name of a MATLAB function
 
    Logically Collective on TS
 
@@ -2446,7 +2446,7 @@ PetscErrorCode  TSComputeJacobian_Matlab(TS snes,PetscReal time,Vec x,Vec xdot,P
 #define __FUNCT__ "TSSetJacobianMatlab"
 /*
    TSSetJacobianMatlab - Sets the Jacobian function evaluation routine and two empty Jacobian matrices
-   vector for use by the TS routines in solving ODEs from Matlab. Here the function is a string containing the name of a Matlab function
+   vector for use by the TS routines in solving ODEs from MATLAB. Here the function is a string containing the name of a MATLAB function
 
    Logically Collective on TS
 
