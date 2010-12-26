@@ -215,6 +215,7 @@ the MatType, call MatSetFromOptions() first if you wish to check it.<br>
       <ul>
         <li>PCFieldSplitSetIS() and PCFieldSplitSetFields() now take a
 split-name parameter which is used to define the options database keys.</li>
+        <li>CHOLMOD can be used for Cholesky factorization using AIJ or SBAIJ(1) matrix formats.</li>
       </ul>
       <p><u><b>KSP:<br>
       </b></u></p>
@@ -233,12 +234,6 @@ PetscObjectAddOptionsHandler()</li>
 solve and uses it to configure a reduction-free method for subsequent
 solves, intended for use when reductions are expensive such as levels
 of multigrid.</li>
-      </ul>
-      <ul>
-      </ul>
-      <ul>
-      </ul>
-      <ul>
       </ul>
       <p><u><b>SNES:</b></u></p>
       <ul>
