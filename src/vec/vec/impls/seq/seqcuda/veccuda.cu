@@ -1328,6 +1328,7 @@ PetscErrorCode VecResetArray_SeqCUDA(Vec vin)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  ierr = VecCUDACopyFromGPU(vin);CHKERRCUDA(ierr);
   ierr = VecResetArray_Seq(vin);CHKERRQ(ierr);
   if (vin->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
     vin->valid_GPU_array = PETSC_CUDA_CPU;
@@ -1341,6 +1342,7 @@ PetscErrorCode VecPlaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  ierr = VecCUDACopyFromGPU(vin);CHKERRCUDA(ierr);
   ierr = VecPlaceArray_Seq(vin,a);CHKERRQ(ierr);
   if (vin->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
     vin->valid_GPU_array = PETSC_CUDA_CPU;
@@ -1355,6 +1357,7 @@ PetscErrorCode VecReplaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  ierr = VecCUDACopyFromGPU(vin);CHKERRCUDA(ierr);
   ierr = VecReplaceArray_Seq(vin,a);CHKERRQ(ierr);
   if (vin->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
     vin->valid_GPU_array = PETSC_CUDA_CPU;
