@@ -1,6 +1,6 @@
 #define PETSCSNES_DLL
 
-#include "../src/snes/impls/vi/viimpl.h"
+#include "../src/snes/impls/vi/viimpl.h" /*I "petscsnes.h" I*/
 #include "../include/private/kspimpl.h"
 
 #undef __FUNCT__  
