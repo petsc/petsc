@@ -47,7 +47,7 @@ classdef PetscMat < PetscObject
       err = calllib('libpetsc', 'MatSetType', obj.pobj,name);PetscCHKERRQ(err);
     end
     function err = SetFromOptions(obj)
-      err = calllib('libpetsc', 'MatSetSetFromOptions', obj.pobj);PetscCHKERRQ(err);
+      err = calllib('libpetsc', 'MatSetFromOptions', obj.pobj);PetscCHKERRQ(err);
     end
     function err = SetSizes(obj,m,n,M,N)
       if (nargin == 3) 

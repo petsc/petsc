@@ -197,10 +197,23 @@ static PetscErrorCode SNESVIComputeMeritFunction(Vec phi, PetscReal* merit,Petsc
 static PetscErrorCode ComputeFischerFunction(PetscScalar a, PetscScalar b, PetscScalar* ff)
 {
   PetscFunctionBegin;
-  *ff = sqrt(a*a + b*b) - a - b;
+  *ff = a + b - sqrt(a*a + b*b);
   PetscFunctionReturn(0);
 }
   
+static inline PetscScalar Phi(PetscScalar a,PetscScalar b)
+{
+  return a + b - sqrt(a*a + b*b);
+}
+
+static inline PetscScalar DPhi(PetscScalar a,PetscScalar b)
+{
+  if ((PetscAbsScalar(a) >= 1.e-6) || (PetscAbsScalar(b) >= 1.e-6))
+    return  1.0 - a/ sqrt(a*a + b*b);
+  else 
+    return .5;
+}
+
 /* 
    SNESVIComputeFunction - Reformulates a system of nonlinear equations in mixed complementarity form to a system of nonlinear equations in semismooth form. 
 
@@ -230,7 +243,7 @@ static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void* functx
   PetscErrorCode  ierr;
   SNES_VI       *vi = (SNES_VI*)snes->data;
   Vec             Xl = vi->xl,Xu = vi->xu,F = snes->vec_func;
-  PetscScalar     *phi_arr,*x_arr,*f_arr,*l,*u,t;
+  PetscScalar     *phi_arr,*x_arr,*f_arr,*l,*u;
   PetscInt        i,nlocal;
 
   PetscFunctionBegin;
@@ -245,25 +258,19 @@ static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void* functx
 
   for (i=0;i < nlocal;i++) {
     if ((l[i] <= PETSC_VI_NINF) && (u[i] >= PETSC_VI_INF)) {
-      phi_arr[i] = -f_arr[i];
+      phi_arr[i] = f_arr[i];
     }
     else if (l[i] <= PETSC_VI_NINF) {
-      t = u[i] - x_arr[i];
-      ierr = ComputeFischerFunction(t,-f_arr[i],&phi_arr[i]);CHKERRQ(ierr);
-      phi_arr[i] = -phi_arr[i];
+      phi_arr[i] = -Phi(u[i] - x_arr[i],-f_arr[i]);
     }
     else if (u[i] >= PETSC_VI_INF) {
-      t = x_arr[i] - l[i];
-      ierr = ComputeFischerFunction(t,f_arr[i],&phi_arr[i]);CHKERRQ(ierr);
+      phi_arr[i] = Phi(x_arr[i] - l[i],f_arr[i]);
     }
     else if (l[i] == u[i]) {
       phi_arr[i] = l[i] - x_arr[i];
     }
     else {
-      t = u[i] - x_arr[i];
-      ierr = ComputeFischerFunction(t,-f_arr[i],&phi_arr[i]);
-      t = x_arr[i] - l[i];
-      ierr = ComputeFischerFunction(t,phi_arr[i],&phi_arr[i]);
+      phi_arr[i] = Phi(x_arr[i] - l[i],-Phi(u[i] - x_arr[i],-f_arr[i]));
     }
   }
   
@@ -276,6 +283,8 @@ static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void* functx
   PetscFunctionReturn(0);
 }
 
+
+
 /* 
    SNESVIComputeBsubdifferentialVectors - Computes the diagonal shift (Da) and row scaling (Db) vectors needed for the
                                           the semismooth jacobian.
@@ -286,7 +295,7 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat ja
 {
   PetscErrorCode ierr;
   SNES_VI      *vi = (SNES_VI*)snes->data;
-  PetscScalar    *l,*u,*x,*f,*da,*db,*z,*t,t1,t2,ci,di,ei;
+  PetscScalar    *l,*u,*x,*f,*da,*db,da1,da2,db1,db2;
   PetscInt       i,nlocal;
 
   PetscFunctionBegin;
@@ -297,96 +306,29 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat ja
   ierr = VecGetArray(vi->xu,&u);CHKERRQ(ierr);
   ierr = VecGetArray(Da,&da);CHKERRQ(ierr);
   ierr = VecGetArray(Db,&db);CHKERRQ(ierr);
-  ierr = VecGetArray(vi->z,&z);CHKERRQ(ierr);
   
   ierr = VecGetLocalSize(X,&nlocal);CHKERRQ(ierr);
-  /* Set the elements of the vector z:
-     z[i] = 1 if (x[i] - l[i],f[i]) = (0,0) or (u[i] - x[i],f[i]) = (0,0)
-     else z[i] = 0
-  */
-  for(i=0;i < nlocal;i++) {
-    da[i] = db[i] = z[i] = 0;
-    if(PetscAbsScalar(f[i]) <= vi->const_tol) {
-      if ((l[i] > PETSC_VI_NINF) && (PetscAbsScalar(x[i]-l[i]) <= vi->const_tol)) {
-	da[i] = 1;
-	z[i]  = 1;
-      }
-      if ((u[i] < PETSC_VI_INF) && (PetscAbsScalar(u[i]-x[i]) <= vi->const_tol)) {
-	db[i] = 1;
-	z[i]  = 1;
-      }
-    }
-  }
-  ierr = VecRestoreArray(vi->z,&z);CHKERRQ(ierr);
-  ierr = MatMult(jac,vi->z,vi->t);CHKERRQ(ierr);
-  ierr = VecGetArray(vi->t,&t);CHKERRQ(ierr);
-  /* Compute the elements of the diagonal perturbation vector Da and row scaling vector Db */
-  for(i=0;i< nlocal;i++) {
-    /* Free variables */
-    if ((l[i] <= PETSC_VI_NINF) && (u[i] >= PETSC_VI_INF)) {
-      da[i] = 0; db[i] = -1;
-    }
-    /* lower bounded variables */
-    else if (u[i] >= PETSC_VI_INF) {
-      if (da[i] >= 1) {
-	t2 = PetscScalarNorm(1,t[i]);
-	da[i] = 1/t2 - 1;
-	db[i] = t[i]/t2 - 1;
-      } else {
-	t1 = x[i] - l[i];
-	t2 = PetscScalarNorm(t1,f[i]);
-	da[i] = t1/t2 - 1;
-	db[i] = f[i]/t2 - 1;
-      }
-    }
-    /* upper bounded variables */
-    else if (l[i] <= PETSC_VI_NINF) {
-      if (db[i] >= 1) {
-	t2 = PetscScalarNorm(1,t[i]);
-	da[i] = -1/t2 -1;
-	db[i] = -t[i]/t2 - 1;
-      }
-      else {
-	t1 = u[i] - x[i];
-	t2 = PetscScalarNorm(t1,f[i]);
-	da[i] = t1/t2 - 1;
-	db[i] = -f[i]/t2 - 1;
-      }
-    }
-    /* Fixed variables */
-    else if (l[i] == u[i]) {
-      da[i] = -1;
+  
+  for (i=0;i< nlocal;i++) {
+    if ((l[i] <= PETSC_VI_NINF) && (u[i] >= PETSC_VI_INF)) {/* Free variables */
+      da[i] = 0; 
+      db[i] = 1;
+    } else if (u[i] >= PETSC_VI_INF) { /* lower bounded variables */
+      da[i] = DPhi(x[i] - l[i], f[i]);
+      db[i] = DPhi(f[i],x[i] - l[i]);
+    } else if (l[i] <= PETSC_VI_NINF) { /* upper bounded variables */
+      da[i] = DPhi(u[i] - x[i], -f[i]);
+      db[i] = DPhi(-f[i],u[i] - x[i]);
+    } else if (l[i] == u[i]) { /* Fixed variables */
+      da[i] = 1;
       db[i] = 0;
-    }
-    /* Box constrained variables */
-    else {
-      if (db[i] >= 1) {
-	t2 = PetscScalarNorm(1,t[i]);
-	ci = 1/t2 + 1;
-	di = t[i]/t2 + 1;
-      }
-      else {
-	t1 = x[i] - u[i];
-	t2 = PetscScalarNorm(t1,f[i]);
-	ci = t1/t2 + 1;
-	di = f[i]/t2 + 1;
-      }
-      
-      if (da[i] >= 1) {
-	t1 = ci + di*t[i];
-	t2 = PetscScalarNorm(1,t1);
-	t1 = t1/t2 - 1;
-	t2 = 1/t2  - 1;
-      }
-      else {
-	ierr = ComputeFischerFunction(u[i]-x[i],-f[i],&ei);CHKERRQ(ierr);
-	t2 = PetscScalarNorm(x[i]-l[i],ei);
-	t1 = ei/t2 - 1;
-	t2 = (x[i] - l[i])/t2 - 1;
-      }
-
-      da[i] = t2 + t1*ci;
-      db[i] = t1*di;
+    } else { /* Box constrained variables */
+      da1 = DPhi(x[i] - l[i], -Phi(u[i] - x[i], -f[i]));
+      db1 = DPhi(-Phi(u[i] - x[i], -f[i]),x[i] - l[i]);
+      da2 = DPhi(u[i] - x[i], -f[i]);
+      db2 = DPhi(-f[i],u[i] - x[i]);
+      da[i] = da1 + db1*da2;
+      db[i] = db1*db2;
     }
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
@@ -395,7 +337,6 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat ja
   ierr = VecRestoreArray(vi->xu,&u);CHKERRQ(ierr);
   ierr = VecRestoreArray(Da,&da);CHKERRQ(ierr);
   ierr = VecRestoreArray(Db,&db);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vi->t,&t);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
