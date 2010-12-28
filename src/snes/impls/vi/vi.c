@@ -450,10 +450,8 @@ PetscErrorCode SNESVIProjectOntoBounds(SNES snes,Vec X)
 
    Notes:
    This implements essentially a semismooth Newton method with a
-   line search.  By default a cubic backtracking line search 
-   is employed, as described in the text "Numerical Methods for
-   Unconstrained Optimization and Nonlinear Equations" by Dennis 
-   and Schnabel.
+   line search. The default line search does not do any line seach
+   but rather takes a full newton step.
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSolveVI_SS"
