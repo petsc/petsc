@@ -71,12 +71,9 @@ requires the FFTW parallel interface.<br>
           </h3>
         </li>
         <li>
-          <h3>Converting PetscLogViewPython() to generate JSON
+          <h3>&nbsp;Converting PetscLogViewPython() to generate JSON
 instead and developing Python parsers for quickly generating nice
-tables of performance details from runs or groups of runs.
-<a href="http://github.com/jedbrown/petscplot">This script</a> is a
-start for plotting convergence and performance results from a batch of
-runs.</h3>
+tables of performance details from runs or groups of runs.</h3>
         </li>
         <li>
           <h3>Extend PetscWebServe() that allows accessing running
@@ -85,8 +82,9 @@ AMS inside). See src/sys/viewer/impls/socket/send.c<br>
           </h3>
         </li>
         <li>
-          <h3>&nbsp;GPU based preconditioners<br>
-          </h3>
+          <h3>&nbsp;GPU based preconditioners</h3>
+        </li>
+        <li>Turn MPICH, OpenMPI and then PETSc into an Apple Framework.<br>
         </li>
       </ul>
 &nbsp; Below is a bunch of random ideas of things that need to be done.<br>
@@ -108,6 +106,9 @@ except parmetis, where they are incorrectly always used.<br>
       <br>
 &nbsp; Provide support for shared libraries with gcc on cygwin: &nbsp;<a
  href="http://cygwin.com/cygwin-ug-net/dll.html">http://cygwin.com/cygwin-ug-net/dll.html</a><br>
+      <br>
+Add support for CHOMOD<br>
+&nbsp;http://www.cise.ufl.edu/research/sparse/cholmod/ <br>
       <br>
 &nbsp;Do you plan to do a new PETSc interface to PARMS software : the
 parallel&nbsp;Algebraic Recursive Multilevel Solvers of Yousef Saad? <br>
@@ -142,6 +143,10 @@ entire bag before calling PetscBagLoad()<br>
 &nbsp; add GMRESR<br>
       <br>
 &nbsp; Add PCCreate_LRC() see MatCreateLRC()<br>
+      <br>
+&nbsp; (Priority 1) Add DAVecGetArrayf90() Hmmm, thought I did this a
+long time ago?<br>
+      <br>
       <br>
 &nbsp;&nbsp; (Priority 1) Add new KSP that allows reordering unknowns
 (parallel or sequential) for better performance and then calls regular
