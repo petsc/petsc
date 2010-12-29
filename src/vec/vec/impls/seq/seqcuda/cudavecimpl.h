@@ -144,10 +144,13 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDAGetArrayReadWrite(Vec v, CUSPARRAY** a
 #define __FUNCT__ "VecCUDARestoreArrayReadWrite"
 PETSC_STATIC_INLINE PetscErrorCode VecCUDARestoreArrayReadWrite(Vec v, CUSPARRAY** a)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (v->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
     v->valid_GPU_array = PETSC_CUDA_GPU;
   }
+  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -187,10 +190,13 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDAGetArrayWrite(Vec v, CUSPARRAY** a)
 #define __FUNCT__ "VecCUDARestoreArrayWrite"
 PETSC_STATIC_INLINE PetscErrorCode VecCUDARestoreArrayWrite(Vec v, CUSPARRAY** a)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (v->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
     v->valid_GPU_array = PETSC_CUDA_GPU;
   }
+  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
