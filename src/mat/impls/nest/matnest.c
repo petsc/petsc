@@ -1091,7 +1091,27 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateNest"
-PetscErrorCode  MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscInt nc,const IS is_col[],const Mat a[],Mat *B)
+/*@
+   MatCreateNest - Creates a new matrix containing several nested submatrices, each stored separately
+
+   Collective on Mat
+
+   Input Parameter:
++  comm - Communicator for the new Mat
+.  nr - number of nested row blocks
+.  is_row - index sets for each nested row block, or PETSC_NULL to make contiguous
+.  nc - number of nested column blocks
+.  is_col - index sets for each nested column block, or PETSC_NULL to make contiguous
+-  a - row-aligned array of nr*nc submatrices, empty submatrices can be passed using PETSC_NULL
+
+   Output Parameter:
+.  B - new matrix
+
+   Level: advanced
+
+.seealso: MatCreate(), VecCreateNest(), DMGetMatrix(), MATNEST
+@*/
+PetscErrorCode MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscInt nc,const IS is_col[],const Mat a[],Mat *B)
 {
   Mat            A;
   Mat_Nest       *s;
@@ -1157,3 +1177,16 @@ PetscErrorCode  MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscI
   *B = A;
   PetscFunctionReturn(0);
 }
+
+/*MC
+  MATNEST - MATNEST = "nest" - Matrix type consisting of nested submatrices, each stored separately.
+
+  Level: intermediate
+
+  Notes:
+  This matrix type permits scalable use of PCFieldSplit and avoids the large memory costs of extracting submatrices.
+  It allows the use of symmetric and block formats for parts of multi-physics simulations.
+  It is usually used with DMComposite and DMGetMatrix()
+
+.seealso: MatCreate(), MatType, MatCreateNest()
+M*/
