@@ -128,9 +128,9 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
       if (i == 0 || i == Mx-1) ff[i] = xx[i]/hx; 
       else  ff[i] =  (2.0*xx[i] - xx[i-1] - xx[i+1])/hx - hx*PetscExpScalar(xx[i]); 
     }
-  }
     ierr = DMDAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(da,f,&ff);CHKERRQ(ierr);
+  }
     ierr = DMRestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
   //  VecView(x,0);printf("f\n");
   //  VecView(f,0);
