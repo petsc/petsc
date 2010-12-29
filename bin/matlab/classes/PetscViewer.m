@@ -11,10 +11,12 @@ classdef PetscViewer < PetscObject
 %    v = PetscViewer('filename');      Open ASCII file for writing
 %
   methods
-    function obj = PetscViewer(filename)
+    function obj = PetscViewer(filename,mode)
       comm = PETSC_COMM_SELF();
-      if (nargin == 1) 
-        [err,obj.pobj] = calllib('libpetsc', 'PetscViewerASCIIOpen', comm,filename,0);PetscCHKERRQ(err);
+      if (nargin == 2) 
+        [err,dummy,obj.pobj] = calllib('libpetsc', 'PetscViewerBinaryOpen', comm,filename,mode,0);PetscCHKERRQ(err);
+      elseif (nargin == 1) 
+        [err,dummy,obj.pobj] = calllib('libpetsc', 'PetscViewerASCIIOpen', comm,filename,0);PetscCHKERRQ(err);
       else
         [err,obj.pobj] = calllib('libpetsc', 'PetscViewerCreate', comm,0);PetscCHKERRQ(err);
       end

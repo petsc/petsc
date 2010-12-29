@@ -77,6 +77,9 @@ classdef PetscMat < PetscObject
         err = calllib('libpetsc', 'MatView', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
       end
     end
+    function err = Load(obj,viewer)
+      err = calllib('libpetsc', 'MatLoad', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
+    end
     function err = Destroy(obj)
       err = calllib('libpetsc', 'MatDestroy', obj.pobj);PetscCHKERRQ(err);
     end

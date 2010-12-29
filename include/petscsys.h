@@ -135,13 +135,22 @@ typedef int PetscClassId;
 
     Notes: usually this is the same as PetscInt, but if PETSc was built with --with-64-bit-indices but 
            standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt it remains 32 bit 
-           (except on very rare BLAS/LAPACK implementations that support 64 bit integers).
+           (except on very rare BLAS/LAPACK implementations that support 64 bit integers see the note below).
 
     PetscBLASIntCheck(a) checks if the given PetscInt a will fit in a PetscBLASInt, if not it generates a 
       PETSC_ERR_ARG_OUTOFRANGE.
 
     PetscBLASInt b = PetscBLASIntCast(a) checks if the given PetscInt a will fit in a PetscBLASInt, if not it 
       generates a PETSC_ERR_ARG_OUTOFRANGE
+
+    Developer Notes: The 64bit versions of MATLAB ship with BLAS and LAPACK that use 64 bit integers for sizes etc,
+     if you run ./configure with the option
+     --with-blas-lapack-lib=[/Applications/MATLAB_R2010b.app/bin/maci64/libmwblas.dylib,/Applications/MATLAB_R2010b.app/bin/maci64/libmwlapack.dylib]
+     for example, you can change the int below to long int. Since MATLAB uses the MKL (Intel Math Libraries) it is likely one can
+     purchase a 64 bit integer version of the MKL and use that with a  PetscBLASInt of long int.
+
+     External packages such as hypre, ML, SuperLU etc do not provide any support for passing 64 bit integers to BLAS/LAPACK so cannot
+     be used with PETSc if you have set PetscBLASInt to long int.
 
 .seealso: PetscMPIInt, PetscInt
 

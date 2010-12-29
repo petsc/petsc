@@ -998,6 +998,9 @@ PetscErrorCode  MatDestroy(Mat A)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   if (--((PetscObject)A)->refct > 0) PetscFunctionReturn(0);
+  /* if no sizes were ever set in matrix then MatPreallocated() may generate an error, so set the sizes */
+  if (A->rmap->n == -1 && A->rmap->N == -1) A->rmap->n = A->rmap->N = 0;
+  if (A->cmap->n == -1 && A->cmap->N == -1) A->cmap->n = A->cmap->N = 0;
   ierr = MatPreallocated(A);CHKERRQ(ierr);
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(A);CHKERRQ(ierr);
