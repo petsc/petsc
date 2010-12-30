@@ -93,6 +93,13 @@ parallel tridiagonal solvers.</li>
       </ul>
 &nbsp; Below is a bunch of random ideas of things that need to be done.<br>
       <br>
+Rewrite BlasLapack.py to handle --download-f-blas-lapack
+--download-c-blas-lapack with seperate package files and cleanup like
+totally<br>
+      <br>
+Rewrite MPI.py to handle the --download-mpich --download-openmpi as
+seperate package files and cleanup like totally.<br>
+      <br>
 Make a new matrix type MPIMSBAIJ that works like MPISBAIJ but stores
 the off -diagonal portions twice (like AIJ). This would have better
 load balance for work and storage.<br>
