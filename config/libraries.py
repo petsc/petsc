@@ -136,11 +136,11 @@ class Configure(config.base.Configure):
        - libName may be a list of library names'''
     if not isinstance(funcs,list): funcs = [funcs]
     if not isinstance(libName, list): libName = [libName]
-    self.framework.logPrint('Checking for functions '+str(funcs)+' in library '+str(libName)+' '+str(otherLibs))
     for f, funcName in enumerate(funcs):
       # Handle Fortran mangling
       if fortranMangle:
         funcName = self.compilers.mangleFortranFunction(funcName)
+      self.framework.logPrint('Checking for function '+str(funcName)+' in library '+str(libName)+' '+str(otherLibs))
       if self.language[-1] == 'FC':
         includes = ''
       else:

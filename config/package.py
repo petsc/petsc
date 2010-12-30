@@ -975,7 +975,7 @@ class GNUPackage(Package):
         if self.framework.argDB['with-'+package.package] == 1:
           raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
         else:
-          raise RuntimeError('Did not find package '+package.PACKAGE+' needed by '+self.name+'.\nEnable the package using --with-'+package.package)
+          raise RuntimeError('Did not find package '+package.PACKAGE+' needed by '+self.name+'.\nEnable the package using --with-'+package.package+' or --download-'+package.package)
       if hasattr(package, 'dlib'):    libs  += package.dlib
       if hasattr(package, 'include'): incls += package.include
     for package in self.odeps:

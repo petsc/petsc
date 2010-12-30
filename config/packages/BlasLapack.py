@@ -119,15 +119,15 @@ class Configure(config.package.Package):
       foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
       if foundLapack:
         self.mangling = self.compilers.fortranMangling
-    elif not hasattr(self.compilers, 'FC'):
-      self.framework.logPrint('Checking for cblaslapack (underscore) namemangling')
-      foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'ddot_')
-      foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['dgetrs_', 'dgeev_'])
+    else:
+      self.framework.logPrint('Checking for cblaslapack namemangling')
+      foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'ddot')
+      foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['dgetrs', 'dgeev'])
       if foundBlas and foundLapack:
-        self.framework.logPrint('Found cblaslapack (underscore) name mangling')
-        self.mangling = 'underscore'
+        self.framework.logPrint('Found cblaslapack name mangling')
+        self.mangling = ''
         self.f2c = 1
-    self.f2cpkg = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'f2cblaslapack311_id_')
+    self.f2cpkg = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'f2cblaslapack311_id')
     return (foundBlas, foundLapack)
 
   def generateGuesses(self):
@@ -142,8 +142,8 @@ class Configure(config.package.Package):
       raise RuntimeError('You cannot set both the library containing BLAS/LAPACK with --with-blas-lapack-lib=<lib>\nand the directory to search with --with-blas-lapack-dir=<dir>')
 
     if self.framework.argDB['download-c-blas-lapack']:
-      self.download= ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.1.1.tar.gz']
-      self.downloadname = 'f2cblaslapack-3.1.1'
+      self.download= ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.1.1.a.tar.gz']
+      self.downloadname = 'f2cblaslapack-3.1.1.a'
     elif self.framework.argDB['download-f-blas-lapack']:
       self.download= ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fblaslapack-3.1.1.tar.gz']
       self.downloadname = 'fblaslapack-3.1.1'
@@ -153,8 +153,8 @@ class Configure(config.package.Package):
         self.download= 'file://'+os.path.abspath(self.framework.argDB['download-c-blas-lapack'])
       self.f2c = 1
       
-      if hasattr(self.compilers, 'FC'):
-        raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
+#      if hasattr(self.compilers, 'FC'):
+#        raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
       libdir = self.downLoadBlasLapack('f2c', 'c')
       f2cLibs = [os.path.join(libdir,'libf2cblas.a')]
       if self.libraries.math:
@@ -522,7 +522,7 @@ class Configure(config.package.Package):
     ''' used by other packages to see if a BLAS routine is available
         This is not really correct because other packages do not (usually) know about f2cblasLapack'''
     if self.f2c:
-      return self.libraries.check(self.dlib,routine+'_')
+      return self.libraries.check(self.dlib,routine)
     else:
       return self.libraries.check(self.dlib,routine,fortranMangle = hasattr(self.compilers, 'FC'))
 
