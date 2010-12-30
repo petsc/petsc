@@ -990,7 +990,25 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V,PetscInt nb,IS is[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreateNest"
-PetscErrorCode  VecCreateNest(MPI_Comm comm,PetscInt nb,IS is[],Vec x[],Vec *X)
+/*@
+   VecCreateNest - Creates a new vector containing several nested subvectors, each stored separately
+
+   Collective on Vec
+
+   Input Parameter:
++  comm - Communicator for the new Vec
+.  nb - number of nested blocks
+.  is - array of nb index sets describing each nested block, or PETSC_NULL to pack subvectors contiguously
+-  x - array of nb sub-vectors
+
+   Output Parameter:
+.  Y - new vector
+
+   Level: advanced
+
+.seealso: VecCreate(), MatCreateNest(), DMSetVecType(), VECNEST
+@*/
+PetscErrorCode  VecCreateNest(MPI_Comm comm,PetscInt nb,IS is[],Vec x[],Vec *Y)
 {
   Vec            V;
   Vec_Nest       *s;
@@ -1030,7 +1048,18 @@ PetscErrorCode  VecCreateNest(MPI_Comm comm,PetscInt nb,IS is[],Vec x[],Vec *X)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)V,"VecNestGetSubVecs_C","VecNestGetSubVecs_Nest",VecNestGetSubVecs_Nest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)V,"VecNestGetSize_C","VecNestGetSize_Nest",VecNestGetSize_Nest);CHKERRQ(ierr);
 
-  *X = V;
+  *Y = V;
   PetscFunctionReturn(0);
 }
 
+/*MC
+  VECNEST - VECNEST = "nest" - Vector type consisting of nested subvectors, each stored separately.
+
+  Level: intermediate
+
+  Notes:
+  This vector type reduces the number of copies for certain solvers applied to multi-physics problems.
+  It is usually used with MATNEST and DMComposite via DMSetVecType().
+
+.seealso: VecCreate(), VecType, VecCreateNest(), MatCreateNest()
+M*/
