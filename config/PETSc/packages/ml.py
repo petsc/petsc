@@ -100,5 +100,8 @@ class Configure(PETSc.package.NewPackage):
       # ML requires LAPACK routine dgels() ?
       if not self.blasLapack.checkForRoutine('dgels'):
         raise RuntimeError('ML requires the LAPACK routine dgels(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
+      if not self.blasLapack.checkForRoutine('dsteqr'):
+        raise RuntimeError('ML requires the LAPACK routine dsteqr(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
+      self.framework.log.write('Found dsteqr() in Lapack library as needed by ML\n')
       self.framework.log.write('Found dgels() in Lapack library as needed by ML\n')
     return
