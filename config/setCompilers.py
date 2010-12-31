@@ -830,6 +830,7 @@ class Configure(config.base.Configure):
         output.find('not recognized') >= 0 or output.find('not recognised') >= 0 or
         output.find('unknown option') >= 0 or output.find('unknown flag') >= 0 or output.find('Unknown switch') >= 0 or
         output.find('ignoring option') >= 0 or output.find('ignored') >= 0 or
+        output.find('argument unused') >= 0 or
         output.find('illegal option') >= 0 or output.find('Invalid option') >= 0 or
         (output.find('bad ') >= 0 and output.find(' option') >= 0) or
         output.find('linker input file unused because linking not done') >= 0 or
