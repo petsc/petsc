@@ -92,8 +92,8 @@ class Configure(PETSc.package.NewPackage):
       self.postInstall(output+err,os.path.join('src','Makefile.inc'))
     return self.installDir
 
-  def consistencyChecks(self):
-    PETSc.package.NewPackage.consistencyChecks(self)
-    if self.framework.argDB['with-'+self.package]:
-      if self.libraries.rt is None:
-        raise RuntimeError('Scotch requires a realtime library (librt) with clock_gettime()')
+#  def consistencyChecks(self):
+#    PETSc.package.NewPackage.consistencyChecks(self)
+#    if self.framework.argDB['with-'+self.package]:
+#     if self.libraries.rt is None:
+#        raise RuntimeError('Scotch requires a realtime library (librt) with clock_gettime()')
