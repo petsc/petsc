@@ -12,7 +12,7 @@ namespace ALE {
   class DMBuilder {
   public:
     #undef __FUNCT__
-    #define __FUNCT__ "CreateBasketMesh"
+    #define __FUNCT__ "createBasketMesh"
     static PetscErrorCode createBasketMesh(MPI_Comm comm, const int dim, const bool structured, const bool interpolate, const int debug, DM *dm) {
       PetscErrorCode ierr;
 
@@ -52,7 +52,7 @@ namespace ALE {
       PetscFunctionReturn(0);
     };
     #undef __FUNCT__
-    #define __FUNCT__ "CreateBoxMesh"
+    #define __FUNCT__ "createBoxMesh"
     static PetscErrorCode createBoxMesh(MPI_Comm comm, const int dim, const bool structured, const bool interpolate, const int debug, DM *dm) {
       PetscErrorCode ierr;
 
@@ -107,7 +107,7 @@ namespace ALE {
       PetscFunctionReturn(0);
     };
     #undef __FUNCT__
-    #define __FUNCT__ "CreateReentrantBoxMesh"
+    #define __FUNCT__ "createReentrantBoxMesh"
     static PetscErrorCode createReentrantBoxMesh(MPI_Comm comm, const int dim, const bool interpolate, const int debug, DM *dm) {
       typedef PETSC_MESH_TYPE::point_type point_type;
       ::Mesh         mesh;
@@ -145,7 +145,7 @@ namespace ALE {
       PetscFunctionReturn(0);
     };
     #undef __FUNCT__
-    #define __FUNCT__ "CreateSphericalMesh"
+    #define __FUNCT__ "createSphericalMesh"
     static PetscErrorCode createSphericalMesh(MPI_Comm comm, const int dim, const bool interpolate, const int debug, DM *dm) {
       typedef PETSC_MESH_TYPE::point_type point_type;
       ::Mesh         mesh;
@@ -173,7 +173,7 @@ namespace ALE {
       PetscFunctionReturn(0);
     };
     #undef __FUNCT__
-    #define __FUNCT__ "CreateReentrantSphericalMesh"
+    #define __FUNCT__ "createReentrantSphericalMesh"
     static PetscErrorCode createReentrantSphericalMesh(MPI_Comm comm, const int dim, const bool interpolate, const int debug, DM *dm) {
       typedef PETSC_MESH_TYPE::point_type point_type;
       ::Mesh         mesh;

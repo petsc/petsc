@@ -4,7 +4,7 @@ class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
     # use the version from PETSc ftp site - it has lapack removed
-    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scalapack.tgz']
+    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/SCALAPACK-1.7.tar.gz']
     self.includes         = []
     self.liblist          = [[],['libscalapack.a']]
     self.functions        = ['pssytrd']
