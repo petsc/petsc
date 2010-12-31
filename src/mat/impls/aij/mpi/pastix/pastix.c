@@ -168,7 +168,6 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscTruth valOnly,PetscInt *n,PetscInt **c
     tmprows   = malloc(nnz*sizeof(PetscInt));if (!tmprows) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Unable to allocate memory");
     tmpcolptr = malloc((*n+1)*sizeof(PetscInt));if (!tmpcolptr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Unable to allocate memory");
 
-    ierr = PetscMalloc3(nnz,PetscScalar,&tmpvalues,nnz,PetscInt,&tmprows,(*n+1),PetscInt,&tmpcolptr);CHKERRQ(ierr);
     if (sizeof(PetscScalar) != sizeof(pastix_float_t)) {
       SETERRQ2(PETSC_ERR_SUP,"sizeof(PetscScalar) %d != sizeof(pastix_float_t) %d",sizeof(PetscScalar),sizeof(pastix_float_t));
     }
