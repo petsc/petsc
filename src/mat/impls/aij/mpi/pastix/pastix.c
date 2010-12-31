@@ -332,11 +332,12 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
   IS             is_iden;
   Vec            b;
   IS             isrow;
-  PetscTruth     isSeqAIJ,isSeqSBAIJ;
+  PetscTruth     isSeqAIJ,isSeqSBAIJ,isMPIAIJ;
 
   PetscFunctionBegin; 	
   
   ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&isMPIAIJ);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSeqSBAIJ);CHKERRQ(ierr);
   if (lu->matstruc == DIFFERENT_NONZERO_PATTERN){ 
     (F)->ops->solve   = MatSolve_PaStiX;
@@ -382,7 +383,8 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
     PetscOptionsEnd();
     valOnly = PETSC_FALSE; 
   }  else {
-    valOnly = PETSC_TRUE; 
+    if (isSeqAIJ || isMPIAIJ)  valOnly = PETSC_FALSE;
+    else                       valOnly = PETSC_TRUE; 
   }
 
   lu->iparm[IPARM_MATRIX_VERIFICATION] = API_YES;
