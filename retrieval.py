@@ -46,7 +46,7 @@ class Retriever(logger.Logger):
        - All the logic for removing old versions, updating etc. must move'''
 
     archive    = '_d_'+name
-    if url.endswith(".bz") or url.endswith(".tbz"):
+    if url.endswith(".bz2") or url.endswith(".tbz"):
       archive += '.tar'
       archiveZip = archive+'.bz2'
     elif url.endswith('.tgz') or url.endswith('.tar.gz'):
