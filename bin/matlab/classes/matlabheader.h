@@ -12,6 +12,12 @@ typedef int MPI_Comm;
 int PetscGetPETSC_COMM_SELF(MPI_Comm*);
 int PetscFinalize(void);
 
+typedef int PetscLogStage;
+
+int PetscLogStageRegister(const char*,PetscLogStage*);
+int PetscLogStagePush(PetscLogStage);
+int PetscLogStagePop(void);
+
 typedef int PetscBool;
 typedef int InsertMode;
 typedef long int PetscPointer;
