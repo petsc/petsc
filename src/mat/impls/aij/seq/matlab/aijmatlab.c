@@ -42,7 +42,7 @@ PetscErrorCode  MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine)
   mxArray        *mat; 
 
   PetscFunctionBegin;
-  mat = MatSeqAIJToMatlab((Mat)obj);CHKERRQ(ierr);
+  mat = MatSeqAIJToMatlab((Mat)obj);if (!mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot create MATLAB matrix");
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
   engPutVariable((Engine *)mengine,obj->name,mat);
   PetscFunctionReturn(0);

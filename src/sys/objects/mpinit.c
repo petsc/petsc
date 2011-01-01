@@ -247,7 +247,7 @@ static void     *objects[100];
 PetscErrorCode  PetscOpenMPHandle(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  PetscInt       command;
+  PetscInt       command = 0; /* dummy value so MPI-Uni doesn't think it is not set*/
   PetscBool      exitwhileloop = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -255,7 +255,7 @@ PetscErrorCode  PetscOpenMPHandle(MPI_Comm comm)
     ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
     switch (command) {
     case 0: { /* allocate some memory on this worker process */
-      size_t   n;
+      size_t   n = 0; /* dummy value so MPI-Uni doesn't think it is not set*/
       void     *ptr;
       ierr = MPI_Bcast(&n,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
       /* cannot use PetscNew() cause it requires struct argument */

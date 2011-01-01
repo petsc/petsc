@@ -665,9 +665,7 @@ extern int    MPI_Finalized(int*);
 #define MPI_Graph_map(comm,a,b,c,d) MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Get_processor_name(name,result_len) \
      (MPIUNI_Memcpy(name,"localhost",9*sizeof(char)),name[10] = 0,*(result_len) = 10)
-#define MPI_Errhandler_create(function,errhandler) \
-     (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (errhandler),\
-     MPI_SUCCESS)
+#define MPI_Errhandler_create(function,errhandler) (*(errhandler) = (MPI_Errhandler) 0, MPI_SUCCESS)    
 #define MPI_Errhandler_set(comm,errhandler) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (errhandler),\

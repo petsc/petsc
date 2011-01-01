@@ -947,7 +947,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
 PetscErrorCode SNESSetUp_VI(SNES snes)
 {
   PetscErrorCode ierr;
-  SNES_VI      *vi = (SNES_VI*) snes->data;
+  SNES_VI        *vi = (SNES_VI*) snes->data;
   PetscInt       i_start[3],i_end[3];
 
   PetscFunctionBegin;
@@ -1611,11 +1611,11 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
   if (flg) {
     ierr = SNESMonitorSet(snes,SNESMonitorVI,0,0);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsReal("-snes_vi_alpha","Function norm must decrease by","None",vi->alpha,&vi->alpha,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_vi_maxstep","Step must be less than","None",vi->maxstep,&vi->maxstep,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_vi_minlambda","Minimum lambda allowed","None",vi->minlambda,&vi->minlambda,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ls_alpha","Function norm must decrease by","None",vi->alpha,&vi->alpha,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ls_maxstep","Step must be less than","None",vi->maxstep,&vi->maxstep,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ls_minlambda","Minimum lambda allowed","None",vi->minlambda,&vi->minlambda,0);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_vi_const_tol","constraint tolerance","None",vi->const_tol,&vi->const_tol,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_vi_lsmonitor","Print progress of line searches","SNESLineSearchSetMonitor",vi->lsmonitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_ls_monitor","Print progress of line searches","SNESLineSearchSetMonitor",vi->lsmonitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = SNESLineSearchSetMonitor(snes,flg);CHKERRQ(ierr);}
   ierr = PetscOptionsEList("-snes_vi_type","Semismooth algorithm used","",vies,2,"ss",&indx,&flg2);CHKERRQ(ierr);
   if (flg2) {
@@ -1628,7 +1628,7 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
       break;
     }
   }
-  ierr = PetscOptionsEList("-snes_vi_ls","Line search used","SNESLineSearchSet",lses,4,"basic",&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-snes_ls","Line search used","SNESLineSearchSet",lses,4,"basic",&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     switch (indx) {
     case 0:
@@ -1653,11 +1653,11 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
       SNESVI - Semismooth newton method based nonlinear solver that uses a line search
 
    Options Database:
-+   -snes_vi [cubic,quadratic,basic,basicnonorms] - Selects line search
-.   -snes_vi_alpha <alpha> - Sets alpha
-.   -snes_vi_maxstep <maxstep> - Sets the maximum stepsize the line search will use (if the 2-norm(y) > maxstep then scale y to be y = (maxstep/2-norm(y)) *y)
-.   -snes_vi_minlambda <minlambda>  - Sets the minimum lambda the line search will use  minlambda / max_i ( y[i]/x[i] )
--   -snes_vi_monitor - print information about progress of line searches 
++   -snes_ls [cubic,quadratic,basic,basicnonorms] - Selects line search
+.   -snes_ls_alpha <alpha> - Sets alpha
+.   -snes_ls_maxstep <maxstep> - Sets the maximum stepsize the line search will use (if the 2-norm(y) > maxstep then scale y to be y = (maxstep/2-norm(y)) *y)
+.   -snes_ls_minlambda <minlambda>  - Sets the minimum lambda the line search will use  minlambda / max_i ( y[i]/x[i] )
+-   -snes_ls_monitor - print information about progress of line searches 
 
 
    Level: beginner

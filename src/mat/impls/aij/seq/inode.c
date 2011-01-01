@@ -3730,7 +3730,7 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscBool  samestructure)
     i    = j;
   }
   /* If not enough inodes found,, do not use inode version of the routines */
-  if (!m || node_count > .9*m) {
+  if (!m || node_count > .8*m) {
     ierr = PetscFree(ns);CHKERRQ(ierr);
     a->inode.node_count       = 0;
     a->inode.size             = PETSC_NULL;
@@ -3763,6 +3763,7 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscBool  samestructure)
     a->inode.size             = ns;
     ierr = PetscInfo3(A,"Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);CHKERRQ(ierr);
   }
+  a->inode.checked = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -3833,7 +3834,7 @@ PetscErrorCode Mat_CheckInode_FactorLU(Mat A,PetscBool  samestructure)
     i    = j;
   }
   /* If not enough inodes found,, do not use inode version of the routines */
-  if (!m || node_count > .9*m) {
+  if (!m || node_count > .8*m) {
     ierr = PetscFree(ns);CHKERRQ(ierr);
     a->inode.node_count     = 0;
     a->inode.size           = PETSC_NULL;
@@ -3854,6 +3855,7 @@ PetscErrorCode Mat_CheckInode_FactorLU(Mat A,PetscBool  samestructure)
     a->inode.size             = ns;
     ierr = PetscInfo3(A,"Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);CHKERRQ(ierr);
   }
+  a->inode.checked = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

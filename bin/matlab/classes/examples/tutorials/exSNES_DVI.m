@@ -7,7 +7,7 @@
 more on
 figure(1),clf;figure(2),clf;
 path(path,'../../')
-PetscInitialize({'-snes_vi_monitor','-ksp_monitor','-snes_vi_type','rs'});
+PetscInitialize({'-snes_vi_monitor','-ksp_monitor','-snes_vi_type','ss'});
 %%
 %  Create DM to manage the grid and get work vectors
 user.mx = 10;user.my = 10;
