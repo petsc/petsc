@@ -622,6 +622,16 @@ runex19_superlu_equil: #This test fails - I'll check it. Hong
 	   if (${DIFF} output/ex19_superlu_equil.out ex19.tmp) then true; \
 	   else echo "Possible problem with ex19_superlu_equil, diffs above"; fi; \
 	   ${RM} -f ex19.tmp
+runex19_superlu_dist:
+	-@${MPIEXEC} -n 1 ./ex19 -nlevels 1 -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu_dist > ex19.tmp 2>&1; \
+	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
+	   else echo "Possible problem with ex19_superlu_dist, diffs above"; fi; \
+	   ${RM} -f ex19.tmp
+runex19_superlu_dist_2:
+	-@${MPIEXEC} -n 2 ./ex19 -nlevels 1 -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu_dist > ex19.tmp 2>&1; \
+	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
+	   else echo "Possible problem with ex19_superlu_dist, diffs above"; fi; \
+	   ${RM} -f ex19.tmp
 runex19_cuda:
 	-@${MPIEXEC} -n 1 ./ex19 da_vec_type cuda -da_mat_type aijcuda -pc_type none -dmmg_nlevels 1 -snes_monitor_short -snes_rtol 1.e-5 > ex19.tmp 2>&1; \
 	   if (${DIFF} output/ex19_cuda.out ex19.tmp) then true; \
@@ -759,7 +769,8 @@ TESTEXAMPLES_MATLAB_ENGINE     = ex5.PETSc runex5_11 runex5_13 ex5.rm
 TESTEXAMPLES_AMS	       = 
 TESTEXAMPLES_ADIFOR	       = ex5f.PETSc runex5f_2 ex5f.rm
 TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_3 runex19_4 runex19_fieldsplit_mumps runex19_fieldsplit_redundant ex19.rm 
-TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu runex19_superlu_equil ex19.rm 
+TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu ex19.rm 
+TESTEXAMPLES_SUPERLU_DIST      = ex19.PETSc runex19_superlu_dist runex19_superlu_dist_2 ex19.rm 
 TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm 
 TESTEXAMPLES_CUDA              = ex19.PETSc runex19_cuda ex19.rm 
 
