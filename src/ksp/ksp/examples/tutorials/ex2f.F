@@ -286,7 +286,6 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 !  Check the error
-
       call VecAXPY(x,neg_one,u,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)

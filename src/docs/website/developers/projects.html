@@ -12,7 +12,7 @@ Computation</title>
   <tbody>
     <tr>
       <td valign="top" width="218">
-      <h1><font color="#ff0000" size="7">PETSc</font></h1>
+      <h1><font size="7" color="#ff0000">PETSc</font></h1>
       <ul>
         <li><a href="../index.html"><strong>Home</strong></a></li>
       </ul>
@@ -23,7 +23,7 @@ Computation</title>
     </tr>
     <tr>
       <td colspan="2" width="771">
-      <hr color="#ff5b5b" size="4"> </td>
+      <hr size="4" color="#ff5b5b"> </td>
     </tr>
     <tr>
       <td valign="top" width="218">
@@ -88,7 +88,11 @@ AMS inside). See src/sys/viewer/impls/socket/send.c<br>
         <li>Make a Mat subclass for tridiagonal matrix (and block
 tridiagonal) and write fast sequential solvers for them. Also do fast
 parallel tridiagonal solvers.</li>
-        <li><br>
+        <li>Convert KSPSPECEST to something like -ksp_type chebychev
+-ksp_chebychev_precompute_parameters -ksp_chebychev_precompute_ksp_type
+cg -ksp_chebychev_precompute_minfactor .95</li>
+        <li>KSPSolve and SNESSolve should return bounds on the errors
+and some measure of sensitivity of the solution to the something<br>
         </li>
       </ul>
 &nbsp; Below is a bunch of random ideas of things that need to be done.<br>
@@ -126,7 +130,8 @@ parallel&nbsp;Algebraic Recursive Multilevel Solvers of Yousef Saad? <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Add
 PetscConsistent(MPI_Comm,...)
-error check macros checks that<br>
+error
+check macros checks that<br>
 all processors in comm set the same value; for example the alpha in
 VecAXPY() etc etc.<br>
       <br>
@@ -242,7 +247,7 @@ address for common errors.<br>
     </tr>
     <tr>
       <td colspan="2" width="771">
-      <hr color="#ff5b5b" size="4"> </td>
+      <hr size="4" color="#ff5b5b"> </td>
     </tr>
     <tr>
       <td colspan="2" width="771"> <br>
