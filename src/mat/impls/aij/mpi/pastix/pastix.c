@@ -374,8 +374,12 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
     PetscOptionsEnd();
     valOnly = PETSC_FALSE; 
   }  else {
-    if (isSeqAIJ || isMPIAIJ)  valOnly = PETSC_FALSE;
-    else           valOnly = PETSC_TRUE; 
+    if (isSeqAIJ || isMPIAIJ)  {
+      ierr = PetscFree(lu->colptr);CHKERRQ(ierr);
+      ierr = PetscFree(lu->row);CHKERRQ(ierr);
+      ierr = PetscFree(lu->val);CHKERRQ(ierr);
+      valOnly = PETSC_FALSE;
+    } else valOnly = PETSC_TRUE; 
   }
 
   lu->iparm[IPARM_MATRIX_VERIFICATION] = API_YES;
@@ -389,8 +393,10 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
   ierr = MatIsSymmetric(*tseq,0.0,&isSym);CHKERRQ(ierr);
   ierr = MatDestroyMatrices(1,&tseq);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((lu->n)*sizeof(PetscInt)   ,&(lu->perm));CHKERRQ(ierr);
-  ierr = PetscMalloc((lu->n)*sizeof(PetscInt)   ,&(lu->invp));CHKERRQ(ierr);
+  if (!lu->perm) {
+    ierr = PetscMalloc((lu->n)*sizeof(PetscInt)   ,&(lu->perm));CHKERRQ(ierr);
+    ierr = PetscMalloc((lu->n)*sizeof(PetscInt)   ,&(lu->invp));CHKERRQ(ierr);
+  }
 
   if (isSym) {
     /* On symmetric matrix, LLT */
