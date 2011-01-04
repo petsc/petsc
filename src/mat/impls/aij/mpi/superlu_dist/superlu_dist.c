@@ -461,7 +461,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
 #define __FUNCT__ "MatLUFactorSymbolic_SuperLU_DIST"
 PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
-  Mat_SuperLU_DIST  *lu = (Mat_SuperLU_DIST*) (F)->spptr;   
+  Mat_SuperLU_DIST  *lu = (Mat_SuperLU_DIST*)F->spptr;   
   PetscInt          M=A->rmap->N,N=A->cmap->N;
 
   PetscFunctionBegin;
@@ -471,9 +471,10 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,const MatF
   /* Initialize ScalePermstruct and LUstruct. */
   ScalePermstructInit(M, N, &lu->ScalePermstruct);
   LUstructInit(M, N, &lu->LUstruct); 
-  (F)->ops->lufactornumeric = MatLUFactorNumeric_SuperLU_DIST;
-  (F)->ops->solve           = MatSolve_SuperLU_DIST;
-  (F)->ops->matsolve        = MatMatSolve_SuperLU_DIST;
+  F->ops->lufactornumeric = MatLUFactorNumeric_SuperLU_DIST;
+  F->ops->solve           = MatSolve_SuperLU_DIST;
+  F->ops->matsolve        = MatMatSolve_SuperLU_DIST;
+  lu->CleanUpSuperLU_Dist = PETSC_TRUE;
   PetscFunctionReturn(0); 
 }
 
@@ -639,9 +640,8 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
                               (PetscBool)options.PrintStat,(PetscBool*)&options.PrintStat,0);CHKERRQ(ierr); 
   PetscOptionsEnd();
 
-  lu->options             = options; 
-  lu->options.Fact        = DOFACT;
-  lu->CleanUpSuperLU_Dist = PETSC_TRUE;
+  lu->options              = options; 
+  lu->options.Fact         = DOFACT;
   lu->matsolve_iscalled    = PETSC_FALSE;
   lu->matmatsolve_iscalled = PETSC_FALSE;
   *F = B;
