@@ -293,6 +293,34 @@ static PetscErrorCode PCSetFromOptions_Redistribute(PC pc)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCRedistributeGetKSP"
+/*@
+   PCRedistributeGetKSP - Gets the KSP created by the PCREDISTRIBUTE
+
+   Not Collective
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  innerksp - the inner KSP
+
+   Level: advanced
+
+.keywords: PC, redistribute solve
+@*/
+PetscErrorCode  PCRedistributeGetKSP(PC pc,KSP *innerksp)
+{
+  PC_Redistribute *red = (PC_Redistribute*)pc->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(innerksp,2);
+  *innerksp = red->ksp;
+  PetscFunctionReturn(0);
+}  
+
 /* -------------------------------------------------------------------------------------*/
 /*MC
      PCREDISTRIBUTE - Redistributes a matrix for load balancing, removing the rows that only have a diagonal entry and then applys a KSP to that new matrix
@@ -306,7 +334,7 @@ static PetscErrorCode PCSetFromOptions_Redistribute(PC pc)
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types)
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCRedistributeGetKSP()
 M*/
 
 EXTERN_C_BEGIN

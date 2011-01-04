@@ -296,6 +296,7 @@ extern PetscErrorCode  KSPLSQRSetStandardErrorVec(KSP,Vec);
 extern PetscErrorCode  KSPLSQRGetStandardErrorVec(KSP,Vec*);
 
 extern PetscErrorCode  PCRedundantGetKSP(PC,KSP*);
+extern PetscErrorCode  PCRedistributeGetKSP(PC,KSP*);
 
 /*E
     KSPNormType - Norm that is passed in the Krylov convergence
