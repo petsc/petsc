@@ -4,7 +4,7 @@
   This file defines a "solve the problem redundantly on each subgroup of processor" preconditioner.
 */
 #include "private/pcimpl.h"     /*I "petscpc.h" I*/
-#include "petscksp.h"
+#include "petscksp.h"           /*I "petscksp.h" I*/
 
 typedef struct {
   KSP          ksp;
