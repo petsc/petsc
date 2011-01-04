@@ -295,6 +295,8 @@ extern PetscErrorCode  KSPView(KSP,PetscViewer);
 extern PetscErrorCode  KSPLSQRSetStandardErrorVec(KSP,Vec);
 extern PetscErrorCode  KSPLSQRGetStandardErrorVec(KSP,Vec*);
 
+extern PetscErrorCode  PCRedundantGetKSP(PC,KSP*);
+
 /*E
     KSPNormType - Norm that is passed in the Krylov convergence
        test routines.

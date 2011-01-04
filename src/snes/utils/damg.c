@@ -639,7 +639,9 @@ PetscErrorCode  DMMGSetNullSpace(DMMG *dmmg,PetscBool  has_cnst,PetscInt n,Petsc
       ierr = KSPGetPC(iksp,&ipc);CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)ipc,PCREDUNDANT,&isred);CHKERRQ(ierr);
       if (isred) {
-        ierr = PCRedundantGetPC(ipc,&ipc);CHKERRQ(ierr);
+        KSP iksp;
+        ierr = PCRedundantGetKSP(ipc,&iksp);CHKERRQ(ierr);
+        ierr = KSPGetPC(iksp,&ipc);CHKERRQ(ierr);
       }
       ierr = PCFactorSetShiftType(ipc,MAT_SHIFT_POSITIVE_DEFINITE);CHKERRQ(ierr);
     }

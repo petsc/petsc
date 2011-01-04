@@ -366,13 +366,16 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
   /* Create the coarse linear solver context */
   {
     PC  pc_ctx, inner_pc;
+    KSP inner_ksp;
+
     ierr = KSPCreate(((PetscObject)pc)->comm,&pcnn->ksp_coarse);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)pcnn->ksp_coarse,(PetscObject)pc,2);CHKERRQ(ierr);
     ierr = KSPSetOperators(pcnn->ksp_coarse,pcnn->coarse_mat,pcnn->coarse_mat,SAME_PRECONDITIONER);CHKERRQ(ierr);
     ierr = KSPGetPC(pcnn->ksp_coarse,&pc_ctx);CHKERRQ(ierr);
     ierr = PCSetType(pc_ctx,PCREDUNDANT);CHKERRQ(ierr);                
     ierr = KSPSetType(pcnn->ksp_coarse,KSPPREONLY);CHKERRQ(ierr);               
-    ierr = PCRedundantGetPC(pc_ctx,&inner_pc);CHKERRQ(ierr);           
+    ierr = PCRedundantGetKSP(pc_ctx,&inner_ksp);CHKERRQ(ierr);           
+    ierr = KSPGetPC(inner_ksp,&inner_pc);CHKERRQ(ierr);           
     ierr = PCSetType(inner_pc,PCLU);CHKERRQ(ierr);                     
     ierr = KSPSetOptionsPrefix(pcnn->ksp_coarse,"nn_coarse_");CHKERRQ(ierr);
     ierr = KSPSetFromOptions(pcnn->ksp_coarse);CHKERRQ(ierr);

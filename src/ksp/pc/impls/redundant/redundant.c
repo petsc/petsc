@@ -198,7 +198,7 @@ static PetscErrorCode PCApply_Redundant(PC pc,Vec x,Vec y)
   ierr = VecPlaceArray(red->xsub,(const PetscScalar*)array);CHKERRQ(ierr);
 
   /* apply preconditioner on each processor */
-  ierr = PCApply(red->pc,red->xsub,red->ysub);CHKERRQ(ierr);
+  ierr = KSPSolve(red->ksp,red->xsub,red->ysub);CHKERRQ(ierr);
   ierr = VecResetArray(red->xsub);CHKERRQ(ierr);
   ierr = VecRestoreArray(red->xdup,&array);CHKERRQ(ierr);
  
@@ -342,8 +342,8 @@ PetscErrorCode  PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCRedundantGetPC_Redundant"
-PetscErrorCode  PCRedundantGetPC_Redundant(PC pc,PC *innerpc)
+#define __FUNCT__ "PCRedundantGetKSP_Redundant"
+PetscErrorCode  PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
 {
   PetscErrorCode ierr;
   PC_Redundant   *red = (PC_Redundant*)pc->data;
@@ -371,16 +371,15 @@ PetscErrorCode  PCRedundantGetPC_Redundant(PC pc,PC *innerpc)
     ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr); 
     ierr = KSPAppendOptionsPrefix(red->ksp,"redundant_");CHKERRQ(ierr); 
   }
-
-  ierr = KSPGetPC(red->ksp,innerpc);CHKERRQ(ierr);
+  *innerksp = red->ksp;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCRedundantGetPC"
+#define __FUNCT__ "PCRedundantGetKSP"
 /*@
-   PCRedundantGetPC - Gets the sequential PC created by the redundant PC.
+   PCRedundantGetKSP - Gets the less parallel KSP created by the redundant PC.
 
    Not Collective
 
@@ -388,20 +387,20 @@ EXTERN_C_END
 .  pc - the preconditioner context
 
    Output Parameter:
-.  innerpc - the sequential PC 
+.  innerksp - the KSP on the smaller set of processes
 
    Level: advanced
 
 .keywords: PC, redundant solve
 @*/
-PetscErrorCode  PCRedundantGetPC(PC pc,PC *innerpc)
+PetscErrorCode  PCRedundantGetKSP(PC pc,KSP *innerksp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidPointer(innerpc,2);
-  ierr = PetscTryMethod(pc,"PCRedundantGetPC_C",(PC,PC*),(pc,innerpc));CHKERRQ(ierr);
+  PetscValidPointer(innerksp,2);
+  ierr = PetscTryMethod(pc,"PCRedundantGetKSP_C",(PC,KSP*),(pc,innerksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }  
 
@@ -451,9 +450,9 @@ PetscErrorCode  PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
 
 /* -------------------------------------------------------------------------------------*/
 /*MC
-     PCREDUNDANT - Runs a preconditioner for the entire problem on subgroups of processors
+     PCREDUNDANT - Runs a KSP solver with preconditioner for the entire problem on subgroups of processors
 
-     Options for the redundant preconditioners can be set with -redundant_pc_xxx
+     Options for the redundant preconditioners can be set with -redundant_pc_xxx for the redundant KSP with -redundant_ksp_xxx
 
   Options Database:
 .  -pc_redundant_number <n> - number of redundant solves, for example if you are using 64 MPI processes and
@@ -461,12 +460,12 @@ PetscErrorCode  PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
 
    Level: intermediate
 
-   Developer Notes: Should this be a KSP? Or maybe it should be an ability of the base KSP class to 
-     do redundant solves with the actual KSP and PC living on subcommunicators? Note that PCSetInitialGuessNonzero() 
-     is not used by this class but likely should be.
+   Notes: The default KSP is preonly and the default PC is LU.
+
+   Developer Notes: Note that PCSetInitialGuessNonzero()  is not used by this class but likely should be.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCRedundantSetScatter(),
-           PCRedundantGetPC(), PCRedundantGetOperators(), PCRedundantSetNumber()
+           PCRedundantGetKSP(), PCRedundantGetOperators(), PCRedundantSetNumber()
 M*/
 
 EXTERN_C_BEGIN
@@ -495,8 +494,8 @@ PetscErrorCode  PCCreate_Redundant(PC pc)
                     PCRedundantSetScatter_Redundant);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantSetNumber_C","PCRedundantSetNumber_Redundant",
                     PCRedundantSetNumber_Redundant);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantGetPC_C","PCRedundantGetPC_Redundant",
-                    PCRedundantGetPC_Redundant);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantGetKSP_C","PCRedundantGetKSP_Redundant",
+                    PCRedundantGetKSP_Redundant);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantGetOperators_C","PCRedundantGetOperators_Redundant",
                     PCRedundantGetOperators_Redundant);CHKERRQ(ierr);
   PetscFunctionReturn(0);

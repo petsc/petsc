@@ -68,6 +68,7 @@ runex11p:
 	-@${MPIEXEC} -n 4 ex11 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
 	-coarse_pc_type redundant -coarse_ksp_type preonly \
 	-coarse_redundant_pc_type lu \
+	-coarse_redundant_ksp_type preonly \
 	-fine_ksp_type richardson \
 	-fine_ksp_max_it 1 -fine_pc_type asm \
 	-pc_mg_type multiplicative \
@@ -120,6 +121,7 @@ runex15p:
 	-@${MPIEXEC} -n 4 ex15 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
 	-coarse_pc_type redundant -coarse_ksp_type preonly  \
 	-coarse_redundant_pc_type lu \
+	-coarse_redundant_ksp_type preonly \
 	-fine_ksp_type richardson \
 	-fine_ksp_max_it 1 -fine_pc_type asm \
 	-pc_mg_type multiplicative \
@@ -131,6 +133,7 @@ runex15a:
 	-@${MPIEXEC} -n 4 ex15 -Mx 17 -My 17 \
 	-coarse_pc_type redundant -coarse_ksp_type preonly  \
 	-coarse_redundant_pc_type lu \
+	-coarse_redundant_ksp_type preonly \
 	-fine_ksp_type richardson \
 	-fine_ksp_max_it 1 -fine_pc_type asm \
 	-mg_levels_sub_pc_factor_levels 1 \

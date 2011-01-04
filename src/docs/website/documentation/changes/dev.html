@@ -215,7 +215,13 @@ the MatType, call MatSetFromOptions() first if you wish to check it.<br>
       <ul>
         <li>PCFieldSplitSetIS() and PCFieldSplitSetFields() now take a
 split-name parameter which is used to define the options database keys.</li>
-        <li>CHOLMOD can be used for Cholesky factorization using AIJ or SBAIJ(1) matrix formats.</li>
+        <li>CHOLMOD can be used for Cholesky factorization using AIJ or
+SBAIJ(1) matrix formats.</li>
+        <li>PCREDUNDANT now uses the inner KSP with the inner PC.
+Default is still preonly for KSP and LU for PC so default behavior is
+the same but now you can use for example -redundant_ksp_gmres.
+PCRedundantGetPC() is now changed to PCRedundantGetKSP()<br>
+        </li>
       </ul>
       <p><u><b>KSP:<br>
       </b></u></p>

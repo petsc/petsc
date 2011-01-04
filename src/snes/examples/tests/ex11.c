@@ -164,6 +164,7 @@ int main( int argc, char **argv )
   /* always solve the coarse problem redundantly with direct LU solver */
   ierr = PetscOptionsSetValue("-coarse_pc_type","redundant");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-coarse_redundant_pc_type","lu");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-coarse_redundant_ksp_type","preonly");CHKERRQ(ierr);
 
   /* Create coarse level */
   ierr = PCMGGetCoarseSolve(pc,&user.ksp_coarse);CHKERRQ(ierr);
