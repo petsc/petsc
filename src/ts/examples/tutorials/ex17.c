@@ -15,15 +15,17 @@ static const char help[] = "Time-dependent PDE in 1d. Simplified from ex15.c for
 
 Program usage:
    mpiexec -n <procs> ./ex17 [-help] [all PETSc options]
-   e.g., mpiexec -n 2 ./ex17 -da_grid_x 40 -ts_max_steps 2 -use_coloring -snes_monitor -ksp_monitor
-         ./ex17 -da_grid_x 40 -use_coloring -drawcontours
-         ./ex17 -use_coloring -drawcontours -draw_pause .1
-         ./ex17 -da_grid_x 100 -drawcontours -draw_pause .1 -ts_type theta -ts_theta_theta 0.5     # Midpoint is not L-stable
-         ./ex17 -use_coloring -drawcontours -draw_pause .1 -da_grid_x 500 -boundary 1 -pc_type lu -ts_max_time 2.0
+   e.g., mpiexec -n 2 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor -ksp_monitor
+         ./ex17 -da_grid_x 40 -drawcontours -draw_pause .1
+         ./ex17 -da_grid_x 100 -drawcontours -draw_pause .1 -ts_type theta -ts_theta_theta 0.5 # Midpoint is not L-stable
+         ./ex17 -jac_type 1 -drawcontours -draw_pause .1 -da_grid_x 500 -boundary 1 
+         ./ex17 -da_grid_x 100 -drawcontours -draw_pause 1 -ts_type gl -ts_adapt_type none -ts_max_steps 2 
 */
 
 #include "petscdm.h"
 #include "petscts.h"
+
+enum JacEvalType {JAC_EXACT,JAC_COLOR,JAC_FD};
 
 /*
    User-defined data structures and routines
@@ -58,7 +60,7 @@ int main(int argc,char **argv)
   PetscReal      ftime,dt;
   MonitorCtx     usermonitor;       /* user-defined monitor context */
   AppCtx         user;              /* user-defined work context */
-  PetscBool      use_coloring;
+  JacEvalType    jacType;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -93,6 +95,7 @@ int main(int argc,char **argv)
   ierr = TSSetIFunction(ts,FormIFunction,&user);CHKERRQ(ierr);
 
   ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  jacType = JAC_EXACT; /* use user-provide Jacobian */
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
 
   ftime = 1.0;
@@ -112,9 +115,10 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  /* Use coloring to compute rhs Jacobian efficiently */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_coloring",&use_coloring,PETSC_NULL);CHKERRQ(ierr);
-  if (use_coloring) {
+  /* Use slow fd Jacobian or fast fd Jacobian with clorings. 
+     Note: this requirs snes which is not created until TSSetUp()/TSSetFromOptions() is called */
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-jac_type",(PetscInt*)&jacType,PETSC_NULL);CHKERRQ(ierr);
+  if (jacType == JAC_COLOR) {
     SNES       snes;
     ISColoring iscoloring;
     ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
@@ -124,6 +128,10 @@ int main(int argc,char **argv)
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+  } else if (jacType == JAC_FD){
+    SNES       snes;
+    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,&user);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
