@@ -71,20 +71,25 @@ PetscErrorCode  PetscOptionsCheckInitial_Components(void)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
 extern PetscBool PetscBeganMPI;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscInitializeNonPointers"
-/*@C
-      PetscInitializeNonPointers - Calls PetscInitialize() from C/C++ without the pointers to argc and args
+#define __FUNCT__ "PetscInitializeMatlab"
+/*
+      PetscInitializeMatlab - Calls PetscInitialize() from C/C++ without the pointers to argc and args
 
    Collective
   
    Level: advanced
 
+    Notes: this is called only by the PETSc MATLAB interface. Even though it might start MPI it sets the flag to 
+     indicate that it did NOT start MPI so that the PetscFinalize() does not end MPI, thus allowing PetscInitialize() to 
+     be called multiple times from MATLAB without the problem of trying to initialize MPI more than once.
+
 .seealso: PetscInitialize(), PetscInitializeFortran(), PetscInitializeNoArguments()
-@*/
-PetscErrorCode  PetscInitializeNonPointers(int argc,char **args,const char *filename,const char *help)
+*/
+PetscErrorCode  PetscInitializeMatlab(int argc,char **args,const char *filename,const char *help)
 {
   PetscErrorCode ierr;
   int            myargc = argc;
@@ -97,16 +102,39 @@ PetscErrorCode  PetscInitializeNonPointers(int argc,char **args,const char *file
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscGetPETSC_COMM_SELF"
+#define __FUNCT__ "PetscInitializedMatlab"
+/*
+      PetscInitializedMatlab - Has PETSc been initialized already?
+
+   Not Collective
+  
+   Level: advanced
+
+    Notes: this is called only by the PETSc MATLAB interface.
+
+.seealso: PetscInitialize(), PetscInitializeFortran(), PetscInitializeNoArguments()
+*/
+int  PetscInitializedMatlab(void)
+{
+  PetscBool flg;
+
+  PetscInitialized(&flg);
+  if (flg) return 1;
+  else return 0;
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscGetPETSC_COMM_SELFMatlab"
 /*
       Used by MATLAB interface to get communicator
 */
-PetscErrorCode  PetscGetPETSC_COMM_SELF(MPI_Comm *comm)
+PetscErrorCode  PetscGetPETSC_COMM_SELFMatlab(MPI_Comm *comm)
 {
   PetscFunctionBegin;
   *comm = PETSC_COMM_SELF;
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscInitializeNoArguments"
