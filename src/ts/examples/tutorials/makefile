@@ -181,20 +181,20 @@ runex10_4:
 	   ${RM} -f ex10_4.tmp
 
 runex15:
-	-@${MPIEXEC} -n 1 ./ex15 -da_grid_x 20 -boundary 0 -ts_max_steps 10 > ex15.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex15 -da_grid_x 20 -da_grid_y 20 -boundary 0 -ts_max_steps 10 > ex15.tmp 2>&1; \
 	   ${DIFF} output/ex15_1.out ex15.tmp || echo "Possible problem with ex15_1, diffs above"; \
 	   ${RM} -f ex15.tmp
 runex15_2:
-	-@${MPIEXEC} -n 1 ./ex15 -da_grid_x 20 -boundary 0 -ts_max_steps 10 -use_coloring > ex15.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex15 -da_grid_x 20 -da_grid_y 20 -boundary 0 -ts_max_steps 10 -fdcoloring > ex15.tmp 2>&1; \
 	   ${DIFF} output/ex15_1.out ex15.tmp || echo "Possible problem with ex15_2, diffs above"; \
 	   ${RM} -f ex15.tmp
 runex15_3:
-	-@${MPIEXEC} -n 1 ./ex15 -da_grid_x 20 -boundary 1 -ts_max_steps 10 > ex15.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex15 -da_grid_x 20 -da_grid_y 20 -boundary 1 -ts_max_steps 10 > ex15.tmp 2>&1; \
 	   ${DIFF} output/ex15_3.out ex15.tmp || echo "Possible problem with ex15_3, diffs above"; \
 	   ${RM} -f ex15.tmp
 runex15_4:
-	-@${MPIEXEC} -n 1 ./ex15 -da_grid_x 20 -boundary 1 -ts_max_steps 10 -use_coloring > ex15.tmp 2>&1; \
-	   ${DIFF} output/ex15_3.out ex15.tmp || echo "Possible problem with ex15_4, diffs above"; \
+	-@${MPIEXEC} -n 2 ./ex15 -da_grid_x 20 -da_grid_y 20 -boundary 1 -ts_max_steps 10 > ex15.tmp 2>&1; \
+	   ${DIFF} output/ex15_4.out ex15.tmp || echo "Possible problem with ex15_4, diffs above"; \
 	   ${RM} -f ex15.tmp
 
 
