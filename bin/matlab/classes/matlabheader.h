@@ -7,9 +7,10 @@
 */
 typedef struct mxArray_tag mxArray;
 
-int PetscInitializeNonPointers(int,char **,const char*,const char*);
+int PetscInitializeMatlab(int,char **,const char*,const char*);
+int PetscInitializedMatlab(void);
 typedef int MPI_Comm;
-int PetscGetPETSC_COMM_SELF(MPI_Comm*);
+int PetscGetPETSC_COMM_SELFMatlab(MPI_Comm*);
 int PetscFinalize(void);
 
 typedef int PetscLogStage;

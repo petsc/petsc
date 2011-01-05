@@ -164,9 +164,9 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool  valOnly,PetscInt *n,PetscInt **c
   {
     PetscScalar *tmpvalues;
     PetscInt    *tmprows,*tmpcolptr;
-    tmpvalues = malloc(nnz*sizeof(PetscScalar)); if (!tmpvalues) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Unable to allocate memory");
-    tmprows   = malloc(nnz*sizeof(PetscInt));if (!tmprows) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Unable to allocate memory");
-    tmpcolptr = malloc((*n+1)*sizeof(PetscInt));if (!tmpcolptr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Unable to allocate memory");
+    tmpvalues = (PetscScalar*)malloc(nnz*sizeof(PetscScalar)); if (!tmpvalues) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Unable to allocate memory");
+    tmprows   = (PetscInt*)malloc(nnz*sizeof(PetscInt));if (!tmprows) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Unable to allocate memory");
+    tmpcolptr = (PetscInt*)malloc((*n+1)*sizeof(PetscInt));if (!tmpcolptr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Unable to allocate memory");
     ierr = PetscMemcpy(tmpcolptr,*colptr,(*n+1)*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmprows,*row,nnz*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpvalues,*values,nnz*sizeof(PetscScalar));CHKERRQ(ierr);

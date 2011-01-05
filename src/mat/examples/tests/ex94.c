@@ -4,7 +4,7 @@ Input arguments are:\n\
   -f0 <input_file> -f1 <input_file> -f2 <input_file> -f3 <input_file> : file to load\n\n";
 /* Example of usage:
    ./ex94 -f0 <A_binary> -f1 <B_binary> -matmatmult_mat_view_info -matmatmulttr_mat_view_info
-   mpiexec -n 3 ./ex94 -f0 $D/medium -f1 $D/medium -f2 $D/arco1 -f3 $D/arco1 -matmatmult_mat_view_info
+   mpiexec -n 3 ./ex94 -f0 medium -f1 medium -f2 arco1 -f3 arco1 -matmatmult_mat_view_info
 */
 
 #include "petscmat.h"
@@ -19,7 +19,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscInt       i,m,n,j,*idxn,M,N,nzp;
-  PetscReal      norm,norm_tmp,tol=1.e-8,fill=4.0;
+  PetscReal      norm,norm_abs,norm_tmp,tol=1.e-8,fill=4.0;
   PetscRandom    rdm;
   char           file[4][128];
   PetscBool      flg,preload = PETSC_TRUE;
@@ -105,8 +105,10 @@ int main(int argc,char **args)
       ierr = MatMult(B,x,v1);CHKERRQ(ierr);  
       ierr = MatMult(A,v1,v2);CHKERRQ(ierr);  /* v2 = A*B*x */
       ierr = MatMult(C,x,v1);CHKERRQ(ierr);   /* v1 = C*x   */
+      ierr = VecNorm(v1,NORM_2,&norm_abs);CHKERRQ(ierr);
       ierr = VecAXPY(v1,none,v2);CHKERRQ(ierr);
       ierr = VecNorm(v1,NORM_2,&norm_tmp);CHKERRQ(ierr);
+      norm_tmp /= norm_abs;
       if (norm_tmp > norm) norm = norm_tmp;
     }
     if (norm >= tol) {
@@ -182,8 +184,10 @@ int main(int argc,char **args)
       ierr = MatMult(B,x,v5);CHKERRQ(ierr);            /* v5 = B*x   */
       ierr = MatMultTranspose(P,v5,v3);CHKERRQ(ierr);  /* v3 = Pt*B*x */
       ierr = MatMult(C,x,v4);CHKERRQ(ierr);            /* v4 = C*x   */
+      ierr = VecNorm(v4,NORM_2,&norm_abs);CHKERRQ(ierr);
       ierr = VecAXPY(v4,none,v3);CHKERRQ(ierr);
       ierr = VecNorm(v4,NORM_2,&norm_tmp);CHKERRQ(ierr);
+      norm_tmp /= norm_abs;
       if (norm_tmp > norm) norm = norm_tmp;
     }
     if (norm >= tol) {
@@ -259,8 +263,10 @@ int main(int argc,char **args)
 
       ierr = MatMultTranspose(P,v2,v3);CHKERRQ(ierr); /* v3 = Pt*A*P*x */
       ierr = MatMult(C,x,v4);CHKERRQ(ierr);           /* v3 = C*x   */
+      ierr = VecNorm(v4,NORM_2,&norm_abs);CHKERRQ(ierr);
       ierr = VecAXPY(v4,none,v3);CHKERRQ(ierr);
       ierr = VecNorm(v4,NORM_2,&norm_tmp);CHKERRQ(ierr);
+      norm_tmp /= norm_abs;
       if (norm_tmp > norm) norm = norm_tmp;
     }
     if (norm >= tol) {
