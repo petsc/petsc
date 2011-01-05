@@ -164,9 +164,9 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscTruth valOnly,PetscInt *n,PetscInt **c
   {
     PetscScalar *tmpvalues;
     PetscInt    *tmprows,*tmpcolptr;
-    tmpvalues = malloc(nnz*sizeof(PetscScalar)); if (!tmpvalues) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Unable to allocate memory");
-    tmprows   = malloc(nnz*sizeof(PetscInt));if (!tmprows) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Unable to allocate memory");
-    tmpcolptr = malloc((*n+1)*sizeof(PetscInt));if (!tmpcolptr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Unable to allocate memory");
+    tmpvalues = malloc(nnz*sizeof(PetscScalar)); if (!tmpvalues) SETERRQ(PETSC_ERR_MEM,"Unable to allocate memory");
+    tmprows   = malloc(nnz*sizeof(PetscInt));if (!tmprows) SETERRQ(PETSC_ERR_MEM,"Unable to allocate memory");
+    tmpcolptr = malloc((*n+1)*sizeof(PetscInt));if (!tmpcolptr) SETERRQ(PETSC_ERR_MEM,"Unable to allocate memory");
 
     if (sizeof(PetscScalar) != sizeof(pastix_float_t)) {
       SETERRQ2(PETSC_ERR_SUP,"sizeof(PetscScalar) %d != sizeof(pastix_float_t) %d",sizeof(PetscScalar),sizeof(pastix_float_t));
