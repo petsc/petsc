@@ -19,7 +19,7 @@ Program usage:
    mpiexec -n <procs> ./ex15 [-help] [all PETSc options] 
    e.g., mpiexec -n 2 ./ex15 -da_grid_x 40 -da_grid_y 40 -ts_max_steps 2 -snes_monitor -ksp_monitor 
          ./ex15 -da_grid_x 40 -da_grid_y 40 -drawcontours -draw_pause .1 -boundary 1 
-         ./ex15 -da_grid_x 40 -da_grid_y 40 -drawcontours -draw_pause .1 -boundary 1 -use_coloring
+         ./ex15 -da_grid_x 40 -da_grid_y 40 -drawcontours -draw_pause .1 -boundary 1 -fdcoloring -nstencilpts 9
         
         
 */
@@ -30,12 +30,15 @@ Program usage:
 /* 
    User-defined data structures and routines
 */
+/* MonitorCtx: used by MyTSMonitor() */
 typedef struct {
    PetscBool drawcontours;   
 } MonitorCtx;
 
+/* AppCtx: used by FormIFunction() and FormIJacobian() */
 typedef struct {
   DM             da;
+  PetscInt       nstencilpts;    /* number of stencil points: 5 or 9 */
   PetscReal      c;   
   PetscInt       boundary;       /* Type of boundary condition */
   PetscBool      viewJacobian;
@@ -60,31 +63,41 @@ int main(int argc,char **argv)
   PetscReal      ftime,dt;
   MonitorCtx     usermonitor;       /* user-defined monitor context */
   AppCtx         user;              /* user-defined work context */
-  PetscBool      use_coloring;
+  PetscBool      fdcoloring;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create distributed array (DMDA) to manage parallel grid and vectors
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,
-                      1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
-
-  /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Extract global vectors from DMDA; 
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMCreateGlobalVector(da,&u);CHKERRQ(ierr);
-
   /* Initialize user application context */
-  user.da            = da;
+  user.da            = PETSC_NULL;
+  user.nstencilpts   = 5;
   user.c             = -30.0;
   user.boundary      = 0; /* 0: Drichlet BC; 1: Neumann BC */
   user.viewJacobian  = PETSC_FALSE;
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-nstencilpts",&user.nstencilpts,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-boundary",&user.boundary,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-viewJacobian",&user.viewJacobian);CHKERRQ(ierr);
 
   usermonitor.drawcontours = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-drawcontours",&usermonitor.drawcontours);CHKERRQ(ierr);
+  
+  usermonitor.drawcontours = PETSC_FALSE;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-drawcontours",&usermonitor.drawcontours);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Create distributed array (DMDA) to manage parallel grid and vectors
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  if (user.nstencilpts == 5){
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  } else if (user.nstencilpts == 9){
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"nstencilpts %d is not supported",user.nstencilpts);
+  }
+  user.da = da;
+
+  /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Extract global vectors from DMDA; 
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = DMCreateGlobalVector(da,&u);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -96,7 +109,6 @@ int main(int argc,char **argv)
 
   ierr = TSSetIFunction(ts,FormIFunction,&user);CHKERRQ(ierr);
   ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
 
   ftime = 1.0;
   ierr = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
@@ -116,8 +128,9 @@ int main(int argc,char **argv)
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* Use coloring to compute rhs Jacobian efficiently */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_coloring",&use_coloring,PETSC_NULL);CHKERRQ(ierr);
-  if (use_coloring){
+  fdcoloring = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-fdcoloring",&fdcoloring,PETSC_NULL);CHKERRQ(ierr);
+  if (fdcoloring){
     SNES       snes;
     ISColoring iscoloring;
     ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
@@ -127,6 +140,9 @@ int main(int argc,char **argv)
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+  } else { /* use user provided Jacobian evaluation routine */
+    if (user.nstencilpts != 5) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"user Jacobian routine FormIJacobian() does not support nstencilpts=%D",user.nstencilpts);
+    ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -138,7 +154,7 @@ int main(int argc,char **argv)
      Free work space.  
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatDestroy(J);CHKERRQ(ierr);
-  if (use_coloring){
+  if (fdcoloring){
     ierr = MatFDColoringDestroy(matfdcoloring);CHKERRQ(ierr);
   }
   ierr = VecDestroy(u);CHKERRQ(ierr);     
@@ -172,6 +188,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
 
   hx     = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
   hy     = 1.0/(PetscReal)(My-1); sy = 1.0/(hy*hy);
+  if (user->nstencilpts == 9 && hx != hy)SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"hx must equal hy when nstencilpts = 9 for this example");
   hxdhy  = hx/hy; 
   hydhx  = hy/hx;
 
@@ -200,21 +217,35 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
         if (user->boundary == 0){ /* Drichlet BC */
           f[j][i] = uarray[j][i]; /* F = U */
         } else {                  /* Neumann BC */
-          if (i == 0){
+          if (i == 0 && j == 0){              /* SW corner */
+            f[j][i] = uarray[j][i] - uarray[j+1][i+1];
+          } else if (i == Mx-1 && j == 0){    /* SE corner */
+            f[j][i] = uarray[j][i] - uarray[j+1][i-1];
+          } else if (i == 0 && j == My-1){    /* NW corner */
+            f[j][i] = uarray[j][i] - uarray[j-1][i+1];
+          } else if (i == Mx-1 && j == My-1){ /* NE corner */
+            f[j][i] = uarray[j][i] - uarray[j-1][i-1]; 
+          } else if (i == 0){                  /* Left */
             f[j][i] = uarray[j][i] - uarray[j][i+1];
-          } else if (i == Mx-1){
+          } else if (i == Mx-1){               /* Right */
             f[j][i] = uarray[j][i] - uarray[j][i-1];
-          } else if (j == 0) {
+          } else if (j == 0) {                 /* Bottom */
             f[j][i] = uarray[j][i] - uarray[j+1][i];
-          } else if (j == My-1){
+          } else if (j == My-1){               /* Top */
             f[j][i] = uarray[j][i] - uarray[j-1][i];
           }
         }
-      } else {
+      } else { /* Interior */
         u       = uarray[j][i];
-        uxx     = (-2.0*u + uarray[j][i-1] + uarray[j][i+1])*sx;
-        uyy     = (-2.0*u + uarray[j-1][i] + uarray[j+1][i])*sy;
-        f[j][i] = udot[j][i] - (uxx + uyy);  
+        /* 5-point stencil */
+        uxx     = (-2.0*u + uarray[j][i-1] + uarray[j][i+1]);
+        uyy     = (-2.0*u + uarray[j-1][i] + uarray[j+1][i]);
+        if (user->nstencilpts == 9){
+        /* 9-point stencil: assume hx=hy */
+          uxx = 2.0*uxx/3.0 + (0.5*(uarray[j-1][i-1]+uarray[j-1][i+1]+uarray[j+1][i-1]+uarray[j+1][i+1]) - 2.0*u)/6.0;
+          uyy = 2.0*uyy/3.0 + (0.5*(uarray[j-1][i-1]+uarray[j-1][i+1]+uarray[j+1][i-1]+uarray[j+1][i+1]) - 2.0*u)/6.0;
+        }
+        f[j][i] = udot[j][i] - (uxx*sx + uyy*sy);  
       }
     }
   }
