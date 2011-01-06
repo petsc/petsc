@@ -51,7 +51,11 @@ class Configure(PETSc.package.NewPackage):
     cflags += ' ' + self.headers.toString(self.mpi.include)+' '+self.headers.toString('.')
         
     g.write('CC             = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CFLAGS         = '+cflags)
+    g.write('CFLAGS         = '+cflags+'\n')
+    # parmetis uses defaut 'make' targets, and this uses TARGET_ARCH var. If this var
+    # is set incorrectly in user env - build breaks.
+    g.write('TARGET_ARCH    = \n')
+
     self.setCompilers.popLanguage()
     g.close()
 

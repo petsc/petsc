@@ -76,6 +76,7 @@ E*/
 #define PCSYSPFMG         "syspfmg"
 #define PCREDISTRIBUTE    "redistribute"
 #define PCSACUDA          "sacuda"
+#define PCBICGSTABCUDA    "bicgstabcuda"
 #define PCSVD             "svd"
 
 /* Logging support */

@@ -55,6 +55,7 @@ extern PetscErrorCode  PCCreate_Prometheus(PC);
 #endif
 #if defined(PETSC_HAVE_CUSP_SMOOTHED_AGGREGATION) && defined(PETSC_HAVE_CUDA)
 extern PetscErrorCode  PCCreate_SACUDA(PC);
+extern PetscErrorCode  PCCreate_BiCGStabCUDA(PC);
 #endif
 
 EXTERN_C_END
@@ -133,6 +134,7 @@ PetscErrorCode  PCRegisterAll(const char path[])
 #endif
 #if defined(PETSC_HAVE_CUSP_SMOOTHED_AGGREGATION) && defined(PETSC_HAVE_CUDA)
   ierr = PCRegisterDynamic(PCSACUDA       ,path,"PCCreate_SACUDA",PCCreate_SACUDA);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCBICGSTABCUDA ,path,"PCCreate_BiCGStabCUDA",PCCreate_BiCGStabCUDA);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
