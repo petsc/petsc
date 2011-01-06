@@ -442,6 +442,7 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
     }
     ierr = MatSetValues(A,1,&row,nnz[i],aj,aa,INSERT_VALUES);CHKERRQ(ierr);
   }
+  ML_free(gordering);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *newmat = A;
