@@ -3,7 +3,7 @@ ALL: lib
 
 LIBBASE  = libpetscksp
 DIRS     = jacobi none sor shell bjacobi mg eisens asm ksp composite redundant spai is pbjacobi ml\
-           mat hypre tfs fieldsplit factor prometheus galerkin openmp supportgraph asa cp bfbt wb python sacuda\
+           mat hypre tfs fieldsplit factor prometheus galerkin openmp supportgraph asa cp bfbt wb python sacuda bicgstabcuda\
            lsc redistribute gasm svd
 LOCDIR   = src/ksp/pc/impls/
 

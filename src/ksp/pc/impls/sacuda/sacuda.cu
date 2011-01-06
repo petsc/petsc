@@ -62,7 +62,7 @@ static PetscErrorCode PCSetUp_SACUDA(PC pc)
   Mat_SeqAIJCUDA *gpustruct;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUDA,&flg);CHKERRQ(ierr);;
+  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUDA,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Currently only handles CUDA matrices");
   if (pc->setupcalled != 0){
     try {
@@ -141,15 +141,11 @@ static PetscErrorCode PCApply_SACUDA(PC pc,Vec x,Vec y)
   if (!sac->SACUDA) {
     ierr = PCSetUp_SACUDA(pc);CHKERRQ(ierr);
   }
-  /*ierr = VecCUDACopyToGPU(x);CHKERRQ(ierr);*/
   ierr = VecSet(y,0.0);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayWrite(y,&yarray);CHKERRQ(ierr);
   try {
     cusp::multiply(*sac->SACUDA,*xarray,*yarray);
-    /*if (y->valid_GPU_array != PETSC_CUDA_UNALLOCATED) {
-    y->valid_GPU_array = PETSC_CUDA_GPU;
-     }*/
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
   } 
