@@ -224,6 +224,23 @@ class Configure(config.base.Configure):
     return 0
   isCray = staticmethod(isCray)
   
+  def isCrayVector(compiler):
+    '''Returns true if the compiler is a Cray compiler for a Cray Vector system'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -VV')
+      output = output + error
+      if not status and output.find('x86') >= 0:
+        return 0
+      elif not status:
+        return 1
+      else:
+        return 0
+    except RuntimeError:
+      pass
+    return 0
+  isCrayVector = staticmethod(isCrayVector)
+  
+
   def isPGI(compiler):
     '''Returns true if the compiler is a PGI compiler'''
     try:
