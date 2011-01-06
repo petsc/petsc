@@ -10,7 +10,7 @@ OBJSC    = taodm.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = tao
-LOCDIR   = src/gridsequencing
+LOCDIR   = src/gridsequencing/
 
 include ${TAO_DIR}/conf/tao_base
 

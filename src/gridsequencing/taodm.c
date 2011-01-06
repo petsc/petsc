@@ -5,6 +5,7 @@
 #include "private/taodm_impl.h" /*I "taodm.h" I*/
 
 PetscClassId TAODM_CLASSID;
+static PetscBool taodmclass_registered = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "TaoDMCreate"
@@ -51,9 +52,12 @@ PetscErrorCode  TaoDMCreate(MPI_Comm comm,PetscInt nlevels,void *user,TaoDM **ta
     ierr = PetscOptionsGetInt(0,"-taodm_nlevels",&nlevels,PETSC_IGNORE);CHKERRQ(ierr);
   }
   if (nlevels < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot set levels less than 1");
-  
+  if (!taodmclass_registered) {
+    ierr = PetscClassIdRegister("TaoDM",&TAODM_CLASSID); CHKERRQ(ierr);
+  }
+  ierr = PetscMalloc(nlevels*sizeof(TaoDM),&p); CHKERRQ(ierr);
   for (i=0; i<nlevels; i++) {
-    ierr = PetscHeaderCreate(p[i],_p_TaoDM,struct _TaoDMOps,TAODM_CLASSID,0,"TaoDM",comm,TaoDMDestroy,TaoDMView); CHKERRQ(ierr);
+    ierr = PetscHeaderCreate(p[i],_p_TaoDM,struct _TaoDMOps,TAODM_CLASSID,0,"TaoDM",comm,TaoDMDestroyLevel,TaoDMView); CHKERRQ(ierr);
     p[i]->nlevels  = nlevels - i;
     p[i]->user     = user;
     p[i]->isctype  = IS_COLORING_GLOBAL; 
@@ -143,34 +147,46 @@ PetscErrorCode  TaoDMSetOptionsPrefix(TaoDM *taodm,const char prefix[])
 PetscErrorCode  TaoDMDestroy(TaoDM *taodm)
 {
   PetscErrorCode ierr;
-  PetscInt       i,nlevels = taodm[0]->nlevels;
+  PetscInt       i,nlevels;
+  
+  if (!taodm) return(0);
+    
+  nlevels = taodm[0]->nlevels;
 
   PetscFunctionBegin;
-  if (!taodm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Passing null as TaoDM");
 
-  for (i=1; i<nlevels; i++) {
-    if (taodm[i]->R) {ierr = MatDestroy(taodm[i]->R);CHKERRQ(ierr);}
-  }
   for (i=0; i<nlevels; i++) {
-    ierr = PetscFree(((PetscObject)(taodm[i]))->prefix);CHKERRQ(ierr);
-    ierr = PetscFree(taodm[i]->mtype);CHKERRQ(ierr);
-    if (taodm[i]->dm)      {ierr = DMDestroy(taodm[i]->dm);CHKERRQ(ierr);}
-    if (taodm[i]->x)       {ierr = VecDestroy(taodm[i]->x);CHKERRQ(ierr);}
-    //if (taodm[i]->b)       {ierr = VecDestroy(taodm[i]->b);CHKERRQ(ierr);}
-    //if (taodm[i]->r)       {ierr = VecDestroy(taodm[i]->r);CHKERRQ(ierr);}
-    //if (taodm[i]->work1)   {ierr = VecDestroy(taodm[i]->work1);CHKERRQ(ierr);}
-    //if (taodm[i]->w)       {ierr = VecDestroy(taodm[i]->w);CHKERRQ(ierr);}
-    //if (taodm[i]->work2)   {ierr = VecDestroy(taodm[i]->work2);CHKERRQ(ierr);}
-    //if (taodm[i]->lwork1)  {ierr = VecDestroy(taodm[i]->lwork1);CHKERRQ(ierr);}
-    if (taodm[i]->hessian_pre)         {ierr = MatDestroy(taodm[i]->hessian_pre);CHKERRQ(ierr);}
-    if (taodm[i]->hessian)         {ierr = MatDestroy(taodm[i]->hessian);CHKERRQ(ierr);}
-    if (taodm[i]->R)    {ierr = MatDestroy(taodm[i]->R);CHKERRQ(ierr);}
-    //if (taodm[i]->fdcoloring){ierr = MatFDColoringDestroy(taodm[i]->fdcoloring);CHKERRQ(ierr);}
-    if (taodm[i]->tao)      {ierr = PetscObjectDestroy((PetscObject)taodm[i]->tao);CHKERRQ(ierr);} 
-    ierr = PetscFree(taodm[i]);CHKERRQ(ierr);
+    ierr = TaoDMDestroyLevel(taodm[i]); CHKERRQ(ierr);
   }
   ierr = PetscFree(taodm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoDMDestroyLevel"
+PetscErrorCode  TaoDMDestroyLevel(TaoDM taodmlevel)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscFree(((PetscObject)(taodmlevel))->prefix);CHKERRQ(ierr);
+  ierr = PetscFree(taodmlevel->mtype);CHKERRQ(ierr);
+  if (taodmlevel->dm)      {ierr = DMDestroy(taodmlevel->dm);CHKERRQ(ierr);}
+  if (taodmlevel->x)       {ierr = VecDestroy(taodmlevel->x);CHKERRQ(ierr);}
+  //if (taodmlevel->b)       {ierr = VecDestroy(taodmlevel->b);CHKERRQ(ierr);}
+  //if (taodmlevel->r)       {ierr = VecDestroy(taodmlevel->r);CHKERRQ(ierr);}
+  //if (taodmlevel->work1)   {ierr = VecDestroy(taodmlevel->work1);CHKERRQ(ierr);}
+  //if (taodmlevel->w)       {ierr = VecDestroy(taodmlevel->w);CHKERRQ(ierr);}
+  //if (taodmlevel->work2)   {ierr = VecDestroy(taodmlevel->work2);CHKERRQ(ierr);}
+  //if (taodmlevel->lwork1)  {ierr = VecDestroy(taodmlevel->lwork1);CHKERRQ(ierr);}
+  if (taodmlevel->hessian_pre)         {ierr = MatDestroy(taodmlevel->hessian_pre);CHKERRQ(ierr);}
+  if (taodmlevel->hessian)         {ierr = MatDestroy(taodmlevel->hessian);CHKERRQ(ierr);}
+  //if (taodmlevel->R)    {ierr = MatDestroy(taodmlevel->R);CHKERRQ(ierr);}
+  //if (taodmlevel->fdcoloring){ierr = MatFDColoringDestroy(taodmlevel->fdcoloring);CHKERRQ(ierr);}
+  if (taodmlevel->tao)      {ierr = PetscObjectDestroy((PetscObject)taodmlevel->tao);CHKERRQ(ierr);}
+  ierr = PetscHeaderDestroy(taodmlevel); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+
+  
 }
 
 #undef __FUNCT__  
@@ -269,6 +285,7 @@ PetscErrorCode  TaoDMSolve(TaoDM *taodm)
   PetscFunctionBegin;
   ierr = PetscOptionsGetBool(0,"-taodm_grid_sequence",&gridseq,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(0,"-taodm_monitor_solution",&vecmonitor,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TaoDMSetUp(taodm);
   if (taodm[0]->ops->computeinitialguess) {
     ierr = (*taodm[0]->ops->computeinitialguess)(taodm[0],taodm[0]->x);CHKERRQ(ierr);
     ierr = TaoSolverSetInitialVector(taodm[0]->tao,taodm[0]->x); CHKERRQ(ierr);
@@ -411,7 +428,6 @@ PetscErrorCode  TaoDMSetKSP(TaoDM *taodm,PetscErrorCode (*rhs)(TaoDM,Vec),PetscE
   if (!taodm[0]->ksp) {
     /* create solvers for each level if they don't already exist*/
     for (i=0; i<nlevels; i++) {
-
       ierr = KSPCreate(taodm[i]->comm,&taodm[i]->ksp);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)taodm[i]->ksp,PETSC_NULL,nlevels-i);CHKERRQ(ierr);
       //ierr = KSPSetOptionsPrefix(taodm[i]->ksp,taodm[i]->prefix);CHKERRQ(ierr);
@@ -569,6 +585,56 @@ PetscErrorCode  TaoDMSetInitialGuessRoutine(TaoDM *taodm,PetscErrorCode (*guess)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoDMSetObjectiveAndGradientRoutine"
+PetscErrorCode TaoDMSetObjectiveAndGradientRoutine(TaoDM* taodm, PetscErrorCode (*func)(TaoSolver,Vec,PetscScalar*,Vec,void*))
+{
+  PetscInt i;
+  PetscInt nlevels = taodm[0]->nlevels;
+  PetscFunctionBegin;
+  for (i=0;i<nlevels;i++) {
+    taodm[i]->ops->computeobjectiveandgradientlocal = 0;
+    taodm[i]->ops->computeobjective=0;
+    taodm[i]->ops->computeobjectiveandgradient=func;
+  }
+  PetscFunctionReturn(0);
+  
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoDMSetObjectiveRoutine"
+PetscErrorCode TaoDMSetObjectiveRoutine(TaoDM* taodm, PetscErrorCode (*func)(TaoSolver,Vec,PetscScalar*,void*))
+{
+  PetscInt i;
+  PetscInt nlevels = taodm[0]->nlevels;
+  PetscFunctionBegin;
+  for (i=0;i<nlevels;i++) {
+    taodm[i]->ops->computeobjectiveandgradientlocal = 0;
+    taodm[i]->ops->computeobjectivelocal=0;
+    taodm[i]->ops->computeobjective=func;
+  }
+  PetscFunctionReturn(0);
+  
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoDMSetObjectiveRoutine"
+PetscErrorCode TaoDMSetGradientRoutine(TaoDM* taodm, PetscErrorCode (*func)(TaoSolver,Vec,Vec,void*))
+{
+  PetscInt i;
+  PetscInt nlevels = taodm[0]->nlevels;
+  PetscFunctionBegin;
+  for (i=0;i<nlevels;i++) {
+    taodm[i]->ops->computeobjectiveandgradientlocal = 0;
+    taodm[i]->ops->computegradientlocal=0;
+    taodm[i]->ops->computegradient=func;
+  }
+  PetscFunctionReturn(0);
+  
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMSetLocalObjectiveRoutine"
 PetscErrorCode TaoDMSetLocalObjectiveRoutine(TaoDM* taodm, PetscErrorCode (*func)(DMDALocalInfo*,PetscScalar**,PetscScalar*,void*))
@@ -618,6 +684,20 @@ PetscErrorCode TaoDMSetLocalObjectiveAndGradientRoutine(TaoDM* taodm, PetscError
 }
 
 
+#undef __FUNCT__
+#define __FUNCT__ "TaoDMSetHessianRoutine"
+PetscErrorCode TaoDMSetHessianRoutine(TaoDM* taodm, PetscErrorCode (*func)(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*))
+{
+  PetscInt i;
+  PetscInt nlevels = taodm[0]->nlevels;
+  PetscFunctionBegin;
+  for (i=0;i<nlevels;i++) {
+    taodm[i]->ops->computehessianlocal = 0;
+    taodm[i]->ops->computehessian = func;
+  }
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMSetLocalHessianRoutine"
@@ -628,6 +708,7 @@ PetscErrorCode TaoDMSetLocalHessianRoutine(TaoDM* taodm, PetscErrorCode (*func)(
   PetscFunctionBegin;
   for (i=0;i<nlevels;i++) {
     taodm[i]->ops->computehessianlocal = func;
+    taodm[i]->ops->computehessian = 0;
   }
   PetscFunctionReturn(0);
 }
@@ -639,6 +720,7 @@ PetscErrorCode TaoDMSetLocalHessianRoutine(TaoDM* taodm, PetscErrorCode (*func)(
 PetscErrorCode TaoDMSetFromOptions(TaoDM* taodm)
 {
   PetscFunctionBegin;
+  
   PetscFunctionReturn(0);
 }
 
@@ -683,6 +765,7 @@ PetscErrorCode TaoDMSetUp(TaoDM* taodm)
 
 
     ierr = TaoSolverSetOptionsPrefix(taodm[i]->tao,((PetscObject)(taodm[i]))->prefix); CHKERRQ(ierr);
+    ierr = TaoSolverSetFromOptions(taodm[i]->tao); CHKERRQ(ierr);
     //ierr = TaoDMSetUpLevel(taodm,taodm[i]->ksp,i+1);CHKERRQ(ierr);
     
   }
@@ -893,6 +976,8 @@ PetscErrorCode TaoDMFormFunctionLocal(TaoSolver tao, Vec X, PetscScalar *f, void
 
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TaoDMFormBounds"
 PetscErrorCode TaoDMFormBounds(TaoSolver tao, Vec XL, Vec XU, void *ptr)
 {
 

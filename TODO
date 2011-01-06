@@ -13,7 +13,7 @@ Mesh Refinement
  - fd
  - adic?
  - mf
-
+ - when setfromoptions?
 
 initialize/finalize, esp. for Fortran
 

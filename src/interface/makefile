@@ -1,4 +1,4 @@
-ALL: lib
+ALL: lib 
 
 CFLAGS   =-DTAO_LIB_DIR='"${TAO_LIB_DIR}"'
 FFLAGS   =
