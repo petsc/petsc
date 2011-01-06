@@ -201,8 +201,8 @@ class Configure(config.base.Configure):
       self.addMakeMacro('PETSC_WITH_BATCH','1')
 
     # Test for compiler-specific macros that need to be defined.
-    if self.setCompilers.isCray('CC'):
-      self.addDefine('HAVE_CRAYC','1')
+    if self.setCompilers.isCrayVector('CC'):
+      self.addDefine('HAVE_CRAY_VECTOR','1')
 
 #-----------------------------------------------------------------------------------------------------
     if self.functions.haveFunction('gethostbyname') and self.functions.haveFunction('socket'):

@@ -372,11 +372,11 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A,Vec xx,Vec yy)
          * the chunk, we should vectorize along nz, that is, perform the 
          * mat-vec one row at a time as in the usual CSR case. */
         if (nz > isize) {
-#if defined(PETSC_HAVE_CRAYC)
+#if defined(PETSC_HAVE_CRAY_VECTOR)
 #pragma _CRI preferstream
 #endif
           for (i=0; i<isize; i++) {
-#if defined(PETSC_HAVE_CRAYC)
+#if defined(PETSC_HAVE_CRAY_VECTOR)
 #pragma _CRI prefervector
 #endif
             for (j=0; j<nz; j++) {
@@ -396,7 +396,7 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A,Vec xx,Vec yy)
           }
         }
 
-#if defined(PETSC_HAVE_CRAYC)
+#if defined(PETSC_HAVE_CRAY_VECTOR)
 #pragma _CRI ivdep
 #endif
         /* Put results from yp[] into non-permuted result vector y. */
@@ -533,11 +533,11 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
          * the chunk, we should vectorize along nz, that is, perform the 
          * mat-vec one row at a time as in the usual CSR case. */
         if(nz > isize) {
-#if defined(PETSC_HAVE_CRAYC)
+#if defined(PETSC_HAVE_CRAY_VECTOR)
 #pragma _CRI preferstream
 #endif
           for(i=0; i<isize; i++) {
-#if defined(PETSC_HAVE_CRAYC)
+#if defined(PETSC_HAVE_CRAY_VECTOR)
 #pragma _CRI prefervector
 #endif
             for(j=0; j<nz; j++) {
@@ -558,7 +558,7 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
           }
         }
 
-#if defined(PETSC_HAVE_CRAYC)
+#if defined(PETSC_HAVE_CRAY_VECTOR)
 #pragma _CRI ivdep
 #endif
         /* Put results from yp[] into non-permuted result vector y. */

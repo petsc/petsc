@@ -176,7 +176,7 @@ PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
 
   Level: advanced
 
-.seealso: MatCreateSeqDense
+.seealso: MatMAIJGetAIJ(), MatMAIJRedimension(), MatCreateMAIJ()
 M*/
 
 EXTERN_C_BEGIN
@@ -3367,7 +3367,7 @@ EXTERN_C_END
 
   Level: advanced
 
-.seealso: MatMAIJGetAIJ(), MatMAIJRedimension()
+.seealso: MatMAIJGetAIJ(), MatMAIJRedimension(), MATMAIJ
 @*/
 PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
 {
