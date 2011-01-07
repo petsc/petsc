@@ -48,7 +48,7 @@ PetscErrorCode viewme(Vec v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "initalizevecs"
+#define __FUNCT__ "initializevecs"
 PetscErrorCode initializevecs(Vec **vv, PetscInt numvecs, PetscInt size) 
 {
     PetscErrorCode ierr;
