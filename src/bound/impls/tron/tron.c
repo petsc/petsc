@@ -387,10 +387,8 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
     /* Reduce vectors (r[i]=g[i], if i in Free_Local, 
                        r[i]=0     if i not in Free_Local) */
 
-    ierr = VecCopy(tao->gradient, tron->R); CHKERRQ(ierr);
-    ierr = VecCopy(tao->stepdirection, tron->DXFree); CHKERRQ(ierr);
-    ierr = VecPointwiseMult(tron->R, tron->rmask); CHKERRQ(ierr);
-    ierr = VecPointwiseMult(tron->DXFree, tron->rmask); CHKERRQ(ierr);
+    ierr = VecPointwiseMult(tron->R, tao->gradient, tron->rmask); CHKERRQ(ierr);
+    ierr = VecPointwiseMult(tron->DXFree, tao->stepdirection, tron->rmask); CHKERRQ(ierr);
     ierr = VecScale(tron->R, -1.0); CHKERRQ(ierr);
 
     /* Get Reduced Hessian 
@@ -445,10 +443,8 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
     /* Reduce vectors (r[i]=g[i], if i in Free_Local, 
                        r[i]=0     if i not in Free_Local) */
 
-    ierr = VecCopy(tao->gradient, tron->R); CHKERRQ(ierr);
-    ierr = VecCopy(tao->stepdirection, tron->DXFree); CHKERRQ(ierr);
-    ierr = VecPointwiseMult(tron->R, tron->rmask); CHKERRQ(ierr);
-    ierr = VecPointwiseMult(tron->DXFree, tron->rmask); CHKERRQ(ierr);
+    ierr = VecPointwiseMult(tron->R, tao->gradient, tron->rmask); CHKERRQ(ierr);
+    ierr = VecPointwiseMult(tron->DXFree, tao->stepdirection, tron->rmask); CHKERRQ(ierr);
     ierr = VecScale(tron->R, -1.0); CHKERRQ(ierr);
 
 
