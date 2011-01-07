@@ -572,6 +572,7 @@ PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
 {
   PetscErrorCode ierr;
   PetscMPIInt size;
+  PetscInt n, N;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
@@ -583,7 +584,6 @@ PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
     if(!is->total) {
       ierr = ISGatherTotal_Private(is); CHKERRQ(ierr);
     }
-    PetscInt n, N;
     ierr = ISGetLocalSize(is,&n); CHKERRQ(ierr);
     ierr = ISGetSize(is,&N);      CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscInt)*(N-n), &(is->nonlocal));   CHKERRQ(ierr);

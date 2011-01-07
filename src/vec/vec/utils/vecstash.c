@@ -360,7 +360,7 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
 PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash,PetscMPIInt *nvals,PetscInt **rows,PetscScalar **vals,PetscInt *flg)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    i = 0; /* dummy value so MPI-Uni doesn't think it is not set*/;
+  PetscMPIInt    i = 0; /* dummy value so MPI-Uni doesn't think it is not set */
   PetscInt       *flg_v;
   PetscInt       i1,i2,bs=stash->bs;
   MPI_Status     recv_status;

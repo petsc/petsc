@@ -1405,9 +1405,10 @@ PetscErrorCode MatCreateMPIAIJFromSeqMatrices_Private(MPI_Comm comm, Mat A, Mat 
 { 
   /* If making this function public, change the error returned in this function away from _PLIB. */
   PetscErrorCode ierr;
-  PetscFunctionBegin;
   Mat_MPIAIJ *aij;
   PetscBool seqaij;
+
+  PetscFunctionBegin;
   /* Check to make sure the component matrices are compatible with C. */
   ierr = PetscTypeCompare((PetscObject)A, MATSEQAIJ, &seqaij); CHKERRQ(ierr);
   if(!seqaij) {
@@ -1444,8 +1445,8 @@ PetscErrorCode MatCreateMPIAIJFromSeqMatrices_Private(MPI_Comm comm, Mat A, Mat 
 #define __FUNCT__ "MatMPIAIJExtractSeqMatrices_Private" 
 PetscErrorCode MatMPIAIJExtractSeqMatrices_Private(Mat C, Mat *A, Mat *B)
 { 
-  PetscFunctionBegin;
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*) (C->data);
+  PetscFunctionBegin;
   PetscValidPointer(A,2);
   PetscValidPointer(B,3);
   *A = aij->A;
