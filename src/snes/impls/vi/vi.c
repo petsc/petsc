@@ -736,12 +736,14 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
 { 
   SNES_VI          *vi = (SNES_VI*)snes->data;
   PetscErrorCode    ierr;
-  PetscInt          maxits,i,lits,Nis_inact;
+  PetscInt          maxits,i,lits,Nis_inact_prev;
   PetscBool         lssucceed;
   MatStructure      flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal         fnorm,gnorm,xnorm=0,ynorm;
   Vec                Y,X,F,G,W;
   KSPConvergedReason kspreason;
+  KSP                snesksp;
+  Mat                Amat;
 
   PetscFunctionBegin;
   snes->numFailures            = 0;
@@ -755,7 +757,11 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
   G		= snes->work[1];
   W		= snes->work[2];
 
-  Nis_inact = F->map->N;
+  /* Get the inactive set size from the previous snes solve */
+  ierr = SNESGetKSP(snes,&snesksp);CHKERRQ(ierr);
+  ierr = KSPGetOperators(snesksp,&Amat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetSize(Amat,&Nis_inact_prev,PETSC_NULL);CHKERRQ(ierr);
+
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.0;
@@ -788,7 +794,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
 
     IS                 IS_act,IS_inact; /* _act -> active set _inact -> inactive set */
     VecScatter         scat_act,scat_inact;
-    PetscInt           nis_act,nis_inact,Nis_inact_prev;
+    PetscInt           nis_act,nis_inact,Nis_inact;
     Vec                Y_act,Y_inact,F_inact;
     Mat                jac_inact_inact,prejac_inact_inact;
 
@@ -800,7 +806,6 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     /* Create active and inactive index sets */
     ierr = SNESVICreateIndexSets_RS(snes,X,vi->xl,vi->xu,&IS_act,&IS_inact);CHKERRQ(ierr);
 
-    Nis_inact_prev = Nis_inact;
     /* Get sizes of active and inactive sets */
     ierr = ISGetLocalSize(IS_act,&nis_act);CHKERRQ(ierr);
     ierr = ISGetLocalSize(IS_inact,&nis_inact);CHKERRQ(ierr);
@@ -867,7 +872,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     if (snes->jacobian != snes->jacobian_pre) {
       ierr = MatDestroy(prejac_inact_inact);CHKERRQ(ierr);
     }
-
+    Nis_inact_prev = Nis_inact;
     ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
     ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
