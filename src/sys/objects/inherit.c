@@ -138,7 +138,7 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectsView"
 /*@C
-   PetscObjectsView- Prints the currently existing objects.
+   PetscObjectsView - Prints the currently existing objects.
 
    Logically Collective on PetscViewer
 
