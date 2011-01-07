@@ -195,7 +195,6 @@ static PetscErrorCode TaoSolverSetUp_LMVM(TaoSolver tao)
   /* Existence of tao->solution checked in TaoSolverSetUp() */
   if (!tao->gradient) {ierr = VecDuplicate(tao->solution,&tao->gradient); CHKERRQ(ierr);  }
   if (!tao->stepdirection) {ierr = VecDuplicate(tao->solution,&tao->stepdirection); CHKERRQ(ierr);  }
-  if (!lmP->W) {ierr = VecDuplicate(tao->solution,&lmP->W); CHKERRQ(ierr);  }
   if (!lmP->D) {ierr = VecDuplicate(tao->solution,&lmP->D); CHKERRQ(ierr);  }
   if (!lmP->Xold) {ierr = VecDuplicate(tao->solution,&lmP->Xold); CHKERRQ(ierr);  }
   if (!lmP->Gold) {ierr = VecDuplicate(tao->solution,&lmP->Gold); CHKERRQ(ierr);  }
@@ -220,15 +219,6 @@ static PetscErrorCode TaoSolverDestroy_LMVM(TaoSolver tao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (tao->gradient) {
-    ierr = VecDestroy(tao->gradient); CHKERRQ(ierr);
-  }
-  if (tao->stepdirection) {
-    ierr = VecDestroy(tao->stepdirection); CHKERRQ(ierr);
-  }
-  if (lmP->W) {
-    ierr = VecDestroy(lmP->W); CHKERRQ(ierr);
-  }
   if (lmP->Xold) {
     ierr = VecDestroy(lmP->Xold); CHKERRQ(ierr);
   }
@@ -313,6 +303,11 @@ PetscErrorCode TaoSolverCreate_LMVM(TaoSolver tao)
   tao->ops->destroy = TaoSolverDestroy_LMVM;
 
   ierr = PetscNewLog(tao,TAO_LMVM, &lmP); CHKERRQ(ierr);
+  lmP->D = 0;
+  lmP->M = 0;
+  lmP->Xold = 0;
+  lmP->Gold = 0;
+
   tao->data = (void*)lmP;
   tao->max_its = 2000;
   tao->max_funcs = 4000;

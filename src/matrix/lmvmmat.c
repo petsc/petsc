@@ -117,6 +117,7 @@ extern PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
     ctx->Xprev = 0;
 
     ctx->scale = 0;
+    ctx->useScale = PETSC_FALSE;
 
     ctx->H0 = 0;
     ctx->useDefaultH0=PETSC_TRUE;
@@ -244,6 +245,7 @@ extern PetscErrorCode MatDestroy_LMVM(Mat M)
     MatLMVMCtx     *ctx;
     PetscErrorCode ierr;
     PetscFunctionBegin;
+
     ierr = MatShellGetContext(M,(void**)&ctx); CHKERRQ(ierr);
 
     ierr = VecDestroyVecs(ctx->S, ctx->lm+1); CHKERRQ(ierr);
@@ -258,6 +260,7 @@ extern PetscErrorCode MatDestroy_LMVM(Mat M)
     ierr = VecDestroy(ctx->Gprev); CHKERRQ(ierr);
     
     ierr = PetscFree(ctx); CHKERRQ(ierr);
+
     PetscFunctionReturn(0);
 	
 }
@@ -779,10 +782,12 @@ extern PetscErrorCode MatLMVMSetScale(Mat m, Vec s)
 	SETERRQ(PETSC_COMM_SELF,1,"Matrix m is not type MatLMVM");
     }
     ierr = MatShellGetContext(m,(void**)&ctx); CHKERRQ(ierr);
+
     if (ctx->scale) {
-	ierr = VecDestroy(ctx->scale); CHKERRQ(ierr);
-	ctx->scale=PETSC_NULL;
+      ierr = VecDestroy(ctx->scale); CHKERRQ(ierr);
+      ctx->scale=PETSC_NULL;
     }
+
     ierr = VecDuplicate(s,&ctx->scale); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
