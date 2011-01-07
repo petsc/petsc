@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     CHKERRQ(ierr);
 
     usebounds = PETSC_FALSE;
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-bounded",&usebounds,&flg); CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-bounded",&usebounds,&flg); CHKERRQ(ierr);
     if (usebounds == PETSC_TRUE) {
 	ierr = VecDuplicate(x,&xl); CHKERRQ(ierr);
 	ierr = VecDuplicate(x,&xu); CHKERRQ(ierr);
