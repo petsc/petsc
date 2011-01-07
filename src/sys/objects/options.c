@@ -643,7 +643,7 @@ PetscErrorCode  PetscOptionsInsert(int *argc,char ***args,const char file[])
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsView"
 /*@C
-   PetscOptionsView- Prints the options that have been loaded. This is
+   PetscOptionsView - Prints the options that have been loaded. This is
    useful for debugging purposes.
 
    Logically Collective on PetscViewer
