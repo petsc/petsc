@@ -978,19 +978,26 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);  
 
   /* 
-       Free all objects the user forgot to free 
+       List all objects the user may have forgot to free 
   */
   if (objects_left && PetscObjectsCounts) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"The following objects were never freed\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"The following objects %D were never freed\n",PetscObjectsCounts);
   }
   for (i=0; i<PetscObjectsMaxCounts; i++) {
     if (PetscObjects[i]) {
       if (objects_left) {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"  %s %s %s\n",PetscObjects[i]->class_name,PetscObjects[i]->type_name,PetscObjects[i]->name);CHKERRQ(ierr);
       }
-      ierr = PetscObjectDestroy(PetscObjects[i]);CHKERRQ(ierr);
     }
   }
+  /* cannot actually destroy the left over objects, but destroy the list */
+  PetscObjectsCounts    = 0;
+  PetscObjectsMaxCounts = 0;
+  if (PetscObjects) {
+    ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
+    PetscObjects = 0;
+  }
+
 
 
 #if defined(PETSC_USE_LOG)
@@ -1081,6 +1088,39 @@ PetscErrorCode  PetscFinalize(void)
   ierr = MPI_Op_free(&PetscMaxSum_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscADMax_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscADMin_Op);CHKERRQ(ierr);
+
+  /* 
+     Destroy any known inner communicators and attributes pointing to them
+     Note this will not destroy any new communicators the user has created
+ */
+  PetscCommCounter *counter;
+  PetscMPIInt      flg;
+  MPI_Comm         icomm;
+  void             *ptr;
+  ierr  = MPI_Attr_get(PETSC_COMM_SELF,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+  if (flg) {
+    /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
+    ierr = PetscMemcpy(&icomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
+    ierr = MPI_Attr_get(icomm,Petsc_Counter_keyval,&counter,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected tag/name counter, problem with corrupted memory");
+
+    ierr = MPI_Attr_delete(icomm,Petsc_Counter_keyval);CHKERRQ(ierr);
+    ierr = MPI_Attr_delete(icomm,Petsc_OuterComm_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free(&icomm);CHKERRQ(ierr);
+    ierr = MPI_Attr_delete(PETSC_COMM_SELF,Petsc_InnerComm_keyval);CHKERRQ(ierr);
+  }
+  ierr  = MPI_Attr_get(PETSC_COMM_WORLD,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+  if (flg) {
+    /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
+    ierr = PetscMemcpy(&icomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
+    ierr = MPI_Attr_get(icomm,Petsc_Counter_keyval,&counter,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected tag/name counter, problem with corrupted memory");
+
+    ierr = MPI_Attr_delete(icomm,Petsc_Counter_keyval);CHKERRQ(ierr);
+    ierr = MPI_Attr_delete(icomm,Petsc_OuterComm_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free(&icomm);CHKERRQ(ierr);
+    ierr = MPI_Attr_delete(PETSC_COMM_WORLD,Petsc_InnerComm_keyval);CHKERRQ(ierr);
+  }
 
   ierr = MPI_Keyval_free(&Petsc_Counter_keyval);CHKERRQ(ierr);
   ierr = MPI_Keyval_free(&Petsc_InnerComm_keyval);CHKERRQ(ierr);

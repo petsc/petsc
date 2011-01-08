@@ -237,9 +237,9 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
 
     /* if MPI_Comm has outter comm then remove reference to inner MPI_Comm from outter MPI_Comm */
     ierr  = MPI_Attr_get(icomm,Petsc_OuterComm_keyval,&ptr,&flg);CHKERRQ(ierr);
-    /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
-    ierr = PetscMemcpy(&ocomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
     if (flg) {
+      /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
+      ierr = PetscMemcpy(&ocomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
       ierr = MPI_Attr_delete(ocomm,Petsc_InnerComm_keyval);CHKERRQ(ierr);
     }
 
