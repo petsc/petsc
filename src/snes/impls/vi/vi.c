@@ -614,7 +614,6 @@ PetscErrorCode SNESVICreateIndexSets_RS(SNES snes,Vec X,Vec Xl, Vec Xu,IS* ISact
   Vec                F = snes->vec_func;
 
   PetscFunctionBegin;
-
   ierr = VecGetLocalSize(X,&nlocal);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(X,&ilow,&ihigh);CHKERRQ(ierr);
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
@@ -636,15 +635,13 @@ PetscErrorCode SNESVICreateIndexSets_RS(SNES snes,Vec X,Vec Xl, Vec Xu,IS* ISact
   }
 
   /* Create the index sets */
-  ierr = ISCreateGeneral(((PetscObject)snes)->comm,nloc_isact,idx_act,PETSC_COPY_VALUES,ISact);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(((PetscObject)snes)->comm,nloc_isinact,idx_inact,PETSC_COPY_VALUES,ISinact);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(((PetscObject)snes)->comm,nloc_isact,idx_act,PETSC_OWN_POINTER,ISact);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(((PetscObject)snes)->comm,nloc_isinact,idx_inact,PETSC_OWN_POINTER,ISinact);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Xl,&xl);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Xu,&xu);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(F,&f);CHKERRQ(ierr);
-  ierr = PetscFree(idx_act);CHKERRQ(ierr);
-  ierr = PetscFree(idx_inact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -792,34 +789,58 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
 
   for (i=0; i<maxits; i++) {
 
-    IS                 IS_act,IS_inact; /* _act -> active set _inact -> inactive set */
-    VecScatter         scat_act,scat_inact;
-    PetscInt           nis_act,nis_inact,Nis_inact;
-    Vec                Y_act,Y_inact,F_inact;
-    Mat                jac_inact_inact,prejac_inact_inact;
+    IS         IS_act,IS_inact; /* _act -> active set _inact -> inactive set */
+    VecScatter scat_act,scat_inact;
+    PetscInt   nis_act,nis_inact,Nis_inact;
+    Vec        Y_act,Y_inact,F_inact;
+    Mat        jac_inact_inact,prejac_inact_inact;
+    IS         keptrows;
 
     /* Call general purpose update function */
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+
     /* Create active and inactive index sets */
     ierr = SNESVICreateIndexSets_RS(snes,X,vi->xl,vi->xu,&IS_act,&IS_inact);CHKERRQ(ierr);
+
+    /* Create inactive set submatrices */
+    ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
+    ierr = MatSeqAIJFindZeroRows(jac_inact_inact,&keptrows);CHKERRQ(ierr);
+    if (keptrows) {
+      PetscInt       cnt,*nrows,k;
+      const PetscInt *krows,*inact;
+
+      ierr = MatDestroy(jac_inact_inact);CHKERRQ(ierr);
+      ierr = ISDestroy(IS_act);CHKERRQ(ierr);
+
+      ierr = ISGetLocalSize(keptrows,&cnt);CHKERRQ(ierr);
+      ierr = ISGetIndices(keptrows,&krows);CHKERRQ(ierr);
+      ierr = ISGetIndices(IS_inact,&inact);CHKERRQ(ierr);
+      ierr = PetscMalloc(cnt*sizeof(PetscInt),&nrows);CHKERRQ(ierr);
+      for (k=0; k<cnt; k++) {
+        nrows[k] = inact[krows[k]];
+      }
+      ierr = ISRestoreIndices(keptrows,&krows);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(IS_inact,&inact);CHKERRQ(ierr);
+      ierr = ISDestroy(keptrows);CHKERRQ(ierr);
+      ierr = ISDestroy(IS_inact);CHKERRQ(ierr);
+     
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,cnt,nrows,PETSC_OWN_POINTER,&IS_inact);CHKERRQ(ierr);
+      ierr = ISComplement(IS_inact,0,F->map->n,&IS_act);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
+    }
 
     /* Get sizes of active and inactive sets */
     ierr = ISGetLocalSize(IS_act,&nis_act);CHKERRQ(ierr);
     ierr = ISGetLocalSize(IS_inact,&nis_inact);CHKERRQ(ierr);
     ierr = ISGetSize(IS_inact,&Nis_inact);CHKERRQ(ierr);
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Size of active set = %d, size of inactive set = %d\n",nis_act,nis_inact);CHKERRQ(ierr);
-
     /* Create active and inactive set vectors */
     ierr = SNESVICreateSubVectors(snes,nis_inact,&F_inact);CHKERRQ(ierr);
     ierr = SNESVICreateSubVectors(snes,nis_act,&Y_act);CHKERRQ(ierr);
     ierr = SNESVICreateSubVectors(snes,nis_inact,&Y_inact);CHKERRQ(ierr);
-
-    /* Create inactive set submatrices */
-    ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
 
     /* Create scatter contexts */
     ierr = VecScatterCreate(Y,IS_act,Y_act,PETSC_NULL,&scat_act);CHKERRQ(ierr);
