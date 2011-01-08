@@ -32,6 +32,7 @@
  */
 
 #include "../src/sys/totalview/tv_data_display.h"
+#include "petscconf.h"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -79,6 +80,9 @@ int TV_add_row(const char *field_name,
         
   remaining = TV_data_buffer_ptr + DATA_FORMAT_BUFFER_SIZE - TV_data_format_buffer;
   
+#if defined(PETSC_HAVE__SNPRINTF)
+#define snprintf _snprintf
+#endif
   out = snprintf(TV_data_buffer_ptr, 
                  remaining, "%s\t%s\t%p\n", 
                  field_name, type_name, value);
