@@ -99,9 +99,7 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
       ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,m,n,M,N,dim,0,lx,ly,&dac);CHKERRQ(ierr); 
     } else if (dim == 3) {
       ierr = DMDACreate3d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,m,n,p,M,N,P,dim,0,lx,ly,lz,&dac);CHKERRQ(ierr); 
-    } else {
-      SETERRQ1(comm,PETSC_ERR_ARG_CORRUPT,"Dimension is not 1 2 or 3: %D\n",dim);
-    }
+    } else SETERRQ1(comm,PETSC_ERR_ARG_CORRUPT,"Dimension is not 1 2 or 3: %D\n",dim);
     ierr = DMDACreateNaturalVector(dac,&natural);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,"coor_");CHKERRQ(ierr);
     ierr = DMDAGlobalToNaturalBegin(dac,dd->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);
@@ -110,7 +108,6 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
     ierr = VecDestroy(natural);CHKERRQ(ierr);
     ierr = DMDestroy(dac);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 

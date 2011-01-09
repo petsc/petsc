@@ -8597,3 +8597,38 @@ PetscErrorCode  MatRestoreLocalSubMatrix(Mat mat,IS isrow,IS iscol,Mat *submat)
   *submat = PETSC_NULL;
   PetscFunctionReturn(0);
 }
+
+/* --------------------------------------------------------*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatFindZeroDiagonals"
+/*@
+   MatFindZeroDiagonals - Finds all the rows of a matrix that have zero or no entry in the matrix
+
+   Collective on Mat
+
+   Input Parameter:
+.  mat - the matrix
+
+   Output Parameter:
+.  is - if any rows have zero diagonals this contains the list of them
+
+   Level: developer
+
+   Concepts: matrix-vector product
+
+.seealso: MatMultTranspose(), MatMultAdd(), MatMultTransposeAdd()
+@*/
+PetscErrorCode  MatFindZeroDiagonals(Mat mat,IS *is)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+
+  if (!mat->ops->findzerodiagonals) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"This matrix type does not have a find zero diagonals defined");
+  ierr = (*mat->ops->findzerodiagonals)(mat,is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}   

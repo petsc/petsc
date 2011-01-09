@@ -91,6 +91,10 @@ parallel tridiagonal solvers.</li>
         <li>Convert KSPSPECEST to something like -ksp_type chebychev
 -ksp_chebychev_precompute_parameters -ksp_chebychev_precompute_ksp_type
 cg -ksp_chebychev_precompute_minfactor .95</li>
+        <li>DALoad() should take an already partially created DA like
+VecLoad() and MatLoad() and use the prefix in it to load from the info
+file.<br>
+        </li>
         <li>KSPSolve and SNESSolve should return bounds on the errors
 and some measure of sensitivity of the solution to the something<br>
         </li>
@@ -131,7 +135,8 @@ parallel&nbsp;Algebraic Recursive Multilevel Solvers of Yousef Saad? <br>
 Add
 PetscConsistent(MPI_Comm,...)
 error
-check macros checks that<br>
+check
+macros checks that<br>
 all processors in comm set the same value; for example the alpha in
 VecAXPY() etc etc.<br>
       <br>

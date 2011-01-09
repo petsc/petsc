@@ -111,7 +111,7 @@ struct _MatOps {
   PetscErrorCode (*multconstrained)(Mat,Vec,Vec);
   PetscErrorCode (*multtransposeconstrained)(Mat,Vec,Vec);
   /*79*/
-  PetscErrorCode (*dummy)(Mat);
+  PetscErrorCode (*findzerodiagonals)(Mat,IS*);
   PetscErrorCode (*mults)(Mat, Vecs, Vecs);
   PetscErrorCode (*solves)(Mat, Vecs, Vecs);
   PetscErrorCode (*getinertia)(Mat,PetscInt*,PetscInt*,PetscInt*);

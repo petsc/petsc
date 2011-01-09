@@ -639,7 +639,7 @@ static PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
   PetscBool      ismatlab;
 #endif
 #if defined(PETSC_HAVE_HDF5)
-  PetscBool  ishdf5;
+  PetscBool      ishdf5;
 #endif
 
   PetscFunctionBegin;
