@@ -13,7 +13,7 @@ class Configure(config.package.Package):
     self.substPrefix       = ''
     self.argDB             = framework.argDB
     self.found             = 0
-    self.f2c               = 0
+    self.f2c               = 0  # indicates either the f2c BLAS/LAPACK are used (with or without Fortran compiler) or there is no Fortran compiler (and system BLAS/LAPACK is used)
     self.fblaslapack       = 0
     self.missingRoutines   = []
     self.separateBlas      = 1
@@ -119,14 +119,23 @@ class Configure(config.package.Package):
       foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
       if foundLapack:
         self.mangling = self.compilers.fortranMangling
+      self.framework.logPrint('Found Fortran mangling on BLAS/LAPACK which is '+self.compilers.fortranMangling)
     else:
-      self.framework.logPrint('Checking for cblaslapack namemangling')
+      self.framework.logPrint('Checking for no name mangling on BLAS/LAPACK')
       foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'ddot')
       foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['dgetrs', 'dgeev'])
       if foundBlas and foundLapack:
-        self.framework.logPrint('Found cblaslapack name mangling')
-        self.mangling = ''
+        self.framework.logPrint('Found no name mangling on BLAS/LAPACK')
+        self.mangling = 'unchanged'
         self.f2c = 1
+      else:
+        self.framework.logPrint('Checking for underscore name mangling on BLAS/LAPACK')
+        foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'ddot_')
+        foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['dgetrs_', 'dgeev_'])
+        if foundBlas and foundLapack:
+          self.framework.logPrint('Found underscore name mangling on BLAS/LAPACK')
+          self.mangling = 'underscore'
+          self.f2c = 1
     self.f2cpkg = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'f2cblaslapack311_id')
     return (foundBlas, foundLapack)
 
@@ -508,7 +517,10 @@ class Configure(config.package.Package):
       mangleFunc = hasattr(self.compilers, 'FC') and not self.f2c
       for baseName in ['gesvd','getrf','getrs','geev','gelss','syev','syevx','sygv','sygvx','getrf','potrf','getrs','potrs','stebz','pttrf','pttrs','stein','orgqr','stebz']:
         if self.f2c:
-          routine = 'd'+baseName+'_'
+          if self.mangling == 'underscore':
+            routine = 'd'+baseName+'_'
+          else:
+            routine = 'd'+baseName
         else:
           routine = 'd'+baseName
         oldLibs = self.compilers.LIBS
@@ -522,7 +534,10 @@ class Configure(config.package.Package):
     ''' used by other packages to see if a BLAS routine is available
         This is not really correct because other packages do not (usually) know about f2cblasLapack'''
     if self.f2c:
-      return self.libraries.check(self.dlib,routine)
+      if self.mangling == 'underscore':
+        return self.libraries.check(self.dlib,routine+'_')
+      else:
+        return self.libraries.check(self.dlib,routine)
     else:
       return self.libraries.check(self.dlib,routine,fortranMangle = hasattr(self.compilers, 'FC'))
 
