@@ -29,9 +29,9 @@ else:
 import logger
 
 class Script(logger.Logger):
-  def __init__(self, clArgs = None, argDB = None):
+  def __init__(self, clArgs = None, argDB = None, log = None):
     self.checkPython()
-    logger.Logger.__init__(self, clArgs, argDB)
+    logger.Logger.__init__(self, clArgs, argDB, log)
     self.shell = '/bin/sh'
     self.showHelp = 1
     return

@@ -270,17 +270,21 @@ class Logger(args.ArgumentProcessor):
     '''Return the directory containing this module
        - This has the problem that when we reload a module of the same name, this gets screwed up
          Therefore, we call it in the initializer, and stash it'''
-    if not hasattr(self, '_root_'):
+    #print '      In getRoot'
+    #print hasattr(self, '__root')
+    #print '      done checking'
+    if not hasattr(self, '__root'):
       import os
       import sys
 
       # Work around a bug with pdb in 2.3
       if hasattr(sys.modules[self.__module__], '__file__') and not os.path.basename(sys.modules[self.__module__].__file__) == 'pdb.py':
-        self._root_ = os.path.abspath(os.path.dirname(sys.modules[self.__module__].__file__))
+        self.__root = os.path.abspath(os.path.dirname(sys.modules[self.__module__].__file__))
       else:
-        self._root_ = os.getcwd()
-    return self._root_
+        self.__root = os.getcwd()
+    #print '      Exiting getRoot'
+    return self.__root
   def setRoot(self, root):
-    self._root_ = root
+    self.__root = root
     return
   root = property(getRoot, setRoot, doc = 'The directory containing this module')
