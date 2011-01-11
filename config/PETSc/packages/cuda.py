@@ -13,6 +13,12 @@ class Configure(PETSc.package.NewPackage):
     self.CUDAVersion   = '3.2'
     self.CUSPVersion   = '200' #Version 0.2.0
     self.ThrustVersion = '100400' #Version 1.4.0
+#
+#   obtain thrust and cusp with
+#   hg clone https://thrust.googlecode.com/hg/ thrust 
+#   hg clone https://cusp-library.googlecode.com/hg/ cusp
+#     put them in /usr/local/cuda
+#
 
     # Get Thrust from hg clone https://thrust.googlecode.com/hg/ thrust
     # Get CUSP from hg clone https://cusp-library.googlecode.com/hg/

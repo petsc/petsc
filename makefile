@@ -232,7 +232,7 @@ SCRIPTS    = bin/maint/builddist  bin/maint/wwwman bin/maint/xclude bin/maint/bu
 
 
 # Builds all the documentation - should be done every night
-alldoc: alldoc1 alldoc2
+alldoc: alldoc1 alldoc2 alldoc3
 
 # Build everything that goes into 'doc' dir except html sources
 alldoc1: chk_loc deletemanualpages chk_concepts_dir
@@ -256,6 +256,15 @@ alldoc1: chk_loc deletemanualpages chk_concepts_dir
 alldoc2: chk_loc
 	-${OMAKE} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
 	-bin/maint/update-docs.py ${PETSC_DIR} ${LOC}
+#
+# Builds HTML versions of Matlab scripts
+alldoc3: chk_loc
+	if  [ "${MATLAB_COMMAND}" != "" ]; then\
+          export MATLABPATH=${MATLABPATH}:${PETSC_DIR}/bin/matlab; \
+          cd ${PETSC_DIR}/bin/matlab; ${MATLAB_COMMAND} -nodisplay -nodesktop -r "generatehtml;exit" ; \
+          cd classes; ${MATLAB_COMMAND} -nodisplay -nodesktop -r "generatehtml;exit" ; \
+          cd examples/tutorials; ${MATLAB_COMMAND} -nodisplay -nodesktop -r "generatehtml;exit" ; \
+        fi
 
 alldocclean: deletemanualpages allcleanhtml
 
