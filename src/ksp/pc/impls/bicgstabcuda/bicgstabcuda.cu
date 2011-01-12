@@ -26,6 +26,28 @@ typedef struct {
   CUSPMATRIX* mat;
 } PC_BiCGStabCUDA;
 
+#undef __FUNCT__
+#define __FUNCT__ "PCBiCGStabCUDASetTolerance_BiCGStabCUDA"
+static PetscErrorCode PCBiCGStabCUDASetTolerance_BiCGStabCUDA(PC pc,PetscReal rtol)
+{
+  PC_BiCGStabCUDA *bicg = (PC_BiCGStabCUDA*)pc->data;
+
+  PetscFunctionBegin;
+  bicg->rtol = rtol;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBiCGStabCUDASetTolerance"
+PetscErrorCode PCBiCGStabCUDASetTolerance(PC pc, PetscReal rtol)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc, "PCBiCGStabCUDASetTolerance_C",(PC,PetscReal),(pc,rtol));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+  }
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -53,9 +75,6 @@ static PetscErrorCode PCSetUp_BiCGStabCUDA(PC pc)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUDA,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Currently only handles CUDA matrices");
-  /* defaults */
-  bicg->rtol = 1.e-1;
-  bicg->maxits = 100;
   try{
     ierr = MatCUDACopyToGPU(pc->pmat);CHKERRCUDA(ierr);
     gpustruct = (Mat_SeqAIJCUDA *)(pc->pmat->spptr);
@@ -134,8 +153,22 @@ static PetscErrorCode PCDestroy_BiCGStabCUDA(PC pc)
   ierr = PetscFree(bicg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions_BiCGStabCUDA"
+static PetscErrorCode PCSetFromOptions_BiCGStabCUDA(PC pc)
+{
+  PC_BiCGStabCUDA *bicg = (PC_BiCGStabCUDA*)pc->data;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead("BiCGStabCUDA options");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_bicgstabcuda_rtol","relative tolerance for BiCGStabCUDA preconditioner","PCBiCGStabCUDASetTolerance",bicg->rtol,&bicg->rtol,0);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* -------------------------------------------------------------------------- */
 
 
 EXTERN_C_BEGIN
@@ -151,8 +184,13 @@ PetscErrorCode  PCCreate_BiCGStabCUDA(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
    */
-  ierr      = PetscNewLog(pc,PC_BiCGStabCUDA,&bicg);CHKERRQ(ierr);
-  pc->data  = (void*)bicg;
+  ierr         = PetscNewLog(pc,PC_BiCGStabCUDA,&bicg);CHKERRQ(ierr);
+  /*
+     Set default values.  We don't actually want to set max iterations as far as I know, but the Cusp monitor requires them so we use a large number.
+   */
+  bicg->maxits = 1000;
+  bicg->rtol   = 1.e-1;
+  pc->data     = (void*)bicg;
   /*
       Set the pointers for the functions that are provided above.
       Now when the user-level routines (such as PCApply(), PCDestroy(), etc.)
@@ -164,11 +202,12 @@ PetscErrorCode  PCCreate_BiCGStabCUDA(PC pc)
   pc->ops->applytranspose      = 0;
   pc->ops->setup               = PCSetUp_BiCGStabCUDA;
   pc->ops->destroy             = PCDestroy_BiCGStabCUDA;
-  pc->ops->setfromoptions      = 0;
+  pc->ops->setfromoptions      = PCSetFromOptions_BiCGStabCUDA;
   pc->ops->view                = 0;
   pc->ops->applyrichardson     = 0;
   pc->ops->applysymmetricleft  = 0;
   pc->ops->applysymmetricright = 0;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBiCGStabCUDASetTolerance_C","PCBiCGStabCUDASetTolerance_BiCGStabCUDA",PCBiCGStabCUDASetTolerance_BiCGStabCUDA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
