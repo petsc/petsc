@@ -604,15 +604,26 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESVICreateIndexSets_RS"
-PetscErrorCode SNESVICreateIndexSets_RS(SNES snes,Vec X,Vec Xl, Vec Xu,IS* ISact,IS* ISinact)
-{
-  PetscErrorCode     ierr;
-  PetscInt           i,nlocal,ilow,ihigh,nloc_isact=0,nloc_isinact=0;
-  PetscInt          *idx_act,*idx_inact,i1=0,i2=0;
-  const PetscScalar *x,*xl,*xu,*f;
-  Vec                F = snes->vec_func;
+#define __FUNCT__ "SNESVIGetActiveSetIS"
+/*
+   SNESVIGetActiveSetIndices - Gets the global indices for the active set variables
 
+   Input parameter
+.  snes - the SNES context
+.  X    - the snes solution vector
+.  F    - the nonlinear function vector
+
+   Output parameter
+.  ISact - active set index set
+ */
+PetscErrorCode SNESVIGetActiveSetIS(SNES snes,Vec X,Vec F,IS* ISact)
+{
+  PetscErrorCode   ierr;
+  SNES_VI          *vi = (SNES_VI*)snes->data;
+  Vec               Xl=vi->xl,Xu=vi->xu;
+  const PetscScalar *x,*f,*xl,*xu;
+  PetscInt          *idx_act,i,nlocal,nloc_isact=0,ilow,ihigh,i1=0;
+  
   PetscFunctionBegin;
   ierr = VecGetLocalSize(X,&nlocal);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(X,&ilow,&ihigh);CHKERRQ(ierr);
@@ -620,28 +631,37 @@ PetscErrorCode SNESVICreateIndexSets_RS(SNES snes,Vec X,Vec Xl, Vec Xu,IS* ISact
   ierr = VecGetArrayRead(Xl,&xl);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Xu,&xu);CHKERRQ(ierr);
   ierr = VecGetArrayRead(F,&f);CHKERRQ(ierr);
-  /* Compute the sizes of the active and inactive sets */
+  /* Compute active set size */
   for (i=0; i < nlocal;i++) {
-    if (((x[i] > xl[i] + 1.e-8 || (f[i] < 0.0)) && ((x[i] < xu[i] - 1.e-8) || f[i] > 0.0))) nloc_isinact++;
-    else nloc_isact++;
+    if (!((x[i] > xl[i] + 1.e-8 || (f[i] < 0.0)) && ((x[i] < xu[i] - 1.e-8) || f[i] > 0.0))) nloc_isact++;
   }
+
   ierr = PetscMalloc(nloc_isact*sizeof(PetscInt),&idx_act);CHKERRQ(ierr);
-  ierr = PetscMalloc(nloc_isinact*sizeof(PetscInt),&idx_inact);CHKERRQ(ierr);
 
-  /* Creating the indexing arrays */
+  /* Set active set indices */
   for(i=0; i < nlocal; i++) {
-    if (((x[i] > xl[i] + 1.e-8 || (f[i] < 0.0)) && ((x[i] < xu[i] - 1.e-8) || f[i] > 0.0))) idx_inact[i2++] = ilow+i;
-    else idx_act[i1++] = ilow+i;
+    if (!((x[i] > xl[i] + 1.e-8 || (f[i] < 0.0)) && ((x[i] < xu[i] - 1.e-8) || f[i] > 0.0))) idx_act[i1++] = ilow+i;
   }
 
-  /* Create the index sets */
+   /* Create active set IS */
   ierr = ISCreateGeneral(((PetscObject)snes)->comm,nloc_isact,idx_act,PETSC_OWN_POINTER,ISact);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(((PetscObject)snes)->comm,nloc_isinact,idx_inact,PETSC_OWN_POINTER,ISinact);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Xl,&xl);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Xu,&xu);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(F,&f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESVICreateIndexSets_RS"
+PetscErrorCode SNESVICreateIndexSets_RS(SNES snes,Vec X,Vec F,IS* ISact,IS* ISinact)
+{
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = SNESVIGetActiveSetIS(snes,X,F,ISact);CHKERRQ(ierr);
+  ierr = ISComplement(*ISact,X->map->rstart,X->map->rend,ISinact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -803,7 +823,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
 
     /* Create active and inactive index sets */
-    ierr = SNESVICreateIndexSets_RS(snes,X,vi->xl,vi->xu,&IS_act,&IS_inact);CHKERRQ(ierr);
+    ierr = SNESVICreateIndexSets_RS(snes,X,F,&IS_act,&IS_inact);CHKERRQ(ierr);
 
     /* Create inactive set submatrices */
     ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
@@ -1611,6 +1631,7 @@ PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
   vi->xu = xu;
   PetscFunctionReturn(0);
 }
+
 /* -------------------------------------------------------------------------- */
 /*
    SNESSetFromOptions_VI - Sets various parameters for the SNESVI method.
