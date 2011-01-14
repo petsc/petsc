@@ -4,6 +4,23 @@
 
 /* ------------------------------------------------------------------------------------------*/
 
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetUpMatSolverPackage_Factor"
+PetscErrorCode PCFactorSetUpMatSolverPackage_Factor(PC pc)
+{
+  PC_Factor      *icc = (PC_Factor*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!pc->setupcalled && !((PC_Factor*)icc)->fact){
+    ierr = MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,((PC_Factor*)icc)->factortype,& ((PC_Factor*)icc)->fact);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetZeroPivot_Factor"
@@ -178,10 +195,9 @@ PetscErrorCode  PCFactorSetMatSolverPackage_Factor(PC pc,const MatSolverPackage 
     ierr = PetscStrcmp(stype,ltype,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package after PC has been setup or used");
   } else {
-    ierr = MatGetFactor(pc->pmat,stype,lu->factortype,&lu->fact);CHKERRQ(ierr); 
+    ierr = PetscFree(lu->solvertype);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(stype,&lu->solvertype);CHKERRQ(ierr);
   }
-  ierr = PetscFree(lu->solvertype);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(stype,&lu->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
