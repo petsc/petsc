@@ -189,6 +189,7 @@ slow,
 
 
 
+
         </span>what can I do to make it
 faster?</a></li>
       <li><a href="faq.html#log-summary">How can I
@@ -1072,7 +1073,8 @@ the
 Dirichlet
 rows
 but
-this results in a
+this
+results in a
 non-symmetric system. How can I apply Dirichlet boundary conditions
 but&nbsp; keep the
 matrix symmetric?<br>
@@ -1102,7 +1104,8 @@ and
 Mats
 to
 MATLAB
-or vice versa?<br>
+or
+vice versa?<br>
             </span><br>
             <span style="color: rgb(255, 0, 0);"><br>
             </span>There are five ways to work with PETSc and MATLAB<br>
@@ -1132,7 +1135,8 @@ side
 and
 PetscOpenSocket
 in
-bin/matlab for
+bin/matlab
+for
 access from the MATLAB side.</li>
               <li>You can save PETSc Vecs (not Mats) with the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
@@ -1145,7 +1149,8 @@ can
 then
 be
 loaded
-into MATLAB.</li>
+into
+MATLAB.</li>
               <li>We are just being to develop in <a
  href="../developers/index.html">petsc-dev</a> an API to call most of
 the PETSc function directly from MATLAB; we could use help in
@@ -1155,7 +1160,8 @@ developing this. See bin/matlab/classes/PetscInitialize.m<br>
             <br>
             <span style="color: rgb(255, 0, 0);"><a name="usingCython"></a>How
 do
-I get started with Cython so that I can extend petsc4py?<br>
+I
+get started with Cython so that I can extend petsc4py?<br>
             </span><br>
 Steps I used:
             <ol>
@@ -1165,7 +1171,8 @@ module</a></li>
               <li>Go through the simple example provided by Denis <a
  href="http://stackoverflow.com/questions/3046305/simple-wrapping-of-c-code-with-cython">here</a>.
 Note
-also the next comment that shows how to create numpy arrays in the
+also
+the next comment that shows how to create numpy arrays in the
 Cython and pass them back.</li>
               <li>Check out <a
  href="http://docs.cython.org/src/tutorial/numpy.html">this page</a>
@@ -1346,6 +1353,7 @@ in
 
 
 
+
           <a href="faq.html#slow">generating the
 matrix</a> or some other operation.</li>
         <li>There must be enough work for each process to
@@ -1381,6 +1389,7 @@ consider
 multigrid
 preconditioners
 like
+
 
 
           <a
@@ -1464,7 +1473,15 @@ work
 on
 my
 machine?</font> </a></p>
-      <p>For a uniprocessor job, just try&nbsp;the debugger
+      <p>On newer Mac OSX machines - one has to be in admin group&nbsp;
+to be able to use debugger</p>
+      <p>On newer UBUNTU linux machines - one has to disable <a
+ href="https://wiki.ubuntu.com/Security/Features#ptrace">ptrace_scop</a>
+with "sudo echo 0 &gt; /proc/sys/kernel/yama/ptrace_scope" - to get
+start in debugger working.<br>
+      </p>
+      <p>If start_in_debugger does not really work on your OS, for a
+uniprocessor job, just try&nbsp;the debugger
 directly, for example: gdb ex1. You can also use Totalview which is a
 good graphical parallel debugger.<br>
       </p>
@@ -1581,7 +1598,8 @@ passed
 in
 local
 and
-global sizes that do not make
+global
+sizes that do not make
 sense for the correct number of processors. For example if you pass in
 a local size of 2 and a global size of 100 and run on two processors,
 this cannot work since the sum of the local sizes is 4, not 100.</span></font><br>
@@ -1610,6 +1628,7 @@ problem.<br>
 &nbsp; <br>
 If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
 machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
+
 
 
 
@@ -1667,6 +1686,7 @@ that the matrix is singular. You can use -pc_factor_shift_nonzero or
 -pc_factor_shift_positive_definite,
 -[level]_pc_factor_shift_nonzero,&nbsp; </span></font><font
  style="color: rgb(0, 0, 0);" color="#ff0000">-[level]_pc_factor_shift_postive_definite
+
 
 
 

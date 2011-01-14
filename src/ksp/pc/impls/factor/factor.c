@@ -3,6 +3,29 @@
 #include "../src/ksp/pc/impls/factor/factor.h"  /*I "petscpc.h" I*/
 
 #undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetUpMatSolverPackage"
+/*@
+    PCFactorSetUpMatSolverPackage - Can be called after KSPSetOperators() or PCSetOperators(), causes MatGetFactor() to be called so then one may 
+       set the options for that particular factorization object.
+
+  Input Parameter:
+.  pc  - the preconditioner context
+
+  Notes: After you have called this function (which has to be after the KSPSetOperators() or PCSetOperators()) you can call PCFactorGetMatrix() and then set factor options on that matrix.
+
+.seealso: PCFactorSetMatSolverPackage(), PCFactorGetMatrix()
+
+@*/
+PetscErrorCode PCFactorSetUpMatSolverPackage(PC pc)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCFactorSetUpMatSolverPackage_C",(PC),(pc));CHKERRQ(ierr);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetZeroPivot"
 /*@
    PCFactorSetZeroPivot - Sets the size at which smaller pivots are declared to be zero

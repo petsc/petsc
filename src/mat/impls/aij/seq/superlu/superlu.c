@@ -223,7 +223,6 @@ PetscErrorCode MatDestroy_SuperLU(Mat A)
       Destroy_SuperNode_Matrix(&lu->L);
       Destroy_CompCol_Matrix(&lu->U);
     }
-    
   }
 
   ierr = PetscFree(lu->etree);CHKERRQ(ierr);
@@ -506,9 +505,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU){
     B->ops->lufactorsymbolic  = MatLUFactorSymbolic_SuperLU;
     B->ops->ilufactorsymbolic = MatLUFactorSymbolic_SuperLU; 
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
-  }
+  } SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
 
   B->ops->destroy          = MatDestroy_SuperLU;
   B->ops->view             = MatView_SuperLU;

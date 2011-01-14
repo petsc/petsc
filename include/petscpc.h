@@ -245,6 +245,7 @@ extern PetscErrorCode  PCFactorSetShiftAmount(PC,PetscReal);
 
 extern PetscErrorCode  PCFactorSetMatSolverPackage(PC,const MatSolverPackage);
 extern PetscErrorCode  PCFactorGetMatSolverPackage(PC,const MatSolverPackage*);
+extern PetscErrorCode  PCFactorSetUpMatSolverPackage(PC);
 
 extern PetscErrorCode  PCFactorSetFill(PC,PetscReal);
 extern PetscErrorCode  PCFactorSetColumnPivot(PC,PetscReal);

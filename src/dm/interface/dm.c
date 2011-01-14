@@ -185,7 +185,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMView"
-/*@
+/*@C
     DMView - Views a vector packer or DMDA.
 
     Collective on DM

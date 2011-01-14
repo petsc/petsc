@@ -33,7 +33,7 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL petsclogprintsummary_(PetscViewer *viewer,PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petsclogview_(PetscViewer *viewer,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);

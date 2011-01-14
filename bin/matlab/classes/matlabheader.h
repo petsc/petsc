@@ -141,6 +141,7 @@ int SNESSetJacobianMatlab(SNES,Mat,Mat,const char*,mxArray*);
 int SNESSolve(SNES,Vec,Vec);
 int SNESSetUp(SNES);
 int SNESVISetVariableBounds(SNES,Vec,Vec);
+int SNESVIGetActiveSetIS(SNES,Vec,Vec,IS*);
 int SNESView(SNES,PetscViewer);
 int SNESDestroy(SNES);
 int SNESMonitorSetMatlab(SNES,const char*,mxArray*);
