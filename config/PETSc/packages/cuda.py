@@ -75,8 +75,12 @@ class Configure(PETSc.package.NewPackage):
       raise RuntimeError('Must use either single or double precision with CUDA') 
     else:
       self.setCompilers.pushLanguage('CUDA')
-      if self.scalartypes.precision == 'double':
-        self.setCompilers.addCompilerFlag('-arch sm_13')
+#Not setting -arch if with-cuda-arch is not specified uses nvcc default architecture
+      if 'with-cuda-arch' in self.framework.argDB:
+        if not self.framework.argDB['with-cuda-arch'] in ['compute_10', 'compute_11', 'compute_12', 'compute_13', 'compute_20', 'sm_10', 'sm_11', 'sm_12', 'sm_13', 'sm_20', 'sm_21']:
+          raise RuntimeError('CUDA Error: specified CUDA architecture invalid.  Example of valid architecture: \'-with-cuda-arch=sm_13\'')
+        else:
+          self.setCompilers.addCompilerFlag('-arch='+ self.framework.argDB['with-cuda-arch'])
       self.setCompilers.popLanguage()
     self.checkSizeofVoidP()
     return
