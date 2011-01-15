@@ -928,7 +928,7 @@ static PetscErrorCode MatNestSetOps_Private(struct _MatOps* ops)
   ops->multhermitiantransposeadd = 0;
   ops->getmultiprocblock         = 0;
   /* 124 */
-  ops->dummy1                 = 0;
+
   ops->dummy2                 = 0;
   ops->dummy3                 = 0;
   ops->dummy4                 = 0;

@@ -37,6 +37,31 @@ PetscScalar  MatSetValue_Value = 0.0;
 const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT","MatFactorType","MAT_FACTOR_",0};
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatFindNonzeroRows"
+/*@C
+      MatFindNonzeroRows - Locate all rows that are not completely zero in the matrix
+
+  Input Parameter:
+.    A  - the matrix 
+
+  Output Parameter:
+.    keptrows - the rows that are not completely zero
+
+ @*/
+PetscErrorCode MatFindNonzeroRows(Mat mat,IS *keptrows)
+{
+  PetscErrorCode    ierr;
+
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!mat->ops->findnonzerorows) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Not coded for this matrix type");
+  ierr = (*mat->ops->findnonzerorows)(mat,keptrows);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonalBlock"
 /*@
    MatGetDiagonalBlock - Returns the part of the matrix associated with the on-process coupling

@@ -12,6 +12,51 @@
 #include "petscbt.h"
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatFindNonzeroRows_SeqAIJ"
+PetscErrorCode MatFindNonzeroRows_SeqAIJ(Mat A,IS *keptrows)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  const MatScalar   *aa;
+  PetscInt          m=A->rmap->n,cnt = 0;
+  const PetscInt    *ii;
+  PetscInt          n,i,j,*rows;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  *keptrows = 0;
+  ii        = a->i;
+  for (i=0; i<m; i++) {
+    n   = ii[i+1] - ii[i]; 
+    if (!n) {
+      cnt++;
+      goto ok1;
+    }
+    aa  = a->a + ii[i];
+    for (j=0; j<n; j++) {
+      if (aa[j] != 0.0) goto ok1;
+    }
+    cnt++;
+    ok1:;
+  }
+  if (!cnt) PetscFunctionReturn(0);
+  ierr = PetscMalloc((A->rmap->n-cnt)*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  cnt  = 0;
+  for (i=0; i<m; i++) {
+    n   = ii[i+1] - ii[i]; 
+    if (!n) continue;
+    aa  = a->a + ii[i];
+    for (j=0; j<n; j++) {
+      if (aa[j] != 0.0) {
+        rows[cnt++] = i;
+        break;
+      }
+    }
+  }
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,cnt,rows,PETSC_OWN_POINTER,keptrows);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatDiagonalSet_SeqAIJ"
 PetscErrorCode  MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
 {
@@ -2753,7 +2798,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        0,
        0,
-       MatGetMultiProcBlock_SeqAIJ
+       MatGetMultiProcBlock_SeqAIJ,
+/*124*/MatFindNonzeroRows_SeqAIJ
 };
 
 EXTERN_C_BEGIN
@@ -3961,57 +4007,3 @@ void PETSC_STDCALL matsetvaluesseqaij_(Mat *AA,PetscInt *mm,const PetscInt im[],
 } 
 EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatSeqAIJFindZeroRows"
-/*@C
-      MatSeqAIJFindZeroRows - Locate all rows that are not completely zero in the matrix
-
-  Input Parameter:
-.    A  - the matrix 
-
-  Output Parameter:
-.    keptrows - the rows that are not completely zero
-
- @*/
-PetscErrorCode MatSeqAIJFindZeroRows(Mat A,IS *keptrows)
-{
-  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
-  const MatScalar   *aa;
-  PetscInt          m=A->rmap->n,cnt = 0;
-  const PetscInt    *ii;
-  PetscInt          n,i,j,*rows;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  *keptrows = 0;
-  ii        = a->i;
-  for (i=0; i<m; i++) {
-    n   = ii[i+1] - ii[i]; 
-    if (!n) {
-      cnt++;
-      goto ok1;
-    }
-    aa  = a->a + ii[i];
-    for (j=0; j<n; j++) {
-      if (aa[j] != 0.0) goto ok1;
-    }
-    cnt++;
-    ok1:;
-  }
-  if (!cnt) PetscFunctionReturn(0);
-  ierr = PetscMalloc((A->rmap->n-cnt)*sizeof(PetscInt),&rows);CHKERRQ(ierr);
-  cnt  = 0;
-  for (i=0; i<m; i++) {
-    n   = ii[i+1] - ii[i]; 
-    if (!n) continue;
-    aa  = a->a + ii[i];
-    for (j=0; j<n; j++) {
-      if (aa[j] != 0.0) {
-        rows[cnt++] = i;
-        break;
-      }
-    }
-  }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,cnt,rows,PETSC_OWN_POINTER,keptrows);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}

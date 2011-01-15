@@ -827,7 +827,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
 
     /* Create inactive set submatrices */
     ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
-    ierr = MatSeqAIJFindZeroRows(jac_inact_inact,&keptrows);CHKERRQ(ierr);
+    ierr = MatFindNonzeroRows(jac_inact_inact,&keptrows);CHKERRQ(ierr);
     if (keptrows) {
       PetscInt       cnt,*nrows,k;
       const PetscInt *krows,*inact;
