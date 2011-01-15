@@ -135,8 +135,9 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDAGetArrayReadWrite(Vec v, CUSPARRAY** a
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *a   = 0;
   ierr = VecCUDACopyToGPU(v);CHKERRQ(ierr);
-  *a = ((Vec_CUDA *)v->spptr)->GPUarray;
+  *a   = ((Vec_CUDA *)v->spptr)->GPUarray;
   PetscFunctionReturn(0);
 }
 
@@ -161,8 +162,9 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDAGetArrayRead(Vec v, CUSPARRAY** a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *a   = 0;
   ierr = VecCUDACopyToGPU(v);CHKERRQ(ierr);
-  *a = ((Vec_CUDA *)v->spptr)->GPUarray;
+  *a   = ((Vec_CUDA *)v->spptr)->GPUarray;
   PetscFunctionReturn(0);
 }
 
@@ -181,8 +183,9 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDAGetArrayWrite(Vec v, CUSPARRAY** a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *a   = 0;
   ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
-  *a = ((Vec_CUDA *)v->spptr)->GPUarray;
+  *a   = ((Vec_CUDA *)v->spptr)->GPUarray;
   PetscFunctionReturn(0);
 }
 
