@@ -23,6 +23,7 @@ PetscErrorCode PCFactorSetUpMatSolverPackage(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscTryMethod(pc,"PCFactorSetUpMatSolverPackage_C",(PC),(pc));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
