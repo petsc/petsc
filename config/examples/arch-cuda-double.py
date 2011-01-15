@@ -14,6 +14,8 @@ if __name__ == '__main__':
     'PETSC_ARCH=arch-cuda-double',
     '--with-precision=double',
     '--with-fc=0',
-    '--with-clanguage=c'
+    '--with-clanguage=c',
+    '--with-cuda-arch=sm_13'
+
   ]
   configure.petsc_configure(configure_options)

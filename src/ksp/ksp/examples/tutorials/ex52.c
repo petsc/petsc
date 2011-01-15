@@ -22,7 +22,7 @@ int main(int argc,char **args)
   PetscReal      norm;     /* norm of solution error */
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
   PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE,flg_ilu=PETSC_FALSE;
   PetscScalar    v;
 #if defined(PETSC_USE_LOG)
   PetscLogStage  stage;
@@ -148,16 +148,17 @@ int main(int argc,char **args)
           are equivalent to these procedual calls 
   */
 #ifdef PETSC_HAVE_MUMPS 
-  PetscBool  flg_lu=PETSC_FALSE,flg_ch=PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mumps_lu",&flg_lu,PETSC_NULL);CHKERRQ(ierr);
+  PetscBool  flg_ch=PETSC_FALSE;
+  flg = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mumps_lu",&flg,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mumps_ch",&flg_ch,PETSC_NULL);CHKERRQ(ierr);
-  if (flg_lu || flg_ch){
+  if (flg || flg_ch){
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
     PC       pc;
     Mat      F;
     PetscInt ival,icntl;
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    if (flg_lu){
+    if (flg){
       ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
     } else if (flg_ch) {
       ierr = MatSetOption(A,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr); /* set MUMPS id%SYM=1 */
@@ -178,21 +179,50 @@ int main(int argc,char **args)
           are equivalent to these procedual calls 
   */
 #ifdef PETSC_HAVE_SUPERLU
-  PetscBool  flg_ilu=PETSC_FALSE;
+  flg_ilu = PETSC_FALSE;
+  flg     = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_superlu_lu",&flg,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_superlu_ilu",&flg_ilu,PETSC_NULL);CHKERRQ(ierr);
-  if (flg_ilu){
+  if (flg || flg_ilu){
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
     PC       pc;
     Mat      F;
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    ierr = PCSetType(pc,PCILU);CHKERRQ(ierr); 
+    if (flg){
+      ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+    } else if (flg_ilu) {
+      ierr = PCSetType(pc,PCILU);CHKERRQ(ierr); 
+    }
     ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
-    ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr);
+    ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
     ierr = MatSuperluSetILUDropTol(F,1.e-8);CHKERRQ(ierr);
   }
 #endif
 
+  /*
+    Example of how to use procedural calls that are equivalent to 
+          '-ksp_type preonly -pc_type lu/ilu -pc_factor_mat_solver_package petsc' 
+  */
+  flg     = PETSC_FALSE;
+  flg_ilu = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_petsc_lu",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_petsc_ilu",&flg_ilu,PETSC_NULL);CHKERRQ(ierr);
+  if (flg || flg_ilu){
+    ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
+    PC       pc;
+    Mat      F;
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    if (flg){
+      ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+    } else if (flg_ilu) {
+      ierr = PCSetType(pc,PCILU);CHKERRQ(ierr); 
+    }
+    ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERPETSC);CHKERRQ(ierr);
+    ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
+    ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
+  }
+  
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

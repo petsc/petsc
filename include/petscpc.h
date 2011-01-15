@@ -397,6 +397,7 @@ extern PetscErrorCode  PCPythonSetType(PC,const char[]);
 extern PetscErrorCode  PCSetDM(PC,DM);
 extern PetscErrorCode  PCGetDM(PC,DM*);
 
+extern PetscErrorCode  PCBiCGStabCUDASetTolerance(PC,PetscReal);
 
 PETSC_EXTERN_CXX_END
 
