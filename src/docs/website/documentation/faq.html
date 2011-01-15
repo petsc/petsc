@@ -138,6 +138,8 @@ SNESSetFromOptions() or KSPSetFromOptions() reset all the parameters I
 set or how come TS/SNES/KSPSetXXX() don't seem to work?</a></li>
         <li><a href="faq.html#makefiles">Can I use my own makefiles or
 rules for compiling code, rather than PETSc's?</a></li>
+        <li><a href="faq.html#cmake">Can I use CMake to build my own
+project that depends on PETSc?</a></li>
         <li><a href="faq.html#carriagereturns">How can I put carriage
 returns in PetscPrintf() statements from Fortran?</a></li>
         <li><a href="faq.html#functionjacobian">Everyone knows that
@@ -894,13 +896,21 @@ XXXSetType(obj,type) and hardwire the type at that point.<br>
             <br>
             <br>
             <br>
-            <a name="setfromoptions"></a><span
+            <a name="makefiles"></a><span
  style="color: rgb(255, 0, 0);">Can I use my own makefiles or rules for
 compiling code, instead of using PETSc's?</span><br>
             <br>
 Yes, see the section of the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manual.pdf">users
 manual</a> called Makefiles <br>
+            <br>
+            <a name="cmake"></a><span style="color: rgb(255, 0, 0);">
+              Can I use CMake to build my own project that depends on
+              PETSc?
+            </span><br>
+            <br>
+            Use the FindPETSc.cmake module from <a href="https://github.com/jedbrown/cmake-modules/">this repository</a>.  See the CMakeLists.txt from <a href="https://github.com/jedbrown/dohp">Dohp</a> for example usage.
+            <br>
             <br>
             <a name="carriagereturns"></a><span
  style="color: rgb(255, 0, 0);">How can I put carriage returns in
