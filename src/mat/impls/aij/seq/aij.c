@@ -12,6 +12,36 @@
 #include "petscbt.h"
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatFindZeroDiagonals_SeqAIJ"
+PetscErrorCode MatFindZeroDiagonals_SeqAIJ(Mat A,IS *zrows)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  const MatScalar   *aa = a->a;
+  PetscInt          i,m=A->rmap->n,cnt = 0;
+  const PetscInt    *jj = a->j,*diag;
+  PetscInt          *rows;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
+  diag = a->diag;
+  for (i=0; i<m; i++) {
+    if ((jj[diag[i]] != i) || (aa[diag[i]] == 0.0)) {
+      cnt++;
+    }
+  }
+  ierr = PetscMalloc(cnt*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  cnt  = 0;
+  for (i=0; i<m; i++) {
+    if ((jj[diag[i]] != i) || (aa[diag[i]] == 0.0)) {
+      rows[cnt++] = i;
+    }
+  }
+  ierr = ISCreateGeneral(((PetscObject)A)->comm,cnt,rows,PETSC_OWN_POINTER,zrows);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatFindNonzeroRows_SeqAIJ"
 PetscErrorCode MatFindNonzeroRows_SeqAIJ(Mat A,IS *keptrows)
 {
@@ -2754,7 +2784,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        0,
        0,
-/*79*/ 0,
+/*79*/ MatFindZeroDiagonals_SeqAIJ,
        0,
        0,
        0,

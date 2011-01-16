@@ -25,26 +25,26 @@ struct _PC_FieldSplitLink {
 };
 
 typedef struct {
-  PCCompositeType   type;
-  PetscBool         defaultsplit; /* Flag for a system with a set of 'k' scalar fields with the same layout (and bs = k) */
-  PetscBool         splitdefined; /* Flag is set after the splits have been defined, to prevent more splits from being added */
-  PetscBool         realdiagonal; /* Flag to use the diagonal blocks of mat preconditioned by pmat, instead of just pmat */
-  PetscInt          bs;           /* Block size for IS and Mat structures */
-  PetscInt          nsplits;      /* Number of field divisions defined */
-  Vec               *x,*y,w1,w2;
-  Mat               *mat;         /* The diagonal block for each split */
-  Mat               *pmat;        /* The preconditioning diagonal block for each split */
-  Mat               *Afield;      /* The rows of the matrix associated with each split */
-  PetscBool         issetup;
+  PCCompositeType                    type;
+  PetscBool                          defaultsplit; /* Flag for a system with a set of 'k' scalar fields with the same layout (and bs = k) */
+  PetscBool                          splitdefined; /* Flag is set after the splits have been defined, to prevent more splits from being added */
+  PetscBool                          realdiagonal; /* Flag to use the diagonal blocks of mat preconditioned by pmat, instead of just pmat */
+  PetscInt                           bs;           /* Block size for IS and Mat structures */
+  PetscInt                           nsplits;      /* Number of field divisions defined */
+  Vec                                *x,*y,w1,w2;
+  Mat                                *mat;         /* The diagonal block for each split */
+  Mat                                *pmat;        /* The preconditioning diagonal block for each split */
+  Mat                                *Afield;      /* The rows of the matrix associated with each split */
+  PetscBool                          issetup;
   /* Only used when Schur complement preconditioning is used */
-  Mat               B;            /* The (0,1) block */
-  Mat               C;            /* The (1,0) block */
-  Mat               schur;        /* The Schur complement S = D - C A^{-1} B */
-  Mat               schur_user;   /* User-provided preconditioning matrix for the Schur complement */
-  PCFieldSplitSchurPreType schurpre; /* Determines which preconditioning matrix is used for the Schur complement */
+  Mat                                B;            /* The (0,1) block */
+  Mat                                C;            /* The (1,0) block */
+  Mat                                schur;        /* The Schur complement S = D - C A^{-1} B */
+  Mat                                schur_user;   /* User-provided preconditioning matrix for the Schur complement */
+  PCFieldSplitSchurPreType           schurpre; /* Determines which preconditioning matrix is used for the Schur complement */
   PCFieldSplitSchurFactorizationType schurfactorization;
-  KSP               kspschur;     /* The solver for S */
-  PC_FieldSplitLink head;
+  KSP                                kspschur;     /* The solver for S */
+  PC_FieldSplitLink                  head;
 } PC_FieldSplit;
 
 /* 
@@ -205,7 +205,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   PC_FieldSplit     *jac  = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilink = jac->head;
-  PetscBool         flg = PETSC_FALSE;
+  PetscBool         flg = PETSC_FALSE,stokes = PETSC_FALSE;
   PetscInt          i;
 
   PetscFunctionBegin;
@@ -237,20 +237,34 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       }
 
       ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_default",&flg,PETSC_NULL);CHKERRQ(ierr);
-      if (!flg) {
-        /* Allow user to set fields from command line,  if bs was known at the time of PCSetFromOptions_FieldSplit()
-         then it is set there. This is not ideal because we should only have options set in XXSetFromOptions(). */
-        ierr = PCFieldSplitSetRuntimeSplits_Private(pc);CHKERRQ(ierr);
-        if (jac->splitdefined) {ierr = PetscInfo(pc,"Splits defined using the options database\n");CHKERRQ(ierr);}
-      }
-      if (flg || !jac->splitdefined) {
-        ierr = PetscInfo(pc,"Using default splitting of fields\n");CHKERRQ(ierr);
-        for (i=0; i<jac->bs; i++) {
-          char splitname[8];
-          ierr = PetscSNPrintf(splitname,sizeof splitname,"%D",i);CHKERRQ(ierr);
-          ierr = PCFieldSplitSetFields(pc,splitname,1,&i);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_stokes",&stokes,PETSC_NULL);CHKERRQ(ierr);
+      if (stokes) {
+        IS       zerodiags,rest;
+        PetscInt nmin,nmax;
+
+        ierr = MatGetOwnershipRange(pc->mat,&nmin,&nmax);CHKERRQ(ierr);
+        ierr = MatFindZeroDiagonals(pc->mat,&zerodiags);CHKERRQ(ierr);
+        ierr = ISComplement(zerodiags,nmin,nmax,&rest);CHKERRQ(ierr);
+        ierr = PCFieldSplitSetIS(pc,"0",rest);CHKERRQ(ierr);
+        ierr = PCFieldSplitSetIS(pc,"1",zerodiags);CHKERRQ(ierr);
+        ierr = ISDestroy(zerodiags);CHKERRQ(ierr);
+        ierr = ISDestroy(rest);CHKERRQ(ierr);
+      } else {
+        if (!flg) {
+          /* Allow user to set fields from command line,  if bs was known at the time of PCSetFromOptions_FieldSplit()
+           then it is set there. This is not ideal because we should only have options set in XXSetFromOptions(). */
+          ierr = PCFieldSplitSetRuntimeSplits_Private(pc);CHKERRQ(ierr);
+          if (jac->splitdefined) {ierr = PetscInfo(pc,"Splits defined using the options database\n");CHKERRQ(ierr);}
         }
-        jac->defaultsplit = PETSC_TRUE;
+        if (flg || !jac->splitdefined) {
+          ierr = PetscInfo(pc,"Using default splitting of fields\n");CHKERRQ(ierr);
+          for (i=0; i<jac->bs; i++) {
+            char splitname[8];
+            ierr = PetscSNPrintf(splitname,sizeof splitname,"%D",i);CHKERRQ(ierr);
+            ierr = PCFieldSplitSetFields(pc,splitname,1,&i);CHKERRQ(ierr);
+          }
+          jac->defaultsplit = PETSC_TRUE;
+        }
       }
     }
   } else if (jac->nsplits == 1) {
@@ -1344,6 +1358,16 @@ EXTERN_C_END
       Symmetric Gauss-Seidel:  x_1 = x_1 + A^(b_1 - A x_1 - B x_2)    variant  x_1 = x_1 + A^(b_1 - Ap x_1 - Bp x_2)
           Interestingly this form is not actually a symmetric matrix, the symmetric version is 
                               x_1 = A^(b_1 - B x_2)      variant x_1 = A^(b_1 - Bp x_2)
+
+     Schur complement preconditioner 
+         the preconditioner is 
+                 (I   -B inv(A)) ( inv(A)   0    ) (I         0  )
+                 (0    I       ) (   0    inv(S) ) (-C inv(A) I  )
+         where the action of inv(A) is applied using the KSP solver with prefix -fieldsplit_0_. The action of 
+         inv(S) is computed using the KSP solver with prefix -schur_. For PCFieldSplitGetKSP() when field number is
+         0 it returns the KSP associated with -fieldsplit_0_ while field number 1 gives -fieldsplit_1_ KSP. By default
+         D is used to construct a preconditioner for S, use PCFieldSplitSchurPrecondition() to turn on or off this
+         option.
 
    Level: intermediate
 

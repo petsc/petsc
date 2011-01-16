@@ -37,6 +37,7 @@ int PetscViewerDestroy(PetscViewer);
 int PetscOptionsView(PetscViewer);
 int PetscOptionsSetValue(const char*,const char*);
 int PetscOptionsClearValue(const char*);
+int PetscOptionsInsertString(const char*);
 
 typedef PetscPointer PetscObject;
 int PetscObjectsView(PetscViewer);
