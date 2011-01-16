@@ -2,6 +2,7 @@
 
 #include "../src/snes/impls/vi/viimpl.h" /*I "petscsnes.h" I*/
 #include "../include/private/kspimpl.h"
+#include "../include/private/matimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESMonitorVI"
@@ -825,6 +826,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     if (keptrows) {
       PetscInt       cnt,*nrows,k;
       const PetscInt *krows,*inact;
+      PetscInt       rstart=jac_inact_inact->rmap->rstart;
 
       ierr = MatDestroy(jac_inact_inact);CHKERRQ(ierr);
       ierr = ISDestroy(IS_act);CHKERRQ(ierr);
@@ -834,15 +836,15 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
       ierr = ISGetIndices(IS_inact,&inact);CHKERRQ(ierr);
       ierr = PetscMalloc(cnt*sizeof(PetscInt),&nrows);CHKERRQ(ierr);
       for (k=0; k<cnt; k++) {
-        nrows[k] = inact[krows[k]];
+        nrows[k] = inact[krows[k]-rstart];
       }
       ierr = ISRestoreIndices(keptrows,&krows);CHKERRQ(ierr);
       ierr = ISRestoreIndices(IS_inact,&inact);CHKERRQ(ierr);
       ierr = ISDestroy(keptrows);CHKERRQ(ierr);
       ierr = ISDestroy(IS_inact);CHKERRQ(ierr);
      
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,cnt,nrows,PETSC_OWN_POINTER,&IS_inact);CHKERRQ(ierr);
-      ierr = ISComplement(IS_inact,0,F->map->n,&IS_act);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_WORLD,cnt,nrows,PETSC_OWN_POINTER,&IS_inact);CHKERRQ(ierr);
+      ierr = ISComplement(IS_inact,F->map->rstart,F->map->rend,&IS_act);CHKERRQ(ierr);
       ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
     }
 
