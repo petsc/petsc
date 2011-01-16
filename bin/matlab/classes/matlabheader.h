@@ -21,6 +21,7 @@ int PetscLogStagePop(void);
 
 typedef int PetscBool;
 typedef int InsertMode;
+typedef int CopyMode;
 typedef long int PetscPointer;
 
 typedef PetscPointer PetscViewer;
@@ -46,7 +47,7 @@ char* PetscObjectsGetObjectMatlab(const char*,PetscObject*);
 typedef PetscPointer IS;
 int ISCreate(MPI_Comm,IS *);
 int ISSetType(IS,const char*);
-int ISGeneralSetIndices(IS,int,const int*);
+int ISGeneralSetIndices(IS,int,const int[],CopyMode);
 int ISView(IS,PetscViewer);
 int ISDestroy(IS);
 
