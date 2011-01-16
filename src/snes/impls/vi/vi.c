@@ -753,14 +753,12 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
 { 
   SNES_VI          *vi = (SNES_VI*)snes->data;
   PetscErrorCode    ierr;
-  PetscInt          maxits,i,lits,Nis_inact_prev;
+  PetscInt          maxits,i,lits;
   PetscBool         lssucceed;
   MatStructure      flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal         fnorm,gnorm,xnorm=0,ynorm;
   Vec                Y,X,F,G,W;
   KSPConvergedReason kspreason;
-  KSP                snesksp;
-  Mat                Amat;
 
   PetscFunctionBegin;
   snes->numFailures            = 0;
@@ -773,11 +771,6 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
   Y		= snes->work[0];	/* work vectors */
   G		= snes->work[1];
   W		= snes->work[2];
-
-  /* Get the inactive set size from the previous snes solve */
-  ierr = SNESGetKSP(snes,&snesksp);CHKERRQ(ierr);
-  ierr = KSPGetOperators(snesksp,&Amat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatGetSize(Amat,&Nis_inact_prev,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
@@ -811,10 +804,11 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
 
     IS         IS_act,IS_inact; /* _act -> active set _inact -> inactive set */
     VecScatter scat_act,scat_inact;
-    PetscInt   nis_act,nis_inact,Nis_inact;
+    PetscInt   nis_act,nis_inact;
     Vec        Y_act,Y_inact,F_inact;
     Mat        jac_inact_inact,prejac_inact_inact;
     IS         keptrows;
+    PetscBool  isequal;
 
     /* Call general purpose update function */
     if (snes->ops->update) {
@@ -825,7 +819,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     /* Create active and inactive index sets */
     ierr = SNESVICreateIndexSets_RS(snes,X,F,&IS_act,&IS_inact);CHKERRQ(ierr);
 
-    /* Create inactive set submatrices */
+    /* Create inactive set submatrix */
     ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
     ierr = MatFindNonzeroRows(jac_inact_inact,&keptrows);CHKERRQ(ierr);
     if (keptrows) {
@@ -855,7 +849,6 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     /* Get sizes of active and inactive sets */
     ierr = ISGetLocalSize(IS_act,&nis_act);CHKERRQ(ierr);
     ierr = ISGetLocalSize(IS_inact,&nis_inact);CHKERRQ(ierr);
-    ierr = ISGetSize(IS_inact,&Nis_inact);CHKERRQ(ierr);
 
     /* Create active and inactive set vectors */
     ierr = SNESVICreateSubVectors(snes,nis_inact,&F_inact);CHKERRQ(ierr);
@@ -882,7 +875,8 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
       ierr = MatGetSubMatrix(snes->jacobian_pre,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&prejac_inact_inact);CHKERRQ(ierr);
     } else prejac_inact_inact = jac_inact_inact;
 
-    if (Nis_inact != Nis_inact_prev) {
+    ierr = ISEqual(vi->IS_inact_prev,IS_inact,&isequal);CHKERRQ(ierr);
+    if (!isequal) {
       ierr = SNESVIResetPCandKSP(snes,jac_inact_inact,prejac_inact_inact);CHKERRQ(ierr);
     }
     
@@ -908,12 +902,15 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     ierr = VecScatterDestroy(scat_act);CHKERRQ(ierr);
     ierr = VecScatterDestroy(scat_inact);CHKERRQ(ierr);
     ierr = ISDestroy(IS_act);CHKERRQ(ierr);
+    if (!isequal) {
+      ierr = ISDestroy(vi->IS_inact_prev);CHKERRQ(ierr);
+      ierr = ISDuplicate(IS_inact,&vi->IS_inact_prev);CHKERRQ(ierr);
+    }
     ierr = ISDestroy(IS_inact);CHKERRQ(ierr);
     ierr = MatDestroy(jac_inact_inact);CHKERRQ(ierr);
     if (snes->jacobian != snes->jacobian_pre) {
       ierr = MatDestroy(prejac_inact_inact);CHKERRQ(ierr);
     }
-    Nis_inact_prev = Nis_inact;
     ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
     ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
@@ -1023,6 +1020,18 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
     if ((i_start[0] != i_start[1]) || (i_start[0] != i_start[2]) || (i_end[0] != i_end[1]) || (i_end[0] != i_end[2]))
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Distribution of lower bound, upper bound and the solution vector should be identical across all the processors.");
   }
+  if (snes->ops->solve == SNESSolveVI_RS) {
+    /* Set up previous active index set for the first snes solve 
+       vi->IS_inact_prev = 0,1,2,....N */
+    PetscInt *indices;
+    PetscInt  i,n,rstart,rend;
+
+    ierr = VecGetOwnershipRange(snes->vec_sol,&rstart,&rend);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(snes->vec_sol,&n);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+    for(i=0;i < n; i++) indices[i] = rstart + i;
+    ierr = ISCreateGeneral(((PetscObject)snes)->comm,n,indices,PETSC_OWN_POINTER,&vi->IS_inact_prev);
+  }
 
   if (snes->ops->solve != SNESSolveVI_RS) {
     ierr = VecDuplicate(snes->vec_sol, &vi->dpsi);CHKERRQ(ierr);
@@ -1031,7 +1040,6 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
     ierr = VecDuplicate(snes->vec_sol, &vi->Db); CHKERRQ(ierr);
     ierr = VecDuplicate(snes->vec_sol, &vi->z);CHKERRQ(ierr);
     ierr = VecDuplicate(snes->vec_sol, &vi->t); CHKERRQ(ierr);
-
   }
   PetscFunctionReturn(0);
 }
@@ -1061,6 +1069,9 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
     ierr = VecDestroyVecs(snes->work,snes->nwork);CHKERRQ(ierr);
     snes->nwork = 0;
     snes->work  = PETSC_NULL;
+  }
+  if (snes->ops->solve == SNESSolveVI_RS) {
+    ierr = ISDestroy(vi->IS_inact_prev);
   }
 
   if (snes->ops->solve != SNESSolveVI_RS) {

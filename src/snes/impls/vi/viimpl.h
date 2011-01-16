@@ -36,9 +36,12 @@ typedef struct {
   Vec                      t;    /* B subdifferential work vector */
   Vec                      xl;            /* lower bound on variables */
   Vec                      xu;            /* upper bound on variables */
-  PetscBool                usersetxbounds; /* flag to indicate whether the user has set bounds on variables */
+  PetscBool                usersetxbounds; /* flag to indicate whether the user 
+                                              has set bounds on variables */
 
   PetscScalar             norm_d;         /* two norm of the descent direction */
+  IS                      IS_inact_prev; /* Inctive set IS for the previous iteration 
+                                          or previous snes solve */
 
   /* Tolerance to check whether the constraint is satisfied */
   PetscReal             const_tol;
