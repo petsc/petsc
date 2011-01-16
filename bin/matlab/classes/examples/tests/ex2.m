@@ -12,7 +12,7 @@ vec = PetscVec();
 vec.SetType('seq');
 vec.SetSizes(10,10);
 vec.SetValues(1:10);
-vec.SetValues([1,2],[11.5,12.5],PetscObject.ADD_VALUES);
+vec.SetValues([1,2],[11.5,12.5],Petsc.ADD_VALUES);
 vec.AssemblyBegin();
 vec.AssemblyEnd();
 values = vec.GetValues([2 4])
@@ -33,7 +33,7 @@ vec = PetscVec([2 3.1 4.5]);
 vec.View(viewer);
 vec.Destroy();
 
-is = PetscISCreateGeneral([1 2 5]);
+is = PetscIS([1 2 5]);
 is.View(viewer);
 is.Destroy();
 
@@ -52,7 +52,7 @@ b = PetscVec();
 b.SetType('seq');
 b.SetSizes(10,10);
 b.SetValues(1:10);
-b.SetValues([1,2],[11.5,12.5],PetscObject.ADD_VALUES);
+b.SetValues([1,2],[11.5,12.5],Petsc.ADD_VALUES);
 b.AssemblyBegin();
 b.AssemblyEnd();
 x = b.Duplicate();
