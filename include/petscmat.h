@@ -1721,11 +1721,12 @@ extern PetscErrorCode  MatMumpsSetIcntl(Mat,PetscInt,PetscInt);
 extern PetscErrorCode  MatSuperluSetILUDropTol(Mat,PetscReal);
 #endif
 
-extern PetscErrorCode  MatCreateNest(MPI_Comm comm,PetscInt,const IS[],PetscInt,const IS[],const Mat[],Mat*);
-extern PetscErrorCode  MatNestGetSize(Mat A,PetscInt *M,PetscInt *N);
-extern PetscErrorCode  MatNestGetSubMats(Mat A,PetscInt *M,PetscInt *N,Mat ***mat);
-extern PetscErrorCode  MatNestGetSubMat(Mat A,PetscInt idxm,PetscInt jdxm,Mat *sub);
-extern PetscErrorCode  MatNestSetVecType(Mat,const VecType);
+extern PetscErrorCode MatCreateNest(MPI_Comm,PetscInt,const IS[],PetscInt,const IS[],const Mat[],Mat*);
+extern PetscErrorCode MatNestGetSize(Mat,PetscInt*,PetscInt*);
+extern PetscErrorCode MatNestGetSubMats(Mat,PetscInt*,PetscInt*,Mat***);
+extern PetscErrorCode MatNestGetSubMat(Mat,PetscInt,PetscInt,Mat*);
+extern PetscErrorCode MatNestSetVecType(Mat,const VecType);
+extern PetscErrorCode MatNestSetSubMats(Mat,PetscInt,const IS[],PetscInt,const IS[],const Mat[]);
 
 PETSC_EXTERN_CXX_END
 #endif

@@ -2,10 +2,12 @@
 
 #include "matnestimpl.h" /*I   "petscmat.h"   I*/
 
+static PetscErrorCode MatSetUp_NestIS_Private(Mat,PetscInt,const IS[],PetscInt,const IS[]);
+
 /* private functions */
 #undef __FUNCT__ 
-#define __FUNCT__ "MatNestGetSize_Recursive"
-static PetscErrorCode MatNestGetSize_Recursive(Mat A,PetscBool globalsize,PetscInt *M,PetscInt *N)
+#define __FUNCT__ "MatNestGetSize_Private"
+static PetscErrorCode MatNestGetSize_Private(Mat A,PetscBool globalsize,PetscInt *M,PetscInt *N)
 {
   Mat_Nest       *bA = (Mat_Nest*)A->data;
   PetscInt       sizeM,sizeN,i,j,index = -1;
@@ -13,7 +15,6 @@ static PetscErrorCode MatNestGetSize_Recursive(Mat A,PetscBool globalsize,PetscI
 
   PetscFunctionBegin;
   /* rows */
-  /* now descend recursively */
   for (i=0; i<bA->nr; i++) {
     for (j=0; j<bA->nc; j++) {
       if (bA->m[i][j]) { index = j; break; }
@@ -263,6 +264,11 @@ static PetscErrorCode MatDestroy_Nest(Mat A)
   }
   ierr = PetscFree(vs);CHKERRQ(ierr);
 
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSubMat_C",   "",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSubMats_C",  "",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSize_C",     "",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetVecType_C",  "",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetSubMats_C",   "",0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -772,212 +778,104 @@ PetscErrorCode  MatNestSetVecType(Mat A,const VecType vtype)
   PetscFunctionReturn(0);
 }
 
-/* constructor */
+EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatNestSetOps_Private"
-static PetscErrorCode MatNestSetOps_Private(struct _MatOps* ops)
+#define __FUNCT__ "MatNestSetSubMats_Nest"
+PetscErrorCode MatNestSetSubMats_Nest(Mat A,PetscInt nr,const IS is_row[],PetscInt nc,const IS is_col[],const Mat a[])
 {
-  PetscFunctionBegin;
-  /* 0*/
-  ops->setvalues  = 0;
-  ops->getrow     = 0;
-  ops->restorerow = 0;
-  ops->mult       = MatMult_Nest;
-  ops->multadd    = 0;
-  /* 5*/
-  ops->multtranspose    = MatMultTranspose_Nest;
-  ops->multtransposeadd = 0;
-  ops->solve            = 0;
-  ops->solveadd         = 0;
-  ops->solvetranspose   = 0;
-  /*10*/
-  ops->solvetransposeadd = 0;
-  ops->lufactor          = 0;
-  ops->choleskyfactor    = 0;
-  ops->sor               = 0;
-  ops->transpose         = 0;
-  /*15*/
-  ops->getinfo       = 0;
-  ops->equal         = 0;
-  ops->getdiagonal   = 0;
-  ops->diagonalscale = 0;
-  ops->norm          = 0;
-  /*20*/
-  ops->assemblybegin = MatAssemblyBegin_Nest;
-  ops->assemblyend   = MatAssemblyEnd_Nest;
-  ops->setoption     = 0;
-  ops->zeroentries   = MatZeroEntries_Nest;
-  /*24*/
-  ops->zerorows               = 0;
-  ops->lufactorsymbolic       = 0;
-  ops->lufactornumeric        = 0;
-  ops->choleskyfactorsymbolic = 0;
-  ops->choleskyfactornumeric  = 0;
-  /*29*/
-  ops->setuppreallocation = 0;
-  ops->ilufactorsymbolic  = 0;
-  ops->iccfactorsymbolic  = 0;
-  ops->getarray           = 0;
-  ops->restorearray       = 0;
-  /*34*/
-  ops->duplicate     = MatDuplicate_Nest;
-  ops->forwardsolve  = 0;
-  ops->backwardsolve = 0;
-  ops->ilufactor     = 0;
-  ops->iccfactor     = 0;
-  /*39*/
-  ops->axpy            = 0;
-  ops->getsubmatrices  = 0;
-  ops->increaseoverlap = 0;
-  ops->getvalues       = 0;
-  ops->copy            = 0;
-  /*44*/
-  ops->getrowmax   = 0;
-  ops->scale       = 0;
-  ops->shift       = 0;
-  ops->diagonalset = 0;
-  ops->zerorowscolumns  = 0;
-  /*49*/
-  ops->setblocksize    = 0;
-  ops->getrowij        = 0;
-  ops->restorerowij    = 0;
-  ops->getcolumnij     = 0;
-  ops->restorecolumnij = 0;
-  /*54*/
-  ops->fdcoloringcreate = 0;
-  ops->coloringpatch    = 0;
-  ops->setunfactored    = 0;
-  ops->permute          = 0;
-  ops->setvaluesblocked = 0;
-  /*59*/
-  ops->getsubmatrix  = MatGetSubMatrix_Nest;
-  ops->destroy       = MatDestroy_Nest;
-  ops->view          = MatView_Nest;
-  ops->convertfrom   = 0;
-  ops->usescaledform = 0;
-  /*64*/
-  ops->scalesystem             = 0;
-  ops->unscalesystem           = 0;
-  ops->setlocaltoglobalmapping = 0;
-  ops->setvalueslocal          = 0;
-  ops->zerorowslocal           = 0;
-  /*69*/
-  ops->getrowmaxabs    = 0;
-  ops->getrowminabs    = 0;
-  ops->convert         = 0;
-  ops->setcoloring     = 0;
-  ops->setvaluesadic   = 0;
-  /* 74 */
-  ops->setvaluesadifor = 0;
-  ops->fdcoloringapply              = 0;
-  ops->setfromoptions               = 0;
-  ops->multconstrained              = 0;
-  ops->multtransposeconstrained     = 0;
-  /*79*/
-  ops->findzerodiagonals = 0;
-  ops->mults           = 0;
-  ops->solves          = 0;
-  ops->getinertia      = 0;
-  ops->load            = 0;
-  /*84*/
-  ops->issymmetric             = 0;
-  ops->ishermitian             = 0;
-  ops->isstructurallysymmetric = 0;
-  ops->dummy4                  = 0;
-  ops->getvecs                 = 0; /* Use VECNEST by calling MatNestSetVecType(A,VECNEST) */
-  /*89*/
-  ops->matmult         = 0;
-  ops->matmultsymbolic = 0;
-  ops->matmultnumeric  = 0;
-  ops->ptap            = 0;
-  ops->ptapsymbolic    = 0;
-  /*94*/
-  ops->ptapnumeric              = 0;
-  ops->matmulttranspose         = 0;
-  ops->matmulttransposesymbolic = 0;
-  ops->matmulttransposenumeric  = 0;
-  ops->ptapsymbolic_seqaij      = 0;
-  /*99*/
-  ops->ptapnumeric_seqaij  = 0;
-  ops->ptapsymbolic_mpiaij = 0;
-  ops->ptapnumeric_mpiaij  = 0;
-  ops->conjugate           = 0;
-  ops->setsizes            = 0;
-  /*104*/
-  ops->setvaluesrow              = 0;
-  ops->realpart                  = 0;
-  ops->imaginarypart             = 0;
-  ops->getrowuppertriangular     = 0;
-  ops->restorerowuppertriangular = 0;
-  /*109*/
-  ops->matsolve           = 0;
-  ops->getredundantmatrix = 0;
-  ops->getrowmin          = 0;
-  ops->getcolumnvector    = 0;
-  ops->missingdiagonal    = 0;
-  /* 114 */
-  ops->getseqnonzerostructure = 0;
-  ops->create                 = 0;
-  ops->getghosts              = 0;
-  ops->getlocalsubmatrix      = MatGetLocalSubMatrix_Nest;
-  ops->restorelocalsubmatrix  = MatRestoreLocalSubMatrix_Nest;
-  /* 119 */
-  ops->multdiagonalblock         = 0;
-  ops->hermitiantranspose        = 0;
-  ops->multhermitiantranspose    = 0;
-  ops->multhermitiantransposeadd = 0;
-  ops->getmultiprocblock         = 0;
-  /* 124 */
-
-  ops->dummy2                 = 0;
-  ops->dummy3                 = 0;
-  ops->dummy4                 = 0;
-  ops->getsubmatricesparallel = 0;
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSetUp_Nest_Private"
-static PetscErrorCode MatSetUp_Nest_Private(Mat A,PetscInt nr,PetscInt nc,const Mat *sub)
-{
-  Mat_Nest       *ctx = (Mat_Nest*)A->data;
-  PetscInt       i,j;
+  Mat_Nest       *s = (Mat_Nest*)A->data;
+  PetscInt       i,j,m,n,M,N;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if(ctx->setup_called) PetscFunctionReturn(0);
+  s->nr = nr;
+  s->nc = nc;
 
-  ctx->nr = nr;
-  ctx->nc = nc;
-
-  /* Create space */
-  ierr = PetscMalloc(sizeof(Mat*)*ctx->nr,&ctx->m);CHKERRQ(ierr);
-  for (i=0; i<ctx->nr; i++) {
-    ierr = PetscMalloc(sizeof(Mat)*ctx->nc,&ctx->m[i]);CHKERRQ(ierr);
+  /* Create space for submatrices */
+  ierr = PetscMalloc(sizeof(Mat*)*nr,&s->m);CHKERRQ(ierr);
+  for (i=0; i<nr; i++) {
+    ierr = PetscMalloc(sizeof(Mat)*nc,&s->m[i]);CHKERRQ(ierr);
   }
-  for (i=0; i<ctx->nr; i++) {
-    for (j=0; j<ctx->nc; j++) {
-      ctx->m[i][j] = sub[i*nc+j];
-      if (sub[i*nc+j]) {
-        ierr = PetscObjectReference((PetscObject)sub[i*nc+j]);CHKERRQ(ierr);
+  for (i=0; i<nr; i++) {
+    for (j=0; j<nc; j++) {
+      s->m[i][j] = a[i*nc+j];
+      if (a[i*nc+j]) {
+        ierr = PetscObjectReference((PetscObject)a[i*nc+j]);CHKERRQ(ierr);
       }
     }
   }
 
-  ierr = PetscMalloc(sizeof(IS)*ctx->nr,&ctx->isglobal.row);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(IS)*ctx->nc,&ctx->isglobal.col);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(IS)*nr,&s->isglobal.row);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(IS)*nc,&s->isglobal.col);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(sizeof(PetscInt)*ctx->nr,&ctx->row_len);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*ctx->nc,&ctx->col_len);CHKERRQ(ierr);
-  for (i=0;i<ctx->nr;i++) ctx->row_len[i]=-1;
-  for (j=0;j<ctx->nc;j++) ctx->col_len[j]=-1;
+  ierr = PetscMalloc(sizeof(PetscInt)*nr,&s->row_len);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt)*nc,&s->col_len);CHKERRQ(ierr);
+  for (i=0; i<nr; i++) s->row_len[i]=-1;
+  for (j=0; j<nc; j++) s->col_len[j]=-1;
 
-  ctx->setup_called = PETSC_TRUE;
+  m = n = 0;
+  M = N = 0;
+  ierr = MatNestGetSize_Private(A,PETSC_TRUE,&M,&N);CHKERRQ(ierr);
+  ierr = MatNestGetSize_Private(A,PETSC_FALSE,&m,&n);CHKERRQ(ierr);
 
+  ierr = PetscLayoutSetSize(A->rmap,M);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(A->rmap,m);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(A->rmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetSize(A->cmap,N);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(A->cmap,n);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(A->cmap,1);CHKERRQ(ierr);
+
+  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+
+  ierr = MatSetUp_NestIS_Private(A,nr,is_row,nc,is_col);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nr,Vec,&s->left,nc,Vec,&s->right);CHKERRQ(ierr);
+  ierr = PetscMemzero(s->left,nr*sizeof(Vec));CHKERRQ(ierr);
+  ierr = PetscMemzero(s->right,nc*sizeof(Vec));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatNestSetSubMats"
+/*@
+   MatNestSetSubMats - Sets the nested submatrices
+
+   Collective on Mat
+
+   Input Parameter:
++  N - nested matrix
+.  nr - number of nested row blocks
+.  is_row - index sets for each nested row block, or PETSC_NULL to make contiguous
+.  nc - number of nested column blocks
+.  is_col - index sets for each nested column block, or PETSC_NULL to make contiguous
+-  a - row-aligned array of nr*nc submatrices, empty submatrices can be passed using PETSC_NULL
+
+   Level: advanced
+
+.seealso: MatCreateNest(), MATNEST
+@*/
+PetscErrorCode MatNestSetSubMats(Mat A,PetscInt nr,const IS is_row[],PetscInt nc,const IS is_col[],const Mat a[])
+{
+  PetscErrorCode ierr;
+  PetscInt i;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  if (nr < 0) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Number of rows cannot be negative");
+  if (nr && is_row) {
+    PetscValidPointer(is_row,3);
+    for (i=0; i<nr; i++) PetscValidHeaderSpecific(is_row[i],IS_CLASSID,3);
+  }
+  if (nc < 0) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Number of columns cannot be negative");
+  if (nc && is_row) {
+    PetscValidPointer(is_col,5);
+    for (i=0; i<nr; i++) PetscValidHeaderSpecific(is_col[i],IS_CLASSID,5);
+  }
+  if (nr*nc) PetscValidPointer(a,6);
+  ierr = PetscUseMethod(A,"MatNestSetSubMats_C",(Mat,PetscInt,const IS[],PetscInt,const IS[],const Mat[]),(A,nr,is_row,nc,is_col,a));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* If an IS was provided, there is nothing Nest needs to do, otherwise Nest will build a strided IS */
 /*
@@ -1119,61 +1017,10 @@ PetscErrorCode MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscIn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (nr < 0) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Number of rows cannot be negative");
-  if (nr && is_row) {
-    PetscValidPointer(is_row,3);
-    for (i=0; i<nr; i++) PetscValidHeaderSpecific(is_row[i],IS_CLASSID,3);
-  }
-  if (nc < 0) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Number of columns cannot be negative");
-  if (nc && is_row) {
-    PetscValidPointer(is_col,5);
-    for (i=0; i<nr; i++) PetscValidHeaderSpecific(is_col[i],IS_CLASSID,5);
-  }
-  if (nr*nc) PetscValidPointer(a,6);
-  PetscValidPointer(B,7);
-
+  *B = 0;
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
-
-  ierr = PetscMalloc( sizeof(Mat_Nest), &s );CHKERRQ(ierr);
-  ierr = PetscMemzero( s, sizeof(Mat_Nest) );CHKERRQ(ierr);
-  A->data         = (void*)s;
-  s->setup_called = PETSC_FALSE;
-  s->nr = s->nc   = -1;
-  s->m            = PETSC_NULL;
-
-  /* define the operations */
-  ierr = MatNestSetOps_Private(A->ops);CHKERRQ(ierr);
-  A->spptr            = 0;
-  A->same_nonzero     = PETSC_FALSE;
-  A->assembled        = PETSC_FALSE;
-
-  ierr = PetscObjectChangeTypeName((PetscObject) A, MATNEST );CHKERRQ(ierr);
-  ierr = MatSetUp_Nest_Private(A,nr,nc,a);CHKERRQ(ierr);
-
-  m = n = 0;
-  M = N = 0;
-  ierr = MatNestGetSize_Recursive(A,PETSC_TRUE,&M,&N);CHKERRQ(ierr);
-  ierr = MatNestGetSize_Recursive(A,PETSC_FALSE,&m,&n);CHKERRQ(ierr);
-
-  ierr = PetscLayoutSetSize(A->rmap,M);CHKERRQ(ierr);
-  ierr = PetscLayoutSetLocalSize(A->rmap,m);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(A->rmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetSize(A->cmap,N);CHKERRQ(ierr);
-  ierr = PetscLayoutSetLocalSize(A->cmap,n);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(A->cmap,1);CHKERRQ(ierr);
-
-  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
-
-  ierr = MatSetUp_NestIS_Private(A,nr,is_row,nc,is_col);CHKERRQ(ierr);
-  ierr = PetscMalloc2(nr,Vec,&s->left,nc,Vec,&s->right);CHKERRQ(ierr);
-
-  /* expose Nest api's */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSubMat_C","MatNestGetSubMat_Nest",MatNestGetSubMat_Nest);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSubMats_C","MatNestGetSubMats_Nest",MatNestGetSubMats_Nest);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSize_C","MatNestGetSize_Nest",MatNestGetSize_Nest);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetVecType_C","MatNestSetVecType_Nest",MatNestSetVecType_Nest);CHKERRQ(ierr);
-
+  ierr = MatSetType(A,MATNEST);CHKERRQ(ierr);
+  ierr = MatNestSetSubMats(A,nr,is_row,nc,is_col,a);CHKERRQ(ierr);
   *B = A;
   PetscFunctionReturn(0);
 }
@@ -1190,3 +1037,47 @@ PetscErrorCode MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscIn
 
 .seealso: MatCreate(), MatType, MatCreateNest()
 M*/
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreate_Nest"
+PetscErrorCode MatCreate_Nest(Mat A)
+{
+  Mat_Nest       *s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscNewLog(A,Mat_Nest,&s);CHKERRQ(ierr);
+  A->data         = (void*)s;
+  s->nr = s->nc   = -1;
+  s->m            = PETSC_NULL;
+
+  ierr = PetscMemzero(A->ops,sizeof(*A->ops));CHKERRQ(ierr);
+  A->ops->mult                  = MatMult_Nest;
+  A->ops->multadd               = 0;
+  A->ops->multtranspose         = MatMultTranspose_Nest;
+  A->ops->multtransposeadd      = 0;
+  A->ops->assemblybegin         = MatAssemblyBegin_Nest;
+  A->ops->assemblyend           = MatAssemblyEnd_Nest;
+  A->ops->zeroentries           = MatZeroEntries_Nest;
+  A->ops->duplicate             = MatDuplicate_Nest;
+  A->ops->getsubmatrix          = MatGetSubMatrix_Nest;
+  A->ops->destroy               = MatDestroy_Nest;
+  A->ops->view                  = MatView_Nest;
+  A->ops->getvecs               = 0; /* Use VECNEST by calling MatNestSetVecType(A,VECNEST) */
+  A->ops->getlocalsubmatrix     = MatGetLocalSubMatrix_Nest;
+  A->ops->restorelocalsubmatrix = MatRestoreLocalSubMatrix_Nest;
+
+  A->spptr        = 0;
+  A->same_nonzero = PETSC_FALSE;
+  A->assembled    = PETSC_FALSE;
+
+  /* expose Nest api's */
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSubMat_C",   "MatNestGetSubMat_Nest",   MatNestGetSubMat_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSubMats_C",  "MatNestGetSubMats_Nest",  MatNestGetSubMats_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSize_C",     "MatNestGetSize_Nest",     MatNestGetSize_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetVecType_C",  "MatNestSetVecType_Nest",  MatNestSetVecType_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetSubMats_C",  "MatNestSetSubMats_Nest",  MatNestSetSubMats_Nest);CHKERRQ(ierr);
+
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATNEST);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
