@@ -761,7 +761,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
 {
   PetscErrorCode  ierr;
   PetscInt        bs;
-  PetscBool       flg;
+  PetscBool       flg,stokes;
   PC_FieldSplit   *jac = (PC_FieldSplit*)pc->data;
   PCCompositeType ctype;
 
@@ -771,6 +771,12 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
   ierr = PetscOptionsInt("-pc_fieldsplit_block_size","Blocksize that defines number of fields","PCFieldSplitSetBlockSize",jac->bs,&bs,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFieldSplitSetBlockSize(pc,bs);CHKERRQ(ierr);
+  }
+
+  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_stokes",&stokes,PETSC_NULL);CHKERRQ(ierr);
+  if (stokes) {
+    ierr = PCFieldSplitSetType(pc,PC_COMPOSITE_SCHUR);CHKERRQ(ierr);
+    jac->schurpre = PC_FIELDSPLIT_SCHUR_PRE_SELF;
   }
 
   ierr = PetscOptionsEnum("-pc_fieldsplit_type","Type of composition","PCFieldSplitSetType",PCCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&ctype,&flg);CHKERRQ(ierr);
@@ -1247,8 +1253,9 @@ PetscErrorCode  PCFieldSplitSetType(PC pc,PCCompositeType type)
 .   -pc_fieldsplit_default - automatically add any fields to additional splits that have not
                               been supplied explicitly by -pc_fieldsplit_%d_fields
 .   -pc_fieldsplit_block_size <bs> - size of block that defines fields (i.e. there are bs fields)
-.    -pc_fieldsplit_type <additive,multiplicative,schur,symmetric_multiplicative>
-.    -pc_fieldsplit_schur_precondition <true,false> default is true
+.   -pc_fieldsplit_type <additive,multiplicative,schur,symmetric_multiplicative>
+.   -pc_fieldsplit_schur_precondition <true,false> default is true
+.   -pc_fieldsplit_stokes - automatically finds rows with zero diagonal and uses Schur complement with no preconditioner as the solver
 
 -    Options prefix for inner solvers when using Schur complement preconditioner are -fieldsplit_0_ and -fieldsplit_1_
      for all other solvers they are -fieldsplit_%d_ for the dth field, use -fieldsplit_ for all fields
