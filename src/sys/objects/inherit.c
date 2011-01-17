@@ -563,7 +563,7 @@ PetscErrorCode  PetscObjectSetPrecision(PetscObject obj,PetscPrecision precision
    Concepts: objects^querying
    Concepts: querying objects
 
-.seealso: PetscObjectQuery()
+.seealso: PetscObjectCompose()
 @*/
 PetscErrorCode  PetscObjectQuery(PetscObject obj,const char name[],PetscObject *ptr)
 {
