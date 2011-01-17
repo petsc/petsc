@@ -1012,8 +1012,6 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
 PetscErrorCode MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscInt nc,const IS is_col[],const Mat a[],Mat *B)
 {
   Mat            A;
-  Mat_Nest       *s;
-  PetscInt       i,m,n,M,N;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1081,3 +1079,4 @@ PetscErrorCode MatCreate_Nest(Mat A)
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATNEST);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END

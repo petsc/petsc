@@ -97,7 +97,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,4,4,4,PETSC_DECIDE,PETSC_DECIDE,
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-4,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
                     PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
