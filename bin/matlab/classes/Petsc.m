@@ -44,6 +44,8 @@ classdef Petsc < handle
     DECIDE=-1;
     DETERMINE=-1;
     DEFAULT=-2;
+    
+    COPY_VALUES=0;
   
     FILE_MODE_READ=0;
     FILE_MODE_WRITE=1;
