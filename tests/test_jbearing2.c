@@ -182,7 +182,7 @@ int main( int argc, char **argv )
   /* Solve the bound constrained problem */
   info = TaoSolverSolve(tao); CHKERRQ(info);
 
-  info = TaoSolverView(tao,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(info);
+  //info = TaoSolverView(tao,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(info);
 
   info = TaoSolverGetConvergedReason(tao,&reason); CHKERRQ(info);
   if (reason <= 0)
@@ -351,6 +351,8 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
   info = VecDot(user->B,X,&f2); CHKERRQ(info);
   info = VecAXPY(G, one, user->B); CHKERRQ(info);
   *fcn = f1/2.0 + f2;
+  VecNorm(G,NORM_2,&f2);
+  PetscPrintf(PETSC_COMM_SELF,"fcn=%f\t gnorm=%f\n",*fcn,f2);
 
   info = PetscLogFlops((91 + 10*ym) * xm); CHKERRQ(info);
   return 0;

@@ -14,6 +14,7 @@ struct _TaoDMOps {
   PetscErrorCode (*computehessian)(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*);
   PetscErrorCode (*computebounds)(TaoDM, Vec, Vec);
   PetscErrorCode (*computeinitialguess)(TaoDM, Vec);
+  PetscErrorCode (*levelmonitor)(TaoDM,PetscInt,void*);
 };
 
 struct _p_TaoDM {
@@ -27,12 +28,14 @@ struct _p_TaoDM {
   PetscInt       nlevels; /* # of levels above this one (== total levels for level 0) */
   void           *user; /* user context */
   MatType        mtype;
+  TaoSolverType  ttype;
   ISColoringType isctype;
   TaoSolver      tao; /* TaoSolver at this level */
   void *userfctx;
   void *usergctx;
   void *userhctx;
   void *userfgctx;
+  void *usermonitor;
 };
 
 #endif

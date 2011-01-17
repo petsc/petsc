@@ -1,0 +1,120 @@
+
+Research Challenges:
+
+The solution of large-scale optimization problems on parallel
+architectures poses many challenges in terms of interfaces,
+algorithms, and implementations.  While various optimization software
+packages are now available, their versatility, scalability, and
+interoperability are restricted.  To address these issues,
+particularly as motivated by applications in Structural and Functional
+Genomics (SFGen), we propose to develop component-based optimization
+software using CCA technology.
+
+CCA component technology is well suited to address these challenges,
+as it facilitates the interoperability among multiple toolkits and
+application codes as well as the reuse of external tools.  In
+particular, we will develop abstract interfaces between optimization
+software and (1) application drivers, (2) chemistry codes for
+evaluation of objective functions and gradients, and (3) external
+tools such as lower-level linear algebra support and visualization.
+The use of common abstract interfaces will also enable the exploration
+of dynamically changing physical models and optimization algorithms,
+based on the evolution of the optimization and the accuracy of the
+physics, as dictated by the user.
+
+We will begin with the foundation of two optimization libraries, which
+currently include algorithms of use within the motivating protein
+structure prediction problems: (1) the distance geometry software,
+DGSOL \cite{mw97,dgsol-web-page}, and (2) the Toolkit for Advanced
+Optimization (TAO) \cite{tao-user-ref,bmm99}, which focuses on
+parallel tools for nonlinear optimization.  We will componentize these
+libraries, and we will explore various software interface issues in
+collaboration with optimization researchers at SNL, who have developed
+OPT++ and the Java Optimization Toolkit (JOT).
+
+This proposed work will leverage other CCA software being developed
+within the scope of this proposal, including linear solver components,
+options database components, nonlinear solver components, and general
+framework infrastructure and services.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+References:
+
+mw97 - Jorge More' and Zhijun Wu, Global Continuation of Distance Geometry Problems,
+       SIAM J. Optim., vol. 7, no. 3 (August 1997), pp. 814-836.
+
+dgsol-web-page - Jorge More' and Zhijun Wu, DGSOL Web Page, 
+       http://www.mcs.anl.gov/~more/dgsol
+
+@techreport{ bmm99,
+ Author      = "Steve Benson and Lois Curfman McInnes and Jorge Mor\'{e}",
+ title       = "{GPCG}: A case study in the performance and scalability of optimization algorithms",
+ year        = 1999,
+ institution = "Mathematics and Computer Science Division, Argonne National Laboratory",
+ number      = "ANL/MCS-P768-0799"
+}
+
+@techreport{ tao-user-ref,
+ Author      = "Steve Benson and Lois Curfman McInnes and Jorge Mor\'{e}",
+ title       = "{TAO} Users Manual",
+ year        = 2000,
+ institution = "Mathematics and Computer Science Division, Argonne National Laboratory",
+ number      = "ANL/MCS-TM-242",
+ note        = "(See {\tt http://www.mcs.anl.gov/tao})"
+}
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Milestones and Tasks:
+
+Abbreviations:
+   OS - optimization researchers at SNL
+    A - applications scientists
+    N - nonlinear solvers component developers
+
+Year 1:
+  Milestones:
+    - Design and implement preliminary software components for constrained
+      optimization and distance-constrained geometry optimization.
+
+  Tasks:
+    - Componentize parts of DGSOL and TAO.
+    - Investigate the interfaces needed (1) between optimization software and
+      application drivers, such as MS3D and Jock, and (2) between optimization
+      software and codes for evaluation of objective functions and gradients,
+      such as MPQC and DEMoS (in collaboration with A).
+    - Explore the development of constrained optimization algorithms
+      (in collaboration with OS and N).
+    - Evaluate preliminary performance.
+
+Year 2:
+  Milestones:
+    - Refine, tune, and extend optimization component functionality.
+
+  Tasks:
+    - Complete componentization of DGSOL and TAO.
+    - Refine and extend interfaces between optimization software and 
+      application drivers and codes for evaluation of objective functions.
+    - Incorporate use of the ESI interface for linear solves within the
+      optimization software (in collaboration with various labs).
+    - Explore techniques for derivative computations (finite differences and
+      automatic differentiation) for selected motivating applications.
+    - Implement constrained optimization components, subject to 
+      outcome of year 1 evaluation.
+
+Year 3:
+  Milestones:
+    - Explore dynamically changing optimization algorithms and physical models,
+      based on the evolution of the optimization and the accuracy of the 
+      physics, as dictated by the user.
+
+  Tasks:
+    - Evaluate and improve performance of optimization components with selected
+      motivating applications.
+    - Explore the effects of the accuracy of the simulation on the
+      optimization algorithms (in collaboration with A).
+    - Explore optimization algorithms that exploit varying levels of physics
+      (crude through sophisticated), depending on algorithmic progress.
+
+

@@ -115,7 +115,9 @@ PetscErrorCode TaoSolverCreate(MPI_Comm comm, TaoSolver *newtao)
 PetscErrorCode TaoSolverSolve(TaoSolver tao)
 {
   PetscErrorCode ierr;
-//  PetscViewer viewer;
+  char           filename[PETSC_MAX_PATH_LEN];
+  PetscBool      flg;
+  PetscViewer    viewer;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
 
@@ -126,11 +128,15 @@ PetscErrorCode TaoSolverSolve(TaoSolver tao)
   if (tao->ops->solve){ ierr = (*tao->ops->solve)(tao);CHKERRQ(ierr); }
   ierr = PetscLogEventEnd(TaoSolver_Solve,tao,0,0,0); CHKERRQ(ierr);
 
-/*  if (tao->viewtao) { 
-      ierr = PetscViewerASCIIOpen(((PetscObject)tao)->comm, 
-      ierr = TaoSolverView(tao,viewer);CHKERRQ(ierr); 
-      }*/
-/*  if (tao->viewksptao) { ierr = TaoLinearSolver(tao);CHKERRQ(ierr); } */
+
+  
+  ierr = PetscOptionsGetString(((PetscObject)tao)->prefix,"-tao_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg && !PetscPreLoadingOn) {
+    ierr = PetscViewerASCIIOpen(((PetscObject)tao)->comm,filename,&viewer);CHKERRQ(ierr);
+    ierr = TaoSolverView(tao,viewer);CHKERRQ(ierr); 
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  }
+  
 
   if (tao->printreason) { 
       if (tao->reason > 0) {
@@ -286,7 +292,9 @@ PetscErrorCode TaoSolverDestroy(TaoSolver tao)
 . -tao_vecmonitor_update
 . -tao_xmonitor
 . -tao_fd
+. -tao_view
 - -tao_fdgrad
+
 
   Notes:
   To see all options, run your program with the -help option or consult the 

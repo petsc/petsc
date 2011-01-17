@@ -232,6 +232,16 @@ static int TaoSolverView_BLMVM(TaoSolver tao, PetscViewer viewer)
 
     
     PetscFunctionBegin;
+    TAO_BLMVM *lmP = (TAO_BLMVM *)tao->data;
+    PetscBool isascii;
+    PetscErrorCode ierr;
+
+
+    PetscFunctionBegin;
+    ierr = PetscTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
+    if (isascii) {
+	ierr = PetscViewerASCIIPrintf(viewer, "  Gradient steps: %d\n", lmP->grad); CHKERRQ(ierr);
+    }
     PetscFunctionReturn(0);
 }
 

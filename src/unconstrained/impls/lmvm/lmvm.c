@@ -275,11 +275,11 @@ static PetscErrorCode TaoSolverView_LMVM(TaoSolver tao, PetscViewer viewer)
 
     PetscFunctionBegin;
     ierr = PetscTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
-    if (isascii) {
+//    if (isascii) {
 	ierr = PetscViewerASCIIPrintf(viewer, "  BFGS steps: %d\n", lm->bfgs); CHKERRQ(ierr);
 	ierr = PetscViewerASCIIPrintf(viewer, "  Scaled gradient steps: %d\n", lm->sgrad); CHKERRQ(ierr);
 	ierr = PetscViewerASCIIPrintf(viewer, "  Gradient steps: %d\n", lm->grad); CHKERRQ(ierr);
-    }
+//    }
     PetscFunctionReturn(0);
 }
 

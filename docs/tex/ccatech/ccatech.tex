@@ -1,0 +1,1648 @@
+\documentclass[doublespacing,12pt]{article}
+% verbatiminput.  See pages 66-70 in the latex companion
+
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{layout}
+\usepackage{moreverb}
+\usepackage{epsf}
+\usepackage{afterpage}
+\usepackage{enumerate}
+\usepackage{times}
+
+\setlength{\textwidth}{6.75in}
+\setlength{\textheight}{8.5in}
+\setlength{\evensidemargin}{0.0in}
+\setlength{\oddsidemargin}{0.0in}
+\setlength{\topmargin}{0.0in}
+
+
+
+
+\begin{document}
+\title{A Programmer's Guide for Providing CCA Component 
+Interface to the Toolkit for Advanced Optimization}
+\author{Jason Sarich\\
+       Mathematics and Computer Science Division \\
+       Argonne National Laboratory \\
+       9700 S. Cass Avenue, Argonne, IL 60439\\}
+\maketitle
+\begin{abstract}
+The Toolkit for Advanced Optimization (TAO) developed at Argonne
+National Laboratory provides an object-oriented framework and
+implementation for solving numerical optimization applications.  An
+application writer does not need to know any of the internal workings
+of the optimization algorithms, but just needs to create a model that 
+can supply the algorithm
+with function, gradient, and Hessian evaluations at given variable
+values.  This abstraction allows for a simple integration into a
+component-based system with a well-defined port for communication
+between the TAO solver internals and the model's function and derivative 
+evaluation routines.
+Taking advantage of existent software tools like Babel and Ccaffeine, 
+the user's model can be implemented in C, C++, Fortran, Java, or
+Python, and can be selected and loaded as a module during run-time.
+A technical overview of this integration into TAO is presented.
+\end{abstract}
+
+\section{Introduction}
+One of the keys to creating successful scientific software
+applications is the ability to
+utilize existing packages.  This approach allows a programmer to
+focus on writing code that directly concerns his or her
+research and to rely on the expertise of others for contributions
+outside of that area.  The Toolkit for Advanced Optimization (TAO\cite{tao})
+concentrates on the implementation of nonlinear optimization, but
+does not have to concern itself with the issues of portability,
+inter-process communication, or linear algebra operations because of
+the efforts in those fields by MPI (Message Passing
+Interface\cite{mpi}) and PETSc (Portable, Extensible Toolkit 
+for Scientific Computation\cite{petsc}). 
+
+Likewise, TAO is designed so that application programmers can
+concentrate their work on designing and improving theoretical models
+rather than delving into the details of optimization algorithms.  For
+this reason, TAO has introduced new interfaces for its nonlinear
+optimization libraries.  These employ the Scientific Interface
+Description Language (SIDL) for the ability to use TAO routines
+from projects coded in C, C++, Java, Fortran, or Python when used
+together with the Babel\cite{babel} interpretation software, and the
+Common Component Architecture\cite{cca} (CCA) for working in a
+component framework such as Ccaffeine\cite{ccaffeine}.
+
+
+\section{Tools}
+Serveral tools need to be installed before these
+interfaces to TAO can be utilized.  Babel is a product of the
+Center for Advanced Scientific Computing at Lawrence Livermore
+National Laboratory, and Ccaffeine is a product of the High
+Performance Computing Research Division at Sandia National Labs 
+in Livermore.
+
+
+\subsection{Babel}\label{sec:babel}
+Babel is a tool for the integration of software projects written in
+more than one programming language.  This capability is achieved
+through the use of a generic 
+programming language-independent description of the available interfaces
+and classes.  The description is written in Scientific Interface
+Description Language (SIDL), and afterwards Babel is used to create
+the necessary filler material so that the classes can be implemented
+in any of the Babel-supported programming languages (C, C++, Fortran,
+Java, or Python), and likewise, these methods will be made available
+for use by any of those languages.
+
+\subsection{Ccaffeine}
+The Common Component Architecture Forum provides a standard for software
+components in order to facilitate the specialization of scientific programming
+and software reuse.  Using CCA components reinforces the practice of
+developing well-defined interfaces and allows programmers to develop 
+in their sphere of knowledge while being able to leverage successful
+software in complementary fields.  Ccaffeine provides a framework for
+linking these components together.  Through the use of Babel, the
+implementation of these components can be written in any of the
+Babel-supported languages.
+
+\subsection{Installation of Tools}
+The installation of Babel and Ccaffeine can be difficult because they have 
+so many dependencies, and because both packages are
+still in development, the information given here can become outdated.  
+The following instructions are intended for use with Babel-0.9.2 and Ccaffeine-0.5.0 installed on a Linux platform.
+
+The prerequisites for Babel include:
+\begin{itemize}
+\item C compiler;
+\item Java 1.4;
+
+\item C++, Fortran77, and/or Fortran90 compilers if interoperability with these languages are desired;
+\item Python and the Numeric module if Python servers or clients are desired;
+
+\item The Python shared library if servers are to be implemented in Python.
+
+\end{itemize}
+
+\noindent The installation process for Babel is:
+\begin{itemize}
+\item Download the latest version from \url{http://www.llnl.gov/CASC/components/babel.html}
+\item Unzip and extract the tarball 
+\begin{verbatim}
+unzip babel-0.9.2.tar.gz 
+tar -xf babel-0.9.2.tar
+\end{verbatim} 
+\item Configure. (Run \texttt{configure --help} to see the available
+  options.  The default installation will be in /usr/local/, so if you
+  do not have access to this directory you will need to use the
+  \texttt{--prefix=<installation directory>} option.)
+\item You may need to add ``.'' to the environment variable CLASSPATH before running configure.
+\item \texttt{make}
+\item \texttt{make install}
+\end{itemize}
+
+\noindent The prerequisite packages for installing Ccaffeine include:
+\begin{itemize}
+\item Babel.
+\item Boost headers (can be downloaded from \url{http://www.boost.org}).
+\item Ruby (can be downloaded from \url{http://www.ruby-lang.org})
+\item cca-spec-ccaffeine and cca-spec-babel.  These packages are included in the tarball distributions, but need to be downloaded and installed separately if you are using the CVS repository.
+\end{itemize}
+
+The installation directions for Ccaffeine are:
+\begin{itemize}
+\item Download the latest version of Ccaffeine from \url{http://www.cca-forum.org/download/ccafe}.
+\item Unzip and extract the tarball.
+\item Configure. (Run \texttt{configure --help} to see the available
+  options.  The default installation will be in /usr/local/, so if you
+  do not have access to this directory you will need to use the
+  \texttt{--prefix=<installation directory>} option.)
+\item \texttt{make}.
+\item \texttt{make install}.  
+\item There is more information available on building and installing Ccaffeine at \url{http://www.cca-forum.org/ccafe/ccaffeine-man}
+\end{itemize}
+
+
+
+\section{SIDL Interface to TAO}\label{sec:SIDLInterface}
+
+
+\subsection{Server/Client Model of Babel}
+In order for Babel to successfully adapt function calls from one
+computing language to the implementation of that function in possibly another
+language, a client/server approach is used.  According to this
+approach, ``client'' function stubs
+are created in the client language (C for Fortran clients) which 
+through an intermediary entry-point vector structure (hidden from the
+user) will call the corresponding
+``server'' function.  In order to simplify the declaration and
+definition of these server functions, Babel can be used for the
+automatic creation of unimplemented function stubs and any necessary
+header files.  
+
+When coding an application that takes advantage of SIDL, client
+function stubs must be created from the SIDL files using the Babel
+compiler.  These client files must then be compiled and linked with
+the application code.  In contrast, if a desired SIDL class is
+implementing
+SIDL interfaces, the server files can be compiled
+separately and dynamically loaded at run-time by adding the path of 
+the library to
+the environment variable \texttt{SIDL\_DLL\_PATH} and using the
+\textsf{SIDL.Loader} class that is provided with the Babel run-time
+library.  This practice is essential when using CCA components.
+
+As an example, consider the \textsf{Optimize.Op\-ti\-mi\-za\-tion\-Mod\-el} interface.  The TAO libraries use an object of this
+interface to get application-specific information such as function and gradient
+evaluations, and so it is considered to be a client for this interface.  
+Therefore 
+a client library for \textsf{Optimize.Op\-ti\-mi\-za\-tion\-Mod\-el} must be built. Specifically, 
+the C++ client library is necessary because the TAO 
+code that calls methods on this class is written in C++.
+See Section~\ref{sec:clientlibs} for more information on building the client 
+libraries.
+
+The server library lies on the other side of this relationship.  The code that
+actually implements the methods declared in the \textsf{Optimize.Op\-ti\-mi\-za\-tion\-Mod\-el} 
+interface is considered to be the server, and it can be in any of the 
+languages that Babel supports and then compiled
+into a shared library.  By 
+placing the location of this shared library into the environment variable
+\texttt{SIDL\_DLL\_PATH} and creating an SCL file, this implementation
+can be loaded at run time.  See Section~\ref{sec:exampleServer} for details.
+
+
+\subsection{Abstract SIDL Interfaces Used by TAO}
+TAO can be used to take advantage of several SIDL interfaces.  These
+interfaces, although created by TAO developers, by design have no
+direct relationship to TAO and thus applications that use these
+interfaces should be able to easily reuse the code with any
+other solver that implements the abstract interfaces.
+
+\subsubsection{Solver.OptimizationSolver}
+The \textsf{Sol\-ver.Op\-ti\-mi\-za\-tion\-Sol\-ver} interface  presents the methods
+available to application writers for setting up and solving an
+optimization problem.  These methods include the obvious \textsf{Create()}, 
+\textsf{SolveApplication()}, and \textsf{Destroy()}, as well as some 
+accessors for setting and retrieving tolerances and other numerical
+parameters.   
+
+\subsection{TAO implementation of the OptimizationSolver interface}\label{sec:TAOimplementation}
+The \textsf{Sol\-ver.Op\-ti\-mi\-za\-tion\-Sol\-ver} interface can be thought of as a Java
+interface or an abstract C++ class.  This interface will allow programs that
+call methods from the interface to compile without having to know or
+decide ahead of time what the actual implementation of the interface
+is going to be until run time.  In this case, the \textsf{TAO.Solver} SIDL
+class is
+defined to implement the methods in Sol\-ver.Op\-ti\-mi\-za\-tion\-Sol\-ver and
+the \textsf{TAO.En\-vi\-ron\-ment} class to implement the methods in
+\textsf{Sol\-ver.Pro\-ject\-State}.  
+The \textsf{TAO.En\-vi\-ron\-ment} class provides a convenient way of wrapping the TAO methods
+\textsf{TaoInitialize()} and \textsf{TaoFinalize()} which set up memory and
+data structures that are used by TAO. 
+
+%TODO discuss TaoVec, TaoMat
+\subsubsection{LinearAlgebra.Factory}
+This linear algebra factory interface is used as a means for providing
+TAO and the model application with a usable linear algebra classes for
+storing vectors and matrices and performing basic vector and matrix
+computations.  Use of the \textsf{Lin\-ear\-Al\-ge\-bra.Fact\-ory} is not required when
+using the SIDL interface to TAO, which will create PETSc Vec's and
+Mat's unless a
+\textsf{Lin\-ear\-Al\-ge\-bra.Fact\-ory} implementation is created and passed along to
+the Solver with the method \textsf{SetLAFact\-ory()}. 
+
+
+\subsubsection{Optimize.OptimizationModel}\label{sec:optimizationModel}
+Just as the \textsf{Sol\-ver.Op\-ti\-mi\-za\-tion\-Sol\-ver} interface abstracts the
+necessary functionality of an optimization solver, the
+\textsf{Optimize.Op\-ti\-mi\-za\-tion\-Mod\-el} interface provides a generic means 
+to access
+function, gradient, and Hessian evaluations for a particular
+application.  
+
+This interface is the one that should be most important to TAO users,
+because they will have to implement these methods.  This
+implementation can be done
+by running the Babel compiler to generate server function stubs and
+headers, filling in the functions with application-specific code, and
+compiling the server files into a shared library.  Section~\ref{sec:exampleModel} gives a detailed account of this process.
+
+
+\section{Using TAO with the Common Component Architecture}
+
+\subsection{Description of Ports and Components}
+Parallel to the ideas of interfaces and classes, CCA ports and
+components provide for well-defined abstract interfaces and concrete
+implementations of theses interfaces.  A \textit{port} is in interface that
+extends from the \textsf{gov.cca.Port} interface, which is an empty declaration
+but is necessary as a common interface so that its handle can be
+passed between the CCA framework and the CCA components that use the port.
+
+Similarly, a \textit{component} is any class that implements the
+\textsf{gov.cca.Component} interface, which 
+has only one member method -- \textsf{setServices()}.  The method is generally
+called from the CCA framework so that the component can register with
+the framework which ports this component provides and which the
+component uses. 
+
+The CCA ports that TAO utilizes are very similar to the
+SIDL interfaces described in Section~\ref{sec:SIDLInterface}.
+The important difference is that in order for an interface to be
+classified as a port, it must extend the \textsf{gov.cca.Port} interface.
+
+The ports employed by TAO for CCA applications are defined in the SIDL file
+\url{${TAO_DIR}/src/sidl/components/sidlfiles/OptimizationPorts.sidl} %$
+
+These ports
+include the \textsf{Sol\-ver.Op\-ti\-mi\-za\-tion\-Sol\-ver}, which is just an extension of
+the \textsf{Sol\-ver.Op\-ti\-mi\-za\-tion\-Sol\-ver} interface and \textsf{gov.cca.Port} and 
+the additional methods \textsf{Initialize()}, \textsf{Solve()}, and
+\textsf{Finalize()};
+the \textsf{Op\-ti\-mi\-za\-tion\-Ports.LAFact\-oryPort}, which extends the
+\textsf{Lin\-ear\-Al\-ge\-bra.Fact\-ory} and \textsf{gov.cca.Port} interfaces,
+and \textsf{Op\-ti\-mi\-za\-tion\-Ports.ModelPort}, which extends
+\textsf{Optimize.Op\-ti\-mi\-za\-tion\-Mod\-el} and \textsf{gov.cca.Port}.
+\subsection{TaoSolver Component}
+The \textsf{TaoSolver.Component} is the component that TAO provides for
+application programmers.  This component provides the services of the
+\textsf{Op\-ti\-mi\-za\-tion\-Ports.SolverPort} and uses the port
+\textsf{Op\-ti\-mi\-za\-tion\-Ports.Lin\-ear\-Al\-ge\-bra\-Port} for the creation of linear algebra
+objects and the \textsf{Op\-ti\-mi\-za\-tion\-Ports.ModelPort} for function, gradient,
+and Hessian evaluations and other model-dependant methods.
+The implementation of this component is essentially a wrapper for the
+\textsf{TAO.Solver} and \textsf{TAO.En\-vi\-ron\-ment} classes discussed in 
+Section~\ref{sec:TAOimplementation}.
+\subsection{Other Components}
+In addition to the \textsf{TaoSolver.Component}, four other components are
+included with the TAO distribution in order to provide an example of
+its usage.  These include an implementation of the \textsf{ModelPort}, two
+implementations of the \textsf{Lin\-ear\-Al\-ge\-bra\-Port}, and a driver port for
+controlling the execution of the application.
+\begin{itemize}
+\item \textbf{PetscFactory and GlobalArrayFactory Components\\}
+These two components provide the \textsf{Op\-ti\-mi\-za\-tion\-Ports.Lin\-ear\-Al\-ge\-bra\-Port}.
+The difference is the underlying way they are implemented.  The
+\textsf{PetscFact\-ory} provides handles to linear algebra 
+Vec's and Mat's, while the
+\textsf{GlobalArrayFact\-ory} provides handles to global array objects.  The
+opaque data type that the functions return are cast to TaoVec and 
+TaoMat objects when TAO requires mathematical operations on them.
+
+\item \textbf{Minsurf Example Component}\\
+The \textsf{Minsurf.Component} is included in the TAO distribution in order to
+both provide a template example that application writers can follow when
+creating their own application, and so that TAO users can run a
+fully-functional CCA application ``out of the box''.  The C++
+implementation of this component can be found in the files
+\url{$TAO_DIR/src/sidl/components/Minsurf/Minsurf_Component_Impl.hh} and
+\url{$TAO_DIR/src/sidl/components/Minsurf/Minsurf_Component_Impl.cc}
+
+
+
+\item \textbf{TaoDriver}\\
+The TaoDriver.Component is similar to the driver program created in
+Section~\ref{sec:driverprogram} in that it establishes process control
+when a CCA application is executed.  In addition to the standard
+\textsf{gov.cca.Component} interface, \textsf{TaoDriver.Component}
+also implements the
+\textsf{gov.cca.ports.Go\-Port} interface.  The \textsf{GoPort}
+interface requires the 
+implementation of a
+\textsf{go()} method which can be initiated from the CCA framework. 
+\end{itemize}
+
+\subsection{Setting TAO-specific Parameters}
+The use of abstract interfaces and dynamically loaded components can
+certainly be a useful tool in encouraging code reuse and intelligent
+software design, but a problem that arises from this practice is the
+lack of fine-grain control of the underlying software.  This can be
+seen in the \textsf{TaoSolver} component which adheres to
+the \textsf{Sol\-ver.Op\-ti\-mi\-za\-tion\-Sol\-ver} interface.  The design of this interface
+is to be general enough to be easily implemented by any optimization
+solver software, but this generalization results in the unavailability
+of many TAO specific parameter settings, such as the number of vectors
+to utilize when using TAO's limited memory variable metric method, or
+if PETSc's memory-usage logging feature should be turned on for a
+particular solve.  
+
+These features can normally be accessed in TAO through command-line
+options, but the CCA framework does not make the command line
+available to users.  Instead, devices called \textit{parameter ports}
+are used to pass flags and values from the CCA framework user to an
+application component.  However, since the \textsf{TaoSolver} component is
+implemented as a wrapper of the \textsf{TAO.Solver} class, the component does
+not have direct access to many of the TAO internal variables and
+structures.  In order to easily accommodate TAO users accustomed to using
+command-line options for setting these parameters, the
+\textit{-tao\_options} parameter is provided which takes a string of
+command-line options from the parameter port and passes them directly
+to TAO as command line options.  The only caveat is that the Ccaffeine
+CCA framework does not allow whitespace in these strings, so the
+tokens in this command-line string must be delimited with percent
+sign characters (\texttt{\%}'s).
+The syntax of setting these parameter values varies depending upon
+the chosen framework interface, so discussion on their usage is
+postponed in this paper until the presentation of those interfaces in
+the next section.
+
+\subsection{Running An Example Application Using Ccaffeine}
+Although the CCA specification allows for different implementations
+and ideally the TAO components could work with any of these implementations,
+Ccaffeine is the framework that the TAO component were developed on
+and tested with.  In order to satisfy different users' needs and
+preferences, there are several ways to construct and execute component
+applications using Ccaffeine.
+
+\subsubsection{Text Interface}\label{sec:textinterface}
+The most primitive way to use Ccaffeine is through the text interface.
+The Ccaffeine scripting interface (for single-processor applications)
+is initiated with the command \texttt{ccafe-single} which will give
+the prompt \\
+\noindent \texttt{cca>}\\
+
+The commands that can be used with this prompt include \texttt{path
+set} and \texttt{path append} for declaring the location of the
+components, \texttt{repository get-global} to load the component
+libraries, \texttt{create} to create an instantiation of a
+component, \texttt{connect} for connecting the uses port of one
+component to the provides port of another, and \texttt{run} which
+initiates the \textsf{GoPort()} method of one of the components.
+There are several other commands available in Ccaffeine, a listing of
+the commands
+and their syntax is available through the \texttt{help} command.
+
+For convenience, Ccaffeine can read these commands from a file so the
+user doesn't have to type in the same commands every time an
+application is run.  Such a file can be designated at run-time with
+the \texttt{--ccafe-rc} option to \texttt{ccafe-single}.  The
+Ccaffeine resource file used to run the Minsurf example in the TAO
+distribution can be found in \texttt{src/sidl/components/CCAFERC}.
+
+\begin{verbatim}
+#!ccaffeine bootstrap file.
+# ------- don't change anything ABOVE this line.-------------
+path set /home/sarich/working/bktao/lib/libg_c++/linux-gnu
+
+repository get-global TaoDriver.Component
+repository get-global TaoSolver.Component
+repository get-global Minsurf.Component
+repository get-global PetscLA.Factory
+
+create TaoDriver.Component driver
+create TaoSolver.Component solver
+create Minsurf.Component minsurf
+create PetscLA.Factory factory
+
+parameter solver configure tao_grtol 0.0001
+
+connect driver OptimizationSolver solver OptimizationSolver
+connect solver OptimizationModel minsurf OptimizationModel
+connect solver LAFactory factory LAFactory
+
+go driver go
+
+quit
+\end{verbatim}
+
+
+
+\subsubsection{Graphical User Interface}
+Ccaffeine also provides a Graphical User Interface (GUI) programmed in Java 
+which is useful for visualizing a CCA
+application because it provides an image of how all of the components
+components interact with each other through the various ports.  
+Each component is represented as a block on the screen that displays which
+ports the component uses and which it provides, and the GUI allows the user to
+connect these components up to one another, use the parameter ports
+to configure the components, and to initiate computation by selecting
+the go button available on components implementing the
+gov.cca.ports.GoPort interface.
+
+A resource file must be created when using the GUI, but it can
+be much simpler because all of the creations, connections, and
+parameter settings can be done with the GUI.  The commands that should
+be in the resource file for the Minsurf example are:
+\begin{verbatim}
+#!ccaffeine (This must be the first line)
+path set <path/to/component/libraries>
+repository get-global TaoDriver.Component
+repository get-global TaoSolver.Component
+repository get-global Minsurf.Component
+repository get-global PetscLA.Factory
+\end{verbatim}
+
+In order to use the GUI, Ccaffeine must be running and the GUI
+attached later via sockets.  Prior to running the Ccaffine GUI, the 
+locations of the cca-spec-classic
+Java archive file
+\texttt{cca\-Spec\-Class\-ic.jar} and the Ccaffeine Java
+libraries must be set in the environment variable \texttt{CLASSPATH}.
+\begin{verbatim}
+>ccafe-client --type server --port 3314 --ccafe-rc ccafe.rc \
+  --output-dir $PWD 
+>java gov.sandia.ccaffeine.dc.user_iface.BuilderClient \
+  --builderPort 3314
+\end{verbatim} #$
+\noindent The number of the port used is of course arbitrary as long
+as the port is not already in use and is the same in both commands.
+\begin{figure}
+\centerline{\epsfysize=3.5in \epsfbox{gui.eps}}
+\caption{Ccaffeine GUI Interface}
+\label{fig:gui}
+\end{figure}
+
+Once the GUI has been launched, then there should be a list of the
+four components on the left ``palette'' section of the screen, and an
+empty ``arena'' (See Figure~\ref{fig:gui}).  
+To instantiate the components, drag and drop each desired component from
+the palette to the arena and give it a name.  The
+component will then appear in the arena with a list of \textit{provides} port
+on the left and \textit{uses} ports on the right.  After all four
+components have been instantiated once, they can be hooked up to
+each other by clicking on the uses port of one component and then
+clicking on the corresponding provides port of another component.  A
+line will be drawn between the components to show that they have been
+connected.  Figure~\ref{fig:gui} shows the GUI with the components
+instantiated, connected, and ready for execution.
+
+Once all the necessary connections have been made (they are the same
+connections made by the interactive script in
+Section~\ref{sec:textinterface}), then the program can be executed by
+clicking on the green ``go'' port on the instantiated \textsf{TaoDriver}
+component.  All standard error and standard output from the
+application will be piped into the files pOut0 and pErr0.
+
+
+\section{Developer's Guide}
+Developing a software package is rarely a simple task, and any project that 
+employs automatic code generation and provides support for several different
+languages will
+make the process even more difficult.  This section describes the 
+various files generated by Babel and the process of creating client
+and server libraries 
+and CCA components starting from the creation of the SIDL description file.
+
+\subsection{Code Generation}\label{sec:codeGeneration}
+Creating any code using Babel is essentially a two step process.  In the first
+step, Babel creates an Extensible Markup Language (XML) description file for 
+each class, interface, and package that will be used in the project.  
+These XML files contain information on the 
+structures (name, parents, methods, etc.) that are needed by any new classes or
+interfaces that either descend from or make reference to them.  The XML files 
+generated when compiling the TAO SIDL libraries and components are created in 
+the \texttt{src/sidl/xml} directory.  
+Once this repository of XML files has been 
+generated, then future Babel commands
+can access this repository by using one or more \texttt{--repository-path=} 
+command line options 
+designating the name of a directory where these files are located.
+The Babel command used to generate these files 
+from the SIDL description file is
+\begin{verbatim}
+babel --text=xml myfile.sidl
+\end{verbatim}
+
+The next step is the generation of client and server code which is 
+accomplished with more Babel statements.  The command-line options communicate
+to Babel whether client or server code is requested, which language
+to generate it in, the location of any necessary XML files, and which
+directory to send the output to.  For example,
+\begin{verbatim}
+babel --client=C++ --repository-path=$TAO_DIR/src/sidl/xml \  
+    --output-directory=$TAO_DIR/src/sidl/clients/\
+                       Optimize/Optimize-client-C++ \
+    Optimize.OptimizationModel
+\end{verbatim}
+and
+\begin{verbatim}
+babel --server=C++ --repository-path=$TAO_DIR/src/sidl/xml \
+      --output-directory=$TAO_DIR/src/sidl/servers/\
+                         Rosenbrock/Rosenbrock-server-C++ 
+      Rosenbrock.RosenbrockModel
+\end{verbatim}
+
+Running Babel, whether creating client or server code, generates a number of 
+files.  Most of these files can just be created, compiled, and then 
+forgotten, but some of them need further work.  The following is a 
+categorization of these generated files:
+
+\begin{itemize}
+
+\item \textbf{Intermediate Object Representation (IOR) Files}\\
+As discussed in Section~\ref{sec:babel}, Babel allows a program written in one
+programming language to access code written in another language.  
+Instead of implementing 
+this for each possible language-to-language combination, the translation is
+done by routing everything through C with an 
+\textit{Intermediate Object Representation}.
+This is a C structure that holds information on
+an interface or class and includes a table of function pointers, or
+\textit{entry point vector}.  The IOR source files
+define this structure and implement some basic functions that act on it.
+
+\item \textbf{Stub Files} \\
+Stub files are the ``client bindings''.  The functions in these files are 
+called by application code which uses the SIDL interfaces or classes.  For 
+example when the programmer creates an object or accesses one of its methods,
+it is this stub code that is being called.  The actual code in the stub file 
+is a call to the function pointer that corresponds to the method 
+in the entry point vector in the object's IOR structure.
+
+\item \textbf{Skeleton Files} \\
+The skeleton files contain the functions that are pointed to by the pointers
+in the entry point vector.  They in turn are wrappers for the actual function
+implementation which is written by the application developer in the 
+implementation files.
+
+\item \textbf{Implementation Files}\\
+The implementation files are the actual implementation of SIDL 
+server language and are the only generated files that the software developer
+needs to edit.  These methods are not accessed directly by the client programs,
+but instead are ``proxied'' by the functions in the stub and skeleton files.
+
+\item \textbf{Build Files}\\
+Other than code, Babel creates some files that simplify the compilation of 
+the generated code.  A \texttt{babel.make} file is created to define makefile
+macros that list the names of the files that need to be compiled.  Babel also
+creates a \texttt{setup.py} file for Python clients and servers to help in
+creating Python modules.
+\end{itemize}
+
+\subsection{Client Libraries}\label{sec:clientlibs}
+SIDL client libraries are fairly simple to create.  All the code is generated 
+by Babel so there is no need to keep any of the source code in version control,
+and all that needs to be done is to set up makefiles that will run Babel on 
+the SIDL interfaces in the XML repository and compile the resulting files 
+into a client library.
+
+To use the SIDL interface for TAO, several clients must be compiled in all
+of the languages which are desired.  The selection of languages can be set
+before compiling TAO by editing the macro \texttt{SIDL\_CLIENT\_LANGUAGES} in the
+makefile \texttt{\$TAO\_DIR/bmake/packages.\$PETSC\_ARCH}.  The clients 
+required include the \textsf{Optimize.Op\-ti\-mi\-za\-tion\-Mod\-el}, 
+\textsf{Sol\-ver.Op\-ti\-mi\-za\-tion\-Sol\-ver}, \textsf{Solver.Pro\-ject\-State}, 
+and \textsf{Lin\-ear\-Al\-ge\-bra.Fact\-ory}
+interfaces, as
+well as the interfaces and clients in the SIDL package
+(The C clients for the SIDL package are compiled as part of the 
+\texttt{libsidl.so} library in Babel, but clients for other languages must
+also be generated).
+
+Babel eases the compilation of the generated client files into libraries
+by creating files named \texttt{babel.make}, each of which includes macros
+containing lists of all the files that need to be compiled for the library.
+Taking advantage of these macros, TAO has makefile templates for each language
+that define rules to create the client libraries.  The only difference between
+the various makefiles is the name of the library and the location of the source
+files.  The resulting libraries (both static and dynamic) are placed in the 
+same directory as the other
+TAO libraries \url{($TAO_DIR/lib/lib$BOPT/$PETSC_ARCH)} %$
+and have the naming 
+scheme \texttt{lib}package\_name\texttt{-client-}language.
+
+Client libraries are also required for building the TAO CCA components.  For 
+convenience, all of the client-side object code required for 
+using the CCA Ports
+used or required by TAO (\textsf{Optimization\-Ports.SolverPort}, 
+\textsf{Optimization\-Ports.Model\-Port}, and 
+\textsf{Optimization\-Ports.LAFact\-ory\-Port}) are compiled
+into one library for each client language, 
+\texttt{libOp\-ti\-mi\-za\-tion\-Ports-client-}language.
+
+
+\subsection{Server Libraries}\label{sec:serverlibs}
+Building the server libraries is more difficult that the client libraries 
+because generated code and existing code need to be merged together. 
+As discussed in Section~\ref{sec:codeGeneration}, running Babel with the 
+\texttt{--server} option on a class in the XML repository will create 
+a number of files, but the ones that are of most concern are the implementation
+files.  When running Babel for the first time, these files are
+created from templates with the necessary function definitions existing only 
+in stub form.  For example, running Babel on the SIDL class 
+\textsf{TAO.En\-vi\-ron\-ment}
+(declared in the file 
+\begin{verbatim}
+src/sidl/sidlfiles/Taoapi.sidl
+\end{verbatim}
+with the command
+\begin{verbatim}
+babel --server=C++ --outpur-dir=serverfiles \
+  --repository-path=$TAO_DIR/src/sidl/xml TAO.Environment
+\end{verbatim} %$
+will create among others two files named \texttt{TAO\_Solver\_Impl.cc}
+and \texttt{TAO\_Solver\_Impl.hh}.  The C++ header file will contain all the
+necessary class declarations and function prototypes --
+\textsf{\_ctor()},
+\textsf{\_dtor()}, \textsf{Initialize()}, \textsf{InitializeNoArgs()},
+and 
+\textsf{Finalize()} -- and the C++ source file
+will contain definitions for the functions that are empty except for a 
+commented ``splicer block''.  The stub for the function 
+\textsf{Initialize()} will look like:
+
+\small
+\begin{verbatim}
+/**
+ * Method:  Initialize[]
+ */
+int32_t
+TAO::Environment_impl::Initialize (
+  /*in*/ ::SIDL::array< ::std::string> argv ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TAO.Environment.Initialize)
+  // insert implementation here
+  // DO-NOT-DELETE splicer.end(TAO.Environment.Initialize)
+}
+\end{verbatim}
+\normalsize
+
+The purpose of the splicer block is to allow a software developer to edit 
+the code in one of the implementation files without having that code disappear the next
+time Babel is used to re-generate them.  Anything that lies outside of these
+splicer blocks will be lost, but any code written inside of the blocks will be
+saved and transferred to the newly generated file.
+
+Other that the function definitions, there are also splicer blocks for any 
+header files that need to be \texttt{\#include}'d, any data members to be
+declared, and any other C++ classes that the class should descend from.
+Implementation files generated for server languages other than C++
+will also have 
+splicer blocks, but the details and locations will naturally be language
+dependant.
+
+There is a version control issue that appears when developing TAO or
+installing it from
+the Bit\-keeper\cite{bitkeeper} repository (available at \url{http://tao.bkbits.net}).  When checking
+out source from this repository, all of the implementation files are
+present but none of the other Babel-generated files (skeleton, stub, 
+IOR, and build files) are existent.  Therefore one of the makefiles will have
+to run Babel
+to create these files before the library can be built.  The potential trouble
+is that the initial state of the implementation files when checked out
+from the Bitkeeper repository is read-only,
+which would cause an
+error if Babel tries to regenerate these files.  Even if there would be no 
+changes to the file, the Babel execution will fail unless it can write these
+files again.  The solution to this issue implemented in the TAO makefiles is 
+to automatically check out all of the relevant implementation files in
+the TAO file tree
+with a makefile target named \textsf{bkfiles}.  One of the side effects of this 
+workaround is that if Babel changes the ordering of the functions in one of the
+implementation files (the ordering is arbitrary, dependant upon the
+version of Java 
+installed), then the implementation file will appear to bitkeeper to
+have been altered
+and it will want to add that file to the changeset to be checked back in to the
+repository.  
+
+The actual compilation of a server library is very similar to the compilation 
+of a client library and they will be both be installed in the same directory.
+Babel will always create the \texttt{babel.make} file, 
+and the makefile used to build the library will be very similar to the C++ 
+makefile template that was used for the client stubs.  Although it would 
+certainly be possible to use altered templates that would work for the server
+libraries as well as the clients, the small number of server libraries compared
+to the number of client libraries makes this less of a convenience.  Another
+complication to the server libraries is that they depend upon the
+client shared libraries.  This dependency can be handled when writing
+a driver program by linking the driver program with all of the
+necessary dependencies, but when using components the library itself must
+know where to find them.
+
+There are only two non-component server libraries that TAO builds in its
+installation process (both static and dynamic):
+\begin{itemize}
+\item \textbf{libTaoapi-server-C++} This library contains the object code
+for the SIDL classes \textsf{TAO.Solver} and \textsf{TAO.En\-vi\-ron\-ment} 
+(which implement the
+SIDL interfaces \textsf{Sol\-ver.Op\-ti\-mi\-za\-tion\-Sol\-ver} and 
+\textsf{Solver.ProjectState}, 
+respectively).  The TAO.En\-vi\-ron\-ment class is essentially a device for
+calling the functions \textsf{Petsc\_Initialize()} and 
+\textsf{Tao\_Initialize()} when
+starting a TAO application, and \textsf{Tao\_Finalize()} and 
+\textsf{Petsc\_Finalize()} when
+exiting.
+The \textsf{TAO.Solver} class is a wrapper for a TAO\_SOLVER object,
+containing a
+pointer to a TAO\_SOLVER object which is created with a call to
+\textsf{TAO.Solver.Create()} method.
+
+\item \textbf{libRosenbrock-server-C++} This library contains the object code
+for the SIDL class \textsf{Rosen\-brock.Rosen\-brockModel} which
+implements the SIDL interface 
+\textsf{Optimize.Op\-ti\-mi\-za\-tion\-Mod\-el}.  The library is not considered to be
+a TAO library, but is included in the installation for an example of how
+an application programmer would solve their specific optimization problem.
+\end{itemize}
+
+The other server libraries in the TAO installation are those containing the
+CCA components.  Only dynamic libraries are created, and they are placed in 
+the same directory with the rest of the TAO libraries.  
+Table~\ref{table:componentlibs} shows the names of the libraries (dynamic only)
+and which SIDL class it contains the object code for.
+\begin{table}\label{table:componentlibs}
+\caption{List of TAO Component Libraries}
+\begin{center}
+\begin{tabular}{ l | l  }
+Library & SIDL Class  \\
+\hline
+\texttt{libTaoSolver.so} & \textsf{TaoSolver.Component} \\
+\texttt{libTaoDriver.so} & \textsf{TaoDriver.Component} \\ 
+\texttt{libTaoPetscFactory.so} & \textsf{LAPetsc.Factory} \\
+\texttt{libGAFactory.so} & \textsf{GA.Factory} \\
+\texttt{libMinsurf.so} & \textsf{Minsurf.Component} \\
+\end{tabular}
+\end{center}
+\end{table}
+
+\subsection{Developing a SIDL Server Library}\label{sec:exampleModel}
+Development using SIDL and Babel is not as straightforward as development in
+any one of the languages that Babel supports.  This section provides a 
+cookbook-like recipe for creating a new application model that can
+solved with TAO using its SIDL interface, using the minimization of
+the extended Rosen\-brock function\cite{rosenbrock} as an example
+application.  This example is included in the TAO distribution.
+
+
+\begin{enumerate}
+\item \textbf{Creating the .sidl file.} \\
+The first step is
+to create a file describing any new 
+classes or interfaces that the project requires.  Our application wants
+TAO to solve our Rosen\-brock model, so we have to create a class that implements
+the \textsf{Optimize.Op\-ti\-mi\-za\-tion\-Mod\-el}.  Any additional methods we
+wish to add to the
+model must also be placed in the .sidl file.  The following is an example 
+of what this file \texttt{Rosen\-brock.sidl} should look like:
+
+\begin{verbatim}
+package Rosenbrock version 0.0.2 {
+  class RosenbrockModel implements-all 
+                          Optimize.OptimizationModel {
+    void setNumberVariables(in int n);
+    void setAlpha(in double alpha);
+  };
+}
+\end{verbatim}
+
+From the SIDL declaration we cans see that the implementation of the class
+\textsf{Rosen\-brock.Rosen\-brock\-Model} will implement all of the methods declared
+in the \textsf{Optimize.Op\-ti\-mi\-za\-tion\-Mod\-el} interface as well as the two new
+methods \textsf{setNumberVariables()} and \textsf{setAlpha()} which
+are specific to this model.
+
+\item \textbf{Running Babel on the .sidl file.} \\
+Once the SIDL declaration is written, then the server stubs will
+need to be constructed in the desired language (C, C++, F77, F90,
+Python, or Java).  For implementation in C++, this is done with the
+two commands:
+\begin{verbatim}
+babel Rosenbrock.sidl --text=xml \
+                --repository-path=$TAO_DIR/src/sidl/xml
+babel Rosenbrock.Model --server=C++ \
+  --output-directory=Rosenbrock-server-C++ \
+  --repository-path=$TAO_DIR/src/sidl/xml --exclude="^SIDL.*" \
+  --exclude="^Optimize.*"
+\end{verbatim} %
+
+
+The first command creates an XML-formatted description of
+the class \textsf{Rosen\-brock.Rosen\-brock\-Model} in the file 
+\texttt{xml/Rosen\-brock.Rosen\-brockModel-v0.0.2.xml} (If there is already
+an XML description of \textsf{Rosen\-brock.Model} in that directory, 
+then this command
+will fail).  The
+second command will create the actual C++ code necessary to create the library.
+The \texttt{--server} option tells Babel to make the server stubs for
+Rosen\-brock.sidl in the C++ language, the \texttt{--output\--directory} option 
+specifies the
+output directory for the newly created files, and the 
+\texttt{--repository-path}
+specifies the location of the xml repository where the XML-formatted
+definitions of any base classes or interfaces are located.  In the
+command, Babel needed to know how to interpret the interface
+\textsf{Optimize.Op\-ti\-mi\-za\-tion\-Mod\-el} and in the second,
+it needed to know where to
+find information on the class \textsf{Rosen\-brock.Rosen\-brockModel}.
+
+The Babel command will create several files in the 
+\texttt{Rosen\-brock-server-C++} directory:
+\begin{verbatim}
+babel.make      
+Rosenbrock_RosenbrockModel_Impl.hh
+Rosenbrock_RosenbrockModel.cc  
+Rosenbrock_RosenbrockModel_IOR.c
+Rosenbrock_RosenbrockModel.hh
+Rosenbrock_RosenbrockModel_IOR.h
+Rosenbrock_RosenbrockModel_Impl.cc
+Rosenbrock_RosenbrockModel_Skel.cc
+\end{verbatim}
+The \texttt{--exclude} option prevents the generation of the base interfaces 
+that are already part of the TAO client libraries.
+
+
+
+\item \textbf{Implementing the class.} \\
+A look at the \texttt{Rosen\-brock\_Rosen\-brockModel\_Impl.hh}
+file shows that the C++ class \textsf{Rosen\-brockModel\_impl} is declared in the
+package \textsf{Rosen\-brock}, as well as all the methods declared in
+both the \textsf{Optimize.Op\-ti\-mi\-za\-tion\-Mod\-el} interface and the
+\textsf{Rosen\-brock.Rosen\-brock\-Model} class.  You should also notice that there
+are several places in the file that look like:
+
+\small
+\begin{verbatim}
+// DO-NOT-DELETE splicer.begin(Rosenbrock.RosenbrockModel._<something>)
+// Put additional includes or other arbitrary code here...
+// DO-NOT-DELETE splicer.end(Rosenbrock.RosenbrockModel._<something>)
+\end{verbatim}
+\normalsize
+
+These \textbf{splicer blocks} are set up so that the developer can edit the
+code in the file, and the Babel can be
+executed on the SIDL file to generate the code again without losing
+all of the desired edits.  For example, in our Rosen\-brock model, we
+want to add some parameters $alpha$ and $n$ as private 
+data members in the implementation class.  This can be done by editing
+the text found between the implementation splicer blocks:
+
+\small
+\begin{verbatim}
+// DO-NOT-DELETE splicer.begin(Rosenbrock.RosenbrockModel._implementation)
+int n;
+double alpha;
+// DO-NOT-DELETE splicer.end(Rosenbrock.RosenbrockModel._implementation)
+\end{verbatim}
+\normalsize
+If necessary, we could add additional \texttt{\#include} statements,
+inherit from other C++ classes, or add more private data members or
+methods to this file as long as the additional code is inserted inside
+these splicer blocks.
+
+The majority of the model implementation is done inside of the
+\texttt{Rosen\-brock\_Rosen\-brock\-Model\_Impl.cc} file.  Each member method of the
+\textsf{Rosen\-brock.Rosen\-brockModel} SIDL class is represented here by an
+equivalently-named method in the \textsf{Rosen\-brock::Rosen\-brock\-Model\_impl} C++
+class which is initially empty except for a splicer block.  The splicer block
+corresponding to each member method can now be implemented, as well as
+the constructor and destructor methods \textsf{\_ctor()} and
+\textsf{\_dtor()}.  For example, to implement the \textsf{setAlpha()}
+method, the code block
+\small
+\begin{verbatim}
+// DO-NOT-DELETE splicer.begin(Rosenbrock.RosenbrockModel.setAlpha)
+// insert implemenation here
+// DO-NOT-DELETE splicer.end(Rosenbrock.RosenbrockModel.setAlpha)
+\end{verbatim}
+\normalsize
+needs to be replaced with
+\small
+\begin{verbatim}
+// DO-NOT-DELETE splicer.begin(Rosenbrock.RosenbrockModel.setAlpha)
+this->alpha = alpha;
+// DO-NOT-DELETE splicer.end(Rosenbrock.RosenbrockModel.setAlpha)
+\end{verbatim}
+\normalsize
+assuming of course that \texttt{alpha} was declared as a data member
+in the header implementation file.
+
+\item \textbf{Compiling the server library}\\
+After all of the necessary methods have been implemented, then the
+files can be compiled to form a shared library.  By taking advantage
+of the \texttt{babel.make} file, this can be done with a simple makefile such
+as in Figure~\ref{fig:modelmakefile}
+\begin{figure}[H]\label{fig:modelmakefile}
+  {\footnotesize \verbatiminput{modelmakefile}}
+\caption{Sample makefile for Rosenbrock.RosenbrockModel}
+\end{figure}
+
+\item \textbf{Writing the .scl file.}\\
+Starting with Babel version 0.9.0, an additional SIDL Class List file (SCL
+file) is required for each dynamically loadable server library 
+This SCL file is used to determine what classes are available for
+loading and which library contains the implementation.  These SCL
+files should be placed in the path of the environment variable 
+\texttt{SIDL\_DLL\_PATH} along with the shared library.
+An SCL file for the Rosen\-brock server library
+(\texttt{libRosen\-brock-server-C++.so.scl})
+could look like the following:
+\begin{verbatim}
+<?xml version="1.0"?> 
+<scl>
+  <library uri="libRosenbrock-server-C++.so" 
+	scope="global" 
+	resolution="now" > 
+    <class name="Rosenbrock.RosenbrockModel" desc="ior/impl" />
+  </library>
+</scl>
+\end{verbatim}
+The online documentation on Babel's Web page \cite{babel} has more 
+information on the creation of these files and the meanings of the variables.
+
+
+
+
+\item \textbf{Creating the client library.} \\
+The client libraries are easier to create than the server library because
+all the necessary code is generated automatically by Babel.  The command used
+to to this for the C++ clients is:
+\begin{verbatim}
+babel Rosenbrock.RosenbrockModel --client=C++  \
+   --output-directory=Rosenbrock-client-C++ \
+   --repository-path=$TAO_DIR/src/sidl/xml \
+   --exclude="^SIDL.*" --exclude="Optimize.*"
+\end{verbatim} %$
+
+This creates the files:\\
+\begin{verbatim}
+babel.make
+Rosenbrock_RosenbrockModel_IOR.c
+Rosenbrock_RosenbrockModel.cc
+Rosenbrock_RosenbrockModel_IOR.h
+Rosenbrock_RosenbrockModel.hh
+\end{verbatim}
+
+These files can be formed into a client library using a C++ compiler (g++ for
+example) with the command:
+\begin{verbatim}
+g++ -shared -fPIC Rosenbrock_RosenbrockModel.cc \
+  -I$BABEL_HOME/include \
+  -I$TAO_DIR/src/sidl/Optimize/Optimize-client-C++ \
+  -o libRosenbrock-client-C++.so 
+\end{verbatim}
+where \texttt{\$BABEL\_HOME} is the location of the Babel installation.
+
+\item \textbf{Writing the driver.} \\
+\label{sec:driverprogram}
+Once the Rosen\-brock-server-C++ library and Rosenbrock client libraries
+has been created, then we can
+create a driver program that will create the necessary instances of
+\textsf{TAO.En\-vi\-ron\-ment}, \textsf{TAO.Solver}, and
+\textsf{Rosen\-brock.Rosen\-brockModel}, and run
+the solver.  By taking advantage of the language interoperability that
+SIDL offers, this driver can be written in any language that Babel
+supports.
+A bare-bones example of such a driver written in C is presented here in
+Figure~\ref{fig:rosenbrock.c},
+but full F77, C,
+Python, and C++ examples can be found in \texttt{src/sidl/examples}.
+To run these programs, several environment variables must be set to enable
+the Babel run-time library to find and load the various shared libraries and
+Python modules.
+\begin{itemize}
+\item \texttt{SIDL\_DLL\_PATH}.  This variable lets Babel know where the shared
+libraries are for the dynamic loading of SIDL classes.  It should contain 
+the location of the TAO shared libraries
+(\texttt{\$TAO\_DIR/lib/lib\$BOPT/\$PETSC\_ARCH})
+and the location of the Rosen\-brock server library.  When using Python clients,
+this variable also needs to have the location of the directory containing
+the shared library \texttt{libsidl.so}. 
+Multiple directories listed in \texttt{SIDL\_DLL\_PATH} must be delimited by
+a semicolon, and the order of the directories is important.  For our example,
+the location of the \texttt{libsidl.so} library must be listed before the 
+location of the TAO libraries.
+\item \texttt{LD\_LIBRARY\_PATH}.  If accessing any SIDL libraries from a 
+Python client, then this needs 
+to be set to the name of the directory containing the Babel 
+library \texttt{libsidl.so}.
+\item \texttt{PYTHONPATH}.  If accessing any SIDL libraries from a Python 
+client, then this variable should
+contain the locations of any Python client modules that are required (modules
+that are loaded using the ``import'' statement).  For the TAO example, this
+variable should be set to
+\url{(babel-install-dir)/lib/python2.3/site-packages:$TAO_DIR/lib/python2.3/site-packages}. %$
+If using a version of Python other than 2.3, than the major and minor
+version numbers should be reflected in the environment variable.
+\end{itemize}
+
+\begin{figure}[H]
+  {\footnotesize \verbatiminput{rosenbrock.c}}
+\caption{Sample C Driver program\label{fig:rosenbrock.c}}
+\end{figure}
+
+\end{enumerate}
+
+
+\subsection{Developing a Model CCA Component}\label{sec:exampleServer}
+Creating a CCA component that plugs into TAO's 
+\textsf{Op\-ti\-mi\-za\-tion\-Ports.ModelPort}
+is very similar to the way the Rosenbrock implementation class
+was written in Section~\ref{sec:exampleModel}.  First, write a SIDL
+file that declares a new class implementing both the 
+\textsf{OptimizationPorts.ModelPort} and \textsf{gov.cca.Component}
+interfaces.
+Then
+run Babel on the SIDL file to create server stubs, fill in the
+splicer-blocks in the newly-created implementation files, and compile
+the files into a library.  One additional step is required, the
+creation of the .cca description file to identify the
+components to the CCA framework.
+
+The following list describes the process of creating a model
+component, using TAO's minimum surface area example (minsurf) as a reference.
+This component is included in the TAO distribution.
+
+\begin{enumerate}
+\item \textbf{Creating the .sidl file.}  \\
+As we did in creating the Rosenbrock server library, the first step we
+need to do is describe our minsurf problem.  The component will need
+to implement the \textsf{OptimizationPorts.ModelPort} and 
+\textsf{gov.cca.Component}
+interfaces, so the file should look like the following 
+Note that
+there is no possibility to add any new public methods to the class
+because these methods would be unavailable to other components.
+\begin{verbatim}
+package Minsurf version 0.0.3 {
+  class Component implements-all OptimizationPorts.ModelPort,
+    gov.cca.Component {};
+};
+\end{verbatim}
+
+\item \textbf{Running Babel on the .sidl file.} \\
+The minsurf component can be implemented in any of the Babel-supported
+languages.  The chosen language -- TAO implementes minsurf in C++ --
+must then be used as an argument when running Babel on the SIDL file
+to create the implementation files in the directory Minsurf.
+\begin{verbatim}
+babel Minsurf.sidl --text=xml --output-directory=xmldir \
+  --repository-path=$TAO_DIR/src/sidl/xml
+babel Minsurf.Component --server=C++ --exclude="^SIDL.*" \
+  --exclude="^gov.*" \
+  --exclude="^Optimize.*" \
+  --repository-path=$TAO_DIR/src/sidl/xml \
+  --repository-path=xmldir --output-directory=Minsurf 
+\end{verbatim}
+
+If the Minsurf XML files already exist in \$TAO\_DIR/src/sidl/xml, 
+then you will get a ``Redefinition of symbol'' error when you
+execute the first babel command.
+
+The Babel commands will create several files in the \texttt{Minsurf}
+directory:
+\begin{verbatim}
+Minsurf_Component.cc
+Minsurf_Component_Impl.cc
+Minsurf_Component.hh
+Minsurf_Component_Impl.hh
+Minsurf_Component_IOR.c
+Minsurf_Component_Skel.cc
+Minsurf_Component_IOR.h
+babel.make
+\end{verbatim}
+
+\item \textbf{Implementing the class.} \\
+Only two of the above files need to be edited,
+\texttt{Min\-surf\_Comp\-onent\_Impl.hh} and
+\texttt{Min\-surf\_Comp\-onent\_Impl.cc}.  These files when created by
+Babel only have the class declaration and class method prototypes in the
+header file and method stubs in the C++ source file.  The application
+programmer is responsible for adding the appropriate code between the
+splicer blocks of these implementation files.  For the minsurf
+example we used several data members and introduced a new helper
+method, so we have to add them to the header file.  We replace:
+\small
+\begin{verbatim}
+// DO-NOT-DELETE splicer.begin(Minsurf.Component._implementation)
+// Put additional implementation details here...
+// DO-NOT-DELETE splicer.end(Minsurf.Component._implementation)
+\end{verbatim}
+\normalsize
+with
+\small
+\begin{verbatim}
+// DO-NOT-DELETE splicer.begin(Minsurf.Component._implementation)
+double *bottom, *top, *left, *right;
+int  mx,my; // global dimension in each direction of the array
+int  bmx, bmy; // bounds
+double bheight;
+int n_iters;
+double fvalue;
+
+int MSA_BoundaryConditions(); // Calculate boundary conditions
+// DO-NOT-DELETE splicer.end(Minsurf.Component._implementation)
+\end{verbatim}
+\normalsize
+
+Likewise, the methods in the source file will also have to be
+implemented by adding code between the method's splicer blocks:
+\texttt{
+\begin{itemize}
+\item \_ctor()
+\item \_dtor()
+\item initialize()
+\item finalize()
+\item getNumberVariables()
+\item evaluateObjectiveFunction()
+\item evaluateGradient()
+\item evaluateObjectiveAndGradient()
+\item evaluateHessian()
+\item getVariableBounds()
+\item initializeVariables()
+\item monitor()
+\item checkConvergence()
+\item setServices()
+\end{itemize}
+}
+
+Also, the user-defined method \textsf{MSA\_BoundaryConditions()} that
+was declared in the header file will also have to be implemented in
+the C++ source file.  The correct location for the implementation and
+any other additional methods is between the splicer blocks labeled
+``Minsurf.Component.\_misc'' towards the end of the file.
+
+The \textsf{setServices()} function is inherited from the interface
+\textsf{gov.cca.Component}.  The method will be called from the framework in
+order to get information on what CCA ports this component uses and
+requires.  This method is also called with a null argument when the
+framework is finished with the component.  Our component provides one
+port \textsf{OptimizationPorts.ModelPort} which is identified by the string
+``Op\-ti\-mi\-za\-tion\-Mod\-el'', and doesn't require any other ports to run, so a
+simplified implementation could look like this:
+\small
+\begin{verbatim}
+void
+Minsurf::Component_impl::setServices (
+  /*in*/ ::gov::cca::Services services ) 
+throw ( 
+  ::gov::cca::CCAException
+){
+  // DO-NOT-DELETE splicer.begin(Minsurf.Component.setServices)
+  if (services._not_nil()) 
+    services.addProvidesPort(self,"OptimizationModel","OptimizationPorts.ModelPort",0);
+
+  // DO-NOT-DELETE splicer.end(Minsurf.Component.setServices)
+}
+\end{verbatim}
+\normalsize
+
+\item \textbf{Compiling the component into a library.}\\
+Here is an example makefile that can be used to create the component
+library.
+\begin{verbatim}
+include babel.make
+BABEL_ROOT=/usr/local/babel
+OBJS=${IMPLSRCS:.cc=.o} ${IORSRCS:.c=.o} ${SKELSRCS:.cc=.o} \
+     ${STUBSRCS:.cc=.o}
+INCLUDES = -I${BABEL_ROOT}/include \
+        -I$(TAO_DIR)/src/sidl/clients/SIDL/SIDL-client-C++ \
+	-I$(TAO_DIR)/src/sidl/components/OptimizationPorts-C++ \
+
+LIBS = ${PETSC_C_SH_LIB_PATH} ${PETSC_LIB} ${TAO_C_SH_LIB_PATH} \
+        ${TAO_LIB} \
+	${SIDL_LIB} ${TAO_SIDLCLIENT_CXX_LIB} ${TAO_SIDL_SERVER_LIB} \
+        -lOptimizationPorts-client-C++ \
+    ${CLINKER_SLFLAG}${CCASO_DIR}  -L${CCASO_DIR} -lcca 
+
+libMinsurf.so: ${OBJS}
+	g++ -shared ${OBJS} -o libRosenbrockModel.so 
+.c.o:
+	gcc -fPIC -c ${INCLUDES} $<
+.cc.o:
+	g++ -fPIC -c ${INCLUDES} $<
+
+\end{verbatim} %$
+
+\item \textbf{Creating the .scl and .cca files.}\\
+The final step in creating a Ccaffeine-usable CCA component is to
+create an .scl file and a .cca file.  The .scl file is required by
+Babel for information on which SIDL classes are implemented in which
+shared library files.  See Section~\ref{sec:exampleServer} for more
+information on creating .scl files.
+
+While Babel requires the .scl files for loading SIDL server classes,
+the Ccaffeine framework requires its own type of 
+file (.cca) as a way to let Ccaffeine know which 
+components are available for loading.
+Like the .scl file, the .cca file is written in XML format, and it needs
+to be in a directory
+readable by the Ccaffeine ``path'' variable (in the Ccaffeine scripting
+interface, this variable is set with the \texttt{path set} or
+\texttt{path append} commands).  During installation, TAO creates
+these files from the template in 
+\texttt{\$TAO\_DIR/src/sidl/components/cca\_template}
+and installs them in the same directory as the component library.
+The .cca file for the \texttt{TaoSolver} directory is 
+
+\begin{verbatim}
+<xml>
+<componentDeployment
+  name="TaoSolver.Component"
+  paletteClassAlias="TaoSolver.Component"
+>
+    <environment>
+        <ccaSpec binding="babel" />
+        <library loading="dynamic"
+                 location="libTaoSolver.so.scl"
+        />
+    </environment>
+</componentDeployment>
+</xml>
+\end{verbatim}
+
+
+
+\item \textbf{Running the new model.}
+You can run this model using the same driver, solver, and linear
+algebra components that are included in the TAO installation.  In
+order to use the new Minsurf component as the model, you need to add
+the location of the library and .cca file to the Ccaffeine script file
+with the line
+
+\noindent \texttt{path set /path/to/Minsurf.so}
+
+If you are using the same CCAFERC and components.cca file that are
+included in the TAO distribution, then you will want to add the
+previous line to CCAFERC before setting the path to the location of
+the TAO libraries.  This will prevent Ccaffeine from loading the
+already existant \textsf{Minsurf.Component} in favor of the component that you
+have just created.
+
+\end{enumerate}
+
+\subsection{TaoSIDLApplication Class}
+When TAO is used to solve an optimization application, there are several 
+application-specific operations that need to be defined by the application
+programmer.  These include the calculation of the objective function
+and its gradient 
+and Hessian at a given vector, any bounds on the variables, and the initial
+vector to use.  The operations that TAO needs are declared in the abstract 
+class \textsf{TaoApplication}.  In the example suite included in the TAO 
+distribution, this class is implemented with the 
+\textsf{TaoPetscApplication} class (or 
+the \textsf{TaoGAApplication} class if using Global Arrays instead of PETSc 
+objects).  The TaoPetscApplication class (or TaoGAApplication) is used as an 
+adaptor for the \textsf{TAO\_APPLICATION} class (or 
+\textsf{TAO\_GA\_APPLICATION}), which contains a table of the 
+operations provided by the application programmer.
+
+When using the SIDL interface, the class implementing the 
+\textsf{TaoApplication}
+abstract class is \textsf{TaoSIDLApplication}.  This class is an adaptor for 
+the SIDL interface \textsf{Optimize.Op\-ti\-mi\-za\-tion\-Mod\-el} discussed in 
+Section~\ref{sec:optimizationModel}.  Through this adaptor (the C++ 
+code can be found in the directory \texttt{src/sidl/interface}) TAO is able to 
+gather the necessary information on an optimization application which has
+been programmed as an implemenation of the 
+\textsf{Optimize.Op\-ti\-mi\-za\-tion\-Mod\-el}.
+
+\subsection{Modifying Existing SIDL Interfaces}
+The SIDL interfaces for TAO is still in a developmental stage, so
+there may be occasions in the future when one of these interfaces will 
+need to be modified.  This section is intended to provide some
+instruction on making these modifications.  In particular, focus will
+be given to the likely task of adding a new method to the
+\textsf{Optimize.Op\-ti\-mi\-za\-tion\-Mod\-el} interface, which controls the flow of
+information between the TAO solver and the optimization model.
+
+The first step is to make a change to the SIDL file.  This is similar
+to changing the header file for C or C++ and should not be done
+lightly, particularly if the SIDL file is part of an already
+agreed-upon interface.  After this change, then all of the client
+libraries will need to be recompiled, the application code that uses
+this clients will need to be modified to reflect the changes in the
+interface, and finally the implementation files themselves will have
+to be modified.
+
+As an example, consider the possibility of the TAO solver requiring
+the Jacobian information from the optimization model.  The following
+is a detailed list of steps necessary for this modification.
+
+\begin{itemize}
+\item \textbf{Cleaning out the source tree.} \\
+  Before making any changes
+  to the SIDL file, it would be a good idea to clean out any files
+  that make reference to the old SIDL files.  This is similar to the
+  step of removing any C or C++ object files that were compiled with 
+  outdated headers.  This can be accomplished with the commands: 
+\begin{verbatim}
+cd $TAO_DIR/src/sidl
+make tree ACTION=clean
+\end{verbatim} #$
+
+\item \textbf{Modifying the SIDL file.} \\
+  The \texttt{Optimize.sidl} file will
+  need to be changed to reflect this new requirement.  In this case,
+  we will add a new method to the interface to calculate the
+  Jacobian.  This can be done by adding the lines to the \texttt{Optimize.sidl}
+  file:
+\begin{verbatim}
+/**
+ * evaluateJacobian() calculates the Jacobian of the constraint
+ * function at a given x
+ */
+void evaluateJacobian(in array<double,1> x, 
+                      in array<double,2> J);
+\end{verbatim}
+
+\item \textbf{Making the call.}  \\
+  Now that the interface has the
+  required method, somewhere TAO needs to make a call to that method.
+  Because the \textsf{TaoApplication} C++ class already has the virtual method
+  \textsf{EvaluateJacobian()}, this can be accomplished by modifying
+  \textsf{TaoSIDLApplication} C++ class (which inherits from 
+  \textsf{TaoApplication}) to
+  implement this virtual method.  Specifically, the method
+  \textsf{TaoSIDLApplication::EvaluateJacabian(TaoVec *xx, TaoMat *JJ)} will
+  need to be added to the files \texttt{taoapp\_sidl.c} and 
+  \texttt{taoapp\_sidl.h} in the
+  \texttt{src/sidl/interface directory}.  The implementation of this method
+  will be a matter of converting the TaoVec and TaoMat pointers to
+  SIDL arrays, and passing these SIDL arrays to the
+  \textsf{model.eval\-uate\-Jacobian()} method.  More details on
+  this sequence of steps
+  can be found by analyzing the \textsf{TaoSIDLApplication::EvaluateHessian()}
+  method.
+
+\item \textbf{Implementing the m ethod.} \\
+  Before the implementation can
+  be performed, Babel will need to be rerun on the altered SIDL file
+  in order to append the empty function \textsf{evaluateJacobian()} to
+  the (perhaps)
+  already existing implementation files (See
+  Section~\ref{sec:exampleModel} for more on running Babel).  Once the
+  splicer block is in place, then the \textsf{evaluateJacobian()} method can be
+  programmed.
+
+\item \textbf{Recompiling.}
+  \begin{verbatim}
+    cd $TAO_DIR/src/sidl
+    make 
+  \end{verbatim} #$
+  
+
+\end{itemize}
+
+\subsection{RPM's}
+After Supercomputing 2002, the cca-forum group decided to distribute
+the various CCA demos to the public in RPM (RPM Package Manager)
+format.  This required that each demo developer create an RPM
+containing their component libraries.  These RPM's, and their
+prerequisites,
+are available for Linux 
+Red Hat 7.3 and Red Hat 8.0, and can be downloaded from the cca-forum
+website \url{http://www.cca-forum.org/}.  The list of required
+prerequisites (in recommended installation order) is:
+\begin{itemize}
+\item blas and lapack -- included in Red Hat distributions
+\item mpich-1.2.5-1b.i586.rpm
+\item boost-hdrs-1.30.0-cca.1.noarch.rpm    
+\item j2sdk-1\_4\_1\_01-linux-i586-rpm.bin 
+\item python-so-2.2.1-17.cca.1.rh8.i386.rpm   
+\item babel-0.8.4-cca.1.i386.rpm  
+\item cca-spec-babel-0.6.1-cca.5.rh8.i386.rpm  
+\item cca-spec-classic-0.5.6-cca.1.rh80.i386.rpm  
+\item ccafe-0.4.1-cca.3.rh8.i386.rpm   
+\end{itemize}
+
+This section is
+provided as a quick reference on the creation of the TAO RPM's, which
+install PETSc-2.1.5, TAO-1.5, and TaoSolverComponents on a Red Hat 7.3 or
+Red Hat 8.0 Linux machine.
+
+\begin{itemize}
+\item \textbf{Getting started.} \\
+The first step in creating RPM's is 
+to have root access to a Red Hat
+7.3 or 8.0 installation and install the necessary prerequisites.  This
+can be done with the command 
+\begin{verbatim} 
+rpm -i <rpm-file>
+\end{verbatim} 
+for each of the prerequisites.
+The next step is to create directories for the TAO 
+packages to build in.  First make a directory for the
+RPM's (I used \url{/home/sarich/rpm}) and setting this path as the
+build location by creating a file \texttt{.rpmmacros} in your home directory.
+This file should contain the location of the build directory:
+\begin{verbatim}
+%_topdir /home/sarich/rpm
+\end{verbatim} 
+to the file \url{/home/sarich/.rpmmacros}.  Next, create subdirectories
+\texttt{SPECS} and \texttt{SOURCES} under the root rpm directory 
+(\url{/home/sarich/rpm/SPECS} and \url{/home/sarich/rpm/SOURCES}).
+
+\item \textbf{Creating the sources.}\\
+The source tarballs for the PETSc-2.1.5 and TAO-1.5 releases were used
+to create the RPM's.  These tar files need to be copied to the newly
+created \texttt{SOURCES} directory.  An extra patch file for the PETSc source
+must also be placed in this directory.  The patch is necessary because 
+when PETSc and TAO compile they permanently set the search path for the
+dynamic loading of shared libraries, but the RPM build
+process compiles the libraries in a separate directory from
+where they will be installed.  In the PETSc source, the actual changes
+that needs to be made are to the \url{bmake/linux/packages} file (change the
+packages file to select the MPI, blas, and lapack directories from the
+blas, lapack, and MPICH RPM's, and comment out the BlockSolve95
+lines), and in the \url{src/sys/src/dll/makefile}
+file, \url{$PETSC_LIB_DIR} needs to be replaced with
+\url{/usr/local/cca/petsc/lib/lib$BOPT/$PETSC_ARCH}. %$
+The change
+that needs to be made to the TAO source is in
+\url{src/interface/tao\_init.c}. 
+The line \texttt{\#include <stdlib.h>} needs to be included at the beginning of
+the file and
+\texttt{setenv("TAO\_DIR",}\texttt{"/usr/local/cca/tao",0);} needs to be added 
+to the function \textsf{TaoInitialize()} before the call to 
+\textsf{TaoStandardRegisterAll()}
+
+
+The PETSc patch should be made with the following commands and moved
+to the \texttt{SOURCES} directory:
+\begin{verbatim}
+gunzip petsc-2.1.5.tar.gz
+tar xf petsc-2.1.5.tar
+mv petsc petsc-orig
+tar xf petsc-2.1.5.tar
+<make the necessary changes to the petsc-old directory>
+diff -uNr petsc-orig petsc > petsc-2.1.5-redhat.patch
+\end{verbatim}
+
+The TAO patch \url{tao-1.5-redhat.patch} should be made in a similar way.
+
+
+The RPM for the TAO components are in a separate package from the
+TAO-1.5 RPM.  The reasons for this were so that the base TAO installation
+could be installed for users who weren't interested in using the
+components, and because the cca-forum group suggested that the various
+components be installed in particular directories (which were outside
+of the TAO source tree).  In hindsight, 
+this was probably a mistake because of the
+extra work involved, and any future versions would be better off just
+making a single RPM package.  
+
+In any case, the sources for the TaoSolverComponents RPM package are
+basically the files from the TAO \url{src/sidl/components} directory with
+some of the \texttt{.sidl} files moved around.
+Also added is a \texttt{runMinsurf} script to
+test that the RPM's have been successfully installed.
+The later section on SRPM's will explain how to access the actual source
+files used in creating the TaoSolverComponents RPM.
+
+
+
+\item \textbf{Writing the specification files.}\\
+The specification (or .spec) file is the list of directions used to
+build the RPM.
+More details on the syntax of the spec file can be found at
+\url{http://www.rpm.org}.  
+The basic structure of the specification file is to
+provide some information on the package to be built, identify the
+source and any patches to be compiled, give the commands necessare to
+compile and install the package on the RPM developer's machine, 
+and provide a list of all of the files that need to be installed onto
+the target machine.
+
+The specification file used to create the PETSc RPM, minus a complete listing
+of all the installation files, can be found in Figure~\ref{fig:petsc.spec}.
+
+\begin{figure}[H]
+  {\tiny \verbatiminput{petsc.spec}}
+\caption{specification file for building PETSc RPM\label{fig:petsc.spec}}
+\end{figure}
+
+
+\item \textbf{Building the RPM's and SRPM's.}\\
+Once the source tarballs and patches have been placed in the SOURCES
+directory and the specification files in the SPECS directory, each of the RPM's
+and SRPM's (source RPM) can be built with the command \\
+\texttt{rpmbuild -ba <specfile>}\\
+where \texttt{specfile} is the name of the specification file.
+The SRPM is a separate package from the RPM, in that it contains the
+source code and specification file of a package, but doesn't actually
+contain the libraries, headers, or documentation that are to be
+installed.  The purpose of the SRPM is to provide the necessary
+materials to build the actual RPM on any system.  The SRPM's for the
+PETSc-2.1.5, TAO-1.5, and TaoSolverComponents RPM's are available from
+the cca-forum web site in the directory
+\url{http://www.cca-forum.org/download/SC02/redhat/8.0/SRPMS}.  
+After the RPM's and SRPM's have been built, they can be installed by the root
+user with the command
+\texttt{rpm -i <rpmfile>}
+
+Building or installing the RPM's requires that the prerequisites have
+already been installed on the system, but SRPM's can be installed anytime.
+\end{itemize}
+
+\subsection{Troubleshooting}
+While working on developing a SIDL interface and CCA components for
+TAO, several questions, bugs, linking problems, and other issues have arisen
+enough times that a special section of the report has been written to
+address these symptoms and their possible causes.
+\begin{itemize}
+\item \textbf{How do I start a TaoSolver component application in the
+  gdb debugger?}\\
+One way to do this is to add a command to the Ccaffeine resource file:\\
+\texttt{
+parameter solver configure tao\_options -start\_in\_debugger
+}
+This is identical to using the command-line option
+\texttt{-start\_in\_debugger} in a non-SIDL PETSc or TAO application.
+
+\item \textbf{Why are some of the tao\_options ignored?}\\
+Writing more that one \texttt{parameter solver configure tao\_options}
+command to the Ccaffeine resource file will result in only the final
+line being read.  If you wish to set more that one TAO or PETSc
+option, then you will need to place them all on the same
+\texttt{parameter} line, with the different options separated by ``\%'s''.
+
+\item \textbf{When I try to run a component application using
+  Ccaffeine, it complains that one of the libraries cannot be loaded.}\\
+There are several causes for this, but it is difficult to determine
+which because of the unhelpful error messages that Babel and Ccaffeine
+give. One possibility is that the environment
+variables \texttt{SIDL\_DLL\_PATH}, \texttt{LD\_LIBRARY\_PATH},
+  and \texttt{PYTHONPATH} have not been set correctly or the
+  \texttt{.scl} or \texttt{.cca} files are missing or incorrect.
+Another possibility is that the
+  Babel-created IOR.c files were compiled using a C++ compiler.  This
+  can be checked for by listing the symbols in the libraries and
+  seeing if there is a name-mangled \texttt{set\_epv} symbol.
+It's also possible that your library has not been compiled correctly.
+  Check to make sure that the loader can find all of the libraries
+  your component depends on (use \texttt{ldd} in Linux), or to be more
+  thorough, write
+  a simple C driver program that loads your library and its
+  dependencies.  Setting the environment variable
+  \texttt{SIDL\_DLOPEN\_DEBUG} (or \texttt{sidl\_DLOPEN\_DEBUG} in
+  Babel versions 0.9.0 and 0.9.2 because of a bug) to ``1'' will
+  cause the Babel class loader to print out some helpful error
+  messages when a class fails to load.
+\end{itemize}
+
+
+\section{Acknowledgements}
+Thanks to the CCA Forum for their help with software issues.  Especially Rob Armstrong and Ben Allan for their help with Ccaffeine and Boyana Norris for answering my hundreds of questions.
+
+
+
+
+\begin{thebibliography}{2}
+\bibitem[1]{ccaffeine}
+  Benjamin A. Allan, Robert C. Armstrong, Alicia P. Wolfe, Jaideep
+  Ray, David E. Bernholdt and James A. Kohl, 
+  "The CCA Core Specification in a Distributed Memory SPMD Framework,"  
+  Concurrency : Practice and Experience , 14(5):323-345, 2002.
+\bibitem[2]{petsc}
+  Satish Balay, Kris Buschelman, William D. Gropp, Dinesh Kaushik,
+  Matt Knepley, Lois Curfman McInnes, Barry F. Smith, and Hong Zhang.
+  PETSc Web page.  See \url{http://www.mcs.anl.gov/petsc}.
+\bibitem[3]{tao}
+  Steve Benson, Lois Curfman McInnes, Jorge Mor\'e, and Jason Sarich.  
+  TAO Web Page.  See \url{http://www.mcs.anl.gov/tao}.
+\bibitem[4]{bitkeeper}
+  Bitkeeper Web page.  See \url{http://www.bitkeeper.com}.
+\bibitem[5]{cca}
+  Common Component Architecture Forum Web page.  
+  See \url{http://www.cca-forum.org}.
+\bibitem[6]{babel}
+  Tamara Dahlgren, Tom Epperly, and Gary Kumfert.  Babel Web page.
+  See \url{http://www.llnl.gov/CASC/components/babel.html}.
+\bibitem[7]{mpi}
+  William Gropp and Ewing Lusk.  MPICH Web page.  See
+  \url{http://www.mcs.anl.gov/mpi/mpich}.
+\bibitem[8]{rosenbrock}
+  H. H. Rosenbrock, "An Automatic Method for Finding the Greatest or Least Value of a Function," Computer Journal, Vol 3, pp. 175-184, 1960.
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,147 @@
+
+\chapter{Advanced Options}
+
+This section discusses options and routines that apply to all TAO
+solvers and problem classes.  In particular, we focus on
+convergence tests and line searches.
+
+
+
+\section{Convergence Tests}
+\label{sec:Taoconvergence}
+
+There are many different ways to define convergence of a solver.
+The methods TAO uses by default are mentioned in 
+Section \ref{sec:customize}.
+These methods include absolute and relative convergence tolerances as well
+as a maximum number of iterations of function evaluations.
+If these choices are not sufficient, 
+the user can even specify a customized test\sindex{convergence tests}. 
+
+Users can set their own customized convergence tests of the form
+\begin{verbatim}
+   int  conv(TAO_SOLVER tao, void *cctx);
+\end{verbatim}
+\noindent
+The second argument
+is a pointer to a structure defined by the user.
+Within this routine, the solver
+can be queried for the solution vector, gradient vector,
+or other statistic at the current iteration through routines such as
+{\tt TaoGetSolutionStatus()} and  {\tt TaoGetTolerances()}.
+
+To use this convergence test within a TAO solver, use
+the command \findex{TaoSetConvergenceTest()}
+\begin{verbatim}
+      int TaoSetConvergenceTest(TAO_SOLVER solver,
+                                int (*conv)(TAO_SOLVER tao,
+                                            void *cctx),
+                                void *cctx);
+\end{verbatim}
+\noindent
+The second argument of this command is the convergence routine, and the
+final argument of the convergence test routine, {\tt cctx},
+denotes an optional user-defined context for private data.  
+The convergence routine receives the TAO solver and this private data
+structure. 
+The termination flag can be set using the routine
+\begin{verbatim}
+   int TaoSetTerminationReason(TAO_SOLVER , TaoTerminationReason*);
+\end{verbatim}
+\noindent
+
+
+
+\section{Line Searches} \sindex{line search}
+\label{sec:TaoLineSearch}
+
+Many solver in TAO require a line search.  While these solver always
+offer a default line search, alternative line searches can also be used.
+Line searches must have the form:
+\begin{verbatim}
+    int L(TAO_SOLVER tao,TaoVec *xx,TaoVec *gg,TaoVec *dx, TaoVec *ww,
+          double *f, double *step,double *gdx,int *flg,void *lsctx);
+\end{verbatim}
+In this routine the first argument is the TAO solver, the second argument
+is the current solution vector, the third argument is the gradient at
+the current point, the fourth argument is the step direction, the fourth
+vector is a work vector, the fifth argument is the function value, the
+sixth argument is the step length, the seventh argument is the inner
+product of the gradient and direction vector used for the Armijo condition,
+the eighth argument is a flag indicating success or
+failure of the line search, and the last argument is a pointer to
+a structure that can be used to define the line search.  When the 
+routine is finished the solution vector {\tt xx}, gradient vector {\tt gg}, 
+function value {\tt f}, step size {\tt step}, and {\tt flg} should be
+updated to reflect the new solution.
+
+This routine can be set with the function \findex{TaoSetLineSearch()}
+\begin{verbatim}
+   int TaoSetLineSearch(TAO_SOLVER solver, 
+                  int (*setup)(TAO_SOLVER, void*),
+		  int (*options)(TAO_SOLVER,void*),
+                  int (*line)(TAO_SOLVER,TaoVec*,TaoVec*,TaoVec*,TaoVec*,
+                           double*,double*,double*,int*,void*),
+                  int (*viewit)(TAO_SOLVER,void*),
+		  int (*destroy)(TAO_SOLVER,void*),
+                  void *ctx);
+\end{verbatim}
+\noindent
+In this routine, the fourth argument is the function pointer to the line
+search routine, and the seventh argument is the pointer that will be passed
+to the line search routine.  The other arguments are optional function 
+pointers than can be used to set up, view, and deallocate the solver.
+
+\begin{comment}
+%Three of the algorithms mentioned earlier contain a line search.
+%By default, this technique employs cubic interpolation and
+%backtracking \cite{dennis:83}.
+%The default line search algorithm is taken from Mor\'{e} and Thuente
+%\cite{more:92}. 
+
+%Other line search methods provided by PETSc are 
+%{\tt TaoQuadraticLineSearch()},
+%{\tt TaoNoLineSearch()}, and {\tt TaoNoLineSearchNoNorms()},
+%\findex{TaoNoLineSearch()} \findex{TaoNoLineSearchNoNorms()}
+%\findex{TaoQuadraticLineSearch()}
+%which can be set with the option
+%{\tt -tao\_eq\_ls [cubic, quadratic, basic, basicnonorms]}. \findex{-tao_eq_ls}
+%The line search routines involve several parameters, which are set
+%to defaults that are reasonable for many applications.  The user
+%can override the defaults by using the options
+%{\tt -tao\_eq\_ls\_alpha <alpha>}, \findex{-tao_eq_ls_alpha}
+%{\tt -tao\_eq\_ls\_maxstep <max>}, and \findex{-tao_eq_ls_maxstep}
+%{\tt -tao\_eq\_ls\_steptol <tol>}. \findex{-tao_eq_ls_steptol}
+
+% Again, the user can set a variety of parameters to
+%control the line search; one should run a Tao program with the option 
+%{\tt -help}
+%for details.  Users may write their own customized line search codes
+%by modeling them after one of the defaults provided.
+%}
+\end{comment}
+
+\Comment{
+\section{Linear Solvers}
+\label{sec:TaoLinearSolvers}
+
+One of the most computationally intensive phases of many optimization
+algorithms involves the solution of systems of linear equations.  
+The performance
+of the linear solver may be critical to an efficient computation
+of the solution.
+Since linear equation solvers often have a wide variety of options 
+associated with them, TAO allows the user to access the linear
+solver with the command 
+{\tt TaoGetLinearSolver()}\findex{TaoGetLinearSolver()}.
+With access to the linear solver context, users can modify the solver
+according to their preferences.  This linear solver object has a method
+that allows the user to adjust convergence tolerances.  Alternatively, the
+specific data structures of the linear solver can be accessed and modified
+directly.  
+}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "manual_tex"
+%%% End: 

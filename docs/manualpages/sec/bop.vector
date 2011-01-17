@@ -1,0 +1,17 @@
+<HTML>
+<HEAD>
+<TITLE>TaoVec Manual Pages</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+
+<H2> TaoVec Methods and Manual Pages
+</H2>
+
+TAO uses a vector class called TaoVec to represent the variables 
+of an optimization problem.  This class has methods that
+can be used within an optimization solver or application code.
+The methods are virtual functions whose implementation depends upon
+upon the internal representation of the data.   
+<P>
+
+

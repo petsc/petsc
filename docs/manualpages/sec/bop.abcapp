@@ -1,0 +1,19 @@
+<HTML>
+<HEAD>
+<TITLE>TAO Application Manual Pages</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+
+<H2> TAO Application Manual Pages
+</H2>
+
+These routines allow the application developers to solve
+optimization problems using gradient based methods one processor.
+The vectors are represented as an array of doubles.  The application
+developer must write a constructor the optimization object that declares
+the number of variables, and the method for evaluating the function and
+gradient.  The application may also specify bounds on the variables and
+an initial starting point.
+<P>
+
+

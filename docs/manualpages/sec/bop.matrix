@@ -1,0 +1,21 @@
+<HTML>
+<HEAD>
+<TITLE>TaoMat Manual Pages</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+
+<H2> TaoMat Methods and Manual Pages
+</H2>
+
+TAO uses an abstract class called TaoMat to represent linear operators.  
+Examples of 
+linear operators are a Hessian matrix, Jacobian matrix, 
+and projection matrices.  These
+operators act on vectors and have methods
+which can be used within an optimization solver or application code.
+These methods are virtual functions whose implementation depends upon
+upon the internal representation of the data.  
+
+<P>
+
+

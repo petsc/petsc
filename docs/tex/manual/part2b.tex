@@ -1,0 +1,906 @@
+
+\chapter{TAO Solvers}
+
+\section{Unconstrained Minimization}
+\label{chapter:unconstrained}
+Unconstrained minimization is used to minimize a function of many variables
+without any constraints on the variables, such as bounds.  The methods 
+available in TAO for solving these problems can be classified according
+to the amount of derivative information required:
+\begin{enumerate}
+\item Function evaluation only -- Nelder-Mead method ({\tt tao\_nm})
+\item Function and gradient evaluations -- limited-memory, variable-metric 
+method ({\tt tao\_lmvm}) and nonlinear conjugate gradient method 
+({\tt tao\_cg})
+\item Function, gradient, and Hessian evaluations -- Newton line-search 
+method ({\tt tao\_nls}) and Newton trust-region method ({\tt tao\_ntr})
+\end{enumerate}
+The best method to use depends on the particular problem being solved
+and the accuracy required in the solution.  If a Hessian evaluation 
+routine is available, then the Newton line-search and Newton trust-region 
+methods will be the best performers.  When a Hessian evaluation routine
+is not available, then the limited-memory, variable-metric method is 
+likely to perform best.  The Nelder-Mead method should be used only
+as a last resort when no gradient information is available.
+
+Each solver has a set of options associated with it that can be set with 
+command line arguments.  A brief description of these algorithms and the 
+associated options are discussed in this chapter.
+
+\subsection{Nelder-Mead}
+The Nelder-Mead algorithm \cite{nelder.mead:simplex} is a direct search method for finding a local
+minimum of a function $f(x)$.  This algorithm does not require any gradient or Hessian 
+information of $f$, and therefore has some expected advantages and disadvantages compared
+to the other TAO solvers.  The obvious advantage is that it is easier to write an 
+application when no derivatives need to be calculated.  The downside is that this algorithm can
+be very slow to converge or can even stagnate, and performs poorly for large numbers of variables.
+
+This solver keeps a set of $N+1$ sorted vectors ${x_1,x_2,\ldots,x_{N+1}}$ and their corresponding 
+objective function values $f_1 \leq f_2 \leq \ldots \leq f_{N+1}$.  At each iteration, $x_{N+1}$ is removed from
+the set and replaced with 
+\[
+x(\mu) = (1+\mu) \frac{1}{N} \sum_{i=1}^N x_i - \mu x_{N+1},
+\]  
+ 
+where $\mu$ can be one of ${\mu_0,2\mu_0,\frac{1}{2}\mu_0,-\frac{1}{2}\mu_0}$ depending upon the values of 
+each possible $f(x(\mu))$.
+
+The algorithm terminates when the residual  $f_{N+1} - f_1$ becomes sufficiently small.  Because of 
+the way new vectors can be added to the sorted set, 
+the minimum function value and/or the residual may not be impacted at each iteration.
+
+There are two options that can be set specifically for the Nelder-Mead algorithm,
+{\tt -tao\_nm\_lamda <value>} sets the initial set of vectors ($x_0$ plus 
+{\tt value} in each cartesion direction), the default value is $1$.  
+{\tt tao\_nm\_mu <value>} sets the value of $\mu_0$, 
+the default is $\mu_0=1$.
+
+
+\subsection{Limited-Memory, Variable-Metric Method}\sindex{line search}\sindex{gradients}
+
+The limited-memory, variable-metric method solves the system of equations
+\[
+H_k d_k = -\nabla f(x_k),
+\]
+where $H_k$ is a positive definite approximation to the Hessian matrix 
+obtained by using the BFGS update formula with a limited number of 
+previous iterates and gradient evaluations.  The inverse of $H_k$ can 
+readily be applied to obtain the direction $d_k$.  Having obtained the 
+direction, a Mor\'{e}-Thuente line search is applied to compute a step
+length, $\tau_k$, that approximately solves the one-dimensional 
+optimization problem
+\[
+\min_\tau f(x_k + \tau d_k).
+\]
+The current iterate and Hessian approximation are updated and the process
+is repeated until the method converges.  This algorithm is the default 
+unconstrained minimization solver and can be selected using the 
+TaoMethod {\tt tao\_lmvm}.  For best efficiency, function and gradient 
+evaluations should be performed simultaneously when using this algorithm.
+
+The primary factors determining the behavior of this algorithm are the 
+number of vectors stored for the Hessian approximation and the scaling matrix
+used when computing the direction.  The number of vectors stored can be set
+with the command line argument {\tt -tao\_lmm\_vectors <int>}; $5$ is the 
+default 
+value.  Increasing the number of vectors results in a better Hessian 
+approximation and can decrease the number of iterations required to compute
+a solution to the optimization problem.  However, as the number of vectors
+increases, more memory is consumed and each direction calculation takes
+longer to compute.  Therefore, a trade off must be made between the 
+quality of the Hessian approximation, the memory requirements, and
+the time to compute the direction.
+
+During the computation of the direction, the inverse of an initial 
+Hessian approximation $H_{0,k}$ is applied.  The choice of $H_{0,k}$
+has a significant impact on the quality of the direction obtained
+and can result in a decrease in the number of function and gradient 
+evaluations required to solve the optimization problem.  However,
+the calculation of $H_{0,k}$ at each iteration can have a significant 
+impact on the time required to update the limited-memory BFGS 
+approximation and the cost of obtaining the direction.  By default, 
+$H_{0,k}$ is a diagonal matrix obtained from the diagonal entries
+of a Broyden approximation to the Hessian matrix.  The calculation
+of $H_{0,k}$ can be modified with the command line argument 
+{\tt -tao\_lmm\_scale\_type <none,scalar,broyden>}.  Each scaling 
+method is described below.  The {\tt scalar} and {\tt broyden} 
+techniques are inspired by \cite{Gilbert-Lemarachal}.
+
+\begin{description}
+\item[{\tt none}]  This scaling method uses the identity matrix as 
+$H_{0,k}$.  No extra computations are required when obtaining the 
+search direction or updating the Hessian approximation.  However, 
+the number of functions and gradient evaluations required to converge
+to a solution is typically much larger than the number required when 
+using other scaling methods.
+\item[{\tt scalar}]  This scaling method uses a multiple of the identity 
+matrix as $H_{0,k}$.  The scalar value $\sigma$ is chosen by solving the 
+one-dimensional optimization problem
+\[
+\min_\sigma \|\sigma^\alpha Y - \sigma^{\alpha - 1} S\|_F^2,
+\]
+where $\alpha \in [0,1]$ is given, and $S$ and $Y$ are the matrices of 
+past iterate and gradient information required by the limited-memory
+BFGS update formula.  The optimal value for $\sigma$ can be written
+down explicitly.  This choice of $\sigma$ attempts to satisfy the 
+secant equation $\sigma Y = S$.  Since this equation cannot typically
+be satisfied by a scalar, a least norm solution is computed.  The amount 
+of past iterate and gradient information used is set by the command line 
+argument {\tt tao\_lmm\_scalar\_history <int>}, which must be less than 
+or equal to the number of vectors kept for the BFGS approximation.  
+The default value is 5.  The choice for $\alpha$ is made with the command 
+line argument {\tt tao\_lmm\_scalar\_alpha <double>}; $1$ is the default
+value.  This scaling method offers a good compromise between no scaling 
+and {\tt broyden} scaling.
+\item[{\tt broyden}] This scaling method uses a positive-definite diagonal 
+matrix obtained from the diagonal entries of the Broyden approximation to 
+the Hessian for the scaling matrix.  The Broyden approximation is a 
+family of approximations parametrized by a constant $\phi$; $\phi = 0$ 
+gives the BFGS formula and $\phi = 1$ gives the DFP formula.  The value 
+of $\phi$ is set with the command line argument 
+{\tt -tao\_lmm\_broyden\_phi <double>}.  The default value for $\phi$ 
+is $0.125$.  This scaling method requires the most computational effort 
+of available choices, but typically results in a significant reduction 
+in the number of function and gradient evaluations taken to compute a 
+solution.
+\end{description}
+
+An additional rescaling of the diagonal matrix can be applied to further
+improve performance when using the {\tt broyden} scaling method.  The
+rescaling method can be set with the command line argument 
+{\tt -tao\_lmm\_rescale\_type <none,scalar,gl>}; {\tt scalar} is the 
+default rescaling method.  The rescaling method applied can have a large 
+impact on the number of function and gradient evaluations necessary to 
+compute a solution to the optimization problem, but increases the time
+required to update the BFGS approximation.  Each rescaling method is 
+described below.  These techniques are inspired by \cite{Gilbert-Lemarachal}.
+
+\begin{description}
+\item[{\tt none}] This rescaling method does not modify the diagonal scaling
+matrix.
+\item[{\tt scalar}] This rescaling method chooses a scalar value $\sigma$ by 
+solving the one-dimensional optimization problem
+\[
+\min_\sigma \|\sigma^\alpha H_{0,k}^{\beta} Y - \sigma^{\alpha - 1} H_{0,k}^{\beta - 1} S\|_F^2,
+\]
+where $\alpha \in [0,1]$ and $\beta \in [0,1]$ are given, $H_{0,k}$ is the 
+positive-definite diagonal scaling matrix computed by using the Broyden 
+update, and $S$ and $Y$ are the matrices of past iterate and gradient
+information required by the limited-memory BFGS update formula.  This 
+choice of $\sigma$ attempts to satisfy the secant equation 
+$\sigma H_{0,k} Y = S$.  Since this equation cannot typically be satisfied 
+by a scalar, a least norm solution is computed.  The scaling matrix used is 
+then $\sigma H_{0,k}$.  The amount of past iterate and gradient information 
+used is set by the command line argument 
+{\tt tao\_lmm\_rescale\_history <int>}, which must be less than or equal
+to the number of vectors kept for the BFGS approximation.  The default value 
+is 5.  The choice for $\alpha$ is made with the command
+line argument {\tt tao\_lmm\_rescale\_alpha <double>}; $1$ is the default
+value.  The choice for $\beta$ is made with the command line argument 
+{\tt tao\_lmm\_rescale\_beta <double>}; $0.5$ is the default value.
+\item[{\tt gl}] This scaling method is the same as the {\tt scalar} rescaling 
+method, but the previous value for the scaling matrix $H_{0,k-1}$ is used when 
+computing $\sigma$.  This is the rescaling method suggested in 
+\cite{Gilbert-Lemarachal}.
+\end{description}
+
+Finally, a limit can be placed on the difference between the scaling
+matrix computed at this iteration and the previous value for the
+scaling matrix.  The limiting type can be set with the command line 
+argument {\tt -tao\_lmm\_limit\_type <none,average,relative,absolute>};
+{\tt none} is the default value.  Each of these methods is described 
+below when using the {\tt scalar} scaling method.  The techniques are
+the same when using the {\tt broyden} scaling method, but are applied
+to each entry in the diagonal matrix.
+
+\begin{description}
+\item[{\tt none}] Set $\sigma_k = \sigma$, where $\sigma$ is the value
+computed by the scaling method.
+\item[{\tt average}] Set $\sigma_k = \mu \sigma + (1 - \mu) \sigma_{k-1}$, 
+where $\sigma$ is the value computed by the scaling method, $\sigma_{k-1}$ is
+the previous value, and $\mu \in [0,1]$ is given.
+\item[{\tt relative}] Set $\sigma_k = \mbox{median}\left\{ (1 - \mu) \sigma_{k-1}, \sigma, (1+\mu) \sigma_{k-1}\right\}$, 
+where $\sigma$ is the value computed by the scaling method, $\sigma_{k-1}$ is 
+the previous value, and $\mu \in [0,1]$ is given.
+\item[{\tt absolute}] Set $\sigma_k = \mbox{median}\left\{\sigma_{k-1} - \nu, \sigma, \sigma_{k-1} + \nu\right\}$, 
+where $\sigma$ is the value computed by the scaling method, $\sigma_{k-1}$ is 
+the previous value, and $\nu$ is given.
+\end{description}
+The value for $\mu$ is set with the command line argument 
+{\tt -tao\_lmm\_limit\_mu <double>}; $1$ is the default value.
+The value for $\nu$ is set with the command line argument 
+{\tt -tao\_lmm\_limit\_nu <double>}.  The default value is 100.  
+
+The default values for the scaling are based on many tests using the
+unconstrained problems from the MINPACK-2 test set.  These tests were
+used to narrow the choices to a few sets of values.  These values were
+then run on the unconstrained problems from the CUTEr test set to
+obtain the default values supplied.
+
+\begin{table}[h]
+\caption{Summary of {\tt lmvm} options}
+\begin{tabular}{l|p{1.5in}|l|p{2.0in}}
+Name & Value & Default & Description \\
+{\tt -tao\_lmm\_vectors} & int & 5 & Number of vectors for Hessian approximation \\
+{\tt -tao\_lmm\_scale\_type} & none, scalar, broyden & broyden & Type of scaling method to use \\
+{\tt -tao\_lmm\_scalar\_history} & int & 5 & Number of vectors to use when scaling \\
+{\tt -tao\_lmm\_scalar\_alpha} & double & 1 & Value of $\alpha$ for scalar scaling method \\
+{\tt -tao\_lmm\_broyden\_phi} & double & 0.125 & Value of $\alpha$ for scalar scaling method \\
+{\tt -tao\_lmm\_rescale\_type} & none, scalar, gl & scalar & Type of rescaling method to use \\
+{\tt -tao\_lmm\_rescale\_history} & int & 5 & Number of vectors to use when rescaling \\
+{\tt -tao\_lmm\_rescale\_alpha} & double & 1 & Value of $\alpha$ for rescaling method \\
+{\tt -tao\_lmm\_rescale\_beta} & double & 0.5 & Value of $\beta$ for rescaling method \\
+{\tt -tao\_lmm\_limit\_type} & none, average, relative, absolute & none & Type of limit to impose on scaling matrix \\
+{\tt -tao\_lmm\_limit\_mu} & double & 1 & Value of $\mu$ for limit type\\
+{\tt -tao\_lmm\_limit\_nu} & double & 100 & Value of $\nu$ for limit type\\
+\end{tabular}
+\end{table}
+
+\subsection{Nonlinear Conjugate Gradient Method}\sindex{line search}\sindex{gradients}
+
+The nonlinear conjugate gradient method can be viewed as an extensions of the 
+conjugate gradient method for solving symmetric, positive-definite linear 
+systems of equations.  This algorithm requires only function and gradient 
+evaluations as well as a line search.  The TAO implementation uses a 
+Mor\'{e}-Thuente line search to obtain the step length.  The nonlinear 
+conjugate gradient method can be selected by using the TaoMethod 
+{\tt tao\_cg}.  For the best efficiency, function and gradient evaluations 
+should be performed simultaneously when using this algorithm.
+
+Five variations are currently supported by the TAO implementation: the 
+Fletcher-Reeves method, the Polak-Ribi\'ere method, the Polak-Ribi\'ere-Plus 
+method\cite{NW99}, the Hestenes-Stiefel method, and the Dai-Yuan method.  
+These conjugate gradient methods can be specified by using the command line 
+argument {\tt tao\_cg\_type <fr,pr,prp,hs,dy>}, respectively.  The default 
+value is {\tt prp}.  
+
+The conjugate gradient method incorporates automatic restarts when successive 
+gradients are not sufficiently orthogonal.  TAO measures the orthogonality by 
+dividing the inner product of the gradient at the current point and the 
+gradient at the previous point by the square of the Euclidean norm of 
+the gradient at the current point.  When the absolute value of this 
+ratio is greater than $\eta$, the algorithm restarts using the gradient 
+direction.  The parameter $\eta$ can be set using the command line argument 
+{\tt -tao\_cg\_eta <double>}; 0.1 is the default value.  
+
+\subsection{Newton Line-Search Method}\sindex{Newton method}\sindex{line search}
+
+The Newton line-search method solves the symmetric system of equations
+\[
+H_k d_k = -g_k
+\]
+to obtain a step $d_k$, where $H_k$ is the Hessian of the objective function
+at $x_k$ and $g_k$ is the gradient of the objective function at $x_k$.
+For problems where the Hessian matrix is indefinite, the perturbed system
+of equations
+\[
+(H_k + \rho_k I) d_k = -g_k
+\]
+is solved to obtain the direction, where $\rho_k$ is a positive constant.
+If the direction computed is not a descent direction, the (scaled) steepest 
+descent direction is used instead.  Having obtained the direction, 
+a Mor\'{e}-Thuente line search is applied to obtain a step length, 
+$\tau_k$, that approximately solves the one-dimensional optimization 
+problem
+\[
+\min_\tau f(x_k + \tau d_k).
+\]
+The Newton line-search method can be set using the TaoMethod {\tt tao\_nls}.
+For the best efficiency, function and gradient evaluations should be 
+performed simultaneously when using this algorithm.
+
+The system of equations is approximately solved by applying the conjugate 
+gradient method, Steihaug-Toint conjugate gradient method, generalized 
+Lanczos method, or an alternative Krylov subspace method 
+supplied by PETSc.  The method used to solve the systems of equations is 
+specified with the command line argument 
+{\tt -tao\_nls\_ksp\_type <cg,stcg,gltr,petsc>}; {\tt cg} 
+is the default.  When the type is set to {\tt petsc}, the method set with 
+the PETSc {\tt -ksp\_type} command line argument is used.  For example, to 
+use GMRES as the linear system solver, one would use the the command line 
+arguments {\tt -tao\_nls\_ksp\_type petsc -ksp\_type gmres}.  Internally,
+the PETSc implementations for the conjugate gradient methods and the 
+generalized Lanczos method are used.  See the PETSc manual for further 
+information on changing the behavior of the linear system solvers.  
+
+A good preconditioner reduces the number of iterations required to
+solve the linear system of equations.  For the conjugate gradient
+methods and generalized Lanczos method, this preconditioner must be
+symmetric and positive definite.  The available options are to use no
+preconditioner, the absolute value of the diagonal of the Hessian
+matrix, a limited-memory BFGS approximation to the Hessian matrix, or
+one of the other preconditioners provided by the PETSc package.  These
+preconditioners are specified by the command line argument 
+{\tt -tao\_nls\_pc\_type <none,ahess,bfgs,petsc>}, respectively. The
+default is the {\tt bfgs} preconditioner.  When the preconditioner
+type is set to {\tt petsc}, the preconditioner set with the PETSc 
+{\tt -pc\_type} command line argument is used.  For example, to use an
+incomplete Cholesky factorization for the preconditioner, one would
+use the command line arguments 
+{\tt -tao\_nls\_pc\_type petsc -pc\_type icc}.  See the PETSc manual 
+for further information on changing the behavior of the preconditioners.
+
+The choice of scaling matrix can have a significant impact on the quality 
+of the Hessian approximation when using the {\tt bfgs} preconditioner and
+affect the number of iterations required by the linear system solver.
+The choices for scaling matrices are the same as those discussed for 
+the limited-memory, variable-metric algorithm.  For Newton methods,
+however, the option exists to use a scaling matrix based on the true
+Hessian matrix.  In particular, the implementation supports using the 
+absolute value of the diagonal of the Hessian matrix or the absolute 
+value of the diagonal of the perturbed Hessian matrix.  The scaling 
+matrix to use with the {\tt bfgs} preconditioner is set with the 
+command line argument {\tt -tao\_nls\_bfgs\_scale\_type <bfgs,ahess,phess>}; 
+{\tt phess} is the default.  The {\tt bfgs} scaling matrix is derived from 
+the BFGS options.  The {\tt ahess} scaling matrix is the absolute value of 
+the diagonal of the Hessian matrix.  The {\tt phess} scaling matrix is
+the absolute value of the diagonal of the perturbed Hessian matrix.
+
+The perturbation $\rho_k$ is added when the direction returned by the
+Krylov subspace method is either not a descent direction, the Krylov method
+diverged due to an indefinite preconditioner or matrix, or a direction of 
+negative curvature was found.  In the two latter cases, if the step returned
+is a descent direction, it is used during the line search.  Otherwise, a
+steepest descent direction is used during the line search.  The perturbation
+is decreased as long as the Krylov subspace method reports success and 
+increased if further problems are encountered.  There are three cases:
+initializing, increasing, and decreasing the perturbation.  These cases
+are described below.
+\begin{enumerate}
+\item If $\rho_k$ is zero and a problem was detected with either the
+direction on the Krylov subspace method, the perturbation is initialized to
+\[
+\rho_{k+1} = \mbox{median}\left\{\mbox{imin}, \mbox{imfac} * \|g(x_k)\|, \mbox{imax}\right\},
+\]
+where {\tt imin} is set with the command line argument 
+{\tt -tao\_nls\_imin <double>} with a default value of $10^{-4}$,
+{\tt imfac} by {\tt -tao\_nls\_imfac} with a default value of 0.1, and 
+{\tt imax} by {\tt -tao\_nls\_imax} with a default value of 100.  
+When using the {\tt gltr} method to solve the system of equations, an
+estimate of the minimum eigenvalue $\lambda_1$ of the Hessian matrix 
+is available.  This value is use to initialize the perturbation to
+$\rho_{k+1} = \max\left\{\rho_{k+1}, -\lambda_1\right\}$.
+\item If $\rho_k$ is nonzero and a problem was detected with either the 
+direction or Krylov subspace method, the perturbation is increased to 
+\[
+\rho_{k+1} = \min\left\{\mbox{pmax}, \max\left\{\mbox{pgfac} * \rho_k, \mbox{pmgfac} * \|g(x_k)\|\right\}\right\},
+\]
+where {\tt pgfac} is set with the command line argument {\tt -tao\_nls\_pgfac}
+with a default value of 10, {\tt pmgfac} by {\tt -tao\_nls\_pmgfac} with a
+default value of 0.1, and {\tt pmax} by {\tt -tao\_nls\_pmax} with a default
+value of 100.
+\item If $\rho_k$ is nonzero and no problems were detected with either
+the direction or Krylov subspace method, the perturbation is decreased to
+\[
+\rho_{k+1} = \min\left\{\mbox{psfac} * \rho_k, \mbox{pmsfac} * \|g(x_k)\|\right\},
+\]
+where {\tt psfac} is set with the command line argument {\tt -tao\_nls\_psfac}
+with a default value of 0.4, and {\tt pmsfac} by {\tt -tao\_nls\_pmsfac} with
+a default value of 0.1.  Moreover, if $\rho_{k+1} < \mbox{pmin}$ then 
+$\rho_{k+1} = 0$, where {\tt pmin} is set with the command line argument 
+{\tt -tao\_nls\_pmin} and has a default value of $10^{-12}$.
+\end{enumerate}
+
+When using {\tt stcg} or {\tt gltr} to solve the linear systems of equation,
+a trust-region radius need to be initialized and updated.  This trust-region
+radius limits the size of the step computed.  The method for initializing
+the trust-region radius is set with the command line argument 
+{\tt -tao\_nls\_init\_type <constant,direction,interpolation>};
+{\tt interpolation}, which chooses an initial value based on the 
+interpolation scheme found in \cite{CGT}, is the default.  This
+scheme performs a number of function and gradient evaluations to determine 
+a radius such that the reduction predicted by the quadratic model along the 
+gradient direction coincides with the actual reduction in the nonlinear 
+function.  The iterate obtaining the best objective function value is 
+used as the starting point for the main line-search algorithm.  The 
+{\tt constant} method initializes the trust-region radius by using 
+the value specified with the {\tt -tao\_trust0 <double>} command line 
+argument, where the default value is 100.  The {\tt direction} technique 
+solves the first quadratic optimization problem by using a standard 
+conjugate gradient method and initializes the trust-region to 
+$\|s_0\|$.
+
+Finally, the method for updating the trust-region radius is set with the 
+command line argument 
+{\tt -tao\_nls\_update\_type <step,reduction,interpolation>}; {\tt step} 
+is the default.  The {\tt step} method updates the trust-region 
+radius based on the value of $\tau_k$.  In particular,
+\[
+\Delta_{k+1} = \left\{\begin{array}{ll}
+\omega_1 \mbox{min}(\Delta_k, \|d_k\|) & \mbox{if } \tau_k \in [0, \nu_1) \\
+\omega_2 \mbox{min}(\Delta_k, \|d_k\|) & \mbox{if } \tau_k \in [\nu_1, \nu_2) \\
+\omega_3 \Delta_k & \mbox{if } \tau_k \in [\nu_2, \nu_3) \\
+\mbox{max}(\Delta_k, \omega_4 \|d_k\|) & \mbox{if } \tau_k \in [\nu_3, \nu_4) \\
+\mbox{max}(\Delta_k, \omega_5 \|d_k\|) & \mbox{if } \tau_k \in [\nu_4, \infty)
+\end{array}
+\right.
+\]
+where $0 < \omega_1 < \omega_2 < \omega_3 = 1 < \omega_4 < \omega_5$ and
+$0 < \nu_1 < \nu_2 < \nu_3 < \nu_4$ are constants.  The {\tt reduction} 
+method computes the ratio of the actual reduction in the objective function 
+to the reduction predicted by the quadratic model for the full step, 
+$\kappa_k = \frac{f(x_k) - f(x_k + d_k)}{q(x_k) - q(x_k + d_k)}$, where 
+$q_k$ is the quadratic model.  The radius is then updated as:
+\[
+\Delta_{k+1} = \left\{\begin{array}{ll}
+\alpha_1 \mbox{min}(\Delta_k, \|d_k\|) & \mbox{if } \kappa_k \in (-\infty, \eta_1) \\
+\alpha_2 \mbox{min}(\Delta_k, \|d_k\|) & \mbox{if } \kappa_k \in [\eta_1, \eta_2) \\
+\alpha_3 \Delta_k & \mbox{if } \kappa_k \in [\eta_2, \eta_3) \\
+\mbox{max}(\Delta_k, \alpha_4 \|d_k\|) & \mbox{if } \kappa_k \in [\eta_3, \eta_4) \\
+\mbox{max}(\Delta_k, \alpha_5 \|d_k\|) & \mbox{if } \kappa_k \in [\eta_4, \infty)
+\end{array}
+\right.
+\]
+where $0 < \alpha_1 < \alpha_2 < \alpha_3 = 1 < \alpha_4 < \alpha_5$ and
+$0 < \eta_1 < \eta_2 < \eta_3 < \eta_4$ are constants.  The {\tt interpolation}
+method uses the same interpolation mechanism as in the initialization to
+compute a new value for the trust-region radius.
+
+\begin{table}[h]
+\caption{Summary of {\tt nls} options}
+\begin{tabular}{l|p{1.5in}|l|p{2.0in}}
+Name & Value & Default & Description \\
+{\tt -tao\_nls\_ksp\_type} & cg, stcg, gltr, petsc & cg & Type of Krylov subspace method to use when solving linear system \\
+{\tt -tao\_nls\_pc\_type} & none, ahess, bfgs, petsc & bfgs & Type of preconditioner to use when solving linear system \\
+{\tt -tao\_nls\_bfgs\_scale\_type} & ahess, phess, bfgs & phess & Type of scaling matrix to use with BFGS preconditioner \\
+{\tt -tao\_nls\_sval} & double & $0$ & Initial perturbation value \\
+{\tt -tao\_nls\_imin} & double & $10^{-4}$ & Minimum initial perturbation value \\
+{\tt -tao\_nls\_imax} & double & $100$ & Maximum initial perturbation value \\
+{\tt -tao\_nls\_imfac} & double & $0.1$ & Factor applied to norm of gradient when initializing perturbation \\
+{\tt -tao\_nls\_pmax} & double & $100$ & Maximum perturbation when increasing value \\
+{\tt -tao\_nls\_pgfac} & double & $10$ & Growth factor applied to perturbation when increasing value \\
+{\tt -tao\_nls\_pmgfac} & double & $0.1$ & Factor applied to norm of gradient when increasing perturbation \\
+{\tt -tao\_nls\_pmin} & double & $10^{-12}$ & Minimum perturbation when decreasing value; smaller values set to zero \\
+{\tt -tao\_nls\_psfac} & double & $0.4$ & Shrink factor applied to perturbation when decreasing value \\
+{\tt -tao\_nls\_pmsfac} & double & $0.1$ & Factor applied to norm of gradient when decreasing perturbation \\
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\caption{Summary of {\tt nls} options (continued)}
+\begin{tabular}{l|p{1.5in}|l|p{2.0in}}
+Name & Value & Default & Description \\
+{\tt -tao\_nls\_init\_type} & constant, direction, interpolation & interpolation & Method used to initialize trust-region radius when using {\tt stcg} or {\tt gltr} \\
+{\tt -tao\_nls\_mu1\_i} & double & 0.35 & $\mu_1$ in {\tt interpolation} init \\
+{\tt -tao\_nls\_mu2\_i} & double & 0.50 & $\mu_2$ in {\tt interpolation} init \\
+{\tt -tao\_nls\_gamma1\_i} & double & 0.0625 & $\gamma_1$ in {\tt interpolation} init \\
+{\tt -tao\_nls\_gamma2\_i} & double & 0.50 & $\gamma_2$ in {\tt interpolation} init \\
+{\tt -tao\_nls\_gamma3\_i} & double & 2.00 & $\gamma_3$ in {\tt interpolation} init \\
+{\tt -tao\_nls\_gamma4\_i} & double & 5.00 & $\gamma_4$ in {\tt interpolation} init \\
+{\tt -tao\_nls\_theta\_i} & double & 0.25 & $\theta$ in {\tt interpolation} init \\
+{\tt -tao\_nls\_update\_type} & step, reduction, interpolation & step & Method used to update trust-region radius when using {\tt stcg} or {\tt gltr} \\
+{\tt -tao\_nls\_nu1} & double & 0.25 & $\nu_1$ in {\tt step} update \\
+{\tt -tao\_nls\_nu2} & double & 0.50 & $\nu_2$ in {\tt step} update \\
+{\tt -tao\_nls\_nu3} & double & 1.00 & $\nu_3$ in {\tt step} update \\
+{\tt -tao\_nls\_nu4} & double & 1.25 & $\nu_4$ in {\tt step} update \\
+{\tt -tao\_nls\_omega1} & double & 0.25 & $\omega_1$ in {\tt step} update \\
+{\tt -tao\_nls\_omega2} & double & 0.50 & $\omega_2$ in {\tt step} update \\
+{\tt -tao\_nls\_omega3} & double & 1.00 & $\omega_3$ in {\tt step} update \\
+{\tt -tao\_nls\_omega4} & double & 2.00 & $\omega_4$ in {\tt step} update \\
+{\tt -tao\_nls\_omega5} & double & 4.00 & $\omega_5$ in {\tt step} update \\
+{\tt -tao\_nls\_eta1} & double & $10^{-4}$ & $\eta_1$ in {\tt reduction} update \\
+{\tt -tao\_nls\_eta2} & double & 0.25 & $\eta_2$ in {\tt reduction} update \\
+{\tt -tao\_nls\_eta3} & double & 0.50 & $\eta_3$ in {\tt reduction} update \\
+{\tt -tao\_nls\_eta4} & double & 0.90 & $\eta_4$ in {\tt reduction} update \\
+{\tt -tao\_nls\_alpha1} & double & 0.25 & $\alpha_1$ in {\tt reduction} update \\
+{\tt -tao\_nls\_alpha2} & double & 0.50 & $\alpha_2$ in {\tt reduction} update \\
+{\tt -tao\_nls\_alpha3} & double & 1.00 & $\alpha_3$ in {\tt reduction} update \\
+{\tt -tao\_nls\_alpha4} & double & 2.00 & $\alpha_4$ in {\tt reduction} update \\
+{\tt -tao\_nls\_alpha5} & double & 4.00 & $\alpha_5$ in {\tt reduction} update \\
+{\tt -tao\_nls\_mu1} & double & 0.10 & $\mu_1$ in {\tt interpolation} update \\
+{\tt -tao\_nls\_mu2} & double & 0.50 & $\mu_2$ in {\tt interpolation} update \\
+{\tt -tao\_nls\_gamma1} & double & 0.25 & $\gamma_1$ in {\tt interpolation} update \\
+{\tt -tao\_nls\_gamma2} & double & 0.50 & $\gamma_2$ in {\tt interpolation} update \\
+{\tt -tao\_nls\_gamma3} & double & 2.00 & $\gamma_3$ in {\tt interpolation} update \\
+{\tt -tao\_nls\_gamma4} & double & 4.00 & $\gamma_4$ in {\tt interpolation} update \\
+{\tt -tao\_nls\_theta} & double & 0.05 & $\theta$ in {\tt interpolation} update \\
+\end{tabular}
+\end{table}
+
+\subsection{Newton Trust-Region Method}\sindex{Newton method}\sindex{trust region}
+
+The Newton trust-region method solves the constrained quadratic programming
+problem
+\[
+\begin{array}{ll}
+\min_d  & \frac{1}{2}d^T H_k d  + g_k^T d \\
+\mbox{subject to} & \|d\| \leq \Delta_k
+\end{array}
+\]
+to obtain a direction $d_k$, where $H_k$ is the Hessian of the objective 
+function at $x_k$, $g_k$ is the gradient of the objective function at $x_k$ 
+and $\Delta_k$ is the trust-region radius.  If $x_k + d_k$ sufficiently 
+reduces the nonlinear objective function, then the step is accepted and the 
+trust-region radius is updated.  However, if $x_k + d_k$ does not sufficiently
+reduce the nonlinear objective function, then the step is rejected, the 
+trust-region radius is reduced, and the quadratic program is re-solved 
+using the updated trust-region radius. The Newton trust-region method 
+can be set using TaoMethod {\tt tao\_ntr}.  For the best efficiency, 
+function and gradient evaluations should be performed separately when 
+using this algorithm.
+
+The quadratic optimization problem is approximately solved by applying
+the Steihaug-Toint conjugate gradient method or generalized Lanczos 
+method to the symmetric system of equations $H_k d = -g_k$.  The method 
+used to solve the system of equations is specified with the command line
+argument {\tt -tao\_ntr\_ksp\_type <stcg,gltr>}; {\tt stcg} is the default.  
+Internally, the PETSc implementations for the Steihaug-Toint method and the 
+generalized Lanczos method are used.  See the PETSc manual for further 
+information on changing the behavior of these linear system solvers.  
+
+A good preconditioner reduces the number of iterations required to
+compute the direction.  For the Steihaug-Toint conjugate gradient
+method and generalized Lanczos method, this preconditioner must be
+symmetric and positive definite.  The available options are to use no
+preconditioner, the absolute value of the diagonal of the Hessian
+matrix, a limited-memory BFGS approximation to the Hessian matrix, or
+one of the other preconditioners provided by the PETSc package.  These
+preconditioners are specified by the the command line argument 
+{\tt -tao\_ntr\_pc\_type <none,ahess,bfgs,petsc>}, respectively.  The
+default is the {\tt bfgs} preconditioner.  When the preconditioner
+type is set the to {\tt petsc}, the preconditioner set with the PETSc
+{\tt -pc\_type} command line argument is used.  For example, to use an
+incomplete Cholesky factorization for the preconditioner, one would
+use the command line arguments 
+{\tt -tao\_ntr\_pc\_type petsc -pc\_type icc}.  See the PETSc manual 
+for further information on changing the behavior of the preconditioners.
+
+The choice of scaling matrix can have a significant impact on the quality 
+of the Hessian approximation when using the {\tt bfgs} preconditioner and
+affect the number of iterations required by the linear system solver.
+The choices for scaling matrices are the same as those discussed for 
+the limited-memory, variable-metric algorithm.  For Newton methods,
+however, the option exists to use a scaling matrix based on the true
+Hessian matrix.  In particular, the implementation supports using the 
+absolute value of the diagonal of the Hessian matrix.  The scaling 
+matrix to use with the {\tt bfgs} preconditioner is set with the 
+command line argument {\tt -tao\_ntr\_bfgs\_scale\_type <ahess,bfgs>}; 
+{\tt ahess} is the default.  The {\tt bfgs} scaling matrix is derived from 
+the BFGS options.  The {\tt ahess} scaling matrix is the absolute value of 
+the diagonal of the Hessian matrix.
+
+The method for computing an initial trust-region radius is set with the 
+command line argument {\tt -tao\_ntr\_init\_type <constant,direction,interpolation>};
+{\tt interpolation}, which chooses an initial value based on the 
+interpolation scheme found in \cite{CGT}, is the default.  This
+scheme performs a number of function and gradient evaluations to determine 
+a radius such that the reduction predicted by the quadratic model along the 
+gradient direction coincides with the actual reduction in the nonlinear 
+function.  The iterate obtaining the best objective function value is 
+used as the starting point for the main line-search algorithm.  The 
+{\tt constant} method initializes the trust-region radius by using 
+the value specified with the {\tt -tao\_trust0 <double>} command line 
+argument, where the default value is 100.  The {\tt direction} technique 
+solves the first quadratic optimization problem by using a standard 
+conjugate gradient method and initializes the trust-region to 
+$\|s_0\|$.
+
+Finally, the method for updating the trust-region radius is set with the 
+command line argument 
+{\tt -tao\_ntr\_update\_type <reduction,interpolation>}; {\tt reduction} 
+is the default.  The {\tt reduction} method computes the ratio of the 
+actual reduction in the objective function to the reduction predicted 
+by the quadratic model for the full step, 
+$\kappa_k = \frac{f(x_k) - f(x_k + d_k)}{q(x_k) - q(x_k + d_k)}$, where 
+$q_k$ is the quadratic model.  The radius is then updated as:
+\[
+\Delta_{k+1} = \left\{\begin{array}{ll}
+\alpha_1 \mbox{min}(\Delta_k, \|d_k\|) & \mbox{if } \kappa_k \in (-\infty, \eta_1) \\
+\alpha_2 \mbox{min}(\Delta_k, \|d_k\|) & \mbox{if } \kappa_k \in [\eta_1, \eta_2) \\
+\alpha_3 \Delta_k & \mbox{if } \kappa_k \in [\eta_2, \eta_3) \\
+\mbox{max}(\Delta_k, \alpha_4 \|d_k\|) & \mbox{if } \kappa_k \in [\eta_3, \eta_4) \\
+\mbox{max}(\Delta_k, \alpha_5 \|d_k\|) & \mbox{if } \kappa_k \in [\eta_4, \infty)
+\end{array}
+\right.
+\]
+where $0 < \alpha_1 < \alpha_2 < \alpha_3 = 1 < \alpha_4 < \alpha_5$ and
+$0 < \eta_1 < \eta_2 < \eta_3 < \eta_4$ are constants.  The {\tt interpolation}
+method uses the same interpolation mechanism as in the initialization to
+compute a new value for the trust-region radius.
+
+\begin{table}[h]
+\caption{Summary of {\tt ntr} options}
+\begin{tabular}{l|p{1.5in}|l|p{2.0in}}
+Name & Value & Default & Description \\
+{\tt -tao\_ntr\_ksp\_type} & stcg, gltr & stcg & Type of Krylov subspace method to use when solving linear system \\
+{\tt -tao\_ntr\_pc\_type} & none, ahess, bfgs, petsc & bfgs & Type of preconditioner to use when solving linear system \\
+{\tt -tao\_ntr\_bfgs\_scale\_type} & ahess, bfgs & ahess & Type of scaling matrix to use with BFGS preconditioner \\
+{\tt -tao\_ntr\_init\_type} & constant, direction, interpolation & interpolation & Method used to initialize trust-region radius \\
+{\tt -tao\_ntr\_mu1\_i} & double & 0.35 & $\mu_1$ in {\tt interpolation} init \\
+{\tt -tao\_ntr\_mu2\_i} & double & 0.50 & $\mu_2$ in {\tt interpolation} init \\
+{\tt -tao\_ntr\_gamma1\_i} & double & 0.0625 & $\gamma_1$ in {\tt interpolation} init \\
+{\tt -tao\_ntr\_gamma2\_i} & double & 0.50 & $\gamma_2$ in {\tt interpolation} init \\
+{\tt -tao\_ntr\_gamma3\_i} & double & 2.00 & $\gamma_3$ in {\tt interpolation} init \\
+{\tt -tao\_ntr\_gamma4\_i} & double & 5.00 & $\gamma_4$ in {\tt interpolation} init \\
+{\tt -tao\_ntr\_theta\_i} & double & 0.25 & $\theta$ in {\tt interpolation} init \\
+{\tt -tao\_ntr\_update\_type} & reduction, interpolation & reduction & Method used to update trust-region radius \\
+{\tt -tao\_ntr\_eta1} & double & $10^{-4}$ & $\eta_1$ in {\tt reduction} update \\
+{\tt -tao\_ntr\_eta2} & double & 0.25 & $\eta_2$ in {\tt reduction} update \\
+{\tt -tao\_ntr\_eta3} & double & 0.50 & $\eta_3$ in {\tt reduction} update \\
+{\tt -tao\_ntr\_eta4} & double & 0.90 & $\eta_4$ in {\tt reduction} update \\
+{\tt -tao\_ntr\_alpha1} & double & 0.25 & $\alpha_1$ in {\tt reduction} update \\
+{\tt -tao\_ntr\_alpha2} & double & 0.50 & $\alpha_2$ in {\tt reduction} update \\
+{\tt -tao\_ntr\_alpha3} & double & 1.00 & $\alpha_3$ in {\tt reduction} update \\
+{\tt -tao\_ntr\_alpha4} & double & 2.00 & $\alpha_4$ in {\tt reduction} update \\
+{\tt -tao\_ntr\_alpha5} & double & 4.00 & $\alpha_5$ in {\tt reduction} update \\
+{\tt -tao\_ntr\_mu1} & double & 0.10 & $\mu_1$ in {\tt interpolation} update \\
+{\tt -tao\_ntr\_mu2} & double & 0.50 & $\mu_2$ in {\tt interpolation} update \\
+{\tt -tao\_ntr\_gamma1} & double & 0.25 & $\gamma_1$ in {\tt interpolation} update \\
+{\tt -tao\_ntr\_gamma2} & double & 0.50 & $\gamma_2$ in {\tt interpolation} update \\
+{\tt -tao\_ntr\_gamma3} & double & 2.00 & $\gamma_3$ in {\tt interpolation} update \\
+{\tt -tao\_ntr\_gamma4} & double & 4.00 & $\gamma_4$ in {\tt interpolation} update \\
+{\tt -tao\_ntr\_theta} & double & 0.05 & $\theta$ in {\tt interpolation} update \\
+\end{tabular}
+\end{table}
+
+\section{Bound Constrained Optimization}\sindex{bounds}
+\label{chapter:bound}
+
+Bound constrained optimization algorithms
+minimize $f: \, \Re^n \to \Re$, subject to upper or
+lower bounds on some of the variables.
+These solvers also bounds on the variables as well as objective
+function, gradient, and possibly Hessian information.
+
+\subsection{Newton Trust Region}\label{sec:tron} \sindex{Newton's method} \sindex{trust region}
+The TRON \cite{lin_c3} algorithm is an active set method that uses a 
+combination of gradient projections and 
+a preconditioned conjugate gradient method to minimize an objective function.
+Each iteration of the TRON algorithm requires function, gradient, 
+and Hessian evaluations.  In each iteration, the algorithm
+first applies several conjugate
+gradients.  
+After these iterates, the TRON solver momentarily ignores the variables
+that equal one of its bounds and
+applies a preconditioned conjugate gradient method to a
+quadratic model of the free variables.  
+
+
+The TRON algorithm solves a reduced linear system
+defined by the rows and columns corresponding to the variables that
+lie between the upper and lower bounds.
+When running in parallel, these rows can either remain on
+their current processor or be redistributed evenly over all of the
+processors with the command {\tt TaoSelectSubset()}.
+The TRON algorithm applies a trust region to the 
+conjugate gradients to ensure convergence.  The initial trust region
+can be set using the command 
+{\tt TaoSetTrustRegionRadius()}
+and the current trust region size can be found using the command
+{\tt TaoGetTrustRegionRadius().}
+The initial trust region can significantly alter the 
+rate of convergence for the algorithm and should be
+tuned and adjusted for optimal performance.
+
+
+\subsection{Gradient Projection--Conjugate Gradient Method}
+The GPCG \cite{more-toraldo} algorithm is much like the TRON algorithm, discussed in
+Section \ref{sec:tron}, except that
+it assumes that the objective function is quadratic and convex.
+Therefore, it evaluates the function, gradient, and Hessian only
+once.
+Since the objective function
+is quadratic, the algorithm does not use a trust region.  
+All of the options that apply to TRON, except for trust region
+options,  also apply to GPCG.
+
+\subsection{Interior Point Newton Algorithm}
+The BQPIP algorithm is an interior point algorithm for bound
+constrained quadratic optimization.  It can be set using the
+TaoMethod of {\tt tao\_bqpip}.
+Since it assumes the objective function is quadratic, 
+it evaluates the function, gradient, and Hessian only once.
+In this algorithm all of the variables are free variables.
+This method also requires the solution of systems of linear equations,
+whose solver can be accessed and modified 
+with the command {\tt TaoGetLinearSolver()}.
+
+\subsection{Limited Memory Variable Metric Method}
+
+This method is the bound constrained variant of the LMVM method for
+unconstrained optimization.  It uses projected gradients to approximate
+the Hessian -- eliminating the need for Hessian evaluations.
+The method can be set using  TaoMethod {\tt tao\_blmvm}.
+The command {\tt TaoLMVMSetSize()}, which sets the number
+of vectors to be used in the Hessian approximation, 
+also applies to this method.
+
+\subsection{KT Method} \sindex{Newton's method}
+
+This method calculates points satisfying the first-order necessary 
+optimality conditions.  The method uses the mixed complementarity
+problem solvers from Section \ref{sec:complementarity} to calculate
+the solutions.  The choice of complementarity solver is specified
+with the runtime option {\tt -tao\_kt\_method} with the default
+being the {\tt tao\_ssils} method.
+
+
+\section{Complementarity}
+\label{sec:complementarity}
+
+Mixed complementarity problems, or box-constrained variational inequalities,
+are related to nonlinear systems of equations.  They are defined by a 
+continuously differentiable function,
+$F:\Re^n \to \Re^n$, and bounds, $\ell \in \{\Re \cup \{-\infty\}\}^n$ 
+and $u \in \{\Re \cup \{\infty\}\}^n$, on the variables such that 
+$\ell \leq u$.  Given this information, $\x^* \in [\ell,u]$ is a solution to 
+MCP($F$, $\ell$, $u$) if for each $i \in \{1, \ldots, n\}$ we have at
+least one of the following:
+\begin{eqnarray*}
+\begin{array}{ll}
+F_i(x^*) \geq 0 & \mbox{if } x^*_i = \ell_i \\
+F_i(x^*) = 0 & \mbox{if } \ell_i < x^*_i < u_i \\
+F_i(x^*) \leq 0 & \mbox{if } x^*_i = u_i.
+\end{array}
+\end{eqnarray*}
+Note that when $\ell = \{-\infty\}^n$ and $u = \{\infty\}^n$ we have a 
+nonlinear system of equations, and $\ell = \{0\}^n$ and $u = \{\infty\}^n$ 
+corresponds to the nonlinear complementarity problem \cite{cottle:nonlinear}.
+
+Simple complementarity conditions arise from the first-order optimality 
+conditions from optimization \cite{karush:minima, kuhn.tucker:nonlinear}.  
+In the simple bound constrained optimization case, these conditions 
+correspond to MCP($\nabla f$, $\ell$, $u$), where $f: \Re^n \to \Re$ 
+is the objective function.  In a one-dimensional setting these conditions 
+are intuitive.  If the solution is at the lower bound, then the function must 
+be increasing and $\nabla f \geq 0$.  However, if the solution is at the 
+upper bound, then the function must be decreasing and $\nabla f \leq 0$.  
+Finally, if the solution 
+is strictly between the bounds, we must be at a stationary point and 
+$\nabla f = 0$.  Other complementarity problems arise in economics and 
+engineering \cite{ferris.pang:engineering}, game 
+theory \cite{nash:equilibrium}, and finance \cite{huang.pang:option}.
+
+Evaluation routines for $F$ and its Jacobian must be supplied prior
+to solving the application.
+The bounds, $[\ell,u]$, on the variables must also be 
+provided.  
+If no starting point is supplied, a default starting point of all zeros 
+is used.
+
+\subsection{Semismooth Methods}
+
+TAO has two implementations of semismooth algorithms 
+\cite{munson.facchinei.ea:semismooth, deluca.facchinei.ea:semismooth, 
+facchinei.fischer.ea:semismooth} for solving mixed complementarity problems.
+Both are based upon a reformulation of the mixed complementarity problem
+as a nonsmooth system of equations using the Fischer-Burmeister 
+function \cite{fischer:special}.  A nonsmooth Newton method is applied to
+the reformulated system to calculate a solution.  The theoretical properties
+of such methods are detailed in the aforementioned references.
+
+The Fischer-Burmeister function, $\phi:\Re^2 \to \Re$, is defined as,
+\begin{eqnarray*}
+\phi(a,b) := \sqrt{a^2 + b^2} - a - b.
+\end{eqnarray*}
+This function has the following key property
+\begin{eqnarray*}
+\begin{array}{lcr}
+        \phi(a,b) = 0 & \Leftrightarrow & a \geq 0,\; b \geq 0,\; ab = 0
+\end{array}
+\end{eqnarray*}
+used when reformulating the mixed complementarity problem the system of 
+equations $\Phi(x) = 0$ where $\Phi:\Re^n \to \Re^n$.  
+The reformulation is defined component-wise as
+\begin{eqnarray*}
+\Phi_i(x) := \left\{ \begin{array}{ll}
+   \phi(x_i - l_i, F_i(x)) & \mbox{if } -\infty < l_i < u_i = \infty, \\
+   -\phi(u_i-x_i, -F_i(x)) & \mbox{if } -\infty = l_i < u_i < \infty, \\
+   \phi(x_i - l_i, \phi(u_i - x_i, - F_i(x))) & \mbox{if } -\infty < l_i < u_i < \infty, \\
+   -F_i(x) & \mbox{if } -\infty = l_i < u_i = \infty, \\
+   l_i - x_i & \mbox{if } -\infty < l_i = u_i < \infty.
+   \end{array} \right.
+\end{eqnarray*}
+We note that $\Phi$ is not differentiable everywhere, but satisfies a
+semismoothness property 
+\cite{mifflin:semismooth, qi:convergence, qi.sun:nonsmooth}.  Furthermore,
+the natural merit function, $\Psi(x) := \frac{1}{2} \| \Phi(x) \|_2^2$, is 
+continuously differentiable.
+
+The two semismooth TAO solvers both solve the system $\Phi(x) = 0$ by applying
+a nonsmooth newton method with a line-search.  We calculate a direction, $d^k$,
+by solving the system $H^kd^k = -\Phi(x^k)$ where $H^k$ is an element of the 
+$B$-subdifferential \cite{qi.sun:nonsmooth} of $\Phi$ at $x^k$.  If the 
+direction calculated does not satisfy a suitable descent condition, then 
+we use the negative gradient of the merit function, $-\nabla \Psi(x^k)$, as 
+the search direction.  A standard Armijo search \cite{armijo:minimization} is
+used to find the new iteration.  Non-monotone searches 
+\cite{grippo.lampariello.ea:nonmonotone} are also available by setting 
+appropriate run-time options.  See Section \ref{sec:TaoLineSearch} for further 
+details.
+
+The first semismooth algorithm available in TAO is not guaranteed to 
+remain feasible with respect to the bounds, $[\ell, u]$, and is termed 
+an infeasible semismooth method.  This method can be specified using the 
+TaoMethod {\tt tao\_ssils}.  In this case, the descent test used is 
+that
+\begin{eqnarray*}
+\nabla \Psi(x^k)^Td^k \leq -\delta\| d^k \|^\rho.
+\end{eqnarray*}
+Both $\delta > 0$ and $\rho > 2$ can be modified using the
+run-time commands {\tt -tao\_ssils\_delta <delta>} and 
+{\tt -tao\_ssils\_rho <rho>} respectively. By default, 
+$\delta = 10^{-10}$ and $\rho = 2.1$.
+
+An alternative is to remain feasible with respect to the bounds by using a 
+projected Armijo line-search.  This method can be specified using the 
+TaoMethod {\tt tao\_ssfls}.  The descent test used is the same as above 
+where the direction in this case corresponds to the first part of the 
+piece-wise linear arc searched by the projected line-search.  
+Both $\delta > 0$ and $\rho > 2$ can be modified using the run-time 
+commands  {\tt -tao\_ssfls\_delta <delta>} and {\tt -tao\_ssfls\_rho <rho>} 
+respectively.  By default, $\delta = 10^{-10}$ and $\rho = 2.1$.
+
+The recommended algorithm is the infeasible semismooth method,
+{\tt tao\_ssils}, because of its strong global and local convergence 
+properties.  However, if it is known that $F$ is not defined outside 
+of the box, $[\ell,u]$, perhaps due to the presence of $log$ functions,
+the feasible algorithm, {\tt tao\_ssfls}, is a reasonable alternative.
+
+\Comment{
+\section{Nonlinear Least Squares}
+\label{sec:leastsquares}
+Given a function $C  : \Re^n \to \Re^m$, the nonlinear least
+squares problem minimizes $\half \| C(X) \|_2$.
+The nonlinear equations $C$ should be specified with the function
+{\tt TaoSetPetscConstraintsFunction()}.
+Most solvers also require the Jacobian of this function.  
+The routine that evaluates this matrix should be set
+using the command {\tt TaoSetPetscJacobian()}.
+
+Using the constraint data provided by the user, the nonlinear
+least squares solver formulates a minimization problem, and
+solves the minimization problem using another TAO solver.  
+A nonlinear least squares solver should be chosen with
+the method \texttt{tao\_nlsq}. The underlying
+minimization solver can be chosen with the runtime
+option {\tt -nlsq\_tao\_method TaoMethod}.
+
+\subsection{Levenberg Marquardt}
+
+   One algorithm for solving the least squares problem is a Levenberg
+Marquardt algorithm.  This implementation of the 
+algorithm applies the Newton trust region method to the minimization problem.
+The gradient of the minimization
+problem is $J^T C(X)$ and the Hessian matrix is approximated by
+$J^T J$, where $J$ is the Jacobian of the constraints at $X$.
+In this algorithm the initial trust region radius can be set
+with the command {\tt TaoSetTrustRegionRadius()}.
+
+
+\subsection{Gauss--Newton Method}
+   One algorithm for solving the least squares problem is a
+Gauss-Newton algorithm.  This implementation of the 
+algorithm applies the Newton line search method to the minimization problem.
+The gradient of the minimization
+problem is $J^T C(X)$ and the Hessian matrix is approximated by
+$J^T J$, where $J$ is the Jacobian of the constraints at $X$.
+
+\subsection{Limited Memory Variable Metric Method}
+   Another algorithm for solving the least squares problem is a
+limited memory variable metric algorithm.  This implementation of the 
+algorithm applies the LMVM method 
+to the unconstrained minimization problem.  This algorithm is generally not
+as efficient as Levenberg Marquardt or Gauss--Newton methods,
+but can be efficient when the residual is large.
+
+
+\subsection{Levenberg Marquardt with Bound Constraints}
+If the least squares problem also imposes bound constraints on the
+variables, another Levenberg Marquardt algorithm can be used.  The
+TaoMethod should be set to {\tt tao\_blm}.
+a TAO solver of this type.
+In this algorithm the initial trust region radius can be set
+with the command {\tt TaoSetTrustRegionRadius()}.
+
+\subsection{Limited Memory Variable Metric Method with Bound Constraints}
+   Another algorithm for solving the least squares problem when
+the variables have upper and lower bounds is a
+limited memory variable metric algorithm.  This implementation of the 
+algorithm applies the BLMVM method 
+to the bound constrained minimization problem.  
+This algorithm is generally not
+as efficient as the method based on the Newton Trust Region method
+for bound constrained optimization, 
+but it can be efficient when the residual is large.
+}

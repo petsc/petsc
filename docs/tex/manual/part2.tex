@@ -1,0 +1,208 @@
+%
+% NOTES:  
+%  - Be sure to place captions BEFORE labels in figures and tables!
+%    Otherwise, numbering will be incorrect.  For example, use the following:
+%       \caption{TAO Info}
+%       \label{fig:taoinfo}
+%  - Use \break to indicate a line break (needed to prevent long strings in
+%    \tt mode from running of the page)
+%
+% ---------------------------------------------------------------
+
+\chapter{Basic Usage of TAO Solvers}
+%\sindex{continuous optimization}
+\label{chapter:tao_solver}
+
+TAO contains unconstrained minimization, bound constrained minimization, 
+%nonlinear least squares, 
+and nonlinear complementarity solvers.
+The structure of these problems can differ significantly, 
+but TAO has a similar interface to all of its solvers.  
+Routines that most solvers have in common will be discussed in 
+this chapter.
+A complete list of options can be found by consulting the manual pages.
+Many of the options can also be set at the command line.  These options
+can also be found in manual pages or by
+running a program with the {\tt -help} option.
+
+
+\section{Initialize and Finalize}
+The first TAO routine in any application should be {\tt TaoInitialize()}.
+Most TAO programs begin with a call to
+\findex{TaoInitialize()}
+\begin{verbatim}
+   info = TaoInitialize(int *argc,char ***argv,char *file_name, 
+                        char *help_message);
+\end{verbatim}
+\noindent
+This command initializes TAO, as well as MPI, PETSc, and other packages
+to which TAO applications may link (if these have not yet
+been initialized elsewhere).  
+In particular, the arguments {\tt argc} and 
+{\tt argv} are the command line arguments delivered in all C and C++
+programs; these arguments initialize the options database.  
+\sindex{command line arguments} The argument {\tt file\_name}
+optionally indicates an alternative name for an options file, which by
+default is called {\tt .petscrc} and resides in the user's home directory.
+
+One of the last routines\findex{TaoFinalize()} that all TAO programs should 
+call is 
+\begin{verbatim}
+   info = TaoFinalize();
+\end{verbatim}
+\noindent
+This routine finalizes TAO and any other libraries that may have been
+initialized during the {\tt TaoInitialize()} phase.
+For example, {\tt TaoFinalize()}
+calls {\tt MPI\_Finalize()} %\findex{MPI_Finalize()}
+if {\tt TaoInitialize()}
+began MPI. If MPI was initiated externally from TAO (by either
+the user or another software package), then the user is
+responsible for calling {\tt MPI\_Finalize()}. 
+
+\section{Creation and Destruction}
+
+A TAO solver can be created with
+the command 
+\findex{TaoCreate()}
+\begin{verbatim}
+   info = TaoCreate(MPI_Comm comm,TaoMethod method,TAO_SOLVER *newsolver);
+\end{verbatim}
+\noindent
+The first argument in this routine is an MPI communicator indicating which
+processes are involved in the solution process.  In
+most cases, this should be set to {\tt MPI\_COMM\_WORLD}.
+The second argument in this creation routine 
+specifies the default method that should be be used to
+solve the optimization problem.  
+The third argument in {\tt TaoCreate()} is a pointer to a TAO solver
+object.  This routine creates the object and returns it to the user.
+The TAO object is then to be used in all TAO routines.
+
+The various types of TAO solvers and the flags that identify them 
+will be discussed in the following chapters.
+The solution method should be carefully chosen depending upon
+the problem that is being solved.  Some solvers, for instance, are meant for
+problems with no constraints, while other solvers acknowledge constraints
+in the problem and solve them accordingly.
+The user must also be aware of the derivative information that is available.
+Some solvers require second-order information, while other solvers require
+only gradient or function information.
+The {\tt TaoMethod} can also be set to {\tt TAO\_NULL} in the 
+{\tt TaoCreate()} routine if the user selects a method at runtime using
+the options database.
+The command line option \texttt{-tao\_method} followed by an TAO method
+will override any method specified by the second argument.
+The command line option {\tt -tao\_method tao\_lmvm}, for instance,
+will specify the limited memory variable metric method for unconstrained
+optimization.  Note that the {\tt TaoMethod} variable is a string that requires
+quotation marks in an application program, but quotation marks are not required
+at the command line.
+The method that TAO uses to solve an optimization problem can be changed at a later point
+in the program with the command
+\findex{TaoSetMethod()} {\tt TaoSetMethod()}, whose
+arguments are a TAO solver
+and a string that uniquely identifies a method for solving the problem.
+
+Each TAO solver that has been created should also be destroyed using
+the command 
+\findex{TaoDestroy()}
+\begin{verbatim}
+   info = TaoDestroy(TAO_SOLVER solver);
+\end{verbatim}
+\noindent 
+This routine frees the internal data structures used by the solver.
+
+
+\section{Convergence}\label{sec:customize}
+
+Although TAO and its solvers set default parameters 
+that are useful
+for many problems, it may be necessary for the user to modify these
+parameters to change the behavior and convergence of various algorithms.
+
+One convergence criterion for most algorithms concerns the
+of digits of accuracy needed in the solution.  In particular,
+one convergence test employed by TAO attempts to stop when
+the error in the constraints is less than $\epsilon_{crtol}$,
+ and either
+\[\frac{ |f(X) - f(X^*)|}{ |f(X)| + 1} \leq \epsilon_{frtol}
+\;\textnormal{or}\;
+f(X) - f(X^*)  \leq \epsilon_{fatol}, \]
+where $X^*$ is the current approximation to $X$.
+TAO estimates $f(X) - f(X^*)$ with either 
+the square of the norm of the gradient or the duality gap.
+A relative tolerance of $\epsilon_{frtol}=0.01$ indicates that two
+significant digits are desired in the objective function.
+Each solver sets its own  convergence tolerances, but they can
+be changed using the routine
+{\tt TaoSetTolerances()}\findex{TaoSetTolerances()} \sindex{convergence tests}. 
+Another set of convergence tolerances can be set with 
+{\tt TaoSetGradientTolerances()}.\findex{TaoSetGradientTolerances()}
+These tolerances terminate the solver when the norm of the gradient function
+(or Lagrangian function for bound-constrained problems)
+is sufficiently close to zero.
+
+Other stopping criteria include a minimum trust region radius or 
+a maximum number of iterations.  These parameters can be set with
+the routines {\tt TaoSetTrustRegionTolerance()}\sindex{trust region}\findex{TaoSetTrustRegionTolerance}
+and {\tt TaoSetMaximumIterates()}\findex{TaoSetMaximumIterates()}.
+Similarly, a maximum number of function evaluations can be set 
+with the command 
+{\tt TaoSetMaximumFunctionEvaluations()}
+\findex{TaoSetMaximumFunctionEvaluations()}.
+
+\section{Viewing Solutions}
+
+The routine
+\begin{verbatim}
+   int TaoSolveApplication(TAO_APPLICATION, TAO_SOLVER);
+\end{verbatim}
+\noindent
+will apply the solver to the application that has been created by the user.
+
+To see parameters and performance statistics for the solver, the
+routine
+\begin{verbatim}
+   int TaoView(TAO_SOLVER);
+\end{verbatim}
+can be used.  This routine will display to standard output the number
+of function evaluations need by the solver and other information
+specific to the solver.
+
+The progress of the optimization solver can be monitored with
+the runtime option {\tt -tao\_monitor}.  Although monitoring routines
+can be customized, the default monitoring routine will print out 
+several relevant statistics to the screen.
+
+The user also has access to information about the current solution.
+The current iteration number, objective function value, gradient
+norm, infeasibility norm, and step length 
+can be retrieved with the command 
+\findex{TaoGetSolutionStatus()}
+\begin{verbatim}
+   int TaoGetSolutionStatus(TAO_SOLVER tao, int* iterate, double* f, 
+                            double* gnorm, double *cnorm, double *xdiff, 
+                            TaoTerminateReason *reason)
+\end{verbatim}
+\noindent
+The last argument returns
+a code that indicates the reason that the solver terminated.  Positive 
+numbers indicate that a solution has been found, while negative numbers
+indicate a failure.  A list of reasons can be found in the manual page
+for {\tt TaoGetTerminationReason()}.
+
+The user set
+vectors containing the solution and gradient before solving
+the problem, but pointers to these vectors can also be retrieved with the
+commands {\tt TaoGetSolution()}\findex{TaoGetSolution()}
+and {\tt TaoGetGradient()}\findex{TaoGetGradient()}.  
+Dual variables and other relevant information are also available. 
+This information can be obtained during
+user-defined routines such as a function evaluation and customized
+monitoring routine, or after the solver has terminated.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "manual_tex"
+%%% End: 

@@ -1,0 +1,93 @@
+% $Id: manual.tex,v 1.2 2006-10-30 20:40:20 sarich Exp $ 
+%
+% HTML version of the TAO users manual.
+%
+% manual_tex.tex is the base file for LaTeX format, while manual.tex is
+% the corresponding base HTML format file.
+%
+\documentclass[dvipdfm,11pt,openright]{book}
+%\documentclass[twoside,12pt]{report_tao}
+\usepackage[dvips]{graphicx}
+\usepackage{amssymb}
+% moreverb provides commands for reading and writing files. In particular,
+% verbatiminput. See pages 66-70 on the LateX Companion.
+\usepackage{moreverb}
+\usepackage{epsf}
+% float supersedes the obsolete here package. See page 149 of the LateX Companion.
+\usepackage{float}
+% url is a form of \verb intended for addresses, hypertext links, directories/paths,...
+%\usepackage{url}
+\usepackage[dvipdfm]{hyperref}
+% afterpage places documents at the top of the page. See page 150 of the LateX Companion.
+\usepackage{afterpage}
+
+\setlength{\textwidth}{6.0in}
+\setlength{\oddsidemargin}{18pt}
+\setlength{\evensidemargin}{18pt}
+\setlength{\topmargin}{-0.5in}
+\setlength{\textheight}{8.5in}
+
+% Make a unified index
+\newcommand{\half}{{\textstyle{\frac{1}{2}}}}
+%\newcommand{\findex}[1]{\index{FUNCTION #1}}
+\newcommand{\findex}[1]{\index{#1}}
+\newcommand{\sindex}[1]{\index{#1}}
+\newcommand{\F}{\mbox{\boldmath \(F\)}}
+\newcommand{\x}{\mbox{\boldmath \(x\)}}
+\newcommand{\rr}{\mbox{\boldmath \(r\)}}
+\newcommand{\R}{\mathbb R}
+\renewcommand{\Re}{\R}
+\newcommand{\Comment}[1]{}
+
+\makeindex
+ 
+\begin{document}
+
+\pagestyle {empty}
+\input {cover}
+
+% Table of contents.
+\cleardoublepage
+\pagestyle {plain}
+\pagenumbering{roman}
+\setcounter{page}{1}
+\tableofcontents
+
+% Abstract for users manual
+\cleardoublepage
+% \addcontentsline{toc}{chapter}{Preface}
+\input{abstract.tex}
+
+% Acknowledgements for users manual
+% \addcontentsline{toc}{chapter}{Acknowledgments}
+\input{acknowl.tex}
+
+% Start of the Users Manual
+\cleardoublepage
+\setcounter {page}{1}
+\pagenumbering{arabic}
+
+\input{part0.tex}
+
+\input{part1.tex}
+
+\input{part2.tex}
+
+\input{part2b.tex}
+
+\input{taoapplication.tex}
+
+\input{part3.tex}
+
+\input{addsolver.tex}
+
+\begin{theindex}
+\end{theindex}
+\label{sec:index}
+
+\bibliographystyle{plain}
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliography{../tao,mathprog}
+
+\end{document}
+

@@ -1,0 +1,264 @@
+\chapter{Introduction to TAO}
+\label{chapter:introduction}
+
+% Very introductory, gentle introduction. Pretty tables and figures.
+% Perhaps use preamble of \ref{chapter:Getting Started}
+% Written in C, but good with C++ compilers.  Also can use fortran.
+
+The Toolkit for Advanced Optimization (TAO) focuses on the design and
+implementation of optimization software for the
+solution of large-scale optimization applications on high-performance
+architectures.  Our approach is motivated by the scattered support for
+parallel computations and lack of reuse of linear algebra software in
+currently available optimization software.  The TAO design allows the
+reuse of toolkits that provide lower-level support (parallel sparse
+matrix data structures, preconditioners, solvers), and thus we are
+able to build on top of these toolkits instead of having to redevelop
+code. The advantages in terms of efficiency and development time are
+significant.
+
+The TAO design philosophy uses object-oriented techniques of data and
+state encapsulation, abstract classes, and limited inheritance to
+create a flexible optimization toolkit.  This chapter provides a short
+introduction to our design philosophy by describing the objects in TAO
+and the importance of this design.  Since a major concern in the TAO
+project is the performance and scalability of optimization algorithms
+on large problems, we also present some performance resuls.
+
+\begin{comment}   
+
+The Toolkit for Advanced Optimization (TAO) focuses on the design of large
+scale optimization software, including nonlinear least
+squares, unconstrained minimization, bound constrained
+optimization, and decomposition techniques.
+The solution of such problems
+pervades many areas of computational science and demands robust and
+flexible solution strategies.
+As surveyed by Mor\'e and Wright \cite{optguide93},
+various software packages are available for solving these
+problems; however, their portability, versatility, and scalability are
+restricted, especially within parallel environments.
+
+The current generation of numerical software generally has a rigid form
+that imposes many limitations, even when restricted to
+uniprocessor architectures.
+In traditional software design, the expressions of
+algorithms make assumptions about the way mathematical objects, such as
+vectors and matrices, are represented by the computer.
+Thus, users are
+forced to convert from the natural representation of data for a particular
+application to one imposed by the software developer, often at the
+expense of considerable overhead.  In addition, library routines are
+often characterized by long and complicated calling sequences, with
+no consistent interface among algorithms that solve a particular class
+of problems.
+
+These issues are magnified by the very nature of multiprocessor
+architectures, since robust and
+efficient implementation of mathematical abstractions involves
+the added considerations
+of parallel data structures and communication.
+An effective software package should
+exploit different parallel programming
+techniques for various phases of the solution process.
+
+Since many application problems require the computational
+power of high-performance computers, a need clearly exists for a
+uniform and flexible framework for developing optimization software and
+solving application programs.
+Our goal is to use object-oriented and component-based
+software engineering techniques to create such an environment.
+
+\end{comment}
+
+\section{TAO Design Philosophy} 
+
+%Use MPI, Microkernal 
+% Goals, Current state of art. AD support
+%\section{} Use matrices, vectors, linear solvers, as TAO objects
+
+The TAO design philosophy place strongs emphasis on the reuse of
+external tools where appropriate.  Our design enables bidirectional
+connection to lower-level linear algebra support (e.g. parallel sparse
+matrix data structures) provided in toolkits such as PETSc
+\cite{petsc} \cite{petsc-user-ref,petsc-web-page}
+as well as higher-level application
+frameworks.  Our design decisions are strongly motivated by the
+challenges inherent in the use of large-scale distributed memory
+architectures and the reality of working with large and often poorly
+structured legacy codes for specific applications.  Figure
+\ref{tao:design} illustrates how the TAO software works with external
+libraries and application code.
+
+%\begin{figure}[ht]
+%\centering{\includegraphics[height=3.5in,clip]{taofig.eps}}
+%\caption{TAO Design}
+%\label{tao:design}
+%\end{figure}
+
+\begin{figure}
+\centerline{\epsfysize=3.5in \epsfbox{taofig.eps}}
+\caption{TAO Design}
+\label{tao:design}
+\end{figure}
+
+
+The TAO solvers use four fundamental objects to define and solve
+optimization problems: vectors, index sets, matrices, and linear
+solvers.  The concepts of vectors and matrices are standard, while an
+index set refers to a set of integers used to identify particular
+elements of vectors or matrices.  An optimization algorithm is a
+sequence of well defined operations on these objects.  These
+operations include vector sums, inner products, and matrix-vector
+multiplication.  TAO makes no assumptions about the representation of
+these objects by passing pointers to data-structure-neutral objects
+for the execution of these numerical operations.
+
+With sufficiently flexible abstract interfaces, TAO can support a
+variety of implementations of data structures and algorithms.  These
+abstractions allow us to more easily experiment with a range of
+algorithmic and data structure options for realistic problems, such as
+within this case study.  Such capabilities are critical for making
+high-performance optimization software adaptable to the continual
+evolution of parallel and distributed architectures and the research
+community's discovery of new algorithms that exploit their features.
+
+Our current TAO implementation uses the parallel system
+infrastructure and linear algebra objects offered by PETSc,
+which uses MPI \cite{using-mpi} for all interprocessor communication.
+The PETSc package supports objects for vectors, matrices, index 
+sets, and linear solvers.
+
+The TAO design philosophy eliminates some of the barriers in using
+independently developed software components by accepting data that is
+independent of representation and calling sequence written for
+particular data formats.  The user can initialize an application with
+external frameworks, provide function information to a TAO solver, and
+call TAO to solve the application problem.
+
+The use of abstractions for matrices and vectors in TAO optimization
+software also enables us to leverage automatic differentiation
+technology to facilitate the parallel computation of gradients and
+Hessians needed within optimization algorithms.  We have demonstrated
+the viability of this approach through preliminary interfacing between
+TAO solvers and the automatic differentiation tools ADIFOR and ADIC.
+We are currently working on developing TAO interfaces that use special
+problem features (for example, partial separability, stencil
+information) in automatic differentiation computations.
+
+\section{Performance Results}
+
+A major concern in the TAO project is the performance and scalability
+of optimization algorithms on large problems.  In this section we
+focus on the GPCG (gradient projection, conjugate gradient) algorithm
+for the solution of bound-constrained convex quadratic programming
+problems.  Originally developed by Mor\'e and Toraldo
+\cite{more-toraldo}, the GPCG algorithm was designed for large-scale
+problems but had only been implemented for a single processor.  GPCG
+combines the advantages of the identification properties of the
+gradient projection method with the finite termination properties of
+the conjugate gradient method.  Moreover, the performance of the
+TAO implementation on large optimization problems is noteworthy.
+
+%\begin{figure}[tb]
+%\centering{\includegraphics[height=3.0in]{pjb.eps}}
+%\caption{The journal bearing problem with $\epsilon$ = 0.9}
+%\label{dpjb}
+%\end{figure}
+
+\begin{figure}[tb]
+\centerline{\epsfysize=3.0in \epsfbox{pjb.eps}}
+\caption{The journal bearing problem with $\epsilon$ = 0.9}
+\label{dpjb}
+\end{figure}
+
+
+
+We illustrate the performance of the GPCG algorithm by 
+presenting results for a journal bearing problem
+with over 2.5 million variables.
+The journal bearing problem
+is a finite element approximation to a variational problem 
+over a rectangular two-dimensional grid.  A
+grid with $1600$ points in each direction, for example, is formulated
+as a bound constrained quadratic problem with $1600^2=2,560,000$
+variables.
+The triangulation of the grid results in a matrix that has the
+usual five diagonal nonzero structure that arises
+from a difference approximation to the Laplacian operator.
+The journal bearing problem contains an eccentricity parameter,
+$\varepsilon \in (0,1)$, that influences the number of active
+variables at the solution and the difficulty in solving it.
+Figure \ref{dpjb} shows the solution of the journal bearing problem
+for $ \varepsilon = 0.9 $. The steep gradient in the solution
+makes this problem a difficult benchmark.
+
+The performance results in Table \ref{flops} are noteworthy is several
+ways.  First of all, the number of faces visited by GPCG is remarkably
+small.  Other strategies can lead to a large number of gradient
+projection iterates, but the GPCG algorithm is remarkably efficient.
+Another interesting aspect of these results is that due to the low
+memory requirements of iterative solvers, we were able to solve these
+problems with only $ p = 8 $ processors.  Strategies that rely on
+direct solvers are likely to need significantly more storage, and thus
+more processors.  Finally, these results show that the GPCG
+implementation has excellent efficiency.  For example, the efficiency
+of GPCG with respect to $ p = 8 $ processors ranges between $ 70\% $
+and $ 100\% $ when $ \varepsilon = 0.1 $.  This sustained efficiency
+is remarkable since the GPCG algorithm is solving a sequence of linear
+problems with a coefficient matrix set to the submatrix of the Hessian
+matrix with respect to the free variables for the current iterate.
+Thus, our implementation's repartitioning of submatrices effectively
+deals with the load-balancing problem that is inherent in the GPCG
+algorithm.
+
+\begin{table}[htb]
+\begin{center}
+\begin{tabular}{| c r | c c r c r |}
+\hline
+\multicolumn{1}{|c}{$ \varepsilon $} & 
+\multicolumn{1}{c|}{$ p $} & 
+\multicolumn{1}{c}{faces} &
+\multicolumn{1}{c}{$n_{CG}$} & 
+\multicolumn{1}{c}{time} &
+\multicolumn{1}{c}{$t_{CG}$\%} & 
+\multicolumn{1}{c|}{$ \cal E $} \\ \hline
+0.1  & 8 & 46 & 431 & 7419 & 86 & 100  \\ 
+0.1  & 16 & 45 & 423 & 3706 & 83 & 100  \\
+0.1  & 32 & 45 & 427 & 2045 & 82 & 91 \\
+0.1  & 64 & 45 & 427 & 1279 & 82 & 73 \\
+\hline
+0.9  & 8 & 37 & 105 & 2134 & 70 & 100 \\
+0.9  & 16 & 37 & 103 & 1124 & 71 & 95 \\
+0.9  & 32 & 38 & 100 & 618 & 69 & 86 \\
+0.9  & 64 & 38 & 99 & 397 & 68 & 67 \\
+\hline
+\end{tabular}
+\caption{Performance of GPCG on the journal bearing problem
+with $ 2.56 \cdot 10^6 $ variables.}
+\label{flops}
+\end{center}
+\end{table}
+
+
+
+
+An important aspect of our results that is not
+apparent from Table \ref{flops} is that 
+for these results we were able to experiment easily 
+with all the preconditioners offered by PETSc.
+In particular, we were able to compare the diagonal Jacobi
+preconditioner with block Jacobi and overlapping additive Schwarz
+preconditioners that use a zero-fill ILU solver in each block.  We
+also experimented with a parallel zero-fill incomplete Cholesky preconditioner
+provided by a PETSc interface to the BlockSolve95~\cite{bs-user-ref}
+package of Jones and
+Plassmann.  Interestingly enough, the diagonal Jacobi preconditioner
+achieved better performance on this problem.
+
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "manual_tex"
+%%% End: 

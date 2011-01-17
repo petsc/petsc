@@ -12,6 +12,7 @@ extern PetscClassId TAODM_CLASSID;
 
 extern PetscErrorCode TaoDMSetMatType(TaoDM *, const MatType);
 extern PetscErrorCode TaoDMCreate(MPI_Comm, PetscInt, void*, TaoDM**);
+extern PetscErrorCode TaoDMSetSolverType(TaoDM*, const TaoSolverType);
 extern PetscErrorCode TaoDMSetOptionsPrefix(TaoDM *, const char []);
 extern PetscErrorCode TaoDMDestroy(TaoDM*);
 extern PetscErrorCode TaoDMDestroyLevel(TaoDM);
@@ -23,6 +24,7 @@ extern PetscErrorCode TaoDMSetDM(TaoDM *, DM);
 extern PetscErrorCode TaoDMGetDM(TaoDM , DM*);
 extern PetscErrorCode TaoDMGetContext(TaoDM , void**);
 
+extern PetscErrorCode TaoDMSetLevelMonitor(TaoDM*,PetscErrorCode(*)(TaoDM, PetscInt, void*),void*);
 extern PetscErrorCode TaoDMSetInitialGuessRoutine(TaoDM*,PetscErrorCode(*)(TaoDM,Vec));
 extern PetscErrorCode TaoDMSetVariableBoundsRoutine(TaoDM*,PetscErrorCode(*)(TaoDM,Vec, Vec));
 extern PetscErrorCode TaoDMSetObjectiveAndGradientRoutine(TaoDM*,PetscErrorCode(*)(TaoSolver, Vec, PetscReal*, Vec, void*));

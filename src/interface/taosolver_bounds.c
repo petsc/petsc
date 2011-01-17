@@ -44,7 +44,7 @@ PetscErrorCode TaoSolverSetVariableBounds(TaoSolver tao, Vec XL, Vec XU)
 }
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetVariableBoundsRoutine"
-/*@
+/*@C
   TaoSolverSetVariableBoundsRoutine - Sets a function to be used to compute variable bounds
 
   Collective on TaoSolver

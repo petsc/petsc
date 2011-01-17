@@ -62,6 +62,7 @@ PetscErrorCode  TaoDMCreate(MPI_Comm comm,PetscInt nlevels,void *user,TaoDM **ta
     p[i]->user     = user;
     p[i]->isctype  = IS_COLORING_GLOBAL; 
     ierr           = PetscStrallocpy(MATAIJ,&p[i]->mtype);CHKERRQ(ierr);
+    p[i]->ttype = PETSC_NULL;
   }
   *taodm = p;
 
@@ -69,6 +70,7 @@ PetscErrorCode  TaoDMCreate(MPI_Comm comm,PetscInt nlevels,void *user,TaoDM **ta
   if (ftype) {
     ierr = TaoDMSetMatType(*taodm,mtype);CHKERRQ(ierr);
   }
+  
   PetscFunctionReturn(0);
 }
 
@@ -101,6 +103,21 @@ PetscErrorCode  TaoDMSetMatType(TaoDM *taodm,const MatType mtype)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoDMSetSolverType"
+PetscErrorCode TaoDMSetSolverType(TaoDM *taodm, const TaoSolverType type)
+{
+  PetscInt i;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  for (i=0; i<taodm[0]->nlevels; i++) {
+    ierr = PetscFree(taodm[i]->ttype);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(type,&taodm[i]->ttype);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+  
+}
 #undef __FUNCT__  
 #define __FUNCT__ "TaoDMSetOptionsPrefix"
 /*@C
@@ -170,6 +187,7 @@ PetscErrorCode  TaoDMDestroyLevel(TaoDM taodmlevel)
   PetscFunctionBegin;
   ierr = PetscFree(((PetscObject)(taodmlevel))->prefix);CHKERRQ(ierr);
   ierr = PetscFree(taodmlevel->mtype);CHKERRQ(ierr);
+  ierr = PetscFree(taodmlevel->ttype);CHKERRQ(ierr);
   if (taodmlevel->dm)      {ierr = DMDestroy(taodmlevel->dm);CHKERRQ(ierr);}
   if (taodmlevel->x)       {ierr = VecDestroy(taodmlevel->x);CHKERRQ(ierr);}
   //if (taodmlevel->b)       {ierr = VecDestroy(taodmlevel->b);CHKERRQ(ierr);}
@@ -290,15 +308,32 @@ PetscErrorCode  TaoDMSolve(TaoDM *taodm)
     ierr = (*taodm[0]->ops->computeinitialguess)(taodm[0],taodm[0]->x);CHKERRQ(ierr);
     ierr = TaoSolverSetInitialVector(taodm[0]->tao,taodm[0]->x); CHKERRQ(ierr);
   }
-  for (i=0; i<nlevels-1; i++) {
+  for (i=0; i<nlevels; i++) {
+    /* generate hessian for this level */
+    ierr = DMGetMatrix(taodm[i]->dm,taodm[nlevels-1]->mtype,&taodm[i]->hessian);CHKERRQ(ierr);
+    taodm[i]->hessian_pre = 0;
+    if (taodm[i]->ops->computehessianlocal) {
+      ierr = TaoSolverSetHessianRoutine(taodm[i]->tao,taodm[i]->hessian,taodm[i]->hessian,TaoDMFormHessianLocal,taodm[i]); CHKERRQ(ierr);
+    } else if (taodm[i]->ops->computehessian) {
+      ierr = TaoSolverSetHessianRoutine(taodm[i]->tao,taodm[i]->hessian,taodm[i]->hessian,taodm[i]->ops->computehessian,taodm[i]); CHKERRQ(ierr);
+    }
+
+
+    if (taodm[i]->ops->levelmonitor) {
+      ierr = (*taodm[i]->ops->levelmonitor)(taodm[i],i,taodm[i]->usermonitor); CHKERRQ(ierr);
+    }
+
     ierr = TaoSolverSolve(taodm[i]->tao);CHKERRQ(ierr);
     if (vecmonitor) {
       ierr = VecView(taodm[i]->x,PETSC_VIEWER_DRAW_(((PetscObject)(taodm[i]))->comm));CHKERRQ(ierr);
     }
-    ierr = MatInterpolate(taodm[i+1]->R,taodm[i]->x,taodm[i+1]->x);CHKERRQ(ierr);
-    ierr = TaoSolverSetInitialVector(taodm[i+1]->tao,taodm[i+1]->x);
+    /* get ready for next level (if another exists) */
+    if (i < nlevels-1) {
+      ierr = MatInterpolate(taodm[i+1]->R,taodm[i]->x,taodm[i+1]->x);CHKERRQ(ierr);
+      ierr = TaoSolverSetInitialVector(taodm[i+1]->tao,taodm[i+1]->x);
+    }
   }
-
+  
   /*ierr = VecView(taodm[nlevels-1]->x,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);*/
   
   //ierr = (*TaoDMGetFine(taodm)->solve)(taodm,nlevels-1);CHKERRQ(ierr);
@@ -425,6 +460,7 @@ PetscErrorCode  TaoDMSetKSP(TaoDM *taodm,PetscErrorCode (*rhs)(TaoDM,Vec),PetscE
   PetscFunctionBegin;
   if (!taodm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Passing null as TaoDM");
 
+
   if (!taodm[0]->ksp) {
     /* create solvers for each level if they don't already exist*/
     for (i=0; i<nlevels; i++) {
@@ -434,8 +470,6 @@ PetscErrorCode  TaoDMSetKSP(TaoDM *taodm,PetscErrorCode (*rhs)(TaoDM,Vec),PetscE
       //ierr = TaoDMSetUpLevel(taodm,taodm[i]->ksp,i+1);CHKERRQ(ierr);
       //ierr = KSPSetFromOptions(taodm[i]->ksp);CHKERRQ(ierr);
 
-      if (!taodm[i]->hessian) {
-	ierr = DMGetMatrix(taodm[i]->dm,taodm[nlevels-1]->mtype,&taodm[i]->hessian);CHKERRQ(ierr);
       } 
     }
   }
@@ -520,11 +554,12 @@ PetscErrorCode  TaoDMView(TaoDM *taodm,PetscViewer viewer)
   } else {
     if (iascii) {
       ierr = PetscViewerASCIIPrintf(viewer,"TaoDM Object with %D levels\n",nlevels);CHKERRQ(ierr);
+      /*
       if (taodm[0]->isctype == IS_COLORING_GLOBAL) {
         ierr = PetscViewerASCIIPrintf(viewer,"Using global (nonghosted) hessian coloring computation\n");CHKERRQ(ierr);
       } else {
         ierr = PetscViewerASCIIPrintf(viewer,"Using ghosted hessian coloring computation\n");CHKERRQ(ierr);
-      }
+	}*/
     }
     for (i=0; i<nlevels; i++) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -534,11 +569,7 @@ PetscErrorCode  TaoDMView(TaoDM *taodm,PetscViewer viewer)
     if (iascii) {
       ierr = PetscViewerASCIIPrintf(viewer,"Using matrix type %s\n",taodm[nlevels-1]->mtype);CHKERRQ(ierr);
     }
-    if (taodm[i]->tao != 0) {
-      ierr = TaoSolverView(taodm[i]->tao,viewer);CHKERRQ(ierr);
-    } else if (iascii) {
-      ierr = PetscViewerASCIIPrintf(viewer,"TaoDM does not have a TaoSolver set\n");CHKERRQ(ierr);
-    }
+    
   }
   PetscFunctionReturn(0);
 }
@@ -692,23 +723,8 @@ PetscErrorCode TaoDMSetHessianRoutine(TaoDM* taodm, PetscErrorCode (*func)(TaoSo
   PetscInt nlevels = taodm[0]->nlevels;
   PetscFunctionBegin;
   for (i=0;i<nlevels;i++) {
-    taodm[i]->ops->computehessianlocal = 0;
     taodm[i]->ops->computehessian = func;
-  }
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "TaoDMSetLocalHessianRoutine"
-PetscErrorCode TaoDMSetLocalHessianRoutine(TaoDM* taodm, PetscErrorCode (*func)(DMDALocalInfo*,PetscScalar**,Mat,void*))
-{
-  PetscInt i;
-  PetscInt nlevels = taodm[0]->nlevels;
-  PetscFunctionBegin;
-  for (i=0;i<nlevels;i++) {
-    taodm[i]->ops->computehessianlocal = func;
-    taodm[i]->ops->computehessian = 0;
+    taodm[i]->ops->computehessianlocal = 0;
   }
   PetscFunctionReturn(0);
 }
@@ -736,6 +752,9 @@ PetscErrorCode TaoDMSetUp(TaoDM* taodm)
   /* Create Solver for each level */
   for (i=0; i<nlevels; i++) {
     ierr = TaoSolverCreate(((PetscObject)(taodm[i]))->comm,&taodm[i]->tao);CHKERRQ(ierr);
+    if (taodm[i]->ttype) {
+      ierr = TaoSolverSetType(taodm[i]->tao,taodm[i]->ttype); CHKERRQ(ierr);
+    }
     ierr = PetscObjectIncrementTabLevel((PetscObject)taodm[i]->tao,PETSC_NULL,nlevels - i - 1);CHKERRQ(ierr);
 
     if (taodm[i]->ops->computeobjectivelocal) {
@@ -756,11 +775,7 @@ PetscErrorCode TaoDMSetUp(TaoDM* taodm)
       ierr = TaoSolverSetObjectiveAndGradientRoutine(taodm[i]->tao,taodm[i]->ops->computeobjectiveandgradient,taodm[i]); CHKERRQ(ierr);
     }
 
-    if (taodm[i]->ops->computehessianlocal) {
-      ierr = TaoSolverSetHessianRoutine(taodm[i]->tao,taodm[i]->hessian,taodm[i]->hessian_pre,TaoDMFormHessianLocal,taodm[i]); CHKERRQ(ierr);
-    } else if (taodm[i]->ops->computehessian) {
-      ierr = TaoSolverSetHessianRoutine(taodm[i]->tao,taodm[i]->hessian,taodm[i]->hessian_pre,taodm[i]->ops->computehessian,taodm[i]); CHKERRQ(ierr);
-    }
+    /* Hessian hasn't been built yet */
     ierr = TaoSolverSetVariableBoundsRoutine(taodm[i]->tao,TaoDMFormBounds,taodm[i]); CHKERRQ(ierr);
 
 
@@ -985,5 +1000,19 @@ PetscErrorCode TaoDMFormBounds(TaoSolver tao, Vec XL, Vec XU, void *ptr)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = (*taodm->ops->computebounds)(taodm,XL,XU); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoDMSetLevelMonitor"
+PetscErrorCode TaoDMSetLevelMonitor(TaoDM* taodm, PetscErrorCode (*func)(TaoDM,PetscInt, void*),void *ctx)
+{
+  PetscInt i,nlevels = taodm[0]->nlevels;
+
+  PetscFunctionBegin;
+  for (i=0;i<nlevels;i++) {
+    taodm[i]->ops->levelmonitor = func;
+    taodm[i]->usermonitor = ctx;
+  }
   PetscFunctionReturn(0);
 }

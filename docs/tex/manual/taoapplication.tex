@@ -1,0 +1,900 @@
+\chapter{TAO Applications using PETSc}
+\sindex{application}
+\label{chapter:taoapplication}
+\label{chapter:petscapp}
+
+The solvers in TAO address applications that have a set of variables, an objective
+function, and constraints on the variables.  Many solvers also require derivatives
+of the objective and constraint functions.
+To use the TAO solvers, the application developer must 
+define a set of variables, implement routines that evaluate the 
+objective function and constraint functions, and pass this information
+to a TAO application object.   
+
+TAO uses vector and matrix objects to pass this information from the
+application to the solver.   The set of variables, for instance, is
+represented in a vector.
+The gradient of an objective function $f: \, \Re^n \to \Re$,
+evaluated at a point, is also represented as a vector.
+Matrices,  on the other hand,
+can be used to represent the Hessian of $f$ or the Jacobian of a constraint
+function $c: \, \Re^n \to \Re^m$.  The TAO solvers use
+these objects to compute a solution to the application.
+
+The PETSc package provides parallel and serial implementations of these
+objects and offers additional tools intended for high-performance 
+scientific applications.
+The {\bf Vec} and {\bf Mat} types in PETSc
+represent the vectors and matrices in a TAO application.
+This chapter will describe how to create these an application object
+and give it the necessary properties.  This chapter will also describe how to use
+the TAO solvers in conjunction with this application object.
+
+\section{Header File}
+
+TAO applications written in C/C++ should have the statement 
+\begin{verbatim}
+   #include "tao.h"
+\end{verbatim}
+\noindent
+in each file that uses a routine in the TAO libraries.
+All of the required lower level include files such as ``tao\_solver.h''
+and ``taoapp.h''
+are automatically included within this high-level file.
+
+\section{Create and Destroy}
+To create an application object, first
+declare a {\tt TAO\_APPLICATION} variable.
+This variable is only a pointer.  
+The application object associated with it can be created using
+the routine \findex{TaoApplicationCreate()}
+\begin{verbatim}
+   TaoApplicationCreate(MPI_Comm, TAO_APPLICATION*);
+\end{verbatim}
+\noindent
+Much like creating PETSc vector and matrix objects, 
+the first argument is an MPI {\em communicator}.
+An MPI \cite{using-mpi} communicator
+indicates a collection of processors that will be used to evaluate the
+objective function, compute constraints, and provide derivative information.
+When only one processor is being used, the communicator {\tt MPI\_COMM\_SELF}
+can be used with no understanding of MPI.
+Even parallel users need to be familiar with only the basic concepts 
+of message passing and  distributed-memory computing. 
+Most applications running TAO in
+parallel environments can employ the communicator {\tt
+MPI\_COMM\_WORLD} to indicate all processes in a given run.
+
+%The {\tt TAO\_APPLICATION} variable whose address is in the second argument
+%will be set the 
+The second argument is the address of a  {\tt TAO\_APPLICATION} variable.  This
+routine will create a new application object and set the variable, which is a pointer,
+to the address of the object.   This application variable can now be used
+by the developer to define the application and by the 
+TAO solver to solve the application.
+
+Elsewhere in this chapter, the {\tt TAO\_APPLICATION} variable will be referred
+to as the {\em application object}\sindex{application object}.
+
+After solving the application, the command \findex{TaoApplicationDestroy()}
+\begin{verbatim}
+   TaoAppDestroy(TAO_APPLICATION);
+\end{verbatim}
+\noindent
+will destroy the application object and free 
+the work space associated with it.
+
+\section{Defining Variables}
+
+In all of the optimization solvers, the application must provide
+a {\bf Vec} object of appropriate dimension to represent the variables.
+This vector will be cloned by the solvers to create additional work
+space within the solver.
+If this vector is distributed over multiple processors, it
+should have a parallel distribution that allows
+for efficient scaling, inner products, and
+function evaluations.  This vector can be passed to the
+application object using the routine \findex{TaoAppSetInitialSolutionVec()}
+\begin{verbatim}
+   TaoAppSetInitialSolutionVec(TAO_APPLICATION,Vec);
+\end{verbatim}
+When using this routine, the application should initialize the vector with
+an approximate solution of the optimization problem before calling the
+TAO solver.   If you do not know of a solution that that can be used,
+the routine
+\findex{TaoAppSetDefaultSolutionVec()}
+{\tt   TaoAppSetDefaultSolutionVec(TAO\_APPLICATION,Vec);}
+can be used to declare variables that will in
+be set to zero or some other default solution.  
+
+This vector will be used by the TAO solver to store the solution.
+Elsewhere in the application, 
+this solution vector can be retieved from the application object 
+using the routine \findex{TaoAppGetSolutionVec()}
+\begin{verbatim}
+   TaoAppGetSolutionVec(TAO_APPLICATION, Vec *);
+\end{verbatim}
+This routine takes the address of a {\tt Vec} in the second argument and sets it to
+the solution vector used in the application.
+
+\section{Application Context}  \sindex{application context}
+Writing an application using the {\tt TAO\_APPLICATION} object may require
+use of an {\em application context}.
+An application context is a structure or object defined by an
+application developer, passed
+into a routine also written by the application developer, 
+and used within the routine to perform its stated task.
+ 
+For example, a routine that evaluates an objective function may need
+parameters, work vectors, and other information.   This information,
+which may be specific to an application and necessary to evaluate the objective,
+can be collected in a single structure and used as one of the
+arguments in the routine.
+The address of this structure will be cast as type {\tt (void*)} and passed to
+the routine in the final argument.
+There are many examples of these structures in the TAO distribution.
+
+This technique offers several advantages.
+In particular, it allows for a uniform interface between TAO and 
+the applications.   The fundamental information needed by TAO 
+appears in the arguments of the routine, while data specific to an application
+and its implementation is confined to an opaque pointer.
+The routines can access information created outside the 
+local scope without the use of global variables.
+The TAO solvers and application objects will never access this structure, 
+so the application developer has complete freedom to define it.  In fact,
+these contexts are completely optional -- a NULL pointer can be used.
+
+
+
+\section{Objective Function and Gradient Routines}\label{sec:fghj}
+
+TAO solvers that minimize an objective function require
+the application to evaluate the objective function.  Some solvers
+may also require the application to evaluate
+derivatives of the objective function.  
+Routines that perform these computations must be identified
+to the application object and must follow a strict calling sequence.
+
+Routines that evaluate an objective function $f: \, \Re^n \to \Re$,
+should follow the form:
+\begin{verbatim}
+   EvaluateObjective(TAO_APPLICATION,Vec,double*,void*);
+\end{verbatim}
+\noindent
+The first argument is the application object, the second argument is the
+$n$-dimensional vector that identifies where the objective should be evaluated, 
+and the fourth argument is an application context.
+This routine should use the third argument to return objective value, 
+evaluated at the given point
+specified the by the vector in the second argument.
+
+This routine, and the application context, should be passed to the 
+application object using
+the routine \findex{TaoAppSetObjectiveRoutine()}
+\begin{verbatim}
+   TaoAppSetObjectiveRoutine(TAO_APPLICATION,
+                             int(*)(TAO_APPLICATION,Vec,double*,void*),
+                             void*);
+\end{verbatim}
+\noindent
+The first argument in this routine is the application object, 
+the second argument is a function pointer to the routine that 
+evaluates the objective, and the third
+argument is the pointer an appropriate application context.  
+
+Although final argument may point to anything, it must be cast as a {\tt (void*)} type.
+This pointer will be passed back to the developer in the fourth argument of the
+routine that evaluates the objective.  In this routine, the pointer can be cast
+back to the appropriate type.  Examples of these structures and there usage
+are provides in the distribution.
+
+
+   Most TAO solvers also require gradient information from the 
+application \sindex{gradients}.
+  The gradient of the objective function can be specified in a similar manner.
+Routines that evaluate the gradient should have the calling sequence
+\begin{verbatim}
+   EvaluateTheGradient(TAO_APPLICATION,Vec,Vec,void*);
+\end{verbatim}
+\noindent
+In this routine, the first
+argument is the application object, the second argument is the variable
+vector, the third argument is the gradient, and the fourth argument is
+the user-defined application context.  Only the third argument in this
+routine is different from the arguments in the routine that evaluates
+the objective function.  The numbers in the gradient vector have no
+meaning when passed into this routine, but should represent the gradient
+of the objective at the specified point at the end of the routine.
+This routine, and the user-defined pointer, can be passed to the application
+object using the routine: \findex{TaoAppSetGradientRoutine()}
+\begin{verbatim}
+   TaoAppSetGradientRoutine(TAO_APPLICATION,
+                            int (*)(TAO_APPLICATION,Vec,Vec,void*),
+                            void *);
+\end{verbatim}
+\noindent
+In this routine, the first argument is the application object, the second argument
+is the function pointer, and the third object is the application context, cast
+to {\tt (void*)}.
+
+   Instead of evaluating the objective and its gradient in separate
+routines, TAO also allows the user to evaluate the function and the gradient
+at the same routine.  In fact, some solvers are more efficient when
+both function and gradient information can be computed in the same routine.
+These routines should follow the form
+\begin{verbatim}
+   EvaluateFunctionGradient(TAO_APPLICATION,Vec,double*,Vec,void*);
+\end{verbatim}
+\noindent
+where the first
+argument is the TAO solver, and the second
+argument points to the input vector for use in evaluating the
+function and gradient. The third argument should return the
+function value, while the fourth argument should return the gradient vector,
+and the fifth argument is a pointer to a user-defined context.
+This context and the name of the routine should be set with the
+call: \findex{TaoAppSetObjectiveAndGradientRoutine()}
+\begin{verbatim}
+   TaoAppSetObjectiveAndGradientRoutine(TAO_APPLICATION,
+                     int (*)(TAO_APPLICATION,Vec,double*,Vec,void*),
+                     void *);
+\end{verbatim}
+\noindent
+The arguments of this routine are the TAO application, a
+function name, and a pointer to a user-defined context.
+
+The TAO example problems demonstrate the use of these application contexts
+as well as specific instances of function, gradient, and Hessian 
+evaluation routines.
+All of these routines should return the integer $0$ after 
+successful completion and a nonzero integer if the function
+is undefined at that point or an error occurred.
+
+\section{Hessian Evaluation}
+\label{sec:matrixfree}
+\label{sec:finitedifference}
+
+Some optimization routines also require a Hessian matrix from the user.
+The routine that evaluates the Hessian should have the form:
+\begin{verbatim}
+   EvaluateTheHessian(TAO_APPLICATION,Vec,Mat*,Mat*,MatStructure*,void*);
+\end{verbatim}
+\noindent
+The first argument of this routine is a TAO application.  The second
+argument is the point at which the Hessian should be evaluated.  The
+third argument is the Hessian matrix, and the sixth argument is a
+user-defined context.
+Since the Hessian matrix is usually used in solving
+a system of linear equations, a preconditioner for the matrix is often
+needed.  The fourth argument is the matrix that will be used
+for preconditioning the linear system.  In most cases, this
+matrix will be the same as the Hessian matrix.  The fifth
+argument is the flag used to set the Hessian matrix and
+linear solver in the routine {\tt KSPSetOperators()}.
+
+One can set the Hessian evaluation routine by calling \sindex{Hessian}
+\findex{TaoAppSetHessianRoutine()}
+\begin{verbatim}
+   int TaoAppSetHessianRoutine(TAO_APPLICATION,
+                int (*)(TAO_APPLICATION,Vec,Mat*,Mat*,MatStructure*,void*),
+                void *)
+\end{verbatim}
+\noindent
+The first argument is the TAO application, the second 
+argument is the function that evaluates the Hessian, 
+and the third argument is a pointer to a user defined context,
+cast as a {\tt void*} pointer.
+
+For solvers that evaluate the Hessian, 
+the matrices used to store the Hessian should be set using 
+\findex{TaoAppSetHessianMat()}
+\begin{verbatim}
+   TaoAppSetHessianMat(TAO_APPLICATION,Mat,Mat);
+\end{verbatim}
+\noindent
+The first argument is the TAO application, the second argument is the Hessian
+matrix, and the third argument is the preconditioning matrix.  In most applications,
+these two matrices will be the same structure.
+
+\subsection{Finite Differences} \sindex{finite differences}
+Finite differences approximations can be used to compute the gradient and the
+Hessian of an objective
+function.  These approximations will slow down the solve considerably and are only 
+recommended for checking the accuracy of hand-coded gradients and Hessians.
+These routines are 
+
+\findex{TaoAppDefaultComputeGradient()}
+\begin{verbatim}
+  TaoAppDefaultComputeGradient(TAO_APPLICATION, Vec, Vec, void*);
+\end{verbatim}, 
+
+
+\findex{TaoAppDefaultComputeHessian()}
+\begin{verbatim}
+   TaoAppDefaultComputeHessian( TAO_APPLICATION, Vec, Mat*, Mat*, 
+                                MatStructure*, void*);
+\end{verbatim}
+\noindent
+and \findex{TaoAppDefaultComputeHessianColor()}
+\begin{verbatim}
+   TaoAppDefaultComputeHessianColor( TAO_APPLICATION, Vec, Mat*, Mat*, 
+                                      MatStructure*, void* );
+\end{verbatim}
+\noindent
+These routines can be set using {\tt TaoAppSetGradientRoutine()} and 
+{\tt TaoAppSetHessianRoutine()} or through the options database.
+If finite differencing is used with coloring, the routine \findex{TaoAppSetColoring()}
+\begin{verbatim}
+   TaoAppSetColoring(TAO_APPLICATION, ISColoring);
+\end{verbatim}
+\noindent
+should be used to specify the coloring.
+
+It is also possible to use finite difference approximations to directly check
+the correctness of an application's gradient and/or Hessian evaluation routines.
+This can be done using the special TAO solver {\tt tao\_fd\_test} together with the options
+{\tt -tao\_test\_gradient} or {\tt -tao\_test\_hessian}.
+
+
+\subsection{Matrix-Free methods}
+TAO fully supports matrix-free methods. The matrices specified in the
+Hessian evaluation routine need not be conventional
+matrices; instead, they can point to the data required to implement a
+particular matrix-free method.  The matrix-free variant is allowed
+{\em only} when the linear systems are solved by an iterative method
+in combination with no preconditioning ({\tt PCNONE} or {\tt -pc\_type none}),
+a user-provided preconditioner matrix, or a user-provided preconditioner
+shell ({\tt PCSHELL}); that is,
+obviously matrix-free methods cannot be used if a direct solver is to 
+be employed. \sindex{matrix-free options} %\findex{PCSHELL}
+Details about using matrix-free methods are provided in the
+PETSc  Users Manual.
+
+
+\section{Bounds on Variables}\label{sec:bounds}
+
+Some optimization problems also impose constraints upon the variables.
+The constraints may impose simple bounds upon the variables, or
+require that the variables satisfy a set of linear or  nonlinear equations.
+
+The simplest type of constraint upon an optimization problem puts lower
+or upper bounds upon the variables. 
+Vectors that represent lower and upper bounds for each variable 
+can be set with the command  \sindex{bounds}\findex{TaoSetVariableBoundsRoutine}
+\begin{verbatim}
+   TaoAppSetVariableBoundsRoutine(TAO_APPLICATION, 
+                          int (*)(TAO_APPLICATION, Vec,Vec,void*),void *);
+\end{verbatim}
+\noindent
+The first vector and second vectors should contain the lower and upper 
+bounds, respectively.
+When no upper or lower bound exists for a variable, the bound
+may be set to {\tt TAO\_INFINITY} or {\tt TAO\_NINFINITY}.
+After the two bound vectors have been set, they may be accessed with the
+with the command  {\tt TaoGetApplicationVariableBounds()}.
+Since not all solvers use bounds on variables, the user must be careful 
+to select a type of solver that acknowledges these bounds.
+
+\section{Complementarity}\label{sec:constraints}
+
+Constraints in the form of nonlinear equations have the form
+$C(X) = 0$ where $C: \Re^n \to \Re^m$.
+These constraints should be specified in a 
+routine, written by the user, that evaluates {\tt C(X)}.
+The routine that evaluates the constraint equations should have the form:
+\begin{verbatim}
+   int EqualityConstraints(TAO_APPLICATION,Vec,Vec,void*);
+\end{verbatim}
+\noindent
+The first argument of this routine is a TAO application object.  The second argument
+is the variable vector at which the constraint function should be evaluated.  
+The third argument is the vector of function values {\tt C}, and the fourth
+argument is a pointer to a user-defined context.
+This routine  and the user-defined context 
+should be set in the TAO solver with the command
+\findex{TaoAppSetConstraintsRoutine()}
+\begin{verbatim}
+   TaoAppSetConstraintRoutine(TAO_APPLICATION,
+                               int (*)(TAO_APPLICATION,Vec,Vec,void*),
+                               void*);
+\end{verbatim}
+\noindent
+In this function, first argument is the TAO application,
+the second argument is vector in which to store the function values,
+and the third argument is a pointer to a user-defined context that will
+be passed back to the user.
+
+The Jacobian of the function {\tt C} is the matrix in $\Re^{m \times n}$
+such that each column contains the partial derivatives of {\tt f} with respect
+to one variable. 
+The evaluation of the Jacobian of {\tt f} should be performed in a routine
+of the form
+\begin{verbatim}
+   int J(TAO_APPLICATION,Vec,Mat*,Mat*,MatStructure*,void*);
+\end{verbatim}
+\noindent
+In this function, the second argument is the variable vector at which to 
+evaluate the Jacobian matrix, the third argument is the Jacobian matrix,
+and the sixth argument is a pointer to a user-defined context.
+This routine should be specified using
+\findex{TaoAppSetJacobianRoutine()}
+\begin{verbatim}
+   TaoAppSetJacobianRoutine(TAO_APPLICATION,Mat,
+                int (*)(TAO_APPLICATION,Vec,Mat*,Mat*, MatStructure*,void*), 
+                void*);
+\end{verbatim}
+\noindent
+The first argument is the TAO application, the second
+argument is the matrix in which the information can be stored,
+the third argument is the function pointer, and the fourth argument is
+an optional user-defined context.
+The Jacobian matrix should be created in a way such that the product of 
+it and the variable vector can be put in the constraint vector.
+
+For solvers that evaluate the Jacobian, 
+the matrices used to store the Jacobian should be set using 
+\findex{TaoAppSetJacobianMat()}
+\begin{verbatim}
+   TaoAppSetJacobianMat(TAO_APPLICATION,Mat,Mat);
+\end{verbatim}
+\noindent
+The first argument is the TAO application, the second argument is the Jacobian
+matrix, and the third argument is the preconditioning matrix.  In most applications,
+these two matrices will be the same structure.
+
+\section{Monitors}
+
+By default the TAO solvers run silently without displaying information
+about the iterations. The user can initiate monitoring with the
+command \findex{TaoSetMonitor()} 
+\begin{verbatim}
+   int TaoSetMonitor(TAO_SOLVER solver,
+                     int (*mon)(TAO_SOLVER tao,void* mctx),
+                     void *mctx);
+\end{verbatim}
+\noindent
+
+The routine, {\tt mon} indicates a user-defined monitoring routine
+and {\tt mctx} denotes an optional user-defined context for private 
+data for the monitor routine.
+
+The routine set by {\tt TaoAppSetMonitor()} is called once during each
+iteration of the optimization solver.  Hence, the
+user can employ this routine for any application-specific computations
+that should be done after the solution update. 
+\findex{TaoAppSetMonitor()}.
+\begin{verbatim}
+   TaoAppSetMonitor(TAO_APPLICATION, 
+                    int (*)(TAO_APPLICATION,void*),void *);
+\end{verbatim}
+
+
+
+% This linear solver object has a method
+% that allows the user to adjust convergence tolerances.
+% Alternatively, the
+% specific data structures of the linear solver can be accessed and modified
+% directly.
+% comment from Lois: I don't like the wording of this last sentence.
+\section{Linear Solvers}\label{sec:TaoLinearSolvers}
+One of the most computationally intensive phases of many optimization
+algorithms involves the solution of systems of linear equations.  
+The performance
+of the linear solver may be critical to an efficient computation
+of the solution.
+Since linear equation solvers often have a wide variety of options 
+associated with them, TAO allows the user to access the linear
+solver with the command
+
+\findex{TaoAppGetKSP()}
+\begin{verbatim}
+   TaoAppGetKSP(TAO_APPLICATION, KSP *);
+\end{verbatim}
+
+\noindent
+With access to the KSP object, users can customize it for their application
+to achieve additional performance.
+
+
+\section{Application Solutions}
+Once the application object has the 
+objective function, constraints, derivatives, and other features associated with it,
+a TAO solver can be applied to the application.  
+For further information about how to create a TAO solver, see the previous chapter.
+
+Once the TAO solver and TAO application object have been created and customized, 
+they can be matched with one another
+using the routine \findex{TaoSetupApplicationSolver()}
+\begin{verbatim} 
+   TaoSetupApplicationSolver( TAO_APPLICATION, TAO_SOLVER);
+\end{verbatim}
+\noindent
+This routine will set up the TAO solver for the application.  
+Different solvers may set up differently, but they typically
+create the work vectors and linear solvers needed to find a solution.  
+These structures were not created
+during the creation of the solver because the size of the application
+was not known.
+After calling this routine
+the routine {\tt  TaoAppGetTaoSolver()} can be used to obtain
+the TAO solver object.  If not called directly by the application, 
+\texttt{TaoSetupApplicationSolver()} will be executed inside of the
+subroutine \texttt{TaoSolveApplication()}.
+
+The routine \findex{TaoGetGradientVec()}
+\begin{verbatim}
+   TaoGetGradientVec( TAO_SOLVER, Vec*);
+\end{verbatim}
+\noindent
+will set a pointer to a {\tt Vec} to the vector object containing
+the gradient vector and the \findex{TaoGetVariableBoundVecs()} routine
+\begin{verbatim}
+   TaoGetVariableBoundVecs( TAO_SOLVER, Vec*, Vec*);
+\end{verbatim}
+\noindent
+will set the pointers to the lower and upper bounds on the variables  -- if 
+they exist.  These vectors may be viewed at before, during, and after
+the solver is running.
+
+Options for the application and solver 
+can be be set from the command line using the routine \sindex{options} \findex{TaoSetOptions()}
+\begin{verbatim}
+   TaoSetOptions( TAO_APPLICATION, TAO_SOLVER);
+\end{verbatim}
+This routine will call  {\tt TaoSetupApplicationSolver()} if it has not been
+called already.
+This command also provides information about runtime options when the
+user includes the {\tt -help } option on the
+command line.
+
+
+Once the application and solver have been set up, the solver can be called using the routine
+\findex{TaoSolveApplication()}
+\begin{verbatim}
+   TaoSolveApplication( TAO_APPLICATION, TAO_SOLVER);
+\end{verbatim}
+\noindent
+This  routine will call the TAO solver.  If the routine  {\tt TaoSetupApplicationSolver()}
+has not already been called, this routine will call it.
+
+After a solution has been found, the routine
+\begin{verbatim}
+   TaoCopyDualsOfVariableBounds( TAO_APPLICATION, Vec, Vec );
+\end{verbatim}
+\noindent
+can compute the dual values of the variables bounds and copy them
+into the vectors passed into this routine.
+
+% \section{Extensions}
+%int TaoAppSetDestroyRoutine(TAO_APPLICATION taoapp,int (*destroy)(void*),void *mctx)
+%int TaoAppAddObject(TAO_APPLICATION taoapp, char *key, void *mctx, int *id)
+%int TaoAppQueryForObject(TAO_APPLICATION taoapp, char *key, void **mctx)
+%int TaoAppQueryRemoveObject(TAO_APPLICATION taoapp, char *key)
+%int TaoAppSetOptionsRoutine(TAO_APPLICATION taoapp,int (*options)(TAO_APPLICATION) )
+
+\section{Linear Algebra Abstractions}
+
+Occasionally TAO users will have to interact directly with the linear
+algebra objects used by the solvers.   Solvers within TAO use 
+vector, matrix, index set, and linear solver objects that have no
+native data structures. Instead they have methods whose implementation
+is uses structures and routines provided by PETSc or other external
+software packages.
+
+  Given a PETSc {\tt Vec} object {\tt X}, the user can create a {\tt TaoVec} object. \sindex{vectors}
+By declaring the variables 
+\begin{verbatim}
+   TaoVec *xx;
+\end{verbatim}
+\noindent
+the routine
+\begin{verbatim}
+   TaoWrapPetscVec(Vec,TaoVec **); 
+\end{verbatim}
+\noindent
+takes the {\tt Vec x} and creates and sets {\tt TaoVec *xx} equal to
+a new {\tt TaoVec} object.   This object actually has the derived
+type {\tt TaoVecPetsc}.
+Given a {\tt TaoVec} whose underlying representation is a PETSc {\tt Vec},
+the command
+\begin{verbatim}
+   TaoVecGetPetscVec( TaoVec *, Vec *);
+\end{verbatim}
+\noindent
+will retrieve the underlying vector.
+The routine {\tt TaoVecDestroy()} will destroy the {\tt TaoVec} object,
+but the {\tt Vec } object must also be destroyed.
+
+The routine \sindex{matrix}
+\begin{verbatim}
+   TaoWrapPetscMat(Mat,TaoMat **); 
+\end{verbatim}
+\noindent
+takes the {\tt Mat H} and creates and sets {\tt TaoMat *HH} equal to
+the new {\tt TaoMat} object.   The second argument specifies whether
+the {\tt Mat} object should be destroyed when the {\tt TaoVec} object
+is destroy.
+This object actually has the derived
+type {\tt TaoMatPetsc}.
+Given a {\tt TaoMat} whose underlying representation is a PETSc {\tt Vec},
+the command
+\begin{verbatim}
+   TaoMatGetPetscMat( TaoMat *, Mat *);
+\end{verbatim}
+\noindent
+will retrieve the underlying matrix.
+The routine {\tt TaoMatDestroy()} will destroy the {\tt TaoMat} object,
+but the {\tt Mat } object must also be destroyed.
+
+Similarly, the routine \sindex{linear solver}
+\begin{verbatim}
+   TaoWrapKSP( KSP, TaoLinearSolver **);
+\end{verbatim}
+\noindent
+takes a {\tt KSP } object and creates a  {\tt TaoLinearSolver}
+object.  The 
+\begin{verbatim}
+   TaoLinearSolverGetKSP( TaoLinearSolver *, KSP *);
+\end{verbatim}
+\noindent
+gets the underlying {\tt KSP} object from the {\tt TaoLinearSolver}
+object.
+
+
+For index sets, the routine
+\begin{verbatim}
+   TaoWrapPetscIS( IS, int, TaoIndexSet **);
+\end{verbatim}
+\noindent
+creates a {\tt TaoIndexSet} object.  In this routine, however, the
+second argument is the local size of the vectors that this object
+will describe.  For instance, this object may describe with
+elements of a vector are positive.  The second argument should
+be be local length of the vector.  The {\tt IS} object will
+be destroyed when the {\tt TaoIndexSet} is destroyed.  The routine
+\begin{verbatim}
+   TaoIndexSetGetPetscIS( TaoIndexSet *, IS *);
+\end{verbatim}
+\noindent
+will return the underlying {\tt IS} object.
+
+
+\section{Compiling and Linking}
+
+Portable TAO makefiles follow the rules and definitions
+of PETSc makefiles.
+In Figures \ref{fig:make3} we present a sample makefile.
+
+\begin{figure}[tbh]
+{\footnotesize
+\begin{verbatim}   
+       CFLAGS    = 
+       FFLAGS    = 
+       CPPFLAGS  =
+       FPPFLAGS  =
+       
+       include ${TAO_DIR}/bmake/tao_common
+   
+       minsurf1: minsurf1.o tao_chkopts
+            -${CLINKER} -o minsurf1 minsurf1.o ${TAO_LIB} ${PETSC_SNES_LIB}
+            ${RM} minsurf1.o
+\end{verbatim} 
+% $
+\noindent
+}
+\caption{Sample TAO makefile for a single C program}
+\label{fig:make3}
+\end{figure}
+
+This small makefile is suitable for maintaining a single program that
+uses the TAO library.  The most important line in this makefile is the
+line starting with {\tt include}:
+
+\begin{verbatim}
+   include ${TAO_DIR}/bmake/tao_common
+\end{verbatim}
+\noindent % $
+\findex{TAO_LIB}
+This line includes other makefiles that provide the needed definitions
+and rules for the particular base software installations (specified by
+{\tt \$\{TAO\_DIR\}} and {\tt \$\{PETSC\_DIR\}}) and architecture
+(specified by {\tt \$\{PETSC\_ARCH\}}), which are typically set as
+environmental variables prior to compiling TAO source or programs.  As
+listed in the sample makefile, the appropriate {\tt include} file is
+automatically completely specified; the user should {\em not} alter
+this statement within the makefile.
+ 
+TAO applications using PETSc should be linked with the
+to the {\tt PETSC\_SNES\_LIB} library
+as well as the {\tt TAO\_LIB} library. This version uses
+PETSc 3.1, and the {\tt PETSC\_DIR} variable
+should be set accordingly.  Many examples of makefiles
+can be found in the {\tt examples} directories.
+
+
+\section{TAO Applications using PETSc and FORTRAN}
+\label{chapter:petscfapp}
+%\label{chapter:fortran}
+
+Most of the functionality of TAO can be obtained by people who program
+purely in Fortran 77 or Fortran 90.  Note, however, that we recommend
+the use of C and/or C++ because these languages contain several
+extremely powerful concepts that the Fortran77/90 family does not.
+The TAO Fortran interface works with both F77 and F90 compilers.
+
+Since Fortran77 does not provide type checking of routine input/output
+parameters, we find that many errors encountered within TAO Fortran
+programs result from accidentally using incorrect calling sequences.
+Such mistakes are immediately detected during compilation when using
+C/C++.  Thus, using a mixture of C/C++ and Fortran often works well
+for programmers who wish to employ Fortran for the core numerical
+routines within their applications.  In particular, one can
+effectively write TAO driver routines in C++, thereby preserving
+flexibility within the program, and still use Fortran when desired for
+underlying numerical computations.
+
+% \section{Differences between TAO Interfaces for C and Fortran}
+
+Only a few differences exist between the C and Fortran TAO interfaces,
+all of which are due to differences in Fortran syntax.  All Fortran
+routines have the same names as the corresponding C versions, and
+command line options are fully supported. The routine arguments follow
+the usual Fortran conventions; the user need not worry about passing
+pointers or values.  The calling sequences for the Fortran version are
+in most cases identical to the C version, except for the error
+checking variable discussed in Section \ref{sec:fortran_errors}.  In
+addition, the Fortran routine {\tt TaoInitialize(char *filename,int info)}
+differs slightly from its C counterpart; see the manual page for
+details.
+
+
+\subsection{Include Files}
+\label{sec:fortran_includes}
+
+%  In Fortran the
+%  initialization command has the form
+%  \begin{verbatim}
+%     call TaoInitialize(character file_name,integer info)
+%  \end{verbatim}\noindent
+%  \begin{verbatim}
+%     call Finalize(integer info)
+%  \end{verbatim}\noindent
+
+Currently, TAO users must employ the Fortran file suffix {\tt .F}
+rather than {\tt .f}.  This convention enables use of the CPP
+preprocessor, which allows the use of the {\em \#include} statements
+that define TAO objects and variables. (Familiarity with the CPP
+preprocessor is not needed for writing TAO Fortran code; one can
+simply begin by copying a TAO Fortran example and its corresponding
+makefile.)  
+
+The TAO directory {\tt \$\{TAO\_DIR\}/include/finclude}
+contains the Fortran include files
+and should be used via statements 
+such as the following:
+\begin{verbatim}
+    #include "include/finclude/includefile.h"
+\end{verbatim}
+\noindent
+Since one must be very careful to include each file no more than once
+in a Fortran routine, application programmers must manually include
+each file needed for the various TAO (or other supplementary)
+components within their program.  This approach differs from the TAO
+C++ interface, where the user need only include the highest level
+file, for example, {\tt tao.h}, which then automatically
+includes all of the required lower level files.  As shown in the
+various Fortran example programs in the TAO distribution, in Fortran
+one must explicitly list {\em each} of the include files.
+
+
+\subsection{Error Checking}
+\label{sec:fortran_errors}
+
+In the Fortran version, each TAO routine has as its final argument
+an integer error variable, in contrast to the C++ convention of
+providing the error variable as the routine's return value.  The error
+code is set to be nonzero if an error has been detected; otherwise, it
+is zero.  For example, the Fortran and C++ variants of {\tt TaoSolveApplication()} are
+given, respectively, below, where {\tt info} denotes the error variable:
+\begin{verbatim}
+   call TaoSolveApplication(TAO_APPLICATION taoapp, TAO_SOLVER tao, int info)
+   info = TaoSolveApplication(TAO_APPLICATION taoapp, TAO_SOLVER tao)
+\end{verbatim}
+\noindent
+
+Fortran programmers can use the error codes in writing their own
+tracebacks.  For example, one could use code such as the following:
+\begin{verbatim}
+   call TaoSolveApplication(taoapp, tao, info)
+   if (info .ne. 0) then
+       print*, 'Error in routine ...'
+       return
+   endif
+\end{verbatim}
+\noindent
+In addition, Fortran programmers can check these error codes with the
+macro {\tt CHKERRQ()}, which terminates all process when an error
+is encountered.  See the PETSc users manual for details.  The most
+common reason for crashing PETSc Fortran code is forgetting the final
+{\tt info} argument.
+
+Additional interface differences for Fortran users:
+\begin{itemize}
+\item \texttt{TaoGetConvergenceHistory()} -- returns only the number of 
+elements in the history.  Storage for the convergence information must 
+be preallocated by the user and then registered with 
+\texttt{TaoSetConvergenceHistory()}.
+\item \texttt{TaoSetLinesearch()} -- use only the first and fourth 
+arguments. The setup, options, view, and destroy routines do not apply.
+\end{itemize}
+
+\subsection{Compiling and Linking Fortran Programs}
+\label{sec:fortcompile}
+
+Figure \ref{fig:make4} shows a sample makefile that can be used for
+TAO Fortran programs.  You can compile a debugging
+version of the program {\tt rosenbrock1f} with 
+{\tt make rosenbrock1f}.
+
+\begin{figure}[tbh]
+{\footnotesize
+\begin{verbatim}   
+       CFLAGS    = 
+       FFLAGS    = 
+       CPPFLAGS  =
+       FPPFLAGS  =
+       
+       include ${TAO_DIR}/bmake/tao_common
+   
+       rosenbrock1f: rosenbrock1f.o  tao_chkopts
+                 -${FLINKER} -o rosenbrock1f rosenbrock1f.o ${TAO_FORTRAN_LIB} ${TAO_LIB} \
+                                ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
+        ${RM} rosenbrock1f.o
+\end{verbatim} % $
+\noindent
+}
+\caption{Sample TAO makefile for a single Fortran program}
+\label{fig:make4}
+\end{figure}
+
+\noindent
+Note that the TAO Fortran interface library, given by {\tt
+\$\{TAO\_FORTRAN\_LIB\}}, {\em must} \findex{TAO_FORTRAN_LIB} precede
+the base TAO library, given by {\tt \$\{TAO\_LIB\}}, \findex{TAO_LIB}
+on the link line.
+
+\subsection{Additional Issues}
+
+The TAO library currently interfaces to the PETSc library for
+low-level system functionality as well as linear algebra support.  The
+PETSc users manual discusses additional Fortran issues in these areas,
+including
+\begin{itemize}
+\item array arguments (e.g., {\tt VecGetArray()}),
+\item calling Fortran Routines from C (and C Routines from Fortran),
+\item passing null pointers,
+\item duplicating multiple vectors, and
+\item matrix and vector indices.
+\end{itemize}
+
+
+\Comment{
+\chapter{TAO Applications using ESI Objects}
+\label{chapter:esiapp}
+Applications using TAO  
+can be implemented using one of several techniques.  TAO
+currently supports applications developed using PETSc
+as well as applications that have been implemented
+with the Equation Solver Interface (ESI)~\cite{esi-web-page}.
+
+
+TAO also supports applications written using the ESI interface. For more
+information about this interface, please contact the developers.
+}
+% \section{TAO Application Object Model}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "manual_tex"
+%%% End: 
