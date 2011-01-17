@@ -11,7 +11,6 @@ struct MatNestISPair {
 typedef struct {
   PetscInt           nr,nc;        /* nr x nc blocks */
   Mat                **m;
-  PetscBool          setup_called;
   struct MatNestISPair isglobal;
   struct MatNestISPair islocal;
   Vec                *left,*right;

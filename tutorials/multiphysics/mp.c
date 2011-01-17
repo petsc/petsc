@@ -202,6 +202,15 @@ PetscErrorCode FormFunctionComp(SNES snes,Vec X,Vec F,void *ctx)
 #define __FUNCT__ "FormCoupleLocations"
 /* 
    Computes the coupling between DMDA1 and DMDA2. This determines the location of each coupling between DMDA1 and DMDA2.
+   Input Parameters:
++     dmcomposite -
+.     A - Jacobian matrix
+.     dnz - number of nonzeros per row in DIAGONAL portion of local submatrix
+.     onz - number of nonzeros per row in the OFF-DIAGONAL portion of local submatrix
+.     __rstart - the global index of the first local row of A
+.     __nrows - number of loacal rows
+.     __start - the global index of the first local column
+.     __end - the global index of the last local column + 1
 */
 PetscErrorCode FormCoupleLocations(DM dmcomposite,Mat A,PetscInt *dnz,PetscInt *onz,PetscInt __rstart,PetscInt __nrows,PetscInt __start,PetscInt __end)
 {
@@ -210,6 +219,9 @@ PetscErrorCode FormCoupleLocations(DM dmcomposite,Mat A,PetscInt *dnz,PetscInt *
   DM             da1,da2;
 
   PetscFunctionBegin;
+  PetscMPIInt rank;
+  ierr = MPI_Comm_rank(((PetscObject)dmcomposite)->comm,&rank);CHKERRQ(ierr);
+  printf("[%d] __rstart %d, __nrows %d, __start %d, __end %d,\n",rank,__rstart,__nrows,__start,__end);
   ierr =  DMCompositeGetEntries(dmcomposite,&da1,&da2);CHKERRQ(ierr);
   ierr =  DMDAGetInfo(da1,0,&M,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr  = DMDAGetCorners(da1,&istart,&jstart,PETSC_NULL,&in,&jn,PETSC_NULL);CHKERRQ(ierr);
@@ -246,7 +258,7 @@ PetscErrorCode FormCoupleLocations(DM dmcomposite,Mat A,PetscInt *dnz,PetscInt *
       /* temp is coupled to both u and v at each point */
       cols[0] = col;
       cols[1] = col + 1;
-      ierr = MatPreallocateLocation(A,row,2,cols,dnz,onz);CHKERRQ(ierr);
+      ierr = MatPreallocateLocation(A,row,2,cols,dnz,onz);CHKERRQ(ierr); 
       row += 1;
       col += 3;
     }

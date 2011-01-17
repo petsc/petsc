@@ -37,7 +37,7 @@ extern PetscErrorCode  MatCreate_MPIAIJCRL(Mat);
 
 extern PetscErrorCode  MatCreate_Scatter(Mat);
 extern PetscErrorCode  MatCreate_BlockMat(Mat);
-
+extern PetscErrorCode  MatCreate_Nest(Mat);
 extern PetscErrorCode  MatCreate_DD(Mat);
 
 #if defined PETSC_HAVE_CUDA
@@ -114,6 +114,7 @@ PetscErrorCode  MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATMPIADJ,         path,"MatCreate_MPIAdj",    MatCreate_MPIAdj);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSCATTER,        path,"MatCreate_Scatter",   MatCreate_Scatter);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATBLOCKMAT,       path,"MatCreate_BlockMat",   MatCreate_BlockMat);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATNEST,           path,"MatCreate_Nest",      MatCreate_Nest);CHKERRQ(ierr);
 
   /*ierr = MatRegisterDynamic(MATDD,             path,"MatCreate_DD",   MatCreate_DD);CHKERRQ(ierr);*/
 #if defined PETSC_HAVE_MATIM
