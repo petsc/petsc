@@ -12,6 +12,10 @@ EXTERN_C_BEGIN
 EXTERN_C_END
 #endif
 
+#if defined(PETSC_HAVE_HDF5)
+extern PetscErrorCode VecView_MPI_HDF5(Vec,PetscViewer);
+#endif
+
 #include "../src/vec/vec/impls/seq/ftn-kernels/fnorm.h"
 #undef __FUNCT__  
 #define __FUNCT__ "VecNorm_Seq"
@@ -479,7 +483,7 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
   PetscTruth     ismatlab;
 #endif
 #if defined(PETSC_HAVE_HDF5)
-  PetscBool  ishdf5;
+  PetscTruth     ishdf5;
 #endif
 
   PetscFunctionBegin;
@@ -491,7 +495,7 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATHEMATICA,&ismathematica);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_HDF5)
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF5,&ishdf5);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PNETCDF)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
