@@ -3,6 +3,69 @@
 #include "../src/mat/impls/aij/mpi/mpiaij.h"   /*I "petscmat.h" I*/
 #include "petscblaslapack.h"
 
+#undef __FUNCT__
+#define __FUNCT__ "MatFindNonZeroRows_MPIAIJ"
+PetscErrorCode MatFindNonZeroRows_MPIAIJ(Mat M,IS *keptrows)
+{
+  PetscErrorCode  ierr;
+  Mat_MPIAIJ      *mat = (Mat_MPIAIJ*)M->data;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)mat->A->data;
+  Mat_SeqAIJ      *b = (Mat_SeqAIJ*)mat->B->data;
+  const PetscInt  *ia,*ib;
+  const MatScalar *aa,*bb;
+  PetscInt        na,nb,i,j,*rows,cnt=0,n0rows;
+  PetscInt        m = M->rmap->n,rstart = M->rmap->rstart;
+
+  PetscFunctionBegin;
+  *keptrows = 0;
+  ia = a->i;
+  ib = b->i;
+  for (i=0; i<m; i++) {
+    na = ia[i+1] - ia[i];
+    nb = ib[i+1] - ib[i];
+    if (!na && !nb) {
+      cnt++;
+      goto ok1;
+    }
+    aa = a->a + ia[i];
+    for (j=0; j<na; j++) {
+      if (aa[j] != 0.0) goto ok1;
+    }
+    bb = b->a + ib[i];
+    for (j=0; j <nb; j++) {
+      if (bb[j] != 0.0) goto ok1;
+    }
+    cnt++;
+    ok1:;
+  }  
+  ierr = MPI_Allreduce(&cnt,&n0rows,1,MPIU_INT,MPI_SUM,((PetscObject)M)->comm);CHKERRQ(ierr);
+  if (!n0rows) PetscFunctionReturn(0);
+  ierr = PetscMalloc((M->rmap->n-cnt)*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  cnt = 0;
+  for (i=0; i<m; i++) {
+    na = ia[i+1] - ia[i];
+    nb = ib[i+1] - ib[i];
+    if (!na && !nb) continue;
+    aa = a->a + ia[i];
+    for(j=0; j<na;j++) {
+      if (aa[j] != 0.0) {
+        rows[cnt++] = rstart + i;
+        goto ok2;
+      }
+    }
+    bb = b->a + ib[i];
+    for (j=0; j<nb; j++) {
+      if (bb[j] != 0.0) {
+        rows[cnt++] = rstart + i;
+        goto ok2;
+      }
+    }
+    ok2:;
+  }
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,cnt,rows,PETSC_OWN_POINTER,keptrows);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatDistribute_MPIAIJ"
 /*
@@ -2966,7 +3029,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        0,
        MatGetMultiProcBlock_MPIAIJ, 
-/*124*/0,
+/*124*/MatFindNonZeroRows_MPIAIJ,
        0,
        0,
        0,
