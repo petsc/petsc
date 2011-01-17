@@ -9,6 +9,40 @@ typedef struct {
   Vec work1,work2;
 } Mat_SchurComplement;
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_SchurComplement"
+PetscErrorCode MatView_SchurComplement(Mat N,PetscViewer viewer)
+{
+  Mat_SchurComplement  *Na = (Mat_SchurComplement*)N->data;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerASCIIPrintf(viewer,"Schur complement A11 - A10 inv(A00) A01\n");CHKERRQ(ierr);
+  if (Na->D) {
+    ierr = PetscViewerASCIIPrintf(viewer,"A11\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = MatView(Na->D,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerASCIIPrintf(viewer,"A11 = 0\n");CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIPrintf(viewer,"A10\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = MatView(Na->C,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"KSP of A00\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = KSPView(Na->ksp,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"A01\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = MatView(Na->B,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 /*
            D - C inv(A) B 
 */
@@ -138,6 +172,7 @@ PetscErrorCode  MatCreateSchurComplement(Mat A,Mat Ap,Mat B,Mat C,Mat D,Mat *N)
   }
 
   (*N)->ops->destroy        = MatDestroy_SchurComplement;
+  (*N)->ops->view           = MatView_SchurComplement;
   (*N)->ops->mult           = MatMult_SchurComplement;
   (*N)->ops->setfromoptions = MatSetFromOptions_SchurComplement;
   (*N)->assembled           = PETSC_TRUE;
@@ -331,6 +366,8 @@ PetscErrorCode  MatSchurComplementGetSubmatrices(Mat N,Mat *A,Mat *Ap,Mat *B,Mat
     Since the real Schur complement is usually dense, providing a good approximation to newpmat usually requires
     application-specific information.  The default for assembled matrices is to use the diagonal of the (0,0) block
     which will rarely produce a scalable algorithm.
+
+    Developer Notes: This should be implemented with a MatCreate_SchurComplement() as that is the standard design for new Mat classes.
 
     Level: advanced
 

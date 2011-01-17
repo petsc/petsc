@@ -142,7 +142,7 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
       }
       ilink = ilink->next;
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"KSP solver for A block \n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"KSP solver for A00 block \n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     if (jac->schur) {
       ierr = MatSchurComplementGetKSP(jac->schur,&ksp);CHKERRQ(ierr);
@@ -151,7 +151,7 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  not yet available\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"KSP solver for S = D - C inv(A) B \n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"KSP solver for S = A11 - A10 inv(A00) A01 \n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     if (jac->kspschur) {
       ierr = KSPView(jac->kspschur,viewer);CHKERRQ(ierr);
@@ -237,7 +237,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       }
 
       ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_default",&flg,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_stokes",&stokes,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,PETSC_NULL);CHKERRQ(ierr);
       if (stokes) {
         IS       zerodiags,rest;
         PetscInt nmin,nmax;
@@ -773,7 +773,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
     ierr = PCFieldSplitSetBlockSize(pc,bs);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_stokes",&stokes,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,PETSC_NULL);CHKERRQ(ierr);
   if (stokes) {
     ierr = PCFieldSplitSetType(pc,PC_COMPOSITE_SCHUR);CHKERRQ(ierr);
     jac->schurpre = PC_FIELDSPLIT_SCHUR_PRE_SELF;
@@ -1255,7 +1255,7 @@ PetscErrorCode  PCFieldSplitSetType(PC pc,PCCompositeType type)
 .   -pc_fieldsplit_block_size <bs> - size of block that defines fields (i.e. there are bs fields)
 .   -pc_fieldsplit_type <additive,multiplicative,schur,symmetric_multiplicative>
 .   -pc_fieldsplit_schur_precondition <true,false> default is true
-.   -pc_fieldsplit_stokes - automatically finds rows with zero diagonal and uses Schur complement with no preconditioner as the solver
+.   -pc_fieldsplit_detect_saddle_point - automatically finds rows with zero or negative diagonal and uses Schur complement with no preconditioner as the solver
 
 -    Options prefix for inner solvers when using Schur complement preconditioner are -fieldsplit_0_ and -fieldsplit_1_
      for all other solvers they are -fieldsplit_%d_ for the dth field, use -fieldsplit_ for all fields
