@@ -44,7 +44,7 @@ PetscErrorCode MatView_SchurComplement(Mat N,PetscViewer viewer)
 
 
 /*
-           D - C inv(A) B 
+           A11 - A10 ksp(A00,Ap00)  A01 
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SchurComplement"
@@ -106,10 +106,10 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
    Collective on Mat
 
    Input Parameter:
-.   A,B,C,D  - the four parts of the original matrix (D is optional)
+.   A00,A01,A10,A11  - the four parts of the original matrix (D is optional)
 
    Output Parameter:
-.   N - the matrix that the Schur complement D - C inv(A) B
+.   N - the matrix that the Schur complement A11 - A10 ksp(A00) A01
 
    Level: intermediate
 
@@ -119,56 +119,56 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
 
           All four matrices must have the same MPI communicator
 
-          A and  D must be square matrices
+          A00 and  A11 must be square matrices
 
 .seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatSchurComplementUpdate(), MatCreateTranspose()
 
 @*/
-PetscErrorCode  MatCreateSchurComplement(Mat A,Mat Ap,Mat B,Mat C,Mat D,Mat *N)
+PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A11,Mat *N)
 {
   PetscErrorCode       ierr;
   PetscInt             m,n;
   Mat_SchurComplement  *Na;  
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidHeaderSpecific(Ap,MAT_CLASSID,2);
-  PetscValidHeaderSpecific(B,MAT_CLASSID,3);
-  PetscValidHeaderSpecific(C,MAT_CLASSID,4);
-  PetscCheckSameComm(A,1,Ap,2);
-  PetscCheckSameComm(A,1,B,3);
-  PetscCheckSameComm(A,1,C,4);
-  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local columns %D",A->rmap->n,A->cmap->n);
-  if (A->rmap->n != Ap->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local rows of Ap %D",A->rmap->n,Ap->rmap->n);
-  if (Ap->rmap->n != Ap->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of Ap %D do not equal local columns %D",Ap->rmap->n,Ap->cmap->n);
-  if (A->cmap->n != B->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local columns of A %D do not equal local rows of B %D",A->cmap->n,B->rmap->n);
-  if (C->cmap->n != A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local columns of C %D do not equal local rows of A %D",C->cmap->n,A->rmap->n);
-  if (D) {
-    PetscValidHeaderSpecific(D,MAT_CLASSID,5);
-    PetscCheckSameComm(A,1,D,5);
-    if (D->rmap->n != D->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of D %D do not equal local columns %D",D->rmap->n,D->cmap->n);
-    if (C->rmap->n != D->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of C %D do not equal local rows D %D",C->rmap->n,D->rmap->n);
+  PetscValidHeaderSpecific(A00,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(Ap00,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(A01,MAT_CLASSID,3);
+  PetscValidHeaderSpecific(A10,MAT_CLASSID,4);
+  PetscCheckSameComm(A00,1,Ap00,2);
+  PetscCheckSameComm(A00,1,A01,3);
+  PetscCheckSameComm(A00,1,A10,4);
+  if (A00->rmap->n != A00->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A00 %D do not equal local columns %D",A00->rmap->n,A00->cmap->n);
+  if (A00->rmap->n != Ap00->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A00 %D do not equal local rows of Ap00 %D",A00->rmap->n,Ap00->rmap->n);
+  if (Ap00->rmap->n != Ap00->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of Ap00 %D do not equal local columns %D",Ap00->rmap->n,Ap00->cmap->n);
+  if (A00->cmap->n != A01->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local columns of A00 %D do not equal local rows of A01 %D",A00->cmap->n,A01->rmap->n);
+  if (A10->cmap->n != A00->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local columns of A10 %D do not equal local rows of A00 %D",A10->cmap->n,A00->rmap->n);
+  if (A11) {
+    PetscValidHeaderSpecific(A11,MAT_CLASSID,5);
+    PetscCheckSameComm(A00,1,A11,5);
+    if (A11->rmap->n != A11->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A11 %D do not equal local columns %D",A11->rmap->n,A11->cmap->n);
+    if (A10->rmap->n != A11->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A10 %D do not equal local rows A11 %D",A10->rmap->n,A11->rmap->n);
   }
 
-  ierr = MatGetLocalSize(B,PETSC_NULL,&n);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(C,&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatCreate(((PetscObject)A)->comm,N);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A01,PETSC_NULL,&n);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A10,&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A00)->comm,N);CHKERRQ(ierr);
   ierr = MatSetSizes(*N,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATSCHURCOMPLEMENT);CHKERRQ(ierr);
   
   ierr      = PetscNewLog(*N,Mat_SchurComplement,&Na);CHKERRQ(ierr);
   (*N)->data = (void*) Na;
-  ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-  ierr      = PetscObjectReference((PetscObject)Ap);CHKERRQ(ierr);
-  ierr      = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
-  ierr      = PetscObjectReference((PetscObject)C);CHKERRQ(ierr);
-  Na->A     = A;
-  Na->Ap    = Ap;
-  Na->B     = B;
-  Na->C     = C;
-  Na->D     = D;
-  if (D) {
-    ierr = PetscObjectReference((PetscObject)D);CHKERRQ(ierr);
+  ierr      = PetscObjectReference((PetscObject)A00);CHKERRQ(ierr);
+  ierr      = PetscObjectReference((PetscObject)Ap00);CHKERRQ(ierr);
+  ierr      = PetscObjectReference((PetscObject)A01);CHKERRQ(ierr);
+  ierr      = PetscObjectReference((PetscObject)A10);CHKERRQ(ierr);
+  Na->A     = A00;
+  Na->Ap    = Ap00;
+  Na->B     = A01;
+  Na->C     = A10;
+  Na->D     = A11;
+  if (A11) {
+    ierr = PetscObjectReference((PetscObject)A11);CHKERRQ(ierr);
   }
 
   (*N)->ops->destroy        = MatDestroy_SchurComplement;
@@ -183,10 +183,8 @@ PetscErrorCode  MatCreateSchurComplement(Mat A,Mat Ap,Mat B,Mat C,Mat D,Mat *N)
   ierr = PetscLayoutSetUp((*N)->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp((*N)->cmap);CHKERRQ(ierr);
 
-  ierr = KSPCreate(((PetscObject)A)->comm,&Na->ksp);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(Na->ksp,((PetscObject)A)->prefix);CHKERRQ(ierr);
-  ierr = KSPAppendOptionsPrefix(Na->ksp,"fieldsplit_0_");CHKERRQ(ierr);
-  ierr = KSPSetOperators(Na->ksp,A,Ap,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPCreate(((PetscObject)A00)->comm,&Na->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(Na->ksp,A00,Ap00,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

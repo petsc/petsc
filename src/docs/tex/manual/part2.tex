@@ -3042,7 +3042,14 @@ two levels of fill in the incomplete factorization.
 \section{Solving Block Matrices}
 \label{sec_block_matrices}
 
-Block matrices represent an important class of problems in numerical linear algebra and offer the possibility of far more efficient iterative solvers than just treating the matrices as black box. In this section we are using the common linear algebra definition of block matrices where matrices are divided in a small (two, three or so) number of very large blocks. Where the blocks arise naturally from the underlying physics or discretization of the problem. Under a certain numbering of unknowns the matrix can be written as 
+Block matrices represent an important class of problems in numerical
+linear algebra and offer the possibility of far more efficient
+iterative solvers than just treating the matrices as black box. In
+this section we are using the common linear algebra definition of
+block matrices where matrices are divided in a small (two, three or
+so) number of very large blocks. Where the blocks arise naturally from
+the underlying physics or discretization of the problem. Under a
+certain numbering of unknowns the matrix can be written as
 \[
 \left( \begin{array}{cccc}
 A_{00}   & A_{01} & A_{02} & A_{03} \\
@@ -3051,32 +3058,48 @@ A_{20}   & A_{21} & A_{22} & A_{23} \\
 A_{30}   & A_{31} & A_{32} & A_{33} \\
 \end{array} \right).
 \]
-In a parallel computer the matrices are not stored explicitly this way however, each process will own some of the rows of $A_{0*}$, $A_{1*}$ etc. On a process the blocks may be stored with rows/columns interlaced or one block followed by another. For example, noninterlaced,
+In a parallel computer the matrices are not stored explicitly this way
+however, each process will own some of the rows of $A_{0*}$, $A_{1*}$
+etc. On a process the blocks may be stored with rows/columns
+interlaced or one block followed by another. For example,
+noninterlaced,
 \[
 \left( \begin{array}{ccccccc}
-{A_{00}}_{00}   & {A_{00}}_{01} & {A_{00}}_{02} & ... & {A_{01}}_{00} & {A_{01}}_{02} & ...  \\
-{A_{00}}_{10}   & {A_{00}}_{11} & {A_{00}}_{12} & ... & {A_{01}}_{10} & {A_{01}}_{12} & ... \\
-{A_{00}}_{20}   & {A_{00}}_{21} & {A_{00}}_{22} & ... & {A_{01}}_{20} & {A_{01}}_{22}  & ...\\
+A_{{00}_{00}}   & A_{{00}_{01}} & A_{{00}_{02}} & ... & A_{{01}_{00}} & A_{{01}_{02}} & ...  \\
+A_{{00}_{10}}   & A_{{00}_{11}} & A_{{00}_{12}} & ... & A_{{01}_{10}} & A_{{01}_{12}} & ... \\
+A_{{00}_{20}}   & A_{{00}_{21}} & A_{{00}_{22}} & ... & A_{{01}_{20}} & A_{{01}_{22}}  & ...\\
 ... \\
-{A_{10}}_{00}   & {A_{10}}_{01} & {A_{10}}_{02} & ... & {A_{11}}_{00} & {A_{11}}_{02}  & ... \\
-{A_{10}}_{10}   & {A_{10}}_{11} & {A_{10}}_{12} & ... & {A_{11}}_{10} & {A_{11}}_{12}  & ... \\
+A_{{10}_{00}}   & A_{{10}_{01}} & A_{{10}_{02}} & ... & A_{{11}_{00}} & A_{{11}_{02}}  & ... \\
+A_{{10}_{10}}   & A_{{10}_{11}} & A_{{10}_{12}} & ... & A_{{11}_{10}} & A_{{11}_{12}}  & ... \\
 ... \\
 \end{array} \right)
 \]
 interlaced, with two blocks 
 \[
 \left( \begin{array}{ccccc}
-A_{{00}_{00}}   & {A_{01}}_{00} &  {A_{00}}_{01} & {A_{01}}_{01} &  ... \\
-{A_{10}}_{00}   & {A_{11}}_{00} &  {A_{10}}_{01} & {A_{11}}_{01} &  ... \\
+A_{{00}_{00}}   & A_{{01}_{00}} &  A_{{00}_{01}} & A_{{01}_{01}} &  ... \\
+A_{{10}_{00}}   & A_{{11}_{00}} &  A_{{10}_{01}} & A_{{11}_{01}} &  ... \\
 ... \\
-{A_{00}}_{10}   & {A_{01}}_{10} & {A_{00}}_{11} & {A_{01}}_{11} & ...\\
-{A_{10}}_{10}   & {A_{11}}_{10} & {A_{10}}_{11} & {A_{11}}_{11} & ...\\
+A_{{00}_{10}}   & A_{{01}_{10}} & A_{{00}_{11}} & A_{{01}_{11}} & ...\\
+A_{{10}_{10}}   & A_{{11}_{10}} & A_{{10}_{11}} & A_{{11}_{11}} & ...\\
 ...
 \end{array} \right).
 \]
-Note that for interlaced storage the number of rows/columns of each block must be the same size. Matrices obtained with DMGetMatrix() where the DM is a a DMDA are always stored interlaced. 
+Note that for interlaced storage the number of rows/columns of each
+block must be the same size. Matrices obtained with DMGetMatrix()
+where the DM is a a DMDA are always stored interlaced.
 
-The PETSc PCFIELDSPLIT preconditioner is used to implement that ``block matrix'' solvers. There are three ways to provide the information  that defines the blocks.  If the matrices are stored as interlaced then  PCFieldSplitSetFields() can be called repeatedly to indicate which fields belong to each block. More generally PCFieldSplitSetIS() can be used to indicate exactly which rows/columns of the matrix belong to a particular block. With these two approaches the blocks may overlap (though generally they will not). If only one block is defined then the complement of the matrices is used to define the other block. Finally the option  \trl{-pc_fieldsplit_detect_saddle_point} 
+The PETSc PCFIELDSPLIT preconditioner is used to implement that
+``block matrix'' solvers. There are three ways to provide the
+information that defines the blocks.  If the matrices are stored as
+interlaced then PCFieldSplitSetFields() can be called repeatedly to
+indicate which fields belong to each block. More generally
+PCFieldSplitSetIS() can be used to indicate exactly which rows/columns
+of the matrix belong to a particular block. With these two approaches
+the blocks may overlap (though generally they will not). If only one
+block is defined then the complement of the matrices is used to define
+the other block. Finally the
+option \trl{-pc_fieldsplit_detect_saddle_point}
 \findex{-pc_fieldsplit_detect_saddle_point} causes two blocks to be found, one associated with all rows/columns that have zeros on the diagonals and the rest.
 
 For simplicity in the rest of the section we restrict our matrices to two by two blocks. So the matrix is 
@@ -3128,7 +3151,7 @@ I   & -A_{01} \\
 0 & I \\
 \end{array} \right)
 \left( \begin{array}{cc}
-I   & 0 \\
+A_{00}   & 0 \\
 0 & ksp(A_{11},Ap_{11}) \\
 \end{array} \right)
 \left( \begin{array}{cc}
@@ -3142,7 +3165,78 @@ ksp(A_{00},Ap_{00})   & 0 \\
 \]
 These can be access with \trl{-pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative} \findex{-pc_fieldsplit_type} or the function PCFieldSplitSetType().
 
-For two by two blocks only are another family of solvers, based on Schur complements. These can be accessed with \trl{-pc_fieldsplit_type schur}. 
+For two by two blocks only there are another family of solvers, based on Schur complements. The inverse of the Schur complement factorization is  
+\[
+\left[ 
+\left( \begin{array}{cc}
+I   & 0 \\
+A_{10}A_{00}^{-1} & I \\
+\end{array} \right)
+\left( \begin{array}{cc}
+A_{00}  & 0 \\
+0 & S \\
+\end{array} \right)
+\left( \begin{array}{cc}
+I   & A_{00}^{-1} A_{01} \\
+0 & I \\
+\end{array} \right)
+\right]^{-1}
+\]
+
+
+\[
+\left( \begin{array}{cc}
+I   & A_{00}^{-1} A_{01} \\
+0 & I \\
+\end{array} \right)^{-1}
+\left( \begin{array}{cc}
+A_{00}^{-1}  & 0 \\
+0 & S^{-1} \\
+\end{array} \right)
+\left( \begin{array}{cc}
+I   & 0 \\
+A_{10}A_{00}^{-1} & I \\
+\end{array} \right)^{-1}
+\]
+
+\[
+\left( \begin{array}{cc}
+I   & -A_{00}^{-1} A_{01} \\
+0 & I \\
+\end{array} \right)
+\left( \begin{array}{cc}
+A_{00}^{-1}  & 0 \\
+0 & S^{-1} \\
+\end{array} \right)
+\left( \begin{array}{cc}
+I   & 0 \\
+-A_{10}A_{00}^{-1} & I \\
+\end{array} \right)
+\]
+
+\[
+\left( \begin{array}{cc}
+A_{00}^{-1}   & 0 \\
+0 & I \\
+\end{array} \right)
+\left( \begin{array}{cc}
+I   & -A_{01} \\
+0 & I \\
+\end{array} \right)
+\left( \begin{array}{cc}
+A_{00}  & 0 \\
+0 & S^{-1} \\
+\end{array} \right)
+\left( \begin{array}{cc}
+I   & 0 \\
+-A_{10} & I \\
+\end{array} \right)
+\left( \begin{array}{cc}
+A_{00}^{-1}   & 0 \\
+0 & I \\
+\end{array} \right).
+\]
+The preconditioner is accessed with \trl{-pc_fieldsplit_type schur} and is implemented as
 \[
 \left( \begin{array}{cc}
 ksp(A_{00},Ap_{00})   & 0 \\
@@ -3153,23 +3247,26 @@ I   & -A_{01} \\
 0 & I \\
 \end{array} \right)
 \left( \begin{array}{cc}
-I   & 0 \\
+I  & 0 \\
 0 & ksp(\hat{S},\hat{S}p) \\
 \end{array} \right)
 \left( \begin{array}{cc}
 I   & 0 \\
--A_{10} & I \\
-\end{array} \right)
-\left( \begin{array}{cc}
-ksp(A_{00},Ap_{00})   & 0 \\
-0 & I \\
+-A_{10} ksp(A_{00},Ap_{00}) & I \\
 \end{array} \right).
 \]
 Where $\hat{S} = A_{11} - A_{10} ksp(A_{00},Ap_{00}) A_{01}$ is the approximate Schur complement. By default $\hat{S}p$ is $Ap_{11}.$ One can provide an alternative with XXXX. Or one can provide a custom PC for the Schur complement system with YYYY.
 
-There are several variants of the Schur complement preconditioner obtained by dropping some of the terms ZZZZ
+There are several variants of the Schur complement preconditioner obtained by dropping some of the terms, these can be obtained with \trl{-pc_fieldsplit_schur_factorization_type <diag,lower,upper,full>} or NOTE WE NEED TO ADD A FUNCTIONAL INTERFACE. Note that the \trl{diag} form uses the preconditioner
+\[
+\left( \begin{array}{cc}
+ksp(A_{00},Ap_{00})   & 0 \\
+0 & -ksp(\hat{S},\hat{S}p) \\
+\end{array} \right)
+\]
+since the Schur complement for saddle point problems is negative definite. IS THIS ALWAYS TRUE, SHOULD THERE BE A FLAG TO SET THE SIGN?
 
-
+If you provide names for the partions you have created the options prefix for the internal KSPs are given by \trl{-fieldsplit_name_} if you did not provide names then they are given by \trl{-fieldsplit_0_}, \trl{-fieldsplit_1_} etc.
 
 
 \section{Solving Singular Systems}
