@@ -14,8 +14,9 @@ classdef PetscIS < PetscObject
       comm = PETSC_COMM_SELF();
       if (nargin == 1) 
         [err,obj.pobj] = calllib('libpetsc', 'ISCreate',comm ,0);PetscCHKERRQ(err);
-        err = calllib('libpetsc', 'ISSetType', obj.pobj,"general");PetscCHKERRQ(err);
-        err = calllib('libpetsc', 'ISGeneralSetIndices', obj.pobj,length(indices),indices);PetscCHKERRQ(err);
+        err = calllib('libpetsc', 'ISSetType', obj.pobj,'general');PetscCHKERRQ(err);
+        indices = indices-1;
+        err = calllib('libpetsc', 'ISGeneralSetIndices', obj.pobj,length(indices),indices,Petsc.COPY_VALUES);PetscCHKERRQ(err);
       else
         [err,obj.pobj] = calllib('libpetsc', 'ISCreate',comm ,0);PetscCHKERRQ(err);
       end
@@ -25,7 +26,7 @@ classdef PetscIS < PetscObject
     end
     function err = GeneralSetIndices(obj,indices)
       indices = indices - 1;  
-      err = calllib('libpetsc', 'ISGeneralSetIndices', obj.pobj,length(inds ices),indices);PetscCHKERRQ(err);
+      err = calllib('libpetsc', 'ISGeneralSetIndices', obj.pobj,length(indices),indices,Petsc.COPY_VALUES);PetscCHKERRQ(err);
     end
     function err = View(obj,viewer)
       if (nargin == 1)

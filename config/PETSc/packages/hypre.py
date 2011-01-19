@@ -67,7 +67,17 @@ class Configure(PETSc.package.NewPackage):
     args.append('--with-lapack-lib-dir=')
     args.append('--with-blas=yes')
     args.append('--with-lapack=yes')
-    
+
+    # explicitly tell hypre BLAS/LAPACK mangling since it may not match Fortran mangling
+    if self.blasLapack.mangling == 'underscore':
+      mang = 'one-underscore'
+    elif self.blasLapack.mangling == 'caps':
+      mang = 'caps-no-underscores'
+    else:
+      mang = 'no-underscores'
+    args.append('--with-fmangle-blas='+mang)
+    args.append('--with-fmangle-lapack='+mang)
+
     args.append('--without-babel')
     args.append('--without-mli')
     args.append('--without-fei')

@@ -4,7 +4,6 @@ function PetscBinaryWrite(inarg,varargin)
 %  if the array is multidimensional and dense it is saved
 %  as a one dimensional array
 %
-%  Only works for square sparse matrices 
 %
 %   PetscBinaryWrite(inarg,args to write)
 %   inarg may be:

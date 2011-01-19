@@ -133,6 +133,8 @@ int main(int argc,char **argv)
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,&user);CHKERRQ(ierr);
   }
+  
+  //ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
