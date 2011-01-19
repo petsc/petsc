@@ -1472,7 +1472,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         ierr = MPI_Send(arrows, size*3, MPIU_INT, 0, 1, sifter.comm());CHKERRXX(ierr);
         ierr = PetscFree(arrows);CHKERRXX(ierr);
       }
-    };
+    }
     template<typename Sifter>
     static void loadSifter(std::ifstream& fs, Sifter& sifter) {
       typedef typename Sifter::traits::arrow_container_type::set_type::size_type size_type;
@@ -1531,7 +1531,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         }
         ierr = PetscFree(arrows);CHKERRXX(ierr);
       }
-    };
+    }
   };
 } // namespace ALE
 

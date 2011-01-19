@@ -1839,6 +1839,47 @@ namespace ALE {
         v.visitPoint(*p_iter);
       }
     }
+    // Helper function
+    void insertNSupport(point_type p, pointSet& set, const int depth) {
+      const index_type start = this->supportOffsets[p];
+      const index_type end   = this->supportOffsets[p+1];
+
+      if (depth == 1) {
+        set.insert(&this->supports[start], &this->supports[end]);
+      } else {
+        for(index_type s = start; s < end; ++s) {
+          this->insertNSupport(this->supports[s], set, depth-1);
+        }
+      }
+    }
+    // Gives only the join of depth n
+    template<typename SequenceIterator, typename Visitor>
+    void nJoin(const SequenceIterator& pointsBegin, const SequenceIterator& pointsEnd, const int depth, Visitor& v) {
+      typedef std::set<point_type> pointSet;
+      pointSet intersect[2] = {pointSet(), pointSet()};
+      pointSet tmp;
+      int      p = 0;
+      int      c = 0;
+
+      for(SequenceIterator p_iter = pointsBegin; p_iter != pointsEnd; ++p_iter) {
+        this->chart.checkPoint(*p_iter);
+        // Put points in the nSupport into tmp (duplicates are fine since it is a set)
+        this->insertNSupport(*p_iter, tmp, depth);
+        if (p == 0) {
+          intersect[1-c].insert(tmp.begin(), tmp.end());
+          p++;
+        } else {
+          std::set_intersection(intersect[c].begin(), intersect[c].end(), tmp.begin(), tmp.end(),
+                                std::insert_iterator<pointSet>(intersect[1-c], intersect[1-c].begin()));
+          intersect[c].clear();
+        }
+        c = 1 - c;
+        tmp.clear();
+      }
+      for(typename pointSet::const_iterator p_iter = intersect[c].begin(); p_iter != intersect[c].end(); ++p_iter) {
+        v.visitPoint(*p_iter);
+      }
+    }
   public: // Viewing
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
       ostringstream txt;
