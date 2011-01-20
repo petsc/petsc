@@ -131,9 +131,11 @@ int main(int argc,char **args)
         } else {
           ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
           ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
+          ierr = VecSetFromOptions(b);CHKERRQ(ierr);
           ierr = VecLoad(b,fd);CHKERRQ(ierr);
         }
       } else {
+        ierr = VecSetFromOptions(b);CHKERRQ(ierr);
         ierr = VecLoad(b,fd);CHKERRQ(ierr);
       }
     }
