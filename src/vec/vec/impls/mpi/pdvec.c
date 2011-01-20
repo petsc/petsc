@@ -714,7 +714,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   maxDims[dim] = dims[dim];
   chunkDims[dim] = dims[dim];
   ++dim;
-  if (bs > 1) {
+  if (bs >= 1) {
     dims[dim]    = bs;
     maxDims[dim] = dims[dim];
     chunkDims[dim] = dims[dim];
@@ -759,7 +759,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   }
   count[dim] = PetscHDF5IntCast(xin->map->n)/bs;
   ++dim;
-  if (bs > 1) {
+  if (bs >= 1) {
     count[dim] = bs;
     ++dim;
   }
@@ -779,7 +779,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   }
   offset[dim] = PetscHDF5IntCast(low/bs);
   ++dim;
-  if (bs > 1) {
+  if (bs >= 1) {
     offset[dim] = 0;
     ++dim;
   }
