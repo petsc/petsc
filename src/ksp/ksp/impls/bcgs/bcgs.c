@@ -2,6 +2,10 @@
 
 #include "private/kspimpl.h"
 
+typedef struct {
+  Vec guess;        /* if using right preconditioning with nonzero initial guess must keep that around to "fix" solution */
+} KSP_BCGS;
+
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_BCGS"
 static PetscErrorCode KSPSetUp_BCGS(KSP ksp)
@@ -23,6 +27,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
   PetscScalar    rho,rhoold,alpha,beta,omega,omegaold,d1,d2;
   Vec            X,B,V,P,R,RP,T,S;
   PetscReal      dp = 0.0;
+  KSP_BCGS       *bcgs = (KSP_BCGS*)ksp->data;
 
   PetscFunctionBegin;
   if (ksp->normtype == KSP_NORM_NATURAL) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Cannot use natural residual norm with KSPBCGS");
@@ -40,6 +45,15 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
 
   /* Compute initial preconditioned residual */
   ierr = KSPInitialResidual(ksp,X,V,T,R,B);CHKERRQ(ierr);
+
+  /* with right preconditioning need to save initial guess to add to final solution */
+  if (ksp->pc_side == PC_RIGHT && !ksp->guess_zero) {
+    if (!bcgs->guess) {
+      ierr = VecDuplicate(X,&bcgs->guess);CHKERRQ(ierr);
+    }
+    ierr = VecCopy(X,bcgs->guess);CHKERRQ(ierr);
+    ierr = VecSet(X,0.0);CHKERRQ(ierr);
+  }
 
   /* Test for nothing to do */
   if (ksp->normtype != KSP_NORM_NONE) {
@@ -123,8 +137,48 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
   }
 
   ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr);
+  if (bcgs->guess) {
+    ierr = VecAXPY(X,1.0,bcgs->guess);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPBuildSolution_BCGS"
+PetscErrorCode KSPBuildSolution_BCGS(KSP ksp,Vec v,Vec *V)
+{
+  PetscErrorCode ierr;
+  KSP_BCGS       *bcgs = (KSP_BCGS*)ksp->data;
+
+  PetscFunctionBegin;
+  if (ksp->pc_side == PC_RIGHT) {
+    if (v) {
+      ierr = KSP_PCApply(ksp,ksp->vec_sol,v);CHKERRQ(ierr); 
+      if (bcgs->guess) {
+        ierr = VecAXPY(v,1.0,bcgs->guess);CHKERRQ(ierr);
+      }
+      *V = v;
+    } else SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Not working with right preconditioner");
+  } else {
+    if (v) {ierr = VecCopy(ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
+    else { *V = ksp->vec_sol; }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPDestroy_BCGS" 
+PetscErrorCode KSPDestroy_BCGS(KSP ksp)
+{
+  KSP_BCGS       *cg = (KSP_BCGS*)ksp->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (cg->guess) {ierr = VecDestroy(cg->guess);CHKERRQ(ierr);}
+  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 /*MC
      KSPBCGS - Implements the BiCGStab (Stabilized version of BiConjugate Gradient Squared) method.
@@ -147,12 +201,14 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPCreate_BCGS"
 PetscErrorCode  KSPCreate_BCGS(KSP ksp)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  ksp->data                 = (void*)0;
+  ierr = PetscNewLog(ksp,KSP_BCGS,&ksp->data);CHKERRQ(ierr);
   ksp->ops->setup           = KSPSetUp_BCGS;
   ksp->ops->solve           = KSPSolve_BCGS;
-  ksp->ops->destroy         = KSPDefaultDestroy;
-  ksp->ops->buildsolution   = KSPDefaultBuildSolution;
+  ksp->ops->destroy         = KSPDestroy_BCGS;
+  ksp->ops->buildsolution   = KSPBuildSolution_BCGS;
   ksp->ops->buildresidual   = KSPDefaultBuildResidual;
   ksp->ops->setfromoptions  = 0;
   ksp->ops->view            = 0;
