@@ -645,9 +645,6 @@ static PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF5)
   PetscBool      ishdf5;
 #endif
-#if defined(PETSC_HAVE_HDF5)
-  PetscTruth     ishdf5;
-#endif
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
