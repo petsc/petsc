@@ -8,6 +8,10 @@
 #include "../src/vec/vec/impls/mpi/pvecimpl.h" /* For VecView_MPI_HDF5 */
 #include "petscblaslapack.h"
 
+#if defined(PETSC_HAVE_HDF5)
+extern PetscErrorCode VecView_MPI_HDF5(Vec,PetscViewer);
+#endif
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecPointwiseMax_Seq"
 static PetscErrorCode VecPointwiseMax_Seq(Vec win,Vec xin,Vec yin)
@@ -641,6 +645,9 @@ static PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF5)
   PetscBool      ishdf5;
 #endif
+#if defined(PETSC_HAVE_HDF5)
+  PetscTruth     ishdf5;
+#endif
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
@@ -652,6 +659,7 @@ static PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #endif
 #if defined(PETSC_HAVE_HDF5)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
+#endif
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERMATLAB,&ismatlab);CHKERRQ(ierr);
@@ -666,6 +674,10 @@ static PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_MATHEMATICA)
   } else if (ismathematica) {
     ierr = PetscViewerMathematicaPutVector(viewer,xin);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_HDF5)
+  } else if (ishdf5) {
+    ierr = VecView_MPI_HDF5(xin,viewer);CHKERRQ(ierr); /* Reusing VecView_MPI_HDF5 ... don't want code duplication*/
 #endif
 #if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {
