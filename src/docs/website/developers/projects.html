@@ -96,7 +96,11 @@ VecLoad() and MatLoad() and use the prefix in it to load from the info
 file.<br>
         </li>
         <li>KSPSolve and SNESSolve should return bounds on the errors
-and some measure of sensitivity of the solution to the something<br>
+and some measure of sensitivity of the solution to the something</li>
+        <li>The MatCreateSeqCUFFT() and MatCreateSeqFFTW() should be
+both made subclasses of an abstract Mat class for FFTs. Allowing
+command line switching between them etc so that user code makes no
+mention of the particular FFT package being used.<br>
         </li>
       </ul>
 &nbsp; Below is a bunch of random ideas of things that need to be done.<br>
@@ -136,7 +140,8 @@ Add
 PetscConsistent(MPI_Comm,...)
 error
 check
-macros checks that<br>
+macros
+checks that<br>
 all processors in comm set the same value; for example the alpha in
 VecAXPY() etc etc.<br>
       <br>
