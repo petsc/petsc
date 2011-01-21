@@ -2066,60 +2066,6 @@ M*/
 
 M*/
 
-#else /* end of -DPETSC_USE_LOG section */
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscLogObjectState"
-PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#endif /* PETSC_USE_LOG*/
-
-
-PetscClassId PETSC_LARGEST_CLASSID = PETSC_SMALLEST_CLASSID;
-PetscClassId PETSC_OBJECT_CLASSID  = 0;
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscClassIdRegister"
-/*@C
-  PetscClassIdRegister - Registers a new class name for objects and logging operations in an application code. 
-
-  Not Collective
-
-  Input Parameter:
-. name   - The class name
-            
-  Output Parameter:
-. oclass - The class id or classid
-
-  Level: developer
-
-.keywords: log, class, register
-
-@*/
-PetscErrorCode  PetscClassIdRegister(const char name[],PetscClassId *oclass )
-{
-#if defined(PETSC_USE_LOG)
-  StageLog       stageLog;
-  PetscInt       stage;
-  PetscErrorCode ierr;
-#endif
-
-  PetscFunctionBegin;
-  *oclass = ++PETSC_LARGEST_CLASSID;
-#if defined(PETSC_USE_LOG)
-  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-  ierr = ClassRegLogRegister(stageLog->classLog, name, *oclass);CHKERRQ(ierr);
-  for(stage = 0; stage < stageLog->numStages; stage++) {
-    ierr = ClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses);CHKERRQ(ierr);
-  }
-#endif
-  PetscFunctionReturn(0);
-}
-
 #include "../src/sys/viewer/impls/ascii/asciiimpl.h"  /*I     "petscsys.h"   I*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogViewPython"
@@ -2495,5 +2441,59 @@ for(stage = 0; stage < numStages; stage++) {
   /* Cleanup */
   ierr = PetscFPrintf(comm, fd, "\n");CHKERRQ(ierr);
   ierr = StageLogPush(stageLog, lastStage);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#else /* end of -DPETSC_USE_LOG section */
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogObjectState"
+PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#endif /* PETSC_USE_LOG*/
+
+
+PetscClassId PETSC_LARGEST_CLASSID = PETSC_SMALLEST_CLASSID;
+PetscClassId PETSC_OBJECT_CLASSID  = 0;
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscClassIdRegister"
+/*@C
+  PetscClassIdRegister - Registers a new class name for objects and logging operations in an application code. 
+
+  Not Collective
+
+  Input Parameter:
+. name   - The class name
+            
+  Output Parameter:
+. oclass - The class id or classid
+
+  Level: developer
+
+.keywords: log, class, register
+
+@*/
+PetscErrorCode  PetscClassIdRegister(const char name[],PetscClassId *oclass )
+{
+#if defined(PETSC_USE_LOG)
+  StageLog       stageLog;
+  PetscInt       stage;
+  PetscErrorCode ierr;
+#endif
+
+  PetscFunctionBegin;
+  *oclass = ++PETSC_LARGEST_CLASSID;
+#if defined(PETSC_USE_LOG)
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  ierr = ClassRegLogRegister(stageLog->classLog, name, *oclass);CHKERRQ(ierr);
+  for(stage = 0; stage < stageLog->numStages; stage++) {
+    ierr = ClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
