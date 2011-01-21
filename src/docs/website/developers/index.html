@@ -10,7 +10,7 @@
   <tbody>
     <tr>
       <td style="width: 261px;" valign="top">
-      <h1><font color="#ff0000" size="7">PETSc</font></h1>
+      <h1><font size="7" color="#ff0000">PETSc</font></h1>
       <ul>
         <li><a href="../index.html"><strong>Home</strong></a></li>
       </ul>
@@ -21,7 +21,7 @@
     </tr>
     <tr>
       <td style="width: 498px;" colspan="2">
-      <hr color="#ff5b5b" size="4"> </td>
+      <hr size="4" color="#ff5b5b"> </td>
     </tr>
     <tr>
       <td style="width: 261px;" valign="top">
@@ -41,7 +41,8 @@ Software</strong></a></li>
             <li><strong><font color="#ff0000"><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/index.html">Development
 copy
-of documentation</a></font></strong></li>
+of
+documentation</a></font></strong></li>
             <li><strong></strong><strong><font color="#ff0000"><a
  href="developers.pdf">Developers Instructions<br>
               </a></font></strong></li>
@@ -83,15 +84,18 @@ to the master copy of petsc-dev</a></li>
         <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/ksp/pc/impls/jacobi/jacobi.c.html">add
 a
-new PC type</a></li>
+new
+PC type</a></li>
         <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/ksp/ksp/impls/cg/cg.c.html">add
 a
-new KSP type</a></li>
+new
+KSP type</a></li>
         <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/mat/impls/aij/seq/superlu/superlu.c.html">add
 a
-new subclass of a matrix type (implementation inheritence)</a></li>
+new
+subclass of a matrix type (implementation inheritence)</a></li>
       </ul>
       <br>
       <big><span style="font-weight: bold;"><a name="Browsing"></a>Browsing
@@ -105,7 +109,8 @@ One can browse the development repositories at the following location<br>
       <br>
       <big><span style="font-weight: bold;"><a name="Obtaining"></a>Obtaining
 the
-development version of PETSc:</span></big><br>
+development
+version of PETSc:</span></big><br>
       <br>
 You have three options<br>
       <ol>
@@ -145,7 +150,8 @@ the software <br>
  href="http://www.selenic.com/mercurial/wiki/index.cgi/BinaryPackages">Prebuilt
 binaries</a> are available. For eg: <a
  href="http://mercurial.berkwood.com/binaries/Mercurial-1.5-py2.6-macosx10.6.zip">Mercurial
-1.5 for <span class="release"> OS X 10.6</span></a></li>
+1.5
+for <span class="release"> OS X 10.6</span></a></li>
         <li>Windows: <a
  href="http://www.selenic.com/mercurial/wiki/index.cgi/BinaryPackages">Prebuilt
 binaries</a> are available. For ex: <a
@@ -167,7 +173,8 @@ following:
         <li>hg clone http://petsc.cs.iit.edu/petsc/BuildSystem
 BuildSystem</li>
       </ul>
-PETSc can now be configured in the usual way, specified on the <a href="../documentation/installation.html">Installation page</a>.
+PETSc can now be configured in the usual way, specified on the <a
+ href="../documentation/installation.html">Installation page</a>.
 To update your copy of petsc-dev
       <ul style="color: rgb(128, 0, 0);">
         <li>cd petsc-dev<br>
@@ -230,6 +237,7 @@ the tarballs&nbsp; including the new changes.<br>
       <a name="3_"></a>3) The nightly tarball will be equivalent to the
 release tarball - with all the doumentation built. To use the <strong>nightly
 tarball
+
       </strong>snapshot,
 simply download <a
  href="http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz</a>
@@ -255,42 +263,33 @@ petsc-maint@mcs.anl.gov). And subscribe to <a
       <h4>Experimental build systems</h4>
       <ul>
         <li>CMake
-          <p>
-            The main reasons for using CMake are parallel builds,
-            dependency analysis, and IDE integration.  The following
-            instructions assume that you have CMake version 2.6 or later
-            installed.
-          </p>
+          <p> The main reasons for using CMake are parallel builds,
+dependency analysis, and IDE integration. The following instructions
+assume that you have CMake version 2.6 or later installed. </p>
           <ol>
             <li>Configure as usual with ./configure, provide
-            --with-cmake=/path/to/cmake if the CMake executable is not
-            in your PATH.</li>
+--with-cmake=/path/to/cmake if the CMake executable is not in your PATH.</li>
             <li>Run make in the build directory
-            ($PETSC_DIR/$PETSC_ARCH), the value of the environment
-            variables is not important.</li>
+($PETSC_DIR/$PETSC_ARCH), the value of the environment variables is not
+important.</li>
           </ol>
-          <p>
-            Notes:
-            <ul>
-              <li>The generator for the build directory can be changed
-                (e.g. to Eclipse, XCode, Visual Studio) after running
-                configure.</li>
-              <li>Multiple builds can run at once.</li>
-              <li>If new files are added, the CMake build files can be
-                quickly updated with bin/maint/cmakegen.py.  This is
-                done automatically when reconfiguring for any PETSC_ARCH
-                (e.g. $PETSC_ARCH/conf/reconfigure-$PETSC_ARCH.py).</li>
-              <li>The CMake build creates the same libraries as PETSc's
-                standard build, the object files are stored privately in
-                the build directory so multiple PETSC_ARCHs can be built
-                simultaneously.</li>
-            </ul>
-          </p>
+          <p> Notes: </p>
+          <ul>
+            <li>The generator for the build directory can be changed
+(e.g. to Eclipse, XCode, Visual Studio) after running configure.</li>
+            <li>Multiple builds can run at once.</li>
+            <li>If new files are added, the CMake build files can be
+quickly updated with bin/maint/cmakegen.py. This is done automatically
+when reconfiguring for any PETSC_ARCH (e.g.
+$PETSC_ARCH/conf/reconfigure-$PETSC_ARCH.py).</li>
+            <li>The CMake build creates the same libraries as PETSc's
+standard build, the object files are stored privately in the build
+directory so multiple PETSC_ARCHs can be built simultaneously.</li>
+          </ul>
+          <p></p>
         </li>
         <li>builder.py</li>
-        <p>
-          Run config/builder.py
-        </p>
+        <p> Run config/builder.py </p>
       </ul>
       <p style="font-weight: bold;" align="left"><br>
       <big><a name="Building_documentation:"></a>Building documentation:</big></p>
@@ -303,20 +302,23 @@ downloaded and installed by ./configure.&nbsp;</p>
           <p align="left"><font size="4"><a
  href="http://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz">Sowing</a>:</font>&nbsp;
 A
-text processing tools developed by Bill Gropp</p>
+text
+processing tools developed by Bill Gropp</p>
         </li>
         <li>
           <p align="left"><font size="4"><a
  href="http://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz">C2html</a></font>:
 A
-text processing package required to generate the PETSc documentation.</p>
+text
+processing package required to generate the PETSc documentation.</p>
         </li>
         <li>
           <p align="left">A version of pdflatex <a
  href="http://www.tug.org/teTeX/"></a><font size="4"><a
  href="http://www.tug.org/teTeX/">(for example in teTeX)</a>:</font>This
 package
-might already be installed on most systems. It is required to
+might
+already be installed on most systems. It is required to
 generate the users manual (part of the PETSc documentation)</p>
         </li>
       </ul>
@@ -353,6 +355,13 @@ Once you have developed experience with developing PETSc source code
 you can become an active member of our development and push changes
 directly to the petsc-dev repository. Send mail to
 petsc-maint@mcs.anl.gov to arrange it.<br>
+      <br>
+      <big><span style="font-weight: bold;">Developer Guide:</span></big><br>
+      <br>
+The <a
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/developers.pdf">developer
+guide</a> gives an overview of the design and detailed style
+specifications.<br>
       <p><big><a name="nightly_logs"></a><span
  style="font-weight: bold;">Nightly builds:</span></big></p>
       <big> </big>The logs for the nightly builds at<br>

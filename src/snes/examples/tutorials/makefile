@@ -12,7 +12,7 @@ MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex5s.c ex6.c \
                    ex14.c ex18.c ex19.c ex20.c ex21.c ex22.c \
                    ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex38.c ex42.c ex43.c \
-                   ex44.c ex45.c ex47.c ex48.c ex49.c ex50.c ex47cu.cu
+                   ex44.c ex45.c ex48.c ex49.c ex50.c ex47cu.cu
 EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F ex33f.F 
 EXAMPLESCH	 = ex43-44.h
 EXAMPLESFH       = ex5f.h
@@ -173,9 +173,6 @@ ex45: ex45.o  chkopts
 ex46: ex46.o  chkopts
 	-${CLINKER} -o ex46 ex46.o ${PETSC_SNES_LIB}
 	${RM} ex46.o
-ex47: ex47.o  chkopts
-	-${CLINKER} -o ex47 ex47.o ${PETSC_SNES_LIB}
-	${RM} ex47.o
 ex47cu: ex47cu.o  chkopts
 	-${CLINKER} -o ex47cu ex47cu.o ${PETSC_SNES_LIB}
 	${RM} ex47cu.o
@@ -729,6 +726,12 @@ runex45_3:
 	   else echo "Possible problem with ex45_3, diffs above"; fi; \
 	   ${RM} -f ex45.tmp
 
+runex47cu:
+	-@${MPIEXEC} -n 1 ./ex47cu -snes_monitor_short -da_vec_type cusp  > ex47cu_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex47cu_1.out ex47cu_1.tmp) then true; \
+	   else echo "Possible problem with ex47cu_1, diffs above"; fi; \
+	   ${RM} -f ex47cu_1.tmp
+
 runex48:
 	-@${MPIEXEC} -n 1 ./ex48 -M 6 -P 4 -thi_nlevels 2 -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ksp_converged_reason -thi_mat_type sbaij > ex48.tmp 2>&1; \
 	   ${DIFF} output/ex48_1.out ex48.tmp || echo "Possible problem with ex48_1, diffs above"; \
@@ -778,6 +781,6 @@ TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_3 runex19_4 runex19_fieldspl
 TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu ex19.rm 
 TESTEXAMPLES_SUPERLU_DIST      = ex19.PETSc runex19_superlu_dist runex19_superlu_dist_2 ex19.rm 
 TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm 
-TESTEXAMPLES_CUSP              = ex19.PETSc runex19_cusp ex19.rm 
+TESTEXAMPLES_CUSP              = ex19.PETSc runex19_cusp ex19.rm ex47cu.PETSc runex47cu ex47cu.rm
 
 include ${PETSC_DIR}/conf/test

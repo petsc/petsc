@@ -50,7 +50,7 @@ extern PetscBool  synchronizeCUSP;
 
 #define VecCUSPCastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])
 
-#define WaitForGPU() synchronizeCUSP ? cuspThreadSynchronize() : 0
+#define WaitForGPU() synchronizeCUSP ? cudaThreadSynchronize() : 0
 
 struct Vec_CUSP {
   /* eventually we should probably move the GPU flag into here */

@@ -47,5 +47,5 @@ developers.pdf: chk_loc developers.tex
 	  ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > developerstmp.tex
 	${PDFLATEX} developerstmp.tex
 	${PDFLATEX} developerstmp.tex
-	${MV} developerstmp.pdf developers.pdf
+	${MV} developerstmp.pdf ${LOC}/docs/developers.pdf
 

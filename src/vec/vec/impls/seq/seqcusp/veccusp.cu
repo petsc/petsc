@@ -4,10 +4,10 @@
 */
 
 #include "petscconf.h"
-PETSC_CUSP_EXTERN_C_BEGIN
+PETSC_CUDA_EXTERN_C_BEGIN
 #include "private/vecimpl.h"          /*I "petscvec.h" I*/
 #include "../src/vec/vec/impls/dvecimpl.h"
-PETSC_CUSP_EXTERN_C_END
+PETSC_CUDA_EXTERN_C_END
 #include "../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h"
 
 #undef __FUNCT__
