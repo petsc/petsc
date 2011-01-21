@@ -55,7 +55,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
 
    Input Parameter:
 +  da - initial distributed array
-.  ctype - the vector type, currently either VECSTANDARD or VECCUDA
+.  ctype - the vector type, currently either VECSTANDARD or VECCUSP
 
    Options Database:
 .   -da_vec_type ctype

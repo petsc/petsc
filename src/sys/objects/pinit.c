@@ -5,7 +5,7 @@
 
 #include "petscsys.h"        /*I  "petscsys.h"   I*/
 
-#if defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_CUSP)
 #include <cublas.h>
 #endif
 

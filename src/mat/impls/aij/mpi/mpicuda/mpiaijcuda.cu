@@ -4,8 +4,8 @@
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJCUDA"
-PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUDA(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
+#define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJCUSP"
+PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   Mat_MPIAIJ     *b;
   PetscErrorCode ierr;
@@ -37,11 +37,11 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUDA(Mat B,PetscInt d_nz,const P
     /* Explicitly create 2 MATSEQAIJ matrices. */
     ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
     ierr = MatSetSizes(b->A,B->rmap->n,B->cmap->n,B->rmap->n,B->cmap->n);CHKERRQ(ierr);
-    ierr = MatSetType(b->A,MATSEQAIJCUDA);CHKERRQ(ierr);
+    ierr = MatSetType(b->A,MATSEQAIJCUSP);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(B,b->A);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_SELF,&b->B);CHKERRQ(ierr);
     ierr = MatSetSizes(b->B,B->rmap->n,B->cmap->N,B->rmap->n,B->cmap->N);CHKERRQ(ierr);
-    ierr = MatSetType(b->B,MATSEQAIJCUDA);CHKERRQ(ierr);
+    ierr = MatSetType(b->B,MATSEQAIJCUSP);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(B,b->B);CHKERRQ(ierr);
   }
 
@@ -52,8 +52,8 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUDA(Mat B,PetscInt d_nz,const P
 }
 EXTERN_C_END
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetVecs_MPIAIJCUDA"
-PetscErrorCode  MatGetVecs_MPIAIJCUDA(Mat mat,Vec *right,Vec *left)
+#define __FUNCT__ "MatGetVecs_MPIAIJCUSP"
+PetscErrorCode  MatGetVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
 {
   PetscErrorCode ierr;
   PetscMPIInt size;
@@ -70,8 +70,8 @@ PetscErrorCode  MatGetVecs_MPIAIJCUDA(Mat mat,Vec *right,Vec *left)
       ierr = PetscLayoutDestroy((*right)->map);CHKERRQ(ierr);
       (*right)->map = mat->cmap;
       mat->cmap->refcnt++;
-      ierr = VecSetType(*right,VECMPICUDA);CHKERRQ(ierr);
-      } else {ierr = VecSetType(*right,VECSEQCUDA);CHKERRQ(ierr);}
+      ierr = VecSetType(*right,VECMPICUSP);CHKERRQ(ierr);
+      } else {ierr = VecSetType(*right,VECSEQCUSP);CHKERRQ(ierr);}
   }
   if (left) {
     ierr = VecCreate(((PetscObject)mat)->comm,left);CHKERRQ(ierr);
@@ -82,8 +82,8 @@ PetscErrorCode  MatGetVecs_MPIAIJCUDA(Mat mat,Vec *right,Vec *left)
       ierr = PetscLayoutDestroy((*left)->map);CHKERRQ(ierr);
       (*left)->map = mat->rmap;
       mat->rmap->refcnt++;
-      ierr = VecSetType(*left,VECMPICUDA);CHKERRQ(ierr);
-    } else {ierr = VecSetType(*left,VECSEQCUDA);CHKERRQ(ierr);}
+      ierr = VecSetType(*left,VECMPICUSP);CHKERRQ(ierr);
+    } else {ierr = VecSetType(*left,VECSEQCUSP);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -94,26 +94,26 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatCreate_MPIAIJCUDA"
-PetscErrorCode  MatCreate_MPIAIJCUDA(Mat B)
+#define __FUNCT__ "MatCreate_MPIAIJCUSP"
+PetscErrorCode  MatCreate_MPIAIJCUSP(Mat B)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate_MPIAIJ(B);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAIJSetPreallocation_C",
-                                     "MatMPIAIJSetPreallocation_MPIAIJCUDA",
-                                      MatMPIAIJSetPreallocation_MPIAIJCUDA);CHKERRQ(ierr);
-  B->ops->getvecs = MatGetVecs_MPIAIJCUDA;
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJCUDA);CHKERRQ(ierr);
+                                     "MatMPIAIJSetPreallocation_MPIAIJCUSP",
+                                      MatMPIAIJSetPreallocation_MPIAIJCUSP);CHKERRQ(ierr);
+  B->ops->getvecs = MatGetVecs_MPIAIJCUSP;
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJCUSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatCreateMPIAIJCUDA"
-PetscErrorCode  MatCreateMPIAIJCUDA(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
+#define __FUNCT__ "MatCreateMPIAIJCUSP"
+PetscErrorCode  MatCreateMPIAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -123,20 +123,20 @@ PetscErrorCode  MatCreateMPIAIJCUDA(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt
   ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
-    ierr = MatSetType(*A,MATMPIAIJCUDA);CHKERRQ(ierr);
+    ierr = MatSetType(*A,MATMPIAIJCUSP);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(*A,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
   } else {
-    ierr = MatSetType(*A,MATSEQAIJCUDA);CHKERRQ(ierr);
+    ierr = MatSetType(*A,MATSEQAIJCUSP);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(*A,d_nz,d_nnz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 /*MC
-   MATAIJCUDA - MATAIJCUDA = "aijcuda" - A matrix type to be used for sparse matrices.
+   MATAIJCUSP - MATAIJCUSP = "aijcusp" - A matrix type to be used for sparse matrices.
 
-   This matrix type is identical to MATSEQAIJCUDA when constructed with a single process communicator,
-   and MATMPIAIJCUDA otherwise.  As a result, for single process communicators, 
+   This matrix type is identical to MATSEQAIJCUSP when constructed with a single process communicator,
+   and MATMPIAIJCUSP otherwise.  As a result, for single process communicators, 
   MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation is supported 
   for communicators controlling multiple processes.  It is recommended that you call both of
   the above preallocation routines for simplicity.
@@ -146,13 +146,13 @@ PetscErrorCode  MatCreateMPIAIJCUDA(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt
 
   Level: beginner
 
-.seealso: MatCreateMPIAIJ,MATSEQAIJ,MATMPIAIJ, MATMPIAIJCUDA, MATSEQAIJCUDA
+.seealso: MatCreateMPIAIJ,MATSEQAIJ,MATMPIAIJ, MATMPIAIJCUSP, MATSEQAIJCUSP
 M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatCreate_AIJCUDA"
-PetscErrorCode  MatCreate_AIJCUDA(Mat A) 
+#define __FUNCT__ "MatCreate_AIJCUSP"
+PetscErrorCode  MatCreate_AIJCUSP(Mat A) 
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -160,9 +160,9 @@ PetscErrorCode  MatCreate_AIJCUDA(Mat A)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = MatSetType(A,MATSEQAIJCUDA);CHKERRQ(ierr);
+    ierr = MatSetType(A,MATSEQAIJCUSP);CHKERRQ(ierr);
   } else {
-    ierr = MatSetType(A,MATMPIAIJCUDA);CHKERRQ(ierr);
+    ierr = MatSetType(A,MATMPIAIJCUSP);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

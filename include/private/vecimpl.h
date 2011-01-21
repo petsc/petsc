@@ -148,9 +148,9 @@ typedef struct {
   PetscInt      *bowners;
 } VecStash;
 
-#if defined(PETSC_HAVE_CUDA)
-/* Defines the flag structure that the CUDA arch uses. */
-typedef enum {PETSC_CUDA_UNALLOCATED,PETSC_CUDA_GPU,PETSC_CUDA_CPU,PETSC_CUDA_BOTH} PetscCUDAFlag;
+#if defined(PETSC_HAVE_CUSP)
+/* Defines the flag structure that the CUSP arch uses. */
+typedef enum {PETSC_CUSP_UNALLOCATED,PETSC_CUSP_GPU,PETSC_CUSP_CPU,PETSC_CUSP_BOTH} PetscCUSPFlag;
 #endif
 
 struct _p_Vec {
@@ -162,9 +162,9 @@ struct _p_Vec {
   PetscBool              array_gotten;
   VecStash               stash,bstash; /* used for storing off-proc values during assembly */
   PetscBool              petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
-#if defined(PETSC_HAVE_CUDA)
-  PetscCUDAFlag          valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
-  void                   *spptr; /* if we're using CUDA, then this is the special pointer to the array on the GPU */
+#if defined(PETSC_HAVE_CUSP)
+  PetscCUSPFlag          valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
+  void                   *spptr; /* if we're using CUSP, then this is the special pointer to the array on the GPU */
 #endif
 };
 
@@ -173,11 +173,11 @@ extern PetscLogEvent VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_
 extern PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd;
 extern PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
 extern PetscLogEvent VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier, VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ, VEC_Ops;
-extern PetscLogEvent VEC_CUDACopyToGPU, VEC_CUDACopyFromGPU;
-extern PetscLogEvent VEC_CUDACopyToGPUSome, VEC_CUDACopyFromGPUSome;
+extern PetscLogEvent VEC_CUSPCopyToGPU, VEC_CUSPCopyFromGPU;
+extern PetscLogEvent VEC_CUSPCopyToGPUSome, VEC_CUSPCopyFromGPUSome;
 
-#if defined(PETSC_HAVE_CUDA)
-extern PetscErrorCode VecCUDACopyFromGPU(Vec v);
+#if defined(PETSC_HAVE_CUSP)
+extern PetscErrorCode VecCUSPCopyFromGPU(Vec v);
 #endif
 
 #undef __FUNCT__
@@ -188,9 +188,9 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar *a[])
 
   PetscFunctionBegin;
   if (x->petscnative){
-#if defined(PETSC_HAVE_CUDA)
-    if (x->valid_GPU_array == PETSC_CUDA_GPU || !*((PetscScalar**)x->data)){
-      ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUSP)
+    if (x->valid_GPU_array == PETSC_CUSP_GPU || !*((PetscScalar**)x->data)){
+      ierr = VecCUSPCopyFromGPU(x);CHKERRQ(ierr);
     }
 #endif
     *a = *((PetscScalar **)x->data);
@@ -208,9 +208,9 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar *
 
   PetscFunctionBegin;
   if (x->petscnative){
-#if defined(PETSC_HAVE_CUDA)
-    if (x->valid_GPU_array != PETSC_CUDA_UNALLOCATED) {
-      x->valid_GPU_array = PETSC_CUDA_BOTH;
+#if defined(PETSC_HAVE_CUSP)
+    if (x->valid_GPU_array != PETSC_CUSP_UNALLOCATED) {
+      x->valid_GPU_array = PETSC_CUSP_BOTH;
     }
 #endif
   } else {
@@ -227,9 +227,9 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArray(Vec x,PetscScalar *a[])
 
   PetscFunctionBegin;
   if (x->petscnative){
-#if defined(PETSC_HAVE_CUDA)
-    if (x->valid_GPU_array == PETSC_CUDA_GPU || !*((PetscScalar**)x->data)){
-      ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUSP)
+    if (x->valid_GPU_array == PETSC_CUSP_GPU || !*((PetscScalar**)x->data)){
+      ierr = VecCUSPCopyFromGPU(x);CHKERRQ(ierr);
     }
 #endif
     *a = *((PetscScalar **)x->data);
@@ -247,9 +247,9 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
 
   PetscFunctionBegin;
   if (x->petscnative){
-#if defined(PETSC_HAVE_CUDA)
-    if (x->valid_GPU_array != PETSC_CUDA_UNALLOCATED) {
-      x->valid_GPU_array = PETSC_CUDA_CPU;
+#if defined(PETSC_HAVE_CUSP)
+    if (x->valid_GPU_array != PETSC_CUSP_UNALLOCATED) {
+      x->valid_GPU_array = PETSC_CUSP_CPU;
     }
 #endif
   } else {

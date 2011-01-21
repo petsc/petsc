@@ -3,15 +3,15 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCECU  = sacuda.cu
+SOURCECU  = sacusp.cu
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = sacuda.o
+OBJSC    = sacusp.o
 OBJSF    =
 LIBBASE  = libpetscksp
 DIRS     = 
 MANSEC   = PC
-LOCDIR   = src/ksp/pc/impls/sacuda/
+LOCDIR   = src/ksp/pc/impls/sacusp/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

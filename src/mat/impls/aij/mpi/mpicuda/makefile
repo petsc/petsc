@@ -1,17 +1,17 @@
-#requirespackage 'PETSC_HAVE_CUDA'
+#requirespackage 'PETSC_HAVE_CUSP'
 ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCECU = mpiaijcuda.cu
+SOURCECU = mpiaijcusp.cu
 SOURCEF	 =
 SOURCEH	 = 
-OBJSC	 = mpiaijcuda.o
+OBJSC	 = mpiaijcusp.o
 OBJSF	 =
 LIBBASE	 = libpetscmat
 DIRS	 =
 MANSEC	 = Mat
-LOCDIR	 = src/mat/impls/aij/mpi/mpicuda
+LOCDIR	 = src/mat/impls/aij/mpi/mpicusp
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

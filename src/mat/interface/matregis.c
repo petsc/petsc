@@ -40,10 +40,10 @@ extern PetscErrorCode  MatCreate_BlockMat(Mat);
 extern PetscErrorCode  MatCreate_Nest(Mat);
 extern PetscErrorCode  MatCreate_DD(Mat);
 
-#if defined PETSC_HAVE_CUDA
-extern PetscErrorCode  MatCreate_SeqAIJCUDA(Mat);
-extern PetscErrorCode  MatCreate_MPIAIJCUDA(Mat);
-extern PetscErrorCode  MatCreate_AIJCUDA(Mat);
+#if defined PETSC_HAVE_CUSP
+extern PetscErrorCode  MatCreate_SeqAIJCUSP(Mat);
+extern PetscErrorCode  MatCreate_MPIAIJCUSP(Mat);
+extern PetscErrorCode  MatCreate_AIJCUSP(Mat);
 #endif
 
 #if defined PETSC_HAVE_MATIM
@@ -120,10 +120,10 @@ PetscErrorCode  MatRegisterAll(const char path[])
 #if defined PETSC_HAVE_MATIM
   ierr = MatRegisterDynamic(MATIM,            path,"MatCreate_IM",   MatCreate_IM);CHKERRQ(ierr);
 #endif
-#if defined PETSC_HAVE_CUDA
-  ierr = MatRegisterDynamic(MATSEQAIJCUDA,     path,"MatCreate_SeqAIJCUDA",      MatCreate_SeqAIJCUDA);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATMPIAIJCUDA,     path,"MatCreate_MPIAIJCUDA",      MatCreate_MPIAIJCUDA);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATAIJCUDA,        path,"MatCreate_AIJCUDA",         MatCreate_AIJCUDA);CHKERRQ(ierr);
+#if defined PETSC_HAVE_CUSP
+  ierr = MatRegisterDynamic(MATSEQAIJCUSP,     path,"MatCreate_SeqAIJCUSP",      MatCreate_SeqAIJCUSP);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATMPIAIJCUSP,     path,"MatCreate_MPIAIJCUSP",      MatCreate_MPIAIJCUSP);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATAIJCUSP,        path,"MatCreate_AIJCUSP",         MatCreate_AIJCUSP);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

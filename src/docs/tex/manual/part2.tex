@@ -3125,16 +3125,43 @@ ksp(A_{00},Ap_{00})   & 0 \\
 0   & ksp(A_{11},Ap_{11}) \\
 \end{array} \right)
 \]
+
 block Gauss-Seidel,
+\[
+\left( \begin{array}{cc}
+I   & 0 \\
+0 & A^{-1}_{11} \\
+\end{array} \right)
+\left( \begin{array}{cc}
+I   & 0 \\
+-A_{10} & -A_{11} \\
+\end{array} \right)
+\left( \begin{array}{cc}
+A^{-1}_{00}   & 0 \\
+0 & I \\
+\end{array} \right)
+\]
+which is implemented as 
 \[
 \left( \begin{array}{cc}
 I   & 0 \\
 0 & ksp(A_{11},Ap_{11}) \\
 \end{array} \right)
+\left[
+\left( \begin{array}{cc}
+0   & 0 \\
+0 & I \\
+\end{array} \right)
++
 \left( \begin{array}{cc}
 I   & 0 \\
--A_{10} & I \\
+-A_{10} & -A_{11} \\
 \end{array} \right)
+\left( \begin{array}{cc}
+I   & 0 \\
+0 & 0 \\
+\end{array} \right)
+\right]
 \left( \begin{array}{cc}
 ksp(A_{00},Ap_{00})   & 0 \\
 0 & I \\

@@ -53,9 +53,9 @@ extern PetscErrorCode  PCCreate_TFS(PC);
 #if defined(PETSC_HAVE_PROMETHEUS)
 extern PetscErrorCode  PCCreate_Prometheus(PC);
 #endif
-#if defined(PETSC_HAVE_CUSP_SMOOTHED_AGGREGATION) && defined(PETSC_HAVE_CUDA)
-extern PetscErrorCode  PCCreate_SACUDA(PC);
-extern PetscErrorCode  PCCreate_BiCGStabCUDA(PC);
+#if defined(PETSC_HAVE_CUSP_SMOOTHED_AGGREGATION) && defined(PETSC_HAVE_CUSP)
+extern PetscErrorCode  PCCreate_SACUSP(PC);
+extern PetscErrorCode  PCCreate_BiCGStabCUSP(PC);
 #endif
 
 EXTERN_C_END
@@ -132,9 +132,9 @@ PetscErrorCode  PCRegisterAll(const char path[])
 #if defined(PETSC_HAVE_PROMETHEUS)
   ierr = PCRegisterDynamic(PCPROMETHEUS   ,path,"PCCreate_Prometheus",PCCreate_Prometheus);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_CUSP_SMOOTHED_AGGREGATION) && defined(PETSC_HAVE_CUDA)
-  ierr = PCRegisterDynamic(PCSACUDA       ,path,"PCCreate_SACUDA",PCCreate_SACUDA);CHKERRQ(ierr);
-  ierr = PCRegisterDynamic(PCBICGSTABCUDA ,path,"PCCreate_BiCGStabCUDA",PCCreate_BiCGStabCUDA);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUSP_SMOOTHED_AGGREGATION) && defined(PETSC_HAVE_CUSP)
+  ierr = PCRegisterDynamic(PCSACUSP       ,path,"PCCreate_SACUSP",PCCreate_SACUSP);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCBICGSTABCUSP ,path,"PCCreate_BiCGStabCUSP",PCCreate_BiCGStabCUSP);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

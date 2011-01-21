@@ -5,10 +5,10 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1 using GPU\n\n
 
 #include "petscdm.h"
 #include "petscsnes.h"
-#include "petsccuda.h"
+#include "petsccusp.h"
 
 extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*), ComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-PetscBool  useCUDA = PETSC_FALSE;
+PetscBool  useCUSP = PETSC_FALSE;
 
 int main(int argc,char **argv) 
 {
@@ -23,8 +23,8 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsGetString(PETSC_NULL,"-da_vec_type",typeName,256,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscStrstr(typeName,"cuda",&tmp);CHKERRQ(ierr);
-    if (tmp) useCUDA = PETSC_TRUE;
+    ierr = PetscStrstr(typeName,"cusp",&tmp);CHKERRQ(ierr);
+    if (tmp) useCUSP = PETSC_TRUE;
   }
 
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,-8,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
@@ -83,9 +83,9 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   ierr = DMGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
 
-  if (useCUDA) {
-    ierr = VecCUDAGetArrayRead(xlocal,&xarray);CHKERRQ(ierr);
-    ierr = VecCUDAGetArrayWrite(f,&farray);CHKERRQ(ierr);
+  if (useCUSP) {
+    ierr = VecCUSPGetArrayRead(xlocal,&xarray);CHKERRQ(ierr);
+    ierr = VecCUSPGetArrayWrite(f,&farray);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -117,8 +117,8 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
     catch(char* all){
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Thrust is not working\n");CHKERRQ(ierr);
     }
-    ierr = VecCUDARestoreArrayRead(xlocal,&xarray);CHKERRQ(ierr);
-    ierr = VecCUDARestoreArrayWrite(f,&farray);CHKERRQ(ierr);
+    ierr = VecCUSPRestoreArrayRead(xlocal,&xarray);CHKERRQ(ierr);
+    ierr = VecCUSPRestoreArrayWrite(f,&farray);CHKERRQ(ierr);
   } else {
     ierr = DMDAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(da,f,&ff);CHKERRQ(ierr);

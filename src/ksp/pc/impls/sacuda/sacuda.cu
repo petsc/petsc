@@ -3,7 +3,7 @@
 /*  -------------------------------------------------------------------- */
 
 /* 
-   Include files needed for the CUDA Smoothed Aggregation preconditioner:
+   Include files needed for the CUSP Smoothed Aggregation preconditioner:
      pcimpl.h - private include file intended for use by all preconditioners 
 */
 
@@ -14,23 +14,23 @@
 #include <cusp/precond/smoothed_aggregation.h>
 #define VecType char*
 #include "../src/vec/vec/impls/dvecimpl.h"
-#include "../src/mat/impls/aij/seq/seqcuda/cudamatimpl.h"
+#include "../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h"
 
-#define cudasaprecond cusp::precond::smoothed_aggregation<PetscInt,PetscScalar,cusp::device_memory>
+#define cuspsaprecond cusp::precond::smoothed_aggregation<PetscInt,PetscScalar,cusp::device_memory>
 
 /* 
-   Private context (data structure) for the SACUDA preconditioner.  
+   Private context (data structure) for the SACUSP preconditioner.  
 */
 typedef struct {
- cudasaprecond* SACUDA;
+ cuspsaprecond* SACUSP;
   /*int cycles; */
-} PC_SACUDA;
+} PC_SACUSP;
 
 /*#undef __FUNCT__
-#define __FUNCT__ "PCSACUDASetCycles"
-static PetscErrorCode PCSACUDASetCycles(PC pc, int n)
+#define __FUNCT__ "PCSACUSPSetCycles"
+static PetscErrorCode PCSACUSPSetCycles(PC pc, int n)
 {
-  PC_SACUDA      *sac = (PC_SACUDA*)pc->data;
+  PC_SACUSP      *sac = (PC_SACUSP*)pc->data;
 
   PetscFunctionBegin;
   sac->cycles = n;	 
@@ -40,7 +40,7 @@ static PetscErrorCode PCSACUDASetCycles(PC pc, int n)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCSetUp_SACUDA - Prepares for the use of the SACUDA preconditioner
+   PCSetUp_SACUSP - Prepares for the use of the SACUSP preconditioner
                     by setting data structures and options.   
 
    Input Parameter:
@@ -53,51 +53,51 @@ static PetscErrorCode PCSACUDASetCycles(PC pc, int n)
    the user, but instead is called by PCApply() if necessary.
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetUp_SACUDA"
-static PetscErrorCode PCSetUp_SACUDA(PC pc)
+#define __FUNCT__ "PCSetUp_SACUSP"
+static PetscErrorCode PCSetUp_SACUSP(PC pc)
 {
-  PC_SACUDA      *sa = (PC_SACUDA*)pc->data;
+  PC_SACUSP      *sa = (PC_SACUSP*)pc->data;
   PetscBool      flg = PETSC_FALSE;
   PetscErrorCode ierr;
-  Mat_SeqAIJCUDA *gpustruct;
+  Mat_SeqAIJCUSP *gpustruct;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUDA,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Currently only handles CUDA matrices");
+  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUSP,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Currently only handles CUSP matrices");
   if (pc->setupcalled != 0){
     try {
-      delete sa->SACUDA;
+      delete sa->SACUSP;
     } catch(char* ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
     } 
   }
   try {
-    ierr = MatCUDACopyToGPU(pc->pmat);CHKERRCUDA(ierr);
-    gpustruct  = (Mat_SeqAIJCUDA *)(pc->pmat->spptr);
-    sa->SACUDA = new cudasaprecond(*(CUSPMATRIX*)gpustruct->mat);
+    ierr = MatCUSPCopyToGPU(pc->pmat);CHKERRCUSP(ierr);
+    gpustruct  = (Mat_SeqAIJCUSP *)(pc->pmat->spptr);
+    sa->SACUSP = new cuspsaprecond(*(CUSPMATRIX*)gpustruct->mat);
   } catch(char* ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   } 
-  /*ierr = PetscOptionsInt("-pc_sacuda_cycles","Number of v-cycles to perform","PCSACUDASetCycles",sa->cycles,
+  /*ierr = PetscOptionsInt("-pc_sacusp_cycles","Number of v-cycles to perform","PCSACUSPSetCycles",sa->cycles,
     &sa->cycles,PETSC_NULL);CHKERRQ(ierr);*/
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCApplyRichardson_SACUDA"
-static PetscErrorCode PCApplyRichardson_SACUDA(PC pc, Vec b, Vec y, Vec w,PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
+#define __FUNCT__ "PCApplyRichardson_SACUSP"
+static PetscErrorCode PCApplyRichardson_SACUSP(PC pc, Vec b, Vec y, Vec w,PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
-  PC_SACUDA      *sac = (PC_SACUDA*)pc->data;
+  PC_SACUSP      *sac = (PC_SACUSP*)pc->data;
   PetscErrorCode ierr;
   CUSPARRAY      *barray,*yarray;
   
   PetscFunctionBegin;
   /* how to incorporate dtol, guesszero, w?*/
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = VecCUDAGetArrayRead(b,&barray);CHKERRQ(ierr);
-  ierr = VecCUDAGetArrayReadWrite(y,&yarray);CHKERRQ(ierr);
+  ierr = VecCUSPGetArrayRead(b,&barray);CHKERRQ(ierr);
+  ierr = VecCUSPGetArrayReadWrite(y,&yarray);CHKERRQ(ierr);
   cusp::default_monitor<PetscScalar> monitor(*barray,its,rtol,abstol);
-  sac->SACUDA->solve(*barray,*yarray,monitor);
+  sac->SACUSP->solve(*barray,*yarray,monitor);
   *outits = monitor.iteration_count();
   if (monitor.converged()){
     /* how to discern between converging from RTOL or ATOL?*/
@@ -106,14 +106,14 @@ static PetscErrorCode PCApplyRichardson_SACUDA(PC pc, Vec b, Vec y, Vec w,PetscR
     *reason = PCRICHARDSON_CONVERGED_ITS;
   }
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
-  ierr = VecCUDARestoreArrayRead(b,&barray);CHKERRQ(ierr);
-  ierr = VecCUDARestoreArrayReadWrite(y,&yarray);CHKERRQ(ierr);
+  ierr = VecCUSPRestoreArrayRead(b,&barray);CHKERRQ(ierr);
+  ierr = VecCUSPRestoreArrayReadWrite(y,&yarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCApply_SACUDA - Applies the SACUDA preconditioner to a vector.
+   PCApply_SACUSP - Applies the SACUSP preconditioner to a vector.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -125,39 +125,39 @@ static PetscErrorCode PCApplyRichardson_SACUDA(PC pc, Vec b, Vec y, Vec w,PetscR
    Application Interface Routine: PCApply()
  */
 #undef __FUNCT__  
-#define __FUNCT__ "PCApply_SACUDA"
-static PetscErrorCode PCApply_SACUDA(PC pc,Vec x,Vec y)
+#define __FUNCT__ "PCApply_SACUSP"
+static PetscErrorCode PCApply_SACUSP(PC pc,Vec x,Vec y)
 {
-  PC_SACUDA      *sac = (PC_SACUDA*)pc->data;
+  PC_SACUSP      *sac = (PC_SACUSP*)pc->data;
   PetscErrorCode ierr;
   PetscBool      flg1,flg2;
   CUSPARRAY      *xarray,*yarray;
 
   PetscFunctionBegin;
   /*how to apply a certain fixed number of iterations?*/
-  ierr = PetscTypeCompare((PetscObject)x,VECSEQCUDA,&flg1);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)y,VECSEQCUDA,&flg2);CHKERRQ(ierr);
-  if (!(flg1 && flg2)) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP, "Currently only handles CUDA vectors");
-  if (!sac->SACUDA) {
-    ierr = PCSetUp_SACUDA(pc);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)x,VECSEQCUSP,&flg1);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)y,VECSEQCUSP,&flg2);CHKERRQ(ierr);
+  if (!(flg1 && flg2)) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP, "Currently only handles CUSP vectors");
+  if (!sac->SACUSP) {
+    ierr = PCSetUp_SACUSP(pc);CHKERRQ(ierr);
   }
   ierr = VecSet(y,0.0);CHKERRQ(ierr);
-  ierr = VecCUDAGetArrayRead(x,&xarray);CHKERRQ(ierr);
-  ierr = VecCUDAGetArrayWrite(y,&yarray);CHKERRQ(ierr);
+  ierr = VecCUSPGetArrayRead(x,&xarray);CHKERRQ(ierr);
+  ierr = VecCUSPGetArrayWrite(y,&yarray);CHKERRQ(ierr);
   try {
-    cusp::multiply(*sac->SACUDA,*xarray,*yarray);
+    cusp::multiply(*sac->SACUSP,*xarray,*yarray);
   } catch(char* ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   } 
-  ierr = VecCUDARestoreArrayRead(x,&xarray);CHKERRQ(ierr);
-  ierr = VecCUDARestoreArrayWrite(y,&yarray);CHKERRQ(ierr);
+  ierr = VecCUSPRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
+  ierr = VecCUSPRestoreArrayWrite(y,&yarray);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
 /*
-   PCDestroy_SACUDA - Destroys the private context for the SACUDA preconditioner
-   that was created with PCCreate_SACUDA().
+   PCDestroy_SACUSP - Destroys the private context for the SACUSP preconditioner
+   that was created with PCCreate_SACUSP().
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -165,18 +165,18 @@ static PetscErrorCode PCApply_SACUDA(PC pc,Vec x,Vec y)
    Application Interface Routine: PCDestroy()
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_SACUDA"
-static PetscErrorCode PCDestroy_SACUDA(PC pc)
+#define __FUNCT__ "PCDestroy_SACUSP"
+static PetscErrorCode PCDestroy_SACUSP(PC pc)
 {
-  PC_SACUDA      *sac  = (PC_SACUDA*)pc->data;
+  PC_SACUSP      *sac  = (PC_SACUSP*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (sac->SACUDA) {
+  if (sac->SACUSP) {
     try {
-      delete sac->SACUDA;
+      delete sac->SACUSP;
     } catch(char* ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error: %s", ex);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
     } 
 }
 
@@ -188,13 +188,13 @@ static PetscErrorCode PCDestroy_SACUDA(PC pc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetFromOptions_SACUDA"
-static PetscErrorCode PCSetFromOptions_SACUDA(PC pc)
+#define __FUNCT__ "PCSetFromOptions_SACUSP"
+static PetscErrorCode PCSetFromOptions_SACUSP(PC pc)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SACUDA options");CHKERRQ(ierr);			 
+  ierr = PetscOptionsHead("SACUSP options");CHKERRQ(ierr);			 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -205,10 +205,10 @@ static PetscErrorCode PCSetFromOptions_SACUDA(PC pc)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCCreate_SACUDA"
-PetscErrorCode  PCCreate_SACUDA(PC pc)
+#define __FUNCT__ "PCCreate_SACUSP"
+PetscErrorCode  PCCreate_SACUSP(PC pc)
 {
-  PC_SACUDA      *sac;
+  PC_SACUSP      *sac;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -216,14 +216,14 @@ PetscErrorCode  PCCreate_SACUDA(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr      = PetscNewLog(pc,PC_SACUDA,&sac);CHKERRQ(ierr);
+  ierr      = PetscNewLog(pc,PC_SACUSP,&sac);CHKERRQ(ierr);
   pc->data  = (void*)sac;
 
   /*
      Initialize the pointer to zero
      Initialize number of v-cycles to default (1)
   */
-  sac->SACUDA          = 0;
+  sac->SACUSP          = 0;
   /*sac->cycles=1;*/
 
 
@@ -234,13 +234,13 @@ PetscErrorCode  PCCreate_SACUDA(PC pc)
       choose not to provide a couple of these functions since they are
       not needed.
   */
-  pc->ops->apply               = PCApply_SACUDA;
+  pc->ops->apply               = PCApply_SACUSP;
   pc->ops->applytranspose      = 0;
-  pc->ops->setup               = PCSetUp_SACUDA;
-  pc->ops->destroy             = PCDestroy_SACUDA;
-  pc->ops->setfromoptions      = PCSetFromOptions_SACUDA;
+  pc->ops->setup               = PCSetUp_SACUSP;
+  pc->ops->destroy             = PCDestroy_SACUSP;
+  pc->ops->setfromoptions      = PCSetFromOptions_SACUSP;
   pc->ops->view                = 0;
-  pc->ops->applyrichardson     = PCApplyRichardson_SACUDA;
+  pc->ops->applyrichardson     = PCApplyRichardson_SACUSP;
   pc->ops->applysymmetricleft  = 0;
   pc->ops->applysymmetricright = 0;
   PetscFunctionReturn(0);

@@ -75,8 +75,8 @@ E*/
 #define PCPFMG            "pfmg"
 #define PCSYSPFMG         "syspfmg"
 #define PCREDISTRIBUTE    "redistribute"
-#define PCSACUDA          "sacuda"
-#define PCBICGSTABCUDA    "bicgstabcuda"
+#define PCSACUSP          "sacusp"
+#define PCBICGSTABCUSP    "bicgstabcusp"
 #define PCSVD             "svd"
 
 /* Logging support */
@@ -397,7 +397,7 @@ extern PetscErrorCode  PCPythonSetType(PC,const char[]);
 extern PetscErrorCode  PCSetDM(PC,DM);
 extern PetscErrorCode  PCGetDM(PC,DM*);
 
-extern PetscErrorCode  PCBiCGStabCUDASetTolerance(PC,PetscReal);
+extern PetscErrorCode  PCBiCGStabCUSPSetTolerance(PC,PetscReal);
 
 PETSC_EXTERN_CXX_END
 

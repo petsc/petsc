@@ -3,15 +3,15 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCECU  = bicgstabcuda.cu
+SOURCECU  = bicgstabcusp.cu
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = bicgstabcuda.o
+OBJSC    = bicgstabcusp.o
 OBJSF    =
 LIBBASE  = libpetscksp
 DIRS     = 
 MANSEC   = PC
-LOCDIR   = src/ksp/pc/impls/bicgstabcuda/
+LOCDIR   = src/ksp/pc/impls/bicgstabcusp/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

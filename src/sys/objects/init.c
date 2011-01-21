@@ -66,8 +66,8 @@ PetscErrorCode  (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintf_
 PetscErrorCode  (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDefault;
 #endif
 /*
-  This is needed to turn on/off cuda synchronization */
-PetscBool   synchronizeCUDA = PETSC_FALSE;
+  This is needed to turn on/off cusp synchronization */
+PetscBool   synchronizeCUSP = PETSC_FALSE;
 
 /* ------------------------------------------------------------------------------*/
 /* 
@@ -588,15 +588,15 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = PetscInfoDeactivateClass(PETSC_NULL);CHKERRQ(ierr);
   }
 
-#if defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_CUSP)
   ierr = PetscOptionsHasName(PETSC_NULL,"-log_summary",&flg3);CHKERRQ(ierr);
   if (flg3) {
     flg1 = PETSC_TRUE;
   } else {
     flg1 = PETSC_FALSE;
   }
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-cuda_synchronize",&flg1,PETSC_NULL);CHKERRQ(ierr);
-  if (flg1) synchronizeCUDA = PETSC_TRUE;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-cusp_synchronize",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  if (flg1) synchronizeCUSP = PETSC_TRUE;
 #endif
 
   PetscFunctionReturn(0);

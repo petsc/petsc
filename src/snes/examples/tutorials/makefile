@@ -632,10 +632,10 @@ runex19_superlu_dist_2:
 	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
 	   else echo "Possible problem with ex19_superlu_dist, diffs above"; fi; \
 	   ${RM} -f ex19.tmp
-runex19_cuda:
-	-@${MPIEXEC} -n 1 ./ex19 da_vec_type cuda -da_mat_type aijcuda -pc_type none -dmmg_nlevels 1 -snes_monitor_short -snes_rtol 1.e-5 > ex19.tmp 2>&1; \
-	   if (${DIFF} output/ex19_cuda.out ex19.tmp) then true; \
-	   else echo "Possible problem with ex19_cuda, diffs above"; fi; \
+runex19_cusp:
+	-@${MPIEXEC} -n 1 ./ex19 da_vec_type cusp -da_mat_type aijcusp -pc_type none -dmmg_nlevels 1 -snes_monitor_short -snes_rtol 1.e-5 > ex19.tmp 2>&1; \
+	   if (${DIFF} output/ex19_cusp.out ex19.tmp) then true; \
+	   else echo "Possible problem with ex19_cusp, diffs above"; fi; \
 	   ${RM} -f ex19.tmp
 runex21:
 	-@${MPIEXEC} -n 4 ./ex21  -snes_mf -snes_monitor_short -nox > ex21_1.tmp 2>&1; \
@@ -778,6 +778,6 @@ TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_3 runex19_4 runex19_fieldspl
 TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu ex19.rm 
 TESTEXAMPLES_SUPERLU_DIST      = ex19.PETSc runex19_superlu_dist runex19_superlu_dist_2 ex19.rm 
 TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm 
-TESTEXAMPLES_CUDA              = ex19.PETSc runex19_cuda ex19.rm 
+TESTEXAMPLES_CUSP              = ex19.PETSc runex19_cusp ex19.rm 
 
 include ${PETSC_DIR}/conf/test

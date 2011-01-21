@@ -6,10 +6,10 @@ extern PetscErrorCode  VecCreate_Seq(Vec);
 extern PetscErrorCode  VecCreate_MPI(Vec);
 extern PetscErrorCode  VecCreate_Standard(Vec);
 extern PetscErrorCode  VecCreate_Shared(Vec);
-#if defined(PETSC_HAVE_CUDA)
-extern PetscErrorCode  VecCreate_SeqCUDA(Vec);
-extern PetscErrorCode  VecCreate_MPICUDA(Vec);
-extern PetscErrorCode  VecCreate_CUDA(Vec);
+#if defined(PETSC_HAVE_CUSP)
+extern PetscErrorCode  VecCreate_SeqCUSP(Vec);
+extern PetscErrorCode  VecCreate_MPICUSP(Vec);
+extern PetscErrorCode  VecCreate_CUSP(Vec);
 #endif
 #if 0
 #if defined(PETSC_HAVE_SIEVE)
@@ -44,10 +44,10 @@ PetscErrorCode  VecRegisterAll(const char path[])
   ierr = VecRegisterDynamic(VECMPI,      path, "VecCreate_MPI",      VecCreate_MPI);CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VECSTANDARD, path, "VecCreate_Standard", VecCreate_Standard);CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VECSHARED,   path, "VecCreate_Shared",   VecCreate_Shared);CHKERRQ(ierr);
-#if defined PETSC_HAVE_CUDA
-  ierr = VecRegisterDynamic(VECSEQCUDA,  path, "VecCreate_SeqCUDA",  VecCreate_SeqCUDA);CHKERRQ(ierr);
-  ierr = VecRegisterDynamic(VECMPICUDA,  path, "VecCreate_MPICUDA",  VecCreate_MPICUDA);CHKERRQ(ierr);
-  ierr = VecRegisterDynamic(VECCUDA,     path, "VecCreate_CUDA",     VecCreate_CUDA);CHKERRQ(ierr);
+#if defined PETSC_HAVE_CUSP
+  ierr = VecRegisterDynamic(VECSEQCUSP,  path, "VecCreate_SeqCUSP",  VecCreate_SeqCUSP);CHKERRQ(ierr);
+  ierr = VecRegisterDynamic(VECMPICUSP,  path, "VecCreate_MPICUSP",  VecCreate_MPICUSP);CHKERRQ(ierr);
+  ierr = VecRegisterDynamic(VECCUSP,     path, "VecCreate_CUSP",     VecCreate_CUSP);CHKERRQ(ierr);
 #endif
 #if 0
 #if defined(PETSC_HAVE_SIEVE)

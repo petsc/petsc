@@ -287,8 +287,8 @@ struct _p_Mat {
   PetscBool              symmetric_set,hermitian_set,structurally_symmetric_set,spd_set; /* if true, then corresponding flag is correct*/
   PetscBool              symmetric_eternal;
   PetscBool              nooffprocentries,nooffproczerorows;
-#if defined(PETSC_HAVE_CUDA)
-  PetscCUDAFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
+#if defined(PETSC_HAVE_CUSP)
+  PetscCUSPFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
 #endif
   void                   *spptr;          /* pointer for special library like SuperLU */
   MatSolverPackage       solvertype;
@@ -990,6 +990,6 @@ extern PetscLogEvent  MAT_Getsymtranspose, MAT_Transpose_SeqAIJ, MAT_Getsymtrans
 
 extern PetscLogEvent  MATMFFD_Mult;
 extern PetscLogEvent  MAT_GetMultiProcBlock;
-extern PetscLogEvent  MAT_CUDACopyToGPU;
+extern PetscLogEvent  MAT_CUSPCopyToGPU;
 
 #endif

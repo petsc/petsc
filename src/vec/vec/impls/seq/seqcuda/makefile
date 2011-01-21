@@ -1,16 +1,16 @@
-#requirespackage 'PETSC_HAVE_CUDA'
+#requirespackage 'PETSC_HAVE_CUSP'
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCECU = veccuda.cu
+SOURCECU = veccusp.cu
 SOURCEF  =
-SOURCEH  = cudavecimpl.h
-OBJSC    = veccuda.o
+SOURCEH  = cuspvecimpl.h
+OBJSC    = veccusp.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/vec/impls/seq/seqcuda/
+LOCDIR   = src/vec/vec/impls/seq/seqcusp/
 DIRS     = 
 
 include ${PETSC_DIR}/conf/variables

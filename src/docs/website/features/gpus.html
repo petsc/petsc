@@ -67,16 +67,16 @@ on some aspects of GPU usage from PETSc.</a><br>
         </li>
         <li>Quick summary of usage</li>
         <ul>
-          <li>The VecType VECSEQCUDA, VECMPICUDA, or VECCUDA maybe used
-with VecSetType() or -vec_type seqcuda,mpicuda, or cuda when
+          <li>The VecType VECSEQCUSP, VECMPICUSP, or VECCUSP maybe used
+with VecSetType() or -vec_type seqcusp,mpicusp, or cusp when
 VecSetFromOptions() is used.<br>
           </li>
-          <li>The MatType MATSEQAIJCUDA, MATMPIAIJCUDA, or MATAIJCUDA
-maybe used with MatSetType or -mat_type seqaijcuda,mpiaijcuda, or
-aijcuda when MatSetOptions() is used.<br>
+          <li>The MatType MATSEQAIJCUSP, MATMPIAIJCUSP, or MATAIJCUSP
+maybe used with MatSetType or -mat_type seqaijcusp,mpiaijcusp, or
+aijcusp when MatSetOptions() is used.<br>
           </li>
           <li>If you are creating the vectors and matrices with a DM
-you can use -da_vec_type cuda and -da_mat_type cuda</li>
+you can use -da_vec_type cusp and -da_mat_type cusp</li>
           <li>It is useful to develop your code with the default
 vectors and then run production runs with the command line options to
 use the GPU since debugging on GPUs is difficult.</li>
