@@ -39,7 +39,7 @@ class Configure(PETSc.package.NewPackage):
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
       g.write('FC         = '+self.setCompilers.getCompiler()+'\n')
-      g.write('FFLAGS     = '+self.setCompilers.getCompilerFlags()+' -DVOID_POINTER_SIZE_'+str(self.types.sizes['known-sizeof-void_p'])+'\n')
+      g.write('FFLAGS     = '+self.setCompilers.getCompilerFlags()+' -DVOID_POINTER_SIZE_'+str(self.types.sizes['known-sizeof-void-p'])+'\n')
       # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag      
       # set fortran name mangling
       if self.compilers.fortranMangling == 'underscore':
@@ -48,7 +48,7 @@ class Configure(PETSc.package.NewPackage):
         g.write('CFDEFS     = -DFORTRAN_CAPS\n')
       else:
         g.write('CFDEFS     = -DFORTRAN_DOUBLE_UNDERSCORE\n') 
-      g.write('CFFLAGS    = ${CFDEFS} -DVOID_POINTER_SIZE_'+str(self.types.sizes['known-sizeof-void_p'])+'\n')
+      g.write('CFFLAGS    = ${CFDEFS} -DVOID_POINTER_SIZE_'+str(self.types.sizes['known-sizeof-void-p'])+'\n')
       self.setCompilers.popLanguage()
       
     else:
