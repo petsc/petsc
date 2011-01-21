@@ -232,15 +232,15 @@ PetscErrorCode VecCUSPCopyFromGPUSome(Vec v,CUSPINTARRAYCPU *indicesCPU,CUSPINTA
     s->array           = array;
     s->array_allocated = array;
   }
-  if (v->valid_GPU_array == PETSC_CUDA_GPU) {
-    ierr = PetscLogEventBegin(VEC_CUDACopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
-    ierr = VecCUDAGetArrayRead(v,&varray);CHKERRQ(ierr);
+  if (v->valid_GPU_array == PETSC_CUSP_GPU) {
+    ierr = PetscLogEventBegin(VEC_CUSPCopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
+    ierr = VecCUSPGetArrayRead(v,&varray);CHKERRQ(ierr);
     thrust::copy(
 		 thrust::make_permutation_iterator(varray->begin(),indicesGPU->begin()),
 		 thrust::make_permutation_iterator(varray->begin(),indicesGPU->end()),
 		 thrust::make_permutation_iterator(s->array,indicesCPU->begin()));
-    ierr = VecCUDARestoreArrayRead(v,&varray);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(VEC_CUDACopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
+    ierr = VecCUSPRestoreArrayRead(v,&varray);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(VEC_CUSPCopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
   }
   /*v->valid_GPU_array = PETSC_CUSP_CPU; */
   PetscFunctionReturn(0);
