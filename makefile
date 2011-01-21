@@ -318,7 +318,7 @@ update-web:
 	@cd ${PETSC_DIR}/src/docs; make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} bib2html; \
 	/usr/bin/rsync -az -C --exclude=BitKeeper --exclude=documentation/installation.html \
 	  ${PETSC_DIR}/src/docs/website/ petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as
-	@cd ${PETSC_DIR}/src/docs; /usr/bin/rsync -az developers.pdf petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as/developers/
+	@cd ${PETSC_DIR}/docs; /usr/bin/rsync -az developers.pdf petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as/developers/
 
 #
 #  builds a single list of files for each PETSc library so they may all be built in parallel
