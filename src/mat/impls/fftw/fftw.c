@@ -146,7 +146,7 @@ PetscErrorCode  MatCreateSeqFFTW(MPI_Comm comm,PetscInt ndim,const PetscInt dim[
   for (i=0; i<ndim; i++){
     if (dim[i] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"dim[%d]=%d must be > 0",i,dim[i]);
     m *= dim[i];
-  }
+b  }
   ierr = MatSetSizes(*A,m,m,m,m);CHKERRQ(ierr);  
   ierr = PetscObjectChangeTypeName((PetscObject)*A,MATSEQFFTW);CHKERRQ(ierr);
 

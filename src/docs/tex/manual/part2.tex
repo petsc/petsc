@@ -3192,7 +3192,7 @@ A_{00}^{-1}   & 0 \\
 0 & I \\
 \end{array} \right).
 \]
-These can be access with \trl{-pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative>} \findex{-pc_fieldsplit_type} or the function PCFieldSplitSetType().
+These can be access with \trl{-pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative>} \findex{-pc_fieldsplit_type} or the function PCFieldSplitSetType(). The option prefixes for the internal KSPs are given by \trl{-fieldsplit_name_}.
 
 For two by two blocks only there are another family of solvers, based on Schur complements. The inverse of the Schur complement factorization is  
 \[
@@ -3295,8 +3295,7 @@ ksp(A_{00},Ap_{00})   & 0 \\
 \]
 since the Schur complement for saddle point problems is negative definite. IS THIS ALWAYS TRUE, SHOULD THERE BE A FLAG TO SET THE SIGN?
 
-The option prefixes for the internal KSPs are given by \trl{-fieldsplit_name_}.
-
+You can use the PCLSC preconditioner for the Schur complement with -fieldsplit_1_pc_type lsc.
 
 \section{Solving Singular Systems}
 \label{sec_singular}

@@ -1289,14 +1289,14 @@ PetscErrorCode  PCFieldSplitSetType(PC pc,PCCompositeType type)
      For PCFieldSplitGetKSP() when field number is
      0 it returns the KSP associated with -fieldsplit_0_ while field number 1 gives -fieldsplit_1_ KSP. By default
      A11 is used to construct a preconditioner for S, use PCFieldSplitSchurPrecondition() to turn on or off this
-     option.
+     option. You can use the preconditioner PCLSC to precondition the Schur complement with -fieldsplit_1_pc_type lsc
      
      If only one set of indices (one IS) is provided with PCFieldSplitSetIS() then the complement of that IS
      is used automatically for a second block.
 
    Concepts: physics based preconditioners, block preconditioners
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, Block_Preconditioners
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, Block_Preconditioners, PCLSC,
            PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSchurPrecondition()
 M*/
 

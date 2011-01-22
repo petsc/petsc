@@ -9,6 +9,7 @@ typedef struct {
   KSP        kspL;
   Vec        scale;
   Vec        x0,y0,x1;
+  Mat        L;            /* keep a copy to reuse when obtained with L = A10*A01 */
 } PC_LSC;
 
 #undef __FUNCT__  
@@ -22,6 +23,7 @@ static PetscErrorCode PCLSCAllocate_Private(PC pc)
   PetscFunctionBegin;
   if (lsc->allocated) PetscFunctionReturn(0);
   ierr = KSPCreate(((PetscObject)pc)->comm,&lsc->kspL);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)lsc->kspL,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr = KSPSetType(lsc->kspL,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(lsc->kspL,((PetscObject)pc)->prefix);CHKERRQ(ierr);
   ierr = KSPAppendOptionsPrefix(lsc->kspL,"lsc_");CHKERRQ(ierr);
@@ -41,13 +43,22 @@ static PetscErrorCode PCLSCAllocate_Private(PC pc)
 static PetscErrorCode PCSetUp_LSC(PC pc)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
-  Mat             L,Lp;
+  Mat             L,Lp,B,C;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PCLSCAllocate_Private(pc);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)pc->pmat,"LSC_L",(PetscObject*)&L);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)pc->pmat,"LSC_Lp",(PetscObject*)&Lp);CHKERRQ(ierr);
+  if (!L) {
+    ierr = MatSchurComplementGetSubmatrices(pc->mat,PETSC_NULL,PETSC_NULL,&B,&C,PETSC_NULL);CHKERRQ(ierr);
+    if (!lsc->L) {
+      ierr = MatMatMult(C,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&lsc->L);CHKERRQ(ierr);
+    } else {
+      ierr = MatMatMult(C,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&lsc->L);CHKERRQ(ierr);
+    }
+    Lp = L = lsc->L;
+  }
   if (lsc->scale) {
     Mat Ap;
     ierr = MatSchurComplementGetSubmatrices(pc->mat,PETSC_NULL,&Ap,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -95,6 +106,7 @@ static PetscErrorCode PCDestroy_LSC(PC pc)
   if (lsc->x1)    {ierr = VecDestroy(lsc->x1);CHKERRQ(ierr);}
   if (lsc->scale) {ierr = VecDestroy(lsc->scale);CHKERRQ(ierr);}
   if (lsc->kspL)  {ierr = KSPDestroy(lsc->kspL);CHKERRQ(ierr);}
+  if (lsc->L)     {ierr = MatDestroy(lsc->L);CHKERRQ(ierr);}
   ierr = PetscFree(lsc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -115,6 +127,24 @@ static PetscErrorCode PCSetFromOptions_LSC(PC pc)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_LSC"
+static PetscErrorCode PCView_LSC(PC pc,PetscViewer viewer)
+{
+  PC_LSC           *jac = (PC_LSC*)pc->data;
+  PetscErrorCode   ierr;
+  PetscBool        iascii;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = KSPView(jac->kspL,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for LSC",((PetscObject)viewer)->type_name);
+  PetscFunctionReturn(0);
+}
+
 /*MC
      PCLSC - Preconditioning for Schur complements, based on Least Squares Commutators
 
@@ -128,18 +158,18 @@ static PetscErrorCode PCSetFromOptions_LSC(PC pc)
    it can be used for any Schur complement system.  Consider the Schur complement
 
 .vb
-   S = D - C inv(A) B
+   S = A11 - A10 inv(A00) A01
 .ve
 
-   PCLSC currently doesn't do anything with D, so let's assume it is 0.  The idea is that a good approximation to
+   PCLSC currently doesn't do anything with A11, so let's assume it is 0.  The idea is that a good approximation to
    inv(S) is given by
 
 .vb
-   inv(CB) C A B inv(CB)
+   inv(A10 A01) A10 A00 A01 inv(A10 A01)
 .ve
 
-   At some point, we'll be able to form the product CB for you, but for now the application has to provide it (this is
-   usually more efficient anyway).  In the case of incompressible flow, CB is a Laplacian, call it L.  The current
+   The product A10 A01 can be computed for you, but you can provide it (this is
+   usually more efficient anyway).  In the case of incompressible flow, A10 A10 is a Laplacian, call it L.  The current
    interface is to hang L and a preconditioning matrix Lp on the preconditioning matrix.
 
    If you had called KSPSetOperators(ksp,S,Sp,flg), S should have type MATSCHURCOMPLEMENT and Sp can be any type you
@@ -192,7 +222,7 @@ PetscErrorCode  PCCreate_LSC(PC pc)
   pc->ops->setup               = PCSetUp_LSC;
   pc->ops->destroy             = PCDestroy_LSC;
   pc->ops->setfromoptions      = PCSetFromOptions_LSC;
-  pc->ops->view                = 0;
+  pc->ops->view                = PCView_LSC;
   pc->ops->applyrichardson     = 0;
   PetscFunctionReturn(0);
 }
