@@ -811,10 +811,9 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
 +  -pc_mg_cycles <1>: 1 for V cycle, 2 for W-cycle (MGSetCycles)
 .  -pc_mg_smoothup <1>: Number of post-smoothing steps (MGSetNumberSmoothUp)
 .  -pc_mg_smoothdown <1>: Number of pre-smoothing steps (MGSetNumberSmoothDown)
--  -pc_mg_type <multiplicative>: (one of) additive multiplicative full cascade kascade
-   
+   -pc_mg_type <multiplicative>: (one of) additive multiplicative full cascade kascade
    ML options:
-+  -pc_ml_PrintLevel <0>: Print level (ML_Set_PrintLevel)
+.  -pc_ml_PrintLevel <0>: Print level (ML_Set_PrintLevel)
 .  -pc_ml_maxNlevels <10>: Maximum number of levels (None)
 .  -pc_ml_maxCoarseSize <1>: Maximum coarsest mesh size (ML_Aggregate_Set_MaxCoarseSize)
 .  -pc_ml_CoarsenScheme <Uncoupled>: (one of) Uncoupled Coupled MIS METIS

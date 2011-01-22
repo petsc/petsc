@@ -3044,11 +3044,11 @@ two levels of fill in the incomplete factorization.
 
 Block matrices represent an important class of problems in numerical
 linear algebra and offer the possibility of far more efficient
-iterative solvers than just treating the matrices as black box. In
+iterative solvers than just treating the entire matrix as black box. In
 this section we are using the common linear algebra definition of
 block matrices where matrices are divided in a small (two, three or
 so) number of very large blocks. Where the blocks arise naturally from
-the underlying physics or discretization of the problem. Under a
+the underlying physics or discretization of the problem, for example, the velocity and pressure. Under a
 certain numbering of unknowns the matrix can be written as
 \[
 \left( \begin{array}{cccc}
@@ -3058,11 +3058,10 @@ A_{20}   & A_{21} & A_{22} & A_{23} \\
 A_{30}   & A_{31} & A_{32} & A_{33} \\
 \end{array} \right).
 \]
+Where each $ A_{ij}$ is an entire block.
 In a parallel computer the matrices are not stored explicitly this way
 however, each process will own some of the rows of $A_{0*}$, $A_{1*}$
-etc. On a process the blocks may be stored with rows/columns
-interlaced or one block followed by another. For example,
-noninterlaced,
+etc. On a process the blocks may be stored one block followed by another
 \[
 \left( \begin{array}{ccccccc}
 A_{{00}_{00}}   & A_{{00}_{01}} & A_{{00}_{02}} & ... & A_{{01}_{00}} & A_{{01}_{02}} & ...  \\
@@ -3074,7 +3073,7 @@ A_{{10}_{10}}   & A_{{10}_{11}} & A_{{10}_{12}} & ... & A_{{11}_{10}} & A_{{11}_
 ... \\
 \end{array} \right)
 \]
-interlaced, with two blocks 
+or interlaced, for example, with two blocks 
 \[
 \left( \begin{array}{ccccc}
 A_{{00}_{00}}   & A_{{01}_{00}} &  A_{{00}_{01}} & A_{{01}_{01}} &  ... \\
@@ -3089,18 +3088,20 @@ Note that for interlaced storage the number of rows/columns of each
 block must be the same size. Matrices obtained with DMGetMatrix()
 where the DM is a a DMDA are always stored interlaced.
 
-The PETSc PCFIELDSPLIT preconditioner is used to implement that
-``block matrix'' solvers. There are three ways to provide the
+The PETSc PCFIELDSPLIT preconditioner is used to implement the
+``block'' solvers in PETSc. There are three ways to provide the
 information that defines the blocks.  If the matrices are stored as
 interlaced then PCFieldSplitSetFields() can be called repeatedly to
 indicate which fields belong to each block. More generally
 PCFieldSplitSetIS() can be used to indicate exactly which rows/columns
-of the matrix belong to a particular block. With these two approaches
+of the matrix belong to a particular block. You can provide names for each block with these routines, if you do not provide 
+names they are numbered from 0. With these two approaches
 the blocks may overlap (though generally they will not). If only one
 block is defined then the complement of the matrices is used to define
 the other block. Finally the
 option \trl{-pc_fieldsplit_detect_saddle_point}
-\findex{-pc_fieldsplit_detect_saddle_point} causes two blocks to be found, one associated with all rows/columns that have zeros on the diagonals and the rest.
+\findex{-pc_fieldsplit_detect_saddle_point} causes two diagonal blocks to be found, one associated with all
+rows/columns that have zeros on the diagonals and the rest.
 
 For simplicity in the rest of the section we restrict our matrices to two by two blocks. So the matrix is 
 \[
@@ -3116,7 +3117,8 @@ Ap_{00}   & Ap_{01} \\
 Ap_{10}   & Ap_{11} \\
 \end{array} \right).
 \]
-For notational simplicity define $ ksp(A,Ap) $ to mean approximately solving a linear system using KSP with operator $ A$ and preconditioner built from matrix $Ap$. 
+For notational simplicity define $ ksp(A,Ap) $ to mean approximately solving a linear system using KSP with operator $ A$ and
+preconditioner built from matrix $Ap$. 
 
 For matrices defined with any number of blocks there are three ``block'' algorithms available: block Jacobi, 
 \[
@@ -3134,14 +3136,14 @@ I   & 0 \\
 \end{array} \right)
 \left( \begin{array}{cc}
 I   & 0 \\
--A_{10} & -A_{11} \\
+-A_{10} & I \\
 \end{array} \right)
 \left( \begin{array}{cc}
 A^{-1}_{00}   & 0 \\
 0 & I \\
 \end{array} \right)
 \]
-which is implemented as 
+which is implemented\footnote{This may seem an odd way to implement since it involves the ``extra'' multiply by $ -A_{11}$. The reason is this is implemented this way is that this approach works for any number of blocks that may overlap.} as 
 \[
 \left( \begin{array}{cc}
 I   & 0 \\
@@ -3170,7 +3172,7 @@ ksp(A_{00},Ap_{00})   & 0 \\
  and symmetric block Gauss-Seidel
 \[
 \left( \begin{array}{cc}
-ksp(A_{00},Ap_{00})   & 0 \\
+A_{00}^{-1}   & 0 \\
 0 & I \\
 \end{array} \right)
 \left( \begin{array}{cc}
@@ -3179,18 +3181,18 @@ I   & -A_{01} \\
 \end{array} \right)
 \left( \begin{array}{cc}
 A_{00}   & 0 \\
-0 & ksp(A_{11},Ap_{11}) \\
+0 & A_{11}^{-1} \\
 \end{array} \right)
 \left( \begin{array}{cc}
 I   & 0 \\
 -A_{10} & I \\
 \end{array} \right)
 \left( \begin{array}{cc}
-ksp(A_{00},Ap_{00})   & 0 \\
+A_{00}^{-1}   & 0 \\
 0 & I \\
 \end{array} \right).
 \]
-These can be access with \trl{-pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative} \findex{-pc_fieldsplit_type} or the function PCFieldSplitSetType().
+These can be access with \trl{-pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative>} \findex{-pc_fieldsplit_type} or the function PCFieldSplitSetType().
 
 For two by two blocks only there are another family of solvers, based on Schur complements. The inverse of the Schur complement factorization is  
 \[
@@ -3293,7 +3295,7 @@ ksp(A_{00},Ap_{00})   & 0 \\
 \]
 since the Schur complement for saddle point problems is negative definite. IS THIS ALWAYS TRUE, SHOULD THERE BE A FLAG TO SET THE SIGN?
 
-If you provide names for the partions you have created the options prefix for the internal KSPs are given by \trl{-fieldsplit_name_} if you did not provide names then they are given by \trl{-fieldsplit_0_}, \trl{-fieldsplit_1_} etc.
+The option prefixes for the internal KSPs are given by \trl{-fieldsplit_name_}.
 
 
 \section{Solving Singular Systems}
