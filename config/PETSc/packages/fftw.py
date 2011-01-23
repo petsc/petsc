@@ -62,10 +62,3 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Error running make on FFTW: '+str(e))
       self.postInstall(output1+err1+output2+err2,'fftw')
     return self.installDir
-
-  def consistencyChecks(self):
-    PETSc.package.NewPackage.consistencyChecks(self)
-    if self.framework.argDB['with-'+self.package]:
-      if not self.scalartypes.scalartype.lower() == 'complex':
-        raise RuntimeError('FFTW requires the complex precision, run ./configure --with-scalar-type=complex')
-    return
