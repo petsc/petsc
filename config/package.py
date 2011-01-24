@@ -54,7 +54,7 @@ class Package(config.base.Configure):
     # Outside coupling
     self.defaultInstallDir= os.path.abspath('externalpackages')
     return
-    
+
   def __str__(self):
     '''Prints the location of the packages includes and libraries'''
     output = ''
@@ -86,7 +86,7 @@ class Package(config.base.Configure):
     if hasattr(self, 'usePkgConfig'):
       help.addArgument(self.PACKAGE, '-with-'+self.package+'-pkg-config=<dir>', nargs.ArgDir(None, None, 'Indicate the root directory of the '+self.name+' installation'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dirs>',nargs.ArgDirList(None,None,'Indicate the directory of the '+self.name+' include files'))
-    help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))    
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))
     if self.download and not self.download[0] == 'redefine':
       help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,filename>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
     return
@@ -180,7 +180,7 @@ class Package(config.base.Configure):
     if not os.path.isdir(self.confDir):    os.mkdir(self.confDir)
     return os.path.abspath(self.Install())
 
-  def getChecksum(self,source, chunkSize = 1024*1024):  
+  def getChecksum(self,source, chunkSize = 1024*1024):
     '''Return the md5 checksum for a given file, which may also be specified by its filename
        - The chunkSize argument specifies the size of blocks read from the file'''
     if isinstance(source, file):
@@ -223,7 +223,7 @@ class Package(config.base.Configure):
         yield('Download '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+d+'\n')
 
-    if 'with-'+self.package+'-dir' in self.framework.argDB:     
+    if 'with-'+self.package+'-dir' in self.framework.argDB:
       d = self.framework.argDB['with-'+self.package+'-dir']
       for l in self.generateLibList(os.path.join(d, self.libdir)):
         yield('User specified root directory '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
@@ -241,7 +241,7 @@ class Package(config.base.Configure):
       if self.includes:
         raise RuntimeError('If you provide --with-'+self.package+'-lib you must also supply with-'+self.package+'-include\n')
     if 'with-'+self.package+'-include-dir' in self.framework.argDB:
-        raise RuntimeError('Use --with-'+self.package+'-include; not --with-'+self.package+'-include-dir') 
+        raise RuntimeError('Use --with-'+self.package+'-include; not --with-'+self.package+'-include-dir')
 
     if 'with-'+self.package+'-include' in self.framework.argDB and 'with-'+self.package+'-lib' in self.framework.argDB:
       inc = self.framework.argDB['with-'+self.package+'-include']
@@ -254,7 +254,7 @@ class Package(config.base.Configure):
       d = os.path.dirname(inc[0])
       yield('User specified '+self.PACKAGE+' libraries', d, libs, inc)
       raise RuntimeError('--with-'+self.package+'-lib='+str(self.framework.argDB['with-'+self.package+'-lib'])+' and \n'+\
-                         '--with-'+self.package+'-include='+str(self.framework.argDB['with-'+self.package+'-include'])+' did not work') 
+                         '--with-'+self.package+'-include='+str(self.framework.argDB['with-'+self.package+'-include'])+' did not work')
 
     for d in self.getSearchDirectories():
       for libdir in [self.libdir, self.altlibdir]:
@@ -318,7 +318,7 @@ class Package(config.base.Configure):
 
   def postInstall(self, output, mkfile):
     '''Dump package build log into configure.log - also copy package config to prevent unnecessary rebuild'''
-    self.framework.log.write('********Output of running make on '+self.name+' follows *******\n')        
+    self.framework.log.write('********Output of running make on '+self.name+' follows *******\n')
     self.framework.log.write(output)
     self.framework.log.write('********End of Output of running make on '+self.name+' *******\n')
     output,err,ret  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, mkfile)+' '+os.path.join(self.confDir, self.name), timeout=5, log = self.framework.log)
@@ -420,7 +420,7 @@ class Package(config.base.Configure):
       if self.libraries.math is None:
         raise RuntimeError('Math library not found')
       libs += self.libraries.math
-      
+
     for location, directory, lib, incl in self.generateGuesses():
       if directory and not os.path.isdir(directory):
         self.framework.logPrint('Directory does not exist: %s (while checking "%s" for "%r")' % (directory,location,lib))
@@ -440,7 +440,7 @@ class Package(config.base.Configure):
       else:
         self.framework.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
       if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2]}):
-        self.lib = lib	
+        self.lib = lib
         self.framework.logPrint('Checking for headers '+location+': '+str(incl))
         if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 1800.0):
           if self.includes:
@@ -476,7 +476,7 @@ class Package(config.base.Configure):
       if not self.worksonWindows and self.setCompilers.isCygwin():
         raise RuntimeError('External package '+self.name+' does not work on Microsoft Windows')
       if self.download and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()] and not self.downloadonWindows and self.setCompilers.isCygwin():
-        raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' on Microsoft Windows')        
+        raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' on Microsoft Windows')
     return
 
   def configure(self):
@@ -509,9 +509,9 @@ Brief overview of how BuildSystem\'s configuration of packages works.
   which makes the "configure()" calls according to the dependencies between the configure objects.
     config.package.Package extends config.base.Configure and adds instance variables and methods that facilitate
   writing classes that configure packages.  Customized package configuration classes are written by subclassing
-  config.package.Package -- the "parent class". 
+  config.package.Package -- the "parent class".
 
-    Packages essentially encapsulate libraries, that are either 
+    Packages essentially encapsulate libraries, that are either
     (A) (prefix-)installed already somewhere on the system or
     (B) need to be dowloaded and built first
   If (A), the parent class provides a generic mechanism for locating the installation, by looking in user-specified and standard locations.
@@ -547,23 +547,23 @@ Brief overview of how BuildSystem\'s configuration of packages works.
     self.PACKAGE          - uppercase name                                [string]
     self.downloadname     - same as self.name (usage a bit inconsistent)  [string]
   Package subclass typically sets up the following state variables:
-    self.download         - url to download source from                   [string] 
-    self.includes         - names of header files to locate               [list of strings] 
-    self.liblist          - names of library files to locate              [list of lists of strings] 
+    self.download         - url to download source from                   [string]
+    self.includes         - names of header files to locate               [list of strings]
+    self.liblist          - names of library files to locate              [list of lists of strings]
     self.functions        - names of functions to locate in libraries     [list of strings]
     self.cxx              - whether C++ is required for this package      [bool]
     self.functionsFortran - whether to mangle self.functions symbols      [bool]
   Most of these instance variables determine the behavior of the location/installation and the testing stages.
   Ideally, a package subclass would extend only the __init__ method and parameterize the remainder of
   the configure process by the appropriate variables.  This is not always possible, since some
-  of the package-specific choices depend on 
+  of the package-specific choices depend on
 
 
   setup:
   -----
   The setup stage follows init and is accomplished by the configure framework calling each configure objects
   setup hooks:
-  
+
     setupHelp:
     ---------
     This is used to define the command-line arguments expected by this configure object.
@@ -577,14 +577,14 @@ Brief overview of how BuildSystem\'s configuration of packages works.
     The package subclass can add to these arguments.  These arguments\' values are set
     from the defaults specified in setupHelp or from the user-supplied command-line arguments.
     Their values can be queried at any time during the configure process.
-    
+
     setupDependencies:
     -----------------
     This is used to specify other conifigure objects that the package being configured depends on.
     This is done via the configure framework\'s "require" mechanism:
       self.framework.require(<dependentObject>, self)
     dependentObject is a string -- the name of the configure module this package depends on.
-    
+
     The parent package class requires some of the common dependencies:
       config.compilers, config.types, config.headers, config.libraries, config.packages.MPI,
     among others.
@@ -603,7 +603,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
   (by the code outside of the package class) that a download is necessary.  Otherwise (e.g., if setupDownload
   is called from __init__) setupDownload the user for the version of the package to download even when no download
   is necessary (and this is annoying).
-  
+
   Location/installation:
   ---------------------
   These stages (somewhat mutually-exclusive), as well as the testing stage are carried out by the code in
@@ -616,7 +616,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
 
   Installation:
   ------------
-  This stage is carried out by configure and functions called from it, most notably, configureLibrary 
+  This stage is carried out by configure and functions called from it, most notably, configureLibrary
   The essential difficulty here is that the function calls are deeply nested (A-->B-->C--> ...),
   as opposed to a single driver repeatedly calling small single-purpose callback hooks.  This means that any
   customization would not be able to be self-contained by would need to know to call further down the chain.
@@ -635,7 +635,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
              in unnecessary prompts for user input, only to discover later that a download is not required.
              Because of this a package configure class must always have at least dummy string for self.download, if
              a download is possible.
-            
+
   Here is a schematic description of the main point on the call chain:
 
   configure:
@@ -648,10 +648,10 @@ Brief overview of how BuildSystem\'s configuration of packages works.
       the command-line flag(s) pointing to a package installation "-with-"self.package+"-dir or ...-lib, ...-include are present
     ...
     configureLibrary:
-      consistencyChecks: 
+      consistencyChecks:
         ...
         check that appropriate language support is on:
-          self.cxx            == 1 implies C++ compiler must be present 
+          self.cxx            == 1 implies C++ compiler must be present
           self.fc             == 1 implies Fortran compiler must be present
           self.noMPIUni       == 1 implies real MPI must be present
           self.worksonWindows == 0 implies we cannot use Cygwin compilers
@@ -677,16 +677,16 @@ Brief overview of how BuildSystem\'s configuration of packages works.
             self.includeDir   /* subdir of self.installDir */
             self.libDir       /* subdir of self.installDir */
             self.packageDir = /* this dir is where the source is unpacked and built */
-            self.getDir():    
+            self.getDir():
               ...
               if a package dir starting with self.downloadname does not exist already
                 create the package dir
                 downLoad():
                   ...
-                  download and unpack the source to self.packageDir, 
+                  download and unpack the source to self.packageDir,
           Install():
             /* This must be implemented by a package subclass */
-  
+
     Install:
     ------
     Note that it follows from the above pseudocode, that the package source is already in self.packageDir
@@ -712,13 +712,12 @@ Brief overview of how BuildSystem\'s configuration of packages works.
        postInstall(self, output,mkfile):
          This method will simply save string output in the file with name mkfile in self.confDir.
          Storing package configuration parameters there will enable installNeeded to do its job
-         next time this package is being configured.  
-  
-    
+         next time this package is being configured.
+
   testing:
   -------
   The testing is carried out by part of the code in config.package.configureLibrary,
-  after the package library has been located or installed.  
+  after the package library has been located or installed.
   The library is considered functional if two conditions are satisfied:
    (1) all of the symbols in self.functions have been resolved when linking against the libraries in self.liblist,
        either located on the system or newly installed;
@@ -786,7 +785,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
   using the following hook, which is called at the beginning of setupDownload:
     setupVersion
   is provided that will set self.downloadversion from the command-line argument "--download-"+self.package+"-version",
-  prompting for user input, if necessary. 
+  prompting for user input, if necessary.
   Clearly, both setupDownload and setupDownloadVersion can be overridden by specific package configure subclasses.
   They are intended to be a convenient hooks for isolating the download url management based on the command-line arguments
   and user input.
@@ -831,7 +830,7 @@ class GNUPackage(Package):
     if hasattr(self, 'downloadversion'):
       downloadversion = self.downloadversion
     help.addArgument(self.PACKAGE, '-download-'+self.package+'-version=<string>',  nargs.Arg(None, downloadversion, 'Version number of '+self.PACKAGE+' to download'))
-    help.addArgument(self.PACKAGE, '-download-'+self.package+'-shared=<bool>',     nargs.ArgBool(None, 0, 'Install '+self.PACKAGE+' with shared libraries'))    
+    help.addArgument(self.PACKAGE, '-download-'+self.package+'-shared=<bool>',     nargs.ArgBool(None, 0, 'Install '+self.PACKAGE+' with shared libraries'))
 
   def setupDependencies(self,framework):
     config.package.Package.setupDependencies(self, framework)
@@ -857,7 +856,6 @@ class GNUPackage(Package):
   def checkDownload(self, requireDownload = 1):
     self.setupDownload()
     return Package.checkDownload(self,requireDownload)
- 
 
   def formGNUConfigureDepArgs(self):
     '''Add args corresponding to --with-<deppackage>=<deppackage-dir>.'''
@@ -889,7 +887,7 @@ class GNUPackage(Package):
     else:
       args.append('--disable-cxx')
     if hasattr(self.compilers, 'FC'):
-      self.pushLanguage('FC')      
+      self.pushLanguage('FC')
       fc = self.getCompiler()
       if self.compilers.fortranIsF90:
         try:
@@ -925,9 +923,7 @@ class GNUPackage(Package):
         args.append('--disable-shared')
     args.extend(self.formGNUConfigureDepArgs())
     return args
-  
 
-    
   def Install(self):
     ##### getInstallDir calls this, and it sets up self.packageDir (source download), self.confDir and self.installDir
     if not os.path.isdir(self.installDir):
@@ -991,7 +987,7 @@ class GNUPackage(Package):
       if self.libraries.math is None:
         raise RuntimeError('Math library not found')
       libs += self.libraries.math
-      
+
     for location, directory, lib, incl in self.generateGuesses():
       if directory and not os.path.isdir(directory):
         self.framework.logPrint('Directory does not exist: %s (while checking "%s" for "%r")' % (directory,location,lib))
@@ -1011,7 +1007,7 @@ class GNUPackage(Package):
       else:
         self.framework.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
       if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2]}):
-        self.lib = lib	
+        self.lib = lib
         self.framework.logPrint('Checking for headers '+location+': '+str(incl))
         if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 1800.0):
           if self.includes:

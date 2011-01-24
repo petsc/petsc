@@ -1,13 +1,16 @@
 import config.package
+import os
 
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fiat-dev.tar.gz', 'hg://www.fenics.org/hg/fiat', 'http://www.fenics.org/pub/software/fiat/FIAT-0.3.0.tar.gz']
-    self.downloadname    = self.name.lower()
-    self.archIndependent = 1
+    self.downloadname      = self.name.lower()
+    self.archIndependent   = 1
     self.worksonWindows    = 1
     self.downloadonWindows = 1
+    self.liblist           = [['Lagrange.py']]
+    self.altlibdir         = os.path.join('lib', 'python', 'site-packages')
     return
 
   def setupDependencies(self, framework):
@@ -16,27 +19,37 @@ class Configure(config.package.Package):
     return
 
   def Install(self):
-    fiatDir = self.getDir()
+    import shutil
     # We could make a check of the md5 of the current configure framework
-    self.logPrintBox('FIAT needs no installation')
-    self.framework.actions.addArgument('FIAT', 'Install', 'Installed FIAT into '+fiatDir)
-    return fiatDir
+    self.logPrintBox('Installing FIAT')
+    # Copy FIAT into $PETSC_ARCH/lib/python/site-packages
+    installLoc = os.path.join(self.installDir, self.altlibdir)
+    packageDir = os.path.join(installLoc, 'FIAT')
+    if not os.path.isdir(installLoc):
+      os.makedirs(installLoc)
+    if os.path.exists(packageDir):
+      shutil.rmtree(packageDir)
+    shutil.copytree(os.path.join(self.packageDir, 'FIAT'), packageDir)
+    self.framework.actions.addArgument('FIAT', 'Install', 'Installed FIAT into '+self.installDir)
+    return self.installDir
 
   def configureLibrary(self):
     '''Find an installation ando check if it can work with PETSc'''
-    import os, sys
+    import sys
     self.framework.log.write('==================================================================================\n')
     self.framework.log.write('Checking for a functional '+self.name+'\n')
 
-    for location, dir, lib, incl in self.generateGuesses():
+    for location, rootDir, lib, incDir in self.generateGuesses():
       try:
-        sys.path.insert(0, dir)
+        libDir = os.path.dirname(lib[0])
+        self.framework.logPrint('Checking location '+location)
+        self.framework.logPrint('Added directory '+libDir+' to Python path')
+        sys.path.insert(0, libDir)
         import FIAT
         import FIAT.shapes
         import FIAT.Lagrange
         import FIAT.quadrature
         return
       except ImportError, e:
-        self.framework.logPrint('Added directory '+dir+' to path')
         self.framework.logPrint('ERROR: Could not import FIAT: '+str(e))
     raise RuntimeError('Could not find a functional '+self.name+'\n')
