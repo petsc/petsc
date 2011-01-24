@@ -398,6 +398,8 @@ extern PetscErrorCode  PCSetDM(PC,DM);
 extern PetscErrorCode  PCGetDM(PC,DM*);
 
 extern PetscErrorCode  PCBiCGStabCUSPSetTolerance(PC,PetscReal);
+extern PetscErrorCode  PCBiCGStabCUSPSetIterations(PC,PetscInt);
+extern PetscErrorCode  PCBiCGStabCUSPSetUseVerboseMonitor(PC,PetscBool);
 
 PETSC_EXTERN_CXX_END
 
