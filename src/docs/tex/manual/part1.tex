@@ -13,10 +13,11 @@
 The Portable, Extensible Toolkit for Scientific Computation (PETSc)
 has successfully demonstrated that the use of modern programming
 paradigms can ease the development of large-scale scientific
-application codes in Fortran, C, and C++.  Begun several years ago,
+application codes in Fortran, C, C++, and Pyton.  Begun several years ago,
 the software has evolved into a powerful set of tools for the
 numerical solution of partial differential equations and related problems 
-on high-performance computers.
+on high-performance computers. PETSc is also callable directly from MATLAB (sequential) to 
+allow ``trying out'' PETSc's solvers from prototype MATLAB code.
 
 PETSc consists of a variety of libraries (similar to classes in C++),
 which are discussed in detail in Parts II and III of the users manual.
@@ -30,10 +31,10 @@ experiences with scientific computation. Some of the PETSc modules deal with
 \item matrices (generally sparse);
 \item distributed arrays (useful for parallelizing regular grid-based 
       problems);
-\item Krylov subspace methods;
-\item preconditioners, including multigrid and sparse direct solvers;
+\item over fifteen Krylov subspace methods;
+\item dozens of preconditioners, including multigrid, block solvers, and sparse direct solvers;
 \item nonlinear solvers; and
-\item timesteppers for solving time-dependent (nonlinear) PDEs.
+\item timesteppers for solving time-dependent (nonlinear) PDEs, including support for differential algebraic equations (DAE).
 \end{itemize}
 Each consists of an abstract interface 
 (simply a set of calling sequences) and one or more implementations 
@@ -152,6 +153,13 @@ the user interface.  Chapter \ref{ch_fortran} provides a discussion of the
 differences between using PETSc from Fortran and C, as well as several
 complete Fortran examples.  This chapter also introduces some
 routines that support direct use of Fortran90 pointers.
+
+\noindent{\bf Note to Python Programmers}: To program with PETSc in Python you need to install the PETSc4py package developed by 
+Lisandro Dalcin. This can be done by configuring PETSc with the option \trl{--download-petsc4py}. See the PETSc installation guide 
+for more details \href{http://www.mcs.anl.gov/petsc/petsc-as/documentation/installation.html}{http://www.mcs.anl.gov/petsc/petsc-as/documentation/installation.html}.
+
+\noindent{\bf Note to MATLAB Programmers}: To program with PETSc in MATLAB read the information in src/matlab/classes/PetscInitialize.m. Numerious examples 
+are given in src/matlab/classes/examples/tutorials. Run the program demo in that directory.
 
 %-----------------------------------------------------------------------------
 \section{Running PETSc Programs}

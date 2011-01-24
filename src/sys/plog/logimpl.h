@@ -48,8 +48,8 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscLogGetStageLog(StageLog *stageLog)
 {
   PetscFunctionBegin;
   PetscValidPointer(stageLog,1);
-  if (_stageLog == PETSC_NULL) {
-    fprintf(stderr, "Logging has not been enabled.\nYou might have forgotten to call PetscInitialize().\n");
+  if (!_stageLog) {
+    fprintf(stderr, "PETSC ERROR: Logging has not been enabled.\nYou might have forgotten to call PetscInitialize().\n");
     MPI_Abort(MPI_COMM_WORLD, PETSC_ERR_SUP);
   }
   *stageLog = _stageLog;

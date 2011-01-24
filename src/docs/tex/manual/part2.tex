@@ -3297,9 +3297,9 @@ since the Schur complement for saddle point problems is negative definite. IS TH
 
 You can use the PCLSC preconditioner for the Schur complement with \trl{-pc_fieldsplit_type schur -fieldsplit_1_pc_type lsc}. This uses for the preconditioner to $\hat{S}$ the operator 
 \[
- ksp(A10 A01,A10 A01) A10 A00 A01 ksp(A10 A01,A10 01) 
+ ksp(A_{10} A_{01},A_{10} A_{01}) A_{10} A_{00} A_{01} ksp(A_{10} A_{01},A_{10} A_{01}) 
 \]
- which, of course, introduces two additional inner solves for each application of the Schur complement. The options prefix for this inner KSP is \trl{-fieldsplit_1_lsc_}. Instead of constructing the matrix $A10 A01$ the user can provide their own matrix. This is done by attaching the matrix/matrices to the $ Sp $ matrix they provide with
+ which, of course, introduces two additional inner solves for each application of the Schur complement. The options prefix for this inner KSP is \trl{-fieldsplit_1_lsc_}. Instead of constructing the matrix $A_{10} A_{01}$ the user can provide their own matrix. This is done by attaching the matrix/matrices to the $ Sp $ matrix they provide with
 \begin{tabbing}
  PetscObjectCompose((PetscObject)Sp,"LSC\_L",(PetscObject)L); \\
  PetscObjectCompose((PetscObject)Sp,"LSC\_Lp",(PetscObject)Lp);
