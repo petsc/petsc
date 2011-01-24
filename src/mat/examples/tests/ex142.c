@@ -1,4 +1,4 @@
-static char help[] = "Test sequential r2c FFTW interface \n\n";
+static char help[] = "Test sequential r2c/c2r FFTW interface \n\n";
 
 /*
   Compiling the code:
