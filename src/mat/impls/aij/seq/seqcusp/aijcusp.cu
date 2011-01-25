@@ -100,6 +100,29 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
   }
     PetscFunctionReturn(0);
 }
+#undef __FUNCT__
+#define __FUNCT__ "MatGetVecs_SeqAIJCUSP"
+PetscErrorCode MatGetVecs_SeqAIJCUSP(Mat mat, Vec *right, Vec *left)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  if (right) {
+    ierr = VecCreate(((PetscObject)mat)->comm,right);CHKERRQ(ierr);
+    ierr = VecSetSizes(*right,mat->cmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(*right,mat->rmap->bs);CHKERRQ(ierr);
+    ierr = VecSetType(*right,VECSEQCUSP);CHKERRQ(ierr);
+  }
+  if (left) {
+    ierr = VecCreate(((PetscObject)mat)->comm,left);CHKERRQ(ierr);
+    ierr = VecSetSizes(*left,mat->rmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(*left,mat->rmap->bs);CHKERRQ(ierr);
+    ierr = VecSetType(*left,VECSEQCUSP);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqAIJCUSP"
 PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
@@ -338,6 +361,7 @@ PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
   
   B->ops->assemblyend = MatAssemblyEnd_SeqAIJCUSP;
   B->ops->destroy     = MatDestroy_SeqAIJCUSP;
+  B->ops->getvecs     = MatGetVecs_SeqAIJCUSP;
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUSP);CHKERRQ(ierr);
   B->valid_GPU_matrix = PETSC_CUSP_UNALLOCATED;
   PetscFunctionReturn(0);
