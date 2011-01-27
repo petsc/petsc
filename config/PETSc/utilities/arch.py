@@ -58,7 +58,6 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
     if self.arch.find('/') >= 0 or self.arch.find('\\') >= 0:
       raise RuntimeError('PETSC_ARCH should not contain path characters, but you have specified: '+str(self.arch))
     self.archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.arch)
-    self.hostOsBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.framework.host_os)
     self.addDefine('ARCH', '"'+self.arch+'"')
     return
 

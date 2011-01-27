@@ -571,22 +571,20 @@ class Configure(config.base.Configure):
 
   def configureSolaris(self):
     '''Solaris specific stuff'''
-    if self.arch.hostOsBase.startswith('solaris'):
-      if os.path.isdir(os.path.join('/usr','ucblib')):
-        try:
-          flag = getattr(self.setCompilers, self.language[-1]+'SharedLinkerFlag')
-        except AttributeError:
-          flag = None
-        if flag is None:
-          self.compilers.LIBS += ' -L/usr/ucblib'
-        else:
-          self.compilers.LIBS += ' '+flag+'/usr/ucblib'
+    if os.path.isdir(os.path.join('/usr','ucblib')):
+      try:
+        flag = getattr(self.setCompilers, self.language[-1]+'SharedLinkerFlag')
+      except AttributeError:
+        flag = None
+      if flag is None:
+        self.compilers.LIBS += ' -L/usr/ucblib'
+      else:
+        self.compilers.LIBS += ' '+flag+'/usr/ucblib'
     return
 
   def configureLinux(self):
     '''Linux specific stuff'''
-    if self.arch.hostOsBase == 'linux':
-      self.addDefine('HAVE_DOUBLE_ALIGN_MALLOC', 1)
+    self.addDefine('HAVE_DOUBLE_ALIGN_MALLOC', 1)
     return
 
   def configureWin32(self):

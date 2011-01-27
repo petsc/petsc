@@ -13,6 +13,7 @@ typedef struct {
   Vec        *vwork_m;  /* work vectors of length m, where the system is size m x n */
   Vec        *vwork_n;  /* work vectors of length n */
   Vec        se;        /* Optional standard error vector */
+  Vec        initialguess;
   PetscBool  se_flg;   /* flag for -ksp_lsqr_set_standard_error */
   PetscReal  arnorm;   /* Norm of the vector A.r */
   PetscReal  anorm;    /* Frobenius norm of the matrix A */
@@ -115,6 +116,10 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,U);CHKERRQ(ierr);       /*   u <- b - Ax     */
     ierr = VecAYPX(U,-1.0,B);CHKERRQ(ierr);
+    if (!lsqr->initialguess) {
+      ierr = VecDuplicate(X,&lsqr->initialguess);CHKERRQ(ierr);
+    }
+    ierr = VecCopy(X,lsqr->initialguess);CHKERRQ(ierr);
   } else { 
     ierr = VecCopy(B,U);CHKERRQ(ierr);            /*   u <- b (x is 0) */
   }
@@ -130,8 +135,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
 
-  ierr = VecCopy(B,U);CHKERRQ(ierr);
-  ierr = VecNorm(U,NORM_2,&beta);CHKERRQ(ierr);
+  beta = rnorm;
   ierr = VecScale(U,1.0/beta);CHKERRQ(ierr);
   ierr = KSP_MatMultTranspose(ksp,Amat,U,V); CHKERRQ(ierr);
   if (nopreconditioner) {
@@ -153,7 +157,6 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   } else {
     ierr = VecCopy(Z,W);CHKERRQ(ierr);
   }
-  ierr = VecSet(X,0.0);CHKERRQ(ierr);
 
   lsqr->arnorm = alpha * beta;
   phibar = beta;
@@ -264,6 +267,9 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
   }
   if (lsqr->se_flg && lsqr->se){
     ierr = VecDestroy(lsqr->se);CHKERRQ(ierr);
+  }
+  if (lsqr->initialguess) {
+    ierr = VecDestroy(lsqr->initialguess);CHKERRQ(ierr);
   }
   ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -218,6 +218,8 @@ int main(int argc,char **args)
       ierr = VecLoad(x,viewer2);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(viewer2);CHKERRQ(ierr);
       initialguess = PETSC_TRUE;
+    } else if (initialguess) {
+      ierr = VecSet(x,1.0);CHKERRQ(ierr);
     } else {
       ierr = VecSet(x,0.0);CHKERRQ(ierr);
     }
