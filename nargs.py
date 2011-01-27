@@ -363,7 +363,7 @@ class ArgDirList(Arg):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     import os
     self.checkKey()
-    if not isinstanceof(value, list):
+    if not isinstance(value, list):
       value = [value]
     # Should check whether it is a well-formed path
     nvalue = []

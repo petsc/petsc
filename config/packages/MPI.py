@@ -690,14 +690,35 @@ class Configure(config.package.Package):
     self.compilers.LIBS = oldLibs
     return
 
+  def findMPIInc(self):
+    '''Find MPI include paths from "mpicc -show"'''
+    import re
+    output = ''
+    try:
+      output   = self.executeShellCommand(self.compilers.CC + ' -show')[0]
+      compiler = output.split(' ')[0]
+    except:
+      pass
+    argIter = iter(output.split())
+    try:
+      while 1:
+        arg = argIter.next()
+        self.logPrint( 'Checking arg '+arg, 4, 'compilers')
+        m = re.match(r'^-I.*$', arg)
+        if m:
+          inc = arg.replace('-I','')
+          self.logPrint('Found include directory: '+inc, 4, 'compilers')
+          self.include.append(inc)
+          continue
+    except StopIteration:
+      pass
+    return
+
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by MPI'''
     if 'with-'+self.package+'-shared' in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1
     config.package.Package.configureLibrary(self)
-    # Satish check here if the self.directory is truly the MPI root directory with mpicc underneath it
-    # if not then set it to None
-
     self.executeTest(self.configureConversion)
     self.executeTest(self.configureMPI2)
     self.executeTest(self.configureTypes)
@@ -707,6 +728,7 @@ class Configure(config.package.Package):
     self.executeTest(self.CxxMPICheck)
     self.executeTest(self.FortranMPICheck)
     self.executeTest(self.configureIO)
+    self.executeTest(self.findMPIInc)
     if self.libraries.check(self.dlib, "MPI_Alltoallw") and self.libraries.check(self.dlib, "MPI_Type_create_indexed_block"):
       self.addDefine('HAVE_MPI_ALLTOALLW',1)
     if self.libraries.check(self.dlib, "MPI_Comm_spawn"):
