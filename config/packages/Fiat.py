@@ -4,7 +4,7 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fiat-dev.tar.gz', 'hg://www.fenics.org/hg/fiat', 'http://www.fenics.org/pub/software/fiat/FIAT-0.3.0.tar.gz']
+    self.download = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fiat-dev.tar.gz', 'http://www.fenicsproject.org/pub/software/fiat/FIAT-0.3.0.tar.gz']
     self.downloadname      = self.name.lower()
     self.archIndependent   = 1
     self.worksonWindows    = 1
