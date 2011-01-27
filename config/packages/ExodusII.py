@@ -9,9 +9,11 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download   = ['http://downloads.sourceforge.net/exodusii/exodusii-4.75.tar.gz']
-    self.liblist    = [['libexoIIv2for.a', 'libexoIIv2c.a']]
-    self.functions  = ['ex_close'] 
+    self.liblist    = [['libexoIIv2for.a', 'libexodus.a'], ['libexoIIv2for.a', 'libexoIIv2c.a']]
+    self.functions  = ['ex_close']
     self.includes   = ['exodusII.h']
+    self.includedir = os.path.join('cbind', 'include')
+    self.altlibdir  = '.'
     return
 
   def setupDependencies(self, framework):
@@ -19,7 +21,7 @@ class Configure(config.package.Package):
     self.netcdf = framework.require('config.packages.NetCDF', self)
     self.deps   = [self.netcdf]
     return
-          
+
   def Install(self):
     self.framework.log.write('exodusIIDir = '+self.packageDir+' installDir '+self.installDir+'\n')
 
@@ -47,7 +49,7 @@ class Configure(config.package.Package):
     g.write('UMFPACK_CONFIG   = '+flg+'\n')
     g.write('CLEAN = *.o *.obj *.ln *.bb *.bbg *.da *.tcov *.gcov gmon.out *.bak *.d\n')
     g.close()
-    
+
     # Build UMFPACK
     if self.installNeeded(mkfile):
       try:
