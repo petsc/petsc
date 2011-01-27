@@ -7,9 +7,7 @@
 
 #include "private/matimpl.h"          /*I "petscmat.h" I*/
 EXTERN_C_BEGIN 
-#if defined(PETSC_USE_COMPLEX)
 #include "fftw3.h"
-#endif
 EXTERN_C_END 
 
 typedef struct {
@@ -17,6 +15,8 @@ typedef struct {
   PetscInt       *dim;
   fftw_plan      p_forward,p_backward;
   unsigned       p_flag; /* planner flags, FFTW_ESTIMATE,FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */
+  PetscScalar    *finarray,*foutarray,*binarray,*boutarray; /* keep track of arrays becaue fftw plan should be 
+                                                               executed for the arrays with which the plan was created */
 } Mat_FFTW;
 
 #undef __FUNCT__  
@@ -29,6 +29,9 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
   PetscInt       ndim=fftw->ndim,*dim=fftw->dim;
 
   PetscFunctionBegin;
+#if !defined(PETSC_USE_COMPLEX)
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
+#endif
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!fftw->p_forward){ /* create a plan, then excute it */
@@ -46,10 +49,17 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
       fftw->p_forward = fftw_plan_dft(ndim,dim,(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_FORWARD,fftw->p_flag);
       break;
     }
+    fftw->finarray  = x_array;
+    fftw->foutarray = y_array;
+    /* Warning: if (fftw->p_flag!==FFTW_ESTIMATE) The data in the in/out arrays is overwritten! 
+                planning should be done before x is initialized! See FFTW manual sec2.1 or sec4 */
     fftw_execute(fftw->p_forward);
-  } else {
-    /* use existing plan */
-    fftw_execute_dft(fftw->p_forward,(fftw_complex*)x_array,(fftw_complex*)y_array);
+  } else { /* use existing plan */
+    if (fftw->finarray != x_array || fftw->foutarray != y_array){ /* use existing plan on new arrays */
+      fftw_execute_dft(fftw->p_forward,(fftw_complex*)x_array,(fftw_complex*)y_array);
+    } else {
+      fftw_execute(fftw->p_forward);
+    }
   }
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
@@ -66,6 +76,9 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
   PetscInt       ndim=fftw->ndim,*dim=fftw->dim;
 
   PetscFunctionBegin;
+#if !defined(PETSC_USE_COMPLEX)
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
+#endif
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!fftw->p_backward){ /* create a plan, then excute it */
@@ -83,9 +96,15 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
       fftw->p_backward = fftw_plan_dft(ndim,dim,(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_BACKWARD,fftw->p_flag);
       break;
     }
+    fftw->binarray  = x_array;
+    fftw->boutarray = y_array;
     fftw_execute(fftw->p_backward);CHKERRQ(ierr);
   } else { /* use existing plan */
-    fftw_execute_dft(fftw->p_backward,(fftw_complex*)x_array,(fftw_complex*)y_array);
+    if (fftw->binarray != x_array || fftw->boutarray != y_array){ /* use existing plan on new arrays */
+      fftw_execute_dft(fftw->p_backward,(fftw_complex*)x_array,(fftw_complex*)y_array);
+    } else {
+      fftw_execute(fftw->p_backward);CHKERRQ(ierr);
+    }
   }
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
@@ -99,7 +118,10 @@ PetscErrorCode MatDestroy_SeqFFTW(Mat A)
   Mat_FFTW       *fftw = (Mat_FFTW*)A->data;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;  
+  PetscFunctionBegin; 
+#if !defined(PETSC_USE_COMPLEX)
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
+#endif
   ierr = PetscFree(fftw->dim);CHKERRQ(ierr);
   fftw_destroy_plan(fftw->p_forward);
   fftw_destroy_plan(fftw->p_backward);
@@ -140,13 +162,16 @@ PetscErrorCode  MatCreateSeqFFTW(MPI_Comm comm,PetscInt ndim,const PetscInt dim[
   PetscInt       p_flag;
 
   PetscFunctionBegin;
-  if (ndim < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"ndim %d must be > 0",ndim);
+#if !defined(PETSC_USE_COMPLEX)
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
+#endif
+  if (ndim < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"ndim %d must be > 0",ndim);
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
   m = 1;
   for (i=0; i<ndim; i++){
-    if (dim[i] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"dim[%d]=%d must be > 0",i,dim[i]);
+    if (dim[i] < 1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"dim[%d]=%d must be > 0",i,dim[i]);
     m *= dim[i];
-b  }
+  }
   ierr = MatSetSizes(*A,m,m,m,m);CHKERRQ(ierr);  
   ierr = PetscObjectChangeTypeName((PetscObject)*A,MATSEQFFTW);CHKERRQ(ierr);
 
