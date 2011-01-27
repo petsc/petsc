@@ -13,7 +13,6 @@ typedef struct {
   Vec        *vwork_m;  /* work vectors of length m, where the system is size m x n */
   Vec        *vwork_n;  /* work vectors of length n */
   Vec        se;        /* Optional standard error vector */
-  Vec        initialguess;
   PetscBool  se_flg;   /* flag for -ksp_lsqr_set_standard_error */
   PetscReal  arnorm;   /* Norm of the vector A.r */
   PetscReal  anorm;    /* Frobenius norm of the matrix A */
@@ -116,10 +115,6 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,U);CHKERRQ(ierr);       /*   u <- b - Ax     */
     ierr = VecAYPX(U,-1.0,B);CHKERRQ(ierr);
-    if (!lsqr->initialguess) {
-      ierr = VecDuplicate(X,&lsqr->initialguess);CHKERRQ(ierr);
-    }
-    ierr = VecCopy(X,lsqr->initialguess);CHKERRQ(ierr);
   } else { 
     ierr = VecCopy(B,U);CHKERRQ(ierr);            /*   u <- b (x is 0) */
   }
@@ -267,9 +262,6 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
   }
   if (lsqr->se_flg && lsqr->se){
     ierr = VecDestroy(lsqr->se);CHKERRQ(ierr);
-  }
-  if (lsqr->initialguess) {
-    ierr = VecDestroy(lsqr->initialguess);CHKERRQ(ierr);
   }
   ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -459,10 +451,12 @@ PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
 
    References:The original unpreconditioned algorithm can be found in Paige and Saunders, ACM Transactions on Mathematical Software, Vol 8, pp 43-71, 1982. 
      In exact arithmetic the LSQR method (with no preconditioning) is identical to the KSPCG algorithm applied to the normal equations.
-     The preconditioned varient was implemented by Bas van't Hof and is essentially a left preconditioning for the Normal Equations. 
+     The preconditioned varient was implemented by Bas van't Hof and is essentially a left preconditioning for the Normal Equations. It appears the implementation with preconditioner
+     track the true norm of the residual and uses that in the convergence test.
 
    Developer Notes: How is this related to the KSPCGNE implementation? One difference is that KSPCGNE applies
             the preconditioner transpose times the preconditioner,  so one does not need to pass A'*A as the third argument to KSPSetOperators().
+            
 
    For least squares problems without a zero to A*x = b, there are additional convergence tests for the residual of the normal equations, A'*(b - Ax), see KSPLSQRDefaultConverged()
 
@@ -495,6 +489,7 @@ PetscErrorCode  KSPCreate_LSQR(KSP ksp)
   ksp->ops->setfromoptions       = KSPSetFromOptions_LSQR;
   ksp->ops->view                 = KSPView_LSQR;
   ksp->converged                 = KSPLSQRDefaultConverged;
+  ksp->normtype                  = KSP_NORM_UNPRECONDITIONED;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
