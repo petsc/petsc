@@ -26,6 +26,12 @@ if useThreads is None:
 else:
   useThreads = int(useThreads)
 
+useSelect = nargs.Arg.findArgument('useSelect', sys.argv[1:])
+if useSelect is None:
+  useSelect = 1
+else:
+  useSelect = int(useSelect)
+
 import logger
 
 class Script(logger.Logger):
@@ -152,31 +158,35 @@ class Script(logger.Logger):
       if log: log.write('Executing: '+command+'\n')
       (input, output, error, pipe) = Script.openPipe(command)
       input.close()
-      outputClosed = 0
-      errorClosed  = 0
-      lst = [output, error]
-      while 1:
-        ready = select.select(lst, [], [])
-        if len(ready[0]):
-          if error in ready[0]:
-            msg = error.readline()
-            if msg:
-              err += msg
-            else:
-              errorClosed = 1
-              lst.remove(error)
-          if output in ready[0]:
-            msg = output.readline()
-            if msg:
-              out += msg
-            else:
-              outputClosed = 1
-              lst.remove(output)
-          if out.find('password:') >= 0 or err.find('password:') >= 0:
-            loginError = 1
+      if useSelect:
+        outputClosed = 0
+        errorClosed  = 0  
+        lst = [output, error]
+        while 1:
+          ready = select.select(lst, [], [])
+          if len(ready[0]):
+            if error in ready[0]:
+              msg = error.readline()
+              if msg:
+                err += msg
+              else:
+                errorClosed = 1
+                lst.remove(error)
+            if output in ready[0]:
+              msg = output.readline()
+              if msg:
+                out += msg
+              else:
+                outputClosed = 1
+                lst.remove(output)
+            if out.find('password:') >= 0 or err.find('password:') >= 0:
+              loginError = 1
+              break
+          if outputClosed and errorClosed:
             break
-        if outputClosed and errorClosed:
-          break
+      else:
+        out = output.read()
+        err = error.read()
       output.close()
       error.close()
       if pipe:
