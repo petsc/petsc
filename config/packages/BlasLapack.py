@@ -159,7 +159,7 @@ class Configure(config.package.Package):
 
     if self.framework.argDB['download-c-blas-lapack'] == 1 or isinstance(self.framework.argDB['download-c-blas-lapack'], str):
       if isinstance(self.framework.argDB['download-c-blas-lapack'], str):
-        self.download= 'file://'+os.path.abspath(self.framework.argDB['download-c-blas-lapack'])
+        self.download= [self.framework.argDB['download-c-blas-lapack']]
       self.f2c = 1
       
 #      if hasattr(self.compilers, 'FC'):
@@ -173,7 +173,7 @@ class Configure(config.package.Package):
 
     if self.framework.argDB['download-f-blas-lapack'] == 1  or isinstance(self.framework.argDB['download-f-blas-lapack'], str):
       if isinstance(self.framework.argDB['download-f-blas-lapack'], str):
-        self.download= 'file://'+os.path.abspath(self.framework.argDB['download-f-blas-lapack'])
+        self.download= [self.framework.argDB['download-f-blas-lapack']]
       self.fblaslapack = 1
       
       if not hasattr(self.compilers, 'FC'):
