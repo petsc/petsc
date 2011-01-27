@@ -143,37 +143,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
           dirs.extend(self.listDirs(os.path.join(base, dir),rest ))            
     return dirs
 
-  def getArchitecture(self):
-    import sys
-
-    auxDir = None
-    searchDirs = [os.path.join(self.root, 'packages')] + sys.path
-    for d in searchDirs:
-      if os.path.isfile(os.path.join(d, 'config.sub')):
-        auxDir      = d
-        configSub   = os.path.join(auxDir, 'config.sub')
-        configGuess = os.path.join(auxDir, 'config.guess')
-        break
-    if auxDir is None:
-      self.logPrintBox('Unable to locate config.sub in '+str(searchDirs)+'.\nYour BuildSystem installation is incomplete.\n Get BuildSystem again', 'screen')
-      return ('Unknown', 'Unknown', sys.platform)
-    try:
-      host   = config.base.Configure.executeShellCommand(self.shell+' '+configGuess, log = self.log)[0]
-      output = config.base.Configure.executeShellCommand(self.shell+' '+configSub+' '+host, log = self.log)[0]
-    except RuntimeError, e:
-      fd = open(configGuess)
-      data = fd.read()
-      fd.close()
-      if data.find('\r\n') >= 0:
-        raise RuntimeError('''It appears BuildSystem.tar.gz is uncompressed on Windows (perhaps with Winzip)
-          and files copied over to Unix/Linux. Windows introduces LF characters which are
-          inappropriate on other systems. Please use gunzip/tar on the install machine.\n''')
-      raise RuntimeError('Unable to determine host type using '+configSub+': '+str(e))
-    m = re.match(r'^(?P<cpu>[^-]*)-(?P<vendor>[^-]*)-(?P<os>.*)$', output)
-    if not m:
-      raise RuntimeError('Unable to parse output of '+configSub+': '+output)
-    return (m.group('cpu'), m.group('vendor'), m.group('os'))
-
   def getTmpDir(self):
     if not hasattr(self, '_tmpDir'):
       self._tmpDir = tempfile.mkdtemp(prefix = 'petsc-')
@@ -190,27 +159,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self._tmpDir = temp
     return
   tmpDir = property(getTmpDir, setTmpDir, doc = 'Temporary directory for test byproducts')
-  def getHostCPU(self):
-    if not hasattr(self, '_host_cpu'):
-      return self.argDB['known-host-cpu']
-    return self._host_cpu
-  def setHostCPU(self, cpu):
-    self._host_cpu = cpu
-  host_cpu = property(getHostCPU, setHostCPU, doc = 'Machine CPU')
-  def getHostVendor(self):
-    if not hasattr(self, '_host_vendor'):
-      return self.argDB['known-host-vendor']
-    return self._host_vendor
-  def setHostVendor(self, vendor):
-    self._host_vendor = vendor
-  host_vendor = property(getHostVendor, setHostVendor, doc = 'Machine Vendor')
-  def getHostOS(self):
-    if not hasattr(self, '_host_os'):
-      return self.argDB['known-host-os']
-    return self._host_os
-  def setHostOS(self, os):
-    self._host_os = os
-  host_os = property(getHostOS, setHostOS, doc = 'Machine OS')
   def getFileCreatePause(self):
     if not hasattr(self, '_file_create_pause'):
       return self.argDB['with-file-create-pause']
@@ -238,7 +186,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     list = self.listDirs('/opt/','intel_fc_[0-9.]*/bin')
     if list: searchdirs.append(list[-1])
 
-    host_cpu, host_vendor, host_os = self.getArchitecture()
 
     help.addArgument('Framework', '-configModules',       nargs.Arg(None, None, 'A list of Python modules with a Configure class'))
     help.addArgument('Framework', '-ignoreCompileOutput=<bool>', nargs.ArgBool(None, 1, 'Ignore compiler output'))
@@ -250,9 +197,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     help.addArgument('Framework', '-package-dirs',        nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
     help.addArgument('Framework', '-with-external-packages-dir=<dir>', nargs.Arg(None, None, 'Location to install downloaded packages'))
     help.addArgument('Framework', '-with-batch=<bool>',          nargs.ArgBool(None, 0, 'Machine using cross-compilers or a batch system to submit jobs'))
-    help.addArgument('Framework', '-known-host-cpu=<string>',       nargs.Arg(None, host_cpu,    'Machine CPU'))
-    help.addArgument('Framework', '-known-host-vendor=<string>',    nargs.Arg(None, host_vendor, 'Machine vendor'))
-    help.addArgument('Framework', '-known-host-os=<string>',        nargs.Arg(None, host_os,     'Machine OS'))
     help.addArgument('Framework', '-with-file-create-pause=<bool>', nargs.ArgBool(None, 0, 'Add 1 sec pause between config temp file delete/recreate'))
     return help
 

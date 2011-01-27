@@ -307,7 +307,6 @@ class Configure(config.base.Configure):
 
   def isDarwin():
     '''Returns true if system is Darwin/MacOSX'''
-    #replace self.framework.host_cpu == 'powerpc' and self.framework.host_vendor == 'apple' and self.framework.host_os.startswith('darwin'):
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s')
     if not status:
       return output.lower().strip() == 'darwin'

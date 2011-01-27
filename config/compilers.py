@@ -799,7 +799,6 @@ class Configure(config.base.Configure):
           if arg == '-l:libF90.a':  arg = '-lF90'
           if arg == '-l:libIO77.a': arg = '-lIO77'                      
           if not arg in lflags:
-            #TODO: if arg == '-lkernel32' and host_os.startswith('cygwin'):
             if arg == '-lkernel32':
               continue
             elif arg == '-lm':
@@ -822,7 +821,6 @@ class Configure(config.base.Configure):
           arg = '-L'+os.path.abspath(arg[2:])
           if arg in ['-L/usr/lib','-L/lib','-L/usr/lib64','-L/lib64']: continue          
           if not arg in lflags:
-            #TODO: if arg == '-lkernel32' and host_os.startswith('cygwin'):
             lflags.append(arg)
             self.logPrint('Found library directory: '+arg, 4, 'compilers')
             flibs.append(arg)
