@@ -368,7 +368,7 @@ class Package(config.base.Configure):
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.name+' into '+self.getDir(0))
         return
       except RuntimeError, e:
-        pass
+        self.logPrint('ERROR: '+str(e))
     raise RuntimeError(e)
 
   def Install(self):
