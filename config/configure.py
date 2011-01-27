@@ -67,13 +67,6 @@ if not hasattr(sys, 'version_info') or not sys.version_info[0] == 2 or not sys.v
   print '*******************************************************************************'
   sys.exit(4)
 
-if sys.platform == 'win32':
-  print '**** Windows python detected. ****'
-  print sys.version,'on',sys.platform
-  print ''
-  print '** You must use cygwin python, but not windows python with PETSc configure. ***'
-  sys.exit(4)
-
 def check_for_option_mistakes(opts):
   for opt in opts[1:]:
     name = opt.split('=')[0]
