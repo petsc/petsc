@@ -75,10 +75,7 @@ int main(int argc, char **argv)
     TaoSolver tao;
     TaoSolverTerminationReason reason;
     PetscBool flg;
-    PetscInt iter;
-    PetscReal ff,gnorm;
     AppCtx user;
-    KSP ksp;
 
     /* Initialize PETSc, TAO */
     PetscInitialize(&argc, &argv, (char *)0, help);
@@ -125,10 +122,6 @@ int main(int argc, char **argv)
 
     ierr = TaoSolverSetHessianRoutine(tao,H,H,FormHessian,(void*)&user); CHKERRQ(ierr);
 
-/*    ierr = TaoAppGetKSP(torsionapp,&ksp); CHKERRQ(ierr);
-    if (ksp) {                                              // Modify the PETSc KSP structure 
-	ierr = KSPSetType(ksp,KSPCG); CHKERRQ(ierr);
-    }*/
 
     /* Check for any TAO command line options */
     ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
@@ -137,7 +130,7 @@ int main(int argc, char **argv)
     ierr = TaoSolverSolve(tao);  CHKERRQ(ierr);
 
     /* Get information on termination */
-    ierr = TaoSolverView(tao,PETSC_VIEWER_STDOUT_WORLD);
+    //ierr = TaoSolverView(tao,PETSC_VIEWER_STDOUT_WORLD);
     ierr = TaoSolverGetConvergedReason(tao,&reason); CHKERRQ(ierr);
     if (reason <= 0){
 	ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");//Iterations: %d, f: %4.2e, residual: %4.2e\n", iter,ff,gnorm); 

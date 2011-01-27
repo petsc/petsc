@@ -73,8 +73,6 @@ int main( int argc, char **argv )
   Vec        x,xl,xu;               /* solution vector  and bounds*/
   PetscBool   flg;                /* A return variable when checking for user options */
   TaoSolver  tao;                  /* TAO_SOLVER solver context */
-  PetscReal  ff,gnorm,cnorm;       /* iteration information */
-  PetscInt   iter;
   ISLocalToGlobalMapping isltog;   /* local-to-global mapping object */
   TaoSolverTerminationReason reason;
   Mat         H_shell;                  /* to test matrix-free submatrices */
@@ -181,7 +179,6 @@ int main( int argc, char **argv )
   ierr = TaoSolverView(tao,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   if (reason <= 0){
     PetscPrintf(PETSC_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");
-    PetscPrintf(PETSC_COMM_WORLD,"Iteration: %d, f: %4.2e, Residual: %4.2e, Infeas: %4.2e\n",iter,ff,gnorm,cnorm);
   }
   /* Free TAO data structures */
   ierr = TaoSolverDestroy(tao); CHKERRQ(ierr);

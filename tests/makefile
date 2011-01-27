@@ -153,22 +153,98 @@ runtest_plate2f:
 	${RM} -f test_plate2f_1.tmp
 
 runtest_eptorsion1: 
-	-@${MPIEXEC} -np 2 ./test_eptorsion1 > test_eptorsion1_1.tmp 2>&1; \
+	-@${MPIEXEC} -np 1 ./test_eptorsion1 -tao_smonitor -tao_method tao_lmvm > test_eptorsion1_1.tmp 2>&1; \
 	if (${DIFF} output/test_eptorsion1_1.out test_eptorsion1_1.tmp) then true;\
         else echo "Possible problem with test_eptorsion1_1, diffs above"; fi; \
 	${RM} -f test_eptorsion1_1.tmp
 
+runtest_eptorsion1_2:
+	-@${MPIEXEC} -np 1 ./test_eptorsion1 -tao_smonitor -tao_method tao_nls \
+	 > test_eptorsion1_2.tmp 2>&1; \
+	if (${DIFF} output/test_eptorsion1_2.out test_eptorsion1_2.tmp) then true;\
+	else echo "Possible problem with test_eptorsion1_2, diffs above"; fi;\
+	${RM} -f test_eptorsion1_2.tmp
+
+runtest_eptorsion1_3:
+	-@${MPIEXEC} -np 1 ./test_eptorsion1 -tao_smonitor -tao_method tao_cg \
+        -tao_cg_type prp > test_eptorsion1_3.tmp 2>&1; \
+	if (${DIFF} output/test_eptorsion1_3.out test_eptorsion1_3.tmp) then true;\
+	else echo "Possible problem with test_eptorsion1_3, diffs above"; fi;\
+	${RM} -f test_eptorsion1_3.tmp
+
+runtest_eptorsion1_4:
+	-@${MPIEXEC} -np 1 ./test_eptorsion1 -tao_smonitor -tao_method tao_ntr \
+         > test_eptorsion1_4.tmp 2>&1; \
+	if (${DIFF} output/test_eptorsion1_4.out test_eptorsion1_4.tmp) then true;\
+	else echo "Possible problem with test_eptorsion1_4, diffs above"; fi;\
+	${RM} -f test_eptorsion1_4.tmp
+
+
+
 runtest_eptorsion2: 
-	-@${MPIEXEC} -np 2 ./test_eptorsion2 > test_eptorsion2_1.tmp 2>&1; \
+	-@${MPIEXEC} -np 1 ./test_eptorsion2 -tao_smonitor -tao_method tao_nls \
+	> test_eptorsion2_1.tmp 2>&1; \
 	if (${DIFF} output/test_eptorsion2_1.out test_eptorsion2_1.tmp) then true;\
         else echo "Possible problem with test_eptorsion2_1, diffs above"; fi; \
 	${RM} -f test_eptorsion2_1.tmp
 
+runtest_eptorsion2_2: 
+	-@${MPIEXEC} -np 2 ./test_eptorsion2 -tao_smonitor -tao_method tao_nls \
+	 > test_eptorsion2_2.tmp 2>&1; \
+	if (${DIFF} output/test_eptorsion2_2.out test_eptorsion2_2.tmp) then true;\
+        else echo "Possible problem with test_eptorsion2_2, diffs above"; fi; \
+	${RM} -f test_eptorsion2_2.tmp
+
+runtest_eptorsion2_3: 
+	-@${MPIEXEC} -np 1 ./test_eptorsion2 -tao_smonitor -tao_method tao_ntr \
+	> test_eptorsion2_3.tmp 2>&1; \
+	if (${DIFF} output/test_eptorsion2_3.out test_eptorsion2_3.tmp) then true;\
+        else echo "Possible problem with test_eptorsion2_3, diffs above"; fi; \
+	${RM} -f test_eptorsion2_3.tmp
+
+runtest_eptorsion2_4: 
+	-@${MPIEXEC} -np 2 ./test_eptorsion2 -mx 16 -my 16 -tao_smonitor \
+	-tao_method tao_ntr > test_eptorsion2_4.tmp 2>&1; \
+	if (${DIFF} output/test_eptorsion2_4.out test_eptorsion2_4.tmp) then true;\
+        else echo "Possible problem with test_eptorsion2_4, diffs above"; fi; \
+	${RM} -f test_eptorsion2_4.tmp
+
+runtest_eptorsion2_5: 
+	-@${MPIEXEC} -np 1 ./test_eptorsion2 -tao_method tao_lmvm -tao_smonitor \
+	> test_eptorsion2_5.tmp 2>&1; \
+	if (${DIFF} output/test_eptorsion2_5.out test_eptorsion2_5.tmp) then true;\
+        else echo "Possible problem with test_eptorsion2_5, diffs above"; fi; \
+	${RM} -f test_eptorsion2_5.tmp
+
+runtest_eptorsion2_6: 
+	-@${MPIEXEC} -np 3 ./test_eptorsion2 -tao_method tao_lmvm -mx 16 -my 16 \
+	 -tao_smonitor  test_eptorsion2_6.tmp 2>&1; \
+	if (${DIFF} output/test_eptorsion2_6.out test_eptorsion2_6.tmp) then true;\
+        else echo "Possible problem with test_eptorsion2_6, diffs above"; fi; \
+	${RM} -f test_eptorsion2_6.tmp
+
+
 runtest_eptorsion2f: 
-	-@${MPIEXEC} -np 2 ./test_eptorsion2f > test_eptorsion2f_1.tmp 2>&1; \
+	-@${MPIEXEC} -np 1 ./test_eptorsion2f -tao_smonitor -tao_method tao_nls \
+	 > test_eptorsion2f_1.tmp 2>&1; \
 	if (${DIFF} output/test_eptorsion2f_1.out test_eptorsion2f_1.tmp) then true;\
         else echo "Possible problem with test_eptorsion2f_1, diffs above"; fi; \
 	${RM} -f test_eptorsion2f_1.tmp
+
+runtest_eptorsion2f_1: 
+	-@${MPIEXEC} -np 2 ./test_eptorsion2f -tao_smonitor -tao_method tao_nls \
+	 > test_eptorsion2f_1.tmp 2>&1; \
+	if (${DIFF} output/test_eptorsion2f_1.out test_eptorsion2f_1.tmp) then true;\
+        else echo "Possible problem with test_eptorsion2f_1, diffs above"; fi; \
+	${RM} -f test_eptorsion2f_1.tmp
+
+runtest_eptorsion2f_2: 
+	-@${MPIEXEC} -np 3 ./test_eptorsion2f -tao_smonitor -tao_method tao_lmvm \
+	-mx 16 -my 16  > test_eptorsion2f_1.tmp 2>&1; \
+	if (${DIFF} output/test_eptorsion2f_1.out test_eptorsion2f_1.tmp) then true;\
+        else echo "Possible problem with test_eptorsion2f_1, diffs above"; fi; \
+	${RM} -f test_eptorsion2f_1.tmp
+
 
 runtest_minsurf1: 
 	-@${MPIEXEC} -np 1 ./test_minsurf1 > test_minsurf1_1.tmp 2>&1; \

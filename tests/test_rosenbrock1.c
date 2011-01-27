@@ -98,7 +98,7 @@ int main(int argc,char **argv)
 
   /* Get termination information */
   info = TaoSolverGetConvergedReason(tao,&reason); CHKERRQ(info);
-  info = TaoSolverView(tao,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(info);
+  // info = TaoSolverView(tao,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(info);
   if (reason <= 0)
     PetscPrintf(MPI_COMM_WORLD,"Try a different TAO type, adjust some parameters, or check the function evaluation routines\n");
 

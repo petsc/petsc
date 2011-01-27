@@ -130,10 +130,10 @@
          print *,'or check the function evaluation routines.'
       endif
 
-!  TaoView() prints ierr about the TAO solver; the option
+!  TaoSolverView() prints ierr about the TAO solver; the option
 !      -tao_view 
 !  can alternatively be used to activate this at runtime.
-      call TaoSolverView(tao,PETSC_VIEWER_STDOUT_SELF,ierr)
+!      call TaoSolverView(tao,PETSC_VIEWER_STDOUT_SELF,ierr)
       
 
 !  Free TAO data structures

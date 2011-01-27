@@ -24,7 +24,7 @@ POUNDer
 KT?
 BNLS?
 
-rosenbrock1 fails for ntr
+rosenbrock1 fails for ntr (endless loop)
 
 tabs for view()
 
@@ -40,7 +40,6 @@ Decisions to make:
 finish examples
   combustion3
   ginzland3
-  jbearing3
   jbearing3f
   minsurf3
   - generate output

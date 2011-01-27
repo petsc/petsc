@@ -810,8 +810,7 @@ PetscErrorCode TaoSolverDefaultSMonitor(TaoSolver tao, void *dummy)
   fct=tao->fc;
   gnorm=tao->residual;
   ierr=PetscPrintf(((PetscObject)tao)->comm,"iter = %d,",its); CHKERRQ(ierr);
-  ierr=PetscPrintf(((PetscObject)tao)->comm," Function value: %12.10e,",fct); CHKERRQ(ierr);
-  ierr=PetscPrintf(((PetscObject)tao)->comm,"  Residual: %12.10e \n",gnorm);CHKERRQ(ierr);
+  ierr=PetscPrintf(((PetscObject)tao)->comm," Function value %g,",fct); CHKERRQ(ierr);
   if (gnorm > 1.e-6) {
     ierr=PetscPrintf(((PetscObject)tao)->comm," Residual: %7.6f \n",gnorm);CHKERRQ(ierr);
   } else if (gnorm > 1.e-11) {
