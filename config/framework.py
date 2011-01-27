@@ -48,6 +48,7 @@ import tempfile
 
 import os
 import re
+import platform
 # workarround for python2.2 which does not have pathsep
 if not hasattr(os.path,'pathsep'): os.path.pathsep=':'
 
@@ -801,7 +802,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.log.write('Starting Configure Run at '+time.ctime(time.time())+'\n')
     self.log.write('Configure Options: '+self.getOptionsString()+'\n')
     self.log.write('Working directory: '+os.getcwd()+'\n')
-    self.log.write('Machine uname:\n' + str(os.uname())+'\n')
+    self.log.write('Machine platform: ' + str(platform.platform())+'\n')
     self.log.write('Python version:\n' + sys.version+'\n')
     self.log.write(('='*80)+'\n')
     return
