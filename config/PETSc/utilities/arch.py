@@ -48,7 +48,7 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
           raise RuntimeError('PETSC_ARCH is the empty string in your environment. It must either be a valid string, or not be defined in the environment at all.')
         self.arch = os.environ['PETSC_ARCH']
       else:
-        import platform
+        import sys
         self.arch = 'arch-' + sys.platform
         # use opt/debug, c/c++ tags.
         self.arch+= '-'+self.languages.clanguage.lower()
