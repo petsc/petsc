@@ -385,15 +385,15 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
       
       /* Solve the trust region subproblem */
       if (NTR_KSP_NASH == tr->ksp_type) {
-	ierr = KSPNASHSetRadius(tao->ksp,tr->max_radius); CHKERRQ(ierr);
+	ierr = KSPNASHSetRadius(tao->ksp,tr->radius); CHKERRQ(ierr);
 	ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
 	ierr = KSPNASHGetNormD(tao->ksp, &norm_d); CHKERRQ(ierr);
       } else if (NTR_KSP_STCG == tr->ksp_type) {
-	ierr = KSPSTCGSetRadius(tao->ksp,tr->max_radius); CHKERRQ(ierr);
+	ierr = KSPSTCGSetRadius(tao->ksp,radius); CHKERRQ(ierr);
 	ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
 	ierr = KSPSTCGGetNormD(tao->ksp, &norm_d); CHKERRQ(ierr);
       } else { //NTR_KSP_GLTR
-	ierr = KSPGLTRSetRadius(tao->ksp,tr->max_radius); CHKERRQ(ierr);
+	ierr = KSPGLTRSetRadius(tao->ksp,radius); CHKERRQ(ierr);
 	ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
 	ierr = KSPGLTRGetNormD(tao->ksp, &norm_d); CHKERRQ(ierr);
       }
@@ -417,15 +417,15 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
           radius = PetscMin(radius, tr->max_radius);
 	  
 	  if (NTR_KSP_NASH == tr->ksp_type) {
-	    ierr = KSPNASHSetRadius(tao->ksp,tr->max_radius); CHKERRQ(ierr);
+	    ierr = KSPNASHSetRadius(tao->ksp,radius); CHKERRQ(ierr);
 	    ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
 	    ierr = KSPNASHGetNormD(tao->ksp, &norm_d); CHKERRQ(ierr);
 	  } else if (NTR_KSP_STCG == tr->ksp_type) {
-	    ierr = KSPSTCGSetRadius(tao->ksp,tr->max_radius); CHKERRQ(ierr);
+	    ierr = KSPSTCGSetRadius(tao->ksp,radius); CHKERRQ(ierr);
 	    ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
 	    ierr = KSPSTCGGetNormD(tao->ksp, &norm_d); CHKERRQ(ierr);
 	  } else { //NTR_KSP_GLTR
-	    ierr = KSPGLTRSetRadius(tao->ksp,tr->max_radius); CHKERRQ(ierr);
+	    ierr = KSPGLTRSetRadius(tao->ksp,radius); CHKERRQ(ierr);
 	    ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
 	    ierr = KSPGLTRGetNormD(tao->ksp, &norm_d); CHKERRQ(ierr);
 	  }
