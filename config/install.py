@@ -59,7 +59,7 @@ class Installer(script.Script):
     self.setCompilers  = self.framework.require('config.setCompilers',         None)
     self.arch          = self.framework.require('PETSc.utilities.arch',        None)
     self.petscdir      = self.framework.require('PETSc.utilities.petscdir',    None)
-    self.makesys       = self.framework.require('PETSc.utilities.Make',        None)
+    self.makesys       = self.framework.require('config.programs',        None)
     self.compilers     = self.framework.require('config.compilers',            None)
     return
   

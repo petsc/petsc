@@ -60,6 +60,7 @@ class Configure(config.base.Configure):
       - Specify --with-shared-libraries
       - Have found a working shared linker
     Defines PETSC_USE_SHARED_LIBRARIES if they are used'''
+    import sys
 
     self.useShared = self.framework.argDB['with-shared-libraries'] and not self.setCompilers.staticLibraries
 

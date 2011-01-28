@@ -8,7 +8,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
-    self.defineAutoconfMacros()
     return
 
   def __str2__(self):
@@ -35,7 +34,6 @@ class Configure(config.base.Configure):
     self.petscdir      = framework.require('PETSc.utilities.petscdir', self.setCompilers)
     self.languages     = framework.require('PETSc.utilities.languages',self.setCompilers)
     self.debugging     = framework.require('PETSc.utilities.debugging',self.setCompilers)
-    self.make          = framework.require('PETSc.utilities.Make',     self)
     self.CHUD          = framework.require('PETSc.utilities.CHUD',     self)        
     self.compilers     = framework.require('config.compilers',         self)
     self.types         = framework.require('config.types',             self)
@@ -93,10 +91,6 @@ class Configure(config.base.Configure):
     self.libraries.libraries.extend(libraries1)
     return
 
-  def defineAutoconfMacros(self):
-    self.hostMacro = 'dnl Version: 2.13\ndnl Variable: host_cpu\ndnl Variable: host_vendor\ndnl Variable: host_os\nAC_CANONICAL_HOST'
-    return
-    
   def Dump(self):
     ''' Actually put the values into the configuration files '''
     # eventually everything between -- should be gone

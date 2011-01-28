@@ -122,7 +122,7 @@ class PETScMaker(script.Script):
    self.petscdir      = self.framework.require('PETSc.utilities.petscdir',    None)
    self.languages     = self.framework.require('PETSc.utilities.languages',   None)
    self.debugging     = self.framework.require('PETSc.utilities.debugging',   None)
-   self.make          = self.framework.require('PETSc.utilities.Make',        None)
+   self.make          = self.framework.require('config.programs',        None)
    self.CHUD          = self.framework.require('PETSc.utilities.CHUD',        None)
    self.compilers     = self.framework.require('config.compilers',            None)
    self.types         = self.framework.require('config.types',                None)
@@ -375,7 +375,7 @@ class PETScMaker(script.Script):
    return
 
  def linkShared(self, sharedLib, libDir, tmpDir):
-   osName = self.arch.hostOsBase
+   osName = sys.platform
    # PCC_LINKER PCC_LINKER_FLAGS
    linker      = self.setCompilers.getLinker()
    linkerFlags = self.setCompilers.getLinkerFlags()
@@ -399,7 +399,7 @@ class PETScMaker(script.Script):
      self.executeShellCommand(cmd, log=self.log)
      os.chdir(oldDir)
    else:
-     if osName == 'linux':
+     if osName == 'linux2':
        cmd = linker+' -shared -Wl,-soname,'+os.path.basename(sharedLib)+' -o '+sharedLib+' *.o '+externalLib
      elif osName.startswith('darwin'):
        cmd   = ''

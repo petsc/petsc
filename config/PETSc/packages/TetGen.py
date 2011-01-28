@@ -125,7 +125,7 @@ class Configure(PETSc.package.NewPackage):
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
-    self.make            = framework.require('PETSc.utilities.Make', self)
+    self.make            = framework.require('config.programs', self)
     self.deps            = []
     return
 
@@ -173,9 +173,9 @@ class Configure(PETSc.package.NewPackage):
 
       g.write('BUILDSHAREDLIB = yes\n')
       if config.setCompilers.Configure.isSolaris() and config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
-        g.write('shared_arch: shared_'+self.petscarch.hostOsBase+'gnu\n')
+        g.write('shared_arch: shared_'+sys.platform+'gnu\n')
       else:
-        g.write('shared_arch: shared_'+self.petscarch.hostOsBase+'\n')
+        g.write('shared_arch: shared_'+sys.platform+'\n')
         g.write('''
 tetgen_shared: 
 	-@if [ "${BUILDSHAREDLIB}" = "no" ]; then \\
