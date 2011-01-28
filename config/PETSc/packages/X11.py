@@ -20,7 +20,7 @@ class Configure(PETSc.package.NewPackage,config.autoconf.Configure):
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
-    self.make = framework.require('PETSc.utilities.Make', self)
+    self.make = framework.require('config.programs', self)
     return
 
   def generateGuesses(self):

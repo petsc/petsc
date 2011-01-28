@@ -43,7 +43,7 @@ class PETScMaker(script.Script):
    self.petscdir      = self.framework.require('PETSc.utilities.petscdir',    None)
    self.languages     = self.framework.require('PETSc.utilities.languages',   None)
    self.debugging     = self.framework.require('PETSc.utilities.debugging',   None)
-   self.make          = self.framework.require('PETSc.utilities.Make',        None)
+   self.make          = self.framework.require('config.programs',             None)
    self.CHUD          = self.framework.require('PETSc.utilities.CHUD',        None)
    self.compilers     = self.framework.require('config.compilers',            None)
    self.types         = self.framework.require('config.types',                None)
