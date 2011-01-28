@@ -41,7 +41,7 @@ class Compiler(config.compile.processor.Processor):
     base, ext = os.path.splitext(source)
     if ext == '.h':
       return None
-    return base+'.o'
+    return base+self.targetExtension
 
   def getCommand(self, sourceFiles, outputFile = None):
     '''If no outputFile is given, do not execute anything'''
