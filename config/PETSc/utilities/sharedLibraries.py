@@ -61,16 +61,17 @@ class Configure(config.base.Configure):
       - Specify --with-shared-libraries
       - Have found a working shared linker
     Defines PETSC_USE_SHARED_LIBRARIES if they are used'''
+    import sys
 
     self.useShared = self.framework.argDB['with-shared-libraries'] and not self.setCompilers.staticLibraries
     
     if self.useShared:
       if config.setCompilers.Configure.isSolaris() and config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
-        self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase+'gnu')
+        self.addMakeRule('shared_arch','shared_'+sys.platform+'gnu')
       elif '-qmkshrobj' in self.setCompilers.sharedLibraryFlags:
         self.addMakeRule('shared_arch','shared_linux_ibm')
       else:
-        self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase)
+        self.addMakeRule('shared_arch','shared_'+sys.platform)
       self.addMakeMacro('BUILDSHAREDLIB','yes')
     else:
       self.addMakeRule('shared_arch','')

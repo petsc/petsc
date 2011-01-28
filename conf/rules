@@ -897,25 +897,24 @@ shared_freebsd3: shared_freebsd
 shared_kfreebsd5: shared_kfreebsd
 shared_kfreebsd6: shared_kfreebsd
 
-shared_kfreebsd: shared_linux
+shared_kfreebsd: shared_linux2
+shared_linux: shared_linux2
 
 shared_aix3:
 shared_aix4:
 shared_aix5:
 shared_aix6:
 
-shared_darwin6: 
-
 shared_hpux11: shared_hpux
 
 # rules for building different shared libraries
 shared_none:
 
-shared_linux_ibm:
+shared_linux2_ibm:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
         ${CLINKER} -qmkshrobj -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}
 
-shared_linux_intel:
+shared_linux2_intel:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${CLINKER} -shared -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}
 
@@ -932,7 +931,7 @@ shared_hpux:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${LD} -b *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX}
 
-shared_linux:
+shared_linux2:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${CLINKER} -shared -Wl,-soname,${LIBNAME}.${SL_LINKER_SUFFIX} -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC} ${OTHERSHAREDLIBS}
 
@@ -951,11 +950,12 @@ shared_libtool:
 	${LIBTOOL} --mode=link ${CLINKER} ${CFLAGS} ${CCPPFLAGS} -rpath ${INSTALL_LIB_DIR} -o ${LIBNAME}.la *.lo; \
 	${LIBTOOL} --mode=install ${PETSC_DIR}/bin/config/install-sh ${LIBNAME}.la ${INSTALL_LIB_DIR}
 
-shared_darwin8: shared_darwin7
-shared_darwin9: shared_darwin7
-shared_darwin10: shared_darwin7
+shared_darwin7: shared_darwin
+shared_darwin8: shared_darwin
+shared_darwin9: shared_darwin
+shared_darwin10: shared_darwin
 
-shared_darwin7: 
+shared_darwin:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
         if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="${PETSC_EXTERNAL_LIB_BASIC}   ${SYS_LIB}  ${OTHERSHAREDLIBS}  ${SL_LINKER_LIBS} -lm -lc "; fi;\
         if [ "${LIBNAME}" = "libpetscsys" ]; then OTHERLIBS="  ${SYS_LIB}  ${OTHERSHAREDLIBS}  ${SL_LINKER_LIBS} -lm -lc "; fi;\
