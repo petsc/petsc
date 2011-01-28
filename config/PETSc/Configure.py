@@ -584,6 +584,7 @@ class Configure(config.base.Configure):
 
   def configureLinux(self):
     '''Linux specific stuff'''
+    # TODO: Test for this by mallocing an odd number of floats and checking the address
     self.addDefine('HAVE_DOUBLE_ALIGN_MALLOC', 1)
     return
 

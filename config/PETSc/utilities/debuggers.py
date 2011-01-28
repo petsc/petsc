@@ -13,12 +13,12 @@ class Configure(config.base.Configure):
 
   def __str__(self):
     return ''
-    
+
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-debugger=<gdb,dbx,etc>',   nargs.Arg(None, None, 'Debugger to use in PETSc'))
     return
-      
+
   def configureDebuggers(self):
     '''Find a default debugger and determine its arguments'''
     # We use the framework in order to remove the PETSC_ namespace
@@ -26,7 +26,7 @@ class Configure(config.base.Configure):
       self.getExecutable(self.framework.argDB['with-debugger'], getFullPath = 1)
       if not hasattr(self,self.framework.argDB['with-debugger']):
         raise RuntimeError('Cannot locate debugger indicated using --with-debugger='+self.framework.argDB['with-debugger'])
-    else:                               
+    else:
       self.getExecutable('gdb', getFullPath = 1)
       self.getExecutable('dbx', getFullPath = 1)
       self.getExecutable('xdb', getFullPath = 1)
@@ -36,7 +36,7 @@ class Configure(config.base.Configure):
       self.addMakeMacro('DSYMUTIL', self.dsymutil)
     else:
       self.addMakeMacro('DSYMUTIL', 'true')
-      
+
     if hasattr(self, 'gdb'):
       self.addDefine('USE_GDB_DEBUGGER', 1)
     elif hasattr(self, 'dbx'):
