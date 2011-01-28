@@ -17,9 +17,18 @@ class Preprocessor(config.compile.processor.Processor):
 class Compiler(config.compile.processor.Processor):
   '''The C compiler'''
   def __init__(self, argDB, usePreprocessorFlags = True):
-    config.compile.processor.Processor.__init__(self, argDB, 'CC', 'CFLAGS', '.c', '.o')
-    self.requiredFlags[-1]  = '-c'
-    self.outputFlag         = '-o'
+    import platform
+    if platform.system() == 'Windows':
+      ext = '.obj'
+    else:
+      ext = '.o'
+    config.compile.processor.Processor.__init__(self, argDB, 'CC', 'CFLAGS', '.c', ext)
+    if platform.system() == 'Windows':
+      self.outputFlag         = '/Fo'
+      self.requiredFlags[-1]  = '/c'
+    else:
+      self.outputFlag         = '-o'
+      self.requiredFlags[-1]  = '-c'
     self.includeDirectories = sets.Set()
     if usePreprocessorFlags:
       self.flagsName.extend(Preprocessor(argDB).flagsName)
