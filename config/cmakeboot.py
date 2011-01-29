@@ -63,10 +63,13 @@ class PETScMaker(script.Script):
      langlist.append(('Cxx','CXX'))
    for petsclanguage,cmakelanguage in langlist:
      self.setCompilers.pushLanguage(petsclanguage)
-     options.append('-DCMAKE_'+cmakelanguage+'_COMPILER=' + self.compilers.getCompiler())
+     compiler = self.setCompilers.getCompiler()
      flags = [self.setCompilers.getCompilerFlags(),
               self.setCompilers.CPPFLAGS,
               self.CHUD.CPPFLAGS]
+     if compiler.split()[0].endswith('win32fe'): # Hack to support win32fe without changing the rest of configure
+       flags = compiler.split()[1:] + flags
+       compiler = compiler.split()[0]
      options.append('-DCMAKE_'+cmakelanguage+'_FLAGS=' + ''.join(flags))
      options.append('-DCMAKE_'+cmakelanguage+'_COMPILER=' + self.setCompilers.getCompiler())
      self.setCompilers.popLanguage()
