@@ -658,6 +658,23 @@ namespace ALE {
       return this->_orders[bundle.ptr()][name];
     };
     template<typename ABundle_, typename Section_>
+    const Obj<order_type>& getGlobalOrderWithBC(const Obj<ABundle_>& bundle, const std::string& name, const Obj<Section_>& section, const int space = -1) {
+      if ((this->_orders.find(bundle.ptr()) == this->_orders.end()) ||
+          (this->_orders[bundle.ptr()].find(name) == this->_orders[bundle.ptr()].end())) {
+        bundle->constructOverlap();
+        Obj<order_type>        order       = new order_type(bundle->comm(), bundle->debug());
+        Obj<send_overlap_type> sendOverlap = bundle->getSendOverlap();
+        Obj<recv_overlap_type> recvOverlap = bundle->getRecvOverlap();
+
+        if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Creating new global order: " << name << std::endl;}
+        this->constructOrderBC(order, sendOverlap, recvOverlap, section->getChart(), section, space);
+        this->_orders[bundle.ptr()][name] = order;
+      } else {
+        if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old global order: " << name << std::endl;}
+      }
+      return this->_orders[bundle.ptr()][name];
+    };
+    template<typename ABundle_, typename Section_>
     const Obj<order_type>& getGlobalOrderWithBC(const Obj<ABundle_>& bundle, const std::string& name, const typename Section_::chart_type& points, const Obj<Section_>& section, const int space = -1) {
       if ((this->_ordersBC.find(bundle.ptr()) == this->_ordersBC.end()) ||
           (this->_ordersBC[bundle.ptr()].find(name) == this->_ordersBC[bundle.ptr()].end())) {
