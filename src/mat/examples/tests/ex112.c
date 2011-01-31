@@ -45,22 +45,26 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
 
   for(DIM = 1; DIM < 5; DIM++){
-    /* create vectors of length N=n^DIM */
     for(i = 0, N = 1; i < DIM; i++) N *= dim[i];
     ierr = PetscPrintf(PETSC_COMM_SELF, "\n %d-D: FFTW on vector of size %d \n",DIM,N);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
+
+    /* create FFTW object */
+    ierr = MatCreateSeqFFTW(PETSC_COMM_SELF,DIM,dim,&A);CHKERRQ(ierr);
+   
+    /* create vectors of length N=n^DIM */
+    ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr); 
+    ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
-    ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr);
-    ierr = VecDuplicate(x,&z);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);
+
+    /* set values of space vector x */
     if (function == RANDOM) {
       ierr = VecSetRandom(x, rdm);CHKERRQ(ierr);
     } else if (function == CONSTANT) {
       ierr = VecSet(x, 1.0);CHKERRQ(ierr);
     } else if (function == TANH) {
       PetscScalar *a;
-
       ierr = VecGetArray(x, &a);CHKERRQ(ierr);
       for(i = 0; i < N; ++i) {
         a[i] = tanh((i - N/2.0)*(10.0/N));
@@ -69,15 +73,11 @@ PetscInt main(PetscInt argc,char **args)
     }
     if (view) {ierr = VecView(x, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
 
-    /* create FFTW object */
-    ierr = MatCreateSeqFFTW(PETSC_COMM_SELF,DIM,dim,&A);CHKERRQ(ierr);
-
     /* apply FFTW_FORWARD and FFTW_BACKWARD several times on same x, y, and z */
     for (i=0; i<3; i++){
       ierr = MatMult(A,x,y);CHKERRQ(ierr); 
       if (view && i == 0) {ierr = VecView(y, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}   
       ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
-      
  
       /* compare x and z. FFTW computes an unnormalized DFT, thus z = N*x */
       s = 1.0/(PetscReal)N;
@@ -98,7 +98,6 @@ PetscInt main(PetscInt argc,char **args)
 
       ierr = MatMult(A,x,y);CHKERRQ(ierr);  
       ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
-      
  
       /* compare x and z. FFTW computes an unnormalized DFT, thus z = N*x */
       s = 1.0/(PetscReal)N;
