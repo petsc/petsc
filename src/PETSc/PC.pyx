@@ -38,7 +38,7 @@ class PCType(object):
     PFMG         = S_(PCPFMG)
     SYSPFMG      = S_(PCSYSPFMG)
     REDISTRIBUTE = S_(PCREDISTRIBUTE)
-    SACUDA       = S_(PCSACUDA)
+    SACUSP       = S_(PCSACUSP)
 
 class PCSide(object):
     # native

@@ -6,9 +6,9 @@ class VecType(object):
     STANDARD = S_(VECSTANDARD)
     SHARED   = S_(VECSHARED)
     SIEVE    = S_(VECSIEVE)
-    SEQCUDA  = S_(VECSEQCUDA)
-    MPICUDA  = S_(VECMPICUDA)
-    CUDA     = S_(VECCUDA)
+    SEQCUSP  = S_(VECSEQCUSP)
+    MPICUSP  = S_(VECMPICUSP)
+    CUSP     = S_(VECCUSP)
 
 class VecOption(object):
     IGNORE_OFF_PROC_ENTRIES = VEC_IGNORE_OFF_PROC_ENTRIES

@@ -11,9 +11,9 @@
 #define MATSEQAIJCRL   MATSEQCRL
 #define MATMPIAIJCRL   MATMPICRL
 #define MATAIJCRL      MATCRL
-#define MATAIJCUDA     "aijcuda"
-#define MATSEQAIJCUDA  "seqaijcuda"
-#define MATMPIAIJCUDA  "mpiaijcuda"
+#define MATAIJCUSP     "aijcusp"
+#define MATSEQAIJCUSP  "seqaijcusp"
+#define MATMPIAIJCUSP  "mpiaijcusp"
 #define MATSEQCUFFT    "seqcufft"
 #define MATSUBMATRIX   "submatrix"
 #define MATNEST        "nest"

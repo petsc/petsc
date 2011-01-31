@@ -37,7 +37,7 @@ cdef extern from * nogil:
     PetscPCType PCPFMG
     PetscPCType PCSYSPFMG
     PetscPCType PCREDISTRIBUTE
-    PetscPCType PCSACUDA
+    PetscPCType PCSACUSP
 
     ctypedef enum PetscPCSide "PCSide":
         PC_LEFT
