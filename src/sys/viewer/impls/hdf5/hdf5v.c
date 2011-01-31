@@ -63,6 +63,7 @@ PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[
   MPI_Info          info = MPI_INFO_NULL;
 #endif
   hid_t             plist_id;
+  herr_t            herr;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -70,7 +71,7 @@ PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[
   /* Set up file access property list with parallel I/O access */
   plist_id = H5Pcreate(H5P_FILE_ACCESS);
 #if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
-  H5Pset_fapl_mpio(plist_id, ((PetscObject)viewer)->comm, info);
+  herr = H5Pset_fapl_mpio(plist_id, ((PetscObject)viewer)->comm, info);CHKERRQ(herr);
 #endif
   /* Create or open the file collectively */
   switch (hdf5->btype) {
@@ -100,6 +101,7 @@ PetscErrorCode  PetscViewerCreate_HDF5(PetscViewer v)
  
   PetscFunctionBegin;
   ierr = PetscNewLog(v, PetscViewer_HDF5, &hdf5);CHKERRQ(ierr);
+
   v->data         = (void *) hdf5;
   v->ops->destroy = PetscViewerDestroy_HDF5;
   v->ops->flush   = 0;
