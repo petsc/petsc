@@ -767,8 +767,14 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   count[dim] = 2;
   ++dim;
 #endif
-  memspace = H5Screate_simple(dim, count, NULL);
-  if (memspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
+  if (xin->map->n > 0) {
+    memspace = H5Screate_simple(dim, count, NULL);
+    if (memspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
+  } else {
+    /* Can't create dataspace with zero for any dimension, so create null dataspace. */
+    memspace = H5Screate(H5S_NULL);
+    if (memspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate()");
+  }
 
   /* Select hyperslab in the file */
   ierr = VecGetOwnershipRange(xin, &low, PETSC_NULL);CHKERRQ(ierr);
@@ -790,6 +796,10 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   filespace = H5Dget_space(dset_id);
   if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Dget_space()");
   status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);CHKERRQ(status);
+  if (xin->map->n == 0) {
+    /* Reset filespace to none when not writing data. */
+    status = H5Sselect_none(filespace);CHKERRQ(status);
+  }
 
   /* Create property list for collective dataset write */
   plist_id = H5Pcreate(H5P_DATASET_XFER);

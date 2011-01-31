@@ -55,7 +55,8 @@ int main(int argc,char **args)
   PetscMPIInt    size;
   PetscBool      flg;
   PetscBool      user_subdomains = PETSC_FALSE;     
-  PetscScalar    v, one = 1.0, e;
+  PetscScalar    v, one = 1.0;
+  PetscReal      e;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

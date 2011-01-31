@@ -8,7 +8,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
-    self.defineAutoconfMacros()
     return
 
   def __str2__(self):
@@ -92,10 +91,6 @@ class Configure(config.base.Configure):
     self.libraries.libraries.extend(libraries1)
     return
 
-  def defineAutoconfMacros(self):
-    self.hostMacro = 'dnl Version: 2.13\ndnl Variable: host_cpu\ndnl Variable: host_vendor\ndnl Variable: host_os\nAC_CANONICAL_HOST'
-    return
-    
   def Dump(self):
     ''' Actually put the values into the configuration files '''
     # eventually everything between -- should be gone
@@ -583,6 +578,7 @@ class Configure(config.base.Configure):
 
   def configureLinux(self):
     '''Linux specific stuff'''
+    # TODO: Test for this by mallocing an odd number of floats and checking the address
     self.addDefine('HAVE_DOUBLE_ALIGN_MALLOC', 1)
     return
 
