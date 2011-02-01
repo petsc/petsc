@@ -54,6 +54,12 @@ class Linker(config.compile.C.Linker):
     self.libraries  = sets.Set()
     return
 
+  def getExtraArguments(self):
+    if not hasattr(self, '_extraArguments'):
+      return ''
+    return self._extraArguments
+  extraArguments = property(getExtraArguments, config.compile.processor.Processor.setExtraArguments, doc = 'Optional arguments for the end of the command')
+
 class SharedLinker(config.compile.C.SharedLinker):
   '''The CUDA shared linker: Just use regular linker for now'''
   def __init__(self, argDB):
