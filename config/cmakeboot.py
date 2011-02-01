@@ -71,7 +71,7 @@ class PETScMaker(script.Script):
        flags = compiler.split()[1:] + flags
        compiler = compiler.split()[0]
      options.append('-DCMAKE_'+cmakelanguage+'_FLAGS=' + ''.join(flags))
-     options.append('-DCMAKE_'+cmakelanguage+'_COMPILER=' + self.setCompilers.getCompiler())
+     options.append('-DCMAKE_'+cmakelanguage+'_COMPILER=' + compiler)
      self.setCompilers.popLanguage()
    cmd = [self.cmake.cmake, self.petscdir.dir] + map(lambda x:x.strip(), options) + args
    archdir = os.path.join(self.petscdir.dir, self.arch.arch)
