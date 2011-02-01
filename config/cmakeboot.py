@@ -69,7 +69,7 @@ class PETScMaker(script.Script):
               self.CHUD.CPPFLAGS]
      if compiler.split()[0].endswith('win32fe'): # Hack to support win32fe without changing the rest of configure
        flags = compiler.split()[1:] + flags
-       compiler = compiler.split()[0]
+       compiler = compiler.split()[0] + '.exe'
      options.append('-DCMAKE_'+cmakelanguage+'_FLAGS=' + ''.join(flags))
      options.append('-DCMAKE_'+cmakelanguage+'_COMPILER=' + compiler)
      self.setCompilers.popLanguage()
