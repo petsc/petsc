@@ -55,19 +55,22 @@ class Linker(config.compile.C.Linker):
     return
 
 class SharedLinker(config.compile.C.SharedLinker):
-  '''The CUDA shared linker, just use C for now'''
+  '''The CUDA shared linker: Just use regular linker for now'''
   def __init__(self, argDB):
+    self.language = 'CUDA'
     config.compile.C.SharedLinker.__init__(self, argDB)
     return
 
 class StaticLinker(config.compile.C.StaticLinker):
   '''The CUDA static linker, just use C for now'''
   def __init__(self, argDB):
+    self.language = 'CUDA'
     config.compile.C.StaticLinker.__init__(self, argDB)
     return
 
 class DynamicLinker(config.compile.C.DynamicLinker):
   '''The CUDA dynamic linker, just use C for now'''
   def __init__(self, argDB):
+    self.language = 'CUDA'
     config.compile.C.DynamicLinker.__init__(self, argDB)
     return
