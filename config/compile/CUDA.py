@@ -46,10 +46,10 @@ class Compiler(config.compile.processor.Processor):
 class Linker(config.compile.C.Linker):
   '''The CUDA linker'''
   def __init__(self, argDB):
-    self.language        = 'CUDA'
     self.compiler        = Compiler(argDB, usePreprocessorFlags = False)
     self.configLibraries = config.libraries.Configure(config.framework.Framework(clArgs = '', argDB = argDB, tmpDir = os.getcwd()))
     config.compile.processor.Processor.__init__(self, argDB, [self.compiler.name], ['CUDAC_LINKER_FLAGS'], '.o', '.a')
+    self.language   = 'CUDA'
     self.outputFlag = '-o'
     self.libraries  = sets.Set()
     return
@@ -57,20 +57,20 @@ class Linker(config.compile.C.Linker):
 class SharedLinker(config.compile.C.SharedLinker):
   '''The CUDA shared linker: Just use regular linker for now'''
   def __init__(self, argDB):
-    self.language = 'CUDA'
     config.compile.C.SharedLinker.__init__(self, argDB)
+    self.language = 'CUDA'
     return
 
 class StaticLinker(config.compile.C.StaticLinker):
   '''The CUDA static linker, just use C for now'''
   def __init__(self, argDB):
-    self.language = 'CUDA'
     config.compile.C.StaticLinker.__init__(self, argDB)
+    self.language = 'CUDA'
     return
 
 class DynamicLinker(config.compile.C.DynamicLinker):
   '''The CUDA dynamic linker, just use C for now'''
   def __init__(self, argDB):
-    self.language = 'CUDA'
     config.compile.C.DynamicLinker.__init__(self, argDB)
+    self.language = 'CUDA'
     return
