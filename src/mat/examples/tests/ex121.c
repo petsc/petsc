@@ -84,7 +84,7 @@ PetscInt main(PetscInt argc,char **args)
     if (view) {ierr = VecView(w, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
 
     /* create FFTW object */
-    ierr = MatCreateSeqFFTW(PETSC_COMM_SELF,DIM,dim,&A);CHKERRQ(ierr);
+    ierr = MatCreateFFTW(PETSC_COMM_SELF,DIM,dim,&A);CHKERRQ(ierr);
 
     /* Convolve x with w*/
     ierr = MatMult(A,x,y1);CHKERRQ(ierr);

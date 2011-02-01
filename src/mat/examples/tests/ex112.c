@@ -49,7 +49,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_SELF, "\n %d-D: FFTW on vector of size %d \n",DIM,N);CHKERRQ(ierr);
 
     /* create FFTW object */
-    ierr = MatCreateSeqFFTW(PETSC_COMM_SELF,DIM,dim,&A);CHKERRQ(ierr);
+    ierr = MatCreateFFTW(PETSC_COMM_SELF,DIM,dim,&A);CHKERRQ(ierr);
    
     /* create vectors of length N=n^DIM */
     ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr); 

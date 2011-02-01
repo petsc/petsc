@@ -1481,6 +1481,15 @@ runex141:
 	   ${DIFF} output/ex141.out ex141.tmp || echo "Possible problem with ex141, diffs above"; \
 	   ${RM} -f ex141.tmp
 
+runex143:
+	-@${MPIEXEC} -n 1 ./ex143  > ex143.tmp 2>&1; \
+	   ${DIFF} output/ex143.out ex143.tmp || echo "Possible problem with ex143, diffs above"; \
+	   ${RM} -f ex143.tmp
+runex143_2:
+	-@${MPIEXEC} -n 3 ./ex143  > ex143.tmp 2>&1; \
+	   ${DIFF} output/ex143.out ex143.tmp || echo "Possible problem with ex143_2, diffs above"; \
+	   ${RM} -f ex143.tmp
+
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc \
                                  runex10 ex10.rm ex11.PETSc runex11 runex11_2 runex11_3 runex11_4 ex11.rm ex14.PETSc \
