@@ -274,19 +274,17 @@ typedef PetscErrorCode (*PetscFwkPythonClearVTableFunction)
   (PetscFwk fwk, void **vtable_p);
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
-EXTERN_C_BEGIN
 static PetscFwkPythonCallFunction
        PetscFwkPythonCall = PETSC_NULL;
 static PetscFwkPythonLoadVTableFunction
        PetscFwkPythonLoadVTable = PETSC_NULL;
 static PetscFwkPythonClearVTableFunction
        PetscFwkPythonClearVTable = PETSC_NULL;
-EXTERN_C_END
 #else
 EXTERN_C_BEGIN
-PetscFwkPythonCallFunction        PetscFwkPythonCall;
-PetscFwkPythonLoadVTableFunction  PetscFwkPythonLoadVTable;
-PetscFwkPythonClearVTableFunction PetscFwkPythonClearVTable;
+extern PetscFwkPythonCallFunction        PetscFwkPythonCall;
+extern PetscFwkPythonLoadVTableFunction  PetscFwkPythonLoadVTable;
+extern PetscFwkPythonClearVTableFunction PetscFwkPythonClearVTable;
 EXTERN_C_END
 #endif
 
