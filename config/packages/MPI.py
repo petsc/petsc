@@ -12,7 +12,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.4/downloads/openmpi-1.4.3.tar.gz']
-    self.download_mpich     = ['http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.3.1/mpich2-1.3.1.tar.gz']
+    self.download_mpich     = ['http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.3.2/mpich2-1.3.2.tar.gz']
     self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
     self.includes           = ['mpi.h']
@@ -497,8 +497,6 @@ class Configure(config.package.Package):
     else:
       args.append('--without-mpe')
     args.append('--with-pm='+self.argDB['download-mpich-pm'])
-    if self.argDB['download-mpich-pm'] == 'hydra':
-      args.append('--with-hydra-bss=fork,ssh')
     # make MPICH behave properly for valgrind
     args.append('--enable-g=meminit')    
     args.append('--enable-fast')    
