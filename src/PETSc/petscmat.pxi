@@ -36,8 +36,9 @@ cdef extern from * nogil:
     PetscMatType MATSCATTER
     PetscMatType MATBLOCKMAT
     PetscMatType MATCOMPOSITE
-    PetscMatType MATSEQFFTW
-    PetscMatType MATSEQCUFFT
+    PetscMatType MATFFT
+    PetscMatType   MATFFTW
+    PetscMatType   MATSEQCUFFT
     PetscMatType MATTRANSPOSEMAT
     PetscMatType MATSCHURCOMPLEMENT
     #PetscMatType MATPYTHON

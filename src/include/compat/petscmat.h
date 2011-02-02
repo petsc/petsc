@@ -14,6 +14,8 @@
 #define MATAIJCUSP     "aijcusp"
 #define MATSEQAIJCUSP  "seqaijcusp"
 #define MATMPIAIJCUSP  "mpiaijcusp"
+#define MATFFT         "fft"
+#define MATFFTW        "fftw"
 #define MATSEQCUFFT    "seqcufft"
 #define MATSUBMATRIX   "submatrix"
 #define MATNEST        "nest"
