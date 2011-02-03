@@ -19,7 +19,7 @@ PetscInt main(PetscInt argc,char **args)
 {
   PetscErrorCode  ierr;
   PetscMPIInt     rank,size;
-  PetscInt        N0=5,N1=2,N=N0*N1;
+  PetscInt        N0=50,N1=20,N=N0*N1;
   PetscRandom     rdm;
   PetscScalar     a;
   PetscReal       enorm;
@@ -102,7 +102,7 @@ PetscInt main(PetscInt argc,char **args)
     dim[0] = N0; dim[1] = N1;
     if (!rank) printf("Use PETSc-FFTW interface...%d-DIM: %d %d\n",DIM,dim[0],dim[1]);
 
-    ierr = MatCreateSeqFFTW(PETSC_COMM_WORLD,DIM,dim,&A);CHKERRQ(ierr);
+    ierr = MatCreateFFTW(PETSC_COMM_WORLD,DIM,dim,&A);CHKERRQ(ierr);
 
     /* Create vectors that are compatible with parallel layout of A - must call MatGetVecs()! */
     ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr); 

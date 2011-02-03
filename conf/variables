@@ -46,8 +46,8 @@ LIBNAME    = ${INSTALL_LIB_DIR}/${LIBBASE}.${AR_LIB_SUFFIX}
 SOURCE     = ${SOURCEC} ${SOURCEF}
 OBJS       = ${OBJSC} ${OBJSF}
 
-CLINKER = ${PCC_LINKER} ${PCC_LINKER_FLAGS}
-FLINKER = ${FC_LINKER} ${FC_LINKER_FLAGS}
+CLINKER = ${PCC_LINKER} ${PCC_LINKER_FLAGS} ${CFLAGS}
+FLINKER = ${FC_LINKER} ${FC_LINKER_FLAGS} ${FFLAGS}
 #
 # Defines all libraries needed for using linear and nonlinear solvers, 
 # and all lower level PETSc components (such as vectors and matrices).

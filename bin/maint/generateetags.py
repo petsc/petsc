@@ -51,7 +51,7 @@ def createTags(etagfile,ctagfile,dirname,files):
   files= []
   gfiles = glob.glob(os.path.join(dirname,'*'))
   for file in gfiles:
-    if file.endswith('.c') or file.endswith('.cu') or file.endswith('.F') or file.endswith('.cpp') or file.endswith('.F90'):
+    if file.endswith('.h') or file.endswith('.c') or file.endswith('.cu') or file.endswith('.F') or file.endswith('.cpp') or file.endswith('.F90'):
       files.append(file)
   if files:
     (status,output) = commands.getstatusoutput('ctags -a -f '+ctagfile+' '+' '.join(files))

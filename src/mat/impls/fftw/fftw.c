@@ -13,7 +13,7 @@ EXTERN_C_END
 typedef struct {
   PetscInt       ndim;
   PetscInt       *dim;
-  PetscInt       N; /* global size of the transform */
+  PetscInt       n,N; /* local and global size of the transform */
   fftw_plan      p_forward,p_backward;
   unsigned       p_flag; /* planner flags, FFTW_ESTIMATE,FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */
   PetscScalar    *finarray,*foutarray,*binarray,*boutarray; /* keep track of arrays becaue fftw plan should be 
@@ -27,7 +27,7 @@ extern PetscErrorCode MatMultTranspose_MPIFFTW(Mat,Vec,Vec);
 extern PetscErrorCode MatDestroy_SeqFFTW(Mat);
 extern PetscErrorCode VecDestroy_MPIFFTW(Vec);
 extern PetscErrorCode MatGetVecs_FFTW(Mat,Vec*,Vec*);
-extern PetscErrorCode MatCreateSeqFFTW(MPI_Comm,PetscInt,const PetscInt [],Mat*);
+extern PetscErrorCode MatCreateFFTW(MPI_Comm,PetscInt,const PetscInt [],Mat*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqFFTW"
@@ -259,8 +259,8 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetVecs_FFTW"
-/*@
-   MatFFTWGetVecs - Get vector(s) compatible with the matrix, i.e. with the
+/*
+   MatGetVecs_FFTW - Get vector(s) compatible with the matrix, i.e. with the
      parallel layout determined by FFTW
 
    Collective on Mat
@@ -275,7 +275,7 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
   Level: advanced
 
 .seealso: MatCreateFFTW()
-@*/
+*/
 PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
 {
   PetscErrorCode ierr;
@@ -296,28 +296,26 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
   if (size == 1){ /* sequential case */
     if (fin) {ierr = VecCreateSeq(PETSC_COMM_SELF,N,fin);CHKERRQ(ierr);}
     if (fout){ierr = VecCreateSeq(PETSC_COMM_SELF,N,fout);CHKERRQ(ierr);}
-  } else { /* mpi case */
+  } else {        /* mpi case */
     ptrdiff_t      alloc_local,local_n0,local_0_start;
-    PetscInt       ndim=fftw->ndim,*dim=fftw->dim;
+    PetscInt       ndim=fftw->ndim,*dim=fftw->dim,n=fftw->n;
+    fftw_complex    *data_fin,*data_fout;
 
     switch (ndim){
     case 1:
       SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Not supported yet");
       break;
     case 2:
-      fftw_complex    *data_fin,*data_fout;
-      PetscInt        local_n;
       /* get local size */
       alloc_local = fftw_mpi_local_size_2d(dim[0],dim[1],comm,&local_n0,&local_0_start);
-      local_n=((PetscInt)local_n0)*dim[1];
       if (fin) {
         data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-        ierr = VecCreateMPIWithArray(comm,local_n,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
+        ierr = VecCreateMPIWithArray(comm,n,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
         (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
       }
       if (fout) {
         data_fout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-        ierr = VecCreateMPIWithArray(comm,local_n,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
+        ierr = VecCreateMPIWithArray(comm,n,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
         (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
       break;
@@ -334,15 +332,15 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatCreateSeqFFTW"
-/*@
-      MatCreateSeqFFTW - Creates a matrix object that provides sequential FFT
+#define __FUNCT__ "MatCreateFFTW"
+/*
+      MatCreateFFTW - Creates a matrix object that provides FFT
   via the external package FFTW
 
    Collective on MPI_Comm
 
    Input Parameter:
-+   comm - MPI communicator, set to PETSC_COMM_SELF
++   comm - MPI communicator
 .   ndim - the ndim-dimensional transform
 -   dim - array of size ndim, dim[i] contains the vector length in the i-dimension
 
@@ -354,12 +352,12 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
 
    Level: intermediate
    
-@*/
-PetscErrorCode  MatCreateSeqFFTW(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],Mat* A)
+*/
+PetscErrorCode  MatCreateFFTW(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],Mat* A)
 {
   PetscErrorCode ierr;
   Mat_FFTW       *fftw;
-  PetscInt       m,i;
+  PetscInt       n,N,i;
   const char     *p_flags[]={"FFTW_ESTIMATE","FFTW_MEASURE","FFTW_PATIENT","FFTW_EXHAUSTIVE"};
   PetscBool      flg;
   PetscInt       p_flag;
@@ -368,24 +366,26 @@ PetscErrorCode  MatCreateSeqFFTW(MPI_Comm comm,PetscInt ndim,const PetscInt dim[
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
+  SETERRQ(comm,PETSC_ERR_SUP,"not support for real numbers");
 #endif
-  if (ndim < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"ndim %d must be > 0",ndim);
+  if (ndim < 1) SETERRQ1(comm,PETSC_ERR_USER,"ndim %d must be > 0",ndim);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
   ierr = MatCreate(comm,&FFTW);CHKERRQ(ierr);
-  m = 1;
+  N = 1;
   for (i=0; i<ndim; i++){
     if (dim[i] < 1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"dim[%d]=%d must be > 0",i,dim[i]);
-    m *= dim[i];
+    N *= dim[i];
   }
   if (size == 1) {
-    ierr = MatSetSizes(FFTW,m,m,m,m);CHKERRQ(ierr);  
+    ierr = MatSetSizes(FFTW,N,N,N,N);CHKERRQ(ierr);  
+    n = N;
   } else {
-    ptrdiff_t      alloc_local,local_n0,local_0_start;
+    ptrdiff_t alloc_local,local_n0,local_0_start;
     switch (ndim){
     case 1:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not implemented yet");
       break;
     case 2:
       alloc_local = fftw_mpi_local_size_2d(dim[0],dim[1],comm,&local_n0,&local_0_start);
@@ -393,22 +393,26 @@ PetscErrorCode  MatCreateSeqFFTW(MPI_Comm comm,PetscInt ndim,const PetscInt dim[
        PetscSynchronizedPrintf(comm,"[%d] MatCreateSeqFFTW: local_n0, local_0_start %d %d, N %d,dim %d, %d\n",rank,(PetscInt)local_n0*dim[1],(PetscInt)local_0_start,m,dim[0],dim[1]);
        PetscSynchronizedFlush(comm);
        */
-      ierr = MatSetSizes(FFTW,(PetscInt)local_n0*dim[1],(PetscInt)local_n0*dim[1],m,m);CHKERRQ(ierr);  
+      n = (PetscInt)local_n0*dim[1];
+      ierr = MatSetSizes(FFTW,n,n,N,N);CHKERRQ(ierr);  
       break;
     case 3:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not implemented yet");
       break;
     default:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not implemented yet");
       break;
     }
   }
-  ierr = PetscObjectChangeTypeName((PetscObject)FFTW,MATSEQFFTW);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)FFTW,MATFFTW);CHKERRQ(ierr);
 
   ierr = PetscNewLog(FFTW,Mat_FFTW,&fftw);CHKERRQ(ierr);
   FFTW->data = (void*)fftw;
   ierr = PetscMalloc((ndim+1)*sizeof(PetscInt),&fftw->dim);CHKERRQ(ierr);
   ierr = PetscMemcpy(fftw->dim,dim,ndim*sizeof(PetscInt));CHKERRQ(ierr);
   fftw->ndim       = ndim;
-  fftw->N          = m;
+  fftw->n          = n;
+  fftw->N          = N;
   fftw->p_forward  = 0;
   fftw->p_backward = 0;
   fftw->p_flag     = FFTW_ESTIMATE;
