@@ -32,7 +32,7 @@ typedef struct {
     PetscInt nmodelpoints;
     PetscInt *model_indices; //n
     PetscInt *interp_indices; //n
-    PetscInt *iwork; //n
+    PetscBLASInt *iwork; //n
     PetscInt nHist;
   VecScatter scatterf,scatterx; 
   Vec localf, localx, localfmin, localxmin;
@@ -78,6 +78,13 @@ typedef struct {
 
 
 void gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscReal delta, PetscReal rtol, PetscReal atol, PetscInt itmax, PetscReal *par, PetscReal *f, PetscReal *x, PetscInt *info, int *its, PetscReal *z, PetscReal *wa1, PetscReal *wa2);
+PetscErrorCode gqtwrap(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qmin);
+PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi);
+PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP);
+PetscErrorCode morepoints(TAO_POUNDERS *mfqP);
+PetscErrorCode addpoint(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt index);
+PetscErrorCode modelimprove(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt addallpoints);
+PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscReal c);
 
 EXTERN_C_BEGIN
 void dgqt_(PetscInt *n, PetscReal *a, PetscInt *lda, PetscReal *b, PetscReal *delta, PetscReal *rtol, PetscReal *atol, PetscInt *itmax, PetscReal *par, PetscReal *f, PetscReal *x, PetscInt *info, int *its, PetscReal *z, PetscReal *wa1, PetscReal *wa2);

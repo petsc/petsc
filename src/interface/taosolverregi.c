@@ -17,6 +17,7 @@ extern PetscErrorCode TaoSolverCreate_GPCG(TaoSolver);
 extern PetscErrorCode TaoSolverCreate_BQPIP(TaoSolver);
 
 extern PetscErrorCode TaoSolverCreate_POUNDERS(TaoSolver);
+extern PetscErrorCode TaoSolverCreate_POUNDER(TaoSolver);
 //extern PetscErrorCode TaoSolverCreate_LM(TaoSolver);
 /*
 
@@ -98,7 +99,8 @@ PetscErrorCode TaoSolverRegisterAll(const char path[])
   ierr = TaoSolverRegisterDynamic("tao_nm",path,"TaoSolverCreate_NM",TaoSolverCreate_NM); CHKERRQ(ierr);
 
   ierr = TaoSolverRegisterDynamic("tao_pounders",path,"TaoSolverCreate_POUNDERS",TaoSolverCreate_POUNDERS); CHKERRQ(ierr);
-//  ierr = TaoSolverRegisterDynamic("tao_lm",path,"TaoSolverCreate_POUNDERS",TaoSolverCreate_LM); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_pounder",path,"TaoSolverCreate_POUNDER",TaoSolverCreate_POUNDER); CHKERRQ(ierr);
+//  ierr = TaoSolverRegisterDynamic("tao_lm",path,"TaoSolverCreate_LM",TaoSolverCreate_LM); CHKERRQ(ierr);
 /*
   ierr = TaoSolverRegisterDynamic("tao_bnls",path,"TaoSolverCreate_BNLS",TaoSolverCreate_BNLS); CHKERRQ(ierr);
   ierr = TaoSolverRegisterDynamic("tao_nm",path,"TaoSolverCreate_NM",TaoSolverCreate_NM); CHKERRQ(ierr);
