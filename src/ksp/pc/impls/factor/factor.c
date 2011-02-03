@@ -339,6 +339,9 @@ PetscErrorCode  PCFactorGetMatSolverPackage(PC pc,const MatSolverPackage *stype)
    actual amount of fill used; allowing you to set the value accurately for
    future runs. Default PETSc uses a value of 5.0
 
+   This parameter has NOTHING to do with the levels-of-fill of ILU(). That is set with PCFactorSetLevels() or -pc_factor_levels.
+    
+
 .keywords: PC, set, factorization, direct, fill
 
 @*/

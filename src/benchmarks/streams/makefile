@@ -1,7 +1,7 @@
 
 ALL: 
 
-CFLAGS	      =
+CFLAGS	      = -fopenmp
 FFLAGS	      =	 
 CPPFLAGS      =
 FPPFLAGS      =
@@ -27,5 +27,6 @@ test:  BasicVersion OpenMPVersion
 	-@echo "Time Taken by STREAMS as follows"
 	-@echo "------------------------------------------------"
 	-@${MPIEXEC} -n 1 ./BasicVersion
-	-@read -p "Enter number of OpenMP threads to use: " cnt ; OMP_NUM_THREADS=${cnt}; export OMP_NUM_THREADS; ${MPIEXEC} -n 1 ./OpenMPVersion
+	-@read -p "Enter number of MPI processes to use: " cnt ; ${MPIEXEC} -n $${cnt} ./BasicVersion
+	-@read -p "Enter number of OpenMP threads to use: " cnt ; OMP_NUM_THREADS=$${cnt}; export OMP_NUM_THREADS; ${MPIEXEC} -n 1 ./OpenMPVersion
 	-@echo "------------------------------------------------"
