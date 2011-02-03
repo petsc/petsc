@@ -356,6 +356,23 @@ PetscErrorCode  TaoDMSolve(TaoDM *taodm)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TaoDMSetTolerances"
+PetscErrorCode TaoDMSetTolerances(TaoDM *taodm, PetscReal fatol, PetscReal frtol, PetscReal gatol, PetscReal grtol, PetscReal gttol)
+{
+  PetscInt i;
+  PetscFunctionBegin;
+  for (i=0; i<taodm[0]->nlevels; i++) {
+    taodm[i]->fatol = fatol;
+    taodm[i]->frtol = frtol;
+    taodm[i]->gatol = gatol;
+    taodm[i]->grtol = grtol;
+    taodm[i]->gttol = gttol;
+  }
+  PetscFunctionReturn(0);
+}
+
+
 
 #ifdef SKIP
 /*
@@ -716,6 +733,19 @@ PetscErrorCode TaoDMSetLocalObjectiveAndGradientRoutine(TaoDM* taodm, PetscError
 
 
 #undef __FUNCT__
+#define __FUNCT__ "TaoDMSetLocalHessianRoutine"
+PetscErrorCode TaoDMSetLocalHessianRoutine(TaoDM *taodm, PetscErrorCode (*func)(DMDALocalInfo*, PetscScalar**,Mat,void*))
+{
+  PetscInt i;
+  PetscInt nlevels = taodm[0]->nlevels;
+  PetscFunctionBegin;
+  for (i=0;i<nlevels;i++) {
+    taodm[i]->ops->computehessianlocal=func;
+    taodm[i]->ops->computehessian=0;
+  }
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
 #define __FUNCT__ "TaoDMSetHessianRoutine"
 PetscErrorCode TaoDMSetHessianRoutine(TaoDM* taodm, PetscErrorCode (*func)(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*))
 {
@@ -752,6 +782,7 @@ PetscErrorCode TaoDMSetUp(TaoDM* taodm)
   /* Create Solver for each level */
   for (i=0; i<nlevels; i++) {
     ierr = TaoSolverCreate(((PetscObject)(taodm[i]))->comm,&taodm[i]->tao);CHKERRQ(ierr);
+    ierr = TaoSolverSetTolerances(taodm[i]->tao,taodm[i]->fatol,taodm[i]->frtol, taodm[i]->gatol,taodm[i]->grtol,taodm[i]->gttol); CHKERRQ(ierr);
     if (taodm[i]->ttype) {
       ierr = TaoSolverSetType(taodm[i]->tao,taodm[i]->ttype); CHKERRQ(ierr);
     }

@@ -17,6 +17,7 @@ extern PetscErrorCode TaoDMSetOptionsPrefix(TaoDM *, const char []);
 extern PetscErrorCode TaoDMDestroy(TaoDM*);
 extern PetscErrorCode TaoDMDestroyLevel(TaoDM);
 extern PetscErrorCode TaoDMSetFromOptions(TaoDM*);
+extern PetscErrorCode TaoDMSetTolerances(TaoDM*,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
 extern PetscErrorCode TaoDMSetUp(TaoDM*);
 extern PetscErrorCode TaoDMSolve(TaoDM*);
 extern PetscErrorCode TaoDMView(TaoDM*, PetscViewer);

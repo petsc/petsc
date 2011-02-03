@@ -84,6 +84,13 @@ test_minsurf1: test_minsurf1.o tao_chkopts
 	-${CLINKER} -o test_minsurf1 test_minsurf1.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_minsurf1.o
 
+test_minsurf3: test_minsurf3.o tao_chkopts
+	-${CLINKER} -o test_minsurf3 test_minsurf3.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_minsurf3.o
+
+test_dgesv: test_dgesv.o tao_chkopts
+	-${CLINKER} -o test_dgesv test_dgesv.o  -llapack -lblas
+
 test_minsurf2: test_minsurf2.o tao_chkopts
 	-${CLINKER} -o test_minsurf2 test_minsurf2.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_minsurf2.o

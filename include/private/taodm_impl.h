@@ -31,6 +31,11 @@ struct _p_TaoDM {
   TaoSolverType  ttype;
   ISColoringType isctype;
   TaoSolver      tao; /* TaoSolver at this level */
+  PetscReal fatol;
+  PetscReal frtol;
+  PetscReal gatol;
+  PetscReal grtol;
+  PetscReal gttol;
   void *userfctx;
   void *usergctx;
   void *userhctx;
