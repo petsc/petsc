@@ -86,7 +86,7 @@ PetscErrorCode  PetscOpenMPSpawn(PetscMPIInt nodesize)
   } else { /* worker nodes that get spawned */
     ierr              = MPI_Intercomm_merge(parent,1,&PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr); 
     ierr              = PetscOpenMPHandle(PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
-    PetscOpenMPWorker = PETSC_TRUE; /* so that PetscOpenMPIFinalize() will not attempt a broadcast from this process */
+    PetscOpenMPWorker = PETSC_TRUE; /* so that PetscOpenMPFinalize() will not attempt a broadcast from this process */
     ierr              = PetscEnd();  /* cannot continue into user code */
   }
   PetscFunctionReturn(0);
@@ -185,7 +185,7 @@ PetscErrorCode  PetscOpenMPMerge(PetscMPIInt nodesize,PetscErrorCode (*func)(voi
   if (!PETSC_COMM_WORLD) {
     ierr              = PetscOpenMPHandle(PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
     PETSC_COMM_WORLD  = saved_PETSC_COMM_WORLD;
-    PetscOpenMPWorker = PETSC_TRUE; /* so that PetscOpenMPIFinalize() will not attempt a broadcast from this process */
+    PetscOpenMPWorker = PETSC_TRUE; /* so that PetscOpenMPFinalize() will not attempt a broadcast from this process */
     ierr = PetscInfo(0,"PETSc OpenMP inactive process becoming active");CHKERRQ(ierr);
   } else {
     if (func) {
