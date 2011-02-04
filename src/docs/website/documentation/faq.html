@@ -303,7 +303,7 @@ performance one needs&nbsp;</p>
 low-latency interconnect</span>; any ethernet, even 10 gigE
 simply cannot provide the needed performance.&nbsp;</li>
         <li><span style="font-weight: bold;">high
-per-CPU memory performance</span>. Each CPU (core in dual core
+per-CPU memory performance</span>. Each CPU (core in multi-core
 systems) needs to have its <span style="font-weight: bold;">own</span>
 memory bandwith of roughly 2 or more gigabytes/second. For example,
 standard
@@ -312,10 +312,13 @@ provide better performance when the second processor is used, that is,
 you will not see speed-up when you using the second processor. This is
 because the speed of sparse matrix computations is almost totally
 determined by the speed of the memory, not the speed of the CPU. Smart
-process to core binding may help you (for example, with mpich hydra
-mpiexec.hydra -n 4/8 --binding topo:sockets) <a
- href="http://wiki.mcs.anl.gov/mpich2/index.php/Using_the_Hydra_Process_Manager#Process-core_Binding">http://wiki.mcs.anl.gov/mpich2/index.php/Using_the_Hydra_Process_Manager#Process-core_Binding</a>
-OpenMPI also has equivalent functionality, check its documentation.<br>
+process to core/socket binding may help you. For example, consider using fewer processes than cores and binding processes to separate sockets so that each process uses a different memory bus:
+<dl>
+  <dt><a href="http://wiki.mcs.anl.gov/mpich2/index.php/Using_the_Hydra_Process_Manager#Process-core_Binding">MPICH2 binding with the Hydra process manager</a></dt>
+  <dd>mpiexec.hydra -n 4 --binding cpu:sockets</dd>
+  <dt><a href="http://www.open-mpi.org/doc/v1.5/man1/mpiexec.1.php#sect8">Open MPI binding</a></dt>
+  <dd>mpiexec -n 4 --bysocket --bind-to-socket --report-bindings</dd>
+</dl>
         </li>
         <li>The software &nbsp;<a href="http://open-mx.org">http://open-mx.org</a>
 provides faster speed for ethernet systems, we have not tried it but it
