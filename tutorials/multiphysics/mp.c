@@ -7,6 +7,7 @@ static char help[] = "Model multi-physics solver. Modified from src/snes/example
     Examples of command line options:
       ./mp -dmmg_jacobian_mf_fd_operator
       ./mp -dmcomposite_dense_jacobian #inefficient, but compute entire Jacobian for testing
+      ./mp -couple -snes_monitor_short -pc_type fieldsplit -ksp_monitor_short -pc_fieldsplit_type schur -fieldsplit_ksp_monitor_short -fieldsplit_1_ksp_type fgmres -fieldsplit_0_ksp_type gmres -fieldsplit_0_ksp_monitor_short -pc_fieldsplit_schur_precondition self 
   ----------------------------------------------------------------------------------------- */
 #include "mp.h"
 
