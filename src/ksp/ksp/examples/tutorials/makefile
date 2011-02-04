@@ -603,7 +603,7 @@ runex10_24:
 
 # Start a parallel user code [on 4 nodes, assembling MPIAIJ with
 # np=4] and then spwan a parallel sub-domain-solver on each node
-# [with np=2]. This emulates mixed MPI/OpenMPI model [MPI between
+# [with np=2]. This emulates mixed MPI/OpenMP model [MPI between
 # nodes, OpenMP within the nodes]
 # See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex10_25:

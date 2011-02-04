@@ -392,6 +392,10 @@ static PetscErrorCode PhysicsSample_Burgers(void *vctx,PetscInt initial,FVBCType
       if (t > 0) SETERRQ(PETSC_COMM_SELF,1,"Only initial condition available");
       u[0] = 0.7 + 0.3*sin(2*M_PI*((x-xmin)/(xmax-xmin)));
       break;
+    case 5:                     /* Pure shock solution */
+      if (x < 0.5*t) u[0] = 1;
+      else u[0] = 0;
+      break;
     default: SETERRQ(PETSC_COMM_SELF,1,"unknown initial condition");
   }
   PetscFunctionReturn(0);
