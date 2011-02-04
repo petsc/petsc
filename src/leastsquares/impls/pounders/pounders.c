@@ -2,7 +2,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "gqtwrap"
-static PetscErrorCode gqtwrap(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qmin) {
+PetscErrorCode gqtwrap(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qmin) {
     PetscReal atol=1.0e-10;
     PetscInt info,its;
     PetscFunctionBegin;
@@ -20,7 +20,7 @@ static PetscErrorCode gqtwrap(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qm
 
 #undef __FUNCT__
 #define __FUNCT__ "phi2eval"
-static PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi) {
+PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi) {
 /* Phi = .5*[x(1)^2  sqrt(2)*x(1)*x(2) ... sqrt(2)*x(1)*x(n) ... x(2)^2 sqrt(2)*x(2)*x(3) .. x(n)^2] */
     PetscInt i,j,k;
     PetscReal sqrt2 = sqrt(2);
@@ -42,7 +42,7 @@ static PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi) {
 
 #undef __FUNCT__
 #define __FUNCT__ "getquadpounders"
-static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP) {
+PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP) {
 /* Computes the parameters of the quadratic Q(x) = c + g'*x + 0.5*x*G*x'
    that satisfies the interpolation conditions Q(X[:,j]) = f(j)
    for j=1,...,m and with a Hessian matrix of least Frobenius norm */
@@ -127,7 +127,7 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP) {
 
 #undef __FUNCT__
 #define __FUNCT__ "morepoints"
-static PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
+PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
     /* Assumes mfqP->model_indices[0]  is minimum index
        Finishes adding points to mfqP->model_indices (up to npmax)
        Computes L,Z,M,N
@@ -292,7 +292,7 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
 #undef __FUNCT__
 #define __FUNCT__ "addpoint"
 /* Only call from modelimprove, addpoint() needs ->Q_tmp and ->work to be set */
-static PetscErrorCode addpoint(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt index) 
+PetscErrorCode addpoint(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt index) 
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -322,7 +322,7 @@ static PetscErrorCode addpoint(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt index
 
 #undef __FUNCT__
 #define __FUNCT__ "modelimprove"
-static PetscErrorCode modelimprove(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt addallpoints) {
+PetscErrorCode modelimprove(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt addallpoints) {
   /* modeld = Q(:,np+1:n)' */
   PetscErrorCode ierr;
   PetscInt i,j,minindex;
@@ -382,7 +382,7 @@ static PetscErrorCode modelimprove(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt a
 
 #undef __FUNCT__
 #define __FUNCT__ "affpoints"
-static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, 
+PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, 
 				PetscReal c) {
     PetscInt i,j;
     PetscBLASInt blasm=mfqP->m,blasj,blask,blasn=mfqP->n,ione=1,info;
@@ -586,7 +586,8 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
   
   /* G = D(ModelIn,:) \ (F(ModelIn,1:m)-repmat(F(xkin,1:m),n,1)); */
   /* D (nxn) Fdiff (nxm)  => G (nxm) */
-  LAPACKgesv_(&blasn,&blasm,mfqP->Disp,&blasnpmax,mfqP->iwork,mfqP->Fdiff,&blasn,&info);
+  PetscBLASInt blasn2 = blasn;
+  LAPACKgesv_(&blasn,&blasm,mfqP->Disp,&blasnpmax,mfqP->iwork,mfqP->Fdiff,&blasn2,&info);
   ierr = PetscInfo1(tao,"gesv returned %d\n",info); CHKERRQ(ierr);
 
   cres = minnorm;
@@ -846,7 +847,7 @@ static PetscErrorCode TaoSolverSetUp_POUNDERS(TaoSolver tao)
     ierr = PetscMalloc(mfqP->m*mfqP->n*sizeof(PetscReal),&mfqP->Gdel); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->n*mfqP->n*mfqP->m*sizeof(PetscReal), &mfqP->Hdel); CHKERRQ(ierr);
     ierr = PetscMalloc(PetscMax(mfqP->m,mfqP->n)*sizeof(PetscInt),&mfqP->indices); CHKERRQ(ierr);
-    ierr = PetscMalloc(mfqP->n*sizeof(PetscInt),&mfqP->iwork); CHKERRQ(ierr);
+    ierr = PetscMalloc(mfqP->n*sizeof(PetscBLASInt),&mfqP->iwork); CHKERRQ(ierr);
     for (i=0;i<PetscMax(mfqP->m,mfqP->n);i++) {
 	mfqP->indices[i] = i;
     }
@@ -897,6 +898,7 @@ static PetscErrorCode TaoSolverDestroy_POUNDERS(TaoSolver tao)
   ierr = PetscFree(mfqP->Z); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->L); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->L_tmp); CHKERRQ(ierr);
+  ierr = PetscFree(mfqP->L_save); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->M); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->N); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->alpha); CHKERRQ(ierr);
@@ -912,6 +914,8 @@ static PetscErrorCode TaoSolverDestroy_POUNDERS(TaoSolver tao)
   ierr = PetscFree(mfqP->Gres); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->Hres); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->Gpoints); CHKERRQ(ierr);
+  ierr = PetscFree(mfqP->Gdel); CHKERRQ(ierr);
+  ierr = PetscFree(mfqP->Hdel); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->Xsubproblem); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->model_indices); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->indices); CHKERRQ(ierr);
@@ -936,7 +940,9 @@ static PetscErrorCode TaoSolverDestroy_POUNDERS(TaoSolver tao)
 
 
 
-
+  if (tao->data) {
+    ierr = PetscFree(tao->data); CHKERRQ(ierr);
+  }
   tao->data = PETSC_NULL;
   PetscFunctionReturn(0);
 }
