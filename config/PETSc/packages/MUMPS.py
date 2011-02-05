@@ -35,11 +35,11 @@ class Configure(PETSc.package.NewPackage):
 
     # Disable threads on BGL
     if self.libraryOptions.isBGL():
-      g.write('ORDERINGSC = -DWITHOUT_PTHREAD -Dmetis -Dpord\n')
+      g.write('ORDERINGSC = -DWITHOUT_PTHREAD -Dmetis -Dparmetis -Dpord\n')
     else:
-      g.write('ORDERINGSC = -Dmetis -Dpord\n')
+      g.write('ORDERINGSC = -Dmetis -Dparmetis -Dpord\n')
     if self.compilers.FortranDefineCompilerOption:
-      g.write('ORDERINGSF = '+self.compilers.FortranDefineCompilerOption+'metis'+' '+self.compilers.FortranDefineCompilerOption+'pord\n')
+      g.write('ORDERINGSF = '+self.compilers.FortranDefineCompilerOption+'metis '+self.compilers.FortranDefineCompilerOption+'parmetis '+self.compilers.FortranDefineCompilerOption+'pord\n')
     else:
       raise RuntimeError('Fortran compiler cannot handle preprocessing directives from command line.')     
     g.write('LORDERINGS  = $(LMETIS) $(LPORD) $(LSCOTCH)\n')
