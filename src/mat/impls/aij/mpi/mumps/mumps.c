@@ -44,7 +44,7 @@ typedef struct {
   PetscScalar    *val;
   MPI_Comm       comm_mumps;
   VecScatter     scat_rhs, scat_sol;
-  PetscBool      isAIJ,CleanUpMUMPS,mumpsview;
+  PetscBool      isAIJ,CleanUpMUMPS;
   Vec            b_seq,x_seq;
   PetscErrorCode (*MatDestroy)(Mat);
   PetscErrorCode (*ConvertToTriples)(Mat, int, MatReuse, int*, int**, int**, PetscScalar**);
@@ -697,7 +697,6 @@ PetscErrorCode PetscSetMUMPSOptions(Mat F, Mat A)
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"MUMPS Options","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-mat_mumps_view","View MUMPS parameters","None",lu->mumpsview,&lu->mumpsview,PETSC_NULL);CHKERRQ(ierr);
   if (lu->size == 1){
     lu->id.ICNTL(18) = 0;   /* centralized assembled matrix input */
   } else {
@@ -1013,118 +1012,13 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatFactorInfo_MUMPS"
-PetscErrorCode MatFactorInfo_MUMPS(Mat A,PetscViewer viewer) 
-{
-  Mat_MUMPS      *lu=(Mat_MUMPS*)A->spptr;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(1) (output for error):        %d \n",lu->id.ICNTL(1));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(2) (output of diagnostic msg):%d \n",lu->id.ICNTL(2));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(3) (output for global info):  %d \n",lu->id.ICNTL(3));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(4) (level of printing):       %d \n",lu->id.ICNTL(4));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(5) (input mat struct):        %d \n",lu->id.ICNTL(5));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(6) (matrix prescaling):       %d \n",lu->id.ICNTL(6));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(7) (matrix ordering):         %d \n",lu->id.ICNTL(7));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(8) (scalling strategy):       %d \n",lu->id.ICNTL(8));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(9) (A/A^T x=b is solved):     %d \n",lu->id.ICNTL(9));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(10) (max num of refinements): %d \n",lu->id.ICNTL(10));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(11) (error analysis):         %d \n",lu->id.ICNTL(11));CHKERRQ(ierr);  
-  if (lu->id.ICNTL(11)>0) {
-    ierr = PetscViewerASCIIPrintf(viewer,"        RINFOG(4) (inf norm of input mat):        %g\n",lu->id.RINFOG(4));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        RINFOG(5) (inf norm of solution):         %g\n",lu->id.RINFOG(5));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        RINFOG(6) (inf norm of residual):         %g\n",lu->id.RINFOG(6));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        RINFOG(7),RINFOG(8) (backward error est): %g, %g\n",lu->id.RINFOG(7),lu->id.RINFOG(8));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        RINFOG(9) (error estimate):               %g \n",lu->id.RINFOG(9));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        RINFOG(10),RINFOG(11)(condition numbers): %g, %g\n",lu->id.RINFOG(10),lu->id.RINFOG(11));CHKERRQ(ierr);
-  
-  }
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(12) (efficiency control):                         %d \n",lu->id.ICNTL(12));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(13) (efficiency control):                         %d \n",lu->id.ICNTL(13));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(14) (percentage of estimated workspace increase): %d \n",lu->id.ICNTL(14));CHKERRQ(ierr);
-  /* ICNTL(15-17) not used */
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(18) (input mat struct):                           %d \n",lu->id.ICNTL(18));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(19) (Shur complement info):                       %d \n",lu->id.ICNTL(19));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(20) (rhs sparse pattern):                         %d \n",lu->id.ICNTL(20));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(21) (solution struct):                            %d \n",lu->id.ICNTL(21));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(22) (in-core/out-of-core facility):               %d \n",lu->id.ICNTL(22));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(23) (max size of memory can be allocated locally):%d \n",lu->id.ICNTL(23));CHKERRQ(ierr);
-
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(24) (detection of null pivot rows):               %d \n",lu->id.ICNTL(24));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(25) (computation of a null space basis):          %d \n",lu->id.ICNTL(25));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(26) (Schur options for rhs or solution):          %d \n",lu->id.ICNTL(26));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(27) (experimental parameter):                     %d \n",lu->id.ICNTL(27));CHKERRQ(ierr);
-
-  ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(1) (relative pivoting threshold):      %g \n",lu->id.CNTL(1));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(2) (stopping criterion of refinement): %g \n",lu->id.CNTL(2));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(3) (absolute pivoting threshold):      %g \n",lu->id.CNTL(3));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(4) (value of static pivoting):         %g \n",lu->id.CNTL(4));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(5) (fixation for null pivots):         %g \n",lu->id.CNTL(5));CHKERRQ(ierr);
-
-  /* infomation local to each processor */
-  ierr = PetscViewerASCIIPrintf(viewer, "              RINFO(1) (local estimated flops for the elimination after analysis): \n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"              [%d] %g \n",lu->myid,lu->id.RINFO(1));CHKERRQ(ierr);
-  ierr = PetscViewerFlush(viewer);
-  ierr = PetscViewerASCIIPrintf(viewer, "              RINFO(2) (local estimated flops for the assembly after factorization): \n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"              [%d]  %g \n",lu->myid,lu->id.RINFO(2));CHKERRQ(ierr);
-  ierr = PetscViewerFlush(viewer);
-  ierr = PetscViewerASCIIPrintf(viewer, "              RINFO(3) (local estimated flops for the elimination after factorization): \n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"              [%d]  %g \n",lu->myid,lu->id.RINFO(3));CHKERRQ(ierr);
-  ierr = PetscViewerFlush(viewer);
-
-  ierr = PetscViewerASCIIPrintf(viewer, "              INFO(15) (estimated size of (in MB) MUMPS internal data for running numerical factorization): \n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"              [%d] %d \n",lu->myid,lu->id.INFO(15));CHKERRQ(ierr);
-  ierr = PetscViewerFlush(viewer);
-
-  ierr = PetscViewerASCIIPrintf(viewer, "              INFO(16) (size of (in MB) MUMPS internal data used during numerical factorization): \n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"              [%d] %d \n",lu->myid,lu->id.INFO(16));CHKERRQ(ierr);
-  ierr = PetscViewerFlush(viewer);
-
-  ierr = PetscViewerASCIIPrintf(viewer, "              INFO(23) (num of pivots eliminated on this processor after factorization): \n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"              [%d] %d \n",lu->myid,lu->id.INFO(23));CHKERRQ(ierr);
-  ierr = PetscViewerFlush(viewer);
-
-  if (!lu->myid){ /* information from the host */
-    ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(1) (global estimated flops for the elimination after analysis): %g \n",lu->id.RINFOG(1));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(2) (global estimated flops for the assembly after factorization): %g \n",lu->id.RINFOG(2));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(3) (global estimated flops for the elimination after factorization): %g \n",lu->id.RINFOG(3));CHKERRQ(ierr);
-
-    ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(3) (estimated real workspace for factors on all processors after analysis): %d \n",lu->id.INFOG(3));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(4) (estimated integer workspace for factors on all processors after analysis): %d \n",lu->id.INFOG(4));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(5) (estimated maximum front size in the complete tree): %d \n",lu->id.INFOG(5));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(6) (number of nodes in the complete tree): %d \n",lu->id.INFOG(6));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(7) (ordering option effectively uese after analysis): %d \n",lu->id.INFOG(7));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(8) (structural symmetry in percent of the permuted matrix after analysis): %d \n",lu->id.INFOG(8));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(9) (total real/complex workspace to store the matrix factors after factorization): %d \n",lu->id.INFOG(9));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(10) (total integer space store the matrix factors after factorization): %d \n",lu->id.INFOG(10));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(11) (order of largest frontal matrix after factorization): %d \n",lu->id.INFOG(11));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(12) (number of off-diagonal pivots): %d \n",lu->id.INFOG(12));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(13) (number of delayed pivots after factorization): %d \n",lu->id.INFOG(13));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(14) (number of memory compress after factorization): %d \n",lu->id.INFOG(14));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(15) (number of steps of iterative refinement after solution): %d \n",lu->id.INFOG(15));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(16) (estimated size (in MB) of all MUMPS internal data for factorization after analysis: value on the most memory consuming processor): %d \n",lu->id.INFOG(16));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(17) (estimated size of all MUMPS internal data for factorization after analysis: sum over all processors): %d \n",lu->id.INFOG(17));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(18) (size of all MUMPS internal data allocated during factorization: value on the most memory consuming processor): %d \n",lu->id.INFOG(18));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(19) (size of all MUMPS internal data allocated during factorization: sum over all processors): %d \n",lu->id.INFOG(19));CHKERRQ(ierr);
-     ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(20) (estimated number of entries in the factors): %d \n",lu->id.INFOG(20));CHKERRQ(ierr);
-     ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(21) (size in MB of memory effectively used during factorization - value on the most memory consuming processor): %d \n",lu->id.INFOG(21));CHKERRQ(ierr);
-     ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(22) (size in MB of memory effectively used during factorization - sum over all processors): %d \n",lu->id.INFOG(22));CHKERRQ(ierr);
-     ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(23) (after analysis: value of ICNTL(6) effectively used): %d \n",lu->id.INFOG(23));CHKERRQ(ierr);
-     ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(24) (after analysis: value of ICNTL(12) effectively used): %d \n",lu->id.INFOG(24));CHKERRQ(ierr);
-     ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(25) (after factorization: number of pivots modified by static pivoting): %d \n",lu->id.INFOG(25));CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatView_MUMPS"
 PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscBool         iascii;
   PetscViewerFormat format;
-  Mat_MUMPS         *mumps=(Mat_MUMPS*)A->spptr;
+  Mat_MUMPS         *lu=(Mat_MUMPS*)A->spptr;
 
   PetscFunctionBegin;
   /* check if matrix is mumps type */
@@ -1133,12 +1027,102 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_ASCII_INFO || mumps->mumpsview){
+    if (format == PETSC_VIEWER_ASCII_INFO){
       ierr = PetscViewerASCIIPrintf(viewer,"MUMPS run parameters:\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  SYM (matrix type):                  %d \n",mumps->id.sym);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  PAR (host participation):           %d \n",mumps->id.par);CHKERRQ(ierr);
-      if (mumps->mumpsview){ /* View all MUMPS parameters */
-        ierr = MatFactorInfo_MUMPS(A,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  SYM (matrix type):                  %d \n",lu->id.sym);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  PAR (host participation):           %d \n",lu->id.par);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(1) (output for error):        %d \n",lu->id.ICNTL(1));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(2) (output of diagnostic msg):%d \n",lu->id.ICNTL(2));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(3) (output for global info):  %d \n",lu->id.ICNTL(3));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(4) (level of printing):       %d \n",lu->id.ICNTL(4));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(5) (input mat struct):        %d \n",lu->id.ICNTL(5));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(6) (matrix prescaling):       %d \n",lu->id.ICNTL(6));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(7) (matrix ordering):         %d \n",lu->id.ICNTL(7));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(8) (scalling strategy):       %d \n",lu->id.ICNTL(8));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(9) (A/A^T x=b is solved):     %d \n",lu->id.ICNTL(9));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(10) (max num of refinements): %d \n",lu->id.ICNTL(10));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(11) (error analysis):         %d \n",lu->id.ICNTL(11));CHKERRQ(ierr);  
+      if (lu->id.ICNTL(11)>0) {
+        ierr = PetscViewerASCIIPrintf(viewer,"        RINFOG(4) (inf norm of input mat):        %g\n",lu->id.RINFOG(4));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"        RINFOG(5) (inf norm of solution):         %g\n",lu->id.RINFOG(5));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"        RINFOG(6) (inf norm of residual):         %g\n",lu->id.RINFOG(6));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"        RINFOG(7),RINFOG(8) (backward error est): %g, %g\n",lu->id.RINFOG(7),lu->id.RINFOG(8));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"        RINFOG(9) (error estimate):               %g \n",lu->id.RINFOG(9));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"        RINFOG(10),RINFOG(11)(condition numbers): %g, %g\n",lu->id.RINFOG(10),lu->id.RINFOG(11));CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(12) (efficiency control):                         %d \n",lu->id.ICNTL(12));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(13) (efficiency control):                         %d \n",lu->id.ICNTL(13));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(14) (percentage of estimated workspace increase): %d \n",lu->id.ICNTL(14));CHKERRQ(ierr);
+      /* ICNTL(15-17) not used */
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(18) (input mat struct):                           %d \n",lu->id.ICNTL(18));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(19) (Shur complement info):                       %d \n",lu->id.ICNTL(19));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(20) (rhs sparse pattern):                         %d \n",lu->id.ICNTL(20));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(21) (solution struct):                            %d \n",lu->id.ICNTL(21));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(22) (in-core/out-of-core facility):               %d \n",lu->id.ICNTL(22));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(23) (max size of memory can be allocated locally):%d \n",lu->id.ICNTL(23));CHKERRQ(ierr);
+      
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(24) (detection of null pivot rows):               %d \n",lu->id.ICNTL(24));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(25) (computation of a null space basis):          %d \n",lu->id.ICNTL(25));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(26) (Schur options for rhs or solution):          %d \n",lu->id.ICNTL(26));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(27) (experimental parameter):                     %d \n",lu->id.ICNTL(27));CHKERRQ(ierr);
+      
+      ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(1) (relative pivoting threshold):      %g \n",lu->id.CNTL(1));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(2) (stopping criterion of refinement): %g \n",lu->id.CNTL(2));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(3) (absolute pivoting threshold):      %g \n",lu->id.CNTL(3));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(4) (value of static pivoting):         %g \n",lu->id.CNTL(4));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(5) (fixation for null pivots):         %g \n",lu->id.CNTL(5));CHKERRQ(ierr);
+      
+      /* infomation local to each processor */
+      ierr = PetscViewerASCIIPrintf(viewer, "  RINFO(1) (local estimated flops for the elimination after analysis): \n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %g \n",lu->myid,lu->id.RINFO(1));CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);
+      ierr = PetscViewerASCIIPrintf(viewer, "  RINFO(2) (local estimated flops for the assembly after factorization): \n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d]  %g \n",lu->myid,lu->id.RINFO(2));CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);
+      ierr = PetscViewerASCIIPrintf(viewer, "  RINFO(3) (local estimated flops for the elimination after factorization): \n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d]  %g \n",lu->myid,lu->id.RINFO(3));CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);
+      
+      ierr = PetscViewerASCIIPrintf(viewer, "  INFO(15) (estimated size of (in MB) MUMPS internal data for running numerical factorization): \n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] %d \n",lu->myid,lu->id.INFO(15));CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);
+      
+      ierr = PetscViewerASCIIPrintf(viewer, "  INFO(16) (size of (in MB) MUMPS internal data used during numerical factorization): \n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %d \n",lu->myid,lu->id.INFO(16));CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);
+      
+      ierr = PetscViewerASCIIPrintf(viewer, "  INFO(23) (num of pivots eliminated on this processor after factorization): \n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %d \n",lu->myid,lu->id.INFO(23));CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);
+
+      if (!lu->myid){ /* information from the host */
+        ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(1) (global estimated flops for the elimination after analysis): %g \n",lu->id.RINFOG(1));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(2) (global estimated flops for the assembly after factorization): %g \n",lu->id.RINFOG(2));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(3) (global estimated flops for the elimination after factorization): %g \n",lu->id.RINFOG(3));CHKERRQ(ierr);
+        
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(3) (estimated real workspace for factors on all processors after analysis): %d \n",lu->id.INFOG(3));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(4) (estimated integer workspace for factors on all processors after analysis): %d \n",lu->id.INFOG(4));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(5) (estimated maximum front size in the complete tree): %d \n",lu->id.INFOG(5));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(6) (number of nodes in the complete tree): %d \n",lu->id.INFOG(6));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(7) (ordering option effectively uese after analysis): %d \n",lu->id.INFOG(7));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(8) (structural symmetry in percent of the permuted matrix after analysis): %d \n",lu->id.INFOG(8));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(9) (total real/complex workspace to store the matrix factors after factorization): %d \n",lu->id.INFOG(9));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(10) (total integer space store the matrix factors after factorization): %d \n",lu->id.INFOG(10));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(11) (order of largest frontal matrix after factorization): %d \n",lu->id.INFOG(11));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(12) (number of off-diagonal pivots): %d \n",lu->id.INFOG(12));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(13) (number of delayed pivots after factorization): %d \n",lu->id.INFOG(13));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(14) (number of memory compress after factorization): %d \n",lu->id.INFOG(14));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(15) (number of steps of iterative refinement after solution): %d \n",lu->id.INFOG(15));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(16) (estimated size (in MB) of all MUMPS internal data for factorization after analysis: value on the most memory consuming processor): %d \n",lu->id.INFOG(16));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(17) (estimated size of all MUMPS internal data for factorization after analysis: sum over all processors): %d \n",lu->id.INFOG(17));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(18) (size of all MUMPS internal data allocated during factorization: value on the most memory consuming processor): %d \n",lu->id.INFOG(18));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(19) (size of all MUMPS internal data allocated during factorization: sum over all processors): %d \n",lu->id.INFOG(19));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(20) (estimated number of entries in the factors): %d \n",lu->id.INFOG(20));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(21) (size in MB of memory effectively used during factorization - value on the most memory consuming processor): %d \n",lu->id.INFOG(21));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(22) (size in MB of memory effectively used during factorization - sum over all processors): %d \n",lu->id.INFOG(22));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(23) (after analysis: value of ICNTL(6) effectively used): %d \n",lu->id.INFOG(23));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(24) (after analysis: value of ICNTL(12) effectively used): %d \n",lu->id.INFOG(24));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(25) (after factorization: number of pivots modified by static pivoting): %d \n",lu->id.INFOG(25));CHKERRQ(ierr);
       }
     }
   }
@@ -1218,7 +1202,7 @@ PetscErrorCode MatMumpsSetIcntl(Mat F,PetscInt icntl,PetscInt ival)
   Options Database Keys:
 + -mat_mumps_icntl_4 <0,...,4> - print level
 . -mat_mumps_icntl_6 <0,...,7> - matrix prescaling options (see MUMPS User's Guide)
-. -mat_mumps_icntl_7 <0,...,7> - matrix orderings (see MUMPS User's Guide)
+. -mat_mumps_icntl_7 <0,...,7> - matrix orderings (see MUMPS User's Guidec)
 . -mat_mumps_icntl_9 <1,2> - A or A^T x=b to be solved: 1 denotes A, 2 denotes A^T
 . -mat_mumps_icntl_10 <n> - maximum number of iterative refinements
 . -mat_mumps_icntl_11 <n> - error analysis, a positive value returns statistics during -ksp_view
