@@ -95,7 +95,6 @@ PetscInt main(PetscInt argc,char **args)
     default:
       fplan = fftw_plan_dft_r2c(DIM,dim,(double *)x_array, (fftw_complex*)y_array,flags);
       bplan = fftw_plan_dft_c2r(DIM,dim,(fftw_complex*)y_array,(double *)z_array,flags);
-      //SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"not done yet");
       break;
     }
 
@@ -119,10 +118,8 @@ PetscInt main(PetscInt argc,char **args)
       ierr = VecRestoreArray(x, &x_array);CHKERRQ(ierr);
     }
     if (view) {
-      ierr = VecView(x, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
-      //ierr = VecView(x, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      ierr = VecView(x, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
-
 
     /* FFT - also test repeated transformation   */
     /*-------------------------------------------*/

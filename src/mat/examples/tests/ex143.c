@@ -102,7 +102,7 @@ PetscInt main(PetscInt argc,char **args)
     dim[0] = N0; dim[1] = N1;
     if (!rank) printf("Use PETSc-FFTW interface...%d-DIM: %d %d\n",DIM,dim[0],dim[1]);
 
-    ierr = MatCreateFFTW(PETSC_COMM_WORLD,DIM,dim,&A);CHKERRQ(ierr);
+    ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
 
     /* Create vectors that are compatible with parallel layout of A - must call MatGetVecs()! */
     ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr); 
