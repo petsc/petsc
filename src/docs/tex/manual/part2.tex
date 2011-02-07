@@ -4421,10 +4421,9 @@ uses:
   $\dot{u}$, and the (optional) user-provided context \trl{funP}.
 
 \item Jacobian $F_u + aF_{\dot{u}}$ \\
-  Unless one is using matrix-free methods without preconditioning, the
-  user must also provide an (approximate) Jacobian matrix of $G(u) =
-  F(t,u,w+au)$ where $\dot{u}=w+au$ and $a$ are provided by the integrator.  The
-  function that evaluates $G'(u) = F_u + aF_{\dot{u}}$ is set with
+  Unless one is using matrix-free methods without preconditioning, the user must also provide an (approximate) Jacobian matrix of $G(u) = F(t,u,w+au)$.
+  This form for $G$ arises because the time integrator internally approximates $\dot{u}$ by $w+au$ where the positive ``shift'' $a$ and vector $w$ depend on the integration method, step size, and past states.
+  The function that evaluates $G'(u) = F_u + aF_{\dot{u}}$ is set with
   \begin{tabbing}
     TS\=SetIJacobian(TS ts,Mat A,Mat B,\\
     \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*),void *jacP);

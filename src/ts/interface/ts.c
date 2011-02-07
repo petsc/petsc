@@ -737,8 +737,10 @@ PetscErrorCode  TSSetIFunction(TS ts,TSIFunction f,void *ctx)
 #undef __FUNCT__
 #define __FUNCT__ "TSSetIJacobian"
 /*@C
-   TSSetIJacobian - Set the function to compute the Jacobian of
-   G(U) = F(t,U,U0+a*U) where F(t,U,U_t) = 0 is the DAE to be solved.
+   TSSetIJacobian - Set the function to compute the matrix dF/dU + a*dF/dU_t which is
+   the Jacobian of G(U) = F(t,U,W+a*U) where F(t,U,U_t) = 0 is the DAE to be solved.
+   The time integrator internally approximates U_t by W+a*U where the positive "shift"
+   a and vector W depend on the integration method, step size, and past states.
 
    Logically Collective on TS
 
@@ -750,13 +752,13 @@ PetscErrorCode  TSSetIFunction(TS ts,TSIFunction f,void *ctx)
 -  ctx - user-defined context for private data for the Jacobian evaluation routine (may be PETSC_NULL)
 
    Calling sequence of f:
-$  f(TS ts,PetscReal t,Vec u,Vec u_t,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx);
+$  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx);
 
 +  t    - time at step/stage being solved
-.  u    - state vector
-.  u_t  - time derivative of state vector
+.  U    - state vector
+.  U_t  - time derivative of state vector
 .  a    - shift
-.  A    - Jacobian of G(U) = F(t,U,U0+a*U), equivalent to dF/dU + a*dF/dU_t
+.  A    - Jacobian of G(U) = F(t,U,W+a*U), equivalent to dF/dU + a*dF/dU_t
 .  B    - preconditioning matrix for A, may be same as A
 .  flag - flag indicating information about the preconditioner matrix
           structure (same as flag in KSPSetOperators())
