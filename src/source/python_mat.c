@@ -436,7 +436,6 @@ static PetscErrorCode MatMultTranspose_Python(Mat mat,Vec x, Vec y)
   MAT_PYTHON_SETERRSUP(mat, "multTranspose");
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTransposeAdd_Python"
 static PetscErrorCode MatMultTransposeAdd_Python(Mat mat,Vec x,Vec v,Vec y)
@@ -456,6 +455,112 @@ static PetscErrorCode MatMultTransposeAdd_Python(Mat mat,Vec x,Vec v,Vec y)
   ierr = MatMultTranspose_Python(mat,x,y);CHKERRQ(ierr);
   ierr = VecAXPY(y, 1, v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatLUFactor_Python"
+static PetscErrorCode MatLUFactor_Python(Mat mat,IS row, IS col,
+                                         const MatFactorInfo *info)
+{
+  PetscFunctionBegin;
+  MAT_PYTHON_CALL_MAYBE(mat, "factorLU", ("O&O&O&",
+                                          PyPetscMat_New, mat,
+                                          PyPetscIS_New,  row,
+                                          PyPetscIS_New,  col),
+                        notimplemented);
+  PetscFunctionReturn(0);
+ notimplemented: /* MatLUFactor */
+  MAT_PYTHON_SETERRSUP(mat, "factorLU");
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatILUFactor_Python"
+static PetscErrorCode MatILUFactor_Python(Mat mat,IS row, IS col,
+                                          const MatFactorInfo *info)
+{
+  PetscFunctionBegin;
+  MAT_PYTHON_CALL_MAYBE(mat, "factorILU", ("O&O&O&",
+                                           PyPetscMat_New, mat,
+                                           PyPetscIS_New,  row,
+                                           PyPetscIS_New,  col),
+                        notimplemented);
+  PetscFunctionReturn(0);
+ notimplemented: /* MatILUFactor */
+  MAT_PYTHON_SETERRSUP(mat, "factorILU");
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatCholeskyFactor_Python"
+static PetscErrorCode MatCholeskyFactor_Python(Mat mat,IS perm, 
+                                               const MatFactorInfo *info)
+{
+  PetscFunctionBegin;
+  MAT_PYTHON_CALL_MAYBE(mat, "factorCholesky", ("O&O&",
+                                                PyPetscMat_New, mat,
+                                                PyPetscIS_New,  perm),
+                        notimplemented);
+  PetscFunctionReturn(0);
+ notimplemented: /* MatCholeskyFactor */
+  MAT_PYTHON_SETERRSUP(mat, "factorCholesky");
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatICCFactor_Python"
+static PetscErrorCode MatICCFactor_Python(Mat mat,IS perm,
+                                          const MatFactorInfo *info)
+{
+  PetscFunctionBegin;
+  MAT_PYTHON_CALL_MAYBE(mat, "factorICC", ("O&O&",
+                                           PyPetscMat_New, mat,
+                                           PyPetscIS_New,  perm),
+                        notimplemented);
+  PetscFunctionReturn(0);
+ notimplemented: /* MatICCFactor */
+  MAT_PYTHON_SETERRSUP(mat, "factorICC");
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatForwardSolve_Python"
+static PetscErrorCode MatForwardSolve_Python(Mat mat,Vec b,Vec x)
+{
+  Mat_Py         *py = (Mat_Py *) mat->data;
+  PetscScalar    one = 1;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  /*  shift */
+  if (py->shift) goto notimplemented;
+  MAT_PYTHON_CALL_MAYBE(mat, "solveForward", ("O&O&O&",
+                                              PyPetscMat_New, mat,
+                                              PyPetscVec_New, b,
+                                              PyPetscVec_New, x),
+                        notimplemented);
+  /*  scale */
+  if (py->scale) { ierr = VecScale(x,one/py->vscale);CHKERRQ(ierr); }
+  PetscFunctionReturn(0);
+ notimplemented: /* MatForwardSolve */
+  MAT_PYTHON_SETERRSUP(mat, "solveForward");
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatbackwardSolve_Python"
+static PetscErrorCode MatBackwardSolve_Python(Mat mat,Vec b,Vec x)
+{
+  Mat_Py         *py = (Mat_Py *) mat->data;
+  PetscScalar    one = 1;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  /*  shift */
+  if (py->shift) goto notimplemented;
+  MAT_PYTHON_CALL_MAYBE(mat, "solveBackward", ("O&O&O&",
+                                               PyPetscMat_New, mat,
+                                               PyPetscVec_New, b,
+                                               PyPetscVec_New, x),
+                        notimplemented);
+  /*  scale */
+  if (py->scale) { ierr = VecScale(x,one/py->vscale);CHKERRQ(ierr); }
+  PetscFunctionReturn(0);
+ notimplemented: /* MatBackwardSolve */
+  MAT_PYTHON_SETERRSUP(mat, "solveBackward");
 }
 
 #undef __FUNCT__
@@ -695,6 +800,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Python(Mat mat)
   mat->ops->multadd              = MatMultAdd_Python;
   mat->ops->multtransposeadd     = MatMultTransposeAdd_Python;
 
+  mat->ops->lufactor             = MatLUFactor_Python;
+  mat->ops->choleskyfactor       = MatCholeskyFactor_Python;
+  mat->ops->ilufactor            = MatILUFactor_Python;
+  mat->ops->iccfactor            = MatICCFactor_Python;
+
+  mat->ops->forwardsolve         = MatForwardSolve_Python;
+  mat->ops->backwardsolve        = MatBackwardSolve_Python;
   mat->ops->solve                = MatSolve_Python;
   mat->ops->solvetranspose       = MatSolveTranspose_Python;
   mat->ops->solveadd             = MatSolveAdd_Python;
