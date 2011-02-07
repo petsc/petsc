@@ -19,9 +19,9 @@ static PetscErrorCode PetscObjectGetPyDict(PetscObject obj, PetscBool create, vo
 {
   PyObject      *pydict = NULL;
   PetscFunctionBegin;
+  if (dict) *dict = NULL;
   PetscValidHeader(obj, 1);
   if (dict) PetscValidPointer(dict, 2);
-  if (dict) *dict = NULL;
   if (obj->python_context != NULL) {
     pydict = (PyObject *) obj->python_context;
     if (!PyDict_CheckExact(pydict)) {

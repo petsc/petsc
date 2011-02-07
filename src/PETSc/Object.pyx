@@ -241,7 +241,7 @@ cdef int TypeRegistryAdd(PetscClassId classid, type cls) except -1:
         type_registry[key] = cls
         reg_LogClass(str2bytes(cls.__name__, &dummy),
                      <PetscLogClass>classid)
-        # TypeEnableGC(<PyTypeObject*>cls) # XXX disabled !!!
+        TypeEnableGC(<PyTypeObject*>cls)
     else:
         value = type_registry[key]
         if cls is not value:

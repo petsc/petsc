@@ -10,27 +10,18 @@ cdef extern from "Python.h":
     ctypedef int visitproc(PyObject *, void *)
     ctypedef int traverseproc(PyObject *, visitproc, void *)
     ctypedef int inquiry(PyObject *)
-    ctypedef PyObject *allocfunc(PyTypeObject*, Py_ssize_t)
-    ctypedef void freefunc(void *)
     ctypedef struct PyTypeObject:
        char*        tp_name
-       long         tp_flags
        traverseproc tp_traverse
        inquiry      tp_clear
-       allocfunc    tp_alloc
-       freefunc     tp_free
-       inquiry      tp_is_gc
-    enum: Py_TPFLAGS_HAVE_GC
-    PyObject *PyType_GenericAlloc(PyTypeObject *, Py_ssize_t)
-    void PyObject_GC_Del(void *)
 
 cdef int traverse(PyObject *o, visitproc visit, void *arg):
     ## printf("%s.tp_traverse(%p)\n", Py_TYPE(o).tp_name, <void*>o)
     cdef PetscObject p = (<Object>o).obj[0]
-    cdef PyObject *dct = NULL
     if p == NULL: return 0
+    cdef PyObject *dct = NULL
     PetscObjectGetPyDict(p, PETSC_FALSE, <void**>&dct)
-    if dct == <PyObject*>None: return 0
+    if dct == NULL or dct == <PyObject*>None: return 0
     return visit(dct, arg)
 
 cdef int clear(PyObject *o):
@@ -41,13 +32,7 @@ cdef int clear(PyObject *o):
 
 cdef inline void TypeEnableGC(PyTypeObject *t):
     ## printf("%s: enforcing GC support\n", t.tp_name)
-    # this is required
     t.tp_traverse = traverse
     t.tp_clear    = clear
-    # and this should not
-    t.tp_flags   |= Py_TPFLAGS_HAVE_GC
-    t.tp_alloc    = PyType_GenericAlloc
-    t.tp_free     = PyObject_GC_Del
-    t.tp_is_gc    = NULL
 
 # --------------------------------------------------------------------

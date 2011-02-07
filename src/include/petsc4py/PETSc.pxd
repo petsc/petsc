@@ -67,7 +67,7 @@ ctypedef public api class Object [
     type   PyPetscObject_Type,
     object PyPetscObjectObject,
     ]:
-    #cdef __weakref__
+    cdef __weakref__
     cdef PetscObject oval
     cdef PetscObject *obj
     cdef long inc_ref(self) except -1
