@@ -14,7 +14,7 @@ OBJSC    = fftw.o
 OBJSF    =
 LIBBASE  = libpetscmat
 MANSEC   = Mat
-LOCDIR   = src/mat/impls/fftw/
+LOCDIR   = src/mat/impls/fft/fftw/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
