@@ -386,7 +386,7 @@ PetscErrorCode AddTSTermLocal(DMDALocalInfo* info,Field **x,Field **f,void *ptr)
   dtinv = hxhy/(tsCtx->cfl*tsCtx->dt);
   /* 
      use_parab = PETSC_TRUE for parabolic equations; all the four equations have temporal term.
-               = PETSC_FALSE for differential algebraic equtions (DMDAE); 
+               = PETSC_FALSE for differential algebraic equtions (DAE);
                  velocity equations do not have temporal term.
   */
   for (j=yints; j<yinte; j++) {
