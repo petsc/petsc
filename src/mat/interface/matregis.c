@@ -49,6 +49,10 @@ extern PetscErrorCode  MatCreate_AIJCUSP(Mat);
 #if defined PETSC_HAVE_MATIM
 extern PetscErrorCode  MatCreate_IM(Mat);
 #endif
+
+#if defined PETSC_HAVE_FFTW
+extern PetscErrorCode  MatCreate_FFTW(Mat);
+#endif
 EXTERN_C_END
   
 /*
@@ -113,17 +117,20 @@ PetscErrorCode  MatRegisterAll(const char path[])
 
   ierr = MatRegisterDynamic(MATMPIADJ,         path,"MatCreate_MPIAdj",    MatCreate_MPIAdj);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSCATTER,        path,"MatCreate_Scatter",   MatCreate_Scatter);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATBLOCKMAT,       path,"MatCreate_BlockMat",   MatCreate_BlockMat);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATBLOCKMAT,       path,"MatCreate_BlockMat",  MatCreate_BlockMat);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATNEST,           path,"MatCreate_Nest",      MatCreate_Nest);CHKERRQ(ierr);
 
   /*ierr = MatRegisterDynamic(MATDD,             path,"MatCreate_DD",   MatCreate_DD);CHKERRQ(ierr);*/
 #if defined PETSC_HAVE_MATIM
-  ierr = MatRegisterDynamic(MATIM,            path,"MatCreate_IM",   MatCreate_IM);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATIM,             path,"MatCreate_IM",   MatCreate_IM);CHKERRQ(ierr);
 #endif
 #if defined PETSC_HAVE_CUSP
-  ierr = MatRegisterDynamic(MATSEQAIJCUSP,     path,"MatCreate_SeqAIJCUSP",      MatCreate_SeqAIJCUSP);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATMPIAIJCUSP,     path,"MatCreate_MPIAIJCUSP",      MatCreate_MPIAIJCUSP);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATAIJCUSP,        path,"MatCreate_AIJCUSP",         MatCreate_AIJCUSP);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSEQAIJCUSP,     path,"MatCreate_SeqAIJCUSP",  MatCreate_SeqAIJCUSP);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATMPIAIJCUSP,     path,"MatCreate_MPIAIJCUSP",  MatCreate_MPIAIJCUSP);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATAIJCUSP,        path,"MatCreate_AIJCUSP",     MatCreate_AIJCUSP);CHKERRQ(ierr);
+#endif
+#if defined PETSC_HAVE_FFTW
+  ierr = MatRegisterDynamic(MATFFTW,           path,"MatCreate_FFTW",        MatCreate_FFTW);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
