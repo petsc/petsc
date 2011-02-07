@@ -538,6 +538,8 @@ PetscErrorCode  PCShellSetView(PC pc,PetscErrorCode (*view)(PC,PetscViewer))
 
    Notes: the function MUST return an error code of 0 on success and nonzero on failure.
 
+   Developer Notes: There should also be a PCShellSetApplySymmetricRight() and PCShellSetApplySymmetricLeft().
+
    Level: developer
 
 .keywords: PC, shell, set, apply, user-provided
