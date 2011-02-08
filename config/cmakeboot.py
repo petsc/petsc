@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os,sys,subprocess,string
+import os,sys,string
 from collections import deque
 sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config'))
 sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config', 'BuildSystem'))
@@ -61,6 +61,7 @@ class PETScMaker(script.Script):
      langlist.append(('FC','Fortran'))
    if (self.languages.clanguage == 'Cxx'):
      langlist.append(('Cxx','CXX'))
+   win32fe = None
    for petsclanguage,cmakelanguage in langlist:
      self.setCompilers.pushLanguage(petsclanguage)
      compiler = self.setCompilers.getCompiler()
@@ -68,15 +69,17 @@ class PETScMaker(script.Script):
               self.setCompilers.CPPFLAGS,
               self.CHUD.CPPFLAGS]
      if compiler.split()[0].endswith('win32fe'): # Hack to support win32fe without changing the rest of configure
-       flags = compiler.split()[1:] + flags
-       compiler = compiler.split()[0] + '.exe'
+       win32fe = compiler.split()[0] + '.exe'
+       compiler = ' '.join(compiler.split()[1:])
      options.append('-DCMAKE_'+cmakelanguage+'_FLAGS=' + ''.join(flags))
      options.append('-DCMAKE_'+cmakelanguage+'_COMPILER=' + compiler)
      self.setCompilers.popLanguage()
+   if win32fe:
+     options.append('-DPETSC_WIN32FE:FILEPATH=%s'%win32fe)
    cmd = [self.cmake.cmake, self.petscdir.dir] + map(lambda x:x.strip(), options) + args
    archdir = os.path.join(self.petscdir.dir, self.arch.arch)
    logPrint('Invoking: %s' % cmd)
-   retcode = subprocess.call(cmd, cwd=archdir)
+   output,error,retcode = self.executeShellCommand(cmd, cwd=archdir)
    if retcode < 0:
      raise OSError('CMake process was terminated by signal %d' % (-retcode,))
    if retcode > 0:

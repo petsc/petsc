@@ -4177,11 +4177,11 @@ supported for the AIJ matrix format.
 
 % ---------------------------------------------------------------
 \cleardoublepage
-\chapter{TS: Scalable ODE and DMDAE Solvers}
+\chapter{TS: Scalable ODE and DAE Solvers}
 \label{chapter_ts}
 \sindex{ODE solvers}
 
-The TS library provides a framework for the scalable solution of ODEs and DMDAEs
+The TS library provides a framework for the scalable solution of ODEs and DAEs
 arising from the discretization of time-dependent PDEs, and of
 steady-state problems using pseudo-timestepping.
 
@@ -4256,7 +4256,7 @@ the time steps $dt^{n}$ and the left-hand-side matrix $B$
 identity matrix,
 a scalar timestep), as well as optionally the Jacobian of $F(u)$. 
 
-More generally, this can be applied to implicit ODE and DMDAE for which
+More generally, this can be applied to implicit ODE and DAE for which
 the transient form is
 \[
   F(u,\dot{u}) = 0.
@@ -4399,7 +4399,7 @@ form
         F(t,u,\dot{u}) = 0, \quad u(t_0) = u_0
 \]
 is slightly different.  In general, this is a differential algebraic
-equation (DMDAE), but if the matrix $F_{\dot{u}}(t) = \partial F
+equation (DAE), but if the matrix $F_{\dot{u}}(t) = \partial F
 / \partial \dot{u}$ is nonsingular then it is an ODE and can be
 transformed to the standard explicit form, although this transformation
 may not lead to efficient algorithms.  For ODE with nontrivial mass
@@ -4408,7 +4408,7 @@ reduces overhead to prepare the system for algebraic solvers (SNES/KSP)
 by having the user assemble the correctly shifted matrix.  Therefore
 this interface is also useful for ODE systems.
 
-To solve a DMDAE, instead of TSSetRHSFunction and TSSetRHSJacobian, one
+To solve a DAE, instead of TSSetRHSFunction and TSSetRHSJacobian, one
 uses:
 
 \begin{itemize}
@@ -4421,10 +4421,9 @@ uses:
   $\dot{u}$, and the (optional) user-provided context \trl{funP}.
 
 \item Jacobian $F_u + aF_{\dot{u}}$ \\
-  Unless one is using matrix-free methods without preconditioning, the
-  user must also provide an (approximate) Jacobian matrix of $G(u) =
-  F(t,u,w+au)$ where $w$ and $a$ are provided by the integrator.  The
-  function that evaluates $G'(u) = F_u + aF_{\dot{u}}$ is set with
+  Unless one is using matrix-free methods without preconditioning, the user must also provide an (approximate) Jacobian matrix of $G(u) = F(t,u,w+au)$.
+  This form for $G$ arises because the time integrator internally approximates $\dot{u}$ by $w+au$ where the positive ``shift'' $a$ and vector $w$ depend on the integration method, step size, and past states.
+  The function that evaluates $G'(u) = F_u + aF_{\dot{u}}$ is set with
   \begin{tabbing}
     TS\=SetIJacobian(TS ts,Mat A,Mat B,\\
     \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*),void *jacP);
@@ -4437,8 +4436,8 @@ uses:
   details), and the (optional) user-provided context \trl{jacP}.
 \end{itemize}
 
-Note: currently only TSGL, TSTHETA, and TSPSEUDO have
-support for solving DMDAE.
+Note: currently only TSALPHA, TSGL, TSTHETA, and TSPSEUDO have
+support for solving differential algebraic equations.
 
 \subsection{Using Sundials from PETSc}
 \label{sec_sundials}
