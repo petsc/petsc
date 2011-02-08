@@ -556,6 +556,8 @@ namespace ALE {
       }
     };
     // A parallel viewer
+    #undef __FUNCT__
+    #define __FUNCT__ "view"
     PetscErrorCode view(const char* label = NULL, bool raw = false){
       PetscErrorCode ierr;
       ostringstream txt;
@@ -595,17 +597,17 @@ namespace ALE {
         ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str());CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         ierr = PetscSynchronizedFlush(this->comm()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
       }// if(raw)
-      
+
       PetscFunctionReturn(0);
     };
   public:
     //
     // Lattice queries
     //
-    template<class targetInputSequence> 
+    template<class targetInputSequence>
     Obj<typename traits::coneSequence> meet(const Obj<targetInputSequence>& targets);
     // unimplemented
-    template<class sourceInputSequence> 
+    template<class sourceInputSequence>
     Obj<typename traits::coneSequence> join(const Obj<sourceInputSequence>& sources);
   public:
     //
