@@ -427,7 +427,7 @@ class Configure(config.base.Configure):
     if sys.version_info >= (2,5) and hasattr(self.cmake,'cmake'):
       try:
         import cmakeboot
-        cmakeboot.main(petscdir=self.petscdir.dir,petscarch=self.arch.arch,argDB=self.argDB,framework=self.framework,logPrint=self.framework.logPrint)
+        cmakeboot.main(petscdir=self.petscdir.dir,petscarch=self.arch.arch,argDB=self.argDB,framework=self.framework,log=self.framework.log)
       except (OSError), e:
         self.framework.logPrint('Booting CMake in PETSC_ARCH failed:\n' + str(e))
       except (ImportError, KeyError), e:
