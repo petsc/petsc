@@ -5,6 +5,11 @@ BROWSE
 TAGS*
 lib/*
 *.o
+*.html
+*.pdf
+*.aux
+*.dvi
+*.log
 
 syntax: regexp
 test_(.*)[0-9]$
