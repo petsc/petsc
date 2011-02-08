@@ -76,6 +76,10 @@ class PETScMaker(script.Script):
      self.setCompilers.popLanguage()
    if win32fe:
      options.append('-DPETSC_WIN32FE:FILEPATH=%s'%win32fe)
+     # Default on Windows is to generate Visual Studio project files, but
+     # 1. the build process for those is different, need to give different build instructions
+     # 2. the current WIN32FE workaround does not work with VS project files
+     options.append('-GUnix Makefiles')
    cmd = [self.cmake.cmake, self.petscdir.dir] + map(lambda x:x.strip(), options) + args
    archdir = os.path.join(self.petscdir.dir, self.arch.arch)
    log.write('Invoking: %s\n' % cmd)
