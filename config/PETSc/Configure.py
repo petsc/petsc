@@ -3,6 +3,13 @@ import config.base
 import os
 import re
 
+# The sorted() builtin is not available with python-2.3
+try: sorted
+except NameError:
+  def sorted(lst):
+    lst.sort()
+    return lst
+
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
@@ -688,7 +695,7 @@ class Configure(config.base.Configure):
     f.write('  import configure\n')
     # pretty print repr(args.values())
     f.write('  configure_options = [\n')
-    for itm in args.values():
+    for itm in sorted(args.values()):
       f.write('    \''+str(itm)+'\',\n')
     f.write('  ]\n')
     f.write('  configure.petsc_configure(configure_options)\n')
