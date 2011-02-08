@@ -39,6 +39,7 @@ int PetscOptionsView(PetscViewer);
 int PetscOptionsSetValue(const char*,const char*);
 int PetscOptionsClearValue(const char*);
 int PetscOptionsInsertString(const char*);
+char* PetscObjectsGetStringMatlab(const char*,const char*);
 
 typedef PetscPointer PetscObject;
 int PetscObjectsView(PetscViewer);

@@ -31,9 +31,9 @@ class Configure(PETSc.package.NewPackage):
     g.write('LPORDDIR   = $(topdir)/PORD/lib/\n')
     g.write('IPORD      = -I$(topdir)/PORD/include/\n')
     g.write('LPORD      = -L$(LPORDDIR) -lpord\n')
-    g.write('IMETIS =\n')
+    g.write('IMETIS = self.headers.toString(self.parmetis.include)\n')
     g.write('LMETIS = '+self.libraries.toString(self.parmetis.lib)+'\n') 
-    g.write('ISCOTCH =\n')
+    g.write('ISCOTCH = self.headers.toString(self.scotch.include)\n')
     g.write('LSCOTCH = '+self.libraries.toString(self.scotch.lib)+'\n') 
 
     # Disable threads on BGL

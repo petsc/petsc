@@ -1850,6 +1850,21 @@ PetscErrorCode  PetscOptionsGetString(const char pre[],const char name[],char st
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsGetStringMatlab"
+char* PetscOptionsGetStringMatlab(const char pre[],const char name[])
+{
+  char           *value;
+  PetscErrorCode ierr;
+  PetscBool      flag;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);if (ierr) PetscFunctionReturn(0);
+  if (!flag) PetscFunctionReturn(value);
+  else PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsGetStringArray"
 /*@C
    PetscOptionsGetStringArray - Gets an array of string values for a particular
