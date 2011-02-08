@@ -28,7 +28,6 @@ tabs for view()
 Decisions to make:
  - what to #include in applications
  - PetscReal or PetscScalar
- - How to set ksp options in application
  - #define __FUNCT__/PetscFunctionBegin/End in applications
  - get solution status
  - CHKERRQ in fortran examples

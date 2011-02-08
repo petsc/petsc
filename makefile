@@ -129,8 +129,8 @@ tao_manual:
 	cd docs/tex/manual; ${OMAKE} manual.dvi manual.pdf manual.html
 
 tao_deletemanpages:
-	${RM} -f ${TAO_DIR}/docs/manualpages/*/*.html \
-                 ${TAO_DIR}/docs/manualpages/manualpages.cit 
+	${RM} -f ${TAO_DIR}/docs/manpages/*/*.html \
+                 ${TAO_DIR}/docs/manpages/manpages.cit 
 
 tao_allmanpages: tao_deletemanpages
 	-${OMAKE} ACTION=tao_manpages_buildcite tree

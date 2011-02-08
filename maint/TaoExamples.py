@@ -125,7 +125,7 @@ class TaoExamples(ExampleList):
         self.add(Example(example="minsurf2",nprocs=1,options="-tao_smonitor -mx 4 -my 20 -random 2",method="ntr",tags=["minsurf","single","unconstrained","dm","c","ntr"],name="minsurf2_6"))
 
         self.add(Example(example="rosenbrock1",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","c","lmvm"],name="rosenbrock1"))
-
+        self.add(Example(example="rosenbrock1",nprocs=1,options="-tao_smonitor -tao_frtol 0 -tao_fatol 0",method="pounder",tags=["rosenbrock","single","unconstrained","c","pounder"],name="rosenbrock1_2"))
         self.add(Example(example="rosenbrock1f",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","fortran","lmvm"],name="rosenbrock1f"))
 
         self.add(Example(example="eptorsion1",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["eptorsion","single","unconstrained","c","lmvm"],name="eptorsion1"))
@@ -153,6 +153,9 @@ class TaoExamples(ExampleList):
         self.add(Example(example="jbearing2",nprocs=2,options="-tao_smonitor -mx 50 -my 50 -ecc 0.99",method="gpcg",tags=["bound","jbearing","multiprocessor","c","gpcg","dm"],name="jbearing2_2"))
         self.add(Example(example="jbearing2",nprocs=2,options="-tao_smonitor -mx 10 -my 16 -ecc 0.9",method="bqpip",tags=["bound","jbearing","multiprocessor","c","bqpip","dm"],name="jbearing2_3"))
         
+
+        # Least squares
+        self.add(Example(example="chwirut1",nprocs=1,options="-tao_smonitor",method="pounders -tao_fatol 0 -tao_frtol 0",tags=["leastsquares","chwirut","single","c","pounders"],name="chwirut1"))
 
         
         

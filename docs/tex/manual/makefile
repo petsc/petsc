@@ -24,42 +24,11 @@ manual.dvi: abstract.tex acknowl.tex manual_tex.tex part0.tex part1.tex part2.te
 	-@chmod -f g+w *.dvi *.aux *.toc *.log *.bbl *.blg *.ilg *.ind \
                     *.idx findex.tex sindex.tex
 
-oldmanual.html: manual.tex abstract.tex acknowl.tex part0.tex part1.tex part2.tex part3.tex
-	-@rm -f www.cit
-	-@cat ../../manualpages/manualpages.cit | sed 's#+man+..#+man+../manualpages#g' > www.cit 
-	tohtml -headeroffset 1 -cvtmath -quietlatex \
-               -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
-	       -nonavnames -nobottomnav -mapref ../../manualpages/manualpages.cit
-	tohtml -headeroffset 1 -cvtmath -quietlatex \
-               -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
-	       -nonavnames -nobottomnav -useimg -mapref ../../manualpages/manualpages.cit
-	-@chmod g+w manual.hux latex.err manual.html *.xbm *.gif
-	-mv manual.html manual_html.html
-	cat manual_html.html \
-            | sed 's/H1/H2/g' \
-            | sed 's/H0/H1/g' \
-            | sed 's/&amp;gt;/   /g' \
-            | sed 's/bullet://g' \
-            | sed 's/$$ //g' \
-            > manual.html
-	-@mv manual.html *.xbm ../../manual
-	-@cp *.gif ../../manual
-	-@chmod -R ug+w www.cit ../../manual/*
-	rm -f  latex.err findex.tex sindex.tex tmp.html manual_html.html
 
 manual.pdf: manual_tex.tex abstract.tex acknowl.tex part0.tex part1.tex part2.tex \
             part3.tex manual_tex.dvi
 	dvipdfm manual_tex
 	-@cp manual_tex.pdf ../../tao_manual.pdf
-
-manual.ps: manual_tex.tex abstract.tex acknowl.tex part0.tex part1.tex part2.tex \
-           part3.tex manual_tex.dvi
-	-@echo running dvips
-	-@dvips manual_tex 2> tempout  
-	-@cat tempout | grep -v pdf | grep -v ignored | grep -v "\[" | grep -v macro
-	-@rm tempout
-	-cp manual_tex.ps ../../tao_manual.ps
-	-@chmod g+w ../../manual.ps
 
 
 manual_tex.dvi: manual_tex.tex abstract.tex acknowl.tex part0.tex part1.tex part2.tex part3.tex addsolver.tex
@@ -71,11 +40,11 @@ manual_tex.dvi: manual_tex.tex abstract.tex acknowl.tex part0.tex part1.tex part
 # This is the split version; some users prefer this
 splitmanual.html: manual.tex abstract.tex acknowl.tex  part0.tex part1.tex part2.tex part3.tex
 	-@rm -f www.cit latex.err
-	-@cat ../../manualpages/manualpages.cit | sed 's#+man+..#+man+../manualpages#g' > www.cit 
+	-@cat ../../manpages/manpages.cit | sed 's#+man+..#+man+../manpages#g' > www.cit 
 	tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
-	       -mapref ../../manualpages/manualpages.cit -quietlatex
+	       -mapref ../../manpages/manpages.cit -quietlatex
 	tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
-	       -useimg -mapref ../../manualpages/manualpages.cit -quietlatex
+	       -useimg -mapref ../../manpages/manpages.cit -quietlatex
 	-@chmod g+w manual.hux latex.err 
 	-@/bin/rm -fr ../../splitmanual
 	-@mv manual ../../splitmanual
@@ -151,7 +120,7 @@ manual.html:
 	rm ./manual_html.html
 	rm -f *.sty
 	rm -f www.cit
-	cat ../../manualpages/manualpages.cit | sed 's#\.\./#\.\./manualpages/#g' > www.cit 
+	cat ../../manpages/manpages.cit | sed 's#\.\./#\.\./manpages/#g' > www.cit 
 	${TAO_DIR}/docs/tex/manual/linkmans.pl www.cit ./manual/manual.html
 	${TAO_DIR}/docs/tex/manual/swapimages.pl ./manual/manual.html.linkmans ../../manual > ../../manual/manual.html
 	cp -f ./manual/*.gif ../../manual/

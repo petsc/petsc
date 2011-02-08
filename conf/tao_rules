@@ -58,12 +58,6 @@ tao_chk_tao_dir:
 	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
 	  if [ "$$?" != 1 ]; then \
 	  cat trashz ; fi; ${RM} trashz;
-# Builds man pages (LaTeX version)
-tao_latexpages:
-	@-if [ "${MANSEC}" != "" ] ; then \
-	/home/gropp/bin/linux-rh73/doc2lt \
-	  ${SOURCEC} ${SOURCEH} >> \
-		    ${TAO_DIR}/docs/tex/rsum/rsum${MANSEC}.tex ; fi 
 
 # Builds man pages (HTML version) in two stages
 # See rule for allwwwpages in ${PETSC_DIR}/makefile 

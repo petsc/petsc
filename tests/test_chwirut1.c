@@ -1,5 +1,3 @@
-/* Program usage: rat43 [-help] [all TAO options] */
-
 /* 
    Include "tao.h" so that we can use TAO solvers.  Note that this
    file automatically includes libraries such as:
@@ -115,13 +113,9 @@ int main(int argc,char **argv)
   /* Perform the Solve */
   ierr = TaoSolverSolve(tao); CHKERRQ(ierr);
   ierr = TaoSolverView(tao,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
-  /* View iteration data */
-//  ierr = TaoGetIterationData(tao,&iter,&ff,0,0,0,0); CHKERRQ(ierr);
-//  PetscPrintf(PETSC_COMM_SELF,"Solved: Iterations: %d, Residual: %5.3e\n",
-//	      iter,ff);
 
   /* Use VecView to print x to screen  */
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
+  //ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
 
 
   /* Free TAO data structures */
