@@ -104,7 +104,7 @@ of a Broyden approximation to the Hessian matrix.  The calculation
 of $H_{0,k}$ can be modified with the command line argument 
 {\tt -tao\_lmm\_scale\_type <none,scalar,broyden>}.  Each scaling 
 method is described below.  The {\tt scalar} and {\tt broyden} 
-techniques are inspired by \cite{Gilbert-Lemarachal}.
+techniques are inspired by \cite{Gilbert-Lemarechal}.
 
 \begin{description}
 \item[{\tt none}]  This scaling method uses the identity matrix as 
@@ -153,7 +153,7 @@ default rescaling method.  The rescaling method applied can have a large
 impact on the number of function and gradient evaluations necessary to 
 compute a solution to the optimization problem, but increases the time
 required to update the BFGS approximation.  Each rescaling method is 
-described below.  These techniques are inspired by \cite{Gilbert-Lemarachal}.
+described below.  These techniques are inspired by \cite{Gilbert-Lemarechal}.
 
 \begin{description}
 \item[{\tt none}] This rescaling method does not modify the diagonal scaling
@@ -181,7 +181,7 @@ value.  The choice for $\beta$ is made with the command line argument
 \item[{\tt gl}] This scaling method is the same as the {\tt scalar} rescaling 
 method, but the previous value for the scaling matrix $H_{0,k-1}$ is used when 
 computing $\sigma$.  This is the rescaling method suggested in 
-\cite{Gilbert-Lemarachal}.
+\cite{Gilbert-Lemarechal}.
 \end{description}
 
 Finally, a limit can be placed on the difference between the scaling

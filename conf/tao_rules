@@ -58,3 +58,159 @@ tao_chk_tao_dir:
 	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
 	  if [ "$$?" != 1 ]; then \
 	  cat trashz ; fi; ${RM} trashz;
+# Builds man pages (LaTeX version)
+tao_latexpages:
+	@-if [ "${MANSEC}" != "" ] ; then \
+	/home/gropp/bin/linux-rh73/doc2lt \
+	  ${SOURCEC} ${SOURCEH} >> \
+		    ${TAO_DIR}/docs/tex/rsum/rsum${MANSEC}.tex ; fi 
+
+# Builds man pages (HTML version) in two stages
+# See rule for allwwwpages in ${PETSC_DIR}/makefile 
+#   1.) wwwpages_buildcite: builds the file manpages.cit for hyperlinks
+#   2.) wwwpages: builds the html pages, complete with hyperlinks
+tao_manpages_buildcite:
+	@-if [ "${MANSEC}" != "" ] ; then \
+	  DOCTEXT_PATH=${TAO_DIR}/docs/tex/doctext; \
+          doctext -html -indexdir ../${MANSEC} \
+		-index ${TAO_DIR}/docs/manpages/manpages.cit \
+		-mpath ${TAO_DIR}/docs/manpages/${MANSEC} ${SOURCEC} ${SOURCEH}; \
+		chmod g+w ${TAO_DIR}/docs/manpages/${MANSEC}/*; fi 
+#
+#   DOCTEXT_PATH env variable is used by doctext
+#
+tao_manpages:
+	@-if [ "${MANSEC}" != "" ] ; then \
+	  DOCTEXT_PATH=${TAO_DIR}/docs/tex/doctext; \
+	  doctext -html \
+		-mpath ${TAO_DIR}/docs/manpages/${MANSEC} -heading TAO \
+		-defn ${TAO_DIR}/docs/tex/doctext/html.def \
+		-locdir ${LOCDIR} -mapref ${TAO_DIR}/docs/manpages/manpages.cit \
+		-defn ${TAO_DIR}/docs/manpages/sec/eop.${MANSEC} \
+		${SOURCEC} ${SOURCEH}; \
+		chmod g+w ${TAO_DIR}/docs/manpages/${MANSEC}/*; fi 
+
+
+
+tao_deleteshared: 
+	${RM} ${TAO_LDIR}/*.${SLSUFFIX} ${TAO_LDIR}/so_locations
+
+tao_noshared:
+
+tao_build_components:
+	-cd ${TAO_DIR}/src/sidl/components && ${OMAKE} components
+
+taopagemaker: 
+	-@if [ "${TUTORIALS}" != "" ] ; then ${OMAKE} taopageform; fi
+
+taopageform: 
+	-@echo "NONE title=\"TAO ${MANSEC}\" command=link src=../../${LOCDIR}../exercises/main.htm target=replace" >> ${TAO_DIR}/docs/pageform.txt
+	-@${RM} pageform.txt
+	-@${RM} -rf ../exercises
+	-@mkdir ../exercises
+	-@echo "title=\"TAO ${MANSEC} examples\""                               >  pageform.txt 
+	-@echo "access_format=short"                                            >> pageform.txt
+	-@echo "access_title=${MANSEC} exercises"                            >>  pageform.txt 
+	-@echo "startpage=../exercises/introduction.htm"                         >> pageform.txt
+	-@ROOT=`echo ${LOCDIR} | sed s?/[a-z_]*?/..?g | sed s?src/??g`; echo "mappath=\"%+../%+$${ROOT}/docs/manpages/%\"" >> pageform.txt
+	-@echo "NONE title=\"Introduction\" command=link src=../exercises/introduction.htm" >> pageform.txt
+	-@cp -f ${TAO_DIR}/docs/manpages/sec/bop.${MANSEC} ../exercises/introduction.htm
+	-@for file in ${TUTORIALS}; do \
+          cmess=`grep "static char help" $${file} | cut -d\" -f2 | cut -d\. -f1`; \
+          if [ "$$cmess" = "" ] ; then \
+            echo "$${file} title=\"$${file}\" command=f" >> pageform.txt; \
+          else \
+            echo "$${file} title=\"$${file}\" command=c" >> pageform.txt; \
+          fi; \
+        done
+	-@echo "makefile title=\"makefile\" command=listing"                     >> pageform.txt
+	-@echo "NONE title=\"<HR>\" " >> pageform.txt; 
+	-@ROOT=`echo ${LOCDIR} | sed s?/[a-z_]*?/..?g | sed s?src/??g`; echo "NONE title=\"Return to all Exercises\" command=link src=$${ROOT}/docs/exercises/main.htm target=replace" >> pageform.txt
+	-@ROOT=`echo ${LOCDIR} | sed s?/[a-z_]*?/..?g | sed s?src/??g`; echo "NONE title=\"TAO Documentation\" command=link src=http://www-fp.mcs.anl.gov/tao/docs/index.htm target=replace" >> pageform.txt
+	/home/sarich/software/makepage/makepage.new -pageform=pageform.txt -access_extra=/dev/null -map=+${TAO_DIR}/docs/manpages/manpages.cit -outdir=../exercises
+
+tao_html:
+	-@sed -e s?man+../?man+ROOT/docs/manpages/? ${LOC}/docs/manpages/manpages.cit > /tmp/$$USER.htmlmap
+	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
+          loc=`pwd | sed -e s?\$${TAO_DIR}?$${LOC}/?g -e s?/disks??g`;  \
+          ${MKDIR} -p $${loc} ;\
+          for i in ${SOURCEC} ${SOURCEF} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH}  foo ; do\
+	    if [ -f $$i ]; then \
+              iroot=`echo $$i | sed -e "s?[a-z.]*/??g"`;\
+              IROOT=`echo $${i} | sed -e s?[.][.]??g` ;\
+              if [ "$${IROOT}" != "$${i}" ] ; then \
+                IROOT=".."; \
+              else \
+                IROOT=$${ROOT};\
+              fi;\
+              ${RM} $${loc}/$$i.html; \
+              echo "<center><a href=\"$${iroot}\">Actual source code: $${iroot}</a></center><br>" > $${loc}/$$i.html; \
+              sed -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g"  \
+              -e "s/ierr [ ]*= //g"  $$i | ${C2HTML} -n  | \
+              egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C|extern )' | \
+              ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
+	    fi; \
+         done
+	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
+          loc=`pwd | sed -e s?\$${TAO_DIR}?$${LOC}/?g -e s?/disks??g`; ${RM} $${loc}/index.html; \
+          cat ${TAO_DIR}/docs/manpages/sec/bop.${MANSEC} | sed -e "s?<A HREF=\"PETSC_DIR[a-z/]*\">Examples</A>?<A HREF=\"$${ROOT}/docs/manpages/${MANSEC}\">Man pages</A>?g" -e "s?TAO_DIR?$${ROOT}/?g"> $${loc}/index.html; \
+          echo "<p>" >> $${loc}/index.html
+	-@loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;\
+            if [ "${EXAMPLESC}" != "" ] ; then \
+               for file in ${EXAMPLESC} foo ; do \
+		if [ -f $$file ]; then \
+                   cmess=`grep "static char help" $${file} | cut -d\" -f2 | cut -d\. -f1`; \
+                   echo "<a href=\"$${file}.html\">$${file}: $${cmess}</a><br>" >> $${loc}/index.html;\
+		fi; \
+               done ;\
+            else \
+               for file in ${DIRS} foo; do \
+		 if [ -d $$file ]; then \
+                   echo "<a href=\"$${file}/\">$${file}/</a><br>" >> $${loc}/index.html; \
+		 fi; \
+               done; \
+               echo " " >> $${loc}/index.html; \
+               for file in ${SOURCEH} ${SOURCEC} ${SOURCEF} foo ; do \
+		 if [ -f $$file ]; then \
+                   echo "<a href=\"$${file}.html\">$${file}</a><br>" >> $${loc}/index.html; \
+		 fi; \
+               done; \
+            fi ;\
+            echo " " >> $${loc}/index.html; \
+            echo "<a href=\"makefile.html\">makefile</a><br>" >> $${loc}/index.html
+	-@loc=`pwd | sed -e s?\$${TAO_DIR}?$${LOC}/?g -e s?/disks??g`;  \
+	   cat makefile | ${C2HTML}  | ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml > $${loc}/makefile.html
+	-@${RM} /tmp/$$USER.htmlmap tmp
+
+#
+#   Example usage for man pages; adds each example that uses a function to that functions
+# man page up to a limit of 10 examples.
+#
+tao_manexamples:
+	-@base=`basename ${LOCDIR}`; \
+        if [ "$${base}" = "tutorials" ] || [ "$${base}" = "examples" ] ; then \
+          echo "Generating man example links" ; \
+	  echo "LOC=${TAO_DIR}" ; \
+          for i in ${EXAMPLESC} ${EXAMPLESF} foo ; do \
+            echo $$i; \
+            if [ "$$i" != "foo" ] ; then \
+              a=`cat $$i | ${MAPNAMES} -map ${LOC}/docs/manpages/manpages.cit \
+                   -printmatch -o /dev/null | sort | uniq` ;  echo $$a; \
+              for j in $$a ; do \
+                b=`ls ${LOC}/docs/manpages/*/$${j}.html | cut -f9` ; \
+		echo $$b; \
+                l=`grep tutorials $${b} | wc -l`; \
+                if [ $$l -le 10 ] ; then \
+                  if [ $$l -eq 0 ] ; then \
+                    echo "<P><H3><FONT COLOR=\"#CC3333\">Examples</FONT></H3>" >> $$b; \
+                  fi; \
+                  echo  "<A HREF=\"../../../BB\">BB</A><BR>" | sed s?BB?${LOCDIR}$$i.html?g >> $$b; \
+                  grep -v /BODY $$b > ltmp; \
+                  echo "</BODY></HTML>" >> ltmp; \
+                  mv -f ltmp $$b; \
+                fi; \
+              done; \
+            fi; \
+	  done; \
+        fi
+

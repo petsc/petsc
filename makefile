@@ -92,7 +92,6 @@ tao_info_h:
 
 
 
-
 #
 # Builds the TAO libraries
 # This target also builds fortran77 and f90 interface
@@ -121,12 +120,25 @@ tao_alletags:
 
 
 tao_testexamples_c: 
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} TAO_DIR=${TAO_DIR} ACTION=testexamples_C tree
+	-@PYTHONPATH=${TAO_DIR}/maint ./maint/runExamples.py
 
-
-# Builds Fortran stub files
 tao_allfortranstubs:
 	-@maint/generatefortranstubs.py ${BFORT}
+
+tao_manual:
+	cd docs/tex/manual; ${OMAKE} manual.dvi manual.pdf manual.html
+
+tao_deletemanpages:
+	${RM} -f ${TAO_DIR}/docs/manualpages/*/*.html \
+                 ${TAO_DIR}/docs/manualpages/manualpages.cit 
+
+tao_allmanpages: tao_deletemanpages
+	-${OMAKE} ACTION=tao_manpages_buildcite tree
+	-${OMAKE} ACTION=tao_manpages tree
+	-maint/wwwindex.py ${TAO_DIR}
+
+tao_htmlpages: 
+	-${OMAKE} ACTION=tao_html TAO_DIR=${TAO_DIR} PETSC_DIR=${PETSC_DIR} alltree LOC=${TAO_DIR}
 
 
 tao_chk_lib_dir: chklib_dir
