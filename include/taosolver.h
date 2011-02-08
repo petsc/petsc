@@ -90,7 +90,11 @@ extern PetscErrorCode TaoSolverComputeVariableBounds(TaoSolver);
 
 extern PetscErrorCode TaoSolverGetTolerances(TaoSolver, PetscReal*, PetscReal*, PetscReal*, PetscReal*, PetscReal*);
 extern PetscErrorCode TaoSolverSetTolerances(TaoSolver, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
-
+extern PetscErrorCode TaoSolverSetDefaultKSPType(TaoSolver, KSPType);
+extern PetscErrorCode TaoSolverSetDefaultPCType(TaoSolver, PCType);
+extern PetscErrorCode TaoSolverSetOptionsPrefix(TaoSolver, const char p[]);
+extern PetscErrorCode TaoSolverAppendOptionsPrefix(TaoSolver, const char p[]);
+extern PetscErrorCode TaoSolverGetOptionsPrefix(TaoSolver, const char *p[]);
 extern PetscErrorCode TaoSolverResetStatistics(TaoSolver);
 extern PetscErrorCode TaoSolverSetDefaultMonitors(TaoSolver);
 extern PetscErrorCode TaoSolverGetKSP(TaoSolver, KSP*);

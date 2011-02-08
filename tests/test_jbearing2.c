@@ -73,9 +73,6 @@ int main( int argc, char **argv )
   PetscBool   flg;              /* A return variable when checking for user options */
   TaoSolver tao;                /* TAO_SOLVER solver context */
 
-  ISLocalToGlobalMapping isltog; /* local-to-global mapping object */
-  PetscInt nloc;                      /* The number of local elements */
-  PetscInt *ltog;                     /* mapping of local elements to global elements */
   TaoSolverTerminationReason reason;
   AppCtx     user;               /* user-defined work context */
   PetscReal     zero=0.0;           /* lower bound on all variables */
@@ -127,20 +124,10 @@ int main( int argc, char **argv )
 
   /*  Create matrix user.A to store quadratic, Create a local ordering scheme. */
   info = VecGetLocalSize(x,&m); CHKERRQ(info);
-  info = MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,TAO_NULL,3,TAO_NULL,&user.A); CHKERRQ(info);
-
-
-
-  info = DMDAGetGlobalIndices(user.dm,&nloc,&ltog); CHKERRQ(info);
-  info = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,ltog,PETSC_COPY_VALUES,&isltog); 
-  CHKERRQ(info);
-  info = MatSetLocalToGlobalMapping(user.A,isltog,isltog); CHKERRQ(info);
-  info = ISLocalToGlobalMappingDestroy(isltog); CHKERRQ(info);
-
+  info = DMGetMatrix(user.dm,MATAIJ,&user.A);
 
   /* User defined function -- compute linear term of quadratic */
   info = ComputeB(&user); CHKERRQ(info);
-
 
   /* The TAO code begins here */
 

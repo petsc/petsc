@@ -893,9 +893,6 @@ static PetscErrorCode TaoSolverSetUp_NTL(TaoSolver tao)
   tl->Diag = 0;
   tl->M = 0;
 
-  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(tao->ksp, "tao_"); CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -986,6 +983,7 @@ static PetscErrorCode TaoSolverSetFromOptions_NTL(TaoSolver tao)
   ierr = PetscOptionsReal("-tao_ntl_epsilon", "tolerance used when computing actual and predicted reduction", "", tl->epsilon, &tl->epsilon, 0); CHKERRQ(ierr);
   ierr = PetscOptionsTail(); CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch); CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1100,6 +1098,10 @@ PetscErrorCode TaoSolverCreate_NTL(TaoSolver tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch); CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type); CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch, tao); CHKERRQ(ierr);
+
+  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, "tao_"); CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

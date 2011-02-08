@@ -306,14 +306,22 @@ PetscErrorCode TaoSolverSetFromOptions(TaoSolver tao)
 {
     PetscErrorCode ierr;
     const TaoSolverType default_type = "tao_lmvm";
+    const char *prefix;
     char type[256];
     PetscBool flg;
     
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    ierr = TaoSolverGetOptionsPrefix(tao,&prefix);
+    /* So no warnings are given about unused options */
+    ierr = PetscOptionsHasName(prefix,"-tao_ksp_type",&flg);
+    ierr = PetscOptionsHasName(prefix,"-tao_pc_type",&flg);
+    
 
     ierr = PetscOptionsBegin(((PetscObject)tao)->comm, ((PetscObject)tao)->prefix,"TaoSolver options","TaoSolver"); CHKERRQ(ierr);
     {
+							
+
 	if (!TaoSolverRegisterAllCalled) {
 	    ierr = TaoSolverRegisterAll(PETSC_NULL); CHKERRQ(ierr);
 	}
@@ -882,6 +890,87 @@ PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver tao,void *dummy)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverSetOptionsPrefix"
+PetscErrorCode TaoSolverSetOptionsPrefix(TaoSolver tao, const char p[])
+{
+  PetscObjectSetOptionsPrefix((PetscObject)tao,p);
+  return(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverAppendOptionsPrefix"
+PetscErrorCode TaoSolverAppendOptionsPrefix(TaoSolver tao, const char p[])
+{
+  PetscObjectAppendOptionsPrefix((PetscObject)tao,p);
+  return(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverGetOptionsPrefix"
+PetscErrorCode TaoSolverGetOptionsPrefix(TaoSolver tao, const char *p[])
+{
+   PetscObjectGetOptionsPrefix((PetscObject)tao,p);
+   return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverSetDefaultKSPType"
+/*@
+  TaoSolverSetDefaultKSPType - Sets the default KSP type if a KSP object
+  is created.
+
+  Note: Some solvers may require a particular KSP type and will not work 
+  correctly if the default value is changed
+*/
+PetscErrorCode TaoSolverSetDefaultKSPType(TaoSolver tao, KSPType ktype)
+{
+  PetscFunctionBegin;
+  const char *prefix=0;
+  char *option=0;
+  size_t n1,n2;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  ierr = TaoSolverGetOptionsPrefix(tao,&prefix); CHKERRQ(ierr);
+  ierr = PetscStrlen(prefix,&n1);
+  ierr = PetscStrlen("_ksp_type",&n2);
+  ierr = PetscMalloc(n1+n2+1,&option);
+  ierr = PetscStrncpy(option,prefix,n1+1);
+  ierr = PetscStrncat(option,"_ksp_type",n2+1);
+  ierr = PetscOptionsSetValue(option,ktype); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverSetDefaultPCType"
+/*@
+  TaoSolverSetDefaultPCType - Sets the default PC type if a PC object
+  is created.
+
+  Note: Some solvers may require a particular PC type and will not work 
+  correctly if the default value is changed
+*/
+PetscErrorCode TaoSolverSetDefaultPCType(TaoSolver tao, PCType ptype)
+{
+  
+  const char *prefix=0;
+  char *option=0;
+  size_t n1,n2;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  ierr = TaoSolverGetOptionsPrefix(tao,&prefix); CHKERRQ(ierr);
+  ierr = PetscStrlen(prefix,&n1);
+  ierr = PetscStrlen("_pc_type",&n2);
+  ierr = PetscMalloc(n1+n2+1,&option);
+  ierr = PetscStrncpy(option,prefix,n1+1);
+  ierr = PetscStrncat(option,"_pc_type",n2+1);
+  ierr = PetscOptionsSetValue(option,ptype); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetType"
@@ -1007,25 +1096,3 @@ PetscErrorCode TaoSolverMonitor(TaoSolver tao, PetscInt its, PetscReal f, PetscR
 
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSetOptionsPrefix"
-/*@C
-    TaoSolverSetOptionsPrefix - Sets the prefix used for the solvers inside a TaoSolver
-
-    Collective on MPI_Comm 
-
-    Input Parameters:
-+    tao - the TaoSolver object created with TaoSolverCreate()
--    prefix - the prefix string
-
-    Level: intermediate
-
-@*/
-PetscErrorCode  TaoSolverSetOptionsPrefix(TaoSolver tao,const char prefix[])
-{
-  PetscErrorCode ierr;
-  
-  PetscFunctionBegin;
-  ierr = PetscStrallocpy(prefix,&(((PetscObject)(tao))->prefix));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}

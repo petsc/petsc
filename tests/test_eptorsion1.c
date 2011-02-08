@@ -166,12 +166,13 @@ PetscErrorCode main(int argc,char **argv)
 
   }
 
-  /* Check for any TAO command line options */
-  ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
 
 
   /* Modify the PETSc KSP structure */
   ierr = PetscOptionsSetValue("-tao_ksp_type","cg"); CHKERRQ(ierr);
+
+  /* Check for any TAO command line options */
+  ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
 
 
   /* SOLVE THE APPLICATION */
@@ -502,7 +503,6 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *HH,Mat *Hpre, MatStructure *
   /* Assemble matrix  */
   ierr = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  printf("Form Complete Hessian\n"); 
   return 0;
 }
 

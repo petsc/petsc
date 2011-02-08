@@ -655,10 +655,6 @@ static PetscErrorCode TaoSolverSetUp_NTR(TaoSolver tao)
   tr->Diag = 0;
   tr->M = 0;
 
-  /* Set linear solver to default for trust region */
-  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(tao->ksp, "tao_"); CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -730,6 +726,7 @@ static PetscErrorCode TaoSolverSetFromOptions_NTR(TaoSolver tao)
   ierr = PetscOptionsReal("-tao_ntr_max_radius", "upper bound on trust-region radius", "", tr->max_radius, &tr->max_radius, 0); CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_ntr_epsilon", "tolerance used when computing actual and predicted reduction", "", tr->epsilon, &tr->epsilon, 0); CHKERRQ(ierr);
   ierr = PetscOptionsTail(); CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -823,7 +820,15 @@ PetscErrorCode TaoSolverCreate_NTR(TaoSolver tao)
   tr->bfgs_scale_type = BFGS_SCALE_AHESS;
   tr->init_type	      = NTR_INIT_INTERPOLATION;
   tr->update_type     = NTR_UPDATE_REDUCTION;
+
+
+  /* Set linear solver to default for trust region */
+  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, "tao_"); CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
+
+
 }
 EXTERN_C_END
 

@@ -1,4 +1,3 @@
-
 LineSearch
 * Clear/reset variable bounds
 
@@ -23,8 +22,6 @@ Levenberg-Marquardt
 POUNDer
 KT?
 BNLS?
-
-rosenbrock1 fails for ntr (endless loop)
 
 tabs for view()
 

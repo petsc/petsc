@@ -110,11 +110,12 @@ int main( int argc, char **argv )
   ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
 
   /* Limit the number of iterations in the KSP linear solver */
-/*  ierr = TaoAppGetKSP(minsurfapp,&ksp); CHKERRQ(ierr);
+  ierr = TaoSolverGetKSP(tao,&ksp); CHKERRQ(ierr);
   if (ksp) {                                            
     ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,user.mx*user.my);
     CHKERRQ(ierr);
-    }*/
+  }
+
 
   /* SOLVE THE APPLICATION */
   ierr = TaoSolverSolve(tao); CHKERRQ(ierr);

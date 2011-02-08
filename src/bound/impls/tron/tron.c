@@ -58,6 +58,7 @@ static PetscErrorCode TaoSolverSetFromOptions_TRON(TaoSolver tao)
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -316,12 +317,7 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
   PC pc;
 
   PetscFunctionBegin;
-  if (tao->ksp == PETSC_NULL) {
-    ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(tao->ksp, "tao_"); CHKERRQ(ierr);
-    ierr = KSPSetType(tao->ksp, KSPCG); CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
-  }
+
   if (tron->subset_type == TRON_SUBSET_SUBMAT) {
     ierr = VecCreate(((PetscObject)tao)->comm,&tron->R); CHKERRQ(ierr);
     ierr = VecCreate(((PetscObject)tao)->comm,&tron->DXFree); CHKERRQ(ierr);
@@ -586,6 +582,9 @@ PetscErrorCode TaoSolverCreate_TRON(TaoSolver tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch); CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type); CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch,tao); CHKERRQ(ierr);
+
+  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, "tao_"); CHKERRQ(ierr);
 
 
   PetscFunctionReturn(0);

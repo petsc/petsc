@@ -1042,12 +1042,6 @@ static PetscErrorCode TaoSolverSetUp_NLS(TaoSolver tao)
   nlsP->Diag = 0;
   nlsP->M = 0;
 
-
-  // Set linear solver to default for symmetric matrices
-  ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp); CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(tao->ksp,"tao_"); CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -1152,6 +1146,7 @@ static PetscErrorCode TaoSolverSetFromOptions_NLS(TaoSolver tao)
   ierr = PetscOptionsReal("-tao_nls_epsilon", "tolerance used when computing actual and predicted reduction", "", nlsP->epsilon, &nlsP->epsilon, 0); CHKERRQ(ierr);
   ierr = PetscOptionsTail(); CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1286,6 +1281,10 @@ PetscErrorCode TaoSolverCreate_NLS(TaoSolver tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch); CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type); CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch,tao); CHKERRQ(ierr);
+
+  // Set linear solver to default for symmetric matrices
+  ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp); CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp,"tao_"); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
