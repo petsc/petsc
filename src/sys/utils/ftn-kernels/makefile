@@ -1,6 +1,6 @@
 
 ALL: lib
-#requirespackage   'PETSC_USE_FORTRAN_KERNELS'
+#requiresdefine   'PETSC_USE_FORTRAN_KERNELS'
 
 CFLAGS   =
 FFLAGS   =

@@ -1,5 +1,5 @@
 
-#requirespackage 'PETSC_USING_F90'
+#requiresdefine 'PETSC_USING_F90'
 ALL: lib
 
 CFLAGS   =

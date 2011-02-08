@@ -1,5 +1,5 @@
 
-#requirespackage 'PETSC_USE_WINDOWS_GRAPHICS'
+#requiresdefine 'PETSC_USE_WINDOWS_GRAPHICS'
 
 ALL: lib 
 

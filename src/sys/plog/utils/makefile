@@ -1,4 +1,4 @@
-#requirespackage    'PETSC_USE_LOG'
+#requiresdefine    'PETSC_USE_LOG'
 
 ALL: lib 
 

@@ -1,4 +1,4 @@
-#requirespackage 'PETSC_HAVE_DRAND48'
+#requiresfunction 'PETSC_HAVE_DRAND48'
 
 ALL: lib
 

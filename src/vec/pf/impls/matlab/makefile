@@ -1,5 +1,5 @@
 
-#requirespackage  'PETSC_HAVE_MATLAB_ENGINE'
+#requiresdefine  'PETSC_HAVE_MATLAB_ENGINE'
 #requiresscalar real 
 #requiresprecision  double
 

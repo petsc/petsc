@@ -1,5 +1,5 @@
 
-#requirespackage 'PETSC_HAVE_JAVA'
+#requiresdefine 'PETSC_HAVE_JAVA'
 SPECIALLIB     = yes
 SPECIALFASTLIB = yes
 speciallib:

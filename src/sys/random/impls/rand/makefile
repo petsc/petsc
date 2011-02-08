@@ -1,4 +1,4 @@
-#requirespackage 'PETSC_HAVE_RAND'
+#requiresfunction 'PETSC_HAVE_RAND'
 
 ALL: lib
 
