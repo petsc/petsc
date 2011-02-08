@@ -120,11 +120,11 @@ class Script(logger.Logger):
 
   if USE_SUBPROCESS:
 
-    def runShellCommand(command, log=None):
+    def runShellCommand(command, log=None, cwd=None):
       Popen = subprocess.Popen
       PIPE  = subprocess.PIPE
       if log: log.write('Executing: '+command+'\n')
-      pipe = Popen(command, stdin=None, stdout=PIPE, stderr=PIPE,
+      pipe = Popen(command, cwd=cwd, stdin=None, stdout=PIPE, stderr=PIPE,
                    bufsize=-1, shell=True, universal_newlines=True)
       (out, err) = pipe.communicate()
       ret = pipe.returncode
@@ -148,15 +148,20 @@ class Script(logger.Logger):
       return (input, output, err, pipe)
     openPipe = staticmethod(openPipe)
 
-    def runShellCommand(command, log = None):
-      import select
+    def runShellCommand(command, log = None, cwd = None):
+      import select, os
 
       ret        = None
       out        = ''
       err        = ''
       loginError = 0
-      if log: log.write('Executing: '+command+'\n')
+      if cwd is not None:
+        oldpath = os.getcwd()
+        os.chdir(cwd)
+      if log: log.write('Executing: %s\n' % (command,))
       (input, output, error, pipe) = Script.openPipe(command)
+      if cwd is not None:
+        os.chdir(oldpath)
       input.close()
       if useSelect:
         outputClosed = 0
@@ -200,10 +205,10 @@ class Script(logger.Logger):
 
   def defaultCheckCommand(command, status, output, error):
     '''Raise an error if the exit status is nonzero'''
-    if status: raise RuntimeError('Could not execute \''+command+'\':\n'+output+error)
+    if status: raise RuntimeError('Could not execute "%s":\n%s' % (command,output+error))
   defaultCheckCommand = staticmethod(defaultCheckCommand)
 
-  def executeShellCommand(command, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0):
+  def executeShellCommand(command, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0, cwd=None):
     '''Execute a shell command returning the output, and optionally provide a custom error checker
        - This returns a tuple of the (output, error, statuscode)'''
     if not checkCommand:
@@ -218,7 +223,7 @@ class Script(logger.Logger):
         output = '\n'.join(output.split('\n')[:lineLimit])
       log.write('sh: '+output+'\n')
       return output
-    def runInShell(command, log):
+    def runInShell(command, log, cwd):
       if useThreads:
         import threading
         class InShell(threading.Thread):
@@ -227,7 +232,7 @@ class Script(logger.Logger):
             self.name = 'Shell Command'
             self.setDaemon(1)
           def run(self):
-            (self.output, self.error, self.status) = Script.runShellCommand(command, log)
+            (self.output, self.error, self.status) = Script.runShellCommand(command, log, cwd)
         thread = InShell()
         thread.start()
         thread.join(timeout)
@@ -238,10 +243,10 @@ class Script(logger.Logger):
         else:
           return (thread.output, thread.error, thread.status)
       else:
-        return Script.runShellCommand(command, log)
+        return Script.runShellCommand(command, log, cwd)
 
-    log.write('sh: '+command+'\n')
-    (output, error, status) = runInShell(command, log)
+    log.write('sh: %s\n' % (command,))
+    (output, error, status) = runInShell(command, log, cwd)
     output = logOutput(log, output)
     checkCommand(command, status, output, error)
     return (output, error, status)
