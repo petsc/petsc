@@ -368,7 +368,7 @@ namespace ALE {
       return this->getLabelStratum("depth", depth);
     };
     #undef __FUNCT__
-    #define __FUNCT__ "Bundle::stratify"
+    #define __FUNCT__ "stratify"
     virtual void stratify() {
       ALE_LOG_EVENT_BEGIN;
       this->computeHeights();
