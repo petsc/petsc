@@ -6,6 +6,9 @@ sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config'))
 sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config', 'BuildSystem'))
 import script
 
+def noCheck(command, status, output, error):
+  return
+
 class StdoutLogger(object):
   def write(self,str):
     print(str)
@@ -83,7 +86,7 @@ class PETScMaker(script.Script):
    cmd = [self.cmake.cmake, self.petscdir.dir] + map(lambda x:x.strip(), options) + args
    archdir = os.path.join(self.petscdir.dir, self.arch.arch)
    log.write('Invoking: %s\n' % cmd)
-   output,error,retcode = self.executeShellCommand(cmd, log=log, cwd=archdir)
+   output,error,retcode = self.executeShellCommand(cmd, checkCommand = noCheck, log=log, cwd=archdir)
    if retcode < 0:
      raise OSError('CMake process was terminated by signal %d' % (-retcode,))
    if retcode > 0:
