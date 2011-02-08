@@ -1,7 +1,6 @@
 
 #requirespackage   'PETSC_HAVE_FFTW'
 #requiresprecision double
-#requiresscalar    complex
 
 ALL: lib
 
