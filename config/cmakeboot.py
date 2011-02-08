@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os,sys,string
+import os,sys,subprocess,string
 from collections import deque
 sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config'))
 sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config', 'BuildSystem'))
@@ -79,7 +79,7 @@ class PETScMaker(script.Script):
    cmd = [self.cmake.cmake, self.petscdir.dir] + map(lambda x:x.strip(), options) + args
    archdir = os.path.join(self.petscdir.dir, self.arch.arch)
    logPrint('Invoking: %s' % cmd)
-   output,error,retcode = self.executeShellCommand(cmd, cwd=archdir)
+   retcode = subprocess.call(cmd, cwd=archdir)
    if retcode < 0:
      raise OSError('CMake process was terminated by signal %d' % (-retcode,))
    if retcode > 0:
