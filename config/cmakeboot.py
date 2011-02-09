@@ -9,6 +9,14 @@ import script
 def noCheck(command, status, output, error):
   return
 
+def quoteIfNeeded(path):
+  "Don't need quotes unless the path has bits that would confuse the shell"
+  safe = string.letters + string.digits + os.path.sep + os.path.pardir + '-_'
+  if set(path).issubset(safe):
+    return path
+  else:
+    return '"' + path + '"'
+
 class StdoutLogger(object):
   def write(self,str):
     print(str)
@@ -23,7 +31,6 @@ class PETScMaker(script.Script):
      argDB.load()
    script.Script.__init__(self, argDB = argDB)
    self.framework = framework
-   self.log = sys.stdout
 
  def __str__(self):
    return ''
@@ -87,20 +94,12 @@ class PETScMaker(script.Script):
    archdir = os.path.join(self.petscdir.dir, self.arch.arch)
    log.write('Invoking: %s\n' % cmd)
    output,error,retcode = self.executeShellCommand(cmd, checkCommand = noCheck, log=log, cwd=archdir)
-   if retcode < 0:
-     raise OSError('CMake process was terminated by signal %d' % (-retcode,))
-   if retcode > 0:
-     raise OSError('CMake process failed with status %d' % (retcode,))
-   log.write('CMake configuration completed successfully.\n')
-
-   def quoteIfNeeded(path):
-     "Don't need quotes unless the path has bits that would confuse the shell"
-     safe = string.letters + string.digits + os.path.sep + os.path.pardir + '-_'
-     if set(path).issubset(safe):
-       return path
-     else:
-       return '"' + path + '"'
-   log.write('Build the library with: make -C %s\n' % quoteIfNeeded(archdir))
+   if retcode:
+      self.logPrintBox('CMake process failed with status %d. Proceeding..' % (retcode,))
+   else:
+     self.logPrintBox('CMake configuration completed successfully.\n' +
+                      'Can now use alternate build command [optionally with -j]: make -C %s' % quoteIfNeeded(archdir))
+   return
 
 def main(petscdir, petscarch, argDB=None, framework=None, log=StdoutLogger(), args=[]):
   # This can be called as a stand-alone program, or by importing it from
