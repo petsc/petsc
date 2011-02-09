@@ -146,6 +146,7 @@ class DirectoryTreeWalker(logger.Logger):
             self.logPrint('Rejecting '+dirname+' because function '+reqValue+' does not exist')
             return False
         elif reqType == 'define':
+          self.logPrint('Checking '+reqValue)
           if not reqValue in ['\'PETSC_'+d+'\'' for d in self.configInfo.base.defines]:
             self.logPrint('Rejecting '+dirname+' because define '+reqValue+' does not exist')
             return False
