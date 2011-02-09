@@ -33,7 +33,7 @@ class Configure(PETSc.package.NewPackage):
       g.write('WHATMPI      = -DCSAMEF77\n')
     g.write('DEBUGLVL  = -DBlacsDebugLvl=1\n')
     g.write('BLACSdir  = '+self.packageDir+'\n')
-    g.write('BLACSLIB  = '+os.path.join(self.installDir,self.libdir,'libblacs.a')+'\n')
+    g.write('BLACSLIB  = '+os.path.join(self.installDir,self.libdir,'libblacs.'+self.setCompilers.AR_LIB_SUFFIX)+'\n')
     g.write('MPILIB    = '+self.libraries.toString(self.mpi.lib)+'\n')
     g.write('SYSINC    = '+self.headers.toString(self.mpi.include)+'\n')
     g.write('BTLIBS    = $(BLACSLIB)  $(MPILIB) \n')

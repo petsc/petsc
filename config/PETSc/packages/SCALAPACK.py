@@ -38,7 +38,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('BLACSDBGLVL  = -DBlacsDebugLvl=1\n')
     g.write('BLACSLIB     = '+self.libraries.toString(self.blacs.lib)+'\n') 
     g.write('SMPLIB       = '+self.libraries.toString(self.mpi.lib)+'\n')
-    g.write('SCALAPACKLIB = '+os.path.join(self.installDir,self.libdir,'libscalapack.a')+' \n')
+    g.write('SCALAPACKLIB = '+os.path.join(self.installDir,self.libdir,'libscalapack.'+self.setCompilers.AR_LIB_SUFFIX)+' \n')
     g.write('CBLACSLIB    = $(BLACSCINIT) $(BLACSLIB) $(BLACSCINIT)\n')
     g.write('FBLACSLIB    = $(BLACSFINIT) $(BLACSLIB) $(BLACSFINIT)\n')
     # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag    
