@@ -11,7 +11,7 @@ VERBOSE = False
 def cmakeconditional(key,val):
   def unexpected():
     raise RuntimeError('Unexpected')
-  if key == 'package':
+  if key in ['package', 'function', 'define']:
     return val
   if key == 'precision':
     if val == 'double':
