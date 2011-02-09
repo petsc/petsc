@@ -83,7 +83,7 @@ def FixDir(petscdir,dir):
 
     # now assemble the makefile
     outbuf  =  '\n'
-    outbuf +=  "#requirespackage   'PETSC_HAVE_FORTRAN'\n"
+    outbuf +=  "#requiresdefine   'PETSC_HAVE_FORTRAN'\n"
     outbuf +=  'ALL: lib\n'
     outbuf +=   cppflags + '\n'
     outbuf +=  'CFLAGS   =\n'

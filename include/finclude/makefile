@@ -1,6 +1,6 @@
 #
 
-#requirespackage   'PETSC_USING_F90'
+#requiresdefine   'PETSC_USING_F90'
 
 CFLAGS    =
 FFLAGS    =
@@ -11,11 +11,11 @@ SOURCEH   = petsc.h petscsys.h petsclog.h petscvec.h petscsnes.h petscdm.h petsc
 	    petscts.h petscis.h90 petscvec.h90 petscmat.h90 petscdm.h90 \
             petscdef.h  petscsysdef.h petsclogdef.h petscvecdef.h petscsnesdef.h petscdmdef.h petscdrawdef.h petscmatdef.h \
 	    petsckspdef.h petscpcdef.h petscviewerdef.h petscisdef.h petscaodef.h petscmgdef.h \
-	    petsctsdef.h petscmeshdef.h 
+	    petsctsdef.h petscmeshdef.h
 OBJSC     =
 OBJSF     =
 LIBBASE   = libpetscvec
-DIRS      = 
+DIRS      =
 MANSEC    = Sys
 LOCDIR    = include/finclude/
 NOADIC    = true
