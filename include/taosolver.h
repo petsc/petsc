@@ -75,6 +75,7 @@ extern PetscErrorCode TaoSolverComputeObjective(TaoSolver, Vec, PetscReal*);
 extern PetscErrorCode TaoSolverComputeSeparableObjective(TaoSolver, Vec, Vec);
 extern PetscErrorCode TaoSolverComputeGradient(TaoSolver, Vec, Vec);
 extern PetscErrorCode TaoSolverComputeObjectiveAndGradient(TaoSolver, Vec, PetscReal*, Vec);
+extern PetscErrorCode TaoSolverDefaultComputeGradient(TaoSolver, Vec, Vec, void*);
 
 extern PetscErrorCode TaoSolverComputeHessian(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
 

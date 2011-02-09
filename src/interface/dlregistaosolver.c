@@ -72,4 +72,4 @@ PetscErrorCode PetscDLLibraryRegister_taosolver(const char path[])
     PetscFunctionReturn(0);
 }
 EXTERN_C_END
-#endif /*PETSC_USE_DYNAMIC_LIBRARIES*/
+#endif /* PETSC_USE_DYNAMIC_LIBRARIES */
