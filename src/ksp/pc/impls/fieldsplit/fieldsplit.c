@@ -763,7 +763,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
 {
   PetscErrorCode  ierr;
   PetscInt        bs;
-  PetscBool       flg,stokes;
+  PetscBool       flg,stokes = PETSC_FALSE;
   PC_FieldSplit   *jac = (PC_FieldSplit*)pc->data;
   PCCompositeType ctype;
 

@@ -62,8 +62,9 @@ E*/
 #define MATSCATTER         "scatter"
 #define MATBLOCKMAT        "blockmat"
 #define MATCOMPOSITE       "composite"
-#define MATSEQFFTW         "seqfftw"
-#define MATSEQCUFFT        "seqcufft"
+#define MATFFT             "fft"
+#define MATFFTW              "fftw"
+#define MATSEQCUFFT          "seqcufft"
 #define MATTRANSPOSEMAT    "transpose"
 #define MATSCHURCOMPLEMENT "schurcomplement"
 #define MATPYTHON          "python"
@@ -328,8 +329,9 @@ extern PetscErrorCode  MatCreateComposite(MPI_Comm,PetscInt,const Mat*,Mat*);
 typedef enum {MAT_COMPOSITE_ADDITIVE,MAT_COMPOSITE_MULTIPLICATIVE} MatCompositeType;
 extern PetscErrorCode  MatCompositeSetType(Mat,MatCompositeType);
 
-extern PetscErrorCode  MatCreateSeqFFTW(MPI_Comm,PetscInt,const PetscInt[],Mat*);
+extern PetscErrorCode  MatCreateFFT(MPI_Comm,PetscInt,const PetscInt[],const MatType,Mat*);
 extern PetscErrorCode  MatCreateSeqCUFFT(MPI_Comm,PetscInt,const PetscInt[],Mat*);
+
 extern PetscErrorCode  MatCreateTranspose(Mat,Mat*);
 extern PetscErrorCode  MatCreateSubMatrix(Mat,IS,IS,Mat*);
 extern PetscErrorCode  MatSubMatrixUpdate(Mat,Mat,IS,IS);
@@ -337,7 +339,6 @@ extern PetscErrorCode  MatCreateLocalRef(Mat,IS,IS,Mat*);
 
 extern PetscErrorCode  MatCreatePython(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const char[],Mat*);
 extern PetscErrorCode  MatPythonSetType(Mat,const char[]);
-
 
 extern PetscErrorCode  MatSetUp(Mat);
 extern PetscErrorCode  MatDestroy(Mat);

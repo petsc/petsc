@@ -5502,7 +5502,8 @@ EXTERN_C_END
    Level: advanced
 
    Notes:
-       The i, j, and a arrays ARE NOT copied by this routine into the internal format used by PETSc.
+       The i, j, and a arrays ARE NOT copied by this routine into the internal format used by PETSc. The user
+       must free the arrays once the matrix has been destroyed and not before.
 
        The i and j indices are 0 based
  

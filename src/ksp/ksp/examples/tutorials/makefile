@@ -1,7 +1,7 @@
 
-CFLAGS	         = -I${PETSC_DIR}/src/dm/mesh/sieve ${BOOST_INCLUDE} ${TRIANGLE_INCLUDE} ${TETGEN_INCLUDE}
-FFLAGS	         = 
-CPPFLAGS         = 
+CFLAGS	         =
+FFLAGS	         =
+CPPFLAGS         = -I${PETSC_DIR}/src/dm/mesh/sieve ${BOOST_INCLUDE} ${TRIANGLE_INCLUDE} ${TETGEN_INCLUDE}
 FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex5.c ex7.c ex8.c ex8g.c ex9.c ex10.c ex11.c \
@@ -603,7 +603,7 @@ runex10_24:
 
 # Start a parallel user code [on 4 nodes, assembling MPIAIJ with
 # np=4] and then spwan a parallel sub-domain-solver on each node
-# [with np=2]. This emulates mixed MPI/OpenMPI model [MPI between
+# [with np=2]. This emulates mixed MPI/OpenMP model [MPI between
 # nodes, OpenMP within the nodes]
 # See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex10_25:

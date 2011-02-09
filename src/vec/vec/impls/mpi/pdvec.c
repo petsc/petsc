@@ -462,7 +462,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
   ierr = VecRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
-    if (file && xin->map->bs > 1) {
+    if (file) {
       if (((PetscObject)xin)->prefix) {
 	ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%svecload_block_size %D\n",((PetscObject)xin)->prefix,xin->map->bs);CHKERRQ(ierr);
       } else {

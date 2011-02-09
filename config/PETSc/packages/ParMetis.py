@@ -61,8 +61,8 @@ class Configure(PETSc.package.NewPackage):
 
 #   Warning: Scotch also installs a file metis.h which will be incorrectly found by ParMetis when compiling so you cannot build PETSc to use
 #   both Scotch and ParMetis in the same PETSc build
-    if self.framework.argDB['download-scotch']:
-      raise RuntimeError('Cannot use both --download-scotch and --download-parmetis')
+#    if self.framework.argDB['download-scotch']:
+#      raise RuntimeError('Cannot use both --download-scotch and --download-parmetis')
    
     if self.installNeeded('make.inc'):    # Now compile & install
       self.framework.outputHeader(metisconfigheader,prefix='METIS')

@@ -10,7 +10,7 @@ OBJSC    = dm.o dmregall.o
 OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = DM
-LOCDIR   = src/dm/da/interface/
+LOCDIR   = src/dm/interface/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

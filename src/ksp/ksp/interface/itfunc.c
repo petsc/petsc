@@ -757,8 +757,8 @@ PetscErrorCode  KSPDestroy(KSP ksp)
 .   -ksp_pc_side <right,left,symmetric>
 
     Notes:
-    Left preconditioning is used by default.  Symmetric preconditioning is
-    currently available only for the KSPQCG method. Note, however, that
+    Left preconditioning is used by default for most Krylov methods except KSPFGMRES which only supports right preconditioning.
+    Symmetric preconditioning is currently available only for the KSPQCG method. Note, however, that
     symmetric preconditioning can be emulated by using either right or left
     preconditioning and a pre or post processing step.
 

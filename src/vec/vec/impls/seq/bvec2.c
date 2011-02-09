@@ -598,7 +598,7 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
 #endif
 
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
-  if (file && xin->map->bs > 1) {
+  if (file) {
     if (((PetscObject)xin)->prefix) {
       ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%s_vecload_block_size %D\n",((PetscObject)xin)->prefix,xin->map->bs);CHKERRQ(ierr);
     } else {

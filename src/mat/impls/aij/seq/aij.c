@@ -3775,7 +3775,7 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscBool * flg)
 
    Notes:
        The i, j, and a arrays are not copied by this routine, the user must free these arrays
-    once the matrix is destroyed
+    once the matrix is destroyed and not before
 
        You cannot set new nonzero locations into this matrix, that will generate an error.
 

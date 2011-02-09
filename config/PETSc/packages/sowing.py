@@ -81,7 +81,8 @@ class Configure(PETSc.package.NewPackage):
           import generatefortranstubs
           del sys.path[0]
           generatefortranstubs.main(self.petscdir.dir, self.bfort, self.petscdir.dir)
-          generatefortranstubs.processf90interfaces(self.petscdir.dir)
+          if self.compilers.fortranIsF90:
+            generatefortranstubs.processf90interfaces(self.petscdir.dir)
           self.framework.actions.addArgument('PETSc', 'File creation', 'Generated Fortran stubs')
         except RuntimeError, e:
           raise RuntimeError('*******Error generating Fortran stubs: '+str(e)+'*******\n')

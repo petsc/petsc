@@ -96,14 +96,16 @@ static double	bytes[4] = {
 
 extern double second();
 
-int
-main()
+#include "mpi.h"
+
+int main(int argc,char **args)
    {
    int			quantum, checktick();
    int			BytesPerWord;
    register int	j, k;
    double		scalar, t, times[4][NTIMES];
 
+   MPI_Init(&argc,&args);
    /* --- SETUP --- determine precision and check timing --- */
 
    printf(HLINE);
@@ -151,36 +153,36 @@ main()
 
    printf(HLINE);
 
-   printf("WARNING -- The above is only a rough guideline.\n");
-   printf("For best results, please be sure you know the\n");
-   printf("precision of your system timer.\n");
-   printf(HLINE);
 
    /*	--- MAIN LOOP --- repeat test cases NTIMES times --- */
 
    scalar = 3.0;
    for (k=0; k<NTIMES; k++)
 	{
+   MPI_Barrier(MPI_COMM_WORLD);
 	times[0][k] = second();
 	for (j=0; j<N; j++)
 	    c[j] = a[j];
 	times[0][k] = second() - times[0][k];
 	
+   MPI_Barrier(MPI_COMM_WORLD);
 	times[1][k] = second();
 	for (j=0; j<N; j++)
 	    b[j] = scalar*c[j];
 	times[1][k] = second() - times[1][k];
 	
+   MPI_Barrier(MPI_COMM_WORLD);
 	times[2][k] = second();
 	for (j=0; j<N; j++)
 	    c[j] = a[j]+b[j];
 	times[2][k] = second() - times[2][k];
 	
+   MPI_Barrier(MPI_COMM_WORLD);
 	times[3][k] = second();
 	for (j=0; j<N; j++)
 	    a[j] = b[j]+scalar*c[j];
 	times[3][k] = second() - times[3][k];
-	}
+     }
 
    /*	--- SUMMARY --- */
 
@@ -204,6 +206,7 @@ main()
 	       mintime[j],
 	       maxtime[j]);
    }
+   MPI_Finalize();
    return 0;
 }
 

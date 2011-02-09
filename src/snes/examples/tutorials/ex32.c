@@ -925,8 +925,8 @@ PetscErrorCode MySolutionView(MPI_Comm comm,PetscInt phy_num,void *ctx)
       err = 0.0;
       for (j=ys; j<ys+ym; j++) {
         for (i=xs; i<xs+xm; i++) {
-          err_tmp = PetscAbs(x[j][i].u-x1[j][i].u) + PetscAbs(x[j][i].v-x1[j][i].v) + PetscAbs(x[j][i].omega-x1[j][i].omega);
-          err_tmp += PetscAbs(x[j][i].temp-x2[j][i].temp);
+          err_tmp = PetscAbsScalar(x[j][i].u-x1[j][i].u) + PetscAbsScalar(x[j][i].v-x1[j][i].v) + PetscAbsScalar(x[j][i].omega-x1[j][i].omega);
+          err_tmp += PetscAbsScalar(x[j][i].temp-x2[j][i].temp);
           if (err < err_tmp) err = err_tmp; 
           if (phy_num == 3){
             ierr = PetscPrintf(PETSC_COMM_SELF,"x[%d,%d] = %g, %g, %g, %g\n",j,i,x1[j][i].u,x1[j][i].v,x1[j][i].omega,x2[j][i].temp);

@@ -119,11 +119,8 @@ extern void tuned_STREAM_Scale(double scalar);
 extern void tuned_STREAM_Add();
 extern void tuned_STREAM_Triad(double scalar);
 #endif
-#ifdef _OPENMP
 extern int omp_get_num_threads();
-#endif
-int
-main()
+int main()
     {
     int			quantum, checktick();
     int			BytesPerWord;
@@ -151,7 +148,6 @@ main()
     printf("Each test is run %d times, but only\n", NTIMES);
     printf("the *best* time for each is used.\n");
 
-#ifdef _OPENMP
     printf(HLINE);
 #pragma omp parallel 
     {
@@ -161,7 +157,6 @@ main()
 	    printf ("Number of Threads requested = %i\n",k);
         }
     }
-#endif
 
     printf(HLINE);
 #pragma omp parallel
@@ -202,11 +197,6 @@ main()
 
     printf(HLINE);
 
-    printf("WARNING -- The above is only a rough guideline.\n");
-    printf("For best results, please be sure you know the\n");
-    printf("precision of your system timer.\n");
-    printf(HLINE);
-    
     /*	--- MAIN LOOP --- repeat test cases NTIMES times --- */
 
     scalar = 3.0;

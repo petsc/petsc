@@ -130,6 +130,10 @@ def writePackage(f,pkg,pkgdeps):
 if (NOT PETSC_USE_SINGLE_LIBRARY)
   add_library (petsc%(pkg)s ${PETSC%(PKG)s_SRCS})
   target_link_libraries (petsc%(pkg)s %(pkgdeps)s ${PETSC_PACKAGE_LIBS})
+  if (PETSC_WIN32FE)
+    set_target_properties (petsc%(pkg)s PROPERTIES RULE_LAUNCH_COMPILE "${PETSC_WIN32FE}")
+    set_target_properties (petsc%(pkg)s PROPERTIES RULE_LAUNCH_LINK "${PETSC_WIN32FE}")
+  endif ()
 endif ()
 ''' % dict(pkg=pkg, PKG=pkg.upper(), pkgdeps=' '.join('petsc%s'%p for p in pkgdeps)))
 
@@ -155,6 +159,11 @@ def main(petscdir):
 if (PETSC_USE_SINGLE_LIBRARY)
   add_library (petsc %s)
   target_link_libraries (petsc ${PETSC_PACKAGE_LIBS})
+  if (PETSC_WIN32FE)
+    set_target_properties (petsc PROPERTIES RULE_LAUNCH_COMPILE "${PETSC_WIN32FE}")
+    set_target_properties (petsc PROPERTIES RULE_LAUNCH_LINK "${PETSC_WIN32FE}")
+  endif ()
+
 endif ()
 ''' % (' '.join([r'${PETSC' + pkg.upper() + r'_SRCS}' for pkg,deps in pkglist]),))
       f.write('''

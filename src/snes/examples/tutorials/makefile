@@ -2,9 +2,9 @@
 # This directory contains SNES example programs for solving systems of
 # nonlinear equations.  
 
-#CFLAGS		 = -I/PETSc3/geodynamics/PetscSimulationsViewers/src
-CFLAGS       =
-FFLAGS		 = 
+#CPPFLAGS	 = -I/PETSc3/geodynamics/PetscSimulationsViewers/src
+CFLAGS           =
+FFLAGS		 =
 CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = src/snes/examples/tutorials/

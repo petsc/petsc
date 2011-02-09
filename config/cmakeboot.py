@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 
-import os,sys,subprocess,string
+import os,sys,string
 from collections import deque
 sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config'))
 sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config', 'BuildSystem'))
 import script
 
-def printFunction(s):
-  'The print statement cannot be passed as a default argument'
-  print(s)
+def noCheck(command, status, output, error):
+  return
+
+class StdoutLogger(object):
+  def write(self,str):
+    print(str)
 
 class PETScMaker(script.Script):
  def __init__(self, petscdir, petscarch, argDB = None, framework = None):
@@ -53,7 +56,7 @@ class PETScMaker(script.Script):
      self.framework = self.loadConfigure()
    self.setupModules()
 
- def cmakeboot(self, args, logPrint):
+ def cmakeboot(self, args, log):
    self.setup()
    options = deque()
    langlist = [('C','C')]
@@ -61,6 +64,7 @@ class PETScMaker(script.Script):
      langlist.append(('FC','Fortran'))
    if (self.languages.clanguage == 'Cxx'):
      langlist.append(('Cxx','CXX'))
+   win32fe = None
    for petsclanguage,cmakelanguage in langlist:
      self.setCompilers.pushLanguage(petsclanguage)
      compiler = self.setCompilers.getCompiler()
@@ -68,21 +72,27 @@ class PETScMaker(script.Script):
               self.setCompilers.CPPFLAGS,
               self.CHUD.CPPFLAGS]
      if compiler.split()[0].endswith('win32fe'): # Hack to support win32fe without changing the rest of configure
-       flags = compiler.split()[1:] + flags
-       compiler = compiler.split()[0]
+       win32fe = compiler.split()[0] + '.exe'
+       compiler = ' '.join(compiler.split()[1:])
      options.append('-DCMAKE_'+cmakelanguage+'_FLAGS=' + ''.join(flags))
-     options.append('-DCMAKE_'+cmakelanguage+'_COMPILER=' + self.setCompilers.getCompiler())
+     options.append('-DCMAKE_'+cmakelanguage+'_COMPILER=' + compiler)
      self.setCompilers.popLanguage()
+   if win32fe:
+     options.append('-DPETSC_WIN32FE:FILEPATH=%s'%win32fe)
+     # Default on Windows is to generate Visual Studio project files, but
+     # 1. the build process for those is different, need to give different build instructions
+     # 2. the current WIN32FE workaround does not work with VS project files
+     options.append('-GUnix Makefiles')
    cmd = [self.cmake.cmake, self.petscdir.dir] + map(lambda x:x.strip(), options) + args
    archdir = os.path.join(self.petscdir.dir, self.arch.arch)
-   logPrint('Invoking: %s' % cmd)
-   retcode = subprocess.call(cmd, cwd=archdir)
+   log.write('Invoking: %s\n' % cmd)
+   output,error,retcode = self.executeShellCommand(cmd, checkCommand = noCheck, log=log, cwd=archdir)
    if retcode < 0:
      raise OSError('CMake process was terminated by signal %d' % (-retcode,))
    if retcode > 0:
      raise OSError('CMake process failed with status %d' % (retcode,))
-   logPrint('CMake configuration completed successfully.')
-   
+   log.write('CMake configuration completed successfully.\n')
+
    def quoteIfNeeded(path):
      "Don't need quotes unless the path has bits that would confuse the shell"
      safe = string.letters + string.digits + os.path.sep + os.path.pardir + '-_'
@@ -90,20 +100,20 @@ class PETScMaker(script.Script):
        return path
      else:
        return '"' + path + '"'
-   logPrint('Build the library with: make -C %s' % quoteIfNeeded(archdir))
+   log.write('Build the library with: make -C %s\n' % quoteIfNeeded(archdir))
 
-def main(petscdir, petscarch, argDB=None, framework=None, logPrint=printFunction, args=[]):
+def main(petscdir, petscarch, argDB=None, framework=None, log=StdoutLogger(), args=[]):
   # This can be called as a stand-alone program, or by importing it from
   # python.  The latter functionality is needed because argDB does not
   # get written until the very end of configure, but we want to run this
   # automatically during configure (if CMake is available).
   #
-  # Strangely, we can't store logPrint in the PETScMaker because
+  # Strangely, we can't store log in the PETScMaker because
   # (somewhere) it creeps into framework (which I don't want to modify)
   # and makes the result unpickleable.  This is not a problem when run
   # as a standalone program (because the database is read-only), but is
   # not okay when called from configure.
-  PETScMaker(petscdir,petscarch,argDB,framework).cmakeboot(args,logPrint)
+  PETScMaker(petscdir,petscarch,argDB,framework).cmakeboot(args,log)
 
 if __name__ == "__main__":
   main(petscdir=os.environ['PETSC_DIR'], petscarch=os.environ['PETSC_ARCH'], args=sys.argv[1:])
