@@ -56,6 +56,11 @@ classdef PetscMat < PetscObject
       end
       err = calllib('libpetsc', 'MatSetSizes', obj.pobj,m,n,M,N);PetscCHKERRQ(err);
     end
+    function [m,n,err] = GetSize(obj)
+      m = 0;
+      n = 0;
+      [err,m,n] = calllib('libpetsc', 'MatGetLocalSize', obj.pobj,m,n);PetscCHKERRQ(err);
+    end
     function err = SetValues(obj,idx,idy,values,insertmode)
       idx = idx - 1;
       idy = idy - 1;

@@ -39,7 +39,7 @@ int PetscOptionsView(PetscViewer);
 int PetscOptionsSetValue(const char*,const char*);
 int PetscOptionsClearValue(const char*);
 int PetscOptionsInsertString(const char*);
-char* PetscObjectsGetStringMatlab(const char*,const char*);
+char* PetscOptionsGetStringMatlab(const char*,const char*);
 
 typedef PetscPointer PetscObject;
 int PetscObjectsView(PetscViewer);
@@ -79,6 +79,7 @@ int MatCreate(MPI_Comm,Mat *);
 int MatSetType(Mat,const char*);
 int MatSetFromOptions(Mat);
 int MatSetSizes(Mat,int,int,int,int);
+int MatGetLocalSize(Mat,int*,int*);
 int MatSetValues(Mat,int,int*,int,int*,double*,InsertMode);
 int MatAssemblyBegin(Mat,MatAssemblyType);
 int MatAssemblyEnd(Mat,MatAssemblyType);

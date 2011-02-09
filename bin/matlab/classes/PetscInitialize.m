@@ -42,24 +42,14 @@ end
 
 % append any options in the options variable
 global options
-if (ischar(options))
-  options = {options};
-end
-if (iscell(options))
-  l = length(args);
-  for i=1:length(options)
-    args{i+l} = options{i};
-  end
+if (length(options) > 0)
+  args = cellcat(args,options)
   disp('Using additional options')
   disp(options)
 end
 
 % first argument should be program name, use matlab for this
-arg = cell(1,length(args)+1);
-arg{1} = 'matlab';
-for i=1:length(args)
-  arg{i+1} = args{i};
-end
+arg = cellcat('matlab',args);
 %
 % If the user forgot to PetscFinalize() we do it for them, before restarting PETSc
 %

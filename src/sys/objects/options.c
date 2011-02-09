@@ -1859,7 +1859,7 @@ char* PetscOptionsGetStringMatlab(const char pre[],const char name[])
 
   PetscFunctionBegin;
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);if (ierr) PetscFunctionReturn(0);
-  if (!flag) PetscFunctionReturn(value);
+  if (flag) PetscFunctionReturn(value);
   else PetscFunctionReturn(0);
 }
 
