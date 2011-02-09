@@ -50,6 +50,8 @@ PetscErrorCode  PetscObjectSetName(PetscObject obj,const char name[])
 PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer viewer,const char string[])
 {
   PetscErrorCode ierr;
+  MPI_Comm       comm;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = PetscViewerASCIIPrintf(viewer,"%s:",string);CHKERRQ(ierr);
@@ -59,6 +61,9 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
   if (obj->prefix) {
     ierr = PetscViewerASCIIPrintf(viewer,"(%s)",obj->prefix);CHKERRQ(ierr);
   }
+  ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer," %d MPI processes",size);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
   if (obj->type_name) {
     ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",obj->type_name);CHKERRQ(ierr);
