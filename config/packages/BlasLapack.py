@@ -191,8 +191,6 @@ class Configure(config.package.Package):
         f2cLibs = f2cLibs+self.libraries.math
       yield ('User specified installation root (F2C)', f2cLibs, os.path.join(dir, 'libf2clapack.a'), 1)
       yield ('User specified installation root', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'), 1)
-      yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libcblas.a'),os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')], 1)
-      yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')], 1)
       # Check AMD ACML libraries
       yield ('User specified AMD ACML lib dir', None, os.path.join(dir,'lib','libacml.a'), 1)
       yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml.a'), os.path.join(dir,'lib','libacml_mv.a')], 1)
@@ -202,11 +200,11 @@ class Configure(config.package.Package):
       yield ('User specified MKL Linux lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'mkl', 'guide', 'pthread'], 1)
       for libdir in ['32','64','em64t']:
         yield ('User specified MKL Linux installation root', None, [os.path.join(dir,'lib',libdir,'libmkl_lapack.a'),'mkl', 'guide', 'pthread'], 1)
-      # Some new MLK 11 variations
-      yield ('User specified MKL11 Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'mkl_intel', 'mkl_intel_thread', 'mkl_core', 'guide', 'pthread'], 1)
-      yield ('User specified MKL11 Linux-x86 installation root', None, [os.path.join(dir,'lib','em64t','libmkl_lapack.a'),'mkl_intel', 'mkl_intel_thread', 'mkl_core', 'guide', 'pthread'], 1)
-      yield ('User specified MKL11 Linux-em64t lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'mkl_intel_lp64', 'mkl_intel_thread', 'mkl_core', 'guide', 'pthread'], 1)
-      yield ('User specified MKL11 Linux-em64t installation root', None, [os.path.join(dir,'lib','em64t','libmkl_lapack.a'),'mkl_intel_lp64', 'mkl_intel_thread', 'mkl_core', 'guide', 'pthread'], 1)
+      # Some new MKL 11/12 variations
+      for libdir in ['',os.path.join('lib','32'),os.path.join('lib','ia32')]:
+        yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_intel_thread','mkl_core','iomp5','pthread'],1)
+      for libdir in ['',os.path.join('lib','em64t'),os.path.join('lib','intel64')]:
+        yield ('User specified MKL11/12 Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_intel_thread','mkl_core','iomp5','pthread'],1)
       # Older Linux MKL checks
       yield ('User specified MKL Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_def.a', 'guide', 'pthread'], 1)
       yield ('User specified MKL Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_def.a', 'guide', 'vml','pthread'], 1)
@@ -241,6 +239,9 @@ class Configure(config.package.Package):
       mkldir = os.path.join(dir, 'ia64', 'lib')
       yield ('User specified ia64 MKL Windows installation root', None, [os.path.join(mkldir, 'mkl_dll.lib')], 1)
       yield ('User specified MKL10-64 Windows installation root', None, [os.path.join(mkldir, 'mkl_intel_lp64_dll.lib'),'mkl_intel_thread_dll.lib','mkl_core_dll.lib','libiomp5md.lib'], 1)
+      # Search for atlas
+      yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libcblas.a'),os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')], 1)
+      yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')], 1)
       # Search for liblapack.a and libblas.a after the implementations with more specific name to avoid
       # finding these in /usr/lib despite using -L<blas-lapack-dir> while attempting to get a different library.
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'), 1)
