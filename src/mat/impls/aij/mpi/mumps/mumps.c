@@ -3,12 +3,9 @@
 /* 
     Provides an interface to the MUMPS sparse solver
 */
-#include "../src/mat/impls/aij/seq/aij.h"  /*I  "petscmat.h"  I*/
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
-#include "../src/mat/impls/sbaij/seq/sbaij.h"
+
+#include "../src/mat/impls/aij/mpi/mpiaij.h" /*I  "petscmat.h"  I*/
 #include "../src/mat/impls/sbaij/mpi/mpisbaij.h"
-#include "../src/mat/impls/baij/seq/baij.h"
-#include "../src/mat/impls/baij/mpi/mpibaij.h"
 
 EXTERN_C_BEGIN 
 #if defined(PETSC_USE_COMPLEX)
@@ -569,6 +566,20 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolveTranspose_MUMPS"
+PetscErrorCode MatSolveTranspose_MUMPS(Mat A,Vec b,Vec x) 
+{
+  Mat_MUMPS      *lu=(Mat_MUMPS*)A->spptr; 
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin; 
+  lu->id.ICNTL(9) = 0;
+  ierr = MatSolve_MUMPS(A,b,x);
+  lu->id.ICNTL(9) = 1;
+  PetscFunctionReturn(0);
+}
+
 #if !defined(PETSC_USE_COMPLEX)
 /* 
   input:
@@ -724,7 +735,6 @@ PetscErrorCode PetscSetMUMPSOptions(Mat F, Mat A)
     }
   } 
   ierr = PetscOptionsInt("-mat_mumps_icntl_8","ICNTL(8): scaling strategy (-2 to 7 or 77)","None",lu->id.ICNTL(8),&lu->id.ICNTL(8),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_9","ICNTL(9): A or A^T x=b to be solved. 1: A; otherwise: A^T","None",lu->id.ICNTL(9),&lu->id.ICNTL(9),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_10","ICNTL(10): max num of refinements","None",lu->id.ICNTL(10),&lu->id.ICNTL(10),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_11","ICNTL(11): statistics related to the linear system solved (via -ksp_view)","None",lu->id.ICNTL(11),&lu->id.ICNTL(11),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_12","ICNTL(12): efficiency control: defines the ordering strategy with scaling constraints (0 to 3","None",lu->id.ICNTL(12),&lu->id.ICNTL(12),PETSC_NULL);CHKERRQ(ierr);
@@ -852,6 +862,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
   
   F->ops->lufactornumeric  = MatFactorNumeric_MUMPS;
   F->ops->solve            = MatSolve_MUMPS;
+  F->ops->solvetranspose   = MatSolveTranspose_MUMPS;
   PetscFunctionReturn(0); 
 }
 
@@ -930,6 +941,7 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
  
   F->ops->lufactornumeric  = MatFactorNumeric_MUMPS;
   F->ops->solve            = MatSolve_MUMPS;
+  F->ops->solvetranspose   = MatSolveTranspose_MUMPS;
   PetscFunctionReturn(0); 
 }
 
@@ -1005,10 +1017,11 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
 #endif
   if (lu->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",lu->id.INFOG(1)); 
 
-  F->ops->choleskyfactornumeric =  MatFactorNumeric_MUMPS;
-  F->ops->solve                 =  MatSolve_MUMPS;
+  F->ops->choleskyfactornumeric = MatFactorNumeric_MUMPS;
+  F->ops->solve                 = MatSolve_MUMPS;
+  F->ops->solvetranspose        = MatSolve_MUMPS;
 #if !defined(PETSC_USE_COMPLEX)
-  (F)->ops->getinertia          =  MatGetInertia_SBAIJMUMPS;
+  (F)->ops->getinertia          = MatGetInertia_SBAIJMUMPS;
 #endif
   PetscFunctionReturn(0);
 }
@@ -1041,7 +1054,6 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(6) (matrix prescaling):        %d \n",lu->id.ICNTL(6));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(7) (sequentia matrix ordering):%d \n",lu->id.ICNTL(7));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(8) (scalling strategy):        %d \n",lu->id.ICNTL(8));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(9) (A/A^T x=b is solved):      %d \n",lu->id.ICNTL(9));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(10) (max num of refinements):  %d \n",lu->id.ICNTL(10));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(11) (error analysis):          %d \n",lu->id.ICNTL(11));CHKERRQ(ierr);  
       if (lu->id.ICNTL(11)>0) {
