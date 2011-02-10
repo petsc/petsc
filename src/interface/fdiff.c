@@ -202,17 +202,13 @@ PetscErrorCode TaoSolverDefaultComputeHessianColor(TaoSolver tao, Vec V, Mat *HH
   MatFDColoring       coloring = (MatFDColoring)ctx;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(H,MAT_CLASSID,3);  
-  PetscValidHeaderSpecific(B,MAT_CLASSID,4);  
   PetscValidHeaderSpecific(ctx,MAT_FDCOLORING_CLASSID,6);
-  PetscCheckSameComm(V,2,H,3);
-  PetscCheckSameComm(H,3,B,4);
 
+  
   
   *flag = SAME_NONZERO_PATTERN;
 
   ierr=PetscInfo(tao,"TAO computing matrix using finite differences Hessian and coloring\n"); CHKERRQ(ierr);
-
   ierr = MatFDColoringApply(B,coloring,V,flag,ctx); CHKERRQ(ierr);
 
   if (H != B) {
@@ -222,77 +218,77 @@ PetscErrorCode TaoSolverDefaultComputeHessianColor(TaoSolver tao, Vec V, Mat *HH
   PetscFunctionReturn(0);
 }
 
+
+
 /*
 #undef __FUNCT__  
-#define __FUNCT__ "TaoAppSetFiniteDifferencesOptions"
- @
-  TaoAppSetFiniteDifferencesOptions - Sets various TAO parameters from user options
+#define __FUNCT__ "TaoSolverSetFiniteDifferencesOptions"
+@C
+  TaoSolverSetFiniteDifferencesOptions - Sets various TAO parameters from user options
 
-   Collective on TAO_APPLICATION
+   Collective on TAO_SOLVER
 
    Input Parameters:
-+  taoapp - the TAO Application (optional)
++  tao - the TAO Solver
 
    Level: beginner
 
 .keywords:  options, finite differences
 
-.seealso: TaoSolveApplication();
 
-@ */
-/*PetscErrorCode TaoSolverSetFiniteDifferencesOptions(TaoSolver tao){
-  int info;
+ PetscErrorCode TaoSolverSetFiniteDifferencesOptions(TaoSolver tao){
+  PetscErrorCode ierr;
   PetscBool flg;
 
   PetscFunctionBegin;
 
-  PetscValidHeaderSpecific(taoapp,TAO_APP_CLASSID,1);
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
 
   flg=PETSC_FALSE;
-  info = PetscOptionsName("-tao_fd","use finite differences for Hessian","TaoAppDefaultComputeHessian",&flg);CHKERRQ(info);
+  ierr = PetscOptionsName("-tao_fd","use finite differences for Hessian","TaoSolverDefaultComputeHessian",&flg);CHKERRQ(ierr);
   if (flg) {
-    info = TaoAppSetHessianRoutine(taoapp,TaoAppDefaultComputeHessian,(void*)taoapp);CHKERRQ(info);
-    info = PetscInfo(taoapp,"Setting default finite difference Hessian matrix\n"); CHKERRQ(info);
+    ierr = TaoSolverSetHessianRoutine(tao,TaoSolverDefaultComputeHessian,(void*)tao);CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"Setting default finite difference Hessian matrix\n"); CHKERRQ(ierr);
   }
 
   flg=PETSC_FALSE;
-  info = PetscOptionsName("-tao_fdgrad","use finite differences for gradient","TaoAppDefaultComputeGradient",&flg);CHKERRQ(info);
+.  ierr = PetscOptionsName("-tao_fdgrad","use finite differences for gradient","TaoSolverDefaultComputeGradient",&flg);CHKERRQ(ierr);
   if (flg) {
-    info = TaoAppSetGradientRoutine(taoapp,TaoAppDefaultComputeGradient,(void*)taoapp);CHKERRQ(info);
-    info = PetscInfo(taoapp,"Setting default finite difference gradient routine\n"); CHKERRQ(info);
+    ierr = TaoSolverSetGradientRoutine(tao,TaoSolverDefaultComputeGradient,(void*)tao);CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"Setting default finite difference gradient routine\n"); CHKERRQ(ierr);
   }
 
 
   flg=PETSC_FALSE;
-  info = PetscOptionsName("-tao_fd_coloring","use finite differences with coloring to compute Hessian","TaoAppDefaultComputeHessianColor",&flg);CHKERRQ(info);
+  ierr = PetscOptionsName("-tao_fd_coloring","use finite differences with coloring to compute Hessian","TaoSolverDefaultComputeHessianColor",&flg);CHKERRQ(ierr);
   if (flg) {
-    info = TaoAppSetHessianRoutine(taoapp,TaoAppDefaultComputeHessianColor,(void*)taoapp);CHKERRQ(info);
-    info = PetscInfo(taoapp,"Use finite differencing with coloring to compute Hessian \n"); CHKERRQ(info);
+    
+    ierr = TaoSolverSetHessianRoutine(tao,TaoSolverDefaultComputeHessianColor,(void*)tao);CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"Use finite differencing with coloring to compute Hessian \n"); CHKERRQ(ierr);
   }
     
   PetscFunctionReturn(0);
 }
 
 
-static char TaoAppColoringXXX[] = "TaoColoring";
+static char TaoColoringXXX[] = "TaoColoring";
 
 typedef struct {
   ISColoring coloring;
-} TaoAppColorit;
+} TaoColorit;
 
 #undef __FUNCT__  
 #define __FUNCT__ "TaoAppDestroyColoringXXX"
 static int TaoAppDestroyColoringXXX(void*ctx){
-  int info;
-  TaoAppColorit *mctx=(TaoAppColorit*)ctx;
+  PetscErrorCode ierr;
+  TaoColorit *mctx=(TaoColorit*)ctx;
   PetscFunctionBegin;
   if (mctx){
 //    if (mctx->coloring){  
-//      info = ISColoringDestroy(mctx->coloring);CHKERRQ(info);
+//      ierr = ISColoringDestroy(mctx->coloring);CHKERRQ(ierr);
 //    }
-    info = PetscFree(mctx); CHKERRQ(info);
+    ierr = PetscFree(mctx); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 */
-

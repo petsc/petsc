@@ -96,6 +96,20 @@ PetscErrorCode TaoSolverGetVariableBounds(TaoSolver tao, Vec *XL, Vec *XU)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverComputeVariableBounds"
+/*@C
+   TaoSolverComputeVariableBounds - Compute the variable bounds using the
+   routine set by TaoSolverSetVariableBoundsRoutine(). 
+
+   Collective on TaoSolver
+
+   Input Parameters:
+.  tao - the TaoSolver context
+
+   Level: developer
+
+.seealso: TaoSolverSetVariableBoundsRoutine(), TaoSolverSetVariableBounds()
+@*/
+
 PetscErrorCode TaoSolverComputeVariableBounds(TaoSolver tao)
 {
     PetscErrorCode ierr;
