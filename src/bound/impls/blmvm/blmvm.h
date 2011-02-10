@@ -10,7 +10,7 @@ typedef struct {
 
   Mat M;
 
-  Vec GP; /*  gradient projection */
+  Vec unprojected_gradient;
   
   PetscInt n_free;
   PetscInt n_bind;
