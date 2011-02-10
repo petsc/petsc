@@ -111,6 +111,16 @@ class DirectoryTreeWalker(logger.Logger):
       self.allowFortran  = allowFortran
     self.allowExamples   = allowExamples
     self.setup()
+    self.collectDefines()
+    return
+
+  def collectDefines(self):
+    self.defines = {}
+    self.defines.update(self.configInfo.base.defines)
+    self.defines.update(self.configInfo.compilers.defines)
+    self.defines.update(self.configInfo.libraryOptions.defines)
+    for p in self.configInfo.framework.packages:
+      self.defines.update(p.defines)
     return
 
   def checkSourceDir(self, dirname):
@@ -146,8 +156,7 @@ class DirectoryTreeWalker(logger.Logger):
             self.logPrint('Rejecting '+dirname+' because function '+reqValue+' does not exist')
             return False
         elif reqType == 'define':
-          self.logPrint('Checking '+reqValue)
-          if not reqValue in ['\'PETSC_'+d+'\'' for d in self.configInfo.base.defines]:
+          if not reqValue in ['\'PETSC_'+d+'\'' for d in self.defines]:
             self.logPrint('Rejecting '+dirname+' because define '+reqValue+' does not exist')
             return False
         elif reqType == 'package':
