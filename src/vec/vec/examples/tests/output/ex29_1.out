@@ -1,4 +1,4 @@
-Vector Object:
+Vector Object: 3 MPI processes
   type: mpi
 Process [0]
 0
@@ -381,7 +381,7 @@ Process [2]
 375
 376
 377
-Vector Object:
+Vector Object: 3 MPI processes
   type: mpi
 Process [0]
 0

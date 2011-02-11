@@ -1,4 +1,4 @@
-Vector Object:
+Vector Object: 2 MPI processes
   type: mpi
 Process [0]
 0
@@ -13,7 +13,7 @@ Process [1]
 13
 14
 ----
-Vector Object:
+Vector Object: 1 MPI processes
   type: seq
 0
 1

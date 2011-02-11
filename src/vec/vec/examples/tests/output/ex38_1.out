@@ -35,7 +35,7 @@
 [2] 1 27
 [2] 2 28
 [2] 3 29
-Vector Object:
+Vector Object: 3 MPI processes
   type: mpi
 Process [0]
 0
@@ -52,7 +52,7 @@ Process [2]
 23
 24
 25
-Vector Object:
+Vector Object: 3 MPI processes
   type: mpi
 Process [0]
 3

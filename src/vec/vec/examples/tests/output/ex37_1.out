@@ -13,13 +13,13 @@ Vector Object:
       type=nest, rows=2 
       VecNest  structure: 
       (0) : name="(null)", type=seq, rows=3 
-        Vector Object:        
+        Vector Object:         1 MPI processes        
           type: seq
         1
         1
         1
       (1) : name="(null)", type=seq, rows=3 
-        Vector Object:        
+        Vector Object:         1 MPI processes        
           type: seq
         2
         2
@@ -29,13 +29,13 @@ Vector Object:
       type=nest, rows=2 
       VecNest  structure: 
       (0) : name="(null)", type=seq, rows=3 
-        Vector Object:        
+        Vector Object:         1 MPI processes        
           type: seq
         3
         3
         3
       (1) : name="(null)", type=seq, rows=3 
-        Vector Object:        
+        Vector Object:         1 MPI processes        
           type: seq
         7.20032
         0.61794
@@ -45,14 +45,14 @@ Vector Object:
 ============== test_axpy_dot_max ==============
 VecAXPY 
 (1) y1 = 
-Vector Object:
+Vector Object: 1 MPI processes
   type: seq
 4
 8
 12
 16
 (1) y2 = 
-Vector Object:
+Vector Object: 1 MPI processes
   type: seq
 15
 18
@@ -61,14 +61,14 @@ Vector Object:
 27
 X.Y = 1610.000000 + 0.000000i 
 (2) y1 = 
-Vector Object:
+Vector Object: 1 MPI processes
   type: seq
 4
 9
 14
 19
 (2) y2 = 
-Vector Object:
+Vector Object: 1 MPI processes
   type: seq
 25
 30
