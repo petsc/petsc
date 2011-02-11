@@ -29,7 +29,8 @@ PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_GradientEval, 
 .    tao_lmvm - Limited memory variable metric method for unconstrained minimization
 .    tao_cg - Nonlinear conjugate gradient method for unconstrained minimization
 .    tao_nm - Nelder-Mead algorithm for derivate-free unconstrained minimization
-.    tao_pounder - Model-based algorithm for derivate-free unconstrained minimization
+.    tao_pounder - Model-based algorithm for derivate-free unconstrained minimiz
+ation
 .    tao_tron - Newton Trust Region method for bound constrained minimization
 .    tao_gpcg - Newton Trust Region method for quadratic bound constrained minimization
 .    tao_blmvm - Limited memory variable metric method for bound constrained minimization
@@ -37,6 +38,7 @@ PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_GradientEval, 
 
    Options Database Keys:
 .   -tao_method - select which method TAO should use
+.   -tao_type - identical to -tao_method
 
    Level: beginner
 
@@ -172,6 +174,8 @@ PetscErrorCode TaoSolverSolve(TaoSolver tao)
 }
 
 
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverSetUp"
 /*@ 
   TaoSolverSetUp - Sets up the internal data structures for the later use
   of a Tao solver
@@ -191,8 +195,6 @@ PetscErrorCode TaoSolverSolve(TaoSolver tao)
 
 .seealso: TaoSolverCreate(), TaoSolverSolve()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolverSetUp"
 PetscErrorCode TaoSolverSetUp(TaoSolver tao)
 {
   PetscErrorCode ierr;

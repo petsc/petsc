@@ -92,7 +92,7 @@ PetscErrorCode TaoSolverComputeGradient(TaoSolver tao, Vec X, Vec G)
 /*@
   TaoSolverComputeObjective - Computes the objective function value at a given point
 
-  Collective on TaoSOlver
+  Collective on TaoSolver
 
   Input Parameters:
 + tao - the TaoSolver context
@@ -106,7 +106,7 @@ PetscErrorCode TaoSolverComputeGradient(TaoSolver tao, Vec X, Vec G)
 
   Level: advanced
 
-.seealso: TaoSolverComputeGradient(), TaoSolverComputeObjectiveAndGradient(), TaoSolverSetObjective()
+.seealso: TaoSolverComputeGradient(), TaoSolverComputeObjectiveAndGradient(), TaoSolverSetObjectiveRoutine()
 @*/
 PetscErrorCode TaoSolverComputeObjective(TaoSolver tao, Vec X, PetscReal *f) 
 {
