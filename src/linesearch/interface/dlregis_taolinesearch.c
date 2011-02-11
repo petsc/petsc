@@ -35,34 +35,41 @@ extern PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch);
 extern PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch);
 EXTERN_C_END
     
-extern PetscBool TaoLineSearchRegisterAllCalled;
+extern PetscBool TaoLineSearchInitialized;
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchRegisterAll"
-PetscErrorCode TaoLineSearchRegisterAll(const char path[])
-{
-    PetscErrorCode info;
-    PetscFunctionBegin;
-    TaoLineSearchRegisterAllCalled=PETSC_TRUE;
-    info = TaoLineSearchRegisterDynamic("unit",path,"TaoLineSearchCreate_Unit",TaoLineSearchCreate_Unit); CHKERRQ(info);
-    info = TaoLineSearchRegisterDynamic("more-thuente",path,"TaoLineSearchCreate_MT",TaoLineSearchCreate_MT); CHKERRQ(info);
-    info = TaoLineSearchRegisterDynamic("gpcg",path,"TaoLineSearchCreate_GPCG",TaoLineSearchCreate_GPCG); CHKERRQ(info);
-    PetscFunctionReturn(0);
-}
 
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchInitializePackage"
+/*@C
+  TaoLineSearchInitializePackage - This function registers the line-search
+  algorithms in TAO.
+  When using static libraries, this function is called from the
+  first entry to TaoSolverCreate(); when using shared libraries, it is called
+  from PetscDLLibraryRegister()
+
+  Input parameter:
+. path - The dynamic library path or PETSC_NULL
+
+  Level: developer
+
+.seealso: TaoLineSearchCreate()
+@*/
 PetscErrorCode TaoLineSearchInitializePackage(const char path[])
 {
-    static PetscBool initialized = PETSC_FALSE;
     PetscErrorCode info;
 
     PetscFunctionBegin;
-    if (initialized) PetscFunctionReturn(0);
-    initialized = PETSC_TRUE;
+    if (TaoLineSearchInitialized) PetscFunctionReturn(0);
+    TaoLineSearchInitialized=PETSC_TRUE;
+
     info = PetscClassIdRegister("TaoLineSearch",&TAOLINESEARCH_CLASSID); CHKERRQ(info);
-    info = TaoLineSearchRegisterAll(path);
+
+
+    info = TaoLineSearchRegisterDynamic("unit",path,"TaoLineSearchCreate_Unit",TaoLineSearchCreate_Unit); CHKERRQ(info);
+    info = TaoLineSearchRegisterDynamic("more-thuente",path,"TaoLineSearchCreate_MT",TaoLineSearchCreate_MT); CHKERRQ(info);
+    info = TaoLineSearchRegisterDynamic("gpcg",path,"TaoLineSearchCreate_GPCG",TaoLineSearchCreate_GPCG); CHKERRQ(info);
+
     info = PetscLogEventRegister(  "TaoLineSearchApply",TAOLINESEARCH_CLASSID,&TaoLineSearch_ApplyEvent); CHKERRQ(info);
     info = PetscLogEventRegister("TaoLineSearchComputeObjective[Gradient]",TAOLINESEARCH_CLASSID,&TaoLineSearch_EvalEvent); CHKERRQ(info);
     PetscFunctionReturn(0);

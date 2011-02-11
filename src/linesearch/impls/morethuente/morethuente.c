@@ -3,6 +3,12 @@
 #include "private/taolinesearch_impl.h"
 #include "morethuente.h"
 
+/*
+   This algorithm is taken from More' and Thuente, "Line search algorithms
+   with guaranteed sufficient decrease", Argonne National Laboratory, 
+   Technical Report MCS-P330-1092.
+*/
+
 static PetscErrorCode Tao_mcstep(TaoLineSearch ls,
 				 PetscReal *stx, PetscReal *fx, PetscReal *dx,
 				 PetscReal *sty, PetscReal *fy, PetscReal *dy,

@@ -41,7 +41,7 @@ extern PetscErrorCode TaoLineSearchGetStepLength(TaoLineSearch, PetscReal*);
 extern PetscErrorCode TaoLineSearchSetInitialStepLength(TaoLineSearch, PetscReal);
 extern PetscErrorCode TaoLineSearchGetSolution(TaoLineSearch, Vec, PetscReal*, Vec, PetscReal*, TaoLineSearchTerminationReason*);
 extern PetscErrorCode TaoLineSearchGetFullStepObjective(TaoLineSearch, PetscReal*);
-
+extern PetscErrorCode TaoLineSearchGetNumberFunctionEvals(TaoLineSearch, PetscInt*);
 extern PetscErrorCode TaoLineSearchGetType(TaoLineSearch, const TaoLineSearchType *);
 extern PetscErrorCode TaoLineSearchSetType(TaoLineSearch, const TaoLineSearchType);
 
@@ -58,7 +58,6 @@ extern PetscErrorCode TaoLineSearchSetVariableBounds(TaoLineSearch, Vec, Vec);
 
 extern PetscErrorCode TaoLineSearchInitializePackage(const char path[]); 
 
-extern PetscErrorCode TaoLineSearchRegisterAll(const char path[]);
 extern PetscErrorCode TaoLineSearchRegister(const char[], const char[], const char[], PetscErrorCode (*)(TaoLineSearch));
 
 PETSC_EXTERN_CXX_END
