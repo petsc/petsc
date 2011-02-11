@@ -133,6 +133,10 @@ tao_deletemanpages:
                  ${TAO_DIR}/docs/manpages/manpages.cit 
 
 tao_allmanpages: tao_deletemanpages
+	@mkdir -p ${TAO_DIR}/docs/manpages/taosolver
+	@mkdir -p ${TAO_DIR}/docs/manpages/tao
+	@mkdir -p ${TAO_DIR}/docs/manpages/linesearch
+
 	-${OMAKE} ACTION=tao_manpages_buildcite tree
 	-${OMAKE} ACTION=tao_manpages tree
 	-maint/wwwindex.py ${TAO_DIR}
