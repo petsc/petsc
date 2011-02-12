@@ -310,7 +310,7 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpiaij(Mat A,int shift,MatReuse reuse,
     /* A-part */
     for (j=0; j<countA; j++){
       if (reuse == MAT_INITIAL_MATRIX){
-        row[jj] = irow + shift; col[jj] = rstart + ajj[j] + shift; 
+        row[jj] = irow + shift; col[jj] = rstart + ajj[j] + shift;
       }
       val[jj++] = v1[j];
     }
@@ -335,7 +335,7 @@ PetscErrorCode MatConvertToTriples_mpibaij_mpiaij(Mat A,int shift,MatReuse reuse
   Mat_SeqBAIJ        *aa=(Mat_SeqBAIJ*)(mat->A)->data;
   Mat_SeqBAIJ        *bb=(Mat_SeqBAIJ*)(mat->B)->data;
   const PetscInt     *ai = aa->i, *bi = bb->i, *aj = aa->j, *bj = bb->j,*ajj, *bjj;
-  const PetscInt     *garray = mat->garray,mbs=mat->mbs,rstartbs=mat->rstartbs;
+  const PetscInt     *garray = mat->garray,mbs=mat->mbs,rstart=A->rmap->rstart;
   const PetscInt     bs = A->rmap->bs,bs2=mat->bs2;
   PetscErrorCode     ierr;
   PetscInt           nz,i,j,k,n,jj,irow,countA,countB,idx;
@@ -357,7 +357,7 @@ PetscErrorCode MatConvertToTriples_mpibaij_mpiaij(Mat A,int shift,MatReuse reuse
     row = *r; col = *c; val = *v; 
   }
 
-  jj = 0; irow = rstartbs;   
+  jj = 0; irow = rstart;   
   for ( i=0; i<mbs; i++ ) {       
     countA = ai[i+1] - ai[i];
     countB = bi[i+1] - bi[i];
@@ -372,8 +372,8 @@ PetscErrorCode MatConvertToTriples_mpibaij_mpiaij(Mat A,int shift,MatReuse reuse
       for (j=0; j<bs; j++) {
 	for (n=0; n<bs; n++) {
 	  if (reuse == MAT_INITIAL_MATRIX){
-	    row[jj] = bs*irow + n + shift; 
-	    col[jj] = bs*(rstartbs + ajj[k]) + j + shift;
+	    row[jj] = irow + n + shift; 
+	    col[jj] = rstart + bs*ajj[k] + j + shift;
 	  }
 	  val[jj++] = v1[idx++];
 	}
@@ -386,14 +386,14 @@ PetscErrorCode MatConvertToTriples_mpibaij_mpiaij(Mat A,int shift,MatReuse reuse
       for (j=0; j<bs; j++) {
 	for (n=0; n<bs; n++) {
 	  if (reuse == MAT_INITIAL_MATRIX){
-	    row[jj] = bs*irow + n + shift; 
-	    col[jj] = bs*(garray[bjj[k]]) + j + shift;
+	    row[jj] = irow + n + shift; 
+	    col[jj] = bs*garray[bjj[k]] + j + shift;
 	  }
-	  val[jj++] = bv[idx++];
+	  val[jj++] = v2[idx++];
 	}
       }
     }
-    irow++;
+    irow += bs;
   } 
   PetscFunctionReturn(0);
 }
