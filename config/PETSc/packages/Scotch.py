@@ -31,7 +31,7 @@ class Configure(PETSc.package.NewPackage):
     g = open(os.path.join(self.packageDir,'src','Makefile.inc'),'w')
 
     g.write('EXE	=\n')
-    g.write('LIB        = '+self.setCompilers.AR_LIB_SUFFIX+'\n')
+    g.write('LIB        = .'+self.setCompilers.AR_LIB_SUFFIX+'\n')
     g.write('OBJ	= .o\n')
     g.write('\n')
     g.write('MAKE	= make\n')
