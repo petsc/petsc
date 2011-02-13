@@ -10,6 +10,9 @@ class DirectedGraph(object):
     map(self.addVertex, vertices)
     return
 
+  def __len__(self):
+    return len(self.vertices)
+
   def __str__(self):
     return 'DirectedGraph with '+str(len(self.vertices))+' vertices and '+str(reduce(lambda k,l: k+l, [len(edgeList) for edgeList in self.inEdges.values()], 0))+' edges'
 
