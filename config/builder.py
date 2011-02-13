@@ -57,7 +57,7 @@ class NullSourceDatabase(object):
   def rebuild(self, vertex):
     return True
 
-class SourceDatabase(object):
+class SourceDatabaseDict(object):
   '''This can be replaced by the favorite software of Jed'''
   def __init__(self, verbose = 0):
     # Vertices are filenames
@@ -100,6 +100,71 @@ class SourceDatabase(object):
     except KeyError:
       return True
     return False
+
+class SourceDatabase(logger.Logger):
+  '''This can be replaced by the favorite software of Jed'''
+  def __init__(self, argDB, log):
+    logger.Logger.__init__(self, argDB = argDB, log = log)
+    self.setup()
+    # Vertices are filenames
+    #   Arcs indicate a dependence and are decorated with consistency markers
+    import graph
+    self.dependencyGraph = graph.DirectedGraph()
+    return
+
+  def __len__(self):
+    return len(self.dependencyGraph)
+
+  def __str__(self):
+    return str(self.dependencyGraph)
+
+  @staticmethod
+  def marker(dep):
+    import hashlib
+    if not os.path.isfile(dep):
+      return 0
+    with file(dep) as f:
+      mark = hashlib.sha1(f.read()).digest()
+    return mark
+
+  @staticmethod
+  def vertex(filename):
+    return (filename, SourceDatabase.marker(filename))
+
+  def setNode(self, vertex, deps):
+    self.dependencyGraph.addEdges(SourceDatabase.vertex(vertex), [SourceDatabase.vertex(dep) for dep in deps])
+    return
+
+  def updateNode(self, vertex):
+    v = SourceDatabase.vertex(vertex)
+    self.dependencyGraph.clearEdges(v, inOnly = True)
+    self.dependencyGraph.addEdges([SourceDatabase.vertex(dep) for dep,mark in self.dependencyGraph.getEdges(v)[0]])
+    return
+
+  def rebuildArc(self, vertex, dep, mark):
+    import hashlib
+    with file(dep) as f:
+      newMark = hashlib.sha1(f.read()).digest()
+    return not mark == newMark
+
+  def rebuild(self, vertex):
+    self.logPrint('Checking for rebuild of '+str(vertex))
+    v = SourceDatabase.vertex(vertex)
+    try:
+      for dep,mark in self.dependencyGraph.getEdges(v)[0]:
+        if self.rebuildArc(vertex, dep, mark):
+          self.logPrint('    dep '+str(dep)+' is changed')
+          return True
+    except KeyError, e:
+      self.logPrint('    %s not in database' % vertex)
+      return True
+    return False
+
+  def topologicalSort(self):
+    import graph
+    for vertex,marker in graph.DirectedGraph.topologicalSort(self.dependencyGraph):
+      yield vertex
+    return
 
 class DirectoryTreeWalker(logger.Logger):
   def __init__(self, argDB, log, configInfo, allowFortran = None, allowExamples = False):
@@ -190,7 +255,7 @@ class DirectoryTreeWalker(logger.Logger):
 
     if base == 'examples':
       return self.allowExamples
-    elif base in ['tutorials', 'benchmarks', 'contrib']:
+    elif base in ['externalpackages', 'projects', 'tutorials', 'benchmarks', 'contrib']:
       return False
     elif base.startswith('ftn-') or base.startswith('f90-'):
       return self.allowFortran
@@ -223,7 +288,7 @@ class DependencyBuilder(logger.Logger):
       compilerObj = os.path.join(objDir, self.configInfo.compiler['C'].getTarget(os.path.basename(source)))
     return compilerObj
 
-  def sortSourceFiles(self, dirname, fnames, objDir = None):
+  def sortSourceFiles(self, fnames, objDir = None):
     '''Sorts source files by language (returns dictionary with language keys)'''
     cnames    = []
     cxxnames  = []
@@ -235,15 +300,15 @@ class DependencyBuilder(logger.Logger):
       if ext == '.c':
         cnames.append(f)
       elif ext in ['.cxx', '.cpp', '.cc']:
-        if self.languages.clanguage == 'Cxx':
+        if self.configInfo.languages.clanguage == 'Cxx':
           cxxnames.append(f)
       elif ext == '.cu':
         cudanames.append(f)
       elif ext == '.F':
-        if hasattr(self.compilers, 'FC'):
+        if hasattr(self.configInfo.compilers, 'FC'):
           f77names.append(f)
       elif ext == '.F90':
-        if hasattr(self.compilers, 'FC') and self.compilers.fortranIsF90:
+        if hasattr(self.configInfo.compilers, 'FC') and self.configInfo.compilers.fortranIsF90:
           f90names.append(f)
     source = cnames+cxxnames+cudanames+f77names+f90names
     if self.argDB['maxSources'] >= 0:
@@ -255,30 +320,33 @@ class DependencyBuilder(logger.Logger):
       source    = source[:self.argDB['maxSources']]
     return {'C': cnames, 'Cxx': cxxnames, 'Cuda': cudanames, 'F77': f77names, 'F90': f90names, 'Fortran': f77names+f90names, 'Objects': [self.getObjectName(s, objDir) for s in source]}
 
-  def readDependencyFile(self, depFile):
+  def readDependencyFile(self, dirname, source, depFile):
     '''Read *.d file with dependency information and store it in the source database'''
     with file(depFile) as f:
-      target,deps = f.read().split(':')
-    self.sourceDatabase.setNode(target, deps.replace('\\','').split())
+      target, deps = f.read().split(':')
+      assert(target == os.path.basename(source))
+    self.sourceDatabase.setNode(source, [os.path.join(dirname, d) for d in deps.replace('\\','').split()])
     return
 
-  def buildDependency(self, source):
-    depFile = os.path.splitext(source)[0]+'.d'
+  def buildDependency(self, dirname, source):
+    depFile = os.path.splitext(os.path.basename(source))[0]+'.d'
     if os.path.isfile(depFile):
-      self.logWrite('FOUND DEPENDENCY FILE '+depFile+'\n', debugSection = self.debugSection, forceScroll = True)
-      if not self.dryRun:
-        self.readDependencyFile(depFile)
+      self.logWrite('Found dependency file '+depFile+'\n', forceScroll = True)
+      self.readDependencyFile(dirname, source, depFile)
     return
 
   def buildDependencies(self, dirname, fnames):
     ''' This is run in a PETSc source directory'''
-    self.logWrite('Entering '+dirname+'\n', debugSection = 'screen', forceScroll = True)
+    self.logWrite('Building dependencies in '+dirname+'\n', debugSection = 'screen', forceScroll = True)
+    oldDir = os.getcwd()
     os.chdir(dirname)
-    sourceMap = self.sortSourceFiles(dirname, self.objDir)
+    sourceMap = self.sortSourceFiles(fnames, self.objDir)
+    #print dirname,sourceMap
     if sourceMap['Objects']:
       self.logPrint('Rebuilding dependency info for files '+str(sourceMap['Objects']))
       for source in sourceMap['Objects']:
-        self.buildDependency(source)
+        self.buildDependency(dirname, source)
+    os.chdir(oldDir)
     return
 
 class PETScConfigureInfo(object):
@@ -336,7 +404,7 @@ class PETScMaker(script.Script):
    help.addArgument('PETScMaker', '-dependencies',  nargs.ArgBool(None, True, 'Use dependencies to control build', isTemporary = 1))
    help.addArgument('PETScMaker', '-buildLibraries', nargs.ArgBool(None, True, 'Build the PETSc libraries', isTemporary = 1))
    help.addArgument('PETScMaker', '-regressionTests', nargs.ArgBool(None, False, 'Only run regression tests', isTemporary = 1))
-   help.addArgument('PETScMaker', '-rebuildDependencies', nargs.ArgBool(None, False, 'Rebuild dependency information', isTemporary = 1))
+   help.addArgument('PETScMaker', '-rebuildDependencies', nargs.ArgBool(None, False, 'Force dependency information to be recalculated', isTemporary = 1))
    help.addArgument('PETScMaker', '-verbose', nargs.ArgInt(None, 0, 'The verbosity level', min = 0, isTemporary = 1))
 
    help.addArgument('PETScMaker', '-maxSources', nargs.ArgInt(None, -1, 'The maximum number of source files in a directory', min = -1, isTemporary = 1))
@@ -357,21 +425,10 @@ class PETScMaker(script.Script):
    self.framework  = self.loadConfigure()
    self.configInfo = PETScConfigureInfo(self.framework)
    # Setup directories
-   self.petscDir  = self.configInfo.petscdir.dir
-   self.petscArch = self.configInfo.arch.arch
-   # Load dependencies
-   if self.argDB['dependencies']:
-     confDir = os.path.join(self.petscDir, self.petscArch, 'conf')
-     if not self.argDB['rebuildDependencies'] and os.path.isfile(os.path.join(confDir, 'source.db')):
-       import cPickle
-
-       with file(os.path.join(confDir, 'source.db'), 'rb') as f:
-         self.sourceDatabase = cPickle.load(f)
-       self.sourceDatabase.verbose = self.verbose
-     else:
-       self.sourceDatabase = SourceDatabase(self.verbose)
-   else:
-     self.sourceDatabase = NullSourceDatabase(self.verbose)
+   self.petscDir     = self.configInfo.petscdir.dir
+   self.petscArch    = self.configInfo.arch.arch
+   self.petscConfDir = os.path.join(self.petscDir, self.petscArch, 'conf')
+   self.petscLibDir  = os.path.join(self.petscDir, self.petscArch, 'lib')
    return
 
  def cleanupLog(self, framework, confDir):
@@ -433,14 +490,11 @@ class PETScMaker(script.Script):
  def getObjDir(self, libname):
    return os.path.join(self.petscDir, self.petscArch, 'lib', libname+'-obj')
 
- def getLibDir(self):
-   return os.path.join(self.petscDir, self.petscArch, 'lib')
-
  def getPackageInfo(self):
    '''Get package include and library information from configure data'''
    packageIncludes = []
    packageLibs     = []
-   for p in self.framework.packages:
+   for p in self.configInfo.framework.packages:
      # Could put on compile line, self.addDefine('HAVE_'+i.PACKAGE, 1)
      if hasattr(p, 'lib'):
        if not isinstance(p.lib, list):
@@ -452,8 +506,8 @@ class PETScMaker(script.Script):
          packageIncludes.append(p.include)
        else:
          packageIncludes.extend(p.include)
-   packageLibs     = self.libraries.toStringNoDupes(packageLibs+self.libraries.math)
-   packageIncludes = self.headers.toStringNoDupes(packageIncludes)
+   packageLibs     = self.configInfo.libraries.toStringNoDupes(packageLibs+self.configInfo.libraries.math)
+   packageIncludes = self.configInfo.headers.toStringNoDupes(packageIncludes)
    return packageIncludes, packageLibs
 
  def getObjectName(self, source, objDir = None):
@@ -471,21 +525,20 @@ class PETScMaker(script.Script):
    cudanames = []
    f77names  = []
    f90names  = []
-   #for f in os.listdir(dirname):
    for f in fnames:
      ext = os.path.splitext(f)[1]
      if ext == '.c':
        cnames.append(f)
      elif ext in ['.cxx', '.cpp', '.cc']:
-       if self.languages.clanguage == 'Cxx':
+       if self.configInfo.languages.clanguage == 'Cxx':
          cxxnames.append(f)
      elif ext == '.cu':
        cudanames.append(f)
      elif ext == '.F':
-       if hasattr(self.compilers, 'FC'):
+       if hasattr(self.configInfo.compilers, 'FC'):
          f77names.append(f)
      elif ext == '.F90':
-       if hasattr(self.compilers, 'FC') and self.compilers.fortranIsF90:
+       if hasattr(self.configInfo.compilers, 'FC') and self.configInfo.compilers.fortranIsF90:
          f90names.append(f)
    source = cnames+cxxnames+cudanames+f77names+f90names
    if self.argDB['maxSources'] >= 0:
@@ -499,15 +552,23 @@ class PETScMaker(script.Script):
 
  def compileC(self, source, objDir = None):
    includes = ['-I'+inc for inc in [os.path.join(self.petscDir, self.petscArch, 'include'), os.path.join(self.petscDir, 'include')]]
-   self.setCompilers.pushLanguage(self.languages.clanguage)
-   compiler = self.setCompilers.getCompiler()
+   self.configInfo.setCompilers.pushLanguage(self.configInfo.languages.clanguage)
+   compiler = self.configInfo.setCompilers.getCompiler()
    flags = []
-   flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
-   flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
+   flags.append(self.configInfo.setCompilers.getCompilerFlags())             # PCC_FLAGS
+   flags.extend([self.configInfo.setCompilers.CPPFLAGS, self.configInfo.CHUD.CPPFLAGS]) # CPP_FLAGS
    flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscDir, ''))
    # TODO: Move this up to configure
    if self.argDB['dependencies']: flags.append('-MMD')
-   sources = [s for s in source if not os.path.isfile(self.getObjectName(s, objDir)) or self.sourceDatabase.rebuild(self.getObjectName(s, objDir))]
+   sources = []
+   for s in source:
+     objName = self.getObjectName(s, objDir)
+     if not os.path.isfile(objName):
+       self.logPrint('Rebuilding %s due to missing object file %s' % (s, objName))
+       sources.append(s)
+     elif self.sourceDatabase.rebuild(self.getObjectName(s, objDir)):
+       self.logPrint('Rebuilding %s due to outdated dependencies' % (s))
+       sources.append(s)
    objects = [self.getObjectName(s, objDir) for s in sources]
    packageIncludes, packageLibs = self.getPackageInfo()
    cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+sources)
@@ -518,28 +579,30 @@ class PETScMaker(script.Script):
        if status:
          self.logPrint("ERROR IN COMPILE ******************************", debugSection='screen')
          self.logPrint(output+error, debugSection='screen')
-       else:
-         self.buildDependenciesFiles(sources)
+       ##else:
+       ##  self.buildDependenciesFiles(sources)
    else:
      self.logPrint('Nothing to build', debugSection = self.debugSection)
-   self.setCompilers.popLanguage()
+   self.configInfo.setCompilers.popLanguage()
    for o in objects:
      locObj = os.path.basename(o)
-     if not os.path.isfile(locObj):
-       print 'ERROR: Missing object file',locObj
-     else:
-       shutil.move(locObj, o)
+     self.logPrint('Moving %s to %s' % (locObj, o))
+     if not self.dryRun:
+       if not os.path.isfile(locObj):
+         print 'ERROR: Missing object file',locObj
+       else:
+         shutil.move(locObj, o)
    return objects
 
- def compileF(self, source, objDir = None):
+ def compileFortran(self, source, objDir = None):
    flags           = []
 
    includes = ['-I'+inc for inc in [os.path.join(self.petscDir, self.petscArch, 'include'), os.path.join(self.petscDir, 'include')]]
    objects  = [self.getObjectName(s, objDir) for s in source]
-   self.setCompilers.pushLanguage('FC')
-   compiler      = self.setCompilers.getCompiler()
-   flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
-   flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
+   self.configInfo.setCompilers.pushLanguage('FC')
+   compiler      = self.configInfo.setCompilers.getCompiler()
+   flags.append(self.configInfo.setCompilers.getCompilerFlags())             # PCC_FLAGS
+   flags.extend([self.configInfo.setCompilers.CPPFLAGS, self.configInfo.CHUD.CPPFLAGS]) # CPP_FLAGS
    cmd = ' '.join([compiler]+['-c']+includes+flags+source)
    self.logWrite(cmd+'\n', debugSection = self.debugSection, forceScroll = True)
    if not self.dryRun:
@@ -547,19 +610,24 @@ class PETScMaker(script.Script):
      if status:
        self.logPrint("ERROR IN COMPILE ******************************", debugSection='screen')
        self.logPrint(output+error, debugSection='screen')
-   self.setCompilers.popLanguage()
+   self.configInfo.setCompilers.popLanguage()
    for o in objects:
-     if not os.path.isfile(o):
-       print 'ERROR: Missing object file',o
+     if not self.dryRun:
+       locObj = os.path.basename(o)
+       self.logPrint('Moving %s to %s' % (locObj, o))
+       if not os.path.isfile(locObj):
+         print 'ERROR: Missing object file',o
+       else:
+         shutil.move(locObj, o)
    return objects
 
  def archive(self, library, objects):
    '''${AR} ${AR_FLAGS} ${LIBNAME} $*.o'''
-   lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
+   lib = os.path.splitext(library)[0]+'.'+self.configInfo.setCompilers.AR_LIB_SUFFIX
    if self.rootDir == self.petscDir:
-     cmd = ' '.join([self.setCompilers.AR, self.setCompilers.FAST_AR_FLAGS, lib]+objects)
+     cmd = ' '.join([self.configInfo.setCompilers.AR, self.configInfo.setCompilers.FAST_AR_FLAGS, lib]+objects)
    else:
-     cmd = ' '.join([self.setCompilers.AR, self.setCompilers.AR_FLAGS, lib]+objects)
+     cmd = ' '.join([self.configInfo.setCompilers.AR, self.configInfo.setCompilers.AR_FLAGS, lib]+objects)
    self.logWrite(cmd+'\n', debugSection = self.debugSection, forceScroll = True)
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
@@ -570,9 +638,10 @@ class PETScMaker(script.Script):
 
  def ranlib(self, library):
    '''${ranlib} ${LIBNAME} '''
-   library = os.path.join(self.petscDir, self.petscArch, 'lib', library)
-   lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
-   cmd = ' '.join([self.setCompilers.RANLIB, lib])
+   library = os.path.join(self.petscLibDir, library)
+   lib     = os.path.splitext(library)[0]+'.'+self.configInfo.setCompilers.AR_LIB_SUFFIX
+   cmd     = ' '.join([self.configInfo.setCompilers.RANLIB, lib])
+   self.logPrint('Running ranlib on '+lib)
    self.logWrite(cmd+'\n', debugSection = self.debugSection, forceScroll = True)
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
@@ -584,22 +653,22 @@ class PETScMaker(script.Script):
  def linkShared(self, sharedLib, libDir, tmpDir):
    osName = sys.platform
    # PCC_LINKER PCC_LINKER_FLAGS
-   linker      = self.setCompilers.getLinker()
-   linkerFlags = self.setCompilers.getLinkerFlags()
+   linker      = self.configInfo.setCompilers.getLinker()
+   linkerFlags = self.configInfo.setCompilers.getLinkerFlags()
    packageIncludes, packageLibs = self.getPackageInfo()
-   extraLibs = self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
+   extraLibs = self.configInfo.libraries.toStringNoDupes(self.configInfo.compilers.flibs+self.configInfo.compilers.cxxlibs+self.configInfo.compilers.LIBS.split(' '))+self.configInfo.CHUD.LIBS
    sysLib      = ''
    sysLib.replace('-Wl,-rpath', '-L')
    externalLib = packageLibs+' '+extraLibs
    externalLib.replace('-Wl,-rpath', '-L')
    # Move this switch into the sharedLibrary module
-   if self.setCompilers.isSolaris() and self.setCompilers.isGNU(self.framework.getCompiler()):
-     cmd = self.setCompilers.LD+' -G -h '+os.path.basename(sharedLib)+' *.o -o '+sharedLib+' '+sysLib+' '+externalLib
+   if self.configInfo.setCompilers.isSolaris() and self.configInfo.setCompilers.isGNU(self.configInfo.framework.getCompiler()):
+     cmd = self.configInfo.setCompilers.LD+' -G -h '+os.path.basename(sharedLib)+' *.o -o '+sharedLib+' '+sysLib+' '+externalLib
      oldDir = os.getcwd()
      os.chdir(tmpDir)
      self.executeShellCommand(cmd, log=self.log)
      os.chdir(oldDir)
-   elif '-qmkshrobj' in self.setCompilers.sharedLibraryFlags:
+   elif '-qmkshrobj' in self.configInfo.setCompilers.sharedLibraryFlags:
      cmd = linker+' '+linkerFlags+' -qmkshrobj -o '+sharedLib+' *.o '+externalLib
      oldDir = os.getcwd()
      os.chdir(tmpDir)
@@ -613,9 +682,9 @@ class PETScMaker(script.Script):
        flags = ''
        if not 'MACOSX_DEPLOYMENT_TARGET' in os.environ:
          cmd += 'MACOSX_DEPLOYMENT_TARGET=10.5 '
-       if self.setCompilers.getLinkerFlags().find('-Wl,-commons,use_dylibs') > -1:
+       if self.configInfo.setCompilers.getLinkerFlags().find('-Wl,-commons,use_dylibs') > -1:
          flags += '-Wl,-commons,use_dylibs'
-       cmd += self.setCompilers.getSharedLinker()+' -g  -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup '+flags+' -o '+sharedLib+' *.o -L'+libDir+' '+packageLibs+' '+sysLib+' '+extraLibs+' -lm -lc'
+       cmd += self.configInfo.setCompilers.getSharedLinker()+' -g  -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup '+flags+' -o '+sharedLib+' *.o -L'+libDir+' '+packageLibs+' '+sysLib+' '+extraLibs+' -lm -lc'
      elif osName == 'cygwin':
        cmd = linker+' '+linkerFlags+' -shared -o '+sharedLib+' *.o '+externalLib
      else:
@@ -624,8 +693,8 @@ class PETScMaker(script.Script):
      os.chdir(tmpDir)
      self.executeShellCommand(cmd, log=self.log)
      os.chdir(oldDir)
-     if hasattr(self.debuggers, 'dsymutil'):
-       cmd = self.debuggers.dsymutil+' '+sharedLib
+     if hasattr(self.configInfo.debuggers, 'dsymutil'):
+       cmd = self.configInfo.debuggers.dsymutil+' '+sharedLib
        self.executeShellCommand(cmd, log=self.log)
    return
 
@@ -642,12 +711,12 @@ class PETScMaker(script.Script):
    PETSC_LIB_DIR        = ${PETSC_DIR}/${PETSC_ARCH}/lib
    INSTALL_LIB_DIR	= ${PETSC_LIB_DIR}
    '''
-   if self.sharedLibraries.useShared:
-     libDir = self.getLibDir()
+   if self.configInfo.sharedLibraries.useShared:
+     libDir = self.petscLibDir
      objDir = self.getObjDir(libname)
      self.logPrint('Making shared libraries in '+libDir)
-     sharedLib = os.path.join(libDir, os.path.splitext(libname)[0]+'.'+self.setCompilers.sharedLibraryExt)
-     archive   = os.path.join(libDir, os.path.splitext(libname)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX)
+     sharedLib = os.path.join(libDir, os.path.splitext(libname)[0]+'.'+self.configInfo.setCompilers.sharedLibraryExt)
+     archive   = os.path.join(libDir, os.path.splitext(libname)[0]+'.'+self.configInfo.setCompilers.AR_LIB_SUFFIX)
      # Should we rebuild?
      rebuild = False
      if os.path.isfile(archive):
@@ -681,128 +750,54 @@ class PETScMaker(script.Script):
    self.compilers.popLanguage()
    return [executable]
 
- def checkDir(self, dirname, allowExamples = False):
-   '''Checks whether we should recurse into this directory
-   - Excludes examples directory
-   - Excludes contrib directory
-   - Excludes tutorials directory
-   - Excludes benchmarks directory
-   - Checks whether fortran bindings are necessary
-   - Checks makefile to see if compiler is allowed to visit this directory for this configuration'''
-   base = os.path.basename(dirname)
-
-   if base == 'examples' and not allowExamples: return False
-   if not hasattr(self.compilers, 'FC'):
-     if base.startswith('ftn-') or base.startswith('f90-'): return False
-   if base == 'contrib':  return False
-   #if base == 'tutorials' and not allowExamples:  return False
-   if base == 'tutorials':  return False
-   if base == 'benchmarks':  return False
-
-   import re
-   reg   = re.compile(' [ ]*')
-   fname = os.path.join(dirname, 'makefile')
-   if not os.path.isfile(fname):
-     if os.path.isfile(os.path.join(dirname, 'Makefile')): self.logPrint('ERROR: Change Makefile to makefile in '+dirname, debugSection = 'screen')
-     return False
-   fd = open(fname)
-   text = fd.readline()
-   while text:
-     if text.startswith('#requires'):
-       text = text[9:-1].strip()
-       text = reg.sub(' ',text)
-       rtype = text.split(' ')[0]
-       rvalue = text.split(' ')[1]
-       if rtype == 'scalar' and not self.scalarType.scalartype == rvalue:
-         self.logPrint('Rejecting '+dirname+' because scalar type '+self.scalarType.scalartype+' is not '+rvalue)
-         return 0
-       if rtype == 'language':
-         if rvalue == 'CXXONLY' and self.languages.clanguage == 'C':
-           self.logPrint('Rejecting '+dirname+' because language is '+self.languages.clanguage+' is not C++')
-           return 0
-       if rtype == 'precision' and not rvalue == self.scalarType.precision:
-         self.logPrint('Rejecting '+dirname+' because precision '+self.scalarType.precision+' is not '+rvalue)
-         return 0
-       # handles both missing packages and other random stuff that is treated as a package, that should be changed
-       if rtype == 'package':
-         if rvalue == "'"+'PETSC_HAVE_FORTRAN'+"'" or rvalue == "'"+'PETSC_USING_F90'+"'":
-           if not hasattr(self.compilers, 'FC'):
-             self.logPrint('Rejecting '+dirname+' because fortran is not being used')
-             return 0
-         elif rvalue == "'"+'PETSC_USE_LOG'+"'":
-           if not self.libraryOptions.useLog:
-             self.logPrint('Rejecting '+dirname+' because logging is turned off')
-             return 0
-         elif rvalue == "'"+'PETSC_USE_FORTRAN_KERNELS'+"'":
-           if not self.libraryOptions.useFortranKernels:
-             self.logPrint('Rejecting '+dirname+' because fortran kernels are turned off')
-             return 0
-         else:
-           found = 0
-           if self.mpi.usingMPIUni:
-             pname = 'PETSC_HAVE_MPIUNI'
-             pname = "'"+pname+"'"
-             if pname == rvalue: found = 1
-           for i in self.framework.packages:
-             pname = 'PETSC_HAVE_'+i.PACKAGE
-             pname = "'"+pname+"'"
-             if pname == rvalue: found = 1
-           for i in self.base.defines:
-             pname = 'PETSC_'+i
-             pname = "'"+pname+"'"
-             if pname == rvalue: found = 1
-           for i in self.functions.defines:
-             pname = 'PETSC_'+i
-             pname = "'"+pname+"'"
-             if pname == rvalue: found = 1
-           if not found:
-             self.logPrint('Rejecting '+dirname+' because package '+rvalue+' is not installed or function does not exist')
-             return 0
-
-     text = fd.readline()
-   fd.close()
-   return True
-
- def buildDir(self, dirname, dummy, objDir):
+ def buildDir(self, dirname, files, objDir):
    ''' This is run in a PETSc source directory'''
-   self.logWrite('Entering '+dirname+'\n', debugSection = 'screen', forceScroll = True)
+   self.logWrite('Building in '+dirname+'\n', debugSection = 'screen', forceScroll = True)
+   oldDir = os.getcwd()
    os.chdir(dirname)
-   sourceMap = self.sortSourceFiles(dirname, objDir)
+   sourceMap = self.depBuilder.sortSourceFiles(dirname, files, objDir)
    objects   = []
-   if sourceMap['C']:
-     self.logPrint('Compiling C files '+str(sourceMap['C']))
-     objects.extend(self.compileC(sourceMap['C'], objDir))
-   if sourceMap['Fortran']:
-     self.logPrint('Compiling Fortran files '+str(sourceMap['Fortran']))
-     objects.extend(self.compileF(sourceMap['Fortran'], objDir))
+   for language in ['C', 'Fortran', 'Cuda']:
+     if sourceMap[language]:
+       self.logPrint('Compiling %s files %s' % (language, str(sourceMap['C'])))
+       objects.extend(getattr(self, 'compile'+language)(sourceMap[language], objDir))
+   os.chdir(oldDir)
    return objects
 
- def buildAll(self, libname, rootDir):
-   self.setup()
-   # TODO: Need better way to indicate this
-   if rootDir == self.petscDir:
-     srcdirs = [os.path.join(rootDir, 'include'), os.path.join(rootDir, 'src')]
-   else:
-     srcdirs = [rootDir]
-   if not any(map(self.checkDir, srcdirs)):
-     self.logPrint('Nothing to be done')
+ def buildFile(self, filename, objDir):
+   ''' This is run in a PETSc source directory'''
+   self.logWrite('Building '+filename+'\n', debugSection = 'screen', forceScroll = True)
+   sourceMap = self.depBuilder.sortSourceFiles([filename], objDir)
+   objects   = []
+   for language in ['C', 'Fortran', 'Cuda']:
+     if sourceMap[language]:
+       self.logPrint('Compiling %s files %s' % (language, str(sourceMap['C'])))
+       objects.extend(getattr(self, 'compile'+language)(sourceMap[language], objDir))
+   return objects
+
+ def buildLibraries(self, libname, rootDir):
+   if not self.argDB['buildLibraries']: return
    library = os.path.join(self.petscDir, self.petscArch, 'lib', libname)
    objDir  = self.getObjDir(libname)
    if not os.path.isdir(objDir): os.mkdir(objDir)
+   # Remove old library by default when rebuilding the entire package
    if rootDir == self.petscDir and not self.argDB['dependencies']:
-     # TODO: Fix this
-     # Remove old library by default when rebuilding the entire package
-     lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
+     lib = os.path.splitext(library)[0]+'.'+self.configInfo.setCompilers.AR_LIB_SUFFIX
      if os.path.isfile(lib):
        self.logPrint('Removing '+lib)
        os.unlink(lib)
+
    objects = []
-   for srcdir in srcdirs:
-     for root, dirs, files in os.walk(srcdir):
-       self.logPrint('Processing '+root)
+   if len(self.sourceDatabase):
+     print 'BUILDING'
+     import graph
+     for filename in self.sourceDatabase.topologicalSort():
+       objects += self.buildFile(filename, objDir)
+   else:
+     walker  = DirectoryTreeWalker(self.argDB, self.log, self.configInfo)
+     for root, files in walker.walk(rootDir):
        objects += self.buildDir(root, files, objDir)
-       for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
-         dirs.remove(badDir)
+
    if len(objects):
      self.logPrint('Archiving files '+str(objects)+' into '+libname)
      self.archive(library, objects)
@@ -811,11 +806,32 @@ class PETScMaker(script.Script):
    return
 
  def rebuildDependencies(self, libname, rootDir):
-   depBuilder = DependencyBuilder(self.argDB, self.log, self.configInfo, self.sourceDatabase, self.getObjDir(libname))
-   walker     = DirectoryTreeWalker(self.argDB, self.log, self.configInfo)
+   '''Calculates build dependencies and stores them in a database
+   - If --dependencies is False, ignore them
+   '''
+   if self.argDB['dependencies']:
+     dbFilename = os.path.join(self.petscConfDir, 'source.db')
 
-   for root, files in walker.walk(rootDir):
-     depBuilder.buildDependencies(root, files)
+     if not self.argDB['rebuildDependencies'] and os.path.isfile(dbFilename):
+       import cPickle
+
+       with file(dbFilename, 'rb') as f:
+         self.sourceDatabase = cPickle.load(f)
+       self.sourceDatabase.verbose = self.verbose
+     else:
+       self.sourceDatabase = SourceDatabase(self.argDB, self.log)
+       self.depBuilder     = DependencyBuilder(self.argDB, self.log, self.configInfo, self.sourceDatabase, self.getObjDir(libname))
+       walker              = DirectoryTreeWalker(self.argDB, self.log, self.configInfo)
+
+       for root, files in walker.walk(rootDir):
+         self.depBuilder.buildDependencies(root, files)
+   else:
+     self.sourceDatabase = NullSourceDatabase()
+   if self.verbose > 3:
+     import graph
+     print 'Source database:'
+     for filename in self.sourceDatabase.topologicalSort():
+       print '  ',filename
    return
 
  def cleanupTest(self, dirname, execname):
@@ -862,7 +878,7 @@ class PETScMaker(script.Script):
    ''' This is run in a PETSc source directory'''
    self.logWrite('Entering '+dirname+'\n', debugSection = 'screen', forceScroll = True)
    os.chdir(dirname)
-   sourceMap = self.sortSourceFiles(dirname)
+   sourceMap = self.depBuilder.sortSourceFiles(dirname)
    objects   = []
    if sourceMap['C']:
      self.logPrint('Compiling C files '+str(sourceMap['C']))
@@ -898,6 +914,7 @@ class PETScMaker(script.Script):
    return
 
  def regressionTests(self, rootDir):
+   if not self.argDB['regressionTests']: return
    if not self.checkDir(rootDir, allowExamples = True):
      self.logPrint('Nothing to be done')
    for root, dirs, files in os.walk(rootDir):
@@ -915,12 +932,9 @@ class PETScMaker(script.Script):
 
  def run(self):
    self.setup()
-   if self.argDB['rebuildDependencies']:
-     self.rebuildDependencies('libpetsc', self.rootDir)
-   if self.argDB['buildLibraries']:
-     self.buildAll('libpetsc', self.rootDir)
-   if self.argDB['regressionTests']:
-     self.regressionTests(self.rootDir)
+   self.rebuildDependencies('libpetsc', self.rootDir)
+   self.buildLibraries('libpetsc', self.rootDir)
+   self.regressionTests(self.rootDir)
    self.cleanup()
    return
 
