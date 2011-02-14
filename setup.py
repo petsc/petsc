@@ -13,7 +13,7 @@ all message-passing communication.
 
 import sys, os
 from distutils.core import setup
-from distutils.util import get_platform
+from distutils.util import get_platform, split_quoted
 from distutils.spawn import find_executable
 from distutils.command.build import build as _build
 if 'setuptools' in sys.modules:
@@ -43,7 +43,7 @@ metadata = {
 }
 
 def bootstrap():
-    # Set PETSC_DIR and PETSC_ARCH, 
+    # Set PETSC_DIR and PETSC_ARCH
     PETSC_DIR  = os.path.abspath(os.getcwd())
     PETSC_ARCH = get_platform() + '-python'
     os.environ['PETSC_DIR']  = PETSC_DIR
@@ -76,27 +76,40 @@ def bootstrap():
 
 def config(dry_run=False):
     log.info('PETSc: configure')
-    if dry_run: return
     options = [
         'PETSC_ARCH='+os.environ['PETSC_ARCH'],
+        '--with-shared-libraries=1',
         '--with-debugging=0',
-        '--with-shared-libraries',
         '--with-cmake=0', # not needed
         ]
     # MPI
     try:
         import mpi4py
         conf = mpi4py.get_config()
-        mpicc = conf.get('mpicc')
+        mpicc  = conf.get('mpicc')
+        mpicxx = conf.get('mpicxx')
+        mpif90 = conf.get('mpif90')
     except (ImportError, AttributeError):
-        mpicc = os.environ.get('MPICC') or find_executable('mpicc')
+        mpicc  = os.environ.get('MPICC')  or find_executable('mpicc')
+        mpicxx = os.environ.get('MPICXX') or find_executable('mpicxx')
+        mpif90 = os.environ.get('MPIF90') or find_executable('mpif90')
     if mpicc:
         options.append('--with-cc='+mpicc)
+        if mpicxx:
+            options.append('--with-cxx='+mpicxx)
+        if mpif90:
+            options.append('--with-fc='+mpif90)
     else:
         options.append('--with-mpi=0')
-    options.append('--with-cxx=0') # XXX mpicxx?
-    options.append('--with-fc=0')  # XXX mpif90?
+    # Extra configure options
+    config_opts = os.environ.get('PETSC_CONFIGURE_OPTIONS', '')
+    config_opts = split_quoted(config_opts)
+    options.extend(config_opts)
+    log.info('configure options:')
+    for opt in options:
+        log.info(' '*4 + opt)
     # Run PETSc configure
+    if dry_run: return
     import configure
     configure.petsc_configure(options)
     import logger
@@ -104,8 +117,8 @@ def config(dry_run=False):
 
 def build(dry_run=False):
     log.info('PETSc: build')
-    if dry_run: return
     # Run PETSc builder
+    if dry_run: return
     import builder
     builder.PETScMaker().run()
     import logger
@@ -113,14 +126,17 @@ def build(dry_run=False):
 
 def install(dest_dir, prefix=None, dry_run=False):
     log.info('PETSc: install')
-    if dry_run: return
     if prefix is None:
         prefix = dest_dir
     options = [
         '--destDir=' + dest_dir,
         '--prefix='  + prefix,
         ]
+    log.info('install options:')
+    for opt in options:
+        log.info(' '*4 + opt)
     # Run PETSc installer
+    if dry_run: return
     import install
     install.Installer(options).run()
     import logger

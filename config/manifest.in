@@ -1,5 +1,5 @@
 include makefile
-recursive-include config *.py config.guess config.sub
+recursive-include config *.py
 recursive-exclude config/examples *
 recursive-exclude config/BuildSystem/docs *
 
@@ -10,9 +10,9 @@ recursive-include include *
 recursive-include src *
 
 recursive-exclude src/characteristic/examples *
-recursive-exclude src/dm/adda/examples *
+recursive-exclude src/dm/examples *
 recursive-exclude src/dm/ao/examples *
-recursive-exclude src/dm/da/examples *
+recursive-exclude src/dm/impls/adda/examples *
 recursive-exclude src/dm/mesh/examples *
 recursive-exclude src/ksp/ksp/examples *
 recursive-exclude src/ksp/pc/examples *
