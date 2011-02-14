@@ -123,7 +123,7 @@ class Script(logger.Logger):
     def runShellCommand(command, log=None, cwd=None):
       Popen = subprocess.Popen
       PIPE  = subprocess.PIPE
-      if log: log.write('Executing: '+command+'\n')
+      if log: log.write('Executing: %s\n' % (command,))
       pipe = Popen(command, cwd=cwd, stdin=None, stdout=PIPE, stderr=PIPE,
                    bufsize=-1, shell=True, universal_newlines=True)
       (out, err) = pipe.communicate()
