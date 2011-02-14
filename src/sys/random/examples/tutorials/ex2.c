@@ -27,7 +27,7 @@ PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo);
 double mcVal(double St, double r, double vol, double dt, double eps);
 void exchange(double *a, double *b);
 double basketPayoff(double vol[], double St0[], int n, double r,double dt, double eps[]);
-void stdNormalArray(double *eps, unsigned long size,PetscRandom ran);
+void stdNormalArray(double *eps, int size,PetscRandom ran);
 unsigned long divWork(int id, unsigned long num, int np);
 
 /* 
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void stdNormalArray(double *eps, unsigned long size, PetscRandom ran)
+void stdNormalArray(double *eps, int size, PetscRandom ran)
 {
   int            i;
   double         u1,u2,t;
