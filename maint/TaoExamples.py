@@ -115,12 +115,6 @@ class TaoExamples(ExampleList):
 
         self.add(Example(example="rosenbrock1",nprocs=1,options="-tao_smonitor",method="ntr",tags=["rosenbrock","single","unconstrained","c","ntr"],name="rosenbrockntr"))
 
-        # Check gradients and hessians of examples
-        for n in ["minsurf1","eptorsion1","rosenbrock1","rosenbrock1f"]:
-            self.add(Example(example=n,nprocs=1,options="-tao_fd_test_gradient -tao_fd_test_hessian",method="fd_test",tags=["fd_test"],name=n+"_fd_test"))
-        for n in ["plate2","plate2f","eptorsion2","eptorsion2f"]:
-            self.add(Example(example=n,nprocs=2,options="-tao_fd_test_gradient -tao_fd_test_hessian",method="fd_test",tags=["fd_test"],name=n+"_fd_test"))
-            
             
                  
         # Unconstrained
@@ -165,6 +159,12 @@ class TaoExamples(ExampleList):
         # Least squares
         self.add(Example(example="chwirut1",nprocs=1,options="-tao_smonitor",method="pounders -tao_fatol 0 -tao_frtol 0",tags=["leastsquares","chwirut","single","c","pounders"],name="chwirut1"))
 
+        # Check gradients and hessians of examples
+        for n in ["minsurf1","eptorsion1","rosenbrock1","rosenbrock1f"]:
+            self.add(Example(example=n,nprocs=1,options="-tao_fd_test_gradient -tao_fd_test_hessian",method="fd_test",tags=["fd_test"],name=n+"_fd_test"))
+        for n in ["plate2","plate2f","eptorsion2","eptorsion2f"]:
+            self.add(Example(example=n,nprocs=2,options="-tao_fd_test_gradient -tao_fd_test_hessian",method="fd_test",tags=["fd_test"],name=n+"_fd_test"))
+            
         
         
 

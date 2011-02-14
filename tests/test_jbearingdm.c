@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
   //ierr = TaoDMSetHessianRoutine(taodm,FormHessian); CHKERRQ(ierr);
   ierr = TaoDMSetInitialGuessRoutine(taodm,FormInitialGuess); CHKERRQ(ierr);
   ierr = TaoDMSetVariableBoundsRoutine(taodm,FormBounds); CHKERRQ(ierr);
-  ierr = TaoDMSetLevelMonitor(taodm,Monitor,PETSC_NULL); CHKERRQ(ierr);
+  ierr = TaoDMSetPreLevelMonitor(taodm,Monitor,PETSC_NULL); CHKERRQ(ierr);
   ierr = TaoDMSetFromOptions(taodm); CHKERRQ(ierr);
   ierr = TaoDMSolve(taodm); CHKERRQ(ierr);
   

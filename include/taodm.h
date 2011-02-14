@@ -23,9 +23,11 @@ extern PetscErrorCode TaoDMSolve(TaoDM*);
 extern PetscErrorCode TaoDMView(TaoDM*, PetscViewer);
 extern PetscErrorCode TaoDMSetDM(TaoDM *, DM);
 extern PetscErrorCode TaoDMGetDM(TaoDM , DM*);
+extern PetscErrorCode TaoDMSetContext(TaoDM , void*);
 extern PetscErrorCode TaoDMGetContext(TaoDM , void**);
 
-extern PetscErrorCode TaoDMSetLevelMonitor(TaoDM*,PetscErrorCode(*)(TaoDM, PetscInt, void*),void*);
+extern PetscErrorCode TaoDMSetPreLevelMonitor(TaoDM*,PetscErrorCode(*)(TaoDM, PetscInt, void*),void*);
+extern PetscErrorCode TaoDMSetPostLevelMonitor(TaoDM*,PetscErrorCode(*)(TaoDM, PetscInt, void*),void*);
 extern PetscErrorCode TaoDMSetInitialGuessRoutine(TaoDM*,PetscErrorCode(*)(TaoDM,Vec));
 extern PetscErrorCode TaoDMSetVariableBoundsRoutine(TaoDM*,PetscErrorCode(*)(TaoDM,Vec, Vec));
 extern PetscErrorCode TaoDMSetObjectiveAndGradientRoutine(TaoDM*,PetscErrorCode(*)(TaoSolver, Vec, PetscReal*, Vec, void*));

@@ -14,11 +14,11 @@ struct _TaoDMOps {
   PetscErrorCode (*computehessian)(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*);
   PetscErrorCode (*computebounds)(TaoDM, Vec, Vec);
   PetscErrorCode (*computeinitialguess)(TaoDM, Vec);
-  PetscErrorCode (*levelmonitor)(TaoDM,PetscInt,void*);
 };
-
+#define MAXTAODMMONITORS 10
 struct _p_TaoDM {
   PETSCHEADER(struct _TaoDMOps);
+  void           *coarselevel;
   DM             dm;  /* Grid information at this level */
   Vec            x;   /* solution on this level */
   Mat            hessian;   /* Hessian on this level */
@@ -40,7 +40,13 @@ struct _p_TaoDM {
   void *usergctx;
   void *userhctx;
   void *userfgctx;
-  void *usermonitor;
+  void *userpremonitor[MAXTAODMMONITORS];
+  void *userpostmonitor[MAXTAODMMONITORS];
+  PetscErrorCode (*prelevelmonitor[MAXTAODMMONITORS])(TaoDM,PetscInt,void*);
+  PetscErrorCode (*postlevelmonitor[MAXTAODMMONITORS])(TaoDM,PetscInt,void*);
+  PetscInt npremonitors;
+  PetscInt npostmonitors;
+  
 };
 
 #endif

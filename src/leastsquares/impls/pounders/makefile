@@ -10,7 +10,7 @@ SOURCEH  = pounders.h
 OBJSC    = pounders.o gqt.o
 OBJSF    = 
 LIBBASE  = libtaosolver
-MANSEC   = solver
+MANSEC   = taosolver
 LOCDIR   = src/leastsquares/impls/pounders/
 
 include ${TAO_DIR}/conf/tao_base

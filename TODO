@@ -5,7 +5,12 @@ TaoSolver
 * Check lower bound <= than upper bound
 * Check bounds for bounded methods, give warning for unbounded methods
 
+MANSEC - do we need more than 1?
+
 SetOptionsPrefix for all objects
+
+finite differences
+   add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
 
 Mesh Refinement
  TaoDMSetUpLevel
@@ -24,6 +29,9 @@ KT?
 BNLS?
 
 tabs for view()
+
+mv src/sys/util to src/util
+
 
 Decisions to make:
  - what to #include in applications
@@ -46,14 +54,17 @@ Check fortran stubs
 test examples script/make target
 test output against tao-1.10.1
 automatic testing, coverage
+ - add keyword recognition to runExamples
 
 
 documentation
  -- check header includes for /*I I*/
+ Check TAO options in TaoSolverSetFromOptions
+ Fix convergence explanations
+
+TaoSolverClearMonitor
 
 manual
-
-build documentation
 
 make install
 

@@ -37,8 +37,8 @@ ation
 -    tao_pounders - Model-based algorithm pounder extended for nonlinear least squares 
 
    Options Database Keys:
-.   -tao_method - select which method TAO should use
-.   -tao_type - identical to -tao_method
++   -tao_method - select which method TAO should use
+-   -tao_type - identical to -tao_method
 
    Level: beginner
 
@@ -806,7 +806,7 @@ PetscErrorCode TaoSolverSetDefaultMonitors(TaoSolver tao)
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetMonitor"
 /*@C
-   TaoSetMonitor - Sets an ADDITIONAL function that is to be used at every
+   TaoSolverSetMonitor - Sets an ADDITIONAL function that is to be used at every
    iteration of the unconstrained minimization solver to display the iteration's 
    progress.   
 

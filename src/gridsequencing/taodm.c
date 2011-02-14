@@ -9,7 +9,7 @@ static PetscBool taodmclass_registered = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "TaoDMCreate"
-/*@C
+/*@
     TaoDMCreate - Creates a D based multigrid solver object. This allows one to 
       easily implement MG methods on regular grids.
 
@@ -21,7 +21,7 @@ static PetscBool taodmclass_registered = PETSC_FALSE;
 -   user - an optional user context
 
     Output Parameters:
-.    - the context
+.    - the TaoDM context
 
     Options Database:
 +     -taodm_nlevels <levels> - number of levels to use
@@ -59,10 +59,23 @@ PetscErrorCode  TaoDMCreate(MPI_Comm comm,PetscInt nlevels,void *user,TaoDM **ta
   for (i=0; i<nlevels; i++) {
     ierr = PetscHeaderCreate(p[i],_p_TaoDM,struct _TaoDMOps,TAODM_CLASSID,0,"TaoDM",comm,TaoDMDestroyLevel,TaoDMView); CHKERRQ(ierr);
     p[i]->nlevels  = nlevels - i;
+    p[i]->coarselevel = p[0];
     p[i]->user     = user;
     p[i]->isctype  = IS_COLORING_GLOBAL; 
     ierr           = PetscStrallocpy(MATAIJ,&p[i]->mtype);CHKERRQ(ierr);
     p[i]->ttype = PETSC_NULL;
+    p[i]->ops->computeobjectiveandgradientlocal=0;
+    p[i]->ops->computeobjectivelocal=0;
+    p[i]->ops->computegradientlocal=0;
+    p[i]->ops->computehessianlocal=0;
+    p[i]->ops->computeobjectiveandgradient=0;
+    p[i]->ops->computeobjective=0;
+    p[i]->ops->computegradient=0;
+    p[i]->ops->computehessian=0;
+    p[i]->ops->computebounds=0;
+    p[i]->ops->computeinitialguess=0;
+    p[i]->npremonitors=0;
+    p[i]->npostmonitors=0;
   }
   *taodm = p;
 
@@ -106,6 +119,24 @@ PetscErrorCode  TaoDMSetMatType(TaoDM *taodm,const MatType mtype)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMSetSolverType"
+/*@C
+    TaoDMSetSolverType - Sets the type of solver that TaoDM will use.
+
+    Collective on MPI_Comm 
+
+    Input Parameters:
++    taodm - the TaoDM object created with TaoDMCreate()
+-    type - the solver type
+
+    Level: intermediate
+
+    Options Database Keys:
++   -tao_method - select which method TAO should use
+-   -tao_type - identical to -tao_method
+    
+.seealso TaoDMDestroy(), TaoDMSetUser(), TaoDMGetUser(), TaoDMCreate(), TaoDMSetNullSpace()
+
+@*/
 PetscErrorCode TaoDMSetSolverType(TaoDM *taodm, const TaoSolverType type)
 {
   PetscInt i;
@@ -297,7 +328,7 @@ PetscErrorCode  TaoDMSetDM(TaoDM *taodm, DM dm)
 PetscErrorCode  TaoDMSolve(TaoDM *taodm)
 {
   PetscErrorCode ierr;
-  PetscInt       i,nlevels = taodm[0]->nlevels;
+  PetscInt       i,j,nlevels = taodm[0]->nlevels;
   PetscBool     gridseq = PETSC_FALSE,vecmonitor = PETSC_FALSE,flg;
 
   PetscFunctionBegin;
@@ -319,14 +350,18 @@ PetscErrorCode  TaoDMSolve(TaoDM *taodm)
     }
 
 
-    if (taodm[i]->ops->levelmonitor) {
-      ierr = (*taodm[i]->ops->levelmonitor)(taodm[i],i,taodm[i]->usermonitor); CHKERRQ(ierr);
+    for (j=0;j<taodm[i]->npremonitors;j++) {
+      ierr = (*taodm[i]->prelevelmonitor[j])(taodm[i],i,taodm[i]->userpremonitor[j]); CHKERRQ(ierr);
     }
 
     ierr = TaoSolverSolve(taodm[i]->tao);CHKERRQ(ierr);
     if (vecmonitor) {
       ierr = VecView(taodm[i]->x,PETSC_VIEWER_DRAW_(((PetscObject)(taodm[i]))->comm));CHKERRQ(ierr);
     }
+    for (j=0;j<taodm[i]->npostmonitors;j++) {
+      ierr = (*taodm[i]->postlevelmonitor[j])(taodm[i],i,taodm[i]->userpostmonitor[j]); CHKERRQ(ierr);
+    }
+
     /* get ready for next level (if another exists) */
     if (i < nlevels-1) {
       ierr = MatInterpolate(taodm[i+1]->R,taodm[i]->x,taodm[i+1]->x);CHKERRQ(ierr);
@@ -344,7 +379,7 @@ PetscErrorCode  TaoDMSolve(TaoDM *taodm)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-taodm_view",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
-    PetscViewer viewer;
+   PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(((PetscObject)(taodm[0]))->comm,&viewer);CHKERRQ(ierr);
     ierr = TaoDMView(taodm,viewer);CHKERRQ(ierr);
   }
@@ -358,6 +393,37 @@ PetscErrorCode  TaoDMSolve(TaoDM *taodm)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMSetTolerances"
+/*
+  TaoSolverSetTolerances - Sets parameters used in TAO convergence tests
+
+  Collective on TaoSolver
+
+  Input Parameters
++ tao - the TaoSolver context
+. fatol - absolute convergence tolerance
+. frtol - relative convergence tolerance
+. gatol - stop if norm of gradient is less than this
+. grtol - stop if relative norm of gradient is less than this
+- gttol - stop if norm of gradient is reduced by a this factor
+
+  Options Database Keys:
++ -tao_fatol <fatol> - Sets fatol
+. -tao_frtol <frtol> - Sets frtol
+. -tao_gatol <catol> - Sets gatol
+. -tao_grtol <catol> - Sets gatol
+- .tao_gttol <crtol> - Sets gttol
+
+  Absolute Stopping Criteria
+$ f_{k+1} <= f_k + fatol
+
+  Relative Stopping Criteria
+$ f_{k+1} <= f_k + frtol*|f_k|
+
+  Notes: Use PETSC_DEFAULT to leave one or more tolerances unchanged.
+
+  Level: beginner
+
+@*/
 PetscErrorCode TaoDMSetTolerances(TaoDM *taodm, PetscReal fatol, PetscReal frtol, PetscReal gatol, PetscReal grtol, PetscReal gttol)
 {
   PetscInt i;
@@ -536,7 +602,7 @@ PetscErrorCode  TaoDMSetKSP(TaoDM *taodm,PetscErrorCode (*rhs)(TaoDM,Vec),PetscE
     Collective on TaoDM and PetscViewer
 
     Input Parameter:
-+   taodm - the context
++   taodm - the TaoDM context
 -   viewer - the viewer
 
     Level: advanced
@@ -593,12 +659,33 @@ PetscErrorCode  TaoDMView(TaoDM *taodm,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMSetVariableBoundsRoutine"
-PetscErrorCode TaoDMSetVariableBoundsRoutine(TaoDM *taodm, PetscErrorCode (*bounds)(TaoDM,Vec,Vec))
+/*@C
+  TaoDMSolverSetVariableBoundsRoutine - Sets a function to be used to compute variable bounds
+
+  Collective on TaoSolver
+
+  Input Parameters:
++ taodm - the TaoDM context
+- func - the bounds computation routine
+ 
+  Calling sequence of func:
+$      func (TaoSolver tao, Vec xl, Vec xu);
+
++ taodm - the TaoDM context
+. xl  - vector of lower bounds 
+- xu  - vector of upper bounds
+
+  Level: intermediate
+
+.seealso: TaoDMSetInitialGuessRoutine()
+
+@*/
+PetscErrorCode TaoDMSetVariableBoundsRoutine(TaoDM *taodm, PetscErrorCode (*func)(TaoDM,Vec,Vec))
 {
   PetscInt i, nlevels=taodm[0]->nlevels;
   PetscFunctionBegin;
   for (i=0;i<nlevels;i++) {
-    taodm[i]->ops->computebounds = bounds;
+    taodm[i]->ops->computebounds = func;
   }
   PetscFunctionReturn(0);
 }
@@ -612,21 +699,20 @@ PetscErrorCode TaoDMSetVariableBoundsRoutine(TaoDM *taodm, PetscErrorCode (*boun
 
     Input Parameter:
 +   taodm - the context
--   guess - the function
+-   func - the function
 
     Level: intermediate
 
 
-.seealso TaoDMCreate(), TaoDMDestroy, TaoDMSetKSP(), TaoDMSetSNES(), TaoDMInitialGuessCurrent(), TaoDMSetMatType(), TaoDMSetNullSpace()
-
+.seealso TaoDMCreate(), TaoDMDestroy(), TaoDMSetVariableBoundsRoutine()
 @*/
-PetscErrorCode  TaoDMSetInitialGuessRoutine(TaoDM *taodm,PetscErrorCode (*guess)(TaoDM,Vec))
+PetscErrorCode  TaoDMSetInitialGuessRoutine(TaoDM *taodm,PetscErrorCode (*func)(TaoDM,Vec))
 {
   PetscInt       i,nlevels = taodm[0]->nlevels;
 
 
   PetscFunctionBegin;
-  taodm[0]->ops->computeinitialguess=guess;
+  taodm[0]->ops->computeinitialguess=func;
   for (i=1; i<nlevels; i++) {
     taodm[i]->ops->computeinitialguess = 0;
   }
@@ -636,6 +722,30 @@ PetscErrorCode  TaoDMSetInitialGuessRoutine(TaoDM *taodm,PetscErrorCode (*guess)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMSetObjectiveAndGradientRoutine"
+/*@C
+  TaoDMSetObjectiveAndRoutine - Sets the function/gradient evaluation routine for minimization
+
+  Collective on TaoDM
+
+  Input Parameter:
++ taodm - the TaoDM context
+. func - the objective/gradient evalution routine
+- ctx - [optional] user-defined context for private data for the function evaluation
+        routine (may be PETSC_NULL)
+
+  Calling sequence of func:
+$      func (TaoSolver tao, Vec x, PetscReal *f, Vec g, void *ctx);
+
++ tao - a TaoSolver context
+. x - input vector
+. f - function value
+. g - the gradient vector
+- ctx - [optional] user-defined function context
+
+  Level: intermediate
+
+.seealso: TaoDMSetGradientRoutine(), TaoDMSetHessianRoutine() TaoDMSetObjectiveRoutine(), TaoDMSetLocalObjectiveAndGradientRoutine()
+@*/
 PetscErrorCode TaoDMSetObjectiveAndGradientRoutine(TaoDM* taodm, PetscErrorCode (*func)(TaoSolver,Vec,PetscScalar*,Vec,void*))
 {
   PetscInt i;
@@ -653,6 +763,29 @@ PetscErrorCode TaoDMSetObjectiveAndGradientRoutine(TaoDM* taodm, PetscErrorCode 
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMSetObjectiveRoutine"
+/*@C
+  TaoDMSetObjectiveRoutine - Sets the function evaluation routine for minimization
+
+  Collective on TaoDM
+
+  Input Parameter:
++ taodm - the TaoDM context
+. func - the objective function
+- ctx - [optional] user-defined context for private data for the function evaluation
+        routine (may be PETSC_NULL)
+
+  Calling sequence of func:
+$      func (TaoSolver tao, Vec x, PetscReal *f, void *ctx);
+
++ tao - a TaoSolver context
+. x - input vector
+. f - function value
+- ctx - [optional] user-defined function context
+
+  Level: intermediate
+
+.seealso: TaoDMSetGradientRoutine(), TaoDMSetHessianRoutine() TaoDMSetObjectiveAndGradientRoutine(), TaoDMSetLocalObjectiveRoutine()
+@*/
 PetscErrorCode TaoDMSetObjectiveRoutine(TaoDM* taodm, PetscErrorCode (*func)(TaoSolver,Vec,PetscScalar*,void*))
 {
   PetscInt i;
@@ -669,6 +802,29 @@ PetscErrorCode TaoDMSetObjectiveRoutine(TaoDM* taodm, PetscErrorCode (*func)(Tao
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMSetObjectiveRoutine"
+/*@C
+  TaoDMSetObjectiveRoutine - Sets the function evaluation routine for minimization
+
+  Collective on TaoDM
+
+  Input Parameter:
++ taodm- the TaoDM context
+. func - the objective function
+- ctx - [optional] user-defined context for private data for the function evaluation
+        routine (may be PETSC_NULL)
+
+  Calling sequence of func:
+$      func (TaoSolver tao, Vec x, Vec g, void *ctx);
+
++ tao - a TaoSolver context
+. x - input vector
+. g - the gradient vector
+- ctx - [optional] user-defined function context
+
+  Level: intermediate
+
+.seealso: TaoDMSetGradientRoutine(), TaoDMSetHessianRoutine() TaoDMSetObjectiveAndGradientRoutine(), TaoDMSetLocalGradientRoutine()
+@*/
 PetscErrorCode TaoDMSetGradientRoutine(TaoDM* taodm, PetscErrorCode (*func)(TaoSolver,Vec,Vec,void*))
 {
   PetscInt i;
@@ -685,6 +841,27 @@ PetscErrorCode TaoDMSetGradientRoutine(TaoDM* taodm, PetscErrorCode (*func)(TaoS
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMSetLocalObjectiveRoutine"
+/*@C
+  TaoDMSetLocalObjectiveRoutine - Sets the local function evaluation routine for minimization.
+
+  Collective on TaoDM
+
+  Input Parameter:
++ taodm- the TaoDM context
+- func - the objective function
+
+  Calling sequence of func:
+$      func (DMDALocalInfo *info, PetscScalar **x, PetscScalar *f, void *ctx)
+
++ info - information about the DMDA grid
+. x - input vector
+. f - the objective function value at x
+- ctx - [optional] user-defined function context
+
+  Level: intermediate
+
+.seealso: TaoDMSetGradientRoutine(), TaoDMSetHessianRoutine() TaoDMSetObjectiveAndGradientRoutine(), TaoDMSetLocalGradientRoutine()
+@*/
 PetscErrorCode TaoDMSetLocalObjectiveRoutine(TaoDM* taodm, PetscErrorCode (*func)(DMDALocalInfo*,PetscScalar**,PetscScalar*,void*))
 {
   PetscInt i;
@@ -700,6 +877,27 @@ PetscErrorCode TaoDMSetLocalObjectiveRoutine(TaoDM* taodm, PetscErrorCode (*func
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMSetLocalGradientRoutine"
+/*@C
+  TaoDMSetLocalGradientRoutine - Sets the local gradient evaluation routine for minimization.
+
+  Collective on TaoDM
+
+  Input Parameter:
++ taodm- the TaoDM context
+- func - the gradient function
+
+  Calling sequence of func:
+$      func (DMDALocalInfo *info, PetscScalar **x, PetscScalar **g, void *ctx)
+
++ info - information about the DMDA grid
+. x - input array of local x values
+. g - output array of local g values
+- ctx - [optional] user-defined function context
+
+  Level: intermediate
+
+.seealso: TaoDMSetLocalObjectiveRoutine(), TaoDMSetHessianRoutine() TaoDMSetObjectiveAndGradientRoutine(), TaoDMSetGradientRoutine()
+@*/
 PetscErrorCode TaoDMSetLocalGradientRoutine(TaoDM* taodm, PetscErrorCode (*func)(DMDALocalInfo*,PetscScalar**,PetscScalar**,void*))
 {
   PetscInt i;
@@ -734,6 +932,27 @@ PetscErrorCode TaoDMSetLocalObjectiveAndGradientRoutine(TaoDM* taodm, PetscError
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMSetLocalHessianRoutine"
+/*@C
+  TaoDMSetLocalHessianRoutine - Sets the local hessian evaluation routine for minimization.
+
+  Collective on TaoDM
+
+  Input Parameter:
++ taodm- the TaoDM context
+- func - the hessian evaluation routine
+
+  Calling sequence of func:
+$      func (DMDALocalInfo *info, PetscScalar **x, Mat H, void *ctx)
+
++ info - information about the DMDA grid
+. x - input vector
+. H - the Hessian matrix at H
+- ctx - [optional] user-defined function context
+
+  Level: intermediate
+
+.seealso: TaoDMSetLocalGradientRoutine(), TaoDMSetHessianRoutine() TaoDMSetLocalObjectiveAndGradientRoutine(), TaoDMSetLocalObjectiveRoutine()
+@*/
 PetscErrorCode TaoDMSetLocalHessianRoutine(TaoDM *taodm, PetscErrorCode (*func)(DMDALocalInfo*, PetscScalar**,Mat,void*))
 {
   PetscInt i;
@@ -747,6 +966,29 @@ PetscErrorCode TaoDMSetLocalHessianRoutine(TaoDM *taodm, PetscErrorCode (*func)(
 }
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMSetHessianRoutine"
+/*@C
+  TaoDMSetHessianRoutine - Sets the hessian evaluation routine for minimization.
+
+  Collective on TaoDM
+
+  Input Parameter:
++ taodm- the TaoDM context
+- func - the hessian evaluation routine
+
+  Calling sequence of func:
+$      func (TaoSolver tao, Vec x, Mat *H, Mat *Hpre, MatStructure *flg, void *ctx)
+
++ tao - TaoSolver context
+. x - input vector
+. H - the Hessian matrix at H
+. Hpre - The matrix used in constructing preconditioner (usually same as H)
+. flg - flag indicating information about the preconditioner matrix structure
+- ctx - [optional] user-defined function context
+
+  Level: intermediate
+
+.seealso: TaoDMSetLocalGradientRoutine(), TaoDMSetHessianRoutine() TaoDMSetLocalObjectiveAndGradientRoutine(), TaoDMSetLocalObjectiveRoutine()
+@*/
 PetscErrorCode TaoDMSetHessianRoutine(TaoDM* taodm, PetscErrorCode (*func)(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*))
 {
   PetscInt i;
@@ -763,6 +1005,7 @@ PetscErrorCode TaoDMSetHessianRoutine(TaoDM* taodm, PetscErrorCode (*func)(TaoSo
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMSetFromOptions"
+
 PetscErrorCode TaoDMSetFromOptions(TaoDM* taodm)
 {
   PetscFunctionBegin;
@@ -827,6 +1070,21 @@ PetscErrorCode TaoDMSetUp(TaoDM* taodm)
 
 #undef __FUNCT__ 
 #define __FUNCT__ "TaoDMGetContext"
+/*@
+  TaoDMGetContext - Gets a user context from a TaoDM Object
+
+  Not Collective
+
+  Input Parameter:
+. taodm - the TaoDM object
+
+  Output Parameter:
+. ctx - the user context
+
+  Level: intermediate
+
+.seealse TaoDMGetDM(), TaoDMSetContext(), TaoDMCreate()
+@*/
 PetscErrorCode TaoDMGetContext(TaoDM taodm, void **ctx)
 {
   PetscFunctionBegin;
@@ -835,8 +1093,46 @@ PetscErrorCode TaoDMGetContext(TaoDM taodm, void **ctx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__ 
+#define __FUNCT__ "TaoDMSetContext"
+/*@
+  TaoDMSetContext - Sets a user context for a TaoDM Object
+
+  Not Collective
+
+  Input Parameter:
++ taodm - the TaoDM object
+- ctx - the user context
+
+  Level: intermediate
+
+.seealse TaoDMGetDM(), TaoDMGetContext(), TaoDMCreate()
+@*/
+PetscErrorCode TaoDMSetContext(TaoDM taodm, void *ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(taodm,TAODM_CLASSID,1); 
+  taodm->user = ctx;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMGetDM"
+/*@
+  TaoDMGetDM - Gets the PETSc DM object
+
+  Not Collective
+
+  Input Parameter:
+. taodm - the TaoDM object
+
+  Output Parameter:
+. dm - the DM context
+
+  Level: intermediate
+
+.seealse TaoDMDSetDM(), TaoDMGetContext(), TaoDMCreate()
+@*/
 PetscErrorCode TaoDMGetDM(TaoDM taodm, DM *dm)
 {
   PetscFunctionBegin;
@@ -847,6 +1143,21 @@ PetscErrorCode TaoDMGetDM(TaoDM taodm, DM *dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMFormHessianLocal"
+/*@C
+  TaoDMFormHessianLocal - hessian evaluation routine for a local DM function. This function is an intermediary between the TaoSolver and the TaoDM hessian evaluation routine.
+
+  Collective on TaoSolver
+  
+  Input Parameters:
++ tao - TaoSolver context
+. X - input vector
+. H - hessian matrix
+. Hpre - matrix for preconditioner
+. flg - flag for preconditioner structure
+- ptr - user context
+
+  Level: developer
+@*/
 PetscErrorCode TaoDMFormHessianLocal(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStructure *flg, void* ptr)
 {
   TaoDM          taodm = (TaoDM) ptr;
@@ -871,6 +1182,19 @@ PetscErrorCode TaoDMFormHessianLocal(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, Ma
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMFormGradientLocal"
+/*@C
+  TaoDMFormGradientLocal - gradient evaluation routine for a local DM function. This function is an intermediary between the TaoSolver and the TaoDM gradient evaluation routine.
+
+  Collective on TaoSolver
+  
+  Input Parameters:
++ tao - TaoSolver context
+. X - input vector
+. G - gradient vector
+- ptr - user context
+
+  Level: developer
+@*/
 PetscErrorCode TaoDMFormGradientLocal(TaoSolver tao, Vec X, Vec G, void *ptr)
 {
   PetscErrorCode ierr;
@@ -923,6 +1247,20 @@ PetscErrorCode TaoDMFormGradientLocal(TaoSolver tao, Vec X, Vec G, void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMFormFunctionGradientLocal"
+/*@C
+  TaoDMFormFunctionGradientLocal - gradient evaluation routine for a local DM function. This function is an intermediary between the TaoSolver and the TaoDM function/gradient evaluation routine.
+
+  Collective on TaoSolver
+  
+  Input Parameters:
++ tao - TaoSolver context
+. X - input vector
+. f - objective function value at X
+. G - gradient vector
+- ptr - user context
+
+  Level: developer
+@*/
 PetscErrorCode TaoDMFormFunctionGradientLocal(TaoSolver tao, Vec X, PetscScalar *f, Vec G, void *ptr)
 {
   PetscErrorCode ierr;
@@ -974,6 +1312,19 @@ PetscErrorCode TaoDMFormFunctionGradientLocal(TaoSolver tao, Vec X, PetscScalar 
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMFormFunctionLocal"
+/*@C
+  TaoDMFormFunctionLocal - objective function evaluation routine for a local DM function. This function is an intermediary between the TaoSolver and the TaoDM function evaluation routine.
+
+  Collective on TaoSolver
+  
+  Input Parameters:
++ tao - TaoSolver context
+. X - input vector
+. f - objective function value at X
+- ptr - user context
+
+  Level: developer
+@*/
 PetscErrorCode TaoDMFormFunctionLocal(TaoSolver tao, Vec X, PetscScalar *f, void *ptr)
 {
   PetscErrorCode ierr;
@@ -1024,6 +1375,21 @@ PetscErrorCode TaoDMFormFunctionLocal(TaoSolver tao, Vec X, PetscScalar *f, void
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMFormBounds"
+/*@
+  TaoDMFormBounds - bounds evaluation routine for a TaoDM application. This function is an intermediary between the TaoSolver and the TaoDM bounds evaluation routine.
+
+  Collective on TaoSolver
+  
+  Input Parameters:
++ tao - TaoSolver context
+. XL - lower bounds vector
+. XU - upper bounds vector
+- ptr - user context
+
+  Level: developer
+@*/
+
+
 PetscErrorCode TaoDMFormBounds(TaoSolver tao, Vec XL, Vec XU, void *ptr)
 {
 
@@ -1035,15 +1401,84 @@ PetscErrorCode TaoDMFormBounds(TaoSolver tao, Vec XL, Vec XU, void *ptr)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoDMSetLevelMonitor"
-PetscErrorCode TaoDMSetLevelMonitor(TaoDM* taodm, PetscErrorCode (*func)(TaoDM,PetscInt, void*),void *ctx)
+#define __FUNCT__ "TaoDMSetPreLevelMonitor"
+/*@C
+  TaoDMSetPreLevelMonitor - Sets a user monitor that will be called after a 
+  DM level is set up but before a solve is performed.
+  
+  Collective on TaoDM
+
+  InputParameters:
++ taodm - the TaoDM context
+. func - monitoring routine
+- ctx - (optional) user-defined context to pass to the monitor routine.
+  
+
+  Calling sequence of func:
+$    PetscErrorCode func(TaoDM taodm, PetscInt level, void *ctx)
+
++  taodm - the TaoDM context
+.  level - the current depth of mesh refinement
+-  ctx - the user-defined monitor context
+
+  Level: intermediate
+
+.seealso TaoDMSetPostLevelMonitor(), TaoDMSolve()
+@*/
+PetscErrorCode TaoDMSetPreLevelMonitor(TaoDM* taodm, PetscErrorCode (*func)(TaoDM,PetscInt, void*),void *ctx)
 {
   PetscInt i,nlevels = taodm[0]->nlevels;
 
   PetscFunctionBegin;
+  if (taodm[0]->npremonitors >= MAXTAODMMONITORS) {
+    SETERRQ1(PETSC_COMM_SELF,1,"Cannot attach another monitor -- max=",MAXTAODMMONITORS);
+  }
   for (i=0;i<nlevels;i++) {
-    taodm[i]->ops->levelmonitor = func;
-    taodm[i]->usermonitor = ctx;
+    taodm[i]->prelevelmonitor[taodm[i]->npremonitors] = func;
+    taodm[i]->userpremonitor[taodm[i]->npremonitors] = ctx;
+    ++taodm[i]->npremonitors;
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoDMSetPostLevelMonitor"
+/*@C
+  TaoDMSetPostLevelMonitor - Sets a user monitor that will be called after a 
+  DM level is set up but before a solve is performed.
+  
+  Collective on TaoDM
+
+  InputParameters:
++ taodm - the TaoDM context
+. func - monitoring routine
+- ctx - (optional) user-defined context to pass to the monitor routine.
+  
+
+  Calling sequence of func:
+$    PetscErrorCode func(TaoDM taodm, PetscInt level, void *ctx)
+
++  taodm - the TaoDM context
+.  level - the current depth of mesh refinement
+-  ctx - the user-defined monitor context
+
+  Level: intermediate
+
+.seealso TaoDMSetPreLevelMonitor(), TaoDMSolve()
+@*/
+PetscErrorCode TaoDMSetPostLevelMonitor(TaoDM* taodm, PetscErrorCode (*func)(TaoDM,PetscInt, void*),void *ctx)
+{
+  PetscInt i,nlevels = taodm[0]->nlevels;
+
+  PetscFunctionBegin;
+  if (taodm[0]->npostmonitors >= MAXTAODMMONITORS) {
+    SETERRQ1(PETSC_COMM_SELF,1,"Cannot attach another monitor -- max=",MAXTAODMMONITORS);
+  }
+  for (i=0;i<nlevels;i++) {
+    taodm[i]->postlevelmonitor[taodm[i]->npostmonitors] = func;
+    taodm[i]->userpostmonitor[taodm[i]->npostmonitors] = ctx;
+    ++taodm[i]->npremonitors;
   }
   PetscFunctionReturn(0);
 }
