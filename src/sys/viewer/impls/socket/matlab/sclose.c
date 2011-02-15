@@ -1,7 +1,7 @@
 /* 
  
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
-	 Updated by Ridhard Katz, katz@ldeo.columbia.edu 9/28/03
+	 Updated by Richard Katz, katz@ldeo.columbia.edu 9/28/03
 */
 
 #include "petscsys.h"
