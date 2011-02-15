@@ -1367,8 +1367,8 @@ PetscErrorCode  DMComputeJacobian_Matlab(DM dm,Vec x,Mat A,Mat B,MatStructure *s
   prhs[3] =  mxCreateDoubleScalar((double)lB);
   prhs[4] =  mxCreateString(sctx->jacname);
   ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"PetscDMComputeJacobianInternal");CHKERRQ(ierr);
-  *str    =  mxGetScalar(plhs[0]);CHKERRQ(ierr);
-  ierr    =  mxGetScalar(plhs[1]);CHKERRQ(ierr);
+  *str    =  (PetscEnum) mxGetScalar(plhs[0]);
+  ierr    =  (PetscInt) mxGetScalar(plhs[1]);CHKERRQ(ierr);
   mxDestroyArray(prhs[0]);
   mxDestroyArray(prhs[1]);
   mxDestroyArray(prhs[2]);

@@ -16,8 +16,9 @@ mxArray *MatSeqAIJToMatlab(Mat B)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)B->data;
-  mwIndex        i,*ii,*jj;
+  mwIndex        *ii,*jj;
   mxArray        *mat;
+  PetscInt       i;
 
   PetscFunctionBegin;
   mat  = mxCreateSparse(B->cmap->n,B->rmap->n,aij->nz,mxREAL);
