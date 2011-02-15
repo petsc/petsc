@@ -26,7 +26,7 @@ void SYByteSwapInt(int *buff,int n)
   char *ptr1,*ptr2 = (char*)&tmp;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
-    for (i=0; i<sizeof(int); i++) {
+    for (i=0; i<(int)sizeof(int); i++) {
       ptr2[i] = ptr1[sizeof(int)-1-i];
     }
     buff[j] = tmp;
@@ -44,7 +44,7 @@ void SYByteSwapShort(short *buff,int n)
   char  *ptr1,*ptr2 = (char*)&tmp;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
-    for (i=0; i<sizeof(short); i++) {
+    for (i=0; i<(int)sizeof(short); i++) {
       ptr2[i] = ptr1[sizeof(int)-1-i];
     }
     buff[j] = tmp;
@@ -66,7 +66,7 @@ void SYByteSwapScalar(PetscScalar *buff,int n)
 #endif
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff1 + j);
-    for (i=0; i<sizeof(double); i++) {
+    for (i=0; i<(int)sizeof(double); i++) {
       ptr2[i] = ptr1[sizeof(double)-1-i];
     }
     buff1[j] = tmp;
