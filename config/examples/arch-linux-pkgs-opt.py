@@ -7,6 +7,7 @@ configure_options = [
   '--download-hypre=1',
   '--download-plapack=1',
   '--download-parmetis=1',
+  '--download-scotch=1',
   '--download-umfpack=1',
   '--download-triangle=1',
   '--download-spooles=1',
