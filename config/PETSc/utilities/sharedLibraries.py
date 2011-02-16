@@ -40,7 +40,12 @@ class Configure(config.base.Configure):
     return
 
   def checkSharedDynamicPicOptions(self):
-    # if user specifies inconsistant 'with-dynamic-loading with-shared-libraries with-pic' options - flag error.
+    # uf user specified 'with-shared' or 'with-dynamic' - flag an error
+    if 'with-shared' in self.framework.argDB:
+      raise RuntimeError('Option "--with-shared" no longer exists. Use "--with-shared-libraries".')
+    if 'with-dynamic' in self.framework.argDB:
+      raise RuntimeError('Option "--with-dynamic" no longer exists. Use "--with-dynamic-loading".')
+    # if user specifies inconsistant 'with-dynamic-loading with-shared-libraries with-pic' options - flag error
     if self.framework.argDB['with-dynamic-loading'] and not self.framework.argDB['with-shared-libraries'] and 'with-shared-libraries' in self.framework.clArgDB:
       raise RuntimeError('If you use --with-dynamic-loading you cannot disable --with-shared-libraries')
     if self.framework.argDB['with-dynamic-loading'] and not self.framework.argDB['with-pic'] and 'with-pic' in self.framework.clArgDB:
