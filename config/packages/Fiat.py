@@ -1,5 +1,5 @@
 import config.package
-import os
+import os, sys
 
 class Configure(config.package.Package):
   def __init__(self, framework):
@@ -10,7 +10,8 @@ class Configure(config.package.Package):
     self.worksonWindows    = 1
     self.downloadonWindows = 1
     self.liblist           = [['Lagrange.py']]
-    self.altlibdir         = os.path.join('lib', 'python', 'site-packages')
+    self.libdir            = os.path.join('lib', 'python', 'site-packages')
+    self.altlibdir         = os.path.join('lib', 'python'+'.'.join(map(str, sys.version_info[0:2])), 'site-packages')
     return
 
   def setupDependencies(self, framework):
