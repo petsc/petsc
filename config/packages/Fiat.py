@@ -46,8 +46,8 @@ class Configure(config.package.Package):
         self.framework.logPrint('Added directory '+libDir+' to Python path')
         sys.path.insert(0, libDir)
         import FIAT
-        import FIAT.shapes
-        import FIAT.Lagrange
+        import FIAT.ufc_simplex
+        import FIAT.lagrange
         import FIAT.quadrature
         return
       except ImportError, e:
