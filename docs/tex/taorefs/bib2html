@@ -455,6 +455,8 @@ while (<BIB>) {
     # \"
     $line =~ s%\\"\{([AEIOUaeiou]{1})\}%&$1uml;%;
     $line =~ s%\\"([AEIOUYaeiouy]{1})%&$1uml;%;
+    $line =~ s%\\"\{([AEIOUaeiou]{1})\}%&$1uml;%;
+    $line =~ s%\\"([AEIOUYaeiouy]{1})%&$1uml;%;
     # \`
     $line =~ s%\\`\{([AEIOUaeiou]{1})\}%&$1grave;%;
     $line =~ s%\\`([AEIOUaeiou]{1})%&$1grave;%;
