@@ -22,6 +22,7 @@ struct _PCOps {
   PetscErrorCode (*setuponblocks)(PC);
   PetscErrorCode (*destroy)(PC);
   PetscErrorCode (*view)(PC,PetscViewer);
+  PetscErrorCode (*reset)(PC);
 };
 
 /*

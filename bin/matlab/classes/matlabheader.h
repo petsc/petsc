@@ -120,6 +120,7 @@ int PCSetFromOptions(PC);
 int PCSetOperators(PC,Mat,Mat,MatStructure);
 int PCSetUp(PC);
 int PCView(PC,PetscViewer);
+int PCFieldSplitSetIS(PC,const char*,IS);
 int PCDestroy(PC);
 
 typedef PetscPointer KSP;
@@ -151,6 +152,7 @@ int SNESDestroy(SNES);
 int SNESMonitorSetMatlab(SNES,const char*,mxArray*);
 int SNESSetConvergenceHistory(SNES,double[],int[],int,PetscBool);
 mxArray* SNESGetConvergenceHistoryMatlab(SNES);
+int SNESGetKSP(SNES,KSP*);
 
 typedef PetscPointer TS;
 int TSCreate(MPI_Comm,TS *);

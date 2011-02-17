@@ -54,6 +54,43 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char* type[])
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PCReset"
+/*@
+   PCReset - Resets a PC context to the pcsetupcalled = 0 state and removes any allocated Vecs and Mats
+
+   Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Level: developer
+
+   Notes: This allows a PC to be reused for a different sized linear system but using the same options that have been previously set in the PC
+
+.keywords: PC, destroy
+
+.seealso: PCCreate(), PCSetUp()
+@*/
+PetscErrorCode  PCReset(PC pc)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  if (pc->dm) {ierr = DMDestroy(pc->dm);CHKERRQ(ierr); pc->dm = 0;}
+
+  if (pc->diagonalscaleright) {ierr = VecDestroy(pc->diagonalscaleright);CHKERRQ(ierr);pc->diagonalscaleright = 0;}
+  if (pc->diagonalscaleleft)  {ierr = VecDestroy(pc->diagonalscaleleft);CHKERRQ(ierr);pc->diagonalscaleleft = 0;}
+
+  if (pc->pmat) {ierr = MatDestroy(pc->pmat);CHKERRQ(ierr);pc->pmat = 0;}
+  if (pc->mat) {ierr = MatDestroy(pc->mat);CHKERRQ(ierr);pc->mat = 0;}
+  if (pc->ops->reset) {
+    ierr = (*pc->ops->reset)(pc);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PCDestroy"
 /*@
    PCDestroy - Destroys PC context that was created with PCCreate().

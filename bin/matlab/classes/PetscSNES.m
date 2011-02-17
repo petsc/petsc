@@ -65,6 +65,10 @@ classdef PetscSNES < PetscObject
     function history = GetConvergenceHistory(obj)
       history = calllib('libpetsc', 'SNESGetConvergenceHistoryMatlab', obj.pobj);
     end
+    function ksp = GetKSP(obj)
+      [err,ksp] = calllib('libpetsc', 'SNESGetKSP', obj.pobj,0);
+      ksp = PetscKSP(ksp,'pobj');
+    end
     function err = View(obj,viewer)
       if (nargin == 1)
         err = calllib('libpetsc', 'SNESView', obj.pobj,0);PetscCHKERRQ(err);

@@ -843,6 +843,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   IS             tix = 0,tiy = 0;
 
   PetscFunctionBegin;
+  if (!ix && !iy) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_SUP,"Cannot pass default in for both input and output indices");
 
   /*
       Determine if the vectors are "parallel", ie. it shares a comm with other processors, or

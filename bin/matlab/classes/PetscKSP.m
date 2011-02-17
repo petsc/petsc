@@ -9,7 +9,12 @@ classdef PetscKSP < PetscObject
 %       ksp.SetFromOptions;
 %
   methods
-    function obj = PetscKSP()
+    function obj = PetscKSP(pid,flag)
+      if (nargin > 1) 
+        %  PetscKSP(pid,'pobj') uses an already existing PETSc KSP object
+        obj.pobj = pid;
+        return
+      end
       comm =  PETSC_COMM_SELF();
       [err,obj.pobj] = calllib('libpetsc', 'KSPCreate', comm,0);PetscCHKERRQ(err);
     end
