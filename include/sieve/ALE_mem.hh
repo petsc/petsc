@@ -25,8 +25,8 @@ namespace ALE {
   class MemoryLogger {
   public:
     struct Log {
-      int num;
-      int total;
+      long long num;
+      long long total;
       std::map<std::string, int> items;
 
       Log(): num(0), total(0) {};
