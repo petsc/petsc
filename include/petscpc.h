@@ -177,6 +177,7 @@ M*/
 #define PCRegisterDynamic(a,b,c,d) PCRegister(a,b,c,d)
 #endif
 
+extern PetscErrorCode  PCReset(PC);
 extern PetscErrorCode  PCDestroy(PC);
 extern PetscErrorCode  PCSetFromOptions(PC);
 extern PetscErrorCode  PCGetType(PC,const PCType*);
