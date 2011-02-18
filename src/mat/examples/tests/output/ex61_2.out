@@ -1,4 +1,4 @@
-Matrix Object:
+Matrix Object: 1 MPI processes
   type: seqbaij
 row 0: (0, 1)  (2, 3) 
 row 1: (0, 1)  (1, 2)  (2, 3) 

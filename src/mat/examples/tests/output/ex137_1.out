@@ -1,4 +1,4 @@
-Matrix Object:
+Matrix Object: 1 MPI processes
   type: mpisbaij
 row 0: (0, 0)  (1, 1) 
 row 1: (1, 2)  (2, 3)  (6, 4) 

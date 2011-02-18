@@ -1,4 +1,4 @@
-Matrix Object:
+Matrix Object: 4 MPI processes
   type: mpisbaij
   rows=1000, cols=1000
   total: nonzeros=1999, allocated nonzeros=2000

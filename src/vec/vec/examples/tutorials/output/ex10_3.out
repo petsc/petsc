@@ -1,4 +1,4 @@
-Vector Object:Test_Vec
+Vector Object:Test_Vec 5 MPI processes
   type: mpi
 Process [0]
 0
@@ -27,7 +27,7 @@ Process [4]
 403
 writing vector in binary to vector.dat ...
 reading vector in binary from vector.dat ...
-Vector Object:Test_Vec
+Vector Object:Test_Vec 5 MPI processes
   type: mpi
 Process [0]
 0
