@@ -1,4 +1,4 @@
-Vector Object:
+Vector Object: 2 MPI processes
   type: mpi
 Process [0]
 0
@@ -14,7 +14,7 @@ Process [1]
 103
 104
 105
-Vector Object:
+Vector Object: 2 MPI processes
   type: mpi
 Process [0]
 -5
@@ -30,7 +30,7 @@ Process [1]
 201
 108
 215
-Matrix Object:
+Matrix Object: 1 MPI processes
   type: mpiaij
 row 0: (0, 4)  (1, -1)  (4, -1) 
 row 1: (0, -1)  (1, 4)  (2, -1)  (5, -1) 

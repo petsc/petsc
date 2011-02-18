@@ -1,5 +1,5 @@
 Matrix mpibaij(2)
-Matrix Object:
+Matrix Object: 2 MPI processes
   type: mpibaij
   rows=8, cols=8
   total: nonzeros=64, allocated nonzeros=64
@@ -31,7 +31,7 @@ Matrix Object:
     Now the indices for all remote receives (in order by process received from)
     [1] 0 
     [1] 2 
-Matrix Object:
+Matrix Object: 1 MPI processes
   type: mpibaij
 row 0: (0, 2)  (1, 4)  (2, 6)  (3, 8)  (4, 10)  (5, 12)  (6, 14)  (7, 16) 
 row 1: (0, 18)  (1, 20)  (2, 22)  (3, 24)  (4, 26)  (5, 28)  (6, 30)  (7, 32) 
@@ -42,7 +42,7 @@ row 5: (0, 82)  (1, 84)  (2, 86)  (3, 88)  (4, 90)  (5, 92)  (6, 94)  (7, 96)
 row 6: (0, 98)  (1, 100)  (2, 102)  (3, 104)  (4, 106)  (5, 108)  (6, 110)  (7, 112) 
 row 7: (0, 114)  (1, 116)  (2, 98)  (3, 120)  (4, 122)  (5, 124)  (6, 126)  (7, 128) 
 Matrix mpisbaij(2)
-Matrix Object:
+Matrix Object: 2 MPI processes
   type: mpisbaij
   rows=8, cols=8
   total: nonzeros=40, allocated nonzeros=64
@@ -66,7 +66,7 @@ Matrix Object:
     [1] 0 
     [1] 2 
     [1] Number receives = 0; Number from self = 0
-Matrix Object:
+Matrix Object: 1 MPI processes
   type: mpisbaij
 row 0: (0, 2)  (1, 4)  (2, 6)  (3, 8)  (4, 10)  (5, 12)  (6, 14)  (7, 16) 
 row 1: (0, 18)  (1, 20)  (2, 22)  (3, 24)  (4, 26)  (5, 28)  (6, 30)  (7, 32) 
@@ -77,7 +77,7 @@ row 5: (4, 90)  (5, 92)  (6, 94)  (7, 96)
 row 6: (6, 110)  (7, 112) 
 row 7: (6, 126)  (7, 128) 
 Matrix mpibaij(1)
-Matrix Object:
+Matrix Object: 2 MPI processes
   type: mpibaij
   rows=4, cols=4
   total: nonzeros=16, allocated nonzeros=16
@@ -109,14 +109,14 @@ Matrix Object:
     Now the indices for all remote receives (in order by process received from)
     [1] 0 
     [1] 1 
-Matrix Object:
+Matrix Object: 1 MPI processes
   type: mpibaij
 row 0: (0, 2)  (1, 4)  (2, 6)  (3, 8) 
 row 1: (0, 10)  (1, 12)  (2, 14)  (3, 16) 
 row 2: (0, 18)  (1, 20)  (2, 22)  (3, 24) 
 row 3: (0, 26)  (1, 28)  (2, 30)  (3, 32) 
 Matrix mpisbaij(1)
-Matrix Object:
+Matrix Object: 2 MPI processes
   type: mpisbaij
   rows=4, cols=4
   total: nonzeros=10, allocated nonzeros=16
@@ -140,7 +140,7 @@ Matrix Object:
     [1] 0 
     [1] 1 
     [1] Number receives = 0; Number from self = 0
-Matrix Object:
+Matrix Object: 1 MPI processes
   type: mpisbaij
 row 0: (0, 2)  (1, 4)  (2, 6)  (3, 8) 
 row 1: (1, 12)  (2, 14)  (3, 16) 

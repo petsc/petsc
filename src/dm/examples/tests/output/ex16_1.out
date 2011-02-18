@@ -1,4 +1,4 @@
-Vector Object:
+Vector Object: 3 MPI processes
   type: mpi
 Process [0]
 0
@@ -34,14 +34,14 @@ Process [2]
  0:   0.0000e+00   1.0000e+00   2.0000e+00
  3:   3.0000e+00   4.0000e+00
 [0] My part of da1 vector
-Vector Object:
+Vector Object: 1 MPI processes
   type: seq
 5
 6
 7
 10
 [1] My part of da1 vector
-Vector Object:
+Vector Object: 1 MPI processes
   type: seq
 7
 10
@@ -49,7 +49,7 @@ Vector Object:
 12
 17
 [2] My part of da1 vector
-Vector Object:
+Vector Object: 1 MPI processes
   type: seq
 12
 17
@@ -61,25 +61,25 @@ Vector Object:
 [2] My part of redundant2 array
  0:   1.3000e+01   1.4000e+01
 [0] My part of da2 vector
-Vector Object:
+Vector Object: 1 MPI processes
   type: seq
 8
 9
 15
 [1] My part of da2 vector
-Vector Object:
+Vector Object: 1 MPI processes
   type: seq
 9
 15
 16
 19
 [2] My part of da2 vector
-Vector Object:
+Vector Object: 1 MPI processes
   type: seq
 16
 19
 20
-Vector Object:
+Vector Object: 3 MPI processes
   type: mpi
 Process [0]
 0

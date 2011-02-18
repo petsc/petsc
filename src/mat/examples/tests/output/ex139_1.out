@@ -35,7 +35,7 @@ The first indices of each block are
 Block 0 Index 0
 Block 1 Index 2
 Block 2 Index 3
-Matrix Object:
+Matrix Object: 1 MPI processes
   type: mpiaij
 row 0: (0, 1000)  (1, 1002)  (2, 2000)  (3, 2001) 
 row 1: (0, 1020)  (1, 1022)  (2, 2010)  (3, 2011) 
