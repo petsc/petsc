@@ -7,7 +7,7 @@
 /* Must use hypre 2.0.0 or more recent. */
 
 #include "private/pcimpl.h"          /*I "petscpc.h" I*/
-#include "../src/dm/impls/da/mhyp.h"
+#include "../src/dm/impls/da/hypre/mhyp.h"
 
 /* 
    Private context (data structure) for the  preconditioner.  

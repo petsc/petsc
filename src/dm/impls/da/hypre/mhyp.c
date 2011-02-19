@@ -4,10 +4,9 @@
     Creates hypre ijmatrix from PETSc matrix
 */
 #include "petscsys.h"
-#if defined(PETSC_HAVE_HYPRE)
 #include "private/matimpl.h"          /*I "petscmat.h" I*/
 #include "petscdm.h"                  /*I "petscdm.h" I*/
-#include "../src/dm/impls/da/mhyp.h"
+#include "../src/dm/impls/da/hypre/mhyp.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "MatHYPRE_IJMatrixPreallocate"
@@ -1135,5 +1134,5 @@ PetscErrorCode  MatCreate_HYPRESStruct(Mat B)
 }
 EXTERN_C_END
 
-#endif
+
  
