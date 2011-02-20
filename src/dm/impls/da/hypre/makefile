@@ -1,7 +1,4 @@
-#requirespackage  'PETSC_HAVE_HYPRE'
-#requiresprecision double
-#requiresscalar    real
-
+#requirespackage 'PETSC_HAVE_HYPRE'
 ALL: lib
 
 CFLAGS   =
