@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCECU  = sacusp.cu sacusppoly.cu
+SOURCECU  = sacusp.cu
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = sacusp.o sacusppoly.o
+OBJSC    = sacusp.o
 OBJSF    =
 LIBBASE  = libpetscksp
 DIRS     = 
