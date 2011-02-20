@@ -13,7 +13,7 @@ subroutine fillK (P, K)
   real(kind=8), intent(out) :: K(-1:1)
   real(kind=8)  Ka, Kb
   call evalK((P(-1)+P( 0))/2.0, Ka)
-  call evalK((P(-1)+P( 0))/2.0, Kb)
+  call evalK((P( 0)+P( 1))/2.0, Kb)
   K(-1) = -Ka
   K( 0) = Ka + Kb
   K(+1) = -Kb

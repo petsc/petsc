@@ -14,8 +14,8 @@ test: run clean
 .PHONY:run
 run: run_py run_cc
 
-SCRIPT=matfree
-MODULE=matfreelib
+SCRIPT=driver
+MODULE=App
 .PHONY:run_py
 run_py: ${MODULE}.so
 	${MPIEXEC} ${PYTHON} ${SCRIPT}.py
@@ -23,7 +23,7 @@ run_py: ${MODULE}.so
 ${MODULE}.so: ${MODULE}.f90
 	${F2PY} ${F2PY_FLAGS} -c $< -m ${MODULE}
 
-EXECUTABLE=matfree
+EXECUTABLE=driver
 .PHONY:run_cc
 run_cc: ${EXECUTABLE}.exe
 	${MPIEXEC} ./${EXECUTABLE}.exe

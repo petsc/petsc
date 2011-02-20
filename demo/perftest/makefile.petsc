@@ -1,6 +1,6 @@
 # -*- makefile -*-
 
-EXECUTABLE=matfree
+EXECUTABLE=driver
 
 .PHONY:all
 all: ${EXECUTABLE}.exe
@@ -8,8 +8,8 @@ all: ${EXECUTABLE}.exe
 SOURCEC=${EXECUTABLE}.c
 OBJSC=${EXECUTABLE}.o
 
-SOURCEF=matfreelib.f90
-OBJSF=matfreelib.o
+SOURCEF=App.f90
+OBJSF=App.o
 
 ${EXECUTABLE}.exe: ${SOURCEC} ${SOURCEF}
 	-${PETSC_FCOMPILE}

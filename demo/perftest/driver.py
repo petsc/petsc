@@ -19,8 +19,8 @@ class AppCtx:
     def __init__(self, nx, ny, nz):
         self.n = np.array([nx, ny, nz], dtype='i')
         self.h = np.array([1.0/(n-1) for n in self.n], dtype='d')
-        from matfreelib import formfunction as formFunction
-        from matfreelib import forminitial as formInitial
+        from App import formfunction as formFunction
+        from App import forminitial as formInitial
         self._formFunction = formFunction
         self._formInitial = formInitial
 
@@ -111,7 +111,7 @@ def run_test(nx,ny,nz,samples,plot=False):
 OptDB = PETSc.Options()
 
 
-start = OptDB.getInt('start', 8)
+start = OptDB.getInt('start', 12)
 step = OptDB.getInt('step', 4)
 stop = OptDB.getInt('stop', start)
 samples = OptDB.getInt('samples', 1)

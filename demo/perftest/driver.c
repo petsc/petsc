@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 
   ierr = PetscInitialize(&argc,&argv,NULL,NULL);CHKERRQ(ierr);
 
-  ierr = GetInt("-start",   &start,   8);CHKERRQ(ierr);
+  ierr = GetInt("-start",   &start,   12);CHKERRQ(ierr);
   ierr = GetInt("-step",    &step,    4);CHKERRQ(ierr);
   ierr = GetInt("-stop",    &stop,    start);CHKERRQ(ierr);
   ierr = GetInt("-samples", &samples, 1);CHKERRQ(ierr);

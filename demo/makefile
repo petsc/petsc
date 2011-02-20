@@ -6,6 +6,6 @@ all:
 	-${MAKE} -C bratu3d
 	-${MAKE} -C poisson2d
 	-${MAKE} -C poisson3d
-	-${MAKE} -C matfree
+	-${MAKE} -C perftest
 #	-${MAKE} -C wrap-swig
 #	-${MAKE} -C wrap-f2py
