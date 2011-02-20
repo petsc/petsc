@@ -87,11 +87,12 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Error running make on Scotch: '+str(e))
 
       #Scotch has a file identical to one in ParMetis, remove it so ParMetis will not use it by mistake
-      try:
-        os.unlink(os.path.join(self.packageDir,'include','metis.h'))
+      try: # PTScotch installs parmetis.h by default, we need to remove it so it does not conflict with the ParMETIS native copy
         os.unlink(os.path.join(self.packageDir,'include','parmetis.h'))
-      except:
-        pass
+      except: pass
+      try: # This would only be produced if "make scotch" was invoked, but try to remove it anyway in case someone was messing with it
+        os.unlink(os.path.join(self.packageDir,'include','metis.h'))
+      except: pass
 
       libDir     = os.path.join(self.installDir, self.libdir)
       includeDir = os.path.join(self.installDir, self.includedir)
