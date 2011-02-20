@@ -40,6 +40,7 @@ namespace ALE {
       alloc_type().deallocate(mask, numVertices);
       for(int i = 0; i < numVertices*2; ++i) {alloc_type().destroy(xls+i);}
       alloc_type().deallocate(xls, numVertices*2);
+      Partitioner<>::destroyCSR(numVertices, start, adjacency);
       // Correct for Fortran numbering
       for(int i = 0; i < numVertices; ++i) --perm[i];
       // Construct closure
