@@ -53,7 +53,7 @@ namespace ALE {
     void Builder::readInpFile(MPI_Comm comm, const std::string& filename, const int dim, const int numCorners, int& numElements, int *vertices[], int& numVertices, double *coordinates[]) {
       PetscViewer    viewer;
       FILE          *f;
-      PetscReal     *coords;
+      double        *coords;
       PetscInt      *verts;
       PetscInt       commRank;
       char           buf[2048];

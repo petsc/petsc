@@ -947,7 +947,7 @@ PetscErrorCode  MeshFormJacobian(Mesh mesh, SectionReal X, Mat J, void *ctx)
 //  - The section takes values on vertices and is P1
 //  - Points have the same dimension as the mesh
 //  - All values have the same dimension
-PetscErrorCode  MeshInterpolatePoints(Mesh mesh, SectionReal section, int numPoints, double *points, double **values)
+PetscErrorCode  MeshInterpolatePoints(Mesh mesh, SectionReal section, int numPoints, PetscReal *points, PetscScalar **values)
 {
   Obj<PETSC_MESH_TYPE> m;
   Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -962,10 +962,10 @@ PetscErrorCode  MeshInterpolatePoints(Mesh mesh, SectionReal section, int numPoi
   int dim      = s->getFiberDimension(*m->depthStratum(0)->begin());
 
   ierr = PetscMalloc3(embedDim,double,&v0,embedDim*embedDim,double,&J,embedDim*embedDim,double,&invJ);CHKERRQ(ierr);
-  ierr = PetscMalloc(numPoints*dim * sizeof(double), &values);CHKERRQ(ierr);
+  ierr = PetscMalloc(numPoints*dim * sizeof(PetscScalar), &values);CHKERRQ(ierr);
   for(int p = 0; p < numPoints; p++) {
-    double *point = &points[p*embedDim];
-    
+    PetscReal *point = &points[p*embedDim];
+
     PETSC_MESH_TYPE::point_type e = m->locatePoint(point);
     const PETSC_MESH_TYPE::real_section_type::value_type *coeff = s->restrictPoint(e);
 
@@ -1910,8 +1910,9 @@ PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningF
 
 PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh mesh, int numLevels, Mesh *coarseHierarchy)
 {
+  PetscReal      cfactor = 1.5;
   PetscErrorCode ierr;
-  double cfactor = 1.5;
+
   PetscFunctionBegin;
   ierr = PetscOptionsReal("-dmmg_coarsen_factor", "The coarsening factor", PETSC_NULL, cfactor, &cfactor, PETSC_NULL);CHKERRQ(ierr);
 #ifdef PETSC_OPT_SIEVE

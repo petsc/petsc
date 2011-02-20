@@ -248,7 +248,7 @@ namespace ALE {
         v = strtok(NULL, " ");
         for(c = 0; c < corners; c++) {
           int vertex = atoi(v);
-        
+
           if (!useZeroBase) vertex -= 1;
           verts[cellCount*corners+c] = vertex;
           v = strtok(NULL, " ");
@@ -259,7 +259,7 @@ namespace ALE {
       numElements = numCells;
       *vertices = verts;
     };
-    void Builder::readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, double *coordinates[]) {
+    void Builder::readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, PetscReal *coordinates[]) {
       PetscViewer    viewer;
       FILE          *f;
       PetscInt       numVerts, vertexCount = 0;
@@ -286,7 +286,7 @@ namespace ALE {
       ierr = PetscMalloc(numVerts*dim * sizeof(PetscReal), &coords);
       while(fgets(buf, 2048, f) != NULL) {
         const char *x = strtok(buf, " ");
-      
+
         /* Ignore vertex number */
         x = strtok(NULL, " ");
         for(c = 0; c < dim; c++) {
@@ -304,18 +304,19 @@ namespace ALE {
     };
 #ifdef PETSC_OPT_SIEVE
     Obj<PETSC_MESH_TYPE> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
+      typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
       Obj<Mesh>          mesh  = new Mesh(comm, dim, debug);
       Obj<sieve_type>    sieve = new sieve_type(comm, debug);
-      const Obj<ALE::Mesh>             m = new ALE::Mesh(comm, dim, debug);
-      const Obj<ALE::Mesh::sieve_type> s = new ALE::Mesh::sieve_type(comm, debug);
-      int    *cells            = NULL;
-      double *coordinates      = NULL;
-      int     numCells = 0, numVertices = 0, numCorners = dim+1;
+      const Obj<FlexMesh>             m = new FlexMesh(comm, dim, debug);
+      const Obj<FlexMesh::sieve_type> s = new FlexMesh::sieve_type(comm, debug);
+      int       *cells            = NULL;
+      PetscReal *coordinates      = NULL;
+      int        numCells = 0, numVertices = 0, numCorners = dim+1;
       PetscErrorCode ierr;
 
       ALE::PCICE::Builder::readConnectivity(comm, adjFilename, numCorners, useZeroBase, numCells, &cells);
       ALE::PCICE::Builder::readCoordinates(comm, coordFilename, dim, numVertices, &coordinates);
-      ALE::SieveBuilder<ALE::Mesh>::buildTopology(s, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
+      ALE::SieveBuilder<FlexMesh>::buildTopology(s, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
       m->setSieve(s);
       m->stratify();
       mesh->setSieve(sieve);
@@ -331,7 +332,7 @@ namespace ALE {
     void Builder::readBoundary(const Obj<Mesh>& mesh, const std::string& bcFilename) {
       throw ALE::Exception("Not implemented for optimized sieves");
     };
-    void Builder::outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, double *coordinates[], const bool columnMajor) {
+    void Builder::outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, PetscReal *coordinates[], const bool columnMajor) {
       const Obj<Mesh::real_section_type>& coordSec = mesh->getRealSection("coordinates");
       if (!coordSec->size()) {
         *numVertices = 0;
@@ -343,7 +344,7 @@ namespace ALE {
       const Obj<Mesh::numbering_type>& vNumbering = mesh->getFactory()->getLocalNumbering(mesh, 0);
       int            size     = vertices->size();
       int            embedDim = coordSec->getFiberDimension(*vertices->begin());
-      double        *coords;
+      PetscReal     *coords;
       PetscErrorCode ierr;
 
       ierr = PetscMalloc(vertices->size()*embedDim * sizeof(double), &coords);

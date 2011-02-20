@@ -71,7 +71,7 @@ namespace ALE {
         v = strtok(NULL, " ");
         for(c = 0; c < corners; c++) {
           int vertex = atoi(v);
-        
+
           if (!useZeroBase) vertex -= 1;
           verts[cellCount*corners+c] = vertex;
           v = strtok(NULL, " ");
@@ -83,7 +83,7 @@ namespace ALE {
       *vertices   = verts;
       *materials  = mats;
     };
-    void Builder::readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, double *coordinates[]) {
+    void Builder::readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, PetscReal *coordinates[]) {
       PetscViewer    viewer;
       FILE          *f;
       PetscInt       maxVerts = 1024, vertexCount = 0;
@@ -148,7 +148,7 @@ namespace ALE {
     // numSplit is the number of split node entries (lines in the file)
     // splitInd[] is an array of numSplit pairs, <element, vertex>
     // splitValues[] is an array of numSplit*dim displacements
-    void Builder::readSplit(MPI_Comm comm, const std::string& filename, const int dim, const bool useZeroBase, int& numSplit, int *splitInd[], int *loadHistory[], double *splitValues[]) {
+    void Builder::readSplit(MPI_Comm comm, const std::string& filename, const int dim, const bool useZeroBase, int& numSplit, int *splitInd[], int *loadHistory[], PetscReal *splitValues[]) {
       PetscViewer    viewer;
       FILE          *f;
       PetscInt       maxSplit = 1024, splitCount = 0;
@@ -218,7 +218,7 @@ namespace ALE {
       *splitValues = splitVal;
     };
 #if 0
-    void Builder::buildSplit(const Obj<pair_section_type>& splitField, const Obj<int_section_type>& loadField, int numCells, int numSplit, int splitInd[], int loadHistory[], double splitVals[]) {
+    void Builder::buildSplit(const Obj<pair_section_type>& splitField, const Obj<int_section_type>& loadField, int numCells, int numSplit, int splitInd[], int loadHistory[], PetscReal splitVals[]) {
       const pair_section_type::patch_type                     patch = 0;
       pair_section_type::value_type                          *values;
       int_section_type::value_type                           *history;

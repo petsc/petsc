@@ -717,11 +717,12 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "distributeMesh"
-    static Obj<ALE::Mesh> distributeMesh(const Obj<ALE::Mesh>& serialMesh, const int height = 0, const std::string& partitioner = "chaco") {
-      MPI_Comm                          comm          = serialMesh->comm();
-      const int                         dim           = serialMesh->getDimension();
-      Obj<ALE::Mesh>                    parallelMesh  = new ALE::Mesh(comm, dim, serialMesh->debug());
-      const Obj<ALE::Mesh::sieve_type>& parallelSieve = new ALE::Mesh::sieve_type(comm, serialMesh->debug());
+    static Obj<ALE::Mesh<PetscInt,PetscScalar> > distributeMesh(const Obj<ALE::Mesh<PetscInt,PetscScalar> >& serialMesh, const int height = 0, const std::string& partitioner = "chaco") {
+      typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
+      MPI_Comm                         comm          = serialMesh->comm();
+      const int                        dim           = serialMesh->getDimension();
+      Obj<FlexMesh>                    parallelMesh  = new FlexMesh(comm, dim, serialMesh->debug());
+      const Obj<FlexMesh::sieve_type>& parallelSieve = new FlexMesh::sieve_type(comm, serialMesh->debug());
 
       ALE_LOG_EVENT_BEGIN;
       parallelMesh->setSieve(parallelSieve);
@@ -963,10 +964,11 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "unifyMesh"
-    static Obj<ALE::Mesh> unifyMesh(const Obj<ALE::Mesh>& parallelMesh) {
-      const int                         dim         = parallelMesh->getDimension();
-      Obj<ALE::Mesh>                    serialMesh  = new ALE::Mesh(parallelMesh->comm(), dim, parallelMesh->debug());
-      const Obj<ALE::Mesh::sieve_type>& serialSieve = new ALE::Mesh::sieve_type(parallelMesh->comm(), parallelMesh->debug());
+    static Obj<ALE::Mesh<PetscInt,PetscScalar> > unifyMesh(const Obj<ALE::Mesh<PetscInt,PetscScalar> >& parallelMesh) {
+      typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
+      const int                        dim         = parallelMesh->getDimension();
+      Obj<FlexMesh>                    serialMesh  = new FlexMesh(parallelMesh->comm(), dim, parallelMesh->debug());
+      const Obj<FlexMesh::sieve_type>& serialSieve = new FlexMesh::sieve_type(parallelMesh->comm(), parallelMesh->debug());
 
       ALE_LOG_EVENT_BEGIN;
       serialMesh->setSieve(serialSieve);

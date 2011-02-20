@@ -19,8 +19,8 @@ namespace ALE {
       static inline void ignoreComments(char *buf, PetscInt bufSize, FILE *f);
     public:
       static void readConnectivity(MPI_Comm comm, const std::string& filename, int& corners, const bool useZeroBase, int& numElements, int *vertices[], int *materials[]);
-      static void readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, double *coordinates[]);
-      static void readSplit(MPI_Comm comm, const std::string& filename, const int dim, const bool useZeroBase, int& numSplit, int *splitInd[], int *loadHistory[], double *splitValues[]);
+      static void readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, PetscReal *coordinates[]);
+      static void readSplit(MPI_Comm comm, const std::string& filename, const int dim, const bool useZeroBase, int& numSplit, int *splitInd[], int *loadHistory[], PetscReal *splitValues[]);
       static void readTractions(MPI_Comm comm, const std::string& filename, const int dim, const int& corners, const bool useZeroBase, int& numTractions, int& vertsPerFace, int *tractionVertices[], double *tractionValues[]);
       static void buildMaterials(const Obj<Mesh>& mesh, const Obj<int_section_type>& matField, const int materials[]);
 #if 0
@@ -75,7 +75,7 @@ namespace ALE {
       typedef PETSC_MESH_TYPE             Mesh;
       typedef PETSC_MESH_TYPE::sieve_type sieve_type;
     public:
-      static void readInpFile(MPI_Comm comm, const std::string& filename, const int dim, const int numCorners, int& numElements, int *vertices[], int& numVertices, double *coordinates[], double *faceNormals[]);
+      static void readInpFile(MPI_Comm comm, const std::string& filename, const int dim, const int numCorners, int& numElements, int *vertices[], int& numVertices, PetscReal *coordinates[], PetscReal *faceNormals[]);
       static Obj<Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& filename, const bool interpolate, const int debug);
       static void readFault(Obj<Mesh> mesh, const std::string& filename);
     };
@@ -88,7 +88,7 @@ namespace ALE {
 
     class Builder {
     public:
-      typedef PETSC_MESH_TYPE               Mesh;
+      typedef PETSC_MESH_TYPE         Mesh;
       typedef Mesh::sieve_type        sieve_type;
       typedef Mesh::real_section_type section_type;
     public:
@@ -96,20 +96,20 @@ namespace ALE {
       virtual ~Builder() {};
     public:
       static void readConnectivity(MPI_Comm comm, const std::string& filename, int& corners, const bool useZeroBase, int& numElements, int *vertices[]);
-      static void readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, double *coordinates[]);
+      static void readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, PetscReal *coordinates[]);
       static Obj<Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase, const bool interpolate, const int debug);
       static Obj<Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase, const bool interpolate, const int debug);
       static void readBoundary(const Obj<Mesh>& mesh, const std::string& bcFilename);
-      static void outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, double *coordinates[], bool columnMajor);
+      static void outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, PetscReal *coordinates[], bool columnMajor);
       static void outputElementsLocal(const Obj<Mesh>& mesh, int *numElements, int *numCorners, int *vertices[], bool columnMajor);
     };
 
     typedef struct {
-      Mesh::point_type                    vertex;
-      Mesh::real_section_type::value_type veln_x;
-      Mesh::real_section_type::value_type veln_y;
-      Mesh::real_section_type::value_type pn;
-      Mesh::real_section_type::value_type tn;
+      ALE::Mesh<PetscInt,PetscScalar>::point_type                    vertex;
+      ALE::Mesh<PetscInt,PetscScalar>::real_section_type::value_type veln_x;
+      ALE::Mesh<PetscInt,PetscScalar>::real_section_type::value_type veln_y;
+      ALE::Mesh<PetscInt,PetscScalar>::real_section_type::value_type pn;
+      ALE::Mesh<PetscInt,PetscScalar>::real_section_type::value_type tn;
     } RestartType;
 
     class Viewer {
@@ -166,7 +166,7 @@ namespace ALE {
     public:
       XMLMesh(const Obj<PETSC_MESH_TYPE>& mesh) : XMLObject(), mesh(mesh), state(OUTSIDE), coords(NULL), embedDim(0), numCells(0) {};
       virtual ~XMLMesh() {};
-    public:    
+    public:
       void startElement (const xmlChar* name, const xmlChar** attrs);
       void endElement   (const xmlChar* name);
       void open(std::string filename) {};
@@ -179,7 +179,7 @@ namespace ALE {
       void readInterval    (const xmlChar* name, const xmlChar** attrs);
       void readTriangle    (const xmlChar* name, const xmlChar** attrs);
       void readTetrahedron (const xmlChar* name, const xmlChar** attrs);
-    
+
       void closeMesh();
     };
     class Builder {
@@ -224,7 +224,7 @@ namespace ALE {
         // Set up the sax handler. Note that it is important that we initialise
         // all (24) fields, even the ones we don't use!
         xmlSAXHandler sax = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-  
+
         // Set up handlers for parser events
         sax.startDocument = sax_start_document;
         sax.endDocument   = sax_end_document;
@@ -276,11 +276,11 @@ namespace ALE {
     };
 
     typedef struct {
-      Mesh::point_type                    vertex;
-      Mesh::real_section_type::value_type veln_x;
-      Mesh::real_section_type::value_type veln_y;
-      Mesh::real_section_type::value_type pn;
-      Mesh::real_section_type::value_type tn;
+      ALE::Mesh<PetscInt,PetscScalar>::point_type                    vertex;
+      ALE::Mesh<PetscInt,PetscScalar>::real_section_type::value_type veln_x;
+      ALE::Mesh<PetscInt,PetscScalar>::real_section_type::value_type veln_y;
+      ALE::Mesh<PetscInt,PetscScalar>::real_section_type::value_type pn;
+      ALE::Mesh<PetscInt,PetscScalar>::real_section_type::value_type tn;
     } RestartType;
 
     class Viewer {
