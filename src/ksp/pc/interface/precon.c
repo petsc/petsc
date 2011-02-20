@@ -87,6 +87,7 @@ PetscErrorCode  PCReset(PC pc)
   if (pc->ops->reset) {
     ierr = (*pc->ops->reset)(pc);
   }
+  pc->setupcalled = 0;
   PetscFunctionReturn(0);
 }
 
