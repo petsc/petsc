@@ -76,6 +76,7 @@ E*/
 #define PCSYSPFMG         "syspfmg"
 #define PCREDISTRIBUTE    "redistribute"
 #define PCSACUSP          "sacusp"
+#define PCSACUSPPOLY      "sacusppoly"
 #define PCBICGSTABCUSP    "bicgstabcusp"
 #define PCSVD             "svd"
 
