@@ -10,6 +10,7 @@ class Configure(PETSc.package.NewPackage):
     self.cxx             = 1
     self.complex         = 1
     self.worksonWindows  = 1
+    self.double          = 0
     return
 
   def setupDependencies(self, framework):
