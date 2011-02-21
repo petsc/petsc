@@ -87,9 +87,9 @@ AMS inside). See src/sys/viewer/impls/socket/send.c<br>
         <li>
           <h3>&nbsp;GPU based preconditiones</h3>
         </li>
+        <li>Interface to CUBLAS for dense linear algebra on GPUs</li>
+        <li>Interface to <a href="http://code.google.com/p/elemental/">Elemental</a> for modern distributed-memory dense linear algebra</li>
         <li>Vec and Mat class based on pthreads parallelism</li>
-        <li><br>
-        </li>
         <li>Turn MPICH, Open MPI and then PETSc into an Apple Framework.</li>
         <li>Make a Mat subclass for tridiagonal matrix (and block
 tridiagonal) and write fast sequential solvers for them. Also do fast
@@ -135,9 +135,6 @@ except parmetis, where they are incorrectly always used.<br>
       <br>
 &nbsp; Provide support for shared libraries with gcc on cygwin: &nbsp;<a
  href="http://cygwin.com/cygwin-ug-net/dll.html">http://cygwin.com/cygwin-ug-net/dll.html</a><br>
-      <br>
-Add support for CHOMOD<br>
-&nbsp;http://www.cise.ufl.edu/research/sparse/cholmod/ <br>
       <br>
 &nbsp;Do you plan to do a new PETSc interface to PARMS software : the
 parallel&nbsp;Algebraic Recursive Multilevel Solvers of Yousef Saad? <br>
