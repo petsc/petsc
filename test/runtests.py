@@ -22,7 +22,7 @@ def getoptionparser():
                       help="prepend PATH to sys.path", metavar="PATH")
     parser.add_option("--refleaks", type="int",
                       action="store", dest="repeats", default=3,
-                      help="run tests REPEAT times in a loop to catch refleaks",
+                      help="run tests REPEAT times in a loop to catch leaks",
                       metavar="REPEAT")
     parser.add_option("--arch", type="string",
                       action="store", dest="arch", default=None,
@@ -90,6 +90,10 @@ def getprocessorinfo():
     name =  os.uname()[1]
     return (rank, name)
 
+def getpythoninfo():
+    x, y = sys.version_info[:2]
+    return ("Python %d.%d (%s)" % (x, y, sys.executable))
+
 def getlibraryinfo():
     from petsc4py import PETSc
     (major, minor, micro), patch = PETSc.Sys.getVersion(patch=True)
@@ -100,22 +104,25 @@ def getlibraryinfo():
     return ("PETSc %d.%d.%d-p%d %s (conf: '%s')"
             % (major, minor, micro, patch, release, arch) )
     
+def getpackageinfo(pkg):
+    return ("%s %s (%s)" % (pkg.__name__,
+                            pkg.__version__,
+                            pkg.__path__[0]))
+
 def writeln(message='', endl='\n'):
     from petsc4py.PETSc import Sys
     rank, name = getprocessorinfo()
     Sys.syncPrint(("[%d@%s] " % (rank, name))+message, flush=True)
 
 def print_banner(options, package):
-    x, y = sys.version_info[:2]
     if options.verbose:
-        writeln("Python %d.%d (%s)" % (x, y, sys.executable))
+        writeln(getpythoninfo())
         writeln(getlibraryinfo())
-        writeln("%s %s (%s)" % (package.__name__,
-                                package.__version__,
-                                package.__path__[0]))
+        writeln(getpackageinfo(package))
 
 def load_tests(options, args):
     from glob import glob
+    import re
     testsuitedir = os.path.dirname(__file__)
     sys.path.insert(0, testsuitedir)
     pattern = 'test_*.py'
@@ -123,27 +130,27 @@ def load_tests(options, args):
     testfiles = glob(wildcard)
     testfiles.sort()
     testsuite = unittest.TestSuite()
+    testloader = unittest.TestLoader()
+    include = exclude = None
+    if options.include:
+        include = re.compile('|'.join(options.include)).search
+    if options.exclude:
+        exclude = re.compile('|'.join(options.exclude)).search
     for testfile in testfiles:
         filename = os.path.basename(testfile)
-        modname = os.path.splitext(filename)[0]
-        testname = modname.replace('test_','')
-        if (modname in options.exclude or
-            testname in options.exclude):
+        testname = os.path.splitext(filename)[0]
+        if ((exclude and exclude(testname)) or
+            (include and not include(testname))):
             continue
-        if (options.include and
-            not (modname  in options.include or
-                 testname in options.include)):
-            continue
-        module = __import__(modname)
-        loader = unittest.TestLoader()
+        module = __import__(testname)
         for arg in args:
             try:
-                cases = loader.loadTestsFromNames((arg,), module)
+                cases = testloader.loadTestsFromNames((arg,), module)
                 testsuite.addTests(cases)
             except AttributeError:
                 pass
         if not args:
-            cases = loader.loadTestsFromModule(module)
+            cases = testloader.loadTestsFromModule(module)
             testsuite.addTests(cases)
     return testsuite
 
@@ -155,6 +162,7 @@ def run_tests(options, testsuite):
 def run_tests_leaks(options, testsuite):
     from sys import gettotalrefcount
     from gc import collect
+    rank, name = getprocessorinfo()
     r1 = r2 = 0
     repeats = options.repeats
     while repeats:
@@ -164,8 +172,8 @@ def run_tests_leaks(options, testsuite):
         run_tests(options, testsuite)
         collect()
         r2 = gettotalrefcount()
-        writeln('refleaks:  (%d - %d) --> %d'
-                % (r2, r1, r2-r1))
+        writeln('[%d@%s] refleaks:  (%d - %d) --> %d'
+                % (rank, name, r2, r1, r2-r1))
 
 def main(pkgname):
     parser = getoptionparser()
