@@ -194,6 +194,8 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "generateMeshV_Triangle"
       static Obj<Mesh> generateMeshV(const Obj<Mesh>& boundary, const bool interpolate = false, const bool constrained = false) {
+        typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
+        typedef typename Mesh::real_section_type::value_type real;
         int                                   dim   = 2;
         const Obj<Mesh>                       mesh  = new Mesh(boundary->comm(), dim, boundary->debug());
         const Obj<typename Mesh::sieve_type>& sieve = boundary->getSieve();
@@ -271,23 +273,38 @@ namespace ALE {
         if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);}
         if (in.holelist)          {ierr = PetscFree(in.holelist);}
         const Obj<typename Mesh::sieve_type> newSieve = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
-        const Obj<ALE::Mesh>                 m        = new ALE::Mesh(boundary->comm(), dim, boundary->debug());
-        const Obj<ALE::Mesh::sieve_type>     newS     = new ALE::Mesh::sieve_type(m->comm(), m->debug());
+        const Obj<FlexMesh>                  m        = new FlexMesh(boundary->comm(), dim, boundary->debug());
+        const Obj<FlexMesh::sieve_type>      newS     = new FlexMesh::sieve_type(m->comm(), m->debug());
         int     numCorners  = 3;
         int     numCells    = out.numberoftriangles;
         int    *cells       = out.trianglelist;
         int     numVertices = out.numberofpoints;
         double *coords      = out.pointlist;
+        real   *coordsR;
 
-        ALE::SieveBuilder<ALE::Mesh>::buildTopology(newS, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
+        ALE::SieveBuilder<FlexMesh>::buildTopology(newS, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
         m->setSieve(newS);
         m->stratify();
         mesh->setSieve(newSieve);
         std::map<typename Mesh::point_type,typename Mesh::point_type> renumbering;
         ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, false);
         mesh->stratify();
-        ALE::ISieveConverter::convertOrientation(*newS, *newSieve, renumbering, m->getArrowSection("orientation").ptr());
-        ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, dim, coords);
+        ALE::ISieveConverter::convertOrientation(*newS, *newSieve, renumbering,
+        m->getArrowSection("orientation").ptr());
+        {
+          if (sizeof(double) == sizeof(real)) {
+            coordsR = (real *) coords;
+          } else {
+            coordsR = new real[numVertices*dim];
+            for(int i = 0; i < numVertices*dim; ++i) coordsR[i] = coords[i];
+          }
+        }
+        ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, dim, coordsR);
+        {
+          if (sizeof(double) != sizeof(real)) {
+            delete [] coordsR;
+          }
+        }
         const Obj<typename Mesh::label_type>& newMarkers = mesh->createLabel("marker");
 
         if (mesh->commRank() == 0) {
@@ -550,6 +567,8 @@ namespace ALE {
         return refMesh;
       };
       static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolumes[], const bool interpolate = false, const bool forceSerial = false) {
+        typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
+        typedef typename Mesh::real_section_type::value_type real;
         typedef typename Mesh::point_type point_type;
         const int                             dim     = mesh->getDimension();
         const Obj<Mesh>                       refMesh = new Mesh(mesh->comm(), dim, mesh->debug());
@@ -655,7 +674,7 @@ namespace ALE {
                 in.segmentmarkerlist[s++] = edgeMarker;
                 pV.clear();
               }
-            } 
+            }
           }
         }
         const typename Mesh::holes_type& holes = mesh->getHoles();
@@ -680,15 +699,16 @@ namespace ALE {
         if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);}
         if (in.trianglelist)      {ierr = PetscFree(in.trianglelist);}
         const Obj<typename Mesh::sieve_type> newSieve = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
-        const Obj<ALE::Mesh>                 m        = new ALE::Mesh(mesh->comm(), dim, mesh->debug());
-        const Obj<ALE::Mesh::sieve_type>     newS     = new ALE::Mesh::sieve_type(m->comm(), m->debug());
+        const Obj<FlexMesh>                  m        = new FlexMesh(mesh->comm(), dim, mesh->debug());
+        const Obj<FlexMesh::sieve_type>      newS     = new FlexMesh::sieve_type(m->comm(), m->debug());
         int     numCorners  = 3;
         int     numCells    = out.numberoftriangles;
         int    *cells       = out.trianglelist;
         int     numVertices = out.numberofpoints;
         double *coords      = out.pointlist;
+        real   *coordsR;
 
-        ALE::SieveBuilder<ALE::Mesh>::buildTopology(newS, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
+        ALE::SieveBuilder<FlexMesh>::buildTopology(newS, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
         m->setSieve(newS);
         m->stratify();
         refMesh->setSieve(newSieve);
@@ -696,7 +716,20 @@ namespace ALE {
         ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, false);
         refMesh->stratify();
         ALE::ISieveConverter::convertOrientation(*newS, *newSieve, renumbering, m->getArrowSection("orientation").ptr());
-        ALE::SieveBuilder<Mesh>::buildCoordinates(refMesh, dim, coords);
+        {
+          if (sizeof(double) == sizeof(real)) {
+            coordsR = (real *) coords;
+          } else {
+            coordsR = new real[numVertices*dim];
+            for(int i = 0; i < numVertices*dim; ++i) coordsR[i] = coords[i];
+          }
+        }
+        ALE::SieveBuilder<Mesh>::buildCoordinates(refMesh, dim, coordsR);
+        {
+          if (sizeof(double) != sizeof(real)) {
+            delete [] coordsR;
+          }
+        }
         const Obj<typename Mesh::label_type>& newMarkers = refMesh->createLabel("marker");
 
         if (refMesh->commRank() == 0) {

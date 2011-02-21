@@ -13,6 +13,7 @@ namespace ALE {
   template<typename Mesh_>
   class Selection {
   public:
+    typedef ALE::Mesh<PetscInt,PetscScalar>      FlexMesh;
     typedef Mesh_                                mesh_type;
     typedef typename mesh_type::sieve_type       sieve_type;
     typedef typename mesh_type::point_type       point_type;
@@ -442,17 +443,17 @@ namespace ALE {
       return faceOrientation(cell, mesh, numCorners, indices, v.getOppositeVertex(), origVertices, faceVertices);
     };
     template<typename FaceType>
-    static bool getOrientedFace(const Obj<ALE::Mesh>& mesh, const point_type& cell, FaceType face,
+    static bool getOrientedFace(const Obj<FlexMesh>& mesh, const point_type& cell, FaceType face,
                                 const int numCorners, int indices[], PointArray *origVertices, PointArray *faceVertices)
     {
-      const Obj<typename ALE::Mesh::sieve_type::traits::coneSequence>& cone = mesh->getSieve()->cone(cell);
+      const Obj<typename FlexMesh::sieve_type::traits::coneSequence>& cone = mesh->getSieve()->cone(cell);
       const int debug = mesh->debug();
       int       v     = 0;
       int       oppositeVertex;
 
       origVertices->clear();
       faceVertices->clear();
-      for(typename ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = cone->begin(); v_iter != cone->end(); ++v_iter, ++v) {
+      for(typename FlexMesh::sieve_type::traits::coneSequence::iterator v_iter = cone->begin(); v_iter != cone->end(); ++v_iter, ++v) {
         if (face->find(*v_iter) != face->end()) {
           if (debug) std::cout << "    vertex " << *v_iter << std::endl;
           indices[origVertices->size()] = v;
@@ -741,8 +742,8 @@ namespace ALE {
       typedef typename int_section_type::chart_type chart_type;
       const int                           dim        = (dimension > 0) ? dimension : mesh->getDimension()-1;
       const Obj<sieve_type>&              sieve      = mesh->getSieve();
-      Obj<ALE::Mesh>                      submesh    = new ALE::Mesh(mesh->comm(), dim, mesh->debug());
-      Obj<typename ALE::Mesh::sieve_type> subSieve   = new typename ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
+      Obj<FlexMesh>                       submesh    = new FlexMesh(mesh->comm(), dim, mesh->debug());
+      Obj<typename FlexMesh::sieve_type>  subSieve   = new typename FlexMesh::sieve_type(mesh->comm(), mesh->debug());
       const bool                          censor     = mesh->hasLabel("censored depth");
       const Obj<label_type>&              depthLabel = censor ? mesh->getLabel("censored depth") : mesh->getLabel("depth");
       const chart_type&                   chart      = label->getChart();
@@ -827,8 +828,8 @@ namespace ALE {
           if (!boundaryFaces) throw ALE::Exception("Invalid fault mesh: Too many vertices of an element on the fault");
           // Here we allow a set of vertices to lie completely on a boundary cell (like a corner tetrahedron)
           //   We have to take all the faces, and discard those in the interior
-          FaceInserterV<ALE::Mesh::sieve_type> inserter(mesh, sieve, subSieve, f, *c_iter, numCorners, indices, &origVertices, &faceVertices, &submeshCells);
-          PointArray                           faceVec(face->begin(), face->end());
+          FaceInserterV<FlexMesh::sieve_type> inserter(mesh, sieve, subSieve, f, *c_iter, numCorners, indices, &origVertices, &faceVertices, &submeshCells);
+          PointArray                          faceVec(face->begin(), face->end());
 
           subsets(faceVec, faceSize, inserter);
         }
@@ -1082,14 +1083,14 @@ namespace ALE {
       throw ALE::Exception("Cannot handle partially interpolated meshes");
     };
     template<typename MeshTypeQ>
-    static Obj<ALE::Mesh> boundaryV_uninterpolated(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
+    static Obj<FlexMesh> boundaryV_uninterpolated(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
         throw ALE::Exception("Cannot handle uninterpolated meshes");
     };
     // This method takes in an interpolated mesh, and returns the boundary
     template<typename MeshTypeQ>
-    static Obj<ALE::Mesh> boundaryV_interpolated(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
-      Obj<ALE::Mesh>                                      newMesh  = new ALE::Mesh(mesh->comm(), mesh->getDimension()-1, mesh->debug());
-      Obj<typename ALE::Mesh::sieve_type>                 newSieve = new typename ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
+    static Obj<FlexMesh> boundaryV_interpolated(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
+      Obj<FlexMesh>                                       newMesh  = new FlexMesh(mesh->comm(), mesh->getDimension()-1, mesh->debug());
+      Obj<typename FlexMesh::sieve_type>                  newSieve = new typename FlexMesh::sieve_type(mesh->comm(), mesh->debug());
       const Obj<typename MeshTypeQ::sieve_type>&          sieve    = mesh->getSieve();
       const Obj<typename MeshTypeQ::label_sequence>&      faces    = mesh->heightStratum(faceHeight);
       const typename MeshTypeQ::label_sequence::iterator  fBegin   = faces->begin();
@@ -1110,7 +1111,7 @@ namespace ALE {
       return newMesh;
     };
     template<typename MeshTypeQ>
-    static Obj<ALE::Mesh> boundaryV(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
+    static Obj<FlexMesh> boundaryV(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
       const int dim   = mesh->getDimension();
       const int depth = mesh->depth();
 
