@@ -21,6 +21,7 @@ struct _KSPOps {
   PetscErrorCode (*computeeigenvalues)(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt *);
   PetscErrorCode (*destroy)(KSP);
   PetscErrorCode (*view)(KSP,PetscViewer);
+  PetscErrorCode (*reset)(KSP);
 };
 
 typedef struct {PetscInt model,curl,maxl;Mat mat; KSP ksp;}* KSPGuessFischer;

@@ -77,13 +77,10 @@ PetscErrorCode  PCReset(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (pc->dm) {ierr = DMDestroy(pc->dm);CHKERRQ(ierr); pc->dm = 0;}
-
-  if (pc->diagonalscaleright) {ierr = VecDestroy(pc->diagonalscaleright);CHKERRQ(ierr);pc->diagonalscaleright = 0;}
-  if (pc->diagonalscaleleft)  {ierr = VecDestroy(pc->diagonalscaleleft);CHKERRQ(ierr);pc->diagonalscaleleft = 0;}
-
-  if (pc->pmat) {ierr = MatDestroy(pc->pmat);CHKERRQ(ierr);pc->pmat = 0;}
-  if (pc->mat) {ierr = MatDestroy(pc->mat);CHKERRQ(ierr);pc->mat = 0;}
+  if (pc->diagonalscaleright) {ierr = VecDestroy(pc->diagonalscaleright);CHKERRQ(ierr);}
+  if (pc->diagonalscaleleft)  {ierr = VecDestroy(pc->diagonalscaleleft);CHKERRQ(ierr);}
+  if (pc->pmat) {ierr = MatDestroy(pc->pmat);CHKERRQ(ierr);}
+  if (pc->mat) {ierr = MatDestroy(pc->mat);CHKERRQ(ierr);}
   if (pc->ops->reset) {
     ierr = (*pc->ops->reset)(pc);
   }
@@ -115,17 +112,10 @@ PetscErrorCode  PCDestroy(PC pc)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (--((PetscObject)pc)->refct > 0) PetscFunctionReturn(0);
 
-  /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(pc);CHKERRQ(ierr);
+  ierr = PCReset(pc);CHKERRQ(ierr);
+  if (pc->ops->destroy) {ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
   if (pc->dm) {ierr = DMDestroy(pc->dm);CHKERRQ(ierr);}
-
-  if (pc->ops->destroy)       {ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
-  if (pc->diagonalscaleright) {ierr = VecDestroy(pc->diagonalscaleright);CHKERRQ(ierr);}
-  if (pc->diagonalscaleleft)  {ierr = VecDestroy(pc->diagonalscaleleft);CHKERRQ(ierr);}
-
-  if (pc->pmat) {ierr = MatDestroy(pc->pmat);CHKERRQ(ierr);}
-  if (pc->mat) {ierr = MatDestroy(pc->mat);CHKERRQ(ierr);}
-
   ierr = PetscHeaderDestroy(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

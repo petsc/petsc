@@ -65,7 +65,7 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat A)
   if (container) {
     ierr = PetscContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
-  A->ops->destroy = mult->MatDestroy;
+  A->ops->destroy = mult->destroy;
   ierr = PetscObjectCompose((PetscObject)A,"Mat_MatMatMultMPI",0);CHKERRQ(ierr);
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   ierr = PetscContainerDestroy(container);CHKERRQ(ierr); 
@@ -89,9 +89,9 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat 
      several large data sets (see PetscContainerDestroy_Mat_MatMatMultMPI()).
      These data sets are only used for repeated calling of MatMatMultNumeric(). 
      *M is unlikely being used in this way. Thus we create *M with pure mpiaij format */
-  ierr = (*mult->MatDuplicate)(A,op,M);CHKERRQ(ierr);
-  (*M)->ops->destroy   = mult->MatDestroy;   /* = MatDestroy_MPIAIJ, *M doesn't duplicate A's container! */
-  (*M)->ops->duplicate = mult->MatDuplicate; /* = MatDuplicate_MPIAIJ */
+  ierr = (*mult->duplicate)(A,op,M);CHKERRQ(ierr);
+  (*M)->ops->destroy   = mult->destroy;   /* = MatDestroy_MPIAIJ, *M doesn't duplicate A's container! */
+  (*M)->ops->duplicate = mult->duplicate; /* = MatDuplicate_MPIAIJ */
   PetscFunctionReturn(0);
 }
 
@@ -130,8 +130,8 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
   ierr = PetscContainerSetPointer(container,mult);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)(*C),"Mat_MatMatMultMPI",(PetscObject)container);CHKERRQ(ierr);
   ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_Mat_MatMatMultMPI);CHKERRQ(ierr);
-  mult->MatDestroy   = (*C)->ops->destroy;
-  mult->MatDuplicate = (*C)->ops->duplicate;
+  mult->destroy   = (*C)->ops->destroy;
+  mult->duplicate = (*C)->ops->duplicate;
 
   (*C)->ops->destroy   = MatDestroy_MPIAIJ_MatMatMult; 
   (*C)->ops->duplicate = MatDuplicate_MPIAIJ_MatMatMult;

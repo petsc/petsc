@@ -129,7 +129,8 @@ PetscPolymorphicSubroutine(VecCreateMPIWithArray,(PetscInt n,PetscInt N,PetscSca
 extern PetscErrorCode  VecCreateShared(MPI_Comm,PetscInt,PetscInt,Vec*);
 extern PetscErrorCode  VecSetFromOptions(Vec);
 extern PetscErrorCode  VecSetUp(Vec);
-extern PetscErrorCode  VecDestroy(Vec);
+extern PetscErrorCode  VecDestroy_(Vec);
+#define VecDestroy(a)  (VecDestroy_(a) || (((a) = 0),0))
 extern PetscErrorCode  VecZeroEntries(Vec);
 extern PetscErrorCode  VecSetOptionsPrefix(Vec,const char[]);
 extern PetscErrorCode  VecAppendOptionsPrefix(Vec,const char[]);

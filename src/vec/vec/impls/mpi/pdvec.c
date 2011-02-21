@@ -1,4 +1,4 @@
-#define PETSCVEC_DLL
+
 /*
      Code for some of the parallel vector primatives.
 */

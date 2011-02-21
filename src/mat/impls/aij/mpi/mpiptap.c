@@ -40,7 +40,7 @@ PetscErrorCode  MatDestroy_MPIAIJ_MatPtAP(Mat A)
     ierr = PetscContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)A,"MatMergeSeqsToMPI",0);CHKERRQ(ierr);
   }
-  ierr = merge->MatDestroy(A);CHKERRQ(ierr);
+  ierr = merge->destroy(A);CHKERRQ(ierr);
   ierr = PetscFree(merge);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -58,9 +58,9 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat A, MatDuplicateOption op, Mat *M)
   if (container) {
     ierr  = PetscContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
-  ierr = (*merge->MatDuplicate)(A,op,M);CHKERRQ(ierr);
-  (*M)->ops->destroy   = merge->MatDestroy;   /* =MatDestroy_MPIAIJ, *M doesn't duplicate A's container! */
-  (*M)->ops->duplicate = merge->MatDuplicate; /* =MatDuplicate_ MPIAIJ */
+  ierr = (*merge->duplicate)(A,op,M);CHKERRQ(ierr);
+  (*M)->ops->destroy   = merge->destroy;   /* =MatDestroy_MPIAIJ, *M doesn't duplicate A's container! */
+  (*M)->ops->duplicate = merge->duplicate; /* =MatDuplicate_ MPIAIJ */
   PetscFunctionReturn(0);
 }
 
@@ -126,8 +126,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   if (container) { 
     /* reset functions */
     ierr = PetscContainerGetPointer(container,(void **)&ap);CHKERRQ(ierr);
-    P->ops->destroy = ap->MatDestroy;
-    P->ops->duplicate = ap->MatDuplicate;
+    P->ops->destroy   = ap->destroy;
+    P->ops->duplicate = ap->duplicate;
     /* destroy container and contents */
     ierr = PetscContainerDestroy(container);CHKERRQ(ierr); 
     ierr = PetscObjectCompose((PetscObject)P,"Mat_MatMatMultMPI",0);CHKERRQ(ierr);
@@ -141,7 +141,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
   ierr = PetscContainerSetPointer(container,ap);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)P,"Mat_MatMatMultMPI",(PetscObject)container);CHKERRQ(ierr);
-  ap->MatDestroy  = P->ops->destroy;
+  ap->destroy     = P->ops->destroy;
   P->ops->destroy = MatDestroy_MPIAIJ_MatMatMult;
   ap->reuse       = MAT_INITIAL_MATRIX;
   ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_Mat_MatMatMultMPI);CHKERRQ(ierr);
@@ -451,8 +451,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   merge->buf_ri        = buf_ri;
   merge->buf_rj        = buf_rj;
   merge->owners_co     = owners_co;
-  merge->MatDestroy    = B_mpi->ops->destroy;
-  merge->MatDuplicate  = B_mpi->ops->duplicate;
+  merge->destroy       = B_mpi->ops->destroy;
+  merge->duplicate     = B_mpi->ops->duplicate;
 
   /* B_mpi is not ready for use - assembly will be done by MatPtAPNumeric() */
   B_mpi->assembled     = PETSC_FALSE; 

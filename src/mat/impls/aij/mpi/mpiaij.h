@@ -54,8 +54,8 @@ typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ and MatPtAP_MPIAIJ_MPIAIJ f
   PetscInt       *abi,*abj; /* symbolic i and j arrays of the local product A_loc*B_seq */
   PetscInt       abnz_max;  /* max(abi[i+1] - abi[i]), max num of nnz in a row of A_loc*B_seq */
   MatReuse       reuse; 
-  PetscErrorCode (*MatDestroy)(Mat);
-  PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
+  PetscErrorCode (*destroy)(Mat);
+  PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
 } Mat_MatMatMultMPI;
 
 typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
@@ -65,8 +65,8 @@ typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
   PetscMPIInt    nsend,nrecv;  
   PetscInt       *bi,*bj; /* i and j array of the local portion of mpi C=P^T*A*P */
   PetscInt       *owners_co,*coi,*coj; /* i and j array of (p->B)^T*A*P - used in the communication */
-  PetscErrorCode (*MatDestroy)(Mat);
-  PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
+  PetscErrorCode (*destroy)(Mat);
+  PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
 } Mat_Merge_SeqsToMPI; 
 
 extern PetscErrorCode MatSetColoring_MPIAIJ(Mat,ISColoring);

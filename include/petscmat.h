@@ -341,7 +341,8 @@ extern PetscErrorCode  MatCreatePython(MPI_Comm,PetscInt,PetscInt,PetscInt,Petsc
 extern PetscErrorCode  MatPythonSetType(Mat,const char[]);
 
 extern PetscErrorCode  MatSetUp(Mat);
-extern PetscErrorCode  MatDestroy(Mat);
+extern PetscErrorCode  MatDestroy_(Mat);
+#define MatDestroy(a)  (MatDestroy_(a) || (((a) = 0),0))
 
 extern PetscErrorCode  MatConjugate(Mat);
 extern PetscErrorCode  MatRealPart(Mat);

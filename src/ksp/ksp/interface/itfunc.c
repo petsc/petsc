@@ -689,6 +689,43 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "KSPReset"
+/*@
+   KSPReset - Resets a PC context to the kspsetupcalled = 0 state and removes any allocated Vecs and Mats
+
+   Collective on KSP
+
+   Input Parameter:
+.  ksp - iterative context obtained from KSPCreate()
+
+   Level: beginner
+
+.keywords: KSP, destroy
+
+.seealso: KSPCreate(), KSPSetUp(), KSPSolve()
+@*/
+PetscErrorCode  KSPReset(KSP ksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  if (ksp->guess) {
+    ierr = KSPFischerGuessDestroy(ksp->guess);CHKERRQ(ierr);
+  }  
+  if (ksp->ops->reset) {
+    ierr = (*ksp->ops->reset)(ksp);CHKERRQ(ierr);
+  }
+  if (ksp->pc) {ierr = PCReset(ksp->pc);CHKERRQ(ierr);}
+  if (ksp->vec_rhs) {ierr = VecDestroy(ksp->vec_rhs);CHKERRQ(ierr);}
+  if (ksp->vec_sol) {ierr = VecDestroy(ksp->vec_sol);CHKERRQ(ierr);}
+  if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
+  if (ksp->truediagonal) {ierr = VecDestroy(ksp->truediagonal);CHKERRQ(ierr);}
+  if (ksp->nullsp) {ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy"
 /*@
    KSPDestroy - Destroys KSP context.
@@ -711,25 +748,15 @@ PetscErrorCode  KSPDestroy(KSP ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (--((PetscObject)ksp)->refct > 0) PetscFunctionReturn(0);
-
-  /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(ksp);CHKERRQ(ierr);
-
   if (ksp->dm) {ierr = DMDestroy(ksp->dm);CHKERRQ(ierr);}
   if (ksp->ops->destroy) {
     ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
   }
-  if (ksp->guess) {
-    ierr = KSPFischerGuessDestroy(ksp->guess);CHKERRQ(ierr);
-  }  
+  ierr = KSPReset(ksp);CHKERRQ(ierr);
+  if (ksp->pc) {ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);}
   ierr = PetscFree(ksp->res_hist_alloc);CHKERRQ(ierr);
   ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);
-  if (ksp->pc) {ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);}
-  if (ksp->vec_rhs) {ierr = VecDestroy(ksp->vec_rhs);CHKERRQ(ierr);}
-  if (ksp->vec_sol) {ierr = VecDestroy(ksp->vec_sol);CHKERRQ(ierr);}
-  if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
-  if (ksp->truediagonal) {ierr = VecDestroy(ksp->truediagonal);CHKERRQ(ierr);}
-  if (ksp->nullsp) {ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr);}
   if (ksp->convergeddestroy) {ierr = (*ksp->convergeddestroy)(ksp->cnvP);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);

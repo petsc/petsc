@@ -13,6 +13,7 @@
 #define vecmax_                   VECMAX
 #define vecgetownershiprange_     VECGETOWNERSHIPRANGE
 #define vecgetownershipranges_    VECGETOWNERSHIPRANGES
+#define vecdestroy_               VECDESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define vecgetarrayaligned_       vecgetarrayaligned
 #define vecsetvalue_              vecsetvalue
@@ -26,9 +27,15 @@
 #define vecmax_                   vecmax
 #define vecgetownershiprange_     vecgetownershiprange
 #define vecgetownershipranges_    vecgetownershipranges
+#define vecdestroy_               vecdestroy
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL  vecdestroy_(Vec *v, int *__ierr )
+{
+  *__ierr = VecDestroy(*v);
+}
 
 void PETSC_STDCALL vecsetvalue_(Vec *v,PetscInt *i,PetscScalar *va,InsertMode *mode,PetscErrorCode *ierr)
 {
