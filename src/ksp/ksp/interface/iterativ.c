@@ -9,25 +9,6 @@
  */
 #include "private/kspimpl.h"   /*I "petscksp.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPDefaultFreeWork"
-/*
-  KSPDefaultFreeWork - Free work vectors
-
-  Input Parameters:
-. ksp  - iterative context
- */
-PetscErrorCode KSPDefaultFreeWork(KSP ksp)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (ksp->work)  {
-    ierr = VecDestroyVecs(ksp->work,ksp->nwork);CHKERRQ(ierr);
-    ksp->work = PETSC_NULL;
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGetResidualNorm"
@@ -855,10 +836,31 @@ PetscErrorCode KSPDefaultGetWork(KSP ksp,PetscInt nw)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ksp->work) {ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);}
+  if (ksp->work) {ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);}
   ksp->nwork = nw;
   ierr = KSPGetVecs(ksp,nw,&ksp->work,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,nw,ksp->work);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPDefaultReset"
+/*
+  KSPDefaultReset - Resets a iterative context variable for methods with
+  no separate context.  
+
+  Input Parameter: 
+. ksp - the iterative context
+*/
+PetscErrorCode KSPDefaultReset(KSP ksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  if (ksp->work)  {
+    ierr      = VecDestroyVecs(&ksp->work,ksp->nwork);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -877,9 +879,7 @@ PetscErrorCode KSPDefaultDestroy(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  /* free work vectors */
-  ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
-  /* free private data structure */
+  ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);
   ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -38,7 +38,7 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
 
   lsqr->nwork_m = 2;
   if (lsqr->vwork_m) {
-    ierr = VecDestroyVecs(lsqr->vwork_m,lsqr->nwork_m);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(&lsqr->vwork_m,lsqr->nwork_m);CHKERRQ(ierr);
   }
   if (nopreconditioner) {
      lsqr->nwork_n = 4;
@@ -46,7 +46,7 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
      lsqr->nwork_n = 5;
   }
   if (lsqr->vwork_n) {
-    ierr = VecDestroyVecs(lsqr->vwork_n,lsqr->nwork_n);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(&lsqr->vwork_n,lsqr->nwork_n);CHKERRQ(ierr);
   }
   ierr = KSPGetVecs(ksp,lsqr->nwork_n,&lsqr->vwork_n,lsqr->nwork_m,&lsqr->vwork_m);CHKERRQ(ierr);
   if (lsqr->se_flg && !lsqr->se){
@@ -255,10 +255,10 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
 
   /* Free work vectors */
   if (lsqr->vwork_n) {
-    ierr = VecDestroyVecs(lsqr->vwork_n,lsqr->nwork_n);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(&lsqr->vwork_n,lsqr->nwork_n);CHKERRQ(ierr);
   }
   if (lsqr->vwork_m) {
-    ierr = VecDestroyVecs(lsqr->vwork_m,lsqr->nwork_m);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(&lsqr->vwork_m,lsqr->nwork_m);CHKERRQ(ierr);
   }
   if (lsqr->se_flg && lsqr->se){
     ierr = VecDestroy(lsqr->se);CHKERRQ(ierr);

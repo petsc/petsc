@@ -304,6 +304,7 @@ PetscErrorCode  KSPCreate_IBCGS(KSP ksp)
   ksp->data                 = (void*)0;
   ksp->ops->setup           = KSPSetUp_IBCGS;
   ksp->ops->solve           = KSPSolve_IBCGS;
+  ksp->ops->reset           = KSPDefaultReset;
   ksp->ops->destroy         = KSPDefaultDestroy;
   ksp->ops->buildsolution   = KSPDefaultBuildSolution;
   ksp->ops->buildresidual   = KSPDefaultBuildResidual;

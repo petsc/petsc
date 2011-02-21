@@ -146,15 +146,27 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "KSPDestroy_Broyden" 
-PetscErrorCode KSPDestroy_Broyden(KSP ksp)
+#define __FUNCT__ "KSPReset_Broyden" 
+PetscErrorCode KSPReset_Broyden(KSP ksp)
 {
   KSP_Broyden    *cg = (KSP_Broyden*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroyVecs(cg->v,cg->msize);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(cg->w,cg->msize);CHKERRQ(ierr);
+  if (cg->v) {ierr = VecDestroyVecs(&cg->v,cg->msize);CHKERRQ(ierr);}
+  if (cg->w) {ierr = VecDestroyVecs(&cg->w,cg->msize);CHKERRQ(ierr);}
+  ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPDestroy_Broyden" 
+PetscErrorCode KSPDestroy_Broyden(KSP ksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPReset_Broyden(ksp);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -241,6 +253,7 @@ PetscErrorCode  KSPCreate_Broyden(KSP ksp)
   */
   ksp->ops->setup                = KSPSetUp_Broyden;
   ksp->ops->solve                = KSPSolve_Broyden;
+  ksp->ops->reset                = KSPReset_Broyden;
   ksp->ops->destroy              = KSPDestroy_Broyden;
   ksp->ops->view                 = KSPView_Broyden;
   ksp->ops->setfromoptions       = KSPSetFromOptions_Broyden;

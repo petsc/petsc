@@ -572,27 +572,27 @@ PetscErrorCode  VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])
    Collective on Vec
 
    Input Parameters:
-+  vv - pointer to array of vector pointers
++  vv - pointer to pointer to array of vector pointers
 -  m - the number of vectors previously obtained
 
    Fortran Note:
    The Fortran interface is slightly different from that given below.
-   See the Fortran chapter of the users manual and
-   petsc/src/vec/examples for details.
+   See the Fortran chapter of the users manual
 
    Level: intermediate
 
 .seealso: VecDuplicateVecs(), VecDestroyVecsf90()
 @*/
-PetscErrorCode  VecDestroyVecs(Vec vv[],PetscInt m)
+PetscErrorCode  VecDestroyVecs(Vec *vv[],PetscInt m)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(vv,1);
-  PetscValidHeaderSpecific(*vv,VEC_CLASSID,1);
-  PetscValidType(*vv,1);
-  ierr = (*(*vv)->ops->destroyvecs)(vv,m);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(**vv,VEC_CLASSID,1);
+  PetscValidType(**vv,1);
+  ierr = (*(**vv)->ops->destroyvecs)(*vv,m);CHKERRQ(ierr);
+  *vv = 0;
   PetscFunctionReturn(0);
 }
 

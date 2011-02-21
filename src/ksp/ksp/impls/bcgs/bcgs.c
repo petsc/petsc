@@ -167,18 +167,29 @@ PetscErrorCode KSPBuildSolution_BCGS(KSP ksp,Vec v,Vec *V)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPDestroy_BCGS" 
-PetscErrorCode KSPDestroy_BCGS(KSP ksp)
+#define __FUNCT__ "KSPReset_BCGS" 
+PetscErrorCode KSPReset_BCGS(KSP ksp)
 {
   KSP_BCGS       *cg = (KSP_BCGS*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (cg->guess) {ierr = VecDestroy(cg->guess);CHKERRQ(ierr);}
-  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
+  ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPDestroy_BCGS" 
+PetscErrorCode KSPDestroy_BCGS(KSP ksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPReset_BCGS(ksp);CHKERRQ(ierr);
+  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*MC
      KSPBCGS - Implements the BiCGStab (Stabilized version of BiConjugate Gradient Squared) method.
@@ -208,6 +219,7 @@ PetscErrorCode  KSPCreate_BCGS(KSP ksp)
   ksp->ops->setup           = KSPSetUp_BCGS;
   ksp->ops->solve           = KSPSolve_BCGS;
   ksp->ops->destroy         = KSPDestroy_BCGS;
+  ksp->ops->reset           = KSPReset_BCGS;
   ksp->ops->buildsolution   = KSPBuildSolution_BCGS;
   ksp->ops->buildresidual   = KSPDefaultBuildResidual;
   ksp->ops->setfromoptions  = 0;

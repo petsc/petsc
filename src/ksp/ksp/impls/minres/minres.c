@@ -233,6 +233,7 @@ PetscErrorCode  KSPCreate_MINRES(KSP ksp)
   */
   ksp->ops->setup                = KSPSetUp_MINRES;
   ksp->ops->solve                = KSPSolve_MINRES;
+  ksp->ops->reset                = KSPDefaultReset;
   ksp->ops->destroy              = KSPDefaultDestroy;
   ksp->ops->setfromoptions       = 0;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;

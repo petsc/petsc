@@ -129,16 +129,28 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "KSPDestroy_LCD" 
-PetscErrorCode KSPDestroy_LCD(KSP ksp)
+#define __FUNCT__ "KSPReset_LCD" 
+PetscErrorCode KSPReset_LCD(KSP ksp)
 {
   KSP_LCD         *lcd = (KSP_LCD*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
-  if (lcd->P) { ierr = VecDestroyVecs(lcd->P, lcd->restart+1);CHKERRQ(ierr); }
-  if (lcd->Q) { ierr = VecDestroyVecs(lcd->Q, lcd->restart+1);CHKERRQ(ierr); }
+  ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);
+  if (lcd->P) { ierr = VecDestroyVecs(&lcd->P, lcd->restart+1);CHKERRQ(ierr);}
+  if (lcd->Q) { ierr = VecDestroyVecs(&lcd->Q, lcd->restart+1);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPDestroy_LCD" 
+PetscErrorCode KSPDestroy_LCD(KSP ksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPReset_LCD(ksp);CHKERRQ(ierr);
   ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -252,6 +264,7 @@ PetscErrorCode KSPCreate_LCD(KSP ksp)
   */
   ksp->ops->setup                = KSPSetUp_LCD;
   ksp->ops->solve                = KSPSolve_LCD;
+  ksp->ops->reset                = KSPReset_LCD;
   ksp->ops->destroy              = KSPDestroy_LCD;
   ksp->ops->view                 = KSPView_LCD;
   ksp->ops->setfromoptions       = KSPSetFromOptions_LCD;

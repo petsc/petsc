@@ -127,9 +127,9 @@ typedef struct {
 	}
 
 extern PetscErrorCode KSPDefaultDestroy(KSP);
+extern PetscErrorCode KSPDefaultReset(KSP);
 extern PetscErrorCode KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
 extern PetscErrorCode KSPDefaultGetWork(KSP,PetscInt);
-extern PetscErrorCode KSPDefaultFreeWork(KSP);
 
 /*
        These allow the various Krylov methods to apply to either the linear system or its transpose.

@@ -984,10 +984,10 @@ static PetscErrorCode TSDestroy_GL(TS ts)
   PetscFunctionBegin;
   if (gl->setupcalled) {
     ierr = TSGLGetMaxSizes(ts,&max_r,&max_s);CHKERRQ(ierr);
-    ierr = VecDestroyVecs(gl->Xold,max_r);CHKERRQ(ierr);
-    ierr = VecDestroyVecs(gl->X,max_r);CHKERRQ(ierr);
-    ierr = VecDestroyVecs(gl->Ydot,max_s);CHKERRQ(ierr);
-    ierr = VecDestroyVecs(gl->himom,3);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(&gl->Xold,max_r);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(&gl->X,max_r);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(&gl->Ydot,max_s);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(&gl->himom,3);CHKERRQ(ierr);
     ierr = VecDestroy(gl->W);CHKERRQ(ierr);
     ierr = VecDestroy(gl->Y);CHKERRQ(ierr);
     ierr = VecDestroy(gl->Z);CHKERRQ(ierr);

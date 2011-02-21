@@ -54,6 +54,7 @@ PetscErrorCode  KSPCreate_PREONLY(KSP ksp)
   ksp->data                      = (void*)0;
   ksp->ops->setup                = KSPSetUp_PREONLY;
   ksp->ops->solve                = KSPSolve_PREONLY;
+  ksp->ops->reset                = KSPDefaultReset;
   ksp->ops->destroy              = KSPDefaultDestroy;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;

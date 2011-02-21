@@ -163,6 +163,26 @@ PetscErrorCode KSPSetUp_GCR( KSP ksp )
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "KSPReset_GCR"
+PetscErrorCode KSPReset_GCR( KSP ksp )
+{
+  PetscErrorCode ierr;
+  KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
+        
+  PetscFunctionBegin;
+  if (ctx) {
+    ierr = VecDestroy( ctx->R );CHKERRQ(ierr);
+    ierr = VecDestroyVecs(&ctx->VV, ctx->restart );CHKERRQ(ierr);
+    ierr = VecDestroyVecs(&ctx->SS, ctx->restart );CHKERRQ(ierr);
+    if (ctx->modifypc_destroy) {
+      ierr = (*ctx->modifypc_destroy)(ctx->modifypc_ctx);CHKERRQ(ierr);
+    }
+    ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_GCR"
 PetscErrorCode KSPDestroy_GCR( KSP ksp )
 {
@@ -170,13 +190,8 @@ PetscErrorCode KSPDestroy_GCR( KSP ksp )
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
         
   PetscFunctionBegin;
-  ierr = VecDestroy( ctx->R );CHKERRQ(ierr);
-  ierr = VecDestroyVecs( ctx->VV, ctx->restart );CHKERRQ(ierr);
-  ierr = VecDestroyVecs( ctx->SS, ctx->restart );CHKERRQ(ierr);
+  ierr = KSPReset_GCR(ksp);CHKERRQ(ierr);
   ierr = PetscFree( ctx->val );CHKERRQ(ierr);
-  if (ctx->modifypc_destroy) {
-    ierr = (*ctx->modifypc_destroy)(ctx->modifypc_ctx);CHKERRQ(ierr);
-  }
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -369,6 +384,7 @@ PetscErrorCode KSPCreate_GCR(KSP ksp)
         
   ksp->ops->setup                = KSPSetUp_GCR;
   ksp->ops->solve                = KSPSolve_GCR;
+  ksp->ops->reset                = KSPReset_GCR;
   ksp->ops->destroy              = KSPDestroy_GCR;
   ksp->ops->view                 = KSPView_GCR;
   ksp->ops->setfromoptions       = KSPSetFromOptions_GCR;

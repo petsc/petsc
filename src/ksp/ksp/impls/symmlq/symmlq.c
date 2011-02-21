@@ -231,6 +231,7 @@ PetscErrorCode  KSPCreate_SYMMLQ(KSP ksp)
   */
   ksp->ops->setup                = KSPSetUp_SYMMLQ;
   ksp->ops->solve                = KSPSolve_SYMMLQ;
+  ksp->ops->reset                = KSPDefaultReset;
   ksp->ops->destroy              = KSPDefaultDestroy;
   ksp->ops->setfromoptions       = 0;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;

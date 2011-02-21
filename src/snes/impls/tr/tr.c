@@ -258,12 +258,10 @@ static PetscErrorCode SNESDestroy_TR(SNES snes)
   PetscFunctionBegin;
   if (snes->vec_sol_update) {
     ierr = VecDestroy(snes->vec_sol_update);CHKERRQ(ierr);
-    snes->vec_sol_update = PETSC_NULL;
   }
   if (snes->nwork) {
-    ierr = VecDestroyVecs(snes->work,snes->nwork);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(&snes->work,snes->nwork);CHKERRQ(ierr);
     snes->nwork = 0;
-    snes->work  = PETSC_NULL;
   }
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);

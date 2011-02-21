@@ -1399,11 +1399,10 @@ PetscErrorCode KSPSetUp_GLTR(KSP ksp)
 #define __FUNCT__ "KSPDestroy_GLTR"
 PetscErrorCode KSPDestroy_GLTR(KSP ksp)
 {
-  KSP_GLTR *cg = (KSP_GLTR *)ksp->data;
+  KSP_GLTR       *cg = (KSP_GLTR *)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   /***************************************************************************/
   /* Free memory allocated for the data.                                     */
   /***************************************************************************/
@@ -1585,6 +1584,7 @@ PetscErrorCode  KSPCreate_GLTR(KSP ksp)
 
   ksp->ops->setup          = KSPSetUp_GLTR;
   ksp->ops->solve          = KSPSolve_GLTR;
+  ksp->ops->reset          = KSPDefaultReset;
   ksp->ops->destroy        = KSPDestroy_GLTR;
   ksp->ops->setfromoptions = KSPSetFromOptions_GLTR;
   ksp->ops->buildsolution  = KSPDefaultBuildSolution;

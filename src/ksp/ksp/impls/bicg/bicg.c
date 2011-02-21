@@ -134,17 +134,6 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPDestroy_BiCG" 
-PetscErrorCode KSPDestroy_BiCG(KSP ksp)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /*MC
      KSPBICG - Implements the Biconjugate gradient method (similar to running the conjugate
          gradient on the normal equations).
@@ -179,7 +168,8 @@ PetscErrorCode  KSPCreate_BiCG(KSP ksp)
   ksp->pc_side                   = PC_LEFT;
   ksp->ops->setup                = KSPSetUp_BiCG;
   ksp->ops->solve                = KSPSolve_BiCG;
-  ksp->ops->destroy              = KSPDestroy_BiCG;
+  ksp->ops->reset                = KSPDefaultReset;
+  ksp->ops->destroy              = KSPDefaultDestroy;
   ksp->ops->view                 = 0;
   ksp->ops->setfromoptions       = 0;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;

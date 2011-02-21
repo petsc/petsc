@@ -1068,9 +1068,8 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
     snes->vec_sol_update = PETSC_NULL;
   }
   if (snes->nwork) {
-    ierr = VecDestroyVecs(snes->work,snes->nwork);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(&snes->work,snes->nwork);CHKERRQ(ierr);
     snes->nwork = 0;
-    snes->work  = PETSC_NULL;
   }
   if (snes->ops->solve == SNESSolveVI_RS) {
     ierr = ISDestroy(vi->IS_inact_prev);

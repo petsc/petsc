@@ -287,10 +287,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
   }
   PetscFunctionReturn(0);
 }
-/*
-       KSPDestroy_CG - Frees all memory space used by the Krylov method
 
-*/
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_CG" 
 PetscErrorCode KSPDestroy_CG(KSP ksp)
@@ -448,6 +445,7 @@ PetscErrorCode  KSPCreate_CG(KSP ksp)
   */
   ksp->ops->setup                = KSPSetUp_CG;
   ksp->ops->solve                = KSPSolve_CG;
+  ksp->ops->reset                = KSPDefaultReset;
   ksp->ops->destroy              = KSPDestroy_CG;
   ksp->ops->view                 = KSPView_CG;
   ksp->ops->setfromoptions       = KSPSetFromOptions_CG;

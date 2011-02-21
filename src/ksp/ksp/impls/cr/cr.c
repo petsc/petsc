@@ -177,6 +177,7 @@ PetscErrorCode  KSPCreate_CR(KSP ksp)
   ksp->pc_side                   = PC_LEFT;
   ksp->ops->setup                = KSPSetUp_CR;
   ksp->ops->solve                = KSPSolve_CR;
+  ksp->ops->reset                = KSPDefaultReset;
   ksp->ops->destroy              = KSPDefaultDestroy;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;

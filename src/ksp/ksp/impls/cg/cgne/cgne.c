@@ -238,6 +238,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 M*/
 
 extern PetscErrorCode KSPDestroy_CG(KSP);
+extern PetscErrorCode KSPReset_CG(KSP);
 extern PetscErrorCode KSPView_CG(KSP,PetscViewer);
 extern PetscErrorCode KSPSetFromOptions_CG(KSP);
 EXTERN_C_BEGIN
@@ -271,6 +272,7 @@ PetscErrorCode  KSPCreate_CGNE(KSP ksp)
   */
   ksp->ops->setup                = KSPSetUp_CGNE;
   ksp->ops->solve                = KSPSolve_CGNE;
+  ksp->ops->reset                = KSPDefaultReset;
   ksp->ops->destroy              = KSPDestroy_CG;
   ksp->ops->view                 = KSPView_CG;
   ksp->ops->setfromoptions       = KSPSetFromOptions_CG;

@@ -169,6 +169,11 @@ and loads according to any type or sizes that have previously been set
 into the Vec.</li>
         <li>VecLoad() does NOT access the options database to check for
 the VecType, call VecSetFromOptions() first if you wish to check it.</li>
+        <li>VecDestroyVecs() now takes the pointer to the first array
+and zeros it on return</li>
+        <li>VecDestroy() now zeros the pointer to the destroyed vector
+so it cannot be reused<br>
+        </li>
       </ul>
       <p><u><b> </b></u></p>
       <p><u><b>VecScatter:<br>

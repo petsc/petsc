@@ -258,7 +258,7 @@ extern PetscErrorCode  VecExp(Vec);
 extern PetscErrorCode  VecAbs(Vec);
 extern PetscErrorCode  VecDuplicate(Vec,Vec*);          
 extern PetscErrorCode  VecDuplicateVecs(Vec,PetscInt,Vec*[]);         
-extern PetscErrorCode  VecDestroyVecs(Vec[],PetscInt); 
+extern PetscErrorCode  VecDestroyVecs(Vec*[],PetscInt); 
 extern PetscErrorCode  VecStrideNormAll(Vec,NormType,PetscReal[]);
 extern PetscErrorCode  VecStrideMaxAll(Vec,PetscInt [],PetscReal []);
 extern PetscErrorCode  VecStrideMinAll(Vec,PetscInt [],PetscReal []);

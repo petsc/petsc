@@ -278,6 +278,7 @@ PetscErrorCode  KSPCreate_Chebychev(KSP ksp)
   ksp->ops->setup                = KSPSetUp_Chebychev;
   ksp->ops->solve                = KSPSolve_Chebychev;
   ksp->ops->destroy              = KSPDestroy_Chebychev;
+  ksp->ops->reset                = KSPDefaultReset;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
   ksp->ops->setfromoptions       = KSPSetFromOptions_Chebychev;

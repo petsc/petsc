@@ -263,7 +263,7 @@ PetscErrorCode KSPDestroy_GMRES_Internal(KSP ksp)
 
   /* free work vectors */
   for (i=0; i<gmres->nwork_alloc; i++) {
-    ierr = VecDestroyVecs(gmres->user_work[i],gmres->mwork_alloc[i]);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(&gmres->user_work[i],gmres->mwork_alloc[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(gmres->user_work);CHKERRQ(ierr);
   ierr = PetscFree(gmres->mwork_alloc);CHKERRQ(ierr);

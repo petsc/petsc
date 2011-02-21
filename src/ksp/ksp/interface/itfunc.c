@@ -748,12 +748,12 @@ PetscErrorCode  KSPDestroy(KSP ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (--((PetscObject)ksp)->refct > 0) PetscFunctionReturn(0);
+  ierr = KSPReset(ksp);CHKERRQ(ierr);
   ierr = PetscObjectDepublish(ksp);CHKERRQ(ierr);
   if (ksp->dm) {ierr = DMDestroy(ksp->dm);CHKERRQ(ierr);}
   if (ksp->ops->destroy) {
     ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
   }
-  ierr = KSPReset(ksp);CHKERRQ(ierr);
   if (ksp->pc) {ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);}
   ierr = PetscFree(ksp->res_hist_alloc);CHKERRQ(ierr);
   ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);

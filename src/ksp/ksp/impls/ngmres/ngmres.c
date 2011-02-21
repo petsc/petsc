@@ -123,6 +123,20 @@ PetscErrorCode  KSPSolve_NGMRES(KSP ksp)
   ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
 }
+#undef __FUNCT__  
+#define __FUNCT__ "KSPReset_NGMRES" 
+PetscErrorCode KSPReset_NGMRES(KSP ksp)
+{
+  KSP_NGMRES    *cg = (KSP_NGMRES*)ksp->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecDestroyVecs(&cg->v,cg->msize);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(&cg->w,cg->msize);CHKERRQ(ierr);
+  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
        KSPDestroy_NGMRES - Frees all memory space used by the Krylov method
 
@@ -131,12 +145,10 @@ PetscErrorCode  KSPSolve_NGMRES(KSP ksp)
 #define __FUNCT__ "KSPDestroy_NGMRES" 
 PetscErrorCode KSPDestroy_NGMRES(KSP ksp)
 {
-  KSP_NGMRES    *cg = (KSP_NGMRES*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroyVecs(cg->v,cg->msize);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(cg->w,cg->msize);CHKERRQ(ierr);
+  ierr = KSPReset_NGMRES(ksp);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -225,6 +237,7 @@ PetscErrorCode  KSPCreate_NGMRES(KSP ksp)
   */
   ksp->ops->setup                = KSPSetUp_NGMRES;
   ksp->ops->solve                = KSPSolve_NGMRES;
+  ksp->ops->reset                = KSPReset_NGMRES;
   ksp->ops->destroy              = KSPDestroy_NGMRES;
   ksp->ops->view                 = KSPView_NGMRES;
   ksp->ops->setfromoptions       = KSPSetFromOptions_NGMRES;

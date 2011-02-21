@@ -786,6 +786,7 @@ PetscErrorCode  KSPCreate_STCG(KSP ksp)
 
   ksp->ops->setup                = KSPSetUp_STCG;
   ksp->ops->solve                = KSPSolve_STCG;
+  ksp->ops->reset                = KSPDefaultReset;
   ksp->ops->destroy              = KSPDestroy_STCG;
   ksp->ops->setfromoptions       = KSPSetFromOptions_STCG;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
