@@ -211,6 +211,7 @@ class TestDACreate(unittest.TestCase):
 # --------------------------------------------------------------------
 
 if PETSc.COMM_WORLD.getSize() > 1:
+    del TestDA_1D_W0
     del TestDA_2D_W0, TestDA_2D_W0_N2
     del TestDA_3D_W0, TestDA_3D_W0_N2
                         
