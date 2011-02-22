@@ -13,10 +13,12 @@ Python bindings for PETSc libraries.
 ## except ImportError:
 ##     pass
 
+import sys
+sys.dont_write_bytecode = True
 
-# -----------------------------------------------------------------------------
+# --------------------------------------------------------------------
 # Metadata
-# -----------------------------------------------------------------------------
+# --------------------------------------------------------------------
 
 from conf.metadata import metadata
 
@@ -50,9 +52,9 @@ metadata['download_url'] = download
 metadata['provides'] = ['petsc4py']
 metadata['requires'] = ['numpy']
 
-# -----------------------------------------------------------------------------
+# --------------------------------------------------------------------
 # Extension modules
-# -----------------------------------------------------------------------------
+# --------------------------------------------------------------------
 
 def get_ext_modules(Extension):
     from os   import walk, path
@@ -77,12 +79,13 @@ def get_ext_modules(Extension):
                                     ] + numpy_includes,
                       depends=depends)]
 
-# -----------------------------------------------------------------------------
+# --------------------------------------------------------------------
 # Setup
-# -----------------------------------------------------------------------------
+# --------------------------------------------------------------------
 
 from conf.petscconf import setup, Extension
-from conf.petscconf import config, build, build_ext
+from conf.petscconf import config, build, sdist
+from conf.petscconf import build_src, build_ext
 
 def run_setup():
     import sys, os
@@ -106,7 +109,10 @@ def run_setup():
           ext_modules  = get_ext_modules(Extension),
           cmdclass     = {'config'     : config,
                           'build'      : build,
-                          'build_ext'  : build_ext},
+                          'build_src'  : build_src,
+                          'build_ext'  : build_ext,
+                          'sdist'      : sdist,
+                          },
           **metadata)
 
 def chk_cython(CYTHON_VERSION_REQUIRED):
@@ -146,30 +152,49 @@ def chk_cython(CYTHON_VERSION_REQUIRED):
     #
     return True
 
-def run_cython(source):
-    from conf.cythonize import run as cythonize
+def run_cython(source, target, includes=(),
+               depends=(), force=False,
+               CYTHON_VERSION_REQUIRED=None):
     from distutils import log
-    log.set_verbosity(1)
-    log.info("cythonizing '%s' source" % source)
-    cythonize(source)
-
-def main():
-    CYTHON_VERSION_REQUIRED = '0.13'
-    import sys, os, glob
     from distutils import dep_util
+    from distutils.errors import DistutilsError
+    depends = [source] + list(depends)
+    if not (force or dep_util.newer_group(depends, target)):
+        log.debug("skipping '%s' -> '%s' (up-to-date)",
+                  source, target)
+        return
+    if (CYTHON_VERSION_REQUIRED and not
+        chk_cython(CYTHON_VERSION_REQUIRED)):
+        raise DistutilsError('requires Cython>=%s'
+                             % CYTHON_VERSION_REQUIRED)
+    log.info("cythonizing '%s' -> '%s'", source, target)
+    from conf.cythonize import run as cythonize
+    cythonize(source, includes=includes)
+
+def build_sources(cmd):
+    CYTHON_VERSION_REQUIRED = '0.13'
+    import os, glob
+    if not (os.path.isdir('.hg')  or
+            os.path.isdir('.git') or
+            cmd.force): return
     source = os.path.join('src', 'petsc4py.PETSc.pyx')
     target = os.path.splitext(source)[0]+".c"
     depends = (glob.glob("src/include/*/*.pxd") +
                glob.glob("src/*/*.pyx") +
                glob.glob("src/*/*.pxi"))
-    if ((os.path.isdir('.hg') or os.path.isdir('.git')) and
-        dep_util.newer_group([source]+depends, target)):
-        if not chk_cython(CYTHON_VERSION_REQUIRED):
-            sys.exit(1)
-        run_cython(source)
+    includes =  []
+    run_cython(source, target, includes,
+               depends, cmd.force,
+               CYTHON_VERSION_REQUIRED)
+
+build_src.run = build_sources
+
+# --------------------------------------------------------------------
+
+def main():
     run_setup()
 
 if __name__ == '__main__':
     main()
 
-# -----------------------------------------------------------------------------
+# --------------------------------------------------------------------

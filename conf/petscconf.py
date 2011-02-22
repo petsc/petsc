@@ -4,7 +4,9 @@ __all__ = ['setup',
            'Extension',
            'config',
            'build',
+           'build_src',
            'build_ext',
+           'sdist',
            ]
 
 # --------------------------------------------------------------------
@@ -17,9 +19,9 @@ if (not hasattr(sys, 'version_info') or
 
 # --------------------------------------------------------------------
 
-from conf.core import PetscConfig as BasePetscConfig
-from conf.core import setup, Extension
-from conf.core import config, build, build_ext
+from conf.baseconf import PetscConfig as BasePetscConfig
+from conf.baseconf import setup, Extension
+from conf.baseconf import config, build, build_src, build_ext, sdist
 
 # --------------------------------------------------------------------
 
