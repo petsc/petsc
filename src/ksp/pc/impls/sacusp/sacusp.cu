@@ -2,9 +2,9 @@
 
 /*  -------------------------------------------------------------------- */
 
-/* 
+/*
    Include files needed for the CUSP Smoothed Aggregation preconditioner:
-     pcimpl.h - private include file intended for use by all preconditioners 
+     pcimpl.h - private include file intended for use by all preconditioners
 */
 
 #include "private/pcimpl.h"   /*I "petscpc.h" I*/
@@ -18,8 +18,8 @@
 
 #define cuspsaprecond cusp::precond::smoothed_aggregation<PetscInt,PetscScalar,cusp::device_memory>
 
-/* 
-   Private context (data structure) for the SACUSP preconditioner.  
+/*
+   Private context (data structure) for the SACUSP preconditioner.
 */
 typedef struct {
  cuspsaprecond* SACUSP;
@@ -33,7 +33,7 @@ static PetscErrorCode PCSACUSPSetCycles(PC pc, int n)
   PC_SACUSP      *sac = (PC_SACUSP*)pc->data;
 
   PetscFunctionBegin;
-  sac->cycles = n;	 
+  sac->cycles = n;
   PetscFunctionReturn(0);
 
   }*/
@@ -41,7 +41,7 @@ static PetscErrorCode PCSACUSPSetCycles(PC pc, int n)
 /* -------------------------------------------------------------------------- */
 /*
    PCSetUp_SACUSP - Prepares for the use of the SACUSP preconditioner
-                    by setting data structures and options.   
+                    by setting data structures and options.
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -52,7 +52,7 @@ static PetscErrorCode PCSACUSPSetCycles(PC pc, int n)
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_SACUSP"
 static PetscErrorCode PCSetUp_SACUSP(PC pc)
 {
@@ -69,7 +69,7 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
       delete sa->SACUSP;
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-    } 
+    }
   }
   try {
     ierr = MatCUSPCopyToGPU(pc->pmat);CHKERRCUSP(ierr);
@@ -77,7 +77,7 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
     sa->SACUSP = new cuspsaprecond(*(CUSPMATRIX*)gpustruct->mat);
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-  } 
+  }
   /*ierr = PetscOptionsInt("-pc_sacusp_cycles","Number of v-cycles to perform","PCSACUSPSetCycles",sa->cycles,
     &sa->cycles,PETSC_NULL);CHKERRQ(ierr);*/
   PetscFunctionReturn(0);
@@ -90,7 +90,7 @@ static PetscErrorCode PCApplyRichardson_SACUSP(PC pc, Vec b, Vec y, Vec w,PetscR
   PC_SACUSP      *sac = (PC_SACUSP*)pc->data;
   PetscErrorCode ierr;
   CUSPARRAY      *barray,*yarray;
-  
+
   PetscFunctionBegin;
   /* how to incorporate dtol, guesszero, w?*/
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -124,7 +124,7 @@ static PetscErrorCode PCApplyRichardson_SACUSP(PC pc, Vec b, Vec y, Vec w,PetscR
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_SACUSP"
 static PetscErrorCode PCApply_SACUSP(PC pc,Vec x,Vec y)
 {
@@ -148,7 +148,7 @@ static PetscErrorCode PCApply_SACUSP(PC pc,Vec x,Vec y)
     cusp::multiply(*sac->SACUSP,*xarray,*yarray);
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-  } 
+  }
   ierr = VecCUSPRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPRestoreArrayWrite(y,&yarray);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
@@ -164,7 +164,7 @@ static PetscErrorCode PCApply_SACUSP(PC pc,Vec x,Vec y)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_SACUSP"
 static PetscErrorCode PCDestroy_SACUSP(PC pc)
 {
@@ -177,7 +177,7 @@ static PetscErrorCode PCDestroy_SACUSP(PC pc)
       delete sac->SACUSP;
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-    } 
+    }
 }
 
   /*
@@ -187,14 +187,14 @@ static PetscErrorCode PCDestroy_SACUSP(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SACUSP"
 static PetscErrorCode PCSetFromOptions_SACUSP(PC pc)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SACUSP options");CHKERRQ(ierr);			 
+  ierr = PetscOptionsHead("SACUSP options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -204,7 +204,7 @@ static PetscErrorCode PCSetFromOptions_SACUSP(PC pc)
 
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_SACUSP"
 PetscErrorCode  PCCreate_SACUSP(PC pc)
 {

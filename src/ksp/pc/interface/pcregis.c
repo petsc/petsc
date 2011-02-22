@@ -57,6 +57,7 @@ extern PetscErrorCode  PCCreate_Prometheus(PC);
 extern PetscErrorCode  PCCreate_SACUSP(PC);
 extern PetscErrorCode  PCCreate_SACUSPPoly(PC);
 extern PetscErrorCode  PCCreate_BiCGStabCUSP(PC);
+extern PetscErrorCode  PCCreate_AINVCUSP(PC);
 #endif
 
 EXTERN_C_END
@@ -135,6 +136,7 @@ PetscErrorCode  PCRegisterAll(const char path[])
 #endif
 #if defined(PETSC_HAVE_CUSP_SMOOTHED_AGGREGATION) && defined(PETSC_HAVE_CUSP)
   ierr = PCRegisterDynamic(PCSACUSP       ,path,"PCCreate_SACUSP",PCCreate_SACUSP);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCAINVCUSP     ,path,"PCCreate_AINVCUSP",PCCreate_AINVCUSP);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCBICGSTABCUSP ,path,"PCCreate_BiCGStabCUSP",PCCreate_BiCGStabCUSP);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCSACUSPPOLY    ,path,"PCCreateSACUSPPoly",PCCreate_SACUSPPoly);CHKERRQ(ierr);
 #endif

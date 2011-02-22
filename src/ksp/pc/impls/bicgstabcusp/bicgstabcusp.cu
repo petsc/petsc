@@ -2,9 +2,9 @@
 
 /*  -------------------------------------------------------------------- */
 
-/* 
+/*
    Include files needed for the CUSP BiCGSTAB preconditioner:
-     pcimpl.h - private include file intended for use by all preconditioners 
+     pcimpl.h - private include file intended for use by all preconditioners
 */
 
 #include "private/pcimpl.h"   /*I "petscpc.h" I*/
@@ -99,7 +99,7 @@ PetscErrorCode PCBiCGStabCUSPSetTolerance(PC pc, PetscReal rtol)
 /* -------------------------------------------------------------------------- */
 /*
    PCSetUp_BiCGStabCUSP - Prepares for the use of the CUSP BiCGStab preconditioner
-                    by setting data structures and options.   
+                    by setting data structures and options.
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -110,7 +110,7 @@ PetscErrorCode PCBiCGStabCUSPSetTolerance(PC pc, PetscReal rtol)
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_BiCGStabCUSP"
 static PetscErrorCode PCSetUp_BiCGStabCUSP(PC pc)
 {
@@ -145,7 +145,7 @@ static PetscErrorCode PCSetUp_BiCGStabCUSP(PC pc)
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_BiCGStabCUSP"
 static PetscErrorCode PCApply_BiCGStabCUSP(PC pc,Vec x,Vec y)
 {
@@ -155,7 +155,6 @@ static PetscErrorCode PCApply_BiCGStabCUSP(PC pc,Vec x,Vec y)
   CUSPARRAY       *xarray,*yarray;
 
   PetscFunctionBegin;
-  /*how to apply a certain fixed number of iterations?*/
   ierr = PetscTypeCompare((PetscObject)x,VECSEQCUSP,&flg1);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)y,VECSEQCUSP,&flg2);CHKERRQ(ierr);
   if (!(flg1 && flg2)) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP, "Currently only handles CUSP vectors");
@@ -191,7 +190,7 @@ static PetscErrorCode PCApply_BiCGStabCUSP(PC pc,Vec x,Vec y)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_BiCGStabCUSP"
 static PetscErrorCode PCDestroy_BiCGStabCUSP(PC pc)
 {
@@ -206,7 +205,7 @@ static PetscErrorCode PCDestroy_BiCGStabCUSP(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_BiCGStabCUSP"
 static PetscErrorCode PCSetFromOptions_BiCGStabCUSP(PC pc)
 {
@@ -226,7 +225,7 @@ static PetscErrorCode PCSetFromOptions_BiCGStabCUSP(PC pc)
 
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_BiCGStabCUSP"
 PetscErrorCode  PCCreate_BiCGStabCUSP(PC pc)
 {
