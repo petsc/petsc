@@ -65,7 +65,7 @@ class Configure(config.package.Package):
     help.addArgument('MPI', '-download-mpich-pm=<hydra, gforker or mpd>',          nargs.Arg(None, 'hydra', 'Launcher for MPI processes'))
     help.addArgument('MPI', '-download-mpich-device=<ch3:nemesis or see mpich2 docs>', nargs.Arg(None, 'ch3:sock', 'Communicator for MPI processes'))
     help.addArgument('MPI', '-download-mpich-mpe=<bool>',                               nargs.ArgBool(None, 0, 'Install MPE with MPICH'))
-    help.addArgument('MPI', '-download-mpich-shared=<bool>',                            nargs.ArgBool(None, 0, 'Install MPICH with shared libraries'))    
+    help.addArgument('MPI', '-download-mpich-shared=<bool>',                            nargs.ArgBool(None, 0, 'Install MPICH with shared libraries'))
     return
 
   def setupDependencies(self, framework):
@@ -154,7 +154,7 @@ class Configure(config.package.Package):
     if self.framework.argDB['with-batch']:
       self.mpiexec = 'Not_appropriate_for_batch_systems'
       self.addMakeMacro('MPIEXEC',self.mpiexec)
-      return   
+      return
     mpiexecs = ['mpiexec -n 1', 'mpirun -n 1', 'mprun -n 1', 'mpiexec', 'mpirun', 'mprun']
     path    = []
     if 'with-mpi-dir' in self.framework.argDB:
@@ -275,13 +275,13 @@ class Configure(config.package.Package):
     #  include path for its mpi.h and mpif.h so that external packages that are built with PETSc to
     #  use MPI-Uni can find them.
     self.include = [os.path.abspath(os.path.join('include', 'mpiuni'))]
-    self.framework.packages.append(self)    
+    self.framework.packages.append(self)
     self.mpiexec = '${PETSC_DIR}/bin/mpiexec.uni'
     self.addMakeMacro('MPIEXEC','${PETSC_DIR}/bin/mpiexec.uni')
     self.addDefine('HAVE_MPI_COMM_F2C', 1)
     self.addDefine('HAVE_MPI_COMM_C2F', 1)
     self.addDefine('HAVE_MPI_FINT', 1)
-    self.addDefine('HAVE_MPI_C_DOUBLE_COMPLEX', 1)    
+    self.addDefine('HAVE_MPI_C_DOUBLE_COMPLEX', 1)
     self.commf2c = 1
     self.commc2f = 1
     self.usingMPIUni = 1
@@ -302,7 +302,7 @@ class Configure(config.package.Package):
     '''Check if we should download MPICH or OpenMPI'''
     if 'download-mpi' in self.framework.argDB and self.framework.argDB['download-mpi']:
       raise RuntimeError('Option --download-mpi does not exist! Use --download-mpich or --download-openmpi instead.')
-    
+
     if self.framework.argDB['download-mpich'] and self.framework.argDB['download-openmpi']:
       raise RuntimeError('Cannot install more than one of OpenMPI or  MPICH-2 for a single configuration. \nUse different PETSC_ARCH if you want to be able to switch between two')
 
@@ -335,7 +335,7 @@ class Configure(config.package.Package):
       return self.InstallOpenMPI()
     else:
       raise RuntimeError('Internal Error!')
-    
+
   def InstallOpenMPI(self):
     openmpiDir = self.getDir()
 
@@ -347,7 +347,7 @@ class Configure(config.package.Package):
     self.pushLanguage('C')
     flags = self.getCompilerFlags()
     if config.setCompilers.Configure.isDarwin():
-      # OpenMPI configure crashes on Apple if -g or -g3 flag is passed in here 
+      # OpenMPI configure crashes on Apple if -g or -g3 flag is passed in here
       flags = flags.replace('-g3','')
       flags = flags.replace('-g','')
     args.append('CC="'+self.getCompiler()+'"')
@@ -403,12 +403,12 @@ class Configure(config.package.Package):
       try:
         self.logPrintBox('Compiling OPENMPI/MPI; this may take several minutes')
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && make install', timeout=6000, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && make clean', timeout=200, log = self.framework.log)        
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && make clean', timeout=200, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on OPENMPI/MPI: '+str(e))
       if not os.path.isdir(os.path.join(installDir,'lib')):
         self.framework.log.write('Error running make on OPENMPI/MPI   ******(libraries not installed)*******\n')
-        self.framework.log.write('********Output of running make on OPENMPI follows *******\n')        
+        self.framework.log.write('********Output of running make on OPENMPI follows *******\n')
         self.framework.log.write(output)
         self.framework.log.write('********End of Output of running make on OPENMPI *******\n')
         raise RuntimeError('Error running make on OPENMPI, libraries not installed')
@@ -441,7 +441,7 @@ class Configure(config.package.Package):
     confDir = os.path.join(self.defaultInstallDir,self.arch,'conf')
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
-      
+
     # Configure and Build MPICH
     self.pushLanguage('C')
     args = ['--prefix='+installDir]
@@ -457,7 +457,7 @@ class Configure(config.package.Package):
     else:
       args.append('--disable-cxx')
     if hasattr(self.compilers, 'FC'):
-      self.pushLanguage('FC')      
+      self.pushLanguage('FC')
       fc = self.getCompiler()
       if self.compilers.fortranIsF90:
         try:
@@ -498,8 +498,8 @@ class Configure(config.package.Package):
       args.append('--without-mpe')
     args.append('--with-pm='+self.argDB['download-mpich-pm'])
     # make MPICH behave properly for valgrind
-    args.append('--enable-g=meminit')    
-    args.append('--enable-fast')    
+    args.append('--enable-g=meminit')
+    args.append('--enable-fast')
     args = ' '.join(args)
 
     f = file(os.path.join(self.packageDir, 'args.petsc'), 'w')
