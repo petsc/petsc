@@ -753,7 +753,7 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
   if (jac->kspschur) {ierr = KSPDestroy(jac->kspschur);CHKERRQ(ierr);}
   if (jac->B) {ierr = MatDestroy(jac->B);CHKERRQ(ierr);}
   if (jac->C) {ierr = MatDestroy(jac->C);CHKERRQ(ierr);}
-  ierr = PetscFree(jac);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

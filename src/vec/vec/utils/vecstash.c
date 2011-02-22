@@ -84,7 +84,6 @@ PetscErrorCode VecStashDestroy_Private(VecStash *stash)
 
   PetscFunctionBegin;
   ierr = PetscFree2(stash->array,stash->idx);CHKERRQ(ierr);
-  stash->array = 0;
   ierr = PetscFree(stash->bowners);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -131,15 +130,10 @@ PetscErrorCode VecStashScatterEnd_Private(VecStash *stash)
   stash->array = 0;
   stash->idx   = 0;
   ierr = PetscFree(stash->send_waits);CHKERRQ(ierr);
-  stash->send_waits = 0;
   ierr = PetscFree(stash->recv_waits);CHKERRQ(ierr);
-  stash->recv_waits = 0;
   ierr = PetscFree2(stash->svalues,stash->sindices);CHKERRQ(ierr);
-  stash->svalues = 0;
   ierr = PetscFree2(stash->rvalues,stash->rindices);CHKERRQ(ierr);
-  stash->rvalues = 0;
   ierr = PetscFree(stash->nprocs);CHKERRQ(ierr);
-  stash->nprocs = 0;
   PetscFunctionReturn(0);
 }
 

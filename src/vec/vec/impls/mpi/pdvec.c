@@ -25,7 +25,7 @@ PetscErrorCode VecDestroy_MPI(Vec v)
   /* Destroy the stashes: note the order - so that the tags are freed properly */
   ierr = VecStashDestroy_Private(&v->bstash);CHKERRQ(ierr);
   ierr = VecStashDestroy_Private(&v->stash);CHKERRQ(ierr);
-  ierr = PetscFree(x);CHKERRQ(ierr);
+  ierr = PetscFree(v->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

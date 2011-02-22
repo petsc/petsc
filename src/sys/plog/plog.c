@@ -104,9 +104,7 @@ PetscErrorCode  PetscLogDestroy(void)
 
   PetscFunctionBegin;
   ierr = PetscFree(actions);CHKERRQ(ierr);
-  actions = PETSC_NULL;
   ierr = PetscFree(objects);CHKERRQ(ierr);
-  objects =  PETSC_NULL;
   ierr = PetscLogSet(PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
 
   /* Resetting phase */

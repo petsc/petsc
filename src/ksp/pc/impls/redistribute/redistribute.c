@@ -277,7 +277,7 @@ static PetscErrorCode PCDestroy_Redistribute(PC pc)
   if (red->work)     {ierr = VecDestroy(red->work);CHKERRQ(ierr);}
   ierr = PetscFree(red->drows);
   ierr = PetscFree(red->diag);
-  ierr = PetscFree(red);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

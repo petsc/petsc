@@ -309,7 +309,7 @@ PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,const Petsc
   PetscBool      sorted = PETSC_TRUE;
 
   PetscFunctionBegin;
-  if (sub->idx) {ierr = PetscFree(sub->idx);CHKERRQ(ierr);}
+  ierr = PetscFree(sub->idx);CHKERRQ(ierr);
   sub->n = n;
   ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,((PetscObject)is)->comm);CHKERRQ(ierr);
   for (i=1; i<n; i++) {

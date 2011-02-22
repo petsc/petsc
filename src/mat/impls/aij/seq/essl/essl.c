@@ -39,7 +39,7 @@ PetscErrorCode MatDestroy_Essl(Mat A)
   if (essl->CleanUpESSL) {
     ierr = PetscFree4(essl->a,essl->aux,essl->ia,essl->ja);CHKERRQ(ierr);
   }
-  ierr = PetscFree(essl);CHKERRQ(ierr);
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

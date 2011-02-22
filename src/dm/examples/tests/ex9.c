@@ -52,11 +52,9 @@ int main(int argc,char **argv)
 
   /* Create distributed array and get vectors */
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,stencil_type,M,N,P,m,n,p,w,s,lx,ly,lz,&da);CHKERRQ(ierr);
-  if (lx) {
-    ierr = PetscFree(lx);CHKERRQ(ierr);
-    ierr = PetscFree(ly);CHKERRQ(ierr);
-    ierr = PetscFree(lz);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(lx);CHKERRQ(ierr);
+  ierr = PetscFree(ly);CHKERRQ(ierr);
+  ierr = PetscFree(lz);CHKERRQ(ierr);
 
   ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATMPIAIJ,&coloring);CHKERRQ(ierr);
   ierr = DMGetMatrix(da,MATMPIAIJ,&mat);CHKERRQ(ierr);

@@ -213,25 +213,6 @@ PetscErrorCode  PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
     (void)PetscMalloc((oldLength+1) * sizeof(char), &newformat);
   }
   PetscFormatConvert(format,newformat,oldLength+1);
-  if (PETSC_ZOPEFD && PETSC_ZOPEFD != PETSC_STDOUT){
-    va_list s;
-#if defined(PETSC_HAVE_VA_COPY)
-    va_copy(s, Argp);
-#elif defined(PETSC_HAVE___VA_COPY)
-    __va_copy(s, Argp);
-#else
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Zope not supported due to missing va_copy()");
-#endif
-
-#if defined(PETSC_HAVE_VA_COPY) || defined(PETSC_HAVE___VA_COPY)
-#if defined(PETSC_HAVE_VFPRINTF_CHAR)
-    vfprintf(PETSC_ZOPEFD,newformat,(char *)s);
-#else
-    vfprintf(PETSC_ZOPEFD,newformat,s);
-#endif
-    fflush(PETSC_ZOPEFD);
-#endif
-  }
 
 #if defined(PETSC_HAVE_VFPRINTF_CHAR)
   vfprintf(fd,newformat,(char *)Argp);
@@ -240,7 +221,7 @@ PetscErrorCode  PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
 #endif
   fflush(fd);
   if (oldLength >= 8*1024) {
-    if (PetscFree(newformat)) {};
+    PetscFree(newformat);
   }
   return 0;
 }

@@ -166,16 +166,15 @@ static PetscErrorCode PCApply_SupportGraph(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCDestroy_SupportGraph"
 static PetscErrorCode PCDestroy_SupportGraph(PC pc)
 {
-  PC_SupportGraph      *sg = (PC_SupportGraph*)pc->data;
-  PetscErrorCode ierr;
+  PC_SupportGraph *sg = (PC_SupportGraph*)pc->data;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (sg->pre)     {ierr = MatDestroy(sg->pre);CHKERRQ(ierr);}
-
   /*
       Free the private data structure that was hanging off the PC
   */
-  ierr = PetscFree(sg);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

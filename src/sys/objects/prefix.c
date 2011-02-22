@@ -30,7 +30,6 @@ PetscErrorCode  PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
   PetscValidHeader(obj,1);
   if (!prefix) {
     ierr = PetscFree(obj->prefix);CHKERRQ(ierr);
-    obj->prefix = PETSC_NULL;
   } else {
     if (prefix[0] == '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hypen");
     ierr = PetscFree(obj->prefix);CHKERRQ(ierr);

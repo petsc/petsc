@@ -520,7 +520,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive(Mat C,PetscInt nrqr,Pets
               new_estimate = (PetscInt)(1.5*mem_estimate)+1;
               ierr         = PetscMalloc(new_estimate*sizeof(PetscInt),&tmp);CHKERRQ(ierr);
               ierr         = PetscMemcpy(tmp,xdata[0],mem_estimate*sizeof(PetscInt));CHKERRQ(ierr);
-              ierr = PetscFree(xdata[0]);CHKERRQ(ierr);
+              ierr         = PetscFree(xdata[0]);CHKERRQ(ierr);
               xdata[0]     = tmp;
               mem_estimate = new_estimate; ++no_malloc;
               for (ctr =1; ctr <=i; ctr++) { xdata[ctr] = xdata[ctr-1] + isz1[ctr-1];}

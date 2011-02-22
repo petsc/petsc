@@ -237,7 +237,6 @@ static PetscErrorCode TSGLDestroy_Default(TS_GL *gl)
     if (gl->schemes[i]) {ierr = TSGLSchemeDestroy(gl->schemes[i]);CHKERRQ(ierr);}
   }
   ierr = PetscFree(gl->schemes);CHKERRQ(ierr);
-  gl->schemes = 0;
   gl->nschemes = 0;
   ierr = PetscMemzero(gl->type_name,sizeof(gl->type_name));CHKERRQ(ierr);
   PetscFunctionReturn(0);

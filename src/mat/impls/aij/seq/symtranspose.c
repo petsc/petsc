@@ -207,9 +207,7 @@ PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat A,PetscInt *ati[],PetscInt
   PetscFunctionBegin;
   ierr = PetscInfo(A,"Restoring Symbolic Transpose.\n");CHKERRQ(ierr);
   ierr = PetscFree(*ati);CHKERRQ(ierr);
-  ati  = PETSC_NULL;
   ierr = PetscFree(*atj);CHKERRQ(ierr);
-  atj  = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 

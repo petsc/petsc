@@ -130,9 +130,9 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   if (a->row) {ierr = ISDestroy(a->row);CHKERRQ(ierr);}
   if (a->col){ierr = ISDestroy(a->col);CHKERRQ(ierr);}
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
-  if (a->idiag) {ierr = PetscFree(a->idiag);CHKERRQ(ierr);}
-  if (a->inode.size) {ierr = PetscFree(a->inode.size);CHKERRQ(ierr);}
-  if (a->free_diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
+  ierr = PetscFree(a->idiag);CHKERRQ(ierr);
+  ierr = PetscFree(a->inode.size);CHKERRQ(ierr);
+  ierr = PetscFree(a->diag);CHKERRQ(ierr);
   if (a->free_imax_ilen) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
   ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
   ierr = PetscFree(a->sor_work);CHKERRQ(ierr);

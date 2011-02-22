@@ -138,7 +138,7 @@ static PetscErrorCode PCDestroy_Composite(PC pc)
 
   if (jac->work1) {ierr = VecDestroy(jac->work1);CHKERRQ(ierr);}
   if (jac->work2) {ierr = VecDestroy(jac->work2);CHKERRQ(ierr);}
-  ierr = PetscFree(jac);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

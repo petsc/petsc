@@ -1201,15 +1201,14 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
     nbcs = ny;
   }
 
-  if (b != PETSC_NULL) {
+  if (b) {
     ierr = VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
   }
-  if (A != PETSC_NULL) {
+  if (A) {
     ierr = MatZeroRows(A,nbcs,bc_global_ids,1.0,0,0);CHKERRQ(ierr);
   }
-
 
   ierr = PetscFree(bc_vals);CHKERRQ(ierr);
   ierr = PetscFree(bc_global_ids);CHKERRQ(ierr);
@@ -1273,15 +1272,14 @@ static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
     nbcs = ny;
   }
 
-  if (b != PETSC_NULL) {
+  if (b) {
     ierr = VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
   }
-  if (A != PETSC_NULL) {
+  if (A) {
     ierr = MatZeroRows(A,nbcs,bc_global_ids,1.0,0,0);CHKERRQ(ierr);
   }
-
 
   ierr = PetscFree(bc_vals);CHKERRQ(ierr);
   ierr = PetscFree(bc_global_ids);CHKERRQ(ierr);

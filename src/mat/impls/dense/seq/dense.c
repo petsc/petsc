@@ -366,7 +366,6 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,const MatFactorInfo *fac
   
   PetscFunctionBegin;
   ierr = PetscFree(mat->pivots);CHKERRQ(ierr);
-  mat->pivots = 0;
 
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
   LAPACKpotrf_("L",&n,mat->v,&mat->lda,&info);

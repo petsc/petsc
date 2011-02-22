@@ -200,7 +200,7 @@ static PetscErrorCode TSDestroy_BEuler(TS ts)
   if (beuler->update) {ierr = VecDestroy(beuler->update);CHKERRQ(ierr);}
   if (beuler->func) {ierr = VecDestroy(beuler->func);CHKERRQ(ierr);}
   if (beuler->rhs) {ierr = VecDestroy(beuler->rhs);CHKERRQ(ierr);}
-  ierr = PetscFree(beuler);CHKERRQ(ierr);
+  ierr = PetscFree(ts->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

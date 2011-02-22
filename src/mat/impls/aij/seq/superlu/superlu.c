@@ -237,7 +237,7 @@ PetscErrorCode MatDestroy_SuperLU(Mat A)
 
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   if (lu->A_dup){ierr = MatDestroy(lu->A_dup);CHKERRQ(ierr);}
-  if (lu->rhs_dup){ierr = PetscFree(lu->rhs_dup);CHKERRQ(ierr);}
+  ierr = PetscFree(lu->rhs_dup);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

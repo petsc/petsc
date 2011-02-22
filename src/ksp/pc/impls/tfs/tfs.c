@@ -38,7 +38,7 @@ PetscErrorCode PCDestroy_TFS(PC pc)
   if (tfs->xo) {
   ierr = VecDestroy(tfs->xo);CHKERRQ(ierr);
   }
-  ierr = PetscFree(tfs);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

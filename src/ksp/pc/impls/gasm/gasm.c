@@ -530,7 +530,7 @@ static PetscErrorCode PCDestroy_GASM(PC pc)
   if (osm->is) {
     ierr = PCGASMDestroySubdomains(osm->n,osm->is,osm->is_local);CHKERRQ(ierr);
   }
-  ierr = PetscFree(osm);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1244,7 +1244,6 @@ PetscErrorCode  PCGASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
     ierr = PetscFree(indices);
     ierr = ISDestroy(isnumb);CHKERRQ(ierr);
     ierr = ISDestroy(ispart);CHKERRQ(ierr);
-
   }
   
   PetscFunctionReturn(0);

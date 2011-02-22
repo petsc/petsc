@@ -17,11 +17,10 @@ typedef struct {
 #define __FUNCT__ "PCDestroy_SOR"
 static PetscErrorCode PCDestroy_SOR(PC pc)
 {
-  PC_SOR         *jac = (PC_SOR*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(jac);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

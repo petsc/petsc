@@ -93,11 +93,10 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscI
                                      if (A->singlemalloc) {
                                        ierr = PetscFree3(*a,*j,*i);CHKERRQ(ierr);
                                      } else {
-                                       if (A->free_a  && *a) {ierr = PetscFree(*a);CHKERRQ(ierr);}
-                                       if (A->free_ij && *j) {ierr = PetscFree(*j);CHKERRQ(ierr);}
-                                       if (A->free_ij && *i) {ierr = PetscFree(*i);CHKERRQ(ierr);}
+                                       if (A->free_a)  {ierr = PetscFree(*a);CHKERRQ(ierr);}
+                                       if (A->free_ij) {ierr = PetscFree(*j);CHKERRQ(ierr);}
+                                       if (A->free_ij) {ierr = PetscFree(*i);CHKERRQ(ierr);}
                                      }
-                                     *a = 0; *j = 0; *i = 0;
                                      return 0;
                                    }
 /*

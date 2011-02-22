@@ -257,10 +257,8 @@ static PetscErrorCode MatDestroy_Nest(Mat A)
         }
       }
       ierr = PetscFree( vs->m[i] );CHKERRQ(ierr);
-      vs->m[i] = PETSC_NULL;
     }
     ierr = PetscFree(vs->m);CHKERRQ(ierr);
-    vs->m = PETSC_NULL;
   }
   ierr = PetscFree(vs);CHKERRQ(ierr);
 

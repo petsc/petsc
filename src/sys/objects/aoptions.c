@@ -34,13 +34,9 @@ PetscErrorCode PetscOptionsBegin_Private(MPI_Comm comm,const char prefix[],const
   PetscOptionsObject.next          = 0;
   PetscOptionsObject.comm          = comm;
   PetscOptionsObject.changedmethod = PETSC_FALSE;
-  if (PetscOptionsObject.prefix) {
-    ierr = PetscFree(PetscOptionsObject.prefix);CHKERRQ(ierr); PetscOptionsObject.prefix = 0;
-  }
+  ierr = PetscFree(PetscOptionsObject.prefix);CHKERRQ(ierr); 
   ierr = PetscStrallocpy(prefix,&PetscOptionsObject.prefix);CHKERRQ(ierr);
-  if (PetscOptionsObject.title) {
-    ierr = PetscFree(PetscOptionsObject.title);CHKERRQ(ierr); PetscOptionsObject.title  = 0;
-  }
+  ierr = PetscFree(PetscOptionsObject.title);CHKERRQ(ierr);
   ierr = PetscStrallocpy(title,&PetscOptionsObject.title);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-help",&PetscOptionsObject.printhelp);CHKERRQ(ierr);
@@ -454,8 +450,8 @@ PetscErrorCode PetscOptionsEnd_Private(void)
     }
   }
 
-  ierr = PetscFree(PetscOptionsObject.title);CHKERRQ(ierr); PetscOptionsObject.title  = 0;
-  ierr = PetscFree(PetscOptionsObject.prefix);CHKERRQ(ierr); PetscOptionsObject.prefix = 0;
+  ierr = PetscFree(PetscOptionsObject.title);CHKERRQ(ierr);
+  ierr = PetscFree(PetscOptionsObject.prefix);CHKERRQ(ierr);
 
   /* reset counter to -2; this updates the screen with the new options for the selected method */
   if (PetscOptionsObject.changedmethod) PetscOptionsPublishCount = -2; 

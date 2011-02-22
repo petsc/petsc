@@ -183,7 +183,7 @@ static PetscErrorCode PCDestroy_SACUSP(PC pc)
   /*
       Free the private data structure that was hanging off the PC
   */
-  ierr = PetscFree(sac);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

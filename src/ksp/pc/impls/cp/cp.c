@@ -126,7 +126,7 @@ static PetscErrorCode PCDestroy_CP(PC pc)
   ierr = PetscFree(cp->d);CHKERRQ(ierr);
   if (cp->work) {ierr = VecDestroy(cp->work);CHKERRQ(ierr);}
   ierr = PetscFree3(cp->a,cp->i,cp->j);CHKERRQ(ierr);
-  ierr = PetscFree(cp);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

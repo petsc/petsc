@@ -79,7 +79,7 @@ PetscErrorCode  PetscLayoutDestroy(PetscLayout map)
 
   PetscFunctionBegin;
   if (!map->refcnt--) {
-    if (map->range) {ierr = PetscFree(map->range);CHKERRQ(ierr);}
+    ierr = PetscFree(map->range);CHKERRQ(ierr);
     ierr = PetscFree(map);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -142,7 +142,7 @@ static PetscErrorCode PCDestroy_SPAI(PC pc)
   PetscFunctionBegin;
   if (ispai->PM) {ierr = MatDestroy(ispai->PM);CHKERRQ(ierr);}
   ierr = MPI_Comm_free(&(ispai->comm_spai));CHKERRQ(ierr);
-  ierr = PetscFree(ispai);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

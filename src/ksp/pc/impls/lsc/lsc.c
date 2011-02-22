@@ -107,7 +107,7 @@ static PetscErrorCode PCDestroy_LSC(PC pc)
   if (lsc->scale) {ierr = VecDestroy(lsc->scale);CHKERRQ(ierr);}
   if (lsc->kspL)  {ierr = KSPDestroy(lsc->kspL);CHKERRQ(ierr);}
   if (lsc->L)     {ierr = MatDestroy(lsc->L);CHKERRQ(ierr);}
-  ierr = PetscFree(lsc);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

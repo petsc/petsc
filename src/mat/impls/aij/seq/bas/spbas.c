@@ -391,7 +391,7 @@ PetscErrorCode spbas_delete(spbas_matrix matrix)
    ierr=PetscFree(matrix.row_nnz);CHKERRQ(ierr);
    ierr=PetscFree(matrix.icols);CHKERRQ(ierr);
    if (matrix.col_idx_type == SPBAS_OFFSET_ARRAY) {ierr=PetscFree(matrix.icol0);CHKERRQ(ierr);}
-   if (matrix.values)  {ierr=PetscFree(matrix.values);CHKERRQ(ierr);}
+   ierr=PetscFree(matrix.values);CHKERRQ(ierr);
    PetscFunctionReturn(0);
 }
 

@@ -83,7 +83,7 @@ PetscErrorCode test_view( void )
   tmp_buf[0] = a;
   tmp_buf[1] = b;
   ierr = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&X);CHKERRQ(ierr);
-  ierr = VecDestroy(a);CHKERRQ(ierr);   ierr = VecDestroy(b);CHKERRQ(ierr);
+  ierr = VecDestroy(a);CHKERRQ(ierr); 
 
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
@@ -93,6 +93,8 @@ PetscErrorCode test_view( void )
 
   ierr = VecMin( b, &index, &val );CHKERRQ(ierr);
   PetscPrintf( PETSC_COMM_WORLD, "(min-b) = %f : index = %d \n", val, index );
+
+  ierr = VecDestroy(b);CHKERRQ(ierr);
 
   ierr = VecMax( X, &index, &val );CHKERRQ(ierr);
   PetscPrintf( PETSC_COMM_WORLD, "(max-X) = %f : index = %d \n", val, index );

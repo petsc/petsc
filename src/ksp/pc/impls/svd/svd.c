@@ -151,7 +151,7 @@ static PetscErrorCode PCDestroy_SVD(PC pc)
   if (jac->diag) {
     ierr = VecDestroy(jac->diag);CHKERRQ(ierr);
   }
-  ierr = PetscFree(jac);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

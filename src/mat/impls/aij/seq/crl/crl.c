@@ -21,8 +21,7 @@ PetscErrorCode MatDestroy_SeqAIJCRL(Mat A)
 
   /* Free everything in the Mat_AIJCRL data structure. */
   ierr = PetscFree2(aijcrl->acols,aijcrl->icols);CHKERRQ(ierr);
-  ierr = PetscFree(aijcrl);CHKERRQ(ierr);
-  A->spptr = 0;
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName( (PetscObject)A, MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);

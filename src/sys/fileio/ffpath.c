@@ -43,16 +43,19 @@
 
    Level: developer
 
+   Developer Notes: Wrongly returns 1 as an error code sometimes. Maybe should have additional flag argument indicating
+                    if it found it.  Most arguments likely should be const.
+
    Concepts: files^finding in path
    Concepts: path^searching for file
 
 @*/
 PetscErrorCode  PetscGetFileFromPath(char *path,char *defname,char *name,char *fname,char mode)
 {
-  char       *p,*cdir,trial[PETSC_MAX_PATH_LEN],*senv,*env;
-  size_t     ln;
+  char           *p,*cdir,trial[PETSC_MAX_PATH_LEN],*senv,*env;
+  size_t         ln;
   PetscErrorCode ierr;
-  PetscBool  flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   /* Setup default */

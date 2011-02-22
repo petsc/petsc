@@ -182,7 +182,7 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
   if (jac->destroy) PetscStackCallHypre("HYPRE_DistroyXXX",(*jac->destroy),(jac->hsolver));
   ierr = PetscFree(jac->hypre_type);CHKERRQ(ierr);
   if (jac->comm_hypre != MPI_COMM_NULL) { ierr = MPI_Comm_free(&(jac->comm_hypre));CHKERRQ(ierr);}
-  ierr = PetscFree(jac);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)pc,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCHYPRESetType_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -1053,7 +1053,7 @@ PetscErrorCode PCDestroy_PFMG(PC pc)
   PetscFunctionBegin;
   if (ex->hsolver) {PetscStackCallHypre(0,HYPRE_StructPFMGDestroy,(ex->hsolver));}
   ierr = MPI_Comm_free(&ex->hcomm);CHKERRQ(ierr);
-  ierr = PetscFree(ex);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1274,7 +1274,7 @@ PetscErrorCode PCDestroy_SysPFMG(PC pc)
   PetscFunctionBegin;
   if (ex->ss_solver) {PetscStackCallHypre(0,HYPRE_SStructSysPFMGDestroy,(ex->ss_solver));}
   ierr = MPI_Comm_free(&ex->hcomm);CHKERRQ(ierr);
-  ierr = PetscFree(ex);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

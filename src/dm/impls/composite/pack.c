@@ -106,9 +106,7 @@ PetscErrorCode  DMDestroy_Composite(DM dm)
     if (prev->type == DMCOMPOSITE_DM) {
       ierr = DMDestroy(prev->dm);CHKERRQ(ierr);
     }
-    if (prev->grstarts) {
-      ierr = PetscFree(prev->grstarts);CHKERRQ(ierr);
-    }
+    ierr = PetscFree(prev->grstarts);CHKERRQ(ierr);
     ierr = PetscFree(prev);CHKERRQ(ierr);
   }
   ierr = PetscFree(com);CHKERRQ(ierr);

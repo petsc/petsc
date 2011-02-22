@@ -79,10 +79,12 @@ typedef struct _n_PetscFwkGraph *PetscFwkGraph;
 */
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkGraphExpandRow_Private"
-PetscErrorCode PetscFwkGraphExpandRow_Private(PetscFwkGraph graph, PetscInt row) {
+PetscErrorCode PetscFwkGraphExpandRow_Private(PetscFwkGraph graph, PetscInt row) 
+{
   PetscErrorCode ierr;
-  PetscInt rowlen, rowmax, rowoffset;
-  PetscInt ii;
+  PetscInt       rowlen, rowmax, rowoffset;
+  PetscInt       ii;
+
   PetscFunctionBegin;
   rowlen = graph->outdegree[row]; 
   rowmax = graph->i[row+1] - graph->i[row]; 
@@ -251,7 +253,8 @@ PetscErrorCode PetscFwkGraphTopologicalSort(PetscFwkGraph graph, PetscInt *n, Pe
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkGraphDestroy"
-PetscErrorCode PetscFwkGraphDestroy(PetscFwkGraph graph) {
+PetscErrorCode PetscFwkGraphDestroy(PetscFwkGraph graph) 
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscFree(graph->i);        CHKERRQ(ierr);
@@ -259,13 +262,13 @@ PetscErrorCode PetscFwkGraphDestroy(PetscFwkGraph graph) {
   ierr = PetscFree(graph->outdegree);     CHKERRQ(ierr);
   ierr = PetscFree(graph->indegree); CHKERRQ(ierr);
   ierr = PetscFree(graph);           CHKERRQ(ierr);
-  graph = PETSC_NULL;
   PetscFunctionReturn(0);
 }/* PetscFwkGraphDestroy() */
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkGraphCreate"
-PetscErrorCode PetscFwkGraphCreate(PetscFwkGraph *graph_p) {
+PetscErrorCode PetscFwkGraphCreate(PetscFwkGraph *graph_p) 
+{
   PetscFwkGraph graph;
   PetscErrorCode ierr;
   PetscFunctionBegin;

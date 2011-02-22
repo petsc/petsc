@@ -1037,7 +1037,7 @@ PetscErrorCode  MatDestroy_(Mat A)
   if (A->rbmapping) {ierr = ISLocalToGlobalMappingDestroy(A->rbmapping);CHKERRQ(ierr);}
   if (A->cbmapping) {ierr = ISLocalToGlobalMappingDestroy(A->cbmapping);CHKERRQ(ierr);}
 
-  if (A->spptr){ierr = PetscFree(A->spptr);CHKERRQ(ierr);}
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(A->cmap);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(A);CHKERRQ(ierr);

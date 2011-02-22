@@ -233,8 +233,8 @@ PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
   PetscFunctionBegin;
    PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (nf < 0 || nf >= dd->w) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
-  if (dd->fieldname[nf]) {ierr = PetscFree(dd->fieldname[nf]);CHKERRQ(ierr);}
-   ierr = PetscStrallocpy(name,&dd->fieldname[nf]);CHKERRQ(ierr);
+  ierr = PetscFree(dd->fieldname[nf]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(name,&dd->fieldname[nf]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -993,11 +993,7 @@ PetscErrorCode  PetscFinalize(void)
   /* cannot actually destroy the left over objects, but destroy the list */
   PetscObjectsCounts    = 0;
   PetscObjectsMaxCounts = 0;
-  if (PetscObjects) {
-    ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
-    PetscObjects = 0;
-  }
-
+  ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
 
 
 #if defined(PETSC_USE_LOG)

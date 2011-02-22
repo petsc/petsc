@@ -195,14 +195,13 @@ static PetscErrorCode PCApply_BiCGStabCUSP(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCDestroy_BiCGStabCUSP"
 static PetscErrorCode PCDestroy_BiCGStabCUSP(PC pc)
 {
-  PC_BiCGStabCUSP *bicg = (PC_BiCGStabCUSP*)pc->data;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   /*
       Free the private data structure that was hanging off the PC
   */
-  ierr = PetscFree(bicg);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

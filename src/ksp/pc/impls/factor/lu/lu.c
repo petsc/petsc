@@ -175,7 +175,7 @@ static PetscErrorCode PCDestroy_LU(PC pc)
   if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
   ierr = PetscFree(((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
   ierr = PetscFree(((PC_Factor*)dir)->solvertype);CHKERRQ(ierr);
-  ierr = PetscFree(dir);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

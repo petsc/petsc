@@ -209,12 +209,12 @@ static PetscErrorCode TSStep_SSP(TS ts,PetscInt *steps,PetscReal *ptime)
 #define __FUNCT__ "TSDestroy_SSP"
 static PetscErrorCode TSDestroy_SSP(TS ts)
 {
-  TS_SSP       *ssp = (TS_SSP*)ts->data;
+  TS_SSP         *ssp = (TS_SSP*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ssp->work) {ierr = VecDestroyVecs(&ssp->work,ssp->nwork);CHKERRQ(ierr);}
-  ierr = PetscFree(ssp);CHKERRQ(ierr);
+  ierr = PetscFree(ts->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/

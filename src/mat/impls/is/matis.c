@@ -257,7 +257,7 @@ PetscErrorCode MatZeroRows_IS(Mat A,PetscInt n,const PetscInt rows[],PetscScalar
     ierr = ISGlobalToLocalMappingApply(is->mapping,IS_GTOLM_DROP,n,rows,&n_l,rows_l);CHKERRQ(ierr);
   }
   ierr = MatZeroRowsLocal(A,n_l,rows_l,diag,x,b);CHKERRQ(ierr);
-  if (rows_l) { ierr = PetscFree(rows_l);CHKERRQ(ierr); }
+  ierr = PetscFree(rows_l);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 

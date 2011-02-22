@@ -328,7 +328,7 @@ static PetscErrorCode PCDestroy_Jacobi(PC pc)
   /*
       Free the private data structure that was hanging off the PC
   */
-  ierr = PetscFree(jac);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

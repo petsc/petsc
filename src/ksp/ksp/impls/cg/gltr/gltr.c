@@ -905,8 +905,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       ierr = PetscFree(cg->rwork);CHKERRQ(ierr);
       ierr = PetscFree(cg->iwork);CHKERRQ(ierr);
       cg->alloced += cg->init_alloc;
-    }
-    else {
+    } else {
       cg->alloced = cg->init_alloc;
     }
 

@@ -174,14 +174,13 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
 #define __FUNCT__ "PCDestroy_PBJacobi"
 static PetscErrorCode PCDestroy_PBJacobi(PC pc)
 {
-  PC_PBJacobi    *jac = (PC_PBJacobi*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /*
       Free the private data structure that was hanging off the PC
   */
-  ierr = PetscFree(jac);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */

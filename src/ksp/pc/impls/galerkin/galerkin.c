@@ -67,7 +67,7 @@ static PetscErrorCode PCDestroy_Galerkin(PC pc)
   if (jac->x) {ierr = VecDestroy(jac->x);CHKERRQ(ierr);}
   if (jac->b) {ierr = VecDestroy(jac->b);CHKERRQ(ierr);}
   ierr = KSPDestroy(jac->ksp);CHKERRQ(ierr);
-  ierr = PetscFree(jac);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

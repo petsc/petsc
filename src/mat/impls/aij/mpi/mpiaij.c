@@ -2742,9 +2742,7 @@ PetscErrorCode MatGetRowMaxAbs_MPIAIJ(Mat A, Vec v, PetscInt idx[])
 
   ierr = VecRestoreArray(v,&va);CHKERRQ(ierr); 
   ierr = VecRestoreArray(vtmp,&vb);CHKERRQ(ierr); 
-  if (idxb) {
-    ierr = PetscFree(idxb);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(idxb);CHKERRQ(ierr);
   ierr = VecDestroy(vtmp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2784,9 +2782,7 @@ PetscErrorCode MatGetRowMinAbs_MPIAIJ(Mat A, Vec v, PetscInt idx[])
 
   ierr = VecRestoreArray(v,&va);CHKERRQ(ierr); 
   ierr = VecRestoreArray(vtmp,&vb);CHKERRQ(ierr); 
-  if (idxb) {
-    ierr = PetscFree(idxb);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(idxb);CHKERRQ(ierr);
   ierr = VecDestroy(vtmp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

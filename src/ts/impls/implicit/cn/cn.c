@@ -266,7 +266,7 @@ static PetscErrorCode TSDestroy_CN(TS ts)
   if (cn->rhsfunc) {ierr = VecDestroy(cn->rhsfunc);CHKERRQ(ierr);}
   if (cn->rhsfunc_old) {ierr = VecDestroy(cn->rhsfunc_old);CHKERRQ(ierr);}
   if (cn->rhs) {ierr = VecDestroy(cn->rhs);CHKERRQ(ierr);}
-  ierr = PetscFree(cn);CHKERRQ(ierr);
+  ierr = PetscFree(ts->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

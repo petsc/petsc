@@ -62,10 +62,8 @@ int main(int argc,char **argv)
 
   /* Create distributed array and get vectors */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,wrap,st,M,N,m,n,w,s,lx,ly,&da);CHKERRQ(ierr);
-  if (lx) { 
-    ierr = PetscFree(lx);CHKERRQ(ierr);
-    ierr = PetscFree(ly);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(lx);CHKERRQ(ierr);
+  ierr = PetscFree(ly);CHKERRQ(ierr);
 
   ierr = DMView(da,viewer);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);

@@ -268,7 +268,6 @@ PetscErrorCode  PetscOpenMPHandle(MPI_Comm comm)
       PetscInt i;
       ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
       ierr = PetscFree(objects[i]);CHKERRQ(ierr);
-      objects[i] = 0;
       break;
     }
     case 2: {  /* run a function on this worker process */
@@ -363,8 +362,7 @@ PetscErrorCode  PetscOpenMPFree(MPI_Comm comm,void *ptr)
   for (i=0; i<numberobjects; i++) {
     if (objects[i] == ptr) {
       ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-      ierr = PetscFree(ptr);CHKERRQ(ierr);
-      objects[i] = 0;
+      ierr = PetscFree(objects[i]);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
   }

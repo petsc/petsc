@@ -34,8 +34,7 @@ PetscErrorCode MatDestroy_MPIAIJCRL(Mat A)
     ierr = VecDestroy(aijcrl->xwork);CHKERRQ(ierr);
   }
   ierr = PetscFree(aijcrl->array);CHKERRQ(ierr);
-  ierr = PetscFree(aijcrl);CHKERRQ(ierr);
-  A->spptr = 0;
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName( (PetscObject)A, MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);

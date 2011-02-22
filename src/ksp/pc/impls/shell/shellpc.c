@@ -206,7 +206,7 @@ static PetscErrorCode PCDestroy_Shell(PC pc)
   if (shell->destroy) {
     PetscStackCall("PCSHELL user function destroy()",ierr  = (*shell->destroy)(pc);CHKERRQ(ierr));
   }
-  ierr = PetscFree(shell);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

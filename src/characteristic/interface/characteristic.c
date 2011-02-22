@@ -712,9 +712,7 @@ PetscErrorCode CharacteristicGetValuesEnd(Characteristic c)
   PetscFunctionBegin;
   ierr = MPI_Waitall(c->numNeighbors-1, c->request, c->status);CHKERRQ(ierr);
   /* Free queue of requests from other procs */
-  if (c->queueRemote) {
-    ierr = PetscFree(c->queueRemote);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(c->queueRemote);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

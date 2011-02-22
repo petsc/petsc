@@ -659,7 +659,7 @@ PetscErrorCode  KSPDefaultConvergedDestroy(void *ctx)
 
   PetscFunctionBegin;
   if (cctx->work) {ierr = VecDestroy(cctx->work);CHKERRQ(ierr);}
-  ierr = PetscFree(cctx);CHKERRQ(ierr);
+  ierr = PetscFree(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

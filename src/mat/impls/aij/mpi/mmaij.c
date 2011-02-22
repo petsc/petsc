@@ -185,7 +185,6 @@ PetscErrorCode DisAssemble_MPIAIJ(Mat A)
     aij->colmap = 0;
 #else
     ierr = PetscFree(aij->colmap);CHKERRQ(ierr);
-    aij->colmap = 0;
     ierr = PetscLogObjectMemory(A,-aij->B->cmap->n*sizeof(PetscInt));CHKERRQ(ierr);
 #endif
   }
@@ -212,7 +211,6 @@ PetscErrorCode DisAssemble_MPIAIJ(Mat A)
     }
   }
   ierr = PetscFree(aij->garray);CHKERRQ(ierr);
-  aij->garray = 0;
   ierr = PetscLogObjectMemory(A,-ec*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = MatDestroy(B);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(A,Bnew);CHKERRQ(ierr);

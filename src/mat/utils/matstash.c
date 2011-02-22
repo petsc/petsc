@@ -138,17 +138,12 @@ PetscErrorCode MatStashScatterEnd_Private(MatStash *stash)
     stash->space      = 0;
   }
   ierr = PetscFree(stash->send_waits);CHKERRQ(ierr);
-  stash->send_waits = 0;
   ierr = PetscFree(stash->recv_waits);CHKERRQ(ierr);
-  stash->recv_waits = 0;
   ierr = PetscFree2(stash->svalues,stash->sindices);CHKERRQ(ierr);
-  stash->svalues = 0;
   ierr = PetscFree(stash->rvalues[0]);CHKERRQ(ierr);
   ierr = PetscFree(stash->rvalues);CHKERRQ(ierr);
-  stash->rvalues = 0;
   ierr = PetscFree(stash->rindices[0]);CHKERRQ(ierr);
   ierr = PetscFree(stash->rindices);CHKERRQ(ierr);
-  stash->rindices = 0;
   PetscFunctionReturn(0);
 }
 

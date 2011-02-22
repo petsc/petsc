@@ -116,7 +116,7 @@ static PetscErrorCode PCDestroy_Eisenstat(PC pc)
   if (eis->b)     {ierr = VecDestroy(eis->b);CHKERRQ(ierr);}
   if (eis->shell) {ierr = MatDestroy(eis->shell);CHKERRQ(ierr);}
   if (eis->diag)  {ierr = VecDestroy(eis->diag);CHKERRQ(ierr);}
-  ierr = PetscFree(eis);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -238,10 +238,9 @@ PetscErrorCode PCDestroy_MG_Private(PC pc)
       ierr = KSPDestroy(mglevels[i]->smoothu);CHKERRQ(ierr);
       ierr = PetscFree(mglevels[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFree(mglevels);CHKERRQ(ierr);
+    ierr = PetscFree(mg->levels);CHKERRQ(ierr);
   }
   mg->nlevels = -1;
-  mg->levels  = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -249,12 +248,11 @@ PetscErrorCode PCDestroy_MG_Private(PC pc)
 #define __FUNCT__ "PCDestroy_MG"
 PetscErrorCode PCDestroy_MG(PC pc)
 {
-  PC_MG          *mg = (PC_MG*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PCDestroy_MG_Private(pc);CHKERRQ(ierr);
-  ierr = PetscFree(mg);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

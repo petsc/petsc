@@ -57,13 +57,10 @@ int main(int argc,char **argv)
   }
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,wrap,stencil_type,M,N,P,m,n,p,w,s,
-                    lx,ly,lz,&da);CHKERRQ(ierr);
-  if (lx) {
-    ierr = PetscFree(lx);CHKERRQ(ierr);
-    ierr = PetscFree(ly);CHKERRQ(ierr);
-    ierr = PetscFree(lz);CHKERRQ(ierr);
-  }
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,wrap,stencil_type,M,N,P,m,n,p,w,s,lx,ly,lz,&da);CHKERRQ(ierr);
+  ierr = PetscFree(lx);CHKERRQ(ierr);
+  ierr = PetscFree(ly);CHKERRQ(ierr);
+  ierr = PetscFree(lz);CHKERRQ(ierr);
   ierr = DMView(da,viewer);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);

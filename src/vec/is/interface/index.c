@@ -220,12 +220,8 @@ PetscErrorCode  ISDestroy(IS is)
     ierr = (*is->ops->destroy)(is);CHKERRQ(ierr);
   }
   /* Destroy local representations of offproc data. */
-  if(is->total) {
-    ierr = PetscFree(is->total); CHKERRQ(ierr);
-  }
-  if(is->nonlocal) {
-    ierr = PetscFree(is->nonlocal); CHKERRQ(ierr);
-  }
+  ierr = PetscFree(is->total); CHKERRQ(ierr);
+  ierr = PetscFree(is->nonlocal); CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

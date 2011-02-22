@@ -160,8 +160,7 @@ static PetscErrorCode KSPDestroy_SpecEst(KSP ksp)
   ierr = KSPDestroy(spec->kspest);CHKERRQ(ierr);
   ierr = KSPDestroy(spec->kspcheap);CHKERRQ(ierr);
   ierr = PCDestroy(spec->pcnone);CHKERRQ(ierr);
-  ierr = PetscFree(spec);CHKERRQ(ierr);
-  ksp->data = PETSC_NULL;
+  ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

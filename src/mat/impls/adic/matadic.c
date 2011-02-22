@@ -223,7 +223,7 @@ PetscErrorCode MatSOR_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscRea
 #define __FUNCT__ "MatDestroy_DAAD"
 PetscErrorCode MatDestroy_DAAD(Mat A)
 {
-  Mat_DAAD *a = (Mat_DAAD*)A->data;
+  Mat_DAAD       *a = (Mat_DAAD*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

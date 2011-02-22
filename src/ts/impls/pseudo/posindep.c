@@ -188,14 +188,14 @@ static PetscErrorCode TSStep_Pseudo(TS ts,PetscInt *steps,PetscReal *ptime)
 #define __FUNCT__ "TSDestroy_Pseudo"
 static PetscErrorCode TSDestroy_Pseudo(TS ts)
 {
-  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
+  TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (pseudo->update) {ierr = VecDestroy(pseudo->update);CHKERRQ(ierr);}
   if (pseudo->func) {ierr = VecDestroy(pseudo->func);CHKERRQ(ierr);}
   if (pseudo->xdot) {ierr = VecDestroy(pseudo->xdot);CHKERRQ(ierr);}
-  ierr = PetscFree(pseudo);CHKERRQ(ierr);
+  ierr = PetscFree(ts->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
