@@ -47,6 +47,9 @@ class Configure(config.base.Configure):
     if self.useShared:
       if config.setCompilers.Configure.isSolaris() and config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
         self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase+'gnu')
+
+      elif config.setCompilers.Configure.isIBM(self.framework.getCompiler()):
+        self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase+'ibm')
       else:
         self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase)
       self.addMakeMacro('BUILDSHAREDLIB','yes')
