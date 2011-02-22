@@ -639,7 +639,7 @@ namespace ALE {
           if (!subBundle.isNull() && !subBundleNew.isNull()) {
             part_type *subAssignment = GenPartitioner::subordinatePartition(bundle, 1, subBundle, assignment);
             const Obj<sieve_type>& sieve      = subBundle->getSieve();
-            const Obj<sieve_type>& sieveNew   = new Mesh::sieve_type(subBundle->comm(), subBundle->debug());
+            const Obj<sieve_type>& sieveNew   = new typename ALE::Mesh<PetscInt,PetscScalar>::sieve_type(subBundle->comm(), subBundle->debug());
             const int              numCells   = subBundle->heightStratum(height)->size();
 
             subBundleNew->setSieve(sieveNew);
@@ -661,7 +661,7 @@ namespace ALE {
           if (!subBundle.isNull() && !subBundleNew.isNull()) {
             part_type *subAssignment = GenPartitioner::subordinatePartition(bundle, 1, subBundle, assignment);
             const Obj<sieve_type>& sieve      = subBundle->getSieve();
-            const Obj<sieve_type>& sieveNew   = new Mesh::sieve_type(subBundle->comm(), subBundle->debug());
+            const Obj<sieve_type>& sieveNew   = new typename ALE::Mesh<PetscInt,PetscScalar>::sieve_type(subBundle->comm(), subBundle->debug());
             const int              numCells   = subBundle->heightStratum(height)->size();
 
             subBundleNew->setSieve(sieveNew);
