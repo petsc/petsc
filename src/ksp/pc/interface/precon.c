@@ -1131,21 +1131,31 @@ PetscErrorCode  PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (mat) {
     if (!pc->mat) {
-      ierr = MatCreate(((PetscObject)pc)->comm,&pc->mat);CHKERRQ(ierr);
-      if (!pc->pmat && !pmat) { /* user did NOT request pmat, so make same as mat */
-        pc->pmat = pc->mat;
-        ierr     = PetscObjectReference((PetscObject)pc->pmat);CHKERRQ(ierr); 
-      } 
+      if (pc->pmat && !pmat) {  /* pmat has been set, but user did not request it, so use for mat */
+        pc->mat = pc->pmat;
+        ierr = PetscObjectReference((PetscObject)pc->mat);CHKERRQ(ierr);
+      } else {                  /* both mat and pmat are empty */
+        ierr = MatCreate(((PetscObject)pc)->comm,&pc->mat);CHKERRQ(ierr);
+        if (!pmat) { /* user did NOT request pmat, so make same as mat */
+          pc->pmat = pc->mat;
+          ierr     = PetscObjectReference((PetscObject)pc->pmat);CHKERRQ(ierr);
+        }
+      }
     }
     *mat  = pc->mat;
   }  
   if (pmat) {
     if (!pc->pmat) {
-      ierr = MatCreate(((PetscObject)pc)->comm,&pc->mat);CHKERRQ(ierr);
-      if (!pc->mat && !mat) { /* user did NOT request mat, so make same as pmat */
-        pc->mat = pc->pmat;
-        ierr    = PetscObjectReference((PetscObject)pc->mat);CHKERRQ(ierr); 
-      } 
+      if (pc->mat && !mat) {    /* mat has been set but was not requested, so use for pmat */
+        pc->pmat = pc->mat;
+        ierr    = PetscObjectReference((PetscObject)pc->pmat);CHKERRQ(ierr);
+      } else {
+        ierr = MatCreate(((PetscObject)pc)->comm,&pc->pmat);CHKERRQ(ierr);
+        if (!mat) { /* user did NOT request mat, so make same as pmat */
+          pc->mat = pc->pmat;
+          ierr    = PetscObjectReference((PetscObject)pc->mat);CHKERRQ(ierr);
+        }
+      }
     }
     *pmat = pc->pmat;
   }
