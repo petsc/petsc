@@ -875,7 +875,7 @@ class Configure(config.base.Configure):
       languages.append('FC')
     for language in languages:
       self.pushLanguage(language)
-      for testFlag in ['-PIC', '-fPIC', '-KPIC']:
+      for testFlag in ['-PIC', '-fPIC', '-KPIC','-qpic']:
         try:
           self.framework.logPrint('Trying '+language+' compiler flag '+testFlag)
           if not self.checkLinkerFlag(testFlag):
@@ -1083,6 +1083,7 @@ class Configure(config.base.Configure):
       yield (self.CXX, ['-shared'], 'so')
     # C compiler default
     yield (self.CC, ['-shared'], 'so')
+    yield (self.CC, ['-qmkshrobj'], 'so')
     # Solaris default
     if Configure.isSolaris():
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':

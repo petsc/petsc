@@ -308,7 +308,7 @@ class Configure(config.package.Package):
     return
 
   def getSharedFlag(self,cflags):
-    for flag in ['-PIC', '-fPIC', '-KPIC']:
+    for flag in ['-PIC', '-fPIC', '-KPIC', '-qpic']:
       if cflags.find(flag) >=0: return flag
     return ''
 
