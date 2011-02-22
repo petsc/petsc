@@ -502,6 +502,8 @@ class Configure(config.package.Package):
     args.append('--enable-fast')
     args = ' '.join(args)
 
+    if os.path.isfile(os.path.join(self.packageDir, 'args.petsc')):
+      os.rename(os.path.join(self.packageDir, 'args.petsc'), os.path.join(self.packageDir, 'args.petsc.bkp'))
     f = file(os.path.join(self.packageDir, 'args.petsc'), 'w')
     f.write(args)
     f.close()
