@@ -1,3 +1,23 @@
+subroutine formFunction_C(nx, ny, nz, h, t, x, xdot, f) &
+     bind(C, name="formFunction")
+  use ISO_C_BINDING, only: C_INT, C_DOUBLE
+  implicit none
+  integer(kind=C_INT), intent(in)    :: nx, ny, nz
+  real(kind=C_DOUBLE), intent(in)    :: h(3), t
+  real(kind=C_DOUBLE), intent(in)    :: x(nx,ny,nz), xdot(nx,ny,nz)
+  real(kind=C_DOUBLE), intent(inout) :: f(nx,ny,nz)
+  call formfunction(nx, ny, nz, h, t, x, xdot, f)
+end subroutine formFunction_C
+subroutine formInitial_C(nx, ny, nz, h, t, x) &
+     bind(C, name="formInitial")
+  use ISO_C_BINDING, only: C_INT, C_DOUBLE
+  implicit none
+  integer(kind=C_INT), intent(in)    :: nx, ny, nz
+  real(kind=C_DOUBLE), intent(in)    :: h(3), t
+  real(kind=C_DOUBLE), intent(inout) :: x(nx,ny,nz)
+  call forminitial(nx, ny, nz, h, t, x)
+end subroutine formInitial_C
+
 subroutine evalK (P, K)
   real(kind=8), intent(in)  :: P
   real(kind=8), intent(out) :: K

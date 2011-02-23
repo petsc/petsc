@@ -1,0 +1,13 @@
+# -*- makefile -*-
+
+MODULE=App
+.PHONY:all
+all: ${MODULE}.so
+
+F2PY = f2py
+F2PY_FLAGS  = --quiet
+F2PY_FLAGS += --noarch --f90flags=''
+F2PY_FLAGS += -DF2PY_REPORT_ON_ARRAY_COPY=1
+
+${MODULE}.so: ${MODULE}.pyf ${MODULE}.f90
+	${F2PY} ${F2PY_FLAGS} -m ${MODULE} -c $< ${MODULE}.f90

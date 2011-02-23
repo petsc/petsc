@@ -1,11 +1,11 @@
 #include <petsc.h>
 
-#define formInitial forminitial_
+EXTERN_C_BEGIN
 extern void formInitial(int*,int*,int*,double*,
                         double*,double*);
-#define formFunction formfunction_
 extern void formFunction(int*,int*,int*,double*,
                          double*,double*,double*,double*);
+EXTERN_C_END
 
 typedef struct AppCtx {
   PetscInt    nx,ny,nz;
