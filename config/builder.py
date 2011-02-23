@@ -603,7 +603,14 @@ class PETScMaker(script.Script):
    return self.compile(self.configInfo.languages.clanguage, source, objDir)
 
  def compileFortran(self, source, objDir = None):
-   return self.compile('FC', source, objDir)
+   objects = self.compile('FC', source, objDir)
+   # Copy any module files produced into the include directory
+   for locMod in os.listdir(os.getcwd()):
+     if os.path.splitext(locMod)[1] == '.mod':
+       mod = os.path.join(self.petscDir, self.petscArch, 'include', locMod)
+       self.logPrint('Moving F90 module %s to %s' % (locMod, mod))
+       shutil.move(locMod, mod)
+   return objects
 
  def archive(self, library, objects):
    '''${AR} ${AR_FLAGS} ${LIBNAME} $*.o'''
