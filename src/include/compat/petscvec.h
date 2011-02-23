@@ -14,6 +14,21 @@
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
+#define __FUNCT__ "VecDestroyVecs"
+static PetscErrorCode VecDestroyVecs_Compat(Vec *vv[],PetscInt m)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidPointer(vv,1);
+  ierr = VecDestroyVecs(vv[0],m);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define VecDestroyVecs VecDestroyVecs_Compat
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
 #define __FUNCT__ "VecLoad"
 static PetscErrorCode VecLoad_Compat(Vec vec,PetscViewer viewer)
 {
