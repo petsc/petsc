@@ -225,6 +225,7 @@ class DirectoryTreeWalker(logger.Logger):
     if not os.path.isfile(makename):
       if os.path.isfile(os.path.join(dirname, 'Makefile')): self.logPrint('ERROR: Change Makefile to makefile in '+dirname, debugSection = 'screen')
       return False
+
     # Parse makefile
     import re
     reg = re.compile(' [ ]*')
@@ -287,7 +288,7 @@ class DirectoryTreeWalker(logger.Logger):
       return self.allowExamples
     elif base in ['externalpackages', 'projects', 'tutorials', 'benchmarks', 'contrib']:
       return False
-    elif base.startswith('ftn-') or base.startswith('f90-'):
+    elif base in ['ftn-auto', 'ftn-custom', 'f90-custom']:
       return self.allowFortran
     return self.checkSourceDir(dirname)
 
@@ -361,8 +362,9 @@ class DependencyBuilder(logger.Logger):
     '''Read *.d file with dependency information and store it in the source database'''
     with file(depFile) as f:
       target, deps = f.read().split(':')
-      assert(target == self.sourceManager.getObjectName(source))
-    deps = deps.replace('\\','').split()
+    target = target.split()[0]
+    assert(target == self.sourceManager.getObjectName(source))
+    deps = [d for d in deps.replace('\\','').split() if not os.path.splitext(d)[1] == '.mod']
     assert(deps[0] == source)
     self.sourceDatabase.setNode(os.path.join(dirname, source), [os.path.join(dirname, d) for d in deps[1:]])
     return
