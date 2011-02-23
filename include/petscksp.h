@@ -395,7 +395,7 @@ typedef enum {/* converged */
               KSP_DIVERGED_INDEFINITE_MAT      = -10,
  
               KSP_CONVERGED_ITERATING          =  0} KSPConvergedReason;
-extern const char **KSPConvergedReasons;
+extern const char *const*KSPConvergedReasons;
 
 /*MC
      KSP_CONVERGED_RTOL - norm(r) <= rtol*norm(b)

@@ -242,7 +242,7 @@ typedef enum {/* converged */
               SNES_DIVERGED_LINE_SEARCH         = -6, /* the line search failed */ 
               SNES_DIVERGED_LOCAL_MIN           = -8, /* || J^T b || is small, implies converged to local minimum of F() */
               SNES_CONVERGED_ITERATING          =  0} SNESConvergedReason;
-extern const char **SNESConvergedReasons;
+extern const char *const*SNESConvergedReasons;
 
 /*MC
      SNES_CONVERGED_FNORM_ABS - 2-norm(F) <= abstol

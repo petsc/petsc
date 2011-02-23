@@ -17,7 +17,7 @@ const char *SNESConvergedReasons_Shifted[]  = {" "," ","DIVERGED_LOCAL_MIN"," ",
                                                "DIVERGED_FNORM_NAN","DIVERGED_LINEAR_SOLVE","DIVERGED_FUNCTION_COUNT","DIVERGED_FUNCTION_DOMAIN",
                                                "CONVERGED_ITERATING"," ","CONVERGED_FNORM_ABS","CONVERGED_FNORM_RELATIVE",
                                                "CONVERGED_PNORM_RELATIVE","CONVERGED_ITS"," ","CONVERGED_TR_DELTA","SNESConvergedReason","",0};
-const char **SNESConvergedReasons = SNESConvergedReasons_Shifted + 10;
+const char *const*SNESConvergedReasons = SNESConvergedReasons_Shifted + 10;
 
 /*
       This is used by SNESSetType() to make sure that at least one 
