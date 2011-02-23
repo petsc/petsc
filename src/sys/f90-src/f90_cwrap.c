@@ -51,10 +51,13 @@ PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,PetscInt start,Pe
 {
   PetscFunctionBegin;
   if (type == PETSC_SCALAR) {
+    if (!len) array = PETSC_NULL_SCALAR_Fortran;
     f90array1dcreatescalar_(array,&start,&len,ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_REAL) {
+    if (!len) array = PETSC_NULL_REAL_Fortran;
     f90array1dcreatereal_(array,&start,&len,ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_INT) {
+    if (!len) array = PETSC_NULL_INTEGER_Fortran;
     f90array1dcreateint_(array,&start,&len,ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_FORTRANADDR) {
     f90array1dcreatefortranaddr_(array,&start,&len,ptr PETSC_F90_2PTR_PARAM(ptrd));
