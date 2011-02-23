@@ -48,6 +48,9 @@ class NullSourceDatabase(object):
   def __init__(self, verbose = 0):
     return
 
+  def __len__(self):
+    return 0
+
   def setNode(self, vertex, deps):
     return
 
@@ -587,7 +590,7 @@ class PETScMaker(script.Script):
    flags.extend([self.configInfo.setCompilers.CPPFLAGS, self.configInfo.CHUD.CPPFLAGS]) # Add CPP_FLAGS
    flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscDir, ''))                 # Define __INSDIR__
    # TODO: Move this up to configure
-   if self.argDB['dependencies']: flags.append('-MMD')
+   flags.append('-MMD')
    cmd      = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
    self.logWrite(cmd+'\n', debugSection = self.debugSection, forceScroll = True)
    if not self.dryRun:
