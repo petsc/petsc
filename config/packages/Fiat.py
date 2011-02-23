@@ -41,6 +41,7 @@ class Configure(config.package.Package):
     self.framework.log.write('==================================================================================\n')
     self.framework.log.write('Checking for a functional '+self.name+'\n')
 
+    self.checkDependencies()
     for location, rootDir, lib, incDir in self.generateGuesses():
       try:
         libDir = os.path.dirname(lib[0])
@@ -51,6 +52,7 @@ class Configure(config.package.Package):
         from FIAT import ufc_simplex
         import FIAT.lagrange
         import FIAT.quadrature
+        self.found = 1
         return
       except ImportError, e:
         self.framework.logPrint('ERROR: Could not import FIAT: '+str(e))

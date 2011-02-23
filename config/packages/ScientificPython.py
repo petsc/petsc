@@ -40,6 +40,7 @@ class Configure(config.package.Package):
     self.framework.log.write('==================================================================================\n')
     self.framework.log.write('Checking for a functional '+self.name+'\n')
 
+    self.checkDependencies()
     for location, rootDir, lib, incDir in self.generateGuesses():
       try:
         libDir = os.path.dirname(lib[0])
@@ -47,6 +48,7 @@ class Configure(config.package.Package):
         self.framework.logPrint('Added directory '+libDir+' to Python path')
         sys.path.insert(0, libDir)
         import Scientific.Functions.Derivatives
+        self.found = 1
         return
       except ImportError, e:
         self.framework.logPrint('ERROR: Could not import Scientific Python: '+str(e))

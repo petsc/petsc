@@ -214,21 +214,26 @@ class Package(config.base.Configure):
       alllibs.append(libs)
     return alllibs
 
+  def getIncludeDirs(self, prefix, includeDir):
+    if isinstance(includedir, list):
+      return [inc for inc in includedir if os.path.isabs(inc)] + [os.path.join(prefix, inc) for inc in includedir if not os.path.isabs(inc)]
+    return os.path.join(prefix, includeDir)
+
   def generateGuesses(self):
     d = self.checkDownload(1)
     if d:
       for l in self.generateLibList(os.path.join(d, self.libdir)):
-        yield('Download '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
+        yield('Download '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
       for l in self.generateLibList(os.path.join(d, self.altlibdir)):
-        yield('Download '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
+        yield('Download '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+d+'\n')
 
     if 'with-'+self.package+'-dir' in self.framework.argDB:
       d = self.framework.argDB['with-'+self.package+'-dir']
       for l in self.generateLibList(os.path.join(d, self.libdir)):
-        yield('User specified root directory '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
+        yield('User specified root directory '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
       for l in self.generateLibList(os.path.join(d, self.altlibdir)):
-        yield('User specified root directory '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
+        yield('User specified root directory '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
       if 'with-'+self.package+'-include' in self.framework.argDB:
         raise RuntimeError('Do not set --with-'+self.package+'-include if you set --with-'+self.package+'-dir')
       if 'with-'+self.package+'-lib' in self.framework.argDB:
@@ -259,21 +264,18 @@ class Package(config.base.Configure):
     for d in self.getSearchDirectories():
       for libdir in [self.libdir, self.altlibdir]:
         for l in self.generateLibList(os.path.join(d, libdir)):
-          if isinstance(self.includedir, list):
-            includedir = ([inc for inc in self.includedir if os.path.isabs(inc)] +
-                          [os.path.join(d, inc) for inc in self.includedir if not os.path.isabs(inc)])
-          elif d:
-            includedir = os.path.join(d, self.includedir)
-          else:
+          if not d:
             includedir = ''
+          else:
+            includeDir = self.getIncludeDirs(d, self.includedir)
           yield('Package specific search directory '+self.PACKAGE, d, l, includedir)
 
     d = self.checkDownload(requireDownload = 0)
     if d:
       for l in self.generateLibList(os.path.join(d, self.libdir)):
-        yield('Download '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
+        yield('Download '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
       for l in self.generateLibList(os.path.join(d, self.altlibdir)):
-        yield('Download '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
+        yield('Download '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+self.getInstallDir()+'\n')
 
     if not self.lookforbydefault:
@@ -396,16 +398,7 @@ class Package(config.base.Configure):
     self.compilers.LIBS = oldLibs
     return result
 
-  def configureLibrary(self):
-    '''Find an installation and check if it can work with PETSc'''
-    self.framework.log.write('==================================================================================\n')
-    self.framework.logPrint('Checking for a functional '+self.name)
-    foundLibrary = 0
-    foundHeader  = 0
-
-    # get any libraries and includes we depend on
-    libs         = []
-    incls        = []
+  def checkDependencies(self, libs = None, incls = None):
     for package in self.deps:
       if not hasattr(package, 'found'):
         raise RuntimeError('Package '+package.name+' does not have found attribute!')
@@ -414,8 +407,21 @@ class Package(config.base.Configure):
           raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
         else:
           raise RuntimeError('Did not find package '+package.PACKAGE+' needed by '+self.name+'.\nEnable the package using --with-'+package.package+' or --download-'+package.package)
-      if hasattr(package, 'dlib'):    libs  += package.dlib
-      if hasattr(package, 'include'): incls += package.include
+      if hasattr(package, 'dlib')    and not libs  is None: libs  += package.dlib
+      if hasattr(package, 'include') and not incls is None: incls += package.include
+    return
+
+  def configureLibrary(self):
+    '''Find an installation and check if it can work with PETSc'''
+    self.framework.log.write('==================================================================================\n')
+    self.framework.logPrint('Checking for a functional '+self.name)
+    foundLibrary = 0
+    foundHeader  = 0
+
+    # get any libraries and includes we depend on
+    libs  = []
+    incls = []
+    self.checkDependencies(libs, incls)
     if self.needsMath:
       if self.libraries.math is None:
         raise RuntimeError('Math library not found')
@@ -957,6 +963,16 @@ class GNUPackage(Package):
     self.setupDefaultDownload()
     Package.configure(self)
 
+  def checkDependencies(self, libs = None, incls = None):
+    Package.checkDependencies(self, libs, incls)
+    for package in self.odeps:
+      if not package.found:
+        if self.framework.argDB['with-'+package.package] == 1:
+          raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
+      if hasattr(package, 'dlib')    and not libs  is None: libs  += package.dlib
+      if hasattr(package, 'include') and not incls is None: incls += package.include
+    return
+
   def configureLibrary(self):
     '''Find an installation and check if it can work with PETSc'''
     self.framework.log.write('==================================================================================\n')
@@ -967,22 +983,7 @@ class GNUPackage(Package):
     # get any libraries and includes we depend on
     libs         = []
     incls        = []
-    for package in self.deps:
-      if not hasattr(package, 'found'):
-        raise RuntimeError('Package '+package.name+' does not have found attribute!')
-      if not package.found:
-        if self.framework.argDB['with-'+package.package] == 1:
-          raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
-        else:
-          raise RuntimeError('Did not find package '+package.PACKAGE+' needed by '+self.name+'.\nEnable the package using --with-'+package.package+' or --download-'+package.package)
-      if hasattr(package, 'dlib'):    libs  += package.dlib
-      if hasattr(package, 'include'): incls += package.include
-    for package in self.odeps:
-      if not package.found:
-        if self.framework.argDB['with-'+package.package] == 1:
-          raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
-      if hasattr(package, 'dlib'):    libs  += package.dlib
-      if hasattr(package, 'include'): incls += package.include
+    self.checkDependencies(libs, incls)
     if self.needsMath:
       if self.libraries.math is None:
         raise RuntimeError('Math library not found')

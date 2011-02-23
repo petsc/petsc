@@ -12,7 +12,7 @@ class Configure(config.package.Package):
     self.liblist    = [['libexoIIv2for.a', 'libexodus.a'], ['libexoIIv2for.a', 'libexoIIv2c.a']]
     self.functions  = ['ex_close']
     self.includes   = ['exodusII.h']
-    self.includedir = os.path.join('cbind', 'include')
+    self.includedir = ['include', os.path.join('cbind', 'include'), os.path.join('forbind', 'include')]
     self.altlibdir  = '.'
     return
 
