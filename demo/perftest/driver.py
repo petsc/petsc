@@ -19,8 +19,8 @@ class AppCtx:
     def __init__(self, nx, ny, nz):
         self.n = np.array([nx, ny, nz], dtype='i')
         self.h = np.array([1.0/(n-1) for n in self.n], dtype='d')
-        from App import formfunction as formFunction
-        from App import forminitial as formInitial
+        from App import formFunction
+        from App import formInitial
         self._formFunction = formFunction
         self._formInitial = formInitial
 
