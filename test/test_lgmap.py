@@ -24,6 +24,13 @@ class BaseTestLGMap(object):
         size = self.lgmap.getSize()
         self.assertTrue(size >=0)
 
+    def testGetIndices(self):
+        size = self.lgmap.getSize()
+        idx  = self.lgmap.getIndices()
+        self.assertEqual(len(idx), size)
+        for i, val in enumerate(self.idx):
+            self.assertEqual(idx[i], val)
+
     def testGetInfo(self):
         info = self.lgmap.getInfo()
         self.assertEqual(type(info), dict)
@@ -45,7 +52,7 @@ class BaseTestLGMap(object):
         is_out = self.lgmap.apply(is_in)
 
     def testProperties(self):
-        for prop in ('size', 'info'):
+        for prop in ('size', 'indices', 'info'):
             self.assertTrue(hasattr(self.lgmap, prop))
 
 # --------------------------------------------------------------------

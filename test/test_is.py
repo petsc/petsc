@@ -69,7 +69,7 @@ class BaseTestIS(object):
         del iset
 
     def testProperties(self):
-        proplist = ['sizes', 'size', 'local_size',
+        proplist = ['sizes', 'size', 'local_size', 'indices',
                     'permutation', 'identity', 'sorted']
         for prop in proplist:
             self.assertTrue(hasattr(self.iset, prop))

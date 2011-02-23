@@ -187,6 +187,36 @@ ISLocalToGlobalMappingCreate_Compat(MPI_Comm comm,PetscInt n,const PetscInt idx[
 }
 #define ISLocalToGlobalMappingCreate ISLocalToGlobalMappingCreate_Compat
 
+#undef __FUNCT__
+#define __FUNCT__ "ISLocalToGlobalMappingCreate"
+static PetscErrorCode
+ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog, 
+                                 const PetscInt **array)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ltog,IS_LTOGM_COOKIE,1);
+  PetscValidPointer(array,2);
+  *array = ltog->indices;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ISLocalToGlobalMappingRestoreIndices"
+static PetscErrorCode
+ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog,
+                                     const PetscInt **array)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ltog,IS_LTOGM_COOKIE,1);
+  PetscValidPointer(array,2);
+  if (*array != ltog->indices) 
+    SETERRQ(PETSC_ERR_ARG_BADPTR,
+            "Trying to return mismatched pointer");
+  *array = PETSC_NULL;
+  PetscFunctionReturn(0);
+}
+
 #endif
 
 #if PETSC_VERSION_(3,0,0)

@@ -66,6 +66,8 @@ cdef extern from * nogil:
     int ISLocalToGlobalMappingDestroy(PetscLGMap)
     int ISLocalToGlobalMappingApplyIS(PetscLGMap,PetscIS,PetscIS*)
     int ISLocalToGlobalMappingGetSize(PetscLGMap,PetscInt*)
+    int ISLocalToGlobalMappingGetIndices(PetscLGMap,const_PetscInt*[])
+    int ISLocalToGlobalMappingRestoreIndices(PetscLGMap,const_PetscInt*[])
     int ISLocalToGlobalMappingGetInfo(PetscLGMap,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[])
     int ISLocalToGlobalMappingRestoreInfo(PetscLGMap,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[])
     int ISLocalToGlobalMappingBlock(PetscLGMap,PetscInt,PetscLGMap*)

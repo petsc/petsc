@@ -292,6 +292,10 @@ cdef class IS(Object):
         def __get__(self):
             return self.getBlockSize()
 
+    property indices:
+        def __get__(self):
+            return self.getIndices()
+
     property array:
         def __get__(self):
             return asarray(self)
@@ -358,6 +362,21 @@ cdef class LGMap(Object):
         CHKERR( ISLocalToGlobalMappingGetSize(self.lgm, &n) )
         return toInt(n)
 
+    def getIndices(self):
+        cdef PetscInt size = 0 
+        cdef const_PetscInt *indices = NULL
+        CHKERR( ISLocalToGlobalMappingGetSize(
+                self.lgm, &size) )
+        CHKERR( ISLocalToGlobalMappingGetIndices(
+                self.lgm, &indices) )
+        cdef object oindices = None
+        try:
+            oindices = array_i(size, indices)
+        finally:
+            CHKERR( ISLocalToGlobalMappingRestoreIndices(
+                    self.lgm, &indices) )
+        return oindices
+
     def getInfo(self):
         cdef PetscInt i, nproc = 0, *procs = NULL,
         cdef PetscInt *numprocs = NULL, **indices = NULL
@@ -371,6 +390,8 @@ cdef class LGMap(Object):
             ISLocalToGlobalMappingRestoreInfo(
                 self.lgm, &nproc, &procs, &numprocs, &indices)
         return neighs
+
+    #
 
     def apply(self, indices, result=None):
         cdef IS isetin, iset
@@ -408,6 +429,10 @@ cdef class LGMap(Object):
     property size:
         def __get__(self):
             return self.getSize()
+
+    property indices:
+        def __get__(self):
+            return self.getIndices()
 
     property info:
         def __get__(self):
