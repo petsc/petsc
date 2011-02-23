@@ -50,7 +50,8 @@ class Configure(PETSc.package.NewPackage):
   def configure(self):
     '''Determine whether the c2html exist or not'''
 
-    if not self.framework.clArgDB.get('with-c2html',True) or not self.framework.clArgDB.get('download-c2html',True):
+    if (self.framework.clArgDB.has_key('with-c2html') and not self.framework.argDB['with-c2html']) or \
+          (self.framework.clArgDB.has_key('download-c2html') and not self.framework.argDB['download-c2html']):
       self.framework.logPrint("Not checking c2html on user request\n")
       return
 
