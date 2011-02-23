@@ -267,7 +267,7 @@ class Package(config.base.Configure):
           if not d:
             includedir = ''
           else:
-            includeDir = self.getIncludeDirs(d, self.includedir)
+            includedir = self.getIncludeDirs(d, self.includedir)
           yield('Package specific search directory '+self.PACKAGE, d, l, includedir)
 
     d = self.checkDownload(requireDownload = 0)
