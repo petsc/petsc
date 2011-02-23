@@ -68,6 +68,7 @@ extern PetscErrorCode  KSPSetUp(KSP);
 extern PetscErrorCode  KSPSetUpOnBlocks(KSP);
 extern PetscErrorCode  KSPSolve(KSP,Vec,Vec);
 extern PetscErrorCode  KSPSolveTranspose(KSP,Vec,Vec);
+extern PetscErrorCode  KSPReset(KSP);
 extern PetscErrorCode  KSPDestroy(KSP);
 
 extern PetscFList KSPList;
