@@ -50,8 +50,7 @@ class Configure(PETSc.package.NewPackage):
   def configure(self):
     '''Determine whether the c2html exist or not'''
 
-    if (self.framework.clArgDB.has_key('with-c2html') and not self.framework.argDB['with-c2html']) or \
-          (self.framework.clArgDB.has_key('download-c2html') and not self.framework.argDB['download-c2html']):
+    if not self.framework.clArgDB.get('with-c2html',True) or not self.framework.clArgDB.get('download-c2html',True):
       self.framework.logPrint("Not checking c2html on user request\n")
       return
 
@@ -64,7 +63,7 @@ class Configure(PETSc.package.NewPackage):
         self.framework.logPrint('Found c2html, will not install c2html')
       else:
         self.framework.logPrint('Installing c2html')
-        if not self.framework.argDB.has_key('download-c2html') or not self.framework.argDB['download-c2html']: self.framework.argDB['download-c2html'] = 1
+        if not self.framework.argDB.get('download-c2html'): self.framework.argDB['download-c2html'] = 1
         PETSc.package.NewPackage.configure(self)
     else:
       self.framework.logPrint("Not a clone of PETSc, don't need c2html\n")

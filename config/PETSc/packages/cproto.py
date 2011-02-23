@@ -39,7 +39,7 @@ class Configure(PETSc.package.NewPackage):
     
   def configure(self):
     '''Determine whether the cproto exist or not'''
-    if self.framework.argDB.has_key('download-cproto') and self.framework.argDB['download-cproto']:
+    if self.framework.argDB.get('download-cproto'):
 
       self.getExecutable('cproto', getFullPath = 1)
       
