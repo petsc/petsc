@@ -566,7 +566,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
     if (flg) lu->options.PivotGrowth = YES;
     ierr = PetscOptionsBool("-mat_superlu_conditionnumber","ConditionNumber","None",(PetscBool)lu->options.ConditionNumber,&flg,0);CHKERRQ(ierr);
     if (flg) lu->options.ConditionNumber = YES;
-    ierr = PetscOptionsEList("-mat_superlu_rowperm","rowperm","None",rowperm,2,rowperm[0],&indx,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-mat_superlu_rowperm","rowperm","None",rowperm,2,rowperm[lu->options.RowPerm],&indx,&flg);CHKERRQ(ierr);
     if (flg) {lu->options.RowPerm = (rowperm_t)indx;}
     ierr = PetscOptionsBool("-mat_superlu_replacetinypivot","ReplaceTinyPivot","None",(PetscBool)lu->options.ReplaceTinyPivot,&flg,0);CHKERRQ(ierr);
     if (flg) lu->options.ReplaceTinyPivot = YES; 

@@ -745,10 +745,14 @@ PetscErrorCode PetscSetMUMPSOptions(Mat F, Mat A)
   ierr = PetscOptionsInt("-mat_mumps_icntl_22","ICNTL(22): in-core/out-of-core facility (0 or 1)","None",lu->id.ICNTL(22),&lu->id.ICNTL(22),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_23","ICNTL(23): max size of the working memory (MB) that can allocate per processor","None",lu->id.ICNTL(23),&lu->id.ICNTL(23),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_24","ICNTL(24): detection of null pivot rows (0 or 1)","None",lu->id.ICNTL(24),&lu->id.ICNTL(24),PETSC_NULL);CHKERRQ(ierr);
+  if (lu->id.ICNTL(24)){
+    lu->id.ICNTL(13) = 1; /* turn-off ScaLAPACK to help with the correct detection of null pivots */
+  }
+
   ierr = PetscOptionsInt("-mat_mumps_icntl_25","ICNTL(25): computation of a null space basis","None",lu->id.ICNTL(25),&lu->id.ICNTL(25),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_26","ICNTL(26): Schur options for right-hand side or solution vector","None",lu->id.ICNTL(26),&lu->id.ICNTL(26),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_27","ICNTL(27): experimental parameter","None",lu->id.ICNTL(27),&lu->id.ICNTL(27),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_28","ICNTL(28): use 1 sequential (ictnl(7)) or 2 parallel (ictnl(29)) ordering","None",lu->id.ICNTL(28),&lu->id.ICNTL(28),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_28","ICNTL(28): use 1 for sequential analysis and ictnl(7) ordering, or 2 for parallel analysis and ictnl(29) ordering","None",lu->id.ICNTL(28),&lu->id.ICNTL(28),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_29","ICNTL(29): parallel ordering 1 = ptscotch 2 = parmetis","None",lu->id.ICNTL(29),&lu->id.ICNTL(29),PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsReal("-mat_mumps_cntl_1","CNTL(1): relative pivoting threshold","None",lu->id.CNTL(1),&lu->id.CNTL(1),PETSC_NULL);CHKERRQ(ierr);
