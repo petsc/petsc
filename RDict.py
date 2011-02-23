@@ -260,6 +260,12 @@ Arg class, which wraps the usual value.'''
       return self.send(key)
     return 0
 
+  def get(self, key, default=None):
+    if self.has_key(key):
+      return self.__getitem__(key)
+    else:
+      return default
+
   def hasType(self, key):
     '''Checks for the key locally, and if not found consults the parent. Then checks whether the type has been set'''
     if dict.has_key(self, key):
