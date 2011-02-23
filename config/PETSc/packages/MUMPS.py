@@ -21,7 +21,7 @@ class Configure(PETSc.package.NewPackage):
     self.scalapack  = framework.require('PETSc.packages.SCALAPACK',self)
     self.parmetis   = framework.require('PETSc.packages.ParMetis',self)
     self.deps       = [self.parmetis,self.scalapack,self.blacs,self.mpi,self.blasLapack]
-    if self.framework.argDB.has_key('download-scotch') and self.framework.argDB['download-scotch']:
+    if self.framework.argDB.get('download-scotch') or self.framework.argDB.get('with-scotch'):
       self.scotch     = framework.require('PETSc.packages.Scotch',self)
       self.deps.append(self.scotch)
     else:
