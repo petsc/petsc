@@ -120,10 +120,11 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
       sieve->symmetrize();
     } else {
       // Same old thing
-      ALE::Obj<ALE::Mesh::sieve_type> s = new ALE::Mesh::sieve_type(sieve->comm(), sieve->debug());
+      typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
+      ALE::Obj<FlexMesh::sieve_type> s = new FlexMesh::sieve_type(sieve->comm(), sieve->debug());
 
-      ALE::SieveBuilder<ALE::Mesh>::buildTopology(s, num_dim, num_elem, cells, num_nodes, interpolate, numCorners);
-      std::map<ALE::Mesh::point_type,ALE::Mesh::point_type> renumbering;
+      ALE::SieveBuilder<FlexMesh>::buildTopology(s, num_dim, num_elem, cells, num_nodes, interpolate, numCorners);
+      std::map<FlexMesh::point_type,FlexMesh::point_type> renumbering;
       ALE::ISieveConverter::convertSieve(*s, *sieve, renumbering);
     }
     if (!interpolate) {

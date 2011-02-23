@@ -15,4 +15,5 @@ struct Mat_SeqAIJCUSP {
 };
 
 extern PetscErrorCode MatCUSPCopyToGPU(Mat);
+extern PetscErrorCode MatCUSPCopyFromGPU(Mat, CUSPMATRIX *);
 #endif

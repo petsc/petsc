@@ -2,7 +2,7 @@
 
 namespace ALE {
   namespace Bardhan {
-    void Builder::readInpFile(MPI_Comm comm, const std::string& filename, const int dim, const int numCorners, int& numElements, int *vertices[], int& numVertices, double *coordinates[], double *faceNormals[]) {
+    void Builder::readInpFile(MPI_Comm comm, const std::string& filename, const int dim, const int numCorners, int& numElements, int *vertices[], int& numVertices, PetscReal *coordinates[], PetscReal *faceNormals[]) {
       PetscViewer    viewer;
       FILE          *f;
       PetscReal     *coords;
@@ -67,22 +67,23 @@ namespace ALE {
     };
 #ifdef PETSC_OPT_SIEVE
     Obj<Builder::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& filename, const bool interpolate = false, const int debug = 0) {
+      typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
       Obj<Mesh>       mesh  = new Mesh(comm, dim, debug);
       Obj<sieve_type> sieve = new sieve_type(comm, debug);
-      Obj<ALE::Mesh>             m = new ALE::Mesh(comm, dim, debug);
-      Obj<ALE::Mesh::sieve_type> s = new ALE::Mesh::sieve_type(comm, debug);
+      Obj<FlexMesh>             m = new FlexMesh(comm, dim, debug);
+      Obj<FlexMesh::sieve_type> s = new FlexMesh::sieve_type(comm, debug);
       std::map<Mesh::point_type,Mesh::point_type> renumbering;
-      int    *cells;
-      double *coordinates, *normals;
-      int     numCells = 0, numVertices = 0, numCorners = dim+1;
+      int       *cells;
+      PetscReal *coordinates, *normals;
+      int        numCells = 0, numVertices = 0, numCorners = dim+1;
       PetscErrorCode ierr;
 
       mesh->setSieve(sieve);
       Builder::readInpFile(comm, filename, dim, numCorners, numCells, &cells, numVertices, &coordinates, &normals);
-      ALE::SieveBuilder<ALE::Mesh>::buildTopology(s, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
+      ALE::SieveBuilder<FlexMesh>::buildTopology(s, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
       m->setSieve(s);
       m->stratify();
-      ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(m, dim+1, coordinates);
+      ALE::SieveBuilder<FlexMesh>::buildCoordinates(m, dim+1, coordinates);
       ierr = PetscFree(cells);CHKERRXX(ierr);
       ierr = PetscFree(coordinates);CHKERRXX(ierr);
       ierr = PetscFree(normals);CHKERRXX(ierr);

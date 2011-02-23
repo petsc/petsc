@@ -679,7 +679,7 @@ namespace ALE {
         }
       }
     };
-    static void buildCoordinates(const Obj<Bundle_>& bundle, const int embedDim, const double coords[]) {
+    static void buildCoordinates(const Obj<Bundle_>& bundle, const int embedDim, const PetscReal coords[]) {
       const Obj<typename Bundle_::real_section_type>& coordinates = bundle->getRealSection("coordinates");
       const Obj<typename Bundle_::label_sequence>&    vertices    = bundle->depthStratum(0);
       const int numCells = bundle->heightStratum(0)->size();

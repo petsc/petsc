@@ -1575,11 +1575,11 @@ namespace ALE {
 #ifdef IMESH_NEW_LABELS
   template<typename Label_ = IFSieve<int> >
 #else
-  template<typename Label_ = LabelSifter<int, int> >
+  template<typename IndexType, typename ScalarType, typename Label_ = LabelSifter<IndexType, IndexType> >
 #endif
-  class IMesh : public IBundle<IFSieve<int>, IGeneralSection<int, double>, IGeneralSection<int, int>,  Label_> {
+  class IMesh : public IBundle<IFSieve<IndexType>, IGeneralSection<IndexType, ScalarType>, IGeneralSection<IndexType, IndexType>,  Label_> {
   public:
-    typedef IBundle<IFSieve<int>, IGeneralSection<int, double>, IGeneralSection<int, int>, Label_> base_type;
+    typedef IBundle<IFSieve<IndexType>, IGeneralSection<IndexType, ScalarType>, IGeneralSection<IndexType, IndexType>, Label_> base_type;
     typedef typename base_type::sieve_type            sieve_type;
     typedef typename sieve_type::point_type           point_type;
     typedef typename base_type::alloc_type            alloc_type;
@@ -1804,9 +1804,9 @@ namespace ALE {
       }
     };
     void computeTriangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
-      const double *coords = this->restrictClosure(coordinates, e);
-      const int     dim    = 2;
-      double        invDet;
+      const PetscReal *coords = this->restrictClosure(coordinates, e);
+      const int        dim    = 2;
+      double           invDet;
 
       if (v0) {
         for(int d = 0; d < dim; d++) {
@@ -1849,9 +1849,9 @@ namespace ALE {
       }
     };
     void computeTetrahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
-      const double *coords = this->restrictClosure(coordinates, e);
-      const int     dim    = 3;
-      double        invDet;
+      const PetscReal *coords = this->restrictClosure(coordinates, e);
+      const int        dim    = 3;
+      double           invDet;
 
       if (v0) {
         for(int d = 0; d < dim; d++) {
@@ -2445,19 +2445,24 @@ namespace ALE {
 }
 
 namespace ALE {
-  class Mesh : public Bundle<ALE::Sieve<int,int,int>, GeneralSection<int, double> > {
+  template<typename IndexType, typename ScalarType>
+  class Mesh : public Bundle<ALE::Sieve<IndexType,IndexType,IndexType>, GeneralSection<IndexType,ScalarType> > {
   public:
-    typedef Bundle<ALE::Sieve<int,int,int>, GeneralSection<int, double> > base_type;
-    typedef base_type::sieve_type            sieve_type;
-    typedef sieve_type::point_type           point_type;
-    typedef base_type::alloc_type            alloc_type;
-    typedef base_type::label_sequence        label_sequence;
-    typedef base_type::real_section_type     real_section_type;
-    typedef base_type::numbering_type        numbering_type;
-    typedef base_type::order_type            order_type;
-    typedef base_type::send_overlap_type     send_overlap_type;
-    typedef base_type::recv_overlap_type     recv_overlap_type;
-    typedef base_type::sieve_alg_type        sieve_alg_type;
+    typedef Bundle<ALE::Sieve<IndexType,IndexType,IndexType>, GeneralSection<IndexType,ScalarType> > base_type;
+    typedef typename base_type::sieve_type            sieve_type;
+    typedef typename sieve_type::point_type           point_type;
+    typedef typename base_type::alloc_type            alloc_type;
+    typedef typename base_type::label_type            label_type;
+    typedef typename base_type::label_sequence        label_sequence;
+    typedef typename base_type::coneArray             coneArray;
+    typedef typename base_type::supportArray          supportArray;
+    typedef typename base_type::arrow_section_type    arrow_section_type;
+    typedef typename base_type::real_section_type     real_section_type;
+    typedef typename base_type::numbering_type        numbering_type;
+    typedef typename base_type::order_type            order_type;
+    typedef typename base_type::send_overlap_type     send_overlap_type;
+    typedef typename base_type::recv_overlap_type     recv_overlap_type;
+    typedef typename base_type::sieve_alg_type        sieve_alg_type;
     typedef std::set<std::string>            names_type;
     typedef std::map<std::string, Obj<Discretization> > discretizations_type;
     typedef std::vector<PETSc::Point<3> >    holes_type;
@@ -2709,7 +2714,7 @@ namespace ALE {
       }
     };
     void computeLineFaceGeometry(const point_type& cell, const point_type& face, const int f, const double cellInvJ[], double invJ[], double& detJ, double normal[], double tangent[]) {
-      const arrow_section_type::point_type arrow(cell, face);
+      const typename arrow_section_type::point_type arrow(cell, face);
       const bool reversed = (this->getArrowSection("orientation")->restrictPoint(arrow)[0] == -2);
       const int  dim      = this->getDimension();
       double     norm     = 0.0;
@@ -2747,7 +2752,7 @@ namespace ALE {
       invJ[0] = 1.0/detJ;
     };
     void computeTriangleFaceGeometry(const point_type& cell, const point_type& face, const int f, const double cellInvJ[], double invJ[], double& detJ, double normal[], double tangent[]) {
-      const arrow_section_type::point_type arrow(cell, face);
+      const typename arrow_section_type::point_type arrow(cell, face);
       const bool reversed = this->getArrowSection("orientation")->restrictPoint(arrow)[0] < 0;
       const int  dim      = this->getDimension();
       const int  faceDim  = dim-1;
@@ -2880,20 +2885,20 @@ namespace ALE {
       if (dim == 1) refVolume = 2.0;
       if (dim == 2) refVolume = 2.0;
       if (dim == 3) refVolume = 4.0/3.0;
-      for(label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+      for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
         this->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
         maxVolume = std::max(maxVolume, detJ*refVolume);
       }
       return maxVolume;
     };
     // Find the cell in which this point lies (stupid algorithm)
-    point_type locatePoint_2D(const real_section_type::value_type point[]) {
+    point_type locatePoint_2D(const typename real_section_type::value_type point[]) {
       const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
       const Obj<label_sequence>&    cells       = this->heightStratum(0);
       const int                     embedDim    = 2;
       double v0[2], J[4], invJ[4], detJ;
 
-      for(label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+      for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
         this->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
         double xi   = invJ[0*embedDim+0]*(point[0] - v0[0]) + invJ[0*embedDim+1]*(point[1] - v0[1]);
         double eta  = invJ[1*embedDim+0]*(point[0] - v0[0]) + invJ[1*embedDim+1]*(point[1] - v0[1]);
@@ -2905,13 +2910,13 @@ namespace ALE {
       throw ALE::Exception("Could not locate point");
     };
     //   Assume a simplex and 3D
-    point_type locatePoint_3D(const real_section_type::value_type point[]) {
+    point_type locatePoint_3D(const typename real_section_type::value_type point[]) {
       const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
       const Obj<label_sequence>&    cells       = this->heightStratum(0);
       const int                     embedDim    = 3;
       double v0[3], J[9], invJ[9], detJ;
 
-      for(label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+      for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
         this->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
         double xi   = invJ[0*embedDim+0]*(point[0] - v0[0]) + invJ[0*embedDim+1]*(point[1] - v0[1]) + invJ[0*embedDim+2]*(point[2] - v0[2]);
         double eta  = invJ[1*embedDim+0]*(point[0] - v0[0]) + invJ[1*embedDim+1]*(point[1] - v0[1]) + invJ[1*embedDim+2]*(point[2] - v0[2]);
@@ -2923,7 +2928,7 @@ namespace ALE {
       }
       throw ALE::Exception("Could not locate point");
     };
-    point_type locatePoint(const real_section_type::value_type point[], point_type guess = -1) {
+    point_type locatePoint(const typename real_section_type::value_type point[], point_type guess = -1) {
       //guess overrides this by saying that we already know the relation of this point to this mesh.  We will need to make it a more robust "guess" later for more than P1
       if (guess != -1) {
         return guess;
@@ -2942,9 +2947,9 @@ namespace ALE {
       const Obj<sieve_type>&     sieve    = this->getSieve();
 
       if (!onlyVertices) {
-        const label_sequence::iterator end = boundary->end();
+        const typename label_sequence::iterator end = boundary->end();
 
-        for(label_sequence::iterator e_iter = boundary->begin(); e_iter != end; ++e_iter) {
+        for(typename label_sequence::iterator e_iter = boundary->begin(); e_iter != end; ++e_iter) {
           if (this->height(*e_iter) == 1) {
             const point_type cell = *sieve->support(*e_iter)->begin();
 
@@ -2952,18 +2957,18 @@ namespace ALE {
           }
         }
       } else {
-        const label_sequence::iterator end   = boundary->end();
+        const typename label_sequence::iterator end   = boundary->end();
         const int                      depth = this->depth();
 
-        for(label_sequence::iterator v_iter = boundary->begin(); v_iter != end; ++v_iter) {
+        for(typename label_sequence::iterator v_iter = boundary->begin(); v_iter != end; ++v_iter) {
           const Obj<supportArray>      support = sieve->nSupport(*v_iter, depth);
-          const supportArray::iterator sEnd    = support->end();
+          const typename supportArray::iterator sEnd    = support->end();
 
-          for(supportArray::iterator c_iter = support->begin(); c_iter != sEnd; ++c_iter) {
-            const Obj<sieve_type::traits::coneSequence>&     cone = sieve->cone(*c_iter);
-            const sieve_type::traits::coneSequence::iterator cEnd = cone->end();
+          for(typename supportArray::iterator c_iter = support->begin(); c_iter != sEnd; ++c_iter) {
+            const Obj<typename sieve_type::traits::coneSequence>&     cone = sieve->cone(*c_iter);
+            const typename sieve_type::traits::coneSequence::iterator cEnd = cone->end();
 
-            for(sieve_type::traits::coneSequence::iterator e_iter = cone->begin(); e_iter != cEnd; ++e_iter) {
+            for(typename sieve_type::traits::coneSequence::iterator e_iter = cone->begin(); e_iter != cEnd; ++e_iter) {
               if (sieve->support(*e_iter)->size() == 1) {
                 this->setValue(label, *c_iter, newMarker);
                 break;
@@ -3005,14 +3010,14 @@ namespace ALE {
         if (this->hasLabel(labelName)) {
           const Obj<label_type>&         label     = this->getLabel(labelName);
           const Obj<label_sequence>&     exclusion = this->getLabelStratum(labelName, 1);
-          const label_sequence::iterator end       = exclusion->end();
+          const typename label_sequence::iterator end       = exclusion->end();
           if (debug > 1) {label->view(labelName.c_str());}
 
-          for(label_sequence::iterator e_iter = exclusion->begin(); e_iter != end; ++e_iter) {
-            const Obj<coneArray>      closure = ALE::SieveAlg<ALE::Mesh>::closure(this, this->getArrowSection("orientation"), *e_iter);
-            const coneArray::iterator cEnd    = closure->end();
+          for(typename label_sequence::iterator e_iter = exclusion->begin(); e_iter != end; ++e_iter) {
+            const Obj<coneArray>      closure = ALE::SieveAlg<ALE::Mesh<IndexType,ScalarType> >::closure(this, this->getArrowSection("orientation"), *e_iter);
+            const typename coneArray::iterator cEnd    = closure->end();
 
-            for(coneArray::iterator c_iter = closure->begin(); c_iter != cEnd; ++c_iter) {
+            for(typename coneArray::iterator c_iter = closure->begin(); c_iter != cEnd; ++c_iter) {
               if (seen.find(*c_iter) != seen.end()) continue;
               if (this->getValue(label, *c_iter) == 1) {
                 seen.insert(*c_iter);
@@ -3026,12 +3031,12 @@ namespace ALE {
       }
       // Process constraints
       f = 0;
-      for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+      for(typename std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
         const Obj<ALE::Discretization>&    disc        = this->getDiscretization(*f_iter);
         const Obj<std::set<std::string> >  bcs         = disc->getBoundaryConditions();
         std::string                        excludeName = "exclude-"+*f_iter;
 
-        for(std::set<std::string>::const_iterator bc_iter = bcs->begin(); bc_iter != bcs->end(); ++bc_iter) {
+        for(typename std::set<std::string>::const_iterator bc_iter = bcs->begin(); bc_iter != bcs->end(); ++bc_iter) {
           const Obj<ALE::BoundaryCondition>& bc       = disc->getBoundaryCondition(*bc_iter);
           const Obj<label_sequence>&         boundary = this->getLabelStratum(bc->getLabelName(), bc->getMarker());
 
@@ -3039,7 +3044,7 @@ namespace ALE {
           if (this->hasLabel(excludeName)) {
             const Obj<label_type>& label = this->getLabel(excludeName);
 
-            for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+            for(typename label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
               if (!this->getValue(label, *e_iter)) {
                 const int numDof = disc->getNumDof(this->depth(*e_iter));
 
@@ -3048,7 +3053,7 @@ namespace ALE {
               }
             }
           } else {
-            for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+            for(typename label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
               const int numDof = disc->getNumDof(this->depth(*e_iter));
 
               if (numDof) s->addConstraintDimension(*e_iter, numDof);
@@ -3075,15 +3080,15 @@ namespace ALE {
       }
       const Obj<label_sequence>& cells   = this->heightStratum(0);
       const Obj<coneArray>       closure = sieve_alg_type::closure(this, this->getArrowSection("orientation"), *cells->begin());
-      const coneArray::iterator  end     = closure->end();
+      const typename coneArray::iterator  end     = closure->end();
       int                        offset  = 0;
 
       if (debug > 1) {std::cout << "Closure for first element" << std::endl;}
-      for(coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
+      for(typename coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
         const int dim = this->depth(*cl_iter);
 
         if (debug > 1) {std::cout << "  point " << *cl_iter << " depth " << dim << std::endl;}
-        for(names_type::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
+        for(typename names_type::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
           const Obj<Discretization>& disc = this->getDiscretization(*d_iter);
           const int                  num  = disc->getNumDof(dim);
 
@@ -3094,7 +3099,7 @@ namespace ALE {
         }
       }
       if (debug > 1) {
-        for(names_type::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
+        for(typename names_type::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
           const Obj<Discretization>& disc = this->getDiscretization(*d_iter);
 
           std::cout << "Discretization " << disc->getName() << " indices:";
@@ -3131,21 +3136,21 @@ namespace ALE {
 
         if (this->hasLabel(labelName)) {
           const Obj<label_sequence>&     exclusion = this->getLabelStratum(labelName, 1);
-          const label_sequence::iterator end       = exclusion->end();
+          const typename label_sequence::iterator end       = exclusion->end();
 
           if (debug > 1) {std::cout << "Processing exclusion " << labelName << std::endl;}
-          for(label_sequence::iterator e_iter = exclusion->begin(); e_iter != end; ++e_iter) {
+          for(typename label_sequence::iterator e_iter = exclusion->begin(); e_iter != end; ++e_iter) {
             if (this->height(*e_iter)) continue;
-            const Obj<coneArray>      closure = ALE::SieveAlg<ALE::Mesh>::closure(this, this->getArrowSection("orientation"), *e_iter);
-            const coneArray::iterator clEnd   = closure->end();
+            const Obj<coneArray>      closure = ALE::SieveAlg<ALE::Mesh<IndexType,ScalarType> >::closure(this, this->getArrowSection("orientation"), *e_iter);
+            const typename coneArray::iterator clEnd   = closure->end();
             int                       offset  = 0;
 
             if (debug > 1) {std::cout << "  Closure for cell " << *e_iter << std::endl;}
-            for(coneArray::iterator cl_iter = closure->begin(); cl_iter != clEnd; ++cl_iter) {
+            for(typename coneArray::iterator cl_iter = closure->begin(); cl_iter != clEnd; ++cl_iter) {
               int g = 0;
 
               if (debug > 1) {std::cout << "    point " << *cl_iter << std::endl;}
-              for(names_type::const_iterator g_iter = dBegin; g_iter != dEnd; ++g_iter, ++g) {
+              for(typename names_type::const_iterator g_iter = dBegin; g_iter != dEnd; ++g_iter, ++g) {
                 const int fDim = s->getFiberDimension(*cl_iter, g);
 
                 if (debug > 1) {std::cout << "      disc " << *g_iter << " numDof " << fDim << std::endl;}
@@ -3154,11 +3159,11 @@ namespace ALE {
                 }
               }
             }
-            const std::map<indices_type, int>::iterator entry = indexMap.find(indices);
+            const typename std::map<indices_type, int>::iterator entry = indexMap.find(indices);
 
             if (debug > 1) {
-              for(std::map<indices_type, int>::iterator i_iter = indexMap.begin(); i_iter != indexMap.end(); ++i_iter) {
-                for(names_type::const_iterator g_iter = discs->begin(); g_iter != discs->end(); ++g_iter) {
+              for(typename std::map<indices_type, int>::iterator i_iter = indexMap.begin(); i_iter != indexMap.end(); ++i_iter) {
+                for(typename names_type::const_iterator g_iter = discs->begin(); g_iter != discs->end(); ++g_iter) {
                   std::cout << "Discretization (" << i_iter->second << ") " << *g_iter << " indices:";
                   for(int i = 0; i < ((indices_type) i_iter->first)[*g_iter].first; ++i) {
                     std::cout << " " << ((indices_type) i_iter->first)[*g_iter].second[i];
@@ -3167,7 +3172,7 @@ namespace ALE {
                 }
                 std::cout << "Comparison: " << (indices == i_iter->first) << std::endl;
               }
-              for(names_type::const_iterator g_iter = discs->begin(); g_iter != discs->end(); ++g_iter) {
+              for(typename names_type::const_iterator g_iter = discs->begin(); g_iter != discs->end(); ++g_iter) {
                 std::cout << "Discretization " << *g_iter << " indices:";
                 for(int i = 0; i < indices[*g_iter].first; ++i) {
                   std::cout << " " << indices[*g_iter].second[i];
@@ -3228,21 +3233,21 @@ namespace ALE {
         const Obj<names_type>&         discs         = this->getDiscretizations();
         const point_type               firstCell     = *boundaryCells->begin();
         const int                      numFields     = discs->size();
-        real_section_type::value_type *values        = new real_section_type::value_type[this->sizeWithBC(s, firstCell)];
+        typename real_section_type::value_type *values        = new typename real_section_type::value_type[this->sizeWithBC(s, firstCell)];
         int                           *dofs          = new int[maxDof];
         int                           *v             = new int[numFields];
         double                        *v0            = new double[this->getDimension()];
         double                        *J             = new double[this->getDimension()*this->getDimension()];
         double                         detJ;
 
-        for(label_sequence::iterator c_iter = boundaryCells->begin(); c_iter != boundaryCells->end(); ++c_iter) {
+        for(typename label_sequence::iterator c_iter = boundaryCells->begin(); c_iter != boundaryCells->end(); ++c_iter) {
           const Obj<coneArray>      closure = sieve_alg_type::closure(this, this->getArrowSection("orientation"), *c_iter);
-          const coneArray::iterator end     = closure->end();
+          const typename coneArray::iterator end     = closure->end();
 
           if (debug > 1) {std::cout << "  Boundary cell " << *c_iter << std::endl;}
           this->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
           for(int f = 0; f < numFields; ++f) v[f] = 0;
-          for(coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
+          for(typename coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
             const int cDim = s->getConstraintDimension(*cl_iter);
             int       off  = 0;
             int       f    = 0;
@@ -3309,12 +3314,12 @@ namespace ALE {
           }
           if (debug > 1) {
             const Obj<coneArray>      closure = sieve_alg_type::closure(this, this->getArrowSection("orientation"), *c_iter);
-            const coneArray::iterator end     = closure->end();
+            const typename coneArray::iterator end     = closure->end();
 
             for(int f = 0; f < numFields; ++f) v[f] = 0;
-            for(coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
+            for(typename coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
               int f = 0;
-              for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+              for(typename names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
                 const Obj<ALE::Discretization>& disc    = this->getDiscretization(*f_iter);
                 const int                       fDim    = s->getFiberDimension(*cl_iter, f);
                 const int                      *indices = disc->getIndices(this->getValue(cellExclusion, *c_iter));
@@ -3396,6 +3401,8 @@ namespace ALE {
   template<typename Mesh>
   class MeshBuilder {
   public:
+    typedef typename Mesh::real_section_type::value_type real;
+  public:
     #undef __FUNCT__
     #define __FUNCT__ "createSquareBoundary"
     /*
@@ -3411,11 +3418,11 @@ namespace ALE {
       |     |     |
      12--0-13--1--14
     */
-    static Obj<Mesh> createSquareBoundary(const MPI_Comm comm, const double lower[], const double upper[], const int edges[], const int debug = 0) {
+    static Obj<Mesh> createSquareBoundary(const MPI_Comm comm, const real lower[], const real upper[], const int edges[], const int debug = 0) {
       Obj<Mesh> mesh        = new Mesh(comm, 1, debug);
       int       numVertices = (edges[0]+1)*(edges[1]+1);
       int       numEdges    = edges[0]*(edges[1]+1) + (edges[0]+1)*edges[1];
-      double   *coords      = new double[numVertices*2];
+      real     *coords      = new real[numVertices*2];
       const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
       typename Mesh::point_type           *vertices = new typename Mesh::point_type[numVertices];
       int                         order    = 0;
@@ -3486,11 +3493,11 @@ namespace ALE {
       |           |
       8--0--9--1--10
     */
-    static Obj<Mesh> createSquareBoundary(const MPI_Comm comm, const double lower[], const double upper[], const int edges, const int debug = 0) {
+    static Obj<Mesh> createSquareBoundary(const MPI_Comm comm, const real lower[], const real upper[], const int edges, const int debug = 0) {
       Obj<Mesh> mesh        = new Mesh(comm, 1, debug);
       int       numVertices = edges*4;
       int       numEdges    = edges*4;
-      double   *coords      = new double[numVertices*2];
+      real     *coords      = new real[numVertices*2];
       const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
       typename Mesh::point_type           *vertices = new typename Mesh::point_type[numVertices];
 
@@ -3540,19 +3547,19 @@ namespace ALE {
       normals->setFiberDimension(cells, mesh->getDimension()+1);
       mesh->allocate(normals);
       for(int e = 0; e < edges; ++e) {
-        double normal[2] = {0.0, -1.0};
+        real normal[2] = {0.0, -1.0};
         normals->updatePoint(e+edges*0, normal);
       }
       for(int e = 0; e < edges; ++e) {
-        double normal[2] = {1.0, 0.0};
+        real normal[2] = {1.0, 0.0};
         normals->updatePoint(e+edges*1, normal);
       }
       for(int e = 0; e < edges; ++e) {
-        double normal[2] = {0.0, 1.0};
+        real normal[2] = {0.0, 1.0};
         normals->updatePoint(e+edges*2, normal);
       }
       for(int e = 0; e < edges; ++e) {
-        double normal[2] = {-1.0, 0.0};
+        real normal[2] = {-1.0, 0.0};
         normals->updatePoint(e+edges*3, normal);
       }
       return mesh;
@@ -3572,13 +3579,13 @@ namespace ALE {
       |     |     |
      12--0-13--1--14
     */
-    static Obj<Mesh> createParticleInSquareBoundary(const MPI_Comm comm, const double lower[], const double upper[], const int edges[], const double radius, const int partEdges, const int debug = 0) {
+    static Obj<Mesh> createParticleInSquareBoundary(const MPI_Comm comm, const real lower[], const real upper[], const int edges[], const real radius, const int partEdges, const int debug = 0) {
       Obj<Mesh> mesh              = new Mesh(comm, 1, debug);
       const int numSquareVertices = (edges[0]+1)*(edges[1]+1);
       const int numVertices       = numSquareVertices + partEdges;
       const int numSquareEdges    = edges[0]*(edges[1]+1) + (edges[0]+1)*edges[1];
       const int numEdges          = numSquareEdges + partEdges;
-      double   *coords            = new double[numVertices*2];
+      real   *coords            = new real[numVertices*2];
       const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
       typename Mesh::point_type           *vertices = new typename Mesh::point_type[numVertices];
       int                         order    = 0;
@@ -3643,10 +3650,10 @@ namespace ALE {
           coords[(vy*(edges[0]+1)+vx)*2+1] = lower[1] + ((upper[1] - lower[1])/edges[1])*vy;
         }
       }
-      const double centroidX = 0.5*(upper[0] + lower[0]);
-      const double centroidY = 0.5*(upper[1] + lower[1]);
+      const real centroidX = 0.5*(upper[0] + lower[0]);
+      const real centroidY = 0.5*(upper[1] + lower[1]);
       for(int vp = 0; vp < partEdges; ++vp) {
-        const double rad = 2.0*PETSC_PI*vp/partEdges;
+        const real rad = 2.0*PETSC_PI*vp/partEdges;
         coords[(numSquareVertices+vp)*2+0] = centroidX + radius*cos(rad);
         coords[(numSquareVertices+vp)*2+1] = centroidY + radius*sin(rad);
       }
@@ -3669,11 +3676,11 @@ namespace ALE {
       |           |
       7-----1-----8
     */
-    static Obj<Mesh> createReentrantBoundary(const MPI_Comm comm, const double lower[], const double upper[], double notchpercent[], const int debug = 0) {
+    static Obj<Mesh> createReentrantBoundary(const MPI_Comm comm, const real lower[], const real upper[], real notchpercent[], const int debug = 0) {
       Obj<Mesh> mesh        = new Mesh(comm, 1, debug);
       int       numVertices = 6;
       int       numEdges    = numVertices;
-      double   *coords      = new double[numVertices*2];
+      real   *coords      = new real[numVertices*2];
       const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
       typename Mesh::point_type           *vertices = new typename Mesh::point_type[numVertices];
 
@@ -3727,11 +3734,11 @@ namespace ALE {
       --       --
         -------
     */
-    static Obj<Mesh> createCircularReentrantBoundary(const MPI_Comm comm, const int segments, const double radius, const double arc_percent, const int debug = 0) {
+    static Obj<Mesh> createCircularReentrantBoundary(const MPI_Comm comm, const int segments, const real radius, const real arc_percent, const int debug = 0) {
       Obj<Mesh> mesh        = new Mesh(comm, 1, debug);
       int       numVertices = segments+2;
       int       numEdges    = numVertices;
-      double   *coords      = new double[numVertices*2];
+      real   *coords      = new real[numVertices*2];
       const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
       typename Mesh::point_type           *vertices = new typename Mesh::point_type[numVertices];
 
@@ -3757,7 +3764,7 @@ namespace ALE {
           mesh->setValue(markers, b+numVertices, 1);
         }
 
-        double anglestep = arc_percent*2.*3.14159265/((float)segments);
+        real anglestep = arc_percent*2.*3.14159265/((float)segments);
 
         for (int i = startvertex; i < numVertices; i++) {
           coords[2*i] = radius * sin(anglestep*(i-startvertex));
@@ -3771,11 +3778,11 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "createAnnularBoundary"
-    static Obj<Mesh> createAnnularBoundary(const MPI_Comm comm, const int segments, const double centers[4], const double radii[2], const int debug = 0) {
+    static Obj<Mesh> createAnnularBoundary(const MPI_Comm comm, const int segments, const real centers[4], const real radii[2], const int debug = 0) {
       Obj<Mesh> mesh        = new Mesh(comm, 1, debug);
       int       numVertices = segments*2;
       int       numEdges    = numVertices;
-      double   *coords      = new double[numVertices*2];
+      real   *coords      = new real[numVertices*2];
       const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
       typename Mesh::point_type           *vertices = new typename Mesh::point_type[numVertices];
 
@@ -3792,7 +3799,7 @@ namespace ALE {
           mesh->setValue(markers, e+numEdges,          1);
           mesh->setValue(markers, e+numEdges+segments, 1);
         }
-        const double anglestep = 2.0*M_PI/segments;
+        const real anglestep = 2.0*M_PI/segments;
 
         for (int v = 0; v < segments; ++v) {
           coords[v*2]              = centers[0] + radii[0]*cos(anglestep*v);
@@ -3822,11 +3829,11 @@ namespace ALE {
       |     |     |
      24----25-----26
     */
-    static Obj<Mesh> createCubeBoundary(const MPI_Comm comm, const double lower[], const double upper[], const int faces[], const int debug = 0) {
+    static Obj<Mesh> createCubeBoundary(const MPI_Comm comm, const real lower[], const real upper[], const int faces[], const int debug = 0) {
       Obj<Mesh> mesh        = new Mesh(comm, 2, debug);
       int       numVertices = (faces[0]+1)*(faces[1]+1)*(faces[2]+1);
       int       numFaces    = 6;
-      double   *coords      = new double[numVertices*3];
+      real   *coords      = new real[numVertices*3];
       const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
       typename Mesh::point_type           *vertices = new typename Mesh::point_type[numVertices];
       int                         order    = 0;
@@ -3936,11 +3943,11 @@ namespace ALE {
     };
 
     // Creates a triangular prism boundary
-    static Obj<Mesh> createPrismBoundary(const MPI_Comm comm, const double lower[], const double upper[], const int debug = 0) {
+    static Obj<Mesh> createPrismBoundary(const MPI_Comm comm, const real lower[], const real upper[], const int debug = 0) {
       Obj<Mesh> mesh        = new Mesh(comm, 2, debug);
       int       numVertices = 6;
       int       numFaces    = 5;
-      double   *coords      = new double[numVertices*3];
+      real   *coords      = new real[numVertices*3];
       const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
       typename Mesh::point_type           *vertices = new typename Mesh::point_type[numVertices];
       int                         order    = 0;
@@ -4041,15 +4048,15 @@ namespace ALE {
          \|/
           v3
     */
-    static Obj<Mesh> createFicheraCornerBoundary(const MPI_Comm comm, const double lower[], const double upper[], const double offset[], const int debug = 0) {
+    static Obj<Mesh> createFicheraCornerBoundary(const MPI_Comm comm, const real lower[], const real upper[], const real offset[], const int debug = 0) {
       Obj<Mesh> mesh            = new Mesh(comm, 2, debug);
       const int nVertices = 14;
       const int nFaces = 12;
-      double ilower[3];
+      real ilower[3];
       ilower[0] = lower[0]*(1. - offset[0]) + upper[0]*offset[0];
       ilower[1] = lower[1]*(1. - offset[1]) + upper[1]*offset[1];
       ilower[2] = lower[2]*(1. - offset[2]) + upper[2]*offset[2];
-      double coords[nVertices*3];
+      real coords[nVertices*3];
       //outer square-triplet
       coords[0*3+0] = lower[0];
       coords[0*3+1] = lower[1];
@@ -4202,16 +4209,16 @@ namespace ALE {
 
     */
 #if 0
-    static Obj<Mesh> createSphereBoundary(const MPI_Comm comm, const double radius, const int refinement, const int debug = 0) {
+    static Obj<Mesh> createSphereBoundary(const MPI_Comm comm, const real radius, const int refinement, const int debug = 0) {
       Obj<Mesh> m = new Mesh(comm, 2, debug);
       Obj<Mesh::sieve_type> s = new Mesh::sieve_type(comm, debug);
       m->setSieve(s);
       Mesh::point_type p = 0;
       int nVertices = 8+12*(refinement)+6*(refinement)*(refinement);
       Mesh::point_type vertices[nVertices];
-      double coords[3*nVertices];
+      real coords[3*nVertices];
       int nCells = 6*2*(refinement+1)*(refinement+1);
-      double delta = 2./((double)(refinement+1));
+      real delta = 2./((real)(refinement+1));
       Mesh::point_type cells[nCells];
       for (int i = 0; i < nCells; i++) {
         cells[i] = p;
@@ -4391,14 +4398,14 @@ namespace ALE {
       |     |     |
      24----25-----26
     */
-    static Obj<Mesh> createParticleInCubeBoundary(const MPI_Comm comm, const double lower[], const double upper[], const int faces[], const double radius, const int thetaEdges, const int phiSlices, const int debug = 0) {
+    static Obj<Mesh> createParticleInCubeBoundary(const MPI_Comm comm, const real lower[], const real upper[], const int faces[], const real radius, const int thetaEdges, const int phiSlices, const int debug = 0) {
       Obj<Mesh> mesh            = new Mesh(comm, 2, debug);
       const int numCubeVertices = (faces[0]+1)*(faces[1]+1)*(faces[2]+1);
       const int numPartVertices = (thetaEdges - 1)*phiSlices + 2;
       const int numVertices     = numCubeVertices + numPartVertices;
       const int numCubeFaces    = 6;
       const int numFaces        = numCubeFaces + thetaEdges*phiSlices;
-      double   *coords          = new double[numVertices*3];
+      real   *coords          = new real[numVertices*3];
       const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
       typename Mesh::point_type           *vertices = new typename Mesh::point_type[numVertices];
       int                         order    = 0;
@@ -4543,14 +4550,14 @@ namespace ALE {
       coords[7*3+1] = upper[1];
       coords[7*3+2] = lower[2];
 #endif
-      const double centroidX = 0.5*(upper[0] + lower[0]);
-      const double centroidY = 0.5*(upper[1] + lower[1]);
-      const double centroidZ = 0.5*(upper[2] + lower[2]);
+      const real centroidX = 0.5*(upper[0] + lower[0]);
+      const real centroidY = 0.5*(upper[1] + lower[1]);
+      const real centroidZ = 0.5*(upper[2] + lower[2]);
       for(int s = 0; s < phiSlices; ++s) {
         for(int v = 0; v <= thetaEdges; ++v) {
           int          vertex  = numCubeVertices + v + s*(thetaEdges+1);
-          const double theta   = v*(PETSC_PI/thetaEdges);
-          const double phi     = s*(2.0*PETSC_PI/phiSlices);
+          const real theta   = v*(PETSC_PI/thetaEdges);
+          const real phi     = s*(2.0*PETSC_PI/phiSlices);
           const int correction = (s > 0)*((s-1)*2 + 1);
 
           if ((vertex- numCubeVertices)%(thetaEdges+1) == 0) {
@@ -4981,10 +4988,10 @@ namespace ALE {
       const Obj<typename MeshType::label_sequence>& cells = mesh->heightStratum(0);
       assert(!cells.isNull());
       const typename MeshType::label_sequence::iterator cellsEnd = cells->end();
-      
+
       const Obj<typename MeshType::label_sequence>& vertices = mesh->depthStratum(0);
       assert(!vertices.isNull());
-      
+
       const Obj<sieve_type>& sieve = mesh->getSieve();
       assert(!sieve.isNull());
       ALE::ISieveVisitor::PointRetriever<sieve_type> cV(std::max(1, sieve->getMaxConeSize()));
@@ -5000,7 +5007,7 @@ namespace ALE {
 	int oldNumCellsOther = 0;
 	int oldNumVerticesNormal = 0;
 	int oldNumVerticesOther = 0;
-	
+
 	int newNumCellsNormal = 0;
 	int newNumCellsOther = 0;
 	int newNumVerticesNormal = 0;
@@ -5013,7 +5020,7 @@ namespace ALE {
 	oldNumCellsNormal = cellsNormal->size();
 	for(typename MeshType::label_sequence::iterator c_iter = cellsNormal->begin(); c_iter != cellsNormalEnd; ++c_iter)
 	  newNumCellsNormal += refiner.numNewCells(*c_iter);
-	
+
 	// Count number of remaining cells (other cells).
 	const int numSkip = oldNumCellsNormal;
 	oldNumCellsOther = cells->size() - oldNumCellsNormal;
@@ -5022,13 +5029,13 @@ namespace ALE {
 	  ++c_iter;
 	for (; c_iter != cellsEnd; ++c_iter)
 	  newNumCellsOther += refiner.numNewCells(*c_iter);
-	
+
 	// Get number of old normal vertices.
 	assert(!mesh->getFactory.isNull());
 	Obj<typename Mesh::numbering_type> vNumbering = mesh->getFactory()->getNumbering(mesh, "censored depth", 0);
 	assert(!vNumbering.isNull());
 	oldNumVerticesNormal = vNumbering->size();
-	
+
 	// Count number of new normal vertices.
 	int counterBegin = newNumCellsNormal + vertices->size();
 	const point_type curNewVertex = counterBegin;
@@ -5038,7 +5045,7 @@ namespace ALE {
 	  refiner.splitEdge(*c_iter, cV.getSize(), cV.getPoints(), curNewVertex);
 	} // for
 	newNumVerticesNormal = curNewVertex - counterBegin;
-	
+
 	// Count number of remaining vertices (other vertices).
 	oldNumVerticesOther = vertices->size() - oldNumVerticessNormal;
 	counterBegin = curNewVertex + oldNumVerticesOther;
@@ -5052,13 +5059,13 @@ namespace ALE {
 	  refiner.splitEdge(*c_iter, cV.getSize(), cV.getPoints(), curNewVertex);
 	} // for
 	newNumVerticesOther = curNewVertex - counterBegin;
-	
+
 	Interval<point_type> oldCellsNormalRange(0, oldNumCellsNormal);
 	Interval<point_type> newCellsNormalRange(0, newNumCellsNormal);
 
 	Interval<point_type> oldVerticesNormalRange(oldNumCellsNormal, oldNumCellsNormal+oldNumVerticesNormal);
 	Interval<point_type> newVerticesNormalRange(newNumCellsNormal, newNumCellsNormal+newNumVerticesNormal);
-	
+
 	Interval<point_type> oldVerticesOtherRange(oldNumCellsNormal+oldNumVerticesNormal ,
 						   oldNumCellsNormal+oldNumVerticesNormal+oldNumVerticesOther);
 	Interval<point_type> newVerticesOtherRange(newNumCellsNormal+newNumVerticesNormal ,
@@ -5090,15 +5097,15 @@ namespace ALE {
 	  const point_type *cone = cV.getPoints();
 	  const int coneSize = cV.getSize();
 	  const int newCells = refiner.numNewCells(*c_iter);
-	  
+
 	  for(int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
 	    const point_type *newCone;
 	    int newConeSize;
-	    
+
 	    newSieve->setConeSize(curNewCell, sieve->getConeSize(*c_iter));
 	    // OPTIMIZE THIS
 	    refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
-	    for(int v = 0; v < newConeSize; ++v) 
+	    for(int v = 0; v < newConeSize; ++v)
 	      newSieve->addSupportSize(newCone[v], 1);
 	  } // for
 	} // for
@@ -5115,15 +5122,15 @@ namespace ALE {
 	  const point_type *cone = cV.getPoints();
 	  const int coneSize = cV.getSize();
 	  const int newCells = refiner.numNewCells(*c_iter);
-	
+
 	  for(int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
 	    const point_type *newCone;
 	    int newConeSize;
-	  
+
 	    newSieve->setConeSize(curNewCell, sieve->getConeSize(*c_iter));
 	    // OPTIMIZE THIS
 	    refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
-	    for(int v = 0; v < newConeSize; ++v) 
+	    for(int v = 0; v < newConeSize; ++v)
 	      newSieve->addSupportSize(newCone[v], 1);
 	  } // for
 	} // for
@@ -5142,15 +5149,15 @@ namespace ALE {
 	  const point_type *cone = cV.getPoints();
 	  const int coneSize = cV.getSize();
 	  const int newCells = refiner.numNewCells(*c_iter);
-	  
+
 	  for (int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
 	    const point_type *newCone;
 	    int newConeSize;
-	    
+
 	    refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
 	    newSieve->setCone(newCone, curNewCell);
 	  } // for
-	  
+
 	  refiner.getNeighboringVertices(*c_iter, coneSize, cone, firstNewVertex, vertex2edge);
 	} // for
 
@@ -5164,15 +5171,15 @@ namespace ALE {
 	  const point_type *cone = cV.getPoints();
 	  const int coneSize = cV.getSize();
 	  const int newCells = refiner.numNewCells(*c_iter);
-	  
+
 	  for (int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
 	    const point_type *newCone;
 	    int newConeSize;
-	    
+
 	    refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
 	    newSieve->setCone(newCone, curNewCell);
 	  } // for
-	  
+
 	  // FIX THIS!!! LAGRANGE VERTICES MUST BE AFTER ALL OTHER VERTICES (INCLUDING OLD LAGRANGE VERTICES)
 	  refiner.getNeighboringVertices(*c_iter, coneSize, cone, firstNewVertex, vertex2edge);
 	} // for
@@ -5195,7 +5202,7 @@ namespace ALE {
 	  newCoordinates->setFiberDimension(vNew, spaceDim);
 	} // for
 	newCoordinates->allocatePoint();
-      
+
 	for (int iVertex=0, oldOffset=oldNumCellsNormal, newOffset=newNumCellsNormal; iVertex < oldNumVertices; ++iVertex) {
 	  const point_type vOld = iVertex + oldOffset;
 	  const point_type vNew = iVertex + newOffset;
@@ -5207,12 +5214,12 @@ namespace ALE {
 	  const point_type endpointB = vertex2edge[v*2+1];
 	  std::cout << "Setting coordinates of vertex " << vNew << " between vertices "
 		    << endpointA << " and " << endpointB << std::endl;
-	  const double *coordsA   = coordinates->restrictPoint(endpointA);
-	  double coords[3];
+	  const real *coordsA   = coordinates->restrictPoint(endpointA);
+	  real coords[3];
 
 	  for(int d = 0; d < 3; ++d)
 	    coords[d]  = coordsA[d];
-	  const double *coordsB = coordinates->restrictPoint(endpointB);
+	  const real *coordsB = coordinates->restrictPoint(endpointB);
 	  for(int d = 0; d < 3; ++d) {
 	    coords[d] += coordsB[d];
 	    coords[d] *= 0.5;
@@ -5242,12 +5249,12 @@ namespace ALE {
 	newMesh->setHeight(1);
 	newMesh->setDepth(1);
 
-      } else {	  
+      } else {
 	int counterBegin = 0;
 
 	int oldNumCells = 0;
 	int oldNumVertices = 0;
-	
+
 	int newNumCells = 0;
 	int newNumVertices = 0;
 
@@ -5272,7 +5279,7 @@ namespace ALE {
 
 	Interval<point_type> oldVerticesRange(oldNumCells, oldNumCells+oldNumVertices);
 	Interval<point_type> newVerticesRange(newNumCells, newNumCells+newNumVertices);
-	
+
 	// Allocate chart for new sieve.
 	const Obj<sieve_type>& newSieve = newMesh->getSieve();
 	assert(!newSieve.isNull());
@@ -5293,15 +5300,15 @@ namespace ALE {
 	  const point_type *cone = cV.getPoints();
 	  const int coneSize = cV.getSize();
 	  const int newCells = refiner.numNewCells(*c_iter);
-	  
+
 	  for(int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
 	    const point_type *newCone;
 	    int newConeSize;
-	    
+
 	    newSieve->setConeSize(curNewCell, sieve->getConeSize(*c_iter));
 	    // OPTIMIZE THIS
 	    refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
-	    for(int v = 0; v < newConeSize; ++v) 
+	    for(int v = 0; v < newConeSize; ++v)
 	      newSieve->addSupportSize(newCone[v], 1);
 	  } // for
 	} // for
@@ -5316,15 +5323,15 @@ namespace ALE {
 	  const point_type *cone = cV.getPoints();
 	  const int coneSize = cV.getSize();
 	  const int newCells = refiner.numNewCells(*c_iter);
-	  
+
 	  for (int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
 	    const point_type *newCone;
 	    int newConeSize;
-	    
+
 	    refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
 	    newSieve->setCone(newCone, curNewCell);
 	  } // for
-	  
+
 	  refiner.getNeighboringVertices(*c_iter, coneSize, cone, firstNewVertex, vertex2edge);
 	} // for
 	newSieve->symmetrize();
@@ -5345,7 +5352,7 @@ namespace ALE {
 	for (typename Interval<point_type>::const_iterator v_iter=newVerticesRange.begin(); v_iter != newVerticesRangeEnd; ++v_iter)
 	  newCoordinates->setFiberDimension(v_iter, spaceDim);
 	newCoordinates->allocatePoint();
-      
+
 	const typename Interval<point_type>::const_iterator oldVerticesRangeEnd = oldVerticesRange.end();
 	for (typename Interval<point_type>::const_iterator vOld_iter=oldVerticesRange.begin(), vNew_iter=newVerticesRange.begin(); vOld_iter != oldVerticesRangeEnd; ++vOld_iter)
 	  newCoordinates->updatePoint(*vNew_iter, coordinates->restrictPoint(*vOld_iter));
@@ -5355,12 +5362,12 @@ namespace ALE {
 	  const point_type endpointB = vertex2edge[v*2+1];
 	  std::cout << "Setting coordinates of vertex " << vNew << " between vertices "
 		    << endpointA << " and " << endpointB << std::endl;
-	  const double *coordsA   = coordinates->restrictPoint(endpointA);
-	  double coords[3];
-	  
+	  const real *coordsA   = coordinates->restrictPoint(endpointA);
+	  real coords[3];
+
 	  for(int d = 0; d < 3; ++d)
 	    coords[d]  = coordsA[d];
-	  const double *coordsB = coordinates->restrictPoint(endpointB);
+	  const real *coordsB = coordinates->restrictPoint(endpointB);
 	  for(int d = 0; d < 3; ++d) {
 	    coords[d] += coordsB[d];
 	    coords[d] *= 0.5;

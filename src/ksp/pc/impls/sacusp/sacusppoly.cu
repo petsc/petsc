@@ -2,46 +2,37 @@
 
 /*  -------------------------------------------------------------------- */
 
-/*
-   Include files needed for the CUSP Smoothed Aggregation preconditioner:
-     pcimpl.h - private include file intended for use by all preconditioners
+/* 
+   Include files needed for the CUSP Smoothed Aggregation preconditioner with Chebyshev polynomial smoothing:
+     pcimpl.h - private include file intended for use by all preconditioners 
 */
 
 #include "private/pcimpl.h"   /*I "petscpc.h" I*/
 #include "../src/mat/impls/aij/seq/aij.h"
 #include <cusp/monitor.h>
 #undef VecType
+#define USE_POLY_SMOOTHER 1
 #include <cusp/precond/smoothed_aggregation.h>
+#undef USE_POLY_SMOOTHER
 #define VecType char*
 #include "../src/vec/vec/impls/dvecimpl.h"
 #include "../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h"
 
 #define cuspsaprecond cusp::precond::smoothed_aggregation<PetscInt,PetscScalar,cusp::device_memory>
 
-/*
-   Private context (data structure) for the SACUSP preconditioner.
+/* 
+   Private context (data structure) for the SACUSPPoly preconditioner.  
 */
 typedef struct {
- cuspsaprecond* SACUSP;
+ cuspsaprecond* SACUSPPoly;
   /*int cycles; */
-} PC_SACUSP;
+} PC_SACUSPPoly;
 
-/*#undef __FUNCT__
-#define __FUNCT__ "PCSACUSPSetCycles"
-static PetscErrorCode PCSACUSPSetCycles(PC pc, int n)
-{
-  PC_SACUSP      *sac = (PC_SACUSP*)pc->data;
-
-  PetscFunctionBegin;
-  sac->cycles = n;
-  PetscFunctionReturn(0);
-
-  }*/
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCSetUp_SACUSP - Prepares for the use of the SACUSP preconditioner
-                    by setting data structures and options.
+   PCSetUp_SACUSPPoly - Prepares for the use of the SACUSPPoly preconditioner
+                    by setting data structures and options.   
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -52,11 +43,11 @@ static PetscErrorCode PCSACUSPSetCycles(PC pc, int n)
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_SACUSP"
-static PetscErrorCode PCSetUp_SACUSP(PC pc)
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_SACUSPPoly"
+static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
 {
-  PC_SACUSP      *sa = (PC_SACUSP*)pc->data;
+  PC_SACUSPPoly      *sa = (PC_SACUSPPoly*)pc->data;
   PetscBool      flg = PETSC_FALSE;
   PetscErrorCode ierr;
   Mat_SeqAIJCUSP *gpustruct;
@@ -66,38 +57,38 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
   if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Currently only handles CUSP matrices");
   if (pc->setupcalled != 0){
     try {
-      delete sa->SACUSP;
+      delete sa->SACUSPPoly;
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-    }
+    } 
   }
   try {
     ierr = MatCUSPCopyToGPU(pc->pmat);CHKERRCUSP(ierr);
     gpustruct  = (Mat_SeqAIJCUSP *)(pc->pmat->spptr);
-    sa->SACUSP = new cuspsaprecond(*(CUSPMATRIX*)gpustruct->mat);
+    sa->SACUSPPoly = new cuspsaprecond(*(CUSPMATRIX*)gpustruct->mat);
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-  }
+  } 
   /*ierr = PetscOptionsInt("-pc_sacusp_cycles","Number of v-cycles to perform","PCSACUSPSetCycles",sa->cycles,
     &sa->cycles,PETSC_NULL);CHKERRQ(ierr);*/
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCApplyRichardson_SACUSP"
-static PetscErrorCode PCApplyRichardson_SACUSP(PC pc, Vec b, Vec y, Vec w,PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
+#define __FUNCT__ "PCApplyRichardson_SACUSPPoly"
+static PetscErrorCode PCApplyRichardson_SACUSPPoly(PC pc, Vec b, Vec y, Vec w,PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
-  PC_SACUSP      *sac = (PC_SACUSP*)pc->data;
+  PC_SACUSPPoly      *sac = (PC_SACUSPPoly*)pc->data;
   PetscErrorCode ierr;
   CUSPARRAY      *barray,*yarray;
-
+  
   PetscFunctionBegin;
   /* how to incorporate dtol, guesszero, w?*/
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = VecCUSPGetArrayRead(b,&barray);CHKERRQ(ierr);
   ierr = VecCUSPGetArrayReadWrite(y,&yarray);CHKERRQ(ierr);
   cusp::default_monitor<PetscScalar> monitor(*barray,its,rtol,abstol);
-  sac->SACUSP->solve(*barray,*yarray,monitor);
+  sac->SACUSPPoly->solve(*barray,*yarray,monitor);
   *outits = monitor.iteration_count();
   if (monitor.converged()){
     /* how to discern between converging from RTOL or ATOL?*/
@@ -113,7 +104,7 @@ static PetscErrorCode PCApplyRichardson_SACUSP(PC pc, Vec b, Vec y, Vec w,PetscR
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCApply_SACUSP - Applies the SACUSP preconditioner to a vector.
+   PCApply_SACUSPPoly - Applies the SACUSPPoly preconditioner to a vector.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -124,11 +115,11 @@ static PetscErrorCode PCApplyRichardson_SACUSP(PC pc, Vec b, Vec y, Vec w,PetscR
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_SACUSP"
-static PetscErrorCode PCApply_SACUSP(PC pc,Vec x,Vec y)
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_SACUSPPoly"
+static PetscErrorCode PCApply_SACUSPPoly(PC pc,Vec x,Vec y)
 {
-  PC_SACUSP      *sac = (PC_SACUSP*)pc->data;
+  PC_SACUSPPoly      *sac = (PC_SACUSPPoly*)pc->data;
   PetscErrorCode ierr;
   PetscBool      flg1,flg2;
   CUSPARRAY      *xarray,*yarray;
@@ -138,17 +129,17 @@ static PetscErrorCode PCApply_SACUSP(PC pc,Vec x,Vec y)
   ierr = PetscTypeCompare((PetscObject)x,VECSEQCUSP,&flg1);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)y,VECSEQCUSP,&flg2);CHKERRQ(ierr);
   if (!(flg1 && flg2)) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP, "Currently only handles CUSP vectors");
-  if (!sac->SACUSP) {
-    ierr = PCSetUp_SACUSP(pc);CHKERRQ(ierr);
+  if (!sac->SACUSPPoly) {
+    ierr = PCSetUp_SACUSPPoly(pc);CHKERRQ(ierr);
   }
   ierr = VecSet(y,0.0);CHKERRQ(ierr);
   ierr = VecCUSPGetArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPGetArrayWrite(y,&yarray);CHKERRQ(ierr);
   try {
-    cusp::multiply(*sac->SACUSP,*xarray,*yarray);
+    cusp::multiply(*sac->SACUSPPoly,*xarray,*yarray);
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-  }
+  } 
   ierr = VecCUSPRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPRestoreArrayWrite(y,&yarray);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
@@ -156,45 +147,45 @@ static PetscErrorCode PCApply_SACUSP(PC pc,Vec x,Vec y)
 }
 /* -------------------------------------------------------------------------- */
 /*
-   PCDestroy_SACUSP - Destroys the private context for the SACUSP preconditioner
-   that was created with PCCreate_SACUSP().
+   PCDestroy_SACUSPPoly - Destroys the private context for the SACUSPPoly preconditioner
+   that was created with PCCreate_SACUSPPoly().
 
    Input Parameter:
 .  pc - the preconditioner context
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_SACUSP"
-static PetscErrorCode PCDestroy_SACUSP(PC pc)
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_SACUSPPoly"
+static PetscErrorCode PCDestroy_SACUSPPoly(PC pc)
 {
-  PC_SACUSP      *sac  = (PC_SACUSP*)pc->data;
+  PC_SACUSPPoly      *sac  = (PC_SACUSPPoly*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (sac->SACUSP) {
+  if (sac->SACUSPPoly) {
     try {
-      delete sac->SACUSP;
+      delete sac->SACUSPPoly;
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-    }
+    } 
 }
 
   /*
       Free the private data structure that was hanging off the PC
   */
-  ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  ierr = PetscFree(sac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_SACUSP"
-static PetscErrorCode PCSetFromOptions_SACUSP(PC pc)
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions_SACUSPPoly"
+static PetscErrorCode PCSetFromOptions_SACUSPPoly(PC pc)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SACUSP options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead("SACUSPPoly options");CHKERRQ(ierr);			 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -204,11 +195,11 @@ static PetscErrorCode PCSetFromOptions_SACUSP(PC pc)
 
 
 EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_SACUSP"
-PetscErrorCode  PCCreate_SACUSP(PC pc)
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate_SACUSPPoly"
+PetscErrorCode  PCCreate_SACUSPPoly(PC pc)
 {
-  PC_SACUSP      *sac;
+  PC_SACUSPPoly      *sac;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -216,14 +207,14 @@ PetscErrorCode  PCCreate_SACUSP(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr      = PetscNewLog(pc,PC_SACUSP,&sac);CHKERRQ(ierr);
+  ierr      = PetscNewLog(pc,PC_SACUSPPoly,&sac);CHKERRQ(ierr);
   pc->data  = (void*)sac;
 
   /*
      Initialize the pointer to zero
      Initialize number of v-cycles to default (1)
   */
-  sac->SACUSP          = 0;
+  sac->SACUSPPoly          = 0;
   /*sac->cycles=1;*/
 
 
@@ -234,13 +225,13 @@ PetscErrorCode  PCCreate_SACUSP(PC pc)
       choose not to provide a couple of these functions since they are
       not needed.
   */
-  pc->ops->apply               = PCApply_SACUSP;
+  pc->ops->apply               = PCApply_SACUSPPoly;
   pc->ops->applytranspose      = 0;
-  pc->ops->setup               = PCSetUp_SACUSP;
-  pc->ops->destroy             = PCDestroy_SACUSP;
-  pc->ops->setfromoptions      = PCSetFromOptions_SACUSP;
+  pc->ops->setup               = PCSetUp_SACUSPPoly;
+  pc->ops->destroy             = PCDestroy_SACUSPPoly;
+  pc->ops->setfromoptions      = PCSetFromOptions_SACUSPPoly;
   pc->ops->view                = 0;
-  pc->ops->applyrichardson     = PCApplyRichardson_SACUSP;
+  pc->ops->applyrichardson     = PCApplyRichardson_SACUSPPoly;
   pc->ops->applysymmetricleft  = 0;
   pc->ops->applysymmetricright = 0;
   PetscFunctionReturn(0);

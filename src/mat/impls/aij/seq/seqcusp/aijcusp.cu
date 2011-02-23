@@ -54,7 +54,7 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
       }
     } else if (A->valid_GPU_matrix == PETSC_CUSP_CPU) {
       /*
-       It may be possible to reuse nonzero structure with new matrix values but 
+       It may be possible to reuse nonzero structure with new matrix values but
        for simplicity and insured correctness we delete and build a new matrix on
        the GPU. Likely a very small performance hit.
        */
@@ -69,7 +69,7 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
           }
         } catch(char* ex) {
           SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-        } 
+        }
       }
       try {
         cuspstruct->mat = new CUSPMATRIX;
@@ -93,13 +93,77 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
         cuspstruct->tempvec->resize(m);
       } catch(char* ex) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-      } 
+      }
     }
     A->valid_GPU_matrix = PETSC_CUSP_BOTH;
     ierr = PetscLogEventEnd(MAT_CUSPCopyToGPU,A,0,0,0);CHKERRQ(ierr);
   }
     PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatCUSPCopyFromGPU"
+PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
+{
+  Mat_SeqAIJCUSP *cuspstruct = (Mat_SeqAIJCUSP *) A->spptr;
+  Mat_SeqAIJ     *a          = (Mat_SeqAIJ *) A->data;
+  PetscInt        m          = A->rmap->n;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED) {
+    if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED) {
+      try {
+        cuspstruct->mat = Agpu;
+        if (a->compressedrow.use) {
+          //PetscInt *ii, *ridx;
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Cannot handle row compression for GPU matrices");
+        } else {
+          PetscInt i;
+
+          if (m+1 != (PetscInt) cuspstruct->mat->row_offsets.size()) {SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "GPU matrix has %d rows, should be %d", cuspstruct->mat->row_offsets.size()-1, m);}
+          a->nz    = cuspstruct->mat->values.size();
+          a->maxnz = a->nz; /* Since we allocate exactly the right amount */
+          A->preallocated = PETSC_TRUE;
+          // Copy ai, aj, aa
+          if (a->singlemalloc) {
+            if (a->a) {ierr = PetscFree3(a->a,a->j,a->i);CHKERRQ(ierr);}
+          } else {
+            if (a->i) {ierr = PetscFree(a->i);CHKERRQ(ierr);}
+            if (a->j) {ierr = PetscFree(a->j);CHKERRQ(ierr);}
+            if (a->a) {ierr = PetscFree(a->a);CHKERRQ(ierr);}
+          }
+          ierr = PetscMalloc3(a->nz,PetscScalar,&a->a,a->nz,PetscInt,&a->j,m+1,PetscInt,&a->i);CHKERRQ(ierr);
+          ierr = PetscLogObjectMemory(A, a->nz*(sizeof(PetscScalar)+sizeof(PetscInt))+(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
+          a->singlemalloc = PETSC_TRUE;
+          thrust::copy(cuspstruct->mat->row_offsets.begin(), cuspstruct->mat->row_offsets.end(), a->i);
+          thrust::copy(cuspstruct->mat->column_indices.begin(), cuspstruct->mat->column_indices.end(), a->j);
+          thrust::copy(cuspstruct->mat->values.begin(), cuspstruct->mat->values.end(), a->a);
+          // Setup row lengths
+          if (a->imax) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
+          ierr = PetscMalloc2(m,PetscInt,&a->imax,m,PetscInt,&a->ilen);CHKERRQ(ierr);
+          ierr = PetscLogObjectMemory(A, 2*m*sizeof(PetscInt));CHKERRQ(ierr);
+          for(i = 0; i < m; ++i) {
+            a->imax[i] = a->ilen[i] = a->i[i+1] - a->i[i];
+          }
+          // a->diag?
+        }
+        cuspstruct->tempvec = new CUSPARRAY;
+        cuspstruct->tempvec->resize(m);
+      } catch(char *ex) {
+        SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "CUSP error: %s", ex);
+      }
+    }
+    // This assembly prevents resetting the flag to PETSC_CUSP_CPU and recopying
+    ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    A->valid_GPU_matrix = PETSC_CUSP_BOTH;
+  } else {
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only valid for unallocated GPU matrices");
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatGetVecs_SeqAIJCUSP"
 PetscErrorCode MatGetVecs_SeqAIJCUSP(Mat mat, Vec *right, Vec *left)
@@ -151,7 +215,7 @@ PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
       cusp::multiply(*cuspstruct->mat,*xarray,*yarray);
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-    } 
+    }
   }
   ierr = VecCUSPRestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPRestoreArrayWrite(yy,&yarray);CHKERRQ(ierr);
@@ -226,7 +290,7 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
          VecCUSPPlusEquals());
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-    } 
+    }
     ierr = VecCUSPRestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
     ierr = VecCUSPRestoreArrayRead(yy,&yarray);CHKERRQ(ierr);
     ierr = VecCUSPRestoreArrayWrite(zz,&zarray);CHKERRQ(ierr);
@@ -242,7 +306,7 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
 PetscErrorCode MatAssemblyEnd_SeqAIJCUSP(Mat A,MatAssemblyType mode)
 {
   PetscErrorCode  ierr;
-  
+
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -272,11 +336,11 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUSP(Mat A,MatAssemblyType mode)
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
--  nnz - array containing the number of nonzeros in the various rows 
+-  nnz - array containing the number of nonzeros in the various rows
          (possibly different for each row) or PETSC_NULL
 
    Output Parameter:
-.  A - the matrix 
+.  A - the matrix
 
    It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
    MatXXXXSetPreallocation() paradgm instead of this routine directly.
@@ -291,12 +355,12 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUSP(Mat A,MatAssemblyType mode)
    either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
-   allocation.  For large problems you MUST preallocate memory or you 
+   Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory
+   allocation.  For large problems you MUST preallocate memory or you
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 
-   By default, this format uses inodes (identical nodes) when possible, to 
-   improve numerical efficiency of matrix-vector products and solves. We 
+   By default, this format uses inodes (identical nodes) when possible, to
+   improve numerical efficiency of matrix-vector products and solves. We
    search for consecutive rows with the same nonzero structure, thereby
    reusing matrix information to achieve increased efficiency.
 
@@ -333,7 +397,7 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
     A->valid_GPU_matrix = PETSC_CUSP_UNALLOCATED;
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-  } 
+  }
   /*this next line is because MatDestroy tries to PetscFree spptr if it is not zero, and PetscFree only works if the memory was allocated with PetscNew or PetscMalloc, which don't call the constructor */
   A->spptr = 0;
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
@@ -358,7 +422,7 @@ PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
   ((Mat_SeqAIJCUSP *)B->spptr)->mat = 0;
   ((Mat_SeqAIJCUSP *)B->spptr)->tempvec = 0;
   ((Mat_SeqAIJCUSP *)B->spptr)->indices = 0;
-  
+
   B->ops->assemblyend = MatAssemblyEnd_SeqAIJCUSP;
   B->ops->destroy     = MatDestroy_SeqAIJCUSP;
   B->ops->getvecs     = MatGetVecs_SeqAIJCUSP;

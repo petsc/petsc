@@ -76,8 +76,10 @@ E*/
 #define PCSYSPFMG         "syspfmg"
 #define PCREDISTRIBUTE    "redistribute"
 #define PCSACUSP          "sacusp"
+#define PCSACUSPPOLY      "sacusppoly"
 #define PCBICGSTABCUSP    "bicgstabcusp"
 #define PCSVD             "svd"
+#define PCAINVCUSP        "ainvcusp"
 
 /* Logging support */
 extern PetscClassId  PC_CLASSID;

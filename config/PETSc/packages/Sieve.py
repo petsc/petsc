@@ -10,6 +10,7 @@ class Configure(PETSc.package.NewPackage):
     self.cxx             = 1
     self.complex         = 1
     self.worksonWindows  = 1
+    self.double          = 0
     return
 
   def setupDependencies(self, framework):
@@ -46,9 +47,9 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Sieve requires boost, and configure could not locate it. Suggest using --download-boost=1')
       if 'with-opt-sieve' in self.argDB and self.argDB['with-opt-sieve']:
         self.addDefine('OPT_SIEVE', 1)
-        self.addDefine('MESH_TYPE', 'ALE::IMesh<>')
+        self.addDefine('MESH_TYPE', 'ALE::IMesh<PetscInt, PetscScalar>')
       else:
-        self.addDefine('MESH_TYPE', 'ALE::Mesh')
+        self.addDefine('MESH_TYPE', 'ALE::Mesh<PetscInt, PetscScalar>')
       if 'with-sieve-memory-logging' in self.argDB and self.argDB['with-sieve-memory-logging']:
         self.framework.addDefine('ALE_MEM_LOGGING', 1)
     return

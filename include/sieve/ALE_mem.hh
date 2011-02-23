@@ -61,7 +61,7 @@ namespace ALE {
   public:
     void stagePush(const std::string& name) {
       for(names::const_iterator s_iter = stageNames.begin(); s_iter != stageNames.end(); ++s_iter) {
-        if (*s_iter == name) throw ALE::Exception("Cannot push duplicate stage name");
+        if (*s_iter == name) throw ALE::Exception(std::string("Cannot push duplicate stage name '")+name+std::string("'."));
       }
       stageNames.push_front(name);
       if (_debug) {
