@@ -221,7 +221,7 @@ PetscErrorCode  PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
 #endif
   fflush(fd);
   if (oldLength >= 8*1024) {
-    PetscFree(newformat);
+    (void)PetscFree(newformat);
   }
   return 0;
 }
