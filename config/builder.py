@@ -77,11 +77,11 @@ class SourceDatabaseDict(object):
     return mark
 
   def setNode(self, vertex, deps):
-    self.dependencyGraph[vertex] = [(dep, SourceDatabase.marker(dep)) for dep in deps]
+    self.dependencyGraph[vertex] = [(dep, SourceDatabaseDict.marker(dep)) for dep in deps]
     return
 
   def updateNode(self, vertex):
-    self.dependencyGraph[vertex] = [(dep, SourceDatabase.marker(dep)) for dep,mark in self.dependencyGraph[vertex]]
+    self.dependencyGraph[vertex] = [(dep, SourceDatabaseDict.marker(dep)) for dep,mark in self.dependencyGraph[vertex]]
     return
 
   def rebuildArc(self, vertex, dep, mark):
@@ -101,13 +101,37 @@ class SourceDatabaseDict(object):
       return True
     return False
 
+class SourceNode:
+  def __init__(self, filename, marker):
+    self.filename = filename
+    self.marker   = marker
+    return
+
+  def __str__(self):
+    #return self.filename+' ('+str(self.marker)+')'
+    return self.filename
+
+  def __repr__(self):
+    return self.__str__()
+
+  def __getitem__(self, pos):
+    if   pos == 0: return self.filename
+    elif pos == 1: return self.marker
+    raise IndexError
+
+  def __eq__(self, n):
+    return n.filename == self.filename and n.marker == self.marker
+
+  def __hash__(self):
+    return self.filename.__hash__()
+
 class SourceDatabase(logger.Logger):
   '''This can be replaced by the favorite software of Jed'''
   def __init__(self, argDB, log):
     logger.Logger.__init__(self, argDB = argDB, log = log)
     self.setup()
-    # Vertices are filenames
-    #   Arcs indicate a dependence and are decorated with consistency markers
+    # Vertices are (filename, consistency marker) pairs
+    #   Arcs indicate a dependence
     import graph
     self.dependencyGraph = graph.DirectedGraph()
     return
@@ -129,7 +153,7 @@ class SourceDatabase(logger.Logger):
 
   @staticmethod
   def vertex(filename):
-    return (filename, SourceDatabase.marker(filename))
+    return SourceNode(filename, SourceDatabase.marker(filename))
 
   def setNode(self, vertex, deps):
     self.dependencyGraph.addEdges(SourceDatabase.vertex(vertex), [SourceDatabase.vertex(dep) for dep in deps])
@@ -151,6 +175,8 @@ class SourceDatabase(logger.Logger):
     self.logPrint('Checking for rebuild of '+str(vertex))
     v = SourceDatabase.vertex(vertex)
     try:
+      if not os.path.isfile(vertex):
+        self.logPrint('    %s does not exist' % vertex)
       for dep,mark in self.dependencyGraph.getEdges(v)[0]:
         if self.rebuildArc(vertex, dep, mark):
           self.logPrint('    dep '+str(dep)+' is changed')
@@ -160,10 +186,11 @@ class SourceDatabase(logger.Logger):
       return True
     return False
 
-  def topologicalSort(self):
+  def topologicalSort(self, predicate):
     import graph
     for vertex,marker in graph.DirectedGraph.topologicalSort(self.dependencyGraph):
-      yield vertex
+      if predicate(vertex):
+        yield vertex
     return
 
 class DirectoryTreeWalker(logger.Logger):
@@ -271,12 +298,10 @@ class DirectoryTreeWalker(logger.Logger):
         dirs.remove(badDir)
     return
 
-class DependencyBuilder(logger.Logger):
-  def __init__(self, argDB, log, configInfo, sourceDatabase, objDir):
+class SourceFileManager(logger.Logger):
+  def __init__(self, argDB, log, configInfo):
     logger.Logger.__init__(self, argDB = argDB, log = log)
-    self.configInfo     = configInfo
-    self.sourceDatabase = sourceDatabase
-    self.objDir         = objDir
+    self.configInfo = configInfo
     self.setup()
     return
 
@@ -320,18 +345,30 @@ class DependencyBuilder(logger.Logger):
       source    = source[:self.argDB['maxSources']]
     return {'C': cnames, 'Cxx': cxxnames, 'Cuda': cudanames, 'F77': f77names, 'F90': f90names, 'Fortran': f77names+f90names, 'Objects': [self.getObjectName(s, objDir) for s in source]}
 
+class DependencyBuilder(logger.Logger):
+  def __init__(self, argDB, log, sourceManager, sourceDatabase, objDir):
+    logger.Logger.__init__(self, argDB = argDB, log = log)
+    self.sourceManager  = sourceManager
+    self.sourceDatabase = sourceDatabase
+    self.objDir         = objDir
+    self.setup()
+    return
+
   def readDependencyFile(self, dirname, source, depFile):
     '''Read *.d file with dependency information and store it in the source database'''
     with file(depFile) as f:
       target, deps = f.read().split(':')
-      assert(target == os.path.basename(source))
-    self.sourceDatabase.setNode(source, [os.path.join(dirname, d) for d in deps.replace('\\','').split()])
+      assert(target == self.sourceManager.getObjectName(source))
+    deps = deps.replace('\\','').split()
+    assert(deps[0] == source)
+    self.sourceDatabase.setNode(os.path.join(dirname, source), [os.path.join(dirname, d) for d in deps[1:]])
     return
 
   def buildDependency(self, dirname, source):
-    depFile = os.path.splitext(os.path.basename(source))[0]+'.d'
+    self.logPrint('Rebuilding dependency info for '+os.path.join(dirname, source))
+    depFile = os.path.splitext(source)[0]+'.d'
     if os.path.isfile(depFile):
-      self.logWrite('Found dependency file '+depFile+'\n', forceScroll = True)
+      self.logPrint('Found dependency file '+depFile)
       self.readDependencyFile(dirname, source, depFile)
     return
 
@@ -340,11 +377,10 @@ class DependencyBuilder(logger.Logger):
     self.logWrite('Building dependencies in '+dirname+'\n', debugSection = 'screen', forceScroll = True)
     oldDir = os.getcwd()
     os.chdir(dirname)
-    sourceMap = self.sortSourceFiles(fnames, self.objDir)
-    #print dirname,sourceMap
-    if sourceMap['Objects']:
-      self.logPrint('Rebuilding dependency info for files '+str(sourceMap['Objects']))
-      for source in sourceMap['Objects']:
+    sourceMap = self.sourceManager.sortSourceFiles(fnames, self.objDir)
+    for language in sourceMap.keys():
+      if language == 'Objects': continue
+      for source in sourceMap[language]:
         self.buildDependency(dirname, source)
     os.chdir(oldDir)
     return
@@ -366,6 +402,7 @@ class PETScConfigureInfo(object):
     self.petscdir        = self.framework.require('PETSc.utilities.petscdir',    None)
     self.languages       = self.framework.require('PETSc.utilities.languages',   None)
     self.debugging       = self.framework.require('PETSc.utilities.debugging',   None)
+    self.debuggers       = self.framework.require('PETSc.utilities.debuggers',   None)
     self.make            = self.framework.require('config.programs',        None)
     self.CHUD            = self.framework.require('PETSc.utilities.CHUD',        None)
     self.compilers       = self.framework.require('config.compilers',            None)
@@ -429,6 +466,8 @@ class PETScMaker(script.Script):
    self.petscArch    = self.configInfo.arch.arch
    self.petscConfDir = os.path.join(self.petscDir, self.petscArch, 'conf')
    self.petscLibDir  = os.path.join(self.petscDir, self.petscArch, 'lib')
+   # Setup subobjects
+   self.sourceManager = SourceFileManager(self.argDB, self.log, self.configInfo)
    return
 
  def cleanupLog(self, framework, confDir):
@@ -510,80 +549,7 @@ class PETScMaker(script.Script):
    packageIncludes = self.configInfo.headers.toStringNoDupes(packageIncludes)
    return packageIncludes, packageLibs
 
- def getObjectName(self, source, objDir = None):
-   '''Get object file name corresponding to a source file'''
-   if objDir is None:
-     compilerObj = self.configInfo.compiler['C'].getTarget(source)
-   else:
-     compilerObj = os.path.join(objDir, self.configInfo.compiler['C'].getTarget(os.path.basename(source)))
-   return compilerObj
-
- def sortSourceFiles(self, dirname, fnames, objDir = None):
-   '''Sorts source files by language (returns dictionary with language keys)'''
-   cnames    = []
-   cxxnames  = []
-   cudanames = []
-   f77names  = []
-   f90names  = []
-   for f in fnames:
-     ext = os.path.splitext(f)[1]
-     if ext == '.c':
-       cnames.append(f)
-     elif ext in ['.cxx', '.cpp', '.cc']:
-       if self.configInfo.languages.clanguage == 'Cxx':
-         cxxnames.append(f)
-     elif ext == '.cu':
-       cudanames.append(f)
-     elif ext == '.F':
-       if hasattr(self.configInfo.compilers, 'FC'):
-         f77names.append(f)
-     elif ext == '.F90':
-       if hasattr(self.configInfo.compilers, 'FC') and self.configInfo.compilers.fortranIsF90:
-         f90names.append(f)
-   source = cnames+cxxnames+cudanames+f77names+f90names
-   if self.argDB['maxSources'] >= 0:
-     cnames    = cnames[:self.argDB['maxSources']]
-     cxxnames  = cxxnames[:self.argDB['maxSources']]
-     cudanames = cudanames[:self.argDB['maxSources']]
-     f77names  = f77names[:self.argDB['maxSources']]
-     f90names  = f90names[:self.argDB['maxSources']]
-     source    = source[:self.argDB['maxSources']]
-   return {'C': cnames, 'Cxx': cxxnames, 'Cuda': cudanames, 'F77': f77names, 'F90': f90names, 'Fortran': f77names+f90names, 'Objects': [self.getObjectName(s, objDir) for s in source]}
-
- def compileC(self, source, objDir = None):
-   includes = ['-I'+inc for inc in [os.path.join(self.petscDir, self.petscArch, 'include'), os.path.join(self.petscDir, 'include')]]
-   self.configInfo.setCompilers.pushLanguage(self.configInfo.languages.clanguage)
-   compiler = self.configInfo.setCompilers.getCompiler()
-   flags = []
-   flags.append(self.configInfo.setCompilers.getCompilerFlags())             # PCC_FLAGS
-   flags.extend([self.configInfo.setCompilers.CPPFLAGS, self.configInfo.CHUD.CPPFLAGS]) # CPP_FLAGS
-   flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscDir, ''))
-   # TODO: Move this up to configure
-   if self.argDB['dependencies']: flags.append('-MMD')
-   sources = []
-   for s in source:
-     objName = self.getObjectName(s, objDir)
-     if not os.path.isfile(objName):
-       self.logPrint('Rebuilding %s due to missing object file %s' % (s, objName))
-       sources.append(s)
-     elif self.sourceDatabase.rebuild(self.getObjectName(s, objDir)):
-       self.logPrint('Rebuilding %s due to outdated dependencies' % (s))
-       sources.append(s)
-   objects = [self.getObjectName(s, objDir) for s in sources]
-   packageIncludes, packageLibs = self.getPackageInfo()
-   cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+sources)
-   if len(sources):
-     self.logWrite(cmd+'\n', debugSection = self.debugSection, forceScroll = True)
-     if not self.dryRun:
-       (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
-       if status:
-         self.logPrint("ERROR IN COMPILE ******************************", debugSection='screen')
-         self.logPrint(output+error, debugSection='screen')
-       ##else:
-       ##  self.buildDependenciesFiles(sources)
-   else:
-     self.logPrint('Nothing to build', debugSection = self.debugSection)
-   self.configInfo.setCompilers.popLanguage()
+ def storeObjects(self, objects):
    for o in objects:
      locObj = os.path.basename(o)
      self.logPrint('Moving %s to %s' % (locObj, o))
@@ -592,34 +558,39 @@ class PETScMaker(script.Script):
          print 'ERROR: Missing object file',locObj
        else:
          shutil.move(locObj, o)
-   return objects
+   return
 
- def compileFortran(self, source, objDir = None):
-   flags           = []
-
+ def compile(self, language, source, objDir = None):
+   if not len(source):
+     self.logPrint('Nothing to build', debugSection = self.debugSection)
+     return
+   self.configInfo.setCompilers.pushLanguage(language)
+   packageIncludes, packageLibs = self.getPackageInfo()
+   compiler = self.configInfo.setCompilers.getCompiler()
+   objects  = [self.sourceManager.getObjectName(s, objDir) for s in source]
    includes = ['-I'+inc for inc in [os.path.join(self.petscDir, self.petscArch, 'include'), os.path.join(self.petscDir, 'include')]]
-   objects  = [self.getObjectName(s, objDir) for s in source]
-   self.configInfo.setCompilers.pushLanguage('FC')
-   compiler      = self.configInfo.setCompilers.getCompiler()
-   flags.append(self.configInfo.setCompilers.getCompilerFlags())             # PCC_FLAGS
-   flags.extend([self.configInfo.setCompilers.CPPFLAGS, self.configInfo.CHUD.CPPFLAGS]) # CPP_FLAGS
-   cmd = ' '.join([compiler]+['-c']+includes+flags+source)
+   flags    = []
+   flags.append(self.configInfo.setCompilers.getCompilerFlags())                        # Add PCC_FLAGS
+   flags.extend([self.configInfo.setCompilers.CPPFLAGS, self.configInfo.CHUD.CPPFLAGS]) # Add CPP_FLAGS
+   flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscDir, ''))                 # Define __INSDIR__
+   # TODO: Move this up to configure
+   if self.argDB['dependencies']: flags.append('-MMD')
+   cmd      = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
    self.logWrite(cmd+'\n', debugSection = self.debugSection, forceScroll = True)
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
      if status:
-       self.logPrint("ERROR IN COMPILE ******************************", debugSection='screen')
+       self.logPrint("ERROR IN C COMPILE ******************************", debugSection='screen')
        self.logPrint(output+error, debugSection='screen')
    self.configInfo.setCompilers.popLanguage()
-   for o in objects:
-     if not self.dryRun:
-       locObj = os.path.basename(o)
-       self.logPrint('Moving %s to %s' % (locObj, o))
-       if not os.path.isfile(locObj):
-         print 'ERROR: Missing object file',o
-       else:
-         shutil.move(locObj, o)
+   self.storeObjects(objects)
    return objects
+
+ def compileC(self, source, objDir = None):
+   return self.compile(self.configInfo.languages.clanguage, source, objDir)
+
+ def compileFortran(self, source, objDir = None):
+   return self.compile('FC', source, objDir)
 
  def archive(self, library, objects):
    '''${AR} ${AR_FLAGS} ${LIBNAME} $*.o'''
@@ -746,7 +717,12 @@ class PETScMaker(script.Script):
      if status:
        self.logPrint("ERROR IN LINK ******************************", debugSection='screen')
        self.logPrint(output+error, debugSection='screen')
-   # TODO: Move dsymutil stuff from PETSc.utilities.debuggers to config.compilers
+     # TODO: Move dsymutil stuff from PETSc.utilities.debuggers to config.compilers
+     if hasattr(self.debuggers, 'dsymutil'):
+       (output, error, status) = self.executeShellCommand(self.debuggers.dsymutil+' '+executable, checkCommand = noCheckCommand, log=self.log)
+       if status:
+         self.logPrint("ERROR IN LINK ******************************", debugSection='screen')
+         self.logPrint(output+error, debugSection='screen')
    self.compilers.popLanguage()
    return [executable]
 
@@ -755,7 +731,7 @@ class PETScMaker(script.Script):
    self.logWrite('Building in '+dirname+'\n', debugSection = 'screen', forceScroll = True)
    oldDir = os.getcwd()
    os.chdir(dirname)
-   sourceMap = self.depBuilder.sortSourceFiles(dirname, files, objDir)
+   sourceMap = self.sourceManager.sortSourceFiles(files, objDir)
    objects   = []
    for language in ['C', 'Fortran', 'Cuda']:
      if sourceMap[language]:
@@ -767,7 +743,7 @@ class PETScMaker(script.Script):
  def buildFile(self, filename, objDir):
    ''' This is run in a PETSc source directory'''
    self.logWrite('Building '+filename+'\n', debugSection = 'screen', forceScroll = True)
-   sourceMap = self.depBuilder.sortSourceFiles([filename], objDir)
+   sourceMap = self.sourceManager.sortSourceFiles([filename], objDir)
    objects   = []
    for language in ['C', 'Fortran', 'Cuda']:
      if sourceMap[language]:
@@ -777,6 +753,7 @@ class PETScMaker(script.Script):
 
  def buildLibraries(self, libname, rootDir):
    if not self.argDB['buildLibraries']: return
+   self.logPrint('Building Libraries')
    library = os.path.join(self.petscDir, self.petscArch, 'lib', libname)
    objDir  = self.getObjDir(libname)
    if not os.path.isdir(objDir): os.mkdir(objDir)
@@ -789,20 +766,27 @@ class PETScMaker(script.Script):
 
    objects = []
    if len(self.sourceDatabase):
-     print 'BUILDING'
+     def check(filename):
+       if self.sourceDatabase.rebuild(filename): return True
+       for obj in self.sourceManager.sortSourceFiles([filename], objDir)['Objects']:
+         if not os.path.isfile(obj):
+           self.logPrint('    object file '+obj+' is missing')
+           return True
+       return False
      import graph
-     for filename in self.sourceDatabase.topologicalSort():
+     for filename in self.sourceDatabase.topologicalSort(check):
        objects += self.buildFile(filename, objDir)
    else:
      walker  = DirectoryTreeWalker(self.argDB, self.log, self.configInfo)
      for root, files in walker.walk(rootDir):
+       self.logPrint('Building directory '+root)
        objects += self.buildDir(root, files, objDir)
 
    if len(objects):
      self.logPrint('Archiving files '+str(objects)+' into '+libname)
      self.archive(library, objects)
-   self.ranlib(libname)
-   self.buildSharedLibrary(libname)
+   #self.ranlib(libname)
+   #self.buildSharedLibrary(libname)
    return
 
  def rebuildDependencies(self, libname, rootDir):
@@ -813,24 +797,27 @@ class PETScMaker(script.Script):
      dbFilename = os.path.join(self.petscConfDir, 'source.db')
 
      if not self.argDB['rebuildDependencies'] and os.path.isfile(dbFilename):
+       self.logPrint('Loading Dependencies')
        import cPickle
 
        with file(dbFilename, 'rb') as f:
          self.sourceDatabase = cPickle.load(f)
        self.sourceDatabase.verbose = self.verbose
      else:
+       self.logPrint('Rebuilding Dependencies')
        self.sourceDatabase = SourceDatabase(self.argDB, self.log)
-       self.depBuilder     = DependencyBuilder(self.argDB, self.log, self.configInfo, self.sourceDatabase, self.getObjDir(libname))
+       depBuilder          = DependencyBuilder(self.argDB, self.log, self.sourceManager, self.sourceDatabase, self.getObjDir(libname))
        walker              = DirectoryTreeWalker(self.argDB, self.log, self.configInfo)
 
        for root, files in walker.walk(rootDir):
-         self.depBuilder.buildDependencies(root, files)
+         depBuilder.buildDependencies(root, files)
    else:
+     self.logPrint('Disabling dependency tracking')
      self.sourceDatabase = NullSourceDatabase()
    if self.verbose > 3:
      import graph
      print 'Source database:'
-     for filename in self.sourceDatabase.topologicalSort():
+     for filename in self.sourceDatabase.topologicalSort(lambda x: True):
        print '  ',filename
    return
 
@@ -878,7 +865,7 @@ class PETScMaker(script.Script):
    ''' This is run in a PETSc source directory'''
    self.logWrite('Entering '+dirname+'\n', debugSection = 'screen', forceScroll = True)
    os.chdir(dirname)
-   sourceMap = self.depBuilder.sortSourceFiles(dirname)
+   sourceMap = self.sourceManager.sortSourceFiles(dirname)
    objects   = []
    if sourceMap['C']:
      self.logPrint('Compiling C files '+str(sourceMap['C']))
