@@ -385,6 +385,19 @@ class DependencyBuilder(logger.Logger):
     os.chdir(oldDir)
     return
 
+  def buildDependenciesF90(self):
+    '''We have to hardcode F90 module dependencies (shaking fist)'''
+    pdir = self.sourceManager.configInfo.petscdir.dir
+    if self.sourceManager.configInfo.mpi.usingMPIUni:
+      self.sourceDatabase.setNode(os.path.join(pdir, 'src', 'sys', 'f90-mod', 'petscsysmod.F'), [os.path.join(pdir, 'src', 'sys', 'mpiuni', 'f90-mod', 'mpiunimod.F')])
+    self.sourceDatabase.setNode(os.path.join(pdir, 'src', 'vec',  'f90-mod', 'petscvecmod.F'),  [os.path.join(pdir, 'src', 'sys',  'f90-mod', 'petscsysmod.F')])
+    self.sourceDatabase.setNode(os.path.join(pdir, 'src', 'mat',  'f90-mod', 'petscmatmod.F'),  [os.path.join(pdir, 'src', 'vec',  'f90-mod', 'petscvecmod.F')])
+    self.sourceDatabase.setNode(os.path.join(pdir, 'src', 'dm',   'f90-mod', 'petscdmmod.F'),   [os.path.join(pdir, 'src', 'mat',  'f90-mod', 'petscmatmod.F')])
+    self.sourceDatabase.setNode(os.path.join(pdir, 'src', 'ksp',  'f90-mod', 'petsckspmod.F'),  [os.path.join(pdir, 'src', 'dm',   'f90-mod', 'petscdmmod.F')])
+    self.sourceDatabase.setNode(os.path.join(pdir, 'src', 'snes', 'f90-mod', 'petscsnesmod.F'), [os.path.join(pdir, 'src', 'ksp',  'f90-mod', 'petsckspmod.F')])
+    self.sourceDatabase.setNode(os.path.join(pdir, 'src', 'ts',   'f90-mod', 'petsctsmod.F'),   [os.path.join(pdir, 'src', 'snes', 'f90-mod', 'petscsnesmod.F')])
+    return
+
 class PETScConfigureInfo(object):
   def __init__(self, framework):
     self.framework = framework
@@ -811,6 +824,7 @@ class PETScMaker(script.Script):
 
        for root, files in walker.walk(rootDir):
          depBuilder.buildDependencies(root, files)
+       depBuilder.buildDependenciesF90()
    else:
      self.logPrint('Disabling dependency tracking')
      self.sourceDatabase = NullSourceDatabase()
