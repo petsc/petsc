@@ -133,6 +133,7 @@ include "petscksp.pxi"
 include "petscsnes.pxi"
 include "petscts.pxi"
 include "petscao.pxi"
+include "petscdm.pxi"
 include "petscda.pxi"
 
 # --------------------------------------------------------------------
@@ -160,6 +161,7 @@ include "KSP.pyx"
 include "SNES.pyx"
 include "TS.pyx"
 include "AO.pyx"
+include "DM.pyx"
 include "DA.pyx"
 
 # --------------------------------------------------------------------
@@ -351,7 +353,7 @@ cdef extern from *:
     PetscClassId PETSC_SNES_CLASSID      "SNES_CLASSID"
     PetscClassId PETSC_TS_CLASSID        "TS_CLASSID"
     PetscClassId PETSC_AO_CLASSID        "AO_CLASSID"
-    PetscClassId PETSC_DA_CLASSID        "DM_CLASSID"
+    PetscClassId PETSC_DM_CLASSID        "DM_CLASSID"
 
 cdef int register(char path[]) except -1:
     # make sure all PETSc packages are initialized
@@ -374,7 +376,7 @@ cdef int register(char path[]) except -1:
     TypeRegistryAdd(PETSC_SNES_CLASSID,      SNES)
     TypeRegistryAdd(PETSC_TS_CLASSID,        TS)
     TypeRegistryAdd(PETSC_AO_CLASSID,        AO)
-    TypeRegistryAdd(PETSC_DA_CLASSID,        DA)
+    TypeRegistryAdd(PETSC_DM_CLASSID,        DM)
     return 0 # and we are done, enjoy !!
 
 # --------------------------------------------------------------------

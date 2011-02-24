@@ -28,7 +28,7 @@ class DAElementType(object):
 
 # --------------------------------------------------------------------
 
-cdef class DA(Object):
+cdef class DA(DM):
 
     PeriodicType      = DAPeriodicType
     StencilType       = DAStencilType
@@ -37,6 +37,7 @@ cdef class DA(Object):
 
     def __cinit__(self):
         self.obj = <PetscObject*> &self.da
+        self.dm = <PetscDM*> &self.da
         self.da = NULL
 
     def view(self, Viewer viewer=None):

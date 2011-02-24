@@ -19,6 +19,7 @@
 #include "compat/petscsnes.h"
 #include "compat/petscts.h"
 #include "compat/petscao.h"
+#include "compat/petscdm.h"
 #include "compat/petscda.h"
 
 #if !defined(WITH_THREAD)

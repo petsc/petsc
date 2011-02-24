@@ -21,6 +21,7 @@ cdef extern from * nogil:
     int PetscObjectSetName(PetscObject,char[])
     int PetscObjectGetName(PetscObject,char*[])
 
+    int PetscTypeCompare(PetscObject,char[],PetscBool*)
     int PetscObjectCompose(PetscObject,char[],PetscObject)
     int PetscObjectQuery(PetscObject,char[],PetscObject*)
 

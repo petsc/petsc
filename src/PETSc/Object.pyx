@@ -159,6 +159,12 @@ cdef class Object:
         CHKERR( PetscObjectGetClassId(cobj, &classid) )
         cdef type Class = TypeRegistryGet(classid)
         cdef Object newobj = Class()
+        #
+        cdef PetscBool match = PETSC_FALSE
+        if classid == PETSC_DM_CLASSID:
+            CHKERR( PetscTypeCompare(cobj, b"da", &match) )
+            if match == PETSC_TRUE: Class = DA
+        #
         PetscIncref(cobj)
         newobj.obj[0] = cobj
         return newobj
