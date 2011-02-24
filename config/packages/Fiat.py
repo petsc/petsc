@@ -4,7 +4,7 @@ import os, sys
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download = ['http://launchpad.net/fiat/trunk/0.9.2/+download/fiat-0.9.2.tar.gz'] # 'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fiat-dev.tar.gz'
+    self.download = ['http://launchpad.net/fiat/trunk/0.9.9/+download/fiat-0.9.9.tar.gz'] # 'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fiat-dev.tar.gz'
     self.downloadname      = self.name.lower()
     self.archIndependent   = 1
     self.worksonWindows    = 1
