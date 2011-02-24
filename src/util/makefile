@@ -5,19 +5,15 @@ CFLAGS   =
 FFLAGS   =
 CPPFLAGS = -DTAO_LIB_DIR='"${TAO_LIB_DIR}"'
 SOURCEC  = tao_util.c
-#tao.c tao_util.c tao_reg.c tao_fghj.c\
-#	   tao_lsolver.c dlregis.c line.c newsolver.c fdtest.c
 SOURCEF  =
 SOURCEH  = 
 OBJSC    = tao_util.o
-#tao.o tao_util.o tao_reg.o tao_fghj.o\
-#	   tao_lsolver.o dlregis.o line.o newsolver.o fdtest.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = taosolver
 DIRS     = 
 EDIRS    = 
-LOCDIR   = src/sys
+LOCDIR   = src/util
 
 include ${TAO_DIR}/conf/tao_base
 
