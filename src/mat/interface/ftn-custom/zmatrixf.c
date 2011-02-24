@@ -2,6 +2,7 @@
 #include "petscmat.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define matdestroy_                      MATDESTROY
 #define matdestroymatrices_              MATDESTROYMATRICES
 #define matgetfactor_                    MATGETFACTOR
 #define matfactorgetsolverpackage_       MATFACTORGETSOLVERPACKAGE
@@ -36,6 +37,7 @@
 #define matfactorinfoinitialize_         MATFACTORINFOINITIALIZE
 #define matnullspacesetfunction_         MATNULLSPACESETFUNCTION
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matdestroy_                      matdestroy
 #define matdestroymatrices_              matdestroymatrices_
 #define matgetfactor_                    matgetfactor
 #define matfactorgetsolverpackage_       matfactorgetsolverpackage
@@ -72,6 +74,11 @@
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL  matdestroy_(Mat *A, int *__ierr )
+{
+  *__ierr = MatDestroy(*A);
+}
 
 static PetscErrorCode ournullfunction(MatNullSpace sp,Vec x,void *ctx)
 {
