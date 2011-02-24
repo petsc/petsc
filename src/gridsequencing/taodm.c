@@ -9,8 +9,8 @@ static PetscBool taodmclass_registered = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "TaoDMCreate"
-/*@
-    TaoDMCreate - Creates a D based multigrid solver object. This allows one to 
+/*@C
+    TaoDMCreate - Creates a DM based multigrid solver object. This allows one to 
       easily implement MG methods on regular grids.
 
     Collective on MPI_Comm
