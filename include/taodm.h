@@ -31,6 +31,8 @@ extern PetscErrorCode TaoDMSetPostLevelMonitor(TaoDM*,PetscErrorCode(*)(TaoDM, P
 extern PetscErrorCode TaoDMSetInitialGuessRoutine(TaoDM*,PetscErrorCode(*)(TaoDM,Vec));
 extern PetscErrorCode TaoDMSetVariableBoundsRoutine(TaoDM*,PetscErrorCode(*)(TaoDM,Vec, Vec));
 extern PetscErrorCode TaoDMSetObjectiveAndGradientRoutine(TaoDM*,PetscErrorCode(*)(TaoSolver, Vec, PetscReal*, Vec, void*));
+extern PetscErrorCode TaoDMSetObjectiveRoutine(TaoDM*,PetscErrorCode(*)(TaoSolver, Vec, PetscReal*, void*));
+extern PetscErrorCode TaoDMSetGradientRoutine(TaoDM*,PetscErrorCode(*)(TaoSolver, Vec, Vec, void*));
 extern PetscErrorCode TaoDMSetHessianRoutine(TaoDM*,PetscErrorCode(*)(TaoSolver, Vec, Mat*, Mat*, MatStructure*,void*));
 
 extern PetscErrorCode TaoDMSetLocalObjectiveRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscScalar**,PetscScalar*,void*));

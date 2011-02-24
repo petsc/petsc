@@ -99,13 +99,13 @@ int main(int argc, char **argv) {
   
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,user.mx,
                     user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&dm); CHKERRQ(ierr);
-  ierr = TaoDMSetDM(taodm,(DM)dm); CHKERRQ(ierr);
+  ierr = TaoDMSetDM(taodm,dm); CHKERRQ(ierr);
   ierr = DMDestroy(dm); CHKERRQ(ierr);
   ierr = TaoDMSetTolerances(taodm,0,0,0,0,0);
 
 
   ierr = TaoDMSetLocalObjectiveAndGradientRoutine(taodm,FormFunctionGradientLocal); CHKERRQ(ierr);
-  ierr = TaoDMSetLocalHessianRoutine(taodm,FormHessianLocal); CHKERRQ(ierr);
+//  ierr = TaoDMSetLocalHessianRoutine(taodm,FormHessianLocal); CHKERRQ(ierr);
   //ierr = TaoDMSetObjectiveAndGradientRoutine(taodm,FormFunctionGradient); CHKERRQ(ierr);
   //ierr = TaoDMSetHessianRoutine(taodm,FormHessian); CHKERRQ(ierr);
   ierr = TaoDMSetInitialGuessRoutine(taodm,FormInitialGuess); CHKERRQ(ierr);
@@ -541,7 +541,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
   PetscReal ecc, trule1,trule2,trule3,trule4,trule5,trule6;
   PetscReal vmiddle, vup, vdown, vleft, vright;
   PetscReal px,pxp,pxm,sinxi;
-  PetscReal tt,f1,f2;
+  PetscReal tt,f1,f2,floc;
   PetscReal *x,*g,zero=0.0;
   Vec localX;
 
@@ -573,7 +573,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
   
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
   ierr = VecGetArray(G,&g); CHKERRQ(ierr);
-  f2=0.0;
+  floc=0.0;
   for (i=xs; i< xs+xm; i++){
     xi=(i+1)*hx;
     sinxi = sin(xi);
@@ -623,16 +623,21 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
        }
        row=(j-ys)*xm + (i-xs);
        g[row]=tt - user->ecc*hxhy*sinxi; // B 
-       f2+=user->ecc*hxhy*sinxi * x[row];
+       floc-=user->ecc*hxhy*sinxi * x[row];
      }
 
   }
+  ierr = MPI_Allreduce(&floc,&f2,1,MPI_DOUBLE_PRECISION,MPI_SUM,PETSC_COMM_WORLD); CHKERRQ(ierr);
+  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(G,&g); CHKERRQ(ierr);
 
+  ierr = DMRestoreLocalVector(dm,&localX); CHKERRQ(ierr);
+  
+  
 
   ierr = VecDot(X,G,&f1); CHKERRQ(ierr);
   *fcn = f1/2.0 + f2;
   
-  ierr = VecNorm(G,NORM_2,&f2); CHKERRQ(ierr);
   ierr = PetscLogFlops((91 + 10*ym) * xm); CHKERRQ(ierr); //TODO
   PetscFunctionReturn(0);
 

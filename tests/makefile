@@ -11,6 +11,7 @@ TESTEXAMPLES_C = test_link1.tao runtest_link1 test_link1.rm clean \
 	 test_minsurf2.tao runtest_minsurf2 test_minsurf2.rm \
 	 test_plate2.tao runtest_plate2 test_plate2.rm \
          test_jbearingdm.tao runtest_jbearingdm test_jbearingdm.rm \
+         test_jbearingdmf.tao runtest_jbearingdmf test_jbearingdmf.rm \
 	 clean 
 TESTEXAMPLES_F=	 test_eptorsion2f.tao runtest_eptorsion2f test_eptorsion2f.rm \
 	 test_plate2f.tao runtest_plate2f test_plate2f.rm \
@@ -59,6 +60,11 @@ test_jbearing2: test_jbearing2.o tao_chkopts
 test_jbearingdm: test_jbearingdm.o tao_chkopts
 	-${CLINKER} -o test_jbearingdm test_jbearingdm.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_jbearingdm.o
+
+
+test_jbearingdmf: test_jbearingdmf.o tao_chkopts
+	-${FLINKER} -o test_jbearingdmf test_jbearingdm.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_jbearingdmf.o
 
 test_plate2: test_plate2.o tao_chkopts
 	-${CLINKER} -o test_plate2 test_plate2.o ${TAO_LIB} ${PETSC_LIB}
