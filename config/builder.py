@@ -294,7 +294,7 @@ class DirectoryTreeWalker(logger.Logger):
 
   def walk(self, rootDir):
     if not self.checkDir(rootDir):
-      self.logPrint('Nothing to be done in '+self.rootDir)
+      self.logPrint('Nothing to be done in '+rootDir)
     for root, dirs, files in os.walk(rootDir):
       self.logPrint('Processing '+root)
       yield root, files
@@ -782,16 +782,19 @@ class PETScMaker(script.Script):
 
  def buildLibraries(self, libname, rootDir):
    if not self.argDB['buildLibraries']: return
+   totalRebuild = rootDir == self.petscDir and not len(self.sourceDatabase)
    self.logPrint('Building Libraries')
    library = os.path.join(self.petscDir, self.petscArch, 'lib', libname)
    objDir  = self.getObjDir(libname)
-   if not os.path.isdir(objDir): os.mkdir(objDir)
-   # Remove old library by default when rebuilding the entire package
-   if rootDir == self.petscDir and not self.argDB['dependencies']:
+   # Remove old library and object files by default when rebuilding the entire package
+   if totalRebuild:
      lib = os.path.splitext(library)[0]+'.'+self.configInfo.setCompilers.AR_LIB_SUFFIX
      if os.path.isfile(lib):
        self.logPrint('Removing '+lib)
        os.unlink(lib)
+     if os.path.isdir(objDir):
+       shutil.rmtree(objDir)
+   if not os.path.isdir(objDir): os.mkdir(objDir)
 
    objects = []
    if len(self.sourceDatabase):
@@ -806,16 +809,21 @@ class PETScMaker(script.Script):
      for filename in self.sourceDatabase.topologicalSort(check):
        objects += self.buildFile(filename, objDir)
    else:
-     walker  = DirectoryTreeWalker(self.argDB, self.log, self.configInfo)
-     for root, files in walker.walk(rootDir):
-       self.logPrint('Building directory '+root)
-       objects += self.buildDir(root, files, objDir)
+     walker = DirectoryTreeWalker(self.argDB, self.log, self.configInfo)
+     if totalRebuild:
+       dirs = map(lambda d: os.path.join(rootDir, 'src', d), ['inline', 'sys', 'vec', 'mat', 'dm', 'ksp', 'snes', 'ts', 'characteristic', 'docs', 'tops'])
+     else:
+       dirs = [rootDir]
+     for d in dirs:
+       for root, files in walker.walk(d):
+         self.logPrint('Building directory '+root)
+         objects += self.buildDir(root, files, objDir)
 
    if len(objects):
      self.logPrint('Archiving files '+str(objects)+' into '+libname)
      self.archive(library, objects)
-   #self.ranlib(libname)
-   #self.buildSharedLibrary(libname)
+   self.ranlib(libname)
+   self.buildSharedLibrary(libname)
    return
 
  def rebuildDependencies(self, libname, rootDir):
