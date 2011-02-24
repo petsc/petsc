@@ -529,7 +529,7 @@ class PETScMaker(script.Script):
    if self.argDB['dependencies']:
      if len(self.sourceDatabase):
        import cPickle
-       with file(sourceDBFilename, 'wb') as f:
+       with file(self.sourceDBFilename, 'wb') as f:
          cPickle.dump(self.sourceDatabase, f)
    return
 
