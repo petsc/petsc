@@ -892,7 +892,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscFree(a)   ((a) && ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__) || ((a) = 0)))
+#define PetscFree(a)   ((a) && ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__) || (((a) = 0))))
 
 /*MC
    PetscFreeVoid - Frees memory
