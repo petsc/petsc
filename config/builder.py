@@ -486,6 +486,8 @@ class PETScMaker(script.Script):
    self.petscArch    = self.configInfo.arch.arch
    self.petscConfDir = os.path.join(self.petscDir, self.petscArch, 'conf')
    self.petscLibDir  = os.path.join(self.petscDir, self.petscArch, 'lib')
+   # Setup source database
+   self.sourceDBFilename = os.path.join(self.petscConfDir, 'source.db')
    # Setup subobjects
    self.sourceManager = SourceFileManager(self.argDB, self.log, self.configInfo)
    return
@@ -522,17 +524,11 @@ class PETScMaker(script.Script):
    - Move logs to proper location
    - Save dependency information
    '''
-   root    = self.petscDir
-   arch    = self.petscArch
-   archDir = os.path.join(root, arch)
-   confDir = os.path.join(archDir, 'conf')
-   if not os.path.isdir(archDir): os.mkdir(archDir)
-   if not os.path.isdir(confDir): os.mkdir(confDir)
-
+   confDir = self.petscConfDir
    self.cleanupLog(self, confDir)
    if self.argDB['dependencies']:
      import cPickle
-     with file(os.path.join(confDir, 'source.db'), 'wb') as f:
+     with file(sourceDBFilename, 'wb') as f:
        cPickle.dump(self.sourceDatabase, f)
    return
 
@@ -792,6 +788,9 @@ class PETScMaker(script.Script):
      if os.path.isfile(lib):
        self.logPrint('Removing '+lib)
        os.unlink(lib)
+     if os.path.isfile(self.sourceDBFilename):
+       self.logPrint('Removing '+self.sourceDBFilename)
+       os.unlink(self.sourceDBFilename)
      if os.path.isdir(objDir):
        shutil.rmtree(objDir)
    if not os.path.isdir(objDir): os.mkdir(objDir)
@@ -831,13 +830,11 @@ class PETScMaker(script.Script):
    - If --dependencies is False, ignore them
    '''
    if self.argDB['dependencies']:
-     dbFilename = os.path.join(self.petscConfDir, 'source.db')
-
-     if not self.argDB['rebuildDependencies'] and os.path.isfile(dbFilename):
+     if not self.argDB['rebuildDependencies'] and os.path.isfile(self.sourceDBFilename):
        self.logPrint('Loading Dependencies')
        import cPickle
 
-       with file(dbFilename, 'rb') as f:
+       with file(self.sourceDBFilename, 'rb') as f:
          self.sourceDatabase = cPickle.load(f)
        self.sourceDatabase.verbose = self.verbose
      else:
