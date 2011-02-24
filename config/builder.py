@@ -359,7 +359,9 @@ class DependencyBuilder(logger.Logger):
     return
 
   def readDependencyFile(self, dirname, source, depFile):
-    '''Read *.d file with dependency information and store it in the source database'''
+    '''Read *.d file with dependency information and store it in the source database
+    - Source files depend on headers
+    '''
     with file(depFile) as f:
       target, deps = f.read().split(':')
     target = target.split()[0]
@@ -371,7 +373,7 @@ class DependencyBuilder(logger.Logger):
 
   def buildDependency(self, dirname, source):
     self.logPrint('Rebuilding dependency info for '+os.path.join(dirname, source))
-    depFile = os.path.splitext(source)[0]+'.d'
+    depFile = os.path.join(self.objDir, os.path.splitext(os.path.basename(source))[0]+'.d')
     if os.path.isfile(depFile):
       self.logPrint('Found dependency file '+depFile)
       self.readDependencyFile(dirname, source, depFile)
@@ -568,14 +570,14 @@ class PETScMaker(script.Script):
    return packageIncludes, packageLibs
 
  def storeObjects(self, objects):
-   for o in objects:
-     locObj = os.path.basename(o)
-     self.logPrint('Moving %s to %s' % (locObj, o))
+   for obj in objects:
+     locObj = os.path.basename(obj)
+     self.logPrint('Moving %s to %s' % (locObj, obj))
      if not self.dryRun:
        if not os.path.isfile(locObj):
          print 'ERROR: Missing object file',locObj
        else:
-         shutil.move(locObj, o)
+         shutil.move(locObj, obj)
    return
 
  def compile(self, language, source, objDir = None):
@@ -602,6 +604,8 @@ class PETScMaker(script.Script):
        self.logPrint(output+error, debugSection='screen')
    self.configInfo.setCompilers.popLanguage()
    self.storeObjects(objects)
+   deps = [os.path.splitext(o)[0]+'.d' for o in objects if os.path.isfile(os.path.splitext(os.path.basename(o))[0]+'.d')]
+   self.storeObjects(deps)
    return objects
 
  def compileC(self, source, objDir = None):
@@ -836,15 +840,19 @@ class PETScMaker(script.Script):
 
        for root, files in walker.walk(rootDir):
          depBuilder.buildDependencies(root, files)
-       depBuilder.buildDependenciesF90()
+       if not len(self.sourceDatabase):
+         self.logPrint('No dependency information found -- disabling dependency tracking')
+         self.sourceDatabase = NullSourceDatabase()
+       else:
+         depBuilder.buildDependenciesF90()
+     if self.verbose > 3:
+       import graph
+       print 'Source database:'
+       for filename in self.sourceDatabase.topologicalSort(lambda x: True):
+         print '  ',filename
    else:
      self.logPrint('Disabling dependency tracking')
      self.sourceDatabase = NullSourceDatabase()
-   if self.verbose > 3:
-     import graph
-     print 'Source database:'
-     for filename in self.sourceDatabase.topologicalSort(lambda x: True):
-       print '  ',filename
    return
 
  def cleanupTest(self, dirname, execname):
@@ -944,6 +952,8 @@ class PETScMaker(script.Script):
    return
 
  def run(self):
+   '''
+   '''
    self.setup()
    self.rebuildDependencies('libpetsc', self.rootDir)
    self.buildLibraries('libpetsc', self.rootDir)
