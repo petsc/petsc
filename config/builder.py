@@ -527,9 +527,10 @@ class PETScMaker(script.Script):
    confDir = self.petscConfDir
    self.cleanupLog(self, confDir)
    if self.argDB['dependencies']:
-     import cPickle
-     with file(sourceDBFilename, 'wb') as f:
-       cPickle.dump(self.sourceDatabase, f)
+     if len(self.sourceDatabase):
+       import cPickle
+       with file(sourceDBFilename, 'wb') as f:
+         cPickle.dump(self.sourceDatabase, f)
    return
 
  @property
